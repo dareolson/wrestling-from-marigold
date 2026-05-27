@@ -1,0 +1,746 @@
+import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
+
+const SPEED     = 140;
+const RUN_SPEED = 340;
+const DOWN_SEC  = 4.5;
+const WALK_FREQ = 0.05; // radians per unscaled pixel of travel
+
+// ─── Stamina ─────────────────────────────────────────────────────────────────
+const STAMINA_MAX      = 100;
+const STAMINA_RECOVER  = 6;   // per second while standing
+const STAMINA_DRAIN    = {    // drained from the DEFENDER on each move landing
+    clothesline:  12,
+    bodySlam:     22,
+    piledriver:   30,
+    dropkick:     14,
+    elbowDrop:    10,
+    sleeperHold:  18, // total drained if hold runs full duration
+};
+// Kick-out chance: 100% at full stamina, 0% at or below this threshold
+const KICKOUT_FLOOR = 15;
+
+// ─── Pose library ────────────────────────────────────────────────────────────
+// Angles are facing-relative: positive = toward facing direction.
+// Walk cycle blends additively on top; idle = all zeros lets the walk cycle
+// run freely with no bias.
+export const POSES = {
+    idle:        { lLeg: 0,     rLeg: 0,     lArm: 0,     rArm: 0     },
+    grapple:     { lLeg: 0.12,  rLeg:-0.08,  lArm: 0.50,  rArm: 0.18  },
+    slamHold:    { lLeg:-0.15,  rLeg: 0.28,  lArm: 0.58,  rArm: 0.58  },
+    slamThrow:   { lLeg: 0.42,  rLeg:-0.20,  lArm: 1.00,  rArm: 0.72  },
+    whipRelease: { lLeg: 0.18,  rLeg: 0.10,  lArm: 0.65,  rArm: 0.22  },
+    clothesline: { lLeg:-0.12,  rLeg: 0.32,  lArm: 1.05,  rArm:-0.18  },
+    pinHold:     { lLeg: 0.28,  rLeg: 0.28,  lArm: 0.30,  rArm:-0.30  },
+    elbowRaise:  { lLeg: 0.10,  rLeg: 0.05,  lArm:-1.40,  rArm: 0.15  },
+    elbowImpact: { lLeg: 0.08,  rLeg: 0.06,  lArm:-0.08,  rArm: 0.08  },
+    dropkick:    { lLeg: 0.80,  rLeg: 0.65,  lArm:-0.50,  rArm:-0.50  },
+    stumble:     { lLeg: 0.20,  rLeg:-0.15,  lArm:-0.35,  rArm: 0.35  },
+    sleeperHold: { lLeg: 0.08,  rLeg:-0.05,  lArm: 1.40,  rArm: 0.30  },
+    sleeping:    { lLeg:-0.08,  rLeg:-0.04,  lArm:-0.50,  rArm:-0.45  },
+};
+
+// ─── Move definitions ─────────────────────────────────────────────────────────
+// poseSeq drives the attacker's visual. Durations mirror the defender's tween
+// timings so both sides stay in sync.
+// Defender spatial logic stays in _doXxx — it varies too much per move to
+// collapse into data without a more complex DSL.
+export const MOVE_DEFS = {
+    irishWhip:   { poseSeq: [{ p: 'whipRelease', dur: 150, e: 'Cubic.easeOut' },
+                              { p: 'idle',        dur: 280, e: 'Linear'        }] },
+    bodySlam:    { poseSeq: [{ p: 'slamHold',    dur: 280, e: 'Cubic.easeOut' },
+                              { p: 'slamThrow',   dur: 220, e: 'Cubic.easeIn'  },
+                              { p: 'idle',        dur: 0                       }] },
+    clothesline: { poseSeq: [{ p: 'clothesline', dur: 180, e: 'Cubic.easeOut' },
+                              { p: 'idle',        dur: 260, e: 'Linear'        }] },
+    pin:         { poseSeq: [{ p: 'pinHold',     dur: 200, e: 'Linear'        }] },
+    elbowDrop:   { poseSeq: [{ p: 'elbowRaise',  dur: 220, e: 'Cubic.easeOut' },
+                              { p: 'elbowImpact', dur: 130, e: 'Cubic.easeIn'  },
+                              { p: 'idle',        dur: 280, e: 'Linear'        }] },
+    dropkick:    { poseSeq: [{ p: 'dropkick',    dur: 150, e: 'Cubic.easeOut' },
+                              { p: 'stumble',     dur: 250, e: 'Linear'        },
+                              { p: 'idle',        dur: 300, e: 'Linear'        }] },
+    piledriver:  { poseSeq: [{ p: 'slamHold',    dur: 280, e: 'Cubic.easeOut' },
+                              { p: 'slamThrow',   dur: 200, e: 'Cubic.easeIn'  },
+                              { p: 'idle',        dur: 0                       }] },
+    sleeperHold: { poseSeq: [{ p: 'sleeperHold', dur: 200, e: 'Linear'        }] },
+};
+
+// ─── Drawing helper ───────────────────────────────────────────────────────────
+// Returns 4 world-space points for a rotated rectangle.
+// Pivot at top-center; limb hangs downward at `angle` from vertical.
+// angle=0 → straight down; positive → swings right; negative → swings left.
+function limbPts(px, py, w, h, angle) {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    return [
+        { x: px - w / 2 * cos,           y: py + w / 2 * sin           },
+        { x: px + w / 2 * cos,           y: py - w / 2 * sin           },
+        { x: px + w / 2 * cos + h * sin, y: py - w / 2 * sin + h * cos },
+        { x: px - w / 2 * cos + h * sin, y: py + w / 2 * sin + h * cos },
+    ];
+}
+
+// ─── Wrestler class ───────────────────────────────────────────────────────────
+export default class Wrestler {
+    constructor(scene, x, y, skinCol, trunksCol, input, moveSet = ['irishWhip', 'clothesline', 'bodySlam', 'pin', 'elbowDrop', 'dropkick']) {
+        this.scene        = scene;
+        this.x            = x;
+        this.y            = y;
+        this.skinCol      = skinCol;
+        this.trunksCol    = trunksCol;
+        this.input        = input;
+        this.moveSet      = moveSet;
+        this.facing       = 1;
+        this.state        = 'standing';
+        this.stateTimer   = 0;
+        this.fallProgress = 0;
+        this.runPhase     = null;
+        this.runTarget    = 0;
+        this.runFacing    = 1;
+        this.walkPhase    = 0;
+        this.stamina      = STAMINA_MAX;
+        this.flipProgress = 0;
+        this.flipDir      = 1;
+        this.dropProgress = 0;
+        this.slamPhase    = null; // 'up' | 'throwing'
+        this.slamY        = 0;
+        this.pose         = { ...POSES.idle }; // live joint angles, tweened per move
+        this.gfx          = scene.add.graphics();
+    }
+
+    get s() { return perspectiveScale(this.y); }
+
+    // ── Pose helpers ──────────────────────────────────────────────────────────
+
+    // Tween this.pose toward a target (pose name string or {lLeg,rLeg,lArm,rArm} object).
+    // Kills any in-flight pose tween first so sequences don't stack.
+    tweenPose(target, duration, ease = 'Linear', onComplete) {
+        this.scene.tweens.killTweensOf(this.pose);
+        const t = typeof target === 'string' ? POSES[target] : target;
+        if (!duration) {
+            Object.assign(this.pose, t);
+            if (onComplete) onComplete();
+            return;
+        }
+        this.scene.tweens.add({ targets: this.pose, ...t, duration, ease, onComplete });
+    }
+
+    // Chain through an array of { p, dur, e } pose steps; calls onDone when the last one finishes.
+    _runPoseSequence(sequence, onDone) {
+        const [head, ...rest] = sequence;
+        if (!head) { if (onDone) onDone(); return; }
+        this.tweenPose(
+            POSES[head.p] ?? POSES.idle,
+            head.dur,
+            head.e ?? 'Linear',
+            () => this._runPoseSequence(rest, onDone),
+        );
+    }
+
+    // ── Core game tick ────────────────────────────────────────────────────────
+
+    move(dt, other) {
+        if (this.state !== 'running') {
+            const dx = other.x - this.x;
+            if (dx !== 0) this.facing = Math.sign(dx);
+        }
+
+        if (this.state !== 'standing') return;
+
+        let dx = 0, dy = 0;
+        if (this.input.isDown('left'))  dx -= 1;
+        if (this.input.isDown('right')) dx += 1;
+        if (this.input.isDown('up'))    dy -= 1;
+        if (this.input.isDown('down'))  dy += 1;
+
+        const len = Math.hypot(dx, dy);
+        if (len > 0) {
+            const speed = SPEED * this.s * dt;
+            this.x += (dx / len) * speed;
+            this.y += (dy / len) * speed;
+            this.walkPhase = (this.walkPhase + SPEED * dt * WALK_FREQ) % (Math.PI * 2);
+            this._clamp();
+        } else {
+            this.walkPhase *= Math.pow(0.85, dt * 60);
+        }
+
+        this.stamina = Math.min(STAMINA_MAX, this.stamina + STAMINA_RECOVER * dt);
+
+        const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
+        const minDist = 80 * this.s;
+        if (dist < minDist && dist > 0) {
+            const ang = Phaser.Math.Angle.Between(other.x, other.y, this.x, this.y);
+            this.x = other.x + Math.cos(ang) * minDist;
+            this.y = other.y + Math.sin(ang) * minDist;
+            this._clamp();
+        }
+    }
+
+    tickDown(dt) {
+        if (this.state !== 'down') return;
+        this.stateTimer -= dt;
+        if (this.stateTimer <= 0) this.state = 'standing';
+    }
+
+    tickRun(dt) {
+        if (this.state !== 'running') return;
+        const dir = Math.sign(this.runTarget - this.x);
+        this.x += dir * RUN_SPEED * this.s * dt;
+        this.walkPhase = (this.walkPhase + RUN_SPEED * dt * WALK_FREQ) % (Math.PI * 2);
+
+        const past = dir > 0 ? this.x >= this.runTarget : this.x <= this.runTarget;
+        if (!past) return;
+
+        this.x = this.runTarget;
+        if (this.runPhase === 'toRope') {
+            const b = ringBoundsAtY(this.y);
+            this.runFacing = -dir;
+            this.facing    = -dir;
+            this.runTarget = dir > 0 ? b.left + 20 : b.right - 20;
+            this.runPhase  = 'returning';
+        } else {
+            this.state    = 'standing';
+            this.runPhase = null;
+        }
+    }
+
+    // ── Input ─────────────────────────────────────────────────────────────────
+
+    // Grapple key: clothesline vs returning runner | pin vs down | Irish whip vs standing
+    tryAction(other) {
+        if (this.state !== 'standing') return false;
+        if (!this.input.justDown('action')) return false;
+
+        if (other.state === 'running' && other.runPhase === 'returning') {
+            if (this.moveSet.includes('clothesline')) {
+                const xDist   = Math.abs(other.x - this.x);
+                // Positive = P2 has run past P1's X in the run direction
+                const pastDist = (other.x - this.x) * other.runFacing;
+                // Window: within ~4 ring-feet approaching, forgiving ~1 foot past
+                if (xDist < 160 * this.s && pastDist < 45 * this.s) {
+                    this._doClothesline(other);
+                    return 'clothesline';
+                }
+            }
+        }
+
+        const dist  = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
+        const reach = 110 * this.s;
+        if (dist > reach) return false;
+
+        if (other.state === 'down' && this.moveSet.includes('pin')) {
+            this.state  = 'pinning';
+            other.state = 'pinned';
+            this._runPoseSequence(MOVE_DEFS.pin.poseSeq);
+            return 'pin';
+        }
+
+        if (other.state === 'standing' && this.moveSet.includes('irishWhip')) {
+            this._doIrishWhip(other);
+            return 'irishWhip';
+        }
+
+        return false;
+    }
+
+    // Power key: elbow drop (vs downed) | piledriver / body slam (close) | dropkick (medium)
+    tryPower(other) {
+        if (this.state !== 'standing') return false;
+        if (!this.input.justDown('power')) return false;
+
+        const dist     = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
+        const reach    = 110 * this.s;
+        const medReach = 220 * this.s;
+
+        if (other.state === 'down' && dist <= reach && this.moveSet.includes('elbowDrop')) {
+            this._doElbowDrop(other);
+            return 'elbowDrop';
+        }
+
+        if (other.state === 'standing' && dist <= reach) {
+            if (this.moveSet.includes('piledriver')) { this._doPiledriver(other); return 'piledriver'; }
+            if (this.moveSet.includes('bodySlam'))   { this._doBodySlam(other);   return 'slam';       }
+        }
+
+        if (other.state === 'standing' && dist <= medReach && this.moveSet.includes('dropkick')) {
+            this._doDropkick(other);
+            return 'dropkick';
+        }
+
+        return false;
+    }
+
+    // Finisher key: sleeper hold vs standing
+    tryFinisher(other) {
+        if (this.state !== 'standing') return false;
+        if (!this.input.justDown('finisher')) return false;
+
+        const dist  = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
+        const reach = 120 * this.s;
+        if (dist > reach) return false;
+
+        if (other.state === 'standing' && this.moveSet.includes('sleeperHold')) {
+            this._doSleeperHold(other);
+            return 'sleeperHold';
+        }
+
+        return false;
+    }
+
+    // ── Move execution ────────────────────────────────────────────────────────
+
+    _doIrishWhip(other) {
+        const b   = ringBoundsAtY(other.y);
+        const dir = this.facing;
+
+        other.state     = 'running';
+        other.runPhase  = 'toRope';
+        other.runFacing = dir;
+        other.facing    = dir;
+        other.runTarget = dir > 0 ? b.right - 20 : b.left + 20;
+
+        // Sidestep toward far rope so P2 passes in front
+        const stepY = Math.max(RING.farLeft.y + 20, this.y - 22 * this.s);
+        this.scene.tweens.add({ targets: this, y: stepY, duration: 180, ease: 'Cubic.easeOut' });
+
+        this._runPoseSequence(MOVE_DEFS.irishWhip.poseSeq);
+    }
+
+    _drain(amount) {
+        this.stamina = Math.max(0, this.stamina - amount);
+    }
+
+    _doClothesline(other) {
+        other._drain(STAMINA_DRAIN.clothesline);
+
+        // Step up into delivery position — arm extends at this Y
+        const stepY = Math.max(RING.farLeft.y + 20, this.y - 18 * this.s);
+        this.scene.tweens.add({ targets: this, y: stepY, duration: 100, ease: 'Cubic.easeOut' });
+
+        this._runPoseSequence(MOVE_DEFS.clothesline.poseSeq);
+        other.startClotheslineFall(other.runFacing);
+    }
+
+    _doBodySlam(other) {
+        other._drain(STAMINA_DRAIN.bodySlam);
+        this.state      = 'slamming';
+        other.state     = 'grabbed';
+        other.slamPhase = 'up';
+        const facing = this.facing;
+        const sx = this.x, sy = this.y, ss = this.s;
+
+        other.x     = sx;
+        other.slamY = other.y - (88 + 112 + 34 * 0.7) * other.s;
+
+        // Attacker visual: pose sequence runs in parallel with defender tweens
+        this._runPoseSequence(MOVE_DEFS.bodySlam.poseSeq);
+
+        // Defender phase 1 — lift inverted to held position
+        this.scene.tweens.add({
+            targets:  other,
+            slamY:    sy - 100 * ss,
+            duration: 280,
+            ease:     'Cubic.easeOut',
+            onComplete: () => {
+                if (this.state !== 'slamming') return;
+                const b     = ringBoundsAtY(sy);
+                const landX = Math.max(b.left + 20, Math.min(b.right - 20, sx + facing * 120 * ss));
+                other.slamPhase = 'throwing';
+                other.facing    = facing;
+
+                // Defender phase 2 — arc forward and land flat
+                this.scene.tweens.add({
+                    targets:  other,
+                    x:        landX,
+                    y:        sy,
+                    duration: 220,
+                    ease:     'Cubic.easeIn',
+                    onComplete: () => {
+                        other.state      = 'down';
+                        other.stateTimer = DOWN_SEC;
+                        other.slamPhase  = null;
+                        this.state       = 'standing';
+                    },
+                });
+            },
+        });
+    }
+
+    _doElbowDrop(other) {
+        other._drain(STAMINA_DRAIN.elbowDrop);
+        this.state = 'slamming';
+        // Slide over the downed opponent, then drop
+        this.scene.tweens.add({ targets: this, x: other.x, duration: 120, ease: 'Linear' });
+        this.scene.time.delayedCall(220, () => {
+            if (this.state === 'slamming') other.stateTimer = DOWN_SEC;
+        });
+        this._runPoseSequence(MOVE_DEFS.elbowDrop.poseSeq, () => {
+            if (this.state === 'slamming') this.state = 'standing';
+        });
+    }
+
+    _doDropkick(other) {
+        this.state        = 'dropkicking';
+        this.dropProgress = 0;
+        const facing  = this.facing;
+        const targetX = other.x - facing * 35 * this.s;
+        const hitRange = 100 * this.s;
+
+        this.scene.tweens.add({
+            targets: this,
+            dropProgress: 1,
+            x: targetX,
+            duration: 500,
+            ease: 'Sine.easeInOut',
+            onComplete: () => {
+                const dist = Math.abs(this.x - other.x);
+                const hit  = dist <= hitRange &&
+                             (other.state === 'standing' || other.state === 'running');
+                if (hit) {
+                    other._drain(STAMINA_DRAIN.dropkick);
+                    other.startClotheslineFall(facing);
+                    this.state      = 'down';
+                    this.stateTimer = 1.5;
+                } else {
+                    this.state      = 'down';
+                    this.stateTimer = 2.8;
+                }
+                this.dropProgress = 0;
+            },
+        });
+    }
+
+    _doPiledriver(other) {
+        other._drain(STAMINA_DRAIN.piledriver);
+        this.state      = 'slamming';
+        other.state     = 'grabbed';
+        other.slamPhase = 'up';
+        const facing = this.facing;
+        const sx = this.x, sy = this.y, ss = this.s;
+
+        other.x    = sx;
+        other.slamY = sy - (88 + 112 + 34 * 0.7) * other.s;
+
+        this._runPoseSequence(MOVE_DEFS.piledriver.poseSeq);
+
+        this.scene.tweens.add({
+            targets: other, slamY: sy - 130 * ss,
+            duration: 280, ease: 'Cubic.easeOut',
+            onComplete: () => {
+                if (this.state !== 'slamming') return;
+                other.slamPhase = 'throwing';
+                other.facing    = facing;
+                // Drive straight down — no x shift (lands at attacker's feet)
+                this.scene.tweens.add({
+                    targets: other, x: sx, y: sy,
+                    duration: 180, ease: 'Cubic.easeIn',
+                    onComplete: () => {
+                        other.state      = 'down';
+                        other.stateTimer = DOWN_SEC + 2.0;
+                        other.slamPhase  = null;
+                        this.state       = 'standing';
+                    },
+                });
+            },
+        });
+    }
+
+    _doSleeperHold(other) {
+        this.state  = 'holding';
+        other.state = 'sleeping';
+        this._runPoseSequence(MOVE_DEFS.sleeperHold.poseSeq);
+        other.tweenPose('sleeping', 300, 'Linear');
+    }
+
+    tryKickout() {
+        if (this.state !== 'pinned') return false;
+        if (!this.input.justDown('action')) return false;
+        // Stamina above floor = guaranteed escape; below floor = random chance
+        const chance = this.stamina <= KICKOUT_FLOOR
+            ? this.stamina / KICKOUT_FLOOR * 0.4   // 0–40% when exhausted
+            : 1;
+        return Math.random() < chance;
+    }
+
+    tryEscape() {
+        if (this.state !== 'sleeping') return false;
+        return this.input.justDown('action');
+    }
+
+    startFall() {
+        this.state        = 'falling';
+        this.fallProgress = 0;
+        this.scene.tweens.add({
+            targets:      this,
+            fallProgress: 1,
+            duration:     400,
+            ease:         'Cubic.easeIn',
+            onComplete: () => {
+                this.state        = 'down';
+                this.fallProgress = 0;
+            },
+        });
+    }
+
+    startClotheslineFall(runFacing) {
+        this.state        = 'flipping';
+        this.flipProgress = 0;
+        this.flipDir      = runFacing;
+        const travelX     = runFacing * 80 * this.s;
+
+        this.scene.tweens.add({
+            targets:      this,
+            flipProgress: 1,
+            x:            this.x + travelX,
+            duration:     380,
+            ease:         'Cubic.easeOut',
+            onComplete: () => {
+                this.state        = 'down';
+                this.stateTimer   = DOWN_SEC;
+                this.flipProgress = 0;
+                this.facing       = -runFacing; // head points back, feet went forward
+            },
+        });
+    }
+
+    // ── Drawing ───────────────────────────────────────────────────────────────
+
+    draw() {
+        const { x, y, s, facing, state, skinCol, trunksCol } = this;
+        const gfx = this.gfx;
+        gfx.clear();
+        gfx.setDepth(15 + y * 0.02);
+
+        if (state === 'falling') {
+            this._drawFalling(x, y, s, facing, skinCol, trunksCol, this.fallProgress);
+            return;
+        }
+
+        if (state === 'flipping') {
+            this._drawClotheslineFall(x, y, s, this.flipProgress, this.flipDir, skinCol, trunksCol);
+            return;
+        }
+
+        if (state === 'dropkicking') {
+            const arcFrac = Math.sin(this.dropProgress * Math.PI);
+            const airY    = y - arcFrac * 115 * s;
+            gfx.fillStyle(0x000000, 0.22 + arcFrac * 0.08);
+            gfx.fillEllipse(x, y, (120 + arcFrac * 50) * s, (36 + arcFrac * 10) * s);
+            this._drawDropkickFront(x, airY, s, facing, skinCol, trunksCol);
+            return;
+        }
+
+        // Grabbed — no mat shadow (off the ground during the slam)
+        if (state === 'grabbed') {
+            if (this.slamPhase === 'up') this._drawInverted(x, this.slamY, s, skinCol, trunksCol);
+            else                         this._drawFlat(x, y, s, facing, skinCol, trunksCol);
+            return;
+        }
+
+        gfx.fillStyle(0x000000, 0.22);
+        gfx.fillEllipse(x, y, 120 * s, 36 * s);
+
+        if (state === 'down' || state === 'pinned') {
+            this._drawFlat(x, y, s, facing, skinCol, trunksCol);
+            return;
+        }
+
+        this._drawUpright(x, y, s, facing, skinCol, trunksCol);
+    }
+
+    _drawUpright(x, y, s, facing, skinCol, trunksCol) {
+        const gfx = this.gfx;
+        const wp  = this.walkPhase;
+        const p   = this.pose;
+
+        // Side-view proportions: torso is narrow (we see its depth, not its width).
+        // Legs are close together; one arm draws in front of the torso, one behind.
+        const lH   = 88  * s, lW  = 22 * s;
+        const tH   = 112 * s, tW  = 20 * s, trH = 40 * s;
+        const hR   = 34  * s;
+        const aH   = 76  * s, aW  = 18 * s;
+
+        const shinH = lH * 0.72;
+        const bootH = lH * 0.28;
+
+        const MAX_LEG = 0.38;
+        const MAX_ARM = 0.26;
+
+        // Pose angles are facing-relative; facing* converts to screen space.
+        // Walk cycle blends in additively so any pose animates naturally.
+        const swing   = facing * Math.sin(wp);
+        const lLegAng = facing * p.lLeg + swing * MAX_LEG;
+        const rLegAng = facing * p.rLeg - swing * MAX_LEG;
+        const lArmAng = facing * p.lArm - swing * MAX_ARM;
+        const rArmAng = facing * p.rArm + swing * MAX_ARM;
+
+        // In side view both limbs originate from the same center x.
+        // Near/far depth is handled purely by draw order, not x-offset.
+        const hipY      = y - lH;
+        const shoulderY = y - lH - tH + 12 * s;
+
+        // Near/far split: when facing right the left side faces the camera (near),
+        // right side faces away (far). Draw far first so near renders on top.
+        const [farLA, farAA, nearLA, nearAA] =
+            facing >= 0
+                ? [rLegAng, rArmAng, lLegAng, lArmAng]
+                : [lLegAng, lArmAng, rLegAng, rArmAng];
+
+        const boot = (bx, ang) => [
+            bx + Math.sin(ang) * shinH,
+            hipY + Math.cos(ang) * shinH,
+        ];
+
+        // Far leg (behind torso)
+        gfx.fillStyle(skinCol,   1); gfx.fillPoints(limbPts(x, hipY, lW, shinH, farLA), true);
+        gfx.fillStyle(0x181818,  1); gfx.fillPoints(limbPts(...boot(x, farLA), lW + 4 * s, bootH, farLA), true);
+
+        // Far arm (behind torso)
+        gfx.fillStyle(skinCol, 1);
+        gfx.fillPoints(limbPts(x, shoulderY, aW, aH, farAA), true);
+
+        // Trunks + torso
+        gfx.fillStyle(trunksCol, 1); gfx.fillRect(x - tW / 2, y - lH - trH, tW, trH);
+        gfx.fillStyle(skinCol,   1); gfx.fillRect(x - tW / 2, y - lH - tH,  tW, tH - trH);
+
+        // Near leg (in front of torso)
+        gfx.fillStyle(skinCol,   1); gfx.fillPoints(limbPts(x, hipY, lW, shinH, nearLA), true);
+        gfx.fillStyle(0x181818,  1); gfx.fillPoints(limbPts(...boot(x, nearLA), lW + 4 * s, bootH, nearLA), true);
+
+        // Near arm (in front of torso)
+        gfx.fillStyle(skinCol, 1);
+        gfx.fillPoints(limbPts(x, shoulderY, aW, aH, nearAA), true);
+
+        // Head
+        gfx.fillCircle(x, y - lH - tH - hR * 0.7, hR);
+    }
+
+    _drawInverted(x, slamY, s, skinCol, trunksCol) {
+        const gfx = this.gfx;
+        const lH  = 88  * s, lW  = 24 * s, lG  = 16 * s;
+        const tH  = 112 * s, tW  = 72 * s, trH = 40 * s;
+        const hR  = 34  * s;
+
+        gfx.fillStyle(skinCol, 1);
+        gfx.fillCircle(x, slamY, hR);
+
+        const neckY     = slamY - hR * 0.7;
+        const shoulderY = neckY - tH + 12 * s;
+        const hipY      = neckY - tH;
+
+        gfx.fillStyle(skinCol,  1); gfx.fillRect(x - tW / 2, neckY - (tH - trH), tW, tH - trH);
+        gfx.fillStyle(trunksCol,1); gfx.fillRect(x - tW / 2, neckY - tH, tW, trH);
+
+        gfx.fillStyle(skinCol, 1);
+        gfx.fillRect(x - tW / 2 - 20 * s, shoulderY - 76 * s, 20 * s, 76 * s);
+        gfx.fillRect(x + tW / 2,           shoulderY - 76 * s, 20 * s, 76 * s);
+        gfx.fillRect(x - lG - lW, hipY - lH * 0.72, lW, lH * 0.72);
+        gfx.fillRect(x + lG,      hipY - lH * 0.72, lW, lH * 0.72);
+
+        gfx.fillStyle(0x181818, 1);
+        gfx.fillRect(x - lG - lW, hipY - lH, lW, lH * 0.28);
+        gfx.fillRect(x + lG,      hipY - lH, lW, lH * 0.28);
+    }
+
+    _drawFalling(x, y, s, facing, skinCol, trunksCol, p) {
+        const gfx    = this.gfx;
+        const pCube  = p * p * p;
+        const vScale = 1 - pCube;
+
+        const lH  = 88  * s * vScale, lW  = 24 * s, lG = 16 * s;
+        const tH  = 112 * s * vScale, tW  = 72 * s, trH = 40 * s * vScale;
+        const hR  = 34  * s;
+
+        gfx.fillStyle(0x000000, 0.22 + pCube * 0.12);
+        gfx.fillEllipse(x, y, (120 + pCube * 110) * s, (36 + pCube * 12) * s);
+
+        if (vScale > 0.04) {
+            gfx.fillStyle(0x181818, 1);
+            gfx.fillRect(x - lG - lW, y - lH * 0.28, lW, lH * 0.28);
+            gfx.fillRect(x + lG,      y - lH * 0.28, lW, lH * 0.28);
+            gfx.fillStyle(skinCol, 1);
+            gfx.fillRect(x - lG - lW, y - lH, lW, lH * 0.72);
+            gfx.fillRect(x + lG,      y - lH, lW, lH * 0.72);
+            gfx.fillStyle(trunksCol, 1);
+            gfx.fillRect(x - tW / 2, y - lH - trH, tW, trH);
+            gfx.fillStyle(skinCol, 1);
+            gfx.fillRect(x - tW / 2, y - lH - tH, tW, tH - trH);
+            const armY = y - lH - tH + 12 * s * vScale;
+            gfx.fillRect(x - tW / 2 - 20 * s, armY, 20 * s, 76 * s * vScale);
+            gfx.fillRect(x + tW / 2,           armY, 20 * s, 76 * s * vScale);
+        }
+
+        const headY = y - vScale * (88 + 112 + 34 * 0.7) * s;
+        const headX = x + facing * pCube * 118 * s;
+        gfx.fillStyle(skinCol, 1);
+        gfx.fillCircle(headX, headY, hR);
+    }
+
+    _drawClotheslineFall(x, y, s, flipProgress, flipDir, skinCol, trunksCol) {
+        const gfx  = this.gfx;
+        const arc  = Math.sin(flipProgress * Math.PI); // 0 → 1 → 0
+        const arcY = y - arc * 85 * s;
+
+        // Shadow stays on the mat, expands as body rises
+        gfx.fillStyle(0x000000, 0.22 + arc * 0.10);
+        gfx.fillEllipse(x, y, (120 + arc * 55) * s, (36 + arc * 10) * s);
+
+        // Body arcing through air — flat, head opposite to run direction
+        this._drawFlat(x, arcY, s, -flipDir, skinCol, trunksCol);
+    }
+
+    // Front-facing horizontal view for the dropkick.
+    // Both legs extend toward `facing` (kick direction); head on the opposite side.
+    // "Front-facing" = viewer sees the wrestler's chest while they're airborne.
+    _drawDropkickFront(x, y, s, facing, skinCol, trunksCol) {
+        const gfx     = this.gfx;
+        const legLen  = 92 * s;
+        const shinLen = legLen - 20 * s;  // boot takes the remaining 20s
+        const bootLen = 20 * s;
+        const legW    = 19 * s;           // each leg bar's vertical thickness
+        const legGap  = 13 * s;           // offset above/below center
+        const torsoW  = 72 * s;
+        const torsoH  = 38 * s;
+        const trunkW  = 28 * s;
+        const hR      = 30 * s;
+
+        // Boot is at the kick end; shin is from the hip toward the kick end.
+        const shinLeft = facing > 0 ? x            : x - legLen + bootLen;
+        const bootLeft = facing > 0 ? x + shinLen  : x - legLen;
+
+        // Two legs (upper and lower, side-by-side as seen from front)
+        gfx.fillStyle(skinCol,  1); gfx.fillRect(shinLeft, y - legGap - legW, shinLen, legW);
+        gfx.fillStyle(0x181818, 1); gfx.fillRect(bootLeft, y - legGap - legW, bootLen, legW);
+        gfx.fillStyle(skinCol,  1); gfx.fillRect(shinLeft, y + legGap,        shinLen, legW);
+        gfx.fillStyle(0x181818, 1); gfx.fillRect(bootLeft, y + legGap,        bootLen, legW);
+
+        // Torso: attaches at the hip end, extends away from the kick
+        const torsoLeft = facing > 0 ? x - torsoW : x;
+        gfx.fillStyle(skinCol,   1); gfx.fillRect(torsoLeft, y - torsoH / 2, torsoW, torsoH);
+        gfx.fillStyle(trunksCol, 1);
+        gfx.fillRect(torsoLeft + (torsoW - trunkW) / 2, y - torsoH / 2, trunkW, torsoH);
+
+        // Head: beyond torso, away from kick
+        const headX = facing > 0 ? torsoLeft - hR * 0.8 : torsoLeft + torsoW + hR * 0.8;
+        gfx.fillStyle(skinCol, 1);
+        gfx.fillCircle(headX, y, hR);
+    }
+
+    _drawFlat(x, y, s, facing, skinCol, trunksCol) {
+        const gfx   = this.gfx;
+        const bW    = 200 * s;
+        const bH    = 44  * s;
+        const headX = x + facing * (bW * 0.45 + 28 * s);
+
+        gfx.fillStyle(skinCol,   1); gfx.fillRect(x - bW / 2, y - bH / 2, bW, bH);
+        gfx.fillStyle(trunksCol, 1); gfx.fillRect(x - bW * 0.15, y - bH / 2, bW * 0.3, bH);
+        gfx.fillStyle(skinCol,   1); gfx.fillCircle(headX, y, 32 * s);
+    }
+
+    _clamp() {
+        const margin = 20;
+        this.y = Math.max(RING.farLeft.y + margin, Math.min(RING.nearLeft.y - margin, this.y));
+        const b = ringBoundsAtY(this.y);
+        this.x = Math.max(b.left + margin, Math.min(b.right - margin, this.x));
+    }
+}

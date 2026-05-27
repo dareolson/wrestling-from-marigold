@@ -1,18 +1,6 @@
-const W = 960;
-const H = 600;
-
-const RING = {
-    nearLeft:  { x: 50,  y: 488 },
-    nearRight: { x: 910, y: 488 },
-    farLeft:   { x: 240, y: 205 },
-    farRight:  { x: 720, y: 205 },
-    ropes: [
-        { nearY: 465, farY: 218 },
-        { nearY: 445, farY: 210 },
-        { nearY: 425, farY: 202 },
-    ],
-    apronY: 525,
-};
+import { W, H, RING } from '../constants.js';
+import Wrestler from '../Wrestler.js';
+import InputHandler from '../InputHandler.js';
 
 export default class Arena extends Phaser.Scene {
     constructor() {
@@ -22,6 +10,7 @@ export default class Arena extends Phaser.Scene {
     create() {
         this.drawArenaBackground();
         this.drawCrowd();
+        this.drawSideCrowd();
         this.drawFarApronAndRopes();
         this.drawRingMat();
         this.drawNearApron();
@@ -40,26 +29,26 @@ export default class Arena extends Phaser.Scene {
             const cam = this.cameras.main;
             const cm = cam.filters.internal.addColorMatrix();
             cm.colorMatrix.grayscale(1);
-            cm.colorMatrix.contrast(0.18, true);
-            cam.filters.external.addVignette(0.5, 0.5, 0.52, 0.9);
+            cam.filters.external.addVignette(0.5, 0.5, 0.82, 0.45);
         } catch (e) {
             console.warn('Camera filters unavailable:', e.message);
         }
 
         this.showTitleCard();
+        this._setupGame();
     }
 
     drawArenaBackground() {
         const gfx = this.add.graphics().setDepth(0);
-        gfx.fillStyle(0x060606, 1);
+        gfx.fillStyle(0x0e0e0e, 1);
         gfx.fillRect(0, 0, W, H);
 
-        // Warm light pooling above ring from arena lamps
-        gfx.fillStyle(0x141410, 1);
-        gfx.fillRect(160, 0, 640, 210);
+        // Arena light warming the upper half where the crowd sits
+        gfx.fillStyle(0x222220, 1);
+        gfx.fillRect(0, 0, W, 170);
 
-        gfx.fillStyle(0x181810, 1);
-        gfx.fillRect(80, 180, 800, 320);
+        gfx.fillStyle(0x1a1a18, 1);
+        gfx.fillRect(0, 170, W, 200);
     }
 
     drawCrowd() {
@@ -68,35 +57,149 @@ export default class Arena extends Phaser.Scene {
         let s = 7331;
         const rand = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
 
+        // r = 5ft person head radius at that depth (ring: 43px/ft near, ~0.37× at far stands)
         const rows = [
-            { y: 185, r: 9,  count: 24, gap: 38 },
-            { y: 163, r: 8,  count: 22, gap: 40 },
-            { y: 143, r: 7,  count: 20, gap: 43 },
-            { y: 124, r: 6,  count: 18, gap: 47 },
-            { y: 107, r: 5,  count: 16, gap: 52 },
-            { y: 91,  r: 5,  count: 15, gap: 55 },
-            { y: 76,  r: 4,  count: 13, gap: 60 },
-            { y: 62,  r: 4,  count: 12, gap: 65 },
-            { y: 49,  r: 3,  count: 11, gap: 70 },
-            { y: 37,  r: 3,  count: 10, gap: 78 },
+            { y: 248, r: 9,  count: 26, gap: 28, lum: 120 }, // floor-level seats behind far ropes
+            { y: 222, r: 8,  count: 24, gap: 29, lum: 116 },
+            { y: 196, r: 8,  count: 22, gap: 30, lum: 112 },
+            { y: 170, r: 7,  count: 20, gap: 31, lum: 108 },
+            { y: 152, r: 7,  count: 24, gap: 32, lum: 105 },
+            { y: 134, r: 6,  count: 22, gap: 34, lum: 92  },
+            { y: 117, r: 5,  count: 20, gap: 36, lum: 82  },
+            { y: 101, r: 5,  count: 18, gap: 38, lum: 72  },
+            { y: 86,  r: 4,  count: 16, gap: 42, lum: 64  },
+            { y: 72,  r: 4,  count: 14, gap: 44, lum: 56  },
+            { y: 59,  r: 3,  count: 13, gap: 48, lum: 50  },
+            { y: 47,  r: 3,  count: 11, gap: 52, lum: 44  },
+            { y: 36,  r: 2,  count: 10, gap: 56, lum: 38  },
+            { y: 26,  r: 2,  count: 9,  gap: 60, lum: 32  },
+            { y: 16,  r: 2,  count: 8,  gap: 65, lum: 26  },
         ];
 
-        rows.forEach((row, i) => {
-            const lum = Math.floor(14 + i * 1.5);
-            const col = (lum << 16) | (lum << 8) | lum;
-            gfx.fillStyle(col, 1);
+        rows.forEach(row => {
             for (let j = 0; j < row.count; j++) {
                 const t = j / (row.count - 1);
-                const cx = 30 + t * 900 + (rand() - 0.5) * row.gap * 0.5;
-                gfx.fillCircle(cx, row.y, row.r);
-                gfx.fillEllipse(cx, row.y + row.r + row.r * 0.9, row.r * 2.8, row.r * 1.6);
+                const cx = 20 + t * 920 + (rand() - 0.5) * row.gap * 0.4;
+                const heightFt = 4 + Math.floor(rand() * 3); // 4, 5, or 6ft person
+                const r = row.r * heightFt / 5;
+                const col = (row.lum << 16) | (row.lum << 8) | row.lum;
+                gfx.fillStyle(col, 1);
+                gfx.fillCircle(cx, row.y, r);
+                gfx.fillEllipse(cx, row.y + r + r * 0.8, r * 2.6, r * 1.5);
             }
         });
 
-        // Signs in crowd
-        gfx.fillStyle(0x1e1e1e, 1);
-        [[120, 90, 42, 20], [360, 75, 38, 18], [590, 82, 45, 22], [780, 70, 36, 17]].forEach(([x, y, w, h]) => {
+        // Signs — lighter so they read against the crowd
+        gfx.fillStyle(0x888888, 1);
+        [[120, 95, 42, 20], [360, 78, 38, 18], [590, 85, 45, 22], [780, 72, 36, 17]].forEach(([x, y, w, h]) => {
             gfx.fillRect(x - w / 2, y - h / 2, w, h);
+        });
+    }
+
+    drawSideCrowd() {
+        const gfx = this.add.graphics().setDepth(10);
+        const { nearLeft, nearRight, farLeft, farRight } = RING;
+
+        let s = 9173;
+        const rand = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+
+        // At a given y, find the x boundary of the ring on each side
+        const leftBoundary  = y => nearLeft.x  + (farLeft.x  - nearLeft.x)  * (nearLeft.y  - y) / (nearLeft.y  - farLeft.y);
+        const rightBoundary = y => nearRight.x + (farRight.x - nearRight.x) * (nearRight.y - y) / (nearRight.y - farRight.y);
+
+        // baseR = head radius for a 5ft person at that y, from ring perspective scale
+        // (43px/ft at near edge y=445, 0.6× at far edge y=258; head ≈ 9" = 0.75ft, r = px_per_ft * 0.375)
+        const sideRows = [
+            { y: 430, baseR: 16 },
+            { y: 400, baseR: 15 },
+            { y: 368, baseR: 14 },
+            { y: 335, baseR: 13 },
+            { y: 302, baseR: 11 },
+            { y: 270, baseR: 10 },
+            { y: 240, baseR: 9  },
+        ];
+
+        sideRows.forEach(({ y, baseR }) => {
+            const lx = leftBoundary(y);
+            const rx = rightBoundary(y);
+            const baseLum = Math.floor(58 + (y - 240) * 0.13);
+
+            // Left flank — pack from ring edge toward left canvas edge
+            let x = lx - baseR * 0.8;
+            while (x > -baseR) {
+                const heightFt = 4 + Math.floor(rand() * 3); // 4, 5, or 6ft
+                const r = Math.round(baseR * heightFt / 5);
+                const jitter = (rand() - 0.5) * baseR * 0.5;
+                const lum = Math.min(100, Math.floor(baseLum * (0.85 + rand() * 0.30)));
+                const col = (lum << 16) | (lum << 8) | lum;
+                gfx.fillStyle(col, 1);
+                gfx.fillCircle(x + jitter, y, r);
+                gfx.fillEllipse(x + jitter, y + r + r * 0.75, r * 2.4, r * 1.4);
+                x -= r * 2.1 + rand() * r * 0.5;
+            }
+
+            // Right flank
+            x = rx + baseR * 0.8;
+            while (x < W + baseR) {
+                const heightFt = 4 + Math.floor(rand() * 3);
+                const r = Math.round(baseR * heightFt / 5);
+                const jitter = (rand() - 0.5) * baseR * 0.5;
+                const lum = Math.min(100, Math.floor(baseLum * (0.85 + rand() * 0.30)));
+                const col = (lum << 16) | (lum << 8) | lum;
+                gfx.fillStyle(col, 1);
+                gfx.fillCircle(x + jitter, y, r);
+                gfx.fillEllipse(x + jitter, y + r + r * 0.75, r * 2.4, r * 1.4);
+                x += r * 2.1 + rand() * r * 0.5;
+            }
+        });
+
+        // Foreground crowd — backs of heads, closest to camera, partially cropped
+        const fgGfx = this.add.graphics().setDepth(11);
+
+        // Second row of foreground (slightly further back, fully visible)
+        const fgRow2 = [
+            { x: 35,  r: 22, lum: 48 },
+            { x: 118, r: 20, lum: 44 },
+            { x: 200, r: 24, lum: 50 },
+            { x: 288, r: 21, lum: 46 },
+            { x: 375, r: 23, lum: 48 },
+            { x: 460, r: 20, lum: 42 },
+            { x: 548, r: 22, lum: 47 },
+            { x: 635, r: 24, lum: 50 },
+            { x: 720, r: 21, lum: 44 },
+            { x: 808, r: 23, lum: 48 },
+            { x: 892, r: 20, lum: 45 },
+        ];
+
+        fgRow2.forEach(({ x, r, lum }) => {
+            const col = (lum << 16) | (lum << 8) | lum;
+            const jitter = (rand() - 0.5) * 14;
+            const y = H - r * 4.2;
+            fgGfx.fillStyle(col, 1);
+            fgGfx.fillCircle(x + jitter, y, r);
+            fgGfx.fillEllipse(x + jitter, y + r + r * 0.7, r * 2.8, r * 1.6);
+        });
+
+        // Front row — largest, cropped just below shoulders
+        const fgRow1 = [
+            { x: 55,  r: 42, lum: 32 },
+            { x: 168, r: 38, lum: 28 },
+            { x: 278, r: 44, lum: 34 },
+            { x: 390, r: 36, lum: 30 },
+            { x: 490, r: 40, lum: 33 },
+            { x: 595, r: 38, lum: 29 },
+            { x: 700, r: 42, lum: 32 },
+            { x: 810, r: 37, lum: 31 },
+            { x: 910, r: 44, lum: 30 },
+        ];
+
+        fgRow1.forEach(({ x, r, lum }) => {
+            const col = (lum << 16) | (lum << 8) | lum;
+            const jitter = (rand() - 0.5) * 20;
+            const y = H - r * 1.4;
+            fgGfx.fillStyle(col, 1);
+            fgGfx.fillCircle(x + jitter, y, r);
+            fgGfx.fillEllipse(x + jitter, y + r * 0.5, r * 3.4, r * 2);
         });
     }
 
@@ -117,7 +220,7 @@ export default class Arena extends Phaser.Scene {
         const gfx = this.add.graphics().setDepth(3);
         const { nearLeft, nearRight, farLeft, farRight } = RING;
 
-        gfx.fillStyle(0xd0d0c8, 1);
+        gfx.fillStyle(0xb0b0a8, 1);
         gfx.beginPath();
         gfx.moveTo(nearLeft.x, nearLeft.y);
         gfx.lineTo(nearRight.x, nearRight.y);
@@ -159,38 +262,63 @@ export default class Arena extends Phaser.Scene {
     }
 
     drawNearAndSideRopes() {
-        const gfx = this.add.graphics().setDepth(8);
         const { nearLeft, nearRight, farLeft, farRight, ropes } = RING;
 
+        // Near horizontal ropes + lower halves of side ropes render in front of wrestlers.
+        // Upper halves of side ropes go behind wrestlers, same layer as far horizontal ropes.
+        const nearGfx   = this.add.graphics().setDepth(25);
+        const farSegGfx = this.add.graphics().setDepth(2);
+
         ropes.forEach(rope => {
-            gfx.lineStyle(3, 0xf0f0f0, 1);
-            gfx.lineBetween(nearLeft.x, rope.nearY, nearRight.x, rope.nearY);
+            // Near horizontal rope — in front of all wrestlers
+            nearGfx.lineStyle(3, 0xf0f0f0, 1);
+            nearGfx.lineBetween(nearLeft.x, rope.nearY, nearRight.x, rope.nearY);
 
-            gfx.lineStyle(2, 0xe4e4e4, 0.85);
-            gfx.lineBetween(nearLeft.x, rope.nearY, farLeft.x, rope.farY);
+            // Side ropes split at their geometric midpoint:
+            //   lower half (near side) → in front of wrestlers
+            //   upper half (far side)  → behind wrestlers
+            const lMidX = (nearLeft.x  + farLeft.x)  / 2;
+            const rMidX = (nearRight.x + farRight.x) / 2;
+            const midY  = (rope.nearY  + rope.farY)  / 2;
 
-            gfx.lineStyle(2, 0xe4e4e4, 0.85);
-            gfx.lineBetween(nearRight.x, rope.nearY, farRight.x, rope.farY);
+            nearGfx.lineStyle(2, 0xe4e4e4, 0.85);
+            nearGfx.lineBetween(nearLeft.x,  rope.nearY, lMidX, midY);
+            nearGfx.lineBetween(nearRight.x, rope.nearY, rMidX, midY);
+
+            farSegGfx.lineStyle(2, 0xe4e4e4, 0.85);
+            farSegGfx.lineBetween(lMidX, midY, farLeft.x,  rope.farY);
+            farSegGfx.lineBetween(rMidX, midY, farRight.x, rope.farY);
         });
     }
 
     drawPosts() {
-        const gfx = this.add.graphics().setDepth(9);
         const { nearLeft, nearRight, farLeft, farRight, ropes, apronY } = RING;
         const topRope = ropes[2];
 
-        const posts = [
-            { x: nearLeft.x,  top: topRope.nearY - 6, bot: apronY,         w: 8 },
-            { x: nearRight.x, top: topRope.nearY - 6, bot: apronY,         w: 8 },
-            { x: farLeft.x,   top: topRope.farY - 4,  bot: farLeft.y + 16, w: 5 },
-            { x: farRight.x,  top: topRope.farY - 4,  bot: farRight.y + 16, w: 5 },
-        ];
+        // Near posts must render in front of wrestlers; far posts stay behind them.
+        const nearGfx = this.add.graphics().setDepth(25);
+        const farGfx  = this.add.graphics().setDepth(8);
 
-        posts.forEach(p => {
+        const drawPost = (gfx, p) => {
             gfx.fillStyle(0x686860, 1);
             gfx.fillRect(p.x - p.w / 2, p.top, p.w, p.bot - p.top);
             gfx.fillStyle(0x888880, 1);
             gfx.fillCircle(p.x, p.top, p.w * 0.8);
+        };
+
+        drawPost(nearGfx, { x: nearLeft.x,  top: topRope.nearY - 6, bot: apronY,          w: 8 });
+        drawPost(nearGfx, { x: nearRight.x, top: topRope.nearY - 6, bot: apronY,          w: 8 });
+        drawPost(farGfx,  { x: farLeft.x,   top: topRope.farY - 4,  bot: farLeft.y  + 16, w: 5 });
+        drawPost(farGfx,  { x: farRight.x,  top: topRope.farY - 4,  bot: farRight.y + 16, w: 5 });
+
+        const tbSize = { near: 7, far: 4 };
+        ropes.forEach(rope => {
+            nearGfx.fillStyle(0x484840, 1);
+            nearGfx.fillRect(nearLeft.x  - tbSize.near, rope.nearY - tbSize.near / 2, tbSize.near * 2, tbSize.near);
+            nearGfx.fillRect(nearRight.x - tbSize.near, rope.nearY - tbSize.near / 2, tbSize.near * 2, tbSize.near);
+            farGfx.fillStyle(0x484840, 1);
+            farGfx.fillRect(farLeft.x  - tbSize.far, rope.farY - tbSize.far / 2, tbSize.far * 2, tbSize.far);
+            farGfx.fillRect(farRight.x - tbSize.far, rope.farY - tbSize.far / 2, tbSize.far * 2, tbSize.far);
         });
     }
 
@@ -244,7 +372,208 @@ export default class Arena extends Phaser.Scene {
         });
     }
 
-    update(time) {
+    _setupGame() {
+        const kb = this.input.keyboard;
+
+        const keys1 = {
+            up:       kb.addKey('W'),
+            down:     kb.addKey('S'),
+            left:     kb.addKey('A'),
+            right:    kb.addKey('D'),
+            action:   kb.addKey('F'),     // grapple: whip / clothesline / pin
+            power:    kb.addKey('G'),     // power:   slam / elbow drop / dropkick
+            finisher: kb.addKey('H'),     // finisher: sleeper hold
+        };
+        const keys2 = {
+            up:       kb.addKey('UP'),
+            down:     kb.addKey('DOWN'),
+            left:     kb.addKey('LEFT'),
+            right:    kb.addKey('RIGHT'),
+            action:   kb.addKey('ENTER'), // grapple
+            power:    kb.addKey('SHIFT'), // power
+            finisher: kb.addKey('SPACE'), // finisher: sleeper hold
+        };
+
+        const input1 = new InputHandler('keyboard', keys1);
+        const input2 = new InputHandler('keyboard', keys2);
+
+        // P1 — blue trunks: brawler kit (Irish whip → clothesline, body slam, elbow drop, dropkick)
+        this.w1 = new Wrestler(this, 330, 360, 0xc8906a, 0x334499, input1,
+            ['irishWhip', 'clothesline', 'bodySlam', 'pin', 'elbowDrop', 'dropkick', 'sleeperHold']);
+        this.w1.facing = 1;
+
+        // P2 — dark trunks: powerhouse kit (piledriver instead of body slam, same extras)
+        this.w2 = new Wrestler(this, 630, 360, 0xc8906a, 0x1a1a1a, input2,
+            ['irishWhip', 'clothesline', 'piledriver', 'pin', 'elbowDrop', 'dropkick', 'sleeperHold']);
+        this.w2.facing = -1;
+
+        // Pin countdown text
+        this.pinText = this.add.text(W / 2, H / 2 - 10, '', {
+            fontFamily: '"Times New Roman", Times, serif',
+            fontSize: '72px',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 6,
+        }).setOrigin(0.5).setDepth(150).setAlpha(0);
+
+        // Stamina bars — thin strips at top of screen, outside the broadcast frame
+        this.staminaGfx = this.add.graphics().setDepth(155);
+
+        this.pinState     = null; // { attacker, defender, timer }
+        this.sleeperState = null; // { attacker, defender, timer }
+    }
+
+    _drawStaminaBars() {
+        const g   = this.staminaGfx;
+        const BAR_W = 180, BAR_H = 6, PAD = 24, Y = 14;
+        g.clear();
+
+        const draw = (wrestler, x, flip) => {
+            const pct = wrestler.stamina / 100;
+            const fillW = BAR_W * pct;
+            // Background
+            g.fillStyle(0x222222, 0.8);
+            g.fillRect(x, Y, BAR_W, BAR_H);
+            // Fill — green → yellow → red as stamina drops
+            const col = pct > 0.5 ? 0x88bb44 : pct > 0.25 ? 0xccaa22 : 0xbb3322;
+            g.fillStyle(col, 1);
+            g.fillRect(flip ? x + BAR_W - fillW : x, Y, fillW, BAR_H);
+        };
+
+        draw(this.w1, PAD, false);                   // P1 bar — grows right
+        draw(this.w2, W - PAD - BAR_W, true);        // P2 bar — grows left
+    }
+
+    _tickGame(dt) {
+        const { w1, w2 } = this;
+
+        w1.move(dt, w2);
+        w2.move(dt, w1);
+
+        w1.tickDown(dt);
+        w2.tickDown(dt);
+
+        w1.tickRun(dt);
+        w2.tickRun(dt);
+
+        // Grapple actions — only one can initiate per frame
+        const r1 = w1.tryAction(w2);
+        const r2 = r1 ? false : w2.tryAction(w1);
+
+        // Power moves — mutually exclusive, state machine handles most conflicts
+        if (!w1.tryPower(w2)) w2.tryPower(w1);
+
+        // Finisher slot
+        const f1 = w1.tryFinisher(w2);
+        const f2 = f1 ? false : w2.tryFinisher(w1);
+
+        if (r1 === 'pin' && !this.pinState) {
+            this.pinState = { attacker: w1, defender: w2, timer: 0 };
+        } else if (r2 === 'pin' && !this.pinState) {
+            this.pinState = { attacker: w2, defender: w1, timer: 0 };
+        }
+
+        if (f1 === 'sleeperHold' && !this.sleeperState) {
+            this.sleeperState = { attacker: w1, defender: w2, timer: 0 };
+        } else if (f2 === 'sleeperHold' && !this.sleeperState) {
+            this.sleeperState = { attacker: w2, defender: w1, timer: 0 };
+        }
+
+        if (this.pinState)     this._tickPin(dt);
+        if (this.sleeperState) this._tickSleeper(dt);
+
+        w1.draw();
+        w2.draw();
+        this._drawStaminaBars();
+    }
+
+    _tickPin(dt) {
+        const ps = this.pinState;
+        ps.timer += dt;
+
+        const count = Math.min(3, Math.floor(ps.timer / 0.85) + 1);
+        this.pinText.setText(String(count)).setAlpha(1);
+
+        // Defender mashes action to kick out
+        if (ps.defender.tryKickout()) {
+            ps.attacker.state = 'standing';
+            ps.defender.state = 'standing';
+            this.pinText.setAlpha(0);
+            this.pinState = null;
+            return;
+        }
+
+        // Three-count complete — pin succeeds
+        if (ps.timer >= 2.55) {
+            this.pinText.setAlpha(0);
+            const winner = ps.attacker === this.w1 ? 1 : 2;
+            ps.attacker.state = 'standing';
+            ps.defender.state = 'standing';
+            this.pinState = null;
+            this._showWin(winner);
+        }
+    }
+
+    _tickSleeper(dt) {
+        const ss = this.sleeperState;
+        ss.timer += dt;
+
+        // Keep attacker hugged to the defender
+        ss.attacker.x = ss.defender.x - ss.attacker.facing * 50 * ss.attacker.s;
+
+        // Drain defender stamina continuously (~18 total over 4s)
+        ss.defender._drain(4.5 * dt);
+
+        // Show deepening z's as the hold wears them down
+        const zText = ss.timer < 1.4 ? 'z' : ss.timer < 2.8 ? 'zz' : 'zzz';
+        this.pinText.setText(zText).setAlpha(1);
+
+        const release = (toDown) => {
+            ss.attacker.tweenPose('idle', 200, 'Linear');
+            ss.defender.tweenPose('idle', 200, 'Linear');
+            ss.attacker.state = 'standing';
+            if (toDown) {
+                ss.defender.state      = 'down';
+                ss.defender.stateTimer = 6.5;
+            } else {
+                ss.defender.state = 'standing';
+            }
+            this.pinText.setAlpha(0);
+            this.sleeperState = null;
+        };
+
+        if (ss.defender.tryEscape()) { release(false); return; }
+        if (ss.timer >= 4.0)         { release(true);  return; }
+    }
+
+    _showWin(player) {
+        const txt = this.add.text(W / 2, H / 2, `PLAYER ${player} WINS`, {
+            fontFamily: '"Times New Roman", Times, serif',
+            fontSize: '42px',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 5,
+            letterSpacing: 8,
+        }).setOrigin(0.5).setDepth(200).setAlpha(0);
+
+        this.tweens.add({ targets: txt, alpha: 1, duration: 400, ease: 'Linear' });
+
+        // Reset after a few seconds
+        this.time.delayedCall(4000, () => {
+            this.tweens.add({
+                targets: txt, alpha: 0, duration: 600, ease: 'Linear',
+                onComplete: () => {
+                    txt.destroy();
+                    this.w1.x = 330; this.w1.y = 360; this.w1.state = 'standing'; this.w1.facing =  1; this.w1.stamina = 100;
+                    this.w2.x = 630; this.w2.y = 360; this.w2.state = 'standing'; this.w2.facing = -1; this.w2.stamina = 100;
+                },
+            });
+        });
+    }
+
+    update(time, delta) {
+        this._tickGame(delta / 1000);
+
         const g = this.grainGfx;
         g.clear();
         g.fillStyle(0xffffff, 0.12);

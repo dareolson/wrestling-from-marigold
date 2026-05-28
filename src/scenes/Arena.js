@@ -421,6 +421,14 @@ export default class Arena extends Phaser.Scene {
 
         this.pinState     = null; // { attacker, defender, timer }
         this.sleeperState = null; // { attacker, defender, timer }
+
+        // Match event log — consumed by the future AI commentary system.
+        // Each entry: { t, type, ...payload }
+        // Significant types: 'move', 'knockdown', 'stagger', 'pinAttempt',
+        //   'kickout', 'nearfall', 'pinfall', 'sleeperApplied',
+        //   'sleeperEscape', 'sleeperKO'
+        this.matchEvents = [];
+        this._matchTime  = 0;
     }
 
     _drawStaminaBars() {
@@ -444,8 +452,15 @@ export default class Arena extends Phaser.Scene {
         draw(this.w2, W - PAD - BAR_W, true);        // P2 bar — grows left
     }
 
+    // Append a timestamped event to the match log.
+    // Future AI commentary system reads this to generate contextual play-by-play.
+    _logEvent(type, payload = {}) {
+        this.matchEvents.push({ t: Math.round(this._matchTime), type, ...payload });
+    }
+
     _tickGame(dt) {
         const { w1, w2 } = this;
+        this._matchTime += dt;
 
         w1.move(dt, w2);
         w2.move(dt, w1);
@@ -461,22 +476,38 @@ export default class Arena extends Phaser.Scene {
         const r2 = r1 ? false : w2.tryAction(w1);
 
         // Power moves — mutually exclusive, state machine handles most conflicts
-        if (!w1.tryPower(w2)) w2.tryPower(w1);
+        const p1 = w1.tryPower(w2);
+        const p2 = p1 ? false : w2.tryPower(w1);
 
         // Finisher slot
         const f1 = w1.tryFinisher(w2);
         const f2 = f1 ? false : w2.tryFinisher(w1);
 
+        // Log every move that landed this frame
+        const logMove = (move, attacker, defender) => {
+            if (!move || move === true) return;
+            const type = (move === 'knockdown' || defender.state === 'down' || defender.state === 'falling' || defender.state === 'flipping')
+                ? 'knockdown' : (defender.state === 'staggered' ? 'stagger' : 'move');
+            this._logEvent(type, { attacker, move, defenderStamina: Math.round(defender.stamina) });
+        };
+        logMove(r1, 'p1', w2); logMove(r2, 'p2', w1);
+        logMove(p1, 'p1', w2); logMove(p2, 'p2', w1);
+        logMove(f1, 'p1', w2); logMove(f2, 'p2', w1);
+
         if (r1 === 'pin' && !this.pinState) {
             this.pinState = { attacker: w1, defender: w2, timer: 0 };
+            this._logEvent('pinAttempt', { attacker: 'p1', defenderStamina: Math.round(w2.stamina) });
         } else if (r2 === 'pin' && !this.pinState) {
             this.pinState = { attacker: w2, defender: w1, timer: 0 };
+            this._logEvent('pinAttempt', { attacker: 'p2', defenderStamina: Math.round(w1.stamina) });
         }
 
         if (f1 === 'sleeperHold' && !this.sleeperState) {
             this.sleeperState = { attacker: w1, defender: w2, timer: 0 };
+            this._logEvent('sleeperApplied', { attacker: 'p1' });
         } else if (f2 === 'sleeperHold' && !this.sleeperState) {
             this.sleeperState = { attacker: w2, defender: w1, timer: 0 };
+            this._logEvent('sleeperApplied', { attacker: 'p2' });
         }
 
         if (this.pinState)     this._tickPin(dt);
@@ -499,6 +530,9 @@ export default class Arena extends Phaser.Scene {
             ps.attacker.state = 'standing';
             ps.defender.state = 'standing';
             this.pinText.setAlpha(0);
+            const who = ps.defender === this.w1 ? 'p1' : 'p2';
+            this._logEvent('kickout', { wrestler: who, atCount: count, defenderStamina: Math.round(ps.defender.stamina) });
+            if (count >= 2) this._logEvent('nearfall', { attacker: who === 'p1' ? 'p2' : 'p1' });
             this.pinState = null;
             return;
         }
@@ -507,6 +541,7 @@ export default class Arena extends Phaser.Scene {
         if (ps.timer >= 2.55) {
             this.pinText.setAlpha(0);
             const winner = ps.attacker === this.w1 ? 1 : 2;
+            this._logEvent('pinfall', { winner: `p${winner}` });
             ps.attacker.state = 'standing';
             ps.defender.state = 'standing';
             this.pinState = null;
@@ -542,8 +577,14 @@ export default class Arena extends Phaser.Scene {
             this.sleeperState = null;
         };
 
-        if (ss.defender.tryEscape()) { release(false); return; }
-        if (ss.timer >= 4.0)         { release(true);  return; }
+        if (ss.defender.tryEscape()) {
+            this._logEvent('sleeperEscape', { wrestler: ss.defender === this.w1 ? 'p1' : 'p2' });
+            release(false); return;
+        }
+        if (ss.timer >= 4.0) {
+            this._logEvent('sleeperKO', { winner: ss.attacker === this.w1 ? 'p1' : 'p2' });
+            release(true); return;
+        }
     }
 
     _showWin(player) {

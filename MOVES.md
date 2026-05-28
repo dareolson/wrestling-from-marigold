@@ -17,21 +17,21 @@ Gamepad support is built in — plug in any standard Bluetooth or USB controller
 
 ### Grapple (F / Enter / A) — context-sensitive
 
-| Opponent State | Move | Range |
-|---|---|---|
-| Standing | Irish whip | 110px |
-| Running (returning from rope) | Clothesline | 150px |
-| Downed | Pin | 110px |
+| Opponent State | Move | Range | P1 | P2 |
+|---|---|---|---|---|
+| Standing | Irish whip | 110px | ✓ | ✓ |
+| Staggered | Body slam | 110px | ✓ | — |
+| Staggered | Piledriver | 110px | — | ✓ |
+| Running (returning from rope) | Clothesline | 150px | ✓ | ✓ |
+| Downed | Pin | 110px | ✓ | ✓ |
 
 ### Power (G / Shift / X)
 
 | Opponent State | Move | Range | P1 | P2 |
 |---|---|---|---|---|
+| Standing — point-blank | Jab | 85px | ✓ | ✓ |
 | Staggered | Headbutt | 110px | ✓ | ✓ |
 | Downed | Elbow drop | 110px | ✓ | ✓ |
-| Standing — point-blank | Jab | 85px | ✓ | ✓ |
-| Standing — close | Body slam | 110px | ✓ | — |
-| Standing — close | Piledriver | 110px | — | ✓ |
 | Standing — medium | Dropkick | 220px | ✓ | ✓ |
 
 ### Finisher (H / Space / Y)

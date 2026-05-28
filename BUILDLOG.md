@@ -139,12 +139,9 @@ Two wrestlers, movement, ring boundary, grapple system, moves, pin/kickout, stam
 
 **Built:** Irish whip, clothesline, body slam, piledriver, elbow drop, dropkick, sleeper hold, stamina system, InputHandler abstraction, rope/post depth fix.
 
-**Remaining:**
-- Stagger state — new state between standing and down; enables strike combos and selling without an immediate knockdown
-- Basic strikes — jab and headbutt; no grapple required; put opponent in stagger; foundation for the combo chain (jab → jab → whip → clothesline)
-- Sell poses — brief receiver reaction tween (150–200ms) before the fall; lives in move definitions; makes existing moves feel heavier without new mechanics
-- Idle pose property — each wrestler settles to a character-specific resting stance when not moving; system only at this stage, generic poses for now
-- Taunt — dedicated key, short pose sequence, `'taunting'` state; pure personality for now, feeds heat meter in Phase 3
+**Built:** Irish whip, clothesline, body slam, piledriver, elbow drop, dropkick, sleeper hold, stamina system, InputHandler abstraction, rope/post depth fix, stagger state, jab, headbutt, sell poses, idle pose system, taunt.
+
+**Phase 2 complete.**
 
 ### Phase 3 — Full Roster + Polish
 All 6–8 wrestlers with distinct identities, character-specific animations, crowd system, audio, entrances, title screen and menus.
@@ -155,6 +152,7 @@ All 6–8 wrestlers with distinct identities, character-specific animations, cro
 - Crowd heat meter — fed by taunts, big moves, nearfalls; affects crowd audio and energy
 - Two-step grapple system (No Mercy style) — lock up first, then choose the move; worthwhile once each character has 8–10 moves to choose from; revisit when move sets are full
 - Sprite skeleton rig — replace Graphics API figures with PNG body parts; elbow/knee joints added here, not before
+- Piledriver attacker animation — current placeholder reads as the move but needs a proper seated sprite frame; the stick-figure side view can't show "sitting with legs spread" convincingly without a dedicated pose sprite
 - AI live commentary — Claude API called on significant match events (knockdown, near-fall, finisher, pin); each wrestler has a biography and career history in the prompt so the announcer weaves in stories, feuds, and era context rather than just describing moves; commentary streamed to TTS (Web Speech API for dev, ElevenLabs for production); displayed as subtitle captions in the broadcast frame; event log groundwork already in Arena._tickGame from Phase 2
 
 ### Phase 4 — Local Multiplayer

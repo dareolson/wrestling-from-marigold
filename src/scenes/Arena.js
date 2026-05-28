@@ -400,12 +400,14 @@ export default class Arena extends Phaser.Scene {
         // P1 — blue trunks: brawler kit (Irish whip → clothesline, body slam, elbow drop, dropkick)
         this.w1 = new Wrestler(this, 330, 360, 0xc8906a, 0x334499, input1,
             ['irishWhip', 'clothesline', 'bodySlam', 'pin', 'elbowDrop', 'dropkick', 'sleeperHold', 'jab', 'headbutt']);
-        this.w1.facing = 1;
+        this.w1.facing   = 1;
+        this.w1.idlePose = 'brawlerIdle';
 
         // P2 — dark trunks: powerhouse kit (piledriver instead of body slam, same extras)
         this.w2 = new Wrestler(this, 630, 360, 0xc8906a, 0x1a1a1a, input2,
             ['irishWhip', 'clothesline', 'piledriver', 'pin', 'elbowDrop', 'dropkick', 'sleeperHold', 'jab', 'headbutt']);
-        this.w2.facing = -1;
+        this.w2.facing   = -1;
+        this.w2.idlePose = 'powerIdle';
 
         // Pin countdown text
         this.pinText = this.add.text(W / 2, H / 2 - 10, '', {

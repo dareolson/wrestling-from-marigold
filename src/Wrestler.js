@@ -80,6 +80,20 @@ function limbPts(px, py, w, h, angle) {
     ];
 }
 
+// ─── State machine reference ──────────────────────────────────────────────────
+// 'standing'    default; can move, accept input, initiate moves
+// 'running'     Irish whip victim; runPhase 'toRope' → 'returning'; no input
+// 'falling'     400ms fall tween before going down; no input
+// 'flipping'    clothesline/dropkick victim arc; flipProgress 0→1; no input
+// 'dropkicking' attacker airborne during dropkick; dropProgress 0→1
+// 'slamming'    attacker mid-slam, elbow drop, or dropkick launch; no input
+// 'grabbed'     defender lifted during body slam or piledriver; no input
+// 'down'        flat on mat; stateTimer counts down to 0 → 'standing'
+// 'pinned'      flat during a pin; mash action to attempt kickout
+// 'pinning'     attacker holding the pin
+// 'holding'     attacker applying sleeper hold
+// 'sleeping'    defender in sleeper hold; mash action to escape
+
 // ─── Wrestler class ───────────────────────────────────────────────────────────
 export default class Wrestler {
     constructor(scene, x, y, skinCol, trunksCol, input, moveSet = ['irishWhip', 'clothesline', 'bodySlam', 'pin', 'elbowDrop', 'dropkick']) {
@@ -467,7 +481,7 @@ export default class Wrestler {
         return this.input.justDown('action');
     }
 
-    startFall() {
+    startFall(downTime = DOWN_SEC) {
         this.state        = 'falling';
         this.fallProgress = 0;
         this.scene.tweens.add({
@@ -477,6 +491,7 @@ export default class Wrestler {
             ease:         'Cubic.easeIn',
             onComplete: () => {
                 this.state        = 'down';
+                this.stateTimer   = downTime;
                 this.fallProgress = 0;
             },
         });

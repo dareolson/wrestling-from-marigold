@@ -27,7 +27,9 @@ Gamepad support is built in — plug in any standard Bluetooth or USB controller
 
 | Opponent State | Move | Range | P1 | P2 |
 |---|---|---|---|---|
+| Staggered | Headbutt | 110px | ✓ | ✓ |
 | Downed | Elbow drop | 110px | ✓ | ✓ |
+| Standing — point-blank | Jab | 85px | ✓ | ✓ |
 | Standing — close | Body slam | 110px | ✓ | — |
 | Standing — close | Piledriver | 110px | — | ✓ |
 | Standing — medium | Dropkick | 220px | ✓ | ✓ |
@@ -63,6 +65,12 @@ Attacker slides over a downed opponent, raises elbow, drops. Resets the opponent
 ### Sleeper hold
 Rear chinlock applied for up to 4 seconds. Visual deepens: `z → zz → zzz`. Defender mashes grapple key to break free. Full hold sends opponent down for 6.5s.
 
+### Jab
+Point-blank strike (≤ 85px). Snaps the near arm forward; no wind-up. Puts opponent into a 0.9s stagger — they stumble back, arms up, unable to act. Doesn't knock down on its own; use it to open a combo (jab → Irish whip, jab → headbutt, jab → jab → headbutt).
+
+### Headbutt
+Follow-up strike vs a staggered opponent. Body lunges forward, head leads. Knocks them down for a standard fall. The intended finisher of the jab combo chain.
+
 ### Pin
 3-count at 0.85s per beat (2.55s total). Defender mashes grapple key to kick out.
 
@@ -89,7 +97,6 @@ Each wrestler is constructed with a `moveSet` array. `tryAction`, `tryPower`, an
 | Atomic drop | Power (close) | Strike | Lift and drop tailbone-first on knee; comedy bump, shorter down time |
 | Figure four leglock | Finisher | Submission | On downed opponent; very 1950s NWA; both wrestlers take damage |
 | Bear hug | Finisher | Submission | Standing sustained hold; health drain variant of sleeper |
-| Headbutt | Any | Strike | Quick, no grapple required; short stun, filler between combos |
 | Turnbuckle ram | Power | Throw | Whip or carry opponent into corner post |
 | Flying elbow (rope) | Power | Aerial | Run to rope, climb, drop — Phase 3 rope interaction |
 | Lou Thesz press | Finisher | Signature | Running tackle into mounted punches — Lou Thesz boss move |

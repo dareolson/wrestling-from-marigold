@@ -1,14 +1,17 @@
 import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
 
-const SPEED     = 140;
-const RUN_SPEED = 340;
-const DOWN_SEC  = 4.5;
-const WALK_FREQ = 0.05; // radians per unscaled pixel of travel
+const SPEED      = 140;
+const RUN_SPEED  = 340;
+const DOWN_SEC   = 4.5;
+const STAGGER_SEC = 0.9; // how long a stagger lasts before recovering to standing
+const WALK_FREQ  = 0.05; // radians per unscaled pixel of travel
 
 // ─── Stamina ─────────────────────────────────────────────────────────────────
 const STAMINA_MAX      = 100;
 const STAMINA_RECOVER  = 6;   // per second while standing
 const STAMINA_DRAIN    = {    // drained from the DEFENDER on each move landing
+    jab:          5,
+    headbutt:     8,
     clothesline:  12,
     bodySlam:     22,
     piledriver:   30,
@@ -37,6 +40,9 @@ export const POSES = {
     stumble:     { lLeg: 0.20,  rLeg:-0.15,  lArm:-0.35,  rArm: 0.35  },
     sleeperHold: { lLeg: 0.08,  rLeg:-0.05,  lArm: 1.40,  rArm: 0.30  },
     sleeping:    { lLeg:-0.08,  rLeg:-0.04,  lArm:-0.50,  rArm:-0.45  },
+    stagger:     { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.55,  rArm:-0.48  }, // stumbles back, both arms fly up in surprise
+    jab:         { lLeg: 0.10,  rLeg:-0.05,  lArm: 0.78,  rArm:-0.18  }, // near arm punches forward, far arm pulls back
+    headbutt:    { lLeg: 0.28,  rLeg: 0.12,  lArm: 0.22,  rArm: 0.18  }, // whole body lunges forward, head leads
 };
 
 // ─── Move definitions ─────────────────────────────────────────────────────────
@@ -63,6 +69,10 @@ export const MOVE_DEFS = {
                               { p: 'slamThrow',   dur: 200, e: 'Cubic.easeIn'  },
                               { p: 'idle',        dur: 0                       }] },
     sleeperHold: { poseSeq: [{ p: 'sleeperHold', dur: 200, e: 'Linear'        }] },
+    jab:         { poseSeq: [{ p: 'jab',         dur:  80, e: 'Cubic.easeOut' },
+                              { p: 'idle',        dur: 160, e: 'Linear'        }] },
+    headbutt:    { poseSeq: [{ p: 'headbutt',    dur: 110, e: 'Cubic.easeOut' },
+                              { p: 'idle',        dur: 190, e: 'Linear'        }] },
 };
 
 // ─── Drawing helper ───────────────────────────────────────────────────────────
@@ -82,6 +92,7 @@ function limbPts(px, py, w, h, angle) {
 
 // ─── State machine reference ──────────────────────────────────────────────────
 // 'standing'    default; can move, accept input, initiate moves
+// 'staggered'   brief stun after a light strike; stateTimer counts down; no input; second hit knocks down
 // 'running'     Irish whip victim; runPhase 'toRope' → 'returning'; no input
 // 'falling'     400ms fall tween before going down; no input
 // 'flipping'    clothesline/dropkick victim arc; flipProgress 0→1; no input
@@ -191,9 +202,12 @@ export default class Wrestler {
     }
 
     tickDown(dt) {
-        if (this.state !== 'down') return;
+        if (this.state !== 'down' && this.state !== 'staggered') return;
         this.stateTimer -= dt;
-        if (this.stateTimer <= 0) this.state = 'standing';
+        if (this.stateTimer <= 0) {
+            if (this.state === 'staggered') this.tweenPose('idle', 180, 'Linear');
+            this.state = 'standing';
+        }
     }
 
     tickRun(dt) {
@@ -249,7 +263,7 @@ export default class Wrestler {
             return 'pin';
         }
 
-        if (other.state === 'standing' && this.moveSet.includes('irishWhip')) {
+        if ((other.state === 'standing' || other.state === 'staggered') && this.moveSet.includes('irishWhip')) {
             this._doIrishWhip(other);
             return 'irishWhip';
         }
@@ -257,18 +271,31 @@ export default class Wrestler {
         return false;
     }
 
-    // Power key: elbow drop (vs downed) | piledriver / body slam (close) | dropkick (medium)
+    // Power key: headbutt (vs staggered) | elbow drop (vs downed) | jab (point-blank) | piledriver / body slam (close) | dropkick (medium)
     tryPower(other) {
         if (this.state !== 'standing') return false;
         if (!this.input.justDown('power')) return false;
 
         const dist     = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
+        const jabReach = 85  * this.s; // point-blank — tighter than body slam range
         const reach    = 110 * this.s;
         const medReach = 220 * this.s;
+
+        // Headbutt: follow-up strike on a staggered opponent — knocks them down
+        if (other.state === 'staggered' && dist <= reach && this.moveSet.includes('headbutt')) {
+            this._doHeadbutt(other);
+            return 'headbutt';
+        }
 
         if (other.state === 'down' && dist <= reach && this.moveSet.includes('elbowDrop')) {
             this._doElbowDrop(other);
             return 'elbowDrop';
+        }
+
+        // Jab: point-blank strike vs standing — staggers, sets up follow-ups
+        if (other.state === 'standing' && dist <= jabReach && this.moveSet.includes('jab')) {
+            this._doJab(other);
+            return 'jab';
         }
 
         if (other.state === 'standing' && dist <= reach) {
@@ -302,6 +329,18 @@ export default class Wrestler {
     }
 
     // ── Move execution ────────────────────────────────────────────────────────
+
+    _doJab(other) {
+        other._drain(STAMINA_DRAIN.jab);
+        this._runPoseSequence(MOVE_DEFS.jab.poseSeq);
+        other.startStagger();
+    }
+
+    _doHeadbutt(other) {
+        other._drain(STAMINA_DRAIN.headbutt);
+        this._runPoseSequence(MOVE_DEFS.headbutt.poseSeq);
+        other.startFall();
+    }
 
     _doIrishWhip(other) {
         const b   = ringBoundsAtY(other.y);
@@ -479,6 +518,12 @@ export default class Wrestler {
     tryEscape() {
         if (this.state !== 'sleeping') return false;
         return this.input.justDown('action');
+    }
+
+    startStagger() {
+        this.state      = 'staggered';
+        this.stateTimer = STAGGER_SEC;
+        this.tweenPose('stagger', 120, 'Cubic.easeOut');
     }
 
     startFall(downTime = DOWN_SEC) {

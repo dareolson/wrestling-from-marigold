@@ -142,10 +142,11 @@ export default class Wrestler {
         this.slamPhase    = null; // 'up' | 'throwing' | 'dropping'
         this.slamType     = null; // 'slam' | 'pile' — which move is in progress
         this.slamY        = 0;
-        this.pose         = { ...POSES.idle }; // live joint angles, tweened per move
-        this.idlePose     = 'idle';            // character-specific resting stance — override after construction
-        this.tauntPose    = 'tauntArmsWide';   // character-specific taunt — override after construction
-        this.gfx          = scene.add.graphics();
+        this.pose            = { ...POSES.idle }; // live joint angles, tweened per move
+        this.idlePose        = 'idle';            // character-specific resting stance — override after construction
+        this.tauntPose       = 'tauntArmsWide';   // character-specific taunt — override after construction
+        this._runStepTimer   = 0;
+        this.gfx             = scene.add.graphics();
     }
 
     get s() { return perspectiveScale(this.y); }
@@ -237,6 +238,7 @@ export default class Wrestler {
 
     tickRun(dt) {
         if (this.state !== 'running') return;
+
         const dir = Math.sign(this.runTarget - this.x);
         this.x += dir * RUN_SPEED * this.s * dt;
         this.walkPhase = (this.walkPhase + RUN_SPEED * dt * WALK_FREQ) % (Math.PI * 2);
@@ -251,9 +253,11 @@ export default class Wrestler {
             this.facing    = -dir;
             this.runTarget = dir > 0 ? b.left + 20 : b.right - 20;
             this.runPhase  = 'returning';
+            this.scene.triggerRopeBounce?.('far');
         } else {
             this.state    = 'standing';
             this.runPhase = null;
+            this.scene.triggerRopeBounce?.('near');
         }
     }
 
@@ -440,6 +444,7 @@ export default class Wrestler {
                         other.stateTimer = DOWN_SEC;
                         other.slamPhase  = null;
                         this.state       = 'standing';
+                        this.scene.cameras.main.shake(200, 0.003);
                     },
                 });
             },
@@ -452,7 +457,10 @@ export default class Wrestler {
         // Slide over the downed opponent, then drop
         this.scene.tweens.add({ targets: this, x: other.x, duration: 120, ease: 'Linear' });
         this.scene.time.delayedCall(220, () => {
-            if (this.state === 'slamming') other.stateTimer = DOWN_SEC;
+            if (this.state === 'slamming') {
+                other.stateTimer = DOWN_SEC;
+                this.scene.cameras.main.shake(90, 0.0015);
+            }
         });
         this._runPoseSequence(MOVE_DEFS.elbowDrop.poseSeq, () => {
             if (this.state === 'slamming') this.state = 'standing';
@@ -481,9 +489,11 @@ export default class Wrestler {
                     other._doSell('sellChest', 140, () => other.startClotheslineFall(facing));
                     this.state      = 'down';
                     this.stateTimer = 1.5;
+                    this.scene.cameras.main.shake(120, 0.0015);
                 } else {
                     this.state      = 'down';
                     this.stateTimer = 2.8;
+                    this.scene.cameras.main.shake(80, 0.001);
                 }
                 this.dropProgress = 0;
             },
@@ -533,6 +543,7 @@ export default class Wrestler {
                             other.stateTimer = DOWN_SEC + 2.0;
                             other.slamPhase  = null;
                             other.slamType   = null;
+                            this.scene.cameras.main.shake(220, 0.0035);
                             // Phase 4 — sit 400ms (pileSit pose, slamming state, butt on mat)
                             this.scene.time.delayedCall(400, () => {
                                 // Roll to flat: go to 'down', slide y back to sy over 200ms
@@ -624,6 +635,7 @@ export default class Wrestler {
                 this.state        = 'down';
                 this.stateTimer   = downTime;
                 this.fallProgress = 0;
+                this.scene.cameras.main.shake(100, 0.0015);
             },
         });
     }
@@ -645,6 +657,7 @@ export default class Wrestler {
                 this.stateTimer   = DOWN_SEC;
                 this.flipProgress = 0;
                 this.facing       = -runFacing; // head points back, feet went forward
+                this.scene.cameras.main.shake(150, 0.002);
             },
         });
     }
@@ -655,7 +668,8 @@ export default class Wrestler {
         const { x, y, s, facing, state, skinCol, trunksCol } = this;
         const gfx = this.gfx;
         gfx.clear();
-        gfx.setDepth(15 + y * 0.02);
+        // 12 + y*0.03: ~19.7 at far edge (behind near ropes at 25), ~25.4 at near edge (in front)
+        gfx.setDepth(12 + y * 0.03);
 
         if (state === 'falling' || state === 'risingUp') {
             this._drawFalling(x, y, s, facing, skinCol, trunksCol, this.fallProgress);

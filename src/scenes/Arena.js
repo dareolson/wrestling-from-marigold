@@ -14,7 +14,7 @@ export default class Arena extends Phaser.Scene {
         this.drawFarApronAndRopes();
         this.drawRingMat();
         this.drawNearApron();
-        this.drawNearAndSideRopes();
+        this._setupDynamicRopes();
         this.drawPosts();
         this.createScanlines();
 
@@ -205,15 +205,10 @@ export default class Arena extends Phaser.Scene {
 
     drawFarApronAndRopes() {
         const gfx = this.add.graphics().setDepth(2);
-        const { farLeft, farRight, ropes } = RING;
+        const { farLeft, farRight } = RING;
 
         gfx.fillStyle(0x909088, 1);
         gfx.fillRect(farLeft.x, farRight.y, farRight.x - farLeft.x, 16);
-
-        ropes.forEach(rope => {
-            gfx.lineStyle(1.5, 0xe0e0e0, 0.9);
-            gfx.lineBetween(farLeft.x, rope.farY, farRight.x, rope.farY);
-        });
     }
 
     drawRingMat() {
@@ -261,33 +256,68 @@ export default class Arena extends Phaser.Scene {
         gfx.fillRect(mx - 55, my - 7, 110, 14);
     }
 
-    drawNearAndSideRopes() {
+    _setupDynamicRopes() {
+        this.nearRopeGfx = this.add.graphics().setDepth(24.5);
+        this.farRopeGfx  = this.add.graphics().setDepth(2);
+        this.nearRopeSag = { val: 0, vel: 0 };
+        this.farRopeSag  = { val: 0, vel: 0 };
+    }
+
+    triggerRopeBounce(side) {
+        const sag = side === 'far' ? this.farRopeSag : this.nearRopeSag;
+        sag.vel += 90;
+    }
+
+    _updateRopes(dt) {
         const { nearLeft, nearRight, farLeft, farRight, ropes } = RING;
 
-        // Near horizontal ropes + lower halves of side ropes render in front of wrestlers.
-        // Upper halves of side ropes go behind wrestlers, same layer as far horizontal ropes.
-        const nearGfx   = this.add.graphics().setDepth(25);
-        const farSegGfx = this.add.graphics().setDepth(2);
+        for (const s of [this.nearRopeSag, this.farRopeSag]) {
+            s.vel += (-s.val * 30 - s.vel * 8) * dt;
+            s.val += s.vel * dt;
+        }
+
+        const nearG = this.nearRopeGfx;
+        const farG  = this.farRopeGfx;
+        nearG.clear();
+        farG.clear();
+
+        const ns    = this.nearRopeSag.val;
+        const fs    = this.farRopeSag.val;
+        const lMidX = (nearLeft.x  + farLeft.x)  / 2;
+        const rMidX = (nearRight.x + farRight.x) / 2;
+
+        // Draw a rope as an arched polyline — sag peaks at center, zero at both ends.
+        const arch = (gfx, x0, y0, x1, y1, sag, segs = 14) => {
+            gfx.beginPath();
+            for (let i = 0; i <= segs; i++) {
+                const t = i / segs;
+                const x = x0 + (x1 - x0) * t;
+                const y = y0 + (y1 - y0) * t + sag * Math.sin(t * Math.PI);
+                i === 0 ? gfx.moveTo(x, y) : gfx.lineTo(x, y);
+            }
+            gfx.strokePath();
+        };
 
         ropes.forEach(rope => {
-            // Near horizontal rope — in front of all wrestlers
-            nearGfx.lineStyle(3, 0xf0f0f0, 1);
-            nearGfx.lineBetween(nearLeft.x, rope.nearY, nearRight.x, rope.nearY);
+            const midY = (rope.nearY + rope.farY) / 2;
+            const yBow = (ns + fs) * 0.5;   // vertical displacement at side rope midpoint
+            const xBow = (ns + fs) * 0.6;   // outward horizontal bow (left rope left, right rope right)
 
-            // Side ropes split at their geometric midpoint:
-            //   lower half (near side) → in front of wrestlers
-            //   upper half (far side)  → behind wrestlers
-            const lMidX = (nearLeft.x  + farLeft.x)  / 2;
-            const rMidX = (nearRight.x + farRight.x) / 2;
-            const midY  = (rope.nearY  + rope.farY)  / 2;
+            // Horizontal ropes — 25% less sag than side ropes
+            nearG.lineStyle(3, 0xf0f0f0, 1);
+            arch(nearG, nearLeft.x, rope.nearY, nearRight.x, rope.nearY, ns * 0.75);
 
-            nearGfx.lineStyle(2, 0xe4e4e4, 0.85);
-            nearGfx.lineBetween(nearLeft.x,  rope.nearY, lMidX, midY);
-            nearGfx.lineBetween(nearRight.x, rope.nearY, rMidX, midY);
+            farG.lineStyle(1.5, 0xe0e0e0, 0.9);
+            arch(farG, farLeft.x, rope.farY, farRight.x, rope.farY, fs * 0.75);
 
-            farSegGfx.lineStyle(2, 0xe4e4e4, 0.85);
-            farSegGfx.lineBetween(lMidX, midY, farLeft.x,  rope.farY);
-            farSegGfx.lineBetween(rMidX, midY, farRight.x, rope.farY);
+            // Side ropes bow outward at the midpoint in both x and y
+            nearG.lineStyle(2, 0xe4e4e4, 0.85);
+            nearG.lineBetween(nearLeft.x,  rope.nearY, lMidX - xBow, midY + yBow);
+            nearG.lineBetween(nearRight.x, rope.nearY, rMidX + xBow, midY + yBow);
+
+            farG.lineStyle(2, 0xe4e4e4, 0.85);
+            farG.lineBetween(lMidX - xBow, midY + yBow, farLeft.x,  rope.farY);
+            farG.lineBetween(rMidX + xBow, midY + yBow, farRight.x, rope.farY);
         });
     }
 
@@ -517,6 +547,7 @@ export default class Arena extends Phaser.Scene {
 
         w1.draw();
         w2.draw();
+        this._updateRopes(dt);
         this._drawStaminaBars();
     }
 

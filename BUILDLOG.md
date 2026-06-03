@@ -129,6 +129,84 @@
 
 ---
 
+### 2026-06-02 — Grapple Lockup, Turnbuckle System, Possum
+
+**Goal:** Run button, running attack, richer grapple flow, turnbuckle climbing and diving, and play-possum.
+
+**Built:**
+
+**Run button**
+- R (P1) / `/` (P2) — wrestler runs to the rope *behind* them, bounces back at full sprint
+- InputHandler: `run: 1` added for B/Circle on gamepad
+- Only fires once per press (`justDown`) so you don't spam-run
+
+**Double axe handle**
+- Power key while returning from the rope, opponent within 170*s — arms raise overhead in a triangle, smash down, always staggers
+- `axeHandleUp` / `axeHandleDown` poses added; 280ms wind-up to sell the raise
+
+**Elbow drop rewrite**
+- Now a full horizontal body crash — wrestler goes airborne, becomes side-on (reuses `_drawDropkickFront`), crashes down, arm hangs toward mat
+- Old version looked like a punch to empty space
+
+**Directional Irish whip**
+- Hold left or right while pressing grapple to choose which side the opponent gets sent
+
+**Lockup system** (replaces direct grapple-on-standing)
+- Grapple key near standing opponent → both enter `'lockup'` state, arms fully horizontal at shoulder level (`lockup` pose: `lArm/rArm: 1.57`), separated at arm's length
+- Attacker has 0.8s to follow up: `up` + grapple = suplex, direction + grapple = Irish whip that way, grapple alone = body slam / piledriver
+- Defender can steal control by pressing their grapple key first
+- Timeout breaks the clinch cleanly
+
+**Suplex**
+- Delivered via lockup follow-up (up + grapple)
+- Hoists opponent inverted overhead (reuses `_drawInverted` via `slamPhase='up'`), drops them behind — attacker takes a `startFall(1.5)` on the way down too
+- STAMINA_DRAIN: 20
+
+**Turnbuckle system**
+- `_nearCorner()` detects all four corners (70px radius from mat position)
+- **Near corners** (bottom of screen): press `S`/`↓` to climb in — intuitive, you push into the post
+- **Far corners** (top of screen): press `W`/`↑` to climb in
+- First press → middle rope (`onTurnbuckle`, `_ropeLevel=1`, 400ms tween)
+- `W`/`↑` again → top rope (`_ropeLevel=2`, 250ms tween)
+- `A`/`D` or `←`/`→` → climb back down
+
+**Middle rope dive** (`_doDive`)
+- `S`/`↓` or power key from turnbuckle → flying elbow toward opponent
+- Targets standing or downed opponents; range cap 350*s (auto-climb-down if too far — no Van Terminator)
+- Hit: clothesline fall (standing) or reset down timer (downed); attacker down 2s
+- STAMINA_DRAIN: 18
+
+**Top rope dive** (`_doTopDive`)
+- Only fires on downed or possum opponents
+- Range cap 560*s; 700ms arc, bigger camera shake (260/0.005)
+- Hit: opponent down for DOWN_SEC + 2s; attacker down 3s
+- STAMINA_DRAIN: 28
+
+**Play possum**
+- When down timer expires, hold `S`/`↓` → enter `'possum'` state (flat on mat, up to 4s)
+- Press grapple or power from possum → quick spring (160ms vs normal 350ms)
+- Opponent can still pin, elbow drop, or top dive a possum wrestler — real risk to the gamble
+- Auto-rises normally if the window expires
+
+**Controls (full):**
+
+| | P1 | P2 |
+|---|---|---|
+| Move | WASD | Arrow keys |
+| Grapple / lockup | F | Enter |
+| Power / slam | G | Shift |
+| Finisher | H | Space |
+| Run | R | / |
+
+**Architecture notes:**
+- `'lockup'` state: managed by `Arena._tickLockup(dt)`; attacker/defender stored in `this.lockupState`
+- `_ropeLevel` (0/1/2) on Wrestler tracks which rope; `_corner.topY` added to corner objects
+- `_climbDown()` extracted as shared helper across all exit paths
+- `tickPossum(dt)` / `_startQuickRise()` handle possum state; reuses `stateTimer` for the 4s window
+- New states: `'lockup'`, `'climbing'`, `'onTurnbuckle'`, `'diving'`, `'possum'`
+
+---
+
 ## Phase Roadmap
 
 ### Phase 1 — Proof of Concept ✓

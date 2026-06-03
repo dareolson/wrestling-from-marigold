@@ -21,6 +21,7 @@ const STAMINA_DRAIN    = {    // drained from the DEFENDER on each move landing
     sleeperHold:       18, // total drained if hold runs full duration
     suplex:            20,
     divingElbow:       18,
+    topDive:           28,
 };
 // Kick-out chance: 100% at full stamina, 0% at or below this threshold
 const KICKOUT_FLOOR = 15;
@@ -54,6 +55,7 @@ export const POSES = {
     tauntArmsWide:  { lLeg: 0.14,  rLeg:-0.12,  lArm:-0.82,  rArm:-0.75  }, // arms raised wide, legs spread
     axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10  }, // arms raised overhead — near arm slightly forward, far arm slightly back, peak above head
     axeHandleDown:  { lLeg: 0.30,  rLeg: 0.18,  lArm: 1.20,  rArm: 1.15  }, // whole body lurching forward, arms smashing down at ~40° below horizontal
+    lockup:         { lLeg: 0.18,  rLeg:-0.12,  lArm: 1.57,  rArm: 1.57  }, // arms fully horizontal at shoulder level, wide stance — collar-and-elbow tie-up
 };
 
 // ─── Move definitions ─────────────────────────────────────────────────────────
@@ -122,12 +124,14 @@ function limbPts(px, py, w, h, angle) {
 // 'elbowDropping' attacker airborne during elbow drop; elbowProgress 0→1
 // 'slamming'    attacker mid-slam, elbow drop, or dropkick launch; no input
 // 'grabbed'     defender lifted during body slam or piledriver; no input
-// 'down'        flat on mat; stateTimer counts down to 0 → 'risingUp'
+// 'down'        flat on mat; stateTimer counts down to 0 → 'risingUp' (or 'possum' if holding down)
+// 'possum'      faking unconscious; hold down key to stay flat; action/power = quick spring up
 // 'risingUp'    350ms get-up tween; drawn as falling in reverse; no input
 // 'pinned'      flat during a pin; mash action to attempt kickout
 // 'pinning'     attacker holding the pin
 // 'holding'     attacker applying sleeper hold
 // 'sleeping'    defender in sleeper hold; mash action to escape
+// 'lockup'      grapple clinch; attacker follows up with action+direction, defender contests with action
 // 'climbing'    tweening up to or down from a turnbuckle corner; no input
 // 'onTurnbuckle' standing on middle rope at corner; power = dive, movement = climb down
 // 'diving'      airborne from turnbuckle dive; divProgress 0→1
@@ -158,6 +162,7 @@ export default class Wrestler {
         this.divProgress   = 0;
         this._corner       = null;
         this._divLandY     = 0;
+        this._ropeLevel    = 0; // 0=none, 1=middle rope, 2=top rope
         this.slamPhase    = null; // 'up' | 'throwing' | 'dropping'
         this.slamType     = null; // 'slam' | 'pile' — which move is in progress
         this.slamY        = 0;
@@ -249,10 +254,26 @@ export default class Wrestler {
             if (this.state === 'staggered') {
                 this.tweenPose('idle', 180, 'Linear');
                 this.state = 'standing';
+            } else if (this.input.isDown('down')) {
+                // Player holds down to play possum — stay flat, 4s before forced rise
+                this.state      = 'possum';
+                this.stateTimer = 4.0;
             } else {
                 this._startRiseUp();
             }
         }
+    }
+
+    tickPossum(dt) {
+        if (this.state !== 'possum') return;
+        this.stateTimer -= dt;
+        // Action or power = quick spring to feet
+        if (this.input.justDown('action') || this.input.justDown('power')) {
+            this._startQuickRise();
+            return;
+        }
+        // Forced rise after possum window expires
+        if (this.stateTimer <= 0) this._startRiseUp();
     }
 
     tickRun(dt) {
@@ -304,7 +325,7 @@ export default class Wrestler {
         const reach = 110 * this.s;
         if (dist > reach) return false;
 
-        if (other.state === 'down' && this.moveSet.includes('pin')) {
+        if ((other.state === 'down' || other.state === 'possum') && this.moveSet.includes('pin')) {
             this.state  = 'pinning';
             other.state = 'pinned';
             this._runPoseSequence(MOVE_DEFS.pin.poseSeq);
@@ -318,17 +339,11 @@ export default class Wrestler {
         }
 
         if (other.state === 'standing') {
-            if (dist <= 90 * this.s && this.moveSet.includes('suplex')) {
-                this._doSuplex(other);
-                return 'suplex';
-            }
-            if (this.moveSet.includes('irishWhip')) {
-                let dir = this.facing;
-                if (this.input.isDown('left'))  dir = -1;
-                if (this.input.isDown('right')) dir =  1;
-                this._doIrishWhip(other, dir);
-                return 'irishWhip';
-            }
+            this.state  = 'lockup';
+            other.state = 'lockup';
+            this.tweenPose('lockup', 180, 'Cubic.easeOut');
+            other.tweenPose('lockup', 180, 'Cubic.easeOut');
+            return 'lockup';
         }
 
         return false;
@@ -350,7 +365,7 @@ export default class Wrestler {
             return 'headbutt';
         }
 
-        if (other.state === 'down' && dist <= reach && this.moveSet.includes('elbowDrop')) {
+        if ((other.state === 'down' || other.state === 'possum') && dist <= reach && this.moveSet.includes('elbowDrop')) {
             this._doElbowDrop(other);
             return 'elbowDrop';
         }
@@ -395,48 +410,86 @@ export default class Wrestler {
         return false;
     }
 
-    // Up key near a corner: climb to middle rope
+    // Climb turnbuckle — near corners use down (pressing into the post), far use up
     tryClimb() {
-        if (this.state !== 'standing') return false;
-        if (!this.input.justDown('up')) return false;
-        const corner = this._nearCorner();
-        if (!corner) return false;
-        this._corner = corner;
-        this.state   = 'climbing';
-        this.scene.tweens.add({
-            targets:  this,
-            x:        corner.x,
-            y:        corner.y,
-            duration: 400,
-            ease:     'Cubic.easeOut',
-            onComplete: () => {
-                if (this.state === 'climbing') {
-                    this.state  = 'onTurnbuckle';
-                    this.facing = corner.facing;
-                }
-            },
-        });
-        return 'climb';
-    }
-
-    // While on turnbuckle: power = dive, movement = climb down
-    tryDive(other) {
-        if (this.state !== 'onTurnbuckle') return false;
-        if (this.input.isDown('left') || this.input.isDown('right') || this.input.isDown('down')) {
-            this.state = 'climbing';
+        if (this.state === 'standing') {
+            const corner   = this._nearCorner();
+            if (!corner) return false;
+            const isNear   = corner.matY >= RING.nearLeft.y;
+            const pressed  = isNear ? this.input.justDown('down') : this.input.justDown('up');
+            if (!pressed) return false;
+            this._corner    = corner;
+            this._ropeLevel = 1;
+            this.state      = 'climbing';
             this.scene.tweens.add({
                 targets:  this,
-                x:        this._corner.x,
-                y:        this._corner.matY - 20,
-                duration: 350,
+                x:        corner.x,
+                y:        corner.y,
+                duration: 400,
                 ease:     'Cubic.easeOut',
-                onComplete: () => { if (this.state === 'climbing') this.state = 'standing'; },
+                onComplete: () => {
+                    if (this.state === 'climbing') {
+                        this.state  = 'onTurnbuckle';
+                        this.facing = this._corner.facing;
+                    }
+                },
             });
+            return 'climb';
+        }
+
+        // Up again from middle rope = climb to top rope (always up — going higher on the post)
+        if (this.state === 'onTurnbuckle' && this._ropeLevel === 1 && this.input.justDown('up')) {
+            this._ropeLevel = 2;
+            this.state      = 'climbing';
+            this.scene.tweens.add({
+                targets:  this,
+                y:        this._corner.topY,
+                duration: 250,
+                ease:     'Cubic.easeOut',
+                onComplete: () => { if (this.state === 'climbing') this.state = 'onTurnbuckle'; },
+            });
+            return 'climb';
+        }
+
+        return false;
+    }
+
+    // While on turnbuckle: down/power = dive, left/right = climb down
+    tryDive(other) {
+        if (this.state !== 'onTurnbuckle') return false;
+        if (this.input.isDown('left') || this.input.isDown('right')) {
+            this._climbDown();
             return false;
         }
-        if (!this.input.justDown('power')) return false;
+        if (!(this.input.justDown('down') || this.input.justDown('power'))) return false;
+
+        const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
+
+        if (this._ropeLevel === 2) {
+            // Top rope: only onto downed or possum opponent
+            if (other.state !== 'down' && other.state !== 'possum') { this._climbDown(); return false; }
+            if (dist > 560 * this.s) { this._climbDown(); return false; }
+            this._doTopDive(other);
+            return 'topDive';
+        }
+
+        // Middle rope
+        if (dist > 350 * this.s) { this._climbDown(); return false; }
         this._doDive(other);
         return 'dive';
+    }
+
+    _climbDown() {
+        this.state      = 'climbing';
+        this._ropeLevel = 0;
+        this.scene.tweens.add({
+            targets:  this,
+            x:        this._corner.x,
+            y:        this._corner.matY - 20,
+            duration: 350,
+            ease:     'Cubic.easeOut',
+            onComplete: () => { if (this.state === 'climbing') this.state = 'standing'; },
+        });
     }
 
     // Finisher key: sleeper hold vs nearby standing opponent; taunt when out of range
@@ -738,7 +791,7 @@ export default class Wrestler {
                 if (this.state !== 'diving') return;
                 const dist = Math.abs(this.x - other.x);
                 const hit  = dist <= 130 * this.s &&
-                             (other.state === 'standing' || other.state === 'down' || other.state === 'staggered');
+                             (other.state === 'standing' || other.state === 'down' || other.state === 'possum' || other.state === 'staggered');
                 if (hit) {
                     other._drain(STAMINA_DRAIN.divingElbow);
                     if (other.state === 'down') {
@@ -752,6 +805,37 @@ export default class Wrestler {
                 }
                 this.state       = 'down';
                 this.stateTimer  = 2.0;
+                this.divProgress = 0;
+            },
+        });
+    }
+
+    _doTopDive(other) {
+        this.state       = 'diving';
+        this.divProgress = 0;
+        this._divLandY   = other.y;
+
+        this.scene.tweens.add({
+            targets:     this,
+            divProgress: 1,
+            x:           other.x,
+            y:           other.y,
+            duration:    700,
+            ease:        'Sine.easeIn',
+            onComplete: () => {
+                if (this.state !== 'diving') return;
+                const dist = Math.abs(this.x - other.x);
+                const hit  = dist <= 140 * this.s &&
+                             (other.state === 'down' || other.state === 'possum');
+                if (hit) {
+                    other._drain(STAMINA_DRAIN.topDive);
+                    other.stateTimer = DOWN_SEC + 2.0;
+                    this.scene.cameras.main.shake(260, 0.005);
+                } else {
+                    this.scene.cameras.main.shake(110, 0.002);
+                }
+                this.state       = 'down';
+                this.stateTimer  = 3.0;
                 this.divProgress = 0;
             },
         });
@@ -808,6 +892,23 @@ export default class Wrestler {
                 if (this.state === 'risingUp') {
                     this.state = 'standing';
                     this.tweenPose('idle', 200, 'Linear');
+                }
+            },
+        });
+    }
+
+    _startQuickRise() {
+        this.state        = 'risingUp';
+        this.fallProgress = 1;
+        this.scene.tweens.add({
+            targets:      this,
+            fallProgress: 0,
+            duration:     160,
+            ease:         'Cubic.easeOut',
+            onComplete:   () => {
+                if (this.state === 'risingUp') {
+                    this.state = 'standing';
+                    this.tweenPose('idle', 120, 'Linear');
                 }
             },
         });
@@ -916,7 +1017,7 @@ export default class Wrestler {
         gfx.fillStyle(0x000000, 0.22);
         gfx.fillEllipse(x, y, 120 * s, 36 * s);
 
-        if (state === 'down' || state === 'pinned') {
+        if (state === 'down' || state === 'pinned' || state === 'possum') {
             this._drawFlat(x, y, s, facing, skinCol, trunksCol);
             return;
         }
@@ -1155,10 +1256,10 @@ export default class Wrestler {
 
     _nearCorner() {
         const corners = [
-            { x: RING.nearLeft.x,  y: RING.ropes[1].nearY, matY: RING.nearLeft.y,  facing:  1 },
-            { x: RING.nearRight.x, y: RING.ropes[1].nearY, matY: RING.nearRight.y, facing: -1 },
-            { x: RING.farLeft.x,   y: RING.ropes[1].farY,  matY: RING.farLeft.y,   facing:  1 },
-            { x: RING.farRight.x,  y: RING.ropes[1].farY,  matY: RING.farRight.y,  facing: -1 },
+            { x: RING.nearLeft.x,  y: RING.ropes[1].nearY, topY: RING.ropes[2].nearY, matY: RING.nearLeft.y,  facing:  1 },
+            { x: RING.nearRight.x, y: RING.ropes[1].nearY, topY: RING.ropes[2].nearY, matY: RING.nearRight.y, facing: -1 },
+            { x: RING.farLeft.x,   y: RING.ropes[1].farY,  topY: RING.ropes[2].farY,  matY: RING.farLeft.y,   facing:  1 },
+            { x: RING.farRight.x,  y: RING.ropes[1].farY,  topY: RING.ropes[2].farY,  matY: RING.farRight.y,  facing: -1 },
         ];
         for (const c of corners) {
             if (Phaser.Math.Distance.Between(this.x, this.y, c.x, c.matY) < 70) return c;

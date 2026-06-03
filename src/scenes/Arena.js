@@ -455,6 +455,7 @@ export default class Arena extends Phaser.Scene {
 
         this.pinState     = null; // { attacker, defender, timer }
         this.sleeperState = null; // { attacker, defender, timer }
+        this.lockupState  = null; // { attacker, defender, timer }
 
         // Match event log — consumed by the future AI commentary system.
         // Each entry: { t, type, ...payload }
@@ -501,6 +502,8 @@ export default class Arena extends Phaser.Scene {
 
         w1.tickDown(dt);
         w2.tickDown(dt);
+        w1.tickPossum(dt);
+        w2.tickPossum(dt);
 
         w1.tickRun(dt);
         w2.tickRun(dt);
@@ -541,7 +544,15 @@ export default class Arena extends Phaser.Scene {
         logMove(p1,  'p1', w2); logMove(p2,  'p2', w1);
         logMove(f1,  'p1', w2); logMove(f2,  'p2', w1);
         logMove(ra1, 'p1', w2); logMove(ra2, 'p2', w1);
-        logMove(d1,  'p1', w2); logMove(d2,  'p2', w1);
+        logMove(d1, 'p1', w2); logMove(d2, 'p2', w1);
+
+        if ((r1 === 'lockup') && !this.lockupState) {
+            this.lockupState = { attacker: w1, defender: w2, timer: 0 };
+        } else if ((r2 === 'lockup') && !this.lockupState) {
+            this.lockupState = { attacker: w2, defender: w1, timer: 0 };
+        }
+
+        if (this.lockupState) this._tickLockup(dt);
 
         if (r1 === 'pin' && !this.pinState) {
             this.pinState = { attacker: w1, defender: w2, timer: 0 };
@@ -634,6 +645,68 @@ export default class Arena extends Phaser.Scene {
         if (ss.timer >= 4.0) {
             this._logEvent('sleeperKO', { winner: ss.attacker === this.w1 ? 'p1' : 'p2' });
             release(true); return;
+        }
+    }
+
+    _tickLockup(dt) {
+        const ls = this.lockupState;
+        ls.timer += dt;
+
+        // Hold them at arm's length facing each other — gap of ~100 scaled units
+        const s      = ls.attacker.s;
+        const midX   = (ls.attacker.x + ls.defender.x) / 2;
+        const halfGap = 50 * s; // half of 100*s total gap
+        const dir    = ls.attacker.facing; // points from attacker toward defender
+        ls.attacker.x += (midX - dir * halfGap - ls.attacker.x) * 0.18;
+        ls.defender.x  += (midX + dir * halfGap - ls.defender.x)  * 0.18;
+
+        const who = ls.attacker === this.w1 ? 'p1' : 'p2';
+
+        // Defender contests by pressing grapple — steals the lockup
+        if (ls.defender.input.justDown('action')) {
+            [ls.attacker, ls.defender] = [ls.defender, ls.attacker];
+            ls.timer = 0;
+            ls.attacker.tweenPose('lockup', 150, 'Cubic.easeOut');
+            return;
+        }
+
+        // Attacker executes follow-up: grapple again + optional direction
+        if (ls.attacker.input.justDown('action')) {
+            const goUp    = ls.attacker.input.isDown('up');
+            const goLeft  = ls.attacker.input.isDown('left');
+            const goRight = ls.attacker.input.isDown('right');
+            const dir     = goLeft ? -1 : goRight ? 1 : ls.attacker.facing;
+
+            ls.attacker.state = 'standing';
+            ls.defender.state = 'standing';
+            this.lockupState  = null;
+
+            if (goUp && ls.attacker.moveSet.includes('suplex')) {
+                ls.attacker._doSuplex(ls.defender);
+                this._logEvent('move', { attacker: who, move: 'suplex', defenderStamina: Math.round(ls.defender.stamina) });
+            } else if ((goLeft || goRight) && ls.attacker.moveSet.includes('irishWhip')) {
+                ls.attacker._doIrishWhip(ls.defender, dir);
+                this._logEvent('move', { attacker: who, move: 'irishWhip', defenderStamina: Math.round(ls.defender.stamina) });
+            } else if (ls.attacker.moveSet.includes('piledriver')) {
+                ls.attacker._doPiledriver(ls.defender);
+                this._logEvent('knockdown', { attacker: who, move: 'piledriver', defenderStamina: Math.round(ls.defender.stamina) });
+            } else if (ls.attacker.moveSet.includes('bodySlam')) {
+                ls.attacker._doBodySlam(ls.defender);
+                this._logEvent('knockdown', { attacker: who, move: 'bodySlam', defenderStamina: Math.round(ls.defender.stamina) });
+            } else {
+                ls.attacker._doIrishWhip(ls.defender, dir);
+                this._logEvent('move', { attacker: who, move: 'irishWhip', defenderStamina: Math.round(ls.defender.stamina) });
+            }
+            return;
+        }
+
+        // Timeout — break the clinch
+        if (ls.timer >= 0.8) {
+            ls.attacker.state = 'standing';
+            ls.defender.state = 'standing';
+            ls.attacker.tweenPose('idle', 220, 'Linear');
+            ls.defender.tweenPose('idle', 220, 'Linear');
+            this.lockupState = null;
         }
     }
 

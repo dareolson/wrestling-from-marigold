@@ -413,6 +413,7 @@ export default class Arena extends Phaser.Scene {
             action:   kb.addKey('F'),     // grapple: whip / clothesline / pin
             power:    kb.addKey('G'),     // power:   slam / elbow drop / dropkick
             finisher: kb.addKey('H'),     // finisher: sleeper hold
+            run:      kb.addKey('R'),     // run to rope
         };
         const keys2 = {
             up:       kb.addKey('UP'),
@@ -422,6 +423,7 @@ export default class Arena extends Phaser.Scene {
             action:   kb.addKey('ENTER'), // grapple
             power:    kb.addKey('SHIFT'), // power
             finisher: kb.addKey('SPACE'), // finisher: sleeper hold
+            run:      kb.addKey('FORWARD_SLASH'), // run to rope
         };
 
         const input1 = new InputHandler('keyboard', keys1);
@@ -429,13 +431,13 @@ export default class Arena extends Phaser.Scene {
 
         // P1 — blue trunks: brawler kit (Irish whip → clothesline, body slam, elbow drop, dropkick)
         this.w1 = new Wrestler(this, 330, 360, 0xc8906a, 0x334499, input1,
-            ['irishWhip', 'clothesline', 'bodySlam', 'pin', 'elbowDrop', 'dropkick', 'sleeperHold', 'jab', 'headbutt']);
+            ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'jab', 'headbutt']);
         this.w1.facing   = 1;
         this.w1.idlePose = 'brawlerIdle';
 
         // P2 — dark trunks: powerhouse kit (piledriver instead of body slam, same extras)
         this.w2 = new Wrestler(this, 630, 360, 0xc8906a, 0x1a1a1a, input2,
-            ['irishWhip', 'clothesline', 'piledriver', 'pin', 'elbowDrop', 'dropkick', 'sleeperHold', 'jab', 'headbutt']);
+            ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'jab', 'headbutt']);
         this.w2.facing   = -1;
         this.w2.idlePose = 'powerIdle';
 
@@ -515,6 +517,19 @@ export default class Arena extends Phaser.Scene {
         const f1 = w1.tryFinisher(w2);
         const f2 = f1 ? false : w2.tryFinisher(w1);
 
+        // Self-initiated run — mutually exclusive, no defender to log
+        const rn1 = w1.tryRun();
+        if (!rn1) w2.tryRun();
+
+        // Running attack — fires while returning from rope
+        const ra1 = w1.tryRunningAttack(w2);
+        const ra2 = ra1 ? false : w2.tryRunningAttack(w1);
+
+        // Turnbuckle climb and dive
+        w1.tryClimb(); w2.tryClimb();
+        const d1 = w1.tryDive(w2);
+        const d2 = d1 ? false : w2.tryDive(w1);
+
         // Log every move that landed this frame
         const logMove = (move, attacker, defender) => {
             if (!move || move === true) return;
@@ -522,9 +537,11 @@ export default class Arena extends Phaser.Scene {
                 ? 'knockdown' : (defender.state === 'staggered' ? 'stagger' : 'move');
             this._logEvent(type, { attacker, move, defenderStamina: Math.round(defender.stamina) });
         };
-        logMove(r1, 'p1', w2); logMove(r2, 'p2', w1);
-        logMove(p1, 'p1', w2); logMove(p2, 'p2', w1);
-        logMove(f1, 'p1', w2); logMove(f2, 'p2', w1);
+        logMove(r1,  'p1', w2); logMove(r2,  'p2', w1);
+        logMove(p1,  'p1', w2); logMove(p2,  'p2', w1);
+        logMove(f1,  'p1', w2); logMove(f2,  'p2', w1);
+        logMove(ra1, 'p1', w2); logMove(ra2, 'p2', w1);
+        logMove(d1,  'p1', w2); logMove(d2,  'p2', w1);
 
         if (r1 === 'pin' && !this.pinState) {
             this.pinState = { attacker: w1, defender: w2, timer: 0 };

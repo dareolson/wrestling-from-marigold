@@ -16,8 +16,11 @@ const STAMINA_DRAIN    = {    // drained from the DEFENDER on each move landing
     bodySlam:     22,
     piledriver:   30,
     dropkick:     14,
-    elbowDrop:    10,
-    sleeperHold:  18, // total drained if hold runs full duration
+    elbowDrop:         10,
+    doubleAxeHandle:   12,
+    sleeperHold:       18, // total drained if hold runs full duration
+    suplex:            20,
+    divingElbow:       18,
 };
 // Kick-out chance: 100% at full stamina, 0% at or below this threshold
 const KICKOUT_FLOOR = 15;
@@ -49,6 +52,8 @@ export const POSES = {
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18  }, // guard stance — weight forward, fists up
     powerIdle:      { lLeg: 0.10,  rLeg:-0.09,  lArm: 0.10,  rArm: 0.07  }, // wide, imposing — arms hanging low
     tauntArmsWide:  { lLeg: 0.14,  rLeg:-0.12,  lArm:-0.82,  rArm:-0.75  }, // arms raised wide, legs spread
+    axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10  }, // arms raised overhead — near arm slightly forward, far arm slightly back, peak above head
+    axeHandleDown:  { lLeg: 0.30,  rLeg: 0.18,  lArm: 1.20,  rArm: 1.15  }, // whole body lurching forward, arms smashing down at ~40° below horizontal
 };
 
 // ─── Move definitions ─────────────────────────────────────────────────────────
@@ -74,7 +79,13 @@ export const MOVE_DEFS = {
     piledriver:  { poseSeq: [{ p: 'slamHold',    dur: 200, e: 'Cubic.easeOut' }, // hold
                               { p: 'slamHold',    dur: 120, e: 'Linear'        }, // jump
                               { p: 'pileSit',     dur: 130, e: 'Cubic.easeIn'  }] }, // crash — attacker goes down after
+    doubleAxeHandle: { poseSeq: [{ p: 'axeHandleUp',   dur: 280, e: 'Cubic.easeOut' },
+                                  { p: 'axeHandleDown', dur: 160, e: 'Cubic.easeIn'  },
+                                  { p: 'idle',          dur: 320, e: 'Cubic.easeOut' }] },
     sleeperHold: { poseSeq: [{ p: 'sleeperHold', dur: 200, e: 'Linear'        }] },
+    suplex:      { poseSeq: [{ p: 'slamHold',      dur: 300, e: 'Cubic.easeOut' },
+                              { p: 'slamThrow',    dur: 220, e: 'Cubic.easeIn'  },
+                              { p: 'idle',         dur: 0                       }] },
     taunt:       { poseSeq: [{ p: 'tauntArmsWide', dur: 380, e: 'Cubic.easeOut' },
                               { p: 'tauntArmsWide', dur: 500, e: 'Linear'        },
                               { p: 'idle',          dur: 450, e: 'Linear'        }] },
@@ -107,7 +118,8 @@ function limbPts(px, py, w, h, angle) {
 // 'running'     Irish whip victim; runPhase 'toRope' → 'returning'; no input
 // 'falling'     400ms fall tween before going down; no input
 // 'flipping'    clothesline/dropkick victim arc; flipProgress 0→1; no input
-// 'dropkicking' attacker airborne during dropkick; dropProgress 0→1
+// 'dropkicking'   attacker airborne during dropkick; dropProgress 0→1
+// 'elbowDropping' attacker airborne during elbow drop; elbowProgress 0→1
 // 'slamming'    attacker mid-slam, elbow drop, or dropkick launch; no input
 // 'grabbed'     defender lifted during body slam or piledriver; no input
 // 'down'        flat on mat; stateTimer counts down to 0 → 'risingUp'
@@ -116,10 +128,13 @@ function limbPts(px, py, w, h, angle) {
 // 'pinning'     attacker holding the pin
 // 'holding'     attacker applying sleeper hold
 // 'sleeping'    defender in sleeper hold; mash action to escape
+// 'climbing'    tweening up to or down from a turnbuckle corner; no input
+// 'onTurnbuckle' standing on middle rope at corner; power = dive, movement = climb down
+// 'diving'      airborne from turnbuckle dive; divProgress 0→1
 
 // ─── Wrestler class ───────────────────────────────────────────────────────────
 export default class Wrestler {
-    constructor(scene, x, y, skinCol, trunksCol, input, moveSet = ['irishWhip', 'clothesline', 'bodySlam', 'pin', 'elbowDrop', 'dropkick']) {
+    constructor(scene, x, y, skinCol, trunksCol, input, moveSet = ['irishWhip', 'clothesline', 'bodySlam', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle']) {
         this.scene        = scene;
         this.x            = x;
         this.y            = y;
@@ -136,9 +151,13 @@ export default class Wrestler {
         this.runFacing    = 1;
         this.walkPhase    = 0;
         this.stamina      = STAMINA_MAX;
-        this.flipProgress = 0;
-        this.flipDir      = 1;
-        this.dropProgress = 0;
+        this.flipProgress  = 0;
+        this.flipDir       = 1;
+        this.dropProgress  = 0;
+        this.elbowProgress = 0;
+        this.divProgress   = 0;
+        this._corner       = null;
+        this._divLandY     = 0;
         this.slamPhase    = null; // 'up' | 'throwing' | 'dropping'
         this.slamType     = null; // 'slam' | 'pile' — which move is in progress
         this.slamY        = 0;
@@ -298,9 +317,18 @@ export default class Wrestler {
             if (this.moveSet.includes('bodySlam'))   { this._doBodySlam(other);   return 'slam';       }
         }
 
-        if (other.state === 'standing' && this.moveSet.includes('irishWhip')) {
-            this._doIrishWhip(other);
-            return 'irishWhip';
+        if (other.state === 'standing') {
+            if (dist <= 90 * this.s && this.moveSet.includes('suplex')) {
+                this._doSuplex(other);
+                return 'suplex';
+            }
+            if (this.moveSet.includes('irishWhip')) {
+                let dir = this.facing;
+                if (this.input.isDown('left'))  dir = -1;
+                if (this.input.isDown('right')) dir =  1;
+                this._doIrishWhip(other, dir);
+                return 'irishWhip';
+            }
         }
 
         return false;
@@ -341,6 +369,76 @@ export default class Wrestler {
         return false;
     }
 
+    // Run key: self-initiated run toward the rope you're facing
+    tryRun() {
+        if (this.state !== 'standing') return false;
+        if (!this.input.justDown('run')) return false;
+        const b       = ringBoundsAtY(this.y);
+        const backDir = -this.facing; // run to the rope behind you, bounce back toward opponent
+        this.state     = 'running';
+        this.runPhase  = 'toRope';
+        this.runFacing = backDir;
+        this.facing    = backDir;
+        this.runTarget = backDir > 0 ? b.right - 20 : b.left + 20;
+        return 'run';
+    }
+
+    // Power key while returning from rope: double axe-handle if opponent is in range
+    tryRunningAttack(other) {
+        if (this.state !== 'running' || this.runPhase !== 'returning') return false;
+        if (!this.input.justDown('power')) return false;
+        if (Math.abs(other.x - this.x) > 170 * this.s) return false;
+        if (this.moveSet.includes('doubleAxeHandle')) {
+            this._doDoubleAxeHandle(other);
+            return 'doubleAxeHandle';
+        }
+        return false;
+    }
+
+    // Up key near a corner: climb to middle rope
+    tryClimb() {
+        if (this.state !== 'standing') return false;
+        if (!this.input.justDown('up')) return false;
+        const corner = this._nearCorner();
+        if (!corner) return false;
+        this._corner = corner;
+        this.state   = 'climbing';
+        this.scene.tweens.add({
+            targets:  this,
+            x:        corner.x,
+            y:        corner.y,
+            duration: 400,
+            ease:     'Cubic.easeOut',
+            onComplete: () => {
+                if (this.state === 'climbing') {
+                    this.state  = 'onTurnbuckle';
+                    this.facing = corner.facing;
+                }
+            },
+        });
+        return 'climb';
+    }
+
+    // While on turnbuckle: power = dive, movement = climb down
+    tryDive(other) {
+        if (this.state !== 'onTurnbuckle') return false;
+        if (this.input.isDown('left') || this.input.isDown('right') || this.input.isDown('down')) {
+            this.state = 'climbing';
+            this.scene.tweens.add({
+                targets:  this,
+                x:        this._corner.x,
+                y:        this._corner.matY - 20,
+                duration: 350,
+                ease:     'Cubic.easeOut',
+                onComplete: () => { if (this.state === 'climbing') this.state = 'standing'; },
+            });
+            return false;
+        }
+        if (!this.input.justDown('power')) return false;
+        this._doDive(other);
+        return 'dive';
+    }
+
     // Finisher key: sleeper hold vs nearby standing opponent; taunt when out of range
     tryFinisher(other) {
         if (this.state !== 'standing') return false;
@@ -372,9 +470,26 @@ export default class Wrestler {
         other._doSell('sellHead', 150, () => other.startFall());
     }
 
-    _doIrishWhip(other) {
-        const b   = ringBoundsAtY(other.y);
-        const dir = this.facing;
+    _doDoubleAxeHandle(other) {
+        other._drain(STAMINA_DRAIN.doubleAxeHandle);
+        this.state    = 'slamming';
+        this.runPhase = null;
+        this.facing   = Math.sign(other.x - this.x) || this.facing;
+
+        this._runPoseSequence(MOVE_DEFS.doubleAxeHandle.poseSeq, () => {
+            if (this.state === 'slamming') this.state = 'standing';
+        });
+
+        // Sell fires when arms come down (~280ms wind-up)
+        this.scene.time.delayedCall(280, () => {
+            if (this.state !== 'slamming') return;
+            this.scene.cameras.main.shake(80, 0.001);
+            other._doSell('sellHead', 130, () => other.startStagger());
+        });
+    }
+
+    _doIrishWhip(other, dir = this.facing) {
+        const b = ringBoundsAtY(other.y);
 
         other.state     = 'running';
         other.runPhase  = 'toRope';
@@ -382,7 +497,9 @@ export default class Wrestler {
         other.facing    = dir;
         other.runTarget = dir > 0 ? b.right - 20 : b.left + 20;
 
-        // Sidestep toward far rope so P2 passes in front
+        this.facing = dir;
+
+        // Sidestep toward far rope so defender passes in front
         const stepY = Math.max(RING.farLeft.y + 20, this.y - 22 * this.s);
         this.scene.tweens.add({ targets: this, y: stepY, duration: 180, ease: 'Cubic.easeOut' });
 
@@ -451,19 +568,63 @@ export default class Wrestler {
         });
     }
 
+    _doSuplex(other) {
+        other._drain(STAMINA_DRAIN.suplex);
+        this.state      = 'slamming';
+        other.state     = 'grabbed';
+        other.slamPhase = 'up';
+        other.slamType  = 'suplex';
+        const sx = this.x, sy = this.y, ss = this.s;
+        const facing = this.facing;
+
+        other.x     = sx;
+        other.slamY = other.y - (88 + 112 + 34 * 0.7) * other.s;
+
+        this._runPoseSequence(MOVE_DEFS.suplex.poseSeq);
+
+        // Hoist opponent inverted overhead (300ms) then drop behind attacker
+        this.scene.tweens.add({
+            targets:  other,
+            slamY:    sy - 100 * ss,
+            duration: 300,
+            ease:     'Cubic.easeOut',
+            onComplete: () => {
+                if (this.state !== 'slamming') return;
+                other.x          = sx - facing * 90 * ss;
+                other.y          = sy;
+                other.state      = 'down';
+                other.stateTimer = DOWN_SEC + 1.0;
+                other.slamPhase  = null;
+                other.slamType   = null;
+                this.scene.cameras.main.shake(180, 0.003);
+                this.startFall(1.5);
+            },
+        });
+    }
+
     _doElbowDrop(other) {
         other._drain(STAMINA_DRAIN.elbowDrop);
-        this.state = 'slamming';
-        // Slide over the downed opponent, then drop
-        this.scene.tweens.add({ targets: this, x: other.x, duration: 120, ease: 'Linear' });
-        this.scene.time.delayedCall(220, () => {
-            if (this.state === 'slamming') {
+        this.state         = 'elbowDropping';
+        this.elbowProgress = 0;
+
+        this.scene.tweens.add({
+            targets:       this,
+            elbowProgress: 1,
+            x:             other.x,
+            duration:      380,
+            ease:          'Sine.easeInOut',
+            onComplete: () => {
+                if (this.state !== 'elbowDropping') return;
                 other.stateTimer = DOWN_SEC;
-                this.scene.cameras.main.shake(90, 0.0015);
-            }
-        });
-        this._runPoseSequence(MOVE_DEFS.elbowDrop.poseSeq, () => {
-            if (this.state === 'slamming') this.state = 'standing';
+                this.scene.cameras.main.shake(130, 0.002);
+                // Lie flat for a beat then pop straight back up
+                this.scene.time.delayedCall(110, () => {
+                    if (this.state === 'elbowDropping') {
+                        this.elbowProgress = 0;
+                        this.state         = 'standing';
+                    }
+                });
+            },
         });
     }
 
@@ -558,6 +719,41 @@ export default class Wrestler {
                     });
                 },
             });
+        });
+    }
+
+    _doDive(other) {
+        this.state       = 'diving';
+        this.divProgress = 0;
+        this._divLandY   = other.y;
+
+        this.scene.tweens.add({
+            targets:     this,
+            divProgress: 1,
+            x:           other.x,
+            y:           other.y,
+            duration:    550,
+            ease:        'Sine.easeIn',
+            onComplete: () => {
+                if (this.state !== 'diving') return;
+                const dist = Math.abs(this.x - other.x);
+                const hit  = dist <= 130 * this.s &&
+                             (other.state === 'standing' || other.state === 'down' || other.state === 'staggered');
+                if (hit) {
+                    other._drain(STAMINA_DRAIN.divingElbow);
+                    if (other.state === 'down') {
+                        other.stateTimer = DOWN_SEC;
+                    } else {
+                        other._doSell('sellChest', 150, () => other.startClotheslineFall(this.facing));
+                    }
+                    this.scene.cameras.main.shake(180, 0.003);
+                } else {
+                    this.scene.cameras.main.shake(70, 0.001);
+                }
+                this.state       = 'down';
+                this.stateTimer  = 2.0;
+                this.divProgress = 0;
+            },
         });
     }
 
@@ -687,6 +883,22 @@ export default class Wrestler {
             gfx.fillStyle(0x000000, 0.22 + arcFrac * 0.08);
             gfx.fillEllipse(x, y, (120 + arcFrac * 50) * s, (36 + arcFrac * 10) * s);
             this._drawDropkickFront(x, airY, s, facing, skinCol, trunksCol);
+            return;
+        }
+
+        if (state === 'elbowDropping') {
+            const arcFrac = Math.sin(this.elbowProgress * Math.PI);
+            const airY    = y - arcFrac * 100 * s;
+            gfx.fillStyle(0x000000, 0.22 + arcFrac * 0.08);
+            gfx.fillEllipse(x, y, (120 + arcFrac * 50) * s, (36 + arcFrac * 10) * s);
+            this._drawElbowDropAir(x, airY, s, facing, skinCol, trunksCol);
+            return;
+        }
+
+        if (state === 'diving') {
+            gfx.fillStyle(0x000000, 0.15 + this.divProgress * 0.08);
+            gfx.fillEllipse(x, this._divLandY, (100 + this.divProgress * 60) * s, (30 + this.divProgress * 12) * s);
+            this._drawElbowDropAir(x, y, s, facing, skinCol, trunksCol);
             return;
         }
 
@@ -918,6 +1130,18 @@ export default class Wrestler {
         gfx.fillCircle(headX, y, hR);
     }
 
+    _drawElbowDropAir(x, y, s, facing, skinCol, trunksCol) {
+        // Same front-facing horizontal as the dropkick, with one arm hanging straight down
+        this._drawDropkickFront(x, y, s, facing, skinCol, trunksCol);
+        const torsoW      = 72 * s;
+        const torsoH      = 38 * s;
+        const armW        = 18 * s;
+        const armLen      = 60 * s;
+        const torsoCenter = facing > 0 ? x - torsoW / 2 : x + torsoW / 2;
+        this.gfx.fillStyle(skinCol, 1);
+        this.gfx.fillRect(torsoCenter - armW / 2, y + torsoH / 2, armW, armLen);
+    }
+
     _drawFlat(x, y, s, facing, skinCol, trunksCol) {
         const gfx   = this.gfx;
         const bW    = 200 * s;
@@ -927,6 +1151,19 @@ export default class Wrestler {
         gfx.fillStyle(skinCol,   1); gfx.fillRect(x - bW / 2, y - bH / 2, bW, bH);
         gfx.fillStyle(trunksCol, 1); gfx.fillRect(x - bW * 0.15, y - bH / 2, bW * 0.3, bH);
         gfx.fillStyle(skinCol,   1); gfx.fillCircle(headX, y, 32 * s);
+    }
+
+    _nearCorner() {
+        const corners = [
+            { x: RING.nearLeft.x,  y: RING.ropes[1].nearY, matY: RING.nearLeft.y,  facing:  1 },
+            { x: RING.nearRight.x, y: RING.ropes[1].nearY, matY: RING.nearRight.y, facing: -1 },
+            { x: RING.farLeft.x,   y: RING.ropes[1].farY,  matY: RING.farLeft.y,   facing:  1 },
+            { x: RING.farRight.x,  y: RING.ropes[1].farY,  matY: RING.farRight.y,  facing: -1 },
+        ];
+        for (const c of corners) {
+            if (Phaser.Math.Distance.Between(this.x, this.y, c.x, c.matY) < 70) return c;
+        }
+        return null;
     }
 
     _clamp() {

@@ -14,7 +14,7 @@
 
 const STICK_DEAD = 0.4;
 
-const PAD_BUTTONS = { action: 0, power: 2, finisher: 3 };
+const PAD_BUTTONS = { action: 0, run: 1, power: 2, finisher: 3 };
 const PAD_DPAD    = { up: 12, down: 13, left: 14, right: 15 };
 const PAD_AXIS    = { left: [0, -1], right: [0, 1], up: [1, -1], down: [1, 1] };
 

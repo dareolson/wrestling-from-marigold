@@ -508,6 +508,9 @@ export default class Arena extends Phaser.Scene {
         w1.tickRun(dt);
         w2.tickRun(dt);
 
+        w1.updateCombatBlend(dt, w2);
+        w2.updateCombatBlend(dt, w1);
+
         // Grapple actions — only one can initiate per frame
         const r1 = w1.tryAction(w2);
         const r2 = r1 ? false : w2.tryAction(w1);

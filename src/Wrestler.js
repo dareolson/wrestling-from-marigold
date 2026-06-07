@@ -1,4 +1,5 @@
 import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
+import Skeleton from './Skeleton.js';
 
 const SPEED      = 140;
 const RUN_SPEED  = 340;
@@ -97,20 +98,6 @@ export const MOVE_DEFS = {
                               { p: 'idle',        dur: 190, e: 'Linear'        }] },
 };
 
-// ─── Drawing helper ───────────────────────────────────────────────────────────
-// Returns 4 world-space points for a rotated rectangle.
-// Pivot at top-center; limb hangs downward at `angle` from vertical.
-// angle=0 → straight down; positive → swings right; negative → swings left.
-function limbPts(px, py, w, h, angle) {
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    return [
-        { x: px - w / 2 * cos,           y: py + w / 2 * sin           },
-        { x: px + w / 2 * cos,           y: py - w / 2 * sin           },
-        { x: px + w / 2 * cos + h * sin, y: py - w / 2 * sin + h * cos },
-        { x: px - w / 2 * cos + h * sin, y: py + w / 2 * sin + h * cos },
-    ];
-}
 
 // ─── State machine reference ──────────────────────────────────────────────────
 // 'standing'    default; can move, accept input, initiate moves
@@ -171,9 +158,23 @@ export default class Wrestler {
         this.tauntPose       = 'tauntArmsWide';   // character-specific taunt — override after construction
         this._runStepTimer   = 0;
         this.gfx             = scene.add.graphics();
+        this.skeleton        = new Skeleton(scene, skinCol, trunksCol);
+        this.combatBlend     = 0;
     }
 
     get s() { return perspectiveScale(this.y); }
+
+    // Smoothly ramp combatBlend toward 1 when standing close to the opponent,
+    // toward 0 otherwise. Only active in neutral standing states.
+    updateCombatBlend(dt, opponent) {
+        const NEAR = 130, FAR = 240;
+        const neutralState = this.state === 'standing' || this.state === 'staggered';
+        const dist = Phaser.Math.Distance.Between(this.x, this.y, opponent.x, opponent.y);
+        const target = neutralState
+            ? Math.max(0, Math.min(1, (FAR - dist) / (FAR - NEAR)))
+            : 0;
+        this.combatBlend += (target - this.combatBlend) * Math.min(1, dt * 5);
+    }
 
     // ── Pose helpers ──────────────────────────────────────────────────────────
 
@@ -963,10 +964,12 @@ export default class Wrestler {
 
     draw() {
         const { x, y, s, facing, state, skinCol, trunksCol } = this;
-        const gfx = this.gfx;
+        const gfx   = this.gfx;
+        const depth = 12 + y * 0.03;
         gfx.clear();
-        // 12 + y*0.03: ~19.7 at far edge (behind near ropes at 25), ~25.4 at near edge (in front)
-        gfx.setDepth(12 + y * 0.03);
+        gfx.setDepth(depth);
+        this.skeleton.setDepth(depth);
+        this.skeleton.setVisible(false); // shown only for upright states below
 
         if (state === 'falling' || state === 'risingUp') {
             this._drawFalling(x, y, s, facing, skinCol, trunksCol, this.fallProgress);
@@ -1003,7 +1006,6 @@ export default class Wrestler {
             return;
         }
 
-        // Grabbed — no mat shadow (off the ground during the slam)
         if (state === 'grabbed') {
             if (this.slamType === 'pile' && (this.slamPhase === 'up' || this.slamPhase === 'dropping'))
                 this._drawPiledriverHeld(x, this.slamY, s, skinCol, trunksCol);
@@ -1022,74 +1024,8 @@ export default class Wrestler {
             return;
         }
 
-        this._drawUpright(x, y, s, facing, skinCol, trunksCol);
-    }
-
-    _drawUpright(x, y, s, facing, skinCol, trunksCol) {
-        const gfx = this.gfx;
-        const wp  = this.walkPhase;
-        const p   = this.pose;
-
-        // Side-view proportions: torso is narrow (we see its depth, not its width).
-        // Legs are close together; one arm draws in front of the torso, one behind.
-        const lH   = 88  * s, lW  = 22 * s;
-        const tH   = 112 * s, tW  = 20 * s, trH = 40 * s;
-        const hR   = 34  * s;
-        const aH   = 76  * s, aW  = 18 * s;
-
-        const shinH = lH * 0.72;
-        const bootH = lH * 0.28;
-
-        const MAX_LEG = 0.38;
-        const MAX_ARM = 0.26;
-
-        // Pose angles are facing-relative; facing* converts to screen space.
-        // Walk cycle blends in additively so any pose animates naturally.
-        const swing   = facing * Math.sin(wp);
-        const lLegAng = facing * p.lLeg + swing * MAX_LEG;
-        const rLegAng = facing * p.rLeg - swing * MAX_LEG;
-        const lArmAng = facing * p.lArm - swing * MAX_ARM;
-        const rArmAng = facing * p.rArm + swing * MAX_ARM;
-
-        // In side view both limbs originate from the same center x.
-        // Near/far depth is handled purely by draw order, not x-offset.
-        const hipY      = y - lH;
-        const shoulderY = y - lH - tH + 12 * s;
-
-        // Near/far split: when facing right the left side faces the camera (near),
-        // right side faces away (far). Draw far first so near renders on top.
-        const [farLA, farAA, nearLA, nearAA] =
-            facing >= 0
-                ? [rLegAng, rArmAng, lLegAng, lArmAng]
-                : [lLegAng, lArmAng, rLegAng, rArmAng];
-
-        const boot = (bx, ang) => [
-            bx + Math.sin(ang) * shinH,
-            hipY + Math.cos(ang) * shinH,
-        ];
-
-        // Far leg (behind torso)
-        gfx.fillStyle(skinCol,   1); gfx.fillPoints(limbPts(x, hipY, lW, shinH, farLA), true);
-        gfx.fillStyle(0x181818,  1); gfx.fillPoints(limbPts(...boot(x, farLA), lW + 4 * s, bootH, farLA), true);
-
-        // Far arm (behind torso)
-        gfx.fillStyle(skinCol, 1);
-        gfx.fillPoints(limbPts(x, shoulderY, aW, aH, farAA), true);
-
-        // Trunks + torso
-        gfx.fillStyle(trunksCol, 1); gfx.fillRect(x - tW / 2, y - lH - trH, tW, trH);
-        gfx.fillStyle(skinCol,   1); gfx.fillRect(x - tW / 2, y - lH - tH,  tW, tH - trH);
-
-        // Near leg (in front of torso)
-        gfx.fillStyle(skinCol,   1); gfx.fillPoints(limbPts(x, hipY, lW, shinH, nearLA), true);
-        gfx.fillStyle(0x181818,  1); gfx.fillPoints(limbPts(...boot(x, nearLA), lW + 4 * s, bootH, nearLA), true);
-
-        // Near arm (in front of torso)
-        gfx.fillStyle(skinCol, 1);
-        gfx.fillPoints(limbPts(x, shoulderY, aW, aH, nearAA), true);
-
-        // Head
-        gfx.fillCircle(x, y - lH - tH - hR * 0.7, hR);
+        this.skeleton.setVisible(true);
+        this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, this.combatBlend);
     }
 
     // Narrow side-view of opponent held upside down for piledriver.

@@ -221,16 +221,30 @@ Two wrestlers, movement, ring boundary, grapple system, moves, pin/kickout, stam
 
 **Phase 2 complete.**
 
-### Phase 3 — Full Roster + Polish
+### Phase 3 — Full Roster + Polish (in progress)
 All 6–8 wrestlers with distinct identities, character-specific animations, crowd system, audio, entrances, title screen and menus.
 
+**Built:**
+
+**Skeleton rig** (`src/Skeleton.js`) — replaces Graphics API stick figures with 13 independent Phaser Image game objects per wrestler: far thigh/shin/boot, far upper-arm/forearm, torso, trunks, near thigh/shin/boot, near upper-arm/forearm, head (still a Graphics circle). All body parts are white `sk_pixel` textures tinted with the wrestler's skin/trunks color. Swapping to PNG art = changing the texture key per part.
+
+- Sub-depth layering: far limbs at base depth, torso +0.001, trunks +0.002, near limbs +0.003–0.004, head +0.005 — enforces correct draw order within a wrestler's depth slot
+- `Skeleton.updateUpright(x, y, s, facing, pose, walkPhase, combatBlend)` — positions and rotates all parts each frame
+- Knee joints: shin angle trails thigh during swing phase (`KNEE_BEND = 0.22`) — fades naturally as walkPhase decays when standing
+- Elbow joints: forearm trails upper arm (`ELBOW_LAG = 0.14`) — same fade behaviour
+- `_place(img, px, py, w, h, angle)` / `_end(px, py, h, angle)` helpers chain pivot → endpoint down the limb hierarchy
+- Non-upright states (falling, flat, grabbed, dropkick air, etc.) still use the original Graphics API draw methods — migration deferred to later sessions
+
+**Proximity combat stance** — `Wrestler.updateCombatBlend(dt, opponent)` (called from `Arena._tickGame`) smoothly ramps `combatBlend` 0→1 as wrestlers close within ~240px, reaching full guard at ~130px. `combatBlend = 0` when not in a neutral standing/staggered state. The skeleton blends upper-arm angles toward `facing * 0.60` rad (arms forward at ~34°) and forearm angles toward `facing * 1.50` rad (near-horizontal L-shape guard) — classic wrestling/boxing ready stance as opponents circle each other.
+
+**Still to do in Phase 3:**
 - Character idle personalities — George preening, brawler bouncing on his toes, etc.; tuned per character using the idle pose system from Phase 2
 - Character-specific sell variations — each wrestler reacts to damage differently; a tough babyface eats moves stoically, George is theatrical about everything
 - Taunt personalities — character-specific taunt animations tied to their archetype
 - Crowd heat meter — fed by taunts, big moves, nearfalls; affects crowd audio and energy
 - Two-step grapple system (No Mercy style) — lock up first, then choose the move; worthwhile once each character has 8–10 moves to choose from; revisit when move sets are full
-- Sprite skeleton rig — replace Graphics API figures with PNG body parts; elbow/knee joints added here, not before
-- Piledriver attacker animation — current placeholder reads as the move but needs a proper seated sprite frame; the stick-figure side view can't show "sitting with legs spread" convincingly without a dedicated pose sprite
+- Migrate remaining draw methods (flat, falling, flip, dropkick, elbow air, grabbed/piledriver) to use skeleton parts — enables proper poses for those states and makes PNG swap complete
+- Piledriver attacker animation — needs a proper seated sprite frame; can't be done convincingly without skeleton parts for that state
 - AI live commentary — Claude API called on significant match events (knockdown, near-fall, finisher, pin); each wrestler has a biography and career history in the prompt so the announcer weaves in stories, feuds, and era context rather than just describing moves; commentary streamed to TTS (Web Speech API for dev, ElevenLabs for production); displayed as subtitle captions in the broadcast frame; event log groundwork already in Arena._tickGame from Phase 2
 
 ### Phase 4 — Local Multiplayer

@@ -141,6 +141,7 @@ export default class Wrestler {
         this.runTarget    = 0;
         this.runFacing    = 1;
         this.walkPhase    = 0;
+        this.moveBlend    = 0;
         this.stamina      = STAMINA_MAX;
         this.flipProgress  = 0;
         this.flipDir       = 1;
@@ -225,9 +226,11 @@ export default class Wrestler {
             this.x += (dx / len) * speed;
             this.y += (dy / len) * speed;
             this.walkPhase = (this.walkPhase + SPEED * dt * WALK_FREQ) % (Math.PI * 2);
+            this.moveBlend = Math.min(1, this.moveBlend + dt * 6);
             this._clamp();
         } else {
             this.walkPhase *= Math.pow(0.85, dt * 60);
+            this.moveBlend  = Math.max(0, this.moveBlend - dt * 6);
             // Drift toward character's idle stance while standing still (~1.5s to settle)
             const idleTarget = POSES[this.idlePose] ?? POSES.idle;
             const drift = 1 - Math.pow(0.94, dt * 60);
@@ -283,6 +286,7 @@ export default class Wrestler {
         const dir = Math.sign(this.runTarget - this.x);
         this.x += dir * RUN_SPEED * this.s * dt;
         this.walkPhase = (this.walkPhase + RUN_SPEED * dt * WALK_FREQ) % (Math.PI * 2);
+        this.moveBlend = Math.min(1, this.moveBlend + dt * 8);
 
         const past = dir > 0 ? this.x >= this.runTarget : this.x <= this.runTarget;
         if (!past) return;
@@ -1025,7 +1029,9 @@ export default class Wrestler {
         }
 
         this.skeleton.setVisible(true);
-        this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, this.combatBlend);
+        const bobY = Math.abs(Math.sin(this.walkPhase)) * 6 * s * this.moveBlend;
+        const lean  = this.facing * 0.07 * this.moveBlend;
+        this.skeleton.updateUpright(x, y - bobY, s, facing, this.pose, this.walkPhase, this.combatBlend, lean);
     }
 
     // Narrow side-view of opponent held upside down for piledriver.

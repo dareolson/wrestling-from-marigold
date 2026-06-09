@@ -93,7 +93,7 @@ export default class Skeleton {
         };
     }
 
-    updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0) {
+    updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0) {
         const thighH    = P.thighH    * s;
         const shinH     = P.shinH     * s;
         const bootH     = P.bootH     * s;
@@ -109,6 +109,9 @@ export default class Skeleton {
         const hipY      = y  - (thighH + shinH + bootH);
         const torsoTop  = hipY - torsoH;
         const shoulderY = torsoTop + 12 * s; // arm pivot slightly below torso top
+        // Lean: shift shoulders and head forward in facing direction while hips stay put.
+        const leanX     = Math.sin(lean) * torsoH * 0.6;
+        const shoulderX = x + leanX;
 
         const MAX_LEG   = 0.38;
         const MAX_ARM   = 0.26;
@@ -161,8 +164,8 @@ export default class Skeleton {
         this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, farSA);
 
         // Far arm — upper arm, forearm chained at elbow
-        this._place(this.farUpArm, x, shoulderY, armW, upperArmH, farAA);
-        const farElbow = this._end(x, shoulderY, upperArmH, farAA);
+        this._place(this.farUpArm, shoulderX, shoulderY, armW, upperArmH, farAA);
+        const farElbow = this._end(shoulderX, shoulderY, upperArmH, farAA);
         this._place(this.farForearm, farElbow.x, farElbow.y, armW, forearmH, farFA);
 
         // Torso + trunks — always vertical
@@ -177,15 +180,15 @@ export default class Skeleton {
         this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, nearSA);
 
         // Near arm
-        this._place(this.nearUpArm, x, shoulderY, armW, upperArmH, nearAA);
-        const nearElbow = this._end(x, shoulderY, upperArmH, nearAA);
+        this._place(this.nearUpArm, shoulderX, shoulderY, armW, upperArmH, nearAA);
+        const nearElbow = this._end(shoulderX, shoulderY, upperArmH, nearAA);
         this._place(this.nearForearm, nearElbow.x, nearElbow.y, armW, forearmH, nearFA);
 
-        // Head — circle centered above torso top
+        // Head — circle centered above torso top, follows shoulder lean
         const headY = torsoTop - headR * 0.7;
         this.head.clear();
         this.head.fillStyle(this._headCol, 1);
-        this.head.fillCircle(x, headY, headR);
+        this.head.fillCircle(shoulderX, headY, headR);
     }
 
     destroy() {

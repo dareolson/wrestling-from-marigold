@@ -237,6 +237,50 @@ All 6–8 wrestlers with distinct identities, character-specific animations, cro
 
 **Proximity combat stance** — `Wrestler.updateCombatBlend(dt, opponent)` (called from `Arena._tickGame`) smoothly ramps `combatBlend` 0→1 as wrestlers close within ~240px, reaching full guard at ~130px. `combatBlend = 0` when not in a neutral standing/staggered state. The skeleton blends upper-arm angles toward `facing * 0.60` rad (arms forward at ~34°) and forearm angles toward `facing * 1.50` rad (near-horizontal L-shape guard) — classic wrestling/boxing ready stance as opponents circle each other.
 
+**Movement naturalness — 2026-06-08:**
+
+Three techniques implemented to eliminate the "gliding on ice" look:
+
+1. **Vertical body bob** (`Wrestler.js` draw) — `bobY = abs(sin(walkPhase)) * 6 * s * moveBlend` subtracted from Y before passing to skeleton. Produces two bobs per stride (one per step plant). Shadow stays anchored at ground Y. `moveBlend` (new field, 0→1 driven in `tickStanding`/`tickRun`) gates the effect so it fades in/out smoothly when starting and stopping.
+
+2. **Torso lean** (`Skeleton.js` `updateUpright`) — new `lean` param (default 0). `leanX = sin(lean) * torsoH * 0.6` shifts `shoulderX` forward from the hip pivot. Arms and head follow `shoulderX`; legs and trunks stay at `x`. Lean value = `facing * 0.07 * moveBlend` — about 4° forward in direction of travel, fades to upright at rest.
+
+3. **`moveBlend` signal** (`Wrestler.js`) — `this.moveBlend` ramps up at `dt*6` when moving, down at `dt*6` when stopped (run: `dt*8`). Used by both bob and lean so all secondary motion shares a single smooth gate.
+
+**Next movement step** — proper foot planting (currently both feet arc continuously like swimming). Technique: store each foot's world-space position; trigger a step when the foot drifts past a distance threshold; lerp to new position along a parabolic arc (`midPos = start + (end-start)/2 + (0, stepHeight)`); alternate feet so one completes before the other begins. See research reference below.
+
+---
+
+### Movement Animation Research Reference
+
+Compiled 2026-06-08. Sources used to plan natural character movement.
+
+**Trifox devlog** — https://www.trifox-game.com/exploring-procedural-animation-in-trifox/
+Best single reference for foot planting + body bob. Key techniques:
+- Bob = average current height of each foot relative to base height → use as vertical offset each frame
+- Weight shift = average angle offsets of all feet relative to root position; apply as torso rotation with dampening
+- Foot planting: compare foot distance from reference position; trigger step when threshold exceeded; overshoot = `referencePosition + movementDirection × predictionOffset`; lift arc = normalized vertical offset curve at lerp progress 0→1 (foot lifts then plants)
+- Directional offset curves via dot product — backward step allows greater extension than forward
+
+**Rain World procedural animation** (Merxon22, Medium) — https://medium.com/@merxon22/recreating-rain-worlds-2d-procedural-animation-part-2-f5faef82aa50
+Best for balance-based stepping logic:
+- Balance check: `isBalanced = centerOfMass.x is between leftFoot.x and rightFoot.x`; when center of mass exits range, trigger step
+- Overshoot factor (0.8): plant foot slightly ahead of center of mass to anticipate momentum
+- Step easing: sigmoid `1 / (1 + exp(-10 * (x - 0.5)))` for natural ease-in/ease-out
+- Parabolic foot arc: `midPos = startPos + posDiff/2 + (0, stepSize * 0.8)` — nested lerp for quadratic Bézier
+
+**Little Polygon procedural locomotion** — https://blog.littlepolygon.com/posts/loco1/
+Best for body lean and hip sway math:
+- Lean = cross product of up vector with acceleration → quaternion → damped spring (0.25s), max 45°, multiplier 0.64
+- Hip vertical bob: `HipOffset.Z = amplitude * sin(phase * 2π)`, phase advances with normalized speed; amplitude 20 units, bias -17 units
+- Hip lateral sway at half bob frequency: `HipRotation.Roll = rollMag * sin(0.5 * phase * 2π)`, 8° max
+- All secondary amplitude modulated by stick tilt magnitude, filtered through damped spring
+
+**Alan Zucconi — Introduction to Procedural Animations** — https://www.alanzucconi.com/2017/04/17/procedural-animations/
+Good conceptual overview. Key: Rain World and Grow Home use hybrid approach — specific endpoints moved by code, remaining joints linked by hinge constraints.
+
+---
+
 **Still to do in Phase 3:**
 - Character idle personalities — George preening, brawler bouncing on his toes, etc.; tuned per character using the idle pose system from Phase 2
 - Character-specific sell variations — each wrestler reacts to damage differently; a tough babyface eats moves stoically, George is theatrical about everything

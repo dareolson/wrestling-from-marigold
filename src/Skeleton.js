@@ -150,18 +150,33 @@ export default class Skeleton {
             rForearmAng = rForearmAng + (GUARD_FORE - rForearmAng) * b;
         }
 
+        // Arms hang slightly in front of the body's centerline — breaks perfect mirror symmetry
+        // and gives the forward-swinging arm more reach than the backward-swinging arm.
+        const ARM_FWD = facing * 0.09;
+        lArmAng     += ARM_FWD;
+        rArmAng     += ARM_FWD;
+        lForearmAng += ARM_FWD;
+        rForearmAng += ARM_FWD;
+
         // Far side is behind torso, near side in front — draw far first.
         const [farLA, farSA, farAA, farFA, nearLA, nearSA, nearAA, nearFA] =
             facing >= 0
                 ? [rLegAng, rShinAng, rArmAng, rForearmAng, lLegAng, lShinAng, lArmAng, lForearmAng]
                 : [lLegAng, lShinAng, lArmAng, lForearmAng, rLegAng, rShinAng, rArmAng, rForearmAng];
 
+        // Boot flattening: when a leg is in its planted/push-off phase the boot sole should
+        // sit flat rather than tip backward with the shin. sinWP*facing > 0 = far leg planted.
+        const farPlantDepth  = Math.max(0,  sinWP * facing);
+        const nearPlantDepth = Math.max(0, -sinWP * facing);
+        const farBootAng  = farSA  * Math.max(0.25, 1 - farPlantDepth  * 0.75);
+        const nearBootAng = nearSA * Math.max(0.25, 1 - nearPlantDepth * 0.75);
+
         // Far leg — thigh, shin, boot chained at knee then ankle
         this._place(this.farThigh, x, hipY, legW, thighH, farLA);
         const farKnee  = this._end(x, hipY, thighH, farLA);
         this._place(this.farShin, farKnee.x, farKnee.y, legW, shinH, farSA);
         const farAnkle = this._end(farKnee.x, farKnee.y, shinH, farSA);
-        this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, farSA);
+        this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, farBootAng);
 
         // Far arm — upper arm, forearm chained at elbow
         this._place(this.farUpArm, shoulderX, shoulderY, armW, upperArmH, farAA);
@@ -177,7 +192,7 @@ export default class Skeleton {
         const nearKnee  = this._end(x, hipY, thighH, nearLA);
         this._place(this.nearShin, nearKnee.x, nearKnee.y, legW, shinH, nearSA);
         const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, nearSA);
-        this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, nearSA);
+        this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, nearBootAng);
 
         // Near arm
         this._place(this.nearUpArm, shoulderX, shoulderY, armW, upperArmH, nearAA);

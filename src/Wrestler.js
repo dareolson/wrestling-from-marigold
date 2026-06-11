@@ -1,11 +1,12 @@
 import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
-import Skeleton from './Skeleton.js';
+import Skeleton, { GAIT } from './Skeleton.js';
 
 const SPEED      = 140;
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
 const STAGGER_SEC = 0.9; // how long a stagger lasts before recovering to standing
-const WALK_FREQ  = 0.05; // radians per unscaled pixel of travel
+// Derived so a planted foot stays world-locked (no skating) — see Skeleton GAIT.
+const WALK_FREQ  = GAIT.WALK_FREQ; // radians per unscaled pixel of travel
 
 // ─── Stamina ─────────────────────────────────────────────────────────────────
 const STAMINA_MAX      = 100;
@@ -1029,9 +1030,10 @@ export default class Wrestler {
         }
 
         this.skeleton.setVisible(true);
-        const bobY = Math.abs(Math.sin(this.walkPhase)) * 6 * s * this.moveBlend;
-        const lean  = this.facing * 0.07 * this.moveBlend;
-        this.skeleton.updateUpright(x, y - bobY, s, facing, this.pose, this.walkPhase, this.combatBlend, lean);
+        // Body bob is no longer bolted on here — it emerges from the gait leg geometry
+        // inside the skeleton (hip rides the weight-bearing leg). Just pass moveBlend.
+        const lean = this.facing * 0.07 * this.moveBlend;
+        this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, this.combatBlend, lean, this.moveBlend);
     }
 
     // Narrow side-view of opponent held upside down for piledriver.

@@ -242,6 +242,32 @@ Removed continuous walkPhase advance from `move()` and `tickRun()`. Instead: eac
 
 ---
 
+### 2026-06-10 (cont.) — Foot-Locking IK Gait (4th attempt — the real fix)
+
+**Goal:** Stop the "swimming feet" once and for all. Diagnosed *why* the previous three attempts failed and rebuilt the walk on the canonical technique.
+
+**Root-cause diagnosis (the thing the earlier attempts missed):**
+The legs were a pair of compass arms hinged at one pin (`wrestler.x`), driven by a pure symmetric `sin(walkPhase)`. A pure sine makes the stance and swing halves identical, so the foot is *always* sliding and never sticks to the mat — that's the swimming. And the earlier foot-planting attempts tried to plant feet at world positions **without giving the legs real IK**, so a planted foot was just a straight skin-colored pole = invisible splay, not a leg. Researched the canonical fix (Little Polygon two-bone IK, Rain World / Overgrowth foot-ellipse, Trifox foot-planting).
+
+**Built (`src/Skeleton.js`):**
+- **Foot-locking gait** (`footGait`) — each foot has a real cycle: a **stance** phase where it's planted and sweeps backward at exactly ground speed, and a **swing** phase where it lifts in a sine arc and eases forward to re-plant ahead. Two feet half a cycle apart.
+- **Stride tuned so the foot can't skate.** `WALK_FREQ` is now *derived*, not guessed: `STANCE·2π / STRIDE`. That makes the planted foot's backward sweep exactly cancel body forward speed — verified **0.0000px world-drift within a stance**, and it's speed-independent so the lock holds at run pace too. `GAIT` constants live at the top of Skeleton.js (STRIDE/STANCE/LIFT) and `Wrestler.js` imports `GAIT.WALK_FREQ`.
+- **Two-bone IK** (`solveLeg`, law of cosines) — knee solved from hip→foot, pointing forward. This is what was missing; the knee now bends properly so the leg reads as a leg.
+- **Body bob is emergent**, not bolted on — the hip rides whichever leg bears weight (`hipY = ankleGround − min(legReach)`), so it dips at footfall and peaks at passing automatically. Removed the old `abs(sin)` bob from Wrestler.js.
+- **Moves untouched** — pose-driven leg stances (slam, lockup, sleeper, etc.) keep the original FK path. Gait only runs when walking or plain idle (`useGait = moveBlend > 0.2 || legs-idle`).
+
+**Fixed a pre-existing crash:** the committed code (`c1e7cb2`) was black-screen-on-load — the reverted attempt-3 deleted `updateFeet()` from Wrestler.js but left two calls to it in `Arena._tickGame`. Removed the dead calls; the new gait tracks feet internally.
+
+**Tuning still in progress (NOT yet visually signed off):**
+- Tried dark "tights" leg tint to fix the skin-on-gray-mat invisibility — user rejected it (looked worse), reverted to skin. **The mat-contrast readability problem is still open** and should be solved with the real PNG art (DRAWING_GUIDE), not by recoloring blocks.
+- Tried a stance-width split (near leg lower/closer, far higher) — it scattered the leg blocks to different heights and looked broken; reverted to single-hip.
+- Boot was rotating into a floating diamond (`facing·0.9`); now continues the shin line with a small toe.
+- Current constants: STRIDE 56, STANCE 0.55, LIFT 22 → WALK_FREQ ≈ 0.062. Earlier 42px stride made cadence too fast (user feedback); 64px lunged. 56 is the current compromise — **needs eyeball confirmation next session.**
+
+**State at session end:** Math verified (lock = 0px, hips above feet, knees bend, no IK clamping). Renders without crashing. Walk legibility against the mat is the open item — judge the silhouette against the dark crowd until real leg art exists.
+
+---
+
 ## Phase Roadmap
 
 ### Phase 1 — Proof of Concept ✓

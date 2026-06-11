@@ -207,6 +207,41 @@
 
 ---
 
+### 2026-06-10 — Skeleton Rig + Foot Planting Attempts
+
+**Goal:** Replace Graphics stick-figure with per-part Image skeleton, then implement foot planting so feet feel grounded rather than "swimming."
+
+**Built:**
+
+**Skeleton rig** (`src/Skeleton.js`)
+- 13 Phaser Image game objects per wrestler — white `sk_pixel` (2×2) texture tinted per part
+- Parts: farThigh/Shin/Boot, farUpArm/Forearm, torso, trunks, nearThigh/Shin/Boot, nearUpArm/Forearm, head (Graphics circle)
+- `_place(img, px, py, w, h, angle)` — pivot at `setOrigin(0.5, 0)` (top-center), rotated; `_end()` computes chain endpoint
+- `updateUpright(x, y, s, facing, pose, walkPhase, combatBlend, lean)` — full FK leg/arm chain each frame
+- Knee bend (KNEE_BEND=0.22) and elbow lag (ELBOW_LAG=0.14) — shin/forearm trail the thigh/upper-arm during swing
+- Boot flattening — planted foot's boot sits flat rather than tipping backward with shin
+- Sub-depth layering: far→torso→near→head within each wrestler depth slot
+- Combat guard blend: arms tween from idle → L-shape guard (upper 0.60 rad, forearm 1.50 rad) as opponents close within 240px
+- Lean: shoulders/head shift forward in facing direction while hips stay put
+- ARM_FWD offset (0.09 rad) breaks perfect left/right symmetry
+
+**Foot planting — three attempts, all reverted**
+
+*Attempt 1 — Two-bone IK (law-of-cosines):*
+Added `_solveIK` to Skeleton, passed foot world-space positions from Wrestler. Root cause failure: both thighs originate at `wrestler.x` (body center). Foot targets at `wrestler.x ± STRIDE` forced extreme outward thigh angles. Skin-colored thigh/shin segments spread across the mat, invisible against the similar gray. Reverted.
+
+*Attempt 2 — Base-angle + fixed shin offset:*
+Replaced law-of-cosines with `thighAngle = baseAngle + kneeSide * 0.18`. Looked worse — wrestler hopped, no walk cycle, 3 floating boot squares. Reverted.
+
+*Attempt 3 — FK phase gating (step-event-driven walkPhase):*
+Removed continuous walkPhase advance from `move()` and `tickRun()`. Instead: each foot step fires `_walkTarget += π`; walkPhase chases `_walkTarget` at π/STEP_DUR per second. Goal: one half-sine bump per step, legs vertical between steps. Result: legs vibrated rapidly and knees splayed in opposite directions. Steps fire too fast relative to the phase-chase rate, especially at run speed. Reverted — walkPhase advance restored to both `move()` and `tickRun()`.
+
+**Current state:** Skeleton rig fully working with original FK walk cycle. `_feet` tracking infrastructure remains in Wrestler.js (decoupled from rendering). `updateFeet()` called each frame from Arena but has no visual effect.
+
+**Root constraint (important for future attempts):** Both legs are drawn from `wrestler.x`. Any system that spreads feet wide of center makes the thigh/shin invisible against the mat. Future foot planting approaches must either: keep feet near-vertical (very small stride), or rework the skeleton to use split hip X positions, or accept that planting is purely a phase/timing effect rather than world-space positioning.
+
+---
+
 ## Phase Roadmap
 
 ### Phase 1 — Proof of Concept ✓

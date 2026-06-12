@@ -138,7 +138,7 @@ export default class Skeleton {
     // Place a limb Image: pivot at top-center (origin 0.5, 0), rotated by angle.
     _place(img, px, py, w, h, angle) {
         img.setPosition(px, py)
-           .setRotation(angle)
+           .setRotation(-angle)
            .setDisplaySize(Math.max(1, w), Math.max(1, h));
     }
 
@@ -150,7 +150,7 @@ export default class Skeleton {
         };
     }
 
-    updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0) {
+    updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
         const thighH    = P.thighH    * s;
         const shinH     = P.shinH     * s;
         const bootH     = P.bootH     * s;
@@ -202,14 +202,17 @@ export default class Skeleton {
         const leanX     = Math.sin(lean) * torsoH * 0.6;
         const shoulderX = x + leanX;
 
-        const MAX_ARM   = 0.26;
-        const ELBOW_LAG = 0.14; // max forearm trail behind upper arm during swing
+        const MAX_ARM = 0.26;
 
-        // Upper-arm angles — pose + counter-swing against the legs.
-        let lArmAng = facing * pose.lArm - swing * MAX_ARM;
-        let rArmAng = facing * pose.rArm + swing * MAX_ARM;
-        let lForearmAng = lArmAng + facing * sinWP * ELBOW_LAG;
-        let rForearmAng = rArmAng - facing * sinWP * ELBOW_LAG;
+        // Walk gets a wider swing arc; run stays controlled (fades out as runBlend rises).
+        const walkSwing = 1 - runBlend;
+        const armSwing  = MAX_ARM * (1 + runBlend * 0.35 + walkSwing * 0.50);
+        let lArmAng = facing * pose.lArm - swing * armSwing;
+        let rArmAng = facing * pose.rArm + swing * armSwing;
+        // Walk: mild arm-tracking so forearm swings back with the arm and folds
+        // slightly inward on the upswing — run elbow code below overrides at runBlend→1.
+        let lForearmAng = lArmAng * 1.1 + facing * 0.10;
+        let rForearmAng = rArmAng * 1.1 + facing * 0.10;
 
         // Combat-ready guard: arms come up and forward as opponents close in.
         if (combatBlend > 0) {
@@ -220,6 +223,15 @@ export default class Skeleton {
             rArmAng = rArmAng + (GUARD_UPPER - rArmAng) * b;
             lForearmAng = lForearmAng + (GUARD_FORE - lForearmAng) * b;
             rForearmAng = rForearmAng + (GUARD_FORE - rForearmAng) * b;
+        }
+
+        // Running: forearm folds forward on the upswing, swings back on the backstroke.
+        // The lArmAng * 0.7 term lets the forearm track the arm's backward travel so
+        // it doesn't always stay in front.
+        if (runBlend > 0) {
+            const RUN_ELBOW = Math.PI * 0.13;
+            lForearmAng += (lArmAng * 2.3 + facing * RUN_ELBOW - lForearmAng) * runBlend;
+            rForearmAng += (rArmAng * 2.3 + facing * RUN_ELBOW - rForearmAng) * runBlend;
         }
 
         // Arms hang slightly in front of the centerline — breaks mirror symmetry.
@@ -238,8 +250,8 @@ export default class Skeleton {
         let far, near;
         if (useGait) {
             // Two feet half a cycle apart, knees solved by IK. A=near, B=far.
-            far  = this._gaitLeg(footB, facing, x, hipY, ankleGndY, thighH, shinH, s);
-            near = this._gaitLeg(footA, facing, x, hipY, ankleGndY, thighH, shinH, s);
+            far  = this._gaitLeg(footB, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale);
+            near = this._gaitLeg(footA, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale);
         } else {
             // Original pose-driven FK (move stances). Preserves the facing-based
             // far/near mapping and per-leg swing alternation exactly as before.
@@ -300,9 +312,9 @@ export default class Skeleton {
 
     // Gait leg: foot target from footGait, knee solved by two-bone IK. The planted
     // boot rolls flat-forward over the ball of the foot; the swing boot trails the shin.
-    _gaitLeg(foot, facing, x, hipY, ankleGndY, thighH, shinH, s) {
+    _gaitLeg(foot, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale = 1) {
         const footX = x + facing * foot.fx * s;
-        const footY = ankleGndY - foot.lift * s;
+        const footY = ankleGndY - foot.lift * s * liftScale;
         const { thighAng, shinAng } = solveLeg(x, hipY, footX, footY, thighH, shinH, facing);
         // Boot continues the line of the shin (no kink so it never reads as a detached
         // block) with just a small forward toe.

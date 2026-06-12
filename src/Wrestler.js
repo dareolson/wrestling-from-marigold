@@ -226,7 +226,9 @@ export default class Wrestler {
             const speed = SPEED * this.s * dt;
             this.x += (dx / len) * speed;
             this.y += (dy / len) * speed;
-            this.walkPhase = (this.walkPhase + SPEED * dt * WALK_FREQ) % (Math.PI * 2);
+            const backward = dx !== 0 && Math.sign(dx) !== this.facing;
+            const phaseDir = backward ? -1 : 1;
+            this.walkPhase = ((this.walkPhase + phaseDir * SPEED * dt * WALK_FREQ) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
             this.moveBlend = Math.min(1, this.moveBlend + dt * 6);
             this._clamp();
         } else {
@@ -286,7 +288,7 @@ export default class Wrestler {
 
         const dir = Math.sign(this.runTarget - this.x);
         this.x += dir * RUN_SPEED * this.s * dt;
-        this.walkPhase = (this.walkPhase + RUN_SPEED * dt * WALK_FREQ) % (Math.PI * 2);
+        this.walkPhase = (this.walkPhase + RUN_SPEED * dt * WALK_FREQ * 0.8) % (Math.PI * 2);
         this.moveBlend = Math.min(1, this.moveBlend + dt * 8);
 
         const past = dir > 0 ? this.x >= this.runTarget : this.x <= this.runTarget;
@@ -473,14 +475,14 @@ export default class Wrestler {
 
         if (this._ropeLevel === 2) {
             // Top rope: only onto downed or possum opponent
-            if (other.state !== 'down' && other.state !== 'possum') { this._climbDown(); return false; }
-            if (dist > 560 * this.s) { this._climbDown(); return false; }
+            if (other.state !== 'down' && other.state !== 'possum') return false;
+            if (dist > 560 * this.s) return false;
             this._doTopDive(other);
             return 'topDive';
         }
 
         // Middle rope
-        if (dist > 350 * this.s) { this._climbDown(); return false; }
+        if (dist > 350 * this.s) return false;
         this._doDive(other);
         return 'dive';
     }
@@ -968,7 +970,11 @@ export default class Wrestler {
     // ── Drawing ───────────────────────────────────────────────────────────────
 
     draw() {
-        const { x, y, s, facing, state, skinCol, trunksCol } = this;
+        const { x, y, facing, state, skinCol, trunksCol } = this;
+        // On ropes, size is locked to the corner's mat depth — climbing up the post
+        // doesn't move the wrestler deeper into the ring.
+        const onRopes = (state === 'climbing' || state === 'onTurnbuckle') && this._corner;
+        const s = onRopes ? perspectiveScale(this._corner.matY) : this.s;
         const gfx   = this.gfx;
         const depth = 12 + y * 0.03;
         gfx.clear();
@@ -1021,8 +1027,9 @@ export default class Wrestler {
             return;
         }
 
+        const shadowY = onRopes ? this._corner.matY : y;
         gfx.fillStyle(0x000000, 0.22);
-        gfx.fillEllipse(x, y, 120 * s, 36 * s);
+        gfx.fillEllipse(x, shadowY, 120 * s, 36 * s);
 
         if (state === 'down' || state === 'pinned' || state === 'possum') {
             this._drawFlat(x, y, s, facing, skinCol, trunksCol);
@@ -1032,8 +1039,10 @@ export default class Wrestler {
         this.skeleton.setVisible(true);
         // Body bob is no longer bolted on here — it emerges from the gait leg geometry
         // inside the skeleton (hip rides the weight-bearing leg). Just pass moveBlend.
-        const lean = this.facing * 0.07 * this.moveBlend;
-        this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, this.combatBlend, lean, this.moveBlend);
+        const lean      = this.facing * 0.07 * this.moveBlend;
+        const liftScale = state === 'running' ? 1.0 : 0.5;
+        const runBlend  = state === 'running' ? this.moveBlend : 0;
+        this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, this.combatBlend, lean, this.moveBlend, liftScale, runBlend);
     }
 
     // Narrow side-view of opponent held upside down for piledriver.
@@ -1205,8 +1214,10 @@ export default class Wrestler {
             { x: RING.farLeft.x,   y: RING.ropes[1].farY,  topY: RING.ropes[2].farY,  matY: RING.farLeft.y,   facing:  1 },
             { x: RING.farRight.x,  y: RING.ropes[1].farY,  topY: RING.ropes[2].farY,  matY: RING.farRight.y,  facing: -1 },
         ];
+        const b = ringBoundsAtY(this.y);
         for (const c of corners) {
-            if (Phaser.Math.Distance.Between(this.x, this.y, c.x, c.matY) < 70) return c;
+            const edgeX = c.facing > 0 ? b.left : b.right;
+            if (Math.abs(this.x - edgeX) < 35 && Math.abs(this.y - c.matY) < 40) return c;
         }
         return null;
     }

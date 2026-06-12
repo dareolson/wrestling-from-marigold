@@ -342,6 +342,28 @@ Good conceptual overview. Key: Rain World and Grow Home use hybrid approach — 
 
 ---
 
+**Movement animation tuning — 2026-06-12:**
+
+Four gait refinements made during this session:
+
+1. **Backward walk gait** (`Wrestler.js` `move()`) — added `backward` detection: if `dx !== 0` and `Math.sign(dx) !== this.facing`, phase advances in reverse (`phaseDir = -1`). Feet now step correctly rearward rather than doing a forward stride played backward.
+
+2. **Walk vs run knee lift** (`Skeleton.js` `_gaitLeg`, `Wrestler.js` `draw()`) — new `liftScale` param (0.5 walk, 1.0 run). Walk no longer over-lifts knees; the high knee snap is now exclusively a running characteristic. `runBlend` param (0→1) also passed for arm differentiation.
+
+3. **Run arm elbows** (`Skeleton.js` `updateUpright`) — running forearm now tracks arm swing: `lArmAng * 2.3 + facing * RUN_ELBOW`. The `lArmAng * k` term goes negative when the arm swings back, pulling the elbow behind the body. Walk gets a milder version: `lArmAng * 1.1 + facing * 0.10`. Both eliminated the "arms always in front" problem.
+
+4. **Leg segment rendering root cause** (`Skeleton.js` `_place()`) — discovered Phaser's `applyITRS` puts the bottom of a rotated image at `(px − h·sin(rotation), py + h·cos(rotation))`. The existing code used `setRotation(angle)` (skeleton convention: 0=down, positive=right), but Phaser expected the negated angle. Every limb's endpoint was mirrored on x, causing segments to fly apart at any non-zero angle. Fix: `setRotation(-angle)`. One character change; large visible impact.
+
+**Turnbuckle system tuning — 2026-06-12:**
+
+1. **Corner climb trigger** (`Wrestler.js` `_nearCorner()`) — replaced absolute corner-post distance check with rope-boundary check. Old code: `abs(this.x - c.x) < 28`. Near corners (x=40, x=920) are at the ring's widest point; the ring clamp keeps the player ≥20px from the boundary at y=425, placing them ~38px from the post — over the 28px threshold. Fix: compute `ringBoundsAtY(this.y)`, then check `abs(this.x - edgeX) < 35` where `edgeX` is the left or right boundary. This is geometrically correct at all depths. `dy` threshold: `abs(this.y - c.matY) < 40`.
+
+2. **Top rope auto-bail** (`Wrestler.js` `tryDive()`) — pressing attack while on the top rope when opponent is out of range/position previously called `_climbDown()`. Fixed to `return false` so the player holds position and waits.
+
+3. **Turnbuckle scale fix** (`Wrestler.js` `draw()`) — climbing up the post was shrinking the wrestler by half at the middle rope and again at the top because `perspectiveScale(y)` was evaluated at the tween's animated y (rope y values: 316 mid, 251 top vs 445 mat). Fix: during `climbing` and `onTurnbuckle` states, lock scale to `perspectiveScale(this._corner.matY)` — the wrestler's depth in the ring doesn't change when ascending the post. Shadow also anchored to `corner.matY` so it stays on the mat.
+
+---
+
 **Still to do in Phase 3:**
 - Character idle personalities — George preening, brawler bouncing on his toes, etc.; tuned per character using the idle pose system from Phase 2
 - Character-specific sell variations — each wrestler reacts to damage differently; a tough babyface eats moves stoically, George is theatrical about everything

@@ -4,7 +4,6 @@ import Skeleton, { GAIT } from './Skeleton.js';
 const SPEED      = 140;
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
-const STAGGER_SEC = 0.9; // how long a stagger lasts before recovering to standing
 // Derived so a planted foot stays world-locked (no skating) — see Skeleton GAIT.
 const WALK_FREQ  = GAIT.WALK_FREQ; // radians per unscaled pixel of travel
 
@@ -21,6 +20,8 @@ const STAMINA_DRAIN    = {    // drained from the DEFENDER on each move landing
     elbowDrop:         10,
     doubleAxeHandle:   12,
     sleeperHold:       18, // total drained if hold runs full duration
+    headlock:         3.0, // per second (applied in Arena._tickHeadlock)
+    armDrag:          14,
     suplex:            20,
     divingElbow:       18,
     topDive:           28,
@@ -35,29 +36,60 @@ const KICKOUT_FLOOR = 15;
 export const POSES = {
     idle:        { lLeg: 0,     rLeg: 0,     lArm: 0,     rArm: 0     },
     grapple:     { lLeg: 0.12,  rLeg:-0.08,  lArm: 0.50,  rArm: 0.18  },
-    slamHold:    { lLeg:-0.15,  rLeg: 0.28,  lArm: 0.58,  rArm: 0.58  },
-    slamThrow:   { lLeg: 0.42,  rLeg:-0.20,  lArm: 1.00,  rArm: 0.72  },
-    whipRelease: { lLeg: 0.18,  rLeg: 0.10,  lArm: 0.65,  rArm: 0.22  },
-    clothesline: { lLeg:-0.12,  rLeg: 0.32,  lArm: 1.05,  rArm:-0.18  },
+    slamHold:    { lLeg: 0.20,  rLeg:-0.22,  lArm: 2.80,  rArm: 2.80  }, // arms straight overhead, wide stance
+    slamThrow:   { lLeg: 0.50,  rLeg:-0.28,  lArm: 1.30,  rArm: 1.00  }, // follow-through as opponent is driven down
+    whipRelease: { lLeg: 0.22,  rLeg: 0.12,  lArm: 0.88,  rArm: 0.30  },
+    clothesline: { lLeg:-0.15,  rLeg: 0.38,  lArm: 1.18,  rArm:-0.28  },
     pinHold:     { lLeg: 0.28,  rLeg: 0.28,  lArm: 0.30,  rArm:-0.30  },
     elbowRaise:  { lLeg: 0.10,  rLeg: 0.05,  lArm:-1.40,  rArm: 0.15  },
     elbowImpact: { lLeg: 0.08,  rLeg: 0.06,  lArm:-0.08,  rArm: 0.08  },
     dropkick:    { lLeg: 0.80,  rLeg: 0.65,  lArm:-0.50,  rArm:-0.50  },
-    stumble:     { lLeg: 0.20,  rLeg:-0.15,  lArm:-0.35,  rArm: 0.35  },
+    stumble:     { lLeg: 0.24,  rLeg:-0.20,  lArm:-0.55,  rArm: 0.55  }, // landing recovery — arms wide for balance
     sleeperHold: { lLeg: 0.08,  rLeg:-0.05,  lArm: 1.40,  rArm: 0.30  },
     sleeping:    { lLeg:-0.08,  rLeg:-0.04,  lArm:-0.50,  rArm:-0.45  },
-    pileSit:        { lLeg: 1.25,  rLeg: 1.15,  lArm:-0.28,  rArm:-0.22  }, // seated impact — legs shoot nearly horizontal, arms back
-    stagger:        { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.55,  rArm:-0.48  }, // stumbles back, both arms fly up in surprise
-    jab:            { lLeg: 0.10,  rLeg:-0.05,  lArm: 0.78,  rArm:-0.18  }, // near arm punches forward, far arm pulls back
-    headbutt:       { lLeg: 0.28,  rLeg: 0.12,  lArm: 0.22,  rArm: 0.18  }, // whole body lunges forward, head leads
-    sellChest:      { lLeg:-0.06,  rLeg: 0.05,  lArm:-0.70,  rArm:-0.62  }, // chest impact — both arms whip back violently
-    sellHead:       { lLeg: 0.04,  rLeg: 0.04,  lArm:-0.38,  rArm:-0.32  }, // head strike — hands fly up toward face
+    pileSit:        { lLeg: 0.55,  rLeg: 0.50,  lArm:-0.20,  rArm:-0.16  }, // seated after piledriver — legs spread forward, arms low at sides
+    stagger:        { lLeg:-0.14,  rLeg: 0.12,  lArm: 0.22,  rArm: 0.18  }, // mild — slight lurch, arms loose
+    staggerMed:     { lLeg:-0.24,  rLeg: 0.20,  lArm: 0.55,  rArm: 0.45  }, // hurting — deeper stumble, arms flailing
+    staggerHeavy:   { lLeg:-0.34,  rLeg: 0.28,  lArm: 0.90,  rArm: 0.72  }, // badly hurt — near-buckle, arms way out
+    staggerCollapse:{ lLeg:-0.42,  rLeg: 0.36,  lArm: 1.18,  rArm: 0.96  }, // critical — knees nearly giving, arms thrown wide
+    staggerBack:    { lLeg: 0.20,  rLeg:-0.16,  lArm:-0.38,  rArm:-0.30  }, // counter-sway — reeling back the other way
+    jab:            { lLeg: 0.18,  rLeg:-0.12,  lArm: 1.00,  rArm:-0.35  }, // near arm punches forward, far arm pulls back
+    headbutt:       { lLeg: 0.38,  rLeg: 0.15,  lArm: 0.30,  rArm: 0.25  }, // whole body lunges forward, head leads
+    sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82  }, // chest impact — both arms whip back violently
+    sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55  }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18  }, // guard stance — weight forward, fists up
     powerIdle:      { lLeg: 0.10,  rLeg:-0.09,  lArm: 0.10,  rArm: 0.07  }, // wide, imposing — arms hanging low
-    tauntArmsWide:  { lLeg: 0.14,  rLeg:-0.12,  lArm:-0.82,  rArm:-0.75  }, // arms raised wide, legs spread
+    tauntArmsWide:  { lLeg: 0.22,  rLeg:-0.20,  lArm: 2.20,  rArm: 2.00  }, // arms raised wide above shoulder, legs spread
+    ropeOneTaunt:   { lLeg: 0.08,  rLeg:-0.06,  lArm: 1.80,  rArm:-1.80  }, // one arm raised to crowd, other grips rope
     axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10  }, // arms raised overhead — near arm slightly forward, far arm slightly back, peak above head
     axeHandleDown:  { lLeg: 0.30,  rLeg: 0.18,  lArm: 1.20,  rArm: 1.15  }, // whole body lurching forward, arms smashing down at ~40° below horizontal
+    axeHandleImpact:{ lLeg: 0.34,  rLeg: 0.24,  lArm: 0.70,  rArm: 0.65  }, // arms at impact depth, body weight fully dropped
+    axeHandleFollow:{ lLeg: 0.38,  rLeg: 0.28,  lArm: 0.38,  rArm: 0.35  }, // momentum carries arms past, hunched over
     lockup:         { lLeg: 0.18,  rLeg:-0.12,  lArm: 1.57,  rArm: 1.57  }, // arms fully horizontal at shoulder level, wide stance — collar-and-elbow tie-up
+    // ── Strike wind-up / recoil ───────────────────────────────────────────────
+    jabCock:        { lLeg: 0.12,  rLeg:-0.10,  lArm:-0.55,  rArm: 0.26  }, // punch loaded back, guard hand high
+    jabRecoil:      { lLeg: 0.14,  rLeg:-0.09,  lArm: 0.82,  rArm:-0.10  }, // arm bounces slightly after contact, guard drops
+    headbuttCock:   { lLeg: 0.14,  rLeg:-0.12,  lArm: 0.32,  rArm: 0.28  }, // body coiling back, head tilted
+    headbuttRecoil: { lLeg: 0.22,  rLeg: 0.18,  lArm: 0.42,  rArm: 0.38  }, // rocking back after impact, arms flying out
+    // ── Running attack phases ─────────────────────────────────────────────────
+    clotheslineCock:{ lLeg:-0.08,  rLeg: 0.28,  lArm:-0.85,  rArm:-0.18  }, // arm cocked way back, full running stride
+    clotheslineFollow:{ lLeg:-0.22, rLeg: 0.46, lArm: 0.82,  rArm:-0.40  }, // arm carried through past impact
+    // ── Irish whip phases ─────────────────────────────────────────────────────
+    whipGrab:       { lLeg: 0.14,  rLeg:-0.09,  lArm: 0.65,  rArm: 0.48  }, // both hands reaching to grab wrist/arm
+    whipLoad:       { lLeg: 0.22,  rLeg: 0.14,  lArm: 0.90,  rArm: 0.25  }, // pulling back to generate throw momentum
+    whipFollow:     { lLeg: 0.10,  rLeg: 0.08,  lArm: 0.50,  rArm: 0.12  }, // arm settling after release
+    // ── Slam phases ───────────────────────────────────────────────────────────
+    slamGrab:       { lLeg: 0.25,  rLeg:-0.28,  lArm: 0.78,  rArm: 0.72  }, // bending down, wide stance, reaching to lift
+    slamPeak:       { lLeg: 0.20,  rLeg:-0.20,  lArm: 3.14,  rArm: 2.80  }, // opponent at full height — arms locked out overhead
+    // ── Elbow drop phases (visible before jump) ───────────────────────────────
+    elbowCrouch:    { lLeg: 0.28,  rLeg: 0.25,  lArm: 0.22,  rArm: 0.18  }, // knee-bend crouch before the leap
+    elbowLand:      { lLeg: 0.10,  rLeg: 0.08,  lArm:-0.12,  rArm: 0.10  }, // just landed, arm still down at side
+    // ── Grapple holds ────────────────────────────────────────────────────────
+    headlockHold:   { lLeg: 0.22,  rLeg:-0.18,  lArm: 2.10,  rArm: 0.85  }, // near arm cranked past horizontal pressing head down, far arm locked across
+    headlocked:     { lLeg: 0.35,  rLeg: 0.30,  lArm:-0.45,  rArm:-0.40  }, // torso bent forward hard, arms hanging/pushing down trying to pry free
+    armDragGrab:    { lLeg: 0.14,  rLeg:-0.10,  lArm: 0.72,  rArm: 0.55  }, // both hands reaching to snatch the arm
+    armDragPull:    { lLeg:-0.08,  rLeg: 0.30,  lArm: 1.45,  rArm: 0.85  }, // pivoting hard, dragging opponent through
+    armDragFollow:  { lLeg:-0.16,  rLeg: 0.24,  lArm: 0.58,  rArm: 0.22  }, // arms settling after release
 };
 
 // ─── Move definitions ─────────────────────────────────────────────────────────
@@ -66,37 +98,67 @@ export const POSES = {
 // Defender spatial logic stays in _doXxx — it varies too much per move to
 // collapse into data without a more complex DSL.
 export const MOVE_DEFS = {
-    irishWhip:   { poseSeq: [{ p: 'whipRelease', dur: 150, e: 'Cubic.easeOut' },
-                              { p: 'idle',        dur: 280, e: 'Linear'        }] },
-    bodySlam:    { poseSeq: [{ p: 'slamHold',    dur: 280, e: 'Cubic.easeOut' },
-                              { p: 'slamThrow',   dur: 220, e: 'Cubic.easeIn'  },
-                              { p: 'idle',        dur: 0                       }] },
-    clothesline: { poseSeq: [{ p: 'clothesline', dur: 180, e: 'Cubic.easeOut' },
-                              { p: 'idle',        dur: 260, e: 'Linear'        }] },
+    irishWhip:   { poseSeq: [{ p: 'whipGrab',    dur: 100, e: 'Cubic.easeOut' },
+                              { p: 'whipLoad',    dur: 120, e: 'Linear'        },
+                              { p: 'whipRelease', dur:  90, e: 'Cubic.easeIn'  },
+                              { p: 'whipFollow',  dur: 120, e: 'Cubic.easeOut' },
+                              { p: 'idle',        dur: 160, e: 'Linear'        }] },
+    bodySlam:    { poseSeq: [{ p: 'slamGrab',    dur: 150, e: 'Cubic.easeOut' },
+                              { p: 'slamHold',    dur: 200, e: 'Cubic.easeOut' },
+                              { p: 'slamPeak',    dur: 130, e: 'Linear'        },
+                              { p: 'slamThrow',   dur: 150, e: 'Cubic.easeIn'  },
+                              { p: 'idle',        dur:   0                     }] },
+    clothesline: { poseSeq: [{ p: 'clotheslineCock',   dur: 100, e: 'Cubic.easeOut' },
+                              { p: 'clothesline',       dur:  80, e: 'Cubic.easeIn'  },
+                              { p: 'clotheslineFollow', dur: 130, e: 'Linear'        },
+                              { p: 'idle',              dur: 200, e: 'Cubic.easeOut' }] },
     pin:         { poseSeq: [{ p: 'pinHold',     dur: 200, e: 'Linear'        }] },
-    elbowDrop:   { poseSeq: [{ p: 'elbowRaise',  dur: 220, e: 'Cubic.easeOut' },
-                              { p: 'elbowImpact', dur: 130, e: 'Cubic.easeIn'  },
-                              { p: 'idle',        dur: 280, e: 'Linear'        }] },
+    elbowDrop:   { poseSeq: [{ p: 'elbowCrouch', dur: 130, e: 'Cubic.easeOut' },
+                              { p: 'elbowRaise',  dur: 200, e: 'Cubic.easeOut' },
+                              { p: 'elbowLand',   dur:  80, e: 'Cubic.easeIn'  },
+                              { p: 'elbowImpact', dur: 100, e: 'Linear'        },
+                              { p: 'idle',        dur: 260, e: 'Cubic.easeOut' }] },
     dropkick:    { poseSeq: [{ p: 'dropkick',    dur: 150, e: 'Cubic.easeOut' },
                               { p: 'stumble',     dur: 250, e: 'Linear'        },
                               { p: 'idle',        dur: 300, e: 'Linear'        }] },
-    piledriver:  { poseSeq: [{ p: 'slamHold',    dur: 200, e: 'Cubic.easeOut' }, // hold
-                              { p: 'slamHold',    dur: 120, e: 'Linear'        }, // jump
-                              { p: 'pileSit',     dur: 130, e: 'Cubic.easeIn'  }] }, // crash — attacker goes down after
-    doubleAxeHandle: { poseSeq: [{ p: 'axeHandleUp',   dur: 280, e: 'Cubic.easeOut' },
-                                  { p: 'axeHandleDown', dur: 160, e: 'Cubic.easeIn'  },
-                                  { p: 'idle',          dur: 320, e: 'Cubic.easeOut' }] },
+    piledriver:  { poseSeq: [{ p: 'slamGrab',    dur: 130, e: 'Cubic.easeOut' },
+                              { p: 'slamHold',    dur: 200, e: 'Cubic.easeOut' },
+                              { p: 'slamHold',    dur: 130, e: 'Linear'        },
+                              { p: 'pileSit',     dur: 130, e: 'Cubic.easeIn'  },
+                              { p: 'idle',        dur: 220, e: 'Cubic.easeOut' }] },
+    doubleAxeHandle: { poseSeq: [{ p: 'axeHandleUp',     dur: 150, e: 'Cubic.easeOut' },
+                                  { p: 'axeHandleUp',     dur: 130, e: 'Linear'        },
+                                  { p: 'axeHandleDown',   dur: 100, e: 'Cubic.easeIn'  },
+                                  { p: 'axeHandleImpact', dur:  80, e: 'Linear'        },
+                                  { p: 'axeHandleFollow', dur: 140, e: 'Linear'        },
+                                  { p: 'idle',            dur: 250, e: 'Cubic.easeOut' }] },
     sleeperHold: { poseSeq: [{ p: 'sleeperHold', dur: 200, e: 'Linear'        }] },
-    suplex:      { poseSeq: [{ p: 'slamHold',      dur: 300, e: 'Cubic.easeOut' },
-                              { p: 'slamThrow',    dur: 220, e: 'Cubic.easeIn'  },
-                              { p: 'idle',         dur: 0                       }] },
+    headlock:    { poseSeq: [{ p: 'whipGrab',     dur: 100, e: 'Cubic.easeOut' },
+                              { p: 'headlockHold', dur: 200, e: 'Cubic.easeOut' },
+                              { p: 'headlockHold', dur: 200, e: 'Linear'        }] },
+    armDrag:     { poseSeq: [{ p: 'armDragGrab',   dur:  90, e: 'Cubic.easeOut' },
+                              { p: 'armDragPull',   dur: 100, e: 'Cubic.easeIn'  },
+                              { p: 'armDragFollow', dur: 130, e: 'Linear'        },
+                              { p: 'idle',          dur: 200, e: 'Cubic.easeOut' }] },
+    suplex:      { poseSeq: [{ p: 'slamGrab',    dur: 130, e: 'Cubic.easeOut' },
+                              { p: 'slamHold',    dur: 300, e: 'Cubic.easeOut' },
+                              { p: 'slamPeak',    dur: 100, e: 'Linear'        },
+                              { p: 'slamThrow',   dur: 200, e: 'Cubic.easeIn'  },
+                              { p: 'idle',        dur:   0                     }] },
+    turnbuckleTaunt: { poseSeq: [{ p: 'ropeOneTaunt', dur: 300, e: 'Cubic.easeOut' },
+                                  { p: 'ropeOneTaunt', dur: 900, e: 'Linear'        },
+                                  { p: 'idle',         dur: 350, e: 'Linear'        }] },
     taunt:       { poseSeq: [{ p: 'tauntArmsWide', dur: 380, e: 'Cubic.easeOut' },
-                              { p: 'tauntArmsWide', dur: 500, e: 'Linear'        },
+                              { p: 'tauntArmsWide', dur: 900, e: 'Linear'        },
                               { p: 'idle',          dur: 450, e: 'Linear'        }] },
-    jab:         { poseSeq: [{ p: 'jab',         dur:  80, e: 'Cubic.easeOut' },
-                              { p: 'idle',        dur: 160, e: 'Linear'        }] },
-    headbutt:    { poseSeq: [{ p: 'headbutt',    dur: 110, e: 'Cubic.easeOut' },
-                              { p: 'idle',        dur: 190, e: 'Linear'        }] },
+    jab:         { poseSeq: [{ p: 'jabCock',    dur:  83, e: 'Cubic.easeOut' },
+                              { p: 'jab',        dur:  67, e: 'Cubic.easeIn'  },
+                              { p: 'jabRecoil',  dur:  83, e: 'Linear'        },
+                              { p: 'idle',       dur: 167, e: 'Cubic.easeOut' }] },
+    headbutt:    { poseSeq: [{ p: 'headbuttCock',   dur: 117, e: 'Cubic.easeOut' },
+                              { p: 'headbutt',       dur:  83, e: 'Cubic.easeIn'  },
+                              { p: 'headbuttRecoil', dur: 100, e: 'Linear'        },
+                              { p: 'idle',           dur: 183, e: 'Cubic.easeOut' }] },
 };
 
 
@@ -117,8 +179,9 @@ export const MOVE_DEFS = {
 // 'risingUp'    350ms get-up tween; drawn as falling in reverse; no input
 // 'pinned'      flat during a pin; mash action to attempt kickout
 // 'pinning'     attacker holding the pin
-// 'holding'     attacker applying sleeper hold
+// 'holding'     attacker applying sleeper hold or headlock
 // 'sleeping'    defender in sleeper hold; mash action to escape
+// 'headlocked'  defender in side headlock; mash action to escape
 // 'lockup'      grapple clinch; attacker follows up with action+direction, defender contests with action
 // 'climbing'    tweening up to or down from a turnbuckle corner; no input
 // 'onTurnbuckle' standing on middle rope at corner; power = dive, movement = climb down
@@ -171,7 +234,10 @@ export default class Wrestler {
     updateCombatBlend(dt, opponent) {
         const NEAR = 130, FAR = 240;
         const neutralState = this.state === 'standing' || this.state === 'staggered';
-        const dist = Phaser.Math.Distance.Between(this.x, this.y, opponent.x, opponent.y);
+        const depthDiff = Math.abs(this.y - opponent.y);
+        const dist = depthDiff > 26
+            ? 9999
+            : Phaser.Math.Distance.Between(this.x, this.y, opponent.x, opponent.y);
         const target = neutralState
             ? Math.max(0, Math.min(1, (FAR - dist) / (FAR - NEAR)))
             : 0;
@@ -244,13 +310,18 @@ export default class Wrestler {
 
         this.stamina = Math.min(STAMINA_MAX, this.stamina + STAMINA_RECOVER * dt);
 
-        const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
-        const minDist = 80 * this.s;
-        if (dist < minDist && dist > 0) {
-            const ang = Phaser.Math.Angle.Between(other.x, other.y, this.x, this.y);
-            this.x = other.x + Math.cos(ang) * minDist;
-            this.y = other.y + Math.sin(ang) * minDist;
-            this._clamp();
+        // Y is depth in 2.5D — only separate wrestlers at the same ring depth.
+        // If they're on clearly different depth tracks, let them pass freely.
+        const depthDiff = Math.abs(this.y - other.y);
+        if (depthDiff < 26) {
+            const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
+            const minDist = 80 * this.s;
+            if (dist < minDist && dist > 0) {
+                const ang = Phaser.Math.Angle.Between(other.x, other.y, this.x, this.y);
+                this.x = other.x + Math.cos(ang) * minDist;
+                this.y = other.y + Math.sin(ang) * minDist;
+                this._clamp();
+            }
         }
     }
 
@@ -462,9 +533,13 @@ export default class Wrestler {
         return false;
     }
 
-    // While on turnbuckle: down/power = dive, left/right = climb down
+    // While on turnbuckle: down/power = dive, left/right = climb down, finisher = rope taunt
     tryDive(other) {
         if (this.state !== 'onTurnbuckle') return false;
+        if (this.input.justDown('finisher')) {
+            this._doTurnbuckleTaunt();
+            return 'turnbuckleTaunt';
+        }
         if (this.input.isDown('left') || this.input.isDown('right')) {
             this._climbDown();
             return false;
@@ -474,8 +549,6 @@ export default class Wrestler {
         const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
 
         if (this._ropeLevel === 2) {
-            // Top rope: only onto downed or possum opponent
-            if (other.state !== 'down' && other.state !== 'possum') return false;
             if (dist > 560 * this.s) return false;
             this._doTopDive(other);
             return 'topDive';
@@ -522,13 +595,19 @@ export default class Wrestler {
     _doJab(other) {
         other._drain(STAMINA_DRAIN.jab);
         this._runPoseSequence(MOVE_DEFS.jab.poseSeq);
-        other._doSell('sellHead', 110, () => other.startStagger());
+        // Sell fires when punch reaches full extension (after jabCock phase)
+        this.scene.time.delayedCall(83, () => {
+            other._doSell('sellHead', 110, () => other.startStagger());
+        });
     }
 
     _doHeadbutt(other) {
         other._drain(STAMINA_DRAIN.headbutt);
         this._runPoseSequence(MOVE_DEFS.headbutt.poseSeq);
-        other._doSell('sellHead', 150, () => other.startFall());
+        // Sell fires when head lunges forward (after headbuttCock phase)
+        this.scene.time.delayedCall(117, () => {
+            other._doSell('sellHead', 150, () => other.startFall());
+        });
     }
 
     _doDoubleAxeHandle(other) {
@@ -579,7 +658,10 @@ export default class Wrestler {
         this.scene.tweens.add({ targets: this, y: stepY, duration: 100, ease: 'Cubic.easeOut' });
 
         this._runPoseSequence(MOVE_DEFS.clothesline.poseSeq);
-        other._doSell('sellChest', 150, () => other.startClotheslineFall(other.runFacing));
+        // Sell fires at impact (after clotheslineCock wind-up phase)
+        this.scene.time.delayedCall(100, () => {
+            other._doSell('sellChest', 150, () => other.startClotheslineFall(other.runFacing));
+        });
     }
 
     _doBodySlam(other) {
@@ -591,16 +673,17 @@ export default class Wrestler {
         const facing = this.facing;
         const sx = this.x, sy = this.y, ss = this.s;
 
-        other.x     = sx;
-        other.slamY = other.y - (88 + 112 + 34 * 0.7) * other.s;
+        other.x      = sx;
+        other.facing = facing;
+        other.slamY  = other.y - 130 * other.s; // start near body center, lift to overhead
 
         // Attacker visual: pose sequence runs in parallel with defender tweens
         this._runPoseSequence(MOVE_DEFS.bodySlam.poseSeq);
 
-        // Defender phase 1 — lift inverted to held position
+        // Defender phase 1 — lift flat to overhead position
         this.scene.tweens.add({
             targets:  other,
-            slamY:    sy - 100 * ss,
+            slamY:    sy - 250 * ss,
             duration: 280,
             ease:     'Cubic.easeOut',
             onComplete: () => {
@@ -665,27 +748,38 @@ export default class Wrestler {
 
     _doElbowDrop(other) {
         other._drain(STAMINA_DRAIN.elbowDrop);
-        this.state         = 'elbowDropping';
-        this.elbowProgress = 0;
-
-        this.scene.tweens.add({
-            targets:       this,
-            elbowProgress: 1,
-            x:             other.x,
-            duration:      380,
-            ease:          'Sine.easeInOut',
-            onComplete: () => {
-                if (this.state !== 'elbowDropping') return;
-                other.stateTimer = DOWN_SEC;
-                this.scene.cameras.main.shake(130, 0.002);
-                // Lie flat for a beat then pop straight back up
-                this.scene.time.delayedCall(110, () => {
-                    if (this.state === 'elbowDropping') {
-                        this.elbowProgress = 0;
-                        this.state         = 'standing';
-                    }
-                });
-            },
+        // Wind-up: crouch + raise elbow while still upright (skeleton visible)
+        this.state = 'slamming';
+        this._runPoseSequence([
+            { p: 'elbowCrouch', dur: 130, e: 'Cubic.easeOut' },
+            { p: 'elbowRaise',  dur: 200, e: 'Cubic.easeOut' },
+        ], () => {
+            if (this.state !== 'slamming') return;
+            // Now jump — switch to elbowDropping (custom draw takes over)
+            this.state         = 'elbowDropping';
+            this.elbowProgress = 0;
+            this.scene.tweens.add({
+                targets:       this,
+                elbowProgress: 1,
+                x:             other.x,
+                duration:      380,
+                ease:          'Sine.easeInOut',
+                onComplete: () => {
+                    if (this.state !== 'elbowDropping') return;
+                    other.stateTimer = DOWN_SEC;
+                    this.scene.cameras.main.shake(130, 0.002);
+                    this.elbowProgress = 0;
+                    // Show landing / recovery poses (skeleton visible again)
+                    this.state = 'slamming';
+                    this._runPoseSequence([
+                        { p: 'elbowLand',   dur:  80, e: 'Cubic.easeIn'  },
+                        { p: 'elbowImpact', dur: 100, e: 'Linear'        },
+                        { p: 'idle',        dur: 260, e: 'Cubic.easeOut' },
+                    ], () => {
+                        if (this.state === 'slamming') this.state = 'standing';
+                    });
+                },
+            });
         });
     }
 
@@ -833,12 +927,17 @@ export default class Wrestler {
             onComplete: () => {
                 if (this.state !== 'diving') return;
                 const dist = Math.abs(this.x - other.x);
-                const hit  = dist <= 140 * this.s &&
-                             (other.state === 'down' || other.state === 'possum');
-                if (hit) {
+                const inRange = dist <= 140 * this.s;
+                if (inRange && (other.state === 'down' || other.state === 'possum')) {
+                    // Splash on downed opponent — maximum damage, extended down time
                     other._drain(STAMINA_DRAIN.topDive);
                     other.stateTimer = DOWN_SEC + 2.0;
                     this.scene.cameras.main.shake(260, 0.005);
+                } else if (inRange && (other.state === 'standing' || other.state === 'staggered')) {
+                    // Flying cross-body on standing opponent — big knockdown
+                    other._drain(STAMINA_DRAIN.topDive - 6);
+                    other._doSell('sellChest', 120, () => other.startClotheslineFall(this.facing));
+                    this.scene.cameras.main.shake(200, 0.004);
                 } else {
                     this.scene.cameras.main.shake(110, 0.002);
                 }
@@ -856,6 +955,27 @@ export default class Wrestler {
         other.tweenPose('sleeping', 300, 'Linear');
     }
 
+    _doHeadlock(other) {
+        this.state   = 'holding';
+        other.state  = 'headlocked';
+        other.facing = this.facing; // both face same direction — side headlock, not a clinch
+        this._runPoseSequence(MOVE_DEFS.headlock.poseSeq);
+        other.tweenPose('headlocked', 250, 'Cubic.easeOut');
+    }
+
+    _doArmDrag(other) {
+        other._drain(STAMINA_DRAIN.armDrag);
+        this._runPoseSequence(MOVE_DEFS.armDrag.poseSeq);
+        this.scene.time.delayedCall(90, () => {
+            other._doSell('sellChest', 110, () => other.startClotheslineFall(this.facing));
+        });
+    }
+
+    tryHeadlockEscape() {
+        if (this.state !== 'headlocked') return false;
+        return this.input.justDown('action');
+    }
+
     tryKickout() {
         if (this.state !== 'pinned') return false;
         if (!this.input.justDown('action')) return false;
@@ -869,6 +989,13 @@ export default class Wrestler {
     tryEscape() {
         if (this.state !== 'sleeping') return false;
         return this.input.justDown('action');
+    }
+
+    _doTurnbuckleTaunt() {
+        this.state = 'taunting';
+        this._runPoseSequence(MOVE_DEFS.turnbuckleTaunt.poseSeq, () => {
+            if (this.state === 'taunting') this.state = 'onTurnbuckle';
+        });
     }
 
     _doTaunt() {
@@ -923,9 +1050,47 @@ export default class Wrestler {
     }
 
     startStagger() {
-        this.state      = 'staggered';
-        this.stateTimer = STAGGER_SEC;
-        this.tweenPose('stagger', 120, 'Cubic.easeOut');
+        this.state = 'staggered';
+        const hp = this.stamina;
+
+        if (hp > 60) {
+            // Fresh — one quick stumble, recovers fast
+            this.stateTimer = 0.85;
+            this._runPoseSequence([
+                { p: 'stagger',  dur: 140, e: 'Cubic.easeOut' },
+                { p: 'idle',     dur: 220, e: 'Linear'        },
+            ]);
+        } else if (hp > 35) {
+            // Hurting — two-sway wobble
+            this.stateTimer = 1.1;
+            this._runPoseSequence([
+                { p: 'staggerMed',  dur: 150, e: 'Cubic.easeOut'  },
+                { p: 'staggerBack', dur: 130, e: 'Sine.easeInOut'  },
+                { p: 'staggerMed',  dur: 120, e: 'Sine.easeInOut'  },
+                { p: 'idle',        dur: 270, e: 'Linear'          },
+            ]);
+        } else if (hp > 15) {
+            // Badly hurt — three swings, near-buckle
+            this.stateTimer = 1.35;
+            this._runPoseSequence([
+                { p: 'staggerHeavy', dur: 160, e: 'Cubic.easeOut' },
+                { p: 'staggerBack',  dur: 140, e: 'Sine.easeInOut' },
+                { p: 'staggerHeavy', dur: 130, e: 'Sine.easeInOut' },
+                { p: 'staggerBack',  dur: 120, e: 'Sine.easeInOut' },
+                { p: 'idle',         dur: 310, e: 'Linear'         },
+            ]);
+        } else {
+            // Critical — rubber legs, knees buckling
+            this.stateTimer = 1.65;
+            this._runPoseSequence([
+                { p: 'staggerCollapse', dur: 180, e: 'Cubic.easeOut' },
+                { p: 'staggerBack',     dur: 155, e: 'Sine.easeInOut' },
+                { p: 'staggerCollapse', dur: 165, e: 'Sine.easeInOut' },
+                { p: 'staggerBack',     dur: 135, e: 'Sine.easeInOut' },
+                { p: 'staggerMed',      dur: 120, e: 'Sine.easeInOut' },
+                { p: 'idle',            dur: 360, e: 'Linear'         },
+            ]);
+        }
     }
 
     startFall(downTime = DOWN_SEC) {
@@ -972,8 +1137,8 @@ export default class Wrestler {
     draw() {
         const { x, y, facing, state, skinCol, trunksCol } = this;
         // On ropes, size is locked to the corner's mat depth — climbing up the post
-        // doesn't move the wrestler deeper into the ring.
-        const onRopes = (state === 'climbing' || state === 'onTurnbuckle') && this._corner;
+        // doesn't move the wrestler deeper into the ring. Also applies during rope taunts.
+        const onRopes = (state === 'climbing' || state === 'onTurnbuckle' || (state === 'taunting' && this._ropeLevel > 0)) && this._corner;
         const s = onRopes ? perspectiveScale(this._corner.matY) : this.s;
         const gfx   = this.gfx;
         const depth = 12 + y * 0.03;
@@ -994,10 +1159,13 @@ export default class Wrestler {
 
         if (state === 'dropkicking') {
             const arcFrac = Math.sin(this.dropProgress * Math.PI);
-            const airY    = y - arcFrac * 115 * s;
+            // Scale up the airborne figure — horizontal orientation reads much smaller
+            // than the upright skeleton at the same s, so 1.3× compensates.
+            const ds    = s * 1.3;
+            const airY  = y - arcFrac * 115 * s;
             gfx.fillStyle(0x000000, 0.22 + arcFrac * 0.08);
             gfx.fillEllipse(x, y, (120 + arcFrac * 50) * s, (36 + arcFrac * 10) * s);
-            this._drawDropkickFront(x, airY, s, facing, skinCol, trunksCol);
+            this._drawDropkickFront(x, airY, ds, facing, skinCol, trunksCol);
             return;
         }
 
@@ -1020,6 +1188,8 @@ export default class Wrestler {
         if (state === 'grabbed') {
             if (this.slamType === 'pile' && (this.slamPhase === 'up' || this.slamPhase === 'dropping'))
                 this._drawPiledriverHeld(x, this.slamY, s, skinCol, trunksCol);
+            else if (this.slamPhase === 'up' && this.slamType === 'slam')
+                this._drawFlat(x, this.slamY, s, this.facing, skinCol, trunksCol);
             else if (this.slamPhase === 'up')
                 this._drawInverted(x, this.slamY, s, skinCol, trunksCol);
             else

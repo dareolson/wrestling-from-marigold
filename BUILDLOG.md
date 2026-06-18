@@ -268,6 +268,58 @@ The legs were a pair of compass arms hinged at one pin (`wrestler.x`), driven by
 
 ---
 
+### 2026-06-18 — ROM Analysis, 4-Phase Animations, Headlock/Arm Drag, Stagger, Collision, Scale Fixes
+
+**Goal:** Richer animations, new grapple moves, physical depth collision, and two visual bugs.
+
+**ROM disassembly of WWF Raw (SNES/Genesis)**
+- Disassembled 68000 binary via capstone Python library looking for move tables
+- A promising address (0x13EEE) turned out to be ASCII text ("It's an all-out assault in a / One-on-One") — data layout read wrong
+- Usable insight extracted anyway: WWF Raw uses a consistent **4-phase animation structure** — heavy moves have slow wind-up + fast impact; light moves have fast wind-up + slow recovery. Landed hits always have a distinct impact frame before recovery.
+
+**All moves expanded to 4–6 phases** (was 2–3)
+Added ~20 new POSES: `jabCock`, `jabRecoil`, `headbuttCock`, `headbuttRecoil`, `clotheslineCock`, `clotheslineFollow`, `whipGrab`, `whipLoad`, `whipFollow`, `slamGrab`, `slamPeak`, `elbowCrouch`, `elbowLand`, `axeHandleImpact`, `axeHandleFollow`, `staggerMed`, `staggerHeavy`, `staggerCollapse`, `staggerBack`, `headlockHold`, `headlocked`, `armDragGrab`, `armDragPull`, `armDragFollow`.
+
+**Delayed sell timing** — added `delayedCall` on jab, headbutt, clothesline so defender reacts at the impact frame, not on wind-up.
+
+**Headlock + arm drag**
+- `_doHeadlock(other)` — attacker wraps other's head; both set to same facing direction (side-by-side, not kissing)
+- `_doArmDrag(other)` — grabs wrist, pulls through, flings behind; delayed sell at 90ms
+- `Arena._tickHeadlock(dt)` — positions attacker beside defender each frame, drains 3.0 stamina/s, auto-releases after 3s timeout or `tryHeadlockEscape()`
+- `_tickLockup`: `goDown` → headlock; `power` → arm drag
+
+**Progressive stagger** (4 tiers based on stamina)
+- Fresh (>60%): short stumble, quick recovery — `stagger` pose, 0.8s
+- Tired (>35%): wider wobble — `staggerMed`, 1.3s
+- Spent (>15%): dramatic reel — `staggerHeavy`, 2.0s
+- Exhausted (≤15%): legs buckle, near-fall — `staggerCollapse` + `staggerBack` sequence, 2.8s
+
+**2.5D depth collision fix**
+- Separation logic was running on full Euclidean distance — blocked wrestlers at different ring depths from crossing paths
+- Fix: gate separation on `depthDiff < 26`. If wrestlers are on clearly different Y tracks, let them pass freely
+- Same gate applied to `updateCombatBlend`
+- Threshold set to 26px (half the original 52px) based on user feedback
+
+**Top rope dive on standing opponents**
+- Removed hard `return false` blocking dive if opponent wasn't down/possum
+- Added standing opponent path in `_doTopDive`: flying cross-body → opponent `startClotheslineFall`, attacker down 3s
+
+**Scale bug fixes**
+- **Turnbuckle taunt tiny:** `onRopes` check in `draw()` excluded `'taunting'` state. Near corners have `matY=445` (s=1.0) but `topY=251` (s=0.58 — outside ring, clamped minimum). Taunting dropped from full-size to 58% instantly. Fix: include `state === 'taunting' && this._ropeLevel > 0` in the `onRopes` condition.
+- **Dropkick tiny:** horizontal `_drawDropkickFront` figure is only ~44px tall vs ~250px for the upright skeleton at the same scale factor. Looks dramatically smaller on transition. Fix: draw the airborne figure at `s * 1.3` to better match the visual weight of the standing skeleton.
+
+**Controls clarification (no code change)**
+- Lockup → headlock: `goDown` (S/↓)
+- Lockup → arm drag: `power` (G/Shift)
+- Irish whip: grapple near standing opponent, then direction key
+
+**Deferred (user-requested, not yet built):**
+- Hip toss
+- Arm wringer
+- Grapple hold states to full-body drawn view (headlock looks like a hug due to skeleton rig limitations — needs dedicated draw method like `_drawDropkickFront`)
+
+---
+
 ## Phase Roadmap
 
 ### Phase 1 — Proof of Concept ✓

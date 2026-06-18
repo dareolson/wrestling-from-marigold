@@ -431,13 +431,13 @@ export default class Arena extends Phaser.Scene {
 
         // P1 — blue trunks: brawler kit (Irish whip → clothesline, body slam, elbow drop, dropkick)
         this.w1 = new Wrestler(this, 330, 360, 0xc8906a, 0x334499, input1,
-            ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'jab', 'headbutt']);
+            ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt']);
         this.w1.facing   = 1;
         this.w1.idlePose = 'brawlerIdle';
 
         // P2 — dark trunks: powerhouse kit (piledriver instead of body slam, same extras)
         this.w2 = new Wrestler(this, 630, 360, 0xc8906a, 0x1a1a1a, input2,
-            ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'jab', 'headbutt']);
+            ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt']);
         this.w2.facing   = -1;
         this.w2.idlePose = 'powerIdle';
 
@@ -453,9 +453,10 @@ export default class Arena extends Phaser.Scene {
         // Stamina bars — thin strips at top of screen, outside the broadcast frame
         this.staminaGfx = this.add.graphics().setDepth(155);
 
-        this.pinState     = null; // { attacker, defender, timer }
-        this.sleeperState = null; // { attacker, defender, timer }
-        this.lockupState  = null; // { attacker, defender, timer }
+        this.pinState      = null; // { attacker, defender, timer }
+        this.sleeperState  = null; // { attacker, defender, timer }
+        this.headlockState = null; // { attacker, defender, timer }
+        this.lockupState   = null; // { attacker, defender, timer }
 
         // Match event log — consumed by the future AI commentary system.
         // Each entry: { t, type, ...payload }
@@ -573,8 +574,9 @@ export default class Arena extends Phaser.Scene {
             this._logEvent('sleeperApplied', { attacker: 'p2' });
         }
 
-        if (this.pinState)     this._tickPin(dt);
-        if (this.sleeperState) this._tickSleeper(dt);
+        if (this.pinState)      this._tickPin(dt);
+        if (this.sleeperState)  this._tickSleeper(dt);
+        if (this.headlockState) this._tickHeadlock(dt);
 
         w1.draw();
         w2.draw();
@@ -651,6 +653,34 @@ export default class Arena extends Phaser.Scene {
         }
     }
 
+    _tickHeadlock(dt) {
+        const hs = this.headlockState;
+        hs.timer += dt;
+
+        // Attacker stands to the side — both face the same direction
+        hs.attacker.x = hs.defender.x - hs.attacker.facing * 68 * hs.attacker.s;
+
+        // Continuous stamina drain
+        hs.defender._drain(3.0 * dt);
+
+        const release = (toDown) => {
+            hs.attacker.tweenPose('idle', 200, 'Linear');
+            hs.attacker.state = 'standing';
+            if (toDown) {
+                hs.defender.state      = 'down';
+                hs.defender.stateTimer = 3.5;
+                hs.defender.tweenPose('idle', 150, 'Linear');
+            } else {
+                hs.defender.state = 'standing';
+                hs.defender.tweenPose('idle', 200, 'Linear');
+            }
+            this.headlockState = null;
+        };
+
+        if (hs.defender.tryHeadlockEscape()) { release(false); return; }
+        if (hs.timer >= 3.0)                 { release(true);  return; }
+    }
+
     _tickLockup(dt) {
         const ls = this.lockupState;
         ls.timer += dt;
@@ -676,6 +706,7 @@ export default class Arena extends Phaser.Scene {
         // Attacker executes follow-up: grapple again + optional direction
         if (ls.attacker.input.justDown('action')) {
             const goUp    = ls.attacker.input.isDown('up');
+            const goDown  = ls.attacker.input.isDown('down');
             const goLeft  = ls.attacker.input.isDown('left');
             const goRight = ls.attacker.input.isDown('right');
             const dir     = goLeft ? -1 : goRight ? 1 : ls.attacker.facing;
@@ -684,7 +715,11 @@ export default class Arena extends Phaser.Scene {
             ls.defender.state = 'standing';
             this.lockupState  = null;
 
-            if (goUp && ls.attacker.moveSet.includes('suplex')) {
+            if (goDown && ls.attacker.moveSet.includes('headlock')) {
+                ls.attacker._doHeadlock(ls.defender);
+                this.headlockState = { attacker: ls.attacker, defender: ls.defender, timer: 0 };
+                this._logEvent('move', { attacker: who, move: 'headlock', defenderStamina: Math.round(ls.defender.stamina) });
+            } else if (goUp && ls.attacker.moveSet.includes('suplex')) {
                 ls.attacker._doSuplex(ls.defender);
                 this._logEvent('move', { attacker: who, move: 'suplex', defenderStamina: Math.round(ls.defender.stamina) });
             } else if ((goLeft || goRight) && ls.attacker.moveSet.includes('irishWhip')) {
@@ -700,6 +735,16 @@ export default class Arena extends Phaser.Scene {
                 ls.attacker._doIrishWhip(ls.defender, dir);
                 this._logEvent('move', { attacker: who, move: 'irishWhip', defenderStamina: Math.round(ls.defender.stamina) });
             }
+            return;
+        }
+
+        // Arm drag: power button from lockup — quick pivot throw
+        if (ls.attacker.input.justDown('power') && ls.attacker.moveSet.includes('armDrag')) {
+            ls.attacker.state = 'standing';
+            ls.defender.state = 'standing';
+            this.lockupState  = null;
+            ls.attacker._doArmDrag(ls.defender);
+            this._logEvent('move', { attacker: who, move: 'armDrag', defenderStamina: Math.round(ls.defender.stamina) });
             return;
         }
 

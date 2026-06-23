@@ -189,7 +189,7 @@ export const MOVE_DEFS = {
 
 // ─── Wrestler class ───────────────────────────────────────────────────────────
 export default class Wrestler {
-    constructor(scene, x, y, skinCol, trunksCol, input, moveSet = ['irishWhip', 'clothesline', 'bodySlam', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle']) {
+    constructor(scene, x, y, skinCol, trunksCol, input, moveSet = ['irishWhip', 'clothesline', 'bodySlam', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle'], textures = {}) {
         this.scene        = scene;
         this.x            = x;
         this.y            = y;
@@ -223,7 +223,7 @@ export default class Wrestler {
         this.tauntPose       = 'tauntArmsWide';   // character-specific taunt — override after construction
         this._runStepTimer   = 0;
         this.gfx             = scene.add.graphics();
-        this.skeleton        = new Skeleton(scene, skinCol, trunksCol);
+        this.skeleton        = new Skeleton(scene, skinCol, trunksCol, textures);
         this.combatBlend     = 0;
     }
 

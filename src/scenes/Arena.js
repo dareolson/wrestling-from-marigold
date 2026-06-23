@@ -1,10 +1,23 @@
 import { W, H, RING } from '../constants.js';
 import Wrestler from '../Wrestler.js';
 import InputHandler from '../InputHandler.js';
+import { george } from '../characters/george.js';
+
+// All characters whose PNGs should be preloaded
+const CHARACTERS = [george];
+const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png' };
 
 export default class Arena extends Phaser.Scene {
     constructor() {
         super('Arena');
+    }
+
+    preload() {
+        for (const char of CHARACTERS) {
+            for (const [part, key] of Object.entries(char.textures)) {
+                this.load.image(key, `assets/wrestlers/${char.id}/${PART_FILES[part]}`);
+            }
+        }
     }
 
     create() {
@@ -458,6 +471,16 @@ export default class Arena extends Phaser.Scene {
         this.headlockState = null; // { attacker, defender, timer }
         this.lockupState   = null; // { attacker, defender, timer }
 
+        // Crowd heat — 0–100, decays slowly, bumped by big moves, taunts, nearfalls
+        this.heat    = 30;
+        this.heatGfx = this.add.graphics().setDepth(152);
+        this.heatLbl = this.add.text(W / 2, H - 30, 'CROWD', {
+            fontFamily: '"Times New Roman", Times, serif',
+            fontSize: '8px',
+            color: '#666660',
+            letterSpacing: 4,
+        }).setOrigin(0.5, 1).setDepth(153);
+
         // Match event log — consumed by the future AI commentary system.
         // Each entry: { t, type, ...payload }
         // Significant types: 'move', 'knockdown', 'stagger', 'pinAttempt',
@@ -492,6 +515,44 @@ export default class Arena extends Phaser.Scene {
     // Future AI commentary system reads this to generate contextual play-by-play.
     _logEvent(type, payload = {}) {
         this.matchEvents.push({ t: Math.round(this._matchTime), type, ...payload });
+    }
+
+    bumpHeat(amount) {
+        this.heat = Math.min(100, this.heat + amount);
+    }
+
+    _heatForMove(move) {
+        const bumps = {
+            irishWhip: 2, clothesline: 8, bodySlam: 12, piledriver: 15,
+            dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
+            headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
+            jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12,
+        };
+        const n = bumps[move];
+        if (n) this.bumpHeat(n);
+    }
+
+    _updateHeat(dt) {
+        this.heat = Math.max(0, this.heat - 3 * dt);
+    }
+
+    _drawHeatMeter() {
+        const g = this.heatGfx;
+        g.clear();
+        const BAR_W = 160, BAR_H = 5;
+        const bx = (W - BAR_W) / 2;
+        const by = H - 22;
+
+        g.fillStyle(0x111111, 0.85);
+        g.fillRect(bx - 1, by - 1, BAR_W + 2, BAR_H + 2);
+
+        const fillW = BAR_W * (this.heat / 100);
+        const lum = Math.floor(38 + this.heat * 0.52); // dim gray (cold) → near-white (hot)
+        const col = (lum << 16) | (lum << 8) | lum;
+        g.fillStyle(col, 1);
+        g.fillRect(bx, by, fillW, BAR_H);
+
+        this.heatLbl.setPosition(W / 2, by - 2);
     }
 
     _tickGame(dt) {
@@ -537,12 +598,13 @@ export default class Arena extends Phaser.Scene {
         const d1 = w1.tryDive(w2);
         const d2 = d1 ? false : w2.tryDive(w1);
 
-        // Log every move that landed this frame
+        // Log every move that landed this frame and bump crowd heat
         const logMove = (move, attacker, defender) => {
             if (!move || move === true) return;
             const type = (move === 'knockdown' || defender.state === 'down' || defender.state === 'falling' || defender.state === 'flipping')
                 ? 'knockdown' : (defender.state === 'staggered' ? 'stagger' : 'move');
             this._logEvent(type, { attacker, move, defenderStamina: Math.round(defender.stamina) });
+            this._heatForMove(move);
         };
         logMove(r1,  'p1', w2); logMove(r2,  'p2', w1);
         logMove(p1,  'p1', w2); logMove(p2,  'p2', w1);
@@ -582,6 +644,8 @@ export default class Arena extends Phaser.Scene {
         w2.draw();
         this._updateRopes(dt);
         this._drawStaminaBars();
+        this._updateHeat(dt);
+        this._drawHeatMeter();
     }
 
     _tickPin(dt) {
@@ -598,7 +662,7 @@ export default class Arena extends Phaser.Scene {
             this.pinText.setAlpha(0);
             const who = ps.defender === this.w1 ? 'p1' : 'p2';
             this._logEvent('kickout', { wrestler: who, atCount: count, defenderStamina: Math.round(ps.defender.stamina) });
-            if (count >= 2) this._logEvent('nearfall', { attacker: who === 'p1' ? 'p2' : 'p1' });
+            if (count >= 2) { this._logEvent('nearfall', { attacker: who === 'p1' ? 'p2' : 'p1' }); this.bumpHeat(22); }
             this.pinState = null;
             return;
         }

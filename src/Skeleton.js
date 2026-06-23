@@ -82,27 +82,43 @@ function ensureTexture(scene) {
 }
 
 export default class Skeleton {
-    constructor(scene, skinCol, trunksCol) {
+    // textures: optional map of part keys → preloaded texture keys
+    //   { head, torso, upperArm, forearm, thigh, shin }
+    // Parts with a texture use the PNG; others fall back to sk_pixel + tint.
+    // Providing 'torso' hides the trunks block; providing 'shin' hides the boot block.
+    constructor(scene, skinCol, trunksCol, textures = {}) {
         ensureTexture(scene);
         this._headCol  = skinCol;
         this.skinCol   = skinCol;
         this.trunksCol = trunksCol;
 
-        const img = col => scene.add.image(0, 0, 'sk_pixel').setOrigin(0.5, 0).setTint(col);
+        const img = (key, col) => {
+            const i = scene.add.image(0, 0, key || 'sk_pixel').setOrigin(0.5, 0);
+            if (!key) i.setTint(col);
+            return i;
+        };
 
-        this.farThigh    = img(skinCol);
-        this.farShin     = img(skinCol);
-        this.farBoot     = img(0x181818);
-        this.farUpArm    = img(skinCol);
-        this.farForearm  = img(skinCol);
-        this.torso       = img(skinCol);
-        this.trunks      = img(trunksCol);
-        this.nearThigh   = img(skinCol);
-        this.nearShin    = img(skinCol);
-        this.nearBoot    = img(0x181818);
-        this.nearUpArm   = img(skinCol);
-        this.nearForearm = img(skinCol);
-        this.head        = scene.add.graphics();
+        this.farThigh    = img(textures.thigh,    skinCol);
+        this.farShin     = img(textures.shin,     skinCol);
+        this.farBoot     = textures.shin   ? null : img(null, 0x181818);
+        this.farUpArm    = img(textures.upperArm, skinCol);
+        this.farForearm  = img(textures.forearm,  skinCol);
+        this.torso       = img(textures.torso,    skinCol);
+        this.trunks      = textures.torso  ? null : img(null, trunksCol);
+        this.nearThigh   = img(textures.thigh,    skinCol);
+        this.nearShin    = img(textures.shin,     skinCol);
+        this.nearBoot    = textures.shin   ? null : img(null, 0x181818);
+        this.nearUpArm   = img(textures.upperArm, skinCol);
+        this.nearForearm = img(textures.forearm,  skinCol);
+
+        if (textures.head) {
+            // PNG head: origin at bottom-center (neck connection point)
+            this.head = scene.add.image(0, 0, textures.head).setOrigin(0.5, 1);
+            this._headIsImage = true;
+        } else {
+            this.head = scene.add.graphics();
+            this._headIsImage = false;
+        }
 
         this._parts = [
             this.farThigh, this.farShin, this.farBoot,
@@ -111,21 +127,21 @@ export default class Skeleton {
             this.nearThigh, this.nearShin, this.nearBoot,
             this.nearUpArm, this.nearForearm,
             this.head,
-        ];
+        ].filter(Boolean);
     }
 
     // Sub-depths enforce far→torso→near→head layering within a single wrestler depth slot.
     setDepth(base) {
         this.farThigh.setDepth(base);
         this.farShin.setDepth(base);
-        this.farBoot.setDepth(base);
+        this.farBoot?.setDepth(base);
         this.farUpArm.setDepth(base);
         this.farForearm.setDepth(base);
         this.torso.setDepth(base + 0.001);
-        this.trunks.setDepth(base + 0.002);
+        this.trunks?.setDepth(base + 0.002);
         this.nearThigh.setDepth(base + 0.003);
         this.nearShin.setDepth(base + 0.003);
-        this.nearBoot.setDepth(base + 0.003);
+        this.nearBoot?.setDepth(base + 0.003);
         this.nearUpArm.setDepth(base + 0.004);
         this.nearForearm.setDepth(base + 0.004);
         this.head.setDepth(base + 0.005);
@@ -280,34 +296,43 @@ export default class Skeleton {
         const farKnee  = this._end(far.hx, far.hy, thighH, far.thighAng);
         this._place(this.farShin, farKnee.x, farKnee.y, legW, shinH, far.shinAng);
         const farAnkle = this._end(farKnee.x, farKnee.y, shinH, far.shinAng);
-        this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, far.bootAng);
+        if (this.farBoot) this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, far.bootAng);
 
         // Far arm
         this._place(this.farUpArm, shoulderX, shoulderY, armW, upperArmH, farAA);
         const farElbow = this._end(shoulderX, shoulderY, upperArmH, farAA);
         this._place(this.farForearm, farElbow.x, farElbow.y, armW, forearmH, farFA);
 
-        // Torso + trunks — always vertical
-        this._place(this.torso,  x, torsoTop,       torsoW, torsoH - trunksH, 0);
-        this._place(this.trunks, x, hipY - trunksH, torsoW, trunksH,          0);
+        // Torso: full height when trunks are baked into the PNG, split otherwise
+        this._place(this.torso, x, torsoTop, torsoW, this.trunks ? torsoH - trunksH : torsoH, 0);
+        if (this.trunks) this._place(this.trunks, x, hipY - trunksH, torsoW, trunksH, 0);
 
         // Near leg — drawn in front of torso
         this._place(this.nearThigh, near.hx, near.hy, legW, thighH, near.thighAng);
         const nearKnee  = this._end(near.hx, near.hy, thighH, near.thighAng);
         this._place(this.nearShin, nearKnee.x, nearKnee.y, legW, shinH, near.shinAng);
         const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, near.shinAng);
-        this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
+        if (this.nearBoot) this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
 
         // Near arm
         this._place(this.nearUpArm, shoulderX, shoulderY, armW, upperArmH, nearAA);
         const nearElbow = this._end(shoulderX, shoulderY, upperArmH, nearAA);
         this._place(this.nearForearm, nearElbow.x, nearElbow.y, armW, forearmH, nearFA);
 
-        // Head — circle centered above torso top, follows shoulder lean
+        // Head — PNG image (pivot at neck bottom) or plain circle
         const headY = torsoTop - headR * 0.7;
-        this.head.clear();
-        this.head.fillStyle(this._headCol, 1);
-        this.head.fillCircle(shoulderX, headY, headR);
+        if (this._headIsImage) {
+            // Neck sits at the top of the torso; head extends upward from there.
+            // Flip horizontally to match facing direction (PNG is drawn facing right).
+            this.head
+                .setPosition(shoulderX, torsoTop)
+                .setDisplaySize(headR * 2.0, headR * 2.5)
+                .setFlipX(facing < 0);
+        } else {
+            this.head.clear();
+            this.head.fillStyle(this._headCol, 1);
+            this.head.fillCircle(shoulderX, headY, headR);
+        }
     }
 
     // Gait leg: foot target from footGait, knee solved by two-bone IK. The planted

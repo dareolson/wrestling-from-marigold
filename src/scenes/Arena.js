@@ -2,6 +2,7 @@ import { W, H, RING } from '../constants.js';
 import Wrestler from '../Wrestler.js';
 import InputHandler from '../InputHandler.js';
 import { george } from '../characters/george.js';
+import AIHandler from '../AIHandler.js';
 
 // All characters whose PNGs should be preloaded
 const CHARACTERS = [george];
@@ -433,10 +434,10 @@ export default class Arena extends Phaser.Scene {
             down:     kb.addKey('DOWN'),
             left:     kb.addKey('LEFT'),
             right:    kb.addKey('RIGHT'),
-            action:   kb.addKey('ENTER'), // grapple
-            power:    kb.addKey('SHIFT'), // power
-            finisher: kb.addKey('SPACE'), // finisher: sleeper hold
-            run:      kb.addKey('FORWARD_SLASH'), // run to rope
+            action:   kb.addKey('ENTER'),
+            power:    kb.addKey('SHIFT'),
+            finisher: kb.addKey('SPACE'),
+            run:      kb.addKey('FORWARD_SLASH'),
         };
 
         const input1 = new InputHandler('keyboard', keys1);
@@ -558,6 +559,9 @@ export default class Arena extends Phaser.Scene {
     _tickGame(dt) {
         const { w1, w2 } = this;
         this._matchTime += dt;
+
+        // Tick AI before wrestler actions so decisions are ready this frame
+        w2.input.tick?.(dt);
 
         w1.move(dt, w2);
         w2.move(dt, w1);

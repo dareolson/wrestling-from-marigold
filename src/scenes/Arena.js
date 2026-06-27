@@ -2,7 +2,6 @@ import { W, H, RING } from '../constants.js';
 import Wrestler from '../Wrestler.js';
 import InputHandler from '../InputHandler.js';
 import { george } from '../characters/george.js';
-import AIHandler from '../AIHandler.js';
 
 // All characters whose PNGs should be preloaded
 const CHARACTERS = [george];
@@ -522,6 +521,19 @@ export default class Arena extends Phaser.Scene {
         this.heat = Math.min(100, this.heat + amount);
     }
 
+    _isAtRopes(wrestler) {
+        const b = ringBoundsAtY(wrestler.y);
+        const threshold = 30 * wrestler.s;
+        return wrestler.x <= b.left + threshold || wrestler.x >= b.right - threshold;
+    }
+
+    _showRopeBreak() {
+        this.pinText.setText('ROPE BREAK').setAlpha(1);
+        this.time.delayedCall(1000, () => this.pinText.setAlpha(0));
+        this.bumpHeat(12);
+        this._logEvent('ropeBreak');
+    }
+
     _heatForMove(move) {
         const bumps = {
             irishWhip: 2, clothesline: 8, bodySlam: 12, piledriver: 15,
@@ -656,6 +668,17 @@ export default class Arena extends Phaser.Scene {
         const ps = this.pinState;
         ps.timer += dt;
 
+        // Rope break — defender's position is at the ropes
+        if (this._isAtRopes(ps.defender)) {
+            ps.attacker.state    = 'standing';
+            ps.defender.state    = 'down';
+            ps.defender.stateTimer = 1.5;
+            this.pinText.setAlpha(0);
+            this._showRopeBreak();
+            this.pinState = null;
+            return;
+        }
+
         const count = Math.min(3, Math.floor(ps.timer / 0.85) + 1);
         this.pinText.setText(String(count)).setAlpha(1);
 
@@ -689,6 +712,18 @@ export default class Arena extends Phaser.Scene {
 
         // Keep attacker hugged to the defender
         ss.attacker.x = ss.defender.x - ss.attacker.facing * 50 * ss.attacker.s;
+
+        // Rope break
+        if (this._isAtRopes(ss.defender)) {
+            ss.attacker.tweenPose('idle', 200, 'Linear');
+            ss.defender.tweenPose('idle', 200, 'Linear');
+            ss.attacker.state = 'standing';
+            ss.defender.state = 'standing';
+            this.pinText.setAlpha(0);
+            this._showRopeBreak();
+            this.sleeperState = null;
+            return;
+        }
 
         // Drain defender stamina continuously (~18 total over 4s)
         ss.defender._drain(4.5 * dt);
@@ -727,6 +762,17 @@ export default class Arena extends Phaser.Scene {
 
         // Attacker stands to the side — both face the same direction
         hs.attacker.x = hs.defender.x - hs.attacker.facing * 68 * hs.attacker.s;
+
+        // Rope break
+        if (this._isAtRopes(hs.defender)) {
+            hs.attacker.tweenPose('idle', 200, 'Linear');
+            hs.attacker.state = 'standing';
+            hs.defender.state = 'standing';
+            hs.defender.tweenPose('idle', 200, 'Linear');
+            this._showRopeBreak();
+            this.headlockState = null;
+            return;
+        }
 
         // Continuous stamina drain
         hs.defender._drain(3.0 * dt);

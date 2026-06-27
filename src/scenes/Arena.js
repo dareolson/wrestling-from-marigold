@@ -1,4 +1,4 @@
-import { W, H, RING } from '../constants.js';
+import { W, H, RING, ringBoundsAtY } from '../constants.js';
 import Wrestler from '../Wrestler.js';
 import InputHandler from '../InputHandler.js';
 import { george } from '../characters/george.js';

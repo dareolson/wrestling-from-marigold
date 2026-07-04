@@ -58,6 +58,21 @@ export default class Arena extends Phaser.Scene {
 
         this.showTitleCard();
         this._setupGame();
+
+        // HUD camera — renders meters/clock without the vignette so they stay
+        // readable at the frame edges. Gets its own grayscale filter so the
+        // colored stamina bars keep the B/W broadcast look. Objects created
+        // after this point render on both cameras unless ignored on one.
+        try {
+            const hudObjects = [this.staminaGfx, this.heatGfx, this.heatLbl, this.clockLbl, this.p2ModeLbl];
+            this.hudCam = this.cameras.add(0, 0, W, H);
+            const cmHud = this.hudCam.filters.internal.addColorMatrix();
+            cmHud.colorMatrix.grayscale(1);
+            this.hudCam.ignore(this.children.list.filter(o => !hudObjects.includes(o)));
+            this.cameras.main.ignore(hudObjects);
+        } catch (e) {
+            console.warn('HUD camera unavailable:', e.message);
+        }
     }
 
     drawArenaBackground() {
@@ -966,6 +981,7 @@ export default class Arena extends Phaser.Scene {
             strokeThickness: 5,
             letterSpacing: 8,
         }).setOrigin(0.5).setDepth(200).setAlpha(0);
+        this.hudCam?.ignore(txt); // created after the HUD camera — main cam only
 
         this.tweens.add({ targets: txt, alpha: 1, duration: 400, ease: 'Linear' });
 

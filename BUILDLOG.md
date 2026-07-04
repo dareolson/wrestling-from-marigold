@@ -320,6 +320,28 @@ Added ~20 new POSES: `jabCock`, `jabRecoil`, `headbuttCock`, `headbuttRecoil`, `
 
 ---
 
+### 2026-07-03 — George AI Enabled + Pacing Fixes
+
+**George AI re-enabled** — P2 now defaults to `AIHandler('george')`. Press **2** to toggle P2 between AI and keyboard anytime; a label top-right shows the current mode and fades after a few seconds.
+
+**Why he felt too aggressive before, and the fixes:**
+
+1. **Global offense cooldown** (`_attack()` helper) — every offensive press now sets a randomized 1.1–2.0s `_offense` timer on top of the per-action cooldown. Attacks come in beats instead of machine-gun bursts. The AI can still move/stall between attacks.
+2. **Per-frame probability saturation** — `_chooseAction` runs every frame once cooldowns clear, so any "odds" roll saturates: the old 50% dropkick roll at medium range hit ~99.8% within one second, which is why George always opened with a dropkick. Failed rolls now set a short cooldown (0.4–0.5s) so odds are per-beat. Dropkick odds now a personality field (`dropkickOdds`: george 0.10, brawler 0.40).
+3. **Showboat beat** (`showboatAfter: 2`) — after landing 2 moves George breaks rhythm: backs off ~1s, then taunts if at safe distance (guarded so a close-range finisher press can't accidentally become a sleeper). Naturally caps his offense rate and reads as character.
+4. **Reaction delay** — 150–350ms pause before pouncing on a downed opponent, so he reads as human instead of frame-perfect.
+5. **Jab → headbutt combo** — staggered-opponent follow-up moved ahead of the offense gate (rolled at 55% per beat) so roughly half his staggers convert to knockdowns before the stagger wears off.
+6. **Desperate cheap shot** — while begging off at low stamina, if you walk into jab range there's a 40% roll he sucker-punches you. Classic George.
+7. **AI paused during win banner** — new `Arena.matchOver` flag set in `_showWin`, cleared on reset; `_tickGame` skips `w2.input.tick()` while set. Previously the AI kept jabbing the loser during "PLAYER 2 WINS".
+
+**Verified headless** (playwright-core + system Chrome against the Vite dev server, polling game state via new `window.__WFM_GAME` debug handle in main.js): 45s AFK match arc was taunt → paced dropkick (t=21, not t=2) → elbow drops with showboat taunts between → lockup → piledriver → pin → pinfall, zero AI inputs during the banner, clean reset after.
+
+**Known quirks noticed while verifying (pre-existing, not fixed):**
+- Taunts get logged to `matchEvents` as `type: 'knockdown'` — event-type bug in Arena's move logging.
+- AI lockup follow-up holds down+action intending headlock but piledriver comes out (w2's kit maps that input to piledriver). Reads fine in practice.
+
+---
+
 ## Phase Roadmap
 
 ### Phase 1 — Proof of Concept ✓

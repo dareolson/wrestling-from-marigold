@@ -1,6 +1,7 @@
 import { W, H, RING, ringBoundsAtY } from '../constants.js';
 import Wrestler from '../Wrestler.js';
 import InputHandler from '../InputHandler.js';
+import AIHandler from '../AIHandler.js';
 import { george } from '../characters/george.js';
 
 // All characters whose PNGs should be preloaded
@@ -454,6 +455,21 @@ export default class Arena extends Phaser.Scene {
         this.w2.facing   = -1;
         this.w2.idlePose = 'powerIdle';
 
+        // P2 defaults to the George AI — press 2 to swap between AI and keyboard
+        this._p2Keyboard = input2;
+        this._p2AI       = new AIHandler('george');
+        this._p2AI.setWrestlers(this.w2, this.w1);
+        this.w2.input = this._p2AI;
+
+        this.p2ModeLbl = this.add.text(W - 24, 26, '', {
+            fontFamily: '"Times New Roman", Times, serif',
+            fontSize: '10px',
+            color: '#888880',
+            letterSpacing: 2,
+        }).setOrigin(1, 0).setDepth(155);
+        this._showP2Mode();
+        kb.addKey('TWO').on('down', () => this._toggleP2());
+
         // Pin countdown text
         this.pinText = this.add.text(W / 2, H / 2 - 10, '', {
             fontFamily: '"Times New Roman", Times, serif',
@@ -488,6 +504,27 @@ export default class Arena extends Phaser.Scene {
         //   'sleeperEscape', 'sleeperKO'
         this.matchEvents = [];
         this._matchTime  = 0;
+        this.matchOver   = false;
+    }
+
+    _toggleP2() {
+        const toAI = this.w2.input !== this._p2AI;
+        this.w2.input = toAI ? this._p2AI : this._p2Keyboard;
+        this._showP2Mode();
+    }
+
+    // Show the P2 control mode for a few seconds, then fade
+    _showP2Mode() {
+        const isAI = this.w2.input === this._p2AI;
+        this.p2ModeLbl.setText(isAI ? 'P2: GEORGE (AI) — 2 = KEYBOARD' : 'P2: KEYBOARD — 2 = AI');
+        this.p2ModeLbl.setAlpha(1);
+        this.tweens.killTweensOf(this.p2ModeLbl);
+        this.tweens.add({
+            targets: this.p2ModeLbl,
+            alpha: 0,
+            delay: 3500,
+            duration: 800,
+        });
     }
 
     _drawStaminaBars() {
@@ -572,8 +609,9 @@ export default class Arena extends Phaser.Scene {
         const { w1, w2 } = this;
         this._matchTime += dt;
 
-        // Tick AI before wrestler actions so decisions are ready this frame
-        w2.input.tick?.(dt);
+        // Tick AI before wrestler actions so decisions are ready this frame.
+        // Paused while the win banner is up so the AI doesn't attack the loser.
+        if (!this.matchOver) w2.input.tick?.(dt);
 
         w1.move(dt, w2);
         w2.move(dt, w1);
@@ -873,6 +911,7 @@ export default class Arena extends Phaser.Scene {
     }
 
     _showWin(player) {
+        this.matchOver = true;
         const txt = this.add.text(W / 2, H / 2, `PLAYER ${player} WINS`, {
             fontFamily: '"Times New Roman", Times, serif',
             fontSize: '42px',
@@ -892,6 +931,7 @@ export default class Arena extends Phaser.Scene {
                     txt.destroy();
                     this.w1.x = 330; this.w1.y = 360; this.w1.state = 'standing'; this.w1.facing =  1; this.w1.stamina = 100;
                     this.w2.x = 630; this.w2.y = 360; this.w2.state = 'standing'; this.w2.facing = -1; this.w2.stamina = 100;
+                    this.matchOver = false;
                 },
             });
         });

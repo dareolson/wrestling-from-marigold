@@ -1,6 +1,6 @@
 import Arena from './scenes/Arena.js';
 
-new Phaser.Game({
+window.__WFM_GAME = new Phaser.Game({
     type: Phaser.AUTO,
     width: 960,
     height: 600,

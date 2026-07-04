@@ -33,63 +33,67 @@ const KICKOUT_FLOOR = 15;
 // Angles are facing-relative: positive = toward facing direction.
 // Walk cycle blends additively on top; idle = all zeros lets the walk cycle
 // run freely with no bias.
+// Optional channels (default 0): `lean` pitches the torso/head forward (+) or
+// back (−); `crouch` (0..1) bends the knees and drops the hips with feet
+// planted. These carry the silhouette of a move — wind-ups coil back and low,
+// impacts drive forward and down.
 export const POSES = {
-    idle:        { lLeg: 0,     rLeg: 0,     lArm: 0,     rArm: 0     },
-    grapple:     { lLeg: 0.12,  rLeg:-0.08,  lArm: 0.50,  rArm: 0.18  },
-    slamHold:    { lLeg: 0.20,  rLeg:-0.22,  lArm: 2.80,  rArm: 2.80  }, // arms straight overhead, wide stance
-    slamThrow:   { lLeg: 0.50,  rLeg:-0.28,  lArm: 1.30,  rArm: 1.00  }, // follow-through as opponent is driven down
-    whipRelease: { lLeg: 0.22,  rLeg: 0.12,  lArm: 0.88,  rArm: 0.30  },
-    clothesline: { lLeg:-0.15,  rLeg: 0.38,  lArm: 1.18,  rArm:-0.28  },
-    pinHold:     { lLeg: 0.28,  rLeg: 0.28,  lArm: 0.30,  rArm:-0.30  },
-    elbowRaise:  { lLeg: 0.10,  rLeg: 0.05,  lArm:-1.40,  rArm: 0.15  },
-    elbowImpact: { lLeg: 0.08,  rLeg: 0.06,  lArm:-0.08,  rArm: 0.08  },
+    idle:        { lLeg: 0,     rLeg: 0,     lArm: 0,     rArm: 0,    lean: 0, crouch: 0 },
+    grapple:     { lLeg: 0.12,  rLeg:-0.08,  lArm: 0.50,  rArm: 0.18, lean: 0.15, crouch: 0.12 },
+    slamHold:    { lLeg: 0.20,  rLeg:-0.22,  lArm: 2.80,  rArm: 2.80, lean:-0.14, crouch: 0.08 }, // arms straight overhead, back arched under the weight
+    slamThrow:   { lLeg: 0.50,  rLeg:-0.28,  lArm: 1.30,  rArm: 1.00, lean: 0.42, crouch: 0.22 }, // driving down through the throw
+    whipRelease: { lLeg: 0.22,  rLeg: 0.12,  lArm: 0.88,  rArm: 0.30, lean: 0.28 },
+    clothesline: { lLeg:-0.15,  rLeg: 0.38,  lArm: 1.18,  rArm:-0.28, lean: 0.30 },
+    pinHold:     { lLeg: 0.28,  rLeg: 0.28,  lArm: 0.30,  rArm:-0.30, lean: 0.55, crouch: 0.75 }, // dropped low over the opponent
+    elbowRaise:  { lLeg: 0.10,  rLeg: 0.05,  lArm:-1.40,  rArm: 0.15, lean:-0.12 }, // arm loaded high, back arched
+    elbowImpact: { lLeg: 0.08,  rLeg: 0.06,  lArm:-0.08,  rArm: 0.08, lean: 0.30, crouch: 0.30 },
     dropkick:    { lLeg: 0.80,  rLeg: 0.65,  lArm:-0.50,  rArm:-0.50  },
-    stumble:     { lLeg: 0.24,  rLeg:-0.20,  lArm:-0.55,  rArm: 0.55  }, // landing recovery — arms wide for balance
-    sleeperHold: { lLeg: 0.08,  rLeg:-0.05,  lArm: 1.40,  rArm: 0.30  },
-    sleeping:    { lLeg:-0.08,  rLeg:-0.04,  lArm:-0.50,  rArm:-0.45  },
-    pileSit:        { lLeg: 0.55,  rLeg: 0.50,  lArm:-0.20,  rArm:-0.16  }, // seated after piledriver — legs spread forward, arms low at sides
-    stagger:        { lLeg:-0.14,  rLeg: 0.12,  lArm: 0.22,  rArm: 0.18  }, // mild — slight lurch, arms loose
-    staggerMed:     { lLeg:-0.24,  rLeg: 0.20,  lArm: 0.55,  rArm: 0.45  }, // hurting — deeper stumble, arms flailing
-    staggerHeavy:   { lLeg:-0.34,  rLeg: 0.28,  lArm: 0.90,  rArm: 0.72  }, // badly hurt — near-buckle, arms way out
-    staggerCollapse:{ lLeg:-0.42,  rLeg: 0.36,  lArm: 1.18,  rArm: 0.96  }, // critical — knees nearly giving, arms thrown wide
-    staggerBack:    { lLeg: 0.20,  rLeg:-0.16,  lArm:-0.38,  rArm:-0.30  }, // counter-sway — reeling back the other way
-    jab:            { lLeg: 0.18,  rLeg:-0.12,  lArm: 1.00,  rArm:-0.35  }, // near arm punches forward, far arm pulls back
-    headbutt:       { lLeg: 0.38,  rLeg: 0.15,  lArm: 0.30,  rArm: 0.25  }, // whole body lunges forward, head leads
-    sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82  }, // chest impact — both arms whip back violently
-    sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55  }, // head strike — hands fly up toward face
-    brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18  }, // guard stance — weight forward, fists up
-    powerIdle:      { lLeg: 0.10,  rLeg:-0.09,  lArm: 0.10,  rArm: 0.07  }, // wide, imposing — arms hanging low
-    tauntArmsWide:  { lLeg: 0.22,  rLeg:-0.20,  lArm: 2.20,  rArm: 2.00  }, // arms raised wide above shoulder, legs spread
+    stumble:     { lLeg: 0.24,  rLeg:-0.20,  lArm:-0.55,  rArm: 0.55, lean: 0.12, crouch: 0.20 }, // landing recovery — arms wide for balance
+    sleeperHold: { lLeg: 0.08,  rLeg:-0.05,  lArm: 1.40,  rArm: 0.30, lean: 0.18, crouch: 0.10 },
+    sleeping:    { lLeg:-0.08,  rLeg:-0.04,  lArm:-0.50,  rArm:-0.45, lean:-0.10, crouch: 0.15 },
+    pileSit:        { lLeg: 0.55,  rLeg: 0.50,  lArm:-0.20,  rArm:-0.16, crouch: 0.45 }, // seated after piledriver — legs spread forward, arms low at sides
+    stagger:        { lLeg:-0.14,  rLeg: 0.12,  lArm: 0.22,  rArm: 0.18, lean:-0.06 }, // mild — slight lurch, arms loose
+    staggerMed:     { lLeg:-0.24,  rLeg: 0.20,  lArm: 0.55,  rArm: 0.45, lean:-0.12, crouch: 0.12 }, // hurting — deeper stumble, arms flailing
+    staggerHeavy:   { lLeg:-0.34,  rLeg: 0.28,  lArm: 0.90,  rArm: 0.72, lean:-0.18, crouch: 0.26 }, // badly hurt — near-buckle, arms way out
+    staggerCollapse:{ lLeg:-0.42,  rLeg: 0.36,  lArm: 1.18,  rArm: 0.96, lean:-0.24, crouch: 0.42 }, // critical — knees nearly giving, arms thrown wide
+    staggerBack:    { lLeg: 0.20,  rLeg:-0.16,  lArm:-0.38,  rArm:-0.30, lean:-0.15 }, // counter-sway — reeling back the other way
+    jab:            { lLeg: 0.18,  rLeg:-0.12,  lArm: 1.00,  rArm:-0.35, lean: 0.22, crouch: 0.10 }, // near arm punches forward, body drives behind it
+    headbutt:       { lLeg: 0.38,  rLeg: 0.15,  lArm: 0.30,  rArm: 0.25, lean: 0.48, crouch: 0.18 }, // whole body lunges forward, head leads
+    sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82, lean:-0.30 }, // chest impact — torso snaps back, arms whip behind
+    sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10 }, // head strike — hands fly up toward face
+    brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
+    powerIdle:      { lLeg: 0.10,  rLeg:-0.09,  lArm: 0.10,  rArm: 0.07, crouch: 0.05 }, // wide, imposing — arms hanging low
+    tauntArmsWide:  { lLeg: 0.22,  rLeg:-0.20,  lArm: 2.20,  rArm: 2.00, lean:-0.16 }, // arms raised wide, chest out to the crowd
     ropeOneTaunt:   { lLeg: 0.08,  rLeg:-0.06,  lArm: 1.80,  rArm:-1.80  }, // one arm raised to crowd, other grips rope
-    axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10  }, // arms raised overhead — near arm slightly forward, far arm slightly back, peak above head
-    axeHandleDown:  { lLeg: 0.30,  rLeg: 0.18,  lArm: 1.20,  rArm: 1.15  }, // whole body lurching forward, arms smashing down at ~40° below horizontal
-    axeHandleImpact:{ lLeg: 0.34,  rLeg: 0.24,  lArm: 0.70,  rArm: 0.65  }, // arms at impact depth, body weight fully dropped
-    axeHandleFollow:{ lLeg: 0.38,  rLeg: 0.28,  lArm: 0.38,  rArm: 0.35  }, // momentum carries arms past, hunched over
-    lockup:         { lLeg: 0.18,  rLeg:-0.12,  lArm: 1.57,  rArm: 1.57  }, // arms fully horizontal at shoulder level, wide stance — collar-and-elbow tie-up
+    axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10, lean:-0.22 }, // arms overhead, back arched for the drop
+    axeHandleDown:  { lLeg: 0.30,  rLeg: 0.18,  lArm: 1.20,  rArm: 1.15, lean: 0.40, crouch: 0.20 }, // whole body lurching forward, arms smashing down
+    axeHandleImpact:{ lLeg: 0.34,  rLeg: 0.24,  lArm: 0.70,  rArm: 0.65, lean: 0.48, crouch: 0.34 }, // arms at impact depth, body weight fully dropped
+    axeHandleFollow:{ lLeg: 0.38,  rLeg: 0.28,  lArm: 0.38,  rArm: 0.35, lean: 0.52, crouch: 0.28 }, // momentum carries arms past, hunched over
+    lockup:         { lLeg: 0.18,  rLeg:-0.12,  lArm: 1.57,  rArm: 1.57, lean: 0.26, crouch: 0.18 }, // leaning hard into the collar-and-elbow tie-up
     // ── Strike wind-up / recoil ───────────────────────────────────────────────
-    jabCock:        { lLeg: 0.12,  rLeg:-0.10,  lArm:-0.55,  rArm: 0.26  }, // punch loaded back, guard hand high
-    jabRecoil:      { lLeg: 0.14,  rLeg:-0.09,  lArm: 0.82,  rArm:-0.10  }, // arm bounces slightly after contact, guard drops
-    headbuttCock:   { lLeg: 0.14,  rLeg:-0.12,  lArm: 0.32,  rArm: 0.28  }, // body coiling back, head tilted
-    headbuttRecoil: { lLeg: 0.22,  rLeg: 0.18,  lArm: 0.42,  rArm: 0.38  }, // rocking back after impact, arms flying out
+    jabCock:        { lLeg: 0.12,  rLeg:-0.10,  lArm:-0.55,  rArm: 0.26, lean:-0.10, crouch: 0.08 }, // punch loaded back, body coiled
+    jabRecoil:      { lLeg: 0.14,  rLeg:-0.09,  lArm: 0.82,  rArm:-0.10, lean: 0.08 }, // arm bounces slightly after contact, guard drops
+    headbuttCock:   { lLeg: 0.14,  rLeg:-0.12,  lArm: 0.32,  rArm: 0.28, lean:-0.28, crouch: 0.14 }, // body coiling way back before the lunge
+    headbuttRecoil: { lLeg: 0.22,  rLeg: 0.18,  lArm: 0.42,  rArm: 0.38, lean:-0.10, crouch: 0.10 }, // rocking back after impact, arms flying out
     // ── Running attack phases ─────────────────────────────────────────────────
-    clotheslineCock:{ lLeg:-0.08,  rLeg: 0.28,  lArm:-0.85,  rArm:-0.18  }, // arm cocked way back, full running stride
-    clotheslineFollow:{ lLeg:-0.22, rLeg: 0.46, lArm: 0.82,  rArm:-0.40  }, // arm carried through past impact
+    clotheslineCock:{ lLeg:-0.08,  rLeg: 0.28,  lArm:-0.85,  rArm:-0.18, lean:-0.12 }, // arm cocked way back, full running stride
+    clotheslineFollow:{ lLeg:-0.22, rLeg: 0.46, lArm: 0.82,  rArm:-0.40, lean: 0.38 }, // arm carried through past impact
     // ── Irish whip phases ─────────────────────────────────────────────────────
-    whipGrab:       { lLeg: 0.14,  rLeg:-0.09,  lArm: 0.65,  rArm: 0.48  }, // both hands reaching to grab wrist/arm
-    whipLoad:       { lLeg: 0.22,  rLeg: 0.14,  lArm: 0.90,  rArm: 0.25  }, // pulling back to generate throw momentum
-    whipFollow:     { lLeg: 0.10,  rLeg: 0.08,  lArm: 0.50,  rArm: 0.12  }, // arm settling after release
+    whipGrab:       { lLeg: 0.14,  rLeg:-0.09,  lArm: 0.65,  rArm: 0.48, lean: 0.18, crouch: 0.10 }, // both hands reaching to grab wrist/arm
+    whipLoad:       { lLeg: 0.22,  rLeg: 0.14,  lArm: 0.90,  rArm: 0.25, lean:-0.14, crouch: 0.16 }, // pulling back against the opponent's weight
+    whipFollow:     { lLeg: 0.10,  rLeg: 0.08,  lArm: 0.50,  rArm: 0.12, lean: 0.18 }, // arm settling after release
     // ── Slam phases ───────────────────────────────────────────────────────────
-    slamGrab:       { lLeg: 0.25,  rLeg:-0.28,  lArm: 0.78,  rArm: 0.72  }, // bending down, wide stance, reaching to lift
-    slamPeak:       { lLeg: 0.20,  rLeg:-0.20,  lArm: 3.14,  rArm: 2.80  }, // opponent at full height — arms locked out overhead
+    slamGrab:       { lLeg: 0.25,  rLeg:-0.28,  lArm: 0.78,  rArm: 0.72, lean: 0.40, crouch: 0.45 }, // bent low, wide stance, reaching to lift
+    slamPeak:       { lLeg: 0.20,  rLeg:-0.20,  lArm: 3.14,  rArm: 2.80, lean:-0.18 }, // opponent at full height — back arched, arms locked out
     // ── Elbow drop phases (visible before jump) ───────────────────────────────
-    elbowCrouch:    { lLeg: 0.28,  rLeg: 0.25,  lArm: 0.22,  rArm: 0.18  }, // knee-bend crouch before the leap
-    elbowLand:      { lLeg: 0.10,  rLeg: 0.08,  lArm:-0.12,  rArm: 0.10  }, // just landed, arm still down at side
+    elbowCrouch:    { lLeg: 0.28,  rLeg: 0.25,  lArm: 0.22,  rArm: 0.18, lean: 0.24, crouch: 0.50 }, // deep knee-bend before the leap
+    elbowLand:      { lLeg: 0.10,  rLeg: 0.08,  lArm:-0.12,  rArm: 0.10, lean: 0.30, crouch: 0.35 }, // just landed, weight dropped
     // ── Grapple holds ────────────────────────────────────────────────────────
-    headlockHold:   { lLeg: 0.22,  rLeg:-0.18,  lArm: 2.10,  rArm: 0.85  }, // near arm cranked past horizontal pressing head down, far arm locked across
-    headlocked:     { lLeg: 0.35,  rLeg: 0.30,  lArm:-0.45,  rArm:-0.40  }, // torso bent forward hard, arms hanging/pushing down trying to pry free
-    armDragGrab:    { lLeg: 0.14,  rLeg:-0.10,  lArm: 0.72,  rArm: 0.55  }, // both hands reaching to snatch the arm
-    armDragPull:    { lLeg:-0.08,  rLeg: 0.30,  lArm: 1.45,  rArm: 0.85  }, // pivoting hard, dragging opponent through
-    armDragFollow:  { lLeg:-0.16,  rLeg: 0.24,  lArm: 0.58,  rArm: 0.22  }, // arms settling after release
+    headlockHold:   { lLeg: 0.22,  rLeg:-0.18,  lArm: 2.10,  rArm: 0.85, lean: 0.30, crouch: 0.15 }, // cranking the head down, body over the hold
+    headlocked:     { lLeg: 0.35,  rLeg: 0.30,  lArm:-0.45,  rArm:-0.40, lean: 0.62, crouch: 0.28 }, // bent forward hard, trying to pry free
+    armDragGrab:    { lLeg: 0.14,  rLeg:-0.10,  lArm: 0.72,  rArm: 0.55, lean: 0.18, crouch: 0.10 }, // both hands reaching to snatch the arm
+    armDragPull:    { lLeg:-0.08,  rLeg: 0.30,  lArm: 1.45,  rArm: 0.85, lean: 0.35, crouch: 0.18 }, // pivoting hard, dragging opponent through
+    armDragFollow:  { lLeg:-0.16,  rLeg: 0.24,  lArm: 0.58,  rArm: 0.22, lean: 0.15 }, // arms settling after release
 };
 
 // ─── Move definitions ─────────────────────────────────────────────────────────
@@ -107,7 +111,8 @@ export const MOVE_DEFS = {
                               { p: 'slamHold',    dur: 200, e: 'Cubic.easeOut' },
                               { p: 'slamPeak',    dur: 130, e: 'Linear'        },
                               { p: 'slamThrow',   dur: 150, e: 'Cubic.easeIn'  },
-                              { p: 'idle',        dur:   0                     }] },
+                              { p: 'stumble',     dur: 140, e: 'Cubic.easeOut' },
+                              { p: 'idle',        dur: 240, e: 'Linear'        }] },
     clothesline: { poseSeq: [{ p: 'clotheslineCock',   dur: 100, e: 'Cubic.easeOut' },
                               { p: 'clothesline',       dur:  80, e: 'Cubic.easeIn'  },
                               { p: 'clotheslineFollow', dur: 130, e: 'Linear'        },
@@ -144,7 +149,8 @@ export const MOVE_DEFS = {
                               { p: 'slamHold',    dur: 300, e: 'Cubic.easeOut' },
                               { p: 'slamPeak',    dur: 100, e: 'Linear'        },
                               { p: 'slamThrow',   dur: 200, e: 'Cubic.easeIn'  },
-                              { p: 'idle',        dur:   0                     }] },
+                              { p: 'stumble',     dur: 140, e: 'Cubic.easeOut' },
+                              { p: 'idle',        dur: 240, e: 'Linear'        }] },
     turnbuckleTaunt: { poseSeq: [{ p: 'ropeOneTaunt', dur: 300, e: 'Cubic.easeOut' },
                                   { p: 'ropeOneTaunt', dur: 900, e: 'Linear'        },
                                   { p: 'idle',         dur: 350, e: 'Linear'        }] },
@@ -218,7 +224,7 @@ export default class Wrestler {
         this.slamPhase    = null; // 'up' | 'throwing' | 'dropping'
         this.slamType     = null; // 'slam' | 'pile' — which move is in progress
         this.slamY        = 0;
-        this.pose            = { ...POSES.idle }; // live joint angles, tweened per move
+        this.pose            = { ...POSES.idle, lean: 0, crouch: 0 }; // live joint angles, tweened per move
         this.idlePose        = 'idle';            // character-specific resting stance — override after construction
         this.tauntPose       = 'tauntArmsWide';   // character-specific taunt — override after construction
         this._runStepTimer   = 0;
@@ -250,7 +256,10 @@ export default class Wrestler {
     // Kills any in-flight pose tween first so sequences don't stack.
     tweenPose(target, duration, ease = 'Linear', onComplete) {
         this.scene.tweens.killTweensOf(this.pose);
-        const t = typeof target === 'string' ? POSES[target] : target;
+        const p = typeof target === 'string' ? POSES[target] : target;
+        // Normalize so lean/crouch always tween back to 0 for poses that omit them
+        const t = { lLeg: p.lLeg ?? 0, rLeg: p.rLeg ?? 0, lArm: p.lArm ?? 0, rArm: p.rArm ?? 0,
+                    lean: p.lean ?? 0, crouch: p.crouch ?? 0 };
         if (!duration) {
             Object.assign(this.pose, t);
             if (onComplete) onComplete();
@@ -303,8 +312,8 @@ export default class Wrestler {
             // Drift toward character's idle stance while standing still (~1.5s to settle)
             const idleTarget = POSES[this.idlePose] ?? POSES.idle;
             const drift = 1 - Math.pow(0.94, dt * 60);
-            for (const k of ['lLeg', 'rLeg', 'lArm', 'rArm']) {
-                this.pose[k] += (idleTarget[k] - this.pose[k]) * drift;
+            for (const k of ['lLeg', 'rLeg', 'lArm', 'rArm', 'lean', 'crouch']) {
+                this.pose[k] += ((idleTarget[k] ?? 0) - this.pose[k]) * drift;
             }
         }
 
@@ -1141,7 +1150,9 @@ export default class Wrestler {
         const onRopes = (state === 'climbing' || state === 'onTurnbuckle' || (state === 'taunting' && this._ropeLevel > 0)) && this._corner;
         const s = onRopes ? perspectiveScale(this._corner.matY) : this.s;
         const gfx   = this.gfx;
-        const depth = 12 + y * 0.03;
+        // Depth from ring position, not screen y — a climbing wrestler's y is
+        // tweened up the post but his depth in the ring doesn't change.
+        const depth = 12 + (onRopes ? this._corner.matY : y) * 0.03;
         gfx.clear();
         gfx.setDepth(depth);
         this.skeleton.setDepth(depth);
@@ -1209,7 +1220,8 @@ export default class Wrestler {
         this.skeleton.setVisible(true);
         // Body bob is no longer bolted on here — it emerges from the gait leg geometry
         // inside the skeleton (hip rides the weight-bearing leg). Just pass moveBlend.
-        const lean      = this.facing * 0.07 * this.moveBlend;
+        // Movement lean plus the pose's own torso pitch (both facing-relative)
+        const lean      = this.facing * (0.07 * this.moveBlend + (this.pose.lean ?? 0));
         const liftScale = state === 'running' ? 1.0 : 0.5;
         const runBlend  = state === 'running' ? this.moveBlend : 0;
         this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, this.combatBlend, lean, this.moveBlend, liftScale, runBlend);

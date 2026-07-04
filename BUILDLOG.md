@@ -358,6 +358,26 @@ Timing/geometry facts encoded in the scenarios (useful beyond testing):
 - Clothesline connects at `xDist < 160*s` with `pastDist < 45*s` on a returning runner only (`runPhase === 'returning'`, now exposed in harness `snap()`).
 - Move events log before the delayed sell, so `type` can be 'stagger'/'move' even for moves that knock down — assert on `move`, not `type`.
 
+### 2026-07-04 — Rendering Depth Fixes + Pose Lean/Crouch Channels
+
+**Three depth-sorting bugs fixed** (wrestler depth formula is `12 + y * 0.03`, range 19.7–25.35):
+
+1. **Near ropes vanished behind wrestlers at the bottom of the ring** — a wrestler past y≈417 out-depthed `nearRopeGfx` (24.5). Near ropes sit between the camera and everything in the ring, so they now render at 25.5 (near posts 25.7).
+2. **Side ropes drew over wrestler heads** — each side rope was two straight halves at two fixed depths, but the rope spans the ring's whole depth. Now drawn as 8 banded segments, each depth-sorted with the wrestler formula at its ground position along the ring edge (`sideRopeBands` in `_setupDynamicRopes`; width tapers 2.4→1.4 with distance). Note: bands are created before the HUD camera so they're auto-ignored by it.
+3. **Far post bases painted over the mat** — far posts were depth 8 vs mat 3. Now 2.5: above crowd (1) and far apron (2), behind the mat, so the ring covers their bases.
+
+Also: a climbing wrestler's depth now locks to his corner's `matY` (like scale already did) — his y tweens up the post but his ring depth doesn't change.
+
+**Pose system gains `lean` and `crouch` channels** — the readability fix. Poses previously moved only four limb angles; the torso never pitched and the hips never dropped, so moves read as limb-waving on a vertical stick. Now:
+
+- `lean` (radians, facing-relative, + = forward) shifts shoulders/head ahead of the hips — wind-ups coil back (negative), impacts drive forward.
+- `crouch` (0..1) bends the knees and drops the hip by the vertical extent the bent legs lose, feet staying planted (`cThigh = c*0.85`, `cShin = c*0.75` in Skeleton FK branch; milder hip-drop + IK in gait mode). Boot angle excludes the crouch shin rotation so boots stay flat — without that, toes point skyward when kneeling.
+- `tweenPose` normalizes every target so poses that omit the channels tween back to 0; idle drift covers them too.
+- ~35 poses updated: slamGrab bends low (crouch 0.45), pinHold drops over the opponent (0.75), headbuttCock coils back (lean −0.28) before the lunge (+0.48), lockup leans both wrestlers into the tie-up, stagger tiers sink progressively (0 → 0.42 crouch), etc.
+- Body slam and suplex gained a `stumble` recovery frame after the throw instead of snapping to idle.
+
+Verified with zoomed pose-gallery screenshots via the harness; `debug:play -- all` still 10/10 after the changes.
+
 **Match clock + time-limit draw** (same night) — TV-graphic clock top-center counts up (`this._matchTime`, already ticking since Phase 2). At `matchLimit` (10 min default; 30-min Broadway becomes a story-mode setting) the match ends "TIME LIMIT — DRAW" — deferred while a pin or sleeper is mid-resolution so a count at the bell finishes. `_showWin` refactored through a shared `_endMatch(message)`; clock pauses during the banner and resets with the match.
 
 **Crowd audio** (same night) — `src/CrowdAudio.js`, zero asset files, pure Web Audio API:

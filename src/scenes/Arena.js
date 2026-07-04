@@ -294,10 +294,24 @@ export default class Arena extends Phaser.Scene {
     }
 
     _setupDynamicRopes() {
-        this.nearRopeGfx = this.add.graphics().setDepth(24.5);
+        // Near ropes sit between the camera and everything in the ring, so they
+        // must render above the deepest wrestler depth (12 + 445*0.03 = 25.35).
+        this.nearRopeGfx = this.add.graphics().setDepth(25.5);
         this.farRopeGfx  = this.add.graphics().setDepth(2);
         this.nearRopeSag = { val: 0, vel: 0 };
         this.farRopeSag  = { val: 0, vel: 0 };
+
+        // Side ropes span the ring's whole depth, so no single depth value can
+        // sort them against a wrestler standing mid-ring. Draw them in bands,
+        // each depth-sorted with the wrestler formula (12 + groundY * 0.03) at
+        // the band's ground position along the ring edge.
+        this.sideRopeBands = [];
+        const BANDS = 8;
+        for (let i = 0; i < BANDS; i++) {
+            const tMid    = (i + 0.5) / BANDS; // 0 = near corner → 1 = far corner
+            const groundY = RING.nearLeft.y + (RING.farLeft.y - RING.nearLeft.y) * tMid;
+            this.sideRopeBands.push(this.add.graphics().setDepth(12 + groundY * 0.03));
+        }
     }
 
     triggerRopeBounce(side) {
@@ -317,11 +331,10 @@ export default class Arena extends Phaser.Scene {
         const farG  = this.farRopeGfx;
         nearG.clear();
         farG.clear();
+        for (const b of this.sideRopeBands) b.clear();
 
-        const ns    = this.nearRopeSag.val;
-        const fs    = this.farRopeSag.val;
-        const lMidX = (nearLeft.x  + farLeft.x)  / 2;
-        const rMidX = (nearRight.x + farRight.x) / 2;
+        const ns = this.nearRopeSag.val;
+        const fs = this.farRopeSag.val;
 
         // Draw a rope as an arched polyline — sag peaks at center, zero at both ends.
         const arch = (gfx, x0, y0, x1, y1, sag, segs = 14) => {
@@ -335,11 +348,20 @@ export default class Arena extends Phaser.Scene {
             gfx.strokePath();
         };
 
-        ropes.forEach(rope => {
-            const midY = (rope.nearY + rope.farY) / 2;
-            const yBow = (ns + fs) * 0.5;   // vertical displacement at side rope midpoint
-            const xBow = (ns + fs) * 0.6;   // outward horizontal bow (left rope left, right rope right)
+        // Side rope point at parameter t (0 = near corner → 1 = far corner);
+        // bows outward in x and downward in y, peaking at the midpoint.
+        const BANDS = this.sideRopeBands.length;
+        const yBow  = (ns + fs) * 0.5;
+        const xBow  = (ns + fs) * 0.6;
+        const sidePoint = (nearP, farP, rope, dir, t) => {
+            const bow = Math.sin(t * Math.PI);
+            return {
+                x: nearP.x + (farP.x - nearP.x) * t + dir * xBow * bow,
+                y: rope.nearY + (rope.farY - rope.nearY) * t + yBow * bow,
+            };
+        };
 
+        ropes.forEach(rope => {
             // Horizontal ropes — 25% less sag than side ropes
             nearG.lineStyle(3, 0xf0f0f0, 1);
             arch(nearG, nearLeft.x, rope.nearY, nearRight.x, rope.nearY, ns * 0.75);
@@ -347,14 +369,19 @@ export default class Arena extends Phaser.Scene {
             farG.lineStyle(1.5, 0xe0e0e0, 0.9);
             arch(farG, farLeft.x, rope.farY, farRight.x, rope.farY, fs * 0.75);
 
-            // Side ropes bow outward at the midpoint in both x and y
-            nearG.lineStyle(2, 0xe4e4e4, 0.85);
-            nearG.lineBetween(nearLeft.x,  rope.nearY, lMidX - xBow, midY + yBow);
-            nearG.lineBetween(nearRight.x, rope.nearY, rMidX + xBow, midY + yBow);
-
-            farG.lineStyle(2, 0xe4e4e4, 0.85);
-            farG.lineBetween(lMidX - xBow, midY + yBow, farLeft.x,  rope.farY);
-            farG.lineBetween(rMidX + xBow, midY + yBow, farRight.x, rope.farY);
+            // Side ropes — one segment per depth band so wrestlers sort correctly
+            for (let i = 0; i < BANDS; i++) {
+                const t0 = i / BANDS, t1 = (i + 1) / BANDS;
+                const g  = this.sideRopeBands[i];
+                const wd = 2.4 - 1.0 * (t0 + t1) / 2; // thinner with distance
+                g.lineStyle(wd, 0xe4e4e4, 0.85);
+                const l0 = sidePoint(nearLeft, farLeft, rope, -1, t0);
+                const l1 = sidePoint(nearLeft, farLeft, rope, -1, t1);
+                g.lineBetween(l0.x, l0.y, l1.x, l1.y);
+                const r0 = sidePoint(nearRight, farRight, rope, 1, t0);
+                const r1 = sidePoint(nearRight, farRight, rope, 1, t1);
+                g.lineBetween(r0.x, r0.y, r1.x, r1.y);
+            }
         });
     }
 
@@ -362,9 +389,11 @@ export default class Arena extends Phaser.Scene {
         const { nearLeft, nearRight, farLeft, farRight, ropes, apronY } = RING;
         const topRope = ropes[2];
 
-        // Near posts must render in front of wrestlers; far posts stay behind them.
-        const nearGfx = this.add.graphics().setDepth(25);
-        const farGfx  = this.add.graphics().setDepth(8);
+        // Near posts render in front of wrestlers and near ropes; far posts sit
+        // behind the mat (depth 3) so the ring covers their bases, but above
+        // the crowd (1) and far apron (2).
+        const nearGfx = this.add.graphics().setDepth(25.7);
+        const farGfx  = this.add.graphics().setDepth(2.5);
 
         const drawPost = (gfx, p) => {
             gfx.fillStyle(0x686860, 1);

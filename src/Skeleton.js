@@ -200,6 +200,12 @@ export default class Skeleton {
         const footA = footGait(walkPhase);
         const footB = footGait(walkPhase + Math.PI);
 
+        // Crouch: pose-driven knee bend — hip drops by the vertical extent the
+        // bent legs lose, so feet stay planted at the mat.
+        const crouch = pose.crouch ?? 0;
+        const cThigh = crouch * 0.85; // thigh rotates forward
+        const cShin  = crouch * 0.75; // shin rotates back under the body
+
         let hipY;
         if (useGait) {
             const dxA = footA.fx * s, dxB = footB.fx * s;
@@ -208,8 +214,9 @@ export default class Skeleton {
             const hipYwalk  = ankleGndY - Math.min(reachA, reachB);
             const hipYstand = ankleGndY - LMAX * 0.99;
             hipY = hipYstand + (hipYwalk - hipYstand) * Math.min(1, moveBlend);
+            hipY += crouch * legLen * 0.22; // milder while moving; IK bends the knees
         } else {
-            hipY = y - (thighH + shinH + bootH);
+            hipY = y - bootH - (thighH * Math.cos(cThigh) + shinH * Math.cos(cShin));
         }
 
         const torsoTop  = hipY - torsoH;
@@ -272,15 +279,17 @@ export default class Skeleton {
             // Original pose-driven FK (move stances). Preserves the facing-based
             // far/near mapping and per-leg swing alternation exactly as before.
             const MAX_LEG = 0.38, KNEE_BEND = 0.22;
-            const lLegAng = facing * pose.lLeg + swing * MAX_LEG;
-            const rLegAng = facing * pose.rLeg - swing * MAX_LEG;
-            const lShinAng = lLegAng - facing * sinWP * KNEE_BEND;
-            const rShinAng = rLegAng + facing * sinWP * KNEE_BEND;
+            const lLegAng = facing * (pose.lLeg + cThigh) + swing * MAX_LEG;
+            const rLegAng = facing * (pose.rLeg + cThigh) - swing * MAX_LEG;
+            const lShinAng = lLegAng - facing * (sinWP * KNEE_BEND + cThigh + cShin);
+            const rShinAng = rLegAng + facing * (sinWP * KNEE_BEND - cThigh - cShin);
             const farPlant  = Math.max(0,  sinWP * facing);
             const nearPlant = Math.max(0, -sinWP * facing);
             const mk = (t, sh, plant) => ({
                 hx: x, hy: hipY, thighAng: t, shinAng: sh,
-                bootAng: sh * Math.max(0.25, 1 - plant * 0.75),
+                // Boots stay flat through a crouch — drop the crouch shin
+                // rotation before scaling, or toes point skyward when kneeling
+                bootAng: (sh + facing * (cThigh + cShin)) * Math.max(0.25, 1 - plant * 0.75),
             });
             if (facing >= 0) {
                 far  = mk(rLegAng, rShinAng, farPlant);

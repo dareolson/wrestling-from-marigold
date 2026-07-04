@@ -339,7 +339,16 @@ Added ~20 new POSES: `jabCock`, `jabRecoil`, `headbuttCock`, `headbuttRecoil`, `
 **Known quirks noticed while verifying:**
 - ~~Taunts get logged to `matchEvents` as `type: 'knockdown'`~~ — fixed same night in `logMove`.
 - AI lockup follow-up holds down+action intending headlock but piledriver comes out (w2's kit maps that input to piledriver). Reads fine in practice — not fixed.
-- A favicon 404 appears in the console after first input; cosmetic.
+- ~~A favicon 404 appears in the console after first input~~ — fixed with an empty data-URI icon in index.html.
+
+### 2026-07-04 — Playwright Debug Harness
+
+The ad-hoc verification setup from the AI session is now a permanent tool. `playwright-core` (devDependency, ~4MB — drives the installed system Chrome via `channel: 'chrome'`, no browser downloads) + the `window.__WFM_GAME` handle in main.js.
+
+- `tools/debug/harness.mjs` — `launch()` spawns Vite on port 5199 (or attaches to `WFM_URL`), opens the game in Chrome, clicks the canvas for focus/audio unlock, and returns `{ page, snap, events, screenshot, close }`. `snap()` = both wrestlers' position/state/stamina + clock + heat + matchOver. `HEADED=1` shows the browser.
+- `npm run debug:watch [-- seconds]` — live terminal feed: wrestler states every 500ms, every matchEvents entry as it lands. This is how the AI pacing bugs were found.
+- `npm run debug:shot [-- seconds]` — screenshot after N seconds into `tools/debug/shots/` (gitignored).
+- HUD vignette fix verified with this harness same night: meters/clock now render on a second vignette-free camera with its own grayscale filter.
 
 **Match clock + time-limit draw** (same night) — TV-graphic clock top-center counts up (`this._matchTime`, already ticking since Phase 2). At `matchLimit` (10 min default; 30-min Broadway becomes a story-mode setting) the match ends "TIME LIMIT — DRAW" — deferred while a pin or sleeper is mid-resolution so a count at the bell finishes. `_showWin` refactored through a shared `_endMatch(message)`; clock pauses during the banner and resets with the match.
 

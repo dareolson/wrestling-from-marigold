@@ -2,3 +2,4 @@ node_modules/
 dist/
 Sprite sheets/
 test.html
+tools/debug/shots/

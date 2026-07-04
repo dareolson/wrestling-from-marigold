@@ -505,6 +505,16 @@ export default class Arena extends Phaser.Scene {
         this.matchEvents = [];
         this._matchTime  = 0;
         this.matchOver   = false;
+
+        // Match clock — counts up, TV-graphic style; draw at the time limit.
+        // 10 min for now; the 30-minute Broadway becomes a story-mode setting.
+        this.matchLimit = 10 * 60;
+        this.clockLbl = this.add.text(W / 2, 12, '0:00', {
+            fontFamily: '"Times New Roman", Times, serif',
+            fontSize: '15px',
+            color: '#999990',
+            letterSpacing: 3,
+        }).setOrigin(0.5, 0).setDepth(155);
     }
 
     _toggleP2() {
@@ -607,7 +617,20 @@ export default class Arena extends Phaser.Scene {
 
     _tickGame(dt) {
         const { w1, w2 } = this;
-        this._matchTime += dt;
+
+        // Clock pauses while the end-of-match banner is up
+        if (!this.matchOver) {
+            this._matchTime += dt;
+            const m = Math.floor(this._matchTime / 60);
+            const s = Math.floor(this._matchTime % 60);
+            this.clockLbl.setText(`${m}:${String(s).padStart(2, '0')}`);
+
+            // Time-limit draw — held off while a pin or sleeper is resolving
+            if (this._matchTime >= this.matchLimit && !this.pinState && !this.sleeperState) {
+                this._logEvent('timeLimitDraw');
+                this._endMatch('TIME LIMIT — DRAW');
+            }
+        }
 
         // Tick AI before wrestler actions so decisions are ready this frame.
         // Paused while the win banner is up so the AI doesn't attack the loser.
@@ -655,7 +678,7 @@ export default class Arena extends Phaser.Scene {
         // Log every move that landed this frame and bump crowd heat
         const logMove = (move, attacker, defender) => {
             if (!move || move === true) return;
-            const type = (move === 'knockdown' || defender.state === 'down' || defender.state === 'falling' || defender.state === 'flipping')
+            const type = (move !== 'taunt' && (move === 'knockdown' || defender.state === 'down' || defender.state === 'falling' || defender.state === 'flipping'))
                 ? 'knockdown' : (defender.state === 'staggered' ? 'stagger' : 'move');
             this._logEvent(type, { attacker, move, defenderStamina: Math.round(defender.stamina) });
             this._heatForMove(move);
@@ -911,8 +934,12 @@ export default class Arena extends Phaser.Scene {
     }
 
     _showWin(player) {
+        this._endMatch(`PLAYER ${player} WINS`);
+    }
+
+    _endMatch(message) {
         this.matchOver = true;
-        const txt = this.add.text(W / 2, H / 2, `PLAYER ${player} WINS`, {
+        const txt = this.add.text(W / 2, H / 2, message, {
             fontFamily: '"Times New Roman", Times, serif',
             fontSize: '42px',
             color: '#ffffff',
@@ -931,7 +958,8 @@ export default class Arena extends Phaser.Scene {
                     txt.destroy();
                     this.w1.x = 330; this.w1.y = 360; this.w1.state = 'standing'; this.w1.facing =  1; this.w1.stamina = 100;
                     this.w2.x = 630; this.w2.y = 360; this.w2.state = 'standing'; this.w2.facing = -1; this.w2.stamina = 100;
-                    this.matchOver = false;
+                    this._matchTime = 0;
+                    this.matchOver  = false;
                 },
             });
         });

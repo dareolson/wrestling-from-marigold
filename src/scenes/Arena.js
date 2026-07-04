@@ -2,11 +2,19 @@ import { W, H, RING, ringBoundsAtY } from '../constants.js';
 import Wrestler from '../Wrestler.js';
 import InputHandler from '../InputHandler.js';
 import AIHandler from '../AIHandler.js';
+import CrowdAudio from '../CrowdAudio.js';
 import { george } from '../characters/george.js';
 
 // All characters whose PNGs should be preloaded
 const CHARACTERS = [george];
 const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png' };
+
+// Crowd reaction swell per match event type (0..1)
+const POP_SIZES = {
+    pinfall: 1.0, sleeperKO: 1.0, nearfall: 0.9, kickout: 0.6,
+    knockdown: 0.55, ropeBreak: 0.5, sleeperEscape: 0.5, pinAttempt: 0.45,
+    sleeperApplied: 0.4, stagger: 0.25, move: 0.18,
+};
 
 export default class Arena extends Phaser.Scene {
     constructor() {
@@ -506,6 +514,13 @@ export default class Arena extends Phaser.Scene {
         this._matchTime  = 0;
         this.matchOver   = false;
 
+        // Crowd audio — synthesized murmur tracks the heat meter, pops on events.
+        // Browsers block audio until a user gesture, so start on first input.
+        this.crowd = new CrowdAudio();
+        const unlockAudio = () => this.crowd.start();
+        this.input.keyboard.once('keydown', unlockAudio);
+        this.input.once('pointerdown', unlockAudio);
+
         // Match clock — counts up, TV-graphic style; draw at the time limit.
         // 10 min for now; the 30-minute Broadway becomes a story-mode setting.
         this.matchLimit = 10 * 60;
@@ -562,6 +577,8 @@ export default class Arena extends Phaser.Scene {
     // Future AI commentary system reads this to generate contextual play-by-play.
     _logEvent(type, payload = {}) {
         this.matchEvents.push({ t: Math.round(this._matchTime), type, ...payload });
+        const pop = POP_SIZES[type];
+        if (pop) this.crowd.pop(pop);
     }
 
     bumpHeat(amount) {
@@ -594,6 +611,7 @@ export default class Arena extends Phaser.Scene {
 
     _updateHeat(dt) {
         this.heat = Math.max(0, this.heat - 3 * dt);
+        this.crowd.setHeat(this.heat / 100);
     }
 
     _drawHeatMeter() {
@@ -939,6 +957,7 @@ export default class Arena extends Phaser.Scene {
 
     _endMatch(message) {
         this.matchOver = true;
+        this.crowd.bell(3);
         const txt = this.add.text(W / 2, H / 2, message, {
             fontFamily: '"Times New Roman", Times, serif',
             fontSize: '42px',
@@ -960,6 +979,7 @@ export default class Arena extends Phaser.Scene {
                     this.w2.x = 630; this.w2.y = 360; this.w2.state = 'standing'; this.w2.facing = -1; this.w2.stamina = 100;
                     this._matchTime = 0;
                     this.matchOver  = false;
+                    this.crowd.bell(1);
                 },
             });
         });

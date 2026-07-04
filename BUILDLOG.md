@@ -336,9 +336,20 @@ Added ~20 new POSES: `jabCock`, `jabRecoil`, `headbuttCock`, `headbuttRecoil`, `
 
 **Verified headless** (playwright-core + system Chrome against the Vite dev server, polling game state via new `window.__WFM_GAME` debug handle in main.js): 45s AFK match arc was taunt → paced dropkick (t=21, not t=2) → elbow drops with showboat taunts between → lockup → piledriver → pin → pinfall, zero AI inputs during the banner, clean reset after.
 
-**Known quirks noticed while verifying (pre-existing, not fixed):**
-- Taunts get logged to `matchEvents` as `type: 'knockdown'` — event-type bug in Arena's move logging.
-- AI lockup follow-up holds down+action intending headlock but piledriver comes out (w2's kit maps that input to piledriver). Reads fine in practice.
+**Known quirks noticed while verifying:**
+- ~~Taunts get logged to `matchEvents` as `type: 'knockdown'`~~ — fixed same night in `logMove`.
+- AI lockup follow-up holds down+action intending headlock but piledriver comes out (w2's kit maps that input to piledriver). Reads fine in practice — not fixed.
+- A favicon 404 appears in the console after first input; cosmetic.
+
+**Match clock + time-limit draw** (same night) — TV-graphic clock top-center counts up (`this._matchTime`, already ticking since Phase 2). At `matchLimit` (10 min default; 30-min Broadway becomes a story-mode setting) the match ends "TIME LIMIT — DRAW" — deferred while a pin or sleeper is mid-resolution so a count at the bell finishes. `_showWin` refactored through a shared `_endMatch(message)`; clock pauses during the banner and resets with the match.
+
+**Crowd audio** (same night) — `src/CrowdAudio.js`, zero asset files, pure Web Audio API:
+- **Murmur bed:** 4s looped pink noise (Paul Kellet one-pole stack) → bandpass (Q 0.6) → gain. Heat meter drives both volume (0.06→0.36) and bandpass center (400→1100Hz) via `setTargetAtTime` — the crowd gets louder *and brighter* as heat rises.
+- **Event pops:** every `_logEvent` type has a swell size in `POP_SIZES` (pinfall/sleeperKO 1.0 → move 0.18). Pop = multiplier gain on the murmur chain: fast swell (τ 0.06s), slow settle (τ 0.8s).
+- **Timekeeper's bell:** three inharmonic sine partials (960/1420/2620Hz) with staggered exponential decays. 3 strikes at match end, 1 at the restart.
+- Whole chain runs through a 3.2kHz lowpass to sit inside the vintage-broadcast aesthetic.
+- Browsers block audio until a user gesture — `crowd.start()` is bound to first keydown/pointerdown, idempotent.
+- Verified headless (Chrome `--autoplay-policy=no-user-gesture-required`): murmur gain 0.138→0.334 and filter 581→1039Hz on a heat bump to 90, nearfall pop spiked the pop gain to 3.2× then settled, bell plays without error.
 
 ---
 

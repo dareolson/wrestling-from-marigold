@@ -8,6 +8,7 @@
     "build": "vite build",
     "debug:watch": "node tools/debug/watch.mjs",
     "debug:shot": "node tools/debug/shot.mjs",
+    "debug:play": "node tools/debug/play.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

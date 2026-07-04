@@ -60,7 +60,7 @@ export async function launch() {
             return page.evaluate(() => {
                 const sc = window.__WFM_GAME?.scene?.scenes?.[0];
                 if (!sc?.w1) return null;
-                const f = w => ({ x: Math.round(w.x), y: Math.round(w.y), st: w.state, stam: Math.round(w.stamina) });
+                const f = w => ({ x: Math.round(w.x), y: Math.round(w.y), st: w.state, rp: w.runPhase, stam: Math.round(w.stamina) });
                 return {
                     t: Math.round(sc._matchTime * 10) / 10,
                     clock: sc.clockLbl.text,

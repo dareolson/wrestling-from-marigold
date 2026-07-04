@@ -350,6 +350,14 @@ The ad-hoc verification setup from the AI session is now a permanent tool. `play
 - `npm run debug:shot [-- seconds]` — screenshot after N seconds into `tools/debug/shots/` (gitignored).
 - HUD vignette fix verified with this harness same night: meters/clock now render on a second vignette-free camera with its own grayscale filter.
 
+**Scripted P1 scenario player** (`tools/debug/play.mjs`) — `npm run debug:play -- <scenario|all>`. Drives P1 with real key presses (P2 toggled to keyboard dummy first) and asserts the expected entry lands in `matchEvents` — each scenario is a regression test for a move. 10 scenarios, all passing: jab, combo (jab→headbutt), elbow, dropkick, lockup, headlock, whip, clothesline, sleeper, pin (full arc to pinfall).
+
+Timing/geometry facts encoded in the scenarios (useful beyond testing):
+- Collision separation clamps standing wrestlers at `80*s` (~65px center ring); jab reach is `85*s` (~69px) — the point-blank window only opens while walking *into* the opponent (`jam()` primitive).
+- Lockup auto-releases at 0.8s; directional follow-ups (headlock S, whip left/right, suplex W) must land inside that window.
+- Clothesline connects at `xDist < 160*s` with `pastDist < 45*s` on a returning runner only (`runPhase === 'returning'`, now exposed in harness `snap()`).
+- Move events log before the delayed sell, so `type` can be 'stagger'/'move' even for moves that knock down — assert on `move`, not `type`.
+
 **Match clock + time-limit draw** (same night) — TV-graphic clock top-center counts up (`this._matchTime`, already ticking since Phase 2). At `matchLimit` (10 min default; 30-min Broadway becomes a story-mode setting) the match ends "TIME LIMIT — DRAW" — deferred while a pin or sleeper is mid-resolution so a count at the bell finishes. `_showWin` refactored through a shared `_endMatch(message)`; clock pauses during the banner and resets with the match.
 
 **Crowd audio** (same night) — `src/CrowdAudio.js`, zero asset files, pure Web Audio API:

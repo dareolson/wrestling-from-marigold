@@ -378,6 +378,19 @@ Also: a climbing wrestler's depth now locks to his corner's `matY` (like scale a
 
 Verified with zoomed pose-gallery screenshots via the harness; `debug:play -- all` still 10/10 after the changes.
 
+### 2026-07-04 — AI vs AI Spectator Mode
+
+**P1 gets a brawler AI** — press **1** to toggle P1 keyboard/AI (mirrors P2's **2**), label top-left. Turn both on to watch a match. `_togglePlayer(n)`/`_showPlayerMode(n)` replace the P2-only versions; `_tickGame` ticks both inputs (both paused by `matchOver`).
+
+Watching AI vs AI exposed four deadlocks/bugs, all fixed in AIHandler:
+
+1. **Infinite pin ↔ rope-break loop** — AI re-covered instantly forever when the defender was at the ropes. Now: `_pinWait` cooldown (2.2–3.4s) after any cover, and no covers at all near the ropes (`_nearRopes`, same geometry as the game's rope-break check).
+2. **Elbow-drop chains** — the downed-opponent pounce skipped the global offense gate and each drop re-downed the opponent, keeping them on the mat indefinitely. Now offense-gated, capped at 2 per down-spell (`_pounces`, reset when they rise), never chained at the ropes — the AI steps back and lets them up.
+3. **Lockup steal war** — both AIs ran the lockup handler; the defender pressing grapple *steals* the lockup, so two AIs traded steals for 30+ seconds. Defenders now contest at most once per lockup (35%).
+4. **George camped the ropes forever at low stamina** — unpinnable by rule 1, so matches never ended. Rope-seeking now comes in waves (~2.5–4s on, ~3–5s off); between waves he re-engages. Plus the brawler counters rope-clinging properly: hurt opponent at the ropes → lockup → whip across the ring → **clothesline the rebound** (AI previously ignored running opponents entirely and never cashed in its own whips) → knockdown and pin happen mid-ring.
+
+Full AI-vs-AI match now runs to a clean pinfall (verified headless: knockdown mid-ring → cover → three count → banner at ~1:15). `debug:play -- all` still 10/10.
+
 **Match clock + time-limit draw** (same night) — TV-graphic clock top-center counts up (`this._matchTime`, already ticking since Phase 2). At `matchLimit` (10 min default; 30-min Broadway becomes a story-mode setting) the match ends "TIME LIMIT — DRAW" — deferred while a pin or sleeper is mid-resolution so a count at the bell finishes. `_showWin` refactored through a shared `_endMatch(message)`; clock pauses during the banner and resets with the match.
 
 **Crowd audio** (same night) — `src/CrowdAudio.js`, zero asset files, pure Web Audio API:

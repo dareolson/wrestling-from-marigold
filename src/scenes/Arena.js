@@ -64,7 +64,7 @@ export default class Arena extends Phaser.Scene {
         // colored stamina bars keep the B/W broadcast look. Objects created
         // after this point render on both cameras unless ignored on one.
         try {
-            const hudObjects = [this.staminaGfx, this.heatGfx, this.heatLbl, this.clockLbl, this.p2ModeLbl];
+            const hudObjects = [this.staminaGfx, this.heatGfx, this.heatLbl, this.clockLbl, this.p1ModeLbl, this.p2ModeLbl];
             this.hudCam = this.cameras.add(0, 0, W, H);
             const cmHud = this.hudCam.filters.internal.addColorMatrix();
             cmHud.colorMatrix.grayscale(1);
@@ -507,20 +507,28 @@ export default class Arena extends Phaser.Scene {
         this.w2.facing   = -1;
         this.w2.idlePose = 'powerIdle';
 
-        // P2 defaults to the George AI — press 2 to swap between AI and keyboard
-        this._p2Keyboard = input2;
-        this._p2AI       = new AIHandler('george');
-        this._p2AI.setWrestlers(this.w2, this.w1);
-        this.w2.input = this._p2AI;
-
-        this.p2ModeLbl = this.add.text(W - 24, 26, '', {
+        // P1 defaults to keyboard, P2 to the George AI. Keys 1 and 2 toggle
+        // each player between keyboard and AI — turn both AI on to watch a match.
+        const lblStyle = {
             fontFamily: '"Times New Roman", Times, serif',
             fontSize: '10px',
             color: '#888880',
             letterSpacing: 2,
-        }).setOrigin(1, 0).setDepth(155);
-        this._showP2Mode();
-        kb.addKey('TWO').on('down', () => this._toggleP2());
+        };
+        this._p1Keyboard = input1;
+        this._p1AI       = new AIHandler('brawler');
+        this._p1AI.setWrestlers(this.w1, this.w2);
+        this.p1ModeLbl = this.add.text(24, 26, '', lblStyle).setOrigin(0, 0).setDepth(155);
+        this._showPlayerMode(1);
+        kb.addKey('ONE').on('down', () => this._togglePlayer(1));
+
+        this._p2Keyboard = input2;
+        this._p2AI       = new AIHandler('george');
+        this._p2AI.setWrestlers(this.w2, this.w1);
+        this.w2.input = this._p2AI;
+        this.p2ModeLbl = this.add.text(W - 24, 26, '', lblStyle).setOrigin(1, 0).setDepth(155);
+        this._showPlayerMode(2);
+        kb.addKey('TWO').on('down', () => this._togglePlayer(2));
 
         // Pin countdown text
         this.pinText = this.add.text(W / 2, H / 2 - 10, '', {
@@ -576,20 +584,27 @@ export default class Arena extends Phaser.Scene {
         }).setOrigin(0.5, 0).setDepth(155);
     }
 
-    _toggleP2() {
-        const toAI = this.w2.input !== this._p2AI;
-        this.w2.input = toAI ? this._p2AI : this._p2Keyboard;
-        this._showP2Mode();
+    _playerRig(n) {
+        return n === 1
+            ? { w: this.w1, ai: this._p1AI, kb: this._p1Keyboard, lbl: this.p1ModeLbl, name: 'BRAWLER' }
+            : { w: this.w2, ai: this._p2AI, kb: this._p2Keyboard, lbl: this.p2ModeLbl, name: 'GEORGE' };
     }
 
-    // Show the P2 control mode for a few seconds, then fade
-    _showP2Mode() {
-        const isAI = this.w2.input === this._p2AI;
-        this.p2ModeLbl.setText(isAI ? 'P2: GEORGE (AI) — 2 = KEYBOARD' : 'P2: KEYBOARD — 2 = AI');
-        this.p2ModeLbl.setAlpha(1);
-        this.tweens.killTweensOf(this.p2ModeLbl);
+    _togglePlayer(n) {
+        const r = this._playerRig(n);
+        r.w.input = r.w.input === r.ai ? r.kb : r.ai;
+        this._showPlayerMode(n);
+    }
+
+    // Show a player's control mode for a few seconds, then fade
+    _showPlayerMode(n) {
+        const r    = this._playerRig(n);
+        const isAI = r.w.input === r.ai;
+        r.lbl.setText(isAI ? `P${n}: ${r.name} (AI) — ${n} = KEYBOARD` : `P${n}: KEYBOARD — ${n} = AI`);
+        r.lbl.setAlpha(1);
+        this.tweens.killTweensOf(r.lbl);
         this.tweens.add({
-            targets: this.p2ModeLbl,
+            targets: r.lbl,
             alpha: 0,
             delay: 3500,
             duration: 800,
@@ -696,7 +711,10 @@ export default class Arena extends Phaser.Scene {
 
         // Tick AI before wrestler actions so decisions are ready this frame.
         // Paused while the win banner is up so the AI doesn't attack the loser.
-        if (!this.matchOver) w2.input.tick?.(dt);
+        if (!this.matchOver) {
+            w1.input.tick?.(dt);
+            w2.input.tick?.(dt);
+        }
 
         w1.move(dt, w2);
         w2.move(dt, w1);

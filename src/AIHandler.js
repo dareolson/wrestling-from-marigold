@@ -3,6 +3,8 @@
 // stalls, seeks ropes, cheap-shots, and turns aggressive only when the
 // opponent is vulnerable.
 
+import { ringBoundsAtY } from './constants.js';
+
 const PERSONALITIES = {
     brawler: {
         stallChance:      0.003, // ~once per 5s at 60fps
@@ -41,6 +43,7 @@ export default class AIHandler {
         this._showboat    = false; // mid showboat beat (stall, then taunt)
         this._react       = 0;     // human-feel delay before pouncing on a downed opponent
         this._oppWasDown  = false;
+        this._pinWait     = 0;     // cooldown after a pin attempt — no instant re-covers
     }
 
     // Called once after both wrestlers are constructed.
@@ -57,6 +60,7 @@ export default class AIHandler {
         this._stallTimer  = Math.max(0, this._stallTimer - dt);
         this._offense     = Math.max(0, this._offense - dt);
         this._react       = Math.max(0, this._react - dt);
+        this._pinWait     = Math.max(0, this._pinWait - dt);
 
         const self = this._self;
         const opp  = this._opp;
@@ -65,6 +69,7 @@ export default class AIHandler {
         // Reaction delay: when the opponent hits the mat, take a beat before pouncing
         const oppDown = opp.state === 'down' || opp.state === 'possum';
         if (oppDown && !this._oppWasDown) this._react = 0.15 + Math.random() * 0.2;
+        if (!oppDown) this._pounces = 0; // fresh down-spell, fresh pounce budget
         this._oppWasDown = oppDown;
 
         // Mash to escape holds and kick out of pins
@@ -82,6 +87,7 @@ export default class AIHandler {
             this._handleLockup();
             return;
         }
+        this._contested = false; // lockup over — next one gets a fresh contest roll
 
         // Only act while standing (not mid-move, falling, etc.)
         if (self.state !== 'standing') return;
@@ -141,11 +147,22 @@ export default class AIHandler {
             return;
         }
 
-        // George rope-seeks when hurt: drift toward the nearest horizontal edge
+        // George rope-seeks when hurt — but in waves, not permanently. A heel
+        // who never leaves the ropes can never be pinned (covers rope-break
+        // there), so seek for a few seconds, then drift back into the match.
         if (cfg.ropeSeek && lowStam) {
-            const toLeft = self.x < 480; // which side is closer
-            this._hold(toLeft ? 'left' : 'right');
-            return;
+            this._ropeTimer = (this._ropeTimer ?? 0) - dt;
+            if (this._ropeTimer <= 0) {
+                this._ropeSeeking = !this._ropeSeeking;
+                this._ropeTimer   = this._ropeSeeking ? 2.5 + Math.random() * 1.5
+                                                      : 3.0 + Math.random() * 2.0;
+            }
+            if (this._ropeSeeking) {
+                const toLeft = self.x < 480; // which side is closer
+                this._hold(toLeft ? 'left' : 'right');
+                return;
+            }
+            // Off-wave: fall through to normal spacing/approach below
         }
 
         // Close enough — hold position, let _chooseAction handle the rest
@@ -201,14 +218,21 @@ export default class AIHandler {
 
         // Opponent is down or playing possum — pounce, after a human reaction beat
         if (opp.state === 'down' || opp.state === 'possum') {
-            if (this._react <= 0 && dist < GRAPPLE_REACH) {
-                // Low stamina on opponent → go for pin; otherwise elbow drop
-                if (opp.stamina < 45) {
-                    this._press('action'); // pin
-                    this._cooldown = 0.5;
-                } else {
-                    this._attack('power', 0.9); // elbow drop
-                }
+            if (this._react > 0 || dist >= GRAPPLE_REACH) return;
+            // Pins break instantly at the ropes — don't cover there, and don't
+            // machine-gun re-covers after a kickout or rope break
+            const pinnable = opp.stamina < 45 && this._pinWait <= 0 && !this._nearRopes(opp);
+            if (pinnable) {
+                this._press('action'); // pin
+                this._cooldown = 0.5;
+                this._pinWait  = 2.2 + Math.random() * 1.2;
+            } else if (this._offense <= 0 && (this._pounces ?? 0) < 2 && !this._nearRopes(opp)) {
+                // Each drop re-downs them, so cap follow-ups per down-spell and
+                // never chain them at the ropes — back off and let them rise
+                this._attack('power', 0.9); // elbow drop
+                this._pounces = (this._pounces ?? 0) + 1;
+            } else if (this._stallTimer <= 0 && this._offense <= 0) {
+                this._stallTimer = 0.8; // step back, wait for the rise
             }
             return;
         }
@@ -226,11 +250,23 @@ export default class AIHandler {
         // All attacks below respect the global offense cooldown
         if (this._offense > 0) return;
 
+        // Whipped opponent returning off the ropes — clothesline the rebound
+        if (opp.state === 'running' && opp.runPhase === 'returning') {
+            if (Math.abs(opp.x - self.x) < 130 * scale) {
+                this._attack('action', 1.0); // clothesline
+            }
+            return;
+        }
+
         if (opp.state !== 'standing') return; // don't interrupt ongoing moves
 
         // Close range
         if (dist < JAB_REACH) {
-            if (Math.random() < cfg.cheapShotOdds) {
+            // A hurt opponent hiding at the ropes can't be pinned there — tie up
+            // and whip them off the ropes instead of striking them in place
+            if (opp.stamina < 45 && this._nearRopes(opp)) {
+                this._attack('action', 0.8); // grapple → lockup → whip
+            } else if (Math.random() < cfg.cheapShotOdds) {
                 this._attack('power', 0.55); // jab
             } else {
                 this._attack('action', 0.8); // grapple → lockup
@@ -257,11 +293,43 @@ export default class AIHandler {
         }
     }
 
+    // Same rope proximity check the game uses for rope breaks, slightly wider
+    _nearRopes(w) {
+        const b   = ringBoundsAtY(w.y);
+        const thr = 34 * w.s;
+        return w.x <= b.left + thr || w.x >= b.right - thr;
+    }
+
     _handleLockup() {
         // Wait a beat before committing to a follow-up
         if (this._cooldown > 0) return;
 
+        // Pressing grapple as the DEFENDER steals the lockup — two AIs doing
+        // that unconditionally trade steals forever. Contest at most once per
+        // lockup, and usually just eat the follow-up.
+        const ls = this._self.scene?.lockupState;
+        if (ls && ls.defender === this._self) {
+            if (!this._contested) {
+                this._contested = true;
+                if (Math.random() < 0.35) this._press('action'); // steal it
+            }
+            this._cooldown = 0.4;
+            return;
+        }
+
         const cfg = this._cfg;
+
+        // Opponent clinging to the ropes: whip them across the ring so the
+        // rebound (and the pin that follows) happens mid-ring
+        if (this._nearRopes(this._opp)) {
+            this._hold(this._self.facing > 0 ? 'right' : 'left');
+            this._press('action'); // → irish whip
+            this._cooldown = 0.8;
+            this._offense  = 1.1 + Math.random() * 0.9;
+            this._landed++;
+            return;
+        }
+
         if (cfg.lockupPreference === 'headlock') {
             // George: headlock to drain stamina, or irish whip to create space
             if (Math.random() < 0.55) {

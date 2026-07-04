@@ -391,6 +391,14 @@ Watching AI vs AI exposed four deadlocks/bugs, all fixed in AIHandler:
 
 Full AI-vs-AI match now runs to a clean pinfall (verified headless: knockdown mid-ring → cover → three count → banner at ~1:15). `debug:play -- all` still 10/10.
 
+**Balance telemetry** — `npm run debug:sim -- <N>` runs N AI-vs-AI matches headless and prints per-match winner, duration, offense share, nearfalls, and longest dead-air gap, plus totals. This is the baseline every balance change gets measured against.
+
+**Balance/fun roadmap (from AI-vs-AI observation, next session):**
+- Comeback mechanic: kicking out of a pin / surviving a hold refunds stamina + bumps heat — creates match arcs instead of squashes (helps human matches identically; right now whoever falls behind stays behind)
+- George's real win conditions: sleeper + headlock attrition — his AI barely uses either; jabs (~5 dmg) can't compete with slams (~20)
+- Nearfall drama: always-survive-the-first-cover rule (or heat-scaled kickouts) to manufacture 2.9-count moments
+- Fun proxies to watch in sim stats: momentum swings, nearfalls per match, offense share (~55/45 for a good heel match), dead air
+
 **Match clock + time-limit draw** (same night) — TV-graphic clock top-center counts up (`this._matchTime`, already ticking since Phase 2). At `matchLimit` (10 min default; 30-min Broadway becomes a story-mode setting) the match ends "TIME LIMIT — DRAW" — deferred while a pin or sleeper is mid-resolution so a count at the bell finishes. `_showWin` refactored through a shared `_endMatch(message)`; clock pauses during the banner and resets with the match.
 
 **Crowd audio** (same night) — `src/CrowdAudio.js`, zero asset files, pure Web Audio API:

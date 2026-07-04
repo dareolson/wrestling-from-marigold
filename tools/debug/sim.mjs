@@ -1,0 +1,44 @@
+// Balance telemetry: run N AI-vs-AI matches and print per-match stats plus
+// totals. The baseline every balance change gets measured against.
+//
+//   npm run debug:sim -- 5        — simulate 5 matches (default 3)
+
+import { launch } from './harness.mjs';
+
+const N = Number(process.argv[2]) || 3;
+const h = await launch();
+await h.page.keyboard.press('1'); // P1 → brawler AI (P2 already George AI)
+await h.page.waitForTimeout(500);
+
+const results = [];
+let startIdx = 0;
+let wasOver = false;
+
+while (results.length < N) {
+    await h.page.waitForTimeout(500);
+    const s = await h.snap();
+    if (s.over && !wasOver) {
+        const ev = await h.events(startIdx);
+        startIdx += ev.length;
+        const offense = { p1: 0, p2: 0 };
+        let nearfalls = 0, deadAir = 0, lastT = 0;
+        let winner = 'draw';
+        for (const e of ev) {
+            if (e.attacker && (e.type === 'move' || e.type === 'knockdown' || e.type === 'stagger')) offense[e.attacker]++;
+            if (e.type === 'nearfall') nearfalls++;
+            if (e.type === 'pinfall' || e.type === 'sleeperKO') winner = e.winner;
+            deadAir = Math.max(deadAir, e.t - lastT);
+            lastT = e.t;
+        }
+        const total = offense.p1 + offense.p2 || 1;
+        const r = { winner, dur: lastT, share: Math.round(offense.p1 / total * 100), nearfalls, deadAir };
+        results.push(r);
+        console.log(`match ${results.length}: ${r.winner} wins in ${r.dur}s — offense ${r.share}/${100 - r.share}, nearfalls ${r.nearfalls}, longest dead air ${r.deadAir}s`);
+    }
+    wasOver = s.over;
+}
+
+const wins = results.filter(r => r.winner === 'p1').length;
+const avg = k => Math.round(results.reduce((a, r) => a + r[k], 0) / results.length);
+console.log(`\nTOTALS: p1 ${wins}/${N} wins — avg duration ${avg('dur')}s, avg offense ${avg('share')}/${100 - avg('share')}, avg nearfalls ${avg('nearfalls')}, avg worst dead air ${avg('deadAir')}s`);
+await h.close();

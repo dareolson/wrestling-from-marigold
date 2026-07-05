@@ -20,7 +20,7 @@ const STAMINA_DRAIN    = {    // drained from the DEFENDER on each move landing
     elbowDrop:         10,
     doubleAxeHandle:   12,
     sleeperHold:       18, // total drained if hold runs full duration
-    headlock:         3.0, // per second (applied in Arena._tickHeadlock)
+    headlock:         4.0, // per second (applied in Arena._tickHeadlock)
     armDrag:          14,
     suplex:            20,
     divingElbow:       18,
@@ -28,6 +28,12 @@ const STAMINA_DRAIN    = {    // drained from the DEFENDER on each move landing
 };
 // Kick-out chance: 100% at full stamina, 0% at or below this threshold
 const KICKOUT_FLOOR = 15;
+
+// States a delayed sell must never interrupt — mid two-body moves and holds,
+// where a state change on one wrestler strands the other with no way out.
+const UNSELLABLE_STATES = new Set([
+    'slamming', 'grabbed', 'pinning', 'pinned', 'holding', 'sleeping', 'headlocked', 'lockup',
+]);
 
 // ─── Pose library ────────────────────────────────────────────────────────────
 // Angles are facing-relative: positive = toward facing direction.
@@ -298,14 +304,23 @@ export default class Wrestler {
 
         const len = Math.hypot(dx, dy);
         if (len > 0) {
-            const speed = SPEED * this.s * dt;
+            // Hurt legs: slower gait (phase advance scales with it so planted
+            // feet don't skate), and liable to stumble mid-step — a stumble is
+            // a slam window, since tryAction grabs staggered wrestlers
+            const hurt = Math.max(0, 1 - this.stamina / 35);
+            const eff  = SPEED * (1 - 0.35 * hurt);
+            const speed = eff * this.s * dt;
             this.x += (dx / len) * speed;
             this.y += (dy / len) * speed;
             const backward = dx !== 0 && Math.sign(dx) !== this.facing;
             const phaseDir = backward ? -1 : 1;
-            this.walkPhase = ((this.walkPhase + phaseDir * SPEED * dt * WALK_FREQ) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+            this.walkPhase = ((this.walkPhase + phaseDir * eff * dt * WALK_FREQ) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
             this.moveBlend = Math.min(1, this.moveBlend + dt * 6);
             this._clamp();
+            if (hurt > 0 && Math.random() < 0.45 * hurt * dt) {
+                this.startStagger();
+                return;
+            }
         } else {
             this.walkPhase *= Math.pow(0.85, dt * 60);
             this.moveBlend  = Math.max(0, this.moveBlend - dt * 6);
@@ -325,10 +340,26 @@ export default class Wrestler {
         if (depthDiff < 26) {
             const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
             const minDist = 80 * this.s;
-            if (dist < minDist && dist > 0) {
-                const ang = Phaser.Math.Angle.Between(other.x, other.y, this.x, this.y);
+            if (dist < minDist) {
+                // Dead-centered (moves that set other.x = attacker.x leave dist
+                // at exactly 0) has no angle to push along — step back opposite
+                // our own facing instead of fusing into one silhouette
+                const ang = dist > 0
+                    ? Phaser.Math.Angle.Between(other.x, other.y, this.x, this.y)
+                    : (this.facing > 0 ? Math.PI : 0);
                 this.x = other.x + Math.cos(ang) * minDist;
                 this.y = other.y + Math.sin(ang) * minDist;
+                this._clamp();
+            }
+        } else if (depthDiff < 48 && (other.state === 'standing' || other.state === 'staggered')) {
+            // Half-depth overlap: sprites are ~2.5× taller than the 26px gate, so
+            // two upright wrestlers 26–48px apart in depth still fuse into one
+            // silhouette. Ease them apart in y — gentle enough that a deliberate
+            // walk-by (140·s px/s) slides through, firm enough that nobody loiters
+            // inside the other guy.
+            if (Math.abs(this.x - other.x) < 60 * this.s) {
+                const away = Math.sign(this.y - other.y) || 1;
+                this.y += away * 90 * (1 - depthDiff / 48) * dt;
                 this._clamp();
             }
         }
@@ -420,10 +451,19 @@ export default class Wrestler {
             return 'pin';
         }
 
-        // Grab a staggered opponent for a big throw — jab → grapple combo
+        // Grab a staggered opponent — but a fresh wrestler (≥60 stamina) still
+        // has the legs to resist the snatch: you get a tie-up, not a free
+        // slam. The big-throw window has to be earned by wearing them down.
         if (other.state === 'staggered') {
-            if (this.moveSet.includes('piledriver')) { this._doPiledriver(other); return 'piledriver'; }
-            if (this.moveSet.includes('bodySlam'))   { this._doBodySlam(other);   return 'slam';       }
+            if (other.stamina < 60) {
+                if (this.moveSet.includes('piledriver')) { this._doPiledriver(other); return 'piledriver'; }
+                if (this.moveSet.includes('bodySlam'))   { this._doBodySlam(other);   return 'slam';       }
+            }
+            this.state  = 'lockup';
+            other.state = 'lockup';
+            this.tweenPose('lockup', 180, 'Cubic.easeOut');
+            other.tweenPose('lockup', 180, 'Cubic.easeOut');
+            return 'lockup';
         }
 
         if (other.state === 'standing') {
@@ -659,6 +699,17 @@ export default class Wrestler {
         this.stamina = Math.max(0, this.stamina - amount);
     }
 
+    // Slam sequences guard each phase on the attacker still being in
+    // 'slamming'. If something knocked the attacker out of the move, the
+    // victim must be dropped — bailing silently strands them in 'grabbed'.
+    _releaseGrabbed(other) {
+        if (other.state !== 'grabbed') return;
+        other.state      = 'down';
+        other.stateTimer = DOWN_SEC;
+        other.slamPhase  = null;
+        other.slamType   = null;
+    }
+
     _doClothesline(other) {
         other._drain(STAMINA_DRAIN.clothesline);
 
@@ -696,7 +747,7 @@ export default class Wrestler {
             duration: 280,
             ease:     'Cubic.easeOut',
             onComplete: () => {
-                if (this.state !== 'slamming') return;
+                if (this.state !== 'slamming') { this._releaseGrabbed(other); return; }
                 const b     = ringBoundsAtY(sy);
                 const landX = Math.max(b.left + 20, Math.min(b.right - 20, sx + facing * 120 * ss));
                 other.slamPhase = 'throwing';
@@ -742,7 +793,7 @@ export default class Wrestler {
             duration: 300,
             ease:     'Cubic.easeOut',
             onComplete: () => {
-                if (this.state !== 'slamming') return;
+                if (this.state !== 'slamming') { this._releaseGrabbed(other); return; }
                 other.x          = sx - facing * 90 * ss;
                 other.y          = sy;
                 other.state      = 'down';
@@ -842,14 +893,14 @@ export default class Wrestler {
 
         // Phase 1 — hold (200ms): attacker standing, opponent upside down at thigh level
         this.scene.time.delayedCall(200, () => {
-            if (this.state !== 'slamming') return;
+            if (this.state !== 'slamming') { this._releaseGrabbed(other); return; }
             // Phase 2 — jump: both go up together
             this.scene.tweens.add({
                 targets: this, y: sy - 26 * ss,
                 duration: 120, ease: 'Cubic.easeOut',
                 onUpdate: () => { other.slamY = this.y - 58 * ss; },
                 onComplete: () => {
-                    if (this.state !== 'slamming') return;
+                    if (this.state !== 'slamming') { this._releaseGrabbed(other); return; }
                     other.slamPhase = 'dropping';
                     other.facing    = facing;
                     // Phase 3 — crash: attacker's butt hits mat (y + lH brings hip to sy),
@@ -982,7 +1033,10 @@ export default class Wrestler {
 
     tryHeadlockEscape() {
         if (this.state !== 'headlocked') return false;
-        return this.input.justDown('action');
+        if (!this.input.justDown('action')) return false;
+        // Fresh = wriggle right out; worn down = the hold starts to stick
+        const chance = this.stamina >= 35 ? 1 : Math.max(0.15, this.stamina / 35);
+        return Math.random() < chance;
     }
 
     tryKickout() {
@@ -997,7 +1051,11 @@ export default class Wrestler {
 
     tryEscape() {
         if (this.state !== 'sleeping') return false;
-        return this.input.justDown('action');
+        if (!this.input.justDown('action')) return false;
+        // The sleeper is an attrition finisher: trivial to shrug off fresh,
+        // genuinely dangerous once you're drained below half stamina.
+        const chance = this.stamina >= 50 ? 1 : Math.max(0.05, this.stamina / 50 * 0.7);
+        return Math.random() < chance;
     }
 
     _doTurnbuckleTaunt() {
@@ -1018,6 +1076,11 @@ export default class Wrestler {
     }
 
     _doSell(poseName, duration, onDone) {
+        // Sells arrive on delayed callbacks (synced to the attacker's impact
+        // frame), so by the time one fires this wrestler may have started a
+        // two-body move. Interrupting those strands the partner in 'grabbed'/
+        // 'pinned' with no ticker to free them — no-sell instead.
+        if (UNSELLABLE_STATES.has(this.state)) return;
         this.state = 'selling';
         this.tweenPose(poseName, duration, 'Cubic.easeOut', () => {
             onDone();
@@ -1070,34 +1133,42 @@ export default class Wrestler {
                 { p: 'idle',     dur: 220, e: 'Linear'        },
             ]);
         } else if (hp > 35) {
-            // Hurting — two-sway wobble
-            this.stateTimer = 1.1;
+            // Hurting — three-sway wobble; window long enough for an alert
+            // opponent to close in and grab them (stagger = slam-vulnerable)
+            this.stateTimer = 1.35;
             this._runPoseSequence([
                 { p: 'staggerMed',  dur: 150, e: 'Cubic.easeOut'  },
                 { p: 'staggerBack', dur: 130, e: 'Sine.easeInOut'  },
-                { p: 'staggerMed',  dur: 120, e: 'Sine.easeInOut'  },
-                { p: 'idle',        dur: 270, e: 'Linear'          },
+                { p: 'staggerMed',  dur: 140, e: 'Sine.easeInOut'  },
+                { p: 'staggerBack', dur: 130, e: 'Sine.easeInOut'  },
+                { p: 'idle',        dur: 300, e: 'Linear'          },
             ]);
         } else if (hp > 15) {
-            // Badly hurt — three swings, near-buckle
-            this.stateTimer = 1.35;
+            // Badly hurt — near-buckle swings, stays rubbery the whole window
+            this.stateTimer = 1.9;
             this._runPoseSequence([
                 { p: 'staggerHeavy', dur: 160, e: 'Cubic.easeOut' },
                 { p: 'staggerBack',  dur: 140, e: 'Sine.easeInOut' },
-                { p: 'staggerHeavy', dur: 130, e: 'Sine.easeInOut' },
-                { p: 'staggerBack',  dur: 120, e: 'Sine.easeInOut' },
-                { p: 'idle',         dur: 310, e: 'Linear'         },
+                { p: 'staggerHeavy', dur: 150, e: 'Sine.easeInOut' },
+                { p: 'staggerBack',  dur: 140, e: 'Sine.easeInOut' },
+                { p: 'staggerMed',   dur: 150, e: 'Sine.easeInOut' },
+                { p: 'staggerBack',  dur: 130, e: 'Sine.easeInOut' },
+                { p: 'idle',         dur: 330, e: 'Linear'         },
             ]);
         } else {
-            // Critical — rubber legs, knees buckling
-            this.stateTimer = 1.65;
+            // Critical — rubber legs, knees buckling, out on his feet; the
+            // wobble loops until the timer ends so he never freezes upright
+            this.stateTimer = 2.6;
             this._runPoseSequence([
                 { p: 'staggerCollapse', dur: 180, e: 'Cubic.easeOut' },
                 { p: 'staggerBack',     dur: 155, e: 'Sine.easeInOut' },
                 { p: 'staggerCollapse', dur: 165, e: 'Sine.easeInOut' },
-                { p: 'staggerBack',     dur: 135, e: 'Sine.easeInOut' },
-                { p: 'staggerMed',      dur: 120, e: 'Sine.easeInOut' },
-                { p: 'idle',            dur: 360, e: 'Linear'         },
+                { p: 'staggerBack',     dur: 150, e: 'Sine.easeInOut' },
+                { p: 'staggerHeavy',    dur: 170, e: 'Sine.easeInOut' },
+                { p: 'staggerBack',     dur: 150, e: 'Sine.easeInOut' },
+                { p: 'staggerCollapse', dur: 175, e: 'Sine.easeInOut' },
+                { p: 'staggerMed',      dur: 150, e: 'Sine.easeInOut' },
+                { p: 'idle',            dur: 380, e: 'Linear'         },
             ]);
         }
     }
@@ -1220,8 +1291,14 @@ export default class Wrestler {
         this.skeleton.setVisible(true);
         // Body bob is no longer bolted on here — it emerges from the gait leg geometry
         // inside the skeleton (hip rides the weight-bearing leg). Just pass moveBlend.
-        // Movement lean plus the pose's own torso pitch (both facing-relative)
-        const lean      = this.facing * (0.07 * this.moveBlend + (this.pose.lean ?? 0));
+        // Movement lean plus the pose's own torso pitch (both facing-relative),
+        // plus a slow drunken sway once stamina sinks below 35 — hurt wrestlers
+        // visibly wobble on their feet even between staggers
+        const hurt  = Math.max(0, 1 - this.stamina / 35);
+        const wooze = hurt > 0 && (state === 'standing' || state === 'staggered')
+            ? Math.sin(this.scene.time.now * 0.0021 + (this._woozeSeed ??= Math.random() * Math.PI * 2)) * 0.11 * hurt
+            : 0;
+        const lean      = this.facing * (0.07 * this.moveBlend + (this.pose.lean ?? 0)) + wooze;
         const liftScale = state === 'running' ? 1.0 : 0.5;
         const runBlend  = state === 'running' ? this.moveBlend : 0;
         this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, this.combatBlend, lean, this.moveBlend, liftScale, runBlend);

@@ -409,6 +409,47 @@ Full AI-vs-AI match now runs to a clean pinfall (verified headless: knockdown mi
 - Browsers block audio until a user gesture — `crowd.start()` is bound to first keydown/pointerdown, idempotent.
 - Verified headless (Chrome `--autoplay-policy=no-user-gesture-required`): murmur gain 0.138→0.334 and filter 581→1039Hz on a heat bump to 90, nearfall pop spiked the pop gain to 3.2× then settled, bell plays without error.
 
+### 2026-07-04 (second session) — Fun Pass: match freeze fix, comeback arcs, George's win conditions, readability
+
+**Match-freeze deadlock (user-reported, reproduced in baseline sim).** A delayed sell callback (jab sell fires 83ms after the press, synced to the impact frame) could land while its target was mid-body-slam, yanking the attacker out of `slamming` — and every slam-phase guard was `if (state !== 'slamming') return`, which silently stranded the victim in `grabbed`, a state with no ticker and no timeout. Match dead until the 10-minute draw. Three-layer fix:
+1. `_doSell` no-sells when the target is in any paired state (`UNSELLABLE_STATES`: slamming/grabbed/pinning/pinned/holding/sleeping/headlocked/lockup).
+2. Slam/suplex/piledriver phase guards call `_releaseGrabbed(other)` (drop to `down`) instead of returning silently.
+3. `Arena._orphanWatchdog` — generic net: any wrestler in a paired state whose counterpart is gone gets freed after 0.6s and logs an `orphanRescue` event. Zero rescues fired across ~45 min of post-fix AI-vs-AI sim — the root-cause fixes hold; the watchdog is insurance for future moves.
+
+**Overlap melding (user-reported).** Two causes: (a) slams/lockups set `other.x = attacker.x`, and the separation clamp's `dist > 0` guard skipped the dist === 0 case entirely — wrestlers locked at identical coordinates until someone walked (screenshot-confirmed); fixed with a facing-based fallback push. (b) The `depthDiff < 26` gate ignored the 26–48px band where sprites (~150–260px tall) still overlap heavily; added a soft y-push (90px/s, fading with depth, only between two upright wrestlers, only when |dx| < 60·s) so deliberate walk-bys still slide through. Plus old-TV booking contrast: P1 skin/trunks lightened (0xe0b088/0x8c9cc8), P2 darkened (0xa87858/0x1a1a1a) so the grayscale filter never reads two bodies as one.
+
+**Comeback mechanic** (`Arena._comeback`) — surviving a big spot refunds stamina at the moment the crowd is hottest: deep kickout (count ≥ 2) +15, sleeper escape +10, headlock escape +5, each with a heat bump. Matches arc instead of snowballing.
+
+**Nearfall drama — the 2.9 save.** One per wrestler per match: the first cover that *would* finish them instead forces a kickout at 2.9 (logged as `kickout atCount 2.9` + `nearfall`, big heat). Every match now has at least one heartstopper. Reset with the match; `debug:play` pin scenario updated to cover twice.
+
+**George's win conditions.** Sleeper/headlock escapes are now stamina-gated (guaranteed when fresh; sleeper drops to ~14%/press when drained, headlock milder), a full 4s sleeper is a real KO finish (`_showWin` — previously it logged a winner but the match kept going), AI mash rate scales with stamina, and George's AI: hunts the sleeper below 60% opponent stamina, takes the headlock from 70% of lockups, cashes in with the piledriver on opponents under 40%, retreats at 35 instead of 45, stops showboating when the opponent is under 50 (posing was letting them recover everything his holds drained), headlock drain 3→4/s. Per-personality `cooldownScale` paces engagement (brawler 1.35 slow heavy hitter, George 0.85 busy hands).
+
+**Balance telemetry across the session** (`tools/debug/probe.mjs` — streaming AI-vs-AI probe with stuck-match detection; sim.mjs stats derivable from its event log):
+- Baseline: 1 finished match in 15 min (the deadlock ate the rest); winner match was a 51s squash, ~0 nearfalls, sleeper escaped in <1s.
+- After fun pass round 1: 4 matches/15 min, avg 2:19, 2 nearfalls/match, dead air ≤9s — but p1 4-0, offense 68/32, sleepers ~0 (attrition gate unreachable).
+- After round 2 (headlock 4/s, piledriver cash-in, retreat 35): matches lengthen to avg 4:42, piledrivers land 1–2/match — still p1 3-0, 71/29; George's showboat habit was refunding all his attrition damage.
+- Round 3 (cooldownScale, showboat killer-instinct gate): 4 matches, still p1 4-0, offense 69/31, sleepers 0 — but every match has its 2.9 save + 1–2 nearfalls, dead air ≤7s, and George lands up to 3 piledrivers.
+- **Open problem — win parity.** Diagnosis after 3 rounds: p1 only drops below George's finisher thresholds late, by which point George is under 35 and begging off — his own heel logic eats the win window. Next lever is the brawler's kit (pounce budget 2→1, dropkickOdds 0.4→0.25) and/or letting George's beggingOff actively recover him faster, NOT more George offense. Target ~55/45 offense.
+
+`debug:play -- all` 10/10 after every round.
+
+### 2026-07-04 (second session, continued) — Stumble mechanics, heat with teeth, pacing
+
+**Hurt wrestlers stumble (user request).** Below 35 stamina: walking slows up to 35% (gait phase scales with it so feet stay planted), the torso sways on a slow sine (`wooze` added to the lean channel in draw, per-wrestler phase seed), and each walking step risks a genuine stumble (`0.45 * hurt * dt` → about one per 2.2s of walking at zero stamina). Hurt-tier stagger windows lengthened 1.1/1.35/1.65s → 1.35/1.9/2.6s with extra sway steps so the critical tier wobbles on rubber legs the whole window.
+
+**Staggers are slam windows — with a freshness gate.** The engine's grab-a-staggered-opponent slam (tryAction) is now central: AI converts staggers into the kit's big slam (`staggerSlamOdds`: George 0.40 — jab → stagger → piledriver is his damage engine — brawler 0.25), but a defender at ≥60 stamina resists the snatch and it becomes a lockup instead. The gate exists because ungated 50% conversion produced a 34-second George blitz KO. AI also refuses to down a staggered opponent at the ropes (waits for the stand → lockup → whip counter); without that check one sim match was a 10-minute draw containing 52 body slams at the ropes.
+
+**Heat now has teeth (user: "not sure how it affects the match").** Previously heat only drove crowd audio. Now: (1) all `_comeback` refunds scale 50%→150% with heat — a hot crowd fuels comebacks; (2) taunts convert heat to stamina (`_comeback(attacker, 4)` on taunt/turnbuckleTaunt) — George's preening is finally strategically coherent; (3) audio as before. Heat meter redrawn readable: 200×7 bordered frame, fill luminance 90→230, brighter CROWD label (was a bare dark bar lost in the vignette).
+
+**Pacing (user: matches too short).** Freshness gate above + AI base offense beat 1.1–2.0s → 1.35–2.35s. Probe results: durations went 0:34–3:20 (volatile) → 2:50/6:13/2:57, no blitzes, no grind draws. Offense slipped to 64/36 (the ≥60 gate nerfed George asymmetrically — p1 usually sits above 60 so George's grabs become lockups, George sits below so p1 keeps his slams); countered with the BUILDLOG-flagged brawler trims: `pounceBudget` 1 (was 2 elbow drops per knockdown), dropkickOdds 0.28.
+
+**End-of-session findings + now/later decisions (final probe: one 7:57 match, p1 pinfall, 63/37, 6 George piledrivers, 0 freezes):**
+- ✅ SOLVED, shipping: stability (0 freezes / 0 orphan rescues in ~90 min of AI-vs-AI), melding/readability, drama beats (2.9 save every match, dead air ≤11s), heat with gameplay teeth, stumble mechanics.
+- ⏳ LATER — match-length calibration: the three stacked pacing changes took matches from ~3–6 min to ~8 min (n=1). 5–8 min is period-authentic against a 10-min TV limit, but whether it *feels* right is a controller question, not a sim question. Decide after human playtesting; the knobs are `_attack` beat (1.35–2.35s), `pounceBudget`, and the ≥60 freshness gate.
+- ⏳ LATER — win parity: p1 still favored (~63/37). George lands piledrivers now but converts poorly; next hypothesis is his pin pressure (long `_pinWait`, no-cover-at-ropes discipline) rather than more damage. Needs bigger samples than n=1–4.
+- ⏳ LATER — telemetry scale: 8-min matches × ~2× headless slowdown makes 10-match batches take hours. Add a debug time-scale (Phaser `time.timeScale` + physics dt multiplier) so `debug:sim -- 20` is feasible before the next tuning session.
+- ⏳ LATER — move-texture monotony: long matches re-expose repetition (32 body slams in the 7:57 match). Wants AI move-variety memory (recent-move penalty), pairs well with the two-step grapple roadmap item.
+
 ---
 
 ## Phase Roadmap

@@ -10,21 +10,28 @@ const PERSONALITIES = {
         stallChance:      0.003, // ~once per 5s at 60fps
         retreatStamina:   20,    // backs off below this %
         cheapShotOdds:    0.30,  // jab vs grapple when standing close
-        dropkickOdds:     0.40,  // medium-range dropkick frequency
+        dropkickOdds:     0.28,  // medium-range dropkick frequency
+        pounceBudget:     1,     // one follow-up drop per knockdown, then backs off
         lockupPreference: 'slam',
         tauntOdds:        0.10,
         showboatAfter:    0,     // never breaks rhythm to pose
+        cooldownScale:    1.35,  // heavy hitter, slower between engagements
+        staggerSlamOdds:  0.25,  // sometimes grabs a stumbler for the slam instead of headbutting
     },
     george: {
         stallChance:      0.012, // ~once per 1.5s — backs off constantly
-        retreatStamina:   45,    // retreats much earlier
+        retreatStamina:   35,    // retreats earlier than the brawler, but fights enough to matter
         cheapShotOdds:    0.60,  // mostly jabs, avoids clean tie-ups
         dropkickOdds:     0.10,  // rarely leaves his feet — he's a staller
         lockupPreference: 'headlock', // drain stamina with holds
+        holdOdds:         0.70,  // lockup → headlock this often (attrition is the game plan)
         tauntOdds:        0.35,  // preens and poses often when safe
         showboatAfter:    2,     // backs off to preen after landing 2 moves
         ropeSeek:         true,  // drifts toward ropes when hurt
         beggingOff:       true,  // backs into corner below retreatStamina
+        attrition:        true,  // hunts the sleeper once the opponent is worn down
+        cooldownScale:    0.85,  // busy hands — jabs and holds come in quicker beats
+        staggerSlamOdds:  0.40,  // jab → stagger → piledriver is his real damage engine
     },
 };
 
@@ -72,9 +79,11 @@ export default class AIHandler {
         if (!oppDown) this._pounces = 0; // fresh down-spell, fresh pounce budget
         this._oppWasDown = oppDown;
 
-        // Mash to escape holds and kick out of pins
+        // Mash to escape holds and kick out of pins. A drained wrestler mashes
+        // slower — holds genuinely stick once you're worn down.
         if (self.state === 'sleeping' || self.state === 'headlocked') {
-            if (Math.random() < 0.08) this._press('action');
+            const rate = 0.08 * (0.3 + 0.7 * self.stamina / 100);
+            if (Math.random() < rate) this._press('action');
             return;
         }
         if (self.state === 'pinned') {
@@ -116,7 +125,7 @@ export default class AIHandler {
     _attack(key, cooldown) {
         this._press(key);
         this._cooldown = cooldown;
-        this._offense  = 1.1 + Math.random() * 0.9;
+        this._offense  = (1.35 + Math.random() * 1.0) * (this._cfg.cooldownScale ?? 1);
         this._landed++;
     }
 
@@ -188,8 +197,11 @@ export default class AIHandler {
         const MED_REACH     = 220 * scale;
         const TAUNT_SAFE    = 150 * scale; // finisher press taunts instead of sleeping past this
 
-        // Showboat — after landing a couple of moves, break rhythm: back off, then preen
-        if (cfg.showboatAfter && this._landed >= cfg.showboatAfter) {
+        // Showboat — after landing a couple of moves, break rhythm: back off,
+        // then preen. Suppressed when the opponent is badly hurt: even George
+        // has killer instinct once he smells a finish (posing here let the
+        // opponent recover everything the holds had drained).
+        if (cfg.showboatAfter && this._landed >= cfg.showboatAfter && opp.stamina >= 50) {
             this._landed    = 0;
             this._showboat  = true;
             this._stallTimer = 0.9 + Math.random() * 0.6;
@@ -226,7 +238,7 @@ export default class AIHandler {
                 this._press('action'); // pin
                 this._cooldown = 0.5;
                 this._pinWait  = 2.2 + Math.random() * 1.2;
-            } else if (this._offense <= 0 && (this._pounces ?? 0) < 2 && !this._nearRopes(opp)) {
+            } else if (this._offense <= 0 && (this._pounces ?? 0) < (cfg.pounceBudget ?? 2) && !this._nearRopes(opp)) {
                 // Each drop re-downs them, so cap follow-ups per down-spell and
                 // never chain them at the ropes — back off and let them rise
                 this._attack('power', 0.9); // elbow drop
@@ -237,13 +249,21 @@ export default class AIHandler {
             return;
         }
 
-        // Opponent staggered — headbutt to knock them down. Deliberately ahead
-        // of the offense gate: jab → headbutt is the combo that converts a
-        // stagger into a knockdown before it wears off. Rolled per beat so
-        // roughly half the staggers convert.
+        // Opponent staggered — convert it. Deliberately ahead of the offense
+        // gate: this is the combo window. A stumbling wrestler can't resist a
+        // tie-up, so grapple here goes straight to the kit's big slam
+        // (piledriver/body slam); otherwise headbutt for the knockdown.
+        // Rolled per beat so not every stagger converts.
         if (opp.state === 'staggered' && dist < GRAPPLE_REACH) {
-            if (Math.random() < 0.55) this._attack('power', 0.85);
-            else                      this._cooldown = 0.45;
+            // At the ropes, downing them is a dead end (no covers there) —
+            // wait for them to stand, then the lockup→whip counter relocates
+            // the fight mid-ring. Slamming here caused 50-slam grind loops.
+            if (this._nearRopes(opp)) { this._cooldown = 0.5; return; }
+            const roll = Math.random();
+            const slam = cfg.staggerSlamOdds ?? 0;
+            if (roll < slam)             this._attack('action', 0.9);  // grab → slam
+            else if (roll < slam + 0.45) this._attack('power', 0.85);  // headbutt
+            else                         this._cooldown = 0.45;
             return;
         }
 
@@ -262,6 +282,12 @@ export default class AIHandler {
 
         // Close range
         if (dist < JAB_REACH) {
+            // Attrition finisher: a worn opponent can't just shrug the sleeper
+            // off anymore — this is how George wins matches
+            if (cfg.attrition && opp.stamina < 60 && !this._nearRopes(opp) && Math.random() < 0.5) {
+                this._attack('finisher', 1.4); // sleeper hold
+                return;
+            }
             // A hurt opponent hiding at the ropes can't be pinned there — tie up
             // and whip them off the ropes instead of striking them in place
             if (opp.stamina < 45 && this._nearRopes(opp)) {
@@ -331,8 +357,11 @@ export default class AIHandler {
         }
 
         if (cfg.lockupPreference === 'headlock') {
-            // George: headlock to drain stamina, or irish whip to create space
-            if (Math.random() < 0.55) {
+            // George: cash in on a worn opponent with the piledriver (plain
+            // follow-up), otherwise headlock to drain, or whip to create space
+            if (this._opp.stamina < 40 && Math.random() < 0.5) {
+                this._press('action'); // → piledriver
+            } else if (Math.random() < (cfg.holdOdds ?? 0.55)) {
                 this._hold('down');
                 this._press('action'); // → headlock
             } else {

@@ -172,11 +172,16 @@ const SCENARIOS = {
         },
     },
 
-    pin: { // full sequence: jab → headbutt → pin the downed dummy → pinfall
+    pin: { // jab → headbutt → cover; first fatal cover is always a 2.9 save, so down them again → pinfall
         expect: { type: 'pinfall' },
         async run(h) {
             await SCENARIOS.combo.run(h);
             await until(h, s => s.w2.st === 'down', 'w2 down');
+            await approach(h, 75);
+            await tap(h.page, 'f');
+            await until(h, s => s.w2.st === 'standing', '2.9 save kickout');
+            await SCENARIOS.combo.run(h);
+            await until(h, s => s.w2.st === 'down', 'w2 down again');
             await approach(h, 75);
             await tap(h.page, 'f');
             await until(h, s => s.over, 'pinfall banner', 6000);

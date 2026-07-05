@@ -495,14 +495,16 @@ export default class Arena extends Phaser.Scene {
         const input1 = new InputHandler('keyboard', keys1);
         const input2 = new InputHandler('keyboard', keys2);
 
-        // P1 — blue trunks: brawler kit (Irish whip → clothesline, body slam, elbow drop, dropkick)
-        this.w1 = new Wrestler(this, 330, 360, 0xc8906a, 0x334499, input1,
+        // P1 — light trunks: brawler kit (Irish whip → clothesline, body slam, elbow drop, dropkick).
+        // Old-TV booking rule: one man light, one man dark, so the grayscale
+        // broadcast filter never lets two overlapping bodies read as one.
+        this.w1 = new Wrestler(this, 330, 360, 0xe0b088, 0x8c9cc8, input1,
             ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt']);
         this.w1.facing   = 1;
         this.w1.idlePose = 'brawlerIdle';
 
-        // P2 — dark trunks: powerhouse kit (piledriver instead of body slam, same extras)
-        this.w2 = new Wrestler(this, 630, 360, 0xc8906a, 0x1a1a1a, input2,
+        // P2 — dark trunks, darker skin tone: powerhouse kit (piledriver instead of body slam)
+        this.w2 = new Wrestler(this, 630, 360, 0xa87858, 0x1a1a1a, input2,
             ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt']);
         this.w2.facing   = -1;
         this.w2.idlePose = 'powerIdle';
@@ -552,8 +554,8 @@ export default class Arena extends Phaser.Scene {
         this.heatGfx = this.add.graphics().setDepth(152);
         this.heatLbl = this.add.text(W / 2, H - 30, 'CROWD', {
             fontFamily: '"Times New Roman", Times, serif',
-            fontSize: '8px',
-            color: '#666660',
+            fontSize: '9px',
+            color: '#a8a8a0',
             letterSpacing: 4,
         }).setOrigin(0.5, 1).setDepth(153);
 
@@ -644,6 +646,14 @@ export default class Arena extends Phaser.Scene {
         this.heat = Math.min(100, this.heat + amount);
     }
 
+    // Comeback mechanic: surviving a big spot refunds stamina, so the wrestler
+    // who's behind gets a real chance to swing the match. The refund scales
+    // with crowd heat (50% cold → 150% at full roar) — a hot crowd literally
+    // lifts you, which is what the heat meter is *for*.
+    _comeback(wrestler, stamina) {
+        wrestler.stamina = Math.min(100, wrestler.stamina + stamina * (0.5 + this.heat / 100));
+    }
+
     _isAtRopes(wrestler) {
         const b = ringBoundsAtY(wrestler.y);
         const threshold = 30 * wrestler.s;
@@ -676,20 +686,24 @@ export default class Arena extends Phaser.Scene {
     _drawHeatMeter() {
         const g = this.heatGfx;
         g.clear();
-        const BAR_W = 160, BAR_H = 5;
+        const BAR_W = 200, BAR_H = 7;
         const bx = (W - BAR_W) / 2;
-        const by = H - 22;
+        const by = H - 26;
 
-        g.fillStyle(0x111111, 0.85);
-        g.fillRect(bx - 1, by - 1, BAR_W + 2, BAR_H + 2);
+        // Visible frame — the old bare dark-on-dark bar vanished into the
+        // vignette at the bottom of the frame
+        g.fillStyle(0x000000, 0.9);
+        g.fillRect(bx - 2, by - 2, BAR_W + 4, BAR_H + 4);
+        g.lineStyle(1, 0x777770, 0.9);
+        g.strokeRect(bx - 2, by - 2, BAR_W + 4, BAR_H + 4);
 
         const fillW = BAR_W * (this.heat / 100);
-        const lum = Math.floor(38 + this.heat * 0.52); // dim gray (cold) → near-white (hot)
-        const col = (lum << 16) | (lum << 8) | lum;
+        const lum = Math.floor(90 + this.heat * 1.4); // readable gray (cold) → blazing white (hot)
+        const col = (Math.min(255, lum) << 16) | (Math.min(255, lum) << 8) | Math.min(255, lum);
         g.fillStyle(col, 1);
         g.fillRect(bx, by, fillW, BAR_H);
 
-        this.heatLbl.setPosition(W / 2, by - 2);
+        this.heatLbl.setPosition(W / 2, by - 4);
     }
 
     _tickGame(dt) {
@@ -762,6 +776,11 @@ export default class Arena extends Phaser.Scene {
                 ? 'knockdown' : (defender.state === 'staggered' ? 'stagger' : 'move');
             this._logEvent(type, { attacker, move, defenderStamina: Math.round(defender.stamina) });
             this._heatForMove(move);
+            // Playing to the crowd converts heat into wind: taunts refund
+            // stamina scaled by how hot the building is (via _comeback)
+            if (move === 'taunt' || move === 'turnbuckleTaunt') {
+                this._comeback(attacker === 'p1' ? this.w1 : this.w2, 4);
+            }
         };
         logMove(r1,  'p1', w2); logMove(r2,  'p2', w1);
         logMove(p1,  'p1', w2); logMove(p2,  'p2', w1);
@@ -797,12 +816,47 @@ export default class Arena extends Phaser.Scene {
         if (this.sleeperState)  this._tickSleeper(dt);
         if (this.headlockState) this._tickHeadlock(dt);
 
+        this._orphanWatchdog(w1, w2, dt);
+        this._orphanWatchdog(w2, w1, dt);
+
         w1.draw();
         w2.draw();
         this._updateRopes(dt);
         this._drawStaminaBars();
         this._updateHeat(dt);
         this._drawHeatMeter();
+    }
+
+    // Safety net for the whole class of "partner state changed, victim
+    // stranded" bugs: a wrestler stuck in a paired state whose counterpart
+    // (attacker state or Arena hold-state) is gone gets freed after a short
+    // grace period. Root causes are also guarded at the source (_doSell,
+    // _releaseGrabbed) — this catches whatever slips through next.
+    _orphanWatchdog(w, opp, dt) {
+        const orphaned =
+            (w.state === 'grabbed'    && opp.state !== 'slamming') ||
+            (w.state === 'pinned'     && !this.pinState)           ||
+            (w.state === 'pinning'    && !this.pinState)           ||
+            (w.state === 'sleeping'   && !this.sleeperState)       ||
+            (w.state === 'headlocked' && !this.headlockState)      ||
+            (w.state === 'holding'    && !this.sleeperState && !this.headlockState) ||
+            (w.state === 'lockup'     && !this.lockupState);
+
+        if (!orphaned) { w._orphanT = 0; return; }
+        w._orphanT = (w._orphanT ?? 0) + dt;
+        if (w._orphanT < 0.6) return;
+
+        this._logEvent('orphanRescue', { wrestler: w === this.w1 ? 'p1' : 'p2', from: w.state });
+        w._orphanT = 0;
+        if (w.state === 'grabbed') {
+            w.state      = 'down';
+            w.stateTimer = 4.5;
+            w.slamPhase  = null;
+            w.slamType   = null;
+        } else {
+            w.state = 'standing';
+            w.tweenPose('idle', 200, 'Linear');
+        }
     }
 
     _tickPin(dt) {
@@ -823,15 +877,32 @@ export default class Arena extends Phaser.Scene {
         const count = Math.min(3, Math.floor(ps.timer / 0.85) + 1);
         this.pinText.setText(String(count)).setAlpha(1);
 
-        // Defender mashes action to kick out
-        if (ps.defender.tryKickout()) {
+        const kickout = (atCount) => {
             ps.attacker.state = 'standing';
             ps.defender.state = 'standing';
             this.pinText.setAlpha(0);
             const who = ps.defender === this.w1 ? 'p1' : 'p2';
-            this._logEvent('kickout', { wrestler: who, atCount: count, defenderStamina: Math.round(ps.defender.stamina) });
-            if (count >= 2) { this._logEvent('nearfall', { attacker: who === 'p1' ? 'p2' : 'p1' }); this.bumpHeat(22); }
+            this._logEvent('kickout', { wrestler: who, atCount, defenderStamina: Math.round(ps.defender.stamina) });
+            if (atCount >= 2) {
+                this._logEvent('nearfall', { attacker: who === 'p1' ? 'p2' : 'p1' });
+                this.bumpHeat(22);
+                // Comeback: surviving a deep count fires the crowd up AND puts
+                // wind back in the survivor — matches arc instead of snowballing
+                this._comeback(ps.defender, 15);
+            }
             this.pinState = null;
+        };
+
+        // Defender mashes action to kick out
+        if (ps.defender.tryKickout()) { kickout(count); return; }
+
+        // One 2.9 save per wrestler per match: the first cover that would end
+        // it becomes a manufactured nearfall instead — every match gets at
+        // least one heartstopper before a pin can finish
+        if (ps.timer >= 2.35 && !ps.defender.pinSaveUsed) {
+            ps.defender.pinSaveUsed = true;
+            this.bumpHeat(10); // on top of the nearfall bump below
+            kickout(2.9);
             return;
         }
 
@@ -889,11 +960,16 @@ export default class Arena extends Phaser.Scene {
 
         if (ss.defender.tryEscape()) {
             this._logEvent('sleeperEscape', { wrestler: ss.defender === this.w1 ? 'p1' : 'p2' });
+            this._comeback(ss.defender, 10);
+            this.bumpHeat(8);
             release(false); return;
         }
         if (ss.timer >= 4.0) {
-            this._logEvent('sleeperKO', { winner: ss.attacker === this.w1 ? 'p1' : 'p2' });
-            release(true); return;
+            const winner = ss.attacker === this.w1 ? 1 : 2;
+            this._logEvent('sleeperKO', { winner: `p${winner}` });
+            release(true);
+            this._showWin(winner); // a full sleeper is a finish, not a nap
+            return;
         }
     }
 
@@ -915,8 +991,9 @@ export default class Arena extends Phaser.Scene {
             return;
         }
 
-        // Continuous stamina drain
-        hs.defender._drain(3.0 * dt);
+        // Continuous stamina drain — the headlock is the era's real wear
+        // move; at 4/s a full ride costs 12, competitive with a slam
+        hs.defender._drain(4.0 * dt);
 
         const release = (toDown) => {
             hs.attacker.tweenPose('idle', 200, 'Linear');
@@ -932,7 +1009,11 @@ export default class Arena extends Phaser.Scene {
             this.headlockState = null;
         };
 
-        if (hs.defender.tryHeadlockEscape()) { release(false); return; }
+        if (hs.defender.tryHeadlockEscape()) {
+            this._comeback(hs.defender, 5);
+            this.bumpHeat(5);
+            release(false); return;
+        }
         if (hs.timer >= 3.0)                 { release(true);  return; }
     }
 
@@ -1040,6 +1121,8 @@ export default class Arena extends Phaser.Scene {
                     txt.destroy();
                     this.w1.x = 330; this.w1.y = 360; this.w1.state = 'standing'; this.w1.facing =  1; this.w1.stamina = 100;
                     this.w2.x = 630; this.w2.y = 360; this.w2.state = 'standing'; this.w2.facing = -1; this.w2.stamina = 100;
+                    this.w1.pinSaveUsed = false;
+                    this.w2.pinSaveUsed = false;
                     this._matchTime = 0;
                     this.matchOver  = false;
                     this.crowd.bell(1);

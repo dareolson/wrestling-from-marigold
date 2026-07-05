@@ -10,6 +10,7 @@
     "debug:shot": "node tools/debug/shot.mjs",
     "debug:play": "node tools/debug/play.mjs",
     "debug:sim": "node tools/debug/sim.mjs",
+    "debug:probe": "node tools/debug/probe.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

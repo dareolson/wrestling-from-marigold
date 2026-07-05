@@ -17,6 +17,8 @@ const PERSONALITIES = {
         showboatAfter:    0,     // never breaks rhythm to pose
         cooldownScale:    1.35,  // heavy hitter, slower between engagements
         staggerSlamOdds:  0.25,  // sometimes grabs a stumbler for the slam instead of headbutting
+        evadeOdds:        0.06,  // rarely gives ground — he plants and trades
+        blockOdds:        0.14,  // stands his ground and stuffs tie-ups
     },
     george: {
         stallChance:      0.012, // ~once per 1.5s — backs off constantly
@@ -32,6 +34,11 @@ const PERSONALITIES = {
         attrition:        true,  // hunts the sleeper once the opponent is worn down
         cooldownScale:    0.85,  // busy hands — jabs and holds come in quicker beats
         staggerSlamOdds:  0.40,  // jab → stagger → piledriver is his real damage engine
+        evadeOdds:        0.22,  // slippery — backsteps out of exchanges constantly
+        blockOdds:        0.14,  // will brace to stuff a tie-up when cornered
+        coverStamina:     55,    // covers earlier — he lands piledrivers, he has to convert them
+        pinWait:          [1.2, 2.0], // hustles into re-covers; lazy 2.2–3.4 default gave p1 the rise
+        attritionAt:      70,    // sleeper hunt opens while George still has gas (below 35 he's begging off)
     },
 };
 
@@ -51,6 +58,8 @@ export default class AIHandler {
         this._react       = 0;     // human-feel delay before pouncing on a downed opponent
         this._oppWasDown  = false;
         this._pinWait     = 0;     // cooldown after a pin attempt — no instant re-covers
+        this._defWait     = 0;     // beat between defensive-mixup rolls
+        this._blockTimer  = 0;     // remaining time to keep the block key held
     }
 
     // Called once after both wrestlers are constructed.
@@ -68,6 +77,7 @@ export default class AIHandler {
         this._offense     = Math.max(0, this._offense - dt);
         this._react       = Math.max(0, this._react - dt);
         this._pinWait     = Math.max(0, this._pinWait - dt);
+        this._defWait     = Math.max(0, this._defWait - dt);
 
         const self = this._self;
         const opp  = this._opp;
@@ -80,14 +90,16 @@ export default class AIHandler {
         this._oppWasDown = oppDown;
 
         // Mash to escape holds and kick out of pins. A drained wrestler mashes
-        // slower — holds genuinely stick once you're worn down.
+        // slower — holds genuinely stick once you're worn down. Rates are
+        // per-second (× dt) so behavior is stable across frame rate and the
+        // debug time-scale.
         if (self.state === 'sleeping' || self.state === 'headlocked') {
-            const rate = 0.08 * (0.3 + 0.7 * self.stamina / 100);
-            if (Math.random() < rate) this._press('action');
+            const rate = 4.8 * (0.3 + 0.7 * self.stamina / 100);
+            if (Math.random() < rate * dt) this._press('action');
             return;
         }
         if (self.state === 'pinned') {
-            if (Math.random() < 0.12) this._press('action');
+            if (Math.random() < 7.2 * dt) this._press('action');
             return;
         }
 
@@ -98,16 +110,39 @@ export default class AIHandler {
         }
         this._contested = false; // lockup over — next one gets a fresh contest roll
 
+        // Mid block stance: keep the key held for the decided window (keys are
+        // cleared every tick, so the hold has to be re-pressed each frame).
+        // If the block just stuffed a grapple, drop the stance immediately —
+        // the staggered attacker is the punish window.
+        if (this._blockTimer > 0) {
+            if (opp.state === 'staggered') {
+                this._blockTimer = 0;
+            } else {
+                this._blockTimer -= dt;
+                this._hold('block');
+                return;
+            }
+        }
+
         // Only act while standing (not mid-move, falling, etc.)
         if (self.state !== 'standing') return;
 
         this._updateMovement(dt);
         // No decisions while backing off — stalling and swinging at once reads wrong
-        if (this._cooldown <= 0 && this._stallTimer <= 0) this._chooseAction();
+        if (this._cooldown <= 0 && this._stallTimer <= 0) this._chooseAction(dt);
     }
 
     isDown(key)   { return !!this._keys[key]; }
     justDown(key) { return !!this._justPressed[key]; }
+
+    // Drop any held keys. Arena calls this while the win banner is up —
+    // pausing tick() alone freezes the key map with the last frame's presses
+    // still down, and a frozen justDown('action') re-fires every frame
+    // (zombie pins on the loser mid-banner, stale pinState into the next match).
+    clear() {
+        this._keys        = {};
+        this._justPressed = {};
+    }
 
     // ── Internal ──────────────────────────────────────────────────────────────
 
@@ -142,9 +177,10 @@ export default class AIHandler {
 
         const lowStam = self.stamina < cfg.retreatStamina;
 
-        // Stall — randomly decide to back off (George does this constantly)
+        // Stall — randomly decide to back off (George does this constantly).
+        // stallChance is per-frame-at-60fps, scaled by dt for time-scale safety.
         if (!lowStam && this._stallTimer <= 0 && dist < FAR) {
-            if (Math.random() < cfg.stallChance) {
+            if (Math.random() < cfg.stallChance * 60 * dt) {
                 this._stallTimer = 1.2 + Math.random() * 1.4;
             }
         }
@@ -182,7 +218,7 @@ export default class AIHandler {
         if (Math.abs(dy) > 8) this._hold(dy > 0 ? 'down'  : 'up');
     }
 
-    _chooseAction() {
+    _chooseAction(dt) {
         const self  = this._self;
         const opp   = this._opp;
         const cfg   = this._cfg;
@@ -233,11 +269,12 @@ export default class AIHandler {
             if (this._react > 0 || dist >= GRAPPLE_REACH) return;
             // Pins break instantly at the ropes — don't cover there, and don't
             // machine-gun re-covers after a kickout or rope break
-            const pinnable = opp.stamina < 45 && this._pinWait <= 0 && !this._nearRopes(opp);
+            const pinnable = opp.stamina < (cfg.coverStamina ?? 45) && this._pinWait <= 0 && !this._nearRopes(opp);
             if (pinnable) {
                 this._press('action'); // pin
                 this._cooldown = 0.5;
-                this._pinWait  = 2.2 + Math.random() * 1.2;
+                const [pwLo, pwHi] = cfg.pinWait ?? [2.2, 3.4];
+                this._pinWait = pwLo + Math.random() * (pwHi - pwLo);
             } else if (this._offense <= 0 && (this._pounces ?? 0) < (cfg.pounceBudget ?? 2) && !this._nearRopes(opp)) {
                 // Each drop re-downs them, so cap follow-ups per down-spell and
                 // never chain them at the ropes — back off and let them rise
@@ -267,24 +304,58 @@ export default class AIHandler {
             return;
         }
 
+        // Defensive mixup — the AI can't read the opponent's buttons, so it
+        // plays the range: anyone parked at grapple distance might tie up
+        // (block stuffs it) or strike (evade slips it). Rolled per beat via
+        // _defWait, and deliberately BEFORE the offense gate — you defend
+        // between your own attack beats, not instead of them.
+        if (opp.state === 'standing' && dist < GRAPPLE_REACH * 1.15 && this._defWait <= 0 && !lowStam) {
+            const r  = Math.random();
+            const ev = cfg.evadeOdds ?? 0;
+            const bl = cfg.blockOdds ?? 0;
+            if (r < ev && self._evadeCooldown <= 0) {
+                this._press('evade');
+                this._defWait = 1.6 + Math.random();
+                return;
+            }
+            if (r < ev + bl) {
+                this._blockTimer = 0.35 + Math.random() * 0.45;
+                this._defWait    = 1.8 + Math.random();
+                return;
+            }
+            this._defWait = 0.4; // failed roll — re-roll next beat, not next frame
+        }
+
         // All attacks below respect the global offense cooldown
         if (this._offense > 0) return;
 
-        // Whipped opponent returning off the ropes — clothesline the rebound
+        // Whipped opponent returning off the ropes — clothesline the rebound,
+        // or matador-sidestep the charge (George's favorite trick)
         if (opp.state === 'running' && opp.runPhase === 'returning') {
             if (Math.abs(opp.x - self.x) < 130 * scale) {
+                if (Math.random() < (cfg.evadeOdds ?? 0) * 1.5 && self._evadeCooldown <= 0) {
+                    this._press('evade');
+                    this._cooldown = 0.6;
+                    return;
+                }
                 this._attack('action', 1.0); // clothesline
             }
             return;
         }
 
-        if (opp.state !== 'standing') return; // don't interrupt ongoing moves
+        // Blocking opponents are still fair game — for strikes only
+        if (opp.state !== 'standing' && opp.state !== 'blocking') return; // don't interrupt ongoing moves
 
         // Close range
         if (dist < JAB_REACH) {
+            // Strikes beat block: jab the turtle, never grapple it
+            if (opp.state === 'blocking') {
+                this._attack('power', 0.6); // jab
+                return;
+            }
             // Attrition finisher: a worn opponent can't just shrug the sleeper
             // off anymore — this is how George wins matches
-            if (cfg.attrition && opp.stamina < 60 && !this._nearRopes(opp) && Math.random() < 0.5) {
+            if (cfg.attrition && opp.stamina < (cfg.attritionAt ?? 60) && !this._nearRopes(opp) && Math.random() < 0.5) {
                 this._attack('finisher', 1.4); // sleeper hold
                 return;
             }
@@ -313,7 +384,7 @@ export default class AIHandler {
         }
 
         // Out of range — occasional taunt while approaching
-        if (Math.random() < cfg.tauntOdds * 0.005) {
+        if (Math.random() < cfg.tauntOdds * 0.3 * dt) {
             this._press('finisher');
             this._cooldown = 2.5;
         }

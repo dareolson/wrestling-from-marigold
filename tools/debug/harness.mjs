@@ -7,6 +7,9 @@
 //   WFM_URL  — attach to an already-running dev server (e.g. http://localhost:5176)
 //              instead of spawning one
 //   HEADED=1 — show the browser window instead of running headless
+//   WFM_TS=3 — run the game at 3× speed (?ts= param) for faster balance sims;
+//              note snap().t and event timestamps are game-time, which now
+//              advances WFM_TS× faster than wall time
 
 import { chromium } from 'playwright-core';
 import { spawn } from 'node:child_process';
@@ -37,6 +40,9 @@ export async function launch() {
             stdio: 'ignore',
         });
         await waitForServer(url);
+    }
+    if (process.env.WFM_TS) {
+        url += `${url.includes('?') ? '&' : '?'}ts=${process.env.WFM_TS}`;
     }
 
     const browser = await chromium.launch({

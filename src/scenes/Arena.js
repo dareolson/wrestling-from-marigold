@@ -12,8 +12,8 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // Crowd reaction swell per match event type (0..1)
 const POP_SIZES = {
     pinfall: 1.0, sleeperKO: 1.0, nearfall: 0.9, kickout: 0.6,
-    knockdown: 0.55, ropeBreak: 0.5, sleeperEscape: 0.5, pinAttempt: 0.45,
-    sleeperApplied: 0.4, stagger: 0.25, move: 0.18,
+    knockdown: 0.55, ropeBreak: 0.5, sleeperEscape: 0.5, grappleBlock: 0.5,
+    pinAttempt: 0.45, sleeperApplied: 0.4, dodge: 0.3, stagger: 0.25, move: 0.18,
 };
 
 export default class Arena extends Phaser.Scene {
@@ -54,6 +54,16 @@ export default class Arena extends Phaser.Scene {
             cam.filters.external.addVignette(0.5, 0.5, 0.82, 0.45);
         } catch (e) {
             console.warn('Camera filters unavailable:', e.message);
+        }
+
+        // Debug time-scale (?ts=3): game dt, tween clocks, and delayed calls all
+        // scale together so move timing stays in sync. For headless sims only —
+        // makes big-N balance runs feasible (8-min matches at 2× headless slowdown
+        // were taking ~16 wall-minutes each).
+        this.timeScale = Number(new URLSearchParams(location.search).get('ts')) || 1;
+        if (this.timeScale !== 1) {
+            this.tweens.timeScale = this.timeScale;
+            this.time.timeScale   = this.timeScale;
         }
 
         this.showTitleCard();
@@ -480,6 +490,8 @@ export default class Arena extends Phaser.Scene {
             power:    kb.addKey('G'),     // power:   slam / elbow drop / dropkick
             finisher: kb.addKey('H'),     // finisher: sleeper hold
             run:      kb.addKey('R'),     // run to rope
+            evade:    kb.addKey('E'),     // tap: backstep — dodges strikes
+            block:    kb.addKey('T'),     // hold: braced stance — stuffs grapples
         };
         const keys2 = {
             up:       kb.addKey('UP'),
@@ -490,6 +502,8 @@ export default class Arena extends Phaser.Scene {
             power:    kb.addKey('SHIFT'),
             finisher: kb.addKey('SPACE'),
             run:      kb.addKey('FORWARD_SLASH'),
+            evade:    kb.addKey('COMMA'),  // tap: backstep — dodges strikes
+            block:    kb.addKey('PERIOD'), // hold: braced stance — stuffs grapples
         };
 
         const input1 = new InputHandler('keyboard', keys1);
@@ -640,6 +654,7 @@ export default class Arena extends Phaser.Scene {
         this.matchEvents.push({ t: Math.round(this._matchTime), type, ...payload });
         const pop = POP_SIZES[type];
         if (pop) this.crowd.pop(pop);
+        if (type === 'dodge') this.bumpHeat(3); // logged from strike impact callbacks
     }
 
     bumpHeat(amount) {
@@ -724,10 +739,14 @@ export default class Arena extends Phaser.Scene {
         }
 
         // Tick AI before wrestler actions so decisions are ready this frame.
-        // Paused while the win banner is up so the AI doesn't attack the loser.
+        // Paused while the win banner is up so the AI doesn't attack the loser —
+        // and cleared, or the frozen key map keeps re-firing its last presses.
         if (!this.matchOver) {
             w1.input.tick?.(dt);
             w2.input.tick?.(dt);
+        } else {
+            w1.input.clear?.();
+            w2.input.clear?.();
         }
 
         w1.move(dt, w2);
@@ -743,6 +762,11 @@ export default class Arena extends Phaser.Scene {
 
         w1.updateCombatBlend(dt, w2);
         w2.updateCombatBlend(dt, w1);
+
+        // Defense first — a block/evade registered this frame beats the
+        // attack attempts resolved below
+        w1.tickDefense(dt, w2);
+        w2.tickDefense(dt, w1);
 
         // Grapple actions — only one can initiate per frame
         const r1 = w1.tryAction(w2);
@@ -772,6 +796,12 @@ export default class Arena extends Phaser.Scene {
         // Log every move that landed this frame and bump crowd heat
         const logMove = (move, attacker, defender) => {
             if (!move || move === true) return;
+            // Stuffed grapple — the credit belongs to the blocker, not the attacker
+            if (move === 'grappleBlocked') {
+                this._logEvent('grappleBlock', { blocker: attacker === 'p1' ? 'p2' : 'p1' });
+                this.bumpHeat(6);
+                return;
+            }
             const type = (move !== 'taunt' && (move === 'knockdown' || defender.state === 'down' || defender.state === 'falling' || defender.state === 'flipping'))
                 ? 'knockdown' : (defender.state === 'staggered' ? 'stagger' : 'move');
             this._logEvent(type, { attacker, move, defenderStamina: Math.round(defender.stamina) });
@@ -1100,6 +1130,10 @@ export default class Arena extends Phaser.Scene {
 
     _endMatch(message) {
         this.matchOver = true;
+        // Kill any in-flight hold/pin state — a pin attempt sneaking in on the
+        // final frame otherwise survives the banner and ticks into the next match
+        this.pinState = this.sleeperState = this.headlockState = this.lockupState = null;
+        this.pinText.setAlpha(0);
         this.crowd.bell(3);
         const txt = this.add.text(W / 2, H / 2, message, {
             fontFamily: '"Times New Roman", Times, serif',
@@ -1132,7 +1166,7 @@ export default class Arena extends Phaser.Scene {
     }
 
     update(time, delta) {
-        this._tickGame(delta / 1000);
+        this._tickGame(delta / 1000 * this.timeScale);
 
         const g = this.grainGfx;
         g.clear();

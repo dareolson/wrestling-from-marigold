@@ -8,6 +8,9 @@
 | Grapple | F | Enter | A / Cross |
 | Power | G | Shift | X / Square |
 | Finisher | H | Space | Y / Triangle |
+| Run | R | / | B / Circle |
+| Evade (tap) | E | , | LB / L1 |
+| Block (hold) | T | . | RB / R1 |
 
 Gamepad support is built in — plug in any standard Bluetooth or USB controller and it maps automatically.
 
@@ -39,6 +42,15 @@ Gamepad support is built in — plug in any standard Bluetooth or USB controller
 | Opponent State | Move | Range | Notes |
 |---|---|---|---|
 | Standing | Sleeper hold | 120px | 4-second hold; mash to escape |
+
+### Defense (No Mercy style)
+
+The mixup triangle: **strike beats block · block beats grapple · evade beats strike**.
+
+| Input | Move | Effect |
+|---|---|---|
+| Evade — tap (E / , / LB) | Backstep | Quick hop away with dodge frames — jabs, headbutts, axe handles, and dropkicks whiff; grapples find nothing. Costs 2 stamina, 0.55s cooldown. Concedes ground. |
+| Block — hold (T / . / RB) | Braced stance | A grapple or sleeper attempt on you is **stuffed** — the attacker staggers (free punish window). But strikes hit you normally, and stamina doesn't recover while blocking. |
 
 ---
 

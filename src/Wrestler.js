@@ -100,6 +100,9 @@ export const POSES = {
     armDragGrab:    { lLeg: 0.14,  rLeg:-0.10,  lArm: 0.72,  rArm: 0.55, lean: 0.18, crouch: 0.10 }, // both hands reaching to snatch the arm
     armDragPull:    { lLeg:-0.08,  rLeg: 0.30,  lArm: 1.45,  rArm: 0.85, lean: 0.35, crouch: 0.18 }, // pivoting hard, dragging opponent through
     armDragFollow:  { lLeg:-0.16,  rLeg: 0.24,  lArm: 0.58,  rArm: 0.22, lean: 0.15 }, // arms settling after release
+    // ── Defense ──────────────────────────────────────────────────────────────
+    block:          { lLeg: 0.18,  rLeg:-0.14,  lArm: 0.95,  rArm: 0.80, lean: 0.14, crouch: 0.25 }, // braced sprawl — arms up front, weight low, ready to stuff a tie-up
+    evade:          { lLeg:-0.25,  rLeg: 0.30,  lArm: 0.55,  rArm: 0.40, lean:-0.32, crouch: 0.10 }, // backstep — torso whipped back out of reach, arms trailing up
 };
 
 // ─── Move definitions ─────────────────────────────────────────────────────────
@@ -176,6 +179,9 @@ export const MOVE_DEFS = {
 
 // ─── State machine reference ──────────────────────────────────────────────────
 // 'standing'    default; can move, accept input, initiate moves
+// 'evading'     quick backstep with dodge frames — strikes whiff, grapples find nothing; ~320ms then standing
+// 'blocking'    braced stance while block key held — grapple/sleeper attempts get stuffed (attacker
+//               staggers), but strikes land normally and stamina doesn't recover
 // 'staggered'   brief stun after a light strike; stateTimer counts down; no input; second hit knocks down
 // 'selling'     brief reaction tween on the defender before fall/stagger; blocks movement and input
 // 'taunting'    attacker mid-taunt pose sequence; blocks movement and input; ~1.3s total
@@ -237,6 +243,7 @@ export default class Wrestler {
         this.gfx             = scene.add.graphics();
         this.skeleton        = new Skeleton(scene, skinCol, trunksCol, textures);
         this.combatBlend     = 0;
+        this._evadeCooldown  = 0;
     }
 
     get s() { return perspectiveScale(this.y); }
@@ -422,6 +429,52 @@ export default class Wrestler {
 
     // ── Input ─────────────────────────────────────────────────────────────────
 
+    // Defense keys — the mixup triangle: block stuffs grapples (attacker
+    // staggers), strikes land on blockers normally, evade dodges strikes but
+    // concedes ground. Called every tick from Arena.
+    tickDefense(dt, other) {
+        this._evadeCooldown = Math.max(0, this._evadeCooldown - dt);
+
+        if (this.state === 'standing') {
+            if (this._evadeCooldown <= 0 && this.input.justDown('evade')) {
+                this.startEvade(other);
+                return 'evade';
+            }
+            if (this.input.isDown('block')) {
+                this.state = 'blocking';
+                this.tweenPose('block', 130, 'Cubic.easeOut');
+            }
+        } else if (this.state === 'blocking' && !this.input.isDown('block')) {
+            this.state = 'standing';
+            this.tweenPose('idle', 160, 'Linear');
+        }
+        return false;
+    }
+
+    // Backstep with dodge frames: while 'evading', strike impacts whiff (see
+    // the _doJab/_doHeadbutt/_doDoubleAxeHandle impact checks and the dropkick
+    // hit test) and grapple attempts find nothing to grab. Costs a little
+    // stamina and carries a cooldown so it can't be spammed into a retreat.
+    startEvade(other) {
+        this._drain(2);
+        this.state          = 'evading';
+        this._evadeCooldown = 0.55;
+        const dir = this.x <= other.x ? -1 : 1; // hop away from the opponent
+        const b   = ringBoundsAtY(this.y);
+        const targetX = Math.max(b.left + 20, Math.min(b.right - 20, this.x + dir * 110 * this.s));
+        this._runPoseSequence([
+            { p: 'evade', dur: 120, e: 'Cubic.easeOut' },
+            { p: 'idle',  dur: 220, e: 'Linear'        },
+        ]);
+        this.scene.tweens.add({
+            targets:  this,
+            x:        targetX,
+            duration: 320,
+            ease:     'Cubic.easeOut',
+            onComplete: () => { if (this.state === 'evading') this.state = 'standing'; },
+        });
+    }
+
     // Grapple key: clothesline vs returning runner | pin vs down | slam vs staggered | Irish whip vs standing
     tryAction(other) {
         if (this.state !== 'standing') return false;
@@ -443,6 +496,16 @@ export default class Wrestler {
         const dist  = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
         const reach = 110 * this.s;
         if (dist > reach) return false;
+
+        // Grapple block: a braced opponent stuffs the tie-up and shoves the
+        // attacker off balance — the free window swings the other way.
+        // Strikes are the answer to a turtle, not grapples.
+        if (other.state === 'blocking') {
+            this.x -= this.facing * 26 * this.s;
+            this._clamp();
+            this.startStagger();
+            return 'grappleBlocked';
+        }
 
         if ((other.state === 'down' || other.state === 'possum') && this.moveSet.includes('pin')) {
             this.state  = 'pinning';
@@ -498,13 +561,15 @@ export default class Wrestler {
             return 'elbowDrop';
         }
 
-        // Jab: point-blank strike vs standing — staggers, sets up follow-ups
-        if (other.state === 'standing' && dist <= jabReach && this.moveSet.includes('jab')) {
+        // Jab: point-blank strike vs standing — staggers, sets up follow-ups.
+        // Strikes beat block: a blocking opponent is a legal strike target.
+        const strikable = other.state === 'standing' || other.state === 'blocking';
+        if (strikable && dist <= jabReach && this.moveSet.includes('jab')) {
             this._doJab(other);
             return 'jab';
         }
 
-        if (other.state === 'standing' && dist <= medReach && this.moveSet.includes('dropkick')) {
+        if (strikable && dist <= medReach && this.moveSet.includes('dropkick')) {
             this._doDropkick(other);
             return 'dropkick';
         }
@@ -630,6 +695,14 @@ export default class Wrestler {
         const dist  = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
         const reach = 120 * this.s;
 
+        // Block stuffs the sleeper the same as any grapple
+        if (dist <= reach && other.state === 'blocking' && this.moveSet.includes('sleeperHold')) {
+            this.x -= this.facing * 26 * this.s;
+            this._clamp();
+            this.startStagger();
+            return 'grappleBlocked';
+        }
+
         if (dist <= reach && other.state === 'standing' && this.moveSet.includes('sleeperHold')) {
             this._doSleeperHold(other);
             return 'sleeperHold';
@@ -642,25 +715,33 @@ export default class Wrestler {
     // ── Move execution ────────────────────────────────────────────────────────
 
     _doJab(other) {
-        other._drain(STAMINA_DRAIN.jab);
         this._runPoseSequence(MOVE_DEFS.jab.poseSeq);
-        // Sell fires when punch reaches full extension (after jabCock phase)
+        // Drain and sell fire at full extension (after jabCock phase) so a
+        // defender who reads the wind-up can still slip it with an evade
         this.scene.time.delayedCall(83, () => {
+            if (other.state === 'evading') {
+                this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'jab' });
+                return;
+            }
+            other._drain(STAMINA_DRAIN.jab);
             other._doSell('sellHead', 110, () => other.startStagger());
         });
     }
 
     _doHeadbutt(other) {
-        other._drain(STAMINA_DRAIN.headbutt);
         this._runPoseSequence(MOVE_DEFS.headbutt.poseSeq);
-        // Sell fires when head lunges forward (after headbuttCock phase)
+        // Drain and sell fire when the head lunges forward (after headbuttCock)
         this.scene.time.delayedCall(117, () => {
+            if (other.state === 'evading') {
+                this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'headbutt' });
+                return;
+            }
+            other._drain(STAMINA_DRAIN.headbutt);
             other._doSell('sellHead', 150, () => other.startFall());
         });
     }
 
     _doDoubleAxeHandle(other) {
-        other._drain(STAMINA_DRAIN.doubleAxeHandle);
         this.state    = 'slamming';
         this.runPhase = null;
         this.facing   = Math.sign(other.x - this.x) || this.facing;
@@ -669,9 +750,15 @@ export default class Wrestler {
             if (this.state === 'slamming') this.state = 'standing';
         });
 
-        // Sell fires when arms come down (~280ms wind-up)
+        // Drain and sell fire when arms come down (~280ms wind-up) — long
+        // enough that an alert defender can sidestep the whole thing
         this.scene.time.delayedCall(280, () => {
             if (this.state !== 'slamming') return;
+            if (other.state === 'evading') {
+                this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'doubleAxeHandle' });
+                return;
+            }
+            other._drain(STAMINA_DRAIN.doubleAxeHandle);
             this.scene.cameras.main.shake(80, 0.001);
             other._doSell('sellHead', 130, () => other.startStagger());
         });
@@ -859,7 +946,7 @@ export default class Wrestler {
             onComplete: () => {
                 const dist = Math.abs(this.x - other.x);
                 const hit  = dist <= hitRange &&
-                             (other.state === 'standing' || other.state === 'running');
+                             (other.state === 'standing' || other.state === 'running' || other.state === 'blocking');
                 if (hit) {
                     other._drain(STAMINA_DRAIN.dropkick);
                     other._doSell('sellChest', 140, () => other.startClotheslineFall(facing));

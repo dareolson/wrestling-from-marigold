@@ -6,7 +6,8 @@
 //   HEADED=1 npm run debug:play -- pin   — watch it happen
 //
 // P2 is switched to keyboard (an unmoving dummy) at the start of each
-// scenario so the George AI doesn't interfere with reproducibility.
+// scenario so the George AI doesn't interfere with reproducibility. Defense
+// scenarios drive P2's keys directly (comma = evade, period = block).
 
 import { launch } from './harness.mjs';
 
@@ -169,6 +170,32 @@ const SCENARIOS = {
         async run(h) {
             await approach(h, 85);
             await tap(h.page, 'h');
+        },
+    },
+
+    dodge: { // P2 sidesteps the double axe handle inside its 280ms wind-up
+        // (the jab's 83ms window is too tight for scripted back-to-back keys
+        // under headless slowdown — humans dodge reads, not reactions, anyway)
+        expect: { type: 'dodge' },
+        async run(h) {
+            await tap(h.page, 'r'); // P1 runs to the rope behind and rebounds toward P2
+            await until(h, s => s.w1.st === 'running' && s.w1.rp === 'returning' && Math.abs(s.w2.x - s.w1.x) < 110,
+                'p1 returning in range');
+            await tap(h.page, 'g'); // double axe handle — impact fires at 280ms
+            await tap(h.page, ','); // P2 evades during the wind-up
+        },
+    },
+
+    block: { // P2 braces; P1's grapple attempt gets stuffed, P1 staggers
+        expect: { type: 'grappleBlock' },
+        async run(h) {
+            await approach(h, 85);
+            await jam(h);
+            await hold(h.page, '.'); // P2 block stance
+            await h.page.waitForTimeout(200);
+            await tap(h.page, 'f');  // P1 grapple → stuffed
+            await until(h, s => s.w1.st === 'staggered', 'p1 staggered by the stuff');
+            await releaseAll(h.page);
         },
     },
 

@@ -5,6 +5,8 @@
 //   btn 0  = A / Cross      → action (grapple)
 //   btn 2  = X / Square     → power
 //   btn 3  = Y / Triangle   → finisher
+//   btn 4  = LB / L1        → evade (backstep dodge)
+//   btn 5  = RB / R1        → block (grapple stuff)
 //   btn 12 = D-pad Up
 //   btn 13 = D-pad Down
 //   btn 14 = D-pad Left
@@ -14,7 +16,7 @@
 
 const STICK_DEAD = 0.4;
 
-const PAD_BUTTONS = { action: 0, run: 1, power: 2, finisher: 3 };
+const PAD_BUTTONS = { action: 0, run: 1, power: 2, finisher: 3, evade: 4, block: 5 };
 const PAD_DPAD    = { up: 12, down: 13, left: 14, right: 15 };
 const PAD_AXIS    = { left: [0, -1], right: [0, 1], up: [1, -1], down: [1, 1] };
 

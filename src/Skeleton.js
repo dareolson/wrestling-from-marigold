@@ -344,6 +344,101 @@ export default class Skeleton {
         }
     }
 
+    // ── Get-up sequence ──────────────────────────────────────────────────────
+    // Grounded keyposes for the flat → sit up → all fours → standing rise.
+    // All angles are facing-relative skeleton convention (0 = straight down,
+    // + rotates toward facing); `hip` is hip height above the mat in unscaled
+    // px; `torso` is the hip→shoulder direction (π/2 = lying toward facing,
+    // π = vertical). Mirroring for facing < 0 is a sign flip on every angle.
+    static GETUP_POSES = [
+        //         hips on mat, torso barely off it, arms at sides, legs away from facing
+        { t: 0.00, hip: 10, torso: 1.62, farThigh: -1.45, farShin: -1.60, nearThigh: -1.40, nearShin: -1.55, farArm: -1.48, farFore: -1.55, nearArm: -1.42, nearFore: -1.50 },
+        //         sitting up — torso reclined ~55°, hands propped on the mat behind the hips
+        { t: 0.34, hip: 14, torso: 2.50, farThigh: -1.42, farShin: -1.62, nearThigh: -1.34, nearShin: -1.56, farArm: -0.38, farFore: -0.55, nearArm: -0.30, nearFore: -0.48 },
+        //         all fours — thighs vertical, shins flat behind, arms straight down, torso sloping up to the shoulders
+        { t: 0.72, hip: 42, torso: 1.92, farThigh:  0.06, farShin: -1.46, nearThigh: -0.06, nearShin: -1.52, farArm:  0.06, farFore:  0.02, nearArm: -0.06, nearFore: -0.02 },
+        //         standing — matches updateUpright's rest geometry closely enough to hand off
+        { t: 1.00, hip: 88, torso: Math.PI, farThigh: 0, farShin: 0, nearThigh: 0, nearShin: 0, farArm: 0.10, farFore: 0.16, nearArm: 0.06, nearFore: 0.12 },
+    ];
+
+    // Draw the get-up at progress t (0 flat → 1 standing) by interpolating the
+    // grounded keyposes. Wrestler swaps to updateUpright when the tween lands.
+    updateGetUp(x, y, s, facing, t) {
+        const K = Skeleton.GETUP_POSES;
+        let a = K[0], b = K[K.length - 1];
+        for (let i = 0; i < K.length - 1; i++) {
+            if (t >= K[i].t && t <= K[i + 1].t) { a = K[i]; b = K[i + 1]; break; }
+        }
+        const u = b.t > a.t ? (t - a.t) / (b.t - a.t) : 0;
+        const g = {};
+        for (const k of Object.keys(a)) g[k] = a[k] + (b[k] - a[k]) * u;
+        this._applyGrounded(x, y, s, facing, g);
+    }
+
+    // Place every part from a grounded pose: hip-rooted, torso free to pitch
+    // anywhere from lying to vertical. This is the piece updateUpright can't
+    // do (it assumes a vertical torso), and it's all the sit/crawl states need.
+    _applyGrounded(x, y, s, facing, g) {
+        const f = facing >= 0 ? 1 : -1;
+        const ang = a => f * a; // mirror: sin flips with the angle sign, cos is untouched
+
+        const thighH = P.thighH * s, shinH = P.shinH * s, bootH = P.bootH * s;
+        const legW   = P.legW   * s, armW  = P.armW  * s;
+        const upperArmH = P.upperArmH * s, forearmH = P.forearmH * s;
+        const torsoH = P.torsoH * s, torsoW = P.torsoW * s, trunksH = P.trunksH * s;
+        const headR  = P.headR  * s;
+
+        const hipX = x, hipY = y - g.hip * s;
+        const ta   = ang(g.torso);                       // hip → shoulder direction
+        const shX  = hipX + Math.sin(ta) * torsoH;
+        const shY  = hipY + Math.cos(ta) * torsoH;
+        const down = ta - Math.PI;                        // shoulder → hip direction
+
+        // Torso image pivots at the shoulders and extends down the back to the
+        // hips; trunks cover the hip end of that line
+        this._place(this.torso, shX, shY, torsoW, this.trunks ? torsoH - trunksH : torsoH, down);
+        if (this.trunks) {
+            const tx = hipX + Math.sin(ta) * trunksH;
+            const ty = hipY + Math.cos(ta) * trunksH;
+            this._place(this.trunks, tx, ty, torsoW, trunksH, down);
+        }
+
+        // Legs root at the hip; boots continue the shin line
+        const leg = (thigh, shin, imgs) => {
+            const [thighImg, shinImg, bootImg] = imgs;
+            const tA = ang(thigh), sA = ang(shin);
+            this._place(thighImg, hipX, hipY, legW, thighH, tA);
+            const knee = this._end(hipX, hipY, thighH, tA);
+            this._place(shinImg, knee.x, knee.y, legW, shinH, sA);
+            const ankle = this._end(knee.x, knee.y, shinH, sA);
+            if (bootImg) this._place(bootImg, ankle.x, ankle.y, legW + 4 * s, bootH, sA + f * 0.3);
+        };
+        leg(g.farThigh,  g.farShin,  [this.farThigh,  this.farShin,  this.farBoot]);
+        leg(g.nearThigh, g.nearShin, [this.nearThigh, this.nearShin, this.nearBoot]);
+
+        // Arms root at the shoulders
+        const arm = (up, fore, imgs) => {
+            const [upImg, foreImg] = imgs;
+            const uA = ang(up), fA = ang(fore);
+            this._place(upImg, shX, shY, armW, upperArmH, uA);
+            const elbow = this._end(shX, shY, upperArmH, uA);
+            this._place(foreImg, elbow.x, elbow.y, armW, forearmH, fA);
+        };
+        arm(g.farArm,  g.farFore,  [this.farUpArm,  this.farForearm]);
+        arm(g.nearArm, g.nearFore, [this.nearUpArm, this.nearForearm]);
+
+        // Head continues past the shoulders along the torso line
+        const hx = shX + Math.sin(ta) * headR * 0.9;
+        const hy = shY + Math.cos(ta) * headR * 0.9;
+        if (this._headIsImage) {
+            this.head.setPosition(shX, shY).setDisplaySize(headR * 2.0, headR * 2.5).setFlipX(facing < 0);
+        } else {
+            this.head.clear();
+            this.head.fillStyle(this._headCol, 1);
+            this.head.fillCircle(hx, hy, headR);
+        }
+    }
+
     // Gait leg: foot target from footGait, knee solved by two-bone IK. The planted
     // boot rolls flat-forward over the ball of the foot; the swing boot trails the shin.
     _gaitLeg(foot, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale = 1) {

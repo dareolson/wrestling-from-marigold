@@ -40,6 +40,29 @@ const PERSONALITIES = {
         pinWait:          [1.2, 2.0], // hustles into re-covers; lazy 2.2–3.4 default gave p1 the rise
         attritionAt:      70,    // sleeper hunt opens while George still has gas (below 35 he's begging off)
     },
+    thesz: {
+        // NWA World Heavyweight Champion — the legitimate wall. Technical,
+        // methodical, submission-heavy. No theater: he stalks, ties up, works
+        // holds, and covers the instant you're weak. His patience is the
+        // opening George's stall-and-sting kit has been waiting for.
+        stallChance:      0.001, // never stalls — he stalks
+        retreatStamina:   12,    // doesn't beg off; fights until there's nothing left
+        cheapShotOdds:    0.15,  // clean wrestler — prefers the tie-up to the jab
+        dropkickOdds:     0.12,  // has one (really), throws it sparingly
+        lockupPreference: 'headlock',
+        holdOdds:         0.75,  // hold-for-hold the best in the world
+        tauntOdds:        0.04,  // barely acknowledges the crowd
+        showboatAfter:    0,
+        attrition:        true,  // the sleeper is his submission proxy
+        attritionAt:      65,
+        cooldownScale:    1.05,  // deliberate, never hurried
+        staggerSlamOdds:  0.45,  // staggers become suplexes, relentlessly
+        pounceBudget:     1,
+        evadeOdds:        0.08,
+        blockOdds:        0.26,  // a shooter's base — stuffs tie-ups better than anyone
+        coverStamina:     60,    // covers early and often — the closer George isn't
+        pinWait:          [0.9, 1.6],
+    },
 };
 
 export default class AIHandler {

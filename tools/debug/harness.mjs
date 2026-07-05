@@ -10,6 +10,8 @@
 //   WFM_TS=3 — run the game at 3× speed (?ts= param) for faster balance sims;
 //              note snap().t and event timestamps are game-time, which now
 //              advances WFM_TS× faster than wall time
+//   WFM_P1 / WFM_P2 — character preset per side (?p1=/?p2= params), e.g.
+//              WFM_P1=thesz to sim Thesz vs George
 
 import { chromium } from 'playwright-core';
 import { spawn } from 'node:child_process';
@@ -41,8 +43,8 @@ export async function launch() {
         });
         await waitForServer(url);
     }
-    if (process.env.WFM_TS) {
-        url += `${url.includes('?') ? '&' : '?'}ts=${process.env.WFM_TS}`;
+    for (const [env, param] of [['WFM_TS', 'ts'], ['WFM_P1', 'p1'], ['WFM_P2', 'p2']]) {
+        if (process.env[env]) url += `${url.includes('?') ? '&' : '?'}${param}=${process.env[env]}`;
     }
 
     const browser = await chromium.launch({

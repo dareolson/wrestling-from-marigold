@@ -192,9 +192,10 @@ export const MOVE_DEFS = {
 // 'elbowDropping' attacker airborne during elbow drop; elbowProgress 0→1
 // 'slamming'    attacker mid-slam, elbow drop, or dropkick launch; no input
 // 'grabbed'     defender lifted during body slam or piledriver; no input
-// 'down'        flat on mat; stateTimer counts down to 0 → 'risingUp' (or 'possum' if holding down)
+// 'down'        flat on mat; stateTimer counts down to 0 → 'gettingUp' (or 'possum' if holding down)
 // 'possum'      faking unconscious; hold down key to stay flat; action/power = quick spring up
-// 'risingUp'    350ms get-up tween; drawn as falling in reverse; no input
+// 'gettingUp'   staged rise: flat → sit up → all fours → standing (riseT 0→1, slower when hurt); no input
+// 'risingUp'    160ms kip-up after possum; drawn as falling in reverse; no input
 // 'pinned'      flat during a pin; mash action to attempt kickout
 // 'pinning'     attacker holding the pin
 // 'holding'     attacker applying sleeper hold or headlock
@@ -1174,18 +1175,22 @@ export default class Wrestler {
         });
     }
 
+    // The normal rise: flat → sit up → all fours → standing, drawn by the
+    // skeleton's grounded keyposes. A worn wrestler takes visibly longer to
+    // peel himself off the mat — the get-up itself sells the damage.
     _startRiseUp() {
-        this.state        = 'risingUp';
-        this.fallProgress = 1; // reuse fallProgress in reverse: 1 → 0
+        this.state = 'gettingUp';
+        this.riseT = 0;
+        const hurt = Math.max(0, 1 - this.stamina / 100);
         this.scene.tweens.add({
-            targets:      this,
-            fallProgress: 0,
-            duration:     350,
-            ease:         'Cubic.easeOut',
-            onComplete:   () => {
-                if (this.state === 'risingUp') {
+            targets:  this,
+            riseT:    1,
+            duration: 850 + 750 * hurt,
+            ease:     'Sine.easeInOut',
+            onComplete: () => {
+                if (this.state === 'gettingUp') {
                     this.state = 'standing';
-                    this.tweenPose('idle', 200, 'Linear');
+                    this.tweenPose('idle', 150, 'Linear');
                 }
             },
         });
@@ -1318,6 +1323,15 @@ export default class Wrestler {
 
         if (state === 'falling' || state === 'risingUp') {
             this._drawFalling(x, y, s, facing, skinCol, trunksCol, this.fallProgress);
+            return;
+        }
+
+        if (state === 'gettingUp') {
+            // Shadow shrinks as the body gathers itself off the mat
+            gfx.fillStyle(0x000000, 0.22);
+            gfx.fillEllipse(x, y, (170 - this.riseT * 60) * s, 36 * s);
+            this.skeleton.setVisible(true);
+            this.skeleton.updateGetUp(x, y, s, facing, this.riseT);
             return;
         }
 

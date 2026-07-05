@@ -509,19 +509,41 @@ export default class Arena extends Phaser.Scene {
         const input1 = new InputHandler('keyboard', keys1);
         const input2 = new InputHandler('keyboard', keys2);
 
-        // P1 — light trunks: brawler kit (Irish whip → clothesline, body slam, elbow drop, dropkick).
-        // Old-TV booking rule: one man light, one man dark, so the grayscale
-        // broadcast filter never lets two overlapping bodies read as one.
-        this.w1 = new Wrestler(this, 330, 360, 0xe0b088, 0x8c9cc8, input1,
-            ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt']);
-        this.w1.facing   = 1;
-        this.w1.idlePose = 'brawlerIdle';
+        // Kit + AI presets. Defaults preserve the classic card (brawler vs
+        // George); ?p1=thesz / ?p2=thesz (WFM_P1/WFM_P2 through the debug
+        // harness) swap a side for matchup sims. Old-TV booking rule: one man
+        // light, one man dark, so the grayscale broadcast filter never lets
+        // two overlapping bodies read as one.
+        const PRESETS = {
+            brawler: {
+                name: 'BRAWLER', personality: 'brawler', idlePose: 'brawlerIdle',
+                skin: 0xe0b088, trunks: 0x8c9cc8,
+                moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt'],
+            },
+            george: {
+                name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
+                skin: 0xa87858, trunks: 0x1a1a1a,
+                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt'],
+            },
+            thesz: {
+                // Clean technical kit — no headbutt, no piledriver; suplex and
+                // slam are his conversions, the holds are his actual game
+                name: 'THESZ', personality: 'thesz', idlePose: 'powerIdle',
+                skin: 0xe8c098, trunks: 0x484848,
+                moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab'],
+            },
+        };
+        const q  = new URLSearchParams(location.search);
+        const c1 = this._preset1 = PRESETS[q.get('p1')] ?? PRESETS.brawler;
+        const c2 = this._preset2 = PRESETS[q.get('p2')] ?? PRESETS.george;
 
-        // P2 — dark trunks, darker skin tone: powerhouse kit (piledriver instead of body slam)
-        this.w2 = new Wrestler(this, 630, 360, 0xa87858, 0x1a1a1a, input2,
-            ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt']);
+        this.w1 = new Wrestler(this, 330, 360, c1.skin, c1.trunks, input1, c1.moveSet);
+        this.w1.facing   = 1;
+        this.w1.idlePose = c1.idlePose;
+
+        this.w2 = new Wrestler(this, 630, 360, c2.skin, c2.trunks, input2, c2.moveSet);
         this.w2.facing   = -1;
-        this.w2.idlePose = 'powerIdle';
+        this.w2.idlePose = c2.idlePose;
 
         // P1 defaults to keyboard, P2 to the George AI. Keys 1 and 2 toggle
         // each player between keyboard and AI — turn both AI on to watch a match.
@@ -532,14 +554,14 @@ export default class Arena extends Phaser.Scene {
             letterSpacing: 2,
         };
         this._p1Keyboard = input1;
-        this._p1AI       = new AIHandler('brawler');
+        this._p1AI       = new AIHandler(c1.personality);
         this._p1AI.setWrestlers(this.w1, this.w2);
         this.p1ModeLbl = this.add.text(24, 26, '', lblStyle).setOrigin(0, 0).setDepth(155);
         this._showPlayerMode(1);
         kb.addKey('ONE').on('down', () => this._togglePlayer(1));
 
         this._p2Keyboard = input2;
-        this._p2AI       = new AIHandler('george');
+        this._p2AI       = new AIHandler(c2.personality);
         this._p2AI.setWrestlers(this.w2, this.w1);
         this.w2.input = this._p2AI;
         this.p2ModeLbl = this.add.text(W - 24, 26, '', lblStyle).setOrigin(1, 0).setDepth(155);
@@ -602,8 +624,8 @@ export default class Arena extends Phaser.Scene {
 
     _playerRig(n) {
         return n === 1
-            ? { w: this.w1, ai: this._p1AI, kb: this._p1Keyboard, lbl: this.p1ModeLbl, name: 'BRAWLER' }
-            : { w: this.w2, ai: this._p2AI, kb: this._p2Keyboard, lbl: this.p2ModeLbl, name: 'GEORGE' };
+            ? { w: this.w1, ai: this._p1AI, kb: this._p1Keyboard, lbl: this.p1ModeLbl, name: this._preset1.name }
+            : { w: this.w2, ai: this._p2AI, kb: this._p2Keyboard, lbl: this.p2ModeLbl, name: this._preset2.name };
     }
 
     _togglePlayer(n) {

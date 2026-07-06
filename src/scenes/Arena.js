@@ -371,10 +371,20 @@ export default class Arena extends Phaser.Scene {
             }
             return { top, bot };
         };
-        const fillRibbon = (gfx, pts, halfW, color, alpha) => {
-            const { top, bot } = ribbonEdges(pts, halfW);
+        // Two passes: a slightly wider faint halo under the solid core fakes
+        // the antialiasing the post-filter framebuffers throw away — without
+        // it the rope edges stair-step, worst on the diagonal side ropes.
+        const AA = 0.9;
+        const drawStrip = (gfx, top, bot, color, alpha) => {
             gfx.fillStyle(color, alpha);
-            gfx.fillPoints([...top, ...bot.reverse()], true);
+            gfx.fillPoints([...top, ...[...bot].reverse()], true);
+        };
+        const fillRibbon = (gfx, pts, halfW, color, alpha) => {
+            const grow = w => Array.isArray(w) ? w.map(v => v + AA) : w + AA;
+            const halo = ribbonEdges(pts, grow(halfW));
+            drawStrip(gfx, halo.top, halo.bot, color, alpha * 0.3);
+            const core = ribbonEdges(pts, halfW);
+            drawStrip(gfx, core.top, core.bot, color, alpha);
         };
 
         // Side rope point at parameter t (0 = near corner → 1 = far corner);
@@ -414,11 +424,14 @@ export default class Arena extends Phaser.Scene {
                     pts.push(sidePoint(nearP, farP, rope, dir, t, sideRest));
                     hw.push((3.0 - 1.2 * t) / 2); // thinner with distance
                 }
-                const { top, bot } = ribbonEdges(pts, hw);
+                const core = ribbonEdges(pts, hw);
+                const halo = ribbonEdges(pts, hw.map(v => v + AA));
                 for (let i = 0; i < BANDS; i++) {
                     const g = this.sideRopeBands[i];
+                    g.fillStyle(0xe4e4e4, 0.85 * 0.3);
+                    g.fillPoints([halo.top[i], halo.top[i + 1], halo.bot[i + 1], halo.bot[i]], true);
                     g.fillStyle(0xe4e4e4, 0.85);
-                    g.fillPoints([top[i], top[i + 1], bot[i + 1], bot[i]], true);
+                    g.fillPoints([core.top[i], core.top[i + 1], core.bot[i + 1], core.bot[i]], true);
                 }
             }
         });

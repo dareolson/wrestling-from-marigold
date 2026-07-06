@@ -171,8 +171,10 @@ export default class Arena extends Phaser.Scene {
             const rx = rightBoundary(y);
             const baseLum = Math.floor(58 + (y - 240) * 0.13);
 
-            // Left flank — pack from ring edge toward left canvas edge
-            let x = lx - baseR * 0.8;
+            // Left flank — pack from ring edge toward left canvas edge,
+            // leaving a ringside strip of bare floor (press row, photographers)
+            // so the crowd doesn't read as pressed against the apron
+            let x = lx - baseR * 3.4;
             while (x > -baseR) {
                 const heightFt = 4 + Math.floor(rand() * 3); // 4, 5, or 6ft
                 const r = Math.round(baseR * heightFt / 5);
@@ -186,7 +188,7 @@ export default class Arena extends Phaser.Scene {
             }
 
             // Right flank
-            x = rx + baseR * 0.8;
+            x = rx + baseR * 3.4;
             while (x < W + baseR) {
                 const heightFt = 4 + Math.floor(rand() * 3);
                 const r = Math.round(baseR * heightFt / 5);

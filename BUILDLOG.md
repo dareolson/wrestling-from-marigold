@@ -490,6 +490,21 @@ Full AI-vs-AI match now runs to a clean pinfall (verified headless: knockdown mi
 
 **Thesz vs George sim batch** (`WFM_P1=thesz`, n=8): **Thesz 3, George 0, draws 5** — five of eight went the full 10 minutes to a time-limit draw. Avg duration 8:06, offense avg 73/27 Thesz, dead air ≤12s, zero freezes. Reading: the user's parity framing holds — against a real personality George *survives* (his begging-off + rope waves outlast even Thesz's cover discipline), while against the placeholder brawler he went 0-28-2. Thesz dominates offense but converts only when he corners George mid-ring early; a George who reaches his beg-off phase near the ropes rides out the clock. This is period-authentic booking (the champ retains on a Broadway; the heel survives) and arguably *correct* for a final-boss-vs-midcard-boss card. Open question for a future tuning pass: whether 5/8 Broadways is too many for story mode — likely lever is Thesz whipping George off the ropes during beg-off (he already does this under 45 stamina; could extend it to beg-off detection) rather than more damage.
 
+### 2026-07-05 (evening) — Ring aesthetics pass (user-directed, from classic-footage study)
+
+Iterated live with hot reload + `debug:shot` screenshots, one commit per step:
+
+- **Rope sag** (`aae469e`): permanent gravity droop — bottom rope loosest (6px) → top tightest (3px), far side scaled by perspective, side ropes carry 80%. Bounce spring rides on top. Slightly thicker lines (near 3→4px, far 1.5→2, sides +25%).
+- **Rope tearing fix** (`e80ab93`): Phaser Graphics strokes have no line joins — thicker curved strokes cracked at every segment. Ropes are now filled quad-strip **ribbons** (per-vertex normals, tapered width); side-rope edges computed once per span so adjacent depth bands share exact vertices.
+- **Edge softening** (`2416a1a`): post-filter framebuffers discard MSAA, so ribbon edges stair-stepped. A 0.9px-wider faint **halo pass** under the solid core fakes the lost antialiasing (`AA` constant).
+- **Dark ropes** (`e94b3ff`): period-correct taped look — 0x32322e near / 0x3c3c38 far / 0x36362f sides. Reads against the canvas, melts into crowd shadow.
+- **Lit top edge** (`a199705`): dark ropes got lost against the crowd — thin bright strip along each strand's visually-upper edge (picked by midpoint y comparison) reads as arena light raking the rope. Keeps them traceable everywhere.
+- **Side crowd pushed back** (`b323313`): first heads started <1 head-radius off the apron; now 3.4 radii out, leaving a bare ringside strip (press row) so the crowd stops encroaching on the action.
+
+**NEXT SESSION (user-declared goal): rope physics.**
+1. **Ropes slice through wrestlers** — the side-rope depth bands sort against wrestler depth per band, but the near/far horizontal ropes are single graphics at fixed depths (25.5 / 2), so a wrestler at the right depth can interpenetrate a strand that should pass in front of/behind them. Likely needs the horizontal ropes split into depth-banded segments like the side ropes, or per-frame depth assignment vs. each wrestler.
+2. **Ropes should bow around a wrestler pressed against them** — when a wrestler is pushed back into the ropes (rope-break positions, whip bounces, cornered begging-off), deform the strands locally: displace rope points near the wrestler's x outward/backward with falloff, instead of (or in addition to) the current uniform spring sag. The ribbon renderer already samples points per frame, so local displacement is a natural fit — inject a per-rope `deform(x, amount)` before ribbonEdges.
+
 ---
 
 ## Phase Roadmap

@@ -379,12 +379,26 @@ export default class Arena extends Phaser.Scene {
             gfx.fillStyle(color, alpha);
             gfx.fillPoints([...top, ...[...bot].reverse()], true);
         };
-        const fillRibbon = (gfx, pts, halfW, color, alpha) => {
+        const fillRibbon = (gfx, pts, halfW, color, alpha, hlColor) => {
             const grow = w => Array.isArray(w) ? w.map(v => v + AA) : w + AA;
             const halo = ribbonEdges(pts, grow(halfW));
             drawStrip(gfx, halo.top, halo.bot, color, alpha * 0.3);
             const core = ribbonEdges(pts, halfW);
             drawStrip(gfx, core.top, core.bot, color, alpha);
+            // Arena light catches the top of the strand — a thin bright edge
+            // keeps dark ropes readable where they cross the crowd shadows
+            if (hlColor) {
+                const shrink = w => Array.isArray(w)
+                    ? w.map(v => v - Math.max(0.7, v * 0.55))
+                    : halfW - Math.max(0.7, halfW * 0.55);
+                const inner = ribbonEdges(pts, shrink(halfW));
+                const mid = pts.length >> 1;
+                const useTop = core.top[mid].y < core.bot[mid].y; // pick the visually-upper edge
+                const o = useTop ? core.top : core.bot;
+                const n = useTop ? inner.top : inner.bot;
+                gfx.fillStyle(hlColor, alpha * 0.9);
+                gfx.fillPoints([...o, ...[...n].reverse()], true);
+            }
         };
 
         // Side rope point at parameter t (0 = near corner → 1 = far corner);
@@ -410,8 +424,8 @@ export default class Arena extends Phaser.Scene {
             // Horizontal ropes — 25% less spring sag than side ropes
             // Dark taped ropes, period-correct — they read as dark strands
             // against the lit canvas and melt into the crowd shadows above it
-            fillRibbon(nearG, archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75), 2, 0x32322e, 1);
-            fillRibbon(farG,  archPts(farLeft.x,  rope.farY,  farRight.x,  rope.farY,  rest * 0.58 + fs * 0.75), 1, 0x3c3c38, 0.9);
+            fillRibbon(nearG, archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75), 2, 0x32322e, 1,   0x8e8e82);
+            fillRibbon(farG,  archPts(farLeft.x,  rope.farY,  farRight.x,  rope.farY,  rest * 0.58 + fs * 0.75), 1, 0x3c3c38, 0.9, 0x787870);
 
             // Side ropes — one segment per depth band so wrestlers sort
             // correctly. Ribbon edges are computed once over the whole span so
@@ -426,14 +440,21 @@ export default class Arena extends Phaser.Scene {
                     pts.push(sidePoint(nearP, farP, rope, dir, t, sideRest));
                     hw.push((3.0 - 1.2 * t) / 2); // thinner with distance
                 }
-                const core = ribbonEdges(pts, hw);
-                const halo = ribbonEdges(pts, hw.map(v => v + AA));
+                const core  = ribbonEdges(pts, hw);
+                const halo  = ribbonEdges(pts, hw.map(v => v + AA));
+                const inner = ribbonEdges(pts, hw.map(v => v - Math.max(0.7, v * 0.55)));
+                const mid   = pts.length >> 1;
+                const useTop = core.top[mid].y < core.bot[mid].y;
+                const hlO = useTop ? core.top  : core.bot;
+                const hlI = useTop ? inner.top : inner.bot;
                 for (let i = 0; i < BANDS; i++) {
                     const g = this.sideRopeBands[i];
                     g.fillStyle(0x36362f, 0.85 * 0.3);
                     g.fillPoints([halo.top[i], halo.top[i + 1], halo.bot[i + 1], halo.bot[i]], true);
                     g.fillStyle(0x36362f, 0.85);
                     g.fillPoints([core.top[i], core.top[i + 1], core.bot[i + 1], core.bot[i]], true);
+                    g.fillStyle(0x82827a, 0.75);
+                    g.fillPoints([hlO[i], hlO[i + 1], hlI[i + 1], hlI[i]], true);
                 }
             }
         });

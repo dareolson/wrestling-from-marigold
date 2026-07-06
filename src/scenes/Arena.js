@@ -346,16 +346,35 @@ export default class Arena extends Phaser.Scene {
         const ns = this.nearRopeSag.val;
         const fs = this.farRopeSag.val;
 
-        // Draw a rope as an arched polyline — sag peaks at center, zero at both ends.
-        const arch = (gfx, x0, y0, x1, y1, sag, segs = 14) => {
-            gfx.beginPath();
+        // Sample an arched rope as a polyline — sag peaks mid-span
+        const archPts = (x0, y0, x1, y1, sag, segs = 24) => {
+            const pts = [];
             for (let i = 0; i <= segs; i++) {
                 const t = i / segs;
-                const x = x0 + (x1 - x0) * t;
-                const y = y0 + (y1 - y0) * t + sag * Math.sin(t * Math.PI);
-                i === 0 ? gfx.moveTo(x, y) : gfx.lineTo(x, y);
+                pts.push({ x: x0 + (x1 - x0) * t, y: y0 + (y1 - y0) * t + sag * Math.sin(t * Math.PI) });
             }
-            gfx.strokePath();
+            return pts;
+        };
+
+        // Crack-free ribbon: stroked polylines tear at the segment joints once
+        // lines get thick (Graphics has no line joins) — fill one continuous
+        // quad strip instead. halfW may be an array for tapered width.
+        const ribbonEdges = (pts, halfW) => {
+            const top = [], bot = [];
+            for (let i = 0; i < pts.length; i++) {
+                const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
+                const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+                const nx = -(b.y - a.y) / len, ny = (b.x - a.x) / len;
+                const hw = Array.isArray(halfW) ? halfW[i] : halfW;
+                top.push({ x: pts[i].x + nx * hw, y: pts[i].y + ny * hw });
+                bot.push({ x: pts[i].x - nx * hw, y: pts[i].y - ny * hw });
+            }
+            return { top, bot };
+        };
+        const fillRibbon = (gfx, pts, halfW, color, alpha) => {
+            const { top, bot } = ribbonEdges(pts, halfW);
+            gfx.fillStyle(color, alpha);
+            gfx.fillPoints([...top, ...bot.reverse()], true);
         };
 
         // Side rope point at parameter t (0 = near corner → 1 = far corner);
@@ -379,25 +398,28 @@ export default class Arena extends Phaser.Scene {
         ropes.forEach((rope, ri) => {
             const rest = REST_SAG[ri] ?? 4;
             // Horizontal ropes — 25% less spring sag than side ropes
-            nearG.lineStyle(4, 0xf0f0f0, 1);
-            arch(nearG, nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75);
+            fillRibbon(nearG, archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75), 2, 0xf0f0f0, 1);
+            fillRibbon(farG,  archPts(farLeft.x,  rope.farY,  farRight.x,  rope.farY,  rest * 0.58 + fs * 0.75), 1, 0xe0e0e0, 0.9);
 
-            farG.lineStyle(2, 0xe0e0e0, 0.9);
-            arch(farG, farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58 + fs * 0.75);
-
-            // Side ropes — one segment per depth band so wrestlers sort correctly
-            for (let i = 0; i < BANDS; i++) {
-                const t0 = i / BANDS, t1 = (i + 1) / BANDS;
-                const g  = this.sideRopeBands[i];
-                const wd = 3.0 - 1.2 * (t0 + t1) / 2; // thinner with distance
-                g.lineStyle(wd, 0xe4e4e4, 0.85);
-                const sideRest = rest * 0.8;
-                const l0 = sidePoint(nearLeft, farLeft, rope, -1, t0, sideRest);
-                const l1 = sidePoint(nearLeft, farLeft, rope, -1, t1, sideRest);
-                g.lineBetween(l0.x, l0.y, l1.x, l1.y);
-                const r0 = sidePoint(nearRight, farRight, rope, 1, t0, sideRest);
-                const r1 = sidePoint(nearRight, farRight, rope, 1, t1, sideRest);
-                g.lineBetween(r0.x, r0.y, r1.x, r1.y);
+            // Side ropes — one segment per depth band so wrestlers sort
+            // correctly. Ribbon edges are computed once over the whole span so
+            // adjacent bands share exact vertices: no cracks between graphics.
+            const sideRest = rest * 0.8;
+            for (const dir of [-1, 1]) {
+                const nearP = dir < 0 ? nearLeft : nearRight;
+                const farP  = dir < 0 ? farLeft  : farRight;
+                const pts = [], hw = [];
+                for (let i = 0; i <= BANDS; i++) {
+                    const t = i / BANDS;
+                    pts.push(sidePoint(nearP, farP, rope, dir, t, sideRest));
+                    hw.push((3.0 - 1.2 * t) / 2); // thinner with distance
+                }
+                const { top, bot } = ribbonEdges(pts, hw);
+                for (let i = 0; i < BANDS; i++) {
+                    const g = this.sideRopeBands[i];
+                    g.fillStyle(0xe4e4e4, 0.85);
+                    g.fillPoints([top[i], top[i + 1], bot[i + 1], bot[i]], true);
+                }
             }
         });
     }

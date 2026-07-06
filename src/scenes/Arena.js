@@ -363,33 +363,40 @@ export default class Arena extends Phaser.Scene {
         const BANDS = this.sideRopeBands.length;
         const yBow  = (ns + fs) * 0.5;
         const xBow  = (ns + fs) * 0.6;
-        const sidePoint = (nearP, farP, rope, dir, t) => {
+        const sidePoint = (nearP, farP, rope, dir, t, rest) => {
             const bow = Math.sin(t * Math.PI);
             return {
                 x: nearP.x + (farP.x - nearP.x) * t + dir * xBow * bow,
-                y: rope.nearY + (rope.farY - rope.nearY) * t + yBow * bow,
+                y: rope.nearY + (rope.farY - rope.nearY) * t + (yBow + rest) * bow,
             };
         };
 
-        ropes.forEach(rope => {
-            // Horizontal ropes — 25% less sag than side ropes
-            nearG.lineStyle(3, 0xf0f0f0, 1);
-            arch(nearG, nearLeft.x, rope.nearY, nearRight.x, rope.nearY, ns * 0.75);
+        // Resting gravity sag, bottom rope loosest → top rope tightest (px at
+        // the near side; far side scaled down with the perspective). The
+        // spring sag from bounces rides on top of this.
+        const REST_SAG = [6, 4.5, 3];
 
-            farG.lineStyle(1.5, 0xe0e0e0, 0.9);
-            arch(farG, farLeft.x, rope.farY, farRight.x, rope.farY, fs * 0.75);
+        ropes.forEach((rope, ri) => {
+            const rest = REST_SAG[ri] ?? 4;
+            // Horizontal ropes — 25% less spring sag than side ropes
+            nearG.lineStyle(4, 0xf0f0f0, 1);
+            arch(nearG, nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75);
+
+            farG.lineStyle(2, 0xe0e0e0, 0.9);
+            arch(farG, farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58 + fs * 0.75);
 
             // Side ropes — one segment per depth band so wrestlers sort correctly
             for (let i = 0; i < BANDS; i++) {
                 const t0 = i / BANDS, t1 = (i + 1) / BANDS;
                 const g  = this.sideRopeBands[i];
-                const wd = 2.4 - 1.0 * (t0 + t1) / 2; // thinner with distance
+                const wd = 3.0 - 1.2 * (t0 + t1) / 2; // thinner with distance
                 g.lineStyle(wd, 0xe4e4e4, 0.85);
-                const l0 = sidePoint(nearLeft, farLeft, rope, -1, t0);
-                const l1 = sidePoint(nearLeft, farLeft, rope, -1, t1);
+                const sideRest = rest * 0.8;
+                const l0 = sidePoint(nearLeft, farLeft, rope, -1, t0, sideRest);
+                const l1 = sidePoint(nearLeft, farLeft, rope, -1, t1, sideRest);
                 g.lineBetween(l0.x, l0.y, l1.x, l1.y);
-                const r0 = sidePoint(nearRight, farRight, rope, 1, t0);
-                const r1 = sidePoint(nearRight, farRight, rope, 1, t1);
+                const r0 = sidePoint(nearRight, farRight, rope, 1, t0, sideRest);
+                const r1 = sidePoint(nearRight, farRight, rope, 1, t1, sideRest);
                 g.lineBetween(r0.x, r0.y, r1.x, r1.y);
             }
         });

@@ -306,9 +306,16 @@ export default class Arena extends Phaser.Scene {
     }
 
     _setupDynamicRopes() {
-        // Near ropes sit between the camera and everything in the ring, so they
-        // must render above the deepest wrestler depth (12 + 445*0.03 = 25.35).
-        this.nearRopeGfx = this.add.graphics().setDepth(25.5);
+        // Near ropes sit between the camera and everything in the ring, so by
+        // default they render above the deepest wrestler depth (12 + 445*0.03
+        // = 25.35). They're banded by x — like the side ropes are banded by
+        // depth — so when a wrestler is pressed into them, just the strands at
+        // his back re-sort behind his body while the rest of the span keeps
+        // crossing in front of the ring broadcast-style.
+        this.nearRopeBands = [];
+        for (let i = 0; i < 24; i++) {
+            this.nearRopeBands.push(this.add.graphics().setDepth(25.5));
+        }
         this.farRopeGfx  = this.add.graphics().setDepth(2);
         this.nearRopeSag = { val: 0, vel: 0 };
         this.farRopeSag  = { val: 0, vel: 0 };
@@ -322,8 +329,42 @@ export default class Arena extends Phaser.Scene {
         for (let i = 0; i < BANDS; i++) {
             const tMid    = (i + 0.5) / BANDS; // 0 = near corner → 1 = far corner
             const groundY = RING.nearLeft.y + (RING.farLeft.y - RING.nearLeft.y) * tMid;
-            this.sideRopeBands.push(this.add.graphics().setDepth(12 + groundY * 0.03));
+            const g = this.add.graphics().setDepth(12 + groundY * 0.03);
+            g._baseDepth = 12 + groundY * 0.03;
+            this.sideRopeBands.push(g);
         }
+    }
+
+    // Wrestlers close enough to a rope wall press into it: 0 press at 34px
+    // inside the plane, full press at the movement clamp (20px), so contact
+    // peaks exactly where whip bounces, rope breaks, and cornered stalling
+    // put a body. Airborne/held/climbing states don't press; grounded bodies
+    // only reach the bottom strand.
+    _ropePresses() {
+        const SKIP = new Set(['climbing', 'onTurnbuckle', 'diving', 'grabbed',
+                              'falling', 'flipping', 'slamming', 'dropkicking']);
+        const LOW  = new Set(['down', 'gettingUp', 'possum', 'pinned',
+                              'sleeping', 'pin', 'elbowDrop', 'elbowDropping']);
+        const press = d => Math.min(1, Math.max(0, (34 - d) / 14));
+        const out = { near: [], far: [], side: { '-1': [], 1: [] } };
+        for (const w of [this.w1, this.w2]) {
+            if (!w || SKIP.has(w.state)) continue;
+            // per-strand weight bottom→top: an upright back bends the middle
+            // and top ropes; a body on the mat only nudges the bottom one
+            const wRope = LOW.has(w.state) ? [1, 0.15, 0] : [0.8, 1, 0.85];
+            const depth = 12 + w.y * 0.03;
+            const b = ringBoundsAtY(w.y);
+            const t = (RING.nearLeft.y - w.y) / (RING.nearLeft.y - RING.farLeft.y);
+            const kNear = press(RING.nearLeft.y - w.y);
+            const kFar  = press(w.y - RING.farLeft.y);
+            const kL    = press(w.x - b.left);
+            const kR    = press(b.right - w.x);
+            if (kNear) out.near.push({ x: w.x, k: kNear, depth, w: wRope });
+            if (kFar)  out.far.push({ x: w.x, k: kFar, w: wRope });
+            if (kL)    out.side[-1].push({ t, k: kL, depth, w: wRope });
+            if (kR)    out.side[1].push({ t, k: kR, depth, w: wRope });
+        }
+        return out;
     }
 
     triggerRopeBounce(side) {
@@ -339,21 +380,30 @@ export default class Arena extends Phaser.Scene {
             s.val += s.vel * dt;
         }
 
-        const nearG = this.nearRopeGfx;
-        const farG  = this.farRopeGfx;
-        nearG.clear();
+        const farG = this.farRopeGfx;
         farG.clear();
+        for (const b of this.nearRopeBands) b.clear();
         for (const b of this.sideRopeBands) b.clear();
 
         const ns = this.nearRopeSag.val;
         const fs = this.farRopeSag.val;
 
-        // Sample an arched rope as a polyline — sag peaks mid-span
-        const archPts = (x0, y0, x1, y1, sag, segs = 24) => {
+        // Local rope deformation: wrestlers pressed into a wall bow the
+        // strands around their position with a smooth cosine falloff.
+        const presses = this._ropePresses();
+        const bump = (u, c, r) => {
+            const q = Math.abs(u - c) / r;
+            return q >= 1 ? 0 : 0.5 + 0.5 * Math.cos(q * Math.PI);
+        };
+
+        // Sample an arched rope as a polyline — sag peaks mid-span; warp(x)
+        // adds local press deformation on top of the uniform sag
+        const archPts = (x0, y0, x1, y1, sag, warp, segs = 24) => {
             const pts = [];
             for (let i = 0; i <= segs; i++) {
                 const t = i / segs;
-                pts.push({ x: x0 + (x1 - x0) * t, y: y0 + (y1 - y0) * t + sag * Math.sin(t * Math.PI) });
+                const x = x0 + (x1 - x0) * t;
+                pts.push({ x, y: y0 + (y1 - y0) * t + sag * Math.sin(t * Math.PI) + (warp ? warp(x) : 0) });
             }
             return pts;
         };
@@ -403,15 +453,39 @@ export default class Arena extends Phaser.Scene {
             }
         };
 
+        // Fill a ribbon split across an array of band graphics — one segment
+        // per band, pts.length === bands.length + 1. Edges are computed once
+        // over the whole span so adjacent bands share exact vertices: no
+        // cracks between graphics.
+        const fillRibbonBands = (bands, pts, hw, color, alpha, hlColor, hlAlpha) => {
+            const core  = ribbonEdges(pts, hw);
+            const halo  = ribbonEdges(pts, hw.map(v => v + AA));
+            const inner = ribbonEdges(pts, hw.map(v => v - Math.max(0.7, v * 0.55)));
+            const mid   = pts.length >> 1;
+            const useTop = core.top[mid].y < core.bot[mid].y;
+            const hlO = useTop ? core.top  : core.bot;
+            const hlI = useTop ? inner.top : inner.bot;
+            for (let i = 0; i < bands.length; i++) {
+                const g = bands[i];
+                g.fillStyle(color, alpha * 0.3);
+                g.fillPoints([halo.top[i], halo.top[i + 1], halo.bot[i + 1], halo.bot[i]], true);
+                g.fillStyle(color, alpha);
+                g.fillPoints([core.top[i], core.top[i + 1], core.bot[i + 1], core.bot[i]], true);
+                g.fillStyle(hlColor, hlAlpha);
+                g.fillPoints([hlO[i], hlO[i + 1], hlI[i + 1], hlI[i]], true);
+            }
+        };
+
         // Side rope point at parameter t (0 = near corner → 1 = far corner);
         // bows outward in x and downward in y, peaking at the midpoint.
-        const BANDS = this.sideRopeBands.length;
+        const BANDS  = this.sideRopeBands.length;
+        const NBANDS = this.nearRopeBands.length;
         const yBow  = (ns + fs) * 0.5;
         const xBow  = (ns + fs) * 0.6;
-        const sidePoint = (nearP, farP, rope, dir, t, rest) => {
+        const sidePoint = (nearP, farP, rope, dir, t, rest, warpX) => {
             const bow = Math.sin(t * Math.PI);
             return {
-                x: nearP.x + (farP.x - nearP.x) * t + dir * xBow * bow,
+                x: nearP.x + (farP.x - nearP.x) * t + dir * xBow * bow + (warpX ? warpX(t) : 0),
                 y: rope.nearY + (rope.farY - rope.nearY) * t + (yBow + rest) * bow,
             };
         };
@@ -425,41 +499,59 @@ export default class Arena extends Phaser.Scene {
             const rest = REST_SAG[ri] ?? 4;
             // Horizontal ropes — 25% less spring sag than side ropes
             // Dark taped ropes, period-correct — they read as dark strands
-            // against the lit canvas and melt into the crowd shadows above it
-            fillRibbon(nearG, archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75), 2, 0x32322e, 1,   0x8e8e82);
-            fillRibbon(farG,  archPts(farLeft.x,  rope.farY,  farRight.x,  rope.farY,  rest * 0.58 + fs * 0.75), 1, 0x3c3c38, 0.9, 0x787870);
+            // against the lit canvas and melt into the crowd shadows above it.
+            // A press bows the near strands toward the camera (down-screen)
+            // and the far strands away from it (up-screen), scaled with the
+            // perspective; per-strand weight comes from the presser's posture.
+            const nearWarp = x =>  presses.near.reduce((a, p) => a + p.k * p.w[ri] * 9   * bump(x, p.x, 85), 0);
+            const farWarp  = x => -presses.far.reduce((a, p)  => a + p.k * p.w[ri] * 4.5 * bump(x, p.x, 55), 0);
+            fillRibbonBands(this.nearRopeBands,
+                archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75, nearWarp, NBANDS),
+                new Array(NBANDS + 1).fill(2), 0x32322e, 1, 0x8e8e82, 0.9);
+            fillRibbon(farG, archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58 + fs * 0.75, farWarp), 1, 0x3c3c38, 0.9, 0x787870);
 
             // Side ropes — one segment per depth band so wrestlers sort
-            // correctly. Ribbon edges are computed once over the whole span so
-            // adjacent bands share exact vertices: no cracks between graphics.
+            // correctly; a press bows them outward in x, fading with distance.
             const sideRest = rest * 0.8;
             for (const dir of [-1, 1]) {
                 const nearP = dir < 0 ? nearLeft : nearRight;
                 const farP  = dir < 0 ? farLeft  : farRight;
+                const warpX = t => dir * presses.side[dir].reduce(
+                    (a, p) => a + p.k * p.w[ri] * 8 * (1 - 0.42 * t) * bump(t, p.t, 0.28), 0);
                 const pts = [], hw = [];
                 for (let i = 0; i <= BANDS; i++) {
                     const t = i / BANDS;
-                    pts.push(sidePoint(nearP, farP, rope, dir, t, sideRest));
+                    pts.push(sidePoint(nearP, farP, rope, dir, t, sideRest, warpX));
                     hw.push((3.0 - 1.2 * t) / 2); // thinner with distance
                 }
-                const core  = ribbonEdges(pts, hw);
-                const halo  = ribbonEdges(pts, hw.map(v => v + AA));
-                const inner = ribbonEdges(pts, hw.map(v => v - Math.max(0.7, v * 0.55)));
-                const mid   = pts.length >> 1;
-                const useTop = core.top[mid].y < core.bot[mid].y;
-                const hlO = useTop ? core.top  : core.bot;
-                const hlI = useTop ? inner.top : inner.bot;
-                for (let i = 0; i < BANDS; i++) {
-                    const g = this.sideRopeBands[i];
-                    g.fillStyle(0x36362f, 0.85 * 0.3);
-                    g.fillPoints([halo.top[i], halo.top[i + 1], halo.bot[i + 1], halo.bot[i]], true);
-                    g.fillStyle(0x36362f, 0.85);
-                    g.fillPoints([core.top[i], core.top[i + 1], core.bot[i + 1], core.bot[i]], true);
-                    g.fillStyle(0x82827a, 0.75);
-                    g.fillPoints([hlO[i], hlO[i + 1], hlI[i + 1], hlI[i]], true);
-                }
+                fillRibbonBands(this.sideRopeBands, pts, hw, 0x36362f, 0.85, 0x82827a, 0.75);
             }
         });
+
+        // Re-sort pressed bands behind the pressing wrestler. Only full
+        // contact re-sorts (k ≥ 0.55, i.e. within ~6px of the movement clamp)
+        // so the flip lands while the bow already reads as touching; the
+        // deeper wrestler still sorts behind the rope everywhere else because
+        // depth is monotonic in ground y.
+        for (let i = 0; i < NBANDS; i++) {
+            const bx = nearLeft.x + (nearRight.x - nearLeft.x) * ((i + 0.5) / NBANDS);
+            let d = 25.5;
+            for (const p of presses.near) {
+                if (p.k >= 0.55 && bump(bx, p.x, 95) > 0.15) d = Math.min(d, p.depth - 0.02);
+            }
+            this.nearRopeBands[i].setDepth(d);
+        }
+        for (let i = 0; i < BANDS; i++) {
+            const g = this.sideRopeBands[i];
+            const tMid = (i + 0.5) / BANDS;
+            let d = g._baseDepth;
+            for (const dir of [-1, 1]) {
+                for (const p of presses.side[dir]) {
+                    if (p.k >= 0.55 && Math.abs(tMid - p.t) < 0.3) d = Math.min(d, p.depth - 0.02);
+                }
+            }
+            g.setDepth(d);
+        }
     }
 
     drawPosts() {

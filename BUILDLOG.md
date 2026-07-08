@@ -537,6 +537,18 @@ Round 1 (decay 0.12, ratchet threshold 12 / factor 0.35, tested last session) st
 
 **Same session, playtest feedback — horizontal ropes no longer bend.** User: the near/far rope bow "looks weird when they move," and since movement is mostly side-to-side, bodies rarely brush those planes anyway. Removed `nearWarp`/`farWarp` (and the unused far-press collection in `_ropePresses`); side ropes keep their outward bow. The near-band depth re-sort **stays** — that's what keeps strands from slicing through a body at the near plane, independent of bending. Verified: 12/12 `debug:play`, harness screenshots of near-wall press (strands straight, body unbroken) and side-wall press.
 
+**NEXT SESSION: gamepad support** (user request after playtesting — this is the opening move of Phase 4). Current state: `main.js` already enables the plugin (`input.gamepad: true`) and `InputHandler.js` already has a gamepad branch with the full mapping (A=grapple, B=run, X=power, Y=finisher, LB=evade, RB=block, d-pad + left stick with 0.4 deadzone) — but Arena never constructs a `'gamepad'` handler, so that branch has never executed. Plan:
+
+1. **Verify the Phaser 4 gamepad API first** (read `node_modules`-free — Phaser is CDN; check the Phaser 4 docs/source for `Input.Gamepad`). Known suspects in the never-run branch: Phaser's gamepad `Button` exposes `.pressed`/`.value` (not `.isDown`), and there is no `justDown` on pad buttons — `justDown(action)` needs per-frame edge detection (snapshot previous button state each update, likely a small `poll()` the Arena calls once per frame, mirroring how AIHandler keys work).
+2. **Pad assignment**: "press any button to join" — on Phaser's `gamepad.connected` event (or first button press), assign pad 0 → whichever player is currently on keyboard (P1 first), pad 1 → the other. Store handlers as `this._p1Pad`/`_p2Pad` alongside the existing keyboard/AI handlers.
+3. **Extend the 1/2 toggle cycle**: keyboard → gamepad (if a pad is assigned) → AI → keyboard. `_showPlayerMode` labels gain a `GAMEPAD` state. Handle `disconnected` (drop back to keyboard, update label).
+4. **Audio unlock**: `this.input.keyboard.once('keydown', unlockAudio)` never fires for a pad-only player — also unlock on the first gamepad button event.
+5. **Mash mechanics check**: pin kickout / hold escapes count `justDown` presses — confirm they feel right on a pad once edge detection exists (mash rate on a face button differs from a keyboard key).
+6. **Verification**: real-controller playtest is the primary check (user has the pad). For the harness, optionally inject a fake `navigator.getGamepads` via an init script so `debug:play` can drive the gamepad path headlessly — worth it only if the manual test surfaces bugs worth regression-locking.
+7. MOVES.md controls table + BUILDLOG.
+
+Risks: Phaser 4's gamepad plugin may have its own breakages vs v3 (the whole project has hit v4 API drift before — scanlines, graphics); browsers only surface a pad after user interaction with it (expect "no pad until you press a button" — that's the join gesture, not a bug).
+
 ---
 
 ## Phase Roadmap

@@ -517,6 +517,24 @@ Items 1 + 2 of the declared goal, shipped together because they share one mechan
 
 **NEXT: crowd heat meter** (item 3 of the declared goal). Heat sits near zero all match (user: "makes the matches seem pretty boring") — flat 3/s decay bleeds out the small one-shot bumps between spots. Ideas: slower/asymmetric decay (fast above 70, slow below), a floor that ratchets up with match milestones (nearfalls, comebacks), bigger bumps for chained spots, rolling-average display. Heat has gameplay teeth (comeback scaling 50–150%, taunt conversion) — retune together.
 
+### 2026-07-07 — Crowd heat retune (rounds 1+2) + match-restart heat reset
+
+The heat meter now tells the story of a match instead of flatlining. Replaced the flat 3/s linear decay with three mechanisms in `bumpHeat`/`_updateHeat`:
+
+- **Floor ratchet**: spots with bump ≥ 8 raise `heatFloor` by 45% of the bump (cap 60) — once the crowd has seen a nearfall they never go back to cold silence. Floor itself cools at 0.15/s, so a long dead stretch does slowly lose the room. Drawn as a dim under-fill on the meter (how much of the room the match has permanently won).
+- **Exponential decay toward the floor** (not zero): `heat = floor + (heat − floor)·e^(−0.08·dt)` — a roar dies down over ~20s but settles at the simmer the match earned.
+- **Chain multiplier**: bumps landing within 4s of the previous build ×(1 + 0.18/link), cap 5 links — a sequence heats the room faster than the same moves spread across dead air.
+
+Round 1 (decay 0.12, ratchet threshold 12 / factor 0.35, tested last session) still read flat: mid-match ~15–25. Round 2 (decay 0.08, threshold 8, factor 0.45) lands the arc — `WFM_TS=3` watch runs show cold open mid-20s, mid-match 40s–50s tracking the spots, closing nearfall stretch 80–99, banner in the 70s.
+
+**Match-restart heat carryover (found & fixed)**: `_endMatch`'s restart callback reset stamina/clock/pin saves but not heat state — match 2 opened at heat ~74 with the floor still ratcheted. Worse: `_lastBumpT` outlived the match clock it's compared against (`_matchTime` resets to 0, so `_matchTime − _lastBumpT` goes negative → chain check always true → stale multiplier on the next match's first bump). Restart now resets `heat`/`heatFloor`/`_heatChain`/`_lastBumpT` to create() values. Verified across three consecutive AI-vs-AI match boundaries: each new match opens at 29.
+
+**Regression**: `debug:play -- all` 12/12.
+
+**Watch next**: comeback refunds scale 50–150% with heat — sustained higher heat means bigger kickout refunds, which may lengthen matches. Compare a future `debug:sim` batch against the 6:02 baseline avg (n=30 soak) before trusting old duration tuning.
+
+**Still open (pre-existing)**: knockback falls don't `_clamp()` — a downed wrestler can land at y≈500, outside the ring plane.
+
 ---
 
 ## Phase Roadmap

@@ -744,8 +744,14 @@ export default class Arena extends Phaser.Scene {
         this.headlockState = null; // { attacker, defender, timer }
         this.lockupState   = null; // { attacker, defender, timer }
 
-        // Crowd heat — 0–100, decays slowly, bumped by big moves, taunts, nearfalls
-        this.heat    = 30;
+        // Crowd heat — 0–100, bumped by big moves, taunts, nearfalls. Cools
+        // exponentially toward a floor that big spots ratchet upward, so a
+        // match that has delivered stays warm between spots instead of
+        // bleeding back to silence (see bumpHeat/_updateHeat).
+        this.heat      = 30;
+        this.heatFloor = 10;
+        this._heatChain = 0;
+        this._lastBumpT = -99;
         this.heatGfx = this.add.graphics().setDepth(152);
         this.heatLbl = this.add.text(W / 2, H - 30, 'CROWD', {
             fontFamily: '"Times New Roman", Times, serif',
@@ -839,7 +845,15 @@ export default class Arena extends Phaser.Scene {
     }
 
     bumpHeat(amount) {
-        this.heat = Math.min(100, this.heat + amount);
+        // Chained spots play bigger: bumps landing within 4s of the previous
+        // one build a multiplier, so a sequence heats the room faster than
+        // the same moves spread across dead air.
+        this._heatChain = (this._matchTime - this._lastBumpT < 4) ? Math.min(5, this._heatChain + 1) : 0;
+        this._lastBumpT = this._matchTime;
+        this.heat = Math.min(100, this.heat + amount * (1 + 0.18 * this._heatChain));
+        // Big spots ratchet the crowd's floor — once they've seen a nearfall
+        // the room never goes back to cold silence.
+        if (amount >= 8) this.heatFloor = Math.min(60, this.heatFloor + amount * 0.45);
     }
 
     // Comeback mechanic: surviving a big spot refunds stamina, so the wrestler
@@ -875,7 +889,11 @@ export default class Arena extends Phaser.Scene {
     }
 
     _updateHeat(dt) {
-        this.heat = Math.max(0, this.heat - 3 * dt);
+        // A roar dies down over ~15s but settles at the simmer the match has
+        // earned rather than draining linearly to zero. The floor itself
+        // cools very slowly, so a long dead stretch does lose the room.
+        this.heatFloor = Math.max(10, this.heatFloor - 0.15 * dt);
+        this.heat = this.heatFloor + (this.heat - this.heatFloor) * Math.exp(-0.08 * dt);
         this.crowd.setHeat(this.heat / 100);
     }
 
@@ -892,6 +910,11 @@ export default class Arena extends Phaser.Scene {
         g.fillRect(bx - 2, by - 2, BAR_W + 4, BAR_H + 4);
         g.lineStyle(1, 0x777770, 0.9);
         g.strokeRect(bx - 2, by - 2, BAR_W + 4, BAR_H + 4);
+
+        // Dim under-fill marks the ratcheted floor — how much of the room
+        // the match has permanently won over
+        g.fillStyle(0x55554e, 1);
+        g.fillRect(bx, by, BAR_W * (this.heatFloor / 100), BAR_H);
 
         const fillW = BAR_W * (this.heat / 100);
         const lum = Math.floor(90 + this.heat * 1.4); // readable gray (cold) → blazing white (hot)
@@ -1339,6 +1362,12 @@ export default class Arena extends Phaser.Scene {
                     this.w1.pinSaveUsed = false;
                     this.w2.pinSaveUsed = false;
                     this._matchTime = 0;
+                    // Fresh crowd for the next match — and _lastBumpT must not
+                    // outlive the match clock it's compared against
+                    this.heat      = 30;
+                    this.heatFloor = 10;
+                    this._heatChain = 0;
+                    this._lastBumpT = -99;
                     this.matchOver  = false;
                     this.crowd.bell(1);
                 },

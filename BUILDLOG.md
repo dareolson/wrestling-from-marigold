@@ -677,6 +677,10 @@ The contrast between the two is intentional — George is theater, Thesz is spor
 ### Phase 6 — Launch
 GitHub Pages (static builds) + backend deploy, public announcement.
 
+*(Note 2026-07-07: Derek is leaning Vercel + a custom domain instead of GitHub
+Pages, and is eager to host the game early as a build-in-public playable demo —
+but wants to polish it a bit more first. Revisit when it feels ready; don't rush.)*
+
 ---
 
 ## Running the Project

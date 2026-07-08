@@ -549,6 +549,45 @@ Round 1 (decay 0.12, ratchet threshold 12 / factor 0.35, tested last session) st
 
 Risks: Phaser 4's gamepad plugin may have its own breakages vs v3 (the whole project has hit v4 API drift before — scanlines, graphics); browsers only surface a pad after user interaction with it (expect "no pad until you press a button" — that's the join gesture, not a bug).
 
+### 2026-07-08 — Feel audit (diagnosis only — no game code touched)
+
+Instrument-first audit of movement physics, momentum, and ring psychology.
+**Full findings + fix list in `FEEL_AUDIT.md`** — 15 ranked findings, each with
+measured evidence, severity, and the lever it pulls; fixes grouped into batches
+A (correctness) / B (movement feel) / C (psychology), every item with a
+hypothesis and an acceptance check. **Next session: Derek picks the batch,
+then implement one concern per commit (12/12 after each, sim vs the 6:02
+baseline for pacing changes).**
+
+Method: per-frame kinematics sampler (hooked on the scene's `postupdate`) +
+5 AI-vs-AI probe matches (3× brawler/George, 2× Thesz/George, ts=3) with
+event/heat/position/occupancy/OOB traces. Baseline `debug:play -- all` 12/12
+before measuring. Probe scripts live in the session scratchpad (not committed);
+caveat noted in the audit: the probe's per-match heat/pos traces are only valid
+for match 1 of a run — events/occupancy/OOB are valid for all.
+
+**Headline discovery — the AI lockup mini-game has never executed.**
+`AIHandler.justDown` doesn't consume presses (keyboard goes through
+`Phaser.Input.Keyboard.JustDown`, which does), so the press that creates a
+lockup is still down when `_tickLockup` runs later the same frame → instant
+plain follow-up. Measured 179/186 AI lockups resolving same-second; Thesz
+(holdOdds 0.75) got 74 lockups → 72 body slams, 1 headlock, 0 whips. This is
+the real cause of the 2026-07-03 "intends headlock but piledriver comes out"
+quirk, and it disables the steal contest, headlock attrition, and the
+whip-out-of-the-corner counter (which explains a lot of the wall-hugging).
+
+Other headline numbers: walk reaches full speed in 1 frame / stops in 1 /
+reverses in 1 (zero acceleration anywhere); no hitstop, no shake or sound on
+jab/headbutt contact, knockdown shakes fire at fall-complete (~0.4s late);
+knockback arcs rise 83ms / fall 284ms (anti-gravity) and land at ~0 px/s;
+whipped runner full-stops 250ms then launches at a fixed 80·s knockback
+regardless of speed; loser functionally dead at 9–24% of match in 3/5 probes
+then a 5–9 min zombie phase; both-in-center-third 0–14% of samples (as few as
+2/32 grid cells used); 19/22 kickouts at count 1; `_tickLockup` follow-ups
+bypass `_heatForMove` (slam matches flatline ~17, one sleeper-KO finish landed
+at heat 11); y≈500 bug reproduced (down body at y=509 — unclamped
+`startClotheslineFall` + the piledriver attacker's crash seat).
+
 ---
 
 ## Phase Roadmap

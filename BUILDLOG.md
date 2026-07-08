@@ -535,6 +535,8 @@ Round 1 (decay 0.12, ratchet threshold 12 / factor 0.35, tested last session) st
 
 **Still open (pre-existing)**: knockback falls don't `_clamp()` — a downed wrestler can land at y≈500, outside the ring plane.
 
+**Same session, playtest feedback — horizontal ropes no longer bend.** User: the near/far rope bow "looks weird when they move," and since movement is mostly side-to-side, bodies rarely brush those planes anyway. Removed `nearWarp`/`farWarp` (and the unused far-press collection in `_ropePresses`); side ropes keep their outward bow. The near-band depth re-sort **stays** — that's what keeps strands from slicing through a body at the near plane, independent of bending. Verified: 12/12 `debug:play`, harness screenshots of near-wall press (strands straight, body unbroken) and side-wall press.
+
 ---
 
 ## Phase Roadmap

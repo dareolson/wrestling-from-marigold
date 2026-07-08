@@ -346,7 +346,9 @@ export default class Arena extends Phaser.Scene {
         const LOW  = new Set(['down', 'gettingUp', 'possum', 'pinned',
                               'sleeping', 'pin', 'elbowDrop', 'elbowDropping']);
         const press = d => Math.min(1, Math.max(0, (34 - d) / 14));
-        const out = { near: [], far: [], side: { '-1': [], 1: [] } };
+        // near presses only feed the depth re-sort (horizontal ropes don't
+        // deform — the toward-camera bow read badly); side presses also bow
+        const out = { near: [], side: { '-1': [], 1: [] } };
         for (const w of [this.w1, this.w2]) {
             if (!w || SKIP.has(w.state)) continue;
             // per-strand weight bottom→top: an upright back bends the middle
@@ -356,11 +358,9 @@ export default class Arena extends Phaser.Scene {
             const b = ringBoundsAtY(w.y);
             const t = (RING.nearLeft.y - w.y) / (RING.nearLeft.y - RING.farLeft.y);
             const kNear = press(RING.nearLeft.y - w.y);
-            const kFar  = press(w.y - RING.farLeft.y);
             const kL    = press(w.x - b.left);
             const kR    = press(b.right - w.x);
             if (kNear) out.near.push({ x: w.x, k: kNear, depth, w: wRope });
-            if (kFar)  out.far.push({ x: w.x, k: kFar, w: wRope });
             if (kL)    out.side[-1].push({ t, k: kL, depth, w: wRope });
             if (kR)    out.side[1].push({ t, k: kR, depth, w: wRope });
         }
@@ -500,15 +500,12 @@ export default class Arena extends Phaser.Scene {
             // Horizontal ropes — 25% less spring sag than side ropes
             // Dark taped ropes, period-correct — they read as dark strands
             // against the lit canvas and melt into the crowd shadows above it.
-            // A press bows the near strands toward the camera (down-screen)
-            // and the far strands away from it (up-screen), scaled with the
-            // perspective; per-strand weight comes from the presser's posture.
-            const nearWarp = x =>  presses.near.reduce((a, p) => a + p.k * p.w[ri] * 9   * bump(x, p.x, 85), 0);
-            const farWarp  = x => -presses.far.reduce((a, p)  => a + p.k * p.w[ri] * 4.5 * bump(x, p.x, 55), 0);
+            // No press deformation: bodies bow along their movement axis
+            // (side to side), and a toward/away-from-camera bulge reads wrong.
             fillRibbonBands(this.nearRopeBands,
-                archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75, nearWarp, NBANDS),
+                archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75, null, NBANDS),
                 new Array(NBANDS + 1).fill(2), 0x32322e, 1, 0x8e8e82, 0.9);
-            fillRibbon(farG, archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58 + fs * 0.75, farWarp), 1, 0x3c3c38, 0.9, 0x787870);
+            fillRibbon(farG, archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58 + fs * 0.75, null), 1, 0x3c3c38, 0.9, 0x787870);
 
             // Side ropes — one segment per depth band so wrestlers sort
             // correctly; a press bows them outward in x, fading with distance.
@@ -530,8 +527,8 @@ export default class Arena extends Phaser.Scene {
 
         // Re-sort pressed bands behind the pressing wrestler. Only full
         // contact re-sorts (k ≥ 0.55, i.e. within ~6px of the movement clamp)
-        // so the flip lands while the bow already reads as touching; the
-        // deeper wrestler still sorts behind the rope everywhere else because
+        // so the flip lands at the moment of body contact; the deeper
+        // wrestler still sorts behind the rope everywhere else because
         // depth is monotonic in ground y.
         for (let i = 0; i < NBANDS; i++) {
             const bx = nearLeft.x + (nearRight.x - nearLeft.x) * ((i + 0.5) / NBANDS);

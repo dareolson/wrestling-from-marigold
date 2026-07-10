@@ -83,6 +83,7 @@ export default class AIHandler {
         this._pinWait     = 0;     // cooldown after a pin attempt — no instant re-covers
         this._defWait     = 0;     // beat between defensive-mixup rolls
         this._blockTimer  = 0;     // remaining time to keep the block key held
+        this._lockupBeat  = 0;     // decision delay inside a lockup (own clock, not _cooldown)
     }
 
     // Called once after both wrestlers are constructed.
@@ -128,10 +129,11 @@ export default class AIHandler {
 
         // In lockup: choose a follow-up
         if (self.state === 'lockup') {
-            this._handleLockup();
+            this._handleLockup(dt);
             return;
         }
-        this._contested = false; // lockup over — next one gets a fresh contest roll
+        this._contested  = false; // lockup over — next one gets a fresh contest roll
+        this._lockupBeat = 0.15 + Math.random() * 0.3; // decision delay for the next lockup
 
         // Mid block stance: keep the key held for the decided window (keys are
         // cleared every tick, so the hold has to be re-pressed each frame).
@@ -430,9 +432,16 @@ export default class AIHandler {
         return w.x <= b.left + thr || w.x >= b.right - thr;
     }
 
-    _handleLockup() {
-        // Wait a beat before committing to a follow-up
-        if (this._cooldown > 0) return;
+    _handleLockup(dt) {
+        // Wait a beat before committing — but on the lockup's own clock, NOT
+        // the global _cooldown: the grapple press that created this lockup set
+        // _cooldown to 0.8–0.9s, which outlives the 0.8s lockup timeout (the
+        // timer gets a one-frame head start), so gating on _cooldown meant the
+        // attacker could never follow up and every lockup timed out unless a
+        // steal reset the clock. Measured post-A1: Thesz threw 122 lockups and
+        // zero slams in a 10:00 match.
+        this._lockupBeat -= dt;
+        if (this._lockupBeat > 0) return;
 
         // Pressing grapple as the DEFENDER steals the lockup — two AIs doing
         // that unconditionally trade steals forever. Contest at most once per
@@ -441,7 +450,10 @@ export default class AIHandler {
         if (ls && ls.defender === this._self) {
             if (!this._contested) {
                 this._contested = true;
-                if (Math.random() < 0.35) this._press('action'); // steal it
+                if (Math.random() < 0.35) {
+                    this._press('action'); // steal it
+                    this._lockupBeat = 0.15 + Math.random() * 0.2; // beat before the counter follow-up
+                }
             }
             this._cooldown = 0.4;
             return;

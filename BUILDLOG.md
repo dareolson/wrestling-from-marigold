@@ -588,6 +588,44 @@ bypass `_heatForMove` (slam matches flatline ~17, one sleeper-KO finish landed
 at heat 11); y≈500 bug reproduced (down body at y=509 — unclamped
 `startClotheslineFall` + the piledriver attacker's crash seat).
 
+### 2026-07-09/10 — FEEL_AUDIT Batch A + the two bugs it uncovered
+
+Six commits, `debug:play -- all` 12/12 after each, verified by three probe
+rounds (results table in FEEL_AUDIT.md "Batch A results" addendum):
+
+- **A1 (`6d581d4`)** — `AIHandler.justDown` consumes on read, mirroring
+  `Phaser.Input.Keyboard.JustDown`. Killed the same-frame lockup self-resolve.
+- **A2 (`82c7aac`)** — clamp `startClotheslineFall` landings (60·s downed-body
+  margin) + cap the piledriver seat at the near plane (the y≈500 bug).
+- **A3 (`e78e10d`)** — `_tickLockup` follow-ups now bump heat via
+  `_heatForMove` (shared `followUp` helper; armDrag too).
+- **A1 follow-up (`3be9e3b`)** — first re-probe found `_handleLockup` (newly
+  reachable thanks to A1) gated on the global `_cooldown`, which the
+  lockup-initiating grapple press itself sets to 0.8–0.9s — longer than the
+  0.8s lockup window, so the AI could never follow up (Thesz: 122 lockups,
+  0 slams, 0 covers, all 5 matches 10:00 draws). Follow-ups now run on a
+  dedicated 0.15–0.45s `_lockupBeat`.
+- **A2 residuals (`d761429`, `92815cd`)** — probes traced the remaining OOB to
+  three more unclamped positioners: the lockup arm's-length drift (bodies
+  walked to x≈890), the suplex landing (drops victim 90·s behind the
+  attacker), and the dropkick attacker's landing (flies past a rope-hugging
+  victim). All clamped; final probe: OOB ≈ 0 (one 1-frame blip in 2 matches).
+
+**Outcome:** AI matches transformed. Move monotony gone (longest same-move
+streak 25–35 → 2–4), the lockup mini-game is real (headlocks/whips/steals all
+firing), heat arcs 74→100 instead of flatlining, ring usage up (16–32/32 grid
+cells vs 2–21), beat gaps halved. brawler/George now splits pinfalls and
+hard-fought 10:00 draws with real nearfall stretches.
+
+**Open question for Derek (C-batch scoping):** Thesz/George is now ALL
+Broadways — Thesz throws zero slams and zero covers because his slam branch
+needs `opp.stamina < 40` and his covers need `< 60`, and George never gets
+that low now that headlock attrition (4/s) competes with George's taunt regen.
+The plain-slam branch in `_handleLockup` and the cover thresholds are booking
+knobs, not bugs — they belong to Batch C (C1 kickout depth, C2 finish-hunting,
+C3 escalation gates), which is exactly where the audit said to re-decide after
+A. Matches are now dramatic but nobody can close; C1+C2 are the closing tools.
+
 ---
 
 ## Phase Roadmap

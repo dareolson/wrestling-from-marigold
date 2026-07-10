@@ -538,3 +538,60 @@ then C1+C2 (the drama pair), then the rest as taste dictates.
   to 2 before they break?
 - Watch one full AI match start to finish: name the shine, the heat, the
   comeback, and the finish out loud. If you can't, Batch C isn't done.
+
+---
+
+## Batch A results (2026-07-09/10, commits 6d581d4…92815cd)
+
+Method: same probe setup as the baselines (3× brawler/George + 2× Thesz/George
+at ts=3), run twice — after A1–A3, then after the two follow-up fixes the
+first re-probe demanded — plus a 2-match verification round. 12/12
+`debug:play` after every commit.
+
+### What the re-probe found (and forced)
+
+**A1 exposed a second, older bug.** With lockups no longer self-resolving,
+`_handleLockup` ran for the first time ever — and deadlocked: it gates on the
+global `_cooldown`, which the grapple press that *creates* the lockup sets to
+0.8–0.9s, longer than the 0.8s lockup timeout (and the timer gets a one-frame
+head start). Result: Thesz threw 122 lockups with **zero** slams and zero
+covers; all 5 matches went to 10:00 draws. Fixed in `3be9e3b` — follow-ups
+run on a dedicated 0.15–0.45s `_lockupBeat`.
+
+**A2's first pass wasn't enough.** OOB probes traced three more unclamped
+positioners: the lockup arm's-length drift (Arena `_tickLockup` — bodies at
+x≈890), the suplex landing (90·s behind the attacker), and the dropkick
+attacker's landing (targets past a rope-hugging victim, then ends `down`
+there). Fixed in `d761429` + `92815cd`.
+
+### Acceptance checks
+
+| check | target | result |
+|---|---|---|
+| A1: Thesz headlocks | ≥10 | **47–56** ✓ |
+| A1: Thesz bodySlams | ≤35 | 0 — see C-batch note |
+| A1: Thesz irishWhips | ≥5 | **62–67** ✓ |
+| A1: slam monotony | halve | longest same-move streak 25–35 → **2–5** ✓ |
+| A2: OOB down/flipping/gettingUp | ≈0 | **0** (one 1-frame standing blip / 2 matches; was 100–150/match) ✓ |
+| A3: slam-heavy match heat | peak >60 | **peak 86–100** (was 44) ✓ |
+
+### What changed in match quality (vs baseline probes)
+
+- Heat: quartile arcs 74→89→86→88 peak 100 (bg), 79→92→94→92 (tg — was
+  19→17→19→13).
+- Space: grid cells 16–32/32 (was 2–21), both-in-center-third up, worst beat
+  gaps 16–42s (was 27–111s post-A1-only).
+- Nearfalls: bg matches now produce 1–4 real nearfalls + the 2.9 save;
+  pin attempts 4–18/match.
+- brawler/George: pinfalls at 1:37, 7:56, 8:08 + two hard-fought 10:00 draws
+  across rounds (baseline: 3/3 pinfalls but vs a zombie).
+
+### New headline problem → Batch C
+
+**Nobody can close.** Thesz/George is now all Broadways: Thesz's plain-slam
+branch requires `opp.stamina < 40`, his covers `< 60` — and George never gets
+that low because headlock drain (4/s) roughly cancels his taunt regen. The
+match is alive (heat 100, 30/32 cells) but endless. These thresholds are
+booking knobs, not bugs; C1 (kickout depth curve) + C2 (finish hunting) are
+the tools, exactly as the batch ordering predicted. Re-decide C scope with
+these numbers, not the baseline's.

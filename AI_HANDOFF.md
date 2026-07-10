@@ -72,6 +72,45 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-10 — Claude (feel-audit session)
+
+FEEL_AUDIT Batch A landed: six commits `6d581d4..92815cd`, all on master and
+pushed. Full results in FEEL_AUDIT.md "Batch A results" addendum + BUILDLOG
+2026-07-09/10 entry. Summary:
+
+- `AIHandler.justDown` now **consumes presses on read** (keyboard parity).
+  Anyone writing input-adjacent code: never read `justDown` twice for the
+  same action in one frame — the second read is false by design, on both
+  keyboard and AI paths.
+- `_handleLockup` runs on its own `_lockupBeat`, not the global `_cooldown`
+  (which the lockup-initiating grapple press sets past the lockup window).
+- Lockup follow-ups bump heat via `_heatForMove`.
+- Five unclamped positioners clamped (clothesline fall, piledriver seat,
+  lockup drift, suplex landing, dropkick attacker landing). Probe OOB is ≈0;
+  keep it that way — any new tween that moves `x`/`y` needs a
+  `ringBoundsAtY` clamp (60·s margin if the body ends up flat).
+- Verification: `npm run debug:play -- all` 12/12 after every commit; 12
+  AI-vs-AI probe matches analyzed (`tools/debug/psych_probe.mjs` +
+  `psych_analyze.mjs`, now committed).
+
+**Coordination:** the tryPower extraction (Phase 0 Task 1) does not collide
+with any of this — Batch A touched `startClotheslineFall`, `_doPiledriver`,
+`_doSuplex`, `_doDropkick`, `AIHandler`, and Arena's `_tickLockup` only. Base
+it on `92815cd` or later. Note FEEL_AUDIT Batch B (queued next) WILL touch
+`Wrestler.js` movement/velocity code and MOVE_DEFS timing — sequence
+accordingly.
+
+**Open design question for Derek before Batch C:** Thesz/George now goes to a
+10:00 Broadway every time — matches are dramatic (heat peaks 100) but nobody
+can close. The closing tools are C1 (kickout depth curve) + C2 (finish
+hunting); the relevant booking knobs are `_handleLockup`'s `< 40` plain-slam
+threshold and the personalities' `coverStamina`.
+
+Also: DRAWING_GUIDE.md's v1 naming section shows `[character]_head.png` but
+its own loader note (and `Arena.js`) reads plain `head.png` etc. from the
+character folder — the prefix is wrong; whoever next edits the guide should
+fix that section.
+
 ### 2026-07-10 — Claude
 
 Holding off on Phase 0 Task 1 (`resolvePowerMove` extraction) — a separate

@@ -1282,25 +1282,33 @@ export default class Arena extends Phaser.Scene {
             ls.defender.state = 'standing';
             this.lockupState  = null;
 
+            // Log + heat together — these bypassed _heatForMove for months,
+            // leaving the AI's primary offense (lockup slams) heat-invisible
+            // and slam-heavy matches flatlined at heat ~17.
+            const followUp = (move, type = 'move') => {
+                this._logEvent(type, { attacker: who, move, defenderStamina: Math.round(ls.defender.stamina) });
+                this._heatForMove(move);
+            };
+
             if (goDown && ls.attacker.moveSet.includes('headlock')) {
                 ls.attacker._doHeadlock(ls.defender);
                 this.headlockState = { attacker: ls.attacker, defender: ls.defender, timer: 0 };
-                this._logEvent('move', { attacker: who, move: 'headlock', defenderStamina: Math.round(ls.defender.stamina) });
+                followUp('headlock');
             } else if (goUp && ls.attacker.moveSet.includes('suplex')) {
                 ls.attacker._doSuplex(ls.defender);
-                this._logEvent('move', { attacker: who, move: 'suplex', defenderStamina: Math.round(ls.defender.stamina) });
+                followUp('suplex');
             } else if ((goLeft || goRight) && ls.attacker.moveSet.includes('irishWhip')) {
                 ls.attacker._doIrishWhip(ls.defender, dir);
-                this._logEvent('move', { attacker: who, move: 'irishWhip', defenderStamina: Math.round(ls.defender.stamina) });
+                followUp('irishWhip');
             } else if (ls.attacker.moveSet.includes('piledriver')) {
                 ls.attacker._doPiledriver(ls.defender);
-                this._logEvent('knockdown', { attacker: who, move: 'piledriver', defenderStamina: Math.round(ls.defender.stamina) });
+                followUp('piledriver', 'knockdown');
             } else if (ls.attacker.moveSet.includes('bodySlam')) {
                 ls.attacker._doBodySlam(ls.defender);
-                this._logEvent('knockdown', { attacker: who, move: 'bodySlam', defenderStamina: Math.round(ls.defender.stamina) });
+                followUp('bodySlam', 'knockdown');
             } else {
                 ls.attacker._doIrishWhip(ls.defender, dir);
-                this._logEvent('move', { attacker: who, move: 'irishWhip', defenderStamina: Math.round(ls.defender.stamina) });
+                followUp('irishWhip');
             }
             return;
         }
@@ -1312,6 +1320,7 @@ export default class Arena extends Phaser.Scene {
             this.lockupState  = null;
             ls.attacker._doArmDrag(ls.defender);
             this._logEvent('move', { attacker: who, move: 'armDrag', defenderStamina: Math.round(ls.defender.stamina) });
+            this._heatForMove('armDrag');
             return;
         }
 

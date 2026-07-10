@@ -72,6 +72,76 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-10 — Claude (asset-pipeline tooling session)
+
+Reviewed the first Codex-generated art drop in `WrestlerPNGs/` (a ChatGPT
+image-gen composite) against `DRAWING_GUIDE.md` — rejected. It was one
+flattened reference sheet, not six transparent PNGs: no alpha channel, three
+of six canvas sizes wrong, pivot markers/labels baked into the image as
+literal text, parts drawn independently rather than cut from one full-body
+neutral pose, and the forearm bent instead of hanging straight with a flat
+top edge. Conclusion: image generators are good at concept art, not reliable
+asset exporters — decided with Derek to keep hand-cutting layers in
+Procreate (as this guide already prescribes) rather than asking an image
+model to also do the exporting.
+
+Built `tools/wrestler-cutter/index.html` — a standalone, dependency-free
+browser tool (open the file directly, no build step). Drop each rough
+hand-cut transparent layer per part; it auto-crops to content, scales/pads
+to the exact spec canvas per part, flushes the pivot edge (top for
+torso/arms/legs, bottom for head), and warns if the forearm/shin's top edge
+isn't fully opaque (the elbow/knee joint-seam rule) or if non-pivot padding
+is under 20px. Outputs correctly-named, correctly-sized transparent PNGs
+ready for `src/assets/wrestlers/<slug>/`. Verified with a headless Playwright
+script exercising both pivot directions and the opaque-cap warning before
+handoff — see commit for the tool itself (test script was scratch-only, not
+committed).
+
+**Coordination note:** this session only touched `AI_HANDOFF.md` (this entry)
+and `tools/wrestler-cutter/`, both committed and pushed. Found the working
+tree already carrying substantial uncommitted work from other concurrent
+sessions (art-pipeline session's `Arena.js`/`george.js`/head.png texture
+wiring below, and what looks like a separate movesets session's changes to
+`MOVES.md`/`AIHandler.js`/`Wrestler.js` for a Thesz press). Deliberately left
+all of that untouched and unstaged — didn't write it, haven't verified it,
+and the art-pipeline entry below has an open question for Derek (head
+redraw) that shouldn't get swept into an unrelated push. Flagging per this
+file's own protocol: whoever owns those diffs should commit them explicitly
+rather than relying on a future broad `git add`.
+
+### 2026-07-10 — Claude (art pipeline session)
+
+First George asset landed: `src/assets/wrestlers/george/head.png` (uncommitted
+in the working tree — not yet staged/committed by this session; be aware if
+another session runs a broad `git add`). Wired via a new `textures:
+george.textures` field on `PRESETS.george` and a `c1.textures ?? {}` /
+`c2.textures ?? {}` arg added to both `new Wrestler(...)` calls in
+`Arena.js`'s `_setupGame()` — previously `Wrestler` was never passed a
+`textures` object at all, so every wrestler always rendered as the Graphics
+placeholder no matter what was preloaded. Also fixed `Arena.js` preload
+(`this.load.image` path was missing the `src/` prefix, 404ing to the SPA
+fallback HTML under Vite dev — no PNG could ever have loaded before this).
+Verified via `w2.skeleton.head.texture.key === 'george_head'` at runtime
+(`scene.textures.exists()` alone only proves the preload succeeded, not that
+a wrestler is using it — learned that the hard way mid-session).
+
+Derek's first head drawing was flagged twice by playtest: mirrored (art faced
+left; `Skeleton.js` line 334 requires "PNG is drawn facing right" since only
+one PNG is drawn and the engine mirrors it per-facing) — flipped in place,
+cheap fix. Second issue is not code: it's a pure side profile, not the
+three-quarter view `DRAWING_GUIDE.md` specifies (both eyes visible) — reads
+narrow/small against the fixed head display box (`headR*2.0 × headR*2.5` in
+`Skeleton.js`). That's a redraw, flagging for Derek rather than deciding
+unilaterally.
+
+**Coordination note:** touched only `Arena.js`'s `_setupGame()`
+(PRESETS/Wrestler-construction block) and `preload()` — no overlap with Batch
+A's `_tickLockup`/`startClotheslineFall`/etc. below. Also noticed this file
+got edited concurrently mid-session (lost an initial write, had to re-read) —
+this and the feel-audit session are sharing one working directory, not
+separate worktrees, so uncommitted changes from both are interleaved on disk
+right now.
+
 ### 2026-07-10 — Claude (feel-audit session)
 
 FEEL_AUDIT Batch A landed: six commits `6d581d4..92815cd`, all on master and

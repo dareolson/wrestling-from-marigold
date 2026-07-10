@@ -940,7 +940,12 @@ export default class Wrestler {
         this.state        = 'dropkicking';
         this.dropProgress = 0;
         const facing  = this.facing;
-        const targetX = other.x - facing * 35 * this.s;
+        // The attacker ends this move down/staggered at targetX — against a
+        // rope-hugging victim that lands him through the rope plane, so clamp
+        // with the downed-body margin (still inside the 100·s hit range)
+        const b        = ringBoundsAtY(this.y);
+        const m        = 60 * this.s;
+        const targetX  = Math.max(b.left + m, Math.min(b.right - m, other.x - facing * 35 * this.s));
         const hitRange = 100 * this.s;
 
         this.scene.tweens.add({

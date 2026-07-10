@@ -1259,6 +1259,10 @@ export default class Arena extends Phaser.Scene {
         const dir    = ls.attacker.facing; // points from attacker toward defender
         ls.attacker.x += (midX - dir * halfGap - ls.attacker.x) * 0.18;
         ls.defender.x  += (midX + dir * halfGap - ls.defender.x)  * 0.18;
+        // The drift aims at an unclamped midpoint — at a wall it walks bodies
+        // through the rope plane (probes logged lockups at x≈890)
+        ls.attacker._clamp();
+        ls.defender._clamp();
 
         const who = ls.attacker === this.w1 ? 'p1' : 'p2';
 

@@ -882,7 +882,12 @@ export default class Wrestler {
             ease:     'Cubic.easeOut',
             onComplete: () => {
                 if (this.state !== 'slamming') { this._releaseGrabbed(other); return; }
-                other.x          = sx - facing * 90 * ss;
+                // Drops the victim BEHIND the attacker — delivered with his back
+                // to the ropes that's outside the ring; clamp with the wide
+                // margin the ~200·s flat body needs
+                const b = ringBoundsAtY(sy);
+                const m = 60 * ss;
+                other.x          = Math.max(b.left + m, Math.min(b.right - m, sx - facing * 90 * ss));
                 other.y          = sy;
                 other.state      = 'down';
                 other.stateTimer = DOWN_SEC + 1.0;

@@ -156,7 +156,17 @@ export default class AIHandler {
     }
 
     isDown(key)   { return !!this._keys[key]; }
-    justDown(key) { return !!this._justPressed[key]; }
+
+    // Consume on read, mirroring Phaser.Input.Keyboard.JustDown — otherwise a
+    // single AI press reads true for every consumer in the same frame. That's
+    // how every AI lockup self-resolved into the plain slam: tryAction created
+    // the lockup, then _tickLockup saw the same still-true justDown('action')
+    // and executed the no-direction follow-up before _handleLockup ever ran.
+    justDown(key) {
+        const hit = !!this._justPressed[key];
+        if (hit) this._justPressed[key] = false;
+        return hit;
+    }
 
     // Drop any held keys. Arena calls this while the win banner is up —
     // pausing tick() alone freezes the key map with the last frame's presses

@@ -2,6 +2,8 @@
 
 This guide covers everything needed to draw wrestler body parts that work correctly with the game's skeleton system. Read it fully before starting a character.
 
+**Current implementation status:** the rig (`Skeleton.js`) loads exactly **six single-instance PNGs** per character — head, torso, upper arm, forearm, thigh, shin. Left/right and near/far copies are generated in code by reusing those same six files (mirrored + repositioned), so you only ever draw one of each — never separate left/right files. Expression heads and hand/foot variants are documented later in this guide as the target design, but **no swap logic exists in code yet** — treat those sections as future backlog, not a v1 requirement, until the code is extended to support them.
+
 ---
 
 ## The Approach
@@ -23,6 +25,8 @@ This is the same method used to build Adobe Character Animator puppets.
 **Facing direction:** the engine flips sprites horizontally when the character turns. For most characters, a horizontal flip reads fine. George is worth drawing both directions (facing left and facing right) because his hair and details are distinctive enough that a flip looks slightly off.
 
 **Move exceptions:** during complex spatial moves — suplexes, body slams, piledrivers, the clothesline arc — the character naturally shifts toward profile view. This is correct and expected. The three-quarter stance is the at-rest personality; profile is the mechanics of the move. Nobody notices the shift because it follows the action.
+
+**One file per part, not per side:** the near/far asymmetry described above is about how you draw the *single* reference illustration so it reads with correct volume — it does not mean you export separate near-arm/far-arm files. The engine reuses one upper-arm PNG, one forearm PNG, one thigh PNG, one shin PNG, etc. for both sides and mirrors/repositions them in code.
 
 ---
 
@@ -65,6 +69,8 @@ The game applies a **grayscale + scanline broadcast filter** over everything. Th
 
 ## Expressions
 
+> **Not yet wired into code.** `Skeleton.js` currently uses a single static head texture — there is no expression-swap logic anywhere in the rig. Drawing this full set now means banking assets ahead of the code. Confirm with Claude before investing time here for a v1 character; George's first implementation only needs one `head.png`.
+
 Each character has multiple head sprites. The engine swaps them based on match state and the specific move being performed. Draw the neutral pose head first, then do expressions as variations — same hair, same structure, only the face changes.
 
 **Standard set (every character):**
@@ -94,7 +100,7 @@ Each character has multiple head sprites. The engine swaps them based on match s
 
 Ten expressions for George is not overkill — he's a performer and expressions are cheap assets. A stoic character like Thesz probably needs only the standard five. The expressiveness budget follows the character's personality.
 
-**The engine picks expressions in this order of priority:**
+**The engine picks expressions in this order of priority (once built):**
 1. Move-specific (toehold → mercy; whip → whipping)
 2. State-specific (staggered → hurt; down → down)
 3. Stamina threshold (below 30% overrides idle → low_stamina)
@@ -103,6 +109,8 @@ Ten expressions for George is not overkill — he's a performer and expressions 
 ---
 
 ## Sprite Variants — Body Parts
+
+> **Not yet wired into code.** No hand or foot texture keys exist in `Skeleton.js` — `foot_bent`, `hand_grip`, etc. have no swap logic. Same caveat as Expressions above: this is target design, not a v1 requirement.
 
 Beyond the head, specific body parts have variants that swap in during certain moves. These are drawn as additional PNG files and referenced by move name in the engine.
 
@@ -121,33 +129,38 @@ Beyond the head, specific body parts have variants that swap in during certain m
 | `hand_fist` | jab, headbutt, strikes | Knuckles forward |
 | `hand_grip` | applying any hold — sleeper, toehold, whip | Fingers closed around opponent |
 
-**How move-specific variants work in practice:**
+**How move-specific variants would work in practice:**
 - Toehold (attacker): hand_grip + stern/effort expression
 - Toehold (defender): foot_bent on affected foot + mercy expression
 - Sleeper hold (attacker): hand_grip + effort expression
 - Sleeper hold (defender): normal parts + fading/pained expression
 - Jab (attacker): hand_fist on striking hand + effort expression
 
-This is the level at which a toehold stops being a diagram and starts being a story. The guy twisting the foot has a stern face and a grip hand; the guy receiving it has a bent foot and is begging for mercy. No text, no UI — the sprites tell it.
+This is the level at which a toehold stops being a diagram and starts being a story. The guy twisting the foot has a stern face and a grip hand; the guy receiving it has a bent foot and is begging for mercy. No text, no UI — the sprites tell it. Until this is wired up, the fist/grip hand shape should just be baked directly into the forearm PNG (see Canvas and Export Sizes below) and the boot baked into the shin PNG.
 
 ---
 
 ## Canvas and Export Sizes
 
-Work at whatever size feels comfortable in Procreate or Photoshop. The game code sets display dimensions regardless of PNG pixel count, so your working size does not need to be exact.
+Work at whatever size feels comfortable in Procreate or Photoshop. The game code sets display dimensions regardless of PNG pixel count, so your working size does not need to be exact — only the aspect ratio and padding matter.
 
-**Minimum export sizes** (what you save as PNG for the game):
+**Required for v1** — six parts, one file each:
 
 | Part | Export canvas | Notes |
 |---|---|---|
-| Head (each expression) | 200 × 200 px | Same canvas every expression — face changes, nothing else |
-| Torso | 190 × 260 px | Shoulder line at top, hips at bottom |
-| R Arm | 110 × 240 px | Shoulder at top-center of canvas |
-| L Arm | 110 × 240 px | Shoulder at top-center of canvas |
-| R Leg | 110 × 260 px | Hip at top-center of canvas |
-| L Leg | 110 × 260 px | Hip at top-center of canvas |
-| Foot (each variant) | 110 × 100 px | Ankle at top-center; foot_normal and foot_bent same canvas size |
-| Hand (each variant) | 90 × 90 px | Wrist at top-center; hand_open, hand_fist, hand_grip same canvas size |
+| Head | 200 × 200 px | One file; expression variants above are future work |
+| Torso | 190 × 260 px | Shoulder line at top, hips at bottom; trunks baked in |
+| Upper Arm | 130 × 160 px | Pivot at top-center (shoulder); bottom edge is the elbow joint |
+| Forearm | 130 × 190 px | Own pivot at top-center (elbow); fist/hand baked in; renders **on top** of the upper arm at the joint — see Joint Seams |
+| Thigh | 150 × 150 px | Pivot at top-center (hip); bottom edge is the knee joint |
+| Shin | 150 × 230 px | Own pivot at top-center (knee); boot baked in; renders **on top** of the thigh at the joint — see Joint Seams |
+
+**Future, not yet wired:**
+
+| Part | Export canvas | Notes |
+|---|---|---|
+| Foot variant | 110 × 100 px | Only relevant once foot-variant swapping is built |
+| Hand variant | 90 × 90 px | Only relevant once hand-variant swapping is built |
 
 **Recommended working size:** draw at 4× these dimensions (e.g., head on an 800×800px canvas), then export at the sizes above. 4× gives comfortable drawing room. Export by scaling down — downscaling always looks sharper than upscaling.
 
@@ -161,7 +174,7 @@ Work at whatever size feels comfortable in Procreate or Photoshop. The game code
 
 The pivot is the joint — the point each body part rotates around in the game. **Getting pivots wrong is the most common mistake.** An arm with the pivot in the center rotates from the elbow instead of the shoulder and looks broken immediately.
 
-**Rule: the joint goes at the EDGE of the image, not the center.**
+**Rule: the joint goes at the EDGE of the image, not the center. Each of the six parts has its own independent pivot.**
 
 ```
 HEAD
@@ -181,38 +194,52 @@ TORSO
 │   hips   │
 └──────────┘
 
-ARM (right)
+ARM — two separate pieces, two separate pivots
      ↕ ← pivot here (top center = shoulder)
 ┌────┼─────┐
 │ upper arm│
+└────┬─────┘
+     ↕ ← forearm's OWN pivot (top center); positioned every frame at
+       upper arm's bottom edge (the elbow)
+┌────┼─────┐
 │  forearm │
-│   hand   │
+│   +hand  │
 └──────────┘
 
-LEG (right)
+LEG — two separate pieces, two separate pivots
      ↕ ← pivot here (top center = hip)
 ┌────┼─────┐
 │   thigh  │
+└────┬─────┘
+     ↕ ← shin's OWN pivot (top center); positioned every frame at
+       thigh's bottom edge (the knee)
+┌────┼─────┐
 │   shin   │
-│   foot   │
+│   +boot  │
 └──────────┘
 ```
 
-In practice: leave **20–30px of transparent padding** on the three non-pivot sides of each part. The pivot edge (top for arms/legs, bottom for head) can be tight to the drawing. This padding prevents the part from clipping when rotated to extreme angles.
+In practice: leave **20–30px of transparent padding** on the non-pivot sides of each part. The pivot edge (top for torso/upper arm/forearm/thigh/shin, bottom for head) can be tight to the drawing. This padding prevents the part from clipping when rotated to extreme angles — and the range is wide: the get-up sequence alone swings the torso through roughly 143° and the thighs/shins to roughly ±92°, well beyond a casual idle sway.
+
+For the upper-arm/forearm and thigh/shin pairs, the elbow/knee edge is a pivot edge for the lower piece (forearm, shin) but a plain bottom edge for the upper piece (upper arm, thigh) — see Joint Seams for exactly how that edge should be drawn.
 
 ---
 
 ## Joint Seams — Which Part Owns the Overlap
 
-When two body parts meet at a joint, one part covers the other. The depth order in the game determines which is on top. Plan your cutting accordingly.
+When two body parts meet at a joint, one part covers the other. The render order in the game determines which is on top. Plan your cutting accordingly.
 
 | Joint | Who owns it | What to do |
 |---|---|---|
-| Shoulder | **Torso** | Torso has complete shoulder mass. Arm top is a clean flat edge that slides under the torso. |
-| Hip | **Torso** | Torso has complete hip/pelvis area. Leg top is a clean flat edge under the torso. |
+| Shoulder | **Torso** | Torso has complete shoulder mass. Upper arm's top edge is a clean flat cut that slides under the torso. |
+| Hip | **Torso** | Torso has complete hip/pelvis area. Thigh's top edge is a clean flat cut under the torso. |
 | Neck | **Head** | Head extends down to cover the neck. Torso has a short neck stub that is hidden behind the head. |
+| Elbow | **Forearm** | Forearm renders on top of the upper arm at their shared pivot point. Give the forearm's top edge a flat, fully opaque cap — no transparent padding on that row — at least as wide as the upper arm's bottom edge. Because both pieces pivot at the exact same world coordinate every frame, that's enough to cover the seam at any bend angle. |
+| Knee | **Shin** | Same rule as the elbow, mirrored: shin renders on top of the thigh. Flat, opaque top edge on the shin, at least as wide as the thigh's bottom edge. |
 
-**Draw arms and legs with a flat, clean top edge at the joint.** You don't need to draw a perfectly rounded shoulder cap on the arm — the torso covers it. The arm just needs to start cleanly at the shoulder point.
+**Elbow and knee work opposite to shoulder/hip/neck.** At the shoulder and hip, the *upper* body (torso) owns the seam. At the elbow and knee, the *lower* limb segment (forearm, shin) owns it — that's the render order the rig actually uses. Don't round off the upper arm's or thigh's bottom edge expecting it to cap the joint; round/flatten the forearm's and shin's top edge instead.
+
+Draw the upper arm and thigh with a flat, clean top edge at the shoulder/hip — you don't need to draw a rounded cap there, since the torso covers it. They just need to start cleanly at the joint point.
 
 ---
 
@@ -221,28 +248,32 @@ When two body parts meet at a joint, one part covers the other. The depth order 
 Once the full character is drawn:
 
 1. Duplicate the file before cutting anything
-2. Create a layer group for each body part: `Head`, `Torso`, `R_Arm`, `L_Arm`, `R_Leg`, `L_Leg`
+2. Create a layer group for each body part: `Head`, `Torso`, `Upper_Arm`, `Forearm`, `Thigh`, `Shin` — six groups total, one set each (the engine mirrors for the other side, and generates the far copy from the same art)
 3. Using the lasso or pen tool, select each body part region and move it to its group
-4. For joint areas: the torso group keeps the shoulders and hips; erase the shoulder/hip area from the arm/leg groups
+4. For joint areas: the torso group keeps the shoulders and hips; erase the shoulder/hip area from the Upper_Arm/Thigh groups so their top edge is flat. At the elbow and knee, make sure the Forearm/Shin group's top edge is a flat, fully opaque cap (see Joint Seams) rather than a tapered point.
 5. Turn off all groups except one — check it looks clean against a coloured background to catch edge fringing
 6. Export each group: `File → Export → Export As` → PNG → trim transparent pixels OFF (you want the consistent canvas size, not auto-cropped)
 7. Export at the sizes listed in the table above
 
-**Naming convention:**
+**Naming convention (required for v1):**
+```
+[character]_head.png
+[character]_torso.png
+[character]_upper_arm.png
+[character]_forearm.png
+[character]_thigh.png
+[character]_shin.png
+```
+These six files are all the code currently needs — `Arena.js` loads them as `head.png`, `torso.png`, `upper_arm.png`, `forearm.png`, `thigh.png`, `shin.png` from the character's folder.
+
+**Naming convention (future, not yet wired):**
 ```
 [character]_head_[expression].png     ← one file per expression
-[character]_torso.png
-[character]_r_arm.png
-[character]_l_arm.png
-[character]_r_leg.png
-[character]_l_leg.png
-[character]_r_foot_[variant].png      ← foot_normal, foot_bent, etc.
-[character]_l_foot_[variant].png
-[character]_r_hand_[variant].png      ← hand_open, hand_fist, hand_grip
-[character]_l_hand_[variant].png
+[character]_foot_[variant].png        ← foot_normal, foot_bent, etc.
+[character]_hand_[variant].png        ← hand_open, hand_fist, hand_grip
 ```
 
-Example: `gorgeous_george_head_idle.png`, `gorgeous_george_head_mercy.png`, `gorgeous_george_r_foot_bent.png`
+Example: `gorgeous_george_head.png`, `gorgeous_george_upper_arm.png`, `gorgeous_george_forearm.png` — and, once expressions are wired, `gorgeous_george_head_mercy.png`.
 
 **Where to put them:**
 ```
@@ -253,13 +284,18 @@ src/assets/wrestlers/[character_slug]/
 
 ## Depth Order Reference
 
-When the wrestler faces right, parts render in this order (back to front):
+Within one wrestler, back to front:
 
 ```
-L Leg → L Arm → Torso → R Leg → R Arm → Head
+far thigh → far shin → far upper arm → far forearm →
+torso (+trunks) →
+near thigh → near shin → near upper arm → near forearm →
+head
 ```
 
-When facing left, left and right swap. The code handles this automatically, but it informs how you should draw — the "near" arm and leg (front-facing) should be slightly more detailed/brighter since they're always in front.
+At the elbow and knee specifically, the lower segment always renders on top of the upper segment it's attached to (forearm over upper arm, shin over thigh) — see Joint Seams.
+
+When the wrestler faces right vs left, "near" and "far" swap which physical side is toward camera. Since there's only one upper-arm PNG, one forearm PNG, one thigh PNG, and one shin PNG — reused for both sides — this doesn't change what you draw. The engine mirrors and repositions automatically. It does inform how you draw the original reference illustration, though: the near arm and leg (front-facing in your neutral-pose drawing) should read slightly more detailed/brighter, since conceptually they're the ones always in front.
 
 ---
 
@@ -272,8 +308,8 @@ Your drawings don't need to match this exactly — the code handles all scaling.
 **Wrestler body proportions (approximate, Golden Age era style):**
 - Shoulders roughly 1.5× head width — these were broad men
 - Torso (shoulder to hip) roughly 2.5× head height
-- Legs roughly 2× torso height
-- Arms roughly torso height + a bit
+- Legs (thigh + shin combined) roughly 2× torso height
+- Arms (upper arm + forearm combined) roughly torso height + a bit
 
 Exaggerate slightly toward the heroic — wide shoulders, thick legs, big hands. It reads better at game scale than anatomically precise proportions.
 
@@ -281,21 +317,26 @@ Exaggerate slightly toward the heroic — wide shoulders, thick legs, big hands.
 
 ## Pre-Export Checklist
 
+**Required for v1:**
 - [ ] Character drawn in neutral standing pose, body at three-quarter angle
 - [ ] Head at three-quarter view — both eyes visible
 - [ ] Hard outlines on all body parts (2–4px at drawing size)
 - [ ] Strong value contrast throughout — no grey-on-grey areas
-- [ ] All parts on separate named layers
-- [ ] Torso owns shoulders and hips; arms and legs have flat tops
-- [ ] Head pivot at bottom center, all others at top center
+- [ ] Six parts on separate named layers: Head, Torso, Upper_Arm, Forearm, Thigh, Shin — one set, not per-side
+- [ ] Torso owns shoulders and hips; upper arm and thigh have flat, clean top edges
+- [ ] Forearm and shin have a flat, fully opaque top edge (no transparent padding on that row), at least as wide as upper arm's/thigh's bottom edge — covers the elbow/knee seam
+- [ ] Each part's pivot at its own top-center, except head at bottom-center
 - [ ] 20–30px transparent padding on non-pivot edges
-- [ ] All head expression variants drawn on the same canvas size
-- [ ] Foot variants: foot_normal and foot_bent (minimum)
-- [ ] Hand variants: hand_open, hand_fist, hand_grip (minimum)
-- [ ] Exported at correct canvas sizes (see table above)
+- [ ] Fist/hand shape baked into the forearm PNG; boot baked into the shin PNG
+- [ ] Exported at the sizes in the table above
 - [ ] PNG-24 with transparency, no white background
-- [ ] Named correctly: `[character]_[part]_[variant].png`
+- [ ] Named correctly: `[character]_head.png`, `_torso.png`, `_upper_arm.png`, `_forearm.png`, `_thigh.png`, `_shin.png`
 - [ ] Placed in `src/assets/wrestlers/[character]/`
+
+**Future (only once the corresponding code exists):**
+- [ ] All head expression variants drawn on the same canvas size
+- [ ] Foot variants: foot_normal and foot_bent
+- [ ] Hand variants: hand_open, hand_fist, hand_grip
 
 ---
 

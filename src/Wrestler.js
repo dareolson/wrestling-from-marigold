@@ -998,7 +998,10 @@ export default class Wrestler {
                         duration: 130, ease: 'Cubic.easeIn',
                     });
                     this.scene.tweens.add({
-                        targets: this, y: sy + 88 * ss,
+                        // Seat clamped to the ring's near plane — delivered at the
+                        // near movement clamp (y=425), an unclamped sy + 88·s parks
+                        // the attacker at y≈513, below the ring (the y≈500 bug).
+                        targets: this, y: Math.min(sy + 88 * ss, RING.nearLeft.y - 20),
                         duration: 130, ease: 'Cubic.easeIn',
                         onComplete: () => {
                             other.x          = sx;
@@ -1286,12 +1289,18 @@ export default class Wrestler {
         this.state        = 'flipping';
         this.flipProgress = 0;
         this.flipDir      = runFacing;
-        const travelX     = runFacing * 80 * this.s;
+        // Downed bodies draw ~200·s wide, so the landing spot needs a wider
+        // clamp margin than the standing 20px or head/boots hang through the
+        // rope plane (measured down bodies at x=892, ~70px outside).
+        const downMargin = 60 * this.s;
+        const b          = ringBoundsAtY(this.y);
+        const landX      = Math.max(b.left + downMargin,
+                           Math.min(b.right - downMargin, this.x + runFacing * 80 * this.s));
 
         this.scene.tweens.add({
             targets:      this,
             flipProgress: 1,
-            x:            this.x + travelX,
+            x:            landX,
             duration:     380,
             ease:         'Cubic.easeOut',
             onComplete: () => {

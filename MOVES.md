@@ -12,7 +12,7 @@
 | Evade (tap) | E | , | LB / L1 |
 | Block (hold) | T | . | RB / R1 |
 
-Gamepad support is built in — plug in any standard Bluetooth or USB controller and it maps automatically.
+Gamepad *mapping* exists in `InputHandler.js` (the table above), but it isn't wired up yet: `Arena.js` only ever constructs `InputHandler('keyboard', ...)` for both players and never assigns a gamepad handler, so the mapping never runs in-game. See Technical Reference → Input system for how to wire one in.
 
 ---
 
@@ -117,13 +117,11 @@ Each wrestler is constructed with a `moveSet` array. `tryAction`, `tryPower`, an
 
 | Move | Slot | Type | Era notes |
 |---|---|---|---|
-| Suplex | Power (close) | Throw | Classic — arc opponent overhead and behind; lands differently from body slam |
 | Atomic drop | Power (close) | Strike | Lift and drop tailbone-first on knee; comedy bump, shorter down time |
 | Figure four leglock | Finisher | Submission | On downed opponent; very 1950s NWA; both wrestlers take damage |
 | Bear hug | Finisher | Submission | Standing sustained hold; health drain variant of sleeper |
 | Turnbuckle ram | Power | Throw | Whip or carry opponent into corner post |
 | Flying elbow (rope) | Power | Aerial | Run to rope, climb, drop — Phase 3 rope interaction |
-| Lou Thesz press | Finisher | Signature | Running tackle into mounted punches — Lou Thesz boss move |
 
 ---
 

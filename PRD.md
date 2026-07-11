@@ -189,14 +189,21 @@ Two players, one machine.
 | Action | Player 1 | Player 2 |
 |---|---|---|
 | Move | WASD | Arrow keys |
-| Weak grapple / strike | F | numpad 1 |
-| Strong grapple | G | numpad 2 |
-| Run | Hold move key | Hold move key |
-| Pin attempt | H | numpad 3 |
-| Kickout | Mash F | Mash numpad 1 |
+| Grapple (context-sensitive: whip / clothesline / pin) | F | Enter |
+| Power (context-sensitive: strike / slam / dropkick) | G | Shift |
+| Finisher (sleeper hold; signature move at range) | H | Space |
+| Run to rope | R | / |
+| Evade (tap — backstep, dodges strikes) | E | , |
+| Block (hold — braced stance, stuffs grapples) | T | . |
+| Kickout / hold escape | Mash grapple key (F) | Mash grapple key (Enter) |
+
+See `MOVES.md` for the full context-sensitive move reference.
 
 ### Gamepad Support
-Browser Gamepad API — Xbox and PlayStation controllers supported natively. One controller per player.
+`InputHandler.js` has a complete Xbox/PlayStation/generic-Bluetooth button
+mapping (face buttons, D-pad, left stick) ready to go, but `Arena.js` never
+constructs or assigns a gamepad `InputHandler` to a player — so gamepad input
+does not work yet. Wiring it in is tracked under Phase 4.
 
 ### Single Player
 vs. CPU opponent with basic AI. More sophisticated AI in future versions.
@@ -220,9 +227,9 @@ All audio passes through the same lo-fi filter as the visuals — slightly compr
 | Layer | Tool |
 |---|---|
 | Language | JavaScript / TypeScript |
-| Rendering | HTML5 Canvas via Phaser 3 |
+| Rendering | HTML5 Canvas via Phaser 4 (v4.1.0, loaded via CDN `<script>` tag in `index.html` — not an npm import) |
 | Visual effects | CSS filters + Canvas post-processing |
-| Controls | Keyboard + Gamepad API |
+| Controls | Keyboard (live) + Gamepad API (mapping built, not yet wired — see Controls below) |
 | Hosting | GitHub Pages (free, no server required) |
 | Multiplayer | Local only (v1) |
 
@@ -235,36 +242,52 @@ All audio passes through the same lo-fi filter as the visuals — slightly compr
 ### No Backend Required (v1)
 The game runs entirely in the browser. No server, no database, no auth. Host on GitHub Pages for free.
 
+> **Correction (2026-07-11):** BUILDLOG.md's 2026-07-07 entry records Derek
+> leaning toward Vercel + a custom domain instead of GitHub Pages, wanting to
+> host the game early as a build-in-public playable demo. The Hosting row
+> above and the Phase 5 "GitHub Pages deployment" step have not been rewritten
+> to match — BUILDLOG.md is the current source of truth on deployment
+> direction until this doc catches up.
+
 ---
 
 ## Development Phases
 
-### Phase 1 — Proof of Concept
+*(Statuses below corrected 2026-07-11 against BUILDLOG.md's Phase Roadmap,
+which is the continuously-updated source of truth. Note BUILDLOG.md's
+roadmap has since split what this PRD calls Phase 5 into two phases — Story
+Mode + Accounts, then Launch — so phase numbers here and in BUILDLOG.md no
+longer line up 1:1; only the status of the 5 phases below is corrected here.)*
+
+### Phase 1 — Proof of Concept ✓ complete
 - Ring renders correctly with camera angle
 - Post-processing filter stack applied (B&W, grain, scanlines, vignette)
 - One wrestler on screen, idle animation
 - Crowd visible in background
 - Confirm the visual direction works before building game logic
 
-### Phase 2 — Core Engine
+### Phase 2 — Core Engine ✓ complete
 - Two wrestlers, movement, ring boundary
 - Basic grapple system
 - 5-6 moves per wrestler
 - Pin and kickout system
 - Basic stamina
 
-### Phase 3 — Full Roster + Polish
+### Phase 3 — Full Roster + Polish (in progress)
 - All 6-8 wrestlers with full move sets
 - Crowd reaction system
 - Audio
 - Entrance sequences
 - Title screen and menus
 
-### Phase 4 — Local Multiplayer
-- Two-player keyboard support
-- Gamepad support
+### Phase 4 — Local Multiplayer (not started)
+- Two-player keyboard support (both P1 and P2 keyboard input already work
+  today as a side effect of Phase 2/3 development — see Controls above — but
+  this phase hasn't formally started)
+- Gamepad support (mapping exists in `InputHandler.js`, not yet wired in
+  `Arena.js`)
 
-### Phase 5 — Launch
+### Phase 5 — Launch (not started)
 - GitHub Pages deployment
 - Public announcement
 

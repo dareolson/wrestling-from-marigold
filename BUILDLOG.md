@@ -626,6 +626,44 @@ knobs, not bugs — they belong to Batch C (C1 kickout depth, C2 finish-hunting,
 C3 escalation gates), which is exactly where the audit said to re-decide after
 A. Matches are now dramatic but nobody can close; C1+C2 are the closing tools.
 
+### 2026-07-10 (session close-out) — landed pending multi-session work + AI_HANDOFF Phase 0 Task 1
+
+Picked up a working tree with two other sessions' verified-but-uncommitted
+work sitting in it (Thesz press finisher + George head texture wiring) plus
+`AI_HANDOFF.md`'s own pending log entries. Re-verified the combined state
+(`debug:play -- all` 12/12, `npm run build`) and committed it (`a6938ac`,
+`0bc37a5`), then deleted the rejected `WrestlerPNGs/` Codex art drop that
+`AI_HANDOFF.md` had already flagged as safe to remove.
+
+**AI_HANDOFF.md's queued "Active assignment — Phase 0, Task 1"** (extract the
+decision logic out of `Wrestler.tryPower` into a pure, engine-free
+`resolvePowerMove()`) was delegated to a Sonnet subagent working in its own
+git worktree — not the shared working directory — specifically to avoid the
+interleaved-uncommitted-diffs problem this same file documents from earlier
+sessions. First attempt mis-targeted the wrong repo entirely (isolation
+defaulted to the orchestrating session's own cwd, a different project) and
+was caught and discarded before it touched anything; second attempt, pointed
+explicitly at a worktree of this repo, succeeded.
+
+Result (`9c9f18e`): `src/logic/moveDecision.js` (new, zero Phaser
+dependency), `Wrestler.tryPower` now gathers context and dispatches on the
+resolver's return value via `switch`, `tests/moveDecision.test.js` (43
+`node:test` cases — every branch, fallback order, unavailable-move
+fallthrough, and below/at/above boundary checks on all three reach
+thresholds at two scales), `package.json`'s `test` script wired to
+`node --test`. Reviewed the diff personally against every constraint in
+`AI_HANDOFF.md`'s assignment (no Phaser import, `<=` and branch order
+preserved verbatim, guard clauses stayed in `Wrestler.js`, nothing in
+`AIHandler.js`/animations/timing/damage touched) and independently re-ran
+`npm test` (43/43), `debug:play -- all` (12/12), and `npm run build` rather
+than trusting the subagent's report. Fast-forward merged to master, worktree
+and branch removed. Full account in `AI_HANDOFF.md`'s 2026-07-10 entry.
+
+Skipped deliberately: Batch C (still an open design call for Derek), Batch B
+(broad, needs human playtest, not this file's one active assignment), the
+George head redraw and `DRAWING_GUIDE.md` naming-prefix fix (both minor/art,
+left open). No new Active Assignment queued — needs Derek/Codex to set one.
+
 ---
 
 ## Phase Roadmap

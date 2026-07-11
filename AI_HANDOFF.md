@@ -72,6 +72,58 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-10 — Claude (art pipeline session, wrap-up)
+
+Session ending (Derek closing this tab) — leaving state for whoever picks this
+up next.
+
+**head.png resize/recenter (since the last entry below):** Derek flagged the
+landed head as "wrong size, not situated over his shoulders, needs to be
+bigger and wider" — the neck length is intentional (drawn long on purpose so
+it stays covered by the torso through the full animation range, not a
+mistake). Root cause found: my crop centered on the full hair+face bounding
+box, but the hair bulges out ~2.3x further on one side than the face does on
+the other (122px vs 286px from the neck's own x-center to each bbox edge) —
+so bbox-centering put the actual neck 32px (16% of the 200px canvas) off from
+where `Skeleton.js` assumes it sits (`setOrigin(0.5,1)`, i.e. dead-center).
+Fixed by re-cropping symmetrically around the neck's own x-position instead
+of the bbox, and tightened non-pivot padding from ~25px avg down to
+6-12px (below `DRAWING_GUIDE.md`'s 20-30px generic-part guidance —
+deliberate, Derek explicitly asked for bigger/wider, and heads rotate far
+less than limbs so the rotation-clipping padding rationale applies less
+here). Drawn content went from 150×137 (off-center) to 188×122 (centered).
+Verified: neck x-center now 101.5 vs canvas center 100 (was 132 vs 100), and
+visually confirmed in a live screenshot against P1's placeholder head for
+scale reference. `head.png` is still uncommitted.
+
+**"My match died" — diagnosed as environmental, not a code bug.** Ran
+`debug:play -- all` twice back-to-back; got different, non-reproducible
+failures each time (`Cannot read properties of null`, `Execution context was
+destroyed, most likely because of a navigation`). Checked file mtimes
+mid-investigation and caught `src/scenes/Arena.js` being modified three times
+in a 12-second window by what's now confirmed to be a concurrent movesets
+session — this matches the known hazard already on record in project memory
+("don't edit src/ while a probe is running — Vite HMR reloads mid-run and
+corrupts it"). Two-plus sessions are sharing one working directory (not
+worktrees), so any dev-server tab open during another session's save gets a
+live HMR reload, which can corrupt or freeze a match in progress. Did not
+chase this further as a code bug — told Derek to retest with a fresh
+`npm run dev` once edits settle, and to report back if it still dies with no
+concurrent writes happening. If it recurs under that condition, treat it as
+real and start from `debug:watch`/`debug:probe`, not `debug:play` (which
+itself is now polluted by this same hazard and unreliable to run while others
+are editing).
+
+**Current uncommitted working-tree state at handoff (from `git status`):**
+modified `MOVES.md`, `src/AIHandler.js`, `src/Wrestler.js` (not this
+session's — presumably the movesets/Thesz-press session below), plus this
+session's `src/characters/george.js`, `src/scenes/Arena.js` (textures wiring
++ preload path fix, see entry below), and untracked `src/assets/` (George's
+`head.png`) and `WrestlerPNGs/` (rejected Codex art drop, still sitting
+there — safe to delete, already superseded by the Procreate+cutter workflow).
+Nothing from this session is staged or committed. Whoever resumes: `git diff`
+before assuming a clean baseline.
+
 ### 2026-07-10 — Claude (asset-pipeline tooling session)
 
 Reviewed the first Codex-generated art drop in `WrestlerPNGs/` (a ChatGPT

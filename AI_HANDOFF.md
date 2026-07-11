@@ -72,6 +72,62 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-10 — Claude (session close-out: pending work landed + Phase 0 Task 1 done)
+
+Picked this up with the working tree already carrying two other sessions'
+verified-but-uncommitted work (see the two entries below this one) plus this
+file's own uncommitted log entries. Before starting anything new, ran
+`debug:play -- all` (12/12) and `npm run build` against that combined state,
+then committed it as `a6938ac` (Thesz press finisher + George head texture
+wiring) and `0bc37a5` (this file's pending log entries). Deleted
+`WrestlerPNGs/` (the rejected Codex art drop flagged safe-to-delete in the
+entry below).
+
+**Phase 0 Task 1 (`resolvePowerMove` extraction) — done, commit `9c9f18e`.**
+Delegated to a Sonnet subagent working in its own git worktree (branch
+`task1-resolve-power-move`, off `0bc37a5`) rather than the shared working
+directory, specifically to avoid the interleaved-uncommitted-diffs problem
+this file already documents. Reviewed the diff personally against every
+constraint in the "Active assignment" section above before merging:
+
+- `src/logic/moveDecision.js` — new pure `resolvePowerMove(context)`, zero
+  Phaser import, takes `{ dist, scale, otherState, moveSet }`.
+- `Wrestler.tryPower` keeps the `state !== 'standing'` guard, the
+  `input.justDown('power')` check, and the `Phaser.Math.Distance.Between`
+  call — only the four-branch move selection moved out. Dispatches on the
+  resolver's return string via `switch` to the same `_do*` methods, same
+  return values as before.
+- `<=` vs `<`, branch order (headbutt → elbowDrop → jab → dropkick → false),
+  and all three thresholds (`jabReach`/`reach`/`medReach`, `* scale`) are
+  verbatim copies — confirmed by diff, not just by test pass.
+- `tests/moveDecision.test.js`: 43 `node:test` cases — every branch,
+  unavailable-move fallthrough, priority-order cases, and below/at/above
+  boundary checks for all three thresholds at scale 1 and scale 2.
+  `package.json`'s `test` script now runs `node --test "tests/**/*.test.js"`
+  (a bare directory arg 404s on this Node version's test-runner glob —
+  confirmed, not a mistake).
+- Did not touch `AIHandler.js`, other `tryX` methods, animations/tweens/
+  timing/damage, the reach-range-drift note, or the AI lockup logic — all
+  correctly out of scope per the assignment.
+
+Independently re-ran (not just trusting the subagent's report): `npm test`
+(43/43), `npm run debug:play -- all` (12/12), `npm run build` (succeeds) —
+all pass in the merged tree at `9c9f18e`. Fast-forward merged to master,
+worktree removed.
+
+**Skipped, deliberately, not forgotten:** Batch C (kickout depth curve /
+finish hunting) — still an open design question for Derek, not mine to
+decide. Batch B (accel/hitstop/gravity) — queued but broad and needs human
+playtest per this file's own priorities, not part of this file's one
+concrete active assignment. The George head redraw and the `DRAWING_GUIDE.md`
+`[character]_head.png` naming-prefix fix are still open — the naming fix is
+trivial enough to just do inline next time someone's in that file, not worth
+a dedicated pass.
+
+**Open**: no new "Active assignment" queued after Task 1 — Derek/Codex should
+set the next one (Task 2? Batch B/C decision?) before more code work happens
+here.
+
 ### 2026-07-10 — Claude (art pipeline session, wrap-up)
 
 Session ending (Derek closing this tab) — leaving state for whoever picks this

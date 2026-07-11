@@ -72,6 +72,136 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-11 — Codex (consolidated next-gameplay audit and prompt for Claude)
+
+Claude, please treat the following as the consolidated brief for the next
+gameplay-planning session. It combines Codex's repository/code audit with a
+full reading of every project-authored Markdown file (`AI_HANDOFF.md`,
+`BUILDLOG.md`, `DRAWING_GUIDE.md`, `FEEL_AUDIT.md`, `MOVES.md`, and `PRD.md`).
+Do not silently replace earlier decisions. Read the current code and the newer
+handoff entries before acting; code wins when documentation is stale.
+
+The project's order of values remains: game feel, wrestling psychology and
+match drama, emergent storytelling, then architecture. This is a simulation of
+a 1940s–50s wrestling broadcast, not an arcade fighter. Crowd response,
+selling, escalation, ring position, and recognizable match structure matter as
+much as input responsiveness. Avoid a large rewrite.
+
+First, establish a new post-Thesz-press baseline before changing match balance.
+Batch A repaired AI lockups, heat accounting, ring usage, and out-of-bounds
+positioning, but the later `slamAt`, earlier-cover, finish-hunting, and Thesz
+press changes landed after the published Batch A measurements. The old finding
+that Thesz/George always goes to a Broadway may therefore be stale. Once the
+toolchain is working, measure approximately 8 Thesz-vs-George and 8
+brawler-vs-George AI matches, plus human playtests where practical. Capture
+duration, finish type, offense share, stamina arcs, kickout-depth distribution,
+first major-finisher time, move distribution/repetition, ring usage, and time
+from the first opponent-below-15-stamina moment to the bell. Do not tune C1/C2
+solely from the pre-Thesz-press numbers.
+
+The recommended next isolated gameplay implementation is locomotion
+acceleration, braking, and turn commitment (FEEL_AUDIT B1). `Wrestler.move`
+still applies full positional speed immediately; `moveBlend` eases only the
+visual gait. Add per-wrestler movement velocity so walking reaches full speed
+in roughly 100–140ms, brakes in roughly 80–110ms, and reversals pass through
+zero before accelerating in the opposite direction. Preserve perspective
+scaling, diagonal normalization, hurt-speed behavior, stamina recovery,
+collision/clamping, and the existing foot-locking IK gait. Do not combine this
+with another foot-planting rewrite, move timing changes, AI tuning, mass, or
+momentum. Instrument kinematics before and after, run all regression scenarios,
+and require a human playtest before treating the feel as signed off.
+
+After B1 is accepted, the preferred feel sequence is:
+
+1. Contact-time hitstop and feedback (B2): use a small Arena-owned gameplay
+   hitstop seam rather than casually changing global Phaser time. Suggested
+   starting points are jab 35–45ms, headbutt/clothesline 55–75ms, and major
+   landings 80–110ms. Freeze both wrestlers equally, put the first shake at the
+   actual contact frame, and retain a distinct landing response where the move
+   calls for it.
+2. Gravity-correct knockdown arcs (B3): replace the clothesline fall's single
+   ease-out float with an approximately 35–45% slowing ascent and 55–65%
+   accelerating descent. Horizontal travel should finish at or just before
+   touchdown. Preserve every recently added ring clamp.
+3. Re-measure before proceeding into psychology/balance work. Acceleration,
+   hitstop, and gravity are the core feel trio and should be independently
+   committed and playtested rather than shipped as one blind batch.
+
+Once the new match baseline exists, evaluate these psychology improvements in
+this order:
+
+- Kickout depth (C1): replace the binary first-successful-mash escape with a
+  damage-dependent opportunity curve. Fresh wrestlers should overwhelmingly
+  escape before two; moderately hurt wrestlers should often reach two to 2.5;
+  badly hurt wrestlers should create organic 2.7–2.9 counts and genuine failure
+  risk. Never allow cheap high-stamina pinfalls. Keep the existing once-per-match
+  2.9 save initially, then reconsider it only after organic nearfall data exists.
+- Escalation and repetition memory (C3/P4): track recent move use per wrestler,
+  diminish heat for repetition inside roughly 45–60 seconds, and gate the AI's
+  major moves using damage plus match heat. Preserve rare early surprises, but
+  make piledrivers, sleepers, and the Thesz press feel like chapter breaks.
+- Finish hunting/zombie phase (C2): reassess this from the new data because the
+  Thesz press may already solve part of it. The desired result is a match that
+  stays contested longer but ends promptly once truly decided.
+- AI vocabulary (C6): only after the above, teach personality-specific use of
+  mechanics already available to humans—arm drags and suplex variety from
+  lockup, occasional era-appropriate dives, and George's possum/theatrical
+  choices. George should feel like theater, Thesz like sport, and the brawler
+  like direct force. Added variety must serve psychology rather than obscure
+  bad pacing.
+- Later feel systems: momentum-scaled running impacts, an 80–100ms rope-loading
+  beat, and per-wrestler mass. Implement these after the basic velocity and fall
+  models stabilize because they touch several interconnected systems.
+
+Gamepad wiring is the strongest parallel product/accessibility task. The input
+mapping exists, but Arena does not construct or assign a gamepad handler, so the
+claim in `MOVES.md` that pads work automatically is currently false. Follow the
+BUILDLOG's Phaser-4-first verification plan: confirm actual button properties,
+implement per-frame edge detection for `justDown`, press-any-button assignment,
+disconnect fallback, gamepad audio unlock, mode labels/toggles, and real-pad
+mash testing. This is worthwhile, but do not describe it as a substitute for
+the gameplay-feel pass.
+
+Art/rendering constraints should shape the roadmap. Foot-locking IK already
+exists and should not be reinvented. Many grounded, falling, grabbed, and
+complex-move states still use Graphics fallbacks instead of the six-part
+skeleton, which limits selling and makes PNG integration incomplete. Finishing
+that migration is a later readability/polish project, not part of B1. Expression
+and hand/foot texture swapping are documented future targets but are not wired
+and are not v1 requirements.
+
+Before relying on automated verification, make the runtime reproducible. This
+checkout currently resolves to Node 19.8.1, under which the quoted Node test
+glob fails and Vite 8 cannot build (Vite requires Node 20.19+ or 22.12+). Prefer
+declaring Node 22 in `.nvmrc` or `.node-version` and `package.json` `engines`,
+then rerun `npm test`, `npm run debug:play -- all`, and `npm run build`. Treat
+the observed failures as toolchain-version failures, not gameplay regressions.
+
+There is also documentation drift to correct when touching the relevant files:
+
+- `PRD.md` says Phaser 3, has obsolete controls/phase status, and no longer
+  fully matches the deployment/backend direction.
+- `MOVES.md` says gamepad support is live when it is not, and lists implemented
+  suplex/Thesz-press work as planned. Its planned mounted-punch Thesz press
+  contradicts the implemented era-correct flying body press directly into a
+  cover.
+- `DRAWING_GUIDE.md` requires prefixed names such as `george_head.png`, while
+  the loader reads plain `head.png`, `torso.png`, etc. inside each character
+  folder.
+- The BUILDLOG roadmap retains several completed systems as unfinished.
+
+For the immediate next assignment, prefer B1 as one conservative commit. Do
+not modify moves, AI, move animation durations, stamina balance, or match
+psychology in that commit. Add focused tests/measurements where an engine-free
+seam is practical, preserve the debug harness scenarios, and report the human
+playtest result separately from automated success.
+
+At the end of your work, add a new dated Claude entry at the top of this Handoff
+Log. Record the chosen scope, decisions and deviations from this brief, changed
+files, commit SHA(s), exact commands/results, browser/controller verification,
+new measurements, and unresolved questions. Also update `BUILDLOG.md` for any
+meaningful work that ships. Do not overwrite or delete this Codex entry.
+
 ### 2026-07-10 — Claude (session close-out: pending work landed + Phase 0 Task 1 done)
 
 Picked this up with the working tree already carrying two other sessions'

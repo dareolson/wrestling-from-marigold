@@ -43,6 +43,21 @@ await page.keyboard.up('a');
 await mark('B_end');
 await page.waitForTimeout(400);
 
+// ── Test B2: live reversal (plant-and-turn, no stop in between) ─────────────
+// Ramp to full speed one way, then swap input direction without ever
+// releasing, and check velocity passes back through ~0 before it builds up
+// the other way — a real mid-motion reversal, unlike Test B's fresh start.
+await mark('B2_start');
+await page.keyboard.down('d');
+await page.waitForTimeout(400); // reach steady rightward speed first
+await mark('B2_swap');
+await page.keyboard.up('d');
+await page.keyboard.down('a');
+await page.waitForTimeout(400);
+await page.keyboard.up('a');
+await mark('B2_end');
+await page.waitForTimeout(300);
+
 // ── Test C: self-run + rope rebound ──────────────────────────────────────────
 await mark('C_start');
 await page.keyboard.press('r');
@@ -133,18 +148,55 @@ function vels(ss, who) {
     console.log('first 6 moving-frame vx (px/s):', moving.slice(0, 6).map(x => x.vx.toFixed(0)).join(', '));
     const steady = moving.slice(3, 20).reduce((a, x) => a + x.vx, 0) / Math.max(1, moving.slice(3, 20).length);
     console.log('steady vx:', steady.toFixed(1));
+    // time-to-full-speed: first moving frame -> first frame at/above 90% of steady
+    const startT = moving[0]?.t;
+    const fullIdx = moving.findIndex(x => Math.abs(x.vx) >= 0.9 * Math.abs(steady));
+    if (startT != null && fullIdx >= 0) {
+        console.log(`time to 90% steady speed: ${(moving[fullIdx].t - startT).toFixed(0)}ms (frame ${fullIdx + 1})`);
+    }
     // stop: find release
     const relIdx = v.findIndex(x => x.t >= M['A_release']);
     console.log('vx frames around release:', v.slice(Math.max(0, relIdx - 2), relIdx + 5).map(x => x.vx.toFixed(0)).join(', '));
+    // brake time/distance: release -> first frame with ~0 vx
+    if (relIdx >= 0) {
+        const stopIdx = v.findIndex((x, i) => i >= relIdx && Math.abs(x.vx) < 3);
+        if (stopIdx >= 0) {
+            const brakeMs = v[stopIdx].t - M['A_release'];
+            const brakeDist = v[stopIdx].x - v[relIdx].x;
+            console.log(`brake time (release -> ~0 vx): ${brakeMs.toFixed(0)}ms, brake distance: ${brakeDist.toFixed(1)}px`);
+        } else {
+            console.log('brake time: did not reach ~0 vx before segment end');
+        }
+    }
 }
 
-// B: turn
+// B: turn (fresh start in the opposite direction, from a stop)
 {
     const v = vels(seg('B_start', 'C_start'), 'w1');
     const first = v.findIndex(x => x.vx < -1);
-    console.log('\n== B: TURN-AROUND ==');
+    console.log('\n== B: TURN-AROUND (from a stop) ==');
     console.log('facing before/after first left frame:', v[Math.max(0, first - 1)]?.fc, '->', v[first]?.fc);
     console.log('first 5 vx after turn:', v.slice(first, first + 5).map(x => x.vx.toFixed(0)).join(', '));
+}
+
+// B2: live reversal — analyze the drive captured above (Test B2 section)
+{
+    const vv = vels(seg('B2_start', 'C_start'), 'w1');
+    console.log('\n== B2: LIVE REVERSAL (plant-and-turn, no stop between) ==');
+    const preSwap = vv.filter(x => x.t < M['B2_swap']).slice(-3);
+    console.log('vx just before swap:', preSwap.map(x => x.vx.toFixed(0)).join(', '));
+    const postSwap = vv.filter(x => x.t >= M['B2_swap']);
+    console.log('vx after swap (full profile):', postSwap.map(x => x.vx.toFixed(0)).join(', '));
+    const zeroIdx = postSwap.findIndex(x => Math.abs(x.vx) < 5);
+    if (zeroIdx >= 0) {
+        console.log(`crosses ~0 vx at ${(postSwap[zeroIdx].t - M['B2_swap']).toFixed(0)}ms after swap`);
+    } else {
+        console.log('WARNING: never dipped near 0 vx after the swap — instant flip, not a reversal');
+    }
+    const newSteadyIdx = postSwap.findIndex(x => x.vx < -90);
+    if (newSteadyIdx >= 0) {
+        console.log(`reaches new-direction speed at ${(postSwap[newSteadyIdx].t - M['B2_swap']).toFixed(0)}ms after swap`);
+    }
 }
 
 // C: run + rebound

@@ -8,6 +8,15 @@ const DOWN_SEC   = 4.5;
 // Derived so a planted foot stays world-locked (no skating) — see Skeleton GAIT.
 const WALK_FREQ  = GAIT.WALK_FREQ; // radians per unscaled pixel of travel
 
+// Walk velocity ramps (px/s², unscaled — multiplied by perspective scale `s`
+// at tick time so the feel holds across ring depth). Big men plant and drive:
+// ~130ms to full walk speed, ~90ms to brake to a stop. A direction reversal
+// is just two ramps back to back, so it passes through zero on the way.
+const WALK_ACCEL_TIME = 0.13; // seconds to reach full walk speed
+const WALK_BRAKE_TIME = 0.09; // seconds to decelerate to a stop
+const WALK_ACCEL = SPEED / WALK_ACCEL_TIME;
+const WALK_BRAKE = SPEED / WALK_BRAKE_TIME;
+
 // ─── Stamina ─────────────────────────────────────────────────────────────────
 const STAMINA_MAX      = 100;
 const STAMINA_RECOVER  = 6;   // per second while standing
@@ -228,6 +237,9 @@ export default class Wrestler {
         this.runFacing    = 1;
         this.walkPhase    = 0;
         this.moveBlend    = 0;
+        this.vx           = 0; // walk velocity, px/s — ramps toward/away from target speed
+        this.vy           = 0;
+        this._walkPhaseDir = 1; // last stride direction, held through brake-to-stop frames
         this.stamina      = STAMINA_MAX;
         this.flipProgress  = 0;
         this.flipDir       = 1;
@@ -305,7 +317,13 @@ export default class Wrestler {
             if (dx !== 0) this.facing = Math.sign(dx);
         }
 
-        if (this.state !== 'standing') return;
+        if (this.state !== 'standing') {
+            // Not under walk control (mid-move, staggered, etc.) — re-enter
+            // standing from a dead stop rather than carrying stale velocity.
+            this.vx = 0;
+            this.vy = 0;
+            return;
+        }
 
         let dx = 0, dy = 0;
         if (this.input.isDown('left'))  dx -= 1;
@@ -314,26 +332,60 @@ export default class Wrestler {
         if (this.input.isDown('down'))  dy += 1;
 
         const len = Math.hypot(dx, dy);
+        // Hurt legs: slower target speed (phase advance below scales with
+        // actual velocity so planted feet don't skate), and liable to stumble
+        // mid-step — a stumble is a slam window, since tryAction grabs
+        // staggered wrestlers.
+        const hurt = Math.max(0, 1 - this.stamina / 35);
+        const eff  = SPEED * (1 - 0.35 * hurt);
+
+        let targetVx = 0, targetVy = 0;
         if (len > 0) {
-            // Hurt legs: slower gait (phase advance scales with it so planted
-            // feet don't skate), and liable to stumble mid-step — a stumble is
-            // a slam window, since tryAction grabs staggered wrestlers
-            const hurt = Math.max(0, 1 - this.stamina / 35);
-            const eff  = SPEED * (1 - 0.35 * hurt);
-            const speed = eff * this.s * dt;
-            this.x += (dx / len) * speed;
-            this.y += (dy / len) * speed;
+            const speed = eff * this.s;
+            targetVx = (dx / len) * speed;
+            targetVy = (dy / len) * speed;
+        }
+
+        // Ramp actual velocity toward the target at a constant rate (accelerating
+        // with input held, braking toward zero with none) — this is what gives
+        // starts/stops/reversals real time instead of snapping to target speed.
+        const rate = (len > 0 ? WALK_ACCEL : WALK_BRAKE) * this.s * dt;
+        const dvx = targetVx - this.vx, dvy = targetVy - this.vy;
+        const dv = Math.hypot(dvx, dvy);
+        if (dv <= rate || dv === 0) {
+            this.vx = targetVx;
+            this.vy = targetVy;
+        } else {
+            this.vx += (dvx / dv) * rate;
+            this.vy += (dvy / dv) * rate;
+        }
+
+        if (len > 0) {
             const backward = dx !== 0 && Math.sign(dx) !== this.facing;
-            const phaseDir = backward ? -1 : 1;
-            this.walkPhase = ((this.walkPhase + phaseDir * eff * dt * WALK_FREQ) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-            this.moveBlend = Math.min(1, this.moveBlend + dt * 6);
+            this._walkPhaseDir = backward ? -1 : 1;
+        }
+
+        // Gait speed is fed from actual travel speed (not target speed) so the
+        // planted foot stays locked to the ground through both the accel ramp
+        // and the brake-to-stop tail — never the input's instantaneous target.
+        const travelSpeed = Math.hypot(this.vx, this.vy);
+        if (travelSpeed > 0.5) {
+            this.x += this.vx * dt;
+            this.y += this.vy * dt;
+            const unscaled = travelSpeed / this.s;
+            this.walkPhase = ((this.walkPhase + this._walkPhaseDir * unscaled * dt * WALK_FREQ) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
             this._clamp();
+        } else {
+            this.walkPhase *= Math.pow(0.85, dt * 60);
+        }
+
+        if (len > 0) {
+            this.moveBlend = Math.min(1, this.moveBlend + dt * 6);
             if (hurt > 0 && Math.random() < 0.45 * hurt * dt) {
                 this.startStagger();
                 return;
             }
         } else {
-            this.walkPhase *= Math.pow(0.85, dt * 60);
             this.moveBlend  = Math.max(0, this.moveBlend - dt * 6);
             // Drift toward character's idle stance while standing still (~1.5s to settle)
             const idleTarget = POSES[this.idlePose] ?? POSES.idle;

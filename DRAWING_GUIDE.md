@@ -257,23 +257,30 @@ Once the full character is drawn:
 
 **Naming convention (required for v1):**
 ```
-[character]_head.png
-[character]_torso.png
-[character]_upper_arm.png
-[character]_forearm.png
-[character]_thigh.png
-[character]_shin.png
+head.png
+torso.png
+upper_arm.png
+forearm.png
+thigh.png
+shin.png
 ```
-These six files are all the code currently needs — `Arena.js` loads them as `head.png`, `torso.png`, `upper_arm.png`, `forearm.png`, `thigh.png`, `shin.png` from the character's folder.
+No character prefix — the folder already scopes the files to one character.
+These six plain filenames are all the code currently needs: `Arena.js`'s
+`preload()` loads them from `src/assets/wrestlers/[character_slug]/` (see
+`PART_FILES` in `Arena.js`), and each character's config file (e.g.
+`src/characters/george.js`) maps them to that character's Phaser texture keys
+(e.g. `george_head`) — the prefix lives in the texture key, not the filename.
 
 **Naming convention (future, not yet wired):**
 ```
-[character]_head_[expression].png     ← one file per expression
-[character]_foot_[variant].png        ← foot_normal, foot_bent, etc.
-[character]_hand_[variant].png        ← hand_open, hand_fist, hand_grip
+head_[expression].png     ← one file per expression
+foot_[variant].png        ← foot_normal, foot_bent, etc.
+hand_[variant].png        ← hand_open, hand_fist, hand_grip
 ```
 
-Example: `gorgeous_george_head.png`, `gorgeous_george_upper_arm.png`, `gorgeous_george_forearm.png` — and, once expressions are wired, `gorgeous_george_head_mercy.png`.
+Example, for George's folder (`src/assets/wrestlers/george/`): `head.png`,
+`upper_arm.png`, `forearm.png` — and, once expressions are wired,
+`head_mercy.png`.
 
 **Where to put them:**
 ```
@@ -330,7 +337,7 @@ Exaggerate slightly toward the heroic — wide shoulders, thick legs, big hands.
 - [ ] Fist/hand shape baked into the forearm PNG; boot baked into the shin PNG
 - [ ] Exported at the sizes in the table above
 - [ ] PNG-24 with transparency, no white background
-- [ ] Named correctly: `[character]_head.png`, `_torso.png`, `_upper_arm.png`, `_forearm.png`, `_thigh.png`, `_shin.png`
+- [ ] Named correctly: `head.png`, `torso.png`, `upper_arm.png`, `forearm.png`, `thigh.png`, `shin.png` (no character prefix — the folder scopes it)
 - [ ] Placed in `src/assets/wrestlers/[character]/`
 
 **Future (only once the corresponding code exists):**

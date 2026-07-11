@@ -696,6 +696,8 @@ All 6–8 wrestlers with distinct identities, character-specific animations, cro
 
 **Proximity combat stance** — `Wrestler.updateCombatBlend(dt, opponent)` (called from `Arena._tickGame`) smoothly ramps `combatBlend` 0→1 as wrestlers close within ~240px, reaching full guard at ~130px. `combatBlend = 0` when not in a neutral standing/staggered state. The skeleton blends upper-arm angles toward `facing * 0.60` rad (arms forward at ~34°) and forearm angles toward `facing * 1.50` rad (near-horizontal L-shape guard) — classic wrestling/boxing ready stance as opponents circle each other.
 
+**Crowd heat meter** — shipped and retuned; see the 2026-07-04 sessions (heat given gameplay teeth: comeback scaling, taunt-to-stamina conversion) and the 2026-07-07 session (floor ratchet, exponential decay toward the floor, chain multiplier) below for the full history.
+
 **Movement naturalness — 2026-06-08:**
 
 Three techniques implemented to eliminate the "gliding on ice" look:
@@ -766,7 +768,6 @@ Four gait refinements made during this session:
 - Character idle personalities — George preening, brawler bouncing on his toes, etc.; tuned per character using the idle pose system from Phase 2
 - Character-specific sell variations — each wrestler reacts to damage differently; a tough babyface eats moves stoically, George is theatrical about everything
 - Taunt personalities — character-specific taunt animations tied to their archetype
-- Crowd heat meter — fed by taunts, big moves, nearfalls; affects crowd audio and energy
 - Two-step grapple system (No Mercy style) — lock up first, then choose the move; worthwhile once each character has 8–10 moves to choose from; revisit when move sets are full
 - Migrate remaining draw methods (flat, falling, flip, dropkick, elbow air, grabbed/piledriver) to use skeleton parts — enables proper poses for those states and makes PNG swap complete
 - Piledriver attacker animation — needs a proper seated sprite frame; can't be done convincingly without skeleton parts for that state

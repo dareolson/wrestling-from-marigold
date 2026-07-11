@@ -24,7 +24,7 @@ export default class Arena extends Phaser.Scene {
     preload() {
         for (const char of CHARACTERS) {
             for (const [part, key] of Object.entries(char.textures)) {
-                this.load.image(key, `assets/wrestlers/${char.id}/${PART_FILES[part]}`);
+                this.load.image(key, `src/assets/wrestlers/${char.id}/${PART_FILES[part]}`);
             }
         }
     }
@@ -680,24 +680,25 @@ export default class Arena extends Phaser.Scene {
                 name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
                 skin: 0xa87858, trunks: 0x1a1a1a,
                 moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt'],
+                textures: george.textures,
             },
             thesz: {
                 // Clean technical kit — no headbutt, no piledriver; suplex and
                 // slam are his conversions, the holds are his actual game
                 name: 'THESZ', personality: 'thesz', idlePose: 'powerIdle',
                 skin: 0xe8c098, trunks: 0x484848,
-                moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab'],
+                moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'theszPress'],
             },
         };
         const q  = new URLSearchParams(location.search);
         const c1 = this._preset1 = PRESETS[q.get('p1')] ?? PRESETS.brawler;
         const c2 = this._preset2 = PRESETS[q.get('p2')] ?? PRESETS.george;
 
-        this.w1 = new Wrestler(this, 330, 360, c1.skin, c1.trunks, input1, c1.moveSet);
+        this.w1 = new Wrestler(this, 330, 360, c1.skin, c1.trunks, input1, c1.moveSet, c1.textures ?? {});
         this.w1.facing   = 1;
         this.w1.idlePose = c1.idlePose;
 
-        this.w2 = new Wrestler(this, 630, 360, c2.skin, c2.trunks, input2, c2.moveSet);
+        this.w2 = new Wrestler(this, 630, 360, c2.skin, c2.trunks, input2, c2.moveSet, c2.textures ?? {});
         this.w2.facing   = -1;
         this.w2.idlePose = c2.idlePose;
 
@@ -867,6 +868,20 @@ export default class Arena extends Phaser.Scene {
         return wrestler.x <= b.left + threshold || wrestler.x >= b.right - threshold;
     }
 
+    // A move that lands directly in a cover (the Thesz press) enters the pin
+    // here — tryAction's return-value path only covers grapples on a downed
+    // man. Mirrors that path: states + pinHold pose + pinState + event.
+    startPin(attacker, defender) {
+        if (this.matchOver) return;
+        attacker.state = 'pinning';
+        defender.state = 'pinned';
+        attacker.tweenPose('pinHold', 200, 'Linear');
+        if (!this.pinState) {
+            this.pinState = { attacker, defender, timer: 0 };
+            this._logEvent('pinAttempt', { attacker: attacker === this.w1 ? 'p1' : 'p2', defenderStamina: Math.round(defender.stamina) });
+        }
+    }
+
     _showRopeBreak() {
         this.pinText.setText('ROPE BREAK').setAlpha(1);
         this.time.delayedCall(1000, () => this.pinText.setAlpha(0));
@@ -879,7 +894,7 @@ export default class Arena extends Phaser.Scene {
             irishWhip: 2, clothesline: 8, bodySlam: 12, piledriver: 15,
             dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
             headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
-            jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12,
+            jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12, theszPress: 16,
         };
         const n = bumps[move];
         if (n) this.bumpHeat(n);

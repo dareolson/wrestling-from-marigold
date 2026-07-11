@@ -6,7 +6,7 @@ export const george = {
     skinCol:   0xffe4c4,
     trunksCol: 0xffd700,
     textures: {
-        // head:     'george_head',
+        head:     'george_head',
         // torso:    'george_torso',
         // upperArm: 'george_upper_arm',
         // forearm:  'george_forearm',

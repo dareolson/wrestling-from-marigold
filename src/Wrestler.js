@@ -25,6 +25,7 @@ const STAMINA_DRAIN    = {    // drained from the DEFENDER on each move landing
     suplex:            20,
     divingElbow:       18,
     topDive:           28,
+    theszPress:        24, // flying body press — finisher-grade, lands straight into the cover
 };
 // Kick-out chance: 100% at full stamina, 0% at or below this threshold
 const KICKOUT_FLOOR = 15;
@@ -205,6 +206,7 @@ export const MOVE_DEFS = {
 // 'climbing'    tweening up to or down from a turnbuckle corner; no input
 // 'onTurnbuckle' standing on middle rope at corner; power = dive, movement = climb down
 // 'diving'      airborne from turnbuckle dive; divProgress 0→1
+// 'pressing'    Thesz press flight; pressProgress 0→1; lands into pin (hit) or down (whiff)
 
 // ─── Wrestler class ───────────────────────────────────────────────────────────
 export default class Wrestler {
@@ -709,6 +711,17 @@ export default class Wrestler {
             return 'sleeperHold';
         }
 
+        // Thesz press — the flying body press that lands straight into the
+        // cover (Lou's original, not the mounted-punches version). A charge
+        // move: launches from beyond grapple range; whiffing it (opponent
+        // evades or moves mid-flight) leaves the attacker flat on the mat.
+        if (dist > reach && dist <= 300 * this.s &&
+            (other.state === 'standing' || other.state === 'staggered') &&
+            this.moveSet.includes('theszPress')) {
+            this._doTheszPress(other);
+            return 'theszPress';
+        }
+
         this._doTaunt();
         return 'taunt';
     }
@@ -1109,6 +1122,48 @@ export default class Wrestler {
         });
     }
 
+    _doTheszPress(other) {
+        this.state         = 'pressing';
+        this.pressProgress = 0;
+        this._divLandY     = other.y; // shadow anchor, same as the dives
+        // He ends this move lying on top of the opponent — clamp the landing
+        // with the downed-body margin like every other flat-ending move
+        const b     = ringBoundsAtY(other.y);
+        const m     = 60 * this.s;
+        const landX = Math.max(b.left + m, Math.min(b.right - m, other.x));
+
+        this.scene.tweens.add({
+            targets:       this,
+            pressProgress: 1,
+            x:             landX,
+            y:             other.y,
+            duration:      420,
+            ease:          'Sine.easeIn',
+            onComplete: () => {
+                if (this.state !== 'pressing') return;
+                this.pressProgress = 0;
+                const dist = Math.abs(this.x - other.x);
+                // Blocking doesn't save you from a flying body — evading does
+                const hit  = dist <= 130 * this.s &&
+                             (other.state === 'standing' || other.state === 'staggered' || other.state === 'blocking');
+                if (hit) {
+                    other._drain(STAMINA_DRAIN.theszPress);
+                    // The press IS the cover — victim goes flat underneath
+                    other.x      = this.x;
+                    other.y      = this.y;
+                    other.facing = -this.facing;
+                    this.scene.cameras.main.shake(220, 0.004);
+                    this.scene.startPin(this, other);
+                } else {
+                    // Whiffed — crash and burn, long punish window
+                    this.state      = 'down';
+                    this.stateTimer = 2.6;
+                    this.scene.cameras.main.shake(90, 0.0012);
+                }
+            },
+        });
+    }
+
     _doSleeperHold(other) {
         this.state  = 'holding';
         other.state = 'sleeping';
@@ -1384,6 +1439,16 @@ export default class Wrestler {
             gfx.fillStyle(0x000000, 0.15 + this.divProgress * 0.08);
             gfx.fillEllipse(x, this._divLandY, (100 + this.divProgress * 60) * s, (30 + this.divProgress * 12) * s);
             this._drawElbowDropAir(x, y, s, facing, skinCol, trunksCol);
+            return;
+        }
+
+        if (state === 'pressing') {
+            // Low horizontal leap — body arcs up ~55·s and comes down on the target
+            const arc  = Math.sin(this.pressProgress * Math.PI);
+            const airY = y - arc * 55 * s;
+            gfx.fillStyle(0x000000, 0.15 + this.pressProgress * 0.08);
+            gfx.fillEllipse(x, this._divLandY, (100 + this.pressProgress * 50) * s, (30 + this.pressProgress * 10) * s);
+            this._drawDropkickFront(x, airY, s * 1.15, facing, skinCol, trunksCol);
             return;
         }
 

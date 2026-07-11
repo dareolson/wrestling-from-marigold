@@ -42,6 +42,7 @@ Gamepad support is built in — plug in any standard Bluetooth or USB controller
 | Opponent State | Move | Range | Notes |
 |---|---|---|---|
 | Standing | Sleeper hold | 120px | 4-second hold; mash to escape |
+| Standing/staggered — beyond grapple range | Thesz press | 120–300px | Thesz's kit only. Flying body press straight into the cover; whiff = attacker crashes flat (2.6s punish window) |
 
 ### Defense (No Mercy style)
 
@@ -86,6 +87,16 @@ Follow-up strike vs a staggered opponent. Body lunges forward, head leads. Knock
 ### Pin
 3-count at 0.85s per beat (2.55s total). Defender mashes grapple key to kick out.
 
+### Thesz press *(Thesz)*
+Lou's original finisher — the flying body press, not the mounted-punches
+version. Launches from beyond grapple range (120–300px) at a standing or
+staggered opponent: a low horizontal leap that takes them straight down with
+the attacker on top, **directly into the pin**. Drains 24, so on a worn
+opponent (<~40 stamina) the cover lands below the kickout floor — this is the
+kill shot. Evade beats it: whiffing leaves the attacker flat on the mat for
+2.6s, the longest self-inflicted punish window in the game. Blocking does not
+stop a flying body.
+
 ---
 
 ## Roster Move Sets
@@ -96,6 +107,7 @@ Each wrestler is constructed with a `moveSet` array. `tryAction`, `tryPower`, an
 |---|---|---|---|---|
 | **Brawler** (P1) | Irish whip / clothesline / pin | Body slam | Dropkick | Sleeper hold |
 | **Powerhouse** (P2) | Irish whip / clothesline / pin | Piledriver | Dropkick | Sleeper hold |
+| **Thesz** (`?p1=thesz`) | Irish whip / clothesline / pin | Body slam / suplex | Dropkick | Sleeper hold + **Thesz press** (at range) |
 | *Technical (planned)* | Irish whip / clothesline / pin | Suplex | Dropkick | Figure four |
 | *Heel (planned)* | Irish whip / clothesline / pin | Atomic drop | Dropkick | Bear hug |
 

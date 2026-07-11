@@ -55,6 +55,8 @@ const PERSONALITIES = {
         showboatAfter:    0,
         attrition:        true,  // the sleeper is his submission proxy
         attritionAt:      65,
+        slamAt:           60,    // converts lockups to suplex/slam early — throws are his wear-down game
+        pressHuntAt:      42,    // hunts the Thesz press once the opponent is in the kill window
         cooldownScale:    1.05,  // deliberate, never hurried
         staggerSlamOdds:  0.45,  // staggers become suplexes, relentlessly
         pounceBudget:     1,
@@ -410,6 +412,17 @@ export default class AIHandler {
         // Failed roll sets a short cooldown so the odds are per-beat, not
         // per-frame (per-frame rolls saturate to 100% within a second).
         if (dist < MED_REACH) {
+            // Finish hunt: the Thesz press — flying body press straight into
+            // the cover. Distance-gated above grapple reach so tryFinisher
+            // dispatches the press, not the sleeper. The press drains 24, so
+            // below pressHuntAt (~42) it pins under the kickout floor — this
+            // is the closer. Not thrown at the ropes (pins break there).
+            if (self.moveSet.includes('theszPress') &&
+                opp.stamina < (cfg.pressHuntAt ?? 0) && opp.state === 'standing' &&
+                dist > GRAPPLE_REACH * 1.1 && !this._nearRopes(opp)) {
+                this._attack('finisher', 1.5);
+                return;
+            }
             if (Math.random() < cfg.dropkickOdds) {
                 this._attack('power', 1.2); // dropkick
             } else {
@@ -473,10 +486,18 @@ export default class AIHandler {
         }
 
         if (cfg.lockupPreference === 'headlock') {
-            // George: cash in on a worn opponent with the piledriver (plain
-            // follow-up), otherwise headlock to drain, or whip to create space
-            if (this._opp.stamina < 40 && Math.random() < 0.5) {
-                this._press('action'); // → piledriver
+            // Cash in on a worn opponent with the kit's big throw (plain
+            // follow-up → piledriver/bodySlam), otherwise headlock to drain,
+            // or whip to create space. `slamAt` sets when the throw window
+            // opens: George waits for a dying man (<40, default) because the
+            // piledriver is his kill shot; Thesz converts much earlier — the
+            // suplex/slam IS his wear-down game (headlock drain alone can't
+            // outpace taunt regen; measured 2026-07-10, tg probes).
+            if (this._opp.stamina < (cfg.slamAt ?? 40) && Math.random() < 0.5) {
+                // Kits without the piledriver mix in the suplex for variety
+                if (!this._self.moveSet.includes('piledriver') &&
+                    this._self.moveSet.includes('suplex') && Math.random() < 0.5) this._hold('up');
+                this._press('action');
             } else if (Math.random() < (cfg.holdOdds ?? 0.55)) {
                 this._hold('down');
                 this._press('action'); // → headlock

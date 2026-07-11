@@ -4,7 +4,7 @@
 //
 // Env: MATCHES=2 OUT=path WFM_TS=3 WFM_URL=... WFM_P1/WFM_P2, SHOTS=dir
 
-import { launch } from '/Users/home/Documents/wrestling-from-marigold/tools/debug/harness.mjs';
+import { launch } from './harness.mjs';
 import { writeFileSync } from 'node:fs';
 
 const N = Number(process.env.MATCHES) || 2;

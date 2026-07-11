@@ -3,7 +3,7 @@
 // rebound, clothesline knockback arc timing, position clamping.
 // Run at ts=1 so px/s map directly to gameplay speeds.
 
-import { launch } from '/Users/home/Documents/wrestling-from-marigold/tools/debug/harness.mjs';
+import { launch } from './harness.mjs';
 
 const h = await launch();
 const page = h.page;

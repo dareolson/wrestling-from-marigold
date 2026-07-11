@@ -115,6 +115,11 @@ Independently re-ran (not just trusting the subagent's report): `npm test`
 all pass in the merged tree at `9c9f18e`. Fast-forward merged to master,
 worktree removed.
 
+**Pushed to origin/master** (`e894d1a..0dad564`, includes this file's own
+`817b883`/session-close-out entry and the `0dad564` BUILDLOG entry) — Derek
+confirmed. Anyone resuming should `git pull` before assuming their local
+`master` is current.
+
 **Skipped, deliberately, not forgotten:** Batch C (kickout depth curve /
 finish hunting) — still an open design question for Derek, not mine to
 decide. Batch B (accel/hitstop/gravity) — queued but broad and needs human

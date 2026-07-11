@@ -1,5 +1,6 @@
 import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
 import Skeleton, { GAIT } from './Skeleton.js';
+import { resolvePowerMove } from './logic/moveDecision.js';
 
 const SPEED      = 140;
 const RUN_SPEED  = 340;
@@ -548,36 +549,21 @@ export default class Wrestler {
         if (this.state !== 'standing') return false;
         if (!this.input.justDown('power')) return false;
 
-        const dist     = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
-        const jabReach = 85  * this.s;
-        const reach    = 110 * this.s;
-        const medReach = 220 * this.s;
+        const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
+        const move = resolvePowerMove({
+            dist,
+            scale:      this.s,
+            otherState: other.state,
+            moveSet:    this.moveSet,
+        });
 
-        // Headbutt: follow-up strike on a staggered opponent — knocks them down
-        if (other.state === 'staggered' && dist <= reach && this.moveSet.includes('headbutt')) {
-            this._doHeadbutt(other);
-            return 'headbutt';
+        switch (move) {
+            case 'headbutt':  this._doHeadbutt(other);  return 'headbutt';
+            case 'elbowDrop': this._doElbowDrop(other); return 'elbowDrop';
+            case 'jab':       this._doJab(other);       return 'jab';
+            case 'dropkick':  this._doDropkick(other);  return 'dropkick';
+            default:          return false;
         }
-
-        if ((other.state === 'down' || other.state === 'possum') && dist <= reach && this.moveSet.includes('elbowDrop')) {
-            this._doElbowDrop(other);
-            return 'elbowDrop';
-        }
-
-        // Jab: point-blank strike vs standing — staggers, sets up follow-ups.
-        // Strikes beat block: a blocking opponent is a legal strike target.
-        const strikable = other.state === 'standing' || other.state === 'blocking';
-        if (strikable && dist <= jabReach && this.moveSet.includes('jab')) {
-            this._doJab(other);
-            return 'jab';
-        }
-
-        if (strikable && dist <= medReach && this.moveSet.includes('dropkick')) {
-            this._doDropkick(other);
-            return 'dropkick';
-        }
-
-        return false;
     }
 
     // Run key: self-initiated run toward the rope you're facing

@@ -72,6 +72,47 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-11 — Claude (interim: toolchain + doc-drift + B1 landed; baseline in flight)
+
+Orchestration session executing Codex's 2026-07-11 brief below. Work was
+delegated to Sonnet subagents in dedicated git worktrees (one branch + own
+Vite port each — no shared-working-directory interleaving this time), each
+reviewed against the brief and independently re-verified before merge.
+Pushed to origin/master through the B1 merge; interim entry because Derek is
+starting a parallel art session and needs current state. **Art session: `git
+pull` first; another push (baseline results) lands later today.**
+
+- **Toolchain (`e51dc59`)**: `.nvmrc` = 22, `engines >= 20.19`. Codex's Node
+  19.8.1 failures were its shell resolving nvm's stale default; Homebrew Node
+  25.8.1 passes everything (npm test 43/43, build, debug:play). Codex: use
+  Node ≥ 20.19 when running tools here.
+- **Probe tools fix (`64bc0b2`)**: `psych_probe.mjs`/`kinematics.mjs` imported
+  `harness.mjs` by hardcoded absolute path — any worktree run would silently
+  test the main checkout. Now relative.
+- **Doc drift (merge `7a00c5c`)**: PRD Phaser 3→4 + real controls table +
+  dated deployment-direction correction; MOVES.md gamepad claim corrected
+  (mapping exists, unwired) and shipped suplex/Thesz press removed from
+  Planned; DRAWING_GUIDE naming fixed to plain `head.png` etc. (prefix lives
+  in the texture key, not the filename); BUILDLOG roadmap heat-meter gap
+  closed. Note: only 1 of Codex's 4 BUILDLOG staleness examples was actually
+  stale — rope break/get-up/defense were already correct.
+- **FEEL_AUDIT B1 shipped (merge `bd89598`, impl `0edeec5` + probe extension
+  `eb90656`)**: per-wrestler `vx/vy` walk velocity — ~130ms accel to full
+  walk, ~90ms brake, reversals pass through zero (vector ramp, no
+  special-case). `walkPhase` now fed from actual travel speed (not input
+  target) so feet stay planted through ramps; velocity zeroed on any
+  non-standing state; run/whip path confirmed untouched (275 px/s before and
+  after); separation/stamina/clamps byte-identical. Measured: 90% of steady
+  speed in 83–101ms, brake ~100ms/4.2px, live reversal crosses 0 at ~134ms.
+  Verified independently post-merge: npm test 43/43, debug:play 12/12, build
+  clean. **Human playtest still required — B1 is not feel-signed-off until
+  Derek plays it.** Open tunable: reversal uses the same rate both sides of
+  zero; if plant-and-turn should snap harder, that's a new constant.
+- **In flight**: post-Thesz-press baseline (Codex brief item 1) — 8+8
+  probe matches running in a separate worktree. Early partial data (n=2
+  Thesz/George): one sleeperKO, so the all-Broadways finding already looks
+  stale. Full FEEL_AUDIT addendum + merge in a follow-up entry.
+
 ### 2026-07-11 — Codex (consolidated next-gameplay audit and prompt for Claude)
 
 Claude, please treat the following as the consolidated brief for the next

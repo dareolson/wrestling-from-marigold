@@ -31,6 +31,18 @@ await page.evaluate(() => {
         const R = window.__REC;
         const t = sc._matchTime;
         R.frames++;
+        // Self-heal a match-boundary race: the "matchOver" handler below resets
+        // R.last{Heat,Pos}T to -1 the instant matchOver flips true, but
+        // sc._matchTime is still frozen at the OLD match's final (high) value
+        // during the win-banner phase — that reset fires while t is still e.g.
+        // 600, so the very next tick logs one bogus sample at t=600 and pins
+        // last{Heat,Pos}T there. Once the *new* match actually starts and
+        // _matchTime resets to ~0, `t - lastHeatT` is deeply negative and never
+        // clears the >=1/>=0.5 threshold again — every trace after match 1 was
+        // silently frozen at a single stale sample. Detect the rewind (new
+        // match's t drops below the last recorded time) and re-baseline.
+        if (t < R.lastHeatT) R.lastHeatT = -1;
+        if (t < R.lastPosT) R.lastPosT = -1;
         if (t - R.lastHeatT >= 1) { R.heat.push([Math.round(t), Math.round(sc.heat), Math.round(sc.heatFloor)]); R.lastHeatT = t; }
         if (t - R.lastPosT >= 0.5) {
             R.pos.push([Math.round(t * 10) / 10,

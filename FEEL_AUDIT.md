@@ -595,3 +595,132 @@ match is alive (heat 100, 30/32 cells) but endless. These thresholds are
 booking knobs, not bugs; C1 (kickout depth curve) + C2 (finish hunting) are
 the tools, exactly as the batch ordering predicted. Re-decide C scope with
 these numbers, not the baseline's.
+
+---
+
+## Post-Thesz-press baseline (2026-07-11)
+
+Method: 16 AI-vs-AI probe matches at ts=3 — 8× Thesz/George, 8× brawler/George —
+measured on `baseline-post-thesz` (game code as of `9c9f18e`, i.e. with Batch A,
+the Thesz press finisher + `slamAt`/`pressHuntAt` hunt logic, earlier covers
+`coverStamina` 55/60 + tightened `pinWait`, and the `resolvePowerMove`
+extraction). Probes ran in 2–4-match chunks against a dedicated Vite server
+(port 5301) so no HMR could touch a live match. Before measuring, fixed a
+psych_probe recorder bug (`7fdf25a`): heat/position traces froze after match 1
+of any multi-match run (the match-boundary reset re-baselined the throttle
+clocks while `_matchTime` was still parked at the old match's final value).
+All 16 matches have valid event logs; 15 of 16 have valid traces (bg match 2
+was captured pre-fix — its events count, its traces don't). Supplemental
+analyzer: `tools/debug/psych_baseline.mjs` (`4ef5599`) — kickout depth,
+offense share, first-finisher timing, per-minute stamina, below-15-to-bell.
+
+### The headline: Thesz/George is still all Broadways — 8 for 8
+
+Nothing that landed since Batch A moved the needle. The press, the earlier
+covers, and the `slamAt: 60` throw window all gate on the same state — **a
+standing opponent at low stamina — and that state does not exist.** Measured
+across all eight tg matches, George is standing with stamina <60 in **0.3%**
+of trace samples, and standing with stamina <42 (the `pressHuntAt` window) in
+**0.0%**. His stamina does dip (event-time floors 18–68) — but every dip
+happens mid-knockdown-chain while he's down or being covered, and the recovery
+stack (taunt-to-stamina conversion at ~35 taunts/match, kickout comeback
+refunds, natural regen) lifts him back over every threshold before he's on his
+feet again. The kill windows are real in the code and vacant in the match.
+
+Downstream of that, in 8 tg matches:
+
+- Thesz threw **0 suplexes and 0 bodySlams** (the `slamAt: 60` branch needs
+  George <60 at lockup-follow-up time: 509 of 511 follow-ups found him ≥60).
+- The **Thesz press was attempted once** — 1 press in 8 matches (m6, 6:03,
+  George at 25) — and it whiffed; George was back on offense a second later
+  and taunt-regenned 25→37.
+- **16 pin attempts total** (0–6 per match; three matches had zero), all 16
+  kickouts at count 1. **Zero nearfalls. The 2.9 save never fired** — the
+  "fired in every single match" claim from the original audit no longer holds
+  for this matchup because no cover ever gets deep enough to trigger it.
+
+### Per-matchup tables
+
+**Thesz vs George (n=8):**
+
+| metric | value |
+|---|---|
+| finishes | 8× 10:00 time-limit draw (0 pinfalls, 0 KOs) |
+| offense share (Thesz) | 52–59% of attributed events |
+| pin attempts / kickouts | 16 / 16 across all matches; 100% at count 1 |
+| nearfalls / 2.9 saves / rope breaks | 0 / 0 / 0 |
+| first major-finisher attempt | sleeper median 1:27 (0:40–8:57); press 1× in 8 matches |
+| George stamina floor per match | 18–68; **never below 15 in any match** |
+| below-15-to-bell | n/a — the trigger state never occurred |
+| per-minute stamina averages | both sides 76–100 all match (full-regen equilibrium) |
+| moves per match (both sides) | lockup 97, whip 52, jab 48, headlock 45, taunt 35, elbowDrop 28, dropkick 15, clothesline 11; suplex 0, bodySlam 0 |
+| longest same-move streak | 4 (jab) |
+| space | 24–32/32 grid cells (7 of 8 ≥31); center-both 12–26%; George rope-adjacent 43–67% |
+| heat (quartile avg) | 59–81 → 85–94 → 90–93 → 90–94, peak 100 every match |
+| worst beat gap per match | 38–98s (median ~51s) |
+| OOB | 0–57 frames/match, all `standing` at the rope planes (x≈845/x≈121, ≤10px past the probe margin); down/flipping/gettingUp = 0 |
+
+**Brawler vs George (n=8):**
+
+| metric | value |
+|---|---|
+| finishes | 6× 10:00 draw, **2× brawler pinfall (9:44, 6:21)** |
+| offense share (brawler) | 57–64% |
+| pin attempts | 7–21 per match (115 total) |
+| kickout depth (n=113) | count 1: 91% · count 2: 4% · 2.9 save: 4% · deep-mash "3": 2% |
+| nearfalls / rope breaks | 0–2 per match (10 total) / 0 |
+| first major-finisher attempt | sleeper only, 4 of 8 matches (0:34–6:38); George's sleeper hunt rarely arms (brawler stays >70) |
+| George stamina floor per match | 0–5 in six matches — **hit 0 and still survived in 4 of those 6** |
+| below-15-to-bell (n=7 traced) | 16–559s, median 219s |
+| moves per match (both sides) | lockup 60, jab 44, elbowDrop 38, taunt 33, whip 29, dropkick 27, bodySlam 18, headlock 14, headbutt 9, clothesline 2 |
+| longest same-move streak | 3–4 (jab) |
+| space | 23–32/32 cells; center-both 8–20%; George rope-adjacent 29–66% |
+| heat (quartile avg) | 57–83 → 82–93 → 86–92 → 91–93, peak 100 every match |
+| worst beat gap per match | 36–52s |
+| OOB | 0–99 frames/match, all `standing` at rope planes; down-state OOB = 0 |
+
+Both pinfalls have the same anatomy: the brawler stacks bodySlam-grade burst
+damage faster than the refund cycle can pay it back — e.g. the 9:44 finish is
+slam (20→0), 2.9 save + refund to 23, immediate re-slam (23→1), pin inside
+seven seconds. Burst can out-race the regen; drip (Thesz's headlock at 4/s)
+cannot.
+
+### Against the Batch A published numbers
+
+| | Batch A (published above) | This baseline |
+|---|---|---|
+| tg finishes | all 10:00 Broadways | **still all Broadways (8/8)** |
+| bg finishes | 3 pinfalls (1:37, 7:56, 8:08) + 2 draws across rounds | 2 pinfalls (6:21, 9:44) + 6 draws — closing got *rarer*, and later |
+| heat arcs | bg 74→89→86→88; tg 79→92→94→92 | same shape: opens 57–83, sustains ~90, peak 100 in 16/16 |
+| space | 16–32/32 cells | 23–32/32 — holds, slightly better floor |
+| beat gaps | 16–42s | bg 36–52s; tg 38–98s (tg's worst gaps are hold/whip loops) |
+| kickout depth | count-1 dominated (P5) | unchanged: 91–100% count-1 — C1 still untouched |
+| 2.9 save | "fired in every single match" | bg only (4×); **never fires in tg** |
+| OOB | ≈0 after A2 | small regression: ≤99 frames/match of `standing` bodies ~5–10px past the rope-plane margin (x≈845 / x≈115–121); nothing flat ever leaves the ring |
+
+### Answer to the open question
+
+**Can somebody close now?** Brawler: occasionally (2 of 8, vs 3 of 5 at Batch
+A — if anything the earlier covers made George *harder* to pin, because every
+extra count-1 kickout is another beat of taunt-regen). Thesz: **no — 0 for 8,
+and structurally can't.** The C-batch levers are confirmed as the right ones,
+with one sharpening from this data: C2's finish-hunting shouldn't gate on
+"standing opponent below threshold" (that state is vacant — 0.0–2.7% of
+samples); it has to either catch George *during* the down/getting-up window,
+or suppress the recovery stack (taunt conversion + kickout refund) once a
+wrestler has been driven under the threshold, or both. C1 (kickout depth
+curve) is untouched by recent work and remains the other half.
+
+### Anomalies and caveats
+
+- Sample sizes: n=8 per matchup, single personality pairing per side; bg
+  match 2's traces are invalid (pre-fix capture) so trace-derived bg metrics
+  are n=7 (event-derived metrics are n=8).
+- The event log's stagger-grab conversion logs move name `slam`
+  ([Wrestler.js:527](src/Wrestler.js#L527)), which has no entry in
+  `_heatForMove`'s bump table — those conversions (~1–2/match, bg) award no
+  heat. One-line fix whenever someone's next in that file.
+- Zero crashes, zero stuck matches, zero orphan rescues across all 16 probe
+  matches (~2.7h of game time). One theszPress whiff (its only attempt).
+- Runs were chunked (2–4 matches per probe invocation) after a prior session
+  reported multi-match reliability issues; all chunks completed cleanly.

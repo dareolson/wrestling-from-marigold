@@ -664,6 +664,53 @@ Skipped deliberately: Batch C (still an open design call for Derek), Batch B
 George head redraw and `DRAWING_GUIDE.md` naming-prefix fix (both minor/art,
 left open). No new Active Assignment queued — needs Derek/Codex to set one.
 
+### 2026-07-11 — Codex brief executed: toolchain, doc drift, B1 locomotion, post-Thesz baseline
+
+Codex queued a consolidated audit/brief in `AI_HANDOFF.md`; this session
+executed it as PM/reviewer with three Sonnet subagents in dedicated git
+worktrees (own branch + own Vite port each — the fix for the concurrent
+shared-working-directory mess of 2026-07-10). Every deliverable was reviewed
+against the brief and independently re-verified before merging; one (docs) was
+sent back once for revision. All pushed to origin/master.
+
+**Toolchain (`e51dc59`)** — `.nvmrc` 22 + `engines >=20.19`. Codex's Node
+19.8.1 test/build failures were its shell resolving nvm's stale default, not
+regressions. Also fixed hardcoded absolute harness imports in
+`psych_probe.mjs`/`kinematics.mjs` (`64bc0b2`) — they'd silently test the main
+checkout when run from a worktree.
+
+**Doc drift (merge `7a00c5c`)** — PRD.md Phaser 3→4, real controls table,
+gamepad claims corrected in PRD/MOVES (mapping exists, never wired),
+DRAWING_GUIDE naming fixed to plain `head.png` (prefix is the texture key,
+not the filename), BUILDLOG roadmap heat-meter staleness fixed. Only 1 of
+Codex's 4 claimed BUILDLOG staleness examples was actually stale.
+
+**FEEL_AUDIT B1 shipped (merge `bd89598`)** — walk accel/brake/turn
+commitment: per-wrestler `vx/vy` ramps ~130ms to full speed, ~90ms brake,
+reversals pass through zero; `walkPhase` fed from actual travel speed so feet
+stay planted through ramps; velocity zeroed on non-standing states; run/whip
+path verified untouched (275 px/s unchanged). Kinematics before/after in the
+commit; 43/43 + 12/12 + build verified independently post-merge. **Awaiting
+Derek's playtest for feel sign-off.**
+
+**Post-Thesz-press baseline (merge `d2033b9`)** — 16 probe matches (8
+Thesz/George, 8 brawler/George), full addendum in FEEL_AUDIT.md, raw data
+gzipped in `tools/debug/baselines/`. Headline: **Thesz/George is still 8/8
+Broadways and structurally can't close** — every closing tool (`slamAt`,
+`pressHuntAt`, `coverStamina`) gates on a standing low-stamina opponent, and
+George is standing-below-60 in 0.3% of samples (below-42: 0.0%); the recovery
+stack (taunt regen + kickout refunds) outpaces drip damage every time. Brawler
+closes 2/8 (burst slams outrun the refund cycle). C-batch design implication:
+C2 must catch the down/getting-up window or suppress the recovery stack, not
+wait for a standing worn opponent. Also fixed a psych_probe recorder bug that
+froze heat/pos traces after match 1 (`7fdf25a`) and added
+`psych_baseline.mjs` (kickout depth, first-finisher, below-15-to-bell).
+
+**New bugs found, not fixed (logged for next session):** stagger-grab slams
+log move `slam`, which has no `_heatForMove` entry — those conversions award
+zero heat (Wrestler.js:527); standing bodies can sit 5–10px past the
+rope-plane probe margin (≤99 frames/match, down-states never leave the ring).
+
 ---
 
 ## Phase Roadmap

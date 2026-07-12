@@ -15,6 +15,31 @@ const P = {
     headR:     34,
 };
 
+// Display boxes for parts backed by real PNG textures, unscaled px (multiply
+// by s like everything in P). The placeholder stick-figure blocks above are
+// deliberately narrow (torsoW 20, legW 26) — stretching a 190px-wide torso
+// PNG into that box would render it as a column. Widths derive from the rig
+// bone lengths and each art canvas's aspect ratio; heights stay equal to the
+// bone lengths so all joint/pivot math is untouched — except shin, whose
+// PNG has the boot baked in: its box spans shinH + bootH (32 + 25 = 57) so
+// the boot sole lands on the ground line, while the knee pivot and the
+// _end/ankle math still use shinH exactly as before.
+//
+// The cutter pipeline (tools/wrestler-cutter/process-parts.mjs) makes the
+// art fill each canvas's full height, so canvas top = pivot joint and
+// canvas bottom = bone end and these boxes map 1:1... except the shin
+// again: its canvas is width-limited by the boot toe (art fills 84.1% of
+// the 230px canvas height — the pipeline reports this as fillFrac), so its
+// box is 57 / 0.841 ≈ 68 tall to land the sole on the ground anyway.
+// Recompute w/h from the reported fillFrac if the shin art is regenerated.
+const TEX = {
+    torso:    { w: 82, h: 112 },
+    upperArm: { w: 28, h: 34 },
+    forearm:  { w: 29, h: 42 },
+    thigh:    { w: 32, h: 32 },
+    shin:     { w: 44, h: 68 }, // (37, 57) / 0.841 shin-art fillFrac, see above
+};
+
 const TAU = Math.PI * 2;
 
 // ─── Gait tuning ─────────────────────────────────────────────────────────────
@@ -92,24 +117,29 @@ export default class Skeleton {
         this.skinCol   = skinCol;
         this.trunksCol = trunksCol;
 
-        const img = (key, col) => {
+        // texDims: when a part has a real texture, stash its TEX display box
+        // on the Image so _placePart swaps it in for the block dims. The
+        // placeholder path leaves _texDims undefined and renders exactly as
+        // before.
+        const img = (key, col, texDims) => {
             const i = scene.add.image(0, 0, key || 'sk_pixel').setOrigin(0.5, 0);
             if (!key) i.setTint(col);
+            else if (texDims) i._texDims = texDims;
             return i;
         };
 
-        this.farThigh    = img(textures.thigh,    skinCol);
-        this.farShin     = img(textures.shin,     skinCol);
+        this.farThigh    = img(textures.thigh,    skinCol, TEX.thigh);
+        this.farShin     = img(textures.shin,     skinCol, TEX.shin);
         this.farBoot     = textures.shin   ? null : img(null, 0x181818);
-        this.farUpArm    = img(textures.upperArm, skinCol);
-        this.farForearm  = img(textures.forearm,  skinCol);
-        this.torso       = img(textures.torso,    skinCol);
+        this.farUpArm    = img(textures.upperArm, skinCol, TEX.upperArm);
+        this.farForearm  = img(textures.forearm,  skinCol, TEX.forearm);
+        this.torso       = img(textures.torso,    skinCol, TEX.torso);
         this.trunks      = textures.torso  ? null : img(null, trunksCol);
-        this.nearThigh   = img(textures.thigh,    skinCol);
-        this.nearShin    = img(textures.shin,     skinCol);
+        this.nearThigh   = img(textures.thigh,    skinCol, TEX.thigh);
+        this.nearShin    = img(textures.shin,     skinCol, TEX.shin);
         this.nearBoot    = textures.shin   ? null : img(null, 0x181818);
-        this.nearUpArm   = img(textures.upperArm, skinCol);
-        this.nearForearm = img(textures.forearm,  skinCol);
+        this.nearUpArm   = img(textures.upperArm, skinCol, TEX.upperArm);
+        this.nearForearm = img(textures.forearm,  skinCol, TEX.forearm);
 
         if (textures.head) {
             // PNG head: origin at bottom-center (neck connection point)
@@ -156,6 +186,20 @@ export default class Skeleton {
         img.setPosition(px, py)
            .setRotation(-angle)
            .setDisplaySize(Math.max(1, w), Math.max(1, h));
+    }
+
+    // Place a body part: textured parts (PNG art) swap in their art-derived
+    // TEX display box and mirror horizontally for facing < 0 (all PNGs are
+    // baked facing right, same convention as the head). Placeholder blocks
+    // fall through to _place with the exact same args as always — the
+    // stick-figure rendering path is untouched.
+    _placePart(img, px, py, w, h, angle, s, facing) {
+        if (img._texDims) {
+            img.setFlipX(facing < 0);
+            this._place(img, px, py, img._texDims.w * s, img._texDims.h * s, angle);
+        } else {
+            this._place(img, px, py, w, h, angle);
+        }
     }
 
     // World-space endpoint (bottom) of a limb given its pivot and length.
@@ -301,32 +345,32 @@ export default class Skeleton {
         }
 
         // Far leg — drawn first (behind torso)
-        this._place(this.farThigh, far.hx, far.hy, legW, thighH, far.thighAng);
+        this._placePart(this.farThigh, far.hx, far.hy, legW, thighH, far.thighAng, s, facing);
         const farKnee  = this._end(far.hx, far.hy, thighH, far.thighAng);
-        this._place(this.farShin, farKnee.x, farKnee.y, legW, shinH, far.shinAng);
+        this._placePart(this.farShin, farKnee.x, farKnee.y, legW, shinH, far.shinAng, s, facing);
         const farAnkle = this._end(farKnee.x, farKnee.y, shinH, far.shinAng);
         if (this.farBoot) this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, far.bootAng);
 
         // Far arm
-        this._place(this.farUpArm, shoulderX, shoulderY, armW, upperArmH, farAA);
+        this._placePart(this.farUpArm, shoulderX, shoulderY, armW, upperArmH, farAA, s, facing);
         const farElbow = this._end(shoulderX, shoulderY, upperArmH, farAA);
-        this._place(this.farForearm, farElbow.x, farElbow.y, armW, forearmH, farFA);
+        this._placePart(this.farForearm, farElbow.x, farElbow.y, armW, forearmH, farFA, s, facing);
 
         // Torso: full height when trunks are baked into the PNG, split otherwise
-        this._place(this.torso, x, torsoTop, torsoW, this.trunks ? torsoH - trunksH : torsoH, 0);
+        this._placePart(this.torso, x, torsoTop, torsoW, this.trunks ? torsoH - trunksH : torsoH, 0, s, facing);
         if (this.trunks) this._place(this.trunks, x, hipY - trunksH, torsoW, trunksH, 0);
 
         // Near leg — drawn in front of torso
-        this._place(this.nearThigh, near.hx, near.hy, legW, thighH, near.thighAng);
+        this._placePart(this.nearThigh, near.hx, near.hy, legW, thighH, near.thighAng, s, facing);
         const nearKnee  = this._end(near.hx, near.hy, thighH, near.thighAng);
-        this._place(this.nearShin, nearKnee.x, nearKnee.y, legW, shinH, near.shinAng);
+        this._placePart(this.nearShin, nearKnee.x, nearKnee.y, legW, shinH, near.shinAng, s, facing);
         const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, near.shinAng);
         if (this.nearBoot) this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
 
         // Near arm
-        this._place(this.nearUpArm, shoulderX, shoulderY, armW, upperArmH, nearAA);
+        this._placePart(this.nearUpArm, shoulderX, shoulderY, armW, upperArmH, nearAA, s, facing);
         const nearElbow = this._end(shoulderX, shoulderY, upperArmH, nearAA);
-        this._place(this.nearForearm, nearElbow.x, nearElbow.y, armW, forearmH, nearFA);
+        this._placePart(this.nearForearm, nearElbow.x, nearElbow.y, armW, forearmH, nearFA, s, facing);
 
         // Head — PNG image (pivot at neck bottom) or plain circle
         const headY = torsoTop - headR * 0.7;
@@ -396,7 +440,7 @@ export default class Skeleton {
 
         // Torso image pivots at the shoulders and extends down the back to the
         // hips; trunks cover the hip end of that line
-        this._place(this.torso, shX, shY, torsoW, this.trunks ? torsoH - trunksH : torsoH, down);
+        this._placePart(this.torso, shX, shY, torsoW, this.trunks ? torsoH - trunksH : torsoH, down, s, facing);
         if (this.trunks) {
             const tx = hipX + Math.sin(ta) * trunksH;
             const ty = hipY + Math.cos(ta) * trunksH;
@@ -407,9 +451,9 @@ export default class Skeleton {
         const leg = (thigh, shin, imgs) => {
             const [thighImg, shinImg, bootImg] = imgs;
             const tA = ang(thigh), sA = ang(shin);
-            this._place(thighImg, hipX, hipY, legW, thighH, tA);
+            this._placePart(thighImg, hipX, hipY, legW, thighH, tA, s, facing);
             const knee = this._end(hipX, hipY, thighH, tA);
-            this._place(shinImg, knee.x, knee.y, legW, shinH, sA);
+            this._placePart(shinImg, knee.x, knee.y, legW, shinH, sA, s, facing);
             const ankle = this._end(knee.x, knee.y, shinH, sA);
             if (bootImg) this._place(bootImg, ankle.x, ankle.y, legW + 4 * s, bootH, sA + f * 0.3);
         };
@@ -420,9 +464,9 @@ export default class Skeleton {
         const arm = (up, fore, imgs) => {
             const [upImg, foreImg] = imgs;
             const uA = ang(up), fA = ang(fore);
-            this._place(upImg, shX, shY, armW, upperArmH, uA);
+            this._placePart(upImg, shX, shY, armW, upperArmH, uA, s, facing);
             const elbow = this._end(shX, shY, upperArmH, uA);
-            this._place(foreImg, elbow.x, elbow.y, armW, forearmH, fA);
+            this._placePart(foreImg, elbow.x, elbow.y, armW, forearmH, fA, s, facing);
         };
         arm(g.farArm,  g.farFore,  [this.farUpArm,  this.farForearm]);
         arm(g.nearArm, g.nearFore, [this.nearUpArm, this.nearForearm]);

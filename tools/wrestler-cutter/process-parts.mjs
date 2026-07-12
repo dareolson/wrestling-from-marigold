@@ -66,7 +66,7 @@ const CHARACTERS = {
         sourceKeys: ['head', 'torso', 'trunks', 'upperArm', 'forearm', 'thigh', 'shin', 'foot'],
         files: {
             head: 'georgehead2.png',
-            torso: 'Torso2.png',
+            torso: 'torso3.png',
             trunks: 'Trunks.png',
             upperArm: 'L_Arm_Upper.png',
             forearm: 'L_Arm_Lower.png',
@@ -76,7 +76,10 @@ const CHARACTERS = {
         },
         // Whole source sheet was drawn facing left.
         flip: 'all',
-        composites: { torso: 'trunks', shin: 'foot' },
+        // torso3.png has trunks hand-drawn into the same layer (Derek,
+        // 2026-07-12 — the algorithmic Trunks.png composite read like a
+        // diaper) — no separate trunks composite for torso anymore.
+        composites: { shin: 'foot' },
     },
     thesz: {
         srcDir: '/Users/home/Downloads/louThesz',
@@ -91,9 +94,13 @@ const CHARACTERS = {
             thigh: 'upperLeg.png',
             shin: 'LowerLeg.png',
         },
-        // Head/torso/upperArm/forearm/thigh already face right; only the
-        // shin's baked-in boot toe points left and needs mirroring.
-        flip: { shin: true },
+        // All parts including the shin's baked-in boot already face right in
+        // the source art (Derek, 2026-07-12 — the earlier `shin: true` flip
+        // here was based on a misread of the source at a tiny preview scale;
+        // a tight crop on the boot's actual content bbox showed the toe
+        // already pointing right, so flipping it was backward — the boot
+        // was reading mirrored in-game).
+        flip: {},
         // Trunks are already baked into torso, the boot into shin — no
         // composite step this round.
         composites: {},

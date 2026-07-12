@@ -9,7 +9,7 @@ const h = await launch();
 const page = h.page;
 
 await page.waitForTimeout(600);
-await page.keyboard.press('2'); // P2 AI -> keyboard dummy
+// P2 already defaults to keyboard now (Derek, 2026-07-12) — no toggle needed.
 await page.waitForTimeout(300);
 
 // Install per-frame sampler: wrap scene.update, record post-tick state.

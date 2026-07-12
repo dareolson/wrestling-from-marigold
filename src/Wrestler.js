@@ -32,6 +32,8 @@ const STAMINA_DRAIN    = {    // drained from the DEFENDER on each move landing
     sleeperHold:       18, // total drained if hold runs full duration
     headlock:         4.0, // per second (applied in Arena._tickHeadlock)
     armDrag:          14,
+    armBar:           16,
+    ankleLock:        14,
     suplex:            20,
     divingElbow:       18,
     topDive:           28,
@@ -111,6 +113,15 @@ export const POSES = {
     armDragGrab:    { lLeg: 0.14,  rLeg:-0.10,  lArm: 0.72,  rArm: 0.55, lean: 0.18, crouch: 0.10 }, // both hands reaching to snatch the arm
     armDragPull:    { lLeg:-0.08,  rLeg: 0.30,  lArm: 1.45,  rArm: 0.85, lean: 0.35, crouch: 0.18 }, // pivoting hard, dragging opponent through
     armDragFollow:  { lLeg:-0.16,  rLeg: 0.24,  lArm: 0.58,  rArm: 0.22, lean: 0.15 }, // arms settling after release
+    // Submission poses (attacker / defender variants)
+    armBarSetup:    { lLeg: 0.18,  rLeg:-0.12,  lArm: 1.10,  rArm: 1.40, lean:-0.08, crouch: 0.22 }, // lowering into the armbar setup
+    armBarLock:     { lLeg: 0.14,  rLeg:-0.08,  lArm: 1.80,  rArm: 1.05, lean: 0.32, crouch: 0.24 }, // cranking the trapped arm
+    armBarHold:     { lLeg: 0.20,  rLeg:-0.04,  lArm: 1.50,  rArm: 0.90, lean: 0.18, crouch: 0.28 }, // holding the submission
+    armBarDefender: { lLeg:-0.08,  rLeg: 0.06,  lArm:-0.60,  rArm: 0.90, lean:-0.14, crouch: 0.20 }, // opponent trapped and reaching out
+    ankleLockSetup: { lLeg: 0.24,  rLeg:-0.18,  lArm: 0.90,  rArm: 0.40, lean: 0.16, crouch: 0.22 }, // grabbing the leg and isolating the foot
+    ankleLockTwist: { lLeg: 0.32,  rLeg:-0.28,  lArm: 1.10,  rArm: 0.28, lean:-0.06, crouch: 0.30 }, // winding the twist into the hold
+    ankleLockHold:  { lLeg: 0.14,  rLeg:-0.36,  lArm: 0.82,  rArm: 0.50, lean: 0.26, crouch: 0.34 }, // leaning back on the foot lock
+    ankleLockDefender:{ lLeg: 0.46, rLeg:-0.52,  lArm:-0.18,  rArm:-0.10, lean:-0.16, crouch: 0.18 }, // trapped ankle and pain response
     // ── Defense ──────────────────────────────────────────────────────────────
     block:          { lLeg: 0.18,  rLeg:-0.14,  lArm: 0.95,  rArm: 0.80, lean: 0.14, crouch: 0.25 }, // braced sprawl — arms up front, weight low, ready to stuff a tie-up
     evade:          { lLeg:-0.25,  rLeg: 0.30,  lArm: 0.55,  rArm: 0.40, lean:-0.32, crouch: 0.10 }, // backstep — torso whipped back out of reach, arms trailing up
@@ -185,6 +196,14 @@ export const MOVE_DEFS = {
                               { p: 'headbutt',       dur:  83, e: 'Cubic.easeIn'  },
                               { p: 'headbuttRecoil', dur: 100, e: 'Linear'        },
                               { p: 'idle',           dur: 183, e: 'Cubic.easeOut' }] },
+    armBar:      { poseSeq: [{ p: 'armBarSetup', dur: 120, e: 'Cubic.easeOut' },
+                              { p: 'armBarLock',  dur: 200, e: 'Cubic.easeOut' },
+                              { p: 'armBarHold',  dur: 800, e: 'Linear'        },
+                              { p: 'idle',        dur: 200, e: 'Linear'        }] },
+    ankleLock:   { poseSeq: [{ p: 'ankleLockSetup', dur: 120, e: 'Cubic.easeOut' },
+                              { p: 'ankleLockTwist', dur: 180, e: 'Cubic.easeOut' },
+                              { p: 'ankleLockHold',  dur: 800, e: 'Linear'        },
+                              { p: 'idle',           dur: 200, e: 'Linear'        }] },
 };
 
 
@@ -1231,6 +1250,43 @@ export default class Wrestler {
         this._runPoseSequence(MOVE_DEFS.armDrag.poseSeq);
         this.scene.time.delayedCall(90, () => {
             other._doSell('sellChest', 110, () => other.startClotheslineFall(this.facing));
+        });
+    }
+
+    _doArmBar(other) {
+        // Quick submission: attacker locks arm, runs pose sequence, defender shows trapped pose
+        other._drain(STAMINA_DRAIN.armBar);
+        this.state  = 'holding';
+        other.state = 'holding';
+        this._runPoseSequence(MOVE_DEFS.armBar.poseSeq);
+        other.tweenPose('armBarDefender', 200, 'Cubic.easeOut');
+
+        // Hold duration then release to standing (give a small extra drain on release)
+        this.scene.time.delayedCall(1600, () => {
+            if (this.state === 'holding') this.state = 'standing';
+            if (other.state === 'holding') {
+                other.state = 'standing';
+                other.tweenPose('idle', 200, 'Linear');
+                other._drain(6);
+            }
+        });
+    }
+
+    _doAnkleLock(other) {
+        other._drain(STAMINA_DRAIN.ankleLock);
+        this.state  = 'holding';
+        other.state = 'holding';
+        this._runPoseSequence(MOVE_DEFS.ankleLock.poseSeq);
+        other.tweenPose('ankleLockDefender', 200, 'Cubic.easeOut');
+
+        // Hold then release; stronger pain on release
+        this.scene.time.delayedCall(1700, () => {
+            if (this.state === 'holding') this.state = 'standing';
+            if (other.state === 'holding') {
+                other.state = 'standing';
+                other.tweenPose('idle', 200, 'Linear');
+                other._drain(8);
+            }
         });
     }
 

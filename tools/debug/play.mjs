@@ -5,9 +5,9 @@
 //   npm run debug:play -- all            — run every scenario in sequence
 //   HEADED=1 npm run debug:play -- pin   — watch it happen
 //
-// P2 is switched to keyboard (an unmoving dummy) at the start of each
-// scenario so the George AI doesn't interfere with reproducibility. Defense
-// scenarios drive P2's keys directly (comma = evade, period = block).
+// P2 defaults to keyboard (an unmoving dummy — Derek, 2026-07-12) so the
+// George AI never interferes with reproducibility. Defense scenarios drive
+// P2's keys directly (comma = evade, period = block).
 
 import { launch } from './harness.mjs';
 
@@ -257,9 +257,9 @@ const names = arg === 'all' ? Object.keys(SCENARIOS) : [arg];
 let failed = 0;
 
 for (const name of names) {
-    // Fresh page state per scenario: reload, refocus, dummy P2
+    // Fresh page state per scenario: reload, refocus. P2 defaults to
+    // keyboard dummy already — no toggle needed.
     const h = await launch();
-    await tap(h.page, '2'); // P2: AI → keyboard dummy
     await h.page.waitForTimeout(400);
     if (!await runScenario(h, name)) failed++;
     await h.close();

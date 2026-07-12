@@ -83,6 +83,101 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-12 — Claude (skeleton proportion pass: torso/arms/legs, boot-flip bug, AI-off-by-default)
+
+Same-session follow-up to the head/neck entries below, driven live by Derek
+via screenshot-and-adjust iteration (not a scoped assignment) — full detail
+in BUILDLOG.md's "Skeleton proportion pass" entry, this is the short version.
+
+**What changed (`src/Skeleton.js` unless noted):** george's torso box +10%;
+forearm 1.5x longer with a real ~30° elbow bend and a new `ELBOW_OVERLAP`
+technique (pull the child part's render origin back into the parent, extend
+the parent's own display box by the same amount so the far/physics endpoint
+never moves) to hide the bend's joint gap; far arm renders 15% smaller
+(`FAR_ARM_SCALE`) for 3/4-shoulder depth; thighs 32→56, shins 32→64, using
+the same overlap technique at the hip (`HIP_OVERLAP`) and knee
+(`KNEE_OVERLAP`); far/near thigh stagger (`HIP_STAGGER`/`LEG_BACK_BIAS`,
+same idea as the existing `SHOULDER_STAGGER`); a long tail of small
+per-leg/per-character nudges and two render-only rotation biases on
+george's near thigh/shin, described to me in clock-position terms ("5
+o'clock to 5:30" etc — these map to skeleton-angle deltas at 30°/hour, and
+the mapping held up across two more requests without correction, so it's
+validated for at least george's current facing).
+
+**Bug found and fixed:** `tools/wrestler-cutter/process-parts.mjs` had
+`flip: { shin: true }` for thesz, based on a source-art preview misread at
+thumbnail scale in an earlier session — a tight crop on the boot's actual
+content bbox showed the source already faces right, so the flip was
+mirroring the boot backward regardless of facing. Now `flip: {}`;
+`thesz/shin.png` regenerated.
+
+**Behavior change:** `src/scenes/Arena.js` — P2 no longer defaults to the
+George AI on load; both players default to keyboard now, so loading the
+game doesn't immediately start a fight (was making art review harder).
+Updated `debug:sim`/`debug:probe`/`psych_probe.mjs` (explicitly toggle P2 AI
+on now, since they can no longer rely on the old default) and removed the
+now-redundant P2-off toggle from `debug:play`/`kinematics.mjs`.
+
+**Verified:** `npm test` 43/43, `npm run debug:play -- all` 12/12, `npm run
+build` clean after every structural change. The long tail of per-character
+cosmetic nudges was eyeballed via screenshots per Derek's explicit request
+to skip re-running the suite on every micro-adjustment — none of those touch
+gait/IK code, only render-time position/rotation/scale of already-placed
+parts.
+
+**Not done:** Derek's closing note is that he's now leaning toward
+redrawing the source art rather than continuing to tune proportions in code
+— if new art lands, most of the constants above (especially the per-leg
+offsets and both clock-position tilts) will likely need re-zeroing, not
+reuse. Also **did not touch Derek's armbar/ankle-lock submission-move
+changes** in the entry directly below — that review/commit/BUILDLOG request
+is still open for whoever picks it up next.
+
+### 2026-07-12 — Derek (submission moves: armbar & ankle-lock added)
+
+Quick heads-up for Claude: I added two submission moves and the minimal pose + handler plumbing so you can review and commit if it fits the feel.
+
+- What changed: added stamina drains, new `POSES` entries for the attacker/defender variants, `MOVE_DEFS` sequences for `armBar` and `ankleLock`, `_doArmBar` and `_doAnkleLock` handlers in `src/Wrestler.js`, and lockup follow-up wiring in `src/scenes/Arena.js` (right → `armBar`, left → `ankleLock` when in `moveSet`).
+- Why: these moves needed multi-keyframe pose sequences and a timed 'holding' state separate from existing slams/throws.
+- Test steps for review: run `npm test`; then run the debug play mode and exercise a lockup follow-up (lockup → right for armbar, left for ankle lock). Verify attacker/defender states move to `holding`, defender pose shows trapped variant, stamina drain applies, and the timed release returns both to `standing` with no orphaned state. Confirm no regressions in pin/headlock/suplex flows.
+- Next action for Claude: please review the diffs, run the tests above, and if acceptable commit on a focused branch; include the commit SHA and the `npm test`/`debug:play` results in a BUILDLOG.md entry and add a short Claude note here with the commit hash and verification outcomes.
+
+### 2026-07-12 — Claude (george's head still floating — fixed with a tunable anchor offset)
+
+Follow-up to the head/neck refactor logged directly below. Derek reported
+after playtesting it that George's head still sat too high and too far back.
+
+**Root cause:** the refactor's flush-anchor assumption was wrong for this
+specific art. `head.png` isn't cropped along a clean horizontal neck line —
+it's cropped along the jaw curve, so only the chin-tip pixel is flush with
+the canvas's bottom-center pivot (confirmed via per-row alpha bounding-box
+measurement: content width tapers smoothly from ~93px at row 180 to 7px at
+row 199, out of a 200×200 canvas). The actual jaw/ear mass — where a neck
+would attach — sits roughly 15 canvas px above that point and is skewed
+toward the hair side of the canvas center, not underneath it. So the
+"pivot-flush, zero-offset" join from the prior commit was seamless in the
+literal sense (canvas boxes touch) but visually wrong, because the flush
+point isn't where the head reads as connected.
+
+**Fix (`c4cd31b`'s follow-up, uncommitted at time of writing — see BUILDLOG
+2026-07-12 "fixed remaining float"):** added `textures.headOffsetX/Y`
+(unscaled px, default 0, gated behind `neckInTorso` so Thesz is untouched) in
+`Skeleton.js`, applied in both `updateUpright` and `_applyGrounded`. Set on
+`george.js`: `headOffsetX: 6, headOffsetY: 15`. Values came from measuring
+the art's alpha bbox, then tuned by rendering in-world debug crosshairs at
+the live anchor coordinate and comparing screenshots before/after — not a
+closed-form derivation, since the crop is irregular.
+
+**Verified:** `npm test` 43/43, `npm run debug:play -- all` 12/12, `npm run
+build` clean. Visual comparison across idle/walk/taunt poses shows the gap
+and backward drift gone. **Not Derek-playtest-confirmed yet.**
+
+**Open flag for whoever touches George's head art next:** this is a code
+patch over an art/crop mismatch, not a re-crop. If Derek redraws or
+re-processes `georgehead2.png` with a cleaner neck-line crop (matching how
+`torso.png`'s neck stub is flush), these offsets will likely need to change
+or go back to 0 — check visually, don't assume they still apply.
+
 ### 2026-07-12 — Claude (head/neck refactor landed: george's head2/torso2 art wired in)
 
 Closed out the assignment directly below (Derek's "Head/neck architecture

@@ -711,8 +711,10 @@ export default class Arena extends Phaser.Scene {
         this.w2.facing   = -1;
         this.w2.idlePose = c2.idlePose;
 
-        // P1 defaults to keyboard, P2 to the George AI. Keys 1 and 2 toggle
-        // each player between keyboard and AI — turn both AI on to watch a match.
+        // Both P1 and P2 default to keyboard (Derek, 2026-07-12 — loading the
+        // game for a quick look shouldn't immediately throw them into a
+        // fight). Keys 1 and 2 toggle each player between keyboard and AI —
+        // turn both AI on to watch a match.
         const lblStyle = {
             fontFamily: '"Times New Roman", Times, serif',
             fontSize: '10px',
@@ -729,7 +731,6 @@ export default class Arena extends Phaser.Scene {
         this._p2Keyboard = input2;
         this._p2AI       = new AIHandler(c2.personality);
         this._p2AI.setWrestlers(this.w2, this.w1);
-        this.w2.input = this._p2AI;
         this.p2ModeLbl = this.add.text(W - 24, 26, '', lblStyle).setOrigin(1, 0).setDepth(155);
         this._showPlayerMode(2);
         kb.addKey('TWO').on('down', () => this._togglePlayer(2));
@@ -1325,6 +1326,12 @@ export default class Arena extends Phaser.Scene {
             } else if (goUp && ls.attacker.moveSet.includes('suplex')) {
                 ls.attacker._doSuplex(ls.defender);
                 followUp('suplex');
+            } else if (goRight && ls.attacker.moveSet.includes('armBar')) {
+                ls.attacker._doArmBar(ls.defender);
+                followUp('armBar');
+            } else if (goLeft && ls.attacker.moveSet.includes('ankleLock')) {
+                ls.attacker._doAnkleLock(ls.defender);
+                followUp('ankleLock');
             } else if ((goLeft || goRight) && ls.attacker.moveSet.includes('irishWhip')) {
                 ls.attacker._doIrishWhip(ls.defender, dir);
                 followUp('irishWhip');

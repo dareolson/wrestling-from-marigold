@@ -7,7 +7,9 @@ import { launch } from './harness.mjs';
 
 const N = Number(process.argv[2]) || 3;
 const h = await launch();
-await h.page.keyboard.press('1'); // P1 → brawler AI (P2 already George AI)
+// Both default to keyboard now (Derek, 2026-07-12) — toggle both AI on.
+await h.page.keyboard.press('1'); // P1 → brawler AI
+await h.page.keyboard.press('2'); // P2 → George AI
 await h.page.waitForTimeout(500);
 
 const results = [];
@@ -30,6 +32,7 @@ while (results.length < N) {
                 await h.page.waitForSelector('canvas', { timeout: 15000 });
                 await h.page.locator('canvas').click();
                 await h.page.keyboard.press('1'); // P1 back to brawler AI
+                await h.page.keyboard.press('2'); // P2 back to George AI
                 startIdx = 0; // fresh instance = fresh event log
                 wasOver  = false;
             } catch (e) {

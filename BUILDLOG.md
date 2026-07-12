@@ -850,6 +850,108 @@ head, no console errors. Full account in `AI_HANDOFF.md`.
 **Not done:** Thesz still needs the same neck-in-torso art treatment —
 out of scope for this session.
 
+### 2026-07-12 — George's head: fixed remaining float (headOffset tuning)
+
+**Goal:** Derek playtested the neck-in-torso rebuild above and reported the
+head still sat too high and too far back. The prior fix assumed the head2 art
+was flush-cropped along a clean horizontal neck line, matching the torso's
+pivot-flush neck stub. It isn't: `head.png`'s crop follows the jaw curve, so
+only the chin-tip pixel actually touches the canvas's bottom-center anchor —
+the visible jaw/ear mass (where a neck would really attach) sits ~15 canvas
+px above that point and skewed toward the hair/back side, not centered.
+Confirmed by measuring the PNG's alpha bounding box per row and by drawing an
+in-world crosshair at the live anchor coordinate and screenshotting via the
+debug harness (`debug:shot`-style, ad hoc scripts, not committed).
+
+**Fix (`src/Skeleton.js`):** added per-character `textures.headOffsetX/Y`
+(unscaled px, default 0, only applied when `neckInTorso` is set) so the head
+anchor can be nudged independently of `neckY`/`shX,shY` — `headOffsetY` sinks
+the anchor down, `headOffsetX` shifts it along the facing direction. Applied
+in both `updateUpright` and `_applyGrounded`. Set `george.js` to
+`headOffsetX: 6, headOffsetY: 15`, tuned by iterating screenshots until the
+jaw sat on the neck stub with no gap. Thesz unaffected (`neckInTorso` false,
+offset never applied).
+
+**Verified:** `npm test` 43/43, `npm run debug:play -- all` 12/12, `npm run
+build` clean. Screenshot comparison (idle, walking, taunting poses,
+`WFM_P1=george WFM_P2=george`) before/after shows the visible gap and
+backward drift gone — jaw meets the shoulder line directly. Not yet
+Derek-playtest-confirmed.
+
+### 2026-07-12 — Skeleton proportion pass: torso/arms/legs resized, boot-flip bug fixed, both AI off by default
+
+**Goal:** continuation of the head/neck session above — Derek's live playtest
+found the rest of the rig reading squished/disconnected against the new
+head-anchor math, and worked through it joint by joint via screenshot
+iteration (`src/Skeleton.js` unless noted).
+
+**Torso:** george's display box +10% (82x112 → 90x123 in `george.js`) —
+read too small next to the resized limbs below.
+
+**Arms:** `forearmH` 42→63 (1.5x, was reading stubby); base elbow bend
+raised from ~6° to ~30° (`FOREARM_BEND`); new `ELBOW_OVERLAP` (17, unscaled
+px) pulls the forearm's render origin back up the upper-arm bone so a real
+elbow bend doesn't show a wedge gap at the joint; new `FAR_ARM_SCALE` (0.85)
+renders the far arm smaller to sell the 3/4-shoulder depth. George's
+shoulder pivot also got a per-character nudge (`armOffsetX: -6, armOffsetY:
+8` in `george.js`) — sat too high/forward.
+
+**Legs (the big one):** `thighH` 32→56, `shinH` 32→64 — both read squished
+and short. New `HIP_OVERLAP` (14) and `KNEE_OVERLAP` (12) pull each render
+origin up into its parent (thigh into trunks, shin into thigh) the same way
+`ELBOW_OVERLAP` does, with each character's shin/thigh display box grown by
+the matching overlap amount so the far/bottom end (knee, ankle) doesn't
+move — this pattern (extend the display box + pull the origin back, keep
+the true IK-consumed endpoint untouched) is now used three times in the rig
+and is the one to reach for next time a joint reads disconnected. New
+`HIP_STAGGER` (8) + `LEG_BACK_BIAS` (10) stagger the far thigh slightly
+ahead of the near one (matching `SHOULDER_STAGGER`) and pull both back —
+the wider thigh art read like both legs stepped too far forward. Small
+additional shared near/far nudges tuned over several rounds (final values:
+`NEAR_LEG_FWD` 10, `NEAR_LEG_UP` -5, `FAR_LEG_FWD` -5, `FAR_LEG_UP` 0,
+`FAR_THIGH_TILT` -10°, `NEAR_SHIN_SCALE` 1.1, `NEAR_SHIN_FWD`/`NEAR_SHIN_UP`
+5 — an earlier pass had several of these backward on the up/down and
+fwd/back axes and was reversed once Derek caught it, worth double-checking
+sign against a screenshot before trusting a "raise/lower" or "forward/back"
+request literally).
+
+Per-character (`george.js`): `legOffsetY: 6`, `legOffsetX: 6`,
+`nearLegOffsetY: -6`, `nearLegTilt: -15°` ("5 o'clock to 5:30" — Derek
+described several of these in clock-position terms, which map to skeleton
+angle deltas at 30°/hour), `nearShinOffsetX: -18`, `nearShinOffsetY: 18`,
+`nearShinTilt: -30°` ("6 o'clock to 7 o'clock"). Thesz got his own thigh/shin
+boxes (101x86, 63x114 — his art reads smaller than george's at the same
+unscaled dims) plus `legOffsetY: -14`.
+
+**Boot-flip bug (`tools/wrestler-cutter/process-parts.mjs`):** thesz's boots
+were pointing backward regardless of facing direction. Root cause: the
+`flip: { shin: true }` config was based on a misjudged preview of the source
+art at a tiny thumbnail scale months ago — a proper tight crop on the boot's
+actual content bbox showed the source already faces right correctly, so the
+flip was mirroring it backward. Fixed to `flip: {}`, regenerated
+`thesz/shin.png`.
+
+**Default AI behavior (`src/scenes/Arena.js`):** P2 no longer defaults to
+the George AI on load — both P1 and P2 now default to keyboard, so opening
+the game (or the debug harness) doesn't immediately throw the two wrestlers
+into a fight, which was making art review harder. `debug:sim`, `debug:probe`,
+and `psych_probe.mjs` (which relied on "P2 already AI") now explicitly press
+`2` as well as `1`; `debug:play` and `kinematics.mjs` (which explicitly
+toggled P2 *off* AI) had that now-redundant toggle removed.
+
+**Verified:** `npm test` 43/43, `npm run debug:play -- all` 12/12, `npm run
+build` clean, after every structural change (proportions, overlap technique,
+AI-default rewiring) — cosmetic-only per-character tuning passes were
+eyeballed via screenshots per Derek's request, not re-verified against the
+suite each time since nothing in those touches gait/IK.
+
+**Not done / open:** Derek's closing note this session — the rig is "pretty
+close" but he's now leaning toward redrawing the source art rather than
+continuing to chase proportions with code offsets. If new art lands, expect
+most of the per-character constants above (especially the near-leg/shin
+offsets and both tilts) to need re-zeroing or re-tuning against the new
+geometry — don't assume they carry over.
+
 ---
 
 ## Phase Roadmap

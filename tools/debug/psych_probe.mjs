@@ -14,7 +14,9 @@ const SHOTS = process.env.SHOTS || '';
 const h = await launch();
 const page = h.page;
 await page.waitForTimeout(600);
-await page.keyboard.press('1'); // P1 -> AI (P2 already AI)
+// Both default to keyboard now (Derek, 2026-07-12) — toggle both AI on.
+await page.keyboard.press('1'); // P1 -> AI
+await page.keyboard.press('2'); // P2 -> AI
 await page.waitForTimeout(300);
 
 // Page-side recorder on postupdate: throttled traces + OOB watch.

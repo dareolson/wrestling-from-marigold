@@ -711,6 +711,44 @@ log move `slam`, which has no `_heatForMove` entry — those conversions award
 zero heat (Wrestler.js:527); standing bodies can sit 5–10px past the
 rope-plane probe margin (≤99 frames/match, down-states never leave the ring).
 
+### 2026-07-11 — George's full body lands: 5 PNG textures + textured-part rig sizing
+
+**Goal:** Land Derek's 7 hand-drawn George layers (`Sprite sheets/GeorgeParts/`)
+as in-game textures. Directed by one Claude session, built by Sonnet subagents
+in a dedicated worktree (`art/george-body-parts`), merged as `3d46a4f`
+(commits `e473b39`, `b0e8e4a`), pushed.
+
+**Built:**
+- `src/assets/wrestlers/george/{torso,upper_arm,forearm,thigh,shin}.png` —
+  all 6 rig textures now live (head landed 2026-07-10). Trunks baked into
+  torso, boot baked into shin (the rig nulls its placeholder trunks/boot
+  blocks when those textures exist). Forearm rotated 25.7° to vertical
+  (was drawn diagonal); all parts mirrored to face right per the head
+  convention; 4 sources had no alpha (opaque white bg) — white-keyed +
+  alpha-decontaminated to kill the halo.
+- `tools/wrestler-cutter/process-parts.mjs` — deterministic CLI pipeline
+  (playwright-core headless-Chrome canvas, no new deps) encoding every
+  lesson to date: pivot-centered cropping (not bbox), speck removal,
+  composite rules, cap flattening, bottom-flush + fillFrac metrics. Reuse
+  for the remaining roster.
+- `src/Skeleton.js`: `TEX` display-box map + `_placePart` seam — textured
+  parts render at art-derived proportions (placeholder blocks are 20–26px
+  wide; stretching real art into them was never going to work), shin box
+  spans shinH+bootH so the boot sole hits the ground line, and textured
+  parts now `setFlipX(facing < 0)` like the head (limb PNGs previously
+  never mirrored with facing). Placeholder rendering byte-identical.
+
+**Verified:** npm test 43/43; `debug:play -- all` 12/12; runtime assertion on
+merged master that all 10 skeleton image parts (near+far) carry `george_*`
+texture keys; screenshot review of idle/walk both facings, grabbed, get-up,
+and George-vs-Thesz scale.
+
+**Open (art, non-blocking):** neck-slack blob visible over the chest in some
+walk frames (narrow the neck art, or experiment with head depth below torso);
+knee/shin line weight faint under the grayscale filter; next character's
+export checklist — background layer OFF, and don't draw second arms/legs
+(no per-side texture keys in the rig yet).
+
 ---
 
 ## Phase Roadmap

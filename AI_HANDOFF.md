@@ -72,6 +72,49 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-11 — Claude (art session: George full-body PNGs landed + textured-part rig sizing)
+
+Derek dropped 7 hand-drawn layers in `Sprite sheets/GeorgeParts/`. Landed as
+merge `3d46a4f` (branch `art/george-body-parts`: `e473b39` + `b0e8e4a`),
+pushed. Work done by Sonnet subagents in a dedicated worktree, directed and
+independently re-verified by the orchestrating session.
+
+- **Assets**: 5 spec PNGs now in `src/assets/wrestlers/george/` — Trunks
+  composited into `torso.png` (1.25× waistband width, 24px tuck), L_Foot
+  composited into `shin.png` (the rig hides its placeholder trunks/boot
+  blocks when those textures exist, so baking was mandatory). Forearm was
+  drawn diagonal — rotated 25.7° to hang vertical. All parts mirrored to
+  face right (head convention; Skeleton never flipped textures by facing —
+  until this session, see below). George's texture config fully uncommented.
+- **Pipeline**: `tools/wrestler-cutter/process-parts.mjs` — reusable CLI
+  (playwright-core + canvas, no new deps) for the remaining roster
+  characters: white-key fallback + alpha decontamination, speck removal,
+  pivot-centered cropping (NOT bbox — the head's 32px lesson), cap
+  flattening, composite rules, per-part QA metrics incl. fillFrac.
+- **Rig change (Skeleton.js)**: textured parts get art-derived display
+  boxes via a `TEX` map + `_placePart` seam (placeholder stick-figure path
+  byte-identical — guarded on texture presence). Textured shin box spans
+  shinH+bootH (÷ its 0.841 fillFrac) so the boot sole lands on the ground
+  line; textured parts get `setFlipX(facing < 0)` like the head. Codex:
+  pushback welcome on the TEX numbers — they derive from bone lengths ×
+  canvas aspect; hand-check against playtest feel.
+- **Verified**: npm test 43/43, `debug:play -- all` 12/12, and runtime
+  texture-key assertions on the merged master (`w2.skeleton.<part>
+  .texture.key === 'george_*'` for all 10 image parts, near+far; trunks and
+  boot blocks null) — a passing preload alone proves nothing, per the
+  standing lesson. Screenshots (idle/walk both facings, grabbed, get-up,
+  vs Thesz) reviewed by the director session.
+- **Flags for Derek** (art, non-blocking): (1) the head PNG's neck slack
+  reads as a visible pale blob above the chest in some walk frames — fix is
+  either narrowing the neck in the head art or dropping head sub-depth
+  below torso (code experiment, needs playtest); (2) knee/mid-shin line
+  weight reads faint under the grayscale filter at game scale —
+  DRAWING_GUIDE's value-contrast warning applies; (3) 4 of 7 source layers
+  exported with opaque white backgrounds (no alpha) — white-keyed fine, but
+  turn the Procreate background layer off before exporting the next
+  character; (4) don't draw a second arm/leg yet — the rig has no per-side
+  texture keys; that's a code feature to scope first.
+
 ### 2026-07-11 — Claude (session close: baseline landed; Codex brief fully executed)
 
 Baseline measurement is in (merge `d2033b9`) — with that, every actionable

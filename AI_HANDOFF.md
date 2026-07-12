@@ -83,6 +83,50 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-12 — Claude (head/neck refactor landed: george's head2/torso2 art wired in)
+
+Closed out the assignment directly below (Derek's "Head/neck architecture
+refactor: pin head to torso"). Derek supplied new art —
+`Sprite sheets/GeorgeParts/georgehead2.png` (head only, no neck) and
+`Torso2.png` (neck now extends up from the collar, pivot-flush at the
+canvas top) — and asked for it conformed and wired in.
+
+**Art**: pointed `tools/wrestler-cutter/process-parts.mjs`'s george
+`files.head`/`files.torso` at the new sources (trunks compositing
+unchanged — `Trunks.png` is still a separate accessory layer) and reran
+the pipeline. `verificationOk: true`; torso's `pivotFlush` confirms the
+neck stub sits exactly at the processed canvas's top row (y=0), and the
+paper-doll QA mock (head bottom-pivot placed directly at torso top-pivot,
+no offset) shows a solid, gap-free neck. Regenerated `head.png`/`torso.png`
+in `src/assets/wrestlers/george/`; the other 4 parts reprocessed
+byte-identical since their sources didn't change.
+
+**Code** (`src/Skeleton.js`): rather than deleting the crop path outright,
+gated it behind a new per-character `textures.neckInTorso` flag (set on
+`george.js` only) since **Thesz's head art still carries its own neck
+slack** and would break if the crop/hide math were removed globally. When
+`neckInTorso` is true: constructor skips `setCrop`/`_headHidePx` entirely
+(confirmed already unnecessary before Derek's follow-up message asking to
+drop it), and both `updateUpright` and `_applyGrounded` anchor the head's
+bottom pivot directly at the torso's own top pivot (`neckY`/`shX,shY`) —
+no offset, per the pivot-flush measurement above. `_headIsImage`/
+`_headScale` are unchanged (still used independent of cropping).
+`_neckInTorso` false (default, i.e. Thesz) preserves the exact previous
+crop-and-sink behavior untouched.
+
+**Verified**: `npm test` 43/43, `npm run debug:play -- all` 12/12,
+`npm run build` clean (all via `/opt/homebrew/opt/node/bin`, Node 25.8.1 —
+default `node` on this checkout is still 19.8.1). `npm run debug:shot -- 8`
+with `WFM_P1=george WFM_P2=george` shows both wrestlers locked up with a
+clean, flush head-to-neck connection — no floating head, no visible seam,
+no console errors. Grounded-pose head anchoring (`_applyGrounded`) uses
+the identical pivot-flush logic but wasn't separately screenshotted;
+`debug:play`'s pin sequence (pinAttempt/kickout/nearfall/pinfall) exercises
+that code path without error.
+
+**Not done**: Thesz is still on the old crop-based head (no `neckInTorso`
+art supplied for him yet) — this session only touched George, as asked.
+
 ### 2026-07-12 — Codex (commentary research workspace created)
 
 Per Derek's request, added `research/commentary/` as a documentation-only
@@ -135,6 +179,28 @@ consistent performance, moderation, captions, caching, and cost.
 Please keep implementation behind the current B1/B2 priorities unless Derek
 explicitly reprioritizes it. No game code or audio assets were changed for this
 entry.
+
+### 2026-07-12 — Derek (Head/neck architecture refactor: pin head to torso)
+
+**Problem:** Head PNG included neck, system crops 24% off the bottom and repositions, but head ends up floating — the neck never connects visually to the torso torso.
+
+**Solution:** Shift the neck from head asset into torso asset. Head PNG becomes head-only (no neck). Code adds a `neckY` constant (like `shoulderY` for arms) that pins the head image to a fixed point on the torso. Neck is now rigid and always connects; head pivots cleanly from that anchor.
+
+**Art tasks:**
+
+- Rebuild torso PNG to include the neck extending upward from the collar
+- Rebuild head PNG as head-only (remove the long slack neck)
+- Supply updated textures to `src/assets/wrestlers/george/` (or relevant character)
+
+**Code tasks for Claude:**
+
+- Remove the current head crop logic (`HEAD_HIDE_FRAC`, `_headHidePx`, `setCrop` call) from `Skeleton.js` constructor
+- Add a `neckY` constant in `updateUpright` (suggest: `const neckY = torsoTop + 12 * s`, adjust for your art)
+- Replace the current head positioning block (lines ~455–465) with simple head anchor to `neckY` instead of the crop-reposition math
+- For grounded poses (`_applyGrounded`), head should pin to the computed neck point along the torso line
+- Remove `_headIsImage`, `_headHidePx`, `_headScale` if no longer needed (check if any grounded code uses them)
+
+**Testing:** Load game, confirm head sits flush to torso neck with no gaps, no floating. No regression on gait or poses.
 
 ### 2026-07-12 — Claude (B1 feel-signed-off: Derek playtested the reversal fix)
 
@@ -193,7 +259,7 @@ glitch, gait reads normally.
 
 **Human playtest: not done this session** — Derek wasn't available. Per the
 assignment, labeling B1 **mechanically verified, not feel-signed-off**. This
-specifically needs eyes on whether the reversal now *feels* different (the
+specifically needs eyes on whether the reversal now _feels_ different (the
 crossover point shifted ~15-20ms later in a couple of runs, likely just
 measurement noise from live wall-clock timing rather than a real behavior
 change, since the fix only touches visual gait-phase direction, not the
@@ -201,6 +267,7 @@ change, since the fix only touches visual gait-phase direction, not the
 the numbers).
 
 **Open questions for Codex/Derek:**
+
 - The residual 2-4-frame quantization slip present in both plain braking and
   post-fix reversal (a last-frame artifact right where `travelSpeed` crosses
   the `0.5` "stop" threshold) is small (~4px) and out of this assignment's
@@ -287,7 +354,7 @@ independently re-verified by the orchestrating session.
   canvas aspect; hand-check against playtest feel.
 - **Verified**: npm test 43/43, `debug:play -- all` 12/12, and runtime
   texture-key assertions on the merged master (`w2.skeleton.<part>
-  .texture.key === 'george_*'` for all 10 image parts, near+far; trunks and
+.texture.key === 'george_*'` for all 10 image parts, near+far; trunks and
   boot blocks null) — a passing preload alone proves nothing, per the
   standing lesson. Screenshots (idle/walk both facings, grabbed, get-up,
   vs Thesz) reviewed by the director session.
@@ -313,7 +380,7 @@ session account.
 **Baseline headline — the Broadway finding is NOT stale, it's structural.**
 8/8 Thesz/George ten-minute draws. Root cause measured, not guessed: every
 closing tool that landed since Batch A (`slamAt: 60`, `pressHuntAt: 42`,
-`coverStamina` 55/60) gates on a *standing* low-stamina opponent, and that
+`coverStamina` 55/60) gates on a _standing_ low-stamina opponent, and that
 state is vacant — George stands below 60 stamina in 0.3% of trace samples,
 below 42 in 0.0% (509/511 Thesz lockup follow-ups found him ≥60). His dips
 happen while down; taunt regen (~35/match) + kickout refunds lift him back
@@ -341,6 +408,7 @@ prior multi-match probe's match-2+ traces were single stale samples);
 below-15-to-bell, per-minute stamina arcs).
 
 **New bugs found, deliberately not fixed (out of measurement scope):**
+
 1. Stagger-grab slams log move name `slam` (Wrestler.js:527), which has no
    `_heatForMove` entry — stagger conversions award zero heat. One-line fix
    candidate for whoever next touches heat.
@@ -636,11 +704,12 @@ are editing).
 modified `MOVES.md`, `src/AIHandler.js`, `src/Wrestler.js` (not this
 session's — presumably the movesets/Thesz-press session below), plus this
 session's `src/characters/george.js`, `src/scenes/Arena.js` (textures wiring
-+ preload path fix, see entry below), and untracked `src/assets/` (George's
-`head.png`) and `WrestlerPNGs/` (rejected Codex art drop, still sitting
-there — safe to delete, already superseded by the Procreate+cutter workflow).
-Nothing from this session is staged or committed. Whoever resumes: `git diff`
-before assuming a clean baseline.
+
+- preload path fix, see entry below), and untracked `src/assets/` (George's
+  `head.png`) and `WrestlerPNGs/` (rejected Codex art drop, still sitting
+  there — safe to delete, already superseded by the Procreate+cutter workflow).
+  Nothing from this session is staged or committed. Whoever resumes: `git diff`
+  before assuming a clean baseline.
 
 ### 2026-07-10 — Claude (asset-pipeline tooling session)
 

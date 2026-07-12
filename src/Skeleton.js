@@ -1,12 +1,15 @@
 // Proportions in unscaled pixels — multiply by s before placing parts.
-// Lengths chosen to match the old single-piece stick-figure totals exactly
-// (arm 76, leg 89≈88, torso 112) while splitting at elbow and knee joints.
+// Lengths originally chosen to match the old single-piece stick-figure totals
+// exactly (arm 76, leg 89≈88, torso 112) while splitting at elbow and knee
+// joints. upperArmH later doubled (Derek's proportion note, 2026-07-12 — the
+// arm read too short); forearmH untouched, so the old arm-76 total no longer
+// holds.
 const P = {
     thighH:    32,
     shinH:     32,
     bootH:     25,
     legW:      26,
-    upperArmH: 34,
+    upperArmH: 68,
     forearmH:  42,
     armW:      18,
     torsoH:    112,
@@ -35,12 +38,33 @@ const P = {
 // is no single default here: every character wiring a shin texture must
 // supply its own box explicitly (see george.js, thesz.js). Recompute from
 // the reported fillFrac if a shin art asset is regenerated.
+// upperArm/forearm/thigh widths below are widened past the raw art-derived
+// crop (Derek's proportion note, 2026-07-12: limbs read too thin next to the
+// torso — measured fill was ~50-60% of canvas width vs. torso's ~70-80%).
+// upperArm and thigh 2x, forearm 1.5x over the original derived values
+// (28, 29, 32 — see git history). upperArm.h doubled (34->68) to match
+// P.upperArmH's own doubling (Derek: arm read too short) — this is the one
+// case where TEX.*.h has to move too, since the two are meant to stay 1:1.
 const TEX = {
     torso:    { w: 82, h: 112 },
-    upperArm: { w: 28, h: 34 },
-    forearm:  { w: 29, h: 42 },
-    thigh:    { w: 32, h: 32 },
+    upperArm: { w: 56, h: 68 },
+    forearm:  { w: 44, h: 42 },
+    thigh:    { w: 64, h: 32 },
 };
+
+// Legacy heads (thesz) are drawn with a deliberately long neck (slack meant
+// to tuck behind the collar rather than show in full). Measured on thesz
+// head.png: the neck (near-constant-width region below the jawline) runs
+// ~31-33% of the 200px canvas height. Cropped out of the texture entirely
+// (not just drawn-over) in the Skeleton constructor, then the head's Y
+// anchor is pushed down by the same amount in world space
+// (updateUpright/_applyGrounded) so the remaining visible neck still meets
+// the collar with no gap. 0.24 hides ~3/4 of the neck (raised from an
+// initial 1/2 — Derek: heads still sat too high) while staying under the
+// ~31% jawline floor, so it never eats into face content (Derek,
+// 2026-07-12). Superseded for characters whose torso art bakes the neck in
+// instead (george.js's `neckInTorso: true`) — see `_neckInTorso` below.
+const HEAD_HIDE_FRAC = 0.24;
 
 const TAU = Math.PI * 2;
 
@@ -159,6 +183,22 @@ export default class Skeleton {
             // PNG head: origin at bottom-center (neck connection point)
             this.head = scene.add.image(0, 0, textures.head).setOrigin(0.5, 1);
             this._headIsImage = true;
+            // neckInTorso: the character's torso art bakes the neck in
+            // (pivot-flush at its own top edge) and the head art is neck-free,
+            // so the head's bottom edge anchors straight to the torso pivot —
+            // no crop needed. Defaults to false: legacy heads (thesz) still
+            // carry their own neck slack, cropped below.
+            this._neckInTorso = !!textures.neckInTorso;
+            if (!this._neckInTorso) {
+                // Crop rect is in fixed texture-space px, independent of the s-scaled
+                // display size set every frame — safe to compute once here.
+                this._headHidePx = Math.round(this.head.height * HEAD_HIDE_FRAC);
+                this.head.setCrop(0, 0, this.head.width, this.head.height - this._headHidePx);
+            }
+            // Per-character head size override, e.g. george.js's headScale: 0.9
+            // (Derek, 2026-07-12: George's head read ~10% too big for his body).
+            // Defaults to 1 — most characters shouldn't need this.
+            this._headScale = textures.headScale ?? 1;
         } else {
             this.head = scene.add.graphics();
             this._headIsImage = false;
@@ -174,13 +214,20 @@ export default class Skeleton {
         ].filter(Boolean);
     }
 
-    // Sub-depths enforce far→torso→near→head layering within a single wrestler depth slot.
+    // Sub-depths enforce far→head→torso→near layering within a single wrestler
+    // depth slot. Head sits behind torso (not in front, as it used to) so the
+    // torso actually covers the cropped-off neck stub instead of just abutting
+    // it — genuine overlap, not a butt-joint (Derek, 2026-07-12). Tradeoff:
+    // the near arm (still ordered after torso) now also draws in front of the
+    // head/face, which matters for headlock/sleeper/guard — see AI_HANDOFF if
+    // that reads wrong and needs revisiting.
     setDepth(base) {
         this.farThigh.setDepth(base);
         this.farShin.setDepth(base);
         this.farBoot?.setDepth(base);
         this.farUpArm.setDepth(base);
         this.farForearm.setDepth(base);
+        this.head.setDepth(base + 0.0005);
         this.torso.setDepth(base + 0.001);
         this.trunks?.setDepth(base + 0.002);
         this.nearThigh.setDepth(base + 0.003);
@@ -188,7 +235,6 @@ export default class Skeleton {
         this.nearBoot?.setDepth(base + 0.003);
         this.nearUpArm.setDepth(base + 0.004);
         this.nearForearm.setDepth(base + 0.004);
-        this.head.setDepth(base + 0.005);
     }
 
     setVisible(v) {
@@ -279,9 +325,12 @@ export default class Skeleton {
 
         const torsoTop  = hipY - torsoH;
         const shoulderY = torsoTop + 12 * s; // arm pivot slightly below torso top
-        // Lean: shift shoulders and head forward in facing direction while hips stay put.
-        const leanX     = Math.sin(lean) * torsoH * 0.6;
-        const shoulderX = x + leanX;
+        // Shoulder pivot is pinned to the same x as the torso/hip below it — the
+        // torso image is a rigid, non-rotating block anchored at x (see below), so
+        // any separate horizontal shift here (previously a sin(lean) drift meant to
+        // suggest forward lean) pulls the arm/head pivot off the torso instead of
+        // pitching it, reading as the shoulders floating loose of the body.
+        const shoulderX = x;
 
         const MAX_ARM = 0.26;
 
@@ -369,9 +418,18 @@ export default class Skeleton {
         // gait mode (see comment above); meaningless in pose-driven FK, so null.
         this.farFoot = { x: farAnkle.x, y: farAnkle.y, planted: useGait ? footB.lift === 0 : null };
 
+        // Shoulder stagger: the torso art is drawn three-quarter (both shoulders
+        // visible, not coincident), so the near/far arms shouldn't pivot from the
+        // exact same point. Near arm sits back toward the torso's rear/back-curve
+        // edge; far arm sits slightly ahead of it — matches the 3/4 shoulder line
+        // even though the head itself stays a flat profile (Derek, 2026-07-12).
+        const SHOULDER_STAGGER = 12 * s;
+        const farShoulderX  = shoulderX + facing * SHOULDER_STAGGER;
+        const nearShoulderX = shoulderX - facing * SHOULDER_STAGGER;
+
         // Far arm
-        this._placePart(this.farUpArm, shoulderX, shoulderY, armW, upperArmH, farAA, s, facing);
-        const farElbow = this._end(shoulderX, shoulderY, upperArmH, farAA);
+        this._placePart(this.farUpArm, farShoulderX, shoulderY, armW, upperArmH, farAA, s, facing);
+        const farElbow = this._end(farShoulderX, shoulderY, upperArmH, farAA);
         this._placePart(this.farForearm, farElbow.x, farElbow.y, armW, forearmH, farFA, s, facing);
 
         // Torso: full height when trunks are baked into the PNG, split otherwise
@@ -387,18 +445,32 @@ export default class Skeleton {
         this.nearFoot = { x: nearAnkle.x, y: nearAnkle.y, planted: useGait ? footA.lift === 0 : null };
 
         // Near arm
-        this._placePart(this.nearUpArm, shoulderX, shoulderY, armW, upperArmH, nearAA, s, facing);
-        const nearElbow = this._end(shoulderX, shoulderY, upperArmH, nearAA);
+        this._placePart(this.nearUpArm, nearShoulderX, shoulderY, armW, upperArmH, nearAA, s, facing);
+        const nearElbow = this._end(nearShoulderX, shoulderY, upperArmH, nearAA);
         this._placePart(this.nearForearm, nearElbow.x, nearElbow.y, armW, forearmH, nearFA, s, facing);
 
         // Head — PNG image (pivot at neck bottom) or plain circle
         const headY = torsoTop - headR * 0.7;
+        // neckY: the torso's own top pivot, unscaled by headScale — where the
+        // head's bottom edge anchors when the neck is baked into the torso art.
+        const neckY = torsoTop;
         if (this._headIsImage) {
             // Neck sits at the top of the torso; head extends upward from there.
             // Flip horizontally to match facing direction (PNG is drawn facing right).
+            // _headScale (per-character, default 1) shrinks/grows the whole
+            // display box; folded in here so the crop math stays in sync.
+            const headDispH = headR * 2.5 * this._headScale;
+            // neckInTorso art is pivot-flush on both sides of the joint (torso's
+            // top edge and head's bottom edge), so anchoring at neckY connects
+            // them directly. Legacy heads carry neck slack in their own art;
+            // sink the anchor by the cropped-out amount (world px) so the
+            // shortened visible neck still meets the collar with no gap.
+            const anchorY = this._neckInTorso
+                ? neckY
+                : neckY + this._headHidePx * headDispH / this.head.height;
             this.head
-                .setPosition(shoulderX, torsoTop)
-                .setDisplaySize(headR * 2.0, headR * 2.5)
+                .setPosition(shoulderX, anchorY)
+                .setDisplaySize(headR * 2.0 * this._headScale, headDispH)
                 .setFlipX(facing < 0);
         } else {
             this.head.clear();
@@ -490,11 +562,17 @@ export default class Skeleton {
         arm(g.farArm,  g.farFore,  [this.farUpArm,  this.farForearm]);
         arm(g.nearArm, g.nearFore, [this.nearUpArm, this.nearForearm]);
 
-        // Head continues past the shoulders along the torso line
+        // Head continues past the shoulders along the torso line. (shX, shY)
+        // is the torso's own pivot here too (see the torso placement above),
+        // so it doubles as neckY for a neckInTorso head.
         const hx = shX + Math.sin(ta) * headR * 0.9;
         const hy = shY + Math.cos(ta) * headR * 0.9;
         if (this._headIsImage) {
-            this.head.setPosition(shX, shY).setDisplaySize(headR * 2.0, headR * 2.5).setFlipX(facing < 0);
+            const headDispH = headR * 2.5 * this._headScale;
+            const anchorY = this._neckInTorso
+                ? shY
+                : shY + this._headHidePx * headDispH / this.head.height;
+            this.head.setPosition(shX, anchorY).setDisplaySize(headR * 2.0 * this._headScale, headDispH).setFlipX(facing < 0);
         } else {
             this.head.clear();
             this.head.fillStyle(this._headCol, 1);

@@ -817,6 +817,39 @@ through the direction change, confirmed it "looks pretty glued" with no
 visible skate. **B1 is fully feel-signed-off.** See `AI_HANDOFF.md` for the
 handoff entries.
 
+### 2026-07-12 — George's head/neck rebuilt: neck baked into the torso art
+
+**Goal:** the crop-based head/neck fix from earlier this session (hide the
+bottom of the head PNG's own neck slack, sink the anchor by the same
+amount) still left the head reading as floating rather than connected.
+Derek's diagnosis: shift the neck into the torso art instead, drew new
+`georgehead2.png` (head only) + `Torso2.png` (neck extends up from the
+collar), and asked for them conformed and wired in.
+
+**Built:**
+- `tools/wrestler-cutter/process-parts.mjs` — george's `files.head`/
+  `files.torso` now point at the new sources; reran the pipeline.
+  `verificationOk: true`, torso's `pivotFlush` confirms the neck stub sits
+  exactly at the processed canvas's top row. Regenerated `head.png`/
+  `torso.png` in `src/assets/wrestlers/george/`; other 4 parts came out
+  byte-identical.
+- `src/Skeleton.js` — new per-character `textures.neckInTorso` flag (set
+  true on `george.js` only, since Thesz's head art still carries its own
+  neck slack and would break under a global change). When true: no
+  `setCrop`, and both `updateUpright`/`_applyGrounded` anchor the head's
+  bottom pivot directly at the torso's own top pivot, no offset — the
+  pivot-flush cutter output makes that connection seamless by
+  construction. `neckInTorso` false (default) preserves the old
+  crop-and-sink behavior for Thesz untouched.
+
+**Verified:** `npm test` 43/43, `npm run debug:play -- all` 12/12, `npm run
+build` clean. `npm run debug:shot -- 8` with `WFM_P1=george WFM_P2=george`
+shows both wrestlers locked up with a clean, gap-free neck — no floating
+head, no console errors. Full account in `AI_HANDOFF.md`.
+
+**Not done:** Thesz still needs the same neck-in-torso art treatment —
+out of scope for this session.
+
 ---
 
 ## Phase Roadmap

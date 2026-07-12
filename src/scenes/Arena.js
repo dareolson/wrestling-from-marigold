@@ -24,7 +24,11 @@ export default class Arena extends Phaser.Scene {
 
     preload() {
         for (const char of CHARACTERS) {
-            for (const [part, entry] of Object.entries(char.textures)) {
+            // Only load actual body-part textures — char.textures can also carry
+            // non-file metadata (e.g. headScale) that isn't a loadable part.
+            for (const part of Object.keys(PART_FILES)) {
+                const entry = char.textures[part];
+                if (!entry) continue;
                 // entry is either a plain texture key or { key, box } (see
                 // Skeleton.js's resolveTexEntry) — only the key is a load path.
                 const key = typeof entry === 'string' ? entry : entry.key;

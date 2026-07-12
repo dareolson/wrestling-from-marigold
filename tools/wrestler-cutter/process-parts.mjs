@@ -63,9 +63,10 @@ const CHARACTERS = {
         srcDir: '/Users/home/Documents/wrestling-from-marigold/Sprite sheets/GeorgeParts',
         destDir: path.join(REPO_ROOT, 'src/assets/wrestlers/george'),
         qaDir: GEORGE_QA_DIR,
-        sourceKeys: ['torso', 'trunks', 'upperArm', 'forearm', 'thigh', 'shin', 'foot'],
+        sourceKeys: ['head', 'torso', 'trunks', 'upperArm', 'forearm', 'thigh', 'shin', 'foot'],
         files: {
-            torso: 'Torso.png',
+            head: 'georgehead2.png',
+            torso: 'Torso2.png',
             trunks: 'Trunks.png',
             upperArm: 'L_Arm_Upper.png',
             forearm: 'L_Arm_Lower.png',

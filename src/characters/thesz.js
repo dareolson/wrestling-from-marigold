@@ -13,8 +13,9 @@ export const thesz = {
         // Object form overrides the Skeleton.js TEX default display box —
         // shin always needs this since its true box depends on this
         // character's own boot-art fillFrac (see Skeleton.js's TEX comment).
-        // (37, 57) / 0.8747 thesz-shin-art fillFrac.
-        shin:     { key: 'thesz_shin', box: { w: 42, h: 65 } },
+        // (37, 57) / 0.8747 thesz-shin-art fillFrac = (42, 65), then widened
+        // 1.5x on width per the same limb-proportion bump as TEX (2026-07-12).
+        shin:     { key: 'thesz_shin', box: { w: 63, h: 65 } },
     },
     idlePose:  'powerIdle',
     tauntPose: 'tauntArmsWide',

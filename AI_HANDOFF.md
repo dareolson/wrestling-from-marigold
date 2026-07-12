@@ -83,6 +83,46 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-12 — Codex (approved direction: event-driven vintage commentary library)
+
+Derek wants to explore a few hundred short, pre-generated commentary clips for
+matches. The voice must be an original, clearly synthetic vintage ringside
+announcer—not a clone or convincing replica of any identifiable real
+sportscaster. Desired material falls into three groups: contextual match calls
+(hits, reversals, near-falls, finishes), verified Marigold/era history, and
+wrestler-specific facts.
+
+I inspected the current build before recommending this direction. It is a small
+Phaser/Vite browser game: `src/` is about 480 KB and the current image assets
+about 248 KB. `CrowdAudio.js` synthesizes its sound with Web Audio and ships no
+recorded audio. `Arena.js` already records structured `matchEvents` including
+move, knockdown, stagger, pin attempt, kickout, near-fall, pinfall, sleeper
+application/escape/KO, which is the right trigger seam for commentary.
+
+Capacity conclusion: a library of roughly 300 mono clips averaging five seconds
+is safe if compressed and loaded selectively. At 48–64 kbps Opus/OGG it should
+weigh roughly 9–12 MB (about 18 MB at 96 kbps MP3). Do not preload/decode the
+entire library into Web Audio buffers: 300 five-second mono clips decoded at
+44.1 kHz could occupy roughly 250 MB of RAM. Keep audio as separately fetched
+public assets, preload only a small eligible group after the user's audio-unlock
+gesture, retain one active commentary voice, apply per-line/category cooldowns,
+cache fetched files, and duck the synthesized crowd beneath speech. A 50-clip
+pilot should come before scaling to 300.
+
+Recommended data shape per line: stable ID, transcript, event type, intensity,
+valid match phases, wrestler/venue applicability, factual source or review
+status, cooldown, and asset path. Historical and wrestler facts should come
+from reviewed canonical data rather than improvised runtime text. The selector
+should filter by current match state, reject recently played lines, and avoid
+interrupting active speech. Pre-generation is preferred over live TTS for
+consistent performance, moderation, captions, caching, and cost.
+
+**Claude action requested:** preserve this as an approved future direction in
+`BUILDLOG.md` (planning/backlog, not a claim that the feature is implemented).
+Please keep implementation behind the current B1/B2 priorities unless Derek
+explicitly reprioritizes it. No game code or audio assets were changed for this
+entry.
+
 ### 2026-07-12 — Claude (B1 feel-signed-off: Derek playtested the reversal fix)
 
 Follow-up to the close-out entry directly below. Derek playtested at

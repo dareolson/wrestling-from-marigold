@@ -25,34 +25,45 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Active assignment — Phase 0, Task 1
+## Active assignment — B1 close-out: reversal foot-lock
 
-Extract only the decision portion of `Wrestler.tryPower` into
-`src/logic/moveDecision.js` as a pure exported function such as
-`resolvePowerMove(context)`.
+Claude: close the remaining verification gap in B1 locomotion before starting
+B2 hitstop or any C-batch psychology/balance work. The velocity ramp itself is
+accepted provisionally; this assignment is limited to gait direction during a
+live reversal and the evidence needed to sign B1 off.
+
+The current implementation changes `_walkPhaseDir` from the new input while
+`vx` can still carry the wrestler in the old direction. The existing
+kinematics probe proves that body velocity crosses zero, but it does not measure
+either planted foot in world space. Therefore the handoff claim that feet stay
+planted through reversals is not yet established and may be false during the
+deceleration half of a reversal.
 
 Requirements:
 
-- The new module must have no Phaser dependency.
-- Preserve all existing behavior and numerical boundaries exactly.
-- Preserve `<` versus `<=`, state conditions, scaling, availability checks, and fallback order.
-- `Wrestler.js` gathers runtime data, calls the resolver, and executes through existing methods.
-- Use Node's built-in `node:test`; do not add Vitest.
-- Add table-driven tests for every opponent-state branch.
-- Test immediately below, exactly at, and immediately above each distance threshold.
-- Test unavailable moves and fallback ordering.
-- Do not change AI, shared constants, animations, tweens, timing, damage, or state transitions.
-- Do not fix reach-range drift or include the separate AI lockup fix in this commit.
+- Extend the kinematics tooling to measure near/far foot world positions during
+  steady walking, braking, and a no-release live reversal. Prefer a small debug
+  read seam over scraping rendered pixels; keep production exposure minimal.
+- Reproduce and quantify any planted-foot slide before changing gameplay code.
+- If confirmed, make the smallest B1 correction so gait phase direction follows
+  actual travel relative to facing, not merely the newly pressed input. Preserve
+  the intentional pass through zero and avoid a phase snap at the crossover.
+- Preserve the accepted acceleration/braking targets, perspective scaling,
+  diagonal normalization, hurt-speed behavior, stumble behavior, run/whip path,
+  collision/clamping, poses, animation timings, stamina, AI, and match balance.
+- Do not add B2 hitstop, gravity changes, gamepad work, C1/C2 tuning, move-memory,
+  heat fixes, rope-boundary fixes, or art cleanup to this commit.
+- Run `npm test`, `npm run debug:play -- all`, `npm run build`, and the extended
+  kinematics probe under Node >=20.19. Report before/after foot-slip measurements,
+  not only body-velocity measurements.
+- Derek must perform the final human playtest. If he is unavailable, label B1
+  mechanically verified but not feel-signed-off; do not claim full acceptance.
+- Land this as one focused commit, then update `BUILDLOG.md` and add a new Claude
+  entry at the top of the Handoff Log with the commit SHA, exact commands/results,
+  measurements, browser verification, human-playtest status, and open questions.
 
-Suggested files:
-
-- `src/logic/moveDecision.js`
-- `tests/moveDecision.test.js`
-- `src/Wrestler.js`
-- `package.json`
-
-After implementation, add a handoff entry containing changed files, commit SHA,
-exact tests and results, browser verification, and unresolved questions.
+If measurement disproves the suspected slide, do not manufacture a code change:
+commit only the useful probe improvement and document the evidence.
 
 ## Clarifications
 
@@ -71,6 +82,25 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 `Skeleton.js` and are not v1 requirements.
 
 ## Handoff Log
+
+### 2026-07-12 — Codex (review of July 11–12 work; next Claude prompt)
+
+Reviewed the July 11 consolidated brief against Claude's reports and the landed
+code through `986a93b`. The brief was followed well: Node/tooling and doc drift
+were corrected; B1 stayed isolated; the post-Thesz baseline was rerun and
+archived after repairing the multi-match trace bug; George and Thesz art landed
+through a reusable cutter/rig path. Independent verification on current master:
+`npm test` 43/43, `npm run build` clean, and `npm run debug:play -- all` 12/12
+under Node 25.8.1. Worktree was clean and matched `origin/master`.
+
+One substantive verification gap remains. `Wrestler.move()` sets
+`_walkPhaseDir` from current input while actual `vx` may still point the other
+way during a live reversal. The velocity probe confirms the body passes through
+zero but does not sample foot world positions, so its evidence cannot support
+the stronger report that the planted foot remains locked throughout reversal.
+The Active Assignment above asks Claude to measure this directly and make only
+the smallest correction if the suspected slide is confirmed. B2 and C-batch
+remain queued behind this close-out and Derek's human feel test.
 
 ### 2026-07-12 — Claude (same art session: Lou Thesz fully textured, ~2h after George)
 

@@ -606,12 +606,12 @@ the Thesz press finisher + `slamAt`/`pressHuntAt` hunt logic, earlier covers
 `coverStamina` 55/60 + tightened `pinWait`, and the `resolvePowerMove`
 extraction). Probes ran in 2–4-match chunks against a dedicated Vite server
 (port 5301) so no HMR could touch a live match. Before measuring, fixed a
-psych_probe recorder bug (`7fdf25a`): heat/position traces froze after match 1
+psych_probe recorder bug (`02562b1`): heat/position traces froze after match 1
 of any multi-match run (the match-boundary reset re-baselined the throttle
 clocks while `_matchTime` was still parked at the old match's final value).
 All 16 matches have valid event logs; 15 of 16 have valid traces (bg match 2
 was captured pre-fix — its events count, its traces don't). Supplemental
-analyzer: `tools/debug/psych_baseline.mjs` (`4ef5599`) — kickout depth,
+analyzer: `tools/debug/psych_baseline.mjs` (`1feb455`) — kickout depth,
 offense share, first-finisher timing, per-minute stamina, below-15-to-bell.
 
 ### The headline: Thesz/George is still all Broadways — 8 for 8

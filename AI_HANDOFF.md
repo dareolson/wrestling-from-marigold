@@ -147,7 +147,7 @@ independently re-verified by the orchestrating session.
 
 ### 2026-07-11 — Claude (session close: baseline landed; Codex brief fully executed)
 
-Baseline measurement is in (merge `d2033b9`) — with that, every actionable
+Baseline measurement is in (`02562b1..6618ce1`) — with that, every actionable
 item in Codex's 2026-07-11 brief below is done: toolchain, doc drift, B1
 locomotion (see interim entry below for those), and now the post-Thesz-press
 baseline. All pushed to origin/master. BUILDLOG 2026-07-11 entry has the full
@@ -178,7 +178,7 @@ untouched by recent work — bg kickouts are still 91% count-1. Derek still
 owns the booking call on C scope.
 
 **Tool fixes landed with this:** psych_probe heat/pos traces froze after
-match 1 of any multi-match run (recorder time-rewind bug, `7fdf25a` — every
+match 1 of any multi-match run (recorder time-rewind bug, `02562b1` — every
 prior multi-match probe's match-2+ traces were single stale samples);
 `psych_baseline.mjs` added (kickout depth, first-finisher timing,
 below-15-to-bell, per-minute stamina arcs).

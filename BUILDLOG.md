@@ -693,7 +693,7 @@ path verified untouched (275 px/s unchanged). Kinematics before/after in the
 commit; 43/43 + 12/12 + build verified independently post-merge. **Awaiting
 Derek's playtest for feel sign-off.**
 
-**Post-Thesz-press baseline (merge `d2033b9`)** — 16 probe matches (8
+**Post-Thesz-press baseline (`02562b1..6618ce1`)** — 16 probe matches (8
 Thesz/George, 8 brawler/George), full addendum in FEEL_AUDIT.md, raw data
 gzipped in `tools/debug/baselines/`. Headline: **Thesz/George is still 8/8
 Broadways and structurally can't close** — every closing tool (`slamAt`,
@@ -703,7 +703,7 @@ stack (taunt regen + kickout refunds) outpaces drip damage every time. Brawler
 closes 2/8 (burst slams outrun the refund cycle). C-batch design implication:
 C2 must catch the down/getting-up window or suppress the recovery stack, not
 wait for a standing worn opponent. Also fixed a psych_probe recorder bug that
-froze heat/pos traces after match 1 (`7fdf25a`) and added
+froze heat/pos traces after match 1 (`02562b1`) and added
 `psych_baseline.mjs` (kickout depth, first-finisher, below-15-to-bell).
 
 **New bugs found, not fixed (logged for next session):** stagger-grab slams

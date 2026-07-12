@@ -70,11 +70,24 @@ const ALPHA_THRESHOLD = 10;
 const SPECK_AREA_FRAC = 0.01;
 const NEAR_WHITE = 250;
 const OPAQUE_CAP_MIN_FRAC = 0.6;
+// Flatten to a stricter target at source scale: bicubic downsampling softens
+// the top row's edges, costing ~10% of the opaque run width in the final
+// PNG. 0.72 at source keeps the final comfortably above the 0.6 spec floor.
+const OPAQUE_CAP_FLATTEN_FRAC = 0.72;
 const PIVOT_ROWS = 8;
-const TRUNKS_WIDTH_MULT = 1.08;
-const COMPOSITE_OVERLAP_PX = 12;
-const PAD_SIDES = 20; // per side -> 40 total width budget
-const PAD_BOTTOM = 20;
+// Trunks scale relative to the waistband width. Round 1 used 1.08 which read
+// as a narrow apron below the waistband; the director's round-2 pick from the
+// 1.15 / 1.25 / 1.35 candidate sheet (see trunks_candidates.png in the QA dir)
+// is set here. Candidates are still generated on every run for review.
+const TRUNKS_WIDTH_MULT = 1.25;
+const TRUNKS_CANDIDATE_MULTS = [1.15, 1.25, 1.35];
+// Deep tuck: the trunks' own dark top band must hide completely behind the
+// torso's waistband (no gap, no double band).
+const TRUNKS_OVERLAP_PX = 24;
+const SHIN_OVERLAP_PX = 12;
+// Content fills the canvas height exactly (see scaleFlush); a small horizontal
+// safety margin keeps antialiased edges off the texture border.
+const SIDE_SAFETY = 2;
 
 // ── Browser-side pixel-math library (injected once via addScriptTag) ──────
 const BROWSER_LIB = `
@@ -120,19 +133,120 @@ window.WC = (function () {
     return { w: canvas.width, h: canvas.height, fullyTransparent, partial, opaque, nearWhiteOpaque, total, needsKeying };
   }
 
-  // Bakes real alpha into the canvas: either trusts existing alpha, or (fallback)
-  // keys out near-white pixels as background. Returns the audit info too.
+  // Bakes real alpha into the canvas. For sources with a real alpha channel
+  // this is a no-op. For keyed (opaque white background) sources it does
+  // three passes:
+  //   1. hard key: all channels >= NEAR_WHITE -> alpha 0
+  //   2. alpha decontamination of the fringe: content pixels near the
+  //      background are white-blended (obs = a*ink + (1-a)*255). Estimate a
+  //      against the darkest nearby core pixel's luminance, then recover the
+  //      un-blended color as (rgb - (1-a)*255)/a, clamped. This kills the
+  //      white halo plain keying leaves against dark game backgrounds.
+  //   3. tiny alpha-island cleanup: connected alpha>0 clusters smaller than
+  //      a few px (keying survivors / scan dust) are dropped outright.
+  // Returns { decontaminated, extendedKeyed, speckPixelsDropped, speckIslandsDropped }.
   function bakeAlpha(canvas, needsKeying) {
+    if (!needsKeying) return { decontaminated: 0, extendedKeyed: 0, speckPixelsDropped: 0, speckIslandsDropped: 0 };
     const ctx = ctxOf(canvas);
-    const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const w = canvas.width, h = canvas.height;
+    const id = ctx.getImageData(0, 0, w, h);
     const d = id.data;
-    if (needsKeying) {
-      for (let i = 0; i < d.length; i += 4) {
-        if (d[i] >= NEAR_WHITE && d[i+1] >= NEAR_WHITE && d[i+2] >= NEAR_WHITE) d[i+3] = 0;
-      }
-      ctx.putImageData(id, 0, 0);
+
+    // pass 1: hard key
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i] >= NEAR_WHITE && d[i+1] >= NEAR_WHITE && d[i+2] >= NEAR_WHITE) d[i+3] = 0;
     }
-    return canvas;
+
+    const lum = p => 0.299 * d[p*4] + 0.587 * d[p*4+1] + 0.114 * d[p*4+2];
+    const isBg = p => d[p*4+3] === 0;
+
+    // fringe band: content pixels within 2px (chebyshev) of background
+    const band = [];
+    const inBand = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const p = y * w + x;
+        if (isBg(p)) continue;
+        let nearBg = false;
+        for (let dy = -2; dy <= 2 && !nearBg; dy++) {
+          for (let dx = -2; dx <= 2; dx++) {
+            const nx = x + dx, ny = y + dy;
+            if (nx < 0 || nx >= w || ny < 0 || ny >= h) { nearBg = true; break; }
+            if (isBg(ny * w + nx)) { nearBg = true; break; }
+          }
+        }
+        if (nearBg) { band.push(p); inBand[p] = 1; }
+      }
+    }
+
+    // pass 2: decontaminate the band
+    let decontaminated = 0, extendedKeyed = 0;
+    const FRINGE_L_MIN = 245;   // this light in the band -> just background residue
+    const INK_FALLBACK_L = 30;  // assume black outline if no core neighbor found
+    for (const p of band) {
+      const x = p % w, y = (p / w) | 0;
+      const L = lum(p);
+      if (L >= FRINGE_L_MIN) { d[p*4+3] = 0; extendedKeyed++; continue; }
+      // darkest core (non-band, non-bg) pixel in the 7x7 neighborhood is the
+      // best guess at the ink this fringe pixel was blended from
+      let coreL = null;
+      for (let dy = -3; dy <= 3; dy++) {
+        for (let dx = -3; dx <= 3; dx++) {
+          const nx = x + dx, ny = y + dy;
+          if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+          const np = ny * w + nx;
+          if (isBg(np) || inBand[np]) continue;
+          const nL = lum(np);
+          if (coreL === null || nL < coreL) coreL = nL;
+        }
+      }
+      if (coreL === null) coreL = INK_FALLBACK_L;
+      if (coreL > 240) continue; // core is itself near-white: nothing sane to recover
+      const a = Math.min(1, Math.max(0, (255 - L) / (255 - coreL)));
+      if (a >= 0.98) continue;   // effectively solid ink already
+      if (a <= 0.02) { d[p*4+3] = 0; extendedKeyed++; continue; }
+      for (let c = 0; c < 3; c++) {
+        const rec = (d[p*4+c] - (1 - a) * 255) / a;
+        d[p*4+c] = Math.max(0, Math.min(255, Math.round(rec)));
+      }
+      d[p*4+3] = Math.round(a * 255);
+      decontaminated++;
+    }
+
+    // pass 3: drop tiny alpha>0 islands (keying survivors / scan dust)
+    const MAX_SPECK = 8;
+    const visited = new Uint8Array(w * h);
+    let speckPixelsDropped = 0, speckIslandsDropped = 0;
+    const stack = [];
+    for (let start = 0; start < w * h; start++) {
+      if (visited[start] || d[start*4+3] === 0) continue;
+      const px = [];
+      stack.length = 0;
+      stack.push(start);
+      visited[start] = 1;
+      while (stack.length) {
+        const p = stack.pop();
+        px.push(p);
+        const x = p % w, y = (p / w) | 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const nx = x + dx, ny = y + dy;
+            if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+            const np = ny * w + nx;
+            if (!visited[np] && d[np*4+3] > 0) { visited[np] = 1; stack.push(np); }
+          }
+        }
+      }
+      if (px.length <= MAX_SPECK) {
+        for (const p of px) d[p*4+3] = 0;
+        speckPixelsDropped += px.length;
+        speckIslandsDropped++;
+      }
+    }
+
+    ctx.putImageData(id, 0, 0);
+    return { decontaminated, extendedKeyed, speckPixelsDropped, speckIslandsDropped };
   }
 
   // 8-connected components over alpha>ALPHA_THRESHOLD. Iterative flood fill.
@@ -411,13 +525,21 @@ window.WC = (function () {
 
   // Fit croppedCanvas into targetW x targetH: pivot edge flush at y=0,
   // horizontally centered (which centers the pivot since the crop is
-  // pivot-symmetric), padSides/padBottom minimums honored via the smaller
-  // of the two available scale factors.
-  function scaleFlush(croppedCanvas, targetW, targetH, padSides, padBottom) {
+  // pivot-symmetric).
+  //
+  // The rig (Skeleton.js) maps the FULL canvas onto the bone span — canvas
+  // top = pivot joint, canvas bottom = bone end (hip line for the torso,
+  // elbow for the upper arm, ground line for the shin+boot). So the content
+  // must FILL the canvas height exactly or the art falls short of the joint
+  // and gaps open at the hips/elbows/knees in-game (this is exactly what
+  // round 1's 20px bottom padding caused). Height-fill is the target; width
+  // caps the scale when the art is proportionally too wide (shin+boot toe),
+  // in which case fillFrac < 1 is reported and the rig's TEX display box
+  // must compensate (see TEX.shin in Skeleton.js).
+  function scaleFlush(croppedCanvas, targetW, targetH, sideSafety) {
     const cropW = croppedCanvas.width, cropH = croppedCanvas.height;
-    const availW = targetW - padSides * 2;
-    const availH = targetH - padBottom;
-    const scale = Math.min(availW / cropW, availH / cropH);
+    const availW = targetW - sideSafety * 2;
+    const scale = Math.min(availW / cropW, targetH / cropH);
     const drawW = cropW * scale, drawH = cropH * scale;
     const dx = (targetW - drawW) / 2, dy = 0;
     const out = newCanvas(targetW, targetH);
@@ -425,6 +547,7 @@ window.WC = (function () {
     return {
       canvas: out, scale, drawW, drawH, dx, dy,
       leftPad: dx, rightPad: targetW - (dx + drawW), bottomPad: targetH - (dy + drawH),
+      fillFrac: drawH / targetH,
     };
   }
 
@@ -519,9 +642,9 @@ async function main() {
     await page.goto('about:blank');
     await page.addScriptTag({ content: BROWSER_LIB });
 
-    const report = { alphaAudit: {}, droppedSpecks: {}, flip: 'all parts mirrored horizontally to face right', rotation: null, composites: {}, capFlatten: {}, pivotCrop: {}, finalPadding: {} };
+    const report = { alphaAudit: {}, defringe: {}, droppedSpecks: {}, flip: 'all parts mirrored horizontally to face right', rotation: null, composites: {}, capFlatten: {}, pivotCrop: {}, finalPadding: {} };
 
-    // ── Load + clean every source (mask, speck removal, flip) once ────────
+    // ── Load + clean every source (mask, defringe, speck removal, flip) ───
     const sourceKeys = ['torso', 'trunks', 'upperArm', 'forearm', 'thigh', 'shin', 'foot'];
     const cleaned = {};
     for (const key of sourceKeys) {
@@ -530,13 +653,14 @@ async function main() {
         const result = await page.evaluate(async ({ dataUrl, fracThreshold }) => {
             const canvas = await window.WC.loadImage(dataUrl);
             const audit = window.WC.alphaAudit(canvas);
-            window.WC.bakeAlpha(canvas, audit.needsKeying);
+            const defringe = window.WC.bakeAlpha(canvas, audit.needsKeying);
             const { keptCount, dropped } = window.WC.dropSmallComponents(canvas, fracThreshold);
             const flipped = window.WC.flipHorizontal(canvas);
-            return { dataUrl: window.WC.toDataURL(flipped), audit, keptCount, dropped };
+            return { dataUrl: window.WC.toDataURL(flipped), audit, defringe, keptCount, dropped };
         }, { dataUrl, fracThreshold: SPECK_AREA_FRAC });
         cleaned[key] = result.dataUrl;
         report.alphaAudit[char.files[key]] = result.audit;
+        report.defringe[char.files[key]] = result.defringe;
         report.droppedSpecks[char.files[key]] = result.dropped;
     }
 
@@ -544,11 +668,11 @@ async function main() {
     const outputs = {};
     outputs.upper_arm = await buildSimplePart(page, cleaned.upperArm, PART_SPECS.upper_arm, 'upper_arm');
     report.pivotCrop.upper_arm = { pivotX: outputs.upper_arm.pivotX, bboxCenterX: outputs.upper_arm.bboxCenterX, delta: outputs.upper_arm.pivotDelta };
-    report.finalPadding.upper_arm = { leftPad: outputs.upper_arm.leftPad, rightPad: outputs.upper_arm.rightPad, bottomPad: outputs.upper_arm.bottomPad, drawW: outputs.upper_arm.drawW, drawH: outputs.upper_arm.drawH };
+    report.finalPadding.upper_arm = { leftPad: outputs.upper_arm.leftPad, rightPad: outputs.upper_arm.rightPad, bottomPad: outputs.upper_arm.bottomPad, drawW: outputs.upper_arm.drawW, drawH: outputs.upper_arm.drawH, fillFrac: outputs.upper_arm.fillFrac };
 
     // ── forearm (rotate to vertical fist-down, then cap-flatten) ──────────
     {
-        const res = await page.evaluate(async ({ dataUrl, spec, minFrac, pivotRows, padSides, padBottom }) => {
+        const res = await page.evaluate(async ({ dataUrl, spec, flattenFrac, pivotRows, sideSafety }) => {
             const canvas = await window.WC.loadImage(dataUrl);
             // Fist hint: after the facing flip, the fist is the LOWER-RIGHT
             // end of the diagonal (source had elbow upper-right/fist
@@ -557,10 +681,10 @@ async function main() {
             const bbox = window.WC.contentBBox(canvas);
             const hintX = bbox.maxX, hintY = bbox.maxY;
             const rot = window.WC.alignVerticalFistDown(canvas, hintX, hintY);
-            const cap = window.WC.flattenOpaqueCap(rot.canvas, minFrac);
+            const cap = window.WC.flattenOpaqueCap(rot.canvas, flattenFrac);
             const pivot = window.WC.pivotCrop(rot.canvas, pivotRows);
-            const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, padSides, padBottom);
-            const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 3, 'forearm');
+            const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety);
+            const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'forearm');
             return {
                 finalDataUrl: window.WC.toDataURL(flushed.canvas),
                 qaDataUrl: window.WC.toDataURL(qa),
@@ -568,24 +692,27 @@ async function main() {
                 capShaved: cap.shavedRows, capMaxWidth: cap.maxWidth, capFinalTopWidth: cap.finalTopWidth,
                 pivotX: pivot.pivotX, bboxCenterX: pivot.bboxCenterX, pivotDelta: pivot.delta,
                 leftPad: flushed.leftPad, rightPad: flushed.rightPad, bottomPad: flushed.bottomPad,
-                drawW: flushed.drawW, drawH: flushed.drawH,
+                drawW: flushed.drawW, drawH: flushed.drawH, fillFrac: flushed.fillFrac,
             };
-        }, { dataUrl: cleaned.forearm, spec: PART_SPECS.forearm, minFrac: OPAQUE_CAP_MIN_FRAC, pivotRows: PIVOT_ROWS, padSides: PAD_SIDES, padBottom: PAD_BOTTOM });
+        }, { dataUrl: cleaned.forearm, spec: PART_SPECS.forearm, flattenFrac: OPAQUE_CAP_FLATTEN_FRAC, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY });
         outputs.forearm = res;
         report.rotation = { forearm_thetaDeg: res.thetaDeg, forearm_rotationAppliedDeg: res.rotationDeg, flipped180ForFistDown: res.flipped180 };
         report.capFlatten.forearm = { shavedRows: res.capShaved, maxWidth: res.capMaxWidth, finalTopWidth: res.capFinalTopWidth };
         report.pivotCrop.forearm = { pivotX: res.pivotX, bboxCenterX: res.bboxCenterX, delta: res.pivotDelta };
-        report.finalPadding.forearm = { leftPad: res.leftPad, rightPad: res.rightPad, bottomPad: res.bottomPad, drawW: res.drawW, drawH: res.drawH };
+        report.finalPadding.forearm = { leftPad: res.leftPad, rightPad: res.rightPad, bottomPad: res.bottomPad, drawW: res.drawW, drawH: res.drawH, fillFrac: res.fillFrac };
     }
 
     // ── thigh (single source, no composite/rotation) ───────────────────────
     outputs.thigh = await buildSimplePart(page, cleaned.thigh, PART_SPECS.thigh, 'thigh');
     report.pivotCrop.thigh = { pivotX: outputs.thigh.pivotX, bboxCenterX: outputs.thigh.bboxCenterX, delta: outputs.thigh.pivotDelta };
-    report.finalPadding.thigh = { leftPad: outputs.thigh.leftPad, rightPad: outputs.thigh.rightPad, bottomPad: outputs.thigh.bottomPad, drawW: outputs.thigh.drawW, drawH: outputs.thigh.drawH };
+    report.finalPadding.thigh = { leftPad: outputs.thigh.leftPad, rightPad: outputs.thigh.rightPad, bottomPad: outputs.thigh.bottomPad, drawW: outputs.thigh.drawW, drawH: outputs.thigh.drawH, fillFrac: outputs.thigh.fillFrac };
 
     // ── torso = Torso + Trunks composite ───────────────────────────────────
+    // Builds one final canvas per candidate width multiplier plus the chosen
+    // one; the candidates go into a side-by-side comparison sheet in the QA
+    // dir so the trunks scale can be judged against the torso silhouette.
     {
-        const res = await page.evaluate(async ({ torsoUrl, trunksUrl, spec, widthMult, overlapPx, pivotRows, padSides, padBottom }) => {
+        const res = await page.evaluate(async ({ torsoUrl, trunksUrl, spec, widthMult, candidateMults, overlapPx, pivotRows, sideSafety }) => {
             const torso = await window.WC.loadImage(torsoUrl);
             const trunks = await window.WC.loadImage(trunksUrl);
             const torsoBBox = window.WC.contentBBox(torso);
@@ -594,24 +721,51 @@ async function main() {
             const trunksBBox = window.WC.contentBBox(trunks);
             const trunksRefWidth = trunksBBox.maxX - trunksBBox.minX + 1;
             const trunksRefXCenter = (trunksBBox.minX + trunksBBox.maxX) / 2;
-            const placed = window.WC.placeUnderlay({
-                baseCanvas: torso, baseEdgeY: torsoBBox.maxY, baseWidthAtEdge: band.width, baseXCenterAtEdge: band.xCenter,
-                underlayCanvas: trunks, underlayBBox: trunksBBox, underlayRefWidth: trunksRefWidth, underlayRefXCenter: trunksRefXCenter,
-                widthMultiplier: widthMult, overlapPx,
+
+            const build = (mult) => {
+                const placed = window.WC.placeUnderlay({
+                    baseCanvas: torso, baseEdgeY: torsoBBox.maxY, baseWidthAtEdge: band.width, baseXCenterAtEdge: band.xCenter,
+                    underlayCanvas: trunks, underlayBBox: trunksBBox, underlayRefWidth: trunksRefWidth, underlayRefXCenter: trunksRefXCenter,
+                    widthMultiplier: mult, overlapPx,
+                });
+                const pivot = window.WC.pivotCrop(placed.canvas, pivotRows);
+                const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety);
+                return { placed, pivot, flushed };
+            };
+
+            // candidate comparison sheet (3x zoom, dark checker behind each)
+            const zoom = 3, gap = 30, labelH = 26;
+            const sheet = window.WC.newCanvas(
+                candidateMults.length * (spec.w * zoom + gap) + gap,
+                spec.h * zoom + labelH + 16);
+            const sctx = window.WC.ctxOf(sheet);
+            sctx.fillStyle = '#1b1b1f';
+            sctx.fillRect(0, 0, sheet.width, sheet.height);
+            candidateMults.forEach((mult, i) => {
+                const { flushed } = build(mult);
+                const ox = gap + i * (spec.w * zoom + gap);
+                sctx.fillStyle = '#e8e6e3';
+                sctx.font = '16px monospace';
+                sctx.fillText(mult.toFixed(2) + 'x waistband' + (mult === widthMult ? '  <-- CHOSEN' : ''), ox, 18);
+                sctx.save(); sctx.translate(ox, labelH);
+                window.WC.drawCheckerboard(sctx, spec.w * zoom, spec.h * zoom, 12);
+                sctx.drawImage(flushed.canvas, 0, 0, spec.w, spec.h, 0, 0, spec.w * zoom, spec.h * zoom);
+                sctx.restore();
             });
-            const pivot = window.WC.pivotCrop(placed.canvas, pivotRows);
-            const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, padSides, padBottom);
-            const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 2, 'torso');
+
+            const { placed, pivot, flushed } = build(widthMult);
+            const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'torso');
             const uncomposited = window.WC.toDataURL(torso);
             return {
-                finalDataUrl: window.WC.toDataURL(flushed.canvas), qaDataUrl: window.WC.toDataURL(qa), uncompositedDataUrl: uncomposited,
+                finalDataUrl: window.WC.toDataURL(flushed.canvas), qaDataUrl: window.WC.toDataURL(qa),
+                candidatesDataUrl: window.WC.toDataURL(sheet), uncompositedDataUrl: uncomposited,
                 waistbandWidth: band.width, waistbandY: band.y, waistbandXCenter: band.xCenter,
                 trunksRefWidth, trunksRefXCenter, scale: placed.scale, dx: placed.dx, dy: placed.dy, dw: placed.dw, dh: placed.dh,
                 pivotX: pivot.pivotX, bboxCenterX: pivot.bboxCenterX, pivotDelta: pivot.delta,
                 leftPad: flushed.leftPad, rightPad: flushed.rightPad, bottomPad: flushed.bottomPad,
-                drawW: flushed.drawW, drawH: flushed.drawH,
+                drawW: flushed.drawW, drawH: flushed.drawH, fillFrac: flushed.fillFrac,
             };
-        }, { torsoUrl: cleaned.torso, trunksUrl: cleaned.trunks, spec: PART_SPECS.torso, widthMult: TRUNKS_WIDTH_MULT, overlapPx: COMPOSITE_OVERLAP_PX, pivotRows: PIVOT_ROWS, padSides: PAD_SIDES, padBottom: PAD_BOTTOM });
+        }, { torsoUrl: cleaned.torso, trunksUrl: cleaned.trunks, spec: PART_SPECS.torso, widthMult: TRUNKS_WIDTH_MULT, candidateMults: TRUNKS_CANDIDATE_MULTS, overlapPx: TRUNKS_OVERLAP_PX, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY });
         outputs.torso = res;
         report.composites.torso_trunks = {
             waistbandWidth: res.waistbandWidth, waistbandRow: res.waistbandY, waistbandXCenter: res.waistbandXCenter,
@@ -619,12 +773,12 @@ async function main() {
             appliedScale: res.scale, placedAt: { dx: res.dx, dy: res.dy, dw: res.dw, dh: res.dh },
         };
         report.pivotCrop.torso = { pivotX: res.pivotX, bboxCenterX: res.bboxCenterX, delta: res.pivotDelta };
-        report.finalPadding.torso = { leftPad: res.leftPad, rightPad: res.rightPad, bottomPad: res.bottomPad, drawW: res.drawW, drawH: res.drawH };
+        report.finalPadding.torso = { leftPad: res.leftPad, rightPad: res.rightPad, bottomPad: res.bottomPad, drawW: res.drawW, drawH: res.drawH, fillFrac: res.fillFrac };
     }
 
     // ── shin = L_Leg_Lower + L_Foot composite, then cap-flatten ────────────
     {
-        const res = await page.evaluate(async ({ shinUrl, footUrl, spec, overlapPx, minFrac, pivotRows, padSides, padBottom }) => {
+        const res = await page.evaluate(async ({ shinUrl, footUrl, spec, overlapPx, flattenFrac, pivotRows, sideSafety }) => {
             const shin = await window.WC.loadImage(shinUrl);
             const foot = await window.WC.loadImage(footUrl);
             const shinBBox = window.WC.contentBBox(shin);
@@ -639,10 +793,10 @@ async function main() {
                 underlayCanvas: foot, underlayBBox: footBBox, underlayRefWidth: ankle.width, underlayRefXCenter: ankle.xCenter,
                 widthMultiplier: 1.0, overlapPx,
             });
-            const cap = window.WC.flattenOpaqueCap(placed.canvas, minFrac, shinBBox.maxY);
+            const cap = window.WC.flattenOpaqueCap(placed.canvas, flattenFrac, shinBBox.maxY);
             const pivot = window.WC.pivotCrop(placed.canvas, pivotRows);
-            const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, padSides, padBottom);
-            const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 2, 'shin');
+            const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety);
+            const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'shin');
             const uncomposited = window.WC.toDataURL(shin);
             // Where the shin's OWN region (pre-boot) ends up in the final
             // canvas's y-coordinates, so verification can scope its
@@ -656,9 +810,9 @@ async function main() {
                 capShaved: cap.shavedRows, capMaxWidth: cap.maxWidth, capFinalTopWidth: cap.finalTopWidth,
                 pivotX: pivot.pivotX, bboxCenterX: pivot.bboxCenterX, pivotDelta: pivot.delta,
                 leftPad: flushed.leftPad, rightPad: flushed.rightPad, bottomPad: flushed.bottomPad,
-                drawW: flushed.drawW, drawH: flushed.drawH, ownRegionBottomYFinal,
+                drawW: flushed.drawW, drawH: flushed.drawH, fillFrac: flushed.fillFrac, ownRegionBottomYFinal,
             };
-        }, { shinUrl: cleaned.shin, footUrl: cleaned.foot, spec: PART_SPECS.shin, overlapPx: COMPOSITE_OVERLAP_PX, minFrac: OPAQUE_CAP_MIN_FRAC, pivotRows: PIVOT_ROWS, padSides: PAD_SIDES, padBottom: PAD_BOTTOM });
+        }, { shinUrl: cleaned.shin, footUrl: cleaned.foot, spec: PART_SPECS.shin, overlapPx: SHIN_OVERLAP_PX, flattenFrac: OPAQUE_CAP_FLATTEN_FRAC, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY });
         outputs.shin = res;
         report.composites.shin_foot = {
             cuffWidth: res.cuffWidth, cuffRow: res.cuffY, shinBottomRowXCenter: res.bottomRowXCenter,
@@ -667,7 +821,7 @@ async function main() {
         };
         report.capFlatten.shin = { shavedRows: res.capShaved, maxWidth: res.capMaxWidth, finalTopWidth: res.capFinalTopWidth };
         report.pivotCrop.shin = { pivotX: res.pivotX, bboxCenterX: res.bboxCenterX, delta: res.pivotDelta };
-        report.finalPadding.shin = { leftPad: res.leftPad, rightPad: res.rightPad, bottomPad: res.bottomPad, drawW: res.drawW, drawH: res.drawH };
+        report.finalPadding.shin = { leftPad: res.leftPad, rightPad: res.rightPad, bottomPad: res.bottomPad, drawW: res.drawW, drawH: res.drawH, fillFrac: res.fillFrac };
     }
 
     // ── write final PNGs to destDir ─────────────────────────────────────────
@@ -693,7 +847,12 @@ async function main() {
             const dimsOk = canvas.width === spec.w && canvas.height === spec.h;
             const bbox = window.WC.contentBBox(canvas);
             const hasContent = !!bbox;
-            const edgeFree = bbox ? (bbox.minX > 0 && bbox.maxX < canvas.width - 1 && bbox.maxY < canvas.height - 1) : false;
+            // sides must stay off the texture border (bleed safety); the
+            // BOTTOM is the opposite — the rig maps canvas bottom to the
+            // bone end, so content should reach it (within a couple px)
+            // whenever the part isn't width-limited (fillFrac < 1).
+            const sidesFree = bbox ? (bbox.minX > 0 && bbox.maxX < canvas.width - 1) : false;
+            const topFlush = bbox ? bbox.minY === 0 : false;
             let capOk = true, capTopWidth = null, capMaxWidth = null;
             if (spec.opaqueCap && bbox) {
                 const topRow = window.WC.rowStats(canvas, bbox.minY);
@@ -703,27 +862,34 @@ async function main() {
                     const r = window.WC.rowStats(canvas, y);
                     if (r && r.width > maxWidth) maxWidth = r.width;
                 }
-                capTopWidth = topRow ? topRow.width : 0;
-                capMaxWidth = maxWidth;
-                capOk = maxWidth > 0 && (capTopWidth / maxWidth) >= minFrac;
-                // Require the top row's CORE (its own span, minus a few
-                // pixels of unavoidable antialiasing at each outer edge) to
-                // be fully opaque — a hard 0-tolerance check would flag the
-                // natural 1-3px edge taper every raster silhouette has, which
-                // isn't a joint-seam gap since it sits at the very boundary
-                // of an already-wide-enough cap, not its center.
-                if (topRow && topRow.width > edgeTrim * 2) {
+                // The joint-cover width that matters is the longest
+                // CONTIGUOUS effectively-opaque run in the top row — that's
+                // the strip that actually hides the elbow/knee seam.
+                // Threshold 240, not 255: George's source art is itself
+                // painted at alpha ~253, and bicubic resampling shaves a few
+                // more units; 240+ is indistinguishable from solid on screen.
+                let runWidth = 0;
+                if (topRow) {
                     const ctx = window.WC.ctxOf(canvas);
                     const rowData = ctx.getImageData(topRow.minX, bbox.minY, topRow.width, 1).data;
-                    for (let i = edgeTrim; i < topRow.width - edgeTrim; i++) {
-                        if (rowData[i * 4 + 3] < 250) { capOk = false; break; }
+                    let run = 0;
+                    for (let i = 0; i < topRow.width; i++) {
+                        if (rowData[i * 4 + 3] >= 240) { run++; if (run > runWidth) runWidth = run; }
+                        else run = 0;
                     }
                 }
+                capTopWidth = runWidth;
+                capMaxWidth = maxWidth;
+                capOk = maxWidth > 0 && (runWidth / maxWidth) >= minFrac;
             }
-            return { w: canvas.width, h: canvas.height, dimsOk, hasContent, edgeFree, bbox, capOk, capTopWidth, capMaxWidth };
-        }, { dataUrl, spec, minFrac: OPAQUE_CAP_MIN_FRAC, maxWidthSearchYEnd, edgeTrim: 3 });
-        const pass = v.dimsOk && v.hasContent && v.edgeFree && v.capOk;
-        report.verification[name] = { ...v, pass };
+            return { w: canvas.width, h: canvas.height, dimsOk, hasContent, sidesFree, topFlush, bbox, capOk, capTopWidth, capMaxWidth };
+        }, { dataUrl, spec, minFrac: OPAQUE_CAP_MIN_FRAC, maxWidthSearchYEnd });
+        // bottom-flush required unless the part is width-limited (fillFrac<1,
+        // i.e. the art physically can't reach the bottom at legal width)
+        const expectedBottom = Math.round(PART_SPECS[name].h * outputs[name].fillFrac) - 1;
+        const bottomOk = v.bbox ? Math.abs(v.bbox.maxY - expectedBottom) <= 2 : false;
+        const pass = v.dimsOk && v.hasContent && v.sidesFree && v.topFlush && bottomOk && v.capOk;
+        report.verification[name] = { ...v, bottomOk, expectedBottom, fillFrac: outputs[name].fillFrac, pass };
         if (!pass) verificationOk = false;
     }
     report.verificationOk = verificationOk;
@@ -738,6 +904,7 @@ async function main() {
     }
     fs.writeFileSync(path.join(DEFAULT_QA_DIR, 'uncomposited_torso.png'), Buffer.from(outputs.torso.uncompositedDataUrl.split(',')[1], 'base64'));
     fs.writeFileSync(path.join(DEFAULT_QA_DIR, 'uncomposited_shin.png'), Buffer.from(outputs.shin.uncompositedDataUrl.split(',')[1], 'base64'));
+    fs.writeFileSync(path.join(DEFAULT_QA_DIR, 'trunks_candidates.png'), Buffer.from(outputs.torso.candidatesDataUrl.split(',')[1], 'base64'));
 
     // ── paper doll mock ──────────────────────────────────────────────────
     const headPath = path.join(char.destDir, 'head.png');
@@ -800,19 +967,19 @@ async function main() {
 }
 
 async function buildSimplePart(page, sourceDataUrl, spec, label) {
-    const res = await page.evaluate(async ({ dataUrl, spec, pivotRows, padSides, padBottom, label }) => {
+    const res = await page.evaluate(async ({ dataUrl, spec, pivotRows, sideSafety, label }) => {
         const canvas = await window.WC.loadImage(dataUrl);
         const pivot = window.WC.pivotCrop(canvas, pivotRows);
-        const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, padSides, padBottom);
-        const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 3, label);
+        const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety);
+        const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, label);
         return {
             finalDataUrl: window.WC.toDataURL(flushed.canvas),
             qaDataUrl: window.WC.toDataURL(qa),
             pivotX: pivot.pivotX, bboxCenterX: pivot.bboxCenterX, pivotDelta: pivot.delta,
             leftPad: flushed.leftPad, rightPad: flushed.rightPad, bottomPad: flushed.bottomPad,
-            drawW: flushed.drawW, drawH: flushed.drawH,
+            drawW: flushed.drawW, drawH: flushed.drawH, fillFrac: flushed.fillFrac,
         };
-    }, { dataUrl: sourceDataUrl, spec, pivotRows: PIVOT_ROWS, padSides: PAD_SIDES, padBottom: PAD_BOTTOM, label });
+    }, { dataUrl: sourceDataUrl, spec, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY, label });
     return res;
 }
 

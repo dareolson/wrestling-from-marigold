@@ -20,7 +20,11 @@ await page.evaluate(() => {
     window.__mark = (label) => window.__MARKS.push({ label, t: sc.time.now });
     // scene.update is bound at boot — hook the systems' postupdate event instead
     sc.events.on('postupdate', (t, d) => {
-        const f = (w) => ({ x: w.x, y: w.y, st: w.state, fp: w.flipProgress, rp: w.runPhase, fc: w.facing });
+        const f = (w) => ({
+            x: w.x, y: w.y, st: w.state, fp: w.flipProgress, rp: w.runPhase, fc: w.facing,
+            near: w.skeleton.nearFoot ? { ...w.skeleton.nearFoot } : null,
+            far:  w.skeleton.farFoot  ? { ...w.skeleton.farFoot }  : null,
+        });
         window.__SAMPLES.push({ t: sc.time.now, d, w1: f(sc.w1), w2: f(sc.w2) });
     });
 });
@@ -139,6 +143,28 @@ function vels(ss, who) {
     return out;
 }
 
+// Planted-foot world-space slide: for each foot (near/far), walk consecutive
+// samples and record |Δx|,|Δy| between frames where that foot is planted in
+// BOTH frames (a genuine stance-to-stance step, not a swing/plant transition,
+// which legitimately moves). A foot-locked gait should show ~0 here; the B1
+// reversal concern is that gait-phase direction can desync from actual travel
+// during the brake half of a live reversal, letting the stance sweep fail to
+// cancel body displacement.
+function footSlip(ss, who) {
+    let maxSlip = 0, maxAt = null, slipFrames = 0, plantedFrames = 0;
+    for (const foot of ['near', 'far']) {
+        for (let i = 1; i < ss.length; i++) {
+            const a = ss[i - 1][who][foot], b = ss[i][who][foot];
+            if (!a || !b || !a.planted || !b.planted) continue;
+            plantedFrames++;
+            const slip = Math.hypot(b.x - a.x, b.y - a.y);
+            if (slip > 0.5) slipFrames++;
+            if (slip > maxSlip) { maxSlip = slip; maxAt = { t: ss[i].t, foot }; }
+        }
+    }
+    return { maxSlip, maxAt, slipFrames, plantedFrames };
+}
+
 // A: acceleration profile
 {
     const v = vels(seg('A_start', 'B_start'), 'w1');
@@ -168,6 +194,8 @@ function vels(ss, who) {
             console.log('brake time: did not reach ~0 vx before segment end');
         }
     }
+    const slip = footSlip(seg('A_start', 'B_start'), 'w1');
+    console.log(`foot slip (steady walk + brake): max ${slip.maxSlip.toFixed(2)}px, ${slip.slipFrames}/${slip.plantedFrames} planted-pair frames >0.5px${slip.maxAt ? ` (worst @ +${(slip.maxAt.t - M['A_start']).toFixed(0)}ms, ${slip.maxAt.foot})` : ''}`);
 }
 
 // B: turn (fresh start in the opposite direction, from a stop)
@@ -197,6 +225,10 @@ function vels(ss, who) {
     if (newSteadyIdx >= 0) {
         console.log(`reaches new-direction speed at ${(postSwap[newSteadyIdx].t - M['B2_swap']).toFixed(0)}ms after swap`);
     }
+    const slipAll = footSlip(seg('B2_start', 'C_start'), 'w1');
+    console.log(`foot slip (full B2 segment): max ${slipAll.maxSlip.toFixed(2)}px, ${slipAll.slipFrames}/${slipAll.plantedFrames} planted-pair frames >0.5px${slipAll.maxAt ? ` (worst @ +${(slipAll.maxAt.t - M['B2_start']).toFixed(0)}ms, ${slipAll.maxAt.foot})` : ''}`);
+    const slipPostSwap = footSlip(samples.filter(s => s.t >= M['B2_swap'] && s.t < M['C_start']), 'w1');
+    console.log(`foot slip (post-swap window only, the suspected brake-then-accelerate desync): max ${slipPostSwap.maxSlip.toFixed(2)}px, ${slipPostSwap.slipFrames}/${slipPostSwap.plantedFrames} planted-pair frames >0.5px${slipPostSwap.maxAt ? ` (worst @ +${(slipPostSwap.maxAt.t - M['B2_swap']).toFixed(0)}ms, ${slipPostSwap.maxAt.foot})` : ''}`);
 }
 
 // C: run + rebound

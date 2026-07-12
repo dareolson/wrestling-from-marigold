@@ -360,9 +360,18 @@ export default class Wrestler {
             this.vy += (dvy / dv) * rate;
         }
 
-        if (len > 0) {
-            const backward = dx !== 0 && Math.sign(dx) !== this.facing;
-            this._walkPhaseDir = backward ? -1 : 1;
+        // Gait-phase direction must track actual travel relative to facing, not
+        // raw input: the stance-sweep world-lock (Skeleton.js GAIT comment)
+        // only cancels body displacement when dir === sign(vx) relative to
+        // facing. During a live reversal, vx still points the old way through
+        // the whole brake half of the ramp even though input flipped
+        // instantly — driving dir off input there desyncs the phase step from
+        // actual displacement and the planted foot slides. Below a small
+        // epsilon, sign(vx) is noise from the ramp settling; hold the last
+        // direction (matches the existing brake-to-stop behavior).
+        const VX_EPS = 4 * this.s;
+        if (Math.abs(this.vx) > VX_EPS) {
+            this._walkPhaseDir = Math.sign(this.vx) === this.facing ? 1 : -1;
         }
 
         // Gait speed is fed from actual travel speed (not target speed) so the

@@ -364,6 +364,10 @@ export default class Skeleton {
         this._placePart(this.farShin, farKnee.x, farKnee.y, legW, shinH, far.shinAng, s, facing);
         const farAnkle = this._end(farKnee.x, farKnee.y, shinH, far.shinAng);
         if (this.farBoot) this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, far.bootAng);
+        // Debug read seam (feel-audit foot-lock verification) — world ankle
+        // position + planted flag. footA/footB->near/far mapping is stable in
+        // gait mode (see comment above); meaningless in pose-driven FK, so null.
+        this.farFoot = { x: farAnkle.x, y: farAnkle.y, planted: useGait ? footB.lift === 0 : null };
 
         // Far arm
         this._placePart(this.farUpArm, shoulderX, shoulderY, armW, upperArmH, farAA, s, facing);
@@ -380,6 +384,7 @@ export default class Skeleton {
         this._placePart(this.nearShin, nearKnee.x, nearKnee.y, legW, shinH, near.shinAng, s, facing);
         const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, near.shinAng);
         if (this.nearBoot) this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
+        this.nearFoot = { x: nearAnkle.x, y: nearAnkle.y, planted: useGait ? footA.lift === 0 : null };
 
         // Near arm
         this._placePart(this.nearUpArm, shoulderX, shoulderY, armW, upperArmH, nearAA, s, facing);

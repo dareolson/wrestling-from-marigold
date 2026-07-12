@@ -774,6 +774,47 @@ the right `thesz_*`/`george_*` keys; screenshot review both facings.
 Both Phase-5 bosses now have full art. Remaining roster is
 drop-a-folder-per-character; the pipeline and rig need no further changes.
 
+### 2026-07-12 — B1 close-out: fixed gait-phase direction desync during live reversal
+
+**Goal:** Codex flagged a verification gap in FEEL_AUDIT B1: the kinematics
+probe proved body velocity crosses zero during a reversal but never measured
+where the planted foot actually sits in world space, so the "feet stay
+planted through reversals" claim wasn't established. Commit `4fad2eb`.
+
+**Built:**
+- `src/Skeleton.js` — minimal debug read seam: `nearFoot`/`farFoot` (world
+  ankle x,y + planted flag) stored after each frame's leg placement in
+  `updateUpright`. No production behavior change.
+- `tools/debug/kinematics.mjs` — samples the new foot data and adds a
+  `footSlip()` metric: max world-space drift of a foot between two
+  consecutive frames where it's planted in both. Reported for the steady
+  walk+brake test and the existing live-reversal (B2) test.
+- **Confirmed the bug**: pre-fix, the B2 post-swap window showed foot slip up
+  to 3.28px with 10/34 planted-pair frames slipping >0.5px, concentrated
+  right at the input swap (+17ms) — `_walkPhaseDir` was flipping instantly
+  off raw input while `vx` still pointed the old way through the entire brake
+  half of the reversal ramp, desyncing the gait-lock math (which requires
+  phase direction to equal `sign(vx)` relative to facing).
+- `src/Wrestler.js` — `_walkPhaseDir` now derives from actual post-ramp `vx`
+  sign relative to facing (epsilon `4 * this.s` to ignore near-zero noise and
+  hold the last direction through the brake tail, same as before). No other
+  gameplay code touched.
+- Post-fix: post-swap slipping frames drop to 2-3/34-36, and the "worst"
+  frame moves to well after the crossover — matching the same small
+  quantization artifact already present in plain (non-reversal) braking, not
+  a direction-specific bug. Stable across 3 repeated probe runs.
+
+**Verified:** `npm test` 43/43, `npm run debug:play -- all` 12/12, `npm run
+build` clean — all on Node 25.8.1 (`/opt/homebrew/opt/node/bin`, this
+checkout's `nvm`/system default still resolves to 19.8.1). Kinematics probe
+re-run 3× post-fix for stability; run/whip/clothesline/accel/brake timings
+unchanged within measurement noise. Screenshot review mid-walk and
+mid-reversal: no rendering glitch.
+
+**Human playtest still required** — labeling B1 mechanically verified, not
+feel-signed-off, pending Derek. See `AI_HANDOFF.md` for the full handoff
+entry and open questions.
+
 ---
 
 ## Phase Roadmap

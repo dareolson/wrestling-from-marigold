@@ -83,6 +83,69 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-12 — Claude (B1 close-out: reversal foot-lock, per Codex's assignment above)
+
+Closed the verification gap Codex flagged. Landed as `4fad2eb` on master
+(pushed alongside `c58535c`, Derek's assignment-setting commit).
+
+**Measurement first, per the assignment's instruction not to guess.** Added a
+minimal debug read seam in `Skeleton.js` (`nearFoot`/`farFoot`: world ankle
+x,y + planted flag, stored after each frame's leg placement — no rendering
+change) and a `footSlip()` metric in `tools/debug/kinematics.mjs` that finds
+the max world-space drift of a foot between consecutive frames where it's
+planted in both. Ran it pre-fix: the B2 live-reversal test's post-swap window
+showed real slide — max 3.28px, 10/34 planted-pair frames slipping >0.5px,
+concentrated right at the input swap (+17ms after). Root cause confirmed:
+`Wrestler.move` set `_walkPhaseDir` from raw input direction, which flips the
+instant the key changes, while `this.vx` (the ramp) still points the old way
+through the entire brake half of a live reversal — desyncing the gait-lock
+math, which (per the `Skeleton.js` GAIT derivation) requires phase direction
+to equal `sign(vx)` relative to facing, not the newly-pressed key.
+
+**Fix, smallest possible:** `_walkPhaseDir` now derives from actual
+post-ramp `vx` sign relative to facing, with a `4 * this.s` epsilon so
+near-zero `vx` (settling/noise) holds the last direction rather than
+flipping — same "held through brake-to-stop" behavior the field already
+documented, just driven by real velocity instead of input. Nothing else in
+`move()` touched.
+
+**Post-fix measurement:** post-swap slipping frames drop to 2-3 out of
+34-36, and the worst frame shifts from right-at-the-swap to well past the
+150ms crossover — matching the same small residual seen in plain
+(non-reversal) braking, which I did not chase further since it's not the
+direction-desync bug in scope here and shows up identically before and after
+this fix. Confirmed stable across 3 repeated probe runs (max slip 3.28-3.35px
+pre-fix window unchanged in magnitude, but frame count and location moved off
+the swap point every time).
+
+**Verified:** `npm test` 43/43, `npm run debug:play -- all` 12/12, `npm run
+build` clean, all on Node 25.8.1 via `/opt/homebrew/opt/node/bin` (this
+checkout's default `node` still resolves to 19.8.1 — Codex/whoever else,
+prefix `PATH` or `nvm use 22`). Run/whip/clothesline/accel/brake timings
+unchanged within measurement noise (e.g. run speed 273 vs 274 px/s,
+brake time 100-101ms across pre/post-fix runs). Screenshot review at
+mid-walk and mid-reversal (post title-card, ~6-7s into a match): no visual
+glitch, gait reads normally.
+
+**Human playtest: not done this session** — Derek wasn't available. Per the
+assignment, labeling B1 **mechanically verified, not feel-signed-off**. This
+specifically needs eyes on whether the reversal now *feels* different (the
+crossover point shifted ~15-20ms later in a couple of runs, likely just
+measurement noise from live wall-clock timing rather than a real behavior
+change, since the fix only touches visual gait-phase direction, not the
+`vx`/`vy` ramp itself — but worth confirming by feel, not just by staring at
+the numbers).
+
+**Open questions for Codex/Derek:**
+- The residual 2-4-frame quantization slip present in both plain braking and
+  post-fix reversal (a last-frame artifact right where `travelSpeed` crosses
+  the `0.5` "stop" threshold) is small (~4px) and out of this assignment's
+  scope, but flagging in case anyone wants it swept up alongside a future
+  B-batch item — it's not reversal-specific and predates this session.
+- No new Active Assignment queued below — B2 hitstop is next per the original
+  brief's sequence, but that's Codex's/Derek's call, and Derek's human
+  playtest of B1 should probably happen first.
+
 ### 2026-07-12 — Codex (review of July 11–12 work; next Claude prompt)
 
 Reviewed the July 11 consolidated brief against Claude's reports and the landed

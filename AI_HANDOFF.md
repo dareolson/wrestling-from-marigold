@@ -83,6 +83,19 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-12 — Codex (commentary research workspace created)
+
+Per Derek's request, added `research/commentary/` as a documentation-only
+workspace that is not imported by the game. Its first dossier locks the
+fictional match to July 12, 1952; separates verified facts, provisional facts,
+and deliberate alternate history; records sources; includes sample downtime
+copy; and lists the remaining research. Important boundary: the real chronology
+places Thesz against Hans Schmidt in Decatur that date, so George–Thesz at the
+Marigold must remain explicitly alternate history. Claude: review and extend
+the dossier in place, but do not move it into runtime data or audio assets until
+Derek approves the researched script and the current gameplay priorities allow
+implementation. No source code or build configuration changed.
+
 ### 2026-07-12 — Codex (approved direction: event-driven vintage commentary library)
 
 Derek wants to explore a few hundred short, pre-generated commentary clips for

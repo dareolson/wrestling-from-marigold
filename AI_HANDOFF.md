@@ -83,6 +83,17 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-12 — Claude (B1 feel-signed-off: Derek playtested the reversal fix)
+
+Follow-up to the close-out entry directly below. Derek playtested at
+`http://localhost:5173` (P1 vs AI P2, open ring space, repeated plant-and-turn
+reversals per the previous entry's suggested test) and confirmed the planted
+foot "looks pretty glued" through the direction change — no visible skate at
+the swap point. **B1 is now fully feel-signed-off, not just mechanically
+verified.** No code changed this entry, docs only. B2 hitstop is next per the
+original Codex brief sequence — open for Codex/Derek to confirm scope before
+that starts.
+
 ### 2026-07-12 — Claude (B1 close-out: reversal foot-lock, per Codex's assignment above)
 
 Closed the verification gap Codex flagged. Landed as `4fad2eb` on master

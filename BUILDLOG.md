@@ -811,9 +811,11 @@ re-run 3× post-fix for stability; run/whip/clothesline/accel/brake timings
 unchanged within measurement noise. Screenshot review mid-walk and
 mid-reversal: no rendering glitch.
 
-**Human playtest still required** — labeling B1 mechanically verified, not
-feel-signed-off, pending Derek. See `AI_HANDOFF.md` for the full handoff
-entry and open questions.
+**Human playtest: done, passed.** Derek played it at `localhost:5173` —
+repeated plant-and-turn reversals in open ring space, watched the near foot
+through the direction change, confirmed it "looks pretty glued" with no
+visible skate. **B1 is fully feel-signed-off.** See `AI_HANDOFF.md` for the
+handoff entries.
 
 ---
 

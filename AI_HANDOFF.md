@@ -72,6 +72,62 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-11 — Claude (session close: baseline landed; Codex brief fully executed)
+
+Baseline measurement is in (merge `d2033b9`) — with that, every actionable
+item in Codex's 2026-07-11 brief below is done: toolchain, doc drift, B1
+locomotion (see interim entry below for those), and now the post-Thesz-press
+baseline. All pushed to origin/master. BUILDLOG 2026-07-11 entry has the full
+session account.
+
+**Baseline headline — the Broadway finding is NOT stale, it's structural.**
+8/8 Thesz/George ten-minute draws. Root cause measured, not guessed: every
+closing tool that landed since Batch A (`slamAt: 60`, `pressHuntAt: 42`,
+`coverStamina` 55/60) gates on a *standing* low-stamina opponent, and that
+state is vacant — George stands below 60 stamina in 0.3% of trace samples,
+below 42 in 0.0% (509/511 Thesz lockup follow-ups found him ≥60). His dips
+happen while down; taunt regen (~35/match) + kickout refunds lift him back
+over every threshold before he's upright. Thesz threw 0 suplexes/bodySlams
+and 1 press in 8 matches. Brawler/George: 2/8 pinfalls (down from 3/5 at
+Batch A — earlier covers feed George MORE count-1 regen beats), and the two
+finishes share one anatomy: bodySlam burst re-stacked faster than the refund
+cycle repays. Full tables + Batch A comparison: FEEL_AUDIT.md addendum
+"Post-Thesz-press baseline (2026-07-11)". Raw 16-match JSON archived gzipped
+in `tools/debug/baselines/` — re-analyze with `psych_analyze.mjs` /
+`psych_baseline.mjs` (new) without re-running ~3h of probes.
+
+**Design consequence for C-batch (Codex, weigh in):** C2 finish-hunting
+cannot gate on "standing opponent below threshold" — the data says that
+window never opens. It has to catch the down/getting-up window, or suppress
+the recovery stack (taunt conversion + kickout refunds) once a wrestler is
+driven under the threshold, or both. C1 (kickout depth curve) is confirmed
+untouched by recent work — bg kickouts are still 91% count-1. Derek still
+owns the booking call on C scope.
+
+**Tool fixes landed with this:** psych_probe heat/pos traces froze after
+match 1 of any multi-match run (recorder time-rewind bug, `7fdf25a` — every
+prior multi-match probe's match-2+ traces were single stale samples);
+`psych_baseline.mjs` added (kickout depth, first-finisher timing,
+below-15-to-bell, per-minute stamina arcs).
+
+**New bugs found, deliberately not fixed (out of measurement scope):**
+1. Stagger-grab slams log move name `slam` (Wrestler.js:527), which has no
+   `_heatForMove` entry — stagger conversions award zero heat. One-line fix
+   candidate for whoever next touches heat.
+2. Standing bodies rest 5–10px past the rope-plane probe margin (≤99
+   frames/match at x≈845/x≈115). Down-state OOB is still 0 — Batch A's
+   clamps hold; this is the standing separation/walk path.
+
+**Open for Derek:** B1 walk feel playtest (accel ~130ms / brake ~90ms — does
+it read as weight?), the C-batch booking decision above, and George part PNGs
+(a parallel art session is handling rigging; it was told to pull before
+pushing).
+
+**No new Active Assignment is queued** — Codex should set the next one
+(suggested candidates, in this session's order of confidence: C2+C1 with the
+down-window design change above; B2 hitstop per the brief's sequence; or the
+gamepad wiring as the parallel product task).
+
 ### 2026-07-11 — Claude (interim: toolchain + doc-drift + B1 landed; baseline in flight)
 
 Orchestration session executing Codex's 2026-07-11 brief below. Work was

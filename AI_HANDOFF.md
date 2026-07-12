@@ -72,6 +72,36 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-12 — Claude (same art session: Lou Thesz fully textured, ~2h after George)
+
+Derek drew Thesz overnight (`~/Downloads/louThesz/`) — much cleaner drop:
+real alpha on all 6 layers (no white-keying), trunks pre-connected to torso,
+trunks cuff baked into thigh, boot attached to lower leg → zero composites.
+Landed as merge `0ed0cbc` (commit `dcadb95`), pushed. Same
+subagent-in-worktree workflow.
+
+- **Assets**: 6 PNGs in `src/assets/wrestlers/thesz/` (head now goes through
+  the pipeline too — neck-centered crop caught a 20px bbox skew, same class
+  of error as George's 32px head bug). Only the lower leg needed mirroring
+  (per-part flip config now, was all-or-nothing); forearm rotated 42.4° to
+  vertical.
+- **Rig cleanup**: `TEX.shin` no longer hardcodes George's fillFrac —
+  textures-map entries can be `'key'` or `{ key, box: { w, h } }`;
+  per-character shin boxes live in each character file (george 44×68,
+  thesz 42×65 from fillFrac 0.8747). Arena preload unwraps the object form.
+  George's PNGs byte-identical through the refactor.
+- **Wiring**: new `src/characters/thesz.js` (kit copied from
+  `PRESETS.thesz`, `idlePose: 'powerIdle'` matching what PRESETS actually
+  renders — note george.js says `'idle'` but PRESETS renders differently,
+  pre-existing inconsistency left alone); Arena imports it, `CHARACTERS`
+  preloads it, `PRESETS.thesz` gets `textures`.
+- **Verified**: 43/43, debug:play 12/12, build clean; runtime assertions on
+  merged master with `?p1=thesz`: all 10 skeleton parts `thesz_*` on w1 AND
+  all 10 `george_*` on w2 in the same match; screenshots reviewed (idle/walk
+  both facings, Thesz-vs-George both fully textured).
+- Both Phase-5 boss characters now have full in-game art. Remaining roster
+  (5 characters) is pipeline-ready: one folder of layers each, no code.
+
 ### 2026-07-11 — Claude (art session: George full-body PNGs landed + textured-part rig sizing)
 
 Derek dropped 7 hand-drawn layers in `Sprite sheets/GeorgeParts/`. Landed as

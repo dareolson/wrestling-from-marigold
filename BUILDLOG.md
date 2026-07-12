@@ -749,6 +749,31 @@ knee/shin line weight faint under the grayscale filter; next character's
 export checklist — background layer OFF, and don't draw second arms/legs
 (no per-side texture keys in the rig yet).
 
+### 2026-07-12 — Lou Thesz fully textured (same night as George)
+
+**Goal:** Derek drew Thesz immediately after seeing George in-game
+(`~/Downloads/louThesz/`, 6 layers). Merge `0ed0cbc` (commit `dcadb95`),
+pushed.
+
+**Built:**
+- `src/assets/wrestlers/thesz/` — all 6 textures. Cleaner drop: real alpha
+  everywhere (no keying), trunks connected to torso, trunks cuff on thigh,
+  boot attached to lower leg → zero composites. Head went through the
+  pipeline for the first time (neck-centered crop, caught 20px bbox skew);
+  lower leg mirrored (per-part flip config, new); forearm rotated 42.4°.
+- Rig: textures-map entries now `'key'` or `{ key, box }` — per-character
+  shin display boxes (george 44×68 / thesz 42×65 per fillFrac) moved into
+  character configs; no character-specific constants left in Skeleton.js.
+- `src/characters/thesz.js` + Arena wiring (CHARACTERS preload,
+  PRESETS.thesz textures).
+
+**Verified:** 43/43; debug:play 12/12; build clean; runtime assertions on
+merged master — Thesz-vs-George match with all 20 skeleton parts carrying
+the right `thesz_*`/`george_*` keys; screenshot review both facings.
+
+Both Phase-5 bosses now have full art. Remaining roster is
+drop-a-folder-per-character; the pipeline and rig need no further changes.
+
 ---
 
 ## Phase Roadmap

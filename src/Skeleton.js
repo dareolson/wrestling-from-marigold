@@ -20,24 +20,26 @@ const P = {
 // deliberately narrow (torsoW 20, legW 26) — stretching a 190px-wide torso
 // PNG into that box would render it as a column. Widths derive from the rig
 // bone lengths and each art canvas's aspect ratio; heights stay equal to the
-// bone lengths so all joint/pivot math is untouched — except shin, whose
-// PNG has the boot baked in: its box spans shinH + bootH (32 + 25 = 57) so
-// the boot sole lands on the ground line, while the knee pivot and the
-// _end/ankle math still use shinH exactly as before.
+// bone lengths so all joint/pivot math is untouched.
 //
 // The cutter pipeline (tools/wrestler-cutter/process-parts.mjs) makes the
 // art fill each canvas's full height, so canvas top = pivot joint and
-// canvas bottom = bone end and these boxes map 1:1... except the shin
-// again: its canvas is width-limited by the boot toe (art fills 84.1% of
-// the 230px canvas height — the pipeline reports this as fillFrac), so its
-// box is 57 / 0.841 ≈ 68 tall to land the sole on the ground anyway.
-// Recompute w/h from the reported fillFrac if the shin art is regenerated.
+// canvas bottom = bone end and these boxes map 1:1 for every part EXCEPT the
+// shin, whose PNG has the boot baked in: its box must span shinH + bootH
+// (32 + 25 = 57 unscaled) so the boot sole lands on the ground line, while
+// the knee pivot and the _end/ankle math still use shinH exactly as before.
+// The shin's canvas is also typically width-limited by the boot toe (a
+// pivot-symmetric crop can't fill the canvas height at legal width), so its
+// true box is (37, 57) / fillFrac — fillFrac is character-specific (each
+// artist's boot silhouette differs) and reported by the pipeline, so there
+// is no single default here: every character wiring a shin texture must
+// supply its own box explicitly (see george.js, thesz.js). Recompute from
+// the reported fillFrac if a shin art asset is regenerated.
 const TEX = {
     torso:    { w: 82, h: 112 },
     upperArm: { w: 28, h: 34 },
     forearm:  { w: 29, h: 42 },
     thigh:    { w: 32, h: 32 },
-    shin:     { w: 44, h: 68 }, // (37, 57) / 0.841 shin-art fillFrac, see above
 };
 
 const TAU = Math.PI * 2;
@@ -106,8 +108,19 @@ function ensureTexture(scene) {
     g.destroy();
 }
 
+// A textures-map entry is either a plain texture-key string (use the TEX
+// default display box for that part) or { key, box: { w, h } } (override the
+// box — required for any character's shin, since its true box depends on
+// that character's own boot-art fillFrac; see the TEX comment above).
+function resolveTexEntry(entry, defaultDims) {
+    if (!entry) return { key: null, dims: defaultDims };
+    if (typeof entry === 'string') return { key: entry, dims: defaultDims };
+    return { key: entry.key, dims: entry.box ?? defaultDims };
+}
+
 export default class Skeleton {
-    // textures: optional map of part keys → preloaded texture keys
+    // textures: optional map of part keys → preloaded texture keys, or
+    // { key, box } to override that part's display box (see resolveTexEntry)
     //   { head, torso, upperArm, forearm, thigh, shin }
     // Parts with a texture use the PNG; others fall back to sk_pixel + tint.
     // Providing 'torso' hides the trunks block; providing 'shin' hides the boot block.
@@ -117,14 +130,15 @@ export default class Skeleton {
         this.skinCol   = skinCol;
         this.trunksCol = trunksCol;
 
-        // texDims: when a part has a real texture, stash its TEX display box
-        // on the Image so _placePart swaps it in for the block dims. The
-        // placeholder path leaves _texDims undefined and renders exactly as
-        // before.
-        const img = (key, col, texDims) => {
+        // texDims: when a part has a real texture, stash its TEX (or
+        // per-character override) display box on the Image so _placePart
+        // swaps it in for the block dims. The placeholder path leaves
+        // _texDims undefined and renders exactly as before.
+        const img = (entry, col, defaultDims) => {
+            const { key, dims } = resolveTexEntry(entry, defaultDims);
             const i = scene.add.image(0, 0, key || 'sk_pixel').setOrigin(0.5, 0);
             if (!key) i.setTint(col);
-            else if (texDims) i._texDims = texDims;
+            else if (dims) i._texDims = dims;
             return i;
         };
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // process-parts.mjs — turns rough hand-cut body-part PNGs into spec-compliant
-// wrestler textures (torso, upper_arm, forearm, thigh, shin) per
+// wrestler textures (head, torso, upper_arm, forearm, thigh, shin) per
 // DRAWING_GUIDE.md. Drives headless Chrome via playwright-core and does all
 // raster math with canvas 2D in the page context — no PIL, no pngjs, no
 // image-processing npm deps.
@@ -9,11 +9,18 @@
 //   node tools/wrestler-cutter/process-parts.mjs [character]
 //
 // Adding a new character: add an entry to CHARACTERS below pointing at its
-// source PNGs (six single-instance parts: torso, trunks, upperArm, forearm,
-// thigh, shin, foot — trunks/foot are "underlay" pieces baked into
-// torso/shin respectively) and its destination folder. The pipeline itself
-// (alpha audit → mask → speck removal → flip → rotate → composite → cap
-// flatten → pivot crop → scale/flush) is character-agnostic.
+// source PNGs and destination folder. Two source shapes are supported:
+//   - Composite characters (george): torso+trunks and shin+foot are drawn as
+//     separate layers and composited by the pipeline (see `composites`).
+//   - Simple characters (thesz): each of the six parts is a single
+//     already-complete source layer (trunks baked into torso, boot baked
+//     into shin) — no composite step, just clean/rotate/crop/scale.
+// Facing: George's whole source sheet was drawn facing left, so every part
+// flips (`flip: 'all'`). A character can instead face right per-part already
+// and only need specific parts mirrored — pass `flip` as a map of source key
+// -> boolean (thesz: only the boot-bearing shin layer is mirrored).
+// The pipeline itself (alpha audit → mask → speck removal → flip → rotate →
+// composite → cap flatten → pivot crop → scale/flush) is character-agnostic.
 //
 // Processing order (see DRAWING_GUIDE.md + the session brief this was built
 // against):
@@ -21,15 +28,23 @@
 //      fall back to near-white keying, loudly.
 //   2. Content mask — alpha > ALPHA_THRESHOLD counts as content.
 //   3. Speck removal — connected components, drop any < 1% of the largest.
-//   4. Facing flip — mirror every part so the character faces right.
+//   4. Facing flip — per-character/per-part config (see above).
 //   5. Forearm rotation — PCA-align the forearm's long axis to vertical,
 //      fist down, elbow up.
-//   6. Composites — torso+trunks, shin+foot (underlay drawn behind).
+//   6. Composites (composite characters only) — torso+trunks, shin+foot
+//      (underlay drawn behind).
 //   7. Opaque-cap flattening — forearm/shin only, shave the top until it's a
-//      flat opaque joint-cover.
-//   8. Pivot-centered crop — symmetric around the top-row opaque x-center,
-//      NOT the bbox center.
-//   9. Scale + flush — fit target canvas, pivot edge flush at y=0.
+//      flat opaque joint-cover. For a shin with the boot already baked into
+//      the same source layer (no separate foot file to scope against), the
+//      pipeline finds the ankle "pinch" (local width minimum) between the
+//      knee cap search start and the boot flare, and scopes the cap search
+//      to above it — the boot is not the joint this cap covers.
+//   8. Pivot-centered crop — symmetric around the opaque x-center of the
+//      PIVOT_ROWS rows nearest the pivot edge (top for torso/upper_arm/
+//      forearm/thigh/shin, bottom — the neck — for head), NOT the bbox
+//      center. Hair/hands/boots skew the bbox; they must not skew the pivot.
+//   9. Scale + flush — fit target canvas, pivot edge flush (y=0 for top-
+//      pivot parts, y=targetH for bottom-pivot parts like head).
 //  10. Write PNGs + QA images.
 
 import { chromium } from 'playwright-core';
@@ -40,10 +55,15 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../..');
 
+const GEORGE_QA_DIR = '/private/tmp/claude-501/-Users-home-Documents-urworthy/8cbc67d6-398e-45d9-a9e4-a5f9b95bae03/scratchpad/george-art/qa';
+const THESZ_QA_DIR = '/private/tmp/claude-501/-Users-home-Documents-urworthy/8cbc67d6-398e-45d9-a9e4-a5f9b95bae03/scratchpad/thesz-art/qa';
+
 const CHARACTERS = {
     george: {
         srcDir: '/Users/home/Documents/wrestling-from-marigold/Sprite sheets/GeorgeParts',
         destDir: path.join(REPO_ROOT, 'src/assets/wrestlers/george'),
+        qaDir: GEORGE_QA_DIR,
+        sourceKeys: ['torso', 'trunks', 'upperArm', 'forearm', 'thigh', 'shin', 'foot'],
         files: {
             torso: 'Torso.png',
             trunks: 'Trunks.png',
@@ -53,17 +73,39 @@ const CHARACTERS = {
             shin: 'L_Leg_Lower.png',
             foot: 'L_Foot.png',
         },
+        // Whole source sheet was drawn facing left.
+        flip: 'all',
+        composites: { torso: 'trunks', shin: 'foot' },
+    },
+    thesz: {
+        srcDir: '/Users/home/Downloads/louThesz',
+        destDir: path.join(REPO_ROOT, 'src/assets/wrestlers/thesz'),
+        qaDir: THESZ_QA_DIR,
+        sourceKeys: ['head', 'torso', 'upperArm', 'forearm', 'thigh', 'shin'],
+        files: {
+            head: 'head.png',
+            torso: 'torso.png',
+            upperArm: 'upper arm.png',
+            forearm: 'LowerArm.png',
+            thigh: 'upperLeg.png',
+            shin: 'LowerLeg.png',
+        },
+        // Head/torso/upperArm/forearm/thigh already face right; only the
+        // shin's baked-in boot toe points left and needs mirroring.
+        flip: { shin: true },
+        // Trunks are already baked into torso, the boot into shin — no
+        // composite step this round.
+        composites: {},
     },
 };
 
-const DEFAULT_QA_DIR = '/private/tmp/claude-501/-Users-home-Documents-urworthy/8cbc67d6-398e-45d9-a9e4-a5f9b95bae03/scratchpad/george-art/qa';
-
 const PART_SPECS = {
-    torso:     { w: 190, h: 260, opaqueCap: false },
-    upper_arm: { w: 130, h: 160, opaqueCap: false },
-    forearm:   { w: 130, h: 190, opaqueCap: true },
-    thigh:     { w: 150, h: 150, opaqueCap: false },
-    shin:      { w: 150, h: 230, opaqueCap: true },
+    head:      { w: 200, h: 200, opaqueCap: false, pivotEdge: 'bottom' },
+    torso:     { w: 190, h: 260, opaqueCap: false, pivotEdge: 'top' },
+    upper_arm: { w: 130, h: 160, opaqueCap: false, pivotEdge: 'top' },
+    forearm:   { w: 130, h: 190, opaqueCap: true,  pivotEdge: 'top' },
+    thigh:     { w: 150, h: 150, opaqueCap: false, pivotEdge: 'top' },
+    shin:      { w: 150, h: 230, opaqueCap: true,  pivotEdge: 'top' },
 };
 
 const ALPHA_THRESHOLD = 10;
@@ -88,6 +130,11 @@ const SHIN_OVERLAP_PX = 12;
 // Content fills the canvas height exactly (see scaleFlush); a small horizontal
 // safety margin keeps antialiased edges off the texture border.
 const SIDE_SAFETY = 2;
+// Shin ankle-pinch search window (fraction of the shin's own content height)
+// for characters whose boot is already baked into the shin source layer —
+// see findNarrowestRow below.
+const ANKLE_SEARCH_START_FRAC = 0.15;
+const ANKLE_SEARCH_END_FRAC = 0.65;
 
 // ── Browser-side pixel-math library (injected once via addScriptTag) ──────
 const BROWSER_LIB = `
@@ -414,6 +461,20 @@ window.WC = (function () {
     return { width: wSum / n, xCenter: cSum / n };
   }
 
+  // Y (within [yStart,yEnd]) of the row with minimum content width — used to
+  // find the ankle "pinch" separating a shin from a boot that's already
+  // baked into the same source layer (no separate foot file to scope
+  // against, unlike the composite-character path). The cap-flatten search
+  // must not run into the boot's much wider silhouette below this point.
+  function findNarrowestRow(canvas, yStart, yEnd) {
+    let bestY = yStart, bestWidth = Infinity;
+    for (let y = yStart; y <= yEnd; y++) {
+      const r = rowStats(canvas, y);
+      if (r && r.width < bestWidth) { bestWidth = r.width; bestY = y; }
+    }
+    return { y: bestY, width: bestWidth };
+  }
+
   // PCA of the content mask -> angle (radians) of the principal axis from +x.
   function principalAngle(canvas) {
     const ctx = ctxOf(canvas);
@@ -471,10 +532,11 @@ window.WC = (function () {
   // >= minFrac * the content's max row width. Mutates canvas in place
   // (zeroes alpha on shaved rows). Returns { shavedRows, maxWidth, finalTopWidth }.
   // maxWidthSearchYEnd (optional) caps how far down the max-width search
-  // looks — for a composited part (shin+foot) the joint-cap rule is about
-  // the shin's OWN cross-section at the knee, not the much wider boot body
-  // further down the same canvas, so callers pass the base part's own
-  // pre-composite bottom edge here.
+  // looks — for a composited part (shin+foot), or a shin whose boot is baked
+  // into the same source layer, the joint-cap rule is about the shin's OWN
+  // cross-section at the knee, not the much wider boot body further down the
+  // same canvas, so callers pass the shin's own pre-boot bottom edge here
+  // (from the pre-composite source, or from findNarrowestRow's ankle pinch).
   function flattenOpaqueCap(canvas, minFrac, maxWidthSearchYEnd) {
     const bbox = contentBBox(canvas);
     if (!bbox) return { shavedRows: 0, maxWidth: 0, finalTopWidth: 0 };
@@ -501,13 +563,19 @@ window.WC = (function () {
     return { shavedRows: shaved, maxWidth, finalTopWidth: topWidth, newTopY: top };
   }
 
-  // Pivot x = opaque x-center of the top PIVOT_ROWS content rows. Crop window
-  // symmetric around pivotX, vertically spanning content top..bottom.
-  function pivotCrop(canvas, pivotRows) {
+  // Pivot x = opaque x-center of the PIVOT_ROWS content rows nearest the
+  // pivot edge — the top rows for a joint pivot (torso/upper_arm/forearm/
+  // thigh/shin), or the bottom rows (the neck) for the head, whose pivot
+  // sits at canvas bottom. Crop window is symmetric around pivotX,
+  // vertically spanning content top..bottom either way.
+  function pivotCrop(canvas, pivotRows, edge) {
+    edge = edge || 'top';
     const bbox = contentBBox(canvas);
     let wSum = 0, cSum = 0, n = 0;
     for (let i = 0; i < pivotRows; i++) {
-      const r = rowStats(canvas, bbox.minY + i);
+      const y = edge === 'top' ? bbox.minY + i : bbox.maxY - i;
+      if (y < bbox.minY || y > bbox.maxY) continue;
+      const r = rowStats(canvas, y);
       if (!r) continue;
       wSum += r.count; cSum += ((r.minX + r.maxX) / 2) * r.count; n += r.count;
     }
@@ -523,9 +591,9 @@ window.WC = (function () {
     return { canvas: out, pivotX, bboxCenterX, delta: pivotX - bboxCenterX, bbox, cropX0, cropY0: bbox.minY };
   }
 
-  // Fit croppedCanvas into targetW x targetH: pivot edge flush at y=0,
-  // horizontally centered (which centers the pivot since the crop is
-  // pivot-symmetric).
+  // Fit croppedCanvas into targetW x targetH: pivot edge flush (y=0 for a
+  // top pivot, y=targetH for a bottom pivot like the head), horizontally
+  // centered (which centers the pivot since the crop is pivot-symmetric).
   //
   // The rig (Skeleton.js) maps the FULL canvas onto the bone span — canvas
   // top = pivot joint, canvas bottom = bone end (hip line for the torso,
@@ -535,18 +603,23 @@ window.WC = (function () {
   // round 1's 20px bottom padding caused). Height-fill is the target; width
   // caps the scale when the art is proportionally too wide (shin+boot toe),
   // in which case fillFrac < 1 is reported and the rig's TEX display box
-  // must compensate (see TEX.shin in Skeleton.js).
-  function scaleFlush(croppedCanvas, targetW, targetH, sideSafety) {
+  // must compensate. The head's display size is a fixed rig constant
+  // (headR-derived), not a TEX box, so its fillFrac just measures crop
+  // tightness for QA — nothing downstream depends on it.
+  function scaleFlush(croppedCanvas, targetW, targetH, sideSafety, edge) {
+    edge = edge || 'top';
     const cropW = croppedCanvas.width, cropH = croppedCanvas.height;
     const availW = targetW - sideSafety * 2;
     const scale = Math.min(availW / cropW, targetH / cropH);
     const drawW = cropW * scale, drawH = cropH * scale;
-    const dx = (targetW - drawW) / 2, dy = 0;
+    const dx = (targetW - drawW) / 2;
+    const dy = edge === 'top' ? 0 : targetH - drawH;
     const out = newCanvas(targetW, targetH);
     ctxOf(out).drawImage(croppedCanvas, 0, 0, cropW, cropH, dx, dy, drawW, drawH);
     return {
       canvas: out, scale, drawW, drawH, dx, dy,
-      leftPad: dx, rightPad: targetW - (dx + drawW), bottomPad: targetH - (dy + drawH),
+      leftPad: dx, rightPad: targetW - (dx + drawW),
+      topPad: dy, bottomPad: targetH - (dy + drawH),
       fillFrac: drawH / targetH,
     };
   }
@@ -585,7 +658,8 @@ window.WC = (function () {
 
   // Side-by-side QA: left = pre-scale cropped content (zoomed), right =
   // final target canvas with crosshair at pivot + border, at N-times zoom.
-  function buildQA(croppedCanvas, finalCanvas, targetW, targetH, zoom, label) {
+  function buildQA(croppedCanvas, finalCanvas, targetW, targetH, zoom, label, pivotEdge) {
+    pivotEdge = pivotEdge || 'top';
     const leftW = croppedCanvas.width * zoom, leftH = croppedCanvas.height * zoom;
     const rightW = targetW * zoom, rightH = targetH * zoom;
     const gap = 24;
@@ -606,11 +680,15 @@ window.WC = (function () {
     ctx.drawImage(finalCanvas, 0, 0, targetW, targetH, 0, 0, rightW, rightH);
     ctx.strokeStyle = '#ff5c5c'; ctx.lineWidth = 1;
     ctx.strokeRect(0.5, 0.5, rightW - 1, rightH - 1);
-    // crosshair at pivot (targetW/2, 0)
+    // crosshair at pivot (targetW/2, top or bottom edge)
     const px = (targetW / 2) * zoom;
+    const py = pivotEdge === 'top' ? 0 : rightH;
     ctx.strokeStyle = '#5cc8ff'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(px - 10, 2); ctx.lineTo(px + 10, 2); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, 24); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px - 10, py); ctx.lineTo(px + 10, py); ctx.stroke();
+    ctx.beginPath();
+    if (pivotEdge === 'top') { ctx.moveTo(px, 0); ctx.lineTo(px, 24); }
+    else { ctx.moveTo(px, rightH - 24); ctx.lineTo(px, rightH); }
+    ctx.stroke();
     ctx.restore();
     return out;
   }
@@ -618,7 +696,7 @@ window.WC = (function () {
   return {
     newCanvas, ctxOf, loadImage, alphaAudit, bakeAlpha, connectedComponents,
     dropSmallComponents, contentBBox, rowStats, flipHorizontal, darkBandWidth,
-    edgeAverageWidth, principalAngle, rotateAround, alignVerticalFistDown,
+    edgeAverageWidth, findNarrowestRow, principalAngle, rotateAround, alignVerticalFistDown,
     flattenOpaqueCap, pivotCrop, scaleFlush, placeUnderlay, toDataURL,
     drawCheckerboard, buildQA,
   };
@@ -629,72 +707,148 @@ function dataUrlFromFile(p) {
     return 'data:image/png;base64,' + fs.readFileSync(p).toString('base64');
 }
 
+// ── Shared per-part builders (character-agnostic) ──────────────────────────
+
+// upper_arm / thigh / head: pivot-crop then scale-flush, no rotation, no
+// composite, no cap flatten. `spec.pivotEdge` selects top vs bottom pivot.
+async function buildSimplePart(page, sourceDataUrl, spec, label) {
+    const res = await page.evaluate(async ({ dataUrl, spec, pivotRows, sideSafety, label }) => {
+        const edge = spec.pivotEdge || 'top';
+        const canvas = await window.WC.loadImage(dataUrl);
+        const pivot = window.WC.pivotCrop(canvas, pivotRows, edge);
+        const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety, edge);
+        const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, label, edge);
+        return {
+            finalDataUrl: window.WC.toDataURL(flushed.canvas),
+            qaDataUrl: window.WC.toDataURL(qa),
+            pivotX: pivot.pivotX, bboxCenterX: pivot.bboxCenterX, pivotDelta: pivot.delta,
+            leftPad: flushed.leftPad, rightPad: flushed.rightPad, bottomPad: flushed.bottomPad,
+            drawW: flushed.drawW, drawH: flushed.drawH, fillFrac: flushed.fillFrac,
+        };
+    }, { dataUrl: sourceDataUrl, spec, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY, label });
+    return res;
+}
+
+// forearm: rotate to vertical fist-down, cap-flatten the elbow-joint top
+// edge, then pivot-crop/scale-flush. No composite — same for every character.
+async function buildForearmPart(page, cleanedForearmDataUrl, spec) {
+    const res = await page.evaluate(async ({ dataUrl, spec, flattenFrac, pivotRows, sideSafety }) => {
+        const canvas = await window.WC.loadImage(dataUrl);
+        // Fist hint: the bottom-right-most content pixel. Sources are
+        // cleaned (and, per-character, optionally flipped) so the fist ends
+        // up at the diagonal's lower-right end before this step runs.
+        const bbox = window.WC.contentBBox(canvas);
+        const hintX = bbox.maxX, hintY = bbox.maxY;
+        const rot = window.WC.alignVerticalFistDown(canvas, hintX, hintY);
+        const cap = window.WC.flattenOpaqueCap(rot.canvas, flattenFrac);
+        const pivot = window.WC.pivotCrop(rot.canvas, pivotRows, 'top');
+        const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety, 'top');
+        const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'forearm', 'top');
+        return {
+            finalDataUrl: window.WC.toDataURL(flushed.canvas),
+            qaDataUrl: window.WC.toDataURL(qa),
+            rotationDeg: rot.phiDeg, thetaDeg: rot.thetaDeg, flipped180: rot.flipped180,
+            capShaved: cap.shavedRows, capMaxWidth: cap.maxWidth, capFinalTopWidth: cap.finalTopWidth,
+            pivotX: pivot.pivotX, bboxCenterX: pivot.bboxCenterX, pivotDelta: pivot.delta,
+            leftPad: flushed.leftPad, rightPad: flushed.rightPad, bottomPad: flushed.bottomPad,
+            drawW: flushed.drawW, drawH: flushed.drawH, fillFrac: flushed.fillFrac,
+        };
+    }, { dataUrl: cleanedForearmDataUrl, spec, flattenFrac: OPAQUE_CAP_FLATTEN_FRAC, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY });
+    return res;
+}
+
+// shin with NO separate foot source (boot already baked into the same
+// layer): find the ankle pinch to scope the cap-flatten search away from the
+// boot, then cap-flatten/pivot-crop/scale-flush exactly like the composite
+// path's shin+foot result.
+async function buildShinNoComposite(page, cleanedShinDataUrl, spec) {
+    const res = await page.evaluate(async ({ dataUrl, spec, flattenFrac, pivotRows, sideSafety, searchStartFrac, searchEndFrac }) => {
+        const canvas = await window.WC.loadImage(dataUrl);
+        const bbox = window.WC.contentBBox(canvas);
+        const h = bbox.maxY - bbox.minY + 1;
+        const searchStart = bbox.minY + Math.round(h * searchStartFrac);
+        const searchEnd = bbox.minY + Math.round(h * searchEndFrac);
+        const pinch = window.WC.findNarrowestRow(canvas, searchStart, searchEnd);
+        const cap = window.WC.flattenOpaqueCap(canvas, flattenFrac, pinch.y);
+        const pivot = window.WC.pivotCrop(canvas, pivotRows, 'top');
+        const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety, 'top');
+        const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'shin', 'top');
+        // Where the ankle pinch (shin/boot boundary) ends up in the final
+        // canvas's y-coordinates, so verification can scope its max-width
+        // search the same way flattenOpaqueCap did.
+        const ownRegionBottomYFinal = (pinch.y - pivot.cropY0) * flushed.scale + flushed.dy;
+        return {
+            finalDataUrl: window.WC.toDataURL(flushed.canvas), qaDataUrl: window.WC.toDataURL(qa),
+            pinchY: pinch.y, pinchWidth: pinch.width,
+            capShaved: cap.shavedRows, capMaxWidth: cap.maxWidth, capFinalTopWidth: cap.finalTopWidth,
+            pivotX: pivot.pivotX, bboxCenterX: pivot.bboxCenterX, pivotDelta: pivot.delta,
+            leftPad: flushed.leftPad, rightPad: flushed.rightPad, bottomPad: flushed.bottomPad,
+            drawW: flushed.drawW, drawH: flushed.drawH, fillFrac: flushed.fillFrac, ownRegionBottomYFinal,
+        };
+    }, {
+        dataUrl: cleanedShinDataUrl, spec, flattenFrac: OPAQUE_CAP_FLATTEN_FRAC, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY,
+        searchStartFrac: ANKLE_SEARCH_START_FRAC, searchEndFrac: ANKLE_SEARCH_END_FRAC,
+    });
+    return res;
+}
+
 async function main() {
     const slug = process.argv[2] || 'george';
     const char = CHARACTERS[slug];
     if (!char) throw new Error(`Unknown character "${slug}". Known: ${Object.keys(CHARACTERS).join(', ')}`);
 
+    const qaDir = char.qaDir;
     fs.mkdirSync(char.destDir, { recursive: true });
-    fs.mkdirSync(DEFAULT_QA_DIR, { recursive: true });
+    fs.mkdirSync(qaDir, { recursive: true });
 
     const browser = await chromium.launch({ channel: 'chrome', headless: true });
     const page = await browser.newPage();
     await page.goto('about:blank');
     await page.addScriptTag({ content: BROWSER_LIB });
 
-    const report = { alphaAudit: {}, defringe: {}, droppedSpecks: {}, flip: 'all parts mirrored horizontally to face right', rotation: null, composites: {}, capFlatten: {}, pivotCrop: {}, finalPadding: {} };
+    const flipDescription = char.flip === 'all'
+        ? 'all parts mirrored horizontally to face right'
+        : 'per-part: ' + Object.entries(char.flip).filter(([, v]) => v).map(([k]) => k).join(', ') + ' mirrored; rest already face right';
+    const report = { alphaAudit: {}, defringe: {}, droppedSpecks: {}, flip: flipDescription, flipApplied: {}, rotation: null, composites: {}, capFlatten: {}, pivotCrop: {}, finalPadding: {} };
 
     // ── Load + clean every source (mask, defringe, speck removal, flip) ───
-    const sourceKeys = ['torso', 'trunks', 'upperArm', 'forearm', 'thigh', 'shin', 'foot'];
     const cleaned = {};
-    for (const key of sourceKeys) {
+    for (const key of char.sourceKeys) {
         const filePath = path.join(char.srcDir, char.files[key]);
         const dataUrl = dataUrlFromFile(filePath);
-        const result = await page.evaluate(async ({ dataUrl, fracThreshold }) => {
+        const shouldFlip = char.flip === 'all' ? true : !!(char.flip && char.flip[key]);
+        const result = await page.evaluate(async ({ dataUrl, fracThreshold, shouldFlip }) => {
             const canvas = await window.WC.loadImage(dataUrl);
             const audit = window.WC.alphaAudit(canvas);
             const defringe = window.WC.bakeAlpha(canvas, audit.needsKeying);
             const { keptCount, dropped } = window.WC.dropSmallComponents(canvas, fracThreshold);
-            const flipped = window.WC.flipHorizontal(canvas);
-            return { dataUrl: window.WC.toDataURL(flipped), audit, defringe, keptCount, dropped };
-        }, { dataUrl, fracThreshold: SPECK_AREA_FRAC });
+            const finalCanvas = shouldFlip ? window.WC.flipHorizontal(canvas) : canvas;
+            return { dataUrl: window.WC.toDataURL(finalCanvas), audit, defringe, keptCount, dropped };
+        }, { dataUrl, fracThreshold: SPECK_AREA_FRAC, shouldFlip });
         cleaned[key] = result.dataUrl;
         report.alphaAudit[char.files[key]] = result.audit;
         report.defringe[char.files[key]] = result.defringe;
         report.droppedSpecks[char.files[key]] = result.dropped;
+        report.flipApplied[key] = shouldFlip;
+    }
+
+    const outputs = {};
+
+    // ── head (bottom-pivot, simple characters only) ────────────────────────
+    if (char.files.head) {
+        outputs.head = await buildSimplePart(page, cleaned.head, PART_SPECS.head, 'head');
+        report.pivotCrop.head = { pivotX: outputs.head.pivotX, bboxCenterX: outputs.head.bboxCenterX, delta: outputs.head.pivotDelta };
+        report.finalPadding.head = { leftPad: outputs.head.leftPad, rightPad: outputs.head.rightPad, bottomPad: outputs.head.bottomPad, drawW: outputs.head.drawW, drawH: outputs.head.drawH, fillFrac: outputs.head.fillFrac };
     }
 
     // ── upper_arm (single source, no composite/rotation) ───────────────────
-    const outputs = {};
     outputs.upper_arm = await buildSimplePart(page, cleaned.upperArm, PART_SPECS.upper_arm, 'upper_arm');
     report.pivotCrop.upper_arm = { pivotX: outputs.upper_arm.pivotX, bboxCenterX: outputs.upper_arm.bboxCenterX, delta: outputs.upper_arm.pivotDelta };
     report.finalPadding.upper_arm = { leftPad: outputs.upper_arm.leftPad, rightPad: outputs.upper_arm.rightPad, bottomPad: outputs.upper_arm.bottomPad, drawW: outputs.upper_arm.drawW, drawH: outputs.upper_arm.drawH, fillFrac: outputs.upper_arm.fillFrac };
 
-    // ── forearm (rotate to vertical fist-down, then cap-flatten) ──────────
+    // ── forearm (rotate to vertical fist-down, then cap-flatten) — shared ──
     {
-        const res = await page.evaluate(async ({ dataUrl, spec, flattenFrac, pivotRows, sideSafety }) => {
-            const canvas = await window.WC.loadImage(dataUrl);
-            // Fist hint: after the facing flip, the fist is the LOWER-RIGHT
-            // end of the diagonal (source had elbow upper-right/fist
-            // lower-left; a horizontal flip swaps left<->right). Use the
-            // content bbox's bottom-right-most content pixel as the hint.
-            const bbox = window.WC.contentBBox(canvas);
-            const hintX = bbox.maxX, hintY = bbox.maxY;
-            const rot = window.WC.alignVerticalFistDown(canvas, hintX, hintY);
-            const cap = window.WC.flattenOpaqueCap(rot.canvas, flattenFrac);
-            const pivot = window.WC.pivotCrop(rot.canvas, pivotRows);
-            const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety);
-            const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'forearm');
-            return {
-                finalDataUrl: window.WC.toDataURL(flushed.canvas),
-                qaDataUrl: window.WC.toDataURL(qa),
-                rotationDeg: rot.phiDeg, thetaDeg: rot.thetaDeg, flipped180: rot.flipped180,
-                capShaved: cap.shavedRows, capMaxWidth: cap.maxWidth, capFinalTopWidth: cap.finalTopWidth,
-                pivotX: pivot.pivotX, bboxCenterX: pivot.bboxCenterX, pivotDelta: pivot.delta,
-                leftPad: flushed.leftPad, rightPad: flushed.rightPad, bottomPad: flushed.bottomPad,
-                drawW: flushed.drawW, drawH: flushed.drawH, fillFrac: flushed.fillFrac,
-            };
-        }, { dataUrl: cleaned.forearm, spec: PART_SPECS.forearm, flattenFrac: OPAQUE_CAP_FLATTEN_FRAC, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY });
+        const res = await buildForearmPart(page, cleaned.forearm, PART_SPECS.forearm);
         outputs.forearm = res;
         report.rotation = { forearm_thetaDeg: res.thetaDeg, forearm_rotationAppliedDeg: res.rotationDeg, flipped180ForFistDown: res.flipped180 };
         report.capFlatten.forearm = { shavedRows: res.capShaved, maxWidth: res.capMaxWidth, finalTopWidth: res.capFinalTopWidth };
@@ -707,11 +861,12 @@ async function main() {
     report.pivotCrop.thigh = { pivotX: outputs.thigh.pivotX, bboxCenterX: outputs.thigh.bboxCenterX, delta: outputs.thigh.pivotDelta };
     report.finalPadding.thigh = { leftPad: outputs.thigh.leftPad, rightPad: outputs.thigh.rightPad, bottomPad: outputs.thigh.bottomPad, drawW: outputs.thigh.drawW, drawH: outputs.thigh.drawH, fillFrac: outputs.thigh.fillFrac };
 
-    // ── torso = Torso + Trunks composite ───────────────────────────────────
-    // Builds one final canvas per candidate width multiplier plus the chosen
-    // one; the candidates go into a side-by-side comparison sheet in the QA
-    // dir so the trunks scale can be judged against the torso silhouette.
-    {
+    // ── torso ────────────────────────────────────────────────────────────
+    if (char.composites.torso) {
+        // torso = Torso + Trunks composite. Builds one final canvas per
+        // candidate width multiplier plus the chosen one; the candidates go
+        // into a side-by-side comparison sheet in the QA dir so the trunks
+        // scale can be judged against the torso silhouette.
         const res = await page.evaluate(async ({ torsoUrl, trunksUrl, spec, widthMult, candidateMults, overlapPx, pivotRows, sideSafety }) => {
             const torso = await window.WC.loadImage(torsoUrl);
             const trunks = await window.WC.loadImage(trunksUrl);
@@ -728,8 +883,8 @@ async function main() {
                     underlayCanvas: trunks, underlayBBox: trunksBBox, underlayRefWidth: trunksRefWidth, underlayRefXCenter: trunksRefXCenter,
                     widthMultiplier: mult, overlapPx,
                 });
-                const pivot = window.WC.pivotCrop(placed.canvas, pivotRows);
-                const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety);
+                const pivot = window.WC.pivotCrop(placed.canvas, pivotRows, 'top');
+                const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety, 'top');
                 return { placed, pivot, flushed };
             };
 
@@ -754,7 +909,7 @@ async function main() {
             });
 
             const { placed, pivot, flushed } = build(widthMult);
-            const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'torso');
+            const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'torso', 'top');
             const uncomposited = window.WC.toDataURL(torso);
             return {
                 finalDataUrl: window.WC.toDataURL(flushed.canvas), qaDataUrl: window.WC.toDataURL(qa),
@@ -772,12 +927,18 @@ async function main() {
             trunksContentWidth: res.trunksRefWidth, trunksXCenter: res.trunksRefXCenter,
             appliedScale: res.scale, placedAt: { dx: res.dx, dy: res.dy, dw: res.dw, dh: res.dh },
         };
-        report.pivotCrop.torso = { pivotX: res.pivotX, bboxCenterX: res.bboxCenterX, delta: res.pivotDelta };
-        report.finalPadding.torso = { leftPad: res.leftPad, rightPad: res.rightPad, bottomPad: res.bottomPad, drawW: res.drawW, drawH: res.drawH, fillFrac: res.fillFrac };
+        fs.writeFileSync(path.join(qaDir, 'trunks_candidates.png'), Buffer.from(res.candidatesDataUrl.split(',')[1], 'base64'));
+        fs.writeFileSync(path.join(qaDir, 'uncomposited_torso.png'), Buffer.from(res.uncompositedDataUrl.split(',')[1], 'base64'));
+    } else {
+        // Trunks already baked into the torso source layer — no composite.
+        outputs.torso = await buildSimplePart(page, cleaned.torso, PART_SPECS.torso, 'torso');
     }
+    report.pivotCrop.torso = { pivotX: outputs.torso.pivotX, bboxCenterX: outputs.torso.bboxCenterX, delta: outputs.torso.pivotDelta };
+    report.finalPadding.torso = { leftPad: outputs.torso.leftPad, rightPad: outputs.torso.rightPad, bottomPad: outputs.torso.bottomPad, drawW: outputs.torso.drawW, drawH: outputs.torso.drawH, fillFrac: outputs.torso.fillFrac };
 
-    // ── shin = L_Leg_Lower + L_Foot composite, then cap-flatten ────────────
-    {
+    // ── shin ─────────────────────────────────────────────────────────────
+    if (char.composites.shin) {
+        // shin = L_Leg_Lower + L_Foot composite, then cap-flatten.
         const res = await page.evaluate(async ({ shinUrl, footUrl, spec, overlapPx, flattenFrac, pivotRows, sideSafety }) => {
             const shin = await window.WC.loadImage(shinUrl);
             const foot = await window.WC.loadImage(footUrl);
@@ -794,9 +955,9 @@ async function main() {
                 widthMultiplier: 1.0, overlapPx,
             });
             const cap = window.WC.flattenOpaqueCap(placed.canvas, flattenFrac, shinBBox.maxY);
-            const pivot = window.WC.pivotCrop(placed.canvas, pivotRows);
-            const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety);
-            const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'shin');
+            const pivot = window.WC.pivotCrop(placed.canvas, pivotRows, 'top');
+            const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety, 'top');
+            const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'shin', 'top');
             const uncomposited = window.WC.toDataURL(shin);
             // Where the shin's OWN region (pre-boot) ends up in the final
             // canvas's y-coordinates, so verification can scope its
@@ -819,13 +980,20 @@ async function main() {
             footAnkleWidth: res.ankleWidth, footAnkleXCenter: res.ankleXCenter,
             appliedScale: res.scale, placedAt: { dx: res.dx, dy: res.dy, dw: res.dw, dh: res.dh },
         };
-        report.capFlatten.shin = { shavedRows: res.capShaved, maxWidth: res.capMaxWidth, finalTopWidth: res.capFinalTopWidth };
-        report.pivotCrop.shin = { pivotX: res.pivotX, bboxCenterX: res.bboxCenterX, delta: res.pivotDelta };
-        report.finalPadding.shin = { leftPad: res.leftPad, rightPad: res.rightPad, bottomPad: res.bottomPad, drawW: res.drawW, drawH: res.drawH, fillFrac: res.fillFrac };
+        fs.writeFileSync(path.join(qaDir, 'uncomposited_shin.png'), Buffer.from(res.uncompositedDataUrl.split(',')[1], 'base64'));
+    } else {
+        // Boot already baked into the shin source layer — no composite, but
+        // the cap-flatten search still needs to be scoped away from it.
+        outputs.shin = await buildShinNoComposite(page, cleaned.shin, PART_SPECS.shin);
+        report.ankleP = { pinchY: outputs.shin.pinchY, pinchWidth: outputs.shin.pinchWidth };
     }
+    report.capFlatten.shin = { shavedRows: outputs.shin.capShaved, maxWidth: outputs.shin.capMaxWidth, finalTopWidth: outputs.shin.capFinalTopWidth };
+    report.pivotCrop.shin = { pivotX: outputs.shin.pivotX, bboxCenterX: outputs.shin.bboxCenterX, delta: outputs.shin.pivotDelta };
+    report.finalPadding.shin = { leftPad: outputs.shin.leftPad, rightPad: outputs.shin.rightPad, bottomPad: outputs.shin.bottomPad, drawW: outputs.shin.drawW, drawH: outputs.shin.drawH, fillFrac: outputs.shin.fillFrac };
 
     // ── write final PNGs to destDir ─────────────────────────────────────────
-    for (const name of ['torso', 'upper_arm', 'forearm', 'thigh', 'shin']) {
+    const partNames = ['torso', 'upper_arm', 'forearm', 'thigh', 'shin', ...(char.files.head ? ['head'] : [])];
+    for (const name of partNames) {
         const b64 = outputs[name].finalDataUrl.split(',')[1];
         fs.writeFileSync(path.join(char.destDir, `${name}.png`), Buffer.from(b64, 'base64'));
     }
@@ -834,25 +1002,26 @@ async function main() {
     //    rule holds, nothing touches the left/right/bottom edges ───────────
     report.verification = {};
     let verificationOk = true;
-    for (const name of ['torso', 'upper_arm', 'forearm', 'thigh', 'shin']) {
+    for (const name of partNames) {
         const spec = PART_SPECS[name];
+        const edge = spec.pivotEdge || 'top';
         const filePath = path.join(char.destDir, `${name}.png`);
         const dataUrl = dataUrlFromFile(filePath);
         // For shin, scope the max-width search to its own (pre-boot) region
         // — same reasoning as flattenOpaqueCap: the boot is much wider than
         // the shin and isn't the joint this cap is covering.
         const maxWidthSearchYEnd = name === 'shin' ? outputs.shin.ownRegionBottomYFinal : null;
-        const v = await page.evaluate(async ({ dataUrl, spec, minFrac, maxWidthSearchYEnd, edgeTrim }) => {
+        const v = await page.evaluate(async ({ dataUrl, spec, minFrac, maxWidthSearchYEnd, edge }) => {
             const canvas = await window.WC.loadImage(dataUrl);
             const dimsOk = canvas.width === spec.w && canvas.height === spec.h;
             const bbox = window.WC.contentBBox(canvas);
             const hasContent = !!bbox;
             // sides must stay off the texture border (bleed safety); the
-            // BOTTOM is the opposite — the rig maps canvas bottom to the
-            // bone end, so content should reach it (within a couple px)
-            // whenever the part isn't width-limited (fillFrac < 1).
+            // PIVOT edge is the opposite — the rig maps that edge to the
+            // joint/bone-end, so content should reach it (within a couple
+            // px) whenever the part isn't width-limited (fillFrac < 1).
             const sidesFree = bbox ? (bbox.minX > 0 && bbox.maxX < canvas.width - 1) : false;
-            const topFlush = bbox ? bbox.minY === 0 : false;
+            const pivotFlush = bbox ? (edge === 'top' ? bbox.minY === 0 : bbox.maxY === canvas.height - 1) : false;
             let capOk = true, capTopWidth = null, capMaxWidth = null;
             if (spec.opaqueCap && bbox) {
                 const topRow = window.WC.rowStats(canvas, bbox.minY);
@@ -865,9 +1034,9 @@ async function main() {
                 // The joint-cover width that matters is the longest
                 // CONTIGUOUS effectively-opaque run in the top row — that's
                 // the strip that actually hides the elbow/knee seam.
-                // Threshold 240, not 255: George's source art is itself
-                // painted at alpha ~253, and bicubic resampling shaves a few
-                // more units; 240+ is indistinguishable from solid on screen.
+                // Threshold 240, not 255: source art is itself painted at
+                // near-solid alpha, and bicubic resampling shaves a few more
+                // units; 240+ is indistinguishable from solid on screen.
                 let runWidth = 0;
                 if (topRow) {
                     const ctx = window.WC.ctxOf(canvas);
@@ -882,14 +1051,19 @@ async function main() {
                 capMaxWidth = maxWidth;
                 capOk = maxWidth > 0 && (runWidth / maxWidth) >= minFrac;
             }
-            return { w: canvas.width, h: canvas.height, dimsOk, hasContent, sidesFree, topFlush, bbox, capOk, capTopWidth, capMaxWidth };
-        }, { dataUrl, spec, minFrac: OPAQUE_CAP_MIN_FRAC, maxWidthSearchYEnd });
-        // bottom-flush required unless the part is width-limited (fillFrac<1,
-        // i.e. the art physically can't reach the bottom at legal width)
-        const expectedBottom = Math.round(PART_SPECS[name].h * outputs[name].fillFrac) - 1;
-        const bottomOk = v.bbox ? Math.abs(v.bbox.maxY - expectedBottom) <= 2 : false;
-        const pass = v.dimsOk && v.hasContent && v.sidesFree && v.topFlush && bottomOk && v.capOk;
-        report.verification[name] = { ...v, bottomOk, expectedBottom, fillFrac: outputs[name].fillFrac, pass };
+            return { w: canvas.width, h: canvas.height, dimsOk, hasContent, sidesFree, pivotFlush, bbox, capOk, capTopWidth, capMaxWidth };
+        }, { dataUrl, spec, minFrac: OPAQUE_CAP_MIN_FRAC, maxWidthSearchYEnd, edge });
+        // pivot-edge flush required unless the part is width-limited
+        // (fillFrac<1, i.e. the art physically can't reach the far edge at
+        // legal width)
+        const expectedEdgePos = edge === 'top'
+            ? Math.round(spec.h * outputs[name].fillFrac) - 1
+            : spec.h - Math.round(spec.h * outputs[name].fillFrac);
+        const contentEdgeOk = v.bbox
+            ? (edge === 'top' ? Math.abs(v.bbox.maxY - expectedEdgePos) <= 2 : Math.abs(v.bbox.minY - expectedEdgePos) <= 2)
+            : false;
+        const pass = v.dimsOk && v.hasContent && v.sidesFree && v.pivotFlush && contentEdgeOk && v.capOk;
+        report.verification[name] = { ...v, contentEdgeOk, expectedEdgePos, fillFrac: outputs[name].fillFrac, pass };
         if (!pass) verificationOk = false;
     }
     report.verificationOk = verificationOk;
@@ -897,14 +1071,11 @@ async function main() {
         console.error('VERIFICATION FAILED:', JSON.stringify(report.verification, null, 2));
     }
 
-    // ── write QA images + uncomposited variants to scratchpad ──────────────
-    for (const name of ['torso', 'upper_arm', 'forearm', 'thigh', 'shin']) {
+    // ── write QA images to scratchpad ───────────────────────────────────────
+    for (const name of partNames) {
         const qaB64 = outputs[name].qaDataUrl.split(',')[1];
-        fs.writeFileSync(path.join(DEFAULT_QA_DIR, `qa_${name}.png`), Buffer.from(qaB64, 'base64'));
+        fs.writeFileSync(path.join(qaDir, `qa_${name}.png`), Buffer.from(qaB64, 'base64'));
     }
-    fs.writeFileSync(path.join(DEFAULT_QA_DIR, 'uncomposited_torso.png'), Buffer.from(outputs.torso.uncompositedDataUrl.split(',')[1], 'base64'));
-    fs.writeFileSync(path.join(DEFAULT_QA_DIR, 'uncomposited_shin.png'), Buffer.from(outputs.shin.uncompositedDataUrl.split(',')[1], 'base64'));
-    fs.writeFileSync(path.join(DEFAULT_QA_DIR, 'trunks_candidates.png'), Buffer.from(outputs.torso.candidatesDataUrl.split(',')[1], 'base64'));
 
     // ── paper doll mock ──────────────────────────────────────────────────
     const headPath = path.join(char.destDir, 'head.png');
@@ -955,32 +1126,15 @@ async function main() {
             ctx.fillText('paper doll: head+torso(+trunks)+arm+leg, facing right', 8, 16);
             return window.WC.toDataURL(out);
         }, { headUrl, partUrls });
-        fs.writeFileSync(path.join(DEFAULT_QA_DIR, 'paper_doll.png'), Buffer.from(dollUrl.split(',')[1], 'base64'));
+        fs.writeFileSync(path.join(qaDir, 'paper_doll.png'), Buffer.from(dollUrl.split(',')[1], 'base64'));
     } else {
         report.paperDollSkipped = 'head.png not found at ' + headPath;
     }
 
     await browser.close();
 
-    fs.writeFileSync(path.join(DEFAULT_QA_DIR, 'report.json'), JSON.stringify(report, null, 2));
+    fs.writeFileSync(path.join(qaDir, 'report.json'), JSON.stringify(report, null, 2));
     console.log(JSON.stringify(report, null, 2));
-}
-
-async function buildSimplePart(page, sourceDataUrl, spec, label) {
-    const res = await page.evaluate(async ({ dataUrl, spec, pivotRows, sideSafety, label }) => {
-        const canvas = await window.WC.loadImage(dataUrl);
-        const pivot = window.WC.pivotCrop(canvas, pivotRows);
-        const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety);
-        const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, label);
-        return {
-            finalDataUrl: window.WC.toDataURL(flushed.canvas),
-            qaDataUrl: window.WC.toDataURL(qa),
-            pivotX: pivot.pivotX, bboxCenterX: pivot.bboxCenterX, pivotDelta: pivot.delta,
-            leftPad: flushed.leftPad, rightPad: flushed.rightPad, bottomPad: flushed.bottomPad,
-            drawW: flushed.drawW, drawH: flushed.drawH, fillFrac: flushed.fillFrac,
-        };
-    }, { dataUrl: sourceDataUrl, spec, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY, label });
-    return res;
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

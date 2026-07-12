@@ -11,7 +11,11 @@ export const george = {
         upperArm: 'george_upper_arm',
         forearm:  'george_forearm',
         thigh:    'george_thigh',
-        shin:     'george_shin',
+        // Object form overrides the Skeleton.js TEX default display box —
+        // shin always needs this since its true box depends on this
+        // character's own boot-art fillFrac (see Skeleton.js's TEX comment).
+        // (37, 57) / 0.841 george-shin-art fillFrac.
+        shin:     { key: 'george_shin', box: { w: 44, h: 68 } },
     },
     idlePose:  'idle',
     tauntPose: 'tauntArmsWide',

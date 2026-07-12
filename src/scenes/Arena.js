@@ -4,9 +4,10 @@ import InputHandler from '../InputHandler.js';
 import AIHandler from '../AIHandler.js';
 import CrowdAudio from '../CrowdAudio.js';
 import { george } from '../characters/george.js';
+import { thesz } from '../characters/thesz.js';
 
 // All characters whose PNGs should be preloaded
-const CHARACTERS = [george];
+const CHARACTERS = [george, thesz];
 const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png' };
 
 // Crowd reaction swell per match event type (0..1)
@@ -23,7 +24,10 @@ export default class Arena extends Phaser.Scene {
 
     preload() {
         for (const char of CHARACTERS) {
-            for (const [part, key] of Object.entries(char.textures)) {
+            for (const [part, entry] of Object.entries(char.textures)) {
+                // entry is either a plain texture key or { key, box } (see
+                // Skeleton.js's resolveTexEntry) — only the key is a load path.
+                const key = typeof entry === 'string' ? entry : entry.key;
                 this.load.image(key, `src/assets/wrestlers/${char.id}/${PART_FILES[part]}`);
             }
         }
@@ -688,6 +692,7 @@ export default class Arena extends Phaser.Scene {
                 name: 'THESZ', personality: 'thesz', idlePose: 'powerIdle',
                 skin: 0xe8c098, trunks: 0x484848,
                 moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'theszPress'],
+                textures: thesz.textures,
             },
         };
         const q  = new URLSearchParams(location.search);

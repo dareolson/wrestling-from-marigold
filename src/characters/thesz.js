@@ -13,6 +13,15 @@ export const thesz = {
         // flag, Skeleton.js's legacy crop chopped into the new head's actual
         // chin/jaw and stretched the remainder, reading cropped and oversized.
         neckInTorso: true,
+        // Measured directly off LouTheszFullBodyRef.png (2026-07-12): head's
+        // own max content width (122px) vs the isolated torso layer's max
+        // content width (205px, same shared canvas so directly comparable) =
+        // 0.595 ratio. Skeleton.js's fixed headR box vs thesz's TEX-default
+        // torso box was rendering that ratio at ~0.88 (headR's box is sized
+        // for a stylized/bigger head — george needed the same correction via
+        // headScale 0.9) — 1.47x too wide, reading as a bobblehead. Solving
+        // 0.88*headScale = 0.595 gives ~0.68.
+        headScale: 0.68,
         torso:    'thesz_torso',
         upperArm: 'thesz_upper_arm',
         forearm:  'thesz_forearm',

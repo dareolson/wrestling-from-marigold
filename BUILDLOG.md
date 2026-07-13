@@ -59,6 +59,22 @@ session-scratch (not committed). Committed `2441212`. **Still awaiting
 Derek's visual sign-off** —
 a measured fit is not the same as it reading right in motion.
 
+**Follow-up, same session (position pass):** Derek asked for the parts to be
+*placed* per the reference, not just sized. Same loop, this time on joint
+anchors: measured each reference layer's top/bottom-rows ink center (the
+joint the layer hangs from) relative to the torso ink centroid/top, read the
+live pivots off the rig, and set the offset knobs from the measured deltas —
+`headOffsetX/Y: 3/10` (ref seats the head 35/380 of torso height below the
+torso ink top and ~6px unscaled forward; the rig anchored it exactly at torso
+top), `armOffsetX/Y: -9/3` (ref shoulder sits 56.6/380 behind the torso
+centroid — the near-arm pivot was 9px unscaled too far forward), `legOffsetX:
+-13` (near thigh back), `legOffsetY: -14 → -16`. Converged in **1 iteration**
+(residuals ≤ 0.3 unscaled px); size ratios unchanged, 43/43 tests, 12/12
+`debug:play all`. Remaining visible deviation from the drawing is the
+shared-rig leg length documented above — at matched torso height the in-game
+figure stands noticeably taller than the reference; that is `P.thighH`/
+`P.shinH` territory (George shares them), Derek's call.
+
 ### 2026-07-12 (art session) — Lou Thesz art redone from a fresh master pose
 
 Derek redrew all 6 Thesz body parts from a new full-body reference (`Sprite

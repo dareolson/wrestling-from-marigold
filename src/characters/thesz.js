@@ -26,7 +26,23 @@ export const thesz = {
         // uniform, so width is the ratio matched here; the aspect needs a
         // Skeleton-level knob if it bothers in motion.
         headScale: 0.615,
+        // Position pass (2026-07-12, same measured loop as the sizes): every
+        // anchor below is (reference layer's joint landmark relative to the
+        // torso ink centroid/top) minus (live pivot read off the running
+        // rig), converted to unscaled px. Ref seats the head 35/380 of torso
+        // height below the torso ink top and ~22px (ref canvas) forward of
+        // the torso centroid; the rig's default anchors it exactly at torso
+        // top, centered.
+        headOffsetX: 3,
+        headOffsetY: 10,
         torso:    'thesz_torso',
+        // Ref shoulder (upper-arm layer top-rows center) sits 56.6/380 of
+        // torso height BEHIND the torso centroid and 50/380 below its top;
+        // the rig's default (torso x + 12·s shoulder drop, near arm staggered
+        // back 12) rendered the near-arm pivot 9px too far forward and ~3px
+        // too high.
+        armOffsetX: -9,
+        armOffsetY: 3,
         upperArm: 'thesz_upper_arm',
         // TEX default h 63 measured 3.1% long vs the reference (forearm ink
         // length / torso ink height: target 207.4/380 = 0.546, rendered
@@ -41,9 +57,12 @@ export const thesz = {
         // measures 1.00. Still ≥ thighH+HIP_OVERLAP (70), so the knee tuck
         // keeps its overlap margin.
         thigh:    { key: 'thesz_thigh', box: { w: 101, h: 81 } },
-        // Nudged up toward the trunks a bit (Derek, 2026-07-12) — see
-        // Skeleton.js's legOffsetY (+ = down, so negative here = up).
-        legOffsetY: -14,
+        // Position pass (2026-07-12): ref thigh ink top sits 83/380 of torso
+        // height above the torso ink bottom and 66/380 behind the torso
+        // centroid. Derek's eyeballed -14 was close on y (measured residual
+        // -2.3); the near thigh needed to come back 13 on x.
+        legOffsetX: -13,
+        legOffsetY: -16,
         // Object form overrides the Skeleton.js TEX default display box —
         // shin always needs this since its true box depends on this
         // character's own boot-art fillFrac (see Skeleton.js's TEX comment).

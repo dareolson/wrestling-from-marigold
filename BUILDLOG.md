@@ -93,6 +93,28 @@ Fix would be an additive, default-0 `farShinOffsetX/Y` in Skeleton.js
 (George-safe); awaiting Derek's go-ahead per the shared-code guardrail.
 43/43 tests, 12/12 `debug:play all`.
 
+**Follow-up, same session (shared-rig knobs — Derek approved both):** two
+additive, default-preserving knobs added to `Skeleton.js`: per-character leg
+bone lengths (`thighH`/`shinH`, defaulting to the shared `P` values — they
+move the real joint chain: hip height, IK knee, mat contact) and
+`farShinOffsetX/Y` (same convention as the near-shin knob). Characters that
+don't set them are bit-identical — verified live on George (thigh box 70.0,
+shin box 118.0, hip→mat 139.4 unscaled, all exactly the shared-rig values).
+thesz.js then got the full measured treatment: `thighH: 49, shinH: 50` (from
+the shared 56/64; ref targets hip→sole 404/380 and knee→sole 237.5/380 of
+torso ink height — measured 0.999 and 1.011 after), shin box h re-derived
+for sole-on-mat under the new bones (114 → 86), knee art alignment
+re-measured after the bones moved the knee (`nearShinOffsetX/Y: -10/9`,
+`farShinOffsetX/Y: -18/7`, residuals ≤ 0.5 unscaled px on both knees). Big
+side effect: the shin ink-length ratio that was structurally stuck at 1.30
+under the long shared bones now measures **0.983** — every tracked ratio
+from the original six is within 3%. At matched torso height the in-game
+silhouette now stands the same height as the reference drawing. 43/43
+tests, 12/12 `debug:play all`, George visually confirmed unchanged.
+**Awaiting Derek's sign-off in motion** — the shorter legs change gait
+geometry (stride/lift constants are shared and unchanged), so walking and
+dropkicks are worth a look.
+
 ### 2026-07-12 (art session) — Lou Thesz art redone from a fresh master pose
 
 Derek redrew all 6 Thesz body parts from a new full-body reference (`Sprite

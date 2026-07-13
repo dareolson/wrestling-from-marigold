@@ -304,6 +304,22 @@ export default class Skeleton {
         // as nearLegTilt above (e.g. "6 o'clock to 7 o'clock" = -30deg). The
         // true near.shinAng used for the ankle/boot chain is untouched.
         this._nearShinTilt = textures.nearShinTilt ?? 0;
+        // Far-shin render nudge, same +X = forward/+Y = down convention as
+        // nearShinOffsetX/Y — the far shin previously had no per-character
+        // knob, so a character whose thigh art is offset (thesz's legOffsetX)
+        // had no way to keep the far knee's art aligned (2026-07-12).
+        this._farShinOffsetX = textures.farShinOffsetX ?? 0;
+        this._farShinOffsetY = textures.farShinOffsetY ?? 0;
+        // Per-character leg bone lengths, unscaled px, defaulting to the
+        // shared P values (characters that don't set them are bit-identical
+        // to the old behavior). These move the actual joint chain — hip
+        // height, IK knee, ankle/mat contact — not just art boxes: thesz's
+        // reference drawing has legs ~18% shorter relative to his torso than
+        // the shared rig's stylized bones (2026-07-12). A character's shin
+        // box height must be re-derived when shinH changes (sole-on-mat —
+        // see the TEX comment above).
+        this._thighH = textures.thighH ?? P.thighH;
+        this._shinH  = textures.shinH  ?? P.shinH;
 
         this._parts = [
             this.farThigh, this.farShin, this.farBoot,
@@ -372,8 +388,8 @@ export default class Skeleton {
     }
 
     updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
-        const thighH    = P.thighH    * s;
-        const shinH     = P.shinH     * s;
+        const thighH    = this._thighH * s;
+        const shinH     = this._shinH  * s;
         const bootH     = P.bootH     * s;
         const legW      = P.legW      * s;
         const upperArmH = P.upperArmH * s;
@@ -532,6 +548,8 @@ export default class Skeleton {
         // cleanly instead of floating below the thigh — farAnkle below still
         // anchors off the true farKnee, untouched.
         const farShinRender = this._end(farKnee.x, farKnee.y, -KNEE_OVERLAP * s, far.shinAng);
+        farShinRender.x += facing * this._farShinOffsetX * s;
+        farShinRender.y += this._farShinOffsetY * s;
         this._placePart(this.farShin, farShinRender.x, farShinRender.y, legW, shinH, far.shinAng, s, facing);
         const farAnkle = this._end(farKnee.x, farKnee.y, shinH, far.shinAng);
         if (this.farBoot) this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, far.bootAng);
@@ -656,7 +674,7 @@ export default class Skeleton {
         const f = facing >= 0 ? 1 : -1;
         const ang = a => f * a; // mirror: sin flips with the angle sign, cos is untouched
 
-        const thighH = P.thighH * s, shinH = P.shinH * s, bootH = P.bootH * s;
+        const thighH = this._thighH * s, shinH = this._shinH * s, bootH = P.bootH * s;
         const legW   = P.legW   * s, armW  = P.armW  * s;
         const upperArmH = P.upperArmH * s, forearmH = P.forearmH * s;
         const torsoH = P.torsoH * s, torsoW = P.torsoW * s, trunksH = P.trunksH * s;

@@ -17,6 +17,21 @@
 
 ## Sessions Log
 
+### 2026-07-12 (art session) — Lou Thesz art redone from a fresh master pose
+
+Derek redrew all 6 Thesz body parts from a new full-body reference (`Sprite
+sheets/New Lou/`) after flagging issues with the first pass. Updated
+`tools/wrestler-cutter/process-parts.mjs`'s `thesz` entry to the new source
+folder/filenames (`Head.png`, `Torso.png`, `RUpperArm.png`, `RLowerArm.png`,
+`RUpperLeg.png`, `RLowerLeg.png`) and reran it — clean pass: real alpha on
+every layer (no keying fallback), zero dropped specks, no part needed
+mirroring (the master pose was already drawn facing right). New shin fillFrac
+(0.874) landed within noise of the old art's (0.875), so `thesz.js`'s tuned
+display-box overrides didn't need retuning. Verified via the pipeline's
+paper-doll mock (joints sit tight, no gaps) and an in-game screenshot against
+George on the live dev server (port 5173) — 43/43 tests still pass (art-only
+change). Committed `0273e82`; **awaiting Derek's visual sign-off.**
+
 ### 2026-05-15 — Phase 1: Arena Environment
 
 **Goal:** Prove the visual direction works before building any game logic.

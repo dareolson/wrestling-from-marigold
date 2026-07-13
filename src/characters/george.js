@@ -46,9 +46,8 @@ export const george = {
         // (37, 57) / 0.841 george-shin-art fillFrac = (44, 68), then widened
         // 1.5x on width per the same limb-proportion bump as TEX (2026-07-12).
         // Height re-derived for shinH's 2x bump — (64+25)/0.841=106 — plus
-        // +12 for KNEE_OVERLAP (shins read squished/floating, then still too
-        // small at 1.5x to line up with the thigh — Derek, 2026-07-12).
-        shin:     { key: 'george_shin', box: { w: 66, h: 118 } },
+        // +18 for KNEE_OVERLAP (tuned to reference for subtle clean connection, 2026-07-12).
+        shin:     { key: 'george_shin', box: { w: 66, h: 124 } },
         // Nudged back and down to settle under the retilted thigh (Derek,
         // 2026-07-12) — second pass added another 12 (2x the first 6px step)
         // in both directions.

@@ -70,22 +70,23 @@ export const thesz = {
         // Position pass (2026-07-12): ref thigh ink top sits 83/380 of torso
         // height above the torso ink bottom and 66/380 behind the torso
         // centroid. Derek's eyeballed -14 was close on y (measured residual
-        // -2.3); the near thigh needed to come back 13 on x.
-        legOffsetX: -13,
+        // -2.3); the near thigh needed to come back 13 on x, then another 4
+        // by eye alongside the tilt below (Derek, 2026-07-12).
+        legOffsetX: -17,
         legOffsetY: -16,
+        // Rotated clockwise 15deg ("six to 6:30" — Derek, 2026-07-12): the
+        // thigh art's baked-in forward lean read as a forward-broken knee
+        // against the shin. Same clock convention/sign as george.js.
+        nearLegTilt: -15 * Math.PI / 180,
         // Object form overrides the Skeleton.js TEX default display box —
         // shin always needs this since its true box depends on this
         // character's own boot-art fillFrac (see Skeleton.js's TEX comment).
         // Height derived from the sole-on-mat constraint under the shortened
-        // shinH above: render top sits KNEE_OVERLAP (12) above the knee, the
-        // art's sole row is 200.5/230 of the box down, and the knee->mat
-        // drop is ~70 unscaled: the render top sits KNEE_OVERLAP (12) minus
-        // farShinOffsetY (7) above the knee -> (12-7+70)/0.8717 = 86,
-        // confirmed sole-flush live. Width: re-derived
-        // from the reference like the thigh (old 63 carried the legacy-art
-        // 1.5x bump): ref shin max ink row (127/380 of torso height) vs
-        // spec fill (105/150) gives 54.
-        shin:     { key: 'thesz_shin', box: { w: 54, h: 86 } },
+        // shinH above: render top sits KNEE_OVERLAP (18, tuned to reference) above
+        // the knee. Width: re-derived from the reference like the thigh
+        // (old 63 carried the legacy-art 1.5x bump): ref shin max ink row
+        // (127/380 of torso height) vs spec fill (105/150) gives 54.
+        shin:     { key: 'thesz_shin', box: { w: 54, h: 92 } },
         // Knee alignment (2026-07-12 measured pass, after Derek flagged the
         // top/bottom leg reading disconnected): the shin hangs off the IK
         // knee (computed from the un-offset hip bone), so legOffsetX sliding
@@ -95,8 +96,11 @@ export const thesz = {
         // moved the knee): near (on top of Skeleton.js's shared
         // NEAR_SHIN_FWD/UP) and far via the farShinOffset knob added for
         // exactly this (2026-07-12).
-        nearShinOffsetX: -10,
-        nearShinOffsetY: 9,
+        // x re-measured after nearLegTilt swung the thigh's knee end back;
+        // y is a compromise between the ref knee relation (wanted 16) and
+        // not burying the near boot below the mat line.
+        nearShinOffsetX: -31,
+        nearShinOffsetY: 12,
         farShinOffsetX: -18,
         farShinOffsetY: 7,
     },

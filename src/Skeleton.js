@@ -121,7 +121,8 @@ const FAR_THIGH_TILT = -10 * Math.PI / 180;
 // shin box height grows by the same amount — george.js/thesz.js) so the knee
 // joint tucks under the thigh instead of floating below it with a gap, same
 // technique as HIP_OVERLAP one joint down (Derek, 2026-07-12).
-const KNEE_OVERLAP = 12;
+// Tuned from reference: subtle overlap (18-20% of shin height) for clean connection.
+const KNEE_OVERLAP = 18;
 // Near/front shin renders bigger, further forward, and a touch higher than
 // the far shin (Derek, 2026-07-12 — another +5% on top of the first pass).
 const NEAR_SHIN_SCALE = 1.1;

@@ -55,7 +55,8 @@ width was matched.
 
 Verified: 43/43 tests, 12/12 `debug:play all` scenarios, in-game screenshot
 (`tools/debug/shots/2026-07-13T03-09-09.png`). Measurement scripts were
-session-scratch (not committed). **Still awaiting Derek's visual sign-off** —
+session-scratch (not committed). Committed `2441212`. **Still awaiting
+Derek's visual sign-off** —
 a measured fit is not the same as it reading right in motion.
 
 ### 2026-07-12 (art session) — Lou Thesz art redone from a fresh master pose

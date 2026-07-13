@@ -17,6 +17,47 @@
 
 ## Sessions Log
 
+### 2026-07-12 (proportion pass) — Thesz measured against his reference, 5/6 ratios converged
+
+Replaced the eyeballed/first-pass Thesz proportion numbers with a measured
+convergence loop: measured every New Lou reference layer's ink content
+(alpha>10 bbox + principal-axis extents, all on the shared 1538x1024 canvas)
+to derive six target ratios relative to torso ink height (380px) — head width
+0.321, torso width 0.539, upper-arm length 0.606, forearm length 0.546, thigh
+length 0.726, shin-to-ankle 0.397. Then read the live rig via
+`window.__WFM_GAME...w1.skeleton` displayWidth/Height, converted to the same
+ink basis using each spec PNG's own canvas fill (head ink 172/200 wide, torso
+141/190 wide, shin ink 201/230 tall with ankle pinch at row 117 — the other
+parts fill their canvas height exactly), and adjusted `thesz.js`:
+
+- `headScale` 0.68 → **0.615** — rendered head-width ratio 1.106 → 1.000.
+  The 0.68 first pass compared display boxes without the ink-fill correction.
+- `forearm` box h 63 (TEX default) → **61** — ratio 1.031 → 0.998.
+- `thigh` box h 86 → **81** — ratio 1.058 → 0.996 (width 101 kept: limb
+  widths are deliberately stylized wider and aren't tracked against the ref).
+- torso box and upper arm measured 1.007 / 1.001 at their existing TEX
+  defaults — left untouched. Shin box 114 left untouched (see below).
+
+Converged in **1 adjustment iteration** (2 measurement passes) — every
+tracked ratio within 3% (worst 0.7%) **except the shin**, which measures
+1.303 and is structurally pinned by shared Skeleton.js geometry, not a thesz
+knob: the boot sole must land on the mat, and knee→mat distance is fixed by
+`P.thighH`/`P.shinH`/`bootH` (56/64/25) — the minimum shin box that keeps the
+boot grounded still renders a to-ankle ratio ~0.44 vs the 0.397 target (and
+shrinking to converge would float the boot ~20px). Net: the shared rig's legs
+are ~18% longer relative to the torso than the reference drawing (a
+deliberate roster-wide stylization — Derek scaled thighs 1.75x/shins 2x by
+feel). Matching the ref exactly would need per-character bone lengths in
+Skeleton.js, which George also depends on — flagged, not changed. Same class
+of limitation on head aspect: Skeleton.js's fixed 2.0:2.5 head box renders
+the head ~25% taller than the ref's ink aspect; `headScale` is uniform so
+width was matched.
+
+Verified: 43/43 tests, 12/12 `debug:play all` scenarios, in-game screenshot
+(`tools/debug/shots/2026-07-13T03-09-09.png`). Measurement scripts were
+session-scratch (not committed). **Still awaiting Derek's visual sign-off** —
+a measured fit is not the same as it reading right in motion.
+
 ### 2026-07-12 (art session) — Lou Thesz art redone from a fresh master pose
 
 Derek redrew all 6 Thesz body parts from a new full-body reference (`Sprite

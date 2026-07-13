@@ -30,7 +30,19 @@ mirroring (the master pose was already drawn facing right). New shin fillFrac
 display-box overrides didn't need retuning. Verified via the pipeline's
 paper-doll mock (joints sit tight, no gaps) and an in-game screenshot against
 George on the live dev server (port 5173) — 43/43 tests still pass (art-only
-change). Committed `0273e82`; **awaiting Derek's visual sign-off.**
+change). Committed `0273e82`.
+
+**Follow-up fix, same session:** Derek caught the head reading cropped and
+oversized in-game. Root cause: the new `head.png` carries almost no neck
+slack, but `Skeleton.js`'s legacy head path (`HEAD_HIDE_FRAC = 0.24`) assumes
+a long-neck source and crops the bottom 24% expecting to remove neck, then
+stretches the remainder to fill the display box — on the new art that crop
+sliced into the actual chin/jaw instead. The new `torso.png` already bakes its
+own neck stub in (visible notch above the shoulders, same as George's), so
+`thesz.js` now sets `neckInTorso: true` to skip that crop path entirely — same
+convention george.js already uses. Verified via before/after in-game
+screenshot crops (proper neck gap now, matches the reference) + 43/43 tests.
+Committed `a7e2332`. **Still awaiting Derek's visual sign-off.**
 
 ### 2026-05-15 — Phase 1: Arena Environment
 

@@ -42,7 +42,23 @@ own neck stub in (visible notch above the shoulders, same as George's), so
 `thesz.js` now sets `neckInTorso: true` to skip that crop path entirely — same
 convention george.js already uses. Verified via before/after in-game
 screenshot crops (proper neck gap now, matches the reference) + 43/43 tests.
-Committed `a7e2332`. **Still awaiting Derek's visual sign-off.**
+Committed `a7e2332`.
+
+**Second follow-up, same session:** neck fix wasn't enough — Derek flagged
+the head as still clearly oversized ("bobblehead"). Rather than eyeball a new
+`headScale`, measured `LouTheszFullBodyRef.png` directly: head's own max
+content width (122px) vs the isolated torso layer's max content width (205px,
+same shared 1538x1024 canvas, so directly comparable, and confirmed the torso
+alone — not arm overlap — accounts for that width) — a 0.595 head/torso ratio
+in the actual art. Traced through `Skeleton.js`'s fixed `headR` display box
+(elongated 68x85 unscaled, non-uniform stretch off a square canvas) against
+thesz's TEX-default torso box and found the game was rendering that ratio at
+~0.88 — 1.47x too wide. Solving for the correction gives `headScale: 0.68`
+(a much bigger cut than george's 0.9 — his art draws a proportionally larger
+head). Verified via an in-game screenshot crop next to the reference + 43/43
+tests. Committed `9930ea0`. **Still awaiting Derek's visual sign-off** —
+measurement-derived, not eyeballed, but a from-scratch calculation like this
+is exactly the kind of thing that wants a human gut-check.
 
 ### 2026-05-15 — Phase 1: Arena Environment
 

@@ -17,6 +17,36 @@
 
 ## Sessions Log
 
+### 2026-07-12 (leg-audit close-out) — pending knee tuning landed; Codex's audit reconciled as stale
+
+Codex pushed a Lou leg audit (`06fb790`) recommending the cutter be repointed
+at `Sprite sheets/New Lou/` and the rig move to character-specific leg
+dimensions — but it audited `origin/master` (`c4cd31b`), 12 commits behind
+Derek's local tree, and both findings were already done locally (`0273e82`
+repointed the cutter and regenerated all six Thesz PNGs from New Lou;
+`2441212`..`90ab494` landed reference-measured character dims and
+per-character leg bones). Full reconciliation in AI_HANDOFF.md's reply entry.
+
+Shipped this session:
+
+- **`5e9b7ec`** — committed the final tuning round found uncommitted in the
+  tree: `KNEE_OVERLAP` 12→18 (global), George shin box h 118→124 (re-derived
+  for the new overlap), Thesz `nearLegTilt` -15°, `legOffsetX` -13→-17, near
+  shin offsets re-measured (x -31, y 12; box h 86→92).
+- **`5922b6d`** — logged Derek's submission-move review handoff entry (that
+  review itself is still open; the armbar/ankle-lock code is already
+  committed inside `54f42f2`, mixed into the proportion-pass commit).
+- **`b874709`** — merged `06fb790`, keeping both sides' handoff entries.
+
+Verified on the final tree: `npm test` 43/43, `npm run debug:play -- all`
+12/12, `npm run build` clean (Node 25.8.1, `/opt/homebrew/opt/node/bin`);
+screenshot checklist per Codex's audit — idle, both walk facings, two stride
+phases, vertical walk, knee seam at 2x zoom — silhouette tracks
+`LouTheszFullBodyRef.png`. **Not feel-signed-off: Derek playtest pending.**
+
+Also this session (Rate Guide repo, unrelated): `dareolson/the-rate-guide`
+was found public and set private at Derek's direction.
+
 ### 2026-07-12 (proportion pass) — Thesz measured against his reference, 5/6 ratios converged
 
 Replaced the eyeballed/first-pass Thesz proportion numbers with a measured

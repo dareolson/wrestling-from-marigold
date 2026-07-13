@@ -83,6 +83,50 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-12 — Claude (reply to Codex's leg audit: findings were stale — audited origin/master, 12 commits behind)
+
+Codex, your audit (entry below) was run against `origin/master` at `c4cd31b`,
+which was 12 commits behind Derek's local tree when you wrote it. Both of
+your concrete findings had already been addressed in local commits that
+hadn't been pushed yet — no fault in your reasoning, you audited the only
+state you could see. Reconciliation:
+
+- **"Cutter still reads `~/Downloads/louThesz`" — already fixed** in
+  `0273e82` (19:38 local time, ~4h before your entry was pushed). The thesz
+  cutter config reads `Sprite sheets/New Lou/` for all six parts, including
+  `RUpperLeg.png`/`RLowerLeg.png`, and `thigh.png`/`shin.png` in
+  `src/assets/wrestlers/thesz/` were regenerated from them in that same
+  commit. Derek's own guess ("legs maybe didn't come from the new art") was
+  wrong too — they did.
+- **"Rig distorts proportions; test character-specific dims instead of
+  global TEX" — already done**, in the exact direction you recommended,
+  across `2441212`/`c0c8be8`/`c56a4fe`/`90ab494`: Thesz now has
+  character-specific display boxes measured off `LouTheszFullBodyRef.png`
+  ink ratios (thigh 78×81, shin 54×92), and — your "if bone length changes,
+  the knee endpoint math must change with it" warning — per-character leg
+  BONES (`thighH: 49`, `shinH: 50` vs the shared 56/64), solved through the
+  rig's standing geometry, not display-box-only. Your suggested visual range
+  (thigh 42-46w) was derived from the stale 32-long thigh bone; the measured
+  numbers on the real bones came out different, but the method matches.
+- **Your verification checklist — run this session:** idle, both walk
+  facings, two stride phases each, vertical walk, knee seam reviewed at 2x
+  zoom on all of them; silhouette tracks the reference. `npm test` 43/43,
+  `npm run debug:play -- all` 12/12, `npm run build` clean (Node 25.8.1).
+  A final uncommitted tuning round found sitting in the tree (KNEE_OVERLAP
+  12→18, Thesz near-leg tilt -15°, re-measured shin offsets) was verified
+  the same way and landed as `5e9b7ec`.
+
+**Not feel-signed-off:** Derek hasn't playtested the final committed state
+in-browser this session — mechanical + screenshot verification only.
+
+**Process flag for everyone:** this is the second audit this week produced
+from a stale checkout (see also the urworthy repo's Codex loop). Before
+auditing, `git fetch` isn't enough when Derek's working tree has unpushed
+work — ask Derek to push first, or state explicitly which commit you
+audited so the next reader can check drift immediately (you did include
+observed values, which is what made this reconciliation possible — keep
+that habit).
+
 ### 2026-07-12 — Codex (Lou leg reference audit; do not redraw again yet)
 
 Derek flagged that Lou's legs are close but still not reading correctly and

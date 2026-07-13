@@ -75,6 +75,24 @@ shared-rig leg length documented above — at matched torso height the in-game
 figure stands noticeably taller than the reference; that is `P.thighH`/
 `P.shinH` territory (George shares them), Derek's call.
 
+**Follow-up, same session (leg width + knee alignment):** Derek flagged the
+legs as still too big with the top/bottom leg misaligned, and confirmed the
+old width bumps were tuned for the old art ("the new reference for legs is
+what i want to use"). Measured: thigh ink width 1.29x the reference ratio,
+shin 1.18x — box widths re-derived from the ref's max ink rows: thigh w 101 →
+**78**, shin w 63 → **54** (both measure 1.00 ± 0.01 after). The knee
+misalignment had two causes: the legacy widths, and the position pass's
+`legOffsetX: -13` sliding the near thigh's art back while the shin still
+hung off the un-offset IK knee. Measured the shin-top vs thigh-bottom art
+landmarks against the same relation in the reference layers →
+`nearShinOffsetX: -14`, `nearShinOffsetY: 3`; near-knee residual 0.4/0.3
+unscaled px. **Known gap:** the far shin has no per-character offset knob in
+Skeleton.js, so the far knee carries a ~15 unscaled px forward residual —
+invisible at idle (the near leg covers it) but it will peek out mid-stride.
+Fix would be an additive, default-0 `farShinOffsetX/Y` in Skeleton.js
+(George-safe); awaiting Derek's go-ahead per the shared-code guardrail.
+43/43 tests, 12/12 `debug:play all`.
+
 ### 2026-07-12 (art session) — Lou Thesz art redone from a fresh master pose
 
 Derek redrew all 6 Thesz body parts from a new full-body reference (`Sprite

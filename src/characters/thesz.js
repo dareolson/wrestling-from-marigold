@@ -49,14 +49,16 @@ export const thesz = {
         // 0.5625) — 63/1.031 = 61. Width stays the TEX default (limb widths
         // are deliberately stylized wider, not tracked against the ref).
         forearm:  { key: 'thesz_forearm', box: { w: 44, h: 61 } },
-        // Width kept from the earlier eyeball pass (~12% + 10% over TEX,
-        // Derek, 2026-07-12 — thesz's legs read a little small next to
-        // george's). Height re-derived against the reference (2026-07-12
-        // measured pass): thigh ink length / torso ink height target is
+        // Both dims re-derived against the reference (2026-07-12 measured
+        // pass). Height: thigh ink length / torso ink height target is
         // 275.8/380 = 0.726; the old 86 rendered 0.768 (5.8% long) — 81
         // measures 1.00. Still ≥ thighH+HIP_OVERLAP (70), so the knee tuck
-        // keeps its overlap margin.
-        thigh:    { key: 'thesz_thigh', box: { w: 101, h: 81 } },
+        // keeps its overlap margin. Width: the old 101 carried the legacy
+        // art's deliberate widening (Derek: that fix was for the old art —
+        // the new reference legs are what he wants); ref thigh max ink row
+        // (122/380 of torso height) vs the spec canvas fill (69/150) gives
+        // 78 — measured 1.29x narrower, ratio 1.00 after.
+        thigh:    { key: 'thesz_thigh', box: { w: 78, h: 81 } },
         // Position pass (2026-07-12): ref thigh ink top sits 83/380 of torso
         // height above the torso ink bottom and 66/380 behind the torso
         // centroid. Derek's eyeballed -14 was close on y (measured residual
@@ -66,12 +68,25 @@ export const thesz = {
         // Object form overrides the Skeleton.js TEX default display box —
         // shin always needs this since its true box depends on this
         // character's own boot-art fillFrac (see Skeleton.js's TEX comment).
-        // (37, 57) / 0.8747 thesz-shin-art fillFrac = (42, 65), then widened
-        // 1.5x on width per the same limb-proportion bump as TEX (2026-07-12).
-        // Height re-derived for shinH's 2x bump — (64+25)/0.8747=102 — plus
-        // +12 for KNEE_OVERLAP (shins read squished/floating, then still too
-        // small at 1.5x to line up with the thigh — Derek, 2026-07-12).
-        shin:     { key: 'thesz_shin', box: { w: 63, h: 114 } },
+        // Height: (64+25)/0.8747=102 for shinH's 2x bump, plus +12 for
+        // KNEE_OVERLAP — also the minimum that keeps the boot sole on the
+        // mat, so it stays even though the reference wants the shin ~30%
+        // shorter (shared P.thighH/P.shinH territory, see BUILDLOG
+        // 2026-07-12). Width: re-derived from the reference like the thigh
+        // (old 63 carried the legacy-art 1.5x bump): ref shin max ink row
+        // (127/380 of torso height) vs spec fill (105/150) gives 54.
+        shin:     { key: 'thesz_shin', box: { w: 54, h: 114 } },
+        // Knee alignment (2026-07-12 measured pass, after Derek flagged the
+        // top/bottom leg reading disconnected): the shin hangs off the IK
+        // knee (computed from the un-offset hip bone), so legOffsetX sliding
+        // the thigh art back left the shin art forward of it. Measured
+        // shin-top vs thigh-bottom art landmarks against the same relation
+        // in the reference: near shin comes back 14 and down 3 (on top of
+        // Skeleton.js's shared NEAR_SHIN_FWD/UP). The FAR shin has no offset
+        // knob — its residual (~15 unscaled px forward at the knee) is a
+        // Skeleton.js vocabulary gap, see BUILDLOG.
+        nearShinOffsetX: -14,
+        nearShinOffsetY: 3,
     },
     idlePose:  'powerIdle',
     tauntPose: 'tauntArmsWide',

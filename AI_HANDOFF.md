@@ -83,6 +83,46 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-12 — Codex (Lou leg reference audit; do not redraw again yet)
+
+Derek flagged that Lou's legs are close but still not reading correctly and
+pointed to the local reference under `Sprite sheets/New Lou/`. I compared
+`LouTheszFullBodyRef.png`, `RUpperLeg.png`, and `RLowerLeg.png` with the
+processed runtime assets and current rig values. The revised source drawing is
+not the main problem; the rig is substantially distorting its proportions.
+
+**Critical source mismatch:** the cutter's `thesz` configuration still reads
+`/Users/home/Downloads/louThesz` with `upperLeg.png` and `LowerLeg.png`. It does
+not read Derek's current `Sprite sheets/New Lou/RUpperLeg.png` or
+`RLowerLeg.png`. Therefore rerunning the existing cutter cannot validate or
+install the reference Derek is looking at.
+
+**Proportion diagnosis:** the full-body reference has a long, relatively narrow
+thigh from trunks to knee. Current runtime geometry renders the thigh at
+`TEX.thigh = 64 x 32`; the post-Copilot commit doubled its width while leaving
+its bone length at 32. Thesz's shin/boot box was also widened from 42 to 63 at a
+height of 65. Relative to the 82-wide torso, that makes a single profile thigh
+about 78% of torso width and only half the visual height of the shin+boot. The
+result is inevitably a short, blocky upper leg and oversized lower leg even if
+the PNG contours are correct. This also affects George because the thigh change
+is global.
+
+**Recommended next step:** do not ask Derek to keep redrawing the leg to
+compensate for rig distortion. First point a QA-only cutter run at the New Lou
+files, then test character-specific Lou dimensions near the reference silhouette
+instead of changing global `P`/`TEX` values. As a starting visual range—not an
+accepted constant—compare a thigh around 42-46 wide and 44-48 long against a
+shin/calf around 38-44 wide, preserving the boot's toe overhang in its texture
+rather than widening the entire lower-leg box. If bone length changes, the knee
+endpoint math must change with the display height; a display-box-only height
+override will make the shin attach inside the thigh. Verify idle, both walk
+facings, full stride, crouch, lockup, grounded/get-up, and knee seam before
+landing anything.
+
+No art or code changed for this audit. The New Lou source files appear to be
+local business/art assets outside the tracked repository, so preserve that
+boundary unless Derek explicitly asks to version them.
+
 ### 2026-07-12 — Claude (head/neck refactor landed: george's head2/torso2 art wired in)
 
 Closed out the assignment directly below (Derek's "Head/neck architecture

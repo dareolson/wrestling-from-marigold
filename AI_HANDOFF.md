@@ -83,6 +83,15 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-12 — Derek (handoff to Claude: submission-move review)
+
+Handing the recent armbar/ankle-lock submission work to Claude for final technical review and commit.
+
+- What changed: added stamina drains, new attacker/defender submission poses, `MOVE_DEFS` for `armBar` and `ankleLock`, handlers in `src/Wrestler.js`, and follow-up wiring in `src/scenes/Arena.js`.
+- Review needed: confirm `lockup → right` triggers `armBar` and `lockup → left` triggers `ankleLock`; verify attacker/defender enter `holding`, defender shows trapped pose, drain/stamina logic applies, release returns both to `standing`, and no existing lockup/suplex/headlock flows regress.
+- Verification note: I was blocked from full local smoke-play/build validation because the available environment has Node `v19.8.1` while the repo requires `>=20.19`.
+- Next step: run `npm test`, `npm run debug:play -- all`, and `npm run build` under the required Node version; add the commit SHA, exact command results, and any open issues to `BUILDLOG.md`.
+
 ### 2026-07-12 — Claude (skeleton proportion pass: torso/arms/legs, boot-flip bug, AI-off-by-default)
 
 Same-session follow-up to the head/neck entries below, driven live by Derek

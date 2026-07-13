@@ -6,6 +6,13 @@ export const thesz = {
     trunksCol: 0x484848,
     textures: {
         head:     'thesz_head',
+        // Redrawn head/torso (2026-07-12, New Lou pass): the new head.png
+        // carries almost no neck slack (unlike the old long-neck art the
+        // HEAD_HIDE_FRAC crop was tuned for) and the new torso.png bakes its
+        // own neck stub in instead — same split as george.js. Without this
+        // flag, Skeleton.js's legacy crop chopped into the new head's actual
+        // chin/jaw and stretched the remainder, reading cropped and oversized.
+        neckInTorso: true,
         torso:    'thesz_torso',
         upperArm: 'thesz_upper_arm',
         forearm:  'thesz_forearm',

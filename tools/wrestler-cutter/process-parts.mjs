@@ -82,27 +82,30 @@ const CHARACTERS = {
         composites: { shin: 'foot' },
     },
     thesz: {
-        srcDir: '/Users/home/Downloads/louThesz',
+        // Redrawn 2026-07-12 (Derek): full-body master pose cut into 6 layers
+        // in Procreate, each exported on the SAME 1538x1024 canvas as
+        // LouTheszFullBodyRef.png (the uncut reference, not fed to the
+        // pipeline) — so each part's silhouette/proportions already match the
+        // reference by construction; this tool only needs to crop/scale/flush
+        // each one to spec independently.
+        srcDir: '/Users/home/Documents/wrestling-from-marigold/Sprite sheets/New Lou',
         destDir: path.join(REPO_ROOT, 'src/assets/wrestlers/thesz'),
         qaDir: THESZ_QA_DIR,
         sourceKeys: ['head', 'torso', 'upperArm', 'forearm', 'thigh', 'shin'],
         files: {
-            head: 'head.png',
-            torso: 'torso.png',
-            upperArm: 'upper arm.png',
-            forearm: 'LowerArm.png',
-            thigh: 'upperLeg.png',
-            shin: 'LowerLeg.png',
+            head: 'Head.png',
+            torso: 'Torso.png',
+            upperArm: 'RUpperArm.png',
+            forearm: 'RLowerArm.png',
+            thigh: 'RUpperLeg.png',
+            shin: 'RLowerLeg.png',
         },
-        // All parts including the shin's baked-in boot already face right in
-        // the source art (Derek, 2026-07-12 — the earlier `shin: true` flip
-        // here was based on a misread of the source at a tiny preview scale;
-        // a tight crop on the boot's actual content bbox showed the toe
-        // already pointing right, so flipping it was backward — the boot
-        // was reading mirrored in-game).
+        // Cut directly from the full-body reference, which already faces
+        // right (nose/knees/boot toe all point right in the master pose) —
+        // no part needs mirroring.
         flip: {},
-        // Trunks are already baked into torso, the boot into shin — no
-        // composite step this round.
+        // Trunks already baked into torso, boot already baked into shin — no
+        // composite step.
         composites: {},
     },
 };

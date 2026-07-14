@@ -88,6 +88,81 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-14 — Claude (rig-tuner tool shipped — the counter-proposal from the Unity thread is now real)
+
+The visual rig-tuning tool proposed in my reply to Codex's Unity evaluation
+(entry below, same date) is built, verified, and pushed. **Not
+Derek-signed-off yet** — he hasn't driven it in a browser.
+
+**What it is:** `tools/rig-tuner/` (sibling of wrestler-cutter), served by
+the normal Vite dev server — `npm run rig:tuner`, then it opens
+`/tools/rig-tuner/`. It renders a wrestler through the REAL `Skeleton.js`,
+the real `POSES` from `Wrestler.js`, and the real character configs/PNGs —
+not a reimplementation — so the preview is exactly what the game draws
+(minus the arena's grain/color filters, deliberately, for art comparison).
+Adjustable live, with numeric readouts and paste-ready export: global P
+bones, TEX display boxes, all RIG overlap/stagger scalars, every
+per-character texture knob (offsets, tilts in degrees, scales, per-char
+boxes, per-char thighH/shinH), the six pose channels of any POSES entry, and
+a draggable reference-image overlay (opacity/scale/front-behind — load
+`Sprite sheets/New Lou/LouTheszFullBodyRef.png` etc.). Drag handles sit on
+head/shoulder/both thighs/both shins for the offset pairs. The export panel
+emits only changed values, grouped by target file (`Skeleton.js — P/TEX/RIG`
+/ `src/characters/<name>.js` / `Wrestler.js — POSES`); the browser never
+writes source files. Scope cap honored per the assignment: **no timeline, no
+keyframing, no clip authoring** — pose VALUES only, which is the piece that
+supports the four-move blueprint work (Codex: when your blueprint needs new
+pose joint values, this is now the fast way to find them).
+
+**Architecture call (justification requested in the brief):** a separate
+Vite-served page under `tools/rig-tuner/` importing the real src modules,
+NOT a `?rigtool=1` gate in the game. Reasons: `vite build` bundles only the
+root `index.html`, so the tool physically cannot ship or alter production
+(confirmed in build output — same single-page dist before/after); the game's
+Arena scene never has to carry tool branches; and the wrestler-cutter
+precedent already establishes tools/ as the home for this. Cost: the tool
+needed Skeleton's module-level consts reachable, hence the one src change —
+`e713e0b` exports `P`/`TEX` and gathers the scalar consts into one exported
+mutable `RIG` object (identical values, nothing in the game mutates them;
+this is the "minimal read/write seam defaulting to current behavior").
+Per-character knobs needed no seam at all — they're constructor-captured
+instance fields the tool writes directly.
+
+**Commits:** `e713e0b` (Skeleton.js seam), `3a0cb2e` (the tool: index.html,
+rig-tuner.js, smoke.mjs, README.md, `rig:tuner` npm script), plus this
+entry + BUILDLOG. No subagents/worktrees used — single-surface tool, and
+inline kept me clear of the known worktree/absolute-import hazard.
+
+**Verification (exact commands, Node 25.8.1 via /opt/homebrew/opt/node/bin):**
+- `npm test` 43/43; `npm run debug:play -- all` 12/12; `npm run build`
+  clean — run after the seam commit and re-run after the tool commit.
+- `node tools/rig-tuner/smoke.mjs` 16/16 (headless Chrome, harness.mjs
+  pattern): RIG/char-knob edits change the canvas hash and revert to a
+  pixel-identical baseline; a REAL mouse-drag on the head handle moved
+  headOffset (10,9)→(30,22), exactly the +20/+13 unscaled px the zoom
+  predicts; export blocks match expected lines; george/thesz/placeholder
+  all render; zero page/console errors.
+- Round-trip: set george `headOffsetY: 30` in the tool, pasted the export
+  panel's line into `src/characters/george.js`, `WFM_P1=george WFM_P2=george
+  npm run debug:shot -- 7` — the in-game read (head sunk to the collar)
+  matches the tool preview; reverted the paste afterward.
+
+**Open questions / limits:** upright preview only (grounded/get-up keyposes
+aren't rendered — separate small feature if wanted); documented couplings
+(TEX.thigh.h = P.thighH + HIP_OVERLAP; shin box height vs KNEE_OVERLAP;
+thesz far/near lockstep) are warned about in tools/rig-tuner/README.md but
+not auto-enforced — the export gives you what you set, not derived twins;
+values are session-local (reload discards — copy out first). Derek: run
+`npm run rig:tuner` (needs Node ≥ 20.19, i.e. `nvm use 22`), and the two
+things most worth your eyes are drag-handle feel and whether the export
+grouping matches how you'd actually paste.
+
+Files touched: src/Skeleton.js, package.json, tools/rig-tuner/* (new),
+BUILDLOG.md, AI_HANDOFF.md
+Action required: Derek in-browser sign-off; Codex — use it when writing the
+four-move blueprint pose values.
+Priority: medium (tooling; unblocks pose authoring)
+
 ### 2026-07-14 — Derek via Claude (new Active Assignment set: Codex to blueprint four moves)
 
 Derek's direction from today's session: he wants four new move animations

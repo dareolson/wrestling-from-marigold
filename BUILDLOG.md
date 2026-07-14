@@ -17,6 +17,48 @@
 
 ## Sessions Log
 
+### 2026-07-14 — Rig-tuner tool shipped (`e713e0b`, `3a0cb2e`); not Derek-signed-off
+
+Built the visual rig-tuning tool proposed in AI_HANDOFF's 2026-07-14 reply to
+Codex's Unity evaluation — the counter-proposal that keeps the engine and
+fixes the actual pain (hand-edit-constant → screenshot → compare loops).
+
+- **`e713e0b` — Skeleton.js seam.** `P` and `TEX` are now exported, and the
+  module-level scalar tuning consts (ELBOW_OVERLAP, HIP_OVERLAP,
+  KNEE_OVERLAP, SHOULDER_STAGGER, HIP_STAGGER, LEG_BACK_BIAS, NEAR/FAR leg
+  and shin nudges, FAR_THIGH_TILT, FAR_ARM_SCALE, NEAR_SHIN_SCALE) moved
+  into one exported mutable `RIG` object, every value unchanged. Nothing in
+  the game writes to any of them — runtime behavior identical.
+- **`3a0cb2e` — `tools/rig-tuner/`** (sibling of wrestler-cutter). `npm run
+  rig:tuner` serves it off the normal Vite dev server; the page imports the
+  REAL `Skeleton.js`, `POSES`, and character configs — no reimplementation.
+  Character/pose/facing/zoom/walk preview, live sliders + number inputs for
+  P / TEX / RIG / every per-character texture knob (incl. per-char boxes and
+  thighH/shinH bones), drag handles on head/shoulder/thighs/shins for the
+  offset pairs, pose dials for the six POSES channels, a draggable
+  reference-image overlay with opacity/scale, and an export panel that emits
+  paste-ready JS diffs grouped by target file. Browser never writes source.
+  Scope cap honored: no timeline, no keyframing.
+- **Zero production impact:** `vite build` bundles only the root
+  `index.html` (verified in the build output); the game imports nothing from
+  `tools/`.
+
+**Verified:** `npm test` 43/43, `npm run debug:play -- all` 12/12, build
+clean (Node 25.8.1 via `/opt/homebrew/opt/node/bin`) after the seam AND
+after the tool landed. Tool driven headless via `tools/rig-tuner/smoke.mjs`
+(16/16 — knob edits provably change the canvas and revert to a
+pixel-identical baseline, a real mouse-drag on the head handle writes
+headOffsetX/Y, export blocks correct, george/thesz/placeholder all render,
+zero console errors). Round-trip verified end-to-end: set george
+`headOffsetY: 30` in the tool, pasted the exported line into
+`src/characters/george.js`, screenshotted the live game — identical
+head-sunk-to-collar read as the tool preview; reverted after.
+
+**Not done / open:** Derek's in-browser sign-off (drag-handle feel, panel
+ergonomics); grounded/get-up poses aren't previewed (upright only); the
+documented value couplings (TEX.thigh.h = P.thighH + HIP_OVERLAP, thesz
+far/near lockstep) are noted in the tool README but not auto-enforced.
+
 ### 2026-07-13 — Thesz legs-together pass (`7b4861e`); awaiting Derek's visual sign-off
 
 Derek flagged Lou's legs still not matching `Sprite sheets/New Lou/

@@ -25,45 +25,50 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Active assignment — B1 close-out: reversal foot-lock
+## Active assignment — Codex: blueprint four input-invoked move animations
 
-Claude: close the remaining verification gap in B1 locomotion before starting
-B2 hitstop or any C-batch psychology/balance work. The velocity ramp itself is
-accepted provisionally; this assignment is limited to gait direction during a
-live reversal and the evidence needed to sign B1 off.
+(Previous active assignment — B1 close-out: reversal foot-lock — completed and
+feel-signed-off by Derek 2026-07-12; see the Handoff Log entries of that date.
+Replaced here at Derek's direction 2026-07-14.)
 
-The current implementation changes `_walkPhaseDir` from the new input while
-`vx` can still carry the wrestler in the old direction. The existing
-kinematics probe proves that body velocity crosses zero, but it does not measure
-either planted foot in world space. Therefore the handoff claim that feet stay
-planted through reversals is not yet established and may be false during the
-deceleration half of a reversal.
+Codex: design four new move animations for the current skeletons. Deliverable
+is a **blueprint, not code** — precise enough that Claude can implement it
+without making design decisions. Derek reviews the blueprint before any
+implementation starts.
 
 Requirements:
 
-- Extend the kinematics tooling to measure near/far foot world positions during
-  steady walking, braking, and a no-release live reversal. Prefer a small debug
-  read seam over scraping rendered pixels; keep production exposure minimal.
-- Reproduce and quantify any planted-foot slide before changing gameplay code.
-- If confirmed, make the smallest B1 correction so gait phase direction follows
-  actual travel relative to facing, not merely the newly pressed input. Preserve
-  the intentional pass through zero and avoid a phase snap at the crossover.
-- Preserve the accepted acceleration/braking targets, perspective scaling,
-  diagonal normalization, hurt-speed behavior, stumble behavior, run/whip path,
-  collision/clamping, poses, animation timings, stamina, AI, and match balance.
-- Do not add B2 hitstop, gravity changes, gamepad work, C1/C2 tuning, move-memory,
-  heat fixes, rope-boundary fixes, or art cleanup to this commit.
-- Run `npm test`, `npm run debug:play -- all`, `npm run build`, and the extended
-  kinematics probe under Node >=20.19. Report before/after foot-slip measurements,
-  not only body-velocity measurements.
-- Derek must perform the final human playtest. If he is unavailable, label B1
-  mechanically verified but not feel-signed-off; do not claim full acceptance.
-- Land this as one focused commit, then update `BUILDLOG.md` and add a new Claude
-  entry at the top of the Handoff Log with the commit SHA, exact commands/results,
-  measurements, browser verification, human-playtest status, and open questions.
+- Four moves, era-appropriate to the 1940s–50s golden-age repertoire (project
+  priority: psychology and drama over flash).
+- **Exactly four poses per move** for the attacker's animation. Poses use the
+  existing `POSES` format (`Wrestler.js:59`): `{ lLeg, rLeg, lArm, rArm, lean,
+  crouch }`, skeleton angle convention 0 = straight down. Sequence them in the
+  existing `MOVE_DEFS` shape (`Wrestler.js:136`): `{ p, dur, e }` with
+  durations in ms and Phaser easing names. Reuse existing poses where they
+  genuinely fit; new poses need full joint values.
+- **Input-invoked by a human player.** Specify the exact trigger for each move
+  as button × context. No new physical buttons — the action set is grapple /
+  power / finisher / run plus direction and context. Currently occupied:
+  grapple → whip (standing), lockup (close), pin (downed), clothesline
+  (runner); power → jab/headbutt (close), dropkick (medium), elbowDrop
+  (downed), doubleAxeHandle (runner); finisher → sleeper (close), taunt (far);
+  lockup follow-ups → down = headlock, power = armDrag, right = armBar,
+  left = ankleLock. Flag any collision you're intentionally overriding.
+- **Current skeletons only**: no new art, no new rig parts, no second-side
+  texture keys, no entangled two-body drawn holds (those need bespoke art —
+  out of scope). Defender reactions reuse existing sell/fall/stagger states
+  and poses wherever possible; an essential new defender pose counts against
+  that move's four.
+- Per move, specify: name, trigger context, valid target state/range,
+  the four poses (joint values), durations + easings, suggested damage/
+  stamina/heat numbers, which kits get it (george / thesz / brawler), and
+  optional AI-usage notes.
+- Write the blueprint as `AI_HANDOFF_ENTRIES/<date>-codex-four-move-blueprint.md`
+  plus a short dated log entry below pointing at it.
 
-If measurement disproves the suspected slide, do not manufacture a code change:
-commit only the useful probe improvement and document the evidence.
+After Derek approves: Claude implements as focused commits (poses + MOVE_DEFS +
+handlers + `debug:play` scenario coverage), verifying with `npm test`,
+`npm run debug:play -- all`, and `npm run build` under Node >= 20.19.
 
 ## Clarifications
 
@@ -82,6 +87,30 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 `Skeleton.js` and are not v1 requirements.
 
 ## Handoff Log
+
+### 2026-07-14 — Derek via Claude (new Active Assignment set: Codex to blueprint four moves)
+
+Derek's direction from today's session: he wants four new move animations
+designed by Codex and implemented by Claude — "he'll give you the blueprints
+to code the moves." Full spec is in the Active Assignment section at the top
+of this file (it replaces the completed B1 close-out assignment). Short
+version: four era-appropriate moves, four poses each in the existing
+`POSES`/`MOVE_DEFS` format, human-input-triggered within the existing action
+buttons + context, current skeletons only, blueprint document first — Derek
+approves, then Claude codes it.
+
+Context that shaped the constraints: the Unity/Spine tooling debate (entries
+below) is unresolved but everyone agrees new-move authoring is the workflow
+to watch — treat this as a live test of how painful pose-sequence authoring
+actually is under the current system. Also note the rig currently has no
+ankle joint (boot is baked into the shin, `bootAng = shinAng + 0.35·facing`
+in `Skeleton._gaitLeg`), so avoid designs whose readability depends on foot
+articulation.
+
+Files touched: AI_HANDOFF.md (this entry + Active Assignment section)
+Action required: Codex — write the blueprint. Claude implements after
+Derek's approval.
+Priority: high (Derek's current ask)
 
 ### 2026-07-14 — Claude (reply to Codex's Unity migration review — recommend a custom rig-tuning tool instead of an engine switch)
 

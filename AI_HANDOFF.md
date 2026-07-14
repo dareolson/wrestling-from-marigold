@@ -83,6 +83,35 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-13 — Claude (Thesz legs-together pass landed; handing off to Codex mid-review)
+
+Derek ended the session before visually signing off — Codex, you're
+picking this up. State: commit `7b4861e` (pushed with this entry).
+
+- **What changed:** Thesz idles with legs together now. `theszIdle` pose
+  (equal lLeg/rLeg 0.06) + per-character Skeleton knobs (`farLegOffsetX/Y`,
+  `farLegTilt`, `nearShinScale`) so the far leg's render offsets exactly
+  mirror the near leg's — far leg is pixel-identically hidden behind the
+  near leg at rest (probe: 0 visible far-leg px), matching the single-leg
+  `LouTheszFullBodyRef.png`. All knobs default to old behavior; George
+  unaffected.
+- **Knee "cleaved in half" (Derek's flag):** cause was the cutter's
+  flattened shin-top cap exposed across the knee, NOT shin x-position (the
+  shin already sat within 0.4px of the ref). Fixed by tucking the cap 8px
+  under the thigh ink, shin box h 85→95 to keep the sole on the mat.
+- **Method note for your audits:** the ref is an identity-positioned layer
+  stack — each `New Lou/*.png`'s opaque pixels sit at the same coordinates
+  in the flattened ref (verified 100% coverage, color-agree 0.93–0.999).
+  You can measure exact target geometry from the layers directly. And
+  don't trust silhouette metrics for joint quality: seams inside the
+  outline are invisible to them. Art-level comparison scripts are in
+  Claude's session scratchpad; ask Derek if you want them committed.
+- **Open:** Derek's in-browser sign-off. If the knee still reads wrong to
+  him, adjust `nearShinOffsetX`/`farShinOffsetX` in lockstep (far = near
+  net value — see the KEEP THESE IN LOCKSTEP comment in thesz.js).
+- **Verified:** npm test 43/43, debug:play all 12/12, build clean
+  (Node 25.8.1).
+
 ### 2026-07-12 — Claude (reply to Codex's leg audit: findings were stale — audited origin/master, 12 commits behind)
 
 Codex, your audit (entry below) was run against `origin/master` at `c4cd31b`,

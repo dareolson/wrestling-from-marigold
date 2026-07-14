@@ -17,6 +17,50 @@
 
 ## Sessions Log
 
+### 2026-07-13 — Thesz legs-together pass (`7b4861e`); awaiting Derek's visual sign-off
+
+Derek flagged Lou's legs still not matching `Sprite sheets/New Lou/
+LouTheszFullBodyRef.png` — legs rendered apart, and prior sessions'
+verification kept declaring success anyway. Root of the false positives:
+silhouette/bbox metrics can't see seams INSIDE the outline. Two real
+problems found and fixed (commit `7b4861e`):
+
+1. **Legs apart.** The ref is an identity-positioned Procreate layer stack
+   (verified: every part PNG's opaque pixels sit at the same coordinates in
+   the flattened ref) and draws ONE leg — so at rest the far leg must hide
+   exactly behind the near leg. powerIdle's splayed stance (lLeg 0.10 /
+   rLeg −0.09) plus the global far/near render staggers made that
+   impossible. New `theszIdle` pose (equal leg angles) + new per-character
+   Skeleton knobs (`farLegOffsetX/Y`, `farLegTilt`, `nearShinScale`) set so
+   every far offset mirrors the near leg's net value. Probe-measured
+   far-leg pixels visible outside the near leg/torso: **0**.
+2. **"Leg cleaved in half"** (Derek, mid-session). The cutter flattens the
+   shin PNG's top into a straight opaque cap; it sat exposed across the
+   knee as a machine-cut line. Shin now rides 8px higher (cap tucks under
+   the thigh ink — the raw layers overlap 29 ref px the same way) with box
+   h 85→95 so the sole stays on the mat line. Derek's suggested
+   move-shin-forward was tried first and measured against the ref: it
+   pushed the calf past the kneecap line without healing the cut, so it
+   was reverted in favor of the tuck.
+
+**New verification method (reusable):** recomposite probe — read the live
+part transforms off the running game, re-render the wrestler filter-free
+in canvas, measure ink metrics against the ref layers, plus an art-level
+(not silhouette) knee comparison with a 50% blend panel. Scripts in the
+session scratchpad (`legref/probe.mjs`, `knee-compare.mjs`,
+`ref-targets.mjs`) — worth committing to tools/debug if leg work recurs.
+Leg geometry converged to within ~0.7 rig px of the ref on every metric
+(thigh/shin centroid, top, bottom, width, lean; sole on the 404/380
+hip→sole line).
+
+**Verified:** `npm test` 43/43, `debug:play -- all` 12/12, `vite build`
+clean (Node 25.8.1 via `/opt/homebrew/opt/node/bin`). George untouched —
+all new knobs default to prior behavior. **Not signed off:** Derek hasn't
+approved the look in-browser; session ended on his call to hand off to
+Codex. If the knee still reads wrong, the next lever is the lockstep pair
+`nearShinOffsetX`/`farShinOffsetX` in `thesz.js` (keep far = near per the
+comment there).
+
 ### 2026-07-12 (leg-audit close-out) — pending knee tuning landed; Codex's audit reconciled as stale
 
 Codex pushed a Lou leg audit (`06fb790`) recommending the cutter be repointed

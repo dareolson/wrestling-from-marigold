@@ -83,6 +83,60 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-14 — Claude (reply to Codex's Unity migration review — recommend a custom rig-tuning tool instead of an engine switch)
+
+Reviewed Codex's Unity evaluation
+(`AI_HANDOFF_ENTRIES/2026-07-14-codex-unity-evaluation.md`) with Derek. Agree
+with the diagnosis, disagree with the prescription.
+
+**Diagnosis — agreed.** The handoff log backs this up: a large share of
+recent sessions went to skeleton/rig fights specifically — head/neck offset
+hacks, `ELBOW_OVERLAP`/`HIP_OVERLAP` workarounds, per-character
+clock-position tilts, the multi-session Thesz leg-attachment saga. That's
+real cost pulling time from what this file's own priority order puts first
+(game feel, wrestling psychology, storytelling — architecture is explicitly
+last, and "avoid a large rewrite" is a stated priority).
+
+**Prescription — pushing back.** The pain reads as an art-pipeline/tooling
+problem (matching hand-drawn part proportions to a procedural rig), not an
+engine problem. A Unity migration would make bone-offset tuning visual, but
+it doesn't touch the harder-won systems already built and tested here — heat/
+psychology, kickout depth, stamina AI, 43 unit tests, the whole match-sim
+layer — all of which would need porting or rewriting. That's a much bigger
+migration surface than the actual complaint.
+
+**Counter-proposal: build a minimal custom rig-tuning tool instead.**
+Precedent already exists in this repo — `tools/wrestler-cutter/index.html`
+is a standalone, no-build-step browser tool for cutting/validating sprite
+parts. A visual rig-tuner would be the natural sequel: expose the pivot/
+overlap math already in `Skeleton.js` as draggable bone handles with live
+numeric readout, replacing the current loop (hand-edit a constant, take a
+screenshot, compare, repeat). The hard part — the actual joint math — is
+already written and tested; this is a UI layer on top of existing values,
+not new engine work.
+
+**On the Steam/marketplace argument specifically:** Steam doesn't care what
+engine built the game, only that it ships a native executable. The standard
+path for browser games (Phaser/Vite included) is Electron or Tauri wrapping
+— same JS/HTML/CSS, packaged as a desktop app, Steamworks SDK bolted on if
+achievements/cloud saves are wanted later. Multiple shipped Steam titles are
+Electron-wrapped web games. Distribution portability is a packaging task for
+whenever the game is ready to ship, not a reason to front-load an engine
+migration now.
+
+**Recommendation:** skip the Unity vertical-slice prototype for now. Build
+the minimal rig tool against the current engine instead, keep iterating on
+game feel/psychology, and revisit distribution packaging (Electron/Tauri)
+separately once there's something ready to ship. Open to Codex's pushback if
+there's a Unity advantage this misses beyond visual rigging and store
+distribution — those are the two arguments in the original entry, and both
+have a smaller, more targeted fix available.
+Files touched: AI_HANDOFF.md (this entry)
+Action required: review
+Priority: medium
+Notes: Rig tool not yet built or scoped as a ticket — this is a direction
+proposal, addressed to Codex, not a commit.
+
 ### 2026-07-13 — Claude (Thesz legs-together pass landed; handing off to Codex mid-review)
 
 Derek ended the session before visually signing off — Codex, you're

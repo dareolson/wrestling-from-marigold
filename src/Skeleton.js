@@ -311,6 +311,24 @@ export default class Skeleton {
         // had no way to keep the far knee's art aligned (2026-07-12).
         this._farShinOffsetX = textures.farShinOffsetX ?? 0;
         this._farShinOffsetY = textures.farShinOffsetY ?? 0;
+        // Far-thigh render nudge + tilt, same conventions as legOffsetX/Y and
+        // nearLegTilt. A character whose reference art shows the legs together
+        // (thesz's New Lou full-body ref: the far leg is fully hidden behind
+        // the near leg at rest) needs the far thigh's render offsets to equal
+        // the near thigh's — the shared HIP_STAGGER/LEG_BACK_BIAS/FAR_LEG_*
+        // constants deliberately stagger them apart. farLegTilt REPLACES the
+        // global facing-mirrored FAR_THIGH_TILT when set (null = global
+        // default), using nearLegTilt's screen-absolute convention so the two
+        // thighs' render angles can be made identical at any facing.
+        this._farLegOffsetX = textures.farLegOffsetX ?? 0;
+        this._farLegOffsetY = textures.farLegOffsetY ?? 0;
+        this._farLegTilt = textures.farLegTilt ?? null;
+        // Per-character near-shin display scale, defaulting to the shared
+        // NEAR_SHIN_SCALE (1.1). thesz sets 1.0: measured against the New Lou
+        // reference, the 1.1 bump rendered his near shin ~24% wider than the
+        // ref (the far shin, at 1.0, already matched) — and any near/far size
+        // difference makes hiding the far leg behind the near one impossible.
+        this._nearShinScale = textures.nearShinScale ?? NEAR_SHIN_SCALE;
         // Per-character leg bone lengths, unscaled px, defaulting to the
         // shared P values (characters that don't set them are bit-identical
         // to the old behavior). These move the actual joint chain — hip
@@ -538,10 +556,10 @@ export default class Skeleton {
         // The true hip point (far.hx/hy) and far.thighAng stay the knee/IK
         // anchor, untouched — farRenderAng only biases how the far thigh's
         // image itself is drawn (FAR_THIGH_TILT).
-        const farRenderAng = far.thighAng + facing * FAR_THIGH_TILT;
+        const farRenderAng = far.thighAng + (this._farLegTilt ?? facing * FAR_THIGH_TILT);
         const farHipRender = this._end(far.hx, far.hy, -HIP_OVERLAP * s, farRenderAng);
-        farHipRender.x += facing * (HIP_STAGGER - LEG_BACK_BIAS + FAR_LEG_FWD) * s;
-        farHipRender.y += (this._legOffsetY - FAR_LEG_UP) * s;
+        farHipRender.x += facing * (HIP_STAGGER - LEG_BACK_BIAS + FAR_LEG_FWD + this._farLegOffsetX) * s;
+        farHipRender.y += (this._legOffsetY - FAR_LEG_UP + this._farLegOffsetY) * s;
         this._placePart(this.farThigh, farHipRender.x, farHipRender.y, legW, thighH, farRenderAng, s, facing);
         const farKnee  = this._end(far.hx, far.hy, thighH, far.thighAng);
         // Shin's render origin pulls up into the thigh by KNEE_OVERLAP (each
@@ -594,7 +612,7 @@ export default class Skeleton {
         const nearShinRender = this._end(nearKnee.x, nearKnee.y, -KNEE_OVERLAP * s, nearShinRenderAng);
         nearShinRender.x += facing * (NEAR_SHIN_FWD + this._nearShinOffsetX) * s;
         nearShinRender.y += (-NEAR_SHIN_UP + this._nearShinOffsetY) * s;
-        this._placePart(this.nearShin, nearShinRender.x, nearShinRender.y, legW, shinH, nearShinRenderAng, s * NEAR_SHIN_SCALE, facing);
+        this._placePart(this.nearShin, nearShinRender.x, nearShinRender.y, legW, shinH, nearShinRenderAng, s * this._nearShinScale, facing);
         const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, near.shinAng);
         if (this.nearBoot) this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
         this.nearFoot = { x: nearAnkle.x, y: nearAnkle.y, planted: useGait ? footA.lift === 0 : null };

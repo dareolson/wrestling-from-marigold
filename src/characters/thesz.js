@@ -49,16 +49,16 @@ export const thesz = {
         // 0.5625) — 63/1.031 = 61. Width stays the TEX default (limb widths
         // are deliberately stylized wider, not tracked against the ref).
         forearm:  { key: 'thesz_forearm', box: { w: 44, h: 61 } },
-        // Both dims re-derived against the reference (2026-07-12 measured
-        // pass). Height: thigh ink length / torso ink height target is
-        // 275.8/380 = 0.726; the old 86 rendered 0.768 (5.8% long) — 81
-        // measures 1.00. Still ≥ thighH+HIP_OVERLAP (70), so the knee tuck
-        // keeps its overlap margin. Width: the old 101 carried the legacy
-        // art's deliberate widening (Derek: that fix was for the old art —
-        // the new reference legs are what he wants); ref thigh max ink row
-        // (122/380 of torso height) vs the spec canvas fill (69/150) gives
-        // 78 — measured 1.29x narrower, ratio 1.00 after.
-        thigh:    { key: 'thesz_thigh', box: { w: 78, h: 81 } },
+        // Both dims re-derived against the reference (2026-07-13 recomposite
+        // probe: live part transforms re-rendered filter-free and measured
+        // ink-vs-ink against the identity-positioned New Lou layers —
+        // scratchpad legref/probe.mjs). At 78×78 the thigh's rendered ink
+        // matches the ref within 0.7px on every metric (centroid, top,
+        // bottom, width) under the final -5.5° tilt below. Still ≥
+        // thighH+HIP_OVERLAP (63+ margin), so the knee tuck keeps its
+        // overlap. Width note: the ink bbox includes rotation inflation, so
+        // box w is tuned at the shipped tilt, not in isolation.
+        thigh:    { key: 'thesz_thigh', box: { w: 78, h: 78 } },
         // Per-character leg bones (2026-07-12, Derek approved the Skeleton.js
         // knob): the shared rig legs (56/64) stand ~18% longer relative to
         // the torso than the reference drawing. Ref targets, torso-ink-
@@ -67,44 +67,68 @@ export const thesz = {
         // factor) gives 49/50.
         thighH: 49,
         shinH:  50,
-        // Position pass (2026-07-12): ref thigh ink top sits 83/380 of torso
-        // height above the torso ink bottom and 66/380 behind the torso
-        // centroid. Derek's eyeballed -14 was close on y (measured residual
-        // -2.3); the near thigh needed to come back 13 on x, then another 4
-        // by eye alongside the tilt below (Derek, 2026-07-12).
-        legOffsetX: -17,
-        legOffsetY: -16,
-        // Rotated clockwise 15deg ("six to 6:30" — Derek, 2026-07-12): the
-        // thigh art's baked-in forward lean read as a forward-broken knee
-        // against the shin. Same clock convention/sign as george.js.
-        nearLegTilt: -15 * Math.PI / 180,
+        // Thigh anchor, converged by the 2026-07-13 recomposite probe: ref
+        // thigh ink centroid sits 26/380 of torso height behind the torso
+        // ink centroid and 236/380 below it; these values measure within
+        // 0.7px of that with the theszIdle pose (lLeg/rLeg 0.06).
+        legOffsetX: -16,
+        legOffsetY: -15,
+        // -5.5° (was -15° against the old splayed powerIdle stance): the ref
+        // leg's ink leans +9.9° forward hip→knee; at the theszIdle bone angle
+        // (0.06+crouch ≈ 5.9°) this render-only tilt measures 10.1° on the
+        // live rig. Same clock convention/sign as george.js.
+        nearLegTilt: -5.5 * Math.PI / 180,
         // Object form overrides the Skeleton.js TEX default display box —
         // shin always needs this since its true box depends on this
         // character's own boot-art fillFrac (see Skeleton.js's TEX comment).
-        // Height derived from the sole-on-mat constraint under the shortened
-        // shinH above: render top sits KNEE_OVERLAP (18, tuned to reference) above
-        // the knee. Width: re-derived from the reference like the thigh
-        // (old 63 carried the legacy-art 1.5x bump): ref shin max ink row
-        // (127/380 of torso height) vs spec fill (105/150) gives 54.
-        shin:     { key: 'thesz_shin', box: { w: 54, h: 92 } },
-        // Knee alignment (2026-07-12 measured pass, after Derek flagged the
-        // top/bottom leg reading disconnected): the shin hangs off the IK
-        // knee (computed from the un-offset hip bone), so legOffsetX sliding
-        // the thigh art back left the shin art forward of it. Measured
-        // shin-top vs thigh-bottom art landmarks against the same relation
-        // in the reference (re-measured after the thighH/shinH bone change
-        // moved the knee): near (on top of Skeleton.js's shared
-        // NEAR_SHIN_FWD/UP) and far via the farShinOffset knob added for
-        // exactly this (2026-07-12).
-        // x re-measured after nearLegTilt swung the thigh's knee end back;
-        // y is a compromise between the ref knee relation (wanted 16) and
-        // not burying the near boot below the mat line.
-        nearShinOffsetX: -31,
+        // 51×95 from the 2026-07-13 recomposite probe: ref shin ink (boot
+        // included) spans 253/380 of torso height at 131/380 wide (the old
+        // 54×92 measured 5% wide / 9% tall against that). Height is NOT the
+        // ink-match value (85): the cutter flattens the shin PNG's top into
+        // a straight opaque cap, and at the ink-matched position that flat
+        // edge sat exposed across the middle of the knee — the leg read as
+        // cleaved in half (Derek, 2026-07-13). The +12 y-shift below rides
+        // the cap ~8px up under the thigh's opaque ink (like the raw layers'
+        // own 29-ref-px overlap in LouTheszFullBodyRef.png) and h grows to
+        // 95 so the sole stays on the ref's 404/380 hip→sole line (probe:
+        // sole within 0.5px, visible knee seam gone).
+        shin:     { key: 'thesz_shin', box: { w: 51, h: 95 } },
+        // Knee alignment: the shin hangs off the IK knee (computed from the
+        // un-offset hip bone), so the thigh's render offsets/tilt above pull
+        // the thigh art away from where the shin art starts — these re-join
+        // them. x puts the shin ink centroid on the ref's (probe Δ -0.4px);
+        // y carries the cap-tuck described above.
+        nearShinOffsetX: -25,
         nearShinOffsetY: 12,
-        farShinOffsetX: -18,
+        // Far leg mirrors the near leg exactly (2026-07-13, probe-measured
+        // pass): the New Lou full-body reference draws ONE leg — at rest the
+        // far leg must hide completely behind the near leg, so every far
+        // render offset below equals the near leg's net value.
+        // With theszIdle's equal leg angles the bones already coincide, so
+        // equal render offsets make the two legs pixel-identical (probe
+        // measured farPeek — far-leg px visible outside the near leg/torso —
+        // at exactly 0). KEEP THESE IN LOCKSTEP: if a near value changes,
+        // recompute its far twin.
+        //   farShinOffsetX: near shin net x = NEAR_SHIN_FWD(5) + (-25) = -20
+        //   farShinOffsetY: near shin net y = -NEAR_SHIN_UP(5) + 12  =   7
+        //   farLegOffsetX:  near thigh net = -8 + legOffsetX(-16) = -24; far
+        //                   base is -7, so -17 closes the gap
+        //   farLegOffsetY:  near thigh net = legOffsetY + 5; far base is
+        //                   legOffsetY, so +5
+        //   farLegTilt:     same screen-absolute tilt as nearLegTilt
+        farShinOffsetX: -20,
         farShinOffsetY: 7,
+        farLegOffsetX: -17,
+        farLegOffsetY: 5,
+        farLegTilt: -5.5 * Math.PI / 180,
+        // The shared NEAR_SHIN_SCALE 1.1 rendered the near shin ~24% wider
+        // than the reference (the far shin, at 1.0, already matched) and any
+        // near/far size difference makes hiding the far leg impossible.
+        nearShinScale: 1.0,
     },
-    idlePose:  'powerIdle',
+    // Legs-together stance (equal lLeg/rLeg) — powerIdle's splayed legs
+    // rendered a two-leg spread the single-leg reference doesn't have.
+    idlePose:  'theszIdle',
     tauntPose: 'tauntArmsWide',
     moveSet: [
         'irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop',

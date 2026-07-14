@@ -693,7 +693,7 @@ export default class Arena extends Phaser.Scene {
             thesz: {
                 // Clean technical kit — no headbutt, no piledriver; suplex and
                 // slam are his conversions, the holds are his actual game
-                name: 'THESZ', personality: 'thesz', idlePose: 'powerIdle',
+                name: 'THESZ', personality: 'thesz', idlePose: 'theszIdle',
                 skin: 0xe8c098, trunks: 0x484848,
                 moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'theszPress'],
                 textures: thesz.textures,

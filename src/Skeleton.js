@@ -4,7 +4,10 @@
 // joints. upperArmH later doubled (Derek's proportion note, 2026-07-12 — the
 // arm read too short); forearmH untouched, so the old arm-76 total no longer
 // holds.
-const P = {
+// Exported (with TEX and RIG below) as a read/write seam for the dev-only
+// rig tuner (tools/rig-tuner/) — nothing in the game mutates these, so
+// runtime behavior is identical to when they were module-private consts.
+export const P = {
     // 1.75x (32->56) — thighs read squished/flat and too short (Derek,
     // 2026-07-12). TEX.thigh moves with it, same 1:1 convention as
     // upperArmH's own doubling below (plus HIP_OVERLAP — see below).
@@ -54,7 +57,7 @@ const P = {
 // (28, 29, 32 — see git history). upperArm.h doubled (34->68) to match
 // P.upperArmH's own doubling (Derek: arm read too short) — this is the one
 // case where TEX.*.h has to move too, since the two are meant to stay 1:1.
-const TEX = {
+export const TEX = {
     torso:    { w: 82, h: 112 },
     upperArm: { w: 56, h: 68 },
     forearm:  { w: 44, h: 63 },
@@ -80,54 +83,65 @@ const HEAD_HIDE_FRAC = 0.24;
 
 const TAU = Math.PI * 2;
 
-// Unscaled px the forearm's placement pulls back up the upper-arm bone
-// (see updateUpright's far/near arm blocks) so a bent elbow doesn't show a
-// wedge-shaped gap between the two rotated rectangles.
-const ELBOW_OVERLAP = 17;
-// Far arm renders a touch smaller than the near arm — sells the 3/4 shoulder
-// depth (see SHOULDER_STAGGER below) instead of reading same-size-but-offset.
-const FAR_ARM_SCALE = 0.85;
-// Unscaled px the thigh's placement pulls up into the torso/trunks (see
-// TEX.thigh's matching +HIP_OVERLAP height above) so the hip joint tucks
-// under the trunks instead of floating below them with a gap.
-const HIP_OVERLAP = 14;
-// Far thigh renders slightly ahead of the near thigh (same 3/4-depth idea as
-// SHOULDER_STAGGER), and both pull back toward the hip a bit — the wider
-// thigh art (see TEX.thigh) was reading like both legs stepped too far
-// forward of the body (Derek, 2026-07-12).
-const HIP_STAGGER = 8;
-const LEG_BACK_BIAS = 10;
-// Small additional per-leg nudges on top of the above (Derek, 2026-07-12,
-// tuned over several rounds — the up/down and fwd/back directions below were
-// flipped from an earlier pass that read backward on every axis): near/
-// camera-facing thigh pushed forward a touch and lowered a touch; far thigh
-// pulled back a touch, lowered a bit, and tilted further backward (render
-// angle only — see FAR_THIGH_TILT below, applied where the far thigh is
-// placed in updateUpright).
-const NEAR_LEG_FWD = 10;
-const NEAR_LEG_UP = -5;
-const FAR_LEG_FWD = -5;
-// Eased back from 8, then reversed direction entirely (Derek, 2026-07-12) —
-// at 8 the far thigh's image retracted away from the true knee point enough
-// that the shin (which still anchors off that unmoved knee — see
-// KNEE_OVERLAP) read as stretched longer than the near leg's; the
-// higher-not-lower direction was backward, so this now lowers instead.
-const FAR_LEG_UP = 0;
-// Render-only angle bias (the true far.thighAng used for the knee/IK chain
-// is untouched) so the far thigh reads tilted — negative (backward) since
-// the earlier +10deg (forward) direction was backward.
-const FAR_THIGH_TILT = -10 * Math.PI / 180;
-// Unscaled px the shin's placement pulls up into the thigh (each character's
-// shin box height grows by the same amount — george.js/thesz.js) so the knee
-// joint tucks under the thigh instead of floating below it with a gap, same
-// technique as HIP_OVERLAP one joint down (Derek, 2026-07-12).
-// Tuned from reference: subtle overlap (18-20% of shin height) for clean connection.
-const KNEE_OVERLAP = 18;
-// Near/front shin renders bigger, further forward, and a touch higher than
-// the far shin (Derek, 2026-07-12 — another +5% on top of the first pass).
-const NEAR_SHIN_SCALE = 1.1;
-const NEAR_SHIN_FWD = 5;
-const NEAR_SHIN_UP = 5;
+// Overlap/stagger/nudge tuning scalars. One mutable exported object (same
+// dev-tool seam as P/TEX above) — each value keeps its original name and
+// meaning, and nothing in the game writes to it.
+export const RIG = {
+    // Unscaled px the forearm's placement pulls back up the upper-arm bone
+    // (see updateUpright's far/near arm blocks) so a bent elbow doesn't show a
+    // wedge-shaped gap between the two rotated rectangles.
+    ELBOW_OVERLAP: 17,
+    // Far arm renders a touch smaller than the near arm — sells the 3/4 shoulder
+    // depth (see SHOULDER_STAGGER below) instead of reading same-size-but-offset.
+    FAR_ARM_SCALE: 0.85,
+    // Shoulder stagger, unscaled px (scaled by s where applied): the torso art
+    // is drawn three-quarter (both shoulders visible, not coincident), so the
+    // near/far arms shouldn't pivot from the exact same point. Near arm sits
+    // back toward the torso's rear/back-curve edge; far arm sits slightly
+    // ahead of it (Derek, 2026-07-12).
+    SHOULDER_STAGGER: 12,
+    // Unscaled px the thigh's placement pulls up into the torso/trunks (see
+    // TEX.thigh's matching +HIP_OVERLAP height above) so the hip joint tucks
+    // under the trunks instead of floating below them with a gap.
+    HIP_OVERLAP: 14,
+    // Far thigh renders slightly ahead of the near thigh (same 3/4-depth idea as
+    // SHOULDER_STAGGER), and both pull back toward the hip a bit — the wider
+    // thigh art (see TEX.thigh) was reading like both legs stepped too far
+    // forward of the body (Derek, 2026-07-12).
+    HIP_STAGGER: 8,
+    LEG_BACK_BIAS: 10,
+    // Small additional per-leg nudges on top of the above (Derek, 2026-07-12,
+    // tuned over several rounds — the up/down and fwd/back directions below were
+    // flipped from an earlier pass that read backward on every axis): near/
+    // camera-facing thigh pushed forward a touch and lowered a touch; far thigh
+    // pulled back a touch, lowered a bit, and tilted further backward (render
+    // angle only — see FAR_THIGH_TILT below, applied where the far thigh is
+    // placed in updateUpright).
+    NEAR_LEG_FWD: 10,
+    NEAR_LEG_UP: -5,
+    FAR_LEG_FWD: -5,
+    // Eased back from 8, then reversed direction entirely (Derek, 2026-07-12) —
+    // at 8 the far thigh's image retracted away from the true knee point enough
+    // that the shin (which still anchors off that unmoved knee — see
+    // KNEE_OVERLAP) read as stretched longer than the near leg's; the
+    // higher-not-lower direction was backward, so this now lowers instead.
+    FAR_LEG_UP: 0,
+    // Render-only angle bias (the true far.thighAng used for the knee/IK chain
+    // is untouched) so the far thigh reads tilted — negative (backward) since
+    // the earlier +10deg (forward) direction was backward.
+    FAR_THIGH_TILT: -10 * Math.PI / 180,
+    // Unscaled px the shin's placement pulls up into the thigh (each character's
+    // shin box height grows by the same amount — george.js/thesz.js) so the knee
+    // joint tucks under the thigh instead of floating below it with a gap, same
+    // technique as HIP_OVERLAP one joint down (Derek, 2026-07-12).
+    // Tuned from reference: subtle overlap (18-20% of shin height) for clean connection.
+    KNEE_OVERLAP: 18,
+    // Near/front shin renders bigger, further forward, and a touch higher than
+    // the far shin (Derek, 2026-07-12 — another +5% on top of the first pass).
+    NEAR_SHIN_SCALE: 1.1,
+    NEAR_SHIN_FWD: 5,
+    NEAR_SHIN_UP: 5,
+};
 
 // ─── Gait tuning ─────────────────────────────────────────────────────────────
 // STRIDE  — full front-to-back foot travel, unscaled px
@@ -328,7 +342,7 @@ export default class Skeleton {
         // reference, the 1.1 bump rendered his near shin ~24% wider than the
         // ref (the far shin, at 1.0, already matched) — and any near/far size
         // difference makes hiding the far leg behind the near one impossible.
-        this._nearShinScale = textures.nearShinScale ?? NEAR_SHIN_SCALE;
+        this._nearShinScale = textures.nearShinScale ?? RIG.NEAR_SHIN_SCALE;
         // Per-character leg bone lengths, unscaled px, defaulting to the
         // shared P values (characters that don't set them are bit-identical
         // to the old behavior). These move the actual joint chain — hip
@@ -556,17 +570,17 @@ export default class Skeleton {
         // The true hip point (far.hx/hy) and far.thighAng stay the knee/IK
         // anchor, untouched — farRenderAng only biases how the far thigh's
         // image itself is drawn (FAR_THIGH_TILT).
-        const farRenderAng = far.thighAng + (this._farLegTilt ?? facing * FAR_THIGH_TILT);
-        const farHipRender = this._end(far.hx, far.hy, -HIP_OVERLAP * s, farRenderAng);
-        farHipRender.x += facing * (HIP_STAGGER - LEG_BACK_BIAS + FAR_LEG_FWD + this._farLegOffsetX) * s;
-        farHipRender.y += (this._legOffsetY - FAR_LEG_UP + this._farLegOffsetY) * s;
+        const farRenderAng = far.thighAng + (this._farLegTilt ?? facing * RIG.FAR_THIGH_TILT);
+        const farHipRender = this._end(far.hx, far.hy, -RIG.HIP_OVERLAP * s, farRenderAng);
+        farHipRender.x += facing * (RIG.HIP_STAGGER - RIG.LEG_BACK_BIAS + RIG.FAR_LEG_FWD + this._farLegOffsetX) * s;
+        farHipRender.y += (this._legOffsetY - RIG.FAR_LEG_UP + this._farLegOffsetY) * s;
         this._placePart(this.farThigh, farHipRender.x, farHipRender.y, legW, thighH, farRenderAng, s, facing);
         const farKnee  = this._end(far.hx, far.hy, thighH, far.thighAng);
         // Shin's render origin pulls up into the thigh by KNEE_OVERLAP (each
         // character's shin box grew by the same amount) so the knee tucks in
         // cleanly instead of floating below the thigh — farAnkle below still
         // anchors off the true farKnee, untouched.
-        const farShinRender = this._end(farKnee.x, farKnee.y, -KNEE_OVERLAP * s, far.shinAng);
+        const farShinRender = this._end(farKnee.x, farKnee.y, -RIG.KNEE_OVERLAP * s, far.shinAng);
         farShinRender.x += facing * this._farShinOffsetX * s;
         farShinRender.y += this._farShinOffsetY * s;
         this._placePart(this.farShin, farShinRender.x, farShinRender.y, legW, shinH, far.shinAng, s, facing);
@@ -582,7 +596,7 @@ export default class Skeleton {
         // exact same point. Near arm sits back toward the torso's rear/back-curve
         // edge; far arm sits slightly ahead of it — matches the 3/4 shoulder line
         // even though the head itself stays a flat profile (Derek, 2026-07-12).
-        const SHOULDER_STAGGER = 12 * s;
+        const SHOULDER_STAGGER = RIG.SHOULDER_STAGGER * s;
         const armShoulderX = shoulderX + facing * this._armOffsetX * s;
         const armShoulderY = shoulderY + this._armOffsetY * s;
         const farShoulderX  = armShoulderX + facing * SHOULDER_STAGGER;
@@ -592,9 +606,9 @@ export default class Skeleton {
         // the true elbow endpoint) so it overlaps the upper arm's bottom
         // edge instead of leaving a wedge-shaped gap at the bend (Derek,
         // 2026-07-12 — visible once the elbow carries a real bend angle).
-        this._placePart(this.farUpArm, farShoulderX, armShoulderY, armW, upperArmH, farAA, s * FAR_ARM_SCALE, facing);
-        const farElbow = this._end(farShoulderX, armShoulderY, upperArmH - ELBOW_OVERLAP * s, farAA);
-        this._placePart(this.farForearm, farElbow.x, farElbow.y, armW, forearmH, farFA, s * FAR_ARM_SCALE, facing);
+        this._placePart(this.farUpArm, farShoulderX, armShoulderY, armW, upperArmH, farAA, s * RIG.FAR_ARM_SCALE, facing);
+        const farElbow = this._end(farShoulderX, armShoulderY, upperArmH - RIG.ELBOW_OVERLAP * s, farAA);
+        this._placePart(this.farForearm, farElbow.x, farElbow.y, armW, forearmH, farFA, s * RIG.FAR_ARM_SCALE, facing);
 
         // Torso: full height when trunks are baked into the PNG, split otherwise
         this._placePart(this.torso, x, torsoTop, torsoW, this.trunks ? torsoH - trunksH : torsoH, 0, s, facing);
@@ -602,16 +616,16 @@ export default class Skeleton {
 
         // Near leg — drawn in front of torso
         const nearRenderAng = near.thighAng + this._nearLegTilt;
-        const nearHipRender = this._end(near.hx, near.hy, -HIP_OVERLAP * s, nearRenderAng);
-        nearHipRender.x -= facing * (HIP_STAGGER + LEG_BACK_BIAS - NEAR_LEG_FWD) * s;
+        const nearHipRender = this._end(near.hx, near.hy, -RIG.HIP_OVERLAP * s, nearRenderAng);
+        nearHipRender.x -= facing * (RIG.HIP_STAGGER + RIG.LEG_BACK_BIAS - RIG.NEAR_LEG_FWD) * s;
         nearHipRender.x += facing * this._legOffsetX * s;
-        nearHipRender.y += (this._legOffsetY - NEAR_LEG_UP + this._nearLegOffsetY) * s;
+        nearHipRender.y += (this._legOffsetY - RIG.NEAR_LEG_UP + this._nearLegOffsetY) * s;
         this._placePart(this.nearThigh, nearHipRender.x, nearHipRender.y, legW, thighH, nearRenderAng, s, facing);
         const nearKnee  = this._end(near.hx, near.hy, thighH, near.thighAng);
         const nearShinRenderAng = near.shinAng + this._nearShinTilt;
-        const nearShinRender = this._end(nearKnee.x, nearKnee.y, -KNEE_OVERLAP * s, nearShinRenderAng);
-        nearShinRender.x += facing * (NEAR_SHIN_FWD + this._nearShinOffsetX) * s;
-        nearShinRender.y += (-NEAR_SHIN_UP + this._nearShinOffsetY) * s;
+        const nearShinRender = this._end(nearKnee.x, nearKnee.y, -RIG.KNEE_OVERLAP * s, nearShinRenderAng);
+        nearShinRender.x += facing * (RIG.NEAR_SHIN_FWD + this._nearShinOffsetX) * s;
+        nearShinRender.y += (-RIG.NEAR_SHIN_UP + this._nearShinOffsetY) * s;
         this._placePart(this.nearShin, nearShinRender.x, nearShinRender.y, legW, shinH, nearShinRenderAng, s * this._nearShinScale, facing);
         const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, near.shinAng);
         if (this.nearBoot) this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
@@ -619,7 +633,7 @@ export default class Skeleton {
 
         // Near arm
         this._placePart(this.nearUpArm, nearShoulderX, armShoulderY, armW, upperArmH, nearAA, s, facing);
-        const nearElbow = this._end(nearShoulderX, armShoulderY, upperArmH - ELBOW_OVERLAP * s, nearAA);
+        const nearElbow = this._end(nearShoulderX, armShoulderY, upperArmH - RIG.ELBOW_OVERLAP * s, nearAA);
         this._placePart(this.nearForearm, nearElbow.x, nearElbow.y, armW, forearmH, nearFA, s, facing);
 
         // Head — PNG image (pivot at neck bottom) or plain circle

@@ -17,6 +17,25 @@
 
 ## Sessions Log
 
+### 2026-07-15 (knee audit) — Proved the knee-alignment problem is structural, not a tuning gap
+
+Derek/Codex asked for proof that the skeleton's true knee, the shin's
+render origin, and the art's own intended knee point stay coincident
+across facings and motion — not another tuned offset. Built real
+instrumentation instead of eyeballing another screenshot: exposed the true
+knee joint and each part's exact render transform as debug fields on
+`Skeleton.js` (same pattern as the existing foot-lock debug seam), added
+`tools/debug/knee_pivot_audit.mjs` to measure the art's own knee point
+directly from the committed PNGs and carry it through the real transform
+live in-page. Result: they don't stay coincident — the thigh-side art/rig
+gap swings 5-20px across a single walk cycle (not constant), which is why
+every offset tuned to look right at idle has been drifting out at other
+poses. Full numbers and the structural explanation (fixed-offset knobs
+can't compensate for a rotating error) in AI_HANDOFF.md. No fix designed
+or applied — Derek said stop tuning until this was proven, so it stopped
+there; direction is Codex's/Derek's call. Verified: tests, debug:play,
+build, rig-tuner smoke all green, instrumentation is additive-only.
+
 ### 2026-07-15 (third export) — Another rig-tuner pass on Thesz, current art
 
 Applied Derek's third same-day rig-tuner export (still the known-good leg

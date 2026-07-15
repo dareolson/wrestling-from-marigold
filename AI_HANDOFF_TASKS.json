@@ -36,7 +36,7 @@
       "owner": "Claude (implement)",
       "source": "AI_HANDOFF.md, Codex entry 2026-07-14 'knee connections break on facing changes' -- 'Add a rig-tuner smoke/parity check that toggles facing and compares the reflected transforms'",
       "detail": "Split out from mirrored-knee-tilt-fix, which fixed the underlying bug but verified it manually (screenshots) rather than adding an automated regression check. Would toggle facing in the rig-tuner harness and assert hip/knee/shin origins and rotations reflect across the wrestler centerline for both George and Thesz.",
-      "next_step": "Not started. Lower priority now that the underlying bug is fixed -- would mainly guard against a future regression."
+      "next_step": "Partially covered as a side effect of tools/debug/knee_pivot_audit.mjs (2026-07-15, see knee-pivot-structural-fix) -- it confirmed facing-symmetric distances at matching gait phases across both P1/P2 slots, but that's a byproduct of a different script, not a dedicated rig-tuner-integrated parity check. Still not started as its own thing."
     },
     {
       "id": "lou-knee-art-cleanup",
@@ -47,8 +47,20 @@
       "owner": "Derek",
       "source": "AI_HANDOFF.md, Claude entry 2026-07-14 'first live tuning session'",
       "detail": "The knee cap currently tucks with zero margin against the thigh's closed dark outline -- any future shin-down nudge re-exposes the seam. Two options parked for Derek: unlined overlap zone on the thigh's knee end, or a soft-faded shin cap (drawn or as a cutter post-processing step). Either removes the zero-margin fragility entirely instead of re-tuning around it every session.",
-      "next_step": "First attempt (Sprite sheets/newLegLou/, 2026-07-15) tested through the real cutter pipeline; initial diagnosis (an ink line intruding into the shin's cap region) was WRONG -- Derek correctly suspected a pivot-crop mismatch instead. Confirmed: the cutter's pivotCrop step centers each part on its own top-row ink center, and the new thigh's pivot delta measured 21px different (source-canvas terms) from the working thigh's while the shin barely moved. Proven by test: re-applying the new art (ink line untouched) with legOffsetX nudged -15->-9 to compensate made the notch disappear completely. So any thigh redraw will need an offset retune regardless of art cleanliness -- the pivot is derived from ink shape, not a fixed marker. Nothing adopted yet -- reverted after the diagnostic test. Derek's call: adopt the new leg now with a legOffsetX retune (ink line and all -- it didn't visibly matter), wait for a cleaner shin redraw, or something else. See AI_HANDOFF.md 2026-07-15 '(later)' correction entry for full numbers.",
+      "next_step": "First attempt (Sprite sheets/newLegLou/, 2026-07-15) tested through the real cutter pipeline; initial diagnosis (an ink line intruding into the shin's cap region) was WRONG -- Derek correctly suspected a pivot-crop mismatch instead. Confirmed: the cutter's pivotCrop step centers each part on its own top-row ink center, and the new thigh's pivot delta measured 21px different (source-canvas terms) from the working thigh's while the shin barely moved. Proven by test: re-applying the new art (ink line untouched) with legOffsetX nudged -15->-9 to compensate made the notch disappear completely. So any thigh redraw will need an offset retune regardless of art cleanliness -- the pivot is derived from ink shape, not a fixed marker. Nothing adopted yet -- reverted after the diagnostic test. Superseded by knee-pivot-structural-fix below: don't redraw or retune until that decision is made, since a redraw alone won't survive pose changes without the structural fix too.",
+      "blocked_by": ["knee-pivot-structural-fix"],
       "blocks": ["natural-walk-shuffle-prototype"]
+    },
+    {
+      "id": "knee-pivot-structural-fix",
+      "title": "Design and implement a real fix for the knee pivot/art mismatch (not another tuned offset)",
+      "category": "rig",
+      "priority": "high",
+      "status": "decision-needed",
+      "owner": "Codex (technical direction) / Derek (art-vs-rig tradeoff call), then Claude implements",
+      "source": "AI_HANDOFF.md 2026-07-15 'knee audit' entry",
+      "detail": "Proved, not just suspected: the skeleton's true knee joint, the shin's render origin, and the artwork's own intended knee point do not stay coincident across poses. Instrumented Skeleton.js (_endXY helper + nearKneeDebug/farKneeDebug/near+farThighRenderDebug/near+farShinRenderDebug) and built tools/debug/knee_pivot_audit.mjs to measure this from the committed art and a real gait cycle, both facings. Findings: thigh's art-implied knee point drifts 5.4-15.8px (near) / 11.8-20.1px (far) from the true knee across one walk cycle -- not constant. The thigh-vs-shin art gap (most seam-relevant number) swings 3.7-14.7px (near) / 3.9-19.9px (far), a 4-5x range within a single gait cycle. Root cause: per-character offset knobs (nearShinOffsetX/Y, legOffsetX, etc.) are fixed world-axis nudges, but the error they're compensating for (the art's knee point sitting off-center in its own canvas) is a local, rotating quantity -- a global non-rotating fix cannot track it through a pose change. Explicitly stopped tuning offsets pending this decision (Derek's instruction).",
+      "next_step": "Two directions on the table, needs Codex/Derek to pick: (a) make the rig apply the measured art-knee-offset as a proper local-space correction that rotates with the limb (a Skeleton.js change), or (b) re-cut the art so its own knee point lands on-center to begin with (removes the need for rig-side compensation entirely). The audit script (tools/debug/knee_pivot_audit.mjs) is reusable to verify whichever direction is chosen, and to check George once Thesz is settled."
     },
     {
       "id": "natural-walk-shuffle-prototype",

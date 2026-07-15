@@ -88,6 +88,96 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 (knee audit) — Claude (proof: the three knee coordinates do NOT stay coincident across poses — quantified, not eyeballed)
+
+Derek/Codex asked for proof, not another tuned offset: do (1) the skeleton's
+true knee joint, (2) the shin's rotation origin, and (3) the artwork's own
+intended knee point stay coincident across both facings and during motion.
+Stopped tuning and built real instrumentation to answer this, rather than
+another screenshot-and-eyeball pass.
+
+**What was built (reusable, not a one-off):**
+
+- `Skeleton.js`: a general `_endXY(px, py, lx, ly, angle)` local-to-world
+  transform (generalizes the existing `_end` helper to a full 2D local
+  offset, verified consistent with `_end` at lx=0 — debug-only, not called
+  from the render path), plus debug read-seam fields for near/far —
+  `nearKneeDebug`/`farKneeDebug` (the true skeletal joint, previously
+  computed but never exposed), and `nearThighRenderDebug`/
+  `nearShinRenderDebug` (+ far) carrying the exact position/angle/scale/
+  facing/texDims actually fed to `_placePart` for each. Same pattern as the
+  existing `nearFoot`/`farFoot` seam from the B1 foot-lock work.
+- `tools/debug/knee_pivot_audit.mjs`: measures the artwork's own intended
+  knee point directly from the *committed* PNGs (ink x-center at the
+  thigh's bottom edge / shin's top edge — this coordinate was not tracked
+  anywhere in the rig before now), then carries it through the real
+  render transform via `Skeleton._endXY` called live in-page (not
+  reimplemented in the script, so there's no formula-transcription risk),
+  and compares it to the true knee joint. Drives the actual game via the
+  existing Playwright harness pattern, samples idle + 10 frames of an
+  active walk-key-hold (covers a real gait cycle, not just one static
+  pose), both P1 and P2 slots (both facings — found and fixed a P2 key-
+  binding bug in my own first draft: P2 uses arrow keys, not WASD, and my
+  first run silently sampled a frozen, unmoving pose for the whole
+  facing-left column. Frozen identical values across all 10 frames is
+  the fail-open tell, worth remembering as a footgun in future harness
+  scripts).
+
+**Answer: no, they don't.** Numbers from Thesz, current committed art,
+current committed offsets:
+
+- Art's own measured knee-point offset from geometric center: thigh
+  bottom edge is 22.3% of the thigh canvas width off-center (toward
+  facing); shin top edge is a negligible 0.3% off-center. The thigh side
+  carries essentially all of the art/rig disagreement — the shin side is
+  comparatively well-behaved.
+- Across one held walk-key gait cycle (10 sampled frames), near leg
+  true-knee-vs-art-implied-knee-on-the-thigh ranges 5.4px–15.8px (a
+  10.4px swing); far leg ranges 11.8px–20.1px (8.3px swing). Not
+  constant — actively drifts with pose.
+- The more directly seam-relevant number — how far apart the thigh's and
+  the shin's *own* art-implied knee points sit from each other in world
+  space — ranges 3.7px–14.7px on the near leg and 3.9px–19.9px on the far
+  leg across the same gait cycle: a 4-5x swing from tightest to loosest
+  point in a single walk cycle.
+- Facing symmetry check (bonus, validates the earlier mirrored-knee-tilt
+  fix): walk-phase distances are numerically identical between the
+  facing-right and facing-left runs (e.g. near-leg artThigh distance
+  11.16px at the same gait phase in both directions) — the mirroring fix
+  holds under this harder test too, not just the idle screenshots it was
+  originally verified against.
+
+**What this means:** the per-character offset knobs (`nearShinOffsetX/Y`,
+`legOffsetX`, etc.) are applied as fixed world-axis nudges, not offsets
+that rotate with the limb's own angle. A nudge tuned to look right at one
+pose (idle) mathematically cannot stay correct as the thigh/shin angles
+change through a gait cycle, because the underlying error being
+compensated for — the art's own knee point sitting off-center in its
+canvas — is a *local, rotating* quantity, and the fix being applied is a
+*global, non-rotating* one. This is a structural mismatch, not a tuning
+precision problem, and it fully explains why "every perfect adjustment
+breaks in another pose."
+
+**Not done, deliberately, per the instruction to stop tuning:** no design
+proposed or implemented for the actual fix (e.g. baking the measured
+art-knee-offset into a proper local-space correction, or re-cutting the
+art so its own knee point lands on-center to begin with). That's a real
+design decision — Codex's call as technical lead, or Derek's as art
+director if it's cheaper to fix in the art than the rig — not mine to
+make unilaterally after being told to stop.
+
+**Verified:** `npm test` 43/43, `debug:play -- all` 12/12, `build` clean,
+rig-tuner `smoke.mjs` 16/16 — the new debug fields are additive and
+touch nothing in the render path.
+
+Files touched: `src/Skeleton.js` (debug instrumentation only),
+`tools/debug/knee_pivot_audit.mjs` (new), `AI_HANDOFF.md`, `BUILDLOG.md`
+Action required: Codex/Derek — review the numbers and decide the fix
+direction (local-space rotating offsets in the rig vs. re-cutting the art
+so its knee point is on-center). The audit script is reusable for
+George or any future character once that direction is picked.
+Priority: high
+
 ### 2026-07-15 (even later) — Claude (third same-day rig-tuner export applied)
 
 Derek's third round, current/unchanged leg art (the notch-diagnosis

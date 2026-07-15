@@ -426,6 +426,20 @@ export default class Skeleton {
         };
     }
 
+    // General local-to-world point transform for a rendered part: given a
+    // point (lx, ly) in that part's own local space (origin at its top-center
+    // pivot, +y toward the bottom edge, +x toward the facing/right side of the
+    // unflipped source PNG), returns its world position under the same
+    // position+rotation convention _place()/_end() already use. Verified
+    // consistent with _end() at lx=0 (reduces to the same formula). Debug/
+    // diagnostic use only — not called from the normal render path.
+    _endXY(px, py, lx, ly, angle) {
+        return {
+            x: px + lx * Math.cos(angle) + ly * Math.sin(angle),
+            y: py - lx * Math.sin(angle) + ly * Math.cos(angle),
+        };
+    }
+
     updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
         const thighH    = this._thighH * s;
         const shinH     = this._shinH  * s;
@@ -596,6 +610,15 @@ export default class Skeleton {
         // position + planted flag. footA/footB->near/far mapping is stable in
         // gait mode (see comment above); meaningless in pose-driven FK, so null.
         this.farFoot = { x: farAnkle.x, y: farAnkle.y, planted: useGait ? footB.lift === 0 : null };
+        // Debug read seam (2026-07-15, knee pivot-vs-art audit): true skeleton
+        // knee joint, plus the exact render transforms fed to the thigh/shin
+        // Images, so an external script can independently check whether the
+        // art's own visual knee point (measured from the PNG, then carried
+        // through these same transforms via _endXY) lands on farKnee across
+        // poses/facings. Debug-only — nothing here feeds back into rendering.
+        this.farKneeDebug = { x: farKnee.x, y: farKnee.y };
+        this.farThighRenderDebug = { x: farHipRender.x, y: farHipRender.y, angle: farRenderAng, s, facing, texDims: this.farThigh._texDims };
+        this.farShinRenderDebug = { x: farShinRender.x, y: farShinRender.y, angle: far.shinAng, s, facing, texDims: this.farShin._texDims };
 
         // Shoulder stagger: the torso art is drawn three-quarter (both shoulders
         // visible, not coincident), so the near/far arms shouldn't pivot from the
@@ -636,6 +659,11 @@ export default class Skeleton {
         const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, near.shinAng);
         if (this.nearBoot) this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
         this.nearFoot = { x: nearAnkle.x, y: nearAnkle.y, planted: useGait ? footA.lift === 0 : null };
+        // Debug read seam — see the matching farKneeDebug/farThighRenderDebug/
+        // farShinRenderDebug comment above.
+        this.nearKneeDebug = { x: nearKnee.x, y: nearKnee.y };
+        this.nearThighRenderDebug = { x: nearHipRender.x, y: nearHipRender.y, angle: nearRenderAng, s, facing, texDims: this.nearThigh._texDims };
+        this.nearShinRenderDebug = { x: nearShinRender.x, y: nearShinRender.y, angle: nearShinRenderAng, s: s * this._nearShinScale, facing, texDims: this.nearShin._texDims };
 
         // Near arm
         this._placePart(this.nearUpArm, nearShoulderX, armShoulderY, armW, upperArmH, nearAA, s, facing);

@@ -17,6 +17,34 @@
 
 ## Sessions Log
 
+### 2026-07-15 (rig-tuner iteration 2) — Independent elbow/knee posing, far-arm parity, opt-in pivot-correction metadata, far-arm/far-leg depth fix
+
+Four additive, backward-compatible changes to the rig and rig-tuner, per
+Derek's direction (full detail in `AI_HANDOFF.md`, same date):
+
+1. Fixed a `Skeleton.js` `setDepth()` bug — far arm and far leg shared one
+   depth value, so insertion order (arm added after leg) put the far arm on
+   top; Thesz's far hand read as poking through the trunks instead of
+   tucking behind the leg. Now two depth bands, leg in front.
+2. `POSES` gained four optional channels — `lForearm`/`rForearm`/`lShin`/
+   `rShin` — so a pose can set the elbow/knee angle independent of the
+   shoulder/hip, instead of always inheriting a fixed derived-formula
+   relationship. Undefined (every pose before this) is unchanged.
+3. Arms got the same near/far knob + drag-handle treatment legs already had
+   (`nearArmTilt`, `farArmOffsetX/Y`, `farArmTilt`, `nearForearmOffsetX/Y`,
+   `farForearmOffsetX/Y` — arms previously had one shared offset knob and one
+   handle total).
+4. New opt-in `pivotOffsetFrac` per box part — corrects for art whose ink
+   isn't laterally centered at the joint edge (rotation-aware, so it doesn't
+   drift at other poses the way the existing fixed-px offset knobs do). The
+   rig-tuner can auto-measure it from the loaded texture. Zero/absent (every
+   character/part today) = no behavior change. Coexists with, does not
+   override, the separate Thesz-thigh-recrop decision from the knee-audit
+   session below.
+
+Verified: `npm test` (43/43), `node tools/rig-tuner/smoke.mjs` (28/28,
+extended), `npm run debug:play -- all`, `npm run build`.
+
 ### 2026-07-15 (knee audit) — Proved the knee-alignment problem is structural, not a tuning gap
 
 Derek/Codex asked for proof that the skeleton's true knee, the shin's

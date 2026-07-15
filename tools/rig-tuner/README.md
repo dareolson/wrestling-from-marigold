@@ -24,8 +24,12 @@ arena's film-grain/color filters, deliberately, for clean art comparison).
 
 - **Preview**: character (george / thesz / placeholder), pose, facing, zoom,
   walkPhase (+ animate), moveBlend, combatBlend, runBlend.
-- **Pose dials**: the six `POSES` channels (lLeg, rLeg, lArm, rArm, lean,
-  crouch) of the selected pose, live.
+- **Pose dials**: the six original `POSES` channels (lLeg, rLeg, lArm, rArm,
+  lean, crouch) of the selected pose, live, plus four independent elbow/knee
+  overrides (2026-07-15) — `lForearm`/`rForearm`/`lShin`/`rShin`, each a
+  checkbox-armed override. Unchecked (every pose that predates this) uses
+  Skeleton.js's derived angle exactly as before; checking it lets that pose
+  set the elbow or knee bend independent of the shoulder/hip angle.
 - **Skeleton.js — P**: global bone lengths / block sizes.
 - **Skeleton.js — TEX**: global display boxes for textured parts.
 - **Skeleton.js — RIG**: the overlap/stagger scalars (ELBOW_OVERLAP,
@@ -34,9 +38,30 @@ arena's film-grain/color filters, deliberately, for clean art comparison).
 - **Character knobs**: every per-character `textures` knob (headOffsetX/Y,
   headScale, armOffset*, legOffset*, near/far leg+shin offsets and tilts,
   nearShinScale, per-character thighH/shinH bones, and object-form display
-  boxes like the shin's). Tilts are shown in degrees.
-- **Drag handles**: colored dots on head / shoulder / thighs / shins drag the
-  matching offset pair directly (legend under the Preview group).
+  boxes like the shin's). Tilts are shown in degrees. Arms got near/far parity
+  with legs (2026-07-15): `nearArmTilt`, `farArmOffsetX/Y`, `farArmTilt`
+  (nullable, overrides the global far-arm render bias same as `farLegTilt`),
+  and forearm placement knobs `nearForearmOffsetX/Y`/`farForearmOffsetX/Y` —
+  arms previously had only the shared `armOffsetX/Y` and no far-only or
+  forearm-only knob at all.
+- **pivotOffsetFrac** (2026-07-15, per box part — thigh/shin/torso/upperArm/
+  forearm): opt-in correction for art whose ink isn't laterally centered in
+  its canvas at the joint edge (the class of bug
+  `tools/debug/knee_pivot_audit.mjs` measures) — unlike the offset knobs
+  above, this rotates with the limb instead of drifting at other poses. A
+  "measure from art" button runs the same ink-bounding-box scan as that audit
+  script against the loaded texture and fills in a starting value; treat it
+  as a starting point, sanity-check the render before trusting it. 0/unset
+  (every part today) renders exactly as before. See `src/Skeleton.js`'s
+  `_placePart` comment for the math and how this relates to the separate,
+  already-agreed Thesz thigh re-crop (`AI_HANDOFF.md`, 2026-07-15) — this
+  doesn't replace that, it's for the next case where re-cropping isn't the
+  right call.
+- **Drag handles**: colored dots on head / shoulder / thighs / shins / far
+  shoulder / near+far forearm drag the matching offset pair directly (legend
+  under the Preview group). Arms now have 4 handles (shoulder, far shoulder,
+  near forearm, far forearm), matching legs' 4 (near/far thigh, near/far
+  shin) — full parity.
 - **Reference overlay**: load any image (e.g. `Sprite sheets/New
   Lou/LouTheszFullBodyRef.png`), drag to position, opacity/scale sliders,
   front/behind toggle.
@@ -73,6 +98,10 @@ only `src/` change made for the tool is Skeleton.js exporting its existing
 ## Scripting hook
 
 `window.__RIG_TOOL` exposes `{ state, P, TEX, RIG, POSES, setCharKnob,
-setRig, setP, setPose, setCharacter, setPoseName, exportText, skeleton() }`
-for headless/Playwright driving — see `smoke.mjs` (`node
+setRig, setP, setPose, setCharacter, setPoseName, exportText, skeleton(),
+getPivotOffsetFrac, setPivotOffsetFrac, measureArtPivotFrac }` for
+headless/Playwright driving — see `smoke.mjs` (`node
 tools/rig-tuner/smoke.mjs`, needs the system Chrome like tools/debug).
+`setPose(name, channel, null)` clears a nullable elbow/knee override back to
+"use the derived angle" (same convention as `setCharKnob(key, null)` for
+`farLegTilt`).

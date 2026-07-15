@@ -125,7 +125,64 @@ try {
     await settle(page);
     ok(await canvasHash(page) === baseline, 'restoring offsets restores baseline render');
 
-    // 5. Every character renders (incl. placeholder path) with no page errors
+    // 5. Depth-order regression guard (2026-07-15): far arm must render
+    // behind the far leg — was a same-depth tie broken by insertion order,
+    // which put the far hand in front of the far leg (see Skeleton.js
+    // setDepth's comment). Asserting depth values directly rather than a
+    // canvas hash, since whether the two overlap visually depends on the
+    // current pose.
+    const depthOrder = await page.evaluate(() => {
+        const sk = window.__RIG_TOOL.skeleton();
+        return { farUpArm: sk.farUpArm.depth, farThigh: sk.farThigh.depth };
+    });
+    ok(depthOrder.farUpArm < depthOrder.farThigh,
+        `far arm depth (${depthOrder.farUpArm}) behind far leg depth (${depthOrder.farThigh})`);
+
+    // 6. Nullable elbow/knee pose override (2026-07-15) — undefined by
+    // default (every pose predating this), settable per-pose, clears back
+    // to undefined (not 0) rather than sticking once armed.
+    await page.evaluate(() => { window.__RIG_TOOL.setPoseName('lockup'); window.__RIG_TOOL.setPose('lockup', 'lForearm', 1.2); });
+    await settle(page);
+    ok(await canvasHash(page) !== baseline, 'lForearm pose override changes render');
+    text = await page.evaluate(() => window.__RIG_TOOL.exportText());
+    ok(text.includes('lockup: {') && text.includes('lForearm: 1.2'), 'export includes lForearm override');
+    await page.evaluate(() => window.__RIG_TOOL.setPose('lockup', 'lForearm', null));
+    await settle(page);
+    text = await page.evaluate(() => window.__RIG_TOOL.exportText());
+    ok(!text.includes('lForearm'), 'clearing override drops it from export (not pinned to 0)');
+    await page.evaluate(() => window.__RIG_TOOL.setPoseName(window.__RIG_TOOL.CHARS.george.idlePose ?? 'idle'));
+    await settle(page);
+    ok(await canvasHash(page) === baseline, 'back on idle pose: render matches baseline');
+
+    // 7. New far-arm knob (near/far parity, 2026-07-15)
+    await page.evaluate(() => window.__RIG_TOOL.setCharKnob('farArmOffsetX', 25));
+    await settle(page);
+    ok(await canvasHash(page) !== baseline, 'farArmOffsetX edit changes render');
+    text = await page.evaluate(() => window.__RIG_TOOL.exportText());
+    ok(text.includes('farArmOffsetX: 25'), 'export includes farArmOffsetX');
+    await page.evaluate(() => window.__RIG_TOOL.setCharKnob('farArmOffsetX', 0));
+    await settle(page);
+    ok(await canvasHash(page) === baseline, 'reverting farArmOffsetX restores baseline');
+
+    // 8. pivotOffsetFrac (2026-07-15) — manual set + the art-measurement
+    // helper. george's shin is object-form (has a box), unlike his string-
+    // form thigh/upperArm/forearm, so it's a valid target in the current
+    // data model (pivotOffsetFrac only attaches to object-form entries).
+    await page.evaluate(() => window.__RIG_TOOL.setPivotOffsetFrac('shin', 0.1));
+    await settle(page);
+    ok(await canvasHash(page) !== baseline, 'shin pivotOffsetFrac edit changes render');
+    text = await page.evaluate(() => window.__RIG_TOOL.exportText());
+    ok(text.includes('pivotOffsetFrac: 0.1'), 'export includes pivotOffsetFrac');
+    await page.evaluate(() => window.__RIG_TOOL.setPivotOffsetFrac('shin', 0));
+    await settle(page);
+    ok(await canvasHash(page) === baseline, 'reverting pivotOffsetFrac restores baseline');
+    const measured = await page.evaluate(() => {
+        const t = window.__RIG_TOOL;
+        return t.measureArtPivotFrac(t.CHARS.george.textures.shin.key, 'top');
+    });
+    ok(Number.isFinite(measured) && Math.abs(measured) < 0.5, `measureArtPivotFrac returns a sane fraction (${measured})`);
+
+    // 9. Every character renders (incl. placeholder path) with no page errors
     for (const id of ['thesz', 'placeholder', 'george']) {
         await page.evaluate(c => window.__RIG_TOOL.setCharacter(c), id);
         await settle(page);

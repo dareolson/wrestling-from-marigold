@@ -20,6 +20,20 @@ const placeholder = {
 const CHARS = { george, thesz, placeholder };
 const PART_FILES = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png' };
 const BOX_PARTS = ['torso', 'upperArm', 'forearm', 'thigh', 'shin'];
+// Which canvas edge's ink-center "measure from art" reads for each part's
+// pivotOffsetFrac (2026-07-15) — whichever edge is the one that visually
+// reads as a joint (see Skeleton.js _placePart's comment): the thigh/upperArm
+// show their joint at the bottom edge (knee/elbow), shin/forearm/torso at the
+// top edge (knee/elbow/neck). Same convention tools/debug/knee_pivot_audit.mjs
+// already uses for thigh (bottom) and shin (top).
+const PIVOT_EDGE = { torso: 'top', upperArm: 'bottom', forearm: 'top', thigh: 'bottom', shin: 'top' };
+// Skeleton instance image(s) each config part's pivotOffsetFrac must be
+// pushed into live (near+far share one config value but are separate Images
+// — see Skeleton.js constructor).
+const PIVOT_PART_IMAGES = {
+    torso: ['torso'], upperArm: ['nearUpArm', 'farUpArm'], forearm: ['nearForearm', 'farForearm'],
+    thigh: ['nearThigh', 'farThigh'], shin: ['nearShin', 'farShin'],
+};
 
 // ─── Baselines (captured before any edit — export emits diffs only) ─────────
 const deep = o => JSON.parse(JSON.stringify(o));
@@ -36,6 +50,15 @@ const CHAR_KNOBS = [
     { key: 'headOffsetY',     field: '_headOffsetY',     def: () => 0,   min: -60, max: 60,  step: 1, headOnly: true },
     { key: 'armOffsetX',      field: '_armOffsetX',      def: () => 0,   min: -60, max: 60,  step: 1 },
     { key: 'armOffsetY',      field: '_armOffsetY',      def: () => 0,   min: -60, max: 60,  step: 1 },
+    // Near/far arm parity with the leg knobs below (2026-07-15).
+    { key: 'nearArmTilt',       field: '_nearArmTilt',       def: () => 0,    min: -60, max: 60, step: 0.5, angle: true },
+    { key: 'farArmOffsetX',     field: '_farArmOffsetX',     def: () => 0,    min: -60, max: 60, step: 1 },
+    { key: 'farArmOffsetY',     field: '_farArmOffsetY',     def: () => 0,    min: -60, max: 60, step: 1 },
+    { key: 'farArmTilt',        field: '_farArmTilt',        def: () => null, min: -60, max: 60, step: 0.5, angle: true, nullable: true },
+    { key: 'nearForearmOffsetX', field: '_nearForearmOffsetX', def: () => 0,  min: -60, max: 60, step: 1 },
+    { key: 'nearForearmOffsetY', field: '_nearForearmOffsetY', def: () => 0,  min: -60, max: 60, step: 1 },
+    { key: 'farForearmOffsetX',  field: '_farForearmOffsetX',  def: () => 0,  min: -60, max: 60, step: 1 },
+    { key: 'farForearmOffsetY',  field: '_farForearmOffsetY',  def: () => 0,  min: -60, max: 60, step: 1 },
     { key: 'legOffsetX',      field: '_legOffsetX',      def: () => 0,   min: -60, max: 60,  step: 1 },
     { key: 'legOffsetY',      field: '_legOffsetY',      def: () => 0,   min: -60, max: 60,  step: 1 },
     { key: 'nearLegOffsetY',  field: '_nearLegOffsetY',  def: () => 0,   min: -60, max: 60,  step: 1 },
@@ -52,6 +75,13 @@ const CHAR_KNOBS = [
     { key: 'thighH',          field: '_thighH',          def: () => P.thighH, min: 20, max: 120, step: 1 },
     { key: 'shinH',           field: '_shinH',           def: () => P.shinH,  min: 20, max: 120, step: 1 },
 ];
+
+// Pose channel groups: the original 6 always have a value (default 0/undefined
+// treated as 0); the 4 elbow/knee overrides (2026-07-15) are nullable —
+// undefined means "use Skeleton.js's derived angle", same convention as the
+// farLegTilt character knob above.
+const POSE_ABS_CH = ['lLeg', 'rLeg', 'lArm', 'rArm', 'lean', 'crouch'];
+const POSE_NULLABLE_CH = ['lForearm', 'rForearm', 'lShin', 'rShin'];
 
 // ─── Live state ──────────────────────────────────────────────────────────────
 const state = {
@@ -116,6 +146,55 @@ function getCharKnob(key) {
     return spec.angle ? eff * 180 / Math.PI : eff;
 }
 
+// pivotOffsetFrac (2026-07-15): a scalar on the object-form texture entry
+// (see Skeleton.js's resolveTexEntry/_placePart), not a live Skeleton
+// instance field like the other knobs — box.w/h work today by mutating the
+// same object _texDims already points at, but pivotOffsetFrac is a plain
+// number, copied by value at construction, so it has to be pushed into each
+// relevant Image explicitly (near+far share one config value on two Images).
+function getPivotOffsetFrac(part) {
+    return currentChar().textures[part]?.pivotOffsetFrac ?? 0;
+}
+function setPivotOffsetFrac(part, v) {
+    const entry = currentChar().textures[part];
+    if (!entry || typeof entry !== 'object') return;
+    if (near(v, 0)) delete entry.pivotOffsetFrac; else entry.pivotOffsetFrac = v;
+    if (skeleton) for (const imgKey of PIVOT_PART_IMAGES[part]) skeleton[imgKey]._pivotOffsetFrac = v;
+}
+
+// Ports tools/debug/knee_pivot_audit.mjs's ink-bounding-box scan into the
+// browser, reading the already-loaded Phaser texture instead of re-fetching
+// the PNG — same threshold/averaging, so results match that script exactly.
+// edge: 'top' | 'bottom' — which canvas edge's ink x-center to measure
+// (see PIVOT_EDGE). Returns a signed fraction of canvas width, unflipped-
+// source convention (+ = toward facing), same as pivotOffsetFrac itself.
+function measureArtPivotFrac(key, edge) {
+    const src = scene.textures.get(key).getSourceImage();
+    const c = document.createElement('canvas');
+    c.width = src.width; c.height = src.height;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(src, 0, 0);
+    const { data, width, height } = ctx.getImageData(0, 0, c.width, c.height);
+    const T = 10;
+    const rowXCenter = y => {
+        let mn = -1, mx = -1;
+        for (let x = 0; x < width; x++) {
+            if (data[(y * width + x) * 4 + 3] > T) { if (mn === -1) mn = x; mx = x; }
+        }
+        return mn === -1 ? null : (mn + mx) / 2;
+    };
+    let minY = -1, maxY = -1;
+    for (let y = 0; y < height; y++) { if (rowXCenter(y) !== null) { if (minY === -1) minY = y; maxY = y; } }
+    if (minY === -1) return 0;
+    const avg = (y0, y1) => {
+        const vals = [];
+        for (let y = y0; y <= y1; y++) { const v = rowXCenter(y); if (v !== null) vals.push(v); }
+        return vals.reduce((a, b) => a + b, 0) / vals.length;
+    };
+    const edgeXCenter = edge === 'top' ? avg(minY, minY + 2) : avg(maxY - 2, maxY);
+    return (edgeXCenter - width / 2) / width;
+}
+
 // Global P/RIG edits that constructor-captured instance fields must follow
 // (only when the character doesn't override them).
 function syncCapturedGlobals() {
@@ -171,6 +250,7 @@ function create() {
         P, TEX, RIG, POSES, CHARS,
         setCharKnob, setRig, setP, setPose, exportText,
         setCharacter, setPoseName,
+        getPivotOffsetFrac, setPivotOffsetFrac, measureArtPivotFrac,
     };
 }
 
@@ -198,6 +278,9 @@ function update(_, dtMs) {
 const HANDLE_SPECS = [
     { name: 'head (headOffset)',       color: 0xffd24a, kx: 'headOffsetX',     ky: 'headOffsetY',     part: sk => sk._headIsImage && sk._neckInTorso ? sk.head : null },
     { name: 'shoulder (armOffset)',    color: 0x66ccff, kx: 'armOffsetX',      ky: 'armOffsetY',      part: sk => sk.nearUpArm },
+    { name: 'far shoulder (farArmOffset)', color: 0x2e6b8b, kx: 'farArmOffsetX', ky: 'farArmOffsetY', part: sk => sk.farUpArm },
+    { name: 'near forearm (nearForearmOffset)', color: 0xa8e0ff, kx: 'nearForearmOffsetX', ky: 'nearForearmOffsetY', part: sk => sk.nearForearm },
+    { name: 'far forearm (farForearmOffset)', color: 0x4a8cae, kx: 'farForearmOffsetX', ky: 'farForearmOffsetY', part: sk => sk.farForearm },
     { name: 'near thigh (legOffsetX / nearLegOffsetY)', color: 0x8ef58e, kx: 'legOffsetX', ky: 'nearLegOffsetY', part: sk => sk.nearThigh },
     { name: 'far thigh (farLegOffset)', color: 0x2e8b57, kx: 'farLegOffsetX',  ky: 'farLegOffsetY',   part: sk => sk.farThigh },
     { name: 'near shin (nearShinOffset)', color: 0xff8ec8, kx: 'nearShinOffsetX', ky: 'nearShinOffsetY', part: sk => sk.nearShin },
@@ -298,6 +381,11 @@ function setRig(key, v) {
 function setP(key, v) { P[key] = v; syncCapturedGlobals(); refreshCharRows(); }
 function setPose(name, channel, v) {
     if (!POSES[name]) return;
+    if (v === null && POSE_NULLABLE_CH.includes(channel)) {
+        delete POSES[name][channel];
+        refreshPoseRows();
+        return;
+    }
     POSES[name][channel] = v;
     refreshPoseRows();
 }
@@ -341,13 +429,30 @@ function buildPanel() {
     // Pose dials
     const pd = group('Pose dials (POSES values)', true);
     el(pd, `<div class="hint">Edits the selected pose's values live. Sequencing/timeline is out of scope.</div>`);
-    for (const ch of ['lLeg', 'rLeg', 'lArm', 'rArm', 'lean', 'crouch']) {
+    for (const ch of POSE_ABS_CH) {
         const lim = ch === 'crouch' ? [0, 1] : ch === 'lean' ? [-1, 1] : [-3.5, 3.5];
         const r = sliderRow(pd, ch,
             () => currentPose()[ch] ?? 0,
             v => setPose(state.poseName, ch, v),
             lim[0], lim[1], 0.01);
         poseRowRefreshers.push(r.refresh);
+    }
+    el(pd, `<div class="hint">Elbow/knee overrides below (2026-07-15) — independent joint
+        rotation. Unchecked = Skeleton.js's derived angle (today's behavior for every
+        pose that predates this).</div>`);
+    for (const ch of POSE_NULLABLE_CH) {
+        const wrap = el(pd, `<div class="row"><label>${ch}</label>
+            <input type="checkbox" title="override derived angle"><span class="val">override</span></div>`);
+        const cb = wrap.querySelector('input');
+        const r = sliderRow(pd, `↳ value`, () => currentPose()[ch] ?? 0,
+            v => { if (cb.checked) setPose(state.poseName, ch, v); }, -3.5, 3.5, 0.01);
+        const refresh = () => { cb.checked = currentPose()[ch] !== undefined; r.refresh(); };
+        cb.checked = currentPose()[ch] !== undefined;
+        cb.addEventListener('change', () => {
+            setPose(state.poseName, ch, cb.checked ? (currentPose()[ch] ?? 0) : null);
+            r.refresh(); renderExport();
+        });
+        poseRowRefreshers.push(refresh);
     }
     el(pd, `<div class="btnrow"><button class="small" id="poseReset">reset pose to baseline</button></div>`)
         .querySelector('#poseReset').addEventListener('click', () => {
@@ -446,7 +551,21 @@ function buildCharPanel() {
             const box = c.textures[part].box;
             sliderRow(charPanelBody, `${part}.box.w`, () => box.w, v => { box.w = v; }, 10, 220, 1);
             sliderRow(charPanelBody, `${part}.box.h`, () => box.h, v => { box.h = v; }, 10, 220, 1);
+            const pivotRow = sliderRow(charPanelBody, `${part}.pivotOffsetFrac`,
+                () => getPivotOffsetFrac(part), v => setPivotOffsetFrac(part, v), -0.5, 0.5, 0.001);
+            const btns = el(charPanelBody, `<div class="btnrow"><button class="small" id="measure-${part}">measure from art (${PIVOT_EDGE[part]} edge)</button></div>`);
+            btns.querySelector(`#measure-${part}`).addEventListener('click', () => {
+                const frac = measureArtPivotFrac(c.textures[part].key, PIVOT_EDGE[part]);
+                setPivotOffsetFrac(part, Math.round(frac * 1000) / 1000);
+                pivotRow.refresh(); renderExport();
+            });
         }
+        el(charPanelBody, `<div class="hint">pivotOffsetFrac corrects for the part's own art not
+            being laterally centered at its ${'{top/bottom}'} joint edge — see Skeleton.js's
+            _placePart comment. Opt-in; 0/unset renders exactly as before. "measure from art"
+            reads the committed PNG's ink bounding box (same method as
+            tools/debug/knee_pivot_audit.mjs) — sanity-check the result before trusting it,
+            it's a starting point, not gospel.</div>`);
     }
 }
 
@@ -508,19 +627,33 @@ function exportText() {
         for (const part of BOX_PARTS) {
             const e = cfg[part], b = base[part];
             if (!e || typeof e !== 'object' || !e.box || !b || typeof b !== 'object') continue;
-            if (e.box.w !== b.box.w || e.box.h !== b.box.h) {
-                lines.push(`    ${part}: { key: '${e.key}', box: { w: ${fmt(e.box.w)}, h: ${fmt(e.box.h)} } },`);
+            const boxChanged = e.box.w !== b.box.w || e.box.h !== b.box.h;
+            const pivotChanged = !near(e.pivotOffsetFrac ?? 0, b.pivotOffsetFrac ?? 0);
+            if (boxChanged || pivotChanged) {
+                const pivotField = e.pivotOffsetFrac ? `, pivotOffsetFrac: ${fmt(e.pivotOffsetFrac)}` : '';
+                lines.push(`    ${part}: { key: '${e.key}', box: { w: ${fmt(e.box.w)}, h: ${fmt(e.box.h)} }${pivotField} },`);
             }
         }
         if (lines.length) blocks.push(`// ── src/characters/${id}.js — textures ──\n${lines.join('\n')}`);
     }
 
+    // Nullable channels (lForearm/rForearm/lShin/rShin) need definedness
+    // compared, not just value — near(undefined ?? 0, 0) would silently miss
+    // "removed the override" and "set it to literal 0" both reading as 0.
     const poseLines = Object.keys(POSES).filter(name => {
         const a = POSES[name], b = POSES0[name] ?? {};
-        return ['lLeg', 'rLeg', 'lArm', 'rArm', 'lean', 'crouch'].some(ch => !near(a[ch] ?? 0, b[ch] ?? 0));
+        const absChanged = POSE_ABS_CH.some(ch => !near(a[ch] ?? 0, b[ch] ?? 0));
+        const nullableChanged = POSE_NULLABLE_CH.some(ch => {
+            if (a[ch] === undefined && b[ch] === undefined) return false;
+            if (a[ch] === undefined || b[ch] === undefined) return true;
+            return !near(a[ch], b[ch]);
+        });
+        return absChanged || nullableChanged;
     }).map(name => {
         const p = POSES[name];
-        return `    ${name}: { lLeg: ${fmt(p.lLeg ?? 0)}, rLeg: ${fmt(p.rLeg ?? 0)}, lArm: ${fmt(p.lArm ?? 0)}, rArm: ${fmt(p.rArm ?? 0)}, lean: ${fmt(p.lean ?? 0)}, crouch: ${fmt(p.crouch ?? 0)} },`;
+        const abs = POSE_ABS_CH.map(ch => `${ch}: ${fmt(p[ch] ?? 0)}`).join(', ');
+        const overrides = POSE_NULLABLE_CH.filter(ch => p[ch] !== undefined).map(ch => `${ch}: ${fmt(p[ch])}`);
+        return `    ${name}: { ${[abs, ...overrides].join(', ')} },`;
     });
     if (poseLines.length) blocks.push(`// ── src/Wrestler.js — POSES ──\n${poseLines.join('\n')}`);
 

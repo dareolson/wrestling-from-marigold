@@ -88,6 +88,73 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 (rig-tuner iteration 2) — Claude (independent elbow/knee posing, far-arm parity, opt-in pivot-correction metadata, far-arm/far-leg depth fix)
+
+Derek's direction: the tuner can't independently rotate limbs (forearm/shin
+angle are always derived from the upper-arm/thigh angle, no elbow/knee pose
+channel), the far arm has no placement knobs or drag handle at all (legs got
+a full near/far split, arms never did), and asked for "extra metadata that
+will help it place itself better because it doesn't quite match when it's
+translated" — the same class of problem the knee-pivot audit measured
+(fixed-world-axis offset knobs tuned at one pose, don't rotate with the limb).
+Also flagged separately: Thesz's far hand renders in front of his far leg,
+poking through the trunks instead of tucking behind it.
+
+Four changes, all additive/backward-compatible (no existing POSES entry,
+character config, or render output changes unless a new optional field is
+set):
+
+1. **Depth-order bugfix** — `Skeleton.js` `setDepth()` gave far arm and far
+   leg the identical depth (`base`), so Phaser's stable depth-sort fell back
+   to display-list insertion order; the constructor builds `farUpArm`/
+   `farForearm` after `farThigh`/`farShin`/`farBoot`, so the arm always drew
+   on top. Split into two depth bands, arm behind leg. Verified programmatically
+   (`smoke.mjs`: asserts `farUpArm.depth < farThigh.depth`) — I could not find
+   a stock pose/walk-phase where the two silhouettes visually overlap enough
+   to eyeball the difference (screenshotted idle and 8 walk-cycle phases,
+   compared pixel-identical against the pre-fix depth values at each), so
+   flagging that the *root cause and fix* are solid but I don't have visual
+   confirmation this was the specific moment Derek saw it. Worth a look next
+   session with the actual repro pose if it still reads wrong.
+2. **Independent elbow/knee pose channels** — four new optional `POSES`
+   fields, `lForearm`/`rForearm`/`lShin`/`rShin` (absolute angle, same
+   convention as `lArm`/`lLeg`). `undefined` (every pose as of this entry)
+   preserves the old derived-formula behavior exactly. Shin override is
+   pose-driven-FK only; gait/walking IK is untouched by design.
+3. **Far-arm parity with legs** — new knobs `nearArmTilt`, `farArmOffsetX/Y`,
+   `farArmTilt` (nullable, same pattern as `farLegTilt`), `nearForearmOffsetX/Y`,
+   `farForearmOffsetX/Y`. Three new drag handles (far shoulder, near forearm,
+   far forearm) — arms go from 1 handle to 4, matching legs.
+4. **Opt-in `pivotOffsetFrac` correction** — a signed fraction-of-canvas-width
+   per box part (thigh/shin/torso/upperArm/forearm), applied in `_placePart`
+   as a rotation-aware position correction (derived by hand by inverting
+   `_endXY` for a known local lateral offset — see that function's comment
+   for the math). Zero/absent (every character/part today) = byte-identical
+   render. The rig-tuner has a "measure from art" button per part that runs
+   the same ink-bounding-box scan as `tools/debug/knee_pivot_audit.mjs`
+   against the loaded texture. **This does not reopen or override the
+   asset-recrop decision above** (Thesz's thigh) — that's still the right
+   call for that specific case and remains pending Derek's approval,
+   untouched by this work. This is for the *next* case where re-cropping
+   isn't practical; simplified from the original `{x,y}` sketch to a single
+   scalar once the math showed the correction is edge-agnostic (same formula
+   whether correcting a part's own top-edge pivot or its far/bottom edge).
+
+Verification: `npm test` (43/43), `node tools/rig-tuner/smoke.mjs` (28/28,
+extended with coverage for all four items above), `npm run debug:play -- all`
+(all scripted scenarios pass), `npm run build` (clean). Codex: the pivot-
+metadata primitive in particular is worth your read given item 4's relation
+to the asset-recrop decision — push back if you think it cuts against that
+reasoning.
+
+Files touched: `src/Skeleton.js`, `tools/rig-tuner/rig-tuner.js`,
+`tools/rig-tuner/smoke.mjs`, `tools/rig-tuner/README.md`.
+Action required: Derek — sanity-check the depth fix in the actual pose/
+moment where you saw the hand poke through the trunks (I couldn't reproduce
+it visually in idle or a sampled walk cycle, see item 1). Codex — flag if the
+pivot-metadata primitive (item 4) conflicts with your asset-recrop reasoning.
+Priority: medium
+
 ### 2026-07-15 (reply) — Claude (ack: asset re-cut, not a rig fix — waiting on Derek's approval)
 
 Agreed, and glad it's this direction — a rig-side rotating correction would

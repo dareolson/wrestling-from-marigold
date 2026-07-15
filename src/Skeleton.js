@@ -208,13 +208,15 @@ function ensureTexture(scene) {
 }
 
 // A textures-map entry is either a plain texture-key string (use the TEX
-// default display box for that part) or { key, box: { w, h } } (override the
-// box — required for any character's shin, since its true box depends on
-// that character's own boot-art fillFrac; see the TEX comment above).
+// default display box for that part) or { key, box: { w, h }, pivotOffsetFrac }
+// (override the box — required for any character's shin, since its true box
+// depends on that character's own boot-art fillFrac; see the TEX comment
+// above). pivotOffsetFrac (2026-07-15): optional, opt-in — see _placePart's
+// comment for what it corrects and why it's off by default.
 function resolveTexEntry(entry, defaultDims) {
-    if (!entry) return { key: null, dims: defaultDims };
-    if (typeof entry === 'string') return { key: entry, dims: defaultDims };
-    return { key: entry.key, dims: entry.box ?? defaultDims };
+    if (!entry) return { key: null, dims: defaultDims, pivot: 0 };
+    if (typeof entry === 'string') return { key: entry, dims: defaultDims, pivot: 0 };
+    return { key: entry.key, dims: entry.box ?? defaultDims, pivot: entry.pivotOffsetFrac ?? 0 };
 }
 
 export default class Skeleton {
@@ -234,10 +236,10 @@ export default class Skeleton {
         // swaps it in for the block dims. The placeholder path leaves
         // _texDims undefined and renders exactly as before.
         const img = (entry, col, defaultDims) => {
-            const { key, dims } = resolveTexEntry(entry, defaultDims);
+            const { key, dims, pivot } = resolveTexEntry(entry, defaultDims);
             const i = scene.add.image(0, 0, key || 'sk_pixel').setOrigin(0.5, 0);
             if (!key) i.setTint(col);
-            else if (dims) i._texDims = dims;
+            else if (dims) { i._texDims = dims; i._pivotOffsetFrac = pivot; }
             return i;
         };
 
@@ -295,6 +297,23 @@ export default class Skeleton {
         // poses untouched.
         this._armOffsetX = textures.armOffsetX ?? 0;
         this._armOffsetY = textures.armOffsetY ?? 0;
+        // Near/far arm parity with the leg knobs below (2026-07-15 — arms
+        // previously had only the shared armOffsetX/Y above and a single
+        // drag handle, no way to move/tilt one shoulder without the other).
+        // Same conventions as the matching leg knobs: tilt is a render-only
+        // angle bias (radians, wrestler-local, mirrored by facing), offsets
+        // are unscaled px nudges on top of the shared armOffsetX/Y + the
+        // fixed SHOULDER_STAGGER split.
+        this._nearArmTilt = textures.nearArmTilt ?? 0;
+        this._farArmOffsetX = textures.farArmOffsetX ?? 0;
+        this._farArmOffsetY = textures.farArmOffsetY ?? 0;
+        this._farArmTilt = textures.farArmTilt ?? null;
+        // Forearm placement nudges — arms had no equivalent of the legs'
+        // nearShinOffsetX/Y / farShinOffsetX/Y until now.
+        this._nearForearmOffsetX = textures.nearForearmOffsetX ?? 0;
+        this._nearForearmOffsetY = textures.nearForearmOffsetY ?? 0;
+        this._farForearmOffsetX = textures.farForearmOffsetX ?? 0;
+        this._farForearmOffsetY = textures.farForearmOffsetY ?? 0;
         // Per-character thigh nudge, unscaled px. Defaults to 0. Applied on
         // top of HIP_OVERLAP in updateUpright. legOffsetY: + = down (both
         // thighs). legOffsetX: + = toward facing/forward (near thigh only —
@@ -378,11 +397,16 @@ export default class Skeleton {
     // head/face, which matters for headlock/sleeper/guard — see AI_HANDOFF if
     // that reads wrong and needs revisiting.
     setDepth(base) {
-        this.farThigh.setDepth(base);
-        this.farShin.setDepth(base);
-        this.farBoot?.setDepth(base);
+        // Far arm and far leg used to share depth `base`, so Phaser's stable
+        // depth-sort fell back to display-list insertion order — the arm was
+        // constructed after the leg, so it always drew on top, poking the far
+        // hand through the trunks instead of tucking behind the far thigh
+        // (Derek, 2026-07-15). Split into two bands so the far leg wins.
         this.farUpArm.setDepth(base);
         this.farForearm.setDepth(base);
+        this.farThigh.setDepth(base + 0.0001);
+        this.farShin.setDepth(base + 0.0001);
+        this.farBoot?.setDepth(base + 0.0001);
         this.head.setDepth(base + 0.0005);
         this.torso.setDepth(base + 0.001);
         this.trunks?.setDepth(base + 0.002);
@@ -409,9 +433,34 @@ export default class Skeleton {
     // baked facing right, same convention as the head). Placeholder blocks
     // fall through to _place with the exact same args as always — the
     // stick-figure rendering path is untouched.
+    //
+    // pivotOffsetFrac correction (2026-07-15, opt-in, off by default): every
+    // caller computes px,py assuming the art's ink is laterally centered in
+    // its canvas at whichever edge visually matters (top edge for a part
+    // whose own pivot reads as a joint, e.g. the shin at the knee; bottom
+    // edge for a part whose far end reads as the next joint, e.g. the thigh
+    // at the knee) — see tools/debug/knee_pivot_audit.mjs, which found this
+    // false for Thesz's thigh (22.3% of canvas width off-center). When it
+    // isn't, no fixed-px offset knob can fully correct it: those are tuned
+    // at one pose and don't rotate with the limb, so they drift at every
+    // other angle (the audit's own finding). This is the general fix:
+    // inverting _endXY's transform for a known local lateral offset `lx`
+    // shows the correction is the same regardless of which edge (top or
+    // bottom) the offset was measured at — px -= lx*cos(angle), py +=
+    // lx*sin(angle), derived by hand, not guessed. Absent (every character/
+    // part as of this writing) = zero change, byte-identical render. This
+    // does NOT replace the already-agreed fix for Thesz's specific thigh
+    // crop (see AI_HANDOFF.md, 2026-07-15) — that's a real asset re-crop,
+    // still pending Derek's approval, and remains the right call there. This
+    // is for the next case where re-cropping isn't practical.
     _placePart(img, px, py, w, h, angle, s, facing) {
         if (img._texDims) {
             img.setFlipX(facing < 0);
+            if (img._pivotOffsetFrac) {
+                const lx = facing * img._pivotOffsetFrac * img._texDims.w * s;
+                px -= lx * Math.cos(angle);
+                py += lx * Math.sin(angle);
+            }
             this._place(img, px, py, img._texDims.w * s, img._texDims.h * s, angle);
         } else {
             this._place(img, px, py, w, h, angle);
@@ -514,8 +563,15 @@ export default class Skeleton {
         // Base bend ~30deg (0.52 rad) so the elbow reads as a relaxed bend
         // instead of hanging straight off the upper arm (Derek, 2026-07-12).
         const FOREARM_BEND = 0.52;
-        let lForearmAng = lArmAng * 1.1 + facing * FOREARM_BEND;
-        let rForearmAng = rArmAng * 1.1 + facing * FOREARM_BEND;
+        // Optional per-pose elbow override (pose.lForearm/rForearm, skeleton-
+        // convention absolute angle) — lets a pose set the elbow bend
+        // independent of the shoulder instead of always inheriting this
+        // derived relationship. undefined (every pose before 2026-07-15)
+        // preserves the old formula exactly. Combat/run blends and ARM_FWD
+        // below still apply on top either way, so an authored elbow angle
+        // still composes with guard/run state.
+        let lForearmAng = pose.lForearm !== undefined ? facing * pose.lForearm : lArmAng * 1.1 + facing * FOREARM_BEND;
+        let rForearmAng = pose.rForearm !== undefined ? facing * pose.rForearm : rArmAng * 1.1 + facing * FOREARM_BEND;
 
         // Combat-ready guard: arms come up and forward as opponents close in.
         if (combatBlend > 0) {
@@ -561,8 +617,12 @@ export default class Skeleton {
             const MAX_LEG = 0.38, KNEE_BEND = 0.22;
             const lLegAng = facing * (pose.lLeg + cThigh) + swing * MAX_LEG;
             const rLegAng = facing * (pose.rLeg + cThigh) - swing * MAX_LEG;
-            const lShinAng = lLegAng - facing * (sinWP * KNEE_BEND + cThigh + cShin);
-            const rShinAng = rLegAng + facing * (sinWP * KNEE_BEND - cThigh - cShin);
+            // Optional per-pose knee override (pose.lShin/rShin, same
+            // convention as lForearm/rForearm above) — pose-driven FK only;
+            // the gait/walking IK branch above is untouched by design, it's
+            // procedural and shouldn't be hijacked pose-by-pose.
+            const lShinAng = pose.lShin !== undefined ? facing * pose.lShin : lLegAng - facing * (sinWP * KNEE_BEND + cThigh + cShin);
+            const rShinAng = pose.rShin !== undefined ? facing * pose.rShin : rLegAng + facing * (sinWP * KNEE_BEND - cThigh - cShin);
             const farPlant  = Math.max(0,  sinWP * facing);
             const nearPlant = Math.max(0, -sinWP * facing);
             const mk = (t, sh, plant) => ({
@@ -628,16 +688,32 @@ export default class Skeleton {
         const SHOULDER_STAGGER = RIG.SHOULDER_STAGGER * s;
         const armShoulderX = shoulderX + facing * this._armOffsetX * s;
         const armShoulderY = shoulderY + this._armOffsetY * s;
-        const farShoulderX  = armShoulderX + facing * SHOULDER_STAGGER;
+        // Far-shoulder-only nudge on top of the shared armOffsetX/Y + stagger,
+        // same near/far-parity idea as the leg offsets (2026-07-15 — arms
+        // previously had no far-only placement knob at all).
+        const farShoulderX  = armShoulderX + facing * (SHOULDER_STAGGER + this._farArmOffsetX * s);
+        const farShoulderY  = armShoulderY + this._farArmOffsetY * s;
         const nearShoulderX = armShoulderX - facing * SHOULDER_STAGGER;
+        // Near/far shoulder render-angle bias, same wrestler-local,
+        // facing-mirrored convention as nearLegTilt/farLegTilt. Arms have no
+        // IK chain downstream (unlike legs' shin), so — unlike the leg
+        // tilt knobs, which bias only the rendered image and leave the true
+        // thighAng untouched for the shin IK to anchor to — this angle is
+        // used directly for both the upper-arm's render AND the elbow anchor
+        // the forearm hangs from; there's nothing else reading an
+        // "un-tilted" arm angle.
+        const farUpArmAng  = farAA  + facing * (this._farArmTilt ?? 0);
+        const nearUpArmAng = nearAA + facing * this._nearArmTilt;
 
         // Far arm. Forearm placed a few px back up the upper-arm bone (not
         // the true elbow endpoint) so it overlaps the upper arm's bottom
         // edge instead of leaving a wedge-shaped gap at the bend (Derek,
         // 2026-07-12 — visible once the elbow carries a real bend angle).
-        this._placePart(this.farUpArm, farShoulderX, armShoulderY, armW, upperArmH, farAA, s * RIG.FAR_ARM_SCALE, facing);
-        const farElbow = this._end(farShoulderX, armShoulderY, upperArmH - RIG.ELBOW_OVERLAP * s, farAA);
-        this._placePart(this.farForearm, farElbow.x, farElbow.y, armW, forearmH, farFA, s * RIG.FAR_ARM_SCALE, facing);
+        this._placePart(this.farUpArm, farShoulderX, farShoulderY, armW, upperArmH, farUpArmAng, s * RIG.FAR_ARM_SCALE, facing);
+        const farElbow = this._end(farShoulderX, farShoulderY, upperArmH - RIG.ELBOW_OVERLAP * s, farUpArmAng);
+        const farForearmX = farElbow.x + facing * this._farForearmOffsetX * s;
+        const farForearmY = farElbow.y + this._farForearmOffsetY * s;
+        this._placePart(this.farForearm, farForearmX, farForearmY, armW, forearmH, farFA, s * RIG.FAR_ARM_SCALE, facing);
 
         // Torso: full height when trunks are baked into the PNG, split otherwise
         this._placePart(this.torso, x, torsoTop, torsoW, this.trunks ? torsoH - trunksH : torsoH, 0, s, facing);
@@ -666,9 +742,11 @@ export default class Skeleton {
         this.nearShinRenderDebug = { x: nearShinRender.x, y: nearShinRender.y, angle: nearShinRenderAng, s: s * this._nearShinScale, facing, texDims: this.nearShin._texDims };
 
         // Near arm
-        this._placePart(this.nearUpArm, nearShoulderX, armShoulderY, armW, upperArmH, nearAA, s, facing);
-        const nearElbow = this._end(nearShoulderX, armShoulderY, upperArmH - RIG.ELBOW_OVERLAP * s, nearAA);
-        this._placePart(this.nearForearm, nearElbow.x, nearElbow.y, armW, forearmH, nearFA, s, facing);
+        this._placePart(this.nearUpArm, nearShoulderX, armShoulderY, armW, upperArmH, nearUpArmAng, s, facing);
+        const nearElbow = this._end(nearShoulderX, armShoulderY, upperArmH - RIG.ELBOW_OVERLAP * s, nearUpArmAng);
+        const nearForearmX = nearElbow.x + facing * this._nearForearmOffsetX * s;
+        const nearForearmY = nearElbow.y + this._nearForearmOffsetY * s;
+        this._placePart(this.nearForearm, nearForearmX, nearForearmY, armW, forearmH, nearFA, s, facing);
 
         // Head — PNG image (pivot at neck bottom) or plain circle
         const headY = torsoTop - headR * 0.7;

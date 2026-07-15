@@ -57,7 +57,12 @@ const UNSELLABLE_STATES = new Set([
 // planted. These carry the silhouette of a move — wind-ups coil back and low,
 // impacts drive forward and down.
 export const POSES = {
-    idle:        { lLeg: 0,     rLeg: 0,     lArm: 0,     rArm: 0,    lean: 0, crouch: 0 },
+    // idle legs retuned via rig-tuner (Derek, 2026-07-14). Note the non-zero
+    // legs make poseLegActive true, so a wrestler resting in this pose uses
+    // pose-driven FK instead of the gait path (see Skeleton.updateUpright);
+    // in-game the presets idle in powerIdle/theszIdle/brawlerIdle, so this
+    // mostly drives fallbacks.
+    idle:        { lLeg: -0.04, rLeg: 0.16,  lArm: 0,     rArm: 0,    lean: 0, crouch: 0 },
     grapple:     { lLeg: 0.12,  rLeg:-0.08,  lArm: 0.50,  rArm: 0.18, lean: 0.15, crouch: 0.12 },
     slamHold:    { lLeg: 0.20,  rLeg:-0.22,  lArm: 2.80,  rArm: 2.80, lean:-0.14, crouch: 0.08 }, // arms straight overhead, back arched under the weight
     slamThrow:   { lLeg: 0.50,  rLeg:-0.28,  lArm: 1.30,  rArm: 1.00, lean: 0.42, crouch: 0.22 }, // driving down through the throw
@@ -82,7 +87,7 @@ export const POSES = {
     sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10 }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
     powerIdle:      { lLeg: 0.10,  rLeg:-0.09,  lArm: 0.10,  rArm: 0.07, crouch: 0.05 }, // wide, imposing — arms hanging low
-    theszIdle:      { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.10,  rArm: 0.07, crouch: 0.05 }, // legs together — equal angles so the far leg hides exactly behind the near (New Lou full-body ref)
+    theszIdle:      { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.10,  rArm: 0.07, lean: 0.05, crouch: 0.05 }, // legs together, slight forward lean (Derek rig-tuner pass 2026-07-14); equal leg angles so the legs stack (New Lou full-body ref)
     tauntArmsWide:  { lLeg: 0.22,  rLeg:-0.20,  lArm: 2.20,  rArm: 2.00, lean:-0.16 }, // arms raised wide, chest out to the crowd
     ropeOneTaunt:   { lLeg: 0.08,  rLeg:-0.06,  lArm: 1.80,  rArm:-1.80  }, // one arm raised to crowd, other grips rope
     axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10, lean:-0.22 }, // arms overhead, back arched for the drop

@@ -17,13 +17,15 @@ export const george = {
         // too high and too far back (Derek, 2026-07-12). Nudged down/forward
         // to seat the jaw/ear mass on the torso's neck stub — see Skeleton.js.
         headOffsetX: 10,
-        headOffsetY: 9,
+        // headOffsetY/armOffsetX/near+far shin+leg offsets below retuned
+        // visually by Derek in tools/rig-tuner (2026-07-14).
+        headOffsetY: 11,
         // 10% bigger than the Skeleton.js TEX default (82x112) — torso read
         // too small next to the arms/legs (Derek, 2026-07-12).
         torso:    { key: 'george_torso', box: { w: 90, h: 123 } },
         // Shoulders/upper arms sat too high and too far forward (Derek,
         // 2026-07-12) — same offset convention as headOffsetX/Y.
-        armOffsetX: -6,
+        armOffsetX: -2,
         armOffsetY: 8,
         upperArm: 'george_upper_arm',
         forearm:  'george_forearm',
@@ -49,15 +51,23 @@ export const george = {
         // +18 for KNEE_OVERLAP (tuned to reference for subtle clean connection, 2026-07-12).
         shin:     { key: 'george_shin', box: { w: 66, h: 124 } },
         // Nudged back and down to settle under the retilted thigh (Derek,
-        // 2026-07-12) — second pass added another 12 (2x the first 6px step)
-        // in both directions.
-        nearShinOffsetX: -18,
-        nearShinOffsetY: 18,
+        // 2026-07-12; eased via rig-tuner 2026-07-14).
+        nearShinOffsetX: -17,
+        nearShinOffsetY: 7,
+        // Far leg/shin nudges — new in the rig-tuner pass (2026-07-14);
+        // george previously used the shared defaults (0).
+        farLegOffsetX: 11,
+        farLegOffsetY: -1,
+        farShinOffsetX: 10,
+        farShinOffsetY: 2,
         // Rotated from 6 o'clock to 7 o'clock (Derek, 2026-07-12) — same
         // clock convention as nearLegTilt.
         nearShinTilt: -30 * Math.PI / 180,
     },
-    idlePose:  'idle',
+    // Arena's PRESETS.george overrides this with 'powerIdle' at runtime; this
+    // said 'idle' since 2026-07-12 (known inconsistency). Aligned so tools
+    // reading the character file (rig-tuner) preview the real resting stance.
+    idlePose:  'powerIdle',
     tauntPose: 'tauntArmsWide',
     moveSet: [
         'irishWhip', 'clothesline', 'bodySlam', 'pin', 'elbowDrop', 'dropkick',

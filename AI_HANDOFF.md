@@ -88,6 +88,49 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 (later) — Claude (correction: Derek was right, it's a pivot-crop mismatch, not the ink line)
+
+Derek pushed back on my diagnosis in the entry below — suspected the
+skeleton's and the art's pivot points didn't agree, rather than the ink line
+I'd flagged. Checked it properly instead of re-asserting the original read.
+
+The pipeline's own `pivotCrop` step logs exactly this: it centers each part
+on the opaque x-center of its topmost 8 rows (the "pivot"), not the bbox
+center, and reports the delta between them. Old (working) thigh: delta
+-34.93px. New thigh: delta -13.68px — a 21px swing in source-canvas terms
+(~12px once scaled into the final 150px-wide PNG). The shin's delta barely
+moved (-23.30 → -22.50). So the new thigh's ink sits in a measurably
+different position relative to its own top-row pivot than the old thigh
+did — Derek's hypothesis, not mine, and the pipeline had already recorded
+the evidence for it.
+
+Tested directly rather than trusting the math alone: re-swapped the new
+`thigh.png`/`shin.png` back in (same files as the rejected attempt below,
+ink line and all, untouched) and nudged `legOffsetX` from -15 to -9 as a
+compensating shift. **The visible notch disappeared completely** — same
+shin art, same ink line, just a different thigh placement. That isolates
+the cause: the pivot-crop mismatch was doing the damage, not the ink line I
+originally blamed. The ink line may still be worth cleaning up (it's still
+what's dragging the shin's cap-width QA metric to 59%, one point under
+spec) but it was not what produced the notch.
+
+Practical implication for future redraws, not just this one: `pivotCrop`
+derives its pivot from ink-content shape, not a marker Derek places, so
+*any* change to the thigh's silhouette near the top (waistband) rows will
+shift this pivot and require re-tuning the offset knobs regardless of how
+clean the art is — that's inherent to how the tool works, not something a
+better drawing avoids. Reverted the test (`legOffsetX` back to -15, art
+back to the working PNGs) — this was a diagnostic pass, not an adoption
+decision. Derek: your call whether to adopt the new leg with a
+`legOffsetX` retune now (ink line and all — it didn't visibly matter), wait
+for a cleaner shin redraw first, or something else.
+
+Files touched: `AI_HANDOFF.md` only (diagnostic note; art/offset changes
+were tested and reverted within this session, not committed)
+Action required: Derek — decide how to proceed on the leg art; the pivot
+finding itself needs no further action from anyone.
+Priority: medium
+
 ### 2026-07-15 — Claude (Thesz: new-leg-art attempt rejected with diagnosis; second rig-tuner export applied)
 
 Two separate threads from the same session, both about Thesz's legs, neither

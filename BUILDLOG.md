@@ -17,6 +17,21 @@
 
 ## Sessions Log
 
+### 2026-07-15 (correction) — Notch was a pivot-crop mismatch, not the ink line
+
+Derek pushed back on the ink-line diagnosis below and was right. The
+cutter's `pivotCrop` step centers each part on its own top-row ink center,
+not its bbox center — the new thigh's pivot delta measured 21px different
+(source-canvas terms) from the working thigh's, while the shin barely
+moved. Confirmed by testing directly: re-applied the new leg art (ink line
+included, untouched) with `legOffsetX` nudged -15→-9 to compensate, and the
+visible notch disappeared entirely. So the pivot mismatch was the real
+cause, not the shin's ink line (which is still a minor separate QA miss,
+just not what was producing the notch). Reverted the test — nothing
+adopted, this was diagnosis only. Any future thigh redraw will need a
+fresh offset retune regardless of art quality, since the pivot is derived
+from ink shape, not a fixed marker. Full detail in AI_HANDOFF.md.
+
 ### 2026-07-15 (later) — Thesz leg art attempt rejected + second rig-tuner export applied
 
 Derek's `newLegLou` re-draw (meant to add knee overlap "buffer") was tested

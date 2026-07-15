@@ -33,8 +33,8 @@ export const thesz = {
         // height below the torso ink top and ~22px (ref canvas) forward of
         // the torso centroid; the rig's default anchors it exactly at torso
         // top, centered.
-        headOffsetX: 3,
-        headOffsetY: 10,
+        headOffsetX: 4,
+        headOffsetY: 9,
         torso:    'thesz_torso',
         // Ref shoulder (upper-arm layer top-rows center) sits 56.6/380 of
         // torso height BEHIND the torso centroid and 50/380 below its top;
@@ -75,8 +75,10 @@ export const thesz = {
         // 0.7px of that with the theszIdle pose (lLeg/rLeg 0.06).
         // legOffsetX/nearLegOffsetY and the shin/far offsets below: Derek's
         // visual rig-tuner pass (2026-07-14), superseding the 2026-07-13
-        // probe-derived values they replace.
-        legOffsetX: -11,
+        // probe-derived values they replace. legOffsetX -15 is a second
+        // same-day rig-tuner export (was -11), tuned together with the
+        // updated shin offsets and theszIdle pose below.
+        legOffsetX: -15,
         legOffsetY: -15,
         nearLegOffsetY: -2,
         // -5.5° (was -15° against the old splayed powerIdle stance): the ref
@@ -104,16 +106,16 @@ export const thesz = {
         // the thigh art away from where the shin art starts — these re-join
         // them. x puts the shin ink centroid on the ref's (probe Δ -0.4px);
         // y carries the cap-tuck described above.
-        // Shin offsets: Derek's facing-corrected rig-tuner pass (2026-07-14,
-        // third export — the first two were tuned facing left / in the wrong
-        // idle pose). Geometry note (Codex's cleave mechanism): net cap
-        // position vs the true knee = -KNEE_OVERLAP(18) - NEAR_SHIN_UP(5) +
-        // nearShinOffsetY → 23 puts the flat cap exactly AT the knee (0px
-        // tuck; the 2026-07-13 probe state had -11px). If the knee line
+        // Shin offsets: multiple same-day rig-tuner export rounds
+        // (2026-07-14/15, live iteration — the first two exports were tuned
+        // facing left / in the wrong idle pose, superseded). Geometry note
+        // (Codex's cleave mechanism): net cap position vs the true knee =
+        // -KNEE_OVERLAP(18) - NEAR_SHIN_UP(5) + nearShinOffsetY. At the
+        // current nearShinOffsetY (24) that's +1px tuck. If the knee line
         // creeps back, raise shin.box.h instead of pushing offsetY further
         // down — that lowers the sole while keeping the cap tucked.
-        nearShinOffsetX: -7,
-        nearShinOffsetY: 23,
+        nearShinOffsetX: -23,
+        nearShinOffsetY: 24,
         // Far leg NO LONGER mirrors the near leg. The 2026-07-13 pass kept
         // every far offset in lockstep with the near leg's net value so the
         // far leg hid pixel-identically behind the near one (single-leg
@@ -121,10 +123,11 @@ export const thesz = {
         // broke that: the far leg now renders forward of the near leg (both
         // legs visible). If a future pass wants the hidden-leg look back,
         // see git history for the lockstep derivation.
-        // Far cap vs knee = -KNEE_OVERLAP(18) + farShinOffsetY → 16 = -2px
-        // tuck (see near-shin note above).
-        farShinOffsetX: 21,
-        farShinOffsetY: 16,
+        // Far cap vs knee = -KNEE_OVERLAP(18) + farShinOffsetY. At the
+        // current farShinOffsetY (19) that's +1px tuck (see near-shin note
+        // above for the same formula pattern).
+        farShinOffsetX: 12,
+        farShinOffsetY: 19,
         farLegOffsetX: 11,
         farLegOffsetY: 2,
         farLegTilt: -5.5 * Math.PI / 180,

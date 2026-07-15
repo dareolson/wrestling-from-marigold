@@ -47,7 +47,7 @@
       "owner": "Derek",
       "source": "AI_HANDOFF.md, Claude entry 2026-07-14 'first live tuning session'",
       "detail": "The knee cap currently tucks with zero margin against the thigh's closed dark outline -- any future shin-down nudge re-exposes the seam. Two options parked for Derek: unlined overlap zone on the thigh's knee end, or a soft-faded shin cap (drawn or as a cutter post-processing step). Either removes the zero-margin fragility entirely instead of re-tuning around it every session.",
-      "next_step": "Derek picks an approach (or defers); implement in the source art / wrestler-cutter pipeline.",
+      "next_step": "First attempt (Sprite sheets/newLegLou/, 2026-07-15) tested through the real cutter pipeline and rejected -- produced a visible knee notch, caught by the pipeline's own cap-width QA (59% vs required 60%). Root cause: an ink line intruding into the shin's top ~40-50px cap region, not a length/buffer problem -- extending the thigh's length didn't help since KNEE_OVERLAP is a fixed rig constant, not derived from available art. Reverted, nothing committed. Next redraw should keep that top zone ink-free and evenly wide. See AI_HANDOFF.md 2026-07-15 entry for full diagnosis.",
       "blocks": ["natural-walk-shuffle-prototype"]
     },
     {

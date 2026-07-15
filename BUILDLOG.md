@@ -17,6 +17,24 @@
 
 ## Sessions Log
 
+### 2026-07-15 (later) — Thesz leg art attempt rejected + second rig-tuner export applied
+
+Derek's `newLegLou` re-draw (meant to add knee overlap "buffer") was tested
+through the real cutter pipeline and rejected — produced a visible knee
+notch, confirmed by the pipeline's own cap-width QA check (59% vs the 60%
+minimum). Root cause: an ink line intruding into the shin's cap region, not
+a length/buffer problem. Reverted immediately, nothing committed from that
+attempt. Full diagnosis and target for the next art pass in AI_HANDOFF.md.
+
+Separately, applied two same-day rig-tuner export rounds from Derek (current
+art, no new leg drawing involved): `thesz.js` headOffsetX/Y, legOffsetX,
+near/far shin offsets (refined across both rounds), and `Wrestler.js`'s
+`theszIdle` pose (legs now intentionally asymmetric — both visible, not
+stacked). Verified after each round: `npm test` 43/43, `debug:play -- all`
+12/12, `build` clean, rig-tuner `smoke.mjs` 16/16, zoomed screenshot after
+the second round shows both legs connecting cleanly at the knee. Not yet
+Derek-signed-off in-browser.
+
 ### 2026-07-15 — Mirrored-knee-tilt facing bug fixed
 
 Codex root-caused (AI_HANDOFF.md, 2026-07-14) why a knee tuned correctly in

@@ -88,6 +88,85 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 — Claude (Thesz: new-leg-art attempt rejected with diagnosis; second rig-tuner export applied)
+
+Two separate threads from the same session, both about Thesz's legs, neither
+touching the mirrored-knee-tilt fix above.
+
+**1. Derek's `Sprite sheets/newLegLou/` re-draw (UpperLeg.png + LowerLeg.png,
+meant to add knee overlap "buffer") — tested and rejected, not committed.**
+
+Ran it through the real pipeline rather than eyeballing source art: merged
+the new leg pair with the unchanged head/torso/arms from `New Lou/` in a
+scratch source dir, processed with `tools/wrestler-cutter/process-parts.mjs`
+(temporary `theszLegTest` CHARACTERS entry, since removed — not committed),
+then swapped the output into `src/assets/wrestlers/thesz/` and screenshotted
+in-game. Result: a visible notch/gap at the knee, confirmed by the pipeline's
+own automated QA (`capOk: false` — the shin's flattened cap measured 59% of
+its max width in the final 150×230 canvas, below the 60% minimum; the
+current shin sits at 65%). Reverted `thigh.png`/`shin.png` back to the
+working versions immediately after the screenshot confirmed the regression —
+nothing broken, nothing committed from this thread.
+
+**Root cause, for whoever draws the next attempt:** the new thigh is simply
+13px taller in source-canvas terms, but that doesn't help — the knee-overlap
+amount the rig applies is a fixed pixel constant (`KNEE_OVERLAP`), not
+derived from how much art exists, and the cutter's cap-flatten step
+processes the shin in total isolation from the thigh. What actually broke
+it: the new shin has an ink line (a knee-crease/shading stroke) intruding
+into the top ~40-50px region the cutter treats as cap material, so that
+region isn't the clean, flat, unlined, evenly-wide block the cap-flatten
+step needs — it reads as a notch instead. Told Derek the target for a
+re-draw: keep that top zone free of any ink line and evenly wide, matching
+flesh tone, regardless of overall leg length.
+
+**2. Derek's rig-tuner exports (using the *current*, unchanged leg art),
+two rounds same session — applied, verified, this is what's live now.**
+
+Round A:
+
+```
+// thesz.js — textures
+headOffsetX: 3→4, headOffsetY: 10→9, legOffsetX: -11→-15,
+nearShinOffsetX: -7→-24, nearShinOffsetY: 23→24, farShinOffsetX: 21→14
+// Wrestler.js — POSES.theszIdle
+lLeg: 0.06→-0.01, rLeg: 0.06→0.14 (lArm/rArm/lean/crouch unchanged)
+```
+
+Round B, same session, refining round A (theszIdle unchanged, not
+re-quoted):
+
+```
+// thesz.js — textures
+nearShinOffsetX: -24→-23, farShinOffsetX: 14→12, farShinOffsetY: 16→19
+```
+
+Final live values: `headOffsetX: 4, headOffsetY: 9, legOffsetX: -15,
+nearShinOffsetX: -23, nearShinOffsetY: 24, farShinOffsetX: 12,
+farShinOffsetY: 19`, `theszIdle: { lLeg: -0.01, rLeg: 0.14, lArm: 0.1,
+rArm: 0.07, lean: 0.05, crouch: 0.05 }`. Applied verbatim both rounds,
+comments updated in place (net cap-tuck math recomputed for both near and
+far shin rather than quoting superseded numbers). Also fixed a stale comment
+on `theszIdle` while in there — it still said "equal leg angles so the legs
+stack," left over from before today's earlier far-leg-mirror-breaking pass;
+the legs are intentionally unequal now (both visible), so corrected the
+comment to match, no behavior change.
+
+**Verified after each round (Node 25.8.1):** `npm test` 43/43, `debug:play
+-- all` 12/12, `build` clean, rig-tuner `smoke.mjs` 16/16, plus a zoomed
+in-game screenshot of both legs at idle after round B — near and far
+thigh/shin connect with no visible seam. **Not Derek-signed-off in-browser
+yet** — screenshot-verified only, same caveat as every prior rig-tuner
+export.
+
+Files touched: `src/characters/thesz.js`, `src/Wrestler.js`, `AI_HANDOFF.md`,
+`BUILDLOG.md`. (`tools/wrestler-cutter/process-parts.mjs`'s temporary test
+entry was added and removed within this session — not part of the diff.)
+Action required: Derek — in-browser confirm the new stance/knee reads right;
+whenever you take another pass at the shin art, the ink-line note above is
+the specific thing to fix.
+Priority: medium
+
 ### 2026-07-14 (later) — Claude (mirrored-knee-tilt fix landed — the facing-detachment bug from Codex's diagnosis below)
 
 Implemented Codex's diagnosis and prescribed fix (entry directly below,

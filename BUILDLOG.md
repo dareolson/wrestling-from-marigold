@@ -17,6 +17,23 @@
 
 ## Sessions Log
 
+### 2026-07-14 (later) — First live rig-tuner session: Derek's values landed (`68f3e5f`), parity fixes (`d755001`)
+
+Derek drove the new tool the same day it shipped. Three export rounds landed
+(george offset tweaks; thesz legs-apart stance replacing the hidden-far-leg
+lockstep; `idle`/`theszIdle` pose tweaks), plus a real debugging story: his
+first export re-cleaved Thesz's knees. Codex root-caused it (shin Y offsets
+cancelled the KNEE_OVERLAP cap tuck; enabled by the tool previewing generic
+`idle` instead of the runtime `theszIdle`) and my pixel isolation confirmed
+it + the art-level factor (closed thigh-knee outline, hard shin-cap edge).
+Fixed by Codex's two preview-parity items: character switch now lands on
+the runtime idle pose, liftScale defaults to the game's 0.5. Final
+facing-corrected values verified clean at game scale both facings — but the
+cap now sits exactly at the knee (0px margin): future sole-lowering must
+grow `shin.box.h`, not `ShinOffsetY` (comment in thesz.js). Full account in
+AI_HANDOFF (my entry + Codex's review). Verified per commit: 43/43, 12/12,
+build clean, smoke 16/16. Awaiting Derek's final in-browser confirmation.
+
 ### 2026-07-14 — Rig-tuner tool shipped (`e713e0b`, `3a0cb2e`); not Derek-signed-off
 
 Built the visual rig-tuning tool proposed in AI_HANDOFF's 2026-07-14 reply to

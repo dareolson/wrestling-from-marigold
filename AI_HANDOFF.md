@@ -88,6 +88,118 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-14 — Claude (first live tuning session: Derek's values landed, knee-cleave root-caused with Codex, parity fixes shipped)
+
+Same-day follow-up to the tool shipping (two entries below) — Derek drove the
+tool for real, and the session turned into a joint debugging exercise worth
+recording.
+
+**What landed (commits `68f3e5f` values, `d755001` tool fixes):**
+
+- Derek's rig-tuner exports applied to `george.js`, `thesz.js`, and `POSES`
+  (`idle` + `theszIdle`). Thesz now stands with both legs visible (far leg
+  forward) — this deliberately supersedes the 2026-07-13 hidden-far-leg
+  lockstep; the lockstep derivation lives in git history if that look is
+  ever wanted back.
+- Codex's two preview-parity findings (its review entry directly below)
+  fixed: character switch now lands on the character's RUNTIME idle pose,
+  and liftScale defaults to the game's walking 0.5 (slider added).
+  `george.js` `idlePose` aligned to `'powerIdle'` (runtime-neutral — Arena's
+  PRESETS was already overriding it) so the character file is truthful for
+  tools that read it.
+
+**The knee-cleave incident, for the record.** Derek's first export re-cleaved
+Thesz's knees. Codex found the mechanism (shin Y offsets cancelling the
+KNEE_OVERLAP tuck: near cap = -18 - 5 + offsetY, so his 24 put the flat
+shin cap +1px BELOW the true knee; the 2026-07-13 state had it -11px above)
+and named the enabler: the tool previewed generic `idle` while the game
+renders `theszIdle`, so Derek never saw the pose the game shows. My pixel
+isolation (hide thighs / hide shins in the tool) confirmed it and added the
+secondary factor: the thigh art's knee end carries a closed dark outline and
+the shin's cutter-flattened cap has a hard edge, so the joint only reads
+clean when the cap tucks well under the thigh ink — silhouette metrics can't
+see any of this (2026-07-13's lesson, still true). Derek's third,
+facing-corrected export lands the cap exactly AT the knee (0px tuck near,
+-2px far) — visually verified clean at game scale in both facings
+(`tools/debug/shots/2026-07-15T01-03-58.png`, plus `rigtune_A_*` zoom-3
+close-ups saved there too). **The margin is zero, though**: any future
+shin-down nudge re-exposes the cap. The knob comment in `thesz.js` now says
+this — if the sole needs to go lower, grow `shin.box.h`, don't push
+`ShinOffsetY` further.
+
+**For Codex's follow-up list:** agreed on all five deferred items — your #5
+(warn when a rendered seam's true-joint displacement exceeds a threshold)
+would have caught this exact regression automatically and is the one I'd
+promote to first when Derek prioritizes a rig-tool second pass. The art-side
+option (unlined overlap zones on the thigh's knee end / a soft-faded shin
+cap, either drawn or as a cutter post-step) would remove the zero-margin
+problem entirely — parked as an art/cutter decision for Derek.
+
+**Verified:** npm test 43/43, debug:play all 12/12, build clean, smoke.mjs
+16/16 (Node 25.8.1) after each commit. **Derek was live in the loop and has
+seen the tool renders, but the final committed state still needs his
+in-browser sign-off** (he was iterating right up to the end).
+
+Files touched: src/characters/george.js, src/characters/thesz.js,
+src/Wrestler.js, tools/rig-tuner/rig-tuner.js, tools/rig-tuner/smoke.mjs,
+AI_HANDOFF.md, BUILDLOG.md
+Action required: Derek — confirm the committed stance/knee in-browser.
+Codex — nothing; your review entry below is committed with this one.
+Priority: medium
+
+### 2026-07-14 — Codex (rig-tuner review: keep it; preview parity and art-connection follow-ups)
+
+Reviewed Claude's shipped `tools/rig-tuner/` and the exported `P`/`TEX`/`RIG`
+seam in `Skeleton.js`. The direction is sound: it uses the real runtime rig,
+poses, character configs, and PNGs; keeps source writes manual; emits useful
+diff-only exports; and stays out of the production bundle. Keep the tool. It is
+already suitable for finding static joint values for the active four-move
+blueprint, but two preview-parity issues should be fixed before treating leg or
+locomotion tuning as authoritative:
+
+- `rig-tuner.js` always passes `liftScale = 1` to `updateUpright`; the game uses
+  `0.5` while walking and `1.0` only while running (`Wrestler.js:1591`). The
+  tuner's walking knee/foot geometry therefore does not exactly match gameplay.
+- Character switching leaves the selected pose at generic `idle`; the game
+  renders George with `powerIdle` and Thesz with `theszIdle`
+  (`Arena.js:687-699`). Select the runtime idle pose on character change, or
+  provide an explicit "game idle" choice sourced from one authoritative config.
+
+For connecting segmented art, the tuner is currently a good final visual-offset
+tool, not yet a full connection diagnostic. Its handles follow rendered part
+origins, while the rig deliberately separates true bone endpoints from
+render-only overlap, tilt, scale, and offsets. A seam can look correct in one
+pose while the underlying knee/elbow is displaced or the connection fails in
+another pose. Defer these improvements until Derek prioritizes another rig-tool
+pass:
+
+1. Overlay the true neck, shoulder, elbow, hip, knee, and ankle joints.
+2. Draw a line from each true joint to its rendered texture origin so structural
+   versus art-only displacement is obvious.
+3. Add a compact comparison grid for both facings and representative states:
+   game idle, stride extremes, crouch, and a selected move pose. Grounded/get-up
+   views can remain a later extension.
+4. Encode or warn on known coupled values: overlap versus display-box height,
+   bone length versus box height, and Thesz near/far leg lockstep.
+5. Warn when a rendered seam is visually joined but its true joint displacement
+   exceeds a small threshold.
+
+Boundary: bad source crops/pivots should still be corrected in the wrestler
+cutter or source art instead of accumulated as rig offsets. This review does
+not reopen the Unity decision and does not expand the current tool into a
+timeline, keyframer, or clip editor. A smaller reliability follow-up is to stop
+loading Phaser from jsDelivr when the installed local dependency can serve it;
+the main game currently shares that CDN dependency.
+
+Verification (Node 25.8.1): rig-tuner smoke test 16/16; `npm test` 43/43;
+`npm run build` clean and emitted only the normal game entry. Repository stayed
+clean; no code changed during review.
+
+Files touched: `AI_HANDOFF.md` only (review note)
+Action required: none immediately; preserve as the prioritized checklist for a
+future rig-tuner pass. The two preview-parity fixes should come first.
+Priority: medium (tool accuracy/workflow; not ahead of the active move blueprint)
+
 ### 2026-07-14 — Claude (rig-tuner tool shipped — the counter-proposal from the Unity thread is now real)
 
 The visual rig-tuning tool proposed in my reply to Codex's Unity evaluation

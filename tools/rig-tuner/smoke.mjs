@@ -70,13 +70,16 @@ try {
     await settle(page);
     ok(await canvasHash(page) === baseline, 'reverting RIG restores baseline render');
 
-    // 2. Per-character knob (config + instance)
-    await page.evaluate(() => window.__RIG_TOOL.setCharKnob('headOffsetY', 40));
+    // 2. Per-character knob (config + instance). Read the committed value
+    // first — hardcoding it makes the test break every time the config is
+    // legitimately retuned.
+    const origHeadY = await page.evaluate(() => window.__RIG_TOOL.CHARS.george.textures.headOffsetY);
+    await page.evaluate(v => window.__RIG_TOOL.setCharKnob('headOffsetY', v + 31), origHeadY);
     await settle(page);
     ok(await canvasHash(page) !== baseline, 'george headOffsetY edit changes render');
     text = await page.evaluate(() => window.__RIG_TOOL.exportText());
-    ok(text.includes('src/characters/george.js') && text.includes('headOffsetY: 40,'), 'export has character block');
-    await page.evaluate(() => window.__RIG_TOOL.setCharKnob('headOffsetY', 9));
+    ok(text.includes('src/characters/george.js') && text.includes(`headOffsetY: ${origHeadY + 31},`), 'export has character block');
+    await page.evaluate(v => window.__RIG_TOOL.setCharKnob('headOffsetY', v), origHeadY);
     await settle(page);
     ok(await canvasHash(page) === baseline, 'reverting knob restores baseline render');
 
@@ -85,7 +88,12 @@ try {
     await settle(page);
     text = await page.evaluate(() => window.__RIG_TOOL.exportText());
     ok(text.includes('src/Wrestler.js — POSES') && text.includes('lockup: {') && text.includes('lArm: 2.5'), 'export has POSES block');
-    await page.evaluate(() => { window.__RIG_TOOL.setPose('lockup', 'lArm', 1.57); window.__RIG_TOOL.setPoseName('idle'); });
+    await page.evaluate(() => {
+        const t = window.__RIG_TOOL;
+        t.setPose('lockup', 'lArm', 1.57);
+        // back to the boot pose (the character's runtime idle, not generic 'idle')
+        t.setPoseName(t.CHARS.george.idlePose ?? 'idle');
+    });
     await settle(page);
 
     // 4. Real mouse-drag on the head handle drives headOffsetX/Y

@@ -14,7 +14,8 @@ import { thesz } from '/src/characters/thesz.js';
 
 // ─── Characters ──────────────────────────────────────────────────────────────
 const placeholder = {
-    id: 'placeholder', skinCol: 0xffe4c4, trunksCol: 0x3355aa, textures: {},
+    // idlePose matches Arena's brawler preset — the runtime placeholder kit.
+    id: 'placeholder', skinCol: 0xffe4c4, trunksCol: 0x3355aa, textures: {}, idlePose: 'brawlerIdle',
 };
 const CHARS = { george, thesz, placeholder };
 const PART_FILES = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png' };
@@ -55,7 +56,10 @@ const CHAR_KNOBS = [
 // ─── Live state ──────────────────────────────────────────────────────────────
 const state = {
     charId: 'george',
-    poseName: 'idle',
+    // Preview the pose the game actually rests in for this character (Codex
+    // parity review, 2026-07-14) — tuning against generic `idle` hid a knee
+    // regression because the game never shows thesz in it.
+    poseName: CHARS.george.idlePose ?? 'idle',
     facing: 1,
     zoom: 1.5,
     walkPhase: 0,
@@ -63,6 +67,9 @@ const state = {
     moveBlend: 0,
     combatBlend: 0,
     runBlend: 0,
+    // Game parity: Wrestler.js passes liftScale 0.5 except while running
+    // (1.0) — the tool previously hardcoded 1 (Codex parity review).
+    liftScale: 0.5,
     showHandles: true,
     ref: { alpha: 0.5, scale: 1, front: true },
 };
@@ -177,7 +184,7 @@ function update(_, dtMs) {
     const lean = state.facing * (0.07 * state.moveBlend + (pose.lean ?? 0));
     skeleton.updateUpright(
         CX, GROUND_Y, state.zoom, state.facing, pose, state.walkPhase,
-        state.combatBlend, lean, state.moveBlend, 1, state.runBlend
+        state.combatBlend, lean, state.moveBlend, state.liftScale, state.runBlend
     );
     for (const h of handles) {
         const part = h.spec.part(skeleton);
@@ -299,6 +306,9 @@ function setCharacter(id) {
     rebuildSkeleton();
     buildCharPanel();
     ui.charSel?.refresh();
+    // Follow the character's runtime resting pose so tuning happens against
+    // what the game actually renders (Codex parity review, 2026-07-14).
+    setPoseName(CHARS[id].idlePose ?? 'idle');
     renderExport();
 }
 function setPoseName(name) {
@@ -322,6 +332,8 @@ function buildPanel() {
     sliderRow(pv, 'moveBlend', () => state.moveBlend, v => { state.moveBlend = v; }, 0, 1, 0.01);
     sliderRow(pv, 'combatBlend', () => state.combatBlend, v => { state.combatBlend = v; }, 0, 1, 0.01);
     sliderRow(pv, 'runBlend', () => state.runBlend, v => { state.runBlend = v; }, 0, 1, 0.01);
+    sliderRow(pv, 'liftScale', () => state.liftScale, v => { state.liftScale = v; }, 0, 1, 0.05);
+    el(pv, `<div class="hint">game liftScale: 0.5 walking, 1.0 running</div>`);
     checkRow(pv, 'drag handles', () => state.showHandles, v => { state.showHandles = v; });
     el(pv, `<div class="legend">${HANDLE_SPECS.map(h =>
         `<span><span class="dot" style="background:#${h.color.toString(16).padStart(6, '0')}"></span>${h.name}</span>`).join('')}</div>`);

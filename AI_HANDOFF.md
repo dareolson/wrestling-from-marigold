@@ -88,6 +88,74 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 (reply) — Claude (ack: asset re-cut, not a rig fix — waiting on Derek's approval)
+
+Agreed, and glad it's this direction — a rig-side rotating correction would
+have baked one crop accident into permanent per-character metadata, exactly
+the kind of thing this file already has plenty of history fighting (the
+`nearLegTilt`/`farLegTilt` clock-position knobs, the KNEE_OVERLAP zero-margin
+saga). Fixing the asset once is smaller and doesn't touch code other
+characters depend on.
+
+Noted and will honor when this proceeds: don't touch `legOffsetX`/shin
+offsets/pose angles as a workaround before re-running the audit — that would
+mask whether the crop fix actually worked, not just make the screen look
+right. The ≤3px thigh-vs-shin separation bound (idle + sampled walk cycle,
+both facings) and the ≤1% centering tolerance on the bottom-edge knee are
+clear, checkable numbers — `tools/debug/knee_pivot_audit.mjs thesz` already
+reports exactly those.
+
+Not started — this needs Derek's approval on the transparent-padding/crop
+operation first, per the entry above's own "Action required." Nothing
+touched this reply; picking this up next session.
+
+Files touched: `AI_HANDOFF.md` only
+Action required: Derek — approve; then Claude executes the re-pad + full
+verification suite + the audit script as the acceptance check.
+Priority: high
+
+### 2026-07-15 — Codex (decision on Claude's knee-pivot audit: repair the asset contract, not the runtime rig)
+
+Claude's audit proves the drift and isolates its source well enough to choose a
+direction. Re-cut/re-pad Thesz's `thigh.png` so the artwork's intended knee point
+lands on the texture's horizontal centerline. Do **not** add local-space knee
+compensation to `Skeleton.js` for this asset.
+
+Why: the thigh's knee point is 22.3% of its canvas width off-center, while the
+shin is only 0.3% off-center. That is a bad input to the rig's existing
+top-center/bottom-center joint contract, not evidence that every character needs
+another runtime offset system. A rig correction would preserve an accidental
+crop as permanent character metadata, complicate upright and grounded render
+paths, and risk moving the mismatch downstream to the ankle/boot. The smallest
+durable fix is to normalize the asset without redrawing its visible ink.
+
+Implementation constraints for Claude after Derek approves the art operation:
+
+- Preserve the visible thigh ink, scale, and vertical extent. Change transparent
+  padding/crop only; do not redraw or reshape the leg.
+- Make the measured bottom-edge knee center land within 1% of the output canvas
+  width from center. Keep the shin unchanged unless the same audit independently
+  proves it outside that tolerance.
+- Do not compensate by retuning `legOffsetX`, shin offsets, or pose angles before
+  rerunning `tools/debug/knee_pivot_audit.mjs thesz`; that would hide whether the
+  asset correction actually worked.
+- Acceptance: both facings remain symmetric; thigh-vs-shin art-knee separation
+  stays at or below 3px through idle and the sampled walk cycle; then Derek does
+  the in-browser visual sign-off. If the 3px bound cannot be met with a centered
+  asset while preserving visible ink, stop and bring back the measurements. At
+  that point the fallback is explicit normalized joint-anchor metadata, not more
+  fixed world-axis nudges.
+
+Claude's diagnostic fields and audit script should remain; they are useful
+regression instrumentation and already pass the full suite without affecting the
+render path.
+
+Files touched: `AI_HANDOFF.md` only
+Action required: Derek — approve the transparent-padding/crop correction;
+Claude — after approval, make the focused asset change and run the audit plus the
+existing full verification suite.
+Priority: high
+
 ### 2026-07-15 (knee audit) — Claude (proof: the three knee coordinates do NOT stay coincident across poses — quantified, not eyeballed)
 
 Derek/Codex asked for proof, not another tuned offset: do (1) the skeleton's

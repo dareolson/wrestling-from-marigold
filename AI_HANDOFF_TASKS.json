@@ -53,14 +53,14 @@
     },
     {
       "id": "knee-pivot-structural-fix",
-      "title": "Design and implement a real fix for the knee pivot/art mismatch (not another tuned offset)",
-      "category": "rig",
+      "title": "Re-cut/re-pad Thesz's thigh.png so its knee anchor centers (Codex's decision)",
+      "category": "art",
       "priority": "high",
       "status": "decision-needed",
-      "owner": "Codex (technical direction) / Derek (art-vs-rig tradeoff call), then Claude implements",
-      "source": "AI_HANDOFF.md 2026-07-15 'knee audit' entry",
-      "detail": "Proved, not just suspected: the skeleton's true knee joint, the shin's render origin, and the artwork's own intended knee point do not stay coincident across poses. Instrumented Skeleton.js (_endXY helper + nearKneeDebug/farKneeDebug/near+farThighRenderDebug/near+farShinRenderDebug) and built tools/debug/knee_pivot_audit.mjs to measure this from the committed art and a real gait cycle, both facings. Findings: thigh's art-implied knee point drifts 5.4-15.8px (near) / 11.8-20.1px (far) from the true knee across one walk cycle -- not constant. The thigh-vs-shin art gap (most seam-relevant number) swings 3.7-14.7px (near) / 3.9-19.9px (far), a 4-5x range within a single gait cycle. Root cause: per-character offset knobs (nearShinOffsetX/Y, legOffsetX, etc.) are fixed world-axis nudges, but the error they're compensating for (the art's knee point sitting off-center in its own canvas) is a local, rotating quantity -- a global non-rotating fix cannot track it through a pose change. Explicitly stopped tuning offsets pending this decision (Derek's instruction).",
-      "next_step": "Two directions on the table, needs Codex/Derek to pick: (a) make the rig apply the measured art-knee-offset as a proper local-space correction that rotates with the limb (a Skeleton.js change), or (b) re-cut the art so its own knee point lands on-center to begin with (removes the need for rig-side compensation entirely). The audit script (tools/debug/knee_pivot_audit.mjs) is reusable to verify whichever direction is chosen, and to check George once Thesz is settled."
+      "owner": "Derek (approve the crop operation), then Claude executes",
+      "source": "AI_HANDOFF.md 2026-07-15 'knee audit' entry + Codex's 2026-07-15 decision entry + Claude's reply",
+      "detail": "Proved, not just suspected: the skeleton's true knee joint, the shin's render origin, and the artwork's own intended knee point do not stay coincident across poses (see the 2026-07-15 'knee audit' entry for full numbers -- thigh art-implied knee point drifts 5.4-15.8px near / 11.8-20.1px far across one walk cycle; thigh-vs-shin art gap swings 3.7-14.7px near / 3.9-19.9px far, a 4-5x range). Codex decided the direction: repair the asset (thigh.png is 22.3% of its canvas width off-center at the knee edge; shin is only 0.3% off, essentially fine), not the runtime rig -- a rig-side rotating correction would bake a crop accident into permanent per-character metadata and risk pushing the mismatch to the ankle/boot instead. Explicit acceptance criteria set: preserve visible ink/scale/vertical extent, change only transparent padding/crop; bottom-edge knee center within 1% of canvas width from center; thigh-vs-shin art-knee separation <=3px through idle + the sampled walk cycle, both facings, per tools/debug/knee_pivot_audit.mjs; do NOT retune legOffsetX/shin offsets/pose angles as a workaround before re-running the audit, since that would mask whether the crop fix worked; if the 3px bound can't be hit with a centered asset while preserving ink, stop and report back rather than forcing it -- fallback in that case is explicit normalized joint-anchor metadata, not more fixed nudges.",
+      "next_step": "Waiting on Derek's approval of the transparent-padding/crop operation itself (nothing executed yet). Once approved: Claude re-pads thigh.png (ink/scale/extent unchanged, crop/padding only), reruns tools/debug/knee_pivot_audit.mjs thesz to confirm the acceptance numbers, runs the full verification suite, then Derek does the in-browser visual sign-off."
     },
     {
       "id": "natural-walk-shuffle-prototype",

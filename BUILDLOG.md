@@ -17,6 +17,21 @@
 
 ## Sessions Log
 
+### 2026-07-15 — Mirrored-knee-tilt facing bug fixed
+
+Codex root-caused (AI_HANDOFF.md, 2026-07-14) why a knee tuned correctly in
+one facing detached in the other: `Skeleton.js`'s per-character render tilts
+(`_nearLegTilt`, `_nearShinTilt`, `_farLegTilt`) were screen-absolute while
+the true bone chain mirrors with `facing`. Fixed by multiplying all three by
+`facing` in `updateUpright`; `_farLegTilt` also now goes through the mirror
+it used to bypass when a character set it (Thesz does). Existing tuned
+values are a no-op at facing=+1 (the convention already used while tuning)
+and only change behavior at facing=-1 — the broken case. Verified: `npm
+test` 43/43, `debug:play -- all` 12/12, `build` clean, rig-tuner `smoke.mjs`
+16/16, plus visual screenshots of George/Thesz in both facings (both
+arrangements of `WFM_P1`/`WFM_P2`) — knees read clean and connected in all
+four combinations. Full detail in AI_HANDOFF.md.
+
 ### 2026-07-14 (later) — First live rig-tuner session: Derek's values landed (`68f3e5f`), parity fixes (`d755001`)
 
 Derek drove the new tool the same day it shipped. Three export rounds landed

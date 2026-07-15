@@ -88,6 +88,186 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-14 (later) — Claude (mirrored-knee-tilt fix landed — the facing-detachment bug from Codex's diagnosis below)
+
+Implemented Codex's diagnosis and prescribed fix (entry directly below,
+"knee connections break on facing changes") with no deviation from the
+proposed correction.
+
+**Fix (`src/Skeleton.js`, `updateUpright`):** all three per-character
+render-angle tilts (`_nearLegTilt`, `_nearShinTilt`, `_farLegTilt`) were
+applied screen-absolute; they now multiply by `facing`, matching the true
+`thighAng`/`shinAng` bone chain's own mirroring. `_farLegTilt` previously
+bypassed the global branch's `facing * RIG.FAR_THIGH_TILT` mirror entirely
+when a character set it (Thesz does) — now both the override and the
+global default go through the same `facing *` multiplication. Updated the
+three comment blocks that described these knobs as "screen-absolute
+clock-position" values to describe them as wrestler-local values mirrored
+at render time, and corrected the farLegTilt comment's claim that it used
+nearLegTilt's "screen-absolute convention." Existing tuned values
+(george.js/thesz.js) are untouched — since facing=+1 (right) was the
+convention already used while tuning, the fix is a no-op at facing=+1 and
+only changes rendering at facing=-1, which is exactly the broken case.
+
+**Verified (Node 25.8.1 via `/opt/homebrew/opt/node/bin`):** `npm test`
+43/43, `npm run debug:play -- all` 12/12, `npm run build` clean,
+`tools/rig-tuner/smoke.mjs` 16/16 — all unchanged from baseline, no
+regressions. Visual check via `WFM_P1=george WFM_P2=thesz npm run
+debug:shot -- 6` and the swapped-sides `WFM_P1=thesz WFM_P2=george`
+variant: both characters' knees read clean and connected at both facings
+(George facing right + left, Thesz facing right + left, all four
+combinations covered across the two shots) — screenshots in
+`tools/debug/shots/2026-07-15T04-1{1-58,2-18}.png`. Did not build the
+rig-tuner facing-toggle parity smoke check Codex's entry suggested adding —
+flagging as still open below, this session only shipped the game-code fix.
+
+**Not done, explicitly out of scope for this fix:** the separate zero-margin
+knee-cap seam Codex's four-frame game check still found mid-stride (a
+different problem — the cap's own margin, not facing mirroring) still
+needs Derek's planned art cleanup. `AI_HANDOFF_TASKS.json` updated:
+`mirrored-knee-tilt-fix` marked done; `natural-walk-shuffle-prototype`
+still blocked on `lou-knee-art-cleanup` (the art-side seam problem) but no
+longer blocked on this fix.
+
+Files touched: `src/Skeleton.js`, `AI_HANDOFF.md`, `BUILDLOG.md`,
+`AI_HANDOFF_TASKS.json`
+Action required: Derek — in-browser sign-off welcome but not blocking;
+Codex — the facing-toggle rig-tuner smoke check from your review is still
+unbuilt if you want to flag it as next.
+Priority: medium (bug is fixed; remaining follow-ups are lower urgency)
+
+### 2026-07-14 — Codex (locomotion direction: replace scissor walk; proximity-based wrestling shuffle)
+
+Derek does not want the current open-ring walk preserved: the legs read as two
+straight pieces scissoring through one another, and that motion does not make
+sense for the wrestlers or the art style. This is a gait-system problem first,
+not something to hide by drawing one leg permanently forward and the other
+back. Distinct near/far leg art may improve depth later, but both images would
+still follow the bad motion until the gait itself changes.
+
+Approved design direction:
+
+- **Open ring:** replace the current pendulum/scissor motion with a natural
+  four-phase walk: contact, weight acceptance, bent-knee passing, and extension
+  into the next contact. The swing leg must fold and pass underneath the body;
+  it must not remain straight while rotating through the planted leg.
+- **Approaching an opponent:** transition smoothly out of the normal walk as
+  proximity closes.
+- **Close range:** use a guarded, shorter wrestling shuffle with a lead/rear
+  stance, soft knees, smaller foot travel, and no large centerline crossing.
+- **Running / Irish whip:** preserve the existing separate locomotion path;
+  neither normal-walk nor combat-shuffle tuning should leak into it.
+
+Use the existing `combatBlend` proximity seam rather than adding a competing
+distance state. It already rises as opponents close (and drives the upper-body
+guard); extend it to select/blend lower-body gait intent. Avoid naive continuous
+changes to stride length or stance bias while a foot is planted, because that
+will reintroduce skating. Upper-body guard can blend immediately, but each leg
+should adopt changed gait parameters during its swing/footfall transition and
+hold them through the next planted phase.
+
+The normal-walk replacement should include:
+
+1. Separate near/far hip roots or an equivalent pelvis-depth separation instead
+   of both leg chains reading as if they occupy one hinge.
+2. A visibly bent swing knee during the passing phase.
+3. Shorter forward reach and clear planted-versus-swing leg roles.
+4. Subtle pelvis/weight transfer rather than two equal pendulums.
+5. Preservation and direct measurement of the planted-foot world lock.
+
+Potential later art support: allow distinct `nearThigh`/`nearShin` and
+`farThigh`/`farShin` textures, falling back to today's shared `thigh`/`shin`.
+These should be perspective/depth variants using the same joint conventions,
+not artwork with permanent forward/back motion baked in. Do not scope that code
+until the new gait silhouettes are established; otherwise Derek will be drawing
+George's final legs against motion that is about to change.
+
+Recommended order: (1) mirrored knee-angle fix from the entry below, (2) Lou
+knee source-art cleanup, (3) natural-walk + proximity-shuffle prototype and
+human feel sign-off, (4) decide whether distinct near/far texture keys are still
+needed, then (5) George's final full-body/limb art pass and fresh rig tuning.
+Old George offsets and display boxes were fitted to stretched art and should not
+be preserved merely because they exist.
+
+Verification for any gait implementation: instrument planted-foot slip; capture
+both facings at contact/passing/extension key phases; cross the `combatBlend`
+range in both directions without pops; test stopping, reversing, diagonal/depth
+movement, crouched close-range movement, and entry into running/whip. Require
+Derek's playtest before calling the motion accepted.
+
+No code changed for this design note. It does not replace the active four-move
+blueprint assignment unless Derek explicitly reprioritizes implementation.
+
+Files touched: `AI_HANDOFF.md` only (design note)
+Action required: preserve for the next locomotion/art-planning session; do not
+continue polishing the current scissor gait as the final normal walk.
+Priority: high for the next locomotion pass; sequencing remains Derek's call.
+
+### 2026-07-14 — Codex (knee connections break on facing changes: per-character tilts are not mirrored)
+
+Derek found a second reproducible knee issue after the live tuning session:
+placing the legs correctly in one rig-tuner facing makes them detach again when
+the preview flips, and the same separation appears in-game when a wrestler
+turns. This is not a reason to add independent right/left tuning values yet.
+The position offsets already use facing-relative coordinates; the render-only
+leg tilts do not.
+
+`Skeleton.updateUpright` currently computes:
+
+```js
+const nearRenderAng = near.thighAng + this._nearLegTilt;
+const nearShinRenderAng = near.shinAng + this._nearShinTilt;
+const farRenderAng = far.thighAng +
+    (this._farLegTilt ?? facing * RIG.FAR_THIGH_TILT);
+```
+
+The true `thighAng`/`shinAng` bone chain mirrors when `facing` changes, but the
+per-character tilt stays screen-absolute. For Thesz's near thigh, approximately:
+
+```text
+face right: +5.9deg bone - 5.5deg tilt =  +0.4deg render
+face left:  -5.9deg bone - 5.5deg tilt = -11.4deg render
+```
+
+The knee endpoint follows the mirrored true bone while the art rotates to a
+different relative angle, so the thigh and shin connection that was tuned in
+one facing cannot survive the turn. George is affected too: his
+`nearLegTilt: -15deg` and `nearShinTilt: -30deg` are currently applied with the
+same screen-absolute behavior. Thesz also sets `farLegTilt`, which bypasses the
+global branch's existing `facing *` mirror.
+
+Recommended correction: define all per-character leg/shin tilts in wrestler-
+local coordinates and mirror them at render time:
+
+```js
+const nearRenderAng = near.thighAng + facing * this._nearLegTilt;
+const nearShinRenderAng = near.shinAng + facing * this._nearShinTilt;
+const farTilt = this._farLegTilt ?? RIG.FAR_THIGH_TILT;
+const farRenderAng = far.thighAng + facing * farTilt;
+```
+
+Update the `Skeleton.js` comments and rig-tuner labels/help text: these knobs
+would no longer be screen-absolute clock angles; they would be local offsets
+that mirror with the one mirrored PNG. Do not create separate facing values
+unless the art pipeline later gains genuinely distinct left/right textures.
+
+Verification must be visual as well as automated: render George and Thesz in
+both facings at runtime idle, stride extremes, crouch, and representative move
+poses; assert that hip/knee/shin origins and rotations reflect across the
+wrestler centerline. Add a rig-tuner smoke/parity check that toggles facing and
+compares the reflected transforms. Recheck the existing zero-margin Thesz shin
+cap during walking: Codex's live four-frame game check still showed the hard
+horizontal knee seam in parts of the stride, so the facing fix and Derek's
+planned art cleanup solve related but distinct problems.
+
+No code changed for this diagnosis.
+
+Files touched: `AI_HANDOFF.md` only (diagnostic note)
+Action required: Claude — review and implement the mirrored local-angle
+semantics as a focused fix when available; Derek plans to clean the closed knee
+outlines/cap in the source art next session.
+Priority: high (visible knee detachment whenever either wrestler turns)
+
 ### 2026-07-14 — Claude (first live tuning session: Derek's values landed, knee-cleave root-caused with Codex, parity fixes shipped)
 
 Same-day follow-up to the tool shipping (two entries below) — Derek drove the

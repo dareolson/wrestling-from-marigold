@@ -305,19 +305,23 @@ export default class Skeleton {
         // + = down convention (george.js's front leg needed to come up a
         // touch without moving the far leg, 2026-07-12).
         this._nearLegOffsetY = textures.nearLegOffsetY ?? 0;
-        // Near-thigh-only render-angle bias, radians, screen-absolute
-        // clockwise-positive (not mirrored by facing — described as clock
-        // positions, e.g. "5 o'clock to 5:30" = +15deg clockwise). The true
-        // near.thighAng used for the knee/IK chain is untouched.
+        // Near-thigh-only render-angle bias, radians, wrestler-local
+        // (mirrored by facing at render time — tune while facing right,
+        // e.g. "5 o'clock to 5:30" = +15deg clockwise; the tuned value
+        // itself is facing-independent). The true near.thighAng used for
+        // the knee/IK chain is untouched. Fixed 2026-07-14: this used to be
+        // applied screen-absolute, so a knee tuned correctly in one facing
+        // detached in the other (see AI_HANDOFF.md).
         this._nearLegTilt = textures.nearLegTilt ?? 0;
         // Per-character near-shin nudge on top of the shared NEAR_SHIN_FWD/UP,
         // unscaled px, same +X = forward/+Y = down convention as the leg
         // offsets above (george.js, 2026-07-12).
         this._nearShinOffsetX = textures.nearShinOffsetX ?? 0;
         this._nearShinOffsetY = textures.nearShinOffsetY ?? 0;
-        // Near-shin-only render-angle bias, same clock-position convention
-        // as nearLegTilt above (e.g. "6 o'clock to 7 o'clock" = -30deg). The
-        // true near.shinAng used for the ankle/boot chain is untouched.
+        // Near-shin-only render-angle bias, same wrestler-local,
+        // facing-mirrored convention as nearLegTilt above (e.g. "6 o'clock
+        // to 7 o'clock" = -30deg, tuned while facing right). The true
+        // near.shinAng used for the ankle/boot chain is untouched.
         this._nearShinTilt = textures.nearShinTilt ?? 0;
         // Far-shin render nudge, same +X = forward/+Y = down convention as
         // nearShinOffsetX/Y — the far shin previously had no per-character
@@ -330,10 +334,12 @@ export default class Skeleton {
         // (thesz's New Lou full-body ref: the far leg is fully hidden behind
         // the near leg at rest) needs the far thigh's render offsets to equal
         // the near thigh's — the shared HIP_STAGGER/LEG_BACK_BIAS/FAR_LEG_*
-        // constants deliberately stagger them apart. farLegTilt REPLACES the
-        // global facing-mirrored FAR_THIGH_TILT when set (null = global
-        // default), using nearLegTilt's screen-absolute convention so the two
-        // thighs' render angles can be made identical at any facing.
+        // constants deliberately stagger them apart. farLegTilt REPLACES
+        // RIG.FAR_THIGH_TILT when set (null = global default); both are now
+        // wrestler-local values mirrored by facing at render time (same
+        // convention as nearLegTilt), so the two thighs' render angles can
+        // be made identical at any facing. Fixed 2026-07-14: farLegTilt used
+        // to bypass the facing mirror entirely when set (see AI_HANDOFF.md).
         this._farLegOffsetX = textures.farLegOffsetX ?? 0;
         this._farLegOffsetY = textures.farLegOffsetY ?? 0;
         this._farLegTilt = textures.farLegTilt ?? null;
@@ -570,7 +576,7 @@ export default class Skeleton {
         // The true hip point (far.hx/hy) and far.thighAng stay the knee/IK
         // anchor, untouched — farRenderAng only biases how the far thigh's
         // image itself is drawn (FAR_THIGH_TILT).
-        const farRenderAng = far.thighAng + (this._farLegTilt ?? facing * RIG.FAR_THIGH_TILT);
+        const farRenderAng = far.thighAng + facing * (this._farLegTilt ?? RIG.FAR_THIGH_TILT);
         const farHipRender = this._end(far.hx, far.hy, -RIG.HIP_OVERLAP * s, farRenderAng);
         farHipRender.x += facing * (RIG.HIP_STAGGER - RIG.LEG_BACK_BIAS + RIG.FAR_LEG_FWD + this._farLegOffsetX) * s;
         farHipRender.y += (this._legOffsetY - RIG.FAR_LEG_UP + this._farLegOffsetY) * s;
@@ -615,14 +621,14 @@ export default class Skeleton {
         if (this.trunks) this._place(this.trunks, x, hipY - trunksH, torsoW, trunksH, 0);
 
         // Near leg — drawn in front of torso
-        const nearRenderAng = near.thighAng + this._nearLegTilt;
+        const nearRenderAng = near.thighAng + facing * this._nearLegTilt;
         const nearHipRender = this._end(near.hx, near.hy, -RIG.HIP_OVERLAP * s, nearRenderAng);
         nearHipRender.x -= facing * (RIG.HIP_STAGGER + RIG.LEG_BACK_BIAS - RIG.NEAR_LEG_FWD) * s;
         nearHipRender.x += facing * this._legOffsetX * s;
         nearHipRender.y += (this._legOffsetY - RIG.NEAR_LEG_UP + this._nearLegOffsetY) * s;
         this._placePart(this.nearThigh, nearHipRender.x, nearHipRender.y, legW, thighH, nearRenderAng, s, facing);
         const nearKnee  = this._end(near.hx, near.hy, thighH, near.thighAng);
-        const nearShinRenderAng = near.shinAng + this._nearShinTilt;
+        const nearShinRenderAng = near.shinAng + facing * this._nearShinTilt;
         const nearShinRender = this._end(nearKnee.x, nearKnee.y, -RIG.KNEE_OVERLAP * s, nearShinRenderAng);
         nearShinRender.x += facing * (RIG.NEAR_SHIN_FWD + this._nearShinOffsetX) * s;
         nearShinRender.y += (-RIG.NEAR_SHIN_UP + this._nearShinOffsetY) * s;

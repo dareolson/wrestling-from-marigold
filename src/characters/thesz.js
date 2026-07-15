@@ -40,9 +40,10 @@ export const thesz = {
         // torso height BEHIND the torso centroid and 50/380 below its top;
         // the rig's default (torso x + 12·s shoulder drop, near arm staggered
         // back 12) rendered the near-arm pivot 9px too far forward and ~3px
-        // too high.
+        // too high. armOffsetY 3→7: same-day rig-tuner refinement
+        // (2026-07-15), tuned together with the leg/shin knobs below.
         armOffsetX: -9,
-        armOffsetY: 3,
+        armOffsetY: 7,
         upperArm: 'thesz_upper_arm',
         // TEX default h 63 measured 3.1% long vs the reference (forearm ink
         // length / torso ink height: target 207.4/380 = 0.546, rendered
@@ -80,7 +81,7 @@ export const thesz = {
         // updated shin offsets and theszIdle pose below.
         legOffsetX: -15,
         legOffsetY: -15,
-        nearLegOffsetY: -2,
+        nearLegOffsetY: 0,
         // -5.5° (was -15° against the old splayed powerIdle stance): the ref
         // leg's ink leans +9.9° forward hip→knee; at the theszIdle bone angle
         // (0.06+crouch ≈ 5.9°) this render-only tilt measures 10.1° on the
@@ -111,11 +112,11 @@ export const thesz = {
         // facing left / in the wrong idle pose, superseded). Geometry note
         // (Codex's cleave mechanism): net cap position vs the true knee =
         // -KNEE_OVERLAP(18) - NEAR_SHIN_UP(5) + nearShinOffsetY. At the
-        // current nearShinOffsetY (24) that's +1px tuck. If the knee line
+        // current nearShinOffsetY (25) that's +2px tuck. If the knee line
         // creeps back, raise shin.box.h instead of pushing offsetY further
         // down — that lowers the sole while keeping the cap tucked.
-        nearShinOffsetX: -23,
-        nearShinOffsetY: 24,
+        nearShinOffsetX: -12,
+        nearShinOffsetY: 25,
         // Far leg NO LONGER mirrors the near leg. The 2026-07-13 pass kept
         // every far offset in lockstep with the near leg's net value so the
         // far leg hid pixel-identically behind the near one (single-leg
@@ -124,12 +125,12 @@ export const thesz = {
         // legs visible). If a future pass wants the hidden-leg look back,
         // see git history for the lockstep derivation.
         // Far cap vs knee = -KNEE_OVERLAP(18) + farShinOffsetY. At the
-        // current farShinOffsetY (19) that's +1px tuck (see near-shin note
+        // current farShinOffsetY (15) that's -3px tuck (see near-shin note
         // above for the same formula pattern).
         farShinOffsetX: 12,
-        farShinOffsetY: 19,
-        farLegOffsetX: 11,
-        farLegOffsetY: 2,
+        farShinOffsetY: 15,
+        farLegOffsetX: 9,
+        farLegOffsetY: 4,
         farLegTilt: -5.5 * Math.PI / 180,
         // The shared NEAR_SHIN_SCALE 1.1 rendered the near shin ~24% wider
         // than the reference (the far shin, at 1.0, already matched) and any

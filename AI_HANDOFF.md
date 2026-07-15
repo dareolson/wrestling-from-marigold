@@ -88,6 +88,35 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 (even later) — Claude (third same-day rig-tuner export applied)
+
+Derek's third round, current/unchanged leg art (the notch-diagnosis
+correction below this entry didn't lead to adopting new art — this round is
+independent tuning on the known-good textures):
+
+```
+// thesz.js — textures
+headOffsetX: 4 (unchanged), armOffsetY: 3→7, nearLegOffsetY: -2→0,
+nearShinOffsetX: -23→-12, nearShinOffsetY: 24→25,
+farLegOffsetX: 11→9, farLegOffsetY: 2→4, farShinOffsetY: 19→15
+// Wrestler.js — POSES.theszIdle
+rLeg: 0.14→-0.19, rArm: 0.07→0 (lLeg/lArm/lean/crouch unchanged)
+```
+
+Applied verbatim, cap-tuck comment math recomputed for the new
+nearShinOffsetY/farShinOffsetY values (+2px / -3px respectively, was +1px /
++1px). **Verified (Node 25.8.1):** `npm test` 43/43, `debug:play -- all`
+12/12, `build` clean, rig-tuner `smoke.mjs` 16/16, zoomed screenshot —
+both legs still connect cleanly at the knee, stance now reads more
+knock-kneed/together than the previous round (matches `rLeg` swinging
+negative). Not yet Derek-signed-off in-browser.
+
+Files touched: `src/characters/thesz.js`, `src/Wrestler.js`, `AI_HANDOFF.md`,
+`BUILDLOG.md`
+Action required: Derek — in-browser confirm; further rig-tuner rounds welcome,
+same pattern as the last three.
+Priority: medium
+
 ### 2026-07-15 (later) — Claude (correction: Derek was right, it's a pivot-crop mismatch, not the ink line)
 
 Derek pushed back on my diagnosis in the entry below — suspected the

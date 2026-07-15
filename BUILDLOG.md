@@ -17,6 +17,16 @@
 
 ## Sessions Log
 
+### 2026-07-15 (third export) — Another rig-tuner pass on Thesz, current art
+
+Applied Derek's third same-day rig-tuner export (still the known-good leg
+art, no new texture swap): `thesz.js` armOffsetY, nearLegOffsetY, near/far
+shin offsets, far leg offsets, and `Wrestler.js`'s `theszIdle` pose (rLeg
+now negative, arms adjusted). Verified: `npm test` 43/43, `debug:play --
+all` 12/12, `build` clean, rig-tuner `smoke.mjs` 16/16, zoomed screenshot
+confirms both legs still connect cleanly at the knee. Not yet
+Derek-signed-off in-browser.
+
 ### 2026-07-15 (correction) — Notch was a pivot-crop mismatch, not the ink line
 
 Derek pushed back on the ink-line diagnosis below and was right. The

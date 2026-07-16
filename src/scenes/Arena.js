@@ -10,6 +10,62 @@ import { thesz } from '../characters/thesz.js';
 const CHARACTERS = [george, thesz];
 const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png' };
 
+// Named crowd extras: each is one chroma-keyed multi-frame reference sheet
+// cut via tools/audience-cutter into src/assets/audience/<slug>/frame1..N.png
+// (not the wrestler rig pipeline — these are flat multi-frame sprites, not
+// jointed body parts). `restFrame` is the idle texture (usually 1); reacting
+// plays forward from restFrame through `frames` and back down, mirrored (see
+// _reactCrowdExtras). `spots` place repeated instances of that one source
+// design around the ring — x/h/flip/tint jitter so a single design doesn't
+// read as an obvious clone row.
+//
+// `sizeBasis` picks what spot.h anchors to when frames are re-scaled
+// (see _setExtraFrame): 'height' scales off the tallest frame — correct
+// when the frames genuinely change height (oldman's sit→stand). 'width'
+// scales off the resting frame's width instead, for extras that stay
+// seated throughout — their raised-arm frames (and any per-sheet crop/
+// scale drift between separately-cut source sheets) still vary in raw
+// pixel height, and height-basis scaling would render that as growing
+// taller, i.e. looking like she's standing up.
+const CROWD_EXTRAS = [
+    {
+        // Sit→stand cutout. Planted right behind the ring (not the deep
+        // background crowd) at a prominent "camera favorite" scale.
+        slug: 'oldman',
+        frames: 4,
+        restFrame: 1,
+        sizeBasis: 'height',
+        spots: [
+            { x: W / 2 - 260, h: 118, flip: false, tint: 0x554f45 },
+            { x: W / 2 - 150, h: 132, flip: true,  tint: 0x625b4c },
+            { x: W / 2 - 40,  h: 122, flip: false, tint: 0x5c5648 },
+            { x: W / 2 + 70,  h: 140, flip: true,  tint: 0x4f4a3f },
+            { x: W / 2 + 190, h: 126, flip: false, tint: 0x6b6355 },
+            { x: W / 2 + 300, h: 116, flip: true,  tint: 0x554f45 },
+        ],
+    },
+    {
+        // Seated cheer cycle, not a stand-up: frame1 is her resting seated
+        // pose; frames 2-8 build clap → hands-up → fist-pump peak → settle
+        // back down (order confirmed against the two source sheets, see
+        // AI_HANDOFF.md 2026-07-15). First attempt flanked outside the
+        // oldman row (x 220-780) at ±380 and Derek reported her essentially
+        // invisible out there — the visible "core" of the front row is
+        // that 220-780 span. Tucked her into the row's two open gaps
+        // instead (between oldman spots 2-3 and 4-5), smaller/higher than
+        // the oldman spots so she reads as sitting a touch further back,
+        // peeking between them, rather than colliding shoulder-to-shoulder.
+        slug: 'browndresslady',
+        frames: 8,
+        restFrame: 1,
+        sizeBasis: 'width',
+        spots: [
+            { x: W / 2 - 95,  h: 100, flip: false, tint: 0x625b4c },
+            { x: W / 2 + 125, h: 96,  flip: true,  tint: 0x554f45 },
+        ],
+    },
+];
+
 // Crowd reaction swell per match event type (0..1)
 const POP_SIZES = {
     pinfall: 1.0, sleeperKO: 1.0, nearfall: 0.9, kickout: 0.6,
@@ -35,11 +91,17 @@ export default class Arena extends Phaser.Scene {
                 this.load.image(key, `src/assets/wrestlers/${char.id}/${PART_FILES[part]}`);
             }
         }
+        for (const extra of CROWD_EXTRAS) {
+            for (let i = 1; i <= extra.frames; i++) {
+                this.load.image(`${extra.slug}${i}`, `src/assets/audience/${extra.slug}/frame${i}.png`);
+            }
+        }
     }
 
     create() {
         this.drawArenaBackground();
         this.drawCrowd();
+        this._setupCrowdExtras();
         this.drawSideCrowd();
         this.drawFarApronAndRopes();
         this.drawRingMat();
@@ -149,6 +211,85 @@ export default class Arena extends Phaser.Scene {
         [[120, 95, 42, 20], [360, 78, 38, 18], [590, 85, 45, 22], [780, 72, 36, 17]].forEach(([x, y, w, h]) => {
             gfx.fillRect(x - w / 2, y - h / 2, w, h);
         });
+    }
+
+    // Test crowd: named audience members (CROWD_EXTRAS, each a multi-frame
+    // cutout), repeated with enough variation (x spread, flip, size/tint
+    // jitter) that a given design doesn't read as an obvious clone row —
+    // but each IS one source design, so this is a ceiling-of-repetition
+    // test, not a real varied crowd. Planted right behind the ring (not the
+    // deep background crowd) at a prominent "camera favorite" scale. Depth
+    // 1.5 sits below drawRingMat (depth 3); each one's ground line is set so
+    // RING.farLeft.y (258 — the mat's crowd-side edge) crosses at the torso,
+    // same occlusion mechanism the side-crowd rows use against the ring
+    // boundary.
+    _setupCrowdExtras() {
+        this.crowdFans = [];
+        for (const extra of CROWD_EXTRAS) {
+            // Per-frame natural pixel dimensions — needed for both
+            // sizeBasis modes, and because a seated extra's raised-arm
+            // frames (or, across separately-cut source sheets, ordinary
+            // crop/scale drift) naturally have a different bounding-box
+            // height per frame even though the character never grows.
+            extra._dims = {};
+            for (let i = 1; i <= extra.frames; i++) {
+                const src = this.textures.get(`${extra.slug}${i}`).getSourceImage();
+                extra._dims[i] = { w: src.width, h: src.height };
+            }
+            for (const spot of extra.spots) {
+                const fan = { img: this.add.image(spot.x, 0, `${extra.slug}${extra.restFrame}`)
+                    .setOrigin(0.5, 1)
+                    .setTint(spot.tint)
+                    .setDepth(1.5), extra, spot, reacting: false };
+                this._setExtraFrame(fan, extra.restFrame);
+                this.crowdFans.push(fan);
+            }
+        }
+    }
+
+    // Sets a crowd extra instance to reference frame `f`, rescaling to match.
+    // sizeBasis 'height' scales off the tallest frame — frame-to-frame
+    // height growth is the point (oldman's sit→stand). sizeBasis 'width'
+    // scales off the resting frame's width instead, pinning it constant
+    // across frames — for an extra that stays seated throughout, letting
+    // raised-arm frames vary in height (naturally, via their own aspect
+    // ratio) without that height difference reading as her standing up.
+    _setExtraFrame(fan, f) {
+        const { extra, spot } = fan;
+        const dims = extra._dims[f];
+        let scale;
+        if (extra.sizeBasis === 'width') {
+            const rest = extra._dims[extra.restFrame];
+            const targetW = spot.h * (rest.w / rest.h);
+            scale = targetW / dims.w;
+        } else {
+            const refH = Math.max(...Object.values(extra._dims).map(d => d.h));
+            scale = spot.h / refH;
+        }
+        const groundY = RING.farLeft.y + spot.h * 0.45; // ~torso-height occlusion by the mat
+        fan.img.setTexture(`${extra.slug}${f}`)
+            .setY(groundY)
+            .setScale(spot.flip ? -scale : scale, scale);
+    }
+
+    // Plays a subset of the crowd fans forward through their reference
+    // frames (from restFrame) and back down, each on its own random
+    // delay/hold so they don't move in lockstep — hooked off _logEvent so
+    // they react to real match spots, not idle ticks.
+    _reactCrowdExtras() {
+        for (const fan of this.crowdFans) {
+            if (fan.reacting) continue;
+            if (Math.random() > 0.65) continue; // not everyone reacts to every spot
+            fan.reacting = true;
+            const up = Array.from({ length: fan.extra.frames }, (_, i) => i + 1);
+            const down = up.slice(0, -1).reverse();
+            const start = Math.random() * 300;
+            const STEP = 130, HOLD = 1400 + Math.random() * 900;
+            up.forEach((f, i) => this.time.delayedCall(start + i * STEP, () => this._setExtraFrame(fan, f)));
+            const downStart = start + up.length * STEP + HOLD;
+            down.forEach((f, i) => this.time.delayedCall(downStart + i * STEP, () => this._setExtraFrame(fan, f)));
+            this.time.delayedCall(downStart + down.length * STEP, () => { fan.reacting = false; });
+        }
     }
 
     drawSideCrowd() {
@@ -849,6 +990,7 @@ export default class Arena extends Phaser.Scene {
         this.matchEvents.push({ t: Math.round(this._matchTime), type, ...payload });
         const pop = POP_SIZES[type];
         if (pop) this.crowd.pop(pop);
+        if (pop >= 0.15) this._reactCrowdExtras();
         if (type === 'dodge') this.bumpHeat(3); // logged from strike impact callbacks
     }
 

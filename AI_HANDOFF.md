@@ -88,6 +88,20 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 (second crowd extra) — Claude (browndresslady added, crowdFans generalized to config-driven CROWD_EXTRAS)
+
+Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/LadyBrownDress.png` + `...2.png`, gitignored source) via `tools/audience-cutter/cut.mjs` into `src/assets/audience/browndresslady/frame1..8.png`. Frame order across the two sheets isn't visually obvious (unlike oldman's sit→stand) — confirmed with Derek: rest/seated-calm → clap → hands-up → fist-pump peak → settle back down.
+
+Generalized `Arena.js`'s previously oldman-only `OLDMAN_FRAMES`/`_setupOldman()`/`_oldmanReact()` into a `CROWD_EXTRAS` config array + `_setupCrowdExtras()`/`_setExtraFrame()`/`_reactCrowdExtras()`. **Anyone adding a third extra:** each entry needs `slug`, `frames`, `restFrame`, `sizeBasis` (`'height'` or `'width'`, see below), and `spots` (x/h/flip/tint per instance).
+
+Two rounds of Derek feedback after first landing, both fixed:
+- Placement: first attempt flanked her outside the oldman row (x ±380 from center) — Derek reported her essentially invisible out there. The visible "core" of the front row is the oldman row's own span (x 220-780); moved her into that row's two open gaps instead, smaller/higher than the oldman spots so she reads as sitting a touch further back rather than colliding.
+- Scale: Derek reported "she seems to get up" despite never standing in the art. Cause: her two source sheets weren't cut at consistent scale — frame heights range 591-722px (22% swing) while widths stay tight (257-270px, excluding the arms-spread frame). The original oldman-derived code scaled every frame off raw pixel height, so the taller-cropped frames rendered visibly bigger and, anchored at the feet, read as standing. Added `sizeBasis` per extra: `'height'` (oldman, unchanged — his height growth IS the stand-up effect) vs `'width'` (browndresslady — pins torso width constant across frames, height varies naturally per frame's own aspect ratio instead of inheriting the sheets' scale drift).
+
+Verified: `npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`, all green. Not verified: whether `sizeBasis: 'width'` is the right default to reach for on the *next* seated extra, or whether it needs a third mode — decide per-character once you can see it move.
+
+**Coordination:** Derek said another Claude session is now working on a third crowd member concurrently. Base that work on this commit (`CROWD_EXTRAS`/`_setExtraFrame` exist) rather than reintroducing oldman-only assumptions, and pull before pushing — this session also pulled in `010ccef` (rig-tuner iteration 2) first, no file overlap.
+
 ### 2026-07-15 (rig-tuner iteration 2) — Claude (independent elbow/knee posing, far-arm parity, opt-in pivot-correction metadata, far-arm/far-leg depth fix)
 
 Derek's direction: the tuner can't independently rotate limbs (forearm/shin

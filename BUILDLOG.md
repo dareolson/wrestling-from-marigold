@@ -17,6 +17,20 @@
 
 ## Sessions Log
 
+### 2026-07-15 (second crowd extra) — Added browndresslady, generalized the crowd-extra system
+
+Cut Derek's two new reference sheets into an 8-frame seated cheer cycle
+(`src/assets/audience/browndresslady/`) and generalized `Arena.js`'s
+oldman-only crowd code into a config-driven `CROWD_EXTRAS` list so future
+extras are just a config entry, not new methods. Two rounds of fixes from
+Derek eyeballing it live: repositioned her out of an invisible spot at the
+row's far edges into gaps inside the oldman row, and fixed a scale bug
+where her frames' inconsistent source-sheet crop heights (591-722px) made
+her look like she was standing up — now scales off her stable frame width
+instead. Full detail and the coordination note for the next crowd-extra
+session in `AI_HANDOFF.md`, same date. `npm test` (43/43), `debug:play`
+(12/12), and `npm run build` all green.
+
 ### 2026-07-15 (rig-tuner iteration 2) — Independent elbow/knee posing, far-arm parity, opt-in pivot-correction metadata, far-arm/far-leg depth fix
 
 Four additive, backward-compatible changes to the rig and rig-tuner, per

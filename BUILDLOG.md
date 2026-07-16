@@ -17,6 +17,48 @@
 
 ## Sessions Log
 
+### 2026-07-16 (crowd-extra shrink-and-sink bug fix) — sizeBasis:'width' was rescaling per displayed frame instead of once per extra
+
+Derek reported groucho and elvis "get smaller and lower" mid-reaction, and
+marilyn/popcornguy read as too small. Root cause in `Arena.js`'s
+`_setExtraFrame`: the `'width'` sizeBasis branch computed `scale = targetW /
+dims.w`, where `dims` was the *currently displayed* frame's own crop width —
+not a fixed reference. Any pose where a limb extends sideways (a raised
+cigar arm, spread legs, a fist thrown out) widens that frame's crop
+bounding box, and since scale is inversely proportional to width and
+applies uniformly to both axes, the whole figure shrank to compensate.
+Bottom-anchored at a fixed ground Y, a smaller sprite reads as sinking.
+
+Measured before the fix (`window.__WFM_GAME`, forcing each frame via
+`_setExtraFrame`): groucho's displayed height ranged 104px (rest) down to
+76px (peak pose) against a intended 104px; elvis ranged 101-138px (both
+under *and* over the intended 122px, since a narrower pose scales the other
+way); marilyn 92-111px against 102px; popcornguy 89-106px against 104px.
+`displayWidth` was, bizarrely, the one thing being held constant — backwards
+from the intent.
+
+Fix: `'width'` sizeBasis now computes scale once from the *resting* frame's
+own height (`scale = spot.h / rest.h`) and applies that single scale to
+every frame in the cycle — same "compute once, apply uniformly" shape the
+`'height'` branch already used correctly for oldman's real sit→stand growth.
+Frames now vary naturally in *display width* as a limb extends (correct —
+that's real geometry), while display height stays pinned to `spot.h` for
+every seated extra. Verified for all seven `'width'`-basis extras
+(browndresslady, popcornguy, marilyn, elvis, dizzy, groucho, alfred):
+`displayH` range collapsed to a single value (exactly `spot.h`) across all 8
+frames for every one of them, with `displayW` now the axis that legitimately
+varies. `npm test` (43/43), `debug:play -- all` (12/12), `npm run build`,
+all green. Visually confirmed by forcing every extra to its peak frame and
+screenshotting the front row — no one reads as shrunk or sunk relative to
+their neighbors.
+
+**Process note:** this fix was made and verified in one session's working
+tree but not committed there — a concurrent session's `audrey`/`lucille`
+commit (`a7ad148`) swept it in unlabeled while landing unrelated new assets.
+The code is correct and already live/pushed; this entry exists so the fix
+itself has a documented rationale, since the commit that shipped it doesn't
+mention it.
+
 ### 2026-07-16 (ninth and tenth crowd extras) — Added audrey and lucille, grid down to one free slot
 
 Derek's queued assignment (logged in `AI_HANDOFF.md` at the end of the prior

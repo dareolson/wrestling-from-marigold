@@ -88,6 +88,66 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-16 (shrink-and-sink bug fix) — Claude (root-caused and fixed Derek's "groucho/elvis get smaller and lower" report; landed unlabeled inside `a7ad148`)
+
+Derek's live-check report on groucho and alfred: groucho and elvis "seem to
+get smaller and lower" mid-reaction, and marilyn/popcornguy read as too
+small. Diagnosed with `window.__WFM_GAME`, forcing each `CROWD_EXTRAS` fan
+through every frame via `_setExtraFrame` and reading `displayWidth`/
+`displayHeight` directly rather than eyeballing.
+
+**Root cause:** `_setExtraFrame`'s `sizeBasis === 'width'` branch computed
+`scale = targetW / dims.w` where `dims` was `extra._dims[f]` — the
+*currently displayed* frame's own crop width, not a fixed reference. Any
+pose where a limb extends sideways (groucho's cigar arm, elvis's spread
+legs, marilyn/popcornguy's thrown fist) widens that specific frame's crop
+bounding box; since `scale` applies uniformly to both axes via
+`setScale(scale, scale)`, a wider-cropped frame produced a *smaller* overall
+scale, shrinking the whole figure to hold the on-screen width constant.
+Bottom-anchored at a fixed `groundY`, a shrinking sprite reads as sinking.
+Measured pre-fix: groucho 104px→76px across the cycle (intended constant
+104), elvis 101-138px (both under *and* over 122, since a narrower-than-rest
+frame scales the *other* direction), marilyn 92-111 vs 102, popcornguy
+89-106 vs 104. `displayWidth`, the thing actually being pinned, was the one
+value that stayed artificially constant — backwards from what a seated,
+never-standing character should look like.
+
+**Fix:** compute scale once from the *resting* frame's own height
+(`scale = spot.h / rest.h`) and apply that single value to every frame in
+the cycle, instead of recomputing per displayed frame. This mirrors the
+`'height'` branch's existing correct pattern (`refH` computed once via
+`Math.max` across all frames, same scale applied to all) — a fixed
+per-extra scale that lets *width* vary naturally with pose instead of
+forcing width constant and letting height (and thus apparent size) swing.
+Removed the now-unused `dims` local.
+
+**Verified:** re-ran the per-frame `window.__WFM_GAME` probe for all seven
+`'width'`-basis extras (browndresslady, popcornguy, marilyn, elvis, dizzy,
+groucho, alfred) — every one now holds `displayHeight` exactly at `spot.h`
+across all 8 frames; `displayWidth` is the axis that now legitimately varies
+with pose. `npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run
+build`, all green. Forced every extra to its peak (widest) frame
+simultaneously and screenshotted the front row — visually confirmed no one
+reads as shrunk or sunk relative to their neighbors.
+
+**Process note, for the record:** this diagnosis and fix happened in the
+same working-tree session that landed groucho/alfred, but the fix itself
+was made and verified *before* being committed — then a concurrent session
+picked up the queued Audrey/Lucille assignment and its `a7ad148` commit
+swept the already-fixed `Arena.js` in alongside the new assets (the file
+showed clean in `git status` by the time that session committed, so it
+looks like a broad `git add` rather than a deliberate include). The fix is
+correct, verified, and already live on `origin/master` — this entry exists
+purely so it has a documented rationale of its own, since `a7ad148`'s
+commit message only describes the new assets.
+
+Files touched: `src/scenes/Arena.js` (already committed in `a7ad148`),
+`AI_HANDOFF.md`, `BUILDLOG.md` (this entry)
+Action required: Derek — confirm the front row now reads correctly in
+motion, especially groucho/elvis at their reaction peaks.
+Priority: medium (visible regression Derek already flagged; fix verified
+but not yet Derek-confirmed live)
+
 ### 2026-07-16 (ninth and tenth crowd extras) — Claude (audrey and lucille added, per Derek's queued assignment below)
 
 Picked up the queued assignment from the entry directly below. Source

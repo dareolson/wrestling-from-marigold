@@ -17,6 +17,19 @@
 
 ## Sessions Log
 
+### 2026-07-15 (third crowd extra) — Added popcornguy, no code generalization needed
+
+Cut Derek's two new reference sheets (popcornguy.png, popcornguy2.png) into
+an 8-frame seated cycle (`src/assets/audience/popcornguy/`) — rest/eating
+(sheet A) building into an open-mouth shout and fist-pump with popcorn
+flying (sheet B). Slotted into the config-driven `CROWD_EXTRAS` list from
+last session's browndresslady work as a single entry, no code changes.
+Placement (the oldman row's two remaining open gaps) is a first guess,
+not yet eyeballed live by Derek — browndresslady's first placement guess
+turned out invisible despite being technically correct, so treat this the
+same way until confirmed. Full detail in `AI_HANDOFF.md`, same date.
+`npm test` (43/43), `debug:play` (12/12), and `npm run build` all green.
+
 ### 2026-07-15 (second crowd extra) — Added browndresslady, generalized the crowd-extra system
 
 Cut Derek's two new reference sheets into an 8-frame seated cheer cycle

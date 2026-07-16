@@ -88,6 +88,16 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 (third crowd extra) — Claude (popcornguy added, no CROWD_EXTRAS changes needed)
+
+This is the "third crowd member" session flagged in the browndresslady entry below. Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/popcornguy.png` + `popcornguy2.png`, gitignored source, 4 frames each) via `tools/audience-cutter/cut.mjs` into `src/assets/audience/popcornguy/frame1..8.png`. Unlike browndresslady, the frame order here was visually obvious from the QA preview alone (no round-trip with Derek needed): sheet A is a calm seated rest → eating-popcorn micro-loop (frames 1-4), sheet B is an open-mouth-shout → fist-pump-with-popcorn-flying build (frames 5-8) — concatenated in that order.
+
+Added a `popcornguy` entry to `CROWD_EXTRAS` in `Arena.js` — `sizeBasis: 'width'` (stays seated throughout, same reasoning as browndresslady). No changes to the `_setupCrowdExtras`/`_setExtraFrame`/`_reactCrowdExtras` generalization from the last session; the config-driven system took a third entry with zero code changes, which is what it was built for.
+
+**Placement is an unconfirmed guess, same situation browndresslady started in:** the oldman row's two open gaps (outside spots 1-2 and 5-6, i.e. `W/2 - 205` and `W/2 + 245`) were the only remaining space in the visible "core" front row (x 220-780) — browndresslady already took the two inner gaps (between oldman 2-3 and 4-5). Verified programmatically (texture keys resolve, `visible: true`, scale ~50×100px in line with browndresslady, all 8 frames cycle forward/back with no console/page errors — see `window.__WFM_GAME` queries, not eyeballed live since the debug-shot pipeline's CRT/grain filter makes the front row hard to read in a static screenshot) but **not** eyeballed by Derek in motion. Given browndresslady's first placement attempt read as "essentially invisible" despite being programmatically fine, don't assume this one lands right — flag it for Derek's live check before calling it done.
+
+Verified: `npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`, all green.
+
 ### 2026-07-15 (second crowd extra) — Claude (browndresslady added, crowdFans generalized to config-driven CROWD_EXTRAS)
 
 Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/LadyBrownDress.png` + `...2.png`, gitignored source) via `tools/audience-cutter/cut.mjs` into `src/assets/audience/browndresslady/frame1..8.png`. Frame order across the two sheets isn't visually obvious (unlike oldman's sit→stand) — confirmed with Derek: rest/seated-calm → clap → hands-up → fist-pump peak → settle back down.

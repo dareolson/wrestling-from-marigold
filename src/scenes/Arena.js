@@ -64,6 +64,23 @@ const CROWD_EXTRAS = [
             { x: W / 2 + 125, h: 96,  flip: true,  tint: 0x554f45 },
         ],
     },
+    {
+        // Seated throughout (frame1 calm w/ popcorn bucket; frames 2-4 eat,
+        // frames 5-8 build to an open-mouth shout and a fist-pump peak with
+        // popcorn flying — two source sheets, same merge pattern as
+        // browndresslady). The remaining open gaps in the front row (see
+        // browndresslady's note above) are outside oldman spots 1-2 and 5-6;
+        // placed him there rather than flanking outside the 220-780 core span,
+        // which read as invisible for browndresslady's first attempt.
+        slug: 'popcornguy',
+        frames: 8,
+        restFrame: 1,
+        sizeBasis: 'width',
+        spots: [
+            { x: W / 2 - 205, h: 98,  flip: true,  tint: 0x6b6355 },
+            { x: W / 2 + 245, h: 104, flip: false, tint: 0x5c5648 },
+        ],
+    },
 ];
 
 // Crowd reaction swell per match event type (0..1)

@@ -323,9 +323,21 @@ export default class Arena extends Phaser.Scene {
         gfx.fillRect(0, 170, W, 200);
     }
 
+    // Deep background crowd: rows of randomly-repeated cutouts from the same
+    // pool as the named front-row extras (CROWD_EXTRAS's restFrame art),
+    // never the front row's own designs at their own spots — those stay
+    // unique (see _setupCrowdExtras). Randomizing which design lands in
+    // each seat (2026-07-16, replacing flat circles here) is what keeps a
+    // dense back-of-house crowd from reading as a repeating tile: no two
+    // adjacent seats are guaranteed the same design, and 11 source designs
+    // spread across ~250 seats means no obvious cloning even up close.
+    // Each row gets one blur filter (applied to the row's Container, one
+    // GPU pass for the whole row rather than per-sprite) with strength/
+    // steps increasing by row depth — see the row loop below for why
+    // strength is kept low relative to steps (a Kawase-blur ghosting
+    // artifact — 4ish visible offset copies — showed up past strength≈2
+    // per step; more steps at low strength gives a smooth blur instead).
     drawCrowd() {
-        const gfx = this.add.graphics().setDepth(1);
-
         let s = 7331;
         const rand = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
 
@@ -348,20 +360,46 @@ export default class Arena extends Phaser.Scene {
             { y: 16,  r: 2,  count: 8,  gap: 65, lum: 26  },
         ];
 
-        rows.forEach(row => {
+        // Pool of filler designs — same cutout art as the named front row,
+        // always shown at restFrame (these don't react; only the front row
+        // does, see _reactCrowdExtras). Dimensions read straight from the
+        // loaded textures since this runs before _setupCrowdExtras builds
+        // its own per-extra _dims cache.
+        const pool = CROWD_EXTRAS.map(e => {
+            const key = `${e.slug}${e.restFrame}`;
+            const src = this.textures.get(key).getSourceImage();
+            return { key, h: src.height };
+        });
+
+        rows.forEach((row, rowIdx) => {
+            const cont = this.add.container(0, 0).setDepth(1);
+            const depthT = rowIdx / (rows.length - 1);
+            if (rowIdx > 0) { // nearest row stays crisp, a clean handoff off the front row
+                cont.enableFilters();
+                const steps = Math.round(2 + depthT * 8);      // 2..10
+                const strength = 0.3 + depthT * 0.9;           // 0.3..1.2 — see class-doc note on the ghosting ceiling
+                cont.filters.internal.addBlur(0, 1, 1, strength, 0xffffff, steps);
+            }
             for (let j = 0; j < row.count; j++) {
                 const t = j / (row.count - 1);
                 const cx = 20 + t * 920 + (rand() - 0.5) * row.gap * 0.4;
                 const heightFt = 4 + Math.floor(rand() * 3); // 4, 5, or 6ft person
                 const r = row.r * heightFt / 5;
+                const bodyH = r * 8; // full-cutout analog of the old head-circle radius
+                const pick = pool[Math.floor(rand() * pool.length)];
+                const flip = rand() < 0.5;
+                const scale = bodyH / pick.h;
                 const col = (row.lum << 16) | (row.lum << 8) | row.lum;
-                gfx.fillStyle(col, 1);
-                gfx.fillCircle(cx, row.y, r);
-                gfx.fillEllipse(cx, row.y + r + r * 0.8, r * 2.6, r * 1.5);
+                const img = this.add.image(cx, row.y + r * 1.2, pick.key)
+                    .setOrigin(0.5, 1)
+                    .setTint(col)
+                    .setScale(flip ? -scale : scale, scale);
+                cont.add(img);
             }
         });
 
         // Signs — lighter so they read against the crowd
+        const gfx = this.add.graphics().setDepth(1);
         gfx.fillStyle(0x888888, 1);
         [[120, 95, 42, 20], [360, 78, 38, 18], [590, 85, 45, 22], [780, 72, 36, 17]].forEach(([x, y, w, h]) => {
             gfx.fillRect(x - w / 2, y - h / 2, w, h);

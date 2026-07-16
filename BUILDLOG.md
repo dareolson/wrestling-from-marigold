@@ -17,6 +17,36 @@
 
 ## Sessions Log
 
+### 2026-07-16 (background crowd: randomized cutouts + depth blur) — Deep crowd rows now reuse the front row's cutout art instead of flat dots
+
+`drawCrowd()`'s 15 background rows were flat grey circles. Replaced with:
+each row is a `Container` of `Image`s, one per seat, each randomly assigned
+one of the 11 `CROWD_EXTRAS` designs (restFrame texture only — these don't
+react) with random flip and the row's existing height jitter/tint, so no
+two adjacent seats are guaranteed identical and the crowd doesn't read as a
+repeating tile. Row layout (position/count/gap/lum) unchanged from the old
+circle config.
+
+Blur increases by row depth for a perspective cue, applied once per row via
+`Container.filters.internal.addBlur` (Phaser 4's FX API — no `postFX`
+in this build; see `AI_HANDOFF.md` for how that was reverse-engineered).
+One FX pass composites each whole row rather than one pass per sprite.
+Found and avoided a Kawase-blur ghosting artifact that appears once
+`strength` climbs past ~2 relative to `steps` — kept `strength` at
+`0.3..1.2` and scaled `steps` (`2..10`) as the actual depth knob instead.
+Nearest row stays unblurred for a clean handoff off the front row.
+
+Verified via `window.__WFM_GAME` (15 containers, 257 background sprites,
+front row's 11 fans untouched) and direct screenshots (full-frame + both
+edges zoomed): dense, non-repeating crowd, smooth blur falloff, no
+banding. `npm test` (43/43), `npm run debug:play -- all` (12/12, though
+noticeably slower to complete than prior sessions — see the perf flag in
+`AI_HANDOFF.md`), `npm run build`, all green.
+
+Only committed `Arena.js`. Not eyeballed live in motion by Derek yet — same
+caveat as every crowd session, worse here since the background art is
+dark/low-contrast and hard to judge from a still screenshot.
+
 ### 2026-07-16 (eleventh crowd extra) — Added marlon, front row fills all 11 proven grid slots
 
 Derek's queued assignment (logged in `AI_HANDOFF.md` at the end of the prior

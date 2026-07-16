@@ -88,6 +88,69 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-16 (background crowd: randomized cutouts + depth blur) — Claude (Derek: front row "looks mostly good" but wanted the deep crowd behind it to stop reading as flat grey dots)
+
+Derek's ask: keep the front row (`CROWD_EXTRAS`) unique — don't touch those
+designs or spots — but fill the deep background crowd behind it with random
+copies of the *same* cutout art so it reads as a packed stadium instead of
+11 lone figures floating over abstract dots, with each row getting
+progressively blurrier going back for a depth cue.
+
+`drawCrowd()` (`Arena.js`) previously drew its 15 rows as flat grey
+`fillCircle`/`fillEllipse` pairs via one `Graphics` object. Replaced that
+with: for each row, build a `Container` of `Image` game objects — one per
+seat, each randomly assigned one of the 11 `CROWD_EXTRAS` designs at its
+`restFrame` texture (they don't react, only the front row does), random
+per-seat flip and a 4/5/6ft height jitter carried over from the old circle
+sizing, tinted to the row's original grayscale `lum` value. Row position/
+count/gap/lum all reused unchanged from the old `rows` config — only what
+gets drawn at each seat changed.
+
+Blur: Phaser 4 doesn't have the old `gameObject.postFX` API — this build's
+FX system is `gameObject.enableFilters()` → `gameObject.filters.internal.
+addBlur(quality, x, y, strength, color, steps)` (verified empirically via
+`window.__WFM_GAME`, sentinel-value argument probing — no docs consulted,
+positional order isn't obvious from the minified CDN bundle). Applied once
+per row to that row's `Container` (one FX pass composites all of that
+row's seats, not one pass per sprite — 15 passes total, not ~257).
+**Important tuning finding:** `strength` above ~2 relative to `steps`
+produces a visible ghosting/banding artifact — a Kawase-blur implementation
+detail where the multi-tap offsets become individually visible as ~N
+discrete offset copies instead of blending into a smooth blur. Kept
+`strength` in `0.3..1.2` and scaled `steps` (`2..10`) as the primary blur
+knob per row depth instead — confirmed clean (no banding) at both ends of
+that range via direct screenshot comparison. Row 0 (nearest, right behind
+the front row) gets no blur at all, for a clean handoff off the crisp front
+row.
+
+**Flagging, not fixing:** this applies the blur filter live, every frame,
+to genuinely static content (the background crowd never moves or
+reacts) — 14 active FX passes/frame is real repeated GPU cost for
+something that could be baked once into a texture and displayed flat
+forever after. `debug:play -- all` (which drives the game in as-close-to-
+real-time as Playwright allows) took noticeably longer this session than
+prior crowd-extra sessions before completing (still 12/12 green, just
+slower) — plausibly this cost, though this sandboxed/software-rendered
+environment likely isn't representative of Derek's actual GPU. Not
+optimizing further without Derek's read on whether it's actually laggy on
+his machine; if so, the fix is straightforward (bake each row's `Container`
+into a `RenderTexture` once at `create()` via `rt.draw(container)`, then
+`container.destroy()` — one-time blur cost, zero per-frame cost after).
+
+Verified via `window.__WFM_GAME`: 15 `Container`s, 257 total background
+sprites, front row's 11 `crowdFans` untouched. Screenshots (full-frame and
+zoomed both edges) show a dense, non-repeating crowd with a smooth
+near-to-far blur gradient and no banding. `npm test` (43/43),
+`npm run debug:play -- all` (12/12), `npm run build`, all green.
+
+Files touched: `src/scenes/Arena.js` only (`drawCrowd()`)
+Action required: Derek — live sign-off on how the depth crowd actually
+reads in motion (same live-check caveat as every prior crowd session,
+compounded here by genuinely dark/low-contrast background art being hard
+to judge from a static screenshot), and a read on whether the live-blur
+performance cost is worth baking away.
+Priority: low
+
 ### 2026-07-16 (eleventh crowd extra) — Claude (marlon added, took the last open `+300` grid slot; closes the queued note directly below)
 
 Picked up Derek's queued assignment (entry directly below): source sheets

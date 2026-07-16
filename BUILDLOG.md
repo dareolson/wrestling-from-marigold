@@ -17,6 +17,16 @@
 
 ## Sessions Log
 
+### 2026-07-15 (marilyn resize follow-up) — Closed the resize pass's one remaining gap (`efdb147`)
+
+Re-ran the (still-uncommitted-by-the-other-session but already functional)
+downscaled `cut.mjs` against Marilyn's two source sheets — frame1
+392KB→108KB, ~70% smaller like the other three extras, pixel-identical
+in-game (confirmed via runtime scale check). Only committed the 8
+`marilyn/` frame files; left `cut.mjs` and the other three resized folders
+for that session to land itself. `npm test` (43/43), `npm run build`
+clean.
+
 ### 2026-07-15 (audience-cutter resize pass) — Crowd-extra frames were 5-7x higher-res than they're ever displayed at
 
 Derek asked whether stacking on more crowd extras would slow load times.

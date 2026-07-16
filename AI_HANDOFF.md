@@ -88,6 +88,12 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 (marilyn resize follow-up) — Claude (closed the "not done" gap from the resize-pass entry below, `efdb147`, pushed)
+
+Derek asked why wait for the other session — the downscale patch in `tools/audience-cutter/cut.mjs` was already sitting in this same working tree, uncommitted but functional (it had just resized oldman/browndresslady/popcornguy). Re-ran it on `Sprite sheets/Audience/Marilyn.png` + `Marilyn2.png` (same temp-slug-and-renumber merge as the original cut) and overwrote `src/assets/audience/marilyn/frame1..8.png`. frame1 392KB→108KB, same ~70% pattern as the other three. QA preview confirmed identical pose order/content, just smaller. Runtime check via `window.__WFM_GAME`: `displayHeight` unchanged (~102px, spot.h), scale went 0.142→0.283 on a source that halved from 718px→360px tall — resize is invisible to rendered output, as expected.
+
+Only staged/committed the 8 `marilyn/` frame files — `cut.mjs` itself and the other three folders are still that concurrent session's to commit; didn't touch them. `npm test` (43/43) and `npm run build` clean.
+
 ### 2026-07-15 (audience-cutter resize pass) — Claude (crowd-extra frames were shipping 5-7x more pixels than ever get displayed)
 
 Derek asked whether "infinite rows" of crowd extras would bog down load times. Answer: repeating one design across more `spots` is free (Phaser caches by texture key), but each *new* design wasn't — `tools/audience-cutter/cut.mjs` never resized, it just cropped at whatever resolution Derek's reference sheets are (source frames ran ~260-370px wide, 610-741px tall), while `CROWD_EXTRAS` never renders an extra above `spot.h` (max 140px across all four extras today). All of it loads unconditionally in `preload()`, on the critical path, with no lazy-loading or atlasing.

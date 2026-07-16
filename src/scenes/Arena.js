@@ -43,6 +43,37 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // the outside-core invisibility bug again. h/tint/flip still need tuning
 // per new design's own frame proportions — only the x grid is reusable
 // as-is.
+//
+// THREE-ROW DEPTH BAND (2026-07-16): every spot before this pass sat on
+// (near enough) one shared baseline — groundY only varied by each
+// character's own tuned `h` (±14px total spread across all ten) — so the
+// row read as ten designs jammed onto one line rather than a crowd with
+// any depth. `row` (1/2/3, default 1) now buckets each spot into one of
+// three bands via EXTRA_ROWS: row 1 is the untouched "camera favorite"
+// baseline from before this pass (groundY = farLeft.y + h*0.45, full
+// scale, full tint, depth 1.5); rows 2/3 push groundY up (further from
+// the near camera), scale down, dim the tint, and lower depth, so they
+// read as sitting further back and start blending toward `drawCrowd`'s
+// painted silhouette rows instead of competing with the front row.
+// Assignment interleaves across the x grid (index % 3) rather than
+// blocking rows 2/3 to one side, so the recession reads across the full
+// width: row 1 = oldman/browndresslady/alfred/popcornguy, row 2 =
+// groucho/elvis/audrey, row 3 = dizzy/marilyn/lucille.
+const EXTRA_ROWS = {
+    1: { yOffset: 0,   scaleMul: 1.0,  dim: 1.0,  depth: 1.5 },
+    2: { yOffset: -20, scaleMul: 0.82, dim: 0.8,  depth: 1.35 },
+    3: { yOffset: -38, scaleMul: 0.66, dim: 0.62, depth: 1.2 },
+};
+
+// Scales a 0xRRGGBB tint's channels by `factor` (<1 darkens) — used to dim
+// rows 2/3 of CROWD_EXTRAS so they recede instead of just sitting smaller.
+function dimTint(hex, factor) {
+    const r = Math.round(((hex >> 16) & 0xff) * factor);
+    const g = Math.round(((hex >> 8) & 0xff) * factor);
+    const b = Math.round((hex & 0xff) * factor);
+    return (r << 16) | (g << 8) | b;
+}
+
 const CROWD_EXTRAS = [
     {
         // Sit→stand cutout. Planted right behind the ring (not the deep
@@ -54,7 +85,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'height',
         spots: [
-            { x: W / 2 - 260, h: 118, flip: false, tint: 0x554f45 },
+            { x: W / 2 - 260, h: 118, flip: false, tint: 0x554f45, row: 1 },
         ],
     },
     {
@@ -68,7 +99,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 95,  h: 100, flip: false, tint: 0x625b4c },
+            { x: W / 2 - 95,  h: 100, flip: false, tint: 0x625b4c, row: 1 },
         ],
     },
     {
@@ -82,7 +113,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 245, h: 104, flip: false, tint: 0x5c5648 },
+            { x: W / 2 + 245, h: 104, flip: false, tint: 0x5c5648, row: 1 },
         ],
     },
     {
@@ -95,7 +126,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 15, h: 102, flip: false, tint: 0x5c5648 },
+            { x: W / 2 + 15, h: 102, flip: false, tint: 0x5c5648, row: 3 },
         ],
     },
     {
@@ -111,7 +142,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 40, h: 122, flip: false, tint: 0x5c5648 },
+            { x: W / 2 - 40, h: 122, flip: false, tint: 0x5c5648, row: 2 },
         ],
     },
     {
@@ -128,7 +159,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 150, h: 100, flip: true, tint: 0x6b6355 },
+            { x: W / 2 - 150, h: 100, flip: true, tint: 0x6b6355, row: 3 },
         ],
     },
     {
@@ -145,7 +176,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 205, h: 104, flip: false, tint: 0x5c5648 },
+            { x: W / 2 - 205, h: 104, flip: false, tint: 0x5c5648, row: 2 },
         ],
     },
     {
@@ -161,7 +192,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 70, h: 112, flip: false, tint: 0x5c5648 },
+            { x: W / 2 + 70, h: 112, flip: false, tint: 0x5c5648, row: 1 },
         ],
     },
     {
@@ -178,7 +209,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 125, h: 106, flip: false, tint: 0x5c5648 },
+            { x: W / 2 + 125, h: 106, flip: false, tint: 0x5c5648, row: 2 },
         ],
     },
     {
@@ -195,7 +226,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 190, h: 108, flip: true, tint: 0x5c5648 },
+            { x: W / 2 + 190, h: 108, flip: true, tint: 0x5c5648, row: 3 },
         ],
     },
 ];
@@ -352,11 +383,12 @@ export default class Arena extends Phaser.Scene {
     // jitter) that a given design doesn't read as an obvious clone row —
     // but each IS one source design, so this is a ceiling-of-repetition
     // test, not a real varied crowd. Planted right behind the ring (not the
-    // deep background crowd) at a prominent "camera favorite" scale. Depth
-    // 1.5 sits below drawRingMat (depth 3); each one's ground line is set so
-    // RING.farLeft.y (258 — the mat's crowd-side edge) crosses at the torso,
-    // same occlusion mechanism the side-crowd rows use against the ring
-    // boundary.
+    // deep background crowd) at a prominent "camera favorite" scale. Each
+    // spot's `row` (see EXTRA_ROWS) picks depth (below drawRingMat's 3, above
+    // drawCrowd's 1) and how far its ground line sits above RING.farLeft.y
+    // (258 — the mat's crowd-side edge); row 1's ground line crosses at the
+    // torso, same occlusion mechanism the side-crowd rows use against the
+    // ring boundary, and rows 2/3 push further back from there.
     _setupCrowdExtras() {
         this.crowdFans = [];
         for (const extra of CROWD_EXTRAS) {
@@ -371,10 +403,11 @@ export default class Arena extends Phaser.Scene {
                 extra._dims[i] = { w: src.width, h: src.height };
             }
             for (const spot of extra.spots) {
+                const rowCfg = EXTRA_ROWS[spot.row || 1];
                 const fan = { img: this.add.image(spot.x, 0, `${extra.slug}${extra.restFrame}`)
                     .setOrigin(0.5, 1)
-                    .setTint(spot.tint)
-                    .setDepth(1.5), extra, spot, reacting: false };
+                    .setTint(dimTint(spot.tint, rowCfg.dim))
+                    .setDepth(rowCfg.depth), extra, spot, reacting: false };
                 this._setExtraFrame(fan, extra.restFrame);
                 this.crowdFans.push(fan);
             }
@@ -399,6 +432,7 @@ export default class Arena extends Phaser.Scene {
     // to fit a pinned display width.
     _setExtraFrame(fan, f) {
         const { extra, spot } = fan;
+        const rowCfg = EXTRA_ROWS[spot.row || 1];
         let scale;
         if (extra.sizeBasis === 'width') {
             const rest = extra._dims[extra.restFrame];
@@ -407,7 +441,10 @@ export default class Arena extends Phaser.Scene {
             const refH = Math.max(...Object.values(extra._dims).map(d => d.h));
             scale = spot.h / refH;
         }
-        const groundY = RING.farLeft.y + spot.h * 0.45; // ~torso-height occlusion by the mat
+        scale *= rowCfg.scaleMul;
+        // ~torso-height occlusion by the mat at row 1; rowCfg.yOffset pulls
+        // rows 2/3 further from the near camera (see EXTRA_ROWS).
+        const groundY = RING.farLeft.y + spot.h * 0.45 + rowCfg.yOffset;
         fan.img.setTexture(`${extra.slug}${f}`)
             .setY(groundY)
             .setScale(spot.flip ? -scale : scale, scale);

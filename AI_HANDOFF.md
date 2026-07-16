@@ -88,6 +88,53 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-16 (crowd-extra three-row depth band) — Claude (Derek's own unfinished audience work from the night before: front row read "very jumbled," wanted three distinct receding rows)
+
+Derek picked this back up directly, describing the target: three distinct
+rows of animated audience members in front, each row a little higher than
+the next, with the further-back rows dipping into hard-to-see territory —
+current state read as jumbled instead.
+
+Root cause: every `CROWD_EXTRAS` spot computed `groundY` from `RING.farLeft.y
++ spot.h * 0.45` — the only thing varying it was each character's own tuned
+`h` (92-122px range), a ~14px total spread across all ten. They were all on
+one shared baseline, not three separated bands.
+
+Added `EXTRA_ROWS` in `Arena.js` — three bands (`yOffset`/`scaleMul`/`dim`/
+`depth`), selected per spot via a new `row` field (1/2/3, default 1). Row 1
+is byte-identical to the prior render (yOffset 0, scaleMul 1, dim 1, depth
+1.5 — same as every extra used before this pass). Rows 2/3 push `groundY`
+up (further from the near camera), scale down (0.82/0.66), dim the tint via
+a new `dimTint(hex, factor)` helper (0.8/0.62), and lower `setDepth`
+(1.35/1.2) so front-row spots draw over back-row ones on overlap.
+
+Assigned all ten existing extras to a row, interleaved by x-grid index
+(`index % 3`) rather than blocking rows 2/3 to one side: row 1 = oldman/
+browndresslady/alfred/popcornguy, row 2 = groucho/elvis/audrey, row 3 =
+dizzy/marilyn/lucille. Full detail and reasoning in the new comment block
+above `EXTRA_ROWS`.
+
+**Verified:** `window.__WFM_GAME` confirms three separated bands — row 1 y
+303-311 (displayHeight 100-118, full tint), row 2 y 285-293 (displayHeight
+85-100, ~80% tint), row 3 y 265-269 (displayHeight 66-71, ~62% tint).
+Confirmed visually too, not just numerically — a cropped/zoomed debug
+screenshot at t=7s (past the intro title card's fade) shows smaller, dimmer
+figures reading as sitting further back between the bigger front-row ones.
+`npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`,
+all green.
+
+Only touched `Arena.js` (the `EXTRA_ROWS`/`dimTint` additions, the `row`
+field on each spot, and the `_setupCrowdExtras`/`_setExtraFrame` seam),
+plus this entry and the matching `BUILDLOG.md` entry — the still-queued
+eleventh-extra note directly below is untouched and still open.
+
+Files touched: `src/scenes/Arena.js`, `AI_HANDOFF.md`, `BUILDLOG.md`
+Action required: Derek — live/in-motion sign-off on the row read (row
+assignment and the yOffset/scaleMul/dim numbers were my judgment call, not
+measured against a reference image — easy to retune per-row or reassign
+which character sits where if any row still doesn't read right in motion).
+Priority: medium
+
 ### 2026-07-16 (eleventh crowd extra queued) — Derek (relayed by Claude): one more extra planned, +300 grid slot, to be done in a separate session
 
 Derek's plan: add one more (11th) crowd extra, filling the last open grid

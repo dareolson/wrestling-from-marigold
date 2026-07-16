@@ -17,6 +17,31 @@
 
 ## Sessions Log
 
+### 2026-07-16 (sixth crowd extra) — Added dizzy on the reshuffle's freed `-150` grid slot
+
+Cut Derek's two new reference sheets (`Sprite sheets/Audience/dizzy.png`,
+`dizzy2.png`) into an 8-frame seated cycle (`src/assets/audience/dizzy/`)
+via the already-downscaling `cut.mjs` — calm w/ glasses and tie, hands
+starting to move (sheet A), building to excited talking → double
+fist-pump → raised-fist shout → clapping (sheet B). Order was visually
+obvious from the QA preview, same calm-then-build shape as the other four
+seated extras — no round-trip needed.
+
+Asked Derek about placement since the front row read as full from this
+session's starting point (all of oldman's spots and gaps had been used as
+of the last commit this session read) — Derek said to replace an oldman
+spot again, elvis-style. Before acting on that, found a concurrent session
+had already landed the reshuffle (`d011847`) while this session was
+mid-task, freeing six grid slots for exactly this case; used `x = W/2 -
+150` per that entry's own grid note in `Arena.js` instead of re-eating
+another oldman instance, since the note explicitly says to. `sizeBasis:
+'width'` since he never stands, same reasoning as
+the other seated extras. Verified via `window.__WFM_GAME`: dizzy1/4/5/8
+resolve, fan visible at x:330 with correct flipped scale, 6 fans total (one
+per design). `npm test` (43/43), `npm run debug:play -- all` (12/12),
+`npm run build`, all green. Not eyeballed live in motion — same CRT/grain
+caveat as every prior crowd-extra session.
+
 ### 2026-07-15 (crowd-extra reshuffle) — One spot per design, freeing 6 of 11 front-row slots for the next batch
 
 Derek's plan: build toward ~10 unique crowd-extra designs total, one instance

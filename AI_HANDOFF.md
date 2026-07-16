@@ -88,6 +88,20 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-16 (sixth crowd extra) — Claude (dizzy added, took the reshuffle's freed `-150` grid slot)
+
+Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/dizzy.png` + `dizzy2.png`, gitignored source, 4 frames each) via `tools/audience-cutter/cut.mjs` — the downscale patch is now committed (as of the reshuffle entry below), so `dizzy/frame1..8.png` shipped pre-downscaled (~92-135KB each) with no separate resize pass needed. Frame order was visually obvious from the QA preview (no round-trip needed): sheet A is calm with glasses and tie, a subtle hands-starting-to-move build (frames 1-4); sheet B builds from there through excited talking, a double fist-pump, a raised-fist shout, to clapping (frames 5-8) — same calm-then-build shape as the four seated extras before him.
+
+This is the sixth crowd extra. At session start the front row read as fully occupied (all of oldman's spots and the four browndresslady/popcornguy gaps and marilyn's single seam were in use, per the last commit this session had read) — asked Derek rather than guess, and he said to replace an oldman spot again, same as elvis. Before landing that, discovered a concurrent session had committed a full reshuffle (`d011847`, entry directly below) partway through this session: every design dropped to a single spot, freeing six grid slots (`-205, -150, +70, +125, +190, +300`) specifically for the next batch of designs, documented in the new comment block above `CROWD_EXTRAS`. That supersedes the "replace an oldman spot" answer, so used the reshuffle's own explicit instruction instead — picked the free `-150` slot rather than eating another oldman instance. `sizeBasis: 'width'` since he's seated throughout and never stands, same reasoning as browndresslady/popcornguy/marilyn/elvis. Tint `0x6b6355` reused from a since-removed oldman spot rather than inventing a new value.
+
+Verified via `window.__WFM_GAME`: `dizzy1`/`dizzy4`/`dizzy5`/`dizzy8` textures all resolve, the dizzy fan is `visible: true` at `x: 330` with correctly flipped scale (`scaleX: -0.278`, `displayHeight: 100` matching `spot.h`), `crowdFans.length` is 6 (one per design, as the reshuffle intended). `npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`, all green. Not eyeballed live in motion — same CRT/grain-filter caveat noted in every prior crowd-extra session; a static debug-shot screenshot at t=8s shows a seated figure in the row with no visible collision or breakage, but Derek's live check is still the real confirmation.
+
+Only committed `Arena.js` and the new `dizzy/` frame folder, plus this entry and the matching `BUILDLOG.md` entry. `cut.mjs` and the oldman/browndresslady/popcornguy resized frames still sitting modified in this tree are that other, still-uncommitted resize-pass thread's to land — left untouched.
+
+Files touched: `src/scenes/Arena.js`, `src/assets/audience/dizzy/` (new), `AI_HANDOFF.md`, `BUILDLOG.md`
+Action required: Derek — live/in-motion sign-off on dizzy's placement and pose order, same as every prior crowd extra.
+Priority: low
+
 ### 2026-07-15 (crowd-extra reshuffle) — Claude (dropped every design to one spot; Derek's targeting ~10 unique designs, another Claude session drawing the next batch)
 
 Derek's plan: build toward ~10 unique crowd-extra designs, one instance each, rather than repeating any single design enough to read as an obvious clone (oldman was eating 5 of the row's 11 slots by himself). Reshuffled `CROWD_EXTRAS` in `Arena.js` so oldman/browndresslady/popcornguy/marilyn/elvis each keep exactly one of their existing (already-tuned) spots and dropped the rest — no new coordinates invented, just kept one entry per design and deleted the others. 6 of the row's 11 proven positions are now free.

@@ -38,10 +38,10 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // 6 slots open rather than doubling anyone up (oldman previously ate 5 of
 // the 11 slots himself — the exact "obvious repeat" problem being solved).
 // **Adding design #6-10: pick an unused x from the list above** (currently
-// free: -205, -150, +70, +125, +190, +300) rather than re-deriving spacing
-// or risking the outside-core invisibility bug again. h/tint/flip still
-// need tuning per new design's own frame proportions — only the x grid is
-// reusable as-is.
+// free: -205, +70, +125, +190, +300 — dizzy took -150) rather than
+// re-deriving spacing or risking the outside-core invisibility bug again.
+// h/tint/flip still need tuning per new design's own frame proportions —
+// only the x grid is reusable as-is.
 const CROWD_EXTRAS = [
     {
         // Sit→stand cutout. Planted right behind the ring (not the deep
@@ -111,6 +111,23 @@ const CROWD_EXTRAS = [
         sizeBasis: 'width',
         spots: [
             { x: W / 2 - 40, h: 122, flip: false, tint: 0x5c5648 },
+        ],
+    },
+    {
+        // Seated throughout, never stands (frame1 calm w/ glasses and tie;
+        // frames 2-4 a subtle hands-starting-to-move build; frames 5-8
+        // build to excited talking → double fist-pump → single raised fist
+        // shouting → clapping — two source sheets, same calm-then-build
+        // merge pattern as browndresslady/popcornguy/marilyn/elvis; order
+        // was visually obvious from the QA preview, no round-trip needed).
+        // Sixth extra, placed at the reshuffle's -150 grid slot (see the
+        // grid note above) rather than eating another oldman instance.
+        slug: 'dizzy',
+        frames: 8,
+        restFrame: 1,
+        sizeBasis: 'width',
+        spots: [
+            { x: W / 2 - 150, h: 100, flip: true, tint: 0x6b6355 },
         ],
     },
 ];

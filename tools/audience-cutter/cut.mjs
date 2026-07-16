@@ -12,7 +12,8 @@
 // Reads <sourcePng> (a horizontal strip of N poses on a flat green-screen
 // background, e.g. "Sprite sheets/Audience/oldman.png" — that folder is
 // gitignored, only cut output is committed), auto-detects frame count from
-// transparent-column gaps after keying, and writes
+// transparent-column gaps after keying, downscales each crop to
+// MAX_FRAME_HEIGHT (see below), and writes
 // src/assets/audience/<slug>/frame1.png .. frameN.png. Also writes a QA
 // preview (all frames on a dark backdrop) to tools/audience-cutter/_qa/
 // (gitignored) so the cut can be eyeballed before wiring a frame count into
@@ -26,6 +27,15 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../..');
 const QA_DIR = path.join(__dirname, '_qa');
+
+// Source reference sheets are cropped at whatever resolution Derek draws
+// them at (~600-750px tall); Arena.js's CROWD_EXTRAS never renders an extra
+// taller than spot.h, and no spot has gone above 140px. 360px gives ~2.5x
+// headroom over that (retina-ish) while cutting a typical frame's file size
+// by 70-80% versus shipping the raw crop — every extra's frames were
+// loading 5-7x more pixels than ever get displayed. Never upscale a frame
+// that's already smaller than this.
+const MAX_FRAME_HEIGHT = 360;
 
 const [, , srcArg, slugArg] = process.argv;
 if (!srcArg || !slugArg) {
@@ -119,7 +129,17 @@ window.CUT = (function () {
 
   function toDataURL(c) { return c.toDataURL('image/png'); }
 
-  return { loadImage, chromaKeyGreen, splitIntoRuns, cropWithPadding, toDataURL, newCanvas, ctxOf };
+  // Downscales in place if taller than maxH (never upscales). High-quality
+  // smoothing is already the default per ctxOf.
+  function capHeight(canvas, maxH) {
+    if (canvas.height <= maxH) return canvas;
+    const scale = maxH / canvas.height;
+    const out = newCanvas(Math.round(canvas.width * scale), maxH);
+    ctxOf(out).drawImage(canvas, 0, 0, out.width, out.height);
+    return out;
+  }
+
+  return { loadImage, chromaKeyGreen, splitIntoRuns, cropWithPadding, capHeight, toDataURL, newCanvas, ctxOf };
 })();
 `;
 
@@ -135,12 +155,14 @@ async function main() {
     await page.addScriptTag({ content: BROWSER_LIB });
 
     const dataUrl = dataUrlFromFile(SRC);
-    const result = await page.evaluate(async ({ dataUrl }) => {
+    const result = await page.evaluate(async ({ dataUrl, maxFrameHeight }) => {
         const canvas = await window.CUT.loadImage(dataUrl);
         window.CUT.chromaKeyGreen(canvas);
         const ALPHA_THRESHOLD = 25;
         const runs = window.CUT.splitIntoRuns(canvas, ALPHA_THRESHOLD);
-        const frames = runs.map(run => window.CUT.cropWithPadding(canvas, run, ALPHA_THRESHOLD, 6));
+        const frames = runs
+            .map(run => window.CUT.cropWithPadding(canvas, run, ALPHA_THRESHOLD, 6))
+            .map(f => window.CUT.capHeight(f, maxFrameHeight));
         const frameData = frames.map(f => ({ w: f.width, h: f.height, dataUrl: window.CUT.toDataURL(f) }));
 
         // QA preview: all frames on a dark backdrop, common display height.
@@ -155,7 +177,7 @@ async function main() {
         for (const f of scaled) { pctx.drawImage(f.canvas, x, 40, f.w, f.h); x += f.w + gap; }
 
         return { frameCount: frames.length, frameData, previewDataUrl: window.CUT.toDataURL(preview) };
-    }, { dataUrl });
+    }, { dataUrl, maxFrameHeight: MAX_FRAME_HEIGHT });
 
     console.log(`Found ${result.frameCount} frame(s) for "${SLUG}".`);
     result.frameData.forEach((f, i) => {

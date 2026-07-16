@@ -88,6 +88,60 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-16 (eleventh crowd extra) — Claude (marlon added, took the last open `+300` grid slot; closes the queued note directly below)
+
+Picked up Derek's queued assignment (entry directly below): source sheets
+`Sprite sheets/Audience/Marlon.png`/`marlon2.png` (gitignored, 4 frames
+each) were already dropped. Same pipeline as every prior extra: cut sheet A
+to the real `marlon` slug, cut sheet B to a throwaway `marlon-temp` slug and
+renumber its frames into `frame5..8`, read the QA preview, delete the temp
+slug's folder and preview.
+
+Frame order was visually obvious from both QA previews, no round-trip
+needed — but the shape is different from every extra since dizzy: **marlon
+actually stands up**, he isn't seated-throughout. Sheet A: calm hands
+folded → leaning forward, hands gripping his knees, building tension.
+Sheet B: a hunched hinge pose (hands gripping the chair edge, about to
+rise — near-identical framing to sheet A's last pose, just the natural
+seam between the two source sheets) → rising off the chair → standing →
+a full standing fist-pump cheer. Because of that real height change, gave
+him `sizeBasis: 'height'` like oldman rather than `'width'` like the
+seated-only extras — using `'width'` here would've clipped or distorted
+the stand-up frames against a pinned seated height.
+
+Took the grid note's last open slot, `x = W/2 + 300`, `h: 118` (close to
+oldman's `118`, similar frame proportions). Updated the grid note comment:
+all 11 proven positions are now occupied; a 12th extra needs a reshuffle or
+a new placement strategy (second row, untested, floated back in the
+marilyn-era entries).
+
+Verified via `window.__WFM_GAME`: `crowdFans` length 11, marlon's fan
+resolved at `x: 780, h: 118, flip: false`, all 8 `marlonN` textures present
+(`textures.exists` true for each, no missing-texture console errors on
+load). Cycled `_setExtraFrame` through frames 1-8 directly: scale held
+constant at `0.328` (`= 118/360`) and `y` held constant at `311` across
+every frame — confirms no shrink-and-sink regression (the bug fixed
+earlier this session-chain in `_setExtraFrame`, see the entry below) and
+confirms the `'height'` basis is behaving like oldman's, not drifting like
+a `'width'`-basis extra would if misconfigured. `npm test` (43/43),
+`npm run debug:play -- all` (12/12), `npm run build`, all green. Not
+eyeballed live in motion — same CRT/grain-filter caveat as every prior
+crowd-extra session; static debug screenshots at t=3s/8s only caught the
+intro title card and a distant, low-contrast silhouette of the row, not
+enough to judge pose readability by eye.
+
+The resize-pass thread flagged as "still sitting modified" in every prior
+entry back through audrey/lucille is now resolved — it was committed
+(`a2435b3`) and pushed earlier this session, before marlon's work started.
+
+Files touched: `src/scenes/Arena.js`, `src/assets/audience/marlon/` (new),
+`AI_HANDOFF.md`, `BUILDLOG.md`
+Action required: Derek — live/in-motion sign-off on marlon's placement,
+stand-up timing, and pose order, same as every prior crowd extra. Front
+row is now at all 11 proven grid slots filled; no further "next free slot"
+assignment exists without a reshuffle or new row strategy.
+Priority: low
+
 ### 2026-07-16 (eleventh crowd extra queued) — Derek (relayed by Claude): one more extra planned, +300 grid slot, to be done in a separate session
 
 Derek's plan: add one more (11th) crowd extra, filling the last open grid

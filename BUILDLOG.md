@@ -17,6 +17,44 @@
 
 ## Sessions Log
 
+### 2026-07-16 (eleventh crowd extra) — Added marlon, front row fills all 11 proven grid slots
+
+Derek's queued assignment (logged in `AI_HANDOFF.md` at the end of the prior
+session): cut and land one more crowd extra at the last open grid slot.
+Source sheets (`Sprite sheets/Audience/Marlon.png`/`marlon2.png`,
+gitignored, 4 frames each) were already sitting in the working tree.
+
+**Marlon** (`src/assets/audience/marlon/`): unlike every extra since dizzy,
+he isn't seated-throughout — he stands up. Calm hands-folded rest, leaning
+forward with hands gripping his knees as tension builds (sheet A), a hinge
+pose hunched over the chair edge about to rise (sheet B's opening frame,
+near-identical to sheet A's last pose — the natural seam between sheets),
+rising to standing, then a full standing fist-pump cheer (rest of sheet B).
+Because of the real height change, used `sizeBasis: 'height'` (like
+oldman) instead of `'width'` (like the seated-only extras) — `'width'`
+would've clipped or distorted the stand-up frames against a pinned seated
+height. Placed at `x = W/2 + 300`, `h: 118`, the grid note's last open
+slot. Updated the grid note: all 11 proven positions are now occupied;
+a 12th needs a reshuffle or a new placement strategy.
+
+Verified via `window.__WFM_GAME`: 11 crowd fans resolved, marlon at
+`x: 780` matching its spot, all 8 `marlonN` textures present with no
+missing-texture errors. Cycled `_setExtraFrame` through all 8 frames
+directly: scale (`0.328`) and `y` (`311`) held constant across every
+frame — confirms the `'height'` basis is behaving correctly and rules out
+the shrink-and-sink regression (see the fix entry below) recurring on a
+newly-added extra. `npm test` (43/43), `npm run debug:play -- all`
+(12/12), `npm run build`, all green. Not eyeballed live in motion — same
+CRT/grain-filter caveat as every prior crowd-extra session; static debug
+screenshots didn't have enough contrast/resolution to judge pose
+readability by eye.
+
+Only committed `Arena.js`, the new `marlon/` frame folder, and this +
+the matching `AI_HANDOFF.md` entry. The resize-pass thread flagged as
+"still sitting modified" in every entry back through audrey/lucille is
+now resolved — it was committed (`a2435b3`) and pushed earlier this
+session, before this work started.
+
 ### 2026-07-16 (crowd-extra shrink-and-sink bug fix) — sizeBasis:'width' was rescaling per displayed frame instead of once per extra
 
 Derek reported groucho and elvis "get smaller and lower" mid-reaction, and

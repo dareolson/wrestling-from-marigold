@@ -37,12 +37,13 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // reshuffle dropped every design down to a single spot and left the other
 // 6 slots open rather than doubling anyone up (oldman previously ate 5 of
 // the 11 slots himself — the exact "obvious repeat" problem being solved).
-// **Adding a new design: pick an unused x from the list above** (currently
-// free: +300 — dizzy took -150, groucho took -205, alfred took +70, audrey
-// took +125, lucille took +190) rather than re-deriving spacing or risking
-// the outside-core invisibility bug again. h/tint/flip still need tuning
-// per new design's own frame proportions — only the x grid is reusable
-// as-is.
+// **Adding a new design: pick an unused x from the list above** — all 11
+// proven positions are now occupied (dizzy took -150, groucho took -205,
+// alfred took +70, audrey took +125, lucille took +190, marlon took +300);
+// a 12th extra needs either a reshuffle or a new placement strategy (a
+// second, more distant row was floated as untested back in the
+// marilyn-era entries). h/tint/flip still need tuning per new design's
+// own frame proportions — only the x grid is reusable as-is.
 const CROWD_EXTRAS = [
     {
         // Sit→stand cutout. Planted right behind the ring (not the deep
@@ -196,6 +197,26 @@ const CROWD_EXTRAS = [
         sizeBasis: 'width',
         spots: [
             { x: W / 2 + 190, h: 108, flip: true, tint: 0x5c5648 },
+        ],
+    },
+    {
+        // Sit→stand cutout, not seated-throughout like most of the row
+        // (frame1 calm hands folded; frames 2-3 lean forward, hands
+        // gripping his knees, building tension; frame4/frame5 is a hinge
+        // pose shared across both source sheets — hunched forward, hands
+        // gripping the chair edge, about to rise; frames 6-7 rise off the
+        // chair to standing; frame8 a full standing fist-pump cheer — two
+        // source sheets, same merge pattern as the others but he actually
+        // gets up, so sizeBasis is 'height' like oldman rather than
+        // 'width'). Eleventh extra, placed at the reshuffle's last open
+        // +300 grid slot (see the grid note above) — fills the row to
+        // Derek's ~10-design target plus one.
+        slug: 'marlon',
+        frames: 8,
+        restFrame: 1,
+        sizeBasis: 'height',
+        spots: [
+            { x: W / 2 + 300, h: 118, flip: false, tint: 0x5c5648 },
         ],
     },
 ];

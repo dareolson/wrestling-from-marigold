@@ -88,6 +88,20 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-16 (seventh crowd extra) — Claude (groucho added, took the reshuffle's freed `-205` grid slot)
+
+Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/groucho.png` + `groucho2.png`, gitignored source, 4 frames each) via `tools/audience-cutter/cut.mjs` — the downscale patch is committed, so `groucho/frame1..8.png` shipped pre-downscaled (~130-154KB each) with no separate resize pass needed. Frame order was visually obvious from the QA preview (no round-trip needed): sheet A is calm, hands folded, cigar down, building to picking the cigar up to a raised hold (frames 1-4); sheet B continues leaning further in, gesturing with the free hand, to a pointing-outward punchline gesture (frames 5-8) — same calm-then-build shape as the other seated extras.
+
+This is the seventh crowd extra. Followed the reshuffle's documented grid note in `Arena.js` directly rather than asking Derek — dizzy (previous session, same day) took the `-150` slot, so picked the next free one, `-205`. `sizeBasis: 'width'` since he's seated throughout and never stands, same reasoning as browndresslady/popcornguy/marilyn/elvis/dizzy. Updated the grid note's "currently free" list in the same commit.
+
+Verified via `window.__WFM_GAME`: `groucho1`/`groucho8` textures resolve, the groucho fan is `visible: true` at `x: 275`, `displayHeight: 104` matching `spot.h`, `crowdFans.length` is 7 (one per design). `npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`, all green. Not eyeballed live in motion — same CRT/grain-filter caveat noted in every prior crowd-extra session; Derek's live check is still the real confirmation.
+
+Only committed `Arena.js` and the new `groucho/` frame folder, plus this entry and the matching `BUILDLOG.md` entry. `cut.mjs` and the oldman/browndresslady/popcornguy resized frames still sitting modified in this tree are that other, still-uncommitted resize-pass thread's to land — left untouched.
+
+Files touched: `src/scenes/Arena.js`, `src/assets/audience/groucho/` (new), `AI_HANDOFF.md`, `BUILDLOG.md`
+Action required: Derek — live/in-motion sign-off on groucho's placement and pose order, same as every prior crowd extra.
+Priority: low
+
 ### 2026-07-16 (sixth crowd extra) — Claude (dizzy added, took the reshuffle's freed `-150` grid slot)
 
 Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/dizzy.png` + `dizzy2.png`, gitignored source, 4 frames each) via `tools/audience-cutter/cut.mjs` — the downscale patch is now committed (as of the reshuffle entry below), so `dizzy/frame1..8.png` shipped pre-downscaled (~92-135KB each) with no separate resize pass needed. Frame order was visually obvious from the QA preview (no round-trip needed): sheet A is calm with glasses and tie, a subtle hands-starting-to-move build (frames 1-4); sheet B builds from there through excited talking, a double fist-pump, a raised-fist shout, to clapping (frames 5-8) — same calm-then-build shape as the four seated extras before him.

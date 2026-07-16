@@ -37,11 +37,11 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // reshuffle dropped every design down to a single spot and left the other
 // 6 slots open rather than doubling anyone up (oldman previously ate 5 of
 // the 11 slots himself — the exact "obvious repeat" problem being solved).
-// **Adding design #6-10: pick an unused x from the list above** (currently
-// free: -205, +70, +125, +190, +300 — dizzy took -150) rather than
-// re-deriving spacing or risking the outside-core invisibility bug again.
-// h/tint/flip still need tuning per new design's own frame proportions —
-// only the x grid is reusable as-is.
+// **Adding a new design: pick an unused x from the list above** (currently
+// free: +70, +125, +190, +300 — dizzy took -150, groucho took -205) rather
+// than re-deriving spacing or risking the outside-core invisibility bug
+// again. h/tint/flip still need tuning per new design's own frame
+// proportions — only the x grid is reusable as-is.
 const CROWD_EXTRAS = [
     {
         // Sit→stand cutout. Planted right behind the ring (not the deep
@@ -128,6 +128,23 @@ const CROWD_EXTRAS = [
         sizeBasis: 'width',
         spots: [
             { x: W / 2 - 150, h: 100, flip: true, tint: 0x6b6355 },
+        ],
+    },
+    {
+        // Seated throughout, never stands (frame1 calm, hands folded, cigar
+        // down; frames 2-4 pick the cigar up to a raised hold; frames 5-8
+        // build leaning further in, gesturing with the free hand, to a
+        // pointing-outward punchline gesture — two source sheets, same
+        // calm-then-build merge pattern as the other seated extras; order
+        // was visually obvious from the QA preview, no round-trip needed).
+        // Seventh extra, placed at the reshuffle's -205 grid slot (see the
+        // grid note above).
+        slug: 'groucho',
+        frames: 8,
+        restFrame: 1,
+        sizeBasis: 'width',
+        spots: [
+            { x: W / 2 - 205, h: 104, flip: false, tint: 0x5c5648 },
         ],
     },
 ];

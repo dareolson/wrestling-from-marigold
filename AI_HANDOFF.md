@@ -88,6 +88,16 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 (crowd-extra reshuffle) — Claude (dropped every design to one spot; Derek's targeting ~10 unique designs, another Claude session drawing the next batch)
+
+Derek's plan: build toward ~10 unique crowd-extra designs, one instance each, rather than repeating any single design enough to read as an obvious clone (oldman was eating 5 of the row's 11 slots by himself). Reshuffled `CROWD_EXTRAS` in `Arena.js` so oldman/browndresslady/popcornguy/marilyn/elvis each keep exactly one of their existing (already-tuned) spots and dropped the rest — no new coordinates invented, just kept one entry per design and deleted the others. 6 of the row's 11 proven positions are now free.
+
+**Documented the reusable grid** in a new comment above `CROWD_EXTRAS`: the visible core span is `x 220-780` (`W/2 ± 280`, flanking outside it reads as invisible — browndresslady's original mistake), and within it 11 positions have been proven to read as distinct, spaced ~55-65px apart: `W/2 + [-260, -205, -150, -95, -40, +15, +70, +125, +190, +245, +300]`. Currently free: `-205, -150, +70, +125, +190, +300`. **For whoever's session lands design #6 through #10: pick an unused x from that list instead of re-deriving spacing** — only `h`/`tint`/`flip` need tuning per new design's own frame proportions, the x grid is reusable as-is.
+
+Kept elvis and marilyn adjacent (x = W/2-40 and W/2+15, 55px apart) per Derek's earlier request — unaffected by the reshuffle since both already held single spots.
+
+Verified via `window.__WFM_GAME`: 5 crowd fans total (was 11), one per slug, all `visible: true`, textures resolve, positions at x = 220/385/440/495/725 (oldman/browndresslady/elvis/marilyn/popcornguy respectively). `npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`, all green.
+
 ### 2026-07-15 (fifth crowd extra) — Claude (elvis added, took over oldman's freed center spot next to marilyn)
 
 Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/Elvis.png` + `Elvis2.png`, gitignored source, 4 frames each) via `tools/audience-cutter/cut.mjs` — using the already-uncommitted-but-functional downscale patch sitting in this working tree (see the resize-pass entries below), so `elvis/frame1..8.png` shipped pre-downscaled (all ≤135KB) with no separate resize pass needed later. Frame order was visually obvious from the QA preview (no round-trip needed): sheet A is calm, hands folded, a subtle settle micro-loop (frames 1-4); sheet B builds from that same calm pose through legs spreading wider to a fist-raised peak (frames 5-8) — same calm-then-build shape as popcornguy/marilyn.

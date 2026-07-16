@@ -15,9 +15,9 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // (not the wrestler rig pipeline — these are flat multi-frame sprites, not
 // jointed body parts). `restFrame` is the idle texture (usually 1); reacting
 // plays forward from restFrame through `frames` and back down, mirrored (see
-// _reactCrowdExtras). `spots` place repeated instances of that one source
-// design around the ring — x/h/flip/tint jitter so a single design doesn't
-// read as an obvious clone row.
+// _reactCrowdExtras). `spots` place instances of that one source design
+// around the ring — x/h/flip/tint jitter so a single design doesn't read as
+// an obvious clone row.
 //
 // `sizeBasis` picks what spot.h anchors to when frames are re-scaled
 // (see _setExtraFrame): 'height' scales off the tallest frame — correct
@@ -26,60 +26,61 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // seated throughout — their raised-arm frames (and any per-sheet crop/
 // scale drift between separately-cut source sheets) still vary in raw
 // pixel height, and height-basis scaling would render that as growing
-// taller, i.e. looking like she's standing up.
+// taller, i.e. looking like they're standing up.
+//
+// FRONT-ROW GRID (2026-07-15 reshuffle): the visible "core" of the row is
+// x 220-780 (W/2 ± 280) — flanking outside it reads as invisible (found
+// with browndresslady's first attempt). Within that span, 11 positions
+// have been proven to read as distinct, evenly spaced ~55-65px apart:
+//   W/2 + [-260, -205, -150, -95, -40, +15, +70, +125, +190, +245, +300]
+// Derek's target is ~10 unique designs total, one instance each, so this
+// reshuffle dropped every design down to a single spot and left the other
+// 6 slots open rather than doubling anyone up (oldman previously ate 5 of
+// the 11 slots himself — the exact "obvious repeat" problem being solved).
+// **Adding design #6-10: pick an unused x from the list above** (currently
+// free: -205, -150, +70, +125, +190, +300) rather than re-deriving spacing
+// or risking the outside-core invisibility bug again. h/tint/flip still
+// need tuning per new design's own frame proportions — only the x grid is
+// reusable as-is.
 const CROWD_EXTRAS = [
     {
         // Sit→stand cutout. Planted right behind the ring (not the deep
-        // background crowd) at a prominent "camera favorite" scale. Was 6
-        // spots; the center one (x = W/2 - 40) was handed to elvis below —
-        // Derek's call, since oldman repeats 6x and one fewer instance of
-        // him isn't noticeable (see AI_HANDOFF.md 2026-07-15, fifth extra).
+        // background crowd) at a prominent "camera favorite" scale. Down
+        // to a single spot as of the 2026-07-15 reshuffle (was 6, then 5
+        // after elvis took the center one) — see the grid note above.
         slug: 'oldman',
         frames: 4,
         restFrame: 1,
         sizeBasis: 'height',
         spots: [
             { x: W / 2 - 260, h: 118, flip: false, tint: 0x554f45 },
-            { x: W / 2 - 150, h: 132, flip: true,  tint: 0x625b4c },
-            { x: W / 2 + 70,  h: 140, flip: true,  tint: 0x4f4a3f },
-            { x: W / 2 + 190, h: 126, flip: false, tint: 0x6b6355 },
-            { x: W / 2 + 300, h: 116, flip: true,  tint: 0x554f45 },
         ],
     },
     {
         // Seated cheer cycle, not a stand-up: frame1 is her resting seated
         // pose; frames 2-8 build clap → hands-up → fist-pump peak → settle
         // back down (order confirmed against the two source sheets, see
-        // AI_HANDOFF.md 2026-07-15). First attempt flanked outside the
-        // oldman row (x 220-780) at ±380 and Derek reported her essentially
-        // invisible out there — the visible "core" of the front row is
-        // that 220-780 span. Tucked her into the row's two open gaps
-        // instead (between oldman spots 2-3 and 4-5), smaller/higher than
-        // the oldman spots so she reads as sitting a touch further back,
-        // peeking between them, rather than colliding shoulder-to-shoulder.
+        // AI_HANDOFF.md 2026-07-15). Down to a single spot as of the
+        // 2026-07-15 reshuffle (was 2) — see the grid note above.
         slug: 'browndresslady',
         frames: 8,
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
             { x: W / 2 - 95,  h: 100, flip: false, tint: 0x625b4c },
-            { x: W / 2 + 125, h: 96,  flip: true,  tint: 0x554f45 },
         ],
     },
     {
         // Seated throughout (frame1 calm w/ popcorn bucket; frames 2-4 eat,
         // frames 5-8 build to an open-mouth shout and a fist-pump peak with
         // popcorn flying — two source sheets, same merge pattern as
-        // browndresslady). The remaining open gaps in the front row (see
-        // browndresslady's note above) are outside oldman spots 1-2 and 5-6;
-        // placed him there rather than flanking outside the 220-780 core span,
-        // which read as invisible for browndresslady's first attempt.
+        // browndresslady). Down to a single spot as of the 2026-07-15
+        // reshuffle (was 2) — see the grid note above.
         slug: 'popcornguy',
         frames: 8,
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 205, h: 98,  flip: true,  tint: 0x6b6355 },
             { x: W / 2 + 245, h: 104, flip: false, tint: 0x5c5648 },
         ],
     },
@@ -88,14 +89,6 @@ const CROWD_EXTRAS = [
         // frames 2-4 sip and lose the sunglasses in surprise; frames 5-8
         // build to a full glass-raised, fist-pumping cheer — two source
         // sheets, same merge pattern as browndresslady/popcornguy).
-        // Unlike those two, the front row's pair-of-gaps supply is used
-        // up: oldman's 6 spots left exactly one ungapped seam (between
-        // oldman 3-4, the center of the row) after browndresslady and
-        // popcornguy took the other four. One spot only, in that seam,
-        // rather than forcing a second instance out past the 220-780
-        // core span where browndresslady's first flanking attempt read
-        // as invisible. Unconfirmed guess like the last two — flag for
-        // Derek's live check before calling it done.
         slug: 'marilyn',
         frames: 8,
         restFrame: 1,
@@ -110,16 +103,8 @@ const CROWD_EXTRAS = [
         // wider and one arm raises to a fist-pump peak — two source
         // sheets, same calm-then-build merge pattern as browndresslady/
         // popcornguy/marilyn; order was visually obvious from the QA
-        // preview, no round-trip needed).
-        //
-        // Fifth extra — the front row's gap supply was already exhausted
-        // (see marilyn's note above). Derek's call: rather than a new back
-        // row or flanking outside the 220-780 core span (both previously
-        // flagged as options, the latter known to read as invisible), took
-        // over oldman's former center spot (x = W/2 - 40) since oldman
-        // repeats 6x and losing one instance isn't noticeable — Derek also
-        // wanted him seated right next to marilyn (x = W/2 + 15, just 55px
-        // away), which this freed spot already sits immediately beside.
+        // preview, no round-trip needed). Seated right next to marilyn
+        // per Derek's request — the two spots are only 55px apart.
         slug: 'elvis',
         frames: 8,
         restFrame: 1,

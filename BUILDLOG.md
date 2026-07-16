@@ -17,6 +17,20 @@
 
 ## Sessions Log
 
+### 2026-07-15 (crowd-extra reshuffle) — One spot per design, freeing 6 of 11 front-row slots for the next batch
+
+Derek's plan: build toward ~10 unique crowd-extra designs total, one instance
+each, rather than repeating any single design enough to look cloned (oldman
+alone was using 5 of the row's 11 slots). Dropped every design
+(oldman/browndresslady/popcornguy/marilyn/elvis) to a single spot each,
+keeping their existing tuned x/h/tint/flip rather than inventing new values.
+Documented the full 11-position grid in `Arena.js` (the visible core span
+and its proven-good x offsets) so the next session adding design #6+ can
+just pick a free slot instead of re-deriving spacing or risking the
+"flanked outside the core and was invisible" mistake again. Verified via
+`window.__WFM_GAME`: 5 fans total, one per design, all visible. `npm test`
+(43/43), `npm run debug:play -- all` (12/12), `npm run build`, all green.
+
 ### 2026-07-15 (fifth crowd extra) — Added elvis, seated next to marilyn on oldman's freed spot
 
 Cut Derek's two new reference sheets (`Sprite sheets/Audience/Elvis.png`,

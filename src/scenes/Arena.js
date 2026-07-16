@@ -38,10 +38,11 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // 6 slots open rather than doubling anyone up (oldman previously ate 5 of
 // the 11 slots himself — the exact "obvious repeat" problem being solved).
 // **Adding a new design: pick an unused x from the list above** (currently
-// free: +125, +190, +300 — dizzy took -150, groucho took -205, alfred took
-// +70) rather than re-deriving spacing or risking the outside-core
-// invisibility bug again. h/tint/flip still need tuning per new design's
-// own frame proportions — only the x grid is reusable as-is.
+// free: +300 — dizzy took -150, groucho took -205, alfred took +70, audrey
+// took +125, lucille took +190) rather than re-deriving spacing or risking
+// the outside-core invisibility bug again. h/tint/flip still need tuning
+// per new design's own frame proportions — only the x grid is reusable
+// as-is.
 const CROWD_EXTRAS = [
     {
         // Sit→stand cutout. Planted right behind the ring (not the deep
@@ -161,6 +162,40 @@ const CROWD_EXTRAS = [
         sizeBasis: 'width',
         spots: [
             { x: W / 2 + 70, h: 112, flip: false, tint: 0x5c5648 },
+        ],
+    },
+    {
+        // Seated throughout, never stands (frame1 reserved hands-folded
+        // rest; frames 2-4 a gloved hand rises to the mouth in a delicate
+        // gasp; frames 5-8 continue that gasp, hands clasped near the chin,
+        // leaning further forward as the reaction builds — two source
+        // sheets, same calm-then-build merge pattern as the other seated
+        // extras; order was visually obvious from the QA preview, no
+        // round-trip needed). Ninth extra, placed at the reshuffle's +125
+        // grid slot (see the grid note above).
+        slug: 'audrey',
+        frames: 8,
+        restFrame: 1,
+        sizeBasis: 'width',
+        spots: [
+            { x: W / 2 + 125, h: 106, flip: false, tint: 0x5c5648 },
+        ],
+    },
+    {
+        // Seated throughout, never stands (frame1 calm hands folded in lap;
+        // frames 2-4 build to hands-to-cheeks shock, wide-eyed; frames 5-8
+        // continue into animated talking gestures, a bigger two-handed
+        // gesture, an arms-up cheer peak, then settle back down to clasped
+        // hands — two source sheets, same calm-then-build-then-settle merge
+        // pattern as browndresslady; order was visually obvious from the QA
+        // preview, no round-trip needed). Tenth extra, placed at the
+        // reshuffle's +190 grid slot (see the grid note above).
+        slug: 'lucille',
+        frames: 8,
+        restFrame: 1,
+        sizeBasis: 'width',
+        spots: [
+            { x: W / 2 + 190, h: 108, flip: true, tint: 0x5c5648 },
         ],
     },
 ];
@@ -347,20 +382,27 @@ export default class Arena extends Phaser.Scene {
     }
 
     // Sets a crowd extra instance to reference frame `f`, rescaling to match.
-    // sizeBasis 'height' scales off the tallest frame — frame-to-frame
-    // height growth is the point (oldman's sit→stand). sizeBasis 'width'
-    // scales off the resting frame's width instead, pinning it constant
-    // across frames — for an extra that stays seated throughout, letting
-    // raised-arm frames vary in height (naturally, via their own aspect
-    // ratio) without that height difference reading as her standing up.
+    // Both sizeBasis modes compute ONE scale per extra from a fixed
+    // reference frame's own dimensions and apply it uniformly to every
+    // frame — never recomputed from the currently-displayed frame's own
+    // bounding box. Recomputing per-frame was the bug fixed 2026-07-16:
+    // pinning displayed WIDTH constant by rescaling off each frame's own
+    // (pose-dependent) crop width made a sideways limb extension shrink the
+    // whole figure to compensate, reading as "gets smaller and sinks" —
+    // exactly the failure mode this two-mode design exists to avoid on the
+    // height axis for oldman.
+    // 'height' scales off the tallest frame (oldman's sit→stand — a real
+    // height change should read as growth). 'width' scales off the resting
+    // frame's own height instead, for extras that stay seated throughout;
+    // their raised-arm/spread-leg frames then vary in *display* size
+    // naturally with their own crop dimensions, rather than being distorted
+    // to fit a pinned display width.
     _setExtraFrame(fan, f) {
         const { extra, spot } = fan;
-        const dims = extra._dims[f];
         let scale;
         if (extra.sizeBasis === 'width') {
             const rest = extra._dims[extra.restFrame];
-            const targetW = spot.h * (rest.w / rest.h);
-            scale = targetW / dims.w;
+            scale = spot.h / rest.h;
         } else {
             const refH = Math.max(...Object.values(extra._dims).map(d => d.h));
             scale = spot.h / refH;

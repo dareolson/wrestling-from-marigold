@@ -17,6 +17,49 @@
 
 ## Sessions Log
 
+### 2026-07-16 (ninth and tenth crowd extras) — Added audrey and lucille, grid down to one free slot
+
+Derek's queued assignment (logged in `AI_HANDOFF.md` at the end of the prior
+session): cut and land two more crowd extras, same pipeline as every prior
+one. Source sheets (`Sprite sheets/Audience/Audrey.png`/`audrey2.png`,
+`Lucille.png`/`Lucille2.png`, gitignored, 4 frames each) were already sitting
+in the working tree, so both went in back-to-back this session.
+
+**Audrey** (`src/assets/audience/audrey/`): reserved, hands folded (sheet A)
+building to a gloved hand rising to the mouth in a delicate gasp, then
+hands clasped near the chin leaning further forward as the reaction builds
+(sheet B) — visually obvious order, no round-trip needed. Placed at
+`x = W/2 + 125`.
+
+**Lucille** (`src/assets/audience/lucille/`): calm hands folded in her lap
+building to hands-to-cheeks shock (sheet A), continuing into animated
+talking gestures, a bigger two-handed gesture, an arms-up cheer peak, then
+settling back to clasped hands (sheet B) — same calm-then-build-then-settle
+shape as browndresslady. Placed at `x = W/2 + 190`, flipped for facing
+variety.
+
+Both `sizeBasis: 'width'` (seated throughout, never stand). Both sheets
+shipped pre-downscaled by the cutter's existing `capHeight()` patch, no
+separate resize pass needed. Updated the grid note's "currently free" list
+in the same commit — only `+300` remains open.
+
+Verified via `window.__WFM_GAME`: all 10 crowd fans visible and resolved
+(oldman/browndresslady/popcornguy/marilyn/elvis/dizzy/groucho/alfred/audrey/
+lucille), audrey at x:605 displayHeight:106 and lucille at x:670
+displayHeight:108 (both matching their spot.h), lucille's scaleX negative
+confirming the flip applied. `npm test` (43/43), `npm run debug:play -- all`
+(12/12), `npm run build`, all green. Not eyeballed live in motion — same
+CRT/grain-filter caveat as every prior crowd-extra session; a t=3s debug
+screenshot only shows the still-fading intro title card, consistent with
+past sessions' finding that low-second static shots don't read the front
+row.
+
+Only committed `Arena.js`, the new `audrey/` and `lucille/` frame folders,
+and this + the matching `AI_HANDOFF.md` entry. The resize-pass thread
+(`tools/audience-cutter/cut.mjs` + oldman/browndresslady/popcornguy resized
+frames) is still sitting modified in this tree from an earlier session —
+left untouched, same as every session since it appeared.
+
 ### 2026-07-16 (eighth crowd extra) — Added alfred on the reshuffle's freed `+70` grid slot
 
 Cut Derek's two new reference sheets (`Sprite sheets/Audience/alfred.png`,

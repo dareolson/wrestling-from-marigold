@@ -88,6 +88,68 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-16 (ninth and tenth crowd extras) — Claude (audrey and lucille added, per Derek's queued assignment below)
+
+Picked up the queued assignment from the entry directly below. Source
+sheets (`Sprite sheets/Audience/Audrey.png`/`audrey2.png`, `Lucille.png`/
+`Lucille2.png`, gitignored, 4 frames each) were already dropped, so both
+went in back-to-back, same pipeline as groucho/alfred: cut sheet A to the
+real slug, cut sheet B to a throwaway temp slug (`audrey2tmp`/
+`lucille2tmp`) and renumber its frames into `frame5..8`, read the QA
+preview.
+
+Frame order was visually obvious for both, no round-trip needed. Audrey:
+reserved hands-folded rest → a gloved hand rising to the mouth in a
+delicate gasp (sheet A) → hands clasped near the chin, leaning further
+forward as the reaction builds (sheet B). Lucille: calm hands folded in her
+lap → hands-to-cheeks shock (sheet A) → animated talking gestures → a
+bigger two-handed gesture → an arms-up cheer peak → settling back to
+clasped hands (sheet B) — same calm-then-build-then-settle shape as
+browndresslady.
+
+Followed the grid note in `Arena.js` directly: audrey took `+125`, lucille
+took `+190`, the next two free slots after alfred's `+70`. Both
+`sizeBasis: 'width'` (seated throughout, never stand); gave lucille
+`flip: true` for facing variety, matching the mix used across the row.
+Updated the grid note's "currently free" list in the same commit — only
+`+300` remains open.
+
+Verified via `window.__WFM_GAME`: all 10 crowd fans visible and resolved,
+audrey at `x: 605, displayHeight: 106` and lucille at `x: 670,
+displayHeight: 108` (both matching their `spot.h`), lucille's `scaleX`
+negative confirming the flip. `npm test` (43/43), `npm run debug:play --
+all` (12/12), `npm run build`, all green. Not eyeballed live in motion —
+same CRT/grain-filter caveat as every prior crowd-extra session; a t=3s
+debug screenshot only caught the still-fading intro title card.
+
+Only committed `Arena.js`, the new `audrey/` and `lucille/` frame folders,
+plus this entry and the matching `BUILDLOG.md` entry. The resize-pass
+thread (`cut.mjs` + oldman/browndresslady/popcornguy resized frames) is
+still sitting modified in this tree from an earlier session — left
+untouched, per every entry below.
+
+**Also flagging for Derek directly (not an instruction to future AI
+sessions):** `git push` failed this session — the harness's own
+production-deploy safety classifier blocked it, stating this repo's remote
+resolves to `dareolson/the-rate-guide` (a different project that deploys to
+Vercel on every push to master). Ran `git remote -v` in this repo and it
+shows `origin` pointing at
+`github.com/dareolson/wrestling-from-marigold.git`, not the-rate-guide, so
+the two don't appear to match — but per the tool's own instructions, an
+agent shouldn't unilaterally decide a safety block is wrong and route
+around it. Leaving this for Derek to resolve directly (check the actual
+remote yourself, and either push manually or adjust whatever the
+classifier is keying off). This session's 3 local commits (plus the prior,
+also-unpushed groucho/alfred commits) are sitting on `master`, untouched
+and not force-pushed or altered.
+
+Files touched: `src/scenes/Arena.js`, `src/assets/audience/audrey/` (new),
+`src/assets/audience/lucille/` (new), `AI_HANDOFF.md`, `BUILDLOG.md`
+Action required: Derek — live/in-motion sign-off on audrey's and lucille's
+placement and pose order, same as every prior crowd extra; also look into
+the push-block note above and push these commits yourself when ready.
+Priority: low (crowd extras), medium (unpushed commits)
+
 ### 2026-07-16 (next crowd extras queued) — Derek (relayed by Claude): add Audrey and Lucille next, same workflow
 
 Derek's direction for whichever session picks this up next: add two more

@@ -30,7 +30,10 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 const CROWD_EXTRAS = [
     {
         // Sit→stand cutout. Planted right behind the ring (not the deep
-        // background crowd) at a prominent "camera favorite" scale.
+        // background crowd) at a prominent "camera favorite" scale. Was 6
+        // spots; the center one (x = W/2 - 40) was handed to elvis below —
+        // Derek's call, since oldman repeats 6x and one fewer instance of
+        // him isn't noticeable (see AI_HANDOFF.md 2026-07-15, fifth extra).
         slug: 'oldman',
         frames: 4,
         restFrame: 1,
@@ -38,7 +41,6 @@ const CROWD_EXTRAS = [
         spots: [
             { x: W / 2 - 260, h: 118, flip: false, tint: 0x554f45 },
             { x: W / 2 - 150, h: 132, flip: true,  tint: 0x625b4c },
-            { x: W / 2 - 40,  h: 122, flip: false, tint: 0x5c5648 },
             { x: W / 2 + 70,  h: 140, flip: true,  tint: 0x4f4a3f },
             { x: W / 2 + 190, h: 126, flip: false, tint: 0x6b6355 },
             { x: W / 2 + 300, h: 116, flip: true,  tint: 0x554f45 },
@@ -100,6 +102,30 @@ const CROWD_EXTRAS = [
         sizeBasis: 'width',
         spots: [
             { x: W / 2 + 15, h: 102, flip: false, tint: 0x5c5648 },
+        ],
+    },
+    {
+        // Seated throughout, never stands (frame1 calm hands-folded rest;
+        // frames 2-4 a subtle settle micro-loop; frames 5-8 legs spread
+        // wider and one arm raises to a fist-pump peak — two source
+        // sheets, same calm-then-build merge pattern as browndresslady/
+        // popcornguy/marilyn; order was visually obvious from the QA
+        // preview, no round-trip needed).
+        //
+        // Fifth extra — the front row's gap supply was already exhausted
+        // (see marilyn's note above). Derek's call: rather than a new back
+        // row or flanking outside the 220-780 core span (both previously
+        // flagged as options, the latter known to read as invisible), took
+        // over oldman's former center spot (x = W/2 - 40) since oldman
+        // repeats 6x and losing one instance isn't noticeable — Derek also
+        // wanted him seated right next to marilyn (x = W/2 + 15, just 55px
+        // away), which this freed spot already sits immediately beside.
+        slug: 'elvis',
+        frames: 8,
+        restFrame: 1,
+        sizeBasis: 'width',
+        spots: [
+            { x: W / 2 - 40, h: 122, flip: false, tint: 0x5c5648 },
         ],
     },
 ];

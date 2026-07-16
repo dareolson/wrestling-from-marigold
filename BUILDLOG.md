@@ -17,6 +17,26 @@
 
 ## Sessions Log
 
+### 2026-07-15 (fifth crowd extra) — Added elvis, seated next to marilyn on oldman's freed spot
+
+Cut Derek's two new reference sheets (`Sprite sheets/Audience/Elvis.png`,
+`Elvis2.png`) into an 8-frame seated cycle (`src/assets/audience/elvis/`)
+via the already-downscaling `cut.mjs` — calm hands-folded rest building to
+a subtle settle (sheet A), then legs spreading wide with a raised fist-pump
+peak (sheet B). Order was visually obvious from the QA preview, same
+calm-then-build shape as popcornguy/marilyn — no round-trip needed.
+
+Front row's gap supply was already exhausted (see the marilyn entry
+below), so this needed a placement call: Derek chose to take over one of
+oldman's 6 spots (the center one, `x = W/2 - 40`) rather than a new back
+row or flanking outside the visible core — losing one of oldman's six
+repeats isn't noticeable — and asked for Elvis seated right next to
+marilyn, which that freed spot already sits immediately beside (55px
+apart). `sizeBasis: 'width'` since he never stands, same reasoning as the
+other seated extras. Verified via `window.__WFM_GAME`: elvis texture keys
+resolve, fan visible, spot count right (oldman 5, elvis 1). `npm test`
+(43/43), `npm run debug:play -- all` (12/12), `npm run build`, all green.
+
 ### 2026-07-15 (marilyn resize follow-up) — Closed the resize pass's one remaining gap (`efdb147`)
 
 Re-ran the (still-uncommitted-by-the-other-session but already functional)

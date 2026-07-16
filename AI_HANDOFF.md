@@ -88,6 +88,16 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 (fifth crowd extra) — Claude (elvis added, took over oldman's freed center spot next to marilyn)
+
+Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/Elvis.png` + `Elvis2.png`, gitignored source, 4 frames each) via `tools/audience-cutter/cut.mjs` — using the already-uncommitted-but-functional downscale patch sitting in this working tree (see the resize-pass entries below), so `elvis/frame1..8.png` shipped pre-downscaled (all ≤135KB) with no separate resize pass needed later. Frame order was visually obvious from the QA preview (no round-trip needed): sheet A is calm, hands folded, a subtle settle micro-loop (frames 1-4); sheet B builds from that same calm pose through legs spreading wider to a fist-raised peak (frames 5-8) — same calm-then-build shape as popcornguy/marilyn.
+
+This is the fifth crowd extra, and the front row's gap supply was already exhausted per the marilyn entry below (oldman's 6 spots gave exactly 4 gaps, all filled by browndresslady/popcornguy/marilyn). Asked Derek rather than guessing: offered a new back row, replacing an existing extra's spot, or flanking outside the core span (flagged as likely bad, per browndresslady's rejected first attempt). Derek chose to replace a spot, then specified oldman's — oldman repeats 6x so losing one instance isn't noticeable — and separately asked for Elvis seated right next to marilyn. Took over oldman's former center spot (`x = W/2 - 40`), which was already the closest available position to marilyn's single spot (`x = W/2 + 15`, 55px away) — no coordinate change needed once that spot was freed. `sizeBasis: 'width'` since he's seated throughout and never stands, same reasoning as browndresslady/popcornguy/marilyn.
+
+Verified via `window.__WFM_GAME`: `elvis1`/`elvis4`/`elvis5`/`elvis8` textures all resolve, the elvis fan is `visible: true` at `x: 440` (scale ~0.34), oldman correctly dropped from 6 spots to 5, marilyn unchanged at `x: 495`. `npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`, all green.
+
+Only staged/committed `Arena.js` and the new `elvis/` frame folder — `cut.mjs` and the oldman/browndresslady/popcornguy resized frames already sitting modified in this tree are that concurrent session's to commit, left untouched per the note in the resize-pass entry below.
+
 ### 2026-07-15 (marilyn resize follow-up) — Claude (closed the "not done" gap from the resize-pass entry below, `efdb147`, pushed)
 
 Derek asked why wait for the other session — the downscale patch in `tools/audience-cutter/cut.mjs` was already sitting in this same working tree, uncommitted but functional (it had just resized oldman/browndresslady/popcornguy). Re-ran it on `Sprite sheets/Audience/Marilyn.png` + `Marilyn2.png` (same temp-slug-and-renumber merge as the original cut) and overwrote `src/assets/audience/marilyn/frame1..8.png`. frame1 392KB→108KB, same ~70% pattern as the other three. QA preview confirmed identical pose order/content, just smaller. Runtime check via `window.__WFM_GAME`: `displayHeight` unchanged (~102px, spot.h), scale went 0.142→0.283 on a source that halved from 718px→360px tall — resize is invisible to rendered output, as expected.

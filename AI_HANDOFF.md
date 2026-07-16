@@ -88,6 +88,35 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-16 (eleventh crowd extra queued) — Derek (relayed by Claude): one more extra planned, +300 grid slot, to be done in a separate session
+
+Derek's plan: add one more (11th) crowd extra, filling the last open grid
+slot (`W/2 + 300` — see the grid note above `CROWD_EXTRAS` in `Arena.js`;
+every other of the 11 proven positions is now occupied by oldman,
+browndresslady, popcornguy, marilyn, elvis, dizzy, groucho, alfred, audrey,
+and lucille). Derek will pick this up himself in a separate chat/session —
+not an assignment for whichever session reads this next; flagging only so
+the grid-slot bookkeeping and current 10/11-occupied state are visible
+before that session starts. Same pipeline as every prior extra applies
+(cut sheet A to the real slug, cut sheet B to a throwaway temp slug and
+renumber `frame5..8`, confirm order from the QA preview, add a
+`CROWD_EXTRAS` entry with `sizeBasis: 'width'` unless it genuinely stands,
+verify via `window.__WFM_GAME` + `npm test` + `npm run debug:play -- all` +
+`npm run build`, then BUILDLOG.md + AI_HANDOFF.md entries) — see the
+`_setExtraFrame` doc comment below (fixed 2026-07-16) for how the
+width/height scale basis actually works before tuning a new extra's `h`.
+
+Once this 11th extra lands, the front row is at Derek's originally stated
+target of "~10 unique designs" plus one — no further grid slots exist in
+the proven 220-780 span without another reshuffle or a new placement
+strategy (a second, more distant row was floated as untested back in the
+marilyn-era entries, if a 12th is ever wanted).
+
+Files touched: `AI_HANDOFF.md` only (forward note)
+Action required: Derek — cut and land the 11th extra himself in a new
+session.
+Priority: low
+
 ### 2026-07-16 (shrink-and-sink bug fix) — Claude (root-caused and fixed Derek's "groucho/elvis get smaller and lower" report; landed unlabeled inside `a7ad148`)
 
 Derek's live-check report on groucho and alfred: groucho and elvis "seem to

@@ -38,10 +38,10 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // 6 slots open rather than doubling anyone up (oldman previously ate 5 of
 // the 11 slots himself — the exact "obvious repeat" problem being solved).
 // **Adding a new design: pick an unused x from the list above** (currently
-// free: +70, +125, +190, +300 — dizzy took -150, groucho took -205) rather
-// than re-deriving spacing or risking the outside-core invisibility bug
-// again. h/tint/flip still need tuning per new design's own frame
-// proportions — only the x grid is reusable as-is.
+// free: +125, +190, +300 — dizzy took -150, groucho took -205, alfred took
+// +70) rather than re-deriving spacing or risking the outside-core
+// invisibility bug again. h/tint/flip still need tuning per new design's
+// own frame proportions — only the x grid is reusable as-is.
 const CROWD_EXTRAS = [
     {
         // Sit→stand cutout. Planted right behind the ring (not the deep
@@ -145,6 +145,22 @@ const CROWD_EXTRAS = [
         sizeBasis: 'width',
         spots: [
             { x: W / 2 - 205, h: 104, flip: false, tint: 0x5c5648 },
+        ],
+    },
+    {
+        // Seated throughout, never stands (frame1 calm hands folded on lap;
+        // frames 2-4 settle forward slightly; frames 5-8 continue that
+        // forward lean, hands clasping and rising toward the chest like a
+        // building applause — two source sheets, same calm-then-build merge
+        // pattern as the other seated extras; order was visually obvious
+        // from the QA preview, no round-trip needed). Eighth extra, placed
+        // at the reshuffle's +70 grid slot (see the grid note above).
+        slug: 'alfred',
+        frames: 8,
+        restFrame: 1,
+        sizeBasis: 'width',
+        spots: [
+            { x: W / 2 + 70, h: 112, flip: false, tint: 0x5c5648 },
         ],
     },
 ];

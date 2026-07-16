@@ -88,6 +88,20 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-16 (eighth crowd extra) — Claude (alfred added, took the reshuffle's freed `+70` grid slot)
+
+Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/alfred.png` + `alfred2.png`, gitignored source, 4 frames each) via `tools/audience-cutter/cut.mjs` — frames shipped pre-downscaled (~111-143KB each) with no separate resize pass needed. Frame order was visually obvious from the QA preview (no round-trip needed): sheet A is calm, hands folded on his lap, settling slightly forward (frames 1-4); sheet B continues that forward lean into hands clasping and rising toward the chest, reading as a building applause (frames 5-8) — same calm-then-build shape as the other seated extras.
+
+This is the eighth crowd extra, added directly after groucho in the same session. Followed the reshuffle's documented grid note in `Arena.js` — picked the next free slot after groucho's `-205`, which is `+70`. `sizeBasis: 'width'` since he's seated throughout and never stands, same reasoning as the other seated extras. Updated the grid note's "currently free" list in the same commit.
+
+Verified via `window.__WFM_GAME`: `alfred1`/`alfred8` textures resolve, the alfred fan is `visible: true` at `x: 550`, `displayHeight: 112` matching `spot.h`, `crowdFans.length` is 8 (one per design). `npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`, all green. Not eyeballed live in motion — same CRT/grain-filter caveat noted in every prior crowd-extra session; Derek's live check is still the real confirmation.
+
+Only committed `Arena.js` and the new `alfred/` frame folder, plus this entry and the matching `BUILDLOG.md` entry. `cut.mjs` and the oldman/browndresslady/popcornguy resized frames still sitting modified in this tree are that other, still-uncommitted resize-pass thread's to land — left untouched.
+
+Files touched: `src/scenes/Arena.js`, `src/assets/audience/alfred/` (new), `AI_HANDOFF.md`, `BUILDLOG.md`
+Action required: Derek — live/in-motion sign-off on alfred's and groucho's placement and pose order, same as every prior crowd extra.
+Priority: low
+
 ### 2026-07-16 (seventh crowd extra) — Claude (groucho added, took the reshuffle's freed `-205` grid slot)
 
 Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/groucho.png` + `groucho2.png`, gitignored source, 4 frames each) via `tools/audience-cutter/cut.mjs` — the downscale patch is committed, so `groucho/frame1..8.png` shipped pre-downscaled (~130-154KB each) with no separate resize pass needed. Frame order was visually obvious from the QA preview (no round-trip needed): sheet A is calm, hands folded, cigar down, building to picking the cigar up to a raised hold (frames 1-4); sheet B continues leaning further in, gesturing with the free hand, to a pointing-outward punchline gesture (frames 5-8) — same calm-then-build shape as the other seated extras.

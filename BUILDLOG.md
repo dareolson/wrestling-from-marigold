@@ -17,6 +17,27 @@
 
 ## Sessions Log
 
+### 2026-07-16 (eighth crowd extra) — Added alfred on the reshuffle's freed `+70` grid slot
+
+Cut Derek's two new reference sheets (`Sprite sheets/Audience/alfred.png`,
+`alfred2.png`) into an 8-frame seated cycle (`src/assets/audience/alfred/`)
+via `cut.mjs` — calm, hands folded on his lap, settling slightly forward
+(sheet A), continuing that forward lean into hands clasping and rising
+toward the chest like a building applause (sheet B). Order was visually
+obvious from the QA preview, same calm-then-build shape as the other seated
+extras — no round-trip needed. Frames shipped pre-downscaled by the
+cutter's existing `capHeight()` patch (all ≤143KB), no separate resize pass
+needed.
+
+Placed at `x = W/2 + 70`, the next free slot from the reshuffle's documented
+grid (groucho took `-205` earlier this session). `sizeBasis: 'width'` since
+he stays seated throughout, same reasoning as the other seated extras.
+Verified via `window.__WFM_GAME`: alfred1/8 resolve, fan visible at x:550
+with displayHeight matching spot.h (112), 8 fans total (one per design).
+`npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`,
+all green. Not eyeballed live in motion — same CRT/grain caveat as every
+prior crowd-extra session.
+
 ### 2026-07-16 (seventh crowd extra) — Added groucho on the reshuffle's freed `-205` grid slot
 
 Cut Derek's two new reference sheets (`Sprite sheets/Audience/groucho.png`,

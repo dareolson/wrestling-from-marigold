@@ -17,6 +17,44 @@
 
 ## Sessions Log
 
+### 2026-07-15 (audience-cutter resize pass) — Crowd-extra frames were 5-7x higher-res than they're ever displayed at
+
+Derek asked whether stacking on more crowd extras would slow load times.
+It would have: `tools/audience-cutter/cut.mjs` never resized, so every
+frame shipped at full source-crop resolution (~300x700px) despite never
+rendering above ~140px tall in-game, all loaded unconditionally up front.
+Added a downscale step to the cutter (caps at 360px tall, ~2.5x the
+biggest spot in use) and re-cut oldman/browndresslady/popcornguy through
+it. Combined size for those three: 7.8MB → 2.4MB (69% smaller), pixel-
+identical render output confirmed in-game — repeating one design across
+more spots was already free, this just fixes the cost of each new design.
+`marilyn/` (added concurrently by another session today, see
+`AI_HANDOFF.md`) still needs the same pass whenever that thread picks it
+back up — no manual step, just re-run the cutter. Full detail, including
+how browndresslady's original frame-to-source mapping was recovered
+programmatically (it wasn't documented), in `AI_HANDOFF.md`, same date.
+`npm test` (43/43) and `npm run build` clean; `debug:play` not re-run
+(no gameplay code touched).
+
+### 2026-07-15 (fourth crowd extra) — Added marilyn, front row's gap supply now exhausted
+
+Cut Derek's two new reference sheets (Marilyn.png, Marilyn2.png) into an
+8-frame seated cycle (`src/assets/audience/marilyn/`) — calm w/ sunglasses
+and a drink building to sipping/losing the sunglasses in surprise (sheet A),
+then a full glass-raised fist-pump cheer (sheet B). Slotted into
+`CROWD_EXTRAS` as a single entry, no code changes.
+
+Unlike browndresslady/popcornguy, only one gap was left in the oldman row
+(the center seam, between oldman 3-4) — the other four pair-gaps are now
+taken. Gave her one spot there instead of forcing a second instance back
+out past the row's visible core, which is what read as invisible on
+browndresslady's first attempt. Placement not yet eyeballed live by Derek —
+same "unconfirmed guess" caveat as the last two. Full detail in
+`AI_HANDOFF.md`, same date. `npm test` (43/43), `debug:play` (12/12), and
+`npm run build` all green. **Front row is now full** — a fifth extra needs
+either a second, more-distant row (position + scale strategy, not yet
+built) or overwriting one of the four filled slots.
+
 ### 2026-07-15 (third crowd extra) — Added popcornguy, no code generalization needed
 
 Cut Derek's two new reference sheets (popcornguy.png, popcornguy2.png) into

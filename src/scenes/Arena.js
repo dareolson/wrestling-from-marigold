@@ -81,6 +81,27 @@ const CROWD_EXTRAS = [
             { x: W / 2 + 245, h: 104, flip: false, tint: 0x5c5648 },
         ],
     },
+    {
+        // Seated throughout (frame1 calm w/ sunglasses + a sipped drink;
+        // frames 2-4 sip and lose the sunglasses in surprise; frames 5-8
+        // build to a full glass-raised, fist-pumping cheer — two source
+        // sheets, same merge pattern as browndresslady/popcornguy).
+        // Unlike those two, the front row's pair-of-gaps supply is used
+        // up: oldman's 6 spots left exactly one ungapped seam (between
+        // oldman 3-4, the center of the row) after browndresslady and
+        // popcornguy took the other four. One spot only, in that seam,
+        // rather than forcing a second instance out past the 220-780
+        // core span where browndresslady's first flanking attempt read
+        // as invisible. Unconfirmed guess like the last two — flag for
+        // Derek's live check before calling it done.
+        slug: 'marilyn',
+        frames: 8,
+        restFrame: 1,
+        sizeBasis: 'width',
+        spots: [
+            { x: W / 2 + 15, h: 102, flip: false, tint: 0x5c5648 },
+        ],
+    },
 ];
 
 // Crowd reaction swell per match event type (0..1)

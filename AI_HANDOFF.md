@@ -88,6 +88,70 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-15 (audience-cutter resize pass) — Claude (crowd-extra frames were shipping 5-7x more pixels than ever get displayed)
+
+Derek asked whether "infinite rows" of crowd extras would bog down load times. Answer: repeating one design across more `spots` is free (Phaser caches by texture key), but each *new* design wasn't — `tools/audience-cutter/cut.mjs` never resized, it just cropped at whatever resolution Derek's reference sheets are (source frames ran ~260-370px wide, 610-741px tall), while `CROWD_EXTRAS` never renders an extra above `spot.h` (max 140px across all four extras today). All of it loads unconditionally in `preload()`, on the critical path, with no lazy-loading or atlasing.
+
+Added `capHeight()` to `cut.mjs`'s browser-side lib and a `MAX_FRAME_HEIGHT = 360` constant (~2.5x the current max `spot.h`, retina headroom) — every cut now downscales (never upscales) before writing frame PNGs. Re-ran the cutter against all five existing source sheets and swapped the output into `oldman/`, `browndresslady/`, and `popcornguy/` (not `marilyn/` — that folder appeared mid-session from a concurrent session, see below, and I left it alone rather than touch someone else's in-flight write).
+
+For browndresslady specifically, the original per-frame source-sheet mapping (which of the two sheets' four poses became which of the merged frame1-8) wasn't written down anywhere I could find, so I recovered it programmatically: downscaled every current committed frame and every newly-cut candidate frame to a common small size and picked each frame's nearest-match candidate by raw pixel diff, rather than eyeballing it and risking a silent reshuffle of Derek's approved animation order. All 8 matches were unambiguous (next-best score was 1.3-5x worse). Confirmed the recovered mapping reproduces the exact original sequence via a side-by-side QA render before committing to the swap.
+
+Result: oldman 1.4MB→488KB, browndresslady 2.6MB→844KB, popcornguy 3.7MB→1.1MB (69% smaller combined, 7.8MB→2.4MB for these three). Verified pixel-identical `displayWidth`/`displayHeight` in-game before and after via `window.__WFM_GAME` queries (Arena.js computes scale from actual image dims, so this was expected but worth confirming) — the resize is completely invisible to rendered output. Also eyeballed a 2x zoom crop of old-vs-new detail (face/hands) side by side; no visible softening at any size these are actually shown at.
+
+**Not done:** `marilyn/` still ships unresized frames — whoever's working that thread can just re-run `cut.mjs` on the same two source sheets now that it resizes by default, no manual step needed. **Also noticed while working:** another Claude session added `marilyn` to `CROWD_EXTRAS` in `Arena.js` *during* this session (folder appeared mid-way through, entry logged below at "fourth crowd extra") — no conflict since both edits were append-only to the same array, but worth Derek knowing two sessions were live on this file concurrently today.
+
+Verified: `npm test` (43/43), `npm run build`, clean. Did not re-run `debug:play` after this pass (no wrestler/gameplay code touched, only crowd-extra assets + the cutter tool).
+
+### 2026-07-15 (fourth crowd extra) — Claude (marilyn added, front-row gap supply now exhausted)
+
+Same pipeline as the last two: Derek cut two chroma-keyed reference sheets
+(`Sprite sheets/Audience/Marilyn.png` + `Marilyn2.png`, gitignored source,
+4 frames each) via `tools/audience-cutter/cut.mjs`. The tool always writes
+`frame1..N` starting at 1 for whatever slug you give it, so — as must have
+happened for browndresslady/popcornguy too — the second sheet was cut to a
+throwaway slug (`marilyn2tmp`) and its four frames renamed into
+`src/assets/audience/marilyn/frame5..8.png`, then the temp folder removed.
+Frame order was visually obvious from the QA preview (no round-trip needed):
+sheet A is calm-with-sunglasses-and-a-drink → sipping → sunglasses off in
+surprise (frames 1-4), sheet B is a sustained glass-raised fist-pump cheer
+(frames 5-8).
+
+Added a `marilyn` entry to `CROWD_EXTRAS` — `sizeBasis: 'width'` (seated
+throughout, same reasoning as browndresslady/popcornguy). Zero code changes
+to `_setupCrowdExtras`/`_setExtraFrame`/`_reactCrowdExtras`.
+
+**Placement note for whoever adds a fifth extra:** the oldman row has 6
+spots and therefore 4 internal gaps + the option of flanking outside the
+row entirely (which read as invisible for browndresslady's first attempt).
+browndresslady took the two inner gaps (2-3, 4-5), popcornguy took the two
+outer gaps (outside 1-2, outside 5-6) — that's all 4 gaps. Marilyn only got
+**one** spot, in the single remaining seam (between oldman 3-4, `W/2 + 15`)
+— there was no second gap left to pair her with, so I didn't force one by
+going back outside the row. **The front row's gap supply is now exhausted.**
+A fifth extra will need either a genuinely new placement strategy (a second,
+more-distant row via smaller `h` + the existing groundY-from-h mechanic,
+untested) or replacing one of the four filled slots — flag that decision to
+Derek rather than guessing at a new x offset blind, since guessing offsets
+is exactly what's produced three straight "not yet eyeballed live" caveats.
+
+Verified programmatically the same way as the prior two sessions (not
+eyeballed live — the debug-shot CRT/grain filter makes the front row hard
+to read in a static screenshot): `window.__WFM_GAME` query confirms the
+`marilyn` fan is `visible: true`, texture key `marilyn1` resolves, and
+scale (0.142) matches spot.h=102 against the frame's native 718px height.
+`marilyn1` and `marilyn8` both resolve via `scene.textures.exists()`.
+
+Also found the uncommitted-but-complete popcornguy work from the prior
+session still sitting in the working tree at session start (assets, Arena.js
+entry, and both doc entries below already written) — re-verified it myself
+(`npm test`/`debug:play`/`build` all green) and committed it separately
+(`c9b0671`) before starting this session's marilyn work, so the two don't
+land in one commit.
+
+Verified: `npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`, all green.
+
+**Live collision found mid-session, left alone:** `tools/audience-cutter/cut.mjs` showed up modified partway through this session — a `MAX_FRAME_HEIGHT`/`capHeight()` downscale patch (frames were shipping 5-7x more pixels than ever get displayed at spot.h scale) — with oldman/browndresslady/popcornguy's committed frames already re-cut through it. That's a different, apparently-concurrent session's in-progress work, not mine; I didn't author it and didn't verify it, so I left `cut.mjs` and those three frame folders unstaged/uncommitted rather than sweeping them into this commit. My `marilyn` cut ran *before* that patch existed, so those 8 frames are at full source resolution, not yet downscaled — whoever lands the downscale patch should re-run it on `marilyn` too for consistency once it's confirmed and merged.
+
 ### 2026-07-15 (third crowd extra) — Claude (popcornguy added, no CROWD_EXTRAS changes needed)
 
 This is the "third crowd member" session flagged in the browndresslady entry below. Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/popcornguy.png` + `popcornguy2.png`, gitignored source, 4 frames each) via `tools/audience-cutter/cut.mjs` into `src/assets/audience/popcornguy/frame1..8.png`. Unlike browndresslady, the frame order here was visually obvious from the QA preview alone (no round-trip with Derek needed): sheet A is a calm seated rest → eating-popcorn micro-loop (frames 1-4), sheet B is an open-mouth-shout → fist-pump-with-popcorn-flying build (frames 5-8) — concatenated in that order.

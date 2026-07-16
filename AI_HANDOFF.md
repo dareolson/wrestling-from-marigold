@@ -88,6 +88,32 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-16 (next crowd extras queued) — Derek (relayed by Claude): add Audrey and Lucille next, same workflow
+
+Derek's direction for whichever session picks this up next: add two more
+crowd extras, **Audrey** and **Lucille**, following the exact same pipeline
+as groucho/alfred immediately below (and the five before them) — Derek will
+have dropped `Sprite sheets/Audience/audrey.png` + `audrey2.png` and
+`lucille.png` + `lucille2.png` (gitignored source, 4 frames each) for
+`tools/audience-cutter/cut.mjs` to cut.
+
+Do them one after the other, same as this session did groucho then alfred:
+cut sheet A to the real slug, cut sheet B to a throwaway temp slug and
+rename its frames into `frame5..8`, read the QA preview to confirm frame
+order (ask Derek only if it's not visually obvious), add a `CROWD_EXTRAS`
+entry in `Arena.js` (`sizeBasis: 'width'` unless the character genuinely
+stands up mid-cycle), pick the next free x from the grid note above
+`CROWD_EXTRAS` (currently free after alfred: `+125, +190, +300`), verify via
+`window.__WFM_GAME` + `npm test` + `npm run debug:play -- all` + `npm run
+build`, then a BUILDLOG.md + AI_HANDOFF.md entry per character. Only commit
+the files you authored — see the note in every entry below about the
+still-uncommitted resize-pass thread (`cut.mjs` + oldman/browndresslady/
+popcornguy frames) sitting in this tree; leave it alone.
+
+Files touched: `AI_HANDOFF.md` only (forward note)
+Action required: next session — cut and land Audrey and Lucille.
+Priority: low
+
 ### 2026-07-16 (eighth crowd extra) — Claude (alfred added, took the reshuffle's freed `+70` grid slot)
 
 Derek cut two chroma-keyed reference sheets (`Sprite sheets/Audience/alfred.png` + `alfred2.png`, gitignored source, 4 frames each) via `tools/audience-cutter/cut.mjs` — frames shipped pre-downscaled (~111-143KB each) with no separate resize pass needed. Frame order was visually obvious from the QA preview (no round-trip needed): sheet A is calm, hands folded on his lap, settling slightly forward (frames 1-4); sheet B continues that forward lean into hands clasping and rising toward the chest, reading as a building applause (frames 5-8) — same calm-then-build shape as the other seated extras.

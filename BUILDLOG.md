@@ -274,6 +274,56 @@ Only committed `Arena.js`. Not eyeballed live in motion by Derek yet — same
 caveat as every crowd session, worse here since the background art is
 dark/low-contrast and hard to judge from a still screenshot.
 
+### 2026-07-16 (crowd-extra three-row depth band) — the ten named audience members were all sitting on nearly one shared baseline
+
+Derek: front row read as "very jumbled" and asked for three distinct rows —
+front row closest/biggest, each successive row a little higher and dipping
+into harder-to-see territory, blending toward the painted background crowd.
+
+Diagnosed with `window.__WFM_GAME`: every `CROWD_EXTRAS` spot's `groundY`
+was `RING.farLeft.y + spot.h * 0.45` — only each character's own tuned `h`
+(92-122px across all ten) varied it, a ~14px total spread across the whole
+row. All ten were effectively on one line with only minor per-character
+height differences, not three separated bands — that's the jumble.
+
+Added `EXTRA_ROWS` (`Arena.js`) with three bands, keyed by a new `row`
+field (1/2/3, default 1) on each spot:
+
+```
+row 1: yOffset 0,   scaleMul 1.0,  dim 1.0,  depth 1.5   (unchanged baseline)
+row 2: yOffset -20,  scaleMul 0.82, dim 0.8,  depth 1.35
+row 3: yOffset -38,  scaleMul 0.66, dim 0.62, depth 1.2
+```
+
+`_setExtraFrame` now multiplies the computed scale by `rowCfg.scaleMul` and
+adds `rowCfg.yOffset` to `groundY` (pulling rows 2/3 further from the near
+camera); `_setupCrowdExtras` sets `depth` from the row (so front-row spots
+draw on top of back-row spots when they overlap) and tints via a new
+`dimTint(hex, factor)` helper (scales each RGB channel) instead of the raw
+spot tint. Row 1 is byte-identical to the pre-change render (yOffset 0,
+scaleMul 1, dim 1, same depth 1.5 every extra used before).
+
+Assigned all ten existing extras to a row, interleaved across the x grid
+(`index % 3`) rather than blocking rows 2/3 to one side of the screen, so
+the recession reads across the full width: row 1 = oldman/browndresslady/
+alfred/popcornguy, row 2 = groucho/elvis/audrey, row 3 = dizzy/marilyn/
+lucille.
+
+Verified via `window.__WFM_GAME`: row 1 sits at y 303-311 (displayHeight
+100-118, full tint), row 2 at y 285-293 (displayHeight 85-100, tint ~80%),
+row 3 at y 265-269 (displayHeight 66-71, tint ~62%) — three clearly
+separated bands in position, size, and brightness. Confirmed visually with
+a cropped/zoomed debug screenshot at t=7s (waited past the intro title
+card's fade, per the CRT/grain-filter caveat noted in prior crowd-extra
+sessions) — smaller, dimmer figures now read as sitting further back
+between the bigger front-row figures, not jammed onto one line. `npm test`
+(43/43), `npm run debug:play -- all` (12/12), `npm run build`, all green.
+
+Merge note (2026-07-18): pushed directly to `origin/master` before marlon
+existed; reconciled with the local, unpushed marlon-onward history in the
+merge that landed the corner policeman above. Marlon picked up `row: 2`
+in that merge, continuing this entry's index%3 interleave.
+
 ### 2026-07-16 (eleventh crowd extra) — Added marlon, front row fills all 11 proven grid slots
 
 Derek's queued assignment (logged in `AI_HANDOFF.md` at the end of the prior

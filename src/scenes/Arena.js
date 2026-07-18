@@ -51,7 +51,41 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // drawThirdRow's setTint calls), but still slightly darker than the ring
 // itself (drawRingMat's 0xb0b0a8 / drawNearApron's 0xa0a098). Previously
 // the front row was tinted darker than the untinted rows behind it —
-// backwards falloff, fixed here.
+// backwards falloff, fixed here. Each spot's tint below is this fixed,
+// brightened base value — EXTRA_ROWS' own `dim` (below) darkens rows 2/3
+// further from there, it doesn't replace this fix.
+//
+// THREE-ROW DEPTH BAND (2026-07-16, Derek, direct commit): every spot
+// before this pass sat on (near enough) one shared baseline — groundY only
+// varied by each character's own tuned `h` (±14px total spread) — so the
+// row read as designs jammed onto one line rather than a crowd with any
+// depth. `row` (1/2/3, default 1) now buckets each spot into one of three
+// bands via EXTRA_ROWS: row 1 is the untouched "camera favorite" baseline
+// (groundY = farLeft.y + h*0.45, full scale, full tint, depth 1.5); rows
+// 2/3 push groundY up (further from the near camera), scale down, dim the
+// tint, and lower depth, so they read as sitting further back and start
+// blending toward the background-row cutouts instead of competing with the
+// front row. Assignment interleaves across the x grid (index % 3) rather
+// than blocking rows 2/3 to one side, so the recession reads across the
+// full width: row 1 = oldman/browndresslady/alfred/popcornguy, row 2 =
+// groucho/elvis/audrey/marlon, row 3 = dizzy/marilyn/lucille — marlon
+// (added after this system landed) continues the same index%3 pattern at
+// its own grid index (10 → row 2).
+const EXTRA_ROWS = {
+    1: { yOffset: 0,   scaleMul: 1.0,  dim: 1.0,  depth: 1.5 },
+    2: { yOffset: -20, scaleMul: 0.82, dim: 0.8,  depth: 1.35 },
+    3: { yOffset: -38, scaleMul: 0.66, dim: 0.62, depth: 1.2 },
+};
+
+// Scales a 0xRRGGBB tint's channels by `factor` (<1 darkens) — used to dim
+// rows 2/3 of CROWD_EXTRAS so they recede instead of just sitting smaller.
+function dimTint(hex, factor) {
+    const r = Math.round(((hex >> 16) & 0xff) * factor);
+    const g = Math.round(((hex >> 8) & 0xff) * factor);
+    const b = Math.round((hex & 0xff) * factor);
+    return (r << 16) | (g << 8) | b;
+}
+
 const CROWD_EXTRAS = [
     {
         // Sit→stand cutout. Planted right behind the ring (not the deep
@@ -63,7 +97,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'height',
         spots: [
-            { x: W / 2 - 260, h: 118, flip: false, tint: 0x969086 },
+            { x: W / 2 - 260, h: 118, flip: false, tint: 0x969086, row: 1 },
         ],
     },
     {
@@ -77,7 +111,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 95,  h: 100, flip: false, tint: 0xa39c8d },
+            { x: W / 2 - 95,  h: 100, flip: false, tint: 0xa39c8d, row: 1 },
         ],
     },
     {
@@ -91,7 +125,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 245, h: 104, flip: false, tint: 0x9d9789 },
+            { x: W / 2 + 245, h: 104, flip: false, tint: 0x9d9789, row: 1 },
         ],
     },
     {
@@ -104,7 +138,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 15, h: 102, flip: false, tint: 0x9d9789 },
+            { x: W / 2 + 15, h: 102, flip: false, tint: 0x9d9789, row: 3 },
         ],
     },
     {
@@ -120,7 +154,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 40, h: 122, flip: false, tint: 0x9d9789 },
+            { x: W / 2 - 40, h: 122, flip: false, tint: 0x9d9789, row: 2 },
         ],
     },
     {
@@ -137,7 +171,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 150, h: 100, flip: true, tint: 0xaca496 },
+            { x: W / 2 - 150, h: 100, flip: true, tint: 0xaca496, row: 3 },
         ],
     },
     {
@@ -154,7 +188,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 205, h: 104, flip: false, tint: 0x9d9789 },
+            { x: W / 2 - 205, h: 104, flip: false, tint: 0x9d9789, row: 2 },
         ],
     },
     {
@@ -170,7 +204,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 70, h: 112, flip: false, tint: 0x9d9789 },
+            { x: W / 2 + 70, h: 112, flip: false, tint: 0x9d9789, row: 1 },
         ],
     },
     {
@@ -187,7 +221,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 125, h: 106, flip: false, tint: 0x9d9789 },
+            { x: W / 2 + 125, h: 106, flip: false, tint: 0x9d9789, row: 2 },
         ],
     },
     {
@@ -204,7 +238,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 190, h: 108, flip: true, tint: 0x9d9789 },
+            { x: W / 2 + 190, h: 108, flip: true, tint: 0x9d9789, row: 3 },
         ],
     },
     {
@@ -218,13 +252,15 @@ const CROWD_EXTRAS = [
         // gets up, so sizeBasis is 'height' like oldman rather than
         // 'width'). Eleventh extra, placed at the reshuffle's last open
         // +300 grid slot (see the grid note above) — fills the row to
-        // Derek's ~10-design target plus one.
+        // Derek's ~10-design target plus one. row:2 continues the
+        // EXTRA_ROWS index%3 interleave (see that const's comment) at his
+        // own grid index (10 → row 2) — added after that system landed.
         slug: 'marlon',
         frames: 8,
         restFrame: 1,
         sizeBasis: 'height',
         spots: [
-            { x: W / 2 + 300, h: 118, flip: false, tint: 0x9d9789 },
+            { x: W / 2 + 300, h: 118, flip: false, tint: 0x9d9789, row: 2 },
         ],
     },
 ];
@@ -691,11 +727,12 @@ export default class Arena extends Phaser.Scene {
     // jitter) that a given design doesn't read as an obvious clone row —
     // but each IS one source design, so this is a ceiling-of-repetition
     // test, not a real varied crowd. Planted right behind the ring (not the
-    // deep background crowd) at a prominent "camera favorite" scale. Depth
-    // 1.5 sits below drawRingMat (depth 3); each one's ground line is set so
-    // RING.farLeft.y (258 — the mat's crowd-side edge) crosses at the torso,
-    // same occlusion mechanism the side-crowd rows use against the ring
-    // boundary.
+    // deep background crowd) at a prominent "camera favorite" scale. Each
+    // spot's `row` (see EXTRA_ROWS) picks depth (below drawRingMat's 3, above
+    // drawCrowd's 1) and how far its ground line sits above RING.farLeft.y
+    // (258 — the mat's crowd-side edge); row 1's ground line crosses at the
+    // torso, same occlusion mechanism the side-crowd rows use against the
+    // ring boundary, and rows 2/3 push further back from there.
     _setupCrowdExtras() {
         this.crowdFans = [];
         for (const extra of CROWD_EXTRAS) {
@@ -710,10 +747,11 @@ export default class Arena extends Phaser.Scene {
                 extra._dims[i] = { w: src.width, h: src.height };
             }
             for (const spot of extra.spots) {
+                const rowCfg = EXTRA_ROWS[spot.row || 1];
                 const fan = { img: this.add.image(spot.x, 0, `${extra.slug}${extra.restFrame}`)
                     .setOrigin(0.5, 1)
-                    .setTint(spot.tint)
-                    .setDepth(1.5), extra, spot, reacting: false };
+                    .setTint(dimTint(spot.tint, rowCfg.dim))
+                    .setDepth(rowCfg.depth), extra, spot, reacting: false };
                 this._setExtraFrame(fan, extra.restFrame);
                 this.crowdFans.push(fan);
             }
@@ -738,6 +776,7 @@ export default class Arena extends Phaser.Scene {
     // to fit a pinned display width.
     _setExtraFrame(fan, f) {
         const { extra, spot } = fan;
+        const rowCfg = EXTRA_ROWS[spot.row || 1];
         let scale;
         if (extra.sizeBasis === 'width') {
             const rest = extra._dims[extra.restFrame];
@@ -746,16 +785,22 @@ export default class Arena extends Phaser.Scene {
             const refH = Math.max(...Object.values(extra._dims).map(d => d.h));
             scale = spot.h / refH;
         }
+        scale *= rowCfg.scaleMul;
         // extra.frameScale is an opt-in per-frame multiplier on top of the
         // above (photographer only, currently) — for when the art's own
         // relative proportions don't read as big enough a change even
         // after a correct batch-scale cut (see cut.mjs), and a deliberate
         // per-frame exaggeration is wanted instead.
         scale *= extra.frameScale?.[f] ?? 1;
-        // spot.groundY lets a fan opt out of the "behind the ring" anchor
-        // below — needed for the photographer, who sits beside the ring at
-        // near-camera depth, not behind it (see _setupPhotographer).
-        const groundY = spot.groundY ?? (RING.farLeft.y + spot.h * 0.45); // ~torso-height occlusion by the mat
+        // ~torso-height occlusion by the mat at row 1; rowCfg.yOffset pulls
+        // rows 2/3 further from the near camera (see EXTRA_ROWS). spot.groundY
+        // lets a fan opt out of the row-based anchor entirely — needed for
+        // the photographer/policeman, who sit beside the ring at an explicit
+        // near-camera depth, not behind it (see _setupPhotographer/
+        // _setupPoliceman); rowCfg.yOffset still applies on top but is a
+        // no-op for them since neither sets spot.row (defaults to row 1,
+        // yOffset 0).
+        const groundY = (spot.groundY ?? (RING.farLeft.y + spot.h * 0.45)) + rowCfg.yOffset;
         // extra.stepOffset is an opt-in per-frame x shift on top of spot.x
         // (photographer only) — direction-aware via spot.flip so "forward"
         // always means toward the ring regardless of which side a future

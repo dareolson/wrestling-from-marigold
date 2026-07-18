@@ -17,6 +17,41 @@
 
 ## Sessions Log
 
+### 2026-07-18 (corner policeman: added, sized/placed at the far-right post, animation decoupled from match excitement)
+
+Thirteenth crowd extra, same overall pattern as the photographer (kept out
+of `CROWD_EXTRAS`, own `POLICEMAN` const + `_setupPoliceman`) but a new
+source shape: a single 4x2 pose grid rather than a horizontal strip, split
+into two temp row-strips and cut separately with a shared `--scale` before
+merging into `frame1-8`. Stands at attention throughout, gradually turning
+from front-facing to full right-profile — `sizeBasis:'width'` since there's
+no real height change to key off. `_setupPoliceman` takes `flip` as a
+param (default `true`) since Derek's planning one per corner.
+
+Placement went through a few live rounds: an early spot beside the
+near-right post was measured clear programmatically but rendered fully
+invisible — `drawSideCrowd()`'s right-flank flat-dot crowd was drawing in
+front of his actual art at that y-band, so that flank was removed outright
+(same treatment the left flank got for the photographer). Moved to the
+far-right/"upper right" post (`RING.farRight`, a separate fixed post from
+the near-right one) and sized to Derek's explicit ask — head height at the
+second rope's far-side y — then doubled in size with `groundY` adjusted to
+hold his head position in place (origin is bottom-anchored, so scaling `h`
+alone grows a figure upward from a fixed top rather than in place).
+
+Follow-up same day: his head-turn used to trigger off match events
+(`_reactCrowdExtras`, same hook every other crowd fan uses) — turning to
+look at the crowd on pinfalls/nearfalls reads backwards for a cop who's
+watching for trouble, not the match. Stopped pushing him into
+`this.crowdFans` and gave him his own independent loop instead
+(`_schedulePolicemanScan`): random 4-11s idle gaps, turning to a random
+target frame (not always full profile) and back, rescheduling itself —
+confirmed via `window.__WFM_GAME` that his texture changes over real idle
+time with zero match events firing.
+
+`npm test` (43/43), `npm run build`, `npm run debug:play -- all` (12/12)
+all green throughout.
+
 ### 2026-07-17 (photographer: flash workshop — offset onto the actual bulb, delayed one frame; groundY nudged to 428)
 
 Flash was centered on his body/feet, not the bulb, and fired in the same

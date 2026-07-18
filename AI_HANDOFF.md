@@ -88,6 +88,160 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-18 (policeman: intermittent idle scan, decoupled from match excitement) — Claude (Derek: "make his animations intermittent and not tied to the excitement, the cop isn't watching the match, he's looking for threats")
+
+Follow-up on the entries directly below, same character, new session.
+Until now `_setupPoliceman` pushed him into `this.crowdFans` like every
+other extra, so his front→profile head-turn triggered off `_logEvent`'s
+crowd-pop hook (`_reactCrowdExtras`) — he turned his head on pinfalls/
+nearfalls same as the crowd's own excitement, which reads backwards for a
+cop who's supposed to be watching the *crowd*, not the match.
+
+Stopped pushing him into `crowdFans` (confirmed via `window.__WFM_GAME`:
+`crowdFans.length` unchanged at 12, `.some(f => f.extra.slug ===
+'policeman')` false — and his texture provably didn't move off
+`policeman1` immediately after a forced `_logEvent('pinfall')` call).
+`_setExtraFrame` itself doesn't care whether a fan is in that array — it
+only needs the `fan` object — so this was safe to do without touching that
+shared method.
+
+Added `_schedulePolicemanScan(fan)`: an independent loop, unrelated to
+match state, that waits a random 4-11s ("intermittent," not a steady
+cycle), turns from `restFrame` up to a *random* target frame (not always
+the full profile — sometimes a quick glance, sometimes a longer turn, so
+consecutive scans don't read as one repeating animation), holds briefly,
+turns back to `restFrame`, then reschedules itself. Called once from
+`_setupPoliceman` in place of the old `crowdFans.push(fan)`.
+
+Verified: `npm test` (43/43), `npm run build`, `npm run debug:play -- all`
+(12/12) all green. Confirmed live-ness via `window.__WFM_GAME`: sampled his
+texture key every 2s over 12s of real idle time and saw it change
+(`policeman1` → `policeman5` → `policeman2`) with no match events fired —
+the independent loop is genuinely running, not dead code.
+
+Files touched: `src/scenes/Arena.js` only.
+Action required: Derek — live sign-off on the scan's feel/timing (4-11s
+idle window, 170ms per-frame step, 400-1300ms hold at the turn) — first
+guess, easy to retune if it reads too fidgety or too rare.
+Priority: low
+
+### 2026-07-18 (policeman: 2x size, head held in place) — Claude (Derek: "keep his head placement the same but make him 3x that size" — corrected seconds later, same session: "lol, i meant 2 x")
+
+One-line follow-up on the entry directly below, same session. Since origin
+is (0.5,1) (bottom-center = groundY), top-of-head = groundY - h; scaling h
+alone while holding groundY fixed grows a figure upward from a fixed
+top, not in place. To hold the top fixed while `h` doubles (90→180),
+`groundY` had to move down by the same amount `h` grew (270→360; old top
+270-90=180, new top 360-180=180, unchanged). x=790 unchanged.
+
+Verified: `npm test` (43/43), `npm run build`, `npm run debug:play -- all`
+(12/12) all green. Confirmed visually via `page.screenshot()` — face, cap,
+torso, and belt/holster all legible now at this scale, head position
+unchanged from the prior round, standing right at the corner.
+
+Files touched: `src/scenes/Arena.js` only.
+Action required: Derek — live sign-off in the browser (same standing
+caveat every crowd-extra placement round carries).
+Priority: low
+
+### 2026-07-18 (policeman: moved to the upper-right/far-right post, sized to the second rope) — Claude (Derek: "I want him near the upper right post, I want him to be a little taller, maybe he should be as tall as the second rope, i'm eventually going to place a policeman at each corner")
+
+Follow-up on the entry directly below, same character, next session. Two
+changes:
+
+**Moved to a different, separate post.** The near-right post
+(`RING.nearRight`, x=920) and far-right/"upper right" post (`RING.farRight`,
+x=750, y=258) are two distinct fixed posts, not two points along one
+corridor — each has its own fixed x and its own vertical draw span
+(`drawPosts`: near posts 245-490ish, far posts 138-274). Moved him from
+beside the near-right post to beside the far-right one: `x=790` clears the
+ring's own receding boundary at this new `groundY` (~761 there, via the
+same perspective-boundary formula the old `drawSideCrowd` used) with ~30px
+margin, while staying close to the post's own x=750.
+
+**Sized to the second rope, per Derek's explicit ask, not a perspective
+guess.** `groundY=270` sits at the far post's own base. `h=90` puts his
+head at `RING.ropes[1].farY` (181, the second rope's far-side height) at
+that groundY — a direct read of "as tall as the second rope," deliberately
+bigger than the ambient background-crowd scale at this depth would
+otherwise suggest, since that's what was actually asked for.
+
+**Made `_setupPoliceman` take `flip` as a param (default `true`)** instead
+of hardcoding it, since Derek's stated plan is one policeman per corner —
+left-side instances will need `flip:false` to face right into the ring,
+and this avoids re-touching the method when that lands.
+
+Verified: `npm test` (43/43), `npm run build`, `npm run debug:play -- all`
+(12/12) all green. Confirmed visually via `page.screenshot()` crop — he
+reads clearly taller than the surrounding background crowd, standing right
+at the top corner where the ropes converge.
+
+Files touched: `src/scenes/Arena.js` only.
+Action required: Derek — live sign-off in the browser (same standing
+caveat); next corner instances (near-left, far-left) are a known follow-up,
+not started.
+Priority: low
+
+### 2026-07-17 (thirteenth crowd extra: corner policeman) — Claude, live-iterated with Derek in-session
+
+Closes the PENDING assignment below — Derek's reference sheet landed
+(`Sprite sheets/Audience/Policeman.png`, 8 frames). Same overall approach as
+the photographer (kept out of `CROWD_EXTRAS`, own const + `_setupPoliceman`
+mirroring `_setupPhotographer`, pushed into `crowdFans` so match-event
+reactions work for free), but the source art itself required a new step:
+this sheet is a single 4x2 pose grid (1716x916), not a horizontal strip —
+every prior extra's source was one row of poses, so `cut.mjs` (which splits
+on transparent-column gaps across the sheet's full height) can't read this
+shape directly. Split it into two temp horizontal-strip PNGs first (row1:
+front-facing calm, row2: continuing the turn to full profile — he stands at
+attention throughout and gradually turns his head/body from front to right-
+profile across all 8 frames, no sit→stand growth), then ran each through
+`cut.mjs` unmodified with a shared `--scale` (native tallest frames 429px/
+430px, essentially identical — confirms no real growth signal): row1 → the
+real `policeman` slug (frames 1-4), row2 → a temp slug renumbered into
+frames 5-8. `sizeBasis: 'width'` since he stays standing throughout (same
+reasoning as marilyn/elvis/popcornguy's seated-turn frames), not `'height'`
+(oldman/marlon/photographer's actual sit→stand case).
+
+**Bug found and fixed: `drawSideCrowd()`'s right-flank flat-dot crowd fully
+hid him.** First placement attempt (x=888, groundY=380, mirroring the
+photographer's own documented "~55px gap from the post" groundY value)
+measured clear of both the ring boundary and the fixed near-right post via
+`window.__WFM_GAME` — but rendered completely invisible in a screenshot.
+Root cause: `drawSideCrowd()`'s right flank (flat `fillCircle`/`fillEllipse`
+dots, depth 10) draws across exactly that y-band (240-430), in front of his
+actual cutout art (depth 2.8) — not a partial overlap, full occlusion at
+every frame. This is exactly what the PENDING note below flagged as a
+possible outcome. Asked Derek directly rather than guess a workaround
+(remove the flank / leave it and place him differently / hold off since
+Derek's planning to replace `drawSideCrowd()` himself) — he chose removal,
+same treatment the left flank already got for the photographer. Removed the
+right flank's `sideRows`/`rightBoundary`/its own `gfx` entirely (dead code
+once the flank draw call was gone); `rand`/`s` stay, still used by the
+foreground "backs of heads" rows lower in the same method.
+
+**Placement, live with Derek:** with the flank gone, he was visible but
+read as small/distant. Derek: "he needs to be closer to the ring and near
+the corner post." Nudged x=888→905, groundY=380→415 — now standing right
+beside the near-right post with the side ropes crossing naturally in front
+of him at that depth, confirmed via screenshot crop (cap, torso, belt all
+legible, ropes correctly occluding in front). Not iterated further this
+session — Derek can ask for more (bigger, different y, etc.) once he's
+looked at it live himself.
+
+Verified: `npm test` (43/43), `npm run build`, `npm run debug:play -- all`
+(12/12) all green, both before and after the flank removal and the
+placement nudge. Confirmed visually via `page.screenshot()` crops (canvas
+is scaled ~1.146x within the debug harness's 1100x700 viewport, offset
++9.25px top — accounted for when mapping game coordinates to screenshot
+pixels for the crops).
+
+Files touched: `src/scenes/Arena.js`, `src/assets/audience/policeman/`
+(new, 8 frames).
+Action required: Derek — live sign-off in the actual browser, same caveat
+every crowd-extra placement carries (screenshot review isn't a substitute).
+Priority: low
+
 ### PENDING — next Claude: policeman in the corner (Derek's queued assignment)
 
 Derek's plan for whichever session picks this up next: add a policeman,

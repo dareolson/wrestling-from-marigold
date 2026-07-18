@@ -279,6 +279,32 @@ const PHOTOGRAPHER = {
     stepOffset: { 5: 5, 6: 14, 7: 22, 8: 24 },
 };
 
+// Corner policeman — same "unique named character, not filler" reasoning as
+// PHOTOGRAPHER: deliberately NOT part of CROWD_EXTRAS (would otherwise get
+// swept into drawSecondRow/ThirdRow/FourthRow's random background pool),
+// reuses the same _setupPhotographer-style setup + _setExtraFrame/
+// _reactCrowdExtras machinery via _setupPoliceman.
+//
+// Source art (single sheet, unlike photographer/marlon's two-sheet merge —
+// see AI_HANDOFF.md) is a 4x2 pose grid, not a horizontal strip: cut by
+// splitting into two temp horizontal strips first (row1 -> real `policeman`
+// slug frames 1-4, row2 -> renumbered into frames 5-8), each run through
+// the unmodified tools/audience-cutter/cut.mjs with a shared --scale so
+// both rows land on one consistent scale (native tallest frames 429px/430px
+// — see that tool's file-header comment for why a shared scale matters).
+// He stands at attention throughout and gradually turns from front-facing
+// (frame1) to full right-profile (frame8) — no sit->stand growth, so
+// sizeBasis is 'width' (anchors scale to the resting frame, same reasoning
+// as marilyn/elvis/popcornguy's seated-throughout turn/gesture frames)
+// rather than 'height' (which assumes a real height change is the signal,
+// oldman/marlon/photographer's actual sit->stand case).
+const POLICEMAN = {
+    slug: 'policeman',
+    frames: 8,
+    restFrame: 1,
+    sizeBasis: 'width',
+};
+
 // Crowd reaction swell per match event type (0..1)
 const POP_SIZES = {
     pinfall: 1.0, sleeperKO: 1.0, nearfall: 0.9, kickout: 0.6,
@@ -312,6 +338,9 @@ export default class Arena extends Phaser.Scene {
         for (let i = 1; i <= PHOTOGRAPHER.frames; i++) {
             this.load.image(`${PHOTOGRAPHER.slug}${i}`, `src/assets/audience/${PHOTOGRAPHER.slug}/frame${i}.png`);
         }
+        for (let i = 1; i <= POLICEMAN.frames; i++) {
+            this.load.image(`${POLICEMAN.slug}${i}`, `src/assets/audience/${POLICEMAN.slug}/frame${i}.png`);
+        }
     }
 
     create() {
@@ -338,6 +367,33 @@ export default class Arena extends Phaser.Scene {
         // edge instead of reading as grounded against it), then one more
         // small nudge 418→428 ("just a little nudge lower").
         this._setupPhotographer(85, 181, 428);
+        // Corner policeman. Landed first beside the near-right post
+        // (x=905/h=140/groundY=415 — see git history for that round,
+        // including the drawSideCrowd right-flank occlusion bug found and
+        // fixed along the way). Derek then asked to move him to the
+        // upper-right (far-right) post instead — RING.farRight = (750,258),
+        // a separate fixed post from the near-right one, own vertical span
+        // (drawPosts: y 138-274) — and make him "a little taller, maybe as
+        // tall as the second rope." groundY=270 sits at that post's own
+        // base; h=90 puts his head at RING.ropes[1].farY=181 (the second
+        // rope's far-side height) at that groundY — a direct read of
+        // Derek's ask, not a perspective-scaled guess (he's deliberately
+        // larger than the deep background crowd at this depth would
+        // otherwise suggest). x=790 clears the ring's own boundary at this
+        // y (~761, receding-perspective boundary formula — see rightBoundary
+        // in the old drawSideCrowd, same geometry) with ~30px margin, while
+        // staying close to the post's own x=750. Confirmed via
+        // window.__WFM_GAME measurement + screenshot, not guessed blind.
+        // flip:true (default) since the art faces right natively (see
+        // POLICEMAN's comment) but every right-side corner needs him
+        // facing left, into the ring — Derek's planning one of these per
+        // corner, hence _setupPoliceman now takes flip as a param instead
+        // of hardcoding it.
+        // 2x size, head held at the same screen position: origin is
+        // (0.5,1) (bottom-center = groundY), so top-of-head = groundY - h.
+        // Old top = 270-90 = 180; new h=180 needs groundY=180+180=360 to
+        // keep that same top.
+        this._setupPoliceman(790, 180, 360);
         this.drawSideCrowd();
         this.drawFarApronAndRopes();
         this.drawRingMat();
@@ -781,6 +837,75 @@ export default class Arena extends Phaser.Scene {
         this.crowdFans.push(fan);
     }
 
+    // Builds the single corner policeman fan. Same fan shape as
+    // _setupPhotographer (spot.groundY override, own depth) — see
+    // POLICEMAN's comment for why he's kept out of CROWD_EXTRAS and how his
+    // source art differs from every prior extra (single 4x2 grid sheet, not
+    // a horizontal strip).
+    //
+    // Deliberately NOT pushed into this.crowdFans, unlike every other extra
+    // (Derek: "make his animations intermittent and not tied to the
+    // excitement, the cop isn't watching the match, he's looking for
+    // threats") — crowdFans is what _reactCrowdExtras iterates off
+    // _logEvent's match-pop hook, so joining it would turn his head-turn on
+    // every pinfall/nearfall same as the crowd's excitement, exactly what
+    // this call is meant to avoid. Instead kicks off his own independent
+    // random-interval loop, _schedulePolicemanScan, unrelated to match state.
+    //
+    // flip is a param (not hardcoded) since Derek's planning one of these
+    // per corner: the art is drawn facing right (see POLICEMAN's comment),
+    // so a right-side corner needs flip:true to face left into the ring
+    // (this call site's default) while a left-side corner will need
+    // flip:false, without touching this method again.
+    _setupPoliceman(x, h, groundY, flip = true) {
+        const extra = { ...POLICEMAN, _dims: {} };
+        for (let i = 1; i <= extra.frames; i++) {
+            const src = this.textures.get(`${extra.slug}${i}`).getSourceImage();
+            extra._dims[i] = { w: src.width, h: src.height };
+        }
+        const spot = { x, h, flip, tint: 0x9d9789, groundY };
+        const fan = {
+            img: this.add.image(spot.x, 0, `${extra.slug}${extra.restFrame}`)
+                .setOrigin(0.5, 1)
+                .setTint(spot.tint)
+                // Depth 2.8, same as the photographer — below drawRingMat's
+                // 3 so the mat occludes whatever part of him overlaps its
+                // trapezoid at this x/y, still above drawFarApronAndRopes
+                // (2) and every background crowd layer (0.8-1.5).
+                .setDepth(2.8),
+            extra, spot, reacting: false,
+        };
+        this._setExtraFrame(fan, extra.restFrame);
+        this._schedulePolicemanScan(fan);
+    }
+
+    // Independent idle loop for the corner policeman — turns his head
+    // partway (or all the way) through his front-to-profile frame range on
+    // his own random schedule, then back to attention, unrelated to
+    // _logEvent/match excitement (see _setupPoliceman's comment for why
+    // he's not on the same hook as every other crowd fan). Each glance
+    // picks a random target frame (not always the full 8) so successive
+    // scans don't read as one repeating animation — a quick look, then
+    // sometimes a longer turn, like actually scanning the room rather than
+    // playing a loop.
+    _schedulePolicemanScan(fan) {
+        const IDLE_MIN = 4000, IDLE_MAX = 11000; // intermittent, not a steady cycle
+        this.time.delayedCall(IDLE_MIN + Math.random() * (IDLE_MAX - IDLE_MIN), () => {
+            const target = fan.extra.restFrame + 1 + Math.floor(Math.random() * (fan.extra.frames - fan.extra.restFrame));
+            const up = [];
+            for (let f = fan.extra.restFrame + 1; f <= target; f++) up.push(f);
+            const down = up.slice(0, -1).reverse();
+            const STEP = 170, HOLD = 400 + Math.random() * 900;
+            up.forEach((f, i) => this.time.delayedCall(i * STEP, () => this._setExtraFrame(fan, f)));
+            const downStart = up.length * STEP + HOLD;
+            down.forEach((f, i) => this.time.delayedCall(downStart + i * STEP, () => this._setExtraFrame(fan, f)));
+            this.time.delayedCall(downStart + down.length * STEP + STEP, () => {
+                this._setExtraFrame(fan, fan.extra.restFrame);
+                this._schedulePolicemanScan(fan); // reschedule the next glance
+            });
+        });
+    }
+
     // Pops a localized flash at (x, y) — Derek: a full-screen version (the
     // first pass, reusing flickerOverlay) read as too intense; "it should
     // only flash around the bulb." Just records start time + position;
@@ -815,55 +940,17 @@ export default class Arena extends Phaser.Scene {
     }
 
     drawSideCrowd() {
-        const gfx = this.add.graphics().setDepth(10);
-        const { nearRight, farRight } = RING;
-
         let s = 9173;
         const rand = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
 
-        // At a given y, find the ring's right-side x boundary (left-side
-        // equivalent removed along with the left flank below — see that
-        // block's comment)
-        const rightBoundary = y => nearRight.x + (farRight.x - nearRight.x) * (nearRight.y - y) / (nearRight.y - farRight.y);
-
-        // baseR = head radius for a 5ft person at that y, from ring perspective scale
-        // (43px/ft at near edge y=445, 0.6× at far edge y=258; head ≈ 9" = 0.75ft, r = px_per_ft * 0.375)
-        const sideRows = [
-            { y: 430, baseR: 16 },
-            { y: 400, baseR: 15 },
-            { y: 368, baseR: 14 },
-            { y: 335, baseR: 13 },
-            { y: 302, baseR: 11 },
-            { y: 270, baseR: 10 },
-            { y: 240, baseR: 9  },
-        ];
-
-        sideRows.forEach(({ y, baseR }) => {
-            const rx = rightBoundary(y);
-            const baseLum = Math.floor(58 + (y - 240) * 0.13);
-
-            // Left flank removed (Derek: "we can get rid of the fake crowd
-            // on that side") — the ringside photographer (_setupPhotographer,
-            // seated at x=85 across this same y-range) now occupies that
-            // side; the flat fillCircle/fillEllipse dots read as redundant/
-            // inconsistent next to his actual cutout art. Right flank
-            // (below) is unaffected — no equivalent named character sits
-            // there.
-
-            // Right flank
-            let x = rx + baseR * 3.4;
-            while (x < W + baseR) {
-                const heightFt = 4 + Math.floor(rand() * 3);
-                const r = Math.round(baseR * heightFt / 5);
-                const jitter = (rand() - 0.5) * baseR * 0.5;
-                const lum = Math.min(100, Math.floor(baseLum * (0.85 + rand() * 0.30)));
-                const col = (lum << 16) | (lum << 8) | lum;
-                gfx.fillStyle(col, 1);
-                gfx.fillCircle(x + jitter, y, r);
-                gfx.fillEllipse(x + jitter, y + r + r * 0.75, r * 2.4, r * 1.4);
-                x += r * 2.1 + rand() * r * 0.5;
-            }
-        });
+        // Both flanks' flat fillCircle/fillEllipse dots are gone now — left
+        // flank removed for the ringside photographer (Derek: "we can get
+        // rid of the fake crowd on that side"), right flank removed for the
+        // corner policeman (_setupPoliceman, occupying this same right-side
+        // y-range): the flat dots rendered at depth 10, in front of his
+        // actual cutout art (depth 2.8), hiding him completely. Same
+        // "redundant/inconsistent next to real cutout art" reasoning as the
+        // left side.
 
         // Foreground crowd — backs of heads, closest to camera, partially cropped
         const fgGfx = this.add.graphics().setDepth(11);

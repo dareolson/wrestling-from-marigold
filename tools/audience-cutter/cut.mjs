@@ -12,12 +12,34 @@
 // Reads <sourcePng> (a horizontal strip of N poses on a flat green-screen
 // background, e.g. "Sprite sheets/Audience/oldman.png" — that folder is
 // gitignored, only cut output is committed), auto-detects frame count from
-// transparent-column gaps after keying, downscales each crop to
-// MAX_FRAME_HEIGHT (see below), and writes
-// src/assets/audience/<slug>/frame1.png .. frameN.png. Also writes a QA
-// preview (all frames on a dark backdrop) to tools/audience-cutter/_qa/
-// (gitignored) so the cut can be eyeballed before wiring a frame count into
-// Arena.js (OLDMAN_FRAMES et al).
+// transparent-column gaps after keying, downscales to MAX_FRAME_HEIGHT (see
+// below), and writes src/assets/audience/<slug>/frame1.png .. frameN.png.
+// Also writes a QA preview (all frames on a dark backdrop) to
+// tools/audience-cutter/_qa/ (gitignored) so the cut can be eyeballed before
+// wiring a frame count into Arena.js (OLDMAN_FRAMES et al).
+//
+// Downscaling uses ONE shared scale factor per invocation — computed from
+// this sheet's own TALLEST cropped frame, applied uniformly to every frame
+// — never a per-frame independent fit to MAX_FRAME_HEIGHT. A sit→stand
+// character's frames are naturally different native heights (that
+// difference IS the growth signal Arena.js's sizeBasis:'height' relies on);
+// fitting each frame to MAX_FRAME_HEIGHT independently would flatten every
+// frame taller than the cap to exactly the same output height, erasing that
+// signal (found 2026-07-17 debugging the photographer extra never visibly
+// standing — root cause, not just his case: any character with more than
+// one over-cap frame in the same sheet had this problem).
+//
+// For a two-sheet character (sheet A calm, sheet B builds to standing —
+// the usual merge pattern, frame5 renumbered from sheet B's frame1), the
+// two sheets are cut in SEPARATE invocations and each would otherwise
+// compute its own local scale — inconsistent with each other, causing a
+// visible size jump right at the sheet seam. Pass --scale=<factor> on the
+// SECOND invocation using the value the FIRST invocation printed (or vice
+// versa, whichever sheet has the globally tallest frame) so both sheets
+// share one scale and the full 8-frame sequence's heights stay consistent.
+//
+// Usage:
+//   node tools/audience-cutter/cut.mjs <sourcePng> <slug> [--scale=0.502]
 
 import { chromium } from 'playwright-core';
 import path from 'node:path';
@@ -37,11 +59,14 @@ const QA_DIR = path.join(__dirname, '_qa');
 // that's already smaller than this.
 const MAX_FRAME_HEIGHT = 360;
 
-const [, , srcArg, slugArg] = process.argv;
+const positional = process.argv.slice(2).filter(a => !a.startsWith('--'));
+const scaleFlag = process.argv.find(a => a.startsWith('--scale='));
+const [srcArg, slugArg] = positional;
 if (!srcArg || !slugArg) {
-    console.log('usage: node tools/audience-cutter/cut.mjs <sourcePng> <slug>');
+    console.log('usage: node tools/audience-cutter/cut.mjs <sourcePng> <slug> [--scale=0.502]');
     process.exit(1);
 }
+const FORCED_SCALE = scaleFlag ? parseFloat(scaleFlag.split('=')[1]) : null;
 const SRC = path.resolve(REPO_ROOT, srcArg);
 const SLUG = slugArg;
 const DEST_DIR = path.join(REPO_ROOT, 'src/assets/audience', SLUG);
@@ -129,17 +154,20 @@ window.CUT = (function () {
 
   function toDataURL(c) { return c.toDataURL('image/png'); }
 
-  // Downscales in place if taller than maxH (never upscales). High-quality
-  // smoothing is already the default per ctxOf.
-  function capHeight(canvas, maxH) {
-    if (canvas.height <= maxH) return canvas;
-    const scale = maxH / canvas.height;
-    const out = newCanvas(Math.round(canvas.width * scale), maxH);
+  // Scales a canvas by a fixed factor (never upscales — scale is expected
+  // pre-clamped to <=1). High-quality smoothing is already the default per
+  // ctxOf. Unlike the old per-frame capHeight, the caller computes ONE scale
+  // for the whole batch so relative frame-to-frame height differences (the
+  // sit->stand growth signal) survive the downscale — see the file-header
+  // comment for why a per-frame-independent fit-to-maxH broke that.
+  function scaleCanvas(canvas, scale) {
+    if (scale >= 1) return canvas;
+    const out = newCanvas(Math.round(canvas.width * scale), Math.round(canvas.height * scale));
     ctxOf(out).drawImage(canvas, 0, 0, out.width, out.height);
     return out;
   }
 
-  return { loadImage, chromaKeyGreen, splitIntoRuns, cropWithPadding, capHeight, toDataURL, newCanvas, ctxOf };
+  return { loadImage, chromaKeyGreen, splitIntoRuns, cropWithPadding, scaleCanvas, toDataURL, newCanvas, ctxOf };
 })();
 `;
 
@@ -155,14 +183,15 @@ async function main() {
     await page.addScriptTag({ content: BROWSER_LIB });
 
     const dataUrl = dataUrlFromFile(SRC);
-    const result = await page.evaluate(async ({ dataUrl, maxFrameHeight }) => {
+    const result = await page.evaluate(async ({ dataUrl, maxFrameHeight, forcedScale }) => {
         const canvas = await window.CUT.loadImage(dataUrl);
         window.CUT.chromaKeyGreen(canvas);
         const ALPHA_THRESHOLD = 25;
         const runs = window.CUT.splitIntoRuns(canvas, ALPHA_THRESHOLD);
-        const frames = runs
-            .map(run => window.CUT.cropWithPadding(canvas, run, ALPHA_THRESHOLD, 6))
-            .map(f => window.CUT.capHeight(f, maxFrameHeight));
+        const crops = runs.map(run => window.CUT.cropWithPadding(canvas, run, ALPHA_THRESHOLD, 6));
+        const nativeMaxH = Math.max(...crops.map(c => c.height));
+        const scale = forcedScale ?? Math.min(1, maxFrameHeight / nativeMaxH);
+        const frames = crops.map(c => window.CUT.scaleCanvas(c, scale));
         const frameData = frames.map(f => ({ w: f.width, h: f.height, dataUrl: window.CUT.toDataURL(f) }));
 
         // QA preview: all frames on a dark backdrop, common display height.
@@ -176,8 +205,8 @@ async function main() {
         let x = 40;
         for (const f of scaled) { pctx.drawImage(f.canvas, x, 40, f.w, f.h); x += f.w + gap; }
 
-        return { frameCount: frames.length, frameData, previewDataUrl: window.CUT.toDataURL(preview) };
-    }, { dataUrl, maxFrameHeight: MAX_FRAME_HEIGHT });
+        return { frameCount: frames.length, frameData, previewDataUrl: window.CUT.toDataURL(preview), scale, nativeMaxH };
+    }, { dataUrl, maxFrameHeight: MAX_FRAME_HEIGHT, forcedScale: FORCED_SCALE });
 
     console.log(`Found ${result.frameCount} frame(s) for "${SLUG}".`);
     result.frameData.forEach((f, i) => {
@@ -188,6 +217,8 @@ async function main() {
     const qaPath = path.join(QA_DIR, `${SLUG}-preview.png`);
     fs.writeFileSync(qaPath, Buffer.from(result.previewDataUrl.split(',')[1], 'base64'));
     console.log(`QA preview: ${qaPath}`);
+    console.log(`Scale used: ${result.scale.toFixed(4)} (native tallest frame: ${result.nativeMaxH}px)${FORCED_SCALE ? ' [forced via --scale]' : ''}`);
+    console.log(`If this character has a second sheet that should share height with this one, pass --scale=${result.scale.toFixed(4)} on that invocation.`);
     console.log(`\nIf frame count changed, update OLDMAN_FRAMES (or the relevant constant) in src/scenes/Arena.js.`);
 
     await browser.close();

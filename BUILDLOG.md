@@ -17,6 +17,198 @@
 
 ## Sessions Log
 
+### 2026-07-17 (photographer: flash workshop — offset onto the actual bulb, delayed one frame; groundY nudged to 428)
+
+Flash was centered on his body/feet, not the bulb, and fired in the same
+beat the standing pose landed. Fixed both: offset read off `frame8.png`'s
+actual proportions (bulb sits ~30% of display width toward his facing
+direction from center, ~90% up from his feet), and the trigger now waits
+one `_reactCrowdExtras` STEP (130ms) via `delayedCall` before popping, so
+the pose settles first. Also two more small `groundY` nudges (400→418→428)
+from live feedback ("his knees are above ring level," then "just a little
+nudge lower").
+
+`npm test` (43/43), `npm run build`, `npm run debug:play -- all` (12/12)
+all green. Verified the flash lands on the bulb via a forced-frame
+screenshot taken past the new delay.
+
+### 2026-07-17 (photographer: position revert+nudge, forward step-out, localized flash, +25% size, stacked behind the ring mat, left flank crowd removed)
+
+Five quick rounds of live feedback in one session:
+1. Reverted the "genuinely ringside" groundY=465 spot (put him on the
+   apron, not beside it) back to x=85/groundY=400, a small nudge off the
+   original x=70/groundY=380.
+2. Added `extra.stepOffset` — an opt-in per-frame x shift in
+   `_setExtraFrame`, direction-aware via `spot.flip` — so frames 5-8 (rising
+   to standing) actually step him toward the ring instead of just changing
+   pose in place. `PHOTOGRAPHER.stepOffset = { 5: 5, 6: 14, 7: 22, 8: 24 }`.
+3. Replaced the full-screen camera flash with a localized one:
+   `_triggerCameraFlash(x, y)` now takes a position, and a dedicated
+   `cameraFlashGfx` graphics object (created in `create()`, not lazily in
+   `update()` — see the code comment on why that matters for the HUD
+   camera) draws two soft-edged circles centered on the bulb instead of
+   flashing the whole frame.
+4. `h` bumped 145→181 (+25%, covers both seated and standing phases since
+   `sizeBasis:'height'` scales every frame off one value) and depth dropped
+   from 10.5 to 2.8 — below `drawRingMat`'s depth (3) — so the mat now
+   correctly occludes whatever part of his bigger figure overlaps it,
+   instead of him floating in front of the whole ring.
+5. Removed `drawSideCrowd()`'s left-flank crowd dots (same y-range he now
+   occupies) as redundant next to his real art; right flank untouched.
+
+Caught one real bug via `debug:play -- all` that `npm test`/`build` both
+missed: deleting the left flank's `let x = ...` broke the right flank's
+reused (non-`let`) `x` reference — fixed by giving the right flank its own
+declaration.
+
+`npm test` (43/43), `npm run build`, `npm run debug:play -- all` (12/12)
+all green after every round. Final result confirmed via screenshot crops
+at rest and peak frames.
+
+### 2026-07-17 (photographer: genuinely ringside placement + camera flash on his peak frame)
+
+Moved the photographer from an approximated "first row beside the ring"
+spot to actually ringside: `x=150, h=170, groundY=465`, inside the near
+apron's y-span (445-490) rather than the near-left corner post's clearance
+corridor, which turned out not to actually clear the post at every frame
+once measured directly. New spot is clear with real margin at all 8 frames
+(measured via `window.__WFM_GAME`).
+
+Added a real camera-flash effect on his flash-bulb pose (frame 8):
+`flashOnPeak` on `PHOTOGRAPHER` triggers `_triggerCameraFlash()` the
+instant `_reactCrowdExtras` lands him there, which reuses the existing
+`flickerOverlay` (already driving ambient CRT brightness jitter in
+`update()`) for a sharp-attack, quick-decay screen flash (`(1-t)²` over
+220ms) combined with the ambient jitter via `Math.max`.
+
+`npm test` (43/43), `npm run build`, `npm run debug:play -- all` (12/12)
+all green. Flash confirmed numerically (alpha 0.005→0.60→0.002 across the
+trigger) and visually via screenshot at the peak instant.
+
+### 2026-07-17 (photographer +25% standing-frame scale; oldman/marlon re-cut for the same growth bug) — Two different tabs touched Arena.js this session; this entry covers only the frameScale mechanism and the oldman/marlon re-cut
+
+Added `extra.frameScale`, an opt-in per-frame scale multiplier in
+`_setExtraFrame` (`scale *= extra.frameScale?.[f] ?? 1`), and set
+`PHOTOGRAPHER.frameScale = { 5: 1.25, 6: 1.25, 7: 1.25, 8: 1.25 }` — Derek's
+live call that even a correct batch-scale cut didn't make the standing
+pose read as big a change as he wanted, so the last four frames get an
+explicit +25% on top of whatever placement scale is active. A separate tab
+was mid-edit on photographer's actual `x`/`h`/`groundY` at the same time
+(see AI_HANDOFF.md) — this change stacks with whatever that tab lands on.
+
+Also re-cut oldman and marlon through the batch-scale fix from the
+photographer session below — both had the identical bug (every committed
+frame was uniformly 360px tall, confirmed via `sips`), meaning their
+sit→stand growth was silently flat this whole time despite reading as
+"working" in every prior log entry. oldman: single-sheet re-cut, new
+heights 296→287→320→360 (was flat 360×4). marlon: two-sheet re-cut with
+`--scale=0.4938` on the second invocation to keep both sheets consistent
+across the seam, new heights 332→333→335→306→295→330→360→360 (was flat
+360×8).
+
+`npm test` (43/43), `npm run build`, `npm run debug:play -- all` (12/12)
+all green.
+
+### 2026-07-17 (twelfth crowd extra: ringside photographer, + a real cutter bug fix) — Added photographer, live-iterated placement with Derek in-session
+
+Cut Derek's two reference sheets (`photographer.png`/`photographer2.png`)
+into `src/assets/audience/photographer/frame1-8.png`: calm seated → camera
+raised (frames 1-4), rising to standing with a flash-bulb peak on frame 8
+(frames 5-8). Trigger is event-tied via the existing `_reactCrowdExtras`/
+`_logEvent` hook (pinfalls, nearfalls, etc.) — same mechanism the front row
+uses, chosen with Derek over a pure-ambient timer since the flash-bulb peak
+reads as "capturing the moment."
+
+**Real bug found in `tools/audience-cutter/cut.mjs`:** its downscale fit
+each frame *independently* to `MAX_FRAME_HEIGHT` (360px), so any character
+whose native frames all exceed 360 (photographer's ran 574-717px) got every
+frame flattened to the exact same 360px — erasing the sit→stand growth
+signal `sizeBasis: 'height'` depends on entirely. Fixed to compute one
+shared scale per cut (from that sheet's own tallest frame) applied
+uniformly, plus an optional `--scale=` flag so a two-sheet character's
+second cut can match the first sheet's scale (avoids a size jump at the
+sheet seam). Possible latent regression flagged for later: oldman's and
+marlon's shipped frames are also uniformly 360px tall, so their standing
+growth may not actually be visible either — not fixed here, out of scope.
+
+Placement went through two live rounds with Derek in this session (not the
+usual "verify next time" pattern): first at a `drawSideCrowd()` side-flank
+seat per the original plan, corrected live to "behind the ring" (the
+CROWD_EXTRAS front-row's `groundY` formula) via a new `_setupPhotographer`
+method — kept out of the `CROWD_EXTRAS` array itself so he isn't swept into
+the background rows' random pool. Second correction: his first "behind the
+ring" spot (x=170) sat right where the near-left corner's diagonal side
+rope crosses, reading as tangled in the rigging; measured several
+candidates live via `window.__WFM_GAME` + screenshot crops (checking
+displayWidth/left-edge across all 8 frames so the widest pose doesn't clip
+canvas-left) and landed on x=125, h=290 — clear of the rope with margin,
+bigger/lower per Derek's ask.
+
+`npm test` (43/43), `npm run build`, `npm run debug:play -- all` (12/12)
+all green. Confirmed via direct screenshot crops at rest and peak poses,
+reviewed live by Derek in-session — the final position is his sign-off,
+not a pending live-check.
+
+### 2026-07-16/17 (background crowd: third row + cheer capability) — Added drawThirdRow() on top of a from-scratch reset made outside a Claude session
+
+The 4-tier system below was reset and rebuilt one row at a time directly
+in the file (not through this log) between sessions; `drawSecondRow()` —
+a 16-seat weighted-random row behind the front row, ambient-flickering —
+is the confirmed-good result. Added `drawThirdRow()`: identical template,
+own RNG seed, `SPOT_H`/`Y` stepped down ~0.82× (90→74, 268→226) matching
+row 2's own step-down from the front row. `_scheduleAmbientFlicker` gained
+a backward-compatible `{ cheer }` option — row 2 unchanged, row 3 passes
+`cheer: true` so ~30% of its active beats jump to each design's peak
+(last) frame with a longer hold, an actual cheer rather than idle flicker.
+
+`npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`
+all green. Motion confirmed via screenshot file-size diff 2s apart.
+Row 3 is subtle by design — no tint/dimming, matching row 2's template
+exactly. Only `Arena.js` changed.
+
+### 2026-07-16 (background crowd: four ascending tiers) — Replaced the 15-row gradient with four distinct, staggered, curved-bowl tiers
+
+Derek: the 15-row version (below) blended too smoothly and read as a flat
+gymnasium floor, not a packed arena. Rewrote `drawCrowd()`'s row config
+from 15 continuously-interpolated rows to 4 `TIERS`, each 2-3 sub-rows
+sharing one scale/darkness/blur bracket with a real y-gap between tiers
+(distinct depth levels, not a ramp). Added alternating half-gap x-stagger
+between sub-rows (fills gaps left by the row above) and a per-seat
+parabolic arc that lifts each line's ends above its center, stronger the
+farther back the tier — the crowd now curves up and around like a bowl
+instead of sitting on a flat baseline. Tier 3 onward gets meaningfully
+darker (lum 24-40, then 9-16 for tier 4) per Derek's "dark after the first
+few rows." Tier 4 is dim/small enough to be a real static-backdrop
+candidate later — flagged, not built.
+
+`npm test` (43/43), `npm run debug:play -- all` (12/12), `npm run build`
+all green. Verified visually via `npm run debug:shot` at multiple delays
+(title-card fade, mid-match) — four visually distinct ascending tiers,
+recognizable designs up close fading to dark blurred silhouettes at the
+back. Only `Arena.js` changed.
+
+### 2026-07-16 (background crowd: density pass + ambient motion) — Seats bumped ~40% denser, blur pulled back off tiers 2-3, and background seats now flicker between frames instead of sitting frozen
+
+Same session, two fixes: (1) seat counts across all four tiers bumped
+~40%, tier gaps/bowl-arc strength roughly doubled — rendering more copies
+of the same 11 textures is ~free, the blur FX pass is the real per-tier
+cost, so density was previously left too low; blur on tiers 2-3 dialed
+back (was reading as gray mud, not depth-of-field). (2) Added
+`_scheduleAmbientFlicker`: every seat in tiers 1-3 now flips between its
+design's restFrame and frame 2 on its own randomized timer, staggered so
+~240 seats don't move in lockstep — tier 4 stays frozen (too small/dark/
+blurred for motion to register). No rescale on the frame swap, same fixed-
+reference-scale trick the front row's `_setExtraFrame` uses.
+
+`npm test` (43/43) and `npm run build` green right after landing;
+`debug:play -- pin` green; full `-- all` re-run deferred by a transient
+sandbox tool outage, not a code issue. Motion confirmed via two
+`page.screenshot()` crops 1.5s apart differing in file size in an
+otherwise frozen frame (146786 vs 146463 bytes) — an in-page canvas-capture
+diff was tried first and came back blank both times (Phaser's WebGL canvas
+needs `preserveDrawingBuffer` for `drawImage` reads; real `page.screenshot()`
+is the reliable check). Only `Arena.js` changed.
+
 ### 2026-07-16 (background crowd: randomized cutouts + depth blur) — Deep crowd rows now reuse the front row's cutout art instead of flat dots
 
 `drawCrowd()`'s 15 background rows were flat grey circles. Replaced with:

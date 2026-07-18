@@ -44,6 +44,14 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // second, more distant row was floated as untested back in the
 // marilyn-era entries). h/tint/flip still need tuning per new design's
 // own frame proportions — only the x grid is reusable as-is.
+//
+// LIGHTING (2026-07-17): tints brightened from their original ~0x55-0x6b
+// range to ~0x96-0xac — front row is meant to be the lightest crowd row
+// (rows 2/3 behind it are explicitly dimmer, see drawSecondRow/
+// drawThirdRow's setTint calls), but still slightly darker than the ring
+// itself (drawRingMat's 0xb0b0a8 / drawNearApron's 0xa0a098). Previously
+// the front row was tinted darker than the untinted rows behind it —
+// backwards falloff, fixed here.
 const CROWD_EXTRAS = [
     {
         // Sit→stand cutout. Planted right behind the ring (not the deep
@@ -55,7 +63,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'height',
         spots: [
-            { x: W / 2 - 260, h: 118, flip: false, tint: 0x554f45 },
+            { x: W / 2 - 260, h: 118, flip: false, tint: 0x969086 },
         ],
     },
     {
@@ -69,7 +77,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 95,  h: 100, flip: false, tint: 0x625b4c },
+            { x: W / 2 - 95,  h: 100, flip: false, tint: 0xa39c8d },
         ],
     },
     {
@@ -83,7 +91,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 245, h: 104, flip: false, tint: 0x5c5648 },
+            { x: W / 2 + 245, h: 104, flip: false, tint: 0x9d9789 },
         ],
     },
     {
@@ -96,7 +104,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 15, h: 102, flip: false, tint: 0x5c5648 },
+            { x: W / 2 + 15, h: 102, flip: false, tint: 0x9d9789 },
         ],
     },
     {
@@ -112,7 +120,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 40, h: 122, flip: false, tint: 0x5c5648 },
+            { x: W / 2 - 40, h: 122, flip: false, tint: 0x9d9789 },
         ],
     },
     {
@@ -129,7 +137,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 150, h: 100, flip: true, tint: 0x6b6355 },
+            { x: W / 2 - 150, h: 100, flip: true, tint: 0xaca496 },
         ],
     },
     {
@@ -146,7 +154,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 - 205, h: 104, flip: false, tint: 0x5c5648 },
+            { x: W / 2 - 205, h: 104, flip: false, tint: 0x9d9789 },
         ],
     },
     {
@@ -162,7 +170,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 70, h: 112, flip: false, tint: 0x5c5648 },
+            { x: W / 2 + 70, h: 112, flip: false, tint: 0x9d9789 },
         ],
     },
     {
@@ -179,7 +187,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 125, h: 106, flip: false, tint: 0x5c5648 },
+            { x: W / 2 + 125, h: 106, flip: false, tint: 0x9d9789 },
         ],
     },
     {
@@ -196,7 +204,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'width',
         spots: [
-            { x: W / 2 + 190, h: 108, flip: true, tint: 0x5c5648 },
+            { x: W / 2 + 190, h: 108, flip: true, tint: 0x9d9789 },
         ],
     },
     {
@@ -216,10 +224,60 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'height',
         spots: [
-            { x: W / 2 + 300, h: 118, flip: false, tint: 0x5c5648 },
+            { x: W / 2 + 300, h: 118, flip: false, tint: 0x9d9789 },
         ],
     },
 ];
+
+// Ringside photographer — deliberately NOT part of CROWD_EXTRAS: he
+// shouldn't get swept into drawSecondRow/ThirdRow/FourthRow's random
+// background pool (built straight off CROWD_EXTRAS) since he's a unique
+// named character, not filler, and he sits beside the ring (see
+// _setupPhotographer's groundY override) rather than behind it like that
+// array's spots. Still reuses the same extra/spot/fan shape and
+// _setExtraFrame/_reactCrowdExtras machinery via _setupPhotographer, so
+// match-event reactions (pinfalls, nearfalls — see _logEvent) work for
+// free once he's pushed into crowdFans.
+//
+// Art is profile-oriented (faces right) — two source sheets, calm seated
+// with camera on his lap building to camera raised at eye level (frames
+// 1-4), then rising off the chair to standing with a flash-bulb peak on the
+// last frame (frames 5-8, same hinge-pose seam between sheets as marlon).
+// sizeBasis 'height' since he stands, same reasoning as oldman/marlon — see
+// tools/audience-cutter/cut.mjs's file-header comment for the batch-scale
+// fix that was needed for his particular source resolution to actually show
+// that growth (2026-07-17: his frames were all landing at an identical
+// capped height, so he wasn't visibly standing at all before that fix).
+const PHOTOGRAPHER = {
+    slug: 'photographer',
+    frames: 8,
+    restFrame: 1,
+    sizeBasis: 'height',
+    // Derek 2026-07-17: even with cut.mjs's batch-scale fix (see that
+    // file's header comment) restoring a real height difference between
+    // seated and standing frames, the standing set (5-8, the second source
+    // sheet) still didn't read as big enough a change — the art's own
+    // proportions, not a scale bug this time. Explicit +25% on top of the
+    // computed scale for just those four frames (see _setExtraFrame's
+    // frameScale multiplier).
+    frameScale: { 5: 1.25, 6: 1.25, 7: 1.25, 8: 1.25 },
+    // Frame 8 is his flash-bulb pose (see this const's frame-breakdown
+    // comment above) — flashOnPeak fires a real screen flash the instant
+    // he lands on it (see _setExtraFrame's flashOnPeak check and
+    // _triggerCameraFlash), so "capturing the moment" actually reads as a
+    // camera going off, not just a pose.
+    flashOnPeak: true,
+    // Derek: "his animation has him step forward from his chair, can we
+    // code that in" — the art's rising sequence (frames 5-8) already reads
+    // as leaning/stepping out of the chair, but until now every frame was
+    // pinned to the same spot.x; only the pose changed, not his position.
+    // stepOffset is an opt-in per-frame x shift (see _setExtraFrame),
+    // direction-aware via spot.flip so it always steps toward the ring, not
+    // just +x — a gentle forward creep peaking at the flash, then
+    // _reactCrowdExtras' own down-sequence naturally carries him back to
+    // spot.x as he settles back into the chair.
+    stepOffset: { 5: 5, 6: 14, 7: 22, 8: 24 },
+};
 
 // Crowd reaction swell per match event type (0..1)
 const POP_SIZES = {
@@ -251,12 +309,35 @@ export default class Arena extends Phaser.Scene {
                 this.load.image(`${extra.slug}${i}`, `src/assets/audience/${extra.slug}/frame${i}.png`);
             }
         }
+        for (let i = 1; i <= PHOTOGRAPHER.frames; i++) {
+            this.load.image(`${PHOTOGRAPHER.slug}${i}`, `src/assets/audience/${PHOTOGRAPHER.slug}/frame${i}.png`);
+        }
     }
 
     create() {
         this.drawArenaBackground();
-        this.drawCrowd();
+        this.drawSecondRow();
+        this.drawThirdRow();
+        this.drawFourthRow();
         this._setupCrowdExtras();
+        // Ringside photographer. The "genuinely ringside" move to
+        // groundY=465 put his feet inside the near apron's own 445-490
+        // y-span — he read as standing on the apron/in the ring itself once
+        // actually seen, not ringside at all. Derek: "go back to where he
+        // was, he just needed to be nudged a little" — back to the
+        // x=70/h=140/groundY=380 spot (see git history) with a small nudge:
+        // x=85, groundY=400 (position only — "he can stay where he is" on
+        // the next round of feedback). h bumped 145→181 (+25%, Derek: "made
+        // 25 percent bigger in his seating phase and his standing phase" —
+        // one h change covers both since sizeBasis:'height' scales every
+        // frame off this single value, frameScale below layering on top for
+        // frames 5-8 same as before). Depth set in _setupPhotographer, see
+        // that call for the "stacked behind the ring canvas" reasoning.
+        // groundY nudged 400→418 (Derek: "his knees are above ring level"
+        // — his seated knee height was floating clear of the mat's near
+        // edge instead of reading as grounded against it), then one more
+        // small nudge 418→428 ("just a little nudge lower").
+        this._setupPhotographer(85, 181, 428);
         this.drawSideCrowd();
         this.drawFarApronAndRopes();
         this.drawRingMat();
@@ -271,6 +352,13 @@ export default class Arena extends Phaser.Scene {
         this.flickerOverlay.fillStyle(0xffffff, 1);
         this.flickerOverlay.fillRect(0, 0, W, H);
         this.flickerOverlay.setAlpha(0);
+
+        // Camera-flash glow (see _triggerCameraFlash) — created here rather
+        // than lazily in update() so it's part of the same children-list
+        // snapshot the HUD camera setup below takes; a graphics object
+        // created after that snapshot wouldn't be in hudCam's ignore list
+        // and would render on both cameras.
+        this.cameraFlashGfx = this.add.graphics().setDepth(70);
 
         try {
             const cam = this.cameras.main;
@@ -323,87 +411,223 @@ export default class Arena extends Phaser.Scene {
         gfx.fillRect(0, 170, W, 200);
     }
 
-    // Deep background crowd: rows of randomly-repeated cutouts from the same
-    // pool as the named front-row extras (CROWD_EXTRAS's restFrame art),
-    // never the front row's own designs at their own spots — those stay
-    // unique (see _setupCrowdExtras). Randomizing which design lands in
-    // each seat (2026-07-16, replacing flat circles here) is what keeps a
-    // dense back-of-house crowd from reading as a repeating tile: no two
-    // adjacent seats are guaranteed the same design, and 11 source designs
-    // spread across ~250 seats means no obvious cloning even up close.
-    // Each row gets one blur filter (applied to the row's Container, one
-    // GPU pass for the whole row rather than per-sprite) with strength/
-    // steps increasing by row depth — see the row loop below for why
-    // strength is kept low relative to steps (a Kawase-blur ghosting
-    // artifact — 4ish visible offset copies — showed up past strength≈2
-    // per step; more steps at low strength gives a smooth blur instead).
-    drawCrowd() {
-        let s = 7331;
+    // First row added back behind the front row (2026-07-16), one row only
+    // — the plan going forward is to confirm each row looks right live
+    // before adding the next, rather than designing a multi-row system
+    // blind. Composition and depth cue both specified directly by Derek:
+    // 25% oldman, 25% browndresslady, 50% any design at random (the 50%
+    // draw can still land on oldman/browndresslady — not excluded, per
+    // "random" meaning the full pool). Depth is read the same way the
+    // front row already reads distance — smaller scale and a *smaller* y
+    // (higher up on screen) than the front row's groundY, since a camera
+    // pitched slightly down projects a further-back point higher in frame.
+    // Row is staggered half the front row's seat spacing off its x grid so
+    // it doesn't sit as an obvious second copy directly above each
+    // front-row seat.
+    //
+    // Follow-up same session: brought closer (bigger scale, lower/closer Y)
+    // per Derek's read that the first pass sat too small/far; no-adjacent-
+    // repeat pick so the same design can't land next to itself twice in a
+    // row; and ambient flicker motion (same restFrame<->altFrame idea as
+    // the front row's reactions, just idle-triggered instead of event-
+    // triggered) so the row doesn't sit frozen like the first pass did.
+    drawSecondRow() {
+        let s = 42017;
         const rand = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
 
-        // r = 5ft person head radius at that depth (ring: 43px/ft near, ~0.37× at far stands)
-        const rows = [
-            { y: 248, r: 9,  count: 26, gap: 28, lum: 120 }, // floor-level seats behind far ropes
-            { y: 222, r: 8,  count: 24, gap: 29, lum: 116 },
-            { y: 196, r: 8,  count: 22, gap: 30, lum: 112 },
-            { y: 170, r: 7,  count: 20, gap: 31, lum: 108 },
-            { y: 152, r: 7,  count: 24, gap: 32, lum: 105 },
-            { y: 134, r: 6,  count: 22, gap: 34, lum: 92  },
-            { y: 117, r: 5,  count: 20, gap: 36, lum: 82  },
-            { y: 101, r: 5,  count: 18, gap: 38, lum: 72  },
-            { y: 86,  r: 4,  count: 16, gap: 42, lum: 64  },
-            { y: 72,  r: 4,  count: 14, gap: 44, lum: 56  },
-            { y: 59,  r: 3,  count: 13, gap: 48, lum: 50  },
-            { y: 47,  r: 3,  count: 11, gap: 52, lum: 44  },
-            { y: 36,  r: 2,  count: 10, gap: 56, lum: 38  },
-            { y: 26,  r: 2,  count: 9,  gap: 60, lum: 32  },
-            { y: 16,  r: 2,  count: 8,  gap: 65, lum: 26  },
-        ];
-
-        // Pool of filler designs — same cutout art as the named front row,
-        // always shown at restFrame (these don't react; only the front row
-        // does, see _reactCrowdExtras). Dimensions read straight from the
-        // loaded textures since this runs before _setupCrowdExtras builds
-        // its own per-extra _dims cache.
         const pool = CROWD_EXTRAS.map(e => {
             const key = `${e.slug}${e.restFrame}`;
             const src = this.textures.get(key).getSourceImage();
-            return { key, h: src.height };
+            return { key, h: src.height, slug: e.slug, restFrame: e.restFrame, frames: e.frames };
         });
+        const oldman = pool.find(p => p.slug === 'oldman');
+        const browndresslady = pool.find(p => p.slug === 'browndresslady');
 
-        rows.forEach((row, rowIdx) => {
-            const cont = this.add.container(0, 0).setDepth(1);
-            const depthT = rowIdx / (rows.length - 1);
-            if (rowIdx > 0) { // nearest row stays crisp, a clean handoff off the front row
-                cont.enableFilters();
-                const steps = Math.round(2 + depthT * 8);      // 2..10
-                const strength = 0.3 + depthT * 0.9;           // 0.3..1.2 — see class-doc note on the ghosting ceiling
-                cont.filters.internal.addBlur(0, 1, 1, strength, 0xffffff, steps);
-            }
-            for (let j = 0; j < row.count; j++) {
-                const t = j / (row.count - 1);
-                const cx = 20 + t * 920 + (rand() - 0.5) * row.gap * 0.4;
-                const heightFt = 4 + Math.floor(rand() * 3); // 4, 5, or 6ft person
-                const r = row.r * heightFt / 5;
-                const bodyH = r * 8; // full-cutout analog of the old head-circle radius
-                const pick = pool[Math.floor(rand() * pool.length)];
-                const flip = rand() < 0.5;
-                const scale = bodyH / pick.h;
-                const col = (row.lum << 16) | (row.lum << 8) | row.lum;
-                const img = this.add.image(cx, row.y + r * 1.2, pick.key)
-                    .setOrigin(0.5, 1)
-                    .setTint(col)
-                    .setScale(flip ? -scale : scale, scale);
-                cont.add(img);
-            }
-        });
+        let prevKey = null;
+        const pick = () => {
+            let design;
+            let attempts = 0;
+            do {
+                const r = rand();
+                if (r < 0.25) design = oldman;
+                else if (r < 0.5) design = browndresslady;
+                else design = pool[Math.floor(rand() * pool.length)];
+                attempts++;
+            } while (design.key === prevKey && attempts < 8);
+            prevKey = design.key;
+            return design;
+        };
 
-        // Signs — lighter so they read against the crowd
-        const gfx = this.add.graphics().setDepth(1);
-        gfx.fillStyle(0x888888, 1);
-        [[120, 95, 42, 20], [360, 78, 38, 18], [590, 85, 45, 22], [780, 72, 36, 17]].forEach(([x, y, w, h]) => {
-            gfx.fillRect(x - w / 2, y - h / 2, w, h);
+        const COUNT = 16;
+        const SPOT_H = 90; // brought closer/bigger from the first pass's 72
+        const Y = 268; // brought closer/lower from the first pass's 236, still above the front row's ~300-320 groundY
+        const X_START = W / 2 - 280, X_END = W / 2 + 280;
+        const STAGGER = 20; // half the front row's ~40-65px spacing
+
+        for (let i = 0; i < COUNT; i++) {
+            const t = i / (COUNT - 1);
+            const cx = X_START + t * (X_END - X_START) + STAGGER;
+            const design = pick();
+            const flip = rand() < 0.5;
+            const scale = SPOT_H / design.h;
+            const img = this.add.image(cx, Y, design.key)
+                .setOrigin(0.5, 1)
+                .setDepth(1)
+                .setTint(0x6e6e6e) // dimmer than row 1's ~0x96-0xac tints — depth falloff behind the front row
+                .setScale(flip ? -scale : scale, scale);
+            this._scheduleAmbientFlicker(img, design);
+        }
+    }
+
+    // Third row, same template as drawSecondRow (same pool-weighting, same
+    // no-adjacent-repeat pick, same stagger/count) — only the depth cue
+    // changes: SPOT_H and Y both stepped down by the same ratio row 2 used
+    // over the front row (~0.82×), continuing that recession instead of
+    // guessing new numbers. Own RNG seed so its design/flip picks don't
+    // mirror row 2's seat-for-seat. Row 2 was signed off as-is (Derek
+    // 2026-07-16) — left untouched here, including its plain (non-cheer)
+    // _scheduleAmbientFlicker call.
+    //
+    // Cheer: row 3 passes `{ cheer: true }` so a fraction of its idle
+    // cycles jump all the way to each design's own peak frame (last frame —
+    // every CROWD_EXTRAS design's sequence builds to a fist-pump/cheer peak
+    // there, see the per-design comments above) instead of just the subtle
+    // restFrame<->frame2 flicker row 2 uses.
+    drawThirdRow() {
+        let s = 71309;
+        const rand = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+
+        const pool = CROWD_EXTRAS.map(e => {
+            const key = `${e.slug}${e.restFrame}`;
+            const src = this.textures.get(key).getSourceImage();
+            return { key, h: src.height, slug: e.slug, restFrame: e.restFrame, frames: e.frames };
         });
+        const oldman = pool.find(p => p.slug === 'oldman');
+        const browndresslady = pool.find(p => p.slug === 'browndresslady');
+
+        let prevKey = null;
+        const pick = () => {
+            let design;
+            let attempts = 0;
+            do {
+                const r = rand();
+                if (r < 0.25) design = oldman;
+                else if (r < 0.5) design = browndresslady;
+                else design = pool[Math.floor(rand() * pool.length)];
+                attempts++;
+            } while (design.key === prevKey && attempts < 8);
+            prevKey = design.key;
+            return design;
+        };
+
+        const COUNT = 16;
+        const SPOT_H = 74; // row 2's 90 × ~0.82, the same step-down row 2 used over the front row
+        const Y = 226;     // row 2's 268 × ~0.82
+        const X_START = W / 2 - 280, X_END = W / 2 + 280;
+        const STAGGER = 20;
+
+        for (let i = 0; i < COUNT; i++) {
+            const t = i / (COUNT - 1);
+            const cx = X_START + t * (X_END - X_START) + STAGGER;
+            const design = pick();
+            const flip = rand() < 0.5;
+            const scale = SPOT_H / design.h;
+            const img = this.add.image(cx, Y, design.key)
+                .setOrigin(0.5, 1)
+                .setDepth(0.9) // below row 2's depth 1 — row 3 is farther back, must draw/occlude behind it, not on top
+                .setTint(0x4b4b4b) // darker than row 2's 0x6e6e6e — continues the depth falloff
+                .setScale(flip ? -scale : scale, scale);
+            this._scheduleAmbientFlicker(img, design, { cheer: true });
+        }
+    }
+
+    // Fourth row, same template as drawThirdRow (weighting/no-adjacent-
+    // repeat/stagger/count/cheer all identical) — SPOT_H/Y stepped down by
+    // the same ~0.82× ratio again (continuing 118→90→74→61, 300ish→268→
+    // 226→185), own RNG seed, and one tint step darker than row 3's
+    // 0x4b4b4b per Derek's "a little darker than before."
+    drawFourthRow() {
+        let s = 130111;
+        const rand = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+
+        const pool = CROWD_EXTRAS.map(e => {
+            const key = `${e.slug}${e.restFrame}`;
+            const src = this.textures.get(key).getSourceImage();
+            return { key, h: src.height, slug: e.slug, restFrame: e.restFrame, frames: e.frames };
+        });
+        const oldman = pool.find(p => p.slug === 'oldman');
+        const browndresslady = pool.find(p => p.slug === 'browndresslady');
+
+        let prevKey = null;
+        const pick = () => {
+            let design;
+            let attempts = 0;
+            do {
+                const r = rand();
+                if (r < 0.25) design = oldman;
+                else if (r < 0.5) design = browndresslady;
+                else design = pool[Math.floor(rand() * pool.length)];
+                attempts++;
+            } while (design.key === prevKey && attempts < 8);
+            prevKey = design.key;
+            return design;
+        };
+
+        const COUNT = 16;
+        const SPOT_H = 61; // row 3's 74 × ~0.82
+        const Y = 185;     // row 3's 226 × ~0.82
+        const X_START = W / 2 - 280, X_END = W / 2 + 280;
+        const STAGGER = 20;
+
+        for (let i = 0; i < COUNT; i++) {
+            const t = i / (COUNT - 1);
+            const cx = X_START + t * (X_END - X_START) + STAGGER;
+            const design = pick();
+            const flip = rand() < 0.5;
+            const scale = SPOT_H / design.h;
+            const img = this.add.image(cx, Y, design.key)
+                .setOrigin(0.5, 1)
+                .setDepth(0.8) // below row 3's depth 0.9 — farthest back, must occlude behind everything in front
+                .setTint(0x343434) // darker than row 3's 0x4b4b4b — continues the depth falloff
+                .setScale(flip ? -scale : scale, scale);
+            this._scheduleAmbientFlicker(img, design, { cheer: true });
+        }
+    }
+
+    // Ambient idle motion for one background-crowd seat: flips between its
+    // restFrame and one alternate frame (that design's own second frame —
+    // already a hand-tuned first-step-of-reaction pose, see CROWD_EXTRAS)
+    // on its own randomized rhythm, so seats don't move in lockstep. No
+    // rescale on the swap — scale is fixed once from restFrame's height, so
+    // a wider-cropped alt frame doesn't shrink-and-sink the figure (see
+    // _setExtraFrame's comment on that bug for the front row's version of
+    // this same fix).
+    //
+    // `cheer` (row 3 only, see drawThirdRow): when true, a fraction of the
+    // "active" beats jump to the design's own peak frame instead of the
+    // subtle altFrame, with a longer hold — an actual cheer, not just a
+    // shift in the seat.
+    _scheduleAmbientFlicker(img, design, { cheer = false } = {}) {
+        if (design.frames <= 1) return;
+        const altFrame = Math.min(design.frames, 2);
+        if (altFrame === design.restFrame) return;
+        const peakFrame = design.frames;
+        let atRest = true;
+        const tick = () => {
+            if (!img.active) return; // scene may have shut down mid-timer
+            atRest = !atRest;
+            if (atRest) {
+                img.setTexture(`${design.slug}${design.restFrame}`);
+                const hold = 1000 + Math.random() * 2600;
+                this.time.delayedCall(hold, tick);
+            } else {
+                const doCheer = cheer && peakFrame > altFrame && Math.random() < 0.3;
+                img.setTexture(`${design.slug}${doCheer ? peakFrame : altFrame}`);
+                const hold = doCheer ? 500 + Math.random() * 500 : 200 + Math.random() * 260;
+                this.time.delayedCall(hold, tick);
+            }
+        };
+        this.time.delayedCall(Math.random() * 3000, tick); // stagger start times
     }
 
     // Test crowd: named audience members (CROWD_EXTRAS, each a multi-frame
@@ -466,10 +690,108 @@ export default class Arena extends Phaser.Scene {
             const refH = Math.max(...Object.values(extra._dims).map(d => d.h));
             scale = spot.h / refH;
         }
-        const groundY = RING.farLeft.y + spot.h * 0.45; // ~torso-height occlusion by the mat
+        // extra.frameScale is an opt-in per-frame multiplier on top of the
+        // above (photographer only, currently) — for when the art's own
+        // relative proportions don't read as big enough a change even
+        // after a correct batch-scale cut (see cut.mjs), and a deliberate
+        // per-frame exaggeration is wanted instead.
+        scale *= extra.frameScale?.[f] ?? 1;
+        // spot.groundY lets a fan opt out of the "behind the ring" anchor
+        // below — needed for the photographer, who sits beside the ring at
+        // near-camera depth, not behind it (see _setupPhotographer).
+        const groundY = spot.groundY ?? (RING.farLeft.y + spot.h * 0.45); // ~torso-height occlusion by the mat
+        // extra.stepOffset is an opt-in per-frame x shift on top of spot.x
+        // (photographer only) — direction-aware via spot.flip so "forward"
+        // always means toward the ring regardless of which side a future
+        // instance sits on, not just increasing x.
+        const stepX = spot.x + (spot.flip ? -1 : 1) * (extra.stepOffset?.[f] ?? 0);
         fan.img.setTexture(`${extra.slug}${f}`)
+            .setX(stepX)
             .setY(groundY)
             .setScale(spot.flip ? -scale : scale, scale);
+        // extra.flashOnPeak (photographer only): landing on the last frame
+        // — his flash-bulb pose — pops a localized flash at the bulb's
+        // actual position. Only the forward leg of a reaction cycle ever
+        // reaches `extra.frames` (_reactCrowdExtras' `down` sequence stops
+        // one short of it), so this only fires once per reaction, at the
+        // actual peak.
+        //
+        // Offsets read directly off frame8.png (220x360, origin 0.5/1 =
+        // bottom-center): the bulb sits ~30% of the display width toward
+        // his facing direction from center (he's holding the camera out in
+        // front of him, not centered on his body) and ~90% of the way up
+        // from his feet (right at the top of the raised camera, well above
+        // head height) — plain groundY/stepX (his body center) was "back
+        // from where the bulb would be."
+        //
+        // Derek also flagged the flash as "a frame too early" — it used to
+        // fire the instant _setExtraFrame lands on frame 8, i.e. in the
+        // same beat the pose itself changes. Delaying it one
+        // _reactCrowdExtras STEP (130ms) lets the standing/flash pose
+        // actually land on screen first, so the pop reads as the bulb
+        // firing *after* he's raised the camera, not simultaneously with
+        // the pose change.
+        if (f === extra.frames && extra.flashOnPeak) {
+            const dir = spot.flip ? -1 : 1;
+            const flashX = stepX + dir * fan.img.displayWidth * 0.30;
+            const flashY = groundY - fan.img.displayHeight * 0.90;
+            this.time.delayedCall(130, () => this._triggerCameraFlash(flashX, flashY));
+        }
+    }
+
+    // Builds the single ringside photographer fan. Mirrors _setupCrowdExtras'
+    // per-extra body (dims cache, fan shape) for one PHOTOGRAPHER instance,
+    // seated beside the ring rather than behind it like the CROWD_EXTRAS
+    // front row (see the create() call site for the placement history).
+    // Uses spot.groundY (see _setExtraFrame) to anchor to an explicit
+    // near-camera Y instead of the RING.farLeft.y-based formula every
+    // CROWD_EXTRAS spot uses.
+    //
+    // Kept as its own method rather than folded into CROWD_EXTRAS so he
+    // isn't swept into drawSecondRow/ThirdRow/FourthRow's random background
+    // pool (he's a unique named character, not filler). Pushed into
+    // this.crowdFans so _reactCrowdExtras' match-event hook (pinfalls,
+    // nearfalls, etc.) picks him up the same as every other extra — no
+    // separate trigger code needed. Called from create() alongside
+    // _setupCrowdExtras().
+    _setupPhotographer(x, h, groundY) {
+        const extra = { ...PHOTOGRAPHER, _dims: {} };
+        for (let i = 1; i <= extra.frames; i++) {
+            const src = this.textures.get(`${extra.slug}${i}`).getSourceImage();
+            extra._dims[i] = { w: src.width, h: src.height };
+        }
+        // flip: false — he's drawn facing right, which already faces into
+        // the ring from this near-left-of-center position.
+        const spot = { x, h, flip: false, tint: 0x9d9789, groundY };
+        const fan = {
+            img: this.add.image(spot.x, 0, `${extra.slug}${extra.restFrame}`)
+                .setOrigin(0.5, 1)
+                .setTint(spot.tint)
+                // Depth 2.8 — below drawRingMat's 3 (Derek: "he needs to be
+                // stacked behind the ring canvas"), so the mat renders in
+                // front of whatever part of him overlaps its trapezoid at
+                // this x/y, reading as tucked beside/behind the ring's edge
+                // rather than floating in front of it. Still above
+                // drawFarApronAndRopes (2) and every background crowd layer
+                // (0.8-1.5) — only the mat itself occludes him.
+                .setDepth(2.8),
+            extra, spot, reacting: false,
+        };
+        this._setExtraFrame(fan, extra.restFrame);
+        this.crowdFans.push(fan);
+    }
+
+    // Pops a localized flash at (x, y) — Derek: a full-screen version (the
+    // first pass, reusing flickerOverlay) read as too intense; "it should
+    // only flash around the bulb." Just records start time + position;
+    // update() owns the decay curve and draws a small soft-edged glow
+    // (this.cameraFlashGfx, a dedicated graphics object, layered two
+    // circles for a falloff rather than one hard-edged disc) centered
+    // there instead of washing the whole frame.
+    _triggerCameraFlash(x, y) {
+        this._flashStart = this.time.now;
+        this._flashX = x;
+        this._flashY = y;
     }
 
     // Plays a subset of the crowd fans forward through their reference
@@ -494,13 +816,14 @@ export default class Arena extends Phaser.Scene {
 
     drawSideCrowd() {
         const gfx = this.add.graphics().setDepth(10);
-        const { nearLeft, nearRight, farLeft, farRight } = RING;
+        const { nearRight, farRight } = RING;
 
         let s = 9173;
         const rand = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
 
-        // At a given y, find the x boundary of the ring on each side
-        const leftBoundary  = y => nearLeft.x  + (farLeft.x  - nearLeft.x)  * (nearLeft.y  - y) / (nearLeft.y  - farLeft.y);
+        // At a given y, find the ring's right-side x boundary (left-side
+        // equivalent removed along with the left flank below — see that
+        // block's comment)
         const rightBoundary = y => nearRight.x + (farRight.x - nearRight.x) * (nearRight.y - y) / (nearRight.y - farRight.y);
 
         // baseR = head radius for a 5ft person at that y, from ring perspective scale
@@ -516,28 +839,19 @@ export default class Arena extends Phaser.Scene {
         ];
 
         sideRows.forEach(({ y, baseR }) => {
-            const lx = leftBoundary(y);
             const rx = rightBoundary(y);
             const baseLum = Math.floor(58 + (y - 240) * 0.13);
 
-            // Left flank — pack from ring edge toward left canvas edge,
-            // leaving a ringside strip of bare floor (press row, photographers)
-            // so the crowd doesn't read as pressed against the apron
-            let x = lx - baseR * 3.4;
-            while (x > -baseR) {
-                const heightFt = 4 + Math.floor(rand() * 3); // 4, 5, or 6ft
-                const r = Math.round(baseR * heightFt / 5);
-                const jitter = (rand() - 0.5) * baseR * 0.5;
-                const lum = Math.min(100, Math.floor(baseLum * (0.85 + rand() * 0.30)));
-                const col = (lum << 16) | (lum << 8) | lum;
-                gfx.fillStyle(col, 1);
-                gfx.fillCircle(x + jitter, y, r);
-                gfx.fillEllipse(x + jitter, y + r + r * 0.75, r * 2.4, r * 1.4);
-                x -= r * 2.1 + rand() * r * 0.5;
-            }
+            // Left flank removed (Derek: "we can get rid of the fake crowd
+            // on that side") — the ringside photographer (_setupPhotographer,
+            // seated at x=85 across this same y-range) now occupies that
+            // side; the flat fillCircle/fillEllipse dots read as redundant/
+            // inconsistent next to his actual cutout art. Right flank
+            // (below) is unaffected — no equivalent named character sits
+            // there.
 
             // Right flank
-            x = rx + baseR * 3.4;
+            let x = rx + baseR * 3.4;
             while (x < W + baseR) {
                 const heightFt = 4 + Math.floor(rand() * 3);
                 const r = Math.round(baseR * heightFt / 5);
@@ -1774,5 +2088,29 @@ export default class Arena extends Phaser.Scene {
 
         const flicker = Math.sin(time * 0.0017) * 0.012 + Math.random() * 0.008;
         this.flickerOverlay.setAlpha(Math.max(0, flicker));
+
+        // Camera flash (see _triggerCameraFlash): a small soft-edged glow
+        // at the bulb's own position, not a screen-wide wash — Derek's
+        // correction after the first pass (reusing flickerOverlay
+        // full-screen) read as too intense. Sharp attack, quick
+        // square-falloff decay over CAMERA_FLASH_MS so it pops rather than
+        // fades gently. Two layered circles (dim wide halo + bright core)
+        // approximate a radial falloff since Graphics has no native
+        // gradient fill.
+        const cfg = this.cameraFlashGfx;
+        cfg.clear();
+        if (this._flashStart != null) {
+            const CAMERA_FLASH_MS = 200;
+            const t = (time - this._flashStart) / CAMERA_FLASH_MS;
+            if (t < 1) {
+                const a = (1 - t) ** 2;
+                cfg.fillStyle(0xffffff, a * 0.35);
+                cfg.fillCircle(this._flashX, this._flashY, 40);
+                cfg.fillStyle(0xffffff, a * 0.85);
+                cfg.fillCircle(this._flashX, this._flashY, 16);
+            } else {
+                this._flashStart = null;
+            }
+        }
     }
 }

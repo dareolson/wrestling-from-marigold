@@ -88,6 +88,80 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### PENDING — next Claude: policeman in the corner (Derek's queued assignment)
+
+Derek's plan for whichever session picks this up next: add a policeman,
+seated/standing in a ring corner — same general "named ringside character"
+territory the photographer entries below just finished. No source art
+confirmed dropped yet as of this note — check `Sprite sheets/Audience/`
+for a policeman-named file before doing anything; if it's not there, this
+is blocked the same way the photographer was (see that PENDING pattern,
+now resolved, further below in this log for the shape of that blocker).
+
+**Reusable patterns from the photographer work (all in `src/scenes/Arena.js`
+unless noted), read the entries below for full context before guessing:**
+
+- **Don't add a new named character to `CROWD_EXTRAS`** if it needs its own
+  distinct placement (not one of the 11 proven front-row grid x-slots) —
+  that array feeds `drawSecondRow`/`ThirdRow`/`FourthRow`'s random
+  background pool too, so a unique character would get duplicated as
+  anonymous filler. Follow `_setupPhotographer`'s pattern instead: its own
+  const (see `PHOTOGRAPHER`) and setup method, still pushed into
+  `this.crowdFans` so `_reactCrowdExtras`' match-event hook (pinfalls,
+  nearfalls) triggers it for free — no separate trigger code needed.
+- **`tools/audience-cutter/cut.mjs` was fixed this session** (commit
+  `1be75a0`) — it used to fit each over-cap frame independently to
+  `MAX_FRAME_HEIGHT`, flattening any multi-pose character whose frames were
+  all shot above 360px native (silently killing sit→stand growth for
+  oldman/marlon too, also fixed this session). Now computes one shared
+  scale per invocation from that sheet's own tallest frame. **If the
+  policeman has any pose change where size/height should read as
+  different (e.g., saluting, drawing a baton, standing at attention vs.
+  relaxed), use this fixed tool as-is** — no further changes needed there
+  — and if he's cut from two source sheets, pass `--scale=<value>` on the
+  second invocation (value printed by the first) to keep both sheets
+  consistent across the seam. See that file's header comment.
+- **The near-left/near-right ring-corner posts (`drawPosts`) are FIXED
+  screen positions** (`RING.nearLeft.x=40` / `RING.nearRight.x=920`,
+  8px wide, y-span 245-490) — they do NOT recede with perspective the way
+  the ring boundary line (`leftBoundary`/`rightBoundary`) does. Any
+  character placed near a corner needs real per-frame `displayWidth`/
+  left-edge (or right-edge) measurement against that fixed post position,
+  not just the perspective boundary — the photographer's placement was
+  wrong twice (see the rounds below) before this was measured directly via
+  `window.__WFM_GAME` + forcing `_setExtraFrame` through all frames.
+- **"Stacked behind the ring canvas"** (Derek's phrase — canvas = the ring
+  mat) — if a character sits close enough to the ring that they'd visually
+  overlap the mat, give them a depth below `drawRingMat`'s 3 (photographer
+  uses 2.8) so the mat correctly occludes the overlapping part, rather than
+  the character floating in front of the whole ring at CROWD_EXTRAS'
+  typical 1.5-10.5 depth range.
+- **Live iteration workflow** — by far the fastest loop this session:
+  `tools/debug/harness.mjs`'s `launch()` + `window.__WFM_GAME` to force a
+  fan through candidate positions/frames directly (no restart needed),
+  `page.screenshot()` + `sips -c <h> <w> --cropOffset <y> <x>` to crop and
+  eyeball results, before committing to numbers in the actual source.
+  Iterating blind on x/y/depth guesses and asking Derek to re-check burned
+  much more time than measuring first.
+- **`drawSideCrowd()`'s left flank is gone** (removed this session, made
+  room for the photographer) — right flank is untouched. If the policeman
+  goes on the right side near a corner, the flat-dot right flank may need
+  the same removal treatment once he's placed, or he may need to work
+  around/replace it — Derek's call once it's visible.
+
+**Process note:** this session ran with two Claude tabs editing `Arena.js`
+concurrently at times (Derek had them open side by side) — caused one
+mixed-up instruction and required re-reading live file state rather than
+trusting memory of prior edits mid-session. If Derek runs the policeman
+work in parallel with anything else touching `Arena.js`, expect the same —
+`git diff`/fresh `Read` calls before editing, don't assume your last edit
+is still the file's current state.
+
+Everything from the photographer work is committed (`1be75a0` — cutter fix
++ oldman/marlon re-cut; `88b6588` — photographer feature) and not yet
+pushed (`git status` shows the branch ahead of `origin/master`). Working
+tree was clean as of this note.
+
 ### 2026-07-17 (photographer: eighth round — flash workshop, offset onto the actual bulb + delayed one STEP) — Claude (Derek: "let's workshop the flash, it happens a frame too early I think and it's back from where the bulb would be")
 
 Two fixes to `_setExtraFrame`'s flash trigger (entry three below), same

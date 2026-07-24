@@ -28,18 +28,34 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // pixel height, and height-basis scaling would render that as growing
 // taller, i.e. looking like they're standing up.
 //
-// FRONT-ROW GRID (2026-07-15 reshuffle): the visible "core" of the row is
-// x 220-780 (W/2 ± 280) — flanking outside it reads as invisible (found
-// with browndresslady's first attempt). Within that span, 11 positions
-// have been proven to read as distinct, evenly spaced ~55-65px apart:
-//   W/2 + [-260, -205, -150, -95, -40, +15, +70, +125, +190, +245, +300]
-// Derek's target is ~10 unique designs total, one instance each, so this
-// reshuffle dropped every design down to a single spot and left the other
-// 6 slots open rather than doubling anyone up (oldman previously ate 5 of
-// the 11 slots himself — the exact "obvious repeat" problem being solved).
+// FRONT-ROW GRID (2026-07-15 reshuffle, widened 2026-07-18, widened again
+// same day): the visible "core" of the row was originally x 220-780
+// (W/2 ± 280, 55px steps) — flanking outside it read as invisible (found
+// with browndresslady's first attempt). Derek: "widen the row to make more
+// room, some of the characters are being either squished or pushed back" —
+// widened to W/2 ± 325 (x 155-805), 65px steps. Then, after the separate
+// "size equalized to alfred" pass below made every character 5% bigger
+// again ("make the background audience five percent bigger across the
+// board and widen their rows to accommodate so no one is squished or
+// displaced"), widened once more to keep pace: W/2 ± 340, 68px steps
+// (65 * 1.05). Same 11 slots in the same left-to-right order throughout —
+// nobody has moved relative to their neighbors since the original
+// reshuffle, only the spacing has grown to match each size bump:
+//   W/2 + [-340, -272, -204, -136, -68, 0, +68, +136, +204, +272, +340]
+// Re-verified visible via screenshot at both new outer edges (oldman at
+// -325, marlon at +325) before committing to the -325/+325 pass — see the
+// create() call sites' own comments if either ever needs pulling back in.
+// Not independently re-verified at the current -340/+340 edges, but the
+// margin from that check (960-wide canvas, -325 already read fine) leaves
+// enough room that 15 more px shouldn't cross back into the invisible zone.
+// Derek's target is ~10 unique designs total, one instance each, so the
+// 2026-07-15 reshuffle dropped every design down to a single spot and left
+// the other 6 slots open rather than doubling anyone up (oldman previously
+// ate 5 of the 11 slots himself — the exact "obvious repeat" problem being
+// solved).
 // **Adding a new design: pick an unused x from the list above** — all 11
-// proven positions are now occupied (dizzy took -150, groucho took -205,
-// alfred took +70, audrey took +125, lucille took +190, marlon took +300);
+// proven positions are now occupied (dizzy took -204, groucho took -272,
+// alfred took +68, audrey took +136, lucille took +204, marlon took +340);
 // a 12th extra needs either a reshuffle or a new placement strategy (a
 // second, more distant row was floated as untested back in the
 // marilyn-era entries). h/tint/flip still need tuning per new design's
@@ -71,6 +87,30 @@ const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm
 // groucho/elvis/audrey/marlon, row 3 = dizzy/marilyn/lucille — marlon
 // (added after this system landed) continues the same index%3 pattern at
 // its own grid index (10 → row 2).
+//
+// SIZE EQUALIZED TO ALFRED (2026-07-18): Derek: "many of them are tiny and
+// look like children" — each character's own `h` had drifted independently
+// (100-122) AND rows 2/3's scaleMul (0.82/0.66, above) multiplies on top of
+// that at render time, so the actual on-screen size varied far more than
+// the raw h numbers suggested — a row-3 character at h=100 rendered at
+// 100*0.66=66px, less than half alfred's own 112 (row 1, scaleMul 1.0, so
+// his raw h IS his rendered size). Solved each spot's `h` so rendered size
+// (h * EXTRA_ROWS[row].scaleMul) equals alfred's 112 exactly: row 1 -> 112
+// unchanged/flattened, row 2 -> 112/0.82 = 137, row 3 -> 112/0.66 = 170.
+// This intentionally removes scale as a depth cue for rows 2/3 — they still
+// read as further back via the dimmer tint and the yOffset push (both
+// untouched) — since matching Derek's literal ask ("size them up to his
+// size") isn't compatible with also keeping them visibly smaller.
+//
+// +5% ACROSS THE BOARD (2026-07-18, same day): Derek: "make the background
+// audience five percent bigger across the board and widen their rows to
+// accommodate so no one is squished or displaced." Every spot's `h` scaled
+// by 1.05 off the values above: row 1 112->118, row 2 137->144, row 3
+// 170->179 — the row-to-row EQUALIZED-TO-ALFRED relationship (h *
+// scaleMul all landing on the same rendered size) is preserved since every
+// row got the identical 5% multiplier. The x grid was widened to match
+// (65px -> 68px steps) — see the FRONT-ROW GRID comment above — so the
+// bigger sprites don't run into their neighbors at the old spacing.
 const EXTRA_ROWS = {
     1: { yOffset: 0,   scaleMul: 1.0,  dim: 1.0,  depth: 1.5 },
     2: { yOffset: -20, scaleMul: 0.82, dim: 0.8,  depth: 1.35 },
@@ -97,7 +137,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'height',
         spots: [
-            { x: W / 2 - 260, h: 118, flip: false, tint: 0x969086, row: 1 },
+            { x: W / 2 - 340, h: 118, flip: false, tint: 0x969086, row: 1 },
         ],
     },
     {
@@ -110,8 +150,18 @@ const CROWD_EXTRAS = [
         frames: 8,
         restFrame: 1,
         sizeBasis: 'width',
+        // Derek: split the row's 8-frame reactions into two independent
+        // 4-frame animations — animA (1-4, "seat behavior") on its own
+        // random idle loop like the ringside extras (_scheduleTwoAnimExtra,
+        // via _setupCrowdExtras), animB (5-8, "cheer") only ever fired by
+        // real match events (_reactCrowdExtras, scoped to animB when
+        // present — see that method's comment). randomB:false keeps the
+        // idle loop from ever picking animB itself.
+        animA: [1, 2, 3, 4],
+        animB: [5, 6, 7, 8],
+        randomB: false,
         spots: [
-            { x: W / 2 - 95,  h: 100, flip: false, tint: 0xa39c8d, row: 1 },
+            { x: W / 2 - 136, h: 118, flip: false, tint: 0xa39c8d, row: 1 },
         ],
     },
     {
@@ -124,8 +174,12 @@ const CROWD_EXTRAS = [
         frames: 8,
         restFrame: 1,
         sizeBasis: 'width',
+        // Seat-behavior/cheer split — see browndresslady's comment above.
+        animA: [1, 2, 3, 4],
+        animB: [5, 6, 7, 8],
+        randomB: false,
         spots: [
-            { x: W / 2 + 245, h: 104, flip: false, tint: 0x9d9789, row: 1 },
+            { x: W / 2 + 272, h: 118, flip: false, tint: 0x9d9789, row: 1 },
         ],
     },
     {
@@ -137,8 +191,12 @@ const CROWD_EXTRAS = [
         frames: 8,
         restFrame: 1,
         sizeBasis: 'width',
+        // Seat-behavior/cheer split — see browndresslady's comment above.
+        animA: [1, 2, 3, 4],
+        animB: [5, 6, 7, 8],
+        randomB: false,
         spots: [
-            { x: W / 2 + 15, h: 102, flip: false, tint: 0x9d9789, row: 3 },
+            { x: W / 2 + 0, h: 179, flip: false, tint: 0x9d9789, row: 3 },
         ],
     },
     {
@@ -153,8 +211,12 @@ const CROWD_EXTRAS = [
         frames: 8,
         restFrame: 1,
         sizeBasis: 'width',
+        // Seat-behavior/cheer split — see browndresslady's comment above.
+        animA: [1, 2, 3, 4],
+        animB: [5, 6, 7, 8],
+        randomB: false,
         spots: [
-            { x: W / 2 - 40, h: 122, flip: false, tint: 0x9d9789, row: 2 },
+            { x: W / 2 - 68, h: 144, flip: false, tint: 0x9d9789, row: 2 },
         ],
     },
     {
@@ -170,8 +232,12 @@ const CROWD_EXTRAS = [
         frames: 8,
         restFrame: 1,
         sizeBasis: 'width',
+        // Seat-behavior/cheer split — see browndresslady's comment above.
+        animA: [1, 2, 3, 4],
+        animB: [5, 6, 7, 8],
+        randomB: false,
         spots: [
-            { x: W / 2 - 150, h: 100, flip: true, tint: 0xaca496, row: 3 },
+            { x: W / 2 - 204, h: 179, flip: true, tint: 0xaca496, row: 3 },
         ],
     },
     {
@@ -187,8 +253,23 @@ const CROWD_EXTRAS = [
         frames: 8,
         restFrame: 1,
         sizeBasis: 'width',
+        // Seat-behavior/cheer split — see browndresslady's comment above.
+        animA: [1, 2, 3, 4],
+        animB: [5, 6, 7, 8],
+        randomB: false,
+        // Derek: "can the grouchos have smoke" — cigar smoke puffs spawned
+        // at the cigar tip, see _setupCrowdExtras' smokeOffset check and
+        // _scheduleSmokePuff. Derek, live: "connect it to the end of his
+        // cigar though, get the source right there" — read the actual cut
+        // frame1.png (178x360 native): the lit tip sits ~13px in from the
+        // left edge, ~50px down from the top (he's facing/holding it
+        // toward his own left). Converted through _setExtraFrame's own
+        // math (sizeBasis:'width' scale = spot.h/rest.h, then row 2's own
+        // 0.82 scaleMul on top): offsetX = (13 - 178/2) * (144/360) * 0.82
+        // ≈ -25, offsetY = -(360 - 50) * (144/360) * 0.82 ≈ -102.
+        smokeOffset: { x: -25, y: -102 },
         spots: [
-            { x: W / 2 - 205, h: 104, flip: false, tint: 0x9d9789, row: 2 },
+            { x: W / 2 - 272, h: 144, flip: false, tint: 0x9d9789, row: 2 },
         ],
     },
     {
@@ -203,8 +284,12 @@ const CROWD_EXTRAS = [
         frames: 8,
         restFrame: 1,
         sizeBasis: 'width',
+        // Seat-behavior/cheer split — see browndresslady's comment above.
+        animA: [1, 2, 3, 4],
+        animB: [5, 6, 7, 8],
+        randomB: false,
         spots: [
-            { x: W / 2 + 70, h: 112, flip: false, tint: 0x9d9789, row: 1 },
+            { x: W / 2 + 68, h: 118, flip: false, tint: 0x9d9789, row: 1 },
         ],
     },
     {
@@ -220,8 +305,12 @@ const CROWD_EXTRAS = [
         frames: 8,
         restFrame: 1,
         sizeBasis: 'width',
+        // Seat-behavior/cheer split — see browndresslady's comment above.
+        animA: [1, 2, 3, 4],
+        animB: [5, 6, 7, 8],
+        randomB: false,
         spots: [
-            { x: W / 2 + 125, h: 106, flip: false, tint: 0x9d9789, row: 2 },
+            { x: W / 2 + 136, h: 144, flip: false, tint: 0x9d9789, row: 2 },
         ],
     },
     {
@@ -237,8 +326,12 @@ const CROWD_EXTRAS = [
         frames: 8,
         restFrame: 1,
         sizeBasis: 'width',
+        // Seat-behavior/cheer split — see browndresslady's comment above.
+        animA: [1, 2, 3, 4],
+        animB: [5, 6, 7, 8],
+        randomB: false,
         spots: [
-            { x: W / 2 + 190, h: 108, flip: true, tint: 0x9d9789, row: 3 },
+            { x: W / 2 + 204, h: 179, flip: true, tint: 0x9d9789, row: 3 },
         ],
     },
     {
@@ -260,7 +353,7 @@ const CROWD_EXTRAS = [
         restFrame: 1,
         sizeBasis: 'height',
         spots: [
-            { x: W / 2 + 300, h: 118, flip: false, tint: 0x9d9789, row: 2 },
+            { x: W / 2 + 340, h: 144, flip: false, tint: 0x9d9789, row: 2 },
         ],
     },
 ];
@@ -295,8 +388,13 @@ const PHOTOGRAPHER = {
     // sheet) still didn't read as big enough a change — the art's own
     // proportions, not a scale bug this time. Explicit +25% on top of the
     // computed scale for just those four frames (see _setExtraFrame's
-    // frameScale multiplier).
-    frameScale: { 5: 1.25, 6: 1.25, 7: 1.25, 8: 1.25 },
+    // frameScale multiplier). Derek later, separately: "the photographer
+    // seems too small when he's sitting, but the right size when he's
+    // standing" — the seated frames (1-4) had no multiplier at all, just
+    // the shared base scale, so they read small next to 5-8's +25%. +5%
+    // on 1-4 to close that gap without matching the standing set's own
+    // (much bigger, deliberately-exaggerated) jump.
+    frameScale: { 1: 1.05, 2: 1.05, 3: 1.05, 4: 1.05, 5: 1.25, 6: 1.25, 7: 1.25, 8: 1.25 },
     // Frame 8 is his flash-bulb pose (see this const's frame-breakdown
     // comment above) — flashOnPeak fires a real screen flash the instant
     // he lands on it (see _setExtraFrame's flashOnPeak check and
@@ -341,6 +439,124 @@ const POLICEMAN = {
     sizeBasis: 'width',
 };
 
+// Lou Thesz's manager, Ed "Strangler" Lewis — same "unique named character,
+// not filler" treatment as PHOTOGRAPHER/POLICEMAN: kept out of CROWD_EXTRAS,
+// own const, built via the shared _setupTwoAnimExtra. Source art is another
+// single-sheet 4x2 pose grid (1717x916, same shape as the policeman's
+// sheet), cut the same
+// way: split into two temp horizontal-strip PNGs (row1 -> real
+// `stranglerlewis` slug frames 1-4, row2 -> a temp slug renumbered into
+// frames 5-8), each run through unmodified cut.mjs with a shared --scale
+// (native tallest frames 418px/417px — no real growth signal, matches the
+// policeman's case). He stands throughout, building from a calm profile
+// stance through a shout, a cupped-hand call, and a pointing accusation
+// (frames 1-4) into a fist-pump, a pointing jab, an open-handed plea, and
+// back to a calm profile (frames 5-8) — no sit->stand growth, so
+// sizeBasis is 'width' like POLICEMAN, not 'height'.
+//
+// Derek: split the 8-frame sequence into two independent 4-frame animations
+// that fire off intermittently, rather than one continuous 8-frame build
+// tied to match events — closer to the policeman's own independent-loop
+// treatment than the photographer/CROWD_EXTRAS' crowdFans hook, except with
+// two distinct animations to alternate between instead of one variable-
+// depth turn. ANIM_A (frames 1-4: calm -> shout -> cupped-hand call ->
+// pointing accusation) and ANIM_B (frames 5-8: fist-pump -> pointing jab ->
+// open-handed plea -> settles back to a calm profile, already reads as
+// resolved by frame8) are each their own self-contained cycle — see
+// _setupTwoAnimExtra/_scheduleTwoAnimExtra, the generic version of what was
+// originally a lewis-only method (generalized once ANNOUNCER/BELL_RINGER
+// below needed the identical two-anim shape — see those consts).
+//
+// Facing convention is the OPPOSITE of PHOTOGRAPHER/POLICEMAN: this sheet's
+// rest pose (frame1) faces LEFT natively (confirmed against the cut frame,
+// not assumed from the other two extras' convention) — so a RIGHT-side
+// placement needs flip:false to face into the ring, not flip:true.
+const STRANGLER_LEWIS = {
+    slug: 'stranglerlewis',
+    frames: 8,
+    restFrame: 1,
+    sizeBasis: 'width',
+    animA: [1, 2, 3, 4],
+    animB: [5, 6, 7, 8],
+};
+
+// Ringside broadcast pair — announcer (mic + folding chair) and timekeeper/
+// bell-ringer (stopwatch, mallet, bell, small table), Derek's follow-up ask
+// after "who else might be ringside." Same single-sheet 4x2 grid shape and
+// cut process as STRANGLER_LEWIS/POLICEMAN (both sheets 1716x916, split into
+// two temp row-strips, each run through cut.mjs with a shared --scale:
+// announcer 0.8491/native 424px+385px, bellringer 0.8824/native 408px+
+// 423px). Both stand — well, sit — throughout with no real height change,
+// so sizeBasis 'width' like every other seated/standing-in-place extra.
+//
+// Both sheets' own furniture (mic stand, table/bell) is baked into the art
+// itself rather than drawn separately in code — simpler than trying to
+// hand-match a procedural table's perspective/scale to two independently
+// generated character sheets, and it means each can be placed and scaled
+// independently without needing to share one literal prop.
+//
+// Facing convention matches PHOTOGRAPHER/POLICEMAN (right natively,
+// confirmed against each cut frame1.png), NOT stranglerlewis's reversed
+// convention — flip:false reads correctly on the LEFT side of the ring,
+// same side the photographer already sits on.
+//
+// Frame breakdowns (same asymmetric animA-reverses/animB-snaps shape as
+// STRANGLER_LEWIS, since both sheets' frame4 and frame8 already read as
+// settled/neutral rather than mid-gesture):
+// ANNOUNCER animA [1-4]: neutral -> leans into mic -> gestures toward the
+//   ring -> big emphatic call, arm raised. animB [5-8]: neutral (near-
+//   identical to 1) -> cups a hand to listen -> animated talking gesture ->
+//   settles back to neutral.
+// BELL_RINGER animA [1-4]: neutral -> checks stopwatch -> sets it down ->
+//   neutral rest. animB [5-8]: mallet raised -> mid-strike on the bell ->
+//   follow-through -> settles back to neutral, stopwatch back in hand.
+const ANNOUNCER = {
+    slug: 'announcer',
+    frames: 8,
+    restFrame: 1,
+    sizeBasis: 'width',
+    animA: [1, 2, 3, 4],
+    animB: [5, 6, 7, 8],
+};
+const BELL_RINGER = {
+    slug: 'bellringer',
+    frames: 8,
+    restFrame: 1,
+    sizeBasis: 'width',
+    animA: [1, 2, 3, 4],
+    animB: [5, 6, 7, 8],
+    // Derek: "he should only hit the bell when the match begins or ends...
+    // I'm ok with him picking up and putting down the stop watch at
+    // random." randomB:false opts him out of _scheduleTwoAnimExtra's
+    // random animA/animB coin flip — animA (the stopwatch) still fires on
+    // its normal intermittent schedule, animB (the bell strike) only ever
+    // plays via the explicit _ringTimekeeperBell() call from the real
+    // match-start/match-end bell moments in _endMatch.
+    randomB: false,
+};
+
+// "Backs of heads" foreground crowd — Derek dropped four real cutouts
+// (backheadlady1/2, backheadman1/2, each an 8-frame 4x2 grid, same cut
+// process as the other single-sheet designs above) to replace
+// drawSideCrowd's fgRow1/fgRow2, which until now were flat procedural
+// fillCircle/fillEllipse blobs, not real art. Unlike every extra above,
+// these are MULTI-INSTANCE filler — 20 seats total (see drawSideCrowd's
+// FG_ROW1/FG_ROW2 arrays) each randomly assigned one of these 4 designs,
+// not one unique named character per design.
+//
+// All 8 frames read as one pool of small idle fidgets (head-angle shifts,
+// an occasional hand-to-hair/hat adjustment, a slight body turn) with no
+// clear "build to a peak" the way the front-row extras' frames do — there's
+// no seat/cheer split here, just _scheduleBackCrowdIdle picking a random
+// frame to visit and back on its own loop, same shape as
+// _schedulePolicemanScan. sizeBasis 'width' — seated throughout, no growth.
+const BACK_CROWD = [
+    { slug: 'backheadlady1', frames: 8, restFrame: 1, sizeBasis: 'width' },
+    { slug: 'backheadlady2', frames: 8, restFrame: 1, sizeBasis: 'width' },
+    { slug: 'backheadman1', frames: 8, restFrame: 1, sizeBasis: 'width' },
+    { slug: 'backheadman2', frames: 8, restFrame: 1, sizeBasis: 'width' },
+];
+
 // Crowd reaction swell per match event type (0..1)
 const POP_SIZES = {
     pinfall: 1.0, sleeperKO: 1.0, nearfall: 0.9, kickout: 0.6,
@@ -371,19 +587,35 @@ export default class Arena extends Phaser.Scene {
                 this.load.image(`${extra.slug}${i}`, `src/assets/audience/${extra.slug}/frame${i}.png`);
             }
         }
-        for (let i = 1; i <= PHOTOGRAPHER.frames; i++) {
-            this.load.image(`${PHOTOGRAPHER.slug}${i}`, `src/assets/audience/${PHOTOGRAPHER.slug}/frame${i}.png`);
+        // Unique named ringside characters (kept out of CROWD_EXTRAS — see
+        // PHOTOGRAPHER's comment for why), each still a flat multi-frame
+        // sprite sheet cut via the same audience-cutter pipeline.
+        for (const extra of [PHOTOGRAPHER, POLICEMAN, STRANGLER_LEWIS, ANNOUNCER, BELL_RINGER]) {
+            for (let i = 1; i <= extra.frames; i++) {
+                this.load.image(`${extra.slug}${i}`, `src/assets/audience/${extra.slug}/frame${i}.png`);
+            }
         }
-        for (let i = 1; i <= POLICEMAN.frames; i++) {
-            this.load.image(`${POLICEMAN.slug}${i}`, `src/assets/audience/${POLICEMAN.slug}/frame${i}.png`);
+        // Multi-instance filler designs (see BACK_CROWD's comment) — same
+        // per-frame load shape, just not one-const-per-instance.
+        for (const extra of BACK_CROWD) {
+            for (let i = 1; i <= extra.frames; i++) {
+                this.load.image(`${extra.slug}${i}`, `src/assets/audience/${extra.slug}/frame${i}.png`);
+            }
         }
     }
 
     create() {
         this.drawArenaBackground();
+        this.createSmokeTexture();
+        this.createDustTexture();
         this.drawSecondRow();
         this.drawThirdRow();
         this.drawFourthRow();
+        this.drawFifthRow();
+        this.drawSixthRow();
+        this._setupAmbientSmokers();
+        this._setupDustMotes();
+        this._scheduleAmbientCameraFlash();
         this._setupCrowdExtras();
         // Ringside photographer. The "genuinely ringside" move to
         // groundY=465 put his feet inside the near apron's own 445-490
@@ -401,8 +633,11 @@ export default class Arena extends Phaser.Scene {
         // groundY nudged 400→418 (Derek: "his knees are above ring level"
         // — his seated knee height was floating clear of the mat's near
         // edge instead of reading as grounded against it), then one more
-        // small nudge 418→428 ("just a little nudge lower").
-        this._setupPhotographer(85, 181, 428);
+        // small nudge 418→428 ("just a little nudge lower"). Then, while
+        // tuning the announcer/bell-ringer cluster beside him: "move the
+        // photographer slightly down the y and slightly back" — groundY
+        // 428->438, x 85->75.
+        this._setupPhotographer(75, 181, 438);
         // Corner policeman. Landed first beside the near-right post
         // (x=905/h=140/groundY=415 — see git history for that round,
         // including the drawSideCrowd right-flank occlusion bug found and
@@ -430,6 +665,156 @@ export default class Arena extends Phaser.Scene {
         // Old top = 270-90 = 180; new h=180 needs groundY=180+180=360 to
         // keep that same top.
         this._setupPoliceman(790, 180, 360);
+        // Second corner policeman — Derek's planned "one per corner" follow-
+        // through (see the comment directly above). Near-left post
+        // (RING.nearLeft = {x:40, y:445}), "above the announcer" (whose own
+        // groundY is 380 — see the announcer/bell-ringer cluster below).
+        // Same h=180 as the far-right cop for visual consistency (same
+        // character, same apparent scale). flip:false this time — the art
+        // faces right natively, and on the LEFT side that already faces
+        // into the ring, same reasoning as the photographer's own
+        // flip:false at this same post. Then "about a half inch down the y
+        // axis and two inches forward on the x axis" — translated to
+        // screen-space nudges at roughly the same small/bigger ratio:
+        // groundY 320->335, x 40->100. Then "stacked behind the announcer,
+        // another half inch down the y axis and two more inches on the x"
+        // — depth 2.8->2.6 (below the announcer's own 2.7, so the
+        // announcer draws in front of him where they overlap, same
+        // stacking trick as the announcer/photographer pair), groundY
+        // 335->350, x 100->160.
+        this._setupPoliceman(160, 180, 350, false, 2.6);
+        // Ed "Strangler" Lewis, Lou Thesz's manager. Derek: ringside, below
+        // the cop, not fully covering him, same (right) side of the ring —
+        // then, live, "he's facing with his back to the ring" (flip fixed,
+        // see STRANGLER_LEWIS's comment), "needs to be at least 25
+        // percent larger" (h 140 -> 175), "25 percent bigger again"
+        // (175 -> 219), "yikes, 15 percent smaller than now" (219 -> 186,
+        // technically correct but read as too big a swing live: "incredible
+        // hulk to danny devito"), now split the difference between those
+        // two (203, midpoint of 186/219) rather than another single-
+        // direction guess. groundY held at 440 throughout (origin (0.5,1)
+        // means h grows/shrinks from his planted feet, not the reverse).
+        // Uses the generic _setupTwoAnimExtra (was a lewis-only method,
+        // generalized below once the announcer/bell-ringer pair needed the
+        // identical two-intermittent-animation shape).
+        this._setupTwoAnimExtra(STRANGLER_LEWIS, 850, 203, 440, false);
+        // Ringside announcer + timekeeper/bell-ringer pair, Derek's pick
+        // after "who else might be ringside." Placed on the LEFT side, past
+        // the photographer (x=85), so the right side doesn't get any more
+        // crowded than it already is with the cop + Lewis. Both face right
+        // natively (see ANNOUNCER/BELL_RINGER's comment) which already
+        // reads as facing into the ring from this side, so flip:false —
+        // no reversed-facing mistake to repeat this time.
+        //
+        // Different placement convention than every prior ringside extra —
+        // see _setupTwoAnimExtra's depth-param comment for why. First pass
+        // used groundY=440/h=190 (photographer/lewis's "beside the ring"
+        // convention, depth 2.8): both sheets are ~150-175px wide (whole
+        // cutout is character+table), wide enough that at any x with real
+        // clearance from a corner post, the entire footprint landed inside
+        // the ring's mat trapezoid at that y and rendered as nothing —
+        // confirmed via window.__WFM_GAME (positions correct) + a
+        // screenshot (nothing there). Moved IN FRONT of the ring instead —
+        // groundY=505 sits just past RING.apronY (490, the mat's own front
+        // skirt), depth=12 (above the foreground "backs of heads" crowd
+        // silhouettes at depth 11 in drawSideCrowd, so they read as the
+        // closest, most prominent ringside figures, not tucked behind
+        // anonymous filler). h dropped 190->105 to match — at groundY=505
+        // the old h=190 would put the top of his head at y=315, up inside
+        // the rope band (RING.ropes' nearY values run 251-380), visibly
+        // clipping through the ropes; h=105 keeps the top around y=400,
+        // comfortably below the near ropes' y=380 floor.
+        //
+        // Re-positioned again, live: Derek wanted them on the same side as
+        // the photographer (x=85) instead of spread further right along
+        // the front — announcer above him, bell-ringer below him — then
+        // "also need to be made 50 percent larger" (h 105 -> 158). Same
+        // depth=12 in-front-of-the-ring convention throughout (depth-
+        // ordered, not y-dependent, so it renders correctly at any
+        // groundY — see _setupTwoAnimExtra's comment).
+        //
+        // First announcer placement (groundY=380, x=85, same x as the
+        // photographer) read as "basically on the photographer's head" —
+        // a different groundY than the photographer's own 428 put him on a
+        // different ground line entirely, floating with his chair legs in
+        // open air rather than planted beside him. Derek: "think of his
+        // chair as on train tracks, he's to the left/above the journalist,
+        // but they are on the same ground" — groundY matched to the
+        // photographer's 428 (same ground line), x moved left instead of
+        // groundY moved up to read as "above" (offset along the same
+        // track, not stacked on a different one). Same-ground fix read as
+        // "better, but on his other side" — x flipped from 40 (left of the
+        // photographer) to 200 (right of him, toward the ring) — but 200
+        // read as "he's in the ring now" (too far right at depth=12, which
+        // draws in front of the mat regardless of position, so nothing
+        // stopped him from reading as standing on the mat itself instead of
+        // beside it). Derek: "from the journalist, he moves only slightly
+        // right on the x axis and up the y axis, the journalist should
+        // stack in front of him and the stage in front of both of them" —
+        // a real depth-ordering ask, not just a position tweak. Dropped the
+        // depth=12 in-front-of-everything convention for the announcer
+        // specifically and went back to the photographer/policeman/lewis
+        // "beside/behind the ring" shape instead: depth=2.7 (just below the
+        // photographer's 2.8, so the photographer draws in front of him
+        // where they overlap; both still below drawRingMat's 3, so the mat
+        // — "the stage" — occludes both, same as it already does the
+        // photographer). Position is a small offset from the photographer's
+        // own spot (85, 428), not a fresh guess: x+20, groundY-18. Then
+        // "back him up slightly and move him a few more up the y axis" —
+        // x pulled back in 105->95, groundY nudged up further 410->395.
+        // Then, once the bell-ringer's own position settled: "move the
+        // announcer slightly back on the x axis" — x 95->85. Then
+        // "decreased in size by five percent" — h 158->150. Then "move him
+        // slightly up the y axis" — groundY 395->380. Then "forward on the
+        // x axis slightly" — x 85->95. Then "made five percent smaller
+        // again" — h 150->143.
+        this._setupTwoAnimExtra(ANNOUNCER, 95, 143, 380, false, 2.7);
+        // "now the time keeper will be slightly up the y from the
+        // announcer" — groundY moved from 505 (its old standalone
+        // in-front-of-the-ring spot) to just above the announcer's own 395.
+        // Then: "he needs to be stacked below the photographer, announcer
+        // and ring, a bit further up the y axis and 25 percent upscaled" —
+        // dropped the depth=12 in-front-of-everything convention (same fix
+        // as the announcer got) for depth=2.6, below the announcer's 2.7
+        // (and transitively below the photographer's 2.8 and drawRingMat's
+        // 3). groundY nudged 380->365, h scaled 158->198 (+25%) — but that
+        // read as "clearly upscaled more than 25 percent" live, so dialed
+        // back to +5% off the original 158 instead: 158 -> 166. Then
+        // "move him slightly down the y axis and a bit forward on the x
+        // axis" — groundY 365->378, x 85->95. Then, an audition: "I want
+        // to audition the time keeper in front of the ring, his table
+        // should be about at the head level of the audience, but since
+        // he's closer, he would also change size" — back to the depth=12
+        // in-front-of-everything convention (like the very first pass, see
+        // _setupTwoAnimExtra's comment), sized up since foreground reads
+        // as closer/bigger. Table sits ~56% down frame1.png's own height
+        // (read directly off the cut frame, not guessed) — solved groundY
+        // so that point lands around y=545, matching drawSideCrowd's
+        // closest foreground crowd row (fgRow1, heads at y~542-556).
+        // h bumped 166->220 for the "closer = bigger" read; groundY solves
+        // to ~640, past the canvas's own H=600 bottom edge — intentional,
+        // not a bug: fgRow1 itself is "cropped just below shoulders" by
+        // design (see that row's own comment), so a closer, named
+        // character running past the same edge is consistent with it,
+        // not broken. Derek: "he looks good, move him just a bit up the y
+        // axis and stack him in front of the lower left ring post" —
+        // groundY 640->620, x 95->45 (RING.nearLeft.x=40, near posts drawn
+        // in drawPosts at x=nearLeft.x/nearRight.x), depth bumped 12->26,
+        // above drawPosts' near-post depth of 25.7, so he draws in front of
+        // the post rather than behind it. Then "forward a bit on the x
+        // axis" — x 45->65, then "a bit more on the x axis" — x 65->85.
+        // Return value captured this time (unlike every other
+        // _setupTwoAnimExtra call) — _ringTimekeeperBell needs a handle on
+        // this specific fan to fire his bell-strike animation from
+        // _endMatch's real match-start/end bell moments.
+        // "let's move the timekeeper up closer to the ringside" -> "up the
+        // y axis" — groundY 620->530. Then "forward on the x axis and a
+        // little bit down the y axis" — x 85->105, groundY 530->550. Then
+        // "a little bit more forward on the x axis and a little bit down
+        // the y axis again" — x 105->120, groundY 550->565. Then "same
+        // adjustment one more time" — x 120->135, groundY 565->580. Then
+        // "five percent smaller" — h 220->209 -> 199 (five percent again).
+        this.bellRingerFan = this._setupTwoAnimExtra(BELL_RINGER, 135, 199, 580, false, 26);
         this.drawSideCrowd();
         this.drawFarApronAndRopes();
         this.drawRingMat();
@@ -447,16 +832,58 @@ export default class Arena extends Phaser.Scene {
 
         // Camera-flash glow (see _triggerCameraFlash) — created here rather
         // than lazily in update() so it's part of the same children-list
-        // snapshot the HUD camera setup below takes; a graphics object
-        // created after that snapshot wouldn't be in hudCam's ignore list
-        // and would render on both cameras.
-        this.cameraFlashGfx = this.add.graphics().setDepth(70);
+        // snapshot the HUD camera setup below takes; an object created
+        // after that snapshot wouldn't be in hudCam's ignore list and would
+        // render on both cameras.
+        //
+        // Was a Graphics object redrawn every frame with 2 raw fillCircle
+        // calls — Derek: "the flashes have circular edges now and look
+        // weird." Two discrete hard-edged discs (even at different alphas)
+        // reads as visible rings, not a soft glow — same problem
+        // createSmokeTexture/createDustTexture already solved for their
+        // own effects. Switched to a single baked feathered texture
+        // (createFlashTexture) on a reused Image instead, matching that
+        // fix.
+        this.createFlashTexture();
+        this.cameraFlashImg = this.add.image(0, 0, 'cameraFlashGlow').setDepth(70).setVisible(false);
 
         try {
             const cam = this.cameras.main;
             const cm = cam.filters.internal.addColorMatrix();
             cm.colorMatrix.grayscale(1);
             cam.filters.external.addVignette(0.5, 0.5, 0.82, 0.45);
+            // Derek: "should we try applying barrel distortion and warping
+            // the edges to look like an old crt tv." Phaser 4 has a native
+            // Barrel filter for exactly this (amount=1 is no distortion,
+            // >1 bulges outward like curved glass, <1 pinches inward) —
+            // same camera-filter mechanism the grayscale/vignette above
+            // already use, no new per-object work. Started subtle (1.06)
+            // per Derek's own caveat that heavy CRT curvature crops/warps
+            // edge content in a way that reads as a bug, not style. Then
+            // "reduce the barrel distortion by half" — half the deviation
+            // from 1 (the no-distortion baseline), 1.06 -> 1.03.
+            //
+            // Derek then asked why it reads as localized to the center and
+            // whether the circle could be made to cover the width. Checked
+            // the actual shader (FilterBarrel.frag) and tested at an
+            // exaggerated amount (1.6) to see the real shape empirically
+            // rather than guess: the masked region (`length(xy) < 1.0`) is
+            // an ellipse that already touches all four edge-midpoints
+            // (left, right, top, bottom), just not the four corners — the
+            // ropes visibly bowed out to the left/right screen edges at
+            // 1.6. So "cover the width" isn't the actual fix, because it
+            // already does; at a subtle amount like 1.03 the displacement
+            // is just near-zero right at the ellipse's own edge (a fixed
+            // point of the pow() curve by construction) and only reads as
+            // visible in the middle, where the ring's long straight lines
+            // make bending easy to spot against busier crowd detail near
+            // the edges. Derek: "push everything" — 1.03 -> 1.2, past the
+            // subtle range into clearly-visible-at-the-edges territory,
+            // short of the 1.6 test's more dramatic warp. Then, live: "half
+            // the amount of barrel distortion, it just really kicked in" —
+            // half the deviation from 1 again, 1.2 -> 1.1 -> 1.05
+            // ("maybe half that").
+            cam.filters.external.addBarrel(1.05);
         } catch (e) {
             console.warn('Camera filters unavailable:', e.message);
         }
@@ -506,16 +933,18 @@ export default class Arena extends Phaser.Scene {
     // First row added back behind the front row (2026-07-16), one row only
     // — the plan going forward is to confirm each row looks right live
     // before adding the next, rather than designing a multi-row system
-    // blind. Composition and depth cue both specified directly by Derek:
-    // 25% oldman, 25% browndresslady, 50% any design at random (the 50%
-    // draw can still land on oldman/browndresslady — not excluded, per
-    // "random" meaning the full pool). Depth is read the same way the
-    // front row already reads distance — smaller scale and a *smaller* y
-    // (higher up on screen) than the front row's groundY, since a camera
-    // pitched slightly down projects a further-back point higher in frame.
-    // Row is staggered half the front row's seat spacing off its x grid so
-    // it doesn't sit as an obvious second copy directly above each
-    // front-row seat.
+    // blind. Depth is read the same way the front row already reads
+    // distance — smaller scale and a *smaller* y (higher up on screen)
+    // than the front row's groundY, since a camera pitched slightly down
+    // projects a further-back point higher in frame. Row is staggered half
+    // the front row's seat spacing off its x grid so it doesn't sit as an
+    // obvious second copy directly above each front-row seat.
+    //
+    // Composition was originally 25% oldman, 25% browndresslady, 50% any
+    // design at random, per Derek's own explicit ask at the time — dropped
+    // 2026-07-18 ("we can stop the 50 percent oldman and browndresslady
+    // scheme") for uniform random across the full pool; see pick()'s own
+    // comment.
     //
     // Follow-up same session: brought closer (bigger scale, lower/closer Y)
     // per Derek's read that the first pass sat too small/far; no-adjacent-
@@ -532,33 +961,50 @@ export default class Arena extends Phaser.Scene {
             const src = this.textures.get(key).getSourceImage();
             return { key, h: src.height, slug: e.slug, restFrame: e.restFrame, frames: e.frames };
         });
-        const oldman = pool.find(p => p.slug === 'oldman');
-        const browndresslady = pool.find(p => p.slug === 'browndresslady');
-
+        // Derek: "we can stop the 50 percent oldman and browndresslady
+        // scheme" — was a deliberate 25%/25%/50%-random weighting (see
+        // drawSecondRow's own header comment for the original ask); now
+        // uniform across the full pool, same no-adjacent-repeat guard.
         let prevKey = null;
         const pick = () => {
             let design;
             let attempts = 0;
             do {
-                const r = rand();
-                if (r < 0.25) design = oldman;
-                else if (r < 0.5) design = browndresslady;
-                else design = pool[Math.floor(rand() * pool.length)];
+                design = pool[Math.floor(rand() * pool.length)];
                 attempts++;
             } while (design.key === prevKey && attempts < 8);
             prevKey = design.key;
             return design;
         };
 
-        const COUNT = 16;
+        // COUNT 16->26, X span ±280->±450 — Derek: "I want to fill all the
+        // negative space" (found via screenshot: big empty flanks on both
+        // sides of the ring, well past where these rows' old ±280 span
+        // ended at x 200-760 on a 960-wide canvas). COUNT scaled with the
+        // wider span (880/560 ratio) to keep the same seat density rather
+        // than just spreading the existing 16 thinner.
+        const COUNT = 26;
         const SPOT_H = 90; // brought closer/bigger from the first pass's 72
         const Y = 268; // brought closer/lower from the first pass's 236, still above the front row's ~300-320 groundY
-        const X_START = W / 2 - 280, X_END = W / 2 + 280;
+        const X_START = W / 2 - 450, X_END = W / 2 + 450;
         const STAGGER = 20; // half the front row's ~40-65px spacing
 
         for (let i = 0; i < COUNT; i++) {
             const t = i / (COUNT - 1);
-            const cx = X_START + t * (X_END - X_START) + STAGGER;
+            // Per-seat jitter (each row's own already-distinct RNG stream)
+            // — Derek: "something needs to happen so that they don't look
+            // like they are stacked on top of each other... it looks off."
+            // Every row shared the exact same X_START/X_END/STAGGER/COUNT,
+            // so seat i landed at the identical x in all five rows —
+            // literal vertical columns of figures rising straight through
+            // the whole crowd. The jitter desyncs that since no two rows'
+            // rand() sequences match. First pass used ±25px and Derek:
+            // "that made it look horrible, way more subtle was needed" —
+            // seats are only ~35px apart at this COUNT/span, so ±25 was
+            // overlapping/scattering seats into their neighbors' space
+            // rather than just breaking the column alignment. Dropped to
+            // ±7, enough to desync without disrupting the spacing.
+            const cx = X_START + t * (X_END - X_START) + STAGGER + (rand() - 0.5) * 14;
             const design = pick();
             const flip = rand() < 0.5;
             const scale = SPOT_H / design.h;
@@ -594,33 +1040,50 @@ export default class Arena extends Phaser.Scene {
             const src = this.textures.get(key).getSourceImage();
             return { key, h: src.height, slug: e.slug, restFrame: e.restFrame, frames: e.frames };
         });
-        const oldman = pool.find(p => p.slug === 'oldman');
-        const browndresslady = pool.find(p => p.slug === 'browndresslady');
-
+        // Derek: "we can stop the 50 percent oldman and browndresslady
+        // scheme" — was a deliberate 25%/25%/50%-random weighting (see
+        // drawSecondRow's own header comment for the original ask); now
+        // uniform across the full pool, same no-adjacent-repeat guard.
         let prevKey = null;
         const pick = () => {
             let design;
             let attempts = 0;
             do {
-                const r = rand();
-                if (r < 0.25) design = oldman;
-                else if (r < 0.5) design = browndresslady;
-                else design = pool[Math.floor(rand() * pool.length)];
+                design = pool[Math.floor(rand() * pool.length)];
                 attempts++;
             } while (design.key === prevKey && attempts < 8);
             prevKey = design.key;
             return design;
         };
 
-        const COUNT = 16;
+        // COUNT 16->26, X span ±280->±450 — Derek: "I want to fill all the
+        // negative space" (found via screenshot: big empty flanks on both
+        // sides of the ring, well past where these rows' old ±280 span
+        // ended at x 200-760 on a 960-wide canvas). COUNT scaled with the
+        // wider span (880/560 ratio) to keep the same seat density rather
+        // than just spreading the existing 16 thinner.
+        const COUNT = 26;
         const SPOT_H = 74; // row 2's 90 × ~0.82, the same step-down row 2 used over the front row
         const Y = 226;     // row 2's 268 × ~0.82
-        const X_START = W / 2 - 280, X_END = W / 2 + 280;
+        const X_START = W / 2 - 450, X_END = W / 2 + 450;
         const STAGGER = 20;
 
         for (let i = 0; i < COUNT; i++) {
             const t = i / (COUNT - 1);
-            const cx = X_START + t * (X_END - X_START) + STAGGER;
+            // Per-seat jitter (each row's own already-distinct RNG stream)
+            // — Derek: "something needs to happen so that they don't look
+            // like they are stacked on top of each other... it looks off."
+            // Every row shared the exact same X_START/X_END/STAGGER/COUNT,
+            // so seat i landed at the identical x in all five rows —
+            // literal vertical columns of figures rising straight through
+            // the whole crowd. The jitter desyncs that since no two rows'
+            // rand() sequences match. First pass used ±25px and Derek:
+            // "that made it look horrible, way more subtle was needed" —
+            // seats are only ~35px apart at this COUNT/span, so ±25 was
+            // overlapping/scattering seats into their neighbors' space
+            // rather than just breaking the column alignment. Dropped to
+            // ±7, enough to desync without disrupting the spacing.
+            const cx = X_START + t * (X_END - X_START) + STAGGER + (rand() - 0.5) * 14;
             const design = pick();
             const flip = rand() < 0.5;
             const scale = SPOT_H / design.h;
@@ -647,33 +1110,56 @@ export default class Arena extends Phaser.Scene {
             const src = this.textures.get(key).getSourceImage();
             return { key, h: src.height, slug: e.slug, restFrame: e.restFrame, frames: e.frames };
         });
-        const oldman = pool.find(p => p.slug === 'oldman');
-        const browndresslady = pool.find(p => p.slug === 'browndresslady');
-
+        // Derek: "we can stop the 50 percent oldman and browndresslady
+        // scheme" — was a deliberate 25%/25%/50%-random weighting (see
+        // drawSecondRow's own header comment for the original ask); now
+        // uniform across the full pool, same no-adjacent-repeat guard.
         let prevKey = null;
         const pick = () => {
             let design;
             let attempts = 0;
             do {
-                const r = rand();
-                if (r < 0.25) design = oldman;
-                else if (r < 0.5) design = browndresslady;
-                else design = pool[Math.floor(rand() * pool.length)];
+                design = pool[Math.floor(rand() * pool.length)];
                 attempts++;
             } while (design.key === prevKey && attempts < 8);
             prevKey = design.key;
             return design;
         };
 
-        const COUNT = 16;
+        // COUNT 16->26, X span ±280->±450 — Derek: "I want to fill all the
+        // negative space" (found via screenshot: big empty flanks on both
+        // sides of the ring, well past where these rows' old ±280 span
+        // ended at x 200-760 on a 960-wide canvas). COUNT scaled with the
+        // wider span (880/560 ratio) to keep the same seat density rather
+        // than just spreading the existing 16 thinner.
+        // COUNT bumped 26->32 (past the "fill negative space" pass, above)
+        // — Derek: "go back to how it was [drop the center-density warp]
+        // and in the back three rows have less distance between each
+        // person, have it be less as each row goes back." Same X_START/
+        // X_END span as row 2/3, more seats packed into it — tighter
+        // spacing here, tighter again in rows 5/6 below.
+        const COUNT = 32;
         const SPOT_H = 61; // row 3's 74 × ~0.82
         const Y = 185;     // row 3's 226 × ~0.82
-        const X_START = W / 2 - 280, X_END = W / 2 + 280;
+        const X_START = W / 2 - 450, X_END = W / 2 + 450;
         const STAGGER = 20;
 
         for (let i = 0; i < COUNT; i++) {
             const t = i / (COUNT - 1);
-            const cx = X_START + t * (X_END - X_START) + STAGGER;
+            // Per-seat jitter (each row's own already-distinct RNG stream)
+            // — Derek: "something needs to happen so that they don't look
+            // like they are stacked on top of each other... it looks off."
+            // Every row shared the exact same X_START/X_END/STAGGER/COUNT,
+            // so seat i landed at the identical x in all five rows —
+            // literal vertical columns of figures rising straight through
+            // the whole crowd. The jitter desyncs that since no two rows'
+            // rand() sequences match. First pass used ±25px and Derek:
+            // "that made it look horrible, way more subtle was needed" —
+            // seats are only ~35px apart at this COUNT/span, so ±25 was
+            // overlapping/scattering seats into their neighbors' space
+            // rather than just breaking the column alignment. Dropped to
+            // ±7, enough to desync without disrupting the spacing.
+            const cx = X_START + t * (X_END - X_START) + STAGGER + (rand() - 0.5) * 14;
             const design = pick();
             const flip = rand() < 0.5;
             const scale = SPOT_H / design.h;
@@ -685,6 +1171,145 @@ export default class Arena extends Phaser.Scene {
             this._scheduleAmbientFlicker(img, design, { cheer: true });
         }
     }
+
+    // Fifth row — Derek: "I think we need at least two more rows behind...
+    // it still doesn't seem like a big enough crowd." Same template as
+    // rows 2-4 (weighting/no-adjacent-repeat/stagger/count/cheer all
+    // identical), SPOT_H/Y stepped down the same ~0.82× ratio again
+    // (61->50, 185->152), own RNG seed. Tint drops to near-silhouette
+    // (0x202020, down from row 4's 0x343434) per "they can be silhouette
+    // like the last row" — but each seat has a 20% chance of rolling one
+    // of the brighter row 2-4 tints instead (visibleTints below) per "some
+    // of them could randomly be a little visible," so the row isn't a
+    // uniformly flat silhouette mass.
+    drawFifthRow() {
+        let s = 190501;
+        const rand = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+
+        const pool = CROWD_EXTRAS.map(e => {
+            const key = `${e.slug}${e.restFrame}`;
+            const src = this.textures.get(key).getSourceImage();
+            return { key, h: src.height, slug: e.slug, restFrame: e.restFrame, frames: e.frames };
+        });
+        let prevKey = null;
+        const pick = () => {
+            let design;
+            let attempts = 0;
+            do {
+                design = pool[Math.floor(rand() * pool.length)];
+                attempts++;
+            } while (design.key === prevKey && attempts < 8);
+            prevKey = design.key;
+            return design;
+        };
+
+        const COUNT = 40; // tighter than row 4's 32 — "less distance... as each row goes back"
+        const SPOT_H = 50; // row 4's 61 × ~0.82
+        const Y = 152;     // row 4's 185 × ~0.82
+        const X_START = W / 2 - 450, X_END = W / 2 + 450;
+        const STAGGER = 20;
+        const visibleTints = [0x6e6e6e, 0x4b4b4b, 0x343434]; // rows 2/3/4's own tints
+
+        for (let i = 0; i < COUNT; i++) {
+            const t = i / (COUNT - 1);
+            // Per-seat jitter (each row's own already-distinct RNG stream)
+            // — Derek: "something needs to happen so that they don't look
+            // like they are stacked on top of each other... it looks off."
+            // Every row shared the exact same X_START/X_END/STAGGER/COUNT,
+            // so seat i landed at the identical x in all five rows —
+            // literal vertical columns of figures rising straight through
+            // the whole crowd. The jitter desyncs that since no two rows'
+            // rand() sequences match. First pass used ±25px and Derek:
+            // "that made it look horrible, way more subtle was needed" —
+            // seats are only ~35px apart at this COUNT/span, so ±25 was
+            // overlapping/scattering seats into their neighbors' space
+            // rather than just breaking the column alignment. Dropped to
+            // ±7, enough to desync without disrupting the spacing.
+            const cx = X_START + t * (X_END - X_START) + STAGGER + (rand() - 0.5) * 14;
+            const design = pick();
+            const flip = rand() < 0.5;
+            const scale = SPOT_H / design.h;
+            const tint = rand() < 0.2 ? visibleTints[Math.floor(rand() * visibleTints.length)] : 0x202020;
+            const img = this.add.image(cx, Y, design.key)
+                .setOrigin(0.5, 1)
+                .setDepth(0.7) // below row 4's depth 0.8 — farther back still
+                .setTint(tint)
+                .setScale(flip ? -scale : scale, scale);
+            this._scheduleAmbientFlicker(img, design, { cheer: true });
+        }
+    }
+
+    // Sixth row — same template/reasoning as drawFifthRow (see that
+    // method's comment), one more ~0.82× step down (50->41, 152->125),
+    // darker silhouette base (0x161616) with the same 20%-chance-of-a-
+    // brighter-row-tint variety roll.
+    drawSixthRow() {
+        let s = 220901;
+        const rand = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+
+        const pool = CROWD_EXTRAS.map(e => {
+            const key = `${e.slug}${e.restFrame}`;
+            const src = this.textures.get(key).getSourceImage();
+            return { key, h: src.height, slug: e.slug, restFrame: e.restFrame, frames: e.frames };
+        });
+        let prevKey = null;
+        const pick = () => {
+            let design;
+            let attempts = 0;
+            do {
+                design = pool[Math.floor(rand() * pool.length)];
+                attempts++;
+            } while (design.key === prevKey && attempts < 8);
+            prevKey = design.key;
+            return design;
+        };
+
+        const COUNT = 50; // densest of the three back rows — "less distance... as each row goes back"
+        const SPOT_H = 41; // row 5's 50 × ~0.82
+        const Y = 125;     // row 5's 152 × ~0.82
+        const X_START = W / 2 - 450, X_END = W / 2 + 450;
+        const STAGGER = 20;
+        const visibleTints = [0x6e6e6e, 0x4b4b4b, 0x343434, 0x202020];
+
+        for (let i = 0; i < COUNT; i++) {
+            const t = i / (COUNT - 1);
+            // Per-seat jitter (each row's own already-distinct RNG stream)
+            // — Derek: "something needs to happen so that they don't look
+            // like they are stacked on top of each other... it looks off."
+            // Every row shared the exact same X_START/X_END/STAGGER/COUNT,
+            // so seat i landed at the identical x in all five rows —
+            // literal vertical columns of figures rising straight through
+            // the whole crowd. The jitter desyncs that since no two rows'
+            // rand() sequences match. First pass used ±25px and Derek:
+            // "that made it look horrible, way more subtle was needed" —
+            // seats are only ~35px apart at this COUNT/span, so ±25 was
+            // overlapping/scattering seats into their neighbors' space
+            // rather than just breaking the column alignment. Dropped to
+            // ±7, enough to desync without disrupting the spacing.
+            const cx = X_START + t * (X_END - X_START) + STAGGER + (rand() - 0.5) * 14;
+            const design = pick();
+            const flip = rand() < 0.5;
+            const scale = SPOT_H / design.h;
+            const tint = rand() < 0.2 ? visibleTints[Math.floor(rand() * visibleTints.length)] : 0x161616;
+            const img = this.add.image(cx, Y, design.key)
+                .setOrigin(0.5, 1)
+                .setDepth(0.6) // below row 5's depth 0.7 — farthest back of all six rows
+                .setTint(tint)
+                .setScale(flip ? -scale : scale, scale);
+            this._scheduleAmbientFlicker(img, design, { cheer: true });
+        }
+    }
+
+    // REMOVED (2026-07-19) — was a soft fog fade at both edges of the
+    // background-crowd rows, meant to sell "more people obscured by smoke
+    // and lighting" (Derek's original ask). Derek, live: "there's something
+    // going on on the right and left extreme sides of the screen, some
+    // kind of overlay that looks wrong" — a light gray (0xb8b8ae) band
+    // against this scene's very dark palette read as a wrong, out-of-place
+    // bright smudge rather than atmospheric haze; it fought the existing
+    // camera-level vignette (which darkens edges) instead of extending it.
+    // See git history for the full implementation if a darker-toned retry
+    // is wanted later.
 
     // Ambient idle motion for one background-crowd seat: flips between its
     // restFrame and one alternate frame (that design's own second frame —
@@ -754,6 +1379,20 @@ export default class Arena extends Phaser.Scene {
                     .setDepth(rowCfg.depth), extra, spot, reacting: false };
                 this._setExtraFrame(fan, extra.restFrame);
                 this.crowdFans.push(fan);
+                // Extras split into animA/animB (see browndresslady's
+                // comment) get their own independent "seat behavior" idle
+                // loop on top of crowdFans membership — animA fires at
+                // random via _scheduleTwoAnimExtra (randomB:false keeps it
+                // from ever picking animB itself), while animB ("cheer")
+                // stays reserved for real match events via
+                // _reactCrowdExtras. Extras without animA (oldman, marlon)
+                // are unaffected — they keep reacting with their old
+                // full-frame cycle only.
+                if (extra.animA) this._scheduleTwoAnimExtra(fan);
+                // extra.smokeOffset (groucho only, currently) — cigar
+                // smoke puffs rising from a fixed offset off this fan's
+                // own groundY. See _scheduleSmokePuff.
+                if (extra.smokeOffset) this._scheduleSmokePuff(fan, extra.smokeOffset);
             }
         }
     }
@@ -902,7 +1541,11 @@ export default class Arena extends Phaser.Scene {
     // so a right-side corner needs flip:true to face left into the ring
     // (this call site's default) while a left-side corner will need
     // flip:false, without touching this method again.
-    _setupPoliceman(x, h, groundY, flip = true) {
+    // depth defaults to 2.8, same as the photographer's own default — a
+    // second policeman instance can pass a lower value to stack behind a
+    // neighboring extra in the same corner cluster (see the near-left
+    // cop's call site: "stacked behind the announcer").
+    _setupPoliceman(x, h, groundY, flip = true, depth = 2.8) {
         const extra = { ...POLICEMAN, _dims: {} };
         for (let i = 1; i <= extra.frames; i++) {
             const src = this.textures.get(`${extra.slug}${i}`).getSourceImage();
@@ -913,11 +1556,11 @@ export default class Arena extends Phaser.Scene {
             img: this.add.image(spot.x, 0, `${extra.slug}${extra.restFrame}`)
                 .setOrigin(0.5, 1)
                 .setTint(spot.tint)
-                // Depth 2.8, same as the photographer — below drawRingMat's
-                // 3 so the mat occludes whatever part of him overlaps its
-                // trapezoid at this x/y, still above drawFarApronAndRopes
-                // (2) and every background crowd layer (0.8-1.5).
-                .setDepth(2.8),
+                // Depth below drawRingMat's 3 so the mat occludes whatever
+                // part of him overlaps its trapezoid at this x/y, still
+                // above drawFarApronAndRopes (2) and every background
+                // crowd layer (0.8-1.5).
+                .setDepth(depth),
             extra, spot, reacting: false,
         };
         this._setExtraFrame(fan, extra.restFrame);
@@ -951,30 +1594,196 @@ export default class Arena extends Phaser.Scene {
         });
     }
 
+    // Builds a single ringside fan for any "two independent 4-frame
+    // animations, fired intermittently" extra — originally a lewis-only
+    // method, generalized once ANNOUNCER/BELL_RINGER needed the identical
+    // shape (see STRANGLER_LEWIS's comment). Same fan shape as
+    // _setupPhotographer/_setupPoliceman (spot.groundY override, own
+    // depth). NOT pushed into crowdFans (unlike the photographer) — these
+    // animations run on their own independent schedule
+    // (_scheduleTwoAnimExtra), same "not driven by _reactCrowdExtras'
+    // match-pop hook" shape as the policeman's scan loop.
+    //
+    // flip is a param, same shape as _setupPoliceman — always confirm the
+    // sheet's own native facing direction against its actual frame1.png
+    // before picking a default; stranglerlewis's convention turned out to
+    // be the reverse of photographer/policeman/announcer/bellringer's, and
+    // got placed backwards once already from assuming instead of checking.
+    //
+    // depth defaults to 2.8, the photographer/policeman/lewis "beside the
+    // ring, stacked behind the ring canvas" convention — that trick only
+    // works because those designs are narrow enough to straddle the mat's
+    // left/right boundary and mostly clear it. The announcer/bellringer
+    // call sites pass an explicit higher depth instead: their sheets are
+    // ~150-175px wide (character + table/mic baked into the same cutout),
+    // wide enough that at any x with real margin from a corner post their
+    // ENTIRE footprint lands inside the ring's mat trapezoid at ringside
+    // y-values — not straddling the boundary, fully behind depth 3, fully
+    // invisible (found via screenshot: they measured into the scene fine
+    // but rendered as nothing). Placed in FRONT of the ring instead — see
+    // the create() call site.
+    _setupTwoAnimExtra(extraDef, x, h, groundY, flip, depth = 2.8) {
+        const extra = { ...extraDef, _dims: {} };
+        for (let i = 1; i <= extra.frames; i++) {
+            const src = this.textures.get(`${extra.slug}${i}`).getSourceImage();
+            extra._dims[i] = { w: src.width, h: src.height };
+        }
+        const spot = { x, h, flip, tint: 0x9d9789, groundY };
+        const fan = {
+            img: this.add.image(spot.x, 0, `${extra.slug}${extra.restFrame}`)
+                .setOrigin(0.5, 1)
+                .setTint(spot.tint)
+                // See _setupTwoAnimExtra's comment for the depth param —
+                // 2.8 (default) for the "beside the ring" convention, a
+                // higher explicit value for "in front of the ring" extras.
+                .setDepth(depth),
+            extra, spot, reacting: false,
+        };
+        this._setExtraFrame(fan, extra.restFrame);
+        this._scheduleTwoAnimExtra(fan);
+        return fan;
+    }
+
+    // Plays one of a _setupTwoAnimExtra fan's two 4-frame animations
+    // through to completion, then calls onComplete (if given). Factored out
+    // of _scheduleTwoAnimExtra so an explicit event trigger (see
+    // _ringTimekeeperBell) can play a specific animation on demand, not
+    // just the random loop.
+    //
+    // Guarded by fan.reacting so an explicit trigger and the random loop
+    // can't stomp on each other's frame-setting mid-cycle — same shape as
+    // _reactCrowdExtras' own reacting guard. Returns false (does nothing)
+    // if already playing; callers that need to reschedule regardless
+    // (the random loop) handle that themselves rather than relying on
+    // onComplete firing.
+    //
+    // animA plays forward then reverses back through its own frames to
+    // restFrame — a real up/down cycle, for animations that end mid-
+    // gesture. animB is assumed to already land on a settled/neutral pose
+    // at its last frame (true for every current user — see each const's
+    // frame-breakdown comment), so it only plays forward and then snaps
+    // straight back to restFrame rather than walking back down through
+    // frames that would replay the gesture in reverse.
+    _playTwoAnimExtra(fan, anim, onComplete) {
+        if (fan.reacting) return false;
+        fan.reacting = true;
+        const isAnimA = anim === fan.extra.animA;
+        const up = anim;
+        const down = isAnimA ? up.slice(0, -1).reverse() : [fan.extra.restFrame];
+        const STEP = 170, HOLD = 500 + Math.random() * 900;
+        up.forEach((f, i) => this.time.delayedCall(i * STEP, () => this._setExtraFrame(fan, f)));
+        const downStart = up.length * STEP + HOLD;
+        down.forEach((f, i) => this.time.delayedCall(downStart + i * STEP, () => this._setExtraFrame(fan, f)));
+        this.time.delayedCall(downStart + down.length * STEP + STEP, () => {
+            this._setExtraFrame(fan, fan.extra.restFrame);
+            fan.reacting = false;
+            onComplete?.();
+        });
+        return true;
+    }
+
+    // Independent intermittent loop shared by every _setupTwoAnimExtra fan
+    // — picks one of its two 4-frame animations at random (extra.animA/
+    // animB) on each firing, unrelated to match state. Mirrors
+    // _schedulePolicemanScan's shape (random idle gap, reschedules itself)
+    // but walks a full animation array rather than a variable-depth turn.
+    //
+    // extra.randomB === false opts an extra OUT of ever picking animB here
+    // — BELL_RINGER's case (Derek: "he should only hit the bell when the
+    // match begins or ends, it needs to be binded to those actions and not
+    // used otherwise... I'm ok with him picking up and putting down the
+    // stop watch at random"). animB still exists and plays fine — see
+    // _ringTimekeeperBell, which calls _playTwoAnimExtra directly with
+    // animB, bypassing this random gate entirely.
+    _scheduleTwoAnimExtra(fan) {
+        const IDLE_MIN = 5000, IDLE_MAX = 13000; // intermittent, not a steady cycle
+        this.time.delayedCall(IDLE_MIN + Math.random() * (IDLE_MAX - IDLE_MIN), () => {
+            const anim = fan.extra.randomB === false || Math.random() < 0.5 ? fan.extra.animA : fan.extra.animB;
+            // started === false means an explicit trigger (e.g. the bell)
+            // is already mid-animation — skip this firing rather than
+            // fight over the same frame, just reschedule the next one.
+            const started = this._playTwoAnimExtra(fan, anim, () => this._scheduleTwoAnimExtra(fan));
+            if (!started) this._scheduleTwoAnimExtra(fan);
+        });
+    }
+
+    // Fires the timekeeper's bell-strike animation (BELL_RINGER.animB) on
+    // demand — called from the two real match-bell moments (_endMatch's
+    // crowd.bell(3), and the post-reset crowd.bell(1) for the next match),
+    // not on any timer. this.bellRingerFan is null until _setupTwoAnimExtra
+    // creates him in create() (see that call site) and unset entirely if
+    // he's ever removed, so this is a no-op rather than a crash if called
+    // before setup or in a build without him.
+    _ringTimekeeperBell() {
+        if (!this.bellRingerFan) return;
+        this._playTwoAnimExtra(this.bellRingerFan, this.bellRingerFan.extra.animB);
+    }
+
     // Pops a localized flash at (x, y) — Derek: a full-screen version (the
     // first pass, reusing flickerOverlay) read as too intense; "it should
     // only flash around the bulb." Just records start time + position;
-    // update() owns the decay curve and draws a small soft-edged glow
-    // (this.cameraFlashGfx, a dedicated graphics object, layered two
-    // circles for a falloff rather than one hard-edged disc) centered
-    // there instead of washing the whole frame.
+    // update() owns the decay curve and repositions this.cameraFlashImg
+    // (a feathered-texture glow, see createFlashTexture) there instead of
+    // washing the whole frame.
     _triggerCameraFlash(x, y) {
         this._flashStart = this.time.now;
         this._flashX = x;
         this._flashY = y;
     }
 
+    // Ambient crowd camera flashes — Derek asked what else could "up the
+    // production value" like the smoke; reuses _triggerCameraFlash as-is
+    // (single-flash state — a random one landing in the same ~200ms window
+    // as the photographer's own peak-frame flash would just restart the
+    // timer at the newer position, a minor and rare enough overlap not
+    // worth generalizing to a multi-flash array for). Fires from a random
+    // point across the background crowd's own rough footprint rather than
+    // any specific extra, selling "someone in the stands has a camera"
+    // without needing a real character/position to anchor to, same
+    // "ambient, not tied to a character" shape as _setupAmbientSmokers.
+    //
+    // Y range 120-280 -> 120-240: Derek: "make sure cameras don't go off
+    // below where the ring is, meaning on the ring, or in the front row or
+    // the back." RING.farLeft.y=258 is the ring mat's own far/top edge —
+    // the old range's upper end (280) dipped into that trapezoid, and
+    // combined with the flash glow's own ~40px radius could visibly bleed
+    // onto the ring or into the row 1/FRONT_ROW territory below it. 240
+    // keeps flashes inside rows 3-6's clearly-crowd-only band, with real
+    // margin before the ring starts.
+    _scheduleAmbientCameraFlash() {
+        const GAP_MIN = 4000, GAP_MAX = 9000;
+        this.time.delayedCall(GAP_MIN + Math.random() * (GAP_MAX - GAP_MIN), () => {
+            const x = 60 + Math.random() * (W - 120);
+            const y = 120 + Math.random() * 120;
+            this._triggerCameraFlash(x, y);
+            this._scheduleAmbientCameraFlash();
+        });
+    }
+
     // Plays a subset of the crowd fans forward through their reference
     // frames (from restFrame) and back down, each on its own random
     // delay/hold so they don't move in lockstep — hooked off _logEvent so
     // they react to real match spots, not idle ticks.
+    //
+    // Extras with animA/animB (see browndresslady's comment) only react
+    // through animB ("cheer") here — animA ("seat behavior") runs on its
+    // own independent schedule (_scheduleTwoAnimExtra) entirely untouched
+    // by match events. Extras without that split (oldman, marlon,
+    // photographer) keep the original full-frame (1..extra.frames) cycle,
+    // unchanged.
+    //
+    // animB doesn't start at restFrame (5-8, not 1) the way the old
+    // full-frame cycle always did, so a plain reverse-of-up wouldn't
+    // actually make it back to rest (it'd stop at animB's own first frame,
+    // 5) — the explicit push below closes that gap.
     _reactCrowdExtras() {
         for (const fan of this.crowdFans) {
             if (fan.reacting) continue;
             if (Math.random() > 0.65) continue; // not everyone reacts to every spot
             fan.reacting = true;
-            const up = Array.from({ length: fan.extra.frames }, (_, i) => i + 1);
+            const up = fan.extra.animB ? [...fan.extra.animB] : Array.from({ length: fan.extra.frames }, (_, i) => i + 1);
             const down = up.slice(0, -1).reverse();
+            if (fan.extra.animB && down[down.length - 1] !== fan.extra.restFrame) down.push(fan.extra.restFrame);
             const start = Math.random() * 300;
             const STEP = 130, HOLD = 1400 + Math.random() * 900;
             up.forEach((f, i) => this.time.delayedCall(start + i * STEP, () => this._setExtraFrame(fan, f)));
@@ -997,53 +1806,256 @@ export default class Arena extends Phaser.Scene {
         // "redundant/inconsistent next to real cutout art" reasoning as the
         // left side.
 
-        // Foreground crowd — backs of heads, closest to camera, partially cropped
-        const fgGfx = this.add.graphics().setDepth(11);
+        // Foreground crowd — backs of heads, closest to camera. Real
+        // cutouts (BACK_CROWD) since 2026-07-18, replacing the flat
+        // fillCircle/fillEllipse blobs that used to render here — see that
+        // const's comment.
+        //
+        // lum bumped a second time (70-96 -> 150-190 on the row that
+        // survived, below) after Derek spotted "a black mask or whatever at
+        // the crowd shoulder level" — setTint is multiplicative, and unlike
+        // Lewis/announcer's light suits, these designs' own clothing/chairs
+        // are already dark brown/navy in the source art; multiplying that
+        // by a mid-gray tint crushed it to near-black while the lighter
+        // hair/skin stayed visible, and with many seated figures sharing
+        // the same neck-to-shoulder transition height, that read as one
+        // uniform hard-edged band, not natural shading. Pushing lum much
+        // higher keeps the multiply from crushing the already-dark source
+        // colors.
+        //
+        // Original two-row layout killed and rebuilt (2026-07-18, second
+        // pass) — Derek: "kill the first row, they are too tiny and the
+        // distribution is off, it's all beehive lady... the row that
+        // exists is too small but making a little bigger can be the front
+        // front row, but the one behind it should be bigger and probably
+        // darkened and blurred." The old fgRow2 (coded first, smaller,
+        // closer to camera in draw order but visually "further back" —
+        // Derek's "first row") is gone entirely, not just resized: at
+        // h=95 it read as tiny/childlike (same lesson as the CROWD_EXTRAS
+        // resize-to-alfred pass earlier), and Math.floor(rand() *
+        // BACK_CROWD.length) picking independently per seat had no
+        // guardrail against runs of the same design — with only 4 designs
+        // across 20 seats, "it's all beehive lady" (backheadlady1's
+        // distinctive hairstyle) was a real, not imagined, pattern.
+        //
+        // Replaced with: fgRow1 (renamed FRONT_ROW below) bumped a little
+        // bigger and kept as the front-front row; a brand-new layer
+        // (LAYER3 — Derek: "save this layer for a final third layer," a
+        // layer 2 is still TBD/unplaced between FRONT_ROW and LAYER3) sized
+        // comparably-to-bigger (not shrunk — the "tiny reads as childlike"
+        // lesson applies to depth cues too, not just the CROWD_EXTRAS
+        // pass), reading as an extreme-foreground silhouette via near-zero
+        // lum and a cheap multi-copy blur (spawnBlurredBackHead: 2 offset
+        // low-alpha copies plus one full-alpha copy, animated together —
+        // Phaser 4's Blur filter is camera-only, no per-GameObject blur
+        // exists in this version, so this is the practical approximation).
+        //
+        // Design assignment is a fixed rotation (random start phase)
+        // instead of independent random picks per seat — guarantees the
+        // "stagger man woman man woman, don't repeat too often" ask
+        // structurally, not statistically. Shared across all three rows
+        // (one continuous rotation) so the overall distribution stays even
+        // rather than each row separately risking its own run of repeats.
+        //
+        // Weighted 3:1 toward backheadman1 over backheadman2 — Derek:
+        // "less of the bald guy, more of the hat guy, bald guy is a little
+        // distracting if there's too many of him." Was an even 1:1:1:1
+        // cycle (lady1/man1/lady2/man2); man1 now appears 3x per 8-seat
+        // cycle to man2's 1x, lady1/lady2 unchanged at 2x each, still
+        // alternating man/woman throughout.
+        this.backCrowdFans = [];
+        const designRotation = [
+            'backheadlady1', 'backheadman1', 'backheadlady2', 'backheadman1',
+            'backheadlady1', 'backheadman2', 'backheadlady2', 'backheadman1',
+        ].map(slug => BACK_CROWD.find(d => d.slug === slug));
+        let rotationIdx = Math.floor(rand() * designRotation.length);
+        const nextDesign = () => designRotation[rotationIdx++ % designRotation.length];
 
-        // Second row of foreground (slightly further back, fully visible)
-        const fgRow2 = [
-            { x: 35,  r: 22, lum: 48 },
-            { x: 118, r: 20, lum: 44 },
-            { x: 200, r: 24, lum: 50 },
-            { x: 288, r: 21, lum: 46 },
-            { x: 375, r: 23, lum: 48 },
-            { x: 460, r: 20, lum: 42 },
-            { x: 548, r: 22, lum: 47 },
-            { x: 635, r: 24, lum: 50 },
-            { x: 720, r: 21, lum: 44 },
-            { x: 808, r: 23, lum: 48 },
-            { x: 892, r: 20, lum: 45 },
-        ];
-
-        fgRow2.forEach(({ x, r, lum }) => {
+        const spawnBackCrowd = (x, h, groundY, lum, depth = 28, alpha = 1) => {
+            const design = nextDesign();
             const col = (lum << 16) | (lum << 8) | lum;
-            const jitter = (rand() - 0.5) * 14;
-            const y = H - r * 4.2;
-            fgGfx.fillStyle(col, 1);
-            fgGfx.fillCircle(x + jitter, y, r);
-            fgGfx.fillEllipse(x + jitter, y + r + r * 0.7, r * 2.8, r * 1.6);
+            const flip = rand() < 0.5;
+            const extra = { ...design, _dims: {} };
+            for (let i = 1; i <= design.frames; i++) {
+                const src = this.textures.get(`${design.slug}${i}`).getSourceImage();
+                extra._dims[i] = { w: src.width, h: src.height };
+            }
+            const fan = {
+                img: this.add.image(x, 0, `${design.slug}${design.restFrame}`)
+                    .setOrigin(0.5, 1)
+                    .setTint(col)
+                    .setAlpha(alpha)
+                    // depth param added when SECOND_ROW needed to sit
+                    // BEHIND FRONT_ROW's default 28 — see that row's
+                    // comment. Default 28 unchanged for FRONT_ROW itself:
+                    // above the bell-ringer's 26 and drawPosts' near-post
+                    // depth of 25.7 (Derek: "the crowd needs to be in
+                    // front of the time keeper"). alpha param added for
+                    // THIRD_ROW's "semi opaque" ask, below.
+                    .setDepth(depth),
+                extra, spot: { x, h, flip, groundY }, reacting: false,
+            };
+            this._setExtraFrame(fan, design.restFrame);
+            this.backCrowdFans.push(fan);
+            this._scheduleBackCrowdIdle(fan);
+        };
+
+        // LAYER3 (the multi-copy-blur silhouette layer, 11 seats
+        // edge-to-edge) got killed for merging into one flat dark bar
+        // instead of reading as individual people — see git history for
+        // spawnBlurredBackHead/_setBlurredFrame/_scheduleBlurredIdle if
+        // that specific approach is wanted again. Replaced with a gradient
+        // vignette (below) PLUS a real SECOND_ROW brought back in — Derek:
+        // "the second row is gone again" — using the same real art as
+        // FRONT_ROW (not a near-black silhouette), just fewer seats with
+        // actual gaps between them (not edge-to-edge) so they can't merge
+        // into a stripe the same way. Originally sat BEHIND FRONT_ROW
+        // (depth 20) so FRONT_ROW's own detail would break up the row
+        // visually — but Derek: "move the row of audience that is stacked
+        // behind the timekeeper to the very front" (it was landing behind
+        // the timekeeper's own depth 26 too, at that x). Depth 20 -> 30,
+        // above everything in this method including the vignette (29) and
+        // FRONT_ROW (28).
+        // x's tightened (200/180/180/200 gaps -> 150/160/160/150), groundY
+        // nudged down repeatedly (560 -> 585 -> 600 -> 615), and the whole
+        // row shifted left (170-790 centered on 480 -> 60-540 centered
+        // near the timekeeper's own x=135) — Derek: "move them a bit closer
+        // together and move them a bit down the y axis," "a little more
+        // down the y axis," then "go a little more down the y axis and
+        // make this row closest to the timekeeper."
+        // Depth 30 -> 27: Derek: "all the biggest sprites should be at the
+        // back, it looks weird when a small sprite is at the back" — at
+        // depth 30, this row (h=175) drew IN FRONT of FRONT_ROW (h=204,
+        // depth 28) despite being the smaller sprite, backwards from how
+        // depth/size should stack (bigger reads as closer, so it should be
+        // the one drawn last/on top). 27 keeps it in front of the
+        // timekeeper (26, still "closest to the timekeeper" per the
+        // earlier ask) while sitting behind FRONT_ROW's bigger sprites.
+        // x's computed directly off FRONT_ROW's own 9 seats (55, 168, 278,
+        // 390, 490, 595, 700, 810, 910) rather than picked independently —
+        // Derek: "stagger the three rows better, some places are jumbled
+        // others are bare," then "get the ghost layer into the blank white
+        // spots... and also stagger them better." SECOND_ROW and THIRD_ROW
+        // together now cover the 8 gaps BETWEEN FRONT_ROW's seats, one row
+        // or the other (or both, at the persistent 542-647 bare spot) per
+        // gap: gap midpoints are 111, 223, 334, 440, 542, 647, 755, 860.
+        // SECOND_ROW takes 111, 223, 440, 647, 860.
+        const SECOND_ROW = [
+            { x: 111, lum: 104 }, { x: 223, lum: 98 }, { x: 440, lum: 108 },
+            { x: 647, lum: 100 }, { x: 860, lum: 102 },
+        ];
+        SECOND_ROW.forEach(({ x, lum }) => {
+            const jitter = (rand() - 0.5) * 20;
+            // groundY 615->635: Derek: "the entire audience foreground
+            // needs to come down the y axis a little bit" (applied to all
+            // three rows).
+            spawnBackCrowd(x + jitter, 175, 635, lum, 27);
         });
 
-        // Front row — largest, cropped just below shoulders
-        const fgRow1 = [
-            { x: 55,  r: 42, lum: 32 },
-            { x: 168, r: 38, lum: 28 },
-            { x: 278, r: 44, lum: 34 },
-            { x: 390, r: 36, lum: 30 },
-            { x: 490, r: 40, lum: 33 },
-            { x: 595, r: 38, lum: 29 },
-            { x: 700, r: 42, lum: 32 },
-            { x: 810, r: 37, lum: 31 },
-            { x: 910, r: 44, lum: 30 },
+        // THIRD_ROW — Derek: "add another row behind the two we have, this
+        // time with larger, semi opaque watchers like we had before, but
+        // they move." "Like we had before" = LAYER3's look (bigger,
+        // reduced-opacity figures), but NOT its mechanics: LAYER3 used 11
+        // seats edge-to-edge with a 3-copy blur-stack per seat, which is
+        // exactly what merged into the flat "black tinted stripe" Derek
+        // killed it for. This reuses spawnBackCrowd instead (single image,
+        // real animated idle loop via _scheduleBackCrowdIdle — "they
+        // move") with only 4 seats and wide real gaps between them, same
+        // "don't cover the full width edge-to-edge" lesson SECOND_ROW
+        // already applied. Depth 15 — behind both FRONT_ROW (28) and
+        // SECOND_ROW (27), "behind the two we have." h=260 ("larger" —
+        // bigger than FRONT_ROW's 204, not smaller despite being the
+        // furthest-back row, same "don't shrink for depth" reasoning as
+        // the CROWD_EXTRAS resize-to-alfred pass). alpha=0.55 ("semi
+        // opaque"). lum kept moderate (120-135, the "avoid crushing"
+        // range from the earlier tint fix) rather than LAYER3's near-black
+        // 15 — full silhouette isn't what "semi opaque" asked for.
+        // x's now the remaining 4 of FRONT_ROW's 8 gap-midpoints not used
+        // by SECOND_ROW (see that row's comment): 40 (off the left edge,
+        // past FRONT_ROW's own first seat), 334, 542, 755. 542 sits right
+        // next to SECOND_ROW's 647 — deliberate double coverage at the
+        // 542-647 span, the specific bare gap Derek flagged ("get the
+        // ghost layer into the blank white spots").
+        const THIRD_ROW = [
+            { x: 40,  lum: 128 }, { x: 334, lum: 122 },
+            { x: 542, lum: 132 }, { x: 755, lum: 124 },
         ];
+        THIRD_ROW.forEach(({ x, lum }) => {
+            const jitter = (rand() - 0.5) * 24;
+            // groundY 590 -> 698: Derek: "their heads should be about level
+            // [with] the other row" — at groundY=590 with h=260, the top
+            // (head) landed at y=330, ~105px above FRONT_ROW/SECOND_ROW's
+            // own head level (~y=436-440), reading as floating rather than
+            // a row sitting behind them. 698 lines the head level up
+            // (698-260=438). Then 698->718 — "the entire audience
+            // foreground needs to come down the y axis a little bit."
+            spawnBackCrowd(x + jitter, 260, 718, lum, 15, 0.55);
+        });
 
-        fgRow1.forEach(({ x, r, lum }) => {
-            const col = (lum << 16) | (lum << 8) | lum;
+        // Vignette — Derek: "it needs feathering," then after the first
+        // fix: "why can't we feather that harsh edge from that mask...
+        // right now it looks like a filter [not] a camera vignette."
+        // Rebuilt from scratch rather than re-tuned: fillGradientStyle is
+        // WebGL-only (Graphics.js: "@webglOnly") and even where it renders,
+        // a flat full-width rectangle with a linear top-to-bottom alpha
+        // ramp reads as a filter overlay, not a vignette — real lens
+        // vignettes darken radially (stronger at the corners/edges, soft
+        // and rounded), not as a straight horizontal band. Replaced with
+        // many thin non-overlapping bands (so alphas don't compound),
+        // eased quadratically (slow at the top, accelerating toward the
+        // bottom — actual "feathering" instead of a linear ramp) AND
+        // tapered narrower near the top, widening to full-canvas width
+        // only at the very bottom edge, faking the rounded/radial falloff
+        // a rectangle alone can't give. Plain fillStyle/fillRect — no
+        // WebGL-only calls, so it renders the same under Canvas fallback.
+        const vignetteGfx = this.add.graphics().setDepth(29);
+        const VIGNETTE_TOP = 380, VIGNETTE_MAX_ALPHA = 0.6, VIGNETTE_BANDS = 30;
+        const bandH = (H - VIGNETTE_TOP) / VIGNETTE_BANDS;
+        for (let i = 0; i < VIGNETTE_BANDS; i++) {
+            const t = (i + 1) / VIGNETTE_BANDS; // 0..1 excluding 0, so the top band is already faintly visible
+            const alpha = VIGNETTE_MAX_ALPHA * t * t; // quadratic ease — gentle start, stronger finish
+            const taper = (1 - t) * 220; // rounds the shape inward near the top, 0 inset at the bottom
+            vignetteGfx.fillStyle(0x000000, alpha);
+            vignetteGfx.fillRect(taper, VIGNETTE_TOP + i * bandH, W - taper * 2, bandH + 1);
+        }
+
+        // FRONT_ROW — the front-front row, closest to camera. Bumped a
+        // little bigger (165 -> 185 -> 204, +10% "both") and down a little
+        // twice (610 -> 625 -> 640, "the first row should move down the y
+        // axis slightly").
+        const FRONT_ROW = [
+            { x: 55,  lum: 154 }, { x: 168, lum: 150 }, { x: 278, lum: 158 },
+            { x: 390, lum: 152 }, { x: 490, lum: 156 }, { x: 595, lum: 151 },
+            { x: 700, lum: 155 }, { x: 810, lum: 153 }, { x: 910, lum: 150 },
+        ];
+        FRONT_ROW.forEach(({ x, lum }) => {
             const jitter = (rand() - 0.5) * 20;
-            const y = H - r * 1.4;
-            fgGfx.fillStyle(col, 1);
-            fgGfx.fillCircle(x + jitter, y, r);
-            fgGfx.fillEllipse(x + jitter, y + r * 0.5, r * 3.4, r * 2);
+            // groundY 640->660: "the entire audience foreground needs to
+            // come down the y axis a little bit."
+            spawnBackCrowd(x + jitter, 204, 660, lum);
+        });
+    }
+
+    // Independent idle loop for a single BACK_CROWD fan — occasionally
+    // hops to a random different frame (a small fidget: head-angle shift,
+    // hand-to-hair/hat adjustment, a slight turn) and back, unrelated to
+    // match state. Simpler than _scheduleTwoAnimExtra/_schedulePolicemanScan
+    // on purpose: these 8 frames don't build toward any peak (see
+    // BACK_CROWD's comment) — there's nothing to walk up through, just one
+    // pose to visit and return from.
+    _scheduleBackCrowdIdle(fan) {
+        const IDLE_MIN = 3000, IDLE_MAX = 9000;
+        this.time.delayedCall(IDLE_MIN + Math.random() * (IDLE_MAX - IDLE_MIN), () => {
+            if (fan.reacting) { this._scheduleBackCrowdIdle(fan); return; }
+            fan.reacting = true;
+            const target = 2 + Math.floor(Math.random() * (fan.extra.frames - 1)); // 2..frames
+            const HOLD = 300 + Math.random() * 600;
+            this._setExtraFrame(fan, target);
+            this.time.delayedCall(HOLD, () => {
+                this._setExtraFrame(fan, fan.extra.restFrame);
+                fan.reacting = false;
+                this._scheduleBackCrowdIdle(fan);
+            });
         });
     }
 
@@ -1377,6 +2389,253 @@ export default class Arena extends Phaser.Scene {
             farGfx.fillRect(farLeft.x  - tbSize.far, rope.farY - tbSize.far / 2, tbSize.far * 2, tbSize.far);
             farGfx.fillRect(farRight.x - tbSize.far, rope.farY - tbSize.far / 2, tbSize.far * 2, tbSize.far);
         });
+    }
+
+    // Bakes a soft-edged circle texture once — layered fillCircle passes at
+    // falling alpha (same trick _triggerCameraFlash uses, just with more
+    // rings for a softer result) — for _scheduleSmokePuff to reuse, cheaper
+    // than any per-puff Graphics draw, and a plain fillCircle alone would
+    // read as a hard disc, not a wisp. Derek: "feather the edges" — went
+    // from 3 rings to 10 with a quadratic falloff, and a bigger canvas
+    // (64px vs 40px) so the outermost, faintest rings have room to actually
+    // read as a gradient instead of getting cropped by the texture bounds.
+    createSmokeTexture() {
+        const gfx = this.add.graphics();
+        const SIZE = 64, CENTER = 32, RINGS = 10, MAX_R = 30, PEAK_ALPHA = 0.3;
+        for (let i = RINGS; i >= 1; i--) {
+            const t = i / RINGS; // 1 at the outer edge, small near center
+            gfx.fillStyle(0xc8c8c0, PEAK_ALPHA * (1 - t) * (1 - t));
+            gfx.fillCircle(CENTER, CENTER, MAX_R * t);
+        }
+        gfx.generateTexture('smokePuff', SIZE, SIZE);
+        gfx.destroy();
+    }
+
+    // Same layered-circle technique as createSmokeTexture/createDustTexture
+    // — many concentric rings at a quadratic alpha falloff, baked once,
+    // instead of the original _triggerCameraFlash render's 2 raw
+    // fillCircle discs (which read as visible hard-edged rings — Derek:
+    // "the flashes have circular edges now and look weird"). 16 rings on a
+    // 100px canvas gives a real gradient across the flash's full
+    // ~50px radius rather than 2 discrete steps.
+    createFlashTexture() {
+        const gfx = this.add.graphics();
+        const SIZE = 100, CENTER = 50, RINGS = 16, MAX_R = 48, PEAK_ALPHA = 0.9;
+        for (let i = RINGS; i >= 1; i--) {
+            const t = i / RINGS;
+            gfx.fillStyle(0xffffff, PEAK_ALPHA * (1 - t) * (1 - t));
+            gfx.fillCircle(CENTER, CENTER, MAX_R * t);
+        }
+        gfx.generateTexture('cameraFlashGlow', SIZE, SIZE);
+        gfx.destroy();
+    }
+
+    createDustTexture() {
+        const gfx = this.add.graphics();
+        const SIZE = 20, CENTER = 10, RINGS = 7, MAX_R = 9, PEAK_ALPHA = 0.55;
+        for (let i = RINGS; i >= 1; i--) {
+            const t = i / RINGS;
+            gfx.fillStyle(0xe8e8d8, PEAK_ALPHA * (1 - t) * (1 - t));
+            gfx.fillCircle(CENTER, CENTER, MAX_R * t);
+        }
+        gfx.generateTexture('dustMote', SIZE, SIZE);
+        gfx.destroy();
+    }
+
+    // Dust motes drifting through the arena light — Derek asked what else
+    // could "up the production value" like the smoke; this reuses
+    // drawArenaBackground's own lit band (y 0-170, the "arena light
+    // warming the upper half where the crowd sits" fill) as the only place
+    // motes spawn, same idea as light catching dust in a real lit room.
+    // Respawns itself at a fresh random position on its own random gap —
+    // 14 independent slots, staggered start, so it reads as a steady
+    // ambient scatter rather than a synchronized pulse or a fixed cluster.
+    //
+    // Derek, live: "more subtle, subtler falloff and need warping." Three
+    // fixes: peak alpha dropped (0.35-0.6 -> 0.1-0.2, on top of
+    // createDustTexture's own softer edge — doubly subtler); the alpha
+    // tween's flat `hold` plateau removed in favor of one continuous
+    // yoyo arc (duration life/2 each way, no hold) so it reads as a smooth
+    // rise-and-fall rather than fade-in/steady/fade-out; and scaleX/scaleY
+    // now run as two separate out-of-phase tweens (same "independent,
+    // out-of-phase motions read as organic warping" trick
+    // _spawnSmokePuffAt already uses) instead of one fixed setScale, so
+    // each mote subtly pulses/deforms rather than staying a static dot.
+    _scheduleDustMote() {
+        const x = Math.random() * W, y = Math.random() * 170;
+        const baseScale = 0.4 + Math.random() * 0.5;
+        const mote = this.add.image(x, y, 'dustMote')
+            .setDepth(1.6) // same "floating in the lit air above the background crowd" layer the smoke uses
+            .setAlpha(0)
+            .setScale(baseScale, baseScale);
+        const life = 4000 + Math.random() * 3000;
+        this.tweens.add({
+            targets: mote,
+            alpha: 0.1 + Math.random() * 0.1,
+            duration: life / 2,
+            yoyo: true,
+            ease: 'Sine.easeInOut',
+            onComplete: () => { this.tweens.killTweensOf(mote); mote.destroy(); },
+        });
+        // Wanders through 2 random intermediate waypoints instead of one
+        // straight interpolation to a final point — Derek: "more random in
+        // their path." Phaser tweens accept an array of values per prop
+        // and visit each in sequence over the total duration, so this is
+        // still one tween, just a meandering one instead of point-to-point.
+        this.tweens.add({
+            targets: mote,
+            x: [x + (Math.random() - 0.5) * 40, x + (Math.random() - 0.5) * 50, x + (Math.random() - 0.5) * 60],
+            y: [y + 3 + Math.random() * 6, y + 6 + Math.random() * 10, y + 8 + Math.random() * 15], // gentle downward settle — "fall even slower": shorter distance over the same duration
+            duration: life,
+            ease: 'Sine.easeInOut',
+        });
+        this.tweens.add({
+            targets: mote,
+            scaleX: baseScale * (0.7 + Math.random() * 0.5),
+            duration: life * (0.3 + Math.random() * 0.2),
+            yoyo: true,
+            ease: 'Sine.easeInOut',
+        });
+        this.tweens.add({
+            targets: mote,
+            scaleY: baseScale * (0.7 + Math.random() * 0.5),
+            duration: life * (0.4 + Math.random() * 0.3),
+            yoyo: true,
+            ease: 'Sine.easeInOut',
+        });
+        this.time.delayedCall(life + 200 + Math.random() * 800, () => this._scheduleDustMote());
+    }
+
+    _setupDustMotes() {
+        const COUNT = 7; // "make them half as common" — was 14
+        for (let i = 0; i < COUNT; i++) {
+            this.time.delayedCall(Math.random() * 4000, () => this._scheduleDustMote());
+        }
+    }
+
+    // Spawns one soft puff at (x, y), tweens it drifting up while
+    // stretching and fading, then destroys it — a single wisp, not a real
+    // particle system (this codebase has no particle emitter set up
+    // anywhere yet). Shared by _scheduleSmokePuff (groucho's cigar, tracks
+    // a moving fan) and _scheduleAmbientSmoke (fixed ambient positions
+    // scattered through the crowd, not tied to any character's hand).
+    //
+    // Iterated live with Derek across several rounds on groucho's cigar
+    // before this became shared code — see git history for the blow-by-
+    // blow (subtlety, feathering, slow-down, warp) if tuning it again.
+    // sizeMul/alphaMul let ambient background instances read smaller/
+    // fainter than groucho's own, depth lets them sit behind whichever
+    // crowd row they're planted in rather than always in front like his.
+    _spawnSmokePuffAt(x, y, { sizeMul = 1, alphaMul = 1, depth = 1.6 } = {}) {
+        const puff = this.add.image(x, y, 'smokePuff')
+            .setDepth(depth)
+            .setAlpha(0.13 * alphaMul)
+            .setScale(0.3 * sizeMul, 0.3 * sizeMul)
+            .setAngle((Math.random() - 0.5) * 20);
+        this.tweens.add({
+            targets: puff,
+            x: x + (Math.random() - 0.5) * 12,
+            y: y - (75 + Math.random() * 15) * sizeMul,
+            alpha: 0,
+            duration: 3800 + Math.random() * 900,
+            ease: 'Sine.easeOut',
+            onComplete: () => { this.tweens.killTweensOf(puff); puff.destroy(); },
+        });
+        this.tweens.add({
+            targets: puff,
+            scaleX: (0.5 + Math.random() * 0.4) * sizeMul,
+            angle: puff.angle + (Math.random() - 0.5) * 60,
+            duration: 2000 + Math.random() * 800,
+            ease: 'Sine.easeInOut',
+        });
+        this.tweens.add({
+            targets: puff,
+            scaleY: (2.0 + Math.random() * 0.8) * sizeMul,
+            duration: 3200 + Math.random() * 900,
+            ease: 'Sine.easeOut',
+        });
+    }
+
+    // Reschedules itself, same "independent loop, own random gap" shape as
+    // _scheduleBackCrowdIdle et al. Reads fan.img.x/y live each firing
+    // rather than caching spot.x/groundY once — harmless for groucho (a
+    // fixed CROWD_EXTRAS spot that never moves), but keeps this reusable
+    // if a future smoking extra ever does move (stepOffset, etc.).
+    _scheduleSmokePuff(fan, offset) {
+        const GAP_MIN = 500, GAP_MAX = 750;
+        this.time.delayedCall(GAP_MIN + Math.random() * (GAP_MAX - GAP_MIN), () => {
+            // offset.x flips with the fan's own spot.flip, same
+            // direction-aware convention _setExtraFrame's stepOffset uses
+            // — groucho is flip:false today so this is a no-op for him,
+            // but keeps the offset correct if a future mirrored smoker
+            // reuses it.
+            const dir = fan.spot.flip ? -1 : 1;
+            this._spawnSmokePuffAt(fan.img.x + offset.x * dir, fan.img.y + offset.y, { depth: 1.6 });
+            this._scheduleSmokePuff(fan, offset);
+        });
+    }
+
+    // Ambient period-atmosphere smoke, scattered through the crowd — Derek:
+    // "I just want the crowd to be smoking... it doesn't have to be
+    // necessarily perfect, they can be in the back, maybe one or two in
+    // the foreground... it's about the overall ambiance of the time
+    // period." Unlike groucho's cigar (a real prop in his hand), these
+    // aren't anchored to any specific character — just fixed points in the
+    // crowd's general footprint, since nobody's actually holding a visible
+    // cigarette at this scale/distance anyway. Same reschedule shape as
+    // _scheduleSmokePuff, fixed (x, y) instead of a moving fan.
+    _scheduleAmbientSmoke(x, y, opts) {
+        const GAP_MIN = 500, GAP_MAX = 750;
+        this.time.delayedCall(GAP_MIN + Math.random() * (GAP_MAX - GAP_MIN), () => {
+            this._spawnSmokePuffAt(x, y, opts);
+            this._scheduleAmbientSmoke(x, y, opts);
+        });
+    }
+
+    // 10 ambient smokers — Derek: "if 15 is trivial, let's do at least 10."
+    // 8 in the back rows (depth matched to roughly which background row
+    // they'd sit in — see drawFourth/Fifth/SixthRow's own depths of
+    // 0.8/0.7/0.6), 2 up front. Positions hand-picked across the crowd's
+    // actual x/y footprint (backgrounds span x 30-930/y 125-300) rather
+    // than randomized at runtime — keeps them out of the ring posts/mat
+    // and spread across the width rather than risking a random cluster.
+    //
+    // The 2 front ones were originally planted at y 270-280, depth 1.6 —
+    // that's the BACKGROUND crowd's own y-range (behind the ring), not
+    // actually "foreground." Derek: "two of the smokes are in the ring,
+    // move them to the level of the foreground audience's heads and pick
+    // a head for each one and increase their size, but stack them behind
+    // so the head covers the smoke." Foreground here means drawSideCrowd's
+    // FRONT_ROW (depth 28, groundY 660, h 204 — the row actually in front
+    // of the ring, not CROWD_EXTRAS' row behind it). Repositioned to two
+    // of FRONT_ROW's own seat x's (390, 700) at that row's head level
+    // (top = groundY - h = 456, nudged to 465 to sit in the hair mass
+    // rather than the empty air right above it), sized up accordingly, and
+    // given depth 27.5 — below FRONT_ROW's 28 (so his head visually covers
+    // the smoke's base — "stack them behind") but above SECOND_ROW's 27.
+    //
+    // Derek also: "increase the smoke sizes too, except for grouchos" —
+    // BACK's sizeMul bumped 0.6->0.9; groucho's own cigar smoke
+    // (_scheduleSmokePuff, separate code path via CROWD_EXTRAS'
+    // smokeOffset) is untouched by this method entirely.
+    _setupAmbientSmokers() {
+        const BACK = [
+            { x: 90,  y: 145, depth: 0.6 },
+            { x: 250, y: 130, depth: 0.6 },
+            { x: 420, y: 140, depth: 0.65 },
+            { x: 600, y: 128, depth: 0.6 },
+            { x: 760, y: 150, depth: 0.65 },
+            { x: 870, y: 165, depth: 0.7 },
+            { x: 150, y: 190, depth: 0.7 },
+            { x: 520, y: 175, depth: 0.7 },
+        ];
+        BACK.forEach(({ x, y, depth }) => this._scheduleAmbientSmoke(x, y, { sizeMul: 0.9, alphaMul: 0.75, depth }));
+
+        const FRONT = [
+            { x: 390, y: 465 },
+            { x: 700, y: 465 },
+        ];
+        FRONT.forEach(({ x, y }) => this._scheduleAmbientSmoke(x, y, { sizeMul: 2.2, alphaMul: 1, depth: 27.5 }));
     }
 
     createScanlines() {
@@ -2168,6 +3427,7 @@ export default class Arena extends Phaser.Scene {
         this.pinState = this.sleeperState = this.headlockState = this.lockupState = null;
         this.pinText.setAlpha(0);
         this.crowd.bell(3);
+        this._ringTimekeeperBell();
         const txt = this.add.text(W / 2, H / 2, message, {
             fontFamily: '"Times New Roman", Times, serif',
             fontSize: '42px',
@@ -2199,6 +3459,7 @@ export default class Arena extends Phaser.Scene {
                     this._lastBumpT = -99;
                     this.matchOver  = false;
                     this.crowd.bell(1);
+                    this._ringTimekeeperBell();
                 },
             });
         });
@@ -2207,14 +3468,22 @@ export default class Arena extends Phaser.Scene {
     update(time, delta) {
         this._tickGame(delta / 1000 * this.timeScale);
 
+        // Derek: "I can't see it at all, remember, we're black and white"
+        // — the black half of the grain (0x000000 @ 0.15) was doing almost
+        // nothing against a scene that's mostly already-dark/black; only
+        // the white half had any real chance of showing, and 700 pixels
+        // across a 960x600 (576,000px) canvas at just 0.12 alpha was too
+        // sparse/faint to register anyway. Pixel counts and alphas both
+        // bumped so it actually reads.
+        // "let's up the intensity" — pushed further still.
         const g = this.grainGfx;
         g.clear();
-        g.fillStyle(0xffffff, 0.12);
-        for (let i = 0; i < 700; i++) {
+        g.fillStyle(0xffffff, 0.4);
+        for (let i = 0; i < 2600; i++) {
             g.fillRect(Math.random() * W | 0, Math.random() * H | 0, 1, 1);
         }
-        g.fillStyle(0x000000, 0.15);
-        for (let i = 0; i < 700; i++) {
+        g.fillStyle(0x000000, 0.42);
+        for (let i = 0; i < 2600; i++) {
             g.fillRect(Math.random() * W | 0, Math.random() * H | 0, 1, 1);
         }
 
@@ -2226,23 +3495,22 @@ export default class Arena extends Phaser.Scene {
         // correction after the first pass (reusing flickerOverlay
         // full-screen) read as too intense. Sharp attack, quick
         // square-falloff decay over CAMERA_FLASH_MS so it pops rather than
-        // fades gently. Two layered circles (dim wide halo + bright core)
-        // approximate a radial falloff since Graphics has no native
-        // gradient fill.
-        const cfg = this.cameraFlashGfx;
-        cfg.clear();
+        // fades gently. Was 2 raw fillCircle discs redrawn every frame
+        // (visible hard edges — see createFlashTexture's comment); now a
+        // single reused Image on the pre-baked feathered texture, just
+        // repositioned/rescaled/faded each frame instead of redrawn.
         if (this._flashStart != null) {
             const CAMERA_FLASH_MS = 200;
             const t = (time - this._flashStart) / CAMERA_FLASH_MS;
             if (t < 1) {
                 const a = (1 - t) ** 2;
-                cfg.fillStyle(0xffffff, a * 0.35);
-                cfg.fillCircle(this._flashX, this._flashY, 40);
-                cfg.fillStyle(0xffffff, a * 0.85);
-                cfg.fillCircle(this._flashX, this._flashY, 16);
+                this.cameraFlashImg.setVisible(true).setPosition(this._flashX, this._flashY).setAlpha(a);
             } else {
                 this._flashStart = null;
+                this.cameraFlashImg.setVisible(false);
             }
+        } else if (this.cameraFlashImg.visible) {
+            this.cameraFlashImg.setVisible(false);
         }
     }
 }

@@ -55,31 +55,72 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../..');
 
-const GEORGE_QA_DIR = '/private/tmp/claude-501/-Users-home-Documents-urworthy/8cbc67d6-398e-45d9-a9e4-a5f9b95bae03/scratchpad/george-art/qa';
-const THESZ_QA_DIR = '/private/tmp/claude-501/-Users-home-Documents-urworthy/8cbc67d6-398e-45d9-a9e4-a5f9b95bae03/scratchpad/thesz-art/qa';
+// QA dirs are scratch output only (never read back by the pipeline itself),
+// scoped to the current Claude session's scratchpad — stamp in your own
+// session's path here before running. THESZ_QA_DIR previously pointed at a
+// stale path left over from an unrelated project ("urworthy") from a much
+// earlier session; harmless (qaDir is write-only scratch) but fixed for
+// hygiene, 2026-07-22.
+const GEORGE_QA_DIR = '/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/68f35a14-53a5-4286-ac91-1412198e45da/scratchpad/george-art/qa';
+const THESZ_QA_DIR = '/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/68f35a14-53a5-4286-ac91-1412198e45da/scratchpad/thesz-art/qa';
 
 const CHARACTERS = {
     george: {
-        srcDir: '/Users/home/Documents/wrestling-from-marigold/Sprite sheets/GeorgeParts',
+        // "newgeorge" redraw (2026-07-19, Derek): replaces the old hand-cut
+        // GeorgeParts source (which needed a trunks/foot composite step and
+        // per-part offset hacks to compensate for mismatched pivots). This
+        // pass follows DRAWING_GUIDE's "draw full body, cut into layers on
+        // one shared canvas" method — same approach as the New Lou/thesz
+        // redraw — so trunks are baked into the torso layer and the boot is
+        // baked into the lower-leg layer already; no composite step needed.
+        srcDir: '/Users/home/Documents/wrestling-from-marigold/Sprite sheets/NewGeorge',
         destDir: path.join(REPO_ROOT, 'src/assets/wrestlers/george'),
         qaDir: GEORGE_QA_DIR,
-        sourceKeys: ['head', 'torso', 'trunks', 'upperArm', 'forearm', 'thigh', 'shin', 'foot'],
+        sourceKeys: ['head', 'torso', 'upperArm', 'forearm', 'thigh', 'shin'],
         files: {
-            head: 'georgehead2.png',
-            torso: 'torso3.png',
-            trunks: 'Trunks.png',
-            upperArm: 'L_Arm_Upper.png',
-            forearm: 'L_Arm_Lower.png',
-            thigh: 'L_Leg_Upper.png',
-            shin: 'L_Leg_Lower.png',
-            foot: 'L_Foot.png',
+            head: 'GeorgeHead.png',
+            torso: 'GeorgeTorso.png',
+            upperArm: 'GeorgeUpperArm.png',
+            forearm: 'GeorgeLowerArm.png',
+            thigh: 'GeorgeUpperLeg.png',
+            shin: 'GeorgeLowerLeg.png',
         },
-        // Whole source sheet was drawn facing left.
+        // Reference sheet (Georgereference.png) faces left, same convention
+        // as the old GeorgeParts sheet — mirror everything to face right.
         flip: 'all',
-        // torso3.png has trunks hand-drawn into the same layer (Derek,
-        // 2026-07-12 — the algorithmic Trunks.png composite read like a
-        // diaper) — no separate trunks composite for torso anymore.
-        composites: { shin: 'foot' },
+        // Trunks baked into GeorgeTorso.png, boot baked into GeorgeLowerLeg.png.
+        composites: {},
+        // 2026-07-21 (general joint-attachment contract, see AI_HANDOFF.md's
+        // 2026-07-19 Codex entries): Derek deliberately drew flesh-tone
+        // overlap slack above the knee/elbow for joint coverage, but
+        // flattenOpaqueCap was shaving it off (28 rows on the forearm, 26 on
+        // the shin) to force a flat top-of-texture cap. These two parts opt
+        // out of that destructive step — the cutter instead measures where
+        // the cap boundary WOULD be and reports it as jointPivotFrac, which
+        // Skeleton.js uses as the texture's internal origin instead of
+        // forcing the joint to row 0. Not needed for upper_arm/thigh (no
+        // reported detachment there) or for thesz (not the reported bug —
+        // stays on the legacy flattened-cap path).
+        jointPivotParts: ['forearm', 'shin'],
+        // 2026-07-23 (Derek: "george's ear is black for some reason"):
+        // closeThinAlphaGaps (added 2026-07-19 to close ONE specific
+        // hairline seam in the shin's cap art — see the header comment on
+        // that function) used to run unconditionally on every part for
+        // every character. Its own report.json showed why that was wrong:
+        // GeorgeHead.png alone had 229 gaps closed / 380px promoted to
+        // opaque — an order of magnitude more than the shin (8 gaps) it was
+        // actually built for — because the ear's fine curved shading
+        // strokes sit within its 4px threshold of the ear's outline in many
+        // rows, so the "close a hairline gap" logic kept copying the
+        // nearest (black) flanking pixel and ballooned the ear's inner
+        // detail into a solid black blob. Scoped to an explicit opt-in list
+        // instead of a blanket pass; only `shin` — the part with the actual
+        // reported defect — is in it. torso/upperArm/thigh also had
+        // suspiciously high gap counts (130/42/26) in that same report and
+        // may have similar latent artifacts, but weren't reported broken,
+        // so left on the (now off-by-default) legacy path rather than
+        // guessing they need reprocessing too.
+        gapCloseParts: ['shin'],
     },
     thesz: {
         // Redrawn 2026-07-12 (Derek): full-body master pose cut into 6 layers
@@ -121,6 +162,9 @@ const PART_SPECS = {
 
 const ALPHA_THRESHOLD = 10;
 const SPECK_AREA_FRAC = 0.01;
+// See closeThinAlphaGaps: hairline unfilled seams up to this wide, flanked
+// by solid ink on both sides, get promoted to opaque during cleaning.
+const THIN_GAP_MAX_PX = 4;
 const NEAR_WHITE = 250;
 const OPAQUE_CAP_MIN_FRAC = 0.6;
 // Flatten to a stricter target at source scale: bicubic downsampling softens
@@ -307,6 +351,47 @@ window.WC = (function () {
     return { decontaminated, extendedKeyed, speckPixelsDropped, speckIslandsDropped };
   }
 
+  // Closes hairline non-opaque seams (a few px of low/partial alpha flanked
+  // by solid ink on both sides within the same row) by promoting them to
+  // fully opaque, copying the nearer flanking pixel's color. Source art from
+  // AI/hand-drawing tools sometimes leaves a 1-4px unfilled crease line
+  // (e.g. a shading stroke drawn without fill) that isn't a real part
+  // boundary — left alone it can break the elbow/knee opaque-cap rule
+  // (flattenOpaqueCap/verification look for one CONTIGUOUS opaque run, and a
+  // hairline gap splits an otherwise-solid cap into two shorter runs).
+  // Character-agnostic and cheap to run on every part: a single scan per row
+  // that only fires when both sides of a short gap are already solid, so it
+  // can't merge two genuinely separate shapes.
+  function closeThinAlphaGaps(canvas, maxGapPx) {
+    const ctx = ctxOf(canvas);
+    const w = canvas.width, h = canvas.height;
+    const id = ctx.getImageData(0, 0, w, h);
+    const d = id.data;
+    let closedPixels = 0, closedGaps = 0;
+    for (let y = 0; y < h; y++) {
+      let x = 0;
+      while (x < w) {
+        if (d[(y * w + x) * 4 + 3] >= 240) { x++; continue; }
+        const gapStart = x;
+        while (x < w && d[(y * w + x) * 4 + 3] < 240) x++;
+        const gapEnd = x; // exclusive
+        const gapLen = gapEnd - gapStart;
+        if (gapStart > 0 && gapEnd < w && gapLen > 0 && gapLen <= maxGapPx &&
+            d[(y * w + gapStart - 1) * 4 + 3] >= 240 && d[(y * w + gapEnd) * 4 + 3] >= 240) {
+          for (let gx = gapStart; gx < gapEnd; gx++) {
+            const srcX = (gx - gapStart) < (gapEnd - gx) ? gapStart - 1 : gapEnd;
+            const sp = (y * w + srcX) * 4, dp = (y * w + gx) * 4;
+            d[dp] = d[sp]; d[dp+1] = d[sp+1]; d[dp+2] = d[sp+2]; d[dp+3] = 255;
+          }
+          closedPixels += gapLen;
+          closedGaps++;
+        }
+      }
+    }
+    ctx.putImageData(id, 0, 0);
+    return { closedPixels, closedGaps };
+  }
+
   // 8-connected components over alpha>ALPHA_THRESHOLD. Iterative flood fill.
   function connectedComponents(canvas) {
     const ctx = ctxOf(canvas);
@@ -432,6 +517,27 @@ window.WC = (function () {
     }
     if (count === 0) return null;
     return { y, minX, maxX, width: maxX - minX + 1, count, darkFrac: darkCount / count };
+  }
+
+  // Longest run of contiguous effectively-opaque (alpha>=240) pixels in one
+  // row — the strip that actually hides a joint seam, as opposed to
+  // rowStats' width, which is just the bounding span between the row's
+  // leftmost and rightmost non-transparent pixel and can be much wider than
+  // any solid run inside it (soft/antialiased edges, a taper's faint tip).
+  // Threshold 240, not 255: see the matching comment at this function's call
+  // sites — source art paints near-solid alpha and bicubic resampling shaves
+  // a few more units, so 240+ reads as solid on screen.
+  function capRunWidth(canvas, y) {
+    const r = rowStats(canvas, y);
+    if (!r) return 0;
+    const ctx = ctxOf(canvas);
+    const rowData = ctx.getImageData(r.minX, y, r.width, 1).data;
+    let run = 0, best = 0;
+    for (let i = 0; i < r.width; i++) {
+      if (rowData[i * 4 + 3] >= 240) { run++; if (run > best) best = run; }
+      else run = 0;
+    }
+    return best;
   }
 
   function flipHorizontal(canvas) {
@@ -574,17 +680,57 @@ window.WC = (function () {
     return { shavedRows: shaved, maxWidth, finalTopWidth: topWidth, newTopY: top };
   }
 
+  // Non-destructive counterpart to flattenOpaqueCap: finds the same
+  // joint-cap row (the first row from content-top whose CONTIGUOUS opaque
+  // run — capRunWidth, not the bounding span rowStats.width reports — is >=
+  // minFrac * the content's max row width) WITHOUT zeroing anything above
+  // it. For a jointPivotParts part (2026-07-21 general joint-attachment
+  // contract — see AI_HANDOFF.md's 2026-07-19 Codex entries), the art above
+  // this row is authored overlap slack meant to tuck under the parent limb
+  // at runtime, not a defect to shave off. Search criterion uses capRunWidth
+  // specifically (not rowStats.width, which flattenOpaqueCap's search uses)
+  // so the row this picks is guaranteed to satisfy verification's own capOk
+  // check below — a taper's bounding span can be wide while its actual solid
+  // ink core is much narrower (soft/antialiased edges), and the destination
+  // check cares about the solid core, not the span. Returns { jointRowY,
+  // maxWidth, jointRowWidth }.
+  function findJointCapRow(canvas, minFrac, maxWidthSearchYEnd) {
+    const bbox = contentBBox(canvas);
+    if (!bbox) return { jointRowY: 0, maxWidth: 0, jointRowWidth: 0 };
+    const searchEnd = maxWidthSearchYEnd != null ? Math.min(bbox.maxY, maxWidthSearchYEnd) : bbox.maxY;
+    let maxWidth = 0;
+    for (let y = bbox.minY; y <= searchEnd; y++) {
+      const r = rowStats(canvas, y);
+      if (r && r.width > maxWidth) maxWidth = r.width;
+    }
+    let y = bbox.minY;
+    let width = capRunWidth(canvas, y);
+    while (width / maxWidth < minFrac && y < bbox.maxY) {
+      y++;
+      width = capRunWidth(canvas, y);
+    }
+    return { jointRowY: y, maxWidth, jointRowWidth: width };
+  }
+
   // Pivot x = opaque x-center of the PIVOT_ROWS content rows nearest the
   // pivot edge — the top rows for a joint pivot (torso/upper_arm/forearm/
   // thigh/shin), or the bottom rows (the neck) for the head, whose pivot
   // sits at canvas bottom. Crop window is symmetric around pivotX,
   // vertically spanning content top..bottom either way.
-  function pivotCrop(canvas, pivotRows, edge) {
+  // pivotEdgeY (2026-07-21, optional, top-edge only): for a jointPivotParts
+  // part, the true joint row sits below bbox.minY (see findJointCapRow
+  // above) — sampling the PIVOT_ROWS x-center from the tapered overlap tip
+  // at bbox.minY would give a poor, near-single-pixel centering estimate.
+  // Pass the joint row here to sample centering from THAT row's content
+  // instead; the crop itself still spans bbox.minY..bbox.maxY either way, so
+  // the authored overlap band above it is retained, not cropped away.
+  function pivotCrop(canvas, pivotRows, edge, pivotEdgeY) {
     edge = edge || 'top';
     const bbox = contentBBox(canvas);
+    const topStart = pivotEdgeY != null ? pivotEdgeY : bbox.minY;
     let wSum = 0, cSum = 0, n = 0;
     for (let i = 0; i < pivotRows; i++) {
-      const y = edge === 'top' ? bbox.minY + i : bbox.maxY - i;
+      const y = edge === 'top' ? topStart + i : bbox.maxY - i;
       if (y < bbox.minY || y > bbox.maxY) continue;
       const r = rowStats(canvas, y);
       if (!r) continue;
@@ -705,10 +851,10 @@ window.WC = (function () {
   }
 
   return {
-    newCanvas, ctxOf, loadImage, alphaAudit, bakeAlpha, connectedComponents,
-    dropSmallComponents, contentBBox, rowStats, flipHorizontal, darkBandWidth,
+    newCanvas, ctxOf, loadImage, alphaAudit, bakeAlpha, closeThinAlphaGaps, connectedComponents,
+    dropSmallComponents, contentBBox, rowStats, capRunWidth, flipHorizontal, darkBandWidth,
     edgeAverageWidth, findNarrowestRow, principalAngle, rotateAround, alignVerticalFistDown,
-    flattenOpaqueCap, pivotCrop, scaleFlush, placeUnderlay, toDataURL,
+    flattenOpaqueCap, findJointCapRow, pivotCrop, scaleFlush, placeUnderlay, toDataURL,
     drawCheckerboard, buildQA,
   };
 })();
@@ -742,8 +888,13 @@ async function buildSimplePart(page, sourceDataUrl, spec, label) {
 
 // forearm: rotate to vertical fist-down, cap-flatten the elbow-joint top
 // edge, then pivot-crop/scale-flush. No composite — same for every character.
-async function buildForearmPart(page, cleanedForearmDataUrl, spec) {
-    const res = await page.evaluate(async ({ dataUrl, spec, flattenFrac, pivotRows, sideSafety }) => {
+// preserveOverlap (2026-07-21, opt-in via CHARACTERS.<char>.jointPivotParts
+// — see AI_HANDOFF.md's 2026-07-19 Codex entries): skip the destructive cap
+// flatten and export a jointPivotFrac instead, so the authored overlap slack
+// above the elbow survives into the final PNG for Skeleton.js's internal
+// joint-pivot contract to use, rather than being shaved off.
+async function buildForearmPart(page, cleanedForearmDataUrl, spec, preserveOverlap) {
+    const res = await page.evaluate(async ({ dataUrl, spec, flattenFrac, pivotRows, sideSafety, preserveOverlap }) => {
         const canvas = await window.WC.loadImage(dataUrl);
         // Fist hint: the bottom-right-most content pixel. Sources are
         // cleaned (and, per-character, optionally flipped) so the fist ends
@@ -751,54 +902,78 @@ async function buildForearmPart(page, cleanedForearmDataUrl, spec) {
         const bbox = window.WC.contentBBox(canvas);
         const hintX = bbox.maxX, hintY = bbox.maxY;
         const rot = window.WC.alignVerticalFistDown(canvas, hintX, hintY);
-        const cap = window.WC.flattenOpaqueCap(rot.canvas, flattenFrac);
-        const pivot = window.WC.pivotCrop(rot.canvas, pivotRows, 'top');
+        const cap = preserveOverlap
+            ? window.WC.findJointCapRow(rot.canvas, flattenFrac)
+            : window.WC.flattenOpaqueCap(rot.canvas, flattenFrac);
+        // preserveOverlap: center the pivot crop on the joint row's own
+        // content, not the tapered overlap tip at content-top (see
+        // pivotCrop's pivotEdgeY comment) — the crop itself still keeps the
+        // full canvas top..bottom, so the overlap band is retained either way.
+        const pivot = window.WC.pivotCrop(rot.canvas, pivotRows, 'top', preserveOverlap ? cap.jointRowY : undefined);
         const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety, 'top');
         const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'forearm', 'top');
+        // Where the joint row lands in the final canvas, as a fraction of
+        // canvas height — the jointPivotFrac to wire into george.js's
+        // forearm texture entry (Skeleton.js's img() reads it as the
+        // origin's y-fraction).
+        const jointPivotFrac = preserveOverlap
+            ? ((cap.jointRowY - pivot.cropY0) * flushed.scale + flushed.dy) / spec.h
+            : null;
         return {
             finalDataUrl: window.WC.toDataURL(flushed.canvas),
             qaDataUrl: window.WC.toDataURL(qa),
             rotationDeg: rot.phiDeg, thetaDeg: rot.thetaDeg, flipped180: rot.flipped180,
-            capShaved: cap.shavedRows, capMaxWidth: cap.maxWidth, capFinalTopWidth: cap.finalTopWidth,
+            capShaved: cap.shavedRows ?? 0, capMaxWidth: cap.maxWidth, capFinalTopWidth: cap.finalTopWidth ?? cap.jointRowWidth,
             pivotX: pivot.pivotX, bboxCenterX: pivot.bboxCenterX, pivotDelta: pivot.delta,
             leftPad: flushed.leftPad, rightPad: flushed.rightPad, bottomPad: flushed.bottomPad,
             drawW: flushed.drawW, drawH: flushed.drawH, fillFrac: flushed.fillFrac,
+            jointPivotFrac,
         };
-    }, { dataUrl: cleanedForearmDataUrl, spec, flattenFrac: OPAQUE_CAP_FLATTEN_FRAC, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY });
+    }, { dataUrl: cleanedForearmDataUrl, spec, flattenFrac: OPAQUE_CAP_FLATTEN_FRAC, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY, preserveOverlap: !!preserveOverlap });
     return res;
 }
 
 // shin with NO separate foot source (boot already baked into the same
 // layer): find the ankle pinch to scope the cap-flatten search away from the
 // boot, then cap-flatten/pivot-crop/scale-flush exactly like the composite
-// path's shin+foot result.
-async function buildShinNoComposite(page, cleanedShinDataUrl, spec) {
-    const res = await page.evaluate(async ({ dataUrl, spec, flattenFrac, pivotRows, sideSafety, searchStartFrac, searchEndFrac }) => {
+// path's shin+foot result. preserveOverlap: see buildForearmPart's comment —
+// same opt-in mechanism, applied to the knee joint instead of the elbow.
+async function buildShinNoComposite(page, cleanedShinDataUrl, spec, preserveOverlap) {
+    const res = await page.evaluate(async ({ dataUrl, spec, flattenFrac, pivotRows, sideSafety, searchStartFrac, searchEndFrac, preserveOverlap }) => {
         const canvas = await window.WC.loadImage(dataUrl);
         const bbox = window.WC.contentBBox(canvas);
         const h = bbox.maxY - bbox.minY + 1;
         const searchStart = bbox.minY + Math.round(h * searchStartFrac);
         const searchEnd = bbox.minY + Math.round(h * searchEndFrac);
         const pinch = window.WC.findNarrowestRow(canvas, searchStart, searchEnd);
-        const cap = window.WC.flattenOpaqueCap(canvas, flattenFrac, pinch.y);
-        const pivot = window.WC.pivotCrop(canvas, pivotRows, 'top');
+        const cap = preserveOverlap
+            ? window.WC.findJointCapRow(canvas, flattenFrac, pinch.y)
+            : window.WC.flattenOpaqueCap(canvas, flattenFrac, pinch.y);
+        const pivot = window.WC.pivotCrop(canvas, pivotRows, 'top', preserveOverlap ? cap.jointRowY : undefined);
         const flushed = window.WC.scaleFlush(pivot.canvas, spec.w, spec.h, sideSafety, 'top');
         const qa = window.WC.buildQA(pivot.canvas, flushed.canvas, spec.w, spec.h, 4, 'shin', 'top');
         // Where the ankle pinch (shin/boot boundary) ends up in the final
         // canvas's y-coordinates, so verification can scope its max-width
         // search the same way flattenOpaqueCap did.
         const ownRegionBottomYFinal = (pinch.y - pivot.cropY0) * flushed.scale + flushed.dy;
+        // Where the knee joint row lands in the final canvas, as a fraction
+        // of canvas height — the jointPivotFrac to wire into george.js's
+        // shin texture entry.
+        const jointPivotFrac = preserveOverlap
+            ? ((cap.jointRowY - pivot.cropY0) * flushed.scale + flushed.dy) / spec.h
+            : null;
         return {
             finalDataUrl: window.WC.toDataURL(flushed.canvas), qaDataUrl: window.WC.toDataURL(qa),
             pinchY: pinch.y, pinchWidth: pinch.width,
-            capShaved: cap.shavedRows, capMaxWidth: cap.maxWidth, capFinalTopWidth: cap.finalTopWidth,
+            capShaved: cap.shavedRows ?? 0, capMaxWidth: cap.maxWidth, capFinalTopWidth: cap.finalTopWidth ?? cap.jointRowWidth,
             pivotX: pivot.pivotX, bboxCenterX: pivot.bboxCenterX, pivotDelta: pivot.delta,
             leftPad: flushed.leftPad, rightPad: flushed.rightPad, bottomPad: flushed.bottomPad,
             drawW: flushed.drawW, drawH: flushed.drawH, fillFrac: flushed.fillFrac, ownRegionBottomYFinal,
+            jointPivotFrac,
         };
     }, {
         dataUrl: cleanedShinDataUrl, spec, flattenFrac: OPAQUE_CAP_FLATTEN_FRAC, pivotRows: PIVOT_ROWS, sideSafety: SIDE_SAFETY,
-        searchStartFrac: ANKLE_SEARCH_START_FRAC, searchEndFrac: ANKLE_SEARCH_END_FRAC,
+        searchStartFrac: ANKLE_SEARCH_START_FRAC, searchEndFrac: ANKLE_SEARCH_END_FRAC, preserveOverlap: !!preserveOverlap,
     });
     return res;
 }
@@ -828,18 +1003,24 @@ async function main() {
         const filePath = path.join(char.srcDir, char.files[key]);
         const dataUrl = dataUrlFromFile(filePath);
         const shouldFlip = char.flip === 'all' ? true : !!(char.flip && char.flip[key]);
-        const result = await page.evaluate(async ({ dataUrl, fracThreshold, shouldFlip }) => {
+        const closeGaps = !!char.gapCloseParts?.includes(key);
+        const result = await page.evaluate(async ({ dataUrl, fracThreshold, shouldFlip, thinGapMaxPx, closeGaps }) => {
             const canvas = await window.WC.loadImage(dataUrl);
             const audit = window.WC.alphaAudit(canvas);
             const defringe = window.WC.bakeAlpha(canvas, audit.needsKeying);
             const { keptCount, dropped } = window.WC.dropSmallComponents(canvas, fracThreshold);
+            const gapsClosed = closeGaps
+                ? window.WC.closeThinAlphaGaps(canvas, thinGapMaxPx)
+                : { closedPixels: 0, closedGaps: 0 };
             const finalCanvas = shouldFlip ? window.WC.flipHorizontal(canvas) : canvas;
-            return { dataUrl: window.WC.toDataURL(finalCanvas), audit, defringe, keptCount, dropped };
-        }, { dataUrl, fracThreshold: SPECK_AREA_FRAC, shouldFlip });
+            return { dataUrl: window.WC.toDataURL(finalCanvas), audit, defringe, keptCount, dropped, gapsClosed };
+        }, { dataUrl, fracThreshold: SPECK_AREA_FRAC, shouldFlip, thinGapMaxPx: THIN_GAP_MAX_PX, closeGaps });
         cleaned[key] = result.dataUrl;
         report.alphaAudit[char.files[key]] = result.audit;
         report.defringe[char.files[key]] = result.defringe;
         report.droppedSpecks[char.files[key]] = result.dropped;
+        report.gapsClosed = report.gapsClosed || {};
+        report.gapsClosed[char.files[key]] = result.gapsClosed;
         report.flipApplied[key] = shouldFlip;
     }
 
@@ -859,12 +1040,17 @@ async function main() {
 
     // ── forearm (rotate to vertical fist-down, then cap-flatten) — shared ──
     {
-        const res = await buildForearmPart(page, cleaned.forearm, PART_SPECS.forearm);
+        const preserveOverlap = !!char.jointPivotParts?.includes('forearm');
+        const res = await buildForearmPart(page, cleaned.forearm, PART_SPECS.forearm, preserveOverlap);
         outputs.forearm = res;
         report.rotation = { forearm_thetaDeg: res.thetaDeg, forearm_rotationAppliedDeg: res.rotationDeg, flipped180ForFistDown: res.flipped180 };
         report.capFlatten.forearm = { shavedRows: res.capShaved, maxWidth: res.capMaxWidth, finalTopWidth: res.capFinalTopWidth };
         report.pivotCrop.forearm = { pivotX: res.pivotX, bboxCenterX: res.bboxCenterX, delta: res.pivotDelta };
         report.finalPadding.forearm = { leftPad: res.leftPad, rightPad: res.rightPad, bottomPad: res.bottomPad, drawW: res.drawW, drawH: res.drawH, fillFrac: res.fillFrac };
+        if (preserveOverlap) {
+            report.jointPivotFrac = report.jointPivotFrac || {};
+            report.jointPivotFrac.forearm = res.jointPivotFrac;
+        }
     }
 
     // ── thigh (single source, no composite/rotation) ───────────────────────
@@ -995,8 +1181,13 @@ async function main() {
     } else {
         // Boot already baked into the shin source layer — no composite, but
         // the cap-flatten search still needs to be scoped away from it.
-        outputs.shin = await buildShinNoComposite(page, cleaned.shin, PART_SPECS.shin);
+        const preserveShinOverlap = !!char.jointPivotParts?.includes('shin');
+        outputs.shin = await buildShinNoComposite(page, cleaned.shin, PART_SPECS.shin, preserveShinOverlap);
         report.ankleP = { pinchY: outputs.shin.pinchY, pinchWidth: outputs.shin.pinchWidth };
+        if (preserveShinOverlap) {
+            report.jointPivotFrac = report.jointPivotFrac || {};
+            report.jointPivotFrac.shin = outputs.shin.jointPivotFrac;
+        }
     }
     report.capFlatten.shin = { shavedRows: outputs.shin.capShaved, maxWidth: outputs.shin.capMaxWidth, finalTopWidth: outputs.shin.capFinalTopWidth };
     report.pivotCrop.shin = { pivotX: outputs.shin.pivotX, bboxCenterX: outputs.shin.bboxCenterX, delta: outputs.shin.pivotDelta };
@@ -1022,7 +1213,17 @@ async function main() {
         // — same reasoning as flattenOpaqueCap: the boot is much wider than
         // the shin and isn't the joint this cap is covering.
         const maxWidthSearchYEnd = name === 'shin' ? outputs.shin.ownRegionBottomYFinal : null;
-        const v = await page.evaluate(async ({ dataUrl, spec, minFrac, maxWidthSearchYEnd, edge }) => {
+        // jointPivotParts (2026-07-21): for a part that opted out of
+        // flattenOpaqueCap, the cap row — the flat, full-width strip that
+        // actually hides the joint seam — no longer sits at bbox.minY. It
+        // sits jointPivotFrac of the way down the texture (see
+        // buildForearmPart/buildShinNoComposite); bbox.minY is now the
+        // tapered tip of the authored overlap slack, which is legitimately
+        // narrow and was making this check fail (capOk: false) even though
+        // the actual joint cap is fine. Point the search at the real row.
+        const isJointPivotPart = !!char.jointPivotParts?.includes(name);
+        const jointRowYFinal = isJointPivotPart ? outputs[name].jointPivotFrac * spec.h : null;
+        const v = await page.evaluate(async ({ dataUrl, spec, minFrac, maxWidthSearchYEnd, edge, jointRowYFinal }) => {
             const canvas = await window.WC.loadImage(dataUrl);
             const dimsOk = canvas.width === spec.w && canvas.height === spec.h;
             const bbox = window.WC.contentBBox(canvas);
@@ -1035,7 +1236,7 @@ async function main() {
             const pivotFlush = bbox ? (edge === 'top' ? bbox.minY === 0 : bbox.maxY === canvas.height - 1) : false;
             let capOk = true, capTopWidth = null, capMaxWidth = null;
             if (spec.opaqueCap && bbox) {
-                const topRow = window.WC.rowStats(canvas, bbox.minY);
+                const capRowY = jointRowYFinal != null ? Math.round(jointRowYFinal) : bbox.minY;
                 const searchEnd = maxWidthSearchYEnd != null ? Math.min(bbox.maxY, Math.round(maxWidthSearchYEnd)) : bbox.maxY;
                 let maxWidth = 0;
                 for (let y = bbox.minY; y <= searchEnd; y++) {
@@ -1043,27 +1244,19 @@ async function main() {
                     if (r && r.width > maxWidth) maxWidth = r.width;
                 }
                 // The joint-cover width that matters is the longest
-                // CONTIGUOUS effectively-opaque run in the top row — that's
-                // the strip that actually hides the elbow/knee seam.
-                // Threshold 240, not 255: source art is itself painted at
-                // near-solid alpha, and bicubic resampling shaves a few more
-                // units; 240+ is indistinguishable from solid on screen.
-                let runWidth = 0;
-                if (topRow) {
-                    const ctx = window.WC.ctxOf(canvas);
-                    const rowData = ctx.getImageData(topRow.minX, bbox.minY, topRow.width, 1).data;
-                    let run = 0;
-                    for (let i = 0; i < topRow.width; i++) {
-                        if (rowData[i * 4 + 3] >= 240) { run++; if (run > runWidth) runWidth = run; }
-                        else run = 0;
-                    }
-                }
+                // CONTIGUOUS effectively-opaque run in the cap row — that's
+                // the strip that actually hides the elbow/knee seam. Shares
+                // capRunWidth with findJointCapRow's own row-selection search
+                // (2026-07-22) so a jointPivotFrac the cutter picked is
+                // guaranteed to satisfy this same check, not just a looser
+                // bounding-span estimate of it.
+                const runWidth = window.WC.capRunWidth(canvas, capRowY);
                 capTopWidth = runWidth;
                 capMaxWidth = maxWidth;
                 capOk = maxWidth > 0 && (runWidth / maxWidth) >= minFrac;
             }
             return { w: canvas.width, h: canvas.height, dimsOk, hasContent, sidesFree, pivotFlush, bbox, capOk, capTopWidth, capMaxWidth };
-        }, { dataUrl, spec, minFrac: OPAQUE_CAP_MIN_FRAC, maxWidthSearchYEnd, edge });
+        }, { dataUrl, spec, minFrac: OPAQUE_CAP_MIN_FRAC, maxWidthSearchYEnd, edge, jointRowYFinal });
         // pivot-edge flush required unless the part is width-limited
         // (fillFrac<1, i.e. the art physically can't reach the far edge at
         // legal width)

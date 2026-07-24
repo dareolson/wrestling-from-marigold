@@ -5,6 +5,18 @@ export const thesz = {
     skinCol:   0xe8c098,
     trunksCol: 0x484848,
     textures: {
+        // Measured alongside george.js's own height fix (Derek, 2026-07-19:
+        // real George 5'9" vs real Thesz 6'2", Thesz should have the height
+        // advantage — both currently rendered ~7ft, no prior real-world
+        // calibration existed for either). At s=1 (DRAWING_GUIDE's near-edge
+        // calibration, 43px/ft), Thesz's assembled skeleton measured 302px
+        // tall = 7.03ft. Real Thesz stood 6'2" (74in = 6.167ft = 265px at
+        // s=1); heightScale = 265/302 = 0.877. Wrestler.js folds this into
+        // draw()'s local `s` only — never the `s` getter (movement/reach/
+        // hit-detection) — so this is a visual resize only, no gameplay
+        // change. Result: Thesz now reads taller than George (265px vs
+        // George's 247px target in george.js), matching their real heights.
+        heightScale: 0.877,
         head:     'thesz_head',
         // Redrawn head/torso (2026-07-12, New Lou pass): the new head.png
         // carries almost no neck slack (unlike the old long-neck art the

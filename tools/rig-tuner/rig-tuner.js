@@ -45,6 +45,11 @@ const CHAR0 = { george: deep(george.textures), thesz: deep(thesz.textures) };
 // def: effective value when the config key is absent.
 // angle: UI/config in degrees ↔ radians internally, exported as `deg * Math.PI / 180`.
 const CHAR_KNOBS = [
+    // Not a Skeleton field (Wrestler.js folds it into draw()'s local `s`
+    // before Skeleton ever sees it — see renderScale() above) — `field` is
+    // still set for setCharKnob's uniform read/write-back-to-config path;
+    // nothing reads skeleton._heightScale, it's inert on that object.
+    { key: 'heightScale',     field: '_heightScale',     def: () => 1,   min: 0.5, max: 1.3, step: 0.005 },
     { key: 'headScale',       field: '_headScale',       def: () => 1,   min: 0.3, max: 2,   step: 0.005, headOnly: true },
     { key: 'headOffsetX',     field: '_headOffsetX',     def: () => 0,   min: -60, max: 60,  step: 1, headOnly: true },
     { key: 'headOffsetY',     field: '_headOffsetY',     def: () => 0,   min: -60, max: 60,  step: 1, headOnly: true },
@@ -67,6 +72,8 @@ const CHAR_KNOBS = [
     { key: 'nearShinOffsetY', field: '_nearShinOffsetY', def: () => 0,   min: -60, max: 60,  step: 1 },
     { key: 'nearShinTilt',    field: '_nearShinTilt',    def: () => 0,   min: -60, max: 60,  step: 0.5, angle: true },
     { key: 'nearShinScale',   field: '_nearShinScale',   def: () => RIG.NEAR_SHIN_SCALE, min: 0.5, max: 1.6, step: 0.01 },
+    { key: 'farShinScale',    field: '_farShinScale',    def: () => RIG.FAR_SHIN_SCALE,  min: 0.5, max: 1.6, step: 0.01 },
+    { key: 'farThighScale',   field: '_farThighScale',   def: () => RIG.FAR_THIGH_SCALE, min: 0.5, max: 1.6, step: 0.01 },
     { key: 'farLegOffsetX',   field: '_farLegOffsetX',   def: () => 0,   min: -60, max: 60,  step: 1 },
     { key: 'farLegOffsetY',   field: '_farLegOffsetY',   def: () => 0,   min: -60, max: 60,  step: 1 },
     { key: 'farLegTilt',      field: '_farLegTilt',      def: () => null, min: -60, max: 60, step: 0.5, angle: true, nullable: true },
@@ -111,6 +118,12 @@ let draggingHandle = false;
 
 const currentChar = () => CHARS[state.charId];
 const currentPose = () => POSES[state.poseName] ?? POSES.idle;
+// Wrestler.js's draw() folds textures.heightScale into its local `s` before
+// ever reaching Skeleton — this tool constructs Skeleton directly and must
+// mirror that fold (2026-07-19) or it stops being WYSIWYG for any character
+// that sets heightScale (see george.js/thesz.js). Read live off the char
+// config, same as every other texture knob, so tuner edits apply immediately.
+const renderScale = () => state.zoom * (currentChar().textures.heightScale ?? 1);
 
 // ─── Value plumbing ──────────────────────────────────────────────────────────
 const near = (a, b) => Math.abs(a - b) < 1e-9;
@@ -203,6 +216,8 @@ function syncCapturedGlobals() {
     if (cfg.thighH === undefined) skeleton._thighH = P.thighH;
     if (cfg.shinH === undefined) skeleton._shinH = P.shinH;
     if (cfg.nearShinScale === undefined) skeleton._nearShinScale = RIG.NEAR_SHIN_SCALE;
+    if (cfg.farShinScale === undefined) skeleton._farShinScale = RIG.FAR_SHIN_SCALE;
+    if (cfg.farThighScale === undefined) skeleton._farThighScale = RIG.FAR_THIGH_SCALE;
 }
 
 // Per-character display-box override (object-form entries only — string-form
@@ -263,7 +278,7 @@ function update(_, dtMs) {
     const pose = currentPose();
     const lean = state.facing * (0.07 * state.moveBlend + (pose.lean ?? 0));
     skeleton.updateUpright(
-        CX, GROUND_Y, state.zoom, state.facing, pose, state.walkPhase,
+        CX, GROUND_Y, renderScale(), state.facing, pose, state.walkPhase,
         state.combatBlend, lean, state.moveBlend, state.liftScale, state.runBlend
     );
     for (const h of handles) {
@@ -302,7 +317,7 @@ function buildHandles() {
             h.vy0 = getCharKnob(spec.ky) ?? 0;
         });
         c.on('drag', p => {
-            const s = state.zoom;
+            const s = renderScale();
             setCharKnob(spec.kx, Math.round(h.vx0 + state.facing * (p.x - h.sx) / s));
             setCharKnob(spec.ky, Math.round(h.vy0 + (p.y - h.sy) / s));
             c.setPosition(p.x, p.y);
@@ -481,7 +496,7 @@ function buildPanel() {
     for (const key of Object.keys(RIG)) {
         if (key === 'FAR_THIGH_TILT') {
             sliderRow(rg, 'FAR_THIGH_TILT (deg)', () => RIG.FAR_THIGH_TILT * 180 / Math.PI, v => setRig(key, v), -60, 60, 0.5);
-        } else if (key === 'FAR_ARM_SCALE' || key === 'NEAR_SHIN_SCALE') {
+        } else if (key === 'FAR_ARM_SCALE' || key === 'NEAR_SHIN_SCALE' || key === 'FAR_SHIN_SCALE') {
             sliderRow(rg, key, () => RIG[key], v => setRig(key, v), 0.4, 1.6, 0.01);
         } else {
             sliderRow(rg, key, () => RIG[key], v => setRig(key, v), -40, 40, 1);

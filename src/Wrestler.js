@@ -86,7 +86,7 @@ export const POSES = {
     sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82, lean:-0.30 }, // chest impact — torso snaps back, arms whip behind
     sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10 }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
-    powerIdle:      { lLeg: 0.10,  rLeg:-0.09,  lArm: 0.10,  rArm: 0.07, crouch: 0.05 }, // wide, imposing — arms hanging low
+    powerIdle:      { lLeg: 0.04,  rLeg: 0.17,  lArm: 0.10,  rArm: 0.07, lean: 0.09, crouch: 0.22 }, // wide, imposing — arms hanging low (rig-tuner pass 2026-07-23, live export; supersedes the 2026-07-19 values)
     theszIdle:      { lLeg:-0.01,  rLeg:-0.19,  lArm: 0.10,  rArm: 0,    lean: 0.05, crouch: 0.05 }, // slight forward lean (Derek rig-tuner pass 2026-07-15, third same-day export); legs no longer equal — both legs render visible (see thesz.js's far-leg-offset comments), not stacked/hidden
     tauntArmsWide:  { lLeg: 0.22,  rLeg:-0.20,  lArm: 2.20,  rArm: 2.00, lean:-0.16 }, // arms raised wide, chest out to the crowd
     ropeOneTaunt:   { lLeg: 0.08,  rLeg:-0.06,  lArm: 1.80,  rArm:-1.80  }, // one arm raised to crowd, other grips rope
@@ -285,6 +285,13 @@ export default class Wrestler {
         this.skeleton        = new Skeleton(scene, skinCol, trunksCol, textures);
         this.combatBlend     = 0;
         this._evadeCooldown  = 0;
+        // Render-only overall size multiplier (2026-07-19, real-world height
+        // calibration — see george.js/thesz.js) — folded into draw()'s local
+        // `s` only, never into the `s` getter below, so it never touches
+        // movement speed, reach, or hit-detection ranges, all of which read
+        // `this.s` directly. Defaults to 1: bit-identical for any character
+        // that doesn't set textures.heightScale.
+        this._heightScale    = textures.heightScale ?? 1;
     }
 
     get s() { return perspectiveScale(this.y); }
@@ -1494,7 +1501,10 @@ export default class Wrestler {
         // On ropes, size is locked to the corner's mat depth — climbing up the post
         // doesn't move the wrestler deeper into the ring. Also applies during rope taunts.
         const onRopes = (state === 'climbing' || state === 'onTurnbuckle' || (state === 'taunting' && this._ropeLevel > 0)) && this._corner;
-        const s = onRopes ? perspectiveScale(this._corner.matY) : this.s;
+        // heightScale folded in here only — every draw()-local use of `s`
+        // below (skeleton render, fallback gfx shapes, shadow) picks it up
+        // uniformly; `this.s` itself (movement/reach/hit-detection) is untouched.
+        const s = (onRopes ? perspectiveScale(this._corner.matY) : this.s) * this._heightScale;
         const gfx   = this.gfx;
         // Depth from ring position, not screen y — a climbing wrestler's y is
         // tweened up the post but his depth in the ring doesn't change.

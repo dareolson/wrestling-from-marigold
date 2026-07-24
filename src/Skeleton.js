@@ -141,6 +141,20 @@ export const RIG = {
     NEAR_SHIN_SCALE: 1.1,
     NEAR_SHIN_FWD: 5,
     NEAR_SHIN_UP: 5,
+    // Far shin had no matching scale knob until 2026-07-19 (george rig-tuner
+    // pass found the gap: nearShinScale could be tuned per-character but the
+    // far shin was hardcoded to plain `s`, so once a character's near shin
+    // was scaled down/up there was no way to keep the far shin visually
+    // matched). Defaults to 1 — bit-identical rendering for every character
+    // that doesn't set farShinScale.
+    FAR_SHIN_SCALE: 1,
+    // Far thigh had no scale knob at all (2026-07-23, Derek: "his far leg
+    // needs to be reduced in size by five percent" — the far leg is thigh
+    // AND shin, and only the shin had a knob) — same gap FAR_SHIN_SCALE
+    // closed for the shin, mirrored here for the thigh. Defaults to 1 —
+    // bit-identical rendering for every character that doesn't set
+    // farThighScale.
+    FAR_THIGH_SCALE: 1,
 };
 
 // ─── Gait tuning ─────────────────────────────────────────────────────────────
@@ -208,15 +222,21 @@ function ensureTexture(scene) {
 }
 
 // A textures-map entry is either a plain texture-key string (use the TEX
-// default display box for that part) or { key, box: { w, h }, pivotOffsetFrac }
-// (override the box — required for any character's shin, since its true box
-// depends on that character's own boot-art fillFrac; see the TEX comment
-// above). pivotOffsetFrac (2026-07-15): optional, opt-in — see _placePart's
-// comment for what it corrects and why it's off by default.
+// default display box for that part) or { key, box: { w, h }, pivotOffsetFrac,
+// jointPivotFrac } (override the box — required for any character's shin,
+// since its true box depends on that character's own boot-art fillFrac; see
+// the TEX comment above). pivotOffsetFrac (2026-07-15): optional, opt-in —
+// see _placePart's comment for what it corrects and why it's off by default.
+// jointPivotFrac (2026-07-21): optional, opt-in — see the constructor's img()
+// comment and _attachChild below for what it corrects.
 function resolveTexEntry(entry, defaultDims) {
-    if (!entry) return { key: null, dims: defaultDims, pivot: 0 };
-    if (typeof entry === 'string') return { key: entry, dims: defaultDims, pivot: 0 };
-    return { key: entry.key, dims: entry.box ?? defaultDims, pivot: entry.pivotOffsetFrac ?? 0 };
+    if (!entry) return { key: null, dims: defaultDims, pivot: 0, jointPivotFrac: 0 };
+    if (typeof entry === 'string') return { key: entry, dims: defaultDims, pivot: 0, jointPivotFrac: 0 };
+    return {
+        key: entry.key, dims: entry.box ?? defaultDims,
+        pivot: entry.pivotOffsetFrac ?? 0,
+        jointPivotFrac: entry.jointPivotFrac ?? 0,
+    };
 }
 
 export default class Skeleton {
@@ -235,11 +255,22 @@ export default class Skeleton {
         // per-character override) display box on the Image so _placePart
         // swaps it in for the block dims. The placeholder path leaves
         // _texDims undefined and renders exactly as before.
+        // jointPivotFrac (2026-07-21, general joint-attachment contract —
+        // see AI_HANDOFF.md's 2026-07-19 Codex entries): the cutter can now
+        // export shin/forearm art whose alpha content genuinely extends past
+        // the knee/elbow (authored overlap slack), instead of shaving that
+        // slack off to force a flat top-of-texture cap. For a part that
+        // supplies this, the true joint row sits jointPivotFrac of the way
+        // down the texture, not at row 0 — setOrigin there so the extra
+        // above-joint art tucks under the parent limb (which draws behind it
+        // in the existing depth order) instead of hanging below the joint.
+        // Absent (default 0, every part before this) = setOrigin(0.5, 0),
+        // byte-identical to the old behavior.
         const img = (entry, col, defaultDims) => {
-            const { key, dims, pivot } = resolveTexEntry(entry, defaultDims);
-            const i = scene.add.image(0, 0, key || 'sk_pixel').setOrigin(0.5, 0);
+            const { key, dims, pivot, jointPivotFrac } = resolveTexEntry(entry, defaultDims);
+            const i = scene.add.image(0, 0, key || 'sk_pixel').setOrigin(0.5, jointPivotFrac);
             if (!key) i.setTint(col);
-            else if (dims) { i._texDims = dims; i._pivotOffsetFrac = pivot; }
+            else if (dims) { i._texDims = dims; i._pivotOffsetFrac = pivot; i._jointPivotFrac = jointPivotFrac; }
             return i;
         };
 
@@ -368,6 +399,10 @@ export default class Skeleton {
         // ref (the far shin, at 1.0, already matched) — and any near/far size
         // difference makes hiding the far leg behind the near one impossible.
         this._nearShinScale = textures.nearShinScale ?? RIG.NEAR_SHIN_SCALE;
+        // Matching far-shin knob (2026-07-19) — see RIG.FAR_SHIN_SCALE.
+        this._farShinScale = textures.farShinScale ?? RIG.FAR_SHIN_SCALE;
+        // Matching far-thigh knob (2026-07-23) — see RIG.FAR_THIGH_SCALE.
+        this._farThighScale = textures.farThighScale ?? RIG.FAR_THIGH_SCALE;
         // Per-character leg bone lengths, unscaled px, defaulting to the
         // shared P values (characters that don't set them are bit-identical
         // to the old behavior). These move the actual joint chain — hip
@@ -453,6 +488,13 @@ export default class Skeleton {
     // crop (see AI_HANDOFF.md, 2026-07-15) — that's a real asset re-crop,
     // still pending Derek's approval, and remains the right call there. This
     // is for the next case where re-cropping isn't practical.
+    // jointPivotFrac correction: `w`/`h` (the caller's box target) are always
+    // the intended BELOW-pivot bone span — same meaning as before this knob
+    // existed. When the origin sits inside the texture (jointPivotFrac > 0),
+    // that span is only the fraction (1 - jointPivotFrac) of the full
+    // display box, so the full box must be grown by 1/(1-jointPivotFrac) for
+    // the below-pivot portion to still measure h. jointPivotFrac 0 (default)
+    // divides by 1 — unchanged math, byte-identical to before.
     _placePart(img, px, py, w, h, angle, s, facing) {
         if (img._texDims) {
             img.setFlipX(facing < 0);
@@ -461,10 +503,30 @@ export default class Skeleton {
                 px -= lx * Math.cos(angle);
                 py += lx * Math.sin(angle);
             }
-            this._place(img, px, py, img._texDims.w * s, img._texDims.h * s, angle);
+            const growth = 1 / (1 - (img._jointPivotFrac || 0));
+            this._place(img, px, py, img._texDims.w * s * growth, img._texDims.h * s * growth, angle);
         } else {
             this._place(img, px, py, w, h, angle);
         }
+    }
+
+    // Resolves the render position for a child limb (thigh/shin/forearm)
+    // whose pivot should connect to the parent's true joint point (jointX,
+    // jointY). If the child's texture supplies an internal jointPivotFrac
+    // (see the constructor's img() comment — the art's own alpha content
+    // already extends past the joint), the pivot IS the joint: return it
+    // directly, no correction needed. Otherwise, fall back to the technique
+    // this file already used per-joint before 2026-07-21: pull the render
+    // origin back up the bone by overlapPx along backoffAngle, so the
+    // flat-capped texture's edge tucks toward the parent instead of leaving
+    // a gap. Shared by updateUpright and _applyGrounded so both paths
+    // resolve joint connectivity identically — previously _applyGrounded
+    // didn't apply this correction at all, which is why a knee/elbow that
+    // looked connected standing could pop open while getting up (see
+    // AI_HANDOFF.md's 2026-07-19 Codex entries).
+    _attachChild(childImg, jointX, jointY, backoffAngle, s, overlapPx) {
+        if (childImg._jointPivotFrac) return { x: jointX, y: jointY };
+        return this._end(jointX, jointY, -overlapPx * s, backoffAngle);
     }
 
     // World-space endpoint (bottom) of a limb given its pivot and length.
@@ -651,19 +713,21 @@ export default class Skeleton {
         // anchor, untouched — farRenderAng only biases how the far thigh's
         // image itself is drawn (FAR_THIGH_TILT).
         const farRenderAng = far.thighAng + facing * (this._farLegTilt ?? RIG.FAR_THIGH_TILT);
-        const farHipRender = this._end(far.hx, far.hy, -RIG.HIP_OVERLAP * s, farRenderAng);
+        const farHipRender = this._attachChild(this.farThigh, far.hx, far.hy, farRenderAng, s, RIG.HIP_OVERLAP);
         farHipRender.x += facing * (RIG.HIP_STAGGER - RIG.LEG_BACK_BIAS + RIG.FAR_LEG_FWD + this._farLegOffsetX) * s;
         farHipRender.y += (this._legOffsetY - RIG.FAR_LEG_UP + this._farLegOffsetY) * s;
-        this._placePart(this.farThigh, farHipRender.x, farHipRender.y, legW, thighH, farRenderAng, s, facing);
+        this._placePart(this.farThigh, farHipRender.x, farHipRender.y, legW, thighH, farRenderAng, s * this._farThighScale, facing);
         const farKnee  = this._end(far.hx, far.hy, thighH, far.thighAng);
         // Shin's render origin pulls up into the thigh by KNEE_OVERLAP (each
         // character's shin box grew by the same amount) so the knee tucks in
         // cleanly instead of floating below the thigh — farAnkle below still
-        // anchors off the true farKnee, untouched.
-        const farShinRender = this._end(farKnee.x, farKnee.y, -RIG.KNEE_OVERLAP * s, far.shinAng);
+        // anchors off the true farKnee, untouched. If farShin carries
+        // jointPivotFrac (authored overlap art), _attachChild skips the
+        // pull-back and anchors directly at farKnee instead.
+        const farShinRender = this._attachChild(this.farShin, farKnee.x, farKnee.y, far.shinAng, s, RIG.KNEE_OVERLAP);
         farShinRender.x += facing * this._farShinOffsetX * s;
         farShinRender.y += this._farShinOffsetY * s;
-        this._placePart(this.farShin, farShinRender.x, farShinRender.y, legW, shinH, far.shinAng, s, facing);
+        this._placePart(this.farShin, farShinRender.x, farShinRender.y, legW, shinH, far.shinAng, s * this._farShinScale, facing);
         const farAnkle = this._end(farKnee.x, farKnee.y, shinH, far.shinAng);
         if (this.farBoot) this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, far.bootAng);
         // Debug read seam (feel-audit foot-lock verification) — world ankle
@@ -677,8 +741,8 @@ export default class Skeleton {
         // through these same transforms via _endXY) lands on farKnee across
         // poses/facings. Debug-only — nothing here feeds back into rendering.
         this.farKneeDebug = { x: farKnee.x, y: farKnee.y };
-        this.farThighRenderDebug = { x: farHipRender.x, y: farHipRender.y, angle: farRenderAng, s, facing, texDims: this.farThigh._texDims };
-        this.farShinRenderDebug = { x: farShinRender.x, y: farShinRender.y, angle: far.shinAng, s, facing, texDims: this.farShin._texDims };
+        this.farThighRenderDebug = { x: farHipRender.x, y: farHipRender.y, angle: farRenderAng, s: s * this._farThighScale, facing, texDims: this.farThigh._texDims };
+        this.farShinRenderDebug = { x: farShinRender.x, y: farShinRender.y, angle: far.shinAng, s: s * this._farShinScale, facing, texDims: this.farShin._texDims };
 
         // Shoulder stagger: the torso art is drawn three-quarter (both shoulders
         // visible, not coincident), so the near/far arms shouldn't pivot from the
@@ -710,7 +774,8 @@ export default class Skeleton {
         // edge instead of leaving a wedge-shaped gap at the bend (Derek,
         // 2026-07-12 — visible once the elbow carries a real bend angle).
         this._placePart(this.farUpArm, farShoulderX, farShoulderY, armW, upperArmH, farUpArmAng, s * RIG.FAR_ARM_SCALE, facing);
-        const farElbow = this._end(farShoulderX, farShoulderY, upperArmH - RIG.ELBOW_OVERLAP * s, farUpArmAng);
+        const farTrueElbow = this._end(farShoulderX, farShoulderY, upperArmH, farUpArmAng);
+        const farElbow = this._attachChild(this.farForearm, farTrueElbow.x, farTrueElbow.y, farUpArmAng, s, RIG.ELBOW_OVERLAP);
         const farForearmX = farElbow.x + facing * this._farForearmOffsetX * s;
         const farForearmY = farElbow.y + this._farForearmOffsetY * s;
         this._placePart(this.farForearm, farForearmX, farForearmY, armW, forearmH, farFA, s * RIG.FAR_ARM_SCALE, facing);
@@ -721,14 +786,14 @@ export default class Skeleton {
 
         // Near leg — drawn in front of torso
         const nearRenderAng = near.thighAng + facing * this._nearLegTilt;
-        const nearHipRender = this._end(near.hx, near.hy, -RIG.HIP_OVERLAP * s, nearRenderAng);
+        const nearHipRender = this._attachChild(this.nearThigh, near.hx, near.hy, nearRenderAng, s, RIG.HIP_OVERLAP);
         nearHipRender.x -= facing * (RIG.HIP_STAGGER + RIG.LEG_BACK_BIAS - RIG.NEAR_LEG_FWD) * s;
         nearHipRender.x += facing * this._legOffsetX * s;
         nearHipRender.y += (this._legOffsetY - RIG.NEAR_LEG_UP + this._nearLegOffsetY) * s;
         this._placePart(this.nearThigh, nearHipRender.x, nearHipRender.y, legW, thighH, nearRenderAng, s, facing);
         const nearKnee  = this._end(near.hx, near.hy, thighH, near.thighAng);
         const nearShinRenderAng = near.shinAng + facing * this._nearShinTilt;
-        const nearShinRender = this._end(nearKnee.x, nearKnee.y, -RIG.KNEE_OVERLAP * s, nearShinRenderAng);
+        const nearShinRender = this._attachChild(this.nearShin, nearKnee.x, nearKnee.y, nearShinRenderAng, s, RIG.KNEE_OVERLAP);
         nearShinRender.x += facing * (RIG.NEAR_SHIN_FWD + this._nearShinOffsetX) * s;
         nearShinRender.y += (-RIG.NEAR_SHIN_UP + this._nearShinOffsetY) * s;
         this._placePart(this.nearShin, nearShinRender.x, nearShinRender.y, legW, shinH, nearShinRenderAng, s * this._nearShinScale, facing);
@@ -743,7 +808,8 @@ export default class Skeleton {
 
         // Near arm
         this._placePart(this.nearUpArm, nearShoulderX, armShoulderY, armW, upperArmH, nearUpArmAng, s, facing);
-        const nearElbow = this._end(nearShoulderX, armShoulderY, upperArmH - RIG.ELBOW_OVERLAP * s, nearUpArmAng);
+        const nearTrueElbow = this._end(nearShoulderX, armShoulderY, upperArmH, nearUpArmAng);
+        const nearElbow = this._attachChild(this.nearForearm, nearTrueElbow.x, nearTrueElbow.y, nearUpArmAng, s, RIG.ELBOW_OVERLAP);
         const nearForearmX = nearElbow.x + facing * this._nearForearmOffsetX * s;
         const nearForearmY = nearElbow.y + this._nearForearmOffsetY * s;
         this._placePart(this.nearForearm, nearForearmX, nearForearmY, armW, forearmH, nearFA, s, facing);
@@ -840,26 +906,37 @@ export default class Skeleton {
             this._place(this.trunks, tx, ty, torsoW, trunksH, down);
         }
 
-        // Legs root at the hip; boots continue the shin line
+        // Legs root at the hip; boots continue the shin line. Thigh/shin
+        // attach through the same _attachChild helper updateUpright uses
+        // (2026-07-21) — previously this closure placed both parts flush at
+        // their parent's exact joint point with no HIP_OVERLAP/KNEE_OVERLAP
+        // pull-back at all, unlike the standing pose, which is exactly why a
+        // knee that looked connected standing could pop open while getting
+        // up (see AI_HANDOFF.md's 2026-07-19 Codex entries).
         const leg = (thigh, shin, imgs) => {
             const [thighImg, shinImg, bootImg] = imgs;
             const tA = ang(thigh), sA = ang(shin);
-            this._placePart(thighImg, hipX, hipY, legW, thighH, tA, s, facing);
+            const hipRender = this._attachChild(thighImg, hipX, hipY, tA, s, RIG.HIP_OVERLAP);
+            this._placePart(thighImg, hipRender.x, hipRender.y, legW, thighH, tA, s, facing);
             const knee = this._end(hipX, hipY, thighH, tA);
-            this._placePart(shinImg, knee.x, knee.y, legW, shinH, sA, s, facing);
+            const kneeRender = this._attachChild(shinImg, knee.x, knee.y, sA, s, RIG.KNEE_OVERLAP);
+            this._placePart(shinImg, kneeRender.x, kneeRender.y, legW, shinH, sA, s, facing);
             const ankle = this._end(knee.x, knee.y, shinH, sA);
             if (bootImg) this._place(bootImg, ankle.x, ankle.y, legW + 4 * s, bootH, sA + f * 0.3);
         };
         leg(g.farThigh,  g.farShin,  [this.farThigh,  this.farShin,  this.farBoot]);
         leg(g.nearThigh, g.nearShin, [this.nearThigh, this.nearShin, this.nearBoot]);
 
-        // Arms root at the shoulders
+        // Arms root at the shoulders. Forearm attaches through the same
+        // ELBOW_OVERLAP _attachChild pull-back updateUpright uses, for the
+        // same reason as the leg closure above.
         const arm = (up, fore, imgs) => {
             const [upImg, foreImg] = imgs;
             const uA = ang(up), fA = ang(fore);
             this._placePart(upImg, shX, shY, armW, upperArmH, uA, s, facing);
             const elbow = this._end(shX, shY, upperArmH, uA);
-            this._placePart(foreImg, elbow.x, elbow.y, armW, forearmH, fA, s, facing);
+            const elbowRender = this._attachChild(foreImg, elbow.x, elbow.y, uA, s, RIG.ELBOW_OVERLAP);
+            this._placePart(foreImg, elbowRender.x, elbowRender.y, armW, forearmH, fA, s, facing);
         };
         arm(g.farArm,  g.farFore,  [this.farUpArm,  this.farForearm]);
         arm(g.nearArm, g.nearFore, [this.nearUpArm, this.nearForearm]);

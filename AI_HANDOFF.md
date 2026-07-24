@@ -88,6 +88,801 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-23 (george: live leg/arm tuning pass, a new far-thigh scale knob, and a real cutter bug found in the process — flagging the last piece for Codex) — Claude, live-iterated with Derek in-session
+
+Direct continuation of the 2026-07-22 joint-attachment entry below, next
+session. Derek confirmed the legs read as connected after that fix's
+0.00px/1.37px pivot-coincidence numbers, but only after actually looking at
+the rendered game rather than trusting the measurement — worth remembering
+for future joint work: pivot/ground-gap measurements check the render
+origin, not whether the visible art reads as connected at a glance.
+
+**Live-tuned via tools/rig-tuner/, applied as exported (no independent
+re-derivation on top of these):**
+- `nearShinOffsetX/Y`: -4 / 3, `farShinOffsetX/Y`: 16 / -12 — final leg seat,
+  superseding the 07-22 entry's analytically-zeroed values. Also superseded
+  an intermediate analytical fix of my own for a floating-boot regression
+  (see below) — Derek's live-tuned final numbers already account for it.
+- `farForearmOffsetX/Y`: -3 / -6 — small elbow seat, same category as
+  `nearForearmOffsetX` above it.
+- `powerIdle` pose (`Wrestler.js`): `lLeg 0.05→0.04, rLeg 0.30→0.17,
+  lean 0→0.09, crouch 0.05→0.22` (lArm/rArm unchanged) — george-only pose,
+  thesz/brawler use their own idle poses so this didn't touch them.
+
+**Arm length/size, three sequential asks, each applied literally as
+worded rather than assumed to mean the same thing:** "reduce the length of
+george's arms by five percent" → `upperArm.box.h` 75→71, `forearm.box.h`
+69→66 (length/height only, width untouched, since "length" was the literal
+ask). "reduce the size of just his lower arms an additional five percent" →
+forearm-only, both dims this time since "size" ≠ "length": 40→38, 66→63.
+"make george's forearms 5 percent smaller" → forearm again, both dims:
+38→36, 63→60. All display-box resizes, no bone-length/joint-chain changes,
+same technique as the thigh/torso resizes in earlier entries.
+
+**New knob: `RIG.FAR_THIGH_SCALE`/`_farThighScale` (Skeleton.js,
+rig-tuner.js CHAR_KNOBS + syncCapturedGlobals).** Derek: "his far leg needs
+to be reduced in size by five percent" — the far leg is thigh AND shin, and
+only the shin had a scale knob (`farShinScale`, added 2026-07-19). Added
+the matching thigh knob (default 1, bit-identical for every character that
+doesn't set it — same pattern as `FAR_SHIN_SCALE`'s own addition). George:
+`farThighScale: 0.95`, `farShinScale` 0.81→0.77 (5% off the existing tuned
+value).
+
+**Found and fixed a real regression from that same far-leg scale change:
+his far boot started floating.** `farShinScale`'s scale is applied to the
+whole display box around the shin's own top-anchored render origin (near
+the knee), so shrinking it pulls the *bottom* edge — the boot — up with it;
+the shadow itself doesn't move (`Wrestler.draw()` always draws it at the
+wrestler's own `y`). Derek: "george doesn't seem to be rooted on the
+mat... too much distance between him and his shadow." Measured via
+`window.__WFM_GAME`: far boot sat ~8.1px (unscaled) above the shadow right
+after the scale change while the near leg (untouched) was still sub-pixel.
+Closed it analytically via `farShinOffsetY` first, then Derek re-tuned the
+final seat live in rig-tuner anyway (see the offsets above) — so the
+shipped values are his live pass, not my analytical one, though both
+targeted the same root cause.
+
+**Investigated "george's ear is black for some reason" — found one real
+cutter bug, fixed it, but the visible symptom is mostly the source art, not
+code.** `closeThinAlphaGaps` (added 2026-07-19 in the newgeorge redraw
+entry, to close one specific hairline gap in the shin's cap art) was
+running unconditionally on every part for every character. Its own
+report.json showed why that was wrong for the head specifically:
+GeorgeHead.png alone had 229 gaps closed / 380px promoted to opaque ink —
+an order of magnitude more than the shin (8) it was built for — because the
+ear's fine curved shading sits within the function's 4px threshold of the
+ear's own outline through much of its height, so the gap-close logic kept
+merging them, each time copying the nearest (dark) flanking pixel.
+
+Fixed by scoping the function to an explicit opt-in list —
+`CHARACTERS.<char>.gapCloseParts` — instead of a blanket pass; only `shin`
+(the part it was actually built for) is in it for george now.
+`torso`/`upperArm`/`thigh` also had suspiciously high gap counts in that
+same report (130/42/26) and may have similar latent artifacts, but weren't
+reported broken, so left alone rather than guessing they need reprocessing
+too — worth a glance if either of you spots something odd on those parts
+later. Re-ran the cutter, `verificationOk: true`, gapsClosed now 0 for
+every part except shin.
+
+That fix alone did NOT resolve the ear, though — re-measured after
+regenerating the asset and it still reads as a solid dark patch in-game.
+Traced it further: sampled actual pixel colors in the raw, uncut
+`Sprite sheets/NewGeorge/GeorgeHead.png` at full resolution (not the
+processed output) — the ear's inner canal shading is already a fairly
+bold, mostly-solid fill in the source drawing itself (dominant color
+`rgb(63,61,58)`, the same charcoal ink used for outlines everywhere else,
+confirmed via direct pixel sampling, not eyeballing). It reads fine at the
+source's ~1500px scale, but at George's actual in-game head size
+(`headScale: 0.745` on top of an already-small on-screen head) plus the
+grayscale broadcast filter, there's much less surrounding pink to contrast
+against, so a fill that's proportionate at full res reads as a black blob
+at game scale — the same category of problem the legs had (art detail that
+doesn't survive being scaled down to game size), just the opposite
+direction: too much fill instead of too little.
+
+**Action required — Codex, this is the one open thread from today:** the
+ear needs either an art touch-up (thinning the canal shading stroke in the
+source PNG) or a code-side call (e.g. a modest `headScale` bump so existing
+detail has more pixels to land in, or an automated fill-reduction step in
+the cutter scoped to just this part). I didn't attempt an automated pixel
+edit on Derek's art without sign-off — flagging for you two to decide the
+direction rather than guessing. Everything needed to reproduce the finding
+is above (sampled RGB, the report.json gap counts, the crop comparison
+method — crop the raw source and the processed PNG at matching regions via
+a canvas with `imageSmoothingEnabled=false` before comparing, sips'
+resampling was misleading me on this one initially).
+
+Verified after every round in this entry: `npm test` (43/43, `node --test
+tests/*.test.js`), `npm run debug:play -- all` (12/12), `npm run build`
+(clean) — all under the homebrew Node install, same environment note as
+every prior entry. Confirmed the leg/arm/ear changes visually via
+`window.__WFM_GAME` screenshots and direct pixel measurement, not just
+tests, per this project's own standing verification bar.
+
+Files touched: `AI_HANDOFF.md`, `src/Skeleton.js` (FAR_THIGH_SCALE knob),
+`src/Wrestler.js` (powerIdle pose), `src/characters/george.js` (all the
+offset/scale/box values above), `tools/rig-tuner/rig-tuner.js`
+(farThighScale wiring), `tools/wrestler-cutter/process-parts.mjs`
+(gapCloseParts scoping), `src/assets/wrestlers/george/*.png` (regenerated
+by the corrected cutter run).
+Action required: Codex — see the ear thread above. Derek — live sign-off,
+same standing caveat as always; the leg/arm numbers above are already your
+own live exports so this is really just confirming nothing regressed since.
+Priority: medium (ear — cosmetic but visible on every idle frame), low
+(everything else — already live-confirmed this session).
+
+### 2026-07-22 (general joint-attachment contract: implemented, verified, and the stale knee/elbow compensation offsets it made obsolete are gone) — Claude
+
+Closes out the two 2026-07-19 Codex design entries directly below (the
+"keep the rendered leg attached through bends" direction and its broadened
+"not knees only" follow-up). The structural implementation — Skeleton.js's
+`jointPivotFrac`/`_attachChild`, the cutter's opt-in overlap-preserving
+path — had already been built in an earlier, uncommitted session (see those
+two files' 2026-07-21-dated comments), but was left in a half-finished
+state: George's forearm/shin texture entries never got the computed
+`jointPivotFrac` wired in, the cutter's own verification step still failed
+on both parts, and the leg offset knobs tuned for the *old* backoff-based
+attachment were never revisited, so a stale-but-syntactically-fine tree sat
+uncommitted with no log entry. Finished it this session rather than
+re-deriving from scratch.
+
+**Bug found and fixed in the cutter's own verification, not just George's
+wiring.** Running `node tools/wrestler-cutter/process-parts.mjs george`
+against the pre-existing pipeline code produced `verificationOk: false` —
+`capOk: false` on both forearm (`26/61` width) and shin (`26/76`). Root
+cause: `findJointCapRow` (which picks the row `jointPivotFrac` points at)
+searched using `rowStats.width`, the row's raw min-to-max opaque *bounding
+span* — but the verification check it's supposed to satisfy measures the
+longest *contiguous* run of alpha>=240 pixels, which is a stricter, usually
+smaller number once a row has soft/antialiased edges (exactly what a
+tapered overlap-slack region has, by design). The two checks were
+independently written to conceptually the same intent but implemented
+against different width definitions, so they disagreed on any row that
+wasn't either fully solid or fully soft. Fixed by extracting one shared
+`capRunWidth(canvas, y)` helper (longest contiguous alpha>=240 run) and
+making both `findJointCapRow`'s row-selection search and the verification
+`capOk` check call it — they can't drift apart again since it's the same
+function. Re-running the cutter now returns `verificationOk: true` across
+all six parts, `capTopWidth: 43/61` (forearm) and `56/76` (shin), both
+comfortably clearing the 60% floor.
+
+**George's forearm/shin now carry real `jointPivotFrac` values**, read from
+that verified report and wired into `src/characters/george.js`:
+`forearm: 0.1804878048780488`, `shin: 0.125`. Also fixed `THESZ_QA_DIR` in
+`process-parts.mjs`, which had been pointing at a leftover scratch path
+from an unrelated project (`urworthy`) since some earlier session —
+harmless (QA dirs are write-only debug output, never read back by the
+pipeline) but clearly wrong, so repointed both QA dirs at this session's
+own scratchpad.
+
+**Found and fixed a second-order bug this unlocked: George's leg visibly
+detached in the opposite direction once jointPivotFrac was wired in
+un-adjusted.** `nearShinOffsetX/Y` and `farShinOffsetX/Y` were tuned during
+the 2026-07-19 rig-tuner pass to compensate for the *old* contract, where
+`_attachChild` pulled the shin's render origin back by `RIG.KNEE_OVERLAP`
+(18px) along the bone before drawing it — those offsets pushed the shin
+back down/across to close the resulting gap ("george is floating" in that
+entry's own words). With `jointPivotFrac` set, `_attachChild` now anchors
+the shin exactly at the true knee with zero backoff, so the *same* old
+offsets overshoot the correction that's no longer needed. Measured via
+`window.__WFM_GAME` (matching that same entry's own methodology) before
+touching anything: with `jointPivotFrac` wired in but the old offsets still
+in place, George's boots sank 11.5px/12.5px *below* the mat (screen units,
+s≈0.809) — the mirror image of the original floating bug — and
+`tools/debug/knee_pivot_audit.mjs george` (a pre-existing tool from the
+2026-07-15 knee investigation, not written this session) showed the shin's
+render origin sitting 12.98px/17.37px off the true knee joint, constant
+across every sampled walk frame and both facings.
+
+Zeroed all four (`nearShinOffsetX/Y`, `farShinOffsetX/Y`) and re-measured:
+the far leg's shin-render-origin now coincides with the true knee at
+**0.00px** in both facings (`knee_pivot_audit`), and its ground gap closed
+to 0.35px. The near leg still carried a small residual — 4.60px ground gap,
+3.23px knee offset — that turned out to be `RIG.NEAR_SHIN_FWD`/
+`RIG.NEAR_SHIN_UP` (5px unscaled each), the shared forward/up bias *every*
+character's near shin gets, not George-specific compensation. Added back
+`nearShinOffsetY: 5` (≈ `RIG.NEAR_SHIN_UP`) to cancel just its vertical
+component, landing the ground gap at 1.37px and leaving only the
+horizontal FWD-bias residual (3.23px) — the same shape of small, shared,
+intentional bias the far leg would show if it had one. Documented this
+directly in `george.js` so a future session doesn't mistake that small
+residual for a new floating-feet bug and re-inflate it.
+
+Left `nearForearmOffsetX: 2` untouched — checked whether it was the same
+class of stale backoff compensation and concluded it isn't: it's an order
+of magnitude too small against `RIG.ELBOW_OVERLAP` (17px) to be that, so
+it's almost certainly a minor fist-position nudge, unrelated to the joint-
+attachment fix. No `farForearmOffsetX` is set (defaults 0), so the far
+elbow already anchors exactly at its true joint.
+
+**Verified, quantitatively and visually, not just "tests still pass."**
+`npm test` (43/43 — run as `node --test tests/*.test.js`, the bare `npm
+test` glob still doesn't expand in this shell/node combo per prior
+entries), `npm run debug:play -- all` (12/12), `npm run build` (clean;
+Node 19.8.1 is this environment's default and is below Vite's floor, so
+all of the above ran under the homebrew Node 25 install per the existing
+project convention). `knee_pivot_audit.mjs george`: far knee 0.00px
+coincidence both facings; near knee 3.23px (the accounted-for structural
+bias, not a defect). `window.__WFM_GAME` ground-gap check: near 1.37px, far
+0.35px (screen units). Forced George through the `gettingUp` state directly
+(the pose category the original bug report specifically named — "elbows
+should be fixed in the same pass ... limbs visibly detach in authored poses
+such as getting up") and screenshotted: knee and elbow both read as one
+continuous connected line in that pose, no gap, no floating shin/forearm.
+Also confirmed idle side-by-side against Thesz — proportioned, connected,
+no stretching.
+
+**Scope note — this closes the elbow/knee half of the two 2026-07-19
+design entries below, not the full 6-point plan in the broader "all limb
+attachments" entry above them.** Point 4 there (unifying grounded/get-up
+placement with the upright path) was done as part of the same earlier
+session — `_applyGrounded`'s leg/arm closures now call `_attachChild` too,
+confirmed by reading `Skeleton.js` directly, and the get-up screenshot
+above is real evidence it works, not just code inspection. Point 5's
+broader audit (neck/shoulders/hips getting the same explicit-endpoint
+treatment) was NOT started — only knees and elbows carry `jointPivotFrac`
+today (`CHARACTERS.george.jointPivotParts: ['forearm', 'shin']`). Point 6
+(an optional joint-cover sprite for extreme bends) also not started — not
+needed yet, nothing in this session's screenshots showed a seam bad enough
+to need one. Thesz was deliberately left off `jointPivotParts` — his art
+was never reported as having this detachment problem, and re-cutting his
+already-correct art on this contract without a specific complaint isn't
+this session's call to make.
+
+Files touched: `AI_HANDOFF.md`, `tools/wrestler-cutter/process-parts.mjs`
+(verification fix + QA dir fix — Skeleton.js/cutter's core
+jointPivotFrac/_attachChild mechanism itself was already in the working
+tree from the earlier session, not authored here), `src/characters/
+george.js` (jointPivotFrac wiring + offset re-derivation), `src/assets/
+wrestlers/george/{forearm,shin}.png` (regenerated by the corrected cutter
+run — pixel content should be equivalent to the pre-existing uncommitted
+versions modulo the verification fix's effect on exactly where the pivot
+crop centers).
+Action required: Derek — live sign-off in the browser (standard caveat —
+screenshot/measurement review isn't a full substitute for eyes on the real
+game). If the near leg's small intentional 1.37px/3.23px residual reads as
+visible in person, it's a `nearShinOffsetX/Y` nudge from here, not a sign
+the structural fix is wrong. Point 5 of the broader six-point plan
+(shoulder/hip/neck endpoint invariants) remains open for whoever picks up
+this thread next.
+Priority: medium (finishes a real visible-bug fix that was sitting
+half-done in the working tree; not urgent since nothing was pushed or
+reviewed against it yet).
+
+### 2026-07-19 (all limb attachments, not knees only: elbows/get-up poses + cutter is shaving George's overlap slack) — Codex (investigation/design follow-up; not implemented)
+
+Derek broadened the knee report: elbows should be fixed in the same pass,
+and limb attachment matters everywhere because limbs visibly detach in
+authored poses such as getting up. He also remembered deliberately leaving
+flesh-tone slack in George's leg drawings for overlap and questioned whether
+the cutter trims it because it is flesh-colored.
+
+**Confirmed cutter behavior:** color is not the problem, but destructive
+cap flattening probably is. George's source files use real alpha; connected
+flesh-tone pixels are ordinary content and survive the alpha mask and
+largest-component cleanup regardless of RGB color. Only isolated components
+smaller than 1% of the largest component are dropped. However,
+`flattenOpaqueCap()` explicitly zeroes complete alpha rows from the *top* of
+the forearm and shin until the first surviving row is at least 72% as wide
+as that part's widest joint-region row. George's saved cutter report records:
+
+- forearm: **28 source rows shaved** (`maxWidth: 65`, first retained cap
+  width: 47);
+- shin: **26 source rows shaved** (`maxWidth: 85`, first retained cap
+  width: 62).
+
+`pivotCrop()` then crops to the new alpha bounding box and `scaleFlush()`
+rescales that result, so those erased rows are absent from the runtime PNGs.
+The full-canvas source layers already contain substantial shared-coordinate
+overlap between adjacent parts; the pipeline's cap rule was designed around
+a top-edge pivot contract and can therefore destroy exactly the tapered
+pre-joint slack Derek intentionally supplied.
+
+This reveals a deeper contract mismatch: the current runtime constructs all
+limb images with `setOrigin(0.5, 0)`, meaning the joint must be the texture's
+top row. It has no representation for artwork extending *above* the elbow or
+knee while rotating around a joint located inside the texture. The cutter
+shaves that extension to make the art conform to the runtime assumption.
+
+**Revised implementation direction — general joint attachment contract:**
+
+1. Support an internal proximal joint pivot for lower limb pieces, e.g.
+   `jointPivotY`/`overlapInset` metadata for forearm and shin. In Phaser terms,
+   the image origin should sit on the authored elbow/knee row inside the
+   texture, allowing flesh artwork above that row to tuck under the parent
+   while both pieces rotate about the same joint.
+2. Preserve the authored pre-pivot overlap band in the cutter. Do not run
+   `flattenOpaqueCap()` by deleting rows for a character/part that supplies
+   an internal joint pivot. Export/report the measured pivot inset instead.
+3. Make parent endpoint and child pivot coincidence a runtime invariant for
+   elbows and knees. Ground feet by resolving the visual chain toward the
+   ankle target, never by translating the shin away from its knee. Apply the
+   same rule to arm pose endpoints.
+4. Unify upright and grounded/get-up placement semantics. `_applyGrounded()`
+   currently has its own simpler leg/arm placement path and does not use the
+   upright path's `ELBOW_OVERLAP`, `KNEE_OVERLAP`, or character attachment
+   corrections. This explains why a connection that survives idle can open
+   during getting-up poses.
+5. Audit every attachment boundary: neck/head-to-torso, shoulders, hips,
+   elbows, and knees. Knees and elbows need the new internal-pivot/overlap
+   treatment first; shoulders/hips should at minimum share explicit endpoint
+   invariants rather than pose-specific visual nudges.
+6. Keep an optional joint-cover sprite (kneecap/elbow patch) as a secondary
+   art solution for extreme bends, not as a substitute for coincident pivots.
+
+Acceptance should cover idle, a complete gait cycle, both facings, and every
+grounded/get-up keypose. Instrument the actual rendered parent endpoint and
+child pivot; require coincidence within rounding at every sampled frame, and
+also verify grounded boots. Add a cutter regression assertion that authored
+pixels above an internal joint pivot survive export.
+
+Files touched: `AI_HANDOFF.md` only. No cutter, runtime, or art changes were
+made in this entry.
+Action required: inspect/mark the intended elbow and knee rows in George's
+shared-canvas sources, then implement internal pivots and one shared joint
+placement path before further offset or overlap tuning.
+Priority: high (general rig/art contract issue, visible across poses).
+
+### 2026-07-19 (george knee direction: keep the rendered leg attached through bends; stop offset-tuning) — Codex (design decision only, not implemented)
+
+Derek's main remaining read on George is that his knees do not stay
+connected, and suggested thinking outside the existing display-box/offset
+model: the knees should remain attached while they bend. That diagnosis is
+correct. The IK chain already computes a bending knee, but the *rendered*
+thigh and shin are not constrained to share one visual knee point.
+
+Concrete evidence from the current George settings: the grounding offsets
+almost exactly cancel the rig's knee tuck in a straight pose. The near shin
+lands at `-KNEE_OVERLAP - NEAR_SHIN_UP + nearShinOffsetY` =
+`-18 - 5 + 25` = **2px below** the true knee; the far shin lands at
+`-18 + farShinOffsetY` = `-18 + 20` = **2px below** it. They are also
+translated sideways by approximately 2px near
+(`NEAR_SHIN_FWD + nearShinOffsetX` = `5 - 3`) and 18px far
+(`farShinOffsetX`). Separately, the thigh artwork receives render-only
+hip offsets and angle biases while the downstream IK knee remains derived
+from the unshifted/unbiased bone. A fixed world-space nudge can therefore
+look correct in one pose but must drift as the thigh and shin rotate.
+
+**Direction for the next implementation pass:** treat attachment as an
+invariant rather than continuing to tune offsets.
+
+1. Compute a `visualKnee` from the rendered thigh endpoint (or otherwise
+   make the thigh and shin resolve to one explicit render-space knee).
+2. Pin the shin's top pivot to that point every frame.
+3. Aim/size the shin from the attached visual knee toward the grounded
+   ankle/boot target. Do not ground the foot by translating the whole shin
+   away from its knee.
+4. Add an optional George-specific kneecap/joint-cover sprite centered on
+   `visualKnee`, rendered over the thigh and shin, to conceal the two rigid
+   cut edges at deeper bends. This is preferable to a full deformable mesh:
+   it is the standard paper-doll solution and fits the existing Phaser
+   Image rig.
+
+Conceptually the visual chain must be endpoint-constrained:
+`rendered hip -> attached visual knee -> grounded ankle`. Logical IK can
+remain responsible for the motion, but the art should no longer be allowed
+to translate independently at the joint. Once that architecture is in
+place, re-derive George's shin display height/scale needed to reach the mat
+and remove or drastically reduce his near/far shin X/Y compensation values.
+
+Do **not** start another live-tuning round on `nearShinOffsetX/Y`,
+`farShinOffsetX/Y`, or `KNEE_OVERLAP` before this structural pass; those
+knobs are currently trading knee attachment against foot grounding.
+
+Suggested acceptance checks: idle and a complete gait cycle, near/far legs,
+both facings, plus the deepest authored crouch/knee bends. At every sample,
+the thigh endpoint, shin top pivot, and optional kneecap center should remain
+coincident within rounding while both boot soles still meet the mat.
+
+Files touched: `AI_HANDOFF.md` only. No runtime or art change was made in
+this entry.
+Action required: implement and visually review the endpoint-constrained
+visual-knee pass before any further George leg tuning.
+Priority: high (structural cause of the recurring visible knee separation).
+
+### 2026-07-19 (george: corrected the thigh-length fix — wrong lever, torso/head were riding too high) — Claude (Derek: "his feet are on the ground, but now the rest of him needs to be brought down as well")
+
+One-round correction on the entry directly below, same day. Derek's report
+was the tell that the `thighH: 68` bone-length approach was wrong: feet
+correctly grounded, but everything above (torso, arms, head) had also
+risen, since the standing-pose `hipY` solve holds the *ankle* fixed at
+ground and derives hip height from `thighH+shinH` — a longer thigh bone
+necessarily pushes the hip, and everything stacked on it, further up.
+"Longer thighs" was never supposed to mean "taller George."
+
+Root cause, confirmed by reading `Skeleton.js`'s constructor rather than
+guessing: `img()` always stashes a fixed `_texDims` display box on every
+textured part (`TEX.thigh` as the default even for a plain string entry),
+and `_placePart` uses that box unconditionally — so bumping `textures.
+thighH` alone changes the *joint math* but never the *rendered art size*.
+The thigh image was still exactly as long as before; only the hip point it
+hung from had moved.
+
+**Fix:** reverted `thighH` entirely (back to the shared `P.thighH` default,
+56 — hip/torso/head back to their original height) and instead gave the
+thigh a bigger *display box* — the same technique already working for the
+torso (−5%) and arms (+10%) earlier in this session:
+`box: { w: 96, h: 82 }`, i.e. `TEX.thigh`'s own default formula
+(`P.thighH + RIG.HIP_OVERLAP` = 70) recomputed as if thighH were 68 (68+14
+= 82), width scaled by the same ratio. Since the knee anchor is still
+computed from the *true*, unchanged thighH, the thigh's image now visually
+extends past the real knee point — covered cleanly by the shin, which
+renders on top at that joint (see DRAWING_GUIDE's Joint Seams table) — so
+it reads as a longer thigh without moving anything above it. Verified this
+directly (`thighShinOverlap` in a throwaway measurement script: thigh's own
+image bottom edge sits ~6px past where the shin's image starts, i.e.
+covered, not gapped).
+
+Re-derived the floating-feet offsets and `heightScale` from scratch against
+this reverted state rather than assuming the prior entry's numbers still
+applied (they didn't — those were solved for the taller, thighH=68 rig):
+`nearShinOffsetY`/`farShinOffsetY` 23/18 → 25/20 (closes the ground gap to
+sub-pixel: 0.15px/−0.20px, measured via `window.__RIG_TOOL`), `heightScale`
+0.824 → 0.798 (re-measured raw height 310.05px, `247/310.05 = 0.798`,
+landing total height at 247.4px against the 247.3px target from two entries
+below — Real George, 5'9").
+
+Verified: `npm test` (43/43), `tools/debug/play.mjs all` (12/12).
+Screenshotted `?p1=thesz&p2=george` in the real Arena scene — shadow
+directly under both boots, torso/head back at the correct height, legs
+still read visibly longer than before this whole thread started.
+
+Files touched: `src/characters/george.js` only.
+Action required: Derek — live sign-off; if the thigh still doesn't read
+long enough (or reads too long / the knee overlap looks off at extreme
+pose angles), it's a `thigh.box` resize from here, not a `thighH` change —
+see the comment in george.js for why that lever is the wrong one for a
+"longer limb" ask specifically (contrast with the shin, which legitimately
+still needs a display-box change for its own reasons, or `torsoH`/leg
+`thighH`/`shinH` overrides for characters whose reference art has genuinely
+different *proportions*, like thesz — the distinction is "different
+proportions at the same total height" (bone length, thesz's case) vs.
+"just draw this one limb chunkier/longer without moving anything else"
+(display box, this case).
+Priority: medium (was a real visible regression from the entry below, now
+fixed and verified).
+
+### 2026-07-19 (george: fixed floating feet, lengthened thighs, re-solved heightScale) — Claude (Derek: "george is floating" / "george's thighs need to be longer too")
+
+Follow-up on the heightScale entry directly below, same day. Two related
+reports, fixed together since they touch the same leg chain.
+
+**Floating, measured not eyeballed.** `window.__WFM_GAME` (the real Arena
+scene, not rig-tuner) showed his boot soles
+(`skeleton.nearShin/farShin.getBounds().bottom`) sitting 6.5px/9.5px above
+his own ground `y` at that frame's `s≈0.809` — 8.0/11.7 unscaled px of
+daylight. `nearShinOffsetY`/`farShinOffsetY` (15/6 from the live-tuning
+pass) got the gap added back in.
+
+**Thighs longer — a bone-length change, not a display resize.** Added
+`thighH: 68` (up from the shared `P.thighH` default of 56). Unlike the
+torso/arm box overrides earlier in this session (pure display-size resizes
+that don't move joints), thigh bone length is structural: the standing-pose
+`hipY` solve (`Skeleton.js` ~line 551) holds the *ankle* fixed at
+`groundY - bootH` regardless of thigh/shin length, so a longer thigh pushes
+the *hip* higher and genuinely grows total standing height — it doesn't
+self-correct like the floating-feet bug might have suggested. Confirmed
+this analytically before touching offsets again, so the two fixes didn't
+fight each other.
+
+**heightScale re-solved, not left stale.** A taller raw rig (thighH bump)
+needed a smaller `heightScale` to keep hitting the same 5'9" target from
+the entry below: re-measured raw (heightScale=1) height 322.0px (up from
+300.0px pre-thighH), so `heightScale = 247/322.0 = 0.768` (was 0.824).
+Iterated twice against live `window.__RIG_TOOL` measurements until the
+ground gap was sub-pixel (0.17-0.33px) and total height landed within 2px
+of the 247px target — both verified against the real Arena scene afterward,
+not just the tuner.
+
+Verified: `npm test` (43/43), `tools/debug/play.mjs all` (12/12).
+`window.__WFM_GAME` gap check re-run after the fix: 0.27px/0.14px (was
+6.5px/9.5px). Screenshotted `?p1=thesz&p2=george` — shadow now sits
+directly under both boots with no visible gap, thighs read visibly longer
+and less stubby.
+
+Files touched: `src/characters/george.js` only.
+Action required: Derek — live sign-off; the thighH=68 value is a first
+guess at "longer" with no specific target number given, easy to retune via
+rig-tuner (remember: changing thighH again will shift total height, so
+heightScale needs re-solving alongside it — the comment in george.js spells
+out the formula).
+Priority: low (floating was a real visible bug, now fixed and verified;
+thigh length is a feel call, first pass only).
+
+### 2026-07-19 (george live rig-tuner pass; new farShinScale knob; real-world height calibration for george+thesz) — Claude, live-iterated with Derek in-session, same day as the newgeorge redraw below
+
+Direct continuation of the redraw entry directly below — Derek picked up
+`tools/rig-tuner/` himself and iterated live, pasting Export-panel output
+back several rounds (headScale converged 0.91 measured → 0.745 live-tuned;
+head/arm/leg/shin offsets; torso −5%; arms +10%; legs nudged up). Each
+paste applied directly to `src/characters/george.js` / `src/Wrestler.js`'s
+`powerIdle`, verified with `npm test` + `debug:play -- all` after every
+round. Final per-part values are documented inline in george.js's own
+comments, not repeated here.
+
+**Found and fixed a real tool gap, not just a george number:** near the end
+of the leg pass Derek flagged "there is no way to affect the far leg
+currently with scale" — `nearShinScale` existed (character override +
+`RIG.NEAR_SHIN_SCALE` global default) but the far shin was hardcoded to
+plain `s`, so once a character's near shin got scaled there was no way to
+keep the far leg visually matched. Added the missing symmetric knob:
+`RIG.FAR_SHIN_SCALE` (default 1, so every other character renders
+identically), `Skeleton._farShinScale`, wired into the far-shin
+`_placePart` call and its debug-seam object the same way `_nearShinScale`
+already was, plus a matching `farShinScale` row in rig-tuner's `CHAR_KNOBS`
+and `syncCapturedGlobals`. George's now set to `farShinScale: 0.81` (same
+as his tuned `nearShinScale`) so both legs read the same size.
+
+**Real-world height calibration (Derek: "george looks about seven feet
+tall... in real life george was 5'9" and lou thesz was 6'2", so thesz
+should have the height advantage").** Measured rather than guessed:
+DRAWING_GUIDE already documents a s=1 ↔ 43px/foot calibration at the ring's
+near edge (`perspectiveScale(RING.nearLeft.y) === 1.0`, confirmed in
+`src/constants.js`); read both characters' assembled skeleton height
+(`head.getBounds().top` to `nearShin.getBounds().bottom`) at that exact `s`
+via `window.__RIG_TOOL`. Both measured ~300px (~7ft) — george 300.0px,
+thesz 302.4px — confirming Derek's read exactly and revealing thesz had the
+identical un-calibrated problem, just never flagged.
+
+No existing mechanism could fix this without a gameplay side effect:
+`Wrestler.s` (`perspectiveScale(this.y)`) is the same value movement speed,
+reach checks, and hit-detection ranges all read directly (`this.s`
+appears throughout Wrestler.js's move-range/collision math) — scaling it
+would have rebalanced combat, not just resized art. Added a render-only
+`textures.heightScale` instead: `Wrestler` constructor reads it into
+`this._heightScale` (default 1), and `draw()` folds it into its own
+**local** `s` (used only for the skeleton + every fallback gfx shape drawn
+in that method) before that local variable is used anywhere — `this.s`
+itself, and everything gameplay code reads from it, is untouched. Also
+wired into rig-tuner (`renderScale()`, replacing the raw `state.zoom` at
+both the `updateUpright` call and the drag-handle math) since that tool
+constructs `Skeleton` directly and bypasses `Wrestler.draw()` entirely —
+without this it would have silently stopped being WYSIWYG for any
+character setting `heightScale`. Added as a normal `CHAR_KNOBS` entry too,
+so it's live-tunable/exportable like every other knob, not just a
+hardcoded value.
+
+Solved for each character's real height at the same s=1 reference:
+george 5'9"=247px → `heightScale = 247/300.0 = 0.824`; thesz 6'2"=265px →
+`heightScale = 265/302.4 = 0.877`. Re-measured after applying: george
+247.2px (5.75ft exactly), thesz 265.2px (6.167ft exactly) — both landed
+within rounding of their real heights, and thesz now reads ~7% taller than
+george as asked.
+
+Verified after every round: `npm test` (43/43), `tools/debug/play.mjs all`
+(12/12). Confirmed visually via `tools/debug/shot.mjs` with `?p1=thesz&p2=george`
+— both wrestlers now read as plausible human proportions against the ring
+(a real change from the prior giant-scale look), Thesz subtly but visibly
+taller.
+
+**Housekeeping note:** two untracked, unrecognized scratch scripts turned
+up in `tools/debug/` during this session's cleanup pass
+(`_crop_tmp.mjs`, `_george_leg_measure_tmp.mjs`, pointed at
+`localhost:5174` — a port this session never used). Left them alone rather
+than deleting — likely a concurrent tab/session's in-progress scratch work
+(this project has hit that exact "two tabs on the same files" situation
+before, see the photographer-era entries further down), not confirmed
+mine. Worth a glance if you didn't leave them yourself.
+
+Files touched: `src/characters/george.js`, `src/characters/thesz.js`,
+`src/Wrestler.js`, `src/Skeleton.js`, `tools/rig-tuner/rig-tuner.js`.
+Action required: Derek — this was live in-session the whole time, so
+consider it self-signed-off through the `heightScale` addition; the
+`_crop_tmp.mjs`/`_george_leg_measure_tmp.mjs` files above are the one
+open thread.
+Priority: low (tuning), medium (the heightScale mechanism — touches both
+playable characters' render path, worth a second look).
+
+### 2026-07-19 (newgeorge redraw wired in; old per-part offset hacks removed) — Claude (Derek: "in sprite sheets i added a folder called newgeorge, it's got a reworked george in it, please use the reference guide to put him together correctly" — then mid-task: "eliminate all the distortion from before")
+
+Derek dropped a full redraw at `Sprite sheets/NewGeorge/` (GeorgeHead/Torso/
+UpperArm/LowerArm/UpperLeg/LowerLeg.png + Georgereference.png, the uncut
+full-body illustration — same shape as the New Lou drop that thesz's redraw
+used). Unlike the original `GeorgeParts` source (hand-cut piece by piece,
+mismatched pivots, needed a torso+trunks/shin+foot composite step and a long
+chain of per-part offsetX/Y/tilt corrections to line back up — and whose raw
+files are gone from disk now, just an empty folder), this one follows
+DRAWING_GUIDE's "draw the full body, then cut it into layers on one shared
+canvas" method: trunks already baked into the torso layer, boot already
+baked into the lower-leg layer, every part's silhouette/pivot agrees with
+the reference by construction. Same category of redraw as thesz's, so
+`tools/wrestler-cutter/process-parts.mjs`'s existing "simple character"
+path (no composite step) applied directly — just needed `CHARACTERS.george`
+repointed at the new source dir/filenames and `sourceKeys` trimmed from 8
+(head/torso/trunks/upperArm/forearm/thigh/shin/foot) to 6.
+
+**Pipeline fix, not george-specific:** first run failed verification on the
+shin — its cap-flatten top edge (the flat opaque strip that's supposed to
+hide the knee seam) had a 3px hairline gap right at the art's tapered peak,
+splitting one 85px-wide opaque run into two shorter ones and failing the
+"contiguous opaque cap" check. Root cause was a genuine unfilled seam in the
+source art (likely a shading stroke drawn without fill), not a pipeline
+bug. Rather than special-case george, added `closeThinAlphaGaps` to the
+cutter's shared browser-side lib — closes any ≤4px non-opaque run flanked by
+solid ink on both sides during the existing per-source cleaning pass
+(alongside the speck-removal step it sits next to). Character-agnostic,
+zero effect on any part without this kind of hairline seam; fixed george's
+shin cap (32px contiguous run → 53px, clears the 51px/60% floor) without
+touching the actual shape. `verificationOk` now true for all six parts —
+every one fills its target canvas at fillFrac 1.0 (no width-limited crop
+this time, unlike the old art's shin at 0.841).
+
+**george.js rewritten, not patched — this is the "eliminate the distortion"
+part.** The old file carried ~15 tuned offsetX/Y/tilt values (headOffsetX/Y,
+armOffsetX/Y, legOffsetX/Y, nearLegOffsetY, nearLegTilt, near/far shin
+offsets, nearShinTilt), every one dated 2026-07-12 or 2026-07-14 and
+explicitly commented as compensating for the old hand-cut art's pivot
+mismatches. None of that reasoning applies to art whose pivots are already
+correct by construction, and carrying it forward unchanged would have
+misplaced every joint against the new silhouettes. Dropped all of it. What's
+left is only what's structurally required, and none of it is guessed:
+- `skinCol`/`trunksCol` sampled directly off pixels in
+  `Georgereference.png` (`#c7a2ac`, `#d54283`) — these only feed the
+  flat-fill fallback draws in Wrestler.js (piledriver/flat/dropkick), so
+  they should track the real art.
+- `headScale: 0.91` — measured, not guessed, following the same
+  ink-content-basis method thesz's redraw used: on the shared reference
+  canvas, head max profile width / torso content height = 160/320 = 0.5
+  (largest-connected-component only, to exclude a couple of stray 1-2px
+  flecks in the source PNGs). Solved against Skeleton.js's fixed head
+  display box and the default TEX.torso.h for that target ratio. Landed
+  within 0.01 of the old value (0.9) — a reassuring cross-check that the
+  character's actual head/body proportions didn't change much between
+  drawings, just the cut quality.
+- `shin` box `{w:58, h:107}` — every character must supply this explicitly
+  (Skeleton.js's TEX comment: the shin's true box depends on its own
+  boot-art fillFrac). Followed the documented formula directly instead of
+  adding another fudge factor: scale = (shinH+bootH)/fillFrac/canvasH =
+  89/1/230 = 0.387; box.w = canvasW×scale ≈ 58; box.h = canvasH×scale +
+  KNEE_OVERLAP = 89+18 = 107.
+- `neckInTorso: true` carried over, confirmed (not assumed) by measuring
+  that the head and torso source layers' content genuinely overlap in the
+  neck region (head content to y=257, torso content from y=235) on their
+  shared canvas.
+
+torso/upperArm/forearm/thigh all wired as plain string texture keys (no
+custom box) — like thesz, since none of them came back width-limited
+(fillFrac 1.0 across the board per the verification report).
+
+**Verified, not just assembled.** `npm test` (43/43). `npm run build`
+succeeds cleanly under Node 25 (`/opt/homebrew/opt/node`) — this environment's
+default Node is still 19.8.1, below Vite's floor, so build/dev-server work
+needs the homebrew Node explicitly, same as rig-tuner's own README already
+notes. `tools/debug/play.mjs all` 12/12. Screenshotted three ways: the
+cutter's own paper-doll mock (rough bbox-stacked, sanity check only), a live
+render through `tools/rig-tuner/` (`window.__RIG_TOOL`, both facings + the
+taunt pose — real Skeleton.js pivot math, filters stripped for clean
+comparison), and one real in-match `tools/debug/shot.mjs` frame (full
+broadcast filter, standing across from the placeholder opponent). All three
+read as a clean, correctly-proportioned figure — connected joints, no
+stretching, no floating parts, scales sensibly against the ring.
+
+**Deliberately not chased further:** no live fine-offset pass (the kind of
+single-digit headOffsetX/armOffsetY nudge thesz's redraw still needed even
+with clean art) — the screenshots above didn't show anything obviously
+wrong, and Derek's own instruction named the fallback for whatever's left:
+"if you can't, we can use the tuner." `tools/rig-tuner/` is the right place
+for that pass (drag handles + live export), not another round of hand-typed
+constants here.
+
+Files touched: `tools/wrestler-cutter/process-parts.mjs` (CHARACTERS.george
+retargeted to `Sprite sheets/NewGeorge/`, `closeThinAlphaGaps` added to the
+shared cleaning pass), `src/characters/george.js` (rewritten), `src/assets/
+wrestlers/george/*.png` (all six regenerated). `Sprite sheets/GeorgeParts/`
+is now empty (source already gone) and could be deleted, left alone here
+since it's outside git (gitignored) and not this session's call to make.
+Action required: Derek — live sign-off in the browser, and a rig-tuner pass
+for any joint/offset polish the screenshots didn't catch (nothing chased
+here beyond what the three QA renders showed).
+Priority: medium (a whole character's art, not a background-extra tweak).
+
+### 2026-07-18 (fourteenth/fifteenth/sixteenth crowd extras: manager, announcer, timekeeper) — Claude, live-iterated with Derek in-session
+
+Three named ringside characters added in one session, closing out the
+"who else might be ringside" thread.
+
+**Ed "Strangler" Lewis (Lou Thesz's manager).** Source art
+(`Sprite sheets/Audience/Ed "Strangler" Lewis.png`, 1717x916) is a single
+4x2 pose grid like the policeman's sheet — split into two temp row-strip
+PNGs (own `tools/audience-cutter/_split_sheet_tmp.mjs`, deleted after use;
+not a committed tool) and each run through unmodified `cut.mjs` with a
+shared `--scale` (native tallest frames 418px/417px, no real growth
+signal). Own `STRANGLER_LEWIS` const, standing throughout so
+`sizeBasis:'width'`. Placed ringside beneath the policeman, right side,
+depth 2.8 ("stacked behind the ring canvas," same trick as the
+photographer/policeman). **Facing bug found live:** default `flip:true`
+(copied from the policeman's convention without checking) put him with his
+back to the ring — his sheet's rest pose actually faces LEFT natively, the
+opposite of photographer/policeman's rightward convention. Fixed to
+`flip:false`. Size iterated live: 140 (initial) → 175 (+25%) → 219 (+25%
+again) → 186 (-15%, technically correct math but Derek: "incredible hulk to
+danny devito," too big a swing) → 203 (split the difference, landed).
+
+Derek then asked to split his 8-frame reaction into two independent 4-frame
+animations firing intermittently (rather than one continuous 8-frame build
+tied to `_reactCrowdExtras`' match-pop hook) — closer to the policeman's
+own decoupled-from-match-state treatment, except alternating between two
+distinct animations instead of one variable-depth turn. Built
+`_scheduleStranglerLewisAnim` for this, immediately generalized (see below)
+once two more characters needed the identical shape.
+
+**Announcer + timekeeper/bell-ringer pair.** Derek asked "who else might be
+ringside" — Claude suggested a timekeeper/ring announcer (period-accurate
+for a 1950s Marigold-style broadcast) or a rival manager for George's
+corner; Derek picked the announcer/timekeeper. Claude also advised on the
+ChatGPT art-generation approach (two separate character sheets rather than
+one combined image, so per-character animation stays independent — matches
+the existing one-sheet-per-character pipeline) and period-accurate props
+(RCA-style ribbon mic on a stand for the announcer, no headset; a classic
+dome ring bell + mallet + stopwatch for the timekeeper, no anachronistic
+gear). Derek's ChatGPT output (`announcer.png`, `bell-ringer.png`, both
+1716x916) came back as 4x2 grids with the mic-stand/bell-table furniture
+baked directly into each character's own art — simpler than code-drawing a
+shared table, since each sheet can be placed/scaled independently. Cut the
+same two-row-strip way as stranglerlewis/policeman. Own `ANNOUNCER` and
+`BELL_RINGER` consts, `sizeBasis:'width'` (seated throughout, no growth).
+
+**Generalized the two-anim setup**, since it was about to be duplicated a
+third time: `_setupStranglerLewis`/`_scheduleStranglerLewisAnim` became
+`_setupTwoAnimExtra(extraDef, x, h, groundY, flip, depth=2.8)` /
+`_scheduleTwoAnimExtra(fan)`, used by all three new characters. Also folded
+the photographer/policeman/stranglerlewis preload loops (three
+near-identical `for` blocks) into one loop over
+`[PHOTOGRAPHER, POLICEMAN, STRANGLER_LEWIS, ANNOUNCER, BELL_RINGER]`.
+
+**Placement bug found and fixed: announcer/bellringer rendered as nothing
+at their first-guess spot.** Positioned like every prior ringside extra —
+`groundY=440`, depth 2.8 ("beside the ring" convention — mat occludes
+whatever overlaps its trapezoid, the rest reads as tucked beside it). Their
+sheets are ~150-175px wide (character + table baked into one cutout, much
+wider than the standing-alone photographer/policeman/lewis designs); at any
+x with real clearance from a corner post, their ENTIRE footprint landed
+inside the ring's mat trapezoid at that y, not straddling its boundary like
+the narrower designs do — so depth 3 (`drawRingMat`) occluded them
+completely. Confirmed via `window.__WFM_GAME` (positions were correct) +
+screenshot (nothing rendered there). Fix: moved them in FRONT of the ring
+instead of beside it — `groundY=505` (just past `RING.apronY=490`, the
+mat's own front skirt) with an explicit `depth=12` (above `drawSideCrowd`'s
+foreground "backs of heads" filler at depth 11, so the named characters read
+as the closest, most prominent ringside figures rather than tucked behind
+anonymous crowd). `h` dropped from the first-guess 190 down to 105 to
+match — at `groundY=505`, `h=190` put the top of the head at y=315, up
+inside the rope band (`RING.ropes` near-side y values run 251-380),
+visibly clipping through the ropes; `h=105` keeps the top around y=400,
+clear of the near ropes. Also respaced x (150/300, ~150px apart) after an
+initial too-tight guess (225/300, alongside the photographer at 85) put
+photographer/announcer and announcer/bellringer 21px/56px into each other,
+reading as one muddy blob.
+
+**Reusable pattern for the next ringside extra:** if the source art is a
+solo standing/seated figure (narrow, ~60-100px), the photographer/
+policeman/lewis "beside the ring, depth 2.8" convention works. If the art
+bakes in furniture (a table, a desk — wide, 140px+), it likely needs the
+"in front of the ring, depth ~12, groundY just past RING.apronY" convention
+instead, or it will render as fully invisible behind the mat. Don't assume
+either — measure the cut frame's actual pixel width and check whether the
+placement clears the ring's mat trapezoid boundary at the intended y
+(`ringBoundsAtY` in `src/constants.js`) before treating a position as
+final.
+
+Verified: `npm test` (43/43, `node --test tests/*.test.js` — the bare `npm
+test` glob doesn't expand in this shell/node combo, unrelated to this
+change). `npm run build` fails in this environment (Node 19.8.1; Vite
+requires 20.19+/22.12+) — pre-existing, unrelated to this session's changes,
+not something introduced here. Confirmed all three characters visually via
+`tools/debug/harness.mjs` + `page.screenshot()` crops (several rounds,
+temp scripts deleted after use — none committed).
+
+Files touched: `src/scenes/Arena.js`;
+`src/assets/audience/{stranglerlewis,announcer,bellringer}/` (new, 8 frames
+each).
+Action required: Derek — live sign-off on all three in the actual browser
+(same standing caveat every crowd-extra placement carries — screenshot
+review isn't a substitute), especially the announcer/bellringer's new
+in-front-of-the-ring depth convention since it's the first extra placed
+that way.
+Priority: low
+
 ### 2026-07-18 (policeman: intermittent idle scan, decoupled from match excitement) — Claude (Derek: "make his animations intermittent and not tied to the excitement, the cop isn't watching the match, he's looking for threats")
 
 Follow-up on the entries directly below, same character, new session.

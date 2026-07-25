@@ -43,6 +43,14 @@ angle sweep in both facings, `npm test`, `npm run debug:play -- all`, build, and
 before/after screenshots. Do not repair failures with new fixed screen-space
 offsets.
 
+**Status 2026-07-25 (Claude): first slice implemented, stopped here for
+Derek's visual review.** George's near/far elbows are now bound via a
+measured two-anchor correction (`distalAnchorFrac` in Skeleton.js); see the
+Handoff Log entry below for the diagnostic finding, the fix, and full
+verification. Thesz elbows, knees, and torso sockets are explicitly NOT
+started — do not proceed to them until Derek has looked at George's elbows
+in-browser and signed off.
+
 **Previous assignment closed 2026-07-24 (Claude):** Derek approved the four-move blueprint below
 in full — all four moves, all three directional-input overrides, the kit
 assignments as proposed, and the current-rig hammerlock approximation (no
@@ -120,6 +128,73 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 `Skeleton.js` and are not v1 requirements.
 
 ## Handoff Log
+
+### 2026-07-25 (cohesive-body-rig-binding, first slice: Phase A + George's elbows) — Claude
+
+Implemented the recommended first slice from `COHESIVE_BODY_RIG_BLUEPRINT.md`:
+Phase A diagnostics plus a real two-anchor binding for George's near/far
+elbows. Stopped here per the blueprint's own guardrail — Thesz, knees, and
+torso sockets are untouched.
+
+**Diagnostic tool:** `tools/debug/elbow_anchor_sweep.mjs`. Measures George's
+upper-arm PNG's own painted elbow anchor (bottom-most opaque row's
+alpha-weighted centroid) once, then sweeps shoulder angle from -1.8 to 2.4 rad
+(past the widest authored pose in both directions) across both facings,
+transforming that fixed local anchor through each sample's actual Phaser
+render transform and comparing it against `Skeleton.jointAttachmentPoints`'s
+"true joint" — the same quantity `_attachChild` already anchors the forearm
+to.
+
+**Finding:** the existing ink-gap audit (`joint_attachment_audit.mjs`) already
+passed at 0px because George's forearm has generous authored overlap slack —
+but the *anchor mapping* itself was off by a constant ~3.4-4.0px (near/far),
+constant across the whole sweep because it's two points on one rigid rotating
+body, not a sign of pose-dependent drift. Root cause, once decomposed by
+measuring both the shoulder-end and elbow-end ink centroids separately:
+
+1. The elbow ink's lateral centroid sits at u=0.60 of the canvas width, not
+   0.5 — while the shoulder end is already close to centered (u=0.527). Not a
+   uniform offset, so the existing single-scalar `pivotOffsetFrac` (built for
+   a part with one constant lateral offset shared by both ends — see its
+   comment in `Skeleton.js`) can't correct this without moving the whole
+   upper-arm image and misplacing the already-correct shoulder to fix the
+   elbow.
+2. George's own upper-arm display box height (71, from a 2026-07-23 "reduce
+   arm length 5%" pass) no longer matches the shared `P.upperArmH` bone-length
+   constant (68) the old `_end()` call used to find the true elbow — a 3px
+   undershoot before the lateral term is even applied.
+
+**Fix:** added `distalAnchorFrac: { u, v }` as a new optional per-texture-entry
+field (`Skeleton.js`'s `resolveTexEntry`/constructor), and a `_trueDistalEnd`
+helper that, when a part carries it, computes the child-attachment joint from
+the part's own actual display box (both axes) instead of assuming the box
+edge sits at the generic bone-length constant. Absent (every character/part
+except George's `upperArm`) = falls through to the exact old `_end()` call,
+byte-identical. Only affects where the forearm attaches — George's upper arm
+still renders at its existing authored shoulder anchor, untouched. Wired into
+`george.js`'s `upperArm` texture entry: `distalAnchorFrac: { u: 0.60, v:
+0.9969 }` (measured values, both documented in that file's own comment).
+
+**Verification:**
+- `elbow_anchor_sweep.mjs`: near/far elbow mapping error 0.001px (from a
+  ~3.4-4.0px baseline), stable across the full angle sweep and both facings —
+  clears the blueprint's 0.5px acceptance criterion with wide margin.
+- `joint_attachment_audit.mjs`: unchanged, all-PASS, 0.00px ink gap, both
+  characters, both facings, all 8 upright poses + 4 get-up samples.
+- `npm test`: 43/43. `npm run debug:play -- all`: 16/16. `npm run build`:
+  clean (Node 22.23.1 via nvm — shell default node v19.8.1 is below this
+  project's >=20.19 floor).
+- Before/after screenshots at `tauntArmsWide` and `axeHandleUp` (the widest
+  authored arm poses), both facings: silhouettes visually identical at normal
+  game scale — the correction is real but small (a few px), exactly what's
+  expected given the ink-gap audit already had generous overlap margin
+  masking the underlying anchor drift.
+
+**Next:** Derek reviews George's elbows in-browser (rig-tuner or live play,
+both facings, extreme overhead poses). Once approved, the same
+`distalAnchorFrac` mechanism extends to Thesz's elbows, then both
+characters' knees (Phase B), then torso sockets (Phase C) — per the
+blueprint's phase order. Not started.
 
 ### 2026-07-25 (cohesive body rig blueprint) — Codex
 

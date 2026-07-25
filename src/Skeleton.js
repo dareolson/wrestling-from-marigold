@@ -223,19 +223,35 @@ function ensureTexture(scene) {
 
 // A textures-map entry is either a plain texture-key string (use the TEX
 // default display box for that part) or { key, box: { w, h }, pivotOffsetFrac,
-// jointPivotFrac } (override the box — required for any character's shin,
-// since its true box depends on that character's own boot-art fillFrac; see
-// the TEX comment above). pivotOffsetFrac (2026-07-15): optional, opt-in —
-// see _placePart's comment for what it corrects and why it's off by default.
-// jointPivotFrac (2026-07-21): optional, opt-in — see the constructor's img()
-// comment and _attachChild below for what it corrects.
+// jointPivotFrac, distalAnchorFrac } (override the box — required for any
+// character's shin, since its true box depends on that character's own
+// boot-art fillFrac; see the TEX comment above). pivotOffsetFrac (2026-07-15):
+// optional, opt-in — see _placePart's comment for what it corrects and why
+// it's off by default. jointPivotFrac (2026-07-21): optional, opt-in — see
+// the constructor's img() comment and _attachChild below for what it
+// corrects. distalAnchorFrac (2026-07-25, cohesive-body-rig-binding Phase A
+// + George elbows slice — see COHESIVE_BODY_RIG_BLUEPRINT.md and
+// tools/debug/elbow_anchor_sweep.mjs): optional, opt-in, { u, v } in the same
+// canvas-fraction convention as jointPivotFrac's v (0 = top edge, 1 = bottom
+// edge; u: 0 = left edge, 0.5 = laterally centered, 1 = right edge of the
+// unflipped source PNG) — see _trueDistalEnd below. Unlike pivotOffsetFrac,
+// this does not move the part's own render position; it only corrects where
+// a CHILD limb attaches, for a part whose painted distal (far) joint isn't
+// where the generic shared bone-length constant (P.upperArmH etc.) assumes.
+// Measured true for George's upper arm: the shared bone length (68 unscaled)
+// undershoots this character's own box height (71) by 3px, and the elbow
+// ink's own lateral centroid sits at u=0.60, not 0.5 — laterally offset from
+// the shoulder end's near-centered ink (u=0.527), so the single-scalar
+// pivotOffsetFrac knob (built for one constant offset shared by both ends)
+// can't correct this without misplacing the shoulder to fix the elbow.
 function resolveTexEntry(entry, defaultDims) {
-    if (!entry) return { key: null, dims: defaultDims, pivot: 0, jointPivotFrac: 0 };
-    if (typeof entry === 'string') return { key: entry, dims: defaultDims, pivot: 0, jointPivotFrac: 0 };
+    if (!entry) return { key: null, dims: defaultDims, pivot: 0, jointPivotFrac: 0, distalAnchorFrac: null };
+    if (typeof entry === 'string') return { key: entry, dims: defaultDims, pivot: 0, jointPivotFrac: 0, distalAnchorFrac: null };
     return {
         key: entry.key, dims: entry.box ?? defaultDims,
         pivot: entry.pivotOffsetFrac ?? 0,
         jointPivotFrac: entry.jointPivotFrac ?? 0,
+        distalAnchorFrac: entry.distalAnchorFrac ?? null,
     };
 }
 
@@ -267,10 +283,10 @@ export default class Skeleton {
         // Absent (default 0, every part before this) = setOrigin(0.5, 0),
         // byte-identical to the old behavior.
         const img = (entry, col, defaultDims) => {
-            const { key, dims, pivot, jointPivotFrac } = resolveTexEntry(entry, defaultDims);
+            const { key, dims, pivot, jointPivotFrac, distalAnchorFrac } = resolveTexEntry(entry, defaultDims);
             const i = scene.add.image(0, 0, key || 'sk_pixel').setOrigin(0.5, jointPivotFrac);
             if (!key) i.setTint(col);
-            else if (dims) { i._texDims = dims; i._pivotOffsetFrac = pivot; i._jointPivotFrac = jointPivotFrac; }
+            else if (dims) { i._texDims = dims; i._pivotOffsetFrac = pivot; i._jointPivotFrac = jointPivotFrac; i._distalAnchorFrac = distalAnchorFrac; }
             return i;
         };
 
@@ -569,13 +585,38 @@ export default class Skeleton {
     // pivot, +y toward the bottom edge, +x toward the facing/right side of the
     // unflipped source PNG), returns its world position under the same
     // position+rotation convention _place()/_end() already use. Verified
-    // consistent with _end() at lx=0 (reduces to the same formula). Debug/
-    // diagnostic use only — not called from the normal render path.
+    // consistent with _end() at lx=0 (reduces to the same formula). Originally
+    // diagnostic-only; also used by _trueDistalEnd below (2026-07-25) since
+    // that's the same local->world point transform a lateral distal-anchor
+    // correction needs.
     _endXY(px, py, lx, ly, angle) {
         return {
             x: px + lx * Math.cos(angle) + ly * Math.sin(angle),
             y: py - lx * Math.sin(angle) + ly * Math.cos(angle),
         };
+    }
+
+    // True distal joint of a parent limb — where a child should attach.
+    // Defaults to _end() (bone-axis endpoint at the caller's generic bone
+    // length, byte-identical to every part before this existed). When the
+    // image carries distalAnchorFrac (its painted distal joint measured off
+    // the generic bone-length assumption — see resolveTexEntry's comment),
+    // both axes are recomputed from the image's own actual display box
+    // instead: lx from how far off-center the ink sits, ly from how far down
+    // the box the ink actually ends (which need not match the shared bone-
+    // length constant `len` was derived from). Does not touch the parent's
+    // own render position/rotation. `s` must be the parent's ACTUAL render
+    // scale (including e.g. FAR_ARM_SCALE) so both terms match its real
+    // display box.
+    _trueDistalEnd(img, px, py, len, angle, s, facing) {
+        const anchor = img._distalAnchorFrac;
+        if (!anchor) return this._end(px, py, len, angle);
+        const growth = 1 / (1 - (img._jointPivotFrac || 0));
+        const dw = img._texDims.w * s * growth;
+        const dh = img._texDims.h * s * growth;
+        const lx = facing * (anchor.u - 0.5) * dw;
+        const ly = anchor.v * dh;
+        return this._endXY(px, py, lx, ly, angle);
     }
 
     updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
@@ -818,7 +859,7 @@ export default class Skeleton {
         // endpoint left a 10px invisible reach beyond the far upper arm, so
         // Lou's forearm was correctly attached to the skeleton but visibly
         // floating beyond the painted elbow.
-        const farTrueElbow = this._end(farShoulderX, farShoulderY, upperArmH * RIG.FAR_ARM_SCALE, farUpArmAng);
+        const farTrueElbow = this._trueDistalEnd(this.farUpArm, farShoulderX, farShoulderY, upperArmH * RIG.FAR_ARM_SCALE, farUpArmAng, s * RIG.FAR_ARM_SCALE, facing);
         // Back off along the CHILD forearm's axis. Using the upper-arm angle
         // makes the root orbit the elbow whenever the joint bends.
         const farElbow = this._attachChild(this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA, s, RIG.ELBOW_OVERLAP);
@@ -858,7 +899,7 @@ export default class Skeleton {
         // Near arm — shoulder stays on its authored anchor like the far arm.
         this._placePart(this.nearUpArm, nearShoulderX, armShoulderY, armW, upperArmH, nearUpArmAng, s, facing);
         this._recordJointAttachment('nearShoulder', this.nearUpArm, nearShoulderX, armShoulderY, nearUpArmAng);
-        const nearTrueElbow = this._end(nearShoulderX, armShoulderY, upperArmH, nearUpArmAng);
+        const nearTrueElbow = this._trueDistalEnd(this.nearUpArm, nearShoulderX, armShoulderY, upperArmH, nearUpArmAng, s, facing);
         const nearElbow = this._attachChild(this.nearForearm, nearTrueElbow.x, nearTrueElbow.y, nearFA, s, RIG.ELBOW_OVERLAP);
         const nearForearmX = nearElbow.x + facing * this._nearForearmOffsetX * s;
         const nearForearmY = nearElbow.y + this._nearForearmOffsetY * s;
@@ -993,7 +1034,7 @@ export default class Skeleton {
             const depthScale = side === 'far' ? RIG.FAR_ARM_SCALE : 1;
             this._placePart(upImg, shX, shY, armW, upperArmH, uA, s * depthScale, facing);
             this._recordJointAttachment(`${side}Shoulder`, upImg, shX, shY, uA);
-            const elbow = this._end(shX, shY, upperArmH * depthScale, uA);
+            const elbow = this._trueDistalEnd(upImg, shX, shY, upperArmH * depthScale, uA, s * depthScale, facing);
             const elbowRender = this._attachChild(foreImg, elbow.x, elbow.y, fA, s, RIG.ELBOW_OVERLAP);
             this._placePart(foreImg, elbowRender.x, elbowRender.y, armW, forearmH, fA, s * depthScale, facing);
             this._recordJointAttachment(`${side}Elbow`, foreImg, elbow.x, elbow.y, fA);

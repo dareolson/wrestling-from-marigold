@@ -81,7 +81,28 @@ export const george = {
         // length tweaks above (visual only; upperArmH bone length is unset,
         // so the shoulder/elbow joint chain doesn't move, just the rendered
         // art's length).
-        upperArm: { key: 'george_upper_arm', box: { w: 55, h: 71 } },
+        // distalAnchorFrac (2026-07-25, cohesive-body-rig-binding Phase A +
+        // George elbows slice — see COHESIVE_BODY_RIG_BLUEPRINT.md):
+        // tools/debug/elbow_anchor_sweep.mjs measured the upper arm's own
+        // painted joints against the true bone shoulder/elbow across a dense
+        // angle sweep, both facings. Two separate mismatches, not one:
+        // (1) the elbow ink's lateral centroid sits at u=0.60, while the
+        // shoulder end is already close to centered (u=0.527) — a real,
+        // non-uniform offset the single-scalar pivotOffsetFrac can't correct
+        // without moving the whole image and misplacing the shoulder to fix
+        // the elbow; (2) this box's own height (71) doesn't match the
+        // shared P.upperArmH bone-length constant (68) the old `_end()` call
+        // used for the true-elbow length, undershooting by 3px before any
+        // lateral term is even applied. v=0.9969 (measured bottom-most ink
+        // row) replaces that generic length with this character's own art.
+        // Before this value: near/far elbow mapping error was a constant
+        // ~3.4-4.0px across the full sweep (constant because it's two points
+        // rotating rigidly together, not a sign of pose-dependent drift).
+        // With only the lateral term corrected: ~1.5-1.8px (still failing).
+        // With both terms: see AI_HANDOFF.md's 2026-07-25 entry. Only
+        // affects where the forearm attaches — not the upper arm's own
+        // render.
+        upperArm: { key: 'george_upper_arm', box: { w: 55, h: 71 }, distalAnchorFrac: { u: 0.60, v: 0.9969 } },
         // Forearms anchor directly at the true elbow through jointPivotFrac.
         // jointPivotFrac (2026-07-21/22, general joint-attachment contract —
         // see AI_HANDOFF.md's 2026-07-19 Codex entries and Skeleton.js's

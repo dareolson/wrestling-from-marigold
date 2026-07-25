@@ -25,16 +25,30 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Active assignment — none queued
+## Active assignment — cohesive body rig binding
 
-**Closed 2026-07-24 (Claude):** Derek approved the four-move blueprint below
+Derek's next priority is a stronger system for making wrestlers read as one
+cohesive articulated body. Codex prepared `COHESIVE_BODY_RIG_BLUEPRINT.md`.
+Implement it incrementally; this is not a renderer rewrite.
+
+First implementation slice: Phase A diagnostics plus George's near/far elbows
+only. Introduce an authoritative named bone graph and two-anchor skin binding so
+the parent painted elbow, mathematical joint, and child painted elbow map to
+the same world point. Preserve gameplay, move timing, existing proportions,
+and draw order. Stop for Derek's visual review before Thesz elbows, knees, or
+torso sockets.
+
+Required verification for the first slice: existing joint audit, a dense elbow
+angle sweep in both facings, `npm test`, `npm run debug:play -- all`, build, and
+before/after screenshots. Do not repair failures with new fixed screen-space
+offsets.
+
+**Previous assignment closed 2026-07-24 (Claude):** Derek approved the four-move blueprint below
 in full — all four moves, all three directional-input overrides, the kit
 assignments as proposed, and the current-rig hammerlock approximation (no
 rename to "standing arm wrench"). Claude implemented all four
 (hammerlock/kneeLift/backBodyDrop/kneeDrop), wired `debug:play` coverage, and
-verified. See the Handoff Log entry below for details. No new active
-assignment is queued — Derek/Codex should set the next one before more code
-work happens here.
+verified. See the Handoff Log entry below for details.
 
 <details>
 <summary>Original assignment text (for the record)</summary>
@@ -107,6 +121,127 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-25 (cohesive body rig blueprint) — Codex
+
+Derek identified the next structural priority: wrestlers need to feel like one
+body rather than independently moved image pieces. Added
+`COHESIVE_BODY_RIG_BLUEPRINT.md` and queued its first incremental slice.
+
+The new contract is two-anchor skin binding. Every limb image declares its
+painted proximal and distal joint; the renderer maps both onto an authoritative
+bone pair. Torso-owned sockets root shoulders, hips, and neck. FK/IK constraints
+modify bones, never sprite offsets. This directly addresses the remaining gap
+between mathematical endpoints, painted parent endpoints, and child pivots.
+
+Start with diagnostics and George's elbows only, then stop for visual approval.
+No runtime implementation was made in this entry.
+Priority: high / active rig architecture.
+
+### 2026-07-25 (Thesz forearm reach fix + audit taunt coverage) — Claude
+
+Derek ran a live rig-tuner pass on Thesz and reported his joints "still
+disconnect at extremes, for instance when thesz taunts." Verified and root-
+caused. His tuner exports included screen-space `nearForearmOffsetY: -12` /
+`farForearmOffsetY: -11`. Those seat the idle forearm but do **not** rotate
+with the elbow, so at the overhead extremes (`tauntArmsWide` lArm/rArm ~2.0,
+`axeHandleUp`) the forearm visibly detached — 3-4px elbow gap in the joint
+audit and an obvious floating far-forearm on screen. This is the exact
+pose-dependent drift the 2026-07-25 internal-pivot refactor (commit 47d06a3)
+was meant to kill; the screen-space offset reintroduced it.
+
+The -12 Y was really "the forearm rests ~12px too low at idle" expressed the
+wrong way. Fixed it as a real, rotating change: `thesz.forearm.box.h` 61->49
+(the below-pivot elbow->hand reach), keeping `w:44` so the wrist/elbow width
+still matches the upper arm. Idle hand now tucks up the same ~12px Derek was
+after AND the elbow stays seated in every pose. Forearm Y offsets set to 0
+(kept his tiny X:-1 lateral nudge). All of Derek's leg/shin/far-leg tuner
+values and the new `theszIdle` pose (lLeg 0.02 / rLeg 0.14 / lArm 0.06 /
+rArm 0.43) were preserved — verified the big `nearShinOffsetX:-22` etc. stay
+0px-connected even at raised-leg extremes (kneeLiftImpact, dropkick).
+
+Also added `tauntArmsWide` + `ropeOneTaunt` to
+`tools/debug/joint_attachment_audit.mjs` so this whole class of extreme-pose
+break is caught automatically from now on — the old sample set topped out at
+`axeHandleUp`, which is why the taunt slipped through.
+
+Verified on Node 22: joint audit ALL PASS (both wrestlers, both facings,
+including the new taunt poses), `npm test` 43/43, build clean, `debug:play --
+all` 16/16. Confirmed visually via headless pose renders of idle + taunt
+before/after.
+
+Files: `src/characters/thesz.js`, `src/Wrestler.js` (theszIdle pose),
+`tools/debug/joint_attachment_audit.mjs`.
+Action required: Derek — playtest the idle forearm reach; if the hand should
+sit a touch higher/lower, `box.h` is the single lever (lower = higher hand).
+
+### 2026-07-25 (animation tooling and plugin evaluation) — Codex
+
+Derek requested an add-on/plugin search to accompany the character animation
+report. Added `ANIMATION_TOOLING_AND_PLUGIN_EVALUATION.md`, evaluated against
+the actual Phaser 4.1/Vite/custom cutout stack rather than generic animation
+feature lists.
+
+Recommendation: build a small in-repo Phaser Scene Plugin for seekable clips,
+events, paired tracks, cancellation, and Scene-lifecycle cleanup. Phaser Editor
+v5, TexturePacker, and Spine remain scoped future evaluations; Rex FSM is an
+optional narrow import only if gameplay-state complexity justifies it. Do not
+migrate the wrestler rig to ContainerLite or Rive now. No package was installed
+and no purchase or runtime migration was approved.
+
+Action required: Derek/Claude — use the companion report's decision sequence
+and acceptance checklist before adding any animation dependency.
+Priority: reference/design.
+
+### 2026-07-25 (character animation and moveset research report) — Codex
+
+Derek requested researched best practices for improving moving characters and
+expanding movesets with the current technology stack. Added
+`CHARACTER_ANIMATION_AND_MOVESET_GUIDE.md`, grounded in the installed Phaser
+4.1/custom six-part rig and official Phaser/Spine documentation.
+
+The recommendation is evolutionary, not a rewrite: retain Phaser and the
+current cutout art, formalize local-space bones/art anchors, introduce seekable
+animation clips with contact events and optional attacker/defender tracks, and
+centralize move selection/execution metadata in a `MoveSpec` registry. Add
+painted-sole and hand-target constraints/audits, then use a Class B move such as
+snapmare or atomic drop to prove synchronized two-body choreography. Spine is
+documented as a later prototype/production-tool decision, including its Phaser
+version and licensing implications, not an approved migration.
+
+No runtime architecture from the report was implemented in this entry.
+Action required: Derek/Claude — use the report as the reference when selecting
+the next animation-system or moveset task.
+Priority: reference/design.
+
+### 2026-07-25 (George painted-sole grounding) — Codex
+
+Derek reported Gorgeous George visibly floating above the ring. The skeleton's
+mathematical ankle targets were planted, but those targets do not measure the
+bottom of a baked boot image. An alpha-aware world-space measurement found
+George's far painted sole 6.6–13.5 screen pixels above the ground plane across
+idle/walking samples; the near sole was already within roughly 2px during
+planted gait frames. Lou was used as a comparison and was not floating.
+
+The cause was George's 2026-07-23 `farShinOffsetY: -12`: positive Y is down,
+so that value moved the already reduced 0.77-scale far shin upward—the opposite
+of its old comment's claimed ground correction. Changed only that value to
+`2`, leaving Derek's X seat, far-leg scale, bone lengths, and near leg intact.
+Afterward the far painted sole is -2.4px to +2.4px from the mat on planted
+walking samples and both idle soles sit within 2–4.5px of the mat edge in both
+facings. The small negative values are boot ink entering the soft shadow/mat
+edge, rather than visible leg sinking.
+
+The full painted-pixel joint audit still passes every sampled George knee at
+0px separation. During verification, Lou's extreme `axeHandleUp` elbow exposed
+that the preceding 0.78-rad bend exceeded his narrower overlap; the stable
+hinge was finalized at 0.70 rad (about 40 degrees), which restores 0px audit
+gaps in all sampled poses for both wrestlers while retaining a visible bend.
+
+Files touched: `src/characters/george.js`, `src/Skeleton.js`, handoff files.
+Action required: Derek — confirm George reads planted during idle and normal
+walking at game scale.
+Priority: high (visible grounding regression fixed).
+
 ### 2026-07-25 (stable visible elbow hinge) — Codex
 
 Derek's follow-up playtest found that the arm pieces still appeared to drift
@@ -120,8 +255,8 @@ changed the relative elbow angle as the shoulder rotated, while the 0.52-rad
 the forearm rendered above the upper arm at equal depth, so its authored
 overlap band swept visibly across the upper-arm cap during rotation.
 
-Changed the default to `forearm = upperArm + facing * 0.78`, producing a
-stable, clearly visible bend of about 45 degrees. Explicit per-pose
+Changed the default to `forearm = upperArm + facing * 0.70`, producing a
+stable, clearly visible bend of about 40 degrees. Explicit per-pose
 `lForearm`/`rForearm` overrides, combat guard, and run folding still work as
 before. Split each arm's existing depth band by a tiny amount so the upper-arm
 cap masks the forearm's overlap slack; this keeps the visible elbow seat from

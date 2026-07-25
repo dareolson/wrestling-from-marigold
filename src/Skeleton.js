@@ -656,8 +656,10 @@ export default class Skeleton {
         // relationship slowly changed the joint angle while the shoulder
         // moved, which made the overlapping artwork look as though it slid
         // around the elbow; its ~30deg baseline also read almost straight at
-        // game scale. About 45deg remains relaxed but makes the split clear.
-        const FOREARM_BEND = 0.78;
+        // game scale. About 40deg remains relaxed but makes the split clear
+        // while staying inside Lou's narrower authored elbow overlap at the
+        // most extreme overhead pose.
+        const FOREARM_BEND = 0.70;
         // Optional per-pose elbow override (pose.lForearm/rForearm, skeleton-
         // convention absolute angle) — lets a pose set the elbow bend
         // independent of the shoulder instead of always inheriting this

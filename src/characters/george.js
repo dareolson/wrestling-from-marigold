@@ -163,18 +163,16 @@ export const george = {
         nearShinScale: 0.81,
         farLegOffsetX: 27,
         farLegOffsetY: -2,
-        // farShinOffsetX/Y (2026-07-23, live rig-tuner export, Derek —
-        // supersedes the analytically-derived 17/6 that were here
-        // momentarily). Same root cause as that prior pass: the far-leg 5%
-        // size reduction (farShinScale 0.81→0.77) shrinks the shin toward
-        // its top-anchored render origin, lifting the boot off the mat
-        // (measured ~8.1px unscaled via window.__WFM_GAME right after the
-        // scale change). That measurement got the *ground contact* to
-        // sub-pixel, but Derek then live-tuned the final seat himself in
-        // tools/rig-tuner/ for the actual look, not just the numeric gap —
-        // these are that export, applied as-is.
+        // farShinOffsetX remains Derek's 2026-07-23 live seat. The exported
+        // farShinOffsetY=-12 moved the already-shorter 0.77-scale boot UP,
+        // opposite the comment's stated ground-contact correction. A real
+        // PNG-alpha/ground-plane audit (2026-07-25) measured George's far
+        // sole floating 6.6–13.5 screen px while the near sole was within
+        // about 2px. Moving only the far shin down to +2 gives both boots the
+        // same 2–4px idle edge allowance and sub-3px planted-walk contact;
+        // knee overlap remains covered by the internal pivot contract.
         farShinOffsetX: 16,
-        farShinOffsetY: -12,
+        farShinOffsetY: 2,
         // Far shin had no scale knob at all until this pass (Skeleton.js/
         // rig-tuner only had nearShinScale) — added farShinScale so the far
         // leg could be brought down to match the near leg's new 0.81 rather

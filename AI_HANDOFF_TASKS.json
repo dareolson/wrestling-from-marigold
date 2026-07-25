@@ -3,7 +3,7 @@
   "generated": "2026-07-14",
   "generated_by": "Claude (Sonnet 5)",
   "last_updated": "2026-07-25",
-  "last_updated_by": "Codex",
+  "last_updated_by": "Claude",
   "status_values": ["open", "decision-needed", "blocked", "in-progress", "done"],
   "tasks": [
     {
@@ -27,7 +27,7 @@
       "source": "CHARACTER_ANIMATION_AND_MOVESET_GUIDE.md + ANIMATION_TOOLING_AND_PLUGIN_EVALUATION.md + AI_HANDOFF.md 2026-07-25 report entries",
       "detail": "Create a stack-specific reference covering articulated cutout movement, FK/IK constraints, painted-art anchors, animation timing/events, move data architecture, tooling/plugins, verification, and the tradeoffs of an external skeletal runtime.",
       "resolved_note": "Added CHARACTER_ANIMATION_AND_MOVESET_GUIDE.md and companion ANIMATION_TOOLING_AND_PLUGIN_EVALUATION.md using the installed Phaser 4.1/Vite/JavaScript rig and current primary documentation. Recommends retaining the custom rig, then adding local-space bone/anchor metadata, a small in-repo Phaser MoveRuntimePlugin with seekable clips/event markers/paired tracks, a central MoveSpec registry, and constraint/audit coverage. Phaser Editor, TexturePacker, and Spine are scoped future evaluations; Rex FSM is optional only as a narrow import; ContainerLite migration and Rive are not recommended for the current wrestler rig.",
-      "resolved_commit": "working tree as of 2026-07-25; commit pending"
+      "resolved_commit": "6bf0932"
     },
     {
       "id": "four-move-blueprint",
@@ -74,7 +74,7 @@
       "source": "AI_HANDOFF.md, 2026-07-24 Codex all-joint attachment entry",
       "detail": "George's arm still detached, and the first shared-shoulder attempt then distorted both wrestlers' silhouettes. The durable contract must preserve authored shoulder silhouettes, keep internal child pivots on the true joint through rotation, account for near/far render scale, and be verifiable against painted pixels rather than display rectangles. It applies to George, Lou Thesz, placeholders, and future wrestlers in upright and grounded/get-up rendering.",
       "resolved_note": "Supersedes the first 2026-07-24 SHOULDER_OVERLAP implementation. Upper arms now stay at the authored shoulder (no football-pad backoff); fallback forearms overlap along the child angle; far elbow endpoints use the same 0.85 depth scale as their rendered art. Removed George's pose-dependent screen-space forearm offsets so his existing internal pivot metadata stays on the true elbow. The cutter now preserves authored overlap for Thesz forearm/shin, and thesz.js records their measured jointPivotFrac values; the shin returned to its authored 51x95 box. A follow-up angle sweep exposed a remaining presentation defect: the derived forearm formula changed relative angle during shoulder travel and the child overlap drew over the upper-arm cap. The default is now a stable 0.70-rad elbow hinge, with upper-arm caps drawn just above forearm overlap inside the existing depth bands. The audit now samples real PNG alpha around every true neck/shoulder/elbow/hip/knee, not just render boxes. It passes both wrestlers, both facings, six extreme upright poses, and four get-up samples with 0px maximum painted gap. Full verification is recorded in AI_HANDOFF.md's 2026-07-25 correction entries.",
-      "resolved_commit": "working tree as of 2026-07-25; commit pending"
+      "resolved_commit": "6bf0932"
     },
     {
       "id": "george-painted-foot-grounding",
@@ -86,7 +86,7 @@
       "source": "AI_HANDOFF.md, 2026-07-25 George painted-sole grounding entry",
       "detail": "George visibly floated even though the procedural ankle targets were planted, because mathematical foot points did not account for the transformed alpha extent of his baked boot art. The far sole measured 6.6-13.5 screen px above the mat across idle/walking samples.",
       "resolved_note": "Corrected george.js farShinOffsetY from -12 to 2. The old negative value moved the reduced 0.77-scale far shin upward, opposite its comment's intended ground correction. Alpha-aware world-space measurements now put the far sole within -2.4px to +2.4px of the mat in planted walking frames; both idle soles are within 2-4.5px in both facings. George's knee chain still passes the painted-pixel attachment audit at 0px separation.",
-      "resolved_commit": "working tree as of 2026-07-25; commit pending"
+      "resolved_commit": "6bf0932"
     },
     {
       "id": "lou-knee-art-cleanup",

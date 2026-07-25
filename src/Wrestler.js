@@ -38,6 +38,10 @@ const STAMINA_DRAIN    = {    // drained from the DEFENDER on each move landing
     divingElbow:       18,
     topDive:           28,
     theszPress:        24, // flying body press — finisher-grade, lands straight into the cover
+    hammerlock:        10, // + 4 more on release, see _doHammerlock
+    kneeLift:           9,
+    backBodyDrop:      16,
+    kneeDrop:          12,
 };
 // Kick-out chance: 100% at full stamina, 0% at or below this threshold
 const KICKOUT_FLOOR = 15;
@@ -131,6 +135,28 @@ export const POSES = {
     // ── Defense ──────────────────────────────────────────────────────────────
     block:          { lLeg: 0.18,  rLeg:-0.14,  lArm: 0.95,  rArm: 0.80, lean: 0.14, crouch: 0.25 }, // braced sprawl — arms up front, weight low, ready to stuff a tie-up
     evade:          { lLeg:-0.25,  rLeg: 0.30,  lArm: 0.55,  rArm: 0.40, lean:-0.32, crouch: 0.10 }, // backstep — torso whipped back out of reach, arms trailing up
+    // ── Four-move blueprint (Codex, 2026-07-24; approved by Derek) ─────────────
+    // Behind-the-back arm lock — attacker stages slightly behind/outside the
+    // defender rather than genuinely interlocking hands (see MOVE_DEFS.hammerlock).
+    hammerlockReach:  { lLeg: 0.10,  rLeg:-0.12,  lArm: 0.78,  rArm: 0.42, lean: 0.18, crouch: 0.10 },
+    hammerlockTurn:   { lLeg:-0.10,  rLeg: 0.24,  lArm: 1.32,  rArm: 0.74, lean: 0.22, crouch: 0.16 },
+    hammerlockSet:    { lLeg: 0.20,  rLeg:-0.16,  lArm: 1.92,  rArm: 0.68, lean: 0.30, crouch: 0.22 },
+    hammerlockCrank:  { lLeg: 0.28,  rLeg:-0.22,  lArm: 2.18,  rArm: 0.46, lean:-0.06, crouch: 0.28 },
+    // Rising knee lift — planted close-range strike, creates stagger not a knockdown.
+    kneeLiftLoad:     { lLeg:-0.18,  rLeg: 0.22,  lArm:-0.15,  rArm: 0.38, lean:-0.12, crouch: 0.30 },
+    kneeLiftChamber:  { lLeg: 1.15,  rLeg:-0.10,  lArm: 0.72,  rArm: 0.40, lean: 0.10, crouch: 0.20 },
+    kneeLiftImpact:   { lLeg: 1.72,  rLeg:-0.06,  lArm: 0.90,  rArm: 0.24, lean: 0.34, crouch: 0.10 },
+    kneeLiftRecover:  { lLeg: 0.24,  rLeg: 0.06,  lArm: 0.30,  rArm: 0.18, lean: 0.12, crouch: 0.16 },
+    // Back body drop — the defensive answer to a returning runner.
+    backDropBrace:    { lLeg: 0.34,  rLeg:-0.26,  lArm: 0.48,  rArm: 0.38, lean: 0.36, crouch: 0.55 },
+    backDropDip:      { lLeg: 0.44,  rLeg:-0.34,  lArm: 0.82,  rArm: 0.72, lean: 0.62, crouch: 0.82 },
+    backDropLaunch:   { lLeg: 0.18,  rLeg: 0.08,  lArm: 1.55,  rArm: 1.35, lean:-0.12, crouch: 0.28 },
+    backDropRecover:  { lLeg:-0.12,  rLeg: 0.24,  lArm: 0.42,  rArm: 0.32, lean: 0.18, crouch: 0.12 },
+    // Knee drop — measured drop onto a grounded opponent.
+    kneeDropSet:      { lLeg: 0.18,  rLeg: 0.10,  lArm: 0.35,  rArm: 0.20, lean: 0.16, crouch: 0.30 },
+    kneeDropLeap:     { lLeg: 0.72,  rLeg: 0.18,  lArm:-0.40,  rArm: 0.52, lean:-0.08, crouch: 0.16 },
+    kneeDropTuck:     { lLeg: 1.38,  rLeg: 0.50,  lArm: 0.30,  rArm: 0.65, lean: 0.28, crouch: 0.50 },
+    kneeDropLand:     { lLeg: 1.05,  rLeg: 0.22,  lArm: 0.18,  rArm: 0.28, lean: 0.44, crouch: 0.68 },
 };
 
 // ─── Move definitions ─────────────────────────────────────────────────────────
@@ -210,6 +236,28 @@ export const MOVE_DEFS = {
                               { p: 'ankleLockTwist', dur: 180, e: 'Cubic.easeOut' },
                               { p: 'ankleLockHold',  dur: 800, e: 'Linear'        },
                               { p: 'idle',           dur: 200, e: 'Linear'        }] },
+    // ── Four-move blueprint (Codex, 2026-07-24; approved by Derek) ─────────────
+    // Runtime execution of hammerlock plays this poseSeq verbatim (_doHammerlock).
+    // kneeLift/backBodyDrop/kneeDrop are documented here for reference, but the
+    // middle airborne/launch phases of backBodyDrop and kneeDrop don't tween
+    // `pose` directly — they share existing custom draw plumbing (clothesline
+    // fall / elbowDropping) the same way MOVE_DEFS.elbowDrop already does.
+    hammerlock:  { poseSeq: [{ p: 'hammerlockReach', dur: 120, e: 'Cubic.easeOut' },
+                              { p: 'hammerlockTurn',  dur: 180, e: 'Cubic.easeInOut' },
+                              { p: 'hammerlockSet',   dur: 200, e: 'Cubic.easeOut' },
+                              { p: 'hammerlockCrank', dur: 900, e: 'Linear'        }] },
+    kneeLift:    { poseSeq: [{ p: 'kneeLiftLoad',    dur: 100, e: 'Cubic.easeOut' },
+                              { p: 'kneeLiftChamber', dur:  90, e: 'Cubic.easeIn'  },
+                              { p: 'kneeLiftImpact',  dur:  70, e: 'Linear'        },
+                              { p: 'kneeLiftRecover', dur: 180, e: 'Cubic.easeOut' }] },
+    backBodyDrop:{ poseSeq: [{ p: 'backDropBrace',   dur: 110, e: 'Cubic.easeOut' },
+                              { p: 'backDropDip',     dur: 120, e: 'Cubic.easeIn'  },
+                              { p: 'backDropLaunch',  dur: 100, e: 'Cubic.easeOut' },
+                              { p: 'backDropRecover', dur: 220, e: 'Cubic.easeOut' }] },
+    kneeDrop:    { poseSeq: [{ p: 'kneeDropSet',     dur: 120, e: 'Cubic.easeOut' },
+                              { p: 'kneeDropLeap',    dur: 140, e: 'Cubic.easeOut' },
+                              { p: 'kneeDropTuck',    dur:  90, e: 'Cubic.easeIn'  },
+                              { p: 'kneeDropLand',    dur: 120, e: 'Linear'        }] },
 };
 
 
@@ -578,15 +626,21 @@ export default class Wrestler {
         if (!this.input.justDown('action')) return false;
 
         if (other.state === 'running' && other.runPhase === 'returning') {
-            if (this.moveSet.includes('clothesline')) {
-                const xDist   = Math.abs(other.x - this.x);
-                // Positive = P2 has run past P1's X in the run direction
-                const pastDist = (other.x - this.x) * other.runFacing;
-                // Window: within ~4 ring-feet approaching, forgiving ~1 foot past
-                if (xDist < 160 * this.s && pastDist < 45 * this.s) {
-                    this._doClothesline(other);
-                    return 'clothesline';
-                }
+            const xDist   = Math.abs(other.x - this.x);
+            // Positive = P2 has run past P1's X in the run direction
+            const pastDist = (other.x - this.x) * other.runFacing;
+            // Window: within ~4 ring-feet approaching, forgiving ~1 foot past
+            const inRange = xDist < 160 * this.s && pastDist < 45 * this.s;
+
+            // Directional override: holding `up` answers the rebound with a
+            // back body drop instead of a clothesline.
+            if (this.input.isDown('up') && inRange && this.moveSet.includes('backBodyDrop')) {
+                this._doBackBodyDrop(other);
+                return 'backBodyDrop';
+            }
+            if (inRange && this.moveSet.includes('clothesline')) {
+                this._doClothesline(other);
+                return 'clothesline';
             }
         }
 
@@ -638,11 +692,25 @@ export default class Wrestler {
     }
 
     // Power key: headbutt (vs staggered) | elbow drop (vs downed) | jab (point-blank) | dropkick (medium)
+    // Knee lift / knee drop (vs standing / grounded) — directional overrides, checked here
+    // (not in resolvePowerMove) because they need to read the held up/down keys.
     tryPower(other) {
         if (this.state !== 'standing') return false;
         if (!this.input.justDown('power')) return false;
 
         const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
+
+        if (this.input.isDown('up') && other.state === 'standing' && dist <= 85 * this.s &&
+            this.moveSet.includes('kneeLift')) {
+            this._doKneeLift(other);
+            return 'kneeLift';
+        }
+        if (this.input.isDown('down') && (other.state === 'down' || other.state === 'possum') && dist <= 105 * this.s &&
+            this.moveSet.includes('kneeDrop')) {
+            this._doKneeDrop(other);
+            return 'kneeDrop';
+        }
+
         const move = resolvePowerMove({
             dist,
             scale:      this.s,
@@ -1001,7 +1069,9 @@ export default class Wrestler {
         ], () => {
             if (this.state !== 'slamming') return;
             // Now jump — switch to elbowDropping (custom draw takes over)
-            this.state         = 'elbowDropping';
+            this.state          = 'elbowDropping';
+            this._airPeakHeight = 100; // explicit — kneeDrop reuses this same
+                                        // state/draw path with a lower hop (see _doKneeDrop)
             this.elbowProgress = 0;
             this.scene.tweens.add({
                 targets:       this,
@@ -1269,16 +1339,23 @@ export default class Wrestler {
     _doArmBar(other) {
         // Quick submission: attacker locks arm, runs pose sequence, defender shows trapped pose
         other._drain(STAMINA_DRAIN.armBar);
-        this.state  = 'holding';
-        other.state = 'holding';
+        this.state       = 'holding';
+        other.state      = 'holding';
+        // _fixedHold: this hold's release is a plain delayedCall, not an
+        // Arena-tracked state (unlike sleeperState/headlockState) — exempts
+        // it from _orphanWatchdog's 0.6s grace, which would otherwise cut a
+        // 1600ms hold short at 600ms. See _doHammerlock for the same pattern.
+        this._fixedHold  = true;
+        other._fixedHold = true;
         this._runPoseSequence(MOVE_DEFS.armBar.poseSeq);
         other.tweenPose('armBarDefender', 200, 'Cubic.easeOut');
 
         // Hold duration then release to standing (give a small extra drain on release)
         this.scene.time.delayedCall(1600, () => {
-            if (this.state === 'holding') this.state = 'standing';
+            if (this.state === 'holding') { this.state = 'standing'; this._fixedHold = false; }
             if (other.state === 'holding') {
                 other.state = 'standing';
+                other._fixedHold = false;
                 other.tweenPose('idle', 200, 'Linear');
                 other._drain(6);
             }
@@ -1287,19 +1364,181 @@ export default class Wrestler {
 
     _doAnkleLock(other) {
         other._drain(STAMINA_DRAIN.ankleLock);
-        this.state  = 'holding';
-        other.state = 'holding';
+        this.state       = 'holding';
+        other.state      = 'holding';
+        this._fixedHold  = true; // see _doArmBar's comment on _fixedHold
+        other._fixedHold = true;
         this._runPoseSequence(MOVE_DEFS.ankleLock.poseSeq);
         other.tweenPose('ankleLockDefender', 200, 'Cubic.easeOut');
 
         // Hold then release; stronger pain on release
         this.scene.time.delayedCall(1700, () => {
-            if (this.state === 'holding') this.state = 'standing';
+            if (this.state === 'holding') { this.state = 'standing'; this._fixedHold = false; }
             if (other.state === 'holding') {
                 other.state = 'standing';
+                other._fixedHold = false;
                 other.tweenPose('idle', 200, 'Linear');
                 other._drain(8);
             }
+        });
+    }
+
+    // ── Four-move blueprint (Codex, 2026-07-24; approved by Derek) ─────────────
+    // See AI_HANDOFF_ENTRIES/2026-07-24-codex-four-move-blueprint.md for the
+    // full spec each of these four implements.
+
+    // Behind-the-back arm lock. Triggered from Arena._tickLockup (finisher
+    // key, attacker-only) — no range test here, the lockup already
+    // established validity. Fixed-duration working hold, not a KO/escape loop.
+    _doHammerlock(other) {
+        this.state       = 'holding';
+        other.state      = 'holding';
+        other.facing     = this.facing;
+        // _fixedHold: release is a plain delayedCall below, not an
+        // Arena-tracked state, which exempts it from _orphanWatchdog's 0.6s
+        // grace period — otherwise the watchdog cuts this 1400ms hold short
+        // at 600ms, same latent issue armBar/ankleLock had (now fixed there too).
+        this._fixedHold  = true;
+        other._fixedHold = true;
+        this._drain(3); // attacker cost
+
+        const s      = this.s;
+        const facing = this.facing;
+        const sx     = this.x;
+        const b      = ringBoundsAtY(this.y);
+        const m      = 20;
+        // Defender staged slightly ahead on the attacker's centerline; attacker
+        // steps in behind/outside — the offset silhouette implies the lock
+        // without the rigs needing to draw genuinely interlocked hands.
+        const defTargetX = Math.max(b.left + m, Math.min(b.right - m, sx + facing * 30 * s));
+        const atkTargetX = Math.max(b.left + m, Math.min(b.right - m, defTargetX - facing * 24 * s));
+
+        this.scene.tweens.add({ targets: this, x: atkTargetX, duration: 300, ease: 'Cubic.easeOut' });
+        this.scene.tweens.add({ targets: other, x: defTargetX, duration: 300, ease: 'Cubic.easeOut' });
+        other.tweenPose('armBarDefender', 260, 'Cubic.easeOut');
+
+        this._runPoseSequence(MOVE_DEFS.hammerlock.poseSeq);
+
+        // Crank begins at 300ms (end of the reach/turn/set wind-up) — first drain lands here
+        this.scene.time.delayedCall(300, () => {
+            if (this.state === 'holding' && other.state === 'holding') {
+                other._drain(STAMINA_DRAIN.hammerlock);
+            }
+        });
+
+        // Full sequence runs 1400ms — release both back to standing
+        this.scene.time.delayedCall(1400, () => {
+            if (this.state === 'holding') {
+                this.state = 'standing';
+                this._fixedHold = false;
+                this.tweenPose(this.idlePose, 220, 'Linear');
+            }
+            if (other.state === 'holding') {
+                other.state = 'standing';
+                other._fixedHold = false;
+                other.tweenPose(other.idlePose, 220, 'Linear');
+                other._drain(4); // release drain
+            }
+        });
+    }
+
+    // Rising knee lift — planted close-range strike; creates stagger, not an
+    // automatic knockdown. Directional override of the point-blank jab.
+    _doKneeLift(other) {
+        this.state  = 'slamming'; // generic "attacker mid-move" — input-locked until the sequence completes
+        this.facing = Math.sign(other.x - this.x) || this.facing;
+        this._drain(3); // attacker cost
+        this._runPoseSequence(MOVE_DEFS.kneeLift.poseSeq, () => {
+            if (this.state === 'slamming') this.state = 'standing';
+        });
+
+        // Contact at 190ms — when kneeLiftImpact begins (load 100 + chamber 90)
+        this.scene.time.delayedCall(190, () => {
+            if (this.state !== 'slamming') return;
+            if (other.state === 'evading') {
+                this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'kneeLift' });
+                return;
+            }
+            other._drain(STAMINA_DRAIN.kneeLift);
+            other._doSell('sellChest', 140, () => other.startStagger());
+        });
+    }
+
+    // Back body drop — the defensive answer to a returning runner. Directional
+    // override of the returning-runner clothesline (tryAction).
+    _doBackBodyDrop(other) {
+        other._drain(STAMINA_DRAIN.backBodyDrop);
+        this.state  = 'slamming';
+        other.state = 'selling'; // halts the run; blocks other's input/movement like any sell
+        this._drain(4); // attacker cost
+        const runDir  = other.runFacing;
+        const centerX = this.x;
+        const targetY = this.y + 10 * this.s;
+
+        this._runPoseSequence(MOVE_DEFS.backBodyDrop.poseSeq, () => {
+            if (this.state === 'slamming') this.state = 'standing';
+        });
+
+        // Bring the defender to the attacker's centerline over the brace+dip
+        // phases (230ms), then launch — reusing the clothesline/dropkick flip
+        // machinery with a bigger arc and further travel than a clothesline.
+        this.scene.tweens.add({
+            targets:  other,
+            x:        centerX,
+            y:        targetY,
+            duration: 230,
+            ease:     'Cubic.easeOut',
+            onComplete: () => {
+                if (other.state !== 'selling') return;
+                other.startClotheslineFall(runDir, { travelDist: 90, arcHeight: 130 });
+            },
+        });
+    }
+
+    // Knee drop — measured drop onto a grounded opponent. Directional override
+    // of the elbow drop. Shares elbowDrop's airborne draw plumbing
+    // (elbowDropping / _drawElbowDropAir) with a lower hop and an offset
+    // landing spot, rather than a bespoke new render path.
+    _doKneeDrop(other) {
+        this.state  = 'slamming';
+        this.facing = Math.sign(other.x - this.x) || this.facing;
+        this._drain(4); // attacker cost
+
+        this._runPoseSequence([
+            { p: 'kneeDropSet', dur: 120, e: 'Cubic.easeOut' },
+        ], () => {
+            if (this.state !== 'slamming') return;
+            this.state          = 'elbowDropping';
+            this._airPeakHeight = 38; // compact hop, vs elbow drop's 100
+            this.elbowProgress  = 0;
+            // Settle beside the opponent rather than directly on top, on
+            // whichever side the attacker jumped in from.
+            const approachDir = Math.sign(this.x - other.x) || this.facing;
+            const landX       = other.x + approachDir * 30 * this.s;
+
+            this.scene.tweens.add({
+                targets:  this,
+                elbowProgress: 1,
+                x:        landX,
+                duration: 140 + 90, // kneeDropLeap + kneeDropTuck, collapsed into one airborne tween
+                ease:     'Sine.easeInOut',
+                onComplete: () => {
+                    if (this.state !== 'elbowDropping') return;
+                    this.elbowProgress = 0;
+                    this.state         = 'slamming';
+                    this.scene.cameras.main.shake(110, 0.0018);
+                    // Contact at 350ms total (120 set + 230 airborne) — the
+                    // defender stays in its existing grounded draw state, no
+                    // pose change, no down-timer restart.
+                    other._drain(STAMINA_DRAIN.kneeDrop);
+                    this._runPoseSequence([
+                        { p: 'kneeDropLand', dur: 120, e: 'Linear' },
+                        { p: this.idlePose,  dur: 220, e: 'Cubic.easeOut' },
+                    ], () => {
+                        if (this.state === 'slamming') this.state = 'standing';
+                    });
+                },
+            });
         });
     }
 
@@ -1466,17 +1705,22 @@ export default class Wrestler {
         });
     }
 
-    startClotheslineFall(runFacing) {
-        this.state        = 'flipping';
-        this.flipProgress = 0;
-        this.flipDir      = runFacing;
+    // travelDist/arcHeight are unscaled (× this.s internally), defaulting to
+    // the original clothesline numbers so every existing caller is
+    // byte-identical. backBodyDrop overrides both for a bigger throw arc —
+    // see _doBackBodyDrop.
+    startClotheslineFall(runFacing, { travelDist = 80, arcHeight = 85 } = {}) {
+        this.state         = 'flipping';
+        this.flipProgress  = 0;
+        this.flipDir       = runFacing;
+        this._flipArcHeight = arcHeight;
         // Downed bodies draw ~200·s wide, so the landing spot needs a wider
         // clamp margin than the standing 20px or head/boots hang through the
         // rope plane (measured down bodies at x=892, ~70px outside).
         const downMargin = 60 * this.s;
         const b          = ringBoundsAtY(this.y);
         const landX      = Math.max(b.left + downMargin,
-                           Math.min(b.right - downMargin, this.x + runFacing * 80 * this.s));
+                           Math.min(b.right - downMargin, this.x + runFacing * travelDist * this.s));
 
         this.scene.tweens.add({
             targets:      this,
@@ -1547,7 +1791,7 @@ export default class Wrestler {
 
         if (state === 'elbowDropping') {
             const arcFrac = Math.sin(this.elbowProgress * Math.PI);
-            const airY    = y - arcFrac * 100 * s;
+            const airY    = y - arcFrac * (this._airPeakHeight ?? 100) * s;
             gfx.fillStyle(0x000000, 0.22 + arcFrac * 0.08);
             gfx.fillEllipse(x, y, (120 + arcFrac * 50) * s, (36 + arcFrac * 10) * s);
             this._drawElbowDropAir(x, airY, s, facing, skinCol, trunksCol);
@@ -1700,7 +1944,7 @@ export default class Wrestler {
     _drawClotheslineFall(x, y, s, flipProgress, flipDir, skinCol, trunksCol) {
         const gfx  = this.gfx;
         const arc  = Math.sin(flipProgress * Math.PI); // 0 → 1 → 0
-        const arcY = y - arc * 85 * s;
+        const arcY = y - arc * (this._flipArcHeight ?? 85) * s;
 
         // Shadow stays on the mat, expands as body rises
         gfx.fillStyle(0x000000, 0.22 + arc * 0.10);

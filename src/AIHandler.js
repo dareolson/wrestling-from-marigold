@@ -19,6 +19,8 @@ const PERSONALITIES = {
         staggerSlamOdds:  0.25,  // sometimes grabs a stumbler for the slam instead of headbutting
         evadeOdds:        0.06,  // rarely gives ground — he plants and trades
         blockOdds:        0.14,  // stands his ground and stuffs tie-ups
+        kneeLiftOdds:     0.20,  // substitutes for the close jab this often (never twice in a row)
+        kneeDropOdds:     0.30,  // substitutes for the elbow drop pounce this often
     },
     george: {
         stallChance:      0.012, // ~once per 1.5s — backs off constantly
@@ -39,6 +41,10 @@ const PERSONALITIES = {
         coverStamina:     55,    // covers earlier — he lands piledrivers, he has to convert them
         pinWait:          [1.2, 2.0], // hustles into re-covers; lazy 2.2–3.4 default gave p1 the rise
         attritionAt:      70,    // sleeper hunt opens while George still has gas (below 35 he's begging off)
+        hammerlockOdds:      0.15, // lockup-finisher frequency, above hammerlockStaminaMin
+        hammerlockStaminaMin: 45,  // below this he keeps hunting his bigger lockup offense instead
+        kneeLiftOdds:     0.20,  // substitutes for the close jab this often (never twice in a row)
+        kneeDropOdds:     0.40,  // substitutes for the elbow drop pounce this often
     },
     thesz: {
         // NWA World Heavyweight Champion — the legitimate wall. Technical,
@@ -64,6 +70,10 @@ const PERSONALITIES = {
         blockOdds:        0.26,  // a shooter's base — stuffs tie-ups better than anyone
         coverStamina:     60,    // covers early and often — the closer George isn't
         pinWait:          [0.9, 1.6],
+        hammerlockOdds:      0.25, // lockup-finisher frequency, inside the stamina window below
+        hammerlockStaminaMin: 35,
+        hammerlockStaminaMax: 75,
+        kneeDropOdds:     0.20,  // substitutes for the elbow drop pounce this often (no kneeLift — not in his kit)
     },
 };
 
@@ -315,7 +325,12 @@ export default class AIHandler {
             } else if (this._offense <= 0 && (this._pounces ?? 0) < (cfg.pounceBudget ?? 2) && !this._nearRopes(opp)) {
                 // Each drop re-downs them, so cap follow-ups per down-spell and
                 // never chain them at the ropes — back off and let them rise
-                this._attack('power', 0.9); // elbow drop
+                if (self.moveSet.includes('kneeDrop') && Math.random() < (cfg.kneeDropOdds ?? 0)) {
+                    this._hold('down');
+                    this._attack('power', 0.9); // knee drop
+                } else {
+                    this._attack('power', 0.9); // elbow drop
+                }
                 this._pounces = (this._pounces ?? 0) + 1;
             } else if (this._stallTimer <= 0 && this._offense <= 0) {
                 this._stallTimer = 0.8; // step back, wait for the rise
@@ -401,7 +416,17 @@ export default class AIHandler {
             if (opp.stamina < 45 && this._nearRopes(opp)) {
                 this._attack('action', 0.8); // grapple → lockup → whip
             } else if (Math.random() < cfg.cheapShotOdds) {
-                this._attack('power', 0.55); // jab
+                // Knee lift substitutes for the jab sometimes — never twice in
+                // a row, and only against an opponent standing to eat it.
+                if (self.moveSet.includes('kneeLift') && opp.state === 'standing' &&
+                    this._lastCloseMove !== 'kneeLift' && Math.random() < (cfg.kneeLiftOdds ?? 0)) {
+                    this._hold('up');
+                    this._attack('power', 0.75); // knee lift
+                    this._lastCloseMove = 'kneeLift';
+                } else {
+                    this._attack('power', 0.55); // jab
+                    this._lastCloseMove = 'jab';
+                }
             } else {
                 this._attack('action', 0.8); // grapple → lockup
             }
@@ -473,6 +498,22 @@ export default class AIHandler {
         }
 
         const cfg = this._cfg;
+
+        // Hammerlock — finisher-slot follow-up, rolled independently of (and
+        // before) the action-based follow-ups below, same as the human
+        // trigger is independent of Arena._tickLockup's other branches.
+        if (this._self.moveSet.includes('hammerlock')) {
+            const oppStam = this._opp.stamina;
+            const min = cfg.hammerlockStaminaMin ?? 0;
+            const max = cfg.hammerlockStaminaMax ?? 100;
+            if (oppStam >= min && oppStam <= max && Math.random() < (cfg.hammerlockOdds ?? 0)) {
+                this._press('finisher');
+                this._cooldown = 0.8;
+                this._offense   = 1.1 + Math.random() * 0.9;
+                this._landed++;
+                return;
+            }
+        }
 
         // Opponent clinging to the ropes: whip them across the ring so the
         // rebound (and the pin that follows) happens mid-ring

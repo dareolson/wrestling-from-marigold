@@ -2728,12 +2728,12 @@ export default class Arena extends Phaser.Scene {
             brawler: {
                 name: 'BRAWLER', personality: 'brawler', idlePose: 'brawlerIdle',
                 skin: 0xe0b088, trunks: 0x8c9cc8,
-                moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt'],
+                moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
             },
             george: {
                 name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
                 skin: 0xa87858, trunks: 0x1a1a1a,
-                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt'],
+                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
                 textures: george.textures,
             },
             thesz: {
@@ -2741,7 +2741,7 @@ export default class Arena extends Phaser.Scene {
                 // slam are his conversions, the holds are his actual game
                 name: 'THESZ', personality: 'thesz', idlePose: 'theszIdle',
                 skin: 0xe8c098, trunks: 0x484848,
-                moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'theszPress'],
+                moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'theszPress', 'hammerlock', 'backBodyDrop', 'kneeDrop'],
                 textures: thesz.textures,
             },
         };
@@ -2952,6 +2952,7 @@ export default class Arena extends Phaser.Scene {
             dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
             headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
             jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12, theszPress: 16,
+            hammerlock: 5, kneeLift: 5, backBodyDrop: 10, kneeDrop: 7,
         };
         const n = bumps[move];
         if (n) this.bumpHeat(n);
@@ -3142,7 +3143,7 @@ export default class Arena extends Phaser.Scene {
             (w.state === 'pinning'    && !this.pinState)           ||
             (w.state === 'sleeping'   && !this.sleeperState)       ||
             (w.state === 'headlocked' && !this.headlockState)      ||
-            (w.state === 'holding'    && !this.sleeperState && !this.headlockState) ||
+            (w.state === 'holding'    && !this.sleeperState && !this.headlockState && !w._fixedHold) ||
             (w.state === 'lockup'     && !this.lockupState);
 
         if (!orphaned) { w._orphanT = 0; return; }
@@ -3337,6 +3338,20 @@ export default class Arena extends Phaser.Scene {
         ls.defender._clamp();
 
         const who = ls.attacker === this.w1 ? 'p1' : 'p2';
+
+        // Hammerlock: finisher key, attacker-only, checked independently of
+        // the action/power follow-up branches below (finisher was otherwise
+        // unused in here — standing finisher still resolves to
+        // sleeper/Thesz press/taunt outside a lockup, tryFinisher requires
+        // state === 'standing').
+        if (ls.attacker.input.justDown('finisher') && ls.attacker.moveSet.includes('hammerlock')) {
+            const attacker = ls.attacker, defender = ls.defender;
+            this.lockupState = null;
+            attacker._doHammerlock(defender);
+            this._logEvent('move', { attacker: who, move: 'hammerlock', defenderStamina: Math.round(defender.stamina) });
+            this._heatForMove('hammerlock');
+            return;
+        }
 
         // Defender contests by pressing grapple — steals the lockup
         if (ls.defender.input.justDown('action')) {

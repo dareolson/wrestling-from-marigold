@@ -199,6 +199,53 @@ const SCENARIOS = {
         },
     },
 
+    // ── Four-move blueprint (Codex, 2026-07-24; approved by Derek) ─────────
+    hammerlock: { // finisher key while attacker in lockup — P1 needs a kit that has it
+        p1: 'thesz',
+        expect: { move: 'hammerlock' },
+        async run(h) {
+            await SCENARIOS.lockup.run(h);
+            // Lockup auto-releases at 0.8s — follow-up must land inside that window
+            await h.page.waitForTimeout(200);
+            await tap(h.page, 'h');
+        },
+    },
+
+    kneeLift: { // hold up + power vs standing, close range — overrides the jab
+        expect: { move: 'kneeLift' },
+        async run(h) {
+            await approach(h, 85);
+            await jam(h);
+            await hold(h.page, 'w');
+            await tap(h.page, 'g');
+            await releaseAll(h.page);
+        },
+    },
+
+    backBodyDrop: { // hold up + grapple vs a returning runner — overrides the clothesline
+        expect: { move: 'backBodyDrop' },
+        async run(h) {
+            await SCENARIOS.whip.run(h);
+            await until(h, s => s.w2.st === 'running' && s.w2.rp === 'returning' && Math.abs(s.w2.x - s.w1.x) < 120,
+                'w2 returning in range');
+            await hold(h.page, 'w');
+            await tap(h.page, 'f');
+            await releaseAll(h.page);
+        },
+    },
+
+    kneeDrop: { // hold down + power vs a grounded opponent — overrides the elbow drop
+        expect: { move: 'kneeDrop' },
+        async run(h) {
+            await SCENARIOS.combo.run(h);
+            await until(h, s => s.w2.st === 'down', 'w2 down');
+            await approach(h, 75);
+            await hold(h.page, 's');
+            await tap(h.page, 'g');
+            await releaseAll(h.page);
+        },
+    },
+
     pin: { // jab → headbutt → cover; first fatal cover is always a 2.9 save, so down them again → pinfall
         expect: { type: 'pinfall' },
         async run(h) {
@@ -258,7 +305,13 @@ let failed = 0;
 
 for (const name of names) {
     // Fresh page state per scenario: reload, refocus. P2 defaults to
-    // keyboard dummy already — no toggle needed.
+    // keyboard dummy already — no toggle needed. A scenario can pin a P1/P2
+    // kit (e.g. hammerlock needs thesz/george, not the default brawler) via
+    // its `p1`/`p2` field — set/clear WFM_P1/WFM_P2 before each launch so
+    // that doesn't leak into the next scenario in an `all` run.
+    const sc = SCENARIOS[name];
+    if (sc.p1) process.env.WFM_P1 = sc.p1; else delete process.env.WFM_P1;
+    if (sc.p2) process.env.WFM_P2 = sc.p2; else delete process.env.WFM_P2;
     const h = await launch();
     await h.page.waitForTimeout(400);
     if (!await runScenario(h, name)) failed++;

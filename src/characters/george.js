@@ -64,6 +64,9 @@ export const george = {
         // aspect ratio to rounding, so the earlier -5% box is sound.
         // Object form only overrides display size; joint math is untouched.
         torso:    { key: 'george_torso', box: { w: 78, h: 106 } },
+        // armOffsetY: live rig-tuner export (Derek), same seating-nudge
+        // category as thesz's own armOffsetY — near-shoulder Y seat only.
+        armOffsetY: 1,
         // Widths re-derived from the uncut shared-canvas reference, not the
         // prior live-tuned boxes. Largest-component, axis-normal p90 ink
         // thicknesses are torso 169.01px, upper arm 84.15px, forearm
@@ -115,14 +118,19 @@ export const george = {
         // same compensation, so it's left in place as a minor fist-position
         // nudge rather than zeroed.
         nearForearmOffsetX: 2,
-        // farForearmOffsetX/Y (2026-07-23, live rig-tuner export, Derek) —
-        // the far elbow was left un-nudged when jointPivotFrac was wired in
-        // (see the comment above), but reads slightly off in the actual
-        // game view; these are a small live-tuned seat, same category as
-        // nearForearmOffsetX above, not a sign the joint-attachment math
-        // needs revisiting.
-        farForearmOffsetX: -3,
-        farForearmOffsetY: -6,
+        // nearForearmOffsetY: live rig-tuner export (Derek, 2026-07-24 —
+        // post-shoulder-attachment-fix pass), same category as
+        // nearForearmOffsetX above.
+        nearForearmOffsetY: -3,
+        // farForearmOffsetX/Y (2026-07-24, live rig-tuner export, Derek —
+        // re-tuned after the shoulder attachment fix landed; supersedes the
+        // 2026-07-23 -3/-6 values) — the far elbow was left un-nudged when
+        // jointPivotFrac was wired in (see the comment above), but reads
+        // slightly off in the actual game view; these are a small
+        // live-tuned seat, same category as nearForearmOffsetX above, not a
+        // sign the joint-attachment math needs revisiting.
+        farForearmOffsetX: -4,
+        farForearmOffsetY: -8,
         // "Thighs need to be longer" (Derek, 2026-07-19) — tried as a
         // per-character `thighH` bone-length bump first; wrong lever.
         // `Skeleton.js`'s `img()` always stashes a fixed `_texDims` display

@@ -113,7 +113,12 @@ export const thesz = {
         // own 29-ref-px overlap in LouTheszFullBodyRef.png) and h grows to
         // 95 so the sole stays on the ref's 404/380 hip→sole line (probe:
         // sole within 0.5px, visible knee seam gone).
-        shin:     { key: 'thesz_shin', box: { w: 51, h: 95 } },
+        // h 95→100 (2026-07-24 all-joint attachment audit): the old
+        // nearShinOffsetY=25 pushed the true knee 1.0–1.7px outside this
+        // render box in every sampled upright pose. Raising the child root
+        // five pixels restores real overlap; growing the display height by
+        // the same five preserves the already-approved boot/ground seat.
+        shin:     { key: 'thesz_shin', box: { w: 51, h: 100 } },
         // Knee alignment: the shin hangs off the IK knee (computed from the
         // un-offset hip bone), so the thigh's render offsets/tilt above pull
         // the thigh art away from where the shin art starts — these re-join
@@ -124,11 +129,13 @@ export const thesz = {
         // facing left / in the wrong idle pose, superseded). Geometry note
         // (Codex's cleave mechanism): net cap position vs the true knee =
         // -KNEE_OVERLAP(18) - NEAR_SHIN_UP(5) + nearShinOffsetY. At the
-        // current nearShinOffsetY (25) that's +2px tuck. If the knee line
-        // creeps back, raise shin.box.h instead of pushing offsetY further
-        // down — that lowers the sole while keeping the cap tucked.
+        // 2026-07-24: nearShinOffsetY 25→20 after the all-joint audit proved
+        // the old value placed the true knee outside the child render box
+        // across both facings and every sampled move pose. The matching
+        // shin.box.h 95→100 change above keeps the sole in place while the
+        // cap moves up into a real 3px tuck.
         nearShinOffsetX: -12,
-        nearShinOffsetY: 25,
+        nearShinOffsetY: 20,
         // Far leg NO LONGER mirrors the near leg. The 2026-07-13 pass kept
         // every far offset in lockstep with the near leg's net value so the
         // far leg hid pixel-identically behind the near one (single-leg

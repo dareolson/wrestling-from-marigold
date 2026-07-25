@@ -87,6 +87,14 @@ const TAU = Math.PI * 2;
 // dev-tool seam as P/TEX above) — each value keeps its original name and
 // meaning, and nothing in the game writes to it.
 export const RIG = {
+    // Upper arms use the same parent/child overlap rule as hips, elbows, and
+    // knees. Without a shoulder overlap the arm texture merely butt-joins the
+    // torso at one row; a strong bend (hammerlock, guard, get-up) rotates that
+    // flat edge into view and the wrestler appears to come apart. Textures
+    // with authored overlap metadata (`jointPivotFrac`) anchor directly at
+    // the true shoulder instead; this is the safe fallback for legacy and
+    // future wrestlers whose art has no metadata yet.
+    SHOULDER_OVERLAP: 12,
     // Unscaled px the forearm's placement pulls back up the upper-arm bone
     // (see updateUpright's far/near arm blocks) so a bent elbow doesn't show a
     // wedge-shaped gap between the two rotated rectangles.
@@ -510,7 +518,8 @@ export default class Skeleton {
         }
     }
 
-    // Resolves the render position for a child limb (thigh/shin/forearm)
+    // Resolves the render position for a child limb
+    // (upper-arm/forearm/thigh/shin)
     // whose pivot should connect to the parent's true joint point (jointX,
     // jointY). If the child's texture supplies an internal jointPivotFrac
     // (see the constructor's img() comment — the art's own alpha content
@@ -527,6 +536,26 @@ export default class Skeleton {
     _attachChild(childImg, jointX, jointY, backoffAngle, s, overlapPx) {
         if (childImg._jointPivotFrac) return { x: jointX, y: jointY };
         return this._end(jointX, jointY, -overlapPx * s, backoffAngle);
+    }
+
+    // Debug/verification seam for the all-joint attachment contract. Reports
+    // how far the true joint sits inside the child's rectangular render box:
+    // positive = covered, zero = a fragile butt-joint, negative = detached.
+    // It intentionally measures the render contract rather than guessing at
+    // character-specific source pixels; cutter verification separately proves
+    // that authored joint rows contain opaque art.
+    _recordJointAttachment(name, childImg, jointX, jointY, angle) {
+        const dx = jointX - childImg.x;
+        const dy = jointY - childImg.y;
+        const localX = dx * Math.cos(angle) - dy * Math.sin(angle);
+        const localY = dx * Math.sin(angle) + dy * Math.cos(angle);
+        const above = childImg.originY * childImg.displayHeight + localY;
+        const below = (1 - childImg.originY) * childImg.displayHeight - localY;
+        const side = childImg.displayWidth / 2 - Math.abs(localX);
+        this.jointAttachmentMargins ??= {};
+        this.jointAttachmentMargins[name] = {
+            above, below, side, min: Math.min(above, below, side),
+        };
     }
 
     // World-space endpoint (bottom) of a limb given its pivot and length.
@@ -552,6 +581,7 @@ export default class Skeleton {
     }
 
     updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
+        this.jointAttachmentMargins = {};
         const thighH    = this._thighH * s;
         const shinH     = this._shinH  * s;
         const bootH     = P.bootH     * s;
@@ -717,6 +747,7 @@ export default class Skeleton {
         farHipRender.x += facing * (RIG.HIP_STAGGER - RIG.LEG_BACK_BIAS + RIG.FAR_LEG_FWD + this._farLegOffsetX) * s;
         farHipRender.y += (this._legOffsetY - RIG.FAR_LEG_UP + this._farLegOffsetY) * s;
         this._placePart(this.farThigh, farHipRender.x, farHipRender.y, legW, thighH, farRenderAng, s * this._farThighScale, facing);
+        this._recordJointAttachment('farHip', this.farThigh, far.hx, far.hy, farRenderAng);
         const farKnee  = this._end(far.hx, far.hy, thighH, far.thighAng);
         // Shin's render origin pulls up into the thigh by KNEE_OVERLAP (each
         // character's shin box grew by the same amount) so the knee tucks in
@@ -728,6 +759,7 @@ export default class Skeleton {
         farShinRender.x += facing * this._farShinOffsetX * s;
         farShinRender.y += this._farShinOffsetY * s;
         this._placePart(this.farShin, farShinRender.x, farShinRender.y, legW, shinH, far.shinAng, s * this._farShinScale, facing);
+        this._recordJointAttachment('farKnee', this.farShin, farKnee.x, farKnee.y, far.shinAng);
         const farAnkle = this._end(farKnee.x, farKnee.y, shinH, far.shinAng);
         if (this.farBoot) this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, far.bootAng);
         // Debug read seam (feel-audit foot-lock verification) — world ankle
@@ -769,16 +801,19 @@ export default class Skeleton {
         const farUpArmAng  = farAA  + facing * (this._farArmTilt ?? 0);
         const nearUpArmAng = nearAA + facing * this._nearArmTilt;
 
-        // Far arm. Forearm placed a few px back up the upper-arm bone (not
-        // the true elbow endpoint) so it overlaps the upper arm's bottom
-        // edge instead of leaving a wedge-shaped gap at the bend (Derek,
-        // 2026-07-12 — visible once the elbow carries a real bend angle).
-        this._placePart(this.farUpArm, farShoulderX, farShoulderY, armW, upperArmH, farUpArmAng, s * RIG.FAR_ARM_SCALE, facing);
+        // Far arm. Both child roots go through _attachChild: shoulder first,
+        // then elbow. This makes the same invariant protect the full arm
+        // chain instead of fixing the elbow while leaving a rotatable
+        // butt-joint at the torso.
+        const farShoulder = this._attachChild(this.farUpArm, farShoulderX, farShoulderY, farUpArmAng, s, RIG.SHOULDER_OVERLAP);
+        this._placePart(this.farUpArm, farShoulder.x, farShoulder.y, armW, upperArmH, farUpArmAng, s * RIG.FAR_ARM_SCALE, facing);
+        this._recordJointAttachment('farShoulder', this.farUpArm, farShoulderX, farShoulderY, farUpArmAng);
         const farTrueElbow = this._end(farShoulderX, farShoulderY, upperArmH, farUpArmAng);
         const farElbow = this._attachChild(this.farForearm, farTrueElbow.x, farTrueElbow.y, farUpArmAng, s, RIG.ELBOW_OVERLAP);
         const farForearmX = farElbow.x + facing * this._farForearmOffsetX * s;
         const farForearmY = farElbow.y + this._farForearmOffsetY * s;
         this._placePart(this.farForearm, farForearmX, farForearmY, armW, forearmH, farFA, s * RIG.FAR_ARM_SCALE, facing);
+        this._recordJointAttachment('farElbow', this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA);
 
         // Torso: full height when trunks are baked into the PNG, split otherwise
         this._placePart(this.torso, x, torsoTop, torsoW, this.trunks ? torsoH - trunksH : torsoH, 0, s, facing);
@@ -791,12 +826,14 @@ export default class Skeleton {
         nearHipRender.x += facing * this._legOffsetX * s;
         nearHipRender.y += (this._legOffsetY - RIG.NEAR_LEG_UP + this._nearLegOffsetY) * s;
         this._placePart(this.nearThigh, nearHipRender.x, nearHipRender.y, legW, thighH, nearRenderAng, s, facing);
+        this._recordJointAttachment('nearHip', this.nearThigh, near.hx, near.hy, nearRenderAng);
         const nearKnee  = this._end(near.hx, near.hy, thighH, near.thighAng);
         const nearShinRenderAng = near.shinAng + facing * this._nearShinTilt;
         const nearShinRender = this._attachChild(this.nearShin, nearKnee.x, nearKnee.y, nearShinRenderAng, s, RIG.KNEE_OVERLAP);
         nearShinRender.x += facing * (RIG.NEAR_SHIN_FWD + this._nearShinOffsetX) * s;
         nearShinRender.y += (-RIG.NEAR_SHIN_UP + this._nearShinOffsetY) * s;
         this._placePart(this.nearShin, nearShinRender.x, nearShinRender.y, legW, shinH, nearShinRenderAng, s * this._nearShinScale, facing);
+        this._recordJointAttachment('nearKnee', this.nearShin, nearKnee.x, nearKnee.y, nearShinRenderAng);
         const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, near.shinAng);
         if (this.nearBoot) this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
         this.nearFoot = { x: nearAnkle.x, y: nearAnkle.y, planted: useGait ? footA.lift === 0 : null };
@@ -806,13 +843,16 @@ export default class Skeleton {
         this.nearThighRenderDebug = { x: nearHipRender.x, y: nearHipRender.y, angle: nearRenderAng, s, facing, texDims: this.nearThigh._texDims };
         this.nearShinRenderDebug = { x: nearShinRender.x, y: nearShinRender.y, angle: nearShinRenderAng, s: s * this._nearShinScale, facing, texDims: this.nearShin._texDims };
 
-        // Near arm
-        this._placePart(this.nearUpArm, nearShoulderX, armShoulderY, armW, upperArmH, nearUpArmAng, s, facing);
+        // Near arm — same shoulder/elbow attachment chain as the far arm.
+        const nearShoulder = this._attachChild(this.nearUpArm, nearShoulderX, armShoulderY, nearUpArmAng, s, RIG.SHOULDER_OVERLAP);
+        this._placePart(this.nearUpArm, nearShoulder.x, nearShoulder.y, armW, upperArmH, nearUpArmAng, s, facing);
+        this._recordJointAttachment('nearShoulder', this.nearUpArm, nearShoulderX, armShoulderY, nearUpArmAng);
         const nearTrueElbow = this._end(nearShoulderX, armShoulderY, upperArmH, nearUpArmAng);
         const nearElbow = this._attachChild(this.nearForearm, nearTrueElbow.x, nearTrueElbow.y, nearUpArmAng, s, RIG.ELBOW_OVERLAP);
         const nearForearmX = nearElbow.x + facing * this._nearForearmOffsetX * s;
         const nearForearmY = nearElbow.y + this._nearForearmOffsetY * s;
         this._placePart(this.nearForearm, nearForearmX, nearForearmY, armW, forearmH, nearFA, s, facing);
+        this._recordJointAttachment('nearElbow', this.nearForearm, nearTrueElbow.x, nearTrueElbow.y, nearFA);
 
         // Head — PNG image (pivot at neck bottom) or plain circle
         const headY = torsoTop - headR * 0.7;
@@ -840,6 +880,7 @@ export default class Skeleton {
                 .setPosition(anchorX, anchorY)
                 .setDisplaySize(headR * 2.0 * this._headScale, headDispH)
                 .setFlipX(facing < 0);
+            this._recordJointAttachment('neck', this.head, shoulderX, neckY, 0);
         } else {
             this.head.clear();
             this.head.fillStyle(this._headCol, 1);
@@ -882,6 +923,7 @@ export default class Skeleton {
     // anywhere from lying to vertical. This is the piece updateUpright can't
     // do (it assumes a vertical torso), and it's all the sit/crawl states need.
     _applyGrounded(x, y, s, facing, g) {
+        this.jointAttachmentMargins = {};
         const f = facing >= 0 ? 1 : -1;
         const ang = a => f * a; // mirror: sin flips with the angle sign, cos is untouched
 
@@ -918,25 +960,32 @@ export default class Skeleton {
             const tA = ang(thigh), sA = ang(shin);
             const hipRender = this._attachChild(thighImg, hipX, hipY, tA, s, RIG.HIP_OVERLAP);
             this._placePart(thighImg, hipRender.x, hipRender.y, legW, thighH, tA, s, facing);
+            const side = thighImg === this.farThigh ? 'far' : 'near';
+            this._recordJointAttachment(`${side}Hip`, thighImg, hipX, hipY, tA);
             const knee = this._end(hipX, hipY, thighH, tA);
             const kneeRender = this._attachChild(shinImg, knee.x, knee.y, sA, s, RIG.KNEE_OVERLAP);
             this._placePart(shinImg, kneeRender.x, kneeRender.y, legW, shinH, sA, s, facing);
+            this._recordJointAttachment(`${side}Knee`, shinImg, knee.x, knee.y, sA);
             const ankle = this._end(knee.x, knee.y, shinH, sA);
             if (bootImg) this._place(bootImg, ankle.x, ankle.y, legW + 4 * s, bootH, sA + f * 0.3);
         };
         leg(g.farThigh,  g.farShin,  [this.farThigh,  this.farShin,  this.farBoot]);
         leg(g.nearThigh, g.nearShin, [this.nearThigh, this.nearShin, this.nearBoot]);
 
-        // Arms root at the shoulders. Forearm attaches through the same
-        // ELBOW_OVERLAP _attachChild pull-back updateUpright uses, for the
-        // same reason as the leg closure above.
+        // Arms root at the shoulders. Upper arm and forearm both attach
+        // through the same _attachChild contract as updateUpright, so
+        // shoulder and elbow connectivity survives every get-up keypose.
         const arm = (up, fore, imgs) => {
             const [upImg, foreImg] = imgs;
             const uA = ang(up), fA = ang(fore);
-            this._placePart(upImg, shX, shY, armW, upperArmH, uA, s, facing);
+            const shoulderRender = this._attachChild(upImg, shX, shY, uA, s, RIG.SHOULDER_OVERLAP);
+            this._placePart(upImg, shoulderRender.x, shoulderRender.y, armW, upperArmH, uA, s, facing);
+            const side = upImg === this.farUpArm ? 'far' : 'near';
+            this._recordJointAttachment(`${side}Shoulder`, upImg, shX, shY, uA);
             const elbow = this._end(shX, shY, upperArmH, uA);
             const elbowRender = this._attachChild(foreImg, elbow.x, elbow.y, uA, s, RIG.ELBOW_OVERLAP);
             this._placePart(foreImg, elbowRender.x, elbowRender.y, armW, forearmH, fA, s, facing);
+            this._recordJointAttachment(`${side}Elbow`, foreImg, elbow.x, elbow.y, fA);
         };
         arm(g.farArm,  g.farFore,  [this.farUpArm,  this.farForearm]);
         arm(g.nearArm, g.nearFore, [this.nearUpArm, this.nearForearm]);
@@ -955,6 +1004,7 @@ export default class Skeleton {
                 ? shX + facing * this._headOffsetX * s
                 : shX;
             this.head.setPosition(anchorX, anchorY).setDisplaySize(headR * 2.0 * this._headScale, headDispH).setFlipX(facing < 0);
+            this._recordJointAttachment('neck', this.head, shX, shY, 0);
         } else {
             this.head.clear();
             this.head.fillStyle(this._headCol, 1);

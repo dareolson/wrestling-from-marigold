@@ -107,6 +107,75 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-25 (George arm-seat retune, post-shoulder-attachment-fix) — Claude
+
+Derek live-tuned George's arm seating in `tools/rig-tuner/` after playtesting
+the shoulder attachment fix below and exported four values into
+`george.js`'s `textures` block: new `armOffsetY: 1` and
+`nearForearmOffsetY: -3` (both previously unset/0), and
+`farForearmOffsetX`/`farForearmOffsetY` moved from -3/-6 to -4/-8. Applied
+as-is, no other logic changes.
+
+Re-verified after applying: `tools/debug/joint_attachment_audit.mjs` still
+passes for George in every sampled pose (min margin now 1.48px in
+`axeHandleUp`, still positive/covered — tighter than before the retune but
+not fragile), `npm test` 43/43, `npm run debug:play -- all` 16/16, `npm run
+build` clean.
+
+Action required: none — Derek already visually approved these values live in
+the rig tuner before exporting them.
+
+### 2026-07-24 (all-joint attachment contract: shoulders now inherit the knee/elbow fix; Thesz's out-of-box near knee corrected) — Codex
+
+Derek reported that George's arm still disconnected and directed the
+knee-attachment work to cover all of George's joints, Lou Thesz, and future
+wrestlers. The underlying gap was structural: `_attachChild` already protected
+hips, knees, and elbows in upright and grounded rendering, but upper arms were
+still placed directly at the shoulder. That left a rotatable, one-row
+butt-joint which opens visibly in strong arm poses such as the new hammerlock.
+
+Added `RIG.SHOULDER_OVERLAP` and routed both near/far upper arms through the
+same `_attachChild` contract in both `updateUpright` and `_applyGrounded`.
+This is shared Skeleton behavior, not George-specific tuning, so George,
+Thesz, placeholder wrestlers, and future textured wrestlers receive it
+automatically. Existing `jointPivotFrac` metadata remains the precise path:
+authored overlap art anchors at the true joint; assets without metadata use
+the safe overlap fallback.
+
+Added `tools/debug/joint_attachment_audit.mjs`, which measures the true
+neck/near+far shoulder/elbow/hip/knee point against the child render box.
+Positive margin means the joint is covered, zero is a fragile butt-joint, and
+negative means the child has structurally detached. It exercises George and
+Thesz in both facings across `powerIdle`, `theszIdle`, `block`,
+`axeHandleUp`, `armBarLock`, `hammerlockCrank`, and all four get-up samples.
+
+The first audit found a second real bug: Thesz's upright near knee sat
+1.0–1.7px outside the shin box in every sampled pose and both facings. The
+old `nearShinOffsetY: 25` had pushed the child farther down than its overlap
+could cover. Changed it to 20 and grew only the shin display height 95→100,
+so the cap moves up into a real overlap while the already-approved boot/ground
+seat stays in place. The rerun passes every sample: George's minimum coverage
+is 2.92px in the most extreme sampled arm pose and Thesz's is 1.80px; get-up
+samples retain at least 6.39px.
+
+Visual check: captured George and Thesz side-by-side in
+`hammerlockCrank`; shoulder/arm chains read continuous. Automated
+verification under Node 25.8.1: joint attachment audit all pass, `npm test`
+43/43, `npm run debug:play -- all` 16/16, `npm run build` clean.
+
+This closes the runtime geometry problem but does not silently close Thesz's
+separate source-art/crop tasks: `knee-pivot-structural-fix` and
+`thesz-shin-cap-seam` remain open because an opaque ink seam can still be
+visible even when the true joint is geometrically covered.
+
+Files touched: `src/Skeleton.js`, `src/characters/thesz.js`,
+`tools/debug/joint_attachment_audit.mjs`, `AI_HANDOFF.md`,
+`AI_HANDOFF_TASKS.json`.
+Action required: Derek — visual sign-off in the live game, especially
+George's hammerlock and Thesz's walking knee. Future rig changes should run
+the new audit before handoff.
+Priority: high (shared visible integrity contract; implemented and verified).
+
 ### 2026-07-24 (four-move blueprint implemented and verified) — Claude
 
 Implemented Codex's four-move blueprint

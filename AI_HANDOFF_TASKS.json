@@ -42,6 +42,18 @@
       "next_step": "Partially covered as a side effect of tools/debug/knee_pivot_audit.mjs (2026-07-15, see knee-pivot-structural-fix) -- it confirmed facing-symmetric distances at matching gait phases across both P1/P2 slots, but that's a byproduct of a different script, not a dedicated rig-tuner-integrated parity check. Still not started as its own thing."
     },
     {
+      "id": "all-joint-attachment-contract",
+      "title": "Carry the child-joint attachment contract through shoulders, elbows, hips, and knees",
+      "category": "rig",
+      "priority": "high",
+      "status": "done",
+      "owner": "Codex (implement), Derek (visual sign-off)",
+      "source": "AI_HANDOFF.md, 2026-07-24 Codex all-joint attachment entry",
+      "detail": "George's arm could still detach because upper arms were placed directly at the shoulder even though hips, knees, and elbows used Skeleton._attachChild. The fix had to be shared by George, Lou Thesz, placeholders, and future wrestlers in both upright and grounded/get-up rendering.",
+      "resolved_note": "Added a shared SHOULDER_OVERLAP fallback and routed near/far upper arms through _attachChild in both render paths. Added a joint_attachment_audit covering neck plus near/far shoulders, elbows, hips, and knees for George and Thesz in both facings, six extreme upright poses, and four get-up samples. The audit exposed Thesz's near knee 1.0-1.7px outside its shin box; nearShinOffsetY 25→20 plus shin display height 95→100 restored 1.8px+ coverage without moving the boot. Joint audit passes, unit tests 43/43, debug:play 16/16, build clean.",
+      "resolved_commit": "working tree as of 2026-07-24; commit pending"
+    },
+    {
       "id": "lou-knee-art-cleanup",
       "title": "Art/cutter decision: remove the zero-margin knee-seam problem at the source",
       "category": "art",
@@ -123,7 +135,7 @@
       "owner": "Derek (art cleanup planned)",
       "source": "AI_HANDOFF.md, Codex entry 2026-07-14 'knee connections break on facing changes', closing note",
       "detail": "Distinct from the facing-mirroring bug above: Codex's live four-frame game check still showed the cap seam mid-stride even accounting for facing. Derek's planned art cleanup on the closed knee outline/cap addresses this; related to but not solved by lou-knee-art-cleanup or mirrored-knee-tilt-fix alone.",
-      "next_step": "Derek's next art session on the knee outline/cap; re-verify after mirrored-knee-tilt-fix lands since that changes what's actually being rendered at each facing."
+      "next_step": "Runtime geometry now passes the 2026-07-24 all-joint audit with at least 1.8px coverage across both facings and sampled poses. This item remains open only for the separate visible ink/cap seam: Derek reviews the walking knee in-browser and, if the line remains visible, handles it as source-art/crop cleanup rather than another runtime offset."
     },
     {
       "id": "rig-tuner-derek-signoff",

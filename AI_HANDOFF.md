@@ -130,6 +130,52 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-25 (cohesive-body-rig-binding: knees investigated, no fix needed) — Claude
+
+Continued into Phase B (knees) after both characters' elbows landed. Finding:
+**knees don't need the elbow-style distalAnchorFrac fix, and forcing one on
+would be the wrong move.**
+
+Two probes, both ad hoc (not committed — see below):
+
+1. **Per-row anchor search** (mirrors the elbow methodology): for every row
+   of the thigh canvas, map its ink centroid through the thigh's actual
+   render transform and measure distance to the true knee
+   (`jointAttachmentPoints.*Knee`), keeping the best-fitting row. Elbows hit
+   0.001px this way. Knees didn't get close even at the best row: George
+   near 3.4px / far 10.0px, Thesz near 4.2px / far 3.8px. Root cause: upper
+   arms end flush at the elbow (box height ~= true bone length) by design,
+   so one row IS the joint. Thighs are deliberately drawn LONGER than the
+   true bone length with the extra art meant to be covered by the shin's own
+   overlap (George's thigh box is explicitly sized "as if thighH were 68"
+   against a real bone length of 56 — see george.js's thigh comment) — there
+   is no single "flush" row to find, by design.
+2. **Dense ink-gap sweep** (the metric that actually matters for an
+   overlap-style joint, and the same technique that caught the elbow bug
+   despite the sparse named-pose audit passing): swept leg angle -1.5..1.5
+   rad, both facings, both characters, measuring parent/child painted-alpha
+   proximity the same way `joint_attachment_audit.mjs` does for its 8 named
+   poses. Result: **0.00px everywhere**, both characters, both facings,
+   across the full angle range. Unlike the elbow (which passed the sparse
+   audit while hiding a real 3-4px anchor error), there's no hidden
+   pose-dependent drift here — the existing hip-overlap/knee-overlap backoff
+   technique is already solid.
+
+**Conclusion:** the blueprint's assumption that the elbow fix's "same code
+path" would carry mechanically to knees doesn't hold — knees use a
+structurally different (generous-overlap) authoring convention that already
+meets the coverage bar that matters for it. No code change made. Both
+probe scripts were exploratory and were not committed (they'd need cleanup
+to be worth keeping — happy to formalize either as a real tool if useful
+going forward, e.g. promoting the ink-gap sweep to a dense-angle variant of
+`joint_attachment_audit.mjs`).
+
+**Stopping here for Derek's check-in before Phase C (torso sockets).** Per
+the blueprint, Phase C is a bigger structural step than anything done so far
+— shoulders/hips/neck root from torso sockets instead of independent
+stagger/offset constants, retiring `SHOULDER_STAGGER`/`HIP_STAGGER`/etc.
+where the socket profile replaces them. Not started.
+
 ### 2026-07-25 (cohesive-body-rig-binding: Thesz's elbows) — Claude
 
 Derek reviewed George's elbows in-browser and signed off ("hes elbos look

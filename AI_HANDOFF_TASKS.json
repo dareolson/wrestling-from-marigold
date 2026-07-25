@@ -11,11 +11,11 @@
       "title": "Bind painted limb anchors to one authoritative bone graph",
       "category": "rig-architecture",
       "priority": "high",
-      "status": "open",
-      "owner": "Claude or Codex (implement), Derek (visual approval)",
+      "status": "decision-needed",
+      "owner": "Claude or Codex (implement), Derek (visual approval + Phase C go-ahead)",
       "source": "COHESIVE_BODY_RIG_BLUEPRINT.md + AI_HANDOFF.md 2026-07-25 active assignment",
       "detail": "Replace the remaining display-box/pivot approximation with an incremental two-anchor skin binding. Each textured limb maps its painted proximal and distal anchors onto shared bone joints; torso sockets own shoulders, hips, and neck; constraints modify bones rather than sprite X/Y. Preserve the current Phaser renderer, artwork, gameplay, and draw ordering.",
-      "next_step": "Both characters' elbows done (George commit c8f8fae, Derek-approved in-browser; Thesz same session, same distalAnchorFrac mechanism, no engine changes needed) -- see AI_HANDOFF.md's 2026-07-25 entries. Both pass elbow_anchor_sweep.mjs at 0.001px (from ~3-4px baselines), joint_attachment_audit unchanged all-PASS, npm test/debug:play/build all clean, before/after screenshots show no silhouette change. Next per the blueprint's phase order: both characters' knees (Phase B), then torso sockets (Phase C). Not started."
+      "next_step": "Both characters' elbows done (George commit c8f8fae, Derek-approved in-browser; Thesz same session, same distalAnchorFrac mechanism). Knees investigated and found NOT to need the same fix -- see AI_HANDOFF.md's 2026-07-25 'knees investigated' entry: thighs are authored with deliberate overlap slack (unlike the flush-ending upper arm), so a dense ink-gap sweep (the metric that actually applies to that authoring style) already passes at 0.00px across the full angle range, both characters, both facings; a per-row anchor search confirmed there's no single flush row to bind to even at best fit (3.4-10px). No code change made for knees. Stopped per the blueprint's own guardrail before Phase C (torso sockets), which is a bigger structural step (retiring SHOULDER_STAGGER/HIP_STAGGER/etc. in favor of socket-rooted limbs) -- waiting on Derek's go-ahead before starting it."
     },
     {
       "id": "animation-moveset-reference-report",

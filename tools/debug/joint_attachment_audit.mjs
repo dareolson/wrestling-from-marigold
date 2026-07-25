@@ -27,9 +27,13 @@ const UPRIGHT_POSES = [
 ];
 const GET_UP_SAMPLES = [0, 0.34, 0.72, 1];
 
+// Optional CLI character list (e.g. `george-ai-pilot`) — defaults to the two
+// shipped characters, exact prior behavior, when no args are given.
+const CHAR_LIST = process.argv.slice(2).length ? process.argv.slice(2) : ['george', 'thesz'];
+
 let failed = 0;
 
-for (const character of ['george', 'thesz']) {
+for (const character of CHAR_LIST) {
     process.env.WFM_P1 = character;
     process.env.WFM_P2 = character === 'george' ? 'thesz' : 'george';
     const h = await launch();

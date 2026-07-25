@@ -5,9 +5,13 @@ import AIHandler from '../AIHandler.js';
 import CrowdAudio from '../CrowdAudio.js';
 import { george } from '../characters/george.js';
 import { thesz } from '../characters/thesz.js';
+import { georgeAiPilot } from '../characters/george_ai_pilot.js';
 
-// All characters whose PNGs should be preloaded
-const CHARACTERS = [george, thesz];
+// All characters whose PNGs should be preloaded. georgeAiPilot (2026-07-25,
+// George AI art-swap pilot) is a reversible, opt-in comparison config --
+// select it via ?p1=george-ai-pilot / ?p2=george-ai-pilot (see PRESETS
+// below); the shipped george.js definition is untouched.
+const CHARACTERS = [george, thesz, georgeAiPilot];
 const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png' };
 
 // Named crowd extras: each is one chroma-keyed multi-frame reference sheet
@@ -2743,6 +2747,17 @@ export default class Arena extends Phaser.Scene {
                 skin: 0xe8c098, trunks: 0x484848,
                 moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'theszPress', 'hammerlock', 'backBodyDrop', 'kneeDrop'],
                 textures: thesz.textures,
+            },
+            // George AI art-swap pilot (2026-07-25) — same kit/personality as
+            // george, new AI-generated art via george_ai_pilot.js's textures
+            // (dynamic-pelvis hip sockets + headAnchorFrac). Reversible: this
+            // does not touch the `george` preset above. Comparison only —
+            // Derek has not approved this as a live-textures swap.
+            'george-ai-pilot': {
+                name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
+                skin: 0xa87858, trunks: 0x1a1a1a,
+                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
+                textures: georgeAiPilot.textures,
             },
         };
         const q  = new URLSearchParams(location.search);

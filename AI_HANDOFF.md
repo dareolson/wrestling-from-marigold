@@ -52,6 +52,20 @@ George elbow changes requested. Proceeding to Thesz's elbows next, per the
 blueprint's phase order, using the same `distalAnchorFrac` mechanism. Knees
 and torso sockets remain not started.
 
+**Status 2026-07-25 (later, Claude): hip sockets landed via the George AI
+pilot, resolving Codex's earlier "add hip sockets now" / "AI pilot" thread.**
+Derek pointed Claude at `Sprite sheets/AI Pilot/George/
+CLAUDE_INTEGRATION_HANDOFF.md` (gitignored — this is why the earlier reply
+above couldn't identify what Codex meant). That doc supplied the missing
+design: a dynamic-pelvis hip-socket contract, opt-in per character. Implemented
+in `Skeleton.js` (`_solveTorsoOrigin`, gated on `nearHip`+`farHip` socket
+presence — George's/Thesz's own sockets still lack both, so their rendering
+is unaffected) and used it to wire the pilot's `george-ai-pilot` character
+config. Full writeup in the Handoff Log entry below. Hip sockets are now
+available for George's/Thesz's own torso sockets whenever someone measures
+their nearHip/farHip values — not done in this pass, out of scope (this pass
+only had to make it work for the pilot's own measured sockets).
+
 **Previous assignment closed 2026-07-24 (Claude):** Derek approved the four-move blueprint below
 in full — all four moves, all three directional-input overrides, the kit
 assignments as proposed, and the current-rig hammerlock approximation (no
@@ -129,6 +143,174 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 `Skeleton.js` and are not v1 requirements.
 
 ## Handoff Log
+
+### 2026-07-25 (George AI art-swap pilot: dynamic-pelvis hip sockets, headAnchorFrac, opt-in character config — comparison gate run, real issues found, NOT recommended for a live swap yet) — Claude
+
+Derek's instruction: begin the pilot Codex prepared in `Sprite sheets/AI
+Pilot/George/` (gitignored — see this file's "reply to Codex" entry above for
+why an earlier session couldn't find it). Read
+`CLAUDE_INTEGRATION_HANDOFF.md`, `PILOT_NOTES.md`, `rig-profile-pilot.json`,
+and `COHESIVE_BODY_RIG_BLUEPRINT.md` first, per Derek's instruction. Commit
+`6faf4a6` (the combined-anchor `_trueDistalEnd` fix Codex's review asked for)
+was already in place — not reimplemented, confirmed via its own six
+`tests/skeletonAnchor.test.js` cases still passing.
+
+**Two separate commits, per Derek's instruction to keep the runtime contract
+reviewable independently of the pilot's own assets:**
+
+**1. Runtime contract (`Skeleton.js`, opt-in, both gated so George/Thesz are
+provably unaffected):**
+
+- **`headAnchorFrac`**: the pilot's head is drawn at a 3/4 angle, so its
+  painted neck point isn't at the legacy hard-coded bottom-center `(0.5, 1)`
+  origin. When `textures.headAnchorFrac` is set, it replaces that origin
+  (both `updateUpright` and `_applyGrounded`); absent (George, Thesz), the
+  origin — and therefore every existing head's on-screen position — is
+  unchanged.
+- **Dynamic-pelvis hip sockets**: when a character's `rigProfile` supplies
+  BOTH `nearHip` and `farHip` torso sockets, a new `_solveTorsoOrigin`
+  inverts the existing `_socketPoint` transform to place the torso so its
+  measured hip-socket midpoint lands exactly on the authoritative pelvis
+  target (`x, hipY` upright; `hipX, hipY` grounded) under the torso's actual
+  rotation/scale/facing — replacing the fixed `torsoH` bone-length walk every
+  character used before. Each leg's true hip root then becomes its own
+  socket's world point (`_gaitLeg` and the pose-driven-FK `mk()` closure both
+  gained an optional hip-point override), and the legacy
+  `HIP_STAGGER`/`LEG_BACK_BIAS`/near+far leg offset knobs are skipped on that
+  path — `jointPivotFrac` already supplies the thigh's hidden proximal
+  overlap, and the pilot's own contract says not to reintroduce per-part
+  compensation on top of it. Applied in both `updateUpright` and
+  `_applyGrounded` (get-up). George's/Thesz's own `rigProfile.sockets` has
+  neck/shoulders only — no hips — so this is unreachable for them.
+- Added `tests/skeletonHipSocket.test.js` (4 cases: `_solveTorsoOrigin`
+  round-trips with `_socketPoint` across angles/scales/facings; individual
+  near/far sockets straddle the pelvis target symmetrically; `_gaitLeg`'s
+  hip-point override actually changes the solved IK, not just the label; and
+  a byte-identical regression pin for the absent-override call shape).
+- **Verification:** `npm test` 53/53 (49 prior + 4 new); `npm run build`
+  clean; `npm run debug:play -- all` 16/16;
+  `joint_attachment_audit.mjs`/`torso_socket_sweep.mjs`/`elbow_anchor_sweep.mjs`
+  re-run for George and Thesz, all unchanged from their pre-existing baselines
+  (George's neck still exactly 1.00px worst-case) — confirms byte-identical.
+
+**2. Pilot asset/config integration:**
+
+- Copied the six approved parts from `rig-parts-source/transparent/` into a
+  new tracked namespace, `src/assets/wrestlers/george-ai-pilot/` (`Sprite
+  sheets/` is gitignored; these copies are the only committed form).
+- New `src/characters/george_ai_pilot.js` (`georgeAiPilot`), wired with
+  distinct `george_ai_*` texture keys, box dimensions from
+  `CLAUDE_INTEGRATION_HANDOFF.md`'s derivation formula (one uniform scale per
+  part, rounded only now for the in-engine comparison, per that doc's own
+  instruction), `jointPivotFrac`/`distalAnchorFrac` straight from
+  `rig-profile-pilot.json`, the full five-socket `rigProfile` (neck + both
+  shoulders + both hips), and `headAnchorFrac` from `parts.head.neck`. Reuses
+  George's own measured `heightScale` (0.798) rather than guessing a new one
+  — same character, same real-world height, new art.
+- Opt-in selection: added `georgeAiPilot` to `Arena.js`'s `CHARACTERS`
+  preload list and a new `'george-ai-pilot'` `PRESETS` entry — select via
+  `?p1=george-ai-pilot` / `?p2=george-ai-pilot` (also works through
+  `WFM_P1`/`WFM_P2` in the debug harness). The shipped `george` preset and
+  `george.js` are untouched.
+- Generalized `joint_attachment_audit.mjs` to take an optional character-list
+  argv (defaults to `['george', 'thesz']`, exact prior behavior) so it can
+  check the pilot too.
+- Wrote `tools/wrestler-cutter/normalize_pilot_expressions.mjs` for Derek's
+  named head-expression request (below).
+
+**Comparison gate results — mixed. Structural rig work is sound; art
+proportions are not ready:**
+
+- `joint_attachment_audit.mjs george-ai-pilot`: **0.00px, all-PASS**, both
+  facings, all 8 upright poses + 4 get-up samples — every joint (shoulders,
+  elbows, hips, knees, neck) covered.
+- `torso_socket_sweep.mjs george-ai-pilot`: **0.00px, PASS**, dense get-up
+  rotation sweep, neck/both shoulders/both hips.
+- Cross-checked the hip-socket math directly (dumped live
+  `jointAttachmentPoints`/render transforms in a plain standing pose): the
+  near elbow's world position exactly equals the forearm's render origin,
+  margins all positive — confirms the ink-gap PASS isn't being masked by
+  generous overlap the way the historical elbow bug was.
+- `elbow_anchor_sweep.mjs george-ai-pilot`: **FAIL**, ~6-7px mapping error.
+  Investigated rather than accepted at face value (the same "generous overlap
+  can mask a real anchor error" pattern that bit the original elbow bug
+  applies here too, so a PASS elsewhere doesn't retroactively excuse a FAIL).
+  Root cause: this tool's anchor-finding heuristic (bottom-most opaque row's
+  centroid) is wrong for this art's authoring style. A row-by-row lateral
+  centroid scan of `upper_arm.png` shows the configured
+  `distalAnchorFrac` (`v=0.843`, from `rig-profile-pilot.json`) sits in the
+  solid, well-populated shaft of the limb (~55 opaque px per row), while the
+  bottom-most row (`v≈0.93`) is a thin diagonal overlap tail (as few as 0
+  opaque px) that the heuristic mistakes for the joint. This is a tooling gap
+  for this authoring style, not a wiring defect — flagging for Codex/whoever
+  owns that script, not silently patching around it. `knee_pivot_audit.mjs`
+  shows a similar-shaped disagreement for the same reason (it has no
+  pass/fail threshold — diagnostic-only — and George's own shipped rig
+  already reads a nonzero 10.41px on this exact metric, confirmed as a
+  baseline check, so the pilot's readings aren't evidence of a regression
+  either).
+- **Real, unresolved issues found via side-by-side screenshots (george vs.
+  george-ai-pilot, both facings, idle/taunt/axe-handle/arm-bar/get-up/walk)
+  — not code bugs, art/scale decisions for Derek:**
+  1. The forearm (hand included in the same canvas) renders very large
+     relative to the upper arm — box heights 138 vs. 85 unscaled, a much
+     bigger ratio than George's tuned 60-vs-71. At any pose where an arm
+     extends away from the torso (hanging at idle, `axeHandleUp`,
+     `armBarLock`, the get-up sit pose), the hand reads as an oversized,
+     almost detached shape. Not visible in `tauntArmsWide` (both arms
+     overhead, where a large raised hand looks intentional).
+  2. Sole grounding: measured the shin's own lowest-opaque-row point through
+     its live render transform across a full gait cycle (same technique as
+     George's own painted-sole fix). Planted-frame gaps are **30-37px below
+     the mat** — the boot reads as sunk into the canvas, not planted on it.
+     Contributing factors: the shin box (151 unscaled, derived per the box
+     formula) is proportionally much taller than George's tuned 107, and the
+     pilot config doesn't override the shared `NEAR_SHIN_SCALE`
+     default (1.1) the way George does (0.81) — there is no measured
+     real-world target to solve for yet, unlike George's rig-tuner pass, so
+     I did not guess one.
+  Both are exactly the kind of thing `CLAUDE_INTEGRATION_HANDOFF.md` itself
+  anticipated ("Round only after an in-engine comparison") — the rig
+  mechanism (sockets, anchors, jointPivotFrac) is verified correct; the raw
+  box numbers from the derivation formula need a scale/crop decision before
+  this is presentable, let alone swappable.
+
+**Expression head variants (Derek's mid-task request):** normalize the five
+approved AI-generated expressions (`Sprite sheets/AI Pilot/George/
+expressions/transparent/*.png` — independent generations, 1536x1024, no
+measured neck anchor, NOT crops of the same body master) onto the idle head's
+exact 262x320 canvas and `headAnchorFrac`. Wrote
+`tools/wrestler-cutter/normalize_pilot_expressions.mjs`. First attempt reused
+the limb-anchor bottom-row heuristic (see above) — validated it against the
+idle head's own documented anchor before trusting it on the expressions, and
+it failed by 25.58px (this head's neck anchor sits ~26px above the
+silhouette's true bottom edge, unlike a limb that fades out right at the
+joint). Replaced with a bounding-box-relative fraction calibrated off the
+idle head's own documented anchor instead. This is a geometric proxy, not an
+independent per-image measurement — the script's own printed output says so
+and reports a bottom-row cross-check delta per expression (29-31px, tightly
+clustered across all five and reasonably close to idle's own 25.58px) so a
+human can sanity-check before trusting it further. Output:
+`src/assets/wrestlers/george-ai-pilot/head_{smug,angry,hurt,exhausted,
+shocked}.png`, all 262x320. Recorded as `textures.headExpressions` in
+`george_ai_pilot.js` as **data only** — `Skeleton.js`/`Wrestler.js` have no
+expression-switching mechanism (per `CLAUDE_INTEGRATION_HANDOFF.md`, not a
+v1 requirement), so none of these five are preloaded or given a texture key
+yet; that runtime wiring is a separate future task.
+
+**Not done — explicitly stopping here per the pilot's own safe-integration
+sequence:** the live `george`/`george.js` textures are untouched; Derek has
+not visually approved anything above; do not swap the live George texture
+map to the pilot's until the two proportion issues above are resolved and
+Derek signs off in-browser.
+
+**Next:** Derek's call on the forearm/hand scale and shin/boot scale (both
+need either a box re-derivation, a `nearShinScale`/`farShinScale`
+override, or an art recrop — not a guessed offset). Once those read right
+in-engine, re-run this same comparison gate before considering a live swap.
+Separately, whoever wires expression switching should read this entry's
+"Expression head variants" section and `george_ai_pilot.js`'s
+`headExpressions` comment before starting.
 
 ### 2026-07-25 (reply to Codex's Phase C review) — Claude
 

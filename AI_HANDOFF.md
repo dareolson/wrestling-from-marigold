@@ -43,13 +43,14 @@ angle sweep in both facings, `npm test`, `npm run debug:play -- all`, build, and
 before/after screenshots. Do not repair failures with new fixed screen-space
 offsets.
 
-**Status 2026-07-25 (Claude): first slice implemented, stopped here for
-Derek's visual review.** George's near/far elbows are now bound via a
-measured two-anchor correction (`distalAnchorFrac` in Skeleton.js); see the
-Handoff Log entry below for the diagnostic finding, the fix, and full
-verification. Thesz elbows, knees, and torso sockets are explicitly NOT
-started — do not proceed to them until Derek has looked at George's elbows
-in-browser and signed off.
+**Status 2026-07-25 (Claude): first slice implemented and Derek-approved.**
+George's near/far elbows are now bound via a measured two-anchor correction
+(`distalAnchorFrac` in Skeleton.js); see the Handoff Log entry below for the
+diagnostic finding, the fix, and full verification. Derek reviewed in-browser
+2026-07-25 ("hes elbos look better than ever") — approved as-is, no further
+George elbow changes requested. Proceeding to Thesz's elbows next, per the
+blueprint's phase order, using the same `distalAnchorFrac` mechanism. Knees
+and torso sockets remain not started.
 
 **Previous assignment closed 2026-07-24 (Claude):** Derek approved the four-move blueprint below
 in full — all four moves, all three directional-input overrides, the kit
@@ -128,6 +129,36 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 `Skeleton.js` and are not v1 requirements.
 
 ## Handoff Log
+
+### 2026-07-25 (cohesive-body-rig-binding: Thesz's elbows) — Claude
+
+Derek reviewed George's elbows in-browser and signed off ("hes elbos look
+better than ever") — extending the same fix to Thesz's elbows per the
+blueprint's phase order.
+
+Generalized `tools/debug/elbow_anchor_sweep.mjs` to take a character argument
+(`node tools/debug/elbow_anchor_sweep.mjs thesz`, defaults `george`) instead
+of duplicating it. Baseline for Thesz: same class of issue as George — elbow
+ink centroid u=0.5846 vs the shoulder end's near-centered u=0.467 — mapping
+error 2.86-3.37px (near/far), constant across the full sweep. Unlike George,
+Thesz's `upperArm` had no box override (plain string entry), so `TEX.upperArm.h`
+(68) already matches `P.upperArmH` — no length-axis term needed, only lateral.
+
+Fix: converted `thesz.js`'s `upperArm` to object form with
+`distalAnchorFrac: { u: 0.5846, v: 0.9969 }`, using the same `Skeleton.js`
+mechanism George's fix added — no engine changes needed, just the measured
+values.
+
+**Verification:** `elbow_anchor_sweep.mjs thesz` mapping error 0.001px (from
+2.86-3.37px baseline); `elbow_anchor_sweep.mjs george` re-run clean (no
+regression from the script's generalization); `joint_attachment_audit.mjs`
+unchanged, all-PASS, 0.00px; `npm test` 43/43; `npm run debug:play -- all`
+16/16; `npm run build` clean; before/after screenshots at `tauntArmsWide` and
+`axeHandleUp`, facing both ways, visually identical silhouettes.
+
+**Next:** both characters' elbows are done. Knees (Phase B) are next per the
+blueprint's phase order — not started. Torso sockets (Phase C) remain after
+that.
 
 ### 2026-07-25 (cohesive-body-rig-binding, first slice: Phase A + George's elbows) — Claude
 

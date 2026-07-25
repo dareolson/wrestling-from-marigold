@@ -1,5 +1,5 @@
 // Phase A diagnostic for the cohesive-body-rig-binding active assignment
-// (COHESIVE_BODY_RIG_BLUEPRINT.md). Measures whether George's upper-arm
+// (COHESIVE_BODY_RIG_BLUEPRINT.md). Measures whether a character's upper-arm
 // PAINTED elbow anchor — the actual opaque ink content of upper_arm.png,
 // not the display box it's rendered into — coincides with the true bone
 // joint (Skeleton.jointAttachmentPoints.*Elbow) across a dense shoulder-
@@ -9,7 +9,7 @@
 // blueprint's acceptance criteria (<=0.5 world px, stable across rotation)
 // require before any elbow binding code is written.
 //
-//   node tools/debug/elbow_anchor_sweep.mjs
+//   node tools/debug/elbow_anchor_sweep.mjs [george|thesz]   — defaults george
 //
 // Method: find the upper-arm texture's own bottom-most run of opaque pixels
 // (the artist's painted elbow edge) once, as a local (u, v) anchor. For each
@@ -20,6 +20,7 @@
 
 import { launch } from './harness.mjs';
 
+const CHAR = process.argv[2] || 'george';
 const MAX_MAPPING_ERROR = 0.5;
 // Shoulder angle sweep — spans well past the widest authored pose (taunt
 // overhead ~2.0) in both directions so the far end of the authored range is
@@ -27,8 +28,8 @@ const MAX_MAPPING_ERROR = 0.5;
 const ANGLES = [];
 for (let a = -1.8; a <= 2.4; a += 0.15) ANGLES.push(Math.round(a * 1000) / 1000);
 
-process.env.WFM_P1 = 'george';
-process.env.WFM_P2 = 'thesz';
+process.env.WFM_P1 = CHAR;
+process.env.WFM_P2 = CHAR === 'george' ? 'thesz' : 'george';
 const h = await launch();
 await h.page.waitForTimeout(300);
 
@@ -108,6 +109,7 @@ await h.close();
 delete process.env.WFM_P1;
 delete process.env.WFM_P2;
 
+console.log(`Character: ${CHAR}`);
 console.log(`Measured painted elbow anchor (local frame fraction): near u=${result.anchorNear.u.toFixed(4)} v=${result.anchorNear.v.toFixed(4)}, far u=${result.anchorFar.u.toFixed(4)} v=${result.anchorFar.v.toFixed(4)}`);
 console.log(`(v=1.0 would mean the current box-edge-is-the-joint assumption is exact)`);
 console.log('');

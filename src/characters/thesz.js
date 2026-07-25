@@ -56,7 +56,18 @@ export const thesz = {
         // (2026-07-15), tuned together with the leg/shin knobs below.
         armOffsetX: -9,
         armOffsetY: 7,
-        upperArm: 'thesz_upper_arm',
+        // distalAnchorFrac (2026-07-25, cohesive-body-rig-binding, extending
+        // George's elbow fix to Thesz per the blueprint's phase order —
+        // see COHESIVE_BODY_RIG_BLUEPRINT.md and george.js's own comment on
+        // this field for the mechanism). tools/debug/elbow_anchor_sweep.mjs
+        // thesz measured the same class of issue as George: the elbow-end
+        // ink centroid sits at u=0.5846 while the shoulder end is close to
+        // centered (u=0.467) — baseline mapping error 2.86-3.37px (near/far),
+        // constant across the full angle sweep for the same reason George's
+        // was (two points on one rigid rotating body). Thesz's box height
+        // (TEX default 68) already matches P.upperArmH, so unlike George
+        // there's no length-axis term to correct — v=0.9969 is nearly 1.0.
+        upperArm: { key: 'thesz_upper_arm', distalAnchorFrac: { u: 0.5846, v: 0.9969 } },
         // TEX default h 63 measured 3.1% long vs the reference (forearm ink
         // length / torso ink height: target 207.4/380 = 0.546, rendered
         // 0.5625) — 63/1.031 = 61. Width stays the TEX default (limb widths

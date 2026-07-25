@@ -82,7 +82,7 @@ export const george = {
         // so the shoulder/elbow joint chain doesn't move, just the rendered
         // art's length).
         upperArm: { key: 'george_upper_arm', box: { w: 55, h: 71 } },
-        // nearForearmOffsetX: live rig-tuner pass (Derek, 2026-07-19).
+        // Forearms anchor directly at the true elbow through jointPivotFrac.
         // jointPivotFrac (2026-07-21/22, general joint-attachment contract —
         // see AI_HANDOFF.md's 2026-07-19 Codex entries and Skeleton.js's
         // img()/_attachChild comments): George's forearm art carries
@@ -110,27 +110,10 @@ export const george = {
         // dimensions again: 38→36.1 (rounded to 36), 63→59.85 (rounded to
         // 60).
         forearm:  { key: 'george_forearm', box: { w: 36, h: 60 }, jointPivotFrac: 0.1804878048780488 },
-        // Left as-is after wiring jointPivotFrac above (2026-07-22): unlike
-        // the shin's offsets (see nearShinOffsetY's comment below — those
-        // were ~13-27px, comparable to RIG.KNEE_OVERLAP=18, i.e. clearly the
-        // old backoff compensation), this is only 2px against
-        // RIG.ELBOW_OVERLAP=17 — an order of magnitude too small to be that
-        // same compensation, so it's left in place as a minor fist-position
-        // nudge rather than zeroed.
-        nearForearmOffsetX: 2,
-        // nearForearmOffsetY: live rig-tuner export (Derek, 2026-07-24 —
-        // post-shoulder-attachment-fix pass), same category as
-        // nearForearmOffsetX above.
-        nearForearmOffsetY: -3,
-        // farForearmOffsetX/Y (2026-07-24, live rig-tuner export, Derek —
-        // re-tuned after the shoulder attachment fix landed; supersedes the
-        // 2026-07-23 -3/-6 values) — the far elbow was left un-nudged when
-        // jointPivotFrac was wired in (see the comment above), but reads
-        // slightly off in the actual game view; these are a small
-        // live-tuned seat, same category as nearForearmOffsetX above, not a
-        // sign the joint-attachment math needs revisiting.
-        farForearmOffsetX: -4,
-        farForearmOffsetY: -8,
+        // Do not add screen-space forearm offsets here. They may line up one
+        // idle frame, but they do not rotate with the limb and therefore make
+        // the elbow drift in authored poses. The internal pivot is the only
+        // structural seat for both near and far forearms.
         // "Thighs need to be longer" (Derek, 2026-07-19) — tried as a
         // per-character `thighH` bone-length bump first; wrong lever.
         // `Skeleton.js`'s `img()` always stashes a fixed `_texDims` display

@@ -107,6 +107,103 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-25 (stable visible elbow hinge) — Codex
+
+Derek's follow-up playtest found that the arm pieces still appeared to drift
+while raising/lowering and that the elbow read nearly straight. An isolated
+five-angle sweep reproduced the presentation failure even though the true
+elbow and painted-pixel connectivity audit remained exact.
+
+The default forearm formula was not a stable hinge: `arm * 1.1 + 0.52` slowly
+changed the relative elbow angle as the shoulder rotated, while the 0.52-rad
+(about 30-degree) baseline was too shallow to read at game scale. In addition,
+the forearm rendered above the upper arm at equal depth, so its authored
+overlap band swept visibly across the upper-arm cap during rotation.
+
+Changed the default to `forearm = upperArm + facing * 0.78`, producing a
+stable, clearly visible bend of about 45 degrees. Explicit per-pose
+`lForearm`/`rForearm` overrides, combat guard, and run folding still work as
+before. Split each arm's existing depth band by a tiny amount so the upper-arm
+cap masks the forearm's overlap slack; this keeps the visible elbow seat from
+crawling without changing either true joint position or the wrestler's
+near/far layering. The corrected angle sweep reads as a two-segment arm from
+hanging through overhead, and the full painted-pixel joint audit still passes
+both wrestlers, both facings, all sampled poses, and get-up frames at 0px
+maximum gap.
+
+Verification under Node 25.8.1: `npm test` 43/43, build clean, `git diff
+--check` clean, and the arm-heavy `hammerlock`, `dodge`/double-axe-handle,
+and `clothesline` browser scenarios pass. The rig-tuner smoke check confirms
+the new far-arm depth ordering and independent `lForearm` override, but its
+existing pointer/hash restoration section currently finishes 22/28: the head
+drag visibly moves the sprite without updating `headOffset`, after which six
+baseline-restore hashes fail. The same result reproduced twice; no rig-tuner
+files were changed in this pass, so that harness problem is recorded rather
+than folded into the arm fix.
+
+Files touched: `src/Skeleton.js`, handoff files.
+Action required: Derek — playtest ordinary walking/guard plus the overhead and
+hammerlock poses for elbow-bend feel.
+Priority: high (visible articulation follow-up).
+
+### 2026-07-25 (joint attachment correction: preserve silhouettes and authored pivots) — Codex
+
+Derek reported three regressions after the first all-joint pass: shoulders read
+like football pads, Lou Thesz's elbows/knees still separated, and George's
+elbow drifted as his arm rotated. The earlier 2026-07-24 implementation below
+is retained for history, but its shoulder-overlap and rectangle-audit
+conclusions are superseded by this correction.
+
+Root causes were structural. Moving the whole upper-arm image 12px behind the
+shoulder enlarged the visible deltoid silhouette instead of merely protecting
+the seam. George's live-tuned forearm X/Y offsets were screen-space values, so
+they could only line up in one pose. The elbow fallback backed the child up
+along the upper-arm angle rather than the child's own angle. Finally, the far
+arm art renders at 85% depth scale while its elbow had been calculated from a
+100%-length bone. The old audit only checked display rectangles, so transparent
+pixels could hide all of these failures.
+
+Corrected the shared contract in `Skeleton.js`: upper arms again anchor at the
+authored shoulder without artificial silhouette-changing backoff; fallback
+forearms overlap along their own rotation; and far-arm elbow endpoints use the
+same 85% scale as the rendered limb in upright and grounded paths. Removed
+George's screen-space forearm offsets while retaining Derek's shared
+`armOffsetY: 1`; George's existing `jointPivotFrac` metadata now keeps each
+forearm's authored internal pivot exactly on the true elbow in every pose.
+
+Lou's forearm and shin are now cutter-preserved joint-pivot parts, matching the
+proven George path. Re-cut both without shaving their authored top overlap and
+recorded their measured `jointPivotFrac` values in `thesz.js` (forearm
+0.0961538462, shin 0.0394497666). Lou's shin display box is restored to its
+authored 51x95 size; near-shin offsets cancel the legacy shared visual nudge so
+the internal pivot remains on the actual knee. This is character metadata over
+the shared rig contract, so future wrestlers can opt into the same durable
+behavior without pose-specific offsets.
+
+Upgraded `tools/debug/joint_attachment_audit.mjs` to inverse-transform samples
+into the actual PNG alpha data and measure painted parent/child pixels around
+every true neck, shoulder, elbow, hip, and knee. It passes George and Thesz in
+both facings across six extreme upright poses and four get-up samples, with a
+maximum painted gap of 0px. Close-up screenshots of idle and
+`hammerlockCrank` confirm the shoulder-pad distortion is gone and the reported
+elbow/knee chains remain seated.
+
+Verification under Node 25.8.1: painted-pixel joint audit all pass; `npm test`
+43/43; all 16 `debug:play` scenarios pass (the combined runner stopped after
+five because of its existing repeated local-server lifecycle behavior, so the
+remaining eleven were run individually); `npm run build` clean; `git diff
+--check` clean.
+
+Files touched: `src/Skeleton.js`, `src/characters/george.js`,
+`src/characters/thesz.js`, Lou's generated `forearm.png`/`shin.png`,
+`tools/wrestler-cutter/process-parts.mjs`,
+`tools/debug/joint_attachment_audit.mjs`, and handoff files.
+Action required: Derek — playtest the corrected silhouettes and joint motion.
+The separate historical Thesz thigh crop/art-seam tasks remain open; this
+change fixes runtime attachment without claiming that separate source-art work
+is complete.
+Priority: high (shared rig integrity regression corrected).
+
 ### 2026-07-25 (George arm-seat retune, post-shoulder-attachment-fix) — Claude
 
 Derek live-tuned George's arm seating in `tools/rig-tuner/` after playtesting

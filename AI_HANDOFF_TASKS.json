@@ -2,8 +2,8 @@
   "description": "Referenceable checklist of open work pulled from AI_HANDOFF.md, FEEL_AUDIT.md's Batch B/C backlog, and BUILDLOG.md's gamepad plan. Not a replacement for those files — this exists so nothing in the current open set gets silently dropped across sessions/tools. Tick items off by flipping status to 'done' and adding resolved_note + resolved_commit; keep finished items in the file for the record rather than deleting them.",
   "generated": "2026-07-14",
   "generated_by": "Claude (Sonnet 5)",
-  "last_updated": "2026-07-24",
-  "last_updated_by": "Claude",
+  "last_updated": "2026-07-25",
+  "last_updated_by": "Codex",
   "status_values": ["open", "decision-needed", "blocked", "in-progress", "done"],
   "tasks": [
     {
@@ -49,9 +49,9 @@
       "status": "done",
       "owner": "Codex (implement), Derek (visual sign-off)",
       "source": "AI_HANDOFF.md, 2026-07-24 Codex all-joint attachment entry",
-      "detail": "George's arm could still detach because upper arms were placed directly at the shoulder even though hips, knees, and elbows used Skeleton._attachChild. The fix had to be shared by George, Lou Thesz, placeholders, and future wrestlers in both upright and grounded/get-up rendering.",
-      "resolved_note": "Added a shared SHOULDER_OVERLAP fallback and routed near/far upper arms through _attachChild in both render paths. Added a joint_attachment_audit covering neck plus near/far shoulders, elbows, hips, and knees for George and Thesz in both facings, six extreme upright poses, and four get-up samples. The audit exposed Thesz's near knee 1.0-1.7px outside its shin box; nearShinOffsetY 25→20 plus shin display height 95→100 restored 1.8px+ coverage without moving the boot. Joint audit passes, unit tests 43/43, debug:play 16/16, build clean.",
-      "resolved_commit": "working tree as of 2026-07-24; commit pending"
+      "detail": "George's arm still detached, and the first shared-shoulder attempt then distorted both wrestlers' silhouettes. The durable contract must preserve authored shoulder silhouettes, keep internal child pivots on the true joint through rotation, account for near/far render scale, and be verifiable against painted pixels rather than display rectangles. It applies to George, Lou Thesz, placeholders, and future wrestlers in upright and grounded/get-up rendering.",
+      "resolved_note": "Supersedes the first 2026-07-24 SHOULDER_OVERLAP implementation. Upper arms now stay at the authored shoulder (no football-pad backoff); fallback forearms overlap along the child angle; far elbow endpoints use the same 0.85 depth scale as their rendered art. Removed George's pose-dependent screen-space forearm offsets so his existing internal pivot metadata stays on the true elbow. The cutter now preserves authored overlap for Thesz forearm/shin, and thesz.js records their measured jointPivotFrac values; the shin returned to its authored 51x95 box. A follow-up angle sweep exposed a remaining presentation defect: the derived forearm formula changed relative angle during shoulder travel and the child overlap drew over the upper-arm cap. The default is now a stable 0.78-rad elbow hinge, with upper-arm caps drawn just above forearm overlap inside the existing depth bands. The audit now samples real PNG alpha around every true neck/shoulder/elbow/hip/knee, not just render boxes. It passes both wrestlers, both facings, six extreme upright poses, and four get-up samples with 0px maximum painted gap. Full verification is recorded in AI_HANDOFF.md's 2026-07-25 correction entries.",
+      "resolved_commit": "working tree as of 2026-07-25; commit pending"
     },
     {
       "id": "lou-knee-art-cleanup",

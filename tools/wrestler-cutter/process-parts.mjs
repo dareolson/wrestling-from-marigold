@@ -148,6 +148,12 @@ const CHARACTERS = {
         // Trunks already baked into torso, boot already baked into shin — no
         // composite step.
         composites: {},
+        // Lou uses the same authored child-joint contract as George. Keep
+        // the tapered flesh overlap above the elbow/knee and report its true
+        // internal pivot row instead of shaving both parts to flat caps.
+        // Without this, the runtime can overlap display rectangles while the
+        // actual painted elbow/knee still ends in a visible cut line.
+        jointPivotParts: ['forearm', 'shin'],
     },
 };
 

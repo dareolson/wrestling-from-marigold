@@ -61,7 +61,10 @@ export const thesz = {
         // length / torso ink height: target 207.4/380 = 0.546, rendered
         // 0.5625) — 63/1.031 = 61. Width stays the TEX default (limb widths
         // are deliberately stylized wider, not tracked against the ref).
-        forearm:  { key: 'thesz_forearm', box: { w: 44, h: 61 } },
+        // Authored elbow overlap retained by the cutter (2026-07-25).
+        // Internal pivot keeps the forearm on the true elbow through bends;
+        // no screen-space seating offset is needed.
+        forearm:  { key: 'thesz_forearm', box: { w: 44, h: 61 }, jointPivotFrac: 0.09615384615384616 },
         // Both dims re-derived against the reference (2026-07-13 recomposite
         // probe: live part transforms re-rendered filter-free and measured
         // ink-vs-ink against the identity-positioned New Lou layers —
@@ -103,39 +106,21 @@ export const thesz = {
         // shin always needs this since its true box depends on this
         // character's own boot-art fillFrac (see Skeleton.js's TEX comment).
         // 51×95 from the 2026-07-13 recomposite probe: ref shin ink (boot
-        // included) spans 253/380 of torso height at 131/380 wide (the old
-        // 54×92 measured 5% wide / 9% tall against that). Height is NOT the
-        // ink-match value (85): the cutter flattens the shin PNG's top into
-        // a straight opaque cap, and at the ink-matched position that flat
-        // edge sat exposed across the middle of the knee — the leg read as
-        // cleaved in half (Derek, 2026-07-13). The +12 y-shift below rides
-        // the cap ~8px up under the thigh's opaque ink (like the raw layers'
-        // own 29-ref-px overlap in LouTheszFullBodyRef.png) and h grows to
-        // 95 so the sole stays on the ref's 404/380 hip→sole line (probe:
-        // sole within 0.5px, visible knee seam gone).
-        // h 95→100 (2026-07-24 all-joint attachment audit): the old
-        // nearShinOffsetY=25 pushed the true knee 1.0–1.7px outside this
-        // render box in every sampled upright pose. Raising the child root
-        // five pixels restores real overlap; growing the display height by
-        // the same five preserves the already-approved boot/ground seat.
-        shin:     { key: 'thesz_shin', box: { w: 51, h: 100 } },
-        // Knee alignment: the shin hangs off the IK knee (computed from the
-        // un-offset hip bone), so the thigh's render offsets/tilt above pull
-        // the thigh art away from where the shin art starts — these re-join
-        // them. x puts the shin ink centroid on the ref's (probe Δ -0.4px);
-        // y carries the cap-tuck described above.
-        // Shin offsets: multiple same-day rig-tuner export rounds
-        // (2026-07-14/15, live iteration — the first two exports were tuned
-        // facing left / in the wrong idle pose, superseded). Geometry note
-        // (Codex's cleave mechanism): net cap position vs the true knee =
-        // -KNEE_OVERLAP(18) - NEAR_SHIN_UP(5) + nearShinOffsetY. At the
-        // 2026-07-24: nearShinOffsetY 25→20 after the all-joint audit proved
-        // the old value placed the true knee outside the child render box
-        // across both facings and every sampled move pose. The matching
-        // shin.box.h 95→100 change above keeps the sole in place while the
-        // cap moves up into a real 3px tuck.
-        nearShinOffsetX: -12,
-        nearShinOffsetY: 20,
+        // included) spans 253/380 of torso height at 131/380 wide. The
+        // authored overlap above the knee is now preserved instead of being
+        // flattened into the exposed cap that previously read as a cleave.
+        // Authored knee overlap retained by the cutter (2026-07-25), same
+        // contract as George. The display height remains the approved 95;
+        // jointPivotFrac grows only the above-knee overlap band.
+        shin:     { key: 'thesz_shin', box: { w: 51, h: 95 }, jointPivotFrac: 0.03944976664210268 },
+        // Earlier screen-space shin offsets were tuned to the now-removed
+        // flat cap. With an authored internal pivot they would drift as the
+        // knee rotates, so only cancel the shared near-leg depth bias here.
+        // Cancel the shared near-shin depth bias so the authored internal
+        // pivot stays exactly on the true knee. Any additional fixed X/Y
+        // offset would reintroduce pose-dependent drift.
+        nearShinOffsetX: -5,
+        nearShinOffsetY: 5,
         // Far leg NO LONGER mirrors the near leg. The 2026-07-13 pass kept
         // every far offset in lockstep with the near leg's net value so the
         // far leg hid pixel-identically behind the near one (single-leg
@@ -143,11 +128,10 @@ export const thesz = {
         // broke that: the far leg now renders forward of the near leg (both
         // legs visible). If a future pass wants the hidden-leg look back,
         // see git history for the lockstep derivation.
-        // Far cap vs knee = -KNEE_OVERLAP(18) + farShinOffsetY. At the
-        // current farShinOffsetY (15) that's -3px tuck (see near-shin note
-        // above for the same formula pattern).
-        farShinOffsetX: 12,
-        farShinOffsetY: 15,
+        // Far shin has no shared depth bias, so its internal pivot needs no
+        // compensating offset.
+        farShinOffsetX: 0,
+        farShinOffsetY: 0,
         farLegOffsetX: 9,
         farLegOffsetY: 4,
         farLegTilt: -5.5 * Math.PI / 180,

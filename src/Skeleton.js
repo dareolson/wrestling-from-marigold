@@ -87,14 +87,6 @@ const TAU = Math.PI * 2;
 // dev-tool seam as P/TEX above) — each value keeps its original name and
 // meaning, and nothing in the game writes to it.
 export const RIG = {
-    // Upper arms use the same parent/child overlap rule as hips, elbows, and
-    // knees. Without a shoulder overlap the arm texture merely butt-joins the
-    // torso at one row; a strong bend (hammerlock, guard, get-up) rotates that
-    // flat edge into view and the wrestler appears to come apart. Textures
-    // with authored overlap metadata (`jointPivotFrac`) anchor directly at
-    // the true shoulder instead; this is the safe fallback for legacy and
-    // future wrestlers whose art has no metadata yet.
-    SHOULDER_OVERLAP: 12,
     // Unscaled px the forearm's placement pulls back up the upper-arm bone
     // (see updateUpright's far/near arm blocks) so a bent elbow doesn't show a
     // wedge-shaped gap between the two rotated rectangles.
@@ -445,8 +437,12 @@ export default class Skeleton {
         // constructed after the leg, so it always drew on top, poking the far
         // hand through the trunks instead of tucking behind the far thigh
         // (Derek, 2026-07-15). Split into two bands so the far leg wins.
-        this.farUpArm.setDepth(base);
+        // Parent cap draws over the child's authored overlap band. If the
+        // forearm wins this tie, that band sweeps across the upper-arm end as
+        // the elbow bends and the joint appears to drift. The tiny split is
+        // contained inside each existing far/near depth band.
         this.farForearm.setDepth(base);
+        this.farUpArm.setDepth(base + 0.00001);
         this.farThigh.setDepth(base + 0.0001);
         this.farShin.setDepth(base + 0.0001);
         this.farBoot?.setDepth(base + 0.0001);
@@ -456,8 +452,8 @@ export default class Skeleton {
         this.nearThigh.setDepth(base + 0.003);
         this.nearShin.setDepth(base + 0.003);
         this.nearBoot?.setDepth(base + 0.003);
-        this.nearUpArm.setDepth(base + 0.004);
         this.nearForearm.setDepth(base + 0.004);
+        this.nearUpArm.setDepth(base + 0.00401);
     }
 
     setVisible(v) {
@@ -553,9 +549,11 @@ export default class Skeleton {
         const below = (1 - childImg.originY) * childImg.displayHeight - localY;
         const side = childImg.displayWidth / 2 - Math.abs(localX);
         this.jointAttachmentMargins ??= {};
+        this.jointAttachmentPoints ??= {};
         this.jointAttachmentMargins[name] = {
             above, below, side, min: Math.min(above, below, side),
         };
+        this.jointAttachmentPoints[name] = { x: jointX, y: jointY };
     }
 
     // World-space endpoint (bottom) of a limb given its pivot and length.
@@ -582,6 +580,7 @@ export default class Skeleton {
 
     updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
         this.jointAttachmentMargins = {};
+        this.jointAttachmentPoints = {};
         const thighH    = this._thighH * s;
         const shinH     = this._shinH  * s;
         const bootH     = P.bootH     * s;
@@ -652,9 +651,13 @@ export default class Skeleton {
         let rArmAng = facing * pose.rArm + swing * armSwing;
         // Walk: mild arm-tracking so forearm swings back with the arm and folds
         // slightly inward on the upswing — run elbow code below overrides at runBlend→1.
-        // Base bend ~30deg (0.52 rad) so the elbow reads as a relaxed bend
-        // instead of hanging straight off the upper arm (Derek, 2026-07-12).
-        const FOREARM_BEND = 0.52;
+        // Keep the default elbow as a real hinge: forearm angle is the upper
+        // arm angle plus a stable relative bend. The old `arm * 1.1 + .52`
+        // relationship slowly changed the joint angle while the shoulder
+        // moved, which made the overlapping artwork look as though it slid
+        // around the elbow; its ~30deg baseline also read almost straight at
+        // game scale. About 45deg remains relaxed but makes the split clear.
+        const FOREARM_BEND = 0.78;
         // Optional per-pose elbow override (pose.lForearm/rForearm, skeleton-
         // convention absolute angle) — lets a pose set the elbow bend
         // independent of the shoulder instead of always inheriting this
@@ -662,8 +665,8 @@ export default class Skeleton {
         // preserves the old formula exactly. Combat/run blends and ARM_FWD
         // below still apply on top either way, so an authored elbow angle
         // still composes with guard/run state.
-        let lForearmAng = pose.lForearm !== undefined ? facing * pose.lForearm : lArmAng * 1.1 + facing * FOREARM_BEND;
-        let rForearmAng = pose.rForearm !== undefined ? facing * pose.rForearm : rArmAng * 1.1 + facing * FOREARM_BEND;
+        let lForearmAng = pose.lForearm !== undefined ? facing * pose.lForearm : lArmAng + facing * FOREARM_BEND;
+        let rForearmAng = pose.rForearm !== undefined ? facing * pose.rForearm : rArmAng + facing * FOREARM_BEND;
 
         // Combat-ready guard: arms come up and forward as opponents close in.
         if (combatBlend > 0) {
@@ -801,15 +804,22 @@ export default class Skeleton {
         const farUpArmAng  = farAA  + facing * (this._farArmTilt ?? 0);
         const nearUpArmAng = nearAA + facing * this._nearArmTilt;
 
-        // Far arm. Both child roots go through _attachChild: shoulder first,
-        // then elbow. This makes the same invariant protect the full arm
-        // chain instead of fixing the elbow while leaving a rotatable
-        // butt-joint at the torso.
-        const farShoulder = this._attachChild(this.farUpArm, farShoulderX, farShoulderY, farUpArmAng, s, RIG.SHOULDER_OVERLAP);
-        this._placePart(this.farUpArm, farShoulder.x, farShoulder.y, armW, upperArmH, farUpArmAng, s * RIG.FAR_ARM_SCALE, facing);
+        // Upper-arm art anchors at its authored shoulder row. Pulling the
+        // whole image backward to manufacture overlap makes the rounded
+        // deltoid swell above the torso (the reported "football pads"
+        // distortion). Keep the shoulder at its true authored anchor; only
+        // child segments with overlap slack use _attachChild.
+        this._placePart(this.farUpArm, farShoulderX, farShoulderY, armW, upperArmH, farUpArmAng, s * RIG.FAR_ARM_SCALE, facing);
         this._recordJointAttachment('farShoulder', this.farUpArm, farShoulderX, farShoulderY, farUpArmAng);
-        const farTrueElbow = this._end(farShoulderX, farShoulderY, upperArmH, farUpArmAng);
-        const farElbow = this._attachChild(this.farForearm, farTrueElbow.x, farTrueElbow.y, farUpArmAng, s, RIG.ELBOW_OVERLAP);
+        // FAR_ARM_SCALE changes the rendered bone length as well as width;
+        // the elbow must end at that rendered length. The old full-length
+        // endpoint left a 10px invisible reach beyond the far upper arm, so
+        // Lou's forearm was correctly attached to the skeleton but visibly
+        // floating beyond the painted elbow.
+        const farTrueElbow = this._end(farShoulderX, farShoulderY, upperArmH * RIG.FAR_ARM_SCALE, farUpArmAng);
+        // Back off along the CHILD forearm's axis. Using the upper-arm angle
+        // makes the root orbit the elbow whenever the joint bends.
+        const farElbow = this._attachChild(this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA, s, RIG.ELBOW_OVERLAP);
         const farForearmX = farElbow.x + facing * this._farForearmOffsetX * s;
         const farForearmY = farElbow.y + this._farForearmOffsetY * s;
         this._placePart(this.farForearm, farForearmX, farForearmY, armW, forearmH, farFA, s * RIG.FAR_ARM_SCALE, facing);
@@ -843,12 +853,11 @@ export default class Skeleton {
         this.nearThighRenderDebug = { x: nearHipRender.x, y: nearHipRender.y, angle: nearRenderAng, s, facing, texDims: this.nearThigh._texDims };
         this.nearShinRenderDebug = { x: nearShinRender.x, y: nearShinRender.y, angle: nearShinRenderAng, s: s * this._nearShinScale, facing, texDims: this.nearShin._texDims };
 
-        // Near arm — same shoulder/elbow attachment chain as the far arm.
-        const nearShoulder = this._attachChild(this.nearUpArm, nearShoulderX, armShoulderY, nearUpArmAng, s, RIG.SHOULDER_OVERLAP);
-        this._placePart(this.nearUpArm, nearShoulder.x, nearShoulder.y, armW, upperArmH, nearUpArmAng, s, facing);
+        // Near arm — shoulder stays on its authored anchor like the far arm.
+        this._placePart(this.nearUpArm, nearShoulderX, armShoulderY, armW, upperArmH, nearUpArmAng, s, facing);
         this._recordJointAttachment('nearShoulder', this.nearUpArm, nearShoulderX, armShoulderY, nearUpArmAng);
         const nearTrueElbow = this._end(nearShoulderX, armShoulderY, upperArmH, nearUpArmAng);
-        const nearElbow = this._attachChild(this.nearForearm, nearTrueElbow.x, nearTrueElbow.y, nearUpArmAng, s, RIG.ELBOW_OVERLAP);
+        const nearElbow = this._attachChild(this.nearForearm, nearTrueElbow.x, nearTrueElbow.y, nearFA, s, RIG.ELBOW_OVERLAP);
         const nearForearmX = nearElbow.x + facing * this._nearForearmOffsetX * s;
         const nearForearmY = nearElbow.y + this._nearForearmOffsetY * s;
         this._placePart(this.nearForearm, nearForearmX, nearForearmY, armW, forearmH, nearFA, s, facing);
@@ -924,6 +933,7 @@ export default class Skeleton {
     // do (it assumes a vertical torso), and it's all the sit/crawl states need.
     _applyGrounded(x, y, s, facing, g) {
         this.jointAttachmentMargins = {};
+        this.jointAttachmentPoints = {};
         const f = facing >= 0 ? 1 : -1;
         const ang = a => f * a; // mirror: sin flips with the angle sign, cos is untouched
 
@@ -972,19 +982,18 @@ export default class Skeleton {
         leg(g.farThigh,  g.farShin,  [this.farThigh,  this.farShin,  this.farBoot]);
         leg(g.nearThigh, g.nearShin, [this.nearThigh, this.nearShin, this.nearBoot]);
 
-        // Arms root at the shoulders. Upper arm and forearm both attach
-        // through the same _attachChild contract as updateUpright, so
-        // shoulder and elbow connectivity survives every get-up keypose.
+        // Arms root at the authored shoulder anchor. Forearms use their own
+        // axis for overlap so the elbow root cannot orbit during a bend.
         const arm = (up, fore, imgs) => {
             const [upImg, foreImg] = imgs;
             const uA = ang(up), fA = ang(fore);
-            const shoulderRender = this._attachChild(upImg, shX, shY, uA, s, RIG.SHOULDER_OVERLAP);
-            this._placePart(upImg, shoulderRender.x, shoulderRender.y, armW, upperArmH, uA, s, facing);
             const side = upImg === this.farUpArm ? 'far' : 'near';
+            const depthScale = side === 'far' ? RIG.FAR_ARM_SCALE : 1;
+            this._placePart(upImg, shX, shY, armW, upperArmH, uA, s * depthScale, facing);
             this._recordJointAttachment(`${side}Shoulder`, upImg, shX, shY, uA);
-            const elbow = this._end(shX, shY, upperArmH, uA);
-            const elbowRender = this._attachChild(foreImg, elbow.x, elbow.y, uA, s, RIG.ELBOW_OVERLAP);
-            this._placePart(foreImg, elbowRender.x, elbowRender.y, armW, forearmH, fA, s, facing);
+            const elbow = this._end(shX, shY, upperArmH * depthScale, uA);
+            const elbowRender = this._attachChild(foreImg, elbow.x, elbow.y, fA, s, RIG.ELBOW_OVERLAP);
+            this._placePart(foreImg, elbowRender.x, elbowRender.y, armW, forearmH, fA, s * depthScale, facing);
             this._recordJointAttachment(`${side}Elbow`, foreImg, elbow.x, elbow.y, fA);
         };
         arm(g.farArm,  g.farFore,  [this.farUpArm,  this.farForearm]);

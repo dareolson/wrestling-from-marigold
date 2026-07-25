@@ -304,8 +304,25 @@ export default class Skeleton {
         this.nearForearm = img(textures.forearm,  skinCol, TEX.forearm);
 
         if (textures.head) {
-            // PNG head: origin at bottom-center (neck connection point)
-            this.head = scene.add.image(0, 0, textures.head).setOrigin(0.5, 1);
+            // headAnchorFrac (2026-07-25, George AI pilot — see Sprite
+            // sheets/AI Pilot/George/CLAUDE_INTEGRATION_HANDOFF.md): optional,
+            // opt-in { u, v } canvas-fraction origin for a head whose painted
+            // neck connection point isn't at the legacy hard-coded
+            // bottom-center (0.5, 1) — e.g. a head drawn at a 3/4 angle for a
+            // gameplay-master view, where the neck sits off-center laterally
+            // and a little above the canvas's true bottom edge. When present,
+            // this replaces (0.5, 1) as the Image's own origin, so whatever
+            // world point the neck/socket code below computes lands exactly
+            // on this measured point instead of assuming bottom-center. Any
+            // art below the anchor is authored overlap that tucks behind the
+            // torso (same depth order as every other part), same convention
+            // as distalAnchorFrac/jointPivotFrac — no crop is needed the way
+            // HEAD_HIDE_FRAC needs one for the legacy long-neck heads below.
+            // Absent (every head before this) = exact old (0.5, 1) origin.
+            this._headAnchorFrac = textures.headAnchorFrac ?? null;
+            const originU = this._headAnchorFrac ? this._headAnchorFrac.u : 0.5;
+            const originV = this._headAnchorFrac ? this._headAnchorFrac.v : 1;
+            this.head = scene.add.image(0, 0, textures.head).setOrigin(originU, originV);
             this._headIsImage = true;
             // neckInTorso: the character's torso art bakes the neck in
             // (pivot-flush at its own top edge) and the head art is neck-free,
@@ -313,7 +330,7 @@ export default class Skeleton {
             // no crop needed. Defaults to false: legacy heads (thesz) still
             // carry their own neck slack, cropped below.
             this._neckInTorso = !!textures.neckInTorso;
-            if (!this._neckInTorso) {
+            if (!this._neckInTorso && !this._headAnchorFrac) {
                 // Crop rect is in fixed texture-space px, independent of the s-scaled
                 // display size set every frame — safe to compute once here.
                 this._headHidePx = Math.round(this.head.height * HEAD_HIDE_FRAC);
@@ -661,6 +678,32 @@ export default class Skeleton {
         return this._endXY(px, py, lx, ly, angle);
     }
 
+    // Inverse of _socketPoint: solves the torso's own render origin (the
+    // px,py normally handed to _placePart) so that the torso's measured
+    // near/far-hip socket MIDPOINT lands exactly on `pelvisX, pelvisY` — the
+    // authoritative dynamic-pelvis target (x/hipY upright, hipX/hipY
+    // grounded) — under the torso's actual rotation/scale/facing, instead of
+    // the fixed torsoH bone-length walk every character used before this
+    // (see Sprite sheets/AI Pilot/George/CLAUDE_INTEGRATION_HANDOFF.md's
+    // "Hip-socket design for this pilot"). This is a genuine affine inverse
+    // (derived by hand, verified against _socketPoint's forward transform at
+    // lx=ly=0), not a screen-space nudge: calling _socketPoint on this
+    // result with the same (u,v) midpoint reproduces (pelvisX, pelvisY)
+    // exactly. Only called when a character supplies both rigProfile
+    // nearHip and farHip sockets (opt-in — see each call site's guard); no
+    // shipped character does yet, so this path is unexercised for George/
+    // Thesz and their torso origin keeps using the legacy walk untouched.
+    _solveTorsoOrigin(pelvisX, pelvisY, angle, s, facing) {
+        const sockets = this._torsoSockets;
+        const dw = this.torso._texDims.w * s;
+        const dh = this.torso._texDims.h * s;
+        const midU = (sockets.nearHip.u + sockets.farHip.u) / 2;
+        const midV = (sockets.nearHip.v + sockets.farHip.v) / 2;
+        const lx = facing * (midU - 0.5) * dw;
+        const ly = midV * dh;
+        return this._endXY(pelvisX, pelvisY, -lx, -ly, angle);
+    }
+
     updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
         this.jointAttachmentMargins = {};
         this.jointAttachmentPoints = {};
@@ -785,12 +828,39 @@ export default class Skeleton {
                 ? [rArmAng, rForearmAng, lArmAng, lForearmAng]
                 : [lArmAng, lForearmAng, rArmAng, rForearmAng];
 
+        // Torso origin + hip sockets (2026-07-25, George AI pilot — dynamic
+        // pelvis design, see Sprite sheets/AI Pilot/George/
+        // CLAUDE_INTEGRATION_HANDOFF.md's "Hip-socket design for this
+        // pilot"): optional, opt-in — when a character's rigProfile supplies
+        // BOTH nearHip and farHip sockets, the torso's render origin is
+        // solved (_solveTorsoOrigin) so its measured hip-socket midpoint
+        // lands exactly on the authoritative pelvis target (x, hipY) instead
+        // of the fixed torsoH bone-length walk below, and each leg's true
+        // hip root becomes that socket's own world point instead of the
+        // shared (x, hipY) every character used before this — legs hang from
+        // the torso art itself. torsoOriginX/Y replace every `x`/`torsoTop`
+        // use below that positions the torso or something socket-rooted on
+        // it (torso placement, shoulder sockets, neck socket); they default
+        // to exactly (x, torsoTop) — byte-identical — when hip sockets are
+        // absent, which is every character as of this writing (George's and
+        // Thesz's current rigProfile.sockets has neck/nearShoulder/
+        // farShoulder only).
+        let torsoOriginX = x, torsoOriginY = torsoTop;
+        let nearHipPoint = null, farHipPoint = null;
+        if (this._torsoSockets?.nearHip && this._torsoSockets?.farHip) {
+            const origin = this._solveTorsoOrigin(x, hipY, 0, s, facing);
+            torsoOriginX = origin.x;
+            torsoOriginY = origin.y;
+            nearHipPoint = this._socketPoint(this.torso, this._torsoSockets.nearHip.u, this._torsoSockets.nearHip.v, torsoOriginX, torsoOriginY, 0, s, facing);
+            farHipPoint  = this._socketPoint(this.torso, this._torsoSockets.farHip.u,  this._torsoSockets.farHip.v,  torsoOriginX, torsoOriginY, 0, s, facing);
+        }
+
         // ── Legs ────────────────────────────────────────────────────────────────
         let far, near;
         if (useGait) {
             // Two feet half a cycle apart, knees solved by IK. A=near, B=far.
-            far  = this._gaitLeg(footB, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale);
-            near = this._gaitLeg(footA, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale);
+            far  = this._gaitLeg(footB, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale, farHipPoint);
+            near = this._gaitLeg(footA, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale, nearHipPoint);
         } else {
             // Original pose-driven FK (move stances). Preserves the facing-based
             // far/near mapping and per-leg swing alternation exactly as before.
@@ -805,18 +875,18 @@ export default class Skeleton {
             const rShinAng = pose.rShin !== undefined ? facing * pose.rShin : rLegAng + facing * (sinWP * KNEE_BEND - cThigh - cShin);
             const farPlant  = Math.max(0,  sinWP * facing);
             const nearPlant = Math.max(0, -sinWP * facing);
-            const mk = (t, sh, plant) => ({
-                hx: x, hy: hipY, thighAng: t, shinAng: sh,
+            const mk = (t, sh, plant, hipPoint) => ({
+                hx: hipPoint ? hipPoint.x : x, hy: hipPoint ? hipPoint.y : hipY, thighAng: t, shinAng: sh,
                 // Boots stay flat through a crouch — drop the crouch shin
                 // rotation before scaling, or toes point skyward when kneeling
                 bootAng: (sh + facing * (cThigh + cShin)) * Math.max(0.25, 1 - plant * 0.75),
             });
             if (facing >= 0) {
-                far  = mk(rLegAng, rShinAng, farPlant);
-                near = mk(lLegAng, lShinAng, nearPlant);
+                far  = mk(rLegAng, rShinAng, farPlant, farHipPoint);
+                near = mk(lLegAng, lShinAng, nearPlant, nearHipPoint);
             } else {
-                far  = mk(lLegAng, lShinAng, farPlant);
-                near = mk(rLegAng, rShinAng, nearPlant);
+                far  = mk(lLegAng, lShinAng, farPlant, farHipPoint);
+                near = mk(rLegAng, rShinAng, nearPlant, nearHipPoint);
             }
         }
 
@@ -832,8 +902,16 @@ export default class Skeleton {
         // image itself is drawn (FAR_THIGH_TILT).
         const farRenderAng = far.thighAng + facing * (this._farLegTilt ?? RIG.FAR_THIGH_TILT);
         const farHipRender = this._attachChild(this.farThigh, far.hx, far.hy, farRenderAng, s, RIG.HIP_OVERLAP);
-        farHipRender.x += facing * (RIG.HIP_STAGGER - RIG.LEG_BACK_BIAS + RIG.FAR_LEG_FWD + this._farLegOffsetX) * s;
-        farHipRender.y += (this._legOffsetY - RIG.FAR_LEG_UP + this._farLegOffsetY) * s;
+        // Hip-socket path (farHipPoint set): render exactly at the socket —
+        // jointPivotFrac already supplies the thigh's hidden proximal
+        // overlap (see the constructor's img() comment), so none of the
+        // legacy stagger/bias/offset knobs apply here (the pilot's own
+        // contract: "do not reintroduce HIP_STAGGER, LEG_BACK_BIAS, or
+        // per-part X/Y compensation on the pilot path").
+        if (!farHipPoint) {
+            farHipRender.x += facing * (RIG.HIP_STAGGER - RIG.LEG_BACK_BIAS + RIG.FAR_LEG_FWD + this._farLegOffsetX) * s;
+            farHipRender.y += (this._legOffsetY - RIG.FAR_LEG_UP + this._farLegOffsetY) * s;
+        }
         this._placePart(this.farThigh, farHipRender.x, farHipRender.y, legW, thighH, farRenderAng, s * this._farThighScale, facing);
         this._recordJointAttachment('farHip', this.farThigh, far.hx, far.hy, farRenderAng);
         const farKnee  = this._end(far.hx, far.hy, thighH, far.thighAng);
@@ -876,8 +954,8 @@ export default class Skeleton {
         // the original chain unchanged.
         let farShoulderX, farShoulderY, nearShoulderX, armShoulderY;
         if (this._torsoSockets) {
-            const near = this._socketPoint(this.torso, this._torsoSockets.nearShoulder.u, this._torsoSockets.nearShoulder.v, x, torsoTop, 0, s, facing);
-            const far  = this._socketPoint(this.torso, this._torsoSockets.farShoulder.u,  this._torsoSockets.farShoulder.v,  x, torsoTop, 0, s, facing);
+            const near = this._socketPoint(this.torso, this._torsoSockets.nearShoulder.u, this._torsoSockets.nearShoulder.v, torsoOriginX, torsoOriginY, 0, s, facing);
+            const far  = this._socketPoint(this.torso, this._torsoSockets.farShoulder.u,  this._torsoSockets.farShoulder.v,  torsoOriginX, torsoOriginY, 0, s, facing);
             nearShoulderX = near.x;
             farShoulderX = far.x;
             farShoulderY = far.y;
@@ -930,16 +1008,21 @@ export default class Skeleton {
         this._placePart(this.farForearm, farForearmX, farForearmY, armW, forearmH, farFA, s * RIG.FAR_ARM_SCALE, facing);
         this._recordJointAttachment('farElbow', this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA);
 
-        // Torso: full height when trunks are baked into the PNG, split otherwise
-        this._placePart(this.torso, x, torsoTop, torsoW, this.trunks ? torsoH - trunksH : torsoH, 0, s, facing);
+        // Torso: full height when trunks are baked into the PNG, split otherwise.
+        // torsoOriginX/Y (see the comment above the leg-solving block) is
+        // exactly (x, torsoTop) unless hip sockets solved a different origin.
+        this._placePart(this.torso, torsoOriginX, torsoOriginY, torsoW, this.trunks ? torsoH - trunksH : torsoH, 0, s, facing);
         if (this.trunks) this._place(this.trunks, x, hipY - trunksH, torsoW, trunksH, 0);
 
         // Near leg — drawn in front of torso
         const nearRenderAng = near.thighAng + facing * this._nearLegTilt;
         const nearHipRender = this._attachChild(this.nearThigh, near.hx, near.hy, nearRenderAng, s, RIG.HIP_OVERLAP);
-        nearHipRender.x -= facing * (RIG.HIP_STAGGER + RIG.LEG_BACK_BIAS - RIG.NEAR_LEG_FWD) * s;
-        nearHipRender.x += facing * this._legOffsetX * s;
-        nearHipRender.y += (this._legOffsetY - RIG.NEAR_LEG_UP + this._nearLegOffsetY) * s;
+        // Hip-socket path — see the matching farHipPoint comment above.
+        if (!nearHipPoint) {
+            nearHipRender.x -= facing * (RIG.HIP_STAGGER + RIG.LEG_BACK_BIAS - RIG.NEAR_LEG_FWD) * s;
+            nearHipRender.x += facing * this._legOffsetX * s;
+            nearHipRender.y += (this._legOffsetY - RIG.NEAR_LEG_UP + this._nearLegOffsetY) * s;
+        }
         this._placePart(this.nearThigh, nearHipRender.x, nearHipRender.y, legW, thighH, nearRenderAng, s, facing);
         this._recordJointAttachment('nearHip', this.nearThigh, near.hx, near.hy, nearRenderAng);
         const nearKnee  = this._end(near.hx, near.hy, thighH, near.thighAng);
@@ -992,7 +1075,7 @@ export default class Skeleton {
             // existing headOffsetX/Y, so this is byte-identical for both.
             let anchorX, anchorY;
             if (this._neckInTorso && this._torsoSockets?.neck) {
-                const neck = this._socketPoint(this.torso, this._torsoSockets.neck.u, this._torsoSockets.neck.v, x, torsoTop, 0, s, facing);
+                const neck = this._socketPoint(this.torso, this._torsoSockets.neck.u, this._torsoSockets.neck.v, torsoOriginX, torsoOriginY, 0, s, facing);
                 anchorX = neck.x;
                 anchorY = neck.y;
             } else {
@@ -1063,9 +1146,29 @@ export default class Skeleton {
 
         const hipX = x, hipY = y - g.hip * s;
         const ta   = ang(g.torso);                       // hip → shoulder direction
-        const shX  = hipX + Math.sin(ta) * torsoH;
-        const shY  = hipY + Math.cos(ta) * torsoH;
         const down = ta - Math.PI;                        // shoulder → hip direction
+        // shX/shY: torso's own render origin (the shoulder/neck end — see
+        // _placePart below). Legacy: fixed torsoH bone-length walk up from
+        // the authoritative hip point. Hip-socket path (2026-07-25, George
+        // AI pilot dynamic-pelvis design — see updateUpright's matching
+        // torsoOriginX/nearHipPoint comment and Sprite sheets/AI Pilot/
+        // George/CLAUDE_INTEGRATION_HANDOFF.md): when both nearHip/farHip
+        // sockets are present, solve the origin instead so the torso's own
+        // measured hip-socket midpoint lands on (hipX, hipY) under this
+        // pose's actual torso rotation, then read each leg's true hip root
+        // off that placed torso. Absent = shX/shY exactly as before and
+        // nearHipPoint/farHipPoint stay null — byte-identical for every
+        // character before this existed.
+        let shX = hipX + Math.sin(ta) * torsoH;
+        let shY = hipY + Math.cos(ta) * torsoH;
+        let nearHipPoint = null, farHipPoint = null;
+        if (this._torsoSockets?.nearHip && this._torsoSockets?.farHip) {
+            const origin = this._solveTorsoOrigin(hipX, hipY, down, s, facing);
+            shX = origin.x;
+            shY = origin.y;
+            nearHipPoint = this._socketPoint(this.torso, this._torsoSockets.nearHip.u, this._torsoSockets.nearHip.v, shX, shY, down, s, facing);
+            farHipPoint  = this._socketPoint(this.torso, this._torsoSockets.farHip.u,  this._torsoSockets.farHip.v,  shX, shY, down, s, facing);
+        }
 
         // Torso image pivots at the shoulders and extends down the back to the
         // hips; trunks cover the hip end of that line
@@ -1083,22 +1186,24 @@ export default class Skeleton {
         // pull-back at all, unlike the standing pose, which is exactly why a
         // knee that looked connected standing could pop open while getting
         // up (see AI_HANDOFF.md's 2026-07-19 Codex entries).
-        const leg = (thigh, shin, imgs) => {
+        const leg = (thigh, shin, imgs, hipPoint) => {
             const [thighImg, shinImg, bootImg] = imgs;
             const tA = ang(thigh), sA = ang(shin);
-            const hipRender = this._attachChild(thighImg, hipX, hipY, tA, s, RIG.HIP_OVERLAP);
+            const rootX = hipPoint ? hipPoint.x : hipX;
+            const rootY = hipPoint ? hipPoint.y : hipY;
+            const hipRender = this._attachChild(thighImg, rootX, rootY, tA, s, RIG.HIP_OVERLAP);
             this._placePart(thighImg, hipRender.x, hipRender.y, legW, thighH, tA, s, facing);
             const side = thighImg === this.farThigh ? 'far' : 'near';
-            this._recordJointAttachment(`${side}Hip`, thighImg, hipX, hipY, tA);
-            const knee = this._end(hipX, hipY, thighH, tA);
+            this._recordJointAttachment(`${side}Hip`, thighImg, rootX, rootY, tA);
+            const knee = this._end(rootX, rootY, thighH, tA);
             const kneeRender = this._attachChild(shinImg, knee.x, knee.y, sA, s, RIG.KNEE_OVERLAP);
             this._placePart(shinImg, kneeRender.x, kneeRender.y, legW, shinH, sA, s, facing);
             this._recordJointAttachment(`${side}Knee`, shinImg, knee.x, knee.y, sA);
             const ankle = this._end(knee.x, knee.y, shinH, sA);
             if (bootImg) this._place(bootImg, ankle.x, ankle.y, legW + 4 * s, bootH, sA + f * 0.3);
         };
-        leg(g.farThigh,  g.farShin,  [this.farThigh,  this.farShin,  this.farBoot]);
-        leg(g.nearThigh, g.nearShin, [this.nearThigh, this.nearShin, this.nearBoot]);
+        leg(g.farThigh,  g.farShin,  [this.farThigh,  this.farShin,  this.farBoot],  farHipPoint);
+        leg(g.nearThigh, g.nearShin, [this.nearThigh, this.nearShin, this.nearBoot], nearHipPoint);
 
         // Arms root at the authored shoulder anchor. Forearms use their own
         // axis for overlap so the elbow root cannot orbit during a bend.
@@ -1124,12 +1229,25 @@ export default class Skeleton {
         const hy = shY + Math.cos(ta) * headR * 0.9;
         if (this._headIsImage) {
             const headDispH = headR * 2.5 * this._headScale;
-            const anchorY = this._neckInTorso
-                ? shY + this._headOffsetY * s
-                : shY + this._headHidePx * headDispH / this.head.height;
-            const anchorX = this._neckInTorso
-                ? shX + facing * this._headOffsetX * s
-                : shX;
+            // Neck socket (2026-07-25, George AI pilot — see updateUpright's
+            // matching neck-socket comment). Gated on _headAnchorFrac (only
+            // the pilot sets it, never George/Thesz) so this is unreachable
+            // for existing characters even though their torso already
+            // carries a neck socket — they keep the legacy headOffsetX/Y
+            // chain in grounded mode exactly as before.
+            let anchorX, anchorY;
+            if (this._headAnchorFrac && this._torsoSockets?.neck) {
+                const neck = this._socketPoint(this.torso, this._torsoSockets.neck.u, this._torsoSockets.neck.v, shX, shY, down, s, facing);
+                anchorX = neck.x;
+                anchorY = neck.y;
+            } else {
+                anchorY = this._neckInTorso
+                    ? shY + this._headOffsetY * s
+                    : shY + this._headHidePx * headDispH / this.head.height;
+                anchorX = this._neckInTorso
+                    ? shX + facing * this._headOffsetX * s
+                    : shX;
+            }
             this.head.setPosition(anchorX, anchorY).setDisplaySize(headR * 2.0 * this._headScale, headDispH).setFlipX(facing < 0);
             this._recordJointAttachment('neck', this.head, shX, shY, 0);
         } else {
@@ -1141,14 +1259,23 @@ export default class Skeleton {
 
     // Gait leg: foot target from footGait, knee solved by two-bone IK. The planted
     // boot rolls flat-forward over the ball of the foot; the swing boot trails the shin.
-    _gaitLeg(foot, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale = 1) {
+    // hipPoint (2026-07-25, George AI pilot dynamic-pelvis design — see
+    // updateUpright's torsoOriginX/nearHipPoint comment): optional {x,y}
+    // override for the IK root and the returned hx/hy. The foot TARGET
+    // (footX/footY) stays computed off the shared `x`/ankleGndY regardless —
+    // per the pilot's own contract, planted feet stay authoritative and only
+    // the root each leg solves FROM moves to its own socket. Absent (every
+    // call before this existed) = root is exactly (x, hipY), byte-identical.
+    _gaitLeg(foot, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale = 1, hipPoint = null) {
         const footX = x + facing * foot.fx * s;
         const footY = ankleGndY - foot.lift * s * liftScale;
-        const { thighAng, shinAng } = solveLeg(x, hipY, footX, footY, thighH, shinH, facing);
+        const rootX = hipPoint ? hipPoint.x : x;
+        const rootY = hipPoint ? hipPoint.y : hipY;
+        const { thighAng, shinAng } = solveLeg(rootX, rootY, footX, footY, thighH, shinH, facing);
         // Boot continues the line of the shin (no kink so it never reads as a detached
         // block) with just a small forward toe.
         const bootAng = shinAng + facing * 0.35;
-        return { hx: x, hy: hipY, thighAng, shinAng, bootAng };
+        return { hx: rootX, hy: rootY, thighAng, shinAng, bootAng };
     }
 
     destroy() {

@@ -91,7 +91,7 @@ export const POSES = {
     sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10 }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
     powerIdle:      { lLeg: 0.04,  rLeg: 0.17,  lArm: 0.10,  rArm: 0.07, lean: 0.09, crouch: 0.22 }, // wide, imposing — arms hanging low (rig-tuner pass 2026-07-23, live export; supersedes the 2026-07-19 values)
-    theszIdle:      { lLeg:-0.01,  rLeg:-0.19,  lArm: 0.10,  rArm: 0,    lean: 0.05, crouch: 0.05 }, // slight forward lean (Derek rig-tuner pass 2026-07-15, third same-day export); legs no longer equal — both legs render visible (see thesz.js's far-leg-offset comments), not stacked/hidden
+    theszIdle:      { lLeg: 0.02,  rLeg: 0.14,  lArm: 0.06,  rArm: 0.43, lean: 0.05, crouch: 0.05 }, // Derek rig-tuner pass 2026-07-25 (supersedes 2026-07-15 -0.01/-0.19); legs render visible (see thesz.js's far-leg-offset comments), not stacked/hidden
     tauntArmsWide:  { lLeg: 0.22,  rLeg:-0.20,  lArm: 2.20,  rArm: 2.00, lean:-0.16 }, // arms raised wide, chest out to the crowd
     ropeOneTaunt:   { lLeg: 0.08,  rLeg:-0.06,  lArm: 1.80,  rArm:-1.80  }, // one arm raised to crowd, other grips rope
     axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10, lean:-0.22 }, // arms overhead, back arched for the drop

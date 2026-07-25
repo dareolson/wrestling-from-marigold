@@ -20,6 +20,10 @@ const UPRIGHT_POSES = [
     'axeHandleUp',
     'armBarLock',
     'hammerlockCrank',
+    // Extreme overhead taunt poses — the arms go higher here (lArm/rArm ~2.0+)
+    // than any other move, so they are the true worst case for elbow seating.
+    'tauntArmsWide',
+    'ropeOneTaunt',
 ];
 const GET_UP_SAMPLES = [0, 0.34, 0.72, 1];
 

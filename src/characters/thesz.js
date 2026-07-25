@@ -64,7 +64,29 @@ export const thesz = {
         // Authored elbow overlap retained by the cutter (2026-07-25).
         // Internal pivot keeps the forearm on the true elbow through bends;
         // no screen-space seating offset is needed.
-        forearm:  { key: 'thesz_forearm', box: { w: 44, h: 61 }, jointPivotFrac: 0.09615384615384616 },
+        // h 61->49 (Derek rig-tuner, 2026-07-25): the forearm rested ~12px too
+        // low at idle. Derek first corrected this with a -12 screen-space
+        // forearmOffsetY, but a fixed Y offset does not rotate with the elbow
+        // and visibly detached the forearm at overhead extremes (taunt,
+        // axe-handle). Shortening the below-pivot reach instead raises the
+        // idle hand the same ~12px as a real, rotating change, so the elbow
+        // stays seated in every pose. Width stays 44 to keep the wrist/elbow
+        // widths matched to the upper arm (a proportional shrink would neck
+        // the joint in). box.h is the elbow->hand span; see Skeleton.js
+        // _placePart's jointPivotFrac growth note.
+        forearm:  { key: 'thesz_forearm', box: { w: 44, h: 49 }, jointPivotFrac: 0.09615384615384616 },
+        // Derek rig-tuner pass (2026-07-25). The Y component is intentionally
+        // 0: a screen-space forearm Y offset seats the idle arm but does NOT
+        // rotate with the elbow, so it visibly detached the forearm at the
+        // overhead extremes (tauntArmsWide, axeHandleUp) — 3-4px elbow gap in
+        // the joint audit and a clear break on screen. X stays as Derek's
+        // small tuned lateral nudge (~1px, no meaningful drift). If the idle
+        // forearm needs to sit higher, shorten forearm.box.h (a real, rotating
+        // reach change) rather than reintroducing a screen-space Y slide.
+        nearForearmOffsetX: -1,
+        nearForearmOffsetY: 0,
+        farForearmOffsetX: -1,
+        farForearmOffsetY: 0,
         // Both dims re-derived against the reference (2026-07-13 recomposite
         // probe: live part transforms re-rendered filter-free and measured
         // ink-vs-ink against the identity-positioned New Lou layers —
@@ -119,8 +141,8 @@ export const thesz = {
         // Cancel the shared near-shin depth bias so the authored internal
         // pivot stays exactly on the true knee. Any additional fixed X/Y
         // offset would reintroduce pose-dependent drift.
-        nearShinOffsetX: -5,
-        nearShinOffsetY: 5,
+        nearShinOffsetX: -22,
+        nearShinOffsetY: 9,
         // Far leg NO LONGER mirrors the near leg. The 2026-07-13 pass kept
         // every far offset in lockstep with the near leg's net value so the
         // far leg hid pixel-identically behind the near one (single-leg
@@ -130,10 +152,10 @@ export const thesz = {
         // see git history for the lockstep derivation.
         // Far shin has no shared depth bias, so its internal pivot needs no
         // compensating offset.
-        farShinOffsetX: 0,
-        farShinOffsetY: 0,
-        farLegOffsetX: 9,
-        farLegOffsetY: 4,
+        farShinOffsetX: 6,
+        farShinOffsetY: -3,
+        farLegOffsetX: 6,
+        farLegOffsetY: -2,
         farLegTilt: -5.5 * Math.PI / 180,
         // The shared NEAR_SHIN_SCALE 1.1 rendered the near shin ~24% wider
         // than the reference (the far shin, at 1.0, already matched) and any

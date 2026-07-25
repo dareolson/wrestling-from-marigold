@@ -1,7 +1,9 @@
 {
-  "description": "Referenceable checklist of open work pulled from AI_HANDOFF.md (including its 2026-07-14 uncommitted entries), FEEL_AUDIT.md's Batch B/C backlog, and BUILDLOG.md's gamepad plan. Not a replacement for those files — this exists so nothing in the current open set gets silently dropped across sessions/tools. Tick items off by flipping status to 'done' and adding resolved_note + resolved_commit; keep finished items in the file for the record rather than deleting them.",
+  "description": "Referenceable checklist of open work pulled from AI_HANDOFF.md, FEEL_AUDIT.md's Batch B/C backlog, and BUILDLOG.md's gamepad plan. Not a replacement for those files — this exists so nothing in the current open set gets silently dropped across sessions/tools. Tick items off by flipping status to 'done' and adding resolved_note + resolved_commit; keep finished items in the file for the record rather than deleting them.",
   "generated": "2026-07-14",
   "generated_by": "Claude (Sonnet 5)",
+  "last_updated": "2026-07-24",
+  "last_updated_by": "Claude",
   "status_values": ["open", "decision-needed", "blocked", "in-progress", "done"],
   "tasks": [
     {
@@ -9,11 +11,12 @@
       "title": "Codex: write the four input-invoked move blueprint",
       "category": "active-assignment",
       "priority": "high",
-      "status": "open",
-      "owner": "Codex (blueprint) -> Derek (approval) -> Claude (implementation)",
-      "source": "AI_HANDOFF.md, 'Active assignment' section (top of file) + 2026-07-14 entry 'Derek via Claude'",
-      "detail": "Current Active Assignment. Four era-appropriate 1940s-50s moves, exactly four POSES-format poses each, human-input-triggered via existing action buttons + context, current skeletons only (no new art/rig parts). Deliverable is AI_HANDOFF_ENTRIES/<date>-codex-four-move-blueprint.md plus a short log entry. Not yet delivered -- AI_HANDOFF_ENTRIES/ only contains the Unity evaluation file so far.",
-      "next_step": "Waiting on Codex to produce the blueprint file. Claude does not implement anything until Derek approves it."
+      "status": "done",
+      "owner": "Derek (approval) -> Claude (implementation)",
+      "source": "AI_HANDOFF.md, 'Active assignment' section + 2026-07-24 Codex entry + AI_HANDOFF_ENTRIES/2026-07-24-codex-four-move-blueprint.md",
+      "detail": "Codex delivered the four era-appropriate moves: hammerlock (behind-the-back arm lock), rising knee lift, back body drop, and knee drop. Each has exactly four full POSES-format attacker poses, four MOVE_DEFS steps, a human-input trigger using existing controls, current-rig defender handling, tuning numbers, kit assignments, and optional AI notes.",
+      "resolved_note": "Derek approved all four moves, the three directional-input overrides, the kit assignments, and the current-rig hammerlock approximation as proposed -- no rename, no scope changes. Claude implemented all four in Wrestler.js/Arena.js/AIHandler.js, added tools/debug/play.mjs coverage (hammerlock/kneeLift/backBodyDrop/kneeDrop scenarios), and fixed a pre-existing bug found along the way: Arena._orphanWatchdog's 0.6s grace period was silently cutting armBar/ankleLock/hammerlock's fixed-duration holds short (~1000ms early, skipping their release-drain bonus) because those holds release via a plain Wrestler-internal delayedCall rather than an Arena-tracked state; fixed with a new per-wrestler _fixedHold exemption flag. backBodyDrop AI deliberately left unwired per the blueprint's own note. Verified: npm test 43/43, npm run debug:play -- all 16/16, npm run build clean (Node 22.23.1 via nvm -- the shell default node v19.8.1 is below this project's >=20.19 floor). Full writeup in AI_HANDOFF.md's 2026-07-24 'four-move blueprint implemented and verified' entry. MOVES.md's move tables were already stale before this session (pre-dates suplex/headlock/armDrag/armBar/ankleLock/doubleAxeHandle/George) and were not touched -- flagged as a follow-up for whoever next does a docs pass.",
+      "resolved_commit": null
     },
     {
       "id": "mirrored-knee-tilt-fix",
@@ -25,7 +28,7 @@
       "source": "AI_HANDOFF.md, Codex entry 2026-07-14 'knee connections break on facing changes'",
       "detail": "Skeleton.updateUpright's per-character _nearLegTilt/_nearShinTilt/_farLegTilt were screen-absolute while the true thighAng/shinAng bone chain mirrors with facing, so a knee tuned correctly in one facing detached in the other -- reproducible in the rig-tuner and in-game on turn. Both George and Thesz were affected.",
       "resolved_note": "Multiplied all three tilts by `facing` in Skeleton.js's updateUpright; `_farLegTilt` now also goes through the mirror it used to bypass when set. Existing tuned values are a no-op at facing=+1 (the tuning convention) and only change the previously-broken facing=-1 case. Verified: npm test 43/43, debug:play -- all 12/12, build clean, rig-tuner smoke.mjs 16/16, plus visual screenshots of both characters in both facings. Did NOT build the rig-tuner facing-toggle parity smoke check Codex's review suggested -- see rig-tuner-facing-parity-check below, split out as its own follow-up.",
-      "resolved_commit": "uncommitted as of this entry -- see AI_HANDOFF.md 2026-07-14 (later) entry"
+      "resolved_commit": "57cf8fb"
     },
     {
       "id": "rig-tuner-facing-parity-check",
@@ -93,12 +96,23 @@
       "title": "George's final full-body/limb art pass + fresh rig tuning",
       "category": "art",
       "priority": "low",
-      "status": "blocked",
+      "status": "done",
       "owner": "Derek (art) + Claude (rig tuning)",
       "source": "AI_HANDOFF.md, Codex entry 2026-07-14 'locomotion direction', recommended-order step 5",
-      "detail": "Last step of the locomotion/art sequence. Old George offsets and display boxes were fitted to stretched art and should not be preserved merely because they exist.",
-      "next_step": "Do not start until the gait prototype and the near/far texture-key decision are both settled.",
-      "blocked_by": ["natural-walk-shuffle-prototype", "near-far-leg-texture-decision"]
+      "detail": "Originally planned as the last step of the locomotion/art sequence because old George offsets and display boxes were fitted to stretched art. Derek later supplied the NewGeorge redraw and live-directed the replacement/tuning work before the earlier gait sequence completed.",
+      "resolved_note": "The NewGeorge full-body reference was cut into six layers, wired into the current skeleton, recalibrated for real-world height, given explicit knee/elbow attachment pivots, and live-tuned with Derek across multiple July 19-23 sessions. The remaining dark-ear concern is isolated as george-ear-art-touchup rather than keeping the completed redraw/rig pass blocked.",
+      "resolved_commit": "7363c76"
+    },
+    {
+      "id": "george-ear-art-touchup",
+      "title": "Thin George's dark inner-ear shading at game scale",
+      "category": "art",
+      "priority": "medium",
+      "status": "decision-needed",
+      "owner": "Derek (approve art edit), then Claude or Codex executes",
+      "source": "AI_HANDOFF.md, 2026-07-23 George live-tuning/cutter entry",
+      "detail": "The blanket cutter gap-close bug was fixed and scoped to George's shin, but the ear still reads as a black patch at game scale. Direct sampling showed the dark canal fill already exists in the raw GeorgeHead.png source; grayscale plus the small rendered head makes it merge visually. Codex recommends a localized source-art touch-up rather than changing headScale or adding another general cutter heuristic.",
+      "next_step": "Derek approves a localized thinning/lightening of the inner-ear canal shading in the source art. Re-cut only the head, compare at actual in-game scale in both facings, then run the normal verification suite."
     },
     {
       "id": "thesz-shin-cap-seam",
@@ -116,11 +130,12 @@
       "title": "Derek's in-browser sign-off on the rig-tuner tool",
       "category": "tooling",
       "priority": "low",
-      "status": "open",
+      "status": "done",
       "owner": "Derek",
       "source": "AI_HANDOFF.md, Claude entries 2026-07-14 'rig-tuner tool shipped' and 'first live tuning session'",
-      "detail": "Tool is built, verified (smoke tests, round-trip test), and Derek has driven it live for one tuning session (68f3e5f/d755001 landed from that), but the general 'is this tool good to keep using' sign-off framed in the original shipping entry hasn't been explicitly closed out.",
-      "next_step": "Effectively answered by the live tuning session already happening -- mostly a formality, but leaving open per the file's own convention of not silently closing things."
+      "detail": "Tool is built and verified with smoke and round-trip tests. The original explicit sign-off was not recorded immediately after shipping.",
+      "resolved_note": "Derek repeatedly drove the rig tuner live through the July 14-23 George and Thesz tuning sessions, exported values, and directed successive visual adjustments. Continued real-session use is practical sign-off that the tool should be kept.",
+      "resolved_commit": "7363c76"
     },
     {
       "id": "rig-tuner-second-pass",

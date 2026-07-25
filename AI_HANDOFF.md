@@ -25,7 +25,24 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Active assignment — Codex: blueprint four input-invoked move animations
+## Active assignment — none queued
+
+**Closed 2026-07-24 (Claude):** Derek approved the four-move blueprint below
+in full — all four moves, all three directional-input overrides, the kit
+assignments as proposed, and the current-rig hammerlock approximation (no
+rename to "standing arm wrench"). Claude implemented all four
+(hammerlock/kneeLift/backBodyDrop/kneeDrop), wired `debug:play` coverage, and
+verified. See the Handoff Log entry below for details. No new active
+assignment is queued — Derek/Codex should set the next one before more code
+work happens here.
+
+<details>
+<summary>Original assignment text (for the record)</summary>
+
+Codex delivered the requested blueprint on 2026-07-24:
+`AI_HANDOFF_ENTRIES/2026-07-24-codex-four-move-blueprint.md`.
+It is design-only; Claude should not implement it until Derek approves the
+four moves, input collisions, and current-rig hammerlock approximation.
 
 (Previous active assignment — B1 close-out: reversal foot-lock — completed and
 feel-signed-off by Derek 2026-07-12; see the Handoff Log entries of that date.
@@ -70,6 +87,8 @@ After Derek approves: Claude implements as focused commits (poses + MOVE_DEFS +
 handlers + `debug:play` scenario coverage), verifying with `npm test`,
 `npm run debug:play -- all`, and `npm run build` under Node >= 20.19.
 
+</details>
+
 ## Clarifications
 
 AI should eventually share authoritative range and move data with Wrestler, but AI
@@ -87,6 +106,115 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 `Skeleton.js` and are not v1 requirements.
 
 ## Handoff Log
+
+### 2026-07-24 (four-move blueprint implemented and verified) — Claude
+
+Implemented Codex's four-move blueprint
+(`AI_HANDOFF_ENTRIES/2026-07-24-codex-four-move-blueprint.md`) as written,
+per Derek's blanket approval of all four moves, the three directional-input
+overrides, the kit assignments, and the current-rig hammerlock approximation.
+
+- **`Wrestler.js`**: 16 new poses + 4 `MOVE_DEFS` entries (hammerlock,
+  kneeLift, backBodyDrop, kneeDrop) and their `_doXxx` execution methods.
+  `backBodyDrop` reuses the clothesline/dropkick flip machinery
+  (`startClotheslineFall`) via new optional `travelDist`/`arcHeight`
+  parameters (defaults match every existing caller byte-for-byte) rather than
+  a new render path. `kneeDrop` reuses `elbowDrop`'s airborne
+  `elbowDropping`/`_drawElbowDropAir` plumbing the same way, via a new
+  `_airPeakHeight` instance field (compact 38·s hop vs. elbow drop's 100·s,
+  explicitly set at both call sites so neither leaks into the other) and an
+  offset landing spot so the two bodies don't fully overlap.
+- **`Wrestler.js`**: `tryPower` now checks `up`+standing+≤85·s (kneeLift) and
+  `down`+down/possum+≤105·s (kneeDrop) before `resolvePowerMove` runs — left
+  `resolvePowerMove`/`moveDecision.js` itself untouched since these need the
+  held direction key, which that pure module doesn't receive.
+  `tryAction`'s returning-runner branch now checks `up`+in-range
+  (backBodyDrop) before falling through to the existing clothesline check.
+- **`scenes/Arena.js`**: hammerlock is a new branch in `_tickLockup`
+  (`ls.attacker.input.justDown('finisher')`), checked first and independent
+  of the existing action/power follow-up branches, matching the blueprint's
+  required ordering. Added the four moves' `_heatForMove` bumps and to the
+  `george`/`thesz`/`brawler` kit `moveSet`s exactly as specified (hammerlock:
+  george+thesz only; kneeLift: george+brawler only; backBodyDrop/kneeDrop:
+  all three).
+- **`AIHandler.js`**: added the blueprint's suggested AI usage as new
+  personality config fields (`hammerlockOdds`/`hammerlockStaminaMin`/`Max`,
+  `kneeLiftOdds`, `kneeDropOdds`) — hammerlock rolls inside `_handleLockup`
+  (finisher-slot, independent of the existing follow-up branches, same
+  ordering as the human trigger); kneeLift substitutes for the close jab
+  (never twice in a row, tracked via `_lastCloseMove`); kneeDrop substitutes
+  for the elbow-drop pounce. backBodyDrop AI is deliberately **not** wired,
+  per the blueprint's explicit "leave disabled" note (needs a rebound-read
+  choice it doesn't have yet).
+- **`tools/debug/play.mjs`**: added `hammerlock`, `kneeLift`, `backBodyDrop`,
+  `kneeDrop` scenarios. `hammerlock` pins P1 to the `thesz` kit (the default
+  `brawler` doesn't have it) via a new per-scenario `p1`/`p2` field the
+  runner now applies as `WFM_P1`/`WFM_P2` before each `launch()`, clearing it
+  between scenarios so it doesn't leak into an `all` run.
+
+**Bug found and fixed along the way:** `Arena._orphanWatchdog`'s 0.6s grace
+period didn't know about holds released by a plain Wrestler-internal
+`delayedCall` rather than an Arena-tracked state (`sleeperState`/
+`headlockState`) — it was cutting hammerlock's approved 1400ms hold short at
+600ms during the first `debug:play` run (visible as spurious `orphanRescue`
+events). Turned out this already silently affected the existing armBar
+(1600ms) and ankleLock (1700ms) holds too — nothing exercised them with a
+scripted scenario before now, so it went unnoticed; both were quietly losing
+their last ~1000ms plus their release-drain bonus (`_drain(6)`/`_drain(8)`)
+every time. Fixed for all three with a new `_fixedHold` instance flag, set
+at hold-start and cleared at each participant's own release point, that
+`_orphanWatchdog` now checks. `debug:play -- all` is clean (no
+`orphanRescue` noise) after the fix.
+
+**Verification:** `npm test` 43/43. `npm run debug:play -- all` 16/16
+(the four new scenarios plus all 12 pre-existing ones, including the
+now-fixed orphan-watchdog interaction). `npm run build` clean. Run under
+Node 22.23.1 via nvm — the shell's default `node` was v19.8.1, below this
+project's documented `>=20.19` floor, so a bare `npm test`/`npm run
+debug:play` fails outright (`node --test` can't glob) until you `nvm use
+22`.
+
+Not done, flagging for whoever's next: `MOVES.md`'s move tables/roster
+section were already out of sync with the shipped kit before this session
+(no suplex/headlock/armDrag/armBar/ankleLock/doubleAxeHandle/George rows,
+still calls P2 "Powerhouse") — left as-is rather than scope-creeping a docs
+pass into this task; whoever next does a docs pass should fold these four
+in too.
+
+### 2026-07-24 (four input-invoked move blueprint delivered; includes Derek's requested behind-the-back arm lock) — Codex
+
+Delivered the active-assignment blueprint at
+`AI_HANDOFF_ENTRIES/2026-07-24-codex-four-move-blueprint.md`. The four proposed
+moves are: hammerlock (behind-the-back arm lock), rising knee lift, back body
+drop, and knee drop. Each has exactly four full-format attacker poses, four
+timed/eased `MOVE_DEFS` steps, exact human input and context, range/state
+requirements, kit assignments, suggested stamina/heat tuning, current-pose
+defender reactions, and optional AI guidance.
+
+The hammerlock uses the clean, currently-unused `finisher` input inside
+lockup. It is deliberately an implied two-rig hold: both wrestlers face the
+same direction, the attacker stages slightly behind/outside, and the defender
+reuses `armBarDefender`. It does not request bespoke interlocked-body art.
+The other three moves use directional overrides: up+power at close standing
+range replaces jab with knee lift; up+grapple against a returning runner
+replaces clothesline with back body drop; down+power against a grounded
+opponent replaces elbow drop with knee drop. Releasing the direction preserves
+all existing inputs.
+
+Also reconciled `AI_HANDOFF_TASKS.json` with the latest record: the blueprint
+is now waiting on Derek rather than Codex; George's redraw/final rig pass and
+the practical rig-tuner sign-off are marked done from the July 23 live work;
+and the newly identified George ear touch-up is now tracked as a
+decision-needed art item. Thesz's separate crop/pivot and knee-seam work
+remains open; the July 22 joint-attachment fix explicitly covered George, not
+Thesz.
+
+Files touched: `AI_HANDOFF.md`, `AI_HANDOFF_TASKS.json`,
+`AI_HANDOFF_ENTRIES/2026-07-24-codex-four-move-blueprint.md`.
+Action required: Derek — review the four approval questions at the end of the
+blueprint. Claude — do not implement until Derek approves.
+Priority: high (active assignment delivered; implementation intentionally
+gated on art-direction/input approval).
 
 ### 2026-07-23 (george: live leg/arm tuning pass, a new far-thigh scale knob, and a real cutter bug found in the process — flagging the last piece for Codex) — Claude, live-iterated with Derek in-session
 

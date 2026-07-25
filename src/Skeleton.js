@@ -429,6 +429,23 @@ export default class Skeleton {
         // see the TEX comment above).
         this._thighH = textures.thighH ?? P.thighH;
         this._shinH  = textures.shinH  ?? P.shinH;
+        // rigProfile.sockets (2026-07-25, cohesive-body-rig-binding Phase C
+        // slice — see COHESIVE_BODY_RIG_BLUEPRINT.md): optional, opt-in
+        // { neck, nearShoulder, farShoulder } canvas-fraction anchors on the
+        // torso texture (same { u, v } convention as distalAnchorFrac — see
+        // its comment). When present, updateUpright roots the neck/shoulders
+        // from these measured torso-relative points via _socketPoint instead
+        // of the standalone SHOULDER_STAGGER + armOffsetX/Y + headOffsetX/Y
+        // chain. Absent (every character/part before this existed) = that
+        // chain runs exactly as before, byte-identical. George's and Thesz's
+        // current sockets were derived algebraically from their existing
+        // tuned offsets (not re-measured from ink), specifically so this
+        // migration is a pure refactor — same rendered output, formalized
+        // mechanism — not a new visual correction. Scoped to upright mode
+        // and shoulders/neck only for this slice; hips and the grounded/
+        // get-up torso rooting are unmigrated (see the socket derivation's
+        // AI_HANDOFF.md entry for why hips don't fit this same simple model).
+        this._torsoSockets = textures.rigProfile?.sockets ?? null;
 
         this._parts = [
             this.farThigh, this.farShin, this.farBoot,
@@ -611,11 +628,36 @@ export default class Skeleton {
     _trueDistalEnd(img, px, py, len, angle, s, facing) {
         const anchor = img._distalAnchorFrac;
         if (!anchor) return this._end(px, py, len, angle);
-        const growth = 1 / (1 - (img._jointPivotFrac || 0));
+        const jointPivotFrac = img._jointPivotFrac || 0;
+        const growth = 1 / (1 - jointPivotFrac);
         const dw = img._texDims.w * s * growth;
         const dh = img._texDims.h * s * growth;
         const lx = facing * (anchor.u - 0.5) * dw;
-        const ly = anchor.v * dh;
+        // anchor.v is a canvas-absolute fraction (0 = top row, 1 = bottom
+        // row), but _endXY's ly must be relative to the image's actual
+        // origin — which setOrigin(0.5, jointPivotFrac) in the constructor
+        // places at jointPivotFrac down the (grown) canvas, not at row 0.
+        // No current part combines jointPivotFrac with distalAnchorFrac (the
+        // only distalAnchorFrac user, upperArm, has jointPivotFrac 0), so
+        // this was an unexercised path — jointPivotFrac 0 makes this a
+        // no-op, byte-identical to the previous formula for every verified
+        // case (George/Thesz elbows). Correctness fix for the general case,
+        // flagged by Codex's 2026-07-25 review.
+        const ly = (anchor.v - jointPivotFrac) * dh;
+        return this._endXY(px, py, lx, ly, angle);
+    }
+
+    // World position of a { u, v } canvas-fraction socket on `img` (same
+    // convention as distalAnchorFrac — see resolveTexEntry's comment),
+    // given the part's actual current render position/angle/scale. Used for
+    // rigProfile.sockets (torso-owned shoulder/neck/hip anchors — see the
+    // constructor's _torsoSockets comment). Unlike _trueDistalEnd this has
+    // no fallback: only called when a socket is already known to exist.
+    _socketPoint(img, u, v, px, py, angle, s, facing) {
+        const dw = img._texDims.w * s;
+        const dh = img._texDims.h * s;
+        const lx = facing * (u - 0.5) * dw;
+        const ly = v * dh;
         return this._endXY(px, py, lx, ly, angle);
     }
 
@@ -822,20 +864,40 @@ export default class Skeleton {
         this.farThighRenderDebug = { x: farHipRender.x, y: farHipRender.y, angle: farRenderAng, s: s * this._farThighScale, facing, texDims: this.farThigh._texDims };
         this.farShinRenderDebug = { x: farShinRender.x, y: farShinRender.y, angle: far.shinAng, s: s * this._farShinScale, facing, texDims: this.farShin._texDims };
 
-        // Shoulder stagger: the torso art is drawn three-quarter (both shoulders
-        // visible, not coincident), so the near/far arms shouldn't pivot from the
-        // exact same point. Near arm sits back toward the torso's rear/back-curve
-        // edge; far arm sits slightly ahead of it — matches the 3/4 shoulder line
-        // even though the head itself stays a flat profile (Derek, 2026-07-12).
-        const SHOULDER_STAGGER = RIG.SHOULDER_STAGGER * s;
-        const armShoulderX = shoulderX + facing * this._armOffsetX * s;
-        const armShoulderY = shoulderY + this._armOffsetY * s;
-        // Far-shoulder-only nudge on top of the shared armOffsetX/Y + stagger,
-        // same near/far-parity idea as the leg offsets (2026-07-15 — arms
-        // previously had no far-only placement knob at all).
-        const farShoulderX  = armShoulderX + facing * (SHOULDER_STAGGER + this._farArmOffsetX * s);
-        const farShoulderY  = armShoulderY + this._farArmOffsetY * s;
-        const nearShoulderX = armShoulderX - facing * SHOULDER_STAGGER;
+        // Shoulder position: rigProfile.sockets (2026-07-25, cohesive-body-
+        // rig-binding Phase C — see the constructor's _torsoSockets comment)
+        // roots near/far shoulders from measured torso-relative anchors when
+        // a character supplies them, replacing the SHOULDER_STAGGER +
+        // armOffsetX/Y + farArmOffsetX/Y chain below. George's and Thesz's
+        // socket values were derived algebraically from that exact chain, so
+        // this branch renders byte-identical output for both — a pure
+        // mechanism refactor, not a new correction. Absent (any future
+        // placeholder/new character without a rigProfile) falls through to
+        // the original chain unchanged.
+        let farShoulderX, farShoulderY, nearShoulderX, armShoulderY;
+        if (this._torsoSockets) {
+            const near = this._socketPoint(this.torso, this._torsoSockets.nearShoulder.u, this._torsoSockets.nearShoulder.v, x, torsoTop, 0, s, facing);
+            const far  = this._socketPoint(this.torso, this._torsoSockets.farShoulder.u,  this._torsoSockets.farShoulder.v,  x, torsoTop, 0, s, facing);
+            nearShoulderX = near.x;
+            farShoulderX = far.x;
+            farShoulderY = far.y;
+            armShoulderY = near.y;
+        } else {
+            // Shoulder stagger: the torso art is drawn three-quarter (both shoulders
+            // visible, not coincident), so the near/far arms shouldn't pivot from the
+            // exact same point. Near arm sits back toward the torso's rear/back-curve
+            // edge; far arm sits slightly ahead of it — matches the 3/4 shoulder line
+            // even though the head itself stays a flat profile (Derek, 2026-07-12).
+            const SHOULDER_STAGGER = RIG.SHOULDER_STAGGER * s;
+            const armShoulderX = shoulderX + facing * this._armOffsetX * s;
+            armShoulderY = shoulderY + this._armOffsetY * s;
+            // Far-shoulder-only nudge on top of the shared armOffsetX/Y + stagger,
+            // same near/far-parity idea as the leg offsets (2026-07-15 — arms
+            // previously had no far-only placement knob at all).
+            farShoulderX  = armShoulderX + facing * (SHOULDER_STAGGER + this._farArmOffsetX * s);
+            farShoulderY  = armShoulderY + this._farArmOffsetY * s;
+            nearShoulderX = armShoulderX - facing * SHOULDER_STAGGER;
+        }
         // Near/far shoulder render-angle bias, same wrestler-local,
         // facing-mirrored convention as nearLegTilt/farLegTilt. Arms have no
         // IK chain downstream (unlike legs' shin), so — unlike the leg
@@ -922,12 +984,25 @@ export default class Skeleton {
             // them directly. Legacy heads carry neck slack in their own art;
             // sink the anchor by the cropped-out amount (world px) so the
             // shortened visible neck still meets the collar with no gap.
-            const anchorY = this._neckInTorso
-                ? neckY + this._headOffsetY * s
-                : neckY + this._headHidePx * headDispH / this.head.height;
-            const anchorX = this._neckInTorso
-                ? shoulderX + facing * this._headOffsetX * s
-                : shoulderX;
+            // Neck socket (2026-07-25, Phase C — see the constructor's
+            // _torsoSockets comment): when present, replaces the standalone
+            // headOffsetX/Y-off-shoulderX/neckY pair below with the same
+            // torso-relative socket mechanism the shoulders use. George's
+            // and Thesz's neck sockets were derived algebraically from their
+            // existing headOffsetX/Y, so this is byte-identical for both.
+            let anchorX, anchorY;
+            if (this._neckInTorso && this._torsoSockets?.neck) {
+                const neck = this._socketPoint(this.torso, this._torsoSockets.neck.u, this._torsoSockets.neck.v, x, torsoTop, 0, s, facing);
+                anchorX = neck.x;
+                anchorY = neck.y;
+            } else {
+                anchorY = this._neckInTorso
+                    ? neckY + this._headOffsetY * s
+                    : neckY + this._headHidePx * headDispH / this.head.height;
+                anchorX = this._neckInTorso
+                    ? shoulderX + facing * this._headOffsetX * s
+                    : shoulderX;
+            }
             this.head
                 .setPosition(anchorX, anchorY)
                 .setDisplaySize(headR * 2.0 * this._headScale, headDispH)

@@ -130,15 +130,124 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-25 (reply to Codex's Phase C review) — Claude
+
+Derek relayed a review from Codex on the neck/shoulder socket work below (6
+points: add hip sockets now, fix a `_trueDistalEnd` formula gap for parts
+combining `jointPivotFrac` + `distalAnchorFrac`, add regression coverage for
+that combination, confirm legacy single-property parts are unchanged, run
+the full verification suite, and record results before "integrating any
+George AI pilot assets" / "wiring the AI pilot thigh").
+
+**Adopted, verified correct independently:** the `_trueDistalEnd` formula
+gap is real. `anchor.v` is a canvas-absolute fraction, but a part's actual
+render origin sits at `jointPivotFrac` down the canvas (`setOrigin(0.5,
+jointPivotFrac)` in the constructor) — the old formula measured `ly` from
+canvas row 0 instead of from the origin. Fixed: `ly = (anchor.v -
+jointPivotFrac) * dh`. No shipped part currently combines both properties
+(the only `distalAnchorFrac` user, `upperArm`, has `jointPivotFrac` 0), so
+this was dead/unexercised code — the fix is a no-op for every verified case
+(re-ran both elbow sweeps after: identical 0.001px, unchanged). Added
+`tests/skeletonAnchor.test.js` (6 cases: distalAnchorFrac alone matches the
+old bone-length `_end()`; lateral offset mirrors correctly by facing; the
+combined case's `ly` is measured from the shifted origin; that combined
+case holds across a full angle sweep and both facings; and two explicit
+byte-for-byte regression pins for the legacy single-property paths).
+`npm test` 49/49 (43 prior + 6 new).
+
+**Not adopted yet — need clarification, not a refusal:**
+
+- **Hip sockets:** I still don't think these fit the shoulder/neck model
+  directly. Shoulders/neck are constant offsets from the torso's own static
+  render box. Hips root from the moving pelvis point (`x, hipY`, tracking
+  gait/crouch) and the render position passes through `_attachChild`'s
+  `HIP_OVERLAP` backoff *along the render angle* (which includes cosmetic
+  tilt — `FAR_THIGH_TILT`/`farLegTilt`), not a fixed offset from a static
+  box. If Codex has a concrete design for this — e.g. a socket defined
+  relative to the pelvis's own local frame rather than the torso canvas,
+  applied before or after the tilt-biased backoff — I'll implement it, but
+  I'd rather get the contract right than force today's shoulder mechanism
+  onto a structurally different attachment. Happy to be walked through it if
+  I'm missing something.
+- **"AI pilot assets" / "wiring the AI pilot thigh":** this doesn't match
+  anything in this file's log, `AI_HANDOFF_TASKS.json`, or either blueprint
+  doc. Not clear what it refers to — no prior entry defines it. Not touching
+  it until someone points me at what it is.
+
+Nothing hip-related or AI-pilot-related has been implemented. The verified,
+byte-identical neck/shoulder socket work (below) plus this correctness fix
+are committed together as their own change, separate from anything else, per
+Codex's own point 6.
+
+### 2026-07-25 (cohesive-body-rig-binding: Phase C, neck + shoulder sockets) — Claude
+
+Derek's call after the "no bug to fix" finding below: proceed with Phase C
+anyway for the architectural payoff, accepting the risk. Scoped to the
+tractable, lowest-risk slice: **neck + shoulder sockets in upright mode
+only**, both characters, verified pixel-identical. Hips and grounded/get-up
+torso rooting are explicitly deferred — see why below.
+
+**Why hips don't fit the same model:** shoulders/neck are static offsets
+from the torso's own render box (torso never rotates in upright mode).
+Hips are rooted from the moving pelvis point (`x, hipY`, which tracks
+gait/crouch), and the render position additionally passes through
+`_attachChild`'s rotation-dependent `HIP_OVERLAP` backoff along the
+*render* angle (which includes cosmetic tilt) — a fundamentally more
+involved relationship than "fixed offset from a static box." Forcing hips
+into today's socket model risked getting the math wrong in a way that
+wouldn't surface until an edge-case pose.
+
+**Why grounded/get-up mode is untouched:** discovered while implementing
+that `_applyGrounded`'s arm placement renders near AND far upper arm at the
+exact same point today — no shoulder stagger at all in that path, unlike
+upright mode. Routing sockets through grounded mode would have *introduced*
+a stagger that doesn't exist today, a real behavior change, not a refactor.
+Left alone.
+
+**Mechanism:** added `rigProfile.sockets` (`{ neck, nearShoulder,
+farShoulder }`, each a `{ u, v }` canvas fraction on the torso texture —
+schema per `COHESIVE_BODY_RIG_BLUEPRINT.md`) plus `Skeleton.js`'s
+`_socketPoint` helper and `_torsoSockets` constructor field. When a
+character supplies sockets, `updateUpright` roots near/far shoulders and
+the neck from them via `_socketPoint` instead of the standalone
+`SHOULDER_STAGGER` + `armOffsetX/Y` + `farArmOffsetX/Y` + `headOffsetX/Y`
+chain. Absent = that chain runs exactly as before, byte-identical (no
+character is left without sockets right now, but future placeholder/new
+characters can omit them and still work).
+
+**Critically, this is a pure refactor, not a new correction**: George's and
+Thesz's socket `{u,v}` values were derived *algebraically* from their
+existing tuned offset constants (solving for the socket that reproduces
+today's exact formula output), not re-measured from ink content the way the
+elbow fix was. Verified by comparing `jointAttachmentPoints` for neck/near/
+far-shoulder across all `POSES`, both facings, both characters, before vs.
+after: max difference **0.000034px** (floating-point noise).
+
+**Verification:** `npm test` 49/49 (43 prior + 6 new — see the reply-to-Codex
+entry above, whose `_trueDistalEnd` fix is bundled into this same commit);
+`npm run debug:play -- all` 16/16; `npm run build` clean;
+`joint_attachment_audit.mjs` unchanged, all-PASS;
+`elbow_anchor_sweep.mjs` both characters still 0.001px; new
+`tools/debug/knee_ink_gap_sweep.mjs` (promoted from an exploratory script,
+see the entry below) both characters 0.00px; new
+`tools/debug/torso_socket_sweep.mjs` (also promoted) both characters
+still passes (George's neck worst-case 1.00px, unchanged from before this
+refactor).
+
+**Next:** hip sockets and grounded-mode torso rooting remain, if this is
+worth continuing — no active bug motivates either, same as the knee finding.
+
 ### 2026-07-25 (cohesive-body-rig-binding: knees investigated, no fix needed) — Claude
 
 Continued into Phase B (knees) after both characters' elbows landed. Finding:
 **knees don't need the elbow-style distalAnchorFrac fix, and forcing one on
 would be the wrong move.**
 
-Two probes, both ad hoc (not committed — see below):
+Two probes:
 
-1. **Per-row anchor search** (mirrors the elbow methodology): for every row
+1. **Per-row anchor search** (mirrors the elbow methodology, exploratory
+   only — not committed, its conclusion below doesn't need re-running as
+   ongoing regression coverage): for every row
    of the thigh canvas, map its ink centroid through the thigh's actual
    render transform and measure distance to the true knee
    (`jointAttachmentPoints.*Knee`), keeping the best-fitting row. Elbows hit
@@ -150,16 +259,17 @@ Two probes, both ad hoc (not committed — see below):
    overlap (George's thigh box is explicitly sized "as if thighH were 68"
    against a real bone length of 56 — see george.js's thigh comment) — there
    is no single "flush" row to find, by design.
-2. **Dense ink-gap sweep** (the metric that actually matters for an
-   overlap-style joint, and the same technique that caught the elbow bug
-   despite the sparse named-pose audit passing): swept leg angle -1.5..1.5
-   rad, both facings, both characters, measuring parent/child painted-alpha
-   proximity the same way `joint_attachment_audit.mjs` does for its 8 named
-   poses. Result: **0.00px everywhere**, both characters, both facings,
-   across the full angle range. Unlike the elbow (which passed the sparse
-   audit while hiding a real 3-4px anchor error), there's no hidden
-   pose-dependent drift here — the existing hip-overlap/knee-overlap backoff
-   technique is already solid.
+2. **Dense ink-gap sweep**, now `tools/debug/knee_ink_gap_sweep.mjs`
+   (promoted from the exploratory version to a real regression tool — the
+   metric that actually matters for an overlap-style joint, and the same
+   technique that caught the elbow bug despite the sparse named-pose audit
+   passing): swept leg angle -1.5..1.5 rad, both facings, both characters,
+   measuring parent/child painted-alpha proximity the same way
+   `joint_attachment_audit.mjs` does for its 8 named poses. Result: **0.00px
+   everywhere**, both characters, both facings, across the full angle range.
+   Unlike the elbow (which passed the sparse audit while hiding a real 3-4px
+   anchor error), there's no hidden pose-dependent drift here — the existing
+   hip-overlap/knee-overlap backoff technique is already solid.
 
 **Conclusion:** the blueprint's assumption that the elbow fix's "same code
 path" would carry mechanically to knees doesn't hold — knees use a

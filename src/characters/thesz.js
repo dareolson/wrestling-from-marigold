@@ -48,6 +48,20 @@ export const thesz = {
         headOffsetX: 4,
         headOffsetY: 9,
         torso:    'thesz_torso',
+        // rigProfile.sockets (2026-07-25, cohesive-body-rig-binding Phase C
+        // — see Skeleton.js's _torsoSockets/_socketPoint comments,
+        // COHESIVE_BODY_RIG_BLUEPRINT.md, and george.js's matching entry).
+        // Derived algebraically from the armOffsetX/Y/headOffsetX/Y +
+        // SHOULDER_STAGGER chain below against the default TEX.torso box
+        // (82x112, since this torso entry has no box override) — byte-
+        // identical rendered output, not a new correction.
+        rigProfile: {
+            sockets: {
+                neck:         { u: 0.54878,  v: 0.080357 },
+                nearShoulder: { u: 0.243902, v: 0.169643 },
+                farShoulder:  { u: 0.536585, v: 0.169643 },
+            },
+        },
         // Ref shoulder (upper-arm layer top-rows center) sits 56.6/380 of
         // torso height BEHIND the torso centroid and 50/380 below its top;
         // the rig's default (torso x + 12·s shoulder drop, near arm staggered

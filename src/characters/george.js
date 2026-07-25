@@ -64,6 +64,23 @@ export const george = {
         // aspect ratio to rounding, so the earlier -5% box is sound.
         // Object form only overrides display size; joint math is untouched.
         torso:    { key: 'george_torso', box: { w: 78, h: 106 } },
+        // rigProfile.sockets (2026-07-25, cohesive-body-rig-binding Phase C
+        // — see Skeleton.js's _torsoSockets/_socketPoint comments and
+        // COHESIVE_BODY_RIG_BLUEPRINT.md). neck/nearShoulder/farShoulder
+        // canvas-fraction anchors on this torso texture, derived
+        // algebraically from the existing armOffsetY/headOffsetX/Y +
+        // SHOULDER_STAGGER chain below (not re-measured from ink) so this
+        // migration reproduces the exact same rendered output — a pure
+        // mechanism refactor. Hip sockets and grounded/get-up torso rooting
+        // are unmigrated; see the AI_HANDOFF.md entry for why hips don't fit
+        // this same simple model.
+        rigProfile: {
+            sockets: {
+                neck:         { u: 0.628205, v: 0.09434 },
+                nearShoulder: { u: 0.346154, v: 0.122642 },
+                farShoulder:  { u: 0.653846, v: 0.122642 },
+            },
+        },
         // armOffsetY: live rig-tuner export (Derek), same seating-nudge
         // category as thesz's own armOffsetY — near-shoulder Y seat only.
         armOffsetY: 1,

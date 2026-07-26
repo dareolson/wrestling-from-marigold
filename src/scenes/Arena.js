@@ -6,13 +6,24 @@ import CrowdAudio from '../CrowdAudio.js';
 import { george } from '../characters/george.js';
 import { thesz } from '../characters/thesz.js';
 import { georgeAiPilot } from '../characters/george_ai_pilot.js';
+import { georgeAiPilotV2 } from '../characters/george_ai_pilot_v2.js';
+import { georgeAiPilotV4 } from '../characters/george_ai_pilot_v4.js';
+import { georgeAiPilotV5 } from '../characters/george_ai_pilot_v5.js';
 
 // All characters whose PNGs should be preloaded. georgeAiPilot (2026-07-25,
 // George AI art-swap pilot) is a reversible, opt-in comparison config --
 // select it via ?p1=george-ai-pilot / ?p2=george-ai-pilot (see PRESETS
 // below); the shipped george.js definition is untouched.
-const CHARACTERS = [george, thesz, georgeAiPilot];
-const PART_FILES  = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png' };
+const CHARACTERS = [george, thesz, georgeAiPilot, georgeAiPilotV2, georgeAiPilotV4, georgeAiPilotV5];
+const PART_FILES  = {
+    head: 'head.png', torso: 'torso.png', pelvisOverlay: 'pelvis_overlay.png',
+    upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png',
+    nearShin: 'near_shin.png', farShin: 'far_shin.png',
+    // nearForearm/farForearm (2026-07-25, George AI pilot v4 — distinct
+    // near/far hand orientations): same generic opt-in pattern as
+    // nearShin/farShin above.
+    nearForearm: 'near_forearm.png', farForearm: 'far_forearm.png',
+};
 
 // Named crowd extras: each is one chroma-keyed multi-frame reference sheet
 // cut via tools/audience-cutter into src/assets/audience/<slug>/frame1..N.png
@@ -2758,6 +2769,37 @@ export default class Arena extends Phaser.Scene {
                 skin: 0xa87858, trunks: 0x1a1a1a,
                 moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
                 textures: georgeAiPilot.textures,
+            },
+            // Versioned hinge-art candidate. Kept separate until the focused
+            // live-walk/lockup visual gate passes; george-ai-pilot remains the
+            // untouched baseline for direct comparison.
+            'george-ai-pilot-v2': {
+                name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
+                skin: 0xa87858, trunks: 0x1a1a1a,
+                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
+                textures: georgeAiPilotV2.textures,
+            },
+            // v4 modular-source candidate (2026-07-25) — surgical torso/
+            // trunks + shared-upper-arm + distinct near/far-forearm repair
+            // over v2, from Derek-approved replacement source art. Kept
+            // separate from v1/v2 until Derek's visual approval; those
+            // remain untouched comparison points.
+            'george-ai-pilot-v4': {
+                name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
+                skin: 0xa87858, trunks: 0x1a1a1a,
+                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
+                textures: georgeAiPilotV4.textures,
+            },
+            // v5 arm-length correction candidate (2026-07-25) — re-cuts v4's
+            // upper arm and both forearms at their real elbow transitions
+            // (Codex's follow-up review: v4's arms read much too long).
+            // Kept separate from v1/v2/v4 until Derek's visual approval;
+            // those remain untouched comparison points.
+            'george-ai-pilot-v5': {
+                name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
+                skin: 0xa87858, trunks: 0x1a1a1a,
+                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
+                textures: georgeAiPilotV5.textures,
             },
         };
         const q  = new URLSearchParams(location.search);

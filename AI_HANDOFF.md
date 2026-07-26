@@ -144,6 +144,758 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-07-26 (George AI pilot v5: Derek approved the pass-3 torso/shoulder fix — "looks great") — Claude
+
+Derek re-reviewed at `?p1=george-ai-pilot-v5&p2=george` after the three-pass
+torso/shoulder-socket correction (entry directly below) and confirmed it
+reads correctly now. `george-ai-pilot-v5` is the current, visually-approved
+candidate for its torso orientation, arm attachment, and arm length. Not yet
+committed or pushed; not yet approved for a live swap into shipped George,
+and expression-state wiring is still explicitly out of scope until Derek
+says otherwise. `george-ai-pilot`, `-v2`, and `-v4` remain untouched,
+available for comparison.
+
+### 2026-07-25/26 (George AI pilot v4/v5: "his torso is backwards" took three passes to actually close out — mirror the image AND keep the original shoulder assignment, not either alone) — Claude
+
+Direct follow-up to the entry immediately below (same bug, that entry's fix
+was incomplete). Full sequence, since whoever reads this next should not
+repeat any of the first two attempts:
+
+**Pass 1** (entry below): swapped which measured point is called
+`nearShoulder`/`farShoulder`/`nearHip`/`farHip` (pixel positions unchanged),
+based on a direct comparison against `george.js`/`thesz.js`'s own socket
+values. Derek: "arms are correctly oriented now, but his torso also needs to
+flip."
+
+**Pass 2:** mirrored `torso.png`/`pelvis_overlay.png` horizontally at the
+cutter and mirrored every socket u-fraction (1-u), keeping pass 1's labels —
+reasoning at the time was "mirroring doesn't change which physical side is
+near/far, only where it sits in the canvas" (true in isolation, but incomplete
+here). Derek: "the arm is now pinned to the wrong shoulder."
+
+**Root cause of pass 2's regression, worked out from `Skeleton.js`'s own
+math before touching anything again:** `_socketPoint`'s `lx = facing * (u -
+0.5) * dw` means at facing=+1, whichever shoulder has the higher u ends up
+further screen-right. Checked what pass 1 vs. a hypothetical mirror-only
+(no label swap) each produce:
+
+- Pass 1 (label swap, no mirror): nearShoulder.u=0.1405 (left), farShoulder.u
+  =0.8061 (right) — matches `george.js`'s near-left/far-right pattern.
+  Confirmed why arms read correctly after pass 1 alone.
+- Pass 1 + pass 2 combined (mirror applied ON TOP of pass 1's already-swapped
+  labels): nearShoulder.u=1-0.1405=0.8595 (right), farShoulder.u=1-0.8061
+  =0.1939 (left) — the OPPOSITE of `george.js`'s pattern. The two fixes
+  canceled each other out for arm-attachment purposes, landing back on the
+  same wrong near/far pattern pass 1 had fixed — exactly matching Derek's
+  "wrong shoulder" report.
+
+**Pass 3 (final, this state):** kept pass 2's mirror (`torso.png`/
+`pelvis_overlay.png` stay flipped — verified by hash that these bytes are
+unchanged from pass 2, since the mirror step doesn't depend on which
+constant is labeled near/far, only the label-to-JSON mapping does) and
+reverted pass 1's label swap back to the ORIGINAL, pre-pass-1 assignment
+(bigger/rounder deltoid = "near," smaller/tucked = "far"; same physical
+side for the hips). Verified algebraically before touching the JS: original
+nearShoulder (u=0.8061 unmirrored) lands at 1-0.8061=0.1939 once mirrored —
+matching `george.js`'s near-shoulder-on-image-left pattern (u=0.346);
+original farShoulder (u=0.1405 unmirrored) lands at 1-0.1405=0.8595 —
+matching `george.js`'s far-on-image-right pattern (u=0.654). So the
+self-consistent combination was mirror + ORIGINAL labels, not mirror + pass
+1's swapped labels. Pass 1's underlying method (check the shipped rigs
+directly, don't trust an unverified comment) was still correct; it was just
+missing pass 2's mirror as the other half of the fix.
+
+**farShinScale re-tuned a third time,** back to **1.185** — the final
+nearHip/farHip assignment has the same physical v-geometry as the very
+first (pass-0) v4 tuning pass, just now paired with a mirrored torso, so the
+minimax point landed back exactly where it originally was (worst gap
+0.97px). Pass 1's intermediate re-tune (1.13) and pass 2's (unmeasured, it
+failed at 2.34px) are both superseded.
+
+**Re-verification (Node 22.23.1), after every pass, final state green:**
+- `npm test`: 64/64
+- `npm run build`: clean
+- `npm run debug:play -- all`: 16/16
+- `joint_attachment_audit.mjs` george/thesz/george-ai-pilot/-v2/-v4/-v5: all
+  PASS, no regression
+- `torso_socket_sweep.mjs` v4 and v5: 0.00px both
+- `sole_grounding_sweep.mjs` v4: 0.97px, v5: matches — both PASS
+- `elbow_anchor_sweep.mjs`, `knee_ink_gap_sweep.mjs` v4 and v5: 0.00px,
+  untouched by any of this
+- Re-shot `pilot_comparison_shots.mjs` for v5 (idle, hammerlock, arm bar) —
+  shoulder attachment and torso silhouette now read consistent with shipped
+  George at every pose checked, including the asymmetric hammerlock/arm-bar
+  poses that would have shown a wrong-shoulder attachment most clearly.
+
+**Lesson recorded for next time:** a citation to another file's convention
+("matches george.js's own convention") is a claim, not a fact, until the
+file is actually opened and checked — that unverified claim is what started
+this whole three-pass chain. Second lesson: when a fix touches both an
+image's pixels and a coordinate convention describing that image, reason
+through the actual runtime math (here, `_socketPoint`'s `facing * (u-0.5)`)
+before combining it with an earlier, independently-derived fix — two
+correct-in-isolation fixes can cancel out.
+
+Not adopted into shipped George; george-ai-pilot, -v2 remain untouched.
+Awaiting Derek's re-review at `?p1=george-ai-pilot-v5&p2=george`.
+
+### 2026-07-25 (George AI pilot v4/v5: torso near/far shoulder and hip sockets were swapped — Derek: "his torso is backwards" — fixed at the source, re-verified) — Claude
+
+Derek's in-browser review of v5 found the torso looked backwards. Root-caused
+by direct comparison against the shipped, Derek-approved rigs rather than by
+guessing:
+
+The v4 cutter's torso landmark comments asserted the image-right shoulder
+(bigger/rounder deltoid, wider/oval nipple) was "near," claiming this
+"matches the same convention shipped george.js already uses at facing=+1" —
+but that claim was never actually checked against the file, and it was
+backwards. Direct read of the shipped configs:
+
+- `george.js`: `nearShoulder: {u: 0.346...}`, `farShoulder: {u: 0.654...}`
+- `thesz.js`: `nearShoulder: {u: 0.244...}`, `farShoulder: {u: 0.537...}`
+
+Both established, extensively-tested characters put the smaller/tucked
+shoulder on image-left as "near" and the bigger one that swings into more
+frontal view on image-right as "far" — the opposite of what v4 assumed. This
+torso's pixels were never mirrored or wrong (still reads as a correct
+front-on chest, both nipples visible, no orientation flip needed) — only the
+near/far *labels* on the two shoulder-socket measurements were swapped, and
+by the same "one physical side throughout" logic the hip labels were also
+swapped to match. Since `Skeleton.js` reads `nearShoulder`/`farShoulder`/
+`nearHip`/`farHip` by name to drive the whole opt-in dynamic-pelvis +
+authored-leg-rig path (arm attachment points, hip-solve geometry, which
+physical leg gets which near/far treatment), this one label swap explains
+Derek's "backwards" read even though no pixel was ever mirrored.
+
+**Fixed at the source:** swapped `TORSO_NEAR_SHOULDER`/`TORSO_FAR_SHOULDER`
+and `TORSO_NEAR_HIP`/`TORSO_FAR_HIP` in
+`Sprite sheets/AI Pilot/George/tools/prepare_v4_modular_assets.py` (measured
+pixel positions unchanged, only which one is called "near" vs "far"),
+re-ran the cutter (torso.png/pelvis_overlay.png bytes are byte-identical —
+only `rig-profile.json`'s labels changed), and updated
+`george_ai_pilot_v4.js`'s `rigProfile.sockets` to match.
+`george_ai_pilot_v5.js` inherits this unchanged via its existing spread of
+`georgeAiPilotV4.textures` — no v5-specific edit needed.
+
+**Consequence requiring re-tuning:** swapping which hip is "near" changes the
+dynamic-pelvis geometry the sole-grounding solve depends on, so v4's
+previously-tuned `farShinScale` (1.185) no longer held — re-swept post-fix,
+worst gap was 2.31px (over the 2px gate). Re-measured the same way as every
+prior tuning pass (sweeping `sk._farShinScale` against
+`sole_grounding_sweep.mjs`'s reported worst-case gap, both facings): **1.13**
+is the new minimax point (worst gap 1.05px vs. 1.46px at 1.15, 2.68px at the
+old 1.20). `george_ai_pilot_v5.js` has no `farShinScale` of its own, so it
+also inherits this corrected value automatically.
+
+**Re-verification (Node 22.23.1):**
+- `npm test`: 64/64
+- `npm run build`: clean
+- `npm run debug:play -- all`: 16/16
+- `joint_attachment_audit.mjs` george/thesz/george-ai-pilot/-v2/-v4/-v5
+  together: all PASS, no regression
+- `torso_socket_sweep.mjs` v4 and v5: 0.00px both
+- `sole_grounding_sweep.mjs` v4: 0.95px (was 2.34px right after the swap,
+  before re-tuning `farShinScale`); v5: 1.04px — both PASS
+- `elbow_anchor_sweep.mjs`, `knee_ink_gap_sweep.mjs` v4 and v5: 0.00px,
+  unaffected (arm-chain and knee geometry untouched by this fix)
+- Re-shot `pilot_comparison_shots.mjs` for both v4 and v5 (idle, overhead
+  taunt, hammerlock, arm bar) — shoulder/arm placement now reads consistent
+  between shipped George and the pilot at the same poses, where the prior
+  screenshots showed a mirrored discrepancy.
+
+Not adopted into shipped George; george-ai-pilot, -v2 remain untouched.
+Awaiting Derek's re-review at `?p1=george-ai-pilot-v5&p2=george` to confirm
+this actually reads correctly now.
+
+### 2026-07-25 (George AI pilot v5: arm-length correction candidate implementing Codex's v4 follow-up — real elbows located visually, both forearms re-scaled to a length target instead of an elbow-width match, comparison gate run, not yet approved) — Claude
+
+Implemented Codex's v4 follow-up (entry directly below) as a new, separate,
+opt-in candidate: `george-ai-pilot-v5`. `george-ai-pilot`, `-v2`, and `-v4`
+are all untouched, reversible comparison points.
+
+**Compare at:** `http://localhost:5173/?p1=george-ai-pilot-v5&p2=george`, or
+against v4 directly: `?p1=george-ai-pilot-v5&p2=george-ai-pilot-v4`.
+
+**Root cause, confirmed independently:** v4's cutter treated each drawn
+object's full top-to-bottom alpha extent as its bone. The upper-arm and both
+forearm source objects were each drawn as a *complete* arm silhouette
+(shoulder to wrist/hand), not an isolated segment — so v4's "elbow" anchors
+sat at the wrong end of each object entirely (the actual wrist/hand end).
+
+**Locating the real elbow (visual, not guessed):** each of the three v4
+parts (`upper_arm.png`, `near_forearm.png`, `far_forearm.png`) has exactly
+one hand-drawn interior "bend crease" ink stroke — the same joint-marking
+convention this artist uses elsewhere, distinct from the bold outer
+silhouette stroke. Found by scanning rows for near-black interior pixels
+(RGB<60, alpha>200) inside the silhouette, clustering them, and reading the
+row where the crease tapers off and disappears (its tip — same convention
+as a real inner-elbow skin fold pointing at the joint). Verified with a
+fine-grained per-row scan at each candidate boundary before fixing the
+constant, per Codex's explicit instruction not to trust the math estimate
+blindly. Measured elbow rows (on v4's own aligned canvases): upper arm 508,
+near forearm 255, far forearm 307. The upper-arm reading independently
+corroborates Codex's own math estimate (~525-530, solved from the 66-68
+world-px target) within 4% — good agreement from an unrelated method. Also
+confirmed neither forearm object hides a *second*, higher crease in its
+rounded top "cap" (scanned rows 40-150 the same way) — that cap really is
+just redundant material, exactly as Codex described.
+
+**Cutter:** new `Sprite sheets/AI Pilot/George/tools/prepare_v5_arm_trim.py`.
+Does not re-derive from the raw two-object source sheets — starts from v4's
+already chroma-keyed/isolated/aligned parts and only re-crops each at its
+real elbow row, keeping a 40-source-px authored underlap past the trim on
+each side (Codex: "roughly 4-7 world pixels") so the existing parent-over-
+child elbow draw order has real drawn skin to hide the other part's cut
+edge with, not a hard transparent boundary. No cap, peg, ellipse, or added
+skin drawn anywhere. Torso, pelvis overlay, and the reused v3 thigh are
+byte-identical copies of v4's own output (Codex: keep the torso scale and
+raw source sheets unchanged) — only the three arm-chain textures actually
+change.
+
+**Forearm re-scale — a deliberate methodology change, not a knob tune:**
+v4 derived `EFFECTIVE_SCALE_FOREARM` by matching elbow *width* between the
+upper arm and forearm sheets. Codex's own review calls that out directly:
+"v4's elbow-width match establishes joint thickness, not limb length." This
+pass does not reuse it. Instead it solves one forearm scale so the newly
+measured elbow-to-fingertip span reproduces `george_ai_pilot.js`'s own
+already-Derek-reviewed forearm bone length (68 world px — the same number
+Codex's review cites as "the prior art's roughly 68-71px elbow-to-hand
+span"), averaged across near/far since only one shared scale backs both.
+Result: upper arm 65.56 world px, near forearm 70.19, far forearm 65.81 —
+all within Codex's cited target range, and within ~1px of
+`george_ai_pilot.js`'s own established 66/68 values. Full numbers:
+`candidates/v5-arm-trim/diagnostics/rig-profile.json`.
+
+**Known trade-off, flagged rather than hidden:** the new forearm scale is
+no longer elbow-width-matched to the upper arm — world elbow width is now
+~25.4px (upper arm) vs. ~20.5px (forearm), a visible mismatch at the seam
+if the parent's hidden-overlap underlap doesn't fully cover it at some bend
+angles. Prioritized correct overall length (Derek's actual complaint, and
+Codex's explicit target) over exact joint-width continuity, since Codex's
+own review identifies width-matching as the wrong basis for length in the
+first place. Worth Derek's eye during review; if a seam shows at an extreme
+bend, re-splitting the underlap allowance between the two parts is the
+first thing to try, not a new scale knob.
+
+**Visual confirmation (this session's own read, not yet Derek's):** cropped
+before/after comparisons at idle, hammerlock, arm-bar, and overhead-taunt
+(same poses, same camera, v4 vs. v5) all show the same pattern — v4's arm
+extends noticeably farther from the body (in two of four poses, off the top
+of a crop framing that fully contains v5's arm), v5's reads as a normal
+resting/reaching arm length in all four. Screenshots:
+`tools/debug/shots/pilot-comparison-george-ai-pilot-v5/` (vs. the existing
+`-v4` sibling directory for direct diffing) and the full 130-frame
+walk/gait/lockup capture at
+`tools/debug/shots/george-pilot-art-review/v5-arm-trim/`.
+
+## Verification (Node 22.23.1 via Homebrew python3.14 + pip-installed
+Pillow for the cutter script — the system `/usr/bin/python3` on this
+machine is currently broken, unrelated to this repo: `xcrun` fails to load
+with an architecture-mismatch error on every invocation)
+
+- `npm test`: 64/64 (unchanged — this pass touches only character-config
+  data and a new gitignored cutter script, no Skeleton.js/test changes)
+- `npm run build`: clean
+- `npm run debug:play -- all`: 16/16
+- `joint_attachment_audit.mjs` george/thesz/george-ai-pilot/-v2/-v4/-v5
+  together: all PASS, 0.00-1.00px, no regression on any prior character
+- `torso_socket_sweep.mjs george-ai-pilot-v5`: worst 0.00px, PASS
+- `sole_grounding_sweep.mjs george-ai-pilot-v5`: worst 1.08px, PASS
+  (untouched — thigh/shin geometry is byte-identical to v4)
+- `elbow_anchor_sweep.mjs george-ai-pilot-v5`: 0.000px, PASS
+- `knee_ink_gap_sweep.mjs george-ai-pilot-v5`: 0.00px, PASS
+
+Not adopted into shipped George; george-ai-pilot, -v2, and -v4 remain
+untouched, available for direct comparison. Awaiting Derek's in-browser
+visual approval before any further integration — do not wire expressions
+or broaden scope.
+
+## Task update
+
+`AI_HANDOFF_TASKS.json`'s `george-ai-pilot` task updated (history preserved)
+to record this candidate and point at this entry.
+
+### 2026-07-25 (George AI pilot v4 follow-up: passing attachment audits hide overlong generated arm geometry; trim at real elbows and retain only short overlap) — Codex
+
+Derek's live review of the new modular candidate found that the arms still
+read much too long. This is not contradicted by v4's green joint audits: those
+audits prove that the configured attachment points coincide and remain
+covered, but they do not prove believable anatomical segment lengths.
+
+The v4 scale derivation exposes the cause. The torso-derived
+`EFFECTIVE_SCALE_TORSO_ARM` is valid for sizing the torso, but applying it to
+the separately drawn upper-arm object produces an approximately **94.4px**
+shoulder-to-elbow span (`678.73 source px * 0.139138`) instead of George's
+established approximately **66-68px** upper arm. Likewise, the current
+near/far forearms render approximately **102-104px** below their near-top
+pivots, versus the prior art's roughly **68-71px** elbow-to-hand span. Objects
+sharing one generated sheet are not thereby guaranteed to have been drawn at
+one anatomical scale; v4's elbow-width match establishes joint thickness, not
+limb length.
+
+For the next focused cutter revision:
+
+- Keep the torso scale and current raw source sheets unchanged. Work in a new
+  versioned candidate; do not overwrite v4 while Claude's torso follow-up is
+  active.
+- Do not shrink the torso, squash a limb non-uniformly, change gait code, or
+  add screen-space offsets to compensate.
+- On the aligned upper-arm art, place the real elbow at the established
+  approximately 68px bone length. At the current v4 scale this is about 489
+  source pixels below the shoulder pivot, around aligned source row 525-530
+  rather than the present distal row near 716. Confirm the row visually
+  before fixing the constant.
+- Trim away the remaining overlong lower section. Retain only approximately
+  35-45 source pixels (roughly 4-7 world pixels) past the elbow as a narrow
+  lengthwise underlap. Do not close the cut with a black transverse line,
+  rounded cap, ellipse, peg, or added skin.
+- Recut each forearm around its actual elbow transition. Remove the redundant
+  long material above the elbow while retaining only a similarly short
+  proximal underlap beneath the upper arm. Do **not** solve this by putting the
+  pivot one-third down an otherwise-unchanged canvas: a long retained overlap
+  can protrude sideways during a deep bend.
+- Recompute each canvas, `jointPivotFrac`, upper-arm
+  `distalAnchorFrac`, and recorded bone span from the trimmed art. Target an
+  elbow-to-fingertip/hand span comparable to the prior approximately 68-71px
+  result while preserving uniform X/Y scale and the two distinct hand
+  orientations.
+- Keep the existing parent-over-child elbow draw order: `Skeleton.js` already
+  draws each upper arm just above its forearm, which is the correct structure
+  for hiding the forearm's short proximal underlap. A nonzero authored pivot
+  already bypasses legacy `ELBOW_OVERLAP`; do not add another runtime overlap
+  offset.
+- Validate the visible silhouette, not only pivot coincidence: dense elbow
+  bends, arms-down, overhead, lockup, headlock, arm bar, and hammerlock; both
+  facings and transition frames. Reject any black cross-joint line, long
+  rubbery double segment, exposed cut edge, or overlap strip that swings out
+  of the natural contour.
+
+This is an art/cutter normalization correction, not a renderer or pose-system
+change. Preserve shipped `george.js`/`src/assets/wrestlers/george/`, the v1/v2
+pilots, the existing v3 thigh source/cut, and all unrelated uncommitted work.
+
+### 2026-07-25 (George AI pilot v4: new isolated modular candidate — torso/trunks + shared upper arm + distinct near/far forearms + the reused v3 thigh, comparison gate run, not yet approved) — Claude
+
+Built `george-ai-pilot-v4` from Derek-approved replacement source art (new
+torso+shared-upper-arm sheet, new near/far-forearms sheet, plus the
+previously-cut v3 replacement thigh reused verbatim). New deterministic
+cutter (`Sprite sheets/AI Pilot/George/tools/prepare_v4_modular_assets.py`)
+derives one effective source-pixel-to-world scale per source sheet (three
+independently-generated sheets, no shared pixel density), each solved to
+preserve the already-approved v1/v2 body proportions rather than guessed.
+Added a new generic opt-in `nearForearm`/`farForearm` fallback pair to
+`Skeleton.js` (same pattern as the existing near/far thigh/shin fallbacks;
+every other character falls through to the shared `forearm` key unchanged).
+Re-tuned `farShinScale` for this torso's own hip-socket geometry (1.185,
+measured, not inherited from v2's 1.20). Full derivation, anchors, a cutter
+bug found and fixed mid-pass (component-isolation leak inflating the
+arm/forearm canvases), and verification are in
+`AI_HANDOFF_ENTRIES/2026-07-25-claude-george-ai-pilot-v4-modular-candidate.md`.
+
+**Verification:** `npm test` 64/64; build clean; `debug:play -- all` 16/16;
+`joint_attachment_audit.mjs` 24/24 for v4 (120/120 across george/thesz/v1/v2/
+v4 together, no regression); `torso_socket_sweep.mjs` 0.00px; `sole_grounding_
+sweep.mjs` 0.97px; `elbow_anchor_sweep.mjs`/`knee_ink_gap_sweep.mjs` clean.
+Real-render capture via `george_pilot_art_review.mjs` (`WFM_REVIEW_PRESET`)
+and `pilot_comparison_shots.mjs` (new `WFM_PILOT_PRESET` env var, defaults
+preserve prior behavior) — dense gait sweep shows the crossing/"emu" gait
+issue tracked since the art-cutter-pass entry below reads substantially
+improved, and no exposed hip wedge through the dense gait sweep or four
+idle-to-lockup transitions in either facing.
+
+Not adopted into shipped George. `george-ai-pilot`/`george-ai-pilot-v2`
+untouched, still available for direct comparison. Awaiting Derek's in-
+browser visual approval before any further integration — compare at
+`http://localhost:5173/?p1=george-ai-pilot-v4&p2=george`.
+
+### 2026-07-25 (George AI pilot: orientation fix — the whole pilot was mirrored, baked facing left instead of right; this, not just thigh art, was the "emu"/backing-up gait) — Claude
+
+Derek reported the new thigh art (below) still didn't work out, and separately
+flagged that George's torso and legs looked "reversed" — his read was that the
+pilot was visibly backing up rather than walking forward. Verified this
+independently, not just taking it on faith: compared shipped `george`'s
+`head.png`/`torso.png`/`shin.png` (the known-good, extensively-tested "facing
+right" baseline) against the pilot's — shipped George's head faces right,
+nipple right-of-center on the torso, boot toe pointing right; the pilot's
+head faced **left**, nipple left-of-center, boot toe pointing **left**. All
+three are mirror images of shipped George, not just visually similar-but-off.
+
+Traced to the source: `Sprite sheets/AI Pilot/George/rig-master/
+george-gameplay-master-transparent-v1.png` (the approved master every pilot
+part is cut from) was drawn with George facing/looking left. `Skeleton.js`
+has a hard, longstanding contract that every baked PNG faces right (`_placePart`
+only ever calls `setFlipX` for `facing < 0` — see that file's comment above
+`_placePart`); it never compensates for a left-facing source. Every part cut
+from this master therefore inherited the reversal. This is a different (and
+more fundamental) bug than the previously-diagnosed thigh-occlusion/
+mismatched-leg-length issue in the entries below — both were real and
+stacking, but this one explains why the body looked backward regardless of
+how well the leg math was tuned: the limbs were swinging through the gait
+correctly, but the head/torso were oriented opposite of travel.
+
+**Fix (Derek chose "flip everything now" over patching just the new thigh or
+waiting on a redrawn master):**
+
+- Horizontally flipped every runtime PNG in `src/assets/wrestlers/
+  george-ai-pilot/` (head + all 5 expression heads, torso, upper_arm,
+  forearm, thigh, shin) and `george-ai-pilot-v2/` (head, torso,
+  pelvis_overlay, upper_arm, forearm, thigh, near_shin, far_shin) in place —
+  pure `ImageOps.mirror`, no redraw, no repainted anatomy.
+- Mirrored every `u` fraction (`1 - u`) in `george_ai_pilot.js`
+  (`headAnchorFrac`, `rigProfile.sockets.*`, `shin.soleAnchorFrac`) and
+  `george_ai_pilot_v2.js` (`nearShin`/`farShin` `soleAnchorFrac`).
+  `distalAnchorFrac.u` entries were already `0.5` (pre-rotated limb
+  centerline) and are no-ops under a horizontal flip — left unchanged, not
+  guessed. Near/far labels are unchanged: mirroring doesn't change which
+  side is camera-near, only where it sits in the canvas.
+- For the gitignored pipeline (non-build-critical, but kept in sync for
+  whoever re-cuts next): flipped `rig-parts-source/transparent/*`,
+  `expressions/transparent/*`, and `candidates/v2-hinge/parts/*` in place;
+  wrote a new `rig-master/george-gameplay-master-transparent-v1-facing-right.png`
+  alongside the untouched original and repointed `tools/
+  prepare_rig_assets.py`'s `MASTER` at it, with `JOINTS`/`LEGACY_MASKS`/
+  `CANDIDATE_MASKS`/`FIXED_CROPS` all mirrored (`x' = 1024 - x`) to match;
+  patched the `u` fields in `rig-profile-pilot.json` and `candidates/
+  v2-hinge/rig-profile.json` with a note.
+- The new thigh art from Codex (see the entry below this one) was cut before
+  this fix was diagnosed and followed the same wrong orientation; flipped its
+  two output PNGs (`candidates/v3-new-thigh/parts/thigh.png` and
+  `thigh-transparent-full.png`) to match. The untouched original
+  `source/george-generated-thigh-source-v1.png` was left as-is, per Derek's
+  original "do not modify the original image" instruction for that cut. Not
+  yet wired into any character config — still just a cut candidate.
+- **Retuned both `farShinScale` values** (they don't survive a pure mirror
+  unchanged): the knee-to-sole vector's *magnitude* is flip-invariant (it's a
+  squared term), so `george-ai-pilot-v2`'s old ratio-derived
+  `1.1525793979640757` is numerically identical post-flip — but the sole's
+  off-axis x now points the opposite (correct) direction relative to the
+  knee, and the idle FK's pelvis-averaging solve is sensitive to more than
+  raw magnitude. Measured empirically (a scratch script sweeping
+  `sk._farShinScale` directly against both facings' idle sole gaps, same
+  method as the original derivation) rather than re-guessed:
+  `george-ai-pilot-v2` moved to `1.20` (worst idle gap 2.15px → 1.10px);
+  `george-ai-pilot` (v1, single shared shin, previously had no scale knob at
+  all) gained a new `farShinScale: 1.04` (worst idle gap had regressed from
+  a borderline 2.00px pre-fix to 2.04px, just over the gate — 1.04 brings it
+  to 1.03px).
+
+**Verification** (Node 22.23.1 via nvm — shell default is v19.8.1, below this
+project's floor): `npm test` 57/57; `npm run build` clean; `npm run
+debug:play -- all` 16/16; `joint_attachment_audit.mjs george thesz
+george-ai-pilot george-ai-pilot-v2` 96/96 PASS, 0.00-2.00px; `torso_socket_sweep.mjs`
+worst 1.00px; `elbow_anchor_sweep.mjs` worst 0.000px; `knee_ink_gap_sweep.mjs`
+worst 0.00px; `sole_grounding_sweep.mjs george-ai-pilot` 1.03px (PASS);
+`sole_grounding_sweep.mjs george-ai-pilot-v2` 1.10px (PASS). Fresh
+`pilot_comparison_shots.mjs` (v1 vs shipped George) and a re-run of
+`george_pilot_art_review.mjs` (v2, `WFM_REVIEW_LABEL=orientation-fix`)
+visually confirm both pilots now face the same direction as shipped George
+and plant their feet correctly through the gait — no more backward-facing
+body. The crossing/stiff-leg quality the thigh-art work below is tracking is
+still visible in the v2 gait closeups and is unaffected by this fix (expected
+— it's a separate, smaller issue); the "walking backward" quality is gone.
+
+Not adopted for a live swap; still gated on Derek's in-browser visual
+approval, same as every entry below. Shipped `george`/`george.js` untouched.
+
+### 2026-07-25 (George AI pilot: measured farShinScale closes v2's idle grounding gap; confirms the crossing/"emu" gait is an unfixable-by-rig thigh-art limitation, not a math bug) — Claude
+
+Derek's instruction after reviewing the art-cutter-pass entry below: try to assemble the pilot correctly with what exists now, while he asks Codex for new thigh art separately.
+
+Investigated `george-ai-pilot-v2`'s two open failures (hip-cap wedge already
+fixed by that pass's pelvis overlay; not touched here):
+
+- **Idle sole-grounding gap (4.90px, was already failing).** Root cause: v2's
+  `nearShin`/`farShin` are two distinct crops of the same photographed leg at
+  different real depths, so their knee-to-sole vectors have different
+  magnitudes (measured 86.86px near vs. 75.36px far, unscaled). The
+  pose-driven FK branch (`Skeleton.js`'s authored-sole idle path,
+  `updateUpright`) has one rigid pelvis and averages each leg's independently
+  required hip height — correct minimax behavior for a rigid torso, but with
+  an 11.5px reach gap between the two legs, half of that gap is unavoidable
+  residual error under averaging. Added `farShinScale: 1.1525793979640757` to
+  `george_ai_pilot_v2.js` — computed (not guessed) to equalize the far sole's
+  reach against the near sole's, derived from both shins' own
+  `soleAnchorFrac`/`jointPivotFrac`/canvas dimensions the same way
+  `Skeleton.js`'s `_anchorVector` does. `sole_grounding_sweep.mjs
+  george-ai-pilot-v2`: 4.91px → **1.28px**, passing the ≤2px gate (swing
+  clearance unchanged, already 0.00px/clean). Re-verified: `npm test` 57/57,
+  build clean, `debug:play -- all` 16/16, `joint_attachment_audit.mjs`
+  0–2.00px all-PASS, `torso_socket_sweep.mjs` 1.41px PASS, `elbow_anchor_sweep.mjs`
+  and `knee_ink_gap_sweep.mjs` PASS for george, thesz, george-ai-pilot, and
+  george-ai-pilot-v2 — no regression to any other character (the change is
+  scoped to `george_ai_pilot_v2.js`, nothing shared touched).
+- **Crossing/"emu" gait (still failing, now isolated).** With grounding no
+  longer confounding the picture, re-shot the same dense gait-phase frames
+  that showed the worst crossing (`tools/debug/george_pilot_art_review.mjs`,
+  `WFM_REVIEW_PRESET=george-ai-pilot-v2`) and inspected them closely (cropped
+  zooms, not just the thumbnail grid). The stiff/disconnected-looking
+  forward leg is unchanged by the grounding fix — confirming it is not a
+  rig-math bug reachable by scale/offset tuning. It reads as the shared thigh
+  photo's own baked-in bend not holding up when rotated to the angles the
+  gait's IK needs; this is the same root cause the art-cutter-pass entry
+  below already flagged (single shared thigh, occluded near contour). Concur
+  with Derek's plan: this needs new thigh art, not another rig pass. For
+  whoever draws it — the new thigh(s) should (a) read as a believable
+  silhouette across the full swing arc the gait sweeps (roughly -0.94 to
+  -0.44 rad shin angle per the grounding-closeout entry, plus whatever thigh
+  angle range `_gaitLeg`'s IK produces at `GAIT.STRIDE=56`), and (b) keep
+  the near and far legs' projected hip-to-sole lengths close to each other so
+  this same averaging gap doesn't reopen — the `farShinScale` above is a
+  patch for the current mismatched pair, not something a new asset should
+  need.
+
+Not adopted for a live swap; still gated on Derek's in-browser visual
+approval, same as every entry below. `george-ai-pilot` (v1) and shipped
+`george`/`george.js` untouched.
+
+### 2026-07-25 (George AI pilot focused art/cutter pass: source-only hinge candidate fixes hip cap, proves gait remains unresolved; baseline untouched) — Codex
+
+Created a versioned `george-ai-pilot-v2` comparison candidate and a repeatable
+130-frame-per-version live review gate. The cutter no longer draws any caps,
+ellipses, bridges, or replacement pixels; it exports a clean torso, an exact-
+canvas real-costume pelvis overlay, source-overlap limbs, and distinct near/far
+shins. The approved gameplay master cannot supply a clean distinct near thigh
+because the near hand occludes its hip-to-mid-thigh outer contour, so the clean
+far thigh remains shared rather than inventing anatomy.
+
+The pelvis overlay fixes the exposed magenta hip wedge across both facings,
+four retained walk phases, and the real lockup tween. Painted joint audits pass
+at 0–1px and the dense torso/socket sweep passes at 1.41px. However, real live
+walking and the 24-phase/facing closeups still show the crossing/overextended
+“emu” gait, and the distinct projected legs fail the old shared idle grounding
+contract at 4.90px. V2 is therefore **not adopted** into the baseline pilot.
+Full art contract, mask counts, evidence paths, runtime details, and verification
+are in `AI_HANDOFF_ENTRIES/2026-07-25-codex-george-ai-pilot-art-cutter-pass.md`.
+Shipped `george.js` and `src/assets/wrestlers/george/` remain untouched.
+
+### 2026-07-25 (Derek's in-browser playtest of the George AI pilot: real cutout/silhouette problems the automated gates and forced-pose screenshots never exercised) — Claude
+
+Derek loaded `http://localhost:5173/?p1=george-ai-pilot&p2=george` directly
+(not through any debug script) and reported the pilot "looks all messed up" —
+confirmed with two independent findings, both reproduced live against the
+running dev server (not just described):
+
+1. **Exposed hip-socket cap.** A dark/magenta wedge sticks out past the hip
+   in the `lockup` pose specifically (screenshot: `~/Desktop/Screenshot
+   2026-07-25 at 7.16.28 PM.png`; reproduced via the harness by walking P1
+   into grapple range and pressing the action key). Root cause:
+   `torso.png`'s two baked-in magenta "hidden cap" ovals (the cutter's
+   `add_hidden_caps` step, meant to seal any sub-pixel torso/thigh gap) are,
+   by that script's own comment, only guaranteed hidden "in the assembled
+   rest pose" — not at every leg angle. `lockup`'s bent-knee stance swings
+   the thighs enough to expose them. This pose was never in
+   `joint_attachment_audit.mjs`'s `UPRIGHT_POSES` list, so nothing caught it.
+2. **Stiff/"emu" walk with thin or disconnected-looking limbs.** Driving
+   real movement (not the forced single-pose screenshots the comparison gate
+   used) shows an unnatural gait — a leg thrust straight out, and at several
+   stride frames a leg renders paper-thin/spindly or bent at an angle that
+   reads as broken rather than posed. This looks like a genuine cutout/
+   silhouette quality issue in the source art at certain joint angles, not a
+   rig-math bug — the scale/grounding fixes earlier today were correct but
+   address a different problem than this one.
+
+Both are logged in `AI_HANDOFF_TASKS.json`'s `george-ai-pilot` entry.
+Downgrading from "technical gate closed, awaiting rubber-stamp" to genuinely
+unresolved — this needs real art/cutout investigation, likely in a fresh
+session (this one is already long). Do not replace live `george.js` or wire
+expression states.
+
+### 2026-07-25 (Codex follow-up: direct painted-sole IK/FK closes the George AI pilot grounding gate; awaiting Derek's visual approval) — Codex
+
+Reviewed Claude's uncommitted focused correction without replacing its
+documentation. The one remaining technical miss was reproducible: the initial
+40-phase sweep measured 5.84px worst-case planted error, and it also exposed a
+-1.82px swing sample despite the diagnostic describing swing clearance as
+positive. The cause was the documented limitation of `soleDropH`: an off-axis
+painted sole cannot be represented by one static vertical ankle span while the
+shin rotates.
+
+Replaced that approximation on the opt-in authored-leg path with a direct
+two-link solve to `soleAnchorFrac`. The measured knee-to-sole vector is now the
+second IK link; its local angular offset is removed to recover the shin image
+angle. Hip height includes the measured near/far pelvis-socket offsets, and the
+pose-driven FK branch solves its shared pelvis translation from the two
+transformed painted soles. The old ankle/boot formulas and `_gaitLeg` call
+shape remain the fallback for George, Thesz, and any character without both
+hip sockets plus both painted sole anchors. Removed the now-dead pilot
+`soleDropH: 38.6` scalar rather than retaining a competing grounding contract.
+
+Hardened `sole_grounding_sweep.mjs` from 40 to 120 gait phases per facing and
+made swing-mat penetration fail the audit instead of being reported but
+unjudged. Added pure-math both-facing coverage proving that an off-axis sole is
+the actual `_gaitLeg` target.
+
+**Fresh comparison gate under Node 22.23.1:** `npm test` 54/54; production
+build clean; `npm run debug:play -- all` 16/16; dense painted-sole sweep 1.05px
+worst-case across 244 poses / 272 planted samples, with minimum sampled swing
+clearance +0.07px; joint-attachment audit 0.00px for George, Thesz, and pilot;
+torso socket, knee ink-gap, and authored elbow sweeps pass for all three
+characters (George's pre-existing 1.00px neck reading remains unchanged).
+Regenerated the full side-by-side comparison set in
+`tools/debug/shots/pilot-comparison/` and visually spot-checked idle, walk, and
+run.
+
+The technical grounding blocker is closed. The pilot remains opt-in and is
+**not approved for a live George swap or expression-state wiring** until Derek
+reviews it in-browser, especially the walk/run leg silhouette and the very
+small clearance at the sampled swing/stance boundary.
+
+### 2026-07-25 (George AI pilot: one-scale proportion fix, painted-sole grounding, thigh-knee/shoulder-socket routing, audit hardening — comparison gate run, one target missed, NOT yet approved for a live swap) — Claude
+
+Implemented the focused correction Codex's review (immediately below) asked
+for. Every point:
+
+- **One effective scale.** Derived a single source-px-to-world scale
+  (0.248614) from the approved master's own measured head-top-to-painted-sole
+  height (1245px, `master-joints.json`'s `nearSole` minus the head part's
+  alpha-bounds top) and George's existing 5'9"/247px target (holding
+  `heightScale: 0.798`, reused unchanged for an apples-to-apples comparison).
+  Every part's `box.w/h` in `george_ai_pilot.js` is now `canvasSize *
+  0.248614` (limbs: `(canvasH - proximalPxY) * scale`, the below-pivot span
+  `_placePart`'s jointPivotFrac growth expects) — no more independent
+  per-part stretching to the shared bone-length constants. `thighH`/`shinH`
+  are now real per-character overrides too (53.45/40.19), derived from each
+  bone's measured pixel length at the same scale, replacing the shared
+  P.thighH/shinH the pilot previously (wrongly) inherited.
+- **Painted sole + grounding.** Added `shin.soleAnchorFrac` (measured by
+  carrying `master-joints.json`'s `nearSole` through the shin's own
+  `align_limb` affine transform — see the config file's derivation comment)
+  and a new `soleDropH` override that replaces the shared `bootH * 0.9`
+  ankle-target approximation in **both** of Skeleton.js's grounding formulas
+  — the gait/IK branch's `ankleRest` (already existed) and, found only while
+  verifying, the separate pose-driven-FK branch's own `hipY` formula (`y -
+  bootH - ...`), which the pilot's own idle pose (`powerIdle`, non-zero
+  `lLeg/rLeg`) actually routes through and which had no soleDropH awareness
+  at all until this pass. **Honest result, not a full pass:** a single
+  static `soleDropH` cannot hit the review's ≤2px target at every gait
+  phase, because this boot's sole sits well off the shin's central bone axis
+  (`soleAnchorFrac.u = 0.374`, a real toe-forward offset, not a measurement
+  error) and the gait-lock mechanic genuinely sweeps a *planted* foot's shin
+  angle through a wide range (~-0.94 to -0.44 rad measured) as the body walks
+  over the fixed foot — an angle-dependent effect a pre-IK static scalar
+  can't null out at every phase. Exhaustively searched for the value
+  minimizing worst-case error (120-phase x2-facing sweep of planted samples
+  only via a new `tools/debug/sole_grounding_sweep.mjs`): best achievable is
+  `soleDropH: 38.6`, worst-case **5.5px** — down from an unmeasured/untuned
+  ~14px, but still short of ≤2px. Closing that last gap needs an
+  angle-aware or iterative ankle-target correction (the shin's actual angle
+  isn't known until after the very IK solve `soleDropH` feeds), which is a
+  bigger architectural change than this pass scoped in. Flagged in the
+  config's own comment rather than forced with an opposite-direction offset
+  knob Codex's review explicitly ruled out.
+- **Thigh distal anchor routed through the knee.** `updateUpright` (far/near
+  legs) and `_applyGrounded`'s `leg()` closure now compute a `trueKnee`
+  (routed through `_trueDistalEnd`/the thigh's actual render transform) used
+  for the shin's attachment point, distinct from the pure-geometric `knee`
+  still used for the ankle/foot IK chain and audit bookkeeping — gated on
+  `thighImg._distalAnchorFrac` presence, so George/Thesz (no thigh anchor)
+  are byte-identical (`trueKnee === knee` exactly).
+- **Grounded/get-up shoulder sockets.** `_applyGrounded`'s `arm()` now roots
+  each shoulder from the torso's measured `nearShoulder`/`farShoulder`
+  sockets when resolved, instead of both arms sharing the flat torso origin
+  `shX/shY`. Gated on the **same** dynamic-pelvis opt-in as the hip sockets
+  (`nearHipPoint && farHipPoint` both resolved) rather than shoulder-socket
+  presence alone — George/Thesz already carry shoulder sockets from Phase C
+  but have never rooted grounded arms from them (both simply share
+  `shX/shY`), so gating on socket presence alone would have changed their
+  shipped grounded rendering. Requiring the hip-socket opt-in too keeps this
+  reachable only by the pilot's own dynamic-pelvis rig.
+- **Audit bookkeeping.** `_recordJointAttachment('neck', ...)` (both upright
+  and grounded) now records the actual resolved `anchorX/anchorY` instead of
+  the legacy `shoulderX/neckY` or `shX/shY`, and grounded shoulder recording
+  now uses the same per-arm `rootX/rootY` the render call itself used.
+  Debug-bookkeeping only — no rendering change — and byte-identical for
+  every character whose resolved anchor already equals the legacy point
+  (verified via the full audit suite, not just inspection).
+- **Authored-leg-rig neutralization.** Added `Skeleton._authoredLegRig`
+  (true only when both hip sockets are supplied — the same opt-in as above,
+  not a new config flag) that zeroes `RIG.FAR_THIGH_TILT`,
+  `RIG.NEAR_SHIN_FWD/UP`, and the `RIG.NEAR_SHIN_SCALE` default for the
+  pilot's path, rather than fighting them with opposite per-character
+  offsets. George/Thesz (no hip sockets) keep every one of these exactly as
+  before.
+- **Elbow diagnostic.** `elbow_anchor_sweep.mjs` now reports and uses the
+  **authored** `distalAnchorFrac` (when a character declares one — George,
+  Thesz, and the pilot all do) for its pass/fail check, and reports the
+  bottom-row-centroid **heuristic** separately, clearly labeled, for
+  visibility only — with an explicit note that the authored check is
+  tautological with runtime config (a transform-regression guard, not
+  anatomical proof). This flips the pilot's previously-reported ~6-7px FAIL
+  to PASS at 0.000px, because that FAIL was the heuristic finding the thin
+  diagonal underlap tail below this art's real elbow, not a wiring defect —
+  exactly as Codex's review diagnosed. George/Thesz also now report
+  0.000px via the authored path (previously also near-0 via the heuristic,
+  since their bottom-row happens to sit close to their authored anchor).
+- Refactored `_socketPoint` to be `jointPivotFrac`/growth-aware (the same
+  math `_trueDistalEnd` used inline) and had `_trueDistalEnd` delegate to it
+  — a pure dedup, byte-identical for every existing caller (torso sockets
+  never carry a nonzero `jointPivotFrac`).
+
+**Comparison gate, all under Node 22.23.1 (nvm):** `npm test` 53/53; `npm run
+build` clean; `npm run debug:play -- all` 16/16;
+`joint_attachment_audit.mjs george thesz george-ai-pilot` all 0.00px (George's
+existing 07-25-earlier state — including its one pre-existing non-zero
+`torso_socket_sweep` neck reading, 1.00px — unchanged, confirming byte-identical
+preservation, not just "still passes"); `torso_socket_sweep.mjs`/
+`knee_ink_gap_sweep.mjs` for all three characters, all clean; new
+`tools/debug/sole_grounding_sweep.mjs george-ai-pilot` reports the honest 5.5px
+result above (exits non-zero — intentionally left failing rather than
+papering over it); side-by-side screenshots (shipped George P1 vs. pilot P2, same
+frame) via new `tools/debug/pilot_comparison_shots.mjs` in
+`tools/debug/shots/pilot-comparison/` — idle both facings, crouch/block,
+overhead taunt, axe-handle-up, hammerlock, arm-bar, four walk-cycle phases,
+running, and four get-up samples. Visually the oversized-hand/sunk-boot problem
+from the prior pass is gone; proportions read consistent with George's
+silhouette. (Aside, unrelated to the rig: that screenshot script's first draft
+hit a `torso.y` NaN specific to `tauntArmsWide` when preceded by another forced
+pose and a real-time gap before the next screenshot — traced to Wrestler's own
+background update loop repainting mid-transition during the wait, not a
+rendering bug; fixed by pausing the scene's update loop for the capture
+sequence, noted in that script's own comment in case anyone reuses the
+pattern.)
+
+**Still NOT recommended for a live swap.** Two honest gaps remain open for
+Derek: (1) the sole-grounding target (≤2px) is not met — best achieved is
+5.5px worst-case, and closing it needs more than this pass's static-scalar
+mechanism; (2) swing-phase foot clearance was sampled but not judged
+(`sole_grounding_sweep.mjs` reports the smallest swing-phase clearance seen
+for visibility, unenforced) — worth a look in the browser. Expression
+switching remains explicitly out of scope until the base body/head
+proportions and grounding are approved. Live `george.js`/`george` character
+untouched throughout.
+
+### 2026-07-25 (Codex review: George AI pilot is structurally promising but needs one-scale art fit, painted-sole grounding, and audit fixes before expressions/live swap) — Codex
+
+Reviewed Claude's focused runtime/pilot commits `4fa14db` and `701b8d8` and
+independently reran verification: 53/53 unit tests, production build, and all
+16 browser scenarios pass. The worktree was clean before this documentation
+entry; shipped George/Thesz remain untouched and the opt-in architecture is a
+sound base.
+
+The pilot is **not ready for a live swap or expression-state wiring**. The
+visible oversized hand/forearm and boot/shin are one root problem: parts cut
+from the same approved master were independently normalized to old shared bone
+lengths, producing different source-pixel-to-world scales per part. The next
+pass must derive one effective scale from the approved master's full painted
+height and George's existing 5'9" target, then derive logical bone/sole spans
+from measured anchors—no independent stretching or X/Y repair nudges.
+
+Also found three contract/audit gaps: the pilot thigh declares a distal anchor
+but knee paths still call generic `_end`; grounded arms still ignore measured
+near/far shoulder sockets; and neck/grounded-shoulder audit points record legacy
+roots rather than actual socket anchors. The current 0.00px painted-gap results
+remain useful coverage tests but do not prove those socket invariants. The pilot
+also still inherits shared cosmetic far-thigh/near-shin corrections. Finally,
+the elbow sweep's 6–7px pilot FAIL is reproducible but its bottom-row heuristic
+is selecting the authored underlap tail, so the tool must distinguish inferred
+legacy anchors from the pilot's authored anchor rather than changing the art to
+satisfy the heuristic.
+
+Full evidence, concrete next steps, and the comparison gate are in
+`AI_HANDOFF_ENTRIES/2026-07-25-codex-george-ai-pilot-review.md`. Stop for
+Derek's visual approval after that focused correction; wire the five prepared
+expressions only after the base body/head proportions and soles are approved.
+
 ### 2026-07-25 (George AI art-swap pilot: dynamic-pelvis hip sockets, headAnchorFrac, opt-in character config — comparison gate run, real issues found, NOT recommended for a live swap yet) — Claude
 
 Derek's instruction: begin the pilot Codex prepared in `Sprite sheets/AI

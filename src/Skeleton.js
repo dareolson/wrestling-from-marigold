@@ -212,6 +212,20 @@ function solveLeg(hx, hy, fx, fy, L1, L2, kneeDir) {
     return { thighAng, shinAng };
 }
 
+// Two-bone IK whose second link ends at an authored off-axis point (for
+// example a painted boot sole) rather than on the shin's centerline. Solve
+// the equivalent knee-to-anchor link, then remove its local angular offset
+// to recover the shin image angle. lx/ly use _endXY's local convention.
+function solveLegToAnchor(hx, hy, fx, fy, L1, lx, ly, kneeDir) {
+    const anchorLen = Math.hypot(lx, ly);
+    const anchorOffset = Math.atan2(lx, ly);
+    const solved = solveLeg(hx, hy, fx, fy, L1, anchorLen, kneeDir);
+    return {
+        thighAng: solved.thighAng,
+        shinAng: solved.shinAng - anchorOffset,
+    };
+}
+
 function ensureTexture(scene) {
     if (scene.textures.exists('sk_pixel')) return;
     const g = scene.add.graphics();
@@ -245,20 +259,27 @@ function ensureTexture(scene) {
 // pivotOffsetFrac knob (built for one constant offset shared by both ends)
 // can't correct this without misplacing the shoulder to fix the elbow.
 function resolveTexEntry(entry, defaultDims) {
-    if (!entry) return { key: null, dims: defaultDims, pivot: 0, jointPivotFrac: 0, distalAnchorFrac: null };
-    if (typeof entry === 'string') return { key: entry, dims: defaultDims, pivot: 0, jointPivotFrac: 0, distalAnchorFrac: null };
+    if (!entry) return { key: null, dims: defaultDims, pivot: 0, jointPivotFrac: 0, distalAnchorFrac: null, soleAnchorFrac: null };
+    if (typeof entry === 'string') return { key: entry, dims: defaultDims, pivot: 0, jointPivotFrac: 0, distalAnchorFrac: null, soleAnchorFrac: null };
     return {
         key: entry.key, dims: entry.box ?? defaultDims,
         pivot: entry.pivotOffsetFrac ?? 0,
         jointPivotFrac: entry.jointPivotFrac ?? 0,
         distalAnchorFrac: entry.distalAnchorFrac ?? null,
+        // soleAnchorFrac (2026-07-25, George AI pilot grounding — see
+        // george_ai_pilot.js's shin entry comment): opt-in, canvas-fraction
+        // painted-sole point, same convention as distalAnchorFrac. Not
+        // consumed by the authored gait/FK grounding path and independently
+        // verified by the sole sweep through _socketPoint.
+        soleAnchorFrac: entry.soleAnchorFrac ?? null,
     };
 }
 
 export default class Skeleton {
     // textures: optional map of part keys → preloaded texture keys, or
     // { key, box } to override that part's display box (see resolveTexEntry)
-    //   { head, torso, upperArm, forearm, thigh, shin }
+    //   { head, torso, pelvisOverlay, upperArm, forearm, thigh, shin,
+    //     nearShin, farShin }
     // Parts with a texture use the PNG; others fall back to sk_pixel + tint.
     // Providing 'torso' hides the trunks block; providing 'shin' hides the boot block.
     constructor(scene, skinCol, trunksCol, textures = {}) {
@@ -283,25 +304,40 @@ export default class Skeleton {
         // Absent (default 0, every part before this) = setOrigin(0.5, 0),
         // byte-identical to the old behavior.
         const img = (entry, col, defaultDims) => {
-            const { key, dims, pivot, jointPivotFrac, distalAnchorFrac } = resolveTexEntry(entry, defaultDims);
+            const { key, dims, pivot, jointPivotFrac, distalAnchorFrac, soleAnchorFrac } = resolveTexEntry(entry, defaultDims);
             const i = scene.add.image(0, 0, key || 'sk_pixel').setOrigin(0.5, jointPivotFrac);
             if (!key) i.setTint(col);
-            else if (dims) { i._texDims = dims; i._pivotOffsetFrac = pivot; i._jointPivotFrac = jointPivotFrac; i._distalAnchorFrac = distalAnchorFrac; }
+            else if (dims) { i._texDims = dims; i._pivotOffsetFrac = pivot; i._jointPivotFrac = jointPivotFrac; i._distalAnchorFrac = distalAnchorFrac; i._soleAnchorFrac = soleAnchorFrac; }
             return i;
         };
 
-        this.farThigh    = img(textures.thigh,    skinCol, TEX.thigh);
-        this.farShin     = img(textures.shin,     skinCol, TEX.shin);
-        this.farBoot     = textures.shin   ? null : img(null, 0x181818);
+        const farThighEntry = textures.farThigh ?? textures.thigh;
+        const nearThighEntry = textures.nearThigh ?? textures.thigh;
+        const farShinEntry = textures.farShin ?? textures.shin;
+        const nearShinEntry = textures.nearShin ?? textures.shin;
+        // nearForearm/farForearm (2026-07-25, George AI pilot v4 — distinct
+        // near/far hand orientations): same generic opt-in fallback pattern
+        // as farThigh/nearThigh and farShin/nearShin above. Absent (every
+        // character before v4) = both fall through to the shared `forearm`
+        // entry, byte-identical to the single-forearm path every character
+        // used before this existed.
+        const farForearmEntry = textures.farForearm ?? textures.forearm;
+        const nearForearmEntry = textures.nearForearm ?? textures.forearm;
+        this.farThigh    = img(farThighEntry,     skinCol, TEX.thigh);
+        this.farShin     = img(farShinEntry,      skinCol, TEX.shin);
+        this.farBoot     = farShinEntry    ? null : img(null, 0x181818);
         this.farUpArm    = img(textures.upperArm, skinCol, TEX.upperArm);
-        this.farForearm  = img(textures.forearm,  skinCol, TEX.forearm);
+        this.farForearm  = img(farForearmEntry,   skinCol, TEX.forearm);
         this.torso       = img(textures.torso,    skinCol, TEX.torso);
+        this.pelvisOverlay = textures.pelvisOverlay
+            ? img(textures.pelvisOverlay, trunksCol, TEX.torso)
+            : null;
         this.trunks      = textures.torso  ? null : img(null, trunksCol);
-        this.nearThigh   = img(textures.thigh,    skinCol, TEX.thigh);
-        this.nearShin    = img(textures.shin,     skinCol, TEX.shin);
-        this.nearBoot    = textures.shin   ? null : img(null, 0x181818);
+        this.nearThigh   = img(nearThighEntry,    skinCol, TEX.thigh);
+        this.nearShin    = img(nearShinEntry,     skinCol, TEX.shin);
+        this.nearBoot    = nearShinEntry   ? null : img(null, 0x181818);
         this.nearUpArm   = img(textures.upperArm, skinCol, TEX.upperArm);
-        this.nearForearm = img(textures.forearm,  skinCol, TEX.forearm);
+        this.nearForearm = img(nearForearmEntry,  skinCol, TEX.forearm);
 
         if (textures.head) {
             // headAnchorFrac (2026-07-25, George AI pilot — see Sprite
@@ -426,26 +462,6 @@ export default class Skeleton {
         this._farLegOffsetX = textures.farLegOffsetX ?? 0;
         this._farLegOffsetY = textures.farLegOffsetY ?? 0;
         this._farLegTilt = textures.farLegTilt ?? null;
-        // Per-character near-shin display scale, defaulting to the shared
-        // NEAR_SHIN_SCALE (1.1). thesz sets 1.0: measured against the New Lou
-        // reference, the 1.1 bump rendered his near shin ~24% wider than the
-        // ref (the far shin, at 1.0, already matched) — and any near/far size
-        // difference makes hiding the far leg behind the near one impossible.
-        this._nearShinScale = textures.nearShinScale ?? RIG.NEAR_SHIN_SCALE;
-        // Matching far-shin knob (2026-07-19) — see RIG.FAR_SHIN_SCALE.
-        this._farShinScale = textures.farShinScale ?? RIG.FAR_SHIN_SCALE;
-        // Matching far-thigh knob (2026-07-23) — see RIG.FAR_THIGH_SCALE.
-        this._farThighScale = textures.farThighScale ?? RIG.FAR_THIGH_SCALE;
-        // Per-character leg bone lengths, unscaled px, defaulting to the
-        // shared P values (characters that don't set them are bit-identical
-        // to the old behavior). These move the actual joint chain — hip
-        // height, IK knee, ankle/mat contact — not just art boxes: thesz's
-        // reference drawing has legs ~18% shorter relative to his torso than
-        // the shared rig's stylized bones (2026-07-12). A character's shin
-        // box height must be re-derived when shinH changes (sole-on-mat —
-        // see the TEX comment above).
-        this._thighH = textures.thighH ?? P.thighH;
-        this._shinH  = textures.shinH  ?? P.shinH;
         // rigProfile.sockets (2026-07-25, cohesive-body-rig-binding Phase C
         // slice — see COHESIVE_BODY_RIG_BLUEPRINT.md): optional, opt-in
         // { neck, nearShoulder, farShoulder } canvas-fraction anchors on the
@@ -463,11 +479,49 @@ export default class Skeleton {
         // get-up torso rooting are unmigrated (see the socket derivation's
         // AI_HANDOFF.md entry for why hips don't fit this same simple model).
         this._torsoSockets = textures.rigProfile?.sockets ?? null;
-
+        // _authoredLegRig (2026-07-25, George AI pilot focused correction —
+        // see AI_HANDOFF_ENTRIES/2026-07-25-codex-george-ai-pilot-review.md
+        // "Neutralize inherited FAR_THIGH_TILT, NEAR_SHIN_FWD/UP, and
+        // NEAR_SHIN_SCALE through one opt-in authored-rig path"): reuses the
+        // SAME opt-in as the dynamic-pelvis hip-socket mechanism (both
+        // nearHip and farHip sockets present) rather than a separate config
+        // flag — a character with authored hip sockets already declares its
+        // own hip/knee geometry explicitly, so the legacy cosmetic
+        // corrections built for the old shared-bone-length rig (staggering,
+        // biasing, and rescaling legs that had no better source of truth)
+        // no longer apply. George's and Thesz's rigProfile.sockets has no
+        // hip entries, so this is false for both — every RIG.FAR_THIGH_TILT/
+        // NEAR_SHIN_FWD/UP/SCALE use below stays exactly as before for them.
+        this._authoredLegRig = !!(this._torsoSockets?.nearHip && this._torsoSockets?.farHip);
+        // Per-character near-shin display scale, defaulting to the shared
+        // NEAR_SHIN_SCALE (1.1). thesz sets 1.0: measured against the New Lou
+        // reference, the 1.1 bump rendered his near shin ~24% wider than the
+        // ref (the far shin, at 1.0, already matched) — and any near/far size
+        // difference makes hiding the far leg behind the near one impossible.
+        // Authored-leg-rig characters (both hip sockets present — see
+        // _authoredLegRig above) default to 1 instead: this cosmetic bump was
+        // built for the old shared-bone-length rig with no better source of
+        // truth, and the pilot's uniform-scale box already renders both legs
+        // at their measured real size.
+        this._nearShinScale = textures.nearShinScale ?? (this._authoredLegRig ? 1 : RIG.NEAR_SHIN_SCALE);
+        // Matching far-shin knob (2026-07-19) — see RIG.FAR_SHIN_SCALE.
+        this._farShinScale = textures.farShinScale ?? RIG.FAR_SHIN_SCALE;
+        // Matching far-thigh knob (2026-07-23) — see RIG.FAR_THIGH_SCALE.
+        this._farThighScale = textures.farThighScale ?? RIG.FAR_THIGH_SCALE;
+        // Per-character leg bone lengths, unscaled px, defaulting to the
+        // shared P values (characters that don't set them are bit-identical
+        // to the old behavior). These move the actual joint chain — hip
+        // height, IK knee, ankle/mat contact — not just art boxes: thesz's
+        // reference drawing has legs ~18% shorter relative to his torso than
+        // the shared rig's stylized bones (2026-07-12). A character's shin
+        // box height must be re-derived when shinH changes (sole-on-mat —
+        // see the TEX comment above).
+        this._thighH = textures.thighH ?? P.thighH;
+        this._shinH  = textures.shinH  ?? P.shinH;
         this._parts = [
             this.farThigh, this.farShin, this.farBoot,
             this.farUpArm, this.farForearm,
-            this.torso, this.trunks,
+            this.torso, this.trunks, this.pelvisOverlay,
             this.nearThigh, this.nearShin, this.nearBoot,
             this.nearUpArm, this.nearForearm,
             this.head,
@@ -502,6 +556,7 @@ export default class Skeleton {
         this.nearThigh.setDepth(base + 0.003);
         this.nearShin.setDepth(base + 0.003);
         this.nearBoot?.setDepth(base + 0.003);
+        this.pelvisOverlay?.setDepth(base + 0.0035);
         this.nearForearm.setDepth(base + 0.004);
         this.nearUpArm.setDepth(base + 0.00401);
     }
@@ -645,37 +700,47 @@ export default class Skeleton {
     _trueDistalEnd(img, px, py, len, angle, s, facing) {
         const anchor = img._distalAnchorFrac;
         if (!anchor) return this._end(px, py, len, angle);
+        return this._socketPoint(img, anchor.u, anchor.v, px, py, angle, s, facing);
+    }
+
+    // World position of a { u, v } canvas-fraction point on `img` (same
+    // convention as distalAnchorFrac — see resolveTexEntry's comment),
+    // given the part's actual current render position/angle/scale. Used for
+    // rigProfile.sockets (torso-owned shoulder/neck/hip anchors — see the
+    // constructor's _torsoSockets comment) and by _trueDistalEnd above. No
+    // fallback: only called when a socket/anchor is already known to exist.
+    // jointPivotFrac-aware (2026-07-25, Codex review correctness fix — see
+    // _trueDistalEnd's prior version): `u,v` are canvas-absolute fractions
+    // (0 = top/left edge, 1 = bottom/right edge), but the image's actual
+    // origin sits at jointPivotFrac down the (grown) canvas, not at row 0 —
+    // same growth/offset math _trueDistalEnd used to apply inline. No
+    // current torso socket combines with a nonzero jointPivotFrac (the
+    // torso never sets one), so growth=1 there — byte-identical to the
+    // prior non-growth-aware version for every existing torso-socket call.
+    _socketPoint(img, u, v, px, py, angle, s, facing) {
         const jointPivotFrac = img._jointPivotFrac || 0;
         const growth = 1 / (1 - jointPivotFrac);
         const dw = img._texDims.w * s * growth;
         const dh = img._texDims.h * s * growth;
-        const lx = facing * (anchor.u - 0.5) * dw;
-        // anchor.v is a canvas-absolute fraction (0 = top row, 1 = bottom
-        // row), but _endXY's ly must be relative to the image's actual
-        // origin — which setOrigin(0.5, jointPivotFrac) in the constructor
-        // places at jointPivotFrac down the (grown) canvas, not at row 0.
-        // No current part combines jointPivotFrac with distalAnchorFrac (the
-        // only distalAnchorFrac user, upperArm, has jointPivotFrac 0), so
-        // this was an unexercised path — jointPivotFrac 0 makes this a
-        // no-op, byte-identical to the previous formula for every verified
-        // case (George/Thesz elbows). Correctness fix for the general case,
-        // flagged by Codex's 2026-07-25 review.
-        const ly = (anchor.v - jointPivotFrac) * dh;
+        const lx = facing * (u - 0.5) * dw;
+        const ly = (v - jointPivotFrac) * dh;
         return this._endXY(px, py, lx, ly, angle);
     }
 
-    // World position of a { u, v } canvas-fraction socket on `img` (same
-    // convention as distalAnchorFrac — see resolveTexEntry's comment),
-    // given the part's actual current render position/angle/scale. Used for
-    // rigProfile.sockets (torso-owned shoulder/neck/hip anchors — see the
-    // constructor's _torsoSockets comment). Unlike _trueDistalEnd this has
-    // no fallback: only called when a socket is already known to exist.
-    _socketPoint(img, u, v, px, py, angle, s, facing) {
-        const dw = img._texDims.w * s;
-        const dh = img._texDims.h * s;
-        const lx = facing * (u - 0.5) * dw;
-        const ly = v * dh;
-        return this._endXY(px, py, lx, ly, angle);
+    // Local-space vector from an image's render origin to an authored
+    // canvas-fraction point, using the exact growth/flip convention shared
+    // by _socketPoint. Keeping this as a vector lets gait IK target a baked
+    // painted sole directly instead of approximating it with a static
+    // vertical ankle-to-mat scalar.
+    _anchorVector(img, anchor, s, facing) {
+        const jointPivotFrac = img._jointPivotFrac || 0;
+        const growth = 1 / (1 - jointPivotFrac);
+        const dw = img._texDims.w * s * growth;
+        const dh = img._texDims.h * s * growth;
+        return {
+            x: facing * (anchor.u - 0.5) * dw,
+            y: (anchor.v - jointPivotFrac) * dh,
+        };
     }
 
     // Inverse of _socketPoint: solves the torso's own render origin (the
@@ -733,7 +798,10 @@ export default class Skeleton {
         // bob EMERGES from leg geometry instead of being a bolted-on sine. The hip can
         // never be higher than a planted (near-straight) leg allows: H = min(reach_i).
         const legLen     = thighH + shinH;       // hip → ankle chain
-        const ankleRest  = bootH * 0.9;          // ankle rides this far above the mat
+        const authoredSoles = !!(this._authoredLegRig && this.nearShin._soleAnchorFrac && this.farShin._soleAnchorFrac);
+        // Legacy ankle target. Authored-sole rigs bypass it below and solve
+        // their painted knee-to-sole vector directly.
+        const ankleRest  = bootH * 0.9;
         const ankleGndY  = y - ankleRest;
         const LMAX       = legLen * 0.985;        // never fully lock the knee
 
@@ -748,15 +816,82 @@ export default class Skeleton {
 
         let hipY;
         if (useGait) {
-            const dxA = footA.fx * s, dxB = footB.fx * s;
-            const reachA = Math.sqrt(Math.max(0, LMAX * LMAX - dxA * dxA));
-            const reachB = Math.sqrt(Math.max(0, LMAX * LMAX - dxB * dxB));
-            const hipYwalk  = ankleGndY - Math.min(reachA, reachB);
-            const hipYstand = ankleGndY - LMAX * 0.99;
+            let hipYwalk, hipYstand;
+            if (authoredSoles) {
+                // The baked pilot boot's sole is lateral to the shin axis,
+                // so its vertical ankle-to-sole span changes with shin
+                // angle. Treat the measured knee-to-sole vector as the
+                // actual second IK link and derive hip height from that same
+                // reach. Hip socket offsets are included so neither side is
+                // silently overextended by the torso's 3/4-view pelvis.
+                const nearSole = this._anchorVector(this.nearShin, this.nearShin._soleAnchorFrac, s * this._nearShinScale, facing);
+                const farSole = this._anchorVector(this.farShin, this.farShin._soleAnchorFrac, s * this._farShinScale, facing);
+                const sockets = this._torsoSockets;
+                const midU = (sockets.nearHip.u + sockets.farHip.u) / 2;
+                const midV = (sockets.nearHip.v + sockets.farHip.v) / 2;
+                const torsoDW = this.torso._texDims.w * s;
+                const torsoDH = this.torso._texDims.h * s;
+                const hipOffset = socket => ({
+                    x: facing * (socket.u - midU) * torsoDW,
+                    y: (socket.v - midV) * torsoDH,
+                });
+                const nearHipOffset = hipOffset(sockets.nearHip);
+                const farHipOffset = hipOffset(sockets.farHip);
+                const nearMax = (thighH + Math.hypot(nearSole.x, nearSole.y)) * 0.985;
+                const farMax = (thighH + Math.hypot(farSole.x, farSole.y)) * 0.985;
+                const dxA = facing * footA.fx * s - nearHipOffset.x;
+                const dxB = facing * footB.fx * s - farHipOffset.x;
+                const reachA = Math.sqrt(Math.max(0, nearMax * nearMax - dxA * dxA));
+                const reachB = Math.sqrt(Math.max(0, farMax * farMax - dxB * dxB));
+                hipYwalk = Math.max(y - nearHipOffset.y - reachA, y - farHipOffset.y - reachB);
+                hipYstand = Math.max(
+                    y - nearHipOffset.y - nearMax * 0.99,
+                    y - farHipOffset.y - farMax * 0.99,
+                );
+            } else {
+                const dxA = footA.fx * s, dxB = footB.fx * s;
+                const reachA = Math.sqrt(Math.max(0, LMAX * LMAX - dxA * dxA));
+                const reachB = Math.sqrt(Math.max(0, LMAX * LMAX - dxB * dxB));
+                hipYwalk = ankleGndY - Math.min(reachA, reachB);
+                hipYstand = ankleGndY - LMAX * 0.99;
+            }
             hipY = hipYstand + (hipYwalk - hipYstand) * Math.min(1, moveBlend);
             hipY += crouch * legLen * 0.22; // milder while moving; IK bends the knees
         } else {
-            hipY = y - bootH - (thighH * Math.cos(cThigh) + shinH * Math.cos(cShin));
+            // Pose-driven FK branch (idle and most authored poses — see
+            // useGait above).
+            if (authoredSoles) {
+                // Pose-driven FK has no ankle target to correct after the
+                // fact, but all joint angles are already known here. Solve
+                // the shared pelvis translation directly from the two
+                // transformed painted sole points; their midpoint is the
+                // minimax translation when the authored stance gives the
+                // two sides slightly different vertical extents.
+                const MAX_LEG = 0.38, KNEE_BEND = 0.22;
+                const lThigh = facing * (pose.lLeg + cThigh) + swing * MAX_LEG;
+                const rThigh = facing * (pose.rLeg + cThigh) - swing * MAX_LEG;
+                const lShin = pose.lShin !== undefined ? facing * pose.lShin : lThigh - facing * (sinWP * KNEE_BEND + cThigh + cShin);
+                const rShin = pose.rShin !== undefined ? facing * pose.rShin : rThigh + facing * (sinWP * KNEE_BEND - cThigh - cShin);
+                const [farThighAng, farShinAng, nearThighAng, nearShinAng] = facing >= 0
+                    ? [rThigh, rShin, lThigh, lShin]
+                    : [lThigh, lShin, rThigh, rShin];
+                const sockets = this._torsoSockets;
+                const midV = (sockets.nearHip.v + sockets.farHip.v) / 2;
+                const torsoDH = this.torso._texDims.h * s;
+                const requiredHipY = (side, thighAng, shinAng, thighImg, shinImg, thighScale, shinScale) => {
+                    const hipOffsetY = (sockets[`${side}Hip`].v - midV) * torsoDH;
+                    const thighVector = this._anchorVector(thighImg, thighImg._distalAnchorFrac, thighScale, facing);
+                    const soleVector = this._anchorVector(shinImg, shinImg._soleAnchorFrac, shinScale, facing);
+                    const thighDrop = -thighVector.x * Math.sin(thighAng) + thighVector.y * Math.cos(thighAng);
+                    const soleDrop = -soleVector.x * Math.sin(shinAng) + soleVector.y * Math.cos(shinAng);
+                    return y - hipOffsetY - thighDrop - soleDrop;
+                };
+                const farRequired = requiredHipY('far', farThighAng, farShinAng, this.farThigh, this.farShin, s * this._farThighScale, s * this._farShinScale);
+                const nearRequired = requiredHipY('near', nearThighAng, nearShinAng, this.nearThigh, this.nearShin, s, s * this._nearShinScale);
+                hipY = (farRequired + nearRequired) / 2;
+            } else {
+                hipY = y - bootH - (thighH * Math.cos(cThigh) + shinH * Math.cos(cShin));
+            }
         }
 
         const torsoTop  = hipY - torsoH;
@@ -859,8 +994,8 @@ export default class Skeleton {
         let far, near;
         if (useGait) {
             // Two feet half a cycle apart, knees solved by IK. A=near, B=far.
-            far  = this._gaitLeg(footB, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale, farHipPoint);
-            near = this._gaitLeg(footA, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale, nearHipPoint);
+            far  = this._gaitLeg(footB, facing, x, hipY, authoredSoles ? y : ankleGndY, thighH, shinH, s, liftScale, farHipPoint, authoredSoles ? this.farShin : null, s * this._farShinScale);
+            near = this._gaitLeg(footA, facing, x, hipY, authoredSoles ? y : ankleGndY, thighH, shinH, s, liftScale, nearHipPoint, authoredSoles ? this.nearShin : null, s * this._nearShinScale);
         } else {
             // Original pose-driven FK (move stances). Preserves the facing-based
             // far/near mapping and per-leg swing alternation exactly as before.
@@ -900,7 +1035,7 @@ export default class Skeleton {
         // The true hip point (far.hx/hy) and far.thighAng stay the knee/IK
         // anchor, untouched — farRenderAng only biases how the far thigh's
         // image itself is drawn (FAR_THIGH_TILT).
-        const farRenderAng = far.thighAng + facing * (this._farLegTilt ?? RIG.FAR_THIGH_TILT);
+        const farRenderAng = far.thighAng + facing * (this._farLegTilt ?? (this._authoredLegRig ? 0 : RIG.FAR_THIGH_TILT));
         const farHipRender = this._attachChild(this.farThigh, far.hx, far.hy, farRenderAng, s, RIG.HIP_OVERLAP);
         // Hip-socket path (farHipPoint set): render exactly at the socket —
         // jointPivotFrac already supplies the thigh's hidden proximal
@@ -915,13 +1050,27 @@ export default class Skeleton {
         this._placePart(this.farThigh, farHipRender.x, farHipRender.y, legW, thighH, farRenderAng, s * this._farThighScale, facing);
         this._recordJointAttachment('farHip', this.farThigh, far.hx, far.hy, farRenderAng);
         const farKnee  = this._end(far.hx, far.hy, thighH, far.thighAng);
+        // Painted-knee routing (2026-07-25, Codex review — "route the
+        // thigh's declared distalAnchorFrac through the upright and grounded
+        // knee calculation"): when the thigh declares a distalAnchorFrac,
+        // the shin attaches to the thigh's own ACTUAL rendered/painted knee
+        // point (via the thigh's real render transform: farHipRender/
+        // farRenderAng, exactly the args just handed to _placePart above)
+        // instead of the generic bone-length farKnee. farKnee itself stays
+        // the pure geometric IK joint used below for the ankle/foot chain
+        // and farKneeDebug — foot-planting precision is untouched. Absent
+        // (every thigh before the pilot) = farTrueKnee === farKnee exactly,
+        // byte-identical to the previous single-variable version.
+        const farTrueKnee = this.farThigh._distalAnchorFrac
+            ? this._trueDistalEnd(this.farThigh, farHipRender.x, farHipRender.y, thighH, farRenderAng, s * this._farThighScale, facing)
+            : farKnee;
         // Shin's render origin pulls up into the thigh by KNEE_OVERLAP (each
         // character's shin box grew by the same amount) so the knee tucks in
         // cleanly instead of floating below the thigh — farAnkle below still
         // anchors off the true farKnee, untouched. If farShin carries
         // jointPivotFrac (authored overlap art), _attachChild skips the
-        // pull-back and anchors directly at farKnee instead.
-        const farShinRender = this._attachChild(this.farShin, farKnee.x, farKnee.y, far.shinAng, s, RIG.KNEE_OVERLAP);
+        // pull-back and anchors directly at farTrueKnee instead.
+        const farShinRender = this._attachChild(this.farShin, farTrueKnee.x, farTrueKnee.y, far.shinAng, s, RIG.KNEE_OVERLAP);
         farShinRender.x += facing * this._farShinOffsetX * s;
         farShinRender.y += this._farShinOffsetY * s;
         this._placePart(this.farShin, farShinRender.x, farShinRender.y, legW, shinH, far.shinAng, s * this._farShinScale, facing);
@@ -931,7 +1080,7 @@ export default class Skeleton {
         // Debug read seam (feel-audit foot-lock verification) — world ankle
         // position + planted flag. footA/footB->near/far mapping is stable in
         // gait mode (see comment above); meaningless in pose-driven FK, so null.
-        this.farFoot = { x: farAnkle.x, y: farAnkle.y, planted: useGait ? footB.lift === 0 : null };
+        this.farFoot = { x: far.soleX ?? farAnkle.x, y: far.soleY ?? farAnkle.y, planted: useGait ? footB.lift === 0 : null };
         // Debug read seam (2026-07-15, knee pivot-vs-art audit): true skeleton
         // knee joint, plus the exact render transforms fed to the thigh/shin
         // Images, so an external script can independently check whether the
@@ -1012,6 +1161,7 @@ export default class Skeleton {
         // torsoOriginX/Y (see the comment above the leg-solving block) is
         // exactly (x, torsoTop) unless hip sockets solved a different origin.
         this._placePart(this.torso, torsoOriginX, torsoOriginY, torsoW, this.trunks ? torsoH - trunksH : torsoH, 0, s, facing);
+        if (this.pelvisOverlay) this._placePart(this.pelvisOverlay, torsoOriginX, torsoOriginY, torsoW, torsoH, 0, s, facing);
         if (this.trunks) this._place(this.trunks, x, hipY - trunksH, torsoW, trunksH, 0);
 
         // Near leg — drawn in front of torso
@@ -1026,15 +1176,19 @@ export default class Skeleton {
         this._placePart(this.nearThigh, nearHipRender.x, nearHipRender.y, legW, thighH, nearRenderAng, s, facing);
         this._recordJointAttachment('nearHip', this.nearThigh, near.hx, near.hy, nearRenderAng);
         const nearKnee  = this._end(near.hx, near.hy, thighH, near.thighAng);
+        // Painted-knee routing — see the matching far-leg comment above.
+        const nearTrueKnee = this.nearThigh._distalAnchorFrac
+            ? this._trueDistalEnd(this.nearThigh, nearHipRender.x, nearHipRender.y, thighH, nearRenderAng, s, facing)
+            : nearKnee;
         const nearShinRenderAng = near.shinAng + facing * this._nearShinTilt;
-        const nearShinRender = this._attachChild(this.nearShin, nearKnee.x, nearKnee.y, nearShinRenderAng, s, RIG.KNEE_OVERLAP);
-        nearShinRender.x += facing * (RIG.NEAR_SHIN_FWD + this._nearShinOffsetX) * s;
-        nearShinRender.y += (-RIG.NEAR_SHIN_UP + this._nearShinOffsetY) * s;
+        const nearShinRender = this._attachChild(this.nearShin, nearTrueKnee.x, nearTrueKnee.y, nearShinRenderAng, s, RIG.KNEE_OVERLAP);
+        nearShinRender.x += facing * ((this._authoredLegRig ? 0 : RIG.NEAR_SHIN_FWD) + this._nearShinOffsetX) * s;
+        nearShinRender.y += ((this._authoredLegRig ? 0 : -RIG.NEAR_SHIN_UP) + this._nearShinOffsetY) * s;
         this._placePart(this.nearShin, nearShinRender.x, nearShinRender.y, legW, shinH, nearShinRenderAng, s * this._nearShinScale, facing);
         this._recordJointAttachment('nearKnee', this.nearShin, nearKnee.x, nearKnee.y, nearShinRenderAng);
         const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, near.shinAng);
         if (this.nearBoot) this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
-        this.nearFoot = { x: nearAnkle.x, y: nearAnkle.y, planted: useGait ? footA.lift === 0 : null };
+        this.nearFoot = { x: near.soleX ?? nearAnkle.x, y: near.soleY ?? nearAnkle.y, planted: useGait ? footA.lift === 0 : null };
         // Debug read seam — see the matching farKneeDebug/farThighRenderDebug/
         // farShinRenderDebug comment above.
         this.nearKneeDebug = { x: nearKnee.x, y: nearKnee.y };
@@ -1090,7 +1244,15 @@ export default class Skeleton {
                 .setPosition(anchorX, anchorY)
                 .setDisplaySize(headR * 2.0 * this._headScale, headDispH)
                 .setFlipX(facing < 0);
-            this._recordJointAttachment('neck', this.head, shoulderX, neckY, 0);
+            // Record the ACTUAL anchor used to place the head (2026-07-25,
+            // Codex review — "Record the actual anchorX/anchorY" — the
+            // legacy shoulderX/neckY recorded here previously even when the
+            // head was placed at a socket-resolved or headOffsetX/Y-nudged
+            // anchorX/anchorY, hiding any socket-mapping error from
+            // joint_attachment_audit. Does not change any rendering — only
+            // the debug bookkeeping joint_attachment_audit.mjs reads —
+            // re-verified clean via the full audit suite below.
+            this._recordJointAttachment('neck', this.head, anchorX, anchorY, 0);
         } else {
             this.head.clear();
             this.head.fillStyle(this._headCol, 1);
@@ -1173,6 +1335,7 @@ export default class Skeleton {
         // Torso image pivots at the shoulders and extends down the back to the
         // hips; trunks cover the hip end of that line
         this._placePart(this.torso, shX, shY, torsoW, this.trunks ? torsoH - trunksH : torsoH, down, s, facing);
+        if (this.pelvisOverlay) this._placePart(this.pelvisOverlay, shX, shY, torsoW, torsoH, down, s, facing);
         if (this.trunks) {
             const tx = hipX + Math.sin(ta) * trunksH;
             const ty = hipY + Math.cos(ta) * trunksH;
@@ -1196,7 +1359,13 @@ export default class Skeleton {
             const side = thighImg === this.farThigh ? 'far' : 'near';
             this._recordJointAttachment(`${side}Hip`, thighImg, rootX, rootY, tA);
             const knee = this._end(rootX, rootY, thighH, tA);
-            const kneeRender = this._attachChild(shinImg, knee.x, knee.y, sA, s, RIG.KNEE_OVERLAP);
+            // Painted-knee routing — see updateUpright's matching far/near-leg
+            // comment. knee itself stays the pure geometric joint (feeds the
+            // ankle chain and the recorded audit point below), untouched.
+            const trueKnee = thighImg._distalAnchorFrac
+                ? this._trueDistalEnd(thighImg, hipRender.x, hipRender.y, thighH, tA, s, facing)
+                : knee;
+            const kneeRender = this._attachChild(shinImg, trueKnee.x, trueKnee.y, sA, s, RIG.KNEE_OVERLAP);
             this._placePart(shinImg, kneeRender.x, kneeRender.y, legW, shinH, sA, s, facing);
             this._recordJointAttachment(`${side}Knee`, shinImg, knee.x, knee.y, sA);
             const ankle = this._end(knee.x, knee.y, shinH, sA);
@@ -1205,22 +1374,45 @@ export default class Skeleton {
         leg(g.farThigh,  g.farShin,  [this.farThigh,  this.farShin,  this.farBoot],  farHipPoint);
         leg(g.nearThigh, g.nearShin, [this.nearThigh, this.nearShin, this.nearBoot], nearHipPoint);
 
-        // Arms root at the authored shoulder anchor. Forearms use their own
-        // axis for overlap so the elbow root cannot orbit during a bend.
-        const arm = (up, fore, imgs) => {
+        // Shoulder sockets in grounded/get-up mode (2026-07-25, Codex review
+        // — "Use individual torso shoulder sockets during grounded/get-up
+        // rendering"): gated on the SAME dynamic-pelvis opt-in as the hip
+        // sockets above (nearHipPoint/farHipPoint set), not on socket
+        // presence alone — George's and Thesz's torsos already carry
+        // nearShoulder/farShoulder sockets (Phase C, upright-only), but their
+        // grounded mode has never rooted arms from them (both arms simply
+        // root at shX/shY, no stagger) — gating on socket-presence alone
+        // would change their shipped grounded rendering. Requiring the hip
+        // sockets too keeps this reachable only by the pilot's own opt-in
+        // rig, so George/Thesz stay byte-identical (nearShoulderPoint/
+        // farShoulderPoint stay null for them, and rootX/rootY below fall
+        // through to the untouched shX/shY).
+        let nearShoulderPoint = null, farShoulderPoint = null;
+        if (nearHipPoint && farHipPoint && this._torsoSockets?.nearShoulder && this._torsoSockets?.farShoulder) {
+            nearShoulderPoint = this._socketPoint(this.torso, this._torsoSockets.nearShoulder.u, this._torsoSockets.nearShoulder.v, shX, shY, down, s, facing);
+            farShoulderPoint  = this._socketPoint(this.torso, this._torsoSockets.farShoulder.u,  this._torsoSockets.farShoulder.v,  shX, shY, down, s, facing);
+        }
+
+        // Arms root at the authored shoulder anchor (socket, when the
+        // opt-in above resolved one; otherwise the shared torso origin).
+        // Forearms use their own axis for overlap so the elbow root cannot
+        // orbit during a bend.
+        const arm = (up, fore, imgs, shoulderPoint) => {
             const [upImg, foreImg] = imgs;
             const uA = ang(up), fA = ang(fore);
             const side = upImg === this.farUpArm ? 'far' : 'near';
             const depthScale = side === 'far' ? RIG.FAR_ARM_SCALE : 1;
-            this._placePart(upImg, shX, shY, armW, upperArmH, uA, s * depthScale, facing);
-            this._recordJointAttachment(`${side}Shoulder`, upImg, shX, shY, uA);
-            const elbow = this._trueDistalEnd(upImg, shX, shY, upperArmH * depthScale, uA, s * depthScale, facing);
+            const rootX = shoulderPoint ? shoulderPoint.x : shX;
+            const rootY = shoulderPoint ? shoulderPoint.y : shY;
+            this._placePart(upImg, rootX, rootY, armW, upperArmH, uA, s * depthScale, facing);
+            this._recordJointAttachment(`${side}Shoulder`, upImg, rootX, rootY, uA);
+            const elbow = this._trueDistalEnd(upImg, rootX, rootY, upperArmH * depthScale, uA, s * depthScale, facing);
             const elbowRender = this._attachChild(foreImg, elbow.x, elbow.y, fA, s, RIG.ELBOW_OVERLAP);
             this._placePart(foreImg, elbowRender.x, elbowRender.y, armW, forearmH, fA, s * depthScale, facing);
             this._recordJointAttachment(`${side}Elbow`, foreImg, elbow.x, elbow.y, fA);
         };
-        arm(g.farArm,  g.farFore,  [this.farUpArm,  this.farForearm]);
-        arm(g.nearArm, g.nearFore, [this.nearUpArm, this.nearForearm]);
+        arm(g.farArm,  g.farFore,  [this.farUpArm,  this.farForearm], farShoulderPoint);
+        arm(g.nearArm, g.nearFore, [this.nearUpArm, this.nearForearm], nearShoulderPoint);
 
         // Head continues past the shoulders along the torso line. (shX, shY)
         // is the torso's own pivot here too (see the torso placement above),
@@ -1249,7 +1441,9 @@ export default class Skeleton {
                     : shX;
             }
             this.head.setPosition(anchorX, anchorY).setDisplaySize(headR * 2.0 * this._headScale, headDispH).setFlipX(facing < 0);
-            this._recordJointAttachment('neck', this.head, shX, shY, 0);
+            // Record the ACTUAL anchor — see updateUpright's matching neck
+            // comment. Debug bookkeeping only, no rendering change.
+            this._recordJointAttachment('neck', this.head, anchorX, anchorY, 0);
         } else {
             this.head.clear();
             this.head.fillStyle(this._headCol, 1);
@@ -1266,16 +1460,26 @@ export default class Skeleton {
     // per the pilot's own contract, planted feet stay authoritative and only
     // the root each leg solves FROM moves to its own socket. Absent (every
     // call before this existed) = root is exactly (x, hipY), byte-identical.
-    _gaitLeg(foot, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale = 1, hipPoint = null) {
+    _gaitLeg(foot, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale = 1, hipPoint = null, soleImg = null, soleScale = s) {
         const footX = x + facing * foot.fx * s;
         const footY = ankleGndY - foot.lift * s * liftScale;
         const rootX = hipPoint ? hipPoint.x : x;
         const rootY = hipPoint ? hipPoint.y : hipY;
-        const { thighAng, shinAng } = solveLeg(rootX, rootY, footX, footY, thighH, shinH, facing);
+        const soleVector = soleImg?._soleAnchorFrac
+            ? this._anchorVector(soleImg, soleImg._soleAnchorFrac, soleScale, facing)
+            : null;
+        const { thighAng, shinAng } = soleVector
+            ? solveLegToAnchor(rootX, rootY, footX, footY, thighH, soleVector.x, soleVector.y, facing)
+            : solveLeg(rootX, rootY, footX, footY, thighH, shinH, facing);
         // Boot continues the line of the shin (no kink so it never reads as a detached
         // block) with just a small forward toe.
         const bootAng = shinAng + facing * 0.35;
-        return { hx: rootX, hy: rootY, thighAng, shinAng, bootAng };
+        const result = { hx: rootX, hy: rootY, thighAng, shinAng, bootAng };
+        if (soleVector) {
+            result.soleX = footX;
+            result.soleY = footY;
+        }
+        return result;
     }
 
     destroy() {

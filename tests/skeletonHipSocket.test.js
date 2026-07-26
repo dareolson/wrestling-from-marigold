@@ -96,4 +96,25 @@ test('_gaitLeg: default hipPoint (absent) is byte-identical to the pre-pilot cal
     const withoutArg = gaitLeg(foot, -1, 50, 210, 285, 56, 64, 1.1, 1.2);
     const withNullArg = gaitLeg(foot, -1, 50, 210, 285, 56, 64, 1.1, 1.2, null);
     assert.deepStrictEqual(withoutArg, withNullArg);
+    assert.deepStrictEqual(Object.keys(withoutArg), ['hx', 'hy', 'thighAng', 'shinAng', 'bootAng']);
+});
+
+test('_gaitLeg: authored off-axis sole is the IK target in both facings', () => {
+    const sk = { _anchorVector: proto._anchorVector };
+    const soleImg = {
+        _jointPivotFrac: 0.16,
+        _texDims: { w: 67, h: 95 },
+        _soleAnchorFrac: { u: 0.374, v: 0.923 },
+    };
+    const foot = { fx: 8, lift: 7, liftFrac: 0.5 };
+    for (const facing of [1, -1]) {
+        const x = 100, hipY = 190, groundY = 285, thighH = 54, shinH = 40, s = 0.8;
+        const solved = proto._gaitLeg.call(sk, foot, facing, x, hipY, groundY, thighH, shinH, s, 1, null, soleImg, s);
+        const knee = proto._end(x, hipY, thighH, solved.thighAng);
+        const vector = proto._anchorVector.call(sk, soleImg, soleImg._soleAnchorFrac, s, facing);
+        const sole = proto._endXY(knee.x, knee.y, vector.x, vector.y, solved.shinAng);
+        assert.ok(Math.abs(sole.x - solved.soleX) < 1e-9, `x facing ${facing}`);
+        assert.ok(Math.abs(sole.y - solved.soleY) < 1e-9, `y facing ${facing}`);
+        assert.equal(solved.soleY, groundY - foot.lift * s);
+    }
 });

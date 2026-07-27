@@ -66,6 +66,17 @@ available for George's/Thesz's own torso sockets whenever someone measures
 their nearHip/farHip values — not done in this pass, out of scope (this pass
 only had to make it work for the pilot's own measured sockets).
 
+**Status 2026-07-26 (Claude): George AI pilot promoted to shipped George —
+hip sockets and the dynamic-pelvis mechanism are now live on a default/
+shipped character for the first time, not just opt-in pilot comparisons.**
+Roster is now just george + thesz (brawler and the whole pilot comparison
+lineage vaulted, not deleted — see `_vault/`). This surfaced two real
+`Skeleton.js` bugs the opt-in-only testing never caught (a facing-mirror
+asymmetry in the hip-socket FK math, and a head-anchor origin that never
+re-mirrored under flipX) — both fixed; see the dated Handoff Log entry below
+for the full story, including why a directly-tuned `faceLeftOverrides` set
+was still needed on top of both fixes. Committed: `6761ff8`.
+
 **Previous assignment closed 2026-07-24 (Claude):** Derek approved the four-move blueprint below
 in full — all four moves, all three directional-input overrides, the kit
 assignments as proposed, and the current-rig hammerlock approximation (no
@@ -143,6 +154,124 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 `Skeleton.js` and are not v1 requirements.
 
 ## Handoff Log
+
+### 2026-07-26 (George AI pilot promoted to shipped George; roster trimmed to Lou vs George; two real facing-mirror bugs found and fixed; committed) — Claude
+
+Following the v9-broadcast Phase A review below, Derek made the call: adopt
+the pilot as George for real. "Let's make this george the default and the
+only two wrestlers on our roster are lou and george, the others can be
+vaulted away, let's launch a lou vs george version of wfm."
+
+**What shipped:**
+
+- `src/characters/george.js` is now a standalone, flattened copy of the
+  fully-resolved george-ai-pilot-v9-broadcast config (v9's Lanczos-downsampled
+  art + every rig-tuner value from v8's live tuning this session) — no more
+  import chain through v1→v9. Confirmed via a diff against the live-resolved
+  v9-broadcast module before writing it: identical except id/texture keys.
+- `src/assets/wrestlers/george/` now holds the v9 art (torso/pelvisOverlay/
+  head/upperArm/nearForearm/farForearm/thigh/nearShin/farShin).
+- Roster trimmed: `Arena.js`'s `CHARACTERS`/`PRESETS` now only has
+  `george`/`thesz`. Default `?p1`/`?p2` fallback changed from
+  brawler/george to thesz/george (Lou vs George is now the default match).
+- **Nothing deleted.** The original hand-drawn "NewGeorge" character/art and
+  the entire george-ai-pilot v1–v9 lineage (character files + asset folders)
+  moved to `_vault/characters/` and `_vault/assets/wrestlers/` — reversible,
+  same convention as everything else in this project. Two unit tests that
+  exercised the vaulted v2/v4 configs directly moved to `_vault/tests/`.
+- `tools/rig-tuner/rig-tuner.js` and `tools/debug/sole_grounding_sweep.mjs`
+  repointed their defaults off the now-vaulted `george-ai-pilot-v8` id (the
+  tuner's `george` entry now carries everything v8 used to, since george.js
+  *is* that config now).
+- `tools/debug/play.mjs`: 5 scenarios (`combo`, `elbow`, `kneeLift`,
+  `kneeDrop`, `pin`) silently assumed the old default P1 (`brawler`, which
+  had `headbutt`/`kneeLift`) and broke the moment the default became `thesz`
+  (whose kit doesn't have either) — pinned `p1: 'george'` on each, matching
+  the pattern the existing `hammerlock` scenario already used for the same
+  reason.
+
+**Two real `Skeleton.js` bugs, both found live, both fixed at the source —
+not papered over with per-character offsets:**
+
+1. **Hip-socket FK mirror asymmetry.** The dynamic-pelvis/authored-sole hip-
+   height solve (`_solveTorsoOrigin` and the pose-driven FK branch it feeds)
+   had never been exercised by a default/shipped character before this
+   promotion — only by opt-in pilot-vs-pilot comparisons, where (in
+   hindsight) nobody happened to scrutinize overall standing posture at
+   facing -1 specifically. The moment George became P2 (facing -1) by
+   default, Derek caught it immediately: "he's in faceleft orientation right
+   now... it has different tuner values for facing right and left... you are
+   just conjuring the wrong version." Proved it was a genuine code bug, not
+   a tuning issue, with a real mirror: rendered George at facing +1 (known
+   good), then took a true pixel-level horizontal flip of that screenshot —
+   it looked correct. The game's own facing -1 render of the identical
+   config did not. A dumped joint comparison confirmed the mechanism exactly:
+   torso/shoulder/hip sockets mirrored perfectly (both facings summed to
+   exactly 960.0 = 2× the wrestler's x), but the FK-derived knees were off by
+   ~9.5px and elbows by ~2px. Root cause: the pose-driven branch's per-side
+   "required hip Y" calculation combines a fixed near/far-hip-socket Y-offset
+   with a thigh angle whose l/r identity swaps with facing — correct in
+   isolation, but it doesn't reproduce a true mirror when the standing pose
+   itself is left/right-asymmetric (George's `powerIdle`: `lLeg: -0.18, rLeg:
+   0.13`), because which anatomical leg's angle lands on the "near" hip
+   changes with facing while the hip socket's own Y offset doesn't. Rather
+   than rederive the exact term across ~500 interacting lines, fixed it
+   structurally: `updateUpright` is now a thin wrapper — for any character
+   with both hip sockets (`_authoredLegRig`) at facing < 0, it computes the
+   whole body once as if facing were +1 (the orientation already proven
+   correct, via `_updateUprightCore`, the renamed original function) and
+   mirrors the fully-assembled result with one well-understood transform
+   (`_mirrorUpright`: negate x about the wrestler's own position, negate
+   rotation, toggle flipX). Re-verified after the fix: the same joint dump
+   now mirrors to full float precision. Opt-in and scoped tight — every
+   other character, and george itself at facing >= 0, is byte-identical to
+   before this wrapper existed.
+2. **Head-anchor origin never re-mirrored.** Derek caught this as a
+   follow-up live report ("his head is off") after the first fix landed.
+   George's head uses `headAnchorFrac` (an off-center origin, u=0.588,
+   pinned to the neck feature in the art — every other body part uses a
+   symmetric 0.5 origin, which is why nothing else showed this). `flipX`
+   mirrors the drawn pixels but Phaser never touches `originX`, so the
+   anchor stayed glued to the same quad-fraction while the art underneath it
+   flipped — same world position, wrong feature of the (now-mirrored) head
+   art sitting at that position. Fixed by stashing the canonical `originU`
+   at construction and re-deriving `originX` (`facing < 0 ? 1 - originU :
+   originU`) everywhere the head's `flipX` is set (both the standing and
+   get-up/grounded render paths), plus in `_mirrorUpright` for the
+   canonical-mirror path above.
+
+**Even with both bugs fixed, Derek's live read of the mirrored render still
+wasn't right** — his conclusion: a 3/4-view torso doesn't necessarily look
+equally good mirrored, independent of whether the math is correct, so he
+gave a second, directly-tuned set of values for facing -1 (rig-tuner's "face
+left" toggle) rather than continuing to rely on derivation from the
+facing +1 config. Added `faceLeftOverrides` to the texture config format and
+`Skeleton.js`'s `_withFaceLeftOverrides`: at facing < 0, if present, patches
+the specific `this._<key>` private fields (and `_torsoSockets` entries) to
+Derek's face-left values for the duration of that render call, then restores
+the facing >= 0 values — takes priority over the canonical-mirror path above
+for whichever fields it lists, leaving everything else (box sizes,
+`pivotOffsetFrac`, thigh/shin, etc.) on the mirrored facing +1 config.
+George's current `faceLeftOverrides`: `nearForearmOffsetX`, `farForearmOffsetX`,
+`farForearmOffsetY`, and the neck socket.
+
+**Verification, final state:** `npm run build` clean; `npm test` 54/54 (was
+64 — 8 tests belonged to the two vaulted-config test files, moved to
+`_vault/tests/`); `npm run debug:play -- all` 16/16; `joint_attachment_audit`
+48/48 (george + thesz, both facings, all sampled poses);
+`torso_socket_sweep`/`elbow_anchor_sweep`/`knee_ink_gap_sweep` all pass
+(0.00px) for george; confirmed live through actual AI-driven gameplay
+(walking, turning, a real lockup hold), not just static idle screenshots.
+Re-verified `thesz`'s own audits untouched (byte-identical — none of these
+mechanisms apply to a character without hip sockets). One pre-existing,
+already-flagged issue carries forward unchanged: `sole_grounding_sweep`
+still fails (~11px planted-sole gap) because `nearShinOffsetY`/
+`farShinOffsetY` apply after the sole-grounding IK solve and aren't read by
+it — unrelated to this pass, flagged across several prior sessions too,
+still open.
+
+**Committed as `6761ff8`** (Derek: "do them both" — commit + update this
+handoff). 119 files changed. Not pushed.
 
 ### 2026-07-26 (George v9 broadcast-downsample Phase A delivered, Derek reviewed it live and called it "way better"; george-ai-pilot-v8 then live-tuned through a facing-specific "egor" posture bug and a real Skeleton.js pivotOffsetFrac/distalAnchorFrac fix) — Claude
 

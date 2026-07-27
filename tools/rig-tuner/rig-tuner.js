@@ -18,21 +18,53 @@ const placeholder = {
     id: 'placeholder', skinCol: 0xffe4c4, trunksCol: 0x3355aa, textures: {}, idlePose: 'brawlerIdle',
 };
 const CHARS = { george, thesz, placeholder };
-const PART_FILES = { head: 'head.png', torso: 'torso.png', upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png' };
-const BOX_PARTS = ['torso', 'upperArm', 'forearm', 'thigh', 'shin'];
+// Roster is now just george/thesz (2026-07-26, promoted-george roster
+// change) -- both ids match their src/characters/ filename base exactly, so
+// no filename override table is needed anymore. The former george-ai-pilot-v8
+// -specific entry (which needed one, since its id used hyphens but its file
+// used underscores) is vaulted along with the rest of the pilot family; see
+// _vault/characters/.
+const charFilename = id => id;
+// pelvisOverlay/nearShin/farShin/nearForearm/farForearm (george, since the
+// 2026-07-26 promoted-george roster change): same filenames Arena.js's own
+// PART_FILES map uses for these opt-in parts.
+const PART_FILES = {
+    head: 'head.png', torso: 'torso.png', pelvisOverlay: 'pelvis_overlay.png',
+    upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png',
+    nearShin: 'near_shin.png', farShin: 'far_shin.png',
+    nearForearm: 'near_forearm.png', farForearm: 'far_forearm.png',
+};
+const BOX_PARTS = ['torso', 'upperArm', 'forearm', 'thigh', 'shin', 'pelvisOverlay', 'nearForearm', 'farForearm', 'nearShin', 'farShin'];
+// torso/pelvisOverlay each get their own slider row below, but on george
+// they're the SAME box object in george.js (a Codex-flagged 2026-07-26
+// registration bug from the george-ai-pilot-v8 lineage: two independent { w, h }
+// literals drifted apart, 78 vs 80, producing a doubled/drifting trunks
+// outline). Dragging either slider here moves both live, by construction.
+// If a future export is pasted back into the character file, keep them as
+// one shared object (not two literals with matching numbers) — copy-pasting
+// two separate box literals reopens the same drift risk the next time only
+// one of them gets tuned.
 // Which canvas edge's ink-center "measure from art" reads for each part's
 // pivotOffsetFrac (2026-07-15) — whichever edge is the one that visually
 // reads as a joint (see Skeleton.js _placePart's comment): the thigh/upperArm
 // show their joint at the bottom edge (knee/elbow), shin/forearm/torso at the
 // top edge (knee/elbow/neck). Same convention tools/debug/knee_pivot_audit.mjs
-// already uses for thigh (bottom) and shin (top).
-const PIVOT_EDGE = { torso: 'top', upperArm: 'bottom', forearm: 'top', thigh: 'bottom', shin: 'top' };
+// already uses for thigh (bottom) and shin (top). nearForearm/farForearm and
+// nearShin/farShin (george's split near/far bitmaps) follow the
+// same generic forearm/shin convention; pelvisOverlay is placed exactly like
+// torso (same box/origin, see Skeleton.js) so it follows torso's edge too.
+const PIVOT_EDGE = {
+    torso: 'top', upperArm: 'bottom', forearm: 'top', thigh: 'bottom', shin: 'top',
+    pelvisOverlay: 'top', nearForearm: 'top', farForearm: 'top', nearShin: 'top', farShin: 'top',
+};
 // Skeleton instance image(s) each config part's pivotOffsetFrac must be
 // pushed into live (near+far share one config value but are separate Images
 // — see Skeleton.js constructor).
 const PIVOT_PART_IMAGES = {
     torso: ['torso'], upperArm: ['nearUpArm', 'farUpArm'], forearm: ['nearForearm', 'farForearm'],
     thigh: ['nearThigh', 'farThigh'], shin: ['nearShin', 'farShin'],
+    pelvisOverlay: ['pelvisOverlay'], nearForearm: ['nearForearm'], farForearm: ['farForearm'],
+    nearShin: ['nearShin'], farShin: ['farShin'],
 };
 
 // ─── Baselines (captured before any edit — export emits diffs only) ─────────
@@ -408,6 +440,7 @@ function setCharacter(id) {
     state.charId = id;
     rebuildSkeleton();
     buildCharPanel();
+    buildSocketsPanel();
     ui.charSel?.refresh();
     // Follow the character's runtime resting pose so tuning happens against
     // what the game actually renders (Codex parity review, 2026-07-14).
@@ -422,6 +455,7 @@ function setPoseName(name) {
 
 // ─── Panels ──────────────────────────────────────────────────────────────────
 let charPanelBody = null;
+let socketsPanelBody = null;
 
 function buildPanel() {
     // Preview
@@ -474,6 +508,19 @@ function buildPanel() {
             POSES[state.poseName] = deep(POSES0[state.poseName]);
             refreshPoseRows(); renderExport();
         });
+
+    // rigProfile.sockets — own top-level, open-by-default group (2026-07-26:
+    // this used to live at the bottom of the much longer "Character knobs"
+    // group below, past ~30 generic offset-knob rows and ~40 per-part box
+    // rows — easy to lose while scrolling, and easy to confuse with the
+    // similarly-named legOffsetX/farLegOffsetX rows just above it in that
+    // list. Pulled out and put first since these are the ONLY controls that
+    // actually move the neck/shoulders/hips on any character that supplies
+    // rigProfile.sockets (george, thesz) — the generic
+    // offset knobs are silently inert wherever the matching socket exists,
+    // see buildSocketsPanel's own hint text below.
+    socketsPanelBody = group('Character sockets (rigProfile.sockets)', true);
+    buildSocketsPanel();
 
     // Global bones (P)
     const pb = group('Skeleton.js — P (bone lengths / blocks)');
@@ -535,7 +582,7 @@ function buildCharPanel() {
     charRowRefreshers = [];
     const c = currentChar();
     charPanelBody.parentElement.querySelector('summary').textContent =
-        `Character knobs — ${c.id}${c.id === 'placeholder' ? ' (not exportable — no character file)' : ` (src/characters/${c.id}.js)`}`;
+        `Character knobs — ${c.id}${c.id === 'placeholder' ? ' (not exportable — no character file)' : ` (src/characters/${charFilename(c.id)}.js)`}`;
     const hasHead = !!c.textures.head;
     for (const spec of CHAR_KNOBS) {
         if (spec.headOnly && !hasHead) continue;
@@ -581,6 +628,56 @@ function buildCharPanel() {
             reads the committed PNG's ink bounding box (same method as
             tools/debug/knee_pivot_audit.mjs) — sanity-check the result before trusting it,
             it's a starting point, not gospel.</div>`);
+    }
+
+    // thighH/shinH (CHAR_KNOBS above) are also inert for any character whose
+    // thigh/shin carry distalAnchorFrac/soleAnchorFrac (the "authored/
+    // painted-sole" rig — george-ai-pilot line): the hip-height solve and
+    // knee/ankle placement come from those anchor vectors directly, not the
+    // abstract bone length. thighH/shinH still matter there, but only as a
+    // walking-gait max-reach clamp near full leg extension — invisible on a
+    // static idle-pose render. Adjust visual leg size via the thigh/shin
+    // box.w/h rows above instead.
+    if (c.textures.thigh?.distalAnchorFrac || c.textures.shin?.soleAnchorFrac || c.textures.nearShin?.soleAnchorFrac) {
+        el(charPanelBody, `<div class="hint" style="margin-top:6px">thighH/shinH above are near-inert
+            on this rig (authored distal/sole anchors drive placement, not bone length) — use the
+            thigh/shin box.w/h rows for visual size instead.</div>`);
+    }
+}
+
+// rigProfile.sockets — own top-level panel (2026-07-26, moved out of
+// buildCharPanel: see buildPanel's comment on why). When present,
+// Skeleton.js's updateUpright roots neck/shoulders/hips from these authored
+// torso-relative u/v fractions (_socketPoint) INSTEAD of headOffsetX/Y,
+// armOffsetX/Y, farArmOffsetX/Y, legOffsetX/Y, nearLegOffsetY,
+// farLegOffsetX/Y — those CHAR_KNOBS rows are silently inert for any
+// character with a matching socket (confirmed empirically: setting them
+// produces zero render change on george, thesz, and george-ai-pilot-v8, all
+// three of which supply rigProfile.sockets). This is the panel that
+// actually moves those joints. u/v are fractions of the torso's own canvas
+// (0..1); mutated in place on the same object Skeleton.js's constructor
+// captured a reference to, so changes are live without a character
+// switch/rebuild.
+function buildSocketsPanel() {
+    socketsPanelBody.innerHTML = '';
+    const c = currentChar();
+    const sockets = c.textures.rigProfile?.sockets;
+    socketsPanelBody.parentElement.querySelector('summary').textContent =
+        `Character sockets (rigProfile.sockets) — ${c.id}${sockets ? '' : ' (none on this character)'}`;
+    if (!sockets) {
+        el(socketsPanelBody, `<div class="hint">This character has no rigProfile.sockets — neck/
+            shoulder/hip position comes from the generic offset knobs in Character knobs below
+            instead (armOffsetX/Y, legOffsetX/Y, etc. all apply normally here).</div>`);
+        return;
+    }
+    el(socketsPanelBody, `<div class="hint">The actual controls for neck/shoulder${sockets.nearHip ? '/hip' : ''}
+        position on this rig — armOffsetX/Y, farArmOffsetX/Y${sockets.nearHip ? ', legOffsetX/Y, nearLegOffsetY, farLegOffsetX/Y' : ''}
+        and headOffsetX/Y (down in Character knobs) have no effect wherever a matching socket
+        exists below.</div>`);
+    for (const name of Object.keys(sockets)) {
+        const sock = sockets[name];
+        sliderRow(socketsPanelBody, `sockets.${name}.u`, () => sock.u, v => { sock.u = v; }, 0, 1, 0.001);
+        sliderRow(socketsPanelBody, `sockets.${name}.v`, () => sock.v, v => { sock.v = v; }, 0, 1, 0.001);
     }
 }
 
@@ -649,7 +746,14 @@ function exportText() {
                 lines.push(`    ${part}: { key: '${e.key}', box: { w: ${fmt(e.box.w)}, h: ${fmt(e.box.h)} }${pivotField} },`);
             }
         }
-        if (lines.length) blocks.push(`// ── src/characters/${id}.js — textures ──\n${lines.join('\n')}`);
+        const sockets = cfg.rigProfile?.sockets, socketsBase = base.rigProfile?.sockets;
+        if (sockets && socketsBase) {
+            const socketLines = Object.keys(sockets)
+                .filter(name => !near(sockets[name].u, socketsBase[name].u) || !near(sockets[name].v, socketsBase[name].v))
+                .map(name => `            ${name}: ${' '.repeat(Math.max(1, 13 - name.length))}{ u: ${fmt(sockets[name].u)}, v: ${fmt(sockets[name].v)} },`);
+            if (socketLines.length) lines.push(`    rigProfile: {\n        sockets: {\n${socketLines.join('\n')}\n        },\n    },`);
+        }
+        if (lines.length) blocks.push(`// ── src/characters/${charFilename(id)}.js — textures ──\n${lines.join('\n')}`);
     }
 
     // Nullable channels (lForearm/rForearm/lShin/rShin) need definedness

@@ -358,6 +358,16 @@ export default class Skeleton {
             this._headAnchorFrac = textures.headAnchorFrac ?? null;
             const originU = this._headAnchorFrac ? this._headAnchorFrac.u : 0.5;
             const originV = this._headAnchorFrac ? this._headAnchorFrac.v : 1;
+            // Stashed so any code path that flips the head for facing < 0
+            // can also flip its origin to 1 - originU — flipX mirrors the
+            // drawn pixels but never touches origin, so an off-center origin
+            // (headAnchorFrac, anchored to a specific art feature like the
+            // neck) stays glued to the wrong feature after a flip unless this
+            // is done every time. Found live ("his head is off") — see
+            // updateUpright's _mirrorUpright for the first fix of this; this
+            // stashed value lets the direct (non-canonical) facing < 0 path
+            // apply the identical correction.
+            this._headOriginU = originU;
             this.head = scene.add.image(0, 0, textures.head).setOrigin(originU, originV);
             this._headIsImage = true;
             // neckInTorso: the character's torso art bakes the neck in
@@ -479,6 +489,15 @@ export default class Skeleton {
         // get-up torso rooting are unmigrated (see the socket derivation's
         // AI_HANDOFF.md entry for why hips don't fit this same simple model).
         this._torsoSockets = textures.rigProfile?.sockets ?? null;
+        // faceLeftOverrides (2026-07-26, Derek's direct request after the
+        // canonical-mirror approach still didn't read right on live review):
+        // a second, independently-tuned set of values for facing < 0,
+        // applied as-is rather than derived by mirroring the facing >= 0
+        // config. Flat keys map to this same "_<key>" private-field
+        // convention every other config value uses; rigProfile.sockets
+        // entries patch this._torsoSockets by name. See updateUpright's
+        // _withFaceLeftOverrides.
+        this._faceLeftOverrides = textures.faceLeftOverrides ?? null;
         // _authoredLegRig (2026-07-25, George AI pilot focused correction —
         // see AI_HANDOFF_ENTRIES/2026-07-25-codex-george-ai-pilot-review.md
         // "Neutralize inherited FAR_THIGH_TILT, NEAR_SHIN_FWD/UP, and
@@ -553,10 +572,14 @@ export default class Skeleton {
         this.head.setDepth(base + 0.0005);
         this.torso.setDepth(base + 0.001);
         this.trunks?.setDepth(base + 0.002);
+        // pelvisOverlay (george-ai-pilot only) sits below the near leg now —
+        // Derek: "his near leg needs to stack on top of his trunks" — so it
+        // still draws over the torso/trunks seam it was added for, but no
+        // longer over the near thigh.
+        this.pelvisOverlay?.setDepth(base + 0.0025);
         this.nearThigh.setDepth(base + 0.003);
         this.nearShin.setDepth(base + 0.003);
         this.nearBoot?.setDepth(base + 0.003);
-        this.pelvisOverlay?.setDepth(base + 0.0035);
         this.nearForearm.setDepth(base + 0.004);
         this.nearUpArm.setDepth(base + 0.00401);
     }
@@ -718,6 +741,22 @@ export default class Skeleton {
     // torso never sets one), so growth=1 there — byte-identical to the
     // prior non-growth-aware version for every existing torso-socket call.
     _socketPoint(img, u, v, px, py, angle, s, facing) {
+        // Mirror _placePart's own pivotOffsetFrac correction on px/py before
+        // deriving a local anchor point from them (2026-07-26, found via
+        // elbow_anchor_sweep.mjs going from 0.000px to 1.18-1.39px the moment
+        // george-ai-pilot-v8's upperArm first combined pivotOffsetFrac with
+        // its existing distalAnchorFrac). Without this, _socketPoint/
+        // _trueDistalEnd computed the distal/socket point from the part's
+        // PRE-correction render origin while _placePart actually draws the
+        // image shifted by `lx`, so any part with both knobs set drifted by
+        // exactly that shift. No part combined the two before this pass.
+        // Absent pivotOffsetFrac (every part before this) = zero change,
+        // byte-identical to the prior version.
+        if (img._pivotOffsetFrac) {
+            const lx0 = facing * img._pivotOffsetFrac * img._texDims.w * s;
+            px -= lx0 * Math.cos(angle);
+            py += lx0 * Math.sin(angle);
+        }
         const jointPivotFrac = img._jointPivotFrac || 0;
         const growth = 1 / (1 - jointPivotFrac);
         const dw = img._texDims.w * s * growth;
@@ -769,7 +808,124 @@ export default class Skeleton {
         return this._endXY(pelvisX, pelvisY, -lx, -ly, angle);
     }
 
+    // 2026-07-26 (promoted-george "egor" fix): the authored-sole/dynamic-
+    // pelvis FK math below (particularly _solveTorsoOrigin's near/far
+    // hip-height averaging in the pose-driven branch) does not reproduce a
+    // true mirror image at facing < 0 when the standing pose itself is
+    // left/right-asymmetric — George's own powerIdle (lLeg: -0.18, rLeg:
+    // 0.13) is exactly that. Verified empirically, not guessed: George at
+    // facing -1 read visibly hunched ("egor") while a genuine pixel-level
+    // mirror of the identical facing +1 render looked correct — proving the
+    // asymmetry is in this file's math, not the art or config. A dumped
+    // joint comparison confirmed torso/shoulder/hip sockets mirror exactly
+    // (0.000px) but the FK-derived knees/elbows do not (~9.5px/~2px). Rather
+    // than chase the exact term across several hundred lines of interacting
+    // facing-multiplied and near/far-swapped formulas, this wrapper computes
+    // the WHOLE body as if facing were +1 (the orientation already proven
+    // correct) and mirrors the fully-assembled result with one well-understood
+    // transform (_mirrorUpright) — robust regardless of which upstream
+    // formula isn't perfectly facing-symmetric. Opt-in and scoped tightly:
+    // only characters declaring both hip sockets (_authoredLegRig) take this
+    // path, and only at facing < 0; every other character (thesz, any
+    // future non-authored-leg-rig character, and george itself at facing
+    // >= 0) runs _updateUprightCore directly, byte-identical to before this
+    // wrapper existed.
     updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
+        // faceLeftOverrides takes priority over the canonical-mirror trick
+        // below: Derek tuned these numbers directly against the facing < 0
+        // render itself (rig-tuner's "face left" toggle), so they're applied
+        // as-is, at the real requested facing, not derived by mirroring.
+        if (facing < 0 && this._faceLeftOverrides) {
+            this._withFaceLeftOverrides(() => {
+                this._updateUprightCore(x, y, s, facing, pose, walkPhase, combatBlend, lean, moveBlend, liftScale, runBlend);
+            });
+            return;
+        }
+        if (this._authoredLegRig && facing < 0) {
+            this._updateUprightCore(x, y, s, 1, pose, walkPhase, combatBlend, lean, moveBlend, liftScale, runBlend);
+            this._mirrorUpright(x);
+            return;
+        }
+        this._updateUprightCore(x, y, s, facing, pose, walkPhase, combatBlend, lean, moveBlend, liftScale, runBlend);
+    }
+
+    // Temporarily patches this._<key> private fields (and this._torsoSockets
+    // entries) to the faceLeftOverrides values for the duration of `fn`, then
+    // restores the facing>=0 values — so the SAME skeleton instance still
+    // renders correctly if it's ever asked for facing>=0 later (rig-tuner's
+    // toggle, or a wrestler that turns around mid-match).
+    _withFaceLeftOverrides(fn) {
+        const o = this._faceLeftOverrides;
+        const snapshot = {};
+        for (const key of Object.keys(o)) {
+            if (key === 'rigProfile') continue;
+            snapshot[key] = this['_' + key];
+            this['_' + key] = o[key];
+        }
+        let socketsSnapshot = null;
+        if (o.rigProfile?.sockets) {
+            socketsSnapshot = { ...this._torsoSockets };
+            Object.assign(this._torsoSockets, o.rigProfile.sockets);
+        }
+        try {
+            fn();
+        } finally {
+            for (const key of Object.keys(snapshot)) this['_' + key] = snapshot[key];
+            if (socketsSnapshot) this._torsoSockets = socketsSnapshot;
+        }
+    }
+
+    // Mirrors the fully-assembled canonical (facing=1) render about the
+    // wrestler's own world x — see updateUpright's comment above for why.
+    // A horizontal reflection: negate each part's x offset from the mirror
+    // line, negate its rotation, and toggle flipX (the standard sprite-
+    // mirroring trick — flipX alone would show canonical poses backwards
+    // without also negating rotation, and rotation alone would leave every
+    // part's own texture unflipped).
+    _mirrorUpright(x) {
+        const mirrorImg = img => {
+            if (!img) return;
+            img.x = 2 * x - img.x;
+            img.rotation = -img.rotation;
+            img.flipX = !img.flipX;
+            // Every limb part uses a symmetric origin (0.5, ...), where
+            // 1 - originX is a no-op — but the head's origin comes from
+            // headAnchorFrac (opt-in, off-center: u=0.588 for George), which
+            // pins the anchor to a specific FEATURE of the art (the neck),
+            // not the quad's center. flipX mirrors the drawn pixels but never
+            // touches origin, so without this the anchor stays glued to the
+            // same quad-fraction while the art underneath it flips — the
+            // anchor point ends up sampling a different part of the (now
+            // mirrored) head art than the neck, reading as a displaced head.
+            // Mirroring originX alongside the flip keeps it locked to the
+            // same art feature. Found live ("his head is off") after the
+            // initial version of this fix shipped only x/rotation/flipX.
+            if (img.originX !== undefined) img.originX = 1 - img.originX;
+        };
+        for (const img of [
+            this.torso, this.pelvisOverlay, this.head,
+            this.nearUpArm, this.farUpArm, this.nearForearm, this.farForearm,
+            this.nearThigh, this.farThigh, this.nearShin, this.farShin,
+            this.nearBoot, this.farBoot,
+        ]) mirrorImg(img);
+
+        const mirrorPoint = p => { if (p) p.x = 2 * x - p.x; };
+        mirrorPoint(this.nearFoot);
+        mirrorPoint(this.farFoot);
+        mirrorPoint(this.nearKneeDebug);
+        mirrorPoint(this.farKneeDebug);
+        for (const dbg of [this.nearThighRenderDebug, this.farThighRenderDebug, this.nearShinRenderDebug, this.farShinRenderDebug]) {
+            if (!dbg) continue;
+            dbg.x = 2 * x - dbg.x;
+            dbg.angle = -dbg.angle;
+            dbg.facing = -dbg.facing;
+        }
+        for (const name of Object.keys(this.jointAttachmentPoints ?? {})) {
+            this.jointAttachmentPoints[name].x = 2 * x - this.jointAttachmentPoints[name].x;
+        }
+    }
+
+    _updateUprightCore(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
         this.jointAttachmentMargins = {};
         this.jointAttachmentPoints = {};
         const thighH    = this._thighH * s;
@@ -1244,6 +1400,10 @@ export default class Skeleton {
                 .setPosition(anchorX, anchorY)
                 .setDisplaySize(headR * 2.0 * this._headScale, headDispH)
                 .setFlipX(facing < 0);
+            // See the constructor's _headOriginU comment: flipX never
+            // touches origin, so an off-center headAnchorFrac origin must be
+            // re-mirrored every time facing changes, not just once.
+            if (this._headOriginU !== undefined) this.head.originX = facing < 0 ? 1 - this._headOriginU : this._headOriginU;
             // Record the ACTUAL anchor used to place the head (2026-07-25,
             // Codex review — "Record the actual anchorX/anchorY" — the
             // legacy shoulderX/neckY recorded here previously even when the
@@ -1441,6 +1601,9 @@ export default class Skeleton {
                     : shX;
             }
             this.head.setPosition(anchorX, anchorY).setDisplaySize(headR * 2.0 * this._headScale, headDispH).setFlipX(facing < 0);
+            // See the constructor's _headOriginU comment / the matching fix
+            // in the upright branch above.
+            if (this._headOriginU !== undefined) this.head.originX = facing < 0 ? 1 - this._headOriginU : this._headOriginU;
             // Record the ACTUAL anchor — see updateUpright's matching neck
             // comment. Debug bookkeeping only, no rendering change.
             this._recordJointAttachment('neck', this.head, anchorX, anchorY, 0);

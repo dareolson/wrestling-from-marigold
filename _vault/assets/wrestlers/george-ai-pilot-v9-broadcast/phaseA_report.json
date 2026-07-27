@@ -1,0 +1,96 @@
+{
+  "srcDir": "/Users/home/Documents/wrestling-from-marigold/src/assets/wrestlers/george-ai-pilot-v8",
+  "destDir": "/Users/home/Documents/wrestling-from-marigold/src/assets/wrestlers/george-ai-pilot-v9-broadcast",
+  "parts": [
+    {
+      "name": "torso",
+      "file": "torso.png",
+      "srcW": 619,
+      "srcH": 910,
+      "outW": 142,
+      "outH": 209,
+      "scaleX": 0.2294022617124394,
+      "scaleY": 0.22967032967032966
+    },
+    {
+      "name": "pelvisOverlay",
+      "file": "pelvis_overlay.png",
+      "srcW": 619,
+      "srcH": 910,
+      "outW": 142,
+      "outH": 209,
+      "scaleX": 0.2294022617124394,
+      "scaleY": 0.22967032967032966
+    },
+    {
+      "name": "head",
+      "file": "head.png",
+      "srcW": 262,
+      "srcH": 320,
+      "outW": 114,
+      "outH": 139,
+      "scaleX": 0.4351145038167939,
+      "scaleY": 0.434375
+    },
+    {
+      "name": "upperArm",
+      "file": "upper_arm.png",
+      "srcW": 350,
+      "srcH": 548,
+      "outW": 80,
+      "outH": 126,
+      "scaleX": 0.22857142857142856,
+      "scaleY": 0.22992700729927007
+    },
+    {
+      "name": "nearForearm",
+      "file": "near_forearm.png",
+      "srcW": 322,
+      "srcH": 624,
+      "outW": 64,
+      "outH": 124,
+      "scaleX": 0.19875776397515527,
+      "scaleY": 0.1987179487179487
+    },
+    {
+      "name": "farForearm",
+      "file": "far_forearm.png",
+      "srcW": 370,
+      "srcH": 661,
+      "outW": 62,
+      "outH": 111,
+      "scaleX": 0.16756756756756758,
+      "scaleY": 0.16792738275340394
+    },
+    {
+      "name": "thigh",
+      "file": "thigh.png",
+      "srcW": 401,
+      "srcH": 751,
+      "outW": 66,
+      "outH": 124,
+      "scaleX": 0.16458852867830423,
+      "scaleY": 0.16511318242343542
+    },
+    {
+      "name": "nearShin",
+      "file": "near_shin.png",
+      "srcW": 364,
+      "srcH": 452,
+      "outW": 149,
+      "outH": 185,
+      "scaleX": 0.40934065934065933,
+      "scaleY": 0.4092920353982301
+    },
+    {
+      "name": "farShin",
+      "file": "far_shin.png",
+      "srcW": 364,
+      "srcH": 452,
+      "outW": 149,
+      "outH": 185,
+      "scaleX": 0.40934065934065933,
+      "scaleY": 0.4092920353982301
+    }
+  ]
+}

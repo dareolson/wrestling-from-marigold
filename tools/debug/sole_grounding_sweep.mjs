@@ -13,10 +13,11 @@
 // down to the mat line.
 //
 //   node tools/debug/sole_grounding_sweep.mjs [character]
-//     — defaults george-ai-pilot; only meaningful for a character whose shin
-//       declares soleAnchorFrac (the shipped characters don't, and their
-//       shin images won't carry _soleAnchorFrac, so this reports "not
-//       declared" and exits 0 rather than failing on an inapplicable check).
+//     — defaults george (2026-07-26, promoted-george roster change: george
+//       now carries the authored soleAnchorFrac rig the former george-ai-pilot
+//       lineage did; thesz doesn't declare it, so passing that in reports
+//       "not declared" and exits 0 rather than failing on an inapplicable
+//       check).
 //
 // Acceptance (Codex review): both painted soles within 2px of the mat for
 // idle and every planted sample across a full gait cycle, both facings.
@@ -25,7 +26,7 @@
 
 import { launch } from './harness.mjs';
 
-const CHAR = process.argv[2] || 'george-ai-pilot';
+const CHAR = process.argv[2] || 'george';
 const MAX_SOLE_GAP = 2;
 // Dense walk-phase sweep — samples both feet's planted AND swing portions
 // of a full gait cycle (matches GAIT.STANCE/footGait's 0..2*PI convention).

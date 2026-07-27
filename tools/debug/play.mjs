@@ -92,6 +92,7 @@ const SCENARIOS = {
     },
 
     combo: { // jab → headbutt converts the stagger into a knockdown
+        p1: 'george', // headbutt is george-only (thesz's kit doesn't have it, and thesz is the default P1 since the promoted-george roster change)
         expect: { move: 'headbutt' }, // logged before the delayed sell, so type varies
         async run(h) {
             await approach(h, 85);
@@ -103,6 +104,7 @@ const SCENARIOS = {
     },
 
     elbow: {
+        p1: 'george', // chains through combo, which needs george's headbutt
         expect: { move: 'elbowDrop' },
         async run(h) {
             await SCENARIOS.combo.run(h);
@@ -212,6 +214,7 @@ const SCENARIOS = {
     },
 
     kneeLift: { // hold up + power vs standing, close range — overrides the jab
+        p1: 'george', // kneeLift is george-only (not in thesz's kit)
         expect: { move: 'kneeLift' },
         async run(h) {
             await approach(h, 85);
@@ -235,6 +238,7 @@ const SCENARIOS = {
     },
 
     kneeDrop: { // hold down + power vs a grounded opponent — overrides the elbow drop
+        p1: 'george', // chains through combo, which needs george's headbutt
         expect: { move: 'kneeDrop' },
         async run(h) {
             await SCENARIOS.combo.run(h);
@@ -247,6 +251,7 @@ const SCENARIOS = {
     },
 
     pin: { // jab → headbutt → cover; first fatal cover is always a 2.9 save, so down them again → pinfall
+        p1: 'george', // chains through combo, which needs george's headbutt
         expect: { type: 'pinfall' },
         async run(h) {
             await SCENARIOS.combo.run(h);
@@ -305,9 +310,11 @@ let failed = 0;
 
 for (const name of names) {
     // Fresh page state per scenario: reload, refocus. P2 defaults to
-    // keyboard dummy already — no toggle needed. A scenario can pin a P1/P2
-    // kit (e.g. hammerlock needs thesz/george, not the default brawler) via
-    // its `p1`/`p2` field — set/clear WFM_P1/WFM_P2 before each launch so
+    // keyboard dummy already — no toggle needed. Default P1/P2 is now
+    // thesz/george (2026-07-26, promoted-george roster change; was
+    // brawler/george) — thesz's kit doesn't have headbutt/kneeLift, so any
+    // scenario needing those pins `p1: 'george'` explicitly. A scenario can
+    // pin a P1/P2 kit via its `p1`/`p2` field — set/clear WFM_P1/WFM_P2 before each launch so
     // that doesn't leak into the next scenario in an `all` run.
     const sc = SCENARIOS[name];
     if (sc.p1) process.env.WFM_P1 = sc.p1; else delete process.env.WFM_P1;

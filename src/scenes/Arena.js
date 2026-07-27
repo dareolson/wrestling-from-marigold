@@ -5,16 +5,15 @@ import AIHandler from '../AIHandler.js';
 import CrowdAudio from '../CrowdAudio.js';
 import { george } from '../characters/george.js';
 import { thesz } from '../characters/thesz.js';
-import { georgeAiPilot } from '../characters/george_ai_pilot.js';
-import { georgeAiPilotV2 } from '../characters/george_ai_pilot_v2.js';
-import { georgeAiPilotV4 } from '../characters/george_ai_pilot_v4.js';
-import { georgeAiPilotV5 } from '../characters/george_ai_pilot_v5.js';
 
-// All characters whose PNGs should be preloaded. georgeAiPilot (2026-07-25,
-// George AI art-swap pilot) is a reversible, opt-in comparison config --
-// select it via ?p1=george-ai-pilot / ?p2=george-ai-pilot (see PRESETS
-// below); the shipped george.js definition is untouched.
-const CHARACTERS = [george, thesz, georgeAiPilot, georgeAiPilotV2, georgeAiPilotV4, georgeAiPilotV5];
+// 2026-07-26 (promoted-george roster change): the roster is now just these
+// two. George is the former AI art-swap pilot (v1-v9), flattened and
+// promoted into george.js after Derek's live approval; the entire pilot
+// lineage and the previous hand-drawn George are preserved under `_vault/`
+// (characters + asset folders), not deleted, in case of a future revert.
+// The third placeholder body type ("brawler", Graphics-fallback only, no
+// textures) is vaulted out of the active roster too -- see PRESETS below.
+const CHARACTERS = [george, thesz];
 const PART_FILES  = {
     head: 'head.png', torso: 'torso.png', pelvisOverlay: 'pelvis_overlay.png',
     upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png',
@@ -2734,17 +2733,16 @@ export default class Arena extends Phaser.Scene {
         const input1 = new InputHandler('keyboard', keys1);
         const input2 = new InputHandler('keyboard', keys2);
 
-        // Kit + AI presets. Defaults preserve the classic card (brawler vs
-        // George); ?p1=thesz / ?p2=thesz (WFM_P1/WFM_P2 through the debug
-        // harness) swap a side for matchup sims. Old-TV booking rule: one man
-        // light, one man dark, so the grayscale broadcast filter never lets
-        // two overlapping bodies read as one.
+        // Kit + AI presets. Roster is just these two (2026-07-26,
+        // promoted-george roster change — the "brawler" placeholder body
+        // type and the entire george-ai-pilot v1-v9 comparison lineage are
+        // vaulted out; see `_vault/` and this file's CHARACTERS comment
+        // above). Default card is Lou Thesz vs George; ?p1=/?p2= (WFM_P1/
+        // WFM_P2 through the debug harness) still swap a side for sims.
+        // Old-TV booking rule: one man light, one man dark, so the
+        // grayscale broadcast filter never lets two overlapping bodies read
+        // as one.
         const PRESETS = {
-            brawler: {
-                name: 'BRAWLER', personality: 'brawler', idlePose: 'brawlerIdle',
-                skin: 0xe0b088, trunks: 0x8c9cc8,
-                moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
-            },
             george: {
                 name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
                 skin: 0xa87858, trunks: 0x1a1a1a,
@@ -2759,51 +2757,9 @@ export default class Arena extends Phaser.Scene {
                 moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'theszPress', 'hammerlock', 'backBodyDrop', 'kneeDrop'],
                 textures: thesz.textures,
             },
-            // George AI art-swap pilot (2026-07-25) — same kit/personality as
-            // george, new AI-generated art via george_ai_pilot.js's textures
-            // (dynamic-pelvis hip sockets + headAnchorFrac). Reversible: this
-            // does not touch the `george` preset above. Comparison only —
-            // Derek has not approved this as a live-textures swap.
-            'george-ai-pilot': {
-                name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
-                skin: 0xa87858, trunks: 0x1a1a1a,
-                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
-                textures: georgeAiPilot.textures,
-            },
-            // Versioned hinge-art candidate. Kept separate until the focused
-            // live-walk/lockup visual gate passes; george-ai-pilot remains the
-            // untouched baseline for direct comparison.
-            'george-ai-pilot-v2': {
-                name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
-                skin: 0xa87858, trunks: 0x1a1a1a,
-                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
-                textures: georgeAiPilotV2.textures,
-            },
-            // v4 modular-source candidate (2026-07-25) — surgical torso/
-            // trunks + shared-upper-arm + distinct near/far-forearm repair
-            // over v2, from Derek-approved replacement source art. Kept
-            // separate from v1/v2 until Derek's visual approval; those
-            // remain untouched comparison points.
-            'george-ai-pilot-v4': {
-                name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
-                skin: 0xa87858, trunks: 0x1a1a1a,
-                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
-                textures: georgeAiPilotV4.textures,
-            },
-            // v5 arm-length correction candidate (2026-07-25) — re-cuts v4's
-            // upper arm and both forearms at their real elbow transitions
-            // (Codex's follow-up review: v4's arms read much too long).
-            // Kept separate from v1/v2/v4 until Derek's visual approval;
-            // those remain untouched comparison points.
-            'george-ai-pilot-v5': {
-                name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
-                skin: 0xa87858, trunks: 0x1a1a1a,
-                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
-                textures: georgeAiPilotV5.textures,
-            },
         };
         const q  = new URLSearchParams(location.search);
-        const c1 = this._preset1 = PRESETS[q.get('p1')] ?? PRESETS.brawler;
+        const c1 = this._preset1 = PRESETS[q.get('p1')] ?? PRESETS.thesz;
         const c2 = this._preset2 = PRESETS[q.get('p2')] ?? PRESETS.george;
 
         this.w1 = new Wrestler(this, 330, 360, c1.skin, c1.trunks, input1, c1.moveSet, c1.textures ?? {});

@@ -91,7 +91,7 @@ export const POSES = {
     sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10 }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
     powerIdle:      { lLeg: -0.18, rLeg: 0.13,  lArm: 0.10,  rArm: 0.59, lean: 0.09, crouch: 0.22 }, // wide, imposing — arms hanging low (rig-tuner pass 2026-07-26, live export; supersedes the prior 2026-07-26 values — used by shipped george via idlePose: 'powerIdle', see Arena.js/george.js; formerly also shared across the now-vaulted george-ai-pilot v1-v9 lineage)
-    theszIdle:      { lLeg: 0.02,  rLeg: 0.14,  lArm: 0.06,  rArm: 0.43, lean: 0.05, crouch: 0.05 }, // Derek rig-tuner pass 2026-07-25 (supersedes 2026-07-15 -0.01/-0.19); legs render visible (see thesz.js's far-leg-offset comments), not stacked/hidden
+    theszIdle:      { lLeg: 0.04,  rLeg: 0.14,  lArm: 0.04,  rArm: 0.17, lean: 0.05, crouch: 0.05, lForearm: 0.8, lShin: -0.11, rShin: -0.06 }, // Derek rig-tuner export 2026-07-30. Arms low (lArm 0.04) so the corrected shoulder seam shows; lForearm bend + shin bends shape the rest stance.
     tauntArmsWide:  { lLeg: 0.22,  rLeg:-0.20,  lArm: 2.20,  rArm: 2.00, lean:-0.16 }, // arms raised wide, chest out to the crowd
     ropeOneTaunt:   { lLeg: 0.08,  rLeg:-0.06,  lArm: 1.80,  rArm:-1.80  }, // one arm raised to crowd, other grips rope
     axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10, lean:-0.22 }, // arms overhead, back arched for the drop
@@ -333,6 +333,11 @@ export default class Wrestler {
         this.skeleton        = new Skeleton(scene, skinCol, trunksCol, textures);
         this.combatBlend     = 0;
         this._evadeCooldown  = 0;
+        // Handle for a move currently driven by the scene MoveRuntime (jab is
+        // the first migrated move). While set, the clip owns this.pose each
+        // frame; anything else that claims the pose (tweenPose) cancels it, so
+        // an interrupted move can't keep animating or fire a late impact.
+        this._activeJab      = null;
         // Render-only overall size multiplier (2026-07-19, real-world height
         // calibration — see george.js/thesz.js) — folded into draw()'s local
         // `s` only, never into the `s` getter below, so it never touches
@@ -361,9 +366,55 @@ export default class Wrestler {
 
     // ── Pose helpers ──────────────────────────────────────────────────────────
 
+    // Consume one sampled frame from the scene MoveRuntime. This is the seam
+    // MoveRuntime.applySample looks for, so the clip writes straight into the
+    // same live pose object draw() already reads. Pose channels merge in place
+    // (extended channels the clip doesn't author — lForearm/lShin/… — pass
+    // through untouched, matching the legacy tweenPose path). The clip's
+    // semantic `strikingForearm` slot is resolved to the correct near/far
+    // forearm here, from facing.
+    applyAnimationSample(sample) {
+        if (sample.pose) Object.assign(this.pose, sample.pose);
+        if (sample.parts) this.skeleton.setPartVariants(this._resolveVariantSlots(sample.parts));
+    }
+
+    // Map any semantic variant slots a clip authors onto the skeleton's real
+    // render slots. `strikingForearm` follows the punching arm: the jab drives
+    // lArm, which the skeleton renders as the NEAR arm facing right and the FAR
+    // arm facing left (Skeleton.js's [far,near] arm mapping). Binding the fist
+    // to the striker keeps it correct in both facings and both wrestler slots —
+    // never a screen-space correction that only holds facing right.
+    _resolveVariantSlots(parts) {
+        const selection = {};
+        for (const [slot, name] of Object.entries(parts)) {
+            if (slot === 'strikingForearm') {
+                selection[this.facing >= 0 ? 'nearForearm' : 'farForearm'] = name;
+            } else {
+                selection[slot] = name;
+            }
+        }
+        return selection;
+    }
+
+    // Cancel any MoveRuntime-driven move on this wrestler. Cancellation removes
+    // the clip handle (no further impact events) and MoveRuntime resets its
+    // part variants to base; the caller that's taking over the pose sets the
+    // new stance. Safe to call when nothing is active.
+    _cancelActiveMove(reason = 'interrupted') {
+        if (this._activeJab) {
+            this.scene.moveRuntime?.cancel(this._activeJab, reason);
+            this._activeJab = null;
+        }
+    }
+
     // Tween this.pose toward a target (pose name string or {lLeg,rLeg,lArm,rArm} object).
     // Kills any in-flight pose tween first so sequences don't stack.
     tweenPose(target, duration, ease = 'Linear', onComplete) {
+        // A tweenPose means something other than a clip now owns the stance —
+        // getting hit and selling, blocking, a follow-up move, the idle
+        // settle. Release any active clip so the two don't fight over the pose
+        // and so an interrupted strike stops before its impact frame.
+        this._cancelActiveMove('pose-override');
         this.scene.tweens.killTweensOf(this.pose);
         const p = typeof target === 'string' ? POSES[target] : target;
         // Normalize so lean/crouch always tween back to 0 for poses that omit them
@@ -875,10 +926,36 @@ export default class Wrestler {
 
     // ── Move execution ────────────────────────────────────────────────────────
 
+    // Jab — first move on the seekable clip runtime (RIG_AND_MOVE_PIPELINE.md).
+    // The clip owns choreography and the impact TIMING; gameplay below still
+    // decides legality, damage, stamina, and selling. The impact marker sits at
+    // the same 83ms the old delayedCall used, so the drain/sell/stagger feel is
+    // unchanged. A missing runtime (unit-test construction) falls back to the
+    // legacy pose-sequence + timer path so Wrestler stays usable standalone.
     _doJab(other) {
+        const runtime = this.scene.moveRuntime;
+        if (!runtime) { this._doJabLegacy(other); return; }
+        // A fresh jab supersedes any in-flight one, so repeated presses can't
+        // leave overlapping handles or stack two impacts.
+        this._cancelActiveMove('rejab');
+        this._activeJab = runtime.play('jab', { attacker: this }, {
+            onEvent: (event) => {
+                if (event.type !== 'impact') return;
+                // Drain and sell fire at the authored impact frame so a
+                // defender who reads the wind-up can still slip it with an evade.
+                if (other.state === 'evading') {
+                    this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'jab' });
+                    return;
+                }
+                other._drain(STAMINA_DRAIN.jab);
+                other._doSell('sellHead', 110, () => other.startStagger());
+            },
+            onComplete: () => { this._activeJab = null; },
+        });
+    }
+
+    _doJabLegacy(other) {
         this._runPoseSequence(MOVE_DEFS.jab.poseSeq);
-        // Drain and sell fire at full extension (after jabCock phase) so a
-        // defender who reads the wind-up can still slip it with an evade
         this.scene.time.delayedCall(83, () => {
             if (other.state === 'evading') {
                 this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'jab' });

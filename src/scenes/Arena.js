@@ -5,6 +5,9 @@ import AIHandler from '../AIHandler.js';
 import CrowdAudio from '../CrowdAudio.js';
 import { george } from '../characters/george.js';
 import { thesz } from '../characters/thesz.js';
+import { enumerateCharacterAssets } from '../rig/partVariants.js';
+import MoveRuntime from '../animation/MoveRuntime.js';
+import { jabClip } from '../animation/clips/jab.js';
 
 // 2026-07-26 (promoted-george roster change): the roster is now just these
 // two. George is the former AI art-swap pilot (v1-v9), flattened and
@@ -14,15 +17,6 @@ import { thesz } from '../characters/thesz.js';
 // The third placeholder body type ("brawler", Graphics-fallback only, no
 // textures) is vaulted out of the active roster too -- see PRESETS below.
 const CHARACTERS = [george, thesz];
-const PART_FILES  = {
-    head: 'head.png', torso: 'torso.png', pelvisOverlay: 'pelvis_overlay.png',
-    upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png',
-    nearShin: 'near_shin.png', farShin: 'far_shin.png',
-    // nearForearm/farForearm (2026-07-25, George AI pilot v4 — distinct
-    // near/far hand orientations): same generic opt-in pattern as
-    // nearShin/farShin above.
-    nearForearm: 'near_forearm.png', farForearm: 'far_forearm.png',
-};
 
 // Named crowd extras: each is one chroma-keyed multi-frame reference sheet
 // cut via tools/audience-cutter into src/assets/audience/<slug>/frame1..N.png
@@ -585,16 +579,9 @@ export default class Arena extends Phaser.Scene {
 
     preload() {
         for (const char of CHARACTERS) {
-            // Only load actual body-part textures — char.textures can also carry
-            // non-file metadata (e.g. headScale) that isn't a loadable part.
-            for (const part of Object.keys(PART_FILES)) {
-                const entry = char.textures[part];
-                if (!entry) continue;
-                // entry is either a plain texture key or { key, box } (see
-                // Skeleton.js's resolveTexEntry) — only the key is a load path.
-                const key = typeof entry === 'string' ? entry : entry.key;
-                this.load.image(key, `src/assets/wrestlers/${char.id}/${PART_FILES[part]}`);
-            }
+            // Base parts and move/expression variants share one manifest seam.
+            // Non-file rig metadata is filtered by enumerateCharacterAssets.
+            for (const asset of enumerateCharacterAssets(char)) this.load.image(asset.key, asset.file);
         }
         for (const extra of CROWD_EXTRAS) {
             for (let i = 1; i <= extra.frames; i++) {
@@ -2770,6 +2757,15 @@ export default class Arena extends Phaser.Scene {
         this.w2.facing   = -1;
         this.w2.idlePose = c2.idlePose;
 
+        // Seekable move-animation runtime, driven by this Scene's own clock in
+        // _tickGame — no second timer. Only the jab is migrated so far (see
+        // RIG_AND_MOVE_PIPELINE.md); every other move still uses the legacy
+        // tween/timer path. shutdown() cancels active clips and clears the
+        // registry so nothing survives a Scene restart.
+        this.moveRuntime = new MoveRuntime();
+        this.moveRuntime.register(jabClip);
+        this.events.once('shutdown', () => this.moveRuntime.shutdown());
+
         // Both P1 and P2 default to keyboard (Derek, 2026-07-12 — loading the
         // game for a quick look shouldn't immediately throw them into a
         // fight). Keys 1 and 2 toggle each player between keyboard and AI —
@@ -3135,6 +3131,11 @@ export default class Arena extends Phaser.Scene {
 
         this._orphanWatchdog(w1, w2, dt);
         this._orphanWatchdog(w2, w1, dt);
+
+        // Advance active move clips last, so their sampled pose is the final
+        // word for the frame (it overrides move()'s idle-drift) and authored
+        // impact markers fire against this frame's already-resolved states.
+        this.moveRuntime.update(dt);
 
         w1.draw();
         w2.draw();

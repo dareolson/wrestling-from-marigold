@@ -1,3 +1,5 @@
+import { resolvePartSelection, textureKey } from './rig/partVariants.js';
+
 // Proportions in unscaled pixels — multiply by s before placing parts.
 // Lengths originally chosen to match the old single-piece stick-figure totals
 // exactly (arm 76, leg 89≈88, torso 112) while splitting at elbow and knee
@@ -545,6 +547,56 @@ export default class Skeleton {
             this.nearUpArm, this.nearForearm,
             this.head,
         ].filter(Boolean);
+
+        // Stable semantic slots are the runtime seam for expression and
+        // move-specific art. Hands and boots are currently baked into the
+        // forearm/shin, so a grip/fist/bent-foot variant replaces that whole
+        // calibrated part while inheriting its anchors and display box.
+        this._textureConfig = textures;
+        this._partImages = {
+            head: this._headIsImage ? this.head : null,
+            torso: this.torso,
+            pelvisOverlay: this.pelvisOverlay,
+            nearUpperArm: this.nearUpArm,
+            farUpperArm: this.farUpArm,
+            nearForearm: this.nearForearm,
+            farForearm: this.farForearm,
+            nearThigh: this.nearThigh,
+            farThigh: this.farThigh,
+            nearShin: this.nearShin,
+            farShin: this.farShin,
+        };
+        this._partBaseDims = Object.fromEntries(
+            Object.entries(this._partImages).map(([slot, image]) => [slot, image?._texDims ? { ...image._texDims } : null]),
+        );
+        this._partVariantState = {};
+    }
+
+    // Apply one complete appearance selection. Omitted slots reset to base,
+    // which makes clip interruption/cleanup deterministic instead of leaving
+    // a fist, grip, hurt face, or bent boot stranded on the wrestler.
+    setPartVariants(selection = {}) {
+        const resolved = resolvePartSelection(this._textureConfig, selection);
+        for (const [slot, img] of Object.entries(this._partImages)) {
+            if (!img) continue;
+            const name = selection[slot] ?? 'base';
+            if (this._partVariantState[slot] === name) continue;
+            const entry = resolved[slot];
+            const key = textureKey(entry);
+            if (!key) continue;
+
+            img.setTexture(key);
+            if (slot !== 'head') {
+                const meta = resolveTexEntry(entry, this._partBaseDims[slot]);
+                img._texDims = meta.dims;
+                img._pivotOffsetFrac = meta.pivot;
+                img._jointPivotFrac = meta.jointPivotFrac;
+                img._distalAnchorFrac = meta.distalAnchorFrac;
+                img._soleAnchorFrac = meta.soleAnchorFrac;
+                img.setOrigin(0.5, meta.jointPivotFrac);
+            }
+            this._partVariantState[slot] = name;
+        }
     }
 
     // Sub-depths enforce far→head→torso→near layering within a single wrestler

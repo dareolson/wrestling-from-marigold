@@ -1,6 +1,8 @@
 # Wrestling from Marigold — Animation Tooling and Plugin Evaluation
 
-**Status:** Reference and purchasing guidance; no dependency is approved by this document  
+**Status:** Reference and purchasing guidance; internal clip/variant foundation
+implemented 2026-07-31 and the first move (`jab`) migrated and shipped; remaining
+move migration (starting with `hammerlock`) still pending
 **Prepared:** 2026-07-25  
 **Evaluated against:** Phaser 4.1.0, Vite 8, JavaScript ES modules, the custom six-PNG articulated rig, paired wrestler choreography, the existing rig tuner, and Playwright diagnostics
 
@@ -40,10 +42,17 @@ Ratings are relative to this project, not judgments of the products generally.
 | Rex ContainerLite | Medium in theory | Low | Explicit Phaser 4 package | Medium–high | **Do not migrate the rig now** |
 | Rive Web runtime | High inside Rive | High inside Rive | No native Phaser path evaluated | Very high | **Not for current wrestlers** |
 
-## 1. Build now: an in-repo Phaser Scene Plugin
+## 1. Built foundation: in-repo move runtime
 
-Create a focused `MoveRuntimePlugin` (or `AnimationClipPlugin`) rather than another
-set of helpers inside `Wrestler`. Phaser's official Scene Plugin API is designed for
+The first dependency-free slice now lives in `src/animation/AnimationClip.js` and
+`src/animation/MoveRuntime.js`, with the asset/variant contract in
+`src/rig/partVariants.js`. It provides validated seekable clips, synchronized
+arbitrary actor roles, deterministic events, cancellation, and appearance cleanup.
+The `jab` is now registered and driven through it in `Arena`/`Wrestler._doJab`
+(shipped 2026-07-31); every other move still runs on the legacy path and migrates
+incrementally, next `hammerlock`, per the gates in `RIG_AND_MOVE_PIPELINE.md`.
+
+Keep it focused rather than adding helpers inside `Wrestler`. Phaser's official Scene Plugin API is designed for
 per-Scene state and exposes `start`, `pause`, `sleep`, `wake`, `shutdown`, and
 `destroy` lifecycle events. Phaser also installs Scene Plugins through game config
 or its Plugin Manager. This is a good match for move playback because every active

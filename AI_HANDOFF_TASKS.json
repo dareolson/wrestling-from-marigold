@@ -1,8 +1,8 @@
 {
-  "description": "Referenceable checklist of open work pulled from AI_HANDOFF.md, FEEL_AUDIT.md's Batch B/C backlog, and BUILDLOG.md's gamepad plan. Not a replacement for those files \u2014 this exists so nothing in the current open set gets silently dropped across sessions/tools. Tick items off by flipping status to 'done' and adding resolved_note + resolved_commit; keep finished items in the file for the record rather than deleting them.",
+  "description": "Referenceable checklist of open work pulled from AI_HANDOFF.md, FEEL_AUDIT.md's Batch B/C backlog, and BUILDLOG.md's gamepad plan. Not a replacement for those files — this exists so nothing in the current open set gets silently dropped across sessions/tools. Tick items off by flipping status to 'done' and adding resolved_note + resolved_commit; keep finished items in the file for the record rather than deleting them.",
   "generated": "2026-07-14",
   "generated_by": "Claude (Sonnet 5)",
-  "last_updated": "2026-07-26",
+  "last_updated": "2026-08-03",
   "last_updated_by": "Claude",
   "status_values": [
     "open",
@@ -21,7 +21,7 @@
       "owner": "Claude or Codex (implement), Derek (visual approval)",
       "source": "COHESIVE_BODY_RIG_BLUEPRINT.md + AI_HANDOFF.md 2026-07-25 active assignment",
       "detail": "Replace the remaining display-box/pivot approximation with an incremental two-anchor skin binding. Each textured limb maps its painted proximal and distal anchors onto shared bone joints; torso sockets own shoulders, hips, and neck; constraints modify bones rather than sprite X/Y. Preserve the current Phaser renderer, artwork, gameplay, and draw ordering.",
-      "next_step": "Elbows done (both characters, Derek-approved). Knees investigated, no fix needed (dense ink-gap sweep already 0.00px -- tools/debug/knee_ink_gap_sweep.mjs). Phase C started: neck + shoulder sockets landed for both characters via new rigProfile.sockets mechanism (Skeleton.js's _socketPoint/_torsoSockets), verified byte-identical to the prior formula chain (0.000034px max diff across all poses/facings -- a pure refactor, not a correction). Hip sockets (dynamic-pelvis design, Skeleton.js's _solveTorsoOrigin) and grounded/get-up torso rooting landed 2026-07-25 (later) as an opt-in mechanism -- built for and verified against the george-ai-pilot task below (see that task), gated on a character supplying both nearHip and farHip sockets. George's and Thesz's own rigProfile.sockets still has neck/shoulders only, so the mechanism exists but is unused by the shipped characters until someone measures their own hip sockets -- not done in this pass. See AI_HANDOFF.md's 2026-07-25 'reply to Codex', 'Phase C', and 'George AI art-swap pilot' entries."
+      "next_step": "Elbows done (both characters, Derek-approved). Knees investigated, no fix needed (dense ink-gap sweep already 0.00px -- tools/debug/knee_ink_gap_sweep.mjs). Phase C started: neck + shoulder sockets landed for both characters via new rigProfile.sockets mechanism (Skeleton.js's _socketPoint/_torsoSockets), verified byte-identical to the prior formula chain (0.000034px max diff across all poses/facings -- a pure refactor, not a correction). Hip sockets (dynamic-pelvis design, Skeleton.js's _solveTorsoOrigin) and grounded/get-up torso rooting landed 2026-07-25 (later) as an opt-in mechanism -- built for and verified against the george-ai-pilot task below (see that task), gated on a character supplying both nearHip and farHip sockets. George's and Thesz's own rigProfile.sockets still has neck/shoulders only, so the mechanism exists but is unused by the shipped characters until someone measures their own hip sockets -- not done in this pass. See AI_HANDOFF.md's 2026-07-25 'reply to Codex', 'Phase C', and 'George AI art-swap pilot' entries.\n\n2026-07-28..31 update (v2-layer-standardization Lou re-cut): Thesz's own leg binding advanced from display-box approximation to painted-anchor binding -- thigh pivotOffsetFrac -0.0767 and shin pivotOffsetFrac -0.1167 seat the off-center painted hip/knee on the true joints, and upperArm.distalAnchorFrac was re-measured (0.5846 -> 0.4923) off the new PNG. soleAnchorFrac is recorded on the shin but stays INERT: Thesz still runs the legacy leg path (authoredSoles/dynamic-pelvis hip sockets remain George-pilot-only and unused by shipped characters). So elbows + knees + neck/shoulder sockets are bound for both shipped characters, but the full two-anchor hip/sole binding for Thesz's legs is still pending a hip-socket measurement. Task remains OPEN for that."
     },
     {
       "id": "george-ai-pilot",
@@ -117,7 +117,7 @@
       "title": "Art/cutter decision: remove the zero-margin knee-seam problem at the source",
       "category": "art",
       "priority": "medium",
-      "status": "decision-needed",
+      "status": "done",
       "owner": "Derek",
       "source": "AI_HANDOFF.md, Claude entry 2026-07-14 'first live tuning session'",
       "detail": "The knee cap currently tucks with zero margin against the thigh's closed dark outline -- any future shin-down nudge re-exposes the seam. Two options parked for Derek: unlined overlap zone on the thigh's knee end, or a soft-faded shin cap (drawn or as a cutter post-processing step). Either removes the zero-margin fragility entirely instead of re-tuning around it every session.",
@@ -127,18 +127,20 @@
       ],
       "blocks": [
         "natural-walk-shuffle-prototype"
-      ]
+      ],
+      "resolved_note": "Resolved together with knee-pivot-structural-fix (its blocked_by). The zero-margin knee-seam fragility is removed at the source: the re-cut thigh ends in a rounded knee-shaped cap (not a flat zero-margin cutoff) and the shin's own painted knee/overlap covers the joint, with the rig now rotating both about their true joints via pivotOffsetFrac. No per-session offset re-tuning around the seam is required to keep it closed: knee_ink_gap_sweep is 0.00px across the dense sweep, both facings. Verified in-browser (walking-stride gait renders, tools/debug/lou_preview.mjs) 2026-08-03."
     },
     {
       "id": "knee-pivot-structural-fix",
       "title": "Re-cut/re-pad Thesz's thigh.png so its knee anchor centers (Codex's decision)",
       "category": "art",
       "priority": "high",
-      "status": "decision-needed",
+      "status": "done",
       "owner": "Derek (approve the crop operation), then Claude executes",
       "source": "AI_HANDOFF.md 2026-07-15 'knee audit' entry + Codex's 2026-07-15 decision entry + Claude's reply",
       "detail": "Proved, not just suspected: the skeleton's true knee joint, the shin's render origin, and the artwork's own intended knee point do not stay coincident across poses (see the 2026-07-15 'knee audit' entry for full numbers -- thigh art-implied knee point drifts 5.4-15.8px near / 11.8-20.1px far across one walk cycle; thigh-vs-shin art gap swings 3.7-14.7px near / 3.9-19.9px far, a 4-5x range). Codex decided the direction: repair the asset (thigh.png is 22.3% of its canvas width off-center at the knee edge; shin is only 0.3% off, essentially fine), not the runtime rig -- a rig-side rotating correction would bake a crop accident into permanent per-character metadata and risk pushing the mismatch to the ankle/boot instead. Explicit acceptance criteria set: preserve visible ink/scale/vertical extent, change only transparent padding/crop; bottom-edge knee center within 1% of canvas width from center; thigh-vs-shin art-knee separation <=3px through idle + the sampled walk cycle, both facings, per tools/debug/knee_pivot_audit.mjs; do NOT retune legOffsetX/shin offsets/pose angles as a workaround before re-running the audit, since that would mask whether the crop fix worked; if the 3px bound can't be hit with a centered asset while preserving ink, stop and report back rather than forcing it -- fallback in that case is explicit normalized joint-anchor metadata, not more fixed nudges.",
-      "next_step": "Waiting on Derek's approval of the transparent-padding/crop operation itself (nothing executed yet). Once approved: Claude re-pads thigh.png (ink/scale/extent unchanged, crop/padding only), reruns tools/debug/knee_pivot_audit.mjs thesz to confirm the acceptance numbers, runs the full verification suite, then Derek does the in-browser visual sign-off."
+      "next_step": "Waiting on Derek's approval of the transparent-padding/crop operation itself (nothing executed yet). Once approved: Claude re-pads thigh.png (ink/scale/extent unchanged, crop/padding only), reruns tools/debug/knee_pivot_audit.mjs thesz to confirm the acceptance numbers, runs the full verification suite, then Derek does the in-browser visual sign-off.",
+      "resolved_note": "Resolved by the v2-layer-standardization Lou re-cut (2026-07-28..31). thigh.png was re-cut as a deterministic DISTAL trim of the standardized 150x150 source to 150x126 (tools/debug/lou_thigh_knee_crop.py): rows at/above the anatomical knee (~row 111) pass through byte-identical (kneecap volume fully preserved) and only the hooked overlap tail below the knee is rounded into a knee-shaped cap. Guarded permanently by tests/theszThighKnee.test.js. NOTE ON PATH TAKEN: the fix was NOT the originally-scoped crop-only-with-no-rig-metadata approach. The load-bearing piece is the rig-side pivotOffsetFrac (thigh -0.0767, shin -0.1167) that seats the off-center painted hip/knee on the true joint so the limb rotates about it; distalAnchorFrac was deliberately NOT routed to the shin (its report.json 'distal' was the canvas bottom = overlap tail, which over-extends and detaches the near knee). Acceptance re-verified: knee_pivot_audit trueKnee-vs-artShin ~1px near, knee_ink_gap_sweep 0.00px across 42 samples both facings, joint_attachment_audit 0 knee fails. Derek LOCKED the accompanying tuner offsets 2026-07-31."
     },
     {
       "id": "natural-walk-shuffle-prototype",
@@ -205,11 +207,12 @@
       "title": "Hard horizontal knee seam still visible in parts of the walking stride",
       "category": "rig",
       "priority": "medium",
-      "status": "open",
+      "status": "done",
       "owner": "Derek (art cleanup planned)",
       "source": "AI_HANDOFF.md, Codex entry 2026-07-14 'knee connections break on facing changes', closing note",
       "detail": "Distinct from the facing-mirroring bug above: Codex's live four-frame game check still showed the cap seam mid-stride even accounting for facing. Derek's planned art cleanup on the closed knee outline/cap addresses this; related to but not solved by lou-knee-art-cleanup or mirrored-knee-tilt-fix alone.",
-      "next_step": "Runtime geometry now passes the 2026-07-24 all-joint audit with at least 1.8px coverage across both facings and sampled poses. This item remains open only for the separate visible ink/cap seam: Derek reviews the walking knee in-browser and, if the line remains visible, handles it as source-art/crop cleanup rather than another runtime offset."
+      "next_step": "Runtime geometry now passes the 2026-07-24 all-joint audit with at least 1.8px coverage across both facings and sampled poses. This item remains open only for the separate visible ink/cap seam: Derek reviews the walking knee in-browser and, if the line remains visible, handles it as source-art/crop cleanup rather than another runtime offset.",
+      "resolved_note": "The hard horizontal knee/cap seam mid-stride is gone. The v2 re-cut's rounded knee cap plus the shin pivotOffsetFrac (-0.1167) keep the painted knee on the true knee through the walk cycle, so there is no flat cap edge escaping the shin. Verified 2026-08-03: knee_ink_gap_sweep thesz max 0.00px across 42 near/far angle samples both facings, and live gait screenshots (lou_preview.mjs gait0/gait2, both facings) show no seam. No remaining source-art cleanup needed."
     },
     {
       "id": "rig-tuner-derek-signoff",
@@ -424,5 +427,6 @@
         "feel-b2-hitstop"
       ]
     }
-  ]
+  ],
+  "jab_migration_note": "2026-07-31: `jab` became the first move migrated to the seekable clip runtime (src/animation/clips/jab.js, driven by Wrestler._doJab; Arena registers jabClip). It is wired into shipped gameplay for both Lou and George, no longer 'pending'. Legacy fallback (_doJabLegacy) retained only for unit-test construction. hammerlock is the next intended migration (see RIG_AND_MOVE_PIPELINE.md)."
 }

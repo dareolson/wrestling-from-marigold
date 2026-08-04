@@ -69,7 +69,13 @@ The game applies a **grayscale + scanline broadcast filter** over everything. Th
 
 ## Expressions
 
-> **Not yet wired into code.** `Skeleton.js` currently uses a single static head texture — there is no expression-swap logic anywhere in the rig. Drawing this full set now means banking assets ahead of the code. Confirm with Claude before investing time here for a v1 character; George's first implementation only needs one `head.png`.
+> **Pipeline support exists; shipped art/state mapping does not yet.** Head
+> variants can now be declared in `character.textures.variants` and selected
+> by a seekable clip through `Skeleton.setPartVariants()`. The one migrated move
+> (`jab`) swaps only a forearm, not a head, and George/Lou still ship one head,
+> so draw the neutral head first and add expressions alongside the move that
+> will actually use them.
+> See `RIG_AND_MOVE_PIPELINE.md`.
 
 Each character has multiple head sprites. The engine swaps them based on match state and the specific move being performed. Draw the neutral pose head first, then do expressions as variations — same hair, same structure, only the face changes.
 
@@ -110,7 +116,13 @@ Ten expressions for George is not overkill — he's a performer and expressions 
 
 ## Sprite Variants — Body Parts
 
-> **Not yet wired into code.** No hand or foot texture keys exist in `Skeleton.js` — `foot_bent`, `hand_grip`, etc. have no swap logic. Same caveat as Expressions above: this is target design, not a v1 requirement.
+> **Whole-part swapping is wired; separate hand/foot bones are not.** Because
+> hands and boots are baked into the existing art, a fist/grip replaces the
+> relevant `nearForearm`/`farForearm`, and a bent foot replaces the relevant
+> `nearShin`/`farShin`. Variants inherit the calibrated base part geometry.
+> Do not draw isolated 90×90 hand or 110×100 foot files for the current rig.
+> Draw aligned forearm/shin replacements unless a later move proves an extra
+> hand or foot bone is necessary.
 
 Beyond the head, specific body parts have variants that swap in during certain moves. These are drawn as additional PNG files and referenced by move name in the engine.
 
@@ -155,7 +167,7 @@ Work at whatever size feels comfortable in Procreate or Photoshop. The game code
 | Thigh | 150 × 150 px | Pivot at top-center (hip); bottom edge is the knee joint |
 | Shin | 150 × 230 px | Own pivot at top-center (knee); boot baked in; renders **on top** of the thigh at the joint — see Joint Seams |
 
-**Future, not yet wired:**
+**Deferred separate-bone assets (not used by the current whole-part variant path):**
 
 | Part | Export canvas | Notes |
 |---|---|---|

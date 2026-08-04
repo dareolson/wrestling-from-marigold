@@ -155,6 +155,47 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-08-03 (Batch close-out: jab migrated to the seekable clip runtime and shipped; Lou v2 art/rig re-cut verified and committed; rig tasks reconciled) — Claude
+
+Closed out the accumulated dirty worktree (rig/move pipeline + jab migration + Lou
+Thesz v2 art/rig re-cut). Node 22 via `.nvmrc`. No new gameplay/art redesign — only
+verification, doc/handoff reconciliation, and intentional commits of the existing work.
+
+**Jab migration (new, shipped).** `jab` is the first move actually wired to the
+seekable clip runtime: `src/animation/clips/jab.js`, played by `Wrestler._doJab`
+(with `_doJabLegacy` retained only for unit-test construction where no `MoveRuntime`
+exists), registered in `Arena` and advanced by `moveRuntime.update(dt)` in `_tickGame`;
+`shutdown` cancels active clips. The clip owns choreography + impact *timing* only;
+gameplay still owns legality/damage/stamina/selling. The impact marker sits at the
+same 83ms the old `delayedCall` used, so game feel is unchanged. The striking forearm
+is bound to a semantic `strikingForearm` slot that `_resolveVariantSlots` maps to
+near/far by facing (no `fist` art yet — resolves to base, a safe no-op). This
+updates the docs' prior "first move migration pending" language.
+
+**Verification (all green, Node 22).**
+- `npm test` 79/79; `npm run rig:validate` (george 9 / thesz 6 textures); `npm run build` OK.
+- Jab: impact fires exactly once at 30/60/120 Hz, seeking never emits, cancel
+  before/after impact is damage-safe, appearance resets on cancel/shutdown, both
+  facings resolve — `tests/jabClip.test.js` + `tools/debug/jab_preview.mjs`, and live
+  `debug:play -- jab` for Lou and George.
+- `debug:play -- all` PASS for Lou (P1), George (P1), and default roster (16 scenarios each).
+- Lou seams (`joint_attachment_audit`, `knee_ink_gap_sweep thesz`, live `lou_preview.mjs`
+  both facings): knees 0.00px, neck/shoulder/idle/get-up 0.00px, George 0.00px (no regression).
+  The only audit fails are near/far elbow separation (~3–5px) at the three overhead-arm
+  extremes (axeHandleUp, hammerlockCrank, tauntArmsWide) — the documented, Derek-accepted
+  fixed-forearm-offset tradeoff (chose idle-hand seating over overhead attachment), not a
+  regression. Taunt renders correctly in-game; the empty-ring frames from `lou_preview.mjs`
+  are a preview-crop artifact in that debug tool, not a shipping defect.
+
+**Handoff reconciliation (`AI_HANDOFF_TASKS.json`).** `knee-pivot-structural-fix`,
+`lou-knee-art-cleanup`, and `thesz-shin-cap-seam` → **done** (resolved by the v2 re-cut:
+distal thigh trim to 150×126 guarded by `tests/theszThighKnee.test.js`, plus rig-side
+`pivotOffsetFrac` seating the off-center painted hip/knee on the true joints; note the
+path taken differs from the originally-scoped crop-only decision — see each task's
+`resolved_note`). `cohesive-body-rig-binding` stays **open**: Thesz's leg binding
+advanced to painted anchors, but full two-anchor hip/sole binding still needs a measured
+hip socket (`soleAnchorFrac` recorded but inert on the legacy leg path).
+
 ### 2026-07-26 (George AI pilot promoted to shipped George; roster trimmed to Lou vs George; two real facing-mirror bugs found and fixed; committed) — Claude
 
 Following the v9-broadcast Phase A review below, Derek made the call: adopt

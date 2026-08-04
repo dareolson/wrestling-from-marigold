@@ -32,7 +32,7 @@ export default class MoveRuntime {
         return clip;
     }
 
-    play(clipId, bindings, { rate = 1, onEvent = null, onComplete = null } = {}) {
+    play(clipId, bindings, { rate = 1, onEvent = null, onComplete = null, onCancel = null } = {}) {
         const clip = this._clips.get(clipId);
         if (!clip) throw new Error(`Unknown animation clip "${clipId}"`);
         const handle = {
@@ -42,7 +42,15 @@ export default class MoveRuntime {
             time: 0,
             rate,
             onEvent,
+            // Natural completion and cancellation are DIFFERENT outcomes and get
+            // different callbacks. onComplete fires only when the clip reaches
+            // its duration (release drains, graceful recovery are legitimate).
+            // onCancel fires when the move is torn down early — through
+            // cancel/cancelTarget/shutdown or a bound actor claiming its pose —
+            // and must NOT run any completion-only gameplay (no release damage,
+            // no "the hold finished" state). A move must never receive both.
             onComplete,
+            onCancel,
             cancelled: false,
         };
         this._active.set(handle.id, handle);
@@ -80,9 +88,16 @@ export default class MoveRuntime {
     }
 
     cancel(handle, reason = 'cancelled') {
+        // The _active.delete guard makes cancellation idempotent and re-entrancy
+        // safe: if an onCancel handler (or the pose-claim it triggers) loops back
+        // into cancel for the same handle, the second delete returns false and we
+        // no-op instead of firing onCancel twice or re-releasing.
         if (!handle || !this._active.delete(handle.id)) return false;
         handle.cancelled = true;
         handle.reason = reason;
+        // Logical teardown first (clear gameplay handles/state), then visual
+        // (reset part variants on any target this handle no longer owns).
+        handle.onCancel?.(handle);
         this._release(handle);
         return true;
     }

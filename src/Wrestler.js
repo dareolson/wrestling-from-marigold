@@ -237,15 +237,16 @@ export const MOVE_DEFS = {
                               { p: 'ankleLockHold',  dur: 800, e: 'Linear'        },
                               { p: 'idle',           dur: 200, e: 'Linear'        }] },
     // ── Four-move blueprint (Codex, 2026-07-24; approved by Derek) ─────────────
-    // Runtime execution of hammerlock plays this poseSeq verbatim (_doHammerlock).
+    // hammerlock migrated to the seekable clip runtime (2026-08-03) — its
+    // choreography and timing now live in src/animation/clips/hammerlock.js, so
+    // it has no MOVE_DEFS.poseSeq here (a duplicate poseSeq would be a dead,
+    // misleading second timing source). The hammerlock* POSES it samples stay
+    // above; they double as rig-audit reference stances (joint_attachment_audit,
+    // lou_preview, comparison shots).
     // kneeLift/backBodyDrop/kneeDrop are documented here for reference, but the
     // middle airborne/launch phases of backBodyDrop and kneeDrop don't tween
     // `pose` directly — they share existing custom draw plumbing (clothesline
     // fall / elbowDropping) the same way MOVE_DEFS.elbowDrop already does.
-    hammerlock:  { poseSeq: [{ p: 'hammerlockReach', dur: 120, e: 'Cubic.easeOut' },
-                              { p: 'hammerlockTurn',  dur: 180, e: 'Cubic.easeInOut' },
-                              { p: 'hammerlockSet',   dur: 200, e: 'Cubic.easeOut' },
-                              { p: 'hammerlockCrank', dur: 900, e: 'Linear'        }] },
     kneeLift:    { poseSeq: [{ p: 'kneeLiftLoad',    dur: 100, e: 'Cubic.easeOut' },
                               { p: 'kneeLiftChamber', dur:  90, e: 'Cubic.easeIn'  },
                               { p: 'kneeLiftImpact',  dur:  70, e: 'Linear'        },
@@ -333,11 +334,15 @@ export default class Wrestler {
         this.skeleton        = new Skeleton(scene, skinCol, trunksCol, textures);
         this.combatBlend     = 0;
         this._evadeCooldown  = 0;
-        // Handle for a move currently driven by the scene MoveRuntime (jab is
-        // the first migrated move). While set, the clip owns this.pose each
-        // frame; anything else that claims the pose (tweenPose) cancels it, so
-        // an interrupted move can't keep animating or fire a late impact.
-        this._activeJab      = null;
+        // Handle for a move currently driven by the scene MoveRuntime. While
+        // set, the clip owns this.pose each frame; anything else that claims the
+        // pose (tweenPose) cancels it, so an interrupted move can't keep
+        // animating or fire a late impact/drain. Move-neutral, not jab-specific:
+        // for a PAIRED move (hammerlock) both the attacker's and the defender's
+        // `_activeMove` reference the SAME handle, so either one claiming a new
+        // pose or state tears down the whole move and both actors get cleaned up
+        // together. The clip's onCancel/onComplete is what nulls this back out.
+        this._activeMove     = null;
         // Render-only overall size multiplier (2026-07-19, real-world height
         // calibration — see george.js/thesz.js) — folded into draw()'s local
         // `s` only, never into the `s` getter below, so it never touches
@@ -401,9 +406,14 @@ export default class Wrestler {
     // part variants to base; the caller that's taking over the pose sets the
     // new stance. Safe to call when nothing is active.
     _cancelActiveMove(reason = 'interrupted') {
-        if (this._activeJab) {
-            this.scene.moveRuntime?.cancel(this._activeJab, reason);
-            this._activeJab = null;
+        if (this._activeMove) {
+            // cancel() runs the handle's onCancel, which nulls _activeMove on
+            // EVERY bound actor (both wrestlers, for a paired move) — so by the
+            // time cancel returns this is usually already null. The explicit
+            // reset below is the single-actor safety net and is harmless when
+            // onCancel already cleared it.
+            this.scene.moveRuntime?.cancel(this._activeMove, reason);
+            this._activeMove = null;
         }
     }
 
@@ -938,7 +948,7 @@ export default class Wrestler {
         // A fresh jab supersedes any in-flight one, so repeated presses can't
         // leave overlapping handles or stack two impacts.
         this._cancelActiveMove('rejab');
-        this._activeJab = runtime.play('jab', { attacker: this }, {
+        this._activeMove = runtime.play('jab', { attacker: this }, {
             onEvent: (event) => {
                 if (event.type !== 'impact') return;
                 // Drain and sell fire at the authored impact frame so a
@@ -950,7 +960,8 @@ export default class Wrestler {
                 other._drain(STAMINA_DRAIN.jab);
                 other._doSell('sellHead', 110, () => other.startStagger());
             },
-            onComplete: () => { this._activeJab = null; },
+            onComplete: () => { this._activeMove = null; },
+            onCancel:   () => { this._activeMove = null; },
         });
     }
 
@@ -1467,56 +1478,94 @@ export default class Wrestler {
     // Behind-the-back arm lock. Triggered from Arena._tickLockup (finisher
     // key, attacker-only) — no range test here, the lockup already
     // established validity. Fixed-duration working hold, not a KO/escape loop.
+    //
+    // First PAIRED move on the seekable clip runtime (RIG_AND_MOVE_PIPELINE.md
+    // migration step 2). The clip owns the synchronized attacker/defender
+    // choreography AND the event TIMING; gameplay below still owns staging,
+    // damage, stamina, state, and the character-specific recovery. The two old
+    // delayedCalls (drain @300ms, release @1400ms) are gone — those beats are
+    // now the clip's apply-drain / release-contact markers, at the same times.
+    // A missing runtime never happens in production (Arena always builds one);
+    // there is intentionally no legacy timing fallback for the paired path.
     _doHammerlock(other) {
+        const runtime = this.scene.moveRuntime;
+        if (!runtime) return;
+
         this.state       = 'holding';
         other.state      = 'holding';
         other.facing     = this.facing;
-        // _fixedHold: release is a plain delayedCall below, not an
-        // Arena-tracked state, which exempts it from _orphanWatchdog's 0.6s
-        // grace period — otherwise the watchdog cuts this 1400ms hold short
-        // at 600ms, same latent issue armBar/ankleLock had (now fixed there too).
+        // _fixedHold exempts this working hold from _orphanWatchdog's 0.6s grace
+        // (its release is a clip marker, not an Arena-tracked hold-state).
+        // releaseHold clears it on completion OR interruption.
         this._fixedHold  = true;
         other._fixedHold = true;
-        this._drain(3); // attacker cost
+        this._drain(3); // attacker commitment cost
 
+        // Ring-aware staging stays in the executor — clip data must never carry
+        // absolute world x. Defender staged slightly ahead on the attacker's
+        // centerline; attacker steps in behind/outside so the offset silhouette
+        // implies the lock without the rigs drawing genuinely interlocked hands.
         const s      = this.s;
         const facing = this.facing;
         const sx     = this.x;
         const b      = ringBoundsAtY(this.y);
         const m      = 20;
-        // Defender staged slightly ahead on the attacker's centerline; attacker
-        // steps in behind/outside — the offset silhouette implies the lock
-        // without the rigs needing to draw genuinely interlocked hands.
         const defTargetX = Math.max(b.left + m, Math.min(b.right - m, sx + facing * 30 * s));
         const atkTargetX = Math.max(b.left + m, Math.min(b.right - m, defTargetX - facing * 24 * s));
-
         this.scene.tweens.add({ targets: this, x: atkTargetX, duration: 300, ease: 'Cubic.easeOut' });
         this.scene.tweens.add({ targets: other, x: defTargetX, duration: 300, ease: 'Cubic.easeOut' });
-        other.tweenPose('armBarDefender', 260, 'Cubic.easeOut');
 
-        this._runPoseSequence(MOVE_DEFS.hammerlock.poseSeq);
-
-        // Crank begins at 300ms (end of the reach/turn/set wind-up) — first drain lands here
-        this.scene.time.delayedCall(300, () => {
-            if (this.state === 'holding' && other.state === 'holding') {
-                other._drain(STAMINA_DRAIN.hammerlock);
-            }
-        });
-
-        // Full sequence runs 1400ms — release both back to standing
-        this.scene.time.delayedCall(1400, () => {
-            if (this.state === 'holding') {
-                this.state = 'standing';
-                this._fixedHold = false;
+        // Shared teardown for BOTH the natural release and any interruption
+        // (either wrestler claiming a pose, cancelTarget, or Scene shutdown).
+        // Clears the paired handles FIRST so the recovery tweens can't re-enter
+        // cancellation, frees the fixed-hold, releases the logical hold (states
+        // back to a legal standing), and — only on a clean finish — settles each
+        // wrestler to its CONFIGURED idle. Idempotent: onComplete and onCancel
+        // each fire at most once and never both (MoveRuntime guarantees it).
+        const releaseHold = (recover) => {
+            this._activeMove  = null;
+            other._activeMove = null;
+            this._fixedHold   = false;
+            other._fixedHold  = false;
+            if (this.state === 'holding')  this.state  = 'standing';
+            if (other.state === 'holding') other.state = 'standing';
+            if (recover) {
+                // 220ms settle to each character's own idle (Lou's theszIdle vs
+                // George's powerIdle) — executor-owned so the shared clip never
+                // bakes in a character pose. Safe here: _activeMove is already
+                // null above, so tweenPose's pose-override cancel is a no-op.
                 this.tweenPose(this.idlePose, 220, 'Linear');
-            }
-            if (other.state === 'holding') {
-                other.state = 'standing';
-                other._fixedHold = false;
                 other.tweenPose(other.idlePose, 220, 'Linear');
-                other._drain(4); // release drain
             }
+        };
+
+        const handle = runtime.play('hammerlock', { attacker: this, defender: other }, {
+            onEvent: (event) => {
+                if (event.type === 'apply-drain') {
+                    // First crank drain (was delayedCall(300)). Guarded so a hold
+                    // already released or cancelled can never still drain.
+                    if (this.state === 'holding' && other.state === 'holding') {
+                        other._drain(STAMINA_DRAIN.hammerlock);
+                    }
+                } else if (event.type === 'release-contact') {
+                    // Release drain (was the delayedCall(1400)'s +4). Reached only
+                    // on natural completion — a move cancelled before 1.4s never
+                    // crosses this marker, so an interrupted hold deals no release
+                    // damage. onComplete's releaseHold(true) runs right after.
+                    other._drain(4);
+                }
+                // acquire-contact is the choreographic catch frame; the physical
+                // grab is the holding state set synchronously above, so there is
+                // no separate gameplay effect to run here (deliberately not a
+                // general contact-constraint system).
+            },
+            onComplete: () => releaseHold(true),
+            onCancel:   () => releaseHold(false),
         });
+        // Bind the SAME handle to both actors: either one claiming a new pose or
+        // state cancels the paired move and releaseHold cleans up both.
+        this._activeMove  = handle;
+        other._activeMove = handle;
     }
 
     // Rising knee lift — planted close-range strike; creates stagger, not an

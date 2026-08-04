@@ -8,6 +8,7 @@ import { thesz } from '../characters/thesz.js';
 import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { jabClip } from '../animation/clips/jab.js';
+import { hammerlockClip } from '../animation/clips/hammerlock.js';
 
 // 2026-07-26 (promoted-george roster change): the roster is now just these
 // two. George is the former AI art-swap pilot (v1-v9), flattened and
@@ -2764,6 +2765,7 @@ export default class Arena extends Phaser.Scene {
         // registry so nothing survives a Scene restart.
         this.moveRuntime = new MoveRuntime();
         this.moveRuntime.register(jabClip);
+        this.moveRuntime.register(hammerlockClip);
         this.events.once('shutdown', () => this.moveRuntime.shutdown());
 
         // Both P1 and P2 default to keyboard (Derek, 2026-07-12 — loading the

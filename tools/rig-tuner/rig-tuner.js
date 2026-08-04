@@ -323,7 +323,13 @@ function update(_, dtMs) {
 
 // ─── Drag handles ────────────────────────────────────────────────────────────
 const HANDLE_SPECS = [
-    { name: 'head (headOffset)',       color: 0xffd24a, kx: 'headOffsetX',     ky: 'headOffsetY',     part: sk => sk._headIsImage && sk._neckInTorso ? sk.head : null },
+    // headOffsetX/Y only drive the head on a neckInTorso head WITHOUT a neck
+    // socket. Once a character declares rigProfile.sockets.neck (george, thesz),
+    // Skeleton.js places the head purely at that socket and headOffsetX/Y are
+    // inert — so this handle would silently write dead values. Hide it there and
+    // steer users to the Character-sockets panel (sockets.neck.u/v moves the
+    // head; headAnchorFrac.u/v recentres the head art on the neck point).
+    { name: 'head (headOffset)',       color: 0xffd24a, kx: 'headOffsetX',     ky: 'headOffsetY',     part: sk => sk._headIsImage && sk._neckInTorso && !sk._torsoSockets?.neck ? sk.head : null },
     { name: 'shoulder (armOffset)',    color: 0x66ccff, kx: 'armOffsetX',      ky: 'armOffsetY',      part: sk => sk.nearUpArm },
     { name: 'far shoulder (farArmOffset)', color: 0x2e6b8b, kx: 'farArmOffsetX', ky: 'farArmOffsetY', part: sk => sk.farUpArm },
     { name: 'near forearm (nearForearmOffset)', color: 0xa8e0ff, kx: 'nearForearmOffsetX', ky: 'nearForearmOffsetY', part: sk => sk.nearForearm },
@@ -662,22 +668,47 @@ function buildSocketsPanel() {
     socketsPanelBody.innerHTML = '';
     const c = currentChar();
     const sockets = c.textures.rigProfile?.sockets;
+    const anchor = c.textures.headAnchorFrac; // { u, v } head-art neck origin, or undefined
     socketsPanelBody.parentElement.querySelector('summary').textContent =
-        `Character sockets (rigProfile.sockets) — ${c.id}${sockets ? '' : ' (none on this character)'}`;
-    if (!sockets) {
-        el(socketsPanelBody, `<div class="hint">This character has no rigProfile.sockets — neck/
-            shoulder/hip position comes from the generic offset knobs in Character knobs below
-            instead (armOffsetX/Y, legOffsetX/Y, etc. all apply normally here).</div>`);
+        `Head/neck attachment — ${c.id}${sockets || anchor ? '' : ' (generic offsets on this character)'}`;
+    if (!sockets && !anchor) {
+        el(socketsPanelBody, `<div class="hint">This character has no rigProfile.sockets and no
+            headAnchorFrac — neck/shoulder/hip and head position come from the generic offset knobs
+            in Character knobs below (armOffsetX/Y, legOffsetX/Y, headOffsetX/Y all apply normally).</div>`);
         return;
     }
-    el(socketsPanelBody, `<div class="hint">The actual controls for neck/shoulder${sockets.nearHip ? '/hip' : ''}
-        position on this rig — armOffsetX/Y, farArmOffsetX/Y${sockets.nearHip ? ', legOffsetX/Y, nearLegOffsetY, farLegOffsetX/Y' : ''}
-        and headOffsetX/Y (down in Character knobs) have no effect wherever a matching socket
-        exists below.</div>`);
-    for (const name of Object.keys(sockets)) {
-        const sock = sockets[name];
-        sliderRow(socketsPanelBody, `sockets.${name}.u`, () => sock.u, v => { sock.u = v; }, 0, 1, 0.001);
-        sliderRow(socketsPanelBody, `sockets.${name}.v`, () => sock.v, v => { sock.v = v; }, 0, 1, 0.001);
+    if (sockets) {
+        el(socketsPanelBody, `<div class="hint">The actual controls for neck/shoulder${sockets.nearHip ? '/hip' : ''}
+            position on this rig — armOffsetX/Y, farArmOffsetX/Y${sockets.nearHip ? ', legOffsetX/Y, nearLegOffsetY, farLegOffsetX/Y' : ''}
+            and <b>headOffsetX/Y</b> (down in Character knobs, and the on-canvas head handle) have no effect
+            wherever a matching socket exists below. <b>sockets.neck.u/v</b> moves the whole head+neck on the torso.</div>`);
+        for (const name of Object.keys(sockets)) {
+            const sock = sockets[name];
+            sliderRow(socketsPanelBody, `sockets.${name}.u`, () => sock.u, v => { sock.u = v; }, 0, 1, 0.001);
+            sliderRow(socketsPanelBody, `sockets.${name}.v`, () => sock.v, v => { sock.v = v; }, 0, 1, 0.001);
+        }
+    }
+    // headAnchorFrac — the head PNG's own neck-origin fraction. For a socket
+    // head this is what RECENTRES the head art on the neck point (u = left/right
+    // lateral centring — the usual "his head is off-centre" fix; v = how far up
+    // the neck sits). Live-updates the running skeleton: _headOriginU is what
+    // updateUpright re-applies to head.originX every frame (per facing), and
+    // head.originY is set directly since updateUpright never rewrites it. The
+    // sliders mutate the same { u, v } the skeleton captured, so an export/
+    // rebuild both see the new values. u is stored facing-right; the tuner and
+    // engine both mirror to 1 - u when facing left.
+    if (anchor) {
+        el(socketsPanelBody, `<div class="hint" style="margin-top:8px">headAnchorFrac — where the head
+            art's neck attaches. <b>u</b> recentres the head left/right on the neck; <b>v</b> raises/lowers it.
+            This is the control for an off-centre head on a socket rig.</div>`);
+        sliderRow(socketsPanelBody, 'headAnchorFrac.u', () => anchor.u, v => {
+            anchor.u = v;
+            if (skeleton) { skeleton._headOriginU = v; if (skeleton.head) skeleton.head.originX = state.facing < 0 ? 1 - v : v; }
+        }, 0, 1, 0.001);
+        sliderRow(socketsPanelBody, 'headAnchorFrac.v', () => anchor.v, v => {
+            anchor.v = v;
+            if (skeleton?.head) skeleton.head.originY = v;
+        }, 0, 1, 0.001);
     }
 }
 
@@ -752,6 +783,10 @@ function exportText() {
                 .filter(name => !near(sockets[name].u, socketsBase[name].u) || !near(sockets[name].v, socketsBase[name].v))
                 .map(name => `            ${name}: ${' '.repeat(Math.max(1, 13 - name.length))}{ u: ${fmt(sockets[name].u)}, v: ${fmt(sockets[name].v)} },`);
             if (socketLines.length) lines.push(`    rigProfile: {\n        sockets: {\n${socketLines.join('\n')}\n        },\n    },`);
+        }
+        const hf = cfg.headAnchorFrac, hfBase = base.headAnchorFrac;
+        if (hf && hfBase && (!near(hf.u, hfBase.u) || !near(hf.v, hfBase.v))) {
+            lines.push(`    headAnchorFrac: { u: ${fmt(hf.u)}, v: ${fmt(hf.v)} },`);
         }
         if (lines.length) blocks.push(`// ── src/characters/${charFilename(id)}.js — textures ──\n${lines.join('\n')}`);
     }

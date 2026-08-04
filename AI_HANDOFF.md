@@ -155,6 +155,62 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-08-04 (Rig-tuner: expose the real head controls for socket-owned heads; head/neck offsets were inert) — Claude
+
+Derek reported George's head reading off-centre and found the tuner's head/neck
+offsets "no longer function." Diagnosed and fixed. **Not** related to the clip/
+move runtime — the rig-tuner is a separate tool and the hammerlock/jab work never
+touched `Skeleton.js`, `george.js`, or the tuner.
+
+**Root cause (pre-existing, from cohesive-body-rig-binding Phase C, `6faf4a6`).**
+Once a character declares `rigProfile.sockets.neck` (george, thesz),
+`Skeleton.js`'s `updateUpright` (the `_neckInTorso && _torsoSockets.neck` branch,
+~line 1439) places the head PURELY at that socket. `headOffsetX/Y` are read only
+on the *else* branch, so they are completely inert for both roster characters —
+proven empirically: `headOffsetX=30` moved George's head 0px; a neck-socket nudge
+moved it. thesz.js already carries a comment saying `headOffsetX/Y are INERT`. The
+head-positioning knobs simply moved to the socket system and the **tuner was never
+updated to match** — its head drag-handle and headOffset sliders still wrote those
+now-dead fields, and `headAnchorFrac` (the head-art neck-origin, George's actual
+lateral-centring knob) was never exposed at all.
+
+**Fix (tools/rig-tuner/rig-tuner.js).**
+- Added `headAnchorFrac.u/v` sliders to the "Head/neck attachment" panel (renamed
+  from "Character sockets"), live-updating the running skeleton (`_headOriginU` +
+  `head.originX/Y`) — `u` recentres the head laterally (the off-centre fix), `v`
+  raises/lowers it. Added `headAnchorFrac` to the export so tuned values paste
+  back into the character file. Neck-socket `u/v` already worked + exported.
+- Hid the head drag-handle for socket-owned heads (guard now
+  `_neckInTorso && !_torsoSockets?.neck`) so it stops silently writing dead
+  `headOffsetX/Y`; the panel hint points users to the socket/anchor sliders.
+- Verified headless: clean boot, handle hidden for George, the `headAnchorFrac.u`
+  slider moves the visible head bounds and export emits
+  `headAnchorFrac: { u: …, v: … }`.
+
+**Smoke test (tools/rig-tuner/smoke.mjs).** Replaced the obsolete head-handle-drag
+test with a `headAnchorFrac`-slider test (all 4 new checks pass) and fixed a
+pre-existing crash (`CHARS.george.textures.shin.key` — George's shin is split
+near/far, no unified `shin`; now reads `nearShin`). Now 22/29.
+
+**Flagged for Codex — pre-existing, separate from the head fix.** The remaining 7
+smoke failures are NOT mine and NOT about head positioning:
+1. **6 "revert doesn't restore baseline" failures** (HIP_OVERLAP, a char knob,
+   farArmOffsetX, pivotOffsetFrac, returning to idle pose, and character switch).
+   Confirmed the canvas hash is fully deterministic (three identical hashes with
+   zero changes), and HIP_OVERLAP's revert value (14) matches its true default —
+   so this is a *real* tuner-state bug: reverting a knob leaves residual geometry
+   (likely `setRig`/`syncCapturedGlobals` not fully re-deriving from RIG/P, or
+   values baked at skeleton construction that a revert doesn't rebuild). Was
+   partly masked before because the shin crash aborted the run early.
+2. **`setPivotOffsetFrac('shin')` export** — same George-split-shin rot; the smoke
+   drives a `shin` pivot but George has only `nearShin`/`farShin`, so the export
+   loop (keyed on a unified `shin` box) never emits it.
+
+**Status: UNCOMMITTED.** Both tuner files (`rig-tuner.js`, `smoke.mjs`) are
+modified in the working tree, awaiting Derek's go-ahead to commit. (Also two
+untracked docs from concurrent sessions — `ARENA_LIGHTING_AND_DEPTH_CONCEPTS.md`,
+`RINGSIDE_CAST_AND_MANAGER_SYSTEM.md` — left untouched, not mine.)
+
 ### 2026-08-03 (Hammerlock migrated to the seekable clip runtime — the first PAIRED-wrestler proof) — Claude
 
 Migrated `hammerlock` from its legacy pose-sequence + `delayedCall` timing into a

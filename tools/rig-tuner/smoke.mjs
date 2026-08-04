@@ -96,34 +96,34 @@ try {
     });
     await settle(page);
 
-    // 4. Real mouse-drag on the head handle drives headOffsetX/Y
-    const before = await page.evaluate(() => {
-        const t = window.__RIG_TOOL;
-        return { x: t.CHARS.george.textures.headOffsetX, y: t.CHARS.george.textures.headOffsetY,
-                 hx: t.skeleton().head.x, hy: t.skeleton().head.y };
-    });
-    const box = await page.locator('#stage canvas').boundingBox();
-    const k = box.width / 960; // FIT scale, game px → page px
-    const px = box.x + before.hx * k, py = box.y + before.hy * k;
-    await page.mouse.move(px, py);
-    await page.mouse.down();
-    await page.mouse.move(px + 30 * k, py + 20 * k, { steps: 8 });
-    await page.mouse.up();
+    // 4. Head position on a socket-owned head. george places the head at
+    // rigProfile.sockets.neck, so headOffsetX/Y are INERT and the on-canvas
+    // head handle is deliberately hidden (it would write dead values). The real
+    // control is headAnchorFrac.u/v (recentres the head art on the neck point)
+    // in the Head/neck-attachment panel. Numeric head-bounds check rather than a
+    // canvas hash so it doesn't depend on render-settle timing.
+    const headCX = () => page.evaluate(() => Math.round(window.__RIG_TOOL.skeleton().head.getBounds().centerX * 100) / 100);
+    const driveAnchorU = delta => page.evaluate(d => {
+        const row = [...document.querySelectorAll('.row')].find(r => r.querySelector('label')?.getAttribute('title') === 'headAnchorFrac.u');
+        if (!row) return false;
+        const range = row.querySelector('input[type=range]');
+        range.value = String(parseFloat(range.value) + d);
+        range.dispatchEvent(new Event('input', { bubbles: true }));
+        return true;
+    }, delta);
+    ok(await page.evaluate(() => {
+        const sk = window.__RIG_TOOL.skeleton();
+        return !(sk._headIsImage && sk._neckInTorso && !sk._torsoSockets?.neck);
+    }), 'head drag-handle is hidden for a socket-owned head (would write dead headOffsetX/Y)');
+    const cx0 = await headCX();
+    const drove = await driveAnchorU(0.08);
     await settle(page);
-    const after = await page.evaluate(() => {
-        const t = window.__RIG_TOOL;
-        return { x: t.CHARS.george.textures.headOffsetX, y: t.CHARS.george.textures.headOffsetY };
-    });
-    // facing=1, zoom=1.5 → +30 game px ≈ +20 unscaled on X, +20 ≈ +13 on Y
-    ok(after.x > before.x + 10 && after.y > before.y + 5,
-        `head handle drag moves headOffset (${before.x},${before.y} → ${after.x},${after.y})`);
-    ok(await canvasHash(page) !== baseline, 'drag visibly moved the head');
-    await page.evaluate(({ x, y }) => {
-        window.__RIG_TOOL.setCharKnob('headOffsetX', x);
-        window.__RIG_TOOL.setCharKnob('headOffsetY', y);
-    }, before);
+    ok(drove && (await headCX()) !== cx0, 'headAnchorFrac.u slider recentres the head');
+    text = await page.evaluate(() => window.__RIG_TOOL.exportText());
+    ok(/headAnchorFrac:\s*\{\s*u:/.test(text), 'export emits headAnchorFrac');
+    await driveAnchorU(-0.08);
     await settle(page);
-    ok(await canvasHash(page) === baseline, 'restoring offsets restores baseline render');
+    ok(Math.abs((await headCX()) - cx0) < 0.5, 'reverting headAnchorFrac restores head position');
 
     // 5. Depth-order regression guard (2026-07-15): far arm must render
     // behind the far leg — was a same-depth tie broken by insertion order,
@@ -178,7 +178,9 @@ try {
     ok(await canvasHash(page) === baseline, 'reverting pivotOffsetFrac restores baseline');
     const measured = await page.evaluate(() => {
         const t = window.__RIG_TOOL;
-        return t.measureArtPivotFrac(t.CHARS.george.textures.shin.key, 'top');
+        // george's shin is split into near/far (no unified `shin` entry), so
+        // measure the near-shin art.
+        return t.measureArtPivotFrac(t.CHARS.george.textures.nearShin.key, 'top');
     });
     ok(Number.isFinite(measured) && Math.abs(measured) < 0.5, `measureArtPivotFrac returns a sane fraction (${measured})`);
 

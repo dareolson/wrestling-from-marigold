@@ -202,12 +202,22 @@ const SCENARIOS = {
     },
 
     // ── Four-move blueprint (Codex, 2026-07-24; approved by Derek) ─────────
-    hammerlock: { // finisher key while attacker in lockup — P1 needs a kit that has it
+    hammerlock: { // finisher key while attacker in lockup — Lou (thesz) attacks George
         p1: 'thesz',
         expect: { move: 'hammerlock' },
         async run(h) {
             await SCENARIOS.lockup.run(h);
             // Lockup auto-releases at 0.8s — follow-up must land inside that window
+            await h.page.waitForTimeout(200);
+            await tap(h.page, 'h');
+        },
+    },
+
+    hammerlockReverse: { // same move, roles swapped: George attacks Lou (paired-clip parity)
+        p1: 'george', p2: 'thesz',
+        expect: { move: 'hammerlock' },
+        async run(h) {
+            await SCENARIOS.lockup.run(h);
             await h.page.waitForTimeout(200);
             await tap(h.page, 'h');
         },

@@ -1,8 +1,10 @@
 # Wrestling from Marigold — Animation Tooling and Plugin Evaluation
 
 **Status:** Reference and purchasing guidance; internal clip/variant foundation
-implemented 2026-07-31 and the first move (`jab`) migrated and shipped; remaining
-move migration (starting with `hammerlock`) still pending
+implemented 2026-07-31, the first move (`jab`) migrated and shipped, and the first
+PAIRED move (`hammerlock`) migrated 2026-08-03 (synchronized attacker/defender
+tracks, contact/drain/release markers, interruption + cleanup); remaining move
+migration continues incrementally
 **Prepared:** 2026-07-25  
 **Evaluated against:** Phaser 4.1.0, Vite 8, JavaScript ES modules, the custom six-PNG articulated rig, paired wrestler choreography, the existing rig tuner, and Playwright diagnostics
 
@@ -49,8 +51,14 @@ The first dependency-free slice now lives in `src/animation/AnimationClip.js` an
 `src/rig/partVariants.js`. It provides validated seekable clips, synchronized
 arbitrary actor roles, deterministic events, cancellation, and appearance cleanup.
 The `jab` is now registered and driven through it in `Arena`/`Wrestler._doJab`
-(shipped 2026-07-31); every other move still runs on the legacy path and migrates
-incrementally, next `hammerlock`, per the gates in `RIG_AND_MOVE_PIPELINE.md`.
+(shipped 2026-07-31), and `hammerlock` followed as the first paired move
+(`Arena`/`Wrestler._doHammerlock`, 2026-08-03) — proving synchronized
+attacker/defender tracks, the `onCancel` lifecycle seam, and the move-neutral
+`_activeMove` handle that lets either bound actor tear the pair down. Every other
+move still runs on the legacy path and migrates incrementally per the gates in
+`RIG_AND_MOVE_PIPELINE.md`. The runtime still delivers only paired lifecycle
+ownership + authored event markers — it is deliberately **not** a declarative
+gameplay language or a contact-constraint/IK solver.
 
 Keep it focused rather than adding helpers inside `Wrestler`. Phaser's official Scene Plugin API is designed for
 per-Scene state and exposes `start`, `pause`, `sleep`, `wake`, `shutdown`, and

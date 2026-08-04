@@ -155,6 +155,78 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-08-03 (Hammerlock migrated to the seekable clip runtime — the first PAIRED-wrestler proof) — Claude
+
+Migrated `hammerlock` from its legacy pose-sequence + `delayedCall` timing into a
+single synchronized two-actor clip. This is migration step 2 in
+`RIG_AND_MOVE_PIPELINE.md` — the paired proof after jab's one-body proof. Node 22
+via `.nvmrc`. Started from a clean tree at `bb33cc1`. No other move was migrated
+and no MoveSpec registry was begun (deliberately out of scope for this pass).
+
+**What the clip owns now.** `src/animation/clips/hammerlock.js` has `attacker` and
+`defender` tracks sampled at one clip time each frame (attacker reach→turn→set→
+crank; defender folds from the shared `lockup` tie-up into `armBarDefender`). The
+two old `delayedCall`s are gone — their beats are authored markers at the same
+times: `acquire-contact` (0.12s, the reach/catch frame), `apply-drain` (0.30s, the
+old +10 set drain), `release-contact` (1.40s, the old +4 release drain). Markers
+fire exactly once, in order, at 30/60/120 Hz and never while a tool seeks.
+
+**Three runtime changes, reusable for every future paired move.**
+- `Wrestler._activeJab` → move-neutral `_activeMove`. For a paired move BOTH
+  wrestlers' `_activeMove` reference the SAME handle, so either one claiming a new
+  pose/state (`tweenPose` → `_cancelActiveMove`) cancels the whole move and cleans
+  up both. Existing jab behaviour + tests preserved.
+- `MoveRuntime.play` gained an `onCancel` seam distinct from `onComplete`. Natural
+  completion and cancellation are different outcomes: only completion runs the
+  release drain and the 220ms recovery; cancellation (either actor, `cancelTarget`,
+  or `shutdown`) tears down with no release damage. `cancel()` is idempotent and
+  re-entrancy-safe — its `_active.delete` guard absorbs a cancel that loops back
+  through a recovery pose-claim.
+- Character-specific recovery is executor-owned: the shared clip never bakes in
+  Lou's `theszIdle` or George's `powerIdle`; `_doHammerlock`'s `onComplete` runs
+  the per-character 220ms settle. No per-actor pose-injection binding was needed.
+
+**Exact legacy timing removed.** `_doHammerlock`'s `this.scene.time.delayedCall(300, …)`
+and `delayedCall(1400, …)` and its `_runPoseSequence(MOVE_DEFS.hammerlock.poseSeq)`
+call — and the now-dead `MOVE_DEFS.hammerlock` poseSeq entry itself (deleted so
+there is no second, misleading timing source). No `_doHammerlockLegacy` was added:
+nothing constructs a hammerlock without a runtime, so a duplicate production timing
+path would only be dead weight. The `hammerlock*` POSES stay (they double as
+rig-audit reference stances). Preserved: staging math, `_fixedHold` exemption from
+`_orphanWatchdog`, drain schedule (10+4), attacker cost 3, heat 5, facing/state
+meanings.
+
+**Grip art.** The clip could author a working/grip forearm later, but no grip PNG
+exists; like jab's `fist`, a missing variant resolves safely to calibrated base
+art. No art was invented this pass.
+
+**Verification (Node 22).** `npm test` 99/99 (20 new in `tests/hammerlockClip.test.js`
+— paired sampling, marker order/exactly-once at 30/60/120 Hz, no-emit-on-seek, and
+the full cancellation matrix: before contact, during the crank, through the attacker,
+through the defender, `cancelTarget`, shutdown, natural completion, both facings /
+P1↔P2 staging parity, idempotent re-entrant cleanup, no stranded
+drain/handle/`_fixedHold`/variant/timer). `rig:validate` + `build` green.
+`debug:play -- hammerlock` (Lou→George) and the new `hammerlockReverse`
+(George→Lou) both PASS; `debug:play -- all` 17/17. `tools/debug/hammerlock_preview.mjs`
+prints paired seek frames + the interruption matrix headlessly. Captured live
+frames (entry/crank/release/recovery) — the current-rig approximation still reads
+as a standing hammerlock (attacker stepped in behind/outside, arm cranked up), and
+both wrestlers return cleanly to idle on release. Did NOT retune Lou/George base rigs.
+
+**Scope honesty.** This delivers paired lifecycle ownership + authored event
+markers only. It is NOT a general contact-constraint/IK system and NOT a
+declarative gameplay language. Gameplay (damage, legality, staging, recovery) still
+lives in `_doHammerlock`.
+
+**Next.** Migration step 3 is a referee actor bound to existing pin/submission
+events (the clip role system already supports a third track), then remaining
+Class A strikes one at a time. Known limitation: after an external interruption the
+non-initiating actor is left in a legal `standing` state but keeps its last hold
+pose until it next acts (cosmetic; no in-engine interrupt path for a fixed hold
+exists today, so this is exercised only by tests/tooling, not live play).
+
+Commits: see below. Pushed to `master`.
+
 ### 2026-08-03 (Batch close-out: jab migrated to the seekable clip runtime and shipped; Lou v2 art/rig re-cut verified and committed; rig tasks reconciled) — Claude
 
 Closed out the accumulated dirty worktree (rig/move pipeline + jab migration + Lou

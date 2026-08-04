@@ -1,6 +1,6 @@
 # Rig and Move Content Pipeline
 
-**Status:** Foundation implemented; `jab` migrated and shipped (2026-07-31); remaining move migration is intentionally incremental
+**Status:** Foundation implemented; `jab` migrated and shipped (2026-07-31); `hammerlock` migrated as the first paired-actor proof (2026-08-03); remaining move migration is intentionally incremental
 **Purpose:** Make new wrestlers, the referee, transitions, and move-specific art predictable content work instead of edits scattered through `Skeleton.js`, `Wrestler.js`, and `Arena.js`.
 
 ## The contract
@@ -104,6 +104,12 @@ Role names are not hard-coded, so a referee track can be added without inventing
 
 `jab` is the first move actually wired to this runtime: `Arena` registers `jabClip` and `Wrestler._doJab` plays it, with a legacy pose-sequence fallback (`_doJabLegacy`) kept for unit-test construction where no `MoveRuntime` exists. Every other move still runs on the legacy tween/timer path. The runtime is deliberately not wired wholesale into every existing move at once — converting all moves in one pass would mix a choreography rewrite with the connected-rig work and make regressions hard to isolate.
 
+`hammerlock` is the first PAIRED move on the runtime (`hammerlockClip`, `Wrestler._doHammerlock`): two synchronized `attacker`/`defender` tracks sampled at one clip time, three authored markers (`acquire-contact`, `apply-drain`, `release-contact`) that replaced the old `delayedCall(300)`/`delayedCall(1400)`, and deterministic teardown when either wrestler is interrupted. It has **no** legacy `poseSeq` fallback — its old `MOVE_DEFS.hammerlock` entry was deleted so there is no second, dead timing source. The paired proof drove three runtime changes worth reusing for future paired moves:
+
+- **Move-neutral active handle.** `Wrestler._activeJab` became `_activeMove`; for a paired move BOTH wrestlers' `_activeMove` reference the same handle, so either one claiming a new pose/state (via `tweenPose` → `_cancelActiveMove`) cancels the whole move and cleans up both actors.
+- **`onCancel` lifecycle seam.** `MoveRuntime.play` now takes `onCancel` alongside `onComplete`. Natural completion and cancellation are different outcomes: only completion runs the release drain and the 220ms settle; cancellation (either actor, `cancelTarget`, or `shutdown`) tears down without release damage. `cancel()` is idempotent and re-entrancy-safe (its `_active.delete` guard absorbs a cancel that loops back through a recovery pose-claim).
+- **Executor-owned character recovery.** The shared clip never bakes in Lou's `theszIdle` or George's `powerIdle`; the executor's `onComplete` runs the per-character 220ms idle settle. This kept the clip data character-agnostic without inventing a per-actor pose-injection binding.
+
 ## Content workflow
 
 1. Draw or generate a neutral full-body master with clear joint landmarks.
@@ -118,7 +124,7 @@ Role names are not hard-coded, so a referee track can be added without inventing
 ## Migration order
 
 1. ~~Use `jab` as the one-body clip proof: transition, fist forearm, impact marker, recovery.~~ **Done (2026-07-31)** — `src/animation/clips/jab.js` + `Wrestler._doJab`. Impact fires exactly once at 30/60/120 Hz, seeking never emits, cancel before/after impact is damage-safe, appearance resets on cancel/shutdown, and the striking forearm resolves correctly in both facings. Verified live (`debug:play -- jab` for Lou and George) and by `tests/jabClip.test.js`.
-2. Use `hammerlock` as the paired proof (next, not yet started): attacker/defender tracks, grip variant, contact acquire/release, interruption.
+2. ~~Use `hammerlock` as the paired proof: attacker/defender tracks, grip variant, contact acquire/release, interruption.~~ **Done (2026-08-03)** — `src/animation/clips/hammerlock.js` + `Wrestler._doHammerlock`. Synchronized attacker/defender tracks; `acquire-contact`/`apply-drain`/`release-contact` markers fire exactly once in order at 30/60/120 Hz and never on seek; interruption through either actor, `cancelTarget`, and `shutdown` all leave both wrestlers in legal, non-orphaned states with no stranded `_fixedHold`/handle/variant/timer and no late damage; preserved timing (drain @300ms, release @1400ms, 220ms recovery) and tuning (defender 10+4, attacker cost 3, heat 5). A working/grip forearm can be authored later but no grip PNG exists yet, so the semantic slot safely resolves to base art (as jab's `fist` does). Verified live (`debug:play -- hammerlock` Lou→George and `hammerlockReverse` George→Lou), by `tests/hammerlockClip.test.js` (20 tests), and by `tools/debug/hammerlock_preview.mjs` (seek frames + interruption matrix). This provides paired lifecycle ownership + event markers only — **not** a general contact-constraint or MoveSpec system.
 3. Add a referee actor and bind it to existing pin/submission events.
 4. Move remaining Class A strikes, then Class B paired moves, one at a time.
 5. Only add separate hand/foot bones, an atlas, or an external skeletal tool if measured authoring pain remains after those proofs.

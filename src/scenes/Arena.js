@@ -9,6 +9,7 @@ import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { jabClip } from '../animation/clips/jab.js';
 import { hammerlockClip } from '../animation/clips/hammerlock.js';
+import { lightingEnabled, FIXTURES, drawFixtures, drawMatLightPool, drawBeams, BEAM_DEPTH, ROPE_SHADOW } from './arenaLighting.js';
 
 // 2026-07-26 (promoted-george roster change): the roster is now just these
 // two. George is the former AI art-swap pilot (v1-v9), flattened and
@@ -579,6 +580,7 @@ export default class Arena extends Phaser.Scene {
     }
 
     preload() {
+        for (const f of FIXTURES) this.load.image(f.key, `src/assets/arena-lighting/${f.key}.png`);
         for (const char of CHARACTERS) {
             // Base parts and move/expression variants share one manifest seam.
             // Non-file rig metadata is filtered by enumerateCharacterAssets.
@@ -820,9 +822,11 @@ export default class Arena extends Phaser.Scene {
         this.drawSideCrowd();
         this.drawFarApronAndRopes();
         this.drawRingMat();
+        this._drawRingMarkings();
         this.drawNearApron();
         this._setupDynamicRopes();
         this.drawPosts();
+        this._setupArenaLighting();
         this.createScanlines();
 
         this.grainGfx = this.add.graphics().setDepth(60);
@@ -2081,14 +2085,24 @@ export default class Arena extends Phaser.Scene {
         gfx.lineTo(farLeft.x, farLeft.y);
         gfx.closePath();
         gfx.fillPath();
+    }
 
-        // Center seam
+    // Center seam + MWF logo circle — split out from drawRingMat's flat fill
+    // (2026-08-04, arena lighting pass) so the mat light pool can sit
+    // between the two: fill (depth 3) -> pool (3.1, see
+    // _setupArenaLighting) -> this markings pass (3.2) -> rope shadows
+    // (3.3). Drawn at 3.2 unconditionally (not just when lighting is on) —
+    // harmless no-op depth bump over the old flat depth-3 draw when the
+    // pool doesn't exist.
+    _drawRingMarkings() {
+        const gfx = this.add.graphics().setDepth(3.2);
+        const { nearLeft, nearRight, farLeft, farRight } = RING;
+
         const mnx = (nearLeft.x + nearRight.x) / 2;
         const mfx = (farLeft.x + farRight.x) / 2;
         gfx.lineStyle(1, 0xb0b0a8, 0.4);
         gfx.lineBetween(mnx, nearLeft.y, mfx, farLeft.y);
 
-        // MWF logo circle
         const lx = (mnx + mfx) / 2;
         const ly = (nearLeft.y + farLeft.y) / 2 + 15;
         gfx.lineStyle(2, 0xb0b0a8, 0.5);
@@ -2193,6 +2207,7 @@ export default class Arena extends Phaser.Scene {
         farG.clear();
         for (const b of this.nearRopeBands) b.clear();
         for (const b of this.sideRopeBands) b.clear();
+        if (this.ropeShadowGfx) this.ropeShadowGfx.clear();
 
         const ns = this.nearRopeSag.val;
         const fs = this.farRopeSag.val;
@@ -2304,6 +2319,12 @@ export default class Arena extends Phaser.Scene {
         // spring sag from bounces rides on top of this.
         const REST_SAG = [6, 4.5, 3];
 
+        // Rope shadows (see ROPE_SHADOW and the shadow pass further below) project the
+        // exact same near/side point arrays the visible ropes are built
+        // from — captured here as they're computed, never recalculated —
+        // per rope index (0=bottom/1=middle/2=top, RING.ropes' own order).
+        const nearPtsByRi = [], sidePtsByRi = [];
+
         ropes.forEach((rope, ri) => {
             const rest = REST_SAG[ri] ?? 4;
             // Horizontal ropes — 25% less spring sag than side ropes
@@ -2311,14 +2332,16 @@ export default class Arena extends Phaser.Scene {
             // against the lit canvas and melt into the crowd shadows above it.
             // No press deformation: bodies bow along their movement axis
             // (side to side), and a toward/away-from-camera bulge reads wrong.
-            fillRibbonBands(this.nearRopeBands,
-                archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75, null, NBANDS),
+            const nearPts = archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75, null, NBANDS);
+            nearPtsByRi[ri] = nearPts;
+            fillRibbonBands(this.nearRopeBands, nearPts,
                 new Array(NBANDS + 1).fill(2), 0x32322e, 1, 0x8e8e82, 0.9);
             fillRibbon(farG, archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58 + fs * 0.75, null), 1, 0x3c3c38, 0.9, 0x787870);
 
             // Side ropes — one segment per depth band so wrestlers sort
             // correctly; a press bows them outward in x, fading with distance.
             const sideRest = rest * 0.8;
+            sidePtsByRi[ri] = {};
             for (const dir of [-1, 1]) {
                 const nearP = dir < 0 ? nearLeft : nearRight;
                 const farP  = dir < 0 ? farLeft  : farRight;
@@ -2330,9 +2353,35 @@ export default class Arena extends Phaser.Scene {
                     pts.push(sidePoint(nearP, farP, rope, dir, t, sideRest, warpX));
                     hw.push((3.0 - 1.2 * t) / 2); // thinner with distance
                 }
+                sidePtsByRi[ri][dir] = pts;
                 fillRibbonBands(this.sideRopeBands, pts, hw, 0x36362f, 0.85, 0x82827a, 0.75);
             }
         });
+
+        // Dynamic mat-clipped rope shadows — draws the same points captured
+        // above, displaced and widened per ROPE_SHADOW, into the masked
+        // this.ropeShadowGfx (clipped to the mat trapezoid by its
+        // GeometryMask, see _setupArenaLighting). Skipped entirely when the
+        // lighting experiment is off (?lighting=0).
+        if (this.lightingOn && this.ropeShadowGfx) {
+            for (let ri = 0; ri < ropes.length; ri++) {
+                const dy = ROPE_SHADOW.dispY[ri], dx = ROPE_SHADOW.dispX[ri];
+                const shHw = ROPE_SHADOW.halfW[ri], shAlpha = ROPE_SHADOW.alpha[ri];
+                const drawShadowRibbon = pts => {
+                    const core = ribbonEdges(pts, shHw);
+                    drawStrip(this.ropeShadowGfx, core.top, core.bot, ROPE_SHADOW.color, shAlpha);
+                    const halo = ribbonEdges(pts, shHw * 2.0);
+                    drawStrip(this.ropeShadowGfx, halo.top, halo.bot, ROPE_SHADOW.color, shAlpha * 0.35);
+                };
+                // Near horizontal rope shadow: pure screen-down displacement.
+                drawShadowRibbon(nearPtsByRi[ri].map(p => ({ x: p.x, y: p.y + dy })));
+                // Side-rope shadows: angle away from the central lamp (x480)
+                // in addition to a slightly reduced vertical displacement.
+                for (const dir of [-1, 1]) {
+                    drawShadowRibbon(sidePtsByRi[ri][dir].map(p => ({ x: p.x + dx * dir, y: p.y + dy * 0.85 })));
+                }
+            }
+        }
 
         // Re-sort pressed bands behind the pressing wrestler. Only full
         // contact re-sorts (k ≥ 0.55, i.e. within ~6px of the movement clamp)
@@ -2391,6 +2440,54 @@ export default class Arena extends Phaser.Scene {
             farGfx.fillRect(farLeft.x  - tbSize.far, rope.farY - tbSize.far / 2, tbSize.far * 2, tbSize.far);
             farGfx.fillRect(farRight.x - tbSize.far, rope.farY - tbSize.far / 2, tbSize.far * 2, tbSize.far);
         });
+    }
+
+    // Arena lighting experiment (2026-08-04) — see
+    // ARENA_LIGHTING_AND_DEPTH_CONCEPTS.md and src/scenes/arenaLighting.js
+    // for the full design brief and tunable constants. ?lighting=0 on the
+    // game URL disables the whole slice (fixtures/pool/beams skipped here,
+    // rope shadows skipped in _updateRopes) for an exact before/after
+    // comparison; purely visual, doesn't touch gameplay state.
+    //
+    // The mat light pool and rope shadows are both masked to the mat
+    // trapezoid (drawRingMat's own polygon) so neither can spill onto the
+    // crowd, apron, posts, or ringside characters. Fixtures and beams are
+    // NOT masked — they belong in the upper/atmospheric space above the
+    // ring, not clipped to the mat.
+    _setupArenaLighting() {
+        this.lightingOn = lightingEnabled();
+        if (!this.lightingOn) return;
+
+        const { nearLeft, nearRight, farLeft, farRight } = RING;
+        const matMaskGfx = this.make.graphics({ x: 0, y: 0, add: false });
+        matMaskGfx.fillStyle(0xffffff);
+        matMaskGfx.beginPath();
+        matMaskGfx.moveTo(nearLeft.x, nearLeft.y);
+        matMaskGfx.lineTo(nearRight.x, nearRight.y);
+        matMaskGfx.lineTo(farRight.x, farRight.y);
+        matMaskGfx.lineTo(farLeft.x, farLeft.y);
+        matMaskGfx.closePath();
+        matMaskGfx.fillPath();
+        const matMask = matMaskGfx.createGeometryMask();
+
+        drawFixtures(this);
+
+        // Mat pool sits between the flat mat fill (depth 3, drawRingMat) and
+        // the seam/logo linework (depth 3.2, _drawRingMarkings) — see that
+        // method's comment for the full depth stack.
+        const poolGfx = this.add.graphics().setDepth(3.1).setMask(matMask);
+        drawMatLightPool(poolGfx);
+
+        const beamGfx = this.add.graphics().setDepth(BEAM_DEPTH);
+        drawBeams(beamGfx);
+
+        // Rope shadows redraw every frame in _updateRopes (reusing that
+        // method's own live rope point arrays) — just the masked Graphics
+        // target is set up here. Depth 3.3: above the mat fill/pool/logo,
+        // below the near apron (6), near posts (25.7), and every wrestler/
+        // rope depth (12+). The mask keeps it off the far posts (2.5)
+        // regardless — see this method's own header comment.
+        this.ropeShadowGfx = this.add.graphics().setDepth(3.3).setMask(matMask);
     }
 
     // Bakes a soft-edged circle texture once — layered fillCircle passes at

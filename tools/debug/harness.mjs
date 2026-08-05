@@ -12,6 +12,8 @@
 //              advances WFM_TS× faster than wall time
 //   WFM_P1 / WFM_P2 — character preset per side (?p1=/?p2= params), e.g.
 //              WFM_P1=thesz to sim Thesz vs George
+//   WFM_QS   — raw extra querystring appended as-is, e.g. WFM_QS=lighting=0
+//              (arena-lighting dev toggle, see src/scenes/arenaLighting.js)
 
 import { chromium } from 'playwright-core';
 import { spawn } from 'node:child_process';
@@ -46,6 +48,7 @@ export async function launch() {
     for (const [env, param] of [['WFM_TS', 'ts'], ['WFM_P1', 'p1'], ['WFM_P2', 'p2']]) {
         if (process.env[env]) url += `${url.includes('?') ? '&' : '?'}${param}=${process.env[env]}`;
     }
+    if (process.env.WFM_QS) url += `${url.includes('?') ? '&' : '?'}${process.env.WFM_QS}`;
 
     const browser = await chromium.launch({
         channel: 'chrome',

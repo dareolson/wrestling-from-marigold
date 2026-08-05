@@ -70,18 +70,38 @@ try {
     await settle(page);
     ok(await canvasHash(page) === baseline, 'reverting RIG restores baseline render');
 
+    // Numeric head-bounds check (not a canvas hash) — used both here, to prove
+    // headOffsetY is inert for george's socket-owned head, and in section 4
+    // below to drive headAnchorFrac. A hash diff isn't safe for either: the
+    // tuner's known residual-state bug (see AI_HANDOFF.md's deferred-issues
+    // list) can shift the canvas hash for reasons unrelated to the knob under
+    // test, which is exactly what previously made this section's assertion
+    // pass for the wrong reason (see below).
+    const headCX = () => page.evaluate(() => Math.round(window.__RIG_TOOL.skeleton().head.getBounds().centerX * 100) / 100);
+
     // 2. Per-character knob (config + instance). Read the committed value
     // first — hardcoding it makes the test break every time the config is
     // legitimately retuned.
+    //
+    // george places the head at rigProfile.sockets.neck (see section 4), so
+    // headOffsetX/Y are INERT for him — headAnchorFrac.u/v is the real
+    // control. Assert that inertness directly (head position unchanged)
+    // instead of asserting the render changes: a passing "changes render"
+    // check here was actually being satisfied by the tuner's residual-state
+    // bug shifting the hash, not by headOffsetY doing anything, so it was
+    // proving the wrong thing. The export round-trip is still real and worth
+    // covering — george's config should still persist whatever value is set,
+    // even though it doesn't move his head.
     const origHeadY = await page.evaluate(() => window.__RIG_TOOL.CHARS.george.textures.headOffsetY);
+    const headCXBeforeOffset = await headCX();
     await page.evaluate(v => window.__RIG_TOOL.setCharKnob('headOffsetY', v + 31), origHeadY);
     await settle(page);
-    ok(await canvasHash(page) !== baseline, 'george headOffsetY edit changes render');
+    ok((await headCX()) === headCXBeforeOffset,
+        "george's socket-owned head does not move when headOffsetY changes");
     text = await page.evaluate(() => window.__RIG_TOOL.exportText());
     ok(text.includes('src/characters/george.js') && text.includes(`headOffsetY: ${origHeadY + 31},`), 'export has character block');
     await page.evaluate(v => window.__RIG_TOOL.setCharKnob('headOffsetY', v), origHeadY);
     await settle(page);
-    ok(await canvasHash(page) === baseline, 'reverting knob restores baseline render');
 
     // 3. Pose dial edit + export line
     await page.evaluate(() => { window.__RIG_TOOL.setPoseName('lockup'); window.__RIG_TOOL.setPose('lockup', 'lArm', 2.5); });
@@ -100,9 +120,9 @@ try {
     // rigProfile.sockets.neck, so headOffsetX/Y are INERT and the on-canvas
     // head handle is deliberately hidden (it would write dead values). The real
     // control is headAnchorFrac.u/v (recentres the head art on the neck point)
-    // in the Head/neck-attachment panel. Numeric head-bounds check rather than a
-    // canvas hash so it doesn't depend on render-settle timing.
-    const headCX = () => page.evaluate(() => Math.round(window.__RIG_TOOL.skeleton().head.getBounds().centerX * 100) / 100);
+    // in the Head/neck-attachment panel. Reuses the numeric headCX() check
+    // from section 2 above rather than a canvas hash, so it doesn't depend on
+    // render-settle timing.
     const driveAnchorU = delta => page.evaluate(d => {
         const row = [...document.querySelectorAll('.row')].find(r => r.querySelector('label')?.getAttribute('title') === 'headAnchorFrac.u');
         if (!row) return false;

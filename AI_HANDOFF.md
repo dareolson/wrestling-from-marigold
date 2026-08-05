@@ -155,6 +155,141 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-08-04 (Correction pass: MoveRuntime self-cancellation, hammerlock staging/partner-recovery, rig-tuner smoke assertion, stale status) — Claude
+
+Narrowly-scoped bug-fix pass on top of `bc070bb`, requested by Derek as a
+correction/cleanup, not a new feature or design pass. No move migration, no
+rig/art changes, no arena-presentation work. The two concept docs
+(`ARENA_LIGHTING_AND_DEPTH_CONCEPTS.md`, `RINGSIDE_CAST_AND_MANAGER_SYSTEM.md`)
+were left untracked and untouched throughout.
+
+**1. `MoveRuntime` self-cancellation (`src/animation/MoveRuntime.js`).**
+`update()` and `seek(..., { emitEvents: true })` kept going after a marker's
+own event callback cancelled the handle dispatching it — could still apply a
+post-cancellation sample, cross into a later marker on the same large delta,
+or (in `update()`) run `onComplete` right after `onCancel` had already fired
+for the same handle. Fixed by checking `handle.cancelled` immediately after
+`_emit()` in both `update()` and `seek()`, and inside `_emit()` itself after
+each of the per-handle and global callbacks, so a self-cancelling marker
+stops that dispatch pass immediately (no later marker, no notifying the
+global listener about a handle it already tore down) without disturbing the
+existing cross-handle case (one clip legitimately cancelling a different
+handle mid-`update()` still works — see the dedicated regression test).
+`cancel()` also gained a third optional `meta` argument, stashed on the
+handle as `handle.cancelMeta` — used by fix 3 below to identify which actor
+initiated a cancellation instead of guessing from state. New file
+`tests/moveRuntime.test.js` (8 tests) covers self-cancellation from a
+per-handle callback (on the first marker and a later one), from the global
+callback, that a per-handle cancellation suppresses the global callback for
+the same event, the preserved cross-handle case, both `seek()` outcomes, and
+the completion/cancellation idempotency guard.
+
+**2. Hammerlock staging tweens kept running after cancellation
+(`src/Wrestler.js:_doHammerlock`).** The two 300ms staging tweens (attacker
+stepping in, defender staging ahead) were fire-and-forget — cancelling the
+hold before they finished (e.g. an interruption in the first ~300ms) left
+both wrestlers still sliding toward the abandoned hammerlock stage position
+after the hold had already torn down and both were "standing" again. Fixed
+by retaining the two tween handles and calling `.stop()` on both — only on
+cancellation, not natural completion — inside the shared `releaseHold`
+teardown; a `.stop()` on an already-finished tween (the common case, since
+staging is short relative to the ~1.4s hold) is a harmless no-op. Deliberately
+not a broad `killTweensOf(this)`/`killTweensOf(other)`, which could kill a
+brand-new move or recovery tween that had already claimed the actor.
+`tools/debug/hammerlock_preview.mjs`'s scene stub had to start returning a
+`{ stop(), remove() }` handle from `tweens.add()` to match (it previously
+returned `undefined` and crashed once the source retained the handle).
+Regression tests in `tests/hammerlockClip.test.js` required upgrading that
+file's mock tween manager from "records the spec" to something that actually
+simulates progress and honors `.stop()` (`makeTweenManager`), so the new
+staging test can advance mock time and observe whether motion actually
+stopped rather than just checking the spec shape.
+
+**3. Partner left stranded mid-clip on a pose-claim interruption
+(same function).** When either bound wrestler had its pose claimed elsewhere
+(`tweenPose` → `_cancelActiveMove` → `runtime.cancel(handle, 'pose-override')`),
+the shared hold tore down and the initiator got its new pose — but its
+partner, who never asked for anything, was left visually frozen mid-clip
+(e.g. still in `armBarDefender`) with no recovery. Fixed with an explicit
+initiator mechanism rather than inferring it from actor state:
+`_cancelActiveMove(reason, initiator = this)` now passes `{ initiator }`
+through to `runtime.cancel`'s new `meta` argument; `_doHammerlock`'s
+`onCancel` reads `handle.cancelMeta.initiator` and, only when
+`handle.reason === 'pose-override'`, gives the *other* bound wrestler a
+220ms recovery tween to its own configured idle (`recoverToIdle`, shared with
+the natural-completion path) — never touching the initiator's newly-claimed
+pose, and never firing for `cancelTarget`/`shutdown` (different reasons, no
+initiator to exclude, so no recovery fires there — confirmed by test, not
+assumed). Six new tests in `tests/hammerlockClip.test.js` cover both
+interruption directions (initiator keeps its pose, partner recovers to its
+OWN idle, no release-only stamina drain lands), that `cancelTarget`/
+`shutdown` start no phantom recovery tween, and that shutdown stays
+idempotent. Also visually confirmed in a real headed-Chrome match (both
+directions, screenshotted before/just-after/settled) — screenshots were a
+throwaway scratchpad script, not committed, since the existing `debug:play`
+scenarios don't script mid-hold interruption and this was a one-off
+verification, not a permanent harness addition.
+
+**4. Rig-tuner smoke test's George `headOffsetY` check was self-contradicting
+(`tools/rig-tuner/smoke.mjs`).** Section 2 asserted that editing George's
+`headOffsetY` changes the render — directly contradicted by section 4's own
+comment three lines later ("george places the head at rigProfile.sockets.neck,
+so headOffsetX/Y are INERT"), and by `bc070bb`'s own fix. The assertion was
+passing, but for the wrong reason: the tuner's known residual-state bug
+(documented in the rig-tuner entry directly below this one — the "revert
+doesn't restore baseline" failures) shifts the canvas hash on unrelated edits
+too, so a changing hash was never real evidence the knob worked. Replaced with a numeric
+head-bounds check (`headCX()`, hoisted above section 2 and reused by section
+4) proving the head does NOT move when `headOffsetY` changes, plus kept the
+export round-trip check (George's config should still persist whatever value
+is set, even though it's inert for rendering). Net: 29 checks → 28 (removed
+the contradictory "changes render" + its "reverting restores baseline"
+follow-up, added one inertness check).
+
+**5. `AI_HANDOFF.md`'s "Status: UNCOMMITTED" was stale.** The 2026-08-04
+rig-tuner entry above said both tuner files were "UNCOMMITTED, awaiting
+Derek's go-ahead" — but they're exactly what `bc070bb` (the commit this
+correction pass started from) contains. Corrected in place.
+
+**Verification — Node 22 (`.nvmrc`/nvm), started from a clean `bc070bb`.**
+- `npm test` — **113/113 pass** (confirmed 99/99 at `bc070bb` before this pass
+  via `git stash -u`, correcting a stale "79/79" figure in prior memory notes
+  that predated the hammerlock migration's own tests; +14 net from the new
+  `tests/moveRuntime.test.js` (8) and the new `tests/hammerlockClip.test.js`
+  tests (6)).
+- `npm run rig:validate` — george and thesz both valid.
+- `npm run build` — clean.
+- `node tools/debug/hammerlock_preview.mjs` — all marker/teardown checks OK
+  (natural, entry-cancel, crank-cancel, defender-initiated, shutdown).
+- `npm run debug:play -- hammerlock` and `-- hammerlockReverse` — both PASS.
+- `node tools/rig-tuner/smoke.mjs` — **22/28 passed.** The 6 remaining
+  failures are the pre-existing, previously-documented ones from the
+  2026-08-04 rig-tuner entry directly below and are **intentionally
+  deferred**, not touched this pass: `reverting RIG restores baseline render`,
+  `back on idle pose: render matches baseline`,
+  `reverting farArmOffsetX restores baseline`,
+  `reverting pivotOffsetFrac restores baseline`,
+  `back on george: render matches baseline` (the residual-state "revert
+  doesn't restore baseline" bug — 5 of the previously-listed 6, the 6th being
+  the george-`headOffsetY` revert check this pass removed as inapplicable to
+  an inert knob, not fixed), and `export includes pivotOffsetFrac` (the
+  split-shin export gap, also previously documented). Both were explicitly
+  out of scope for this pass.
+- Manual browser check: hammerlock interrupted mid-crank through both the
+  attacker and the defender, screenshotted before/just-after/settled — in
+  both directions the initiator keeps its new pose and the partner visibly
+  comes off the hammerlock stance instead of staying frozen in it. This is an
+  eyeball check on one run each direction, not an automated visual-regression
+  guard — no new persistent tooling was added for it.
+
+**Not covered by any of the above** (stating the limits, not implying they're
+broken): no test exercises the exact live-input path that would trigger a
+`'pose-override'` hammerlock interruption during normal play (`'holding'`
+isn't currently reachable through the input-gated sell/block/evade paths —
+the manual check above forced it directly via `tweenPose`, same seam the unit
+tests use); and the deferred tuner failures above still need Codex's
+attention, unchanged from the prior entry's assessment.
+
 ### 2026-08-04 (Rig-tuner: expose the real head controls for socket-owned heads; head/neck offsets were inert) — Claude
 
 Derek reported George's head reading off-centre and found the tuner's head/neck
@@ -206,10 +341,12 @@ smoke failures are NOT mine and NOT about head positioning:
    drives a `shin` pivot but George has only `nearShin`/`farShin`, so the export
    loop (keyed on a unified `shin` box) never emits it.
 
-**Status: UNCOMMITTED.** Both tuner files (`rig-tuner.js`, `smoke.mjs`) are
-modified in the working tree, awaiting Derek's go-ahead to commit. (Also two
-untracked docs from concurrent sessions — `ARENA_LIGHTING_AND_DEPTH_CONCEPTS.md`,
-`RINGSIDE_CAST_AND_MANAGER_SYSTEM.md` — left untouched, not mine.)
+**Status: committed as `bc070bb`.** Both tuner files (`rig-tuner.js`,
+`smoke.mjs`) landed in that commit — this entry previously said "UNCOMMITTED"
+after the commit had already happened; corrected 2026-08-04, see the
+correction-pass entry below. (Also two untracked docs from concurrent sessions
+— `ARENA_LIGHTING_AND_DEPTH_CONCEPTS.md`, `RINGSIDE_CAST_AND_MANAGER_SYSTEM.md`
+— left untouched, not mine.)
 
 ### 2026-08-03 (Hammerlock migrated to the seekable clip runtime — the first PAIRED-wrestler proof) — Claude
 

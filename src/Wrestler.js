@@ -404,15 +404,19 @@ export default class Wrestler {
     // Cancel any MoveRuntime-driven move on this wrestler. Cancellation removes
     // the clip handle (no further impact events) and MoveRuntime resets its
     // part variants to base; the caller that's taking over the pose sets the
-    // new stance. Safe to call when nothing is active.
-    _cancelActiveMove(reason = 'interrupted') {
+    // new stance. Safe to call when nothing is active. `initiator` defaults to
+    // `this` — the wrestler whose own pose-claim triggered the cancel — so a
+    // paired move's onCancel can tell which bound actor is about to get a new
+    // pose (and must be left alone) versus which is the stranded partner (and
+    // needs a recovery tween), without guessing from actor state.
+    _cancelActiveMove(reason = 'interrupted', initiator = this) {
         if (this._activeMove) {
             // cancel() runs the handle's onCancel, which nulls _activeMove on
             // EVERY bound actor (both wrestlers, for a paired move) — so by the
             // time cancel returns this is usually already null. The explicit
             // reset below is the single-actor safety net and is harmless when
             // onCancel already cleared it.
-            this.scene.moveRuntime?.cancel(this._activeMove, reason);
+            this.scene.moveRuntime?.cancel(this._activeMove, reason, { initiator });
             this._activeMove = null;
         }
     }
@@ -1512,8 +1516,17 @@ export default class Wrestler {
         const m      = 20;
         const defTargetX = Math.max(b.left + m, Math.min(b.right - m, sx + facing * 30 * s));
         const atkTargetX = Math.max(b.left + m, Math.min(b.right - m, defTargetX - facing * 24 * s));
-        this.scene.tweens.add({ targets: this, x: atkTargetX, duration: 300, ease: 'Cubic.easeOut' });
-        this.scene.tweens.add({ targets: other, x: defTargetX, duration: 300, ease: 'Cubic.easeOut' });
+        // Retained (not fire-and-forget) so early cancellation can stop just
+        // these two specific tweens — see releaseHold below. A broad
+        // killTweensOf(this)/killTweensOf(other) here would risk killing a
+        // brand-new move or recovery tween that already claimed the actor.
+        const atkStageTween = this.scene.tweens.add({ targets: this, x: atkTargetX, duration: 300, ease: 'Cubic.easeOut' });
+        const defStageTween = this.scene.tweens.add({ targets: other, x: defTargetX, duration: 300, ease: 'Cubic.easeOut' });
+
+        // 220ms settle to a wrestler's OWN idle (Lou's theszIdle vs George's
+        // powerIdle) — executor-owned so the shared clip never bakes in a
+        // character pose.
+        const recoverToIdle = wrestler => wrestler.tweenPose(wrestler.idlePose, 220, 'Linear');
 
         // Shared teardown for BOTH the natural release and any interruption
         // (either wrestler claiming a pose, cancelTarget, or Scene shutdown).
@@ -1522,20 +1535,37 @@ export default class Wrestler {
         // back to a legal standing), and — only on a clean finish — settles each
         // wrestler to its CONFIGURED idle. Idempotent: onComplete and onCancel
         // each fire at most once and never both (MoveRuntime guarantees it).
-        const releaseHold = (recover) => {
+        const releaseHold = (recover, handle) => {
             this._activeMove  = null;
             other._activeMove = null;
             this._fixedHold   = false;
             other._fixedHold  = false;
+            if (!recover) {
+                // Cancellation before the 300ms staging tweens finish must not
+                // leave either wrestler still sliding toward the now-abandoned
+                // hammerlock stance. Stopping an already-finished tween is a
+                // harmless no-op, so this is safe on a late cancel too.
+                atkStageTween.stop();
+                defStageTween.stop();
+            }
             if (this.state === 'holding')  this.state  = 'standing';
             if (other.state === 'holding') other.state = 'standing';
             if (recover) {
-                // 220ms settle to each character's own idle (Lou's theszIdle vs
-                // George's powerIdle) — executor-owned so the shared clip never
-                // bakes in a character pose. Safe here: _activeMove is already
-                // null above, so tweenPose's pose-override cancel is a no-op.
-                this.tweenPose(this.idlePose, 220, 'Linear');
-                other.tweenPose(other.idlePose, 220, 'Linear');
+                // Safe here: _activeMove is already null above, so tweenPose's
+                // pose-override cancel is a no-op.
+                recoverToIdle(this);
+                recoverToIdle(other);
+            } else if (handle?.reason === 'pose-override') {
+                // One bound actor claimed a brand-new pose, which is what tore
+                // the shared hold down. That actor (the initiator) already has
+                // its newly requested pose/tween in flight — leave it alone.
+                // Its partner has no idea the hold just ended and is otherwise
+                // left visually stranded, sampled mid-clip; give it a short
+                // recovery toward its OWN idle. Never fires during shutdown
+                // (reason there is 'shutdown', not 'pose-override').
+                const initiator = handle.cancelMeta?.initiator;
+                const partner = initiator === this ? other : initiator === other ? this : null;
+                partner && recoverToIdle(partner);
             }
         };
 
@@ -1560,7 +1590,7 @@ export default class Wrestler {
                 // general contact-constraint system).
             },
             onComplete: () => releaseHold(true),
-            onCancel:   () => releaseHold(false),
+            onCancel:   handle => releaseHold(false, handle),
         });
         // Bind the SAME handle to both actors: either one claiming a new pose or
         // state cancels the paired move and releaseHold cleans up both.

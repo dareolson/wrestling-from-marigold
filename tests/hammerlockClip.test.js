@@ -11,7 +11,7 @@ import {
     HAMMERLOCK_DEF_SET_AT,
     HAMMERLOCK_PHASES,
 } from '../src/animation/clips/hammerlock.js';
-import Wrestler from '../src/Wrestler.js';
+import Wrestler, { POSES } from '../src/Wrestler.js';
 
 // ── Pure clip / runtime tests (no Wrestler) ────────────────────────────────────
 
@@ -125,6 +125,51 @@ test('completion clears part variants on both actors', () => {
 // binding, releaseHold cleanup, and the real tweenPose/_cancelActiveMove
 // interruption seam all run — just without a live Phaser Scene.
 
+// A tween "manager" that actually simulates progress (linear, ease ignored —
+// irrelevant to the correctness properties under test) instead of just
+// recording specs. `add` still records the raw spec onto `tweenAdds` (the
+// existing spec-shape assertions read that), but now returns a live handle
+// with a real `.stop()`/`.remove()` so source code that retains a tween
+// handle and calls `.stop()` on early cancellation can be exercised for real,
+// and `scene.tweens.advance(ms)` lets a test step time forward and observe
+// whether a stopped tween actually stopped moving its target.
+function makeTweenManager(tweenAdds) {
+    const META_KEYS = new Set(['targets', 'duration', 'ease', 'onComplete']);
+    const live = [];
+    return {
+        add(spec) {
+            tweenAdds.push(spec);
+            const startValues = {};
+            for (const key of Object.keys(spec)) {
+                if (META_KEYS.has(key)) continue;
+                startValues[key] = spec.targets[key];
+            }
+            const entry = { spec, startValues, elapsed: 0, stopped: false };
+            const handle = {
+                stop()   { entry.stopped = true; },
+                remove() { entry.stopped = true; },
+            };
+            live.push(entry);
+            return handle;
+        },
+        killTweensOf: () => {},
+        advance(ms) {
+            for (const entry of live) {
+                if (entry.stopped) continue;
+                entry.elapsed = Math.min(entry.spec.duration, entry.elapsed + ms);
+                const t = entry.spec.duration > 0 ? entry.elapsed / entry.spec.duration : 1;
+                for (const [key, from] of Object.entries(entry.startValues)) {
+                    entry.spec.targets[key] = from + (entry.spec[key] - from) * t;
+                }
+                if (entry.elapsed >= entry.spec.duration) {
+                    entry.stopped = true;
+                    entry.spec.onComplete?.();
+                }
+            }
+        },
+    };
+}
+
 function makeScene() {
     const runtime = new MoveRuntime();
     runtime.register(hammerlockClip);
@@ -132,15 +177,12 @@ function makeScene() {
         moveRuntime: runtime,
         tweenAdds: [],
         timerCalls: 0,
-        tweens: {
-            add: spec => { scene.tweenAdds.push(spec); return spec; },
-            killTweensOf: () => {},
-        },
         // The migrated paired path must schedule NO delayed callbacks — any call
         // here is a regression back toward the old delayedCall(300/1400) timing.
         time: { delayedCall: () => { scene.timerCalls++; } },
         _logEvent: () => {},
     };
+    scene.tweens = makeTweenManager(scene.tweenAdds);
     return scene;
 }
 
@@ -311,4 +353,110 @@ test('re-entrant cleanup is idempotent (recovery pose-claim cannot double-fire)'
     assert.equal(cancels, 0, 'natural completion never routes through cancel');
     assert.equal(def.stamina, 100 - 14);
     assert.equal(scene.timerCalls, 0);
+});
+
+// ── Staging-tween cancellation (retained handles, not a broad kill) ────────────
+
+test('cancellation before staging finishes stops the two staging tweens (no post-cancel sliding)', () => {
+    const { scene, atk, def, runtime } = pair();
+    atk._doHammerlock(def);
+    scene.tweens.advance(50); // 50 of 300ms — staging is genuinely mid-flight
+    const atkXAtCancel = atk.x;
+    const defXAtCancel = def.x;
+    assert.notEqual(atkXAtCancel, 470, 'sanity: attacker staging tween already moved it off its start x');
+    assert.notEqual(defXAtCancel, 520, 'sanity: defender staging tween already moved it off its start x');
+
+    runtime.cancel(atk._activeMove, 'test');
+    scene.tweens.advance(1000); // would easily finish the 300ms staging tweens if still live
+
+    assert.equal(atk.x, atkXAtCancel, 'attacker stops sliding toward the abandoned hammerlock stage position');
+    assert.equal(def.x, defXAtCancel, 'defender stops sliding toward the abandoned hammerlock stage position');
+});
+
+test('cancellation after staging already finished leaves the (already-stopped) staging tweens alone', () => {
+    // Stopping an already-finished tween must be a harmless no-op — natural
+    // completion and a late cancel both rely on that.
+    const { scene, atk, def, runtime } = pair();
+    atk._doHammerlock(def);
+    scene.tweens.advance(300); // staging tweens fully resolve
+    const atkXAtStagingDone = atk.x;
+    const defXAtStagingDone = def.x;
+    advance(runtime, HAMMERLOCK_DRAIN_AT + 0.05);
+    assert.doesNotThrow(() => runtime.cancel(atk._activeMove, 'test'));
+    assert.equal(atk.x, atkXAtStagingDone);
+    assert.equal(def.x, defXAtStagingDone);
+});
+
+// ── Partner recovery on pose-claim interruption ─────────────────────────────────
+
+test('interruption THROUGH the attacker: attacker keeps its new pose, defender recovers to its OWN idle, no completion-only damage', () => {
+    const { scene, atk, def, runtime } = pair();
+    atk._doHammerlock(def);
+    advance(runtime, HAMMERLOCK_DRAIN_AT + 0.05); // set drain (10) already applied
+    assert.equal(def.stamina, 90);
+    scene.tweenAdds.length = 0; // isolate what happens at the moment of interruption
+
+    atk.tweenPose('sellChest', 120, 'Linear');
+
+    const atkTween = scene.tweenAdds.find(t => t.targets === atk.pose);
+    assert.ok(atkTween, 'attacker gets its newly requested tween');
+    assert.equal(atkTween.duration, 120);
+    assert.equal(atkTween.lArm, POSES.sellChest.lArm, 'attacker keeps the claimed pose, not idle');
+    assert.equal(scene.tweenAdds.filter(t => t.targets === atk.pose).length, 1, 'attacker pose tween never double-fires');
+
+    const defTween = scene.tweenAdds.find(t => t.targets === def.pose);
+    assert.ok(defTween, 'defender gets a recovery tween instead of being left stranded');
+    assert.equal(defTween.lArm, POSES[def.idlePose].lArm, 'defender recovers toward its OWN configured idle');
+    assert.equal(scene.tweenAdds.filter(t => t.targets === def.pose).length, 1, 'defender recovery never double-fires');
+
+    advance(runtime, HAMMERLOCK_DURATION);
+    assert.equal(def.stamina, 90, 'no release drain lands on an interrupted hold');
+});
+
+test('interruption THROUGH the defender: defender keeps its new pose, attacker recovers to its OWN idle, no completion-only damage', () => {
+    const { scene, atk, def, runtime } = pair();
+    atk._doHammerlock(def);
+    advance(runtime, HAMMERLOCK_DRAIN_AT + 0.05);
+    assert.equal(def.stamina, 90);
+    scene.tweenAdds.length = 0;
+
+    def.tweenPose('sellChest', 120, 'Linear');
+
+    const defTween = scene.tweenAdds.find(t => t.targets === def.pose);
+    assert.ok(defTween, 'defender gets its newly requested tween');
+    assert.equal(defTween.lArm, POSES.sellChest.lArm, 'defender keeps the claimed pose, not idle');
+    assert.equal(scene.tweenAdds.filter(t => t.targets === def.pose).length, 1);
+
+    const atkTween = scene.tweenAdds.find(t => t.targets === atk.pose);
+    assert.ok(atkTween, 'attacker gets a recovery tween instead of being left stranded');
+    assert.equal(atkTween.lArm, POSES[atk.idlePose].lArm, 'attacker recovers toward its OWN configured idle');
+    assert.equal(scene.tweenAdds.filter(t => t.targets === atk.pose).length, 1);
+
+    advance(runtime, HAMMERLOCK_DURATION);
+    assert.equal(def.stamina, 90, 'no release drain lands on an interrupted hold');
+});
+
+test('cancelTarget and shutdown do not know a pose-claim initiator, so neither wrestler gets a phantom recovery tween', () => {
+    for (const trigger of ['cancelTarget', 'shutdown']) {
+        const { scene, atk, def, runtime } = pair();
+        atk._doHammerlock(def);
+        advance(runtime, 0.6);
+        scene.tweenAdds.length = 0;
+        if (trigger === 'cancelTarget') runtime.cancelTarget(atk, 'test');
+        else runtime.shutdown();
+        assert.equal(scene.tweenAdds.filter(t => t.targets === atk.pose || t.targets === def.pose).length, 0,
+            `${trigger} must not start any pose recovery tween for either wrestler`);
+    }
+});
+
+test('shutdown mid-hammerlock never starts a recovery tween (idempotent, no leftover animation)', () => {
+    const { scene, atk, def, runtime } = pair();
+    atk._doHammerlock(def);
+    advance(runtime, 0.6);
+    scene.tweenAdds.length = 0;
+    runtime.shutdown();
+    assert.doesNotThrow(() => runtime.shutdown()); // idempotent
+    assert.equal(scene.tweenAdds.length, 0);
+    assert.equal(atk.state, 'standing');
+    assert.equal(def.state, 'standing');
 });

@@ -68,7 +68,10 @@ function makeScene() {
     runtime.register(hammerlockClip);
     const scene = {
         moveRuntime: runtime, timerCalls: 0,
-        tweens: { add: () => {}, killTweensOf: () => {} },
+        // add() must return a tween-shaped handle (stop/remove) — _doHammerlock
+        // retains its two staging tween handles and calls .stop() on early
+        // cancellation, same as the real Phaser TweenManager.
+        tweens: { add: () => ({ stop() {}, remove() {} }), killTweensOf: () => {} },
         time: { delayedCall: () => { scene.timerCalls++; } },
     };
     return scene;

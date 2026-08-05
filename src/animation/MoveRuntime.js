@@ -62,7 +62,14 @@ export default class MoveRuntime {
         if (!this._active.has(handle.id)) return null;
         const from = handle.time;
         handle.time = Math.max(0, Math.min(handle.clip.duration, time));
-        if (emitEvents && handle.time >= from) this._emit(handle, from, handle.time);
+        if (emitEvents && handle.time >= from) {
+            this._emit(handle, from, handle.time);
+            // A marker dispatched above can cancel this very handle (the same
+            // self-cancellation hazard as update()). Once that happens the
+            // handle is torn down — sampling and applying a pose for it here
+            // would be a post-cancellation write.
+            if (handle.cancelled) return null;
+        }
         return this._apply(handle);
     }
 
@@ -78,6 +85,12 @@ export default class MoveRuntime {
             const to = Math.min(handle.clip.duration, from + Math.max(0, deltaSeconds) * handle.rate);
             handle.time = to;
             this._emit(handle, from, to);
+            // A marker dispatched above (via either the per-handle or global
+            // onEvent) can cancel THIS handle mid-dispatch — onCancel has
+            // already run and the handle is torn down. Applying a sample or
+            // completing it here would be a post-cancellation write, and
+            // could even fire onComplete after onCancel already fired.
+            if (handle.cancelled) continue;
             this._apply(handle);
             if (to >= handle.clip.duration) {
                 this._active.delete(handle.id);
@@ -87,7 +100,7 @@ export default class MoveRuntime {
         }
     }
 
-    cancel(handle, reason = 'cancelled') {
+    cancel(handle, reason = 'cancelled', meta = null) {
         // The _active.delete guard makes cancellation idempotent and re-entrancy
         // safe: if an onCancel handler (or the pose-claim it triggers) loops back
         // into cancel for the same handle, the second delete returns false and we
@@ -95,6 +108,11 @@ export default class MoveRuntime {
         if (!handle || !this._active.delete(handle.id)) return false;
         handle.cancelled = true;
         handle.reason = reason;
+        // Opaque caller-supplied context (e.g. which actor initiated a
+        // pose-claim cancellation) — MoveRuntime doesn't interpret this, it's
+        // just carried onto the handle for onCancel to read instead of the
+        // handler having to guess the initiator from actor state.
+        handle.cancelMeta = meta;
         // Logical teardown first (clear gameplay handles/state), then visual
         // (reset part variants on any target this handle no longer owns).
         handle.onCancel?.(handle);
@@ -122,7 +140,14 @@ export default class MoveRuntime {
     _emit(handle, from, to) {
         for (const event of eventsBetween(handle.clip, from, to)) {
             handle.onEvent?.(event, handle);
+            // The per-handle callback can cancel its own handle (or another
+            // one it's chained to). If it just cancelled THIS handle, onCancel
+            // has already run — stop here rather than also notifying the
+            // global listener about an event on a now-dead handle, and don't
+            // dispatch any later marker crossed by the same update.
+            if (handle.cancelled) return;
             this._onEvent?.(event, handle);
+            if (handle.cancelled) return;
         }
     }
 

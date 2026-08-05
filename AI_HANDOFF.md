@@ -239,10 +239,16 @@ passing, but for the wrong reason: the tuner's known residual-state bug
 (documented in the rig-tuner entry directly below this one — the "revert
 doesn't restore baseline" failures) shifts the canvas hash on unrelated edits
 too, so a changing hash was never real evidence the knob worked. Replaced with a numeric
-head-bounds check (`headCX()`, hoisted above section 2 and reused by section
-4) proving the head does NOT move when `headOffsetY` changes, plus kept the
-export round-trip check (George's config should still persist whatever value
-is set, even though it's inert for rendering). Net: 29 checks → 28 (removed
+head-bounds check, plus kept the export round-trip check (George's config
+should still persist whatever value is set, even though it's inert for
+rendering). **Follow-up axis correction (same session):** the first pass of
+this fix checked `centerX` (`headCX()`) for a `headOffsetY` edit — the wrong
+axis, since `headOffsetY` moves along Y. Added a separate `headCY()` and
+pointed the inertness check at it; `headCX()` stays as-is for section 4's
+`headAnchorFrac.u` check, which is genuinely an X-axis control. Re-ran
+`node tools/rig-tuner/smoke.mjs` under Node 22: still 22/28, same 6
+pre-existing failures — this was a correctness fix to what the assertion
+measures, not a change in outcome. Net: 29 checks → 28 (removed
 the contradictory "changes render" + its "reverting restores baseline"
 follow-up, added one inertness check).
 

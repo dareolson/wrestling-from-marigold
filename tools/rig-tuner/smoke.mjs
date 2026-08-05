@@ -70,14 +70,17 @@ try {
     await settle(page);
     ok(await canvasHash(page) === baseline, 'reverting RIG restores baseline render');
 
-    // Numeric head-bounds check (not a canvas hash) — used both here, to prove
+    // Numeric head-bounds checks (not a canvas hash) — used both here, to prove
     // headOffsetY is inert for george's socket-owned head, and in section 4
-    // below to drive headAnchorFrac. A hash diff isn't safe for either: the
+    // below to drive headAnchorFrac.u. A hash diff isn't safe for either: the
     // tuner's known residual-state bug (see AI_HANDOFF.md's deferred-issues
     // list) can shift the canvas hash for reasons unrelated to the knob under
     // test, which is exactly what previously made this section's assertion
-    // pass for the wrong reason (see below).
+    // pass for the wrong reason (see below). headOffsetY moves along Y, so its
+    // inertness check reads centerY — centerX (headAnchorFrac.u's own axis)
+    // would prove nothing about a Y offset.
     const headCX = () => page.evaluate(() => Math.round(window.__RIG_TOOL.skeleton().head.getBounds().centerX * 100) / 100);
+    const headCY = () => page.evaluate(() => Math.round(window.__RIG_TOOL.skeleton().head.getBounds().centerY * 100) / 100);
 
     // 2. Per-character knob (config + instance). Read the committed value
     // first — hardcoding it makes the test break every time the config is
@@ -93,10 +96,10 @@ try {
     // covering — george's config should still persist whatever value is set,
     // even though it doesn't move his head.
     const origHeadY = await page.evaluate(() => window.__RIG_TOOL.CHARS.george.textures.headOffsetY);
-    const headCXBeforeOffset = await headCX();
+    const headCYBeforeOffset = await headCY();
     await page.evaluate(v => window.__RIG_TOOL.setCharKnob('headOffsetY', v + 31), origHeadY);
     await settle(page);
-    ok((await headCX()) === headCXBeforeOffset,
+    ok((await headCY()) === headCYBeforeOffset,
         "george's socket-owned head does not move when headOffsetY changes");
     text = await page.evaluate(() => window.__RIG_TOOL.exportText());
     ok(text.includes('src/characters/george.js') && text.includes(`headOffsetY: ${origHeadY + 31},`), 'export has character block');

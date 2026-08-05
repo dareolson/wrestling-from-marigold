@@ -1,132 +1,103 @@
 # Arena Lighting and Depth Concepts
 
-**Status:** First lighting experiment IMPLEMENTED (2026-08-04, Claude) and
-awaiting Derek's screenshot review — see "Implementation record" below. Not
-approved as final; nothing beyond this first slice has been started. All
-other concepts remain explicitly backburnered.  
+**Status:** Round 2 of the first lighting experiment IMPLEMENTED (2026-08-05,
+Claude, per Derek + Codex's correction) and awaiting Derek's screenshot
+review — see "Implementation record, round 2" below. Not approved as final;
+nothing beyond this slice has been started. All other concepts remain
+explicitly backburnered.  
 **Purpose:** Explore ways to add depth, spectacle, and period atmosphere to the
 arena without weakening wrestler readability or the 1940s–50s broadcast identity.
 
-## Implementation record — 2026-08-04 (Claude)
+## Implementation record, round 2 — 2026-08-05 (Claude)
 
-Implemented exactly the four items in "First experiment — approved scope"
-below, nothing else. Code lives in `src/scenes/arenaLighting.js` (all tunable
-constants + the fixture/pool/beam draw helpers) plus small, clearly-marked
-hooks in `src/scenes/Arena.js` (`_setupArenaLighting`, the rope-shadow pass
-inside `_updateRopes`, and splitting `drawRingMat`'s seam/logo strokes into
-`_drawRingMarkings` so the mat pool can sit under them). No lighting-engine,
-shader, or normal-map work — everything is layered 2D Graphics, same
-technique the existing smoke/dust/flash/vignette effects already use.
+Derek's round-1 verdict: "it looks terrible" — the fixture sprites in
+particular ("the fixtures are junk"). Codex proposed a physically better
+rope-shadow model (three vertically-stacked ropes under a roughly-overhead
+light source should project toward essentially the same ground line and
+overlap into one soft band, not three separate offset stripes — the round-1
+implementation drew three distinct stripes per side). Derek approved that
+model and asked for this specific punch list, implemented in full:
 
-**Dev toggle:** append `?lighting=0` to the game URL to render the exact
-pre-lighting baseline (fixtures/pool/beams hidden, rope shadows skipped).
-Defaults to enabled. Purely visual — `Arena._setupArenaLighting` returns
-early when off; no gameplay state is touched. For scripted tools,
-`tools/debug/harness.mjs` accepts `WFM_QS=lighting=0` (or any other raw
-querystring) to pass this through.
+- Fixture sprites removed entirely (art + `tools/arena-lighting-cutter/`
+  deleted from the shipped build — both fully recoverable from git history
+  at `ba00501`, the round-1 commit, if ever worth revisiting).
+- Mat light pool: unchanged (round 1's "Mat light pool" design still
+  applies — 14 concentric normal-blended ellipses, masked to the mat).
+- Beams: reworked to have no equipment origin, softer edges, gentle wobble.
+- Rope shadows: rebuilt from three per-rope stripes into one merged,
+  irregular band per ring side, plus the previously-missing far-side band.
 
-### 1. Fixtures
+Code still lives in `src/scenes/arenaLighting.js` (tunables + pool/beam
+draw helpers) plus `src/scenes/Arena.js` (`_setupArenaLighting`, the
+merged-band rope-shadow pass inside `_updateRopes`). Same
+`?lighting=0` dev toggle as round 1, unchanged — see round 1's own note
+below for how it works.
 
-Cut from the gitignored source sheet via the new
-`tools/arena-lighting-cutter/` (mirrors `tools/audience-cutter`'s chroma-key
-+ spill-suppression approach; `find-components.mjs` is the one-time probe
-that found the three bounding boxes, `cut-fixtures.mjs` is the repeatable
-cutter). Shipped as `src/assets/arena-lighting/{left-fresnel-black,
-fresnel-silver, followspot}.png` (280px-wide transparent PNGs, 2x the
-largest planned display width).
+### Beams (reworked)
 
-Final placement (`FIXTURES` in `arenaLighting.js`):
+`BEAMS` in `arenaLighting.js`: still three tapered soft cones, but with no
+fixture to anchor to (`fromY: -60`, above the visible frame — alpha is
+already ~0 there via the same length-wise `sin(π·t)` taper round 1 used, so
+there's no visible point of origin) and two changes for softness: every
+segment now draws a wide/faint halo pass under a slightly-reduced-alpha
+core (same halo technique the visible ropes use), and each beam gets a
+gentle per-segment wobble (`BEAM_WAVE_AMPLITUDE = 5px`, ramping from 0 at
+the source to full at the aim point, `phase`-offset per beam) so the shaft
+reads as wandering haze rather than a rigid geometric cone. Peak alpha
+dropped slightly, 0.1 → 0.075. Depth/masking logic unchanged from round 1.
 
-| Fixture | x | top | width | rotation | flipX |
-|---|---:|---:|---:|---:|---|
-| left-fresnel-black | 245 | -15 | 132 | 9° | no |
-| followspot | 480 | -25 | 118 | 4° | no |
-| fresnel-silver | 715 | -15 | 132 | -9° | yes |
+### Rope shadows (rebuilt)
 
-The followspot is NOT rotated ~90° to point its lens down — a rotation that
-large around a top-anchored (0.5, 0) origin swings the bulk of the sprite
-sideways off-frame instead of hanging downward (found via screenshot, see
-the code comment on `FIXTURES` in `arenaLighting.js`). Its "aimed down"
-character comes from the mat pool + center beam, not the art's own internal
-lens direction. Depth 1.8 (above background/deep crowd, below the mat and
-every wrestler/rope depth) — fixtures render on the main camera like
-everything else, and the HUD's separate camera + ignore-list already
-guarantees it draws on top regardless of Graphics depth, so "sit behind the
-HUD" needed no extra work.
+Round 1 anchored each of the three ropes (bottom/middle/top) at its own
+offset, producing three visibly separate stripes per ring side. Under a
+believable roughly-overhead light, that's wrong — the three ropes should
+converge toward nearly the same ground line. The rebuild in `_updateRopes`:
 
-### 2. Mat light pool
+1. Anchors each side's merged-band **centerline** to the bottom
+   (nearest-to-mat) rope's own live points only, displaced by that side's
+   `(dx, dy)`.
+2. Widens the band wherever the three ropes are **currently** diverging —
+   computed as each rope's live point vs. its own freshly-computed
+   zero-sag/zero-press reference point (same `archPts`/`sidePoint` calls,
+   sag and press forced to 0), so a press or bounce visibly puffs the band
+   out right where it's happening. (First attempt compared the three ropes'
+   raw live positions directly — that's dominated by their ~130px static
+   height gap, not live deformation, and blew the band out to cover half
+   the mat; caught via screenshot at an exaggerated debug alpha, not
+   guessed — see `buildMergedBand`'s comment in `Arena.js`.)
+3. Draws one band per ring side — **four** total: `near` (the only one
+   round 1 drew), `far` (missing in round 1 — the back ropes sit well above
+   the mat's own far edge on screen, so `far.dy = 70`, much larger than the
+   others, just clears that edge), and `side` (shared config, reused for
+   left/right with `dx` signed by direction).
 
-`MAT_POOL` in `arenaLighting.js`: 14 concentric feathered ellipses
-centered at (480, 350), pale warm tint `0xf0e6cc`, peak alpha 0.1, drawn
-**once** at scene creation (static — no per-frame cost). First pass used
-additive blending, which blew out to a near-white blob at the shared center
-point once ~18 rings' alphas summed (found via screenshot, not guessed) —
-switched to normal alpha compositing (biggest/faintest ring first,
-smallest/brightest last), which caps predictably instead of summing.
-Rendered between the flat mat fill (depth 3) and the seam/logo linework
-(now depth 3.2, see `_drawRingMarkings`) so the pool sits under the logo,
-per the brief. Masked to the mat trapezoid.
+`ROPE_SHADOW` in `arenaLighting.js`:
 
-### 3. Atmospheric beams
+| Band | dy | dx | halfW | alpha | spreadMul |
+|---|---:|---:|---:|---:|---:|
+| near | 12px | 0 | 9 | 0.16 | 0.22 |
+| far | 70px | 0 | 6 | 0.10 | 0.18 |
+| side (×2, dx signed) | 10px | 6px | 8 | 0.15 | 0.20 |
 
-`BEAMS` in `arenaLighting.js`: three tapered polygon cones (narrow at the
-fixture, wide at the aim point) with alpha following `sin(π·t)` along each
-beam's own length — 0 at both the fixture and the aim point, peaking
-mid-air. Additive blend, peak alpha 0.1, drawn once (static). Depth 2.9:
-below the mat fill (3), so the mat's own opaque fill gives a free hard stop
-at the near edge in addition to the alpha taper; below every wrestler/rope
-depth so wrestlers occlude the beam in front of them. This was the most
-over-tuned element — 0.35 read as an obvious modern-concert cone in testing,
-0.07 was nearly invisible; 0.1 was the smallest value that still read as
-"something" in the smoky air without competing with the ring.
-
-### 4. Rope shadows
-
-Implemented inside `Arena.js`'s existing `_updateRopes` — the near-rope and
-side-rope point arrays (`archPts`/`sidePoint` output) are captured into
-`nearPtsByRi`/`sidePtsByRi` at the exact point they're already computed for
-the visible ropes, then reused (never recalculated) to draw a second,
-softer, displaced ribbon pass into a masked `this.ropeShadowGfx` every
-frame, using the same `ribbonEdges`/`drawStrip` helpers the visible ropes
-use. `ROPE_SHADOW` in `arenaLighting.js` holds the tunable numbers:
-
-| Rope | dispY | dispX (side only) | halfW | alpha |
-|---|---:|---:|---:|---:|
-| Bottom | 6.5px | 3px | 3.0 | 0.4 |
-| Middle | 11px | 5px | 4.2 | 0.32 |
-| Top | 18px | 8px | 6.0 | 0.24 |
-
-Near (horizontal) ropes get a pure screen-down offset; side ropes add the
-`dispX` component signed away from the center lamp (x=480) on top of a
-slightly reduced vertical offset. Both passes are masked to the mat
-trapezoid via the same `Phaser.GameObjects.Graphics.createGeometryMask()`
-the mat pool uses, so the shadow physically cannot render outside the mat
-polygon — confirmed at an exaggerated debug alpha (0.9 across all three
-ropes) in `ARENA_LIGHTING_EVIDENCE/06_ropeshadow_clip_boundary_boosted.png`,
-where the boundary is unmistakable.
+Softer/lighter than round 1's per-rope alphas (0.24–0.4), per Derek's ask.
+Masked to the mat trapezoid exactly as round 1 was — reconfirmed at an
+exaggerated debug alpha (0.9 on all three bands) in
+`ARENA_LIGHTING_EVIDENCE/06_ropeshadow_clip_boundary_boosted.png`, which
+also makes the near/far/side bands' relative positions and widths easy to
+see clearly (the shipped build's own alpha is far more restrained).
 
 ### Screenshots
 
-All in `ARENA_LIGHTING_EVIDENCE/` (repo root — NOT gitignored, unlike this
-project's usual `tools/*/shots`/`_qa` convention; screenshots are being
-committed here because the brief for this session explicitly asked for
-them as part of the reviewable deliverable):
-
-- `01_baseline_idle.png` / `02_lighting_idle.png` — same camera/state,
-  `?lighting=0` vs default, direct before/after.
-- `03_lighting_move_jab.png` — mid-strike, standing move.
-- `04_lighting_rope_bounce.png` — a wrestler mid-irish-whip, freshly
-  bounced off the near-right ropes (real `triggerRopeBounce` spring sag),
-  proving the shadows track live rope deformation, not a static pass.
-- `05_lighting_roles_swapped.png` — george/thesz swapped (p1/p2), spot-check
-  for layering problems with the other character pairing.
-- `06_ropeshadow_clip_boundary_boosted.png` — near-left corner at an
-  exaggerated debug alpha, proving the clip boundary; the shipped build
-  uses the much more restrained alpha values in the table above.
-
-Generated by `tools/debug/arena_lighting_comparison_shots.mjs` (repeatable —
-rerun it after any further tuning) plus one manual `tools/debug/shot.mjs`
-pass for the boosted clip-boundary frame.
+Same five generated frames as round 1, in `ARENA_LIGHTING_EVIDENCE/` at the
+repo root (still intentionally committed, not gitignored — see round 1's
+own note on why), re-captured against the round-2 code and overwritten in
+place (round 1's frames remain recoverable from git history at `ba00501`):
+`01_baseline_idle.png`, `02_lighting_idle.png`, `03_lighting_move_jab.png`,
+`04_lighting_rope_bounce.png`, `05_lighting_roles_swapped.png`,
+`06_ropeshadow_clip_boundary_boosted.png` (re-captured at a taller crop
+this round so both the near and far bands are visible in one frame).
+Generated by `tools/debug/arena_lighting_comparison_shots.mjs`, unchanged
+from round 1.
 
 ### Verification run
 
@@ -134,40 +105,50 @@ pass for the boosted clip-boundary frame.
 `npm run build` (clean), `npm run debug:play -- hammerlock` (PASS),
 `npm run debug:play -- hammerlockReverse` (PASS), and
 `npm run debug:play -- all` (17/17 PASS) — all on Node 22.23.1. No gameplay
-code was touched; the full scenario-pass result is expected, not a
-coincidence.
+code was touched.
 
 ### What remains visually uncertain (for Derek's review)
 
-- The followspot's own silhouette is the least distinctive of the three at
-  its current small rotation (4°) — it reads as "a fixture" but not as
-  emphatically as the two Fresnels' barn doors. Open to more rotation/scale
-  if Derek wants it more prominent, bounded by the 90°-swings-sideways
-  constraint noted above.
-- The center followspot sits close to the clock/timer HUD element. The HUD
-  renders on a separate camera on top of it (always fully legible — see
-  "Fixtures" above), but it's a tight composition; flagging in case Derek
-  reads it as cluttered despite technically not covering anything.
-- Beam alpha (0.1) was tuned to "smallest value that still reads as
-  something" rather than a fully worked-out target — genuinely the most
-  subjective of the four numbers here.
+- Beam alpha (0.075) is still tuned by feel, not a hard target — Derek's
+  own framing was "might want to experiment with light beams" as a later
+  pass, so this wasn't over-invested this round.
+- The far-side band's `dy = 70` is a bigger displacement than the other
+  three bands by a wide margin, which reads correctly on screen (it lands
+  just past the mat's own far edge) but is worth a second look if the ring
+  geometry or camera ever changes.
 - Not tested against a full 8-minute real match (only scripted scenarios +
-  idle/move snapshots) — no reason to expect a problem (everything reused
-  is either static or already-existing per-frame work) but not directly
-  observed either.
+  idle/move snapshots), same caveat as round 1.
 
 ### Tuning / rollback
 
-Every constant above lives in `src/scenes/arenaLighting.js`, grouped by
-effect (`FIXTURES`, `MAT_POOL`, `BEAMS`/`BEAM_PEAK_ALPHA`/`BEAM_DEPTH`,
-`ROPE_SHADOW`). To reduce or disable without touching gameplay code:
+Same as round 1: every constant lives in `src/scenes/arenaLighting.js`,
+grouped by effect (`MAT_POOL`, `BEAMS`/`BEAM_PEAK_ALPHA`/`BEAM_DEPTH`/
+`BEAM_WAVE_AMPLITUDE`, `ROPE_SHADOW`). Quick A/B via `?lighting=0`;
+permanent disable by changing `lightingEnabled()`'s default to `false`;
+reduce any one effect by editing its constants directly.
 
-- Quick A/B: `?lighting=0` in the URL.
-- Permanent disable: change `lightingEnabled()`'s default in
-  `arenaLighting.js` to `false`.
-- Reduce any one effect: edit its constants directly — e.g. halve
-  `MAT_POOL.peakAlpha`, drop `BEAM_PEAK_ALPHA`, or scale down
-  `ROPE_SHADOW.alpha`.
+## Implementation record, round 1 — 2026-08-04 (Claude, superseded above)
+
+<details>
+<summary>Original fixture/beam/rope-shadow implementation — kept for
+history; fixtures were removed and beams/rope-shadows reworked in round 2
+above. Not the current behavior.</summary>
+
+Implemented exactly the four items in "First experiment — approved scope"
+below: three fixture sprites cut from the gitignored source sheet via
+`tools/arena-lighting-cutter/` and placed per the "Recommended fixture map"
+below; the mat light pool described in round 2 above (unchanged since);
+three fixture-anchored atmospheric beams; and rope shadows drawn as three
+separate per-rope offset stripes per side (`ROPE_SHADOW.dispY = [6.5, 11,
+18]` for bottom/middle/top, `dispX = [3, 5, 8]` for the side ropes).
+
+Verification, screenshots, and toggle mechanism were the same shape as
+round 2 documents above. See commit `ba00501` for the exact code, and
+`tools/arena-lighting-cutter/find-components.mjs` /`cut-fixtures.mjs` (also
+removed from the working tree in round 2, recoverable the same way) for how
+the three fixture sprites were cut from the six-fixture concept sheet.
+
+</details>
 
 ## Current sequencing decision — Derek, 2026-08-04
 
@@ -241,6 +222,12 @@ The first in-game experiment should use only three fixtures. Using all six at
 once would make the arena look like an asset showcase.
 
 ## Recommended fixture map
+
+**2026-08-05 update: tried and rejected.** This placement was implemented
+almost exactly as specified in round 1 (`ba00501`) and Derek's verdict was
+"the fixtures are junk" — removed entirely in round 2. Kept below as design
+history / in case a different art treatment is worth trying later, not as
+an active recommendation.
 
 The game canvas is 960×600. The ring is centered around x=480, with its far edge
 at y=258 and near edge at y=445.

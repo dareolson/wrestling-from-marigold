@@ -155,6 +155,51 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-08-05 (Arena lighting round 2 — fixtures removed, beams softened, rope shadows rebuilt as merged bands) — Claude
+
+Follow-up to 2026-08-04's arena-lighting slice below, per Derek's live
+verdict ("it looks terrible... the fixtures are junk") after having Codex
+look at it, plus a specific correction Codex proposed and Derek approved:
+under a roughly-overhead light source, three vertically-stacked ropes
+should project toward essentially the same ground line and overlap into
+ONE soft irregular band, not three separate offset stripes. Full writeup in
+`ARENA_LIGHTING_AND_DEPTH_CONCEPTS.md`'s new "Implementation record, round
+2" section (round 1's record demoted to a collapsed `<details>` below it,
+not deleted).
+
+**What changed.**
+- Fixture sprites removed entirely — art (`src/assets/arena-lighting/`) and
+  cutter tool (`tools/arena-lighting-cutter/`) both `git rm`'d from the
+  working tree. Fully recoverable from git history at `ba00501` if ever
+  worth revisiting.
+- Mat light pool: untouched.
+- Beams: no more fixture anchor (now originate above the visible frame,
+  alpha already ~0 there), added a soft halo pass per segment plus a gentle
+  per-beam wobble so they read as haze, not a rigid cone. Peak alpha
+  0.1 → 0.075.
+- Rope shadows: rebuilt in `Arena.js`'s `_updateRopes` from three per-rope
+  offset stripes into one merged band per ring side (near/far/left/right —
+  far was missing entirely in round 1). Each band's centerline follows the
+  BOTTOM rope only; width widens where all three ropes are *currently*
+  diverging (live point vs. each rope's own freshly-computed zero-sag/
+  zero-press reference point), not their raw static distance from each
+  other — the first attempt used raw distance and the ~130px static height
+  gap between the ropes blew the band out to cover half the mat, caught via
+  screenshot at an exaggerated debug alpha before it shipped.
+
+**Verification.** Same suite as round 1, all green again: `npm test`
+(113/113), `rig:validate`, `build`, `debug:play -- hammerlock` /
+`hammerlockReverse` (PASS), `debug:play -- all` (17/17) — Node 22.23.1.
+
+**Screenshots.** `ARENA_LIGHTING_EVIDENCE/` re-captured in place against
+the round-2 code (same 6 filenames as round 1; round 1's frames remain
+recoverable from git history at `ba00501`).
+
+**Status:** implementation complete, tests/build/scenarios all green,
+pushed, awaiting Derek's visual re-review. Round 1's commit (`ba00501`) was
+already on `origin/master` before this pass started (confirmed via
+`git fetch` — earlier local reporting that it was unpushed was stale).
+
 ### 2026-08-04 (Arena lighting experiment — fixtures, mat pool, beams, rope shadows) — Claude
 
 First arena-lighting visual slice, per `ARENA_LIGHTING_AND_DEPTH_CONCEPTS.md`'s

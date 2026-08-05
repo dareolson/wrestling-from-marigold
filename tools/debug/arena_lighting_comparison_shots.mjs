@@ -117,4 +117,64 @@ await shot('05_lighting_roles_swapped', {
 delete process.env.WFM_P1;
 delete process.env.WFM_P2;
 
+// --- Round 3 close crops --------------------------------------------------
+// Game canvas is 960x600 (see src/constants.js), rendered into the harness's
+// 1100x700 viewport under Phaser.Scale.FIT + CENTER_BOTH — uniform scale,
+// letterboxed vertically only. toScreen() maps a game-space rect to the
+// screenshot-space `clip` box these crops need.
+const SCALE = Math.min(1100 / 960, 700 / 600);
+const OFFSET_Y = (700 - 600 * SCALE) / 2;
+const toScreen = (x, y, w, h) => ({ x: x * SCALE, y: y * SCALE + OFFSET_Y, width: w * SCALE, height: h * SCALE });
+
+async function crop(label, rect, { qs } = {}) {
+    if (qs) process.env.WFM_QS = qs; else delete process.env.WFM_QS;
+    const h = await launch();
+    await h.page.waitForTimeout(5700);
+    await h.screenshot(`${DIR}/${label}.png`, toScreen(...rect));
+    await h.close();
+    console.log(`  ${label}.png`);
+}
+
+// 7. Mat center, tight crop — the orb-elimination proof. Wide enough to show
+// the pool reading as a broad, even exposure plateau with no small bright
+// core/bullseye/ring-stepping at the middle.
+await crop('07_mat_center_crop', [330, 260, 300, 220]);
+
+// 8-10. Rope shadow vs. visible rope, same frame, for a direct thickness
+// comparison per side — see ROPE_SHADOW's comment in arenaLighting.js for
+// the target (shadow close to the rope's own rendered width).
+await crop('08_near_rope_crop', [380, 365, 300, 55]);
+await crop('09_far_rope_crop', [350, 195, 300, 130]);
+await crop('10_side_rope_crop', [52, 221, 192, 186]);
+
+// 11. Dust catching a beam — polls live dustMote alpha (boosted by
+// beamInfluenceAt in arenaLighting.js when a mote sits inside a shaft;
+// ambient peak is ~0.1-0.2, beam-caught motes run well above that) and
+// grabs a tight crop around the brightest one seen in a ~20s window rather
+// than a fixed timestamp, since mote spawn/position is randomized.
+{
+    delete process.env.WFM_QS;
+    const h = await launch();
+    await h.page.waitForTimeout(5700);
+    let best = null;
+    for (let i = 0; i < 70; i++) {
+        await h.page.waitForTimeout(500);
+        const motes = await h.page.evaluate(() => {
+            const sc = window.__WFM_GAME?.scene?.scenes?.[0];
+            if (!sc) return [];
+            return sc.children.list
+                .filter(o => o.texture?.key === 'dustMote')
+                .map(o => ({ x: o.x, y: o.y, alpha: o.alpha }));
+        });
+        for (const m of motes) {
+            if (m.alpha > (best?.alpha ?? 0)) {
+                best = m;
+                await h.screenshot(`${DIR}/11_dust_in_beam_crop.png`, toScreen(best.x - 130, best.y - 100, 260, 200));
+            }
+        }
+    }
+    await h.close();
+    console.log(`  11_dust_in_beam_crop.png (best mote alpha ${best?.alpha?.toFixed(2)})`);
+}
+
 console.log(`Done — see ${DIR}`);

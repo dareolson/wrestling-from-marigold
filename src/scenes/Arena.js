@@ -9,7 +9,7 @@ import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { jabClip } from '../animation/clips/jab.js';
 import { hammerlockClip } from '../animation/clips/hammerlock.js';
-import { lightingEnabled, drawMatLightPool, drawBeams, BEAM_DEPTH, ROPE_SHADOW } from './arenaLighting.js';
+import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW } from './arenaLighting.js';
 
 // 2026-07-26 (promoted-george roster change): the roster is now just these
 // two. George is the former AI art-swap pilot (v1-v9), flattened and
@@ -2371,41 +2371,54 @@ export default class Arena extends Phaser.Scene {
             }
         });
 
-        // Dynamic mat-clipped rope shadows — one merged, irregular band per
-        // ring side (near/far/left/right), anchored to the BOTTOM rope's
-        // own live points and displaced per ROPE_SHADOW, not three separate
+        // Dynamic mat-clipped rope shadows — one thin, merged line per ring
+        // side (near/far/left/right), anchored to the BOTTOM rope's own
+        // live points and displaced per ROPE_SHADOW, not three separate
         // offset stripes (see ROPE_SHADOW's own comment in arenaLighting.js
-        // for why). Drawn into the masked this.ropeShadowGfx (clipped to
-        // the mat trapezoid by its GeometryMask, see _setupArenaLighting).
-        // Skipped entirely when the lighting experiment is off (?lighting=0).
+        // for why merged, and for round 3's "close to rope width, fixed
+        // width" correction). Drawn into the masked this.ropeShadowGfx
+        // (clipped to the mat trapezoid by its GeometryMask, see
+        // _setupArenaLighting). Skipped entirely when the lighting
+        // experiment is off (?lighting=0).
         if (this.lightingOn && this.ropeShadowGfx) {
             const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
             // Builds one band's centerline + per-point half-width from the
             // three live rope point arrays (bottom/middle/top, same length)
             // and their matching zero-deflection reference arrays: centerline
-            // follows the bottom rope, offset by (dx, dy); width widens
-            // wherever any of the three ropes is CURRENTLY deforming (its
-            // live point vs its own reference point — press, bounce), via
-            // cfg.spreadMul. Measuring each rope's deviation from its own
-            // reference (rather than the three ropes' raw distance from each
-            // other) is what keeps the band tied to live sag/bounce instead
-            // of the ~130px static height gap between the bottom/middle/top
-            // ropes themselves, which would otherwise dominate and blow the
-            // band out to cover most of the mat.
+            // follows the bottom rope, offset by (dx, dy). `spread` (each
+            // rope's live point vs its own reference point — press, bounce)
+            // is still measured here but ROPE_SHADOW's spreadMul is 0 as of
+            // round 3 — Derek: the shadows should be close to rope width and
+            // hold that width through sag/bounce, so only the centerline
+            // moves; width no longer inflates. Left wired through cfg so a
+            // future pass can dial it back in via that one constant instead
+            // of re-deriving this measurement.
+            // cfg.taper(t), t = 0 (near corner) -> 1 (far corner), lets the
+            // side bands narrow with perspective the same way the visible
+            // side ropes do (see their own `hw` formula above) — near/far
+            // bands don't pass one, so their width stays flat end to end.
             const buildMergedBand = (bPts, mPts, tPts, bRef, mRef, tRef, dx, dy, cfg) => {
                 const pts = [], hw = [];
                 for (let i = 0; i < bPts.length; i++) {
                     const spread = Math.max(dist(bPts[i], bRef[i]), dist(mPts[i], mRef[i]), dist(tPts[i], tRef[i]));
+                    const t = i / (bPts.length - 1);
+                    const taper = cfg.taper ? cfg.taper(t) : 1;
                     pts.push({ x: bPts[i].x + dx, y: bPts[i].y + dy });
-                    hw.push(cfg.halfW + spread * cfg.spreadMul);
+                    hw.push(cfg.halfW * taper + spread * cfg.spreadMul);
                 }
                 return { pts, hw };
             };
+            // Round 3: no more 1.8x-wider halo pass — that's what blew these
+            // up into 12-32px stripes. A hard overhead light casts a shadow
+            // close to the width of the rope itself, so the halo here is
+            // just the same ~1px antialiasing fringe the visible ropes'
+            // own fillRibbon/fillRibbonBands use (AA, above), not a second
+            // wide band.
             const drawBand = (pts, hw, alpha) => {
+                const halo = ribbonEdges(pts, hw.map(v => v + AA));
+                drawStrip(this.ropeShadowGfx, halo.top, halo.bot, ROPE_SHADOW.color, alpha * 0.3);
                 const core = ribbonEdges(pts, hw);
                 drawStrip(this.ropeShadowGfx, core.top, core.bot, ROPE_SHADOW.color, alpha);
-                const halo = ribbonEdges(pts, hw.map(v => v * 1.8));
-                drawStrip(this.ropeShadowGfx, halo.top, halo.bot, ROPE_SHADOW.color, alpha * 0.35);
             };
 
             const N = ROPE_SHADOW.near;
@@ -2520,12 +2533,19 @@ export default class Arena extends Phaser.Scene {
 
         // Mat pool sits between the flat mat fill (depth 3, drawRingMat) and
         // the seam/logo linework (depth 3.2, _drawRingMarkings) — see that
-        // method's comment for the full depth stack.
-        const poolGfx = this.add.graphics().setDepth(3.1).setMask(matMask);
-        drawMatLightPool(poolGfx);
+        // method's comment for the full depth stack. A single tinted glow
+        // Image now (see createMatLightPool), not a Graphics fill — round 3
+        // fix for the concentric-ellipse "orb" bug (see arenaLighting.js's
+        // header comment).
+        const poolImg = createMatLightPool(this).setDepth(3.1).setMask(matMask);
 
         const beamGfx = this.add.graphics().setDepth(BEAM_DEPTH);
         drawBeams(beamGfx);
+
+        // Restrained footprint glow where each beam lands on the crowd/haze
+        // band behind the ring — same depth as the shafts themselves so
+        // they read as one continuous light, not a separate effect.
+        for (const spill of createBeamSpill(this)) spill.setDepth(BEAM_DEPTH);
 
         // Rope shadows redraw every frame in _updateRopes (reusing that
         // method's own live rope point arrays) — just the masked Graphics
@@ -2614,9 +2634,15 @@ export default class Arena extends Phaser.Scene {
             .setAlpha(0)
             .setScale(baseScale, baseScale);
         const life = 4000 + Math.random() * 3000;
+        // Motes spawned inside a beam's footprint catch the light and read
+        // brighter than ambient ones — beamInfluenceAt (arenaLighting.js) is
+        // the shared field every atmospheric particle can sample; checked
+        // once at spawn (motes drift only ~50px, so the beam they started
+        // in is still the one they're mostly in) rather than every frame.
+        const beamBoost = this.lightingOn ? beamInfluenceAt(x, y) * 0.35 : 0;
         this.tweens.add({
             targets: mote,
-            alpha: 0.1 + Math.random() * 0.1,
+            alpha: 0.1 + Math.random() * 0.1 + beamBoost,
             duration: life / 2,
             yoyo: true,
             ease: 'Sine.easeInOut',

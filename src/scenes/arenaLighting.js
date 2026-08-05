@@ -6,13 +6,27 @@
 // ROPE_SHADOW's comment below), but its tunable numbers live here with
 // everything else.
 //
+// 2026-08-05 (round 3, Derek's visual verdict on round 2): "orb in the
+// middle of the ring", "feels composited over the scene", "rope shadows
+// dramatically too thick". Three fixes:
+//   - Mat pool rebuilt from stacked normal-blended ellipses (round 1/2's
+//     technique — see git history — still summed to a small bright core at
+//     the shared center point no matter how low peakAlpha went, since every
+//     ring's fill still overlaps every smaller ring on top of it) into ONE
+//     draw of a smooth radial-gradient canvas texture (ensureGlowTexture),
+//     so there's no ring-stack construction left to produce a core at all.
+//   - Beams now drive a real influence field (beamInfluenceAt) that
+//     brightens dust motes passing through a shaft and casts a restrained
+//     footprint glow on the crowd/haze band where each shaft lands, so the
+//     light has visible consequences instead of sitting on top of the scene
+//     as translucent polygons.
+//   - Rope shadows shrunk from ~9-32px halo'd bands down to ~rope-width
+//     hard lines (see ROPE_SHADOW) with spreadMul removed — width is now
+//     fixed; only the centerline moves with live sag/press.
+//
 // 2026-08-05 (round 2, Derek + Codex): the three visible fixture sprites
 // from the first pass were cut entirely ("the fixtures are junk") — see git
 // history at ba00501 for that art/placement if it's ever worth revisiting.
-// The beams were reworked to read as ambient shafts from above the frame
-// with no equipment implied, and the rope shadows were rebuilt from three
-// separate per-rope stripes into one merged, irregular band per ring side —
-// see ROPE_SHADOW's comment for the physical reasoning.
 //
 // Toggle: append ?lighting=0 to the game URL to render the pre-lighting
 // baseline (pool/beams hidden, rope shadows skipped) for an exact
@@ -21,82 +35,116 @@ export function lightingEnabled() {
     return new URLSearchParams(location.search).get('lighting') !== '0';
 }
 
-// Broad, feathered mat pool — many concentric normal-blended ellipses with a
-// quadratic alpha falloff (same layered-circle technique as Arena.js's
-// createSmokeTexture/createFlashTexture/createDustTexture, just elliptical
-// and drawn once instead of baked into a reusable point texture, since this
-// is a single static shape, not a spawned instance). See drawMatLightPool's
-// own comment for why normal blend, not additive.
+// Shared soft-edged white circle, generated once per page load as an actual
+// canvas radial gradient (browser-interpolated, not a stack of discrete
+// rings) and reused — tinted/scaled/positioned differently — by both the mat
+// pool and the beam spill footprints below. A flat plateau out to ~55% of
+// the radius, then one continuous falloff to fully transparent at the edge:
+// no intermediate stops, so there's nothing to read as banding or stepping.
+const GLOW_TEX_KEY = 'arenaGlowTex';
+const GLOW_TEX_SIZE = 256;
+function ensureGlowTexture(scene) {
+    if (scene.textures.exists(GLOW_TEX_KEY)) return;
+    const tex = scene.textures.createCanvas(GLOW_TEX_KEY, GLOW_TEX_SIZE, GLOW_TEX_SIZE);
+    const ctx = tex.getContext();
+    const c = GLOW_TEX_SIZE / 2;
+    const grad = ctx.createRadialGradient(c, c, 0, c, c, c);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.55, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.8, 'rgba(255,255,255,0.5)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, GLOW_TEX_SIZE, GLOW_TEX_SIZE);
+    tex.refresh();
+}
+
+// Broad, feathered mat pool — a single tinted/scaled Image drawn from the
+// shared glow texture (ensureGlowTexture), not a stack of shapes, so the
+// center is a true flat plateau instead of a re-composited bright core (see
+// this file's header comment for why the old construction always produced
+// one). Elliptical via non-uniform scale (outerRx/outerRy independently).
 export const MAT_POOL = {
     x: 480, y: 350,
     color: 0xf0e6cc, // pale warm tungsten, not neutral white — period followspot color
     outerRx: 250, outerRy: 145,
-    rings: 14,
-    peakAlpha: 0.1,
+    peakAlpha: 0.16,
 };
 
-// Atmospheric beams — no fixture sprites are drawn this pass (see this
-// file's header comment), so these read as ambient light entering from
-// above the visible frame rather than shafts from a specific lamp.
-// `fromY` sits above y=0 and the length-wise alpha profile (see drawBeams)
-// is already ~0 near the source, so there's no visible point of origin.
-// `phase` offsets each beam's gentle organic wobble (drawBeams) so the
-// three don't wave in lockstep.
+// Returns a masked/positioned Image ready for the caller to setDepth+setMask
+// (Arena.js's _setupArenaLighting owns depth/mask, matching every other
+// lighting layer).
+export function createMatLightPool(scene) {
+    ensureGlowTexture(scene);
+    const { x, y, color, outerRx, outerRy, peakAlpha } = MAT_POOL;
+    return scene.add.image(x, y, GLOW_TEX_KEY)
+        .setTint(color)
+        .setAlpha(peakAlpha)
+        .setScale((outerRx * 2) / GLOW_TEX_SIZE, (outerRy * 2) / GLOW_TEX_SIZE);
+}
+
+// Atmospheric beams — no fixture sprites are drawn (see this file's header
+// comment), so these read as ambient light entering from above the visible
+// frame rather than shafts from a specific lamp. `fromY` sits above y=0 and
+// the length-wise alpha profile (see drawBeams) is already ~0 near the
+// source, so there's no visible point of origin. `phase` offsets each
+// beam's gentle organic wobble (drawBeams) so the three don't wave in
+// lockstep.
+//
+// Round 3: peak alpha raised (0.075 -> 0.13) per Derek's "underwhelming,
+// feels composited" verdict — judged against post-processed screenshots
+// (scanlines/grain/vignette/smoke all applied), not raw Graphics output.
 export const BEAMS = [
     { fromX: 300, fromY: -60, toX: 410, toY: 340, startHalfW: 10, endHalfW: 60, phase: 0 },
     { fromX: 480, fromY: -60, toX: 480, toY: 330, startHalfW: 12, endHalfW: 66, phase: 2.1 },
     { fromX: 660, fromY: -60, toX: 550, toY: 340, startHalfW: 10, endHalfW: 60, phase: 4.2 },
 ];
 export const BEAM_COLOR = 0xece2c8;
-export const BEAM_PEAK_ALPHA = 0.075;
+export const BEAM_PEAK_ALPHA = 0.13;
 export const BEAM_DEPTH = 2.9; // above deep crowd/far posts, below the ring mat (3) so the mat's own opaque fill gives a free hard stop, below wrestlers (12+)
 export const BEAM_WAVE_AMPLITUDE = 5; // px — breaks up the straight taper so it doesn't read as a rigid geometric cone
 
-// Rope-shadow projection, applied inside Arena.js's _updateRopes to the same
-// live points archPts()/sidePoint() already compute for the visible ropes —
-// never a separate sag/press calculation.
-//
-// Round 1 drew three separate offset stripes, one per rope (bottom/middle/
-// top). Codex's correction: under a roughly-overhead light source, three
-// vertically stacked ropes project toward essentially the same ground line
-// — their shadows overlap into ONE soft, irregular band below the lowest
-// (nearest-to-mat) rope, not three parallel stripes. So each merged band
-// below is anchored to the BOTTOM rope's own live points (RING.ropes[0]),
-// displaced by a single dy(/dx); the middle and top ropes only contribute
-// extra width where all three currently diverge (press/bounce), via
-// `spreadMul` — see the buildMergedBand comment in Arena.js — which is how
-// "sag and bounce still deform" the combined shadow without drawing them as
-// separate layers again.
-//
-// Four bands, one per ring side: `near` (the bottom horizontal rope, the
-// only one round 1 drew), `far` (missing entirely in round 1 — the back
-// ropes sit well above the mat's own far edge in screen space, so `far.dy`
-// is much larger, just enough to land the band just past that edge), and
-// one shared `side` config reused for both the left and right ropes (dx
-// signed by direction in Arena.js).
-export const ROPE_SHADOW = {
-    color: 0x000000,
-    near: { dy: 12, dx: 0, halfW: 9, alpha: 0.16, spreadMul: 0.22 },
-    far:  { dy: 70, dx: 0, halfW: 6, alpha: 0.10, spreadMul: 0.18 },
-    side: { dy: 10, dx: 6, halfW: 8, alpha: 0.15, spreadMul: 0.20 },
-};
+// Beam "footprint" glow — a restrained, spatially-corresponding brightening
+// of the crowd/haze band directly behind the ring where each shaft actually
+// lands, using the same shared glow texture as the mat pool (tinted/scaled/
+// additive instead of normal-blended). This is what makes the beams read as
+// interacting with the environment instead of floating in front of it.
+export const BEAM_SPILL_Y = 150; // mid-crowd band, above the ring apron, below the crowd's own top rows
+export const BEAM_SPILL_ALPHA = 0.1;
 
-// Draws the mat light pool once into a dedicated Graphics object (masked to
-// the mat trapezoid by the caller) — static, so no per-frame redraw cost.
-// Deliberately NORMAL blend, not additive: concentric rings under additive
-// blending sum their alphas at the shared center point (18 rings at even a
-// modest peak alpha blew out to near-white — found via screenshot, not
-// guessed), whereas normal alpha compositing (biggest/faintest ring first,
-// smallest/brightest painted last) gives a predictable, restrained peak
-// exactly equal to peakAlpha, matching the "no washed-out mat/logo detail"
-// requirement.
-export function drawMatLightPool(gfx) {
-    const { x, y, color, outerRx, outerRy, rings, peakAlpha } = MAT_POOL;
-    for (let i = rings; i >= 1; i--) {
-        const t = i / rings;
-        gfx.fillStyle(color, peakAlpha * (1 - t) * (1 - t));
-        gfx.fillEllipse(x, y, outerRx * t * 2, outerRy * t * 2);
+export function createBeamSpill(scene) {
+    ensureGlowTexture(scene);
+    return BEAMS.map(b => {
+        const t = (BEAM_SPILL_Y - b.fromY) / (b.toY - b.fromY);
+        const cx = b.fromX + (b.toX - b.fromX) * t;
+        const hw = b.startHalfW + (b.endHalfW - b.startHalfW) * t;
+        return scene.add.image(cx, BEAM_SPILL_Y, GLOW_TEX_KEY)
+            .setBlendMode(Phaser.BlendModes.ADD)
+            .setTint(BEAM_COLOR)
+            .setAlpha(BEAM_SPILL_ALPHA)
+            .setScale((hw * 4.4) / GLOW_TEX_SIZE, (hw * 2.6) / GLOW_TEX_SIZE);
+    });
+}
+
+// Shared influence field so atmospheric particles (currently just dust
+// motes, see Arena.js's _scheduleDustMote) can react to the beams without a
+// general lighting engine or a second per-frame pass: given a point, how
+// deep inside a beam's cross-section it sits (0 outside every beam, up to 1
+// dead-center in a beam at its brightest length-wise point). Reuses each
+// beam's own straight-line lerp + linear half-width taper — no new geometry.
+export function beamInfluenceAt(x, y) {
+    let influence = 0;
+    for (const b of BEAMS) {
+        const t = (y - b.fromY) / (b.toY - b.fromY);
+        if (t < 0 || t > 1) continue;
+        const cx = b.fromX + (b.toX - b.fromX) * t;
+        const hw = b.startHalfW + (b.endHalfW - b.startHalfW) * t;
+        const d = Math.abs(x - cx);
+        if (d >= hw) continue;
+        const edge = 1 - d / hw; // 1 at centerline, 0 at the beam's own edge
+        const lengthProfile = Math.sin(Math.PI * t); // matches drawBeams' own alpha taper
+        influence = Math.max(influence, edge * lengthProfile);
     }
+    return influence;
 }
 
 // Draws the atmospheric beams once into a dedicated Graphics object. Each
@@ -138,3 +186,33 @@ export function drawBeams(gfx) {
         }
     }
 }
+
+// Rope-shadow projection, applied inside Arena.js's _updateRopes to the same
+// live points archPts()/sidePoint() already compute for the visible ropes —
+// never a separate sag/press calculation.
+//
+// Round 2 drew one merged band per ring side (see git history for the
+// physical reasoning: three vertically-stacked ropes under a roughly-
+// overhead light converge toward one ground line). Round 3 keeps that
+// merged-band structure but corrects its scale: Derek's verdict was that
+// the bands (halfW 6-9, plus a 1.8x-wider halo pass) read as broad ~12-32px
+// stripes, nowhere near "hard overhead shadow" — a hard light source casts
+// a shadow close to the width of the thing casting it. `halfW` below is now
+// sized to roughly match each side's own visible rope width (near ropes
+// draw at halfW 2, far at halfW 1, side ropes taper ~1.5->0.9 — see
+// Arena.js's fillRibbon/fillRibbonBands calls in _updateRopes), the 1.8x
+// halo is gone (replaced with the same ~1px antialiasing halo the visible
+// ropes themselves use, see AA in _updateRopes), and `spreadMul` — which
+// widened the band under sag/press — is 0: sag/bounce now only moves the
+// centerline (still anchored to the bottom rope's own live points, offset
+// by dx/dy), never inflates the shadow's width. See buildMergedBand's
+// comment in Arena.js for the centerline mechanics, unchanged from round 2.
+// side.taper mirrors the visible side ropes' own perspective narrowing
+// (Arena.js's `hw.push((3.0 - 1.2 * t) / 2)` in _updateRopes) as a
+// multiplier on halfW, t = 0 (near corner) -> 1 (far corner).
+export const ROPE_SHADOW = {
+    color: 0x000000,
+    near: { dy: 12, dx: 0, halfW: 2.2, alpha: 0.4, spreadMul: 0 },
+    far:  { dy: 70, dx: 0, halfW: 1.3, alpha: 0.35, spreadMul: 0 },
+    side: { dy: 10, dx: 6, halfW: 1.7, alpha: 0.38, spreadMul: 0, taper: t => 1 - 0.4 * t },
+};

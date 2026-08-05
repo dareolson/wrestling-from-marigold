@@ -92,8 +92,8 @@ export async function launch() {
             }, since);
         },
 
-        async screenshot(path) {
-            await page.screenshot({ path });
+        async screenshot(path, clip) {
+            await page.screenshot(clip ? { path, clip } : { path });
             return path;
         },
 

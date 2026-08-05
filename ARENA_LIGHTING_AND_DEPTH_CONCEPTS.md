@@ -1,14 +1,143 @@
 # Arena Lighting and Depth Concepts
 
-**Status:** Round 2 of the first lighting experiment IMPLEMENTED (2026-08-05,
-Claude, per Derek + Codex's correction) and awaiting Derek's screenshot
-review — see "Implementation record, round 2" below. Not approved as final;
-nothing beyond this slice has been started. All other concepts remain
-explicitly backburnered.  
+**Status:** Round 3 of the first lighting experiment IMPLEMENTED (2026-08-05,
+Claude, per Derek's visual verdict on round 2) and awaiting Derek's
+screenshot review — see "Implementation record, round 3" below. Not approved
+as final; nothing beyond this slice has been started. All other concepts
+remain explicitly backburnered.
 **Purpose:** Explore ways to add depth, spectacle, and period atmosphere to the
 arena without weakening wrestler readability or the 1940s–50s broadcast identity.
 
-## Implementation record, round 2 — 2026-08-05 (Claude)
+## Implementation record, round 3 — 2026-08-05 (Claude)
+
+Derek's round-2 verdict, live in-browser: an unwanted glowing "orb" at ring
+center; the lighting "underwhelming" and "feels composited over the scene
+rather than interacting with it"; rope shadows "dramatically too thick."
+Three targeted fixes, no new effects added and nothing from the backlog
+below pulled forward:
+
+**1. Orb eliminated — mat pool rebuilt as a single gradient texture.**
+Round 1/2's mat pool drew 14 concentric normal-blended ellipses,
+biggest/faintest first, smallest/brightest last. That construction always
+recomposites a small bright core at the shared center point no matter how
+low `peakAlpha` goes — lowering alpha dims the whole pool but can't remove
+the re-compositing itself. Replaced with `ensureGlowTexture` in
+`arenaLighting.js`: one 256px canvas radial gradient (flat plateau to 55%
+of the radius, one continuous falloff to fully transparent at the edge,
+generated once and cached on the texture manager), drawn as a single tinted/
+non-uniformly-scaled Image (`createMatLightPool`) instead of a Graphics
+fill. Same depth/mask/color/size as before (`MAT_POOL` unchanged except
+`peakAlpha` 0.1 → 0.16, tuned after the orb was gone rather than before).
+
+**2. Beams now have a visible effect on the environment.** Previously three
+additive polygons sitting on top of the scene with no consequence beyond
+their own shape. Added, all in `arenaLighting.js`:
+- `beamInfluenceAt(x, y)` — a shared 0..1 influence field reusing each
+  beam's own centerline/half-width/length-alpha-taper math (no new
+  geometry). `Arena.js`'s `_scheduleDustMote` samples it once at spawn and
+  brightens that mote's peak alpha when it starts inside a shaft — see
+  `11_dust_in_beam_crop.png`, a mote caught mid-shaft at alpha ~0.44 versus
+  the ~0.1-0.2 ambient baseline.
+- `createBeamSpill` — a restrained, additive glow (same shared glow
+  texture as the mat pool, tinted `BEAM_COLOR`) at the point each beam
+  crosses `BEAM_SPILL_Y` (mid-crowd band), so the crowd/haze directly
+  behind the ring visibly brightens in the same three columns the shafts
+  occupy, instead of the beams reading as separate from the background.
+- `BEAM_PEAK_ALPHA` raised 0.075 → 0.13, judged from post-processed
+  screenshots (scanlines/grain/vignette/smoke all applied via the scene's
+  own pipeline, not raw Graphics output) against the round-2 baseline —
+  see `02_lighting_idle.png` vs. `01_baseline_idle.png`.
+- Mat/beam alignment: unchanged, already correct — the center beam's
+  `toX: 480` already matches `MAT_POOL.x: 480`.
+
+**3. Rope shadows rebuilt to hard-line thickness.** Round 2's bands
+(`halfW` 6-9, plus a 1.8x-wider halo pass) rendered as ~12-32px stripes —
+nowhere near "hard overhead shadow." A hard light source casts a shadow
+close to the width of the thing casting it, so `ROPE_SHADOW` in
+`arenaLighting.js` now sizes each band's `halfW` to roughly match its own
+rope's visible width (near ropes draw at halfW 2, far at halfW 1, side
+ropes taper ~1.5→0.9 — see `_updateRopes`'s `fillRibbon`/`fillRibbonBands`
+calls): `near` halfW 9→2.2, `far` 6→1.3, `side` 8→1.7, with a new `taper`
+function mirroring the visible side ropes' own perspective narrowing. The
+1.8x-wider halo pass is gone, replaced with the same ~1px antialiasing
+fringe the visible ropes themselves use (`drawBand` in `Arena.js`, reusing
+`AA`). `spreadMul` — which widened every band under live sag/press — is 0
+on all three bands: sag/bounce now only moves each band's centerline
+(still anchored to the bottom rope's own live points, offset by `dx`/`dy`,
+unchanged from round 2), never inflates its width — verified against
+`04_lighting_rope_bounce.png` (far/side bands stay hairline-thin through
+an active bounce) and, at an exaggerated diagnostic alpha (0.9 on all three
+bands, reverted after capture), `06_ropeshadow_clip_boundary_boosted.png` —
+which now shows thin hairlines tight to each rope and to the mat's own
+clip boundary, in contrast to round 2's same diagnostic view showing a
+solid black rectangle.
+
+| Band | dy | dx | halfW | alpha | spreadMul | taper |
+|---|---:|---:|---:|---:|---:|---|
+| near | 12px | 0 | 2.2 | 0.40 | 0 | — |
+| far | 70px | 0 | 1.3 | 0.35 | 0 | — |
+| side (×2, dx signed) | 10px | 6px | 1.7 | 0.38 | 0 | `1 - 0.4t` |
+
+Alpha raised from round 2 (0.10-0.16 → 0.35-0.40) since a thin line needs
+more contrast than a wide band to read as a hard shadow at all — judged
+against `08_near_rope_crop.png`/`09_far_rope_crop.png`/
+`10_side_rope_crop.png`, each showing the shadow directly beside its rope
+for a thickness comparison.
+
+### Screenshots
+
+`ARENA_LIGHTING_EVIDENCE/` at the repo root, all committed. The five
+round-1/2 frames re-captured against round-3 code
+(`01_baseline_idle.png`…`05_lighting_roles_swapped.png`, unchanged
+filenames/scenarios), plus six new frames added this round:
+`06_ropeshadow_clip_boundary_boosted.png` (diagnostic, exaggerated alpha —
+see item 3 above, not representative of shipped alpha),
+`07_mat_center_crop.png` (tight crop on the mat center — no orb, no
+bullseye, no ring-stepping), `08_near_rope_crop.png` /
+`09_far_rope_crop.png` / `10_side_rope_crop.png` (rope-vs-shadow thickness
+comparisons, one per side), and `11_dust_in_beam_crop.png` (a dust mote
+caught mid-beam, found by polling live mote alpha rather than a fixed
+timestamp, since spawn position/timing is randomized). Generated by
+`tools/debug/arena_lighting_comparison_shots.mjs`, extended this round with
+a `crop()` helper (game-space → screenshot-space via the harness's FIT-mode
+scale factor) and the mote-polling step; `tools/debug/harness.mjs`'s
+`screenshot()` gained an optional `clip` parameter to support it.
+
+### Verification run
+
+`npm test` (113/113), `npm run rig:validate` (george + thesz both valid),
+`npm run build` (clean), `npm run debug:play -- hammerlock` (PASS),
+`npm run debug:play -- hammerlockReverse` (PASS) — Node 22.23.1. No
+gameplay code was touched (purely additive/replaced visual layers).
+
+### What remains visually uncertain (for Derek's review)
+
+- Beam alpha (0.13) and the mat pool's `peakAlpha` (0.16) are still tuned
+  by feel against screenshots, not a hard measured target.
+- The dust-beam interaction is a per-spawn alpha boost, not a continuous
+  per-frame effect — a mote that drifts into a beam mid-life won't
+  brighten, and one that drifts out won't dim. Acceptable for the ~50px
+  drift range motes actually cover, called out here in case a wider drift
+  range is ever tuned in.
+- Not tested against a full 8-minute real match (only scripted scenarios +
+  idle/move snapshots), same caveat as rounds 1 and 2.
+
+### Tuning / rollback
+
+Same as rounds 1-2: every constant lives in `src/scenes/arenaLighting.js`,
+grouped by effect (`MAT_POOL`, `BEAMS`/`BEAM_PEAK_ALPHA`/`BEAM_DEPTH`/
+`BEAM_WAVE_AMPLITUDE`/`BEAM_SPILL_Y`/`BEAM_SPILL_ALPHA`, `ROPE_SHADOW`).
+Quick A/B via `?lighting=0`; permanent disable by changing
+`lightingEnabled()`'s default to `false`; reduce any one effect by editing
+its constants directly.
+
+## Implementation record, round 2 — 2026-08-05 (Claude, superseded above)
+
+<details>
+<summary>Fixture removal / beam softening / merged rope-shadow-band
+implementation — kept for history; mat pool construction and rope-shadow
+thickness were both reworked again in round 3 above. Not the current
+behavior.</summary>
 
 Derek's round-1 verdict: "it looks terrible" — the fixture sprites in
 particular ("the fixtures are junk"). Codex proposed a physically better
@@ -126,6 +255,8 @@ grouped by effect (`MAT_POOL`, `BEAMS`/`BEAM_PEAK_ALPHA`/`BEAM_DEPTH`/
 `BEAM_WAVE_AMPLITUDE`, `ROPE_SHADOW`). Quick A/B via `?lighting=0`;
 permanent disable by changing `lightingEnabled()`'s default to `false`;
 reduce any one effect by editing its constants directly.
+
+</details>
 
 ## Implementation record, round 1 — 2026-08-04 (Claude, superseded above)
 

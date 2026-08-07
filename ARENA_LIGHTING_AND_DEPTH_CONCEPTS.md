@@ -1,14 +1,125 @@
 # Arena Lighting and Depth Concepts
 
-**Status:** Round 3 of the first lighting experiment IMPLEMENTED (2026-08-05,
-Claude, per Derek's visual verdict on round 2) and awaiting Derek's
-screenshot review — see "Implementation record, round 3" below. Not approved
-as final; nothing beyond this slice has been started. All other concepts
-remain explicitly backburnered.
+**Status:** Round 4 of the first lighting experiment IMPLEMENTED (2026-08-07,
+Claude, per Codex's geometry review of round 3's rope shadows) and awaiting
+Derek's screenshot review — see "Implementation record, round 4" below. Not
+approved as final; nothing beyond this slice has been started. All other
+concepts remain explicitly backburnered.
 **Purpose:** Explore ways to add depth, spectacle, and period atmosphere to the
 arena without weakening wrestler readability or the 1940s–50s broadcast identity.
 
-## Implementation record, round 3 — 2026-08-05 (Claude)
+## Implementation record, round 4 — 2026-08-07 (Claude)
+
+Codex's review of round 3's rope shadows (Derek had him assess after
+spotting the bottom shadow sitting too high and the top shadow too low):
+correct on both counts, and diagnosed why. Every band (round 2 onward) was
+positioned as "the bottom rope's own live points + a fixed (dx, dy)" — a
+model with no actual relationship to the mat's own geometry. Measured
+against the real numbers: the near/bottom band centered around game y≈398
+while the near mat edge is y=445 (~47px short); the far/top band centered
+around y≈291 while the far edge is y=258 (~33px past it, the wrong
+direction). Every band also depended entirely on the geometry mask to cut
+off whatever spilled past the true edge, rather than being positioned to
+stay inside it. Codex's fix, approved by Derek verbatim: derive one
+continuous shadow perimeter from the mat boundary itself, inset by each
+band's own width, with sag/bounce still riding on top — "a small geometry
+rewrite, not another round of tuning the three `dy` values."
+
+**What changed, all in `_setupArenaLighting`/`_updateRopes` (`Arena.js`) and
+`arenaLighting.js`:**
+
+1. **New `insetMatTrapezoid(ring, distances)`** (`arenaLighting.js`) —
+   insets the mat's own trapezoid (`RING.nearLeft/nearRight/farLeft/
+   farRight`) inward by a distinct distance per edge, mitering adjacent
+   edges together at their exact line-line intersection rather than
+   shifting each edge in isolation. That mitering is what makes adjacent
+   bands share an *exact* corner point — the near band's left endpoint
+   literally is the left band's near endpoint, not a close approximation
+   ("make the side shadows connect those exact endpoints").
+2. **Each band's REST baseline is now a straight line along its own inset
+   mat edge**, computed once in `_setupArenaLighting` and cached as
+   `this._shadowBaseline.{near,far,left,right}` — not recomputed per frame,
+   since the mat geometry is static. Inset distance is
+   `halfW * ROPE_SHADOW.insetMul + insetPad` ("inset every sampled point by
+   the shadow's width instead of relying on the mask as the terminator") —
+   sized so the band's rendered extent (core + ~1px AA halo) sits inside
+   the mat by construction; the geometry mask stays on as a safety net for
+   the rare large-bounce case, not the everyday terminator.
+3. **Live sag/bounce/press still drives the shadow** — each frame,
+   `buildMergedBand` in `_updateRopes` adds the BOTTOM rope's own current
+   deviation from its (now-corrected, see below) reference point onto the
+   baseline, exactly as rounds 2-3 did onto the rope's own position. The
+   shadow still floats and bounces with the real rope; it just rests in
+   the geometrically correct place when the rope is calm.
+
+**Bug found and fixed during verification, not present in Codex's spec:**
+the "reference point" used to measure live deviation (`nearRefByRi` et al.)
+was built with sag forced to exactly 0 — a perfectly flat line. That made
+"deviation" include the rope's own *always-present* resting gravity droop
+(`REST_SAG`, ~6px for the bottom near rope) as if it were live motion, so
+even a perfectly still rope pushed its shadow ~6-8px past the newly-correct
+inset baseline — silently swallowed by relying on the mask again, the exact
+failure mode this rewrite was meant to remove. Caught by sampling actual
+rendered pixel values along the mat centerline at an exaggerated debug
+alpha, not by eyeballing a screenshot: the near shadow's peak darkness
+landed at game y≈448 (past the real edge, y=445) instead of the predicted
+439.6. Fixed by building each reference point with the rope's own resting
+sag included (`rest`, `rest * 0.58`, `sideRest` — matching each live point
+array's own resting term exactly, only omitting the *live* bounce/press
+terms), so "deviation" now measures only motion beyond the rope's normal
+resting shape. Re-verified: near band's peak now lands at game y≈444 (mat
+edge 445), far band's peak at y≈257 (mat edge 258) — both just inside, as
+intended.
+
+`ROPE_SHADOW`'s `dx`/`dy` per band are gone (replaced by the geometric
+baseline); `insetMul`/`insetPad` are new, shared across all three bands:
+
+| Constant | Value |
+|---|---:|
+| `insetMul` | 2.0 |
+| `insetPad` | 1px |
+
+`halfW`/`alpha`/`spreadMul`/`taper` are unchanged from round 3.
+
+### Screenshots
+
+`ARENA_LIGHTING_EVIDENCE/` re-captured in place against round-4 code (same
+filenames as round 3, `01`…`11`; round 3's own frames remain recoverable
+from git history). `06_ropeshadow_clip_boundary_boosted.png` is the most
+directly relevant — captured at the same exaggerated diagnostic alpha
+rounds 2-3 used, it now shows all four bands sitting tight against their
+respective mat edges with visibly connected corners, rather than floating
+in open mat space.
+
+### Verification run
+
+`npm test` (113/113), `npm run rig:validate` (george + thesz both valid),
+`npm run build` (clean), `npm run debug:play -- hammerlock` (PASS),
+`npm run debug:play -- hammerlockReverse` (PASS), `npm run debug:play --
+all` (17/17 PASS) — Node 22.23.1. No gameplay code was touched.
+
+### What remains visually uncertain (for Derek/Codex's review)
+
+- `insetMul`/`insetPad` guarantee the band's *rest* position and its normal
+  width clear the mat edge; they don't put a hard ceiling on how far a
+  large spring bounce can push the centerline. In the normal gameplay range
+  this reads as intended (verified against a real `triggerRopeBounce` in
+  `04_lighting_rope_bounce.png`), but an unusually large bounce could still
+  ride close to or touch the mask boundary — which clips cleanly (never
+  spills past the mat) rather than looking broken, so this is a "confirm
+  it still looks right" flag, not a known bug.
+- Same not-tested-against-a-full-match caveat as every prior round.
+
+### Tuning / rollback
+
+Same as rounds 1-3: every constant lives in `src/scenes/arenaLighting.js`.
+Quick A/B via `?lighting=0`; permanent disable by changing
+`lightingEnabled()`'s default to `false`; reduce any one effect by editing
+its constants directly. To pull a band's rest position closer to or further
+from the mat edge specifically, adjust `ROPE_SHADOW.insetMul`/`insetPad`,
+not `halfW` (which also changes the rendered stroke width).
+
+## Implementation record, round 3 — 2026-08-05 (Claude, superseded above)
 
 Derek's round-2 verdict, live in-browser: an unwanted glowing "orb" at ring
 center; the lighting "underwhelming" and "feels composited over the scene

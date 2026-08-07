@@ -155,6 +155,53 @@ The current rig expects six assets in `src/assets/wrestlers/george/`:
 
 ## Handoff Log
 
+### 2026-08-07 (Arena lighting round 4 — rope shadows re-anchored to the mat's own boundary, not the ropes' own position) — Claude
+
+Follow-up to round 3 (`62d10a3`). Derek had Codex review the rope shadows
+after spotting the bottom one sitting too high and the top one too low;
+Codex confirmed with real numbers (near band ~47px short of the near mat
+edge, far band ~33px past the far edge) and traced it to the actual
+positioning model: every round since round 2 anchored each shadow band to
+"the bottom rope's own live points + a fixed offset," which has no real
+relationship to where the mat's own edge is. Derek approved Codex's fix
+plan verbatim: derive the shadow perimeter from the mat boundary itself,
+inset by the shadow's own width, with sag/bounce riding on top — "a small
+geometry rewrite, not another round of tuning the three `dy` values." Full
+writeup in `ARENA_LIGHTING_AND_DEPTH_CONCEPTS.md`'s new "Implementation
+record, round 4" section.
+
+**What changed.** New `insetMatTrapezoid()` in `arenaLighting.js` insets
+the mat's own trapezoid per-edge, mitering adjacent edges at their exact
+intersection so adjacent shadow bands share a real corner point. Each
+band's rest position is now that inset edge (computed once, cached on
+`this._shadowBaseline`), with live sag/bounce/press still added on top each
+frame in `_updateRopes` — same live-motion feel as before, correct rest
+position now.
+
+**Bug I found and fixed during verification, not part of Codex's original
+diagnosis:** the reference point used to measure "how much is this rope
+currently deviating" was built with sag forced to 0 (a dead-flat line),
+which folded the rope's own always-present resting gravity droop (~6px)
+into "deviation" — so even a perfectly still rope pushed its shadow past
+the new, correct baseline, silently caught by the mask again. Found by
+sampling actual rendered pixel brightness along the mat centerline (not by
+eyeballing a screenshot) — the near shadow's dark peak landed at game
+y≈448 against a predicted 439.6. Fixed by giving the reference point the
+rope's own resting sag too, so only real bounce/press counts as deviation.
+Re-verified by the same pixel-sampling method: near band peak now at
+y≈444 (true edge 445), far band peak at y≈257 (true edge 258).
+
+**Verification.** `npm test` (113/113), `rig:validate`, `build`,
+`debug:play -- hammerlock`/`hammerlockReverse` (PASS), `debug:play -- all`
+(17/17) — Node 22.23.1.
+
+**Screenshots.** `ARENA_LIGHTING_EVIDENCE/` re-captured in place (11 files,
+same set as round 3; round 3's own frames recoverable from git history at
+`62d10a3`).
+
+**Status:** implementation complete, tests/build/scenarios all green,
+awaiting Derek/Codex's visual re-review.
+
 ### 2026-08-05 (Arena lighting round 3 — orb eliminated, beams now interact with the environment, rope shadows cut to hard-line thickness) — Claude
 
 Follow-up to round 2 (`96c50d6`), driven by Derek's live visual verdict on

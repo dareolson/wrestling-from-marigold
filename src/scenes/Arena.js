@@ -9,7 +9,7 @@ import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { jabClip } from '../animation/clips/jab.js';
 import { hammerlockClip } from '../animation/clips/hammerlock.js';
-import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW } from './arenaLighting.js';
+import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
 
 // 2026-07-26 (promoted-george roster change): the roster is now just these
 // two. George is the former AI art-swap pilot (v1-v9), flattened and
@@ -2340,12 +2340,20 @@ export default class Arena extends Phaser.Scene {
             // (side to side), and a toward/away-from-camera bulge reads wrong.
             const nearPts = archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75, null, NBANDS);
             nearPtsByRi[ri] = nearPts;
-            nearRefByRi[ri] = archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, 0, null, NBANDS);
+            // Reference uses `rest` (the rope's own always-present resting
+            // gravity droop), not 0 — a dead-flat line. Zeroing it out made
+            // the near shadow's "deviation" include that resting droop
+            // (~6px, comparable to the whole inset margin) even with the
+            // rope perfectly still, pushing the shadow's baseline-relative
+            // position past the mat edge at rest, not just during a real
+            // bounce (found via pixel-sampling the rendered frame, not
+            // guessed). Only ns (spring bounce) should count as live motion.
+            nearRefByRi[ri] = archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest, null, NBANDS);
             fillRibbonBands(this.nearRopeBands, nearPts,
                 new Array(NBANDS + 1).fill(2), 0x32322e, 1, 0x8e8e82, 0.9);
             const farPts = archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58 + fs * 0.75, null);
             farPtsByRi[ri] = farPts;
-            farRefByRi[ri] = archPts(farLeft.x, rope.farY, farRight.x, rope.farY, 0, null);
+            farRefByRi[ri] = archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58, null);
             fillRibbon(farG, farPts, 1, 0x3c3c38, 0.9, 0x787870);
 
             // Side ropes — one segment per depth band so wrestlers sort
@@ -2362,7 +2370,7 @@ export default class Arena extends Phaser.Scene {
                 for (let i = 0; i <= BANDS; i++) {
                     const t = i / BANDS;
                     pts.push(sidePoint(nearP, farP, rope, dir, t, sideRest, warpX));
-                    ref.push(sidePoint(nearP, farP, rope, dir, t, 0, null));
+                    ref.push(sidePoint(nearP, farP, rope, dir, t, sideRest, null)); // resting droop included, press excluded — see near-rope comment above
                     hw.push((3.0 - 1.2 * t) / 2); // thinner with distance
                 }
                 sidePtsByRi[ri][dir] = pts;
@@ -2382,28 +2390,37 @@ export default class Arena extends Phaser.Scene {
         // experiment is off (?lighting=0).
         if (this.lightingOn && this.ropeShadowGfx) {
             const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-            // Builds one band's centerline + per-point half-width from the
-            // three live rope point arrays (bottom/middle/top, same length)
-            // and their matching zero-deflection reference arrays: centerline
-            // follows the bottom rope, offset by (dx, dy). `spread` (each
-            // rope's live point vs its own reference point — press, bounce)
-            // is still measured here but ROPE_SHADOW's spreadMul is 0 as of
-            // round 3 — Derek: the shadows should be close to rope width and
-            // hold that width through sag/bounce, so only the centerline
-            // moves; width no longer inflates. Left wired through cfg so a
-            // future pass can dial it back in via that one constant instead
-            // of re-deriving this measurement.
+            // Builds one band's centerline + per-point half-width. The
+            // centerline is `baseline` (a REST position running along the
+            // mat's own inset edge — see _setupArenaLighting's
+            // this._shadowBaseline, computed once from insetMatTrapezoid),
+            // perturbed by the BOTTOM rope's own current deviation from its
+            // zero-deflection reference point (bPts[i] - bRef[i]) — i.e. sag/
+            // bounce/press still move the shadow live, they just displace a
+            // point anchored to the mat edge instead of the rope's own
+            // literal (and, for the top rope in particular, far-from-the-
+            // edge) screen position. `spread` (how much any of the three
+            // ropes is currently diverging from its own reference) is still
+            // measured here but ROPE_SHADOW's spreadMul is 0 as of round 3 —
+            // Derek: the shadows should be close to rope width and hold that
+            // width through sag/bounce, so only the centerline moves; width
+            // no longer inflates. Left wired through cfg so a future pass
+            // can dial it back in via that one constant instead of
+            // re-deriving this measurement.
             // cfg.taper(t), t = 0 (near corner) -> 1 (far corner), lets the
             // side bands narrow with perspective the same way the visible
             // side ropes do (see their own `hw` formula above) — near/far
             // bands don't pass one, so their width stays flat end to end.
-            const buildMergedBand = (bPts, mPts, tPts, bRef, mRef, tRef, dx, dy, cfg) => {
+            const buildMergedBand = (bPts, mPts, tPts, bRef, mRef, tRef, baseline, cfg) => {
                 const pts = [], hw = [];
                 for (let i = 0; i < bPts.length; i++) {
                     const spread = Math.max(dist(bPts[i], bRef[i]), dist(mPts[i], mRef[i]), dist(tPts[i], tRef[i]));
                     const t = i / (bPts.length - 1);
                     const taper = cfg.taper ? cfg.taper(t) : 1;
-                    pts.push({ x: bPts[i].x + dx, y: bPts[i].y + dy });
+                    pts.push({
+                        x: baseline[i].x + (bPts[i].x - bRef[i].x),
+                        y: baseline[i].y + (bPts[i].y - bRef[i].y),
+                    });
                     hw.push(cfg.halfW * taper + spread * cfg.spreadMul);
                 }
                 return { pts, hw };
@@ -2424,21 +2441,21 @@ export default class Arena extends Phaser.Scene {
             const N = ROPE_SHADOW.near;
             const near = buildMergedBand(
                 nearPtsByRi[0], nearPtsByRi[1], nearPtsByRi[2],
-                nearRefByRi[0], nearRefByRi[1], nearRefByRi[2], N.dx, N.dy, N);
+                nearRefByRi[0], nearRefByRi[1], nearRefByRi[2], this._shadowBaseline.near, N);
             drawBand(near.pts, near.hw, N.alpha);
 
             const F = ROPE_SHADOW.far;
             const far = buildMergedBand(
                 farPtsByRi[0], farPtsByRi[1], farPtsByRi[2],
-                farRefByRi[0], farRefByRi[1], farRefByRi[2], F.dx, F.dy, F);
+                farRefByRi[0], farRefByRi[1], farRefByRi[2], this._shadowBaseline.far, F);
             drawBand(far.pts, far.hw, F.alpha);
 
             const S = ROPE_SHADOW.side;
             for (const dir of [-1, 1]) {
+                const baseline = dir < 0 ? this._shadowBaseline.left : this._shadowBaseline.right;
                 const side = buildMergedBand(
                     sidePtsByRi[0][dir], sidePtsByRi[1][dir], sidePtsByRi[2][dir],
-                    sideRefByRi[0][dir], sideRefByRi[1][dir], sideRefByRi[2][dir],
-                    S.dx * dir, S.dy, S);
+                    sideRefByRi[0][dir], sideRefByRi[1][dir], sideRefByRi[2][dir], baseline, S);
                 drawBand(side.pts, side.hw, S.alpha);
             }
         }
@@ -2554,6 +2571,39 @@ export default class Arena extends Phaser.Scene {
         // rope depth (12+). The mask keeps it off the far posts (2.5)
         // regardless — see this method's own header comment.
         this.ropeShadowGfx = this.add.graphics().setDepth(3.3).setMask(matMask);
+
+        // Rope-shadow REST baselines — one straight line per ring side,
+        // running along the mat's own trapezoid edge inset inward by that
+        // band's own halfW (see ROPE_SHADOW/insetMatTrapezoid's comments in
+        // arenaLighting.js for why: round 1-3 anchored each band to the
+        // bottom rope's own live position + a fixed offset, which put the
+        // near band ~47px off the near edge and the far band ~33px off the
+        // far edge). Computed once here since the mat geometry is static;
+        // _updateRopes perturbs these points every frame with live sag/
+        // bounce/press, it never repositions them. insetMatTrapezoid miters
+        // the four inset edges together so adjacent bands share an exact
+        // corner point — near/left/far/right connect with no seam.
+        const insetOf = cfg => cfg.halfW * ROPE_SHADOW.insetMul + ROPE_SHADOW.insetPad;
+        const insetCorners = insetMatTrapezoid(RING, {
+            near: insetOf(ROPE_SHADOW.near),
+            far: insetOf(ROPE_SHADOW.far),
+            left: insetOf(ROPE_SHADOW.side),
+            right: insetOf(ROPE_SHADOW.side),
+        });
+        const lerpPts = (p1, p2, segs) => {
+            const pts = [];
+            for (let i = 0; i <= segs; i++) {
+                const t = i / segs;
+                pts.push({ x: p1.x + (p2.x - p1.x) * t, y: p1.y + (p2.y - p1.y) * t });
+            }
+            return pts;
+        };
+        this._shadowBaseline = {
+            near:  lerpPts(insetCorners.nearLeft, insetCorners.nearRight, this.nearRopeBands.length),
+            far:   lerpPts(insetCorners.farLeft, insetCorners.farRight, this.nearRopeBands.length),
+            left:  lerpPts(insetCorners.nearLeft, insetCorners.farLeft, this.sideRopeBands.length),
+            right: lerpPts(insetCorners.nearRight, insetCorners.farRight, this.sideRopeBands.length),
+        };
     }
 
     // Bakes a soft-edged circle texture once — layered fillCircle passes at

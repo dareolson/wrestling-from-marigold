@@ -193,26 +193,79 @@ export function drawBeams(gfx) {
 //
 // Round 2 drew one merged band per ring side (see git history for the
 // physical reasoning: three vertically-stacked ropes under a roughly-
-// overhead light converge toward one ground line). Round 3 keeps that
-// merged-band structure but corrects its scale: Derek's verdict was that
-// the bands (halfW 6-9, plus a 1.8x-wider halo pass) read as broad ~12-32px
-// stripes, nowhere near "hard overhead shadow" — a hard light source casts
-// a shadow close to the width of the thing casting it. `halfW` below is now
-// sized to roughly match each side's own visible rope width (near ropes
-// draw at halfW 2, far at halfW 1, side ropes taper ~1.5->0.9 — see
-// Arena.js's fillRibbon/fillRibbonBands calls in _updateRopes), the 1.8x
-// halo is gone (replaced with the same ~1px antialiasing halo the visible
-// ropes themselves use, see AA in _updateRopes), and `spreadMul` — which
-// widened the band under sag/press — is 0: sag/bounce now only moves the
-// centerline (still anchored to the bottom rope's own live points, offset
-// by dx/dy), never inflates the shadow's width. See buildMergedBand's
-// comment in Arena.js for the centerline mechanics, unchanged from round 2.
-// side.taper mirrors the visible side ropes' own perspective narrowing
-// (Arena.js's `hw.push((3.0 - 1.2 * t) / 2)` in _updateRopes) as a
-// multiplier on halfW, t = 0 (near corner) -> 1 (far corner).
+// overhead light converge toward one ground line). Round 3 corrected its
+// scale (halfW/alpha, see the values below) but kept round 2's positioning
+// model: each band's centerline was the BOTTOM rope's own live points plus
+// a fixed (dx, dy). Codex's round-4 correction: that model is wrong on its
+// face — the bottom rope sits nowhere near the mat's own near edge (~47px
+// off), the "far" band (built the same way, just with a bigger dy) landed
+// ~33px short of the far edge, and every band's core+AA fringe depended on
+// the geometry mask alone to keep it from crossing the mat boundary.
+//
+// Round 4 replaces (dx, dy) with a proper geometric baseline: each band's
+// REST position is a straight line along the mat's own trapezoid edge
+// (RING.nearLeft/nearRight/farLeft/farRight), inset inward by `insetMul *
+// halfW + insetPad` so the band's rendered extent (core + AA halo) sits
+// fully inside the mat by construction — the geometry mask stays on as a
+// safety net, not the terminator. Adjacent bands share their baseline's
+// exact corner point (see insetMatTrapezoid), so near/left/far/right
+// connect with no gap or overlap. Live sag/bounce/press still drives the
+// centerline: each band adds the BOTTOM rope's own current deviation from
+// its zero-deflection reference (see Arena.js's buildMergedBand) on top of
+// this baseline, so the shadow still floats and bounces with the real rope
+// — it just rests in the right place when the rope is calm.
+//
+// `halfW` is sized to roughly match each side's own visible rope width
+// (near ropes draw at halfW 2, far at halfW 1, side ropes taper ~1.5->0.9 —
+// see Arena.js's fillRibbon/fillRibbonBands calls in _updateRopes).
+// `spreadMul` (extra width from live inter-rope divergence) stays 0 per
+// round 3 — sag/bounce moves the centerline, not the width. side.taper
+// mirrors the visible side ropes' own perspective narrowing (Arena.js's
+// `hw.push((3.0 - 1.2 * t) / 2)` in _updateRopes), t = 0 (near corner) -> 1
+// (far corner).
 export const ROPE_SHADOW = {
     color: 0x000000,
-    near: { dy: 12, dx: 0, halfW: 2.2, alpha: 0.4, spreadMul: 0 },
-    far:  { dy: 70, dx: 0, halfW: 1.3, alpha: 0.35, spreadMul: 0 },
-    side: { dy: 10, dx: 6, halfW: 1.7, alpha: 0.38, spreadMul: 0, taper: t => 1 - 0.4 * t },
+    insetMul: 2.0, // extra safety margin beyond halfW + the ~1px AA halo
+    insetPad: 1,
+    near: { halfW: 2.2, alpha: 0.4, spreadMul: 0 },
+    far:  { halfW: 1.3, alpha: 0.35, spreadMul: 0 },
+    side: { halfW: 1.7, alpha: 0.38, spreadMul: 0, taper: t => 1 - 0.4 * t },
 };
+
+// Insets the mat trapezoid (RING.nearLeft/nearRight/farLeft/farRight)
+// inward by a distinct distance per edge, mitering adjacent edges together
+// at their exact line-line intersection — not a naive per-edge parallel
+// shift, which would leave gaps or overlaps at the corners. The returned
+// corners are shared exactly between adjacent bands: e.g. the near band's
+// left endpoint IS the left band's near endpoint, not a close
+// approximation. `distances` gives each of the trapezoid's 4 edges (in
+// near -> right -> far -> left winding order) its own inset amount, since
+// the four rope-shadow bands don't share one halfW.
+export function insetMatTrapezoid(ring, distances) {
+    const { nearLeft, nearRight, farRight, farLeft } = ring;
+    const verts = [nearLeft, nearRight, farRight, farLeft];
+    const dists = [distances.near, distances.right, distances.far, distances.left];
+    const n = verts.length;
+    const cx = verts.reduce((s, p) => s + p.x, 0) / n;
+    const cy = verts.reduce((s, p) => s + p.y, 0) / n;
+    const edges = verts.map((p1, i) => {
+        const p2 = verts[(i + 1) % n];
+        const dx = p2.x - p1.x, dy = p2.y - p1.y;
+        const len = Math.hypot(dx, dy) || 1;
+        let nx = -dy / len, ny = dx / len;
+        const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+        if ((cx - mx) * nx + (cy - my) * ny < 0) { nx = -nx; ny = -ny; } // point the normal inward
+        const d = dists[i];
+        return { p1: { x: p1.x + nx * d, y: p1.y + ny * d }, p2: { x: p2.x + nx * d, y: p2.y + ny * d } };
+    });
+    const intersect = (a, b) => {
+        const d1x = a.p2.x - a.p1.x, d1y = a.p2.y - a.p1.y;
+        const d2x = b.p2.x - b.p1.x, d2y = b.p2.y - b.p1.y;
+        const denom = d1x * d2y - d1y * d2x;
+        if (Math.abs(denom) < 1e-6) return a.p2; // parallel edges — shouldn't happen for this trapezoid
+        const t = ((b.p1.x - a.p1.x) * d2y - (b.p1.y - a.p1.y) * d2x) / denom;
+        return { x: a.p1.x + d1x * t, y: a.p1.y + d1y * t };
+    };
+    const corners = edges.map((e, i) => intersect(edges[(i - 1 + n) % n], e));
+    return { nearLeft: corners[0], nearRight: corners[1], farRight: corners[2], farLeft: corners[3] };
+}

@@ -103,13 +103,18 @@ stop a flying body.
 
 Each wrestler is constructed with a `moveSet` array. `tryAction`, `tryPower`, and `tryFinisher` only execute moves that appear in the set — this is the character differentiation hook.
 
-| Archetype | Grapple | Power (close) | Power (medium) | Finisher |
-|---|---|---|---|---|
-| **Brawler** (P1) | Irish whip / clothesline / pin | Body slam | Dropkick | Sleeper hold |
-| **Powerhouse** (P2) | Irish whip / clothesline / pin | Piledriver | Dropkick | Sleeper hold |
-| **Thesz** (`?p1=thesz`) | Irish whip / clothesline / pin | Body slam / suplex | Dropkick | Sleeper hold + **Thesz press** (at range) |
-| *Technical (planned)* | Irish whip / clothesline / pin | Suplex | Dropkick | Figure four |
-| *Heel (planned)* | Irish whip / clothesline / pin | Atomic drop | Dropkick | Bear hug |
+**Source of truth:** each character module's own `moveSet` — [`src/characters/george.js`](src/characters/george.js) and [`src/characters/thesz.js`](src/characters/thesz.js). `Arena.js` consumes those arrays directly and validates them against [`src/moves/registry.js`](src/moves/registry.js), which is the canonical list of every move ID and what it is (category, clip, executor, damage key). Don't transcribe kits into this table — it will drift. Arena used to keep its own copies and they did exactly that.
+
+The live roster is George vs Thesz (the older Brawler/Powerhouse archetypes were retired when George was promoted, 2026-07-26):
+
+| Character | Kit size | Identity moves | Deliberately lacks |
+|---|---|---|---|
+| **George** (`?p1=george`) | 17 | Piledriver, headbutt, knee lift — brawler pressure | Thesz press, body slam |
+| **Thesz** (`?p1=thesz`) | 16 | **Thesz press** (finisher), suplex, body slam, the holds | Piledriver, headbutt, knee lift |
+
+Both carry the shared base — Irish whip, clothesline, pin, elbow drop, dropkick, double axe handle, sleeper hold, headlock, arm drag, jab — plus hammerlock, back body drop, and knee drop.
+
+`armBar` and `ankleLock` are fully implemented (poses, executors, damage values, lockup gating) but appear in **neither** kit, so they are currently unreachable in game. `tests/moveRegistry.test.js` asserts that set, so adding either to a kit is a deliberate roster decision rather than an accident.
 
 ---
 
@@ -130,10 +135,16 @@ Each wrestler is constructed with a `moveSet` array. `tryAction`, `tryPower`, an
 ### Adding a move
 
 1. Add pose snapshots to `POSES` in `Wrestler.js`
-2. Add a `poseSeq` entry to `MOVE_DEFS`
-3. Implement `_doXxx(other)` on `Wrestler` — spatial logic, tweens, state transitions
-4. Wire into `tryAction`, `tryPower`, or `tryFinisher`
-5. Add the move name to the wrestler's `moveSet` array in `Arena.js`
+2. Author the choreography:
+   - **New moves should use a seekable clip** — a module in `src/animation/clips/` with its own timing and authored event markers, added to `REGISTERED_MOVE_CLIPS` in [`src/animation/clips/index.js`](src/animation/clips/index.js). See `jab.js` (single-actor) and `hammerlock.js` (paired) as the two worked examples, and `RIG_AND_MOVE_PIPELINE.md` for the migration gates.
+   - The legacy alternative is a `poseSeq` entry in `MOVE_DEFS` plus a separately-timed `scene.time.delayedCall` for the gameplay beat. Most existing moves still work this way, but it duplicates the timing in two places — which is why they're being migrated.
+3. Implement `_doXxx(other)` on `Wrestler` — spatial logic, state transitions, damage
+4. Wire into `tryAction`, `tryPower`, `tryFinisher`, `tryRunningAttack`, or `tryDive` (see each move's `trigger` in the registry for which entry point owns what)
+5. Add a `MOVE_SPECS` entry in [`src/moves/registry.js`](src/moves/registry.js) — id, category, clip, executor, damage key, trigger note
+6. Add the move ID to the character's `moveSet` in **`src/characters/*.js`** — *not* in `Arena.js`, which reads those arrays. A move ID not in `MOVE_SPECS` throws at scene construction.
+7. Add a scenario to `tools/debug/play.mjs` so the move has a live regression check
+
+`tests/moveRegistry.test.js` enforces steps 2, 5, and 6 agree with each other.
 
 ### Pose system
 

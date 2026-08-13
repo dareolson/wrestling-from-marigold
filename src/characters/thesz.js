@@ -335,9 +335,18 @@ export const thesz = {
     // rendered a two-leg spread the single-leg reference doesn't have.
     idlePose:  'theszIdle',
     tauntPose: 'tauntArmsWide',
+    // Clean technical kit — no headbutt, no piledriver; suplex and slam are his
+    // conversions, the holds are his actual game.
+    //
+    // hammerlock/backBodyDrop/kneeDrop were added to Arena's own copy of this
+    // list when those moves shipped, but never back to here, so the two lists
+    // silently diverged (this one was dead code — nothing read it). Reconciled
+    // 2026-08-10 toward the kit that was actually reaching the game, so making
+    // Arena consume this array is a no-op rather than a quiet nerf. Derek chose
+    // to keep all 16; curating them back out is a separate roster decision.
     moveSet: [
         'irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop',
         'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag',
-        'jab', 'theszPress',
+        'jab', 'theszPress', 'hammerlock', 'backBodyDrop', 'kneeDrop',
     ],
 };

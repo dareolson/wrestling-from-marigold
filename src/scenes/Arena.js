@@ -6,9 +6,9 @@ import CrowdAudio from '../CrowdAudio.js';
 import { george } from '../characters/george.js';
 import { thesz } from '../characters/thesz.js';
 import { enumerateCharacterAssets } from '../rig/partVariants.js';
+import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
-import { jabClip } from '../animation/clips/jab.js';
-import { hammerlockClip } from '../animation/clips/hammerlock.js';
+import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
 
 // 2026-07-26 (promoted-george roster change): the roster is now just these
@@ -2949,22 +2949,36 @@ export default class Arena extends Phaser.Scene {
         // Old-TV booking rule: one man light, one man dark, so the
         // grayscale broadcast filter never lets two overlapping bodies read
         // as one.
+        // Kits come from the character modules — they are the single source of
+        // truth for who can do what. Arena used to carry its own copies, which
+        // drifted (Thesz gained hammerlock/backBodyDrop/kneeDrop here and never
+        // there); see the note on thesz.js's moveSet. Validated at construction
+        // below, so a typo'd or duplicated move ID fails loudly instead of
+        // silently disabling part of a kit.
         const PRESETS = {
             george: {
-                name: 'GEORGE', personality: 'george', idlePose: 'powerIdle',
+                name: 'GEORGE', personality: 'george', idlePose: george.idlePose,
                 skin: 0xa87858, trunks: 0x1a1a1a,
-                moveSet: ['irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop'],
+                moveSet: george.moveSet,
                 textures: george.textures,
             },
             thesz: {
-                // Clean technical kit — no headbutt, no piledriver; suplex and
-                // slam are his conversions, the holds are his actual game
-                name: 'THESZ', personality: 'thesz', idlePose: 'theszIdle',
+                name: 'THESZ', personality: 'thesz', idlePose: thesz.idlePose,
                 skin: 0xe8c098, trunks: 0x484848,
-                moveSet: ['irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop', 'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'theszPress', 'hammerlock', 'backBodyDrop', 'kneeDrop'],
+                moveSet: thesz.moveSet,
                 textures: thesz.textures,
             },
         };
+        // Throw rather than log: a bad move ID silently disables part of a kit,
+        // which is exactly the class of failure this registry exists to catch,
+        // and a console.error scrolls past unnoticed during play. The kits are
+        // static data, so this can only fire on a genuine authoring mistake and
+        // will fire the first time the scene is created, not mid-match.
+        const kitProblems = Object.entries(PRESETS)
+            .flatMap(([key, preset]) => validateKit(preset.moveSet, key));
+        if (kitProblems.length) {
+            throw new Error(`Invalid character moveSet:\n  ${kitProblems.join('\n  ')}`);
+        }
         const q  = new URLSearchParams(location.search);
         const c1 = this._preset1 = PRESETS[q.get('p1')] ?? PRESETS.thesz;
         const c2 = this._preset2 = PRESETS[q.get('p2')] ?? PRESETS.george;
@@ -2978,13 +2992,15 @@ export default class Arena extends Phaser.Scene {
         this.w2.idlePose = c2.idlePose;
 
         // Seekable move-animation runtime, driven by this Scene's own clock in
-        // _tickGame — no second timer. Only the jab is migrated so far (see
-        // RIG_AND_MOVE_PIPELINE.md); every other move still uses the legacy
-        // tween/timer path. shutdown() cancels active clips and clears the
-        // registry so nothing survives a Scene restart.
+        // _tickGame — no second timer. Migrated so far: jab (single-actor) and
+        // hammerlock (paired) — see RIG_AND_MOVE_PIPELINE.md; every other move
+        // still uses the legacy tween/timer path. The list lives in
+        // animation/clips/index.js so this scene and moveRegistry.test.js read
+        // the same one; the test asserts it matches the registry's `clip`
+        // fields. shutdown() cancels active clips and clears the registry so
+        // nothing survives a Scene restart.
         this.moveRuntime = new MoveRuntime();
-        this.moveRuntime.register(jabClip);
-        this.moveRuntime.register(hammerlockClip);
+        for (const clip of REGISTERED_MOVE_CLIPS) this.moveRuntime.register(clip);
         this.events.once('shutdown', () => this.moveRuntime.shutdown());
 
         // Both P1 and P2 default to keyboard (Derek, 2026-07-12 — loading the

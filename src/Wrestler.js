@@ -20,7 +20,9 @@ const WALK_BRAKE = SPEED / WALK_BRAKE_TIME;
 // ─── Stamina ─────────────────────────────────────────────────────────────────
 const STAMINA_MAX      = 100;
 const STAMINA_RECOVER  = 6;   // per second while standing
-const STAMINA_DRAIN    = {    // drained from the DEFENDER on each move landing
+// Exported so tests/moveRegistry.test.js can assert every registry damageKey
+// resolves here and every value here is claimed by a move (no dead damage).
+export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move landing
     jab:          5,
     headbutt:     8,
     clothesline:  12,

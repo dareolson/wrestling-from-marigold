@@ -45,6 +45,35 @@ test('near/far render slots fall back to shared base art independently', () => {
     assert.equal(resolved.farForearm.key, 'test_forearm');
 });
 
+test('a unified forearm variant family reaches both semantic near/far slots', () => {
+    const textures = {
+        forearm: { key: 'unified_forearm', box: { w: 40, h: 60 } },
+        variants: {
+            forearm: {
+                fist: { key: 'unified_fist', file: 'forearm_fist.png' },
+            },
+        },
+    };
+    const near = resolvePartSelection(textures, { nearForearm: 'fist' });
+    const far = resolvePartSelection(textures, { farForearm: 'fist' });
+    assert.equal(near.nearForearm.key, 'unified_fist');
+    assert.equal(far.farForearm.key, 'unified_fist');
+    assert.equal(validateCharacterArt({ id: 'unified', textures }).ok, true);
+});
+
+test('a side-specific family overrides the unified fallback', () => {
+    const textures = {
+        forearm: { key: 'base', box: { w: 40, h: 60 } },
+        variants: {
+            forearm: { fist: { key: 'shared_fist', file: 'shared.png' } },
+            nearForearm: { fist: { key: 'near_fist', file: 'near.png' } },
+        },
+    };
+    const resolved = resolvePartSelection(textures, { nearForearm: 'fist', farForearm: 'fist' });
+    assert.equal(resolved.nearForearm.key, 'near_fist');
+    assert.equal(resolved.farForearm.key, 'shared_fist');
+});
+
 test('asset enumeration includes explicit variants without treating rig metadata as files', () => {
     const assets = enumerateCharacterAssets(character);
     assert.deepEqual(assets.map(asset => asset.key), [
@@ -57,10 +86,37 @@ test('asset enumeration includes explicit variants without treating rig metadata
 
 test('variant contract rejects unknown slots and missing files', () => {
     const bad = structuredClone(character);
-    bad.textures.variants.hand = { fist: { key: 'bad' } };
+    bad.textures.variants.elbowPad = { fist: { key: 'bad' } };
     const result = validateCharacterArt(bad);
     assert.equal(result.ok, false);
     assert.ok(result.errors.some(error => error.includes('unknown render slot')));
+});
+
+test('modular hand variants lock the wrist but may move contact geometry', () => {
+    const modular = {
+        id: 'modular',
+        textures: {
+            hand: {
+                key: 'hand_open', box: { w: 96, h: 96 },
+                binding: { proximal: { u: 0.5, v: 0.2 } },
+                semanticAnchors: { contact: { u: 0.6, v: 0.6 } },
+            },
+            variants: {
+                nearHand: {
+                    fist: {
+                        key: 'hand_fist', file: 'hand_fist.png', box: { w: 96, h: 96 },
+                        binding: { proximal: { u: 0.5, v: 0.2 } },
+                        semanticAnchors: { contact: { u: 0.75, v: 0.55 } },
+                    },
+                },
+            },
+        },
+    };
+    assert.equal(validateCharacterArt(modular).ok, true);
+    modular.textures.variants.nearHand.fist.binding.proximal.u += 0.01;
+    const result = validateCharacterArt(modular);
+    assert.equal(result.ok, false);
+    assert.ok(result.errors.some(error => error.includes('binding.proximal must exactly match')));
 });
 
 test('Skeleton applies and then cleanly resets a calibrated whole-part swap', () => {

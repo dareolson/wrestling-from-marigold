@@ -1,4 +1,11 @@
 import { resolvePartSelection, textureKey } from './rig/partVariants.js';
+import {
+    applyImageBinding,
+    solveAnchoredAttachment,
+    solveTwoAnchorBinding,
+    transformBoundPoint,
+} from './rig/twoAnchorBinding.js';
+import { childAngleFromLocalFlex, localFlexFromChildAngle } from './rig/articulation.js';
 
 // Proportions in unscaled pixels — multiply by s before placing parts.
 // Lengths originally chosen to match the old single-piece stick-figure totals
@@ -261,8 +268,8 @@ function ensureTexture(scene) {
 // pivotOffsetFrac knob (built for one constant offset shared by both ends)
 // can't correct this without misplacing the shoulder to fix the elbow.
 function resolveTexEntry(entry, defaultDims) {
-    if (!entry) return { key: null, dims: defaultDims, pivot: 0, jointPivotFrac: 0, distalAnchorFrac: null, soleAnchorFrac: null };
-    if (typeof entry === 'string') return { key: entry, dims: defaultDims, pivot: 0, jointPivotFrac: 0, distalAnchorFrac: null, soleAnchorFrac: null };
+    if (!entry) return { key: null, dims: defaultDims, pivot: 0, jointPivotFrac: 0, distalAnchorFrac: null, soleAnchorFrac: null, binding: null, semanticAnchors: null, displayScale: 1 };
+    if (typeof entry === 'string') return { key: entry, dims: defaultDims, pivot: 0, jointPivotFrac: 0, distalAnchorFrac: null, soleAnchorFrac: null, binding: null, semanticAnchors: null, displayScale: 1 };
     return {
         key: entry.key, dims: entry.box ?? defaultDims,
         pivot: entry.pivotOffsetFrac ?? 0,
@@ -274,13 +281,16 @@ function resolveTexEntry(entry, defaultDims) {
         // consumed by the authored gait/FK grounding path and independently
         // verified by the sole sweep through _socketPoint.
         soleAnchorFrac: entry.soleAnchorFrac ?? null,
+        binding: entry.binding ?? null,
+        semanticAnchors: entry.semanticAnchors ?? null,
+        displayScale: entry.displayScale ?? 1,
     };
 }
 
 export default class Skeleton {
     // textures: optional map of part keys → preloaded texture keys, or
     // { key, box } to override that part's display box (see resolveTexEntry)
-    //   { head, torso, pelvisOverlay, upperArm, forearm, thigh, shin,
+    //   { head, torso, pelvisOverlay, pelvisUnderlay, pelvisMask, upperArm, forearm, thigh, shin,
     //     nearShin, farShin }
     // Parts with a texture use the PNG; others fall back to sk_pixel + tint.
     // Providing 'torso' hides the trunks block; providing 'shin' hides the boot block.
@@ -306,10 +316,19 @@ export default class Skeleton {
         // Absent (default 0, every part before this) = setOrigin(0.5, 0),
         // byte-identical to the old behavior.
         const img = (entry, col, defaultDims) => {
-            const { key, dims, pivot, jointPivotFrac, distalAnchorFrac, soleAnchorFrac } = resolveTexEntry(entry, defaultDims);
+            const { key, dims, pivot, jointPivotFrac, distalAnchorFrac, soleAnchorFrac, binding, semanticAnchors, displayScale } = resolveTexEntry(entry, defaultDims);
             const i = scene.add.image(0, 0, key || 'sk_pixel').setOrigin(0.5, jointPivotFrac);
             if (!key) i.setTint(col);
-            else if (dims) { i._texDims = dims; i._pivotOffsetFrac = pivot; i._jointPivotFrac = jointPivotFrac; i._distalAnchorFrac = distalAnchorFrac; i._soleAnchorFrac = soleAnchorFrac; }
+            else if (dims) {
+                i._texDims = dims;
+                i._pivotOffsetFrac = pivot;
+                i._jointPivotFrac = jointPivotFrac;
+                i._distalAnchorFrac = distalAnchorFrac;
+                i._soleAnchorFrac = soleAnchorFrac;
+                i._binding = binding;
+                i._semanticAnchors = semanticAnchors;
+                i._attachmentDisplayScale = displayScale;
+            }
             return i;
         };
 
@@ -325,21 +344,35 @@ export default class Skeleton {
         // used before this existed.
         const farForearmEntry = textures.farForearm ?? textures.forearm;
         const nearForearmEntry = textures.nearForearm ?? textures.forearm;
+        const farHandEntry = textures.farHand ?? textures.hand;
+        const nearHandEntry = textures.nearHand ?? textures.hand;
+        const farBootEntry = textures.farBoot ?? textures.boot;
+        const nearBootEntry = textures.nearBoot ?? textures.boot;
         this.farThigh    = img(farThighEntry,     skinCol, TEX.thigh);
         this.farShin     = img(farShinEntry,      skinCol, TEX.shin);
-        this.farBoot     = farShinEntry    ? null : img(null, 0x181818);
+        this.farBoot     = farBootEntry ? img(farBootEntry, 0x181818, { w: 40, h: P.bootH })
+            : (farShinEntry ? null : img(null, 0x181818));
         this.farUpArm    = img(textures.upperArm, skinCol, TEX.upperArm);
         this.farForearm  = img(farForearmEntry,   skinCol, TEX.forearm);
+        this.farHand     = farHandEntry ? img(farHandEntry, skinCol, { w: 40, h: 40 }) : null;
         this.torso       = img(textures.torso,    skinCol, TEX.torso);
         this.pelvisOverlay = textures.pelvisOverlay
             ? img(textures.pelvisOverlay, trunksCol, TEX.torso)
             : null;
+        this.pelvisUnderlay = textures.pelvisUnderlay
+            ? img(textures.pelvisUnderlay, trunksCol, TEX.torso)
+            : null;
+        this.pelvisMask = textures.pelvisMask
+            ? img(textures.pelvisMask, trunksCol, TEX.torso)
+            : null;
         this.trunks      = textures.torso  ? null : img(null, trunksCol);
         this.nearThigh   = img(nearThighEntry,    skinCol, TEX.thigh);
         this.nearShin    = img(nearShinEntry,     skinCol, TEX.shin);
-        this.nearBoot    = nearShinEntry   ? null : img(null, 0x181818);
+        this.nearBoot    = nearBootEntry ? img(nearBootEntry, 0x181818, { w: 40, h: P.bootH })
+            : (nearShinEntry ? null : img(null, 0x181818));
         this.nearUpArm   = img(textures.upperArm, skinCol, TEX.upperArm);
         this.nearForearm = img(nearForearmEntry,  skinCol, TEX.forearm);
+        this.nearHand    = nearHandEntry ? img(nearHandEntry, skinCol, { w: 40, h: 40 }) : null;
 
         if (textures.head) {
             // headAnchorFrac (2026-07-25, George AI pilot — see Sprite
@@ -542,9 +575,11 @@ export default class Skeleton {
         this._parts = [
             this.farThigh, this.farShin, this.farBoot,
             this.farUpArm, this.farForearm,
-            this.torso, this.trunks, this.pelvisOverlay,
+            this.farHand,
+            this.pelvisUnderlay, this.torso, this.trunks, this.pelvisOverlay, this.pelvisMask,
             this.nearThigh, this.nearShin, this.nearBoot,
             this.nearUpArm, this.nearForearm,
+            this.nearHand,
             this.head,
         ].filter(Boolean);
 
@@ -557,14 +592,20 @@ export default class Skeleton {
             head: this._headIsImage ? this.head : null,
             torso: this.torso,
             pelvisOverlay: this.pelvisOverlay,
+            pelvisUnderlay: this.pelvisUnderlay,
+            pelvisMask: this.pelvisMask,
             nearUpperArm: this.nearUpArm,
             farUpperArm: this.farUpArm,
             nearForearm: this.nearForearm,
             farForearm: this.farForearm,
+            nearHand: this.nearHand,
+            farHand: this.farHand,
             nearThigh: this.nearThigh,
             farThigh: this.farThigh,
             nearShin: this.nearShin,
             farShin: this.farShin,
+            nearBoot: nearBootEntry ? this.nearBoot : null,
+            farBoot: farBootEntry ? this.farBoot : null,
         };
         this._partBaseDims = Object.fromEntries(
             Object.entries(this._partImages).map(([slot, image]) => [slot, image?._texDims ? { ...image._texDims } : null]),
@@ -593,6 +634,9 @@ export default class Skeleton {
                 img._jointPivotFrac = meta.jointPivotFrac;
                 img._distalAnchorFrac = meta.distalAnchorFrac;
                 img._soleAnchorFrac = meta.soleAnchorFrac;
+                img._binding = meta.binding;
+                img._semanticAnchors = meta.semanticAnchors;
+                img._attachmentDisplayScale = meta.displayScale;
                 img.setOrigin(0.5, meta.jointPivotFrac);
             }
             this._partVariantState[slot] = name;
@@ -617,7 +661,13 @@ export default class Skeleton {
         // the elbow bends and the joint appears to drift. The tiny split is
         // contained inside each existing far/near depth band.
         this.farForearm.setDepth(base);
+        this.farHand?.setDepth(base - 0.00001);
         this.farUpArm.setDepth(base + 0.00001);
+        // A complete pelvis underbody sits behind both thighs and remains
+        // visible only in the opening between them. The optional mask is a
+        // separate front garment edge above both thigh roots. Legacy
+        // pelvisOverlay keeps its historical middle depth unchanged.
+        this.pelvisUnderlay?.setDepth(base + 0.00005);
         this.farThigh.setDepth(base + 0.0001);
         this.farShin.setDepth(base + 0.0001);
         this.farBoot?.setDepth(base + 0.0001);
@@ -632,6 +682,8 @@ export default class Skeleton {
         this.nearThigh.setDepth(base + 0.003);
         this.nearShin.setDepth(base + 0.003);
         this.nearBoot?.setDepth(base + 0.003);
+        this.pelvisMask?.setDepth(base + 0.0035);
+        this.nearHand?.setDepth(base + 0.00399);
         this.nearForearm.setDepth(base + 0.004);
         this.nearUpArm.setDepth(base + 0.00401);
     }
@@ -692,6 +744,60 @@ export default class Skeleton {
         } else {
             this._place(img, px, py, w, h, angle);
         }
+    }
+
+    // Production eight-part path. A part with explicit normalized proximal
+    // and distal anchors is fitted to the authoritative world-space bone.
+    // Both endpoints are therefore exact at every rotation and facing; art
+    // overlap can extend freely on either side without changing the joint.
+    _placeBoundPart(img, worldProximal, worldDistal, facing) {
+        if (!img?._binding?.proximal || !img._binding.distal || !img._texDims) return null;
+        const canvas = img._texDims;
+        const toPixels = point => ({ x: point.u * canvas.w, y: point.v * canvas.h });
+        const binding = solveTwoAnchorBinding({
+            canvas,
+            proximal: toPixels(img._binding.proximal),
+            distal: toPixels(img._binding.distal),
+            worldProximal,
+            worldDistal,
+            facing,
+        });
+        applyImageBinding(img, binding);
+        img._lastBinding = binding;
+        return binding;
+    }
+
+    _placeAttachment(img, worldAnchor, angle, scale, facing, semanticSlot) {
+        if (!img?._binding?.proximal || !img._texDims) return null;
+        const canvas = img._texDims;
+        const proximal = {
+            x: img._binding.proximal.u * canvas.w,
+            y: img._binding.proximal.v * canvas.h,
+        };
+        const binding = solveAnchoredAttachment({
+            canvas, anchor: proximal, worldAnchor, angle,
+            scale: scale * (img._attachmentDisplayScale ?? 1), facing,
+        });
+        applyImageBinding(img, binding);
+        img._lastBinding = binding;
+        if (semanticSlot) {
+            for (const [name, point] of Object.entries(img._semanticAnchors ?? {})) {
+                const world = transformBoundPoint(binding, canvas, {
+                    x: point.u * canvas.w,
+                    y: point.v * canvas.h,
+                }, facing);
+                this.semanticAnchors ??= {};
+                this.semanticAnchors[`${semanticSlot}.${name}`] = world;
+            }
+        }
+        return binding;
+    }
+
+    _placeLimbPart(img, worldProximal, worldDistal, legacy) {
+        const bound = this._placeBoundPart(img, worldProximal, worldDistal, legacy.facing);
+        if (bound) return bound;
+        this._placePart(img, legacy.x, legacy.y, legacy.w, legacy.h, legacy.angle, legacy.scale, legacy.facing);
+        return null;
     }
 
     // Resolves the render position for a child limb
@@ -955,8 +1061,9 @@ export default class Skeleton {
             if (img.originX !== undefined) img.originX = 1 - img.originX;
         };
         for (const img of [
-            this.torso, this.pelvisOverlay, this.head,
+            this.torso, this.pelvisUnderlay, this.pelvisOverlay, this.pelvisMask, this.head,
             this.nearUpArm, this.farUpArm, this.nearForearm, this.farForearm,
+            this.nearHand, this.farHand,
             this.nearThigh, this.farThigh, this.nearShin, this.farShin,
             this.nearBoot, this.farBoot,
         ]) mirrorImg(img);
@@ -975,6 +1082,54 @@ export default class Skeleton {
         for (const name of Object.keys(this.jointAttachmentPoints ?? {})) {
             this.jointAttachmentPoints[name].x = 2 * x - this.jointAttachmentPoints[name].x;
         }
+        for (const name of Object.keys(this.semanticAnchors ?? {})) {
+            this.semanticAnchors[name].x = 2 * x - this.semanticAnchors[name].x;
+        }
+    }
+
+    // Record the joint relationship this frame is actually drawing, in the same
+    // units a pose channel would supply it: local flex for lElbow/rElbow/lKnee/
+    // rKnee, and the absolute pose-convention angle for the legacy lForearm/
+    // rForearm/lShin/rShin. For elbows this is captured at the pose-input seam,
+    // before combat-guard/run/display adjustments. Those downstream adjustments
+    // still compose identically after a seed; recording the final image angle as
+    // an input would apply them twice on the next frame.
+    //
+    // Wrestler.tweenPose reads this to seed a channel the live pose has never
+    // carried, so the first articulation of that joint tweens from where the
+    // limb already is instead of snapping to its destination.
+    //
+    // `facing` is the one this core pass is evaluating with, which is not always
+    // the wrestler's facing: the mirrored path renders at facing 1 and flips
+    // afterwards. That is correct here — local flex is facing-independent by
+    // construction, and the legacy absolute value is stored the way this same
+    // skeleton will consume it.
+    _recordJointState(kind, side, parentAngle, childAngle, facing) {
+        if (!Number.isFinite(parentAngle) || !Number.isFinite(childAngle)) return;
+        const state = this._jointState ??= {};
+        if (kind === 'elbow') {
+            state[`${side}Elbow`]   = localFlexFromChildAngle(parentAngle, childAngle, facing, 'elbow');
+            state[`${side}Forearm`] = childAngle * facing;
+        } else {
+            state[`${side}Knee`] = localFlexFromChildAngle(parentAngle, childAngle, facing, 'knee');
+            state[`${side}Shin`] = childAngle * facing;
+        }
+    }
+
+    /**
+     * The value a pose channel would need to hold to reproduce the joint
+     * relationship currently on screen. Undefined before the first render.
+     */
+    currentPoseChannel(channel) {
+        return this._jointState?.[channel];
+    }
+
+    // Pose-channel seeds are meaningful only for the last upright render.
+    // Wrestler.draw clears them before choosing its render path; updateUpright
+    // repopulates them, while grounded/airborne/procedural silhouettes leave
+    // them unavailable so a later tween cannot seed from stale standing data.
+    invalidatePoseChannels() {
+        this._jointState = null;
     }
 
     _updateUprightCore(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
@@ -1007,6 +1162,8 @@ export default class Skeleton {
         // never be higher than a planted (near-straight) leg allows: H = min(reach_i).
         const legLen     = thighH + shinH;       // hip → ankle chain
         const authoredSoles = !!(this._authoredLegRig && this.nearShin._soleAnchorFrac && this.farShin._soleAnchorFrac);
+        const modularSoles = !!(this.nearBoot?._binding?.proximal && this.nearBoot?._semanticAnchors?.sole
+            && this.farBoot?._binding?.proximal && this.farBoot?._semanticAnchors?.sole);
         // Legacy ankle target. Authored-sole rigs bypass it below and solve
         // their painted knee-to-sole vector directly.
         const ankleRest  = bootH * 0.9;
@@ -1078,8 +1235,14 @@ export default class Skeleton {
                 const MAX_LEG = 0.38, KNEE_BEND = 0.22;
                 const lThigh = facing * (pose.lLeg + cThigh) + swing * MAX_LEG;
                 const rThigh = facing * (pose.rLeg + cThigh) - swing * MAX_LEG;
-                const lShin = pose.lShin !== undefined ? facing * pose.lShin : lThigh - facing * (sinWP * KNEE_BEND + cThigh + cShin);
-                const rShin = pose.rShin !== undefined ? facing * pose.rShin : rThigh + facing * (sinWP * KNEE_BEND - cThigh - cShin);
+                const lShin = pose.lKnee !== undefined
+                    ? childAngleFromLocalFlex(lThigh, pose.lKnee, facing, 'knee')
+                    : pose.lShin !== undefined ? facing * pose.lShin : lThigh - facing * (sinWP * KNEE_BEND + cThigh + cShin);
+                const rShin = pose.rKnee !== undefined
+                    ? childAngleFromLocalFlex(rThigh, pose.rKnee, facing, 'knee')
+                    : pose.rShin !== undefined ? facing * pose.rShin : rThigh + facing * (sinWP * KNEE_BEND - cThigh - cShin);
+                this._recordJointState('knee', 'l', lThigh, lShin, facing);
+                this._recordJointState('knee', 'r', rThigh, rShin, facing);
                 const [farThighAng, farShinAng, nearThighAng, nearShinAng] = facing >= 0
                     ? [rThigh, rShin, lThigh, lShin]
                     : [lThigh, lShin, rThigh, rShin];
@@ -1136,8 +1299,16 @@ export default class Skeleton {
         // preserves the old formula exactly. Combat/run blends and ARM_FWD
         // below still apply on top either way, so an authored elbow angle
         // still composes with guard/run state.
-        let lForearmAng = pose.lForearm !== undefined ? facing * pose.lForearm : lArmAng + facing * FOREARM_BEND;
-        let rForearmAng = pose.rForearm !== undefined ? facing * pose.rForearm : rArmAng + facing * FOREARM_BEND;
+        let lForearmAng = pose.lElbow !== undefined
+            ? childAngleFromLocalFlex(lArmAng, pose.lElbow, facing, 'elbow')
+            : pose.lForearm !== undefined ? facing * pose.lForearm : lArmAng + facing * FOREARM_BEND;
+        let rForearmAng = pose.rElbow !== undefined
+            ? childAngleFromLocalFlex(rArmAng, pose.rElbow, facing, 'elbow')
+            : pose.rForearm !== undefined ? facing * pose.rForearm : rArmAng + facing * FOREARM_BEND;
+        // Captured before the guard/run/ARM_FWD adjustments below, so a seeded
+        // value reproduces this same elbow relationship.
+        this._recordJointState('elbow', 'l', lArmAng, lForearmAng, facing);
+        this._recordJointState('elbow', 'r', rArmAng, rForearmAng, facing);
 
         // Combat-ready guard: arms come up and forward as opponents close in.
         if (combatBlend > 0) {
@@ -1202,8 +1373,8 @@ export default class Skeleton {
         let far, near;
         if (useGait) {
             // Two feet half a cycle apart, knees solved by IK. A=near, B=far.
-            far  = this._gaitLeg(footB, facing, x, hipY, authoredSoles ? y : ankleGndY, thighH, shinH, s, liftScale, farHipPoint, authoredSoles ? this.farShin : null, s * this._farShinScale);
-            near = this._gaitLeg(footA, facing, x, hipY, authoredSoles ? y : ankleGndY, thighH, shinH, s, liftScale, nearHipPoint, authoredSoles ? this.nearShin : null, s * this._nearShinScale);
+            far  = this._gaitLeg(footB, facing, x, hipY, authoredSoles || modularSoles ? y : ankleGndY, thighH, shinH, s, liftScale, farHipPoint, authoredSoles ? this.farShin : null, s * this._farShinScale, modularSoles ? this.farBoot : null);
+            near = this._gaitLeg(footA, facing, x, hipY, authoredSoles || modularSoles ? y : ankleGndY, thighH, shinH, s, liftScale, nearHipPoint, authoredSoles ? this.nearShin : null, s * this._nearShinScale, modularSoles ? this.nearBoot : null);
         } else {
             // Original pose-driven FK (move stances). Preserves the facing-based
             // far/near mapping and per-leg swing alternation exactly as before.
@@ -1214,8 +1385,14 @@ export default class Skeleton {
             // convention as lForearm/rForearm above) — pose-driven FK only;
             // the gait/walking IK branch above is untouched by design, it's
             // procedural and shouldn't be hijacked pose-by-pose.
-            const lShinAng = pose.lShin !== undefined ? facing * pose.lShin : lLegAng - facing * (sinWP * KNEE_BEND + cThigh + cShin);
-            const rShinAng = pose.rShin !== undefined ? facing * pose.rShin : rLegAng + facing * (sinWP * KNEE_BEND - cThigh - cShin);
+            const lShinAng = pose.lKnee !== undefined
+                ? childAngleFromLocalFlex(lLegAng, pose.lKnee, facing, 'knee')
+                : pose.lShin !== undefined ? facing * pose.lShin : lLegAng - facing * (sinWP * KNEE_BEND + cThigh + cShin);
+            const rShinAng = pose.rKnee !== undefined
+                ? childAngleFromLocalFlex(rLegAng, pose.rKnee, facing, 'knee')
+                : pose.rShin !== undefined ? facing * pose.rShin : rLegAng + facing * (sinWP * KNEE_BEND - cThigh - cShin);
+            this._recordJointState('knee', 'l', lLegAng, lShinAng, facing);
+            this._recordJointState('knee', 'r', rLegAng, rShinAng, facing);
             const farPlant  = Math.max(0,  sinWP * facing);
             const nearPlant = Math.max(0, -sinWP * facing);
             const mk = (t, sh, plant, hipPoint) => ({
@@ -1255,9 +1432,12 @@ export default class Skeleton {
             farHipRender.x += facing * (RIG.HIP_STAGGER - RIG.LEG_BACK_BIAS + RIG.FAR_LEG_FWD + this._farLegOffsetX) * s;
             farHipRender.y += (this._legOffsetY - RIG.FAR_LEG_UP + this._farLegOffsetY) * s;
         }
-        this._placePart(this.farThigh, farHipRender.x, farHipRender.y, legW, thighH, farRenderAng, s * this._farThighScale, facing);
-        this._recordJointAttachment('farHip', this.farThigh, far.hx, far.hy, farRenderAng);
         const farKnee  = this._end(far.hx, far.hy, thighH, far.thighAng);
+        this._placeLimbPart(this.farThigh, { x: far.hx, y: far.hy }, farKnee, {
+            x: farHipRender.x, y: farHipRender.y, w: legW, h: thighH,
+            angle: farRenderAng, scale: s * this._farThighScale, facing,
+        });
+        this._recordJointAttachment('farHip', this.farThigh, far.hx, far.hy, this.farThigh._binding ? far.thighAng : farRenderAng);
         // Painted-knee routing (2026-07-25, Codex review — "route the
         // thigh's declared distalAnchorFrac through the upright and grounded
         // knee calculation"): when the thigh declares a distalAnchorFrac,
@@ -1269,7 +1449,7 @@ export default class Skeleton {
         // and farKneeDebug — foot-planting precision is untouched. Absent
         // (every thigh before the pilot) = farTrueKnee === farKnee exactly,
         // byte-identical to the previous single-variable version.
-        const farTrueKnee = this.farThigh._distalAnchorFrac
+        const farTrueKnee = this.farThigh._binding ? farKnee : this.farThigh._distalAnchorFrac
             ? this._trueDistalEnd(this.farThigh, farHipRender.x, farHipRender.y, thighH, farRenderAng, s * this._farThighScale, facing)
             : farKnee;
         // Shin's render origin pulls up into the thigh by KNEE_OVERLAP (each
@@ -1281,14 +1461,23 @@ export default class Skeleton {
         const farShinRender = this._attachChild(this.farShin, farTrueKnee.x, farTrueKnee.y, far.shinAng, s, RIG.KNEE_OVERLAP);
         farShinRender.x += facing * this._farShinOffsetX * s;
         farShinRender.y += this._farShinOffsetY * s;
-        this._placePart(this.farShin, farShinRender.x, farShinRender.y, legW, shinH, far.shinAng, s * this._farShinScale, facing);
-        this._recordJointAttachment('farKnee', this.farShin, farKnee.x, farKnee.y, far.shinAng);
         const farAnkle = this._end(farKnee.x, farKnee.y, shinH, far.shinAng);
-        if (this.farBoot) this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, far.bootAng);
+        this.jointAttachmentPoints.farAnkle = { ...farAnkle };
+        this._placeLimbPart(this.farShin, farKnee, farAnkle, {
+            x: farShinRender.x, y: farShinRender.y, w: legW, h: shinH,
+            angle: far.shinAng, scale: s * this._farShinScale, facing,
+        });
+        this._recordJointAttachment('farKnee', this.farShin, farKnee.x, farKnee.y, far.shinAng);
+        if (this.farBoot) {
+            if (!this._placeAttachment(this.farBoot, farAnkle, far.bootAng, s, facing, 'farBoot')) {
+                this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, far.bootAng);
+            }
+        }
         // Debug read seam (feel-audit foot-lock verification) — world ankle
         // position + planted flag. footA/footB->near/far mapping is stable in
         // gait mode (see comment above); meaningless in pose-driven FK, so null.
-        this.farFoot = { x: far.soleX ?? farAnkle.x, y: far.soleY ?? farAnkle.y, planted: useGait ? footB.lift === 0 : null };
+        const farSole = this.semanticAnchors?.['farBoot.sole'];
+        this.farFoot = { x: far.soleX ?? farSole?.x ?? farAnkle.x, y: far.soleY ?? farSole?.y ?? farAnkle.y, planted: useGait ? footB.lift === 0 : null };
         // Debug read seam (2026-07-15, knee pivot-vs-art audit): true skeleton
         // knee joint, plus the exact render transforms fed to the thigh/shin
         // Images, so an external script can independently check whether the
@@ -1349,27 +1538,40 @@ export default class Skeleton {
         // deltoid swell above the torso (the reported "football pads"
         // distortion). Keep the shoulder at its true authored anchor; only
         // child segments with overlap slack use _attachChild.
-        this._placePart(this.farUpArm, farShoulderX, farShoulderY, armW, upperArmH, farUpArmAng, s * RIG.FAR_ARM_SCALE, facing);
+        const farGraphElbow = this._end(farShoulderX, farShoulderY, upperArmH * RIG.FAR_ARM_SCALE, farUpArmAng);
+        this._placeLimbPart(this.farUpArm, { x: farShoulderX, y: farShoulderY }, farGraphElbow, {
+            x: farShoulderX, y: farShoulderY, w: armW, h: upperArmH,
+            angle: farUpArmAng, scale: s * RIG.FAR_ARM_SCALE, facing,
+        });
         this._recordJointAttachment('farShoulder', this.farUpArm, farShoulderX, farShoulderY, farUpArmAng);
         // FAR_ARM_SCALE changes the rendered bone length as well as width;
         // the elbow must end at that rendered length. The old full-length
         // endpoint left a 10px invisible reach beyond the far upper arm, so
         // Lou's forearm was correctly attached to the skeleton but visibly
         // floating beyond the painted elbow.
-        const farTrueElbow = this._trueDistalEnd(this.farUpArm, farShoulderX, farShoulderY, upperArmH * RIG.FAR_ARM_SCALE, farUpArmAng, s * RIG.FAR_ARM_SCALE, facing);
+        const farTrueElbow = this.farUpArm._binding ? farGraphElbow
+            : this._trueDistalEnd(this.farUpArm, farShoulderX, farShoulderY, upperArmH * RIG.FAR_ARM_SCALE, farUpArmAng, s * RIG.FAR_ARM_SCALE, facing);
         // Back off along the CHILD forearm's axis. Using the upper-arm angle
         // makes the root orbit the elbow whenever the joint bends.
         const farElbow = this._attachChild(this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA, s, RIG.ELBOW_OVERLAP);
         const farForearmX = farElbow.x + facing * this._farForearmOffsetX * s;
         const farForearmY = farElbow.y + this._farForearmOffsetY * s;
-        this._placePart(this.farForearm, farForearmX, farForearmY, armW, forearmH, farFA, s * RIG.FAR_ARM_SCALE, facing);
+        const farWrist = this._end(farTrueElbow.x, farTrueElbow.y, forearmH * RIG.FAR_ARM_SCALE, farFA);
+        this.jointAttachmentPoints.farWrist = { ...farWrist };
+        this._placeLimbPart(this.farForearm, farTrueElbow, farWrist, {
+            x: farForearmX, y: farForearmY, w: armW, h: forearmH,
+            angle: farFA, scale: s * RIG.FAR_ARM_SCALE, facing,
+        });
         this._recordJointAttachment('farElbow', this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA);
+        this._placeAttachment(this.farHand, farWrist, farFA, s * RIG.FAR_ARM_SCALE, facing, 'farHand');
 
         // Torso: full height when trunks are baked into the PNG, split otherwise.
         // torsoOriginX/Y (see the comment above the leg-solving block) is
         // exactly (x, torsoTop) unless hip sockets solved a different origin.
         this._placePart(this.torso, torsoOriginX, torsoOriginY, torsoW, this.trunks ? torsoH - trunksH : torsoH, 0, s, facing);
+        if (this.pelvisUnderlay) this._placePart(this.pelvisUnderlay, torsoOriginX, torsoOriginY, torsoW, torsoH, 0, s, facing);
         if (this.pelvisOverlay) this._placePart(this.pelvisOverlay, torsoOriginX, torsoOriginY, torsoW, torsoH, 0, s, facing);
+        if (this.pelvisMask) this._placePart(this.pelvisMask, torsoOriginX, torsoOriginY, torsoW, torsoH, 0, s, facing);
         if (this.trunks) this._place(this.trunks, x, hipY - trunksH, torsoW, trunksH, 0);
 
         // Near leg — drawn in front of torso
@@ -1381,22 +1583,34 @@ export default class Skeleton {
             nearHipRender.x += facing * this._legOffsetX * s;
             nearHipRender.y += (this._legOffsetY - RIG.NEAR_LEG_UP + this._nearLegOffsetY) * s;
         }
-        this._placePart(this.nearThigh, nearHipRender.x, nearHipRender.y, legW, thighH, nearRenderAng, s, facing);
-        this._recordJointAttachment('nearHip', this.nearThigh, near.hx, near.hy, nearRenderAng);
         const nearKnee  = this._end(near.hx, near.hy, thighH, near.thighAng);
+        this._placeLimbPart(this.nearThigh, { x: near.hx, y: near.hy }, nearKnee, {
+            x: nearHipRender.x, y: nearHipRender.y, w: legW, h: thighH,
+            angle: nearRenderAng, scale: s, facing,
+        });
+        this._recordJointAttachment('nearHip', this.nearThigh, near.hx, near.hy, this.nearThigh._binding ? near.thighAng : nearRenderAng);
         // Painted-knee routing — see the matching far-leg comment above.
-        const nearTrueKnee = this.nearThigh._distalAnchorFrac
+        const nearTrueKnee = this.nearThigh._binding ? nearKnee : this.nearThigh._distalAnchorFrac
             ? this._trueDistalEnd(this.nearThigh, nearHipRender.x, nearHipRender.y, thighH, nearRenderAng, s, facing)
             : nearKnee;
         const nearShinRenderAng = near.shinAng + facing * this._nearShinTilt;
         const nearShinRender = this._attachChild(this.nearShin, nearTrueKnee.x, nearTrueKnee.y, nearShinRenderAng, s, RIG.KNEE_OVERLAP);
         nearShinRender.x += facing * ((this._authoredLegRig ? 0 : RIG.NEAR_SHIN_FWD) + this._nearShinOffsetX) * s;
         nearShinRender.y += ((this._authoredLegRig ? 0 : -RIG.NEAR_SHIN_UP) + this._nearShinOffsetY) * s;
-        this._placePart(this.nearShin, nearShinRender.x, nearShinRender.y, legW, shinH, nearShinRenderAng, s * this._nearShinScale, facing);
-        this._recordJointAttachment('nearKnee', this.nearShin, nearKnee.x, nearKnee.y, nearShinRenderAng);
         const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, near.shinAng);
-        if (this.nearBoot) this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
-        this.nearFoot = { x: near.soleX ?? nearAnkle.x, y: near.soleY ?? nearAnkle.y, planted: useGait ? footA.lift === 0 : null };
+        this.jointAttachmentPoints.nearAnkle = { ...nearAnkle };
+        this._placeLimbPart(this.nearShin, nearKnee, nearAnkle, {
+            x: nearShinRender.x, y: nearShinRender.y, w: legW, h: shinH,
+            angle: nearShinRenderAng, scale: s * this._nearShinScale, facing,
+        });
+        this._recordJointAttachment('nearKnee', this.nearShin, nearKnee.x, nearKnee.y, nearShinRenderAng);
+        if (this.nearBoot) {
+            if (!this._placeAttachment(this.nearBoot, nearAnkle, near.bootAng, s, facing, 'nearBoot')) {
+                this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
+            }
+        }
+        const nearSole = this.semanticAnchors?.['nearBoot.sole'];
+        this.nearFoot = { x: near.soleX ?? nearSole?.x ?? nearAnkle.x, y: near.soleY ?? nearSole?.y ?? nearAnkle.y, planted: useGait ? footA.lift === 0 : null };
         // Debug read seam — see the matching farKneeDebug/farThighRenderDebug/
         // farShinRenderDebug comment above.
         this.nearKneeDebug = { x: nearKnee.x, y: nearKnee.y };
@@ -1404,14 +1618,25 @@ export default class Skeleton {
         this.nearShinRenderDebug = { x: nearShinRender.x, y: nearShinRender.y, angle: nearShinRenderAng, s: s * this._nearShinScale, facing, texDims: this.nearShin._texDims };
 
         // Near arm — shoulder stays on its authored anchor like the far arm.
-        this._placePart(this.nearUpArm, nearShoulderX, armShoulderY, armW, upperArmH, nearUpArmAng, s, facing);
+        const nearGraphElbow = this._end(nearShoulderX, armShoulderY, upperArmH, nearUpArmAng);
+        this._placeLimbPart(this.nearUpArm, { x: nearShoulderX, y: armShoulderY }, nearGraphElbow, {
+            x: nearShoulderX, y: armShoulderY, w: armW, h: upperArmH,
+            angle: nearUpArmAng, scale: s, facing,
+        });
         this._recordJointAttachment('nearShoulder', this.nearUpArm, nearShoulderX, armShoulderY, nearUpArmAng);
-        const nearTrueElbow = this._trueDistalEnd(this.nearUpArm, nearShoulderX, armShoulderY, upperArmH, nearUpArmAng, s, facing);
+        const nearTrueElbow = this.nearUpArm._binding ? nearGraphElbow
+            : this._trueDistalEnd(this.nearUpArm, nearShoulderX, armShoulderY, upperArmH, nearUpArmAng, s, facing);
         const nearElbow = this._attachChild(this.nearForearm, nearTrueElbow.x, nearTrueElbow.y, nearFA, s, RIG.ELBOW_OVERLAP);
         const nearForearmX = nearElbow.x + facing * this._nearForearmOffsetX * s;
         const nearForearmY = nearElbow.y + this._nearForearmOffsetY * s;
-        this._placePart(this.nearForearm, nearForearmX, nearForearmY, armW, forearmH, nearFA, s, facing);
+        const nearWrist = this._end(nearTrueElbow.x, nearTrueElbow.y, forearmH, nearFA);
+        this.jointAttachmentPoints.nearWrist = { ...nearWrist };
+        this._placeLimbPart(this.nearForearm, nearTrueElbow, nearWrist, {
+            x: nearForearmX, y: nearForearmY, w: armW, h: forearmH,
+            angle: nearFA, scale: s, facing,
+        });
         this._recordJointAttachment('nearElbow', this.nearForearm, nearTrueElbow.x, nearTrueElbow.y, nearFA);
+        this._placeAttachment(this.nearHand, nearWrist, nearFA, s, facing, 'nearHand');
 
         // Head — PNG image (pivot at neck bottom) or plain circle
         const headY = torsoTop - headR * 0.7;
@@ -1547,7 +1772,9 @@ export default class Skeleton {
         // Torso image pivots at the shoulders and extends down the back to the
         // hips; trunks cover the hip end of that line
         this._placePart(this.torso, shX, shY, torsoW, this.trunks ? torsoH - trunksH : torsoH, down, s, facing);
+        if (this.pelvisUnderlay) this._placePart(this.pelvisUnderlay, shX, shY, torsoW, torsoH, down, s, facing);
         if (this.pelvisOverlay) this._placePart(this.pelvisOverlay, shX, shY, torsoW, torsoH, down, s, facing);
+        if (this.pelvisMask) this._placePart(this.pelvisMask, shX, shY, torsoW, torsoH, down, s, facing);
         if (this.trunks) {
             const tx = hipX + Math.sin(ta) * trunksH;
             const ty = hipY + Math.cos(ta) * trunksH;
@@ -1567,21 +1794,32 @@ export default class Skeleton {
             const rootX = hipPoint ? hipPoint.x : hipX;
             const rootY = hipPoint ? hipPoint.y : hipY;
             const hipRender = this._attachChild(thighImg, rootX, rootY, tA, s, RIG.HIP_OVERLAP);
-            this._placePart(thighImg, hipRender.x, hipRender.y, legW, thighH, tA, s, facing);
             const side = thighImg === this.farThigh ? 'far' : 'near';
-            this._recordJointAttachment(`${side}Hip`, thighImg, rootX, rootY, tA);
             const knee = this._end(rootX, rootY, thighH, tA);
+            this._placeLimbPart(thighImg, { x: rootX, y: rootY }, knee, {
+                x: hipRender.x, y: hipRender.y, w: legW, h: thighH,
+                angle: tA, scale: s, facing,
+            });
+            this._recordJointAttachment(`${side}Hip`, thighImg, rootX, rootY, tA);
             // Painted-knee routing — see updateUpright's matching far/near-leg
             // comment. knee itself stays the pure geometric joint (feeds the
             // ankle chain and the recorded audit point below), untouched.
-            const trueKnee = thighImg._distalAnchorFrac
+            const trueKnee = thighImg._binding ? knee : thighImg._distalAnchorFrac
                 ? this._trueDistalEnd(thighImg, hipRender.x, hipRender.y, thighH, tA, s, facing)
                 : knee;
             const kneeRender = this._attachChild(shinImg, trueKnee.x, trueKnee.y, sA, s, RIG.KNEE_OVERLAP);
-            this._placePart(shinImg, kneeRender.x, kneeRender.y, legW, shinH, sA, s, facing);
-            this._recordJointAttachment(`${side}Knee`, shinImg, knee.x, knee.y, sA);
             const ankle = this._end(knee.x, knee.y, shinH, sA);
-            if (bootImg) this._place(bootImg, ankle.x, ankle.y, legW + 4 * s, bootH, sA + f * 0.3);
+            this.jointAttachmentPoints[`${side}Ankle`] = { ...ankle };
+            this._placeLimbPart(shinImg, knee, ankle, {
+                x: kneeRender.x, y: kneeRender.y, w: legW, h: shinH,
+                angle: sA, scale: s, facing,
+            });
+            this._recordJointAttachment(`${side}Knee`, shinImg, knee.x, knee.y, sA);
+            if (bootImg) {
+                if (!this._placeAttachment(bootImg, ankle, sA + f * 0.3, s, facing, `${side}Boot`)) {
+                    this._place(bootImg, ankle.x, ankle.y, legW + 4 * s, bootH, sA + f * 0.3);
+                }
+            }
         };
         leg(g.farThigh,  g.farShin,  [this.farThigh,  this.farShin,  this.farBoot],  farHipPoint);
         leg(g.nearThigh, g.nearShin, [this.nearThigh, this.nearShin, this.nearBoot], nearHipPoint);
@@ -1616,12 +1854,24 @@ export default class Skeleton {
             const depthScale = side === 'far' ? RIG.FAR_ARM_SCALE : 1;
             const rootX = shoulderPoint ? shoulderPoint.x : shX;
             const rootY = shoulderPoint ? shoulderPoint.y : shY;
-            this._placePart(upImg, rootX, rootY, armW, upperArmH, uA, s * depthScale, facing);
+            const elbowGraph = this._end(rootX, rootY, upperArmH * depthScale, uA);
+            this._placeLimbPart(upImg, { x: rootX, y: rootY }, elbowGraph, {
+                x: rootX, y: rootY, w: armW, h: upperArmH,
+                angle: uA, scale: s * depthScale, facing,
+            });
             this._recordJointAttachment(`${side}Shoulder`, upImg, rootX, rootY, uA);
-            const elbow = this._trueDistalEnd(upImg, rootX, rootY, upperArmH * depthScale, uA, s * depthScale, facing);
+            const elbow = upImg._binding ? elbowGraph
+                : this._trueDistalEnd(upImg, rootX, rootY, upperArmH * depthScale, uA, s * depthScale, facing);
             const elbowRender = this._attachChild(foreImg, elbow.x, elbow.y, fA, s, RIG.ELBOW_OVERLAP);
-            this._placePart(foreImg, elbowRender.x, elbowRender.y, armW, forearmH, fA, s * depthScale, facing);
+            const wrist = this._end(elbow.x, elbow.y, forearmH * depthScale, fA);
+            this.jointAttachmentPoints[`${side}Wrist`] = { ...wrist };
+            this._placeLimbPart(foreImg, elbow, wrist, {
+                x: elbowRender.x, y: elbowRender.y, w: armW, h: forearmH,
+                angle: fA, scale: s * depthScale, facing,
+            });
             this._recordJointAttachment(`${side}Elbow`, foreImg, elbow.x, elbow.y, fA);
+            const handImg = side === 'far' ? this.farHand : this.nearHand;
+            this._placeAttachment(handImg, wrist, fA, s * depthScale, facing, `${side}Hand`);
         };
         arm(g.farArm,  g.farFore,  [this.farUpArm,  this.farForearm], farShoulderPoint);
         arm(g.nearArm, g.nearFore, [this.nearUpArm, this.nearForearm], nearShoulderPoint);
@@ -1675,14 +1925,27 @@ export default class Skeleton {
     // per the pilot's own contract, planted feet stay authoritative and only
     // the root each leg solves FROM moves to its own socket. Absent (every
     // call before this existed) = root is exactly (x, hipY), byte-identical.
-    _gaitLeg(foot, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale = 1, hipPoint = null, soleImg = null, soleScale = s) {
+    _gaitLeg(foot, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale = 1, hipPoint = null, soleImg = null, soleScale = s, bootImg = null) {
         const footX = x + facing * foot.fx * s;
         const footY = ankleGndY - foot.lift * s * liftScale;
         const rootX = hipPoint ? hipPoint.x : x;
         const rootY = hipPoint ? hipPoint.y : hipY;
-        const soleVector = soleImg?._soleAnchorFrac
+        let soleVector = soleImg?._soleAnchorFrac
             ? this._anchorVector(soleImg, soleImg._soleAnchorFrac, soleScale, facing)
             : null;
+        if (!soleVector && bootImg?._binding?.proximal && bootImg?._semanticAnchors?.sole) {
+            const canvas = bootImg._texDims;
+            const factor = s * (bootImg._attachmentDisplayScale ?? 1);
+            const proximal = bootImg._binding.proximal;
+            const sole = bootImg._semanticAnchors.sole;
+            const bx = facing * (sole.u - proximal.u) * canvas.w * factor;
+            const by = (sole.v - proximal.v) * canvas.h * factor;
+            const delta = facing * 0.35;
+            soleVector = {
+                x: bx * Math.cos(delta) + by * Math.sin(delta),
+                y: shinH - bx * Math.sin(delta) + by * Math.cos(delta),
+            };
+        }
         const { thighAng, shinAng } = soleVector
             ? solveLegToAnchor(rootX, rootY, footX, footY, thighH, soleVector.x, soleVector.y, facing)
             : solveLeg(rootX, rootY, footX, footY, thighH, shinH, facing);

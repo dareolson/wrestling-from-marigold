@@ -1,8 +1,20 @@
 # Wrestling from Marigold — Character Drawing Guide
 
+> **Legacy six-part compatibility guide.** Use this document to maintain the
+> currently shipped George/Lou assets. Do not use its edge-pivot/whole-forearm/
+> whole-shin rules to generate a new production wrestler or to rebuild George
+> or Lou. New characters follow `CHARACTER_ART_SOURCE_STANDARD.md`: internal
+> two-anchor elbow/knee joints, explicit non-exported marker guides, and
+> separately socketed hand/boot replacement families. The legacy cutter's
+> alpha-derived joint rows are migration aids, not the future authoring
+> contract.
+
 This guide covers everything needed to draw wrestler body parts that work correctly with the game's skeleton system. Read it fully before starting a character.
 
-**Current implementation status:** the rig (`Skeleton.js`) loads exactly **six single-instance PNGs** per character — head, torso, upper arm, forearm, thigh, shin. Left/right and near/far copies are generated in code by reusing those same six files (mirrored + repositioned), so you only ever draw one of each — never separate left/right files. Expression heads and hand/foot variants are documented later in this guide as the target design, but **no swap logic exists in code yet** — treat those sections as future backlog, not a v1 requirement, until the code is extended to support them.
+**Current compatibility status:** George and Lou still load these six assets,
+and this document describes only that legacy path. The engine also supports the
+new eight-part/two-anchor contract and independent hand/boot variants; use
+`CHARACTER_ART_SOURCE_STANDARD.md` for all new production work.
 
 ---
 

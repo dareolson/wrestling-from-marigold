@@ -120,7 +120,10 @@ const CHAR_KNOBS = [
 // undefined means "use Skeleton.js's derived angle", same convention as the
 // farLegTilt character knob above.
 const POSE_ABS_CH = ['lLeg', 'rLeg', 'lArm', 'rArm', 'lean', 'crouch'];
-const POSE_NULLABLE_CH = ['lForearm', 'rForearm', 'lShin', 'rShin'];
+// Preferred production controls are local flex (lElbow/rElbow/lKnee/rKnee).
+// Absolute lForearm/rForearm/lShin/rShin remain editable compatibility fields
+// for existing exports; a local channel wins when both are present.
+const POSE_NULLABLE_CH = ['lElbow', 'rElbow', 'lKnee', 'rKnee', 'lForearm', 'rForearm', 'lShin', 'rShin'];
 
 // ─── Live state ──────────────────────────────────────────────────────────────
 const state = {
@@ -140,6 +143,7 @@ const state = {
     // (1.0) — the tool previously hardcoded 1 (Codex parity review).
     liftScale: 0.5,
     showHandles: true,
+    showBones: true,
     ref: { alpha: 0.5, scale: 1, front: true },
 };
 let scene = null;
@@ -147,6 +151,7 @@ let skeleton = null;
 let handles = [];
 let refImage = null;
 let draggingHandle = false;
+let boneOverlay = null;
 
 const currentChar = () => CHARS[state.charId];
 const currentPose = () => POSES[state.poseName] ?? POSES.idle;
@@ -288,11 +293,13 @@ function create() {
     g.lineBetween(0, GROUND_Y, 960, GROUND_Y);        // mat line
     g.lineStyle(1, 0x26262e, 1);
     g.lineBetween(CX, 40, CX, 580);                    // center guide
+    boneOverlay = this.add.graphics().setDepth(30);
     rebuildSkeleton();
     buildPanel();
     window.__RIG_TOOL = {
         scene: () => scene,
         skeleton: () => skeleton,
+        boneOverlay: () => boneOverlay,
         state,
         P, TEX, RIG, POSES, CHARS,
         setCharKnob, setRig, setP, setPose, exportText,
@@ -313,6 +320,21 @@ function update(_, dtMs) {
         CX, GROUND_Y, renderScale(), state.facing, pose, state.walkPhase,
         state.combatBlend, lean, state.moveBlend, state.liftScale, state.runBlend
     );
+    boneOverlay.clear().setVisible(state.showBones);
+    if (state.showBones) {
+        const p = skeleton.jointAttachmentPoints ?? {};
+        boneOverlay.lineStyle(2, 0x39e6ff, 0.9);
+        for (const side of ['near', 'far']) {
+            for (const chain of [['Shoulder', 'Elbow', 'Wrist'], ['Hip', 'Knee', 'Ankle']]) {
+                const points = chain.map(name => p[side + name]).filter(Boolean);
+                if (points.length === 3) {
+                    boneOverlay.beginPath().moveTo(points[0].x, points[0].y)
+                        .lineTo(points[1].x, points[1].y).lineTo(points[2].x, points[2].y).strokePath();
+                    for (const point of points) boneOverlay.strokeCircle(point.x, point.y, 4);
+                }
+            }
+        }
+    }
     for (const h of handles) {
         const part = h.spec.part(skeleton);
         const on = state.showHandles && !!part;
@@ -478,6 +500,8 @@ function buildPanel() {
     sliderRow(pv, 'liftScale', () => state.liftScale, v => { state.liftScale = v; }, 0, 1, 0.05);
     el(pv, `<div class="hint">game liftScale: 0.5 walking, 1.0 running</div>`);
     checkRow(pv, 'drag handles', () => state.showHandles, v => { state.showHandles = v; });
+    checkRow(pv, 'bone + joint overlay', () => state.showBones, v => { state.showBones = v; });
+    el(pv, `<div class="hint">Author production bends with local lElbow/rElbow and lKnee/rKnee. Absolute forearm/shin channels are legacy adapters. Cyan chains show the fixed root/joint and moving wrist/ankle.</div>`);
     el(pv, `<div class="legend">${HANDLE_SPECS.map(h =>
         `<span><span class="dot" style="background:#${h.color.toString(16).padStart(6, '0')}"></span>${h.name}</span>`).join('')}</div>`);
 

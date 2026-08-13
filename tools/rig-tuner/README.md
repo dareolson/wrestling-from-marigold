@@ -30,6 +30,14 @@ arena's film-grain/color filters, deliberately, for clean art comparison).
   checkbox-armed override. Unchecked (every pose that predates this) uses
   Skeleton.js's derived angle exactly as before; checking it lets that pose
   set the elbow or knee bend independent of the shoulder/hip angle.
+  Production authoring now prefers local `lElbow`/`rElbow` and
+  `lKnee`/`rKnee`: flex is relative to the parent bone and mirrors safely.
+  Absolute `lForearm`/`rForearm`/`lShin`/`rShin` remain legacy adapters. Do not
+  export both forms for one joint: the runtime enforces one owner and local
+  flex wins malformed dual-authored content.
+- **Bone + joint overlay**: cyan shoulder→elbow→wrist and hip→knee→ankle
+  chains show that local flex leaves the parent joint fixed. Gate extended,
+  guarded-90, deep-flex, and overhead configurations in both facings.
 - **Skeleton.js — P**: global bone lengths / block sizes.
 - **Skeleton.js — TEX**: global display boxes for textured parts.
 - **Skeleton.js — RIG**: the overlap/stagger scalars (ELBOW_OVERLAP,

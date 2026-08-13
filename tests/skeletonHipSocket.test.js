@@ -118,3 +118,25 @@ test('_gaitLeg: authored off-axis sole is the IK target in both facings', () => 
         assert.equal(solved.soleY, groundY - foot.lift * s);
     }
 });
+
+test('_gaitLeg: a modular boot sole is grounded in both facings', () => {
+    const boot = {
+        _texDims: { w: 120, h: 100 },
+        _binding: { proximal: { u: 0.3, v: 0.22 } },
+        _semanticAnchors: { sole: { u: 0.57, v: 0.88 } },
+        _attachmentDisplayScale: 0.25,
+    };
+    const foot = { fx: 4, lift: 0, liftFrac: 0 };
+    for (const facing of [1, -1]) {
+        const x = 100, hipY = 190, groundY = 285, thighH = 54, shinH = 64, s = 0.8;
+        const solved = proto._gaitLeg.call({}, foot, facing, x, hipY, groundY, thighH, shinH, s, 1, null, null, s, boot);
+        const knee = proto._end(x, hipY, thighH, solved.thighAng);
+        const ankle = proto._end(knee.x, knee.y, shinH, solved.shinAng);
+        const factor = s * boot._attachmentDisplayScale;
+        const localX = facing * (boot._semanticAnchors.sole.u - boot._binding.proximal.u) * boot._texDims.w * factor;
+        const localY = (boot._semanticAnchors.sole.v - boot._binding.proximal.v) * boot._texDims.h * factor;
+        const sole = proto._endXY(ankle.x, ankle.y, localX, localY, solved.bootAng);
+        assert.ok(Math.abs(sole.x - solved.soleX) < 1e-9, `x facing ${facing}`);
+        assert.ok(Math.abs(sole.y - groundY) < 1e-9, `ground y facing ${facing}`);
+    }
+});

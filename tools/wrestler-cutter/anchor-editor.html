@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WFM Source Anchor Editor</title>
+  <style>
+    * { box-sizing: border-box } body { margin:0; background:#111218; color:#ddd; font:14px system-ui,sans-serif; display:grid; grid-template-columns:minmax(0,1fr) 370px; height:100vh }
+    main { display:grid; place-items:center; overflow:auto; padding:24px; background:#090a0d }
+    canvas { max-width:100%; max-height:calc(100vh - 48px); image-rendering:auto; box-shadow:0 0 0 1px #444; cursor:crosshair }
+    aside { padding:16px; overflow:auto; border-left:1px solid #333 } h1 { font-size:18px; margin:0 0 6px } h2 { font-size:14px; margin:18px 0 6px }
+    p { color:#999; line-height:1.4 } label { display:block; margin:8px 0 3px } input,select,button,textarea { width:100%; background:#1c1e27; color:#eee; border:1px solid #444; border-radius:4px; padding:7px }
+    button { cursor:pointer; margin-top:6px } button:hover { background:#292d3b } .row { display:grid; grid-template-columns:1fr 1fr; gap:6px }.check { display:flex; gap:8px; align-items:center }.check input { width:auto }
+    #anchors { display:grid; grid-template-columns:1fr 70px 70px; gap:4px; align-items:center } #anchors input { padding:4px } .status { color:#8bd49c; min-height:20px }.warn { color:#f0b27a }
+  </style>
+</head>
+<body>
+  <main><canvas id="canvas" width="640" height="480"></canvas></main>
+  <aside>
+    <h1>Source Anchor Editor</h1>
+    <p>Artist-approved anchors are authoritative. Crosshairs and overlap bands are a separate guide overlay and are never baked into clean art. Hidden attachment bands must use continuous fill/shading—no bevel, contour ring, rim highlight, or cutoff line.</p>
+    <label>Manifest JSON<input id="manifestFile" type="file" accept="application/json,.json"></label>
+    <label>Part<select id="part"></select></label>
+    <label>Clean part PNG<input id="artFile" type="file" accept="image/png"></label>
+    <label>Active anchor<select id="activeAnchor"></select></label>
+    <div class="check"><input id="guides" type="checkbox" checked><label for="guides">Show marker guide</label></div>
+    <p>Click the art to place the active anchor. Drag an existing crosshair to refine it. Arrow keys move it one export pixel; Shift+arrow moves ten.</p>
+    <h2>Exact export-pixel coordinates</h2>
+    <div id="anchors"></div>
+    <h2>Import / export</h2>
+    <button id="downloadManifest">Download source manifest</button>
+    <div class="row"><button id="downloadGuide">Download guide PNG</button><button id="downloadClean">Download clean PNG</button></div>
+    <p id="status" class="status"></p>
+  </aside>
+  <script type="module" src="./anchor-editor.js"></script>
+</body>
+</html>

@@ -173,6 +173,12 @@ try {
     await settle(page);
     text = await page.evaluate(() => window.__RIG_TOOL.exportText());
     ok(!text.includes('lForearm'), 'clearing override drops it from export (not pinned to 0)');
+    await page.evaluate(() => window.__RIG_TOOL.setPose('lockup', 'lElbow', Math.PI / 2));
+    await settle(page);
+    text = await page.evaluate(() => window.__RIG_TOOL.exportText());
+    ok(text.includes('lElbow: 1.571'), 'local elbow-flex control reaches pose export');
+    ok(await page.evaluate(() => window.__RIG_TOOL.boneOverlay()?.visible === true), 'bone/joint overlay is visible');
+    await page.evaluate(() => window.__RIG_TOOL.setPose('lockup', 'lElbow', null));
     await page.evaluate(() => window.__RIG_TOOL.setPoseName(window.__RIG_TOOL.CHARS.george.idlePose ?? 'idle'));
     await settle(page);
     ok(await canvasHash(page) === baseline, 'back on idle pose: render matches baseline');

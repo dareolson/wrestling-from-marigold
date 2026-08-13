@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "characterId": "example_wrestler",
+  "coordinateSpace": "export-pixels",
+  "workingScale": 4,
+  "minimumJointOverlapPx": 12,
+  "jointSurfaceRule": "continuous-fill-no-edge",
+  "humanExtremeAngleReviewRequired": true,
+  "markerLayer": {
+    "name": "RIG_MARKERS",
+    "exportedIntoArt": false,
+    "cleanArtFile": "source-art.png",
+    "guideFile": "source-guides.png"
+  },
+  "parts": {
+    "head": {
+      "file": "head.png",
+      "geometryLock": "head-v1",
+      "canvas": { "w": 200, "h": 200 },
+      "anchors": { "neck": { "x": 100, "y": 178 } },
+      "jointZones": { "neck": { "beforePx": 16, "afterPx": 16 } }
+    },
+    "torso": {
+      "file": "torso.png",
+      "geometryLock": "torso-v1",
+      "canvas": { "w": 190, "h": 260 },
+      "anchors": {
+        "neck": { "x": 95, "y": 20 },
+        "nearShoulder": { "x": 45, "y": 55 },
+        "farShoulder": { "x": 142, "y": 50 },
+        "nearHip": { "x": 76, "y": 232 },
+        "farHip": { "x": 112, "y": 228 }
+      },
+      "pelvisCoverage": {
+        "owner": "torso",
+        "bounds": { "x": 58, "y": 204, "w": 78, "h": 50 },
+        "cornerRadiusPx": 18,
+        "hipRadiusPx": 16,
+        "sweepRadiusPx": 12,
+        "optionalFrontMask": "pelvis_mask.png",
+        "attachmentSurface": "continuous-fill-no-edge"
+      },
+      "jointZones": {}
+    },
+    "upperArm": {
+      "file": "upper_arm.png",
+      "geometryLock": "upper-arm-v1",
+      "canvas": { "w": 130, "h": 180 },
+      "anchors": {
+        "shoulder": { "x": 65, "y": 20 },
+        "elbow": { "x": 64, "y": 148 }
+      },
+      "jointZones": {
+        "shoulder": { "beforePx": 20, "afterPx": 14, "surface": "continuous-fill-no-edge" },
+        "elbow": { "beforePx": 14, "afterPx": 32, "surface": "continuous-fill-no-edge" }
+      }
+    },
+    "forearm": {
+      "file": "forearm.png",
+      "geometryLock": "forearm-v1",
+      "canvas": { "w": 110, "h": 180 },
+      "anchors": {
+        "elbow": { "x": 55, "y": 24 },
+        "wrist": { "x": 55, "y": 154 }
+      },
+      "jointZones": {
+        "elbow": { "beforePx": 24, "afterPx": 14, "surface": "continuous-fill-no-edge" },
+        "wrist": { "beforePx": 14, "afterPx": 26, "surface": "continuous-fill-no-edge" }
+      }
+    },
+    "hand": {
+      "file": "hand.png",
+      "geometryLock": "hand-v1",
+      "canvas": { "w": 96, "h": 96 },
+      "anchors": {
+        "wrist": { "x": 48, "y": 22 },
+        "contact": { "x": 60, "y": 60 }
+      },
+      "jointZones": { "wrist": { "beforePx": 22, "afterPx": 14, "surface": "continuous-fill-no-edge" } }
+    },
+    "thigh": {
+      "file": "thigh.png",
+      "geometryLock": "thigh-v1",
+      "canvas": { "w": 150, "h": 180 },
+      "anchors": {
+        "hip": { "x": 75, "y": 20 },
+        "knee": { "x": 75, "y": 150 }
+      },
+      "jointZones": {
+        "hip": { "beforePx": 20, "afterPx": 14, "surface": "continuous-fill-no-edge" },
+        "knee": { "beforePx": 14, "afterPx": 30, "surface": "continuous-fill-no-edge" }
+      }
+    },
+    "shin": {
+      "file": "shin.png",
+      "geometryLock": "shin-v1",
+      "canvas": { "w": 130, "h": 210 },
+      "anchors": {
+        "knee": { "x": 65, "y": 24 },
+        "ankle": { "x": 65, "y": 180 }
+      },
+      "jointZones": {
+        "knee": { "beforePx": 24, "afterPx": 14, "surface": "continuous-fill-no-edge" },
+        "ankle": { "beforePx": 14, "afterPx": 30, "surface": "continuous-fill-no-edge" }
+      }
+    },
+    "boot": {
+      "file": "boot.png",
+      "geometryLock": "boot-v1",
+      "canvas": { "w": 120, "h": 100 },
+      "anchors": {
+        "ankle": { "x": 36, "y": 22 },
+        "sole": { "x": 68, "y": 88 }
+      },
+      "jointZones": { "ankle": { "beforePx": 22, "afterPx": 14, "surface": "continuous-fill-no-edge" } }
+    }
+  },
+  "variantFamilies": {
+    "head": [
+      { "id": "idle", "geometryLock": "head-v1", "canvas": { "w": 200, "h": 200 }, "anchors": { "neck": { "x": 100, "y": 178 } } },
+      { "id": "hurt", "geometryLock": "head-v1", "canvas": { "w": 200, "h": 200 }, "anchors": { "neck": { "x": 100, "y": 178 } } }
+    ],
+    "hand": [
+      { "id": "open", "geometryLock": "hand-v1", "canvas": { "w": 96, "h": 96 }, "anchors": { "wrist": { "x": 48, "y": 22 }, "contact": { "x": 60, "y": 60 } } },
+      { "id": "fist", "geometryLock": "hand-v1", "canvas": { "w": 96, "h": 96 }, "anchors": { "wrist": { "x": 48, "y": 22 }, "contact": { "x": 70, "y": 54 } } },
+      { "id": "grip", "geometryLock": "hand-v1", "canvas": { "w": 96, "h": 96 }, "anchors": { "wrist": { "x": 48, "y": 22 }, "contact": { "x": 63, "y": 64 } } }
+    ],
+    "boot": [
+      { "id": "neutral", "geometryLock": "boot-v1", "canvas": { "w": 120, "h": 100 }, "anchors": { "ankle": { "x": 36, "y": 22 }, "sole": { "x": 68, "y": 88 } } },
+      { "id": "flexed", "geometryLock": "boot-v1", "canvas": { "w": 120, "h": 100 }, "anchors": { "ankle": { "x": 36, "y": 22 }, "sole": { "x": 60, "y": 82 } } },
+      { "id": "toePoint", "geometryLock": "boot-v1", "canvas": { "w": 120, "h": 100 }, "anchors": { "ankle": { "x": 36, "y": 22 }, "sole": { "x": 96, "y": 70 } } }
+    ]
+  }
+}

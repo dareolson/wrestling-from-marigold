@@ -24,13 +24,18 @@ The rig remains responsible for connected anatomy. The clip describes how actors
 
 Variants live under `character.textures.variants` and target semantic render slots:
 
-- `head`, `torso`, `pelvisOverlay`
+- `head`, `torso`, legacy `pelvisOverlay`, future `pelvisUnderlay`, `pelvisMask`
 - `nearUpperArm`, `farUpperArm`
 - `nearForearm`, `farForearm`
+- `nearHand`, `farHand`
 - `nearThigh`, `farThigh`
 - `nearShin`, `farShin`
+- `nearBoot`, `farBoot`
 
-Hands and boots are currently baked into forearm and shin art. Therefore a grip or fist swaps the relevant forearm; a bent foot swaps the relevant shin. Splitting hands and feet into extra bones should wait until a real move proves whole-part replacement insufficient.
+George and Lou keep their baked forearm-hand and shin-boot art through the
+compatibility path. New eight-part characters use separately socketed hand and
+boot slots. Structural wrist/ankle anchors are locked across variants; semantic
+hand-contact and sole points may vary with the painted pose.
 
 ```js
 textures: {
@@ -57,6 +62,34 @@ textures: {
 ```
 
 A variant inherits its base part's display box and anchors. This is the fast path and requires the replacement to use the same canvas, joint, and alignment. If the cut is genuinely different, the variant must explicitly override its geometry and pass the same joint audits as a base part.
+
+Slot resolution is deterministic: a side-specific family such as
+`nearForearm.fist` wins when present, otherwise the renderer falls back to the
+shared `forearm.fist` family. This supports George's split forearms and Lou's
+unified forearm without changing clip semantics. `strikingForearm` still maps
+to near/far from facing; the selected side then follows that same fallback.
+
+Articulated channels survive both legacy `tweenPose` and seekable
+`applyAnimationSample` paths. Production content uses local
+`lElbow`/`rElbow`/`lKnee`/`rKnee`; absolute forearm/shin channels remain a
+compatibility input. Each joint has one live representation, with local flex
+winning malformed dual-authored samples, so an invisible legacy channel cannot
+keep animating beneath it. Run
+`node tools/debug/articulated_channel_probe.mjs` when pose plumbing changes;
+it checks actual rendered limb rotations, finite transforms, and intermediate
+frame continuity—not only final pose data.
+
+New content should author facing-independent local `lElbow`/`rElbow` and
+`lKnee`/`rKnee` flex. Absolute forearm/shin channels remain compatibility
+adapters. The rig tuner shows cyan shoulder-elbow-wrist and hip-knee-ankle
+chains; use the local controls to author visibly different extended, guard-90,
+deep-flex, and overhead poses within the runtime joint limits.
+
+The pelvis is also a connected-art contract. The torso or explicit
+`pelvisUnderlay` owns a complete opaque rounded bottom behind both thighs; an
+optional `pelvisMask` may add the front garment edge above both roots. Do not
+use legacy `pelvisOverlay` as both jobs. The source gate checks real alpha and
+pelvis/thigh union sweeps through leg separation/get-up angles.
 
 `Arena.preload()` now discovers both base and variant assets from this contract. `Skeleton.setPartVariants()` applies one complete selection and resets omitted slots to base, preventing interrupted moves from leaving a grip hand or hurt face stranded.
 
@@ -127,7 +160,9 @@ Role names are not hard-coded, so a referee track can be added without inventing
 2. ~~Use `hammerlock` as the paired proof: attacker/defender tracks, grip variant, contact acquire/release, interruption.~~ **Done (2026-08-03)** — `src/animation/clips/hammerlock.js` + `Wrestler._doHammerlock`. Synchronized attacker/defender tracks; `acquire-contact`/`apply-drain`/`release-contact` markers fire exactly once in order at 30/60/120 Hz and never on seek; interruption through either actor, `cancelTarget`, and `shutdown` all leave both wrestlers in legal, non-orphaned states with no stranded `_fixedHold`/handle/variant/timer and no late damage; preserved timing (drain @300ms, release @1400ms, 220ms recovery) and tuning (defender 10+4, attacker cost 3, heat 5). A working/grip forearm can be authored later but no grip PNG exists yet, so the semantic slot safely resolves to base art (as jab's `fist` does). Verified live (`debug:play -- hammerlock` Lou→George and `hammerlockReverse` George→Lou), by `tests/hammerlockClip.test.js` (20 tests), and by `tools/debug/hammerlock_preview.mjs` (seek frames + interruption matrix). This provides paired lifecycle ownership + event markers only — **not** a general contact-constraint or MoveSpec system.
 3. Add a referee actor and bind it to existing pin/submission events.
 4. Move remaining Class A strikes, then Class B paired moves, one at a time.
-5. Only add separate hand/foot bones, an atlas, or an external skeletal tool if measured authoring pain remains after those proofs.
+5. ~~Add separate hand/foot bones.~~ **Architecture done (2026-08-10)** — opt-in
+   eight-part path, source-manifest adapter, marker editor, and compatibility
+   renderer are in place. Final George/Lou art remains intentionally deferred.
 
 ## Non-negotiable gates
 

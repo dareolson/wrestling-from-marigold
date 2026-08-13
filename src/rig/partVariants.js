@@ -2,6 +2,8 @@ export const BASE_PART_FILES = Object.freeze({
     head: 'head.png',
     torso: 'torso.png',
     pelvisOverlay: 'pelvis_overlay.png',
+    pelvisUnderlay: 'pelvis_underlay.png',
+    pelvisMask: 'pelvis_mask.png',
     upperArm: 'upper_arm.png',
     forearm: 'forearm.png',
     thigh: 'thigh.png',
@@ -10,27 +12,50 @@ export const BASE_PART_FILES = Object.freeze({
     farShin: 'far_shin.png',
     nearForearm: 'near_forearm.png',
     farForearm: 'far_forearm.png',
+    hand: 'hand.png',
+    boot: 'boot.png',
 });
 
 export const RENDER_PART_SLOTS = Object.freeze([
-    'head', 'torso', 'pelvisOverlay',
+    'head', 'torso', 'pelvisOverlay', 'pelvisUnderlay', 'pelvisMask',
     'nearUpperArm', 'farUpperArm', 'nearForearm', 'farForearm',
+    'nearHand', 'farHand',
     'nearThigh', 'farThigh', 'nearShin', 'farShin',
+    'nearBoot', 'farBoot',
 ]);
 
 const SLOT_BASE_KEYS = Object.freeze({
     head: ['head'],
     torso: ['torso'],
     pelvisOverlay: ['pelvisOverlay'],
+    pelvisUnderlay: ['pelvisUnderlay'],
+    pelvisMask: ['pelvisMask'],
     nearUpperArm: ['nearUpperArm', 'upperArm'],
     farUpperArm: ['farUpperArm', 'upperArm'],
     nearForearm: ['nearForearm', 'forearm'],
     farForearm: ['farForearm', 'forearm'],
+    nearHand: ['nearHand', 'hand'],
+    farHand: ['farHand', 'hand'],
     nearThigh: ['nearThigh', 'thigh'],
     farThigh: ['farThigh', 'thigh'],
     nearShin: ['nearShin', 'shin'],
     farShin: ['farShin', 'shin'],
+    nearBoot: ['nearBoot', 'boot'],
+    farBoot: ['farBoot', 'boot'],
 });
+
+const SLOT_VARIANT_FAMILY = Object.freeze({
+    nearUpperArm: 'upperArm', farUpperArm: 'upperArm',
+    nearForearm: 'forearm', farForearm: 'forearm',
+    nearHand: 'hand', farHand: 'hand',
+    nearThigh: 'thigh', farThigh: 'thigh',
+    nearShin: 'shin', farShin: 'shin',
+    nearBoot: 'boot', farBoot: 'boot',
+});
+
+const SHARED_VARIANT_FAMILIES = new Set([
+    'upperArm', 'forearm', 'hand', 'thigh', 'shin', 'boot',
+]);
 
 function isObject(value) {
     return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -65,6 +90,9 @@ export function mergeVariantEntry(baseEntry, variantEntry) {
         box: variantEntry.box ?? base.box,
         distalAnchorFrac: variantEntry.distalAnchorFrac ?? base.distalAnchorFrac,
         soleAnchorFrac: variantEntry.soleAnchorFrac ?? base.soleAnchorFrac,
+        binding: variantEntry.binding ?? base.binding,
+        semanticAnchors: variantEntry.semanticAnchors ?? base.semanticAnchors,
+        displayScale: variantEntry.displayScale ?? base.displayScale,
     };
 }
 
@@ -74,7 +102,9 @@ export function resolvePartSelection(textures, selection = {}) {
     for (const slot of RENDER_PART_SLOTS) {
         const base = baseEntryForSlot(textures, slot);
         const requested = selection[slot] ?? 'base';
-        const variant = requested === 'base' ? null : variants[slot]?.[requested];
+        const family = SLOT_VARIANT_FAMILY[slot];
+        const variant = requested === 'base' ? null
+            : variants[slot]?.[requested] ?? variants[family]?.[requested];
         resolved[slot] = mergeVariantEntry(base, variant);
     }
     return resolved;
@@ -108,6 +138,14 @@ function validFrac(point) {
         && Number.isFinite(point.v) && point.v >= 0 && point.v <= 1;
 }
 
+function sameFrac(a, b) {
+    return a?.u === b?.u && a?.v === b?.v;
+}
+
+function sameBox(a, b) {
+    return a?.w === b?.w && a?.h === b?.h;
+}
+
 export function validateCharacterArt(character) {
     const errors = [];
     const warnings = [];
@@ -133,6 +171,20 @@ export function validateCharacterArt(character) {
                 errors.push(`${path}.${anchor}: expected normalized {u,v}`);
             }
         }
+        if (entry.binding !== undefined) {
+            const binding = entry.binding;
+            if (!isObject(binding) || !validFrac(binding.proximal)
+                || (binding.distal !== undefined && !validFrac(binding.distal))) {
+                errors.push(`${path}.binding: expected normalized proximal and optional distal anchors`);
+            }
+        }
+        if (entry.displayScale !== undefined
+            && (!Number.isFinite(entry.displayScale) || entry.displayScale <= 0)) {
+            errors.push(`${path}.displayScale must be a positive number`);
+        }
+        for (const [name, point] of Object.entries(entry.semanticAnchors ?? {})) {
+            if (!validFrac(point)) errors.push(`${path}.semanticAnchors.${name}: expected normalized {u,v}`);
+        }
     };
 
     for (const part of Object.keys(BASE_PART_FILES)) {
@@ -143,7 +195,7 @@ export function validateCharacterArt(character) {
     }
 
     for (const [slot, variants] of Object.entries(textures.variants ?? {})) {
-        if (!RENDER_PART_SLOTS.includes(slot)) {
+        if (!RENDER_PART_SLOTS.includes(slot) && !SHARED_VARIANT_FAMILIES.has(slot)) {
             errors.push(`variants.${slot}: unknown render slot`);
             continue;
         }
@@ -158,6 +210,20 @@ export function validateCharacterArt(character) {
             if (!textureKey(entry)) errors.push(`variants.${slot}.${name}: key is required`);
             if (!isObject(entry) || !entry.file) errors.push(`variants.${slot}.${name}: file is required`);
             validateEntry(entry, `variants.${slot}.${name}`);
+            if (isObject(base) && isObject(entry)) {
+                if (entry.box !== undefined && !sameBox(entry.box, base.box)) {
+                    errors.push(`variants.${slot}.${name}.box must exactly match its base geometry`);
+                }
+                if (entry.displayScale !== undefined && entry.displayScale !== base.displayScale) {
+                    errors.push(`variants.${slot}.${name}.displayScale must exactly match its base geometry`);
+                }
+                for (const anchorName of ['proximal', 'distal']) {
+                    if (entry.binding?.[anchorName] !== undefined
+                        && !sameFrac(entry.binding[anchorName], base.binding?.[anchorName])) {
+                        errors.push(`variants.${slot}.${name}.binding.${anchorName} must exactly match its base geometry`);
+                    }
+                }
+            }
         }
     }
 

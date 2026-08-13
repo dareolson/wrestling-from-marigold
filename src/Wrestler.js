@@ -1,6 +1,12 @@
 import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
+import {
+    ARTICULATED_CHANNELS,
+    ARTICULATION_CHANNEL_PAIRS,
+    authoredArticulationChannels,
+    mergeArticulatedPose,
+} from './rig/articulation.js';
 
 const SPEED      = 140;
 const RUN_SPEED  = 340;
@@ -20,6 +26,13 @@ const WALK_BRAKE = SPEED / WALK_BRAKE_TIME;
 // ─── Stamina ─────────────────────────────────────────────────────────────────
 const STAMINA_MAX      = 100;
 const STAMINA_RECOVER  = 6;   // per second while standing
+// Per-joint pose channels beyond the six the original rig blended. lElbow/
+// rElbow/lKnee/rKnee are local flex relative to the parent bone (see
+// rig/articulation.js); lForearm/rForearm/lShin/rShin are the older absolute
+// skeleton-convention overrides. Both are optional per pose — a pose that omits
+// one leaves the joint on its derived relationship.
+export { ARTICULATED_CHANNELS };
+
 // Exported so tests/moveRegistry.test.js can assert every registry damageKey
 // resolves here and every value here is claimed by a move (no dead damage).
 export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move landing
@@ -336,6 +349,9 @@ export default class Wrestler {
         this.skeleton        = new Skeleton(scene, skinCol, trunksCol, textures);
         this.combatBlend     = 0;
         this._evadeCooldown  = 0;
+        // Scene-clock deadline until which a legacy pose sequence owns the
+        // stance — see _choreoOwnsPose().
+        this._choreoUntil    = 0;
         // Handle for a move currently driven by the scene MoveRuntime. While
         // set, the clip owns this.pose each frame; anything else that claims the
         // pose (tweenPose) cancels it, so an interrupted move can't keep
@@ -355,6 +371,25 @@ export default class Wrestler {
     }
 
     get s() { return perspectiveScale(this.y); }
+
+    // True while authored choreography — a MoveRuntime clip or a MOVE_DEFS pose
+    // sequence — owns the stance.
+    //
+    // The combat-ready guard in Skeleton blends the arms toward a fixed ready
+    // position as combatBlend approaches 1, and at b=1 it REPLACES the arm
+    // angles outright (`a + (GUARD - a) * 1 === GUARD`). combatBlend only falls
+    // when the state leaves standing/staggered, and jab/headbutt never change
+    // state, so every arm-driven strike was being erased at exactly the range
+    // where it is legal: measured 1.55 rad of authored jab travel rendering as
+    // 0.0025 rad. Suppressing the guard while choreography owns the arms fixes
+    // the whole class rather than one move.
+    //
+    // Derived from a deadline rather than a flag so it cannot get stuck on if a
+    // sequence is interrupted, and tweenPose clears it so a pose override
+    // (selling, blocking, the idle settle) hands the guard straight back.
+    _choreoOwnsPose() {
+        return this._activeMove !== null || this.scene.time.now < this._choreoUntil;
+    }
 
     // Smoothly ramp combatBlend toward 1 when standing close to the opponent,
     // toward 0 otherwise. Only active in neutral standing states.
@@ -381,7 +416,7 @@ export default class Wrestler {
     // semantic `strikingForearm` slot is resolved to the correct near/far
     // forearm here, from facing.
     applyAnimationSample(sample) {
-        if (sample.pose) Object.assign(this.pose, sample.pose);
+        if (sample.pose) mergeArticulatedPose(this.pose, sample.pose);
         if (sample.parts) this.skeleton.setPartVariants(this._resolveVariantSlots(sample.parts));
     }
 
@@ -423,7 +458,10 @@ export default class Wrestler {
         }
     }
 
-    // Tween this.pose toward a target (pose name string or {lLeg,rLeg,lArm,rArm} object).
+    // Tween this.pose toward a target. The six original channels normalize to
+    // zero when omitted; articulated elbow/knee channels are copied whenever
+    // authored and otherwise remain at their current value. Dropping them here
+    // makes a valid rig-tuner pose look like broken limb art at runtime.
     // Kills any in-flight pose tween first so sequences don't stack.
     tweenPose(target, duration, ease = 'Linear', onComplete) {
         // A tweenPose means something other than a clip now owns the stance —
@@ -431,11 +469,59 @@ export default class Wrestler {
         // settle. Release any active clip so the two don't fight over the pose
         // and so an interrupted strike stops before its impact frame.
         this._cancelActiveMove('pose-override');
+        // Whatever is claiming the pose now owns it; any pose-sequence deadline
+        // from a superseded move is void. _runPoseSequence re-arms this after
+        // its own tweenPose call, so a live sequence keeps its ownership.
+        this._choreoUntil = 0;
         this.scene.tweens.killTweensOf(this.pose);
         const p = typeof target === 'string' ? POSES[target] : target;
         // Normalize so lean/crouch always tween back to 0 for poses that omit them
         const t = { lLeg: p.lLeg ?? 0, rLeg: p.rLeg ?? 0, lArm: p.lArm ?? 0, rArm: p.rArm ?? 0,
                     lean: p.lean ?? 0, crouch: p.crouch ?? 0 };
+        // Articulated channels need a finite value on this.pose to interpolate
+        // FROM. A channel the live pose has never carried has none, and Phaser
+        // reads that `undefined` as NaN for the whole tween: clampLocalFlex
+        // quietly swaps a NaN elbow for the joint default (so the joint renders
+        // but never animates), while the legacy lForearm/lShin path multiplies
+        // it straight into a sprite rotation and position and the limb
+        // disappears. Measured on Thesz, whose theszIdle is the only pose
+        // authoring these: a knee drop's recovery to idle blanked both shins
+        // and boots.
+        //
+        // So a cold channel is seeded from the joint relationship the skeleton
+        // is currently drawing, then tweened normally. The seed is by
+        // construction render-identical to what is already on screen, so frame
+        // one is unchanged and the joint animates into its authored value
+        // rather than popping to it.
+        //
+        // Before the first render there is no relationship to read — and a
+        // skeleton that reports a non-finite one is not trusted — so the
+        // channel is assigned outright. Motionless for that one transition, but
+        // the NaN can never come back.
+        // Resolve each joint to ONE owner. Local flex is canonical and wins if
+        // invalid compatibility content authors both it and the legacy absolute
+        // child angle. Switching representations is continuous: seed the new
+        // owner from the last upright render, then remove the old owner before
+        // handing the destination to Phaser. Omitted joints keep their current
+        // owner/value, matching seekable clip merge semantics.
+        for (const { local, legacy } of ARTICULATION_CHANNEL_PAIRS) {
+            if (Number.isFinite(this.pose[local]) && Number.isFinite(this.pose[legacy])) {
+                delete this.pose[legacy];
+            }
+        }
+        for (const { channel, counterpart } of authoredArticulationChannels(p)) {
+            if (!Number.isFinite(this.pose[channel])) {
+                const rendered = this.skeleton?.currentPoseChannel?.(channel);
+                if (!Number.isFinite(rendered)) {
+                    this.pose[channel] = p[channel];
+                    delete this.pose[counterpart];
+                    continue;
+                }
+                this.pose[channel] = rendered;
+            }
+            delete this.pose[counterpart];
+            t[channel] = p[channel];
+        }
         if (!duration) {
             Object.assign(this.pose, t);
             if (onComplete) onComplete();
@@ -454,6 +540,11 @@ export default class Wrestler {
             head.e ?? 'Linear',
             () => this._runPoseSequence(rest, onDone),
         );
+        // Claim the stance for the remainder of the sequence. Set AFTER
+        // tweenPose, which clears the deadline as part of taking the pose over.
+        // Re-armed each step, so an interrupted sequence expires on its own.
+        const remaining = sequence.reduce((ms, step) => ms + (step.dur ?? 0), 0);
+        this._choreoUntil = this.scene.time.now + remaining;
     }
 
     // ── Core game tick ────────────────────────────────────────────────────────
@@ -1914,6 +2005,7 @@ export default class Wrestler {
         gfx.clear();
         gfx.setDepth(depth);
         this.skeleton.setDepth(depth);
+        this.skeleton.invalidatePoseChannels();
         this.skeleton.setVisible(false); // shown only for upright states below
 
         if (state === 'falling' || state === 'risingUp') {
@@ -2007,7 +2099,9 @@ export default class Wrestler {
         const lean      = this.facing * (0.07 * this.moveBlend + (this.pose.lean ?? 0)) + wooze;
         const liftScale = state === 'running' ? 1.0 : 0.5;
         const runBlend  = state === 'running' ? this.moveBlend : 0;
-        this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, this.combatBlend, lean, this.moveBlend, liftScale, runBlend);
+        // Choreography outranks the combat-ready guard — see _choreoOwnsPose().
+        const guard = this._choreoOwnsPose() ? 0 : this.combatBlend;
+        this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, guard, lean, this.moveBlend, liftScale, runBlend);
     }
 
     // Narrow side-view of opponent held upside down for piledriver.

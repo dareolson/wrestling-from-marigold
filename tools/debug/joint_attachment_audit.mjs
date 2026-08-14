@@ -75,8 +75,9 @@ for (const character of CHAR_LIST) {
             const lx = c * dx + s * dy;
             const ly = -s * dx + c * dy;
             let u = lx / img.displayWidth + img.originX;
-            const v = ly / img.displayHeight + img.originY;
+            let v = ly / img.displayHeight + img.originY;
             if (img.flipX) u = 1 - u;
+            if (img.flipY) v = 1 - v;
             if (u < 0 || u >= 1 || v < 0 || v >= 1) return false;
             const frame = img.frame;
             const px = Math.max(0, Math.min(frame.cutWidth - 1, Math.floor(u * frame.cutWidth)));

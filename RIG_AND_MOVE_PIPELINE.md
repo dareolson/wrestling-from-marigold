@@ -173,3 +173,84 @@ Role names are not hard-coded, so a referee track can be added without inventing
 - Cancellation restores appearance and releases contacts.
 - New wrestlers and the referee use the same manifests and clip roles.
 - Lou and George's approved base silhouettes do not change merely because the pipeline exists.
+- `npm run rig:certify` reports no architecture-class findings. The reference
+  rig is certified first on every run and is the control; if it fails, every
+  other verdict in that run is unreliable and the run says so.
+
+## Certification and coverage
+
+`npm run rig:certify` drives the high-strain matrix
+(`src/rig/certificationMatrix.js`) through the real render paths in Chrome and
+measures rendered transforms — proximal/distal anchor error, joint ink gaps,
+pelvis depth order, facing bend-inversion, variant anchor drift, non-finite
+transforms, and frame-to-frame continuity. Schema-level checks are not
+sufficient here: they pass while the screen is wrong, which is how an
+attachment solver that ignored every authored wrist and ankle anchor survived
+205 unit tests and both rendered probes unchanged.
+
+Each matrix entry declares which render path actually draws it. Coverage is
+currently **16/17**; one entry still does not reach the modular rig:
+
+| Entry | Drawn by |
+| --- | --- |
+| dropkick extension | `Wrestler._drawDropkickFront` — primitives, skeleton hidden |
+
+This is reported as a **coverage gap**, never as a pass. Authoring a wrestling
+move on a state in this table exercises no articulation guarantee at all —
+there is no joint, no binding, and no part to measure.
+
+### Grounded-state migration (2026-08-13)
+
+`down`, `pinned` and `possum` previously hit `Wrestler._drawFlat`: two filled
+rectangles and a circle, with `skeleton.setVisible(false)`. They now render
+through `Skeleton.updateGrounded`, so they carry real joints, bindings and
+parts and are certified like any other entry.
+
+Lying flat and the get-up's first keyframe are the **same frozen pose object**
+(`Skeleton.GROUNDED_SUPINE`, shared by reference with `GETUP_POSES[0]`), which
+makes two guarantees structural rather than tuned:
+
+- `down` → `gettingUp` is now exactly 0px. It was previously a full
+  representation change, from primitives to a skeleton.
+- Editing the flat pose moves the lying pose and the get-up's opening frame
+  together; they cannot drift apart.
+
+Measured cost: the `falling` → `down` boundary moved from 0px to 4.9px
+(1.5px x, 4.6px y). `_drawFalling` collapses its head to exactly the mat line,
+while the rig places it 4.6px above — the rig is the more correct of the two.
+Rather than retune the falling constants to match, migrate `falling` onto the
+rig; it is the next coverage gap after the dropkick.
+
+`_drawFlat` is retained for the airborne and held paths that still use it
+(`_drawClotheslineFall`, slam/piledriver holds).
+
+Wrestlers land on their backs rather than face-first: `updateGrounded` takes
+`{ onBack: true }`, a render-time reflection (`_mirrorGroundedOnBack`), and the
+get-up stays on the back until `Skeleton.ON_BACK_UNTIL_T` so the turn-over
+lands on the sit-up keyframe. Note `facing` cannot do this — measured on Lou,
+facing +1 and -1 are exact horizontal mirrors of each other and both land
+face-down. That horizontal mirror is the lever a sideways roll will want.
+
+### Known next: grounded parts do not rotate with the torso
+
+George's head visibly detaches when he goes down. It is NOT a position error —
+his head anchor sits exactly on the neck joint (measured 0.00px). The head's
+rotation stays 0 while the grounded torso rotates to -1.522, so the head renders
+upright on a body lying flat.
+
+Two things follow, and both are open:
+
+1. `_applyGrounded` places grounded children at the right point without giving
+   them the parent's orientation. Pre-existing — it affected the get-up before
+   the grounded migration too.
+2. **The certifier cannot see it.** Every structural invariant measures where a
+   part sits, never how it is turned. An orientation invariant — a child's
+   rotation must stay within tolerance of the relationship its parent implies —
+   is the missing check, and it belongs in `src/rig/certification.js` beside
+   `measureChain`. Adding it will fail the reference rig until (1) is fixed,
+   which is correct: the reference rig is the control.
+
+Ink probing runs at authored keyframes rather than every interpolated frame,
+because keyframes are where the authored extremes live. Get-up is sampled at
+49 points to stay at or below the 850 ms tween's real playback density; coarser
+sampling makes ordinary motion register as a false discontinuity.

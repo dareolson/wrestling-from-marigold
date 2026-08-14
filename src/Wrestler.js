@@ -2081,8 +2081,17 @@ export default class Wrestler {
         gfx.fillStyle(0x000000, 0.22);
         gfx.fillEllipse(x, shadowY, 120 * s, 36 * s);
 
+        // Lying on the mat now renders through the modular rig instead of
+        // _drawFlat's primitives, so these states carry real joints, bindings
+        // and parts — and share their pose object with the get-up's first
+        // keyframe, so rising no longer cuts from rectangles to a skeleton.
+        // _drawFlat survives for the airborne/held paths that still use it.
         if (state === 'down' || state === 'pinned' || state === 'possum') {
-            this._drawFlat(x, y, s, facing, skinCol, trunksCol);
+            this.skeleton.setVisible(true);
+            // Wrestlers land on their backs far more often than face-first
+            // (Derek, 2026-08-13). onBack is a render-time reflection, not a
+            // second pose — see Skeleton._mirrorGroundedOnBack.
+            this.skeleton.updateGrounded(x, y, s, facing, 'flat', { onBack: true });
             return;
         }
 

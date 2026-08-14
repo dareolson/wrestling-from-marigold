@@ -12,7 +12,9 @@
     "debug:sim": "node tools/debug/sim.mjs",
     "debug:probe": "node tools/debug/probe.mjs",
     "rig:tuner": "vite --open /tools/rig-tuner/",
+    "move:editor": "vite --open /tools/move-editor/",
     "rig:validate": "node tools/rig/validate-character-rigs.mjs",
+    "rig:certify": "node tools/rig/certify.mjs",
     "art:validate-source": "node tools/wrestler-cutter/validate-source-manifest.mjs",
     "test": "node --test tests/*.test.js"
   },

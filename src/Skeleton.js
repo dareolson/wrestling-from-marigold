@@ -1703,9 +1703,49 @@ export default class Skeleton {
     // + rotates toward facing); `hip` is hip height above the mat in unscaled
     // px; `torso` is the hip→shoulder direction (π/2 = lying toward facing,
     // π = vertical). Mirroring for facing < 0 is a sign flip on every angle.
+    // The flat, supine rest pose: hips on the mat, torso barely off it, arms
+    // at the sides, legs away from facing.
+    //
+    // Shared BY REFERENCE with GETUP_POSES[0] and with updateGrounded below,
+    // so a wrestler who drops, lies there, and then rises cannot pop between
+    // two subtly different "flat" poses — there is exactly one flat pose, and
+    // editing it moves the lying pose and the get-up's first keyframe
+    // together by construction.
+    // Named FLAT, not SUPINE: as authored this pose lies FACE DOWN. Turning
+    // the wrestler onto his back is a separate render-time reflection — see
+    // _mirrorGroundedOnBack.
+    // Carries `t: 0` so this object can BE GETUP_POSES[0] rather than merely
+    // matching it. An earlier version spread it into the keyframe, which left
+    // two objects with equal values — good enough to keep them in sync at
+    // module load, but not the identity the comment claimed (Codex review,
+    // 2026-08-13). _applyGrounded ignores `t`; only updateGetUp reads it.
+    static GROUNDED_FLAT = Object.freeze({
+        t: 0.00,
+        hip: 10, torso: 1.62,
+        farThigh: -1.45, farShin: -1.60, nearThigh: -1.40, nearShin: -1.55,
+        farArm: -1.48, farFore: -1.55, nearArm: -1.42, nearFore: -1.50,
+    });
+
+    // Static grounded poses reachable through updateGrounded. 'down',
+    // 'possum' and 'pinned' all rendered identically through the old
+    // _drawFlat primitive path, so they still share one pose here — this
+    // migration raises their fidelity without inventing new choreography.
+    static GROUNDED_POSES = Object.freeze({
+        flat: Skeleton.GROUNDED_FLAT,
+    });
+
+    // The get-up renders on the wrestler's back below this progress and
+    // face-down at or above it, so the turn-over lands on the sit-up
+    // keyframe where the torso is already swinging hard and a discrete flip
+    // is masked by the motion around it (Derek, 2026-08-13).
+    static ON_BACK_UNTIL_T = 0.34;
+
     static GETUP_POSES = [
-        //         hips on mat, torso barely off it, arms at sides, legs away from facing
-        { t: 0.00, hip: 10, torso: 1.62, farThigh: -1.45, farShin: -1.60, nearThigh: -1.40, nearShin: -1.55, farArm: -1.48, farFore: -1.55, nearArm: -1.42, nearFore: -1.50 },
+        //         hips on mat, torso barely off it, arms at sides, legs away
+        //         from facing. THE SAME OBJECT as GROUNDED_FLAT, not a copy —
+        //         lying down and the get-up's first frame are one pose by
+        //         identity, so they cannot drift apart.
+        Skeleton.GROUNDED_FLAT,
         //         sitting up — torso reclined ~55°, hands propped on the mat behind the hips
         { t: 0.34, hip: 14, torso: 2.50, farThigh: -1.42, farShin: -1.62, nearThigh: -1.34, nearShin: -1.56, farArm: -0.38, farFore: -0.55, nearArm: -0.30, nearFore: -0.48 },
         //         all fours — thighs vertical, shins flat behind, arms straight down, torso sloping up to the shoulders
@@ -1713,6 +1753,116 @@ export default class Skeleton {
         //         standing — matches updateUpright's rest geometry closely enough to hand off
         { t: 1.00, hip: 88, torso: Math.PI, farThigh: 0, farShin: 0, nearThigh: 0, nearShin: 0, farArm: 0.10, farFore: 0.16, nearArm: 0.06, nearFore: 0.12 },
     ];
+
+    /**
+     * Draw a static grounded pose — flat on the mat — through the modular rig.
+     *
+     * Before this existed, 'down'/'pinned'/'possum' were drawn by
+     * Wrestler._drawFlat: two filled rectangles and a circle, with the
+     * skeleton hidden. No joint, no binding, no part — so a wrestling move
+     * authored on those states exercised no articulation guarantee at all,
+     * and the certifier reported them as coverage gaps rather than passes.
+     *
+     * Routing them here also closes a visible seam: lying flat and the first
+     * frame of the get-up now come from the same pose object, instead of
+     * cutting from primitives to a full skeleton.
+     */
+    updateGrounded(x, y, s, facing, poseName = 'flat', { onBack = false } = {}) {
+        const pose = Skeleton.GROUNDED_POSES[poseName];
+        if (!pose) throw new RangeError(`unknown grounded pose "${poseName}"`);
+        this._applyGrounded(x, y, s, facing, pose);
+        if (onBack) this._mirrorGroundedOnBack(y);
+    }
+
+    // Reflect an assembled grounded render across a horizontal axis, turning
+    // a face-down body face-up.
+    //
+    // `facing` cannot do this, which is worth stating because it is the
+    // obvious first guess. Measured on Lou: facing +1 and facing -1 produce an
+    // exact HORIZONTAL mirror of each other (head x +86.8 vs -86.8, every
+    // rotation negated, flipX toggled) and BOTH land face-down. With a single
+    // front-view 3/4 torso, chest direction is coupled to torso rotation — any
+    // rotation that puts the head to the right also points the chest at the
+    // mat — so `facing` chooses which side the head lies on and never turns
+    // the wrestler over. (That horizontal mirror is exactly the lever a
+    // sideways roll will want later; it is simply a different axis.)
+    //
+    // Mirrors position and rotation, toggles flipY, and mirrors originY so
+    // every anchor stays glued to the same art feature — the vertical twin of
+    // _mirrorUpright's originX note, and the same failure if omitted.
+    //
+    // The reflection axis is arbitrary: reflecting about two different axes
+    // differs only by a translation, and the re-seat below normalises that.
+    // The assembly is translated so its lowest anchor sits exactly where it
+    // did before the flip, so the body still rests on the mat rather than
+    // hovering above it or sinking through it.
+    //
+    // Stopgap for front-view art: this flips the silhouette, the limb bends
+    // and the head's profile, but not the torso's drawn face. Presenting a
+    // real back wants back-view torso art, which the partVariants system can
+    // already carry — see RIG_AND_MOVE_PIPELINE.md.
+    // Every grounded part, in one place — the mirror and its clear must walk
+    // exactly the same set or orientation state leaks on whichever they miss.
+    _groundedImages() {
+        return [
+            this.torso, this.pelvisUnderlay, this.pelvisOverlay, this.pelvisMask, this.head,
+            this.nearUpArm, this.farUpArm, this.nearForearm, this.farForearm,
+            this.nearHand, this.farHand,
+            this.nearThigh, this.farThigh, this.nearShin, this.farShin,
+            this.nearBoot, this.farBoot,
+        ].filter(Boolean);
+    }
+
+    // Undo a previous frame's on-back mirror BEFORE parts are placed again.
+    //
+    // _place sets position/rotation/displaySize but never origin, and nothing
+    // in the rig writes flipY, so neither resets itself between frames. An
+    // earlier draft toggled both (`flipY = !flipY`) and produced a body that
+    // alternated mirrored/unmirrored every frame — measured on the get-up as
+    // flipY false at t=0.15 and t=0.30 but true at t=0.33. Clearing first and
+    // then setting absolutely makes the mirror idempotent.
+    //
+    // Clearing must happen before placement, not after: bound parts get their
+    // origin rewritten every frame by applyImageBinding, so the base origin
+    // can only be captured once the frame's placement has run.
+    _clearGroundedOnBack() {
+        for (const img of this._groundedImages()) {
+            if (!img._onBackApplied) continue;
+            img.originY = img._onBackBaseOriginY;
+            img.flipY = false;
+            img._onBackApplied = false;
+        }
+    }
+
+    _mirrorGroundedOnBack(matY) {
+        const images = this._groundedImages();
+        if (!images.length) return;
+
+        const lowest = () => Math.max(...images.map(img => img.y));
+        const before = lowest();
+        for (const img of images) {
+            img.y = 2 * matY - img.y;
+            img.rotation = -img.rotation;
+            // Absolute, not a toggle. Base origin is read here, after this
+            // frame's placement, so bound parts capture the value the binding
+            // just assigned rather than a stale one.
+            img._onBackBaseOriginY = img.originY;
+            img.originY = 1 - img.originY;
+            img.flipY = true;
+            img._onBackApplied = true;
+        }
+        const shift = before - lowest();
+        for (const img of images) img.y += shift;
+
+        // The debug/verification bookkeeping has to follow the art, or the
+        // certifier would measure joints that are no longer where the parts
+        // are and report phantom attachment errors.
+        const mirrorPoint = point => {
+            if (point) point.y = 2 * matY - point.y + shift;
+        };
+        for (const point of Object.values(this.jointAttachmentPoints ?? {})) mirrorPoint(point);
+        for (const point of Object.values(this.semanticAnchors ?? {})) mirrorPoint(point);
+    }
 
     // Draw the get-up at progress t (0 flat → 1 standing) by interpolating the
     // grounded keyposes. Wrestler swaps to updateUpright when the tween lands.
@@ -1726,12 +1876,20 @@ export default class Skeleton {
         const g = {};
         for (const k of Object.keys(a)) g[k] = a[k] + (b[k] - a[k]) * u;
         this._applyGrounded(x, y, s, facing, g);
+        // On his back until the sit-up, face-down from there on — so the rise
+        // starts from the same render the wrestler was lying in, and the
+        // turn-over happens under cover of the sit-up's own motion.
+        if (t < Skeleton.ON_BACK_UNTIL_T) this._mirrorGroundedOnBack(y);
     }
 
     // Place every part from a grounded pose: hip-rooted, torso free to pitch
     // anywhere from lying to vertical. This is the piece updateUpright can't
     // do (it assumes a vertical torso), and it's all the sit/crawl states need.
     _applyGrounded(x, y, s, facing, g) {
+        // Any previous frame's on-back mirror is undone before this frame
+        // places anything, so placement always starts from unmirrored
+        // orientation state — see _clearGroundedOnBack.
+        this._clearGroundedOnBack();
         this.jointAttachmentMargins = {};
         this.jointAttachmentPoints = {};
         const f = facing >= 0 ? 1 : -1;

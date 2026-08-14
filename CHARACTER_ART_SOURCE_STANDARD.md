@@ -253,8 +253,53 @@ must carry the whole chain. Apply the analogous test at hip/knee/ankle.
   facings, and representative move poses pass.
 - The extended / guarded-90 / deep-flex / overhead articulation matrix passes
   with local elbow/knee channels and anatomical limits.
+- `npm run rig:certify -- <character>` reports zero findings AND zero
+  unmeasurable chains. An unmeasurable chain is not a pass — see below.
 - Human review is performed at actual in-game scale, not only on the source
   sheet.
+
+## Articulation certification and the reference rig
+
+`src/rig/referenceRig.js` is a standards-compliant character defined in code
+rather than in artwork: a source manifest plus a procedural painter that fills
+every joint zone from the manifest's own anchors, so it is compliant by
+construction instead of by an artist remembering the rules. It never ships in a
+match and Arena never loads it.
+
+It exists because of a 2026-08-12 audit finding. Neither George nor Lou
+declares a `hand` slot, a `boot` slot, a two-anchor `binding`, or any
+`variants`. `Skeleton._placeAttachment` therefore returns null on its first
+guard at all six of its call sites, `_placeBoundPart` always falls through to
+the legacy `_placePart`, and `resolvePartSelection` never swaps anything. The
+entire production contract in this document was, in the shipped game, dead
+code. This was demonstrated rather than assumed: deliberately breaking
+`solveAnchoredAttachment` so that every hand and boot centred on its quad
+instead of its authored wrist/ankle anchor produced byte-identical output from
+205 unit tests, both validators, `articulated_channel_probe.mjs`, and
+`joint_attachment_audit.mjs`.
+
+The reference rig is therefore the control specimen, and `npm run rig:certify`
+always certifies it first:
+
+- If the reference rig fails an invariant, the finding is **architectural**.
+  Its manifest anchors and its ink are generated from each other and cannot
+  disagree, so no character's artwork can be blamed and no artwork can fix it.
+- If the reference rig passes and a legacy character fails, the finding is
+  **source-artwork**. Regenerate the art; never add a fixed attachment offset.
+- If the reference rig passes and a character that *declares* compliance still
+  fails, the finding is **binding-geometry** — that character's manifest
+  anchors disagree with its own ink.
+
+`UNVERIFIED` is a distinct outcome from `CERTIFIED`. A character with no
+bindings clears every pose in the matrix while proving nothing, which is
+precisely how this architecture went unverified beneath a green test suite.
+George and Lou both currently report `UNVERIFIED`, with the specific
+unmeasurable chains listed.
+
+Known legacy-art defects live in `KNOWN_LEGACY_DEFECTS` in
+`tools/rig/certify.mjs` so that a failure count carries information: a listed
+defect is reported as expected rather than blocking, and the list cannot rot
+silently.
 
 ## George and Lou
 

@@ -63,8 +63,14 @@
     <section><h2>Connected pose</h2><div id="poseControls" class="body"></div></section>
     <section><h2>Part variants</h2><div id="variantControls" class="body"></div></section>
     <section><h2>Contact snap</h2><div class="body">
-      <div class="row wide"><label>Selected limb</label><select id="contactSource"><option>nearWrist</option><option>farWrist</option><option>nearAnkle</option><option>farAnkle</option></select></div>
-      <div class="row wide"><label>Other anchor</label><select id="contactTarget"><option>nearWrist</option><option>farWrist</option><option>nearShoulder</option><option>farShoulder</option><option>nearHip</option><option>farHip</option><option>nearKnee</option><option>farKnee</option><option>neck</option></select></div>
+      <!-- Options are built at runtime from CONTACT_SOURCES / CONTACT_TARGETS
+           (model.js), which are themselves derived from the rig's own
+           STRUCTURAL_CHAINS. Do not hand-write <option> lists here: three
+           hand-maintained copies is exactly how `neck` came to be offered but
+           silently discarded, and elbows/ankles came to be valid but
+           unreachable. -->
+      <div class="row wide"><label>Selected limb</label><select id="contactSource"></select></div>
+      <div class="row wide"><label>Other anchor</label><select id="contactTarget"></select></div>
       <div class="toolbar"><button id="snapContactBtn">Align root + solve limb</button><button id="releaseContactBtn">Release at playhead</button></div>
       <p id="contactGap" class="hint">Select an actor and snap one connected limb to the other wrestler. Capturing the keyframe acquires the contact; it is held to the end of the clip until you release it.</p>
     </div></section>

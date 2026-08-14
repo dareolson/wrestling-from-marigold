@@ -5,9 +5,10 @@ import { enumerateCharacterAssets, RENDER_PART_SLOTS } from '/src/rig/partVarian
 import { createReferenceRigSkeleton, REFERENCE_RIG_ID } from '/src/rig/referenceRigRuntime.js';
 import { certifyPose, measureSample } from '/src/rig/certification.js';
 import {
-    EASES, POSE_CHANNELS, ROLES, addContact, addEvent, basePose, clipReadiness,
-    contactPartner, createDraft, draftValidation, exportModule, insertKeyframe,
-    normalizeDraft, releaseContact, removeKeyframe, sampleDraft, variantChoices,
+    CONTACT_SOURCES, CONTACT_TARGETS, EASES, POSE_CHANNELS, ROLES, addContact,
+    addEvent, basePose, clipReadiness, contactPartner, createDraft,
+    draftValidation, exportModule, insertKeyframe, normalizeDraft,
+    releaseContact, removeKeyframe, sampleDraft, variantChoices,
 } from './model.js';
 
 const CHARACTERS = { george, thesz };
@@ -261,15 +262,22 @@ function capture() {
         transform: { x: round(actor.transform.x ?? 0), y: round(actor.transform.y ?? 0) },
         parts: actor.parts,
     });
+    let contactNote = '';
     if (pendingContact && pendingContact.role === selectedRole) {
         // Acquired here, held to the end of the clip until the author releases
         // it at a chosen frame. The readiness sweep grades only that window.
-        addContact(draft, { from: playhead, ...pendingContact });
+        const result = addContact(draft, { from: playhead, ...pendingContact });
+        // A refusal is reported, never swallowed: the author asked for this pair
+        // to be graded, and needs to know if it was not recorded.
+        if (result.ok) contactNote = ` Contact ${pendingContact.source} → ${pendingContact.target} acquired, held to end.`;
+        else contactNote = ` CONTACT NOT RECORDED — ${result.reason}`;
         pendingContact = null;
     }
     renderTimeline();
     validate();
-    status(`Captured ${selectedRole} keyframe at ${playhead.toFixed(3)}s.`);
+    const message = `Captured ${selectedRole} keyframe at ${playhead.toFixed(3)}s.${contactNote}`;
+    if (contactNote.includes('NOT RECORDED')) status(message, true);
+    else status(message);
 }
 
 // ── Production readiness sweep ───────────────────────────────────────────────
@@ -356,7 +364,11 @@ function runReadiness() {
         const held = contact.to >= draft.duration ? 'held to end' : `released ${contact.to.toFixed(3)}s`;
         lines.push(`· ${contact.role} ${contact.source} → ${contact.target} (${contact.from.toFixed(3)}s, ${held}): worst gap ${contact.maxGap.toFixed(2)} px at ${contact.worstAt.toFixed(3)}s over ${contact.graded} graded frames`);
     }
-    if (!report.contacts.length) lines.push('· No contact pairs declared. Snap a limb and capture the keyframe to track one.');
+    // Rejected contacts are already listed in `blocking` above (that is what
+    // makes the report NOT READY) — no second copy here.
+    if (!report.contacts.length && !report.rejectedContacts.length) {
+        lines.push('· No contact pairs declared. Snap a limb and capture the keyframe to track one.');
+    }
     // The entry tableau is load-bearing under the shared-origin contract: these
     // offsets are where the runtime PLACES the actors at t=0, from the anchor's
     // position, regardless of how far apart they were when the move fired.
@@ -575,8 +587,26 @@ function updateHandles() {
     }
 }
 
+// Build the contact dropdowns from the model constants, which are derived from
+// the rig's STRUCTURAL_CHAINS. The markup deliberately declares empty selects:
+// every joint the model accepts is reachable here by construction, and a joint
+// it does not accept cannot be offered. Defaults pick a wrist source and the
+// opposite wrestler's near shoulder — a plausible collar tie rather than the
+// degenerate wrist→wrist self-reference the old markup defaulted to.
+function buildContactControls() {
+    for (const [id, options, preferred] of [
+        ['contactSource', CONTACT_SOURCES, 'nearWrist'],
+        ['contactTarget', CONTACT_TARGETS, 'nearShoulder'],
+    ]) {
+        const select = $(id);
+        select.innerHTML = options.map(joint => `<option>${joint}</option>`).join('');
+        select.value = options.includes(preferred) ? preferred : options[0];
+    }
+}
+
 function installUI() {
     buildPoseControls();
+    buildContactControls();
     $('role').addEventListener('change', event => { selectedRole = event.target.value; selectedKey = 0; syncControls(); renderTimeline(); });
     $('character').addEventListener('change', event => { actors[selectedRole].character = event.target.value; rebuildActor(selectedRole); buildVariantControls(); });
     $('facing').addEventListener('change', event => { actors[selectedRole].facing = Number(event.target.value); });

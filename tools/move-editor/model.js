@@ -2,6 +2,9 @@ import { compileClip, sampleClip, validateClip } from '../../src/animation/Anima
 // The anchor rule is imported rather than restated: the editor must report the
 // same entry tableau the runtime will actually build.
 import { pickAnchorRole } from '../../src/animation/clipStaging.js';
+// The rig's structural chains are the single source of truth for which joints
+// exist as contact anchors — see CONTACT_TARGETS below.
+import { STRUCTURAL_CHAINS } from '../../src/rig/certification.js';
 
 export const ROLES = Object.freeze(['attacker', 'defender']);
 
@@ -19,14 +22,26 @@ export const RUNTIME_TRANSFORM_CHANNELS = Object.freeze(['x', 'y']);
 // defect. `upright` is the only mode a clip may declare.
 export const SUPPORTED_POSTURE_MODES = Object.freeze(['upright']);
 
-// Joints a contact pair may name. These are the structural anchors the Skeleton
-// publishes in jointAttachmentPoints, so a declared contact can always be
-// measured against a real rendered point.
-export const CONTACT_SOURCES = Object.freeze(['nearWrist', 'farWrist', 'nearAnkle', 'farAnkle']);
-export const CONTACT_TARGETS = Object.freeze([
-    'nearShoulder', 'farShoulder', 'nearElbow', 'farElbow', 'nearWrist', 'farWrist',
-    'nearHip', 'farHip', 'nearKnee', 'farKnee', 'nearAnkle', 'farAnkle',
-]);
+// Joints a contact pair may name — DERIVED from the rig's own structural chain
+// list, not restated. These are exactly the anchors Skeleton publishes in
+// jointAttachmentPoints, so a declared contact can always be measured against a
+// real rendered point.
+//
+// Derivation rather than a hand-kept list is the fix for a real drift bug: the
+// editor's HTML offered `neck` (a genuine structural joint, the first chain in
+// the list) while the model's hand-written array omitted it, so a captured neck
+// contact was silently discarded — and in the other direction the HTML omitted
+// nearElbow/farElbow/nearAnkle/farAnkle, which the model accepted but no author
+// could reach. Two hand-maintained lists plus a third in markup drifted three
+// ways. Now there is one source: add a chain to the rig and it becomes
+// authorable; the dropdowns are built from these constants at runtime.
+export const CONTACT_TARGETS = Object.freeze(STRUCTURAL_CHAINS.map(chain => chain.joint));
+
+// Sources are the limb ENDS the editor can actually solve onto an anchor: the
+// wrist closes a shoulder→elbow→wrist chain and the ankle a hip→knee→ankle one.
+// A mid-limb joint has no two-bone chain to solve, so it is a valid target but
+// never a source.
+export const CONTACT_SOURCES = Object.freeze(CONTACT_TARGETS.filter(joint => /(?:Wrist|Ankle)$/.test(joint)));
 export const EASES = Object.freeze(['linear', 'easeIn', 'easeOut', 'easeInOut', 'step']);
 export const POSE_CHANNELS = Object.freeze([
     'lArm', 'rArm', 'lElbow', 'rElbow',
@@ -57,6 +72,9 @@ export function createDraft(id = 'untitled_move', duration = 1.2) {
         // Editor/draft-only declarative record of which limb was snapped onto
         // which anchor, and when. See normalizeContacts.
         contacts: [],
+        // Captures that could not be recorded, kept so the readiness report can
+        // name what was lost. Always present so callers never have to guard it.
+        rejectedContacts: [],
     };
 }
 
@@ -74,25 +92,53 @@ export function createDraft(id = 'untitled_move', duration = 1.2) {
 // the approach and the follow-through as contact failures and drown the one
 // span the author actually asserted. An unreleased contact holds to the end of
 // the clip, which is the common case for a working hold.
-function normalizeContacts(source, duration) {
-    return (Array.isArray(source) ? source : [])
-        .map(contact => {
-            // `at` is accepted as an alias for `from` so drafts written before
-            // contacts carried an interval still load.
-            const from = clampTime(contact?.from ?? contact?.at, duration, 0);
-            return {
-                from,
-                // An omitted release means "held to the end of the clip"; a
-                // release earlier than acquisition is meaningless, so it
-                // collapses to an instant rather than inverting the window.
-                to: Math.max(from, clampTime(contact?.to, duration, duration)),
-                role: ROLES.includes(contact?.role) ? contact.role : ROLES[0],
-                source: CONTACT_SOURCES.includes(contact?.source) ? contact.source : null,
-                target: CONTACT_TARGETS.includes(contact?.target) ? contact.target : null,
-            };
-        })
-        .filter(contact => contact.source && contact.target)
-        .sort((a, b) => a.from - b.from || a.to - b.to);
+// Why a contact cannot be recorded, or null if it can. Named separately so the
+// capture gesture can refuse loudly with a reason instead of the author finding
+// out later — or never.
+export function contactRejectionReason(contact) {
+    if (!ROLES.includes(contact?.role)) return `unknown role "${contact?.role}"`;
+    if (!CONTACT_SOURCES.includes(contact?.source)) {
+        return `"${contact?.source}" is not a solvable limb end (expected one of ${CONTACT_SOURCES.join(', ')})`;
+    }
+    if (!CONTACT_TARGETS.includes(contact?.target)) {
+        return `"${contact?.target}" is not a structural anchor on the rig (expected one of ${CONTACT_TARGETS.join(', ')})`;
+    }
+    return null;
+}
+
+// Split declared contacts into what can be graded and what cannot.
+//
+// Invalid entries are still REMOVED — a contact naming a joint the rig does not
+// publish can never be measured, and keeping it would put an ungradeable
+// assertion in the draft. But they are no longer dropped on the floor: they are
+// returned as `rejected` so the capture gesture, the status line, and the
+// readiness report can all say what was lost and why. A silently discarded
+// contact is exactly the "green but nothing was actually verified" pattern this
+// whole layer exists to prevent, and it is how the neck-target drift survived.
+function partitionContacts(source, duration) {
+    const contacts = [];
+    const rejected = [];
+    for (const entry of Array.isArray(source) ? source : []) {
+        // `at` is accepted as an alias for `from` so drafts written before
+        // contacts carried an interval still load.
+        const from = clampTime(entry?.from ?? entry?.at, duration, 0);
+        const contact = {
+            from,
+            // An omitted release means "held to the end of the clip"; a release
+            // earlier than acquisition is meaningless, so it collapses to an
+            // instant rather than inverting the window.
+            to: Math.max(from, clampTime(entry?.to, duration, duration)),
+            role: entry?.role,
+            source: entry?.source,
+            target: entry?.target,
+        };
+        const reason = contactRejectionReason(contact);
+        if (reason) rejected.push({ ...contact, reason });
+        else contacts.push(contact);
+    }
+    contacts.sort((a, b) => a.from - b.from || a.to - b.to);
+    rejected.sort((a, b) => a.from - b.from);
+    return { contacts, rejected };
 }
 
 function clampTime(value, duration, fallback) {
@@ -130,7 +176,23 @@ export function normalizeDraft(source) {
         at: Math.max(0, Math.min(draft.duration, Number(event.at) || 0)),
         type: String(event.type || 'marker'),
     })).sort((a, b) => a.at - b.at);
-    draft.contacts = normalizeContacts(draft.contacts, draft.duration);
+    // Rejected entries are carried on the draft (not thrown away) so an
+    // imported draft naming a joint the rig does not publish reports the loss
+    // in the readiness panel instead of quietly grading nothing.
+    //
+    // Already-rejected entries are fed back through the partition, which is what
+    // makes normalization IDEMPOTENT: without this, a second normalize (and
+    // clipReadiness always normalizes again) would rebuild `rejected` from
+    // `contacts` alone, find nothing wrong, and quietly report a clean sweep —
+    // reintroducing the exact silent-discard bug one layer up. Re-partitioning
+    // also means an entry that becomes valid later (a joint added to the rig) is
+    // promoted back into `contacts` rather than staying rejected forever.
+    const partitioned = partitionContacts(
+        [...(draft.contacts ?? []), ...(draft.rejectedContacts ?? [])],
+        draft.duration,
+    );
+    draft.contacts = partitioned.contacts;
+    draft.rejectedContacts = partitioned.rejected;
     // Declared posture is PRESERVED, not coerced. Silently rewriting an
     // imported `prone` draft to `upright` would hand the author a clip that
     // does something other than what it says; clipReadiness blocks on it
@@ -139,11 +201,32 @@ export function normalizeDraft(source) {
     return draft;
 }
 
+/**
+ * Record a contact pair. Returns `{ ok, contact, reason }` — a refusal carries
+ * the reason so the caller can tell the author their capture did not take,
+ * rather than the entry disappearing between the gesture and the draft.
+ */
 export function addContact(draft, { from, at, to, role, source, target }) {
-    draft.contacts ??= [];
-    draft.contacts.push({ from: round(from ?? at ?? 0), to: to === undefined ? undefined : round(to), role, source, target });
-    draft.contacts = normalizeContacts(draft.contacts, draft.duration);
-    return draft.contacts;
+    const candidate = {
+        from: round(from ?? at ?? 0),
+        to: to === undefined ? undefined : round(to),
+        role, source, target,
+    };
+    const reason = contactRejectionReason(candidate);
+    if (reason) {
+        // Still recorded as a rejection so the readiness sweep reports it even
+        // if the author dismissed the status line.
+        draft.rejectedContacts = [...(draft.rejectedContacts ?? []), { ...candidate, to: candidate.to ?? draft.duration, reason }];
+        return { ok: false, contact: null, reason };
+    }
+    draft.contacts = [...(draft.contacts ?? []), candidate];
+    const partitioned = partitionContacts(draft.contacts, draft.duration);
+    draft.contacts = partitioned.contacts;
+    return {
+        ok: true,
+        contact: draft.contacts.find(entry => entry.from === candidate.from && entry.source === source && entry.target === target) ?? null,
+        reason: null,
+    };
 }
 
 /**
@@ -161,7 +244,7 @@ export function releaseContact(draft, role, at) {
         .at(-1);
     if (!open) return null;
     open.to = round(time);
-    draft.contacts = normalizeContacts(draft.contacts, duration);
+    draft.contacts = partitionContacts(draft.contacts, duration).contacts;
     return open;
 }
 
@@ -363,6 +446,13 @@ export function clipReadiness(draft, { measureContactGap = null, certify = null,
         }
     }
 
+    // A contact the author asserted but that cannot be graded is BLOCKING, not a
+    // warning: the whole point of declaring it is to have the gap measured, so
+    // an unmeasurable one means the clip reports clean while proving nothing
+    // about the thing the author cared most about.
+    for (const entry of normalized.rejectedContacts ?? []) {
+        blocking.push(`discarded contact ${entry.role} ${entry.source} → ${entry.target} at ${entry.from.toFixed(3)}s: ${entry.reason}`);
+    }
     for (const entry of nonFinite) blocking.push(`${entry.role} ${entry.group}.${entry.channel} is not finite at ${entry.at.toFixed(3)}s (${entry.source})`);
     blocking.push(...unsupportedStaging, ...unsupportedModes);
     if (certificationFailures.length) {
@@ -410,6 +500,7 @@ export function clipReadiness(draft, { measureContactGap = null, certify = null,
         unsupportedModes,
         certificationFailures,
         contacts,
+        rejectedContacts: normalized.rejectedContacts ?? [],
         stagedRoles,
         anchorRole,
         entryTableau,

@@ -94,6 +94,14 @@ baked contact apart. There is deliberately no hidden persistent contact solver.
   state changes, reversals, and cleanup.
 - Contact metadata is **editor/draft-only**. It is stripped from the exported
   clip and nothing about damage, legality, or hit detection may ever read it.
+- Contact joints are **derived from the rig**, not listed by hand: `CONTACT_TARGETS`
+  comes from `STRUCTURAL_CHAINS` and `CONTACT_SOURCES` is its wrist/ankle subset
+  (the limb ends a two-bone chain can actually solve onto an anchor). The
+  dropdowns are built from those constants at runtime, so every joint the model
+  accepts is reachable and nothing else can be offered. Do not hand-write
+  `<option>` lists in `index.html` — `tests/moveEditorContactContract.test.js`
+  fails if you do. A capture the model cannot grade is refused with a reason in
+  the status line and blocks the readiness report; it is never filtered silently.
 - Persistent contact constraints, onion skinning, and draft recovery are
   subsequent milestones. The full `npm run rig:certify` matrix remains the
   release acceptance gate.

@@ -69,6 +69,37 @@ try {
         throw new Error('reference-rig hand variants did not populate the editor');
     }
 
+    // The contact dropdowns must be built from the model constants — every joint
+    // the model accepts is offered, and nothing else. This is the drift that let
+    // `neck` be offered but silently discarded, and elbows/ankles be valid but
+    // unreachable.
+    const contactOptions = await page.evaluate(async () => {
+        const model = await import('/tools/move-editor/model.js');
+        const read = id => [...document.getElementById(id).options].map(option => option.value);
+        return {
+            sourceUI: read('contactSource'),
+            targetUI: read('contactTarget'),
+            sourceModel: [...model.CONTACT_SOURCES],
+            targetModel: [...model.CONTACT_TARGETS],
+        };
+    });
+    for (const [kind, ui, expected] of [
+        ['source', contactOptions.sourceUI, contactOptions.sourceModel],
+        ['target', contactOptions.targetUI, contactOptions.targetModel],
+    ]) {
+        if (ui.join(',') !== expected.join(',')) {
+            throw new Error(`contact ${kind} dropdown drifted from the model: UI [${ui}] vs model [${expected}]`);
+        }
+    }
+    if (!contactOptions.targetUI.includes('neck')) {
+        throw new Error('neck is not reachable as a contact target');
+    }
+    for (const previouslyUnreachable of ['nearElbow', 'farElbow', 'nearAnkle', 'farAnkle']) {
+        if (!contactOptions.targetUI.includes(previouslyUnreachable)) {
+            throw new Error(`${previouslyUnreachable} is still unreachable in the UI`);
+        }
+    }
+
     await page.click('#snapContactBtn');
     await page.waitForTimeout(100);
     const contactGap = await page.textContent('#contactGap');
@@ -158,12 +189,73 @@ try {
     if (!released.status.includes('Released')) {
         throw new Error(`release was not reported to the author: ${released.status}`);
     }
+
+    // Capture a NECK contact — the target the old markup offered and the model
+    // silently discarded — and a previously unreachable ankle target, both
+    // through the real snap + capture gesture.
+    for (const [source, target] of [['nearWrist', 'neck'], ['nearAnkle', 'nearKnee']]) {
+        const captured = await page.evaluate(async ([src, tgt]) => {
+            const editor = window.__MOVE_EDITOR;
+            editor.setPlayhead(0.6);
+            document.getElementById('contactSource').value = src;
+            document.getElementById('contactTarget').value = tgt;
+            document.getElementById('snapContactBtn').click();
+            document.getElementById('captureBtn').click();
+            const report = editor.readiness();
+            return {
+                status: document.getElementById('status').textContent,
+                declared: editor.draft.contacts.map(c => `${c.source}->${c.target}`),
+                rejected: editor.draft.rejectedContacts.map(c => `${c.source}->${c.target}: ${c.reason}`),
+                blocking: report.blocking,
+                measured: report.contacts.find(c => c.source === src && c.target === tgt)?.measured ?? 0,
+            };
+        }, [source, target]);
+
+        if (captured.rejected.length) {
+            throw new Error(`${source} → ${target} was discarded: ${captured.rejected.join(' | ')}`);
+        }
+        if (!captured.declared.includes(`${source}->${target}`)) {
+            throw new Error(`${source} → ${target} was not recorded on the draft: ${captured.declared.join(', ')}`);
+        }
+        if (!captured.status.includes('acquired')) {
+            throw new Error(`${source} → ${target} acquisition was not reported to the author: ${captured.status}`);
+        }
+        // And it is actually graded against the live rig, not merely stored.
+        if (!captured.measured) {
+            throw new Error(`${source} → ${target} was declared but never measured against the live rig`);
+        }
+        if (captured.blocking.some(issue => /discarded contact/.test(issue))) {
+            throw new Error(`readiness reported a discard for a valid pair: ${captured.blocking.join(' | ')}`);
+        }
+    }
+
+    // A capture the model cannot grade must be REFUSED LOUDLY and must block
+    // readiness — never filtered away behind the author's back.
+    const refused = await page.evaluate(async () => {
+        const editor = window.__MOVE_EDITOR;
+        const model = await import('/tools/move-editor/model.js');
+        const result = model.addContact(editor.draft, { from: 0.5, role: 'attacker', source: 'nearWrist', target: 'sternum' });
+        const report = editor.readiness();
+        return {
+            ok: result.ok,
+            reason: result.reason,
+            rejected: editor.draft.rejectedContacts.length,
+            blocked: report.ok === false && report.blocking.some(issue => /discarded contact/.test(issue) && /sternum/.test(issue)),
+            panel: document.getElementById('readiness').textContent,
+        };
+    });
+    if (refused.ok) throw new Error('an unknown joint was accepted as a contact target');
+    if (!/sternum/.test(refused.reason ?? '')) throw new Error(`refusal did not name the bad joint: ${refused.reason}`);
+    if (refused.rejected !== 1) throw new Error(`discard was not recorded on the draft (${refused.rejected})`);
+    if (!refused.blocked) throw new Error(`a discarded contact did not block readiness: ${refused.panel}`);
     // The export dialog was already closed above, before the readiness sweep.
     if (process.env.SCREENSHOT) {
         await page.screenshot({ path: process.env.SCREENSHOT, fullPage: true });
     }
     if (errors.length) throw new Error(`browser errors: ${errors.join(' | ')}`);
+    const finalContacts = await page.evaluate(() => window.__MOVE_EDITOR.draft.contacts.map(c => `${c.role} ${c.source}→${c.target}`));
     console.log(`PASS move editor connected drag, two-role timeline, capture, marker, export, and readiness sweep (${readiness.report.sampledTimes} frames, contact worst gap ${contact.maxGap.toFixed(2)} px at ${contact.worstAt.toFixed(3)}s)`);
+    console.log(`     contact contract: ${contactOptions.sourceUI.length} sources / ${contactOptions.targetUI.length} targets built from the model; graded pairs: ${finalContacts.join(', ')}; bad joint refused and blocked readiness`);
 } finally {
     await browser.close();
 }

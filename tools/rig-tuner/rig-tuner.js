@@ -11,6 +11,7 @@ import Skeleton, { P, TEX, RIG } from '/src/Skeleton.js';
 import { POSES } from '/src/Wrestler.js';
 import { george } from '/src/characters/george.js';
 import { thesz } from '/src/characters/thesz.js';
+import { enumerateCharacterAssets, RENDER_PART_SLOTS } from '/src/rig/partVariants.js';
 
 // ─── Characters ──────────────────────────────────────────────────────────────
 const placeholder = {
@@ -25,15 +26,6 @@ const CHARS = { george, thesz, placeholder };
 // used underscores) is vaulted along with the rest of the pilot family; see
 // _vault/characters/.
 const charFilename = id => id;
-// pelvisOverlay/nearShin/farShin/nearForearm/farForearm (george, since the
-// 2026-07-26 promoted-george roster change): same filenames Arena.js's own
-// PART_FILES map uses for these opt-in parts.
-const PART_FILES = {
-    head: 'head.png', torso: 'torso.png', pelvisOverlay: 'pelvis_overlay.png',
-    upperArm: 'upper_arm.png', forearm: 'forearm.png', thigh: 'thigh.png', shin: 'shin.png',
-    nearShin: 'near_shin.png', farShin: 'far_shin.png',
-    nearForearm: 'near_forearm.png', farForearm: 'far_forearm.png',
-};
 const BOX_PARTS = ['torso', 'upperArm', 'forearm', 'thigh', 'shin', 'pelvisOverlay', 'nearForearm', 'farForearm', 'nearShin', 'farShin'];
 // torso/pelvisOverlay each get their own slider row below, but on george
 // they're the SAME box object in george.js (a Codex-flagged 2026-07-26
@@ -144,6 +136,9 @@ const state = {
     liftScale: 0.5,
     showHandles: true,
     showBones: true,
+    // Preview-only keyframe appearance, using the same character variant
+    // contract as gameplay. Selections are retained per character.
+    variantSelection: { george: {}, thesz: {}, placeholder: {} },
     ref: { alpha: 0.5, scale: 1, front: true },
 };
 let scene = null;
@@ -268,6 +263,7 @@ function rebuildSkeleton() {
     if (skeleton) skeleton.destroy();
     const c = currentChar();
     skeleton = new Skeleton(scene, c.skinCol, c.trunksCol, c.textures);
+    skeleton.setPartVariants(state.variantSelection[c.id] ?? {});
     skeleton.setDepth(10);
     buildHandles();
 }
@@ -277,12 +273,7 @@ const GROUND_Y = 470, CX = 480;
 
 function preload() {
     for (const char of [george, thesz]) {
-        for (const part of Object.keys(PART_FILES)) {
-            const entry = char.textures[part];
-            if (!entry) continue;
-            const key = typeof entry === 'string' ? entry : entry.key;
-            this.load.image(key, `/src/assets/wrestlers/${char.id}/${PART_FILES[part]}`);
-        }
+        for (const asset of enumerateCharacterAssets(char)) this.load.image(asset.key, `/${asset.file}`);
     }
 }
 
@@ -304,6 +295,7 @@ function create() {
         P, TEX, RIG, POSES, CHARS,
         setCharKnob, setRig, setP, setPose, exportText,
         setCharacter, setPoseName,
+        setPartVariant,
         getPivotOffsetFrac, setPivotOffsetFrac, measureArtPivotFrac,
     };
 }
@@ -469,10 +461,36 @@ function setCharacter(id) {
     rebuildSkeleton();
     buildCharPanel();
     buildSocketsPanel();
+    buildVariantPanel();
     ui.charSel?.refresh();
     // Follow the character's runtime resting pose so tuning happens against
     // what the game actually renders (Codex parity review, 2026-07-14).
     setPoseName(CHARS[id].idlePose ?? 'idle');
+    renderExport();
+}
+
+const VARIANT_FAMILY = {
+    nearUpperArm: 'upperArm', farUpperArm: 'upperArm',
+    nearForearm: 'forearm', farForearm: 'forearm',
+    nearHand: 'hand', farHand: 'hand',
+    nearThigh: 'thigh', farThigh: 'thigh',
+    nearShin: 'shin', farShin: 'shin',
+    nearBoot: 'boot', farBoot: 'boot',
+};
+
+function variantsForSlot(slot) {
+    const variants = currentChar().textures.variants ?? {};
+    return ['base', ...new Set([
+        ...Object.keys(variants[VARIANT_FAMILY[slot]] ?? {}),
+        ...Object.keys(variants[slot] ?? {}),
+    ])];
+}
+
+function setPartVariant(slot, name) {
+    const selection = state.variantSelection[state.charId] ??= {};
+    if (!name || name === 'base') delete selection[slot];
+    else selection[slot] = name;
+    skeleton?.setPartVariants(selection);
     renderExport();
 }
 function setPoseName(name) {
@@ -484,6 +502,7 @@ function setPoseName(name) {
 // ─── Panels ──────────────────────────────────────────────────────────────────
 let charPanelBody = null;
 let socketsPanelBody = null;
+let variantPanelBody = null;
 
 function buildPanel() {
     // Preview
@@ -504,6 +523,9 @@ function buildPanel() {
     el(pv, `<div class="hint">Author production bends with local lElbow/rElbow and lKnee/rKnee. Absolute forearm/shin channels are legacy adapters. Cyan chains show the fixed root/joint and moving wrist/ankle.</div>`);
     el(pv, `<div class="legend">${HANDLE_SPECS.map(h =>
         `<span><span class="dot" style="background:#${h.color.toString(16).padStart(6, '0')}"></span>${h.name}</span>`).join('')}</div>`);
+
+    variantPanelBody = group('Part variants (keyframe preview)', true);
+    buildVariantPanel();
 
     // Pose dials
     const pd = group('Pose dials (POSES values)', true);
@@ -605,6 +627,32 @@ function buildPanel() {
         btns.querySelector('#copyAll').textContent = 'copied ✓';
         setTimeout(() => { btns.querySelector('#copyAll').textContent = 'copy all'; }, 1200);
     });
+}
+
+function buildVariantPanel() {
+    if (!variantPanelBody) return;
+    variantPanelBody.innerHTML = '';
+    const selection = state.variantSelection[state.charId] ??= {};
+    let rows = 0;
+    for (const slot of RENDER_PART_SLOTS) {
+        const choices = variantsForSlot(slot);
+        if (choices.length === 1 && selection[slot] === undefined) continue;
+        rows++;
+        selectRow(variantPanelBody, slot, choices,
+            () => selection[slot] ?? 'base', value => setPartVariant(slot, value));
+    }
+    if (!rows) {
+        el(variantPanelBody, `<div class="hint">No authored variants exist for this character yet.
+            Face/head, hand, limb, boot, torso, and pelvis choices appear automatically when
+            added to its textures.variants contract.</div>`);
+        return;
+    }
+    el(variantPanelBody, `<div class="btnrow"><button class="small" id="resetVariants">restore all base parts</button></div>`)
+        .querySelector('#resetVariants').addEventListener('click', () => {
+            state.variantSelection[state.charId] = {};
+            skeleton?.setPartVariants({});
+            buildVariantPanel(); renderExport();
+        });
 }
 
 function buildCharPanel() {
@@ -765,6 +813,12 @@ const fmtTilt = rad => `${fmt(rad * 180 / Math.PI)} * Math.PI / 180`;
 
 function exportText() {
     const blocks = [];
+
+    const selectedParts = state.variantSelection[state.charId] ?? {};
+    if (Object.keys(selectedParts).length) {
+        const lines = Object.entries(selectedParts).map(([slot, name]) => `        ${slot}: '${name}',`);
+        blocks.push(`// ── move keyframe appearance (${state.charId}) ──\n    parts: {\n${lines.join('\n')}\n    },`);
+    }
 
     const scalarDiffs = (cur, base, tiltKeys = []) => Object.keys(cur)
         .filter(k => typeof cur[k] === 'number' && !near(cur[k], base[k]))

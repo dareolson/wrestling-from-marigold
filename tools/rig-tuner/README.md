@@ -38,6 +38,11 @@ arena's film-grain/color filters, deliberately, for clean art comparison).
 - **Bone + joint overlay**: cyan shoulder→elbow→wrist and hip→knee→ankle
   chains show that local flex leaves the parent joint fixed. Gate extended,
   guarded-90, deep-flex, and overhead configurations in both facings.
+- **Part variants**: preview any face/head, hand, limb, boot, torso, or pelvis
+  variant declared by the selected character's real `textures.variants`
+  contract. The panel uses the same shared-family and side-specific fallback
+  rules as gameplay and exports the selection as a move-keyframe `parts`
+  block. Characters without variant art show an explicit empty state.
 - **Skeleton.js — P**: global bone lengths / block sizes.
 - **Skeleton.js — TEX**: global display boxes for textured parts.
 - **Skeleton.js — RIG**: the overlap/stagger scalars (ELBOW_OVERLAP,

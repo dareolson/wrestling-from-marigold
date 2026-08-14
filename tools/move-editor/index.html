@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WFM Move Editor</title>
+  <link rel="icon" href="data:," />
+  <style>
+    * { box-sizing: border-box; }
+    :root { color-scheme: dark; font: 13px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; height: 100vh; overflow: hidden; color: #d8d8df; background: #0d0e12; display: grid; grid-template: 42px 1fr 210px / 1fr 350px; }
+    header { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-bottom: 1px solid #30313a; background: #171820; }
+    header strong { color: #fff; margin-right: auto; }
+    button, input, select, textarea { font: inherit; color: #e8e8ed; background: #20222b; border: 1px solid #3a3d4a; border-radius: 4px; }
+    button { cursor: pointer; padding: 5px 9px; }
+    button:hover, button.active { background: #30466f; border-color: #5578b5; }
+    input, select { padding: 4px 6px; min-width: 0; }
+    input[type=range] { padding: 0; }
+    #stage { position: relative; min-width: 0; min-height: 0; background: radial-gradient(circle at 50% 65%, #242632, #0a0b0f 68%); }
+    #stage canvas { width: 100% !important; height: 100% !important; object-fit: contain; }
+    #sidebar { overflow-y: auto; border-left: 1px solid #30313a; padding: 9px; background: #15161d; }
+    section { border: 1px solid #30313a; border-radius: 5px; margin-bottom: 8px; background: #1b1c24; }
+    section h2 { font-size: 12px; margin: 0; padding: 6px 8px; border-bottom: 1px solid #30313a; color: #f0f0f5; }
+    .body { padding: 7px 8px; }
+    .row { display: grid; grid-template-columns: 105px 1fr 62px; align-items: center; gap: 6px; margin: 4px 0; }
+    .row.wide { grid-template-columns: 105px 1fr; }
+    .row output { text-align: right; color: #8f93a2; font-family: ui-monospace, monospace; }
+    .hint { color: #8d91a0; font-size: 11px; margin: 5px 0; }
+    .warning { color: #efb56d; }
+    #timeline { grid-column: 1 / -1; border-top: 1px solid #30313a; background: #13141a; padding: 8px 12px; overflow: auto; }
+    #transport { display: grid; grid-template-columns: auto auto 1fr 90px auto; gap: 7px; align-items: center; }
+    #tracks { position: relative; margin-top: 8px; }
+    .track { display: grid; grid-template-columns: 82px 1fr; min-height: 38px; border-top: 1px solid #292b34; }
+    .track-label { padding: 10px 6px; color: #aeb3c3; }
+    .rail { position: relative; background: linear-gradient(90deg, transparent 24.8%, #252733 25%, transparent 25.2%, transparent 49.8%, #252733 50%, transparent 50.2%, transparent 74.8%, #252733 75%, transparent 75.2%); }
+    .key, .event { position: absolute; top: 10px; width: 16px; height: 16px; transform: translateX(-8px) rotate(45deg); border: 1px solid #b8d4ff; background: #4c78bb; cursor: pointer; }
+    .key.selected, .event.selected { background: #ffcf5c; border-color: #fff2be; }
+    .event { border-radius: 50%; transform: translateX(-7px); width: 14px; height: 14px; background: #c85868; border-color: #ff9aa8; }
+    #playhead { position: absolute; top: 0; bottom: 0; width: 1px; background: #ffdc6c; pointer-events: none; z-index: 4; }
+    #exportDialog { width: min(900px, 90vw); }
+    #exportText { width: 100%; height: 55vh; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 8px; }
+    dialog::backdrop { background: #000a; }
+    .toolbar { display: flex; gap: 5px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>Move Editor <span class="hint">connected rig MVP</span></strong>
+    <label>Move <input id="moveId" value="untitled_move" size="18" /></label>
+    <label>Duration <input id="duration" type="number" value="1.2" min="0.05" step="0.05" style="width:70px" />s</label>
+    <button id="importBtn">Import</button>
+    <button id="exportBtn">Export clip</button>
+  </header>
+  <main id="stage"></main>
+  <aside id="sidebar">
+    <section><h2>Selection</h2><div class="body">
+      <div class="row wide"><label>Role</label><select id="role"><option>attacker</option><option>defender</option></select></div>
+      <div class="row wide"><label>Character</label><select id="character"><option value="refrig">Reference rig</option><option value="george">George (legacy)</option><option value="thesz">Lou Thesz (legacy)</option></select></div>
+      <div class="row wide"><label>Facing</label><select id="facing"><option value="1">Right</option><option value="-1">Left</option></select></div>
+      <div class="row wide"><label>Key easing</label><select id="ease"><option>linear</option><option>easeIn</option><option>easeOut</option><option>easeInOut</option><option>step</option></select></div>
+      <p class="hint">Drag a wrist or ankle to solve the connected two-bone chain. Drag an elbow or knee to bend locally. Shift-drag the torso area to move the actor.</p>
+    </div></section>
+    <section><h2>Connected pose</h2><div id="poseControls" class="body"></div></section>
+    <section><h2>Part variants</h2><div id="variantControls" class="body"></div></section>
+    <section><h2>Contact snap</h2><div class="body">
+      <div class="row wide"><label>Selected limb</label><select id="contactSource"><option>nearWrist</option><option>farWrist</option><option>nearAnkle</option><option>farAnkle</option></select></div>
+      <div class="row wide"><label>Other anchor</label><select id="contactTarget"><option>nearWrist</option><option>farWrist</option><option>nearShoulder</option><option>farShoulder</option><option>nearHip</option><option>farHip</option><option>nearKnee</option><option>farKnee</option><option>neck</option></select></div>
+      <button id="snapContactBtn">Align root + solve limb</button>
+      <p id="contactGap" class="hint">Select an actor and snap one connected limb to the other wrestler.</p>
+    </div></section>
+    <section><h2>Selected keyframe</h2><div class="body toolbar">
+      <button id="captureBtn">Capture at playhead</button>
+      <button id="duplicateBtn">Duplicate</button>
+      <button id="deleteBtn">Delete</button>
+    </div></section>
+    <section><h2>Event marker</h2><div class="body">
+      <div class="row wide"><label>Type</label><input id="eventType" value="impact" /></div>
+      <div class="toolbar"><button id="addEventBtn">Add at playhead</button><button id="deleteEventBtn">Delete selected</button></div>
+    </div></section>
+    <section><h2>Status</h2><div id="status" class="body hint">Ready.</div></section>
+    <section><h2>Live rig check</h2><div id="certification" class="body hint">Waiting for the first rendered frame.</div></section>
+    <section><h2>Supported authoring</h2><div class="body hint">Upright modular poses only. Flat, pinned, possum, dropkick-front, and other primitive silhouettes remain disabled until their game render paths migrate to the connected grounded rig.</div></section>
+  </aside>
+  <footer id="timeline">
+    <div id="transport"><button id="playBtn">▶</button><button id="stopBtn">■</button><input id="scrubber" type="range" min="0" max="1.2" step="0.001" value="0" /><input id="time" type="number" min="0" max="1.2" step="0.001" value="0" /><label><input id="loop" type="checkbox" checked /> loop</label></div>
+    <div id="tracks"><div id="playhead"></div></div>
+  </footer>
+  <input id="importFile" type="file" accept="application/json,.json" hidden />
+  <dialog id="exportDialog"><h3>Generated clip module</h3><textarea id="exportText" spellcheck="false"></textarea><div class="toolbar"><button id="copyExport">Copy</button><button id="downloadExport">Download</button><button onclick="this.closest('dialog').close()">Close</button></div></dialog>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@4.1.0/dist/phaser.min.js"></script>
+  <script type="module" src="./move-editor.js"></script>
+</body>
+</html>

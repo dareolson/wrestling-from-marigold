@@ -5,9 +5,9 @@ import { enumerateCharacterAssets, RENDER_PART_SLOTS } from '/src/rig/partVarian
 import { createReferenceRigSkeleton, REFERENCE_RIG_ID } from '/src/rig/referenceRigRuntime.js';
 import { certifyPose, measureSample } from '/src/rig/certification.js';
 import {
-    EASES, POSE_CHANNELS, ROLES, addEvent, basePose, createDraft,
-    draftValidation, exportModule, insertKeyframe, normalizeDraft,
-    removeKeyframe, sampleDraft, variantChoices,
+    EASES, POSE_CHANNELS, ROLES, addContact, addEvent, basePose, clipReadiness,
+    contactPartner, createDraft, draftValidation, exportModule, insertKeyframe,
+    normalizeDraft, removeKeyframe, sampleDraft, variantChoices,
 } from './model.js';
 
 const CHARACTERS = { george, thesz };
@@ -22,6 +22,10 @@ let draft = createDraft();
 let selectedRole = 'attacker';
 let selectedKey = 0;
 let selectedEvent = -1;
+// The contact pair the last snap solved, held until the author captures the
+// keyframe that bakes it. Recording it on capture (rather than on snap) means
+// the draft only ever declares contacts that were actually committed.
+let pendingContact = null;
 let playhead = 0;
 let playing = false;
 let scene;
@@ -48,11 +52,17 @@ const POSE_UI = {
     crouch: { label: 'Crouch', min: 0, max: 1, step: 0.01 },
 };
 
+// Draft `transform` is stored in RIG UNITS (unscaled body space), never in
+// stage pixels — that is the unit the gameplay runtime consumes (see
+// src/animation/clipStaging.js). The preview multiplies by its own SCALE here,
+// and every authoring gesture divides by it on the way back in, so an offset
+// authored in the editor means the same body distance in the ring no matter
+// what either view is zoomed to.
 function actorRoot(role) {
     const actor = actors[role];
     return {
-        x: ROLE_BASE[role].x + (actor.transform.x ?? 0),
-        y: ROLE_BASE[role].y + (actor.transform.y ?? 0),
+        x: ROLE_BASE[role].x + (actor.transform.x ?? 0) * SCALE,
+        y: ROLE_BASE[role].y + (actor.transform.y ?? 0) * SCALE,
     };
 }
 
@@ -208,7 +218,9 @@ function buildPoseControls() {
     for (const axis of ['x', 'y']) {
         const row = document.createElement('div');
         row.className = 'row';
-        row.innerHTML = `<label>Actor ${axis.toUpperCase()}</label><input id="root-${axis}" type="range" min="-300" max="300" step="1"><output id="out-root-${axis}"></output>`;
+        // Range is rig units: ±240 covers the full ring width at the near rope
+        // without letting a slider author an offset no ring position can honour.
+        row.innerHTML = `<label>Actor ${axis.toUpperCase()} (rig units)</label><input id="root-${axis}" type="range" min="-240" max="240" step="0.5"><output id="out-root-${axis}"></output>`;
         host.append(row);
         row.querySelector('input').addEventListener('input', event => {
             playing = false;
@@ -249,9 +261,93 @@ function capture() {
         transform: { x: round(actor.transform.x ?? 0), y: round(actor.transform.y ?? 0) },
         parts: actor.parts,
     });
+    if (pendingContact && pendingContact.role === selectedRole) {
+        addContact(draft, { at: playhead, ...pendingContact });
+        pendingContact = null;
+    }
     renderTimeline();
     validate();
     status(`Captured ${selectedRole} keyframe at ${playhead.toFixed(3)}s.`);
+}
+
+// ── Production readiness sweep ───────────────────────────────────────────────
+
+// Measure a declared contact pair at an arbitrary clip time by rendering BOTH
+// actors at that time and reading the real jointAttachmentPoints — the same
+// forward kinematics the snap used, so a gap reported here is the gap the
+// author would see if they scrubbed to that frame. The live actor state is
+// saved and restored so a sweep never disturbs what is on screen.
+function measureContactGapAt(at, contact) {
+    const saved = Object.fromEntries(ROLES.map(role => [role, {
+        pose: { ...actors[role].pose },
+        transform: { ...actors[role].transform },
+        parts: { ...actors[role].parts },
+    }]));
+    try {
+        const sampled = sampleDraft(draft, at);
+        for (const role of ROLES) {
+            const state = sampled.tracks[role];
+            actors[role].pose = { ...basePose(), ...state.pose };
+            actors[role].transform = { x: 0, y: 0, ...state.transform };
+            actors[role].parts = { ...state.parts };
+            renderActor(role);
+        }
+        const source = actors[contact.role].skeleton?.jointAttachmentPoints?.[contact.source];
+        const target = actors[contactPartner(contact.role)].skeleton?.jointAttachmentPoints?.[contact.target];
+        if (!source || !target) return null;
+        return Math.hypot(source.x - target.x, source.y - target.y);
+    } finally {
+        for (const role of ROLES) Object.assign(actors[role], saved[role]);
+        for (const role of ROLES) renderActor(role);
+    }
+}
+
+// Certification at an arbitrary clip time, for the whole-clip sweep. The live
+// badge only ever certifies the frame on screen; this drives every sampled
+// frame through the same pure invariant kernel as `npm run rig:certify`.
+function certifyAt(at) {
+    const failures = [];
+    const saved = Object.fromEntries(ROLES.map(role => [role, { pose: { ...actors[role].pose }, transform: { ...actors[role].transform } }]));
+    try {
+        const sampled = sampleDraft(draft, at);
+        for (const role of ROLES) {
+            actors[role].pose = { ...basePose(), ...sampled.tracks[role].pose };
+            actors[role].transform = { x: 0, y: 0, ...sampled.tracks[role].transform };
+            renderActor(role);
+            for (const finding of certifyPose(certificationSample(actors[role].skeleton))) {
+                failures.push({ role, kind: finding.kind, detail: `${role} ${finding.kind}` });
+            }
+        }
+    } finally {
+        for (const role of ROLES) Object.assign(actors[role], saved[role]);
+        for (const role of ROLES) renderActor(role);
+    }
+    return { ok: failures.length === 0, failures };
+}
+
+function runReadiness() {
+    playing = false;
+    const report = clipReadiness(draft, { measureContactGap: measureContactGapAt, certify: certifyAt });
+    const lines = [];
+    lines.push(report.ok
+        ? `READY — swept ${report.sampledTimes} frames across the whole clip.`
+        : `NOT READY — ${report.blocking.length} blocking issue(s) across ${report.sampledTimes} swept frames.`);
+    lines.push(report.stagedRoles.length
+        ? `Runtime will own position for: ${report.stagedRoles.join(', ')} (transform is live).`
+        : 'No authored staging — the move executor keeps ownership of position.');
+    for (const issue of report.blocking) lines.push(`✗ ${issue}`);
+    for (const warning of report.warnings) lines.push(`! ${warning}`);
+    for (const contact of report.contacts) {
+        if (!contact.measured) continue;
+        lines.push(`· ${contact.role} ${contact.source} → ${contact.target}: worst gap ${contact.maxGap.toFixed(2)} px at ${contact.worstAt.toFixed(3)}s`);
+    }
+    if (!report.contacts.length) lines.push('· No contact pairs declared. Snap a limb and capture the keyframe to track one.');
+    $('readiness').textContent = lines.join('\n');
+    $('readiness').classList.toggle('warning', !report.ok);
+    // Restore what the author was looking at — the sweep re-rendered both
+    // actors many times to measure.
+    loadSample();
+    return report;
 }
 
 function validate() {
@@ -377,8 +473,8 @@ function snapContact() {
     const distance = Math.max(0.001, Math.hypot(dx, dy));
     const wanted = clamp(distance, Math.abs(upper - lower) + 2, upper + lower - 2);
     if (Math.abs(wanted - distance) > 0.01) {
-        sourceActor.transform.x += target.x - dx / distance * wanted - proximal.x;
-        sourceActor.transform.y += target.y - dy / distance * wanted - proximal.y;
+        sourceActor.transform.x += (target.x - dx / distance * wanted - proximal.x) / SCALE;
+        sourceActor.transform.y += (target.y - dy / distance * wanted - proximal.y) / SCALE;
         renderActor(role);
         points = sourceActor.skeleton.jointAttachmentPoints;
         proximal = points[proximalName];
@@ -391,11 +487,16 @@ function snapContact() {
         renderActor(role);
     }
     let landed = sourceActor.skeleton.jointAttachmentPoints[sourceName];
-    sourceActor.transform.x += target.x - landed.x;
-    sourceActor.transform.y += target.y - landed.y;
+    sourceActor.transform.x += (target.x - landed.x) / SCALE;
+    sourceActor.transform.y += (target.y - landed.y) / SCALE;
     renderActor(role);
     landed = sourceActor.skeleton.jointAttachmentPoints[sourceName];
     const gap = Math.hypot(landed.x - target.x, landed.y - target.y);
+    // Record the pair declaratively so the readiness sweep can re-measure it at
+    // every sampled time, not just the keyframe it was baked on. This is
+    // authoring metadata only — stripped from the exported clip, never read by
+    // gameplay (see model.js normalizeContacts).
+    pendingContact = { role, source: sourceName, target: targetName };
     $('contactGap').textContent = `${role} ${sourceName} → ${otherRole} ${targetName}: ${gap.toFixed(2)} px gap. Capture the keyframe to bake it.`;
     status(gap <= 1 ? 'Contact aligned.' : `Contact is ${gap.toFixed(2)} px apart; refine the actor root or pose.`, gap > 1);
     syncControls();
@@ -421,8 +522,8 @@ function rebuildHandles() {
         }
         makeHandle(role, 'root', role === 'attacker' ? 0x74ec8b : 0xf0788a, target => {
             const root = actorRoot(role);
-            actors[role].transform.x += target.x - root.x;
-            actors[role].transform.y += target.y - root.y;
+            actors[role].transform.x += (target.x - root.x) / SCALE;
+            actors[role].transform.y += (target.y - root.y) / SCALE;
             syncControls();
         });
     }
@@ -482,6 +583,7 @@ function installUI() {
     $('addEventBtn').addEventListener('click', () => { addEvent(draft, playhead, $('eventType').value.trim()); selectedEvent = draft.events.findIndex(event => event.at === round(playhead)); renderTimeline(); validate(); });
     $('deleteEventBtn').addEventListener('click', () => { if (selectedEvent >= 0) draft.events.splice(selectedEvent, 1); selectedEvent = -1; renderTimeline(); validate(); });
     $('snapContactBtn').addEventListener('click', snapContact);
+    $('readinessBtn').addEventListener('click', runReadiness);
     $('exportBtn').addEventListener('click', () => { if (!validate()) return; $('exportText').value = exportModule(draft); $('exportDialog').showModal(); });
     $('copyExport').addEventListener('click', async () => { await navigator.clipboard.writeText($('exportText').value); status('Clip module copied.'); });
     $('downloadExport').addEventListener('click', () => {
@@ -498,7 +600,13 @@ function installUI() {
             selectedKey = 0; selectedEvent = -1; setPlayhead(0); validate();
         } catch (error) { status(`Import failed: ${error.message}`, true); }
     });
-    window.__MOVE_EDITOR = { get draft() { return draft; }, actors, setPlayhead, capture, exportModule: () => exportModule(draft) };
+    window.__MOVE_EDITOR = {
+        get draft() { return draft; },
+        actors, setPlayhead, capture,
+        exportModule: () => exportModule(draft),
+        readiness: runReadiness,
+        SCALE,
+    };
 }
 
 class EditorScene extends Phaser.Scene {

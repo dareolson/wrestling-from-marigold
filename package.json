@@ -11,6 +11,7 @@
     "debug:play": "node tools/debug/play.mjs",
     "debug:sim": "node tools/debug/sim.mjs",
     "debug:probe": "node tools/debug/probe.mjs",
+    "proof:staging": "node tools/debug/staging_transport_proof.mjs",
     "rig:tuner": "vite --open /tools/rig-tuner/",
     "move:editor": "vite --open /tools/move-editor/",
     "rig:validate": "node tools/rig/validate-character-rigs.mjs",

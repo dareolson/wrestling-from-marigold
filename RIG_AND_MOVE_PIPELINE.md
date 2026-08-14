@@ -143,6 +143,57 @@ Role names are not hard-coded, so a referee track can be added without inventing
 - **`onCancel` lifecycle seam.** `MoveRuntime.play` now takes `onCancel` alongside `onComplete`. Natural completion and cancellation are different outcomes: only completion runs the release drain and the 220ms settle; cancellation (either actor, `cancelTarget`, or `shutdown`) tears down without release damage. `cancel()` is idempotent and re-entrancy-safe (its `_active.delete` guard absorbs a cancel that loops back through a recovery pose-claim).
 - **Executor-owned character recovery.** The shared clip never bakes in Lou's `theszIdle` or George's `powerIdle`; the executor's `onComplete` runs the per-character 220ms idle settle. This kept the clip data character-agnostic without inventing a per-actor pose-injection binding.
 
+### The clip transform contract (2026-08-13)
+
+`transform` channels used to be authored in the move editor, previewed there,
+and then silently dropped: `MoveRuntime.applySample` returns early for any
+target implementing `applyAnimationSample`, and `Wrestler.applyAnimationSample`
+only consumed `pose` and `parts`. Editor staging previewed correctly and reached
+nothing. `src/animation/clipStaging.js` is the contract that closes that seam;
+it is the authority, and this is the summary.
+
+- **Units are rig units** (unscaled body space, the space the Skeleton is drawn
+  in at `s = 1`) — never editor pixels, never world coordinates. The move editor
+  divides by its preview `SCALE` on the way into the draft, so an authored
+  offset means the same body distance in the editor and in the ring.
+- **Values are role-local offsets** from the actor's own position when the clip
+  began. Clip data never carries an absolute ring position, so a move stages
+  identically wherever it is started.
+- **`x` is measured along the staging axis** — the direction the anchor role
+  (`attacker`, see `ANCHOR_PREFERENCE`) faced at clip start — and positive `x`
+  is forward along that axis for *both* roles. The two-actor tableau therefore
+  mirrors as one rigid unit: a defender authored ahead of the attacker stays
+  ahead of them when the attacker faces left. **`y` is ring depth and is not
+  mirrored**; facing is a left/right property, and mirroring depth would swap
+  which wrestler is nearer the camera.
+- **One captured scale for the pair.** Both axes are multiplied by the anchor's
+  perspective scale, captured once. Using each actor's own live `s` would let
+  them drift apart as the clip nudges them to different depths.
+- **Placement is absolute, not incremental.** `world = origin + f(sampled
+  transform)`. Nothing accumulates and nothing reads back the previous frame, so
+  an arbitrary seek lands exactly where playing there lands, and re-applying one
+  time twenty times moves nobody.
+- **Ring bounds still win.** `Wrestler._applyStagedTransform` clamps, so a large
+  authored offset started at the ropes is clipped rather than staging a wrestler
+  through the apron.
+
+**Ownership is opt-in per track.** `compileClip` marks each track with
+`authorsTransform`, and a staging context is built *only* for roles whose track
+actually authors transform channels. A clip that authors none — `jab`,
+`hammerlock` — gets no context at all and its executor keeps sole ownership of
+position exactly as before. That is what makes "the clip owns position" and "the
+executor owns position" mutually exclusive by construction rather than by
+convention, so two owners can never fight over a wrestler. Facing is *not* a
+clip channel: executors set it before `play()` and it is captured, not driven.
+
+Proven end to end by `npm run proof:staging`
+(`tools/debug/staging_transport_proof.mjs`), which drives
+`src/animation/clips/stagingProof.js` — a developer proof clip authored in the
+move-editor export shape and deliberately **not** in the move registry —
+through the live Arena's own `MoveRuntime` and real `Wrestler`/`Skeleton`
+instances, measuring world coordinates and rendered joint positions rather than
+inspecting a screenshot. Unit coverage is `tests/clipStaging.test.js`.
+
 ## Content workflow
 
 1. Draw or generate a neutral full-body master with clear joint landmarks.

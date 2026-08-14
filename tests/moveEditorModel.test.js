@@ -38,6 +38,119 @@ test('export produces a reviewable clip module with pose, transforms, parts, and
     assert.match(output, /type: "apply-damage"/);
 });
 
+// ── Editor-only contact metadata ─────────────────────────────────────────────
+
+test('declared contacts are normalized, sorted, and never reach the exported clip', () => {
+    const draft = model.createDraft('collar_tie', 1);
+    model.addContact(draft, { at: 0.6, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
+    model.addContact(draft, { at: 0.2, role: 'defender', source: 'nearAnkle', target: 'nearKnee' });
+    assert.deepEqual(draft.contacts.map(contact => contact.at), [0.2, 0.6], 'sorted by time');
+
+    // Gameplay data must not carry authoring metadata: the exported clip is
+    // exactly what AnimationClip compiles, and nothing more.
+    assert.deepEqual(Object.keys(model.exportClip(draft)).sort(), ['duration', 'events', 'id', 'tracks']);
+    assert.doesNotMatch(model.exportModule(draft), /contacts/);
+    assert.doesNotMatch(model.exportModule(draft), /posture/);
+});
+
+test('contacts naming joints the rig does not publish are dropped, not trusted', () => {
+    const draft = model.normalizeDraft({
+        ...model.createDraft('bad_contact', 1),
+        contacts: [
+            { at: 0.5, role: 'attacker', source: 'nose', target: 'farShoulder' },
+            { at: 0.5, role: 'attacker', source: 'nearWrist', target: 'elbowish' },
+            { at: 0.5, role: 'attacker', source: 'nearWrist', target: 'farShoulder' },
+        ],
+    });
+    assert.equal(draft.contacts.length, 1);
+    assert.equal(draft.contacts[0].source, 'nearWrist');
+});
+
+// ── Production readiness sweep ───────────────────────────────────────────────
+
+test('a clean draft reports ready and names which roles the runtime will stage', () => {
+    const draft = model.createDraft('clean', 1);
+    model.insertKeyframe(draft, 'attacker', 1, { pose: { ...model.basePose(), lArm: 1 }, transform: { x: 20, y: 0 } });
+    const report = model.clipReadiness(draft);
+    assert.equal(report.ok, true, report.blocking.join('; '));
+    assert.deepEqual(report.stagedRoles, ['attacker', 'defender']);
+    assert.ok(report.sampledTimes > model.READINESS_GRID, 'keyframe and midpoint times are swept on top of the grid');
+});
+
+test('non-finite pose and transform channels block readiness and are named per channel', () => {
+    const draft = model.createDraft('nonfinite', 1);
+    model.insertKeyframe(draft, 'attacker', 1, { pose: { ...model.basePose(), lArm: 0 }, transform: { x: 0, y: 0 } });
+    draft.tracks.attacker.keyframes[1].pose.lArm = Number.POSITIVE_INFINITY;
+    draft.tracks.attacker.keyframes[1].transform.y = Number.NaN;
+
+    const report = model.clipReadiness(draft);
+    assert.equal(report.ok, false);
+    // Both the pose channel and the staging channel are named individually,
+    // rather than one generic "invalid clip".
+    assert.ok(report.nonFinite.some(entry => entry.group === 'pose' && entry.channel === 'lArm'));
+    assert.ok(report.nonFinite.some(entry => entry.group === 'transform' && entry.channel === 'y'));
+    assert.ok(report.blocking.some(issue => /pose\.lArm is not finite/.test(issue)));
+});
+
+test('staging channels the runtime cannot consume are reported, not silently exported', () => {
+    const draft = model.createDraft('bad_staging', 1);
+    // `rotation` previews as nothing and reaches nothing — exactly the class of
+    // silent failure this milestone closed for x/y.
+    draft.tracks.attacker.keyframes[0].transform.rotation = 0.4;
+    const report = model.clipReadiness(draft);
+    assert.equal(report.ok, false);
+    assert.ok(report.unsupportedStaging.some(issue => /transform\.rotation/.test(issue)));
+});
+
+test('a grounded posture mode blocks readiness rather than being silently coerced', () => {
+    const draft = { ...model.createDraft('grounded', 1), posture: 'prone' };
+    // Preserved, so the author is told — not rewritten to upright behind their
+    // back. Grounded authoring stays closed: down/pinned/possum reach the
+    // modular rig in game, but only as one fixed flat pose.
+    assert.equal(model.normalizeDraft(draft).posture, 'prone');
+    const report = model.clipReadiness(draft);
+    assert.equal(report.ok, false);
+    assert.ok(report.unsupportedModes.some(issue => /prone/.test(issue)));
+    // It still never leaves the editor as clip data.
+    assert.equal('posture' in model.exportClip(draft), false);
+});
+
+test('a draft with no declared posture defaults to upright and stays ready', () => {
+    assert.equal(model.clipReadiness(model.createDraft('plain', 1)).ok, true);
+});
+
+test('contact drift between keyframes is measured and reported, not solved', () => {
+    const draft = model.createDraft('drift', 1);
+    model.addContact(draft, { at: 0, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
+    // Exact at both authored keyframes, 8 px apart halfway between them — the
+    // failure a per-keyframe check cannot see.
+    const measureContactGap = at => (at === 0 || at === 1 ? 0 : 8 * Math.sin(Math.PI * at));
+    const report = model.clipReadiness(draft, { measureContactGap });
+    assert.equal(report.contacts[0].maxGap.toFixed(2), '8.00');
+    assert.ok(Math.abs(report.contacts[0].worstAt - 0.5) < 0.02);
+    assert.ok(report.warnings.some(warning => /separates to 8\.00 px/.test(warning)));
+    // A drifting contact is a WARNING, not a blocker: snap-and-bake is still a
+    // legitimate authoring choice, the author just has to know.
+    assert.equal(report.ok, true);
+});
+
+test('an unmeasurable contact warns instead of silently reporting a zero gap', () => {
+    const draft = model.createDraft('unmeasurable', 1);
+    model.addContact(draft, { at: 0, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
+    const report = model.clipReadiness(draft, { measureContactGap: () => null });
+    assert.equal(report.contacts[0].measured, 0);
+    assert.ok(report.warnings.some(warning => /could not be measured/.test(warning)));
+});
+
+test('certification failures anywhere in the clip block readiness', () => {
+    const draft = model.createDraft('uncertified', 1);
+    const certify = at => ({ ok: at < 0.5, failures: at < 0.5 ? [] : [{ kind: 'chain-break', detail: 'attacker chain-break' }] });
+    const report = model.clipReadiness(draft, { certify });
+    assert.equal(report.ok, false);
+    assert.ok(report.blocking.some(issue => /certification failed/.test(issue)));
+    assert.ok(report.certificationFailures.length > 0);
+});
+
 test('variant choices combine shared families and side-specific overrides', () => {
     const character = { textures: { variants: {
         hand: { fist: {} }, nearHand: { grip: {} },

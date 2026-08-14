@@ -1,6 +1,7 @@
 import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
+import { stagedWorldPoint } from './animation/clipStaging.js';
 import {
     ARTICULATED_CHANNELS,
     ARTICULATION_CHANNEL_PAIRS,
@@ -415,9 +416,48 @@ export default class Wrestler {
     // through untouched, matching the legacy tweenPose path). The clip's
     // semantic `strikingForearm` slot is resolved to the correct near/far
     // forearm here, from facing.
-    applyAnimationSample(sample) {
+    // `staging` is the immutable per-role frame MoveRuntime captured at play()
+    // (src/animation/clipStaging.js). It is non-null only when THIS role's track
+    // actually authors transform channels, so a clip that stages nobody — jab,
+    // hammerlock — reaches this method exactly as it did before and leaves
+    // position entirely to its executor.
+    //
+    // Pose, parts and transform are applied from the SAME sampled frame in one
+    // call, so a keyframe's stance, its art swap, and its staging can never land
+    // on different game frames.
+    applyAnimationSample(sample, staging = null) {
         if (sample.pose) mergeArticulatedPose(this.pose, sample.pose);
         if (sample.parts) this.skeleton.setPartVariants(this._resolveVariantSlots(sample.parts));
+        if (staging && sample.transform) this._applyStagedTransform(sample.transform, staging);
+    }
+
+    // The staging origin MoveRuntime reads at play() time. A pure snapshot —
+    // deliberately no side effects, so capture order can never change what a
+    // clip does. `scale` is this wrestler's perspective scale at clip start;
+    // the runtime uses the ANCHOR's for every role so the pair stays rigid.
+    captureStagingOrigin() {
+        return { x: this.x, y: this.y, facing: this.facing, scale: this.s };
+    }
+
+    // Absolute placement from a role-local authored offset. Absolute, not
+    // incremental: this is what makes an arbitrary seek land in the same place
+    // as playing there, and what stops repeated frames from ratcheting an actor
+    // across the ring.
+    _applyStagedTransform(transform, staging) {
+        const point = stagedWorldPoint(staging, transform);
+        this.x = point.x;
+        this.y = point.y;
+        // Ring bounds still win. A clip authored with a big lateral offset that
+        // is started near the ropes gets clamped rather than staging a wrestler
+        // through the apron — the same rule every other position writer obeys.
+        this._clamp();
+        // While a clip owns position, walk velocity must not also be integrating
+        // into x/y. Clip-driven moves run in input-locked states so update()'s
+        // walk branch is already dormant, but zeroing here means the frame after
+        // the clip releases starts from rest instead of resuming a stale ramp —
+        // no slide-away on completion or cancellation.
+        this.vx = 0;
+        this.vy = 0;
     }
 
     // Map any semantic variant slots a clip authors onto the skeleton's real

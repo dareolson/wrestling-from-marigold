@@ -79,7 +79,11 @@
     </div></section>
     <section><h2>Status</h2><div id="status" class="body hint">Ready.</div></section>
     <section><h2>Live rig check</h2><div id="certification" class="body hint">Waiting for the first rendered frame.</div></section>
-    <section><h2>Supported authoring</h2><div class="body hint">Upright modular poses only. Flat, pinned, possum, dropkick-front, and other primitive silhouettes remain disabled until their game render paths migrate to the connected grounded rig.</div></section>
+    <section><h2>Production readiness</h2><div class="body">
+      <button id="readinessBtn">Sweep whole clip</button>
+      <pre id="readiness" class="hint">Sweeps every frame — not just the current pose — for non-finite channels, certification failures, contact drift between keyframes, and staging the runtime cannot consume.</pre>
+    </div></section>
+    <section><h2>Supported authoring</h2><div class="body hint">Upright modular poses only. Grounded authoring is disabled. <code>down</code>, <code>pinned</code>, and <code>possum</code> now reach the modular rig in game, but they share a single fixed flat pose — distinct prone, bridge, and kneeling postures are unimplemented, and grounded child-part orientation is a known open defect. Dropkick-front, airborne, and held silhouettes have not migrated at all.</div></section>
   </aside>
   <footer id="timeline">
     <div id="transport"><button id="playBtn">▶</button><button id="stopBtn">■</button><input id="scrubber" type="range" min="0" max="1.2" step="0.001" value="0" /><input id="time" type="number" min="0" max="1.2" step="0.001" value="0" /><label><input id="loop" type="checkbox" checked /> loop</label></div>

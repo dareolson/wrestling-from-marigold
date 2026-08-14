@@ -82,21 +82,31 @@ export function validateClip(source) {
 export function compileClip(source) {
     const result = validateClip(source);
     if (!result.ok) throw new Error(`Invalid animation clip "${source?.id ?? 'unknown'}":\n- ${result.errors.join('\n- ')}`);
-    const tracks = Object.fromEntries(Object.entries(source.tracks).map(([role, track]) => [
-        role,
-        { keyframes: expandKeyframes(track.keyframes.map(frame => ({
+    const tracks = Object.fromEntries(Object.entries(source.tracks).map(([role, track]) => {
+        const keyframes = expandKeyframes(track.keyframes.map(frame => ({
             at: frame.at,
             ease: frame.ease ?? 'linear',
             pose: frame.pose ?? {},
             transform: frame.transform ?? {},
             parts: frame.parts ?? {},
-        }))) },
-    ]));
+        })));
+        return [role, {
+            keyframes,
+            // Whether this track claims ownership of its actor's position. Read
+            // by clipStaging.captureStagingContext: a track that authors no
+            // transform channel gets no staging context, so its executor keeps
+            // sole ownership of position (see src/animation/clipStaging.js).
+            // Measured on the RAW per-frame channels, not the expanded running
+            // state, so it means "the author wrote a transform here".
+            authorsTransform: keyframes.some(frame => Object.keys(frame.transform).length > 0),
+        }];
+    }));
     return Object.freeze({
         _compiled: true,
         id: source.id,
         duration: source.duration,
         tracks,
+        authorsTransform: Object.values(tracks).some(track => track.authorsTransform),
         events: (source.events ?? []).map((event, index) => ({ ...event, _order: index })),
     });
 }

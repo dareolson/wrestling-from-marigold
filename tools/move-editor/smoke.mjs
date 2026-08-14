@@ -93,12 +93,43 @@ try {
     if (!exported.includes('nearHand: "grip"')) {
         throw new Error('selected hand variant was not captured into clip export');
     }
+    // Editor-only authoring metadata must never reach the exported clip data.
+    if (exported.includes('contacts') || exported.includes('posture')) {
+        throw new Error('export leaked editor-only metadata into gameplay clip data');
+    }
+
+    // Production readiness: the whole-clip sweep, not the current-pose badge.
+    await page.click('#exportDialog button:last-child');
+    const readiness = await page.evaluate(() => {
+        const report = window.__MOVE_EDITOR.readiness();
+        return { report, text: document.getElementById('readiness').textContent };
+    });
+    if (readiness.report.sampledTimes <= 1) {
+        throw new Error(`readiness swept ${readiness.report.sampledTimes} frames instead of the whole clip`);
+    }
+    if (!readiness.report.stagedRoles.length) {
+        throw new Error('readiness did not report which roles the runtime will stage');
+    }
+    // The snap-and-bake contact captured above is exact on its own keyframe; the
+    // point of the sweep is that it re-measures the pair BETWEEN keyframes.
+    const contact = readiness.report.contacts[0];
+    if (!contact) throw new Error('captured contact snap was not recorded as a declared contact pair');
+    if (!contact.measured) throw new Error('declared contact was never measured against the live rig');
+    if (!Number.isFinite(contact.maxGap)) throw new Error(`contact gap is not finite: ${contact.maxGap}`);
+    if (!readiness.text.includes('worst gap')) {
+        throw new Error(`readiness panel did not report the authored contact gap: ${readiness.text}`);
+    }
+    // A drifting contact is reported, and reported as a warning — snap-and-bake
+    // stays a legal authoring choice in this milestone.
+    if (contact.maxGap > 1 && !readiness.report.warnings.some(w => /separates to/.test(w))) {
+        throw new Error('a drifting contact was measured but not surfaced to the author');
+    }
+    // The export dialog was already closed above, before the readiness sweep.
     if (process.env.SCREENSHOT) {
-        await page.click('#exportDialog button:last-child');
         await page.screenshot({ path: process.env.SCREENSHOT, fullPage: true });
     }
     if (errors.length) throw new Error(`browser errors: ${errors.join(' | ')}`);
-    console.log('PASS move editor connected drag, two-role timeline, capture, marker, and export');
+    console.log(`PASS move editor connected drag, two-role timeline, capture, marker, export, and readiness sweep (${readiness.report.sampledTimes} frames, contact worst gap ${contact.maxGap.toFixed(2)} px at ${contact.worstAt.toFixed(3)}s)`);
 } finally {
     await browser.close();
 }

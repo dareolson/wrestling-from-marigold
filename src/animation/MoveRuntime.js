@@ -1,15 +1,29 @@
 import { compileClip, eventsBetween, sampleClip } from './AnimationClip.js';
+import { captureStagingContext, stagedWorldPoint } from './clipStaging.js';
 
-function applySample(target, sample) {
+// `staging` is the role's immutable playback context, or null when this track
+// authors no transform channels (the clip does not own this actor's position).
+// It is passed as a second argument rather than folded into `sample` so the
+// sampled frame stays pure clip data — the same object a tool or test can
+// inspect — and so a target that ignores staging is unchanged.
+function applySample(target, sample, staging) {
     if (!target) return;
     if (typeof target.applyAnimationSample === 'function') {
-        target.applyAnimationSample(sample);
+        target.applyAnimationSample(sample, staging);
         return;
     }
     if (sample.pose && 'pose' in target) target.pose = { ...target.pose, ...sample.pose };
     if (sample.transform) {
+        // Generic targets get the same contract as a real Wrestler: x/y resolve
+        // through the staging frame, any other authored channel is a direct
+        // write. A target with no captureStagingOrigin was captured at its own
+        // x/y with facing +1 and scale 1, so an actor sitting at the origin
+        // still sees the raw authored value.
+        const point = staging ? stagedWorldPoint(staging, sample.transform) : null;
         for (const [key, value] of Object.entries(sample.transform)) {
-            if (key in target) target[key] = value;
+            if (!(key in target)) continue;
+            if (point && (key === 'x' || key === 'y')) target[key] = point[key];
+            else target[key] = value;
         }
     }
     target.skeleton?.setPartVariants?.(sample.parts ?? {});
@@ -52,6 +66,13 @@ export default class MoveRuntime {
             onComplete,
             onCancel,
             cancelled: false,
+            // Per-role staging frame, captured ONCE here from the bound actors'
+            // live positions and the anchor's facing/scale, then never rewritten
+            // for the life of the handle. Capturing at play() rather than on
+            // first sample is what makes seeking deterministic: every _apply
+            // resolves against the same origins no matter what order times are
+            // visited in. Null when no bound track authors transform channels.
+            staging: captureStagingContext(clip, bindings),
         };
         this._active.set(handle.id, handle);
         this._apply(handle);
@@ -133,7 +154,9 @@ export default class MoveRuntime {
 
     _apply(handle) {
         const sampled = sampleClip(handle.clip, handle.time);
-        for (const [role, sample] of Object.entries(sampled.tracks)) applySample(handle.bindings[role], sample);
+        for (const [role, sample] of Object.entries(sampled.tracks)) {
+            applySample(handle.bindings[role], sample, handle.staging?.roles[role] ?? null);
+        }
         return sampled;
     }
 

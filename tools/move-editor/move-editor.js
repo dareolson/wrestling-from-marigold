@@ -7,7 +7,7 @@ import { certifyPose, measureSample } from '/src/rig/certification.js';
 import {
     EASES, POSE_CHANNELS, ROLES, addContact, addEvent, basePose, clipReadiness,
     contactPartner, createDraft, draftValidation, exportModule, insertKeyframe,
-    normalizeDraft, removeKeyframe, sampleDraft, variantChoices,
+    normalizeDraft, releaseContact, removeKeyframe, sampleDraft, variantChoices,
 } from './model.js';
 
 const CHARACTERS = { george, thesz };
@@ -262,7 +262,9 @@ function capture() {
         parts: actor.parts,
     });
     if (pendingContact && pendingContact.role === selectedRole) {
-        addContact(draft, { at: playhead, ...pendingContact });
+        // Acquired here, held to the end of the clip until the author releases
+        // it at a chosen frame. The readiness sweep grades only that window.
+        addContact(draft, { from: playhead, ...pendingContact });
         pendingContact = null;
     }
     renderTimeline();
@@ -305,17 +307,29 @@ function measureContactGapAt(at, contact) {
 // Certification at an arbitrary clip time, for the whole-clip sweep. The live
 // badge only ever certifies the frame on screen; this drives every sampled
 // frame through the same pure invariant kernel as `npm run rig:certify`.
+//
+// The sampled PART VARIANTS are applied before measuring, not just the pose. A
+// variant swap moves painted joint anchors — that is what certifyVariantDrift
+// exists to catch — so certifying a variant frame against base art certifies a
+// rig the clip never renders, and would pass a clip whose fist or grip breaks
+// the chain at exactly the contact frame.
 function certifyAt(at) {
     const failures = [];
-    const saved = Object.fromEntries(ROLES.map(role => [role, { pose: { ...actors[role].pose }, transform: { ...actors[role].transform } }]));
+    const saved = Object.fromEntries(ROLES.map(role => [role, {
+        pose: { ...actors[role].pose },
+        transform: { ...actors[role].transform },
+        parts: { ...actors[role].parts },
+    }]));
     try {
         const sampled = sampleDraft(draft, at);
         for (const role of ROLES) {
             actors[role].pose = { ...basePose(), ...sampled.tracks[role].pose };
             actors[role].transform = { x: 0, y: 0, ...sampled.tracks[role].transform };
+            actors[role].parts = { ...sampled.tracks[role].parts };
             renderActor(role);
             for (const finding of certifyPose(certificationSample(actors[role].skeleton))) {
-                failures.push({ role, kind: finding.kind, detail: `${role} ${finding.kind}` });
+                const variants = Object.entries(actors[role].parts).map(([slot, name]) => `${slot}=${name}`).join(' ');
+                failures.push({ role, kind: finding.kind, detail: `${role} ${finding.kind}${variants ? ` [${variants}]` : ''}` });
             }
         }
     } finally {
@@ -339,9 +353,17 @@ function runReadiness() {
     for (const warning of report.warnings) lines.push(`! ${warning}`);
     for (const contact of report.contacts) {
         if (!contact.measured) continue;
-        lines.push(`· ${contact.role} ${contact.source} → ${contact.target}: worst gap ${contact.maxGap.toFixed(2)} px at ${contact.worstAt.toFixed(3)}s`);
+        const held = contact.to >= draft.duration ? 'held to end' : `released ${contact.to.toFixed(3)}s`;
+        lines.push(`· ${contact.role} ${contact.source} → ${contact.target} (${contact.from.toFixed(3)}s, ${held}): worst gap ${contact.maxGap.toFixed(2)} px at ${contact.worstAt.toFixed(3)}s over ${contact.graded} graded frames`);
     }
     if (!report.contacts.length) lines.push('· No contact pairs declared. Snap a limb and capture the keyframe to track one.');
+    // The entry tableau is load-bearing under the shared-origin contract: these
+    // offsets are where the runtime PLACES the actors at t=0, from the anchor's
+    // position, regardless of how far apart they were when the move fired.
+    if (report.entryTableau) {
+        const entries = Object.entries(report.entryTableau).map(([role, offset]) => `${role} x${offset.x >= 0 ? '+' : ''}${offset.x}/y${offset.y >= 0 ? '+' : ''}${offset.y}`);
+        lines.push(`· Entry tableau (rig units from the ${report.anchorRole} at t=0): ${entries.join(', ')}`);
+    }
     $('readiness').textContent = lines.join('\n');
     $('readiness').classList.toggle('warning', !report.ok);
     // Restore what the author was looking at — the sweep re-rendered both
@@ -583,6 +605,11 @@ function installUI() {
     $('addEventBtn').addEventListener('click', () => { addEvent(draft, playhead, $('eventType').value.trim()); selectedEvent = draft.events.findIndex(event => event.at === round(playhead)); renderTimeline(); validate(); });
     $('deleteEventBtn').addEventListener('click', () => { if (selectedEvent >= 0) draft.events.splice(selectedEvent, 1); selectedEvent = -1; renderTimeline(); validate(); });
     $('snapContactBtn').addEventListener('click', snapContact);
+    $('releaseContactBtn').addEventListener('click', () => {
+        const released = releaseContact(draft, selectedRole, playhead);
+        if (released) status(`Released ${released.role} ${released.source} → ${released.target} at ${released.to.toFixed(3)}s; graded ${released.from.toFixed(3)}–${released.to.toFixed(3)}s.`);
+        else status(`No open ${selectedRole} contact acquired at or before ${playhead.toFixed(3)}s.`, true);
+    });
     $('readinessBtn').addEventListener('click', runReadiness);
     $('exportBtn').addEventListener('click', () => { if (!validate()) return; $('exportText').value = exportModule(draft); $('exportDialog').showModal(); });
     $('copyExport').addEventListener('click', async () => { await navigator.clipboard.writeText($('exportText').value); status('Clip module copied.'); });

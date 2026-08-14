@@ -14,13 +14,24 @@
 // (see src/animation/clipStaging.js), local elbow/knee articulation channels,
 // a discrete part-variant swap on a contact keyframe, and event markers.
 //
+// Both roles resolve against ONE shared tableau origin (the attacker's position
+// at clip start), so every offset below is measured from the same point and the
+// separation between the two actors is entirely authored — identical no matter
+// how far apart the wrestlers were when the move fired. That makes frame 0
+// load-bearing: the defender's entry offset IS the tie-up distance, not a
+// correction applied on top of wherever the defender happened to be.
+//
 // Choreography — a step-in collar tie, chosen because every channel under test
 // is separately observable in the result:
-//   0.00  both square, arms low                 (attacker at its own origin)
-//   0.18  attacker steps in +18 units, arm rises, elbow flexes toward guard
-//   0.36  CONTACT: attacker at +26, defender driven back to +14 and 6 deep,
+//   0.00  square off at arm's length            (attacker 0, defender +42)
+//   0.18  attacker steps in to +18, arm rises, elbow flexes toward guard
+//   0.36  CONTACT: attacker at +26 drives the defender back to +52 and 6 deep,
 //         fist variant swaps in on the striking forearm
-//   0.60  both settle, attacker's elbow extends, defender recovers depth
+//   0.60  both settle (attacker +22, defender +48), elbow extends, depth recovers
+//
+// Authored separation: 42 at entry, 24 as the attacker closes, 26 at contact,
+// 26 on the settle. Those four numbers are the tableau, and the proof asserts
+// the ring reproduces them from every trigger distance.
 //
 // The defender's offsets are positive along the SAME staging axis as the
 // attacker's, so under facing -1 the whole tableau mirrors as one rigid unit
@@ -35,12 +46,26 @@ export const STAGING_PROOF_STEP_AT = 0.18;
 // and the tests assert against the SAME numbers the clip data carries rather
 // than re-typing them (a re-typed expectation cannot catch a data edit).
 export const STAGING_PROOF_OFFSETS = Object.freeze({
+    attackerEntry: 0,
     attackerStep: 18,
     attackerContact: 26,
     attackerSettle: 22,
-    defenderContact: 14,
-    defenderSettle: 20,
+    defenderEntry: 42,
+    defenderStep: 42,
+    defenderContact: 52,
+    defenderSettle: 48,
     defenderDepth: 6,
+});
+
+// The authored tableau: separation between the two actors at each phase, in rig
+// units. Derived from the offsets above rather than re-typed, so it cannot
+// silently disagree with the clip data. This is what must be reproduced
+// identically from every trigger distance.
+export const STAGING_PROOF_SEPARATION = Object.freeze({
+    entry: STAGING_PROOF_OFFSETS.defenderEntry - STAGING_PROOF_OFFSETS.attackerEntry,
+    step: STAGING_PROOF_OFFSETS.defenderStep - STAGING_PROOF_OFFSETS.attackerStep,
+    contact: STAGING_PROOF_OFFSETS.defenderContact - STAGING_PROOF_OFFSETS.attackerContact,
+    settle: STAGING_PROOF_OFFSETS.defenderSettle - STAGING_PROOF_OFFSETS.attackerSettle,
 });
 
 export const stagingProofClip = {
@@ -53,7 +78,7 @@ export const stagingProofClip = {
                     at: 0,
                     ease: 'linear',
                     pose: { lArm: 0.15, rArm: -0.10, lElbow: 0.70, rElbow: 0.70, lLeg: -0.08, rLeg: 0.08, lKnee: 0.22, rKnee: 0.22, lean: 0, crouch: 0 },
-                    transform: { x: 0, y: 0 },
+                    transform: { x: STAGING_PROOF_OFFSETS.attackerEntry, y: 0 },
                     parts: {},
                 },
                 {
@@ -86,15 +111,18 @@ export const stagingProofClip = {
                 {
                     at: 0,
                     ease: 'linear',
+                    // The entry offset IS the tie-up distance — see the header.
                     pose: { lArm: -0.12, rArm: 0.12, lElbow: 0.70, rElbow: 0.70, lLeg: -0.08, rLeg: 0.08, lKnee: 0.22, rKnee: 0.22, lean: 0, crouch: 0 },
-                    transform: { x: 0, y: 0 },
+                    transform: { x: STAGING_PROOF_OFFSETS.defenderEntry, y: 0 },
                     parts: {},
                 },
                 {
                     at: STAGING_PROOF_STEP_AT,
                     ease: 'linear',
+                    // Holds ground while the attacker closes: separation drops
+                    // from 42 to 24 purely because the attacker moved.
                     pose: { lArm: 0.10, lElbow: 0.85, lean: -0.05 },
-                    transform: { x: 0, y: 0 },
+                    transform: { x: STAGING_PROOF_OFFSETS.defenderStep, y: 0 },
                 },
                 {
                     at: STAGING_PROOF_CONTACT_AT,

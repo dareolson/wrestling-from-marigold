@@ -124,6 +124,40 @@ try {
     if (contact.maxGap > 1 && !readiness.report.warnings.some(w => /separates to/.test(w))) {
         throw new Error('a drifting contact was measured but not surfaced to the author');
     }
+    // The contact holds over an interval, and an unreleased one runs to the end.
+    if (!(contact.from >= 0) || contact.to !== readiness.report.contacts[0].to) {
+        throw new Error(`contact interval is malformed: ${JSON.stringify(contact)}`);
+    }
+    const duration = await page.evaluate(() => window.__MOVE_EDITOR.draft.duration);
+    if (contact.to !== duration) {
+        throw new Error(`an unreleased contact should hold to ${duration}s, got ${contact.to}`);
+    }
+
+    // Entry tableau: under the shared-origin contract this is where the runtime
+    // PLACES both actors at t=0, so the author has to be able to see it.
+    if (!readiness.report.entryTableau || !readiness.report.anchorRole) {
+        throw new Error('readiness did not report the entry tableau');
+    }
+    if (!readiness.text.includes('Entry tableau')) {
+        throw new Error(`readiness panel did not surface the entry tableau: ${readiness.text}`);
+    }
+
+    // Releasing narrows the graded window rather than deleting the contact.
+    const released = await page.evaluate(() => {
+        window.__MOVE_EDITOR.setPlayhead(0.25);
+        document.getElementById('releaseContactBtn').click();
+        const report = window.__MOVE_EDITOR.readiness();
+        return { contact: report.contacts[0], status: document.getElementById('status').textContent };
+    });
+    if (released.contact.to !== 0.25) {
+        throw new Error(`release did not close the contact at the playhead: to=${released.contact.to}`);
+    }
+    if (released.contact.graded >= contact.graded) {
+        throw new Error(`releasing did not narrow the graded window: ${contact.graded} → ${released.contact.graded}`);
+    }
+    if (!released.status.includes('Released')) {
+        throw new Error(`release was not reported to the author: ${released.status}`);
+    }
     // The export dialog was already closed above, before the readiness sweep.
     if (process.env.SCREENSHOT) {
         await page.screenshot({ path: process.env.SCREENSHOT, fullPage: true });

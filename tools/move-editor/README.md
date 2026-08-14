@@ -41,12 +41,24 @@ preview multiplies by its own `SCALE`; every authoring gesture divides by it),
 travels the real `AnimationClip` → `MoveRuntime` → `Wrestler` → `Skeleton` path,
 and places real wrestlers. `transform.x` is an offset along the *attacker's*
 facing at clip start and `transform.y` is un-mirrored ring depth, so a tableau
-authored here mirrors rigidly in the ring. The full contract — units, origin
-capture, seek determinism, ring clamping, and why the runtime can never end up
-with two owners of a wrestler's position — is in
+authored here mirrors rigidly in the ring.
+
+Both actors resolve against **one shared origin** (the attacker's position at
+clip start), so the separation you compose here is the separation you get in the
+ring — independent of how far apart the wrestlers were when the move fired. The
+consequence is that **frame 0 is load-bearing**: its offsets are the committed
+entry geometry, and each actor is *placed* there at t=0. The readiness report
+prints them as the entry tableau and warns if two actors would enter at the same
+point. A fresh draft starts every role at `x: 0`, so a paired move needs a real
+entry separation authored on the non-attacker roles.
+
+The full contract — units, origin capture, seek determinism, ring clamping, and
+why the runtime can never end up with two owners of a wrestler's position — is in
 `src/animation/clipStaging.js` and summarised in `RIG_AND_MOVE_PIPELINE.md`.
 
-Verified against the live game by `npm run proof:staging`, not by inspection.
+Verified against the live game by `npm run proof:staging`, not by inspection:
+that probe launches the same clip from seven different trigger distances and
+requires the authored tableau to converge identically.
 
 ## Production readiness
 
@@ -56,11 +68,21 @@ that reads fine at every keyframe ships with a broken interpolation between two
 of them. It reports:
 
 - non-finite pose or transform channels, named per role/channel/time;
-- certification failures at any swept frame (same kernel as `npm run rig:certify`);
+- certification failures at any swept frame (same kernel as `npm run rig:certify`),
+  measured with that frame's **sampled part variants applied** — a variant swap
+  moves painted joint anchors, so certifying a variant frame against base art
+  certifies a rig the clip never renders;
 - the maximum authored contact gap for each declared contact pair, and where;
 - unsupported render/posture modes;
-- staging channels the runtime cannot consume, and which roles the runtime will
-  actually take position ownership of.
+- staging channels the runtime cannot consume, which roles the runtime will
+  actually take position ownership of, and the entry tableau.
+
+Contacts hold over an **interval**: capturing a snapped keyframe acquires the
+contact, `Release at playhead` closes it, and an unreleased contact holds to the
+end of the clip. The gap is graded **only inside that window** — before
+acquisition the limb is still travelling to the anchor and after release it is
+deliberately leaving, so grading those spans would report the approach and the
+follow-through as contact failures and bury the one span the author asserted.
 
 Contact drift is a **warning**, not a blocker: snap-and-bake remains a legitimate
 authoring choice, the author simply has to be told when interpolation pulls a

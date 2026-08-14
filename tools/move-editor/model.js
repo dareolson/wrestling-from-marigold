@@ -1,4 +1,7 @@
 import { compileClip, sampleClip, validateClip } from '../../src/animation/AnimationClip.js';
+// The anchor rule is imported rather than restated: the editor must report the
+// same entry tableau the runtime will actually build.
+import { pickAnchorRole } from '../../src/animation/clipStaging.js';
 
 export const ROLES = Object.freeze(['attacker', 'defender']);
 
@@ -63,16 +66,39 @@ export function createDraft(id = 'untitled_move', duration = 1.2) {
 // (exportClip), never sent to the runtime, and nothing about damage, legality,
 // or hit detection may ever read them. Contact in gameplay stays snap-and-bake:
 // this records what the author asserted, it does not re-solve it at runtime.
+//
+// A contact holds over an INTERVAL — `from` (acquisition) to `to` (release) —
+// not at a single instant. Grading the gap outside that window is meaningless
+// and actively misleading: before acquisition the hand has not arrived yet and
+// after release it is deliberately leaving, so a whole-clip sweep would report
+// the approach and the follow-through as contact failures and drown the one
+// span the author actually asserted. An unreleased contact holds to the end of
+// the clip, which is the common case for a working hold.
 function normalizeContacts(source, duration) {
     return (Array.isArray(source) ? source : [])
-        .map(contact => ({
-            at: Math.max(0, Math.min(duration, Number(contact?.at) || 0)),
-            role: ROLES.includes(contact?.role) ? contact.role : ROLES[0],
-            source: CONTACT_SOURCES.includes(contact?.source) ? contact.source : null,
-            target: CONTACT_TARGETS.includes(contact?.target) ? contact.target : null,
-        }))
+        .map(contact => {
+            // `at` is accepted as an alias for `from` so drafts written before
+            // contacts carried an interval still load.
+            const from = clampTime(contact?.from ?? contact?.at, duration, 0);
+            return {
+                from,
+                // An omitted release means "held to the end of the clip"; a
+                // release earlier than acquisition is meaningless, so it
+                // collapses to an instant rather than inverting the window.
+                to: Math.max(from, clampTime(contact?.to, duration, duration)),
+                role: ROLES.includes(contact?.role) ? contact.role : ROLES[0],
+                source: CONTACT_SOURCES.includes(contact?.source) ? contact.source : null,
+                target: CONTACT_TARGETS.includes(contact?.target) ? contact.target : null,
+            };
+        })
         .filter(contact => contact.source && contact.target)
-        .sort((a, b) => a.at - b.at);
+        .sort((a, b) => a.from - b.from || a.to - b.to);
+}
+
+function clampTime(value, duration, fallback) {
+    const time = Number(value);
+    if (!Number.isFinite(time)) return fallback;
+    return Math.max(0, Math.min(duration, time));
 }
 
 // The other role in a two-actor contact — a contact is always authored against
@@ -113,11 +139,30 @@ export function normalizeDraft(source) {
     return draft;
 }
 
-export function addContact(draft, { at, role, source, target }) {
+export function addContact(draft, { from, at, to, role, source, target }) {
     draft.contacts ??= [];
-    draft.contacts.push({ at: round(at), role, source, target });
+    draft.contacts.push({ from: round(from ?? at ?? 0), to: to === undefined ? undefined : round(to), role, source, target });
     draft.contacts = normalizeContacts(draft.contacts, draft.duration);
     return draft.contacts;
+}
+
+/**
+ * Close the open contact a release gesture applies to: the latest one for
+ * `role` that was acquired at or before `at` and is still held to the end of
+ * the clip. Returns the closed contact, or null when there is nothing to
+ * release — the editor reports that rather than silently doing nothing.
+ */
+export function releaseContact(draft, role, at) {
+    const duration = draft.duration;
+    const time = clampTime(at, duration, duration);
+    const open = (draft.contacts ?? [])
+        .filter(contact => contact.role === role && contact.from <= time && contact.to >= duration)
+        .sort((a, b) => a.from - b.from)
+        .at(-1);
+    if (!open) return null;
+    open.to = round(time);
+    draft.contacts = normalizeContacts(draft.contacts, duration);
+    return open;
 }
 
 export function insertKeyframe(draft, role, at, state) {
@@ -290,23 +335,31 @@ export function clipReadiness(draft, { measureContactGap = null, certify = null,
     // they can add an intermediate keyframe — deliberately NOT a runtime
     // constraint solver, which stays out of this milestone.
     const contacts = [];
+    const allTimes = sampleTimes(normalized, grid);
     for (const contact of normalized.contacts) {
         let maxGap = 0;
-        let worstAt = contact.at;
+        let worstAt = contact.from;
         let measured = 0;
+        // Only the held window is graded. The approach before acquisition and
+        // the follow-through after release are not contact failures, and
+        // grading them would bury the one span the author actually asserted.
+        // The endpoints are always included even if the grid misses them.
+        const window = [...new Set([contact.from, contact.to, ...allTimes.filter(at => at >= contact.from && at <= contact.to)])]
+            .sort((a, b) => a - b);
         if (measureContactGap) {
-            for (const at of sampleTimes(normalized, grid)) {
+            for (const at of window) {
                 const gap = measureContactGap(at, contact);
                 if (!Number.isFinite(gap)) continue;
                 measured++;
                 if (gap > maxGap) { maxGap = gap; worstAt = at; }
             }
         }
-        contacts.push({ ...contact, maxGap, worstAt, measured, partner: contactPartner(contact.role) });
+        contacts.push({ ...contact, maxGap, worstAt, measured, graded: window.length, partner: contactPartner(contact.role) });
+        const span = `${contact.from.toFixed(3)}–${contact.to.toFixed(3)}s`;
         if (!measureContactGap || !measured) {
-            warnings.push(`${contact.role} ${contact.source} → ${contact.target}: contact gap could not be measured (no live rig)`);
+            warnings.push(`${contact.role} ${contact.source} → ${contact.target} (${span}): contact gap could not be measured (no live rig)`);
         } else if (maxGap > 1) {
-            warnings.push(`${contact.role} ${contact.source} → ${contact.target}: separates to ${maxGap.toFixed(2)} px at ${worstAt.toFixed(3)}s — add a keyframe there`);
+            warnings.push(`${contact.role} ${contact.source} → ${contact.target} (${span}): separates to ${maxGap.toFixed(2)} px at ${worstAt.toFixed(3)}s — add a keyframe there`);
         }
     }
 
@@ -315,6 +368,37 @@ export function clipReadiness(draft, { measureContactGap = null, certify = null,
     if (certificationFailures.length) {
         const worst = certificationFailures[0];
         blocking.push(`certification failed at ${worst.at.toFixed(3)}s: ${worst.detail ?? worst.kind ?? 'unspecified'} (${certificationFailures.length} total)`);
+    }
+
+    // What the runtime will actually take ownership of, so the author can see at
+    // a glance whether their staging is live or inert.
+    const stagedRoles = Object.entries(normalized.tracks)
+        .filter(([, track]) => track.keyframes.some(frame => Object.keys(frame.transform ?? {}).length > 0))
+        .map(([role]) => role);
+    const anchorRole = pickAnchorRole(Object.keys(normalized.tracks));
+
+    // The entry tableau. Under the shared-origin contract every staged role is
+    // PLACED at these offsets from the anchor at t=0, whatever the trigger
+    // distance was — so frame 0 is not a starting hint, it is the committed
+    // entry geometry, and it is worth showing the author explicitly.
+    let entryTableau = null;
+    if (validation.ok && stagedRoles.length) {
+        const entry = sampleClip(compileClip(exportClip(normalized)), 0);
+        entryTableau = Object.fromEntries(stagedRoles.map(role => [role, {
+            x: round(entry.tracks[role].transform.x ?? 0),
+            y: round(entry.tracks[role].transform.y ?? 0),
+        }]));
+        // Two actors authored to the same entry point land on top of each other
+        // — the degenerate case of a shared origin, and an easy one to author by
+        // accident since a fresh draft starts every role at x:0.
+        for (const role of stagedRoles) {
+            if (role === anchorRole) continue;
+            const offset = entryTableau[role];
+            const anchorOffset = entryTableau[anchorRole] ?? { x: 0, y: 0 };
+            if (Math.hypot(offset.x - anchorOffset.x, offset.y - anchorOffset.y) < 1) {
+                warnings.push(`${role} enters at the same point as ${anchorRole} — author a real entry separation, or the two wrestlers stage on top of each other`);
+            }
+        }
     }
 
     return {
@@ -326,11 +410,9 @@ export function clipReadiness(draft, { measureContactGap = null, certify = null,
         unsupportedModes,
         certificationFailures,
         contacts,
-        // What the runtime will actually take ownership of, so the author can
-        // see at a glance whether their staging is live or inert.
-        stagedRoles: Object.entries(normalized.tracks)
-            .filter(([, track]) => track.keyframes.some(frame => Object.keys(frame.transform ?? {}).length > 0))
-            .map(([role]) => role),
+        stagedRoles,
+        anchorRole,
+        entryTableau,
         sampledTimes: validation.ok ? sampleTimes(normalized, grid).length : 0,
     };
 }

@@ -156,9 +156,28 @@ it is the authority, and this is the summary.
   in at `s = 1`) — never editor pixels, never world coordinates. The move editor
   divides by its preview `SCALE` on the way into the draft, so an authored
   offset means the same body distance in the editor and in the ring.
-- **Values are role-local offsets** from the actor's own position when the clip
-  began. Clip data never carries an absolute ring position, so a move stages
-  identically wherever it is started.
+- **Every staged role resolves against one shared tableau origin** — the anchor's
+  position when the clip began, not its own. Clip data never carries an absolute
+  ring position (a move stages identically wherever in the ring it is triggered)
+  while the *relative* placement of the actors is entirely authored.
+
+  This is the correction to the first version of this contract (2026-08-13),
+  which captured a separate origin per role. That looked equivalent and is not:
+  with per-role origins the final separation was `authored separation + whatever
+  gap the two bodies happened to have at trigger time`, so the same clip produced
+  a different tableau depending on how far apart the wrestlers were when the move
+  fired, and the geometry composed in the editor was never reproduced in the ring.
+  The original proof launched both actors from the same `x`, which hid it exactly.
+
+  The cost is explicit and deliberate: at t=0 each actor is **placed** at its
+  authored entry offset, so an actor whose real position does not match snaps
+  there. For a choreographed paired move that is the desired behaviour —
+  commitment snaps the pair into an exact, reproducible tie-up — but it makes
+  frame 0 load-bearing, so a clip's t=0 offsets must describe the entry geometry
+  the move is actually triggered at. The move editor's readiness report prints
+  those offsets as the **entry tableau**, and warns when two actors are authored
+  to enter at the same point (a fresh draft starts every role at `x: 0`, which
+  under a shared origin stages both wrestlers on top of each other).
 - **`x` is measured along the staging axis** — the direction the anchor role
   (`attacker`, see `ANCHOR_PREFERENCE`) faced at clip start — and positive `x`
   is forward along that axis for *both* roles. The two-actor tableau therefore
@@ -167,15 +186,19 @@ it is the authority, and this is the summary.
   mirrored**; facing is a left/right property, and mirroring depth would swap
   which wrestler is nearer the camera.
 - **One captured scale for the pair.** Both axes are multiplied by the anchor's
-  perspective scale, captured once. Using each actor's own live `s` would let
-  them drift apart as the clip nudges them to different depths.
-- **Placement is absolute, not incremental.** `world = origin + f(sampled
+  perspective scale, captured once — same reasoning as the shared origin. Using
+  each actor's own live `s` would let them drift apart as the clip nudges them to
+  different depths. One origin, one axis, one scale: the tableau is rigid.
+- **Placement is absolute, not incremental.** `world = tableauOrigin + f(sampled
   transform)`. Nothing accumulates and nothing reads back the previous frame, so
   an arbitrary seek lands exactly where playing there lands, and re-applying one
-  time twenty times moves nobody.
+  time twenty times moves nobody. Because the origin is shared, the relative
+  geometry at any time `t` is a pure function of the clip data — identical from
+  every trigger distance, in both facings, in either role assignment.
 - **Ring bounds still win.** `Wrestler._applyStagedTransform` clamps, so a large
   authored offset started at the ropes is clipped rather than staging a wrestler
-  through the apron.
+  through the apron. This is the one place the authored tableau is deliberately
+  *not* reproduced: at the ropes it compresses. Both behaviours are asserted.
 
 **Ownership is opt-in per track.** `compileClip` marks each track with
 `authorsTransform`, and a staging context is built *only* for roles whose track

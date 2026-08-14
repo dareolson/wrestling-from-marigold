@@ -42,9 +42,9 @@ test('export produces a reviewable clip module with pose, transforms, parts, and
 
 test('declared contacts are normalized, sorted, and never reach the exported clip', () => {
     const draft = model.createDraft('collar_tie', 1);
-    model.addContact(draft, { at: 0.6, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
-    model.addContact(draft, { at: 0.2, role: 'defender', source: 'nearAnkle', target: 'nearKnee' });
-    assert.deepEqual(draft.contacts.map(contact => contact.at), [0.2, 0.6], 'sorted by time');
+    model.addContact(draft, { from: 0.6, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
+    model.addContact(draft, { from: 0.2, role: 'defender', source: 'nearAnkle', target: 'nearKnee' });
+    assert.deepEqual(draft.contacts.map(contact => contact.from), [0.2, 0.6], 'sorted by acquisition');
 
     // Gameplay data must not carry authoring metadata: the exported clip is
     // exactly what AnimationClip compiles, and nothing more.
@@ -57,13 +57,67 @@ test('contacts naming joints the rig does not publish are dropped, not trusted',
     const draft = model.normalizeDraft({
         ...model.createDraft('bad_contact', 1),
         contacts: [
-            { at: 0.5, role: 'attacker', source: 'nose', target: 'farShoulder' },
-            { at: 0.5, role: 'attacker', source: 'nearWrist', target: 'elbowish' },
-            { at: 0.5, role: 'attacker', source: 'nearWrist', target: 'farShoulder' },
+            { from: 0.5, role: 'attacker', source: 'nose', target: 'farShoulder' },
+            { from: 0.5, role: 'attacker', source: 'nearWrist', target: 'elbowish' },
+            { from: 0.5, role: 'attacker', source: 'nearWrist', target: 'farShoulder' },
         ],
     });
     assert.equal(draft.contacts.length, 1);
     assert.equal(draft.contacts[0].source, 'nearWrist');
+});
+
+// ── Contact acquisition/release interval ─────────────────────────────────────
+
+test('a contact holds from acquisition to the end of the clip until it is released', () => {
+    const draft = model.createDraft('hold', 1.2);
+    model.addContact(draft, { from: 0.3, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
+    assert.equal(draft.contacts[0].from, 0.3);
+    assert.equal(draft.contacts[0].to, 1.2, 'an unreleased contact is held to the end');
+
+    const released = model.releaseContact(draft, 'attacker', 0.8);
+    assert.equal(released.to, 0.8);
+    assert.equal(model.releaseContact(draft, 'attacker', 0.9), null, 'nothing left open to release');
+    assert.equal(model.releaseContact(draft, 'defender', 0.9), null, 'never closes another role\'s contact');
+});
+
+test('a release earlier than acquisition collapses instead of inverting the window', () => {
+    const draft = model.normalizeDraft({
+        ...model.createDraft('inverted', 1),
+        contacts: [{ from: 0.7, to: 0.2, role: 'attacker', source: 'nearWrist', target: 'farShoulder' }],
+    });
+    assert.equal(draft.contacts[0].from, 0.7);
+    assert.equal(draft.contacts[0].to, 0.7);
+});
+
+test('legacy `at` drafts still load as an acquisition time', () => {
+    const draft = model.normalizeDraft({
+        ...model.createDraft('legacy', 1),
+        contacts: [{ at: 0.4, role: 'attacker', source: 'nearWrist', target: 'farShoulder' }],
+    });
+    assert.equal(draft.contacts[0].from, 0.4);
+    assert.equal(draft.contacts[0].to, 1);
+});
+
+test('the gap is graded only inside the held window, never on approach or follow-through', () => {
+    const draft = model.createDraft('window', 1);
+    model.addContact(draft, { from: 0.4, to: 0.6, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
+    const sampled = [];
+    // Huge separation everywhere except the held window: the limb is travelling
+    // to the anchor before 0.4 and leaving after 0.6, which is not a failure.
+    const measureContactGap = at => { sampled.push(at); return at >= 0.4 && at <= 0.6 ? 0.2 : 500; };
+    const report = model.clipReadiness(draft, { measureContactGap });
+
+    assert.ok(Math.min(...sampled) >= 0.4 && Math.max(...sampled) <= 0.6, `graded outside the window: ${Math.min(...sampled)}–${Math.max(...sampled)}`);
+    assert.ok(report.contacts[0].maxGap < 1, `approach/follow-through leaked into the grade: ${report.contacts[0].maxGap}`);
+    assert.equal(report.warnings.some(warning => /separates to/.test(warning)), false);
+});
+
+test('the window endpoints are always graded even when the grid misses them', () => {
+    const draft = model.createDraft('endpoints', 1);
+    model.addContact(draft, { from: 0.4137, to: 0.5813, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
+    const sampled = [];
+    model.clipReadiness(draft, { measureContactGap: at => { sampled.push(at); return 0; } });
+    assert.ok(sampled.includes(0.4137) && sampled.includes(0.5813));
 });
 
 // ── Production readiness sweep ───────────────────────────────────────────────
@@ -121,7 +175,7 @@ test('a draft with no declared posture defaults to upright and stays ready', () 
 
 test('contact drift between keyframes is measured and reported, not solved', () => {
     const draft = model.createDraft('drift', 1);
-    model.addContact(draft, { at: 0, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
+    model.addContact(draft, { from: 0, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
     // Exact at both authored keyframes, 8 px apart halfway between them — the
     // failure a per-keyframe check cannot see.
     const measureContactGap = at => (at === 0 || at === 1 ? 0 : 8 * Math.sin(Math.PI * at));
@@ -136,10 +190,27 @@ test('contact drift between keyframes is measured and reported, not solved', () 
 
 test('an unmeasurable contact warns instead of silently reporting a zero gap', () => {
     const draft = model.createDraft('unmeasurable', 1);
-    model.addContact(draft, { at: 0, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
+    model.addContact(draft, { from: 0, role: 'attacker', source: 'nearWrist', target: 'farShoulder' });
     const report = model.clipReadiness(draft, { measureContactGap: () => null });
     assert.equal(report.contacts[0].measured, 0);
     assert.ok(report.warnings.some(warning => /could not be measured/.test(warning)));
+});
+
+// ── Entry tableau (shared-origin contract) ───────────────────────────────────
+
+test('the entry tableau reports where the runtime will place each staged role', () => {
+    const draft = model.createDraft('tie_up', 1);
+    draft.tracks.defender.keyframes[0].transform = { x: 42, y: 0 };
+    const report = model.clipReadiness(draft);
+    assert.equal(report.anchorRole, 'attacker');
+    assert.deepEqual(report.entryTableau, { attacker: { x: 0, y: 0 }, defender: { x: 42, y: 0 } });
+});
+
+test('two actors entering at the same point are flagged, not staged on top of each other', () => {
+    // A fresh draft starts every role at x:0 — under a shared origin that means
+    // both wrestlers land on the anchor, which is easy to author by accident.
+    const report = model.clipReadiness(model.createDraft('degenerate', 1));
+    assert.ok(report.warnings.some(warning => /same point as attacker/.test(warning)), report.warnings.join('; '));
 });
 
 test('certification failures anywhere in the clip block readiness', () => {

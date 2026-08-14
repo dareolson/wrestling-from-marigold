@@ -65,8 +65,8 @@
     <section><h2>Contact snap</h2><div class="body">
       <div class="row wide"><label>Selected limb</label><select id="contactSource"><option>nearWrist</option><option>farWrist</option><option>nearAnkle</option><option>farAnkle</option></select></div>
       <div class="row wide"><label>Other anchor</label><select id="contactTarget"><option>nearWrist</option><option>farWrist</option><option>nearShoulder</option><option>farShoulder</option><option>nearHip</option><option>farHip</option><option>nearKnee</option><option>farKnee</option><option>neck</option></select></div>
-      <button id="snapContactBtn">Align root + solve limb</button>
-      <p id="contactGap" class="hint">Select an actor and snap one connected limb to the other wrestler.</p>
+      <div class="toolbar"><button id="snapContactBtn">Align root + solve limb</button><button id="releaseContactBtn">Release at playhead</button></div>
+      <p id="contactGap" class="hint">Select an actor and snap one connected limb to the other wrestler. Capturing the keyframe acquires the contact; it is held to the end of the clip until you release it.</p>
     </div></section>
     <section><h2>Selected keyframe</h2><div class="body toolbar">
       <button id="captureBtn">Capture at playhead</button>

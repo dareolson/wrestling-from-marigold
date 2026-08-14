@@ -15,9 +15,28 @@
 // one authored unit means the same body distance in the editor and in the ring
 // regardless of either one's zoom.
 //
-// ORIGIN. They are OFFSETS FROM THE ACTOR'S OWN POSITION when the clip began,
-// captured once per role at play() time. Clip data therefore never carries an
-// absolute ring position and a move stages identically wherever it is started.
+// ORIGIN. Every staged role resolves against ONE SHARED TABLEAU ORIGIN — the
+// anchor's position when the clip began — not against its own start position.
+// Clip data therefore never carries an absolute ring position (a move stages
+// identically wherever in the ring it is triggered) while the RELATIVE placement
+// of the actors is entirely authored.
+//
+// This is the correction to the first version of this contract, which captured
+// a separate origin per role. That looked equivalent and is not: with per-role
+// origins the final separation is `authored separation + whatever gap the two
+// bodies happened to have at trigger time`, so the same clip produced a
+// different tableau depending on how far apart the wrestlers were when the move
+// fired, and the geometry the author composed in the editor was never
+// reproduced in the ring. A shared frame is what makes the authored tableau
+// mean something.
+//
+// The cost is explicit and deliberate: at t=0 each actor is PLACED at its
+// authored entry offset, so an actor whose real position does not match that
+// offset snaps there. For a choreographed paired move that is the desired
+// behaviour — commitment snaps the pair into an exact, reproducible tie-up —
+// but it makes frame 0 load-bearing: a clip's t=0 offsets must describe the
+// entry geometry the move is actually triggered at. Authors get told what those
+// offsets are by the move editor's readiness report ("entry tableau").
 //
 // AXIS. x is measured along the STAGING AXIS: the direction the anchor role
 // (`attacker`, see ANCHOR_PREFERENCE) was facing at clip start. Positive x is
@@ -28,14 +47,17 @@
 // depth would swap which wrestler is nearer the camera.
 //
 // SCALE. Both axes are multiplied by ONE captured perspective scale, taken
-// from the anchor. Using each actor's own live `s` would let the pair drift
-// apart as the clip nudges them to different depths — the relative geometry the
-// author saw would not survive playback. One scale keeps the tableau rigid.
+// from the anchor — same reasoning as the shared origin. Using each actor's own
+// live `s` would let the pair drift apart as the clip nudges them to different
+// depths. One origin, one axis, one scale: the tableau is rigid.
 //
-// DETERMINISM. world = origin + f(sampled transform). Nothing accumulates and
-// nothing reads back the previous frame, so seeking to t gives the same
-// position whether it was reached by playing forward, scrubbing backward, or
-// jumping there cold — the property the editor's scrubber depends on.
+// DETERMINISM. world = tableauOrigin + f(sampled transform). Nothing
+// accumulates and nothing reads back the previous frame, so seeking to t gives
+// the same position whether it was reached by playing forward, scrubbing
+// backward, or jumping there cold — the property the editor's scrubber depends
+// on. Because the origin is shared, this also means the RELATIVE geometry at
+// any time t is a pure function of the clip data: identical from every trigger
+// distance, in both facings, in either role assignment.
 //
 // OWNERSHIP. Staging is OPT-IN PER TRACK: a context exists only for roles whose
 // track actually authors transform channels (see `authorsTransform` on the
@@ -106,23 +128,23 @@ export function captureStagingContext(clip, bindings) {
 
     // The anchor is chosen from every BOUND role, not only the staged ones: a
     // clip can perfectly well move just the defender while the attacker stands
-    // still, and that move must still mirror about the attacker's facing.
+    // still, and that move must still be framed on the attacker.
     const anchorRole = pickAnchorRole(bound);
     const anchor = captureOrigin(bindings[anchorRole]);
+
+    // ONE frame for every staged role. Note what is deliberately NOT read here:
+    // the non-anchor actors' positions. Their launch positions cannot influence
+    // the result at all, which is precisely the guarantee — trigger distance
+    // cannot leak into the authored tableau if it is never sampled.
+    const frame = {
+        originX: anchor.x,
+        originY: anchor.y,
+        facing: anchor.facing,
+        scale: anchor.scale,
+    };
     const roles = {};
-    for (const role of staged) {
-        const origin = role === anchorRole ? anchor : captureOrigin(bindings[role]);
-        roles[role] = Object.freeze({
-            role,
-            originX: origin.x,
-            originY: origin.y,
-            // Axis and scale come from the ANCHOR for every role — that shared
-            // frame is what keeps the pair rigid.
-            facing: anchor.facing,
-            scale: anchor.scale,
-        });
-    }
-    return Object.freeze({ anchorRole, facing: anchor.facing, scale: anchor.scale, roles: Object.freeze(roles) });
+    for (const role of staged) roles[role] = Object.freeze({ role, ...frame });
+    return Object.freeze({ anchorRole, ...frame, roles: Object.freeze(roles) });
 }
 
 /**

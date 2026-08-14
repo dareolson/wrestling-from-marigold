@@ -14,6 +14,10 @@
 // way out, so the move roster is never distorted by a developer proof.
 //
 // What it proves, in order:
+//   0. The authored tableau is reproduced identically from every trigger
+//      distance — the shared-origin guarantee. Launched from several different
+//      attacker/defender separations, the relative geometry must converge on
+//      exactly the numbers composed in the editor.
 //   1. transform.x/y actually move real Wrestlers (the seam that was dead).
 //   2. Pose, part variant, and staging land on the SAME sampled frame.
 //   3. Articulated elbow/knee channels reach the rendered skeleton.
@@ -64,7 +68,9 @@ await h.page.evaluate(async () => {
         resume() { sc.scene.resume(); },
         // Park both wrestlers in a controlled, input-locked state so gameplay
         // AI and walk integration cannot move them behind the clip's back.
-        setup({ facing = 1, x = 470, y = 360 } = {}) {
+        // `gap` is the DEFENDER's launch offset from the attacker — the variable
+        // the authored tableau must be independent of.
+        setup({ facing = 1, x = 470, y = 360, gap = 0 } = {}) {
             for (const [w, sign] of [[sc.w1, 1], [sc.w2, -1]]) {
                 w._cancelActiveMove?.('proof-reset');
                 sc.tweens.killTweensOf(w);
@@ -72,7 +78,7 @@ await h.page.evaluate(async () => {
                 w.stateTimer = 99;
                 w.vx = 0;
                 w.vy = 0;
-                w.x = x;
+                w.x = sign === 1 ? x : x + gap;
                 w.y = y;
                 w.facing = sign === 1 ? facing : -facing;
             }
@@ -132,10 +138,92 @@ const drive = (method, ...args) => h.page.evaluate(([m, a]) => window.__PROOF[m]
 await drive('pause');
 const constants = await h.page.evaluate(() => ({
     OFFSETS: window.__PROOF.clip.STAGING_PROOF_OFFSETS,
+    SEPARATION: window.__PROOF.clip.STAGING_PROOF_SEPARATION,
+    PHASES: window.__PROOF.clip.STAGING_PROOF_PHASES,
     CONTACT_AT: window.__PROOF.clip.STAGING_PROOF_CONTACT_AT,
     STEP_AT: window.__PROOF.clip.STAGING_PROOF_STEP_AT,
     DURATION: window.__PROOF.clip.STAGING_PROOF_DURATION,
 }));
+
+// ── 0. The authored tableau is independent of trigger distance ────────────────
+//
+// The defect this section exists to catch: with a per-role origin, the final
+// separation was `authored separation + whatever gap the bodies had at trigger
+// time`, so the editor-composed geometry was never reproduced in the ring. A
+// proof that launches both actors from the same x cannot see that at all.
+{
+    // Well inside the ropes so clamping cannot mask a convergence failure, and
+    // deliberately including a defender that starts BEHIND the attacker.
+    const LAUNCH_GAPS = [-90, -12, 0, 35, 70, 140, 240];
+
+    for (const [phase, time] of Object.entries(constants.PHASES)) {
+        const expected = constants.SEPARATION[phase];
+        const measured = [];
+        for (const gap of LAUNCH_GAPS) {
+            const start = await drive('play', { facing: 1, x: 470, y: 360, gap });
+            const frame = await drive('seek', time);
+            measured.push({ gap, separation: (frame.def.x - frame.atk.x) / start.staging.scale });
+        }
+        const worst = measured.reduce((acc, item) => Math.max(acc, Math.abs(item.separation - expected)), 0);
+        check(`authored ${phase} separation converges from every trigger distance`, worst < 1e-9,
+            `authored ${expected} rig units; worst deviation ${worst.toExponential(2)} across gaps ${LAUNCH_GAPS.join('/')}px`);
+    }
+
+    // Absolute placement, not just separation: neither actor may land anywhere
+    // that depends on where the other one started.
+    const placements = new Set();
+    for (const gap of LAUNCH_GAPS) {
+        await drive('play', { facing: 1, x: 470, y: 360, gap });
+        const frame = await drive('step', constants.CONTACT_AT);
+        placements.add(`${frame.atk.x.toFixed(9)}|${frame.atk.y.toFixed(9)}|${frame.def.x.toFixed(9)}|${frame.def.y.toFixed(9)}`);
+    }
+    check('trigger distance cannot influence either actor\'s absolute placement', placements.size === 1,
+        placements.size === 1 ? [...placements][0] : `${placements.size} distinct tableaux: ${[...placements].join(' / ')}`);
+
+    // And the rendered geometry converges too, not only the world coordinates.
+    const wrists = new Set();
+    for (const gap of LAUNCH_GAPS) {
+        await drive('play', { facing: 1, x: 470, y: 360, gap });
+        const frame = await drive('seek', constants.CONTACT_AT);
+        wrists.add(`${frame.atk.joints.nearWrist.x.toFixed(6)}|${frame.atk.joints.nearWrist.y.toFixed(6)}`);
+    }
+    check('the rendered contact frame converges from every trigger distance', wrists.size === 1,
+        wrists.size === 1 ? `nearWrist at ${[...wrists][0]}` : `${wrists.size} distinct rendered frames`);
+
+    // Mirrored: same tableau, negated, still convergent.
+    for (const facing of [1, -1]) {
+        const separations = new Set();
+        for (const gap of LAUNCH_GAPS) {
+            const start = await drive('play', { facing, x: 470, y: 360, gap });
+            const frame = await drive('seek', constants.CONTACT_AT);
+            separations.add(((frame.def.x - frame.atk.x) / start.staging.scale).toFixed(9));
+        }
+        const separation = Number([...separations][0]);
+        check(`facing ${facing}: the mirrored tableau converges and matches the authored separation`,
+            separations.size === 1 && Math.abs(Math.abs(separation) - constants.SEPARATION.contact) < 1e-9 && Math.sign(separation) === facing,
+            `${separations.size} value(s), separation ${separation}, authored ${constants.SEPARATION.contact}`);
+    }
+
+    // Role reversal: the tableau frames on whoever is BOUND as attacker.
+    const reversed = new Set();
+    for (const gap of LAUNCH_GAPS) {
+        const frame = await h.page.evaluate(([g, at]) => {
+            const sc = window.__WFM_GAME.scene.scenes[0];
+            window.__PROOF.setup({ facing: 1, x: 470, y: 360, gap: g });
+            // sc.w2 bound as the attacker; its facing is -1, so the axis flips.
+            window.__PROOF.handle = sc.moveRuntime.play(window.__PROOF.clip.STAGING_PROOF_CLIP_ID, { attacker: sc.w2, defender: sc.w1 });
+            sc.moveRuntime.seek(window.__PROOF.handle, at);
+            // read() labels by object (atk=w1, def=w2), but w2 is the BOUND
+            // attacker here — so the bound defender is read.atk. Normalise by
+            // the bound attacker's facing and scale to get authored rig units.
+            const read = window.__PROOF.read();
+            return { separation: (read.atk.x - read.def.x) / (sc.w2.s * sc.w2.facing) };
+        }, [gap, constants.CONTACT_AT]);
+        reversed.add(frame.separation.toFixed(9));
+    }
+    check('role reversal converges on the same authored tableau', reversed.size === 1 && Math.abs(Number([...reversed][0]) - constants.SEPARATION.contact) < 1e-9,
+        `${reversed.size} value(s): ${[...reversed].join(', ')}; authored ${constants.SEPARATION.contact}`);
+}
 
 // ── 1. Transform actually reaches a real Wrestler ────────────────────────────
 {
@@ -211,7 +299,10 @@ const constants = await h.page.evaluate(() => ({
         const scale = start.staging.scale;
         const expectedAtk = 470 + facing * constants.OFFSETS.attackerContact * scale;
         check(`facing ${facing}: attacker staged along its own facing`, near(contact.atk.x, expectedAtk, 1e-6), `x=${contact.atk.x.toFixed(3)} expected=${expectedAtk.toFixed(3)}`);
-        check(`facing ${facing}: attacker leads the defender`, Math.sign((contact.atk.x - contact.def.x) * facing) === 1, `gap=${(contact.atk.x - contact.def.x).toFixed(3)}`);
+        // A collar tie: the attacker advances INTO the defender, so the defender
+        // stays ahead along the attacker's facing in both facings. A
+        // screen-space offset would put it behind when mirrored.
+        check(`facing ${facing}: defender stays ahead on the attacker facing`, Math.sign((contact.def.x - contact.atk.x) * facing) === 1, `gap=${(contact.def.x - contact.atk.x).toFixed(3)}`);
         check(`facing ${facing}: depth is not mirrored`, contact.def.y > 360, `y=${contact.def.y.toFixed(3)}`);
         geometry[facing] = Math.abs(contact.atk.x - contact.def.x);
     }
@@ -252,6 +343,13 @@ const constants = await h.page.evaluate(() => ({
     const limit = await h.page.evaluate(y => window.__PROOF.boundsAt(y).right, end.atk.y);
     check('staging is clamped inside the ropes', end.atk.x <= limit - 20 + 1e-6 && end.def.x <= limit - 20 + 1e-6,
         `atk=${end.atk.x.toFixed(2)} def=${end.def.x.toFixed(2)} limit=${(limit - 20).toFixed(2)}`);
+    // Ring bounds deliberately OVERRIDE the authored tableau: a clip staged into
+    // the ropes compresses rather than putting a wrestler through the apron.
+    // This is the one place the tableau is not reproduced, and it is intended —
+    // which is why the convergence section above launches well inside the ring.
+    const compressed = Math.abs(end.def.x - end.atk.x) < Math.abs(constants.SEPARATION.settle) - 1;
+    check('at the ropes the tableau compresses rather than breaching the apron', compressed,
+        `separation ${Math.abs(end.def.x - end.atk.x).toFixed(2)} px vs authored ${constants.SEPARATION.settle} rig units`);
 }
 
 // ── 7. Cancellation ──────────────────────────────────────────────────────────

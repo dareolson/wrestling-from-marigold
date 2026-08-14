@@ -10,6 +10,8 @@ import {
     STAGING_PROOF_CONTACT_AT,
     STAGING_PROOF_STEP_AT,
     STAGING_PROOF_OFFSETS,
+    STAGING_PROOF_SEPARATION,
+    STAGING_PROOF_PHASES,
 } from '../src/animation/clips/stagingProof.js';
 import { hammerlockClip } from '../src/animation/clips/hammerlock.js';
 import { jabClip } from '../src/animation/clips/jab.js';
@@ -104,18 +106,118 @@ test('the staging axis comes from the attacker, and falls back predictably', () 
     assert.equal(pickAnchorRole(['thrower', 'victim']), 'thrower');
 });
 
-test('both roles share one captured axis and scale, taken from the anchor', () => {
+test('every staged role shares ONE tableau frame, taken entirely from the anchor', () => {
     const scene = makeScene();
-    // Deliberately different depths: the defender's own perspective scale
-    // differs from the attacker's, and must NOT be used.
+    // Deliberately different positions, depths and facings: none of the
+    // defender's own state may appear anywhere in the resulting frame.
     const atk = makeWrestler(scene, { facing: -1, x: 500, y: 400 });
     const def = makeWrestler(scene, { facing: 1, x: 560, y: 300 });
     const handle = scene.moveRuntime.play(STAGING_PROOF_CLIP_ID, { attacker: atk, defender: def });
+
     assert.equal(handle.staging.anchorRole, 'attacker');
-    assert.equal(handle.staging.facing, -1, 'axis is the attacker facing, not the defender');
-    assert.equal(handle.staging.roles.defender.facing, -1);
+    assert.deepEqual(
+        { ...handle.staging.roles.defender, role: undefined },
+        { ...handle.staging.roles.attacker, role: undefined },
+        'both roles resolve against an identical frame',
+    );
+    assert.equal(handle.staging.roles.defender.originX, 500, 'origin is the attacker position, not the defender');
+    assert.equal(handle.staging.roles.defender.originY, 400);
+    assert.equal(handle.staging.roles.defender.facing, -1, 'axis is the attacker facing, not the defender');
     assert.equal(handle.staging.roles.defender.scale, perspectiveScale(400), 'defender inherits the attacker scale');
     assert.notEqual(perspectiveScale(300), perspectiveScale(400), 'the two depths really do scale differently');
+});
+
+// ── The authored tableau is independent of trigger distance ───────────────────
+//
+// This is the property the first version of this contract did NOT have. With a
+// per-role origin, final separation was `authored separation + whatever gap the
+// bodies happened to have when the move fired`, so the geometry composed in the
+// editor was never actually reproduced in the ring. The original proof started
+// both actors at the same x, which hid it exactly.
+
+const TRIGGER_DISTANCES = [-90, -12, 0, 35, 70, 140, 240];
+
+function separationAt(scene, atk, def, time, { atkX, defX, facing = 1, y = 360 }) {
+    Object.assign(atk, { x: atkX, y, facing });
+    Object.assign(def, { x: defX, y, facing: -facing });
+    const handle = scene.moveRuntime.play(STAGING_PROOF_CLIP_ID, { attacker: atk, defender: def });
+    scene.moveRuntime.seek(handle, time);
+    const separation = (def.x - atk.x) / perspectiveScale(y);
+    scene.moveRuntime.cancel(handle);
+    return separation;
+}
+
+for (const [phase, time] of Object.entries(STAGING_PROOF_PHASES)) {
+    test(`authored ${phase} separation is reproduced from every trigger distance`, () => {
+        const expected = STAGING_PROOF_SEPARATION[phase];
+        for (const gap of TRIGGER_DISTANCES) {
+            const scene = makeScene();
+            const { atk, def } = pair(scene);
+            const measured = separationAt(scene, atk, def, time, { atkX: 470, defX: 470 + gap });
+            assert.ok(Math.abs(measured - expected) < 1e-9,
+                `launch gap ${gap}px gave ${measured.toFixed(9)} rig units, authored ${expected}`);
+        }
+    });
+}
+
+test('trigger distance cannot influence either actor\'s absolute placement', () => {
+    const placements = new Set();
+    for (const gap of TRIGGER_DISTANCES) {
+        const scene = makeScene();
+        const { atk, def } = pair(scene);
+        Object.assign(atk, { x: 470, y: 360, facing: 1 });
+        Object.assign(def, { x: 470 + gap, y: 360, facing: -1 });
+        scene.moveRuntime.play(STAGING_PROOF_CLIP_ID, { attacker: atk, defender: def });
+        advance(scene.moveRuntime, STAGING_PROOF_CONTACT_AT);
+        placements.add(`${atk.x.toFixed(9)}|${atk.y.toFixed(9)}|${def.x.toFixed(9)}|${def.y.toFixed(9)}`);
+    }
+    assert.equal(placements.size, 1, `expected one tableau, got ${[...placements].join(' / ')}`);
+});
+
+test('the tableau converges from every trigger distance in both facings', () => {
+    for (const facing of [1, -1]) {
+        const measured = new Set();
+        for (const gap of TRIGGER_DISTANCES) {
+            const scene = makeScene();
+            const { atk, def } = pair(scene, { facing });
+            const separation = separationAt(scene, atk, def, STAGING_PROOF_CONTACT_AT, { atkX: 470, defX: 470 + gap, facing });
+            measured.add(separation.toFixed(9));
+        }
+        assert.equal(measured.size, 1, `facing ${facing} did not converge: ${[...measured].join(', ')}`);
+        // And the mirrored tableau is the same tableau, negated.
+        const separation = Number([...measured][0]);
+        assert.ok(Math.abs(Math.abs(separation) - STAGING_PROOF_SEPARATION.contact) < 1e-9,
+            `facing ${facing} separation ${separation} does not match the authored ${STAGING_PROOF_SEPARATION.contact}`);
+        assert.equal(Math.sign(separation), facing, 'the defender stays ahead on the attacker facing');
+    }
+});
+
+test('role reversal reproduces the same tableau regardless of trigger distance', () => {
+    const measured = new Set();
+    for (const gap of TRIGGER_DISTANCES) {
+        const scene = makeScene();
+        const { atk, def } = pair(scene);
+        // `def` is bound as the attacker: the tableau frames on IT.
+        Object.assign(def, { x: 470, y: 360, facing: 1 });
+        Object.assign(atk, { x: 470 + gap, y: 360, facing: -1 });
+        const handle = scene.moveRuntime.play(STAGING_PROOF_CLIP_ID, { attacker: def, defender: atk });
+        scene.moveRuntime.seek(handle, STAGING_PROOF_CONTACT_AT);
+        measured.add(((atk.x - def.x) / perspectiveScale(360)).toFixed(9));
+    }
+    assert.equal(measured.size, 1, `role-reversed tableau did not converge: ${[...measured].join(', ')}`);
+    assert.equal(Number([...measured][0]), STAGING_PROOF_SEPARATION.contact);
+});
+
+test('the entry frame places the pair at the authored tie-up distance, not on top of each other', () => {
+    const scene = makeScene();
+    const { atk, def } = pair(scene);
+    Object.assign(atk, { x: 470, y: 360, facing: 1 });
+    Object.assign(def, { x: 470, y: 360, facing: -1 });
+    scene.moveRuntime.play(STAGING_PROOF_CLIP_ID, { attacker: atk, defender: def });
+    // A shared origin means an actor authored at x:0 would land exactly on the
+    // anchor. The proof clip authors a real entry separation instead.
+    assert.ok(STAGING_PROOF_SEPARATION.entry > 20, 'the clip authors a usable tie-up distance');
+    assert.ok(Math.abs((def.x - atk.x) / perspectiveScale(360) - STAGING_PROOF_SEPARATION.entry) < 1e-9);
 });
 
 // ── Facing, roles, and rigid mirroring ────────────────────────────────────────
@@ -132,10 +234,11 @@ test('staging mirrors as one rigid tableau in both facings', () => {
         // Absolute placement follows facing...
         assert.ok(Math.abs(atk.x - (470 + facing * STAGING_PROOF_OFFSETS.attackerContact * scale)) < 1e-6);
         assert.ok(Math.abs(def.x - (470 + facing * STAGING_PROOF_OFFSETS.defenderContact * scale)) < 1e-6);
-        // ...and the attacker is always AHEAD of the defender along its own
-        // facing, in both facings. This is the property a screen-space offset
-        // would break.
-        assert.equal(Math.sign((atk.x - def.x) * facing), 1, `attacker leads in facing ${facing}`);
+        // ...and the defender is always AHEAD of the attacker along the
+        // attacker's own facing (a collar tie: the attacker advances into the
+        // defender), in both facings. This is the property a screen-space
+        // offset would break — it would put the defender behind when mirrored.
+        assert.equal(Math.sign((def.x - atk.x) * facing), 1, `defender stays ahead in facing ${facing}`);
         geometry[facing] = Math.abs(atk.x - def.x);
     }
     assert.ok(Math.abs(geometry[1] - geometry[-1]) < 1e-9, 'the pair keeps identical separation when mirrored');

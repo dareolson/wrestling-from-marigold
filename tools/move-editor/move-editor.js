@@ -6,20 +6,41 @@ import { createReferenceRigSkeleton, REFERENCE_RIG_ID } from '/src/rig/reference
 import { certifyPose, measureSample } from '/src/rig/certification.js';
 import {
     CONTACT_SOURCES, CONTACT_TARGETS, EASES, POSE_CHANNELS, ROLES, addContact,
-    addEvent, basePose, clipReadiness, contactPartner, createDraft,
+    addEvent, basePose, clipReadiness, contactPartner, createPairedDraft,
     draftValidation, exportModule, insertKeyframe, normalizeDraft,
     releaseContact, removeKeyframe, sampleDraft, variantChoices,
 } from './model.js';
+import { pickAnchorRole } from '/src/animation/clipStaging.js';
 
 const CHARACTERS = { george, thesz };
-const ROLE_BASE = { attacker: { x: 355, y: 555 }, defender: { x: 665, y: 555 } };
+
+// ONE shared tableau origin for every role — the editor's copy of the runtime's
+// staging frame (src/animation/clipStaging.js). It used to be a base position
+// PER ROLE (attacker x=355, defender x=665), which meant the preview and the
+// runtime disagreed about what an authored transform MEANS: a draft with both
+// roles at x:0 read as a 254-rig-unit tie-up on screen and staged the two
+// wrestlers on top of each other in the ring. Under one origin, the offsets an
+// author composes here are the offsets the runtime places the actors at, and
+// the readiness report's entry tableau describes what is actually on screen.
+const TABLEAU_ORIGIN = { x: 430, y: 555 };
 const SCALE = 1.22;
+
+// The role whose facing defines the staging axis, chosen by the SAME rule the
+// runtime uses so a tableau mirrors here exactly as it does in the ring.
+const ANCHOR_ROLE = pickAnchorRole(ROLES);
+const stagingFacing = () => (actors[ANCHOR_ROLE]?.facing ?? 1) >= 0 ? 1 : -1;
+
+// Screen delta → authored rig units, along the staging axis. Every gesture that
+// moves an actor goes through this, so none of them can quietly author a
+// screen-space offset that reads backwards when the tableau is mirrored.
+const toRigUnitsX = dx => dx / (SCALE * stagingFacing());
+const toRigUnitsY = dy => dy / SCALE;
 const $ = id => document.getElementById(id);
 const clone = value => JSON.parse(JSON.stringify(value));
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const round = value => Math.round(value * 1000) / 1000;
 
-let draft = createDraft();
+let draft = createPairedDraft();
 let selectedRole = 'attacker';
 let selectedKey = 0;
 let selectedEvent = -1;
@@ -62,8 +83,8 @@ const POSE_UI = {
 function actorRoot(role) {
     const actor = actors[role];
     return {
-        x: ROLE_BASE[role].x + (actor.transform.x ?? 0) * SCALE,
-        y: ROLE_BASE[role].y + (actor.transform.y ?? 0) * SCALE,
+        x: TABLEAU_ORIGIN.x + stagingFacing() * (actor.transform.x ?? 0) * SCALE,
+        y: TABLEAU_ORIGIN.y + (actor.transform.y ?? 0) * SCALE,
     };
 }
 
@@ -507,8 +528,8 @@ function snapContact() {
     const distance = Math.max(0.001, Math.hypot(dx, dy));
     const wanted = clamp(distance, Math.abs(upper - lower) + 2, upper + lower - 2);
     if (Math.abs(wanted - distance) > 0.01) {
-        sourceActor.transform.x += (target.x - dx / distance * wanted - proximal.x) / SCALE;
-        sourceActor.transform.y += (target.y - dy / distance * wanted - proximal.y) / SCALE;
+        sourceActor.transform.x += toRigUnitsX(target.x - dx / distance * wanted - proximal.x);
+        sourceActor.transform.y += toRigUnitsY(target.y - dy / distance * wanted - proximal.y);
         renderActor(role);
         points = sourceActor.skeleton.jointAttachmentPoints;
         proximal = points[proximalName];
@@ -521,8 +542,8 @@ function snapContact() {
         renderActor(role);
     }
     let landed = sourceActor.skeleton.jointAttachmentPoints[sourceName];
-    sourceActor.transform.x += (target.x - landed.x) / SCALE;
-    sourceActor.transform.y += (target.y - landed.y) / SCALE;
+    sourceActor.transform.x += toRigUnitsX(target.x - landed.x);
+    sourceActor.transform.y += toRigUnitsY(target.y - landed.y);
     renderActor(role);
     landed = sourceActor.skeleton.jointAttachmentPoints[sourceName];
     const gap = Math.hypot(landed.x - target.x, landed.y - target.y);
@@ -556,8 +577,8 @@ function rebuildHandles() {
         }
         makeHandle(role, 'root', role === 'attacker' ? 0x74ec8b : 0xf0788a, target => {
             const root = actorRoot(role);
-            actors[role].transform.x += (target.x - root.x) / SCALE;
-            actors[role].transform.y += (target.y - root.y) / SCALE;
+            actors[role].transform.x += toRigUnitsX(target.x - root.x);
+            actors[role].transform.y += toRigUnitsY(target.y - root.y);
             syncControls();
         });
     }
@@ -663,6 +684,12 @@ function installUI() {
         exportModule: () => exportModule(draft),
         readiness: runReadiness,
         SCALE,
+        // The preview's staging frame, published so a test can check it against
+        // src/animation/clipStaging.js's resolver instead of restating the math.
+        actorRoot,
+        TABLEAU_ORIGIN,
+        ANCHOR_ROLE,
+        stagingFacing,
     };
 }
 

@@ -26,6 +26,60 @@ try {
         throw new Error('editor did not create synchronized attacker/defender tracks');
     }
 
+    // ── Shared tableau origin ────────────────────────────────────────────────
+    // The preview used to place each role from its OWN base position, so a draft
+    // with both roles at transform.x = 0 read as a wide tie-up on screen and
+    // staged the two wrestlers on top of each other in the ring. The preview must
+    // resolve staging through the SAME function the runtime does.
+    const staging = await page.evaluate(async () => {
+        const editor = window.__MOVE_EDITOR;
+        const { stagedWorldPoint } = await import('/src/animation/clipStaging.js');
+        const model = await import('/tools/move-editor/model.js');
+        const frame = () => ({
+            originX: editor.TABLEAU_ORIGIN.x,
+            originY: editor.TABLEAU_ORIGIN.y,
+            facing: editor.stagingFacing(),
+            scale: editor.SCALE,
+        });
+        const compare = () => Object.fromEntries(['attacker', 'defender'].map(role => {
+            const root = editor.actorRoot(role);
+            const runtime = stagedWorldPoint(frame(), editor.actors[role].transform);
+            return [role, { root, runtime, agree: Math.hypot(root.x - runtime.x, root.y - runtime.y) }];
+        }));
+        const facingRight = compare();
+        editor.actors[editor.ANCHOR_ROLE].facing = -1;
+        const facingLeft = compare();
+        editor.actors[editor.ANCHOR_ROLE].facing = 1;
+        return {
+            anchorRole: editor.ANCHOR_ROLE,
+            entrySeparation: model.DEFAULT_ENTRY_SEPARATION,
+            defenderEntryX: editor.draft.tracks.defender.keyframes[0].transform.x,
+            scale: editor.SCALE,
+            facingRight,
+            facingLeft,
+        };
+    });
+    for (const [facing, frames] of [['+1', staging.facingRight], ['-1', staging.facingLeft]]) {
+        for (const [role, entry] of Object.entries(frames)) {
+            if (entry.agree > 1e-9) {
+                throw new Error(`editor preview places ${role} at ${JSON.stringify(entry.root)} but the runtime staging resolver says ${JSON.stringify(entry.runtime)} (facing ${facing})`);
+            }
+        }
+    }
+    if (staging.defenderEntryX !== staging.entrySeparation) {
+        throw new Error(`a fresh paired draft must open at the real tie-up separation (${staging.entrySeparation}), got ${staging.defenderEntryX}`);
+    }
+    {
+        const right = staging.facingRight.defender.root.x - staging.facingRight.attacker.root.x;
+        const left = staging.facingLeft.defender.root.x - staging.facingLeft.attacker.root.x;
+        if (Math.abs(Math.abs(right) - Math.abs(left)) > 1e-9 || Math.sign(right) === Math.sign(left)) {
+            throw new Error(`the tableau must mirror rigidly about the anchor facing: +1 gap ${right}, -1 gap ${left}`);
+        }
+        if (Math.abs(right - staging.entrySeparation * staging.scale) > 1e-9) {
+            throw new Error(`on-screen separation ${right} does not match the authored ${staging.entrySeparation} rig units at scale ${staging.scale}`);
+        }
+    }
+
     const canvas = await page.locator('#stage canvas').boundingBox();
     const internal = await page.locator('#stage canvas').evaluate(node => ({ width: node.width, height: node.height }));
     const screen = point => ({

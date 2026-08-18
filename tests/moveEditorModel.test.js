@@ -206,6 +206,22 @@ test('the entry tableau reports where the runtime will place each staged role', 
     assert.deepEqual(report.entryTableau, { attacker: { x: 0, y: 0 }, defender: { x: 42, y: 0 } });
 });
 
+test('a fresh paired draft opens at the real tie-up separation, on ONE shared origin', () => {
+    const draft = model.createPairedDraft('tie_up', 1);
+    const report = model.clipReadiness(draft);
+    // The anchor stays at the origin and the partner is offset from IT — not
+    // from a base position of its own. This is the contract the editor preview
+    // used to contradict: with per-role bases, x:0/x:0 looked like a tie-up on
+    // screen and staged both wrestlers on the same point in the ring.
+    assert.deepEqual(report.entryTableau, {
+        attacker: { x: 0, y: 0 },
+        defender: { x: model.DEFAULT_ENTRY_SEPARATION, y: 0 },
+    });
+    // And it is a real separation, so the degenerate-entry warning is silent.
+    assert.ok(!report.warnings.some(warning => /same point/.test(warning)), report.warnings.join('; '));
+    assert.equal(report.ok, true, report.blocking.join('; '));
+});
+
 test('two actors entering at the same point are flagged, not staged on top of each other', () => {
     // A fresh draft starts every role at x:0 — under a shared origin that means
     // both wrestlers land on the anchor, which is easy to author by accident.

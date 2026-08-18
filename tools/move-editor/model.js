@@ -60,6 +60,36 @@ export function basePose() {
     };
 }
 
+// The separation a fresh PAIRED draft opens with, in rig units.
+//
+// Not an arbitrary "looks about right" number: Arena._tickLockup holds a tie-up
+// at a gap of 100*s, and the hammerlock — the only paired move in the game —
+// can only be triggered from inside that lockup. So 100 rig units IS the entry
+// geometry a paired move is actually committed at, and a draft that opens there
+// already stands where the runtime will PLACE the actors at t=0 (see
+// src/animation/clipStaging.js's shared-origin contract).
+//
+// createDraft itself deliberately does NOT apply this: a bare draft starts both
+// roles at x:0, which is the degenerate same-point case clipReadiness warns
+// about, and that warning has to keep firing for an author who never separates
+// their actors.
+export const DEFAULT_ENTRY_SEPARATION = 100;
+
+/**
+ * A fresh draft whose non-anchor role already stands at a real tie-up distance
+ * from the anchor. This is what the move editor opens with, so the very first
+ * thing an author sees is a tableau the runtime can reproduce.
+ */
+export function createPairedDraft(id = 'untitled_move', duration = 1.2, separation = DEFAULT_ENTRY_SEPARATION) {
+    const draft = createDraft(id, duration);
+    const anchor = pickAnchorRole(ROLES);
+    for (const role of ROLES) {
+        if (role === anchor) continue;
+        for (const frame of draft.tracks[role].keyframes) frame.transform = { x: separation, y: 0 };
+    }
+    return draft;
+}
+
 export function createDraft(id = 'untitled_move', duration = 1.2) {
     const pose = basePose();
     return {

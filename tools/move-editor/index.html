@@ -49,6 +49,8 @@
     <label>Move <input id="moveId" value="untitled_move" size="18" /></label>
     <label>Duration <input id="duration" type="number" value="1.2" min="0.05" step="0.05" style="width:70px" />s</label>
     <select id="draftLibrary" title="Open a draft committed beside its clip"></select>
+    <button id="undoBtn" title="Undo (⌘Z / Ctrl+Z)">↶</button>
+    <button id="redoBtn" title="Redo (⇧⌘Z / Ctrl+Y)">↷</button>
     <button id="importBtn">Import</button>
     <button id="exportBtn">Export clip</button>
   </header>
@@ -83,6 +85,11 @@
     <section><h2>Event marker</h2><div class="body">
       <div class="row wide"><label>Type</label><input id="eventType" value="impact" /></div>
       <div class="toolbar"><button id="addEventBtn">Add at playhead</button><button id="deleteEventBtn">Delete selected</button></div>
+    </div></section>
+    <section id="recovery" hidden><h2>Recovered draft</h2><div class="body">
+      <p id="recoveryText" class="hint"></p>
+      <div class="toolbar"><button id="restoreDraftBtn">Restore it</button><button id="discardDraftBtn">Discard it</button></div>
+      <p class="hint">Autosave stays off until you choose, so nothing overwrites what is stored.</p>
     </div></section>
     <section><h2>Status</h2><div id="status" class="body hint">Ready.</div></section>
     <section><h2>Live rig check</h2><div id="certification" class="body hint">Waiting for the first rendered frame.</div></section>

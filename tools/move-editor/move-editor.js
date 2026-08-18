@@ -237,8 +237,10 @@ function buildPoseControls() {
         host.append(row);
         row.querySelector('input').addEventListener('input', event => {
             playing = false;
-            actors[selectedRole].pose[channel] = Number(event.target.value);
-            row.querySelector('output').value = Number(event.target.value).toFixed(2);
+            mutate(`${spec.label}`, () => {
+                actors[selectedRole].pose[channel] = Number(event.target.value);
+                row.querySelector('output').value = Number(event.target.value).toFixed(2);
+            }, { coalesce: `pose:${selectedRole}:${channel}` });
         });
     }
     for (const axis of ['x', 'y']) {
@@ -250,8 +252,10 @@ function buildPoseControls() {
         host.append(row);
         row.querySelector('input').addEventListener('input', event => {
             playing = false;
-            actors[selectedRole].transform[axis] = Number(event.target.value);
-            row.querySelector('output').value = event.target.value;
+            mutate(`actor ${axis.toUpperCase()}`, () => {
+                actors[selectedRole].transform[axis] = Number(event.target.value);
+                row.querySelector('output').value = event.target.value;
+            }, { coalesce: `transform:${selectedRole}:${axis}` });
         });
     }
 }
@@ -283,8 +287,10 @@ function buildVariantControls() {
         const options = choices.map(choice => `<option${(actor.parts[slot] ?? 'base') === choice ? ' selected' : ''}>${choice}</option>`).join('');
         row.innerHTML = `<label>${label}</label><select>${options}</select>`;
         row.querySelector('select').addEventListener('change', event => {
-            if (event.target.value === 'base') delete actor.parts[slot];
-            else actor.parts[slot] = event.target.value;
+            mutate(`${label} variant`, () => {
+                if (event.target.value === 'base') delete actor.parts[slot];
+                else actor.parts[slot] = event.target.value;
+            });
         });
         host.append(row);
     }
@@ -292,6 +298,10 @@ function buildVariantControls() {
 }
 
 function capture() {
+    return mutate('capture', captureNow);
+}
+
+function captureNow() {
     const actor = actors[selectedRole];
     selectedKey = insertKeyframe(draft, selectedRole, playhead, {
         ease: $('ease').value,
@@ -495,6 +505,11 @@ function solveTwoBone(root, target, upperLength, lowerLength, bendSign) {
 }
 
 function applyChainDrag(role, visualSide, kind, target) {
+    return mutate(`${role} ${visualSide} ${kind} drag`, () => applyChainDragNow(role, visualSide, kind, target),
+        { coalesce: `chain:${role}:${visualSide}:${kind}` });
+}
+
+function applyChainDragNow(role, visualSide, kind, target) {
     const actor = actors[role];
     const sk = actor.skeleton;
     const side = anatomicalSide(actor, visualSide);
@@ -518,6 +533,10 @@ function applyChainDrag(role, visualSide, kind, target) {
 
 function snapContact() {
     playing = false;
+    return mutate('contact snap', snapContactNow);
+}
+
+function snapContactNow() {
     const role = selectedRole;
     const otherRole = role === 'attacker' ? 'defender' : 'attacker';
     const sourceName = $('contactSource').value;
@@ -554,7 +573,7 @@ function snapContact() {
     // shoulder/hip socket and display-angle biases. A final actor translation
     // removes any residual without detaching or distorting the limb.
     for (let pass = 0; pass < 4; pass++) {
-        applyChainDrag(role, visualSide, kind, target);
+        applyChainDragNow(role, visualSide, kind, target);
         renderActor(role);
     }
     let landed = sourceActor.skeleton.jointAttachmentPoints[sourceName];
@@ -592,10 +611,12 @@ function rebuildHandles() {
             makeHandle(role, `${side}Ankle`, side === 'near' ? 0xffca58 : 0xa77c25, target => applyChainDrag(role, side, 'ankle', target));
         }
         makeHandle(role, 'root', role === 'attacker' ? 0x74ec8b : 0xf0788a, target => {
-            const root = actorRoot(role);
-            actors[role].transform.x += toRigUnitsX(target.x - root.x);
-            actors[role].transform.y += toRigUnitsY(target.y - root.y);
-            syncControls();
+            mutate(`${role} staging drag`, () => {
+                const root = actorRoot(role);
+                actors[role].transform.x += toRigUnitsX(target.x - root.x);
+                actors[role].transform.y += toRigUnitsY(target.y - root.y);
+                syncControls();
+            }, { coalesce: `root:${role}` });
         });
     }
 }
@@ -641,6 +662,188 @@ function buildContactControls() {
     }
 }
 
+// ── Undo / redo ──────────────────────────────────────────────────────────────
+//
+// History is SNAPSHOT-based, not command-based: every entry is the whole
+// authoring state — the draft plus the live actor state that has not been
+// captured into a keyframe yet plus the selection. A command log would have to
+// know how to invert a two-bone IK solve, a contact snap that also moved the
+// actor root, and a duration change that re-clamps every keyframe; a snapshot
+// restores all of it by construction, and "undo leaves a coherent state" stops
+// being something each new gesture has to remember to preserve.
+//
+// The uncaptured actor state is deliberately part of it. Posing an arm and then
+// undoing must put the arm back even though nothing was captured — otherwise
+// undo silently means "undo the last CAPTURE", which is not what an author
+// pressing ⌘Z is asking for.
+const HISTORY_LIMIT = 120;
+const history = { past: [], future: [], gesture: null, gestureAt: 0 };
+
+function snapshot() {
+    return JSON.stringify({
+        draft,
+        actors: Object.fromEntries(ROLES.map(role => [role, {
+            pose: actors[role].pose,
+            transform: actors[role].transform,
+            parts: actors[role].parts,
+            facing: actors[role].facing,
+            character: actors[role].character,
+        }])),
+        selectedRole, selectedKey, selectedEvent, pendingContact, playhead,
+    });
+}
+
+function restore(serialized) {
+    const state = JSON.parse(serialized);
+    draft = state.draft;
+    for (const role of ROLES) {
+        const saved = state.actors[role];
+        // A character change rebuilds a Skeleton, so only do it when it actually
+        // changed — rebuilding on every undo step would thrash the textures.
+        if (actors[role].character !== saved.character) {
+            actors[role].character = saved.character;
+            rebuildActor(role);
+        }
+        Object.assign(actors[role], {
+            pose: saved.pose, transform: saved.transform, parts: saved.parts, facing: saved.facing,
+        });
+    }
+    selectedRole = state.selectedRole;
+    selectedKey = state.selectedKey;
+    selectedEvent = state.selectedEvent;
+    pendingContact = state.pendingContact;
+    playing = false;
+    playhead = state.playhead;
+    $('moveId').value = draft.id;
+    $('duration').value = draft.duration;
+    $('scrubber').max = draft.duration;
+    $('time').max = draft.duration;
+    $('scrubber').value = playhead;
+    $('time').value = playhead.toFixed(3);
+    syncControls();
+    renderTimeline();
+    for (const role of ROLES) renderActor(role);
+    scheduleAutosave();
+}
+
+/**
+ * Run an authoring mutation with an undo point in front of it.
+ *
+ * `coalesce` groups a continuous gesture — a slider being dragged, a limb being
+ * pulled around — into ONE undo step. Without it a single drag would push a
+ * hundred entries and ⌘Z would crawl backwards a pixel at a time.
+ */
+function mutate(label, apply, { coalesce = null } = {}) {
+    const now = performance.now();
+    const continuing = coalesce && history.gesture === coalesce && now - history.gestureAt < 700;
+    if (!continuing) {
+        history.past.push(snapshot());
+        if (history.past.length > HISTORY_LIMIT) history.past.shift();
+        history.future.length = 0;
+    }
+    history.gesture = coalesce;
+    history.gestureAt = now;
+    const result = apply();
+    lastMutation = label;
+    scheduleAutosave();
+    return result;
+}
+
+function undo() {
+    if (!history.past.length) { status('Nothing to undo.'); return; }
+    history.future.push(snapshot());
+    history.gesture = null;
+    restore(history.past.pop());
+    status(`Undid ${lastMutation ?? 'the last change'}. ${history.past.length} step(s) left.`);
+}
+
+function redo() {
+    if (!history.future.length) { status('Nothing to redo.'); return; }
+    history.past.push(snapshot());
+    history.gesture = null;
+    restore(history.future.pop());
+    status(`Redid a change. ${history.future.length} step(s) ahead.`);
+}
+
+// ── Draft autosave and recovery ──────────────────────────────────────────────
+//
+// The editor holds hours of work in a tab. Autosave writes the draft to
+// localStorage under a versioned envelope, and a reload OFFERS it back rather
+// than loading it silently: an author who reopened the tool to start something
+// else must not find themselves editing yesterday's move without being told,
+// and an autosave this build cannot read must not be quietly replaced by an
+// empty one. Autosave is therefore SUSPENDED until the offer is resolved.
+const AUTOSAVE_KEY = 'wfm.move-editor.autosave';
+const AUTOSAVE_DEBOUNCE_MS = 500;
+let autosaveTimer = null;
+let autosaveSuspended = false;
+let lastMutation = null;
+let pendingRecovery = null;
+
+function scheduleAutosave() {
+    if (autosaveSuspended) return;
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(writeAutosave, AUTOSAVE_DEBOUNCE_MS);
+}
+
+function writeAutosave() {
+    // The suspension is enforced HERE, not only in the scheduler: while a
+    // recovery decision is pending, storage holds the only copy of the author's
+    // previous session and no path may overwrite it — including a direct call.
+    if (autosaveSuspended) return;
+    try {
+        // normalizeDraft stamps schema/version, so what lands in storage always
+        // identifies itself — including a draft that arrived unstamped.
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+            savedAt: new Date().toISOString(),
+            draft: normalizeDraft(draft),
+        }));
+    } catch (error) {
+        // A full or disabled storage must not take the editor down, but the
+        // author has to know their work is not being saved.
+        autosaveSuspended = true;
+        status(`Autosave is OFF — ${error.message}. Export before you close the tab.`, true);
+    }
+}
+
+function offerRecovery() {
+    let stored;
+    try {
+        stored = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) ?? 'null');
+    } catch (error) {
+        stored = { corrupt: error.message };
+    }
+    if (!stored) return;
+    const compatibility = stored.corrupt
+        ? { ok: false, reason: `stored draft is unreadable (${stored.corrupt})` }
+        : draftCompatibility(stored.draft);
+    pendingRecovery = { stored, compatibility };
+    // Until the author answers, nothing may overwrite what is in storage —
+    // silently replacing an unreadable or newer draft is how work disappears.
+    autosaveSuspended = true;
+    $('recovery').hidden = false;
+    $('recoveryText').textContent = compatibility.ok
+        ? `Recovered "${stored.draft?.id ?? 'untitled'}" autosaved ${new Date(stored.savedAt).toLocaleString()}.`
+        : `An autosaved draft was found but CANNOT be loaded by this build: ${compatibility.reason}. It is left untouched until you discard it; autosave stays off meanwhile.`;
+    $('recoveryText').classList.toggle('warning', !compatibility.ok);
+    $('restoreDraftBtn').disabled = !compatibility.ok;
+}
+
+function resolveRecovery(action) {
+    if (!pendingRecovery) return;
+    if (action === 'restore') {
+        if (!adoptDraft(pendingRecovery.stored.draft, { label: 'Autosaved draft' })) return;
+        status(`Restored the autosaved draft "${draft.id}".`);
+    } else if (action === 'discard') {
+        localStorage.removeItem(AUTOSAVE_KEY);
+        status('Discarded the autosaved draft. Autosave is on again.');
+    }
+    pendingRecovery = null;
+    autosaveSuspended = false;
+    $('recovery').hidden = true;
+    if (action === 'restore') scheduleAutosave();
+}
+
 // ── Draft library ────────────────────────────────────────────────────────────
 //
 // Drafts committed beside the clips they generate (tools/move-editor/drafts/).
@@ -662,6 +865,10 @@ function adoptDraft(source, { label = 'draft' } = {}) {
         status(`${label} was NOT loaded — ${compatibility.reason}`, true);
         return false;
     }
+    // Undoable: opening the wrong move is exactly the mistake ⌘Z should fix.
+    history.past.push(snapshot());
+    history.future.length = 0;
+    history.gesture = null;
     draft = normalizeDraft(source);
     // The arrangement the executor will build, not the editor's default: a
     // behind-the-back hold previews against a defender turned the attacker's
@@ -677,6 +884,7 @@ function adoptDraft(source, { label = 'draft' } = {}) {
     setPlayhead(0);
     renderTimeline();
     validate();
+    scheduleAutosave();
     return true;
 }
 
@@ -699,23 +907,37 @@ function installUI() {
     buildPoseControls();
     buildContactControls();
     $('role').addEventListener('change', event => { selectedRole = event.target.value; selectedKey = 0; syncControls(); renderTimeline(); });
-    $('character').addEventListener('change', event => { actors[selectedRole].character = event.target.value; rebuildActor(selectedRole); buildVariantControls(); });
+    $('character').addEventListener('change', event => {
+        mutate('preview character', () => {
+            actors[selectedRole].character = event.target.value;
+            rebuildActor(selectedRole);
+            buildVariantControls();
+        });
+    });
     $('facing').addEventListener('change', event => {
+        mutate('facing', () => {
         actors[selectedRole].facing = Number(event.target.value);
         // Persisted on the draft so the arrangement survives save/reload.
         draft.preview.facing[selectedRole] = actors[selectedRole].facing;
         buildVariantControls(); // semantic slots resolve to the other side now
+        });
     });
     $('ease').addEventListener('change', event => {
-        const frame = draft.tracks[selectedRole].keyframes[selectedKey];
-        if (frame) frame.ease = EASES.includes(event.target.value) ? event.target.value : 'linear';
+        mutate('easing', () => {
+            const frame = draft.tracks[selectedRole].keyframes[selectedKey];
+            if (frame) frame.ease = EASES.includes(event.target.value) ? event.target.value : 'linear';
+        });
     });
-    $('moveId').addEventListener('change', event => { draft.id = event.target.value.trim() || 'untitled_move'; validate(); });
+    $('moveId').addEventListener('change', event => {
+        mutate('move id', () => { draft.id = event.target.value.trim() || 'untitled_move'; validate(); });
+    });
     $('duration').addEventListener('change', event => {
-        draft.duration = Math.max(0.05, Number(event.target.value) || 1.2);
-        draft = normalizeDraft(draft);
-        $('scrubber').max = draft.duration; $('time').max = draft.duration;
-        setPlayhead(Math.min(playhead, draft.duration));
+        mutate('duration', () => {
+            draft.duration = Math.max(0.05, Number(event.target.value) || 1.2);
+            draft = normalizeDraft(draft);
+            $('scrubber').max = draft.duration; $('time').max = draft.duration;
+            setPlayhead(Math.min(playhead, draft.duration));
+        });
     });
     $('scrubber').addEventListener('input', event => { playing = false; setPlayhead(event.target.value); });
     $('time').addEventListener('change', event => { playing = false; setPlayhead(event.target.value); });
@@ -724,17 +946,46 @@ function installUI() {
     $('captureBtn').addEventListener('click', capture);
     $('duplicateBtn').addEventListener('click', () => { setPlayhead(Math.min(draft.duration, playhead + 0.1), { sample: false }); capture(); });
     $('deleteBtn').addEventListener('click', () => {
-        if (removeKeyframe(draft, selectedRole, selectedKey)) {
-            selectedKey = Math.max(0, selectedKey - 1); renderTimeline(); loadSample(); validate();
-        } else status('Every role must retain at least one keyframe.', true);
+        mutate('delete keyframe', () => {
+            if (removeKeyframe(draft, selectedRole, selectedKey)) {
+                selectedKey = Math.max(0, selectedKey - 1); renderTimeline(); loadSample(); validate();
+            } else status('Every role must retain at least one keyframe.', true);
+        });
     });
-    $('addEventBtn').addEventListener('click', () => { addEvent(draft, playhead, $('eventType').value.trim()); selectedEvent = draft.events.findIndex(event => event.at === round(playhead)); renderTimeline(); validate(); });
-    $('deleteEventBtn').addEventListener('click', () => { if (selectedEvent >= 0) draft.events.splice(selectedEvent, 1); selectedEvent = -1; renderTimeline(); validate(); });
+    $('addEventBtn').addEventListener('click', () => {
+        mutate('add event', () => {
+            addEvent(draft, playhead, $('eventType').value.trim());
+            selectedEvent = draft.events.findIndex(event => event.at === round(playhead));
+            renderTimeline(); validate();
+        });
+    });
+    $('deleteEventBtn').addEventListener('click', () => {
+        mutate('delete event', () => {
+            if (selectedEvent >= 0) draft.events.splice(selectedEvent, 1);
+            selectedEvent = -1; renderTimeline(); validate();
+        });
+    });
     $('snapContactBtn').addEventListener('click', snapContact);
     $('releaseContactBtn').addEventListener('click', () => {
-        const released = releaseContact(draft, selectedRole, playhead);
-        if (released) status(`Released ${released.role} ${released.source} → ${released.target} at ${released.to.toFixed(3)}s; graded ${released.from.toFixed(3)}–${released.to.toFixed(3)}s.`);
-        else status(`No open ${selectedRole} contact acquired at or before ${playhead.toFixed(3)}s.`, true);
+        mutate('release contact', () => {
+            const released = releaseContact(draft, selectedRole, playhead);
+            if (released) status(`Released ${released.role} ${released.source} → ${released.target} at ${released.to.toFixed(3)}s; graded ${released.from.toFixed(3)}–${released.to.toFixed(3)}s.`);
+            else status(`No open ${selectedRole} contact acquired at or before ${playhead.toFixed(3)}s.`, true);
+            renderTimeline();
+        });
+    });
+    $('undoBtn').addEventListener('click', undo);
+    $('redoBtn').addEventListener('click', redo);
+    $('restoreDraftBtn').addEventListener('click', () => resolveRecovery('restore'));
+    $('discardDraftBtn').addEventListener('click', () => resolveRecovery('discard'));
+    // Conventional shortcuts. Ignored while a text field has focus so typing a
+    // move name cannot be swallowed by the history.
+    window.addEventListener('keydown', event => {
+        const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? '');
+        if (typing || !(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'z' && event.key.toLowerCase() !== 'y') return;
+        event.preventDefault();
+        const wantsRedo = event.key.toLowerCase() === 'y' || event.shiftKey;
+        wantsRedo ? redo() : undo();
     });
     $('readinessBtn').addEventListener('click', runReadiness);
     $('exportBtn').addEventListener('click', () => { if (!validate()) return; $('exportText').value = exportModule(draft); $('exportDialog').showModal(); });
@@ -772,6 +1023,12 @@ function installUI() {
         // The preview's staging frame, published so a test can check it against
         // src/animation/clipStaging.js's resolver instead of restating the math.
         loadLibraryDraft,
+        undo, redo, mutate,
+        history,
+        AUTOSAVE_KEY,
+        offerRecovery,
+        resolveRecovery,
+        writeAutosave,
         DRAFT_LIBRARY,
         actorRoot,
         TABLEAU_ORIGIN,
@@ -800,6 +1057,7 @@ class EditorScene extends Phaser.Scene {
         installUI();
         $('scrubber').max = draft.duration; $('time').max = draft.duration;
         syncControls(); renderTimeline(); loadSample(0); validate();
+        offerRecovery();
     }
     update(_time, delta) {
         if (playing) {

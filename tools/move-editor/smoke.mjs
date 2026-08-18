@@ -372,6 +372,171 @@ try {
         throw new Error(`the hold is not an interval: ${JSON.stringify(hold)}`);
     }
 
+
+    // ── Undo / redo across every kind of authoring mutation ─────────────────
+    // The hammerlock draft is loaded at this point, so these run against a real
+    // paired move rather than an empty one.
+    const undoRedo = await page.evaluate(async () => {
+        const editor = window.__MOVE_EDITOR;
+        const snapshot = () => JSON.stringify({
+            draft: editor.draft,
+            pose: { ...editor.actors.attacker.pose },
+            transform: { ...editor.actors.attacker.transform },
+            parts: { ...editor.actors.attacker.parts },
+            facing: editor.actors.attacker.facing,
+        });
+        const $ = id => document.getElementById(id);
+        // Park the playhead first: moving it re-samples the draft into the live
+        // actors, which is a VIEW change rather than an authoring mutation, so
+        // the baseline has to be taken after it.
+        editor.setPlayhead(0.6);
+        const baseline = snapshot();
+
+        const steps = [];
+        $('pose-lArm').value = 1.11;
+        $('pose-lArm').dispatchEvent(new Event('input', { bubbles: true }));
+        steps.push('pose');
+        $('root-x').value = -42;
+        $('root-x').dispatchEvent(new Event('input', { bubbles: true }));
+        steps.push('staging');
+        $('captureBtn').click();
+        steps.push('keyframe insertion');
+        $('eventType').value = 'proof-marker';
+        $('addEventBtn').click();
+        steps.push('event');
+        $('contactSource').value = 'nearAnkle';
+        $('contactTarget').value = 'nearKnee';
+        $('snapContactBtn').click();
+        steps.push('contact snap');
+        $('captureBtn').click();
+        steps.push('contact capture');
+        $('ease').value = 'step';
+        $('ease').dispatchEvent(new Event('change', { bubbles: true }));
+        steps.push('timing/easing');
+        $('deleteBtn').click();
+        steps.push('keyframe deletion');
+
+        const afterAll = snapshot();
+        const changed = afterAll !== baseline;
+
+        // Undo everything, one step at a time, and check the state is coherent
+        // at every stop — not merely that the last one lands back at baseline.
+        const incoherent = [];
+        for (let i = 0; i < steps.length; i++) {
+            editor.undo();
+            const state = JSON.parse(snapshot());
+            for (const role of ['attacker', 'defender']) {
+                const frames = state.draft.tracks[role]?.keyframes ?? [];
+                if (!frames.length) incoherent.push(`${role} lost every keyframe after undo ${i + 1}`);
+                if (frames.some(frame => !Number.isFinite(frame.at))) incoherent.push(`${role} has a non-finite keyframe time after undo ${i + 1}`);
+            }
+            if (!Number.isFinite(state.draft.duration)) incoherent.push(`duration is not finite after undo ${i + 1}`);
+        }
+        const afterUndoAll = snapshot();
+        for (let i = 0; i < steps.length; i++) editor.redo();
+        const afterRedoAll = snapshot();
+
+        // And the keyboard path, which is what an author actually uses.
+        $('pose-rArm').value = 0.99;
+        $('pose-rArm').dispatchEvent(new Event('input', { bubbles: true }));
+        const beforeKey = snapshot();
+        document.activeElement?.blur?.();
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+        const afterKeyUndo = snapshot();
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, shiftKey: true, bubbles: true }));
+        const afterKeyRedo = snapshot();
+
+        return {
+            steps, changed, incoherent,
+            restoredBaseline: afterUndoAll === baseline,
+            restoredEnd: afterRedoAll === afterAll,
+            keyUndoWorked: afterKeyUndo !== beforeKey,
+            keyRedoWorked: afterKeyRedo === beforeKey,
+        };
+    });
+    if (!undoRedo.changed) throw new Error('the authoring mutations changed nothing — the undo test would be vacuous');
+    if (undoRedo.incoherent.length) throw new Error(`undo left an incoherent state: ${undoRedo.incoherent.join(' | ')}`);
+    if (!undoRedo.restoredBaseline) throw new Error(`undoing ${undoRedo.steps.length} mutations did not restore the full authoring state`);
+    if (!undoRedo.restoredEnd) throw new Error('redo did not restore the state undo removed');
+    if (!undoRedo.keyUndoWorked) throw new Error('Ctrl+Z did not undo');
+    if (!undoRedo.keyRedoWorked) throw new Error('Ctrl+Shift+Z did not redo');
+
+    // ── Autosave and recovery ───────────────────────────────────────────────
+    const autosaved = await page.evaluate(async () => {
+        const editor = window.__MOVE_EDITOR;
+        editor.writeAutosave();
+        const raw = JSON.parse(localStorage.getItem(editor.AUTOSAVE_KEY));
+        const model = await import('/tools/move-editor/model.js');
+        return {
+            key: editor.AUTOSAVE_KEY,
+            id: raw?.draft?.id,
+            schema: raw?.draft?.schema,
+            version: raw?.draft?.version,
+            savedAt: raw?.savedAt,
+            expectedSchema: model.DRAFT_SCHEMA,
+            expectedVersion: model.DRAFT_VERSION,
+            hasContacts: Array.isArray(raw?.draft?.contacts),
+        };
+    });
+    if (autosaved.schema !== autosaved.expectedSchema || autosaved.version !== autosaved.expectedVersion) {
+        throw new Error(`autosave is not schema-stamped: ${JSON.stringify(autosaved)}`);
+    }
+    if (!autosaved.savedAt || !autosaved.hasContacts) {
+        throw new Error(`autosave dropped authoring metadata: ${JSON.stringify(autosaved)}`);
+    }
+
+    // A reload must OFFER the draft back, not load it silently.
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForFunction(() => window.__MOVE_EDITOR?.actors?.attacker?.skeleton);
+    await page.waitForTimeout(300);
+    const recovery = await page.evaluate(() => ({
+        visible: !document.getElementById('recovery').hidden,
+        text: document.getElementById('recoveryText').textContent,
+        restoreEnabled: !document.getElementById('restoreDraftBtn').disabled,
+        loadedId: window.__MOVE_EDITOR.draft.id,
+    }));
+    if (!recovery.visible) throw new Error('a recoverable autosave was not offered after reload');
+    if (recovery.loadedId === autosaved.id && autosaved.id !== 'untitled_move') {
+        throw new Error('the autosaved draft was loaded silently instead of being offered');
+    }
+    if (!recovery.restoreEnabled) throw new Error(`a compatible autosave was not restorable: ${recovery.text}`);
+    const restored = await page.evaluate(() => {
+        document.getElementById('restoreDraftBtn').click();
+        return { id: window.__MOVE_EDITOR.draft.id, hidden: document.getElementById('recovery').hidden };
+    });
+    if (restored.id !== autosaved.id) throw new Error(`restore loaded "${restored.id}" instead of "${autosaved.id}"`);
+    if (!restored.hidden) throw new Error('the recovery prompt stayed up after restoring');
+
+    // An INCOMPATIBLE autosave must be refused with a reason, must not be
+    // restorable, and must NOT be overwritten while the author decides.
+    const incompatible = await page.evaluate(async () => {
+        const editor = window.__MOVE_EDITOR;
+        const poisoned = JSON.stringify({ savedAt: new Date().toISOString(), draft: { schema: 'wfm.move-draft', version: 9999, id: 'from_the_future', tracks: {} } });
+        localStorage.setItem(editor.AUTOSAVE_KEY, poisoned);
+        editor.offerRecovery();
+        const offered = {
+            visible: !document.getElementById('recovery').hidden,
+            text: document.getElementById('recoveryText').textContent,
+            restoreEnabled: !document.getElementById('restoreDraftBtn').disabled,
+        };
+        // Author keeps editing while the prompt is up — storage must not move.
+        editor.mutate('probe', () => { editor.draft.id = 'scribble'; });
+        editor.writeAutosave();
+        const afterEditing = localStorage.getItem(editor.AUTOSAVE_KEY);
+        // Explicitly discarding is the only thing that clears it.
+        editor.resolveRecovery('discard');
+        editor.writeAutosave();
+        const afterDiscard = JSON.parse(localStorage.getItem(editor.AUTOSAVE_KEY));
+        return { offered, preserved: afterEditing === poisoned, afterDiscardId: afterDiscard?.draft?.id };
+    });
+    if (!incompatible.offered.visible) throw new Error('an incompatible autosave was not reported at all');
+    if (incompatible.offered.restoreEnabled) throw new Error('an incompatible autosave was offered as restorable');
+    if (!/9999|newer editor/.test(incompatible.offered.text)) {
+        throw new Error(`the refusal did not name the reason: ${incompatible.offered.text}`);
+    }
+    if (!incompatible.preserved) throw new Error('an incompatible autosave was silently overwritten while the author was deciding');
+    if (incompatible.afterDiscardId !== 'scribble') throw new Error('autosave did not resume after an explicit discard');
+
     // The export dialog was already closed above, before the readiness sweep.
     if (process.env.SCREENSHOT) {
         await page.screenshot({ path: process.env.SCREENSHOT, fullPage: true });
@@ -381,6 +546,8 @@ try {
     console.log(`PASS move editor connected drag, two-role timeline, capture, marker, export, and readiness sweep (${readiness.report.sampledTimes} frames, contact worst gap ${contact.maxGap.toFixed(2)} px at ${contact.worstAt.toFixed(3)}s)`);
     console.log(`     contact contract: ${contactOptions.sourceUI.length} sources / ${contactOptions.targetUI.length} targets built from the model; bad joint refused and blocked readiness`);
     console.log(`     hammerlock draft: loaded from the library, READY, staged roles [${hammerlock.report.stagedRoles}], entry tableau ${JSON.stringify(hammerlock.report.entryTableau)}`);
+    console.log(`     undo/redo: ${undoRedo.steps.length} mutation kinds (${undoRedo.steps.join(', ')}) undone and redone to an identical full authoring state, keyboard included`);
+    console.log(`     autosave: schema-stamped, offered (never silently loaded) after reload, restored on request; an incompatible draft is refused with a reason and left untouched until discarded`);
     console.log(`     hammerlock export matches the shipped clip across 241 sampled frames; declared hold ${hold.role} ${hold.source}→${hold.target} ${hold.from}–${hold.to}s measured over ${hold.measured} live frames, worst gap ${hold.maxGap.toFixed(2)} px at ${hold.worstAt.toFixed(3)}s`);
 } finally {
     await browser.close();

@@ -1703,7 +1703,7 @@ export default class Skeleton {
     // + rotates toward facing); `hip` is hip height above the mat in unscaled
     // px; `torso` is the hip→shoulder direction (π/2 = lying toward facing,
     // π = vertical). Mirroring for facing < 0 is a sign flip on every angle.
-    // The flat, supine rest pose: hips on the mat, torso barely off it, arms
+    // The flat, PRONE rest pose: hips on the mat, torso barely off it, arms
     // at the sides, legs away from facing.
     //
     // Shared BY REFERENCE with GETUP_POSES[0] and with updateGrounded below,
@@ -1752,7 +1752,16 @@ export default class Skeleton {
         { t: 0.34, hip: 14, torso: 2.50, farThigh: -1.42, farShin: -1.62, nearThigh: -1.34, nearShin: -1.56, farArm: -0.38, farFore: -0.55, nearArm: -0.30, nearFore: -0.48 },
         //         all fours — thighs vertical, shins flat behind, arms straight down, torso sloping up to the shoulders
         { t: 0.72, hip: 42, torso: 1.92, farThigh:  0.06, farShin: -1.46, nearThigh: -0.06, nearShin: -1.52, farArm:  0.06, farFore:  0.02, nearArm: -0.06, nearFore: -0.02 },
-        //         standing — matches updateUpright's rest geometry closely enough to hand off
+        //         standing — an APPROXIMATION of updateUpright's rest geometry,
+        //         with a known handoff gap. Measured (verification audit,
+        //         2026-08-17, max per-joint jump from t=1.00 to the first
+        //         upright frame): Lou/Thesz 35.19px at nearAnkle, George
+        //         55.79px at nearWrist. That is a visible pop at the moment
+        //         the rise hands off to updateUpright, NOT reflection residue
+        //         — it survives the removal of the on-back mirror and is a
+        //         pose/render-path mismatch between these values and
+        //         updateUpright's rest stance. Do not describe this as a
+        //         clean handoff; see RIG_AND_MOVE_PIPELINE.md.
         { t: 1.00, hip: 88, torso: Math.PI, farThigh: 0, farShin: 0, nearThigh: 0, nearShin: 0, farArm: 0.10, farFore: 0.16, nearArm: 0.06, nearFore: 0.12 },
     ];
 

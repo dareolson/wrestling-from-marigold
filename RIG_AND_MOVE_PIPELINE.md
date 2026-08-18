@@ -281,13 +281,32 @@ through `Skeleton.updateGrounded`, so they carry real joints, bindings and
 parts and are certified like any other entry.
 
 Lying flat and the get-up's first keyframe are the **same frozen pose object**
-(`Skeleton.GROUNDED_SUPINE`, shared by reference with `GETUP_POSES[0]`), which
-makes two guarantees structural rather than tuned:
+(`Skeleton.GROUNDED_FLAT`, shared by reference with `GETUP_POSES[0]`). That
+shared pose is **prone (face down)**, not supine. This makes two guarantees
+structural rather than tuned:
 
-- `down` → `gettingUp` is now exactly 0px. It was previously a full
-  representation change, from primitives to a skeleton.
+- `down` → `gettingUp` is now exactly 0px (re-measured 2026-08-17). It was
+  previously a full representation change, from primitives to a skeleton.
 - Editing the flat pose moves the lying pose and the get-up's opening frame
   together; they cannot drift apart.
+
+The **other** end of the rise is not clean, and the 0px above must not be read
+as covering it. Measured max per-joint jump from `GETUP_POSES` `t = 1.00` to
+the first `updateUpright` frame (verification audit, 2026-08-17):
+
+| character | max joint jump | joint |
+| --- | --- | --- |
+| Lou / Thesz | **35.19 px** | `nearAnkle` |
+| George | **55.79 px** | `nearWrist` |
+
+This is **not reflection residue** — it survives the removal of the on-back
+mirror, and the get-up's own interior is smooth (dense 100-step sweep: median
+per-step 2.36 px Lou / 1.70 px George, worst 5.08 / 3.78 px, and 2.35 / 1.68 px
+across the old `ON_BACK_UNTIL_T` boundary, i.e. indistinguishable from the
+median). It is a genuine pose/render-path mismatch between the final get-up
+keyframe and `updateUpright`'s rest stance: **a visible pop at the hand-off
+that still needs correction.** The keyframe comment in `Skeleton.GETUP_POSES`
+carries the same numbers so the claim cannot drift from the measurement.
 
 Measured cost: the `falling` → `down` boundary moved from 0px to 4.9px
 (1.5px x, 4.6px y). `_drawFalling` collapses its head to exactly the mat line,
@@ -327,6 +346,24 @@ axis.
 **A real supine pose is authored joint angles plus back-facing torso/head art**
 (the partVariants system can already carry the art). That is deliberately a
 separate piece of design work, not a reflection.
+
+### Grounded: open limitations
+
+Four things are open on the grounded path. None is a regression; all are
+honestly reported rather than papered over.
+
+1. **Grounded children do not inherit torso orientation** — see below; the
+   detail is worth keeping because the certifier still cannot see it.
+2. **Get-up → upright handoff pops** — 35.19 px (Lou, `nearAnkle`) / 55.79 px
+   (George, `nearWrist`), measured above. Not reflection residue.
+3. **No supine, bridge or kneeling posture.** `down`, `pinned` and `possum`
+   all render the one shared prone flat pose. `rig:certify` reports these as
+   `postureGap` entries, so the coverage number cannot be read as more than it
+   is. A real supine pose is authored joint angles plus back-facing torso/head
+   art, not a reflection.
+4. **Dropkick extension is a coverage gap** — `Wrestler._drawDropkickFront`
+   draws primitives with the skeleton hidden, so coverage is 16/17 and that
+   state exercises no articulation guarantee at all.
 
 ### Known next: grounded parts do not rotate with the torso
 

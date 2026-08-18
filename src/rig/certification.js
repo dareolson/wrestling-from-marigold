@@ -106,11 +106,13 @@ export function anchorWorldPoint(transform, frac) {
     const { x, y, rotation, originX, originY, displayWidth, displayHeight, flipX, flipY } = transform;
     if (![x, y, rotation, originX, originY, displayWidth, displayHeight].every(isFiniteNumber)) return null;
     if (!isFiniteNumber(frac.u) || !isFiniteNumber(frac.v)) return null;
-    // flipY is the exact vertical twin of flipX and became load-bearing when
-    // grounded states started rendering on the wrestler's back
-    // (Skeleton._mirrorGroundedOnBack). Omitting it here made every anchor on
-    // a mirrored part resolve to the wrong texel and reported the whole
-    // get-up as a proximal-anchor-error.
+    // flipY is the exact vertical twin of flipX. Nothing in the rig sets it
+    // any more — the grounded on-back reflection that did was removed
+    // (2026-08-17) — and certifyOrientation now FAILS any part that has it.
+    // The mirroring stays here regardless: this function must report where a
+    // texel actually landed, including for a part that should not have been
+    // flipped, or the orientation finding would be masked by a phantom
+    // anchor error pointing at the wrong cause.
     const u = flipX ? 1 - frac.u : frac.u;
     const v = flipY ? 1 - frac.v : frac.v;
     const lx = (u - originX) * displayWidth;
@@ -198,6 +200,32 @@ export function findNonFiniteTransforms(sample) {
         if (!isPoint(point)) bad.push(`semanticAnchors.${name}`);
     }
     return bad;
+}
+
+/**
+ * No rendered part may be reflected.
+ *
+ * This exists because of a real defect the rest of this kernel could not see.
+ * The grounded on-back render reflected every assembled part across the mat
+ * axis — negating rotation, setting flipY, inverting originY — and mirrored
+ * jointAttachmentPoints to match. Every anchor therefore still coincided
+ * exactly with its parent joint, so certifyPose reported a clean pass on a
+ * body whose every face, boot, trunk, arm and leg PNG was upside down.
+ *
+ * Anchor coincidence proves parts are CONNECTED. It says nothing about
+ * whether they are the right way up, because a reflection preserves all the
+ * distances this kernel measures. That is the blind spot, and this is the
+ * cheapest exact closure of it: flipY is never legitimate in this rig, so its
+ * presence is by itself a defect. flipX IS legitimate (it is how facing is
+ * mirrored) and is deliberately not checked here.
+ */
+export function findReflectedParts(sample) {
+    const reflected = [];
+    for (const [slot, part] of Object.entries(sample.parts ?? {})) {
+        if (!part?.visible) continue;
+        if (part.flipY) reflected.push(slot);
+    }
+    return reflected;
 }
 
 /** Pelvis layers must bracket the thighs in depth, not sit between them. */
@@ -435,6 +463,9 @@ export function certifyPose(sample, { budget = DEFAULT_BUDGET } = {}) {
     for (const violation of checkDepthOrder(sample)) {
         findings.push({ kind: 'depth-order', detail: `${violation.behind} must render behind ${violation.inFront}`, ...violation });
     }
+    for (const slot of findReflectedParts(sample)) {
+        findings.push({ kind: 'reflected-part', slot, detail: `${slot} renders flipped vertically (upside-down artwork)` });
+    }
     return findings;
 }
 
@@ -461,6 +492,9 @@ export function classifyFinding({ finding, referenceFailed, characterIsCompliant
     if (renderPath === 'unrigged') return 'coverage-gap';
     if (finding.kind === 'chain-unmeasurable') return 'coverage-gap';
     if (finding.kind === 'nonfinite-transport' || finding.kind === 'nonfinite-transform') return 'runtime-transport';
+    // A reflected part is always the render path's doing — no artwork can
+    // cause or fix it, so it must never be attributed to a character's art.
+    if (finding.kind === 'reflected-part') return 'architecture';
     if (finding.kind === 'first-frame-jump' || finding.kind === 'angular-discontinuity') return 'animation-data';
     // A geometry failure ON the reference rig is architectural by
     // construction: its manifest anchors and its ink are generated from each

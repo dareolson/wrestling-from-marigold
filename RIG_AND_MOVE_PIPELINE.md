@@ -298,12 +298,35 @@ rig; it is the next coverage gap after the dropkick.
 `_drawFlat` is retained for the airborne and held paths that still use it
 (`_drawClotheslineFall`, slam/piledriver holds).
 
-Wrestlers land on their backs rather than face-first: `updateGrounded` takes
-`{ onBack: true }`, a render-time reflection (`_mirrorGroundedOnBack`), and the
-get-up stays on the back until `Skeleton.ON_BACK_UNTIL_T` so the turn-over
-lands on the sit-up keyframe. Note `facing` cannot do this — measured on Lou,
-facing +1 and -1 are exact horizontal mirrors of each other and both land
-face-down. That horizontal mirror is the lever a sideways roll will want.
+#### Grounded wrestlers lie PRONE (2026-08-17)
+
+Flat states and the whole get-up render **prone (face down)**. There is no
+supine grounded pose, and nothing should claim otherwise.
+
+An `onBack` render-time reflection (`_mirrorGroundedOnBack`) previously turned
+them face-up, and it was **removed**, not tuned. It reflected every assembled
+part across the mat axis — negating rotation, setting `flipY`, inverting
+`originY` — and mirrored `jointAttachmentPoints`/`semanticAnchors` to match.
+Every anchor therefore still coincided exactly with its parent joint, so the
+certifier reported a clean pass on a body whose every face, boot, trunk, arm
+and leg PNG was **literally upside down**. It reached the shipped game through
+`down`, `pinned` and `possum`, and the early get-up frames.
+
+The lesson generalises: **anchor coincidence proves parts are CONNECTED, not
+that they are the right way up.** A reflection preserves every distance the
+kernel measured. `certification.findReflectedParts` now fails any part
+rendering with `flipY`, attributed `architecture` (no artwork can cause or fix
+it), which reproduces as a hard `rig:certify` failure naming the exact slots
+and states. `flipX` remains legitimate — it is how facing is mirrored.
+
+Note `facing` cannot supply a supine pose either — measured on Lou, facing +1
+and -1 are exact horizontal mirrors of each other and both land face-down. That
+horizontal mirror is the lever a sideways roll will want; it is a different
+axis.
+
+**A real supine pose is authored joint angles plus back-facing torso/head art**
+(the partVariants system can already carry the art). That is deliberately a
+separate piece of design work, not a reflection.
 
 ### Known next: grounded parts do not rotate with the torso
 

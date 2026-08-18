@@ -488,27 +488,17 @@ async function certifyCharacter(page, characterId, referenceFailures) {
                 }
             }
 
-            // Intermediate-frame continuity.
+            // Intermediate-frame continuity, graded across the WHOLE sequence.
             //
-            // The get-up carries ONE authored discontinuity: the turn-over at
-            // Skeleton.ON_BACK_UNTIL_T, where the wrestler stops rendering on
-            // his back. Every joint moves at once there by design, so the
-            // sequence is graded as two segments split at that boundary
-            // rather than exempted wholesale — continuity is still fully
-            // checked on both sides, and only the single deliberate frame
-            // pair is not treated as a defect.
-            const segments = [];
-            const flipIndex = entry.getUp
-                ? plan.findIndex(step => step.t >= Skeleton.ON_BACK_UNTIL_T)
-                : -1;
-            if (flipIndex > 0) {
-                segments.push(samples.slice(0, flipIndex), samples.slice(flipIndex));
-            } else {
-                segments.push(samples);
-            }
-            for (const segment of segments) {
-                for (const finding of certifyMotion(segment).findings) record(entry, facing, finding);
-            }
+            // This used to be split into two segments around the get-up's
+            // turn-over at Skeleton.ON_BACK_UNTIL_T, which was a genuine
+            // authored discontinuity. That turn-over came from the on-back
+            // reflection, which was removed (2026-08-17) because it rendered
+            // every part upside down. With the rise now entirely prone there
+            // is no authored discontinuity left, so the exemption goes with
+            // it and continuity is checked end to end — strictly more than
+            // before.
+            for (const finding of certifyMotion(samples).findings) record(entry, facing, finding);
 
             // Which chains this character simply cannot answer for.
             for (const measurement of measureSample(samples.at(-1))) {

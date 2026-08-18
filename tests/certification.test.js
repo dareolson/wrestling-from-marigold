@@ -13,6 +13,7 @@ import {
     checkDepthOrder,
     classifyFinding,
     findNonFiniteTransforms,
+    findReflectedParts,
     measureChain,
 } from '../src/rig/certification.js';
 import { solveAnchoredAttachment, solveTwoAnchorBinding } from '../src/rig/twoAnchorBinding.js';
@@ -98,10 +99,11 @@ test('an attachment centred on its quad instead of its authored anchor is a meas
     assert.ok(certifyPose(sample(regressed)).some(finding => finding.kind === 'proximal-anchor-error'));
 });
 
-// flipY became load-bearing when grounded states started rendering on the
-// wrestler's back. Before this was handled, every anchor on a mirrored part
-// resolved to the wrong texel and the certifier reported the entire get-up as
-// a proximal-anchor-error.
+// flipY was load-bearing while grounded states rendered on the wrestler's back.
+// That reflection is gone (2026-08-17) and findReflectedParts now rejects it
+// outright, but anchorWorldPoint must still resolve a flipped part correctly:
+// if it did not, an upside-down part would ALSO report a phantom anchor error
+// and point the author at the wrong cause.
 test('anchorWorldPoint mirrors v under flipY, exactly as it mirrors u under flipX', () => {
     const base = {
         visible: true, x: 100, y: 200, rotation: 0,
@@ -270,4 +272,68 @@ test('attribution routes each failure to the layer that owns it', () => {
     assert.equal(classifyFinding({ finding: { kind: 'first-frame-jump' }, referenceFailed: true, renderPath: 'upright' }), 'animation-data');
     // A pose the rig never draws is a coverage gap, whatever else is true.
     assert.equal(classifyFinding({ finding: geometry, isReference: true, renderPath: 'unrigged' }), 'coverage-gap');
+});
+
+// ── Orientation: parts must not be reflected ─────────────────────────────────
+//
+// These pin the blind spot that let the grounded on-back render ship. That
+// render reflected every assembled part across the mat axis AND mirrored the
+// joint bookkeeping to match, so every anchor still coincided perfectly and
+// certifyPose passed a body whose every PNG was upside down.
+
+// A reflected part with its joints mirrored to match — exactly the shape of
+// the defect. Anchors coincide; the artwork is upside down.
+function reflectedSample() {
+    const part = {
+        visible: true, x: 100, y: 200, rotation: 0,
+        originX: 0.5, originY: 0.5, displayWidth: 40, displayHeight: 80, depth: 1,
+    };
+    return {
+        parts: {
+            nearThigh: { ...part, flipY: true, originY: 0.5 },
+            nearShin: { ...part, y: 280, flipY: true, originY: 0.5 },
+            torso: { ...part, y: 120, flipY: false },
+        },
+        joints: {},
+        semanticAnchors: {},
+    };
+}
+
+test('a reflected part is reported even though its anchors are perfectly placed', () => {
+    const sample = reflectedSample();
+    // The precondition that made this invisible: nothing else in the kernel
+    // objects. No non-finite values, no depth violation.
+    assert.deepEqual(findNonFiniteTransforms(sample), []);
+    assert.deepEqual(checkDepthOrder(sample), []);
+
+    assert.deepEqual(findReflectedParts(sample).sort(), ['nearShin', 'nearThigh']);
+    const findings = certifyPose(sample);
+    const reflected = findings.filter(finding => finding.kind === 'reflected-part');
+    assert.equal(reflected.length, 2);
+    assert.ok(reflected.every(finding => /upside-down/.test(finding.detail)));
+});
+
+test('an unreflected sample reports nothing, and flipX is left alone', () => {
+    const sample = reflectedSample();
+    for (const part of Object.values(sample.parts)) { part.flipY = false; part.flipX = true; }
+    assert.deepEqual(findReflectedParts(sample), [],
+        'flipX is how facing is mirrored and must never be treated as a defect');
+    assert.equal(certifyPose(sample).some(finding => finding.kind === 'reflected-part'), false);
+});
+
+test('invisible parts are not graded for orientation', () => {
+    const sample = reflectedSample();
+    for (const part of Object.values(sample.parts)) part.visible = false;
+    assert.deepEqual(findReflectedParts(sample), []);
+});
+
+test('a reflected part is attributed to the render path, never to the artwork', () => {
+    // No character's art can cause or fix a reflection, so it must not be
+    // reported as source-artwork even on a legacy, non-compliant character.
+    assert.equal(classifyFinding({
+        finding: { kind: 'reflected-part' },
+        referenceFailed: false,
+        characterIsCompliant: false,
+        renderPath: 'grounded',
+    }), 'architecture');
 });

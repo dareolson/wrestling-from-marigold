@@ -2128,10 +2128,12 @@ export default class Wrestler {
         // _drawFlat survives for the airborne/held paths that still use it.
         if (state === 'down' || state === 'pinned' || state === 'possum') {
             this.skeleton.setVisible(true);
-            // Wrestlers land on their backs far more often than face-first
-            // (Derek, 2026-08-13). onBack is a render-time reflection, not a
-            // second pose — see Skeleton._mirrorGroundedOnBack.
-            this.skeleton.updateGrounded(x, y, s, facing, 'flat', { onBack: true });
+            // Renders PRONE (face down). Wrestlers land on their backs more
+            // often than face-first, but the render-time reflection that used
+            // to present that turned every part PNG upside down, so it was
+            // removed (2026-08-17). Prone is the honest fallback until a real
+            // supine pose is authored — see Skeleton.GROUNDED_FLAT.
+            this.skeleton.updateGrounded(x, y, s, facing, 'flat');
             return;
         }
 

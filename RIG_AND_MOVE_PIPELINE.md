@@ -143,6 +143,129 @@ Role names are not hard-coded, so a referee track can be added without inventing
 - **`onCancel` lifecycle seam.** `MoveRuntime.play` now takes `onCancel` alongside `onComplete`. Natural completion and cancellation are different outcomes: only completion runs the release drain and the 220ms settle; cancellation (either actor, `cancelTarget`, or `shutdown`) tears down without release damage. `cancel()` is idempotent and re-entrancy-safe (its `_active.delete` guard absorbs a cancel that loops back through a recovery pose-claim).
 - **Executor-owned character recovery.** The shared clip never bakes in Lou's `theszIdle` or George's `powerIdle`; the executor's `onComplete` runs the per-character 220ms idle settle. This kept the clip data character-agnostic without inventing a per-actor pose-injection binding.
 
+### The hammerlock is authored end to end (2026-08-17)
+
+The hammerlock is now the proof that the whole path works, not only that the
+runtime does: **editor draft → export → registry → runtime → two rendered
+skeletons**, with the draft committed beside the clip it generates
+(`tools/move-editor/drafts/hammerlock.json`) and loadable from the editor's
+draft library.
+
+What moved, and why:
+
+- **Staging is clip data.** The tableau used to be two Phaser tweens inside
+  `Wrestler._doHammerlock`, so the geometry an author had to compose lived in
+  gameplay code and the editor's `transform` channels reached nothing on the one
+  move that most needed them. `HAMMERLOCK_STAGING` carries the same offsets
+  (defender +30, attacker +6 rig units from the shared origin) plus the entry
+  geometry the move is actually committed at. The executor adds **no** position
+  tween: clip staging and executor staging are mutually exclusive by
+  construction, so there is exactly one owner.
+- **The entry tableau is measured, not guessed.** Hammerlock can only be
+  triggered from a lockup, and `Arena._tickLockup` holds that tie-up at exactly
+  `100*s` on one depth line — measured live at 99.539 rig units across three
+  commitments. So the shared-origin `t=0` placement moves the defender under half
+  a rig unit and the attacker not at all.
+- **One deliberate behavioural change.** The defender is pulled onto the
+  attacker's depth line, where the old executor left it at whatever depth it
+  committed at. A paired hold is one rigid tableau; this is why the move now
+  reads identically from every trigger.
+- **The grip is a semantic slot.** `workingHand: 'grip'` is worn for exactly the
+  length of the hold. `src/rig/partVariants.js` resolves semantic slots
+  (`strikingForearm`, `workingHand`) to real render slots from live facing, and
+  **the editor previews through the same table**, so the art an author sees is
+  the art the game puts on the correct physical hand in both facings.
+
+Two proofs, deliberately at different levels:
+
+- `npm test` → `tests/hammerlockAuthoring.test.js` holds the draft and the
+  shipped clip in agreement by SEMANTIC comparison over a dense sample (key
+  order and omitted defaults are formatting; easing SHAPE is not), and proves the
+  comparison is sensitive by mutating nine authored dimensions — pose channel,
+  joint channel, actor transform, whole-role staging, part variant, event,
+  duration, easing, keyframe — and requiring every one to be caught.
+- `npm run proof:hammerlock` reads the draft from disk, exports it through the
+  real editor model inside the page, registers it on the live Arena
+  `MoveRuntime`, binds the real wrestlers, and measures `Wrestler.draw()`'s own
+  published joints. A test that only inspects exported JSON proves the data
+  round-tripped and nothing about what reaches the screen.
+
+#### The declared hold is not drawn (measured 2026-08-17)
+
+The draft declares the intended lock — the attacker's gripping wrist on the
+defender's trapped wrist, acquired at the reach and released at 1.400s — and the
+readiness sweep and the runtime proof both **measure** it rather than assuming
+it. They agree that it does not exist:
+
+| measured on | worst separation | source limb reach |
+| --- | --- | --- |
+| live game (Lou → George) | **155.1 px** at the crank | 92.8 px |
+| move editor (reference rig, ×1.22 preview) | **284.8 px** at the crank | 160 px |
+
+A separation wider than the limb is long cannot be closed by any pose of that
+limb, so this is not a keyframe that needs nudging: the two bodies were never
+choreographed to touch. `hammerlockClip` has always said so ("the offset
+silhouette implies the lock"); this is the first time anything measured it.
+Closing it means re-choreographing the attacker's gripping arm AND the
+defender's trapped arm so they travel together through the crank — a
+choreography decision, deliberately not made here.
+
+### The move editor's staging frame (2026-08-17)
+
+The editor placed each role from its OWN base position (attacker x=355, defender
+x=665) while the runtime resolves every staged role against ONE origin. The two
+disagreed about what an authored `transform` MEANS: a draft with both roles at
+`x: 0` read as a 254-rig-unit tie-up on screen and staged the two wrestlers on
+the same point in the ring. The model already half-knew this — it warns about a
+degenerate same-point entry — and the preview contradicted the warning.
+
+The preview now resolves through the same frame the runtime does (one origin,
+the anchor's facing as the staging axis, one scale), and every authoring gesture
+converts screen delta to rig units along that axis, so no gesture can author a
+screen-space offset that reads backwards when the tableau is mirrored. The smoke
+test compares the preview's placement against `clipStaging.stagedWorldPoint`
+itself, in both facings, rather than restating the math.
+
+A fresh paired draft opens at `DEFAULT_ENTRY_SEPARATION` (100 rig units) — the
+real lockup tie-up distance, not a cosmetic default. `createDraft` still starts
+both roles at `x: 0` so the degenerate-entry warning keeps firing.
+
+### Authoring affordances (2026-08-17)
+
+- **Undo/redo** (⌘Z / ⇧⌘Z / Ctrl+Y) over pose, staging, contacts, variants,
+  events, keyframe insert/delete and timing. Snapshot-based, not command-based:
+  a command log would have to know how to invert a two-bone IK solve, a contact
+  snap that also moved the actor root, and a duration change that re-clamps every
+  keyframe. The uncaptured live actor state is part of the snapshot, so undo
+  means "undo what I just did" rather than "undo the last capture". Continuous
+  gestures coalesce into one step.
+- **Autosave with recovery.** Written under the versioned draft envelope
+  (`DRAFT_SCHEMA` / `DRAFT_VERSION`). A reload OFFERS the draft back instead of
+  loading it; a draft this build cannot read is refused WITH THE REASON, cannot
+  be restored, and — the part that matters — is not overwritten while the author
+  decides. Autosave suspends until they explicitly restore or discard, enforced
+  in the writer itself so no path can clobber the only copy of a session.
+- **Onion skinning** of the selected actor's adjacent keyframes, drawn as thin
+  wire chains (previous cool, next warm) on the non-interactive Graphics layer.
+  Wire rather than ghosted skeletons on purpose: this editor's interaction model
+  is "drag the thing you can see", and a translucent second body reads as a
+  wrestler you can grab. The smoke test counts the scene's input list with the
+  skins off and on, so a ghost cannot quietly become selectable.
+- **Contact phases on the timeline**: acquisition tick, maintained window,
+  release tick, labelled with the joints they connect and coloured by what the
+  last sweep measured. Discarded captures are drawn hatched — they already
+  blocked readiness, and now they cannot hide there either.
+- **Layer-attributed readiness.** Every finding names the layer that owns it in
+  the same vocabulary the certifier uses (authoring data, runtime transport,
+  binding geometry, source artwork, architecture, coverage gap), and
+  certification failures carry the certifier's own classification rather than a
+  guess.
+- **Contacts graded against limb reach.** A gap inside the reach of the limb that
+  must close it is *drifting* — pose it, or add a keyframe. A gap wider than the
+  limb is long is *unreachable*: no pose can close it, so the tableau or the
+  choreography has to change, and telling the author to add a keyframe would be
+  actively wrong.
+
 ### The clip transform contract (2026-08-13)
 
 `transform` channels used to be authored in the move editor, previewed there,
@@ -224,14 +347,16 @@ inspecting a screenshot. Unit coverage is `tests/clipStaging.test.js`.
 3. Calibrate sockets and painted anchors once; pass both facings and the angle sweeps.
 4. Draw variants on copies of the calibrated base canvases. Preserve the joint and canvas.
 5. Declare variant key/file entries and run `npm run rig:validate`.
-6. Author the move as a seekable clip with anticipation, contact, impact/hold, release, and recovery keyframes.
-7. Preview the clip at arbitrary time, not only through live gameplay.
-8. Gate the move at 30/60/120 Hz, both facings, both wrestler slots, interruption, reversal, and Scene shutdown.
+6. Author the move in `npm run move:editor` — poses, staging on the shared tableau, contact intervals, part variants, easing and markers — and save the draft beside the clip it will generate (`tools/move-editor/drafts/`).
+7. Sweep readiness for the whole clip, not just the frame on screen. Every finding names the layer that owns it; a declared contact is graded against the reach of the limb that must close it.
+8. Export the clip, add it to `src/animation/clips/index.js` and the move registry, and hold draft and clip in agreement with a semantic round-trip test.
+9. Preview the clip at arbitrary time, not only through live gameplay.
+10. Prove it on the real runtime and both rendered skeletons (`npm run proof:hammerlock` is the worked example), then gate it at 30/60/120 Hz, both facings, both wrestler slots, interruption, reversal, and Scene shutdown.
 
 ## Migration order
 
 1. ~~Use `jab` as the one-body clip proof: transition, fist forearm, impact marker, recovery.~~ **Done (2026-07-31)** — `src/animation/clips/jab.js` + `Wrestler._doJab`. Impact fires exactly once at 30/60/120 Hz, seeking never emits, cancel before/after impact is damage-safe, appearance resets on cancel/shutdown, and the striking forearm resolves correctly in both facings. Verified live (`debug:play -- jab` for Lou and George) and by `tests/jabClip.test.js`.
-2. ~~Use `hammerlock` as the paired proof: attacker/defender tracks, grip variant, contact acquire/release, interruption.~~ **Done (2026-08-03)** — `src/animation/clips/hammerlock.js` + `Wrestler._doHammerlock`. Synchronized attacker/defender tracks; `acquire-contact`/`apply-drain`/`release-contact` markers fire exactly once in order at 30/60/120 Hz and never on seek; interruption through either actor, `cancelTarget`, and `shutdown` all leave both wrestlers in legal, non-orphaned states with no stranded `_fixedHold`/handle/variant/timer and no late damage; preserved timing (drain @300ms, release @1400ms, 220ms recovery) and tuning (defender 10+4, attacker cost 3, heat 5). A working/grip forearm can be authored later but no grip PNG exists yet, so the semantic slot safely resolves to base art (as jab's `fist` does). Verified live (`debug:play -- hammerlock` Lou→George and `hammerlockReverse` George→Lou), by `tests/hammerlockClip.test.js` (20 tests), and by `tools/debug/hammerlock_preview.mjs` (seek frames + interruption matrix). This provides paired lifecycle ownership + event markers only — **not** a general contact-constraint or MoveSpec system.
+2. ~~Use `hammerlock` as the paired proof: attacker/defender tracks, grip variant, contact acquire/release, interruption.~~ **Done (2026-08-03)** — `src/animation/clips/hammerlock.js` + `Wrestler._doHammerlock`. Synchronized attacker/defender tracks; `acquire-contact`/`apply-drain`/`release-contact` markers fire exactly once in order at 30/60/120 Hz and never on seek; interruption through either actor, `cancelTarget`, and `shutdown` all leave both wrestlers in legal, non-orphaned states with no stranded `_fixedHold`/handle/variant/timer and no late damage; preserved timing (drain @300ms, release @1400ms, 220ms recovery) and tuning (defender 10+4, attacker cost 3, heat 5). A working/grip forearm can be authored later but no grip PNG exists yet, so the semantic slot safely resolves to base art (as jab's `fist` does). Verified live (`debug:play -- hammerlock` Lou→George and `hammerlockReverse` George→Lou), by `tests/hammerlockClip.test.js` (20 tests), and by `tools/debug/hammerlock_preview.mjs` (seek frames + interruption matrix). This provides paired lifecycle ownership + event markers only — **not** a general contact-constraint or MoveSpec system. **Extended 2026-08-17** into the first move authored end to end in the editor: staging, the grip variant, and the declared contact interval now come out of a committed draft, the executor no longer owns position, and `npm run proof:hammerlock` measures the whole path on the live runtime — see "The hammerlock is authored end to end" above, including the measured finding that the declared hold is not actually drawn.
 3. Add a referee actor and bind it to existing pin/submission events.
 4. Move remaining Class A strikes, then Class B paired moves, one at a time.
 5. ~~Add separate hand/foot bones.~~ **Architecture done (2026-08-10)** — opt-in
@@ -250,6 +375,11 @@ inspecting a screenshot. Unit coverage is `tests/clipStaging.test.js`.
 - `npm run rig:certify` reports no architecture-class findings. The reference
   rig is certified first on every run and is the control; if it fails, every
   other verdict in that run is unreliable and the run says so.
+- The get-up → upright handoff stays inside its recorded per-character budget.
+  A known open defect, gated so it cannot silently worsen.
+- A move authored in the editor and the clip it ships as describe the same move,
+  proved by semantic comparison rather than by byte equality, and proved on the
+  real runtime rather than on exported JSON.
 
 ## Certification and coverage
 
@@ -308,6 +438,51 @@ keyframe and `updateUpright`'s rest stance: **a visible pop at the hand-off
 that still needs correction.** The keyframe comment in `Skeleton.GETUP_POSES`
 carries the same numbers so the claim cannot drift from the measurement.
 
+#### The handoff is now gated (2026-08-17)
+
+`certifyGetUpHandoff` (`src/rig/certification.js`) measures the largest distance
+any joint published by both frames moves across the seam, and `npm run
+rig:certify` grades it per character. Nothing could see this before:
+`certifyMotion` grades continuity WITHIN one sampled sequence, and the pop lives
+BETWEEN two render paths, which no sequence contains.
+
+**The method, stated exactly, because a budget is meaningless without it:**
+render `updateGetUp` at `t = 1`, then `updateUpright` with `POSES.idle`, both at
+the certifier's render origin and scale 1; take the worst joint jump; measure
+both facings and grade the worse. `POSES.idle` is the defensible comparison
+stance — it is what `_startRiseUp` tweens to the moment the rise completes, and
+the closing get-up keyframe is documented as an approximation of exactly that
+rest geometry.
+
+| character | budget (this method, 2026-08-17) | worst joint | figure recorded above |
+| --- | --- | --- | --- |
+| refrig | **84.96 px** | `nearWrist` | — |
+| george | **78.75 px** | `nearWrist` | 55.79 px |
+| thesz | **45.30 px** | `farWrist` | 35.19 px |
+
+Tolerance is 0.5 px. These renders are deterministic, so a run reproduces its
+measurement exactly and the tolerance is float headroom, not slack.
+
+**On the discrepancy.** The 35.19 / 55.79 figures come from a verification audit
+whose harness was not kept, and the method above does not reproduce them. Rather
+than quietly adopt numbers whose derivation cannot be re-run, the budgets are
+what the stated method measures today, and both sets are recorded — in this
+table and in `tools/rig/certify.mjs` — so the difference is visible rather than
+laundered. Both say the same thing qualitatively: the handoff pops, on every
+character, by tens of pixels.
+
+The finding classifies as `animation-data`, never `source-artwork`: the same art
+renders cleanly on both sides of the seam, so no character is at fault and no
+redraw would fix it. It fails the run on its own, since `animation-data`
+findings are otherwise reported and not blocking. A character with no recorded
+budget is reported as unmeasurable rather than silently exempt, and a handoff
+with no comparable joint is a coverage gap rather than a pass — the two ways a
+budget check ends up asserting nothing. Verified non-vacuous by forcing the
+get-up's closing `nearArm` from 0.06 to 0.80, which failed thesz at 63.74 px
+and exited 1; the code was restored.
+
+**This gate does not close the pop.** It stops it getting worse.
+
 Measured cost: the `falling` → `down` boundary moved from 0px to 4.9px
 (1.5px x, 4.6px y). `_drawFalling` collapses its head to exactly the mat line,
 while the rig places it 4.6px above — the rig is the more correct of the two.
@@ -354,8 +529,9 @@ honestly reported rather than papered over.
 
 1. **Grounded children do not inherit torso orientation** — see below; the
    detail is worth keeping because the certifier still cannot see it.
-2. **Get-up → upright handoff pops** — 35.19 px (Lou, `nearAnkle`) / 55.79 px
-   (George, `nearWrist`), measured above. Not reflection residue.
+2. **Get-up → upright handoff pops** — measured above, and now GATED per
+   character by `rig:certify` so it cannot silently worsen. Still open: the
+   gate holds the line, it does not close the pop. Not reflection residue.
 3. **No supine, bridge or kneeling posture.** `down`, `pinned` and `possum`
    all render the one shared prone flat pose. `rig:certify` reports these as
    `postureGap` entries, so the coverage number cannot be read as more than it

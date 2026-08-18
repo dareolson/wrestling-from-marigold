@@ -25,8 +25,9 @@
 //   5. Seeking is deterministic and does not accumulate.
 //   6. Ring bounds are respected at the ropes.
 //   7. Cancellation leaves nobody sliding.
-//   8. A clip that authors no transform (hammerlock) still stages via its
-//      executor — no regression, and never two owners at once.
+//   8. Ownership stays exclusive in the real game loop: the hammerlock's clip
+//      owns both bodies (and its executor adds no tween), while a clip that
+//      authors no transform — the jab — still leaves position to its executor.
 
 import { launch } from './harness.mjs';
 
@@ -366,9 +367,17 @@ const constants = await h.page.evaluate(() => ({
     }
 }
 
-// ── 8. Hammerlock is untouched: executor still owns staging ──────────────────
-// Runs with the live loop RESUMED so the real Phaser staging tweens and the
-// real Arena update drive it — this section is about what a player sees.
+// ── 8. Ownership is exclusive, and both halves of it still hold ──────────────
+// Runs with the live loop RESUMED so the real Arena update drives it — this
+// section is about what a player sees.
+//
+// The hammerlock used to be the example of "clip authors no transform, so the
+// executor keeps position". It is now the opposite example: its tableau is
+// authored as clip data (HAMMERLOCK_STAGING) and Wrestler._doHammerlock adds no
+// position tween at all. The invariant being guarded was never "hammerlock does
+// not stage" — it is that a clip and its executor can never BOTH own a body.
+// So both halves are checked here: the hammerlock (clip owns) and the jab
+// (executor owns).
 {
     await drive('resume');
     const started = await h.page.evaluate(() => {
@@ -378,34 +387,68 @@ const constants = await h.page.evaluate(() => ({
         sc.w2.state = 'lockup';
         sc.w1.x = 470;
         sc.w2.x = 520;
+        sc.w2.y = 372; // committed off the attacker's depth line on purpose
+        // Read BEFORE the call: play() applies t=0 immediately, so anything read
+        // afterwards is already the placed frame, not the committed geometry.
+        const committed = { atk: sc.w1.x, def: sc.w2.x, defY: sc.w2.y, atkY: sc.w1.y };
+        const tweensBefore = sc.tweens.getTweens().length;
         sc.w1._doHammerlock(sc.w2);
         return {
             staging: sc.w1._activeMove?.staging ?? null,
+            stagedRoles: Object.keys(sc.w1._activeMove?.staging?.roles ?? {}),
             shared: sc.w1._activeMove === sc.w2._activeMove,
-            before: { atk: sc.w1.x, def: sc.w2.x },
+            // Any tween the executor added would be a second position writer.
+            positionTweens: sc.tweens.getTweens()
+                .filter(tween => tween.targets?.some?.(target => target === sc.w1 || target === sc.w2))
+                .filter(tween => tween.data?.some?.(entry => entry.key === 'x' || entry.key === 'y')).length,
+            tweensBefore,
+            before: committed,
+            placed: { atk: sc.w1.x, def: sc.w2.x, defY: sc.w2.y },
+            scale: sc.w1.s,
         };
     });
-    // Let the REAL game loop drive the real staging tweens and the real runtime
-    // — no hand-pumped clock, so this measures what a player would see.
+    // Let the REAL game loop drive the real runtime — no hand-pumped clock, so
+    // this measures what a player would see.
     await h.page.waitForTimeout(400);
     const moved = await h.page.evaluate(() => {
         const sc = window.__WFM_GAME.scene.scenes[0];
-        return { atk: sc.w1.x, def: sc.w2.x, facing: sc.w1.facing };
+        return { atk: sc.w1.x, def: sc.w2.x, atkY: sc.w1.y, defY: sc.w2.y, facing: sc.w1.facing };
     });
 
-    check('hammerlock authors no transform, so the clip takes no position ownership', started.staging === null, `staging=${JSON.stringify(started.staging)}`);
+    check('hammerlock authors transform, so the CLIP owns both bodies', !!started.staging && started.stagedRoles.length === 2,
+        `staging=${started.staging ? `${started.staging.anchorRole}/${started.stagedRoles}` : 'null'}`);
+    check('the executor adds no position tween of its own (one owner, not two)', started.positionTweens === 0,
+        `${started.positionTweens} position tween(s) on a bound wrestler`);
     check('hammerlock still binds one shared handle to both actors', started.shared === true);
-    check('hammerlock executor staging still moves both wrestlers',
-        Math.abs(moved.atk - started.before.atk) > 0.5 || Math.abs(moved.def - started.before.def) > 0.5,
-        `atk ${started.before.atk.toFixed(1)}→${moved.atk.toFixed(1)}, def ${started.before.def.toFixed(1)}→${moved.def.toFixed(1)}`);
+    check('the authored working tableau is reached in the real game loop',
+        Math.abs((moved.def - moved.atk) - 24 * started.scale) < 1.0,
+        `separation ${(moved.def - moved.atk).toFixed(2)} px, authored 24 rig units at s=${started.scale.toFixed(3)} = ${(24 * started.scale).toFixed(2)} px`);
     check('hammerlock staging keeps the defender ahead on the attacker facing',
         Math.sign((moved.def - moved.atk) * moved.facing) === 1,
         `atk=${moved.atk.toFixed(1)} def=${moved.def.toFixed(1)} facing=${moved.facing}`);
+    check('the pair is squared onto one depth line by the shared tableau',
+        Math.abs(moved.defY - moved.atkY) < 1e-6,
+        `committed ${(started.before.defY - started.before.atkY).toFixed(1)} px off the attacker's depth; placed at t=0 ${(started.placed.defY - started.before.atkY).toFixed(3)} px off; ended ${(moved.defY - moved.atkY).toFixed(3)} px apart`);
 
     await h.page.evaluate(() => {
         const sc = window.__WFM_GAME.scene.scenes[0];
         sc.w1._cancelActiveMove?.('proof-teardown');
     });
+
+    // The other half: a clip that authors no transform must still leave its
+    // executor in sole charge of position.
+    const jab = await h.page.evaluate(async () => {
+        const sc = window.__WFM_GAME.scene.scenes[0];
+        const { jabClip } = await import('/src/animation/clips/jab.js');
+        window.__PROOF.setup({ facing: 1, x: 470, y: 360 });
+        sc.w1.state = 'standing';
+        const handle = sc.moveRuntime.play(jabClip.id, { attacker: sc.w1 });
+        const staging = handle.staging;
+        sc.moveRuntime.cancel(handle, 'proof-teardown');
+        return { staging };
+    });
+    check('a clip authoring no transform still takes no position ownership (jab)', jab.staging === null,
+        `staging=${JSON.stringify(jab.staging)}`);
 }
 
 // Tear the proof clip back off the live runtime — it is not a gameplay move.

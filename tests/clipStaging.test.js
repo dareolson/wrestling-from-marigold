@@ -69,18 +69,27 @@ test('authorsTransform is set only for tracks that actually author transform cha
     assert.equal(proof.tracks.attacker.authorsTransform, true);
     assert.equal(proof.tracks.defender.authorsTransform, true);
 
-    // The shipped gameplay clips author no transforms: their executors still own
-    // staging. This is the regression guard for "two owners can never fight".
+    // The hammerlock is fully staged by its clip: both roles author transform,
+    // so the runtime owns both bodies and Wrestler._doHammerlock adds no
+    // position tween of its own (asserted against the real executor in
+    // tests/hammerlockClip.test.js). The jab authors none — its executor still
+    // owns position, and that half of the contract must keep holding too.
     const hammerlock = compileClip(hammerlockClip);
-    assert.equal(hammerlock.authorsTransform, false);
+    assert.equal(hammerlock.authorsTransform, true);
+    assert.equal(hammerlock.tracks.attacker.authorsTransform, true);
+    assert.equal(hammerlock.tracks.defender.authorsTransform, true);
     assert.equal(compileClip(jabClip).authorsTransform, false);
 });
 
 test('a clip that authors no transform gets no staging context at all', () => {
+    // The jab is the surviving example: a one-body strike whose executor keeps
+    // sole ownership of position. "No transform authored" must mean "no staging
+    // frame", not "a staging frame full of zeroes" — a zero frame would still
+    // place the actor and quietly take ownership away from its executor.
     const scene = makeScene();
-    scene.moveRuntime.register(hammerlockClip);
-    const { atk, def } = pair(scene);
-    const handle = scene.moveRuntime.play('hammerlock', { attacker: atk, defender: def });
+    scene.moveRuntime.register(jabClip);
+    const { atk } = pair(scene);
+    const handle = scene.moveRuntime.play('jab', { attacker: atk });
     assert.equal(handle.staging, null);
 });
 

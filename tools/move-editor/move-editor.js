@@ -1,14 +1,14 @@
 import Skeleton from '/src/Skeleton.js';
 import { george } from '/src/characters/george.js';
 import { thesz } from '/src/characters/thesz.js';
-import { enumerateCharacterAssets, RENDER_PART_SLOTS } from '/src/rig/partVariants.js';
+import { enumerateCharacterAssets, RENDER_PART_SLOTS, SEMANTIC_PART_SLOTS, resolveSemanticSlots } from '/src/rig/partVariants.js';
 import { createReferenceRigSkeleton, REFERENCE_RIG_ID } from '/src/rig/referenceRigRuntime.js';
 import { certifyPose, measureSample } from '/src/rig/certification.js';
 import {
     CONTACT_SOURCES, CONTACT_TARGETS, EASES, POSE_CHANNELS, ROLES, addContact,
     addEvent, basePose, clipReadiness, contactPartner, createPairedDraft,
     draftValidation, exportModule, insertKeyframe, normalizeDraft,
-    releaseContact, removeKeyframe, sampleDraft, variantChoices,
+    draftCompatibility, releaseContact, removeKeyframe, sampleDraft, variantChoices,
 } from './model.js';
 import { pickAnchorRole } from '/src/animation/clipStaging.js';
 
@@ -98,7 +98,11 @@ function renderActor(role) {
     if (!actor.skeleton) return;
     const root = actorRoot(role);
     actor.skeleton.setVisible(true);
-    actor.skeleton.setPartVariants(actor.parts);
+    // Semantic slots (strikingForearm, workingHand) resolve through the SAME
+    // table Wrestler.applyAnimationSample uses, so the art an author sees here
+    // is the art the game puts on screen — including facing left, where the
+    // role-bearing limb is the far one.
+    actor.skeleton.setPartVariants(resolveSemanticSlots(actor.parts, actor.facing));
     actor.skeleton.updateUpright(root.x, root.y, SCALE, actor.facing, actor.pose, 0, 0, actor.facing * (actor.pose.lean ?? 0), 0, 0.5, 0);
 }
 
@@ -258,14 +262,26 @@ function buildVariantControls() {
     const actor = actors[selectedRole];
     const character = actor.runtimeCharacter;
     let useful = 0;
-    for (const slot of RENDER_PART_SLOTS) {
-        const choices = variantChoices(character, slot);
+    // Semantic slots first: authoring the ROLE ("the working hand") is what
+    // keeps the art on the correct limb when the move runs facing left, so it
+    // is the choice an author should reach for before a literal near/far slot.
+    // Their choices come from the render slot the role currently maps to.
+    const slots = [
+        ...Object.keys(SEMANTIC_PART_SLOTS).map(slot => ({
+            slot,
+            label: `${slot} (role)`,
+            family: SEMANTIC_PART_SLOTS[slot][actor.facing >= 0 ? 'near' : 'far'],
+        })),
+        ...RENDER_PART_SLOTS.map(slot => ({ slot, label: slot, family: slot })),
+    ];
+    for (const { slot, label, family } of slots) {
+        const choices = variantChoices(character, family);
         if (choices.length === 1 && !(slot in actor.parts)) continue;
         useful++;
         const row = document.createElement('div');
         row.className = 'row wide';
         const options = choices.map(choice => `<option${(actor.parts[slot] ?? 'base') === choice ? ' selected' : ''}>${choice}</option>`).join('');
-        row.innerHTML = `<label>${slot}</label><select>${options}</select>`;
+        row.innerHTML = `<label>${label}</label><select>${options}</select>`;
         row.querySelector('select').addEventListener('change', event => {
             if (event.target.value === 'base') delete actor.parts[slot];
             else actor.parts[slot] = event.target.value;
@@ -625,12 +641,71 @@ function buildContactControls() {
     }
 }
 
+// ── Draft library ────────────────────────────────────────────────────────────
+//
+// Drafts committed beside the clips they generate (tools/move-editor/drafts/).
+// Loading one is the entry point of the authoring path this editor exists to
+// serve: open the shipped move, edit it, preview it, export it, and have the
+// result be the move the game plays. Without this an author can only ever
+// create new moves and never revisit one.
+const DRAFT_LIBRARY = [
+    { id: 'hammerlock', label: 'hammerlock (paired hold)', file: './drafts/hammerlock.json' },
+];
+
+// Adopt a loaded draft as the editing session. Shared by the library, the file
+// importer and autosave recovery so all three land in exactly the same state —
+// three subtly different load paths is how an editor grows a bug that only
+// reproduces "after opening a file".
+function adoptDraft(source, { label = 'draft' } = {}) {
+    const compatibility = draftCompatibility(source);
+    if (!compatibility.ok) {
+        status(`${label} was NOT loaded — ${compatibility.reason}`, true);
+        return false;
+    }
+    draft = normalizeDraft(source);
+    // The arrangement the executor will build, not the editor's default: a
+    // behind-the-back hold previews against a defender turned the attacker's
+    // way, which is what decides whether a contact is even reachable.
+    for (const role of ROLES) actors[role].facing = draft.preview.facing[role];
+    $('moveId').value = draft.id;
+    $('duration').value = draft.duration;
+    $('scrubber').max = draft.duration;
+    $('time').max = draft.duration;
+    selectedKey = 0;
+    selectedEvent = -1;
+    pendingContact = null;
+    setPlayhead(0);
+    renderTimeline();
+    validate();
+    return true;
+}
+
+async function loadLibraryDraft(id) {
+    const entry = DRAFT_LIBRARY.find(candidate => candidate.id === id);
+    if (!entry) return;
+    playing = false;
+    try {
+        const response = await fetch(new URL(entry.file, import.meta.url));
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (adoptDraft(await response.json(), { label: entry.label })) {
+            status(`Loaded ${entry.label}. Sweep readiness to re-measure it against the live rig.`);
+        }
+    } catch (error) {
+        status(`Could not load ${entry.label}: ${error.message}`, true);
+    }
+}
+
 function installUI() {
     buildPoseControls();
     buildContactControls();
     $('role').addEventListener('change', event => { selectedRole = event.target.value; selectedKey = 0; syncControls(); renderTimeline(); });
     $('character').addEventListener('change', event => { actors[selectedRole].character = event.target.value; rebuildActor(selectedRole); buildVariantControls(); });
-    $('facing').addEventListener('change', event => { actors[selectedRole].facing = Number(event.target.value); });
+    $('facing').addEventListener('change', event => {
+        actors[selectedRole].facing = Number(event.target.value);
+        // Persisted on the draft so the arrangement survives save/reload.
+        draft.preview.facing[selectedRole] = actors[selectedRole].facing;
+        buildVariantControls(); // semantic slots resolve to the other side now
+    });
     $('ease').addEventListener('change', event => {
         const frame = draft.tracks[selectedRole].keyframes[selectedKey];
         if (frame) frame.ease = EASES.includes(event.target.value) ? event.target.value : 'linear';
@@ -672,12 +747,22 @@ function installUI() {
     $('importBtn').addEventListener('click', () => $('importFile').click());
     $('importFile').addEventListener('change', async event => {
         try {
-            draft = normalizeDraft(JSON.parse(await event.target.files[0].text()));
-            $('moveId').value = draft.id; $('duration').value = draft.duration;
-            $('scrubber').max = draft.duration; $('time').max = draft.duration;
-            selectedKey = 0; selectedEvent = -1; setPlayhead(0); validate();
+            // Same adoption path as the library and autosave recovery, so an
+            // imported draft is checked against the schema envelope rather than
+            // half-loaded and silently stripped of fields this build cannot read.
+            if (adoptDraft(JSON.parse(await event.target.files[0].text()), { label: 'Imported draft' })) {
+                status(`Imported ${draft.id}.`);
+            }
         } catch (error) { status(`Import failed: ${error.message}`, true); }
     });
+    const library = $('draftLibrary');
+    library.innerHTML = ['<option value="">Load draft…</option>', ...DRAFT_LIBRARY.map(entry => `<option value="${entry.id}">${entry.label}</option>`)].join('');
+    library.addEventListener('change', async event => {
+        const id = event.target.value;
+        event.target.value = '';
+        if (id) await loadLibraryDraft(id);
+    });
+    window.__MOVE_EDITOR_MEASURE = measureContactGapAt;
     window.__MOVE_EDITOR = {
         get draft() { return draft; },
         actors, setPlayhead, capture,
@@ -686,6 +771,8 @@ function installUI() {
         SCALE,
         // The preview's staging frame, published so a test can check it against
         // src/animation/clipStaging.js's resolver instead of restating the math.
+        loadLibraryDraft,
+        DRAFT_LIBRARY,
         actorRoot,
         TABLEAU_ORIGIN,
         ANCHOR_ROLE,

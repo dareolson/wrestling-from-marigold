@@ -1,0 +1,177 @@
+{
+    "schema": "wfm.move-draft",
+    "version": 1,
+    "id": "hammerlock",
+    "duration": 1.4,
+    "posture": "upright",
+    "tracks": {
+        "attacker": {
+            "keyframes": [
+                {
+                    "at": 0,
+                    "pose": {
+                        "lLeg": 0.18,
+                        "rLeg": -0.12,
+                        "lArm": 1.57,
+                        "rArm": 1.57,
+                        "lean": 0.26,
+                        "crouch": 0.18
+                    },
+                    "transform": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "parts": {
+                        "workingHand": "base"
+                    },
+                    "ease": "linear"
+                },
+                {
+                    "at": 0.12,
+                    "ease": "easeOut",
+                    "pose": {
+                        "lLeg": 0.1,
+                        "rLeg": -0.12,
+                        "lArm": 0.78,
+                        "rArm": 0.42,
+                        "lean": 0.18,
+                        "crouch": 0.1
+                    },
+                    "parts": {
+                        "workingHand": "grip"
+                    },
+                    "transform": {}
+                },
+                {
+                    "at": 0.3,
+                    "ease": "easeInOut",
+                    "pose": {
+                        "lLeg": -0.1,
+                        "rLeg": 0.24,
+                        "lArm": 1.32,
+                        "rArm": 0.74,
+                        "lean": 0.22,
+                        "crouch": 0.16
+                    },
+                    "transform": {
+                        "x": 6,
+                        "y": 0
+                    },
+                    "parts": {}
+                },
+                {
+                    "at": 0.5,
+                    "ease": "easeOut",
+                    "pose": {
+                        "lLeg": 0.2,
+                        "rLeg": -0.16,
+                        "lArm": 1.92,
+                        "rArm": 0.68,
+                        "lean": 0.3,
+                        "crouch": 0.22
+                    },
+                    "transform": {},
+                    "parts": {}
+                },
+                {
+                    "at": 1.4,
+                    "ease": "linear",
+                    "pose": {
+                        "lLeg": 0.28,
+                        "rLeg": -0.22,
+                        "lArm": 2.18,
+                        "rArm": 0.46,
+                        "lean": -0.06,
+                        "crouch": 0.28
+                    },
+                    "parts": {
+                        "workingHand": "base"
+                    },
+                    "transform": {}
+                }
+            ]
+        },
+        "defender": {
+            "keyframes": [
+                {
+                    "at": 0,
+                    "pose": {
+                        "lLeg": 0.18,
+                        "rLeg": -0.12,
+                        "lArm": 1.57,
+                        "rArm": 1.57,
+                        "lean": 0.26,
+                        "crouch": 0.18
+                    },
+                    "transform": {
+                        "x": 100,
+                        "y": 0
+                    },
+                    "ease": "linear",
+                    "parts": {}
+                },
+                {
+                    "at": 0.26,
+                    "ease": "easeOut",
+                    "pose": {
+                        "lLeg": -0.08,
+                        "rLeg": 0.06,
+                        "lArm": -0.6,
+                        "rArm": 0.9,
+                        "lean": -0.14,
+                        "crouch": 0.2
+                    },
+                    "transform": {
+                        "x": 30,
+                        "y": 0
+                    },
+                    "parts": {}
+                },
+                {
+                    "at": 1.4,
+                    "pose": {
+                        "lLeg": -0.08,
+                        "rLeg": 0.06,
+                        "lArm": -0.6,
+                        "rArm": 0.9,
+                        "lean": -0.14,
+                        "crouch": 0.2
+                    },
+                    "ease": "linear",
+                    "transform": {},
+                    "parts": {}
+                }
+            ]
+        }
+    },
+    "events": [
+        {
+            "at": 0.12,
+            "type": "acquire-contact"
+        },
+        {
+            "at": 0.3,
+            "type": "apply-drain"
+        },
+        {
+            "at": 1.4,
+            "type": "release-contact"
+        }
+    ],
+    "contacts": [
+        {
+            "from": 0.12,
+            "to": 1.4,
+            "role": "attacker",
+            "source": "nearWrist",
+            "target": "nearWrist"
+        }
+    ],
+    "rejectedContacts": [],
+    "preview": {
+        "facing": {
+            "attacker": 1,
+            "defender": 1
+        }
+    }
+}

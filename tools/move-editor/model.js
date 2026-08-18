@@ -60,6 +60,84 @@ export function basePose() {
     };
 }
 
+// Editor-only PREVIEW state: which way each actor faces on the editor stage.
+//
+// Facing is deliberately not a clip channel — executors establish it at
+// commitment (the hammerlock turns the defender to face the attacker's way
+// before play()) and the staging frame captures it. But the editor still has to
+// SHOW the arrangement the executor will build, or an author composes a hold
+// against a defender who is standing the wrong way round. That is not a
+// cosmetic difference: it decides which physical limb is the near one, so it
+// changes which joints a contact can even reach.
+//
+// Recorded on the draft, stripped from the export (exportClip takes only the
+// four runtime keys), and never read by gameplay.
+export function normalizePreview(source, fallbackFacing = { attacker: 1, defender: -1 }) {
+    const facing = {};
+    for (const role of ROLES) {
+        const value = Number(source?.facing?.[role]);
+        facing[role] = value === -1 || value === 1 ? value : fallbackFacing[role];
+    }
+    return { facing };
+}
+
+// ── Draft identity ───────────────────────────────────────────────────────────
+//
+// A saved draft is a FILE that outlives the editor session that wrote it — a
+// recovered autosave, a draft committed beside the clip it generates, a file a
+// collaborator sends. It therefore has to say what it is and which shape it is
+// in, so a newer editor can refuse an incompatible one instead of half-loading
+// it and silently dropping the fields it no longer understands.
+//
+// Bump DRAFT_VERSION whenever the draft shape changes in a way an older reader
+// would mis-handle; readers reject anything they do not recognise (see
+// draftCompatibility) rather than guessing.
+export const DRAFT_SCHEMA = 'wfm.move-draft';
+export const DRAFT_VERSION = 1;
+
+/**
+ * Can this editor load `source` as a draft?
+ *
+ * Returns `{ ok, reason, schema, version }`. A refusal is deliberately loud and
+ * specific: "incompatible" with no reason is how an author ends up deleting a
+ * recoverable draft, and a silent partial load is how one ends up shipping a
+ * clip missing the half of its data this build does not parse.
+ *
+ * An UNSTAMPED object is accepted as a legacy draft (drafts predate this
+ * envelope, and refusing them would strand real work) — but only when it looks
+ * like a draft at all.
+ */
+export function draftCompatibility(source) {
+    if (!source || typeof source !== 'object' || Array.isArray(source)) {
+        return { ok: false, reason: 'not a draft object', schema: null, version: null };
+    }
+    const schema = source.schema ?? null;
+    const version = source.version ?? null;
+    if (schema !== null && schema !== DRAFT_SCHEMA) {
+        return { ok: false, reason: `unknown draft schema "${schema}" (expected "${DRAFT_SCHEMA}")`, schema, version };
+    }
+    if (version !== null && !(Number.isInteger(version) && version >= 1 && version <= DRAFT_VERSION)) {
+        return {
+            ok: false,
+            reason: version > DRAFT_VERSION
+                ? `draft version ${version} was written by a newer editor (this build reads up to ${DRAFT_VERSION})`
+                : `unusable draft version ${JSON.stringify(version)}`,
+            schema,
+            version,
+        };
+    }
+    if (schema === null && !isDraftShaped(source)) {
+        return { ok: false, reason: 'no schema stamp and no recognisable tracks', schema, version };
+    }
+    return { ok: true, reason: null, schema: schema ?? DRAFT_SCHEMA, version: version ?? DRAFT_VERSION };
+}
+
+function isDraftShaped(source) {
+    const tracks = source.tracks;
+    if (!tracks || typeof tracks !== 'object') return false;
+    return ROLES.some(role => Array.isArray(tracks[role]?.keyframes));
+}
+
 // The separation a fresh PAIRED draft opens with, in rig units.
 //
 // Not an arbitrary "looks about right" number: Arena._tickLockup holds a tie-up
@@ -228,6 +306,12 @@ export function normalizeDraft(source) {
     // does something other than what it says; clipReadiness blocks on it
     // instead, and exportClip drops the field either way.
     draft.posture = typeof draft.posture === 'string' && draft.posture ? draft.posture : 'upright';
+    // Stamp the envelope on the way out, so a draft that came in unstamped
+    // (or straight out of createDraft) is saved as something a later build can
+    // identify rather than have to guess at.
+    draft.preview = normalizePreview(draft.preview);
+    draft.schema = DRAFT_SCHEMA;
+    draft.version = DRAFT_VERSION;
     return draft;
 }
 

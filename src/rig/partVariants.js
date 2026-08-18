@@ -24,6 +24,41 @@ export const RENDER_PART_SLOTS = Object.freeze([
     'nearBoot', 'farBoot',
 ]);
 
+// ── Semantic part slots ──────────────────────────────────────────────────────
+//
+// A clip authors ROLE ("the striking forearm", "the working hand"), not a fixed
+// render slot, because which physical limb plays that role flips with facing:
+// the pose channels a move drives as lArm/lElbow are rendered by the NEAR arm
+// facing right and by the FAR arm facing left (see Skeleton's [far, near] arm
+// mapping). A clip that authored `nearHand` directly would put the grip on the
+// wrong hand every time the move ran facing left, in exactly the half of cases
+// nobody screenshots.
+//
+// This table is the single definition of that mapping. Wrestler resolves clip
+// samples through it, and the move editor previews through it, so the art an
+// author sees on the reference rig is the art the game puts on screen.
+export const SEMANTIC_PART_SLOTS = Object.freeze({
+    strikingForearm: Object.freeze({ near: 'nearForearm', far: 'farForearm' }),
+    workingHand: Object.freeze({ near: 'nearHand', far: 'farHand' }),
+});
+
+/**
+ * Resolve any semantic slots in a clip's `parts` selection to real render
+ * slots, from live facing. Literal render slots pass through untouched, so a
+ * clip may mix the two.
+ *
+ * @param {Record<string,string>} parts clip-authored selection
+ * @param {number} facing +1 (right) or -1 (left)
+ */
+export function resolveSemanticSlots(parts = {}, facing = 1) {
+    const side = facing >= 0 ? 'near' : 'far';
+    const selection = {};
+    for (const [slot, name] of Object.entries(parts)) {
+        selection[SEMANTIC_PART_SLOTS[slot]?.[side] ?? slot] = name;
+    }
+    return selection;
+}
+
 const SLOT_BASE_KEYS = Object.freeze({
     head: ['head'],
     torso: ['torso'],

@@ -10,6 +10,7 @@ import {
     HAMMERLOCK_RELEASE_AT,
     HAMMERLOCK_DEF_SET_AT,
     HAMMERLOCK_PHASES,
+    HAMMERLOCK_STAGING,
 } from '../src/animation/clips/hammerlock.js';
 import Wrestler, { POSES } from '../src/Wrestler.js';
 
@@ -199,6 +200,11 @@ function makeWrestler(scene, { facing = 1, x = 480, idlePose = 'theszIdle' } = {
         skeleton: { setPartVariants() {} },
         _activeMove: null,
         _fixedHold: false,
+        // Staged placement writes x/y and zeroes walk velocity, and reads `s`
+        // as the perspective scale (undefined falls back to 1 in captureOrigin,
+        // which is what these unit fixtures want).
+        vx: 0,
+        vy: 0,
     });
 }
 
@@ -230,18 +236,51 @@ test('commitment: both holding, fixed-hold set, attacker paid, no timers schedul
     assert.ok(atk._activeMove && atk._activeMove === def._activeMove);
 });
 
-test('staging is ring-clamped and offset by facing (P1/P2 + both facings)', () => {
+test('the clip — not the executor — owns staging, and places both actors on the authored tableau', () => {
     for (const facing of [1, -1]) {
-        const { scene, atk, def } = pair({ facing });
+        const { scene, atk, def, runtime } = pair({ facing });
+        const originX = atk.x;
+        const originY = atk.y;
         atk._doHammerlock(def);
-        const defTween = scene.tweenAdds.find(t => t.targets === def);
-        const atkTween = scene.tweenAdds.find(t => t.targets === atk);
-        assert.ok(defTween && atkTween, 'both bodies get a staging tween');
-        // Defender staged ahead on the attacker's facing side; attacker steps in
-        // behind it (toward the attacker's start), so their offset has the sign
-        // of the facing.
-        assert.equal(Math.sign(defTween.x - atkTween.x), facing);
+
+        // ONE owner. The executor used to add two position tweens here; a clip
+        // that authors transform takes ownership instead, and the two can never
+        // both be live (src/animation/clipStaging.js, OWNERSHIP).
+        const positionTweens = scene.tweenAdds.filter(spec => (spec.targets === atk || spec.targets === def) && 'x' in spec);
+        assert.equal(positionTweens.length, 0, 'the executor must not also move the wrestlers');
+        const staging = atk._activeMove.staging;
+        assert.ok(staging, 'a transform-authoring clip captures a staging frame');
+        assert.equal(staging.anchorRole, 'attacker');
+        assert.equal(staging.facing, facing);
+
+        // t=0 PLACES both actors at the authored entry tableau, from the ONE
+        // shared origin — the attacker's position at commitment.
+        const placed = (offset) => originX + facing * offset.x * (atk.s ?? 1);
+        assert.equal(atk.x, placed(HAMMERLOCK_STAGING.attackerEntry));
+        assert.equal(def.x, placed(HAMMERLOCK_STAGING.defenderEntry));
+        assert.equal(def.y, originY, 'the pair is squared onto one depth line');
+
+        // …and the working tableau is reached by the time the defender is set.
+        advance(runtime, HAMMERLOCK_DEF_SET_AT + 0.02);
+        assert.ok(Math.abs(atk.x - placed(HAMMERLOCK_STAGING.attackerWork)) < 1);
+        assert.equal(def.x, placed(HAMMERLOCK_STAGING.defenderWork));
+        // Defender stays ahead on the attacker's facing in BOTH facings — the
+        // property a screen-space offset would break when mirrored.
+        assert.equal(Math.sign(def.x - atk.x), facing);
     }
+});
+
+test('the staged tableau is identical from every trigger distance', () => {
+    // The shared-origin guarantee, at the executor level: the defender's launch
+    // position must not be able to leak into the authored geometry.
+    const separations = new Set();
+    for (const defX of [420, 500, 520, 560, 640]) {
+        const { atk, def, runtime } = pair({ atkX: 470, defX });
+        atk._doHammerlock(def);
+        advance(runtime, HAMMERLOCK_DEF_SET_AT + 0.02);
+        separations.add(`${(def.x - atk.x).toFixed(9)}|${(def.y - atk.y).toFixed(9)}`);
+    }
+    assert.equal(separations.size, 1, `trigger distance leaked into the tableau: ${[...separations].join(' / ')}`);
 });
 
 test('natural completion: both drains applied, both recovered to their own idle', () => {
@@ -355,36 +394,44 @@ test('re-entrant cleanup is idempotent (recovery pose-claim cannot double-fire)'
     assert.equal(scene.timerCalls, 0);
 });
 
-// ── Staging-tween cancellation (retained handles, not a broad kill) ────────────
+// ── Position ownership on cancellation ────────────────────────────────────────
 
-test('cancellation before staging finishes stops the two staging tweens (no post-cancel sliding)', () => {
+test('cancelling mid-staging leaves both actors exactly where the last owned frame put them', () => {
+    // The old executor kept two retained tween handles so a cancel could stop
+    // them before they slid a wrestler into an abandoned stance. Clip staging
+    // removes the hazard rather than handling it: every frame is an ABSOLUTE
+    // placement, so the frame after the handle dies is simply the last frame it
+    // wrote, and nothing is left in flight to keep moving.
     const { scene, atk, def, runtime } = pair();
     atk._doHammerlock(def);
-    scene.tweens.advance(50); // 50 of 300ms — staging is genuinely mid-flight
-    const atkXAtCancel = atk.x;
-    const defXAtCancel = def.x;
-    assert.notEqual(atkXAtCancel, 470, 'sanity: attacker staging tween already moved it off its start x');
-    assert.notEqual(defXAtCancel, 520, 'sanity: defender staging tween already moved it off its start x');
+    advance(runtime, 0.10); // genuinely mid-approach — the defender is still travelling
+    const atkAtCancel = atk.x;
+    const defAtCancel = def.x;
+    assert.ok(Math.abs(defAtCancel - (atk.x + HAMMERLOCK_STAGING.defenderWork.x)) > 1,
+        'sanity: the defender has not finished its approach yet');
 
     runtime.cancel(atk._activeMove, 'test');
-    scene.tweens.advance(1000); // would easily finish the 300ms staging tweens if still live
+    advance(runtime, HAMMERLOCK_DURATION);
+    scene.tweens.advance(1000);
 
-    assert.equal(atk.x, atkXAtCancel, 'attacker stops sliding toward the abandoned hammerlock stage position');
-    assert.equal(def.x, defXAtCancel, 'defender stops sliding toward the abandoned hammerlock stage position');
+    assert.equal(atk.x, atkAtCancel, 'attacker stops where the hold left it');
+    assert.equal(def.x, defAtCancel, 'defender stops where the hold left it');
 });
 
-test('cancellation after staging already finished leaves the (already-stopped) staging tweens alone', () => {
-    // Stopping an already-finished tween must be a harmless no-op — natural
-    // completion and a late cancel both rely on that.
+test('a completed hold leaves nobody drifting either', () => {
     const { scene, atk, def, runtime } = pair();
     atk._doHammerlock(def);
-    scene.tweens.advance(300); // staging tweens fully resolve
-    const atkXAtStagingDone = atk.x;
-    const defXAtStagingDone = def.x;
-    advance(runtime, HAMMERLOCK_DRAIN_AT + 0.05);
-    assert.doesNotThrow(() => runtime.cancel(atk._activeMove, 'test'));
-    assert.equal(atk.x, atkXAtStagingDone);
-    assert.equal(def.x, defXAtStagingDone);
+    advance(runtime, HAMMERLOCK_DURATION + 0.05);
+    const atkAtEnd = atk.x;
+    const defAtEnd = def.x;
+    advance(runtime, 1.0);
+    scene.tweens.advance(1000);
+    assert.equal(atk.x, atkAtEnd);
+    assert.equal(def.x, defAtEnd);
+    // Walk velocity is zeroed by every staged frame, so the frame after the
+    // clip releases starts from rest rather than resuming a stale ramp.
+    assert.equal(atk.vx, 0);
+    assert.equal(def.vx, 0);
 });
 
 // ── Partner recovery on pose-claim interruption ─────────────────────────────────

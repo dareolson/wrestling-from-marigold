@@ -302,6 +302,76 @@ try {
     if (!/sternum/.test(refused.reason ?? '')) throw new Error(`refusal did not name the bad joint: ${refused.reason}`);
     if (refused.rejected !== 1) throw new Error(`discard was not recorded on the draft (${refused.rejected})`);
     if (!refused.blocked) throw new Error(`a discarded contact did not block readiness: ${refused.panel}`);
+
+    // ── The hammerlock authoring path, end to end, in the real editor ────────
+    // Load the committed draft through the library control, sweep it against the
+    // LIVE reference rigs, export it, and check the export describes the same
+    // move as the clip the game ships. This is the editor half of the path; the
+    // runtime half is tools/debug/hammerlock_authoring_proof.mjs.
+    const hammerlock = await page.evaluate(async () => {
+        const editor = window.__MOVE_EDITOR;
+        await editor.loadLibraryDraft('hammerlock');
+        const report = editor.readiness();
+        const model = await import('/tools/move-editor/model.js');
+        const shipped = await import('/src/animation/clips/hammerlock.js');
+        const { compileClip, sampleClip } = await import('/src/animation/AnimationClip.js');
+
+        // Semantic comparison: same sampled behaviour at a dense set of times,
+        // not a byte comparison of two differently formatted objects.
+        const exported = model.exportClip(editor.draft);
+        const a = compileClip(exported);
+        const b = compileClip(shipped.hammerlockClip);
+        const mismatches = [];
+        for (let i = 0; i <= 240; i++) {
+            const at = shipped.HAMMERLOCK_DURATION * (i / 240);
+            const sa = sampleClip(a, at);
+            const sb = sampleClip(b, at);
+            for (const role of Object.keys(sb.tracks)) {
+                for (const group of ['pose', 'transform']) {
+                    for (const [channel, value] of Object.entries(sb.tracks[role][group])) {
+                        const mine = sa.tracks[role][group][channel];
+                        if (!(Math.abs(mine - value) < 1e-9)) mismatches.push(`${role}.${group}.${channel}@${at.toFixed(3)}: ${mine} vs ${value}`);
+                    }
+                }
+                if (JSON.stringify(sa.tracks[role].parts) !== JSON.stringify(sb.tracks[role].parts)) {
+                    mismatches.push(`${role}.parts@${at.toFixed(3)}: ${JSON.stringify(sa.tracks[role].parts)} vs ${JSON.stringify(sb.tracks[role].parts)}`);
+                }
+            }
+        }
+        return {
+            id: editor.draft.id,
+            roles: Object.keys(editor.draft.tracks),
+            contacts: editor.draft.contacts.map(c => ({ ...c })),
+            rejected: editor.draft.rejectedContacts.length,
+            report,
+            mismatches: mismatches.slice(0, 5),
+            events: exported.events.map(event => `${event.type}@${event.at}`),
+            shippedEvents: shipped.hammerlockClip.events.map(event => `${event.type}@${event.at}`),
+            panel: document.getElementById('readiness').textContent,
+        };
+    });
+    if (hammerlock.id !== 'hammerlock') throw new Error(`the draft library did not load the hammerlock: ${hammerlock.id}`);
+    if (hammerlock.roles.join(',') !== 'attacker,defender') throw new Error('the loaded hammerlock is not a paired draft');
+    if (hammerlock.mismatches.length) throw new Error(`editor export drifted from the shipped clip: ${hammerlock.mismatches.join(' | ')}`);
+    if (hammerlock.events.join(',') !== hammerlock.shippedEvents.join(',')) {
+        throw new Error(`event markers drifted: ${hammerlock.events} vs ${hammerlock.shippedEvents}`);
+    }
+    if (!hammerlock.report.ok) throw new Error(`the shipped hammerlock draft is NOT ready: ${hammerlock.report.blocking.join(' | ')}`);
+    if (hammerlock.rejected) throw new Error('the hammerlock draft carries discarded contacts');
+    if (hammerlock.report.stagedRoles.join(',') !== 'attacker,defender') {
+        throw new Error(`the hammerlock must stage both actors, got [${hammerlock.report.stagedRoles}]`);
+    }
+    // The declared hold has to be MEASURED against the live rig, not merely
+    // stored — an unmeasured contact is the "green but nothing was verified"
+    // pattern this whole layer exists to prevent.
+    const hold = hammerlock.report.contacts.find(contact => contact.source === 'nearWrist' && contact.target === 'nearWrist');
+    if (!hold) throw new Error('the hammerlock draft declares no wrist-to-wrist hold');
+    if (!hold.measured) throw new Error('the declared hold was never measured against the live rig');
+    if (!Number.isFinite(hold.maxGap)) throw new Error(`hold gap is not finite: ${hold.maxGap}`);
+    if (!(hold.from > 0 && hold.to === hammerlock.report.contacts[0].to)) {
+        throw new Error(`the hold is not an interval: ${JSON.stringify(hold)}`);
+    }
+
     // The export dialog was already closed above, before the readiness sweep.
     if (process.env.SCREENSHOT) {
         await page.screenshot({ path: process.env.SCREENSHOT, fullPage: true });
@@ -309,7 +379,9 @@ try {
     if (errors.length) throw new Error(`browser errors: ${errors.join(' | ')}`);
     const finalContacts = await page.evaluate(() => window.__MOVE_EDITOR.draft.contacts.map(c => `${c.role} ${c.source}→${c.target}`));
     console.log(`PASS move editor connected drag, two-role timeline, capture, marker, export, and readiness sweep (${readiness.report.sampledTimes} frames, contact worst gap ${contact.maxGap.toFixed(2)} px at ${contact.worstAt.toFixed(3)}s)`);
-    console.log(`     contact contract: ${contactOptions.sourceUI.length} sources / ${contactOptions.targetUI.length} targets built from the model; graded pairs: ${finalContacts.join(', ')}; bad joint refused and blocked readiness`);
+    console.log(`     contact contract: ${contactOptions.sourceUI.length} sources / ${contactOptions.targetUI.length} targets built from the model; bad joint refused and blocked readiness`);
+    console.log(`     hammerlock draft: loaded from the library, READY, staged roles [${hammerlock.report.stagedRoles}], entry tableau ${JSON.stringify(hammerlock.report.entryTableau)}`);
+    console.log(`     hammerlock export matches the shipped clip across 241 sampled frames; declared hold ${hold.role} ${hold.source}→${hold.target} ${hold.from}–${hold.to}s measured over ${hold.measured} live frames, worst gap ${hold.maxGap.toFixed(2)} px at ${hold.worstAt.toFixed(3)}s`);
 } finally {
     await browser.close();
 }

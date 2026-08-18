@@ -2,6 +2,7 @@ import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
+import { resolveSemanticSlots } from './rig/partVariants.js';
 import {
     ARTICULATED_CHANNELS,
     ARTICULATION_CHANNEL_PAIRS,
@@ -461,21 +462,18 @@ export default class Wrestler {
     }
 
     // Map any semantic variant slots a clip authors onto the skeleton's real
-    // render slots. `strikingForearm` follows the punching arm: the jab drives
-    // lArm, which the skeleton renders as the NEAR arm facing right and the FAR
-    // arm facing left (Skeleton.js's [far,near] arm mapping). Binding the fist
-    // to the striker keeps it correct in both facings and both wrestler slots —
-    // never a screen-space correction that only holds facing right.
+    // render slots. `strikingForearm` follows the punching arm and
+    // `workingHand` the gripping one: both drive lArm, which the skeleton
+    // renders as the NEAR arm facing right and the FAR arm facing left
+    // (Skeleton.js's [far,near] arm mapping). Binding the art to the role keeps
+    // it correct in both facings and both wrestler slots — never a screen-space
+    // correction that only holds facing right.
+    //
+    // The mapping itself lives in src/rig/partVariants.js so the move editor
+    // previews a clip's semantic slots through the same table, rather than
+    // showing the author art the game will put on the other hand.
     _resolveVariantSlots(parts) {
-        const selection = {};
-        for (const [slot, name] of Object.entries(parts)) {
-            if (slot === 'strikingForearm') {
-                selection[this.facing >= 0 ? 'nearForearm' : 'farForearm'] = name;
-            } else {
-                selection[slot] = name;
-            }
-        }
-        return selection;
+        return resolveSemanticSlots(parts, this.facing);
     }
 
     // Cancel any MoveRuntime-driven move on this wrestler. Cancellation removes
@@ -1638,23 +1636,23 @@ export default class Wrestler {
         other._fixedHold = true;
         this._drain(3); // attacker commitment cost
 
-        // Ring-aware staging stays in the executor — clip data must never carry
-        // absolute world x. Defender staged slightly ahead on the attacker's
-        // centerline; attacker steps in behind/outside so the offset silhouette
-        // implies the lock without the rigs drawing genuinely interlocked hands.
-        const s      = this.s;
-        const facing = this.facing;
-        const sx     = this.x;
-        const b      = ringBoundsAtY(this.y);
-        const m      = 20;
-        const defTargetX = Math.max(b.left + m, Math.min(b.right - m, sx + facing * 30 * s));
-        const atkTargetX = Math.max(b.left + m, Math.min(b.right - m, defTargetX - facing * 24 * s));
-        // Retained (not fire-and-forget) so early cancellation can stop just
-        // these two specific tweens — see releaseHold below. A broad
-        // killTweensOf(this)/killTweensOf(other) here would risk killing a
-        // brand-new move or recovery tween that already claimed the actor.
-        const atkStageTween = this.scene.tweens.add({ targets: this, x: atkTargetX, duration: 300, ease: 'Cubic.easeOut' });
-        const defStageTween = this.scene.tweens.add({ targets: other, x: defTargetX, duration: 300, ease: 'Cubic.easeOut' });
+        // Staging is the CLIP's now, not the executor's. It used to be built
+        // here as two ring-clamped Phaser tweens toward `sx + facing*30*s`;
+        // those same offsets are authored as transform channels on the clip
+        // (HAMMERLOCK_STAGING), so the tableau can be composed, previewed and
+        // re-measured in tools/move-editor instead of living in gameplay code.
+        //
+        // Clip staging and executor staging are mutually exclusive by
+        // construction — a clip that authors transform captures a staging frame
+        // and owns position; one that does not leaves position alone (see
+        // src/animation/clipStaging.js's OWNERSHIP note) — so there is nothing
+        // to coordinate here and no way for two owners to fight. Ring bounds
+        // are still honoured: Wrestler._applyStagedTransform clamps every
+        // placed frame, which is strictly more than the old code's clamp of the
+        // two tween TARGETS.
+        //
+        // Facing is set above, BEFORE play(): the staging frame captures it, so
+        // the tableau mirrors as one rigid unit.
 
         // 220ms settle to a wrestler's OWN idle (Lou's theszIdle vs George's
         // powerIdle) — executor-owned so the shared clip never bakes in a
@@ -1673,14 +1671,12 @@ export default class Wrestler {
             other._activeMove = null;
             this._fixedHold   = false;
             other._fixedHold  = false;
-            if (!recover) {
-                // Cancellation before the 300ms staging tweens finish must not
-                // leave either wrestler still sliding toward the now-abandoned
-                // hammerlock stance. Stopping an already-finished tween is a
-                // harmless no-op, so this is safe on a late cancel too.
-                atkStageTween.stop();
-                defStageTween.stop();
-            }
+            // Nothing to stop on cancellation any more: the clip placed both
+            // actors absolutely on every frame it owned, so the frame after the
+            // handle dies is simply the last frame it wrote. There is no
+            // in-flight tween left to keep sliding a wrestler toward an
+            // abandoned stance — the class of bug the retained tween handles
+            // existed to fix cannot occur.
             if (this.state === 'holding')  this.state  = 'standing';
             if (other.state === 'holding') other.state = 'standing';
             if (recover) {

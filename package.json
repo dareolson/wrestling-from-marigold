@@ -17,7 +17,8 @@
     "rig:validate": "node tools/rig/validate-character-rigs.mjs",
     "rig:certify": "node tools/rig/certify.mjs",
     "art:validate-source": "node tools/wrestler-cutter/validate-source-manifest.mjs",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "proof:hammerlock": "node tools/debug/hammerlock_authoring_proof.mjs"
   },
   "repository": {
     "type": "git",

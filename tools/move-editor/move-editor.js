@@ -3,7 +3,7 @@ import { george } from '/src/characters/george.js';
 import { thesz } from '/src/characters/thesz.js';
 import { enumerateCharacterAssets, RENDER_PART_SLOTS, SEMANTIC_PART_SLOTS, resolveSemanticSlots } from '/src/rig/partVariants.js';
 import { createReferenceRigSkeleton, REFERENCE_RIG_ID } from '/src/rig/referenceRigRuntime.js';
-import { certifyPose, measureSample } from '/src/rig/certification.js';
+import { certifyPose, classifyFinding, measureSample } from '/src/rig/certification.js';
 import {
     CONTACT_SOURCES, CONTACT_TARGETS, EASES, POSE_CHANNELS, ROLES, addContact,
     addEvent, basePose, clipReadiness, contactPartner, createPairedDraft,
@@ -55,6 +55,10 @@ let overlay;
 let handleLayer;
 let lastTick = 0;
 let lastCertificationAt = 0;
+// The most recent whole-clip sweep, kept so the timeline can colour each
+// declared contact by what was actually measured rather than by what was
+// asserted. Null until the author sweeps.
+let lastReadiness = null;
 
 const actors = {
     attacker: { character: REFERENCE_RIG_ID, runtimeCharacter: null, facing: 1, skeleton: null, pose: basePose(), transform: { x: 0, y: 0 }, parts: {} },
@@ -115,6 +119,7 @@ function loadSample(at = playhead) {
         actors[role].parts = { ...state.parts };
     }
     syncControls();
+    refreshOnionSkins();
 }
 
 function setPlayhead(value, { sample = true } = {}) {
@@ -327,6 +332,86 @@ function captureNow() {
     else status(message);
 }
 
+// ── Onion skinning ───────────────────────────────────────────────────────────
+//
+// The adjacent keyframes of the SELECTED actor, drawn as thin joint chains
+// behind the live rig. Deliberately drawn as lines rather than as ghosted
+// copies of the skeleton: a translucent second body reads as a real wrestler
+// you can grab, and this editor's whole interaction model is "drag the thing
+// you can see". A wire chain cannot be mistaken for a live part and cannot be
+// clicked — it lives on the same non-interactive Graphics layer as the chain
+// overlay, so there is no hit target to hit.
+//
+// Previous is cool, next is warm, both well under the live rig's contrast.
+const ONION = Object.freeze({
+    previous: { color: 0x5fa8ff, alpha: 0.30 },
+    next: { color: 0xffb45f, alpha: 0.30 },
+});
+const ONION_CHAINS = [
+    ['nearShoulder', 'nearElbow', 'nearWrist'],
+    ['farShoulder', 'farElbow', 'farWrist'],
+    ['nearHip', 'nearKnee', 'nearAnkle'],
+    ['farHip', 'farKnee', 'farAnkle'],
+    ['neck', 'nearShoulder'],
+    ['neck', 'farShoulder'],
+    ['nearHip', 'farHip'],
+];
+let onionSkins = { previous: null, next: null };
+
+// Render `role` at an arbitrary sampled state and read back the joints the real
+// renderer published, restoring what was on screen. Same technique the readiness
+// sweep uses to measure a contact at a time the author is not looking at.
+function jointsAtKeyframe(role, frame) {
+    const actor = actors[role];
+    const saved = { pose: { ...actor.pose }, transform: { ...actor.transform }, parts: { ...actor.parts } };
+    try {
+        const sampled = sampleDraft(draft, frame.at).tracks[role];
+        actor.pose = { ...basePose(), ...sampled.pose };
+        actor.transform = { x: 0, y: 0, ...sampled.transform };
+        actor.parts = { ...sampled.parts };
+        renderActor(role);
+        return clone(actor.skeleton.jointAttachmentPoints ?? {});
+    } finally {
+        Object.assign(actors[role], saved);
+        renderActor(role);
+    }
+}
+
+// Recomputed only when the frame in view or the draft changes — an onion skin
+// is a property of the neighbouring KEYFRAMES, not of the pose being edited, so
+// re-solving it every rendered frame would be pure waste.
+function refreshOnionSkins() {
+    onionSkins = { previous: null, next: null };
+    if (!$('onionSkin')?.checked) return;
+    const frames = draft.tracks[selectedRole]?.keyframes ?? [];
+    if (frames.length < 2) return;
+    const previous = [...frames].reverse().find(frame => frame.at < playhead - 1e-6);
+    const next = frames.find(frame => frame.at > playhead + 1e-6);
+    if (previous) onionSkins.previous = { at: previous.at, joints: jointsAtKeyframe(selectedRole, previous) };
+    if (next) onionSkins.next = { at: next.at, joints: jointsAtKeyframe(selectedRole, next) };
+}
+
+function drawOnionSkins() {
+    for (const [which, skin] of Object.entries(onionSkins)) {
+        if (!skin) continue;
+        const style = ONION[which];
+        overlay.lineStyle(1.5, style.color, style.alpha);
+        for (const chain of ONION_CHAINS) {
+            const points = chain.map(joint => skin.joints[joint]).filter(Boolean);
+            if (points.length !== chain.length) continue;
+            overlay.beginPath();
+            overlay.moveTo(points[0].x, points[0].y);
+            for (const point of points.slice(1)) overlay.lineTo(point.x, point.y);
+            overlay.strokePath();
+        }
+        overlay.fillStyle(style.color, style.alpha);
+        for (const joint of new Set(ONION_CHAINS.flat())) {
+            const point = skin.joints[joint];
+            if (point) overlay.fillCircle(point.x, point.y, 2.5);
+        }
+    }
+}
+
 // ── Production readiness sweep ───────────────────────────────────────────────
 
 // Measure a declared contact pair at an arbitrary clip time by rendering BOTH
@@ -384,7 +469,20 @@ function certifyAt(at) {
             renderActor(role);
             for (const finding of certifyPose(certificationSample(actors[role].skeleton))) {
                 const variants = Object.entries(actors[role].parts).map(([slot, name]) => `${slot}=${name}`).join(' ');
-                failures.push({ role, kind: finding.kind, detail: `${role} ${finding.kind}${variants ? ` [${variants}]` : ''}` });
+                // Attributed by the certifier's own rule, not guessed here: on
+                // the reference rig a geometry failure is architectural (its
+                // anchors and its ink are generated from each other, so no
+                // artwork is left to blame), while the same finding on a legacy
+                // character is that character's art.
+                const isReference = actors[role].character === REFERENCE_RIG_ID;
+                const layer = classifyFinding({
+                    finding,
+                    referenceFailed: false,
+                    characterIsCompliant: isReference,
+                    renderPath: 'upright',
+                    isReference,
+                });
+                failures.push({ role, kind: finding.kind, layer, detail: `${role} ${finding.kind} on ${actors[role].character}${variants ? ` [${variants}]` : ''}` });
             }
         }
     } finally {
@@ -394,9 +492,30 @@ function certifyAt(at) {
     return { ok: failures.length === 0, failures };
 }
 
+// The reach of the limb a contact is declared on, measured on the live rig:
+// shoulder→elbow→wrist (or hip→knee→ankle) laid out straight. clipReadiness
+// uses it to tell "this hold drifts apart between keyframes" (fixable by
+// posing) from "these two bodies were never staged close enough to touch"
+// (fixable only by changing the tableau or the choreography).
+function measureContactReachAt(contact) {
+    const joints = actors[contact.role]?.skeleton?.jointAttachmentPoints ?? {};
+    const side = contact.source.startsWith('near') ? 'near' : 'far';
+    const chain = contact.source.endsWith('Wrist')
+        ? [`${side}Shoulder`, `${side}Elbow`, `${side}Wrist`]
+        : [`${side}Hip`, `${side}Knee`, `${side}Ankle`];
+    const [a, b, c] = chain.map(joint => joints[joint]);
+    if (!a || !b || !c) return null;
+    return Math.hypot(b.x - a.x, b.y - a.y) + Math.hypot(c.x - b.x, c.y - b.y);
+}
+
 function runReadiness() {
     playing = false;
-    const report = clipReadiness(draft, { measureContactGap: measureContactGapAt, certify: certifyAt });
+    const report = clipReadiness(draft, {
+        measureContactGap: measureContactGapAt,
+        measureContactReach: measureContactReachAt,
+        certify: certifyAt,
+    });
+    lastReadiness = report;
     const lines = [];
     lines.push(report.ok
         ? `READY — swept ${report.sampledTimes} frames across the whole clip.`
@@ -409,7 +528,7 @@ function runReadiness() {
     for (const contact of report.contacts) {
         if (!contact.measured) continue;
         const held = contact.to >= draft.duration ? 'held to end' : `released ${contact.to.toFixed(3)}s`;
-        lines.push(`· ${contact.role} ${contact.source} → ${contact.target} (${contact.from.toFixed(3)}s, ${held}): worst gap ${contact.maxGap.toFixed(2)} px at ${contact.worstAt.toFixed(3)}s over ${contact.graded} graded frames`);
+        lines.push(`· ${contact.role} ${contact.source} → ${contact.target} (${contact.from.toFixed(3)}s, ${held}): ${contact.severity.toUpperCase()} — worst gap ${contact.maxGap.toFixed(2)} px at ${contact.worstAt.toFixed(3)}s over ${contact.graded} graded frames${Number.isFinite(contact.reachPx) ? `, limb reach ${contact.reachPx.toFixed(2)} px` : ''}`);
     }
     // Rejected contacts are already listed in `blocking` above (that is what
     // makes the report NOT READY) — no second copy here.
@@ -425,6 +544,9 @@ function runReadiness() {
     }
     $('readiness').textContent = lines.join('\n');
     $('readiness').classList.toggle('warning', !report.ok);
+    // Re-render the rails so each declared contact is coloured by what this
+    // sweep measured, not by what it was asserted to be.
+    renderTimeline();
     // Restore what the author was looking at — the sweep re-rendered both
     // actors many times to measure.
     loadSample();
@@ -444,6 +566,39 @@ function selectKey(role, index) {
     const frame = draft.tracks[role].keyframes[index];
     setPlayhead(frame.at);
     syncControls();
+    refreshOnionSkins();
+}
+
+// Contact spans on the role's rail: acquisition, the maintained window, and
+// release, drawn where the author is already looking at time. A contact is an
+// INTERVAL — the panel could only ever say "there is one" — and the three
+// phases of a hold are exactly what a timeline is for.
+//
+// Discarded captures are drawn too, hatched and in the failure colour. A
+// capture that could not be recorded is the one thing that must never be
+// invisible: it is already blocking in the readiness sweep, and this is the
+// second place it cannot hide.
+function renderContactSpans(rail, role) {
+    const duration = draft.duration || 1;
+    const spans = [
+        ...(draft.contacts ?? []).filter(contact => contact.role === role).map(contact => ({ contact, rejected: false })),
+        ...(draft.rejectedContacts ?? []).filter(contact => contact.role === role).map(contact => ({ contact, rejected: true })),
+    ];
+    for (const { contact, rejected } of spans) {
+        const span = document.createElement('div');
+        span.className = `contact${rejected ? ' rejected' : ''}`;
+        span.style.left = `${(contact.from / duration) * 100}%`;
+        span.style.width = `${Math.max(0.6, ((contact.to - contact.from) / duration) * 100)}%`;
+        const graded = lastReadiness?.contacts?.find(entry => entry.role === contact.role
+            && entry.source === contact.source && entry.target === contact.target && entry.from === contact.from);
+        if (graded) span.dataset.severity = graded.severity;
+        span.title = rejected
+            ? `DISCARDED ${contact.source} → ${contact.target}: ${contact.reason}`
+            : `${contact.source} → ${contact.target} held ${contact.from.toFixed(3)}–${contact.to.toFixed(3)}s`
+                + (graded ? ` · worst gap ${graded.maxGap.toFixed(1)} px (${graded.severity})` : ' · sweep readiness to measure it');
+        span.innerHTML = `<b class="acquire"></b><span class="label">${contact.source}→${contact.target}</span><b class="release"></b>`;
+        rail.append(span);
+    }
 }
 
 function renderTimeline() {
@@ -455,6 +610,7 @@ function renderTimeline() {
         track.className = 'track';
         track.innerHTML = `<div class="track-label">${role}</div><div class="rail"></div>`;
         const rail = track.querySelector('.rail');
+        renderContactSpans(rail, role);
         rail.addEventListener('pointerdown', event => {
             if (event.target !== rail) return;
             const rect = rail.getBoundingClientRect();
@@ -623,6 +779,9 @@ function rebuildHandles() {
 
 function updateHandles() {
     overlay.clear();
+    // Behind the live chain overlay and the handles, so the frame being edited
+    // always reads as the foreground one.
+    drawOnionSkins();
     for (const handle of handleLayer) {
         const { role, name } = handle._moveHandle;
         const sk = actors[role].skeleton;
@@ -744,6 +903,7 @@ function mutate(label, apply, { coalesce = null } = {}) {
     history.gesture = coalesce;
     history.gestureAt = now;
     const result = apply();
+    refreshOnionSkins();
     lastMutation = label;
     scheduleAutosave();
     return result;
@@ -906,7 +1066,8 @@ async function loadLibraryDraft(id) {
 function installUI() {
     buildPoseControls();
     buildContactControls();
-    $('role').addEventListener('change', event => { selectedRole = event.target.value; selectedKey = 0; syncControls(); renderTimeline(); });
+    $('role').addEventListener('change', event => { selectedRole = event.target.value; selectedKey = 0; syncControls(); renderTimeline(); refreshOnionSkins(); });
+    $('onionSkin').addEventListener('change', refreshOnionSkins);
     $('character').addEventListener('change', event => {
         mutate('preview character', () => {
             actors[selectedRole].character = event.target.value;
@@ -1024,6 +1185,11 @@ function installUI() {
         // src/animation/clipStaging.js's resolver instead of restating the math.
         loadLibraryDraft,
         undo, redo, mutate,
+        get onionSkins() { return onionSkins; },
+        get scene() { return scene; },
+        get handleLayer() { return handleLayer; },
+        get lastReadiness() { return lastReadiness; },
+        refreshOnionSkins,
         history,
         AUTOSAVE_KEY,
         offerRecovery,

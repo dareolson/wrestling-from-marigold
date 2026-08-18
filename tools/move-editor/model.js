@@ -432,6 +432,26 @@ export function exportModule(draft) {
 
 // ── Production readiness ─────────────────────────────────────────────────────
 
+// ── Failure attribution ──────────────────────────────────────────────────────
+//
+// "Not ready" is close to useless on its own: the author cannot tell whether
+// they mis-authored something, whether the runtime cannot carry what they
+// authored, or whether the character's artwork simply cannot draw it. Every
+// readiness finding therefore names the layer that owns it, using the same
+// vocabulary the articulation certifier attributes with
+// (src/rig/certification.js classifyFinding), so a report from either tool
+// points at the same place.
+export const READINESS_LAYERS = Object.freeze({
+    AUTHORING: 'authoring-data',       // what was written in this draft
+    TRANSPORT: 'runtime-transport',    // authored fine, the runtime cannot carry it
+    BINDING: 'binding-geometry',       // the rig's anchors are wrong
+    ARTWORK: 'source-artwork',         // this character's art cannot draw it
+    ARCHITECTURE: 'architecture',      // no artwork or authoring can fix it
+    COVERAGE: 'coverage-gap',          // nothing draws this state at all
+});
+
+
+
 // How densely the whole clip is swept. The current-pose certification badge
 // only ever sees the frame the author is looking at, which is precisely how a
 // clip that reads fine at every keyframe ships with a broken interpolation
@@ -439,6 +459,11 @@ export function exportModule(draft) {
 // uniform grid, plus the midpoint of every span (where eased interpolation
 // deviates most from the straight line between the baked endpoints).
 export const READINESS_GRID = 60;
+
+// World px inside which a declared contact counts as actually held. Snap-and-bake
+// lands exact on the keyframe it was baked on; this budget only absorbs the
+// sub-pixel drift of interpolation between two of them.
+export const CONTACT_HELD_PX = 1;
 
 function sampleTimes(draft, grid = READINESS_GRID) {
     const times = new Set([0, draft.duration]);
@@ -470,11 +495,25 @@ function sampleTimes(draft, grid = READINESS_GRID) {
  *        each swept time; return `{ ok, failures }`.
  * @returns {object} report
  */
-export function clipReadiness(draft, { measureContactGap = null, certify = null, grid = READINESS_GRID } = {}) {
+export function clipReadiness(draft, {
+    measureContactGap = null,
+    measureContactReach = null,
+    certify = null,
+    grid = READINESS_GRID,
+} = {}) {
     const normalized = normalizeDraft(draft);
     const validation = validateClip(exportClip(normalized));
-    const blocking = [...validation.errors];
+    // Findings carry their layer; blocking/warnings are the rendered strings,
+    // each prefixed with it, so a reader of either sees the same attribution.
+    const findings = [];
+    const record = (layer, severity, message) => {
+        findings.push({ layer, severity, message });
+        (severity === 'blocking' ? blocking : warnings).push(`[${layer}] ${message}`);
+        return message;
+    };
+    const blocking = [];
     const warnings = [];
+    for (const error of validation.errors) record(READINESS_LAYERS.AUTHORING, 'blocking', error);
     const nonFinite = [];
     const unsupportedStaging = [];
     const unsupportedModes = [];
@@ -551,12 +590,30 @@ export function clipReadiness(draft, { measureContactGap = null, certify = null,
                 if (gap > maxGap) { maxGap = gap; worstAt = at; }
             }
         }
-        contacts.push({ ...contact, maxGap, worstAt, measured, graded: window.length, partner: contactPartner(contact.role) });
+        // How far the declared limb can reach at all. This is what turns a gap
+        // into a diagnosis: a separation WIDER THAN THE LIMB IS LONG cannot be
+        // closed by any pose of that limb, so the problem is the tableau or the
+        // choreography, not a keyframe that needs nudging. Without it every gap
+        // reads the same and the author is told to "add a keyframe" for a hold
+        // the bodies were never staged close enough to make.
+        const reachPx = measureContactReach ? measureContactReach(contact) : null;
+        const severity = !measured ? 'unmeasured'
+            : maxGap <= CONTACT_HELD_PX ? 'held'
+                : (Number.isFinite(reachPx) && maxGap > reachPx) ? 'unreachable' : 'drifting';
+        contacts.push({
+            ...contact, maxGap, worstAt, measured, graded: window.length,
+            partner: contactPartner(contact.role), reachPx, severity,
+        });
         const span = `${contact.from.toFixed(3)}–${contact.to.toFixed(3)}s`;
-        if (!measureContactGap || !measured) {
-            warnings.push(`${contact.role} ${contact.source} → ${contact.target} (${span}): contact gap could not be measured (no live rig)`);
-        } else if (maxGap > 1) {
-            warnings.push(`${contact.role} ${contact.source} → ${contact.target} (${span}): separates to ${maxGap.toFixed(2)} px at ${worstAt.toFixed(3)}s — add a keyframe there`);
+        const label = `${contact.role} ${contact.source} → ${contact.target} (${span})`;
+        if (severity === 'unmeasured') {
+            record(READINESS_LAYERS.COVERAGE, 'warning', `${label}: contact gap could not be measured (no live rig)`);
+        } else if (severity === 'unreachable') {
+            record(READINESS_LAYERS.AUTHORING, 'warning',
+                `${label}: separates to ${maxGap.toFixed(2)} px at ${worstAt.toFixed(3)}s, beyond the ${reachPx.toFixed(2)} px reach of that limb — no pose of it can close this, so the tableau or the choreography has to change (the hold is currently implied by silhouette only)`);
+        } else if (severity === 'drifting') {
+            record(READINESS_LAYERS.AUTHORING, 'warning',
+                `${label}: separates to ${maxGap.toFixed(2)} px at ${worstAt.toFixed(3)}s — within the limb's reach, so add a keyframe there`);
         }
     }
 
@@ -565,13 +622,25 @@ export function clipReadiness(draft, { measureContactGap = null, certify = null,
     // an unmeasurable one means the clip reports clean while proving nothing
     // about the thing the author cared most about.
     for (const entry of normalized.rejectedContacts ?? []) {
-        blocking.push(`discarded contact ${entry.role} ${entry.source} → ${entry.target} at ${entry.from.toFixed(3)}s: ${entry.reason}`);
+        record(READINESS_LAYERS.AUTHORING, 'blocking',
+            `discarded contact ${entry.role} ${entry.source} → ${entry.target} at ${entry.from.toFixed(3)}s: ${entry.reason}`);
     }
-    for (const entry of nonFinite) blocking.push(`${entry.role} ${entry.group}.${entry.channel} is not finite at ${entry.at.toFixed(3)}s (${entry.source})`);
-    blocking.push(...unsupportedStaging, ...unsupportedModes);
+    for (const entry of nonFinite) {
+        record(READINESS_LAYERS.AUTHORING, 'blocking',
+            `${entry.role} ${entry.group}.${entry.channel} is not finite at ${entry.at.toFixed(3)}s (${entry.source})`);
+    }
+    // Authored fine, but the gameplay runtime has no way to carry it — the
+    // failure is the transport's, and naming it as authoring would send the
+    // author off to fix a keyframe that is not wrong.
+    for (const issue of unsupportedStaging) record(READINESS_LAYERS.TRANSPORT, 'blocking', issue);
+    // Nothing draws this posture yet: not the author's data and not the art.
+    for (const issue of unsupportedModes) record(READINESS_LAYERS.COVERAGE, 'blocking', issue);
     if (certificationFailures.length) {
         const worst = certificationFailures[0];
-        blocking.push(`certification failed at ${worst.at.toFixed(3)}s: ${worst.detail ?? worst.kind ?? 'unspecified'} (${certificationFailures.length} total)`);
+        // The certifier already attributes its own findings; carry that through
+        // rather than guessing a layer here.
+        record(worst.layer ?? READINESS_LAYERS.BINDING, 'blocking',
+            `certification failed at ${worst.at.toFixed(3)}s: ${worst.detail ?? worst.kind ?? 'unspecified'} (${certificationFailures.length} total)`);
     }
 
     // What the runtime will actually take ownership of, so the author can see at
@@ -600,7 +669,8 @@ export function clipReadiness(draft, { measureContactGap = null, certify = null,
             const offset = entryTableau[role];
             const anchorOffset = entryTableau[anchorRole] ?? { x: 0, y: 0 };
             if (Math.hypot(offset.x - anchorOffset.x, offset.y - anchorOffset.y) < 1) {
-                warnings.push(`${role} enters at the same point as ${anchorRole} — author a real entry separation, or the two wrestlers stage on top of each other`);
+                record(READINESS_LAYERS.AUTHORING, 'warning',
+                    `${role} enters at the same point as ${anchorRole} — author a real entry separation, or the two wrestlers stage on top of each other`);
             }
         }
     }
@@ -609,6 +679,7 @@ export function clipReadiness(draft, { measureContactGap = null, certify = null,
         ok: blocking.length === 0,
         blocking,
         warnings,
+        findings,
         nonFinite,
         unsupportedStaging,
         unsupportedModes,

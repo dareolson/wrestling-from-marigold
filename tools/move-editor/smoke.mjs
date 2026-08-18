@@ -373,6 +373,96 @@ try {
     }
 
 
+    // ── Onion skinning and timeline feedback ────────────────────────────────
+    const feedback = await page.evaluate(async () => {
+        const editor = window.__MOVE_EDITOR;
+        await editor.loadLibraryDraft('hammerlock');
+        // A time with a keyframe on both sides for the selected actor.
+        editor.setPlayhead(0.2);
+        editor.refreshOnionSkins();
+        const skins = editor.onionSkins;
+        const report = editor.readiness();
+
+        const spans = [...document.querySelectorAll('#tracks .contact')].map(node => ({
+            severity: node.dataset.severity ?? null,
+            rejected: node.classList.contains('rejected'),
+            title: node.title,
+            label: node.querySelector('.label')?.textContent ?? '',
+            left: node.style.left,
+            width: node.style.width,
+            interactive: getComputedStyle(node).pointerEvents !== 'none',
+            hasAcquire: !!node.querySelector('.acquire'),
+            hasRelease: !!node.querySelector('.release'),
+        }));
+
+        // Onion skins must not be mistakable for live parts: they add no
+        // interactive object at all. Counted against the scene's own input list
+        // with the skins off and on, so a ghost that quietly became draggable
+        // would show up as a new hit target.
+        const interactiveCount = () => editor.scene.input.list?.length ?? 0;
+        document.getElementById('onionSkin').checked = false;
+        editor.refreshOnionSkins();
+        const withoutSkins = interactiveCount();
+        document.getElementById('onionSkin').checked = true;
+        editor.refreshOnionSkins();
+        const withSkins = interactiveCount();
+
+        // A discarded capture must be visible on the timeline as well as
+        // blocking in the sweep.
+        const model = await import('/tools/move-editor/model.js');
+        model.addContact(editor.draft, { from: 0.3, role: 'attacker', source: 'nearWrist', target: 'sternum' });
+        const afterBadCapture = editor.readiness();
+        const rejectedSpans = [...document.querySelectorAll('#tracks .contact.rejected')].length;
+
+        return {
+            skins: {
+                previous: skins.previous ? { at: skins.previous.at, joints: Object.keys(skins.previous.joints).length } : null,
+                next: skins.next ? { at: skins.next.at, joints: Object.keys(skins.next.joints).length } : null,
+            },
+            spans,
+            withoutSkins,
+            withSkins,
+            contactSeverity: report.contacts.map(contact => `${contact.source}->${contact.target}:${contact.severity}@${Math.round(contact.maxGap)}px/reach${Math.round(contact.reachPx ?? -1)}`),
+            findings: report.findings.map(finding => `${finding.layer}/${finding.severity}`),
+            warnings: report.warnings,
+            rejectedSpans,
+            badCaptureBlocking: afterBadCapture.blocking,
+            badCaptureFindings: afterBadCapture.findings.map(finding => finding.layer),
+        };
+    });
+    if (!feedback.skins.previous || !feedback.skins.next) {
+        throw new Error(`onion skins did not resolve both neighbours: ${JSON.stringify(feedback.skins)}`);
+    }
+    if (!(feedback.skins.previous.at < 0.2 && feedback.skins.next.at > 0.2)) {
+        throw new Error(`onion skins are not the ADJACENT keyframes: ${JSON.stringify(feedback.skins)}`);
+    }
+    if (feedback.skins.previous.joints < 8 || feedback.skins.next.joints < 8) {
+        throw new Error('an onion skin carries too few joints to read as a body');
+    }
+    if (feedback.withSkins !== feedback.withoutSkins) {
+        throw new Error(`onion skins added ${feedback.withSkins - feedback.withoutSkins} interactive object(s) — a ghost must never be selectable`);
+    }
+    if (!feedback.spans.length) throw new Error('the declared hold is not drawn on the timeline');
+
+    const span = feedback.spans[0];
+    if (!span.hasAcquire || !span.hasRelease) throw new Error('the contact span shows no acquisition/release ticks');
+    if (!/nearWrist→nearWrist/.test(span.label)) throw new Error(`the span does not name the connected joints: ${span.label}`);
+    if (!/held 0\.12/.test(span.title)) throw new Error(`the span does not state its maintained window: ${span.title}`);
+    if (span.interactive) throw new Error('contact spans are interactive and can swallow a keyframe click');
+    if (span.severity !== 'unreachable') {
+        throw new Error(`the hammerlock hold should grade as unreachable against the live rig, got ${span.severity}`);
+    }
+    if (!feedback.contactSeverity.some(entry => /unreachable/.test(entry))) {
+        throw new Error(`readiness did not grade the hold: ${feedback.contactSeverity.join(', ')}`);
+    }
+    if (!feedback.warnings.some(warning => /^\[authoring-data\]/.test(warning) && /beyond the/.test(warning))) {
+        throw new Error(`the unreachable hold was not attributed to a layer: ${feedback.warnings.join(' | ')}`);
+    }
+    if (!feedback.rejectedSpans) throw new Error('a discarded capture is invisible on the timeline');
+    if (!feedback.badCaptureBlocking.some(issue => /^\[authoring-data\] discarded contact/.test(issue))) {
+        throw new Error(`a discarded capture was not blocked with its layer: ${feedback.badCaptureBlocking.join(' | ')}`);
+    }
+
     // ── Undo / redo across every kind of authoring mutation ─────────────────
     // The hammerlock draft is loaded at this point, so these run against a real
     // paired move rather than an empty one.
@@ -546,6 +636,8 @@ try {
     console.log(`PASS move editor connected drag, two-role timeline, capture, marker, export, and readiness sweep (${readiness.report.sampledTimes} frames, contact worst gap ${contact.maxGap.toFixed(2)} px at ${contact.worstAt.toFixed(3)}s)`);
     console.log(`     contact contract: ${contactOptions.sourceUI.length} sources / ${contactOptions.targetUI.length} targets built from the model; bad joint refused and blocked readiness`);
     console.log(`     hammerlock draft: loaded from the library, READY, staged roles [${hammerlock.report.stagedRoles}], entry tableau ${JSON.stringify(hammerlock.report.entryTableau)}`);
+    console.log(`     onion skins: previous @${feedback.skins.previous.at}s / next @${feedback.skins.next.at}s, drawn as non-interactive wire chains; timeline shows ${feedback.spans.length} contact span(s) with acquisition/release ticks and ${feedback.rejectedSpans} discarded capture(s)`);
+    console.log(`     readiness attribution: ${feedback.contactSeverity.join(', ')}`);
     console.log(`     undo/redo: ${undoRedo.steps.length} mutation kinds (${undoRedo.steps.join(', ')}) undone and redone to an identical full authoring state, keyboard included`);
     console.log(`     autosave: schema-stamped, offered (never silently loaded) after reload, restored on request; an incompatible draft is refused with a reason and left untouched until discarded`);
     console.log(`     hammerlock export matches the shipped clip across 241 sampled frames; declared hold ${hold.role} ${hold.source}→${hold.target} ${hold.from}–${hold.to}s measured over ${hold.measured} live frames, worst gap ${hold.maxGap.toFixed(2)} px at ${hold.worstAt.toFixed(3)}s`);

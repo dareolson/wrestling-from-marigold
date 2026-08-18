@@ -245,3 +245,62 @@ test('variant choices combine shared families and side-specific overrides', () =
     assert.deepEqual(model.variantChoices(character, 'nearHand'), ['base', 'fist', 'grip']);
     assert.deepEqual(model.variantChoices(character, 'farHand'), ['base', 'fist']);
 });
+
+// ── Failure attribution and contact severity ─────────────────────────────────
+
+test('every readiness finding names the layer responsible', () => {
+    const draft = {
+        ...model.createDraft('attributed', 1),
+        posture: 'prone', // nothing draws this yet -> coverage gap
+    };
+    // Authored fine, but the runtime has no way to carry it -> transport.
+    draft.tracks.attacker.keyframes[0].transform.rotation = 0.4;
+    // Not finite -> the author's data.
+    draft.tracks.defender.keyframes[0].pose.lArm = Number.NaN;
+    const report = model.clipReadiness(draft);
+
+    const layers = Object.fromEntries(report.findings.map(finding => [finding.message, finding.layer]));
+    assert.ok(Object.entries(layers).some(([message, layer]) =>
+        /transform\.rotation/.test(message) && layer === model.READINESS_LAYERS.TRANSPORT));
+    assert.ok(Object.entries(layers).some(([message, layer]) =>
+        /not finite/.test(message) && layer === model.READINESS_LAYERS.AUTHORING));
+    assert.ok(Object.entries(layers).some(([message, layer]) =>
+        /posture "prone"/.test(message) && layer === model.READINESS_LAYERS.COVERAGE));
+    // The rendered strings carry the same attribution, so a reader of either
+    // sees the same place to look.
+    assert.ok(report.blocking.every(issue => /^\[[a-z-]+\] /.test(issue)), report.blocking.join(' | '));
+});
+
+test('a contact is graded against the reach of the limb that must close it', () => {
+    const draft = model.createDraft('graded', 1);
+    draft.contacts = [{ from: 0, to: 1, role: 'attacker', source: 'nearWrist', target: 'nearWrist' }];
+
+    // Within the limb's reach: an authorable problem — pose it, or add a
+    // keyframe where it drifts.
+    const drifting = model.clipReadiness(draft, {
+        measureContactGap: () => 30,
+        measureContactReach: () => 90,
+    });
+    assert.equal(drifting.contacts[0].severity, 'drifting');
+    assert.ok(drifting.warnings.some(warning => /add a keyframe/.test(warning)));
+
+    // Wider than the limb is long: no pose of that limb can close it, so
+    // telling the author to add a keyframe would be actively wrong.
+    const unreachable = model.clipReadiness(draft, {
+        measureContactGap: () => 200,
+        measureContactReach: () => 90,
+    });
+    assert.equal(unreachable.contacts[0].severity, 'unreachable');
+    assert.ok(unreachable.warnings.some(warning => /beyond the 90.00 px reach/.test(warning)));
+    assert.ok(!unreachable.warnings.some(warning => /add a keyframe/.test(warning)));
+
+    // Exact contact is held, and neither case blocks: snap-and-bake stays a
+    // legal authoring choice and an implied hold is a real one.
+    const held = model.clipReadiness(draft, {
+        measureContactGap: () => 0.4,
+        measureContactReach: () => 90,
+    });
+    assert.equal(held.contacts[0].severity, 'held');
+    assert.equal(held.ok, true);
+    assert.equal(unreachable.ok, true);
+});

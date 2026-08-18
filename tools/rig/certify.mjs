@@ -38,6 +38,7 @@ import {
 import {
     DEFAULT_BUDGET,
     certifyFacingSymmetry,
+    certifyGetUpHandoff,
     certifyMotion,
     certifyPose,
     certifyVariantDrift,
@@ -56,6 +57,50 @@ const KNOWN_LEGACY_DEFECTS = [
     // which is why an audit that probed one facing per pose never saw it.
     { character: 'thesz', entry: 'hammerlock', joints: ['nearElbow', 'farElbow'], note: 'legacy fixed forearm offsets; ~2.83px elbow ink gap' },
 ];
+
+// ── Get-up → upright handoff budgets ─────────────────────────────────────────
+//
+// The single frame where Wrestler stops calling Skeleton.updateGetUp and starts
+// calling updateUpright is a KNOWN, DOCUMENTED discontinuity: the get-up's
+// closing keyframe only approximates updateUpright's rest geometry, so joints
+// jump. See RIG_AND_MOVE_PIPELINE.md ("Get-up → upright handoff pops") and the
+// closing entry of Skeleton.GETUP_POSES.
+//
+// This gate does not fix that pop. It stops it getting worse — which nothing
+// else could see, because certifyMotion grades continuity WITHIN one sampled
+// sequence and the pop lives in the seam BETWEEN two render paths.
+//
+// HOW THE NUMBER IS TAKEN, stated exactly, because a budget is meaningless
+// without its method: render updateGetUp at t = 1, then render updateUpright
+// with POSES.idle, both at RENDER_ORIGIN and scale 1, and take the largest
+// distance any joint published by both frames moves. POSES.idle is the
+// defensible comparison stance — it is what _startRiseUp tweens to the moment
+// the rise completes, and the get-up's closing keyframe is documented as an
+// approximation OF the upright rest geometry. Both facings are measured and the
+// worse one is graded.
+//
+// ON THE DOCUMENTED FIGURES. RIG_AND_MOVE_PIPELINE.md records 35.19 px (Lou,
+// nearAnkle) and 55.79 px (George, nearWrist) from a verification audit on
+// 2026-08-17. That audit's harness was not kept, and the method above does not
+// reproduce those numbers — the figures below are what the described
+// measurement actually yields today, on the same code. Rather than quietly
+// adopt numbers whose derivation cannot be re-run, the budgets are the values
+// THIS method measures, and the documented pair is recorded here so the
+// discrepancy is visible instead of laundered. Both say the same thing
+// qualitatively: the handoff pops, on every character, by tens of pixels.
+//
+// The tolerance is small and justified: these renders are deterministic (no
+// randomness, no timing input), so a run reproduces its measurement exactly;
+// 0.5 px is float/renderer headroom, not slack.
+const GETUP_HANDOFF_TOLERANCE_PX = 0.5;
+const GETUP_HANDOFF_BUDGETS = {
+    // character: px measured by the method above on 2026-08-17
+    refrig: 84.96,
+    george: 78.75,
+    thesz: 45.30,
+};
+// What the pipeline doc records, for the same defect, by an unpreserved method.
+const DOCUMENTED_HANDOFF_PX = { thesz: 35.19, george: 55.79 };
 
 // Sole grounding is MEASURED but not GRADED, deliberately.
 //
@@ -362,6 +407,7 @@ async function certifyCharacter(page, characterId, referenceFailures) {
         unmeasurable: new Set(),
         inkFailures: [],
         expectedDefects: [],
+        getUpHandoff: null,
         soleObservations: new Map(),
     };
 
@@ -516,6 +562,43 @@ async function certifyCharacter(page, characterId, referenceFailures) {
         }
     }
 
+    // ── Get-up → upright handoff ─────────────────────────────────────────────
+    // Measured through the same real entry points everything else here uses,
+    // and graded against this character's recorded baseline.
+    {
+        const budgetPx = GETUP_HANDOFF_BUDGETS[characterId];
+        let worstFacing = null;
+        for (const facing of FACINGS) {
+            const last = await page.evaluate(f => window.__wfmCert.renderGetUp(1, f), facing);
+            const first = await page.evaluate(
+                ({ pose, facing }) => window.__wfmCert.renderUpright(pose, facing),
+                { pose: POSES.idle, facing },
+            );
+            report.measured += 2;
+            const result = certifyGetUpHandoff(last, first, {
+                budgetPx,
+                tolerancePx: GETUP_HANDOFF_TOLERANCE_PX,
+            });
+            if (!worstFacing || (result.worst?.jumpPx ?? 0) > worstFacing.jumpPx) {
+                worstFacing = { facing, ...(result.worst ?? { joint: null, jumpPx: 0 }) };
+            }
+            for (const finding of result.findings) {
+                record({ id: 'seated-getup', renderPath: 'getup' }, facing, finding);
+            }
+        }
+        report.getUpHandoff = {
+            budgetPx: budgetPx ?? null,
+            tolerancePx: GETUP_HANDOFF_TOLERANCE_PX,
+            documentedPx: DOCUMENTED_HANDOFF_PX[characterId] ?? null,
+            ...worstFacing,
+        };
+        if (budgetPx === undefined) {
+            // A character with no recorded baseline is NOT silently exempt:
+            // an ungraded handoff is a hole in the gate and has to be visible.
+            report.unmeasurable.add(`getup-handoff: no recorded budget for "${characterId}"; the handoff is measured but not graded`);
+        }
+    }
+
     // Variant swap: structural anchors must not move, semantic contacts may.
     if (info.exercises.partVariants) {
         for (const [slot, jointName, semanticName, ids] of [
@@ -595,6 +678,17 @@ try {
             const joints = new Set(report.expectedDefects.map(defect => `${defect.entry}/${defect.joint}`));
             console.log(`   known legacy-art defects reproduced: ${[...joints].join(', ')}`);
         }
+        if (report.getUpHandoff) {
+            const handoff = report.getUpHandoff;
+            const over = Number.isFinite(handoff.budgetPx) && handoff.jumpPx > handoff.budgetPx + handoff.tolerancePx;
+            console.log(`   get-up → upright handoff: ${handoff.jumpPx.toFixed(2)} px at ${handoff.joint} (facing ${handoff.facing})`
+                + ` — budget ${handoff.budgetPx === null ? 'NONE RECORDED' : `${handoff.budgetPx.toFixed(2)} px +${handoff.tolerancePx} tolerance`}`
+                + `${over ? ' — REGRESSED' : ''}`);
+            if (handoff.documentedPx !== null) {
+                console.log(`     (RIG_AND_MOVE_PIPELINE.md records ${handoff.documentedPx.toFixed(2)} px for this defect by an unpreserved method; see certify.mjs)`);
+            }
+            console.log('     a known open defect: this gate stops it worsening, it does not close it');
+        }
         if (report.soleObservations.length) {
             const sorted = [...report.soleObservations]
                 .sort((a, b) => Math.abs(b.aboveGroundPx) - Math.abs(a.aboveGroundPx));
@@ -639,6 +733,11 @@ try {
         // run. Legacy artwork on a character queued for regeneration is
         // reported, not blocking.
         if (categories.get('architecture') || categories.get('runtime-transport')) exitCode = 1;
+        // The handoff gate fails the run on its own. Its findings classify as
+        // animation-data, which is otherwise reported and not blocking — correct
+        // for a legacy-art defect queued for regeneration, wrong for a budget
+        // whose entire job is to hold a documented number from drifting.
+        if (report.findings.some(finding => finding.kind?.startsWith('getup-handoff'))) exitCode = 1;
     }
 
     const gaps = coverageGaps();

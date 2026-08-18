@@ -315,6 +315,52 @@ export function certifyMotion(samples, { budget = DEFAULT_BUDGET } = {}) {
 }
 
 /**
+ * The get-up → upright HANDOFF: how far each joint jumps on the single frame
+ * where Wrestler stops calling updateGetUp and starts calling updateUpright.
+ *
+ * This is a discontinuity the rest of this kernel cannot see. certifyMotion
+ * grades continuity WITHIN one sampled sequence, and the get-up's own interior
+ * is smooth; the pop lives in the seam BETWEEN two render paths, which no
+ * single sequence contains. It is a real, documented defect (see
+ * RIG_AND_MOVE_PIPELINE.md and Skeleton.GETUP_POSES' closing keyframe) and this
+ * function exists to stop it getting worse, not to hide it.
+ *
+ * `budgetPx` is therefore a RECORDED BASELINE, not an aspiration: it is what
+ * the character measures today plus a small tolerance. Widening it to make a
+ * run pass would delete the only thing holding the line.
+ *
+ * @param {object} last observation of updateGetUp at t = 1
+ * @param {object} first observation of the first updateUpright frame
+ */
+export function certifyGetUpHandoff(last, first, { budgetPx, tolerancePx = 0 } = {}) {
+    const findings = [];
+    const jumps = [];
+    for (const [joint, from] of Object.entries(last?.joints ?? {})) {
+        const to = first?.joints?.[joint];
+        if (!isPoint(from) || !isPoint(to)) continue;
+        jumps.push({ joint, jumpPx: distance(from, to) });
+    }
+    jumps.sort((a, b) => b.jumpPx - a.jumpPx);
+    const worst = jumps[0] ?? null;
+    if (!worst) {
+        // No comparable joint at all is a coverage failure, not a pass: it is
+        // exactly how a gate ends up asserting nothing.
+        findings.push({ kind: 'getup-handoff-unmeasurable', detail: 'no joint is published by both render paths' });
+        return { findings, worst: null, jumps };
+    }
+    if (Number.isFinite(budgetPx) && worst.jumpPx > budgetPx + tolerancePx) {
+        findings.push({
+            kind: 'getup-handoff-pop',
+            joint: worst.joint,
+            jumpPx: worst.jumpPx,
+            budgetPx,
+            tolerancePx,
+        });
+    }
+    return { findings, worst, jumps };
+}
+
+/**
  * Facing symmetry, measured as bend-direction equivalence rather than as a
  * pixel mirror.
  *
@@ -496,6 +542,12 @@ export function classifyFinding({ finding, referenceFailed, characterIsCompliant
     // cause or fix it, so it must never be attributed to a character's art.
     if (finding.kind === 'reflected-part') return 'architecture';
     if (finding.kind === 'first-frame-jump' || finding.kind === 'angular-discontinuity') return 'animation-data';
+    // The get-up's closing keyframe disagreeing with updateUpright's rest stance
+    // is authored animation data and a render-path seam. No artwork can cause it
+    // (the same art renders cleanly on either side of the seam) and no artwork
+    // can fix it, so it must never be attributed to a character's source art.
+    if (finding.kind === 'getup-handoff-pop') return 'animation-data';
+    if (finding.kind === 'getup-handoff-unmeasurable') return 'coverage-gap';
     // A geometry failure ON the reference rig is architectural by
     // construction: its manifest anchors and its ink are generated from each
     // other, so they cannot disagree. There is no artwork left to blame.

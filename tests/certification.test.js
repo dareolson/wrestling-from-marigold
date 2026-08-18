@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    certifyGetUpHandoff,
     DEFAULT_BUDGET,
     STRUCTURAL_CHAINS,
     anchorWorldPoint,
@@ -336,4 +337,55 @@ test('a reflected part is attributed to the render path, never to the artwork', 
         characterIsCompliant: false,
         renderPath: 'grounded',
     }), 'architecture');
+});
+
+// ── Get-up → upright handoff ─────────────────────────────────────────────────
+
+test('the handoff gate measures the worst joint jump between the two render paths', () => {
+    const last = { joints: { nearWrist: { x: 0, y: 0 }, nearAnkle: { x: 10, y: 0 } } };
+    const first = { joints: { nearWrist: { x: 0, y: 30 }, nearAnkle: { x: 14, y: 0 } } };
+    const result = certifyGetUpHandoff(last, first, { budgetPx: 40 });
+    assert.equal(result.worst.joint, 'nearWrist');
+    assert.equal(result.worst.jumpPx, 30);
+    assert.deepEqual(result.findings, [], 'inside budget');
+});
+
+test('a handoff worse than its recorded baseline fails, naming joint, distance and budget', () => {
+    const last = { joints: { nearAnkle: { x: 0, y: 0 } } };
+    const first = { joints: { nearAnkle: { x: 0, y: 50 } } };
+    const result = certifyGetUpHandoff(last, first, { budgetPx: 35.19, tolerancePx: 0.5 });
+    assert.equal(result.findings.length, 1);
+    assert.deepEqual(result.findings[0], {
+        kind: 'getup-handoff-pop',
+        joint: 'nearAnkle',
+        jumpPx: 50,
+        budgetPx: 35.19,
+        tolerancePx: 0.5,
+    });
+    // The tolerance absorbs float noise and nothing more.
+    assert.equal(certifyGetUpHandoff(last, { joints: { nearAnkle: { x: 0, y: 35.6 } } },
+        { budgetPx: 35.19, tolerancePx: 0.5 }).findings.length, 0);
+    assert.equal(certifyGetUpHandoff(last, { joints: { nearAnkle: { x: 0, y: 35.8 } } },
+        { budgetPx: 35.19, tolerancePx: 0.5 }).findings.length, 1);
+});
+
+test('the handoff pop is animation data, never the character\'s artwork', () => {
+    // Attribution matters more here than the number: the same art renders
+    // cleanly on both sides of the seam, so blaming source art would send
+    // someone to redraw a character that is not at fault.
+    const finding = { kind: 'getup-handoff-pop', joint: 'nearWrist', jumpPx: 90, budgetPx: 45 };
+    for (const characterIsCompliant of [true, false]) {
+        assert.equal(classifyFinding({ finding, referenceFailed: false, characterIsCompliant, renderPath: 'getup' }), 'animation-data');
+    }
+});
+
+test('a handoff with no comparable joint is a coverage gap, not a pass', () => {
+    // The failure mode a budget check invites: nothing to measure, so nothing
+    // fails, so the gate reports clean while asserting nothing.
+    const result = certifyGetUpHandoff({ joints: {} }, { joints: {} }, { budgetPx: 10 });
+    assert.equal(result.findings[0].kind, 'getup-handoff-unmeasurable');
+    assert.equal(result.worst, null);
+    assert.equal(classifyFinding({
+        finding: result.findings[0], referenceFailed: false, characterIsCompliant: true, renderPath: 'getup',
+    }), 'coverage-gap');
 });

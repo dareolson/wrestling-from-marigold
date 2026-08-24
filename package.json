@@ -19,6 +19,7 @@
     "art:sheet": "vite --open /tools/wrestler-cutter/canonical-sheet.html",
     "art:sheet:smoke": "node tools/wrestler-cutter/canonical-sheet-smoke.mjs",
     "art:validate-source": "node tools/wrestler-cutter/validate-source-manifest.mjs",
+    "art:validate-pass-a": "node tools/wrestler-cutter/validate-pass-a.mjs",
     "art:export-v2": "node tools/wrestler-cutter/export-v2-sheet.mjs",
     "test": "node --test tests/*.test.js",
     "proof:hammerlock": "node tools/debug/hammerlock_authoring_proof.mjs"

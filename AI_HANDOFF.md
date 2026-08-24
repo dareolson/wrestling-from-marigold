@@ -25,21 +25,43 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Active assignment — Derek's art direction for Thesz v2 Pass A
+## Active assignment — generate Thesz v2 Pass A
 
-The canonical-v2 source pipeline is committed and mechanically green. The
-next step is blocked on the art director, not on code: Pass A cannot be
-generated until Derek settles the identity, style, and costume decisions
-listed in `Sprite sheets/AI Pilot/Lou/v2-canonical/pass-a/DECISIONS.md`
-(recorded in `AI_HANDOFF_ENTRIES/2026-08-23-claude-thesz-v2-pass-a-launch-packet.md`).
-The launch
-packet — the materialized 4096 x 4096 guide and blank-clean PNGs, their
-SHA-256 hashes, and the final Pass-A-only prompt — is prepared and waiting
-beside it. No artwork has been generated.
+The canonical-v2 source pipeline is committed and mechanically green, the
+art direction is **settled**, and the Pass-A gate now exists in code. The
+packet is at `Sprite sheets/AI Pilot/Lou/v2-canonical/pass-a/` (its Markdown
+is tracked; the two 4096 x 4096 PNGs are regenerable generator output and
+are not). Record:
+`AI_HANDOFF_ENTRIES/2026-08-23-claude-thesz-v2-pass-a-launch-packet.md`.
+**No artwork has been generated yet.**
 
-Pass A produces the five cohesive 530 px masters only. The production bank
-stays empty until identity is approved; that ordering is the whole point of
-the master-first workflow.
+**A correction worth keeping.** The first draft of the packet named
+`Sprite sheets/New Lou/LouTheszFullBodyRef.png` as Lou's primary likeness
+reference. That file depicts him with a moustache. Derek caught it. The
+authority is `lou-canonical-chroma-v1.png`, which
+`v2-layer-standardization/REPORT.md` had already documented as the approved
+clean-shaven likeness/style source — the draft failed to follow the
+pipeline's own documentation. The contaminated file is now quarantined from
+every generation input, and Lou's palette was re-measured from the correct
+source (skin luma 178.8, not the 161 the bad file reported).
+
+Settled: the approved canonical supplies identity, proportions, costume,
+palette and profile; George supplies the five-view turnaround **format
+only**, never Lou's likeness; the six-layer board supports body structure;
+black trunks and blue boots are unchanged; the v2 tapered artist-stroke
+standard applies without changing Lou's established identity. The canonical
+is a right-facing near-profile, so the other four views are the model's
+extrapolation — which is exactly what Pass A exists to let Derek approve
+before any part is cut.
+
+New gate: `npm run art:validate-pass-a -- --sheet <sheet.png>`. It is the
+inverse of the normal v2 source check — an *occupied* production cell is a
+failure there, because paint in the bank before identity approval means a
+limb was generated rather than masked from an approved master. Proved
+non-vacuous: it fails the blank clean sheet (5 empty panels) and the guide
+sheet (96 occupied cells, 87,511 stray pixels).
+
+Pass A produces the five cohesive 530 px masters only.
 
 ### Also awaiting review — the authored hammerlock
 
@@ -78,6 +100,76 @@ Kept here rather than deleted: it is the reason the reference rig, not a
 shipped character, is what the move editor previews against.
 
 ## Handoff Log
+
+### 2026-08-23 (Pass A: the likeness authority was wrong, and the gate that would have caught the rest now exists) — Claude
+
+Follows the canonical-v2 pipeline commit earlier today. Two things happened:
+a factual correction from Derek, and the Pass-A gate that was missing.
+
+**The correction.** The Pass-A packet's first draft named
+`Sprite sheets/New Lou/LouTheszFullBodyRef.png` as Lou's primary likeness
+truth, and measured his palette from it. **That file depicts Lou with a
+moustache.** Derek caught it.
+
+What makes this worth writing down rather than quietly fixing: the answer
+was already in the repo. `v2-layer-standardization/REPORT.md` states "Lou is
+clean-shaven" and names `lou-canonical-chroma-v1.png` as "the approved
+likeness/style source", in the same directory the draft was reading from.
+The draft picked the biggest, most obvious full-body file instead of the one
+the pipeline had designated, and then measured a palette off it. Verified
+directly during the correction: the canonical is clean-shaven and matches
+the shipped `head.png`; the quarantined file carries a distinct dark
+moustache; same man otherwise.
+
+Consequences, all now applied: the contaminated file is removed from every
+generation input and marked quarantined; the palette was re-measured from
+the canonical (skin base luma **178.8**, not the 161 the bad file reported;
+skin shadow 147.4, boot blue 54.4, hair 41.7, ink 0.0); and the prompt now
+states explicitly that George supplies the five-view turnaround **format
+only** and never Lou's likeness, because George was the other live
+contamination risk sitting in the input list.
+
+**Art direction, settled by Derek.** The approved canonical supplies
+identity, proportions, costume, palette and profile. The six-layer board
+supports body structure. Black trunks and blue boots unchanged. The v2
+tapered artist-stroke standard applies *without* changing Lou's established
+identity — the stroke treatment changes, the man does not. The canonical is
+a right-facing near-profile, so front, front3q, back3q and back are the
+model's extrapolation; Pass A exists as its own gate so those interpretations
+are approved before any part is cut.
+
+One thing was recorded rather than actioned: measured off the canonical, the
+trunks and the outline ink are both pure black (luma 0.0), against the
+standard's 24-luma floor for adjacent gameplay-critical regions. Derek's call
+is to keep black trunks. It is written into the packet as a known accepted
+deviation so that if the hip boundary reads poorly at 154 px in Gate A, the
+cause is already identified and the fix is a costume-value decision, not a
+rig hunt. Every other adjacency clears the floor comfortably.
+
+**The new gate.** `npm run art:validate-pass-a -- --sheet <sheet.png>`
+(`tools/wrestler-cutter/validate-pass-a.mjs`). It is deliberately the inverse
+of the normal v2 source check: there an empty production cell is a failure,
+here an **occupied** one is, because paint in the bank before identity
+approval means a limb was generated rather than masked from an approved
+master. It enforces exact 4096 x 4096, an empty bank with occupied cells
+named by view/slot, no paint outside the five master panels, a present and
+connected figure per panel at exactly 530 px crown-to-sole, and
+straight-alpha RGB 0,0,0. It reuses the committed
+`validateV2MasterPanelPixels` and `findV2TransparentRgbViolation` rather than
+re-deriving geometry, and every run warns that likeness, grooming, taper,
+value families and luma separation are human review and are not measured.
+
+Proved non-vacuous rather than asserted: it fails the blank clean sheet with
+five empty-panel errors, and fails the guide sheet with all 96 bank cells
+occupied plus 87,511 stray pixels.
+
+**Verification** (Node 22.23.1): `npm test` **363/363** (up from 354; nine new
+Pass-A tests) · `npm run build` · `art:sheet:smoke` · `art:validate-source` on
+the v2 template · `art:validate-pass-a` non-vacuity checks above ·
+`git diff --check`.
+
+**Still not generated.** That is the next action, and it is Derek's to
+trigger.
 
 ### 2026-08-23 (Canonical v2: the source pipeline is buildable end to end, and the Thesz sheet is launch-ready) — Claude
 

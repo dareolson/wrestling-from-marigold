@@ -239,6 +239,16 @@ function partitionContacts(source, duration) {
             role: entry?.role,
             source: entry?.source,
             target: entry?.target,
+            // Is this contact ESSENTIAL to the move — the thing the move IS,
+            // rather than an incidental brush the author wanted graded?
+            //
+            // Defaults to true, and the default is the whole point. Declaring a
+            // contact is an assertion that the two points meet; if that
+            // assertion turns out to be unachievable, a tool that still says
+            // READY is certifying an implied silhouette. An author who really
+            // does mean "grade this, but the move survives without it" has to
+            // say so explicitly by setting required: false.
+            required: entry?.required !== false,
         };
         const reason = contactRejectionReason(contact);
         if (reason) rejected.push({ ...contact, reason });
@@ -320,11 +330,11 @@ export function normalizeDraft(source) {
  * the reason so the caller can tell the author their capture did not take,
  * rather than the entry disappearing between the gesture and the draft.
  */
-export function addContact(draft, { from, at, to, role, source, target }) {
+export function addContact(draft, { from, at, to, role, source, target, required = true }) {
     const candidate = {
         from: round(from ?? at ?? 0),
         to: to === undefined ? undefined : round(to),
-        role, source, target,
+        role, source, target, required,
     };
     const reason = contactRejectionReason(candidate);
     if (reason) {
@@ -607,10 +617,18 @@ export function clipReadiness(draft, {
         const span = `${contact.from.toFixed(3)}–${contact.to.toFixed(3)}s`;
         const label = `${contact.role} ${contact.source} → ${contact.target} (${span})`;
         if (severity === 'unmeasured') {
+            // Not gradeable HERE is a property of the caller (no live rig), not
+            // of the draft, so it cannot block — the editor always supplies a
+            // rig, and the browser sweep is where a required contact is really
+            // decided.
             record(READINESS_LAYERS.COVERAGE, 'warning', `${label}: contact gap could not be measured (no live rig)`);
         } else if (severity === 'unreachable') {
-            record(READINESS_LAYERS.AUTHORING, 'warning',
-                `${label}: separates to ${maxGap.toFixed(2)} px at ${worstAt.toFixed(3)}s, beyond the ${reachPx.toFixed(2)} px reach of that limb — no pose of it can close this, so the tableau or the choreography has to change (the hold is currently implied by silhouette only)`);
+            // A REQUIRED contact that no pose of its limb can close is not a
+            // warning. The move does not do the thing it says it does, and a
+            // tool that still reports READY is certifying a silhouette. This is
+            // the line: READY means the essential contacts are achievable.
+            record(READINESS_LAYERS.AUTHORING, contact.required ? 'blocking' : 'warning',
+                `${label}${contact.required ? '' : ' [optional]'}: separates to ${maxGap.toFixed(2)} px at ${worstAt.toFixed(3)}s, beyond the ${reachPx.toFixed(2)} px reach of that limb — no pose of it can close this, so the tableau or the choreography has to change`);
         } else if (severity === 'drifting') {
             record(READINESS_LAYERS.AUTHORING, 'warning',
                 `${label}: separates to ${maxGap.toFixed(2)} px at ${worstAt.toFixed(3)}s — within the limb's reach, so add a keyframe there`);

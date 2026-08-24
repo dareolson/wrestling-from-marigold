@@ -291,16 +291,44 @@ test('a contact is graded against the reach of the limb that must close it', () 
         measureContactReach: () => 90,
     });
     assert.equal(unreachable.contacts[0].severity, 'unreachable');
-    assert.ok(unreachable.warnings.some(warning => /beyond the 90.00 px reach/.test(warning)));
-    assert.ok(!unreachable.warnings.some(warning => /add a keyframe/.test(warning)));
+    assert.ok(unreachable.blocking.some(issue => /beyond the 90.00 px reach/.test(issue)));
+    assert.ok(!unreachable.blocking.some(issue => /add a keyframe/.test(issue)));
 
-    // Exact contact is held, and neither case blocks: snap-and-bake stays a
-    // legal authoring choice and an implied hold is a real one.
+    // A REQUIRED contact no pose can close BLOCKS. The move does not do the
+    // thing it claims to do, and READY has to mean the essential contacts are
+    // achievable — otherwise the tool certifies a silhouette.
+    assert.equal(unreachable.ok, false);
+    // Drifting stays a warning: snap-and-bake is a legal authoring choice and
+    // the gap is closeable by posing.
+    assert.equal(drifting.ok, true);
+
+    // An author who genuinely means "grade this, but the move survives without
+    // it" has to say so — and then it is a warning again.
+    const optional = model.clipReadiness(
+        { ...draft, contacts: [{ ...draft.contacts[0], required: false }] },
+        { measureContactGap: () => 200, measureContactReach: () => 90 },
+    );
+    assert.equal(optional.contacts[0].severity, 'unreachable');
+    assert.equal(optional.ok, true);
+    assert.ok(optional.warnings.some(warning => /\[optional\]/.test(warning)));
+
+    // Exact contact is held and clean.
     const held = model.clipReadiness(draft, {
         measureContactGap: () => 0.4,
         measureContactReach: () => 90,
     });
     assert.equal(held.contacts[0].severity, 'held');
     assert.equal(held.ok, true);
-    assert.equal(unreachable.ok, true);
+});
+
+test('a declared contact is required unless the author says otherwise', () => {
+    const draft = model.createDraft('defaults', 1);
+    model.addContact(draft, { from: 0.2, role: 'attacker', source: 'nearWrist', target: 'neck' });
+    assert.equal(model.normalizeDraft(draft).contacts[0].required, true);
+    model.addContact(draft, { from: 0.4, role: 'attacker', source: 'nearAnkle', target: 'nearKnee', required: false });
+    assert.equal(model.normalizeDraft(draft).contacts[1].required, false);
+    // And it survives a save/reload hop, or the distinction would evaporate
+    // the first time an author closed the tab.
+    const reloaded = model.normalizeDraft(JSON.parse(JSON.stringify(model.normalizeDraft(draft))));
+    assert.deepEqual(reloaded.contacts.map(contact => contact.required), [true, false]);
 });

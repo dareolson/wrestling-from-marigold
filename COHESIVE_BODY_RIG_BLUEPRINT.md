@@ -4,6 +4,14 @@
 **Prepared:** 2026-07-25  
 **Scope:** George, Lou Thesz, placeholder wrestlers, and future cutout wrestlers
 
+> **V2 source update:** this blueprint remains the runtime rationale for the
+> authoritative bone graph and two-anchor placement. New artwork follows the
+> stricter five-view/fixed-density/core-coverage contract in
+> `CHARACTER_ART_SOURCE_STANDARD.md` and
+> `tools/wrestler-cutter/templates/CANONICAL_CHARACTER_SHEET_V2.md`. Character-
+> specific width/box scaling described below is compatibility architecture, not
+> permission to repair a v2 source with independent resizing.
+
 ## Goal
 
 Make each wrestler behave and read as one articulated body. A shoulder, elbow,

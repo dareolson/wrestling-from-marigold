@@ -5,7 +5,9 @@
 > whole-shin rules to generate a new production wrestler or to rebuild George
 > or Lou. New characters follow `CHARACTER_ART_SOURCE_STANDARD.md`: internal
 > two-anchor elbow/knee joints, explicit non-exported marker guides, and
-> separately socketed hand/boot replacement families. The legacy cutter's
+> separately socketed hand/boot replacement families. The exact five-view,
+> 4096 x 4096 source layout and final export sizes are in
+> `tools/wrestler-cutter/templates/CANONICAL_CHARACTER_SHEET_V2.md`. The legacy cutter's
 > alpha-derived joint rows are migration aids, not the future authoring
 > contract.
 
@@ -62,12 +64,20 @@ The game applies a **grayscale + scanline broadcast filter** over everything. Th
 
 **Draw for value, not color.** The filter strips color entirely. High contrast between light and dark areas is what makes characters read. Flat grey-on-grey will disappear. Strong darks and lights will pop.
 
-**Use hard outlines.** 2–4px black contour lines at the drawing stage. This is the most important single rule. Hard outlines:
+**Legacy assets use hard outlines.** Their old 2–4px contour guidance is not the
+v2 generation instruction. V2 uses tapered pressure hierarchy, measured at its
+fixed two-pixels-per-near-screen-pixel density: stable exterior silhouette,
+lighter/narrower interior anatomy, and no uniform marker-like ring. See
+`CHARACTER_ART_SOURCE_STANDARD.md` before creating new art. On legacy repairs,
+hard outlines:
 - Make characters read at small sizes
 - Prevent visible seams at joints (the outline covers the gap)
 - Fit the 1940s era aesthetic (EC Comics, newspaper strips, vintage wrestling posters)
 
-**Avoid soft gradients.** The filter + scanlines will muddy soft painted edges. Use flat fills or deliberate hatching-style shading. Think graphic and bold, not painterly.
+**Avoid soft gradients.** The filter + scanlines will muddy soft painted edges.
+Use flat value groups. The old suggestion of deliberate hatching is retained
+only as historical context: regular hatching/halftone/dither patterns are
+forbidden in v2 because they beat against the game's 2px scanline period.
 
 **Era reference:** 1940s–50s. Look at:
 - Early EC Comics illustration style
@@ -348,7 +358,14 @@ Exaggerate slightly toward the heroic — wide shoulders, thick legs, big hands.
 
 ## Pre-Export Checklist
 
-**Required for v1:**
+**For canonical v2:** do not use the checklist below. Open
+`tools/wrestler-cutter/templates/CANONICAL_CHARACTER_SHEET_V2.md` and run
+`npm run art:sheet`. V2 uses the exact 4096 x 4096 five-view sheet, fixed 1:1
+export rectangles, separately socketed hands/boots, internal two-anchor joints,
+and tapered pressure-sensitive ink. It must not be alpha-trimmed, resized, or
+given a uniformly thick outline.
+
+**Required only for legacy v1 maintenance:**
 - [ ] Character drawn in neutral standing pose, body at three-quarter angle
 - [ ] Head at three-quarter view — both eyes visible
 - [ ] Hard outlines on all body parts (2–4px at drawing size)

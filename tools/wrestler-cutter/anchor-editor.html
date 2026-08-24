@@ -17,8 +17,8 @@
 <body>
   <main><canvas id="canvas" width="640" height="480"></canvas></main>
   <aside>
-    <h1>Source Anchor Editor</h1>
-    <p>Artist-approved anchors are authoritative. Crosshairs and overlap bands are a separate guide overlay and are never baked into clean art. Hidden attachment bands must use continuous fill/shading—no bevel, contour ring, rim highlight, or cutoff line.</p>
+    <h1>Source Anchor Editor <span style="color:#f0b27a">— per-part compatibility tool</span></h1>
+    <p>Artist-approved anchors are authoritative. This editor handles individual part PNGs and the v1-style base manifest; it does not edit the canonical v2 multi-view sheet or its view overrides. Use the <a href="./canonical-sheet.html" style="color:#ffd166">canonical v2 guide</a> plus its layered source/manifest for new Thesz work. Crosshairs and overlap bands are never baked into clean art. Hidden attachment bands use continuous fill/shading—no bevel, contour ring, rim highlight, or cutoff line.</p>
     <label>Manifest JSON<input id="manifestFile" type="file" accept="application/json,.json"></label>
     <label>Part<select id="part"></select></label>
     <label>Clean part PNG<input id="artFile" type="file" accept="image/png"></label>

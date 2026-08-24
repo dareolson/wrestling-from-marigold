@@ -72,10 +72,13 @@
 </style>
 </head>
 <body>
-  <a href="./anchor-editor.html" style="position:fixed;right:16px;top:12px;z-index:10;color:#9fd0ff">Open source anchor editor →</a>
+  <div style="position:fixed;right:16px;top:12px;z-index:10;display:flex;gap:14px">
+    <a href="./canonical-sheet.html" style="color:#ffd166;font-weight:700">Open canonical v2 sheet guide →</a>
+    <a href="./anchor-editor.html" style="color:#9fd0ff">Open source anchor editor →</a>
+  </div>
 
-<h1>Wrestler Cutter</h1>
-<p class="sub">Drop each hand-cut layer (rough crop, transparent PNG). It auto-crops to content, scales to the spec canvas, flushes the pivot edge, and checks padding / joint-seam rules from DRAWING_GUIDE.md.</p>
+  <h1>Wrestler Cutter <span style="color:#ffb454">— legacy six-part tool only</span></h1>
+  <p class="sub">This auto-resize/alpha-trim workflow exists only to maintain shipped legacy assets. Do not use it for canonical v2 art: it changes geometry. New source work starts with the fixed 1:1 <a href="./canonical-sheet.html" style="color:#ffd166">canonical v2 sheet guide</a>; marker refinement stays in its v2 manifest and layered guide. The current anchor editor remains a per-part compatibility helper. Drop each legacy hand-cut layer below to auto-crop and scale it to the old spec canvas.</p>
 
 <div class="slug-row">
   <label for="slug">Character slug:</label>

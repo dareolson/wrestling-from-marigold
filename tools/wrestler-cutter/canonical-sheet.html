@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Canonical Wrestler Sheet v2</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 20px; background: #17181c; color: #ececf1;
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  header { display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+  h1 { margin: 0 0 4px; font-size: 20px; }
+  p { margin: 0; color: #aaaab5; max-width: 850px; }
+  nav { white-space: nowrap; }
+  a { color: #91c9ff; }
+  .toolbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    padding: 10px 12px; margin-bottom: 12px; border: 1px solid #343640;
+    border-radius: 7px; background: #22232a;
+  }
+  button, select {
+    color: #f0f0f3; background: #343640; border: 1px solid #50535f;
+    border-radius: 4px; padding: 6px 10px; font: inherit;
+  }
+  button { cursor: pointer; }
+  button:hover { background: #414450; }
+  .status { color: #9ed7a7; margin-left: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; color: #b9bac4; font-size: 12px; }
+  .swatch { display: inline-block; width: 12px; height: 3px; margin-right: 4px; vertical-align: middle; }
+  .viewport {
+    width: 100%; height: calc(100vh - 190px); min-height: 480px; overflow: auto;
+    border: 1px solid #363842; border-radius: 7px;
+    background-color: #202127;
+    background-image:
+      linear-gradient(45deg, #282a31 25%, transparent 25%),
+      linear-gradient(-45deg, #282a31 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #282a31 75%),
+      linear-gradient(-45deg, transparent 75%, #282a31 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+  }
+  canvas { display: block; transform-origin: top left; }
+  .error { color: #ff9999; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Canonical wrestler sheet v2</h1>
+    <p>Registration guide generated from the v2 manifest. It draws landmarks, fixed export rectangles, axes, overlap bands, and pelvis/shoulder coverage geometry; it does not generate, resize, trim, or modify artwork. Keep this guide PNG separate from clean production art. Ink should read as an artist's hand: controlled pressure, tapered endings, and lighter internal marks—not one thick, uniform AI/vector outline.</p>
+  </div>
+  <nav><a href="./templates/GENERATION_PROMPT_TEMPLATE.md">Generation prompt</a> · <a href="./templates/CANONICAL_CHARACTER_SHEET_V2.md">Full v2 standard</a> · <a href="./anchor-editor.html">Per-part compatibility editor</a> · <a href="./index.html">Legacy cutter</a></nav>
+</header>
+
+<div class="toolbar">
+  <label for="zoom">Preview zoom</label>
+  <select id="zoom">
+    <option value="0.125">12.5%</option>
+    <option value="0.25" selected>25%</option>
+    <option value="0.5">50%</option>
+    <option value="1">100%</option>
+  </select>
+  <button id="download" type="button" disabled>Download guide PNG</button>
+  <button id="download-clean" type="button" disabled>Download blank clean PNG</button>
+  <span class="legend">
+    <span><i class="swatch" style="background:#65d8ff"></i>skeleton / axis</span>
+    <span><i class="swatch" style="background:#ffd166"></i>export rectangle</span>
+    <span><i class="swatch" style="background:#ff6b8a"></i>anchor / opaque core</span>
+    <span><i class="swatch" style="background:#ff9f68"></i>before/after overlap</span>
+    <span><i class="swatch" style="background:#52e0a4"></i>pelvis/shoulder coverage</span>
+    <span><i class="swatch" style="background:#9b8cff"></i>macro-cell</span>
+  </span>
+  <span class="status" id="status">Loading v2 manifest…</span>
+</div>
+
+<div class="viewport" id="viewport">
+  <canvas id="sheet" aria-label="Canonical sheet v2 registration guide"></canvas>
+</div>
+
+<script type="module" src="./canonical-sheet.js"></script>
+</body>
+</html>

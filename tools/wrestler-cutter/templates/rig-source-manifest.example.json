@@ -107,10 +107,10 @@
     "boot": {
       "file": "boot.png",
       "geometryLock": "boot-v1",
-      "canvas": { "w": 120, "h": 100 },
+      "canvas": { "w": 120, "h": 120 },
       "anchors": {
-        "ankle": { "x": 36, "y": 22 },
-        "sole": { "x": 68, "y": 88 }
+        "ankle": { "x": 36, "y": 10 },
+        "sole": { "x": 86, "y": 118 }
       },
       "jointZones": { "ankle": { "beforePx": 22, "afterPx": 14, "surface": "continuous-fill-no-edge" } }
     }
@@ -126,9 +126,9 @@
       { "id": "grip", "geometryLock": "hand-v1", "canvas": { "w": 96, "h": 96 }, "anchors": { "wrist": { "x": 48, "y": 22 }, "contact": { "x": 63, "y": 64 } } }
     ],
     "boot": [
-      { "id": "neutral", "geometryLock": "boot-v1", "canvas": { "w": 120, "h": 100 }, "anchors": { "ankle": { "x": 36, "y": 22 }, "sole": { "x": 68, "y": 88 } } },
-      { "id": "flexed", "geometryLock": "boot-v1", "canvas": { "w": 120, "h": 100 }, "anchors": { "ankle": { "x": 36, "y": 22 }, "sole": { "x": 60, "y": 82 } } },
-      { "id": "toePoint", "geometryLock": "boot-v1", "canvas": { "w": 120, "h": 100 }, "anchors": { "ankle": { "x": 36, "y": 22 }, "sole": { "x": 96, "y": 70 } } }
+      { "id": "neutral", "geometryLock": "boot-v1", "canvas": { "w": 120, "h": 120 }, "anchors": { "ankle": { "x": 36, "y": 10 }, "sole": { "x": 86, "y": 118 } } },
+      { "id": "flexed", "geometryLock": "boot-v1", "canvas": { "w": 120, "h": 120 }, "anchors": { "ankle": { "x": 36, "y": 10 }, "sole": { "x": 74, "y": 110 } } },
+      { "id": "toePoint", "geometryLock": "boot-v1", "canvas": { "w": 120, "h": 120 }, "anchors": { "ankle": { "x": 36, "y": 10 }, "sole": { "x": 112, "y": 96 } } }
     ]
   }
 }

@@ -1,0 +1,453 @@
+{
+  "version": 2,
+  "rigContract": "marigold-modular-v2",
+  "characterId": "thesz_v2_template",
+  "coordinateSpace": "export-pixels",
+  "assetPixelsPerRigUnit": 2,
+  "minimumJointOverlapPx": 12,
+  "jointSurfaceRule": "continuous-fill-no-edge",
+  "slotConvention": "anatomical-left-right",
+  "sourceFacing": "right",
+  "runtimePrerequisites": {
+    "v2Compiler": "pending",
+    "uniformDensityProfileRenderer": "pending",
+    "semanticSolePoseGrounding": "pending",
+    "bodyViewChannel": "pending",
+    "projectedSocketInterpolation": "pending",
+    "viewDepthOrderTransport": "pending",
+    "shoulderMaskSlot": "pending"
+  },
+  "sourceSheet": {
+    "file": "thesz-canonical-v2.png",
+    "guideFile": "thesz-canonical-v2-guides.png",
+    "canvas": { "w": 4096, "h": 4096 },
+    "masterFigureHeightPx": 530,
+    "masterPanels": {
+      "front": { "x": 64, "y": 64, "w": 768, "h": 960 },
+      "front3q": { "x": 864, "y": 64, "w": 768, "h": 960 },
+      "profile": { "x": 1664, "y": 64, "w": 768, "h": 960 },
+      "back3q": { "x": 2464, "y": 64, "w": 768, "h": 960 },
+      "back": { "x": 3264, "y": 64, "w": 768, "h": 960 }
+    },
+    "productionGrid": {
+      "origin": { "x": 128, "y": 1280 },
+      "cell": { "w": 320, "h": 320 },
+      "columns": 12,
+      "rows": 8,
+      "slotsPerView": 19,
+      "viewOrder": ["front", "front3q", "profile", "back3q", "back"],
+      "slotOrder": [
+        "torso",
+        "pelvisUnderlay",
+        "pelvisMask",
+        "shoulderMask",
+        "upperArm",
+        "forearm",
+        "thigh",
+        "shin",
+        "head.idle",
+        "head.hurt",
+        "head.effort",
+        "head.down",
+        "head.winning",
+        "hand.open",
+        "hand.fist",
+        "hand.grip",
+        "boot.neutral",
+        "boot.flexed",
+        "boot.toePoint"
+      ],
+      "reservedCells": [95]
+    },
+    "extractionPolicy": "fixed-rect-1to1-no-trim-no-resample",
+    "transparentPixelRgb": [0, 0, 0]
+  },
+  "markerLayer": {
+    "name": "RIG_MARKERS",
+    "exportedIntoArt": false,
+    "centers": true,
+    "axes": true,
+    "coverageRings": true
+  },
+  "bilateralSegmentReuse": {
+    "families": ["upperArm", "forearm", "thigh", "shin"],
+    "policy": "one-declared-source-side-mirrored-to-opposite-side",
+    "sourceSideByView": {
+      "front": "left",
+      "front3q": "left",
+      "profile": "left",
+      "back3q": "right",
+      "back": "right"
+    }
+  },
+  "skeleton": {
+    "id": "thesz-skeleton-v2",
+    "boneLengths": {
+      "head": 58,
+      "torso": 98,
+      "upperArm": 60,
+      "forearm": 55,
+      "thigh": 43,
+      "shin": 44,
+      "plantedSoleVerticalDrop": 22
+    },
+    "sourceSpansPx": {
+      "head": 116,
+      "torso": 196,
+      "upperArm": 120,
+      "forearm": 110,
+      "thigh": 86,
+      "shin": 88,
+      "plantedSoleVerticalDrop": 44
+    }
+  },
+  "parts": {
+    "head": {
+      "geometryLock": "thesz-v2-head",
+      "canvas": { "w": 200, "h": 200 },
+      "exportRect": { "x": 60, "y": 60, "w": 200, "h": 200 },
+      "baseSlot": "head.idle",
+      "anchors": {
+        "crown": { "x": 100, "y": 58 },
+        "neckAxis": { "x": 100, "y": 154 },
+        "neck": { "x": 100, "y": 174 }
+      },
+      "jointZones": {
+        "neck": {
+          "beforePx": 16,
+          "afterPx": 16,
+          "opaqueCoreRadiusPx": 8,
+          "surface": "continuous-fill-no-edge"
+        }
+      },
+      "orientation": { "frame": ["neck", "neckAxis"], "sourceFacing": "right" },
+      "paddingPolicy": "fixed-canvas-no-alpha-trim"
+    },
+    "torso": {
+      "geometryLock": "thesz-v2-torso",
+      "canvas": { "w": 190, "h": 260 },
+      "exportRect": { "x": 65, "y": 30, "w": 190, "h": 260 },
+      "baseSlot": "torso",
+      "anchors": {
+        "neck": { "x": 95, "y": 24 },
+        "spineAxis": { "x": 95, "y": 44 },
+        "leftShoulder": { "x": 76, "y": 64 },
+        "rightShoulder": { "x": 114, "y": 64 },
+        "leftHip": { "x": 86, "y": 220 },
+        "rightHip": { "x": 104, "y": 220 }
+      },
+      "jointZones": {
+        "neck": { "beforePx": 16, "afterPx": 16, "opaqueCoreRadiusPx": 8, "surface": "continuous-fill-no-edge" },
+        "leftShoulder": { "beforePx": 16, "afterPx": 16, "opaqueCoreRadiusPx": 12, "surface": "continuous-fill-no-edge" },
+        "rightShoulder": { "beforePx": 16, "afterPx": 16, "opaqueCoreRadiusPx": 12, "surface": "continuous-fill-no-edge" },
+        "leftHip": { "beforePx": 16, "afterPx": 16, "opaqueCoreRadiusPx": 12, "coveragePart": "pelvisUnderlay", "surface": "continuous-fill-no-edge" },
+        "rightHip": { "beforePx": 16, "afterPx": 16, "opaqueCoreRadiusPx": 12, "coveragePart": "pelvisUnderlay", "surface": "continuous-fill-no-edge" }
+      },
+      "pelvisCoverage": {
+        "owner": "pelvisUnderlay",
+        "bounds": { "x": 55, "y": 194, "w": 80, "h": 58 },
+        "cornerRadiusPx": 18,
+        "hipRadiusPx": 12,
+        "sweepRadiusPx": 12,
+        "frontMask": "pelvisMask",
+        "attachmentSurface": "continuous-fill-no-edge"
+      },
+      "shoulderCoverage": {
+        "owner": "torso",
+        "frontMask": "shoulderMask",
+        "shoulderRadiusPx": 12,
+        "sweepRadiusPx": 12,
+        "neckRadiusPx": 8,
+        "attachmentSurface": "continuous-fill-no-edge"
+      },
+      "orientation": { "frame": ["neck", "spineAxis"], "sourceFacing": "right" },
+      "paddingPolicy": "fixed-canvas-no-alpha-trim"
+    },
+    "pelvisUnderlay": {
+      "geometryLock": "thesz-v2-torso",
+      "canvas": { "w": 190, "h": 260 },
+      "exportRect": { "x": 65, "y": 30, "w": 190, "h": 260 },
+      "baseSlot": "pelvisUnderlay",
+      "anchors": {},
+      "jointZones": {},
+      "orientation": { "sourceFacing": "right" },
+      "paddingPolicy": "fixed-canvas-no-alpha-trim"
+    },
+    "pelvisMask": {
+      "geometryLock": "thesz-v2-torso",
+      "canvas": { "w": 190, "h": 260 },
+      "exportRect": { "x": 65, "y": 30, "w": 190, "h": 260 },
+      "baseSlot": "pelvisMask",
+      "anchors": {},
+      "jointZones": {},
+      "orientation": { "sourceFacing": "right" },
+      "paddingPolicy": "fixed-canvas-no-alpha-trim"
+    },
+    "shoulderMask": {
+      "geometryLock": "thesz-v2-torso",
+      "canvas": { "w": 190, "h": 260 },
+      "exportRect": { "x": 65, "y": 30, "w": 190, "h": 260 },
+      "baseSlot": "shoulderMask",
+      "runtimeStatus": "reserved-transparent-until-slot-exists",
+      "anchors": {},
+      "jointZones": {},
+      "orientation": { "sourceFacing": "right" },
+      "paddingPolicy": "fixed-canvas-no-alpha-trim"
+    },
+    "upperArm": {
+      "geometryLock": "thesz-v2-upper-arm",
+      "canvas": { "w": 130, "h": 180 },
+      "exportRect": { "x": 95, "y": 70, "w": 130, "h": 180 },
+      "baseSlot": "upperArm",
+      "anchors": { "shoulder": { "x": 65, "y": 29 }, "elbow": { "x": 65, "y": 149 } },
+      "jointZones": {
+        "shoulder": { "beforePx": 20, "afterPx": 14, "opaqueCoreRadiusPx": 12, "surface": "continuous-fill-no-edge" },
+        "elbow": { "beforePx": 14, "afterPx": 30, "opaqueCoreRadiusPx": 10, "surface": "continuous-fill-no-edge" }
+      },
+      "orientation": { "frame": ["shoulder", "elbow"], "sourceFacing": "right" },
+      "paddingPolicy": "fixed-canvas-no-alpha-trim"
+    },
+    "forearm": {
+      "geometryLock": "thesz-v2-forearm",
+      "canvas": { "w": 110, "h": 180 },
+      "exportRect": { "x": 105, "y": 70, "w": 110, "h": 180 },
+      "baseSlot": "forearm",
+      "anchors": { "elbow": { "x": 55, "y": 30 }, "wrist": { "x": 55, "y": 140 } },
+      "jointZones": {
+        "elbow": { "beforePx": 24, "afterPx": 14, "opaqueCoreRadiusPx": 10, "surface": "continuous-fill-no-edge" },
+        "wrist": { "beforePx": 14, "afterPx": 26, "opaqueCoreRadiusPx": 8, "surface": "continuous-fill-no-edge" }
+      },
+      "orientation": { "frame": ["elbow", "wrist"], "sourceFacing": "right" },
+      "paddingPolicy": "fixed-canvas-no-alpha-trim"
+    },
+    "hand": {
+      "geometryLock": "thesz-v2-hand",
+      "canvas": { "w": 96, "h": 96 },
+      "exportRect": { "x": 112, "y": 112, "w": 96, "h": 96 },
+      "baseSlot": "hand.open",
+      "anchors": {
+        "wrist": { "x": 48, "y": 20 },
+        "wristAxis": { "x": 48, "y": 40 },
+        "contact": { "x": 60, "y": 60 },
+        "contactNormal": { "x": 1, "y": 0 }
+      },
+      "jointZones": {
+        "wrist": { "beforePx": 20, "afterPx": 14, "opaqueCoreRadiusPx": 8, "surface": "continuous-fill-no-edge" }
+      },
+      "orientation": { "frame": ["wrist", "wristAxis"], "sourceFacing": "right" },
+      "paddingPolicy": "fixed-canvas-no-alpha-trim"
+    },
+    "thigh": {
+      "geometryLock": "thesz-v2-thigh",
+      "canvas": { "w": 150, "h": 180 },
+      "exportRect": { "x": 85, "y": 70, "w": 150, "h": 180 },
+      "baseSlot": "thigh",
+      "anchors": { "hip": { "x": 75, "y": 42 }, "knee": { "x": 75, "y": 128 } },
+      "jointZones": {
+        "hip": { "beforePx": 20, "afterPx": 14, "opaqueCoreRadiusPx": 12, "surface": "continuous-fill-no-edge" },
+        "knee": { "beforePx": 14, "afterPx": 30, "opaqueCoreRadiusPx": 10, "surface": "continuous-fill-no-edge" }
+      },
+      "orientation": { "frame": ["hip", "knee"], "sourceFacing": "right" },
+      "paddingPolicy": "fixed-canvas-no-alpha-trim"
+    },
+    "shin": {
+      "geometryLock": "thesz-v2-shin",
+      "canvas": { "w": 130, "h": 210 },
+      "exportRect": { "x": 95, "y": 55, "w": 130, "h": 210 },
+      "baseSlot": "shin",
+      "anchors": { "knee": { "x": 65, "y": 45 }, "ankle": { "x": 65, "y": 133 } },
+      "jointZones": {
+        "knee": { "beforePx": 24, "afterPx": 14, "opaqueCoreRadiusPx": 10, "surface": "continuous-fill-no-edge" },
+        "ankle": { "beforePx": 14, "afterPx": 30, "opaqueCoreRadiusPx": 8, "surface": "continuous-fill-no-edge" }
+      },
+      "orientation": { "frame": ["knee", "ankle"], "sourceFacing": "right" },
+      "paddingPolicy": "fixed-canvas-no-alpha-trim"
+    },
+    "boot": {
+      "geometryLock": "thesz-v2-boot",
+      "canvas": { "w": 120, "h": 120 },
+      "exportRect": { "x": 100, "y": 100, "w": 120, "h": 120 },
+      "baseSlot": "boot.neutral",
+      "anchors": {
+        "ankle": { "x": 36, "y": 22 },
+        "ankleAxis": { "x": 36, "y": 42 },
+        "heel": { "x": 40, "y": 66 },
+        "toe": { "x": 92, "y": 66 },
+        "sole": { "x": 72, "y": 66 },
+        "soleNormal": { "x": 0, "y": 1 }
+      },
+      "groundingContract": {
+        "mode": "semantic-sole-uniform-density-v2",
+        "verticalDropPx": 44,
+        "currentRuntimeCompatible": false
+      },
+      "jointZones": {
+        "ankle": { "beforePx": 20, "afterPx": 14, "opaqueCoreRadiusPx": 8, "surface": "continuous-fill-no-edge" }
+      },
+      "orientation": { "frame": ["ankle", "ankleAxis"], "sourceFacing": "right" },
+      "paddingPolicy": "fixed-canvas-no-alpha-trim"
+    }
+  },
+  "views": {
+    "front": {
+      "index": 0,
+      "role": "front-and-face-up-source",
+      "runtimeStatus": "pending-bodyView",
+      "cameraNearSide": "left",
+      "anchorOverrides": {
+        "torso": {
+          "leftShoulder": { "x": 48, "y": 64 },
+          "rightShoulder": { "x": 142, "y": 64 },
+          "leftHip": { "x": 76, "y": 220 },
+          "rightHip": { "x": 114, "y": 220 }
+        }
+      },
+      "masterLandmarks": {
+        "crown": { "x": 384, "y": 190 }, "neck": { "x": 384, "y": 306 },
+        "leftShoulder": { "x": 270, "y": 330 }, "leftElbow": { "x": 270, "y": 450 }, "leftWrist": { "x": 270, "y": 560 },
+        "rightShoulder": { "x": 498, "y": 330 }, "rightElbow": { "x": 498, "y": 450 }, "rightWrist": { "x": 498, "y": 560 },
+        "leftHip": { "x": 350, "y": 502 }, "leftKnee": { "x": 350, "y": 588 }, "leftAnkle": { "x": 350, "y": 676 }, "leftSole": { "x": 350, "y": 720 },
+        "rightHip": { "x": 418, "y": 502 }, "rightKnee": { "x": 418, "y": 588 }, "rightAnkle": { "x": 418, "y": 676 }, "rightSole": { "x": 418, "y": 720 }
+      },
+      "depthOrder": ["rightArm", "pelvisUnderlay", "rightLeg", "head", "torso", "leftLeg", "pelvisMask", "leftArm", "shoulderMask"]
+    },
+    "front3q": {
+      "index": 1,
+      "role": "front-turn-source",
+      "runtimeStatus": "pending-bodyView",
+      "cameraNearSide": "left",
+      "anchorOverrides": {
+        "head": { "crown": { "x": 104, "y": 58 }, "neckAxis": { "x": 104, "y": 154 }, "neck": { "x": 104, "y": 174 } },
+        "torso": {
+          "leftShoulder": { "x": 58, "y": 64 },
+          "rightShoulder": { "x": 132, "y": 64 },
+          "leftHip": { "x": 80, "y": 220 },
+          "rightHip": { "x": 110, "y": 220 }
+        }
+      },
+      "masterLandmarks": {
+        "crown": { "x": 384, "y": 190 }, "neck": { "x": 384, "y": 306 },
+        "leftShoulder": { "x": 300, "y": 330 }, "leftElbow": { "x": 300, "y": 450 }, "leftWrist": { "x": 300, "y": 560 },
+        "rightShoulder": { "x": 468, "y": 330 }, "rightElbow": { "x": 468, "y": 450 }, "rightWrist": { "x": 468, "y": 560 },
+        "leftHip": { "x": 360, "y": 502 }, "leftKnee": { "x": 360, "y": 588 }, "leftAnkle": { "x": 360, "y": 676 }, "leftSole": { "x": 360, "y": 720 },
+        "rightHip": { "x": 408, "y": 502 }, "rightKnee": { "x": 408, "y": 588 }, "rightAnkle": { "x": 408, "y": 676 }, "rightSole": { "x": 408, "y": 720 }
+      },
+      "depthOrder": ["rightArm", "pelvisUnderlay", "rightLeg", "head", "torso", "leftLeg", "pelvisMask", "leftArm", "shoulderMask"]
+    },
+    "profile": {
+      "index": 2,
+      "role": "primary-gameplay-source",
+      "runtimeStatus": "pending-v2-profile-renderer",
+      "cameraNearSide": "left",
+      "anchorOverrides": {
+        "head": { "crown": { "x": 110, "y": 58 }, "neckAxis": { "x": 110, "y": 154 }, "neck": { "x": 110, "y": 174 } }
+      },
+      "masterLandmarks": {
+        "crown": { "x": 384, "y": 190 }, "neck": { "x": 384, "y": 306 },
+        "leftShoulder": { "x": 365, "y": 330 }, "leftElbow": { "x": 365, "y": 450 }, "leftWrist": { "x": 365, "y": 560 },
+        "rightShoulder": { "x": 403, "y": 330 }, "rightElbow": { "x": 403, "y": 450 }, "rightWrist": { "x": 403, "y": 560 },
+        "leftHip": { "x": 375, "y": 502 }, "leftKnee": { "x": 375, "y": 588 }, "leftAnkle": { "x": 375, "y": 676 }, "leftSole": { "x": 375, "y": 720 },
+        "rightHip": { "x": 393, "y": 502 }, "rightKnee": { "x": 393, "y": 588 }, "rightAnkle": { "x": 393, "y": 676 }, "rightSole": { "x": 393, "y": 720 }
+      },
+      "depthOrder": ["rightArm", "pelvisUnderlay", "rightLeg", "head", "torso", "leftLeg", "pelvisMask", "leftArm", "shoulderMask"]
+    },
+    "back3q": {
+      "index": 3,
+      "role": "rear-turn-source",
+      "runtimeStatus": "pending-bodyView",
+      "cameraNearSide": "right",
+      "anchorOverrides": {
+        "head": { "crown": { "x": 96, "y": 58 }, "neckAxis": { "x": 96, "y": 154 }, "neck": { "x": 96, "y": 174 } },
+        "torso": {
+          "leftShoulder": { "x": 132, "y": 64 },
+          "rightShoulder": { "x": 58, "y": 64 },
+          "leftHip": { "x": 110, "y": 220 },
+          "rightHip": { "x": 80, "y": 220 }
+        }
+      },
+      "masterLandmarks": {
+        "crown": { "x": 384, "y": 190 }, "neck": { "x": 384, "y": 306 },
+        "leftShoulder": { "x": 468, "y": 330 }, "leftElbow": { "x": 468, "y": 450 }, "leftWrist": { "x": 468, "y": 560 },
+        "rightShoulder": { "x": 300, "y": 330 }, "rightElbow": { "x": 300, "y": 450 }, "rightWrist": { "x": 300, "y": 560 },
+        "leftHip": { "x": 408, "y": 502 }, "leftKnee": { "x": 408, "y": 588 }, "leftAnkle": { "x": 408, "y": 676 }, "leftSole": { "x": 408, "y": 720 },
+        "rightHip": { "x": 360, "y": 502 }, "rightKnee": { "x": 360, "y": 588 }, "rightAnkle": { "x": 360, "y": 676 }, "rightSole": { "x": 360, "y": 720 }
+      },
+      "depthOrder": ["leftArm", "pelvisUnderlay", "leftLeg", "head", "torso", "rightLeg", "pelvisMask", "rightArm", "shoulderMask"]
+    },
+    "back": {
+      "index": 4,
+      "role": "back-and-prone-source",
+      "runtimeStatus": "pending-bodyView",
+      "cameraNearSide": "right",
+      "anchorOverrides": {
+        "torso": {
+          "leftShoulder": { "x": 142, "y": 64 },
+          "rightShoulder": { "x": 48, "y": 64 },
+          "leftHip": { "x": 114, "y": 220 },
+          "rightHip": { "x": 76, "y": 220 }
+        }
+      },
+      "masterLandmarks": {
+        "crown": { "x": 384, "y": 190 }, "neck": { "x": 384, "y": 306 },
+        "leftShoulder": { "x": 498, "y": 330 }, "leftElbow": { "x": 498, "y": 450 }, "leftWrist": { "x": 498, "y": 560 },
+        "rightShoulder": { "x": 270, "y": 330 }, "rightElbow": { "x": 270, "y": 450 }, "rightWrist": { "x": 270, "y": 560 },
+        "leftHip": { "x": 418, "y": 502 }, "leftKnee": { "x": 418, "y": 588 }, "leftAnkle": { "x": 418, "y": 676 }, "leftSole": { "x": 418, "y": 720 },
+        "rightHip": { "x": 350, "y": 502 }, "rightKnee": { "x": 350, "y": 588 }, "rightAnkle": { "x": 350, "y": 676 }, "rightSole": { "x": 350, "y": 720 }
+      },
+      "depthOrder": ["leftArm", "pelvisUnderlay", "leftLeg", "head", "torso", "rightLeg", "pelvisMask", "rightArm", "shoulderMask"]
+    }
+  },
+  "connections": {
+    "neck": { "parent": { "part": "torso", "anchor": "neck" }, "child": { "part": "head", "anchor": "neck" }, "opaqueCoreRadiusPx": 8 },
+    "leftShoulder": { "parent": { "part": "torso", "anchor": "leftShoulder" }, "child": { "part": "upperArm", "anchor": "shoulder" }, "opaqueCoreRadiusPx": 12 },
+    "rightShoulder": { "parent": { "part": "torso", "anchor": "rightShoulder" }, "child": { "part": "upperArm", "anchor": "shoulder" }, "opaqueCoreRadiusPx": 12 },
+    "elbow": { "parent": { "part": "upperArm", "anchor": "elbow" }, "child": { "part": "forearm", "anchor": "elbow" }, "opaqueCoreRadiusPx": 10 },
+    "wrist": { "parent": { "part": "forearm", "anchor": "wrist" }, "child": { "part": "hand", "anchor": "wrist" }, "opaqueCoreRadiusPx": 8 },
+    "leftHip": { "parent": { "part": "torso", "anchor": "leftHip" }, "child": { "part": "thigh", "anchor": "hip" }, "opaqueCoreRadiusPx": 12 },
+    "rightHip": { "parent": { "part": "torso", "anchor": "rightHip" }, "child": { "part": "thigh", "anchor": "hip" }, "opaqueCoreRadiusPx": 12 },
+    "knee": { "parent": { "part": "thigh", "anchor": "knee" }, "child": { "part": "shin", "anchor": "knee" }, "opaqueCoreRadiusPx": 10 },
+    "ankle": { "parent": { "part": "shin", "anchor": "ankle" }, "child": { "part": "boot", "anchor": "ankle" }, "opaqueCoreRadiusPx": 8 }
+  },
+  "variantFamilies": {
+    "head": [
+      { "id": "idle", "geometryLock": "thesz-v2-head", "sheetSlot": "head.idle" },
+      { "id": "hurt", "geometryLock": "thesz-v2-head", "sheetSlot": "head.hurt" },
+      { "id": "effort", "geometryLock": "thesz-v2-head", "sheetSlot": "head.effort" },
+      { "id": "down", "geometryLock": "thesz-v2-head", "sheetSlot": "head.down" },
+      { "id": "winning", "geometryLock": "thesz-v2-head", "sheetSlot": "head.winning" }
+    ],
+    "hand": [
+      { "id": "open", "geometryLock": "thesz-v2-hand", "sheetSlot": "hand.open", "semanticAnchors": { "contact": { "x": 60, "y": 60 }, "contactNormal": { "x": 1, "y": 0 } } },
+      { "id": "fist", "geometryLock": "thesz-v2-hand", "sheetSlot": "hand.fist", "semanticAnchors": { "contact": { "x": 72, "y": 54 }, "contactNormal": { "x": 1, "y": 0 } } },
+      { "id": "grip", "geometryLock": "thesz-v2-hand", "sheetSlot": "hand.grip", "semanticAnchors": { "contact": { "x": 64, "y": 64 }, "contactNormal": { "x": 1, "y": 0 } } }
+    ],
+    "boot": [
+      { "id": "neutral", "geometryLock": "thesz-v2-boot", "sheetSlot": "boot.neutral", "semanticAnchors": { "heel": { "x": 40, "y": 66 }, "toe": { "x": 92, "y": 66 }, "sole": { "x": 72, "y": 66 }, "soleNormal": { "x": 0, "y": 1 } } },
+      { "id": "flexed", "geometryLock": "thesz-v2-boot", "sheetSlot": "boot.flexed", "semanticAnchors": { "heel": { "x": 42, "y": 64 }, "toe": { "x": 82, "y": 58 }, "sole": { "x": 64, "y": 62 }, "soleNormal": { "x": 0, "y": 1 } } },
+      { "id": "toePoint", "geometryLock": "thesz-v2-boot", "sheetSlot": "boot.toePoint", "semanticAnchors": { "heel": { "x": 40, "y": 62 }, "toe": { "x": 104, "y": 48 }, "sole": { "x": 88, "y": 52 }, "soleNormal": { "x": 1, "y": 0 } } }
+    ]
+  },
+  "artContract": {
+    "targetBodyHeightsPx": [265, 209, 154],
+    "silhouetteStrokeSourcePx": { "sustainedMin": 4.4, "typicalMin": 5, "typicalMax": 6.5, "localVariationMinFraction": 0.2, "localVariationMaxFraction": 0.25 },
+    "majorInternalStrokeSourcePx": { "min": 3.5, "max": 4.5 },
+    "secondaryStrokeSourcePx": { "min": 2.5, "max": 3.2 },
+    "minimumCriticalLumaDelta": 24,
+    "minimumStructuralValueFamilies": 4,
+    "maximumStructuralValueFamilies": 5,
+    "forbiddenProjectedPatternPeriodPx": { "min": 1, "max": 8 },
+    "uniformOutlineForbidden": true,
+    "hiddenAttachmentBevelForbidden": true,
+    "regularMicroPatternForbidden": true,
+    "randomOnePixelJitterForbidden": true,
+    "grayscaleProofRequired": true,
+    "broadcastProofRequired": true
+  },
+  "humanReview": {
+    "status": "pending",
+    "sourceSheetSha256": null,
+    "extremeJointAngles": false,
+    "artistStrokeAtGameScale": false,
+    "broadcastNearMiddleFar": false
+  }
+}

@@ -25,13 +25,30 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Active assignment — Derek's review of the authored hammerlock
+## Active assignment — Derek's art direction for Thesz v2 Pass A
+
+The canonical-v2 source pipeline is committed and mechanically green. The
+next step is blocked on the art director, not on code: Pass A cannot be
+generated until Derek settles the identity, style, and costume decisions
+listed in `Sprite sheets/AI Pilot/Lou/v2-canonical/pass-a/DECISIONS.md`
+(recorded in `AI_HANDOFF_ENTRIES/2026-08-23-claude-thesz-v2-pass-a-launch-packet.md`).
+The launch
+packet — the materialized 4096 x 4096 guide and blank-clean PNGs, their
+SHA-256 hashes, and the final Pass-A-only prompt — is prepared and waiting
+beside it. No artwork has been generated.
+
+Pass A produces the five cohesive 530 px masters only. The production bank
+stays empty until identity is approved; that ordering is the whole point of
+the master-first workflow.
+
+### Also awaiting review — the authored hammerlock
 
 The move-builder assignment is delivered and awaiting Derek's eyes: the
 hammerlock is authored end to end in `tools/move-editor`, its grip is
 measured rather than implied, and the get-up handoff is gated. See the
 2026-08-23 entry in the Handoff Log for what changed and what it cost.
-Nine commits on `master`, **not pushed**.
+Ten commits on `master`, **not pushed** (part of 20 unpushed on
+`master` overall, including the canonical-v2 commit below).
 
 What wants a decision from Derek:
 
@@ -62,12 +79,84 @@ shipped character, is what the move editor previews against.
 
 ## Handoff Log
 
+### 2026-08-23 (Canonical v2: the source pipeline is buildable end to end, and the Thesz sheet is launch-ready) — Claude
+
+The art pipeline Codex opened in the 2026-08-10 pivot now has a complete,
+mechanically verified source path: a manifest-driven guide generator, a
+structural validator, a deterministic 1:1 exporter, and the locked Thesz
+v2 template they all read. One focused commit on `master`, **not pushed**;
+20 unpushed on `master` overall.
+
+**What exists now.** `npm run art:sheet` opens
+`tools/wrestler-cutter/canonical-sheet.html`, which derives every panel,
+cell, export rectangle, axis, anchor, overlap band, and coverage ring from
+`templates/rig-source-manifest.v2.example.json` and emits two separate
+4096 x 4096 PNGs: a flattened `RIG_MARKERS` guide and a genuinely blank
+clean sheet. The clean sheet is a freshly allocated canvas, not a copy of
+the guide with markers hidden — that separation is asserted in the smoke
+test by probing a center pixel for RGBA 0,0,0,0.
+`npm run art:export-v2` writes all 95 registered crops plus an
+`export-index.json` binding every source rectangle, output SHA-256, and
+the exact manifest/sheet hashes; its PNG encoder is pinned to RGBA8,
+filter 0, no ancillary chunks, so re-running the same source is
+byte-identical.
+
+**The audit finding worth recording: there wasn't one.** The uncommitted
+work was checked against its own published contract rather than taken on
+trust, and it holds. All five master panels are exactly 530 px crown to
+sole. Every bone span in every view equals its declared length times the
+density of 2 — crown-to-neck 116, neck-to-hip-midpoint 196, shoulder-to-
+elbow 120, elbow-to-wrist 110, hip-to-knee 86, knee-to-ankle 88 — with
+zero drift at three decimal places, in all five views, for both anatomical
+sides. All 11 part canvases and all 11 cell-relative export rectangles
+match `CANONICAL_CHARACTER_SHEET_V2.md` exactly, every rectangle fits its
+320 px macro-cell, and every canvas equals its rectangle. All 16 joint
+zones clear the 12 px overlap floor on both sides. Every anchor sits
+inside its canvas with its full opaque-core disk unclipped. The boot's
+ankle-to-sole vertical drop is exactly 44 px, as declared. **No geometry,
+dimension, anchor, overlap band, export rectangle, or runtime prerequisite
+was changed.**
+
+**One thing that looked like a defect and is not.** The v1 fixture
+`rig-source-manifest.example.json` moves its boot from 120 x 100 to
+120 x 120 with new ankle/sole anchors. That is not drift: it is now
+byte-identical to the certified reference rig's boot in
+`src/rig/referenceRig.js` (ankle 36,10 · sole 86,118 · the same three
+variants), which is the fixture it is supposed to mirror.
+
+**Verification** (Node 22.23.1 — the default `node` on PATH is v19.8.1 and
+is too old for vite): `npm test` **354/354** (up from 329/329; the new
+tests are the v2 exporter suite and the extended source-manifest suite) ·
+`npm run build` clean · `npm run art:sheet:smoke` (4096 master, 5 skeleton
+panels, 95 exact cells, 120 overlap zones, pelvis/shoulder coverage,
+separate guide/blank-clean PNGs) · `npm run art:validate-source` against
+the v2 template (11 parts valid, `humanReview` correctly reported
+**pending**) · `git diff --check` clean.
+
+**Runtime status is unchanged and still honest.** All seven
+`runtimePrerequisites` in the v2 manifest remain `pending`: the v2
+compiler, uniform-density profile renderer, semantic-sole pose grounding,
+`bodyView` channel, projected-socket interpolation, view depth-order
+transport, and the shoulder-mask slot. This commit ships a *source*
+pipeline. Nothing in it renders in a match, no move or runtime render path
+was touched, and shipped Thesz assets are untouched. Gate A's mechanical
+precheck passes; Gate A itself does not, because stroke taper, value-family
+count, luma separation, and moire are still human-reviewed items with no
+harness behind them. That is stated in the tooling's own output rather
+than papered over.
+
+**Next.** Thesz v2 Pass A is prepared but deliberately not generated —
+five cohesive 530 px masters only, production bank left empty. The packet
+and the art-director decisions it is blocked on are in
+`Sprite sheets/AI Pilot/Lou/v2-canonical/pass-a/`, recorded in
+`AI_HANDOFF_ENTRIES/2026-08-23-claude-thesz-v2-pass-a-launch-packet.md`.
+
 ### 2026-08-23 (Move editor: the hammerlock is authored end to end, and its grip is actually made) — Claude
 
 Closes the move-builder assignment Derek set: take the builder from a
 strong technical foundation to its first complete, genuinely authorable
-production move. Nine commits on `master`, **not pushed**, starting from
-`7d3c6be`.
+production move. Ten commits on `master`, **not pushed**, starting after
+`7d3c6be` (`be9e7b7` … `5c2ac2c`).
 
 **The audit finding that shaped everything.** The editor placed each role
 from its OWN base position (attacker x=355, defender x=665) while the

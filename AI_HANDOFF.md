@@ -69,8 +69,8 @@ The move-builder assignment is delivered and awaiting Derek's eyes: the
 hammerlock is authored end to end in `tools/move-editor`, its grip is
 measured rather than implied, and the get-up handoff is gated. See the
 2026-08-23 entry in the Handoff Log for what changed and what it cost.
-Ten commits on `master`, **not pushed** (part of 20 unpushed on
-`master` overall, including the canonical-v2 commit below).
+Ten commits on `master`, **not pushed** (part of 22 unpushed on
+`master` overall, including the canonical-v2 commits below).
 
 What wants a decision from Derek:
 
@@ -138,13 +138,16 @@ a right-facing near-profile, so front, front3q, back3q and back are the
 model's extrapolation; Pass A exists as its own gate so those interpretations
 are approved before any part is cut.
 
-One thing was recorded rather than actioned: measured off the canonical, the
-trunks and the outline ink are both pure black (luma 0.0), against the
-standard's 24-luma floor for adjacent gameplay-critical regions. Derek's call
-is to keep black trunks. It is written into the packet as a known accepted
-deviation so that if the hip boundary reads poorly at 154 px in Gate A, the
-cause is already identified and the fix is a costume-value decision, not a
-rig hunt. Every other adjacency clears the floor comfortably.
+One measurement was initially misread, and Derek corrected it in the same
+pass. Off the canonical, the trunks and the outline ink are both pure black
+(luma 0.0), and the draft logged that as a deviation from the standard's
+24-luma floor. It is not a deviation: the trunks and the outline are **one
+dark value family**, not two regions that must be told apart. The trunks are
+a black shape read from their silhouette, and the outline is the line that
+draws them. The boundary that actually matters is skin-to-trunks at 178.8 —
+the largest gap on the character. Black trunks and blue boots stand; the 0.0
+stays on record only so it is not rediscovered and mistaken for a miss. The
+packet now counts five value families, not four.
 
 **The new gate.** `npm run art:validate-pass-a -- --sheet <sheet.png>`
 (`tools/wrestler-cutter/validate-pass-a.mjs`). It is deliberately the inverse
@@ -177,7 +180,7 @@ The art pipeline Codex opened in the 2026-08-10 pivot now has a complete,
 mechanically verified source path: a manifest-driven guide generator, a
 structural validator, a deterministic 1:1 exporter, and the locked Thesz
 v2 template they all read. One focused commit on `master`, **not pushed**;
-20 unpushed on `master` overall.
+22 unpushed on `master` overall.
 
 **What exists now.** `npm run art:sheet` opens
 `tools/wrestler-cutter/canonical-sheet.html`, which derives every panel,

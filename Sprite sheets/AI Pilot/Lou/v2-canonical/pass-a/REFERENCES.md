@@ -69,15 +69,23 @@ chroma excluded.
 | hair (from shipped `head.png`) | 48,40,40 | 41.7 |
 | outline ink / trunks | 0,0,0 | 0.0 |
 
+Five structural families — and note that **the trunks and the outline ink are
+deliberately one dark family**, not two regions that need grading apart. The
+trunks are a black shape read from their silhouette against skin.
+
 Adjacency gaps against the standard's 24-luma floor:
 
 | Pair | Gap | |
 |---|---:|---|
+| **skin ↔ trunks** (the critical boundary) | **178.8** | pass, amply |
 | skin ↔ skin shadow | 31.4 | pass |
 | skin ↔ boot | 124.4 | pass |
 | boot ↔ ink | 54.4 | pass |
 | hair ↔ ink | 41.7 | pass |
-| **trunks ↔ ink** | **0.0** | **known, accepted — see DECISIONS.md D-4** |
+| trunks ↔ ink | 0.0 | n/a — same family by design, see D-4 |
+
+Every real adjacency passes. The trunks-to-ink figure is listed only so nobody
+re-derives it later and mistakes it for an unnoticed failure.
 
 An earlier draft measured this palette from the quarantined file and reported
 skin at luma 161. The approved canonical is a higher-key palette; the figures

@@ -102,12 +102,18 @@ Art direction:
   wraps, tape, jewellery, or championship belt
 
 Value structure, measured against the broadcast filter:
-- four structural luminance families: skin base, skin shadow, boot, and ink
+- five structural luminance families: skin base, skin shadow, boot, hair, and
+  ink — where the black trunks and the outline ink are deliberately ONE dark
+  family, not two separately graded regions
 - match the approved canonical's values: skin base near luma 179, skin shadow
-  near luma 147, boot blue near luma 54, ink black
-- keep gameplay-critical adjacent regions at least 24 luma apart before filters
-- do not rely on hue alone to separate skin, hair, trunks, boots, or outlines;
-  the result must remain readable in grayscale
+  near luma 147, boot blue near luma 54, hair near luma 42, ink and trunks black
+- the trunks read as a black shape defined by their silhouette against skin, not
+  by a value step against the outline; do not lighten them to manufacture one
+- the critical boundary is skin to trunks, and it has ample contrast: roughly
+  179 against 0. Keep every OTHER pair of adjacent gameplay-critical regions at
+  least 24 luma apart before filters
+- do not rely on hue alone to separate skin, hair, boots, or outlines; the
+  result must remain readable in grayscale
 
 Broadcast constraints:
 - no halftone, checker, dither, regular hatching, dense parallel folds, or
@@ -150,7 +156,9 @@ It mechanically enforces, against the committed manifest:
 2. **every production-bank cell empty** and no paint anywhere outside the five
    master panels;
 3. each panel contains a figure, inside its own rectangle, not bleeding;
-4. each figure measures **530 px** crown to planted sole (±2 px);
+4. each figure measures **exactly 530 px** crown to planted sole — the alpha
+   extent must land on the manifest's own crown and sole rows, with no
+   tolerance;
 5. transparent pixels carry RGB 0,0,0.
 
 A pass is a mechanical precheck only. It cannot judge likeness, taper, or value

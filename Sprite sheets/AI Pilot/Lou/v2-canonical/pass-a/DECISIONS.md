@@ -56,17 +56,22 @@ no beard, no stubble.
 **Ruling.** Keep the current **black trunks** and **blue lace-up boots**. No
 colour change.
 
-**Recorded technical note, accepted rather than actioned.** Measured from the
-approved canonical, the trunks and the outline ink are both pure black
-(luma 0.0). `CHARACTER_ART_SOURCE_STANDARD.md` asks for ≥24 luma between
-adjacent gameplay-critical regions, and the pelvis is one. So the trunk edge is
-carried by silhouette and by the skin/trunks boundary (178.8 → 0.0, a large
-gap), not by a trunks-vs-ink value step.
+**How this squares with the 24-luma rule.** Measured from the approved
+canonical, the trunks and the outline ink are both pure black (luma 0.0). That
+is not two gameplay-critical regions failing to separate — **it is one dark
+value family**. The trunks are a black shape whose edge is read from its
+silhouette against skin, exactly as a black shape in ink drawing should be.
 
-This is a known, accepted deviation, not an oversight. It is written down here
-so that if the hip boundary ever reads poorly at 154 px in Gate A, the cause is
-already identified and the fix is a costume-value decision rather than a rig
-bug. Every other adjacency passes comfortably — see `REFERENCES.md`.
+The boundary that actually matters is **skin to trunks**, and it is the largest
+gap on the character: 178.8 to 0.0. `CHARACTER_ART_SOURCE_STANDARD.md`'s ≥24
+requirement applies to adjacent regions that must be told apart from each other;
+the outline is not a region the trunks need to be told apart from, it is the
+line that draws them.
+
+So an earlier draft of this packet was wrong to log this as an accepted
+deviation. There is nothing to deviate from. Recorded here only so the 0.0
+figure is not rediscovered later and mistaken for an unnoticed failure. Every
+real adjacency passes comfortably — see `REFERENCES.md`.
 
 ## D-5 — Neutral pose: open hands
 

@@ -5,7 +5,11 @@ to generate. No artwork has been generated.
 
 Packet: `Sprite sheets/AI Pilot/Lou/v2-canonical/pass-a/`. Its Markdown is
 tracked (force-added past the `Sprite sheets/` ignore); the two 4096 x 4096 PNGs
-are deterministic generator output and stay untracked.
+stay untracked. They are pixel- and layout-reproducible from the committed
+manifest, but not byte-deterministic — the encoder is the browser's, so a
+regenerated pair may hash differently while placing every panel, cell and marker
+identically. Byte-identical output is the `art:export-v2` exporter's guarantee
+(pinned RGBA8 / filter 0 / no ancillary chunks), not these sheets'.
 
 ## Correction of record: the likeness authority
 
@@ -40,10 +44,17 @@ higher-key palette.
 | hair (shipped `head.png`) | 48,40,40 | 41.7 |
 | ink / trunks | 0,0,0 | 0.0 |
 
-Every adjacency clears the standard's 24-luma floor except trunks-vs-ink, which
-is 0.0. Derek has ruled: keep black trunks and blue boots. Recorded in the
-packet as a known accepted deviation so that if the hip boundary reads poorly at
-154 px in Gate A, the cause is already identified.
+Five structural families, and every real adjacency clears the standard's
+24-luma floor. Trunks-vs-ink measures 0.0, but that is **one dark family by
+design**, not a failed separation: the trunks are a black shape read from their
+silhouette against skin, and the outline is the line that draws them rather than
+a region they must be told apart from. The boundary that matters is
+skin-to-trunks at 178.8 — the largest gap on the character.
+
+Derek has ruled: keep black trunks and blue boots. An earlier draft logged the
+0.0 as an accepted deviation; that framing was wrong and is corrected in the
+packet. The figure is kept on record only so it is not rediscovered later and
+mistaken for an unnoticed failure.
 
 ## Settled art direction
 

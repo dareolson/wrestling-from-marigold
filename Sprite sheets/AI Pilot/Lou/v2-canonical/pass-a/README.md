@@ -14,9 +14,22 @@ are **settled** (see `DECISIONS.md`); this packet is ready to run.
 | `thesz-canonical-v2-guides.png` | The 4096 x 4096 **guide**. Supply as image/mask input. | no — regenerable |
 | `thesz-canonical-v2.png` | The 4096 x 4096 **blank clean sheet**. Output geometry. | no — regenerable |
 
-The PNGs are deterministic output of the committed generator, not authored
-assets, so they are left untracked under the repo's gitignored `Sprite sheets/`.
-Regenerate with `npm run art:sheet` and check them against `SHA256SUMS.txt`.
+The PNGs are generator output rather than authored assets, so they are left
+untracked under the repo's gitignored `Sprite sheets/`. Regenerate with
+`npm run art:sheet`.
+
+**On reproducibility, precisely.** These two PNGs are **pixel- and
+layout-reproducible**, not byte-deterministic. Their geometry is derived
+entirely from the committed manifest, so a regenerated pair will place every
+panel, cell, rectangle, anchor and ring identically — but the encoder is the
+browser's, so the file bytes (and therefore the SHA-256) may differ across
+Chrome versions or platforms. The hashes in `SHA256SUMS.txt` identify *these
+exact files* for provenance; treat a hash mismatch after regeneration as
+"re-verify the pixels", not automatically as "the geometry changed".
+
+This is different from `npm run art:export-v2`, which pins its own PNG encoder
+to RGBA8 / filter 0 / no ancillary chunks and *is* byte-identical run to run.
+That guarantee belongs to the exporter, not to these browser-generated sheets.
 
 ## The one correction that matters
 

@@ -69,8 +69,8 @@ The move-builder assignment is delivered and awaiting Derek's eyes: the
 hammerlock is authored end to end in `tools/move-editor`, its grip is
 measured rather than implied, and the get-up handoff is gated. See the
 2026-08-23 entry in the Handoff Log for what changed and what it cost.
-Ten commits on `master`, **not pushed** (part of 22 unpushed on
-`master` overall, including the canonical-v2 commits below).
+Ten commits on `master`, **pushed 2026-08-23** as part of the 13-commit
+catch-up that also carried the canonical-v2 work below (`7d3c6be`..`7905fc9`).
 
 What wants a decision from Derek:
 
@@ -179,8 +179,8 @@ trigger.
 The art pipeline Codex opened in the 2026-08-10 pivot now has a complete,
 mechanically verified source path: a manifest-driven guide generator, a
 structural validator, a deterministic 1:1 exporter, and the locked Thesz
-v2 template they all read. One focused commit on `master`, **not pushed**;
-22 unpushed on `master` overall.
+v2 template they all read. One focused commit on `master`, since **pushed**
+(2026-08-23, in `7d3c6be`..`7905fc9`).
 
 **What exists now.** `npm run art:sheet` opens
 `tools/wrestler-cutter/canonical-sheet.html`, which derives every panel,
@@ -250,7 +250,7 @@ and the art-director decisions it is blocked on are in
 
 Closes the move-builder assignment Derek set: take the builder from a
 strong technical foundation to its first complete, genuinely authorable
-production move. Ten commits on `master`, **not pushed**, starting after
+production move. Ten commits on `master`, since **pushed**, starting after
 `7d3c6be` (`be9e7b7` … `5c2ac2c`).
 
 **The audit finding that shaped everything.** The editor placed each role

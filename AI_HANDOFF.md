@@ -25,135 +25,154 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Active assignment — cohesive body rig binding
+## Active assignment — Derek's review of the authored hammerlock
 
-Derek's next priority is a stronger system for making wrestlers read as one
-cohesive articulated body. Codex prepared `COHESIVE_BODY_RIG_BLUEPRINT.md`.
-Implement it incrementally; this is not a renderer rewrite.
+The move-builder assignment is delivered and awaiting Derek's eyes: the
+hammerlock is authored end to end in `tools/move-editor`, its grip is
+measured rather than implied, and the get-up handoff is gated. See the
+2026-08-23 entry in the Handoff Log for what changed and what it cost.
+Nine commits on `master`, **not pushed**.
 
-First implementation slice: Phase A diagnostics plus George's near/far elbows
-only. Introduce an authoritative named bone graph and two-anchor skin binding so
-the parent painted elbow, mathematical joint, and child painted elbow map to
-the same world point. Preserve gameplay, move timing, existing proportions,
-and draw order. Stop for Derek's visual review before Thesz elbows, knees, or
-torso sockets.
+What wants a decision from Derek:
 
-Required verification for the first slice: existing joint audit, a dense elbow
-angle sweep in both facings, `npm test`, `npm run debug:play -- all`, build, and
-before/after screenshots. Do not repair failures with new fixed screen-space
-offsets.
+- The hammerlock now plants both wrestlers for the hold and lands the
+  approach on the catch (120 ms instead of 300 ms). Both were forced by
+  the grip and both change how a shipped move reads. Screenshots were
+  taken at five phases in both facings; the call is his.
+- `hammerlock.tracks.js` is GENERATED. Re-running
+  `tools/move-editor/author_hammerlock.mjs --write` is now how that move's
+  choreography changes.
 
-**Status 2026-07-25 (Claude): first slice implemented and Derek-approved.**
-George's near/far elbows are now bound via a measured two-anchor correction
-(`distalAnchorFrac` in Skeleton.js); see the Handoff Log entry below for the
-diagnostic finding, the fix, and full verification. Derek reviewed in-browser
-2026-07-25 ("hes elbos look better than ever") — approved as-is, no further
-George elbow changes requested. Proceeding to Thesz's elbows next, per the
-blueprint's phase order, using the same `distalAnchorFrac` mechanism. Knees
-and torso sockets remain not started.
+### Previous assignment — cohesive body rig binding (delivered)
 
-**Status 2026-07-25 (later, Claude): hip sockets landed via the George AI
-pilot, resolving Codex's earlier "add hip sockets now" / "AI pilot" thread.**
-Derek pointed Claude at `Sprite sheets/AI Pilot/George/
-CLAUDE_INTEGRATION_HANDOFF.md` (gitignored — this is why the earlier reply
-above couldn't identify what Codex meant). That doc supplied the missing
-design: a dynamic-pelvis hip-socket contract, opt-in per character. Implemented
-in `Skeleton.js` (`_solveTorsoOrigin`, gated on `nearHip`+`farHip` socket
-presence — George's/Thesz's own sockets still lack both, so their rendering
-is unaffected) and used it to wire the pilot's `george-ai-pilot` character
-config. Full writeup in the Handoff Log entry below. Hip sockets are now
-available for George's/Thesz's own torso sockets whenever someone measures
-their nearHip/farHip values — not done in this pass, out of scope (this pass
-only had to make it work for the pilot's own measured sockets).
+Derek's earlier priority was a stronger system for making wrestlers read
+as one cohesive articulated body, from Codex's
+`COHESIVE_BODY_RIG_BLUEPRINT.md`, starting with Phase A diagnostics and
+George's near/far elbows.
 
-**Status 2026-07-26 (Claude): George AI pilot promoted to shipped George —
-hip sockets and the dynamic-pelvis mechanism are now live on a default/
-shipped character for the first time, not just opt-in pilot comparisons.**
-Roster is now just george + thesz (brawler and the whole pilot comparison
-lineage vaulted, not deleted — see `_vault/`). This surfaced two real
-`Skeleton.js` bugs the opt-in-only testing never caught (a facing-mirror
-asymmetry in the hip-socket FK math, and a head-anchor origin that never
-re-mirrored under flipX) — both fixed; see the dated Handoff Log entry below
-for the full story, including why a directly-tuned `faceLeftOverrides` set
-was still needed on top of both fixes. Committed: `6761ff8`.
-
-**Previous assignment closed 2026-07-24 (Claude):** Derek approved the four-move blueprint below
-in full — all four moves, all three directional-input overrides, the kit
-assignments as proposed, and the current-rig hammerlock approximation (no
-rename to "standing arm wrench"). Claude implemented all four
-(hammerlock/kneeLift/backBodyDrop/kneeDrop), wired `debug:play` coverage, and
-verified. See the Handoff Log entry below for details.
-
-<details>
-<summary>Original assignment text (for the record)</summary>
-
-Codex delivered the requested blueprint on 2026-07-24:
-`AI_HANDOFF_ENTRIES/2026-07-24-codex-four-move-blueprint.md`.
-It is design-only; Claude should not implement it until Derek approves the
-four moves, input collisions, and current-rig hammerlock approximation.
-
-(Previous active assignment — B1 close-out: reversal foot-lock — completed and
-feel-signed-off by Derek 2026-07-12; see the Handoff Log entries of that date.
-Replaced here at Derek's direction 2026-07-14.)
-
-Codex: design four new move animations for the current skeletons. Deliverable
-is a **blueprint, not code** — precise enough that Claude can implement it
-without making design decisions. Derek reviews the blueprint before any
-implementation starts.
-
-Requirements:
-
-- Four moves, era-appropriate to the 1940s–50s golden-age repertoire (project
-  priority: psychology and drama over flash).
-- **Exactly four poses per move** for the attacker's animation. Poses use the
-  existing `POSES` format (`Wrestler.js:59`): `{ lLeg, rLeg, lArm, rArm, lean,
-  crouch }`, skeleton angle convention 0 = straight down. Sequence them in the
-  existing `MOVE_DEFS` shape (`Wrestler.js:136`): `{ p, dur, e }` with
-  durations in ms and Phaser easing names. Reuse existing poses where they
-  genuinely fit; new poses need full joint values.
-- **Input-invoked by a human player.** Specify the exact trigger for each move
-  as button × context. No new physical buttons — the action set is grapple /
-  power / finisher / run plus direction and context. Currently occupied:
-  grapple → whip (standing), lockup (close), pin (downed), clothesline
-  (runner); power → jab/headbutt (close), dropkick (medium), elbowDrop
-  (downed), doubleAxeHandle (runner); finisher → sleeper (close), taunt (far);
-  lockup follow-ups → down = headlock, power = armDrag, right = armBar,
-  left = ankleLock. Flag any collision you're intentionally overriding.
-- **Current skeletons only**: no new art, no new rig parts, no second-side
-  texture keys, no entangled two-body drawn holds (those need bespoke art —
-  out of scope). Defender reactions reuse existing sell/fall/stagger states
-  and poses wherever possible; an essential new defender pose counts against
-  that move's four.
-- Per move, specify: name, trigger context, valid target state/range,
-  the four poses (joint values), durations + easings, suggested damage/
-  stamina/heat numbers, which kits get it (george / thesz / brawler), and
-  optional AI-usage notes.
-- Write the blueprint as `AI_HANDOFF_ENTRIES/<date>-codex-four-move-blueprint.md`
-  plus a short dated log entry below pointing at it.
-
-After Derek approves: Claude implements as focused commits (poses + MOVE_DEFS +
-handlers + `debug:play` scenario coverage), verifying with `npm test`,
-`npm run debug:play -- all`, and `npm run build` under Node >= 20.19.
-
-</details>
-
-## Clarifications
-
-AI should eventually share authoritative range and move data with Wrestler, but AI
-should not call `resolvePowerMove`; tactical selection and player move execution are
-different decisions.
-
-For Phase 1, prefer an instance seam such as `wrestler.setState(next, opts)` unless
-the code clearly favors another design.
-
-## Gorgeous George v1
-
-The current rig expects six assets in `src/assets/wrestlers/george/`:
-`head.png`, `torso.png`, `upper_arm.png`, `forearm.png`, `thigh.png`, and
-`shin.png`. Expression and hand/foot swapping are not supported by the current
-`Skeleton.js` and are not v1 requirements.
+That landed and grew past its first slice: the named bone graph and
+two-anchor skin binding are in `src/rig/twoAnchorBinding.js`, the
+reference rig and the articulation certification layer
+(`src/rig/referenceRig.js`, `src/rig/certification.js`,
+`npm run rig:certify`) are the standing gate for it, and George and Lou
+are reported as UNVERIFIED rather than passed — neither implements the
+production contract, which is the finding that layer exists to surface.
+Kept here rather than deleted: it is the reason the reference rig, not a
+shipped character, is what the move editor previews against.
 
 ## Handoff Log
+
+### 2026-08-23 (Move editor: the hammerlock is authored end to end, and its grip is actually made) — Claude
+
+Closes the move-builder assignment Derek set: take the builder from a
+strong technical foundation to its first complete, genuinely authorable
+production move. Nine commits on `master`, **not pushed**, starting from
+`7d3c6be`.
+
+**The audit finding that shaped everything.** The editor placed each role
+from its OWN base position (attacker x=355, defender x=665) while the
+runtime resolves every staged role against ONE origin — the anchor's
+position at clip start. The two disagreed about what an authored
+`transform` MEANS: a draft with both roles at `x: 0` read as a 254-rig-unit
+tie-up on screen and staged both wrestlers on the same point in the ring.
+The model already half-knew (it warns about a degenerate same-point entry)
+and the preview contradicted the warning. The preview now resolves through
+`clipStaging.stagedWorldPoint` itself, and the smoke test compares the two
+in both facings rather than restating the math.
+
+**The hammerlock's tableau moved out of gameplay code.** It was two Phaser
+tweens inside `Wrestler._doHammerlock`, so the geometry an author had to
+compose lived in `Wrestler.js` and the editor's `transform` channels
+reached nothing on the only move that needed them. It is clip data now and
+the executor adds no position tween — one owner, by construction. The
+entry offsets are the real trigger geometry, measured on the live game:
+hammerlock can only fire from a lockup and `Arena._tickLockup` holds that
+tie-up at exactly `100*s` (99.539 rig units across three commitments), so
+the shared-origin `t=0` placement moves the defender under half a rig unit.
+
+**Derek's correction, and what it took.** The first pass shipped with the
+editor calling the move READY while its declared grip was 155 px from
+happening — the tool was certifying a silhouette. Two changes:
+
+1. A REQUIRED contact that no pose of its limb can close now BLOCKS
+   readiness. Contacts default to required; an author who means "grade
+   this, but the move survives without it" has to say `required: false`.
+2. The grip was made real, and this is the part worth reading. It could
+   not be hand-tuned, so it is SOLVED — `tools/move-editor/author_hammerlock.mjs`
+   drives the real editor, puts the defender's trapped wrist where a
+   hammerlock puts it (behind the hip, rising up the back), solves the
+   attacker's arm onto it with the editor's own two-bone solve, and
+   captures both roles. Three things had to change first, each found by
+   measurement rather than guessed:
+   - **The approach lands ON the catch**, not 140 ms after it. You cannot
+     catch a wrist that is still closing 70 rig units.
+   - **Both wrestlers plant for the hold.** The torso origin is solved
+     from both hip sockets, so the legacy stance-to-stance leg swing moved
+     the torso, the shoulder, and the gripping arm with it: measured
+     **0.015 rad of far hip moves the near elbow 9.98 px** on the
+     reference rig. The grip is exact at every keyframe, so that motion
+     came back as a bulge BETWEEN keyframes, and densifying keyframes did
+     not help because the travel was the cause, not the sampling.
+   - **The trapped wrist follows a smooth path**; a two-bone solve
+     resolves its redundancy from wherever the arm currently is, so a
+     kinked target path lands consecutive keyframes on different branches.
+
+   Result: **0.11 px worst separation across 115 graded frames** on the
+   reference rig (was 284.8 px), **5.15 px on Lou/George** through the
+   live runtime (was 155.1 px). The residual on the shipped pair is
+   attributed to source artwork — different limb proportions, no
+   two-anchor bindings — not hidden.
+
+**Note for the art pipeline:** that 9.98 px/0.015 rad elbow sensitivity to
+the far hip is on the REFERENCE rig, so by the certifier's own attribution
+rule it is architecture, not artwork. It is not a regression and nothing
+here depends on changing it, but it is worth a look when the dynamic-pelvis
+work comes back around — any move that holds a contact while the legs work
+will hit it.
+
+**Choreography is now generated, and says so.** `hammerlock.tracks.js` is
+emitted by the authoring pass (solved geometry, 37 keyframes per role);
+`hammerlock.js` keeps every human DECISION — duration, phase times,
+markers, staging, and the reasoning. The old named stances are gone
+because they were no longer what the move does, and dressing solved
+geometry up as hand-authored constants would have been the lie.
+
+**Get-up handoff is gated.** `certifyGetUpHandoff` measures the seam
+`certifyMotion` structurally cannot see (it grades within one sequence; the
+pop is between two render paths). Budgets are recorded baselines: refrig
+84.96, george 78.75, thesz 45.30 px, ±0.5. Classified `animation-data`,
+never source-artwork, and it fails `rig:certify` on its own. **Honest
+deviation:** these do not reproduce the 35.19/55.79 in
+`RIG_AND_MOVE_PIPELINE.md` — that audit's harness was not preserved and the
+stated method does not yield those numbers. Both sets are recorded in
+`certify.mjs` and the pipeline doc rather than one quietly replacing the
+other. **This gate does not close the pop; it stops it worsening.**
+
+**Editor affordances:** undo/redo (snapshot-based, gestures coalesced,
+⌘Z/⇧⌘Z/Ctrl+Y), autosave that OFFERS a recovered draft rather than loading
+it and refuses an unreadable one without overwriting it, onion skinning as
+non-interactive wire chains, contact acquisition/maintenance/release on the
+timeline, and every readiness finding attributed to a layer in the same
+vocabulary the certifier uses.
+
+**Verification** (Node 22.23.1 — the default `node` on PATH is v19.8.1 and
+is too old for vite): `npm test` 329/329 · `npm run build` · `rig:validate`
+· `art:validate-source` · `rig:certify` exit 0 (refrig CERTIFIED,
+george/thesz UNVERIFIED, unchanged) · `proof:staging` 44/44 ·
+`proof:hammerlock` 42 checks · move-editor smoke · `debug:play -- all`
+17/17 · `git diff --check`. The handoff gate was proved non-vacuous by
+forcing the get-up's closing `nearArm` 0.06 → 0.80, which failed thesz at
+63.74 px and exited 1; the code was restored.
+
+**Visually inspected**, not just measured: the editor at four phases plus
+mirrored, and production playback at five phases in both facings. Both
+wrestlers face correctly, limbs stay connected, elbows and knees
+articulate, the tableau mirrors as one rigid unit, and the attacker's hand
+is now on the trapped wrist instead of in the air.
+
+**Not done, deliberately:** the get-up pop itself; supine/bridge/kneeling
+postures; George and Lou remain UNVERIFIED legacy characters.
+
 
 ### 2026-08-07 (Arena lighting round 4 — rope shadows re-anchored to the mat's own boundary, not the ropes' own position) — Claude
 

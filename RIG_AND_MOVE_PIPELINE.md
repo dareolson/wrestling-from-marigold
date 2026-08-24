@@ -190,25 +190,67 @@ Two proofs, deliberately at different levels:
   published joints. A test that only inspects exported JSON proves the data
   round-tripped and nothing about what reaches the screen.
 
-#### The declared hold is not drawn (measured 2026-08-17)
+#### The declared hold is REQUIRED, and it is made (2026-08-23)
 
 The draft declares the intended lock — the attacker's gripping wrist on the
-defender's trapped wrist, acquired at the reach and released at 1.400s — and the
-readiness sweep and the runtime proof both **measure** it rather than assuming
-it. They agree that it does not exist:
+defender's trapped wrist, from the catch at 0.120s to the release at 1.400s —
+and both the readiness sweep and the runtime proof **measure** it:
 
-| measured on | worst separation | source limb reach |
+| measured on | worst separation over the whole hold | source limb reach |
 | --- | --- | --- |
-| live game (Lou → George) | **155.1 px** at the crank | 92.8 px |
-| move editor (reference rig, ×1.22 preview) | **284.8 px** at the crank | 160 px |
+| move editor, reference rig | **0.11 px** across 115 graded frames | 159.8 px |
+| live game, Lou → George | **5.15 px** across 97 rendered frames | 92.8 px |
 
-A separation wider than the limb is long cannot be closed by any pose of that
-limb, so this is not a keyframe that needs nudging: the two bodies were never
-choreographed to touch. `hammerlockClip` has always said so ("the offset
-silhouette implies the lock"); this is the first time anything measured it.
-Closing it means re-choreographing the attacker's gripping arm AND the
-defender's trapped arm so they travel together through the crank — a
-choreography decision, deliberately not made here.
+It did not start there. The shipped choreography measured **284.8 px** in the
+editor and **155.1 px** in game, against arm reaches of 160 px and 92.8 px — a
+separation wider than the limb is long, which no pose of that limb could close.
+The move implied its lock by silhouette, and the first version of this milestone
+let the editor call that READY.
+
+**A required contact that cannot be closed now BLOCKS readiness.** Contacts
+default to `required: true` — declaring one is an assertion that two points
+meet, and a tool that reports READY over an unachievable assertion is
+certifying a silhouette. An author who genuinely means "grade this, but the
+move survives without it" sets `required: false`, and then it warns.
+
+**The grip is solved, not tuned.** `tools/move-editor/author_hammerlock.mjs`
+drives the real editor: it puts the defender's trapped wrist where a hammerlock
+puts it (tucked behind the hip, rising up the back as the crank progresses),
+solves the defender's arm onto that point and the attacker's arm onto the
+resulting wrist — both through the editor's own two-bone solve, the same one its
+wrist handle runs — and captures both roles. Three things had to change first,
+each found by measurement:
+
+1. **The approach lands ON the catch** (`HAMMERLOCK_STAGING.arrivalAt`), not
+   140 ms after it. You cannot catch a wrist that is still closing 70 rig units,
+   and a contact exact only at its keyframes is pulled apart between them by two
+   bodies travelling through each other.
+2. **Both wrestlers plant for the hold.** The torso origin is solved from BOTH
+   hip sockets, so the legacy stance-to-stance leg swing moved the torso, the
+   shoulder, and the gripping arm with it — measured **0.015 rad of far hip
+   moves the near elbow 9.98 px** on the reference rig. Densifying keyframes did
+   not help, because the travel was the cause rather than the sampling. A
+   working hammerlock is cranked from a braced base anyway.
+3. **The trapped wrist follows a smooth path.** A two-bone solve resolves its
+   redundancy from wherever the arm currently is, so a kinked target path lands
+   consecutive keyframes on different branches of the same solution and the
+   straight line the runtime interpolates between them bulges off the wrist.
+
+That elbow sensitivity in (2) is on the REFERENCE rig, so by the certifier's own
+attribution rule it is **architecture**, not artwork. Nothing here depends on
+changing it and it is not a regression, but any future move that holds a contact
+while the legs work will meet it.
+
+**The choreography is generated.** `src/animation/clips/hammerlock.tracks.js` is
+emitted by the authoring pass — 37 keyframes per role of solved geometry — and
+`hammerlock.js` keeps every human DECISION: duration, phase times, markers, the
+staging tableau, and the reasoning. The old named stance constants are gone
+because they are no longer what the move does; writing solved geometry out as
+hand-named constants would dress derived data up as authored data.
+
+**Two behavioural changes to a shipped move**, both forced by the grip and both
+worth a look before this is pushed: the approach takes 120 ms instead of 300 ms,
+and the legs are braced from the catch instead of swinging through the hold.
 
 ### The move editor's staging frame (2026-08-17)
 
@@ -264,7 +306,9 @@ both roles at `x: 0` so the degenerate-entry warning keeps firing.
   must close it is *drifting* — pose it, or add a keyframe. A gap wider than the
   limb is long is *unreachable*: no pose can close it, so the tableau or the
   choreography has to change, and telling the author to add a keyframe would be
-  actively wrong.
+  actively wrong. An unreachable contact that is **required** (the default)
+  blocks readiness rather than warning, so READY means the move's essential
+  contacts are actually made.
 
 ### The clip transform contract (2026-08-13)
 
@@ -347,7 +391,9 @@ inspecting a screenshot. Unit coverage is `tests/clipStaging.test.js`.
 3. Calibrate sockets and painted anchors once; pass both facings and the angle sweeps.
 4. Draw variants on copies of the calibrated base canvases. Preserve the joint and canvas.
 5. Declare variant key/file entries and run `npm run rig:validate`.
-6. Author the move in `npm run move:editor` — poses, staging on the shared tableau, contact intervals, part variants, easing and markers — and save the draft beside the clip it will generate (`tools/move-editor/drafts/`).
+6. Author the move in `npm run move:editor` — and where a contact has to be
+   held while both bodies move, SOLVE it rather than tuning angles: see
+   `tools/move-editor/author_hammerlock.mjs` for the worked example. Then author the poses, staging on the shared tableau, contact intervals, part variants, easing and markers, and save the draft beside the clip it will generate (`tools/move-editor/drafts/`).
 7. Sweep readiness for the whole clip, not just the frame on screen. Every finding names the layer that owns it; a declared contact is graded against the reach of the limb that must close it.
 8. Export the clip, add it to `src/animation/clips/index.js` and the move registry, and hold draft and clip in agreement with a semantic round-trip test.
 9. Preview the clip at arbitrary time, not only through live gameplay.
@@ -356,7 +402,7 @@ inspecting a screenshot. Unit coverage is `tests/clipStaging.test.js`.
 ## Migration order
 
 1. ~~Use `jab` as the one-body clip proof: transition, fist forearm, impact marker, recovery.~~ **Done (2026-07-31)** — `src/animation/clips/jab.js` + `Wrestler._doJab`. Impact fires exactly once at 30/60/120 Hz, seeking never emits, cancel before/after impact is damage-safe, appearance resets on cancel/shutdown, and the striking forearm resolves correctly in both facings. Verified live (`debug:play -- jab` for Lou and George) and by `tests/jabClip.test.js`.
-2. ~~Use `hammerlock` as the paired proof: attacker/defender tracks, grip variant, contact acquire/release, interruption.~~ **Done (2026-08-03)** — `src/animation/clips/hammerlock.js` + `Wrestler._doHammerlock`. Synchronized attacker/defender tracks; `acquire-contact`/`apply-drain`/`release-contact` markers fire exactly once in order at 30/60/120 Hz and never on seek; interruption through either actor, `cancelTarget`, and `shutdown` all leave both wrestlers in legal, non-orphaned states with no stranded `_fixedHold`/handle/variant/timer and no late damage; preserved timing (drain @300ms, release @1400ms, 220ms recovery) and tuning (defender 10+4, attacker cost 3, heat 5). A working/grip forearm can be authored later but no grip PNG exists yet, so the semantic slot safely resolves to base art (as jab's `fist` does). Verified live (`debug:play -- hammerlock` Lou→George and `hammerlockReverse` George→Lou), by `tests/hammerlockClip.test.js` (20 tests), and by `tools/debug/hammerlock_preview.mjs` (seek frames + interruption matrix). This provides paired lifecycle ownership + event markers only — **not** a general contact-constraint or MoveSpec system. **Extended 2026-08-17** into the first move authored end to end in the editor: staging, the grip variant, and the declared contact interval now come out of a committed draft, the executor no longer owns position, and `npm run proof:hammerlock` measures the whole path on the live runtime — see "The hammerlock is authored end to end" above, including the measured finding that the declared hold is not actually drawn.
+2. ~~Use `hammerlock` as the paired proof: attacker/defender tracks, grip variant, contact acquire/release, interruption.~~ **Done (2026-08-03)** — `src/animation/clips/hammerlock.js` + `Wrestler._doHammerlock`. Synchronized attacker/defender tracks; `acquire-contact`/`apply-drain`/`release-contact` markers fire exactly once in order at 30/60/120 Hz and never on seek; interruption through either actor, `cancelTarget`, and `shutdown` all leave both wrestlers in legal, non-orphaned states with no stranded `_fixedHold`/handle/variant/timer and no late damage; preserved timing (drain @300ms, release @1400ms, 220ms recovery) and tuning (defender 10+4, attacker cost 3, heat 5). A working/grip forearm can be authored later but no grip PNG exists yet, so the semantic slot safely resolves to base art (as jab's `fist` does). Verified live (`debug:play -- hammerlock` Lou→George and `hammerlockReverse` George→Lou), by `tests/hammerlockClip.test.js` (20 tests), and by `tools/debug/hammerlock_preview.mjs` (seek frames + interruption matrix). This provides paired lifecycle ownership + event markers only — **not** a general contact-constraint or MoveSpec system. **Extended 2026-08-17/23** into the first move authored end to end in the editor: staging, the grip variant, and the declared contact interval come out of a committed draft, the choreography is solved by the editor's own IK rather than hand-tuned, the executor no longer owns position, and `npm run proof:hammerlock` measures the whole path on the live runtime. The declared grip is genuinely made — 0.11 px worst separation on the reference rig, 5.15 px on the shipped pair — see "The declared hold is REQUIRED, and it is made" above.
 3. Add a referee actor and bind it to existing pin/submission events.
 4. Move remaining Class A strikes, then Class B paired moves, one at a time.
 5. ~~Add separate hand/foot bones.~~ **Architecture done (2026-08-10)** — opt-in
@@ -380,6 +426,8 @@ inspecting a screenshot. Unit coverage is `tests/clipStaging.test.js`.
 - A move authored in the editor and the clip it ships as describe the same move,
   proved by semantic comparison rather than by byte equality, and proved on the
   real runtime rather than on exported JSON.
+- A move's REQUIRED contacts are achievable. READY may never mean "the move
+  implies this contact"; an unreachable required contact blocks.
 
 ## Certification and coverage
 

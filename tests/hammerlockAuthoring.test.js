@@ -32,6 +32,7 @@ import {
     HAMMERLOCK_CONTACT_AT,
     HAMMERLOCK_DURATION,
     HAMMERLOCK_RELEASE_AT,
+    HAMMERLOCK_GRIP,
     HAMMERLOCK_STAGING,
 } from '../src/animation/clips/hammerlock.js';
 import { REGISTERED_MOVE_CLIPS } from '../src/animation/clips/index.js';
@@ -258,4 +259,66 @@ test('the working hand variant resolves to the correct physical hand in both fac
     assert.equal(sampleClip(clip, HAMMERLOCK_CONTACT_AT - 0.001).tracks.attacker.parts.workingHand, 'base');
     assert.equal(sampleClip(clip, HAMMERLOCK_CONTACT_AT).tracks.attacker.parts.workingHand, 'grip');
     assert.equal(sampleClip(clip, HAMMERLOCK_DURATION).tracks.attacker.parts.workingHand, 'base');
+});
+
+test('the declared hold is REQUIRED, so it cannot be graded away', () => {
+    const draft = model.normalizeDraft(readDraft());
+    const hold = draft.contacts.find(entry => entry.source === 'nearWrist' && entry.target === 'nearWrist');
+    assert.ok(hold, 'the hold is declared');
+    assert.equal(hold.required, true,
+        'the grip is what the move IS — an optional grip would let the move certify without it');
+    // And the clip states the same interval, so the data and the assertion
+    // about the data cannot drift.
+    assert.equal(hold.from, HAMMERLOCK_GRIP.from);
+    assert.equal(hold.to, HAMMERLOCK_GRIP.to);
+    assert.equal(hold.role, HAMMERLOCK_GRIP.role);
+    assert.equal(hold.source, HAMMERLOCK_GRIP.source);
+    assert.equal(hold.target, HAMMERLOCK_GRIP.target);
+});
+
+test('the acquire marker fires on the frame the grip is declared to start', () => {
+    // A hold whose event says one time and whose contact says another is two
+    // stories about the same moment; gameplay follows the marker and the
+    // readiness sweep grades the interval, so they have to agree.
+    const acquire = hammerlockClip.events.find(event => event.type === 'acquire-contact');
+    assert.equal(acquire.at, HAMMERLOCK_GRIP.from);
+    const release = hammerlockClip.events.find(event => event.type === 'release-contact');
+    assert.equal(release.at, HAMMERLOCK_GRIP.to);
+});
+
+test('the approach completes at the catch, so the tableau is still while the grip holds', () => {
+    // The grip is only exact at its keyframes; two bodies still travelling
+    // through each other pull it apart between them. Measured 6.6 px of bulge
+    // before the approach was re-timed, 0.11 px after.
+    const clip = compileClip(model.exportClip(readDraft()));
+    const at = time => Object.fromEntries(Object.entries(sampleClip(clip, time).tracks)
+        .map(([role, track]) => [role, track.transform]));
+    const arrival = at(HAMMERLOCK_STAGING.arrivalAt);
+    assert.deepEqual(arrival.attacker, { ...HAMMERLOCK_STAGING.attackerWork });
+    assert.deepEqual(arrival.defender, { ...HAMMERLOCK_STAGING.defenderWork });
+    // …and nothing moves for the rest of the hold.
+    for (const time of [0.5, 0.9, HAMMERLOCK_DURATION]) {
+        assert.deepEqual(at(time), arrival, `the tableau moved at ${time}s`);
+    }
+});
+
+test('both wrestlers stay planted through the hold', () => {
+    // The torso origin is solved from both hip sockets, so a leg swing moves
+    // the shoulder the gripping arm hangs from — measured at 9.98 px of near
+    // elbow per 0.015 rad of far hip on the reference rig. The legs are braced
+    // from the catch onward precisely so that cannot happen; if a future edit
+    // reintroduces leg motion during the hold, the grip will start drifting and
+    // this is the test that says why.
+    const clip = compileClip(model.exportClip(readDraft()));
+    const legs = ['lLeg', 'rLeg', 'lKnee', 'rKnee'];
+    for (const role of ['attacker', 'defender']) {
+        const planted = sampleClip(clip, HAMMERLOCK_GRIP.from).tracks[role].pose;
+        for (const at of [0.3, 0.7, 1.0, HAMMERLOCK_GRIP.to]) {
+            const pose = sampleClip(clip, at).tracks[role].pose;
+            for (const channel of legs) {
+                assert.equal(pose[channel], planted[channel],
+                    `${role}.${channel} moved during the hold (${at}s)`);
+            }
+        }
+    }
 });

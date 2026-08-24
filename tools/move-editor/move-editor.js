@@ -419,14 +419,14 @@ function drawOnionSkins() {
 // forward kinematics the snap used, so a gap reported here is the gap the
 // author would see if they scrubbed to that frame. The live actor state is
 // saved and restored so a sweep never disturbs what is on screen.
-function measureContactGapAt(at, contact) {
+function measureContactGapAt(at, contact, source = draft) {
     const saved = Object.fromEntries(ROLES.map(role => [role, {
         pose: { ...actors[role].pose },
         transform: { ...actors[role].transform },
         parts: { ...actors[role].parts },
     }]));
     try {
-        const sampled = sampleDraft(draft, at);
+        const sampled = sampleDraft(source, at);
         for (const role of ROLES) {
             const state = sampled.tracks[role];
             actors[role].pose = { ...basePose(), ...state.pose };
@@ -434,10 +434,10 @@ function measureContactGapAt(at, contact) {
             actors[role].parts = { ...state.parts };
             renderActor(role);
         }
-        const source = actors[contact.role].skeleton?.jointAttachmentPoints?.[contact.source];
+        const from = actors[contact.role].skeleton?.jointAttachmentPoints?.[contact.source];
         const target = actors[contactPartner(contact.role)].skeleton?.jointAttachmentPoints?.[contact.target];
-        if (!source || !target) return null;
-        return Math.hypot(source.x - target.x, source.y - target.y);
+        if (!from || !target) return null;
+        return Math.hypot(from.x - target.x, from.y - target.y);
     } finally {
         for (const role of ROLES) Object.assign(actors[role], saved[role]);
         for (const role of ROLES) renderActor(role);
@@ -506,6 +506,18 @@ function measureContactReachAt(contact) {
     const [a, b, c] = chain.map(joint => joints[joint]);
     if (!a || !b || !c) return null;
     return Math.hypot(b.x - a.x, b.y - a.y) + Math.hypot(c.x - b.x, c.y - b.y);
+}
+
+// Sweep an ARBITRARY draft against the live rigs, without adopting it as the
+// editing session. The readiness panel always reports the draft on screen; a
+// tool (or a test) sometimes needs to ask "what would this other draft grade
+// as?" and must not have to overwrite the author's work to find out.
+function readinessFor(candidate) {
+    return clipReadiness(candidate, {
+        measureContactGap: (at, contact) => measureContactGapAt(at, contact, candidate),
+        measureContactReach: measureContactReachAt,
+        certify: null,
+    });
 }
 
 function runReadiness() {
@@ -1180,10 +1192,21 @@ function installUI() {
         actors, setPlayhead, capture,
         exportModule: () => exportModule(draft),
         readiness: runReadiness,
+        readinessFor,
         SCALE,
         // The preview's staging frame, published so a test can check it against
         // src/animation/clipStaging.js's resolver instead of restating the math.
         loadLibraryDraft,
+        // The same solve the wrist/ankle drag handle performs, exposed so an
+        // authoring pass can drive it directly instead of synthesising pointer
+        // events. It is the real gesture, not a parallel implementation.
+        applyChainDrag,
+        // The per-frame render the editor's own loop calls. An authoring pass
+        // has to drive it explicitly between solves: jointAttachmentPoints are
+        // published BY the render, so a solve that reads them without
+        // re-rendering is solving against the previous frame.
+        renderActor,
+        adoptDraft,
         undo, redo, mutate,
         get onionSkins() { return onionSkins; },
         get scene() { return scene; },

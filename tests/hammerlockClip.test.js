@@ -33,26 +33,30 @@ test('hammerlock clip passes validation and compiles', () => {
     assert.doesNotThrow(() => compileClip(hammerlockClip));
 });
 
-test('both actor tracks sample synchronously at the same clip time', () => {
+test('both actor tracks sample synchronously and say different things', () => {
     const clip = compileClip(hammerlockClip);
 
-    // Entry: both start in the shared lockup tie-up.
+    // Entry: both start in the shared lockup tie-up, so the two tracks agree.
     const entry = sampleClip(clip, 0);
     assert.equal(entry.tracks.attacker.pose.lArm, 1.57);
     assert.equal(entry.tracks.defender.pose.lArm, 1.57);
 
-    // By the defender's set time the trapped stance is fully in (armBarDefender:
-    // lArm -0.60, rArm 0.90) while the attacker is mid wind-up between reach and
-    // turn — proving the two tracks advance together but say different things.
-    const set = sampleClip(clip, HAMMERLOCK_DEF_SET_AT);
-    assert.equal(set.tracks.defender.pose.lArm, -0.60);
-    assert.equal(set.tracks.defender.pose.rArm, 0.90);
-    assert.ok(set.tracks.attacker.pose.lArm > 0.42 && set.tracks.attacker.pose.lArm < 1.32);
+    // From the catch on they must NOT agree: one wrestler is cranking an arm
+    // and the other is being folded, at the same clip time. Asserting they
+    // differ is the paired property; asserting a specific angle would just
+    // re-state whatever the solver last produced.
+    for (const at of [HAMMERLOCK_CONTACT_AT, HAMMERLOCK_DEF_SET_AT, HAMMERLOCK_DURATION]) {
+        const frame = sampleClip(clip, at);
+        assert.notEqual(frame.tracks.attacker.pose.lArm, frame.tracks.defender.pose.lArm,
+            `the two roles read identically at ${at}s`);
+    }
 
-    // Release: attacker cranked (lArm 2.18), defender held in the trapped stance.
-    const rel = sampleClip(clip, HAMMERLOCK_DURATION);
-    assert.equal(rel.tracks.attacker.pose.lArm, 2.18);
-    assert.equal(rel.tracks.defender.pose.lArm, -0.60);
+    // The trapped arm is folded and stays folded through the crank.
+    const set = sampleClip(clip, HAMMERLOCK_DEF_SET_AT);
+    const release = sampleClip(clip, HAMMERLOCK_DURATION);
+    assert.ok(set.tracks.defender.pose.lElbow > 1.5, `defender elbow is folded at the set (${set.tracks.defender.pose.lElbow})`);
+    assert.ok(release.tracks.defender.pose.lElbow >= set.tracks.defender.pose.lElbow,
+        'the trapped arm is cranked further, never let out');
 });
 
 test('arbitrary-time sampling is deterministic across every named phase', () => {
@@ -60,10 +64,14 @@ test('arbitrary-time sampling is deterministic across every named phase', () => 
     for (const at of Object.values(HAMMERLOCK_PHASES)) {
         assert.deepEqual(sampleClip(clip, at), sampleClip(clip, at));
     }
-    // The attacker arm monotonically loads from reach through the set (0.78 ->
-    // 1.92) before the crank flattens it — spot-check the blend is moving.
-    const armAt = t => sampleClip(clip, t).tracks.attacker.pose.lArm;
-    assert.ok(armAt(HAMMERLOCK_PHASES.reach) < armAt(HAMMERLOCK_PHASES.set));
+    // The crank works the gripping arm progressively: the elbow folds from the
+    // catch through the set to the release as the trapped wrist is driven up
+    // the back. (The angles themselves are solved geometry — see
+    // hammerlock.tracks.js — so what is asserted is the direction of the work,
+    // not a literal.)
+    const elbowAt = t => sampleClip(clip, t).tracks.attacker.pose.lElbow;
+    assert.ok(elbowAt(HAMMERLOCK_PHASES.reach) < elbowAt(HAMMERLOCK_PHASES.set));
+    assert.ok(elbowAt(HAMMERLOCK_PHASES.set) < elbowAt(HAMMERLOCK_PHASES.release));
 });
 
 test('the three markers are authored in order at their preserved times', () => {

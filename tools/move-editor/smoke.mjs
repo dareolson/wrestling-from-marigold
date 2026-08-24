@@ -407,9 +407,23 @@ try {
         editor.refreshOnionSkins();
         const withSkins = interactiveCount();
 
-        // A discarded capture must be visible on the timeline as well as
-        // blocking in the sweep.
+        // A REQUIRED contact nothing could close must block, and the same one
+        // marked optional must not. Measured on the same live rig, on a pair
+        // that genuinely cannot meet: an ankle onto the other wrestler's neck.
         const model = await import('/tools/move-editor/model.js');
+        const impossible = (() => {
+            const probe = model.normalizeDraft(editor.draft);
+            probe.contacts = [{ from: 0.2, to: 1.2, role: 'attacker', source: 'nearAnkle', target: 'neck', required: true }];
+            const required = editor.readinessFor(probe);
+            probe.contacts[0].required = false;
+            const optional = editor.readinessFor(probe);
+            return {
+                severity: required.contacts[0]?.severity,
+                blocked: required.ok === false && required.blocking.some(issue => /beyond the/.test(issue)),
+                blocking: required.blocking,
+                optionalIsWarning: optional.ok === true && optional.warnings.some(warning => /\[optional\]/.test(warning)),
+            };
+        })();
         model.addContact(editor.draft, { from: 0.3, role: 'attacker', source: 'nearWrist', target: 'sternum' });
         const afterBadCapture = editor.readiness();
         const rejectedSpans = [...document.querySelectorAll('#tracks .contact.rejected')].length;
@@ -425,6 +439,7 @@ try {
             contactSeverity: report.contacts.map(contact => `${contact.source}->${contact.target}:${contact.severity}@${Math.round(contact.maxGap)}px/reach${Math.round(contact.reachPx ?? -1)}`),
             findings: report.findings.map(finding => `${finding.layer}/${finding.severity}`),
             warnings: report.warnings,
+            impossible,
             rejectedSpans,
             badCaptureBlocking: afterBadCapture.blocking,
             badCaptureFindings: afterBadCapture.findings.map(finding => finding.layer),
@@ -449,14 +464,21 @@ try {
     if (!/nearWrist→nearWrist/.test(span.label)) throw new Error(`the span does not name the connected joints: ${span.label}`);
     if (!/held 0\.12/.test(span.title)) throw new Error(`the span does not state its maintained window: ${span.title}`);
     if (span.interactive) throw new Error('contact spans are interactive and can swallow a keyframe click');
-    if (span.severity !== 'unreachable') {
-        throw new Error(`the hammerlock hold should grade as unreachable against the live rig, got ${span.severity}`);
+    if (span.severity !== 'held') {
+        throw new Error(`the hammerlock hold must be genuinely made on the live rig, got "${span.severity}"`);
     }
-    if (!feedback.contactSeverity.some(entry => /unreachable/.test(entry))) {
-        throw new Error(`readiness did not grade the hold: ${feedback.contactSeverity.join(', ')}`);
+    const graded = feedback.contactSeverity.find(entry => /nearWrist->nearWrist/.test(entry));
+    if (!/held/.test(graded ?? '')) {
+        throw new Error(`readiness did not grade the hold as held: ${feedback.contactSeverity.join(', ')}`);
     }
-    if (!feedback.warnings.some(warning => /^\[authoring-data\]/.test(warning) && /beyond the/.test(warning))) {
-        throw new Error(`the unreachable hold was not attributed to a layer: ${feedback.warnings.join(' | ')}`);
+    // A required contact that no pose could close must BLOCK, not warn — that
+    // is what makes READY mean the move does what it says. Proved here by
+    // declaring an impossible one on the same live rig.
+    if (!feedback.impossible.blocked) {
+        throw new Error(`an unreachable required contact did not block readiness: ${feedback.impossible.blocking.join(' | ')}`);
+    }
+    if (!feedback.impossible.optionalIsWarning) {
+        throw new Error('the same contact marked optional should warn rather than block');
     }
     if (!feedback.rejectedSpans) throw new Error('a discarded capture is invisible on the timeline');
     if (!feedback.badCaptureBlocking.some(issue => /^\[authoring-data\] discarded contact/.test(issue))) {
@@ -640,6 +662,7 @@ try {
     console.log(`     readiness attribution: ${feedback.contactSeverity.join(', ')}`);
     console.log(`     undo/redo: ${undoRedo.steps.length} mutation kinds (${undoRedo.steps.join(', ')}) undone and redone to an identical full authoring state, keyboard included`);
     console.log(`     autosave: schema-stamped, offered (never silently loaded) after reload, restored on request; an incompatible draft is refused with a reason and left untouched until discarded`);
+    console.log(`     hammerlock hold: ${span.severity.toUpperCase()} on the live reference rig; an unreachable REQUIRED contact blocks readiness, the same contact marked optional only warns`);
     console.log(`     hammerlock export matches the shipped clip across 241 sampled frames; declared hold ${hold.role} ${hold.source}→${hold.target} ${hold.from}–${hold.to}s measured over ${hold.measured} live frames, worst gap ${hold.maxGap.toFixed(2)} px at ${hold.worstAt.toFixed(3)}s`);
 } finally {
     await browser.close();

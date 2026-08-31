@@ -9,6 +9,8 @@ Shared project notebook for Derek, Claude, and Codex.
 - Identify the author as Derek, Claude, or Codex.
 - Do not silently replace prior decisions; record what changed and why.
 - Link focused commits and include test commands and results.
+- Update the Status summary when the state it describes changes. It is the
+  thirty-second read; the Handoff Log stays the detailed record.
 
 ## Roles
 
@@ -24,6 +26,59 @@ Shared project notebook for Derek, Claude, and Codex.
 4. Architecture
 
 Avoid a large rewrite.
+
+## Status summary — Thesz canonical-v2 art pipeline
+
+At-a-glance state. The dated entries in the Handoff Log and the addenda in
+`AI_HANDOFF_ENTRIES/` remain the detailed record; this section is the version
+you can read in thirty seconds. Keep it current when the state changes.
+
+**Pass A — done.** `thesz-v2-pass-a-v3.png` is the identity-approved master,
+frozen at `ce78aea34da48af54721c6babf74c46c71b29f00810ae26390d9c92cffc3dceb`.
+Landmarks fitted across all five views and gated in code.
+
+**Pass B, profile view — COMPLETE and accepted (2026-08-30).** Committed as
+`b86c93b` on branch `thesz-v2-profile-normalization`, **not pushed**.
+
+- Approved set: `pass-b/candidates/profile-v2-normalized-v4/` (14 cells, both
+  proofs, contact sheet). v1-v3 retained as provenance; all four verify against
+  their own `SHA256SUMS.txt`.
+- Rebuild with `npm run art:normalize-profile-v2`; it refuses to run unless
+  Pass-A v3 still hashes correctly. Deterministic — a re-run is byte-identical.
+- Registration is a two-point similarity transform with **no reflection term**;
+  `oppositeTransformByView` now machine-enforces unreflected reuse for
+  front3q, profile and back3q.
+- Gates: landmark fit 63 disks / 63 reuse-vector / 10 soles; normalizer 20 joint
+  zones across 74 checks; **381/381** tests.
+
+**Two things Derek accepted rather than fixed. Do not reopen these as landmark
+fits.**
+
+1. **Zero-slack leg chain.** Hip-to-ground is 253px against a declared reach plus
+   planted-sole drop of 253.26px, so both profile legs are straight by
+   construction at 0.06px and 0.20px margins. Changing it needs a lower hip line,
+   a shorter planted drop, or longer thigh/shin spans — none authorized.
+2. **Two partly-unpainted landmarks**, declared via `registrationOnlyLandmarks`:
+   profile `leftAnkle` (369,666) at 53% opaque, back3q `rightKnee` (331,552) at
+   77%. **That list is a budget, not a tool — a third entry is evidence of a fit
+   problem, not a fix for one.**
+
+**Next: expand the cutter to front, front3q, back3q and back.** Two things to
+carry in. Re-check each view's ankle/sole ownership with the continuity test
+before trusting its fit — that test is what caught profile and back3q, and both
+looked fine until it ran; front/front3q/back measured 100% but not since the v4
+landmark changes. And do not widen the exemption list.
+
+**Parked, by Derek's instruction.** The proof renderer's non-rotated `blit`
+overwrites destination alpha and punches translucent 1px seams into proof images
+(11 strictly-interior cases, inherited from `build-pass-b-profile-trial.mjs`).
+Proofs only — never asset bytes or runtime rendering. High-zoom review will show
+them; they are the renderer, not the art.
+
+**Runtime is untouched and stays that way for now.** All seven of the v2
+manifest's `runtimePrerequisites` are still `pending`, so none of this renders
+in a match. A rig-tuner preview was built and reverted for exactly that reason
+(2026-08-26); do not rebuild it until those prerequisites are real.
 
 ## Active assignment — expand the cutter to the remaining four views (Codex)
 

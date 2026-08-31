@@ -269,18 +269,32 @@ function syntheticV2Images(manifest) {
     return images;
 }
 
-test('the canonical v2 source manifest passes structurally while pending human review remains explicit', () => {
+test('the canonical v2 source manifest freezes the identity-approved pixels while later reviews remain explicit', () => {
     const result = validateSourceManifest(clone(v2Example));
     assert.deepEqual(result.errors, []);
-    assert.ok(result.warnings.some(warning => warning.includes('humanReview is pending')));
+    assert.ok(result.warnings.some(warning => warning.includes('identity is approved')));
 
     const mistypedStatus = clone(v2Example);
     mistypedStatus.humanReview.status = 'aproved';
-    assert.ok(validateSourceManifest(mistypedStatus).errors.some(error => error.includes('must be "pending" or "approved"')));
+    assert.ok(validateSourceManifest(mistypedStatus).errors.some(error => error.includes('"identity-approved"')));
 
     const partialPending = clone(v2Example);
-    partialPending.humanReview.artistStrokeAtGameScale = true;
+    partialPending.humanReview = {
+        status: 'pending', sourceSheetSha256: null, extremeJointAngles: false,
+        artistStrokeAtGameScale: true, broadcastNearMiddleFar: false,
+    };
     assert.ok(validateSourceManifest(partialPending).errors.some(error => error.includes('pending humanReview')));
+
+    const partialIdentity = clone(v2Example);
+    partialIdentity.humanReview.extremeJointAngles = true;
+    assert.ok(validateSourceManifest(partialIdentity).errors.some(error => error.includes('must remain false when identity-approved')));
+
+    const identityBytes = Buffer.from('identity-approved pixels');
+    const frozenIdentity = clone(v2Example);
+    frozenIdentity.humanReview.sourceSheetSha256 = createHash('sha256').update(identityBytes).digest('hex');
+    assert.equal(verifyV2SourceSheetHash(frozenIdentity, identityBytes), frozenIdentity.humanReview.sourceSheetSha256);
+    assert.throws(() => verifyV2SourceSheetHash(frozenIdentity, Buffer.from('pixel drift')),
+        /does not match frozen humanReview.sourceSheetSha256/);
 });
 
 test('v2 locks the 4096 sheet, five-view registry, 19 slots, and fixed export rectangles', () => {
@@ -557,7 +571,7 @@ test('approved v2 review binds to the SHA-256 of the exact source-sheet bytes', 
     };
     assert.equal(verifyV2SourceSheetHash(manifest, approvedBytes), manifest.humanReview.sourceSheetSha256);
     assert.throws(() => verifyV2SourceSheetHash(manifest, Buffer.from('different bytes')),
-        /does not match approved humanReview.sourceSheetSha256/);
+        /does not match frozen humanReview.sourceSheetSha256/);
 });
 
 function syntheticV2MasterSheet(manifest) {
@@ -565,7 +579,9 @@ function syntheticV2MasterSheet(manifest) {
     for (const viewName of manifest.sourceSheet.productionGrid.viewOrder) {
         const panel = manifest.sourceSheet.masterPanels[viewName];
         const landmarks = manifest.views[viewName].masterLandmarks;
-        for (let y = landmarks.crown.y; y <= landmarks.leftSole.y; y++) {
+        const plantedSide = manifest.bilateralSegmentReuse.bootSourceSideByView[viewName];
+        const plantedSole = landmarks[`${plantedSide}Sole`];
+        for (let y = landmarks.crown.y; y <= plantedSole.y; y++) {
             sheet.alpha[(panel.y + y) * sheet.w + panel.x + landmarks.crown.x] = 255;
         }
     }
@@ -627,8 +643,11 @@ test('the --sheet CLI rejects a source PNG that is not exactly 4096x4096', async
         const wrongSheet = join(tempDir, 'wrong.png');
         await writeFile(wrongSheet, rgbaPng(1, 1));
         const script = fileURLToPath(new URL('../tools/wrestler-cutter/validate-source-manifest.mjs', import.meta.url));
-        const manifest = fileURLToPath(new URL('../tools/wrestler-cutter/templates/rig-source-manifest.v2.example.json', import.meta.url));
-        const result = spawnSync(process.execPath, [script, manifest, '--sheet', wrongSheet], { encoding: 'utf8' });
+        const manifestPath = join(tempDir, 'pending.json');
+        const manifest = clone(v2Example);
+        manifest.humanReview = { status: 'pending', sourceSheetSha256: null, extremeJointAngles: false, artistStrokeAtGameScale: false, broadcastNearMiddleFar: false };
+        await writeFile(manifestPath, `${JSON.stringify(manifest)}\n`);
+        const result = spawnSync(process.execPath, [script, manifestPath, '--sheet', wrongSheet], { encoding: 'utf8' });
         assert.notEqual(result.status, 0);
         assert.match(result.stderr, /expected exactly 4096x4096/);
     } finally {
@@ -644,8 +663,11 @@ test('the --sheet CLI rejects transparent RGBA pixels carrying nonzero RGB', asy
             transparentRgbAt: { x: 0, y: 0, r: 7 },
         }));
         const script = fileURLToPath(new URL('../tools/wrestler-cutter/validate-source-manifest.mjs', import.meta.url));
-        const manifest = fileURLToPath(new URL('../tools/wrestler-cutter/templates/rig-source-manifest.v2.example.json', import.meta.url));
-        const result = spawnSync(process.execPath, [script, manifest, '--sheet', contaminatedSheet], { encoding: 'utf8' });
+        const manifestPath = join(tempDir, 'pending.json');
+        const manifest = clone(v2Example);
+        manifest.humanReview = { status: 'pending', sourceSheetSha256: null, extremeJointAngles: false, artistStrokeAtGameScale: false, broadcastNearMiddleFar: false };
+        await writeFile(manifestPath, `${JSON.stringify(manifest)}\n`);
+        const result = spawnSync(process.execPath, [script, manifestPath, '--sheet', contaminatedSheet], { encoding: 'utf8' });
         assert.notEqual(result.status, 0);
         assert.match(result.stderr, /transparent source pixel at \(0,0\) has nonzero RGB 7,0,0/);
     } finally {
@@ -673,7 +695,7 @@ test('the --sheet CLI rejects byte drift from an approved source-sheet SHA-256',
         const script = fileURLToPath(new URL('../tools/wrestler-cutter/validate-source-manifest.mjs', import.meta.url));
         const result = spawnSync(process.execPath, [script, manifestPath, '--sheet', sheetPath], { encoding: 'utf8' });
         assert.notEqual(result.status, 0);
-        assert.match(result.stderr, /does not match approved humanReview.sourceSheetSha256/);
+        assert.match(result.stderr, /does not match frozen humanReview.sourceSheetSha256/);
     } finally {
         await rm(tempDir, { recursive: true, force: true });
     }

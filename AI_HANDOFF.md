@@ -25,81 +25,600 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Active assignment — generate Thesz v2 Pass A
+## Active assignment — expand the cutter to the remaining four views (Codex)
 
-The canonical-v2 source pipeline is committed and mechanically green, the
-art direction is **settled**, and the Pass-A gate now exists in code. The
-packet is at `Sprite sheets/AI Pilot/Lou/v2-canonical/pass-a/` (its Markdown
-is tracked; the two 4096 x 4096 PNGs are regenerable generator output and
-are not). Record:
-`AI_HANDOFF_ENTRIES/2026-08-23-claude-thesz-v2-pass-a-launch-packet.md`.
-**No artwork has been generated yet.**
+**Read this first (2026-08-30).** Derek accepted the structural proportion. **The
+profile view is complete and approved** — `profile-v2-normalized-v4` is the
+approved profile set. This unblocks expansion to front, front3q, back3q and back,
+which was gated on exactly this approval.
 
-**A correction worth keeping.** The first draft of the packet named
-`Sprite sheets/New Lou/LouTheszFullBodyRef.png` as Lou's primary likeness
-reference. That file depicts him with a moustache. Derek caught it. The
-authority is `lou-canonical-chroma-v1.png`, which
-`v2-layer-standardization/REPORT.md` had already documented as the approved
-clean-shaven likeness/style source — the draft failed to follow the
-pipeline's own documentation. The contaminated file is now quarantined from
-every generation input, and Lou's palette was re-measured from the correct
-source (skin luma 178.8, not the 161 the bad file reported).
+**Settled, do not reopen.** The 0.26px-slack hip-to-ground chain is accepted, so
+both profile legs are straight by construction (0.06px / 0.20px margins). Also
+accepted: profile `leftAnkle` (369,666) at 53% opaque and back3q `rightKnee`
+(331,552) at 77%, both exempted via `registrationOnlyLandmarks`, plus the small
+skin sliver behind the near boot. No hip-line, planted-sole-drop or bone-span
+change is authorized.
 
-Settled: the approved canonical supplies identity, proportions, costume,
-palette and profile; George supplies the five-view turnaround **format
-only**, never Lou's likeness; the six-layer board supports body structure;
-black trunks and blue boots are unchanged; the v2 tapered artist-stroke
-standard applies without changing Lou's established identity. The canonical
-is a right-facing near-profile, so the other four views are the model's
-extrapolation — which is exactly what Pass A exists to let Derek approve
-before any part is cut.
+**Two things to carry into the expansion.**
 
-New gate: `npm run art:validate-pass-a -- --sheet <sheet.png>`. It is the
-inverse of the normal v2 source check — an *occupied* production cell is a
-failure there, because paint in the bank before identity approval means a
-limb was generated rather than masked from an approved master. Proved
-non-vacuous: it fails the blank clean sheet (5 empty panels) and the guide
-sheet (96 occupied cells, 87,511 stray pixels).
+1. **Re-check each view ankle/sole ownership before trusting its fit.** The
+   per-view ankle-to-sole continuity test is what caught profile and back3q.
+   front, front3q and back all measured 100% and are believed healthy, but they
+   have not been re-checked since the v4 landmark changes.
+2. **Treat `registrationOnlyLandmarks` as a budget, not a tool.** Two entries
+   are accepted. A third is evidence of a fit problem, not a fix for one.
 
-Pass A produces the five cohesive 530 px masters only.
+**Still parked:** the proof-alpha seam (non-rotated `blit` overwriting
+destination alpha, 11 interior cases, inherited from
+`build-pass-b-profile-trial.mjs`). Proof images only — never asset bytes or
+runtime rendering. High-zoom review of the v4 proofs will show those seams; they
+are the renderer, not the art.
 
-### Also awaiting review — the authored hammerlock
-
-The move-builder assignment is delivered and awaiting Derek's eyes: the
-hammerlock is authored end to end in `tools/move-editor`, its grip is
-measured rather than implied, and the get-up handoff is gated. See the
-2026-08-23 entry in the Handoff Log for what changed and what it cost.
-Ten commits on `master`, **pushed 2026-08-23** as part of the 13-commit
-catch-up that also carried the canonical-v2 work below (`7d3c6be`..`7905fc9`).
-
-What wants a decision from Derek:
-
-- The hammerlock now plants both wrestlers for the hold and lands the
-  approach on the catch (120 ms instead of 300 ms). Both were forced by
-  the grip and both change how a shipped move reads. Screenshots were
-  taken at five phases in both facings; the call is his.
-- `hammerlock.tracks.js` is GENERATED. Re-running
-  `tools/move-editor/author_hammerlock.mjs --write` is now how that move's
-  choreography changes.
-
-### Previous assignment — cohesive body rig binding (delivered)
-
-Derek's earlier priority was a stronger system for making wrestlers read
-as one cohesive articulated body, from Codex's
-`COHESIVE_BODY_RIG_BLUEPRINT.md`, starting with Phase A diagnostics and
-George's near/far elbows.
-
-That landed and grew past its first slice: the named bone graph and
-two-anchor skin binding are in `src/rig/twoAnchorBinding.js`, the
-reference rig and the articulation certification layer
-(`src/rig/referenceRig.js`, `src/rig/certification.js`,
-`npm run rig:certify`) are the standing gate for it, and George and Lou
-are reported as UNVERIFIED rather than passed — neither implements the
-production contract, which is the finding that layer exists to surface.
-Kept here rather than deleted: it is the reason the reference rig, not a
-shipped character, is what the move editor previews against.
+Record: addendum 9 of
+`AI_HANDOFF_ENTRIES/2026-08-26-claude-thesz-v2-profile-normalization.md`.
+Nothing is committed.
 
 ## Handoff Log
+
+### 2026-08-30 — Derek (accepts the zero-slack leg chain; profile view complete)
+
+Ruling: accept. `profile-v2-normalized-v4` is the approved profile set, and with
+it the 0.26px-slack hip-to-ground chain, the profile `leftAnkle` 53% and back3q
+`rightKnee` 77% disks under `registrationOnlyLandmarks`, and the small skin
+sliver behind the near boot. No hip-line, planted-drop or bone-span change is
+authorized; this is a settled proportion and must not be reopened as another
+landmark fit, nor the exemption list quietly widened.
+
+Profile is therefore complete — art normalized, ownership settled by outline
+trace, fit independently verified, proportion accepted. Expansion to the
+remaining four views is unblocked. Carry two things into it: re-check each
+view ankle/sole ownership with the continuity test before trusting its fit
+(front/front3q/back measured 100% but have not been re-checked since the v4
+landmark changes), and treat the registration-only list as a budget — a third
+entry is evidence of a fit problem, not a fix. Record: addendum 9.
+
+### 2026-08-30 — Claude (v4 verified: foot fit APPROVED, structure to Derek)
+
+Independently verified Codex's v4 rather than accepting the report. All locks
+hold — Pass-A v3 `ce78aea3…3dceb`, normalized v1/v2/v3/v4 each clean against
+their own `SHA256SUMS.txt`, approved source parts rolled hash unchanged. Gates
+green: 63 painted disks / 63 reuse-vector / 10 soles, normalizer 20 zones / 74
+checks / 0 failures, **381/381** tests. Ten of fourteen cells are decoded-pixel
+identical to v3; only thigh, shin and both boots re-registered, matching the
+anchors that moved. No source pixels regenerated.
+
+**Foot fit approved.** The far foot is fixed outright — `rightAnkle` (393,666)
+is 100% opaque with a 100% ankle-to-sole run inside boot B. Soles untouched,
+back3q unchanged and locked by exact coordinates. Assembly width 125% -> 110% of
+the master, visible skin in the boot band 105px -> 82px.
+
+**Flagged so it is a choice rather than a silent pass:** two landmarks are
+exempted from the painted-disk gate via `registrationOnlyLandmarks`. The
+mechanism is sound and test-restricted to knee/ankle targets, but it is
+load-bearing — profile `leftAnkle` (369,666) is only **53%** opaque with a 79.3%
+ankle-to-sole run, and back3q `rightKnee` (331,552) is 77% opaque and was
+exempted in this pass although back3q had been approved before that declaration
+existed. `leftAnkle` is not a fitting error: it is provably the only legal
+integer point on boot A, and the previous value was on the wrong boot.
+
+Nothing modified, nothing committed. The zero-slack leg chain (253px vs 253.26px)
+stays Derek's decision; it must not be reopened as another landmark fit. Record:
+addendum 8.
+
+### 2026-08-30 — Codex (definitive profile foot fit landed as normalized v4)
+
+Applied addendum 7 exactly: near chain `(378,467) -> (371,568) -> (369,666)`
+over unchanged sole `(385,720)`, and far chain
+`(398,467) -> (391,568) -> (393,666)` over unchanged sole `(441,702)`. The
+profile ankle gap is now 24px, each ankle sits on its owned boot, and all four
+bone spans remain exact integer-lattice distances. back3q was neither edited nor
+re-solved and is protected by an exact-coordinate regression test.
+
+The replay manifest, v7 landmark guide, versioned v4 normalizer output, neutral
+proof, articulated proof, tests, and v4 README were updated. The corrected far
+knee/ankle now pass painted-disk validation; only the near ankle needs the
+explicit registration-only declaration because its unique sole-gated solution
+sits at boot A's edge. No source pixels were regenerated, both profile soles
+were preserved, and the proof-alpha seam remains untouched.
+
+Validation: 63 painted disks / 63 exact reuse-vector checks / 10 soles, 20 joint
+zones / 74 normalization checks, byte-identical v4 rerun, targeted 18/18, full
+381/381. Normalized v1/v2/v3 each verify against their original `SHA256SUMS.txt`;
+Pass-A v3 is still `ce78aea3…3dceb`. No commit was made.
+
+The 0.06px/0.20px extension margins are recorded as a structural escalation,
+not an invitation to search again: the hip-to-ground chain has 0.26px total
+slack. Derek must decide whether to accept it or authorize a hip-line,
+planted-drop, or bone-span change after Claude independently reviews v4.
+
+### 2026-08-27 — Claude (boot-ownership ruling: soles correct, both ankles wrong)
+
+Settled the ownership question before Codex changes the fit. Traced both boots by
+outline continuity and occlusion — not blue-component labelling, which had
+already been shown invalid here — and confirmed on an 8x annotated render. Boot A
+(shaft x340-369, outsole to y=720, toe ~414) is drawn in front of boot B (shaft
+x376-408, toe ~447); background separates them at x=412-416, y=704, so the split
+is provable rather than inferred.
+
+**Ruling: `rightSole` (441,702) belongs to boot B; `leftSole` (385,720) to boot
+A, the near foot. Both soles are correct.** That restores addendum 4 and retracts
+the doubt I raised in addendum 5, which rested on a centroid comparison too
+coarse to survive an outline trace. **The work is an ankle + knee chain
+correction only — no sole correction.**
+
+Both ankles are on the wrong boot: `rightAnkle` (429,662) sits in empty
+background, `leftAnkle` (387,666) stands on boot B. Proposed far-foot fix:
+ankle (392,662), knee (415.2,566.8), hip distance 195.09 against the 199.26
+limit — 4.17px margin, spans exact.
+
+**A structural finding the near leg surfaces.** Its hip-to-ankle vertical drop is
+199.00 against a 199.26 two-bone reach, so the system holds 0.26px of slack in
+total. The reachable ankle window clips boot A only at x=368-369 with 0.01px
+margin — a locked knee — and boot A's shaft centre x=354 is unreachable at any
+hip position. Recommended: apply the far fix, do not force the near one, and put
+the near-leg extension question to Derek as its own decision. Nothing was
+modified during this pass; record is addendum 6.
+
+### 2026-08-27 — Claude (re-fit reviewed: back3q correct, profile far foot REVISE)
+
+Ran Derek's review brief against the landed re-fit. **Recommendation: revise, one
+view and one landmark.** Nothing committed; artwork, manifest, normalizer and the
+proof-alpha seam untouched during review.
+
+**Mechanical, all green.** Pass-A v3 `ce78aea3…3dceb`; normalized-v1 and
+normalized-v2 both re-verified against their own `SHA256SUMS.txt` at 0
+mismatches; approved profile-v2 source parts untouched; **all 14 normalized cells
+decoded-pixel identical to v2** (only PNG container bytes differ, so no artwork
+changed); all bone spans exact across five views; `art:validate-landmarks` green
+at 62 disks / 63 reuse-vector checks / 10 soles / 0 occupied cells; **380/380**
+tests; normalizer 20 zones / 74 checks / 0 failures; zero enclosed joint gaps in
+either assembly.
+
+**The re-fit was surgical and two things beat expectations.** Only the two
+identified ankles moved, each with its knee — profile knee 36.2px / ankle 40.2px,
+back3q ankle 67.9px, with soles, hips and the other ankles untouched. back3q's
+re-fitted leg landed at **7.59px reach margin**, comfortably bent, so the
+near-straight-leg fragility flagged before the work did not materialise. And
+no-reflection became **machine-enforced**: the policy is now
+`per-view-declared-opposite-transform` with `oppositeTransformByView` declaring
+`unreflected-registration` for front3q/profile/back3q, and the validator was
+**strengthened** to require and check it.
+
+**Visual judgment, reported separately.** The stance is genuinely restored — two
+upright right-facing boots offset like the master, and the one-legged read is
+gone. But profile `rightAnkle` (429,662) is **in empty space**: at y=662 the boot
+shafts span 376-407 and 339-369, putting it 22px past the nearer edge. Its
+ankle-to-sole run is **44.2% inside boot paint against 100% for the other seven
+feet**, and the assembly is 125% of master width. x≈391 is reachable (195.1 vs
+199.26).
+
+**Unresolved, and it sizes the fix.** The profile soles may also be inconsistent:
+ground contact at y=718-720 spans 367-407 and contains `leftSole` (385,720),
+but `rightSole` (441,702) plausibly sits on that same boot, leaving the 339-369
+shaft unlandmarked. Not provable — the boots merge below y≈675.
+
+**Two corrections to my own earlier records.** Addendum 4's "the soles are right,
+the ankles are collapsed" only half holds; the sole half rested on comparing
+declared sole gap to boot-centroid gap, too coarse to catch a sole on the wrong
+boot. And a component-labelling version of the same-boot check was wrong and
+discarded — each boot's black outsole splits it into several blue blobs, so it
+failed all five views including the healthy ones. The ankle-to-sole continuity
+test replacing it is calibrated against front/front3q/back at 100%. Record:
+`AI_HANDOFF_ENTRIES/2026-08-26-claude-thesz-v2-profile-normalization.md`
+(addendum 5).
+
+### 2026-08-27 — Codex (profile + back3q ankle chains re-fitted; awaiting review)
+
+Corrected the two collapsed ankle chains without changing either sole or any
+artwork. Profile far/right is now `(398,467) -> (427,564) -> (429,662)` over its
+unchanged `(441,702)` sole; back3q near/right is now
+`(386,467) -> (331,552) -> (329,650)` over unchanged `(326,710)`. The selected
+back3q bend avoids the nearly straight, 0.96px-margin solution. Front3q was
+checked against its panel and left untouched.
+
+The manifest now records per-view opposite-side transforms: turned views reuse
+the same unmirrored upper-arm/thigh/shin art by endpoint registration, while
+front/back retain horizontal mirroring. Registration-only exceptions are
+explicit and restricted to concealed knee/ankle targets, never soles. The
+profile normalizer now registers reusable limb cells to both bone endpoints and
+writes only versioned `profile-v2-normalized-v3`; v1 and v2 were not overwritten.
+The settled v3 torso/trunks and non-regenerated natural thigh remain unchanged,
+as do transparent `pelvisMask`, both right-facing boots, distinct hand/forearm
+pairs, canonical canvases/anchors, and the locked depth order.
+
+Delivered proofs: `profile-v2n3-neutral-assembly.png`,
+`profile-v2n3-articulation-proof.png`, and
+`thesz-v2-pass-a-v6-ankle-refit-guide.png`. Validation is green at 62 painted
+disks + 3 declared registration-only targets, 63 exact span/reuse checks, 10
+sole checks, 20 normalized zones / 74 checks, profile 9/9, full 380/380, and a
+byte-identical normalizer rerun. Pass-A v3 is still `ce78aea3…3dceb`. The
+proof-only alpha seam was deliberately left parked. No commit was made.
+
+### 2026-08-26 — Claude (v2 verified; the fit cannot place the far foot)
+
+Verified Codex's normalized v2 independently rather than on report: Pass-A v3
+still `ce78aea3…3dceb`, normalized v1 byte-intact against its own
+`SHA256SUMS.txt` before and after re-running the normalizer, revised torso
+`d65d9e29…22bd1`, 20 zones / 74 checks green, second run byte-identical, 9/9
+profile and 377/377 overall. The two fixes are real: a v1-versus-v2 crop at
+identical coordinates shows the neck collar line and the thigh knob both gone.
+Codex's thigh call was right and my v1 was wrong — `zoneFillByJoint.hip` is 0
+and the hip zone still passes from registered source paint alone, so v1's hip
+capsule clip plus fill was what manufactured the knob. I also walked back my own
+first read that the pale shoulder mass was new; it is present in v1 too.
+
+**New blocker, and it is neither the art nor the normalization: the profile
+landmark fit cannot place the far foot.** Compared side by side against the
+approved v3 profile panel — the check that should have been run from the start —
+the assembly reads one-legged. The fit declares the two ankles 2px apart,
+(387,666) and (389,666), but the two soles 56px apart, (385,720) and (441,702),
+because the far sole was measured at the far boot's painted toe while the near
+sole sits under its own ankle. No placement of one unmirrored boot satisfies
+both: honouring the ankles stacks the feet (current behaviour, keeps each boot on
+its shin), honouring the soles detaches the far boot and blows figure width to
+135% of the master, rotating to join them stands the far foot on its toe. All
+three were built and looked at. **This is a re-fit, not a re-cut — no part needs
+regenerating.** The other four views should be checked for the same near/far sole
+convention before the cutter expands.
+
+Also worth knowing when reading the mask evidence: measured `pelvisMask`
+exposure went *up* between v1 and v2 (1,976 → 3,789px neutral) while the
+appearance got *better*, because it now measures the thigh's natural drawn
+contour rather than v1's coverage capsule. That number is no longer a proxy for
+whether a lip is needed and must not be used to reopen Derek's ruling.
+
+**A rig-tuner preview was built and reverted the same session.** Derek asked to
+assemble the cells interactively; it was the wrong call and I should have said so
+before building it rather than hedging afterward. All seven v2
+`runtimePrerequisites` are still `pending`, so it rendered profile-only cells
+through the near/far rig, could not wire the palm-side hand at all, and used
+seeded rather than measured boxes — any fault it showed would have belonged to
+the scaffolding, not the art. Reverted in full; `grep` finds no trace and
+`rig-tuner.js` is back at HEAD. Derek: "let's follow best practices and do
+things when they are ready." How it was done, and why it was premature, is in
+addendum 2 of the entry file so it is not rediscovered from scratch. Unrelated
+and pre-existing: `tools/rig-tuner/smoke.mjs` reports 24/30, verified identical
+against a pristine `rig-tuner.js`.
+
+One cosmetic defect found and left open, proofs only, no asset bytes: the proof
+renderer's non-rotated `blit` overwrites destination alpha, punching translucent
+1px seams where an antialiased edge lands on opaque paint (11 strictly-interior
+cases in both v1 and v2, inherited from `build-pass-b-profile-trial.mjs`).
+Phaser alpha-blends at runtime, so it misrepresents the proofs rather than the
+assets. `blitRotated` already guards against it. Record:
+`AI_HANDOFF_ENTRIES/2026-08-26-claude-thesz-v2-profile-normalization.md`.
+
+### 2026-08-26 — Codex (settled profile torso/trunks + natural thigh delivered)
+
+Delivered the versioned `profile-v2-normalized-v2/` candidate without
+overwriting normalized v1. Regenerated only torso/trunks from the approved
+profile asset: `profile-torso-trunks-v3-chroma.png` is the built-in image edit
+source and `profile-torso-trunks-v3-alpha.png` is its locally keyed project
+source. The new torso has a short unlined neck seating column and one solid
+black trunks silhouette with no transparent leg opening, notch, dangling trunk
+legs, or pelvis lip. `pelvisMask` remains fully transparent. Proof depth remains
+`pelvisUnderlay -> far leg -> torso+trunks -> near leg -> arms`, so the far leg
+is underneath and the near thigh implies the opening by overlap.
+
+The thigh was **not regenerated**. Native source inspection showed the approved
+`parts/thigh.png` already carries a broad natural hip-to-thigh contour. The v1
+knob was deterministic normalizer geometry: its visible hip end was clipped to
+a capsule and `fillJointZones` then added 488 total zone pixels to the cell.
+V2 removes hip terminal clipping and registers the existing paint far enough
+above the hip anchor to contain the declared coverage zone. Result: zero pixels
+are added at the hip, the broad source contour survives, and concealed joint
+coverage remains fully opaque. Knee terminal cleanup is unchanged.
+
+Preserved unchanged: distinct near/palm-out and far/palm-in forearms/hands; one
+unmirrored side-view upper arm, thigh, and shin; both right-facing boots;
+canonical canvases/anchors; and every other approved normalized part. Added
+mechanical checks for a hole-free torso/trunks silhouette and a non-pinching,
+source-painted upper thigh. Pass-A v3 remains byte-identical at SHA-256
+`ce78aea34da48af54721c6babf74c46c71b29f00810ae26390d9c92cffc3dceb`.
+
+Artifacts: `pass-b/candidates/profile-v2-normalized-v2/` (14 cells, neutral and
+articulation proofs, contact sheet, `parts-index.json`, `SHA256SUMS.txt`).
+Validation: `npm run art:normalize-profile-v2` reports 20 joint zones across 74
+checks with zero failures; a second run is byte-identical; profile normalization
+tests 9/9; full `node --test tests/*.test.js` 377/377. Torso source SHA-256 is
+`d65d9e297864d66b597066e83b1c73f667cb6a49a4c030e264fdf13eea122bd1`;
+all emitted PNG hashes are in the candidate's `SHA256SUMS.txt`.
+
+### 2026-08-26 — Derek/Codex (profile pelvis and torso rulings settled)
+
+There must be no transparent leg opening in the profile torso/trunks. Fill the
+garment silhouette solid black. The far leg remains underneath; the near thigh
+draws above the solid trunks with a broad natural upper-thigh contour, so its
+overlap creates the visual impression of the leg opening. It must not have a
+knob, bulb, peg, joint circle, or rounded cap. `pelvisMask` remains fully
+transparent—do not add a black lip over the near thigh. Regenerate only the
+torso/trunks to implement that solid silhouette and replace the squared outlined
+neck collar with a short unlined seating column. Then re-run normalization and
+neutral/articulation proofs before any other view is cut.
+
+### 2026-08-26 — Claude (profile v2 normalized into the canonical canvases)
+
+Normalized the approved profile-v2 parts into the manifest's fixed canvases and
+profile anchors: `npm run art:normalize-profile-v2`, output
+`pass-b/candidates/profile-v2-normalized-v1/` (14 cells, both proofs,
+`parts-index.json`, `SHA256SUMS.txt`). Registration is a two-point similarity
+transform with no reflection term, so nothing is mirrored and both boots keep
+their drawn right-facing toe. One cleanup rule does the trimming: past a terminal
+joint anchor a part keeps only the overlap the contract declares, clipped to the
+disk containing that band. The round shoulder is trimmed (1038px). **The knee
+shelf turned out to be a registration artifact of the old proof, not an art
+defect** — at their own joints the thigh and shin are both 94px wide. New
+`pelvis-underlay.png` closes the trunks' leg opening, which was an open hole the
+old proof faked with a hardcoded ellipse. Two other real findings: `upper-arm.png`
+is cut 5px above the drawn elbow and carries no post-elbow overlap (the tool cuts
+from `upper-arm-source.png` instead), and the board is not drawn at the fitted
+skeleton's proportions, so registered scales run 0.257-0.489.
+
+`pelvisMask`/`shoulderMask` stay transparent per Derek's rule, but the stress
+evidence he asked for is now measured: the near thigh puts 1,976px (neutral) /
+2,226px (under load) of legal overlap on top of the trunks, and the near upper
+arm 244/351px proud of the torso. That is more than a "very small lip" and is
+Derek's ruling to make. **One part wants regeneration and only one:** the torso's
+neck is a squared outlined collar block roughly 3x the manifest's neck core, so
+seating the head under it leaves a straight ink line across the neck that
+trimming cannot remove without the shoulder line. Pass-A v3 unchanged at
+`ce78aea3…3dceb`; the approved profile-v2 sources are hash-frozen in the test.
+375/375 tests. Record:
+`AI_HANDOFF_ENTRIES/2026-08-26-claude-thesz-v2-profile-normalization.md`.
+
+### 2026-08-26 — Codex (profile v2 parts created; candidate review only)
+
+Created actual transparent profile source parts under
+`pass-b/candidates/profile-v2/parts/`, including torso-attached trunks,
+separate near/back-of-hand and far/palm forearm-hand sources, one reusable upper
+arm/thigh/shin, and two right-facing boot confirmations. Wrote neutral,
+articulated and contact-sheet proofs plus `parts-index.json`. Depth follows
+`pelvisUnderlay -> far leg -> torso+trunks -> near leg -> arms`; the opaque pink
+thigh accidentally generated inside the torso leg opening is deterministically
+removed. Pass-A v3 remains `ce78aea3…3dceb`. This is not production-normalized:
+the broad round shoulder coverage and knee overlap silhouettes still need
+Derek's visual ruling. See `pass-b/candidates/profile-v2/README.md`.
+
+### 2026-08-26 — Derek (profile v2 source approved with cleanup allowance)
+
+Derek reviewed the contact sheet and assembly proofs and ruled that the profile
+parts pass as source material. Approval permits deterministic trimming and
+canonical registration; it does not declare every current crop production
+final. First trim the broad shoulder and knee overlap silhouettes while
+preserving hidden joint coverage. Regenerate an individual part only if the
+required paint is absent and trimming cannot solve it. Do not reopen the full
+profile master or alter frozen Pass-A v3 for these localized corrections.
+
+### 2026-08-25 — Derek/Codex (profile trunks and leg depth)
+
+Visible trunks are attached to the view-specific torso asset. Profile leg
+stack is asymmetrical by design: hidden pelvis underlay, far leg, torso+trunks,
+then near leg. Therefore the far thigh attaches underneath the trunks and the
+near thigh attaches on top. The profile pelvisMask remains transparent unless
+stress testing proves a small front leg-hole lip is required. Skeleton already
+implements the decisive order (`farThigh < torso < nearThigh`) and disables its
+procedural trunks whenever a torso texture exists.
+
+### 2026-08-25 — Codex (strict-profile regeneration candidate)
+
+Replaced the rejected front-biased profile only in a versioned candidate; Pass
+A v3 remains untouched. The new right-facing profile keeps both boots facing
+right, exposes distinct outward/back-of-hand and inward/palm forearm-hand
+surfaces, and provides full-width side-view leg anatomy. Registered crown to
+sole at 530px. Diff confinement: 45,189 changed pixels, zero outside the profile
+panel. File SHA `f5127ad5…143f`; decoded-pixel SHA `5257ef35…159a`. Await visual
+approval before changing landmarks, manifest policy, slots, or Pass B.
+
+### 2026-08-25 — Derek/Codex (profile bilateral rule corrected)
+
+Derek rejected the profile trial's front-reading limbs. Profile must cut one
+true side-view upper arm and one true side-view leg set, then duplicate/reuse
+those for the other side without horizontal mirroring. Forearms and hands need
+separate near/far authored cuts to preserve outward/back-of-hand versus
+inward/palm surfaces. This makes both the single `forearm` slot and the single
+`hand.open` slot real contract questions; do not hide either by using the
+fist/grip variants or by painting two sides into one cell. The head cut also
+extends into torso/shoulder paint and must stop after a short neck seating
+overlap. Profile v1 stays a diagnostic candidate only and must not seed the
+other views.
+
+### 2026-08-25 — Codex (Thesz v2 Pass B profile trial)
+
+Derek approved trying Pass B. Rejected the first model-owned sheet edit because
+it resized/rearranged/redrew the source, then built a deterministic 1:1 profile
+cutter. Eleven base cells now pass 16 opaque joint zones, complete pelvis
+coverage, transparent-RGB and source-lock checks; neutral and moved-limb proofs
+are available for review. v3 SHA unchanged; 368/368 tests and build green. Do
+not expand to other views yet. Full record:
+`AI_HANDOFF_ENTRIES/2026-08-25-codex-thesz-v2-pass-b-profile-trial.md`.
+
+### 2026-08-24 — Codex (Thesz v2 landmark contract correction)
+
+Cleared Claude's B1/B2/B3 blockers while preserving the approved v3 SHA.
+One-cut bilateral limbs remain authoritative and are now true mirrors; planted
+boots have an explicit per-view source side and exact local vector; elevated
+far soles record actual art. Added non-vacuous landmark regression tests and
+regenerated the v4 overlay. Node 22: 368/368 tests, build, landmark gate and
+canonical-sheet smoke all green. Pass B remains unpainted pending overlay
+review. Full record:
+`AI_HANDOFF_ENTRIES/2026-08-24-codex-thesz-v2-landmark-contract-correction.md`.
+
+### 2026-08-24 (v4 landmark fit reviewed: the fit is right, three 1:1 contradictions survive, and one of them wants Codex's ruling) — Claude
+
+Second read-only audit the same day, reviewing Codex's v4 fit against the
+morning's audit below. **Nothing was changed** beyond this notebook. Full
+record: `AI_HANDOFF_ENTRIES/2026-08-24-claude-thesz-v2-landmark-fit-review.md`.
+Reproduced locally: `art:validate-landmarks` green (65 disks, 45 vectors, 10
+soles, 0 occupied cells), `art:validate-source` green, `art:validate-pass-a`
+green on v3, `npm test` **363/363**.
+
+**What the fit got right.** The approved pixels are genuinely untouched — v3
+still hashes to `ce78aea3…3dceb`, mtime unchanged, and the fitter refuses any
+other bytes. Every fitted landmark lands within a few pixels of what the
+morning audit measured independently from the alpha mask (neck 270–272 vs
+269–279; wrist 449–452 vs 443–447; knee 568 vs 562–569; ankle 666 vs 655–674;
+shoulder/elbow/hip within a few px of the estimates). Every finding from that
+audit's §1a and §2a is fixed: the torso (±67,+16) and (±15,0) contradictions
+are gone, the front/back torso now fits its 190 px canvas, all 65 joint disks
+are opaque, and the wrists are inside the hands. `identity-approved` is a
+better design than the one proposed — splitting identity approval from the
+extreme-angle/game-scale/broadcast reviews and freezing the SHA at the identity
+gate is the right shape; keep it. Noted without objection: the "vertical spans
+sum to `masterFigureHeightPx`" check was removed, correctly — Euclidean spans
+do not sum to silhouette height once a limb is angled, and crown-to-sole is
+still checked per view.
+
+**Blocking — a part cut at 1:1 still cannot land on its declared anchors.**
+
+*B1, the boot `ankle → sole` vector, 10 of 10.* This is the item the morning
+audit named explicitly ("include the boot's `ankle → sole` **vector**, not just
+its Δy") and the one item not implemented: `masterToPartVectorChecks` covers
+head/torso/upperArm/forearm/thigh/shin and **boot is absent from the checks
+array**, while the fitter moves `heel/toe/sole.y` to 76 and never touches
+`sole.x`. Part says `(+36,+54)`; master says −21/+22 (front), +62/−20
+(front3q), +28/−2 (profile), −8/+0 (back3q), +1/+1 (back). The boot is cut 1:1
+and planted by its semantic sole, so it lands **8–57 px off in x**. Needs
+per-view `anchorOverrides` like every other part got — and the two sides form a
+mirror pair only in `front`, so it is not a single-number fix.
+
+*B2, mirrored limbs, 9 of 20 placements.* `bilateralSegmentReuse` cuts one side
+and mirrors it, but the new gate validates the **source side only**. On the
+opposite side the master vectors are not mirrors: front3q upperArm Δ(12,−4),
+forearm Δ(−18,4), thigh Δ(22,−4); profile forearm Δ(14,0), thigh Δ(−22,−4);
+back3q upperArm Δ(−12,4), forearm Δ(15,−3), thigh Δ(36,4), shin Δ(−4,0). Front
+and back are clean; every failure is in a turned view. **This is the same defect
+class v4 fixed on the source side, surviving unchecked on the mirrored side.**
+
+*B3, duplicate soles in three of five views.* front3q declares both soles at
+(420,720), profile both at (385,720), back3q both at (396,720) — the gate's
+`sole.y === 720 && opaque` check passes trivially because both point at the same
+near-foot pixel. Measured: in front3q the far foot's paint ends at **y = 708**,
+x 321–326 — its sole is declared 12 px below the ground line and ~97 px away in
+x, on the other foot. The art has only one foot reaching y=720 in those three
+views, so "both soles on the ground row at `plantedSoleVerticalDrop` below their
+ankle" cannot be satisfied honestly there. Same root cause as B1.
+
+**Should fix, not blocking.** `fit-v2-landmarks.mjs` **does not fit anything** —
+it never decodes the PNG, only hashes it; every landmark is a hardcoded literal
+and the spans are hardcoded `Math.sqrt(6290)` and friends, with `APPROVED_SHA256`
+baked in so it refuses any other sheet. Safe as a one-shot replay, but
+`art:fit-landmarks` promises a reusable measurement step that does not exist;
+rename it or implement the measurement. **No test coverage for any of the three
+new tools** — the count is still exactly 363, whereas `art:validate-pass-a` was
+explicitly proved non-vacuous when it landed. **Check C (canvas containment) was
+not implemented**, and that was the hard structural break in v3. Minor:
+`sole.y !== 720` is a hardcoded magic number that should derive from
+`crown.y + masterFigureHeightPx`; and `boneLengths` are now 17-digit irrationals
+(`torso: 99.50125627347627`) with `neckAxis` fractional — harmless while the
+runtime is `pending`, but numbers nobody chose, and `torso` is irrational only
+because `neck.x = 95` against a hip midpoint of 96.
+
+**Recommendation: approve the overlay, do not start Pass B.** B1 and B3 are
+coordinate work plus two missing checks. **B2 is a genuine design question and is
+the one that wants Codex's ruling:** does the mirror policy hold for turned
+views, and if it does not, where does a separately-cut far limb live, given
+`slotOrder` already spends all 19 slots per view and has exactly one `upperArm`,
+`forearm`, `thigh` and `shin` among them?
+
+### 2026-08-24 (Pass A landmark audit: the manifest's skeleton does not describe the drawn figure, and Pass B is blocked until it does) — Claude
+
+Read-only audit, requested after a manifest-landmark overlay on the approved
+Pass A candidate exposed a contract problem `art:validate-pass-a` does not
+detect. **Nothing was changed** beyond this notebook: no manifest, validator,
+shipped asset, test, or runtime edit; no commits; no pushes; no Pass B cells
+painted. Baseline `npm test` = **363/363 pass**. The quarantined moustached
+reference was never opened. Full record:
+`AI_HANDOFF_ENTRIES/2026-08-24-claude-thesz-v2-pass-a-landmark-audit.md`.
+
+**Finding: the manifest is wrong, not the artwork.** Three independent proofs.
+
+*It contradicts itself before any pixel is examined.* Pass B's 1:1 copy is a
+pure translation, so per view and part there is exactly one `T` consistent with
+the part's frame anchor, and every other part anchor must then land on its
+master landmark. Solving `T` from `torso.neck` (= 289,282 in every view) leaves
+the torso shoulders off by **(±67,+16)** in front/back, **(±47,+16)** in the 3q
+views and **(0,+16)** in profile; the torso hips off by **(±15,0)** and
+**(±9,0)**; and the boot's `ankle → sole` vector off by **36 px in x in all
+five views and both sides** (`checkV2PartSpans` compares only `|Δy|` there, so
+it never sees it). The **+16 px shoulder error is in every view**. The
+horizontal error vanishes only in profile — which is why nothing looked wrong.
+
+*A hard structural break.* `torso.canvas.w` is 190, hardcoded in
+`V2_PART_CONTRACT` (`validate-source-manifest.mjs:68`). In front and back the
+torso's own master landmarks span `x = 270…498` = **229 px**. No placement of a
+190 px canvas contains them. Those shoulders are not mispositioned; they are
+unrepresentable in the torso part at any offset.
+
+*The declared proportions were never the contract.* Shoulder→wrist is 230 px
+(43 % of a 530 px figure) and hip→sole 218 px (41 %) — arms longer than legs.
+`DECISIONS.md` fixes only the height and defers the rest to the likeness
+authority.
+
+*And the art was never asked to hit these landmarks.* `PASS_A_PROMPT.md`:
+"**do not invent rig points. Anatomical landmarks, axes, and opaque-core rings
+are placed/refined on the separate guide layer after the five-view art is
+approved.**" The guide does draw the labelled stick figure
+(`canonical-sheet.js:143-171`), but the prompt's only geometric requirements
+were the panel rectangle and the exact 530 px crown-to-sole height, and v3 hits
+both exactly. Landmark placement is, by the packet's own design, a
+post-approval step. Candidate v2 fails identically (40 vs 39), so this is not a
+v3 regression and a re-roll would not fix it.
+
+**Measured.** 39 of 65 jointed landmarks fail opaque-core coverage; all ten
+shoulders and wrists score `441/441` and `197/197` non-opaque, i.e. they sit in
+fully transparent space. Declared minus measured y: neck **+27…+37**, elbow
+**≈+70…+76** (y=450 lands on the drawn *wrist*), wrist **≈+113**, hip **≈+30**,
+knee **+20…+26**, ankle **+2…+17**; crown and sole are exact. The unarguable
+one: in every view where the arm clears the torso, arm-and-hand paint ends at
+y ≈ 503–507 and the next paint below is the boot at y ≈ 692–699 — the wrist is
+declared **53–57 px below the last painted pixel of the hand**, inside ~190 rows
+of transparency. Declared sole x also misses the drawn footprint by ~37–40 px in
+front (contacts centre at 313 / 458 vs declared 350 / 418), same boot root cause.
+
+**Recommendation: a manifest-only v4. No artwork exception.** v3 is the approved
+identity, it passes the Pass-A gate, and the drawn anatomy fits every part
+canvas at 1:1 once landmarks are fitted (torso shoulder span ≈ 151 in a 190
+canvas; thigh ≈ 96 in 180; shin ≈ 100 in 210). Freeze v3's hash into
+`humanReview.sourceSheetSha256`; add a deterministic `art:fit-landmarks` for
+what silhouette resolves (crown, sole, neck, wrist, knee, ankle, crotch); place
+**shoulder, elbow and hip** by hand in the existing anchor editor — the only
+judgement step; then **derive** `sourceSpansPx`, `boneLengths` and every
+part-local anchor from the fitted landmarks rather than hand-authoring them.
+Deriving is what permanently kills the ±67 / +16 / ±15 / +36 contradictions:
+they exist only because the two coordinate systems were authored independently.
+Spans must be even so `boneLengths` stays integral at 2 px per rig unit.
+
+**A decision for Derek, not for a reviewer.** Fitting spans to the art changes
+Thesz's rig proportions. Shipped v1 (`src/Skeleton.js`: `upperArmH 68,
+forearmH 63, thighH 56, shinH 64`) also has arms longer than legs — but its own
+comments call those 1.5×/2× fudges from 2026-07-12 ("arm read too short"), i.e.
+stick-figure-era tuning, not a proportion contract. Recommended: fit to the art,
+since all seven v2 `runtimePrerequisites` are `pending` and nothing shipped
+depends on the v2 spans. If Derek instead wants v1's silhouette preserved, that
+is a Pass A regeneration with the guide skeleton promoted to a binding target —
+a larger decision that should be taken explicitly, not by leaving the
+placeholder in place.
+
+**Proposed gate, `art:validate-landmarks`**, run after `art:validate-pass-a` and
+required green before the first Pass B cell. All checks are geometric
+identities, so the tolerance is 0 px — judgement lives in the fitting, never in
+the gate. **A** opaque-core coverage at each jointed landmark (39/65 fail today);
+**B** part ↔ master agreement under the 1:1 translation, including the boot's
+`ankle → sole` vector rather than just its Δy; **C** canvas containment of a
+part's landmark bbox grown by its `jointZones` margins (front + back torso need
+229 px in 190); **D** silhouette envelope — no landmark in a row where its limb
+has no paint, terminal landmarks inside the limb with `afterPx` beyond (all ten
+wrists fail); **E** ground contact — each `*Sole` x inside its own foot's run on
+the lowest painted row; **F** the existing span checks, unchanged. **A and D are
+exactly what `art:validate-pass-a` structurally cannot catch:** it measures the
+figure's extent and the bank's emptiness, and never asks whether the declared
+skeleton lands on the drawn body.
+
+Two incidentals recorded so they are not rediscovered: the exact-530 guarantee
+is a fully-opaque-core measure (at alpha > 0 the figures are 536–537 px), so the
+`semantic-sole-uniform-density-v2` contract should be written against the opaque
+core; and in profile the lowest rows are a ~14 px bump near x = 386 rather than
+the boot's flat contact line, so the planted-sole row is currently set by a bump.
 
 ### 2026-08-23 (Pass A: the likeness authority was wrong, and the gate that would have caught the rest now exists) — Claude
 

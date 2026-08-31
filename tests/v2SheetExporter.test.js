@@ -14,6 +14,15 @@ const manifestUrl = new URL('../tools/wrestler-cutter/templates/rig-source-manif
 const cliPath = fileURLToPath(new URL('../tools/wrestler-cutter/export-v2-sheet.mjs', import.meta.url));
 const manifest = JSON.parse(await readFile(manifestUrl, 'utf8'));
 
+function pendingManifest() {
+    const value = structuredClone(manifest);
+    value.humanReview = {
+        status: 'pending', sourceSheetSha256: null, extremeJointAngles: false,
+        artistStrokeAtGameScale: false, broadcastNearMiddleFar: false,
+    };
+    return value;
+}
+
 function sha256(buffer) {
     return createHash('sha256').update(buffer).digest('hex');
 }
@@ -74,7 +83,7 @@ test('v2 exporter writes 95 exact deterministic crops and a checksum index', asy
         const manifestPath = path.join(temp, 'manifest.json');
         const sheetPath = path.join(temp, 'clean.png');
         const outputDir = path.join(temp, 'exports');
-        await writeFile(manifestPath, `${JSON.stringify(manifest)}\n`);
+        await writeFile(manifestPath, `${JSON.stringify(pendingManifest())}\n`);
         await writeFile(sheetPath, encodeRgbaPng(makeValidSheet()));
 
         const firstRun = await exportV2Sheet({ manifestPath, sheetPath, outputDir });
@@ -118,7 +127,7 @@ test('CLI refuses a wrong-sized source before creating its output directory', as
         const manifestPath = path.join(temp, 'manifest.json');
         const sheetPath = path.join(temp, 'wrong.png');
         const outputDir = path.join(temp, 'must-not-exist');
-        await writeFile(manifestPath, `${JSON.stringify(manifest)}\n`);
+        await writeFile(manifestPath, `${JSON.stringify(pendingManifest())}\n`);
         await writeFile(sheetPath, encodeRgbaPng({ w: 1, h: 1, rgba: new Uint8Array(4) }));
         const result = spawnSync(process.execPath, [
             cliPath,
@@ -153,7 +162,7 @@ test('exporter binds an approved review to the exact source-sheet bytes before w
 
         await assert.rejects(
             exportV2Sheet({ manifestPath, sheetPath, outputDir }),
-            /does not match approved humanReview\.sourceSheetSha256/,
+            /does not match frozen humanReview\.sourceSheetSha256/,
         );
         await assert.rejects(readdir(outputDir), { code: 'ENOENT' });
     } finally {

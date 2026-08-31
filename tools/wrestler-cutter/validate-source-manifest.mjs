@@ -291,9 +291,9 @@ export function findV2TransparentRgbViolation(image) {
 
 export function verifyV2SourceSheetHash(manifest, bytes) {
     const actual = createHash('sha256').update(bytes).digest('hex');
-    if (manifest?.humanReview?.status === 'approved'
+    if (['identity-approved', 'approved'].includes(manifest?.humanReview?.status)
         && actual !== manifest.humanReview.sourceSheetSha256) {
-        throw new Error(`source sheet SHA-256 ${actual} does not match approved humanReview.sourceSheetSha256 ${manifest.humanReview.sourceSheetSha256}`);
+        throw new Error(`source sheet SHA-256 ${actual} does not match frozen humanReview.sourceSheetSha256 ${manifest.humanReview.sourceSheetSha256}`);
     }
     return actual;
 }
@@ -451,14 +451,22 @@ function checkV2MasterSpans(manifest, viewName, landmarks, errors) {
                 checkV2Span(distance(a, b), spans[spanName], `${prefix} ${side} ${from.toLowerCase()}-to-${to.toLowerCase()} span`, errors);
             }
         }
-        const ankle = landmarks[`${side}Ankle`], sole = landmarks[`${side}Sole`];
-        if (finitePoint(ankle) && finitePoint(sole)) {
-            checkV2Span(Math.abs(sole.y - ankle.y), spans.plantedSoleVerticalDrop,
-                `${prefix} ${side} planted-sole vertical drop`, errors);
-        }
-        if (finitePoint(landmarks.crown) && finitePoint(sole)) {
-            checkV2Span(Math.abs(sole.y - landmarks.crown.y), manifest.sourceSheet?.masterFigureHeightPx,
-                `${prefix} ${side} crown-to-sole height`, errors);
+    }
+    const plantedSide = manifest.bilateralSegmentReuse?.bootSourceSideByView?.[viewName];
+    const ankle = landmarks[`${plantedSide}Ankle`], sole = landmarks[`${plantedSide}Sole`];
+    if (finitePoint(ankle) && finitePoint(sole)) {
+        checkV2Span(Math.abs(sole.y - ankle.y), spans.plantedSoleVerticalDrop,
+            `${prefix} ${plantedSide} planted-sole vertical drop`, errors);
+    }
+    if (finitePoint(landmarks.crown) && finitePoint(sole)) {
+        checkV2Span(Math.abs(sole.y - landmarks.crown.y), manifest.sourceSheet?.masterFigureHeightPx,
+            `${prefix} ${plantedSide} crown-to-sole height`, errors);
+    }
+    const groundY = landmarks.crown?.y + manifest.sourceSheet?.masterFigureHeightPx;
+    for (const side of ['left', 'right']) {
+        const candidate = landmarks[`${side}Sole`];
+        if (finitePoint(candidate) && Number.isFinite(groundY) && candidate.y > groundY) {
+            errors.push(`${prefix} ${side} sole must not fall below derived ground y=${groundY}`);
         }
     }
 }
@@ -704,10 +712,8 @@ function validateSourceManifestV2(manifest) {
             errors.push(`skeleton.sourceSpansPx.${spanName} must equal bone length x assetPixelsPerRigUnit (${bone * density})`);
         }
     }
-    if (sourceSpans && sourceSpans.head + sourceSpans.torso + sourceSpans.thigh + sourceSpans.shin
-        + sourceSpans.plantedSoleVerticalDrop !== sheet?.masterFigureHeightPx) {
-        errors.push('skeleton vertical source spans must add exactly to sourceSheet.masterFigureHeightPx');
-    }
+    // Euclidean bone spans do not add to silhouette height once a limb is
+    // angled. Crown-to-sole height is checked directly in every master view.
     const grounding = manifest.parts?.boot?.groundingContract;
     if (grounding?.mode !== 'semantic-sole-uniform-density-v2') {
         errors.push('parts.boot.groundingContract.mode must be "semantic-sole-uniform-density-v2"');
@@ -737,6 +743,20 @@ function validateSourceManifestV2(manifest) {
         for (const landmarkName of V2_MASTER_LANDMARKS) {
             const point = view.masterLandmarks?.[landmarkName];
             if (!pointInside(point, { w: 768, h: 960 })) errors.push(`${prefix}.masterLandmarks.${landmarkName} must lie inside its 768x960 panel`);
+        }
+        const registrationOnly = view.registrationOnlyLandmarks;
+        if (!Array.isArray(registrationOnly)) {
+            errors.push(`${prefix}.registrationOnlyLandmarks must be an array`);
+        } else {
+            const allowed = new Set(['leftKnee', 'rightKnee', 'leftAnkle', 'rightAnkle']);
+            if (new Set(registrationOnly).size !== registrationOnly.length) {
+                errors.push(`${prefix}.registrationOnlyLandmarks must not contain duplicates`);
+            }
+            for (const landmarkName of registrationOnly) {
+                if (!allowed.has(landmarkName)) {
+                    errors.push(`${prefix}.registrationOnlyLandmarks may contain only knee or ankle targets`);
+                }
+            }
         }
         for (const [partName, overrides] of Object.entries(view.anchorOverrides ?? {})) {
             const part = manifest.parts?.[partName];
@@ -775,13 +795,29 @@ function validateSourceManifestV2(manifest) {
     }
 
     const reuse = manifest.bilateralSegmentReuse;
+    requireExactKeys(reuse, ['families', 'policy', 'oppositeTransformByView', 'sourceSideByView', 'bootSourceSideByView'],
+        'bilateralSegmentReuse', errors);
+    requireExactKeys(reuse?.oppositeTransformByView, V2_VIEW_ORDER,
+        'bilateralSegmentReuse.oppositeTransformByView', errors);
+    requireExactKeys(reuse?.sourceSideByView, V2_VIEW_ORDER,
+        'bilateralSegmentReuse.sourceSideByView', errors);
+    requireExactKeys(reuse?.bootSourceSideByView, V2_VIEW_ORDER,
+        'bilateralSegmentReuse.bootSourceSideByView', errors);
     if (!sameArray(reuse?.families, ['upperArm', 'forearm', 'thigh', 'shin'])
-        || reuse?.policy !== 'one-declared-source-side-mirrored-to-opposite-side') {
-        errors.push('bilateralSegmentReuse must declare the canonical four bilateral families and mirrored-source policy');
+        || reuse?.policy !== 'per-view-declared-opposite-transform') {
+        errors.push('bilateralSegmentReuse must declare the canonical four bilateral families and per-view opposite transform policy');
     }
     for (const viewName of V2_VIEW_ORDER) {
+        const expectedTransform = ['front3q', 'profile', 'back3q'].includes(viewName)
+            ? 'unreflected-registration' : 'horizontal-mirror';
+        if (reuse?.oppositeTransformByView?.[viewName] !== expectedTransform) {
+            errors.push(`bilateralSegmentReuse.oppositeTransformByView.${viewName} must be "${expectedTransform}"`);
+        }
         if (reuse?.sourceSideByView?.[viewName] !== V2_VIEW_META[viewName].cameraNearSide) {
             errors.push(`bilateralSegmentReuse.sourceSideByView.${viewName} must be "${V2_VIEW_META[viewName].cameraNearSide}"`);
+        }
+        if (!['left', 'right'].includes(reuse?.bootSourceSideByView?.[viewName])) {
+            errors.push(`bilateralSegmentReuse.bootSourceSideByView.${viewName} must declare left or right`);
         }
     }
 
@@ -870,8 +906,16 @@ function validateSourceManifestV2(manifest) {
         for (const field of ['extremeJointAngles', 'artistStrokeAtGameScale', 'broadcastNearMiddleFar']) {
             if (manifest.humanReview?.[field] !== true) errors.push(`humanReview.${field} must be true when approved`);
         }
+    } else if (manifest.humanReview?.status === 'identity-approved') {
+        if (!/^[a-f0-9]{64}$/i.test(manifest.humanReview?.sourceSheetSha256 ?? '')) {
+            errors.push('humanReview.sourceSheetSha256 must be a SHA-256 when identity-approved');
+        }
+        for (const field of ['extremeJointAngles', 'artistStrokeAtGameScale', 'broadcastNearMiddleFar']) {
+            if (manifest.humanReview?.[field] !== false) errors.push(`humanReview.${field} must remain false when identity-approved`);
+        }
+        warnings.push('identity is approved and source pixels are frozen; extreme-angle, game-scale, and broadcast review remain pending');
     } else {
-        errors.push('humanReview.status must be "pending" or "approved"');
+        errors.push('humanReview.status must be "pending", "identity-approved", or "approved"');
     }
 
     return { errors, warnings };

@@ -1,0 +1,476 @@
+{
+  "version": "profile-v2-normalized-v3",
+  "derivedFrom": {
+    "approvedParts": "Sprite sheets/AI Pilot/Lou/v2-canonical/pass-b/candidates/profile-v2/parts",
+    "revisedTorso": "Sprite sheets/AI Pilot/Lou/v2-canonical/pass-b/candidates/profile-v2/sources/profile-torso-trunks-v3-alpha.png"
+  },
+  "manifest": "tools/wrestler-cutter/templates/rig-source-manifest.v2.example.json",
+  "view": "profile",
+  "passAv3Sha256": "ce78aea34da48af54721c6babf74c46c71b29f00810ae26390d9c92cffc3dceb",
+  "registration": "two-point similarity (uniform scale, rotation, translation); no reflection",
+  "cleanupRule": "past a concealed terminal joint anchor, clip to the disk that contains its declared overlap band; preserve the visible thigh hip source contour",
+  "depthOrder": [
+    "rightArm",
+    "pelvisUnderlay",
+    "rightLeg",
+    "head",
+    "torso",
+    "leftLeg",
+    "pelvisMask",
+    "leftArm",
+    "shoulderMask"
+  ],
+  "parts": {
+    "head": {
+      "slot": "head.idle",
+      "file": "head.png",
+      "canvas": {
+        "w": 200,
+        "h": 200
+      },
+      "source": "head.png",
+      "sourceLandmarks": {
+        "crown": {
+          "x": 137.5,
+          "y": 16
+        },
+        "neck": {
+          "x": 78,
+          "y": 206
+        }
+      },
+      "registeredScale": 0.41624,
+      "mirrored": false,
+      "trimmedPx": 125,
+      "strayPx": 0,
+      "softAlphaClearedPx": 109,
+      "terminalRadii": {
+        "neck": 18
+      },
+      "zoneFillPx": 262,
+      "zoneFillByJoint": {
+        "neck": 262
+      },
+      "zoneFillColor": "#ebafbf",
+      "fileSha256": "fd6b6d9a98081eef88e60e3d3dfa25c73252c45a4964e9dd88bddaf1dca51b22",
+      "decodedPixelSha256": "b282860948e672da0c9c6ac487013bd64bdde5e5814b4f4711e4ba052d3535f5"
+    },
+    "torso": {
+      "slot": "torso",
+      "file": "torso.png",
+      "canvas": {
+        "w": 190,
+        "h": 260
+      },
+      "source": "profile-torso-trunks-v3-alpha.png",
+      "sourceLandmarks": {
+        "neck": {
+          "x": 463,
+          "y": 153
+        },
+        "midHip": {
+          "x": 497.5,
+          "y": 1355.18
+        }
+      },
+      "registeredScale": 0.16582,
+      "mirrored": false,
+      "trimmedPx": 0,
+      "strayPx": 0,
+      "softAlphaClearedPx": 115,
+      "terminalRadii": {},
+      "zoneFillPx": 1044,
+      "zoneFillByJoint": {
+        "neck": 421,
+        "leftShoulder": 263,
+        "rightShoulder": 360
+      },
+      "zoneFillColor": "#efaec6",
+      "fileSha256": "fe990204e1a67a702363f46ab33ca5fda3f84c8c2965a7356cf575a6672a31a7",
+      "decodedPixelSha256": "2804902440e7bb8736761900bceb8190cf39fa26a264d09e106f7b81c022c982"
+    },
+    "upperArm": {
+      "slot": "upperArm",
+      "file": "upper-arm.png",
+      "canvas": {
+        "w": 130,
+        "h": 180
+      },
+      "source": "upper-arm-source.png",
+      "sourceLandmarks": {
+        "shoulder": {
+          "x": 84,
+          "y": 82
+        },
+        "elbow": {
+          "x": 66.5,
+          "y": 263
+        }
+      },
+      "registeredScale": 0.43614,
+      "mirrored": false,
+      "trimmedPx": 1038,
+      "strayPx": 0,
+      "softAlphaClearedPx": 128,
+      "terminalRadii": {
+        "shoulder": 24,
+        "elbow": 32
+      },
+      "zoneFillPx": 351,
+      "zoneFillByJoint": {
+        "shoulder": 180,
+        "elbow": 171
+      },
+      "zoneFillColor": "#ebafbf",
+      "fileSha256": "a763a288ebb5c2a61ebb1e639e4a8f4234b8f3f027ec037196c6a26bb35d9580",
+      "decodedPixelSha256": "3ddd1b575c6e156533487a424042d4dae40be03704b9a2245f1fd30eff64fab4"
+    },
+    "nearForearm": {
+      "slot": "forearm",
+      "file": "near-forearm.png",
+      "canvas": {
+        "w": 110,
+        "h": 180
+      },
+      "source": "near-forearm-hand-source.png",
+      "sourceLandmarks": {
+        "elbow": {
+          "x": 66,
+          "y": 81.17
+        },
+        "wrist": {
+          "x": 97.5,
+          "y": 283
+        }
+      },
+      "registeredScale": 0.36387,
+      "mirrored": false,
+      "trimmedPx": 345,
+      "strayPx": 0,
+      "softAlphaClearedPx": 116,
+      "terminalRadii": {
+        "elbow": 26,
+        "wrist": 28
+      },
+      "zoneFillPx": 377,
+      "zoneFillByJoint": {
+        "elbow": 232,
+        "wrist": 145
+      },
+      "zoneFillColor": "#ebafbf",
+      "fileSha256": "13480a7ea46cd1279b3d407ebb7b132502928df628200d9a474732b453de33a5",
+      "decodedPixelSha256": "f6ff6aeb2f566190448fe45649667a05259589e424e93fa676f85943705ecbfa"
+    },
+    "farForearm": {
+      "slot": "forearm",
+      "file": "far-forearm.png",
+      "canvas": {
+        "w": 110,
+        "h": 180
+      },
+      "source": "far-forearm-hand-source.png",
+      "sourceLandmarks": {
+        "elbow": {
+          "x": 67,
+          "y": 75.31
+        },
+        "wrist": {
+          "x": 106.5,
+          "y": 259
+        }
+      },
+      "registeredScale": 0.39561,
+      "mirrored": false,
+      "trimmedPx": 657,
+      "strayPx": 0,
+      "softAlphaClearedPx": 120,
+      "terminalRadii": {
+        "elbow": 26,
+        "wrist": 28
+      },
+      "zoneFillPx": 337,
+      "zoneFillByJoint": {
+        "elbow": 229,
+        "wrist": 108
+      },
+      "zoneFillColor": "#e9adbc",
+      "fileSha256": "d67a00e1e854eabe16c565a43abd36a98dd21796bbc997e10bb03bfd4db95e7f",
+      "decodedPixelSha256": "387decca149f45fe59c1904ea1d89273f4c6ddff71d2e7fcd91b5c9ea4ed6408"
+    },
+    "nearHand": {
+      "slot": "hand.open",
+      "file": "near-hand.png",
+      "canvas": {
+        "w": 96,
+        "h": 96
+      },
+      "source": "near-forearm-hand-source.png",
+      "sourceLandmarks": {
+        "wrist": {
+          "x": 97.5,
+          "y": 283
+        },
+        "wristAxis": {
+          "x": 111.95,
+          "y": 336.03
+        }
+      },
+      "registeredScale": 0.36387,
+      "mirrored": false,
+      "trimmedPx": 2,
+      "strayPx": 0,
+      "softAlphaClearedPx": 39,
+      "terminalRadii": {
+        "wrist": 22
+      },
+      "zoneFillPx": 155,
+      "zoneFillByJoint": {
+        "wrist": 155
+      },
+      "zoneFillColor": "#ebafbf",
+      "fileSha256": "d5ce90b8fe6e9e7ee78c99beead80de1e953b08245f2cf28c3620abbb27c209e",
+      "decodedPixelSha256": "4096f3ddd9f5eca554fbf8c66b1485040edfe3d5ea903392cccc031b76dad370"
+    },
+    "farHand": {
+      "slot": "hand.open",
+      "file": "far-hand.png",
+      "canvas": {
+        "w": 96,
+        "h": 96
+      },
+      "source": "far-forearm-hand-source.png",
+      "sourceLandmarks": {
+        "wrist": {
+          "x": 106.5,
+          "y": 259
+        },
+        "wristAxis": {
+          "x": 120.11,
+          "y": 307.69
+        }
+      },
+      "registeredScale": 0.39561,
+      "mirrored": false,
+      "trimmedPx": 15,
+      "strayPx": 0,
+      "softAlphaClearedPx": 58,
+      "terminalRadii": {
+        "wrist": 22
+      },
+      "zoneFillPx": 117,
+      "zoneFillByJoint": {
+        "wrist": 117
+      },
+      "zoneFillColor": "#e9adbd",
+      "fileSha256": "c6a28c80dd454f4b4d8dd6e4df2143feacc35aee39493b294826aa789481da49",
+      "decodedPixelSha256": "ac4fd9aa6024c9cf473aa872950036c9351b51afb7002fcc96f6bcc9fef2f3e3"
+    },
+    "thigh": {
+      "slot": "thigh",
+      "file": "thigh.png",
+      "canvas": {
+        "w": 150,
+        "h": 180
+      },
+      "source": "thigh.png",
+      "sourceLandmarks": {
+        "hip": {
+          "x": 95.5,
+          "y": 80
+        },
+        "knee": {
+          "x": 78.5,
+          "y": 272.85
+        }
+      },
+      "registeredScale": 0.52294,
+      "mirrored": false,
+      "trimmedPx": 92,
+      "strayPx": 0,
+      "softAlphaClearedPx": 185,
+      "terminalRadii": {
+        "knee": 32
+      },
+      "zoneFillPx": 223,
+      "zoneFillByJoint": {
+        "hip": 0,
+        "knee": 223
+      },
+      "zoneFillColor": "#ebaebe",
+      "fileSha256": "52b2ec822c1922ef5a63dff216452a599ff36eb4f5dd104cca76dfa8bc297cf5",
+      "decodedPixelSha256": "9d03e6513eb7fea3fc5d0cd33a5d8bd8e50992b4d8baefb61c7358fd30df1f2a"
+    },
+    "shin": {
+      "slot": "shin",
+      "file": "shin.png",
+      "canvas": {
+        "w": 130,
+        "h": 210
+      },
+      "source": "shin.png",
+      "sourceLandmarks": {
+        "knee": {
+          "x": 84,
+          "y": 64.98
+        },
+        "ankle": {
+          "x": 69,
+          "y": 265
+        }
+      },
+      "registeredScale": 0.48867,
+      "mirrored": false,
+      "trimmedPx": 113,
+      "strayPx": 0,
+      "softAlphaClearedPx": 132,
+      "terminalRadii": {
+        "knee": 26,
+        "ankle": 32
+      },
+      "zoneFillPx": 468,
+      "zoneFillByJoint": {
+        "knee": 194,
+        "ankle": 274
+      },
+      "zoneFillColor": "#ebb0bf",
+      "fileSha256": "ed1c2c98d763c69abbadc9a39d9b3bbba4cb8134d9c658c4a9dca3775cab516d",
+      "decodedPixelSha256": "0d21e70cce0b7b4528bd84528591334a2c2d0d520c233165880681f8708266b9"
+    },
+    "nearBoot": {
+      "slot": "boot.neutral",
+      "file": "near-boot.png",
+      "canvas": {
+        "w": 120,
+        "h": 120
+      },
+      "source": "near-boot.png",
+      "sourceLandmarks": {
+        "ankle": {
+          "x": 71,
+          "y": 75.19
+        },
+        "sole": {
+          "x": 71,
+          "y": 235
+        }
+      },
+      "registeredScale": 0.33813,
+      "mirrored": false,
+      "trimmedPx": 23,
+      "strayPx": 0,
+      "softAlphaClearedPx": 84,
+      "terminalRadii": {
+        "ankle": 22
+      },
+      "zoneFillPx": 185,
+      "zoneFillByJoint": {
+        "ankle": 185
+      },
+      "zoneFillColor": "#2a319b",
+      "fileSha256": "b74afd69cecae9c63df537085cf4ee3c818683cf5109c683643a287b3ed3c983",
+      "decodedPixelSha256": "3af8bd51689d4ff073837f957ad4ce827e8f3d96724f8ac7bd13f1ea36a41eb7"
+    },
+    "farBoot": {
+      "slot": "boot.neutral",
+      "file": "far-boot.png",
+      "canvas": {
+        "w": 120,
+        "h": 120
+      },
+      "source": "far-boot.png",
+      "sourceLandmarks": {
+        "ankle": {
+          "x": 73.5,
+          "y": 75.19
+        },
+        "sole": {
+          "x": 73.5,
+          "y": 235
+        }
+      },
+      "registeredScale": 0.33813,
+      "mirrored": false,
+      "trimmedPx": 23,
+      "strayPx": 0,
+      "softAlphaClearedPx": 88,
+      "terminalRadii": {
+        "ankle": 22
+      },
+      "zoneFillPx": 187,
+      "zoneFillByJoint": {
+        "ankle": 187
+      },
+      "zoneFillColor": "#29319a",
+      "fileSha256": "95c45ca42934abd8aa7e457fa460fb1e963c498c61f8a33bb364c0a88b355cd8",
+      "decodedPixelSha256": "a80f7463b1815ff647182fd221ecbf9cfa9d04491a12bf3db86a09be0f4a4b92"
+    },
+    "pelvisUnderlay": {
+      "slot": "pelvisUnderlay",
+      "file": "pelvis-underlay.png",
+      "canvas": {
+        "w": 190,
+        "h": 260
+      },
+      "source": "derived: manifest pelvisCoverage bounds filled with the torso trunks colour",
+      "fillColor": "#000000",
+      "mirrored": false,
+      "fileSha256": "9fe1b4321f506be00fb2049e9645bad6cfd8dafd264b00be34364b098a928553",
+      "decodedPixelSha256": "7ef54a90960464039c70a5ac84caebbb47709dab692c7529759cfdef25b2ec27"
+    },
+    "pelvisMask": {
+      "slot": "pelvisMask",
+      "file": "pelvis-mask.png",
+      "canvas": {
+        "w": 190,
+        "h": 260
+      },
+      "source": "intentionally transparent",
+      "mirrored": false,
+      "fileSha256": "97efe87f88aa1e579c37707a5bc82bfa07503e22098bf6601e9167a149594a03",
+      "decodedPixelSha256": "f0d18886ee418d845026cd2ad713329e42ee885ba0ebf621398e169e50991817"
+    },
+    "shoulderMask": {
+      "slot": "shoulderMask",
+      "file": "shoulder-mask.png",
+      "canvas": {
+        "w": 190,
+        "h": 260
+      },
+      "source": "intentionally transparent",
+      "mirrored": false,
+      "fileSha256": "97efe87f88aa1e579c37707a5bc82bfa07503e22098bf6601e9167a149594a03",
+      "decodedPixelSha256": "f0d18886ee418d845026cd2ad713329e42ee885ba0ebf621398e169e50991817"
+    }
+  },
+  "proofs": {
+    "profile-v2n3-neutral-assembly.png": {
+      "fileSha256": "f023b3582f12269afa93fb374c0d2981c6a14ff55b06a532e13c4e135dac4b6f",
+      "decodedPixelSha256": "bd2f15a86106bdf00fb0c3d87177e5ee383bc30b947d95a321e1a447005f6fef"
+    },
+    "profile-v2n3-articulation-proof.png": {
+      "fileSha256": "48e7d215573d3b3d43a64f47a2c79e61373c8b2c721c264e8e40abac5afbf625",
+      "decodedPixelSha256": "83fceb2dbefe180a5d2e798db06edff95362ffa733542a29d0b7c137143ab7a2"
+    },
+    "profile-v2n3-parts-contact-sheet.png": {
+      "fileSha256": "da8ec3e5df553cb5ec5c2617101c18343dfc116f9c811bd52cea2c2dbab06601",
+      "decodedPixelSha256": "749a433e2b8cbd0bac48fdb1dea3c63045b631cbf8619a88fc1b702f746a3179"
+    }
+  },
+  "presentationMaskExposure": {
+    "pelvisMask": {
+      "neutralPx": 3789,
+      "stressPx": 3879,
+      "note": "near-thigh overlap drawn on top of the trunks inside pelvisCoverage"
+    },
+    "shoulderMask": {
+      "neutralPx": 232,
+      "stressPx": 337,
+      "note": "near upper-arm overlap standing proud of the torso above the shoulder"
+    }
+  },
+  "validation": {
+    "zoneCount": 20,
+    "checks": 74,
+    "failures": []
+  }
+}

@@ -57,6 +57,22 @@ try {
         cleanBitmap.close();
         const ctx = tool.canvas().getContext('2d');
         const alphaAt = (x, y) => ctx.getImageData(x, y, 1, 1).data[3];
+        const manifest = tool.manifest();
+        const frontPanel = manifest.sourceSheet.masterPanels.front;
+        const frontMarks = manifest.views.front.masterLandmarks;
+        const frontTorso = layout.occupiedCells.find(cell => cell.view === 'front' && cell.slot === 'torso');
+        const frontUpperArm = layout.occupiedCells.find(cell => cell.view === 'front' && cell.slot === 'upperArm');
+        const anchors = (view, part) => ({
+            ...manifest.parts[part].anchors,
+            ...(manifest.views[view].anchorOverrides?.[part] ?? {}),
+        });
+        const torsoAnchors = anchors('front', 'torso');
+        const upperArmAnchors = anchors('front', 'upperArm');
+        const masterMid = {
+            x: frontPanel.x + (frontMarks.crown.x + frontMarks.neck.x) / 2,
+            y: frontPanel.y + (frontMarks.crown.y + frontMarks.neck.y) / 2,
+        };
+        const cellPoint = (cell, point) => ({ x: cell.exportRect.x + point.x, y: cell.exportRect.y + point.y });
         return {
             canvas: { w: tool.canvas().width, h: tool.canvas().height },
             masters: layout.masterPanels.map(panel => panel.view),
@@ -74,14 +90,12 @@ try {
                     && r.x + r.w <= m.x + m.w && r.y + r.h <= m.y + m.h;
             }),
             guidePixels: {
-                masterBone: alphaAt(448, 314),
-                torsoAxis: alphaAt(288, 1344),
-                neckCore: alphaAt(296, 1334),
-                torsoOverlapBefore: alphaAt(288, 1324),
-                torsoShoulderCoverage: alphaAt(253, 1374),
-                pelvisRoundedTop: alphaAt(608, 1504),
-                pelvisHipSweep: alphaAt(601, 1530),
-                upperArmOverlapBefore: alphaAt(1568, 1370),
+                masterBone: alphaAt(masterMid.x, masterMid.y),
+                torsoAxis: alphaAt(...Object.values(cellPoint(frontTorso, torsoAnchors.spineAxis))),
+                neckCore: alphaAt(...Object.values(cellPoint(frontTorso, torsoAnchors.neck))),
+                torsoShoulderCoverage: alphaAt(...Object.values(cellPoint(frontTorso, torsoAnchors.leftShoulder))),
+                pelvisHipSweep: alphaAt(...Object.values(cellPoint(frontTorso, torsoAnchors.leftHip))),
+                upperArmCore: alphaAt(...Object.values(cellPoint(frontUpperArm, upperArmAnchors.shoulder))),
             },
         };
     });

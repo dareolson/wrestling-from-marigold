@@ -38,7 +38,8 @@ frozen at `ce78aea34da48af54721c6babf74c46c71b29f00810ae26390d9c92cffc3dceb`.
 Landmarks fitted across all five views and gated in code.
 
 **Pass B, profile view — COMPLETE and accepted (2026-08-30).** Committed as
-`b86c93b` on branch `thesz-v2-profile-normalization`, **not pushed**.
+`b86c93b` (profile work) and `19b4da2` (this summary) on branch
+`thesz-v2-profile-normalization`, **pushed 2026-09-03**.
 
 - Approved set: `pass-b/candidates/profile-v2-normalized-v4/` (14 cells, both
   proofs, contact sheet). v1-v3 retained as provenance; all four verify against
@@ -111,7 +112,10 @@ are the renderer, not the art.
 
 Record: addendum 9 of
 `AI_HANDOFF_ENTRIES/2026-08-26-claude-thesz-v2-profile-normalization.md`.
-Nothing is committed.
+
+**Committed and pushed (2026-09-03).** The profile work is `b86c93b` and the
+handoff status summary is `19b4da2`, both on branch
+`thesz-v2-profile-normalization`. The expansion below starts from that branch.
 
 ## Handoff Log
 

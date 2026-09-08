@@ -904,40 +904,74 @@ function renderProofs(manifest, parts, stress = false, trace = null) {
         });
     };
 
-    // Far side (camera-right) first, then the presentation stack, then near.
+    // The drawing sequence is the manifest's depthOrder, and which chains are
+    // drawn at all is the manifest's visibility. Nothing about the order or the
+    // limb count is decided here, so a view that hides a chain or reorders its
+    // layers is a data change.
     //
-    // shoulderMask carries the torso shoulder cores, so it is drawn behind the
-    // figure exactly as pelvisUnderlay is. A coverage layer that carries joint
-    // core fill must back the parts it supports rather than cover them: drawn on
-    // top, its flat fill paints over the collarbone and deltoid strokes and
-    // produces a larger pale lump than the defect it was added to remove.
-    fixed('shoulderMask', master.neck);
-    registered('upperArm', 'shoulder', 'elbow', master.rightShoulder, master.rightElbow);
-    registered('farForearm', 'elbow', 'wrist', master.rightElbow, master.rightWrist);
-    fixed('farHand', master.rightWrist);
-    fixed('pelvisUnderlay', master.neck);
-    registered('thigh', 'hip', 'knee', master.rightHip, master.rightKnee);
-    registered('shin', 'knee', 'ankle', master.rightKnee, master.rightAnkle);
-    fixed('farBoot', master.rightAnkle);
-    fixed('head', master.crown);
-    fixed('torso', master.neck);
+    // Two facts the order encodes. shoulderMask and pelvisUnderlay carry joint
+    // core fill, so they back the figure rather than cover it: drawn on top, the
+    // flat fill paints over the collarbone and deltoid strokes. And no part is
+    // ever flipped — each view reuses one true cut per family, with near/far
+    // selected by cameraNearSide.
+    const view = manifest.views[VIEW];
+    const nearSide = view.cameraNearSide;
+    const visibility = view.visibility;
+    const capitalize = side => side.charAt(0).toUpperCase() + side.slice(1);
 
-    if (!stress) {
-        registered('thigh', 'hip', 'knee', master.leftHip, master.leftKnee);
-        registered('shin', 'knee', 'ankle', master.leftKnee, master.leftAnkle);
-        fixed('nearBoot', master.leftAnkle);
-        fixed('pelvisMask', master.neck);
-        registered('upperArm', 'shoulder', 'elbow', master.leftShoulder, master.leftElbow);
-        registered('nearForearm', 'elbow', 'wrist', master.leftElbow, master.leftWrist);
-        fixed('nearHand', master.leftWrist);
-    } else {
-        const knee = chained('thigh', 'hip', 'knee', master.leftHip, -0.42);
-        const ankle = chained('shin', 'knee', 'ankle', knee, -0.18);
-        chained('nearBoot', 'ankle', 'sole', ankle, -0.18);
-        fixed('pelvisMask', master.neck);
-        const elbow = chained('upperArm', 'shoulder', 'elbow', master.leftShoulder, -1.05);
-        const wrist = chained('nearForearm', 'elbow', 'wrist', elbow, -0.78);
-        chained('nearHand', 'wrist', 'wristAxis', wrist, -0.78);
+    // A proof articulation, not character data: the near chains are bent so the
+    // stress proof shows the asset's own edges under load.
+    const STRESS = { thigh: -0.42, shin: -0.18, boot: -0.18, upperArm: -1.05, forearm: -0.78 };
+
+    const drawChain = (chain, side) => {
+        const near = side === nearSide;
+        const at = name => master[`${side}${capitalize(name)}`];
+        const bend = stress && near;
+        if (chain === 'arm') {
+            if (!bend) {
+                registered('upperArm', 'shoulder', 'elbow', at('shoulder'), at('elbow'));
+                registered(near ? 'nearForearm' : 'farForearm', 'elbow', 'wrist', at('elbow'), at('wrist'));
+                fixed(near ? 'nearHand' : 'farHand', at('wrist'));
+                return;
+            }
+            const elbow = chained('upperArm', 'shoulder', 'elbow', at('shoulder'), STRESS.upperArm);
+            const wrist = chained('nearForearm', 'elbow', 'wrist', elbow, STRESS.forearm);
+            chained('nearHand', 'wrist', 'wristAxis', wrist, STRESS.forearm);
+            return;
+        }
+        if (!bend) {
+            registered('thigh', 'hip', 'knee', at('hip'), at('knee'));
+            registered('shin', 'knee', 'ankle', at('knee'), at('ankle'));
+            fixed(near ? 'nearBoot' : 'farBoot', at('ankle'));
+            return;
+        }
+        const knee = chained('thigh', 'hip', 'knee', at('hip'), STRESS.thigh);
+        const ankle = chained('shin', 'knee', 'ankle', knee, STRESS.shin);
+        chained('nearBoot', 'ankle', 'sole', ankle, STRESS.boot);
+    };
+
+    const LAYERS = {
+        head: () => fixed('head', master.crown),
+        torso: () => fixed('torso', master.neck),
+        pelvisUnderlay: () => fixed('pelvisUnderlay', master.neck),
+        pelvisMask: () => fixed('pelvisMask', master.neck),
+        shoulderMask: () => fixed('shoulderMask', master.neck),
+    };
+
+    for (const entry of view.depthOrder) {
+        const layer = LAYERS[entry];
+        if (layer) {
+            layer();
+            continue;
+        }
+        const match = /^(left|right)(Arm|Leg)$/.exec(entry);
+        if (!match) throw new Error(`${VIEW}.depthOrder has an unknown layer "${entry}"`);
+        const [, side, limb] = match;
+        const drawn = limb === 'Arm' ? visibility.arms : visibility.legs;
+        // A chain the view hides keeps its landmarks and its place in the depth
+        // order; it simply is not drawn in the neutral assembly.
+        if (!drawn.includes(side)) continue;
+        drawChain(limb.toLowerCase(), side);
     }
     if (trace) trace.ids = ids;
     return canvas;
@@ -991,13 +1025,21 @@ function measureUncoveredCores(manifest, parts, stress = false) {
                     if (trace.ids[y * 768 + x] === placement.id) uncoveredPx++;
                 }
             }
+            // A zone that names a coveragePart had its flat fill routed onto
+            // that layer, so what shows here is the part's own artwork, not bare
+            // core paint. Whether the layer carries the fill is asserted by the
+            // coversCore checks in validate(). Only zones whose fill is still in
+            // their own art can expose it, so only those count as bare.
+            const fillRoutedToCoverage = Boolean(zone.coveragePart);
             zones.push({
                 part: placement.part,
                 placement: placement.key,
                 joint: jointName,
                 coveragePart: zone.coveragePart ?? null,
+                fillRoutedToCoverage,
                 corePx,
                 uncoveredPx,
+                barePx: fillRoutedToCoverage ? 0 : uncoveredPx,
                 uncoveredFraction: corePx ? Number((uncoveredPx / corePx).toFixed(4)) : 0,
             });
         }

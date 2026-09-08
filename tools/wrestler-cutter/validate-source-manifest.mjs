@@ -121,6 +121,10 @@ const V2_REQUIRED_COVERAGE = Object.freeze({
         rightShoulder: 'shoulderMask',
     }),
 });
+// Derek's ruling, 2026-09-07: these views present one visible arm and one
+// visible leg in neutral assembly. The rig keeps both logical chains; a second
+// offset limb must not appear merely to satisfy slot completeness.
+const V2_SINGLE_VISIBLE_LIMB_VIEWS = new Set(['profile', 'back3q']);
 const V2_MASTER_LANDMARKS = Object.freeze([
     'crown', 'neck',
     'leftShoulder', 'leftElbow', 'leftWrist',
@@ -765,6 +769,72 @@ function validateSourceManifestV2(manifest) {
         }
         const actualDepth = Array.isArray(view.depthOrder) ? [...view.depthOrder].sort() : [];
         if (!sameArray(actualDepth, depthParts)) errors.push(`${prefix}.depthOrder must contain each anatomical side and presentation layer exactly once`);
+
+        // Visibility, depth order and logical-chain completeness are three
+        // separate questions and are checked separately.
+        //
+        // Depth order covers every chain because the rig always has both sides;
+        // visibility says which of them are drawn in the neutral assembled view.
+        // A hidden chain keeps its landmarks and its place in the depth order so
+        // choreography can reveal it, which is why a view may not answer the
+        // second question by deleting anything the first two require.
+        const visibility = view.visibility;
+        if (!isObject(visibility)) {
+            errors.push(`${prefix}.visibility must declare the arms and legs drawn in neutral assembly`);
+        } else {
+            for (const limb of ['arms', 'legs']) {
+                const sides = visibility[limb];
+                if (!Array.isArray(sides) || !sides.length) {
+                    errors.push(`${prefix}.visibility.${limb} must list at least one side`);
+                    continue;
+                }
+                if (new Set(sides).size !== sides.length) {
+                    errors.push(`${prefix}.visibility.${limb} must not repeat a side`);
+                }
+                for (const side of sides) {
+                    if (side !== 'left' && side !== 'right') {
+                        errors.push(`${prefix}.visibility.${limb} may only contain "left" or "right"`);
+                    }
+                }
+                const expected = V2_SINGLE_VISIBLE_LIMB_VIEWS.has(viewName) ? 1 : 2;
+                if (sides.length !== expected) {
+                    errors.push(`${prefix}.visibility.${limb} must list ${expected} `
+                        + `side${expected === 1 ? '' : 's'} in this view`);
+                }
+            }
+            // The near side is the one the camera sees, so a view that draws a
+            // single limb draws that one.
+            if (V2_SINGLE_VISIBLE_LIMB_VIEWS.has(viewName)) {
+                for (const limb of ['arms', 'legs']) {
+                    if (Array.isArray(visibility[limb]) && visibility[limb].length === 1
+                        && visibility[limb][0] !== meta.cameraNearSide) {
+                        errors.push(`${prefix}.visibility.${limb} must be the near side `
+                            + `"${meta.cameraNearSide}"`);
+                    }
+                }
+            }
+            const hidden = visibility.hiddenChainsRevealableByChoreography;
+            if (!Array.isArray(hidden)) {
+                errors.push(`${prefix}.visibility.hiddenChainsRevealableByChoreography must be an array`);
+            } else {
+                const drawn = new Set([
+                    ...(visibility.arms ?? []).map(side => `${side}Arm`),
+                    ...(visibility.legs ?? []).map(side => `${side}Leg`),
+                ]);
+                const everyChain = ['leftArm', 'rightArm', 'leftLeg', 'rightLeg'];
+                const expectedHidden = everyChain.filter(chain => !drawn.has(chain)).sort();
+                if (!sameArray([...hidden].sort(), expectedHidden)) {
+                    errors.push(`${prefix}.visibility.hiddenChainsRevealableByChoreography must be `
+                        + `exactly the chains this view does not draw (${expectedHidden.join(', ') || 'none'})`);
+                }
+                // Logical-chain completeness: a hidden chain is still rigged.
+                for (const chain of hidden) {
+                    if (!view.depthOrder?.includes(chain)) {
+                        errors.push(`${prefix}.depthOrder must still contain the hidden chain "${chain}"`);
+                    }
+                }
+            }
+        }
         requireExactKeys(view.masterLandmarks, V2_MASTER_LANDMARKS, `${prefix}.masterLandmarks`, errors);
         for (const landmarkName of V2_MASTER_LANDMARKS) {
             const point = view.masterLandmarks?.[landmarkName];

@@ -691,6 +691,17 @@
       "role": "front-and-face-up-source",
       "runtimeStatus": "pending-bodyView",
       "cameraNearSide": "left",
+      "visibility": {
+        "arms": [
+          "left",
+          "right"
+        ],
+        "legs": [
+          "left",
+          "right"
+        ],
+        "hiddenChainsRevealableByChoreography": []
+      },
       "anchorOverrides": {
         "head": {
           "crown": {
@@ -871,6 +882,17 @@
       "role": "front-turn-source",
       "runtimeStatus": "pending-bodyView",
       "cameraNearSide": "left",
+      "visibility": {
+        "arms": [
+          "left",
+          "right"
+        ],
+        "legs": [
+          "left",
+          "right"
+        ],
+        "hiddenChainsRevealableByChoreography": []
+      },
       "anchorOverrides": {
         "head": {
           "crown": {
@@ -1051,6 +1073,18 @@
       "role": "primary-gameplay-source",
       "runtimeStatus": "pending-v2-profile-renderer",
       "cameraNearSide": "left",
+      "visibility": {
+        "arms": [
+          "left"
+        ],
+        "legs": [
+          "left"
+        ],
+        "hiddenChainsRevealableByChoreography": [
+          "rightArm",
+          "rightLeg"
+        ]
+      },
       "anchorOverrides": {
         "head": {
           "crown": {
@@ -1233,6 +1267,18 @@
       "role": "rear-turn-source",
       "runtimeStatus": "pending-bodyView",
       "cameraNearSide": "right",
+      "visibility": {
+        "arms": [
+          "right"
+        ],
+        "legs": [
+          "right"
+        ],
+        "hiddenChainsRevealableByChoreography": [
+          "leftArm",
+          "leftLeg"
+        ]
+      },
       "anchorOverrides": {
         "head": {
           "crown": {
@@ -1415,6 +1461,17 @@
       "role": "back-and-prone-source",
       "runtimeStatus": "pending-bodyView",
       "cameraNearSide": "right",
+      "visibility": {
+        "arms": [
+          "left",
+          "right"
+        ],
+        "legs": [
+          "left",
+          "right"
+        ],
+        "hiddenChainsRevealableByChoreography": []
+      },
       "anchorOverrides": {
         "head": {
           "crown": {

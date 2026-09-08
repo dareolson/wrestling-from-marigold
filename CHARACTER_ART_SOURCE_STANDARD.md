@@ -665,3 +665,52 @@ coordinates into source.
 it replays an approved contract and is now named for that. Running it against an
 unchanged manifest is a no-op that reproduces the file byte for byte, which is
 the check that the contract is complete.
+
+## The per-view visibility contract
+
+Each view declares which limbs it draws in neutral assembly:
+
+```json
+"visibility": {
+  "arms": ["left"],
+  "legs": ["left"],
+  "hiddenChainsRevealableByChoreography": ["rightArm", "rightLeg"]
+}
+```
+
+`profile` and `back3q` present one visible arm and one visible leg, and it must
+be the `cameraNearSide`. `front`, `front3q` and `back` present both. A second
+offset limb in a single-limb view is rejected by name.
+
+Three separate questions, checked independently:
+
+- **Visibility** — which chains are drawn in the neutral assembled view.
+- **Depth order** — the sequence every chain is drawn in, whether or not this
+  view draws it. A hidden chain keeps its place, so choreography can reveal it
+  without a different depth contract.
+- **Logical-chain completeness** — the rig always has both sides. All sixteen
+  master landmarks exist in every view, including the hidden side's.
+
+Hiding a limb is a visibility decision. It is *not* expressed through
+`registrationOnlyLandmarks`, which remains what it was: a narrow exemption for a
+joint disk that cannot be made fully opaque, capped to knees and ankles, and
+still a budget rather than a tool.
+
+The proof renderer consumes `depthOrder` and `visibility` directly. There is no
+view-specific drawing sequence in code, and a test asserts that no side-specific
+landmark is named in the render path. Changing which limbs a view draws, or the
+order its layers stack in, is a manifest edit.
+
+### Reading the uncovered-core report
+
+`parts-index.json` records `uncoveredJointCores` per zone:
+
+- `uncoveredPx` — core pixels where the zone's own part is still the visible
+  surface.
+- `barePx` — the subset of those that are un-outlined core fill. A zone that
+  names a `coveragePart` had its fill routed onto that layer, so what shows is
+  the part's own artwork and `barePx` is zero; whether the layer carries the fill
+  is asserted separately by the `coversCore` checks.
+
+`barePx` is the number to act on. `uncoveredPx` alone will mislead, in the same
+way the arm-overhang measurement it replaced did.

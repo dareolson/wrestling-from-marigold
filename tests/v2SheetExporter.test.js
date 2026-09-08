@@ -66,12 +66,11 @@ function makeValidSheet() {
                 w: part.exportRect.w,
                 h: part.exportRect.h,
             };
-            // shoulderMask is contractually reserved transparent; it has no
-            // required joint pixels. Every other crop is opaque and therefore
-            // passes present and future overlap/sweep checks.
-            if (slot !== 'shoulderMask') {
-                paintRect(rgba, w, rect, [viewIndex * 31, slotIndex * 11, 77]);
-            }
+            // Every crop is opaque, so all overlap/sweep checks pass. This now
+            // includes shoulderMask: the torso shoulder zones name it as their
+            // coveragePart, so it carries their cores and can no longer be
+            // reserved transparent.
+            paintRect(rgba, w, rect, [viewIndex * 31, slotIndex * 11, 77]);
         }
     }
     return { w, h, rgba };

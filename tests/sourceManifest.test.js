@@ -504,12 +504,36 @@ test('v2 hip joint pixels are owned by pelvisUnderlay even though torso owns the
     assert.ok(errors.some(error => error.includes('views.front.pelvisUnderlay.leftHip.before')));
 });
 
-test('v2 rejects a transparent pelvis owner in every view while allowing the reserved shoulder mask to stay empty', () => {
+test('v2 rejects a transparent pelvis owner in every view and requires the shoulder mask to carry its cores', () => {
     const images = syntheticV2Images(v2Example);
+    // The shoulder zones name shoulderMask as their coveragePart, so the layer
+    // has to be opaque over both cores in every view. An empty shoulderMask is
+    // exactly the profile defect: the un-outlined core paint has no owner and
+    // ends up bare in the assembled figure.
     for (const viewName of v2Example.sourceSheet.productionGrid.viewOrder) {
-        assert.ok(images.views[viewName].shoulderMask.alpha.every(value => value === 0));
+        assert.ok(images.views[viewName].shoulderMask.alpha.some(value => value === 255),
+            `${viewName} shoulderMask must carry the shoulder cores`);
     }
     assert.deepEqual(validatePixelCoverage(v2Example, images).errors, []);
+
+    // An exposed shoulder fails, in each view and for each side.
+    for (const viewName of v2Example.sourceSheet.productionGrid.viewOrder) {
+        const exposed = syntheticV2Images(v2Example);
+        exposed.views[viewName].shoulderMask.alpha.fill(0);
+        const { errors } = validatePixelCoverage(v2Example, exposed);
+        assert.ok(errors.some(error => error.includes(`views.${viewName}.shoulderMask`)),
+            `${viewName} with an empty shoulderMask must be rejected`);
+    }
+    const punctured = syntheticV2Images(v2Example);
+    const shoulder = {
+        ...v2Example.parts.torso.anchors,
+        ...v2Example.views.profile.anchorOverrides.torso,
+    }.leftShoulder;
+    const layer = punctured.views.profile.shoulderMask;
+    layer.alpha[shoulder.y * layer.w + shoulder.x] = 0;
+    assert.ok(validatePixelCoverage(v2Example, punctured).errors
+        .some(error => error.includes('views.profile.shoulderMask.leftShoulder')),
+    'a single hole in the covered core must still be rejected');
 
     images.views.profile.pelvisUnderlay.alpha.fill(0);
     let errors = validatePixelCoverage(v2Example, images).errors;

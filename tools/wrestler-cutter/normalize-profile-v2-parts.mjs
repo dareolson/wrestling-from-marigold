@@ -723,28 +723,87 @@ function buildPelvisLayers(manifest, parts, report) {
         mirrored: false,
     };
 
-    // Derek's profile rule: pelvisMask and the reserved shoulderMask stay
-    // transparent unless a stress proof proves a lip is needed.
+    // Derek's profile rule: pelvisMask stays transparent unless a stress proof
+    // proves a lip is needed. It owns no joint zone, so nothing depends on it.
+    //
+    // shoulderMask is different. The torso shoulder zones now name it as their
+    // coveragePart, which keeps their flat core fill out of the torso artwork —
+    // so this layer has to actually carry that fill. Leaving it transparent is
+    // what left the profile shoulder as bare un-outlined core paint.
     for (const [key, slot, file] of [['pelvisMask', 'pelvisMask', 'pelvis-mask.png'],
         ['shoulderMask', 'shoulderMask', 'shoulder-mask.png']]) {
         parts[key] = emptyImage(canvas.w, canvas.h);
         report[key] = { slot, file, canvas: { ...canvas }, source: 'intentionally transparent', mirrored: false };
     }
+
+    buildCoverageLayer(manifest, parts, report, 'shoulderMask');
+}
+
+/**
+ * Fills every joint zone that names `layerKey` as its coveragePart, painting the
+ * zone capsule with colour sampled from the part that owns the zone.
+ *
+ * This is the generalization of what the pelvis underlay already did for the
+ * hips. `fillJointZones` skips any zone with a coveragePart precisely so the
+ * flat core fill lands here instead of in the part's own artwork, which means a
+ * declared coverage layer that stays empty produces bare, un-outlined core paint
+ * in the assembled figure.
+ */
+function buildCoverageLayer(manifest, parts, report, layerKey) {
+    const owned = [];
+    for (const plan of PART_PLAN) {
+        for (const [jointName, zone] of Object.entries(manifest.parts[plan.part].jointZones ?? {})) {
+            if (zone.coveragePart === layerKey) owned.push({ plan, jointName, zone });
+        }
+    }
+    if (!owned.length) return;
+
+    const layer = parts[layerKey];
+    let filled = 0;
+    for (const { plan, jointName, zone } of owned) {
+        const anchors = resolvedAnchors(manifest, plan.part);
+        const axis = orientationAxis(manifest, plan.part);
+        const anchor = anchors[jointName];
+        const inside = {
+            x: anchor.x + axis.x * zone.opaqueCoreRadiusPx * 1.5,
+            y: anchor.y + axis.y * zone.opaqueCoreRadiusPx * 1.5,
+        };
+        const color = medianColor(parts[plan.key], inside, zone.opaqueCoreRadiusPx)
+            ?? medianColor(parts[plan.key], anchor, zone.opaqueCoreRadiusPx + 10)
+            ?? medianColor(parts[plan.key], anchor, zone.opaqueCoreRadiusPx + 26);
+        if (!color) throw new Error(`${layerKey} cannot sample a fill colour for ${plan.key}.${jointName}`);
+        filled += fillZone(layer, capsulePoints(anchor, axis, zone.beforePx, zone.afterPx,
+            zone.opaqueCoreRadiusPx + 1), color);
+        report[layerKey].zoneFillByJoint ??= {};
+        report[layerKey].zoneFillByJoint[`${plan.part}.${jointName}`] = filled;
+    }
+    report[layerKey].source = `derived: joint cores naming ${layerKey} as their coveragePart`;
+    report[layerKey].zoneFillPx = filled;
 }
 
 // ---------------------------------------------------------------- proof render
 
-function blit(source, target, dx, dy) {
+// `owner`, when supplied, is a { ids, id } pair that records which placement
+// last painted each pixel. It is how uncovered joint cores are measured: a core
+// is exposed exactly where the part that owns it is still the visible surface.
+function noteOwner(owner, target, x, y) {
+    if (!owner) return;
+    if (x < 0 || y < 0 || x >= target.w || y >= target.h) return;
+    owner.ids[y * target.w + x] = owner.id;
+}
+
+function blit(source, target, dx, dy, owner = null) {
     for (let y = 0; y < source.h; y++) for (let x = 0; x < source.w; x++) {
         const offset = (y * source.w + x) * 4;
         if (!source.rgba[offset + 3]) continue;
         setPixel(target, dx + x, dy + y, source.rgba.slice(offset, offset + 4));
+        noteOwner(owner, target, dx + x, dy + y);
     }
 }
 
 // Supersampled so the moved-limb proof shows the asset's own edge quality
 // rather than the ragged fringe nearest-neighbour rotation would add.
-function blitRotated(source, target, pivot, targetPivot, angle) {
+function blitRotated(source, target, pivot, targetPivot, angle, owner = null) {
     const cos = Math.cos(angle), sin = Math.sin(angle);
     const radius = Math.ceil(Math.hypot(source.w, source.h));
     const offsets = [1 / 6, 1 / 2, 5 / 6];
@@ -767,6 +826,7 @@ function blitRotated(source, target, pivot, targetPivot, angle) {
             if (alpha < 128 && existing === 255) continue;
             setPixel(target, x, y, [Math.round(r / a), Math.round(g / a), Math.round(b / a),
                 Math.max(alpha, existing)]);
+            noteOwner(owner, target, x, y);
         }
     }
 }
@@ -780,23 +840,36 @@ const PLACEMENT = {
     nearBoot: ['boot', 'ankle'], farBoot: ['boot', 'ankle'],
 };
 
-function renderProofs(manifest, parts, stress = false) {
+function renderProofs(manifest, parts, stress = false, trace = null) {
     const canvas = emptyImage(768, 960);
     const master = manifest.views[VIEW].masterLandmarks;
     const anchorOf = key => {
         const [partName, anchorName] = PLACEMENT[key];
         return resolvedAnchors(manifest, partName)[anchorName];
     };
+    // `trace`, when supplied, records where each placement ended up and which
+    // pixels it still owns after everything above it has been drawn. Nothing
+    // about the rendered image changes; this is measurement scaffolding.
+    const ids = trace ? new Array(canvas.w * canvas.h).fill(null) : null;
+    const owner = key => (trace ? { ids, id: `${key}#${trace.placements.length}` } : null);
+    const record = (key, id, place) => {
+        if (trace) trace.placements.push({ key, id, part: PLACEMENT[key][0], ...place });
+    };
     // No part is ever flipped: profile reuses one true side-view cut per family.
     const fixed = (key, target) => {
         const anchor = anchorOf(key);
-        blit(parts[key], canvas, Math.round(target.x - anchor.x), Math.round(target.y - anchor.y));
+        const own = owner(key);
+        const dx = Math.round(target.x - anchor.x), dy = Math.round(target.y - anchor.y);
+        blit(parts[key], canvas, dx, dy, own);
+        record(key, own?.id, { kind: 'fixed', offset: { x: dx, y: dy }, angle: 0 });
     };
     const chained = (key, fromName, toName, target, angle) => {
         const [partName] = PLACEMENT[key];
         const anchors = resolvedAnchors(manifest, partName);
         const from = anchors[fromName], to = anchors[toName];
-        blitRotated(parts[key], canvas, from, target, angle);
+        const own = owner(key);
+        blitRotated(parts[key], canvas, from, target, angle, own);
+        record(key, own?.id, { kind: 'chained', pivot: from, targetPivot: target, angle });
         const delta = subtract(to, from);
         return {
             x: target.x + delta.x * Math.cos(angle) - delta.y * Math.sin(angle),
@@ -809,10 +882,21 @@ function renderProofs(manifest, parts, stress = false) {
         const local = subtract(anchors[toName], anchors[fromName]);
         const target = subtract(targetTo, targetFrom);
         const angle = Math.atan2(target.y, target.x) - Math.atan2(local.y, local.x);
-        blitRotated(parts[key], canvas, anchors[fromName], targetFrom, angle);
+        const own = owner(key);
+        blitRotated(parts[key], canvas, anchors[fromName], targetFrom, angle, own);
+        record(key, own?.id, {
+            kind: 'registered', pivot: anchors[fromName], targetPivot: targetFrom, angle,
+        });
     };
 
     // Far side (camera-right) first, then the presentation stack, then near.
+    //
+    // shoulderMask carries the torso shoulder cores, so it is drawn behind the
+    // figure exactly as pelvisUnderlay is. A coverage layer that carries joint
+    // core fill must back the parts it supports rather than cover them: drawn on
+    // top, its flat fill paints over the collarbone and deltoid strokes and
+    // produces a larger pale lump than the defect it was added to remove.
+    fixed('shoulderMask', master.neck);
     registered('upperArm', 'shoulder', 'elbow', master.rightShoulder, master.rightElbow);
     registered('farForearm', 'elbow', 'wrist', master.rightElbow, master.rightWrist);
     fixed('farHand', master.rightWrist);
@@ -840,14 +924,75 @@ function renderProofs(manifest, parts, stress = false) {
         const wrist = chained('nearForearm', 'elbow', 'wrist', elbow, -0.78);
         chained('nearHand', 'wrist', 'wristAxis', wrist, -0.78);
     }
-    fixed('shoulderMask', master.neck);
+    if (trace) trace.ids = ids;
     return canvas;
 }
 
-// Derek's rule is that the profile pelvisMask stays transparent unless a stress
-// proof shows a lip is genuinely needed. Both presentation masks exist to hide
-// overlap that the near limb legally carries, so this measures exactly how much
-// of that overlap actually lands in view, in the neutral pose and under load.
+// Measures how much un-outlined joint-core paint is the visible surface of the
+// assembled figure.
+//
+// A `continuous-fill-no-edge` core is deliberately un-outlined because something
+// is meant to cover it. Whether anything actually does is a property of the
+// assembled image, not of any single part, so it is measured here rather than
+// asserted: render the figure while recording which placement last painted each
+// pixel, then for every joint zone count the pixels inside its opaque core where
+// the part that owns the zone is still on top.
+//
+// This replaces an earlier measurement that counted near-limb pixels falling
+// *outside* the torso silhouette. That is the complement of the quantity that
+// matters — it reports how far a limb overhangs, not how much bare core shows —
+// and it is why an exposed profile shoulder read as 232px and passed review.
+function measureUncoveredCores(manifest, parts, stress = false) {
+    const trace = { placements: [], ids: null };
+    renderProofs(manifest, parts, stress, trace);
+
+    const rotate = (point, pivot, targetPivot, angle) => {
+        const cos = Math.cos(angle), sin = Math.sin(angle);
+        const dx = point.x - pivot.x, dy = point.y - pivot.y;
+        return {
+            x: targetPivot.x + cos * dx - sin * dy,
+            y: targetPivot.y + sin * dx + cos * dy,
+        };
+    };
+
+    const zones = [];
+    for (const placement of trace.placements) {
+        const declared = manifest.parts[placement.part]?.jointZones ?? {};
+        const anchors = resolvedAnchors(manifest, placement.part);
+        for (const [jointName, zone] of Object.entries(declared)) {
+            const anchor = anchors[jointName];
+            if (!anchor || !Number.isFinite(zone.opaqueCoreRadiusPx)) continue;
+            const centre = placement.kind === 'fixed'
+                ? { x: anchor.x + placement.offset.x, y: anchor.y + placement.offset.y }
+                : rotate(anchor, placement.pivot, placement.targetPivot, placement.angle);
+
+            const radius = zone.opaqueCoreRadiusPx;
+            let corePx = 0, uncoveredPx = 0;
+            for (let y = Math.floor(centre.y - radius); y <= Math.ceil(centre.y + radius); y++) {
+                for (let x = Math.floor(centre.x - radius); x <= Math.ceil(centre.x + radius); x++) {
+                    if (x < 0 || y < 0 || x >= 768 || y >= 960) continue;
+                    if (Math.hypot(x - centre.x, y - centre.y) > radius) continue;
+                    corePx++;
+                    if (trace.ids[y * 768 + x] === placement.id) uncoveredPx++;
+                }
+            }
+            zones.push({
+                part: placement.part,
+                placement: placement.key,
+                joint: jointName,
+                coveragePart: zone.coveragePart ?? null,
+                corePx,
+                uncoveredPx,
+                uncoveredFraction: corePx ? Number((uncoveredPx / corePx).toFixed(4)) : 0,
+            });
+        }
+    }
+    return zones;
+}
+
+// Retained alongside the core measurement because the pelvis lip decision was
+// made against it: how much overlap the near limb carries on top of the trunks,
+// in the neutral pose and under load.
 function measureMaskExposure(manifest, parts) {
     const master = manifest.views[VIEW].masterLandmarks;
     const torsoAnchors = resolvedAnchors(manifest, 'torso');
@@ -945,14 +1090,23 @@ export function validate(manifest, parts) {
             zoneCount++;
         }
     }
-    const torsoAnchors = resolvedAnchors(manifest, 'torso');
-    const torsoAxis = orientationAxis(manifest, 'torso');
-    for (const jointName of ['leftHip', 'rightHip']) {
-        const zone = manifest.parts.torso.jointZones[jointName];
-        const bad = zonePoints(torsoAnchors[jointName], torsoAxis, zone)
-            .filter(point => alphaAt(parts.pelvisUnderlay, point.x, point.y) !== 255);
-        record(`pelvisUnderlay.${jointName}.opaqueZone`, bad.length === 0, `${bad.length} non-opaque points`);
-        zoneCount++;
+    // A zone that names a coveragePart has had its core fill routed onto that
+    // layer instead of into its own artwork, so the layer must actually be
+    // opaque there. An empty coverage layer means bare un-outlined core paint in
+    // the assembled figure — the profile shoulder defect. This replaces a check
+    // that was hardcoded to the two hips and pelvisUnderlay.
+    for (const plan of PART_PLAN) {
+        const anchors = resolvedAnchors(manifest, plan.part);
+        const axis = orientationAxis(manifest, plan.part);
+        for (const [jointName, zone] of Object.entries(manifest.parts[plan.part].jointZones ?? {})) {
+            if (!zone.coveragePart) continue;
+            const layer = parts[zone.coveragePart];
+            const bad = !layer ? [{ x: -1, y: -1 }] : zonePoints(anchors[jointName], axis, zone)
+                .filter(point => alphaAt(layer, point.x, point.y) !== 255);
+            record(`${zone.coveragePart}.${plan.part}.${jointName}.coversCore`, bad.length === 0,
+                bad.length ? `${bad.length} non-opaque points in the declared coverage layer` : '');
+            zoneCount++;
+        }
     }
     const coverage = manifest.parts.torso.pelvisCoverage;
     let uncovered = 0;
@@ -968,12 +1122,13 @@ export function validate(manifest, parts) {
     }
     record('pelvisUnderlay.coverageComplete', uncovered === 0, `${uncovered} transparent coverage pixels`);
 
+    // pelvisMask owns no joint zone, so Derek's rule still holds: it stays
+    // transparent unless a stress proof proves a lip is needed. shoulderMask now
+    // owns the torso shoulder cores, so the opposite is required of it — the
+    // coversCore checks above assert it carries them.
     record('pelvisMask.transparent',
         !parts.pelvisMask.rgba.some((value, index) => index % 4 === 3 && value !== 0),
         'profile pelvisMask must stay transparent');
-    record('shoulderMask.transparent',
-        !parts.shoulderMask.rgba.some((value, index) => index % 4 === 3 && value !== 0),
-        'profile shoulderMask must stay transparent');
     record('torso.solidSilhouette', countTransparentHoles(parts.torso) === 0,
         `${countTransparentHoles(parts.torso)} enclosed transparent pixels`);
 
@@ -1074,6 +1229,10 @@ async function main() {
         parts: report,
         proofs: proofHashes,
         presentationMaskExposure: measureMaskExposure(manifest, parts),
+        uncoveredJointCores: {
+            neutral: measureUncoveredCores(manifest, parts, false),
+            stress: measureUncoveredCores(manifest, parts, true),
+        },
         validation: { zoneCount: result.zoneCount, checks: result.checks.length, failures: result.failures },
     };
     await writeFile(path.join(OUT_DIR, 'parts-index.json'), `${JSON.stringify(index, null, 2)}\n`);

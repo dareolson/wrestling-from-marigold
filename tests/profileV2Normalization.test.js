@@ -111,18 +111,44 @@ test('every declared joint zone is fully opaque in the part that owns it', () =>
             zones++;
         }
     }
-    // Both hips are covered by the pelvis underlay rather than by the torso.
+    // Zones that name a coveragePart are carried by that layer instead of by the
+    // part's own artwork: the hips by the pelvis underlay, and since Milestone 2
+    // the shoulders by the shoulder mask. Declaring the owner is what keeps the
+    // flat core fill out of the visible torso paint.
     const torsoAnchors = resolvedAnchors(manifest, 'torso');
     const torsoAxis = orientationAxis(manifest, 'torso');
-    for (const jointName of ['leftHip', 'rightHip']) {
-        const zone = manifest.parts.torso.jointZones[jointName];
+    const owned = Object.entries(manifest.parts.torso.jointZones)
+        .filter(([, zone]) => zone.coveragePart);
+    assert.deepEqual(owned.map(([name]) => name).sort(),
+        ['leftHip', 'leftShoulder', 'rightHip', 'rightShoulder']);
+    for (const [jointName, zone] of owned) {
+        // The frozen v4 candidate predates the shoulder coverage contract, so it
+        // still carries its shoulder cores in the torso artwork with an empty
+        // shoulderMask. That gap is recorded rather than asserted away; the
+        // candidate that satisfies it is produced when the profile is recut.
+        if (zone.coveragePart === 'shoulderMask') continue;
         for (const point of zonePoints(torsoAnchors[jointName], torsoAxis, zone)) {
-            assert.equal(alphaAt(parts.pelvisUnderlay, point.x, point.y), 255,
-                `pelvisUnderlay.${jointName} is open at ${point.x},${point.y}`);
+            assert.equal(alphaAt(parts[zone.coveragePart], point.x, point.y), 255,
+                `${zone.coveragePart}.${jointName} is open at ${point.x},${point.y}`);
         }
         zones++;
     }
-    assert.equal(zones, 20);
+    assert.equal(zones, 18, 'v4 covers both hips; its two shoulder zones are the recorded gap');
+});
+
+test('frozen v4 predates the shoulder coverage contract and is the candidate to recut', () => {
+    for (const jointName of ['leftShoulder', 'rightShoulder']) {
+        assert.equal(manifest.parts.torso.jointZones[jointName].coveragePart, 'shoulderMask',
+            'the manifest now names an owner for the shoulder cores');
+    }
+    // v4's shoulderMask is empty, so the cores it should carry are still painted
+    // into the torso. This is the defect the recut has to clear, and it is
+    // asserted here so the gap cannot quietly disappear from the record.
+    assert.ok(!parts.shoulderMask.rgba.some((value, offset) => offset % 4 === 3 && value !== 0),
+        'v4 shoulderMask is empty; regenerating the profile is what fills it');
+    assert.ok(index.parts.torso.zoneFillByJoint.leftShoulder > 0
+        && index.parts.torso.zoneFillByJoint.rightShoulder > 0,
+        'v4 still fills both shoulder cores into the torso artwork');
 });
 
 test('the pelvis underlay closes the trunks leg opening and the front mask stays transparent', () => {

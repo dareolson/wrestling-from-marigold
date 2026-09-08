@@ -108,6 +108,19 @@ const V2_PART_CONTRACT = Object.freeze({
         vectors: ['soleNormal'],
     },
 });
+// Joint zones whose coverage owner the standard fixes. The hips have always
+// been carried by the pelvis underlay. The shoulders are added because their
+// cores are otherwise filled into the torso artwork itself, where no layer can
+// cover them — the defect that made the profile shoulder read as a pale
+// un-outlined lump. Any other zone may name an owner; these must.
+const V2_REQUIRED_COVERAGE = Object.freeze({
+    torso: Object.freeze({
+        leftHip: 'pelvisUnderlay',
+        rightHip: 'pelvisUnderlay',
+        leftShoulder: 'shoulderMask',
+        rightShoulder: 'shoulderMask',
+    }),
+});
 const V2_MASTER_LANDMARKS = Object.freeze([
     'crown', 'neck',
     'leftShoulder', 'leftElbow', 'leftWrist',
@@ -574,12 +587,25 @@ function validateSourceManifestV2(manifest) {
                 errors.push(`${zonePrefix}.opaqueCoreRadiusPx must fit inside both overlap sides`);
             }
             if (zone.surface !== 'continuous-fill-no-edge') errors.push(`${zonePrefix}.surface must be "continuous-fill-no-edge"`);
-            const expectedCoveragePart = partName === 'torso' && ['leftHip', 'rightHip'].includes(jointName)
-                ? 'pelvisUnderlay' : null;
+            // A continuous-fill-no-edge core is un-outlined paint that only reads
+            // correctly because something covers it. `coveragePart` names the
+            // layer that owns that job, and declaring it moves the flat core
+            // fill off the part's own artwork and onto the coverage layer.
+            //
+            // This used to be permitted only on the split-pelvis hips. That
+            // restriction is why the profile shoulder cores were filled straight
+            // into torso.png, where nothing could cover them: the manifest had
+            // no way to say who owned them. Any zone may now name an owner, and
+            // the zones whose owner the standard fixes are required to name it.
+            const expectedCoveragePart = V2_REQUIRED_COVERAGE[partName]?.[jointName] ?? null;
             if (expectedCoveragePart && zone.coveragePart !== expectedCoveragePart) {
                 errors.push(`${zonePrefix}.coveragePart must be "${expectedCoveragePart}"`);
-            } else if (!expectedCoveragePart && zone.coveragePart !== undefined) {
-                errors.push(`${zonePrefix}.coveragePart is only valid for split-pelvis hip coverage`);
+            } else if (zone.coveragePart !== undefined) {
+                if (!isObject(manifest.parts?.[zone.coveragePart])) {
+                    errors.push(`${zonePrefix}.coveragePart "${zone.coveragePart}" is not a declared part`);
+                } else if (zone.coveragePart === partName) {
+                    errors.push(`${zonePrefix}.coveragePart must not be the part that owns the zone`);
+                }
             }
             const coverageCanvas = manifest.parts?.[zone.coveragePart]?.canvas ?? part.canvas;
             const axis = v2OrientationAxis(manifest, null, partName);

@@ -261,12 +261,14 @@
           "beforePx": 16,
           "afterPx": 16,
           "opaqueCoreRadiusPx": 12,
+          "coveragePart": "shoulderMask",
           "surface": "continuous-fill-no-edge"
         },
         "rightShoulder": {
           "beforePx": 16,
           "afterPx": 16,
           "opaqueCoreRadiusPx": 12,
+          "coveragePart": "shoulderMask",
           "surface": "continuous-fill-no-edge"
         },
         "leftHip": {
@@ -840,14 +842,14 @@
       },
       "depthOrder": [
         "rightArm",
+        "shoulderMask",
         "pelvisUnderlay",
         "rightLeg",
         "head",
         "torso",
         "leftLeg",
         "pelvisMask",
-        "leftArm",
-        "shoulderMask"
+        "leftArm"
       ],
       "registrationOnlyLandmarks": []
     },
@@ -1020,14 +1022,14 @@
       },
       "depthOrder": [
         "rightArm",
+        "shoulderMask",
         "pelvisUnderlay",
         "rightLeg",
         "head",
         "torso",
         "leftLeg",
         "pelvisMask",
-        "leftArm",
-        "shoulderMask"
+        "leftArm"
       ],
       "registrationOnlyLandmarks": []
     },
@@ -1200,14 +1202,14 @@
       },
       "depthOrder": [
         "rightArm",
+        "shoulderMask",
         "pelvisUnderlay",
         "rightLeg",
         "head",
         "torso",
         "leftLeg",
         "pelvisMask",
-        "leftArm",
-        "shoulderMask"
+        "leftArm"
       ],
       "registrationOnlyLandmarks": [
         "leftAnkle"
@@ -1382,14 +1384,14 @@
       },
       "depthOrder": [
         "leftArm",
+        "shoulderMask",
         "pelvisUnderlay",
         "leftLeg",
         "head",
         "torso",
         "rightLeg",
         "pelvisMask",
-        "rightArm",
-        "shoulderMask"
+        "rightArm"
       ],
       "registrationOnlyLandmarks": [
         "rightKnee"
@@ -1564,14 +1566,14 @@
       },
       "depthOrder": [
         "leftArm",
+        "shoulderMask",
         "pelvisUnderlay",
         "leftLeg",
         "head",
         "torso",
         "rightLeg",
         "pelvisMask",
-        "rightArm",
-        "shoulderMask"
+        "rightArm"
       ],
       "registrationOnlyLandmarks": []
     }

@@ -116,9 +116,14 @@
       "profile": {
         "sourceParts": "pass-b/candidates/profile-v2/parts",
         "revisedTorso": "pass-b/candidates/profile-v2/sources/profile-torso-trunks-v3-alpha.png",
-        "output": "pass-b/candidates/profile-v2-normalized-v4",
-        "proofPrefix": "profile-v2n4"
+        "output": "pass-b/candidates/profile-v2-normalized-v5",
+        "proofPrefix": "profile-v2n5"
       }
+    },
+    "supersededCandidates": {
+      "profile": [
+        "pass-b/candidates/profile-v2-normalized-v4"
+      ]
     }
   },
   "markerLayer": {

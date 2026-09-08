@@ -125,6 +125,27 @@ const V2_REQUIRED_COVERAGE = Object.freeze({
 // visible leg in neutral assembly. The rig keeps both logical chains; a second
 // offset limb must not appear merely to satisfy slot completeness.
 const V2_SINGLE_VISIBLE_LIMB_VIEWS = new Set(['profile', 'back3q']);
+
+// Which logical chain a joint zone belongs to. Coverage exists to hide core
+// paint that would otherwise show, so a zone belonging to a chain the view does
+// not draw needs no coverage: filling it puts a flat capsule where nothing
+// covers it, which in a single-limb view stands proud of the torso as a hard
+// pale block. Joints not listed here belong to whichever chain places them.
+const V2_ZONE_CHAIN = Object.freeze({
+    leftShoulder: 'leftArm', rightShoulder: 'rightArm',
+    leftHip: 'leftLeg', rightHip: 'rightLeg',
+});
+
+/** True when the view draws the chain this joint zone belongs to. */
+export function v2ZoneIsDrawn(manifest, viewName, jointName) {
+    const chain = V2_ZONE_CHAIN[jointName];
+    if (!chain) return true;
+    const visibility = manifest.views?.[viewName]?.visibility;
+    if (!isObject(visibility)) return true;
+    const [, side, limb] = /^(left|right)(Arm|Leg)$/.exec(chain);
+    const drawn = limb === 'Arm' ? visibility.arms : visibility.legs;
+    return Array.isArray(drawn) ? drawn.includes(side) : true;
+}
 const V2_MASTER_LANDMARKS = Object.freeze([
     'crown', 'neck',
     'leftShoulder', 'leftElbow', 'leftWrist',
@@ -1335,6 +1356,8 @@ function validateV2PixelCoverage(manifest, images, alphaThreshold = 254) {
                 const anchor = anchors[jointName];
                 const radius = zone.opaqueCoreRadiusPx;
                 if (!finitePoint(anchor) || !Number.isFinite(radius) || !axis) continue;
+                // A chain this view does not draw needs no coverage anywhere.
+                if (!v2ZoneIsDrawn(manifest, viewName, jointName)) continue;
                 const coverageSlot = zone.coveragePart ?? slot;
                 const coverageImage = viewImages[coverageSlot];
                 const jointPrefix = `views.${viewName}.${coverageSlot}.${jointName}`;

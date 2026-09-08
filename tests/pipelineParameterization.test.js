@@ -50,12 +50,15 @@ test('a second character resolves every path from its own manifest', () => {
     }
 });
 
-test('the first character still resolves to its frozen candidate', () => {
+test('the first character resolves to its current candidate, with v4 kept as provenance', () => {
     const config = resolveProduction(manifest, { view: 'profile' });
     assert.equal(config.characterId, 'lou_thesz_v2');
-    assert.ok(config.output.endsWith('profile-v2-normalized-v4'));
-    assert.equal(config.proofPrefix, 'profile-v2n4');
+    assert.ok(config.output.endsWith('profile-v2-normalized-v5'));
+    assert.equal(config.proofPrefix, 'profile-v2n5');
     assert.deepEqual(declaredViews(manifest), ['profile']);
+    // Superseded candidates are recorded, never overwritten.
+    assert.deepEqual(manifest.production.supersededCandidates.profile,
+        ['pass-b/candidates/profile-v2-normalized-v4']);
 });
 
 test('flags override the manifest, and a view with no declared paths is refused', () => {

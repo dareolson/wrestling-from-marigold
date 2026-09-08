@@ -20,7 +20,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { decodeRgbaPng } from './validate-source-manifest.mjs';
+import { decodeRgbaPng, v2ZoneIsDrawn } from './validate-source-manifest.mjs';
 import { encodeRgbaPng } from './export-v2-sheet.mjs';
 import {
     DEFAULT_MANIFEST, REPO_ROOT, parseFlags, resolveProduction,
@@ -726,6 +726,7 @@ function buildPelvisLayers(manifest, parts, report) {
     }
     const axis = orientationAxis(manifest, 'torso');
     for (const jointName of ['leftHip', 'rightHip']) {
+        if (!v2ZoneIsDrawn(manifest, VIEW, jointName)) continue;
         const zone = manifest.parts.torso.jointZones[jointName];
         fillZone(underlay, capsulePoints(anchors[jointName], axis,
             zone.beforePx, zone.afterPx, zone.opaqueCoreRadiusPx + 1), trunks);
@@ -768,7 +769,11 @@ function buildCoverageLayer(manifest, parts, report, layerKey) {
     const owned = [];
     for (const plan of PART_PLAN) {
         for (const [jointName, zone] of Object.entries(manifest.parts[plan.part].jointZones ?? {})) {
-            if (zone.coveragePart === layerKey) owned.push({ plan, jointName, zone });
+            // Only chains this view draws. A hidden chain's coverage capsule has
+            // nothing to hide behind and stands proud of the torso.
+            if (zone.coveragePart === layerKey && v2ZoneIsDrawn(manifest, VIEW, jointName)) {
+                owned.push({ plan, jointName, zone });
+            }
         }
     }
     if (!owned.length) return;
@@ -1096,6 +1101,71 @@ function measureMaskExposure(manifest, parts) {
     };
 }
 
+/**
+ * Box-filters an assembled proof down to each declared game height and lays the
+ * results out side by side against the full-resolution figure.
+ *
+ * The whole point of the assembled-silhouette gate is judging the figure at the
+ * size it is actually played at, so the proof has to exist at those sizes. The
+ * figure is measured by its own alpha bounds rather than the canvas, so the
+ * declared heights mean wrestler heights.
+ */
+function renderScaleProof(source, heights) {
+    // Tight alpha bounds of the assembled figure.
+    let minX = source.w, minY = source.h, maxX = -1, maxY = -1;
+    for (let y = 0; y < source.h; y++) {
+        for (let x = 0; x < source.w; x++) {
+            if (!source.rgba[(y * source.w + x) * 4 + 3]) continue;
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+        }
+    }
+    if (maxY < minY) return emptyImage(1, 1);
+    const figure = { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+
+    const scaled = heights.map(height => {
+        const scale = height / figure.h;
+        const w = Math.max(1, Math.round(figure.w * scale));
+        const target = emptyImage(w, height);
+        // Area average over the source footprint of each destination pixel.
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < w; x++) {
+                const x0 = figure.x + (x / scale), x1 = figure.x + ((x + 1) / scale);
+                const y0 = figure.y + (y / scale), y1 = figure.y + ((y + 1) / scale);
+                let r = 0, g = 0, b = 0, a = 0, n = 0;
+                for (let sy = Math.floor(y0); sy < Math.max(Math.ceil(y1), Math.floor(y0) + 1); sy++) {
+                    for (let sx = Math.floor(x0); sx < Math.max(Math.ceil(x1), Math.floor(x0) + 1); sx++) {
+                        if (sx < 0 || sy < 0 || sx >= source.w || sy >= source.h) continue;
+                        const offset = (sy * source.w + sx) * 4;
+                        const alpha = source.rgba[offset + 3] / 255;
+                        r += source.rgba[offset] * alpha;
+                        g += source.rgba[offset + 1] * alpha;
+                        b += source.rgba[offset + 2] * alpha;
+                        a += alpha;
+                        n++;
+                    }
+                }
+                if (!n || a < 1e-6) continue;
+                setPixel(target, x, y, [Math.round(r / a), Math.round(g / a), Math.round(b / a),
+                    Math.round((a / n) * 255)]);
+            }
+        }
+        return target;
+    });
+
+    const gap = 24;
+    const width = scaled.reduce((total, image) => total + image.w + gap, gap);
+    const canvas = emptyImage(width, Math.max(...heights) + gap * 2);
+    let x = gap;
+    for (const image of scaled) {
+        blit(image, canvas, x, canvas.h - gap - image.h);
+        x += image.w + gap;
+    }
+    return canvas;
+}
+
 function renderContactSheet(parts) {
     const columns = [['head', 'torso', 'pelvisUnderlay'], ['upperArm', 'nearForearm', 'farForearm'],
         ['nearHand', 'farHand', 'thigh'], ['shin', 'nearBoot', 'farBoot']];
@@ -1157,6 +1227,7 @@ export function validate(manifest, parts) {
         const axis = orientationAxis(manifest, plan.part);
         for (const [jointName, zone] of Object.entries(manifest.parts[plan.part].jointZones ?? {})) {
             if (!zone.coveragePart) continue;
+            if (!v2ZoneIsDrawn(manifest, VIEW, jointName)) continue;
             const layer = parts[zone.coveragePart];
             const bad = !layer ? [{ x: -1, y: -1 }] : zonePoints(anchors[jointName], axis, zone)
                 .filter(point => alphaAt(layer, point.x, point.y) !== 255);
@@ -1258,10 +1329,16 @@ async function main() {
         entry.decodedPixelSha256 = decodedPixelSha256(parts[key]);
         written.push(`parts/${entry.file}`);
     }
+    const neutral = renderProofs(manifest, parts, false);
+    const articulated = renderProofs(manifest, parts, true);
+    const gameHeights = manifest.artContract.targetBodyHeightsPx;
     const proofs = {
-        [`${CONFIG.proofPrefix}-neutral-assembly.png`]: renderProofs(manifest, parts, false),
-        [`${CONFIG.proofPrefix}-articulation-proof.png`]: renderProofs(manifest, parts, true),
+        [`${CONFIG.proofPrefix}-neutral-assembly.png`]: neutral,
+        [`${CONFIG.proofPrefix}-articulation-proof.png`]: articulated,
         [`${CONFIG.proofPrefix}-parts-contact-sheet.png`]: renderContactSheet(parts),
+        // The assembled-silhouette gate is judged at the sizes the game plays at.
+        [`${CONFIG.proofPrefix}-neutral-game-scales.png`]: renderScaleProof(neutral, gameHeights),
+        [`${CONFIG.proofPrefix}-articulated-game-scales.png`]: renderScaleProof(articulated, gameHeights),
     };
     const proofHashes = {};
     for (const [name, image] of Object.entries(proofs)) {

@@ -15,6 +15,7 @@ const manifest = JSON.parse(await readFile(
     new URL('../tools/wrestler-cutter/templates/rig-source-manifest.v2.example.json', import.meta.url),
     'utf8',
 ));
+const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const index = JSON.parse(await readFile(path.join(OUTPUT_DIR, 'parts-index.json'), 'utf8'));
 
 const load = async file => decodeRgbaPng(await readFile(path.join(OUTPUT_DIR, 'parts', file)));
@@ -121,34 +122,52 @@ test('every declared joint zone is fully opaque in the part that owns it', () =>
         .filter(([, zone]) => zone.coveragePart);
     assert.deepEqual(owned.map(([name]) => name).sort(),
         ['leftHip', 'leftShoulder', 'rightHip', 'rightShoulder']);
+    const visibility = manifest.views.profile.visibility;
     for (const [jointName, zone] of owned) {
-        // The frozen v4 candidate predates the shoulder coverage contract, so it
-        // still carries its shoulder cores in the torso artwork with an empty
-        // shoulderMask. That gap is recorded rather than asserted away; the
-        // candidate that satisfies it is produced when the profile is recut.
-        if (zone.coveragePart === 'shoulderMask') continue;
+        // Only the chains this view draws need coverage. Profile draws one arm
+        // and one leg, so the hidden side's cores are neither filled into the
+        // torso nor carried by a layer: nothing is drawn there at all.
+        const drawn = /Shoulder$/.test(jointName)
+            ? visibility.arms.includes(jointName.replace('Shoulder', ''))
+            : visibility.legs.includes(jointName.replace('Hip', ''));
+        if (!drawn) continue;
         for (const point of zonePoints(torsoAnchors[jointName], torsoAxis, zone)) {
             assert.equal(alphaAt(parts[zone.coveragePart], point.x, point.y), 255,
                 `${zone.coveragePart}.${jointName} is open at ${point.x},${point.y}`);
         }
         zones++;
     }
-    assert.equal(zones, 18, 'v4 covers both hips; its two shoulder zones are the recorded gap');
+    assert.equal(zones, 18, 'sixteen part zones plus the drawn hip and shoulder');
 });
 
-test('frozen v4 predates the shoulder coverage contract and is the candidate to recut', () => {
+test('the current candidate satisfies the shoulder coverage contract', () => {
     for (const jointName of ['leftShoulder', 'rightShoulder']) {
         assert.equal(manifest.parts.torso.jointZones[jointName].coveragePart, 'shoulderMask',
-            'the manifest now names an owner for the shoulder cores');
+            'the manifest names an owner for the shoulder cores');
     }
-    // v4's shoulderMask is empty, so the cores it should carry are still painted
-    // into the torso. This is the defect the recut has to clear, and it is
-    // asserted here so the gap cannot quietly disappear from the record.
-    assert.ok(!parts.shoulderMask.rgba.some((value, offset) => offset % 4 === 3 && value !== 0),
-        'v4 shoulderMask is empty; regenerating the profile is what fills it');
-    assert.ok(index.parts.torso.zoneFillByJoint.leftShoulder > 0
-        && index.parts.torso.zoneFillByJoint.rightShoulder > 0,
-        'v4 still fills both shoulder cores into the torso artwork');
+    // The recut routed the drawn shoulder's core onto shoulderMask, so it is no
+    // longer painted into the visible torso artwork.
+    assert.equal(index.parts.torso.zoneFillByJoint.leftShoulder, undefined,
+        'the drawn shoulder core is no longer filled into the torso');
+    assert.equal(index.parts.torso.zoneFillByJoint.rightShoulder, undefined,
+        'the hidden shoulder core is not filled into the torso either');
+    assert.ok(index.parts.shoulderMask.zoneFillPx > 0,
+        'shoulderMask carries the core it owns');
+});
+
+test('superseded v4 is preserved unchanged as provenance', async () => {
+    // v4 is the candidate Derek accepted in August. It predates the coverage
+    // contract and the single-visible-limb ruling, and it is kept exactly as it
+    // was so the production history stays reproducible.
+    const superseded = manifest.production.supersededCandidates.profile;
+    assert.deepEqual(superseded, ['pass-b/candidates/profile-v2-normalized-v4']);
+
+    const v4 = path.resolve(ROOT, manifest.production.characterRoot, superseded[0]);
+    const v4Index = JSON.parse(await readFile(path.join(v4, 'parts-index.json'), 'utf8'));
+    assert.equal(v4Index.version, 'profile-v2-normalized-v4');
+    assert.ok(v4Index.parts.torso.zoneFillByJoint.leftShoulder > 0
+        && v4Index.parts.torso.zoneFillByJoint.rightShoulder > 0,
+    'v4 still records both shoulder cores filled into the torso artwork');
 });
 
 test('the pelvis underlay closes the trunks leg opening and the front mask stays transparent', () => {
@@ -160,10 +179,14 @@ test('the pelvis underlay closes the trunks leg opening and the front mask stays
         if ((px - cx) ** 2 + (py - cy) ** 2 > radius ** 2) continue;
         assert.equal(alphaAt(parts.pelvisUnderlay, px, py), 255, `underlay open at ${px},${py}`);
     }
-    for (const key of ['pelvisMask', 'shoulderMask']) {
-        assert.ok(!parts[key].rgba.some((value, offset) => offset % 4 === 3 && value !== 0),
-            `${key} must stay transparent in profile`);
-    }
+    // pelvisMask owns no joint zone, so Derek's rule still holds and it stays
+    // transparent. shoulderMask owns the torso shoulder cores and must carry the
+    // one this view draws; the hidden side's is not filled, because a coverage
+    // capsule with nothing in front of it stands proud of the torso.
+    assert.ok(!parts.pelvisMask.rgba.some((value, offset) => offset % 4 === 3 && value !== 0),
+        'pelvisMask must stay transparent in profile');
+    assert.ok(parts.shoulderMask.rgba.some((value, offset) => offset % 4 === 3 && value === 255),
+        'shoulderMask must carry the drawn shoulder core');
 });
 
 test('the regenerated torso and trunks are one solid silhouette with no transparent opening', async () => {

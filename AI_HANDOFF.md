@@ -37,7 +37,8 @@ you can read in thirty seconds. Keep it current when the state changes.
 frozen at `ce78aea34da48af54721c6babf74c46c71b29f00810ae26390d9c92cffc3dceb`.
 Landmarks fitted across all five views and gated in code.
 
-**Pass B, profile view — COMPLETE and accepted (2026-08-30).** Committed as
+**Pass B, profile view — mechanically complete, visual treatment reopened
+(2026-09-07).** Committed as
 `b86c93b` (profile work) and `19b4da2` (this summary) on branch
 `thesz-v2-profile-normalization`, **pushed 2026-09-03**.
 
@@ -64,11 +65,23 @@ fits.**
    77%. **That list is a budget, not a tool — a third entry is evidence of a fit
    problem, not a fix for one.**
 
-**Next: expand the cutter to front, front3q, back3q and back.** Two things to
-carry in. Re-check each view's ankle/sole ownership with the continuity test
-before trusting its fit — that test is what caught profile and back3q, and both
-looked fine until it ran; front/front3q/back measured 100% but not since the v4
-landmark changes. And do not widen the exemption list.
+**Next: coverage-schema fix, then parameterization, then silhouette
+correction.**
+Derek clarified that the August acceptance meant it was sensible to stop the
+weeks of iteration and move forward; it was not a declaration that profile v4
+looked great or should become the visual template. Profile and back3q require a
+single-visible-limb treatment: one visible arm and one visible leg in neutral
+assembly. Preserve v4 as mechanically certified provenance and use the gates in
+`CHARACTER_PIPELINE_REVIEW.md`. Do not expand the current bilateral presentation
+to the remaining views.
+
+But do not start with the composition revision. Claude's independent review
+(appended to that file 2026-09-07) proved by suppression diagnostic that the
+profile's worst visible defect — the pale un-outlined shoulder mass — is the
+torso's own joint-zone core left uncovered because the manifest schema forbids
+`coveragePart` anywhere except the split-pelvis hips, and that the
+single-visible-limb recut does not touch it. Fix the coverage schema and
+parameterize the producer stages first; see the active assignment below.
 
 **Parked, by Derek's instruction.** The proof renderer's non-rotated `blit`
 overwrites destination alpha and punches translucent 1px seams into proof images
@@ -81,7 +94,56 @@ manifest's `runtimePrerequisites` are still `pending`, so none of this renders
 in a match. A rig-tuner preview was built and reverted for exactly that reason
 (2026-08-26); do not rebuild it until those prerequisites are real.
 
-## Active assignment — expand the cutter to the remaining four views (Codex)
+## Active assignment — evaluate and correct the character pipeline (Codex)
+
+**Superseding direction, 2026-09-07.** Pause the remaining-view cutter
+expansion. Derek's August acceptance was a decision to end an overlong iteration
+loop, not visual approval of profile v4 as the reusable quality bar. Profile and
+back3q must use one visible arm and one visible leg in neutral assembly. Keep
+both anatomical chains in the logical rig, but do not create a second offset
+limb merely to satisfy bilateral completeness.
+
+The method review is in `CHARACTER_PIPELINE_REVIEW.md`. **Claude's independent
+findings are now appended to it (2026-09-07) and change the order of work.** Read
+that section before starting; the short version is below.
+
+**Start with the coverage schema, not the recut.** A suppression diagnostic
+proved the pale un-outlined mass at the profile's shoulder is the torso's own
+`continuous-fill-no-edge` joint-zone core, not the far arm and not bad master
+art. Suppressing the far arm changes 338px at x399-429; suppressing far arm and
+far leg changes only x383-459; the defect is at x319-376 and survives removing
+the near arm too. `torso.jointZones.leftHip/rightHip` declare
+`coveragePart: pelvisUnderlay`, but the shoulders cannot —
+`validate-source-manifest.mjs:581-582` rejects `coveragePart` on anything except
+split-pelvis hips, so `shoulderMask` has no way to own the zone and is left
+transparent. `measureMaskExposure`'s `pastShoulder` predicate measures arm
+pixels *outside* the torso (232px), the complement of the real quantity, which
+is why it read as acceptable.
+
+**Consequence: the single-visible-limb recut will not fix that shoulder.** Do
+not begin with the composition revision expecting it to. Fix the schema first —
+allow `coveragePart` on any joint zone, bind the shoulder zones to
+`shoulderMask`, add the invariant that a `continuous-fill-no-edge` zone must
+name a non-empty coverage owner where it is exposed in neutral assembly, and
+repair `measureMaskExposure` to measure uncovered core rather than limb
+overhang. This is character-independent and every later step inherits it.
+
+**Then parameterize before recutting.** Every producer stage hardcodes this
+character's paths at module scope, including `const VIEW = 'profile'` in
+`normalize-profile-v2-parts.mjs`; no npm script takes a character argument; and
+`fit-v2-landmarks.mjs` is not a fitter but a replay of a frozen 80-point `const`
+with `characterId` hardcoded. Derek's goal is eight more wrestlers after this
+one, so the recut should be the pipeline's first parameterized run rather than
+another one-off. Master landmarks move into per-character manifest data with
+Thesz's values unchanged.
+
+Only then settle the per-view visibility contract and obtain whole-figure
+approval at actual game scales before relandmarking or expanding other views.
+Normalized v4 remains frozen mechanical evidence rather than the final visual
+template — and note its `shoulderMask`/`pelvisMask` are empty files and its
+shoulder cores render exposed, so it is not a complete part set.
+
+### Prior expansion brief (superseded)
 
 **Read this first (2026-08-30).** Derek accepted the structural proportion. **The
 profile view is complete and approved** — `profile-v2-normalized-v4` is the
@@ -118,6 +180,76 @@ handoff status summary is `19b4da2`, both on branch
 `thesz-v2-profile-normalization`. The expansion below starts from that branch.
 
 ## Handoff Log
+
+### 2026-09-07 — Claude (independent pipeline review; shoulder defect root-caused)
+
+Derek's stated goal for this work: after Thesz, add up to eight more wrestlers
+with relative ease. I reviewed Codex's method against that, and appended the
+findings to `CHARACTER_PIPELINE_REVIEW.md`.
+
+Codex's six-item analysis is accurate and its gates, status vocabulary and
+iteration limit should be kept. What it missed is that all its gates are human
+judgment and none of them touch the tooling. Measured against nine wrestlers the
+tooling is the larger problem: every producer stage hardcodes this character's
+paths at module scope (`normalize-profile-v2-parts.mjs:28-36`, including
+`const VIEW = 'profile'`), no npm script accepts a character argument, and
+`fit-v2-landmarks.mjs` is not a fitter — it replays a frozen 80-point `const FIT`
+and hardcodes `characterId`. The validators do parse argv, so the checking half
+is general and the producing half is nine forks waiting to happen. The manifest
+also holds 226 hand-authored xy pairs per character with two competing authoring
+paths, since the anchor editor already exports manifest JSON.
+
+Root cause found for the profile's worst visible defect. A suppression
+diagnostic (scratch copy of the normalizer, output redirected outside the repo,
+v4 first reproduced pixel-identical) showed the pale un-outlined shoulder mass
+is the torso's own `continuous-fill-no-edge` joint-zone core. Far arm: 338px at
+x399-429, essentially hidden behind the torso. Far arm and leg: changes confined
+to x383-459. The defect is at x319-376 and persists with the near arm removed.
+`torso.jointZones.leftHip/rightHip` declare `coveragePart: pelvisUnderlay`;
+the shoulders cannot, because `validate-source-manifest.mjs:581-582` rejects
+`coveragePart` outside split-pelvis hips. `shoulderMask` therefore has no way to
+own the zone and is left transparent, and `measureMaskExposure`'s `pastShoulder`
+predicate measures arm pixels outside the torso (232px) — the complement of the
+real quantity — which is why it read as acceptable.
+
+**The single-visible-limb recut will not fix that shoulder.** Order of work is
+now: coverage schema, then producer parameterization, then the composition
+revision. Other findings: `depthOrder` is declared and validated but no renderer
+consumes it; `registrationOnlyLandmarks` is the existing "present but not
+visible" mechanism, capped to knees/ankles, and should stay a narrow exemption
+budget with a separate per-view `visibility` block added for the new contract;
+the gate model implies 100+ approvals across nine wrestlers with no human budget
+stated; `shoulder-mask.png` and `pelvis-mask.png` are empty files that passed
+every structural gate; and `SHA256SUMS.txt` does not reproduce at all because
+the PNG encoder is not byte-deterministic, though decoded pixels do.
+
+No art, manifest, landmark, normalizer, or runtime files were changed. Tests
+381/381. The diagnostic's scratch copy was deleted.
+
+### 2026-09-07 — Derek/Codex (pipeline review; profile and back3q visual rule corrected)
+
+Derek clarified that profile v4 did not look great; accepting it was a practical
+decision after weeks of back-and-forth, made so the broader effort could keep
+moving. It must not be cited as the visual quality bar for future characters.
+The goal remains a process that makes new characters easy to add.
+
+New view ruling: profile and back3q use a single-visible-limb neutral treatment,
+with one visible arm and one visible leg. The logical rig can retain anatomical
+left/right chains, and choreography may reveal a hidden side, but neutral
+assembly must not show duplicate offset limbs for contract completeness.
+
+Codex audited the method and recorded the result in
+`CHARACTER_PIPELINE_REVIEW.md`. The useful mechanical work remains: cohesive
+masters, explicit anchors, fixed density, hashes, and separate structural
+checks. The delays came from a wrong bilateral silhouette rule, ambiguous
+approval semantics, approving parts before the assembled figure at game scale,
+using mechanical counts as a quality proxy, attempting too much future
+architecture in the first character, and having no iteration stop rule.
+
+Remaining-view cutter expansion is paused. Next is to merge Claude's independent
+review into the method, revise profile and back3q composition before touching
+landmarks, and approve whole-figure proofs at 265/209/154 px. No art, manifest,
+landmark, normalizer, or runtime files changed in this review.
 
 ### 2026-08-30 — Derek (accepts the zero-slack leg chain; profile view complete)
 

@@ -29,9 +29,11 @@ thigh    → shin    → boot
 pelvisUnderlay / pelvisMask / shoulderMask
 ```
 
-The engine may still mirror/reuse those assets for near/far sides. Hands and
-boots become their own socketed parts so `open`, `fist`, `grip`, `flexed`, and
-`toePoint` variants do not require regenerating an entire forearm or shin.
+The engine may still mirror/reuse those assets for near/far sides, but logical
+bilateral completeness does not require both sides to be visible in every
+neutral view. Hands and boots become their own socketed parts so `open`, `fist`,
+`grip`, `flexed`, and `toePoint` variants do not require regenerating an entire
+forearm or shin.
 
 The runtime articulation path exists behind the existing six-part renderer. Parts that
 declare `binding.proximal` and `binding.distal` use exact two-anchor placement;
@@ -298,12 +300,16 @@ The manifest maps every anatomical slot into the renderer explicitly. Shared
 paint is allowed through an explicit reuse declaration; a missing view is never
 filled by silent fallback.
 
-The base 19-cell/view sheet deliberately stores one bilateral upper-arm,
+The base 19-cell/view sheet deliberately stores one reusable upper-arm,
 forearm, thigh, and shin painting per view. Its manifest names the unobstructed
-source side and explicitly mirrors/reuses that paint for the opposite logical
-side. A wrestler that truly needs asymmetric left/right segment art uses a
-versioned extension sheet; the base sheet does not pretend one cell preserves
-two different projected limb paintings.
+source side and declares how that paint serves the logical sides. Reuse does
+not imply simultaneous visibility: a view may intentionally hide a logical arm
+or leg to preserve its approved silhouette. In particular, profile and back3q
+use a single-visible-limb neutral treatment—one visible arm and one visible
+leg—unless an approved move deliberately reveals a hidden side. A wrestler that
+truly needs asymmetric left/right segment art uses a versioned extension sheet;
+the base sheet does not pretend one cell preserves two different projected limb
+paintings.
 
 A future `bodyView` clip channel will select/transition these skins. `profile`
 is the first planned production runtime target, but remains
@@ -421,12 +427,16 @@ must carry the whole chain. Apply the analogous test at hip/knee/ankle.
 
 1. Start from the locked template in
    `tools/wrestler-cutter/templates/CANONICAL_CHARACTER_SHEET_V2.md`.
-2. Generate the five cohesive neutral masters together. Approve identity,
-   costume, anatomy, source facing, 530 px height, and line hierarchy before
-   producing parts.
+2. Record the per-view visibility contract, then generate the five cohesive
+   neutral masters together. Approve identity, costume, anatomy, source facing,
+   visible limb count, major occlusions, 530 px height, and line hierarchy
+   before producing parts. Profile and back3q require one visible arm and one
+   visible leg in the neutral silhouette.
 3. Place registered anatomical landmarks and center/axis/core guides manually;
    do not rely on the image model to invent exact coordinates.
-4. Derive the fixed production cells from those approved masters at 1:1.
+4. Build a temporary assembled-silhouette pilot for the primary view and approve
+   it at 265, 209, and 154 px before exhaustive landmark tuning. Then derive the
+   fixed production cells from those approved masters at 1:1.
    Inpaint only hidden overlap material; never independently regenerate or
    auto-resize a base limb.
 5. Create visible expression/hand/boot replacements in a separate
@@ -455,6 +465,10 @@ must carry the whole chain. Apply the analogous test at hip/knee/ankle.
 
 - The exact 4096 x 4096 clean/guide sheets, five registered masters, 95 required
   cells, fixed export rectangles, and 530 px master heights exist.
+- Each view has an approved visibility/occlusion contract. Profile and back3q
+  present one visible arm and one visible leg in their neutral silhouettes;
+  hidden logical chains do not create duplicate offset limbs merely to satisfy
+  slot completeness.
 - All semantic base parts, coverage layers, required replacements, structural
   anchors, orientation frames, and semantic contact frames exist in every view.
 - Every adjoining neck/shoulder/elbow/wrist/hip/knee/ankle pair contains its

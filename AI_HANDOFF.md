@@ -65,23 +65,20 @@ fits.**
    77%. **That list is a budget, not a tool — a third entry is evidence of a fit
    problem, not a fix for one.**
 
-**Next: coverage-schema fix, then parameterization, then silhouette
-correction.**
-Derek clarified that the August acceptance meant it was sensible to stop the
-weeks of iteration and move forward; it was not a declaration that profile v4
-looked great or should become the visual template. Profile and back3q require a
-single-visible-limb treatment: one visible arm and one visible leg in neutral
-assembly. Preserve v4 as mechanically certified provenance and use the gates in
-`CHARACTER_PIPELINE_REVIEW.md`. Do not expand the current bilateral presentation
-to the remaining views.
+**Next: Derek's visual approval of profile candidate v5.** Milestones 1-5 of
+Derek's eight-milestone plan are implemented and committed on branch
+`thesz-v2-profile-normalization` (unpushed, seven commits `33f0477`..`7e677ed`).
+The pipeline is now data-driven and a second character builds through it with no
+code change. `profile-v2-normalized-v5` exists as a candidate and is
+**mechanically certified, awaiting visual approval** — nothing in it is
+visually approved, runtime certified, or production ready.
 
-But do not start with the composition revision. Claude's independent review
-(appended to that file 2026-09-07) proved by suppression diagnostic that the
-profile's worst visible defect — the pale un-outlined shoulder mass — is the
-torso's own joint-zone core left uncovered because the manifest schema forbids
-`coveragePart` anywhere except the split-pelvis hips, and that the
-single-visible-limb recut does not touch it. Fix the coverage schema and
-parameterize the producer stages first; see the active assignment below.
+The one open art question is the soft pale un-outlined mass over the deltoid. It
+is a flat inpainted disc inside the approved source torso
+(`profile-torso-trunks-v3-alpha.png`), not something the pipeline adds. Clearing
+it is a source repaint. Three mechanical corrections have already been aimed at
+that area, so per the iteration limit the next thing to test is the source
+composition, not a fourth local fix.
 
 **Parked, by Derek's instruction.** The proof renderer's non-rotated `blit`
 overwrites destination alpha and punches translucent 1px seams into proof images
@@ -94,54 +91,80 @@ manifest's `runtimePrerequisites` are still `pending`, so none of this renders
 in a match. A rig-tuner preview was built and reverted for exactly that reason
 (2026-08-26); do not rebuild it until those prerequisites are real.
 
-## Active assignment — evaluate and correct the character pipeline (Codex)
+## Active assignment — review Milestones 1-5 (Codex)
 
-**Superseding direction, 2026-09-07.** Pause the remaining-view cutter
-expansion. Derek's August acceptance was a decision to end an overlong iteration
-loop, not visual approval of profile v4 as the reusable quality bar. Profile and
-back3q must use one visible arm and one visible leg in neutral assembly. Keep
-both anatomical chains in the logical rig, but do not create a second offset
-limb merely to satisfy bilateral completeness.
+**2026-09-07.** Claude implemented Milestones 1-5 of Derek's eight-milestone
+plan. Nothing is pushed. Review it before Milestone 6 starts; Derek's visual
+approval of candidate v5 is a separate decision and is not yours to make.
 
-The method review is in `CHARACTER_PIPELINE_REVIEW.md`. **Claude's independent
-findings are now appended to it (2026-09-07) and change the order of work.** Read
-that section before starting; the short version is below.
+Seven commits on `thesz-v2-profile-normalization`:
 
-**Start with the coverage schema, not the recut.** A suppression diagnostic
-proved the pale un-outlined mass at the profile's shoulder is the torso's own
-`continuous-fill-no-edge` joint-zone core, not the far arm and not bad master
-art. Suppressing the far arm changes 338px at x399-429; suppressing far arm and
-far leg changes only x383-459; the defect is at x319-376 and survives removing
-the near arm too. `torso.jointZones.leftHip/rightHip` declare
-`coveragePart: pelvisUnderlay`, but the shoulders cannot —
-`validate-source-manifest.mjs:581-582` rejects `coveragePart` on anything except
-split-pelvis hips, so `shoulderMask` has no way to own the zone and is left
-transparent. `measureMaskExposure`'s `pastShoulder` predicate measures arm
-pixels *outside* the torso (232px), the complement of the real quantity, which
-is why it read as acceptable.
+| commit | milestone |
+| --- | --- |
+| `33f0477` | pipeline review recorded, order of work corrected |
+| `6ebd785` | M1 — pin the toolchain, define artifact identity |
+| `b99e13c` | M2 — generalize joint coverage, measure uncovered cores |
+| `1e5ba1a` | M3 — parameterize the producers |
+| `f7ad352` | M4 — encode the view contract as data |
+| `6454b81` | M5 — recut the profile as candidate v5 |
+| `7e677ed` | runtime migration notes |
 
-**Consequence: the single-visible-limb recut will not fix that shoulder.** Do
-not begin with the composition revision expecting it to. Fix the schema first —
-allow `coveragePart` on any joint zone, bind the shoulder zones to
-`shoulderMask`, add the invariant that a `continuous-fill-no-edge` zone must
-name a non-empty coverage owner where it is exposed in neutral assembly, and
-repair `measureMaskExposure` to measure uncovered core rather than limb
-overhang. This is character-independent and every later step inherits it.
+**Verify these claims rather than taking them.** Each is checkable:
 
-**Then parameterize before recutting.** Every producer stage hardcodes this
-character's paths at module scope, including `const VIEW = 'profile'` in
-`normalize-profile-v2-parts.mjs`; no npm script takes a character argument; and
-`fit-v2-landmarks.mjs` is not a fitter but a replay of a frozen 80-point `const`
-with `characterId` hardcoded. Derek's goal is eight more wrestlers after this
-one, so the recut should be the pipeline's first parameterized run rather than
-another one-off. Master landmarks move into per-character manifest data with
-Thesz's values unchanged.
+- `npm test` is 410/410 on Node 22.23.1. The default `node` on PATH is a stale
+  v19 symlink; production commands now refuse to run on it.
+- `npm run art:build` builds and verifies one character/view end to end.
+- A second character with its own id, root, sheet and output builds through
+  `art:build` with no code change. A test rejects any character path or name
+  appearing in a production stage.
+- `apply-landmark-contract` replayed against the unchanged manifest reproduces
+  it byte for byte, which is the evidence the landmark table moved out of source
+  losslessly.
+- `profile-v2-normalized-v4` is untouched and still verifies against its
+  recorded identity.
 
-Only then settle the per-view visibility contract and obtain whole-figure
-approval at actual game scales before relandmarking or expanding other views.
-Normalized v4 remains frozen mechanical evidence rather than the final visual
-template — and note its `shoulderMask`/`pelvisMask` are empty files and its
-shoulder cores render exposed, so it is not a complete part set.
+**Three corrections Claude made to its own earlier review, worth checking:**
+
+1. Finding 8 first blamed the PNG encoder for non-determinism. The encoder is
+   deterministic; the divergence came from running under Node 19 instead of the
+   pinned 22. That is why Milestone 1 enforces the version.
+2. Finding 4 attributed the pale shoulder to `fillJointZones` and the coverage
+   schema. The schema was genuinely broken and fixing it removed 623px of flat
+   fill from the visible torso — but the mass is mostly a flat inpainted disc in
+   the approved source art, and the coverage fix does not clear it.
+3. The uncovered-core metric initially reported 428px of bare shoulder that M2
+   had already routed onto a coverage layer. Zones whose fill is routed now
+   report `barePx` 0. Read `barePx`, not `uncoveredPx`.
+
+**Where to look hardest.** In rough order of risk:
+
+- `renderProofs` in `normalize-profile-v2-parts.mjs` now walks
+  `views.<view>.depthOrder` and gates chains on `views.<view>.visibility`. The
+  old hardcoded sequence is gone. Confirm the profile still composites in the
+  order the manifest declares and that near/far selection follows
+  `cameraNearSide`.
+- Coverage is built only for chains a view draws. This was found because
+  combining M2 and M4 produced a *new* defect: with the far arm no longer drawn,
+  the far shoulder's coverage capsule stood proud of the torso as a hard pale
+  block. Check the gate is applied consistently in the builder, the normalizer's
+  checks and the sheet-level coverage validation.
+- `shoulderMask` moved from last to beside `pelvisUnderlay` in every view's
+  `depthOrder`. A coverage layer carrying core fill must back the parts it
+  supports; drawn on top it paints over the collarbone and deltoid strokes.
+- Seven superseded one-off scripts are listed by name as legacy in
+  `tests/pipelineParameterization.test.js` rather than parameterized. Nothing
+  runs them. Confirm that is the right call.
+
+**Not done, and why.** back3q is not recut: no back3q source part set exists,
+only `profile-v2`. Cutting one needs artwork, not configuration, and is
+Milestone 6. The back3q view contract is already declared and validated.
+
+**Do not** start Milestone 6, repaint the source torso, or push the branch
+without Derek. The runtime migration notes at the end of
+`CHARACTER_PIPELINE_REVIEW.md` are direction for after acceptance, not work to
+begin now.
+
+### Prior direction (superseded 2026-09-07 by the milestone work)
 
 ### Prior expansion brief (superseded)
 
@@ -180,6 +203,65 @@ handoff status summary is `19b4da2`, both on branch
 `thesz-v2-profile-normalization`. The expansion below starts from that branch.
 
 ## Handoff Log
+
+### 2026-09-07 — Claude (Milestones 1-5 implemented; v5 awaiting Derek's approval)
+
+Derek set an eight-milestone plan toward a pipeline where a new wrestler needs
+source art and manifest data rather than new JavaScript, reaching production on
+no more than three planned visual approvals. Milestones 1-5 are done and
+committed on `thesz-v2-profile-normalization` (`33f0477`..`7e677ed`, unpushed).
+
+**M1, toolchain and identity.** The default `node` on this machine is a stale
+yarn symlink to v19.8.1 while `.nvmrc` pins 22. Running off-pin produces artwork
+whose decoded pixels are correct and whose PNG bytes all differ, so every
+recorded checksum fails while the tool still prints that all checks passed.
+Thirteen production commands now refuse to run off-pin. `decodedPixelSha256` is
+defined as the portable artifact identity and `fileSha256` as an
+environment-specific check; `art:verify-candidate` checks both. This corrected
+the review's Finding 8, which had blamed the encoder — it is deterministic.
+
+**M2, joint coverage.** `coveragePart` works on any joint zone; the schema
+previously rejected it outside the split-pelvis hips, which is why the shoulder
+cores were filled into `torso.png` where nothing could own them. The torso
+shoulders now name `shoulderMask`, removing 623px of flat un-outlined fill from
+visible torso art. `measureUncoveredCores` replaces the arm-overhang metric,
+which measured the complement of the real quantity. Ten of forty-one zones were
+uncovered in neutral assembly, so this was never shoulder-only.
+
+**M3, parameterization.** Every producer pinned this character's paths at module
+scope. Paths and the frozen landmark table moved into the manifest as
+`production` and `landmarkContract`; replaying the contract reproduces the
+manifest byte for byte. `fit-v2-landmarks` became `apply-landmark-contract`,
+which is what it always did. New `npm run art:build` runs the four stages. A
+second character builds end to end with no code change, and a test rejects
+character paths appearing in a production stage.
+
+**M4, view contract.** Each view declares the arms and legs it draws.
+`renderProofs` walks `depthOrder` and gates chains on `visibility`; the
+hardcoded sequence is gone, verified by a data-only experiment that changed the
+render from 31 to 41 placements. Visibility, depth order and logical-chain
+completeness are validated independently, and `registrationOnlyLandmarks` stays
+the narrow knee/ankle exemption it was.
+
+**M5, the recut.** `profile-v2-normalized-v5` renders the single-visible-limb
+silhouette with shoulder coverage routed correctly, plus game-scale proofs at
+265/209/154px. v4 is untouched and recorded as superseded.
+
+**Two things worth carrying forward.** Combining the M2 and M4 fixes produced a
+new defect — with the far arm no longer drawn, the far shoulder's coverage
+capsule stood proud of the torso — so coverage is now built only for chains a
+view draws. And the pale deltoid mass is a flat inpainted disc in the approved
+source torso, not a pipeline artifact; the coverage fix does not clear it, and
+per the iteration limit the next thing to test is the source composition rather
+than a fourth local correction.
+
+back3q is not recut: no back3q source part set exists. Its view contract is
+declared and validated. Runtime is untouched; all seven `runtimePrerequisites`
+remain pending. Migration notes for the Spine-inspired direction are recorded at
+the end of `CHARACTER_PIPELINE_REVIEW.md` as direction for after acceptance.
+
+410/410 on Node 22.23.1. Candidate v5 is mechanically certified and awaiting
+Derek's visual approval, which is Milestone 5's exit gate.
 
 ### 2026-09-07 — Claude (independent pipeline review; shoulder defect root-caused)
 

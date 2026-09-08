@@ -5,60 +5,11 @@ import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { parseFlags, resolveProduction } from './production-config.mjs';
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_MANIFEST = path.join(SCRIPT_DIR, 'templates/rig-source-manifest.v2.example.json');
-const DEFAULT_SHEET = path.resolve(SCRIPT_DIR,
-    '../../Sprite sheets/AI Pilot/Lou/v2-canonical/pass-a/candidates/thesz-v2-pass-a-v3.png');
-const APPROVED_SHA256 = 'ce78aea34da48af54721c6babf74c46c71b29f00810ae26390d9c92cffc3dceb';
-
-// Human-selected landmarks, mechanically verified against the frozen v3 alpha.
-// This command replays an approved landmark contract; it does not alter pixels.
-const FIT = Object.freeze({
-    front: {
-        crown: [384, 190], neck: [372, 272],
-        leftArm: [[326, 303], [307, 380], [285, 451]], rightArm: [[442, 303], [461, 380], [483, 451]],
-        leftLeg: [[365, 471], [336, 568], [334, 666]], rightLeg: [[405, 471], [434, 568], [436, 666]],
-        soles: [[313, 720], [458, 720]],
-    },
-    front3q: {
-        crown: [372, 190], neck: [384, 272],
-        leftArm: [[356, 304], [337, 381], [344, 455]], rightArm: [[448, 308], [467, 385], [460, 459]],
-        leftLeg: [[385, 471], [356, 568], [354, 666]], rightLeg: [[409, 471], [438, 568], [440, 666]],
-        soles: [[323, 708], [421, 720]],
-    },
-    profile: {
-        crown: [403, 190], neck: [375, 268],
-        leftArm: [[350, 299], [343, 378], [350, 452]], rightArm: [[400, 299], [407, 378], [400, 452]],
-        leftLeg: [[378, 467], [371, 568], [369, 666]], rightLeg: [[398, 467], [391, 568], [393, 666]],
-        soles: [[385, 720], [441, 702]],
-    },
-    back3q: {
-        crown: [411, 190], neck: [383, 268],
-        leftArm: [[407, 311], [438, 384], [416, 455]], rightArm: [[347, 298], [316, 371], [338, 442]],
-        leftLeg: [[406, 467], [399, 568], [397, 666]], rightLeg: [[386, 467], [331, 552], [329, 650]],
-        soles: [[396, 720], [326, 710]],
-    },
-    back: {
-        crown: [381, 190], neck: [369, 272],
-        leftArm: [[435, 305], [466, 378], [488, 449]], rightArm: [[332, 306], [301, 379], [279, 450]],
-        leftLeg: [[402, 471], [431, 568], [433, 666]], rightLeg: [[362, 471], [333, 568], [331, 666]],
-        soles: [[434, 720], [332, 720]],
-    },
-});
-
-const BOOT_SOURCE_SIDE = Object.freeze({
-    front: 'left', front3q: 'right', profile: 'left', back3q: 'left', back: 'right',
-});
-const OPPOSITE_TRANSFORM = Object.freeze({
-    front: 'horizontal-mirror',
-    front3q: 'unreflected-registration',
-    profile: 'unreflected-registration',
-    back3q: 'unreflected-registration',
-    back: 'horizontal-mirror',
-});
-const REGISTRATION_ONLY = Object.freeze({
-    front: [], front3q: [], profile: ['leftAnkle'], back3q: ['rightKnee'], back: [],
-});
+const REPO_ROOT = path.resolve(SCRIPT_DIR, '../..');
 
 const point = ([x, y]) => ({ x, y });
 const vector = (a, b) => ({ x: b.x - a.x, y: b.y - a.y });
@@ -72,16 +23,36 @@ function placedSegment(a, b, canvas) {
     return [start, { x: start.x + delta.x, y: start.y + delta.y }];
 }
 
-export function applyFit(manifest) {
-    manifest.characterId = 'lou_thesz_v2';
-    manifest.sourceSheet.file = 'thesz-v2-pass-a-v3.png';
-    manifest.sourceSheet.guideFile = 'thesz-v2-pass-a-v7-profile-foot-guide.png';
+/**
+ * Derives every landmark-dependent manifest field from the character's own
+ * `landmarkContract`: master landmarks per view, per-part anchor overrides,
+ * skeleton spans and bone lengths, bilateral reuse sides, and the boot
+ * grounding anchors.
+ *
+ * This does not fit anything. The landmarks are human-selected and frozen; the
+ * command replays them and is named for what it does. The contract used to be a
+ * `const` in this file with the character id hardcoded beside it, which is why
+ * a second wrestler meant editing source rather than supplying data.
+ */
+export function applyLandmarkContract(manifest) {
+    const contract = manifest.landmarkContract;
+    if (!contract) {
+        throw new Error(`${manifest.characterId ?? 'manifest'} has no "landmarkContract" block`);
+    }
+    const FIT = contract.fit;
+    const BOOT_SOURCE_SIDE = contract.bootSourceSideByView;
+    const OPPOSITE_TRANSFORM = contract.oppositeTransformByView;
+    const REGISTRATION_ONLY = contract.registrationOnlyByView;
+    const APPROVED_SHA256 = contract.approvedSheetSha256;
+
+    manifest.sourceSheet.file = contract.sheetFile;
+    manifest.sourceSheet.guideFile = contract.guideFile;
     manifest.bilateralSegmentReuse.policy = 'per-view-declared-opposite-transform';
     manifest.bilateralSegmentReuse.oppositeTransformByView = { ...OPPOSITE_TRANSFORM };
     const spans = {
-        head: Math.sqrt(6868), torso: Math.sqrt(39770), upperArm: Math.sqrt(6290),
-        forearm: Math.sqrt(5525), thigh: Math.sqrt(10250), shin: Math.sqrt(9608),
-        plantedSoleVerticalDrop: 54,
+        ...Object.fromEntries(Object.entries(contract.sourceSpansSquared)
+            .map(([name, squared]) => [name, Math.sqrt(squared)])),
+        plantedSoleVerticalDrop: contract.plantedSoleVerticalDrop,
     };
     manifest.skeleton.sourceSpansPx = spans;
     manifest.skeleton.boneLengths = Object.fromEntries(
@@ -103,7 +74,8 @@ export function applyFit(manifest) {
         manifest.bilateralSegmentReuse.bootSourceSideByView = { ...BOOT_SOURCE_SIDE };
 
         const masterHipMid = { x: (leftHip.x + rightHip.x) / 2, y: (leftHip.y + rightHip.y) / 2 };
-        const torsoDx = 96 - masterHipMid.x, torsoDy = 223 - masterHipMid.y;
+        const torsoDx = contract.torsoHipMidTarget.x - masterHipMid.x;
+        const torsoDy = contract.torsoHipMidTarget.y - masterHipMid.y;
         const translate = source => ({ x: source.x + torsoDx, y: source.y + torsoDy });
         const sourceSide = manifest.bilateralSegmentReuse.sourceSideByView[viewName];
         const arm = sourceSide === 'left' ? [leftShoulder, leftElbow, leftWrist] : [rightShoulder, rightElbow, rightWrist];
@@ -119,13 +91,13 @@ export function applyFit(manifest) {
         const bootDelta = vector(localAnkle, localSole);
         const bootLength = Math.hypot(bootDelta.x, bootDelta.y);
         const ankleAxis = {
-            x: localAnkle.x + Math.round(bootDelta.x * 20 / bootLength),
-            y: localAnkle.y + Math.round(bootDelta.y * 20 / bootLength),
+            x: localAnkle.x + Math.round(bootDelta.x * contract.bootAxisLengthPx / bootLength),
+            y: localAnkle.y + Math.round(bootDelta.y * contract.bootAxisLengthPx / bootLength),
         };
-        const localCrown = { x: 100, y: 48 };
+        const localCrown = { ...contract.localCrown };
         const headDelta = vector(crown, neck);
         const localNeck = { x: localCrown.x + headDelta.x, y: localCrown.y + headDelta.y };
-        const headAxisScale = 20 / spans.head;
+        const headAxisScale = contract.headAxisLengthPx / spans.head;
         manifest.views[viewName].anchorOverrides = {
             head: {
                 crown: localCrown,
@@ -151,8 +123,8 @@ export function applyFit(manifest) {
     for (const partName of ['head', 'torso', 'upperArm', 'forearm', 'thigh', 'shin', 'boot']) {
         manifest.parts[partName].anchors = structuredClone(manifest.views.front.anchorOverrides[partName]);
     }
-    manifest.parts.boot.anchors.heel = { x: 40, y: manifest.parts.boot.anchors.sole.y };
-    manifest.parts.boot.anchors.toe = { x: 92, y: manifest.parts.boot.anchors.sole.y };
+    manifest.parts.boot.anchors.heel = { x: contract.bootHeelX, y: manifest.parts.boot.anchors.sole.y };
+    manifest.parts.boot.anchors.toe = { x: contract.bootToeX, y: manifest.parts.boot.anchors.sole.y };
     manifest.parts.boot.anchors.soleNormal = { x: 0, y: 1 };
     for (const variant of manifest.variantFamilies.boot) {
         if (variant.id === 'neutral') {
@@ -161,7 +133,7 @@ export function applyFit(manifest) {
             variant.semanticAnchors.sole = structuredClone(manifest.parts.boot.anchors.sole);
         }
     }
-    manifest.parts.boot.groundingContract.verticalDropPx = 54;
+    manifest.parts.boot.groundingContract.verticalDropPx = contract.plantedSoleVerticalDrop;
     manifest.humanReview = {
         status: 'identity-approved', sourceSheetSha256: APPROVED_SHA256,
         extremeJointAngles: false, artistStrokeAtGameScale: false, broadcastNearMiddleFar: false,
@@ -170,18 +142,29 @@ export function applyFit(manifest) {
 }
 
 async function main() {
+    const flags = parseFlags(process.argv.slice(2));
     const args = process.argv.slice(2);
-    const manifestPath = path.resolve(args.find(arg => arg.endsWith('.json')) ?? DEFAULT_MANIFEST);
-    const sheetPath = path.resolve(args.find(arg => arg.endsWith('.png')) ?? DEFAULT_SHEET);
-    const write = args.includes('--write');
+    const manifestPath = path.resolve(REPO_ROOT,
+        flags.manifest ?? args.find(arg => arg.endsWith('.json')) ?? DEFAULT_MANIFEST);
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+
+    // The sheet defaults to the one the character's own production block names,
+    // so no path here is specific to any wrestler.
+    const production = resolveProduction(manifest, flags);
+    const sheetPath = path.resolve(REPO_ROOT,
+        flags.sheet ?? args.find(arg => arg.endsWith('.png')) ?? production.passASheet);
+
     const sheetBytes = await readFile(sheetPath);
     const actualHash = createHash('sha256').update(sheetBytes).digest('hex');
-    if (actualHash !== APPROVED_SHA256) throw new Error(`refusing to apply landmarks to unapproved pixels: ${actualHash}`);
-    const manifest = applyFit(JSON.parse(await readFile(manifestPath, 'utf8')));
-    const output = `${JSON.stringify(manifest, null, 2)}\n`;
-    if (write) {
+    const approved = manifest.landmarkContract?.approvedSheetSha256;
+    if (actualHash !== approved) {
+        throw new Error(`refusing to apply landmarks to unapproved pixels: ${actualHash}`);
+    }
+
+    const output = `${JSON.stringify(applyLandmarkContract(manifest), null, 2)}\n`;
+    if (flags.write) {
         await writeFile(manifestPath, output);
-        console.log(`applied canonical ankle re-fit landmarks to ${manifestPath}`);
+        console.log(`applied ${manifest.characterId} landmark contract to ${path.relative(REPO_ROOT, manifestPath)}`);
     } else {
         process.stdout.write(output);
     }

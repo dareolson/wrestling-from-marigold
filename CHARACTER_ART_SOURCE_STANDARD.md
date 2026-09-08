@@ -623,3 +623,45 @@ npm run art:verify-candidate -- path/to/candidate-dir
 
 It recomputes both, fails only on decoded-pixel drift, and reports byte
 differences as re-encoding rather than as corruption.
+
+## Adding a second wrestler
+
+A new character is a source package, a manifest, and one command. No producer
+code changes; a test enforces that by rejecting any character path or name that
+appears in a production stage.
+
+The manifest carries everything character-specific:
+
+- `production` — `characterRoot`, `passASheet`, `passASha256`, and per-view
+  `sourceParts`, `revisedTorso`, `output` and `proofPrefix`.
+- `landmarkContract` — the frozen, human-selected master landmarks per view,
+  plus the source spans, bilateral reuse sides and boot anchors derived from
+  them. These used to be a `const` inside the landmark tool with the character id
+  hardcoded beside them, which is why a second wrestler meant editing source.
+
+Build and validate one character/view:
+
+```
+npm run art:build -- --manifest path/to/manifest.json --view profile
+```
+
+That runs four stages in order: manifest validation, landmark contract replay
+checked against the frozen Pass-A hash, part normalization with proof render,
+and artifact identity verification of what was written. Any path can be
+overridden for a trial run without touching the manifest:
+
+```
+npm run art:build -- --view profile --output /tmp/candidate
+```
+
+`--list-views` reports the views a manifest declares production paths for.
+
+The anchor editor (`npm run art:sheet`) exports a complete manifest by
+`characterId`, so anchor authoring and the landmark contract now live in the same
+artifact. Edit anchors there, export, and rerun `art:build`; do not transcribe
+coordinates into source.
+
+`apply-landmark-contract` replaces `fit-v2-landmarks`. It never fitted anything —
+it replays an approved contract and is now named for that. Running it against an
+unchanged manifest is a no-op that reproduces the file byte for byte, which is
+the check that the contract is complete.

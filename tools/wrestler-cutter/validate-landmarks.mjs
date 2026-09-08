@@ -4,6 +4,8 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { parseFlags, resolveProduction } from './production-config.mjs';
+
 import {
     decodeRgbaPng,
     validateSourceManifest,
@@ -13,8 +15,7 @@ import { validatePassASheet } from './validate-pass-a.mjs';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_MANIFEST = path.join(SCRIPT_DIR, 'templates/rig-source-manifest.v2.example.json');
-const DEFAULT_SHEET = path.resolve(SCRIPT_DIR,
-    '../../Sprite sheets/AI Pilot/Lou/v2-canonical/pass-a/candidates/thesz-v2-pass-a-v3.png');
+const DEFAULT_SHEET = null; // resolved from the manifest's production block
 const VIEW_ORDER = ['front', 'front3q', 'profile', 'back3q', 'back'];
 const JOINTS = Object.freeze({
     neck: 8, leftShoulder: 12, rightShoulder: 12,
@@ -144,10 +145,14 @@ export function validateLandmarkFit(manifest, image) {
 
 async function main() {
     const args = process.argv.slice(2);
-    const manifestPath = path.resolve(args.find(arg => arg.endsWith('.json')) ?? DEFAULT_MANIFEST);
-    const sheetPath = path.resolve(args.find(arg => arg.endsWith('.png')) ?? DEFAULT_SHEET);
-    const [manifestText, sheetBytes] = await Promise.all([readFile(manifestPath, 'utf8'), readFile(sheetPath)]);
-    const manifest = JSON.parse(manifestText);
+    const flags = parseFlags(args);
+    const manifestPath = path.resolve(
+        flags.manifest ?? args.find(arg => arg.endsWith('.json')) ?? DEFAULT_MANIFEST);
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    // The sheet defaults to the one this character's production block names.
+    const sheetPath = path.resolve(flags.sheet ?? args.find(arg => arg.endsWith('.png'))
+        ?? DEFAULT_SHEET ?? resolveProduction(manifest, flags).passASheet);
+    const sheetBytes = await readFile(sheetPath);
     verifyV2SourceSheetHash(manifest, sheetBytes);
     const result = validateLandmarkFit(manifest, decodeRgbaPng(sheetBytes));
     if (result.errors.length) {

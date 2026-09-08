@@ -15,25 +15,40 @@
 // zone. The only paint added is flat sampled fill inside a declared joint zone.
 
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { decodeRgbaPng } from './validate-source-manifest.mjs';
 import { encodeRgbaPng } from './export-v2-sheet.mjs';
+import {
+    DEFAULT_MANIFEST, REPO_ROOT, parseFlags, resolveProduction,
+} from './production-config.mjs';
 
+// Where this run reads and writes is resolved from the character's manifest and
+// the CLI flags, never pinned here. Importing the module (as the tests do)
+// resolves the manifest's own defaults, so the exported paths still describe the
+// frozen Thesz profile candidate.
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(SCRIPT_DIR, '../..');
-const MANIFEST_PATH = path.join(SCRIPT_DIR, 'templates/rig-source-manifest.v2.example.json');
-const V2 = path.join(ROOT, 'Sprite sheets/AI Pilot/Lou/v2-canonical');
-const PASS_A_PATH = path.join(V2, 'pass-a/candidates/thesz-v2-pass-a-v3.png');
-const PASS_A_SHA256 = 'ce78aea34da48af54721c6babf74c46c71b29f00810ae26390d9c92cffc3dceb';
-const SOURCE_PARTS = path.join(V2, 'pass-b/candidates/profile-v2/parts');
-const REVISED_TORSO = path.join(V2,
-    'pass-b/candidates/profile-v2/sources/profile-torso-trunks-v3-alpha.png');
-const OUT_DIR = path.join(V2, 'pass-b/candidates/profile-v2-normalized-v4');
+const ROOT = REPO_ROOT;
+const RUNNING_AS_MAIN = Boolean(process.argv[1])
+    && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const FLAGS = RUNNING_AS_MAIN ? parseFlags(process.argv.slice(2)) : {};
+const MANIFEST_PATH = FLAGS.manifest
+    ? path.resolve(ROOT, FLAGS.manifest)
+    : DEFAULT_MANIFEST;
+
+const CONFIG = resolveProduction(
+    JSON.parse(readFileSync(MANIFEST_PATH, 'utf8')), FLAGS);
+
+const PASS_A_PATH = CONFIG.passASheet;
+const PASS_A_SHA256 = CONFIG.passASha256;
+const SOURCE_PARTS = CONFIG.sourceParts;
+const REVISED_TORSO = CONFIG.revisedTorso;
+const OUT_DIR = CONFIG.output;
 const OUT_PARTS = path.join(OUT_DIR, 'parts');
-const VIEW = 'profile';
+const VIEW = CONFIG.view;
 
 // ---------------------------------------------------------------- image utils
 
@@ -1202,9 +1217,9 @@ async function main() {
         written.push(`parts/${entry.file}`);
     }
     const proofs = {
-        'profile-v2n4-neutral-assembly.png': renderProofs(manifest, parts, false),
-        'profile-v2n4-articulation-proof.png': renderProofs(manifest, parts, true),
-        'profile-v2n4-parts-contact-sheet.png': renderContactSheet(parts),
+        [`${CONFIG.proofPrefix}-neutral-assembly.png`]: renderProofs(manifest, parts, false),
+        [`${CONFIG.proofPrefix}-articulation-proof.png`]: renderProofs(manifest, parts, true),
+        [`${CONFIG.proofPrefix}-parts-contact-sheet.png`]: renderContactSheet(parts),
     };
     const proofHashes = {};
     for (const [name, image] of Object.entries(proofs)) {
@@ -1215,12 +1230,13 @@ async function main() {
     }
 
     const index = {
-        version: 'profile-v2-normalized-v4',
+        version: path.basename(OUT_DIR),
+        characterId: manifest.characterId,
         derivedFrom: {
-            approvedParts: 'Sprite sheets/AI Pilot/Lou/v2-canonical/pass-b/candidates/profile-v2/parts',
-            revisedTorso: 'Sprite sheets/AI Pilot/Lou/v2-canonical/pass-b/candidates/profile-v2/sources/profile-torso-trunks-v3-alpha.png',
+            approvedParts: path.relative(ROOT, SOURCE_PARTS),
+            revisedTorso: path.relative(ROOT, REVISED_TORSO),
         },
-        manifest: 'tools/wrestler-cutter/templates/rig-source-manifest.v2.example.json',
+        manifest: path.relative(ROOT, MANIFEST_PATH),
         view: VIEW,
         passAv3Sha256: passAHash,
         registration: 'two-point similarity (uniform scale, rotation, translation); no reflection',

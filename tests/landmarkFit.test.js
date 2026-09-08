@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-import { applyFit } from '../tools/wrestler-cutter/fit-v2-landmarks.mjs';
+import { applyLandmarkContract } from '../tools/wrestler-cutter/apply-landmark-contract.mjs';
 import { validateLandmarkFit } from '../tools/wrestler-cutter/validate-landmarks.mjs';
 import { decodeRgbaPng, validateSourceManifest } from '../tools/wrestler-cutter/validate-source-manifest.mjs';
 
@@ -29,8 +29,8 @@ test('approved Thesz landmarks satisfy source disks, declared reuse transforms, 
 });
 
 test('landmark replay is idempotent and produces a structurally valid contract', () => {
-    const once = applyFit(clone(manifestTemplate));
-    const twice = applyFit(clone(once));
+    const once = applyLandmarkContract(clone(manifestTemplate));
+    const twice = applyLandmarkContract(clone(once));
     assert.deepEqual(twice, once);
     assert.deepEqual(validateSourceManifest(once).errors, []);
 });

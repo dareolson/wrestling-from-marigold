@@ -11,8 +11,9 @@
 //
 //   fileSha256 — hash of the PNG container bytes. This is an ENVIRONMENT CHECK.
 //     It detects that a file on disk has not been edited since it was written
-//     here, but it does NOT reproduce across encoders or Node versions, because
-//     the PNG encoder is not byte-deterministic.
+//     here. The encoder is deterministic, so it reproduces exactly on the Node
+//     version .nvmrc pins and diverges off-pin, which is why the toolchain is
+//     enforced rather than advised.
 //
 // A candidate whose decoded-pixel hashes all match is the same artwork. A
 // candidate whose file hashes differ while decoded pixels match has merely been
@@ -20,7 +21,7 @@
 //
 // Usage:
 //   node tools/wrestler-cutter/verify-candidate.mjs <candidate-dir>
-//   node tools/wrestler-cutter/verify-candidate.mjs            # defaults to profile v4
+//   node tools/wrestler-cutter/verify-candidate.mjs --view profile  # from the manifest
 
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
@@ -28,11 +29,19 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { decodeRgbaPng } from './validate-source-manifest.mjs';
+import { DEFAULT_MANIFEST, parseFlags, resolveProduction } from './production-config.mjs';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SCRIPT_DIR, '../..');
-const DEFAULT_CANDIDATE = path.join(ROOT,
-    'Sprite sheets/AI Pilot/Lou/v2-canonical/pass-b/candidates/profile-v2-normalized-v4');
+
+/** The candidate a manifest's own production block points at, for the given view. */
+async function defaultCandidate(flags) {
+    const manifestPath = flags.manifest
+        ? path.resolve(ROOT, flags.manifest)
+        : DEFAULT_MANIFEST;
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    return resolveProduction(manifest, flags).output;
+}
 
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
@@ -77,8 +86,10 @@ export async function verifyCandidate(candidateDir) {
 }
 
 async function main() {
-    const [dirArg] = process.argv.slice(2);
-    const candidateDir = dirArg ? path.resolve(dirArg) : DEFAULT_CANDIDATE;
+    const argv = process.argv.slice(2);
+    const flags = parseFlags(argv);
+    const positional = argv.find(token => !token.startsWith('--'));
+    const candidateDir = positional ? path.resolve(positional) : await defaultCandidate(flags);
     const report = await verifyCandidate(candidateDir);
 
     const drifted = report.results.filter(entry => !entry.pixelsMatch);

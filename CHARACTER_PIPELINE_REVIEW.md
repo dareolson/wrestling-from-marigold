@@ -512,3 +512,86 @@ has been deleted.
 
 No art, manifest, landmark, normalizer, or runtime files were changed by this
 review. `git status` after the diagnostic shows only Codex's four files.
+
+---
+
+# Runtime migration notes (for after Milestone 5 acceptance)
+
+**Recorded 2026-09-07 at Derek's direction.** The intended next direction is a
+Spine-inspired Marigold runtime — bones, slots and attachments, character and
+view skins, ordered constraints, animation tracks with mixing, and event markers
+— built independently on the existing Skeleton and MoveRuntime systems. Nothing
+in Milestones 1-5 was redesigned around that. These are the decisions made along
+the way that either help or hinder it, recorded now so the migration does not
+have to rediscover them.
+
+The acceptance test to hold everything against: **adding a wrestler needs assets
+and configuration, not character-specific rendering code.** Milestone 3 met that
+for the art pipeline and enforces it with a test. The runtime has not been
+measured against it at all yet.
+
+## What already points the right way
+
+- **Draw order is data.** `views.<view>.depthOrder` drives the compositor;
+  Milestone 4 removed the hardcoded sequence. This is slot draw order in all but
+  name.
+- **Visibility is per view.** `views.<view>.visibility` decides which chains are
+  drawn while the rig keeps both. That is close to a view skin, and the hidden
+  chain deliberately keeps its landmarks and its depth slot so choreography can
+  reveal it.
+- **Coverage ownership is declared.** `jointZones.<joint>.coveragePart` names the
+  layer that owns a joint's un-outlined core. In a slot/attachment model these
+  become attachments in a skin rather than a special case.
+- **Paths and landmarks are character data.** `production` and `landmarkContract`
+  live on the manifest; the producer stages take them as input.
+- **Artifact identity is defined.** `decodedPixelSha256` is portable; file hashes
+  are environment checks. Any new runtime asset format should keep that split.
+
+## Debt to revisit, roughly in order of how much it will hurt
+
+1. **`nearX` / `farX` part keys are not slots.** `nearForearm`, `farForearm`,
+   `nearHand`, `farHand`, `nearBoot`, `farBoot` are distinct entries in
+   `PART_PLAN`, so one anatomical slot is represented by two part identities
+   chosen by `cameraNearSide`. In a slot/attachment model there is one `forearm`
+   slot whose attachment comes from the active skin, and near/far is draw order
+   plus skin, not identity. This is the single biggest shape mismatch.
+2. **The proof renderer is not the runtime.** `renderProofs` composites for
+   review only. `runtimePrerequisites` still lists `v2Compiler`,
+   `uniformDensityProfileRenderer`, `semanticSolePoseGrounding`,
+   `bodyViewChannel`, `projectedSocketInterpolation`, `viewDepthOrderTransport`
+   and `shoulderMaskSlot` as pending. Whatever consumes `depthOrder` and
+   `visibility` at runtime must read the same fields, or the contract forks.
+3. **Stress angles are a constant, not a track.** The `STRESS` object in the
+   normalizer is a fixed proof articulation. Under animation tracks this should
+   be a short authored clip, which also makes the articulation proof a real
+   animation rather than a hardcoded pose.
+4. **Coverage layers are a workaround for un-outlined core fill.** `shoulderMask`
+   and `pelvisUnderlay` exist because flat fill would otherwise land in visible
+   artwork. With proper slots and attachments, and mesh or clipping attachments
+   in particular, some of this stops being necessary. Do not port the workaround
+   without asking whether the new model needs it.
+5. **Ordering is a flat list.** `depthOrder` is nine entries per view with no
+   notion of parent/child. Bones imply a hierarchy where draw order and transform
+   order are separate concerns; the flat list will need to become one or the
+   other, not both.
+6. **Canvas sizes are fixed constants.** 768x960 assembly and the per-part export
+   canvases are baked into the compositor and the contract. Fixed density was a
+   deliberate decision and should stay, but the numbers belong in the manifest.
+7. **`registrationOnlyLandmarks` is a fitting exemption, not a rig concept.** It
+   is capped to knees and ankles and should not grow into a visibility or
+   attachment mechanism. If the new runtime needs "present but not rendered",
+   that is what `visibility` is for.
+8. **`PART_PLAN` and `SOURCE_FILES` are contract-level code.** They are the same
+   for every character today, which is why parameterization stopped at paths. If
+   a wrestler ever needs a different part inventory — a mask, a jacket, a
+   different hand family — these become data or the exit gate breaks.
+
+## Known-good invariants worth carrying over
+
+- A `continuous-fill-no-edge` core must have a coverage owner, and coverage is
+  built only for chains the view draws.
+- Hidden chains keep complete landmarks and their place in the draw order.
+- Single-visible-limb views draw the `cameraNearSide` chain.
+- Measurement must report the quantity that matters, not its complement. The
+  arm-overhang metric and the first uncovered-core metric both failed this, and
+  both were caught only by rendering the thing and looking at it.

@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "env:check": "node tools/env/require-node.mjs",
     "dev": "vite",
     "build": "vite build",
     "debug:watch": "node tools/debug/watch.mjs",
@@ -15,19 +16,33 @@
     "rig:tuner": "vite --open /tools/rig-tuner/",
     "move:editor": "vite --open /tools/move-editor/",
     "rig:validate": "node tools/rig/validate-character-rigs.mjs",
+    "prerig:validate": "node tools/env/require-node.mjs",
     "rig:certify": "node tools/rig/certify.mjs",
+    "prerig:certify": "node tools/env/require-node.mjs",
     "art:sheet": "vite --open /tools/wrestler-cutter/canonical-sheet.html",
     "art:sheet:smoke": "node tools/wrestler-cutter/canonical-sheet-smoke.mjs",
+    "preart:sheet:smoke": "node tools/env/require-node.mjs",
     "art:validate-source": "node tools/wrestler-cutter/validate-source-manifest.mjs",
+    "preart:validate-source": "node tools/env/require-node.mjs",
     "art:validate-pass-a": "node tools/wrestler-cutter/validate-pass-a.mjs",
+    "preart:validate-pass-a": "node tools/env/require-node.mjs",
     "art:apply-landmarks": "node tools/wrestler-cutter/fit-v2-landmarks.mjs --write",
+    "preart:apply-landmarks": "node tools/env/require-node.mjs",
     "art:fit-landmarks": "npm run art:apply-landmarks",
     "art:validate-landmarks": "node tools/wrestler-cutter/validate-landmarks.mjs",
+    "preart:validate-landmarks": "node tools/env/require-node.mjs",
     "art:landmark-overlay": "node tools/wrestler-cutter/render-landmark-overlay.mjs",
+    "preart:landmark-overlay": "node tools/env/require-node.mjs",
     "art:pass-b-profile-trial": "node tools/wrestler-cutter/build-pass-b-profile-trial.mjs",
+    "preart:pass-b-profile-trial": "node tools/env/require-node.mjs",
     "art:normalize-profile-v2": "node tools/wrestler-cutter/normalize-profile-v2-parts.mjs",
+    "preart:normalize-profile-v2": "node tools/env/require-node.mjs",
     "art:export-v2": "node tools/wrestler-cutter/export-v2-sheet.mjs",
+    "preart:verify-candidate": "node tools/env/require-node.mjs",
+    "art:verify-candidate": "node tools/wrestler-cutter/verify-candidate.mjs",
+    "preart:export-v2": "node tools/env/require-node.mjs",
     "test": "node --test tests/*.test.js",
+    "pretest": "node tools/env/require-node.mjs",
     "proof:hammerlock": "node tools/debug/hammerlock_authoring_proof.mjs"
   },
   "repository": {
@@ -50,6 +65,6 @@
     "vite": "^8.0.13"
   },
   "engines": {
-    "node": ">=20.19"
+    "node": ">=22 <23"
   }
 }

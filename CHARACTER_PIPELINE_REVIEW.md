@@ -427,21 +427,33 @@ contract, logged as such. That converts human review load from an unbounded cost
 into a measured signal, which is the same move the iteration limit makes for
 correction rounds.
 
-### Finding 8 — The recorded checksums do not reproduce
+### Finding 8 — Running off the pinned Node silently breaks the checksum record
 
-Reproducing v4 from unchanged inputs produced fourteen parts and three proofs
-whose decoded pixels are identical to the certified set, and whose PNG file
-bytes all differ. Every entry in `SHA256SUMS.txt` therefore fails to verify on a
-clean re-run, while `parts-index.json`'s `decodedPixelSha256` values all match.
+*Corrected 2026-09-07 after Milestone 1. The first version of this finding said
+the PNG encoder was not byte-deterministic. It is. The divergence came from my
+own reproduction running under the stale Node 19 on this machine's PATH rather
+than the Node 22 pinned in `.nvmrc`.*
 
-The encoder is not byte-deterministic; the pipeline is. That is a fine state of
-affairs, but the artifact presented as the provenance record is the one that
-cannot be checked, and "fixed source density, versioned candidates, hashes"
-appears in this review's own list of what worked.
+Reproducing v4 from unchanged inputs **under Node 22 reproduces every file byte
+exactly**, and `SHA256SUMS.txt` verifies. Reproducing it under Node 19 produces
+seventeen artifacts whose decoded pixels are all identical and whose PNG
+container bytes all differ, so every recorded checksum fails.
 
-Recommended: either make the encoder deterministic, or state in the generated
-reports that `decodedPixelSha256` is the reproducible identity and file hashes
-are incidental. The second is a documentation change and costs nothing.
+That is a worse failure mode than nondeterminism, because it is silent and it
+looks like success. An off-pin run produces correct artwork with a broken
+provenance record, and nothing in the pipeline notices: the normalizer prints
+"all normalization checks passed" either way.
+
+The two hashes therefore mean different things and should be documented as such:
+
+- `decodedPixelSha256` is the portable artifact identity. It depends only on the
+  pixels the pipeline decided to draw and reproduces on any Node version.
+- `fileSha256` is an environment-specific integrity check. It detects on-disk
+  edits, and it only reproduces on the pinned toolchain.
+
+Recommended: pin and enforce the Node version on every production command, and
+state the distinction in the generated reports so a future reader knows which
+hash carries the claim. Both are done in Milestone 1.
 
 ## Amendments proposed to the recovery plan
 

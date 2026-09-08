@@ -592,3 +592,34 @@ or retuned in this architecture pass.
   starts from `rig-source-manifest.v2.example.json`, whose additional views,
   sheet cells, coverage cores, source density, and review fields are deliberately
   not compiled through the legacy adapter. Neither file is final wrestler art.
+
+## Toolchain and artifact identity
+
+Production art commands run on the Node major pinned in `.nvmrc`. This is
+enforced, not advisory: `npm run env:check` and a `pre` hook on every production
+script refuse to run on another version. The reason is specific. Running the
+pipeline off-pin produces artwork whose decoded pixels are correct and whose PNG
+container bytes differ, so every recorded checksum fails while the tool still
+prints that all checks passed. The failure is silent and looks like success.
+
+Two hashes describe every artifact, and they carry different claims:
+
+- **`decodedPixelSha256` is the artifact identity.** It hashes the decoded RGBA
+  buffer and its dimensions, so it depends only on the pixels the pipeline
+  decided to draw. It is portable across machines, encoders, and Node versions,
+  and it is the hash to quote when asserting that two candidates are the same
+  artwork.
+- **`fileSha256` is an environment-specific integrity check.** It detects that a
+  file has not been edited since it was written, and it reproduces only on the
+  pinned toolchain. A candidate whose decoded pixels match while file bytes
+  differ has been re-encoded, not repainted.
+
+`SHA256SUMS.txt` records file hashes for on-disk integrity. `parts-index.json`
+records both per artifact. Verify a produced candidate with:
+
+```
+npm run art:verify-candidate -- path/to/candidate-dir
+```
+
+It recomputes both, fails only on decoded-pixel drift, and reports byte
+differences as re-encoding rather than as corruption.

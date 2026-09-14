@@ -65,6 +65,16 @@ fits.**
    77%. **That list is a budget, not a tool — a third entry is evidence of a fit
    problem, not a fix for one.**
 
+**Before v5 approval: three-quarter versus profile is undecided (2026-09-13).**
+`DRAWING_GUIDE.md` argues for a three-quarter body and head on the grounds that a
+pure side profile leaves one eyebrow and half a mouth for expression. Its header
+disclaims only its joint rules; no v2 document rebuts the camera argument and no
+entry settles it. Approving v5 ratifies strict profile, and the sheet allocates
+five expression heads per view against a PRD that makes crowd reaction a core
+mechanic. Decide this first — it either confirms the profile work or voids it.
+See the 2026-09-13 log entry and
+`AI_HANDOFF_ENTRIES/2026-09-13-claude-image-generation-assessment.md`.
+
 **Next: Derek's visual approval of profile candidate v5.** Milestones 1-5 of
 Derek's eight-milestone plan are implemented and committed on branch
 `thesz-v2-profile-normalization` (unpushed, seven commits `33f0477`..`7e677ed`).
@@ -73,7 +83,11 @@ code change. `profile-v2-normalized-v5` exists as a candidate and is
 **mechanically certified, awaiting visual approval** — nothing in it is
 visually approved, runtime certified, or production ready.
 
-The one open art question is the soft pale un-outlined mass over the deltoid. It
+The deltoid mass below is not the only open art question any more; see the
+2026-09-13 entry for five master-level findings that no gate measures, including
+identity drift across the five views and value families met at 16-20%.
+
+One open art question is the soft pale un-outlined mass over the deltoid. It
 is a flat inpainted disc inside the approved source torso
 (`profile-torso-trunks-v3-alpha.png`), not something the pipeline adds. Clearing
 it is a source repaint. Three mechanical corrections have already been aimed at
@@ -203,6 +217,138 @@ handoff status summary is `19b4da2`, both on branch
 `thesz-v2-profile-normalization`. The expansion below starts from that branch.
 
 ## Handoff Log
+
+### 2026-09-13 — Codex (new image-generator audience control passed; background-pool candidate only)
+
+Derek authorized the non-rigged control proposed in Claude's image-generation
+assessment. Built-in image generation produced one horizontal green-screen
+strip for `chicago-fan-v1`: the same seated 1952 Chicago fan across eight
+incremental calm-to-cheer poses. The source is preserved at
+`Sprite sheets/Audience/chicago-fan-v1.png` (the existing gitignored source-art
+area). No wrestler source, rig, canonical-v2 manifest or runtime prerequisite
+was changed.
+
+The existing `tools/audience-cutter/cut.mjs` pipeline detected exactly eight
+figures and wrote `src/assets/audience/chicago-fan-v1/frame1.png` through
+`frame8.png` at one shared 0.6175 scale. The QA strip is
+`tools/audience-cutter/_qa/chicago-fan-v1-preview.png` (gitignored). Identity,
+hair, moustache, costume, chair and proportions remain unusually consistent
+across the sequence; the cutter removed the slightly variable green field
+without producing a phantom frame from one stray source speck.
+
+`Arena.js` adds the design to `CROWD_EXTRAS` with `spots: []`. That deliberately
+leaves all eleven approved featured-row seats untouched while making the pilot
+available to the uniformly shuffled deeper rows. A real Arena capture under
+grayscale, scanlines, tint, vignette and lighting showed it blending at that
+scale rather than reading as a foreground replacement. This is evidence for
+generator consistency on a flat pose strip only; it does **not** resolve
+three-quarter versus profile, cross-view identity, joints, or Lou v5 approval.
+
+Verification on pinned Node 22.23.1: cutter 8/8; `npm test` **410/410**;
+`npm run build` green. Dependencies had to be installed first; the cutter's
+headless Chrome launch required normal host permission, confirming Claude's
+portability warning in the preceding entry.
+
+### 2026-09-13 — Claude (independent assessment of image generation; one art-direction decision should precede v5 approval)
+
+Derek asked for an independent assessment of using improved image generation for
+a Thesz v2 rebuild. The proposal describes work that already ran, so the review
+is of the executed pilot's evidence rather than of the idea. Read-only: no
+manifest, validator, producer, art, test or runtime edit. Full record in
+`AI_HANDOFF_ENTRIES/2026-09-13-claude-image-generation-assessment.md`.
+
+**A correction first.** An earlier draft of the assessment said Pass B abandoned
+the 1:1-masking rule without recording it as a deviation. That is wrong and this
+file proves it: Codex recorded creating the generated profile part sources on
+2026-08-26, and Derek reviewed the proofs the same day and ruled the parts pass
+as source material. It was deliberate and approved. What is true is only that
+`CANONICAL_CHARACTER_SHEET_V2.md`, `GENERATION_PROMPT_TEMPLATE.md` and
+`pass-a/README.md` still state 1:1 masking as the contract and were never
+amended — which costs nothing now and costs on wrestler #2, who is built from
+those documents.
+
+**The one blocking finding. Three-quarter versus profile has never been
+adjudicated.** `DRAWING_GUIDE.md` argues for a three-quarter body and head with
+a reason — a pure side profile leaves one eyebrow and half a mouth for
+expression. Its header disclaims its joint rules and says nothing about the
+camera argument; no v2 document rebuts it and no entry here settles it. It
+matters because the PRD makes crowd reaction a core mechanic, the sheet
+allocates five expression heads per view, and at 154px a profile head has very
+little to carry them with. It also collides with
+`RIG_AND_MOVE_PIPELINE.md`'s gate that "Lou and George's approved base
+silhouettes do not change merely because the pipeline exists" — a v2 Thesz
+changes Lou's from three-quarter-with-two-legs to profile-with-one.
+**Approving candidate v5 ratifies strict profile**, so this decision belongs
+before that approval rather than after.
+
+**Five findings not previously recorded.**
+
+1. **The five masters are not one man.** Across `thesz-v2-pass-a-v3.png`: three
+   different hairlines and five different hair treatments, `back3q` carrying
+   regular comb-hatching that the contract forbids; three visibly different
+   faces; the ear present, absent and small across views. All five panels pass
+   `art:validate-pass-a`. No gate, human or mechanical, ever compared the panels
+   *to each other* — Pass A's checklist was read as five separate judgements.
+2. **`back3q`'s head is turned over the shoulder**, which bakes a pose into a
+   socketed structural part and is inherited by every expression variant derived
+   from it.
+3. **The `profile` master is not a profile.** Its torso is drawn 20-30 degrees
+   turned — frontal pec mass, inboard nipple, sternum division, far deltoid
+   visible — while the head is near-true profile. Silhouette widths are
+   profile-consistent (chest 106px against front's 173px), which is why
+   width-based checks pass. Candidate v5 is therefore a single-limb side stance
+   wearing a three-quarter ribcage.
+4. **The template's span table is obsolete on every row** after the 2026-08-24
+   refit: crown-to-neck 116 against 82.87, shoulder-to-elbow 120 against 79.31,
+   hip-to-knee 86 against 101.24, planted sole drop 44 against 54. Line 1003 of
+   this file still asserts 44px "as declared," which was true when written.
+5. **Value families are measurably unmet, and now measured.** Only 16-20% of
+   fully-opaque master pixels sit within ±4 luma of one of the five declared
+   families; 38-44% within ±8. Eroding 4px changes nothing, so it is interior
+   continuous tone, not antialiasing. The best five empirical centres still
+   cover only 76%. The front panel holds 16,842 unique RGB values against a
+   contract asking for four or five flat families.
+
+**Two things about the gates themselves.** `art:validate-source` with `--sheet`
+returns **363 errors** evenly across all five views because the production bank
+is empty; without `--sheet` the same command prints "source manifest valid (11
+parts)," and that is the form quoted. And `art:export-v2` has never been run —
+no `export-index.json` exists anywhere — so the canonical 4096 sheet, the 96-cell
+bank and the deterministic exporter are validated, hashed, documented and unused
+by the path that actually produces art.
+
+**On the broadcast budget.** Measured from the committed lighting captures,
+source skin at luma 179 arrives on screen at median ~92, and the wrestler's whole
+on-screen range tops out near 146 — so a 24-luma source separation is worth
+about 13-14 to the player, and Gate A's offline simulation does not include that
+compression. Note also that `Arena.js:857-858` renders the match in
+`grayscale(1)`: all colour work is discarded, and the declared hair (42) and boot
+(54) families collapse into one measured cluster at ~64-66.
+
+**Recommended order.** Settle the three-quarter question; then v5 approval as
+planned; update the two documents to the fitted spans; and do not generate views
+2-5 while all seven `runtimePrerequisites` are `pending`.
+
+**The measurement half of that list is now built.** `npm run art:measure --
+--sheet <png>` reports value flatness, identity drift, broadcast presentation
+and micro-pattern periodicity for any sheet, with or without a manifest, so it
+runs on a master or an assembled proof. Advisory: it exits 0 unless `--strict`,
+and its thresholds are proposed rather than ratified. On Pass-A v3 it reproduces
+this entry's numbers and finds no periodicity problem at game scale, so the
+comb-hatched hair is real in the source and probably does not survive to matter.
+Three of its metrics were wrong in their first version — a unique-colour count
+that was always 1, a drift score that flagged a correct turnaround at 122.9%,
+and a busyness score that graded hatched hair lowest of five views. Each failed
+the same way the arm-overhang metric did, each is fixed, and
+`tests/artContractMeasure.test.js` pins all of them against synthetic art with
+known answers.
+
+Nothing here reopens the shoulder disc, the coverage schema,
+`measureMaskExposure`, producer parameterization or the Node pin. Those are
+settled by the 2026-09-07 entries and this assessment agrees with them.
+
+410/410 on Node 22.23.1. `npm run rig:certify` could not be run here:
+`node_modules` is absent and the harness needs `playwright-core`.
 
 ### 2026-09-07 — Claude (Milestones 1-5 implemented; v5 awaiting Derek's approval)
 

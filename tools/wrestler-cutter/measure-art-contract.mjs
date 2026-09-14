@@ -102,6 +102,15 @@ function regionFrom(image, rect, label) {
 }
 
 function regionsFor(image, manifest) {
+    // Master panels are coordinates on a canonical sheet, so they are only
+    // meaningful on a canvas of exactly that size. Without this check a limb
+    // board or a parts plate large enough to contain the front panel rectangle
+    // got measured through it and reported as a view called "front" — a crop of
+    // an unrelated image, confidently mislabelled.
+    const canvas = manifest?.sourceSheet?.canvas;
+    if (!canvas || image.w !== canvas.w || image.h !== canvas.h) {
+        return [regionFrom(image, { x: 0, y: 0, w: image.w, h: image.h }, 'image')];
+    }
     const panels = manifest?.sourceSheet?.masterPanels ?? {};
     const order = manifest?.sourceSheet?.productionGrid?.viewOrder ?? [];
     const usable = order

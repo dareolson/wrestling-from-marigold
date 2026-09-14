@@ -65,15 +65,34 @@ fits.**
    77%. **That list is a budget, not a tool — a third entry is evidence of a fit
    problem, not a fix for one.**
 
-**Before v5 approval: three-quarter versus profile is undecided (2026-09-13).**
-`DRAWING_GUIDE.md` argues for a three-quarter body and head on the grounds that a
-pure side profile leaves one eyebrow and half a mouth for expression. Its header
-disclaims only its joint rules; no v2 document rebuts the camera argument and no
-entry settles it. Approving v5 ratifies strict profile, and the sheet allocates
-five expression heads per view against a PRD that makes crowd reaction a core
-mechanic. Decide this first — it either confirms the profile work or voids it.
-See the 2026-09-13 log entry and
-`AI_HANDOFF_ENTRIES/2026-09-13-claude-image-generation-assessment.md`.
+**DECIDED 2026-09-13 by Derek: three-quarter is the primary view.** The other
+views are mostly tween and transition sources — profile for suplexes and similar
+move mechanics, not for standing gameplay. This settles the open question raised
+earlier the same day and matches what `DRAWING_GUIDE.md` argued all along: a
+three-quarter body and head, with profile reserved for the mechanics of a move.
+That document's camera guidance is therefore current again; only its
+edge-pivot/whole-forearm/whole-shin joint rules remain legacy, and its header
+does not yet say so.
+
+Consequences, none of them yet applied:
+
+- `views.profile.role` is `primary-gameplay-source` and `front3q.role` is
+  `front-turn-source`. Those are now backwards. `V2_VIEW_META` pins `role`,
+  `runtimeStatus` and `cameraNearSide` per view name as constants, so correcting
+  this is a code-and-data change, not a manifest edit alone.
+- The single-visible-limb ruling still stands for `profile` and `back3q` and is
+  unaffected — but it stops gating the primary view, because `front3q` already
+  declares both arms and both legs visible.
+- `profile-v2-normalized-v5` is a profile recut. It is now a secondary-view
+  candidate rather than the gate on the primary view, and its pending visual
+  approval should be re-scoped accordingly.
+- Derek will use the **profile head on the three-quarter body** until more heads
+  are generated. That is a cross-view reuse and the standard requires reuse to
+  be declared explicitly; it must not be left to silent fallback.
+- New heads for facial expression are planned. `variantFamilies` already
+  declares `head.idle/hurt/effort/down/winning` per view with zero art, so the
+  slots exist. Three-quarter is also what makes them worth drawing: both eyes
+  read, which was `DRAWING_GUIDE.md`'s original argument.
 
 **Next: Derek's visual approval of profile candidate v5.** Milestones 1-5 of
 Derek's eight-milestone plan are implemented and committed on branch
@@ -217,6 +236,55 @@ handoff status summary is `19b4da2`, both on branch
 `thesz-v2-profile-normalization`. The expansion below starts from that branch.
 
 ## Handoff Log
+
+### 2026-09-13 — Derek (ruling: three-quarter is the primary view) / Claude (cleanup)
+
+**Derek's ruling.** Three-quarter is the primary gameplay view. The other views
+are mostly tween and transition sources — profile for suplexes and similar move
+mechanics, not for standing gameplay. Codex generated the new limb set to that
+ruling. The profile head runs on the three-quarter body until new heads exist,
+and new heads for facial expression are planned.
+
+This settles the open question raised earlier the same day, and it settles it
+the way `DRAWING_GUIDE.md` argued from the start: three-quarter body, three-
+quarter head, profile for the mechanics of a move. That document's camera
+guidance is current again — only its edge-pivot/whole-forearm/whole-shin joint
+rules are legacy, and its header does not yet say so. The full consequence list
+is in the Status summary; none of it is applied yet, and the manifest's
+`views.profile.role: primary-gameplay-source` is now backwards.
+
+**New limb set.** `Sprite sheets/AI Pilot/Lou/production-limb-redesign/v1/` — a
+1536x1024 generated board, chroma-keyed, cut into six parts by Codex's new
+`cut-production-limb-board.mjs`. These target the **shipped legacy six-part
+rig**, not the v2 canonical bank: hand baked into forearm, boot into shin, whole
+far arm and far leg, split near side. Worth preserving as a deliberate choice —
+this track can ship without any of the seven v2 `runtimePrerequisites`, all of
+which are still `pending`.
+
+Measured with `art:measure`, value flatness within +-4 luma of a family: Pass-A
+v3 profile master 76.7%, v5 neutral assembly 84.8%, **new limb board 86.5%**.
+Measurably flatter than anything before it and approaching the proposed 90%
+gate. That is one property of four, and it is not an approval.
+
+**Cleanup this session.** `art:measure` had a real scoping bug. Master-panel
+rectangles are coordinates on a canonical sheet, but it applied them to any
+image large enough to contain them — so the limb board was measured through the
+front panel rectangle and reported as a view called "front", a crop of an
+unrelated image, confidently mislabelled. Panels now require a canvas matching
+the manifest's declared size; anything else is measured whole and labelled
+`image`. Pinned by a test.
+
+**The tree is dirty and that is expected.** Codex was paused mid-task rather
+than finished. Committed through `3e9f970`; the uncommitted paths below that are
+Codex's, including live edits to `src/characters/thesz.js` and
+`src/scenes/Arena.js`. The `thesz.js` change zeroes the fixed forearm offsets
+that the file itself records as Derek's own accepted tradeoff — that one needs
+Derek, not a reviewer.
+
+**Next session starts at**
+`AI_HANDOFF_ENTRIES/2026-09-13-next-session-brief-replacement-limbs.md`.
+
+418/418 on Node 22.23.1.
 
 ### 2026-09-13 — Codex (new image-generator audience control passed; background-pool candidate only)
 

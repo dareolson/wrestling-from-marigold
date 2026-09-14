@@ -119,3 +119,21 @@ test('an empty region is reported as empty rather than scoring zero', () => {
     const blank = image(80, 80, () => null);
     assert.equal(only(measure(blank)).empty, true);
 });
+
+test('manifest panels are only applied to a canvas of the declared sheet size', () => {
+    // A limb board or parts plate can be large enough to contain the front
+    // master-panel rectangle. Measuring it through that rectangle reports a crop
+    // of an unrelated image under a view name, which is worse than not using the
+    // manifest at all.
+    const manifest = {
+        sourceSheet: {
+            canvas: { w: 4096, h: 4096 },
+            masterPanels: { front: { x: 64, y: 64, w: 768, h: 960 } },
+            productionGrid: { viewOrder: ['front'] },
+        },
+    };
+    const board = image(1536, 1024, (x, y) => INSIDE(x, y, 1536, 1024) ? 190 : null);
+    const result = measureSheet(board, manifest, {});
+    assert.equal(result.views.length, 1);
+    assert.equal(result.views[0].view, 'image', 'a non-sheet canvas is measured whole');
+});

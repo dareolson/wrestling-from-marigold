@@ -245,6 +245,14 @@ three-quarter, the single-visible-limb ruling, the profile master and v5 all go
 back. It is a short decision that either confirms months of work or voids it,
 and it should be taken before the approval rather than after.
 
+> **RESOLVED the same day. Derek's ruling: three-quarter is the primary view**,
+> with profile and the other views serving as tween and transition sources —
+> profile for suplexes and similar move mechanics. `DRAWING_GUIDE.md` was right
+> about the camera all along. v5 is re-scoped to a secondary-view candidate
+> rather than the gate on the primary view, and the manifest's
+> `views.profile.role: primary-gameplay-source` is now backwards. See the Status
+> summary in `AI_HANDOFF.md` for the full consequence list.
+
 ---
 
 ## What is already covered, and is not reopened here

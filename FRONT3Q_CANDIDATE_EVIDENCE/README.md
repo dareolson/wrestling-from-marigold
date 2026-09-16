@@ -1,18 +1,30 @@
 # Front-three-quarter replacement limbs — review evidence
 
-**Status: NOT approved. Nothing here is production Lou.** Production Lou's art,
-config and offsets are unchanged, and no canonical-v2 runtime prerequisite is
-activated.
+**Status: REJECTED as the production candidate (Derek, 2026-09-15), kept as the
+diagnostic control.** It proved the pipeline end to end and exposed the
+requirements for the next generation; it will not be tuned or repainted further.
+Production Lou's art, config and offsets are unchanged, and no canonical-v2
+runtime prerequisite is activated.
+
+The brief for the next generation is
+`AI_HANDOFF_ENTRIES/2026-09-15-derek-front3q-verdict-and-next-generation-brief.md`.
+Read that before generating more art; this file is the evidence behind it.
 
 These images are committed rather than left under `tools/debug/shots/` (which is
 gitignored, `.gitignore:5`) so the review has something durable to point at, the
 way `ARENA_LIGHTING_EVIDENCE/` does. Everything is reproducible from the commands
 below.
 
-## What Derek is being asked
+## Derek's verdict, 2026-09-15
 
-Only the visual and game-feel questions at the bottom. The mechanical questions
-are answered, and most of the answers are "not yet".
+**Accept the engineering work; reject this art as the production candidate.**
+
+1. It only partially looks like Lou — the face carries identity, the body is
+   noticeably too lean and too tall.
+2. The profile head on a three-quarter body is acceptable for testing, not for
+   final approval.
+3. The next candidate should be broader and more compact, closer to Pass-A.
+4. Start from a revised generation prompt rather than repainting this candidate.
 
 ## The images
 
@@ -41,8 +53,15 @@ about its own declared joint until the bone is vertical. Compare `01` with `02`.
 **Not fixed, because a rotation cannot fix paint.** 15 of 16 joint-facings still
 fail the articulation sweep, with numbers essentially unchanged. The pale
 un-outlined attachment caps at every joint, the notched near-upper-arm
-silhouette, the far fist's heavier outline, and the 8.2% torso-to-pelvis hip-span
-disagreement are all still exactly where they were. **These need new artwork.**
+silhouette and the far fist's heavier outline are all still exactly where they
+were. **These need new artwork.**
+
+**Correction (Derek, 2026-09-15):** an earlier version of this list also named
+the 8.2% torso-to-pelvis hip-span disagreement. That was misleading. It is a
+property of pelvis layers the shipped legacy rig does not use, so while the
+production track stays on that rig it is **not** an art requirement and must not
+be carried into the next generation prompt. The same goes for the unregistered
+`pelvis_overlay`.
 
 **Two findings that turned out not to be on this track.** The black trunks baked
 onto both thighs belongs to the *six-part* `production-limb-redesign/v1` board
@@ -55,22 +74,20 @@ different paintings. That includes `legOffsetX` and `nearLegTilt`, which are wha
 separate shipped Lou's near and far legs — so the candidate's legs stack and read
 as one leg. Judge the art; the tuner pass comes after.
 
-## Open questions for Derek
+## Answered
 
-1. **Does it still look like Lou?** The candidate reads leaner and taller than
-   the Pass-A master beside it in `06`, and paler in value.
-2. **The head reads near-profile on a three-quarter body** (`02`). Acceptable as
-   the declared temporary reuse, or does the three-quarter head come first?
-3. **Is the lean build what you want**, or should the next generation be broader?
-4. **Is this close enough to be worth a paint pass**, or should the next
-   generation start from a different prompt?
+The four questions this file originally posed were answered by Derek on
+2026-09-15; his answers are at the top and the consequences are in the brief.
+The proportion drift visible in `06` — the candidate reading leaner and taller
+than the Pass-A master beside it — is the finding that decided it.
 
 ## Reproducing
 
 ```sh
 nvm use 22    # 22.23.1; production commands refuse to run off it
 
-npm run art:map-candidate    -- --parts "Sprite sheets/AI Pilot/Lou/production-front3q-modular/v3/parts"
+npm run art:map-candidate    -- --parts "Sprite sheets/AI Pilot/Lou/production-front3q-modular/v3/parts" \
+                                --landmarks "Sprite sheets/AI Pilot/Lou/production-front3q-modular/v2/landmarks.json"
 npm run art:straighten-limbs -- --parts "Sprite sheets/AI Pilot/Lou/production-front3q-modular/v3/parts" \
                                 --landmarks "Sprite sheets/AI Pilot/Lou/production-front3q-modular/v2/landmarks.json" \
                                 --out "Sprite sheets/AI Pilot/Lou/production-front3q-modular/v4-straightened/parts"

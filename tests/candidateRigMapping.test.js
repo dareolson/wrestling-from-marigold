@@ -125,3 +125,47 @@ test('shipped Lou declares no pelvis layers, so the pelvis findings are not on h
         assert.ok(thesz.textures.torso, 'the torso is where Lou keeps his trunks');
     });
 });
+
+// ── authoring requirements ──────────────────────────────────────────────────
+//
+// Derek's 2026-09-15 brief names nine requirements for the next generation.
+// Two are measurable with code this repository already has, and a requirement
+// that can be measured and is not is one the next generation misses the same
+// way this one did -- the bent arms went unnoticed until they were wired into
+// the running game and the forearm swung across the body.
+
+test('darkTopFraction separates a baked trunks band from an outline', async () => {
+    const { darkTopFraction, AUTHORING } = await import(
+        '../tools/wrestler-cutter/map-candidate-to-rig.mjs');
+
+    const part = (topLuma) => {
+        const w = 40;
+        const h = 200;
+        const rgba = new Uint8Array(w * h * 4);
+        const alpha = new Uint8Array(w * h);
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                const i = y * w + x;
+                alpha[i] = 255;
+                // Top 18% takes `topLuma`; the rest is skin.
+                const v = y < h * 0.18 ? topLuma : 200;
+                rgba[i * 4] = v; rgba[i * 4 + 1] = v; rgba[i * 4 + 2] = v; rgba[i * 4 + 3] = 255;
+            }
+        }
+        return { w, h, rgba, alpha };
+    };
+
+    // A black trunks band across the limb top.
+    assert.ok(darkTopFraction(part(20)) > AUTHORING.maxDarkTopFraction,
+        'a dark band across the whole limb top must be caught');
+    // Ordinary skin with an outline somewhere in it.
+    assert.ok(darkTopFraction(part(200)) <= AUTHORING.maxDarkTopFraction,
+        'plain limb paint must not read as trunks');
+
+    // The thresholds sit between the two real candidates by a wide margin, not
+    // tuned to a target: the six-part board measures 0.52-0.74 and front3q v3
+    // measures 0.03-0.05.
+    assert.ok(AUTHORING.maxDarkTopFraction > 0.05 && AUTHORING.maxDarkTopFraction < 0.5);
+    assert.ok(AUTHORING.maxBakedAxisDeg > 2 && AUTHORING.maxBakedAxisDeg < 9,
+        'the bake threshold must separate v3 legs (1.7-5.2) from v3 arms (13.4-19.6)');
+});

@@ -101,10 +101,39 @@ the rest stand as written.
   slots exist. Three-quarter is also what makes them worth drawing: both eyes
   read, which was `DRAWING_GUIDE.md`'s original argument.
 
-**Next (2026-09-15): Derek's visual call on the front3q candidate.** It is
-built, wired and reviewable in the running game; see
-`FRONT3Q_CANDIDATE_EVIDENCE/README.md` for the images and the four open
-art-direction questions, and
+**DECIDED 2026-09-15 by Derek: the engineering is accepted, the art is
+rejected as the production candidate.** The next generation starts from a
+revised prompt rather than a repaint of this one. The standing brief, with his
+nine requirements and the checks that measure them, is
+`AI_HANDOFF_ENTRIES/2026-09-15-derek-front3q-verdict-and-next-generation-brief.md`
+— **read it before generating more Lou limb art.** In short: the body is too
+lean and too tall and should be broader and more compact, closer to Pass-A; the
+profile head on the three-quarter body is fine for testing but not for approval;
+and a true three-quarter head is now a requirement rather than a nicety.
+
+`production-front3q-modular/v4-straightened` is kept as the **frozen diagnostic
+control** — it proved the pipeline end to end and exposed those requirements. It
+will not be tuned or repainted, and the zeroed offsets on
+`thesz-front3q-r1` will not get a rig-tuner pass: that work only makes sense on
+art that is going to ship.
+
+**Derek's correction, worth carrying forward:** the 8.2% hip-span disagreement
+and the unregistered `pelvis_overlay` belong to pelvis layers the shipped legacy
+rig does not use, so while the production track stays on that rig they are **not
+art requirements** and must not enter the generation prompt.
+
+Two of the nine requirements are now measured rather than asserted:
+`art:map-candidate --landmarks` reports each part's **bone axis** (BAKED BENT
+past 3 degrees — v3's arms were 13.4–19.6) and the **dark fraction of its top
+rows** (TRUNKS BAKED ON past 20% — the six-part board was 52–74%). It also
+states the decomposition the rig can consume: **eight parts, not twelve**, with
+one shared upper arm and one shared thigh.
+
+The record of how the candidate was built and what it measured follows.
+
+**Built and reviewed (2026-09-15).** See
+`FRONT3Q_CANDIDATE_EVIDENCE/README.md` for the images the verdict was made
+from, and
 `AI_HANDOFF_ENTRIES/2026-09-15-claude-front3q-replacement-limb-candidate.md`
 for the full record. Six commits, `3493f98`..`4516bfa`, unpushed.
 

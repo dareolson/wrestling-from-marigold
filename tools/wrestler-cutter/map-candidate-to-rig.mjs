@@ -35,13 +35,16 @@
 // is unmappable.
 //
 // Usage:
-//   node tools/wrestler-cutter/map-candidate-to-rig.mjs --parts <dir> [--json] [--strict]
+//   node tools/wrestler-cutter/map-candidate-to-rig.mjs --parts <dir> \
+//        [--landmarks <file.json>] [--json] [--strict]
 
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { BASE_PART_FILES } from '../../src/rig/partVariants.js';
+import { decodeRgbaPng } from './validate-source-manifest.mjs';
+import { bakedAxis } from './straighten-limb-bake.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -168,6 +171,56 @@ export function mapCandidate({ partNames, splitFamilies, loadable }) {
     return rows;
 }
 
+
+// ── authoring requirements, checked rather than asserted in prose ───────────
+//
+// Derek's 2026-09-15 brief for the next generation names nine requirements. Two
+// of them are already measurable with code this repository has, and a
+// requirement that can be measured and is not is a requirement the next
+// generation will miss the same way this one did:
+//
+//   "Limb paintings authored on neutral, straight bone axes -- no baked elbow
+//    or knee flex."
+//        The front3q v3 arms missed this by 13-20 degrees and nothing noticed
+//        until they were wired into the running game and the forearm swung
+//        across the body. Reported here per part.
+//
+//   "No baked trunks material on limb pieces."
+//        The six-part board bakes the black band onto the limb tops --
+//        near-thigh 73.8% dark in its top rows against front3q v3's 3.9%. Two
+//        candidates, same described intent, opposite results.
+//
+// Advisory, like the rest of this tool: it reports, it does not gate.
+
+const DARK_LUMA = 70;
+const TOP_ROWS_FRACTION = 0.18;
+
+/** Fraction of the part's top rows that are painted dark, i.e. trunks material. */
+export function darkTopFraction(image) {
+    const rows = Math.floor(image.h * TOP_ROWS_FRACTION);
+    let opaque = 0;
+    let dark = 0;
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < image.w; x++) {
+            const i = y * image.w + x;
+            if (image.alpha[i] <= 40) continue;
+            opaque++;
+            const luma = 0.299 * image.rgba[i * 4] + 0.587 * image.rgba[i * 4 + 1]
+                + 0.114 * image.rgba[i * 4 + 2];
+            if (luma < DARK_LUMA) dark++;
+        }
+    }
+    return opaque ? dark / opaque : 0;
+}
+
+// Thresholds are PROPOSED, not ratified, like every other number this pipeline
+// reports. They are set where the two measured candidates fall either side of
+// them by a wide margin, not tuned to a target.
+export const AUTHORING = Object.freeze({
+    maxBakedAxisDeg: 3,       // v3 arms: 13.4-19.6. v3 legs: 1.7-5.2.
+    maxDarkTopFraction: 0.20, // six-part board: 0.52-0.74. front3q v3: 0.03-0.05.
+});
+
 async function main(argv) {
     const arg = (flag, fallback = null) => {
         const i = argv.indexOf(flag);
@@ -177,7 +230,8 @@ async function main(argv) {
     const strict = argv.includes('--strict');
     const asJson = argv.includes('--json');
     if (!partsDir) {
-        console.error('usage: map-candidate-to-rig.mjs --parts <dir> [--json] [--strict]');
+        console.error('usage: map-candidate-to-rig.mjs --parts <dir> '
+            + '[--landmarks <file.json>] [--json] [--strict]');
         process.exit(2);
     }
 
@@ -190,8 +244,33 @@ async function main(argv) {
     const splitFamilies = splitCapableFamilies(skeleton);
     const rows = mapCandidate({ partNames, splitFamilies, loadable: loadableSlots() });
 
+    // Authoring checks, where the part is a limb segment and a landmark file is
+    // available to say where its joint is.
+    const landmarksPath = arg('--landmarks');
+    const landmarks = landmarksPath ? JSON.parse(await readFile(landmarksPath, 'utf8')) : null;
+    const authoring = [];
+    for (const name of partNames) {
+        const spec = CANDIDATE_SLOTS[name];
+        if (!spec?.family) continue;
+        const image = decodeRgbaPng(await readFile(path.join(partsDir, `${name}.png`)));
+        const dark = darkTopFraction(image);
+        let axisDeg = null;
+        const landmark = landmarks?.[name];
+        if (landmark?.jointPivotFrac) {
+            const mode = landmark.distalAnchorFrac ? 'landmark' : 'distalInk';
+            axisDeg = bakedAxis(image, landmark, mode) * 180 / Math.PI;
+        }
+        authoring.push({
+            part: name,
+            bakedAxisDeg: axisDeg === null ? null : +axisDeg.toFixed(1),
+            darkTopFraction: +dark.toFixed(3),
+            neutralBake: axisDeg === null ? null : Math.abs(axisDeg) <= AUTHORING.maxBakedAxisDeg,
+            trunksFree: dark <= AUTHORING.maxDarkTopFraction,
+        });
+    }
+
     if (asJson) {
-        console.log(JSON.stringify({ splitFamilies: [...splitFamilies].sort(), rows }, null, 2));
+        console.log(JSON.stringify({ splitFamilies: [...splitFamilies].sort(), rows, authoring }, null, 2));
     } else {
         console.log(`  families the runtime can author per side: ${[...splitFamilies].sort().join(', ') || 'none'}`);
         for (const row of rows) {
@@ -202,6 +281,18 @@ async function main(argv) {
         }
         const mapped = rows.filter((r) => r.status === 'mapped').length;
         console.log(`  ${mapped}/${rows.length} parts map to a slot the rig can load and tell apart`);
+
+        if (authoring.length) {
+            console.log('\n  authoring requirements (advisory; --landmarks needed for the bake axis)');
+            for (const row of authoring) {
+                const axis = row.bakedAxisDeg === null ? '   n/a'
+                    : `${row.bakedAxisDeg.toFixed(1).padStart(6)}`;
+                const bake = row.neutralBake === null ? '?' : (row.neutralBake ? 'ok' : 'BAKED BENT');
+                const trunks = row.trunksFree ? 'ok' : 'TRUNKS BAKED ON';
+                console.log(`    ${row.part.padEnd(18)} bone axis ${axis} deg ${bake.padEnd(11)}`
+                    + ` dark top ${(row.darkTopFraction * 100).toFixed(1).padStart(5)}%  ${trunks}`);
+            }
+        }
     }
 
     if (strict && rows.some((r) => r.status !== 'mapped')) process.exit(1);

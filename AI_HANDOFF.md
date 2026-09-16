@@ -94,13 +94,20 @@ Consequences, none of them yet applied:
   slots exist. Three-quarter is also what makes them worth drawing: both eyes
   read, which was `DRAWING_GUIDE.md`'s original argument.
 
-**Next: Derek's visual approval of profile candidate v5.** Milestones 1-5 of
-Derek's eight-milestone plan are implemented and committed on branch
-`thesz-v2-profile-normalization` (unpushed, seven commits `33f0477`..`7e677ed`).
-The pipeline is now data-driven and a second character builds through it with no
-code change. `profile-v2-normalized-v5` exists as a candidate and is
-**mechanically certified, awaiting visual approval** — nothing in it is
-visually approved, runtime certified, or production ready.
+**Next (2026-09-15): Derek's review of the front3q modular candidate.** Work has
+moved from the profile view to the shipped-rig front3q track. The live candidate
+is `production-front3q-modular/v3` — twelve separately authored parts targeting
+the legacy rig, with landmarks measured in `../v2/landmarks.json`. It is
+**unapproved**: Codex records both elbows failing the articulation stress sweep
+and shoulder and hip straight-runs over the proposed limit, and the proof
+renderer additionally reports an 8.2% torso-to-pelvis hip-span disagreement and
+a `pelvis_overlay` with no registration landmarks at all.
+
+`profile-v2-normalized-v5` remains mechanically certified and awaiting visual
+approval, but it is a **secondary-view candidate** since Derek's 2026-09-13
+three-quarter ruling and is no longer the gate on anything. Milestones 1-5 are
+committed on `thesz-v2-profile-normalization` (`33f0477`..`7e677ed`). Nothing in
+either candidate is visually approved, runtime certified, or production ready.
 
 The deltoid mass below is not the only open art question any more; see the
 2026-09-13 entry for five master-level findings that no gate measures, including
@@ -124,11 +131,49 @@ manifest's `runtimePrerequisites` are still `pending`, so none of this renders
 in a match. A rig-tuner preview was built and reverted for exactly that reason
 (2026-08-26); do not rebuild it until those prerequisites are real.
 
-## Active assignment — review Milestones 1-5 (Codex)
+## Source artwork is gitignored and is NOT preserved by any commit
 
-**2026-09-07.** Claude implemented Milestones 1-5 of Derek's eight-milestone
-plan. Nothing is pushed. Review it before Milestone 6 starts; Derek's visual
-approval of candidate v5 is a separate decision and is not yours to make.
+`.gitignore:3` excludes `Sprite sheets/` in full. Every commit in this repository
+therefore preserves the tooling that processes the artwork and none of the
+artwork itself. What currently exists only on Derek's disk:
+
+| path | what it is |
+| --- | --- |
+| `.../production-front3q-modular/v3/{source,keyed,parts}` | the live front3q candidate, 12 parts |
+| `.../production-front3q-modular/v2/landmarks.json` | the measured landmarks v3 is rendered with |
+| `.../production-limb-redesign/v1/` | the six-part legacy-rig limb board |
+| `.../v2-canonical/pass-a/candidates/thesz-v2-pass-a-v3.png` | the identity-approved Pass-A master |
+| `.../v2-layer-standardization/references/lou-canonical-chroma-v1.png` | the canonical clean-shaven identity reference |
+| `Sprite sheets/Audience/chicago-fan-v1.png` | the generated crowd source strip |
+
+**Measured 2026-09-15: the suite cannot pass in a fresh checkout.** Checking any
+commit out into a clean worktree, without `Sprite sheets/`, fails five tests —
+`landmarkFit`, `profileV2Normalization`, the two shipped-thigh pixel tests, and
+`frozen profile v4 reproduces its recorded artifact identity`. They do not skip;
+they fail, because they read artwork that no commit contains. This is
+pre-existing and not new: `e454f77` fails six the same way (the sixth being the
+unregistered `measure-art-contract.mjs`, fixed in `47c6f5c`).
+
+So "479/479 on Node 22.23.1" is true only on a machine that already has the art.
+Anyone cloning this repository gets 474/479 and cannot fix it from the
+repository alone. That is worth deciding about deliberately rather than
+discovering during an onboarding: either those tests should skip when their
+inputs are absent, the way `tests/articulationProofs.test.js` does, or the
+artwork they depend on should stop being gitignored.
+
+Two smaller consequences. The cut audience frames under
+`src/assets/audience/chicago-fan-v1/` **are** committed, so that pilot survives
+while its source does not. And `tests/articulationProofs.test.js`'s real-data
+tests skip rather than fail when the candidate is absent — which means a
+permanent skip in CI would leave the real-data claim resting on nothing.
+
+## Completed assignment — review Milestones 1-5 (Codex, done 2026-09-14)
+
+**2026-09-07, closed 2026-09-14.** Claude implemented Milestones 1-5 of Derek's
+eight-milestone plan. Codex has since reviewed this and moved on to the front3q
+modular track; the section is kept as the record of what was handed over. Derek's
+visual approval of candidate v5 was never given and remains outstanding, though
+v5 is now a secondary-view candidate rather than a gate.
 
 Seven commits on `thesz-v2-profile-normalization`:
 
@@ -236,6 +281,148 @@ handoff status summary is `19b4da2`, both on branch
 `thesz-v2-profile-normalization`. The expansion below starts from that branch.
 
 ## Handoff Log
+
+### 2026-09-14 — Claude (proof renderer rebuilt against the real schema, after Codex rejected it)
+
+Codex ran the proof renderer on the real V3 candidate and rejected it. The
+verdict was right on every point, and one of them contradicted a claim I had made
+in this file. Keep the measurement harness; the renderer needed rebuilding.
+
+**What Codex found, all confirmed.**
+
+1. **The neutral assembly was severely misregistered** — pelvis above the head.
+   Root cause: `pivotOf` did not exist, and the two call sites disagreed about
+   the default for a part that declares no `jointPivotFrac`. Resolving a socket
+   used `{u:0.5,v:0}`; placing the root used `{u:0.5,v:0.5}`. The real torso
+   declares sockets and no pivot, so every socket hung half a torso-height off
+   the figure. One quantity with two defaults.
+2. **Head placement ignored `headAnchorFrac`** unless `jointPivotFrac` was also
+   present. The real head declares only `headAnchorFrac` (v=0.946, the neck
+   base); my synthetic fixture supplied both and hid it.
+3. **The pelvis layers were assumed to share the torso's canvas and origin.**
+   The real exports are independently cropped — torso 266x418, underlay 260x216.
+   They are now registered through the `nearHip`/`farHip` sockets both declare,
+   by translation only. Scale is deliberately not solved: the hip spans disagree
+   by 8.2% on this candidate, and that is a registration defect in the art, so it
+   is reported rather than scaled away. `pelvis_overlay` declares no landmarks at
+   all and is now left undrawn and named, not guessed into place.
+4. **Parent rotation did not propagate.** A child was carried to the rotated
+   socket but kept a world-absolute angle, so a shoulder sweep left the forearm
+   pointing the way it did at rest. Pose angles are now local and compose down
+   the chain. **I had claimed in this file that the forearm followed the upper
+   arm through the chain. It did not. I misread my own contact sheet.**
+5. **The Pass-A comparison downsized the whole 4096x4096 five-view master.**
+   It now extracts the declared `sourceSheet.masterPanels` rectangle for the view
+   (front3q: 768x960 at 864,64), and refuses to panel a sheet whose canvas does
+   not match the manifest's declared size.
+6. **"12/12 parts rendered" proved files loaded, not that they were placed.**
+   It now reports parts *positioned* against parts loaded, names anything with no
+   registration landmark, and `--strict` exits non-zero on an unregistered part.
+
+**One more defect, found by looking at the rebuilt output.** The canvas was fixed
+at 900px with the root at a hardcoded fraction of it, so the real head reached
+about 131px above the top and was silently cut off — every neutral proof and
+scale comparison showed a headless Lou and nothing reported it. The canvas is now
+fitted to the assembled figure, including posed extremes.
+
+**The testing gap that allowed all of this.** Every fixture was synthetic and
+declared every landmark the code happened to read. Synthetic fixtures encode what
+I believed the schema was; they cannot catch the belief being wrong. There are
+now real-schema fixtures (head with only `headAnchorFrac`, torso with only
+sockets, pelvis on its own cropped canvas) and an end-to-end test that runs the
+renderer against the actual V3 candidate and asserts anatomical ordering —
+head above torso above pelvis above knee. That test **skips** when the candidate
+is absent, because `Sprite sheets/` is gitignored in full; a permanent skip in CI
+would mean the real-data claim rests on nothing.
+
+**Status.** The renderer now assembles V3 coherently and produces a genuine
+front3q-panel comparison at 265/209/154. It is **still not an approval
+instrument** and nothing here approves the art. Two things it reports on this
+candidate are art findings for Codex, not renderer bugs: the 8.2% hip-span
+disagreement, and `pelvis_overlay` shipping with no registration landmarks.
+
+**Correction to the previous entry.** It said only one existing file changed. In
+fact three did: `tests/pipelineParameterization.test.js`, `package.json` (two npm
+scripts) and `AI_HANDOFF.md`. `tools/wrestler-cutter/remove-chroma-key.mjs` is
+also modified in the tree; that is Codex's despill work, not mine.
+
+480/480 on Node 22.23.1. No `src/`, manifest, landmark, art or runtime file
+changed. No Lou artwork was created or corrected in this session, and no new
+candidate version was produced.
+
+### 2026-09-13 — Claude (joint articulation harness; the named gate is broken and must not be repointed)
+
+Derek asked for the measured half of the front3q work, built independently of
+whoever produces the art. Full record in
+`AI_HANDOFF_ENTRIES/2026-09-13-claude-joint-articulation-harness.md`.
+
+**`npm run art:measure-joints`** — `tools/wrestler-cutter/measure-joint-articulation.mjs`
+sweeps a joint through its articulation range in both facings and reports the
+worst frame against `interior_bg_px` / `sharpest_deg` / `straight_run_px`. It
+composites through the runtime's own `jointPivotFrac` path
+(`Skeleton.js:818-821`) and pins `localToWorld` against `Skeleton.js`'s `_end`,
+so it poses limbs the way the game does. Advisory; `--strict` blocks.
+
+**Do not repoint `validate_joints.py` at the new parts, and disregard
+`NEW_ASSETS_SPEC.md` where it instructs that.** Two defects, neither cosmetic:
+
+1. **It measures its own crop.** It crops a square around the joint
+   (`validate_joints.py:134`, radii 55/48/60/52). The figure always overruns
+   that crop, the silhouette is clipped by the crop rectangle, and the contour
+   walks that rectangle's straight edge. `straight_run_px` measures
+   34/46/60/80/92px for crop radii 20/28/36/48/64 — identical at every joint
+   angle including rest. Against a threshold of 18 it fails every limb ever
+   authored while appearing to work. The new harness inherited this exactly in
+   its first version, by mirroring the Python deliberately; fixed by measuring
+   the full frame and filtering by distance to the joint.
+2. **It ranks the worst pose by `interior_bg_px` alone**
+   (`validate_joints.py:139`). For an outward-rotating limb that wedge is open
+   to the background on at least one axis, so `interior_bg_px` stays 0 while the
+   flat attachment face registers in `straight_run_px` at 38-41. It reports the
+   cleanest frame of a failing sweep as its worst case.
+
+The thresholds themselves are fine. It was the measurement under them that was
+wrong.
+
+**A correction to my own assumption in the same work.** I built this believing
+`interior_bg_px` fails first, because the old sources failed it at 51-102px. For
+an outward-rotating limb it does not — `straight_run_px` is the load-bearing
+metric there. Both facts are pinned so neither can be quietly dropped.
+
+**Structural note.** `Sprite sheets/` is gitignored in full (`.gitignore:3`), so
+the validator `NEW_ASSETS_SPEC.md` names as the automated gate is untracked,
+undiffable and un-runnable in CI. That is why the replacement is tracked Node
+tooling under `tools/`, and an argument against citing that script as a gate.
+
+**`npm run art:proofs`** — `render-articulation-proofs.mjs` emits the neutral
+assembly, an articulation contact sheet per limb segment across its full range in
+both facings, and the Pass-A comparison at 265/209/154 under the broadcast
+treatment. Proven end to end on a synthetic twelve-part set, output images
+inspected. That inspection caught two defects no assertion had: the head was in
+the depth order but absent from the chain table, so it was never drawn while the
+tool still reported `12/12 parts rendered`; and the pelvis layers inherited the
+torso's pivot instead of keeping their own. Both pinned. Scanlines are applied in
+screen space at fixed 2px pitch per `Arena.js:2877-2886` — scaling them with the
+figure would hide why small scale is hard.
+
+**The front3q generation brief was sent to Codex** on Derek's instruction,
+carrying the corrected part decomposition (both sides split at elbow and knee —
+`RENDER_PART_SLOTS` has no whole-limb slot and `Skeleton.js:1556-1565` rotates
+the far forearm independently), separately authored near/far pieces, Derek's
+production articulation ranges, and the warning above. Copy at
+`~/Desktop/codex-front3q-prompt.md`.
+
+**Derek's ruling on the forearm offsets.** The uncommitted `thesz.js` change
+zeroing `nearForearmOffsetX/Y` and `farForearmOffsetX/Y` is reverted: restore the
+LOCKED 2026-07-31 values and drop `tests/productionJointConfig.test.js`'s pin at
+zero. The resting pose has to make sense too. Explicitly deferred rather than
+settled — the new limbs may change the forearm shape enough that the tradeoff
+disappears. Codex is actioning it.
+
+445/445 on Node 22.23.1, up from 418 (27 new tests). No `src/`, manifest,
+landmark, art or runtime file changed. One additive line in
+`tests/pipelineParameterization.test.js` registers the new tool, which its guard
+requires. Codex's in-flight uncommitted work untouched.
 
 ### 2026-09-13 — Derek (ruling: three-quarter is the primary view) / Claude (cleanup)
 

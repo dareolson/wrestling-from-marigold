@@ -46,7 +46,9 @@
     "preart:export-v2": "node tools/env/require-node.mjs",
     "test": "node --test tests/*.test.js",
     "pretest": "node tools/env/require-node.mjs",
-    "proof:hammerlock": "node tools/debug/hammerlock_authoring_proof.mjs"
+    "proof:hammerlock": "node tools/debug/hammerlock_authoring_proof.mjs",
+    "art:measure-joints": "node tools/wrestler-cutter/measure-joint-articulation.mjs",
+    "art:proofs": "node tools/wrestler-cutter/render-articulation-proofs.mjs"
   },
   "repository": {
     "type": "git",

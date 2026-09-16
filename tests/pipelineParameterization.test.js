@@ -147,7 +147,9 @@ test('every cutter tool is either a production stage or a listed one-off', async
     const accounted = new Set([...PRODUCTION_STAGES, ...LEGACY_ONE_OFFS,
         // smoke tests and utilities that take their input as arguments
         'anchor-editor-smoke.mjs', 'canonical-sheet-smoke.mjs',
-        'prepare_george_v9_broadcast.mjs', 'remove-chroma-key.mjs']);
+        'prepare_george_v9_broadcast.mjs', 'remove-chroma-key.mjs',
+        'measure-art-contract.mjs',
+        'measure-joint-articulation.mjs', 'render-articulation-proofs.mjs']);
     const unaccounted = present.filter(name => !accounted.has(name));
     assert.deepEqual(unaccounted, [],
         'a new cutter tool must be declared a production stage or a one-off');

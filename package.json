@@ -48,7 +48,8 @@
     "pretest": "node tools/env/require-node.mjs",
     "proof:hammerlock": "node tools/debug/hammerlock_authoring_proof.mjs",
     "art:measure-joints": "node tools/wrestler-cutter/measure-joint-articulation.mjs",
-    "art:proofs": "node tools/wrestler-cutter/render-articulation-proofs.mjs"
+    "art:proofs": "node tools/wrestler-cutter/render-articulation-proofs.mjs",
+    "art:map-candidate": "node tools/wrestler-cutter/map-candidate-to-rig.mjs"
   },
   "repository": {
     "type": "git",

@@ -244,20 +244,44 @@ export function trimToContent(img, pad = 0) {
 
 // ── Assembly ────────────────────────────────────────────────────────────────
 
-// Draw order for front3q. Coverage layers back the parts they support:
-// pelvisUnderlay and the torso's concealed shoulder paint sit behind the limbs
-// that move over them, and pelvisOverlay sits over the thigh tops to hide the
-// hip seam. Far side before torso before near side is what makes a
-// three-quarter view read as having depth.
+// Draw order for front3q, back to front. Far side before torso before near side
+// is what makes a three-quarter view read as having depth.
+//
+// THIS IS NOT A DESIGN CHOICE HERE. It is a transcription of the order the
+// runtime actually draws, Skeleton.js's setDepth block, and the point of this
+// renderer is to predict what the game will show. The first version was written
+// from first principles instead and inverted the runtime in five places, every
+// one of which made the candidate look worse than it will actually render:
+//
+//   1. elbows, both sides -- it drew the forearm OVER the upper arm. The runtime
+//      does the opposite (nearForearm 0.004 < nearUpArm 0.00401; farForearm base
+//      < farUpArm base+0.00001) and says why: if the forearm wins that tie its
+//      overlap band "sweeps across the upper-arm end as the elbow bends and the
+//      joint appears to drift". Inverted, every elbow in every proof showed the
+//      forearm's pale un-outlined attachment cap lying on top of the arm --
+//      material the game keeps hidden.
+//   2. pelvis_underlay -- drawn over the far leg. The runtime puts the underlay
+//      behind both thighs (0.00005 < 0.0001); it is a complete underbody seen
+//      only in the opening between the legs.
+//   3. pelvis_overlay -- drawn over the near thigh. The runtime puts it under
+//      (0.0025 < 0.003) on Derek's explicit instruction, quoted in Skeleton.js:
+//      "his near leg needs to stack on top of his trunks".
+//   4. head/torso -- drawn head over torso. The runtime draws the torso over the
+//      head (0.0005 < 0.001), which is what `neckInTorso` depends on: the torso
+//      carries the neck stub and must cover the head's neck base.
+//
+// A diagnostic instrument that disagrees with the runtime about which layer is
+// on top is not measuring the art; it is measuring its own assumptions. Pinned
+// against Skeleton.js's own depths by tests/articulationProofs.test.js.
 export const FRONT3Q_DEPTH_ORDER = Object.freeze([
-    'far_upper_arm', 'far_forearm',
-    'far_thigh', 'far_shin',
+    'far_forearm', 'far_upper_arm',
     'pelvis_underlay',
-    'torso',
+    'far_thigh', 'far_shin',
     'head',
-    'near_thigh', 'near_shin',
+    'torso',
     'pelvis_overlay',
-    'near_upper_arm', 'near_forearm',
+    'near_thigh', 'near_shin',
+    'near_forearm', 'near_upper_arm',
 ]);
 
 // Chains, so a pose can bend a limb rather than only place it.

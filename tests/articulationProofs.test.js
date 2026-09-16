@@ -354,12 +354,25 @@ test('contactSheet: an empty frame list does not throw', () => {
 
 test('the front3q depth order backs coverage layers behind what they support', () => {
     const at = (name) => FRONT3Q_DEPTH_ORDER.indexOf(name);
-    // pelvisUnderlay behind the thighs it backs; pelvisOverlay over them to hide
-    // the hip seam. A coverage layer drawn on top paints over the art it exists
-    // to support -- the mistake that put shoulderMask last in every view's
-    // depthOrder before Milestone 4.
+    // pelvisUnderlay behind the thighs it backs. A coverage layer drawn on top
+    // paints over the art it exists to support -- the mistake that put
+    // shoulderMask last in every view's depthOrder before Milestone 4.
     assert.ok(at('pelvis_underlay') < at('near_thigh'));
-    assert.ok(at('pelvis_overlay') > at('near_thigh'));
+
+    // pelvisOverlay sits UNDER the near thigh, not over it.
+    //
+    // This assertion used to read `>`, from NEW_ASSETS_SPEC.md's description of
+    // the part as "drawn OVER the thigh tops to hide the hip seam". The runtime
+    // was deliberately changed away from that on Derek's instruction, quoted in
+    // Skeleton.js beside the depth it sets: "his near leg needs to stack on top
+    // of his trunks". It still covers the torso/trunks seam it was added for and
+    // the far hip, but the near thigh passes in front of it (0.0025 < 0.003).
+    //
+    // The spec document and the shipped runtime disagree here; the runtime and
+    // the instruction behind it win, and a proof renderer that follows the
+    // document instead shows a candidate the game will not draw.
+    assert.ok(at('pelvis_overlay') < at('near_thigh'));
+
     // Far side behind the torso, near side in front: what makes 3q read as depth.
     assert.ok(at('far_upper_arm') < at('torso'));
     assert.ok(at('near_upper_arm') > at('torso'));
@@ -664,4 +677,80 @@ test('an extreme pose is not clipped either', async (t) => {
     let touching = false;
     for (const x of cols) if (frame.rgba[x * 4 + 3] > 0) touching = true;
     assert.equal(touching, false, 'a raised arm must not be clipped at the top');
+});
+
+// ── draw order is transcribed from the runtime, not invented ────────────────
+//
+// The proof renderer exists to predict what the game will put on screen. Its
+// first depth order was written from first principles and inverted Skeleton.js
+// in five places -- both elbows, the pelvis underlay, the pelvis overlay and
+// head/torso. Every inversion made the candidate look worse than it renders:
+// the elbow ones in particular drew each forearm's pale un-outlined attachment
+// cap on top of the upper arm, material the runtime keeps buried, so every
+// proof image showed a tan band at every elbow that the game will never show.
+//
+// This test reads Skeleton.js's own setDepth calls and checks the order against
+// them, so the transcription cannot silently drift from its source.
+
+test('FRONT3Q_DEPTH_ORDER matches the depths Skeleton.js actually assigns', async () => {
+    const source = await readFile(path.join(ROOT, 'src/Skeleton.js'), 'utf8');
+
+    // `this.<part>...setDepth(base + <n>)` / `setDepth(base)`, inside the depth
+    // block. Optional-chained calls (`this.pelvisOverlay?.setDepth`) included.
+    const depths = new Map();
+    const re = /this\.(\w+)\??\.setDepth\(base(?:\s*\+\s*([0-9.]+))?\)/g;
+    for (let m = re.exec(source); m; m = re.exec(source)) {
+        if (!depths.has(m[1])) depths.set(m[1], Number(m[2] ?? 0));
+    }
+
+    // Proof part name -> the Skeleton field that draws it.
+    const RUNTIME_FIELD = {
+        far_forearm: 'farForearm', far_upper_arm: 'farUpArm',
+        pelvis_underlay: 'pelvisUnderlay',
+        far_thigh: 'farThigh', far_shin: 'farShin',
+        head: 'head', torso: 'torso',
+        pelvis_overlay: 'pelvisOverlay',
+        near_thigh: 'nearThigh', near_shin: 'nearShin',
+        near_forearm: 'nearForearm', near_upper_arm: 'nearUpArm',
+    };
+
+    for (const [part, field] of Object.entries(RUNTIME_FIELD)) {
+        assert.ok(depths.has(field),
+            `Skeleton.js no longer assigns a depth to ${field}; the mapping for `
+            + `${part} needs revisiting rather than deleting`);
+    }
+
+    // Every part in the proof order must be non-decreasing in runtime depth.
+    let previous = -Infinity;
+    let previousPart = null;
+    for (const part of FRONT3Q_DEPTH_ORDER) {
+        const depth = depths.get(RUNTIME_FIELD[part]);
+        assert.ok(depth >= previous,
+            `${part} (runtime depth base+${depth}) is drawn after `
+            + `${previousPart} (base+${previous}) in FRONT3Q_DEPTH_ORDER, `
+            + 'but the runtime draws it behind');
+        previous = depth;
+        previousPart = part;
+    }
+});
+
+test('the runtime keeps each upper arm over its own forearm', () => {
+    // Stated separately because it is the inversion that did the visible damage
+    // and the one most likely to be "corrected" back by someone reasoning from
+    // anatomy rather than from Skeleton.js. The comment there gives the reason:
+    // if the forearm wins the tie, its overlap band sweeps across the upper-arm
+    // end as the elbow bends and the joint appears to drift.
+    const order = FRONT3Q_DEPTH_ORDER;
+    assert.ok(order.indexOf('near_upper_arm') > order.indexOf('near_forearm'),
+        'the near upper arm draws over the near forearm');
+    assert.ok(order.indexOf('far_upper_arm') > order.indexOf('far_forearm'),
+        'the far upper arm draws over the far forearm');
+});
+
+test('the near leg stacks on top of the trunks, as Derek instructed', () => {
+    const order = FRONT3Q_DEPTH_ORDER;
+    assert.ok(order.indexOf('near_thigh') > order.indexOf('pelvis_overlay'),
+        'pelvis_overlay draws under the near thigh (Skeleton.js: 0.0025 < 0.003)');
+    assert.ok(order.indexOf('pelvis_underlay') < order.indexOf('far_thigh'),
+        'the pelvis underlay is an underbody, drawn behind both thighs');
 });

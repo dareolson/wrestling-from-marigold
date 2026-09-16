@@ -74,34 +74,77 @@ That document's camera guidance is therefore current again; only its
 edge-pivot/whole-forearm/whole-shin joint rules remain legacy, and its header
 does not yet say so.
 
-Consequences, none of them yet applied:
+Consequences. **The first and fourth were applied 2026-09-15 in `4b06158`;**
+the rest stand as written.
 
-- `views.profile.role` is `primary-gameplay-source` and `front3q.role` is
-  `front-turn-source`. Those are now backwards. `V2_VIEW_META` pins `role`,
-  `runtimeStatus` and `cameraNearSide` per view name as constants, so correcting
-  this is a code-and-data change, not a manifest edit alone.
+- ~~`views.profile.role` is `primary-gameplay-source` and `front3q.role` is
+  `front-turn-source`. Those are now backwards.~~ **Done.** `front3q` is
+  `primary-gameplay-source` and `profile` is `move-mechanics-source`, in both
+  `V2_VIEW_META` and the manifest, pinned by tests so it cannot flip back.
+  `role` moved and **no `runtimeStatus` did**: promoting front3q is an
+  art-direction decision, not runtime progress, and all seven
+  `runtimePrerequisites` remain `pending`.
 - The single-visible-limb ruling still stands for `profile` and `back3q` and is
   unaffected — but it stops gating the primary view, because `front3q` already
   declares both arms and both legs visible.
 - `profile-v2-normalized-v5` is a profile recut. It is now a secondary-view
   candidate rather than the gate on the primary view, and its pending visual
   approval should be re-scoped accordingly.
-- Derek will use the **profile head on the three-quarter body** until more heads
-  are generated. That is a cross-view reuse and the standard requires reuse to
-  be declared explicitly; it must not be left to silent fallback.
+- ~~Derek will use the **profile head on the three-quarter body** until more
+  heads are generated. That is a cross-view reuse and the standard requires reuse
+  to be declared explicitly.~~ **Done.** Declared in the manifest's new
+  `crossViewPartReuse` block — part, target view, source view, transform,
+  temporary, and a validated reason. There was no mechanism for cross-view reuse
+  before; `bilateralSegmentReuse` only covers left/right within one view.
 - New heads for facial expression are planned. `variantFamilies` already
   declares `head.idle/hurt/effort/down/winning` per view with zero art, so the
   slots exist. Three-quarter is also what makes them worth drawing: both eyes
   read, which was `DRAWING_GUIDE.md`'s original argument.
 
-**Next (2026-09-15): Derek's review of the front3q modular candidate.** Work has
-moved from the profile view to the shipped-rig front3q track. The live candidate
-is `production-front3q-modular/v3` — twelve separately authored parts targeting
-the legacy rig, with landmarks measured in `../v2/landmarks.json`. It is
-**unapproved**: Codex records both elbows failing the articulation stress sweep
-and shoulder and hip straight-runs over the proposed limit, and the proof
-renderer additionally reports an 8.2% torso-to-pelvis hip-span disagreement and
-a `pelvis_overlay` with no registration landmarks at all.
+**Next (2026-09-15): Derek's visual call on the front3q candidate.** It is
+built, wired and reviewable in the running game; see
+`FRONT3Q_CANDIDATE_EVIDENCE/README.md` for the images and the four open
+art-direction questions, and
+`AI_HANDOFF_ENTRIES/2026-09-15-claude-front3q-replacement-limb-candidate.md`
+for the full record. Six commits, `3493f98`..`4516bfa`, unpushed.
+
+The candidate offered is `production-front3q-modular/v4-straightened`: v3's
+paint with the four arm segments rotated upright. **The arms were painted bent**
+— the near arm carried 31.7 degrees of elbow flex in the painting itself, and
+since the rig rotates a limb by the pose angle alone, that added to every pose in
+every frame. Nothing had measured it. `npm run art:straighten-limbs` corrects it
+deterministically; the legs measured near-neutral and were left alone.
+
+**Still unapproved, and a rotation cannot fix paint.** 15 of 16 joint-facings
+fail with numbers essentially unchanged from v3. The pale un-outlined attachment
+caps at every joint, the notched near-upper-arm silhouette and the hip-span
+disagreement all need new artwork.
+
+**Three instruments were reporting numbers that were not measurements**, all
+now fixed and pinned:
+
+- **Both knees had never been measured.** They sat 86px below a fixed 512px
+  canvas, so all three metrics took their perfect default and the harness
+  reported "pass" in both facings — which this file recorded as "Knees pass in
+  both facings". Scoring nothing is now reported as UNMEASURED and can never
+  pass, separated from the opposite case (a joint fully buried in paint, which
+  is a genuine pass and which the far hip really does from 90 to 110 degrees).
+- **The proof renderer's draw order inverted the runtime in four places**,
+  including both elbows, which put each forearm's pale attachment cap on top of
+  the arm in every proof image. Now checked against Skeleton.js's own depths.
+- **"Targeting the shipped legacy rig" was true of neither candidate.** Shipped
+  Lou loads six FILES in which the four limb families are each ONE painting
+  placed twice; "six parts" and "six files" are not the same statement.
+  `npm run art:map-candidate` now answers this from the runtime: front3q v3 maps
+  8 of 12 (the split upper arms have no renderer opt-in, the split thighs have no
+  loader filename — two different failures), and the six-part
+  `production-limb-redesign/v1` maps only 2 of 6, because `far-arm` and `far-leg`
+  fuse the elbow and knee the rig articulates independently.
+
+Two findings turned out not to be on this track: the **baked thigh trunks belong
+to the six-part board** (73.8% dark at the thigh top, versus 3.9% on front3q v3),
+and the **pelvis findings are properties of layers shipped Lou does not have** —
+his torso carries its own trunks, so no pelvis layer is wired.
 
 `profile-v2-normalized-v5` remains mechanically certified and awaiting visual
 approval, but it is a **secondary-view candidate** since Derek's 2026-09-13
@@ -287,6 +330,12 @@ handoff status summary is `19b4da2`, both on branch
 Codex ran the proof renderer on the real V3 candidate and rejected it. The
 verdict was right on every point, and one of them contradicted a claim I had made
 in this file. Keep the measurement harness; the renderer needed rebuilding.
+
+**Correction (2026-09-15).** Two things in this entry did not survive. The
+rebuilt renderer's draw order inverted Skeleton.js in four places, including
+both elbows — fixed in `9aa0594`. And the measurement harness that this entry
+told the next session to keep was itself reporting both knees as passing when it
+had never measured them; see `3493f98`.
 
 **What Codex found, all confirmed.**
 

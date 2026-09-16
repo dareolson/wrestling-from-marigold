@@ -5,6 +5,10 @@ import AIHandler from '../AIHandler.js';
 import CrowdAudio from '../CrowdAudio.js';
 import { george } from '../characters/george.js';
 import { thesz } from '../characters/thesz.js';
+// Front3q replacement-limb comparison candidate. Not on the default card; it
+// appears only for ?p1=thesz-front3q-r1 / ?p2=... . Removing this import, the
+// CHARACTERS entry and the PRESETS entry removes it completely.
+import { theszFront3qR1 } from '../characters/thesz_front3q_r1.js';
 import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
@@ -18,7 +22,10 @@ import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamIn
 // (characters + asset folders), not deleted, in case of a future revert.
 // The third placeholder body type ("brawler", Graphics-fallback only, no
 // textures) is vaulted out of the active roster too -- see PRESETS below.
-const CHARACTERS = [george, thesz];
+// theszFront3qR1 is here so Arena.preload() loads its eight part files. It is a
+// review candidate, not a roster member: it is never selected unless asked for
+// by name, and shipped `thesz` is untouched by its presence.
+const CHARACTERS = [george, thesz, theszFront3qR1];
 
 // Named crowd extras: each is one chroma-keyed multi-frame reference sheet
 // cut via tools/audience-cutter into src/assets/audience/<slug>/frame1..N.png
@@ -2982,6 +2989,16 @@ export default class Arena extends Phaser.Scene {
                 skin: 0xe8c098, trunks: 0x484848,
                 moveSet: thesz.moveSet,
                 textures: thesz.textures,
+            },
+            // Temporary, reversible A/B for Derek's review of the front3q
+            // replacement limbs. Same name, pose, kit, skin and trunks as
+            // THESZ -- only the art differs, so anything that reads
+            // differently on screen is the art.
+            'thesz-front3q-r1': {
+                name: 'THESZ', personality: 'thesz', idlePose: theszFront3qR1.idlePose,
+                skin: 0xe8c098, trunks: 0x484848,
+                moveSet: theszFront3qR1.moveSet,
+                textures: theszFront3qR1.textures,
             },
         };
         // Throw rather than log: a bad move ID silently disables part of a kit,

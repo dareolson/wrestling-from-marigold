@@ -1,6 +1,11 @@
 import { access, readFile } from 'node:fs/promises';
 import { george } from '../../src/characters/george.js';
 import { thesz } from '../../src/characters/thesz.js';
+// The front3q replacement-limb review candidate. It is not on the roster, but
+// Arena.preload() loads its files, so a broken entry here would fail in the
+// browser rather than at the command line -- which is the whole point of this
+// validator running first.
+import { theszFront3qR1 } from '../../src/characters/thesz_front3q_r1.js';
 import {
     baseEntryForSlot,
     enumerateCharacterAssets,
@@ -18,7 +23,7 @@ async function pngSize(file) {
 }
 
 let failed = false;
-for (const character of [george, thesz]) {
+for (const character of [george, thesz, theszFront3qR1]) {
     const result = validateCharacterArt(character);
     for (const warning of result.warnings) console.warn(`${character.id}: warning: ${warning}`);
     for (const error of result.errors) {

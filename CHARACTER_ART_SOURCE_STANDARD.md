@@ -311,12 +311,38 @@ truly needs asymmetric left/right segment art uses a versioned extension sheet;
 the base sheet does not pretend one cell preserves two different projected limb
 paintings.
 
-A future `bodyView` clip channel will select/transition these skins. `profile`
-is the first planned production runtime target, but remains
-`pending-v2-profile-renderer` until its own compiler/global-density/grounding
-path is certified. Generating the remaining views is still required for the
-first Thesz sheet because it freezes the identity and joint architecture before
-move art starts.
+A future `bodyView` clip channel will select/transition these skins.
+
+**`front3q` is the primary gameplay source (Derek, 2026-09-13).** The other four
+are mostly tween and transition sources; `profile` earns its keep on the
+mechanics of a move — suplexes and the like — rather than as the standing view,
+and its `role` is `move-mechanics-source`. This reverses the earlier plan, under
+which profile was the first production runtime target, and it restores
+`DRAWING_GUIDE.md`'s original argument for a three-quarter body and head: both
+eyes read, which is what makes facial-expression heads worth drawing at all.
+
+Promoting front3q is an art-direction decision and changes no runtime status.
+`front3q` remains `pending-bodyView` and `profile` remains
+`pending-v2-profile-renderer` until each one's compiler/global-density/grounding
+path is certified; all seven `runtimePrerequisites` are still `pending` and none
+of this renders in a match. Generating the remaining views is still required for
+the first Thesz sheet because it freezes the identity and joint architecture
+before move art starts.
+
+### Cross-view reuse
+
+Borrowed paint crosses views only through `crossViewPartReuse`, which names the
+part, the view it serves, the view it comes from, whether the borrow is
+temporary, and why it is in force. The reuse rule above — a missing view is
+never filled by silent fallback — is what this block enforces; a declaration
+that carried no more information than the fallback would be the same defect
+under a field name, so the reason is validated, not optional. Like within-view
+bilateral reuse, cross-view reuse registers **without reflection**.
+
+One entry is live: **the profile head on the front3q body**, temporary, until
+three-quarter heads are generated. `variantFamilies` already declares
+`head.idle/hurt/effort/down/winning` per view with zero art behind them, so the
+slots those heads will fill exist today.
 
 ## Fixed source density and export sizes
 

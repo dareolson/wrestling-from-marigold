@@ -167,10 +167,23 @@ const V2_CONNECTIONS = Object.freeze({
     knee: { parent: ['thigh', 'knee'], child: ['shin', 'knee'], radius: 10 },
     ankle: { parent: ['shin', 'ankle'], child: ['boot', 'ankle'], radius: 8 },
 });
+// DECIDED 2026-09-13 by Derek: three-quarter is the primary gameplay view.
+// The others are tween and transition sources; profile earns its keep on the
+// mechanics of a move -- suplexes and the like -- not as the standing view.
+// DRAWING_GUIDE.md argued for a three-quarter body and head from the start.
+//
+// `role` and `runtimeStatus` are separate questions and the swap below touches
+// only the first. `role` says which view the art is FOR; `runtimeStatus` says
+// what is missing before any of it renders in a match. profile keeps
+// `pending-v2-profile-renderer` because that renderer is still the thing
+// profile specifically waits on, and front3q keeps `pending-bodyView` for the
+// same reason -- both are still pending, neither claims readiness, and
+// promoting front3q's status would assert runtime progress that has not
+// happened. All seven runtimePrerequisites remain "pending".
 const V2_VIEW_META = Object.freeze({
     front: { role: 'front-and-face-up-source', runtimeStatus: 'pending-bodyView', cameraNearSide: 'left' },
-    front3q: { role: 'front-turn-source', runtimeStatus: 'pending-bodyView', cameraNearSide: 'left' },
-    profile: { role: 'primary-gameplay-source', runtimeStatus: 'pending-v2-profile-renderer', cameraNearSide: 'left' },
+    front3q: { role: 'primary-gameplay-source', runtimeStatus: 'pending-bodyView', cameraNearSide: 'left' },
+    profile: { role: 'move-mechanics-source', runtimeStatus: 'pending-v2-profile-renderer', cameraNearSide: 'left' },
     back3q: { role: 'rear-turn-source', runtimeStatus: 'pending-bodyView', cameraNearSide: 'right' },
     back: { role: 'back-and-prone-source', runtimeStatus: 'pending-bodyView', cameraNearSide: 'right' },
 });
@@ -936,6 +949,64 @@ function validateSourceManifestV2(manifest) {
         if (!['left', 'right'].includes(reuse?.bootSourceSideByView?.[viewName])) {
             errors.push(`bilateralSegmentReuse.bootSourceSideByView.${viewName} must declare left or right`);
         }
+    }
+
+    // Cross-view part reuse. The standard's rule is that borrowed paint is
+    // allowed through an explicit declaration and that "a missing view is never
+    // filled by silent fallback" -- so the declaration is what makes the reuse
+    // legal, and an undeclared borrow is the failure this block exists to make
+    // impossible to ship quietly.
+    //
+    // Live entry: Derek runs the profile head on the three-quarter body until
+    // three-quarter heads exist (ruling 2026-09-13). front3q is now the primary
+    // gameplay view and has no head art of its own, which is exactly the
+    // situation a silent fallback would paper over.
+    const crossView = manifest.crossViewPartReuse;
+    requireExactKeys(crossView, ['policy', 'entries'], 'crossViewPartReuse', errors);
+    if (crossView?.policy !== 'explicit-declaration-required-never-silent-fallback') {
+        errors.push('crossViewPartReuse.policy must be '
+            + '"explicit-declaration-required-never-silent-fallback"');
+    }
+    if (!Array.isArray(crossView?.entries)) {
+        errors.push('crossViewPartReuse.entries must be an array');
+    } else {
+        const seen = new Set();
+        crossView.entries.forEach((entry, index) => {
+            const prefix = `crossViewPartReuse.entries[${index}]`;
+            requireExactKeys(entry, ['part', 'targetView', 'sourceView', 'transform', 'temporary', 'reason'],
+                prefix, errors);
+            if (!manifest.parts?.[entry?.part]) {
+                errors.push(`${prefix}.part must name a declared part`);
+            }
+            for (const field of ['targetView', 'sourceView']) {
+                if (!V2_VIEW_ORDER.includes(entry?.[field])) {
+                    errors.push(`${prefix}.${field} must name one of the five declared views`);
+                }
+            }
+            if (entry?.targetView === entry?.sourceView) {
+                errors.push(`${prefix} must borrow from a different view than it serves`);
+            }
+            // Reuse across views registers without reflection, the same rule
+            // oppositeTransformByView already machine-enforces within a view.
+            if (entry?.transform !== 'unreflected-registration') {
+                errors.push(`${prefix}.transform must be "unreflected-registration"`);
+            }
+            if (typeof entry?.temporary !== 'boolean') {
+                errors.push(`${prefix}.temporary must be declared true or false`);
+            }
+            // A reason is load-bearing, not decoration: this is the field that
+            // says why a view is wearing another view's paint, and without it
+            // the declaration carries no more information than the fallback it
+            // is supposed to replace.
+            if (typeof entry?.reason !== 'string' || entry.reason.trim().length < 20) {
+                errors.push(`${prefix}.reason must record why the borrow is in force`);
+            }
+            const key = `${entry?.targetView}.${entry?.part}`;
+            if (seen.has(key)) {
+                errors.push(`${prefix} duplicates the source for ${key}`);
+            }
+            seen.add(key);
+        });
     }
 
     requireExactKeys(manifest.connections, Object.keys(V2_CONNECTIONS), 'connections', errors);

@@ -122,3 +122,100 @@ test('the proof renderer has no view-specific hardcoded drawing sequence', async
     assert.match(code, /visibility\.arms/, 'arm chains must be gated by declared visibility');
     assert.match(code, /visibility\.legs/, 'leg chains must be gated by declared visibility');
 });
+
+// ── Derek's 2026-09-13 ruling, encoded ──────────────────────────────────────
+//
+// "Three-quarter is the primary view. The others are mostly tween and
+// transition sources -- profile for suplexes and similar move mechanics, not
+// for standing gameplay."
+//
+// Before this, views.profile.role was `primary-gameplay-source` and front3q was
+// `front-turn-source`: the ruling's exact inverse. It sat that way in the
+// manifest and in V2_VIEW_META for two days because nothing pinned it, which is
+// what these tests are for. A decision that only lives in prose is a decision
+// the next mechanical pass will quietly contradict.
+
+test('front3q is the primary gameplay source and profile serves move mechanics', () => {
+    assert.equal(manifest.views.front3q.role, 'primary-gameplay-source');
+    assert.equal(manifest.views.profile.role, 'move-mechanics-source');
+
+    // And the constants agree with the data, which is the half that actually
+    // gates: V2_VIEW_META pins role per view name, so a manifest edit alone
+    // cannot move the ruling.
+    const swapped = clone();
+    swapped.views.front3q.role = 'front-turn-source';
+    swapped.views.profile.role = 'primary-gameplay-source';
+    const errors = errorsFor(swapped);
+    assert.ok(errors.some(e => e.includes('views.front3q.role must be "primary-gameplay-source"')),
+        'reverting front3q must fail');
+    assert.ok(errors.some(e => e.includes('views.profile.role must be "move-mechanics-source"')),
+        'reverting profile must fail');
+});
+
+test('the ruling moves the role, and does not promote any runtime status', () => {
+    // role says which view the art is FOR. runtimeStatus says what is missing
+    // before it renders in a match. Making front3q primary is an art-direction
+    // decision and must not be allowed to read as runtime progress.
+    assert.equal(manifest.views.front3q.runtimeStatus, 'pending-bodyView');
+    assert.equal(manifest.views.profile.runtimeStatus, 'pending-v2-profile-renderer');
+    for (const [name, view] of Object.entries(manifest.views)) {
+        assert.match(view.runtimeStatus, /^pending-/,
+            `${name} must still declare a pending runtime status`);
+    }
+    for (const [name, state] of Object.entries(manifest.runtimePrerequisites)) {
+        assert.equal(state, 'pending',
+            `${name} must remain pending; none of this renders in a match yet`);
+    }
+});
+
+test('the single-visible-limb ruling survives, and no longer gates the primary view', () => {
+    // It still binds profile and back3q. But front3q declares both arms and
+    // both legs, so promoting it does not smuggle the bilateral silhouette the
+    // pipeline review rejected into the primary view by the back door.
+    for (const viewName of ['profile', 'back3q']) {
+        assert.equal(manifest.views[viewName].visibility.arms.length, 1);
+        assert.equal(manifest.views[viewName].visibility.legs.length, 1);
+    }
+    assert.equal(manifest.views.front3q.visibility.arms.length, 2);
+    assert.equal(manifest.views.front3q.visibility.legs.length, 2);
+    assert.deepEqual(manifest.views.front3q.visibility.hiddenChainsRevealableByChoreography, []);
+});
+
+// ── cross-view reuse is declared, never silent ──────────────────────────────
+
+test('the profile head on the front3q body is declared, not a fallback', () => {
+    const reuse = manifest.crossViewPartReuse;
+    assert.equal(reuse.policy, 'explicit-declaration-required-never-silent-fallback');
+    const head = reuse.entries.find(e => e.part === 'head' && e.targetView === 'front3q');
+    assert.ok(head, 'the borrow Derek is actually running must be in the manifest');
+    assert.equal(head.sourceView, 'profile');
+    assert.equal(head.temporary, true, 'it lasts until three-quarter heads exist');
+    assert.equal(head.transform, 'unreflected-registration');
+    assert.ok(head.reason.length >= 20, 'the declaration must say why');
+});
+
+test('a cross-view borrow without a reason or a transform is rejected', () => {
+    // The declaration has to carry more information than the silent fallback it
+    // replaces, or it is the same defect with a field name attached.
+    const noReason = clone();
+    noReason.crossViewPartReuse.entries[0].reason = 'temp';
+    assert.ok(errorsFor(noReason).some(e => e.includes('.reason must record why the borrow is in force')));
+
+    const reflected = clone();
+    reflected.crossViewPartReuse.entries[0].transform = 'horizontal-mirror';
+    assert.ok(errorsFor(reflected).some(e => e.includes('.transform must be "unreflected-registration"')),
+        'cross-view reuse registers without reflection, as within-view reuse already must');
+
+    const selfBorrow = clone();
+    selfBorrow.crossViewPartReuse.entries[0].sourceView = 'front3q';
+    assert.ok(errorsFor(selfBorrow).some(e => e.includes('must borrow from a different view than it serves')));
+
+    const unknownPart = clone();
+    unknownPart.crossViewPartReuse.entries[0].part = 'cape';
+    assert.ok(errorsFor(unknownPart).some(e => e.includes('.part must name a declared part')));
+
+    const missing = clone();
+    delete missing.crossViewPartReuse;
+    assert.ok(errorsFor(missing).some(e => e.includes('crossViewPartReuse')),
+        'the block itself is required, so the borrow cannot be dropped back to silence');
+});

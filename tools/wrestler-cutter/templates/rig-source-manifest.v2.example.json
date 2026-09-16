@@ -163,6 +163,19 @@
       "back": "right"
     }
   },
+  "crossViewPartReuse": {
+    "policy": "explicit-declaration-required-never-silent-fallback",
+    "entries": [
+      {
+        "part": "head",
+        "targetView": "front3q",
+        "sourceView": "profile",
+        "transform": "unreflected-registration",
+        "temporary": true,
+        "reason": "Derek runs the profile head on the three-quarter body until three-quarter heads are generated (ruling 2026-09-13). front3q is the primary gameplay view and has no head art of its own yet."
+      }
+    ]
+  },
   "skeleton": {
     "id": "thesz-skeleton-v2",
     "boneLengths": {
@@ -884,7 +897,7 @@
     },
     "front3q": {
       "index": 1,
-      "role": "front-turn-source",
+      "role": "primary-gameplay-source",
       "runtimeStatus": "pending-bodyView",
       "cameraNearSide": "left",
       "visibility": {
@@ -1075,7 +1088,7 @@
     },
     "profile": {
       "index": 2,
-      "role": "primary-gameplay-source",
+      "role": "move-mechanics-source",
       "runtimeStatus": "pending-v2-profile-renderer",
       "cameraNearSide": "left",
       "visibility": {

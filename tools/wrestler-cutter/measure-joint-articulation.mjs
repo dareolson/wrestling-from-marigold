@@ -279,7 +279,13 @@ export function traceContour(img) {
 export function sharpestAndStraight(img, focus = null) {
     const contour = traceContour(img);
     const n = contour.length;
-    if (n < 8) return { sharpestDeg: 180, straightRunPx: 0 };
+    // `scoredPoints` is the honesty term. Both perfect values -- 180 degrees and
+    // a zero-length straight run -- are also what this returns when it measures
+    // NOTHING, so on their own they cannot distinguish a flawless joint from a
+    // joint that was never in frame. The knees of the real front3q candidate sat
+    // 86px below a fixed 512px canvas and scored a clean pass at every angle in
+    // both facings on exactly that confusion. Callers must check this.
+    if (n < 8) return { sharpestDeg: 180, straightRunPx: 0, scoredPoints: 0 };
 
     const inFocus = (p) => {
         if (!focus) return true;
@@ -290,8 +296,10 @@ export function sharpestAndStraight(img, focus = null) {
     let sharpest = 180;
     let straight = 0;
     let run = 0;
+    let scoredPoints = 0;
     for (let i = 0; i < n; i++) {
         if (!inFocus(contour[i])) { run = 0; continue; }
+        scoredPoints++;
         const a = contour[(i - k + n) % n];
         const b = contour[i];
         const c = contour[(i + k) % n];
@@ -307,7 +315,7 @@ export function sharpestAndStraight(img, focus = null) {
         if (ang < sharpest) sharpest = ang;
         if (ang > 172) { run++; if (run > straight) straight = run; } else run = 0;
     }
-    return { sharpestDeg: Math.round(sharpest * 10) / 10, straightRunPx: straight };
+    return { sharpestDeg: Math.round(sharpest * 10) / 10, straightRunPx: straight, scoredPoints };
 }
 
 // Green fringe left by an imperfect chroma key: pixels whose green channel
@@ -324,6 +332,76 @@ export function greenFringe(rgba, alpha) {
     return count;
 }
 
+// ── Canvas fitting ──────────────────────────────────────────────────────────
+//
+// The canvas must hold the parent, the joint, the focus disc, and the child at
+// EVERY angle in the sweep. It used to be a fixed 512px square with the parent
+// pivot hardcoded at its centre, which is the same defect the proof renderer had
+// at a fixed 900px: real parts are bigger than the assumption.
+//
+// On the real front3q candidate the thigh is 408px tall with its hip pivot 41px
+// down, so the knee landed at y=598 on a 512px canvas -- 86px past the bottom
+// edge. Nothing was drawn there and no contour point fell inside the focus disc,
+// so interior_bg counted 0, sharpest_deg kept its 180 default and straight_run
+// kept its 0, and BOTH KNEES REPORTED A CLEAN PASS AT EVERY ANGLE IN BOTH
+// FACINGS. A gate that silently scores an unmeasured joint perfect is worse than
+// no gate, because it launders an absence of evidence into a pass.
+//
+// The child is bounded by a disc about the joint rather than per-angle: its
+// pivot is the joint, so no rotation can carry it further than its own furthest
+// corner, and a disc is exact for a full sweep and cheap.
+export function fitCanvas({
+    parent, parentPivot, child, childPivot, childAttachFrac,
+    facing = 1, regionRadius = 64, margin = 16, minSize = 0,
+}) {
+    const ppx = parentPivot.u * parent.width;
+    const ppy = parentPivot.v * parent.height;
+
+    // Parent corners relative to its pivot, at angle 0, mirrored when facing < 0.
+    const px0 = facing < 0 ? -(parent.width - ppx) : -ppx;
+    const px1 = facing < 0 ? ppx : parent.width - ppx;
+    let minX = px0;
+    let maxX = px1;
+    let minY = -ppy;
+    let maxY = parent.height - ppy;
+
+    // The joint, relative to the parent pivot.
+    const jointLocalX = (childAttachFrac.u - parentPivot.u) * parent.width;
+    const jx = facing < 0 ? -jointLocalX : jointLocalX;
+    const jy = (childAttachFrac.v - parentPivot.v) * parent.height;
+
+    // Furthest the child's paint can reach from its own pivot, hence from the
+    // joint, at any rotation.
+    const cpx = childPivot.u * child.width;
+    const cpy = childPivot.v * child.height;
+    const reach = Math.max(
+        Math.hypot(cpx, cpy),
+        Math.hypot(child.width - cpx, cpy),
+        Math.hypot(cpx, child.height - cpy),
+        Math.hypot(child.width - cpx, child.height - cpy),
+    );
+    const radius = Math.max(reach, regionRadius);
+    minX = Math.min(minX, jx - radius);
+    maxX = Math.max(maxX, jx + radius);
+    minY = Math.min(minY, jy - radius);
+    maxY = Math.max(maxY, jy + radius);
+
+    minX -= margin; maxX += margin; minY -= margin; maxY += margin;
+
+    const w = Math.max(Math.ceil(maxX - minX), minSize);
+    const h = Math.max(Math.ceil(maxY - minY), minSize);
+    // Where the parent pivot goes so that the fitted bounds land on the canvas.
+    //
+    // Rounded to whole pixels deliberately. drawPart resamples nearest-neighbour,
+    // so a fractional pivot shifts the rasterisation phase of every edge in the
+    // frame, and straight_run_px -- which counts consecutive contour pixels that
+    // stay within 8 degrees of straight -- is directly sensitive to whether a
+    // rotated cut edge stair-steps. Leaving the origin fractional made the same
+    // art measure differently for no reason but where the canvas happened to
+    // start, which is the crop defect again in another costume.
+    return { w, h, px: Math.round(-minX), py: Math.round(-minY) };
+}
+
 // ── The sweep ───────────────────────────────────────────────────────────────
 
 // Measures one joint through its whole range in one facing. The region examined
@@ -332,14 +410,21 @@ export function greenFringe(rgba, alpha) {
 // frame, and a clean joint should not be credited for the far side of the body.
 export function sweepJoint({
     parent, parentPivot, child, childPivot, childAttachFrac,
-    range, facing = 1, step = 10, regionRadius = 64, canvasSize = 512,
+    range, facing = 1, step = 10, regionRadius = 64, canvasSize = 0,
 }) {
     const results = [];
-    const cx = canvasSize / 2;
-    const cy = canvasSize / 2;
+    // Fitted to this parent/child pair rather than assumed. `canvasSize` is now
+    // only a floor; it used to be the whole answer, and on real parts that put
+    // both knees off the frame entirely. See fitCanvas.
+    const fit = fitCanvas({
+        parent, parentPivot, child, childPivot, childAttachFrac,
+        facing, regionRadius, minSize: canvasSize,
+    });
+    const cx = fit.px;
+    const cy = fit.py;
 
     for (let deg = range.min; deg <= range.max; deg += step) {
-        const frame = canvas(canvasSize, canvasSize);
+        const frame = canvas(fit.w, fit.h);
 
         // Parent at rest; the joint angle is the child's, which is what the
         // runtime rotates -- Skeleton.js:1556-1565 attaches farForearm at the
@@ -361,20 +446,52 @@ export function sweepJoint({
         const focus = { x: joint.x, y: joint.y, radius: regionRadius };
         const { mask } = interiorBackground(frame);
         let count = 0;
+        // Disc coverage, because "no contour was scored here" has two opposite
+        // meanings and reporting one for the other is its own defect.
+        let discPainted = 0;
+        let discUnpainted = 0;
         for (let y = 0; y < frame.h; y++) {
             for (let x = 0; x < frame.w; x++) {
+                const inDisc = Math.hypot(x - joint.x, y - joint.y) <= regionRadius;
+                if (inDisc) {
+                    if (frame.alpha[y * frame.w + x] > PAINT_ALPHA) discPainted++;
+                    else discUnpainted++;
+                }
                 if (!mask[y * frame.w + x]) continue;
-                if (Math.hypot(x - joint.x, y - joint.y) <= regionRadius) count++;
+                if (inDisc) count++;
             }
         }
-        const { sharpestDeg, straightRunPx } = sharpestAndStraight(frame, focus);
+        const { sharpestDeg, straightRunPx, scoredPoints } = sharpestAndStraight(frame, focus);
 
+        // Scoring no contour in the joint region means one of two OPPOSITE
+        // things, and the metrics look identical in both -- 180 degrees and a
+        // zero straight run, the perfect values:
+        //
+        //   empty   nothing is painted in the disc at all. The joint was never
+        //           in frame. This is the real front3q knees: 86px below a
+        //           fixed canvas, scoring clean at every angle in both facings.
+        //           No verdict is available and it must never read as a pass.
+        //   buried  every pixel in the disc is painted. The joint is completely
+        //           covered through this pose, which is the BEST possible
+        //           outcome and a genuine pass -- the far hip does exactly this
+        //           from 90 to 110 degrees.
+        //
+        // Telling them apart needs the disc's own coverage, not the contour.
+        // Collapsing them would trade a false pass for a false unknown.
+        const empty = discPainted === 0;
+        const buried = !empty && discUnpainted === 0;
         results.push({
             angleDeg: deg,
             interiorBgPx: count,
             sharpestDeg,
             straightRunPx,
-            pass: count <= THRESHOLDS.interiorBgPx
+            scoredPoints,
+            discPainted,
+            discUnpainted,
+            measured: !empty,
+            buried,
+            pass: !empty
+                && count <= THRESHOLDS.interiorBgPx
                 && sharpestDeg >= THRESHOLDS.sharpestDeg
                 && straightRunPx <= THRESHOLDS.straightRunPx,
         });
@@ -394,13 +511,20 @@ export function sweepJoint({
     // Each metric is scored as how far past its threshold it sits, normalised by
     // that threshold so the three are comparable, and the frame with the largest
     // single exceedance wins.
-    const severity = (r) => Math.max(
+    // An unmeasured frame outranks every measured one: "we do not know" is a
+    // worse finding than any number, and it must be what gets reported.
+    const severity = (r) => (r.measured === false ? Infinity : Math.max(
         (r.interiorBgPx - THRESHOLDS.interiorBgPx) / THRESHOLDS.interiorBgPx,
         (THRESHOLDS.sharpestDeg - r.sharpestDeg) / THRESHOLDS.sharpestDeg,
         (r.straightRunPx - THRESHOLDS.straightRunPx) / THRESHOLDS.straightRunPx,
-    );
+    ));
     const worst = results.reduce((a, b) => (severity(b) > severity(a) ? b : a));
-    return { facing, results, worst, pass: results.every((r) => r.pass) };
+    const unmeasured = results.filter((r) => !r.measured).length;
+    const buried = results.filter((r) => r.buried).length;
+    return {
+        facing, results, worst, unmeasured, buried,
+        pass: results.every((r) => r.pass),
+    };
 }
 
 export function cropDisc(img, cx, cy, r) {
@@ -489,6 +613,8 @@ async function main(argv) {
             });
             report.push({
                 joint: spec.name, facing, pass: swept.pass, worst: swept.worst,
+                unmeasured: swept.unmeasured, buried: swept.buried,
+                frames: swept.results.length,
             });
         }
     }
@@ -499,17 +625,35 @@ async function main(argv) {
         for (const row of report) {
             if (row.skipped) { console.log(`  SKIP ${row.joint}: ${row.skipped}`); continue; }
             const w = row.worst;
+            if (row.unmeasured) {
+                // Named, never scored. These frames had no paint in the joint
+                // region at all, so their metrics are defaults rather than
+                // findings. Printing those defaults beside real numbers is
+                // exactly how an unmeasured joint gets read as a clean one.
+                console.log(`  UNMEASURED ${row.joint} facing ${row.facing > 0 ? '+1' : '-1'}`
+                    + ` -- ${row.unmeasured}/${row.frames} frames had no paint`
+                    + ' in the joint region; no verdict is available');
+                continue;
+            }
+            const buried = row.buried
+                ? `, ${row.buried}/${row.frames} fully buried` : '';
             console.log(`  ${row.pass ? 'pass' : 'FAIL'} ${row.joint} facing ${row.facing > 0 ? '+1' : '-1'}`
                 + ` worst@${w.angleDeg}deg interior_bg=${w.interiorBgPx}`
-                + ` sharpest=${w.sharpestDeg} straight=${w.straightRunPx}`);
+                + ` sharpest=${w.sharpestDeg} straight=${w.straightRunPx}${buried}`);
         }
     }
 
-    const measured = report.filter((r) => !r.skipped).length;
+    const rows = report.filter((r) => !r.skipped);
+    const measured = rows.length;
+    const unmeasuredRows = rows.filter((r) => r.unmeasured > 0).length;
     const failed = report.some((r) => r.pass === false);
 
-    console.log(`  ${measured}/${JOINTS.length} joints measured`
-        + `, ${report.filter((r) => r.skipped).length} skipped`);
+    // Denominator is JOINTS x both facings: each facing is its own measurement,
+    // and near and far are separately authored, so a clean +1 is no evidence
+    // about -1. The old form printed "16/8", which is not a fraction.
+    console.log(`  ${measured}/${JOINTS.length * 2} joint-facings measured`
+        + `, ${report.filter((r) => r.skipped).length} skipped`
+        + `, ${unmeasuredRows} with unmeasured frames`);
 
     // A gate that measured nothing must not report success. `art:validate-source`
     // already taught this lesson the expensive way: without --sheet it prints

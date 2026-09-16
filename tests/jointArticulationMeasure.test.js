@@ -7,6 +7,7 @@ import {
     canvas,
     cropDisc,
     drawPart,
+    fitCanvas,
     greenFringe,
     interiorBackground,
     localToWorld,
@@ -486,4 +487,150 @@ test('cropDisc: pads rather than throwing when the joint is near an edge', () =>
     assert.equal(out.w, 32);
     assert.equal(out.alpha[0], 0, 'off-canvas area reads as unpainted');
     assert.ok(out.alpha[20 * 32 + 20] > 0, 'on-canvas area is preserved');
+});
+
+// ── the unmeasured joint ────────────────────────────────────────────────────
+//
+// The third defect in this family, found on the real front3q candidate after the
+// first two were fixed. The canvas was a fixed 512px square with the parent
+// pivot hardcoded at its centre. The real thigh is 408px tall with its hip pivot
+// 41px down, so the knee landed at y=598 -- 86px below the bottom edge. Nothing
+// was drawn there, no contour point fell inside the focus disc, and all three
+// metrics took their perfect default: interior_bg 0, sharpest 180, straight 0.
+//
+// Both knees therefore reported "pass" at every angle in both facings, and that
+// pass was written into the handoff as "Knees pass in both facings". They had
+// never been measured at all. An absence of evidence had been laundered into
+// evidence of absence, which is strictly worse than having no gate.
+
+test('sharpestAndStraight: scoring nothing is reported, not scored perfect', () => {
+    const img = canvas(200, 200);
+    drawPart(img, capsule(40, 120), { u: 0.5, v: 0.5 }, 100, 100, 0, 1);
+
+    // A focus disc far away from the only paint on the canvas.
+    const away = sharpestAndStraight(img, { x: 190, y: 190, radius: 5 });
+    assert.equal(away.scoredPoints, 0, 'no contour point is inside that disc');
+    // The metrics still carry their defaults -- that is exactly the trap.
+    assert.equal(away.sharpestDeg, 180);
+    assert.equal(away.straightRunPx, 0);
+
+    // On the paint, the same call scores real points.
+    const onIt = sharpestAndStraight(img, { x: 100, y: 100, radius: 60 });
+    assert.ok(onIt.scoredPoints > 0, 'the joint region must actually be scored');
+});
+
+test('fitCanvas: the joint and the whole child land inside the fitted canvas', () => {
+    // The real geometry that failed: a tall thigh whose pivot is near its top,
+    // so the knee sits far below a centred parent pivot.
+    const parent = capsule(148, 408);
+    const child = capsule(200, 425);
+    const parentPivot = { u: 0.466, v: 0.100 };
+    const childPivot = { u: 0.395, v: 0.085 };
+    const childAttachFrac = { u: 0.392, v: 0.939 };
+
+    for (const facing of [1, -1]) {
+        const fit = fitCanvas({
+            parent, parentPivot, child, childPivot, childAttachFrac, facing,
+        });
+        const jointLocalX = (childAttachFrac.u - parentPivot.u) * parent.width;
+        const jx = fit.px + (facing < 0 ? -jointLocalX : jointLocalX);
+        const jy = fit.py + (childAttachFrac.v - parentPivot.v) * parent.height;
+        assert.ok(jx >= 0 && jx < fit.w && jy >= 0 && jy < fit.h,
+            `facing ${facing}: joint (${jx.toFixed(1)}, ${jy.toFixed(1)}) `
+            + `outside fitted ${fit.w}x${fit.h}`);
+        // And the child's furthest reach from that joint is still on canvas, so
+        // no rotation in the sweep can carry paint off the frame.
+        const cpx = childPivot.u * child.width;
+        const cpy = childPivot.v * child.height;
+        const reach = Math.max(
+            Math.hypot(cpx, cpy), Math.hypot(child.width - cpx, cpy),
+            Math.hypot(cpx, child.height - cpy),
+            Math.hypot(child.width - cpx, child.height - cpy));
+        assert.ok(jx - reach >= 0 && jx + reach <= fit.w
+            && jy - reach >= 0 && jy + reach <= fit.h,
+            `facing ${facing}: the child's ${reach.toFixed(0)}px reach leaves the canvas`);
+    }
+});
+
+test('sweepJoint: a joint carried off a fixed canvas is not scored as clean', () => {
+    // Reproduces the real defect in miniature. The parent is tall and its pivot
+    // is near the top, so with the old hardcoded 512px canvas the attach point
+    // fell off the bottom edge. The child here is a flat-cut limb with no
+    // overlap at all -- a joint that must fail on its merits. If the canvas
+    // still cut it out of frame, it would come back passing.
+    const parent = capsule(60, 760);
+    const swept = sweepJoint({
+        parent,
+        parentPivot: { u: 0.5, v: 0.05 },
+        child: flatCutLimb(34, 110),
+        childPivot: { u: 0.5, v: 0 },
+        childAttachFrac: { u: 0.5, v: 0.95 },
+        range: ARTICULATION_RANGES.knee,
+        step: 30,
+    });
+
+    assert.equal(swept.unmeasured, 0,
+        'every frame must actually measure the joint region');
+    assert.ok(swept.results.every((r) => r.scoredPoints > 0),
+        'no frame may score zero contour points');
+    assert.equal(swept.pass, false,
+        'a zero-overlap flat cut must fail even when the joint sits far from the parent pivot');
+});
+
+// The correction to the fix above. "No contour was scored in the joint region"
+// means one of two OPPOSITE things, and both produce the same perfect-looking
+// metrics, so a harness that cannot tell them apart trades a false pass for a
+// false unknown:
+//
+//   empty   nothing painted in the disc -- the joint was never in frame.
+//   buried  every pixel in the disc painted -- the joint is completely covered,
+//           which is the best result the art can produce.
+//
+// The real far hip is buried from 90 to 110 degrees. Reporting that as "no
+// verdict available" would have been a new defect of the same family.
+test('sweepJoint: an empty joint region is unmeasured, a buried one is a pass', () => {
+    const parent = ellipse(200, 200);
+
+    // Buried: the attach point is dead centre of a large parent, and the child
+    // is small enough to stay inside the 64px disc's worth of parent paint.
+    const buried = sweepJoint({
+        parent,
+        parentPivot: { u: 0.5, v: 0.5 },
+        childAttachFrac: { u: 0.5, v: 0.5 },
+        child: capsule(20, 40),
+        childPivot: { u: 0.5, v: 0.5 },
+        range: { min: 0, max: 90 },
+        step: 45,
+    });
+    assert.ok(buried.results.every((r) => r.discUnpainted === 0),
+        'this fixture must actually bury the joint');
+    assert.equal(buried.unmeasured, 0, 'a buried joint is measured, not unknown');
+    assert.equal(buried.buried, buried.results.length);
+    assert.equal(buried.pass, true, 'a fully covered joint is a pass');
+
+    // Empty: same call, but the frame is forced small enough that the joint
+    // falls outside it -- the shape of the real knee defect.
+    const frame = canvas(40, 40);
+    drawPart(frame, capsule(20, 40), { u: 0.5, v: 0.5 }, 20, 20, 0, 1);
+    const off = sharpestAndStraight(frame, { x: 300, y: 300, radius: 64 });
+    assert.equal(off.scoredPoints, 0);
+    assert.equal(off.sharpestDeg, 180, 'the perfect value is also the empty value');
+    assert.equal(off.straightRunPx, 0, 'and so is this one');
+});
+
+test('sweepJoint: an unmeasured frame can never pass, and outranks measured ones', () => {
+    // The guarantee stated directly, independent of how the canvas is sized: a
+    // frame that scored no contour is not a verdict, so it must not be allowed
+    // to read as a good one, and it must be the frame the sweep reports.
+    const results = [
+        { angleDeg: 0, interiorBgPx: 0, sharpestDeg: 180, straightRunPx: 0, scoredPoints: 0, measured: false },
+        { angleDeg: 30, interiorBgPx: 200, sharpestDeg: 10, straightRunPx: 90, scoredPoints: 40, measured: true },
+    ];
+    // Mirrors sweepJoint's own severity rule.
+    const severity = (r) => (r.measured === false ? Infinity : Math.max(
+        (r.interiorBgPx - THRESHOLDS.interiorBgPx) / THRESHOLDS.interiorBgPx,
+        (THRESHOLDS.sharpestDeg - r.sharpestDeg) / THRESHOLDS.sharpestDeg,
+        (r.straightRunPx - THRESHOLDS.straightRunPx) / THRESHOLDS.straightRunPx));
+    assert.ok(severity(results[0]) > severity(results[1]),
+        '"we do not know" must outrank any measured failure');
 });

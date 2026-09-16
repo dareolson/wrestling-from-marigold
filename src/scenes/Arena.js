@@ -366,6 +366,21 @@ const CROWD_EXTRAS = [
             { x: W / 2 + 340, h: 144, flip: false, tint: 0x9d9789, row: 2 },
         ],
     },
+    {
+        // 2026-09-13 image-generation control pilot: one generated sheet,
+        // cut through the same whole-sprite audience pipeline as the hand-
+        // authored extras. Kept out of the already-full featured row for
+        // now; an empty spots list still makes him available to the deeper
+        // uniformly shuffled rows without displacing approved seating.
+        slug: 'chicago-fan-v1',
+        frames: 8,
+        restFrame: 1,
+        sizeBasis: 'width',
+        animA: [1, 2, 3, 4],
+        animB: [5, 6, 7, 8],
+        randomB: false,
+        spots: [],
+    },
 ];
 
 // Ringside photographer — deliberately NOT part of CROWD_EXTRAS: he

@@ -5,10 +5,11 @@ import { inflateSync } from 'node:zlib';
 
 import { encodeRgbaPng } from './export-v2-sheet.mjs';
 
-const [inputPath, outputPath] = process.argv.slice(2);
+const [inputPath, outputPath, ...options] = process.argv.slice(2);
 if (!inputPath || !outputPath) {
-    throw new Error('usage: node remove-chroma-key.mjs INPUT.png OUTPUT.png');
+    throw new Error('usage: node remove-chroma-key.mjs INPUT.png OUTPUT.png [--despill-all]');
 }
+const despillAll = options.includes('--despill-all');
 
 function paeth(a, b, c) {
     const p = a + b - c;
@@ -118,6 +119,9 @@ function removeGreen(image) {
         } else if (alpha < 252 && keyLike) {
             g = Math.min(g, Math.max(r, b) - 1);
             partial++;
+        }
+        if (alpha > 0 && despillAll && g > Math.max(r, b)) {
+            g = Math.max(r, b);
         }
         image.rgba[offset] = r;
         image.rgba[offset + 1] = Math.max(0, g);

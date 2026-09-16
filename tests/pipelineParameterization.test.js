@@ -148,7 +148,7 @@ test('every cutter tool is either a production stage or a listed one-off', async
         // smoke tests and utilities that take their input as arguments
         'anchor-editor-smoke.mjs', 'canonical-sheet-smoke.mjs',
         'prepare_george_v9_broadcast.mjs', 'remove-chroma-key.mjs',
-        'measure-art-contract.mjs',
+        'cut-front3q-modular-board.mjs', 'cut-production-limb-board.mjs', 'measure-art-contract.mjs',
         'measure-joint-articulation.mjs', 'render-articulation-proofs.mjs']);
     const unaccounted = present.filter(name => !accounted.has(name));
     assert.deepEqual(unaccounted, [],

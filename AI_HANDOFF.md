@@ -130,7 +130,10 @@ states the decomposition the rig can consume: **eight parts, not twelve**, with
 one shared upper arm and one shared thigh.
 
 **Two corrections to my own work, found 2026-09-22 on a re-check and fixed.**
-Both are recorded in full in the entries they belong to.
+Both were arithmetic, both cost a wrong claim, and **both are now written up as
+durable rig facts in `RIG_AND_MOVE_PIPELINE.md`'s new "Binding art to the rig"
+section** rather than only as history here — they apply to binding any
+character's art, not just this candidate.
 
 1. **The candidate's limb widths were wrong.** `_placePart` renders a part at
    `box.w * s * growth`, `growth = 1/(1-jointPivotFrac)`, and the width

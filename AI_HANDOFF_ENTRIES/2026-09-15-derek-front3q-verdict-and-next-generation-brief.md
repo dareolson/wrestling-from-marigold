@@ -101,6 +101,22 @@ bone axis. All eight of the control's parts now read neutral.
 The requirement itself stands unchanged, and v3's four bent arms are still
 correctly flagged at 9.3-18.3 degrees.
 
+## Before binding the next generation to the rig
+
+Read **`RIG_AND_MOVE_PIPELINE.md`, "Binding art to the rig"**. It holds the two
+pieces of arithmetic this session got wrong, both of which apply to any
+character and neither of which is visible from the config:
+
+- `box.w` and `box.h` are both scaled by `growth = 1/(1-jointPivotFrac)`.
+  Matching a limb's on-screen width to another character's means solving that
+  whole expression on both sides; dividing by the fill fraction alone leaves the
+  art too wide by exactly `growth`.
+- Measure a bone on its declared joints. The distal-ink fallback is wrong for a
+  booted shin, whose toe makes a straight leg read as bent.
+
+It also states the eight-part decomposition in requirement 9 below, from the
+runtime rather than from a document.
+
 ## What is preserved
 
 - `npm run art:measure-joints`, `art:proofs`, `art:map-candidate`,

@@ -20,6 +20,83 @@ move executor
 
 The rig remains responsible for connected anatomy. The clip describes how actors transition and which art is visible. The move executor remains responsible for game rules. Do not repair a bad joint by adding a move-only screen offset.
 
+## Binding art to the rig
+
+Two arithmetic facts that are easy to get wrong, cost a session each, and are
+not visible from the config alone. Both were measured wrong on the front3q
+candidate before they were measured right.
+
+### `box` is not the rendered size
+
+`Skeleton._placePart` renders a part at **`box.w * s * growth` by
+`box.h * s * growth`**, where
+
+```text
+growth = 1 / (1 - jointPivotFrac)
+```
+
+and the origin sits at `jointPivotFrac` down that height. Two consequences:
+
+- **`box.h` is the JOINT-to-canvas-bottom span**, not the whole part. The
+  material above the joint is the authored overlap, and `growth` is what makes
+  room for it. To put a bone span of `L` between the pivot and a distal anchor
+  at canvas fraction `v`:
+
+  ```text
+  box.h = L * (1 - jointPivotFrac) / (v - jointPivotFrac)
+  ```
+
+- **`box.w` is scaled by the same `growth`.** The on-screen ink width of a limb
+  is therefore
+
+  ```text
+  box.w * growth * (ink width / canvas width)
+  ```
+
+  **Matching one character's limb width to another's means solving that whole
+  expression on both sides.** Dividing a target width by the fill fraction alone
+  leaves the art too wide by exactly `growth` — 21.8% for a part with
+  `jointPivotFrac` 0.179. A part with no `jointPivotFrac` has `growth` 1, which
+  is why shipped Lou's upper arm and thigh hide the mistake and his forearm and
+  shin do not.
+
+The heights are usually checked, because a wrong one is obvious. A wrong width
+is not: the figure simply looks a little heavier or leaner than the art is, and
+that is exactly the judgement an art review is trying to make.
+
+### Measure a bone on its declared joints, never on its distal paint
+
+Where a part declares both ends, the axis between them is the bone. Where it
+does not, the centroid of the distal ink is a usable fallback **only if the
+paint at that end sits on the axis**.
+
+It does not for a shin. A boot's toe juts forward, so averaging the distal ink
+of a perfectly straight shin reports a lean it does not have:
+
+| part | knee→ankle (the bone) | knee→boot mass | knee→sole |
+| --- | ---: | ---: | ---: |
+| `near_shin` | -1.6 | 2.4 | 7.1 |
+| `far_shin` | **0.0** | 5.2 | 10.3 |
+
+Use the declared ankle for shins. The fallback is sound for a forearm, whose
+fist does sit roughly on the axis. `npm run art:map-candidate --landmarks`
+applies this order — distal anchor, then ankle, then ink — and names which one
+it used.
+
+### What decomposition the rig can actually consume
+
+`npm run art:map-candidate` answers this from the runtime rather than from a
+document, reading the loader's filename table and `Skeleton.js`'s own
+`textures.farX ?? textures.X` opt-ins. For the shipped legacy rig the answer is
+**eight parts**: `head`, `torso`, one shared `upper_arm`, one shared `thigh`,
+and separately authored `near/far_forearm` and `near/far_shin`.
+
+Authoring a separate near and far upper arm or thigh is wasted work — the
+renderer has no opt-in for the first and the loader has no filename for the
+second. Delivering a whole far arm or far leg is worse than wasted: the rig
+articulates the far elbow and far knee independently, and no offset bends one
+painting in the middle.
+
 ## Part variants
 
 Variants live under `character.textures.variants` and target semantic render slots:

@@ -68,11 +68,24 @@
 // therefore about the ART, not about size.
 //
 //   upperArm  shoulder->elbow  68.0 px   ink w 26.7 px
-//   forearm   elbow->hand      49.0 px   ink w 16.7 px
+//   forearm   elbow->hand      49.0 px   ink w 18.0 px
 //   thigh     hip->knee        49.0 px   ink w 36.4 px
-//   shin      knee->sole       86.0 px   ink w 34.2 px
+//   shin      knee->sole       86.0 px   ink w 36.1 px
 //   torso     ink h           108.1 px   ink w 60.9 px
 //   head      headScale       0.5457     ink w 38.5 px
+//
+// CORRECTED 2026-09-22. The first binding got the widths wrong. _placePart
+// renders a part at box.w * s * GROWTH, growth = 1/(1-jointPivotFrac), and the
+// width derivation ignored that factor on both sides of the comparison. The
+// heights were right -- box.h is solved through the same growth and the
+// rendered figure measured 204.2px against shipped Lou's 204.9px -- but every
+// limb came out 3.2% to 21.8% WIDER than the shipped limb it was supposed to
+// match: upperArm +21.8, forearm +13.5, thigh +11.2, shin +3.2.
+//
+// Worth stating plainly because it cuts against the review it fed: the error
+// made the candidate THICKER than intended, so Derek's "too lean" verdict was
+// reached in spite of it, not because of it. The art is leaner than those
+// screenshots showed.
 //
 // SCREEN-SPACE OFFSETS ARE ALL ZERO, and that is a deliberate reporting choice
 // rather than a tuning result. Shipped Lou's armOffset/legOffset/forearm/shin
@@ -116,7 +129,7 @@ export const theszFront3qR1 = {
         armOffsetY: 0,
         upperArm: {
             key: 'thesz_f3q_upper_arm',
-            box: { w: 63.77, h: 79.31 },
+            box: { w: 52.37, h: 79.31 },
             jointPivotFrac: 0.178788,
             distalAnchorFrac: { u: 0.517094, v: 0.882915 },
             pivotOffsetFrac: 0.017094,
@@ -125,13 +138,13 @@ export const theszFront3qR1 = {
         // candidate's separately authored near and far hands are both used.
         nearForearm: {
             key: 'thesz_f3q_near_forearm',
-            box: { w: 45.52, h: 49 },
+            box: { w: 40.10, h: 49 },
             jointPivotFrac: 0.182891,
             pivotOffsetFrac: -0.007407,
         },
         farForearm: {
             key: 'thesz_f3q_far_forearm',
-            box: { w: 48.04, h: 49 },
+            box: { w: 42.12, h: 49 },
             jointPivotFrac: 0.186747,
             pivotOffsetFrac: 0.001931,
         },
@@ -141,7 +154,7 @@ export const theszFront3qR1 = {
         farForearmOffsetY: 0,
         thigh: {
             key: 'thesz_f3q_thigh',
-            box: { w: 43.80, h: 52.58 },
+            box: { w: 39.40, h: 52.58 },
             jointPivotFrac: 0.100490,
             pivotOffsetFrac: -0.033784,
         },
@@ -153,14 +166,14 @@ export const theszFront3qR1 = {
         nearLegTilt: 0,
         nearShin: {
             key: 'thesz_f3q_near_shin',
-            box: { w: 39.03, h: 88.97 },
+            box: { w: 37.80, h: 88.97 },
             jointPivotFrac: 0.084706,
             pivotOffsetFrac: -0.105000,
             soleAnchorFrac: { u: 0.630000, v: 0.969412 },
         },
         farShin: {
             key: 'thesz_f3q_far_shin',
-            box: { w: 38.76, h: 89.19 },
+            box: { w: 37.32, h: 89.19 },
             jointPivotFrac: 0.090000,
             pivotOffsetFrac: -0.173267,
             soleAnchorFrac: { u: 0.643564, v: 0.967500 },

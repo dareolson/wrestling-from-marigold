@@ -68,6 +68,14 @@ onto both thighs belongs to the *six-part* `production-limb-redesign/v1` board
 (73.8% dark at the thigh top), not to this candidate (3.9%, outline only). And
 the pelvis findings are properties of layers shipped Lou does not have.
 
+**The `08`–`12` images were re-shot 2026-09-22** after a width error was found
+in the binding: `_placePart` scales a part by `1/(1-jointPivotFrac)` and the
+derivation ignored it, so every limb rendered 3-22% wider than the shipped limb
+it was matching. Heights were unaffected and remain within 0.4% of shipped Lou.
+The error made the candidate **thicker** than intended, so the "too lean"
+verdict was reached in spite of it; the corrected images show the art leaner
+still.
+
 **One thing in `08`–`12` is the wiring, not the art.** Every screen-space offset
 on the candidate is zero, deliberately, because shipped Lou's were tuned against
 different paintings. That includes `legOffsetX` and `nearLegTilt`, which are what

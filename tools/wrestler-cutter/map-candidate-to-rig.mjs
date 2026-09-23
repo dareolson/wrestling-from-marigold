@@ -257,7 +257,18 @@ async function main(argv) {
         let axisDeg = null;
         const landmark = landmarks?.[name];
         if (landmark?.jointPivotFrac) {
-            const mode = landmark.distalAnchorFrac ? 'landmark' : 'distalInk';
+            // Pick the most truthful axis the part declares, in this order:
+            //
+            //   landmark   both ends declared -- upper arms, thighs. Exact.
+            //   ankle      shins. The declared ankle, NOT the boot mass: a
+            //              boot's toe juts forward and makes a straight shin
+            //              measure bent. far_shin is the straightest segment in
+            //              the set (0.0 deg) and the ink proxy called it 5.2.
+            //   distalInk  forearms, which declare no distal anchor. The fist
+            //              sits roughly on the bone axis, so this is sound
+            //              here, but it is a fallback and it is named as one.
+            const mode = landmark.distalAnchorFrac ? 'landmark'
+                : (landmark.sourcePixel?.ankle ? 'ankle' : 'distalInk');
             axisDeg = bakedAxis(image, landmark, mode) * 180 / Math.PI;
         }
         authoring.push({

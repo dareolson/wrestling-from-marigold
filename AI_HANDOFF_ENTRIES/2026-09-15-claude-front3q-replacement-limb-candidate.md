@@ -135,6 +135,19 @@ Every geometry number is derived, none hand-tuned: each `box.h` solved so the
 bone span underneath equals shipped Lou's, each `box.w` so the on-screen ink
 width does, so the comparison is about the art rather than about size.
 
+**Correction (2026-09-22).** The heights were right; **the widths were not.**
+`_placePart` renders a part at `box.w * s * growth`, `growth =
+1/(1-jointPivotFrac)`, and the width derivation ignored that factor on both
+sides of the comparison. `box.h` is solved through the same growth and was
+correct — the rendered figure measures 204.1px against shipped Lou's 204.9px —
+but every limb came out wider than the shipped limb it was matching: upperArm
++21.8%, forearm +13.5%, thigh +11.2%, shin +3.2%. Fixed, and the live
+comparison images were re-shot.
+
+The direction matters for reading the verdict: the error made the candidate
+**thicker** than intended, so Derek reached "too lean" in spite of it. The art
+is leaner than the screenshots he saw.
+
 **Hip sockets are omitted on purpose.** `Skeleton.js:549` switches a character to
 the authored dynamic-pelvis leg path the moment its torso declares `nearHip` and
 `farHip`. Declaring the candidate's measured ones would have made this a

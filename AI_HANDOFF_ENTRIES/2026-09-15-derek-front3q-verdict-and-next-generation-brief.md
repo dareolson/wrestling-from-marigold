@@ -45,7 +45,7 @@ the running game.
 | --- | --- | --- |
 | 1 | A broader, stockier Lou silhouette | `art:proofs --compare` against the Pass-A master at 265/209/154, plus Derek's eye. The candidate must not read leaner than the master beside it. |
 | 2 | A true three-quarter head matching the body | Removes the `crossViewPartReuse` entry for `head`/`front3q`. Until the art exists that entry stays and the borrow stays declared. |
-| 3 | Limb paintings on neutral, straight bone axes — no baked elbow or knee flex | `art:map-candidate --landmarks` reports the bone axis per part; **BAKED BENT past 3 degrees**. v3's arms measured 13.4–19.6. |
+| 3 | Limb paintings on neutral, straight bone axes — no baked elbow or knee flex | `art:map-candidate --landmarks` reports the bone axis per part; **BAKED BENT past 3 degrees**. v3's arms measured 13.4–19.6. The axis comes from the declared distal anchor where one exists, the declared ankle for shins, and only then from the distal ink — see the correction below for why the ink is wrong for a booted shin. |
 | 4 | Generous unoutlined overlap material on both sides of every elbow and knee | `art:measure-joints` — `interior_bg_px` at articulation extremes. |
 | 5 | Rounded anatomical joint transitions, no pale caps or flat attachment faces | `art:measure-joints` — `sharpest_deg` ≥ 35 and `straight_run_px` ≤ 18, plus the assembled proof at full resolution, where the pale caps are plainly visible. |
 | 6 | Clean near/far perspective differences | Visual, on the assembled proof. |
@@ -78,11 +78,28 @@ unusable. The rig articulates the far elbow and far knee independently, and no
 offset bends a single painting in the middle. That is what the six-part
 `production-limb-redesign/v1` board did, and it maps only 2 of its 6 parts.
 
-### One requirement the control still fails
+### Correction (2026-09-22): the control does NOT fail requirement 3
 
-`far_shin` measures a 5.2-degree bake. The straightener deliberately left the
-legs alone as near-neutral, and 5.2 is past requirement 3's threshold. The next
-generation should bring every segment, legs included, to roughly zero.
+This section previously said `far_shin` measured a 5.2-degree bake and that the
+control still failed the neutral-bake requirement. **That was my measurement
+error, not a defect in the art.**
+
+The check fell back to averaging the distal ink for any part with no declared
+distal anchor. For a shin that ink is the BOOT, whose toe juts well forward, so
+a perfectly straight shin reads as bent. Measured on the declared ankle instead:
+
+| part | knee->ankle (the bone) | knee->boot mass | knee->sole |
+| --- | ---: | ---: | ---: |
+| near_shin | -1.6 | 2.4 | 7.1 |
+| far_shin | **0.0** | 5.2 | 10.3 |
+
+`far_shin` is the straightest segment in the entire candidate. The check now
+prefers the declared ankle for shins and only falls back to the ink for the
+forearms, which declare no distal anchor and whose fist does sit roughly on the
+bone axis. All eight of the control's parts now read neutral.
+
+The requirement itself stands unchanged, and v3's four bent arms are still
+correctly flagged at 9.3-18.3 degrees.
 
 ## What is preserved
 
@@ -103,7 +120,9 @@ generation should bring every segment, legs included, to roughly zero.
 
 ## Verification at the point of the verdict
 
-- `npm test` — 505/505 on Node 22.23.1, 0 skipped, real-art tests RAN.
+- `npm test` — 506/506 on Node 22.23.1, 0 skipped, real-art tests RAN
+  (505/505 at the time of the verdict; one test added by the 2026-09-22
+  correction above).
 - `npm run build` — clean.
 - `npm run rig:validate` — clean for george, thesz, thesz-front3q-r1.
 - `npm run rig:certify` — **exit 0, no architecture-class findings.** `refrig`

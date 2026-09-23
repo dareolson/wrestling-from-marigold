@@ -86,6 +86,19 @@ export function bakedAxis(image, landmark, mode, distalFrac = 0.20) {
             x: landmark.distalAnchorFrac.u * image.w,
             y: landmark.distalAnchorFrac.v * image.h,
         };
+    } else if (mode === 'ankle') {
+        // Shins. The distal-ink fallback is WRONG for a shin and quietly so:
+        // it averages the boot, whose toe juts forward, so it reports a lean
+        // the bone does not have. Measured on the real parts, knee->ankle is
+        // -1.6 and 0.0 degrees while knee->boot-mass reads 2.4 and 5.2 and
+        // knee->sole reads 7.1 and 10.3. The first version of the authoring
+        // check used the fallback here and flagged far_shin -- the straightest
+        // segment in the whole set -- as BAKED BENT.
+        const sp = landmark.sourcePixel;
+        if (!sp?.knee || !sp?.ankle) throw new Error('ankle mode needs sourcePixel.knee and .ankle');
+        // sourcePixel is in the part's own canvas pixels, which is what the
+        // pivot is expressed in too, so the axis is a straight difference.
+        return Math.atan2(sp.ankle.x - sp.knee.x, sp.ankle.y - sp.knee.y);
     } else {
         let top = -1;
         let bottom = -1;

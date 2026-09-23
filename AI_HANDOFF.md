@@ -129,6 +129,24 @@ rows** (TRUNKS BAKED ON past 20% — the six-part board was 52–74%). It also
 states the decomposition the rig can consume: **eight parts, not twelve**, with
 one shared upper arm and one shared thigh.
 
+**Two corrections to my own work, found 2026-09-22 on a re-check and fixed.**
+Both are recorded in full in the entries they belong to.
+
+1. **The candidate's limb widths were wrong.** `_placePart` renders a part at
+   `box.w * s * growth`, `growth = 1/(1-jointPivotFrac)`, and the width
+   derivation ignored that factor. Heights were solved through the same growth
+   and were right — the rendered figure measures 204.1px against shipped Lou's
+   204.9px — but every limb rendered 3.2% to 21.8% wider than the shipped limb
+   it was matching. The error made the candidate **thicker**, so Derek's "too
+   lean" verdict was reached in spite of it; the art is leaner than the
+   screenshots he saw. Fixed, and the live comparison images re-shot.
+2. **The new bake check gave a false positive on shins.** It fell back to
+   averaging the distal ink where no distal anchor is declared, and for a shin
+   that ink is the boot, whose toe juts forward. It flagged `far_shin` at 5.2
+   degrees; measured on the declared ankle, `far_shin` is **0.0** — the
+   straightest segment in the candidate. The check now prefers the declared
+   ankle for shins. v3's four bent arms are still correctly flagged.
+
 The record of how the candidate was built and what it measured follows.
 
 **Built and reviewed (2026-09-15).** See

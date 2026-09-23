@@ -151,3 +151,46 @@ test('only the parts measured to be bent are straightened', () => {
     assert.equal(STRAIGHTEN.near_forearm, 'distalInk',
         'the forearms declare no distal anchor, so the ink is the only axis available');
 });
+
+test('a shin is measured on its declared ankle, not on its boot', () => {
+    // The distal-ink fallback is wrong for a shin and quietly so: it averages
+    // the boot, whose toe juts forward, so a perfectly straight shin reports a
+    // lean. On the real parts knee->ankle is -1.6 and 0.0 degrees while
+    // knee->boot-mass reads 2.4 and 5.2 and knee->sole reads 7.1 and 10.3. The
+    // first version of the authoring check used the fallback and flagged
+    // far_shin -- the straightest segment in the whole candidate -- as bent.
+    const w = 200;
+    const h = 420;
+    const rgba = new Uint8Array(w * h * 4);
+    const alpha = new Uint8Array(w * h);
+    const paint = (x, y) => {
+        if (x < 0 || y < 0 || x >= w || y >= h) return;
+        const i = y * w + x;
+        alpha[i] = 255;
+        rgba[i * 4] = 200; rgba[i * 4 + 1] = 150; rgba[i * 4 + 2] = 140; rgba[i * 4 + 3] = 255;
+    };
+    // A perfectly vertical shaft from the knee to the ankle...
+    const kneeX = 80;
+    const kneeY = 36;
+    const ankleY = 300;
+    for (let y = kneeY; y <= ankleY; y++) {
+        for (let d = -18; d <= 18; d++) paint(kneeX + d, y);
+    }
+    // ...and a boot below it whose toe juts well forward.
+    for (let y = ankleY; y < h - 10; y++) {
+        for (let d = -20; d <= 70; d++) paint(kneeX + d, y);
+    }
+    const image = { w, h, rgba, alpha };
+    const landmark = {
+        jointPivotFrac: { u: kneeX / w, v: kneeY / h },
+        sourcePixel: { knee: { x: kneeX, y: kneeY }, ankle: { x: kneeX, y: ankleY } },
+    };
+
+    const viaAnkle = bakedAxis(image, landmark, 'ankle') * DEG;
+    const viaInk = bakedAxis(image, landmark, 'distalInk') * DEG;
+
+    assert.ok(Math.abs(viaAnkle) < 0.01,
+        `the shaft is vertical, so the bone axis is 0; got ${viaAnkle.toFixed(2)}`);
+    assert.ok(viaInk > 3,
+        `the boot must be what biases the ink proxy; got ${viaInk.toFixed(2)}`);
+});

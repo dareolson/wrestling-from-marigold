@@ -50,7 +50,8 @@
     "art:measure-joints": "node tools/wrestler-cutter/measure-joint-articulation.mjs",
     "art:proofs": "node tools/wrestler-cutter/render-articulation-proofs.mjs",
     "art:map-candidate": "node tools/wrestler-cutter/map-candidate-to-rig.mjs",
-    "art:straighten-limbs": "node tools/wrestler-cutter/straighten-limb-bake.mjs"
+    "art:straighten-limbs": "node tools/wrestler-cutter/straighten-limb-bake.mjs",
+    "art:key-plate": "node tools/wrestler-cutter/key-prealphaed-plate.mjs"
   },
   "repository": {
     "type": "git",

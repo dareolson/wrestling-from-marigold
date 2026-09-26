@@ -45,7 +45,7 @@
 //   node tools/wrestler-cutter/straighten-limb-bake.mjs \
 //        --parts <dir> --landmarks <in.json> --out <dir> [--json]
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { decodeRgbaPng } from './validate-source-manifest.mjs';
@@ -53,19 +53,35 @@ import { encodeRgbaPng } from './export-v2-sheet.mjs';
 
 const PAINT_ALPHA = 40;
 
-// Which parts are straightened, and how each one's axis is defined.
+// Past this, a part is painted bent and is straightened. Under it, it is
+// copied byte for byte. This is the same threshold `art:map-candidate` reports
+// requirement 3 against, and it lives here because this is the module that owns
+// the axis; two copies of a number like this drift.
+export const MAX_BAKED_AXIS_DEG = 3;
+
+// How a part's bone axis is defined, from what the part itself declares.
 //
-// `landmark` uses the declared proximal pivot and distal anchor -- the actual
-// bone, and the right answer where it exists. `distalInk` falls back to the
-// centroid of the distal ink for a part that declares no distal anchor, which
-// is both forearms. The two agree within 3.4 degrees everywhere both are
-// available, which is the evidence the fallback is sound.
-export const STRAIGHTEN = Object.freeze({
-    near_upper_arm: 'landmark',
-    far_upper_arm: 'landmark',
-    near_forearm: 'distalInk',
-    far_forearm: 'distalInk',
-});
+// This was a hardcoded four-name table until 2026-09-22, which meant the tool
+// could only ever straighten the twelve-part decomposition it was written for:
+// an eight-part set delivering one shared `upper_arm` and one shared `thigh`
+// had no entry, and a part with no entry is not looked at. Deriving the mode
+// from the landmark instead means a new decomposition needs no code edit, and
+// it is the same order `art:map-candidate` already applies.
+//
+//   landmark   both ends declared -- upper arms, thighs. The actual bone, and
+//              the right answer wherever it exists.
+//   ankle      shins. The declared ankle, NOT the boot: a boot's toe juts
+//              forward, so averaging the distal ink of a perfectly straight
+//              shin reports a lean it does not have.
+//   distalInk  the fallback, for a part that declares neither -- both forearms.
+//              Sound there because the fist sits roughly on the bone axis, and
+//              it agrees with `landmark` within 3.4 degrees everywhere both are
+//              available. Named as a fallback rather than used silently.
+export function axisModeFor(landmark) {
+    if (landmark?.distalAnchorFrac) return 'landmark';
+    if (landmark?.sourcePixel?.ankle) return 'ankle';
+    return 'distalInk';
+}
 
 /** Angle, in radians, from straight-down to the part's bone axis. */
 export function bakedAxis(image, landmark, mode, distalFrac = 0.20) {
@@ -235,9 +251,30 @@ async function main(argv) {
     out.straightenedFrom = landmarks.version;
     const report = [];
 
-    for (const [name, mode] of Object.entries(STRAIGHTEN)) {
-        const source = decodeRgbaPng(await readFile(path.join(partsDir, `${name}.png`)));
+    // Every part the candidate actually delivers, rather than a fixed list of
+    // names. A part with no landmark, or no proximal pivot in it, has no axis
+    // to measure and is carried through untouched.
+    const delivered = (await readdir(partsDir))
+        .filter((f) => f.endsWith('.png'))
+        .map((f) => f.replace(/\.png$/, ''))
+        .sort();
+    const copied = [];
+
+    for (const name of delivered) {
         const landmark = landmarks[name];
+        if (!landmark?.jointPivotFrac) { copied.push(name); continue; }
+        const mode = axisModeFor(landmark);
+        const source = decodeRgbaPng(await readFile(path.join(partsDir, `${name}.png`)));
+
+        // Measure BEFORE deciding. Which parts are bent is a property of the
+        // paint, not of their names, and the legs of the set this tool was
+        // written for measured 1.7-1.8 degrees: correcting them would resample
+        // art that is already straight. A correction that touches everything it
+        // can reach is not a correction, it is a rewrite.
+        const bakeDeg = Math.abs(bakedAxis(source, landmark, mode) * 180 / Math.PI);
+        if (bakeDeg <= MAX_BAKED_AXIS_DEG) { copied.push(name); continue; }
+
+
         const pivot = {
             x: landmark.jointPivotFrac.u * source.w,
             y: landmark.jointPivotFrac.v * source.h,
@@ -310,8 +347,7 @@ async function main(argv) {
 
     // Everything not straightened is copied byte for byte, so the output is a
     // complete part set and its provenance stays obvious.
-    const untouched = ['head', 'torso', 'pelvis_overlay', 'pelvis_underlay',
-        'near_thigh', 'far_thigh', 'near_shin', 'far_shin'];
+    const untouched = copied;
     for (const name of untouched) {
         await writeFile(path.join(outDir, `${name}.png`),
             await readFile(path.join(partsDir, `${name}.png`)));

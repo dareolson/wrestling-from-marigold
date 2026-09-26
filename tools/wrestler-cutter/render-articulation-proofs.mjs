@@ -37,13 +37,27 @@
 //   node tools/wrestler-cutter/render-articulation-proofs.mjs \
 //        --parts <dir> --landmarks <file.json> --out <dir> \
 //        [--compare <reference.png>] [--heights 265,209,154]
+//
+// Or, to take an ALREADY-ASSEMBLED figure straight to the game-scale gate:
+//
+//   node tools/wrestler-cutter/render-articulation-proofs.mjs \
+//        --figure <whole-character.png> --compare <master.png> --out <dir>
+//
+// WHY THAT MODE EXISTS. Derek's gate is whole-character approval at gameplay
+// scale, and the two requirements that rejected the last candidate -- "broader
+// and stockier, not leaner than the master" and "a true three-quarter head" --
+// are both answerable from a picture of the whole figure. Requiring a rig
+// binding first means measuring landmarks, deriving a config and wiring a
+// character before anyone can see whether the art is worth binding at all. That
+// is the expensive half done on spec. A generation that ships its own assembled
+// reference can be judged before a single landmark is placed.
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { decodeRgbaPng } from './validate-source-manifest.mjs';
 import { encodeRgbaPng } from './export-v2-sheet.mjs';
-import { ARTICULATION_RANGES } from './measure-joint-articulation.mjs';
+import { ARTICULATION_RANGES, PAINT_ALPHA, resolveDelivery } from './measure-joint-articulation.mjs';
 import { DEFAULT_MANIFEST } from './production-config.mjs';
 
 // Rec.709, the same coefficients measure-art-contract.mjs uses, chosen there
@@ -212,14 +226,14 @@ export function blitInto(dst, src, atX, atY) {
     return dst;
 }
 
-export function trimToContent(img, pad = 0) {
+export function trimToContent(img, pad = 0, threshold = 0) {
     let minX = img.w;
     let minY = img.h;
     let maxX = -1;
     let maxY = -1;
     for (let y = 0; y < img.h; y++) {
         for (let x = 0; x < img.w; x++) {
-            if (img.rgba[(y * img.w + x) * 4 + 3] === 0) continue;
+            if (img.rgba[(y * img.w + x) * 4 + 3] <= threshold) continue;
             if (x < minX) minX = x;
             if (x > maxX) maxX = x;
             if (y < minY) minY = y;
@@ -284,6 +298,19 @@ export const FRONT3Q_DEPTH_ORDER = Object.freeze([
     'near_forearm', 'near_upper_arm',
 ]);
 
+// A SHARED PAINTING SERVES BOTH SIDES, which is how the shipped rig works and
+// how the eight-part decomposition Derek's brief specifies is delivered: one
+// `upper_arm.png` and one `thigh.png`, each placed twice. This renderer only
+// ever knew the twelve-part spelling, so an eight-part set produced a figure
+// with no arms and no legs -- and said nothing, because a part with no entry
+// simply gets no placement.
+//
+// Resolving the delivery into the logical slots keeps every chain, depth and
+// diagnostic below written against anatomy rather than against filenames. It is
+// deliberately the runtime's own idiom, `textures.farForearm ?? textures.forearm`
+// (Skeleton.js), rather than a second convention that could disagree with it.
+// `resolveDelivery` lives in measure-joint-articulation.mjs, imported above.
+
 // Chains, so a pose can bend a limb rather than only place it.
 //
 // The head is here rather than treated as decoration: a part that appears in the
@@ -300,6 +327,24 @@ const CHAINS = {
     near_thigh: { parent: 'pelvis_underlay', socket: 'nearHip', joint: 'hip' },
     near_shin: { parent: 'near_thigh', socket: 'distalAnchorFrac', joint: 'knee' },
 };
+
+/**
+ * The chains for a given delivery.
+ *
+ * Only the hip parent varies. The twelve-part set ships a `pelvis_underlay` and
+ * roots both thighs on it; shipped Lou has no pelvis layer at all -- his trunks
+ * are painted into the torso -- so an eight-part set roots them on the torso's
+ * own `nearHip`/`farHip` sockets, which the torso declares either way. Rooting
+ * a thigh on a layer that was not delivered leaves the whole leg unplaced.
+ */
+export function chainsFor(parts) {
+    const hipParent = parts.pelvis_underlay ? 'pelvis_underlay' : 'torso';
+    return {
+        ...CHAINS,
+        far_thigh: { ...CHAINS.far_thigh, parent: hipParent },
+        near_thigh: { ...CHAINS.near_thigh, parent: hipParent },
+    };
+}
 
 // THE PIVOT OF A PART, from the real landmark schema. One function, used by both
 // the placer and the socket solver.
@@ -394,7 +439,13 @@ function registerBySockets(parentPlacement, parentPart, parentLm, childPart, chi
 // Returns the frame plus a report of what was actually positioned. "12/12 parts
 // rendered" proved only that twelve files decoded; a part can load fine and
 // still have nowhere to go.
-export function assemble({ parts, landmarks, pose = {}, facing = 1, size = 900 }) {
+export function assemble({ parts: delivered, landmarks: deliveredLm, pose = {}, facing = 1, size = 900 }) {
+    // A shared painting fills both of its sides before anything below looks at
+    // a part, so every chain, depth and diagnostic stays written against
+    // anatomy rather than against how many files the candidate shipped.
+    const parts = resolveDelivery(delivered);
+    const landmarks = resolveDelivery(deliveredLm);
+    const CHAIN = chainsFor(parts);
     const placements = {};
     const unregistered = [];
     const diagnostics = {};
@@ -445,7 +496,7 @@ export function assemble({ parts, landmarks, pose = {}, facing = 1, size = 900 }
     const resolve = (name, seen = new Set()) => {
         if (placements[name] || seen.has(name)) return;
         seen.add(name);
-        const chain = CHAINS[name];
+        const chain = CHAIN[name];
         if (!chain) return;
         resolve(chain.parent, seen);
         const parentPlacement = placements[chain.parent];
@@ -473,7 +524,7 @@ export function assemble({ parts, landmarks, pose = {}, facing = 1, size = 900 }
             pivot: pivotOf(name, landmarks[name]),
         };
     };
-    for (const name of Object.keys(CHAINS)) resolve(name);
+    for (const name of Object.keys(CHAIN)) resolve(name);
 
     // Fit the canvas to the figure before drawing.
     //
@@ -640,19 +691,80 @@ async function main(argv) {
     const landmarksPath = arg('--landmarks');
     const outDir = arg('--out');
     const comparePath = arg('--compare');
+    const figurePath = arg('--figure');
     const heights = arg('--heights', '265,209,154').split(',').map(Number);
     const view = arg('--view', 'front3q');
     const strict = argv.includes('--strict');
 
-    if (!partsDir || !landmarksPath || !outDir) {
+    if (!outDir || (!figurePath && (!partsDir || !landmarksPath))) {
         console.error('usage: render-articulation-proofs.mjs --parts <dir> '
-            + '--landmarks <file.json> --out <dir> [--compare <ref.png>]');
+            + '--landmarks <file.json> --out <dir> [--compare <ref.png>]\n'
+            + '   or: render-articulation-proofs.mjs --figure <figure.png> '
+            + '--compare <master.png> --out <dir>');
         process.exit(2);
     }
 
-    const landmarks = JSON.parse(await readFile(landmarksPath, 'utf8'));
-    const parts = {};
-    for (const name of FRONT3Q_DEPTH_ORDER) parts[name] = await loadPart(partsDir, name);
+    // Already-assembled figure: no parts, no landmarks, no rig binding. It is
+    // trimmed to its own ink so the height the comparison scales to is the
+    // FIGURE's height and not its canvas -- a 1024x1536 plate with 100px of
+    // margin would otherwise render the man at 240px and call it 265.
+    if (figurePath) {
+        await mkdir(outDir, { recursive: true });
+        const fig = decodeRgbaPng(await readFile(figurePath));
+        // A GENERATED PLATE IS NOT HARD-KEYED. This one carries a faint glow --
+        // 1226523 pixels at alpha 0-15, reaching far past the figure -- and
+        // trimming at "alpha is not zero" measured the glow instead of the man:
+        // 861x1475 against the figure's real 512x1313. Scaling that to 265px
+        // renders Lou at about 236 and invites exactly the "too lean and too
+        // tall" reading this comparison exists to settle. The alpha here is
+        // strongly bimodal (1.2M under 16, 338k over 240, ~8k between), so the
+        // pipeline's own paint threshold separates them cleanly and the bbox is
+        // stable from 8 upward.
+        const keyed = { w: fig.w, h: fig.h, rgba: Uint8Array.from(fig.rgba) };
+        for (let i = 0; i < keyed.w * keyed.h; i++) {
+            if (keyed.rgba[i * 4 + 3] > PAINT_ALPHA) continue;
+            keyed.rgba[i * 4] = 0;
+            keyed.rgba[i * 4 + 1] = 0;
+            keyed.rgba[i * 4 + 2] = 0;
+            keyed.rgba[i * 4 + 3] = 0;
+        }
+        const figure = trimToContent(keyed, 0, PAINT_ALPHA);
+        const writeFig = async (name, img) => {
+            await writeFile(path.join(outDir, name), encodeRgbaPng(img));
+            console.log(`  wrote ${name} (${img.w}x${img.h})`);
+        };
+        await writeFig('figure.png', figure);
+        await writeFig('figure-broadcast.png', applyScanlines(toGrayscale(figure)));
+        console.log(`  figure ink is ${figure.w}x${figure.h}`);
+        if (comparePath) {
+            const sheet = decodeRgbaPng(await readFile(comparePath));
+            let ref = { w: sheet.w, h: sheet.h, rgba: sheet.rgba };
+            const manifest = JSON.parse(await readFile(DEFAULT_MANIFEST, 'utf8'));
+            const declared = manifest?.sourceSheet;
+            const panel = (manifest?.sourceSheet?.masterPanels ?? {})[view];
+            const canvasMatches = !declared?.width || !declared?.height
+                || (sheet.w === declared.width && sheet.h === declared.height);
+            if (panel && canvasMatches) {
+                ref = extractPanel(ref, panel);
+                console.log(`  comparing against the ${view} panel `
+                    + `(${panel.w}x${panel.h} at ${panel.x},${panel.y}) of the master`);
+            }
+            await writeFig('scale-comparison.png',
+                scaleComparison(figure, trimToContent(ref, 0, PAINT_ALPHA), heights));
+        }
+        return;
+    }
+
+    const rawLandmarks = JSON.parse(await readFile(landmarksPath, 'utf8'));
+    // Load the logical slots AND the shared spellings an eight-part set uses.
+    // `resolveDelivery` then fills each side from whichever the candidate
+    // actually shipped, so everything downstream counts anatomy, not files.
+    const rawParts = {};
+    for (const name of [...FRONT3Q_DEPTH_ORDER, 'upper_arm', 'thigh']) {
+        rawParts[name] = await loadPart(partsDir, name);
+    }
+    const parts = resolveDelivery(rawParts);
+    const landmarks = resolveDelivery(rawLandmarks);
     const present = FRONT3Q_DEPTH_ORDER.filter((n) => parts[n]);
 
     if (present.length === 0) {
@@ -666,7 +778,7 @@ async function main(argv) {
         console.log(`  wrote ${name} (${img.w}x${img.h})`);
     };
 
-    const assembled = assemble({ parts, landmarks });
+    const assembled = assemble({ parts: rawParts, landmarks: rawLandmarks });
     const neutral = trimToContent(assembled.frame, 8);
     await write('neutral-assembly.png', neutral);
     await write('neutral-assembly-broadcast.png', applyScanlines(toGrayscale(neutral)));
@@ -702,10 +814,21 @@ async function main(argv) {
     }
 
     // What actually reached the canvas, which is not the same as what loaded.
-    const positioned = FRONT3Q_DEPTH_ORDER.filter((n) => assembled.placements[n]);
-    console.log(`  ${positioned.length}/${FRONT3Q_DEPTH_ORDER.length} parts positioned `
+    //
+    // Counted against what this DECOMPOSITION expects, not against the twelve
+    // slots the depth order lists. An eight-part set ships no pelvis layer
+    // because the shipped rig has none -- reporting that as "10/12, missing
+    // files: pelvis_underlay, pelvis_overlay" describes a complete delivery as
+    // a short one, and this notebook is full of sessions spent chasing a
+    // non-problem a tool reported confidently.
+    const expected = FRONT3Q_DEPTH_ORDER.filter((n) => {
+        if (!n.startsWith('pelvis')) return true;
+        return Boolean(rawParts.pelvis_underlay || rawParts.pelvis_overlay);
+    });
+    const positioned = expected.filter((n) => assembled.placements[n]);
+    console.log(`  ${positioned.length}/${expected.length} parts positioned `
         + `(${present.length} loaded)`);
-    const missing = FRONT3Q_DEPTH_ORDER.filter((n) => !parts[n]);
+    const missing = expected.filter((n) => !parts[n]);
     if (missing.length) console.error(`  missing files: ${missing.join(', ')}`);
     if (assembled.unregistered.length) {
         console.error(`  NOT PLACED, no registration landmark: `

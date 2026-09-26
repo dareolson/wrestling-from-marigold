@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-    STRAIGHTEN,
+    MAX_BAKED_AXIS_DEG,
+    axisModeFor,
     bakedAxis,
     rotateAboutPivot,
     transportFrac,
@@ -141,15 +142,36 @@ test('landmarks are carried through the same rotation', () => {
     assert.ok(movedDistal.v * image.h > newPivot.y, 'and still below the pivot');
 });
 
-test('only the parts measured to be bent are straightened', () => {
-    // The legs measured within a few degrees of neutral and are copied byte for
-    // byte. A correction that touches everything it can reach is not a
-    // correction, it is a rewrite.
-    assert.deepEqual(Object.keys(STRAIGHTEN).sort(),
-        ['far_forearm', 'far_upper_arm', 'near_forearm', 'near_upper_arm']);
-    assert.equal(STRAIGHTEN.near_upper_arm, 'landmark');
-    assert.equal(STRAIGHTEN.near_forearm, 'distalInk',
-        'the forearms declare no distal anchor, so the ink is the only axis available');
+test('which parts are bent is measured, not listed by name', () => {
+    // This was a four-name table until 2026-09-22, which meant the tool could
+    // only straighten the twelve-part decomposition it was written for: an
+    // eight-part set delivering one shared `upper_arm` and one shared `thigh`
+    // had no entry, and a part with no entry is never looked at. The mode now
+    // comes from what the part declares, so a new decomposition needs no edit.
+    assert.equal(axisModeFor({ jointPivotFrac: {}, distalAnchorFrac: { u: 0.5, v: 0.9 } }), 'landmark',
+        'both ends declared is the actual bone -- upper arms and thighs');
+    assert.equal(axisModeFor({ jointPivotFrac: {}, sourcePixel: { ankle: { x: 1, y: 2 } } }), 'ankle',
+        'a shin is measured on its declared ankle, never on its boot');
+    assert.equal(axisModeFor({ jointPivotFrac: {} }), 'distalInk',
+        'the forearms declare neither, so the ink is the only axis available');
+
+    // The eight-part names resolve the same way the twelve-part ones did, which
+    // is the whole point: `upper_arm` is an upper arm whatever it is called.
+    const withAnchor = { jointPivotFrac: {}, distalAnchorFrac: { u: 0.5, v: 0.9 } };
+    for (const part of ['near_upper_arm', 'far_upper_arm', 'upper_arm', 'thigh']) {
+        assert.equal(axisModeFor(withAnchor), 'landmark', `${part} declares both ends`);
+    }
+});
+
+test('a part already straight is copied, not resampled', () => {
+    // The legs of the set this tool was written for measured 1.7-1.8 degrees.
+    // A correction that touches everything it can reach is not a correction, it
+    // is a rewrite -- and resampling costs real quality for nothing. The
+    // threshold is the same one art:map-candidate reports requirement 3
+    // against, deliberately: one number, one module.
+    assert.equal(MAX_BAKED_AXIS_DEG, 3);
+    assert.ok(1.8 <= MAX_BAKED_AXIS_DEG, 'the v3 thighs are copied, as they were before');
+    assert.ok(13.4 > MAX_BAKED_AXIS_DEG, 'the v3 arms are straightened, as they were before');
 });
 
 test('a shin is measured on its declared ankle, not on its boot', () => {

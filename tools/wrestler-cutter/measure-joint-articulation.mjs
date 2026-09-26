@@ -45,7 +45,7 @@
 //        --parts <dir> --landmarks <landmarks.json> [--json] [--strict]
 //        [--proofs <out-dir>] [--step 10]
 
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 
 import { decodeRgbaPng } from './validate-source-manifest.mjs';
 
@@ -71,7 +71,7 @@ export const THRESHOLDS = Object.freeze({
 });
 
 // Alpha at or below this reads as unpainted. Matches the Python's `> 40`.
-const PAINT_ALPHA = 40;
+export const PAINT_ALPHA = 40;
 
 // ── Compositing ─────────────────────────────────────────────────────────────
 //
@@ -545,10 +545,44 @@ export function cropDisc(img, cx, cy, r) {
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
 
+// A SHARED PAINTING SERVES BOTH SIDES.
+//
+// The eight-part decomposition Derek's 2026-09-15 brief specifies ships one
+// `upper_arm.png` and one `thigh.png`, each placed twice, because that is what
+// the shipped rig can consume. Every tool here only knew the twelve-part
+// spelling, so an eight-part set measured nothing at four of the eight joints
+// and said "missing landmarks" -- which reads like an incomplete delivery
+// rather than a tool that cannot see a complete one.
+//
+// Deliberately the runtime's own idiom, `textures.farForearm ?? textures.forearm`
+// (Skeleton.js), rather than a second convention that could disagree with it.
+export const SHARED_SOURCE = Object.freeze({
+    near_upper_arm: 'upper_arm',
+    far_upper_arm: 'upper_arm',
+    near_thigh: 'thigh',
+    far_thigh: 'thigh',
+});
+
+/** Fill each logical slot from its own entry, else from the shared one. */
+export function resolveDelivery(map) {
+    const out = { ...map };
+    for (const [slot, shared] of Object.entries(SHARED_SOURCE)) {
+        if (!out[slot] && map[shared]) out[slot] = map[shared];
+    }
+    return out;
+}
+
+/** Which file backs a logical slot, given the names the candidate delivered. */
+export function sourceFor(deliveredNames, slot) {
+    if (deliveredNames.has(slot)) return slot;
+    const shared = SHARED_SOURCE[slot];
+    return shared && deliveredNames.has(shared) ? shared : null;
+}
+
 // Joints, and which authored part plays parent and child at each. Both sides,
 // because near and far are separately authored for their own front3q depth and
 // perspective and a clean near elbow is no evidence about the far one.
-const JOINTS = [
+export const JOINTS = Object.freeze([
     { name: 'nearShoulder', joint: 'shoulder', parent: 'torso', child: 'near_upper_arm', attach: 'nearShoulder' },
     { name: 'farShoulder', joint: 'shoulder', parent: 'torso', child: 'far_upper_arm', attach: 'farShoulder' },
     { name: 'nearElbow', joint: 'elbow', parent: 'near_upper_arm', child: 'near_forearm', attach: 'elbow' },
@@ -557,7 +591,28 @@ const JOINTS = [
     { name: 'farHip', joint: 'hip', parent: 'pelvis_underlay', child: 'far_thigh', attach: 'farHip' },
     { name: 'nearKnee', joint: 'knee', parent: 'near_thigh', child: 'near_shin', attach: 'knee' },
     { name: 'farKnee', joint: 'knee', parent: 'far_thigh', child: 'far_shin', attach: 'knee' },
-];
+]);
+
+/**
+ * The joint table for a given delivery. Only the hip parent varies.
+ *
+ * The twelve-part set ships a `pelvis_underlay` and roots both thighs on it.
+ * Shipped Lou has no pelvis layer at all -- his trunks are painted into the
+ * torso -- so an eight-part set roots them on the torso's own `nearHip`/`farHip`
+ * sockets, which the torso declares either way. That is the SHIPPED case, not an
+ * exception to it: reporting both hips as unmeasurable because a layer the rig
+ * does not use is absent would be a tool defect filed as an art one, and this
+ * notebook records several sessions lost to exactly that.
+ *
+ * Extracted from `main` so it can be pinned. It mirrors `chainsFor` in
+ * render-articulation-proofs.mjs deliberately; the two make the same decision
+ * and should be readable as the same decision.
+ */
+export function jointsFor(deliveredNames) {
+    const hipParent = deliveredNames.has('pelvis_underlay') ? 'pelvis_underlay' : 'torso';
+    return JOINTS.map((spec) => (
+        spec.joint === 'hip' ? { ...spec, parent: hipParent } : spec));
+}
 
 async function loadPart(dir, name) {
     // decodeRgbaPng returns { w, h, alpha, rgba }.
@@ -582,18 +637,29 @@ async function main(argv) {
         process.exit(2);
     }
 
-    const landmarks = JSON.parse(await readFile(landmarksPath, 'utf8'));
+    const rawLandmarks = JSON.parse(await readFile(landmarksPath, 'utf8'));
+    // What the candidate actually shipped, so a shared painting can serve both
+    // of its sides rather than reading as two missing parts.
+    const deliveredNames = new Set((await readdir(partsDir))
+        .filter((f) => f.endsWith('.png'))
+        .map((f) => f.replace(/\.png$/, '')));
+    const landmarks = resolveDelivery(rawLandmarks);
+    // Where the thighs hang; see `jointsFor` for why the torso is the shipped
+    // answer rather than the fallback.
+    const joints = jointsFor(deliveredNames);
     const report = [];
 
-    for (const spec of JOINTS) {
+    for (const spec of joints) {
         const parentLm = landmarks[spec.parent];
         const childLm = landmarks[spec.child];
-        if (!parentLm || !childLm) {
+        const parentFile = sourceFor(deliveredNames, spec.parent);
+        const childFile = sourceFor(deliveredNames, spec.child);
+        if (!parentLm || !childLm || !parentFile || !childFile) {
             report.push({ joint: spec.name, skipped: 'missing landmarks' });
             continue;
         }
-        const parent = await loadPart(partsDir, spec.parent);
-        const child = await loadPart(partsDir, spec.child);
+        const parent = await loadPart(partsDir, parentFile);
+        const child = await loadPart(partsDir, childFile);
         const attach = parentLm.sockets?.[spec.attach] ?? parentLm.distalAnchorFrac;
         if (!attach) {
             report.push({ joint: spec.name, skipped: `no attach point ${spec.attach}` });

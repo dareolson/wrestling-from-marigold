@@ -1,7 +1,21 @@
 #!/usr/bin/env node
 
-// Cuts a 4x3 front3q modular source plate into twelve independently authored
-// candidates. The input must already be a straight-alpha RGBA PNG.
+// Cuts a front3q modular source plate into independently authored candidates.
+// The input must already be a straight-alpha RGBA PNG.
+//
+// TWO LAYOUTS, chosen by what the plate actually contains rather than by a flag,
+// because the component count is unambiguous and a flag is one more thing to get
+// wrong:
+//
+//   twelve, 4x3   the original decomposition -- both sides split at elbow and
+//                 knee, plus a pelvis overlay and underlay.
+//   eight,  4x2   what the shipped rig can consume, and what Derek's 2026-09-15
+//                 brief specifies: one shared upper arm, one shared thigh,
+//                 separately authored near/far forearms and shins, no pelvis
+//                 layer. See RIG_AND_MOVE_PIPELINE.md, "Binding art to the rig".
+//
+// Anything else is an error rather than a guess: a plate with a stray speck or a
+// missing piece is a generation to re-roll, not a part set to cut.
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -72,35 +86,48 @@ function crop(rect) {
     return output;
 }
 
+// Reading order, row-major, for each supported component count.
+export const LAYOUTS = Object.freeze({
+    12: Object.freeze({
+        rows: 3,
+        names: Object.freeze([
+            'head', 'torso', 'pelvis_overlay', 'pelvis_underlay',
+            'near_upper_arm', 'far_upper_arm', 'near_forearm', 'far_forearm',
+            'near_thigh', 'far_thigh', 'near_shin', 'far_shin',
+        ]),
+    }),
+    8: Object.freeze({
+        rows: 2,
+        names: Object.freeze([
+            'head', 'torso', 'upper_arm', 'thigh',
+            'near_forearm', 'far_forearm', 'near_shin', 'far_shin',
+        ]),
+    }),
+});
+
+/** Groups components into `rows` bands by their centre, each sorted left to right. */
+export function readingOrder(found, imageHeight, rowCount) {
+    const perRow = found.length / rowCount;
+    const rows = Array.from({ length: rowCount }, (_, row) => found
+        .filter((rect) => {
+            const cy = rect.y + rect.h / 2;
+            return cy >= (row * imageHeight) / rowCount && cy < ((row + 1) * imageHeight) / rowCount;
+        })
+        .sort((a, b) => a.x - b.x));
+    if (rows.some((row) => row.length !== perRow)) {
+        throw new Error(`expected ${perRow} components per row, found ${rows.map((r) => r.length).join('/')}`);
+    }
+    return rows.flat();
+}
+
 const found = components(image);
-if (found.length !== 12) {
-    throw new Error(`expected exactly 12 components, found ${found.length}: ${JSON.stringify(found)}`);
+const spec = LAYOUTS[found.length];
+if (!spec) {
+    throw new Error(`expected 8 or 12 components, found ${found.length}: ${JSON.stringify(found)}`);
 }
-
-const rows = [0, 1, 2].map(row => found
-    .filter(rect => {
-        const cy = rect.y + rect.h / 2;
-        return cy >= row * image.h / 3 && cy < (row + 1) * image.h / 3;
-    })
-    .sort((a, b) => a.x - b.x));
-if (rows.some(row => row.length !== 4)) {
-    throw new Error(`expected four components per row, found ${rows.map(row => row.length).join('/')}`);
-}
-
-const layout = [
-    ['head', rows[0][0]],
-    ['torso', rows[0][1]],
-    ['pelvis_overlay', rows[0][2]],
-    ['pelvis_underlay', rows[0][3]],
-    ['near_upper_arm', rows[1][0]],
-    ['far_upper_arm', rows[1][1]],
-    ['near_forearm', rows[1][2]],
-    ['far_forearm', rows[1][3]],
-    ['near_thigh', rows[2][0]],
-    ['far_thigh', rows[2][1]],
-    ['near_shin', rows[2][2]],
-    ['far_shin', rows[2][3]],
-];
+const ordered = readingOrder(found, image.h, spec.rows);
+const layout = spec.names.map((name, i) => [name, ordered[i]]);
+console.log(`  ${found.length} components -> the ${found.length}-part decomposition`);
 
 await mkdir(outputDir, { recursive: true });
 const parts = {};
@@ -111,7 +138,7 @@ for (const [name, bounds] of layout) {
     parts[name] = { sourceBounds: bounds, exportRect, width: output.w, height: output.h };
 }
 await writeFile(path.join(outputDir, 'parts-index.json'), `${JSON.stringify({
-    version: 'lou-front3q-modular-v1',
+    version: `lou-front3q-modular-${layout.length}part`,
     source: inputPath,
     layout: layout.map(([name]) => name),
     parts,

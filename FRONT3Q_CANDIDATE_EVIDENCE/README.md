@@ -89,6 +89,26 @@ The four questions this file originally posed were answered by Derek on
 The proportion drift visible in `06` — the candidate reading leaner and taller
 than the Pass-A master beside it — is the finding that decided it.
 
+## A tenth requirement, added 2026-09-25
+
+The `v5-generated-draft` eight-part plate — generated after this candidate was
+rejected — cut to exactly 8 clean components and maps 8/8, and its **torso is
+still a full bust**. The rig places `head.png` at the torso's own neck socket,
+so it would draw Lou's head twice. It needs re-generation rather than a repaint.
+
+Requirement 10 measures it as a **neck pinch** in the torso's row-width profile:
+the v5 draft reads 10.2%, while this candidate's control torso, shipped Lou,
+shipped George and `thesz-front3q-r1` all read exactly 0.0%. Full reasoning in
+the next-generation brief.
+
+**Correction to this file's "Reproducing" section, same date.** The plate in
+that draft arrived from the generator already carrying alpha and was never
+hard-keyed, so its cut parts violate the transparent-RGB contract and carry a
+glow that inflates every measurement taken from their bounding boxes. Run
+`npm run art:key-plate -- IN.png OUT.png` before the cutter on any plate that
+did not come through `remove-chroma-key.mjs`. It is a byte-identical no-op on a
+plate that did, so it is safe to run unconditionally.
+
 ## Reproducing
 
 ```sh

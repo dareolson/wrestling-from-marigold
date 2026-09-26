@@ -97,6 +97,46 @@ second. Delivering a whole far arm or far leg is worse than wasted: the rig
 articulates the far elbow and far knee independently, and no offset bends one
 painting in the middle.
 
+### The torso is headless, and the head is a part
+
+The rig places `head.png` at the torso's own neck socket. A torso painted as a
+full bust — head, neck and shoulders in one image — draws the head twice, and it
+cannot be repaired by erasing the head: there is no chest or shoulder paint
+behind it. That is a re-generation.
+
+It slips through everything else. The plate still cuts to the right number of
+clean components, every part still maps to a real slot, every joint still
+articulates, and a whole-character reference image still looks like a person.
+The defect only exists once the part is a part. `npm run art:map-candidate`
+reports it from the silhouette alone, with no landmarks needed: a headless torso
+widens monotonically from its neck stub into its shoulders, while a bust rises
+to a head maximum, narrows at the neck, then widens. Shipped Lou, shipped
+George, the front3q v4 control and `thesz-front3q-r1` all measure that
+narrowing at exactly **0.0%**; the front3q v5 draft measures **10.2%**.
+
+### Key a plate that arrives with alpha already on it
+
+`remove-chroma-key.mjs` decides alpha itself and writes `0,0,0` under every
+transparent pixel. A plate generated with an alpha channel already attached has
+had neither done to it, and keeps whatever colour sits under the transparency —
+measured on the front3q v5 draft, 1,122,941 violating pixels out of 1,572,864,
+inherited by all eight cut parts.
+
+Invisible colour stays invisible only until something measures the image instead
+of looking at it, and most of this pipeline measures images. Such a plate also
+tends to carry a faint glow, a wide low-alpha halo reaching past the figure:
+bounding the v5 figure at "alpha is not zero" gives 861x1475 against its real
+512x1313, so a 265px game-scale gate renders the man at about 236px in a frame
+labelled 265 — leaner and taller than he is, which is exactly the judgement the
+gate exists to settle.
+
+Run `npm run art:key-plate -- IN.png OUT.png` before the cutter. It clears
+colour under alpha 0 (the contract, and lossless) and coverage at or below a
+stated threshold (a judgement, defaulting to the pipeline's own `PAINT_ALPHA`).
+It is a byte-identical no-op on a plate that was already keyed, so it is safe in
+front of the cutter unconditionally — and a step that must be applied exactly
+once is a step someone will eventually apply twice.
+
 ## Part variants
 
 Variants live under `character.textures.variants` and target semantic render slots:

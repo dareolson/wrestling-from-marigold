@@ -117,6 +117,18 @@ will not be tuned or repainted, and the zeroed offsets on
 `thesz-front3q-r1` will not get a rig-tuner pass: that work only makes sense on
 art that is going to ship.
 
+**A tenth requirement, added 2026-09-25: the torso must be headless.** The
+`v5-generated-draft` eight-part plate is otherwise sound — it cut to exactly 8
+clean components and all eight map — but its **torso is a full bust**. The rig
+places `head.png` at the torso's own neck socket, so wired up as eight parts it
+draws Lou's head twice. It is unbindable regardless of what Derek thinks of the
+build and needs **re-generation, not a repaint**: erasing the head leaves a hole
+where the chest was never drawn behind it. Measured as a **neck pinch** in the
+row-width profile — v5 10.2%, and shipped Lou, shipped George, the v4 control
+and `thesz-front3q-r1` all exactly 0.0%. Reported by `art:map-candidate` past
+3%. **So requirement 9 passing is not evidence a delivery is bindable**, which
+is the general lesson: it checks the decomposition, not the content of a part.
+
 **Derek's correction, worth carrying forward:** the 8.2% hip-span disagreement
 and the unregistered `pelvis_overlay` belong to pelvis layers the shipped legacy
 rig does not use, so while the production track stays on that rig they are **not
@@ -125,9 +137,20 @@ art requirements** and must not enter the generation prompt.
 Two of the nine requirements are now measured rather than asserted:
 `art:map-candidate --landmarks` reports each part's **bone axis** (BAKED BENT
 past 3 degrees — v3's arms were 13.4–19.6) and the **dark fraction of its top
-rows** (TRUNKS BAKED ON past 20% — the six-part board was 52–74%). It also
+rows** (TRUNKS BAKED ON past 20% — the six-part board was 52–74%). ~~It also
 states the decomposition the rig can consume: **eight parts, not twelve**, with
-one shared upper arm and one shared thigh.
+one shared upper arm and one shared thigh.~~
+
+**Corrected 2026-09-25: it stated that decomposition and could not check one.**
+`CANDIDATE_SLOTS` had no entry for `upper_arm` or `thigh` — the two filenames
+requirement 9 adds — so run against the brief's own eight-part spelling the
+check reported **6/8, `upper_arm` and `thigh` UNKNOWN**. The instrument named
+the right answer in its prose while being unable to read a delivery that gave
+it, which is the worse failure of the two: requirement 9 was unmeasurable, and
+the two families that matter most went unmeasured for the bake axis and the
+trunks fraction as well. All four measurement tools had the same gap — they
+only ever spoke the twelve-part decomposition. Fixed and pinned; the eight-part
+delivery now maps 8/8.
 
 **Two corrections to my own work, found 2026-09-22 on a re-check and fixed.**
 Both were arithmetic, both cost a wrong claim, and **both are now written up as
@@ -226,18 +249,38 @@ in a match. A rig-tuner preview was built and reverted for exactly that reason
 
 ## Source artwork is gitignored and is NOT preserved by any commit
 
-`.gitignore:3` excludes `Sprite sheets/` in full. Every commit in this repository
-therefore preserves the tooling that processes the artwork and none of the
-artwork itself. What currently exists only on Derek's disk:
+~~`.gitignore:3` excludes `Sprite sheets/` in full.~~ **Corrected 2026-09-25:
+21 files under it are tracked** — 10 `.md`, 6 `.txt`, 5 `.json`, and no artwork.
+The point stands exactly: not one image byte is preserved by any commit. But a
+fresh worktree *does* contain a `Sprite sheets/` tree, seven directories deep
+under `v2-canonical`, holding READMEs, `SHA256SUMS.txt` files and
+`parts-index.json` manifests with nothing for them to describe. Expect the
+directory to exist and be empty of art, rather than to be absent.
 
-| path | what it is |
-| --- | --- |
-| `.../production-front3q-modular/v3/{source,keyed,parts}` | the live front3q candidate, 12 parts |
-| `.../production-front3q-modular/v2/landmarks.json` | the measured landmarks v3 is rendered with |
-| `.../production-limb-redesign/v1/` | the six-part legacy-rig limb board |
-| `.../v2-canonical/pass-a/candidates/thesz-v2-pass-a-v3.png` | the identity-approved Pass-A master |
-| `.../v2-layer-standardization/references/lou-canonical-chroma-v1.png` | the canonical clean-shaven identity reference |
-| `Sprite sheets/Audience/chicago-fan-v1.png` | the generated crowd source strip |
+Every commit therefore preserves the tooling that processes the artwork and none
+of the artwork itself.
+
+~~What currently exists only on Derek's disk:~~ **The table below listed six
+paths. Measured 2026-09-25 there are 739 PNGs under `Sprite sheets/`, 619 of
+them under `Sprite sheets/AI Pilot/Lou` alone and 32 under
+`Sprite sheets/Audience/`.** A six-row table was never an inventory and should
+not be read as one; what follows names the trees that matter and their sizes, so
+a missing one is noticeable.
+
+| path | PNGs | what it is |
+| --- | ---: | --- |
+| `.../production-front3q-modular/v4-straightened/parts` | 12 | **the frozen diagnostic control the 2026-09-15 verdict rests on.** Only **8 of its 12** parts survive in git, as the committed `thesz-front3q-r1` assets — the eight the rig can consume. The four split upper arms and thighs exist nowhere else. |
+| `.../production-front3q-modular/v3/{source,keyed,parts}` | — | the candidate v4 was straightened from, 12 parts |
+| `.../production-front3q-modular/v5-generated-draft/` | — | the eight-part generated draft. Its torso has the head baked in; see requirement 10. Undocumented on disk until this entry. |
+| `.../production-front3q-modular/v2/landmarks.json` | — | the measured landmarks v3 is rendered with |
+| `.../production-limb-redesign/v1/` | 8 | the six-part legacy-rig limb board |
+| `.../three-quarter-control/` | 2 | the three-quarter pose sheet, chroma and keyed. Unlisted until this entry. |
+| `.../v2-canonical/pass-a/candidates/thesz-v2-pass-a-v3.png` | 12 (dir) | the identity-approved Pass-A master |
+| `.../v2-canonical/pass-b/` | 114 | the profile candidates v1–v5 and their proofs |
+| `.../v2-layer-standardization/` | 363 | the largest tree by far; `runtime-conformed/` alone is 327 |
+| `.../v1-golden-master/` | 56 | the pre-v2 lineage |
+| `.../v2-layer-standardization/references/lou-canonical-chroma-v1.png` | — | the canonical clean-shaven identity reference |
+| `Sprite sheets/Audience/` | 32 | crowd sources, including `chicago-fan-v1.png` |
 
 **Measured 2026-09-15: the suite cannot pass in a fresh checkout.** Checking any
 commit out into a clean worktree, without `Sprite sheets/`, fails five tests —
@@ -247,9 +290,15 @@ they fail, because they read artwork that no commit contains. This is
 pre-existing and not new: `e454f77` fails six the same way (the sixth being the
 unregistered `measure-art-contract.mjs`, fixed in `47c6f5c`).
 
-So "479/479 on Node 22.23.1" is true only on a machine that already has the art.
-Anyone cloning this repository gets 474/479 and cannot fix it from the
-repository alone. That is worth deciding about deliberately rather than
+So a green suite on Node 22.23.1 is true only on a machine that already has the
+art. ~~Anyone cloning this repository gets 474/479~~ **Corrected 2026-09-25, and
+re-measured rather than re-stated.** In a clean worktree at `a891bb2`: **479
+passing of 488 run, 5 failing, 4 skipped.** The five are exactly the ones named
+above — `landmarkFit`, `profileV2Normalization`, the two shipped-thigh pixel
+tests and `frozen profile v4 reproduces its recorded artifact identity` — and
+the four skips are `articulationProofs`' real-data tests, which say so in their
+skip message. Anyone cloning this repository sees that, and cannot fix it from
+the repository alone. That is worth deciding about deliberately rather than
 discovering during an onboarding: either those tests should skip when their
 inputs are absent, the way `tests/articulationProofs.test.js` does, or the
 artwork they depend on should stop being gitignored.
@@ -374,6 +423,133 @@ handoff status summary is `19b4da2`, both on branch
 `thesz-v2-profile-normalization`. The expansion below starts from that branch.
 
 ## Handoff Log
+
+### 2026-09-25 — Claude (the measurement tools learn the eight-part delivery; requirement 10; four corrections to this file)
+
+**The log had no entry after 2026-09-14.** Three sessions' work landed without
+one: the 2026-09-15 front3q candidate and Derek's verdict (`822031e`..`0d5119c`,
+recorded in `AI_HANDOFF_ENTRIES/` and in the Status summary but never in this
+log), the 2026-09-22 self-correction pass (`d7607a5`, `a891bb2`), and this one.
+This entry covers this session and names the other two so the log is continuous
+again.
+
+**What was uncommitted when this session started**, and is committed by it: all
+four measurement tools only spoke the twelve-part decomposition, and the
+eight-part delivery Derek's brief specifies was unreadable to every one of them.
+The sharpest symptom is the one worth remembering — **requirement 9's own check
+reported the brief's eight filenames as 6/8, `upper_arm` and `thigh` UNKNOWN.**
+The instrument named the right answer in its prose while being unable to read a
+delivery that gave it. Requirement 9 was unmeasurable, and the two shared
+paintings went unmeasured for the bake axis and the trunks fraction as well.
+
+- `map-candidate` has `CANDIDATE_SLOTS` entries for the two shared paintings.
+- `straighten-limb-bake` decides from the measurement rather than a hardcoded
+  name table (`axisModeFor`, `MAX_BAKED_AXIS_DEG` single-sourced).
+- `measure-joint-articulation` gained `resolveDelivery`/`sourceFor`, and the hip
+  parent falls back to the torso's own sockets where no pelvis layer shipped.
+- `render-articulation-proofs` resolves shared paintings through the runtime's
+  own `??` idiom, counts against the delivered decomposition, and gained a
+  `--figure` mode taking a whole-character image straight to the game-scale gate
+  with no rig binding.
+- the cutter picks 4x3 or 4x2 from the component count.
+
+**Verified byte-identical on the frozen control** against a clean worktree at
+`a891bb2`, re-run this session rather than taken on report: 10 proof PNGs,
+`measure-joints` JSON, the straightener's 12 PNGs plus landmarks, and the
+cutter's 12 v3 part PNGs.
+
+**Two deviations, both deliberate, neither of which was in the claim I
+inherited.** The cut PNGs are byte-identical but `parts-index.json`'s `version`
+field changes from `lou-front3q-modular-v1` to `lou-front3q-modular-12part`. And
+`map-candidate`'s JSON now carries one added `torso` block for requirement 10 —
+which reports the control `headless: true` at a 0.0% pinch. Everything else in
+that JSON is unchanged. Re-run the comparison before trusting this summary, the
+same way this session re-ran the one it inherited and found both gaps.
+
+**Two gaps closed.**
+
+1. **A keying step for plates that arrive pre-alpha'd** —
+   `npm run art:key-plate`. The v5 cut parts violated the transparent-RGB
+   contract at 22,060–86,334 coloured pixels under alpha 0 per part, against the
+   v4 control's zero. The cutter was faithful and is not where the fix belongs:
+   v3's plate had been hard-keyed by chroma removal, and this one never was. The
+   new step clears colour under transparent pixels (the contract, lossless) and
+   the sub-threshold glow (a judgement, at a named threshold defaulting to the
+   pipeline's own `PAINT_ALPHA`). Idempotent, self-checking against
+   `findV2TransparentRgbViolation`, and a byte-identical no-op on an
+   already-keyed plate. After keying, all eight v5 parts measure 0 and 0 with
+   their paint counts unchanged.
+
+   The glow was not cosmetic. Bounding the v5 figure at "alpha is not zero"
+   measured 861x1475 against its real 512x1313, and the leg-proportion
+   measurement below collapses from 42.8% to 15.2% if taken on the unkeyed
+   plate.
+
+2. **The two changed code paths now have real fixtures**, not the scratch
+   synthetic landmark file they were proven by: `tests/eightPartDelivery.test.js`
+   (15) pins shared-painting resolution and the hip fallback through the real
+   assembler. Both were mutation-tested rather than assumed non-vacuous —
+   reverting the hip fallback fails 1, removing the shared resolution fails 7.
+
+**Requirement 10, added to the brief: the torso must be headless.** The v5
+draft's torso is a full bust. Shipped Lou, shipped George and the v4 control all
+ship a headless torso with a short neck stub, and the rig places `head.png`
+separately at the torso's own neck socket — so wired as eight parts this draws
+Lou's head twice. It is unbindable regardless of the build's merits and needs
+re-generation, not a repaint: erasing the head leaves a hole behind it.
+
+**No existing requirement catches it, and requirement 9 actively passes:** the
+plate cut to exactly 8 clean components in a 4x2 layout and all eight MAP,
+because `torso.png` is a real file in a real slot. The joints all articulate. A
+whole-character reference image looks right, because a bust with a head on it is
+what a person looks like. It is only wrong once the part is a PART.
+
+The check reads per-row ink width: a headless torso widens monotonically from
+its neck stub into its shoulders, a bust rises to a head maximum, narrows at the
+neck, then widens. Measured — **v5 draft 10.2%; v4 control, shipped Lou, shipped
+George and `thesz-front3q-r1` all exactly 0.0%**, at every smoothing window from
+3 rows to 21. Threshold 3%. The real pinch is shallow (147px to 132px to 343px),
+so the test fixture is built to those proportions rather than to a caricature; a
+slender-necked fixture pinches at 73% and would justify a far blunter check.
+
+**Four corrections to this file**, struck rather than deleted, the way `d7607a5`
+did: the requirement-9 claim above, the six-path art table (739 PNGs exist under
+`Sprite sheets/`; the frozen control was unlisted and only 8 of its 12 parts
+survive in git), the `.gitignore` claim (21 files under it *are* tracked — no
+artwork, so the point stands, but a fresh worktree does contain the tree), and
+the stale fresh-checkout count (**479 of 488 run, 5 fail, 4 skip**, re-measured
+in a clean worktree; the five are exactly the ones named).
+
+**Two measurements from the 2026-09-22 session were wrong. Do not repeat them.**
+Silhouette width at height stations is not a build measure — at 40% down both
+figures read `[arm, torso, arm]`, so the number is contaminated by arm position.
+And a crotch detector scanning down for the first two-run row finds the **arm
+gap**: reproduced here at 68.5% legs on the candidate against a true 42.8%.
+Scan for the longest two-run band through the lower body instead.
+
+**One figure I could not reproduce and have flagged rather than repeated.** The
+corrected leg fractions were recorded as candidate 42.8% against Pass-A master
+41.2%, "~4% longer-legged". The candidate is solid at **42.8%**, stable for any
+alpha threshold from 20 to 200. The master measures **40.3–41.8% depending on
+that threshold**, so 41.2% is inside the range but is not reproducible as a
+precise number. The direction holds and is the part that matters — the candidate
+is relatively 2–5% longer-legged, which leans toward Derek's "too tall" — but
+the two figures should not be quoted against each other to one decimal place.
+The same applies to the "elbow width continuity 0.2% against 23.6% swapped"
+claim in the brief: the method was not recorded, I could not reproduce it, and
+my own measurement (4.9% near, 8.6% far, the two forearms 13.6% apart) supports
+the same conclusion by different numbers. Both are marked in the brief.
+
+**Verification** (Node 22.23.1): `npm test` **544/544, 0 skipped** (up from 508
+— 15 eight-part, 11 keying, 10 requirement 10). `npm run build` clean. `npm run rig:validate` clean for george, thesz and
+`thesz-front3q-r1`. Production Lou's art, config and Derek's locked forearm
+offsets are unchanged; `thesz-front3q-r1` is untouched; all seven
+`runtimePrerequisites` remain `pending`. No `src/` runtime file changed.
+
+**Still Derek's, and not started:** the whole-character game-scale visual
+approval gate. `FRONT3Q_V5_GATE/02-equal-height-candidate-vs-master.png` is the
+format that works and `art:proofs --figure` regenerates it — but the v5 draft
+fails requirement 10 mechanically, so the next generation should come first.
 
 ### 2026-09-14 — Claude (proof renderer rebuilt against the real schema, after Codex rejected it)
 

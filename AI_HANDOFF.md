@@ -103,7 +103,13 @@ the rest stand as written.
 
 **DECIDED 2026-09-15 by Derek: the engineering is accepted, the art is
 rejected as the production candidate.** The next generation starts from a
-revised prompt rather than a repaint of this one. The standing brief, with his
+revised prompt rather than a repaint of this one. **That revised prompt has not
+been written** (checked 2026-09-26). The only one that exists is
+`~/Desktop/codex-front3q-prompt.md` of 13 Sep, which predates this verdict by
+two days and contradicts requirements 1, 8 and 9 while being silent on 10 — it
+instructs the generator to keep Lou **lean and not broad**, which is the verdict
+reversed. **Revise it before generating anything.** Details in the 2026-09-13
+log entry's correction. The standing brief, with his
 nine requirements and the checks that measure them, is
 `AI_HANDOFF_ENTRIES/2026-09-15-derek-front3q-verdict-and-next-generation-brief.md`
 — **read it before generating more Lou limb art.** In short: the body is too
@@ -551,6 +557,36 @@ approval gate. `FRONT3Q_V5_GATE/02-equal-height-candidate-vs-master.png` is the
 format that works and `art:proofs --figure` regenerates it — but the v5 draft
 fails requirement 10 mechanically, so the next generation should come first.
 
+**Addendum, 2026-09-26 — a fifth correction, and the one that blocks the next
+generation.** I checked the generation prompt only after committing the four
+above, which is the wrong order and is why this is an addendum rather than part
+of the entry. `~/Desktop/codex-front3q-prompt.md` is the only prompt that
+exists, no revised one was ever written, and it contradicts requirements 1, 8
+and 9 and is silent on 10. **Requirement 1 is reversed in it**: "Lou must remain
+lean... not thick, broad". Generating from it reproduces the leanness Derek
+rejected however well the torso is fixed. Struck and corrected in the
+2026-09-13 entry, flagged at the top of the Status summary, and a STOP block
+added to the standing brief where a generator-facing reader will hit it.
+
+**Two things measured while checking it**, both on the v5 assembled reference
+against the Pass-A front3q panel, and both scale-invariant so the unkeyed glow
+does not touch them. Torso width at 40% down, taken on the CENTRAL run where the
+arms are cleanly separated: candidate **17.7%** of figure height against the
+master's **18.9%**; widest clean run 22.2% against 23.2%. Legs **42.8%** of
+height against **40.3–41.8%**. So v5's upper body is genuinely thicker than
+v4's, but it still reads leaner and longer-legged than the master — requirement
+1 is **not** met, and the cause is at least partly the prompt.
+
+Also established, because it is recorded nowhere and cost me a rendering of the
+master panel to work out: in `FRONT3Q_V5_GATE/02`, **candidate is LEFT, master
+is RIGHT.** That image predates `art:key-plate`, so the picture may understate
+the candidate's size even though the ratios above hold.
+
+**Requirement 1 still has no mechanical check** — it is `art:proofs --compare`
+plus Derek's eye, which is how leanness survived three generations. The two
+measurements above are the candidate for one, and would have caught v3, v4 and
+v5 alike.
+
 ### 2026-09-14 — Claude (proof renderer rebuilt against the real schema, after Codex rejected it)
 
 Codex ran the proof renderer on the real V3 candidate and rejected it. The
@@ -680,12 +716,39 @@ torso's pivot instead of keeping their own. Both pinned. Scanlines are applied i
 screen space at fixed 2px pitch per `Arena.js:2877-2886` — scaling them with the
 figure would hide why small scale is hard.
 
-**The front3q generation brief was sent to Codex** on Derek's instruction,
+~~**The front3q generation brief was sent to Codex** on Derek's instruction,
 carrying the corrected part decomposition (both sides split at elbow and knee —
 `RENDER_PART_SLOTS` has no whole-limb slot and `Skeleton.js:1556-1565` rotates
 the far forearm independently), separately authored near/far pieces, Derek's
 production articulation ranges, and the warning above. Copy at
-`~/Desktop/codex-front3q-prompt.md`.
+`~/Desktop/codex-front3q-prompt.md`.~~
+
+**Corrected 2026-09-25. That prompt is still on disk, still the only one, and it
+now contradicts four of the ten requirements.** Calling its decomposition "the
+corrected" one was true when written and is actively misleading now — a reader
+sees "corrected" and trusts it. Read against Derek's 2026-09-15 verdict and the
+requirement table, `~/Desktop/codex-front3q-prompt.md` (13 Sep):
+
+- **Requirement 1, reversed.** Line 10: "Lou must remain **lean**, athletic and
+  period-accurate: **not thick, broad**, or bodybuilder-like", and the delivery
+  checklist repeats "**lean proportions**". Derek's verdict is that the body is
+  too lean and too tall and must be broader and more compact. Generating from
+  this reproduces the exact quality he rejected, whatever else is fixed.
+- **Requirement 9, contradicted.** "every limb segment the rig rotates is
+  authored as its own piece", "Near and far authored separately — not mirrored,
+  not shared". Its code citations are right about the far *forearm* and far
+  *shin* and then over-generalise to the upper arm and thigh, which the rig
+  cannot tell apart. That is the `SHARED-ONLY` row `art:map-candidate` prints.
+- **Requirement 8, contradicted.** It asks for "anatomically painted torso
+  shoulders and **pelvis hips**"; no pelvis layer belongs on this track.
+- **Requirement 10, absent.** Nothing asks for a headless torso. That is how the
+  v5 bust got through.
+
+**No revised prompt exists.** The Status summary's "the next generation starts
+from a revised prompt" is a statement of intent, not a pointer to an artifact.
+And the one artifact that drives every generation lives outside the repository,
+so nothing version-controls it, diffs it, or fails when it goes stale — which it
+has, twice over, in twelve days.
 
 **Derek's ruling on the forearm offsets.** The uncommitted `thesz.js` change
 zeroing `nearForearmOffsetX/Y` and `farForearmOffsetX/Y` is reverted: restore the

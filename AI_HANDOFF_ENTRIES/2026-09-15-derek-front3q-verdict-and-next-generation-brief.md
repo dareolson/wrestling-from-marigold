@@ -2,6 +2,35 @@
 
 **Start here before generating any more Lou limb art.**
 
+> ## STOP — the prompt on disk contradicts this brief (added 2026-09-26)
+>
+> `~/Desktop/codex-front3q-prompt.md` is the only generation prompt that exists.
+> It is dated 13 Sep, two days before the verdict below, and **no revised prompt
+> has been written.** Against the ten requirements it is wrong on four:
+>
+> | | the prompt says | the requirement says |
+> | --- | --- | --- |
+> | 1 | "Lou must remain **lean**... **not thick, broad**"; "lean proportions" | broader and more compact, must not read leaner than the master |
+> | 8 | "anatomically painted torso shoulders and **pelvis hips**" | no pelvis layers on this track |
+> | 9 | "Near and far authored separately — not mirrored, not shared" | ONE shared `upper_arm`, ONE shared `thigh` |
+> | 10 | *silent* | headless torso, short neck stub |
+>
+> Requirement 1 is the dangerous one: generating from this prompt reproduces the
+> exact leanness Derek rejected, however well the torso is fixed. The v5 draft
+> already shows it — measured against the Pass-A master, its torso is 17.7% of
+> figure height at 40% down against the master's 18.9%, and its legs are 42.8%
+> of height against the master's 40.3–41.8%. Still leaner, still longer-legged.
+>
+> On requirement 9 the prompt's reasoning is half right and worth preserving: the
+> far **forearm** and far **shin** genuinely do bend independently and must be
+> authored separately. It then over-generalises to the upper arm and thigh, which
+> the rig cannot tell apart — the `SHARED-ONLY` row `art:map-candidate` prints.
+>
+> **Revise the prompt, and put it in the repository.** The one document that
+> drives every generation currently lives outside version control, so nothing
+> diffs it or fails when it goes stale. It has now gone stale twice in twelve
+> days without anything noticing.
+
 ## The verdict
 
 **Accept the engineering work. Reject this art as the production candidate.**

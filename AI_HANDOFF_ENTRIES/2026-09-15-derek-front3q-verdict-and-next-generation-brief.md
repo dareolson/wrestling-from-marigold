@@ -52,6 +52,7 @@ the running game.
 | 7 | **No baked trunks material on limb pieces** | `art:map-candidate` — dark fraction of the part's top rows; **TRUNKS BAKED ON past 20%**. The six-part board measured 52–74%; front3q v3 measured 3–5% and passes. |
 | 8 | No pelvis layers unless the shipped track will actually use it | `art:map-candidate`. Shipped Lou keeps his trunks in the torso, so on this track the answer is none. |
 | 9 | The same modular decomposition the existing rig can consume | `art:map-candidate` must report every delivered part MAPPED. |
+| 10 | **A headless torso.** The head is a separate part; the torso ends in a short neck stub | `art:map-candidate` — the torso's **neck pinch**; **HEAD BAKED INTO TORSO past 3%**. Every headless torso measured — shipped Lou, shipped George, the v4 control, `thesz-front3q-r1` — reads exactly 0.0%. The v5 draft reads 10.2%. Added 2026-09-25; see below. |
 
 ### Requirement 9, concretely: author EIGHT parts, not twelve
 
@@ -77,6 +78,74 @@ Delivering a **whole** far arm or far leg is worse than wasted — it is
 unusable. The rig articulates the far elbow and far knee independently, and no
 offset bends a single painting in the middle. That is what the six-part
 `production-limb-redesign/v1` board did, and it maps only 2 of its 6 parts.
+
+### Requirement 10, added 2026-09-25: the torso must be headless
+
+**The v5 draft's torso has the head baked into it.** It is a full bust — head,
+neck and shoulders in one painting. Shipped Lou, shipped George and the v4
+diagnostic control all ship a headless torso ending in a short neck stub, and
+the rig places `head.png` separately at the torso's own neck socket. Wired up as
+eight parts, the v5 torso draws Lou's head **twice**.
+
+It is unbindable as eight parts regardless of what Derek thinks of the build,
+and it needs **re-generation rather than a repaint**: erasing the head from the
+torso leaves a hole where the chest and shoulders were never drawn behind it.
+
+**Everything else about the plate was sound**, with one claim I could not
+reproduce. It cut to exactly 8 clean components in a 4x2 layout and all eight
+MAP — both verified here. The part identities were said to have been confirmed
+by measurement rather than by eye, "elbow width continuity 0.2% apart as
+assigned against 23.6% swapped"; **that method was not recorded and I could not
+reproduce those figures.** Measuring the mean silhouette width of the upper
+arm's distal band against each forearm's proximal band, on the keyed parts, I
+get 92.1px against 96.8px (near, 4.9% apart) and 84.5px (far, 8.6% apart) — so
+the assignment is still the better fit on both sides, and the two forearms are
+13.6% apart from each other, which is what makes them distinguishable at all.
+The conclusion stands; the specific numbers should not be quoted until the
+method behind them is written down.
+
+**Why a tenth requirement rather than a tightening of an existing one.** None of
+the nine catches this, and the reasons are worth stating because they are the
+same reasons a human review missed it:
+
+- **Requirement 9 passes.** `torso.png` is a real file landing in a real slot,
+  so the delivery maps 8/8. The decomposition is correct; the *content* of one
+  part is not.
+- **The joint checks pass.** Every shoulder and hip is present and articulates.
+- **A whole-character reference image looks right**, because a bust with a head
+  on it is what a person looks like. The defect only exists once the part is a
+  PART.
+
+**The check.** Read the per-row ink width down the torso canvas. A headless
+torso widens monotonically from its neck stub into its shoulders — above the
+shoulders there is nothing but neck. A bust rises to a **head** maximum, narrows
+at the **neck**, then widens into the shoulders. That local minimum between two
+maxima is the pinch, and it cannot occur in a torso with no head on it:
+
+| torso | neck pinch | head mass / shoulder width |
+| --- | ---: | ---: |
+| front3q v5 draft | **10.2%** | 42.9% |
+| front3q v4 control | 0.0% | 9.6% |
+| shipped Lou | 0.0% | 26.6% |
+| shipped George | 0.0% | 11.7% |
+| `thesz-front3q-r1` | 0.0% | 9.6% |
+
+Every headless torso reads **exactly** zero, at every smoothing window from 3
+rows to 21; the v5 bust reads 9.6–11.5% over the same range. The threshold is
+3%, in the gap where nothing lives.
+
+Two properties of the check worth knowing before trusting it. It is measured
+from the **silhouette only and needs no landmarks**, deliberately — the value of
+catching a baked-in head is catching it before anyone measures joints, derives a
+config and wires a character around art that cannot be bound. And the search is
+**bounded above the widest row**, because a real torso narrows toward the waist
+by more than a neck does; searching the whole canvas for "somewhere the
+silhouette gets narrower" would fail every torso ever drawn.
+
+The real pinch is **shallow** — the v5 head rests on a thick collar, so the
+silhouette goes 147px to 132px to 343px. A threshold picked against a
+slender-necked example would sail straight past it, so the test fixture is built
+to the v5 proportions rather than to an obvious caricature.
 
 ### Correction (2026-09-22): the control does NOT fail requirement 3
 

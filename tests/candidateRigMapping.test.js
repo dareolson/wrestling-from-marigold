@@ -169,3 +169,35 @@ test('darkTopFraction separates a baked trunks band from an outline', async () =
     assert.ok(AUTHORING.maxBakedAxisDeg > 2 && AUTHORING.maxBakedAxisDeg < 9,
         'the bake threshold must separate v3 legs (1.7-5.2) from v3 arms (13.4-19.6)');
 });
+
+test('the eight-part decomposition the brief specifies maps completely', () => {
+    // Requirement 9 of Derek's 2026-09-15 brief names these eight filenames and
+    // says every delivered part must report MAPPED. Until 2026-09-22 the check
+    // that enforces it had no entry for `upper_arm` or `thigh` -- the two the
+    // brief adds -- so it reported the requirement's own spelling as UNKNOWN,
+    // 6/8. A requirement whose check cannot read the delivery is a requirement
+    // the next generation misses the way the last one did.
+    const rows = mapCandidate({
+        partNames: ['head', 'torso', 'upper_arm', 'thigh',
+            'near_forearm', 'far_forearm', 'near_shin', 'far_shin'],
+        splitFamilies: splitCapableFamilies(skeleton),
+        loadable: new Set(Object.keys(BASE_PART_FILES)),
+    });
+    assert.equal(rows.length, 8);
+    assert.equal(rows.filter((r) => r.status === 'mapped').length, 8,
+        'every part of the specified decomposition must map');
+
+    const byPart = Object.fromEntries(rows.map((r) => [r.part, r]));
+    // The two shared paintings carry no side, which is the point: the rig
+    // paints each once and places it twice. They must resolve to the SHARED
+    // slot, not to a near one -- a near slot would be a split delivery wearing
+    // an eight-part name.
+    assert.equal(byPart.upper_arm.slot, 'upperArm');
+    assert.equal(byPart.thigh.slot, 'thigh');
+    assert.equal(BASE_PART_FILES[byPart.upper_arm.slot], 'upper_arm.png');
+    assert.equal(BASE_PART_FILES[byPart.thigh.slot], 'thigh.png');
+
+    // And no pelvis layer is expected or required: shipped Lou keeps his trunks
+    // in the torso, so a delivery without one is complete, not short.
+    assert.ok(!rows.some((r) => r.part.startsWith('pelvis')));
+});

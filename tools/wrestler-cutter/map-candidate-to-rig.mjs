@@ -44,7 +44,7 @@ import { fileURLToPath } from 'node:url';
 
 import { BASE_PART_FILES } from '../../src/rig/partVariants.js';
 import { decodeRgbaPng } from './validate-source-manifest.mjs';
-import { bakedAxis } from './straighten-limb-bake.mjs';
+import { MAX_BAKED_AXIS_DEG, axisModeFor, bakedAxis } from './straighten-limb-bake.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -55,6 +55,19 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 export const CANDIDATE_SLOTS = Object.freeze({
     head: { slot: 'head', side: null },
     torso: { slot: 'torso', side: null },
+    // The EIGHT-PART decomposition's two shared paintings. Derek's 2026-09-15
+    // brief specifies these by name, and until 2026-09-22 this table had no
+    // entry for either -- so the check that enforces requirement 9 reported the
+    // requirement's own filenames as UNKNOWN, 6/8, and the two families that
+    // matter most went unmeasured for the bake axis and the trunks fraction.
+    //
+    // They carry no `side`, which is the whole point: the rig paints each of
+    // these once and places it twice. A candidate delivering `upper_arm.png`
+    // and `thigh.png` is not offering the rig less than a split delivery, it is
+    // offering exactly what the rig can consume -- see `sharedFallback` below,
+    // which says the same thing about the near painting of a split pair.
+    upper_arm: { slot: 'upperArm', side: null, family: 'upperArm' },
+    thigh: { slot: 'thigh', side: null, family: 'thigh' },
     pelvis_overlay: { slot: 'pelvisOverlay', side: null },
     pelvis_underlay: { slot: 'pelvisUnderlay', side: null },
     pelvis_mask: { slot: 'pelvisMask', side: null },
@@ -190,10 +203,110 @@ export function mapCandidate({ partNames, splitFamilies, loadable }) {
 //        near-thigh 73.8% dark in its top rows against front3q v3's 3.9%. Two
 //        candidates, same described intent, opposite results.
 //
+// Requirement 10 was added 2026-09-25 and is measured the same way. See
+// `neckPinch` below for the defect that prompted it.
+//
 // Advisory, like the rest of this tool: it reports, it does not gate.
 
 const DARK_LUMA = 70;
 const TOP_ROWS_FRACTION = 0.18;
+
+// ── requirement 10: the torso must be headless ─────────────────────────────
+//
+// THE DEFECT. The front3q v5 draft's torso is a full BUST -- head, neck and
+// shoulders in one painting. Shipped Lou, shipped George and the v4 diagnostic
+// control all ship a headless torso with a short neck stub, and the rig places
+// `head.png` separately at the torso's own neck socket. Wired up as eight parts,
+// the v5 torso draws Lou's head twice: once baked into the torso and once from
+// the head slot on top of it.
+//
+// It is unbindable as eight parts regardless of what Derek thinks of the build,
+// and it needs RE-GENERATION rather than a repaint -- erasing the head from the
+// torso leaves a hole where the chest and shoulders were never drawn behind it.
+//
+// None of the nine existing requirements catches this. Requirement 9 does not:
+// the plate cut to exactly eight clean components in a 4x2 layout and every one
+// of them maps, because `torso.png` is a real file landing in a real slot. The
+// joint checks do not: shoulders and hips are all present and articulate. The
+// figure looks correct in a whole-character reference image, because a bust
+// with a head is what a person looks like. It is only wrong once the part is a
+// PART.
+//
+// THE SIGNATURE, and why it is mechanical rather than a matter of taste. Read
+// the per-row ink width down the canvas. A headless torso widens monotonically
+// from its neck stub into its shoulders -- there is nothing above the shoulders
+// but neck. A bust rises to a HEAD maximum, narrows at the NECK, then widens
+// into the shoulders. That local minimum between two maxima is the pinch, and
+// it does not occur in a torso that has no head on it. Measured:
+//
+//   torso                       neck pinch   head mass / shoulder width
+//   front3q v5 draft                 10.2%                        42.9%
+//   front3q v4 control                0.0%                         9.6%
+//   shipped Lou                       0.0%                        26.6%
+//   shipped George                    0.0%                        11.7%
+//   thesz-front3q-r1                  0.0%                         9.6%
+//
+// Every headless torso measures EXACTLY zero, at every smoothing window from 3
+// rows to 21. The threshold below sits in a gap where nothing lives.
+
+const NECK_PINCH_SMOOTHING_ROWS = 9;
+
+/** Per-row ink width, median-smoothed so one stray strand is not a silhouette. */
+export function rowInkWidths(image, smoothingRows = NECK_PINCH_SMOOTHING_ROWS) {
+    const raw = [];
+    for (let y = 0; y < image.h; y++) {
+        let lo = -1;
+        let hi = -1;
+        for (let x = 0; x < image.w; x++) {
+            if (image.alpha[y * image.w + x] <= 40) continue;
+            if (lo < 0) lo = x;
+            hi = x;
+        }
+        raw.push(lo < 0 ? 0 : hi - lo + 1);
+    }
+    const half = smoothingRows >> 1;
+    return raw.map((_, i) => {
+        const window = raw.slice(Math.max(0, i - half), i + half + 1)
+            .filter((v) => v > 0)
+            .sort((a, b) => a - b);
+        return window.length ? window[window.length >> 1] : 0;
+    });
+}
+
+/**
+ * The deepest bulge-then-narrowing above the widest row.
+ *
+ * Returns `{ fraction, headWidthPx, headRow, neckWidthPx, neckRow, shoulderWidthPx }`,
+ * or a zero fraction where the profile never narrows -- which is what a headless
+ * torso does. Unsmoothed, a single noisy row put shipped Lou at 0.7%; smoothed
+ * at all, every real headless torso is 0.0.
+ */
+export function neckPinch(image, smoothingRows = NECK_PINCH_SMOOTHING_ROWS) {
+    const w = rowInkWidths(image, smoothingRows);
+    const first = w.findIndex((v) => v > 0);
+    const shoulderWidthPx = Math.max(...w);
+    const shoulderRow = w.indexOf(shoulderWidthPx);
+    const zero = { fraction: 0, headWidthPx: null, headRow: null, neckWidthPx: null, neckRow: null, shoulderWidthPx };
+    if (first < 0 || shoulderRow <= first) return zero;
+
+    let best = zero;
+    let headWidthPx = 0;
+    let headRow = first;
+    // One pass: carry the running maximum above the row under test, which IS
+    // the head mass for any row that turns out to be the pinch.
+    for (let row = first; row < shoulderRow; row++) {
+        if (row > first) {
+            const fraction = (headWidthPx - w[row]) / headWidthPx;
+            if (fraction > best.fraction) {
+                best = {
+                    fraction, headWidthPx, headRow, neckWidthPx: w[row], neckRow: row, shoulderWidthPx,
+                };
+            }
+        }
+        if (w[row] > headWidthPx) { headWidthPx = w[row]; headRow = row; }
+    }
+    return best;
+}
 
 /** Fraction of the part's top rows that are painted dark, i.e. trunks material. */
 export function darkTopFraction(image) {
@@ -217,8 +330,16 @@ export function darkTopFraction(image) {
 // reports. They are set where the two measured candidates fall either side of
 // them by a wide margin, not tuned to a target.
 export const AUTHORING = Object.freeze({
-    maxBakedAxisDeg: 3,       // v3 arms: 13.4-19.6. v3 legs: 1.7-5.2.
+    // Owned by straighten-limb-bake.mjs, which is the module that measures the
+    // axis and acts on this number. Reporting it here against one threshold and
+    // correcting it there against another is exactly how the two drift apart.
+    maxBakedAxisDeg: MAX_BAKED_AXIS_DEG, // v3 arms: 13.4-19.6. v3 legs: 1.7-5.2.
     maxDarkTopFraction: 0.20, // six-part board: 0.52-0.74. front3q v3: 0.03-0.05.
+    // Requirement 10. Every headless torso measured -- shipped Lou, shipped
+    // George, the v4 control, thesz-front3q-r1 -- reads exactly 0.000 at every
+    // smoothing window from 3 rows to 21. The v5 bust reads 0.096-0.115 across
+    // the same range. This sits in the gap between them, nearer the floor.
+    maxNeckPinchFraction: 0.03,
 });
 
 async function main(argv) {
@@ -249,6 +370,26 @@ async function main(argv) {
     const landmarksPath = arg('--landmarks');
     const landmarks = landmarksPath ? JSON.parse(await readFile(landmarksPath, 'utf8')) : null;
     const authoring = [];
+
+    // Requirement 10, on the torso alone. It is checked from the SILHOUETTE and
+    // needs no landmarks, deliberately: the whole value of catching a baked-in
+    // head is catching it before anyone measures joints, derives a config and
+    // wires a character around art that cannot be bound as eight parts.
+    let torso = null;
+    if (partNames.includes('torso')) {
+        const image = decodeRgbaPng(await readFile(path.join(partsDir, 'torso.png')));
+        const pinch = neckPinch(image);
+        torso = {
+            part: 'torso',
+            neckPinchFraction: +pinch.fraction.toFixed(3),
+            headWidthPx: pinch.headWidthPx,
+            neckWidthPx: pinch.neckWidthPx,
+            shoulderWidthPx: pinch.shoulderWidthPx,
+            headRowFraction: pinch.headRow === null ? null : +(pinch.headRow / image.h).toFixed(3),
+            headless: pinch.fraction <= AUTHORING.maxNeckPinchFraction,
+        };
+    }
+
     for (const name of partNames) {
         const spec = CANDIDATE_SLOTS[name];
         if (!spec?.family) continue;
@@ -257,19 +398,9 @@ async function main(argv) {
         let axisDeg = null;
         const landmark = landmarks?.[name];
         if (landmark?.jointPivotFrac) {
-            // Pick the most truthful axis the part declares, in this order:
-            //
-            //   landmark   both ends declared -- upper arms, thighs. Exact.
-            //   ankle      shins. The declared ankle, NOT the boot mass: a
-            //              boot's toe juts forward and makes a straight shin
-            //              measure bent. far_shin is the straightest segment in
-            //              the set (0.0 deg) and the ink proxy called it 5.2.
-            //   distalInk  forearms, which declare no distal anchor. The fist
-            //              sits roughly on the bone axis, so this is sound
-            //              here, but it is a fallback and it is named as one.
-            const mode = landmark.distalAnchorFrac ? 'landmark'
-                : (landmark.sourcePixel?.ankle ? 'ankle' : 'distalInk');
-            axisDeg = bakedAxis(image, landmark, mode) * 180 / Math.PI;
+            // The mode resolver lives with the axis it resolves; see
+            // `axisModeFor` for why the order is anchor, then ankle, then ink.
+            axisDeg = bakedAxis(image, landmark, axisModeFor(landmark)) * 180 / Math.PI;
         }
         authoring.push({
             part: name,
@@ -281,7 +412,7 @@ async function main(argv) {
     }
 
     if (asJson) {
-        console.log(JSON.stringify({ splitFamilies: [...splitFamilies].sort(), rows, authoring }, null, 2));
+        console.log(JSON.stringify({ splitFamilies: [...splitFamilies].sort(), rows, authoring, torso }, null, 2));
     } else {
         console.log(`  families the runtime can author per side: ${[...splitFamilies].sort().join(', ') || 'none'}`);
         for (const row of rows) {
@@ -302,6 +433,22 @@ async function main(argv) {
                 const trunks = row.trunksFree ? 'ok' : 'TRUNKS BAKED ON';
                 console.log(`    ${row.part.padEnd(18)} bone axis ${axis} deg ${bake.padEnd(11)}`
                     + ` dark top ${(row.darkTopFraction * 100).toFixed(1).padStart(5)}%  ${trunks}`);
+            }
+        }
+
+        if (torso) {
+            const verdict = torso.headless ? 'ok' : 'HEAD BAKED INTO TORSO';
+            console.log(`    ${'torso'.padEnd(18)} neck pinch `
+                + `${(torso.neckPinchFraction * 100).toFixed(1).padStart(5)}%`
+                + `                    ${verdict}`);
+            if (!torso.headless) {
+                console.log(`                       a ${torso.headWidthPx}px mass at `
+                    + `${(torso.headRowFraction * 100).toFixed(0)}% down narrows to `
+                    + `${torso.neckWidthPx}px before the ${torso.shoulderWidthPx}px shoulders.`);
+                console.log('                       The rig places head.png at the torso\'s neck '
+                    + 'socket, so this draws the head twice.');
+                console.log('                       Needs RE-GENERATION, not a repaint: erasing '
+                    + 'the head leaves a hole behind it.');
             }
         }
     }

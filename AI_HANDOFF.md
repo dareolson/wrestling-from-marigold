@@ -103,13 +103,20 @@ the rest stand as written.
 
 **DECIDED 2026-09-15 by Derek: the engineering is accepted, the art is
 rejected as the production candidate.** The next generation starts from a
-revised prompt rather than a repaint of this one. **That revised prompt has not
-been written** (checked 2026-09-26). The only one that exists is
-`~/Desktop/codex-front3q-prompt.md` of 13 Sep, which predates this verdict by
-two days and contradicts requirements 1, 8 and 9 while being silent on 10 — it
-instructs the generator to keep Lou **lean and not broad**, which is the verdict
-reversed. **Revise it before generating anything.** Details in the 2026-09-13
-log entry's correction. The standing brief, with his
+revised prompt rather than a repaint of this one. **That revised prompt now
+exists, is in version control, and is APPROVED:**
+`tools/wrestler-cutter/prompts/lou-front3q-eight-part-v1.md`, written 2026-09-26,
+reviewed by Codex, corrected on three findings, and approved by Derek the same
+day. It carries a traceability table mapping all ten requirements to the prompt
+language that satisfies each. **The next front3q generation proceeds from it** —
+and from it as corrected, not from any earlier draft.
+
+It supersedes `~/Desktop/codex-front3q-prompt.md` of 13 Sep, which predated the
+verdict by two days and contradicted requirements 1, 8 and 9 while being silent
+on 10 — it instructed the generator to keep Lou **lean and not broad**, which is
+the verdict reversed. That prompt is archived byte-identical at
+`tools/wrestler-cutter/prompts/history/2026-09-13-codex-front3q-prompt.md`; do
+not generate from it. Details in the 2026-09-13 log entry's correction. The standing brief, with his
 nine requirements and the checks that measure them, is
 `AI_HANDOFF_ENTRIES/2026-09-15-derek-front3q-verdict-and-next-generation-brief.md`
 — **read it before generating more Lou limb art.** In short: the body is too
@@ -429,11 +436,136 @@ handoff status summary is `19b4da2`, both on branch
 `thesz-v2-profile-normalization`. The expansion below starts from that branch.
 
 **Next session starts at**
-`AI_HANDOFF_ENTRIES/2026-09-26-next-session-brief-generation-prompt.md`. The job
-is revising the front3q generation prompt, which currently instructs the
-generator to keep Lou lean — the verdict reversed.
+`AI_HANDOFF_ENTRIES/2026-09-26-next-session-brief-generation-prompt.md`. Its
+first job — the revised front3q generation prompt — is **done, approved and
+committed**: `tools/wrestler-cutter/prompts/lou-front3q-eight-part-v1.md`.
+**The next generation may proceed from it.** Its second and third jobs (a
+mechanical check for requirement 1, and the
+orchestration/binding-emitter/tuner work) are deliberately not started; the
+requirement-1 check in particular is a requirement change on a judgement Derek
+has reserved to his own eye, and Codex's addendum ruled it out of that session.
+
+**Follow-up, not a blocker on generation:**
+`Sprite sheets/AI Pilot/Lou/v2-canonical/pass-a/thesz-canonical-v2.png` is a
+**completely transparent** 4096x4096 PNG — zero pixels above alpha 16 — while its
+name reads like the canonical master and `pass-a/SHA256SUMS.txt` certifies it at
+`3d237953…f194b6`. Anything measured against it measures nothing, silently; it
+already cost one round of review on the generation prompt. The real frozen
+authority is `pass-a/candidates/thesz-v2-pass-a-v3.png`, `ce78aea3…3dceb`, which
+the manifest correctly pins at `production.passASheet` / `passASha256`, so no
+tool is affected — only humans and prompts reading by filename.
+**Derek's ruling (2026-09-26): record it, do not let it block generation, and do
+not replace or delete it casually — its provenance and checksum need deliberate
+handling.** So it is deliberately untouched: not deleted, not regenerated, and
+still listed in `SHA256SUMS.txt` at its true hash. Whoever picks this up needs to
+establish what it was meant to be before changing anything.
 
 ## Handoff Log
+
+### 2026-09-26 — Claude (the revised generation prompt, in version control at last)
+
+**The blocker is cleared, and nothing beyond it was touched.** The one document
+that drives every front3q generation now lives in the repository:
+
+| file | what |
+| --- | --- |
+| `tools/wrestler-cutter/prompts/lou-front3q-eight-part-v1.md` | the revised prompt, awaiting Derek's approval of the prompt itself |
+| `tools/wrestler-cutter/prompts/README.md` | why prompts are tracked, and why archived ones are never edited |
+| `tools/wrestler-cutter/prompts/history/2026-09-13-codex-front3q-prompt.md` | the desktop prompt, copied byte-identical (`sha256 4faab8a6…affbd`) |
+
+`~/Desktop/codex-front3q-prompt.md` is untouched, so the only copy was never
+overwritten.
+
+**What the revision changes**, against the four contradictions:
+
+- **Requirement 1** now reads "match the broader, more compact Pass-A `front3q`
+  proportions" — not merely "make him broad" — with three explicit prohibitions:
+  a torso leaner than the master, legs a larger fraction of height than the
+  master's, and an exaggerated modern-bodybuilder silhouette. The v5-versus-master
+  measurements are included as calibration, explicitly **not** as a pass/fail
+  boundary, and the prompt states that Derek's eye is the sole authority unless
+  he authorizes numerical thresholds.
+- **Requirement 8**: no pelvis layer of any kind, and the hidden hip anatomy
+  moves onto the torso as the consequence.
+- **Requirement 9**: one shared `upper_arm`, one shared `thigh`, separately
+  authored near/far forearms and shins. The old prompt's far-forearm/far-shin
+  reasoning is carried forward — it is correct, and `src/Skeleton.js:1556-1565`
+  and `1461-1470` were re-verified — with its scope corrected by
+  `src/Skeleton.js:355,373`, which assign both arms from `textures.upperArm`
+  with no near/far opt-in.
+- **Requirement 10**: the torso is headless, ending in a short neck stub, with
+  the neck cylinder belonging to the head.
+
+**One constraint neither the brief nor the old prompt stated.**
+`cut-front3q-modular-board.mjs` assigns part identities by **row-major reading
+order**, never by filename (`LAYOUTS[8]`, a 4x2 layout). It throws unless it
+finds exactly 8 connected components at alpha > 16, each at least 500 pixels,
+4 per row with each component's vertical centre inside its own half of the
+canvas. A plate whose pieces touch is 7 components and does not cut. The prompt
+now specifies the layout and those constraints.
+
+**A traceability table closes the prompt**, mapping each of the ten requirements
+to the exact prompt language that carries it and to the check that catches it.
+That table is the artifact to review alongside the prompt.
+
+**Corrected after Codex's review, before any approval or commit.** Three
+findings, two of them his:
+
+1. **The prompt named an empty file as the proportion authority.**
+   `pass-a/thesz-canonical-v2.png` is a **completely transparent** 4096x4096 PNG
+   — zero pixels above alpha 16 — despite its name and its listing in
+   `pass-a/SHA256SUMS.txt`. The real frozen authority is
+   `pass-a/candidates/thesz-v2-pass-a-v3.png`, `sha256 ce78aea3…3dceb`, whose
+   `front3q` panel holds 58,072 painted pixels. The manifest already pinned that
+   exact file and SHA at `production.passASheet` / `passASha256`, so the tooling
+   was never wrong — only the prompt draft was. The prompt now names the v3
+   candidate, quotes the SHA, warns about the empty file by name, and says the
+   manifest wins if the two ever disagree.
+2. **The "torso width at 40% down" row was not a like-for-like comparison, and
+   is removed.** Re-measured against the v3 panel, the recorded figures do
+   reproduce (master 18.9%, candidate 17.7–17.8%) — but the master's arms do not
+   separate cleanly from its torso until **43%** down while the candidate's
+   separate at **34%**, so the master was being read at 43% and the candidate at
+   40%. The confound is structural: a longer-legged figure has its torso
+   compressed into a smaller fraction of total height, so a fixed
+   fraction-of-height station lands on different anatomy in each figure. At a
+   genuinely common station the ordering **reverses** — 43%: master 18.9%,
+   candidate 19.2%. The two station-free measures both hold and both support the
+   verdict: widest clean central torso run **23.2% master vs 22.2% candidate**,
+   legs **40.4–41.7% master vs 42.8% candidate**. The prompt now carries only
+   those two, and says explicitly not to compare torso width at a fixed station.
+   **Do not reinstate the 40% row.**
+3. **The cutter's speck tolerance was overstated.** `components()` drops isolated
+   components below **500 pixels**, so a small speck is harmless; only a stray
+   mark of 500 pixels or more moves the count. Touching pieces still collapse
+   into one component and still break the cut.
+
+The master leg fraction is recorded as the **range 40.4–41.7%** (alpha 8 to 128),
+not a point — which independently confirms the standing flag that the single
+figure "41.2%" is not reproducible; it is simply the alpha>32 reading. The
+candidate's 42.8% is stable across the whole range.
+
+**Approved by Derek, 2026-09-26**, after Codex's review and the three
+corrections above. The approval covers the prompt as corrected; generating from
+an earlier draft or from the archived desktop prompt is not covered by it. Codex
+concurred. Committed as five focused files — this file, the brief carrying
+Codex's addendum, and the three under `tools/wrestler-cutter/prompts/` — and
+**not pushed**. `FRONT3Q_V5_GATE/`, `IDEAS/` and
+`RINGSIDE_CAST_AND_MANAGER_SYSTEM.md` stay untracked, per Derek.
+
+**What this session deliberately did not do**, per Codex's addendum to the
+brief: generate any art, build a mechanical check for requirement 1, or start the
+orchestration, binding-emitter or rig-tuner work. No file under `src/` changed,
+and the empty canonical-named PNG was left untouched per Derek's ruling above.
+
+**Generation is now unblocked** — it was gated on this prompt and nothing else.
+The three remaining manual steps between approved art and a live match are
+unchanged and still listed as jobs 1-3 in the brief.
+
+Verified at the point of approval: `npm test` **544/544, 0 skipped** on Node
+22.23.1; `npm run build` clean; no `src/` change; the archived desktop prompt
+byte-identical to `~/Desktop/codex-front3q-prompt.md` at
+`sha256 4faab8a6…affbd`.
 
 ### 2026-09-25 — Claude (the measurement tools learn the eight-part delivery; requirement 10; four corrections to this file)
 

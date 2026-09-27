@@ -26,6 +26,47 @@ Nothing downstream can start until this is done, and doing anything else first
 wastes a generation cycle. The reasoning is below; do not take it on trust, the
 prompt is three minutes to read.
 
+## Codex addendum — prompt approval before another generation
+
+Keep this session focused on the first job. Produce and version-control the
+corrected generation prompt, then show that prompt to Derek before generating
+art. Do not start the orchestration command, binding emitter, tuner integration,
+or another generation until Derek reviews the prompt.
+
+Make the prompt auditable against all ten requirements. Include a final
+traceability table showing the exact prompt language that satisfies each one.
+Be literal about the eight-part delivery:
+
+- Exactly `head`, `torso`, `upper_arm`, `thigh`, `near_forearm`, `far_forearm`,
+  `near_shin`, and `far_shin`.
+- `torso` is headless and ends in a short neck stub. It contains no face, hair,
+  skull, or duplicate head.
+- There is no pelvis layer.
+- `upper_arm` and `thigh` are single shared paintings.
+- Forearms and shins remain separately authored near/far pieces.
+- No whole arm or whole leg may combine a joint the rig articulates.
+
+Requirement 1 must say **match the broader, compact Pass-A front3q
+proportions**, not merely "make him broad." Explicitly prohibit a leaner torso
+and relatively longer legs than the Pass-A master while avoiding an exaggerated
+modern-bodybuilder silhouette. Derek's eye remains the approval authority unless
+he authorizes numerical thresholds.
+
+Do not let a separately generated whole-body reference substitute for proof of
+the delivered parts. The approval image must ultimately be assembled from, or
+be demonstrably identical to, the eight delivered paintings.
+
+Inspect `tools/wrestler-cutter/templates/GENERATION_PROMPT_TEMPLATE.md`, but do
+not inherit its five-view/canonical assumptions blindly. This prompt is
+specifically for the paused-runtime-independent, eight-part legacy-rig
+production track. Put the character-specific prompt in a tracked, clearly named
+location such as
+`tools/wrestler-cutter/prompts/lou-front3q-eight-part-v1.md`. Preserve the old
+desktop prompt as historical evidence rather than overwriting the only copy.
+
+Stop after presenting the revised prompt and its ten-requirement traceability
+table to Derek. Generate only after he approves that artifact.
+
 ## The tree is clean. Here is what landed.
 
 Branch `thesz-v2-profile-normalization`, **31 commits ahead of origin/master,

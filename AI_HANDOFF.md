@@ -428,6 +428,11 @@ Record: addendum 9 of
 handoff status summary is `19b4da2`, both on branch
 `thesz-v2-profile-normalization`. The expansion below starts from that branch.
 
+**Next session starts at**
+`AI_HANDOFF_ENTRIES/2026-09-26-next-session-brief-generation-prompt.md`. The job
+is revising the front3q generation prompt, which currently instructs the
+generator to keep Lou lean — the verdict reversed.
+
 ## Handoff Log
 
 ### 2026-09-25 — Claude (the measurement tools learn the eight-part delivery; requirement 10; four corrections to this file)

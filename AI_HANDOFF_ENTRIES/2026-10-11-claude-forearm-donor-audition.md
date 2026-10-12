@@ -50,3 +50,41 @@ None of these is installable as is. Next: Derek repaints grip over his own
 forearm in Procreate (keeping the elbow→wrist painting), then a real in-game
 audition needs a forearm-level variant hook, since hammerlock's `workingHand`
 maps to hand slots and Procreate Lou's hand is baked into the forearm.
+
+## Later the same day: forearms attached, facing, hammerlock WIP
+
+All verified with Node 22.23.1: `npm test` 567/567, build OK, `rig:validate` OK,
+move-editor smoke OK.
+
+- **Forearms attached** to Procreate Lou (Derek: attach them without a
+  Procreate pass). `far_forearm.png` = palm-v3 and `forearm_grip.png` = grip-v1,
+  each scaled whole-canvas to 117×351. The elbow-cap outline arc was recoloured
+  to skin. Character flag `handInForearm` maps `workingHand` to the forearm
+  slot (`resolveSemanticSlots`).
+- **Per-keyframe `facing`** in clips: discrete, relative to the anchor's start
+  facing, captured once per playback (`captureFacingAxis`). The runtime applies
+  it after `Wrestler.move()`'s per-tick re-face. The move editor captures it per
+  keyframe, and its draw order now follows depth (Actor Y). Found while
+  building it: the SHIPPED hammerlock's `other.facing = this.facing` lasts one
+  tick, so in game the defender faces the attacker for the whole hold.
+- **Elbow range**: `JOINT_LIMITS.elbow.min` −0.12 → −3.0 (arm folded up the
+  back). The editor's wrist-drag solve still floors at −0.12.
+- **Real bug fixed — which arm the l-channels drive.** Characters on the
+  mirrored render path (authored hip sockets, no faceLeftOverrides: Procreate
+  Lou, refrig) keep lArm on the NEAR limb facing left. Core-path characters
+  (shipped Lou, George) swap to far. New `Skeleton.lChannelSide(facing)`;
+  semantic slots and editor limb handles now use it. Before this, the grip
+  landed on the wrong arm facing left, and editor wrist drags solved one arm
+  while measuring the other. Test ties it to `updateUpright`'s real branch.
+- **George `head: hurt` variant**, made from the approved AI-pilot expression
+  (PILOT_NOTES.md), fitted to head.png's canvas with head.png's neck kept.
+- **Derek's hammerlock WIP**: his keys (tie-up, step round, turn) plus an
+  audition hold (arm up the back, pain face, free-arm flail, grip HELD 0.33 px).
+  The clip is `src/animation/clips/hammerlockWip.js`, played ONLY with
+  `?hammerlock=wip`; the editor draft is "hammerlock — Derek WIP". Derek
+  played it: "omg, it's awesome". The shipped hammerlock is unchanged. Next:
+  promote the WIP to the real hammerlock and retire the generated tracks
+  plus their authoring tests.
+- Harness gotcha: `scene.pause()`/`resume()` advances clips by the paused wall
+  time, so don't use it to time clip frames. Playwright `keyboard.press` is too
+  fast for Phaser JustDown; hold the key about 80 ms.

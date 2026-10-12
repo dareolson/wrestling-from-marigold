@@ -42,8 +42,13 @@ const outDir = args.includes('--out')
     ? args[args.indexOf('--out') + 1]
     : path.join(ROOT, 'tools/debug/shots/front3q-candidate');
 
-process.env.WFM_P1 = 'thesz-front3q-r1';
-process.env.WFM_P2 = 'thesz';
+// Which candidate to put on the left. Defaults to the original front3q
+// candidate so existing invocations are unchanged; `--p1 <id>` points the same
+// A/B at any other opt-in candidate (e.g. thesz-procreate-v1).
+const p1 = args.includes('--p1') ? args[args.indexOf('--p1') + 1] : 'thesz-front3q-r1';
+const p2 = args.includes('--p2') ? args[args.indexOf('--p2') + 1] : 'thesz';
+process.env.WFM_P1 = p1;
+process.env.WFM_P2 = p2;
 
 await mkdir(outDir, { recursive: true });
 const h = await launch();
@@ -102,9 +107,9 @@ for (const pose of POSES) {
 }
 
 await writeFile(path.join(outDir, 'INDEX.md'),
-    `# front3q candidate vs shipped Lou\n\n`
-    + `Left figure: \`thesz-front3q-r1\` (candidate).\n`
-    + `Right figure: \`thesz\` (shipped, unchanged).\n\n`
+    `# ${p1} vs ${p2}\n\n`
+    + `Left figure: \`${p1}\` (candidate).\n`
+    + `Right figure: \`${p2}\` (shipped, unchanged).\n\n`
     + `Same kit, pose, skin and trunks colours; only the art differs.\n\n`
     + shots.map(s => `- \`${path.basename(s.file)}\` — ${s.pose}, facing ${s.facing > 0 ? 'right' : 'left'}`).join('\n')
     + '\n');

@@ -1,4 +1,11 @@
-# 2026-09-26 — Brief for the next session: the generation prompt
+# 2026-09-26 — RETIRED brief: the generation prompt
+
+> ## CORRECTION — 2026-09-27
+>
+> Do not execute this brief. Derek states that he never requested the
+> broader/compact/stockier Lou described here as requirement 1. That direction
+> was an AI invention falsely attributed to him. The resulting tracked prompt is
+> retired. Mechanical findings in this file remain historical evidence only.
 
 **Start here.** Then read, in this order:
 

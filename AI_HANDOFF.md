@@ -29,6 +29,23 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**Recovery direction, 2026-09-27.** Full-sheet Lou regeneration is no longer
+the default production loop. Recent front3q candidates remain donor/provenance
+material; none replaces shipped Lou. Derek's Procreate cleanup and normalization
+is now an explicit required stage between donor generation and deterministic
+cutting/binding. The immediate target is “Lou 1.1”: preserve the current working
+body and prove one small move-selected replacement family, beginning with
+`fist`/`open`/`grip` hands. See `CHARACTER_ART_RECOVERY_AUDIT.md` and
+`CHARACTER_PART_INVENTORY.md`. An independent Claude review prompt is at
+`AI_HANDOFF_ENTRIES/2026-09-27-claude-character-art-recovery-audit-prompt.md`.
+
+This recovery direction deliberately narrows the immediate goal; it does not
+delete the future multi-view/two-anchor architecture. Generated whole sheets
+may still supply individual donors, but silhouette, likeness, anatomy, and final
+joint paint are artist-controlled. Shipped Lou remains the production default
+until a named replacement is visually approved, mechanically checked, and
+verified in the real move path.
+
 At-a-glance state. The dated entries in the Handoff Log and the addenda in
 `AI_HANDOFF_ENTRIES/` remain the detailed record; this section is the version
 you can read in thirty seconds. Keep it current when the state changes.
@@ -101,15 +118,26 @@ the rest stand as written.
   slots exist. Three-quarter is also what makes them worth drawing: both eyes
   read, which was `DRAWING_GUIDE.md`'s original argument.
 
+**CORRECTION 2026-09-27:** Derek states that he **never requested** a broader,
+stockier or more compact Lou. The September 15 entry, September 26 brief,
+tracked generation prompt and later summaries falsely attributed that direction
+to him. It was introduced by an AI and then repeated as if it were Derek's
+verdict. This was not Derek changing his mind. The attribution and requirement
+were wrong from the start. Lou's target remains tall and relatively lanky; the
+recent bulky/bodybuilder drift is a failure. The eight-part prompt is retired as
+an execution prompt. Shipped Lou and Derek's chosen original references are the
+recovery silhouette authority.
+
 **DECIDED 2026-09-15 by Derek: the engineering is accepted, the art is
-rejected as the production candidate.** The next generation starts from a
-revised prompt rather than a repaint of this one. **That revised prompt now
-exists, is in version control, and is APPROVED:**
+rejected as the production candidate.** At that time, the next generation was
+directed to start from a revised prompt rather than a repaint. That revised
+prompt exists and remains in version control as approved **historical
+provenance**, but the 2026-09-27 recovery decision above removes its authority
+to launch another full-sheet production attempt:
 `tools/wrestler-cutter/prompts/lou-front3q-eight-part-v1.md`, written 2026-09-26,
 reviewed by Codex, corrected on three findings, and approved by Derek the same
 day. It carries a traceability table mapping all ten requirements to the prompt
-language that satisfies each. **The next front3q generation proceeds from it** —
-and from it as corrected, not from any earlier draft.
+language that satisfied each requirement under the September 15 direction.
 
 It supersedes `~/Desktop/codex-front3q-prompt.md` of 13 Sep, which predated the
 verdict by two days and contradicted requirements 1, 8 and 9 while being silent
@@ -119,10 +147,11 @@ the verdict reversed. That prompt is archived byte-identical at
 not generate from it. Details in the 2026-09-13 log entry's correction. The standing brief, with his
 nine requirements and the checks that measure them, is
 `AI_HANDOFF_ENTRIES/2026-09-15-derek-front3q-verdict-and-next-generation-brief.md`
-— **read it before generating more Lou limb art.** In short: the body is too
-lean and too tall and should be broader and more compact, closer to Pass-A; the
-profile head on the three-quarter body is fine for testing but not for approval;
-and a true three-quarter head is now a requirement rather than a nicety.
+— read it as the record of that candidate and its mechanical requirements, not
+as an accurate record of Derek's art direction. Its “too lean / broader and
+more compact” claim was falsely attributed and is withdrawn. The still-useful
+findings are that the profile head was temporary and a genuine three-quarter
+head remains desirable.
 
 `production-front3q-modular/v4-straightened` is kept as the **frozen diagnostic
 control** — it proved the pipeline end to end and exposed those requirements. It
@@ -461,6 +490,32 @@ still listed in `SHA256SUMS.txt` at its true hash. Whoever picks this up needs t
 establish what it was meant to be before changing anything.
 
 ## Handoff Log
+
+### 2026-09-27 — Codex (correct false attribution; character-art recovery audit)
+
+Derek corrected a serious record error: he never requested a broader, stockier
+or more compact Lou. An AI introduced that direction, the September 15 brief
+misattributed it to Derek, and subsequent prompts and summaries repeated it as
+fact. This was not a later change of mind. The attributed requirement was false
+from the start. Prominent correction/retirement notices were added to the
+misattributed September 15 brief, the September 26 brief, the tracked generation
+prompt, the September 27 launch prompt, and the related candidate report. Lou's
+target remains tall and relatively lanky.
+
+The production recovery direction now keeps shipped Lou as the baseline, treats
+recent candidates as donor/provenance material, and makes Derek's Procreate
+cleanup/normalization an explicit required stage. Added
+`CHARACTER_ART_RECOVERY_AUDIT.md`, `CHARACTER_PART_INVENTORY.md`, and the
+read-only independent Claude review prompt at
+`AI_HANDOFF_ENTRIES/2026-09-27-claude-character-art-recovery-audit-prompt.md`.
+The first proposed “Lou 1.1” vertical slice is a small hand family rather than
+another full body: wrist-ready forearms plus `fist`/`open`/`grip`, with one grip
+state proven in a real hold before broader work.
+
+Verification on the unchanged runtime under Node 22.23.1: `npm test` 544/544,
+`npm run build` passed, and `npm run rig:validate` passed for George, shipped
+Thesz, and the removable front3q comparison character. No production art,
+character configuration, move, or runtime behavior changed.
 
 ### 2026-09-26 — Claude (the revised generation prompt, in version control at last)
 

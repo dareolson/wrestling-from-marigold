@@ -14,4 +14,8 @@ Research rules:
   real broadcaster.
 - Historical copy is not approved for recording until its status is `verified`.
 
-Current dossier: [1952-07-12-marigold.md](1952-07-12-marigold.md)
+Current dossiers:
+
+- [1952-07-12-marigold.md](1952-07-12-marigold.md)
+- [1952-chicago-era-texture.md](1952-chicago-era-texture.md)
+- [guido-moretti-background.md](guido-moretti-background.md)

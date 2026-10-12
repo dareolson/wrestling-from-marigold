@@ -1,5 +1,11 @@
 # 2026-09-15 — Claude: the front3q replacement limbs, and what was actually wrong with them
 
+> **Attribution correction, 2026-09-27:** the later statement in this file that
+> Derek reached a “too lean” verdict depends on the misattributed September 15
+> brief. Derek states that he never requested a broader, stockier or more compact
+> Lou. Retain the width arithmetic as engineering evidence; do not retain the
+> claimed art-direction attribution.
+
 Derek's milestone was to take Lou's front-three-quarter replacement limbs to a
 mechanically verified approval candidate on the shipped rig. The candidate is
 built, wired and reviewable. It is **not approvable yet**, and the reason is

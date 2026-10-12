@@ -1,4 +1,18 @@
-# 2026-09-15 — Derek: front3q verdict, and the brief for the next generation
+# 2026-09-15 — Misattributed front3q verdict and next-generation brief
+
+> ## CORRECTION — 2026-09-27
+>
+> Derek states that he **never asked for Lou to be broader, stockier, more
+> compact, less lean, or shorter-legged.** That direction was introduced by an
+> AI and then recorded here incorrectly as “Derek's answers” and “Derek's nine
+> requirements.” It must not be treated as Derek's verdict. Lou's intended body
+> remains tall and relatively lanky, and the later bulky/bodybuilder drift is a
+> failure.
+>
+> Requirement 1 and every sentence below attributing the broader/compact call to
+> Derek are withdrawn. The remaining mechanical findings are retained as
+> historical engineering evidence only. This file is not authorization to
+> generate another full character sheet.
 
 **Start here before generating any more Lou limb art.**
 

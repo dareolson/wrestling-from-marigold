@@ -1,0 +1,236 @@
+# Character Part Inventory
+
+**Status:** Canonical planning inventory for production wrestler artwork  
+**Updated:** 2026-09-27  
+**Principle:** Create a replacement when an actual move or expression needs it. Preserve base geometry and approved silhouette unless the replacement is explicitly a new rig profile.
+
+## Status vocabulary
+
+Use one status per asset:
+
+- `needed` — requirement identified; no acceptable donor yet.
+- `donor` — potentially useful generated/legacy art; not normalized.
+- `procreate` — Derek is normalizing or repainting it.
+- `normalized` — aligned final art returned; not mechanically checked.
+- `mechanical` — anchors, alpha, mapping, and articulation checks pass.
+- `visual` — Derek approved the named proof/game view.
+- `runtime` — wired and verified in the real move/render path.
+- `production` — visual + mechanical + runtime approval; safe as default.
+- `rejected` — preserved for provenance or harvesting only.
+
+These statuses are deliberately independent of phrases such as “promising” or “accepted to continue.”
+
+## Naming dimensions
+
+Every asset record should identify:
+
+| Field | Examples |
+| --- | --- |
+| character | `lou`, `george` |
+| view | `front3q`, `profile`, `front`, `back3q`, `back` |
+| family | `head`, `torso`, `upper_arm`, `forearm`, `hand`, `thigh`, `shin`, `boot` |
+| side | `shared`, `near`, `far` |
+| variant | `base`, `idle`, `hurt`, `fist`, `open`, `grip`, `twist_near` |
+| status | one value from the vocabulary above |
+| moves | move IDs that request the asset |
+| geometry lock | base canvas/anchor family the variant must match |
+
+Recommended filename:
+
+```text
+<character>_<view>_<side>_<family>_<variant>.png
+```
+
+Example: `lou_front3q_near_hand_grip.png`.
+
+## Base primary-view package
+
+The primary gameplay view is `front3q`. A production character needs this base before variants:
+
+| Family | Side policy | Required geometry | Lou now | George now |
+| --- | --- | --- | --- | --- |
+| head | shared | neck anchor; modular | profile-like shipped base; provisional front3q donor | modular shipped base |
+| torso + trunks | shared | neck/shoulder/hip sockets | production legacy body | production body with legacy pelvis arrangement |
+| upper arm | shared initially | shoulder→elbow, overlap at both ends | production legacy | production |
+| forearm | near/far preferred | elbow→wrist, without hand in target standard | hand currently baked in | hands currently baked in |
+| hand | near/far preferred | fixed wrist; variant-specific contact | not yet separate | not yet separate |
+| thigh | shared initially | hip→knee, overlap at both ends | production legacy | production |
+| shin | near/far preferred | knee→ankle, without boot in target standard | boot currently baked in | boots currently baked in |
+| boot | near/far preferred | fixed ankle; heel/toe/sole contacts | not yet separate | not yet separate |
+
+“Shared initially” means one authored painting may serve both sides until an actual move proves that a perspective-specific replacement is necessary.
+
+## Priority 0 — Lou 1.1 hand vertical slice
+
+This is the next shippable target.
+
+| ID | Asset | Purpose | Lou status | George status |
+| --- | --- | --- | --- | --- |
+| HND-BASE | `hand.fist` or current closed neutral | safe default; jab/guard | `needed` as separately socketed hand | `needed` after Lou proves path |
+| HND-OPEN | `hand.open` | reaching, whip, pin, selling/gesturing | `needed` | `needed` later |
+| HND-GRIP | `hand.grip` | hammerlock, headlock, sleeper, arm control | `needed` | `needed` later |
+| FA-WRIST | handless near/far forearm bases | stable wrist socket and overlap | `needed` | `needed` later |
+
+Acceptance for this family:
+
+- all hand variants share the exact wrist geometry;
+- near/far perspective is reviewed rather than assumed mirrored;
+- base art is unchanged when no variant is selected;
+- at least one hold visibly selects `grip` in both facings;
+- the selected hand resets on completion, interruption, and cancellation;
+- Derek approves neutral and move screenshots at game scale.
+
+## Priority 1 — head inventory
+
+The camera view and expression are separate dimensions. Do not force the current provisional three-quarter head to become the default merely because it exists.
+
+| ID | View | Variant | Intended use | Lou status | George status |
+| --- | --- | --- | --- | --- | --- |
+| HEAD-3Q-IDLE | front3q | idle | primary gameplay candidate | `donor`, likeness cleanup needed | shipped base can seed |
+| HEAD-PRO-IDLE | profile | idle | suplex/profile mechanics and alternate test | existing usable reference/base | `needed` only when a move requires it |
+| HEAD-3Q-HURT | front3q | hurt | strike sell, hold distress | `needed` | donor PNG exists; not wired/certified |
+| HEAD-3Q-EFFORT | front3q | effort | lifts, submissions, aerials | `needed` | exhausted/angry donors exist |
+| HEAD-3Q-DOWN | front3q | down | knockdown/pin exhaustion | `needed` | exhausted/hurt donors exist |
+| HEAD-3Q-WIN | front3q | winning | taunt/victory | `needed` | smug donor exists |
+| HEAD-3Q-SHOCK | front3q | shocked | surprise/nearfall optional | optional | donor PNG exists |
+
+All expression variants must preserve canvas size, neck anchor, head scale, view, and hair/head silhouette unless Derek deliberately approves a silhouette change.
+
+## Priority 2 — move-driven replacements
+
+Only create these when a named move proof shows that ordinary rotation cannot produce an acceptable silhouette.
+
+| Family/variant | Candidate moves | Runtime status | Notes |
+| --- | --- | --- | --- |
+| `forearm.strike` / `hand.fist` | jab, clothesline | supported | Prefer hand-only change if arm silhouette already works. |
+| `upper_arm.overhead` / `forearm.overhead` | double axe handle, taunts | supported with locked anchors | Add only if base parts expose bad joint paint overhead. |
+| `forearm.grip` / `hand.grip` | hammerlock, sleeper, headlock, arm bar | supported | Hand family first; forearm replacement only if wrist/arm silhouette still fails. |
+| `thigh.knee_chamber` / `shin.knee_chamber` | knee lift, knee drop | supported with locked anchors | Use a replacement only if rotated base parts cannot read anatomically. |
+| `thigh.dropkick` / `shin.dropkick` / `boot.pointed` | dropkick | supported | Preserve hip, knee, ankle geometry. |
+| `boot.toe_point` | aerials, dropkick | supported after boot split | Lower priority than hands. |
+| `boot.flexed` | planted crouch, get-up | supported after boot split | Grounding/sole must be rechecked. |
+| `torso.hunched` | grapple, headbutt, lift preparation | paint swap supported | Must keep sockets fixed or gain explicit variant socket support. |
+| `torso.twist_near` / `twist_far` | throws, clothesline, holds | **architecture gap** for true twist | A real twist changes shoulder/hip/neck positions; do not paint one and pretend base sockets still fit. |
+
+## Priority 3 — view inventory
+
+| View | Role | Production timing |
+| --- | --- | --- |
+| front3q | primary gameplay | first and always maintained |
+| profile | specific move mechanics, transitions | create only for moves that require the clearer profile read |
+| front | face-up/impact/transition source | deferred until a runtime body-view use is scheduled |
+| back3q | rear holds and turns | deferred until a runtime body-view use is scheduled |
+| back | prone/rear transition source | deferred until a runtime body-view use is scheduled |
+
+The existence of a cell in a theoretical sheet is not a production requirement. A view becomes required when a real runtime move is assigned to it.
+
+## Procreate master template structure
+
+Use one common canvas. Suggested groups/layers:
+
+```text
+00_REFERENCE_LOCKED
+  shipped_gameplay_silhouette
+  likeness_reference
+  game_scale_boxes
+
+01_GUIDES_LOCKED
+  centerline
+  neck_shoulder_elbow_wrist
+  hip_knee_ankle_sole
+  joint_overlap_bands
+
+02_FULL_LIMB_AUTHORING
+  near_full_arm
+  far_full_arm
+  near_full_leg
+  far_full_leg
+
+03_RUNTIME_BASE_PARTS
+  head
+  torso
+  upper_arm
+  near_forearm
+  far_forearm
+  thigh
+  near_shin
+  far_shin
+  near_hand
+  far_hand
+  near_boot
+  far_boot
+
+04_VARIANTS
+  head__<variant>
+  near_hand__<variant>
+  far_hand__<variant>
+  <family>__<variant>
+
+05_POSE_TESTS
+  neutral
+  bend_45
+  bend_90
+  deep_bend
+
+99_EXPORT_COMPOSITE
+```
+
+Draw the full limb first, then duplicate it into runtime segments. Keep anatomy on both sides of every cut so the joint has overlap. Hidden overlap faces are painted continuation, not finished black cut lines.
+
+## Per-character checklist
+
+Copy this block for each new wrestler:
+
+```text
+[ ] approved primary-view neutral silhouette at source and game scale
+[ ] approved primary-view likeness/head candidate
+[ ] base torso/trunks
+[ ] base upper arm
+[ ] base near/far forearm with wrist socket
+[ ] base thigh
+[ ] base near/far shin with ankle socket
+[ ] fist hand
+[ ] open hand
+[ ] grip hand
+[ ] base boot
+[ ] required head expressions
+[ ] only the move-specific replacements named by failed move proofs
+[ ] aligned full-canvas layer exports received
+[ ] deterministic crops and anchors produced
+[ ] neutral assembly visually approved
+[ ] representative move proofs visually approved
+[ ] mechanical articulation checks pass
+[ ] both facings tested in the real game
+[ ] variant reset tested after cancellation/interruption
+```
+
+## Current character summary
+
+### Lou
+
+- Production default: keep shipped Lou.
+- Body replacement: none approved.
+- Three-quarter head: provisional donor, not default.
+- Profile head: preserve as alternate/reference.
+- First missing production family: separate `fist`, `open`, and `grip` hands plus handless forearms.
+- Generated v4–v7 materials: harvest case-by-case; never treat a whole candidate as the new baseline.
+
+### George
+
+- Production default: keep shipped George.
+- The July AI pilot proved that a generated character can be normalized and promoted, but it also exposed scale, grounding, gait, and joint-source problems that must remain in the checklist.
+- Five expression donors exist (`angry`, `exhausted`, `hurt`, `shocked`, `smug`) but are not a certified runtime family.
+- Do not normalize George's replacement inventory until Lou's hand vertical slice establishes the exact Procreate/export/binding workflow.
+
+## Inventory maintenance rule
+
+Whenever a move looks wrong, add one row naming:
+
+1. the move and failing frame;
+2. the smallest part family capable of fixing it;
+3. whether ordinary rig rotation was exhausted;
+4. the required view/side/variant;
+5. its current status and geometry lock.
+
+This turns move review into a growing, evidence-based part list instead of another speculative master sheet.
+

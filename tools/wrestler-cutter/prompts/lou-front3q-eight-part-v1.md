@@ -1,10 +1,12 @@
 # Generation prompt — Lou Thesz `front3q`, eight-part legacy-rig delivery, v1
 
-Status: **APPROVED by Derek, 2026-09-26, after review by Codex.** The next
-front3q generation proceeds from this prompt. The approval covers this prompt as
-corrected — the v3 proportion authority in §1, the two station-free build
-measures in §2, and the cutter tolerances in §4. Generating from any earlier
-draft, or from the archived desktop prompt, is not covered by it.
+Status: **RETIRED — DO NOT EXECUTE.** On 2026-09-27 Derek corrected the record:
+he never requested the broader/stockier/more-compact body direction in §2. That
+requirement was introduced by an AI and falsely attributed to him across the
+September 15–26 documentation chain. Any earlier approval did not validate that
+invented requirement. Lou's intended body remains tall and relatively lanky.
+This file is preserved as provenance for the still-useful mechanical rules, not
+as authorization to generate another full sheet.
 
 The approval gate this prompt passed through, and the ten-requirement
 traceability table in §10 that it was reviewed against, were both required by

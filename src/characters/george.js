@@ -64,6 +64,18 @@ export const george = {
         // headAnchorFrac comment).
         neckInTorso: true,
         headAnchorFrac: { u: 0.5877862595419847, v: 0.84375 },
+        // Pain face for holds, auditioned 2026-10-11 in Derek's hammerlock.
+        // Source: Sprite sheets/AI Pilot/George/expressions/transparent/
+        // george-hurt-v1.png (one of the five approved expression sources,
+        // PILOT_NOTES.md), scaled 0.197 onto head.png's exact 114x139 canvas,
+        // aligned on hair top and nose tip, with head.png's own neck kept
+        // below the chin so the neck socket is unchanged. Only shows when a
+        // clip asks for `head: 'hurt'`; otherwise George is unchanged.
+        variants: {
+            head: {
+                hurt: { key: 'george_head_hurt', file: 'head_hurt.png' },
+            },
+        },
         // See the shared TORSO_BOX comment above this object.
         torso: { key: 'george_torso', box: TORSO_BOX },
         pelvisOverlay: { key: 'george_pelvis_overlay', box: TORSO_BOX },

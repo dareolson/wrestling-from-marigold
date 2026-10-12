@@ -1,4 +1,9 @@
-const RESERVED_TRACK_KEYS = new Set(['pose', 'transform', 'parts']);
+// `facing` is a per-keyframe whole-body facing: +1 faces along the staging
+// axis (the direction the anchor role faced when the clip started, the same
+// axis transform.x uses), -1 faces against it. Discrete like parts -- it holds
+// from its keyframe until the next one that sets it, never blends. Omitted on
+// every keyframe, the clip leaves facing to its executor, as before.
+const RESERVED_TRACK_KEYS = new Set(['pose', 'transform', 'parts', 'facing']);
 
 function isObject(value) {
     return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -21,11 +26,13 @@ function ease(name, t) {
 }
 
 function cloneState(state) {
-    return {
+    const clone = {
         pose: { ...state.pose },
         transform: { ...state.transform },
         parts: { ...state.parts },
     };
+    if (state.facing !== undefined) clone.facing = state.facing;
+    return clone;
 }
 
 function expandKeyframes(keyframes) {
@@ -34,6 +41,7 @@ function expandKeyframes(keyframes) {
         Object.assign(state.pose, frame.pose);
         Object.assign(state.transform, frame.transform);
         Object.assign(state.parts, frame.parts);
+        if (frame.facing !== undefined) state.facing = frame.facing;
         return { ...frame, state: cloneState(state) };
     });
 }
@@ -67,6 +75,9 @@ export function validateClip(source) {
                 }
             }
             if (frame.parts !== undefined && !isObject(frame.parts)) errors.push(`tracks.${role}.keyframes[${index}].parts must be an object`);
+            if (frame.facing !== undefined && frame.facing !== 1 && frame.facing !== -1) {
+                errors.push(`tracks.${role}.keyframes[${index}].facing must be 1 or -1`);
+            }
         }
     }
     let previousEvent = -Infinity;
@@ -89,6 +100,7 @@ export function compileClip(source) {
             pose: frame.pose ?? {},
             transform: frame.transform ?? {},
             parts: frame.parts ?? {},
+            ...(frame.facing !== undefined ? { facing: frame.facing } : {}),
         })));
         return [role, {
             keyframes,
@@ -99,6 +111,8 @@ export function compileClip(source) {
             // Measured on the RAW per-frame channels, not the expanded running
             // state, so it means "the author wrote a transform here".
             authorsTransform: keyframes.some(frame => Object.keys(frame.transform).length > 0),
+            // Whether this track turns its actor (see RESERVED_TRACK_KEYS).
+            authorsFacing: keyframes.some(frame => frame.facing !== undefined),
         }];
     }));
     return Object.freeze({
@@ -107,6 +121,7 @@ export function compileClip(source) {
         duration: source.duration,
         tracks,
         authorsTransform: Object.values(tracks).some(track => track.authorsTransform),
+        authorsFacing: Object.values(tracks).some(track => track.authorsFacing),
         events: (source.events ?? []).map((event, index) => ({ ...event, _order: index })),
     });
 }
@@ -132,13 +147,16 @@ export function sampleTrack(track, time) {
     if (time === b.at) return cloneState(b.state);
     const span = b.at - a.at;
     const t = ease(b.ease, span > 0 ? (time - a.at) / span : 1);
-    return {
+    const sample = {
         pose: sampleNumericGroup(a.state.pose, b.state.pose, t),
         transform: sampleNumericGroup(a.state.transform, b.state.transform, t),
         // Art swaps are intentionally discrete. Put the swap on a contact or
         // anticipation keyframe; numeric pose/transform channels still blend.
         parts: { ...a.state.parts },
     };
+    // Facing is discrete for the same reason: it turns on its keyframe.
+    if (a.state.facing !== undefined) sample.facing = a.state.facing;
+    return sample;
 }
 
 export function sampleClip(clip, time) {

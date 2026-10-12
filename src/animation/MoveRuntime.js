@@ -1,17 +1,21 @@
 import { compileClip, eventsBetween, sampleClip } from './AnimationClip.js';
-import { captureStagingContext, stagedWorldPoint } from './clipStaging.js';
+import { captureFacingAxis, captureStagingContext, stagedWorldPoint } from './clipStaging.js';
 
 // `staging` is the role's immutable playback context, or null when this track
 // authors no transform channels (the clip does not own this actor's position).
 // It is passed as a second argument rather than folded into `sample` so the
 // sampled frame stays pure clip data — the same object a tool or test can
 // inspect — and so a target that ignores staging is unchanged.
-function applySample(target, sample, staging) {
+//
+// `facingAxis` is the anchor's facing at play() (+1/-1), or null when the clip
+// authors no facing; a sampled `facing` resolves against it.
+function applySample(target, sample, staging, facingAxis = null) {
     if (!target) return;
     if (typeof target.applyAnimationSample === 'function') {
-        target.applyAnimationSample(sample, staging);
+        target.applyAnimationSample(sample, staging, facingAxis);
         return;
     }
+    if (facingAxis && sample.facing && 'facing' in target) target.facing = facingAxis * sample.facing;
     if (sample.pose && 'pose' in target) target.pose = { ...target.pose, ...sample.pose };
     if (sample.transform) {
         // Generic targets get the same contract as a real Wrestler: x/y resolve
@@ -73,6 +77,9 @@ export default class MoveRuntime {
             // resolves against the same origins no matter what order times are
             // visited in. Null when no bound track authors transform channels.
             staging: captureStagingContext(clip, bindings),
+            // The axis authored facing resolves against; null when the clip
+            // authors none. Captured once, like staging.
+            facingAxis: captureFacingAxis(clip, bindings),
         };
         this._active.set(handle.id, handle);
         this._apply(handle);
@@ -155,7 +162,7 @@ export default class MoveRuntime {
     _apply(handle) {
         const sampled = sampleClip(handle.clip, handle.time);
         for (const [role, sample] of Object.entries(sampled.tracks)) {
-            applySample(handle.bindings[role], sample, handle.staging?.roles[role] ?? null);
+            applySample(handle.bindings[role], sample, handle.staging?.roles[role] ?? null, handle.facingAxis);
         }
         return sampled;
     }

@@ -67,10 +67,16 @@
 // mutually exclusive by construction rather than by convention, so two owners
 // can never fight over a wrestler.
 //
-// NOT IN THIS CONTRACT. Facing is not a clip channel: executors set it (the
-// hammerlock's `other.facing = this.facing`) before play() and it is captured,
-// not driven. Ring-bounds clamping is the consumer's job, not this module's —
-// see Wrestler._applyStagedTransform.
+// FACING (2026-10-11). A keyframe may author `facing` (see AnimationClip.js):
+// +1 faces along the staging axis, -1 against it, so a turn authored facing
+// right mirrors with the rest of the tableau. The axis is the anchor's facing
+// at play(), captured once by captureFacingAxis -- independently of position
+// staging, because a clip may turn an actor without moving anyone. A clip that
+// authors no facing gets no axis and its executor keeps setting facing, as
+// before. Gameplay's Wrestler.move() re-faces every wrestler toward the other
+// each tick; the clip's facing is applied after it, so the authored facing is
+// the one that renders. Ring-bounds clamping is the consumer's job, not this
+// module's -- see Wrestler._applyStagedTransform.
 
 // Which bound role defines the staging axis. `attacker` first: for a paired
 // move the attacker's facing is the one gameplay already establishes at
@@ -145,6 +151,18 @@ export function captureStagingContext(clip, bindings) {
     const roles = {};
     for (const role of staged) roles[role] = Object.freeze({ role, ...frame });
     return Object.freeze({ anchorRole, ...frame, roles: Object.freeze(roles) });
+}
+
+/**
+ * The staging axis for authored facing: the anchor's facing (+1/-1) at
+ * play(), or null when the clip authors no facing. Captured once per playback
+ * for the same determinism reason as the staging origin.
+ */
+export function captureFacingAxis(clip, bindings) {
+    if (!clip?.authorsFacing) return null;
+    const bound = Object.keys(bindings ?? {}).filter(role => bindings[role]);
+    if (!bound.length) return null;
+    return captureOrigin(bindings[pickAnchorRole(bound)]).facing;
 }
 
 /**

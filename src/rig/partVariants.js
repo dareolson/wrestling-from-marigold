@@ -47,14 +47,29 @@ export const SEMANTIC_PART_SLOTS = Object.freeze({
  * slots, from live facing. Literal render slots pass through untouched, so a
  * clip may mix the two.
  *
+ * A character whose hands are painted into its forearms (`handInForearm`) has
+ * no hand slot to swap, so its `workingHand` resolves to the matching forearm
+ * instead. An explicit forearm request in the same selection wins.
+ *
+ * Which physical limb carries the lArm channel is a property of the RENDER
+ * path, not of facing alone (see Skeleton.lChannelSide): pass the skeleton's
+ * answer as `lSide` whenever a skeleton exists. Without it the old rule
+ * applies (near facing right, far facing left), which is right for the core
+ * render path only.
+ *
  * @param {Record<string,string>} parts clip-authored selection
  * @param {number} facing +1 (right) or -1 (left)
+ * @param {object} [textures] the character's texture config
+ * @param {'near'|'far'} [lSide] the side the lArm channel drives, from Skeleton.lChannelSide
  */
-export function resolveSemanticSlots(parts = {}, facing = 1) {
-    const side = facing >= 0 ? 'near' : 'far';
+export function resolveSemanticSlots(parts = {}, facing = 1, textures = null, lSide = null) {
+    const side = lSide ?? (facing >= 0 ? 'near' : 'far');
     const selection = {};
     for (const [slot, name] of Object.entries(parts)) {
-        selection[SEMANTIC_PART_SLOTS[slot]?.[side] ?? slot] = name;
+        let target = SEMANTIC_PART_SLOTS[slot]?.[side] ?? slot;
+        if (textures?.handInForearm && slot === 'workingHand') target = `${side}Forearm`;
+        if (target in selection && slot === 'workingHand') continue;
+        selection[target] = name;
     }
     return selection;
 }

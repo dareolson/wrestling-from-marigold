@@ -8,19 +8,43 @@ import { readFileSync } from 'node:fs';
 import { thesz } from '../src/characters/thesz.js';
 import { POSES } from '../src/Wrestler.js';
 import { theszProcreateV1, thesz_procreate_v1 } from '../src/characters/thesz_procreate_v1.js';
-import { validateCharacterArt, enumerateCharacterAssets, BASE_PART_FILES } from '../src/rig/partVariants.js';
+import { validateCharacterArt, enumerateCharacterAssets, BASE_PART_FILES, resolvePartSelection, resolveSemanticSlots } from '../src/rig/partVariants.js';
 
 test('the candidate declares a valid rig contract', () => {
     const { ok, errors } = validateCharacterArt(theszProcreateV1);
     assert.ok(ok, `rig contract invalid: ${errors.join('; ')}`);
 });
 
-test('it delivers shipped Lou\'s six body parts, plus the pelvis mask', () => {
-    const slots = enumerateCharacterAssets(theszProcreateV1).map(a => a.slot).sort();
-    const body = slots;
+test('it delivers shipped Lou\'s six body parts, plus the two audition forearms', () => {
+    const assets = enumerateCharacterAssets(theszProcreateV1);
+    const body = assets.filter(a => a.variant === 'base' && a.slot !== 'farForearm').map(a => a.slot).sort();
     assert.deepEqual(body, ['forearm', 'head', 'shin', 'thigh', 'torso', 'upperArm'].sort());
     const shipped = enumerateCharacterAssets(thesz).map(a => a.slot).sort();
     assert.deepEqual(body, shipped, 'the six body slots must match shipped Lou exactly');
+    // 2026-10-11 audition: palm-side far forearm and the hammerlock grip.
+    const extra = assets.filter(a => a.slot === 'farForearm' || a.variant !== 'base')
+        .map(a => `${a.slot}.${a.variant}`).sort();
+    assert.deepEqual(extra, ['farForearm.base', 'forearm.grip']);
+});
+
+test('audition forearms keep the base forearm geometry exactly', () => {
+    const t = theszProcreateV1.textures;
+    const { key: _a, ...base } = t.forearm;
+    const { key: _b, ...far } = t.farForearm;
+    assert.deepEqual(far, base);
+    const resolved = resolvePartSelection(t, { nearForearm: 'grip' }).nearForearm;
+    assert.equal(resolved.key, 'thesz_pv1_forearm_grip');
+    assert.deepEqual(resolved.box, t.forearm.box);
+    assert.equal(resolved.jointPivotFrac, t.forearm.jointPivotFrac);
+});
+
+test('workingHand swaps the forearm for a hand-in-forearm character, by facing', () => {
+    const t = theszProcreateV1.textures;
+    assert.deepEqual(resolveSemanticSlots({ workingHand: 'grip' }, 1, t), { nearForearm: 'grip' });
+    assert.deepEqual(resolveSemanticSlots({ workingHand: 'grip' }, -1, t), { farForearm: 'grip' });
+    // Characters without the flag keep the hand slot, unchanged.
+    assert.deepEqual(resolveSemanticSlots({ workingHand: 'grip' }, 1, thesz.textures), { nearHand: 'grip' });
+    assert.deepEqual(resolveSemanticSlots({ workingHand: 'grip' }, 1), { nearHand: 'grip' });
 });
 
 // pelvisMask is the ONLY part not derived from a PSD layer of its own: it is the
@@ -38,6 +62,9 @@ test('the hip seam is closed in the art, not with a pelvis layer', () => {
 test('every declared part file exists on disk', () => {
     for (const asset of enumerateCharacterAssets(theszProcreateV1)) {
         assert.ok(readFileSync(asset.file).length > 0, `${asset.file} missing or empty`);
+        // Variant files are named explicitly in the config; only base parts
+        // must use the loader's conventional filenames.
+        if (asset.variant !== 'base') continue;
         assert.ok(Object.values(BASE_PART_FILES).includes(asset.file.split('/').pop()),
             `${asset.file} is not a filename the loader looks for`);
     }

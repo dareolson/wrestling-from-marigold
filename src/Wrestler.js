@@ -432,7 +432,12 @@ export default class Wrestler {
     // Pose, parts and transform are applied from the SAME sampled frame in one
     // call, so a keyframe's stance, its art swap, and its staging can never land
     // on different game frames.
-    applyAnimationSample(sample, staging = null) {
+    //
+    // Authored facing lands FIRST: which physical arm plays a semantic part
+    // slot (workingHand, strikingForearm) depends on facing, so the turn and
+    // the art swap on the same keyframe must resolve against the new facing.
+    applyAnimationSample(sample, staging = null, facingAxis = null) {
+        if (facingAxis && sample.facing) this.facing = facingAxis * sample.facing;
         if (sample.pose) mergeArticulatedPose(this.pose, sample.pose);
         if (sample.parts) this.skeleton.setPartVariants(this._resolveVariantSlots(sample.parts));
         if (staging && sample.transform) this._applyStagedTransform(sample.transform, staging);
@@ -479,7 +484,7 @@ export default class Wrestler {
     // previews a clip's semantic slots through the same table, rather than
     // showing the author art the game will put on the other hand.
     _resolveVariantSlots(parts) {
-        return resolveSemanticSlots(parts, this.facing);
+        return resolveSemanticSlots(parts, this.facing, this.skeleton?._textureConfig, this.skeleton?.lChannelSide?.(this.facing));
     }
 
     // Cancel any MoveRuntime-driven move on this wrestler. Cancellation removes

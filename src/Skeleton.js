@@ -1008,6 +1008,22 @@ export default class Skeleton {
     // future non-authored-leg-rig character, and george itself at facing
     // >= 0) runs _updateUprightCore directly, byte-identical to before this
     // wrapper existed.
+    // Which visual side ('near' | 'far') the l-channels (lArm/lElbow/lLeg/
+    // lKnee) drive at this facing. NOT simply "near facing right, far facing
+    // left": an authored-leg-rig character without faceLeftOverrides is drawn
+    // at facing +1 and mirrored (see updateUpright), so its l-channels stay on
+    // the NEAR limbs in both facings, while every other character takes the
+    // core path, where facing left swaps them to the far limbs. Measured
+    // 2026-10-11: Procreate Lou and the reference rig stay near; shipped Lou
+    // and George (faceLeftOverrides) swap. Mirrors updateUpright's branch
+    // condition exactly, so semantic part slots (workingHand, strikingForearm)
+    // and the move editor's limb handles land on the limb actually drawn.
+    lChannelSide(facing) {
+        if (facing >= 0) return 'near';
+        if (this._faceLeftOverrides) return 'far';
+        return this._authoredLegRig ? 'near' : 'far';
+    }
+
     updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
         // faceLeftOverrides takes priority over the canonical-mirror trick
         // below: Derek tuned these numbers directly against the facing < 0

@@ -206,6 +206,30 @@ export const theszProcreateV1 = {
             jointPivotFrac: 0.116194,
             pivotOffsetFrac: -0.012388,
         },
+        // 2026-10-11, Derek: audition the Oct 8 generated forearms in game
+        // without a Procreate pass. Both are the donors scaled whole-canvas
+        // onto forearm.png's exact 117x351 canvas (never tight-bbox), with
+        // the donor's black outline arc across the elbow cap recoloured to
+        // skin -- Derek's own forearm leaves that cap uninked under the upper
+        // arm. Geometry is forearm.png's, unchanged.
+        //   far_forearm.png   palm-donor-v3: palm-side fist for the far arm
+        //   forearm_grip.png  grip-donor-v1: clutching hand for hammerlock
+        // Source: Sprite sheets/AI Pilot/Lou/articulation-donors/
+        // 2026-10-08-forearm-variants-v1/. Unapproved donors, not final art.
+        farForearm: {
+            key: 'thesz_pv1_far_forearm',
+            box: { w: 23.003, h: 69.008 },
+            jointPivotFrac: 0.116194,
+            pivotOffsetFrac: -0.012388,
+        },
+        // The hand is painted into the forearm, so a clip's `workingHand`
+        // request swaps the whole forearm (see resolveSemanticSlots).
+        handInForearm: true,
+        variants: {
+            forearm: {
+                grip: { key: 'thesz_pv1_forearm_grip', file: 'forearm_grip.png' },
+            },
+        },
         thigh: {
             key: 'thesz_pv1_thigh',
             box: { w: 34.86, h: 87.146 },

@@ -1,29 +1,18 @@
 import backgroundUrl from '../assets/story/marigold-title-clean-v1.jpg';
-import carUrl from '../assets/story/marigold-sedan-v1.png';
+import { TITLE_CARS } from './titleCars.js';
 import patronUrl from '../assets/story/marigold-patron-walk-v1.png';
 import crowdUrl from '../assets/story/marigold-waiting-patrons-v1.png';
 
 // All positions are authored in the 960 × 600 canvas. The complete street
 // belongs to FrontDoor's background container, including its camera push.
 //
-// Runtime images are display-sized (review, 2026-10-11): the generated masters
-// in Sprite sheets/Story/marigold-title/source-masters/ were 6.8 MB for sprites
-// shown at most 230 px wide. Sedan geometry below stays in the MASTER's pixel
-// coordinates (SEDAN_MASTER_W wide) and is scaled to whatever texture loads,
-// so re-exporting the sedan at another size needs no coordinate edits.
-const SEDAN_MASTER_W = 1774;
-const SEDAN_HUBS = [['rear-hub', 354, 415], ['front-hub', 1375, 1436]]; // [frame, crop x, centre x]
-const HUB_Y = 574, HUB_CENTER_Y = 635, HUB_SIZE = 122;
-// Street depth (canvas y of the tyre line). The sidewalk's curb is at about
-// y 452: parked cars sit at the curb on the road, the passing car one lane out.
-// Cars were previously placed with tyres at ~y 440, i.e. parked ON the sidewalk.
-const PARKED_TYRES_Y = 466, PASSING_TYRES_Y = 486;
-const TYRE_LINE = 755 / 887; // sedan master: tyre bottoms at y 755 of 887
+const PARKED_TYRES_Y = 466;
+const PASSING_TYRES_Y = 486;
 
 export class TitleStreet {
     static preload(scene) {
         scene.load.image('marigold-exterior', backgroundUrl);
-        scene.load.image('marigold-sedan', carUrl);
+        TITLE_CARS.forEach(car => scene.load.image(car.key, car.url));
         scene.load.image('marigold-patron', patronUrl);
         scene.load.image('marigold-waiting', crowdUrl);
     }
@@ -51,12 +40,17 @@ export class TitleStreet {
             frameRate: 5, repeat: -1,
         });
 
-        // Rotating hubcaps use the sedan's own pixels; no separate art style.
-        const sedan = scene.textures.get('marigold-sedan');
-        const k = sedan.getSourceImage().width / SEDAN_MASTER_W;
-        for (const [name, x] of SEDAN_HUBS) {
-            if (!sedan.has(name)) sedan.add(name, 0, Math.round(x * k), Math.round(HUB_Y * k),
-                Math.round(HUB_SIZE * k), Math.round(HUB_SIZE * k));
+        // Parked cars use models 0 and 1, so the first car to pass is model 2.
+        this.nextCar = 2;
+        for (const car of TITLE_CARS) {
+            const texture = scene.textures.get(car.key);
+            const k = texture.getSourceImage().width / car.masterWidth;
+            for (const [index, hub] of car.hubs.entries()) {
+                const name = `hub-${index}`;
+                if (!texture.has(name)) texture.add(name, 0,
+                    Math.round(hub.cropX * k), Math.round(hub.cropY * k),
+                    Math.round(hub.size * k), Math.round(hub.size * k));
+            }
         }
 
         // A registered dark mask briefly extinguishes one painted bulb.
@@ -70,8 +64,8 @@ export class TitleStreet {
         this.cars = scene.add.container(0, 0);
         this.layer.add([this.people, this.cars]);
 
-        this.addCar(75, PARKED_TYRES_Y, 200, false);
-        this.addCar(720, PARKED_TYRES_Y, 155, false);
+        this.addCar(75, PARKED_TYRES_Y, 200, false, 0);
+        this.addCar(720, PARKED_TYRES_Y, 155, false, 1);
         // Waiting groups keep the image's own proportions (they were drawn at
         // 64 × 83 from a near-square image: about 25% too thin).
         const waiting = scene.textures.get('marigold-waiting').getSourceImage();
@@ -101,31 +95,35 @@ export class TitleStreet {
             onComplete: () => this.later(Phaser.Math.Between(6500, 13000), () => this.flicker()) });
     }
 
-    // `tyresY` is the canvas y of the tyre bottoms (the car's spot in the street).
-    addCar(x, tyresY, width, moving) {
-        const y = tyresY - TYRE_LINE * width / 2;
-        const actor = this.scene.add.container(x, y);
-        actor.add(this.scene.add.image(0, 0, 'marigold-sedan', '__BASE').setOrigin(0).setDisplaySize(width, width / 2));
+    addCar(x, tyresY, width, moving, modelIndex = 0) {
+        const definition = TITLE_CARS[modelIndex];
+        const scale = width / definition.masterWidth;
+        const actor = this.scene.add.container(x, tyresY - definition.tyreBottom * scale);
+        const body = this.scene.add.image(0, 0, definition.key, '__BASE').setOrigin(0);
+        body.setDisplaySize(width, definition.masterHeight * scale);
+        actor.add(body);
+        actor.setData('vehicle', true);
+        actor.setData('model', definition.key);
+        actor.setData('tyresY', tyresY);
         this.cars.add(actor);
         this.actors.add(actor);
-        if (moving) {
-            const scale = width / SEDAN_MASTER_W;
-            for (const [frame, , centerX] of SEDAN_HUBS) {
-                const hub = this.scene.add.image(centerX * scale, HUB_CENTER_Y * scale, 'marigold-sedan', frame)
-                    .setDisplaySize(HUB_SIZE * scale, HUB_SIZE * scale);
-                actor.add(hub);
-                this.scene.tweens.add({ targets: hub, angle: 360, duration: 900, repeat: -1 });
-            }
+        if (moving) for (const [index, hub] of definition.hubs.entries()) {
+            const wheel = this.scene.add.image(hub.centerX * scale, hub.centerY * scale,
+                definition.key, `hub-${index}`).setDisplaySize(hub.size * scale, hub.size * scale);
+            actor.add(wheel);
+            this.scene.tweens.add({ targets: wheel, angle: 360, duration: 900, repeat: -1 });
         }
         return actor;
     }
 
-    passCar() {
-        const car = this.addCar(-245, PASSING_TYRES_Y, 230, true);
+    passCar(modelIndex = this.nextCar++ % TITLE_CARS.length) {
+        const car = this.addCar(-245, PASSING_TYRES_Y, 230, true, modelIndex);
+        car.setData('passing', true);
         this.scene.tweens.add({ targets: car, x: 980, duration: 10500, ease: 'Linear', onComplete: () => {
             this.removeActor(car);
             this.later(Phaser.Math.Between(11000, 18000), () => this.passCar());
         } });
+        return car;
     }
 
     enterPatron() {

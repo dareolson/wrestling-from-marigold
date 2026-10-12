@@ -26,8 +26,8 @@ User explicitly permits baked lettering, overriding initial art guidelines.
   Guy campaign; the preview completion offers the existing Exhibition roster.
 - `src/scenes/TitleStreet.js`: reusable street layer parented to the shared
   background container. Positions use 960 × 600 coordinates. Owns two parked
-  sedans, two static waiting groups, an occasional passing sedan with rotating
-  hubcap crops, a four-frame walking patron fading through the doorway, and
+  cars, two static waiting groups, lateral passes cycling three side-profile car models,
+  a four-frame walking patron fading through the doorway, and
   one brief bulb flicker. Intervals are intentionally sparse and irregular.
   Scene shutdown cancels timers and tweens and destroys actors. Reduced motion
   disables traffic, walking, flicker, and arrival push.
@@ -40,11 +40,13 @@ User explicitly permits baked lettering, overriding initial art guidelines.
 
 Runtime assets under `src/assets/story/`:
 
-- `marigold-title-clean-v1.png`: registered background with exterior cars and
+- `marigold-title-clean-v1.jpg` (PNG master in `Sprite sheets/Story/marigold-title/source-masters/`): registered background with exterior cars and
   people removed and hidden sidewalk/doors reconstructed by imagegen.
-- `marigold-sedan-v1.png`: transparent late-1940s-style sedan, 1774 × 887.
-  Runtime derives two 122 × 122 hubcap frames; body MUST request `__BASE`
-  explicitly because adding frames changes Phaser's default frame.
+- `marigold-sedan-v1.png`: original burgundy side-profile sedan.
+- `marigold-sedan-cream-v1.png`: cream/tobacco four-door sedan.
+- `marigold-coupe-green-v1.png`: forest-green two-door coupe.
+  Per-model master geometry is in `src/scenes/titleCars.js`. Hub crops scale
+  to runtime texture width; car bodies explicitly request `__BASE`.
 - `marigold-patron-walk-v1.png`: 2081 × 756, four frames in one horizontal row.
   Runtime slices by quarter-width. Gait and alignment remain generated donor
   quality; needs artist animation cleanup before calling it final.
@@ -62,7 +64,8 @@ Do not claim the added marquee or exact 1952 elevation is historically proven.
 
 Run `npm run build` and `node tools/debug/title_opening_proof.mjs` (local port
 5207 and system Chrome required). Browser proof checks advancing street actors,
-walk-frame use, full sedan body, the 4% arrival push, Exhibition shutdown,
+walk-frame use, full car frame, constant traffic depth/scale, each model at 4× size with hubs rotated,
+the 4% arrival push, Exhibition shutdown,
 title restart, reduced motion, and zero page exceptions. Screenshots go to
 ignored `tools/debug/shots/title-opening/`; inspect them, not only assertions.
 
@@ -77,3 +80,29 @@ created; they remain in the shared working directory and MUST NOT be bundled
 into opening integration. Inspect `git status` before staging or switching.
 Use the opening commit for cherry-picking into a clean integration branch.
 No remote push, merge, or message to Claude has been performed.
+
+## Current traffic revision — ready for Claude review
+
+Derek chose Claude's side-profile recommendation after reviewing the angled
+prototype. This revision follows the pasted car brief: right-facing profiles,
+transparent backgrounds, circular visible hubs, one per-car geometry table,
+parked tyres at 466 and passing tyres at 486. Models cycle per spawn rather
+than repeating one sedan. People/cars layers and reduced motion remain intact.
+
+Generated cream-sedan and green-coupe masters are untracked under
+`Sprite sheets/Story/marigold-title/source-masters/`; runtime exports are
+460 × 230 with premultiplied-alpha Lanczos resizing. Prompts are in
+`src/assets/story/marigold-side-profile-cars-v1.manifest.json`. Measurements in
+`titleCars.js` are master pixels, independent of runtime export resolution.
+All three models use the same registration and wheel-rotation implementation.
+
+The browser walkthrough writes `side-profile-traffic.png` and six enlarged
+hub review screenshots (`car-{0,1,2}-hubs-{0,90}.png`). Node 22.23.1 npm test,
+build, and browser proof pass. Review these screenshots before publishing.
+The diagonal traffic and three-quarter assets are no longer loaded. Local
+rejected drafts and masters are preserved under ignored Sprite sheets; their
+manifest is archived under `research/marigold-title-art/`.
+
+No push. Claude should review this local branch before anything is published.
+The booking-dialogue approval item in Claude's original review is still open;
+this vehicle pass does not resolve or change it.

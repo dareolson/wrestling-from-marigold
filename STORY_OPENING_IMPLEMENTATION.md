@@ -30,13 +30,21 @@ context. The reference date/elevation remains unverified, and the added marquee
 is artistic interpretation. Typography is baked in at the user's request,
 overriding the initial editable-type standard for this asset.
 
-`src/scenes/TitleStreet.js` owns parked cars, waiting groups, a sedan pass with
-rotating hubcaps, a four-frame patron walk into the doorway, and a brief
+`src/scenes/TitleStreet.js` owns parked cars, waiting groups, lateral traffic with three car models, a four-frame patron walk into the doorway, and a brief
 single-bulb flicker. Activity repeats at irregular intervals. All actors use
 separate transparent PNG assets. Scene shutdown removes timers, actor tweens,
 and actors. Reduced-motion preference disables movement and camera push.
 Generated walking frames need artist polish; no street or engine audio yet.
 Full asset prompts are in `src/assets/story/marigold-title-layers-v1.manifest.json`.
+New car prompts are in `marigold-side-profile-cars-v1.manifest.json`.
+`src/scenes/titleCars.js` records master dimensions, hub crop boxes/centers/sizes,
+and tyre bottoms for burgundy sedan, cream sedan, and green coupe. Traffic cycles
+through the models at constant scale from left to right. All cars use strict
+side profiles with circular hubs; parked tyre depth is 466 and passing depth is
+486, matching Claude's review. Runtime copies are 460 px wide with premultiplied
+alpha resizing; full-resolution masters stay in the ignored source folder.
+The rejected three-quarter drafts are archived locally and no longer loaded.
+A dark menu backing preserves legibility when traffic crosses the foreground.
 
 Branch and integration instructions: `AI_HANDOFF_ENTRIES/2026-10-11-codex-layered-marigold-opening.md`.
 

@@ -1,0 +1,23 @@
+{
+  "tool": "built-in image_gen",
+  "reference": "src/assets/story/marigold-sedan-v1.png",
+  "assets": [
+    {
+      "asset": "marigold-sedan-cream-v1.png",
+      "prompt": "Generate ONE isolated late-1940s / early-1950s American automobile sprite. Match the supplied burgundy sedan reference exactly in hand-inked illustration style, warm amber marquee lighting from the RIGHT, dark contour ink weight and restrained painted shading. STRICT SIDE PROFILE facing RIGHT, no visible front grille plane or rear plane, no three-quarter angle, no tilted ground. Whole car including bumpers and both circular wheels visible with generous transparent padding. Both wheel centers at same y and tires on one level baseline. Plain circular chrome hubcaps fully visible suitable for rotating crops. No ground shadow, floor, background, people, text, logos. True transparent alpha background. Wide landscape canvas. Build a visibly different car body from reference, period accurate without modern features. Cream and tobacco two-tone 1951-style four-door sedan with slightly longer cabin, rounded fenders and modest chrome.",
+      "master": "Sprite sheets/Story/marigold-title/source-masters/marigold-sedan-cream-v1.png"
+    },
+    {
+      "asset": "marigold-coupe-green-v1.png",
+      "prompt": "Generate ONE isolated late-1940s / early-1950s American automobile sprite. Match the supplied burgundy sedan reference exactly in hand-inked illustration style, warm amber marquee lighting from the RIGHT, dark contour ink weight and restrained painted shading. STRICT SIDE PROFILE facing RIGHT, no visible front grille plane or rear plane, no three-quarter angle, no tilted ground. Whole car including bumpers and both circular wheels visible with generous transparent padding. Both wheel centers at same y and tires on one level baseline. Plain circular chrome hubcaps fully visible suitable for rotating crops. No ground shadow, floor, background, people, text, logos. True transparent alpha background. Wide landscape canvas. Build a visibly different car body from reference, period accurate without modern features. Dark forest-green 1949-style two-door coupe, shorter rounded cabin and distinct short-wheelbase silhouette, restrained chrome.",
+      "master": "Sprite sheets/Story/marigold-title/source-masters/marigold-coupe-green-v1.png"
+    }
+  ],
+  "export": {
+    "width": 460,
+    "height": 230,
+    "method": "Pillow premultiplied RGBa, Lanczos, then RGBA PNG"
+  },
+  "measurements": "src/scenes/titleCars.js; all hub boxes, centers and tyre bottoms recorded in master pixels",
+  "status": "Side-profile traffic requested after review; verified runtime hub crops at 0 and 90 degrees, at 4× passing display size"
+}

@@ -1,0 +1,28 @@
+{
+  "tool": "built-in image_gen",
+  "reference": "marigold-title-clean-v1.jpg (street perspective, illumination and illustration style)",
+  "assets": [
+    {
+      "asset": "marigold-traffic-receding-v1.png",
+      "prompt": "Create ONE isolated transparent vehicle sprite for the supplied illustrated 1952 Chicago arena street. The reference image controls the hand-inked painted style, warm amber night light, and STREET PERSPECTIVE: the road recedes toward screen RIGHT, with camera viewing cars from slightly above pavement. Whole car and tires visible with generous transparent margin. Period-correct early-1950s body, chrome, modest hubcaps, no modern features. No people, environment, text, logos, floor or rectangular shadow; just the car with transparent alpha. Clearly THREE-QUARTER perspective, NEVER flat side elevation. Strong hand-inked contour, restrained painted shading matching the illustration; do not use photographic car styling. Subject: forest-green 1948-style rounded four-door sedan, REAR three-quarter view. Rear trunk and near side visible on LEFT, nose points diagonally AWAY toward UPPER RIGHT. Car's long axis slopes upward to right, strongly foreshortened length; rear bumper largest/nearest at lower left, front axle farther/smaller at upper right. Camera sees rear and driver's side; no front grille visible. This car travels from screen left toward right into distance along the reference curb."
+    },
+    {
+      "asset": "marigold-traffic-approaching-v1.png",
+      "prompt": "Create ONE isolated transparent vehicle sprite for the supplied illustrated 1952 Chicago arena street. The reference image controls the hand-inked painted style, warm amber night light, and STREET PERSPECTIVE: the road recedes toward screen RIGHT, with camera viewing cars from slightly above pavement. Whole car and tires visible with generous transparent margin. Period-correct early-1950s body, chrome, modest hubcaps, no modern features. No people, environment, text, logos, floor or rectangular shadow; just the car with transparent alpha. Clearly THREE-QUARTER perspective, NEVER flat side elevation. Strong hand-inked contour, restrained painted shading matching the illustration; do not use photographic car styling. Subject: cream/tobacco two-tone 1951-style rounded four-door sedan, FRONT three-quarter view. Chrome grille and headlights on LEFT, near flank recedes toward UPPER RIGHT. Nose points toward LOWER LEFT toward camera, front bumper nearest/largest at lower left, rear axle farther/smaller at upper right. Strong diagonal perspective along the reference street, not side elevation. This car approaches camera from frame right then passes toward lower left."
+    },
+    {
+      "asset": "marigold-traffic-coupe-v1.png",
+      "prompt": "Create ONE isolated transparent vehicle sprite for the supplied illustrated 1952 Chicago arena street. The reference image controls the hand-inked painted style, warm amber night light, and STREET PERSPECTIVE: the road recedes toward screen RIGHT, with camera viewing cars from slightly above pavement. Whole car and tires visible with generous transparent margin. Period-correct early-1950s body, chrome, modest hubcaps, no modern features. No people, environment, text, logos, floor or rectangular shadow; just the car with transparent alpha. Clearly THREE-QUARTER perspective, NEVER flat side elevation. Strong hand-inked contour, restrained painted shading matching the illustration; do not use photographic car styling. Subject: burgundy 1949-style compact two-door rounded coupe with distinct short cabin, FRONT three-quarter view. Nose points toward LOWER LEFT, broad chrome grille nearest at lower left, body and rear taper away to UPPER RIGHT, camera sees front and near flank, strong perspective foreshortening. This is a visually different shorter model than a four-door sedan. Align diagonal to reference street receding to the right."
+    }
+  ],
+  "runtime": "TitleStreet.js TRAFFIC_ROUTES: receding and approaching lanes with position and scale interpolated from shared progress. Trim alpha padding for tire baseline; sort cars by tire y.",
+  "status": "Three-quarter traffic prototype; display-sized runtime copies and preserved full-resolution masters. Vehicle silhouettes remain fixed three-quarter views; angled wheel animation requires separately authored wheel assets.",
+  "runtimeExport": {
+    "width": 460,
+    "height": 288,
+    "method": "Pillow RGBa premultiplied-alpha Lanczos, then RGBA PNG",
+    "masters": "Sprite sheets/Story/marigold-title/source-masters/ (ignored)",
+    "trafficBytes": 513086,
+    "totalLoadedImageBytes": 1268031
+  }
+}

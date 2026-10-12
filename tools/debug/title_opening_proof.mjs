@@ -29,20 +29,60 @@ try {
     assert.equal(await page.evaluate(() => {
         const car = [...window.__WFM_GAME.scene.getScene('FrontDoor').street.actors][0];
         return car.list[0].frame.name;
-    }), '__BASE', 'Car body must use the full sedan rather than a hubcap frame');
+    }), '__BASE', 'Car bodies must use full images, not hub frames');
     await page.screenshot({ path: `${shots}title.png` });
     const before = await page.evaluate(() => {
         const scene = window.__WFM_GAME.scene.getScene('FrontDoor');
         scene.street.passCar();
         scene.street.enterPatron();
-        return [...scene.street.actors].map(actor => ({ x: actor.x, frame: actor.frame?.name }));
+        return [...scene.street.actors].map(actor => ({ x: actor.x, y: actor.y, width: actor.list?.[0]?.displayWidth, passing: actor.getData('passing'), frame: actor.frame?.name }));
     });
     await page.waitForTimeout(2500);
     const after = await page.evaluate(() => [...window.__WFM_GAME.scene.getScene('FrontDoor').street.actors]
-        .map(actor => ({ x: actor.x, frame: actor.frame?.name })));
+        .map(actor => ({ x: actor.x, y: actor.y, width: actor.list?.[0]?.displayWidth, passing: actor.getData('passing'), frame: actor.frame?.name })));
     assert(after.some((actor, i) => actor.x !== before[i]?.x), 'Street actors must advance');
     assert(after.some(actor => actor.frame?.startsWith('walk-')), 'Walker must use authored frames');
+    const startCar = before.find(actor => actor.passing);
+    const endCar = after.find(actor => actor.passing);
+    assert(startCar && endCar && endCar.x > startCar.x, 'Passing car advances right');
+    assert.equal(endCar.y, startCar.y, 'Lateral traffic keeps tyre depth');
+    assert.equal(endCar.width, startCar.width, 'Lateral traffic keeps scale');
     await page.screenshot({ path: `${shots}street-motion.png` });
+    await page.waitForTimeout(3500);
+    await page.screenshot({ path: `${shots}side-profile-traffic.png` });
+    // Review each model's actual runtime hub crops at 4× passing size.
+    await page.evaluate(() => {
+        const scene = window.__WFM_GAME.scene.getScene('FrontDoor');
+        scene.panel.setVisible(false);
+        scene.street.cars.list.forEach(actor => actor.setVisible(false));
+    });
+    for (let model = 0; model < 3; model++) {
+        await page.evaluate(index => {
+            const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
+            street.hubProof = street.addCar(20, 565, 920, true, index);
+            street.hubProof.list.slice(1).forEach(wheel => {
+                street.scene.tweens.killTweensOf(wheel);
+                wheel.angle = 0;
+            });
+        }, model);
+        await page.waitForTimeout(50);
+        await page.screenshot({ path: `${shots}car-${model}-hubs-0.png` });
+        await page.evaluate(() => {
+            const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
+            street.hubProof.list.slice(1).forEach(wheel => wheel.angle = 90);
+        });
+        await page.waitForTimeout(50);
+        await page.screenshot({ path: `${shots}car-${model}-hubs-90.png` });
+        await page.evaluate(() => {
+            const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
+            street.removeActor(street.hubProof);
+        });
+    }
+    await page.evaluate(() => {
+        const scene = window.__WFM_GAME.scene.getScene('FrontDoor');
+        scene.panel.setVisible(true);
+        scene.street.cars.list.forEach(actor => actor.setVisible(true));
+    });
     await page.keyboard.press('Enter');
     await page.waitForTimeout(4200);
     assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').state), 'arrival');

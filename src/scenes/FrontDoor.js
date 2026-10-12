@@ -61,6 +61,8 @@ export default class FrontDoor extends Phaser.Scene {
         this.tweens.killTweensOf(this.background);
         this.background.setScale(1);
         const saved = this.readSave();
+        // Legibility backing: the passing car crosses behind the menu text.
+        this.panel.add(this.add.rectangle(480, 506, 320, 136, 0x080a10, 0.58));
         this.buttons([
             ['NEW GAME', () => { this.state = 'arrival'; this.index = 0; this.showArrival(); }],
             ['CONTINUE', () => saved.stage === 'ready' ? this.ready(saved.decision) : this.beginBooking(), !saved],

@@ -50,3 +50,30 @@ Verification (Node 22.23.1): `npm test` 567/567, build OK, title proof PASS,
 title boot loads no wrestler files and Exhibition works, the direct `?p1=`
 link plus F then H plays Derek's WIP hammerlock. Screens were inspected by
 eye, including a 4× check of hubcap registration on the downsized sedan.
+
+## Round 2 — Codex's new cars (reviewed 2026-10-11, 23:10)
+
+Codex delivered in two passes: a committed three-quarter "perspective
+traffic" attempt (fe0b80c), which Derek rejected in favour of side profiles,
+and uncommitted side-profile cars. Both were folded into ONE commit
+(1e865a4, Codex/Derek authorship kept) so the rejected 5.3 MB of car art
+never enters history. The rejected masters stay local under ignored Sprite
+sheets; their manifest is in `research/marigold-title-art/`.
+
+Verified: per-car geometry table (`titleCars.js`) with every hub crop
+centred on its wheel; hub close-ups at 0° and 90° show no rotating-corner
+artifacts on any of the three models; runtime cars are about 90 KB each; tyre
+line, layers and reduced motion are intact. Tests 567/567, build OK, proof
+PASS.
+
+Small review changes: the first passing car is model 2 (the coupe), not a
+repeat of the parked burgundy sedan. The FrontDoor backing comment (still
+"approaching traffic") and the handoff's stale `.png` background name were
+fixed.
+
+**Open for Derek, design:** Codex added a hard-edged translucent box
+(320×136, 58% black) behind the title menu, so text stays legible when a car
+passes behind it. It works, but its edges cut across the curb and sidewalk.
+Options: keep it, soften it to an edgeless gradient, or remove it (the text
+has a drop shadow). **Still open:** item 6, the booking dialogue confirmation.
+Nothing pushed.

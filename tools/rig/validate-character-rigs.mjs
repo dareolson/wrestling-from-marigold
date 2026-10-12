@@ -6,6 +6,7 @@ import { thesz } from '../../src/characters/thesz.js';
 // browser rather than at the command line -- which is the whole point of this
 // validator running first.
 import { theszFront3qR1 } from '../../src/characters/thesz_front3q_r1.js';
+import { theszProcreateV1 } from '../../src/characters/thesz_procreate_v1.js';
 import {
     baseEntryForSlot,
     enumerateCharacterAssets,
@@ -23,7 +24,7 @@ async function pngSize(file) {
 }
 
 let failed = false;
-for (const character of [george, thesz, theszFront3qR1]) {
+for (const character of [george, thesz, theszFront3qR1, theszProcreateV1]) {
     const result = validateCharacterArt(character);
     for (const warning of result.warnings) console.warn(`${character.id}: warning: ${warning}`);
     for (const error of result.errors) {

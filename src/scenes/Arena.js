@@ -9,6 +9,7 @@ import { thesz } from '../characters/thesz.js';
 // appears only for ?p1=thesz-front3q-r1 / ?p2=... . Removing this import, the
 // CHARACTERS entry and the PRESETS entry removes it completely.
 import { theszFront3qR1 } from '../characters/thesz_front3q_r1.js';
+import { theszProcreateV1 } from '../characters/thesz_procreate_v1.js';
 import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
@@ -25,7 +26,7 @@ import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamIn
 // theszFront3qR1 is here so Arena.preload() loads its eight part files. It is a
 // review candidate, not a roster member: it is never selected unless asked for
 // by name, and shipped `thesz` is untouched by its presence.
-const CHARACTERS = [george, thesz, theszFront3qR1];
+const CHARACTERS = [george, thesz, theszFront3qR1, theszProcreateV1];
 
 // Named crowd extras: each is one chroma-keyed multi-frame reference sheet
 // cut via tools/audience-cutter into src/assets/audience/<slug>/frame1..N.png
@@ -2152,10 +2153,8 @@ export default class Arena extends Phaser.Scene {
     _setupDynamicRopes() {
         // Near ropes sit between the camera and everything in the ring, so by
         // default they render above the deepest wrestler depth (12 + 445*0.03
-        // = 25.35). They're banded by x — like the side ropes are banded by
-        // depth — so when a wrestler is pressed into them, just the strands at
-        // his back re-sort behind his body while the rest of the span keeps
-        // crossing in front of the ring broadcast-style.
+        // = 25.35) and stay there; a press bends them rather than re-sorting
+        // them (see _updateRopes). Banded by x for the per-band fill.
         this.nearRopeBands = [];
         for (let i = 0; i < 24; i++) {
             this.nearRopeBands.push(this.add.graphics().setDepth(25.5));
@@ -2190,9 +2189,11 @@ export default class Arena extends Phaser.Scene {
         const LOW  = new Set(['down', 'gettingUp', 'possum', 'pinned',
                               'sleeping', 'pin', 'elbowDrop', 'elbowDropping']);
         const press = d => Math.min(1, Math.max(0, (34 - d) / 14));
-        // near presses only feed the depth re-sort (horizontal ropes don't
-        // deform — the toward-camera bow read badly); side presses also bow
-        const out = { near: [], side: { '-1': [], 1: [] } };
+        // Every wall bows under a press. Near/far bending was removed
+        // 2026-07-07 (f5c96b5) and restored 2026-10-08 at Derek's request:
+        // without it the near strands had nothing to show contact but a
+        // depth flip, which put the rope behind the body.
+        const out = { near: [], far: [], side: { '-1': [], 1: [] } };
         for (const w of [this.w1, this.w2]) {
             if (!w || SKIP.has(w.state)) continue;
             // per-strand weight bottom→top: an upright back bends the middle
@@ -2202,9 +2203,11 @@ export default class Arena extends Phaser.Scene {
             const b = ringBoundsAtY(w.y);
             const t = (RING.nearLeft.y - w.y) / (RING.nearLeft.y - RING.farLeft.y);
             const kNear = press(RING.nearLeft.y - w.y);
+            const kFar  = press(w.y - RING.farLeft.y);
             const kL    = press(w.x - b.left);
             const kR    = press(b.right - w.x);
             if (kNear) out.near.push({ x: w.x, k: kNear, depth, w: wRope });
+            if (kFar)  out.far.push({ x: w.x, k: kFar, w: wRope });
             if (kL)    out.side[-1].push({ t, k: kL, depth, w: wRope });
             if (kR)    out.side[1].push({ t, k: kR, depth, w: wRope });
         }
@@ -2358,9 +2361,20 @@ export default class Arena extends Phaser.Scene {
             // Horizontal ropes — 25% less spring sag than side ropes
             // Dark taped ropes, period-correct — they read as dark strands
             // against the lit canvas and melt into the crowd shadows above it.
-            // No press deformation: bodies bow along their movement axis
-            // (side to side), and a toward/away-from-camera bulge reads wrong.
-            const nearPts = archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75, null, NBANDS);
+            // A press bows the near strands toward the camera (down-screen)
+            // and the far strands away from it (up-screen), scaled with the
+            // perspective; per-strand weight comes from the presser's posture.
+            // Shape is a taut rope under a point load: a long shallow V from
+            // post to post, apex softened slightly by a wide bump -- not a
+            // local bulge (Derek, 2026-10-08: the 85px bump read as one).
+            const span = (x, c, x0, x1) => {
+                const v = x <= c ? (x - x0) / Math.max(1, c - x0) : (x1 - x) / Math.max(1, x1 - c);
+                return Math.max(0, Math.min(1, v));
+            };
+            const pull = (x, c, x0, x1, r) => 0.75 * span(x, c, x0, x1) + 0.25 * bump(x, c, r);
+            const nearWarp = x =>  presses.near.reduce((a, p) => a + p.k * p.w[ri] * 6 * pull(x, p.x, nearLeft.x, nearRight.x, 220), 0);
+            const farWarp  = x => -presses.far.reduce((a, p)  => a + p.k * p.w[ri] * 3 * pull(x, p.x, farLeft.x, farRight.x, 140), 0);
+            const nearPts = archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75, nearWarp, NBANDS);
             nearPtsByRi[ri] = nearPts;
             // Reference uses `rest` (the rope's own always-present resting
             // gravity droop), not 0 — a dead-flat line. Zeroing it out made
@@ -2373,7 +2387,7 @@ export default class Arena extends Phaser.Scene {
             nearRefByRi[ri] = archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest, null, NBANDS);
             fillRibbonBands(this.nearRopeBands, nearPts,
                 new Array(NBANDS + 1).fill(2), 0x32322e, 1, 0x8e8e82, 0.9);
-            const farPts = archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58 + fs * 0.75, null);
+            const farPts = archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58 + fs * 0.75, farWarp);
             farPtsByRi[ri] = farPts;
             farRefByRi[ri] = archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58, null);
             fillRibbon(farG, farPts, 1, 0x3c3c38, 0.9, 0x787870);
@@ -2482,19 +2496,10 @@ export default class Arena extends Phaser.Scene {
             }
         }
 
-        // Re-sort pressed bands behind the pressing wrestler. Only full
-        // contact re-sorts (k ≥ 0.55, i.e. within ~6px of the movement clamp)
-        // so the flip lands at the moment of body contact; the deeper
-        // wrestler still sorts behind the rope everywhere else because
-        // depth is monotonic in ground y.
-        for (let i = 0; i < NBANDS; i++) {
-            const bx = nearLeft.x + (nearRight.x - nearLeft.x) * ((i + 0.5) / NBANDS);
-            let d = 25.5;
-            for (const p of presses.near) {
-                if (p.k >= 0.55 && bump(bx, p.x, 95) > 0.15) d = Math.min(d, p.depth - 0.02);
-            }
-            this.nearRopeBands[i].setDepth(d);
-        }
+        // Near strands always stay in front: a wrestler inside the ring is
+        // behind them from the camera, pressed or not. Re-sorting them behind
+        // a pressing body (the old behaviour) made him read as standing
+        // through the ropes (Derek, 2026-10-08). The bend shows the contact.
         for (let i = 0; i < BANDS; i++) {
             const g = this.sideRopeBands[i];
             const tMid = (i + 0.5) / BANDS;
@@ -2999,6 +3004,16 @@ export default class Arena extends Phaser.Scene {
                 skin: 0xe8c098, trunks: 0x484848,
                 moveSet: theszFront3qR1.moveSet,
                 textures: theszFront3qR1.textures,
+            },
+            // Temporary, reversible A/B for Derek's review of his Procreate
+            // master. Same name, pose, kit, skin and trunks as THESZ -- only the
+            // art differs, so anything that reads differently on screen is the
+            // art. `?p1=thesz-procreate-v1`.
+            'thesz-procreate-v1': {
+                name: 'THESZ', personality: 'thesz', idlePose: theszProcreateV1.idlePose,
+                skin: 0xe8c098, trunks: 0x484848,
+                moveSet: theszProcreateV1.moveSet,
+                textures: theszProcreateV1.textures,
             },
         };
         // Throw rather than log: a bad move ID silently disables part of a kit,

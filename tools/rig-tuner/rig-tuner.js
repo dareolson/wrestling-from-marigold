@@ -11,6 +11,7 @@ import Skeleton, { P, TEX, RIG } from '/src/Skeleton.js';
 import { POSES } from '/src/Wrestler.js';
 import { george } from '/src/characters/george.js';
 import { thesz } from '/src/characters/thesz.js';
+import { theszProcreateV1 } from '/src/characters/thesz_procreate_v1.js';
 import { enumerateCharacterAssets, RENDER_PART_SLOTS } from '/src/rig/partVariants.js';
 
 // ─── Characters ──────────────────────────────────────────────────────────────
@@ -18,14 +19,18 @@ const placeholder = {
     // idlePose matches Arena's brawler preset — the runtime placeholder kit.
     id: 'placeholder', skinCol: 0xffe4c4, trunksCol: 0x3355aa, textures: {}, idlePose: 'brawlerIdle',
 };
-const CHARS = { george, thesz, placeholder };
+const CHARS = { george, thesz, 'thesz-procreate-v1': theszProcreateV1, placeholder };
 // Roster is now just george/thesz (2026-07-26, promoted-george roster
 // change) -- both ids match their src/characters/ filename base exactly, so
 // no filename override table is needed anymore. The former george-ai-pilot-v8
 // -specific entry (which needed one, since its id used hyphens but its file
 // used underscores) is vaulted along with the rest of the pilot family; see
 // _vault/characters/.
-const charFilename = id => id;
+// Most ids match their src/characters/ filename base exactly. The opt-in
+// comparison candidates do not: their ids use hyphens where their filenames use
+// underscores, so the export button would name a file that does not exist.
+const FILENAME_OVERRIDES = { 'thesz-procreate-v1': 'thesz_procreate_v1' };
+const charFilename = id => FILENAME_OVERRIDES[id] ?? id;
 const BOX_PARTS = ['torso', 'upperArm', 'forearm', 'thigh', 'shin', 'pelvisOverlay', 'nearForearm', 'farForearm', 'nearShin', 'farShin'];
 // torso/pelvisOverlay each get their own slider row below, but on george
 // they're the SAME box object in george.js (a Codex-flagged 2026-07-26
@@ -62,7 +67,12 @@ const PIVOT_PART_IMAGES = {
 // ─── Baselines (captured before any edit — export emits diffs only) ─────────
 const deep = o => JSON.parse(JSON.stringify(o));
 const P0 = deep(P), TEX0 = deep(TEX), RIG0 = deep(RIG), POSES0 = deep(POSES);
-const CHAR0 = { george: deep(george.textures), thesz: deep(thesz.textures) };
+// Pristine baselines, so the export can diff against what is on disk. Built
+// from CHARS rather than a hardcoded pair: a character missing here silently
+// exports nothing, because every diff below compares against `CHAR0[id]`.
+const CHAR0 = Object.fromEntries(Object.entries(CHARS)
+    .filter(([, c]) => c.textures && Object.keys(c.textures).length)
+    .map(([id, c]) => [id, deep(c.textures)]));
 
 // ─── Per-character knob schema ───────────────────────────────────────────────
 // field: Skeleton instance field (read every frame → live).
@@ -272,7 +282,7 @@ function rebuildSkeleton() {
 const GROUND_Y = 470, CX = 480;
 
 function preload() {
-    for (const char of [george, thesz]) {
+    for (const char of [george, thesz, theszProcreateV1]) {
         for (const asset of enumerateCharacterAssets(char)) this.load.image(asset.key, `/${asset.file}`);
     }
 }
@@ -835,7 +845,12 @@ function exportText() {
     const rigDiff = scalarDiffs(RIG, RIG0, ['FAR_THIGH_TILT']);
     if (rigDiff.length) blocks.push(`// ── src/Skeleton.js — RIG ──\n${rigDiff.join('\n')}`);
 
-    for (const id of ['george', 'thesz']) {
+    // Every tunable character, not a hardcoded pair. thesz-procreate-v1 was
+    // added to CHARS and to preload() but not here, so its sockets, boxes and
+    // offsets all moved the live render and none of them reached the export --
+    // Derek, 2026-10-07: "when i do it in the tuner, it doesn't show up in the
+    // output".
+    for (const id of Object.keys(CHAR0)) {
         const cfg = CHARS[id].textures, base = CHAR0[id];
         const lines = [];
         for (const spec of CHAR_KNOBS) {

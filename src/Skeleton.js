@@ -469,6 +469,11 @@ export default class Skeleton {
         // + = down convention (george.js's front leg needed to come up a
         // touch without moving the far leg, 2026-07-12).
         this._nearLegOffsetY = textures.nearLegOffsetY ?? 0;
+        // Shin draws UNDER its own thigh instead of tying with it (a tie falls
+        // back to insertion order, which puts the shin on top). For art whose
+        // layers stack the thigh over the calf (Derek's Procreate Lou,
+        // 2026-10-08). Off by default, so existing characters are unchanged.
+        this._shinUnderThigh = !!textures.shinUnderThigh;
         // Near-thigh-only render-angle bias, radians, wrestler-local
         // (mirrored by facing at render time — tune while facing right,
         // e.g. "5 o'clock to 5:30" = +15deg clockwise; the tuned value
@@ -572,6 +577,16 @@ export default class Skeleton {
         // see the TEX comment above).
         this._thighH = textures.thighH ?? P.thighH;
         this._shinH  = textures.shinH  ?? P.shinH;
+        // Same per-character opt-in as thighH/shinH above, for the three bone
+        // lengths that were still global. A character's ART has its own limb
+        // proportions; binding it to shared constants scales each part
+        // independently onto a skeleton it was not drawn for, which reads as a
+        // specific kind of wrong -- Derek, on the first Procreate binding:
+        // "he looks like an orangutan", then "his torso is compressed, legs too
+        // long". Every existing character omits these and is byte-identical.
+        this._torsoH    = textures.torsoH    ?? P.torsoH;
+        this._upperArmH = textures.upperArmH ?? P.upperArmH;
+        this._forearmH  = textures.forearmH  ?? P.forearmH;
         this._parts = [
             this.farThigh, this.farShin, this.farBoot,
             this.farUpArm, this.farForearm,
@@ -683,6 +698,11 @@ export default class Skeleton {
         this.nearShin.setDepth(base + 0.003);
         this.nearBoot?.setDepth(base + 0.003);
         this.pelvisMask?.setDepth(base + 0.0035);
+        // Opt-in: each shin just under its own thigh (see _shinUnderThigh).
+        if (this._shinUnderThigh) {
+            this.farShin.setDepth(this.farThigh.depth - 0.00001);
+            this.nearShin.setDepth(this.nearThigh.depth - 0.00001);
+        }
         this.nearHand?.setDepth(base + 0.00399);
         this.nearForearm.setDepth(base + 0.004);
         this.nearUpArm.setDepth(base + 0.00401);
@@ -1058,7 +1078,12 @@ export default class Skeleton {
             // Mirroring originX alongside the flip keeps it locked to the
             // same art feature. Found live ("his head is off") after the
             // initial version of this fix shipped only x/rotation/flipX.
-            if (img.originX !== undefined) img.originX = 1 - img.originX;
+            // setOrigin, NOT `img.originX = ...`: in Phaser 4 a bare
+            // assignment leaves the cached _displayOriginX (what actually
+            // renders) stale, so this mirror silently did nothing and every
+            // off-center head drifted when facing left (Derek, 2026-10-08:
+            // Procreate Lou's head; shipped George was ~7px off too).
+            if (img.originX !== undefined) img.setOrigin(1 - img.originX, img.originY);
         };
         for (const img of [
             this.torso, this.pelvisUnderlay, this.pelvisOverlay, this.pelvisMask, this.head,
@@ -1139,10 +1164,10 @@ export default class Skeleton {
         const shinH     = this._shinH  * s;
         const bootH     = P.bootH     * s;
         const legW      = P.legW      * s;
-        const upperArmH = P.upperArmH * s;
-        const forearmH  = P.forearmH  * s;
+        const upperArmH = this._upperArmH * s;
+        const forearmH  = this._forearmH  * s;
         const armW      = P.armW      * s;
-        const torsoH    = P.torsoH    * s;
+        const torsoH    = this._torsoH    * s;
         const torsoW    = P.torsoW    * s;
         const trunksH   = P.trunksH   * s;
         const headR     = P.headR     * s;
@@ -1680,7 +1705,7 @@ export default class Skeleton {
             // See the constructor's _headOriginU comment: flipX never
             // touches origin, so an off-center headAnchorFrac origin must be
             // re-mirrored every time facing changes, not just once.
-            if (this._headOriginU !== undefined) this.head.originX = facing < 0 ? 1 - this._headOriginU : this._headOriginU;
+            if (this._headOriginU !== undefined) this.head.setOrigin(facing < 0 ? 1 - this._headOriginU : this._headOriginU, this.head.originY);
             // Record the ACTUAL anchor used to place the head (2026-07-25,
             // Codex review — "Record the actual anchorX/anchorY" — the
             // legacy shoulderX/neckY recorded here previously even when the
@@ -1821,8 +1846,8 @@ export default class Skeleton {
 
         const thighH = this._thighH * s, shinH = this._shinH * s, bootH = P.bootH * s;
         const legW   = P.legW   * s, armW  = P.armW  * s;
-        const upperArmH = P.upperArmH * s, forearmH = P.forearmH * s;
-        const torsoH = P.torsoH * s, torsoW = P.torsoW * s, trunksH = P.trunksH * s;
+        const upperArmH = this._upperArmH * s, forearmH = this._forearmH * s;
+        const torsoH = this._torsoH * s, torsoW = P.torsoW * s, trunksH = P.trunksH * s;
         const headR  = P.headR  * s;
 
         const hipX = x, hipY = y - g.hip * s;
@@ -1987,7 +2012,7 @@ export default class Skeleton {
             this.head.setPosition(anchorX, anchorY).setDisplaySize(headR * 2.0 * this._headScale, headDispH).setFlipX(facing < 0);
             // See the constructor's _headOriginU comment / the matching fix
             // in the upright branch above.
-            if (this._headOriginU !== undefined) this.head.originX = facing < 0 ? 1 - this._headOriginU : this._headOriginU;
+            if (this._headOriginU !== undefined) this.head.setOrigin(facing < 0 ? 1 - this._headOriginU : this._headOriginU, this.head.originY);
             // Record the ACTUAL anchor — see updateUpright's matching neck
             // comment. Debug bookkeeping only, no rendering change.
             this._recordJointAttachment('neck', this.head, anchorX, anchorY, 0);

@@ -109,6 +109,12 @@ export const POSES = {
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
     powerIdle:      { lLeg: -0.18, rLeg: 0.13,  lArm: 0.10,  rArm: 0.59, lean: 0.09, crouch: 0.22 }, // wide, imposing — arms hanging low (rig-tuner pass 2026-07-26, live export; supersedes the prior 2026-07-26 values — used by shipped george via idlePose: 'powerIdle', see Arena.js/george.js; formerly also shared across the now-vaulted george-ai-pilot v1-v9 lineage)
     theszIdle:      { lLeg: 0.04,  rLeg: 0.14,  lArm: 0.04,  rArm: 0.17, lean: 0.05, crouch: 0.05, lForearm: 0.8, lShin: -0.11, rShin: -0.06 }, // Derek rig-tuner export 2026-07-30. Arms low (lArm 0.04) so the corrected shoulder seam shows; lForearm bend + shin bends shape the rest stance.
+    // Derek rig-tuner export 2026-10-07, for the thesz-procreate-v1 comparison
+    // candidate ONLY. Identical to theszIdle except lLeg 0.04 -> -0.05, tuned
+    // against that candidate's own longer thigh. It is a SEPARATE entry because
+    // shipped Lou idles on theszIdle above: editing that in place would have
+    // restanced the shipped character to suit a candidate under review.
+    theszProcreateIdle: { lLeg: -0.05, rLeg: 0.14, lArm: 0.04, rArm: 0.17, lean: 0.05, crouch: 0.05, lForearm: 0.8, lShin: -0.11, rShin: -0.06 },
     tauntArmsWide:  { lLeg: 0.22,  rLeg:-0.20,  lArm: 2.20,  rArm: 2.00, lean:-0.16 }, // arms raised wide, chest out to the crowd
     ropeOneTaunt:   { lLeg: 0.08,  rLeg:-0.06,  lArm: 1.80,  rArm:-1.80  }, // one arm raised to crowd, other grips rope
     axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10, lean:-0.22 }, // arms overhead, back arched for the drop
@@ -2330,7 +2336,14 @@ export default class Wrestler {
 
     _clamp() {
         const margin = 20;
-        this.y = Math.max(RING.farLeft.y + margin, Math.min(RING.nearLeft.y - margin, this.y));
+        // Depth margin is tighter than the side margin so a body at the near
+        // or far wall stands AT that rope's plane. At 20px the near rope sat
+        // in front of him and the far rope behind, so the top rope crossed
+        // at the chest near the camera and at the nose at the back (Derek,
+        // 2026-10-08). Presses still reach full contact (press() saturates
+        // at 20px).
+        const marginY = 6;
+        this.y = Math.max(RING.farLeft.y + marginY, Math.min(RING.nearLeft.y - marginY, this.y));
         const b = ringBoundsAtY(this.y);
         this.x = Math.max(b.left + margin, Math.min(b.right - margin, this.x));
     }

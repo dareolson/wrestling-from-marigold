@@ -60,6 +60,29 @@ Verified against the live game by `npm run proof:staging`, not by inspection:
 that probe launches the same clip from seven different trigger distances and
 requires the authored tableau to converge identically.
 
+## Facing and draw order (2026-10-11)
+
+**Facing is per keyframe.** The Facing control edits the selected actor like a
+pose slider; **Capture** writes it onto the keyframe. It is stored relative to
+the attacker's facing at the clip's first frame (the same axis `transform.x`
+uses), so a turn authored facing right mirrors when the move runs facing left.
+It snaps on its keyframe and holds until the next keyframe that sets it — it
+never blends. At the first frame the control also sets the draft's start
+arrangement (`preview.facing`) — for the defender only. The attacker's start
+facing is the axis everything else resolves against, and it stays fixed while
+authoring: turning the attacker, even on the first frame, turns only him. A clip that authors no facing leaves facing to its
+executor, as every shipped clip does today.
+
+In the game, `Wrestler.move()` turns every wrestler toward the other each tick;
+the clip's facing is applied after that, so what is authored here is what
+renders. That is also why the shipped hammerlock's `other.facing = this.facing`
+only holds for one frame — measured 2026-10-11, the defender faces the attacker
+for the whole hold. Authoring the turn as keyframe facing fixes it.
+
+**Draw order follows ring depth**, as in the game: the actor nearer the camera
+(larger Actor Y) draws in front, so stepping one wrestler round behind the
+other reads correctly while posing. Ties draw the attacker in front.
+
 ## Production readiness
 
 `Sweep whole clip` samples every keyframe time, every span midpoint, and a

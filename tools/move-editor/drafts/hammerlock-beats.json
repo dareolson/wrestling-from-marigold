@@ -1,0 +1,304 @@
+{
+  "schema": "wfm.move-draft",
+  "version": 1,
+  "id": "hammerlock",
+  "duration": 2.4,
+  "posture": "upright",
+  "tracks": {
+    "attacker": {
+      "keyframes": [
+        {
+          "at": 0,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": 0.18,
+            "rLeg": -0.12,
+            "lArm": 1.57,
+            "rArm": 1.57,
+            "lean": 0.26,
+            "crouch": 0.18
+          },
+          "transform": {
+            "x": 0,
+            "y": 0
+          },
+          "parts": {
+            "workingHand": "base"
+          }
+        },
+        {
+          "at": 0.35,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": 0.1,
+            "rLeg": -0.12,
+            "lArm": -0.562,
+            "rArm": 0.42,
+            "lean": 0.18,
+            "crouch": 0.1,
+            "lElbow": 1.654,
+            "rElbow": 0.7,
+            "lKnee": 0.22,
+            "rKnee": 0.22
+          },
+          "transform": {
+            "x": 6,
+            "y": 0
+          },
+          "parts": {
+            "workingHand": "grip"
+          }
+        },
+        {
+          "at": 0.75,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": 0.1,
+            "rLeg": -0.12,
+            "lArm": -0.586,
+            "rArm": 0.74,
+            "lean": 0.22,
+            "crouch": 0.16,
+            "lElbow": 1.724,
+            "rElbow": 0.7,
+            "lKnee": 0.22,
+            "rKnee": 0.22
+          },
+          "transform": {
+            "x": 6,
+            "y": 0
+          },
+          "parts": {
+            "workingHand": "grip"
+          }
+        },
+        {
+          "at": 1.1,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": 0.1,
+            "rLeg": -0.12,
+            "lArm": -0.646,
+            "rArm": 0.68,
+            "lean": 0.3,
+            "crouch": 0.22,
+            "lElbow": 1.91,
+            "rElbow": 0.7,
+            "lKnee": 0.22,
+            "rKnee": 0.22
+          },
+          "transform": {
+            "x": 6,
+            "y": 0
+          },
+          "parts": {
+            "workingHand": "grip"
+          }
+        },
+        {
+          "at": 1.8,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": 0.1,
+            "rLeg": -0.12,
+            "lArm": -0.721,
+            "rArm": 0.568,
+            "lean": 0.12,
+            "crouch": 0.252,
+            "lElbow": 2.4,
+            "rElbow": 0.7,
+            "lKnee": 0.22,
+            "rKnee": 0.22
+          },
+          "transform": {
+            "x": 6,
+            "y": 0
+          },
+          "parts": {
+            "workingHand": "grip"
+          }
+        },
+        {
+          "at": 2.4,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": 0.1,
+            "rLeg": -0.12,
+            "lArm": -0.743,
+            "rArm": 0.46,
+            "lean": -0.06,
+            "crouch": 0.28,
+            "lElbow": 2.563,
+            "rElbow": 0.7,
+            "lKnee": 0.22,
+            "rKnee": 0.22
+          },
+          "transform": {
+            "x": 6,
+            "y": 0
+          },
+          "parts": {
+            "workingHand": "base"
+          }
+        }
+      ]
+    },
+    "defender": {
+      "keyframes": [
+        {
+          "at": 0,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": 0.18,
+            "rLeg": -0.12,
+            "lArm": 1.57,
+            "rArm": 1.57,
+            "lean": 0.26,
+            "crouch": 0.18
+          },
+          "transform": {
+            "x": 100,
+            "y": 0
+          },
+          "parts": {}
+        },
+        {
+          "at": 0.35,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": -0.005,
+            "rLeg": 0.008,
+            "lArm": -0.958,
+            "rArm": 1.094,
+            "lean": -0.024,
+            "crouch": 0.194,
+            "lElbow": 1.937,
+            "rElbow": 0.7,
+            "lKnee": 0.22,
+            "rKnee": 0.22
+          },
+          "transform": {
+            "x": 30,
+            "y": 0
+          },
+          "parts": {}
+        },
+        {
+          "at": 0.75,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": -0.005,
+            "rLeg": 0.008,
+            "lArm": -0.987,
+            "rArm": 0.9,
+            "lean": -0.14,
+            "crouch": 0.2,
+            "lElbow": 1.993,
+            "rElbow": 0.7,
+            "lKnee": 0.22,
+            "rKnee": 0.22
+          },
+          "transform": {
+            "x": 30,
+            "y": 0
+          },
+          "parts": {}
+        },
+        {
+          "at": 1.1,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": -0.005,
+            "rLeg": 0.008,
+            "lArm": -1.069,
+            "rArm": 0.9,
+            "lean": -0.14,
+            "crouch": 0.2,
+            "lElbow": 2.151,
+            "rElbow": 0.7,
+            "lKnee": 0.22,
+            "rKnee": 0.22
+          },
+          "transform": {
+            "x": 30,
+            "y": 0
+          },
+          "parts": {}
+        },
+        {
+          "at": 1.8,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": -0.005,
+            "rLeg": 0.008,
+            "lArm": -1.327,
+            "rArm": 0.9,
+            "lean": -0.14,
+            "crouch": 0.2,
+            "lElbow": 2.619,
+            "rElbow": 0.7,
+            "lKnee": 0.22,
+            "rKnee": 0.22
+          },
+          "transform": {
+            "x": 30,
+            "y": 0
+          },
+          "parts": {}
+        },
+        {
+          "at": 2.4,
+          "ease": "easeInOut",
+          "pose": {
+            "lLeg": -0.005,
+            "rLeg": 0.008,
+            "lArm": -1.505,
+            "rArm": 0.9,
+            "lean": -0.14,
+            "crouch": 0.2,
+            "lElbow": 2.75,
+            "rElbow": 0.7,
+            "lKnee": 0.22,
+            "rKnee": 0.22
+          },
+          "transform": {
+            "x": 30,
+            "y": 0
+          },
+          "parts": {}
+        }
+      ]
+    }
+  },
+  "events": [
+    {
+      "at": 0.35,
+      "type": "acquire-contact"
+    },
+    {
+      "at": 1.1,
+      "type": "apply-drain"
+    },
+    {
+      "at": 2.4,
+      "type": "release-contact"
+    }
+  ],
+  "contacts": [
+    {
+      "from": 0.35,
+      "to": 2.4,
+      "role": "attacker",
+      "source": "nearWrist",
+      "target": "nearWrist",
+      "required": true
+    }
+  ],
+  "rejectedContacts": [],
+  "preview": {
+    "facing": {
+      "attacker": 1,
+      "defender": 1
+    }
+  }
+}

@@ -384,6 +384,7 @@ export function insertKeyframe(draft, role, at, state) {
         transform: clone(state.transform ?? {}),
         parts: clone(state.parts ?? {}),
     };
+    if (state.facing === 1 || state.facing === -1) frame.facing = state.facing;
     if (existing >= 0) track.keyframes[existing] = frame;
     else track.keyframes.push(frame);
     track.keyframes.sort((a, b) => a.at - b.at);

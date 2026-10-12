@@ -1,6 +1,7 @@
 import Skeleton from '/src/Skeleton.js';
 import { george } from '/src/characters/george.js';
 import { thesz } from '/src/characters/thesz.js';
+import { theszProcreateV1 } from '/src/characters/thesz_procreate_v1.js';
 import { enumerateCharacterAssets, RENDER_PART_SLOTS, SEMANTIC_PART_SLOTS, resolveSemanticSlots } from '/src/rig/partVariants.js';
 import { createReferenceRigSkeleton, REFERENCE_RIG_ID } from '/src/rig/referenceRigRuntime.js';
 import { certifyPose, classifyFinding, measureSample } from '/src/rig/certification.js';
@@ -12,7 +13,7 @@ import {
 } from './model.js';
 import { pickAnchorRole } from '/src/animation/clipStaging.js';
 
-const CHARACTERS = { george, thesz };
+const CHARACTERS = { george, thesz, 'thesz-procreate-v1': theszProcreateV1 };
 
 // ONE shared tableau origin for every role — the editor's copy of the runtime's
 // staging frame (src/animation/clipStaging.js). It used to be a base position
@@ -28,7 +29,11 @@ const SCALE = 1.22;
 // The role whose facing defines the staging axis, chosen by the SAME rule the
 // runtime uses so a tableau mirrors here exactly as it does in the ring.
 const ANCHOR_ROLE = pickAnchorRole(ROLES);
-const stagingFacing = () => (actors[ANCHOR_ROLE]?.facing ?? 1) >= 0 ? 1 : -1;
+// It is the anchor's facing at clip START (the draft's preview facing), not its
+// live facing: once a keyframe can turn the attacker mid-move, reading the live
+// value would flip the whole tableau's axis at that keyframe, which the runtime
+// never does (it captures the axis once, at play()).
+const stagingFacing = () => (draft?.preview?.facing?.[ANCHOR_ROLE] ?? actors[ANCHOR_ROLE]?.facing ?? 1) >= 0 ? 1 : -1;
 
 // Screen delta → authored rig units, along the staging axis. Every gesture that
 // moves an actor goes through this, so none of them can quietly author a
@@ -67,9 +72,9 @@ const actors = {
 
 const POSE_UI = {
     lArm:   { label: 'Near shoulder', min: -3.1, max: 3.1, step: 0.01 },
-    lElbow: { label: 'Near elbow', min: -0.12, max: 2.75, step: 0.01 },
+    lElbow: { label: 'Near elbow', min: -3.0, max: 2.75, step: 0.01 }, // negative folds it behind (arm up the back)
     rArm:   { label: 'Far shoulder', min: -3.1, max: 3.1, step: 0.01 },
-    rElbow: { label: 'Far elbow', min: -0.12, max: 2.75, step: 0.01 },
+    rElbow: { label: 'Far elbow', min: -3.0, max: 2.75, step: 0.01 }, // negative folds it behind (arm up the back)
     lLeg:   { label: 'Near hip', min: -2.8, max: 2.8, step: 0.01 },
     lKnee:  { label: 'Near knee', min: -0.1, max: 2.55, step: 0.01 },
     rLeg:   { label: 'Far hip', min: -2.8, max: 2.8, step: 0.01 },
@@ -92,9 +97,13 @@ function actorRoot(role) {
     };
 }
 
+// The pose-channel side ('l' | 'r') that drives a visual limb. Asked of the
+// skeleton (Skeleton.lChannelSide) because it depends on the render path, not
+// on facing alone: Procreate Lou and the reference rig keep l on the near limbs
+// facing left, so a facing-only rule solved one arm while measuring the other.
+const lSideOf = actor => actor.skeleton?.lChannelSide?.(actor.facing) ?? (actor.facing >= 0 ? 'near' : 'far');
 function anatomicalSide(actor, visualSide) {
-    if (visualSide === 'near') return actor.facing >= 0 ? 'l' : 'r';
-    return actor.facing >= 0 ? 'r' : 'l';
+    return visualSide === lSideOf(actor) ? 'l' : 'r';
 }
 
 function renderActor(role) {
@@ -106,17 +115,32 @@ function renderActor(role) {
     // table Wrestler.applyAnimationSample uses, so the art an author sees here
     // is the art the game puts on screen — including facing left, where the
     // role-bearing limb is the far one.
-    actor.skeleton.setPartVariants(resolveSemanticSlots(actor.parts, actor.facing));
+    actor.skeleton.setPartVariants(resolveSemanticSlots(actor.parts, actor.facing, actor.skeleton._textureConfig, lSideOf(actor)));
     actor.skeleton.updateUpright(root.x, root.y, SCALE, actor.facing, actor.pose, 0, 0, actor.facing * (actor.pose.lean ?? 0), 0, 0.5, 0);
+    // Draw order follows ring depth, as in the game: whoever stands nearer the
+    // camera (larger transform.y) draws in front. A fixed attacker-on-top order
+    // made an actor stepping round BEHIND the other still cover him. Ties go to
+    // the attacker, matching the previous fixed order.
+    actor.skeleton.setDepth?.(15 + (actor.transform.y ?? 0) * 0.03 + (role === 'attacker' ? 0.01 : 0));
+}
+
+// Put one sampled track state on an actor. Every path that previews a sampled
+// frame (playhead, onion skins, contact and certification sweeps) goes through
+// here, so they all agree on facing: an authored keyframe facing resolves
+// against the staging axis exactly as Wrestler.applyAnimationSample does; with
+// none authored yet, the actor keeps the draft's start facing.
+function applySampledState(role, state) {
+    const actor = actors[role];
+    actor.pose = { ...basePose(), ...state.pose };
+    actor.transform = { x: 0, y: 0, ...state.transform };
+    actor.parts = { ...state.parts };
+    actor.facing = state.facing !== undefined ? stagingFacing() * state.facing : (draft.preview?.facing?.[role] ?? actor.facing);
 }
 
 function loadSample(at = playhead) {
     const sampled = sampleDraft(draft, at);
     for (const role of ROLES) {
-        const state = sampled.tracks[role];
-        actors[role].pose = { ...basePose(), ...state.pose };
-        actors[role].transform = { x: 0, y: 0, ...state.transform };
-        actors[role].parts = { ...state.parts };
+        applySampledState(role, sampled.tracks[role]);
     }
     syncControls();
     refreshOnionSkins();
@@ -279,7 +303,9 @@ function buildVariantControls() {
         ...Object.keys(SEMANTIC_PART_SLOTS).map(slot => ({
             slot,
             label: `${slot} (role)`,
-            family: SEMANTIC_PART_SLOTS[slot][actor.facing >= 0 ? 'near' : 'far'],
+            // Resolved exactly as the runtime resolves it, including a
+            // hand-in-forearm character's workingHand -> forearm.
+            family: Object.keys(resolveSemanticSlots({ [slot]: 'x' }, actor.facing, character?.textures, lSideOf(actor)))[0],
         })),
         ...RENDER_PART_SLOTS.map(slot => ({ slot, label: slot, family: slot })),
     ];
@@ -303,7 +329,19 @@ function buildVariantControls() {
 }
 
 function capture() {
-    return mutate('capture', captureNow);
+    const result = mutate('capture', captureNow);
+    // Confirm where the author is looking: the Status panel is below the fold.
+    const button = $('captureTopBtn');
+    if (button) {
+        clearTimeout(capture._flash);
+        button.textContent = `✓ Captured ${selectedRole} at ${playhead.toFixed(2)}s`;
+        button.classList.add('active');
+        capture._flash = setTimeout(() => {
+            button.textContent = '● Capture keyframe (K)';
+            button.classList.remove('active');
+        }, 1400);
+    }
+    return result;
 }
 
 function captureNow() {
@@ -313,6 +351,9 @@ function captureNow() {
         pose: Object.fromEntries(POSE_CHANNELS.map(channel => [channel, round(actor.pose[channel] ?? 0)])),
         transform: { x: round(actor.transform.x ?? 0), y: round(actor.transform.y ?? 0) },
         parts: actor.parts,
+        // Relative to the staging axis, the same frame transform.x uses, so the
+        // turn mirrors with the tableau when the move runs facing left.
+        facing: actor.facing * stagingFacing(),
     });
     let contactNote = '';
     if (pendingContact && pendingContact.role === selectedRole) {
@@ -363,12 +404,9 @@ let onionSkins = { previous: null, next: null };
 // sweep uses to measure a contact at a time the author is not looking at.
 function jointsAtKeyframe(role, frame) {
     const actor = actors[role];
-    const saved = { pose: { ...actor.pose }, transform: { ...actor.transform }, parts: { ...actor.parts } };
+    const saved = { pose: { ...actor.pose }, transform: { ...actor.transform }, parts: { ...actor.parts }, facing: actor.facing };
     try {
-        const sampled = sampleDraft(draft, frame.at).tracks[role];
-        actor.pose = { ...basePose(), ...sampled.pose };
-        actor.transform = { x: 0, y: 0, ...sampled.transform };
-        actor.parts = { ...sampled.parts };
+        applySampledState(role, sampleDraft(draft, frame.at).tracks[role]);
         renderActor(role);
         return clone(actor.skeleton.jointAttachmentPoints ?? {});
     } finally {
@@ -424,14 +462,12 @@ function measureContactGapAt(at, contact, source = draft) {
         pose: { ...actors[role].pose },
         transform: { ...actors[role].transform },
         parts: { ...actors[role].parts },
+        facing: actors[role].facing,
     }]));
     try {
         const sampled = sampleDraft(source, at);
         for (const role of ROLES) {
-            const state = sampled.tracks[role];
-            actors[role].pose = { ...basePose(), ...state.pose };
-            actors[role].transform = { x: 0, y: 0, ...state.transform };
-            actors[role].parts = { ...state.parts };
+            applySampledState(role, sampled.tracks[role]);
             renderActor(role);
         }
         const from = actors[contact.role].skeleton?.jointAttachmentPoints?.[contact.source];
@@ -459,13 +495,12 @@ function certifyAt(at) {
         pose: { ...actors[role].pose },
         transform: { ...actors[role].transform },
         parts: { ...actors[role].parts },
+        facing: actors[role].facing,
     }]));
     try {
         const sampled = sampleDraft(draft, at);
         for (const role of ROLES) {
-            actors[role].pose = { ...basePose(), ...sampled.tracks[role].pose };
-            actors[role].transform = { x: 0, y: 0, ...sampled.tracks[role].transform };
-            actors[role].parts = { ...sampled.tracks[role].parts };
+            applySampledState(role, sampled.tracks[role]);
             renderActor(role);
             for (const finding of certifyPose(certificationSample(actors[role].skeleton))) {
                 const variants = Object.entries(actors[role].parts).map(([slot, name]) => `${slot}=${name}`).join(' ');
@@ -1025,6 +1060,13 @@ function resolveRecovery(action) {
 // create new moves and never revisit one.
 const DRAFT_LIBRARY = [
     { id: 'hammerlock', label: 'hammerlock (paired hold)', file: './drafts/hammerlock.json' },
+    // Six hand-posed beats (tie-up, catch, turn, fold, crank, release) over
+    // 2.4s, seeded from the shipped clip's poses for Derek to pose by hand.
+    { id: 'hammerlock-beats', label: 'hammerlock — 6 beats (to pose)', file: './drafts/hammerlock-beats.json' },
+    // Derek's own hammerlock in progress: his keys to 0.3s plus the audition
+    // hold (arm up the back, pain face, free-arm flail). Generates
+    // src/animation/clips/hammerlockWip.js, played in game with ?hammerlock=wip.
+    { id: 'hammerlock-derek-wip', label: 'hammerlock — Derek WIP', file: './drafts/hammerlock-derek-wip.json' },
 ];
 
 // Adopt a loaded draft as the editing session. Shared by the library, the file
@@ -1090,8 +1132,20 @@ function installUI() {
     $('facing').addEventListener('change', event => {
         mutate('facing', () => {
         actors[selectedRole].facing = Number(event.target.value);
-        // Persisted on the draft so the arrangement survives save/reload.
-        draft.preview.facing[selectedRole] = actors[selectedRole].facing;
+        // Like a pose slider this edits the live actor; Capture writes it onto
+        // the keyframe. At the clip's first frame it is also the defender's
+        // START arrangement, persisted on the draft so it survives save/reload.
+        //
+        // Never the attacker's: his start facing IS the staging axis, so writing
+        // it mirrored the whole tableau -- turning Lou on frame 0 threw George
+        // across the stage (Derek, 2026-10-11). The axis stays fixed while
+        // authoring; turning the attacker is just his own keyframe facing. (A
+        // move run facing left in the ring is the runtime mirroring all of it.)
+        if (playhead === 0 && selectedRole !== ANCHOR_ROLE) {
+            draft.preview ??= { facing: {} };
+            draft.preview.facing ??= {};
+            draft.preview.facing[selectedRole] = actors[selectedRole].facing;
+        }
         buildVariantControls(); // semantic slots resolve to the other side now
         });
     });
@@ -1117,6 +1171,9 @@ function installUI() {
     $('playBtn').addEventListener('click', () => { playing = !playing; lastTick = performance.now(); $('playBtn').textContent = playing ? '❚❚' : '▶'; });
     $('stopBtn').addEventListener('click', () => { playing = false; $('playBtn').textContent = '▶'; setPlayhead(0); });
     $('captureBtn').addEventListener('click', capture);
+    // Same action, always visible: the panel button sits below the pose and
+    // contact sections and is off-screen while posing (Derek, 2026-10-11).
+    $('captureTopBtn').addEventListener('click', capture);
     $('duplicateBtn').addEventListener('click', () => { setPlayhead(Math.min(draft.duration, playhead + 0.1), { sample: false }); capture(); });
     $('deleteBtn').addEventListener('click', () => {
         mutate('delete keyframe', () => {
@@ -1155,6 +1212,14 @@ function installUI() {
     // move name cannot be swallowed by the history.
     window.addEventListener('keydown', event => {
         const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? '');
+        // K captures. A focused range slider is not "typing" -- after dragging
+        // one, focus stays on it, and K must still capture the pose just set.
+        const onSlider = document.activeElement?.type === 'range';
+        if ((!typing || onSlider) && !event.metaKey && !event.ctrlKey && event.key.toLowerCase() === 'k') {
+            event.preventDefault();
+            capture();
+            return;
+        }
         if (typing || !(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'z' && event.key.toLowerCase() !== 'y') return;
         event.preventDefault();
         const wantsRedo = event.key.toLowerCase() === 'y' || event.shiftKey;
@@ -1230,7 +1295,7 @@ class EditorScene extends Phaser.Scene {
     constructor() { super('MoveEditor'); }
     preload() {
         const seen = new Set();
-        for (const character of [george, thesz]) {
+        for (const character of [george, thesz, theszProcreateV1]) {
             for (const asset of enumerateCharacterAssets(character)) {
                 if (!seen.has(asset.key)) this.load.image(asset.key, `/${asset.file}`);
                 seen.add(asset.key);

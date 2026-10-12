@@ -60,6 +60,7 @@
     <label>Move <input id="moveId" value="untitled_move" size="18" /></label>
     <label>Duration <input id="duration" type="number" value="1.2" min="0.05" step="0.05" style="width:70px" />s</label>
     <select id="draftLibrary" title="Open a draft committed beside its clip"></select>
+    <button id="captureTopBtn" title="Save the selected role's current pose as a keyframe at the playhead (K)">● Capture keyframe (K)</button>
     <button id="undoBtn" title="Undo (⌘Z / Ctrl+Z)">↶</button>
     <button id="redoBtn" title="Redo (⇧⌘Z / Ctrl+Y)">↷</button>
     <button id="importBtn">Import</button>
@@ -69,7 +70,7 @@
   <aside id="sidebar">
     <section><h2>Selection</h2><div class="body">
       <div class="row wide"><label>Role</label><select id="role"><option>attacker</option><option>defender</option></select></div>
-      <div class="row wide"><label>Character</label><select id="character"><option value="refrig">Reference rig</option><option value="george">George (legacy)</option><option value="thesz">Lou Thesz (legacy)</option></select></div>
+      <div class="row wide"><label>Character</label><select id="character"><option value="refrig">Reference rig</option><option value="george">George (legacy)</option><option value="thesz">Lou Thesz (legacy)</option><option value="thesz-procreate-v1">Lou (Procreate)</option></select></div>
       <div class="row wide"><label>Facing</label><select id="facing"><option value="1">Right</option><option value="-1">Left</option></select></div>
       <div class="row wide"><label>Key easing</label><select id="ease"><option>linear</option><option>easeIn</option><option>easeOut</option><option>easeInOut</option><option>step</option></select></div>
       <div class="row wide"><label>Onion skin</label><label class="hint"><input id="onionSkin" type="checkbox" checked /> adjacent keyframes of the selected actor (previous blue, next amber)</label></div>

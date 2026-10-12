@@ -23,7 +23,7 @@ Arena remains scene index zero for the existing debugging tools. `?arena=1`
 launches it directly; character, time-scale, and lighting query parameters also
 retain direct arena behavior. The shared debug harness adds `arena=1`.
 
-Art: `src/assets/story/marigold-title-clean-v1.png`, a clean plate derived from
+Art: `src/assets/story/marigold-title-clean-v1.jpg` (full-resolution PNG master in `Sprite sheets/Story/marigold-title/source-masters/`), a clean plate derived from
 v3; v1–v3 are preserved locally in `Sprite sheets/Story/marigold-title/` with prompts in `research/marigold-title-art/`. V3 used the user's historical nighttime photograph
 as architectural reference and the modern church photograph as secondary
 context. The reference date/elevation remains unverified, and the added marquee

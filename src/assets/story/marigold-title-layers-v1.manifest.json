@@ -4,7 +4,7 @@
   "historicalLimits": "Exact photo date/elevation unverified; marquee is artistic interpretation. Historical venue names attest Gardens plural and Marigold Arena; combined sign copy not documented.",
   "assets": [
     {
-      "asset": "marigold-title-clean-v1.png",
+      "asset": "marigold-title-clean-v1.jpg",
       "role": "Registered background; all exterior cars and people removed",
       "prompt": "Edit this exact supplied Marigold Gardens Arena illustration into a CLEAN BACKGROUND PLATE for a layered animated game title screen. Preserve exact composition, dimensions, perspective, architecture, gable, arched window, streetlamps, sky, marquee geometry and exact lettering MARIGOLD GARDENS ARENA / TONIGHT: / WRESTLING FROM MARIGOLD, colors and hand-inked style. Remove ALL people on exterior sidewalk and ALL cars from foreground and street including partial cars at both edges. Repaint occluded sidewalk, curb, lower building brickwork, entrance doors and dry street seamlessly. Keep warm illuminated entrance glass; distant indistinct indoor silhouettes may stay. No exterior people or cars remaining. Do not redesign building or move anything. This is an empty registered scene to which separate period car and patron sprites will be added. Do not add new objects. Preserve full original image framing and 16:10 aspect ratio."
     },

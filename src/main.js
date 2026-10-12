@@ -1,4 +1,9 @@
 import Arena from './scenes/Arena.js';
+import FrontDoor from './scenes/FrontDoor.js';
+
+// Keep the arena first for existing rig/debug tools that inspect scenes[0].
+const params = new URLSearchParams(location.search);
+const directArena = ['arena', 'p1', 'p2', 'ts', 'lighting'].some(key => params.has(key));
 
 window.__WFM_GAME = new Phaser.Game({
     type: Phaser.AUTO,
@@ -12,5 +17,13 @@ window.__WFM_GAME = new Phaser.Game({
     input: {
         gamepad: true,
     },
-    scene: [Arena],
+    scene: [Arena, FrontDoor],
+    callbacks: {
+        postBoot(game) {
+            if (!directArena) {
+                game.scene.stop('Arena');
+                game.scene.start('FrontDoor');
+            }
+        },
+    },
 });

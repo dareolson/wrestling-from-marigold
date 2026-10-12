@@ -50,6 +50,9 @@ export async function launch() {
     }
     if (process.env.WFM_QS) url += `${url.includes('?') ? '&' : '?'}${process.env.WFM_QS}`;
 
+    // Debug tools operate on matches; normal launches now open the title screen.
+    url += `${url.includes('?') ? '&' : '?'}arena=1`;
+
     const browser = await chromium.launch({
         channel: 'chrome',
         headless: !process.env.HEADED,

@@ -1,0 +1,10 @@
+{
+  "sourcePrompt": "Use case: illustration-story. Asset: title-screen background for Wrestling from Marigold, landscape 16:10. Chicago summer night, 1952. A modest brick wrestling hall seen nearly straight-on from across the street, its large glowing incandescent cream-and-amber marquee centered in the upper half. Weathered wine-red metal sign frame, empty dark wine-red rectangular sign face at approximately x=20%-80%, y=20%-43% with three generous horizontal spaces for editable game lettering. No lettering or pseudo-text anywhere: game will overlay MARIGOLD ARENA / TONIGHT / WRESTLING FROM MARIGOLD. Warm light spills from glass entrance doors below; a few small period patrons in shirtsleeves near the entrance, parked early-1950s car at edge, dark dry sidewalk and blue-black Chicago brick streetscape. The lower 35% is quiet dark street with space for menu UI. Hand-inked period sports illustration, confident contours, restrained flat painted shading, mild paper texture, slate and charcoal shadows with readable detail, tobacco browns and warm amber bulbs, no photorealism, no modern neon, no rain, no lens flare, no vignette. Building fills image, welcoming light but tough workmanlike architecture. Strong cinematic composition, detailed finished background artwork, no UI.",
+  "editPrompt": "Preserve composition; replace modern skyscrapers with low 1950s brick buildings and make street dry.",
+  "tool": "built-in image_gen",
+  "status": "donor",
+  "sceneId": "intro_00_title",
+  "asset": "Sprite sheets/Story/marigold-title/marigold-title-v1.png",
+  "runtimeMove": "4% arrival push; subtle sign alpha variation",
+  "text": "Editable Phaser overlays"
+}

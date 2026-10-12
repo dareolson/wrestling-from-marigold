@@ -1,0 +1,11 @@
+{
+  "sourcePrompt": "Edit the supplied title-screen illustration into a revised romantic but grounded 1952 Chicago neighborhood wrestling arena exterior. Reference is STYLE AND GAME COMPOSITION ONLY, not documented historic architecture. Subject is Marigold Arena at 817 West Grace, formerly part of a German beer-garden and dance-hall complex. This is an explicitly interpretive reconstruction because no period exterior photograph has been verified. Remove extravagant movie-palace star crest, arched crown, ornate gold scrollwork and decorative theater pilasters. Replace with a plain modest rectangular projecting wine-red metal marquee with simple warm incandescent bulb edging and three blank horizontal lettering spaces, positioned at same approximate image coordinates as reference (20-80% image width, 20-43% image height) for editable game text. Plain weathered older Chicago brick hall, upper rectangular windows, modest wood-and-glass entrance, small posted wrestling picture bills with no text, utility wires and simple utilitarian street lamp. Strong sense of an old dance hall repurposed for boxing and wrestling. Make it feel specifically Chicago in summer 1952: several small patrons in high-waisted trousers and rolled shirtsleeves and modest summer dresses, one parked late-1940s sedan at right, humble dense low-rise brick surroundings. Dry street, humid blue-black dusk, smoky amber doorway warmth, human anticipation. Romantic sports illustration with confident hand-inked contours, restrained flat painted shading and mild paper grain. Retain landscape 16:10 composition and dark quiet lower 30% for game menu. No modern skyscrapers, rain, wet asphalt, neon palette, modern vehicles or clothing. No text or pseudo-lettering anywhere; lettering added in game. Do not include UI. Finished beautiful atmospheric painting.",
+  "tool": "built-in image_gen",
+  "status": "interpretive donor; period exterior photograph not verified",
+  "sceneId": "intro_00_title",
+  "asset": "Sprite sheets/Story/marigold-title/marigold-title-v2.png",
+  "referenceImage": "Sprite sheets/Story/marigold-title/marigold-title-v1.png (style and composition only)",
+  "research": "research/marigold-title-reference.md",
+  "text": "Editable Phaser overlays",
+  "date": "2026-10-11"
+}

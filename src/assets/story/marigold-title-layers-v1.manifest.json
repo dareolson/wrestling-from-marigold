@@ -1,0 +1,29 @@
+{
+  "tool": "built-in image_gen",
+  "reference": "Sprite sheets/Story/marigold-title/marigold-title-v3.png (local, untracked), informed by user-supplied historical facade photograph",
+  "historicalLimits": "Exact photo date/elevation unverified; marquee is artistic interpretation. Historical venue names attest Gardens plural and Marigold Arena; combined sign copy not documented.",
+  "assets": [
+    {
+      "asset": "marigold-title-clean-v1.png",
+      "role": "Registered background; all exterior cars and people removed",
+      "prompt": "Edit this exact supplied Marigold Gardens Arena illustration into a CLEAN BACKGROUND PLATE for a layered animated game title screen. Preserve exact composition, dimensions, perspective, architecture, gable, arched window, streetlamps, sky, marquee geometry and exact lettering MARIGOLD GARDENS ARENA / TONIGHT: / WRESTLING FROM MARIGOLD, colors and hand-inked style. Remove ALL people on exterior sidewalk and ALL cars from foreground and street including partial cars at both edges. Repaint occluded sidewalk, curb, lower building brickwork, entrance doors and dry street seamlessly. Keep warm illuminated entrance glass; distant indistinct indoor silhouettes may stay. No exterior people or cars remaining. Do not redesign building or move anything. This is an empty registered scene to which separate period car and patron sprites will be added. Do not add new objects. Preserve full original image framing and 16:10 aspect ratio."
+    },
+    {
+      "asset": "marigold-sedan-v1.png",
+      "role": "Transparent sedan shared by parked and passing actors; hubcaps cut in runtime",
+      "prompt": "Generate a single isolated period 1950 American four-door sedan sprite for a 1952 Chicago game title scene, facing right in near-perfect side profile, whole car visible with margin, no clipped bumpers. Dark tobacco burgundy paint, rounded late-1940s body, chrome bumpers, modest chrome hubcaps, black rubber tires; authentic early-1950s automobile without modern features. Hand-inked sports-story illustration with confident dark contour lines and restrained flat painted shading matching supplied Marigold arena painting, warm amber highlights from nearby marquee and muted slate night fill. Two clearly circular wheels with plain small hubcaps, at same horizontal ground baseline. Isolate just the car with natural dark contact shadow immediately below tires, transparent background, no street no people no text no logos. Wide landscape output with car filling width and enough transparent margin. This asset will move laterally in game."
+    },
+    {
+      "asset": "marigold-patron-walk-v1.png",
+      "role": "Transparent four-frame row; generated walk donor needs artist polish",
+      "prompt": "Create a transparent horizontal 4-frame walk cycle sprite sheet for one small background patron entering a 1952 Chicago wrestling arena. Exactly FOUR equal-width cells in ONE horizontal row, no gaps between cells, with one full-length SAME man centered in each cell at same size and foot baseline. Every cell has generous transparent padding so limbs stay within cell. Man faces RIGHT, slight rear three-quarter view, charcoal high-waisted trousers, brown shoes, muted blue-gray summer work shirt with rolled sleeves, short brown hair, no hat no bag. Four distinct sequential walking poses: right foot forward, passing pose, left foot forward, passing pose. Hands naturally counter-swing. Calm ordinary walk, anatomically correct knees and ankles, same face body clothes every frame. No ground or shadow or text or labels or grid lines. Hand-inked mid-century sports illustration with restrained flat painted shading, dark contour, warm amber edge light matching supplied arena reference, readable at 55 pixels tall. Background fully transparent. Whole body including shoes fits inside each of four cells. Landscape aspect ratio about 4:1. This is one coherent animation sheet, not four different characters."
+    },
+    {
+      "asset": "marigold-waiting-patrons-v1.png",
+      "role": "Transparent waiting group; two scaled placements",
+      "prompt": "Generate ONE isolated small group of three ordinary patrons waiting outside a wrestling arena in Chicago summer 1952, transparent background. Whole figures shoes visible, standing still in relaxed conversation: two men in high-waisted charcoal and tobacco-brown trousers, pale work shirts rolled sleeves and one modest felt hat; one woman in muted burgundy knee-length summer dress with period hairstyle. Turned partly toward one another and partly toward entrance at right, calm natural poses no theatrical gestures. No ground, no text no props no architecture. Hand-inked mid-century sports illustration and restrained flat painted shading matching supplied Marigold illustration, warm amber marquee illumination and subdued blue night fill, dark confident contour. Figures form a compact overlapping group with generous transparent margin, same ground baseline, readable at 65 pixels tall. No modern clothes. True transparent alpha background."
+    }
+  ],
+  "runtime": "src/scenes/TitleStreet.js; 960×600 authored coordinates; all layers share camera push",
+  "status": "Working animated opening prototype; generated donor art, pending artist review"
+}

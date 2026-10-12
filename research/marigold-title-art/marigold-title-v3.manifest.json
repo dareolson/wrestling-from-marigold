@@ -1,0 +1,20 @@
+{
+  "sourcePrompt": "Create a finished illustrated opening title-screen background, landscape 16:10, 1952 Chicago summer night. Use the TWO USER-SUPPLIED BUILDING PHOTOGRAPHS as reference images: modern church image establishes surviving long low hall only; historical nighttime photograph is PRIMARY ARCHITECTURAL AUTHORITY. Faithfully retain historical photo's long low facade receding to the right, steep triangular gable on left above distinctive tall arched multipane window, roof shape and repeated rectangular window rhythm. Do not copy modern church cross, siding, blocked windows, modern high rise or cars. Reconstruct the old hall in 1952 with restrained romantic warmth, period late-1940s/early-1950s cars, patrons in shirtsleeves, high-waisted trousers and modest summer dresses, dry street, humid summer dusk. View from across street in three-quarter perspective like historical photo. Add an explicitly artistic period marquee at the historical entrance canopy position toward center-right: modest projecting rectangular incandescent-bulb-edged sign, luminous warm ivory/cream sign face, readable dark condensed block lettering EXACTLY three lines: 'MARIGOLD GARDENS ARENA' / 'TONIGHT:' / 'WRESTLING FROM MARIGOLD'. Spell all words exactly, Gardens plural. Sign face itself brightly lit and glowing, bulbs distinct. Size marquee generously enough for title legibility but preserve gabled historical building identity; no enormous fantasy theater palace, no star crest, no ornate gold decoration. Lower 30% quiet dark dry street reserved for later menu overlay; no menu or UI in artwork. Hand-inked historical sports illustration, confident tapered contours, restrained painted shading, mild paper grain, warm amber entrance and sign against slate-blue and tobacco-brown brick night. Warm human life, welcoming show in old working Chicago hall. No rain, neon palette, skyscrapers, modern objects or church signs. Historical photo's cars may be older: replace them with 1952-appropriate cars. Main requirement: recognizable historical architecture and light cream glowing marquee with specified accurate lettering.",
+  "tool": "built-in image_gen",
+  "asset": "Sprite sheets/Story/marigold-title/marigold-title-v3.png",
+  "references": "Two user-supplied photographs: historical nighttime facade primary; modern church secondary. Historical photograph date and elevation unverified.",
+  "status": "Historical-photo-informed donor; marquee is artistic addition",
+  "lettering": [
+    "MARIGOLD GARDENS ARENA",
+    "TONIGHT:",
+    "WRESTLING FROM MARIGOLD"
+  ],
+  "nameCheck": {
+    "finding": "Gardens plural; sources attest Marigold Gardens and Marigold Arena separately. Combined wording is descriptive, not verified exact historical sign copy.",
+    "sources": [
+      "https://www.legacyofwrestling.com/Chicago52.html",
+      "https://archivesspace.library.nd.edu/repositories/3/archival_objects/865472"
+    ]
+  },
+  "animation": "Single registered bulb mask briefly flickers every 6.5–13 seconds; shares arrival camera transform."
+}

@@ -26,63 +26,36 @@ try {
         window.__WFM_GAME.scene.isActive('FrontDoor'));
     await page.goto('http://localhost:5207');
     await waitTitle();
-    assert.equal(await page.evaluate(() => {
-        const car = [...window.__WFM_GAME.scene.getScene('FrontDoor').street.actors][0];
-        return car.list[0].frame.name;
-    }), '__BASE', 'Car bodies must use full images, not hub frames');
-    await page.screenshot({ path: `${shots}title.png` });
     const before = await page.evaluate(() => {
-        const scene = window.__WFM_GAME.scene.getScene('FrontDoor');
-        scene.street.passCar();
-        scene.street.enterPatron();
-        return [...scene.street.actors].map(actor => ({ x: actor.x, y: actor.y, width: actor.list?.[0]?.displayWidth, passing: actor.getData('passing'), frame: actor.frame?.name }));
+        const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
+        return street.queue.map(patron => ({ x: patron.x, frame: patron.frame.name }));
     });
+    assert.equal(before.length, 6, 'Queue starts with six patrons');
+    assert(before.every(patron => patron.frame === 'pose-0'), 'Waiting patrons stand still');
+    await page.screenshot({ path: `${shots}title.png` });
+    await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').street.enterPatron());
     await page.waitForTimeout(2500);
-    const after = await page.evaluate(() => [...window.__WFM_GAME.scene.getScene('FrontDoor').street.actors]
-        .map(actor => ({ x: actor.x, y: actor.y, width: actor.list?.[0]?.displayWidth, passing: actor.getData('passing'), frame: actor.frame?.name })));
-    assert(after.some((actor, i) => actor.x !== before[i]?.x), 'Street actors must advance');
-    assert(after.some(actor => actor.frame?.startsWith('walk-')), 'Walker must use authored frames');
-    const startCar = before.find(actor => actor.passing);
-    const endCar = after.find(actor => actor.passing);
-    assert(startCar && endCar && endCar.x > startCar.x, 'Passing car advances right');
-    assert.equal(endCar.y, startCar.y, 'Lateral traffic keeps tyre depth');
-    assert.equal(endCar.width, startCar.width, 'Lateral traffic keeps scale');
-    await page.screenshot({ path: `${shots}street-motion.png` });
-    await page.waitForTimeout(3500);
-    await page.screenshot({ path: `${shots}side-profile-traffic.png` });
-    // Review each model's actual runtime hub crops at 4× passing size.
-    await page.evaluate(() => {
-        const scene = window.__WFM_GAME.scene.getScene('FrontDoor');
-        scene.panel.setVisible(false);
-        scene.street.cars.list.forEach(actor => actor.setVisible(false));
+    const advancing = await page.evaluate(() => {
+        const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
+        return { admitted: street.admittedCount,
+            queue: street.queue.map(patron => ({ x: patron.x, frame: patron.frame.name })) };
     });
-    for (let model = 0; model < 3; model++) {
-        await page.evaluate(index => {
-            const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
-            street.hubProof = street.addCar(20, 565, 920, true, index);
-            street.hubProof.list.slice(1).forEach(wheel => {
-                street.scene.tweens.killTweensOf(wheel);
-                wheel.angle = 0;
-            });
-        }, model);
-        await page.waitForTimeout(50);
-        await page.screenshot({ path: `${shots}car-${model}-hubs-0.png` });
-        await page.evaluate(() => {
-            const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
-            street.hubProof.list.slice(1).forEach(wheel => wheel.angle = 90);
-        });
-        await page.waitForTimeout(50);
-        await page.screenshot({ path: `${shots}car-${model}-hubs-90.png` });
-        await page.evaluate(() => {
-            const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
-            street.removeActor(street.hubProof);
-        });
-    }
-    await page.evaluate(() => {
-        const scene = window.__WFM_GAME.scene.getScene('FrontDoor');
-        scene.panel.setVisible(true);
-        scene.street.cars.list.forEach(actor => actor.setVisible(true));
+    assert.equal(advancing.admitted, 1, 'Front patron enters arena');
+    assert.equal(advancing.queue.length, 5, 'Admitted patron leaves the line');
+    assert(advancing.queue[0].x > before[1].x, 'Next patron advances toward door');
+    assert(advancing.queue.some(patron => patron.frame !== 'pose-0'), 'Moving queue uses walk frames');
+    await page.screenshot({ path: `${shots}queue-advancing.png` });
+    await page.waitForTimeout(4500);
+    const settled = await page.evaluate(() => {
+        const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
+        return { busy: street.queueBusy, count: street.queue.length,
+            frames: street.queue.map(patron => patron.frame.name), cars: street.cars.length };
     });
+    assert.equal(settled.busy, false);
+    assert.equal(settled.count, 6, 'Newcomer replenishes queue');
+    assert(settled.frames.every(frame => frame === 'pose-0'), 'Settled queue returns to standing poses');
+    assert.equal(settled.cars, 0, 'Traffic is on hold');
+    await page.screenshot({ path: `${shots}queue-settled.png` });
     await page.keyboard.press('Enter');
     await page.waitForTimeout(4200);
     assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').state), 'arrival');
@@ -94,9 +67,9 @@ try {
     await page.waitForFunction(() => window.__WFM_GAME.scene.isActive('Arena'));
     const cleanup = await page.evaluate(() => {
         const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
-        return { disposed: street.disposed, timers: street.timers.size, actors: street.actors.size };
+        return { disposed: street.disposed, timers: street.timers.size, actors: street.actors.size, queue: street.queue.length };
     });
-    assert.deepEqual(cleanup, { disposed: true, timers: 0, actors: 0 });
+    assert.deepEqual(cleanup, { disposed: true, timers: 0, actors: 0, queue: 0 });
     await page.evaluate(() => {
         window.__WFM_GAME.scene.stop('Arena');
         window.__WFM_GAME.scene.start('FrontDoor');
@@ -111,7 +84,7 @@ try {
     await page.waitForTimeout(300);
     assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').background.scaleX), 1);
     assert.deepEqual(errors, []);
-    console.log(`PASS: street movement, arrival camera, scene cleanup/re-entry, reduced motion; screenshots: ${shots}`);
+    console.log(`PASS: queue admission, advance, replenishment and idle poses; arrival camera, scene cleanup/re-entry, reduced motion; screenshots: ${shots}`);
 } finally {
     if (browser) await browser.close();
     await server.close();

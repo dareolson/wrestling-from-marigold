@@ -30,26 +30,27 @@ context. The reference date/elevation remains unverified, and the added marquee
 is artistic interpretation. Typography is baked in at the user's request,
 overriding the initial editable-type standard for this asset.
 
-`src/scenes/TitleStreet.js` owns parked cars, waiting groups, lateral traffic with three car models, a four-frame patron walk into the doorway, and a brief
-single-bulb flicker. Activity repeats at irregular intervals. All actors use
-separate transparent PNG assets. Scene shutdown removes timers, actor tweens,
-and actors. Reduced-motion preference disables movement and camera push.
-Generated walking frames need artist polish; no street or engine audio yet.
-Full asset prompts are in `src/assets/story/marigold-title-layers-v1.manifest.json`.
-New car prompts are in `marigold-side-profile-cars-v1.manifest.json`.
-`src/scenes/titleCars.js` records master dimensions, hub crop boxes/centers/sizes,
-and tyre bottoms for burgundy sedan, cream sedan, and green coupe. Traffic cycles
-through the models at constant scale from left to right. All cars use strict
-side profiles with circular hubs; parked tyre depth is 466 and passing depth is
-486, matching Claude's review. Runtime copies are 460 px wide with premultiplied
-alpha resizing; full-resolution masters stay in the ignored source folder.
-The rejected three-quarter drafts are archived locally and no longer loaded.
-A dark menu backing preserves legibility when traffic crosses the foreground.
+`src/scenes/TitleStreet.js` owns a six-person entrance queue and a brief
+single-bulb flicker. Front patrons enter one at a time; remaining patrons step
+forward with staggered delays, stop in standing poses, and a newcomer joins the
+tail. Two sprite models are reused with tonal variation and decreasing size
+near the doorway. Queue slots and timings are authored in canvas coordinates.
+Scene shutdown cancels timers/tweens and clears actors and queue references.
+Reduced motion keeps the queue still and disables flicker and the camera push.
+
+Cars are on hold: neither parked nor passing car sprites load in the title.
+Their assets and per-car table are preserved for future work. This pass has not
+painted a perspective-matched parked car. No street or character audio yet.
+Runtime queue sheets are 896px wide, resized with premultiplied alpha. Full
+masters are ignored. Full prompts: `src/assets/story/marigold-queue-v1.manifest.json`.
+
+Latest queue handoff: `AI_HANDOFF_ENTRIES/2026-10-11-codex-marigold-queue-animation.md`.
 
 Branch and integration instructions: `AI_HANDOFF_ENTRIES/2026-10-11-codex-layered-marigold-opening.md`.
 
 Current validation: Vite production build; `node tools/debug/title_opening_proof.mjs`
-checks street movement, sprite frames, arrival camera, Exhibition cleanup,
+checks queue admission, advancement, replenishment, standing/walk poses,
+arrival camera, Exhibition cleanup,
 title re-entry, reduced motion, and browser exceptions. Screenshots at 960 × 600
 are written under ignored `tools/debug/shots/title-opening/`.
 

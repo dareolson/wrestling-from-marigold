@@ -1,5 +1,9 @@
 # Layered Marigold opening — Claude integration handoff
 
+Current runtime presentation is superseded by
+`2026-10-11-codex-marigold-queue-animation.md`: cars are on hold and an animated
+entrance queue replaces the waiting groups and isolated walker.
+
 Branch: `story/marigold-opening`
 Base: `4af3703` on `thesz-v2-profile-normalization`.
 

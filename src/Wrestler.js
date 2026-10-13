@@ -599,7 +599,12 @@ export default class Wrestler {
     // ── Core game tick ────────────────────────────────────────────────────────
 
     move(dt, other) {
-        if (this.state !== 'running') {
+        // A bound clip owns facing: the executor sets it before play() and
+        // keyframes may author it. Arena ticks move() BEFORE moveRuntime.update,
+        // so re-facing here undid any facing a clip didn't re-author every
+        // frame — the shipped hammerlock's back-to-the-attacker defender lasted
+        // one frame and played as a face-to-face clinch.
+        if (this.state !== 'running' && !this._activeMove) {
             const dx = other.x - this.x;
             if (dx !== 0) this.facing = Math.sign(dx);
         }

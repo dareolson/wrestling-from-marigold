@@ -67,3 +67,26 @@ test('the predicate exists on the prototype under the expected name', () => {
     // would silently restore the bug.
     assert.equal(typeof Wrestler.prototype._choreoOwnsPose, 'function');
 });
+
+// ── Facing ownership ─────────────────────────────────────────────────────────
+// Arena ticks move() before moveRuntime.update. move() used to re-face every
+// non-running wrestler at the opponent, so a clip-bound defender turned back
+// to face the attacker one frame after _doHammerlock set his back to him.
+
+const move = Wrestler.prototype.move;
+
+function mover({ facing, activeMove = null, x = 100 }) {
+    return { state: 'holding', facing, x, _activeMove: activeMove };
+}
+
+test('a clip-bound wrestler keeps the facing the clip gave him', () => {
+    const defender = mover({ facing: 1, x: 140, activeMove: { id: 1 } });
+    move.call(defender, 0.016, { x: 100 }); // attacker is behind him, to the left
+    assert.equal(defender.facing, 1);
+});
+
+test('a wrestler no clip owns still turns to face the opponent', () => {
+    const w = mover({ facing: 1, x: 140 });
+    move.call(w, 0.016, { x: 100 });
+    assert.equal(w.facing, -1);
+});

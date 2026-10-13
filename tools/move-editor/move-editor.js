@@ -12,6 +12,7 @@ import {
     draftCompatibility, releaseContact, removeKeyframe, sampleDraft, variantChoices,
 } from './model.js';
 import { pickAnchorRole } from '/src/animation/clipStaging.js';
+import { JOINT_LIMITS } from '/src/rig/articulation.js';
 
 const CHARACTERS = { george, thesz, 'thesz-procreate-v1': theszProcreateV1 };
 
@@ -707,6 +708,19 @@ function solveTwoBone(root, target, upperLength, lowerLength, bendSign) {
     return { upper, lower };
 }
 
+// A wrist drag never reverses an elbow by accident: from an ordinary bend the
+// solve floors just short of straight. An elbow already folded behind on
+// purpose (slider or typed value, e.g. a hammerlock's arm up the back) stays
+// on that branch, so the drag can pose it all the way to the joint limit.
+// Leaving reverse fold is the slider's job, as entering it is.
+const ELBOW_DRAG_FLOOR = -0.12;
+
+function chainFlexRange(isArm, currentFlex) {
+    if (!isArm) return [-0.1, 2.55];
+    if (currentFlex < ELBOW_DRAG_FLOOR) return [JOINT_LIMITS.elbow.min, ELBOW_DRAG_FLOOR - 0.01];
+    return [ELBOW_DRAG_FLOOR, 2.75];
+}
+
 function applyChainDrag(role, visualSide, kind, target) {
     return mutate(`${role} ${visualSide} ${kind} drag`, () => applyChainDragNow(role, visualSide, kind, target),
         { coalesce: `chain:${role}:${visualSide}:${kind}` });
@@ -724,13 +738,21 @@ function applyChainDragNow(role, visualSide, kind, target) {
     if (!proximal || !middle || !distal) return;
     const upperLength = Math.hypot(middle.x - proximal.x, middle.y - proximal.y);
     const lowerLength = Math.hypot(distal.x - middle.x, distal.y - middle.y);
-    const cross = (middle.x - proximal.x) * (distal.y - middle.y) - (middle.y - proximal.y) * (distal.x - middle.x);
-    const solved = solveTwoBone(proximal, target, upperLength, lowerLength, cross >= 0 ? 1 : -1);
     const upperChannel = `${side}${isArm ? 'Arm' : 'Leg'}`;
     const flexChannel = `${side}${isArm ? 'Elbow' : 'Knee'}`;
+    const currentFlex = actor.pose[flexChannel] ?? 0;
+    // Both bend directions reach the target; keep the one nearest the joint's
+    // current bend. Picking the branch from the drawn chain's winding instead
+    // flipped near straight (a facing-left drag alternated between the two
+    // solutions every frame) and always chose the forward bend for an elbow
+    // folded behind, so a hammerlock arm could not be dragged at all.
+    const flexOf = solved => Math.atan2(Math.sin(solved.lower - solved.upper), Math.cos(solved.lower - solved.upper)) * actor.facing;
+    const solved = [1, -1]
+        .map(bendSign => solveTwoBone(proximal, target, upperLength, lowerLength, bendSign))
+        .reduce((best, next) => Math.abs(flexOf(next) - currentFlex) < Math.abs(flexOf(best) - currentFlex) ? next : best);
     const currentUpper = pointAngle(proximal, middle);
     actor.pose[upperChannel] = clamp((actor.pose[upperChannel] ?? 0) + actor.facing * (solved.upper - currentUpper), -3.1, 3.1);
-    actor.pose[flexChannel] = clamp((solved.lower - solved.upper) * actor.facing, isArm ? -0.12 : -0.1, isArm ? 2.75 : 2.55);
+    actor.pose[flexChannel] = clamp(flexOf(solved), ...chainFlexRange(isArm, currentFlex));
     syncControls();
 }
 

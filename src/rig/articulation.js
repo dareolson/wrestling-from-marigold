@@ -7,8 +7,9 @@ export const JOINT_LIMITS = Object.freeze({
     // the back, hand at the shoulder blade) and the far arm at about -2.0
     // (mostly hidden, hand showing at the back); -1.8..-2.1 on the near arm
     // reads as a chicken wing sticking out. Only an explicit pose value
-    // reaches it: the move editor's wrist-drag solve still floors at -0.12,
-    // so ordinary posing never produces a reversed elbow by accident.
+    // enters it: the move editor's wrist-drag solve floors at -0.12 from an
+    // ordinary bend, so posing never reverses an elbow by accident, but a
+    // drag on an elbow already folded behind stays folded, down to this min.
     elbow: Object.freeze({ min: -3.0, max: 2.75, preferred: 0.70 }),
     knee: Object.freeze({ min: -0.10, max: 2.55, preferred: 0.22 }),
 });

@@ -649,6 +649,43 @@ try {
     if (!incompatible.preserved) throw new Error('an incompatible autosave was silently overwritten while the author was deciding');
     if (incompatible.afterDiscardId !== 'scribble') throw new Error('autosave did not resume after an explicit discard');
 
+    // Wrist drag keeps the elbow's branch. It used to pick the bend from the
+    // drawn chain's winding: an elbow folded behind (a hammerlock arm up the
+    // back) always solved to the forward bend and could not be dragged, and a
+    // facing-left drag near straight alternated branches every frame.
+    const elbowDrag = await page.evaluate(() => {
+        const editor = window.__MOVE_EDITOR;
+        const actor = editor.actors.defender;
+        const saved = { facing: actor.facing, pose: { ...actor.pose } };
+        const runs = [];
+        for (const facing of [1, -1]) for (const [start, dx, dy] of [[-2.0, 0, -4], [-2.0, 4, 0], [0.6, -4, -4]]) {
+            actor.facing = facing;
+            Object.assign(actor.pose, { lElbow: start, rElbow: start, lArm: 0.3, rArm: 0.3 });
+            editor.renderActor('defender');
+            const channel = actor.skeleton.lChannelSide(facing) === 'near' ? 'lElbow' : 'rElbow';
+            const from = { ...actor.skeleton.jointAttachmentPoints.nearWrist };
+            let maxGap = 0, flipped = false;
+            for (let i = 1; i <= 8; i++) {
+                const target = { x: from.x + dx * i, y: from.y + dy * i };
+                editor.applyChainDrag('defender', 'near', 'wrist', target);
+                editor.renderActor('defender');
+                const wrist = actor.skeleton.jointAttachmentPoints.nearWrist;
+                maxGap = Math.max(maxGap, Math.hypot(wrist.x - target.x, wrist.y - target.y));
+                flipped ||= Math.sign(actor.pose[channel]) !== Math.sign(start);
+            }
+            runs.push({ facing, start, maxGap, flipped });
+        }
+        actor.facing = saved.facing;
+        Object.assign(actor.pose, saved.pose);
+        editor.renderActor('defender');
+        return runs;
+    });
+    for (const run of elbowDrag) {
+        if (run.flipped || run.maxGap > 0.5) {
+            throw new Error(`wrist drag lost the elbow branch (facing ${run.facing}, start ${run.start}): ${JSON.stringify(run)}`);
+        }
+    }
+
     // The export dialog was already closed above, before the readiness sweep.
     if (process.env.SCREENSHOT) {
         await page.screenshot({ path: process.env.SCREENSHOT, fullPage: true });
@@ -664,6 +701,7 @@ try {
     console.log(`     autosave: schema-stamped, offered (never silently loaded) after reload, restored on request; an incompatible draft is refused with a reason and left untouched until discarded`);
     console.log(`     hammerlock hold: ${span.severity.toUpperCase()} on the live reference rig; an unreachable REQUIRED contact blocks readiness, the same contact marked optional only warns`);
     console.log(`     hammerlock export matches the shipped clip across 241 sampled frames; declared hold ${hold.role} ${hold.source}→${hold.target} ${hold.from}–${hold.to}s measured over ${hold.measured} live frames, worst gap ${hold.maxGap.toFixed(2)} px at ${hold.worstAt.toFixed(3)}s`);
+    console.log(`     wrist drag: ${elbowDrag.length} drags, forward and folded-behind elbows, both facings, stay on their branch (worst gap ${Math.max(...elbowDrag.map(r => r.maxGap)).toFixed(2)} px)`);
 } finally {
     await browser.close();
 }

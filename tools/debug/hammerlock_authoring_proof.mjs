@@ -99,6 +99,17 @@ const registration = await h.page.evaluate(async (draft) => {
             for (let t = 0; t < seconds; t += dt) sc.moveRuntime.update(Math.min(dt, seconds - t));
             return this.read();
         },
+        // Arena's real tick order: both wrestlers' move() BEFORE the runtime.
+        // step() alone skips move(), which is how a defender turned back to
+        // face the attacker every frame went unseen.
+        stepArena(seconds, dt = 1 / 60) {
+            for (let t = 0; t < seconds; t += dt) {
+                sc.w1.move(dt, sc.w2);
+                sc.w2.move(dt, sc.w1);
+                sc.moveRuntime.update(Math.min(dt, seconds - t));
+            }
+            return this.read();
+        },
         cancel(reason = 'proof-cancel') { sc.moveRuntime.cancel(this.handle, reason); return this.read(); },
         // World state and RENDERED state together: Wrestler.draw() is the real
         // per-frame render the Arena makes, so the joints read here are measured
@@ -162,6 +173,12 @@ await drive('pause');
         `atk=${working.atk.x.toFixed(3)} def=${working.def.x.toFixed(3)}`);
     check('the defender is turned the attacker\'s way for a behind-the-back lock',
         working.def.facing === working.atk.facing, `atk ${working.atk.facing} / def ${working.def.facing}`);
+
+    await drive('commit', { facing: 1, x: 470, y: 360, gap: 100 });
+    const ticked = await drive('stepArena', 0.8);
+    check('the defender stays turned under Arena\'s tick order (move() before the runtime)',
+        ticked.def.facing === ticked.atk.facing && ticked.def.held,
+        `atk ${ticked.atk.facing} / def ${ticked.def.facing} after ${0.8}s of real ticks`);
 }
 
 // ── 2. The tableau does not drift with trigger distance ──────────────────────

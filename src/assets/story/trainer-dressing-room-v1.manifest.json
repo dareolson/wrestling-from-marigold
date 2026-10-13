@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-12",
+  "tool": "built-in image_gen",
+  "status": "Candidate art for user review, not yet canonical character approval",
+  "assets": [
+    {
+      "asset": "src/assets/story/trainer-medium-v1.png",
+      "master": "Sprite sheets/Story/marigold-dialogue/source-masters/trainer-medium-v1.png",
+      "prompt": "Generate an original fictional wrestling TRAINER CHARACTER MASTER for our Wrestling from Marigold game, Chicago 1952, as an isolated transparent character plate. Reference roles: user's live-action smiling moustached actor beside police car controls facial likeness cues/build: middle-aged Black man, broad expressive face, receding short cropped hair, thick neat black moustache, warm eyes, sturdy stocky shoulders. User's Punch-Out pixel trainer only suggests towel-around-neck and practical corner-man presence; DO NOT imitate pixel art. Supplied inked arena painting controls illustrated art style: confident tapered ink contours, restrained painted shading, muted period colors, natural skin and no photorealism. Transform actor inspiration into a serious experienced wrestling hand, calm attentive expression and CLOSED relaxed mouth, not big sitcom smile or caricature. Costume 1952: faded tobacco-brown short-sleeve work shirt, high-waisted dark charcoal trousers, plain off-white cotton towel over shoulders, no police uniform, badge, necktie or modern logos. Mid-thigh-up framing with complete head, shoulders, BOTH hands visible holding a small plain roll of white athletic tape at waist, natural proportions. Body slight three-quarter turn facing screen RIGHT, looking at an offscreen young wrestler. Soft amber overhead light and muted cooler fill; NOT shiny superhero rendering, no aura, no background glow. No background, scenery, text, grid or cast shadow. Truly transparent alpha. Head and moustache must be clean and unobstructed so later mouth-state replacement is possible; do not generate mouths now. Leave generous transparent margin. Finished hand-inked sports narrative illustration.",
+      "referenceRoles": [
+        "User actor photograph: face/build inspiration",
+        "User Punch-Out trainer image: towel and corner-man archetype",
+        "Marigold title-v3 painting: game illustration style"
+      ],
+      "export": "Transparent RGBA, 1100px high; premultiplied-alpha Lanczos from master"
+    },
+    {
+      "asset": "src/assets/story/dressing-room-v1.jpg",
+      "master": "Sprite sheets/Story/marigold-dialogue/source-masters/dressing-room-v1.png",
+      "prompt": "Generate a clean BACKGROUND PLATE for layered dialogue scene in Wrestling from Marigold, Chicago summer 1952. Landscape 16:10, at least 1920x1200 if available. A modest worn backstage dressing room / trainer's corner in an old Chicago wrestling hall repurposed from a dance hall. This is a plausible fictional interior, not a documented reconstruction. Use supplied Marigold arena painting as STYLE reference only: confident ink contours, restrained painted shading, muted amber/cream light and slate/tobacco palette. Eye-level camera, normal perspective, room gently receding toward back-right. Plain scuffed plaster over old brick, dark wood bench against wall, battered steel lockers on BACK wall, pipes, warm incandescent ceiling fixture, canvas gym bag and folded towels on far bench, dark corridor visible through open doorway on right, faint cooler light from high small window. No people, silhouettes, reflected figures, cars, police equipment, modern plastic gym apparatus, fluorescent fixtures, electronic screens, modern signage, text or logos. LEFT foreground and center are EMPTY uncluttered floor / wall zones for compositing a mid-thigh trainer at left and future Guy at right. No foreground props that would cut across a character's torso. Lower 24% kept quiet and dark enough for later editable dialogue panel. Additional composition margin/overscan for a modest 4% dolly-in. Human, workmanlike, intimate pre-match atmosphere, not luxurious or abandoned horror. NO baked dialogue or UI. Clearly painted illustration matching the game, no photorealism, dense halftone or neon color grading.",
+      "export": "q88 JPEG",
+      "historicalStatus": "Plausible fictional Chicago 1952 backstage interior; no documentary claim about actual Marigold dressing room"
+    }
+  ],
+  "presentation": {
+    "preview": "tools/story-preview/",
+    "dialogueSource": "Two trainer scouting examples from STORY_MODE_SCRIPTING.md, not a new approved campaign exchange",
+    "camera": "12-second 4% push; character and room are separate DOM layers sharing camera container",
+    "future": "No mouth animation or recorded dialogue yet. Establish character approval first; derive registered mouth/head states from this portrait. Guy stays offscreen until an approved identity master is provided."
+  }
+}

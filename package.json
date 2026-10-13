@@ -6,6 +6,7 @@
   "scripts": {
     "env:check": "node tools/env/require-node.mjs",
     "dev": "vite",
+    "story:preview": "vite --open /tools/story-preview/",
     "build": "vite build",
     "debug:watch": "node tools/debug/watch.mjs",
     "debug:shot": "node tools/debug/shot.mjs",

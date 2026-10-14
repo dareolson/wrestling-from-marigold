@@ -332,3 +332,41 @@ test('a declared contact is required unless the author says otherwise', () => {
     const reloaded = model.normalizeDraft(JSON.parse(JSON.stringify(model.normalizeDraft(draft))));
     assert.deepEqual(reloaded.contacts.map(contact => contact.required), [true, false]);
 });
+
+// ── Reference sprites ────────────────────────────────────────────────────────
+// Editor-only pose references from downloaded sprite sheets. The one property
+// that matters most: they never reach an exported clip, so no sheet art or
+// sheet metadata can ship.
+
+test('a reference shows from its time until the role\'s next one', () => {
+    const draft = model.createPairedDraft();
+    model.setReference(draft, 'attacker', 0, { frame: 140 });
+    model.setReference(draft, 'attacker', 0.5, { frame: 145 });
+    model.setReference(draft, 'defender', 0.2, { frame: 150 });
+    assert.equal(model.activeReference(draft, 'attacker', 0.0).frame, 140);
+    assert.equal(model.activeReference(draft, 'attacker', 0.49).frame, 140);
+    assert.equal(model.activeReference(draft, 'attacker', 0.5).frame, 145);
+    assert.equal(model.activeReference(draft, 'defender', 0.1), null);
+    assert.equal(model.activeReference(draft, 'defender', 0.9).frame, 150);
+});
+
+test('setting a reference at the same time replaces it; clearing removes only that one', () => {
+    const draft = model.createPairedDraft();
+    model.setReference(draft, 'attacker', 0.3, { frame: 1 });
+    model.setReference(draft, 'attacker', 0.3, { frame: 2, dx: 5 });
+    assert.equal(draft.references.length, 1);
+    assert.deepEqual({ frame: draft.references[0].frame, dx: draft.references[0].dx }, { frame: 2, dx: 5 });
+    model.setReference(draft, 'defender', 0.3, { frame: 9 });
+    assert.equal(model.clearReference(draft, 'attacker', 0.3), true);
+    assert.deepEqual(draft.references.map(ref => ref.role), ['defender']);
+    assert.equal(model.clearReference(draft, 'attacker', 0.3), false);
+});
+
+test('references survive normalization but never reach the exported clip', () => {
+    const draft = model.createPairedDraft();
+    model.setReference(draft, 'attacker', 0, { frame: 143 });
+    assert.equal(model.normalizeDraft(draft).references.length, 1);
+    const clip = model.exportClip(draft);
+    assert.equal('references' in clip, false);
+    assert.doesNotMatch(model.exportModule(draft), /references|frame: 143/);
+});

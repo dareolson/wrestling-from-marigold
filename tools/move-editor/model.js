@@ -81,7 +81,13 @@ export function normalizePreview(source, fallbackFacing = { attacker: 1, defende
         const value = Number(source?.facing?.[role]);
         facing[role] = value === -1 || value === 1 ? value : fallbackFacing[role];
     }
-    return { facing };
+    // Optional: which character previews each role (e.g. George piledriving
+    // Lou), so opening the draft sets the cast it was posed against.
+    const characters = {};
+    for (const role of ROLES) {
+        if (typeof source?.characters?.[role] === 'string') characters[role] = source.characters[role];
+    }
+    return Object.keys(characters).length ? { facing, characters } : { facing };
 }
 
 // ── Draft identity ───────────────────────────────────────────────────────────

@@ -103,8 +103,8 @@ export const MOVE_SPECS = {
         ai: ['grappleFinish', 'knockdown'],
     },
     piledriver: {
-        category: C.THROW, clip: null, executor: '_doPiledriver',
-        damageKey: 'piledriver', poseSeq: true, legacyFallback: null, kitGated: true,
+        category: C.THROW, clip: 'piledriver', executor: '_doPiledriver',
+        damageKey: 'piledriver', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryAction() — grapple range, preferred over bodySlam',
         ai: ['grappleFinish', 'knockdown', 'heavy'],
     },

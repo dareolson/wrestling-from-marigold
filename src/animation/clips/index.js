@@ -13,8 +13,11 @@ import { jabClip } from './jab.js';
 // (./hammerlockWip.js). ./hammerlock.js is the earlier generated clip; it
 // stays as the fixture the authoring pipeline's tests and proofs are built on.
 import { hammerlockWipClip } from './hammerlockWip.js';
+// Posed against the WWF Raw sheet (tools/move-editor/author_piledriver.mjs).
+import { piledriverClip } from './piledriver.js';
 
 export const REGISTERED_MOVE_CLIPS = [
     jabClip,
     hammerlockWipClip,
+    piledriverClip,
 ];

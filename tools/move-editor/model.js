@@ -47,6 +47,9 @@ export const POSE_CHANNELS = Object.freeze([
     'lArm', 'rArm', 'lElbow', 'rElbow',
     'lLeg', 'rLeg', 'lKnee', 'rKnee',
     'lean', 'crouch',
+    // Whole body, about the hips (Skeleton._applyBodyTilt): tilt in radians,
+    // facing-relative, π upside down; lift in rig units off the mat.
+    'tilt', 'lift',
 ]);
 
 const round = value => Math.round(value * 10000) / 10000;

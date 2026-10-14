@@ -538,7 +538,13 @@ export default class Wrestler {
         const p = typeof target === 'string' ? POSES[target] : target;
         // Normalize so lean/crouch always tween back to 0 for poses that omit them
         const t = { lLeg: p.lLeg ?? 0, rLeg: p.rLeg ?? 0, lArm: p.lArm ?? 0, rArm: p.rArm ?? 0,
-                    lean: p.lean ?? 0, crouch: p.crouch ?? 0 };
+                    lean: p.lean ?? 0, crouch: p.crouch ?? 0,
+                    // A clip can leave the body tilted or lifted (piledriver,
+                    // slams); every ordinary pose sets it back down.
+                    tilt: p.tilt ?? 0, lift: p.lift ?? 0 };
+        // Seeded so Phaser never tweens from undefined (NaN).
+        this.pose.tilt ??= 0;
+        this.pose.lift ??= 0;
         // Articulated channels need a finite value on this.pose to interpolate
         // FROM. A channel the live pose has never carried has none, and Phaser
         // reads that `undefined` as NaN for the whole tween: clampLocalFlex

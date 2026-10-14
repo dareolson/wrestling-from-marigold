@@ -121,7 +121,8 @@ test('lChannelSide agrees with the path updateUpright actually takes', () => {
                 _updateUprightCore: (x, y, s, f) => { coreFacing = f; },
                 _mirrorUpright: () => { mirrored = true; },
             };
-            Skeleton.prototype.updateUpright.call(stub, 0, 0, 1, facing, {}, 0);
+            // The facing routing lives in _updateUprightPlaced (updateUpright adds body tilt on top).
+            Skeleton.prototype._updateUprightPlaced.call(stub, 0, 0, 1, facing, {}, 0);
             // The core path puts lArm on near at facing +1 and on far at -1; a
             // mirrored render keeps whatever the facing-+1 core drew.
             const drawn = coreFacing >= 0 ? 'near' : 'far';

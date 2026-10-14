@@ -1,3 +1,8 @@
+// RETIRED FROM GAME 2026-10-13: Derek's hammerlock (./hammerlockWip.js) is the
+// one registered in ./index.js. This generated clip stays as the fixture the
+// authoring pipeline (tests/hammerlockAuthoring.test.js, the editor smoke,
+// npm run proof:hammerlock) is built and checked on.
+//
 // Hammerlock — the first PAIRED move on the seekable clip runtime (see
 // RIG_AND_MOVE_PIPELINE.md's "Migration order" step 2), and the first move
 // authored END TO END in tools/move-editor with a grip that is actually made:

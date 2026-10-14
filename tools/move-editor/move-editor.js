@@ -85,6 +85,8 @@ const POSE_UI = {
     rKnee:  { label: 'Far knee', min: -0.1, max: 2.55, step: 0.01 },
     lean:   { label: 'Lean', min: -0.8, max: 0.8, step: 0.01 },
     crouch: { label: 'Crouch', min: 0, max: 1, step: 0.01 },
+    tilt:   { label: 'Body tilt', min: -3.15, max: 3.15, step: 0.01 }, // whole body about the hips; ±3.14 upside down
+    lift:   { label: 'Body lift', min: 0, max: 260, step: 1 },          // rig units off the mat
 };
 
 // Draft `transform` is stored in RIG UNITS (unscaled body space), never in

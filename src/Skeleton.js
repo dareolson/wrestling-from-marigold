@@ -1025,6 +1025,53 @@ export default class Skeleton {
     }
 
     updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
+        this._updateUprightPlaced(x, y, s, facing, pose, walkPhase, combatBlend, lean, moveBlend, liftScale, runBlend);
+        this._applyBodyTilt(s, facing, pose?.tilt ?? 0, pose?.lift ?? 0);
+    }
+
+    // Whole-body tilt and lift, layered on the upright render (2026-10-13).
+    // `tilt` rotates the finished body rigidly about the hips — radians,
+    // facing-relative, positive pitching forward (head toward facing), π fully
+    // upside down — and `lift` raises it off the mat in rig units. Every limb
+    // channel keeps working underneath, so a piledriver victim is an ordinary
+    // pose turned over and lifted, not a second posing system. Zero/absent
+    // leaves the render untouched.
+    _applyBodyTilt(s, facing, tilt, lift) {
+        const head = this.head;
+        const headIsGraphics = head && !this._headIsImage;
+        if (!tilt && !lift) {
+            // A drawn (non-image) head is painted in world coordinates; clear
+            // any transform a previous tilted frame left on it.
+            if (headIsGraphics && (head.x || head.y || head.rotation)) head.setPosition(0, 0).setRotation(0);
+            return;
+        }
+        const points = this.jointAttachmentPoints ?? {};
+        const pivot = points.nearHip && points.farHip
+            ? { x: (points.nearHip.x + points.farHip.x) / 2, y: (points.nearHip.y + points.farHip.y) / 2 }
+            : points.nearHip ?? points.farHip ?? { x: this.torso.x, y: this.torso.y };
+        const r = (facing >= 0 ? 1 : -1) * tilt;
+        const cos = Math.cos(r), sin = Math.sin(r);
+        const dy = -lift * s;
+        const move = point => {
+            const px = point.x - pivot.x, py = point.y - pivot.y;
+            point.x = pivot.x + px * cos - py * sin;
+            point.y = pivot.y + px * sin + py * cos + dy;
+        };
+        for (const part of this._parts) {
+            if (!part.visible) continue;
+            if (part === head && headIsGraphics) {
+                // Painted in world space: rotate the graphics object itself.
+                head.setPosition(pivot.x - pivot.x * cos + pivot.y * sin, pivot.y - pivot.x * sin - pivot.y * cos + dy).setRotation(r);
+                continue;
+            }
+            const at = { x: part.x, y: part.y };
+            move(at);
+            part.setPosition(at.x, at.y).setRotation(part.rotation + r);
+        }
+        for (const point of Object.values(points)) move(point);
+    }
+
+    _updateUprightPlaced(x, y, s, facing, pose, walkPhase, combatBlend, lean, moveBlend, liftScale, runBlend) {
         // faceLeftOverrides takes priority over the canonical-mirror trick
         // below: Derek tuned these numbers directly against the facing < 0
         // render itself (rig-tuner's "face left" toggle), so they're applied
@@ -1943,6 +1990,8 @@ export default class Skeleton {
     // anywhere from lying to vertical. This is the piece updateUpright can't
     // do (it assumes a vertical torso), and it's all the sit/crawl states need.
     _applyGrounded(x, y, s, facing, g) {
+        // A painted head may still carry an upright frame's body tilt.
+        if (this.head && !this._headIsImage) this.head.setPosition(0, 0).setRotation(0);
         this.jointAttachmentMargins = {};
         this.jointAttachmentPoints = {};
         const f = facing >= 0 ? 1 : -1;

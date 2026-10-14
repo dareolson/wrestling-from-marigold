@@ -1717,7 +1717,8 @@ export default class Skeleton {
             this.head
                 .setPosition(anchorX, anchorY)
                 .setDisplaySize(headR * 2.0 * this._headScale, headDispH)
-                .setFlipX(facing < 0);
+                .setFlipX(facing < 0)
+                .setRotation(0); // _applyGrounded turns it; standing is upright
             // See the constructor's _headOriginU comment: flipX never
             // touches origin, so an off-center headAnchorFrac origin must be
             // re-mirrored every time facing changes, not just once.
@@ -1753,16 +1754,15 @@ export default class Skeleton {
     // editing it moves the lying pose and the get-up's first keyframe
     // together by construction.
     // Named FLAT, not SUPINE, and it means it: as authored this pose lies
-    // PRONE (face down). There is currently NO supine grounded pose.
+    // PRONE (face down). The face-up pose is GROUNDED_SUPINE below.
     //
     // A render-time reflection used to turn this face-up
     // (_mirrorGroundedOnBack, removed 2026-08-17). It reflected every
     // assembled part across the mat axis — negating rotation, setting flipY,
     // inverting originY — which kept the anchors mathematically connected, so
     // certification passed, while turning every face, boot, trunk, arm and leg
-    // PNG literally upside down. A real supine pose needs authored joint
-    // angles and back-facing torso/head art, not a reflection of front-view
-    // art; until that exists, wrestlers lie prone. See RIG_AND_MOVE_PIPELINE.md.
+    // PNG literally upside down. GROUNDED_SUPINE rotates the body the other
+    // way instead, which keeps every part's art upright relative to the body.
     // Carries `t: 0` so this object can BE GETUP_POSES[0] rather than merely
     // matching it. An earlier version spread it into the keyframe, which left
     // two objects with equal values — good enough to keep them in sync at
@@ -1779,8 +1779,25 @@ export default class Skeleton {
     // 'possum' and 'pinned' all rendered identically through the old
     // _drawFlat primitive path, so they still share one pose here — this
     // migration raises their fidelity without inventing new choreography.
+    // Lying on the back (face up). The prone pose ROTATED the other way round,
+    // not reflected: torso π + 1.52 instead of π - 1.52, limbs +1.5 instead of
+    // -1.5, so every part keeps its own art right side up and the face, which
+    // turns with the torso, points at the ceiling. (The reflection removed
+    // 2026-08-17 is what turned parts upside down; a rotation cannot.) Torso is
+    // written past π rather than as -1.62 so a fall or rise interpolating from
+    // standing (π) rotates backward instead of swinging through the face-down
+    // side. Feet lie toward facing, head away from it.
+    static GROUNDED_SUPINE = Object.freeze({
+        t: 0.00,
+        hip: 10, torso: Math.PI + 1.52,
+        farThigh: 1.45, farShin: 1.60, nearThigh: 1.40, nearShin: 1.55,
+        farArm: 1.48, farFore: 1.55, nearArm: 1.42, nearFore: 1.50,
+    });
+
     static GROUNDED_POSES = Object.freeze({
         flat: Skeleton.GROUNDED_FLAT,
+        prone: Skeleton.GROUNDED_FLAT,
+        supine: Skeleton.GROUNDED_SUPINE,
     });
 
     static GETUP_POSES = [
@@ -1806,6 +1823,88 @@ export default class Skeleton {
         { t: 1.00, hip: 88, torso: Math.PI, farThigh: 0, farShin: 0, nearThigh: 0, nearShin: 0, farArm: 0.10, farFore: 0.16, nearArm: 0.06, nearFore: 0.12 },
     ];
 
+    // ── Falls ────────────────────────────────────────────────────────────────
+    //
+    // Keyposes from standing (the get-up's last frame, so a fall starts where
+    // a rise ends) to a lying pose, sampled by updateFall. `lands` is how the
+    // wrestler ends up and picks the matching get-up. Facing never changes
+    // during a fall: a forward fall puts the head toward facing, a backward
+    // one away from it.
+    static FALLS = Object.freeze({
+        // Flat-back bump: knees give, arms fly up, lands on the shoulders.
+        backward: Object.freeze({ lands: 'supine', duration: 520, keys: Object.freeze([
+            { ...Skeleton.GETUP_POSES[Skeleton.GETUP_POSES.length - 1], t: 0 },
+            { t: 0.35, hip: 76, torso: Math.PI + 0.42, farThigh: 0.42, farShin: 0.05, nearThigh: 0.32, nearShin: -0.02, farArm: 1.10, farFore: 1.45, nearArm: 0.95, nearFore: 1.30 },
+            { t: 0.72, hip: 34, torso: Math.PI + 1.20, farThigh: 1.05, farShin: 0.95, nearThigh: 0.95, nearShin: 0.85, farArm: 2.30, farFore: 2.55, nearArm: 2.15, nearFore: 2.40 },
+            { ...Skeleton.GROUNDED_SUPINE, t: 1.00 },
+        ]) }),
+        // Face-first: stiff topple, hands come out to brace at the last moment.
+        forward: Object.freeze({ lands: 'prone', duration: 480, keys: Object.freeze([
+            { ...Skeleton.GETUP_POSES[Skeleton.GETUP_POSES.length - 1], t: 0 },
+            { t: 0.40, hip: 82, torso: Math.PI - 0.50, farThigh: -0.12, farShin: -0.18, nearThigh: -0.04, nearShin: -0.10, farArm: 0.45, farFore: 0.60, nearArm: 0.35, nearFore: 0.50 },
+            { t: 0.78, hip: 30, torso: Math.PI - 1.25, farThigh: -0.85, farShin: -1.05, nearThigh: -0.75, nearShin: -0.95, farArm: 0.05, farFore: -0.05, nearArm: -0.05, nearFore: -0.12 },
+            { ...Skeleton.GROUNDED_FLAT, t: 1.00 },
+        ]) }),
+        // Legs go first: buckles to the knees, then pitches onto the face.
+        kneesForward: Object.freeze({ lands: 'prone', duration: 720, keys: Object.freeze([
+            { ...Skeleton.GETUP_POSES[Skeleton.GETUP_POSES.length - 1], t: 0 },
+            { t: 0.30, hip: 62, torso: Math.PI - 0.15, farThigh: 0.65, farShin: -0.55, nearThigh: 0.55, nearShin: -0.65, farArm: 0.20, farFore: 0.35, nearArm: 0.15, nearFore: 0.30 },
+            { t: 0.55, hip: 44, torso: Math.PI - 0.10, farThigh: 0.05, farShin: -1.45, nearThigh: -0.05, nearShin: -1.50, farArm: 0.10, farFore: 0.20, nearArm: 0.05, nearFore: 0.15 },
+            { t: 0.82, hip: 26, torso: Math.PI - 1.05, farThigh: -0.70, farShin: -1.50, nearThigh: -0.75, nearShin: -1.52, farArm: 0.05, farFore: -0.05, nearArm: -0.05, nearFore: -0.10 },
+            { ...Skeleton.GROUNDED_FLAT, t: 1.00 },
+        ]) }),
+        // Sits down hard, then the shoulders go back.
+        sitBack: Object.freeze({ lands: 'supine', duration: 700, keys: Object.freeze([
+            { ...Skeleton.GETUP_POSES[Skeleton.GETUP_POSES.length - 1], t: 0 },
+            { t: 0.35, hip: 52, torso: Math.PI - 0.15, farThigh: 1.05, farShin: -0.15, nearThigh: 0.95, nearShin: -0.25, farArm: 0.55, farFore: 0.80, nearArm: 0.45, nearFore: 0.70 },
+            { t: 0.62, hip: 14, torso: Math.PI + 0.30, farThigh: 1.45, farShin: 1.55, nearThigh: 1.38, nearShin: 1.50, farArm: -0.35, farFore: -0.45, nearArm: -0.30, nearFore: -0.40 },
+            { ...Skeleton.GROUNDED_SUPINE, t: 1.00 },
+        ]) }),
+        // Taken off the feet in the air (clothesline, dropkick, back body
+        // drop): flat out horizontal at the peak, down on the back. The
+        // caller adds the arc height; this is only the body's rotation.
+        flip: Object.freeze({ lands: 'supine', duration: 380, keys: Object.freeze([
+            { ...Skeleton.GETUP_POSES[Skeleton.GETUP_POSES.length - 1], t: 0 },
+            { t: 0.45, hip: 48, torso: Math.PI + 1.35, farThigh: 1.30, farShin: 1.20, nearThigh: 1.20, nearShin: 1.10, farArm: 2.40, farFore: 2.70, nearArm: 2.25, nearFore: 2.55 },
+            { ...Skeleton.GROUNDED_SUPINE, t: 1.00 },
+        ]) }),
+    });
+
+    // Variants a caller can ask for by direction, so the same hit doesn't
+    // always fall the same way.
+    static FALL_VARIANTS = Object.freeze({
+        backward: Object.freeze(['backward', 'sitBack']),
+        forward: Object.freeze(['forward', 'kneesForward']),
+    });
+
+    // Rising from the back: sit up with the hands propped behind, gather the
+    // feet under into a crouch, stand. Ends on the same standing keypose as
+    // GETUP_POSES, so both rises hand off to updateUpright identically.
+    static GETUP_SUPINE_POSES = Object.freeze([
+        Skeleton.GROUNDED_SUPINE,
+        { t: 0.34, hip: 16, torso: Math.PI + 0.45, farThigh: 1.42, farShin: 1.58, nearThigh: 1.34, nearShin: 1.52, farArm: -0.38, farFore: -0.55, nearArm: -0.30, nearFore: -0.48 },
+        { t: 0.70, hip: 46, torso: Math.PI - 0.35, farThigh: 1.20, farShin: -0.20, nearThigh: 1.00, nearShin: -0.35, farArm: 0.45, farFore: 0.75, nearArm: 0.35, nearFore: 0.65 },
+        Skeleton.GETUP_POSES[Skeleton.GETUP_POSES.length - 1],
+    ]);
+
+    static _sampleKeyposes(K, t) {
+        let a = K[0], b = K[K.length - 1];
+        for (let i = 0; i < K.length - 1; i++) {
+            if (t >= K[i].t && t <= K[i + 1].t) { a = K[i]; b = K[i + 1]; break; }
+        }
+        const u = b.t > a.t ? Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t))) : 0;
+        const g = {};
+        for (const k of Object.keys(a)) g[k] = a[k] + (b[k] - a[k]) * u;
+        return g;
+    }
+
+    /** Draw fall `variant` (a Skeleton.FALLS key) at progress t (0 standing → 1 lying). */
+    updateFall(x, y, s, facing, variant, t) {
+        const fall = Skeleton.FALLS[variant];
+        if (!fall) throw new RangeError(`unknown fall "${variant}"`);
+        this._applyGrounded(x, y, s, facing, Skeleton._sampleKeyposes(fall.keys, t));
+    }
+
     /**
      * Draw a static grounded pose — flat on the mat — through the modular rig.
      *
@@ -1825,30 +1924,19 @@ export default class Skeleton {
         this._applyGrounded(x, y, s, facing, pose);
     }
 
-    // Grounded renders are PRONE. The on-back reflection that used to turn
-    // them face-up (_mirrorGroundedOnBack, with _groundedImages and
-    // _clearGroundedOnBack) was removed 2026-08-17: it reflected every
-    // assembled part across the mat axis, which kept anchors connected — so
-    // certification passed — while rendering every part PNG upside down.
-    // Do not reintroduce a reflection here. A supine pose is authored joint
-    // angles plus back-facing torso/head art; certifyOrientation now fails
-    // any reflected part so this cannot come back unnoticed.
+    // The on-back REFLECTION (_mirrorGroundedOnBack, removed 2026-08-17)
+    // rendered every part PNG upside down while keeping anchors connected, so
+    // certification passed. Do not reintroduce a reflection here: face-up is
+    // GROUNDED_SUPINE, a rotation, and certifyOrientation fails any reflected
+    // part so this cannot come back unnoticed.
 
     // Draw the get-up at progress t (0 flat → 1 standing) by interpolating the
     // grounded keyposes. Wrestler swaps to updateUpright when the tween lands.
-    updateGetUp(x, y, s, facing, t) {
-        const K = Skeleton.GETUP_POSES;
-        let a = K[0], b = K[K.length - 1];
-        for (let i = 0; i < K.length - 1; i++) {
-            if (t >= K[i].t && t <= K[i + 1].t) { a = K[i]; b = K[i + 1]; break; }
-        }
-        const u = b.t > a.t ? (t - a.t) / (b.t - a.t) : 0;
-        const g = {};
-        for (const k of Object.keys(a)) g[k] = a[k] + (b[k] - a[k]) * u;
-        this._applyGrounded(x, y, s, facing, g);
-        // The whole rise renders PRONE, from the same pose the wrestler was
-        // lying in. There is no turn-over: the reflection that used to supply
-        // one rendered every part upside down (see GROUNDED_FLAT).
+    // `lying` is how the wrestler is lying ('prone' or 'supine'); each rise
+    // starts from that exact pose, so there is no turn-over pop.
+    updateGetUp(x, y, s, facing, t, lying = 'prone') {
+        const K = lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
+        this._applyGrounded(x, y, s, facing, Skeleton._sampleKeyposes(K, t));
     }
 
     // Place every part from a grounded pose: hip-rooted, torso free to pitch
@@ -2018,14 +2106,23 @@ export default class Skeleton {
                 anchorX = neck.x;
                 anchorY = neck.y;
             } else {
-                anchorY = this._neckInTorso
-                    ? shY + this._headOffsetY * s
-                    : shY + this._headHidePx * headDispH / this.head.height;
-                anchorX = this._neckInTorso
-                    ? shX + facing * this._headOffsetX * s
-                    : shX;
+                // The neck offset is authored in the UPRIGHT torso's frame;
+                // turn it with the torso, the way _socketPoint turns sockets.
+                // Unturned, the head sat at the standing offset beside a
+                // lying body.
+                const offX = this._neckInTorso ? facing * this._headOffsetX * s : 0;
+                const offY = this._neckInTorso
+                    ? this._headOffsetY * s
+                    : this._headHidePx * headDispH / this.head.height;
+                anchorX = shX + offX * Math.cos(down) + offY * Math.sin(down);
+                anchorY = shY - offX * Math.sin(down) + offY * Math.cos(down);
             }
-            this.head.setPosition(anchorX, anchorY).setDisplaySize(headR * 2.0 * this._headScale, headDispH).setFlipX(facing < 0);
+            // The head turns with the torso. It used to stay upright on a flat
+            // body ("his head falls off"), which also ruled out lying face-up:
+            // rotating the body the other way only reads as supine if the
+            // head's face turns up with it.
+            this.head.setPosition(anchorX, anchorY).setDisplaySize(headR * 2.0 * this._headScale, headDispH).setFlipX(facing < 0)
+                .setRotation(-down);
             // See the constructor's _headOriginU comment / the matching fix
             // in the upright branch above.
             if (this._headOriginU !== undefined) this.head.setOrigin(facing < 0 ? 1 - this._headOriginU : this._headOriginU, this.head.originY);

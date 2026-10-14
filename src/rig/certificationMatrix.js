@@ -165,16 +165,25 @@ export const CERTIFICATION_MATRIX = Object.freeze([
         groundedPose: 'flat',
         // Lying on the mat: the body bears weight, not the soles.
         footBearing: false,
-        postureGap: 'renders the shared prone (face-down) flat pose; no supine posture exists, so a wrestler dropped on his back still lands face down',
+    }),
+    // Face up (2026-10-13): the prone pose rotated the other way round, with
+    // the head turning with the torso — no reflection, so no part is flipped.
+    Object.freeze({
+        id: 'down-supine',
+        label: 'downed state, on the back',
+        renderPath: 'grounded',
+        state: 'down',
+        groundedPose: 'supine',
+        footBearing: false,
     }),
     Object.freeze({
         id: 'pinned-state',
         label: 'pinned state (flat on mat)',
         renderPath: 'grounded',
         state: 'pinned',
-        groundedPose: 'flat',
         footBearing: false,
-        postureGap: 'no arched bridge / pin-escape posture yet, and no supine posture; renders the shared prone flat pose',
+        groundedPose: 'supine',
+        postureGap: 'no arched bridge / pin-escape posture yet; renders the plain supine pose',
     }),
 ]);
 

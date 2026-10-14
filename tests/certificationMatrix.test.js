@@ -64,22 +64,20 @@ test('lying flat and the get-up first keyframe are the same pose object', () => 
 });
 
 test('a grounded entry that renders a stand-in pose declares the posture it lacks', () => {
-    // "16/17 entries reach the modular rig" must never be readable as
-    // "16/17 wrestling postures exist". down/pinned/possum all render one
-    // shared flat pose, exactly as _drawFlat rendered all three identically
-    // before the migration (Codex review, 2026-08-13).
+    // "N/M entries reach the modular rig" must never be readable as "N/M
+    // wrestling postures exist" (Codex review, 2026-08-13). Since 2026-10-13
+    // there are two real lying poses, prone and supine; the pin still borrows
+    // plain supine for a bridge it doesn't have, and says so.
     const gaps = postureGaps();
-    assert.ok(gaps.length >= 2);
+    assert.ok(gaps.length >= 1);
     for (const entry of gaps) {
         assert.equal(entry.renderPath, 'grounded');
-        assert.match(entry.postureGap, /flat pose/);
-        // A stand-in must not advertise a posture in its own label.
-        assert.doesNotMatch(entry.label, /prone|bridge/i);
+        assert.match(entry.postureGap, /no .*posture/);
+        assert.doesNotMatch(entry.label, /bridge/i);
     }
-    // Every grounded entry currently shares the one authored flat pose.
+    // Both lying poses are certified, by name.
     const grounded = CERTIFICATION_MATRIX.filter(entry => entry.renderPath === 'grounded');
-    assert.equal(new Set(grounded.map(entry => entry.groundedPose)).size, 1);
-    assert.equal(grounded.length, gaps.length, 'a grounded entry has no posture declared');
+    assert.deepEqual([...new Set(grounded.map(entry => entry.groundedPose))].sort(), ['flat', 'supine']);
 });
 
 test('rigged and unrigged entries partition the matrix', () => {

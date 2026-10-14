@@ -3225,6 +3225,10 @@ export default class Arena extends Phaser.Scene {
         if (this.matchOver) return;
         attacker.state = 'pinning';
         defender.state = 'pinned';
+        // A pin is on the back. Turning a face-down wrestler over keeps his
+        // head where it was: prone lies head toward facing, supine away.
+        if (defender.lying === 'prone') defender.facing = -defender.facing;
+        defender.lying = 'supine';
         attacker.tweenPose('pinHold', 200, 'Linear');
         if (!this.pinState) {
             this.pinState = { attacker, defender, timer: 0 };
@@ -3452,6 +3456,7 @@ export default class Arena extends Phaser.Scene {
         w._orphanT = 0;
         if (w.state === 'grabbed') {
             w.state      = 'down';
+            w.lying      = 'supine';
             w.stateTimer = 4.5;
             w.slamPhase  = null;
             w.slamType   = null;
@@ -3552,6 +3557,7 @@ export default class Arena extends Phaser.Scene {
             ss.attacker.state = 'standing';
             if (toDown) {
                 ss.defender.state      = 'down';
+                ss.defender.lying      = 'prone'; // slumps forward out of the sleeper
                 ss.defender.stateTimer = 6.5;
             } else {
                 ss.defender.state = 'standing';
@@ -3602,6 +3608,7 @@ export default class Arena extends Phaser.Scene {
             hs.attacker.state = 'standing';
             if (toDown) {
                 hs.defender.state      = 'down';
+                hs.defender.lying      = 'supine';
                 hs.defender.stateTimer = 3.5;
                 hs.defender.tweenPose('idle', 150, 'Linear');
             } else {

@@ -13,6 +13,12 @@ import {
 const SPEED      = 140;
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
+
+// States where a wrestler is on, or on the way to, the mat. move() must not
+// turn him to face the opponent here: on the ground facing decides which way
+// the body lies (head toward facing prone, away from it supine), so re-facing
+// would flip a lying body end to end whenever the opponent walked past.
+const GROUNDED_FACING_LOCK = new Set(['falling', 'flipping', 'down', 'pinned', 'possum', 'gettingUp', 'risingUp']);
 // Derived so a planted foot stays world-locked (no skating) — see Skeleton GAIT.
 const WALK_FREQ  = GAIT.WALK_FREQ; // radians per unscaled pixel of travel
 
@@ -329,6 +335,12 @@ export default class Wrestler {
         this.state        = 'standing';
         this.stateTimer   = 0;
         this.fallProgress = 0;
+        // How a downed wrestler lies: 'supine' (on the back, feet toward
+        // facing) or 'prone' (face down, head toward facing). Set by every
+        // path that puts a wrestler on the mat; read by the grounded render
+        // and the get-up.
+        this.lying        = 'supine';
+        this._fallVariant = 'backward';
         this.runPhase     = null;
         this.runTarget    = 0;
         this.runFacing    = 1;
@@ -604,7 +616,7 @@ export default class Wrestler {
         // so re-facing here undid any facing a clip didn't re-author every
         // frame — the shipped hammerlock's back-to-the-attacker defender lasted
         // one frame and played as a face-to-face clinch.
-        if (this.state !== 'running' && !this._activeMove) {
+        if (this.state !== 'running' && !this._activeMove && !GROUNDED_FACING_LOCK.has(this.state)) {
             const dx = other.x - this.x;
             if (dx !== 0) this.facing = Math.sign(dx);
         }
@@ -1192,6 +1204,7 @@ export default class Wrestler {
     _releaseGrabbed(other) {
         if (other.state !== 'grabbed') return;
         other.state      = 'down';
+        other.lying      = 'supine';
         other.stateTimer = DOWN_SEC;
         other.slamPhase  = null;
         other.slamType   = null;
@@ -1249,6 +1262,7 @@ export default class Wrestler {
                     ease:     'Cubic.easeIn',
                     onComplete: () => {
                         other.state      = 'down';
+                        other.lying      = 'supine';
                         other.stateTimer = DOWN_SEC;
                         other.slamPhase  = null;
                         this.state       = 'standing';
@@ -1289,6 +1303,7 @@ export default class Wrestler {
                 other.x          = Math.max(b.left + m, Math.min(b.right - m, sx - facing * 90 * ss));
                 other.y          = sy;
                 other.state      = 'down';
+                other.lying      = 'supine';
                 other.stateTimer = DOWN_SEC + 1.0;
                 other.slamPhase  = null;
                 other.slamType   = null;
@@ -1363,10 +1378,12 @@ export default class Wrestler {
                     other._drain(STAMINA_DRAIN.dropkick);
                     other._doSell('sellChest', 140, () => other.startClotheslineFall(facing));
                     this.state      = 'down';
+                    this.lying      = 'supine';
                     this.stateTimer = 1.5;
                     this.scene.cameras.main.shake(120, 0.0015);
                 } else {
                     this.state      = 'down';
+                    this.lying      = 'supine';
                     this.stateTimer = 2.8;
                     this.scene.cameras.main.shake(80, 0.001);
                 }
@@ -1418,6 +1435,7 @@ export default class Wrestler {
                             other.x          = sx;
                             other.y          = sy;
                             other.state      = 'down';
+                            other.lying      = 'supine';
                             other.stateTimer = DOWN_SEC + 2.0;
                             other.slamPhase  = null;
                             other.slamType   = null;
@@ -1426,6 +1444,7 @@ export default class Wrestler {
                             this.scene.time.delayedCall(400, () => {
                                 // Roll to flat: go to 'down', slide y back to sy over 200ms
                                 this.state      = 'down';
+                                this.lying      = 'supine';
                                 this.stateTimer = 2.0;
                                 this.scene.tweens.add({
                                     targets: this, y: sy,
@@ -1468,6 +1487,7 @@ export default class Wrestler {
                     this.scene.cameras.main.shake(70, 0.001);
                 }
                 this.state       = 'down';
+                this.lying       = 'prone';
                 this.stateTimer  = 2.0;
                 this.divProgress = 0;
             },
@@ -1504,6 +1524,7 @@ export default class Wrestler {
                     this.scene.cameras.main.shake(110, 0.002);
                 }
                 this.state       = 'down';
+                this.lying       = 'prone';
                 this.stateTimer  = 3.0;
                 this.divProgress = 0;
             },
@@ -1545,6 +1566,7 @@ export default class Wrestler {
                 } else {
                     // Whiffed — crash and burn, long punish window
                     this.state      = 'down';
+                    this.lying      = 'prone';
                     this.stateTimer = 2.6;
                     this.scene.cameras.main.shake(90, 0.0012);
                 }
@@ -1922,6 +1944,7 @@ export default class Wrestler {
 
     _startQuickRise() {
         this.state        = 'risingUp';
+        this._fallVariant = this.lying === 'prone' ? 'forward' : 'backward';
         this.fallProgress = 1;
         this.scene.tweens.add({
             targets:      this,
@@ -1989,14 +2012,22 @@ export default class Wrestler {
         }
     }
 
-    startFall(downTime = DOWN_SEC) {
+    // `fall` is a direction ('backward' / 'forward', a random variant of it,
+    // see Skeleton.FALL_VARIANTS) or one Skeleton.FALLS variant by name.
+    startFall(downTime = DOWN_SEC, fall = 'backward') {
+        const variants = Skeleton.FALL_VARIANTS[fall];
+        const variant  = variants ? variants[Math.floor(Math.random() * variants.length)] : fall;
+        const spec     = Skeleton.FALLS[variant];
+        if (!spec) throw new RangeError(`unknown fall "${fall}"`);
         this.state        = 'falling';
         this.fallProgress = 0;
+        this._fallVariant = variant;
+        this.lying        = spec.lands;
         this.scene.tweens.add({
             targets:      this,
             fallProgress: 1,
-            duration:     400,
-            ease:         'Cubic.easeIn',
+            duration:     spec.duration,
+            ease:         'Sine.easeIn',
             onComplete: () => {
                 this.state        = 'down';
                 this.stateTimer   = downTime;
@@ -2014,6 +2045,11 @@ export default class Wrestler {
         this.state         = 'flipping';
         this.flipProgress  = 0;
         this.flipDir       = runFacing;
+        // Lands on his back with the head toward -runFacing, as before; on the
+        // back the head lies away from facing, so facing is runFacing.
+        this.facing        = runFacing;
+        this.lying         = 'supine';
+        this._fallVariant  = 'flip';
         this._flipArcHeight = arcHeight;
         // Downed bodies draw ~200·s wide, so the landing spot needs a wider
         // clamp margin than the standing 20px or head/boots hang through the
@@ -2033,7 +2069,6 @@ export default class Wrestler {
                 this.state        = 'down';
                 this.stateTimer   = DOWN_SEC;
                 this.flipProgress = 0;
-                this.facing       = -runFacing; // head points back, feet went forward
                 this.scene.cameras.main.shake(150, 0.002);
             },
         });
@@ -2061,7 +2096,11 @@ export default class Wrestler {
         this.skeleton.setVisible(false); // shown only for upright states below
 
         if (state === 'falling' || state === 'risingUp') {
-            this._drawFalling(x, y, s, facing, skinCol, trunksCol, this.fallProgress);
+            const p = this.fallProgress;
+            gfx.fillStyle(0x000000, 0.22);
+            gfx.fillEllipse(x, y, (120 + p * 60) * s, 36 * s);
+            this.skeleton.setVisible(true);
+            this.skeleton.updateFall(x, y, s, facing, this._fallVariant, p);
             return;
         }
 
@@ -2070,12 +2109,16 @@ export default class Wrestler {
             gfx.fillStyle(0x000000, 0.22);
             gfx.fillEllipse(x, y, (170 - this.riseT * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
-            this.skeleton.updateGetUp(x, y, s, facing, this.riseT);
+            this.skeleton.updateGetUp(x, y, s, facing, this.riseT, this.lying);
             return;
         }
 
         if (state === 'flipping') {
-            this._drawClotheslineFall(x, y, s, this.flipProgress, this.flipDir, skinCol, trunksCol);
+            const arc = Math.sin(this.flipProgress * Math.PI); // 0 → 1 → 0
+            gfx.fillStyle(0x000000, 0.22 + arc * 0.10);
+            gfx.fillEllipse(x, y, (120 + arc * 55) * s, (36 + arc * 10) * s);
+            this.skeleton.setVisible(true);
+            this.skeleton.updateFall(x, y - arc * (this._flipArcHeight ?? 85) * s, s, facing, 'flip', this.flipProgress);
             return;
         }
 
@@ -2140,12 +2183,10 @@ export default class Wrestler {
         // _drawFlat survives for the airborne/held paths that still use it.
         if (state === 'down' || state === 'pinned' || state === 'possum') {
             this.skeleton.setVisible(true);
-            // Renders PRONE (face down). Wrestlers land on their backs more
-            // often than face-first, but the render-time reflection that used
-            // to present that turned every part PNG upside down, so it was
-            // removed (2026-08-17). Prone is the honest fallback until a real
-            // supine pose is authored — see Skeleton.GROUNDED_FLAT.
-            this.skeleton.updateGrounded(x, y, s, facing, 'flat');
+            // Lies however he landed (this.lying; Arena.startPin turns a pinned
+            // wrestler onto his back). Supine is the prone pose rotated the
+            // other way, never reflected (see Skeleton.GROUNDED_SUPINE).
+            this.skeleton.updateGrounded(x, y, s, facing, this.lying);
             return;
         }
 
@@ -2220,53 +2261,6 @@ export default class Wrestler {
         gfx.fillStyle(0x181818, 1);
         gfx.fillRect(x - lG - lW, hipY - lH, lW, lH * 0.28);
         gfx.fillRect(x + lG,      hipY - lH, lW, lH * 0.28);
-    }
-
-    _drawFalling(x, y, s, facing, skinCol, trunksCol, p) {
-        const gfx    = this.gfx;
-        const pCube  = p * p * p;
-        const vScale = 1 - pCube;
-
-        const lH  = 88  * s * vScale, lW  = 24 * s, lG = 16 * s;
-        const tH  = 112 * s * vScale, tW  = 72 * s, trH = 40 * s * vScale;
-        const hR  = 34  * s;
-
-        gfx.fillStyle(0x000000, 0.22 + pCube * 0.12);
-        gfx.fillEllipse(x, y, (120 + pCube * 110) * s, (36 + pCube * 12) * s);
-
-        if (vScale > 0.04) {
-            gfx.fillStyle(0x181818, 1);
-            gfx.fillRect(x - lG - lW, y - lH * 0.28, lW, lH * 0.28);
-            gfx.fillRect(x + lG,      y - lH * 0.28, lW, lH * 0.28);
-            gfx.fillStyle(skinCol, 1);
-            gfx.fillRect(x - lG - lW, y - lH, lW, lH * 0.72);
-            gfx.fillRect(x + lG,      y - lH, lW, lH * 0.72);
-            gfx.fillStyle(trunksCol, 1);
-            gfx.fillRect(x - tW / 2, y - lH - trH, tW, trH);
-            gfx.fillStyle(skinCol, 1);
-            gfx.fillRect(x - tW / 2, y - lH - tH, tW, tH - trH);
-            const armY = y - lH - tH + 12 * s * vScale;
-            gfx.fillRect(x - tW / 2 - 20 * s, armY, 20 * s, 76 * s * vScale);
-            gfx.fillRect(x + tW / 2,           armY, 20 * s, 76 * s * vScale);
-        }
-
-        const headY = y - vScale * (88 + 112 + 34 * 0.7) * s;
-        const headX = x + facing * pCube * 118 * s;
-        gfx.fillStyle(skinCol, 1);
-        gfx.fillCircle(headX, headY, hR);
-    }
-
-    _drawClotheslineFall(x, y, s, flipProgress, flipDir, skinCol, trunksCol) {
-        const gfx  = this.gfx;
-        const arc  = Math.sin(flipProgress * Math.PI); // 0 → 1 → 0
-        const arcY = y - arc * (this._flipArcHeight ?? 85) * s;
-
-        // Shadow stays on the mat, expands as body rises
-        gfx.fillStyle(0x000000, 0.22 + arc * 0.10);
-        gfx.fillEllipse(x, y, (120 + arc * 55) * s, (36 + arc * 10) * s);
-
-        // Body arcing through air — flat, head opposite to run direction
-        this._drawFlat(x, arcY, s, -flipDir, skinCol, trunksCol);
     }
 
     // Front-facing horizontal view for the dropkick.

@@ -430,6 +430,40 @@ function jsValue(value, indent = 0) {
 // every editor-only field (contacts, posture) dropped. Keeping this separate
 // from normalizeDraft is what guarantees authoring metadata cannot leak into
 // gameplay data by accident.
+// ── Reference sprites (editor-only) ──────────────────────────────────────────
+//
+// A reference is a frame of a downloaded sprite sheet shown faded behind one
+// actor, to pose the rig against. `draft.references` holds
+// { role, at, frame, dx, dy, scale, flip }: the frame shown from `at` until the
+// role's next reference. Pose reference only — exportClip never carries it, so
+// no sheet art can reach the game.
+export function activeReference(draft, role, at) {
+    let active = null;
+    for (const entry of draft.references ?? []) {
+        if (entry.role === role && entry.at <= at + 1e-6 && (!active || entry.at >= active.at)) active = entry;
+    }
+    return active;
+}
+
+// Add or replace the reference for `role` at exactly `at`; returns the entry.
+export function setReference(draft, role, at, fields) {
+    draft.references ??= [];
+    let entry = draft.references.find(ref => ref.role === role && Math.abs(ref.at - at) < 1e-6);
+    if (!entry) {
+        entry = { role, at: round(at), frame: 0, dx: 0, dy: 0, scale: 1, flip: false };
+        draft.references.push(entry);
+        draft.references.sort((a, b) => a.at - b.at);
+    }
+    Object.assign(entry, fields);
+    return entry;
+}
+
+export function clearReference(draft, role, at) {
+    const before = (draft.references ?? []).length;
+    draft.references = (draft.references ?? []).filter(ref => !(ref.role === role && Math.abs(ref.at - at) < 1e-6));
+    return draft.references.length !== before;
+}
+
 export function exportClip(draft) {
     const { id, duration, tracks, events } = normalizeDraft(draft);
     return { id, duration, tracks, events };

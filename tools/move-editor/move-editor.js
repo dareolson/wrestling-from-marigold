@@ -10,7 +10,9 @@ import {
     addEvent, basePose, clipReadiness, contactPartner, createPairedDraft,
     draftValidation, exportModule, insertKeyframe, normalizeDraft,
     draftCompatibility, releaseContact, removeKeyframe, sampleDraft, variantChoices,
+    activeReference, setReference, clearReference,
 } from './model.js';
+import { createReferenceLayer } from './reference.js';
 import { pickAnchorRole } from '/src/animation/clipStaging.js';
 import { JOINT_LIMITS } from '/src/rig/articulation.js';
 
@@ -65,6 +67,7 @@ let lastCertificationAt = 0;
 // declared contact by what was actually measured rather than by what was
 // asserted. Null until the author sweeps.
 let lastReadiness = null;
+let referenceLayer = null;
 
 const actors = {
     attacker: { character: REFERENCE_RIG_ID, runtimeCharacter: null, facing: 1, skeleton: null, pose: basePose(), transform: { x: 0, y: 0 }, parts: {} },
@@ -255,6 +258,43 @@ function syncControls() {
         $(`out-root-${axis}`).value = round(actor.transform[axis] ?? 0);
     }
     buildVariantControls();
+    syncReferenceControls();
+}
+
+// The reference panel shows the selected role's reference in effect at the
+// playhead; editing a field changes that entry (or, for the frame number,
+// sets one at the playhead).
+function syncReferenceControls() {
+    if (!$('refFrame')) return;
+    const entry = activeReference(draft, selectedRole, playhead);
+    const here = entry && Math.abs(entry.at - playhead) < 1e-6;
+    if (document.activeElement !== $('refFrame')) $('refFrame').value = entry?.frame ?? '';
+    for (const [id, field, fallback] of [['refDx', 'dx', 0], ['refDy', 'dy', 0], ['refScale', 'scale', 1]]) {
+        if (document.activeElement !== $(id)) $(id).value = entry?.[field] ?? fallback;
+    }
+    $('refFlip').checked = !!entry?.flip;
+    $('refInfo').textContent = entry
+        ? `${selectedRole}: frame ${entry.frame}, set ${here ? 'here' : `at ${entry.at.toFixed(3)}s`}`
+        : `${selectedRole}: no reference yet. Type a frame number to show one from the playhead on.`;
+}
+
+function setReferenceFrame(frame) {
+    if (!Number.isInteger(frame) || frame < 0) return;
+    mutate('reference frame', () => {
+        const previous = activeReference(draft, selectedRole, playhead);
+        // A new entry inherits the alignment of the one before it, so stepping
+        // through a sequence keeps the sprite where the author placed it.
+        const carry = previous ? { dx: previous.dx, dy: previous.dy, scale: previous.scale, flip: previous.flip } : {};
+        setReference(draft, selectedRole, playhead, { ...carry, frame });
+        syncReferenceControls();
+        renderTimeline();
+    });
+}
+
+function nudgeReference(fields) {
+    const entry = activeReference(draft, selectedRole, playhead);
+    if (!entry) return;
+    mutate('reference alignment', () => { Object.assign(entry, fields); syncReferenceControls(); }, { coalesce: `ref:${selectedRole}:${entry.at}` });
 }
 
 function buildPoseControls() {
@@ -659,6 +699,14 @@ function renderTimeline() {
         track.innerHTML = `<div class="track-label">${role}</div><div class="rail"></div>`;
         const rail = track.querySelector('.rail');
         renderContactSpans(rail, role);
+        for (const ref of (draft.references ?? []).filter(entry => entry.role === role)) {
+            const tick = document.createElement('span');
+            tick.className = 'ref-tick';
+            tick.style.left = `${ref.at / draft.duration * 100}%`;
+            tick.title = `reference frame ${ref.frame} from ${ref.at.toFixed(3)}s`;
+            tick.textContent = ref.frame;
+            rail.append(tick);
+        }
         rail.addEventListener('pointerdown', event => {
             if (event.target !== rail) return;
             const rect = rail.getBoundingClientRect();
@@ -1142,6 +1190,19 @@ async function loadLibraryDraft(id) {
 function installUI() {
     buildPoseControls();
     buildContactControls();
+    $('refShow').addEventListener('change', event => { referenceLayer.view.show = event.target.checked; });
+    $('refOpacity').addEventListener('input', event => { referenceLayer.view.opacity = Number(event.target.value); });
+    $('refFrame').addEventListener('change', event => setReferenceFrame(Number(event.target.value)));
+    $('refPrev').addEventListener('click', () => setReferenceFrame(Math.max(0, (activeReference(draft, selectedRole, playhead)?.frame ?? 1) - 1)));
+    $('refNext').addEventListener('click', () => setReferenceFrame((activeReference(draft, selectedRole, playhead)?.frame ?? -1) + 1));
+    $('refClear').addEventListener('click', () => mutate('remove reference', () => {
+        if (!clearReference(draft, selectedRole, playhead)) status('No reference is set exactly at the playhead for this role.', true);
+        syncReferenceControls(); renderTimeline();
+    }));
+    $('refDx').addEventListener('input', event => nudgeReference({ dx: Number(event.target.value) || 0 }));
+    $('refDy').addEventListener('input', event => nudgeReference({ dy: Number(event.target.value) || 0 }));
+    $('refScale').addEventListener('input', event => nudgeReference({ scale: Number(event.target.value) || 1 }));
+    $('refFlip').addEventListener('change', event => nudgeReference({ flip: event.target.checked }));
     $('role').addEventListener('change', event => { selectedRole = event.target.value; selectedKey = 0; syncControls(); renderTimeline(); refreshOnionSkins(); });
     $('onionSkin').addEventListener('change', refreshOnionSkins);
     $('character').addEventListener('change', event => {
@@ -1330,6 +1391,11 @@ class EditorScene extends Phaser.Scene {
         handleLayer = [];
         for (const role of ROLES) rebuildActor(role);
         rebuildHandles();
+        referenceLayer = createReferenceLayer({
+            scene: this, roles: ROLES, scale: SCALE, status,
+            getDraft: () => draft, getPlayhead: () => playhead, getSelectedRole: () => selectedRole,
+            actorRoot,
+        });
         installUI();
         $('scrubber').max = draft.duration; $('time').max = draft.duration;
         syncControls(); renderTimeline(); loadSample(0); validate();
@@ -1345,6 +1411,7 @@ class EditorScene extends Phaser.Scene {
             setPlayhead(next);
         }
         for (const role of ROLES) renderActor(role);
+        referenceLayer?.update();
         updateHandles();
         if (_time - lastCertificationAt > 200) {
             updateCertification();

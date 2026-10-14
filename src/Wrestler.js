@@ -199,12 +199,6 @@ export const MOVE_DEFS = {
                               { p: 'whipRelease', dur:  90, e: 'Cubic.easeIn'  },
                               { p: 'whipFollow',  dur: 120, e: 'Cubic.easeOut' },
                               { p: 'idle',        dur: 160, e: 'Linear'        }] },
-    bodySlam:    { poseSeq: [{ p: 'slamGrab',    dur: 150, e: 'Cubic.easeOut' },
-                              { p: 'slamHold',    dur: 200, e: 'Cubic.easeOut' },
-                              { p: 'slamPeak',    dur: 130, e: 'Linear'        },
-                              { p: 'slamThrow',   dur: 150, e: 'Cubic.easeIn'  },
-                              { p: 'stumble',     dur: 140, e: 'Cubic.easeOut' },
-                              { p: 'idle',        dur: 240, e: 'Linear'        }] },
     clothesline: { poseSeq: [{ p: 'clotheslineCock',   dur: 100, e: 'Cubic.easeOut' },
                               { p: 'clothesline',       dur:  80, e: 'Cubic.easeIn'  },
                               { p: 'clotheslineFollow', dur: 130, e: 'Linear'        },
@@ -354,7 +348,7 @@ export default class Wrestler {
         this._divLandY     = 0;
         this._ropeLevel    = 0; // 0=none, 1=middle rope, 2=top rope
         this.slamPhase    = null; // 'up' | 'throwing' | 'dropping'
-        this.slamType     = null; // 'slam' — which held throw is in progress
+        this.slamType     = null; // 'suplex' — which held throw is in progress
         this.slamY        = 0;
         this.pose            = { ...POSES.idle, lean: 0, crouch: 0 }; // live joint angles, tweened per move
         this.idlePose        = 'idle';            // character-specific resting stance — override after construction
@@ -1225,51 +1219,14 @@ export default class Wrestler {
         });
     }
 
+    // Lou's body slam: scooped, swung across the shoulders and slammed on his
+    // back in front (author_bodyslam.mjs, sheet frames 322–328 / 120–121).
     _doBodySlam(other) {
-        other._drain(STAMINA_DRAIN.bodySlam);
-        this.state      = 'slamming';
-        other.state     = 'grabbed';
-        other.slamPhase = 'up';
-        other.slamType  = 'slam';
-        const facing = this.facing;
-        const sx = this.x, sy = this.y, ss = this.s;
-
-        other.x      = sx;
-        other.facing = facing;
-        other.slamY  = other.y - 130 * other.s; // start near body center, lift to overhead
-
-        // Attacker visual: pose sequence runs in parallel with defender tweens
-        this._runPoseSequence(MOVE_DEFS.bodySlam.poseSeq);
-
-        // Defender phase 1 — lift flat to overhead position
-        this.scene.tweens.add({
-            targets:  other,
-            slamY:    sy - 250 * ss,
-            duration: 280,
-            ease:     'Cubic.easeOut',
-            onComplete: () => {
-                if (this.state !== 'slamming') { this._releaseGrabbed(other); return; }
-                const b     = ringBoundsAtY(sy);
-                const landX = Math.max(b.left + 20, Math.min(b.right - 20, sx + facing * 120 * ss));
-                other.slamPhase = 'throwing';
-                other.facing    = facing;
-
-                // Defender phase 2 — arc forward and land flat
-                this.scene.tweens.add({
-                    targets:  other,
-                    x:        landX,
-                    y:        sy,
-                    duration: 220,
-                    ease:     'Cubic.easeIn',
-                    onComplete: () => {
-                        other.state      = 'down';
-                        other.lying      = 'supine';
-                        other.stateTimer = DOWN_SEC;
-                        other.slamPhase  = null;
-                        this.state       = 'standing';
-                        this.scene.cameras.main.shake(200, 0.003);
-                    },
-                });
+        this._playPairedThrow(other, 'bodySlam', {
+            damage: STAMINA_DRAIN.bodySlam,
+            finish: () => {
+                other._layOnBack(DOWN_SEC);
+                this._standBackUp();
             },
         });
     }
@@ -1393,13 +1350,14 @@ export default class Wrestler {
         });
     }
 
-    // Piledriver on the clip runtime (2026-10-13): posed in the move editor
-    // against the WWF Raw sheet's piledriver frames (tools/move-editor/
-    // author_piledriver.mjs, drafts/piledriver.json). The clip stages both
-    // wrestlers and turns the victim upside down with the body tilt/lift
-    // channels; this executor owns the gameplay: states, the damage on the
-    // impact marker, and both wrestlers ending on their backs.
-    _doPiledriver(other) {
+    // A throw played on the clip runtime, posed in the move editor against the
+    // WWF Raw sheet (tools/move-editor/author_*.mjs). The clip stages both
+    // wrestlers and turns the victim over with the body tilt/lift channels;
+    // this owns the gameplay: both are held for the clip, the damage lands on
+    // its `impact` marker, and `finish` hands them back when it ends. An
+    // interruption drops the victim with no damage and puts the attacker back
+    // on his feet. Nobody is ever left tilted.
+    _playPairedThrow(other, clipId, { damage, shake = [200, 0.003], finish }) {
         const runtime = this.scene.moveRuntime;
         if (!runtime) return;
 
@@ -1411,49 +1369,57 @@ export default class Wrestler {
         this._fixedHold  = true;
         other._fixedHold = true;
 
-        // Lay a wrestler on his back where the clip left him. The clip's last
-        // frame already has both lying back, so this only hands the body from
-        // the upright rig (tilt/lift) to the grounded one.
-        const layDown = (wrestler, seconds) => {
-            wrestler.pose.tilt = 0;
-            wrestler.pose.lift = 0;
-            wrestler.state      = 'down';
-            wrestler.lying      = 'supine';
-            wrestler.stateTimer = seconds;
-        };
         const release = (finished) => {
             this._activeMove  = null;
             other._activeMove = null;
             this._fixedHold   = false;
             other._fixedHold  = false;
-            if (finished) {
-                layDown(other, DOWN_SEC + 2.0);
-                layDown(this, 2.0);
-                return;
-            }
-            // Interrupted: the victim drops wherever he was in the lift; the
-            // attacker is back on his feet. Never leave anyone tilted.
-            if (other.state === 'holding') layDown(other, DOWN_SEC);
-            if (this.state === 'holding') {
-                this.pose.tilt = 0;
-                this.pose.lift = 0;
-                this.state = 'standing';
-                this.tweenPose(this.idlePose ?? 'idle', 200, 'Linear');
-            }
+            if (finished) { finish(); return; }
+            if (other.state === 'holding') other._layOnBack(DOWN_SEC);
+            if (this.state === 'holding') this._standBackUp();
         };
 
-        const handle = runtime.play('piledriver', { attacker: this, defender: other }, {
+        const handle = runtime.play(clipId, { attacker: this, defender: other }, {
             onEvent: (event) => {
                 if (event.type !== 'impact') return;
                 if (this.state !== 'holding' || other.state !== 'holding') return;
-                other._drain(STAMINA_DRAIN.piledriver);
-                this.scene.cameras.main.shake(220, 0.0035);
+                other._drain(damage);
+                this.scene.cameras.main.shake(...shake);
             },
             onComplete: () => release(true),
             onCancel: () => release(false),
         });
         this._activeMove  = handle;
         other._activeMove = handle;
+    }
+
+    // Hand a body a throw clip left lying back over to the grounded rig.
+    _layOnBack(seconds) {
+        this.pose.tilt   = 0;
+        this.pose.lift   = 0;
+        this.state       = 'down';
+        this.lying       = 'supine';
+        this.stateTimer  = seconds;
+    }
+
+    _standBackUp() {
+        this.pose.tilt = 0;
+        this.pose.lift = 0;
+        this.state     = 'standing';
+        this.tweenPose(this.idlePose ?? 'idle', 200, 'Linear');
+    }
+
+    // George's piledriver: Lou stood on his head, driven into the mat
+    // (author_piledriver.mjs, sheet frames 140–153). Both end on their backs.
+    _doPiledriver(other) {
+        this._playPairedThrow(other, 'piledriver', {
+            damage: STAMINA_DRAIN.piledriver,
+            shake: [220, 0.0035],
+            finish: () => {
+                other._layOnBack(DOWN_SEC + 2.0);
+                this._layOnBack(2.0);
+            },
+        });
     }
 
     _doDive(other) {
@@ -2159,9 +2125,7 @@ export default class Wrestler {
         }
 
         if (state === 'grabbed') {
-            if (this.slamPhase === 'up' && this.slamType === 'slam')
-                this._drawFlat(x, this.slamY, s, this.facing, skinCol, trunksCol);
-            else if (this.slamPhase === 'up')
+            if (this.slamPhase === 'up')
                 this._drawInverted(x, this.slamY, s, skinCol, trunksCol);
             else
                 this._drawFlat(x, y, s, facing, skinCol, trunksCol);

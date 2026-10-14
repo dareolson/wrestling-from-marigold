@@ -97,8 +97,8 @@ export const MOVE_SPECS = {
 
     // ── Throws ────────────────────────────────────────────────────────────
     bodySlam: {
-        category: C.THROW, clip: null, executor: '_doBodySlam',
-        damageKey: 'bodySlam', poseSeq: true, legacyFallback: null, kitGated: true,
+        category: C.THROW, clip: 'bodySlam', executor: '_doBodySlam',
+        damageKey: 'bodySlam', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryAction() — grapple range',
         ai: ['grappleFinish', 'knockdown'],
     },

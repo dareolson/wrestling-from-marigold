@@ -16,16 +16,10 @@
 // crown sits 28 rig units below the mat at lift 0, so lift 28 is head-on-mat
 // and ~98 holds his head at George's thigh height.
 
-import { writeFileSync } from 'node:fs';
-import { normalizeDraft, exportModule } from './model.js';
+import { pose, buildDraft, writeDraftAndClip } from './authoring.mjs';
 
 const AT = { stance: 0, reach: 0.20, hook: 0.45, up: 0.72, hold: 1.00, hop: 1.12, impact: 1.28, crumple: 1.50, rest: 1.95 };
 const DURATION = AT.rest;
-
-const pose = (fields) => ({
-    lArm: 0, rArm: 0, lElbow: 0.7, rElbow: 0.7, lLeg: -0.08, rLeg: 0.08, lKnee: 0.22, rKnee: 0.22,
-    lean: 0, crouch: 0, tilt: 0, lift: 0, ...fields,
-});
 
 // [time, pose, transform x, reference frame (or null), ease]
 const attacker = [
@@ -63,38 +57,20 @@ const defender = [
     [AT.impact, pose({ lArm: 2.50, rArm: 2.60, lElbow: 0.4, rElbow: 0.4, lLeg: 0.05, rLeg: -0.05, lKnee: 0.15, rKnee: 0.15, tilt: 3.14, lift: 28 }), 14, 153, 'easeIn'],
     // Folds over onto his back, legs falling over George's side.
     [AT.crumple, pose({ lArm: 2.20, rArm: 2.40, lElbow: 0.6, rElbow: 0.5, lLeg: 0.30, rLeg: 0.20, lKnee: 0.50, rKnee: 0.40, tilt: 3.90, lift: -30 }), 30, null],
-    [AT.rest, pose({ lArm: 1.48, rArm: 1.42, lElbow: 0.1, rElbow: 0.1, lLeg: 0.05, rLeg: 0.10, lKnee: 0.10, rKnee: 0.10, tilt: 4.66, lift: -109 }), 40, null],
+    // Tilted onto his back, arm 0 lies along the body toward the feet.
+    [AT.rest, pose({ lArm: 0.05, rArm: 0.05, lElbow: 0.1, rElbow: 0.1, lLeg: 0.05, rLeg: 0.10, lKnee: 0.10, rKnee: 0.10, tilt: 4.66, lift: -109 }), 40, null],
 ];
 
 // Upside down, the victim's body has to read against the attacker's front, so
 // from the hook on he stands a hair nearer the camera, which draws him in
 // front (draw order follows ring depth, in game and in the editor).
-const FRONT_FROM = AT.hook;
-const track = (beats, role) => ({
-    keyframes: beats.map(([at, beatPose, x, , ease = 'linear']) => ({
-        at, ease, pose: beatPose, transform: { x, y: role === 'defender' && at >= FRONT_FROM ? 4 : 0 }, parts: {},
-    })),
-});
-
-const references = [];
-for (const [role, beats] of [['attacker', attacker], ['defender', defender]]) {
-    for (const [at, , , frame] of beats) {
-        if (frame !== null) references.push({ role, at, frame, dx: 0, dy: 0, scale: 1, flip: false });
-    }
-}
-
-const draft = normalizeDraft({
+const draft = buildDraft({
     id: 'piledriver',
     duration: DURATION,
-    posture: 'upright',
-    tracks: { attacker: track(attacker, 'attacker'), defender: track(defender, 'defender') },
+    attacker, defender,
     events: [{ at: AT.impact, type: 'impact' }],
-    references,
-    preview: { facing: { attacker: 1, defender: -1 }, characters: { attacker: 'george', defender: 'thesz' } },
+    characters: { attacker: 'george', defender: 'thesz' },
+    transformY: (role, at) => (role === 'defender' && at >= AT.hook ? 4 : 0),
 });
 
-const draftPath = new URL('./drafts/piledriver.json', import.meta.url);
-const clipPath = new URL('../../src/animation/clips/piledriver.js', import.meta.url);
-writeFileSync(draftPath, `${JSON.stringify(draft, null, 2)}\n`);
-writeFileSync(clipPath, exportModule(draft));
-console.log(`wrote ${draftPath.pathname}\nwrote ${clipPath.pathname}`);
+writeDraftAndClip(draft, 'piledriver.json', 'piledriver.js');

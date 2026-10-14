@@ -404,8 +404,8 @@
           "at": 1.95,
           "ease": "linear",
           "pose": {
-            "lArm": 1.48,
-            "rArm": 1.42,
+            "lArm": 0.05,
+            "rArm": 0.05,
             "lElbow": 0.1,
             "rElbow": 0.1,
             "lLeg": 0.05,

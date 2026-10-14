@@ -15,9 +15,11 @@ import { jabClip } from './jab.js';
 import { hammerlockWipClip } from './hammerlockWip.js';
 // Posed against the WWF Raw sheet (tools/move-editor/author_piledriver.mjs).
 import { piledriverClip } from './piledriver.js';
+import { bodySlamClip } from './bodySlam.js';
 
 export const REGISTERED_MOVE_CLIPS = [
     jabClip,
     hammerlockWipClip,
     piledriverClip,
+    bodySlamClip,
 ];

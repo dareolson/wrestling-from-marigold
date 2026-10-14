@@ -1,6 +1,6 @@
-// Derek's hammerlock, work in progress — AUDITION ONLY, selected with
-// ?hammerlock=wip (see Arena's clip registration). The shipped hammerlock in
-// ./hammerlock.js is unchanged and is what plays otherwise.
+// Derek's hammerlock — THE game's hammerlock since 2026-10-13 (registered in
+// ./index.js). It began as an audition behind ?hammerlock=wip; the earlier
+// generated clip in ./hammerlock.js no longer plays in game.
 //
 // 0.000–0.300  Derek's own keys: tie-up, step round, Lou turns behind George.
 // 0.550        George's near arm folded up his back (elbow -3.0), pain face

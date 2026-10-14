@@ -13,7 +13,6 @@ import { theszProcreateV1 } from '../characters/thesz_procreate_v1.js';
 import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
-import { hammerlockWipClip } from '../animation/clips/hammerlockWip.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
 
@@ -3049,12 +3048,6 @@ export default class Arena extends Phaser.Scene {
         // nothing survives a Scene restart.
         this.moveRuntime = new MoveRuntime();
         for (const clip of REGISTERED_MOVE_CLIPS) this.moveRuntime.register(clip);
-        // Audition: ?hammerlock=wip replaces the shipped hammerlock clip (same
-        // id, same markers, same executor) with Derek's work in progress. The
-        // shipped clip is what plays without the flag.
-        if (new URLSearchParams(location.search).get('hammerlock') === 'wip') {
-            this.moveRuntime.register(hammerlockWipClip);
-        }
         this.events.once('shutdown', () => this.moveRuntime.shutdown());
 
         // Both P1 and P2 default to keyboard (Derek, 2026-07-12 — loading the

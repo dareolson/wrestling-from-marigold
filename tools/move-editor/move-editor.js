@@ -1087,7 +1087,7 @@ const DRAFT_LIBRARY = [
     { id: 'hammerlock-beats', label: 'hammerlock — 6 beats (to pose)', file: './drafts/hammerlock-beats.json' },
     // Derek's own hammerlock in progress: his keys to 0.3s plus the audition
     // hold (arm up the back, pain face, free-arm flail). Generates
-    // src/animation/clips/hammerlockWip.js, played in game with ?hammerlock=wip.
+    // src/animation/clips/hammerlockWip.js, the game's hammerlock.
     { id: 'hammerlock-derek-wip', label: 'hammerlock — Derek WIP', file: './drafts/hammerlock-derek-wip.json' },
 ];
 

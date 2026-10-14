@@ -9,9 +9,12 @@
 // Adding a migrated move means one edit here plus its registry `clip` field.
 
 import { jabClip } from './jab.js';
-import { hammerlockClip } from './hammerlock.js';
+// The game's hammerlock is Derek's, posed in the move editor
+// (./hammerlockWip.js). ./hammerlock.js is the earlier generated clip; it
+// stays as the fixture the authoring pipeline's tests and proofs are built on.
+import { hammerlockWipClip } from './hammerlockWip.js';
 
 export const REGISTERED_MOVE_CLIPS = [
     jabClip,
-    hammerlockClip,
+    hammerlockWipClip,
 ];

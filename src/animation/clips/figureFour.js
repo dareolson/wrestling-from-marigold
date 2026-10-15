@@ -112,7 +112,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -0.9,
-                        lift: 6
+                        lift: -84
                     },
                     transform: {
                         x: 60,
@@ -135,7 +135,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.2,
-                        lift: 4
+                        lift: -99
                     },
                     transform: {
                         x: 60,
@@ -158,7 +158,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.35,
-                        lift: 4
+                        lift: -99
                     },
                     transform: {
                         x: 60,
@@ -181,7 +181,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.15,
-                        lift: 4
+                        lift: -99
                     },
                     transform: {
                         x: 60,
@@ -204,7 +204,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.35,
-                        lift: 4
+                        lift: -99
                     },
                     transform: {
                         x: 60,
@@ -227,7 +227,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.2,
-                        lift: -73
+                        lift: -99
                     },
                     transform: {
                         x: 60,
@@ -250,7 +250,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -0.5,
-                        lift: 30
+                        lift: -104
                     },
                     transform: {
                         x: 55,
@@ -300,7 +300,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.52,
-                        lift: -109
+                        lift: -110
                     },
                     transform: {
                         x: 150,
@@ -323,7 +323,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.52,
-                        lift: -109
+                        lift: -110
                     },
                     transform: {
                         x: 150,
@@ -346,7 +346,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.52,
-                        lift: -109
+                        lift: -110
                     },
                     transform: {
                         x: 150,
@@ -369,7 +369,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.3,
-                        lift: -109
+                        lift: -110
                     },
                     transform: {
                         x: 150,
@@ -392,7 +392,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.52,
-                        lift: -109
+                        lift: -110
                     },
                     transform: {
                         x: 150,
@@ -415,7 +415,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.25,
-                        lift: -109
+                        lift: -110
                     },
                     transform: {
                         x: 150,
@@ -438,7 +438,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.5,
-                        lift: -109
+                        lift: -110
                     },
                     transform: {
                         x: 150,
@@ -461,7 +461,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.52,
-                        lift: -109
+                        lift: -110
                     },
                     transform: {
                         x: 150,
@@ -484,7 +484,7 @@ export const figureFourClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.52,
-                        lift: -109
+                        lift: -110
                     },
                     transform: {
                         x: 150,

@@ -10,10 +10,9 @@
 //
 // Cast: Lou throws George. George goes over forward — tilt 0 through upside
 // down (π) to ~3π/2, which for his facing is lying on his back with his feet
-// toward Lou — and lands in front of him. George's hips stand 137 off the
-// mat; flat is lift -122.
+// toward Lou — and lands in front of him, flat (LYING).
 
-import { pose, buildDraft, writeDraftAndClip } from './authoring.mjs';
+import { pose, buildDraft, writeDraftAndClip, LYING, hipsAt } from './authoring.mjs';
 
 const AT = { stance: 0, hook: 0.15, load: 0.30, over: 0.42, down: 0.55, impact: 0.66, rest: 0.95 };
 
@@ -43,8 +42,8 @@ const defender = [
     [AT.down, pose({ lArm: 1.80, rArm: 1.60, lElbow: 0.3, rElbow: 0.3, lLeg: 0.20, rLeg: 0.10, lKnee: 0.30, rKnee: 0.20, tilt: 3.60, lift: 40 }), 85, 353, 'easeIn'],
     // Flat on his back, legs bouncing (354–355). Lying tilted back, arm 0
     // lies along the body toward the feet.
-    [AT.impact, pose({ lArm: 0.60, rArm: 0.50, lElbow: 0.3, rElbow: 0.3, lLeg: 0.40, rLeg: 0.30, lKnee: 0.40, rKnee: 0.30, tilt: 4.76, lift: -122 }), 125, 355, 'easeIn'],
-    [AT.rest, pose({ lArm: 0.05, rArm: 0.05, lElbow: 0.1, rElbow: 0.1, lLeg: 0.05, rLeg: 0.10, lKnee: 0.10, rKnee: 0.10, tilt: 4.76, lift: -122 }), 130, 356],
+    [AT.impact, pose({ lArm: 0.60, rArm: 0.50, lElbow: 0.3, rElbow: 0.3, lLeg: 0.40, rLeg: 0.30, lKnee: 0.40, rKnee: 0.30, tilt: 4.76, lift: LYING }), 125, 355, 'easeIn'],
+    [AT.rest, pose({ lArm: 0.05, rArm: 0.05, lElbow: 0.1, rElbow: 0.1, lLeg: 0.05, rLeg: 0.10, lKnee: 0.10, rKnee: 0.10, tilt: 4.76, lift: LYING }), 130, 356],
 ];
 
 const draft = buildDraft({

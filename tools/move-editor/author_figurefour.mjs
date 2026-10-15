@@ -12,15 +12,13 @@
 // pass" in the editor) and src/animation/clips/figureFour.js.
 //
 // Cast: George attacks, Lou (shipped art) lies on his back with his feet
-// toward George. Lying flat is lift -109 for Lou (hips 124 off the mat).
-// George's lifts are small because the upright rig keeps his soles down: with
-// his legs out in front his hips are already near the mat (measured in the
-// editor: 34 for the fall pose, 21 locked, 98 at the release, -10 sitting
-// up), so each lift just sets them ~25 off it. Tilted back, a leg forward of ~1 points up
+// toward George. Lift is in reference-body units (authoring.mjs hipsAt /
+// LYING), so the hold sits the same on any wrestler: George's hips 40 off
+// the mat falling back, 25 locked in, 20 sitting up. Tilted back, a leg forward of ~1 points up
 // and over: George's legs go over Lou's, Lou's crossed legs come up into
 // them. Three `squeeze` markers carry the damage while the hold is on.
 
-import { pose, buildDraft, writeDraftAndClip } from './authoring.mjs';
+import { pose, buildDraft, writeDraftAndClip, LYING, hipsAt } from './authoring.mjs';
 
 const FLAIR = 'wwf-royal-rumble-snes/44464-ric-flair';
 const BRET = 'wwf-royal-rumble-snes/44459-bret-hart';
@@ -34,7 +32,7 @@ const AT = {
 export const SQUEEZES = [2.0, 2.6, 3.2];
 
 // George. Locked in he lies back propped on his hands, legs over Lou's.
-const locked = (tilt, arms) => pose({ lArm: arms, rArm: arms + 0.2, lElbow: 0.4, rElbow: 0.4, lLeg: 1.00, rLeg: 0.80, lKnee: 0.70, rKnee: 0.90, tilt, lift: 4 });
+const locked = (tilt, arms) => pose({ lArm: arms, rArm: arms + 0.2, lElbow: 0.4, rElbow: 0.4, lLeg: 1.00, rLeg: 0.80, lKnee: 0.70, rKnee: 0.90, tilt, lift: hipsAt(25) });
 const attacker = [
     // The hunched Flair strut in (386–388).
     [AT.strut, pose({ lArm: 0.50, rArm: 0.40, lElbow: 1.0, rElbow: 1.0, lLeg: 0.20, rLeg: -0.10, lKnee: 0.40, rKnee: 0.40, lean: 0.45, crouch: 0.30 }), 0, flair(386)],
@@ -44,21 +42,21 @@ const attacker = [
     // Crouched, crossing the legs (393–394).
     [AT.grab, pose({ lArm: 1.20, rArm: 1.00, lElbow: 0.6, rElbow: 0.6, lLeg: -0.20, rLeg: 0.30, lKnee: 0.90, rKnee: 0.90, lean: 0.60, crouch: 0.65 }), 55, flair(394)],
     // Falls back into it (396).
-    [AT.fall, pose({ lArm: -0.60, rArm: -0.40, lElbow: 0.5, rElbow: 0.5, lLeg: 1.00, rLeg: 0.70, lKnee: 0.60, rKnee: 0.80, tilt: -0.90, lift: 6 }), 60, flair(396), 'easeIn'],
+    [AT.fall, pose({ lArm: -0.60, rArm: -0.40, lElbow: 0.5, rElbow: 0.5, lLeg: 1.00, rLeg: 0.70, lKnee: 0.60, rKnee: 0.80, tilt: -0.90, lift: hipsAt(40) }), 60, flair(396), 'easeIn'],
     // Locked, rocking back and slapping the mat (397–399).
     [AT.locked, locked(-1.20, -0.50), 60, flair(397)],
     [AT.rock1, locked(-1.35, -1.00), 60, flair(398)],
     [AT.rock2, locked(-1.15, -0.50), 60, null],
     [AT.rock3, locked(-1.35, -1.00), 60, flair(399)],
-    [AT.release, pose({ lArm: -0.40, rArm: -0.30, lElbow: 0.4, rElbow: 0.4, lLeg: 0.60, rLeg: 0.50, lKnee: 0.30, rKnee: 0.30, tilt: -1.20, lift: -73 }), 60, null],
+    [AT.release, pose({ lArm: -0.40, rArm: -0.30, lElbow: 0.4, rElbow: 0.4, lLeg: 0.60, rLeg: 0.50, lKnee: 0.30, rKnee: 0.30, tilt: -1.20, lift: hipsAt(25) }), 60, null],
     // Sits up and gets up (400–403).
-    [AT.sitUp, pose({ lArm: 0.80, rArm: 0.70, lElbow: 0.6, rElbow: 0.6, lLeg: 1.20, rLeg: 1.10, lKnee: 0.80, rKnee: 0.80, tilt: -0.50, lift: 30 }), 55, flair(400)],
+    [AT.sitUp, pose({ lArm: 0.80, rArm: 0.70, lElbow: 0.6, rElbow: 0.6, lLeg: 1.20, rLeg: 1.10, lKnee: 0.80, rKnee: 0.80, tilt: -0.50, lift: hipsAt(20) }), 55, flair(400)],
     [AT.up, pose({ lArm: 0.10, rArm: 0.59, lLeg: -0.18, rLeg: 0.13, lean: 0.09, crouch: 0.22 }), 50, flair(403), 'easeOut'],
 ];
 
 // Lou, on his back the whole time, feet toward George. Lying tilted back,
 // arm 0 lies along the body; arms forward reach up off the mat.
-const lying = (fields) => pose({ lArm: 0.05, rArm: 0.05, lElbow: 0.1, rElbow: 0.1, lLeg: 0.05, rLeg: 0.10, lKnee: 0.10, rKnee: 0.10, tilt: -1.52, lift: -109, ...fields });
+const lying = (fields) => pose({ lArm: 0.05, rArm: 0.05, lElbow: 0.1, rElbow: 0.1, lLeg: 0.05, rLeg: 0.10, lKnee: 0.10, rKnee: 0.10, tilt: -1.52, lift: LYING, ...fields });
 const crossed = { lLeg: 0.70, rLeg: 0.50, lKnee: 0.90, rKnee: 0.30 };
 const defender = [
     [AT.strut, lying({}), 150, bret(310)],

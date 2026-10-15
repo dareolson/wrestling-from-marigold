@@ -277,7 +277,7 @@ export const bodySlamClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.52,
-                        lift: -122
+                        lift: -110
                     },
                     transform: {
                         x: 160,
@@ -300,7 +300,7 @@ export const bodySlamClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.52,
-                        lift: -122
+                        lift: -110
                     },
                     transform: {
                         x: 165,
@@ -323,7 +323,7 @@ export const bodySlamClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.52,
-                        lift: -122
+                        lift: -110
                     },
                     transform: {
                         x: 165,

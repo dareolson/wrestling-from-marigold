@@ -11,14 +11,13 @@
 // in the editor, export from there instead.
 //
 // Cast: Lou's move, so Lou (shipped art) attacks and George is the victim.
-// George's hips stand 137 rig units off the mat, so lift moves them from
-// there: +45 is Lou's chest, +70 his shoulders, -122 flat on the mat. He
-// lands with his hips ~165 out, so his legs (about as long as his hips are
+// Lift is in reference-body units (authoring.mjs): +45 holds George at Lou's
+// chest, +70 at his shoulders, LYING is flat on the mat. He lands with his hips ~165 out, so his legs (about as long as his hips are
 // high) end just short of Lou's boots.
 // Backward tilt (negative) puts George's head away from Lou, so he lands on
 // his back with his feet toward Lou — the grounded supine pose for his facing.
 
-import { pose, buildDraft, writeDraftAndClip } from './authoring.mjs';
+import { pose, buildDraft, writeDraftAndClip, LYING, hipsAt } from './authoring.mjs';
 
 const AT = { stance: 0, grab: 0.16, scoop: 0.40, peak: 0.66, impact: 0.86, follow: 1.05, rest: 1.35 };
 
@@ -49,10 +48,10 @@ const defender = [
     // Flat on his back on the mat, legs bouncing up (121).
     // Lying tilted back, arm/leg 0 runs along the body toward the feet, so
     // these are small: arms flung a little off the mat, legs bouncing up.
-    [AT.impact, pose({ lArm: 0.60, rArm: 0.50, lElbow: 0.3, rElbow: 0.3, lLeg: 0.40, rLeg: 0.30, lKnee: 0.40, rKnee: 0.30, tilt: -1.52, lift: -122 }), 160, 121, 'easeIn'],
-    [AT.follow, pose({ lArm: 0.30, rArm: 0.25, lElbow: 0.2, rElbow: 0.2, lLeg: 0.15, rLeg: 0.10, lKnee: 0.20, rKnee: 0.15, tilt: -1.52, lift: -122 }), 165, null],
+    [AT.impact, pose({ lArm: 0.60, rArm: 0.50, lElbow: 0.3, rElbow: 0.3, lLeg: 0.40, rLeg: 0.30, lKnee: 0.40, rKnee: 0.30, tilt: -1.52, lift: LYING }), 160, 121, 'easeIn'],
+    [AT.follow, pose({ lArm: 0.30, rArm: 0.25, lElbow: 0.2, rElbow: 0.2, lLeg: 0.15, rLeg: 0.10, lKnee: 0.20, rKnee: 0.15, tilt: -1.52, lift: LYING }), 165, null],
     // Settles into the grounded supine pose the executor hands him to.
-    [AT.rest, pose({ lArm: 0.05, rArm: 0.05, lElbow: 0.1, rElbow: 0.1, lLeg: 0.05, rLeg: 0.10, lKnee: 0.10, rKnee: 0.10, tilt: -1.52, lift: -122 }), 165, null],
+    [AT.rest, pose({ lArm: 0.05, rArm: 0.05, lElbow: 0.1, rElbow: 0.1, lLeg: 0.05, rLeg: 0.10, lKnee: 0.10, rKnee: 0.10, tilt: -1.52, lift: LYING }), 165, null],
 ];
 
 const draft = buildDraft({

@@ -14,7 +14,7 @@
 // deep elbow bend folds the forearm back along it. Lou's hips stand 124 off
 // the mat; flat at the mat is lift ~-95.
 
-import { pose, buildDraft, writeDraftAndSoloClip } from './authoring.mjs';
+import { pose, buildDraft, writeDraftAndSoloClip, LYING, hipsAt } from './authoring.mjs';
 
 const AT = { launch: 0, rise: 0.12, over: 0.24, impact: 0.38 };
 
@@ -31,7 +31,7 @@ const attacker = [
 ];
 
 // The downed target, for the preview only: George lying on his back.
-const down = pose({ tilt: -1.52, lift: -122 });
+const down = pose({ tilt: -1.52, lift: LYING });
 const defender = [[0, down, 120, null], [AT.impact, down, 120, null]];
 
 const draft = buildDraft({

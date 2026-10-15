@@ -158,7 +158,7 @@ export const suplexClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.52,
-                        lift: -109
+                        lift: -110
                     },
                     transform: {
                         x: -20,
@@ -181,7 +181,7 @@ export const suplexClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: -1.52,
-                        lift: -109
+                        lift: -110
                     },
                     transform: {
                         x: -20,
@@ -346,7 +346,7 @@ export const suplexClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: 4.76,
-                        lift: -122
+                        lift: -110
                     },
                     transform: {
                         x: -210,
@@ -369,7 +369,7 @@ export const suplexClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: 4.76,
-                        lift: -122
+                        lift: -110
                     },
                     transform: {
                         x: -215,

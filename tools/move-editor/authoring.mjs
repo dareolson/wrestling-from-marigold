@@ -7,6 +7,15 @@
 import { writeFileSync } from 'node:fs';
 import { normalizeDraft, exportModule, exportClip } from './model.js';
 
+// Lift is in reference-body units (Skeleton REFERENCE_HIP_HEIGHT: shipped
+// Lou, hips 124 off the mat standing) and each rig scales it to its own
+// height, so these mean the same thing on every wrestler.
+export const REF_HIPS = 124;
+/** The lift that puts the hips `h` units off the mat (on the reference body). */
+export const hipsAt = h => h - REF_HIPS;
+/** Lying flat on the mat, any wrestler: hips ~14 off it. */
+export const LYING = hipsAt(14);
+
 export const pose = (fields) => ({
     lArm: 0, rArm: 0, lElbow: 0.7, rElbow: 0.7, lLeg: -0.08, rLeg: 0.08, lKnee: 0.22, rKnee: 0.22,
     lean: 0, crouch: 0, tilt: 0, lift: 0, ...fields,

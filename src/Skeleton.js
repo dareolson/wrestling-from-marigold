@@ -16,6 +16,11 @@ import { childAngleFromLocalFlex, localFlexFromChildAngle } from './rig/articula
 // Exported (with TEX and RIG below) as a read/write seam for the dev-only
 // rig tuner (tools/rig-tuner/) — nothing in the game mutates these, so
 // runtime behavior is identical to when they were module-private consts.
+// The body every clip's lift is authored for: shipped Lou, whose standing
+// hips sit 124 rig units off the mat (boot 25 + thigh 49 + shin 50). Each rig
+// scales lift by its own standingHipHeight over this — see _applyBodyTilt.
+export const REFERENCE_HIP_HEIGHT = 124;
+
 export const P = {
     // 1.75x (32->56) — thighs read squished/flat and too short (Derek,
     // 2026-07-12). TEX.thigh moves with it, same 1:1 convention as
@@ -1030,12 +1035,33 @@ export default class Skeleton {
     }
 
     // Whole-body tilt and lift, layered on the upright render (2026-10-13).
+    // Portable across wrestlers (2026-10-15): off his feet every rig uses the
+    // same hip rule (see the pose-driven branch of _updateUprightCore), and
+    // lift is in reference-body units, scaled to this rig — see
+    // standingHipHeight.
     // `tilt` rotates the finished body rigidly about the hips — radians,
     // facing-relative, positive pitching forward (head toward facing), π fully
     // upside down — and `lift` raises it off the mat in rig units. Every limb
     // channel keeps working underneath, so a piledriver victim is an ordinary
     // pose turned over and lifted, not a second posing system. Zero/absent
     // leaves the render untouched.
+    // How far a pose takes the body off its feet: 0 for ordinary standing,
+    // ramping to 1 by a 20-unit lift or a 0.3-rad tilt. Continuous, so a clip
+    // easing from a standing key into a lifted one never pops.
+    static bodyPlacementWeight(pose) {
+        const lift = Math.abs(pose?.lift ?? 0);
+        const tilt = Math.abs(pose?.tilt ?? 0);
+        return Math.min(1, Math.max(lift / 20, tilt / 0.3));
+    }
+
+    // This rig's standing hip height in rig units, by the crouch-only rule
+    // (boot + thigh + shin). Lift is authored for a 124-unit body (shipped
+    // Lou) and scaled by this over that, so a taller wrestler lying "flat"
+    // lies flat too, and one held up is held proportionally higher.
+    get standingHipHeight() {
+        return P.bootH + this._thighH + this._shinH;
+    }
+
     _applyBodyTilt(s, facing, tilt, lift) {
         const head = this.head;
         const headIsGraphics = head && !this._headIsImage;
@@ -1051,7 +1077,7 @@ export default class Skeleton {
             : points.nearHip ?? points.farHip ?? { x: this.torso.x, y: this.torso.y };
         const r = (facing >= 0 ? 1 : -1) * tilt;
         const cos = Math.cos(r), sin = Math.sin(r);
-        const dy = -lift * s;
+        const dy = -lift * s * (this.standingHipHeight / REFERENCE_HIP_HEIGHT);
         const move = point => {
             const px = point.x - pivot.x, py = point.y - pivot.y;
             point.x = pivot.x + px * cos - py * sin;
@@ -1348,6 +1374,16 @@ export default class Skeleton {
                 const farRequired = requiredHipY('far', farThighAng, farShinAng, this.farThigh, this.farShin, s * this._farThighScale, s * this._farShinScale);
                 const nearRequired = requiredHipY('near', nearThighAng, nearShinAng, this.nearThigh, this.nearShin, s, s * this._nearShinScale);
                 hipY = (farRequired + nearRequired) / 2;
+                // Off his feet (a clip tilting or lifting the body), the
+                // planted-sole solve stops meaning anything — and it is what
+                // made this rig's hips drop when the legs went forward while
+                // other rigs' stayed put, so one clip sat differently on each
+                // wrestler. Blend to the crouch-only rule every rig shares.
+                const placed = Skeleton.bodyPlacementWeight(pose);
+                if (placed > 0) {
+                    const canonical = y - bootH - (thighH * Math.cos(cThigh) + shinH * Math.cos(cShin));
+                    hipY += (canonical - hipY) * placed;
+                }
             } else {
                 hipY = y - bootH - (thighH * Math.cos(cThigh) + shinH * Math.cos(cShin));
             }

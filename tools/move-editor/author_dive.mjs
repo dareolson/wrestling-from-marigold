@@ -16,7 +16,7 @@
 // (Lou's hips stand 124 off it: lift ~-110), the prone pose the executor
 // hands him to.
 
-import { pose, buildDraft, writeDraftAndSoloClip } from './authoring.mjs';
+import { pose, buildDraft, writeDraftAndSoloClip, LYING, hipsAt } from './authoring.mjs';
 
 const AT = { launch: 0, spring: 0.12, fly: 0.32, land: 0.55 };
 
@@ -28,10 +28,10 @@ const attacker = [
     // Flat out, arms reaching past the head (211–212).
     [AT.fly, pose({ lArm: 2.90, rArm: 2.70, lElbow: 0.2, rElbow: 0.3, lLeg: -0.05, rLeg: 0.05, lKnee: 0.10, rKnee: 0.15, tilt: 1.45, lift: -20 }), 90, 212],
     // Down on his front (213).
-    [AT.land, pose({ lArm: 2.60, rArm: 2.40, lElbow: 0.3, rElbow: 0.3, lLeg: 0.00, rLeg: 0.05, lKnee: 0.10, rKnee: 0.10, tilt: 1.52, lift: -110 }), 140, 213, 'easeIn'],
+    [AT.land, pose({ lArm: 2.60, rArm: 2.40, lElbow: 0.3, rElbow: 0.3, lLeg: 0.00, rLeg: 0.05, lKnee: 0.10, rKnee: 0.10, tilt: 1.52, lift: LYING }), 140, 213, 'easeIn'],
 ];
 
-const down = pose({ tilt: -1.52, lift: -122 });
+const down = pose({ tilt: -1.52, lift: LYING });
 const defender = [[0, down, 180, null], [AT.land, down, 180, null]];
 
 const draft = buildDraft({

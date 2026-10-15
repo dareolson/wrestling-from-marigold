@@ -15,7 +15,7 @@
 // on. The last frame lies flat face down at the mat (Lou's hips stand 124
 // off it: lift ~-110), on top of the target.
 
-import { pose, buildDraft, writeDraftAndSoloClip } from './authoring.mjs';
+import { pose, buildDraft, writeDraftAndSoloClip, LYING, hipsAt } from './authoring.mjs';
 
 const AT = { launch: 0, leap: 0.12, flat: 0.26, land: 0.42 };
 
@@ -27,7 +27,7 @@ const attacker = [
     // Flat out, arms spread to wrap him (211–212).
     [AT.flat, pose({ lArm: 2.30, rArm: 1.30, lElbow: 0.3, rElbow: 0.4, lLeg: -0.10, rLeg: 0.05, lKnee: 0.15, rKnee: 0.20, tilt: 1.45, lift: 45 }), 95, 212],
     // Down on top of him (213).
-    [AT.land, pose({ lArm: 2.10, rArm: 1.20, lElbow: 0.5, rElbow: 0.5, lLeg: 0.00, rLeg: 0.05, lKnee: 0.15, rKnee: 0.15, tilt: 1.52, lift: -110 }), 150, 213, 'easeIn'],
+    [AT.land, pose({ lArm: 2.10, rArm: 1.20, lElbow: 0.5, rElbow: 0.5, lLeg: 0.00, rLeg: 0.05, lKnee: 0.15, rKnee: 0.15, tilt: 1.52, lift: LYING }), 150, 213, 'easeIn'],
 ];
 
 // The standing target, for the preview only.

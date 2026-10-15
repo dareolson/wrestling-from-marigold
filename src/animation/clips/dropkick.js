@@ -115,7 +115,7 @@ export const dropkickClip = {
                         "lean": 0,
                         "crouch": 0,
                         "tilt": -1.52,
-                        "lift": -109
+                        "lift": -110
                     },
                     "parts": {}
                 }

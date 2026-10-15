@@ -116,7 +116,7 @@
             "lean": 0,
             "crouch": 0,
             "tilt": -1.52,
-            "lift": -122
+            "lift": -110
           },
           "transform": {
             "x": 180,
@@ -139,7 +139,7 @@
             "lean": 0,
             "crouch": 0,
             "tilt": -1.52,
-            "lift": -122
+            "lift": -110
           },
           "transform": {
             "x": 180,

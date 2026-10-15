@@ -277,7 +277,7 @@ export const hipTossClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: 4.76,
-                        lift: -122
+                        lift: -110
                     },
                     transform: {
                         x: 125,
@@ -300,7 +300,7 @@ export const hipTossClip = {
                         lean: 0,
                         crouch: 0,
                         tilt: 4.76,
-                        lift: -122
+                        lift: -110
                     },
                     transform: {
                         x: 130,

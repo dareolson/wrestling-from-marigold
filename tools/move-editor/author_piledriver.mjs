@@ -12,11 +12,11 @@
 // stop running this.
 //
 // Cast: George's move, so George attacks and Lou (shipped art) is the victim.
-// Lift values are calibrated on that pair: with Lou turned upside down his
-// crown sits 28 rig units below the mat at lift 0, so lift 28 is head-on-mat
-// and ~98 holds his head at George's thigh height.
+// Lift is in reference-body units (authoring.mjs hipsAt/LYING), so it holds
+// for any cast. On shipped Lou, upside down, lift 28 puts the crown on the
+// mat and ~98 holds his head at George's thigh height.
 
-import { pose, buildDraft, writeDraftAndClip } from './authoring.mjs';
+import { pose, buildDraft, writeDraftAndClip, LYING, hipsAt } from './authoring.mjs';
 
 const AT = { stance: 0, reach: 0.20, hook: 0.45, up: 0.72, hold: 1.00, hop: 1.12, impact: 1.28, crumple: 1.50, rest: 1.95 };
 const DURATION = AT.rest;
@@ -33,14 +33,11 @@ const attacker = [
     [AT.hold, pose({ lArm: 0.55, rArm: 0.45, lElbow: 2.0, rElbow: 2.0, lLeg: -0.15, rLeg: 0.15, lean: -0.15, crouch: 0.05 }), 0, 149],
     // Small hop to drive it home.
     [AT.hop, pose({ lArm: 0.55, rArm: 0.45, lElbow: 2.0, rElbow: 2.0, lLeg: -0.10, rLeg: 0.10, lKnee: 0.1, rKnee: 0.1, lean: -0.10, lift: 14 }), 0, null, 'easeOut'],
-    // Sits straight down, legs out in front. The upright rig keeps the soles
-    // on the mat, so legs straight out already drop the hips to ~9 units;
-    // the small lift just seats him on the mat rather than in it.
-    [AT.impact, pose({ lArm: -0.30, rArm: -0.25, lElbow: 0.3, rElbow: 0.3, lLeg: 1.40, rLeg: 1.30, lKnee: 0.15, rKnee: 0.15, lean: -0.15, lift: 8 }), 0, null, 'easeIn'],
-    [AT.crumple, pose({ lArm: -0.35, rArm: -0.30, lElbow: 0.3, rElbow: 0.3, lLeg: 1.40, rLeg: 1.30, lKnee: 0.15, rKnee: 0.15, lean: -0.20, lift: 8 }), 0, null],
-    // Falls back flat, ready for the executor's 'down'. Legs straight again,
-    // so the hips are back at standing height (137) and come down by lift.
-    [AT.rest, pose({ lArm: 0.10, rArm: 0.05, lElbow: 0.3, rElbow: 0.3, lLeg: 0.00, rLeg: 0.10, lKnee: 0.1, rKnee: 0.1, tilt: -1.50, lift: -122 }), -10, null],
+    // Sits straight down, legs out in front, hips 17 off the mat.
+    [AT.impact, pose({ lArm: -0.30, rArm: -0.25, lElbow: 0.3, rElbow: 0.3, lLeg: 1.40, rLeg: 1.30, lKnee: 0.15, rKnee: 0.15, lean: -0.15, lift: hipsAt(17) }), 0, null, 'easeIn'],
+    [AT.crumple, pose({ lArm: -0.35, rArm: -0.30, lElbow: 0.3, rElbow: 0.3, lLeg: 1.40, rLeg: 1.30, lKnee: 0.15, rKnee: 0.15, lean: -0.20, lift: hipsAt(17) }), 0, null],
+    // Falls back flat, ready for the executor's 'down'.
+    [AT.rest, pose({ lArm: 0.10, rArm: 0.05, lElbow: 0.3, rElbow: 0.3, lLeg: 0.00, rLeg: 0.10, lKnee: 0.1, rKnee: 0.1, tilt: -1.50, lift: LYING }), -10, null],
 ];
 
 const defender = [
@@ -58,7 +55,7 @@ const defender = [
     // Folds over onto his back, legs falling over George's side.
     [AT.crumple, pose({ lArm: 2.20, rArm: 2.40, lElbow: 0.6, rElbow: 0.5, lLeg: 0.30, rLeg: 0.20, lKnee: 0.50, rKnee: 0.40, tilt: 3.90, lift: -30 }), 30, null],
     // Tilted onto his back, arm 0 lies along the body toward the feet.
-    [AT.rest, pose({ lArm: 0.05, rArm: 0.05, lElbow: 0.1, rElbow: 0.1, lLeg: 0.05, rLeg: 0.10, lKnee: 0.10, rKnee: 0.10, tilt: 4.66, lift: -109 }), 40, null],
+    [AT.rest, pose({ lArm: 0.05, rArm: 0.05, lElbow: 0.1, rElbow: 0.1, lLeg: 0.05, rLeg: 0.10, lKnee: 0.10, rKnee: 0.10, tilt: 4.66, lift: LYING }), 40, null],
 ];
 
 // Upside down, the victim's body has to read against the attacker's front, so

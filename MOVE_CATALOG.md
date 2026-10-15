@@ -51,10 +51,11 @@ them and a kit decides which fills each one. Lockup + Power is `hipToss` or
 the first the kit has). New moves for an occupied slot follow the same
 pattern.
 
-**Portability caveat:** a clip's body lift is tuned on the cast it was posed
-on (e.g. shipped Lou's hips stay at 124 when his legs go forward; George's
-drop). A move given to a differently-built wrestler may sit a little high or
-low until lift is made relative to each rig — a planned follow-up.
+**Portable:** any built move can go on any wrestler. Body lift is authored
+for a reference body and scaled to each rig, and off his feet every rig
+places its hips the same way, so lying flat, sitting or being held up comes
+out the same on a different-sized wrestler (measured: lying flat puts the
+hips 14–16 off the mat on every cast tried).
 
 Character traits, separate from moves (set in the character file):
 `begsOff` (begs when hurt, Flair's "no, no") and `struts` (Flair's strut as the

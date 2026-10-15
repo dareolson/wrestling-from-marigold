@@ -15,7 +15,7 @@
 // Body tilt is backward (negative): head away from the target. Leaning back
 // by 1.2, a hip angle of ~0.37 puts the legs level, pointing at him.
 
-import { pose, buildDraft, writeDraftAndSoloClip } from './authoring.mjs';
+import { pose, buildDraft, writeDraftAndSoloClip, LYING, hipsAt } from './authoring.mjs';
 
 const AT = { stance: 0, crouch: 0.10, tuck: 0.22, kick: 0.36, land: 0.48, flat: 0.62 };
 
@@ -32,7 +32,7 @@ const attacker = [
     [AT.land, pose({ lArm: 2.30, rArm: 2.20, lElbow: 0.5, rElbow: 0.5, lLeg: 0.40, rLeg: 0.35, lKnee: 0.20, rKnee: 0.20, tilt: -1.45, lift: 5 }), 58, 231, 'easeIn'],
     // Flat on his back (232); Lou's hips stand 124 off the mat. Lying tilted
     // back, arm 0 runs along the body toward the feet.
-    [AT.flat, pose({ lArm: 0.30, rArm: 0.25, lElbow: 0.2, rElbow: 0.2, lLeg: 0.10, rLeg: 0.15, lKnee: 0.10, rKnee: 0.10, tilt: -1.52, lift: -109 }), 58, 232],
+    [AT.flat, pose({ lArm: 0.30, rArm: 0.25, lElbow: 0.2, rElbow: 0.2, lLeg: 0.10, rLeg: 0.15, lKnee: 0.10, rKnee: 0.10, tilt: -1.52, lift: LYING }), 58, 232],
 ];
 
 // The target, standing, for the preview only.

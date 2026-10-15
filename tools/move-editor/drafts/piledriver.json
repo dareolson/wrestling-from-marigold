@@ -158,7 +158,7 @@
             "lean": -0.15,
             "crouch": 0,
             "tilt": 0,
-            "lift": 8
+            "lift": -107
           },
           "transform": {
             "x": 0,
@@ -181,7 +181,7 @@
             "lean": -0.2,
             "crouch": 0,
             "tilt": 0,
-            "lift": 8
+            "lift": -107
           },
           "transform": {
             "x": 0,
@@ -204,7 +204,7 @@
             "lean": 0,
             "crouch": 0,
             "tilt": -1.5,
-            "lift": -122
+            "lift": -110
           },
           "transform": {
             "x": -10,
@@ -415,7 +415,7 @@
             "lean": 0,
             "crouch": 0,
             "tilt": 4.66,
-            "lift": -109
+            "lift": -110
           },
           "transform": {
             "x": 40,

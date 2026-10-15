@@ -15,15 +15,17 @@
 // (lForearm/lShin/…, e.g. theszIdle) are deliberately NOT authored here, so
 // they pass through untouched exactly as the legacy tweenPose path left them.
 
-// Legacy timing this clip reproduces 1:1 (MOVE_DEFS.jab.poseSeq, in ms):
+// Legacy timing (MOVE_DEFS.jab.poseSeq, in ms) was
 //   jabCock 83  ->  jab 67  ->  jabRecoil 83  ->  idle 167   (400ms total)
-// and the single delayedCall(83) that applied damage. The impact marker sits
-// at that same 83ms so game feel is preserved.
-const COCK_AT   = 0.083; // wind-up fully loaded == the authored impact frame
-const JAB_AT    = 0.150; // full forward extension
-const RECOIL_AT = 0.233; // arm bounces back, guard begins dropping
+// with the single delayedCall(83) that applied damage — so damage landed on
+// the fully COCKED pose, before the arm arrived. The gameplay beat stays at
+// 83ms; the stroke is retimed so full extension is that frame: a quicker
+// load, contact at reach, then the same recoil and return.
+const COCK_AT   = 0.040; // wind-up fully loaded
+const JAB_AT    = 0.083; // full forward extension == the authored impact frame
+const RECOIL_AT = 0.166; // arm bounces back, guard begins dropping
 export const JAB_DURATION  = 0.400;
-export const JAB_IMPACT_AT = COCK_AT;
+export const JAB_IMPACT_AT = JAB_AT;
 export const JAB_CLIP_ID    = 'jab';
 
 // Facing-relative stance -> the six blended channels (mirrors tweenPose's own
@@ -66,9 +68,9 @@ export const jabClip = {
 // and tests) so wind-up / extension / impact / recovery can each be inspected
 // at an exact, deterministic time without live gameplay.
 export const JAB_PHASES = Object.freeze({
-    windup:    0.040,   // mid wind-up, arm loading back
-    impact:    COCK_AT, // authored damage frame
-    extension: JAB_AT,  // full forward reach
+    windup:    0.020,   // mid wind-up, arm loading back
+    cocked:    COCK_AT, // wind-up fully loaded
+    impact:    JAB_AT,  // authored damage frame == full forward reach
     recovery:  RECOIL_AT,
     rest:      JAB_DURATION,
 });

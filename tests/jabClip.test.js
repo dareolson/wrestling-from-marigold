@@ -25,12 +25,13 @@ test('jab clip passes validation and compiles', () => {
 
 test('arbitrary-time sampling is deterministic and blends the authored stance', () => {
     const clip = compileClip(jabClip);
-    // Exactly at the impact keyframe: fully-cocked stance, fist swapped in.
+    // Exactly at the impact keyframe: the arm is at full extension with the
+    // fist in, so damage, sell and contact share one beat.
     const impact = sampleClip(clip, JAB_IMPACT_AT).tracks.attacker;
-    assert.equal(impact.pose.lArm, -0.55);
+    assert.equal(impact.pose.lArm, 1.0);
     assert.equal(impact.parts.strikingForearm, 'fist');
-    // Blends between cock (0.083, lArm -0.55) and extension (0.150, lArm 1.00).
-    const mid = sampleClip(clip, (0.083 + 0.150) / 2).tracks.attacker.pose.lArm;
+    // Blends between cock (0.040, lArm -0.55) and extension (0.083, lArm 1.00).
+    const mid = sampleClip(clip, (0.040 + 0.083) / 2).tracks.attacker.pose.lArm;
     assert.ok(mid > -0.55 && mid < 1.0, 'arm extends forward between keyframes');
     // Same time -> identical output, every time.
     assert.deepEqual(sampleClip(clip, 0.2), sampleClip(clip, 0.2));

@@ -3458,8 +3458,6 @@ export default class Arena extends Phaser.Scene {
             w.state      = 'down';
             w.lying      = 'supine';
             w.stateTimer = 4.5;
-            w.slamPhase  = null;
-            w.slamType   = null;
         } else {
             w.state = 'standing';
             w.tweenPose('idle', 200, 'Linear');

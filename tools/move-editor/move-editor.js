@@ -1145,6 +1145,8 @@ const DRAFT_LIBRARY = [
     { id: 'piledriver', label: 'piledriver — reference pass', file: './drafts/piledriver.json' },
     // Matched to the sheet's frames 322–328 / 120–121; author_bodyslam.mjs.
     { id: 'bodySlam', label: 'body slam — reference pass', file: './drafts/bodyslam.json' },
+    // Matched to the sheet's frames 370–374 / 357–365; author_suplex.mjs.
+    { id: 'suplex', label: 'suplex — reference pass', file: './drafts/suplex.json' },
 ];
 
 // Adopt a loaded draft as the editing session. Shared by the library, the file

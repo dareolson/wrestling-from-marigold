@@ -226,12 +226,6 @@ export const MOVE_DEFS = {
                               { p: 'armDragPull',   dur: 100, e: 'Cubic.easeIn'  },
                               { p: 'armDragFollow', dur: 130, e: 'Linear'        },
                               { p: 'idle',          dur: 200, e: 'Cubic.easeOut' }] },
-    suplex:      { poseSeq: [{ p: 'slamGrab',    dur: 130, e: 'Cubic.easeOut' },
-                              { p: 'slamHold',    dur: 300, e: 'Cubic.easeOut' },
-                              { p: 'slamPeak',    dur: 100, e: 'Linear'        },
-                              { p: 'slamThrow',   dur: 200, e: 'Cubic.easeIn'  },
-                              { p: 'stumble',     dur: 140, e: 'Cubic.easeOut' },
-                              { p: 'idle',        dur: 240, e: 'Linear'        }] },
     turnbuckleTaunt: { poseSeq: [{ p: 'ropeOneTaunt', dur: 300, e: 'Cubic.easeOut' },
                                   { p: 'ropeOneTaunt', dur: 900, e: 'Linear'        },
                                   { p: 'idle',         dur: 350, e: 'Linear'        }] },
@@ -294,7 +288,7 @@ export const MOVE_DEFS = {
 // 'dropkicking'   attacker airborne during dropkick; dropProgress 0→1
 // 'elbowDropping' attacker airborne during elbow drop; elbowProgress 0→1
 // 'slamming'    attacker mid-slam, elbow drop, or dropkick launch; no input
-// 'grabbed'     defender lifted during body slam or piledriver; no input
+// 'grabbed'     legacy held-victim state; no move sets it since the throws moved to clips (2026-10-13)
 // 'down'        flat on mat; stateTimer counts down to 0 → 'gettingUp' (or 'possum' if holding down)
 // 'possum'      faking unconscious; hold down key to stay flat; action/power = quick spring up
 // 'gettingUp'   staged rise: flat → sit up → all fours → standing (riseT 0→1, slower when hurt); no input
@@ -347,9 +341,6 @@ export default class Wrestler {
         this._corner       = null;
         this._divLandY     = 0;
         this._ropeLevel    = 0; // 0=none, 1=middle rope, 2=top rope
-        this.slamPhase    = null; // 'up' | 'throwing' | 'dropping'
-        this.slamType     = null; // 'suplex' — which held throw is in progress
-        this.slamY        = 0;
         this.pose            = { ...POSES.idle, lean: 0, crouch: 0 }; // live joint angles, tweened per move
         this.idlePose        = 'idle';            // character-specific resting stance — override after construction
         this.tauntPose       = 'tauntArmsWide';   // character-specific taunt — override after construction
@@ -1193,18 +1184,6 @@ export default class Wrestler {
         this.stamina = Math.max(0, this.stamina - amount);
     }
 
-    // Slam sequences guard each phase on the attacker still being in
-    // 'slamming'. If something knocked the attacker out of the move, the
-    // victim must be dropped — bailing silently strands them in 'grabbed'.
-    _releaseGrabbed(other) {
-        if (other.state !== 'grabbed') return;
-        other.state      = 'down';
-        other.lying      = 'supine';
-        other.stateTimer = DOWN_SEC;
-        other.slamPhase  = null;
-        other.slamType   = null;
-    }
-
     _doClothesline(other) {
         other._drain(STAMINA_DRAIN.clothesline);
 
@@ -1231,42 +1210,16 @@ export default class Wrestler {
         });
     }
 
+    // Vertical suplex: hooked, stood straight up overhead, and taken over
+    // backward; both land on their backs, the victim behind the attacker
+    // (author_suplex.mjs, sheet frames 370–374 / 357–365).
     _doSuplex(other) {
-        other._drain(STAMINA_DRAIN.suplex);
-        this.state      = 'slamming';
-        other.state     = 'grabbed';
-        other.slamPhase = 'up';
-        other.slamType  = 'suplex';
-        const sx = this.x, sy = this.y, ss = this.s;
-        const facing = this.facing;
-
-        other.x     = sx;
-        other.slamY = other.y - (88 + 112 + 34 * 0.7) * other.s;
-
-        this._runPoseSequence(MOVE_DEFS.suplex.poseSeq);
-
-        // Hoist opponent inverted overhead (300ms) then drop behind attacker
-        this.scene.tweens.add({
-            targets:  other,
-            slamY:    sy - 100 * ss,
-            duration: 300,
-            ease:     'Cubic.easeOut',
-            onComplete: () => {
-                if (this.state !== 'slamming') { this._releaseGrabbed(other); return; }
-                // Drops the victim BEHIND the attacker — delivered with his back
-                // to the ropes that's outside the ring; clamp with the wide
-                // margin the ~200·s flat body needs
-                const b = ringBoundsAtY(sy);
-                const m = 60 * ss;
-                other.x          = Math.max(b.left + m, Math.min(b.right - m, sx - facing * 90 * ss));
-                other.y          = sy;
-                other.state      = 'down';
-                other.lying      = 'supine';
-                other.stateTimer = DOWN_SEC + 1.0;
-                other.slamPhase  = null;
-                other.slamType   = null;
-                this.scene.cameras.main.shake(180, 0.003);
-                this.startFall(1.5);
+        this._playPairedThrow(other, 'suplex', {
+            damage: STAMINA_DRAIN.suplex,
+            shake: [180, 0.003],
+            finish: () => {
+                other._layOnBack(DOWN_SEC + 1.0);
+                this._layOnBack(1.5);
             },
         });
     }
@@ -2124,13 +2077,6 @@ export default class Wrestler {
             return;
         }
 
-        if (state === 'grabbed') {
-            if (this.slamPhase === 'up')
-                this._drawInverted(x, this.slamY, s, skinCol, trunksCol);
-            else
-                this._drawFlat(x, y, s, facing, skinCol, trunksCol);
-            return;
-        }
 
         const shadowY = onRopes ? this._corner.matY : y;
         gfx.fillStyle(0x000000, 0.22);
@@ -2140,7 +2086,6 @@ export default class Wrestler {
         // _drawFlat's primitives, so these states carry real joints, bindings
         // and parts — and share their pose object with the get-up's first
         // keyframe, so rising no longer cuts from rectangles to a skeleton.
-        // _drawFlat survives for the airborne/held paths that still use it.
         if (state === 'down' || state === 'pinned' || state === 'possum') {
             this.skeleton.setVisible(true);
             // Lies however he landed (this.lying; Arena.startPin turns a pinned
@@ -2166,35 +2111,6 @@ export default class Wrestler {
         // Choreography outranks the combat-ready guard — see _choreoOwnsPose().
         const guard = this._choreoOwnsPose() ? 0 : this.combatBlend;
         this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, guard, lean, this.moveBlend, liftScale, runBlend);
-    }
-
-    // Narrow side-view of opponent held upside down for piledriver.
-    // slamY = head position (lowest point). Body and boots extend upward.
-    _drawInverted(x, slamY, s, skinCol, trunksCol) {
-        const gfx = this.gfx;
-        const lH  = 88  * s, lW  = 24 * s, lG  = 16 * s;
-        const tH  = 112 * s, tW  = 72 * s, trH = 40 * s;
-        const hR  = 34  * s;
-
-        gfx.fillStyle(skinCol, 1);
-        gfx.fillCircle(x, slamY, hR);
-
-        const neckY     = slamY - hR * 0.7;
-        const shoulderY = neckY - tH + 12 * s;
-        const hipY      = neckY - tH;
-
-        gfx.fillStyle(skinCol,  1); gfx.fillRect(x - tW / 2, neckY - (tH - trH), tW, tH - trH);
-        gfx.fillStyle(trunksCol,1); gfx.fillRect(x - tW / 2, neckY - tH, tW, trH);
-
-        gfx.fillStyle(skinCol, 1);
-        gfx.fillRect(x - tW / 2 - 20 * s, shoulderY - 76 * s, 20 * s, 76 * s);
-        gfx.fillRect(x + tW / 2,           shoulderY - 76 * s, 20 * s, 76 * s);
-        gfx.fillRect(x - lG - lW, hipY - lH * 0.72, lW, lH * 0.72);
-        gfx.fillRect(x + lG,      hipY - lH * 0.72, lW, lH * 0.72);
-
-        gfx.fillStyle(0x181818, 1);
-        gfx.fillRect(x - lG - lW, hipY - lH, lW, lH * 0.28);
-        gfx.fillRect(x + lG,      hipY - lH, lW, lH * 0.28);
     }
 
     // Front-facing horizontal view for the dropkick.
@@ -2244,17 +2160,6 @@ export default class Wrestler {
         const torsoCenter = facing > 0 ? x - torsoW / 2 : x + torsoW / 2;
         this.gfx.fillStyle(skinCol, 1);
         this.gfx.fillRect(torsoCenter - armW / 2, y + torsoH / 2, armW, armLen);
-    }
-
-    _drawFlat(x, y, s, facing, skinCol, trunksCol) {
-        const gfx   = this.gfx;
-        const bW    = 200 * s;
-        const bH    = 44  * s;
-        const headX = x + facing * (bW * 0.45 + 28 * s);
-
-        gfx.fillStyle(skinCol,   1); gfx.fillRect(x - bW / 2, y - bH / 2, bW, bH);
-        gfx.fillStyle(trunksCol, 1); gfx.fillRect(x - bW * 0.15, y - bH / 2, bW * 0.3, bH);
-        gfx.fillStyle(skinCol,   1); gfx.fillCircle(headX, y, 32 * s);
     }
 
     _nearCorner() {

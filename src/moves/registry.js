@@ -109,8 +109,8 @@ export const MOVE_SPECS = {
         ai: ['grappleFinish', 'knockdown', 'heavy'],
     },
     suplex: {
-        category: C.THROW, clip: null, executor: '_doSuplex',
-        damageKey: 'suplex', poseSeq: true, legacyFallback: null, kitGated: true,
+        category: C.THROW, clip: 'suplex', executor: '_doSuplex',
+        damageKey: 'suplex', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'Arena lockup resolution — up',
         ai: ['lockup', 'knockdown'],
     },

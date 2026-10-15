@@ -54,7 +54,7 @@ These are identified frame by frame and only need posing and wiring.
 | Move | Frames | Notes |
 |---|---|---|
 | **Sharpshooter** (Bret's finisher) | Bret 383–398 | grab the legs, step through, turn him over, sit back |
-| Chair shot | Bret 259–278 | swing and overhead; needs a chair prop |
+| Chair shot | Bret 259–278 | **storyline only** — rare in the era; a one-off moment, not a regular move. Needs a chair prop |
 | Front kick | Bret 171–175, 396 | |
 | Shove | Bret 109–114 | |
 | Backward roll (escape) | Bret 239–243 | |
@@ -111,6 +111,22 @@ sheet's Hit/Hurt/Down. Read frame numbers off `rows/` when building.
 Every Slam Masters wrestler also brings his own walk, run, tired idle,
 entrance, turnbuckle taunts and hit/hurt sells — useful for giving new
 wrestlers distinct body language, not just moves.
+
+### Mat wrestling — wanted, needs real-match reference
+
+The 16-bit games are built around slams and are thin on 1950s mat work.
+Real footage is the better reference: the Chicago Film Archives has 1950s
+matches (Lou Thesz, Gorgeous George, Verne Gagne, Buddy Rogers) on
+YouTube. Export a hold's frames into a folder; the move editor's reference
+layer takes any images. Reference only, like the sprites.
+
+| Family | Moves | Have |
+|---|---|---|
+| Arm | wristlock, arm wringer, hip toss | `hammerlock`, `armBar` (unassigned), `armDrag` |
+| Headlock | headlock takeover, flying mare | `headlock` |
+| Leg | step-over toehold, Indian deathlock, Boston crab | `figureFour`, `ankleLock` (unassigned) |
+| Body | body scissors, abdominal stretch, cobra twist | |
+| Signatures | Thesz's airplane spin and backdrop suplex; George's flying tackle (confirm in footage) | `theszPress` |
 
 ## 3. To download next
 

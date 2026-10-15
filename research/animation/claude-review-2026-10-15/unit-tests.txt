@@ -1,0 +1,3966 @@
+
+> wrestling-from-marigold@1.0.0 pretest
+> node tools/env/require-node.mjs
+
+
+> wrestling-from-marigold@1.0.0 test
+> node --test tests/*.test.js
+
+TAP version 13
+# Subtest: clip sampling blends numeric channels and steps art at authored keyframes
+ok 1 - clip sampling blends numeric channels and steps art at authored keyframes
+  ---
+  duration_ms: 4.436083
+  type: 'test'
+  ...
+# Subtest: event interval is deterministic and does not double-fire its left boundary
+ok 2 - event interval is deterministic and does not double-fire its left boundary
+  ---
+  duration_ms: 0.928666
+  type: 'test'
+  ...
+# Subtest: runtime keeps paired tracks synchronized and resets part variants on completion
+ok 3 - runtime keeps paired tracks synchronized and resets part variants on completion
+  ---
+  duration_ms: 0.868916
+  type: 'test'
+  ...
+# Subtest: invalid clips fail before they reach gameplay
+ok 4 - invalid clips fail before they reach gameplay
+  ---
+  duration_ms: 0.167208
+  type: 'test'
+  ...
+# Subtest: a handler that cancels a later clip stops it in the same update
+ok 5 - a handler that cancels a later clip stops it in the same update
+  ---
+  duration_ms: 0.464625
+  type: 'test'
+  ...
+# Subtest: flat value fills score near 100%; a gradient of the same shape does not
+ok 6 - flat value fills score near 100%; a gradient of the same shape does not
+  ---
+  duration_ms: 186.351458
+  type: 'test'
+  ...
+# Subtest: unique colour count reports the colours present, not a constant
+ok 7 - unique colour count reports the colours present, not a constant
+  ---
+  duration_ms: 31.9145
+  type: 'test'
+  ...
+# Subtest: regular hatching is detected by period; irregular detail of equal busyness is not
+ok 8 - regular hatching is detected by period; irregular detail of equal busyness is not
+  ---
+  duration_ms: 227.645708
+  type: 'test'
+  ...
+# Subtest: hairline and head dark-mass are compared only among views that show a face
+ok 9 - hairline and head dark-mass are compared only among views that show a face
+  ---
+  duration_ms: 195.251584
+  type: 'test'
+  ...
+# Subtest: measurement is deterministic
+ok 10 - measurement is deterministic
+  ---
+  duration_ms: 175.393917
+  type: 'test'
+  ...
+# Subtest: an empty region is reported as empty rather than scoring zero
+ok 11 - an empty region is reported as empty rather than scoring zero
+  ---
+  duration_ms: 0.84125
+  type: 'test'
+  ...
+# Subtest: manifest panels are only applied to a canvas of the declared sheet size
+ok 12 - manifest panels are only applied to a canvas of the declared sheet size
+  ---
+  duration_ms: 270.226666
+  type: 'test'
+  ...
+# Subtest: a cold articulated channel is finite immediately, never NaN-from-undefined
+ok 13 - a cold articulated channel is finite immediately, never NaN-from-undefined
+  ---
+  duration_ms: 1.83775
+  type: 'test'
+  ...
+# Subtest: with no rendered relationship available, a cold channel is assigned outright
+ok 14 - with no rendered relationship available, a cold channel is assigned outright
+  ---
+  duration_ms: 0.280625
+  type: 'test'
+  ...
+# Subtest: a warm channel tweens normally instead of snapping
+ok 15 - a warm channel tweens normally instead of snapping
+  ---
+  duration_ms: 0.401084
+  type: 'test'
+  ...
+# Subtest: a NaN left on the live pose is healed rather than tweened from
+ok 16 - a NaN left on the live pose is healed rather than tweened from
+  ---
+  duration_ms: 1.190875
+  type: 'test'
+  ...
+# Subtest: a malformed dual-authored pose resolves to finite canonical local owners
+ok 17 - a malformed dual-authored pose resolves to finite canonical local owners
+  ---
+  duration_ms: 3.520666
+  type: 'test'
+  ...
+# Subtest: the zero-duration path is unaffected
+ok 18 - the zero-duration path is unaffected
+  ---
+  duration_ms: 0.156083
+  type: 'test'
+  ...
+# Subtest: channels the target does not author are not invented
+ok 19 - channels the target does not author are not invented
+  ---
+  duration_ms: 0.2565
+  type: 'test'
+  ...
+# Subtest: a cold channel starts from the currently rendered relationship, not the destination
+ok 20 - a cold channel starts from the currently rendered relationship, not the destination
+  ---
+  duration_ms: 2.00975
+  type: 'test'
+  ...
+# Subtest: a cold channel is handed to the tween so it actually animates
+ok 21 - a cold channel is handed to the tween so it actually animates
+  ---
+  duration_ms: 0.288125
+  type: 'test'
+  ...
+# Subtest: the seeded canonical start is finite and removes its legacy competitor
+ok 22 - the seeded canonical start is finite and removes its legacy competitor
+  ---
+  duration_ms: 1.189458
+  type: 'test'
+  ...
+# Subtest: legacy absolute channels seed from the rendered angle too
+ok 23 - legacy absolute channels seed from the rendered angle too
+  ---
+  duration_ms: 0.299667
+  type: 'test'
+  ...
+# Subtest: with no rendered joint state yet, the channel snaps rather than going NaN
+ok 24 - with no rendered joint state yet, the channel snaps rather than going NaN
+  ---
+  duration_ms: 0.558292
+  type: 'test'
+  ...
+# Subtest: a non-finite reported relationship is not trusted as a seed
+ok 25 - a non-finite reported relationship is not trusted as a seed
+  ---
+  duration_ms: 0.550708
+  type: 'test'
+  ...
+# Subtest: a warm channel is untouched by seeding and still tweens from where it was
+ok 26 - a warm channel is untouched by seeding and still tweens from where it was
+  ---
+  duration_ms: 0.450584
+  type: 'test'
+  ...
+# Subtest: switching legacy absolute ownership to canonical local flex is continuous and exclusive
+ok 27 - switching legacy absolute ownership to canonical local flex is continuous and exclusive
+  ---
+  duration_ms: 0.31325
+  type: 'test'
+  ...
+# Subtest: a legacy compatibility pose can take ownership back without fighting local flex
+ok 28 - a legacy compatibility pose can take ownership back without fighting local flex
+  ---
+  duration_ms: 1.55275
+  type: 'test'
+  ...
+# Subtest: if both representations are authored, canonical local flex wins deterministically
+ok 29 - if both representations are authored, canonical local flex wins deterministically
+  ---
+  duration_ms: 0.854833
+  type: 'test'
+  ...
+# Subtest: an omitted joint preserves its one current owner
+ok 30 - an omitted joint preserves its one current owner
+  ---
+  duration_ms: 0.228292
+  type: 'test'
+  ...
+# Subtest: legacy tweenPose carries authored elbow and knee channels into the live pose
+ok 31 - legacy tweenPose carries authored elbow and knee channels into the live pose
+  ---
+  duration_ms: 1.027208
+  type: 'test'
+  ...
+# Subtest: an already-live legacy channel is handed to the tween itself
+ok 32 - an already-live legacy channel is handed to the tween itself
+  ---
+  duration_ms: 0.252417
+  type: 'test'
+  ...
+# Subtest: articulated pose channels change the exact world endpoints consumed by rendering
+ok 33 - articulated pose channels change the exact world endpoints consumed by rendering
+  ---
+  duration_ms: 0.188375
+  type: 'test'
+  ...
+# Subtest: seekable samples and legacy tweens agree on articulated channel ownership
+ok 34 - seekable samples and legacy tweens agree on articulated channel ownership
+  ---
+  duration_ms: 0.65075
+  type: 'test'
+  ...
+# Subtest: local elbow/knee channels survive tweenPose transport
+ok 35 - local elbow/knee channels survive tweenPose transport
+  ---
+  duration_ms: 2.22325
+  type: 'test'
+  ...
+# Subtest: an already-live local channel is handed to the tween itself
+ok 36 - an already-live local channel is handed to the tween itself
+  ---
+  duration_ms: 0.186584
+  type: 'test'
+  ...
+# Subtest: changing local elbow flex fixes shoulder/elbow and moves only the wrist
+ok 37 - changing local elbow flex fixes shoulder/elbow and moves only the wrist
+  ---
+  duration_ms: 1.274042
+  type: 'test'
+  ...
+# Subtest: changing shoulder carries elbow and wrist while preserving local flex
+ok 38 - changing shoulder carries elbow and wrist while preserving local flex
+  ---
+  duration_ms: 0.150875
+  type: 'test'
+  ...
+# Subtest: local articulation mirrors without bend inversion
+ok 39 - local articulation mirrors without bend inversion
+  ---
+  duration_ms: 0.1785
+  type: 'test'
+  ...
+# Subtest: elbow and knee limits prevent hyperextension and overfolding
+ok 40 - elbow and knee limits prevent hyperextension and overfolding
+  ---
+  duration_ms: 0.156125
+  type: 'test'
+  ...
+# Subtest: mannequin articulation matrix includes visibly distinct combat configurations
+ok 41 - mannequin articulation matrix includes visibly distinct combat configurations
+  ---
+  duration_ms: 0.185917
+  type: 'test'
+  ...
+# Subtest: articulation-matrix extremes keep forearm proximal anchor exactly on elbow
+ok 42 - articulation-matrix extremes keep forearm proximal anchor exactly on elbow
+  ---
+  duration_ms: 0.397042
+  type: 'test'
+  ...
+# Subtest: seekable samples use canonical local flex when both representations are present
+ok 43 - seekable samples use canonical local flex when both representations are present
+  ---
+  duration_ms: 1.205292
+  type: 'test'
+  ...
+# Subtest: seekable samples switch representations instead of leaving an invisible competitor
+ok 44 - seekable samples switch representations instead of leaving an invisible competitor
+  ---
+  duration_ms: 0.223959
+  type: 'test'
+  ...
+# Subtest: omitted articulation remains untouched while ordinary pose channels merge
+ok 45 - omitted articulation remains untouched while ordinary pose channels merge
+  ---
+  duration_ms: 0.204917
+  type: 'test'
+  ...
+# Subtest: authored channel selection exposes one owner per joint
+ok 46 - authored channel selection exposes one owner per joint
+  ---
+  duration_ms: 0.391084
+  type: 'test'
+  ...
+# Subtest: toGrayscale: collapses colour and preserves alpha
+ok 47 - toGrayscale: collapses colour and preserves alpha
+  ---
+  duration_ms: 1.116833
+  type: 'test'
+  ...
+# Subtest: toGrayscale: collapses the declared hair and boot families together
+ok 48 - toGrayscale: collapses the declared hair and boot families together
+  ---
+  duration_ms: 0.29725
+  type: 'test'
+  ...
+# Subtest: applyScanlines: darkens every other row, in screen space
+ok 49 - applyScanlines: darkens every other row, in screen space
+  ---
+  duration_ms: 0.167167
+  type: 'test'
+  ...
+# Subtest: applyScanlines: pitch is fixed, so a smaller figure takes proportionally more
+ok 50 - applyScanlines: pitch is fixed, so a smaller figure takes proportionally more
+  ---
+  duration_ms: 1.530083
+  type: 'test'
+  ...
+# Subtest: scaleToHeight: averages rather than dropping pixels
+ok 51 - scaleToHeight: averages rather than dropping pixels
+  ---
+  duration_ms: 0.176584
+  type: 'test'
+  ...
+# Subtest: scaleToHeight: transparent pixels do not darken the silhouette edge
+ok 52 - scaleToHeight: transparent pixels do not darken the silhouette edge
+  ---
+  duration_ms: 0.124458
+  type: 'test'
+  ...
+# Subtest: blitInto: a transparent source pixel does not punch a hole
+ok 53 - blitInto: a transparent source pixel does not punch a hole
+  ---
+  duration_ms: 3.230334
+  type: 'test'
+  ...
+# Subtest: blitInto: clips at the destination edge instead of wrapping
+ok 54 - blitInto: clips at the destination edge instead of wrapping
+  ---
+  duration_ms: 0.132125
+  type: 'test'
+  ...
+# Subtest: trimToContent: crops to the painted bounds with padding
+ok 55 - trimToContent: crops to the painted bounds with padding
+  ---
+  duration_ms: 0.723667
+  type: 'test'
+  ...
+# Subtest: trimToContent: an empty image does not throw
+ok 56 - trimToContent: an empty image does not throw
+  ---
+  duration_ms: 0.733958
+  type: 'test'
+  ...
+# Subtest: drawPartRgba: composites source-over and keeps colour
+ok 57 - drawPartRgba: composites source-over and keeps colour
+  ---
+  duration_ms: 0.4855
+  type: 'test'
+  ...
+# Subtest: drawPartRgba: a rotated part leaves no interior gaps
+ok 58 - drawPartRgba: a rotated part leaves no interior gaps
+  ---
+  duration_ms: 3.418334
+  type: 'test'
+  ...
+# Subtest: assemble: builds a figure from a complete part set
+ok 59 - assemble: builds a figure from a complete part set
+  ---
+  duration_ms: 44.732417
+  type: 'test'
+  ...
+# Subtest: assemble: a posed joint moves its child and its grandchild
+ok 60 - assemble: a posed joint moves its child and its grandchild
+  ---
+  duration_ms: 26.279208
+  type: 'test'
+  ...
+# Subtest: assemble: every part in the depth order is drawn, the head included
+ok 61 - assemble: every part in the depth order is drawn, the head included
+  ---
+  duration_ms: 21.877833
+  type: 'test'
+  ...
+# Subtest: assemble: missing parts degrade rather than throw
+ok 62 - assemble: missing parts degrade rather than throw
+  ---
+  duration_ms: 5.240833
+  type: 'test'
+  ...
+# Subtest: articulationProof: renders both facings across the range
+ok 63 - articulationProof: renders both facings across the range
+  ---
+  duration_ms: 134.862417
+  type: 'test'
+  ...
+# Subtest: scaleComparison: emits every requested height under identical treatment
+ok 64 - scaleComparison: emits every requested height under identical treatment
+  ---
+  duration_ms: 46.655584
+  type: 'test'
+  ...
+# Subtest: scaleComparison: works with no reference to compare against
+ok 65 - scaleComparison: works with no reference to compare against
+  ---
+  duration_ms: 19.371792
+  type: 'test'
+  ...
+# Subtest: contactSheet: an empty frame list does not throw
+ok 66 - contactSheet: an empty frame list does not throw
+  ---
+  duration_ms: 0.113958
+  type: 'test'
+  ...
+# Subtest: the front3q depth order backs coverage layers behind what they support
+ok 67 - the front3q depth order backs coverage layers behind what they support
+  ---
+  duration_ms: 0.110917
+  type: 'test'
+  ...
+# Subtest: pivotOf: the head pivots on its neck base, not its top edge
+ok 68 - pivotOf: the head pivots on its neck base, not its top edge
+  ---
+  duration_ms: 0.379125
+  type: 'test'
+  ...
+# Subtest: pivotOf: one default for a part that declares no pivot
+ok 69 - pivotOf: one default for a part that declares no pivot
+  ---
+  duration_ms: 0.467167
+  type: 'test'
+  ...
+# Subtest: pivotOf: a limb segment uses its declared joint pivot
+ok 70 - pivotOf: a limb segment uses its declared joint pivot
+  ---
+  duration_ms: 0.074959
+  type: 'test'
+  ...
+# Subtest: assemble: the real schema places the head below the torso top, not above it
+ok 71 - assemble: the real schema places the head below the torso top, not above it
+  ---
+  duration_ms: 129.240709
+  type: 'test'
+  ...
+# Subtest: assemble: the pelvis registers to the torso through shared hip sockets
+ok 72 - assemble: the pelvis registers to the torso through shared hip sockets
+  ---
+  duration_ms: 173.219167
+  type: 'test'
+  ...
+# Subtest: assemble: a layer with no registration landmark is reported, not guessed
+ok 73 - assemble: a layer with no registration landmark is reported, not guessed
+  ---
+  duration_ms: 121.258959
+  type: 'test'
+  ...
+# Subtest: assemble: rotating a parent rotates its child, not just its position
+ok 74 - assemble: rotating a parent rotates its child, not just its position
+  ---
+  duration_ms: 195.524583
+  type: 'test'
+  ...
+# Subtest: assemble: a local pose angle composes with its parent
+ok 75 - assemble: a local pose angle composes with its parent
+  ---
+  duration_ms: 150.438375
+  type: 'test'
+  ...
+# Subtest: extractPanel: takes one view, not the whole five-view master
+ok 76 - extractPanel: takes one view, not the whole five-view master
+  ---
+  duration_ms: 193.797583
+  type: 'test'
+  ...
+# Subtest: extractPanel: clips rather than reading outside the sheet
+ok 77 - extractPanel: clips rather than reading outside the sheet
+  ---
+  duration_ms: 48.589208
+  type: 'test'
+  ...
+# Subtest: the real V3 candidate assembles as a coherent figure
+ok 78 - the real V3 candidate assembles as a coherent figure
+  ---
+  duration_ms: 442.072625
+  type: 'test'
+  ...
+# Subtest: the real V3 candidate carries its forearm through a shoulder sweep
+ok 79 - the real V3 candidate carries its forearm through a shoulder sweep
+  ---
+  duration_ms: 480.677417
+  type: 'test'
+  ...
+# Subtest: the real V3 candidate is not clipped by the canvas
+ok 80 - the real V3 candidate is not clipped by the canvas
+  ---
+  duration_ms: 289.194208
+  type: 'test'
+  ...
+# Subtest: an extreme pose is not clipped either
+ok 81 - an extreme pose is not clipped either
+  ---
+  duration_ms: 390.207583
+  type: 'test'
+  ...
+# Subtest: FRONT3Q_DEPTH_ORDER matches the depths Skeleton.js actually assigns
+ok 82 - FRONT3Q_DEPTH_ORDER matches the depths Skeleton.js actually assigns
+  ---
+  duration_ms: 2.961208
+  type: 'test'
+  ...
+# Subtest: the runtime keeps each upper arm over its own forearm
+ok 83 - the runtime keeps each upper arm over its own forearm
+  ---
+  duration_ms: 0.207167
+  type: 'test'
+  ...
+# Subtest: the near leg stacks on top of the trunks, as Derek instructed
+ok 84 - the near leg stacks on top of the trunks, as Derek instructed
+  ---
+  duration_ms: 0.082667
+  type: 'test'
+  ...
+# Subtest: standing poses are untouched; tilt or lift ramps the body off its feet continuously
+ok 85 - standing poses are untouched; tilt or lift ramps the body off its feet continuously
+  ---
+  duration_ms: 1.622375
+  type: 'test'
+  ...
+# Subtest: standing hip height is boot + thigh + shin; shipped Lou is the reference
+ok 86 - standing hip height is boot + thigh + shin; shipped Lou is the reference
+  ---
+  duration_ms: 0.186875
+  type: 'test'
+  ...
+# Subtest: authoring helpers speak the same units as the rig
+ok 87 - authoring helpers speak the same units as the rig
+  ---
+  duration_ms: 0.158833
+  type: 'test'
+  ...
+# Subtest: the runtime opt-ins are read from Skeleton.js, not assumed
+ok 88 - the runtime opt-ins are read from Skeleton.js, not assumed
+  ---
+  duration_ms: 1.794208
+  type: 'test'
+  ...
+# Subtest: a whole far limb cannot drive a joint the rig bends
+ok 89 - a whole far limb cannot drive a joint the rig bends
+  ---
+  duration_ms: 0.682209
+  type: 'test'
+  ...
+# Subtest: the twelve-part front3q candidate maps eight parts, and names the other four
+ok 90 - the twelve-part front3q candidate maps eight parts, and names the other four
+  ---
+  duration_ms: 0.958083
+  type: 'test'
+  ...
+# Subtest: the shipped rig already shares the families the candidate splits
+ok 91 - the shipped rig already shares the families the candidate splits
+  ---
+  duration_ms: 0.274042
+  type: 'test'
+  ...
+# Subtest: shipped Lou declares no pelvis layers, so the pelvis findings are not on his path
+ok 92 - shipped Lou declares no pelvis layers, so the pelvis findings are not on his path
+  ---
+  duration_ms: 2.073583
+  type: 'test'
+  ...
+# Subtest: darkTopFraction separates a baked trunks band from an outline
+ok 93 - darkTopFraction separates a baked trunks band from an outline
+  ---
+  duration_ms: 5.439667
+  type: 'test'
+  ...
+# Subtest: the eight-part decomposition the brief specifies maps completely
+ok 94 - the eight-part decomposition the brief specifies maps completely
+  ---
+  duration_ms: 0.460458
+  type: 'test'
+  ...
+# Subtest: anchorWorldPoint inverts a real attachment binding back onto its world anchor
+ok 95 - anchorWorldPoint inverts a real attachment binding back onto its world anchor
+  ---
+  duration_ms: 1.772791
+  type: 'test'
+  ...
+# Subtest: anchorWorldPoint inverts a two-anchor limb binding at both of its anchors
+ok 96 - anchorWorldPoint inverts a two-anchor limb binding at both of its anchors
+  ---
+  duration_ms: 0.611459
+  type: 'test'
+  ...
+# Subtest: an attachment centred on its quad instead of its authored anchor is a measurable error
+ok 97 - an attachment centred on its quad instead of its authored anchor is a measurable error
+  ---
+  duration_ms: 1.147916
+  type: 'test'
+  ...
+# Subtest: anchorWorldPoint mirrors v under flipY, exactly as it mirrors u under flipX
+ok 98 - anchorWorldPoint mirrors v under flipY, exactly as it mirrors u under flipX
+  ---
+  duration_ms: 0.475917
+  type: 'test'
+  ...
+# Subtest: a chain the character cannot answer for is unmeasurable, never a pass
+ok 99 - a chain the character cannot answer for is unmeasurable, never a pass
+  ---
+  duration_ms: 0.425
+  type: 'test'
+  ...
+# Subtest: every production joint including wrists and ankles has a structural chain
+ok 100 - every production joint including wrists and ankles has a structural chain
+  ---
+  duration_ms: 0.189542
+  type: 'test'
+  ...
+# Subtest: pelvis layers must bracket the thighs in depth
+ok 101 - pelvis layers must bracket the thighs in depth
+  ---
+  duration_ms: 3.393416
+  type: 'test'
+  ...
+# Subtest: non-finite rendered transforms are reported per slot
+ok 102 - non-finite rendered transforms are reported per slot
+  ---
+  duration_ms: 0.175291
+  type: 'test'
+  ...
+# Subtest: continuity finds a first-frame snap that finite endpoints would hide
+ok 103 - continuity finds a first-frame snap that finite endpoints would hide
+  ---
+  duration_ms: 2.439042
+  type: 'test'
+  ...
+# Subtest: continuity finds an endpoint that teleports between frames
+ok 104 - continuity finds an endpoint that teleports between frames
+  ---
+  duration_ms: 2.259708
+  type: 'test'
+  ...
+# Subtest: facing symmetry catches an inverted bend without demanding a pixel mirror
+ok 105 - facing symmetry catches an inverted bend without demanding a pixel mirror
+  ---
+  duration_ms: 0.465084
+  type: 'test'
+  ...
+# Subtest: a variant swap may move its contact point but never its structural anchor
+ok 106 - a variant swap may move its contact point but never its structural anchor
+  ---
+  duration_ms: 0.385125
+  type: 'test'
+  ...
+# Subtest: sole grounding asks for one planted foot, not two
+ok 107 - sole grounding asks for one planted foot, not two
+  ---
+  duration_ms: 0.380417
+  type: 'test'
+  ...
+# Subtest: sole grounding catches a foot travelling through the mat
+ok 108 - sole grounding catches a foot travelling through the mat
+  ---
+  duration_ms: 0.205
+  type: 'test'
+  ...
+# Subtest: a character with no attachment-slot boots reports soles unmeasurable
+ok 109 - a character with no attachment-slot boots reports soles unmeasurable
+  ---
+  duration_ms: 0.077208
+  type: 'test'
+  ...
+# Subtest: attribution routes each failure to the layer that owns it
+ok 110 - attribution routes each failure to the layer that owns it
+  ---
+  duration_ms: 0.139625
+  type: 'test'
+  ...
+# Subtest: a reflected part is reported even though its anchors are perfectly placed
+ok 111 - a reflected part is reported even though its anchors are perfectly placed
+  ---
+  duration_ms: 0.969291
+  type: 'test'
+  ...
+# Subtest: an unreflected sample reports nothing, and flipX is left alone
+ok 112 - an unreflected sample reports nothing, and flipX is left alone
+  ---
+  duration_ms: 0.251834
+  type: 'test'
+  ...
+# Subtest: invisible parts are not graded for orientation
+ok 113 - invisible parts are not graded for orientation
+  ---
+  duration_ms: 0.139584
+  type: 'test'
+  ...
+# Subtest: a reflected part is attributed to the render path, never to the artwork
+ok 114 - a reflected part is attributed to the render path, never to the artwork
+  ---
+  duration_ms: 0.111583
+  type: 'test'
+  ...
+# Subtest: the handoff gate measures the worst joint jump between the two render paths
+ok 115 - the handoff gate measures the worst joint jump between the two render paths
+  ---
+  duration_ms: 0.287917
+  type: 'test'
+  ...
+# Subtest: a handoff worse than its recorded baseline fails, naming joint, distance and budget
+ok 116 - a handoff worse than its recorded baseline fails, naming joint, distance and budget
+  ---
+  duration_ms: 0.22725
+  type: 'test'
+  ...
+# Subtest: the handoff pop is animation data, never the character's artwork
+ok 117 - the handoff pop is animation data, never the character's artwork
+  ---
+  duration_ms: 0.135458
+  type: 'test'
+  ...
+# Subtest: a handoff with no comparable joint is a coverage gap, not a pass
+ok 118 - a handoff with no comparable joint is a coverage gap, not a pass
+  ---
+  duration_ms: 0.128458
+  type: 'test'
+  ...
+# Subtest: the matrix covers every required high-strain configuration
+ok 119 - the matrix covers every required high-strain configuration
+  ---
+  duration_ms: 0.894
+  type: 'test'
+  ...
+# Subtest: every pose the matrix names exists in the shipped pose table
+ok 120 - every pose the matrix names exists in the shipped pose table
+  ---
+  duration_ms: 0.282583
+  type: 'test'
+  ...
+# Subtest: entries that bypass the rig are declared, not silently certified
+ok 121 - entries that bypass the rig are declared, not silently certified
+  ---
+  duration_ms: 0.139875
+  type: 'test'
+  ...
+# Subtest: lying flat and the get-up first keyframe are the same pose object
+ok 122 - lying flat and the get-up first keyframe are the same pose object
+  ---
+  duration_ms: 2.651125
+  type: 'test'
+  ...
+# Subtest: a grounded entry that renders a stand-in pose declares the posture it lacks
+ok 123 - a grounded entry that renders a stand-in pose declares the posture it lacks
+  ---
+  duration_ms: 0.818041
+  type: 'test'
+  ...
+# Subtest: rigged and unrigged entries partition the matrix
+ok 124 - rigged and unrigged entries partition the matrix
+  ---
+  duration_ms: 0.156
+  type: 'test'
+  ...
+# Subtest: motion expands into intermediate frames, not just its endpoints
+ok 125 - motion expands into intermediate frames, not just its endpoints
+  ---
+  duration_ms: 0.2865
+  type: 'test'
+  ...
+# Subtest: a static entry expands to exactly one frame
+ok 126 - a static entry expands to exactly one frame
+  ---
+  duration_ms: 0.246709
+  type: 'test'
+  ...
+# Subtest: get-up sampling is at least as dense as real playback
+ok 127 - get-up sampling is at least as dense as real playback
+  ---
+  duration_ms: 1.071291
+  type: 'test'
+  ...
+# Subtest: facing must be 1 or -1
+ok 128 - facing must be 1 or -1
+  ---
+  duration_ms: 1.653042
+  type: 'test'
+  ...
+# Subtest: facing is discrete: it holds until its keyframe, then snaps
+ok 129 - facing is discrete: it holds until its keyframe, then snaps
+  ---
+  duration_ms: 1.13575
+  type: 'test'
+  ...
+# Subtest: runtime resolves facing against the anchor's START facing, so it mirrors
+ok 130 - runtime resolves facing against the anchor's START facing, so it mirrors
+  ---
+  duration_ms: 1.164584
+  type: 'test'
+  ...
+# Subtest: authored facing wins over a facing reset between frames
+ok 131 - authored facing wins over a facing reset between frames
+  ---
+  duration_ms: 0.255542
+  type: 'test'
+  ...
+# Subtest: shipped clips author no facing, so they get no axis and change nothing
+ok 132 - shipped clips author no facing, so they get no axis and change nothing
+  ---
+  duration_ms: 2.195625
+  type: 'test'
+  ...
+# Subtest: the editor model stores facing on a captured keyframe and exports it
+ok 133 - the editor model stores facing on a captured keyframe and exports it
+  ---
+  duration_ms: 0.692375
+  type: 'test'
+  ...
+# Subtest: lChannelSide agrees with the path updateUpright actually takes
+ok 134 - lChannelSide agrees with the path updateUpright actually takes
+  ---
+  duration_ms: 0.324958
+  type: 'test'
+  ...
+# Subtest: workingHand follows the drawn arm when given the skeleton's side
+ok 135 - workingHand follows the drawn arm when given the skeleton's side
+  ---
+  duration_ms: 0.62575
+  type: 'test'
+  ...
+# Subtest: authorsTransform is set only for tracks that actually author transform channels
+ok 136 - authorsTransform is set only for tracks that actually author transform channels
+  ---
+  duration_ms: 4.960208
+  type: 'test'
+  ...
+# Subtest: a clip that authors no transform gets no staging context at all
+ok 137 - a clip that authors no transform gets no staging context at all
+  ---
+  duration_ms: 1.240667
+  type: 'test'
+  ...
+# Subtest: a mixed clip stages only the role whose track authors transform
+ok 138 - a mixed clip stages only the role whose track authors transform
+  ---
+  duration_ms: 0.375125
+  type: 'test'
+  ...
+# Subtest: the staging axis comes from the attacker, and falls back predictably
+ok 139 - the staging axis comes from the attacker, and falls back predictably
+  ---
+  duration_ms: 0.286875
+  type: 'test'
+  ...
+# Subtest: every staged role shares ONE tableau frame, taken entirely from the anchor
+ok 140 - every staged role shares ONE tableau frame, taken entirely from the anchor
+  ---
+  duration_ms: 2.253542
+  type: 'test'
+  ...
+# Subtest: authored entry separation is reproduced from every trigger distance
+ok 141 - authored entry separation is reproduced from every trigger distance
+  ---
+  duration_ms: 4.001042
+  type: 'test'
+  ...
+# Subtest: authored step separation is reproduced from every trigger distance
+ok 142 - authored step separation is reproduced from every trigger distance
+  ---
+  duration_ms: 3.691625
+  type: 'test'
+  ...
+# Subtest: authored contact separation is reproduced from every trigger distance
+ok 143 - authored contact separation is reproduced from every trigger distance
+  ---
+  duration_ms: 2.483417
+  type: 'test'
+  ...
+# Subtest: authored settle separation is reproduced from every trigger distance
+ok 144 - authored settle separation is reproduced from every trigger distance
+  ---
+  duration_ms: 1.374917
+  type: 'test'
+  ...
+# Subtest: trigger distance cannot influence either actor's absolute placement
+ok 145 - trigger distance cannot influence either actor's absolute placement
+  ---
+  duration_ms: 7.898708
+  type: 'test'
+  ...
+# Subtest: the tableau converges from every trigger distance in both facings
+ok 146 - the tableau converges from every trigger distance in both facings
+  ---
+  duration_ms: 2.886125
+  type: 'test'
+  ...
+# Subtest: role reversal reproduces the same tableau regardless of trigger distance
+ok 147 - role reversal reproduces the same tableau regardless of trigger distance
+  ---
+  duration_ms: 1.928375
+  type: 'test'
+  ...
+# Subtest: the entry frame places the pair at the authored tie-up distance, not on top of each other
+ok 148 - the entry frame places the pair at the authored tie-up distance, not on top of each other
+  ---
+  duration_ms: 0.276625
+  type: 'test'
+  ...
+# Subtest: staging mirrors as one rigid tableau in both facings
+ok 149 - staging mirrors as one rigid tableau in both facings
+  ---
+  duration_ms: 1.816959
+  type: 'test'
+  ...
+# Subtest: depth is not mirrored by facing
+ok 150 - depth is not mirrored by facing
+  ---
+  duration_ms: 4.901333
+  type: 'test'
+  ...
+# Subtest: role reversal follows the binding, not the wrestler identity
+ok 151 - role reversal follows the binding, not the wrestler identity
+  ---
+  duration_ms: 0.570583
+  type: 'test'
+  ...
+# Subtest: seeking to an arbitrary time is order-independent and never accumulates
+ok 152 - seeking to an arbitrary time is order-independent and never accumulates
+  ---
+  duration_ms: 0.62
+  type: 'test'
+  ...
+# Subtest: playing forward and seeking cold land in the same place
+ok 153 - playing forward and seeking cold land in the same place
+  ---
+  duration_ms: 0.883625
+  type: 'test'
+  ...
+# Subtest: pose, parts, and transform arrive on the same sampled frame
+ok 154 - pose, parts, and transform arrive on the same sampled frame
+  ---
+  duration_ms: 0.322417
+  type: 'test'
+  ...
+# Subtest: articulated elbow and knee channels survive the trip
+ok 155 - articulated elbow and knee channels survive the trip
+  ---
+  duration_ms: 0.155208
+  type: 'test'
+  ...
+# Subtest: staging is clamped at the ring edge instead of pushing a wrestler through the apron
+ok 156 - staging is clamped at the ring edge instead of pushing a wrestler through the apron
+  ---
+  duration_ms: 0.819625
+  type: 'test'
+  ...
+# Subtest: natural completion leaves both wrestlers parked at the final authored frame
+ok 157 - natural completion leaves both wrestlers parked at the final authored frame
+  ---
+  duration_ms: 2.744417
+  type: 'test'
+  ...
+# Subtest: cancellation before contact freezes both wrestlers with no further movement
+ok 158 - cancellation before contact freezes both wrestlers with no further movement
+  ---
+  duration_ms: 0.805125
+  type: 'test'
+  ...
+# Subtest: cancellation after contact freezes both wrestlers with no further movement
+ok 159 - cancellation after contact freezes both wrestlers with no further movement
+  ---
+  duration_ms: 0.57525
+  type: 'test'
+  ...
+# Subtest: a cancelled clip never applies the completion frame
+ok 160 - a cancelled clip never applies the completion frame
+  ---
+  duration_ms: 0.638292
+  type: 'test'
+  ...
+# Subtest: non-finite authored channels resolve to no offset rather than NaN
+ok 161 - non-finite authored channels resolve to no offset rather than NaN
+  ---
+  duration_ms: 0.264375
+  type: 'test'
+  ...
+# Subtest: a Wrestler driven by a non-finite transform stays inside the ring
+ok 162 - a Wrestler driven by a non-finite transform stays inside the ring
+  ---
+  duration_ms: 0.332125
+  type: 'test'
+  ...
+# Subtest: a neutral wrestler does not own the pose — the guard applies
+ok 163 - a neutral wrestler does not own the pose — the guard applies
+  ---
+  duration_ms: 0.846959
+  type: 'test'
+  ...
+# Subtest: an active MoveRuntime clip owns the pose
+ok 164 - an active MoveRuntime clip owns the pose
+  ---
+  duration_ms: 0.203583
+  type: 'test'
+  ...
+# Subtest: a running pose sequence owns the pose until its deadline
+ok 165 - a running pose sequence owns the pose until its deadline
+  ---
+  duration_ms: 0.090334
+  type: 'test'
+  ...
+# Subtest: ownership expires on its own — it cannot get stuck on
+ok 166 - ownership expires on its own — it cannot get stuck on
+  ---
+  duration_ms: 0.078083
+  type: 'test'
+  ...
+# Subtest: ownership ends exactly at the deadline, not after
+ok 167 - ownership ends exactly at the deadline, not after
+  ---
+  duration_ms: 0.836292
+  type: 'test'
+  ...
+# Subtest: a cleared deadline releases the pose
+ok 168 - a cleared deadline releases the pose
+  ---
+  duration_ms: 0.179959
+  type: 'test'
+  ...
+# Subtest: a live clip still owns the pose even with no sequence deadline
+ok 169 - a live clip still owns the pose even with no sequence deadline
+  ---
+  duration_ms: 0.144583
+  type: 'test'
+  ...
+# Subtest: the predicate exists on the prototype under the expected name
+ok 170 - the predicate exists on the prototype under the expected name
+  ---
+  duration_ms: 0.155209
+  type: 'test'
+  ...
+# Subtest: a clip-bound wrestler keeps the facing the clip gave him
+ok 171 - a clip-bound wrestler keeps the facing the clip gave him
+  ---
+  duration_ms: 0.685042
+  type: 'test'
+  ...
+# Subtest: a wrestler no clip owns still turns to face the opponent
+ok 172 - a wrestler no clip owns still turns to face the opponent
+  ---
+  duration_ms: 0.835167
+  type: 'test'
+  ...
+# Subtest: one painting fills both of its sides
+ok 173 - one painting fills both of its sides
+  ---
+  duration_ms: 8.470708
+  type: 'test'
+  ...
+# Subtest: a split delivery keeps its own sides and is not overwritten
+ok 174 - a split delivery keeps its own sides and is not overwritten
+  ---
+  duration_ms: 0.234042
+  type: 'test'
+  ...
+# Subtest: sourceFor names the file a logical slot is actually backed by
+ok 175 - sourceFor names the file a logical slot is actually backed by
+  ---
+  duration_ms: 2.478666
+  type: 'test'
+  ...
+# Subtest: resolveDelivery does not invent a side that has no source at all
+ok 176 - resolveDelivery does not invent a side that has no source at all
+  ---
+  duration_ms: 0.139792
+  type: 'test'
+  ...
+# Subtest: with no pelvis layer the thighs hang from the torso
+ok 177 - with no pelvis layer the thighs hang from the torso
+  ---
+  duration_ms: 5.166375
+  type: 'test'
+  ...
+# Subtest: a delivered pelvis layer is still preferred over the torso
+ok 178 - a delivered pelvis layer is still preferred over the torso
+  ---
+  duration_ms: 2.02175
+  type: 'test'
+  ...
+# Subtest: only the hips move; every other joint is untouched by the delivery
+ok 179 - only the hips move; every other joint is untouched by the delivery
+  ---
+  duration_ms: 3.000542
+  type: 'test'
+  ...
+# Subtest: chainsFor makes the same decision the joint table does
+ok 180 - chainsFor makes the same decision the joint table does
+  ---
+  duration_ms: 3.558458
+  type: 'test'
+  ...
+# Subtest: an eight-part set assembles a whole figure: both arms, both legs
+ok 181 - an eight-part set assembles a whole figure: both arms, both legs
+  ---
+  duration_ms: 106.089125
+  type: 'test'
+  ...
+# Subtest: the two legs are placed apart, not stacked on one hip
+ok 182 - the two legs are placed apart, not stacked on one hip
+  ---
+  duration_ms: 85.165667
+  type: 'test'
+  ...
+# Subtest: the shared thigh is placed twice from ONE image, not copied
+ok 183 - the shared thigh is placed twice from ONE image, not copied
+  ---
+  duration_ms: 4.25325
+  type: 'test'
+  ...
+# Subtest: a shared painting keeps its own pivot on both sides
+ok 184 - a shared painting keeps its own pivot on both sides
+  ---
+  duration_ms: 256.432792
+  type: 'test'
+  ...
+# Subtest: the shins hang off the knees of a shared thigh
+ok 185 - the shins hang off the knees of a shared thigh
+  ---
+  duration_ms: 131.912166
+  type: 'test'
+  ...
+# Subtest: an eight-part figure is not reported as a short twelve-part one
+ok 186 - an eight-part figure is not reported as a short twelve-part one
+  ---
+  duration_ms: 260.909542
+  type: 'test'
+  ...
+# Subtest: a genuinely incomplete delivery is still reported as incomplete
+ok 187 - a genuinely incomplete delivery is still reported as incomplete
+  ---
+  duration_ms: 199.079541
+  type: 'test'
+  ...
+# Subtest: elbow drop drains the defender once, at landing
+ok 188 - elbow drop drains the defender once, at landing
+  ---
+  duration_ms: 9.739708
+  type: 'test'
+  ...
+# Subtest: an interrupted elbow drop costs the defender nothing
+ok 189 - an interrupted elbow drop costs the defender nothing
+  ---
+  duration_ms: 0.742958
+  type: 'test'
+  ...
+# Subtest: a hurt George begs off instead of preening
+ok 190 - a hurt George begs off instead of preening
+  ---
+  duration_ms: 1.04925
+  type: 'test'
+  ...
+# Subtest: a fresh George still preens; a wrestler who does not beg never begs
+ok 191 - a fresh George still preens; a wrestler who does not beg never begs
+  ---
+  duration_ms: 0.174208
+  type: 'test'
+  ...
+# Subtest: the beg poses exist and George is the one who begs
+ok 192 - the beg poses exist and George is the one who begs
+  ---
+  duration_ms: 0.107209
+  type: 'test'
+  ...
+# Subtest: healthy George struts forward; hurt George still begs
+ok 193 - healthy George struts forward; hurt George still begs
+  ---
+  duration_ms: 0.779584
+  type: 'test'
+  ...
+# Subtest: on a downed man: up is the arm bar, down the ankle lock, neither the first in the kit
+ok 194 - on a downed man: up is the arm bar, down the ankle lock, neither the first in the kit
+  ---
+  duration_ms: 0.318208
+  type: 'test'
+  ...
+# Subtest: the committed hammerlock draft is a compatible, complete paired draft
+ok 195 - the committed hammerlock draft is a compatible, complete paired draft
+  ---
+  duration_ms: 9.762834
+  type: 'test'
+  ...
+# Subtest: the draft declares the hold as an interval — acquired at the reach, released at the end
+ok 196 - the draft declares the hold as an interval — acquired at the reach, released at the end
+  ---
+  duration_ms: 0.849542
+  type: 'test'
+  ...
+# Subtest: the draft is READY: nothing blocks it leaving the editor
+ok 197 - the draft is READY: nothing blocks it leaving the editor
+  ---
+  duration_ms: 14.798875
+  type: 'test'
+  ...
+# Subtest: exporting the draft reproduces the shipped clip, channel for channel
+ok 198 - exporting the draft reproduces the shipped clip, channel for channel
+  ---
+  duration_ms: 43.871084
+  type: 'test'
+  ...
+# Subtest: a full save/reload round trip loses nothing
+ok 199 - a full save/reload round trip loses nothing
+  ---
+  duration_ms: 58.581
+  type: 'test'
+  ...
+# Subtest: the round trip is sensitive: dropping any authored dimension is caught
+ok 200 - the round trip is sensitive: dropping any authored dimension is caught
+  ---
+  duration_ms: 218.471917
+  type: 'test'
+  ...
+# Subtest: editor-only authoring metadata never reaches gameplay data
+ok 201 - editor-only authoring metadata never reaches gameplay data
+  ---
+  duration_ms: 14.371583
+  type: 'test'
+  ...
+# Subtest: the exported module is valid, registerable clip source
+ok 202 - the exported module is valid, registerable clip source
+  ---
+  duration_ms: 14.946458
+  type: 'test'
+  ...
+# Subtest: the exported clip registers under the id the move registry expects
+ok 203 - the exported clip registers under the id the move registry expects
+  ---
+  duration_ms: 4.211292
+  type: 'test'
+  ...
+# Subtest: the authored tableau is what the runtime actually resolves, from one origin
+ok 204 - the authored tableau is what the runtime actually resolves, from one origin
+  ---
+  duration_ms: 5.603833
+  type: 'test'
+  ...
+# Subtest: the working hand variant resolves to the correct physical hand in both facings
+ok 205 - the working hand variant resolves to the correct physical hand in both facings
+  ---
+  duration_ms: 4.42925
+  type: 'test'
+  ...
+# Subtest: the declared hold is REQUIRED, so it cannot be graded away
+ok 206 - the declared hold is REQUIRED, so it cannot be graded away
+  ---
+  duration_ms: 1.783333
+  type: 'test'
+  ...
+# Subtest: the acquire marker fires on the frame the grip is declared to start
+ok 207 - the acquire marker fires on the frame the grip is declared to start
+  ---
+  duration_ms: 0.202333
+  type: 'test'
+  ...
+# Subtest: the approach completes at the catch, so the tableau is still while the grip holds
+ok 208 - the approach completes at the catch, so the tableau is still while the grip holds
+  ---
+  duration_ms: 1.864875
+  type: 'test'
+  ...
+# Subtest: both wrestlers stay planted through the hold
+ok 209 - both wrestlers stay planted through the hold
+  ---
+  duration_ms: 1.803458
+  type: 'test'
+  ...
+# Subtest: hammerlock clip passes validation and compiles
+ok 210 - hammerlock clip passes validation and compiles
+  ---
+  duration_ms: 7.656
+  type: 'test'
+  ...
+# Subtest: both actor tracks sample synchronously and say different things
+ok 211 - both actor tracks sample synchronously and say different things
+  ---
+  duration_ms: 1.698917
+  type: 'test'
+  ...
+# Subtest: arbitrary-time sampling is deterministic across every named phase
+ok 212 - arbitrary-time sampling is deterministic across every named phase
+  ---
+  duration_ms: 6.721458
+  type: 'test'
+  ...
+# Subtest: the three markers are authored in order at their preserved times
+ok 213 - the three markers are authored in order at their preserved times
+  ---
+  duration_ms: 0.767708
+  type: 'test'
+  ...
+# Subtest: each marker fires exactly once, in order, when stepped at 30 Hz
+ok 214 - each marker fires exactly once, in order, when stepped at 30 Hz
+  ---
+  duration_ms: 4.259333
+  type: 'test'
+  ...
+# Subtest: each marker fires exactly once, in order, when stepped at 60 Hz
+ok 215 - each marker fires exactly once, in order, when stepped at 60 Hz
+  ---
+  duration_ms: 3.349625
+  type: 'test'
+  ...
+# Subtest: each marker fires exactly once, in order, when stepped at 120 Hz
+ok 216 - each marker fires exactly once, in order, when stepped at 120 Hz
+  ---
+  duration_ms: 5.791416
+  type: 'test'
+  ...
+# Subtest: preview seeking never emits a marker (no damage from inspection)
+ok 217 - preview seeking never emits a marker (no damage from inspection)
+  ---
+  duration_ms: 1.105
+  type: 'test'
+  ...
+# Subtest: a cancelled hold never reaches its later markers
+ok 218 - a cancelled hold never reaches its later markers
+  ---
+  duration_ms: 2.989875
+  type: 'test'
+  ...
+# Subtest: completion clears part variants on both actors
+ok 219 - completion clears part variants on both actors
+  ---
+  duration_ms: 1.740041
+  type: 'test'
+  ...
+# Subtest: commitment: both holding, fixed-hold set, attacker paid, no timers scheduled
+ok 220 - commitment: both holding, fixed-hold set, attacker paid, no timers scheduled
+  ---
+  duration_ms: 2.246792
+  type: 'test'
+  ...
+# Subtest: the clip — not the executor — owns staging, and places both actors on the authored tableau
+ok 221 - the clip — not the executor — owns staging, and places both actors on the authored tableau
+  ---
+  duration_ms: 4.638541
+  type: 'test'
+  ...
+# Subtest: the staged tableau is identical from every trigger distance
+ok 222 - the staged tableau is identical from every trigger distance
+  ---
+  duration_ms: 8.086084
+  type: 'test'
+  ...
+# Subtest: natural completion: both drains applied, both recovered to their own idle
+ok 223 - natural completion: both drains applied, both recovered to their own idle
+  ---
+  duration_ms: 5.0875
+  type: 'test'
+  ...
+# Subtest: cancellation before contact: no drains, clean legal teardown, no later damage
+ok 224 - cancellation before contact: no drains, clean legal teardown, no later damage
+  ---
+  duration_ms: 1.141167
+  type: 'test'
+  ...
+# Subtest: cancellation during the working hold: set drain kept, release drain never lands
+ok 225 - cancellation during the working hold: set drain kept, release drain never lands
+  ---
+  duration_ms: 2.201792
+  type: 'test'
+  ...
+# Subtest: interruption THROUGH the attacker (its pose claimed) tears down the pair
+ok 226 - interruption THROUGH the attacker (its pose claimed) tears down the pair
+  ---
+  duration_ms: 8.413917
+  type: 'test'
+  ...
+# Subtest: interruption THROUGH the defender (its pose claimed) tears down the pair
+ok 227 - interruption THROUGH the defender (its pose claimed) tears down the pair
+  ---
+  duration_ms: 3.226083
+  type: 'test'
+  ...
+# Subtest: cancelTarget on either bound actor cancels the shared move
+ok 228 - cancelTarget on either bound actor cancels the shared move
+  ---
+  duration_ms: 3.759833
+  type: 'test'
+  ...
+# Subtest: shutdown cancels an active hammerlock and leaves both actors legal
+ok 229 - shutdown cancels an active hammerlock and leaves both actors legal
+  ---
+  duration_ms: 9.892584
+  type: 'test'
+  ...
+# Subtest: re-entrant cleanup is idempotent (recovery pose-claim cannot double-fire)
+ok 230 - re-entrant cleanup is idempotent (recovery pose-claim cannot double-fire)
+  ---
+  duration_ms: 6.124583
+  type: 'test'
+  ...
+# Subtest: cancelling mid-staging leaves both actors exactly where the last owned frame put them
+ok 231 - cancelling mid-staging leaves both actors exactly where the last owned frame put them
+  ---
+  duration_ms: 11.576084
+  type: 'test'
+  ...
+# Subtest: a completed hold leaves nobody drifting either
+ok 232 - a completed hold leaves nobody drifting either
+  ---
+  duration_ms: 20.634334
+  type: 'test'
+  ...
+# Subtest: interruption THROUGH the attacker: attacker keeps its new pose, defender recovers to its OWN idle, no completion-only damage
+ok 233 - interruption THROUGH the attacker: attacker keeps its new pose, defender recovers to its OWN idle, no completion-only damage
+  ---
+  duration_ms: 4.214833
+  type: 'test'
+  ...
+# Subtest: interruption THROUGH the defender: defender keeps its new pose, attacker recovers to its OWN idle, no completion-only damage
+ok 234 - interruption THROUGH the defender: defender keeps its new pose, attacker recovers to its OWN idle, no completion-only damage
+  ---
+  duration_ms: 3.674958
+  type: 'test'
+  ...
+# Subtest: cancelTarget and shutdown do not know a pose-claim initiator, so neither wrestler gets a phantom recovery tween
+ok 235 - cancelTarget and shutdown do not know a pose-claim initiator, so neither wrestler gets a phantom recovery tween
+  ---
+  duration_ms: 6.51725
+  type: 'test'
+  ...
+# Subtest: shutdown mid-hammerlock never starts a recovery tween (idempotent, no leftover animation)
+ok 236 - shutdown mid-hammerlock never starts a recovery tween (idempotent, no leftover animation)
+  ---
+  duration_ms: 1.202708
+  type: 'test'
+  ...
+# Subtest: the game registers Derek's hammerlock under the registry id
+ok 237 - the game registers Derek's hammerlock under the registry id
+  ---
+  duration_ms: 0.88525
+  type: 'test'
+  ...
+# Subtest: Derek's hammerlock validates and compiles
+ok 238 - Derek's hammerlock validates and compiles
+  ---
+  duration_ms: 1.391208
+  type: 'test'
+  ...
+# Subtest: every marker the executor needs fires once, in order, at 30 Hz
+ok 239 - every marker the executor needs fires once, in order, at 30 Hz
+  ---
+  duration_ms: 7.99225
+  type: 'test'
+  ...
+# Subtest: every marker the executor needs fires once, in order, at 60 Hz
+ok 240 - every marker the executor needs fires once, in order, at 60 Hz
+  ---
+  duration_ms: 3.934959
+  type: 'test'
+  ...
+# Subtest: every marker the executor needs fires once, in order, at 120 Hz
+ok 241 - every marker the executor needs fires once, in order, at 120 Hz
+  ---
+  duration_ms: 7.305208
+  type: 'test'
+  ...
+# Subtest: the defender ends up behind-the-back: turned the attacker's way during the hold
+ok 242 - the defender ends up behind-the-back: turned the attacker's way during the hold
+  ---
+  duration_ms: 0.515208
+  type: 'test'
+  ...
+# Subtest: the grip and the pain face are on during the hold and gone once it ends
+ok 243 - the grip and the pain face are on during the hold and gone once it ends
+  ---
+  duration_ms: 4.332042
+  type: 'test'
+  ...
+# Subtest: jab clip passes validation and compiles
+ok 244 - jab clip passes validation and compiles
+  ---
+  duration_ms: 6.677542
+  type: 'test'
+  ...
+# Subtest: arbitrary-time sampling is deterministic and blends the authored stance
+ok 245 - arbitrary-time sampling is deterministic and blends the authored stance
+  ---
+  duration_ms: 2.308417
+  type: 'test'
+  ...
+# Subtest: impact fires exactly once when stepped at 30 Hz
+ok 246 - impact fires exactly once when stepped at 30 Hz
+  ---
+  duration_ms: 2.567625
+  type: 'test'
+  ...
+# Subtest: impact fires exactly once when stepped at 60 Hz
+ok 247 - impact fires exactly once when stepped at 60 Hz
+  ---
+  duration_ms: 0.520083
+  type: 'test'
+  ...
+# Subtest: impact fires exactly once when stepped at 120 Hz
+ok 248 - impact fires exactly once when stepped at 120 Hz
+  ---
+  duration_ms: 3.606041
+  type: 'test'
+  ...
+# Subtest: seeking through the impact frame never emits it (no damage from previews)
+ok 249 - seeking through the impact frame never emits it (no damage from previews)
+  ---
+  duration_ms: 10.488708
+  type: 'test'
+  ...
+# Subtest: cancellation before impact causes no damage and no later impact
+ok 250 - cancellation before impact causes no damage and no later impact
+  ---
+  duration_ms: 1.894375
+  type: 'test'
+  ...
+# Subtest: cancellation after impact does not double-apply damage
+ok 251 - cancellation after impact does not double-apply damage
+  ---
+  duration_ms: 0.626375
+  type: 'test'
+  ...
+# Subtest: appearance resets to base after natural completion
+ok 252 - appearance resets to base after natural completion
+  ---
+  duration_ms: 11.337667
+  type: 'test'
+  ...
+# Subtest: appearance resets to base after cancellation
+ok 253 - appearance resets to base after cancellation
+  ---
+  duration_ms: 2.017125
+  type: 'test'
+  ...
+# Subtest: shutdown cancels active jab handles and clears the registry
+ok 254 - shutdown cancels active jab handles and clears the registry
+  ---
+  duration_ms: 1.008542
+  type: 'test'
+  ...
+# Subtest: the semantic strikingForearm slot maps to near/far by facing
+ok 255 - the semantic strikingForearm slot maps to near/far by facing
+  ---
+  duration_ms: 0.301125
+  type: 'test'
+  ...
+# Subtest: applyAnimationSample merges authored channels and preserves the rest
+ok 256 - applyAnimationSample merges authored channels and preserves the rest
+  ---
+  duration_ms: 7.427167
+  type: 'test'
+  ...
+# Subtest: interiorBackground: a solid rectangle encloses nothing
+ok 257 - interiorBackground: a solid rectangle encloses nothing
+  ---
+  duration_ms: 12.64025
+  type: 'test'
+  ...
+# Subtest: interiorBackground: counts a hole, exactly
+ok 258 - interiorBackground: counts a hole, exactly
+  ---
+  duration_ms: 0.480416
+  type: 'test'
+  ...
+# Subtest: interiorBackground: outside background is not counted
+ok 259 - interiorBackground: outside background is not counted
+  ---
+  duration_ms: 0.546916
+  type: 'test'
+  ...
+# Subtest: interiorBackground: the wedge between two separated parts is interior
+ok 260 - interiorBackground: the wedge between two separated parts is interior
+  ---
+  duration_ms: 4.388125
+  type: 'test'
+  ...
+# Subtest: interiorBackground: alpha at or below 40 reads as unpainted
+ok 261 - interiorBackground: alpha at or below 40 reads as unpainted
+  ---
+  duration_ms: 0.767792
+  type: 'test'
+  ...
+# Subtest: traceContour: walks the boundary of a rectangle once
+ok 262 - traceContour: walks the boundary of a rectangle once
+  ---
+  duration_ms: 4.274917
+  type: 'test'
+  ...
+# Subtest: traceContour: ignores a stray speck and follows the largest component
+ok 263 - traceContour: ignores a stray speck and follows the largest component
+  ---
+  duration_ms: 1.901167
+  type: 'test'
+  ...
+# Subtest: traceContour: an L is measured on its real boundary, not an angular sort
+ok 264 - traceContour: an L is measured on its real boundary, not an angular sort
+  ---
+  duration_ms: 2.518417
+  type: 'test'
+  ...
+# Subtest: sharpestAndStraight: a disc has no sharp corner and no long straight run
+ok 265 - sharpestAndStraight: a disc has no sharp corner and no long straight run
+  ---
+  duration_ms: 13.253667
+  type: 'test'
+  ...
+# Subtest: sharpestAndStraight: a spear reads as a sharp corner
+ok 266 - sharpestAndStraight: a spear reads as a sharp corner
+  ---
+  duration_ms: 22.233333
+  type: 'test'
+  ...
+# Subtest: sharpestAndStraight: a clipped silhouette does not fabricate a straight run
+ok 267 - sharpestAndStraight: a clipped silhouette does not fabricate a straight run
+  ---
+  duration_ms: 8.856083
+  type: 'test'
+  ...
+# Subtest: sharpestAndStraight: a long flat cut edge reads as a straight run
+ok 268 - sharpestAndStraight: a long flat cut edge reads as a straight run
+  ---
+  duration_ms: 1.866417
+  type: 'test'
+  ...
+# Subtest: localToWorld: matches Skeleton.js _endXY at the identity angle
+ok 269 - localToWorld: matches Skeleton.js _endXY at the identity angle
+  ---
+  duration_ms: 1.497875
+  type: 'test'
+  ...
+# Subtest: localToWorld: reduces to _end along the bone axis
+ok 270 - localToWorld: reduces to _end along the bone axis
+  ---
+  duration_ms: 0.245291
+  type: 'test'
+  ...
+# Subtest: drawPart: an unrotated part lands with its pivot on the joint
+ok 271 - drawPart: an unrotated part lands with its pivot on the joint
+  ---
+  duration_ms: 1.563584
+  type: 'test'
+  ...
+# Subtest: drawPart: rotation is about the pivot, and area is preserved
+ok 272 - drawPart: rotation is about the pivot, and area is preserved
+  ---
+  duration_ms: 16.305667
+  type: 'test'
+  ...
+# Subtest: drawPart: inverse mapping leaves no gaps in a rotated part
+ok 273 - drawPart: inverse mapping leaves no gaps in a rotated part
+  ---
+  duration_ms: 3.170458
+  type: 'test'
+  ...
+# Subtest: drawPart: facing -1 mirrors the part
+ok 274 - drawPart: facing -1 mirrors the part
+  ---
+  duration_ms: 1.885167
+  type: 'test'
+  ...
+# Subtest: sweepJoint: a generously overlapped joint holds through the full range
+ok 275 - sweepJoint: a generously overlapped joint holds through the full range
+  ---
+  duration_ms: 250.552
+  type: 'test'
+  ...
+# Subtest: sweepJoint: a flat-cut attachment face is caught at high flex
+ok 276 - sweepJoint: a flat-cut attachment face is caught at high flex
+  ---
+  duration_ms: 399.983375
+  type: 'test'
+  ...
+# Subtest: sweepJoint: an outward rotation is caught by straight run, not interior bg
+ok 277 - sweepJoint: an outward rotation is caught by straight run, not interior bg
+  ---
+  duration_ms: 95.60725
+  type: 'test'
+  ...
+# Subtest: sweepJoint: reports the worst angle, not the rest pose
+ok 278 - sweepJoint: reports the worst angle, not the rest pose
+  ---
+  duration_ms: 155.885625
+  type: 'test'
+  ...
+# Subtest: sweepJoint: both facings are measured independently
+ok 279 - sweepJoint: both facings are measured independently
+  ---
+  duration_ms: 232.842375
+  type: 'test'
+  ...
+# Subtest: the production articulation ranges are the ones Derek set
+ok 280 - the production articulation ranges are the ones Derek set
+  ---
+  duration_ms: 0.325667
+  type: 'test'
+  ...
+# Subtest: the thresholds still match NEW_ASSETS_SPEC.md
+ok 281 - the thresholds still match NEW_ASSETS_SPEC.md
+  ---
+  duration_ms: 1.1175
+  type: 'test'
+  ...
+# Subtest: greenFringe: counts keyer residue only where the part is painted
+ok 282 - greenFringe: counts keyer residue only where the part is painted
+  ---
+  duration_ms: 8.712208
+  type: 'test'
+  ...
+# Subtest: cropDisc: pads rather than throwing when the joint is near an edge
+ok 283 - cropDisc: pads rather than throwing when the joint is near an edge
+  ---
+  duration_ms: 1.055917
+  type: 'test'
+  ...
+# Subtest: sharpestAndStraight: scoring nothing is reported, not scored perfect
+ok 284 - sharpestAndStraight: scoring nothing is reported, not scored perfect
+  ---
+  duration_ms: 3.091417
+  type: 'test'
+  ...
+# Subtest: fitCanvas: the joint and the whole child land inside the fitted canvas
+ok 285 - fitCanvas: the joint and the whole child land inside the fitted canvas
+  ---
+  duration_ms: 3.931
+  type: 'test'
+  ...
+# Subtest: sweepJoint: a joint carried off a fixed canvas is not scored as clean
+ok 286 - sweepJoint: a joint carried off a fixed canvas is not scored as clean
+  ---
+  duration_ms: 333.610208
+  type: 'test'
+  ...
+# Subtest: sweepJoint: an empty joint region is unmeasured, a buried one is a pass
+ok 287 - sweepJoint: an empty joint region is unmeasured, a buried one is a pass
+  ---
+  duration_ms: 61.294167
+  type: 'test'
+  ...
+# Subtest: sweepJoint: an unmeasured frame can never pass, and outranks measured ones
+ok 288 - sweepJoint: an unmeasured frame can never pass, and outranks measured ones
+  ---
+  duration_ms: 0.263208
+  type: 'test'
+  ...
+# Subtest: a covered shoulder passes and the manifest names its owner
+ok 289 - a covered shoulder passes and the manifest names its owner
+  ---
+  duration_ms: 72.838667
+  type: 'test'
+  ...
+# Subtest: an exposed shoulder core is rejected
+ok 290 - an exposed shoulder core is rejected
+  ---
+  duration_ms: 85.258583
+  type: 'test'
+  ...
+# Subtest: the shoulder cores may not be reassigned to another owner
+ok 291 - the shoulder cores may not be reassigned to another owner
+  ---
+  duration_ms: 35.157416
+  type: 'test'
+  ...
+# Subtest: coverage is no longer restricted to the split-pelvis hips
+ok 292 - coverage is no longer restricted to the split-pelvis hips
+  ---
+  duration_ms: 39.976583
+  type: 'test'
+  ...
+# Subtest: a coverage owner must be a real part, and never the zone owner itself
+ok 293 - a coverage owner must be a real part, and never the zone owner itself
+  ---
+  duration_ms: 75.645667
+  type: 'test'
+  ...
+# Subtest: a coverage layer is drawn behind the parts whose cores it carries
+ok 294 - a coverage layer is drawn behind the parts whose cores it carries
+  ---
+  duration_ms: 0.285417
+  type: 'test'
+  ...
+# Subtest: approved Thesz landmarks satisfy source disks, declared reuse transforms, boot vectors, and grounding
+ok 295 - approved Thesz landmarks satisfy source disks, declared reuse transforms, boot vectors, and grounding
+  ---
+  duration_ms: 1089.73425
+  type: 'test'
+  ...
+# Subtest: landmark replay is idempotent and produces a structurally valid contract
+ok 296 - landmark replay is idempotent and produces a structurally valid contract
+  ---
+  duration_ms: 143.78425
+  type: 'test'
+  ...
+# Subtest: landmark gate rejects a transparent joint center
+ok 297 - landmark gate rejects a transparent joint center
+  ---
+  duration_ms: 381.048334
+  type: 'test'
+  ...
+# Subtest: landmark gate rejects an opposite limb that is not a true mirror
+ok 298 - landmark gate rejects an opposite limb that is not a true mirror
+  ---
+  duration_ms: 577.651042
+  type: 'test'
+  ...
+# Subtest: turned views register the same reusable limb without requiring a reflection
+ok 299 - turned views register the same reusable limb without requiring a reflection
+  ---
+  duration_ms: 1.118875
+  type: 'test'
+  ...
+# Subtest: registration-only exceptions are restricted to concealed knee and ankle targets
+ok 300 - registration-only exceptions are restricted to concealed knee and ankle targets
+  ---
+  duration_ms: 59.907792
+  type: 'test'
+  ...
+# Subtest: profile foot correction keeps both soles fixed and lands each ankle on its owned boot
+ok 301 - profile foot correction keeps both soles fixed and lands each ankle on its owned boot
+  ---
+  duration_ms: 0.575833
+  type: 'test'
+  ...
+# Subtest: the approved back3q fit remains frozen
+ok 302 - the approved back3q fit remains frozen
+  ---
+  duration_ms: 0.189041
+  type: 'test'
+  ...
+# Subtest: landmark gate rejects a local boot vector that disagrees with its planted master boot
+ok 303 - landmark gate rejects a local boot vector that disagrees with its planted master boot
+  ---
+  duration_ms: 389.372375
+  type: 'test'
+  ...
+# Subtest: bakedAxis reads the angle a limb was painted at
+ok 304 - bakedAxis reads the angle a limb was painted at
+  ---
+  duration_ms: 296.84775
+  type: 'test'
+  ...
+# Subtest: bakedAxis in landmark mode uses the declared bone, not the paint mass
+ok 305 - bakedAxis in landmark mode uses the declared bone, not the paint mass
+  ---
+  duration_ms: 45.14375
+  type: 'test'
+  ...
+# Subtest: straightening removes the bake rather than doubling it
+ok 306 - straightening removes the bake rather than doubling it
+  ---
+  duration_ms: 1029.268667
+  type: 'test'
+  ...
+# Subtest: rotation grows the canvas so no paint is clipped
+ok 307 - rotation grows the canvas so no paint is clipped
+  ---
+  duration_ms: 219.28375
+  type: 'test'
+  ...
+# Subtest: rotation does not grow a dark rim on the silhouette
+ok 308 - rotation does not grow a dark rim on the silhouette
+  ---
+  duration_ms: 253.262
+  type: 'test'
+  ...
+# Subtest: landmarks are carried through the same rotation
+ok 309 - landmarks are carried through the same rotation
+  ---
+  duration_ms: 221.296417
+  type: 'test'
+  ...
+# Subtest: which parts are bent is measured, not listed by name
+ok 310 - which parts are bent is measured, not listed by name
+  ---
+  duration_ms: 0.480167
+  type: 'test'
+  ...
+# Subtest: a part already straight is copied, not resampled
+ok 311 - a part already straight is copied, not resampled
+  ---
+  duration_ms: 0.816625
+  type: 'test'
+  ...
+# Subtest: a shin is measured on its declared ankle, not on its boot
+ok 312 - a shin is measured on its declared ankle, not on its boot
+  ---
+  duration_ms: 10.465875
+  type: 'test'
+  ...
+# Subtest: joint-locked get-ups finish at the actual body height without moving the grounded start
+ok 313 - joint-locked get-ups finish at the actual body height without moving the grounded start
+  ---
+  duration_ms: 7.020666
+  type: 'test'
+  ...
+# Subtest: reference and unmigrated rigs retain their existing get-up geometry
+ok 314 - reference and unmigrated rigs retain their existing get-up geometry
+  ---
+  duration_ms: 0.380666
+  type: 'test'
+  ...
+# Subtest: headbutt fires on staggered opponent within reach when available
+ok 315 - headbutt fires on staggered opponent within reach when available
+  ---
+  duration_ms: 2.537125
+  type: 'test'
+  ...
+# Subtest: elbowDrop fires on down opponent within reach when available
+ok 316 - elbowDrop fires on down opponent within reach when available
+  ---
+  duration_ms: 0.686083
+  type: 'test'
+  ...
+# Subtest: elbowDrop fires on possum opponent within reach when available
+ok 317 - elbowDrop fires on possum opponent within reach when available
+  ---
+  duration_ms: 0.171125
+  type: 'test'
+  ...
+# Subtest: jab fires on standing opponent within jabReach when available
+ok 318 - jab fires on standing opponent within jabReach when available
+  ---
+  duration_ms: 0.127458
+  type: 'test'
+  ...
+# Subtest: jab fires on blocking opponent within jabReach when available
+ok 319 - jab fires on blocking opponent within jabReach when available
+  ---
+  duration_ms: 0.139
+  type: 'test'
+  ...
+# Subtest: dropkick fires on standing opponent within medReach when available
+ok 320 - dropkick fires on standing opponent within medReach when available
+  ---
+  duration_ms: 0.218667
+  type: 'test'
+  ...
+# Subtest: dropkick fires on blocking opponent within medReach when available
+ok 321 - dropkick fires on blocking opponent within medReach when available
+  ---
+  duration_ms: 0.149875
+  type: 'test'
+  ...
+# Subtest: false when opponent state matches nothing, even with every move available
+ok 322 - false when opponent state matches nothing, even with every move available
+  ---
+  duration_ms: 0.126125
+  type: 'test'
+  ...
+# Subtest: false when moveSet is empty regardless of otherState/distance
+ok 323 - false when moveSet is empty regardless of otherState/distance
+  ---
+  duration_ms: 1.46025
+  type: 'test'
+  ...
+# Subtest: headbutt unavailable on staggered opponent falls through to false (no other branch matches "staggered")
+ok 324 - headbutt unavailable on staggered opponent falls through to false (no other branch matches "staggered")
+  ---
+  duration_ms: 1.632625
+  type: 'test'
+  ...
+# Subtest: elbowDrop unavailable on down opponent falls through to false (no other branch matches "down")
+ok 325 - elbowDrop unavailable on down opponent falls through to false (no other branch matches "down")
+  ---
+  duration_ms: 2.098
+  type: 'test'
+  ...
+# Subtest: elbowDrop unavailable on possum opponent falls through to false
+ok 326 - elbowDrop unavailable on possum opponent falls through to false
+  ---
+  duration_ms: 0.240625
+  type: 'test'
+  ...
+# Subtest: jab unavailable on standing opponent within jabReach falls through to dropkick
+ok 327 - jab unavailable on standing opponent within jabReach falls through to dropkick
+  ---
+  duration_ms: 0.127583
+  type: 'test'
+  ...
+# Subtest: jab unavailable on blocking opponent within jabReach falls through to dropkick
+ok 328 - jab unavailable on blocking opponent within jabReach falls through to dropkick
+  ---
+  duration_ms: 0.100125
+  type: 'test'
+  ...
+# Subtest: jab and dropkick both unavailable on standing opponent falls through to false
+ok 329 - jab and dropkick both unavailable on standing opponent falls through to false
+  ---
+  duration_ms: 0.099541
+  type: 'test'
+  ...
+# Subtest: dropkick unavailable beyond jabReach but within medReach falls through to false
+ok 330 - dropkick unavailable beyond jabReach but within medReach falls through to false
+  ---
+  duration_ms: 0.166583
+  type: 'test'
+  ...
+# Subtest: jab takes priority over dropkick when both available and within jabReach
+ok 331 - jab takes priority over dropkick when both available and within jabReach
+  ---
+  duration_ms: 0.102334
+  type: 'test'
+  ...
+# Subtest: headbutt takes priority when staggered and every move is available
+ok 332 - headbutt takes priority when staggered and every move is available
+  ---
+  duration_ms: 0.096
+  type: 'test'
+  ...
+# Subtest: elbowDrop takes priority when down and every move is available
+ok 333 - elbowDrop takes priority when down and every move is available
+  ---
+  duration_ms: 0.094625
+  type: 'test'
+  ...
+# Subtest: headbutt: just below reach @ scale 1 fires
+ok 334 - headbutt: just below reach @ scale 1 fires
+  ---
+  duration_ms: 0.095375
+  type: 'test'
+  ...
+# Subtest: headbutt: exactly at reach @ scale 1 fires
+ok 335 - headbutt: exactly at reach @ scale 1 fires
+  ---
+  duration_ms: 0.067959
+  type: 'test'
+  ...
+# Subtest: headbutt: just above reach @ scale 1 fails
+ok 336 - headbutt: just above reach @ scale 1 fails
+  ---
+  duration_ms: 0.070333
+  type: 'test'
+  ...
+# Subtest: headbutt: just below reach @ scale 2 fires
+ok 337 - headbutt: just below reach @ scale 2 fires
+  ---
+  duration_ms: 0.069583
+  type: 'test'
+  ...
+# Subtest: headbutt: exactly at reach @ scale 2 fires
+ok 338 - headbutt: exactly at reach @ scale 2 fires
+  ---
+  duration_ms: 0.068791
+  type: 'test'
+  ...
+# Subtest: headbutt: just above reach @ scale 2 fails
+ok 339 - headbutt: just above reach @ scale 2 fails
+  ---
+  duration_ms: 0.072416
+  type: 'test'
+  ...
+# Subtest: elbowDrop: just below reach @ scale 1 fires
+ok 340 - elbowDrop: just below reach @ scale 1 fires
+  ---
+  duration_ms: 0.069125
+  type: 'test'
+  ...
+# Subtest: elbowDrop: exactly at reach @ scale 1 fires
+ok 341 - elbowDrop: exactly at reach @ scale 1 fires
+  ---
+  duration_ms: 0.072083
+  type: 'test'
+  ...
+# Subtest: elbowDrop: just above reach @ scale 1 fails
+ok 342 - elbowDrop: just above reach @ scale 1 fails
+  ---
+  duration_ms: 0.071791
+  type: 'test'
+  ...
+# Subtest: elbowDrop: just below reach @ scale 2 fires
+ok 343 - elbowDrop: just below reach @ scale 2 fires
+  ---
+  duration_ms: 0.071042
+  type: 'test'
+  ...
+# Subtest: elbowDrop: exactly at reach @ scale 2 fires
+ok 344 - elbowDrop: exactly at reach @ scale 2 fires
+  ---
+  duration_ms: 0.068708
+  type: 'test'
+  ...
+# Subtest: elbowDrop: just above reach @ scale 2 fails
+ok 345 - elbowDrop: just above reach @ scale 2 fails
+  ---
+  duration_ms: 0.067333
+  type: 'test'
+  ...
+# Subtest: jab: just below jabReach @ scale 1 fires
+ok 346 - jab: just below jabReach @ scale 1 fires
+  ---
+  duration_ms: 0.071417
+  type: 'test'
+  ...
+# Subtest: jab: exactly at jabReach @ scale 1 fires
+ok 347 - jab: exactly at jabReach @ scale 1 fires
+  ---
+  duration_ms: 0.068959
+  type: 'test'
+  ...
+# Subtest: jab: just above jabReach @ scale 1 fails
+ok 348 - jab: just above jabReach @ scale 1 fails
+  ---
+  duration_ms: 0.076417
+  type: 'test'
+  ...
+# Subtest: jab: just below jabReach @ scale 2 fires
+ok 349 - jab: just below jabReach @ scale 2 fires
+  ---
+  duration_ms: 0.21025
+  type: 'test'
+  ...
+# Subtest: jab: exactly at jabReach @ scale 2 fires
+ok 350 - jab: exactly at jabReach @ scale 2 fires
+  ---
+  duration_ms: 0.08025
+  type: 'test'
+  ...
+# Subtest: jab: just above jabReach @ scale 2 fails
+ok 351 - jab: just above jabReach @ scale 2 fails
+  ---
+  duration_ms: 0.067209
+  type: 'test'
+  ...
+# Subtest: dropkick: just below medReach @ scale 1 fires
+ok 352 - dropkick: just below medReach @ scale 1 fires
+  ---
+  duration_ms: 0.068667
+  type: 'test'
+  ...
+# Subtest: dropkick: exactly at medReach @ scale 1 fires
+ok 353 - dropkick: exactly at medReach @ scale 1 fires
+  ---
+  duration_ms: 0.070917
+  type: 'test'
+  ...
+# Subtest: dropkick: just above medReach @ scale 1 fails
+ok 354 - dropkick: just above medReach @ scale 1 fails
+  ---
+  duration_ms: 0.066167
+  type: 'test'
+  ...
+# Subtest: dropkick: just below medReach @ scale 2 fires
+ok 355 - dropkick: just below medReach @ scale 2 fires
+  ---
+  duration_ms: 0.068625
+  type: 'test'
+  ...
+# Subtest: dropkick: exactly at medReach @ scale 2 fires
+ok 356 - dropkick: exactly at medReach @ scale 2 fires
+  ---
+  duration_ms: 0.071625
+  type: 'test'
+  ...
+# Subtest: dropkick: just above medReach @ scale 2 fails
+ok 357 - dropkick: just above medReach @ scale 2 fails
+  ---
+  duration_ms: 0.065542
+  type: 'test'
+  ...
+# Subtest: every contact target is a structural joint the rig actually publishes
+ok 358 - every contact target is a structural joint the rig actually publishes
+  ---
+  duration_ms: 2.713083
+  type: 'test'
+  ...
+# Subtest: contact sources are exactly the solvable limb ends, and all are valid targets
+ok 359 - contact sources are exactly the solvable limb ends, and all are valid targets
+  ---
+  duration_ms: 0.62075
+  type: 'test'
+  ...
+# Subtest: the previously unreachable targets are accepted by the model
+ok 360 - the previously unreachable targets are accepted by the model
+  ---
+  duration_ms: 0.344875
+  type: 'test'
+  ...
+# Subtest: the contact dropdowns declare no hand-written options
+ok 361 - the contact dropdowns declare no hand-written options
+  ---
+  duration_ms: 1.327125
+  type: 'test'
+  ...
+# Subtest: no joint name is hard-coded anywhere in the editor markup
+ok 362 - no joint name is hard-coded anywhere in the editor markup
+  ---
+  duration_ms: 0.719125
+  type: 'test'
+  ...
+# Subtest: every source/target pair the UI can offer round-trips through a draft
+ok 363 - every source/target pair the UI can offer round-trips through a draft
+  ---
+  duration_ms: 151.140917
+  type: 'test'
+  ...
+# Subtest: a neck contact survives capture, normalization, and a draft round trip
+ok 364 - a neck contact survives capture, normalization, and a draft round trip
+  ---
+  duration_ms: 0.307292
+  type: 'test'
+  ...
+# Subtest: an unrecognised joint is refused with a reason instead of vanishing
+ok 365 - an unrecognised joint is refused with a reason instead of vanishing
+  ---
+  duration_ms: 1.243709
+  type: 'test'
+  ...
+# Subtest: a mid-limb joint is refused as a SOURCE while remaining a valid target
+ok 366 - a mid-limb joint is refused as a SOURCE while remaining a valid target
+  ---
+  duration_ms: 1.225792
+  type: 'test'
+  ...
+# Subtest: discarded contacts block readiness rather than reporting a clean sweep
+ok 367 - discarded contacts block readiness rather than reporting a clean sweep
+  ---
+  duration_ms: 2.995208
+  type: 'test'
+  ...
+# Subtest: repeated normalization never loses the rejection record
+ok 368 - repeated normalization never loses the rejection record
+  ---
+  duration_ms: 1.83075
+  type: 'test'
+  ...
+# Subtest: a rejected entry is promoted back once its joint becomes valid
+ok 369 - a rejected entry is promoted back once its joint becomes valid
+  ---
+  duration_ms: 0.404541
+  type: 'test'
+  ...
+# Subtest: an unknown role is refused too
+ok 370 - an unknown role is refused too
+  ---
+  duration_ms: 0.15975
+  type: 'test'
+  ...
+# Subtest: new move drafts are valid synchronized two-role clips
+ok 371 - new move drafts are valid synchronized two-role clips
+  ---
+  duration_ms: 21.274584
+  type: 'test'
+  ...
+# Subtest: capturing at an occupied time replaces rather than duplicates a keyframe
+ok 372 - capturing at an occupied time replaces rather than duplicates a keyframe
+  ---
+  duration_ms: 0.646833
+  type: 'test'
+  ...
+# Subtest: part swaps remain discrete while connected pose channels interpolate
+ok 373 - part swaps remain discrete while connected pose channels interpolate
+  ---
+  duration_ms: 1.711709
+  type: 'test'
+  ...
+# Subtest: export produces a reviewable clip module with pose, transforms, parts, and events
+ok 374 - export produces a reviewable clip module with pose, transforms, parts, and events
+  ---
+  duration_ms: 3.756625
+  type: 'test'
+  ...
+# Subtest: declared contacts are normalized, sorted, and never reach the exported clip
+ok 375 - declared contacts are normalized, sorted, and never reach the exported clip
+  ---
+  duration_ms: 1.509541
+  type: 'test'
+  ...
+# Subtest: contacts naming joints the rig does not publish are dropped, not trusted
+ok 376 - contacts naming joints the rig does not publish are dropped, not trusted
+  ---
+  duration_ms: 0.351625
+  type: 'test'
+  ...
+# Subtest: a contact holds from acquisition to the end of the clip until it is released
+ok 377 - a contact holds from acquisition to the end of the clip until it is released
+  ---
+  duration_ms: 0.507916
+  type: 'test'
+  ...
+# Subtest: a release earlier than acquisition collapses instead of inverting the window
+ok 378 - a release earlier than acquisition collapses instead of inverting the window
+  ---
+  duration_ms: 0.272
+  type: 'test'
+  ...
+# Subtest: legacy `at` drafts still load as an acquisition time
+ok 379 - legacy `at` drafts still load as an acquisition time
+  ---
+  duration_ms: 0.834916
+  type: 'test'
+  ...
+# Subtest: the gap is graded only inside the held window, never on approach or follow-through
+ok 380 - the gap is graded only inside the held window, never on approach or follow-through
+  ---
+  duration_ms: 12.903125
+  type: 'test'
+  ...
+# Subtest: the window endpoints are always graded even when the grid misses them
+ok 381 - the window endpoints are always graded even when the grid misses them
+  ---
+  duration_ms: 2.383666
+  type: 'test'
+  ...
+# Subtest: a clean draft reports ready and names which roles the runtime will stage
+ok 382 - a clean draft reports ready and names which roles the runtime will stage
+  ---
+  duration_ms: 2.853667
+  type: 'test'
+  ...
+# Subtest: non-finite pose and transform channels block readiness and are named per channel
+ok 383 - non-finite pose and transform channels block readiness and are named per channel
+  ---
+  duration_ms: 0.837
+  type: 'test'
+  ...
+# Subtest: staging channels the runtime cannot consume are reported, not silently exported
+ok 384 - staging channels the runtime cannot consume are reported, not silently exported
+  ---
+  duration_ms: 1.903042
+  type: 'test'
+  ...
+# Subtest: a grounded posture mode blocks readiness rather than being silently coerced
+ok 385 - a grounded posture mode blocks readiness rather than being silently coerced
+  ---
+  duration_ms: 1.436291
+  type: 'test'
+  ...
+# Subtest: a draft with no declared posture defaults to upright and stays ready
+ok 386 - a draft with no declared posture defaults to upright and stays ready
+  ---
+  duration_ms: 2.850542
+  type: 'test'
+  ...
+# Subtest: contact drift between keyframes is measured and reported, not solved
+ok 387 - contact drift between keyframes is measured and reported, not solved
+  ---
+  duration_ms: 5.035667
+  type: 'test'
+  ...
+# Subtest: an unmeasurable contact warns instead of silently reporting a zero gap
+ok 388 - an unmeasurable contact warns instead of silently reporting a zero gap
+  ---
+  duration_ms: 3.84175
+  type: 'test'
+  ...
+# Subtest: the entry tableau reports where the runtime will place each staged role
+ok 389 - the entry tableau reports where the runtime will place each staged role
+  ---
+  duration_ms: 3.733333
+  type: 'test'
+  ...
+# Subtest: a fresh paired draft opens at the real tie-up separation, on ONE shared origin
+ok 390 - a fresh paired draft opens at the real tie-up separation, on ONE shared origin
+  ---
+  duration_ms: 1.4525
+  type: 'test'
+  ...
+# Subtest: two actors entering at the same point are flagged, not staged on top of each other
+ok 391 - two actors entering at the same point are flagged, not staged on top of each other
+  ---
+  duration_ms: 3.485583
+  type: 'test'
+  ...
+# Subtest: certification failures anywhere in the clip block readiness
+ok 392 - certification failures anywhere in the clip block readiness
+  ---
+  duration_ms: 2.824875
+  type: 'test'
+  ...
+# Subtest: variant choices combine shared families and side-specific overrides
+ok 393 - variant choices combine shared families and side-specific overrides
+  ---
+  duration_ms: 0.297833
+  type: 'test'
+  ...
+# Subtest: every readiness finding names the layer responsible
+ok 394 - every readiness finding names the layer responsible
+  ---
+  duration_ms: 0.699584
+  type: 'test'
+  ...
+# Subtest: a contact is graded against the reach of the limb that must close it
+ok 395 - a contact is graded against the reach of the limb that must close it
+  ---
+  duration_ms: 7.317667
+  type: 'test'
+  ...
+# Subtest: a declared contact is required unless the author says otherwise
+ok 396 - a declared contact is required unless the author says otherwise
+  ---
+  duration_ms: 1.978084
+  type: 'test'
+  ...
+# Subtest: a reference shows from its time until the role's next one
+ok 397 - a reference shows from its time until the role's next one
+  ---
+  duration_ms: 0.565291
+  type: 'test'
+  ...
+# Subtest: setting a reference at the same time replaces it; clearing removes only that one
+ok 398 - setting a reference at the same time replaces it; clearing removes only that one
+  ---
+  duration_ms: 0.462667
+  type: 'test'
+  ...
+# Subtest: references survive normalization but never reach the exported clip
+ok 399 - references survive normalization but never reach the exported clip
+  ---
+  duration_ms: 2.005834
+  type: 'test'
+  ...
+# Subtest: a paired clip takes exclusive ownership of a participating defender
+ok 400 - a paired clip takes exclusive ownership of a participating defender
+  ---
+  duration_ms: 23.2285
+  type: 'test'
+  ...
+# Subtest: clip entry stops the defender recovery tween and drops stale unowned articulation
+ok 401 - clip entry stops the defender recovery tween and drops stale unowned articulation
+  ---
+  duration_ms: 3.976959
+  type: 'test'
+  ...
+# Subtest: omitted articulation initializes from the character idle, not previous move history
+ok 402 - omitted articulation initializes from the character idle, not previous move history
+  ---
+  duration_ms: 0.425166
+  type: 'test'
+  ...
+# Subtest: cancelling a flight stops its travel tween before it can drag a recovered actor
+ok 403 - cancelling a flight stops its travel tween before it can drag a recovered actor
+  ---
+  duration_ms: 0.847167
+  type: 'test'
+  ...
+# Subtest: a held receiver renders authored limbs without a frozen walking or guard blend
+ok 404 - a held receiver renders authored limbs without a frozen walking or guard blend
+  ---
+  duration_ms: 0.928458
+  type: 'test'
+  ...
+# Subtest: returning George to neutral unwinds a hold instead of retaining its folded joints
+ok 405 - returning George to neutral unwinds a hold instead of retaining its folded joints
+  ---
+  duration_ms: 1.266958
+  type: 'test'
+  ...
+# Subtest: every spec declares a known category
+ok 406 - every spec declares a known category
+  ---
+  duration_ms: 2.6515
+  type: 'test'
+  ...
+# Subtest: every spec carries the full field set
+ok 407 - every spec carries the full field set
+  ---
+  duration_ms: 0.57825
+  type: 'test'
+  ...
+# Subtest: every declared executor exists on Wrestler.prototype
+ok 408 - every declared executor exists on Wrestler.prototype
+  ---
+  duration_ms: 0.445334
+  type: 'test'
+  ...
+# Subtest: every declared damageKey resolves in STAMINA_DRAIN
+ok 409 - every declared damageKey resolves in STAMINA_DRAIN
+  ---
+  duration_ms: 0.41125
+  type: 'test'
+  ...
+# Subtest: no STAMINA_DRAIN value is dead — every one is claimed by a move
+ok 410 - no STAMINA_DRAIN value is dead — every one is claimed by a move
+  ---
+  duration_ms: 0.485167
+  type: 'test'
+  ...
+# Subtest: every MOVE_DEFS entry is registered
+ok 411 - every MOVE_DEFS entry is registered
+  ---
+  duration_ms: 1.50175
+  type: 'test'
+  ...
+# Subtest: poseSeq flags match MOVE_DEFS reality
+ok 412 - poseSeq flags match MOVE_DEFS reality
+  ---
+  duration_ms: 0.542667
+  type: 'test'
+  ...
+# Subtest: a migrated move keeps a poseSeq only to serve a named fallback
+ok 413 - a migrated move keeps a poseSeq only to serve a named fallback
+  ---
+  duration_ms: 0.312292
+  type: 'test'
+  ...
+# Subtest: unmigrated moves declare no fallback
+ok 414 - unmigrated moves declare no fallback
+  ---
+  duration_ms: 0.806583
+  type: 'test'
+  ...
+# Subtest: every registered clip is a registry move, and vice versa
+ok 415 - every registered clip is a registry move, and vice versa
+  ---
+  duration_ms: 1.941667
+  type: 'test'
+  ...
+# Subtest: registered clips carry the ids the registry expects
+ok 416 - registered clips carry the ids the registry expects
+  ---
+  duration_ms: 1.073667
+  type: 'test'
+  ...
+# Subtest: no duplicate registrations
+ok 417 - no duplicate registrations
+  ---
+  duration_ms: 0.314333
+  type: 'test'
+  ...
+# Subtest: George's kit is valid
+ok 418 - George's kit is valid
+  ---
+  duration_ms: 0.434583
+  type: 'test'
+  ...
+# Subtest: Thesz's kit is valid
+ok 419 - Thesz's kit is valid
+  ---
+  duration_ms: 0.332292
+  type: 'test'
+  ...
+# Subtest: Thesz keeps the moves that were previously Arena-only
+ok 420 - Thesz keeps the moves that were previously Arena-only
+  ---
+  duration_ms: 0.169917
+  type: 'test'
+  ...
+# Subtest: kit sizes are what the roster expects
+ok 421 - kit sizes are what the roster expects
+  ---
+  duration_ms: 0.108042
+  type: 'test'
+  ...
+# Subtest: the roster keeps its intended differentiation
+ok 422 - the roster keeps its intended differentiation
+  ---
+  duration_ms: 0.299833
+  type: 'test'
+  ...
+# Subtest: validateKit catches unknown move IDs
+ok 423 - validateKit catches unknown move IDs
+  ---
+  duration_ms: 0.244458
+  type: 'test'
+  ...
+# Subtest: validateKit catches duplicates
+ok 424 - validateKit catches duplicates
+  ---
+  duration_ms: 0.117958
+  type: 'test'
+  ...
+# Subtest: validateKit rejects listing an ungated move in a kit
+ok 425 - validateKit rejects listing an ungated move in a kit
+  ---
+  duration_ms: 0.11775
+  type: 'test'
+  ...
+# Subtest: validateKit rejects a non-array
+ok 426 - validateKit rejects a non-array
+  ---
+  duration_ms: 0.523042
+  type: 'test'
+  ...
+# Subtest: validateKit passes a clean kit
+ok 427 - validateKit passes a clean kit
+  ---
+  duration_ms: 0.162708
+  type: 'test'
+  ...
+# Subtest: built-but-unassigned moves are exactly the catalog pool
+ok 428 - built-but-unassigned moves are exactly the catalog pool
+  ---
+  duration_ms: 0.608958
+  type: 'test'
+  ...
+# Subtest: getMoveSpec returns specs and undefined for unknowns
+ok 429 - getMoveSpec returns specs and undefined for unknowns
+  ---
+  duration_ms: 0.137833
+  type: 'test'
+  ...
+# Subtest: movesInCategory partitions the registry exactly
+ok 430 - movesInCategory partitions the registry exactly
+  ---
+  duration_ms: 0.204875
+  type: 'test'
+  ...
+# Subtest: KIT_ELIGIBLE_IDS excludes the universally-available moves
+ok 431 - KIT_ELIGIBLE_IDS excludes the universally-available moves
+  ---
+  duration_ms: 0.138417
+  type: 'test'
+  ...
+# Subtest: a per-handle onEvent that cancels its own handle stops later markers in the same update, and never applies a post-cancel sample
+ok 432 - a per-handle onEvent that cancels its own handle stops later markers in the same update, and never applies a post-cancel sample
+  ---
+  duration_ms: 6.197708
+  type: 'test'
+  ...
+# Subtest: a per-handle onEvent that cancels its own handle on a LATER marker still blocks any marker after it
+ok 433 - a per-handle onEvent that cancels its own handle on a LATER marker still blocks any marker after it
+  ---
+  duration_ms: 1.960417
+  type: 'test'
+  ...
+# Subtest: a GLOBAL onEvent that cancels the handle also stops later markers, and the per-handle callback for a later marker never runs
+ok 434 - a GLOBAL onEvent that cancels the handle also stops later markers, and the per-handle callback for a later marker never runs
+  ---
+  duration_ms: 0.678375
+  type: 'test'
+  ...
+# Subtest: when the per-handle callback cancels the handle, the global callback is not invoked for that same event
+ok 435 - when the per-handle callback cancels the handle, the global callback is not invoked for that same event
+  ---
+  duration_ms: 1.488875
+  type: 'test'
+  ...
+# Subtest: one handle cancelling ANOTHER handle during the same update is preserved (only self-cancellation is special-cased)
+ok 436 - one handle cancelling ANOTHER handle during the same update is preserved (only self-cancellation is special-cased)
+  ---
+  duration_ms: 1.505541
+  type: 'test'
+  ...
+# Subtest: seek() with emitEvents: a marker that cancels the handle must not apply a post-cancellation sample
+ok 437 - seek() with emitEvents: a marker that cancels the handle must not apply a post-cancellation sample
+  ---
+  duration_ms: 0.443
+  type: 'test'
+  ...
+# Subtest: seek() with emitEvents on a handle that survives still applies and returns a sample as before
+ok 438 - seek() with emitEvents on a handle that survives still applies and returns a sample as before
+  ---
+  duration_ms: 0.635125
+  type: 'test'
+  ...
+# Subtest: cancelling a handle that already reached natural completion in the same update is a no-op (idempotent delete guard)
+ok 439 - cancelling a handle that already reached natural completion in the same update is a no-op (idempotent delete guard)
+  ---
+  duration_ms: 0.606375
+  type: 'test'
+  ...
+# Subtest: variant inherits calibrated geometry from its base part
+ok 440 - variant inherits calibrated geometry from its base part
+  ---
+  duration_ms: 2.599334
+  type: 'test'
+  ...
+# Subtest: near/far render slots fall back to shared base art independently
+ok 441 - near/far render slots fall back to shared base art independently
+  ---
+  duration_ms: 0.700208
+  type: 'test'
+  ...
+# Subtest: a unified forearm variant family reaches both semantic near/far slots
+ok 442 - a unified forearm variant family reaches both semantic near/far slots
+  ---
+  duration_ms: 1.510417
+  type: 'test'
+  ...
+# Subtest: a side-specific family overrides the unified fallback
+ok 443 - a side-specific family overrides the unified fallback
+  ---
+  duration_ms: 0.851791
+  type: 'test'
+  ...
+# Subtest: asset enumeration includes explicit variants without treating rig metadata as files
+ok 444 - asset enumeration includes explicit variants without treating rig metadata as files
+  ---
+  duration_ms: 1.315625
+  type: 'test'
+  ...
+# Subtest: variant contract rejects unknown slots and missing files
+ok 445 - variant contract rejects unknown slots and missing files
+  ---
+  duration_ms: 0.509333
+  type: 'test'
+  ...
+# Subtest: modular hand variants lock the wrist but may move contact geometry
+ok 446 - modular hand variants lock the wrist but may move contact geometry
+  ---
+  duration_ms: 1.191167
+  type: 'test'
+  ...
+# Subtest: Skeleton applies and then cleanly resets a calibrated whole-part swap
+ok 447 - Skeleton applies and then cleanly resets a calibrated whole-part swap
+  ---
+  duration_ms: 0.57975
+  type: 'test'
+  ...
+# Subtest: a five-master sheet with an empty production bank passes Pass A
+ok 448 - a five-master sheet with an empty production bank passes Pass A
+  ---
+  duration_ms: 702.595583
+  type: 'test'
+  ...
+# Subtest: Pass A still reports that likeness and ink remain human review
+ok 449 - Pass A still reports that likeness and ink remain human review
+  ---
+  duration_ms: 1044.157042
+  type: 'test'
+  ...
+# Subtest: a wrong-sized sheet is rejected outright rather than resized
+ok 450 - a wrong-sized sheet is rejected outright rather than resized
+  ---
+  duration_ms: 1.471833
+  type: 'test'
+  ...
+# Subtest: paint in a production-bank cell fails and the cell is named
+ok 451 - paint in a production-bank cell fails and the cell is named
+  ---
+  duration_ms: 817.413583
+  type: 'test'
+  ...
+# Subtest: a single stray pixel outside every panel and cell is still caught
+ok 452 - a single stray pixel outside every panel and cell is still caught
+  ---
+  duration_ms: 507.669917
+  type: 'test'
+  ...
+# Subtest: an empty master panel fails
+ok 453 - an empty master panel fails
+  ---
+  duration_ms: 408.957792
+  type: 'test'
+  ...
+# Subtest: a figure that is not exactly 530px crown-to-sole fails
+ok 454 - a figure that is not exactly 530px crown-to-sole fails
+  ---
+  duration_ms: 524.321458
+  type: 'test'
+  ...
+# Subtest: a transparent pixel carrying colour fails the straight-alpha rule
+ok 455 - a transparent pixel carrying colour fails the straight-alpha rule
+  ---
+  duration_ms: 291.410542
+  type: 'test'
+  ...
+# Subtest: the shipped blank-clean template is not mistaken for a finished Pass A
+ok 456 - the shipped blank-clean template is not mistaken for a finished Pass A
+  ---
+  duration_ms: 455.287792
+  type: 'test'
+  ...
+# Subtest: future pelvis underlay and front mask have unambiguous thigh depth
+ok 457 - future pelvis underlay and front mask have unambiguous thigh depth
+  ---
+  duration_ms: 2.583166
+  type: 'test'
+  ...
+# Subtest: a second character resolves every path from its own manifest
+ok 458 - a second character resolves every path from its own manifest
+  ---
+  duration_ms: 2.202708
+  type: 'test'
+  ...
+# Subtest: the first character resolves to its current candidate, with v4 kept as provenance
+ok 459 - the first character resolves to its current candidate, with v4 kept as provenance
+  ---
+  duration_ms: 1.311291
+  type: 'test'
+  ...
+# Subtest: flags override the manifest, and a view with no declared paths is refused
+ok 460 - flags override the manifest, and a view with no declared paths is refused
+  ---
+  duration_ms: 1.381917
+  type: 'test'
+  ...
+# Subtest: a manifest without a production block names itself in the error
+ok 461 - a manifest without a production block names itself in the error
+  ---
+  duration_ms: 2.806792
+  type: 'test'
+  ...
+# Subtest: the landmark contract is data on the character, not code in the tool
+ok 462 - the landmark contract is data on the character, not code in the tool
+  ---
+  duration_ms: 9.300125
+  type: 'test'
+  ...
+# Subtest: no production stage hardcodes a character path
+ok 463 - no production stage hardcodes a character path
+  ---
+  duration_ms: 9.966709
+  type: 'test'
+  ...
+# Subtest: every cutter tool is either a production stage or a listed one-off
+ok 464 - every cutter tool is either a production stage or a listed one-off
+  ---
+  duration_ms: 1.151208
+  type: 'test'
+  ...
+# Subtest: every guarded npm command accepts a manifest rather than assuming one
+ok 465 - every guarded npm command accepts a manifest rather than assuming one
+  ---
+  duration_ms: 1.358875
+  type: 'test'
+  ...
+# Subtest: the threshold is the pipeline's own paint floor, not a second opinion
+ok 466 - the threshold is the pipeline's own paint floor, not a second opinion
+  ---
+  duration_ms: 1.351125
+  type: 'test'
+  ...
+# Subtest: colour under a fully transparent pixel is cleared
+ok 467 - colour under a fully transparent pixel is cleared
+  ---
+  duration_ms: 22.562833
+  type: 'test'
+  ...
+# Subtest: the opaque core is untouched, pixel for pixel
+ok 468 - the opaque core is untouched, pixel for pixel
+  ---
+  duration_ms: 13.629333
+  type: 'test'
+  ...
+# Subtest: genuine edge antialiasing survives; the halo does not
+ok 469 - genuine edge antialiasing survives; the halo does not
+  ---
+  duration_ms: 2.482875
+  type: 'test'
+  ...
+# Subtest: the glow was being measured as the figure
+ok 470 - the glow was being measured as the figure
+  ---
+  duration_ms: 2.587084
+  type: 'test'
+  ...
+# Subtest: threshold 0 applies the contract and touches no coverage at all
+ok 471 - threshold 0 applies the contract and touches no coverage at all
+  ---
+  duration_ms: 5.607375
+  type: 'test'
+  ...
+# Subtest: re-keying is a byte-identical no-op
+ok 472 - re-keying is a byte-identical no-op
+  ---
+  duration_ms: 18.397791
+  type: 'test'
+  ...
+# Subtest: an already-clean plate is passed straight through
+ok 473 - an already-clean plate is passed straight through
+  ---
+  duration_ms: 2.311667
+  type: 'test'
+  ...
+# Subtest: the two counters partition the pixels touched rather than double-counting
+ok 474 - the two counters partition the pixels touched rather than double-counting
+  ---
+  duration_ms: 3.317042
+  type: 'test'
+  ...
+# Subtest: a nonsensical threshold is refused rather than coerced
+ok 475 - a nonsensical threshold is refused rather than coerced
+  ---
+  duration_ms: 4.370333
+  type: 'test'
+  ...
+# Subtest: inkBounds reports null for a plate with nothing on it
+ok 476 - inkBounds reports null for a plate with nothing on it
+  ---
+  duration_ms: 0.340042
+  type: 'test'
+  ...
+# Subtest: the frozen Pass-A master and the approved profile-v2 sources are untouched
+ok 477 - the frozen Pass-A master and the approved profile-v2 sources are untouched
+  ---
+  duration_ms: 29.906791
+  type: 'test'
+  ...
+# Subtest: the visible thigh hip preserves source contour instead of exposing coverage geometry
+ok 478 - the visible thigh hip preserves source contour instead of exposing coverage geometry
+  ---
+  duration_ms: 4.16025
+  type: 'test'
+  ...
+# Subtest: every normalized cell lands on its canonical canvas with clean alpha
+ok 479 - every normalized cell lands on its canonical canvas with clean alpha
+  ---
+  duration_ms: 85.985834
+  type: 'test'
+  ...
+# Subtest: every declared joint zone is fully opaque in the part that owns it
+ok 480 - every declared joint zone is fully opaque in the part that owns it
+  ---
+  duration_ms: 37.368958
+  type: 'test'
+  ...
+# Subtest: the current candidate satisfies the shoulder coverage contract
+ok 481 - the current candidate satisfies the shoulder coverage contract
+  ---
+  duration_ms: 1.185583
+  type: 'test'
+  ...
+# Subtest: superseded v4 is preserved unchanged as provenance
+ok 482 - superseded v4 is preserved unchanged as provenance
+  ---
+  duration_ms: 8.450541
+  type: 'test'
+  ...
+# Subtest: the pelvis underlay closes the trunks leg opening and the front mask stays transparent
+ok 483 - the pelvis underlay closes the trunks leg opening and the front mask stays transparent
+  ---
+  duration_ms: 8.446667
+  type: 'test'
+  ...
+# Subtest: the regenerated torso and trunks are one solid silhouette with no transparent opening
+ok 484 - the regenerated torso and trunks are one solid silhouette with no transparent opening
+  ---
+  duration_ms: 328.7585
+  type: 'test'
+  ...
+# Subtest: profile reuse never mirrors: both boots face right and the near/far pairs stay distinct
+ok 485 - profile reuse never mirrors: both boots face right and the near/far pairs stay distinct
+  ---
+  duration_ms: 18.561417
+  type: 'test'
+  ...
+# Subtest: registration is a similarity transform with no reflection term
+ok 486 - registration is a similarity transform with no reflection term
+  ---
+  duration_ms: 8.404709
+  type: 'test'
+  ...
+# Subtest: the normalization report records a scale and landmarks for every registered cell
+ok 487 - the normalization report records a scale and landmarks for every registered cell
+  ---
+  duration_ms: 0.686958
+  type: 'test'
+  ...
+# Subtest: the reference manifest passes the production source standard with no warnings
+ok 488 - the reference manifest passes the production source standard with no warnings
+  ---
+  duration_ms: 4.941166
+  type: 'test'
+  ...
+# Subtest: the painted reference art satisfies every joint zone in real pixels
+ok 489 - the painted reference art satisfies every joint zone in real pixels
+  ---
+  duration_ms: 78.644709
+  type: 'test'
+  ...
+# Subtest: the reference pelvis closes over a rotating thigh root at every swept angle
+ok 490 - the reference pelvis closes over a rotating thigh root at every swept angle
+  ---
+  duration_ms: 12.389208
+  type: 'test'
+  ...
+# Subtest: the reference rig owns pelvis coverage with an underlay, not a middle-depth overlay
+ok 491 - the reference rig owns pelvis coverage with an underlay, not a middle-depth overlay
+  ---
+  duration_ms: 9.6255
+  type: 'test'
+  ...
+# Subtest: the reference rig converts into a valid runtime character contract
+ok 492 - the reference rig converts into a valid runtime character contract
+  ---
+  duration_ms: 3.424625
+  type: 'test'
+  ...
+# Subtest: the reference rig declares the production subsystems no shipped character exercises
+ok 493 - the reference rig declares the production subsystems no shipped character exercises
+  ---
+  duration_ms: 0.930625
+  type: 'test'
+  ...
+# Subtest: a hand or boot variant repaints its contact without moving its structural anchor
+ok 494 - a hand or boot variant repaints its contact without moving its structural anchor
+  ---
+  duration_ms: 1.758083
+  type: 'test'
+  ...
+# Subtest: the texture plan names exactly the keys the runtime contract asks for
+ok 495 - the texture plan names exactly the keys the runtime contract asks for
+  ---
+  duration_ms: 2.349833
+  type: 'test'
+  ...
+# Subtest: every planned key resolves to painted pixels with real coverage
+ok 496 - every planned key resolves to painted pixels with real coverage
+  ---
+  duration_ms: 132.085625
+  type: 'test'
+  ...
+# Subtest: piledriver: registered under the registry id and valid
+ok 497 - piledriver: registered under the registry id and valid
+  ---
+  duration_ms: 3.647458
+  type: 'test'
+  ...
+# Subtest: piledriver: the committed clip is exactly what its draft exports
+ok 498 - piledriver: the committed clip is exactly what its draft exports
+  ---
+  duration_ms: 2.452667
+  type: 'test'
+  ...
+# Subtest: piledriver: the draft carries its sprite references, the clip never does
+ok 499 - piledriver: the draft carries its sprite references, the clip never does
+  ---
+  duration_ms: 0.418875
+  type: 'test'
+  ...
+# Subtest: piledriver: impact fires exactly once at 30 Hz
+ok 500 - piledriver: impact fires exactly once at 30 Hz
+  ---
+  duration_ms: 8.632
+  type: 'test'
+  ...
+# Subtest: piledriver: impact fires exactly once at 60 Hz
+ok 501 - piledriver: impact fires exactly once at 60 Hz
+  ---
+  duration_ms: 4.773417
+  type: 'test'
+  ...
+# Subtest: piledriver: impact fires exactly once at 120 Hz
+ok 502 - piledriver: impact fires exactly once at 120 Hz
+  ---
+  duration_ms: 5.5645
+  type: 'test'
+  ...
+# Subtest: piledriver: the victim ends lying on his back
+ok 503 - piledriver: the victim ends lying on his back
+  ---
+  duration_ms: 0.674458
+  type: 'test'
+  ...
+# Subtest: bodySlam: registered under the registry id and valid
+ok 504 - bodySlam: registered under the registry id and valid
+  ---
+  duration_ms: 0.202208
+  type: 'test'
+  ...
+# Subtest: bodySlam: the committed clip is exactly what its draft exports
+ok 505 - bodySlam: the committed clip is exactly what its draft exports
+  ---
+  duration_ms: 1.431041
+  type: 'test'
+  ...
+# Subtest: bodySlam: the draft carries its sprite references, the clip never does
+ok 506 - bodySlam: the draft carries its sprite references, the clip never does
+  ---
+  duration_ms: 1.55275
+  type: 'test'
+  ...
+# Subtest: bodySlam: impact fires exactly once at 30 Hz
+ok 507 - bodySlam: impact fires exactly once at 30 Hz
+  ---
+  duration_ms: 1.313208
+  type: 'test'
+  ...
+# Subtest: bodySlam: impact fires exactly once at 60 Hz
+ok 508 - bodySlam: impact fires exactly once at 60 Hz
+  ---
+  duration_ms: 2.47
+  type: 'test'
+  ...
+# Subtest: bodySlam: impact fires exactly once at 120 Hz
+ok 509 - bodySlam: impact fires exactly once at 120 Hz
+  ---
+  duration_ms: 3.171041
+  type: 'test'
+  ...
+# Subtest: bodySlam: the victim ends lying on his back
+ok 510 - bodySlam: the victim ends lying on his back
+  ---
+  duration_ms: 0.294334
+  type: 'test'
+  ...
+# Subtest: suplex: registered under the registry id and valid
+ok 511 - suplex: registered under the registry id and valid
+  ---
+  duration_ms: 0.181584
+  type: 'test'
+  ...
+# Subtest: suplex: the committed clip is exactly what its draft exports
+ok 512 - suplex: the committed clip is exactly what its draft exports
+  ---
+  duration_ms: 1.011959
+  type: 'test'
+  ...
+# Subtest: suplex: the draft carries its sprite references, the clip never does
+ok 513 - suplex: the draft carries its sprite references, the clip never does
+  ---
+  duration_ms: 0.141084
+  type: 'test'
+  ...
+# Subtest: suplex: impact fires exactly once at 30 Hz
+ok 514 - suplex: impact fires exactly once at 30 Hz
+  ---
+  duration_ms: 1.536875
+  type: 'test'
+  ...
+# Subtest: suplex: impact fires exactly once at 60 Hz
+ok 515 - suplex: impact fires exactly once at 60 Hz
+  ---
+  duration_ms: 2.647958
+  type: 'test'
+  ...
+# Subtest: suplex: impact fires exactly once at 120 Hz
+ok 516 - suplex: impact fires exactly once at 120 Hz
+  ---
+  duration_ms: 4.194083
+  type: 'test'
+  ...
+# Subtest: suplex: the victim ends lying on his back
+ok 517 - suplex: the victim ends lying on his back
+  ---
+  duration_ms: 0.289667
+  type: 'test'
+  ...
+# Subtest: hipToss: registered under the registry id and valid
+ok 518 - hipToss: registered under the registry id and valid
+  ---
+  duration_ms: 0.257208
+  type: 'test'
+  ...
+# Subtest: hipToss: the committed clip is exactly what its draft exports
+ok 519 - hipToss: the committed clip is exactly what its draft exports
+  ---
+  duration_ms: 0.512167
+  type: 'test'
+  ...
+# Subtest: hipToss: the draft carries its sprite references, the clip never does
+ok 520 - hipToss: the draft carries its sprite references, the clip never does
+  ---
+  duration_ms: 0.104875
+  type: 'test'
+  ...
+# Subtest: hipToss: impact fires exactly once at 30 Hz
+ok 521 - hipToss: impact fires exactly once at 30 Hz
+  ---
+  duration_ms: 0.838458
+  type: 'test'
+  ...
+# Subtest: hipToss: impact fires exactly once at 60 Hz
+ok 522 - hipToss: impact fires exactly once at 60 Hz
+  ---
+  duration_ms: 1.727708
+  type: 'test'
+  ...
+# Subtest: hipToss: impact fires exactly once at 120 Hz
+ok 523 - hipToss: impact fires exactly once at 120 Hz
+  ---
+  duration_ms: 1.94175
+  type: 'test'
+  ...
+# Subtest: hipToss: the victim ends lying on his back
+ok 524 - hipToss: the victim ends lying on his back
+  ---
+  duration_ms: 0.2425
+  type: 'test'
+  ...
+# Subtest: piledriver: held upside down, then driven head-first into the mat
+ok 525 - piledriver: held upside down, then driven head-first into the mat
+  ---
+  duration_ms: 0.414208
+  type: 'test'
+  ...
+# Subtest: body slam: lifted to the shoulders, then flat on his back in front
+ok 526 - body slam: lifted to the shoulders, then flat on his back in front
+  ---
+  duration_ms: 0.311125
+  type: 'test'
+  ...
+# Subtest: suplex: stood straight up overhead, then over onto his back behind
+ok 527 - suplex: stood straight up overhead, then over onto his back behind
+  ---
+  duration_ms: 0.330167
+  type: 'test'
+  ...
+# Subtest: dropkick: registered, valid, and exactly the solo export of its draft
+ok 528 - dropkick: registered, valid, and exactly the solo export of its draft
+  ---
+  duration_ms: 1.039958
+  type: 'test'
+  ...
+# Subtest: dropkick: attacker only, and no transform
+ok 529 - dropkick: attacker only, and no transform
+  ---
+  duration_ms: 0.23075
+  type: 'test'
+  ...
+# Subtest: dropkick: impact fires exactly once at 30 Hz
+ok 530 - dropkick: impact fires exactly once at 30 Hz
+  ---
+  duration_ms: 0.467416
+  type: 'test'
+  ...
+# Subtest: dropkick: impact fires exactly once at 60 Hz
+ok 531 - dropkick: impact fires exactly once at 60 Hz
+  ---
+  duration_ms: 0.699333
+  type: 'test'
+  ...
+# Subtest: dropkick: impact fires exactly once at 120 Hz
+ok 532 - dropkick: impact fires exactly once at 120 Hz
+  ---
+  duration_ms: 0.826875
+  type: 'test'
+  ...
+# Subtest: dropkick: feet out at the impact, flat on his back at the end
+ok 533 - dropkick: feet out at the impact, flat on his back at the end
+  ---
+  duration_ms: 0.257458
+  type: 'test'
+  ...
+# Subtest: elbowDrop: a registered, valid one-wrestler clip with no transform
+ok 534 - elbowDrop: a registered, valid one-wrestler clip with no transform
+  ---
+  duration_ms: 0.215042
+  type: 'test'
+  ...
+# Subtest: elbowDrop: exactly the solo export of its draft
+ok 535 - elbowDrop: exactly the solo export of its draft
+  ---
+  duration_ms: 0.590542
+  type: 'test'
+  ...
+# Subtest: elbowDrop: lands tilt/lift-consistent with what the executor hands him to
+ok 536 - elbowDrop: lands tilt/lift-consistent with what the executor hands him to
+  ---
+  duration_ms: 0.176208
+  type: 'test'
+  ...
+# Subtest: kneeDrop: a registered, valid one-wrestler clip with no transform
+ok 537 - kneeDrop: a registered, valid one-wrestler clip with no transform
+  ---
+  duration_ms: 0.198458
+  type: 'test'
+  ...
+# Subtest: kneeDrop: lands tilt/lift-consistent with what the executor hands him to
+ok 538 - kneeDrop: lands tilt/lift-consistent with what the executor hands him to
+  ---
+  duration_ms: 0.125333
+  type: 'test'
+  ...
+# Subtest: divingElbow: a registered, valid one-wrestler clip with no transform
+ok 539 - divingElbow: a registered, valid one-wrestler clip with no transform
+  ---
+  duration_ms: 0.149417
+  type: 'test'
+  ...
+# Subtest: divingElbow: exactly the solo export of its draft
+ok 540 - divingElbow: exactly the solo export of its draft
+  ---
+  duration_ms: 0.498625
+  type: 'test'
+  ...
+# Subtest: divingElbow: lands tilt/lift-consistent with what the executor hands him to
+ok 541 - divingElbow: lands tilt/lift-consistent with what the executor hands him to
+  ---
+  duration_ms: 10.169
+  type: 'test'
+  ...
+# Subtest: topDive: a registered, valid one-wrestler clip with no transform
+ok 542 - topDive: a registered, valid one-wrestler clip with no transform
+  ---
+  duration_ms: 0.324791
+  type: 'test'
+  ...
+# Subtest: topDive: lands tilt/lift-consistent with what the executor hands him to
+ok 543 - topDive: lands tilt/lift-consistent with what the executor hands him to
+  ---
+  duration_ms: 0.186625
+  type: 'test'
+  ...
+# Subtest: theszPress: a registered, valid one-wrestler clip with no transform
+ok 544 - theszPress: a registered, valid one-wrestler clip with no transform
+  ---
+  duration_ms: 0.187667
+  type: 'test'
+  ...
+# Subtest: theszPress: exactly the solo export of its draft
+ok 545 - theszPress: exactly the solo export of its draft
+  ---
+  duration_ms: 1.965042
+  type: 'test'
+  ...
+# Subtest: theszPress: lands tilt/lift-consistent with what the executor hands him to
+ok 546 - theszPress: lands tilt/lift-consistent with what the executor hands him to
+  ---
+  duration_ms: 0.244292
+  type: 'test'
+  ...
+# Subtest: kneeDrop: the hop poses are exactly POSES.kneeDropLeap and kneeDropTuck
+ok 547 - kneeDrop: the hop poses are exactly POSES.kneeDropLeap and kneeDropTuck
+  ---
+  duration_ms: 0.195667
+  type: 'test'
+  ...
+# Subtest: topDive: the diving elbow's flight under its own id
+ok 548 - topDive: the diving elbow's flight under its own id
+  ---
+  duration_ms: 0.118208
+  type: 'test'
+  ...
+# Subtest: figureFour: registered, valid, exactly its draft export, references on two sheets
+ok 549 - figureFour: registered, valid, exactly its draft export, references on two sheets
+  ---
+  duration_ms: 2.279833
+  type: 'test'
+  ...
+# Subtest: figureFour: three squeezes, once each, at 30 Hz
+ok 550 - figureFour: three squeezes, once each, at 30 Hz
+  ---
+  duration_ms: 4.147458
+  type: 'test'
+  ...
+# Subtest: figureFour: three squeezes, once each, at 60 Hz
+ok 551 - figureFour: three squeezes, once each, at 60 Hz
+  ---
+  duration_ms: 24.253042
+  type: 'test'
+  ...
+# Subtest: figureFour: three squeezes, once each, at 120 Hz
+ok 552 - figureFour: three squeezes, once each, at 120 Hz
+  ---
+  duration_ms: 33.552917
+  type: 'test'
+  ...
+# Subtest: figureFour: the victim lies on his back throughout; George ends on his feet
+ok 553 - figureFour: the victim lies on his back throughout; George ends on his feet
+  ---
+  duration_ms: 0.869583
+  type: 'test'
+  ...
+# Subtest: ankleLock: registered, valid, exactly its draft export
+ok 554 - ankleLock: registered, valid, exactly its draft export
+  ---
+  duration_ms: 1.817083
+  type: 'test'
+  ...
+# Subtest: ankleLock: three squeezes, and the victim stays on his back throughout
+ok 555 - ankleLock: three squeezes, and the victim stays on his back throughout
+  ---
+  duration_ms: 3.636541
+  type: 'test'
+  ...
+# Subtest: armBar: registered, valid, exactly its draft export
+ok 556 - armBar: registered, valid, exactly its draft export
+  ---
+  duration_ms: 2.011125
+  type: 'test'
+  ...
+# Subtest: armBar: three squeezes, and the victim stays on his back throughout
+ok 557 - armBar: three squeezes, and the victim stays on his back throughout
+  ---
+  duration_ms: 3.949875
+  type: 'test'
+  ...
+# Subtest: distalAnchorFrac alone (jointPivotFrac 0): anchor.v=1 matches the old bone-length _end() exactly
+ok 558 - distalAnchorFrac alone (jointPivotFrac 0): anchor.v=1 matches the old bone-length _end() exactly
+  ---
+  duration_ms: 2.457292
+  type: 'test'
+  ...
+# Subtest: distalAnchorFrac lateral offset moves perpendicular to the bone axis, both facings
+ok 559 - distalAnchorFrac lateral offset moves perpendicular to the bone axis, both facings
+  ---
+  duration_ms: 0.444625
+  type: 'test'
+  ...
+# Subtest: combined jointPivotFrac + distalAnchorFrac: anchor.v is measured relative to the shifted origin, not canvas row 0
+ok 560 - combined jointPivotFrac + distalAnchorFrac: anchor.v is measured relative to the shifted origin, not canvas row 0
+  ---
+  duration_ms: 0.242
+  type: 'test'
+  ...
+# Subtest: combined jointPivotFrac + distalAnchorFrac holds across rotation angles and both facings
+ok 561 - combined jointPivotFrac + distalAnchorFrac holds across rotation angles and both facings
+  ---
+  duration_ms: 1.207875
+  type: 'test'
+  ...
+# Subtest: legacy part with only jointPivotFrac (no distalAnchorFrac) is unaffected -- falls through to plain _end()
+ok 562 - legacy part with only jointPivotFrac (no distalAnchorFrac) is unaffected -- falls through to plain _end()
+  ---
+  duration_ms: 1.893958
+  type: 'test'
+  ...
+# Subtest: legacy part with only distalAnchorFrac (jointPivotFrac 0, e.g. George/Thesz upperArm) matches the pre-fix formula
+ok 563 - legacy part with only distalAnchorFrac (jointPivotFrac 0, e.g. George/Thesz upperArm) matches the pre-fix formula
+  ---
+  duration_ms: 0.239167
+  type: 'test'
+  ...
+# Subtest: _solveTorsoOrigin round-trips with _socketPoint: placing the torso there and reading the hip-socket midpoint back reproduces the pelvis target
+ok 564 - _solveTorsoOrigin round-trips with _socketPoint: placing the torso there and reading the hip-socket midpoint back reproduces the pelvis target
+  ---
+  duration_ms: 2.573041
+  type: 'test'
+  ...
+# Subtest: _solveTorsoOrigin: individual near/far hip sockets, read off the solved origin, straddle the pelvis target symmetrically at angle 0
+ok 565 - _solveTorsoOrigin: individual near/far hip sockets, read off the solved origin, straddle the pelvis target symmetrically at angle 0
+  ---
+  duration_ms: 0.407167
+  type: 'test'
+  ...
+# Subtest: _gaitLeg: hipPoint override becomes the returned hx/hy and the IK root, not the shared (x, hipY)
+ok 566 - _gaitLeg: hipPoint override becomes the returned hx/hy and the IK root, not the shared (x, hipY)
+  ---
+  duration_ms: 0.600167
+  type: 'test'
+  ...
+# Subtest: _gaitLeg: default hipPoint (absent) is byte-identical to the pre-pilot call shape
+ok 567 - _gaitLeg: default hipPoint (absent) is byte-identical to the pre-pilot call shape
+  ---
+  duration_ms: 0.990083
+  type: 'test'
+  ...
+# Subtest: _gaitLeg: authored off-axis sole is the IK target in both facings
+ok 568 - _gaitLeg: authored off-axis sole is the IK target in both facings
+  ---
+  duration_ms: 0.437875
+  type: 'test'
+  ...
+# Subtest: _gaitLeg: a modular boot sole is grounded in both facings
+ok 569 - _gaitLeg: a modular boot sole is grounded in both facings
+  ---
+  duration_ms: 0.32025
+  type: 'test'
+  ...
+# Subtest: the example eight-part source manifest passes
+ok 570 - the example eight-part source manifest passes
+  ---
+  duration_ms: 10.658541
+  type: 'test'
+  ...
+# Subtest: the v1 neutral boot preserves the certified 0.9 ankle-to-sole canvas ratio
+ok 571 - the v1 neutral boot preserves the certified 0.9 ankle-to-sole canvas ratio
+  ---
+  duration_ms: 0.66775
+  type: 'test'
+  ...
+# Subtest: PNG audit reads real shipped RGBA canvas and alpha data
+ok 572 - PNG audit reads real shipped RGBA canvas and alpha data
+  ---
+  duration_ms: 32.560917
+  type: 'test'
+  ...
+# Subtest: a hand variant cannot move its structural wrist socket
+ok 573 - a hand variant cannot move its structural wrist socket
+  ---
+  duration_ms: 0.788667
+  type: 'test'
+  ...
+# Subtest: a hand variant may define its own semantic contact point
+ok 574 - a hand variant may define its own semantic contact point
+  ---
+  duration_ms: 0.718208
+  type: 'test'
+  ...
+# Subtest: elbow and knee segments require overlap on both sides of the joint
+ok 575 - elbow and knee segments require overlap on both sides of the joint
+  ---
+  duration_ms: 0.957042
+  type: 'test'
+  ...
+# Subtest: all eight modular base parts are mandatory
+ok 576 - all eight modular base parts are mandatory
+  ---
+  duration_ms: 0.784541
+  type: 'test'
+  ...
+# Subtest: synthetic eight-part mannequin has actual opaque coverage across every production joint
+ok 577 - synthetic eight-part mannequin has actual opaque coverage across every production joint
+  ---
+  duration_ms: 137.231167
+  type: 'test'
+  ...
+# Subtest: pixel audit catches transparent knee overlap even when manifest numbers claim it exists
+ok 578 - pixel audit catches transparent knee overlap even when manifest numbers claim it exists
+  ---
+  duration_ms: 60.277625
+  type: 'test'
+  ...
+# Subtest: pixel audit rejects a replacement PNG canvas that differs from its locked family
+ok 579 - pixel audit rejects a replacement PNG canvas that differs from its locked family
+  ---
+  duration_ms: 53.961958
+  type: 'test'
+  ...
+# Subtest: pelvis/thigh sweep covers both hip interiors at combat angles and facings
+ok 580 - pelvis/thigh sweep covers both hip interiors at combat angles and facings
+  ---
+  duration_ms: 28.568333
+  type: 'test'
+  ...
+# Subtest: pelvis sweep catches the transparent-bottom failure even if thigh anchors coincide
+ok 581 - pelvis sweep catches the transparent-bottom failure even if thigh anchors coincide
+  ---
+  duration_ms: 30.003708
+  type: 'test'
+  ...
+# Subtest: source contract requires thigh overlap above and below the hip anchor
+ok 582 - source contract requires thigh overlap above and below the hip anchor
+  ---
+  duration_ms: 1.377459
+  type: 'test'
+  ...
+# Subtest: source contract rejects a finished-edge surface declaration in hidden overlap
+ok 583 - source contract rejects a finished-edge surface declaration in hidden overlap
+  ---
+  duration_ms: 1.020625
+  type: 'test'
+  ...
+# Subtest: pixel audit warns about a likely dark contour spanning an attachment face
+ok 584 - pixel audit warns about a likely dark contour spanning an attachment face
+  ---
+  duration_ms: 22.226708
+  type: 'test'
+  ...
+# Subtest: the canonical v2 source manifest freezes the identity-approved pixels while later reviews remain explicit
+ok 585 - the canonical v2 source manifest freezes the identity-approved pixels while later reviews remain explicit
+  ---
+  duration_ms: 501.761666
+  type: 'test'
+  ...
+# Subtest: v2 locks the 4096 sheet, five-view registry, 19 slots, and fixed export rectangles
+ok 586 - v2 locks the 4096 sheet, five-view registry, 19 slots, and fixed export rectangles
+  ---
+  duration_ms: 295.031958
+  type: 'test'
+  ...
+# Subtest: v2 source density is exact across skeleton spans, part anchors, and every master view
+ok 587 - v2 source density is exact across skeleton spans, part anchors, and every master view
+  ---
+  duration_ms: 299.0105
+  type: 'test'
+  ...
+# Subtest: v2 connections require exact centers, non-zero axes, and matching opaque cores
+ok 588 - v2 connections require exact centers, non-zero axes, and matching opaque cores
+  ---
+  duration_ms: 232.988959
+  type: 'test'
+  ...
+# Subtest: v2 keeps every unimplemented runtime dependency explicit and pending
+ok 589 - v2 keeps every unimplemented runtime dependency explicit and pending
+  ---
+  duration_ms: 338.060292
+  type: 'test'
+  ...
+# Subtest: v2 locks the artist-stroke and moire-safety contract instead of treating it as optional prose
+ok 590 - v2 locks the artist-stroke and moire-safety contract instead of treating it as optional prose
+  ---
+  duration_ms: 147.279917
+  type: 'test'
+  ...
+# Subtest: v2 hand and boot variants require exact bounded semantic anchors and unit normals
+ok 591 - v2 hand and boot variants require exact bounded semantic anchors and unit normals
+  ---
+  duration_ms: 149.951083
+  type: 'test'
+  ...
+# Subtest: v2 pelvis coverage names a bounded torso-sized underlay and its separate front mask
+ok 592 - v2 pelvis coverage names a bounded torso-sized underlay and its separate front mask
+  ---
+  duration_ms: 141.974083
+  type: 'test'
+  ...
+# Subtest: v2 shoulder coverage stays torso-owned with an explicitly reserved front mask
+ok 593 - v2 shoulder coverage stays torso-owned with an explicitly reserved front mask
+  ---
+  duration_ms: 159.070333
+  type: 'test'
+  ...
+# Subtest: v2 computes replacement geometry instead of trusting a matching geometryLock label
+ok 594 - v2 computes replacement geometry instead of trusting a matching geometryLock label
+  ---
+  duration_ms: 45.669875
+  type: 'test'
+  ...
+# Subtest: v2 pixel audit covers every fixed base and head/hand/boot variant in all five views
+ok 595 - v2 pixel audit covers every fixed base and head/hand/boot variant in all five views
+  ---
+  duration_ms: 178.77825
+  type: 'test'
+  ...
+# Subtest: v2 pixel audit grades both oriented overlap bands for base and replacement slots
+ok 596 - v2 pixel audit grades both oriented overlap bands for base and replacement slots
+  ---
+  duration_ms: 157.648458
+  type: 'test'
+  ...
+# Subtest: v2 hip joint pixels are owned by pelvisUnderlay even though torso owns the hip anchors
+ok 597 - v2 hip joint pixels are owned by pelvisUnderlay even though torso owns the hip anchors
+  ---
+  duration_ms: 76.893584
+  type: 'test'
+  ...
+# Subtest: v2 rejects a transparent pelvis owner in every view and requires the shoulder mask to carry its cores
+ok 598 - v2 rejects a transparent pelvis owner in every view and requires the shoulder mask to carry its cores
+  ---
+  duration_ms: 741.751459
+  type: 'test'
+  ...
+# Subtest: v2 fixed-cell extraction copies the declared sheet rectangle at exactly 1:1
+ok 599 - v2 fixed-cell extraction copies the declared sheet rectangle at exactly 1:1
+  ---
+  duration_ms: 143.37075
+  type: 'test'
+  ...
+# Subtest: v2 rejects hidden RGB contamination in fully transparent source pixels
+ok 600 - v2 rejects hidden RGB contamination in fully transparent source pixels
+  ---
+  duration_ms: 0.318958
+  type: 'test'
+  ...
+# Subtest: approved v2 review binds to the SHA-256 of the exact source-sheet bytes
+ok 601 - approved v2 review binds to the SHA-256 of the exact source-sheet bytes
+  ---
+  duration_ms: 3.811917
+  type: 'test'
+  ...
+# Subtest: v2 master panels require connected-ish nonempty alpha with exact 530px crown-to-sole extent
+ok 602 - v2 master panels require connected-ish nonempty alpha with exact 530px crown-to-sole extent
+  ---
+  duration_ms: 454.040584
+  type: 'test'
+  ...
+# Subtest: the --sheet CLI rejects a source PNG that is not exactly 4096x4096
+ok 603 - the --sheet CLI rejects a source PNG that is not exactly 4096x4096
+  ---
+  duration_ms: 239.678083
+  type: 'test'
+  ...
+# Subtest: the --sheet CLI rejects transparent RGBA pixels carrying nonzero RGB
+ok 604 - the --sheet CLI rejects transparent RGBA pixels carrying nonzero RGB
+  ---
+  duration_ms: 1800.041084
+  type: 'test'
+  ...
+# Subtest: the --sheet CLI rejects byte drift from an approved source-sheet SHA-256
+ok 605 - the --sheet CLI rejects byte drift from an approved source-sheet SHA-256
+  ---
+  duration_ms: 207.901667
+  type: 'test'
+  ...
+# Subtest: eight-part source mannequin converts into a valid runtime texture contract
+ok 606 - eight-part source mannequin converts into a valid runtime texture contract
+  ---
+  duration_ms: 6.931292
+  type: 'test'
+  ...
+# Subtest: the candidate declares a valid rig contract
+ok 607 - the candidate declares a valid rig contract
+  ---
+  duration_ms: 5.891666
+  type: 'test'
+  ...
+# Subtest: it delivers shipped Lou's six body parts, plus the two audition forearms
+ok 608 - it delivers shipped Lou's six body parts, plus the two audition forearms
+  ---
+  duration_ms: 3.565833
+  type: 'test'
+  ...
+# Subtest: audition forearms keep the base forearm geometry exactly
+ok 609 - audition forearms keep the base forearm geometry exactly
+  ---
+  duration_ms: 0.912833
+  type: 'test'
+  ...
+# Subtest: workingHand swaps the forearm for a hand-in-forearm character, by facing
+ok 610 - workingHand swaps the forearm for a hand-in-forearm character, by facing
+  ---
+  duration_ms: 1.134167
+  type: 'test'
+  ...
+# Subtest: the hip seam is closed in the art, not with a pelvis layer
+ok 611 - the hip seam is closed in the art, not with a pelvis layer
+  ---
+  duration_ms: 0.201417
+  type: 'test'
+  ...
+# Subtest: every declared part file exists on disk
+ok 612 - every declared part file exists on disk
+  ---
+  duration_ms: 6.154625
+  type: 'test'
+  ...
+# Subtest: head anchoring cannot regress into the NaN combination
+ok 613 - head anchoring cannot regress into the NaN combination
+  ---
+  duration_ms: 0.293125
+  type: 'test'
+  ...
+# Subtest: anchors are finite, in range, and not inherited from another candidate
+ok 614 - anchors are finite, in range, and not inherited from another candidate
+  ---
+  duration_ms: 0.45075
+  type: 'test'
+  ...
+# Subtest: candidate-only screen offsets start at zero
+ok 615 - candidate-only screen offsets start at zero
+  ---
+  duration_ms: 0.79
+  type: 'test'
+  ...
+# Subtest: it reuses shipped Lou's kit, skin and trunks so the review isolates the art
+ok 616 - it reuses shipped Lou's kit, skin and trunks so the review isolates the art
+  ---
+  duration_ms: 0.937625
+  type: 'test'
+  ...
+# Subtest: the candidate does not idle on shipped Lou's pose
+ok 617 - the candidate does not idle on shipped Lou's pose
+  ---
+  duration_ms: 0.700625
+  type: 'test'
+  ...
+# Subtest: shipped Lou's idle pose values are exactly as shipped
+ok 618 - shipped Lou's idle pose values are exactly as shipped
+  ---
+  duration_ms: 0.298042
+  type: 'test'
+  ...
+# Subtest: it does not share asset paths with shipped Lou
+ok 619 - it does not share asset paths with shipped Lou
+  ---
+  duration_ms: 0.334375
+  type: 'test'
+  ...
+# Subtest: the snake_case alias rig:certify resolves is the same object
+ok 620 - the snake_case alias rig:certify resolves is the same object
+  ---
+  duration_ms: 0.099541
+  type: 'test'
+  ...
+# Subtest: shipped Lou is untouched by this candidate existing
+ok 621 - shipped Lou is untouched by this candidate existing
+  ---
+  duration_ms: 0.150125
+  type: 'test'
+  ...
+# Subtest: shipped thigh preserves every source pixel at and above the anatomical knee
+ok 622 - shipped thigh preserves every source pixel at and above the anatomical knee
+  ---
+  duration_ms: 116.77
+  type: 'test'
+  ...
+# Subtest: shipped thigh knee-band ink width is not pinched below the source
+ok 623 - shipped thigh knee-band ink width is not pinched below the source
+  ---
+  duration_ms: 24.362917
+  type: 'test'
+  ...
+# Subtest: the repository pins a Node major and the guard reads it
+ok 624 - the repository pins a Node major and the guard reads it
+  ---
+  duration_ms: 37.64575
+  type: 'test'
+  ...
+# Subtest: the guard accepts only the pinned major
+ok 625 - the guard accepts only the pinned major
+  ---
+  duration_ms: 1.1465
+  type: 'test'
+  ...
+# Subtest: production commands are guarded by the pinned-Node check
+ok 626 - production commands are guarded by the pinned-Node check
+  ---
+  duration_ms: 10.765583
+  type: 'test'
+  ...
+# Subtest: decoded-pixel identity ignores container bytes but not pixels
+ok 627 - decoded-pixel identity ignores container bytes but not pixels
+  ---
+  duration_ms: 1.100333
+  type: 'test'
+  ...
+# Subtest: frozen profile v4 reproduces its recorded artifact identity
+ok 628 - frozen profile v4 reproduces its recorded artifact identity
+  ---
+  duration_ms: 633.794917
+  type: 'test'
+  ...
+# Subtest: a headless torso has no pinch at all
+ok 629 - a headless torso has no pinch at all
+  ---
+  duration_ms: 153.150875
+  type: 'test'
+  ...
+# Subtest: a bust is caught, and the pinch is where the neck is
+ok 630 - a bust is caught, and the pinch is where the neck is
+  ---
+  duration_ms: 11.278333
+  type: 'test'
+  ...
+# Subtest: the SHALLOW pinch of the real v5 draft is caught
+ok 631 - the SHALLOW pinch of the real v5 draft is caught
+  ---
+  duration_ms: 5.998833
+  type: 'test'
+  ...
+# Subtest: the margin over the threshold on the real proportions is stated, not assumed
+ok 632 - the margin over the threshold on the real proportions is stated, not assumed
+  ---
+  duration_ms: 7.808208
+  type: 'test'
+  ...
+# Subtest: the waist taper below the shoulders is not mistaken for a neck
+ok 633 - the waist taper below the shoulders is not mistaken for a neck
+  ---
+  duration_ms: 7.842667
+  type: 'test'
+  ...
+# Subtest: the verdict is stable across smoothing windows
+ok 634 - the verdict is stable across smoothing windows
+  ---
+  duration_ms: 119.846042
+  type: 'test'
+  ...
+# Subtest: smoothing is what keeps one stray row from inventing a neck
+ok 635 - smoothing is what keeps one stray row from inventing a neck
+  ---
+  duration_ms: 7.986375
+  type: 'test'
+  ...
+# Subtest: the threshold sits in the measured gap, not against one side of it
+ok 636 - the threshold sits in the measured gap, not against one side of it
+  ---
+  duration_ms: 2.698625
+  type: 'test'
+  ...
+# Subtest: rowInkWidths reads the silhouette, not the paint inside it
+ok 637 - rowInkWidths reads the silhouette, not the paint inside it
+  ---
+  duration_ms: 12.939958
+  type: 'test'
+  ...
+# Subtest: an empty part reports nothing rather than dividing by zero
+ok 638 - an empty part reports nothing rather than dividing by zero
+  ---
+  duration_ms: 1.861333
+  type: 'test'
+  ...
+# Subtest: two-anchor binding maps both endpoints exactly through rotation and both facings
+ok 639 - two-anchor binding maps both endpoints exactly through rotation and both facings
+  ---
+  duration_ms: 6.35875
+  type: 'test'
+  ...
+# Subtest: off-axis authored anchors do not change the solved world joint
+ok 640 - off-axis authored anchors do not change the solved world joint
+  ---
+  duration_ms: 0.378958
+  type: 'test'
+  ...
+# Subtest: swappable attachment keeps wrist fixed while semantic contact may move
+ok 641 - swappable attachment keeps wrist fixed while semantic contact may move
+  ---
+  duration_ms: 1.307041
+  type: 'test'
+  ...
+# Subtest: coincident structural anchors fail loudly
+ok 642 - coincident structural anchors fail loudly
+  ---
+  duration_ms: 0.971333
+  type: 'test'
+  ...
+# Subtest: v2 exporter writes 95 exact deterministic crops and a checksum index
+ok 643 - v2 exporter writes 95 exact deterministic crops and a checksum index
+  ---
+  duration_ms: 9750.53925
+  type: 'test'
+  ...
+# Subtest: CLI refuses a wrong-sized source before creating its output directory
+ok 644 - CLI refuses a wrong-sized source before creating its output directory
+  ---
+  duration_ms: 210.87025
+  type: 'test'
+  ...
+# Subtest: exporter binds an approved review to the exact source-sheet bytes before writing
+ok 645 - exporter binds an approved review to the exact source-sheet bytes before writing
+  ---
+  duration_ms: 41.777292
+  type: 'test'
+  ...
+# Subtest: every view declares the arms and legs it draws
+ok 646 - every view declares the arms and legs it draws
+  ---
+  duration_ms: 219.234375
+  type: 'test'
+  ...
+# Subtest: profile and back3q present one visible arm and one visible leg
+ok 647 - profile and back3q present one visible arm and one visible leg
+  ---
+  duration_ms: 1.61975
+  type: 'test'
+  ...
+# Subtest: a second offset limb in profile or back3q is rejected
+ok 648 - a second offset limb in profile or back3q is rejected
+  ---
+  duration_ms: 127.724
+  type: 'test'
+  ...
+# Subtest: the single visible limb must be the near side
+ok 649 - the single visible limb must be the near side
+  ---
+  duration_ms: 58.545875
+  type: 'test'
+  ...
+# Subtest: hidden chains keep their landmarks and their place in the depth order
+ok 650 - hidden chains keep their landmarks and their place in the depth order
+  ---
+  duration_ms: 55.518834
+  type: 'test'
+  ...
+# Subtest: the hidden list must be exactly the chains a view does not draw
+ok 651 - the hidden list must be exactly the chains a view does not draw
+  ---
+  duration_ms: 61.261417
+  type: 'test'
+  ...
+# Subtest: registrationOnlyLandmarks stays a narrow fitting exception, separate from visibility
+ok 652 - registrationOnlyLandmarks stays a narrow fitting exception, separate from visibility
+  ---
+  duration_ms: 46.800958
+  type: 'test'
+  ...
+# Subtest: the proof renderer has no view-specific hardcoded drawing sequence
+ok 653 - the proof renderer has no view-specific hardcoded drawing sequence
+  ---
+  duration_ms: 12.858167
+  type: 'test'
+  ...
+# Subtest: front3q is the primary gameplay source and profile serves move mechanics
+ok 654 - front3q is the primary gameplay source and profile serves move mechanics
+  ---
+  duration_ms: 49.747209
+  type: 'test'
+  ...
+# Subtest: the ruling moves the role, and does not promote any runtime status
+ok 655 - the ruling moves the role, and does not promote any runtime status
+  ---
+  duration_ms: 3.586083
+  type: 'test'
+  ...
+# Subtest: the single-visible-limb ruling survives, and no longer gates the primary view
+ok 656 - the single-visible-limb ruling survives, and no longer gates the primary view
+  ---
+  duration_ms: 0.594125
+  type: 'test'
+  ...
+# Subtest: the profile head on the front3q body is declared, not a fallback
+ok 657 - the profile head on the front3q body is declared, not a fallback
+  ---
+  duration_ms: 0.256083
+  type: 'test'
+  ...
+# Subtest: a cross-view borrow without a reason or a transform is rejected
+ok 658 - a cross-view borrow without a reason or a transform is rejected
+  ---
+  duration_ms: 308.762
+  type: 'test'
+  ...
+1..658
+# tests 658
+# suites 0
+# pass 658
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14009.589459

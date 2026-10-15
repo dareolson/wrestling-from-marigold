@@ -1,0 +1,6 @@
+george complete
+thesz complete
+thesz-procreate-v1 complete
+{"character":"george","maxChild":2.5421149729252077e-13,"maxParent":3.4576501834057003e-13,"maxGap":0,"maxUncoveredCore":0}
+{"character":"thesz","maxChild":2.3437142008433856e-13,"maxParent":2.8421709430404007e-13,"maxGap":0,"maxUncoveredCore":0}
+{"character":"thesz-procreate-v1","maxChild":2.3437142008433856e-13,"maxParent":2.8421709430404007e-13,"maxGap":0,"maxUncoveredCore":0}

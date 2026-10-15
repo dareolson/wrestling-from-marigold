@@ -1,0 +1,92 @@
+· baked 16 keys per role at 30 fps (+ authored key/event/contact times)
+· reach attacker nearWrist → part:head 0.075–0.092: worst 44.2px → 0.5px over 1 full-weight keys (jab lands on the chest; the sell is sellHead)
+· reach attacker farAnkle → plant 0–0.4: worst 30.5px → 20.9px over 16 full-weight keys, 7 keys left alone (IK made them worse) (far foot holds still)
+wrote /tmp/marigold-claude-review/jab-experimental.json
+jab-refined: 25 frames → /tmp/marigold-claude-review/jab-experimental-trace.json
+· baked 78 keys per role at 30 fps (+ authored key/event/contact times)
+· reach attacker nearWrist → nearWrist 0.55–2.1: worst 48.7px → 0.5px over 51 full-weight keys
+· reach defender nearAnkle → plant 0.4–2.1: worst 8.6px → 3.0px over 56 full-weight keys
+· reach defender farAnkle → plant 0.4–2.1: worst 16.6px → 10.1px over 56 full-weight keys
+· reach attacker nearAnkle → plant 0.4–2.1: worst 7.7px → 7.7px over 56 full-weight keys, 58 keys left alone (IK made them worse)
+· reach attacker farAnkle → plant 0.4–2.1: worst 7.7px → 7.7px over 56 full-weight keys, 59 keys left alone (IK made them worse)
+wrote /tmp/marigold-claude-review/hammerlock-experimental.json
+hammerlock-refined: 145 frames → /tmp/marigold-claude-review/hammerlock-experimental-trace.json
+· baked 54 keys per role at 30 fps (+ authored key/event/contact times)
+· reach attacker nearAnkle → plant 0–0.95: worst 24.7px → 11.1px over 33 full-weight keys, 10 keys left alone (IK made them worse)
+· reach attacker farAnkle → plant 0–0.95: worst 30.0px → 17.4px over 33 full-weight keys, 29 keys left alone (IK made them worse)
+· reach attacker nearWrist → neck 0.2–1: worst 167.2px → 32.7px over 28 full-weight keys, 2 keys left alone (IK made them worse)
+· reach attacker farWrist → nearHip 0.2–1: worst 124.9px → 28.7px over 28 full-weight keys, 6 keys left alone (IK made them worse)
+· shift defender dx=-45 dy=0 over 1.25–1.6
+wrote /tmp/marigold-claude-review/suplex-experimental.json
+suplex-refined: 97 frames → /tmp/marigold-claude-review/suplex-experimental-trace.json
+· baked 23 keys per role at 30 fps (+ authored key/event/contact times)
+· stopAt attacker nearAnkle/farAnkle → torso/trunks front @0.36: travel -21.1 rig units (-25.8px); separation at contact 116.1 rig units
+wrote /tmp/marigold-claude-review/dropkick-experimental.json
+dropkick-refined: 39 frames → /tmp/marigold-claude-review/dropkick-experimental-trace.json
+
+=== jab-refined (0.4s; thesz vs george) ===
+attacker:
+  floor: worst 0.0% of height below mat (null @0.000s), 0 frames
+  foot slide: 7.6% total; worst near 14.3px 0.200s–0.400s
+  floating (no mat, no partner): 0.000s
+  pops: 4 farElbow@0.083s, nearWrist@0.067s, farWrist@0.083s, nearAnkle@0.033s; velocity hitches at 7 frames: 0.033s, 0.050s, 0.067s, 0.133s, 0.083s, 0.100s, 0.167s
+  stiffness: spine turns 0.00 rad, limbs bend 1.20 rad
+defender:
+  floor: worst 0.0% of height below mat (null @0.000s), 0 frames
+  foot slide: 0.0% total
+  floating (no mat, no partner): 0.000s
+  pops: 0; velocity hitches at 0 frames
+  stiffness: spine turns 0.00 rad, limbs bend 0.00 rad
+impact @0.083s attacker nearWrist→part:head: gap 11.2%, limb at 71.3% of its max reach; closest approach +0.000s from the event
+
+=== hammerlock-refined (2.4s; thesz vs george) ===
+attacker:
+  floor: worst 1.2% of height below mat (nearShin @0.283s), 0 frames
+  foot slide: 13.7% total; worst near 26.5px 0.233s–2.400s
+  floating (no mat, no partner): 0.000s
+  pops: 7 nearShoulder@0.300s, nearElbow@2.183s, nearElbow@2.200s, nearWrist@0.300s; velocity hitches at 18 frames: 0.283s, 0.300s, 0.233s, 0.433s, 0.467s, 0.483s, 0.500s, 0.550s
+  stiffness: spine turns 0.13 rad, limbs bend 2.85 rad
+defender:
+  floor: worst 13.1% of height below mat (nearShin @0.550s), 105 frames
+  foot slide: 59.6% total; worst near 94.6px 0.000s–2.400s
+  floating (no mat, no partner): 0.000s
+  pops: 0; velocity hitches at 21 frames: 0.433s, 2.100s, 0.300s, 0.133s, 0.317s, 0.333s, 0.350s, 0.383s
+  stiffness: spine turns 0.00 rad, limbs bend 3.52 rad
+contact attacker nearWrist→nearWrist: worst gap 17.5% of height @0.550s over 94 frames
+body overlap (torso/head interpenetration > 6% height): 0.150s, worst 15.5% @0.200s
+
+=== suplex-refined (1.6s; thesz vs george) ===
+attacker:
+  floor: worst 4.7% of height below mat (torso @1.283s), 22 frames
+  foot slide: 22.1% total; worst near 43.1px 1.000s–1.067s
+  floating (no mat, no partner): 0.000s 1.100s–1.100s
+  pops: 19 nearElbow@0.217s, nearElbow@0.233s, nearElbow@0.583s, nearElbow@0.600s; velocity hitches at 26 frames: 1.100s, 1.283s, 0.133s, 0.183s, 0.200s, 0.217s, 0.233s, 0.567s
+  stiffness: spine turns 1.52 rad, limbs bend 8.10 rad (bend/turn 5.33)
+defender:
+  floor: worst 5.2% of height below mat (nearUpArm @1.600s), 20 frames
+  foot slide: 20.2% total; worst far 41.5px 0.000s–0.183s
+  floating (no mat, no partner): 0.000s 1.100s–1.100s
+  pops: 0; velocity hitches at 12 frames: 0.183s, 0.617s, 1.100s, 1.133s, 1.167s, 1.283s, 0.417s, 1.200s
+  stiffness: spine turns 4.76 rad, limbs bend 2.78 rad (bend/turn 0.58)
+contact Lou near hand on George's neck (hook → turnover): worst gap 52.6% of height @1.100s over 56 frames
+contact Lou far hand at George's waist (hook → turnover): worst gap 87.1% of height @0.950s over 56 frames
+defender torso lands: 1.283s (event 1.280s, +0.003s)
+attacker torso lands: 1.267s (event 1.280s, -0.013s)
+body overlap (torso/head interpenetration > 6% height): 1.183s, worst 20.2% @0.233s
+
+=== dropkick-refined (0.62s; thesz vs george) ===
+attacker:
+  floor: worst 4.7% of height below mat (torso @0.620s), 2 frames
+  foot slide: 0.4% total
+  floating (no mat, no partner): 0.000s
+  pops: 0; velocity hitches at 21 frames: 0.100s, 0.483s, 0.617s, 0.117s, 0.133s, 0.150s, 0.167s, 0.200s
+  stiffness: spine turns 1.52 rad, limbs bend 4.19 rad (bend/turn 2.76)
+defender:
+  floor: worst 0.0% of height below mat (null @0.000s), 0 frames
+  foot slide: 0.0% total
+  floating (no mat, no partner): 0.000s
+  pops: 0; velocity hitches at 0 frames
+  stiffness: spine turns 0.00 rad, limbs bend 0.00 rad
+impact @0.360s attacker nearAnkle→part:torso: gap 14.1%, limb at 96.3% of its max reach; closest approach +0.090s from the event
+impact @0.360s attacker farAnkle→part:torso: gap 17.6%, limb at 96.1% of its max reach; closest approach +0.123s from the event
+attacker torso lands: 0.617s (event 0.360s, +0.257s)

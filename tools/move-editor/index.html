@@ -79,10 +79,11 @@
     </div></section>
     <section><h2>Reference sprite</h2><div class="body">
       <div class="row wide"><label>Show</label><label class="hint"><input id="refShow" type="checkbox" checked /> opacity <input id="refOpacity" type="range" min="0.1" max="1" step="0.05" value="0.45" style="width:110px;vertical-align:middle" /></label></div>
+      <div class="row wide"><label>Sheet</label><select id="refSheet"></select></div>
       <div class="row wide"><label>Frame</label><span class="toolbar"><button id="refPrev" title="Previous frame">◀</button><input id="refFrame" type="number" min="0" step="1" style="width:70px" /><button id="refNext" title="Next frame">▶</button><button id="refClear" title="Remove the reference set at the playhead">Remove here</button></span></div>
       <div class="row wide"><label>Align</label><span class="toolbar">x <input id="refDx" type="number" step="1" style="width:56px" /> y <input id="refDy" type="number" step="1" style="width:56px" /> size <input id="refScale" type="number" step="0.05" style="width:56px" /> <label><input id="refFlip" type="checkbox" /> flip</label></span></div>
       <p id="refInfo" class="hint"></p>
-      <p class="hint">A frame shows behind the selected role from the playhead until that role's next reference. Frame numbers: <code>Sprite sheets/reference/raw-genesis-44459/INDEX.md</code>. Editor only, never exported.</p>
+      <p class="hint">A frame shows over the selected role, faded, from the playhead until that role's next reference. Frame numbers: each sheet's <code>index.png</code> / <code>rows/</code> under <code>Sprite sheets/reference/</code>; slice new sheets with <code>tools/sprites/slice_sheet.py</code>. Editor only, never exported.</p>
     </div></section>
     <section><h2>Connected pose</h2><div id="poseControls" class="body"></div></section>
     <section><h2>Part variants</h2><div id="variantControls" class="body"></div></section>

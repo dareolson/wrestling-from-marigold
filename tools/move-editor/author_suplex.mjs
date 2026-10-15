@@ -1,5 +1,5 @@
-// Vertical suplex, first pass — posed to match the WWF Raw (Genesis) sheet
-// (see Sprite sheets/reference/raw-genesis-44459/INDEX.md): attacker frames
+// Vertical suplex, first pass — posed to match the WWF Royal Rumble (SNES) sheet
+// (see Sprite sheets/reference/wwf-royal-rumble-snes/44459-bret-hart/INDEX.md): attacker frames
 // 372 (hook), 370/374 (lift, leaning back, arms overhead); victim frames 357
 // (lifted), 359–360 (upside down overhead), 363–365 (coming down, flat on the
 // back). Pose reference only; the frames ride along as editor-only references.

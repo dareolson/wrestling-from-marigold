@@ -1,19 +1,34 @@
 // Reference sprite layer: a frame of a downloaded sprite sheet drawn faded
-// behind an actor, so a move can be posed by matching it. Frames come from
-// `Sprite sheets/reference/<sheet>/fNNN.png` (tools: see that folder's
-// INDEX.md). Which frame shows when lives on the draft (model.js
+// over an actor, so a move can be posed by matching it. Frames come from
+// `Sprite sheets/reference/<sheet>/fNNN.png`, written by
+// tools/sprites/slice_sheet.py, which also lists every sliced sheet in
+// `Sprite sheets/reference/sheets.json`. Each reference names its sheet; one
+// without (drafts from before sheets were selectable) is the first sheet,
+// Bret Hart's. Which frame shows when lives on the draft (model.js
 // activeReference); this module only draws it. Pose reference only — nothing
 // here reaches an exported clip.
 
 import { activeReference } from './model.js';
 
-// Editor actors stand about 340 px tall at the editor's SCALE and the Genesis
+// Editor actors stand about 340 px tall at the editor's SCALE and the Royal Rumble
 // sheet's standing frames about 82 px, so this maps one onto the other before
 // the per-reference `scale` nudge.
 const BASE_SCALE = 4.15;
 
+export const DEFAULT_SHEET = 'wwf-royal-rumble-snes/44459-bret-hart';
+
+// The sliced sheets on this machine. Sheet art is git-ignored, so a checkout
+// without it simply lists the default.
+export async function loadSheetList() {
+    try {
+        const response = await fetch(encodeURI('/Sprite sheets/reference/sheets.json'), { cache: 'no-store' });
+        if (response.ok) return await response.json();
+    } catch { /* no sheets sliced here */ }
+    return [{ id: DEFAULT_SHEET, label: 'Bret Hart — WWF Royal Rumble (SNES)' }];
+}
+
 export function createReferenceLayer(ctx) {
-    const view = { show: true, opacity: 0.45, sheet: 'raw-genesis-44459' };
+    const view = { show: true, opacity: 0.45 };
     const images = {};
     const loading = new Set();
     const crisp = new Set();
@@ -44,7 +59,7 @@ export function createReferenceLayer(ctx) {
     function update() {
         for (const role of ctx.roles) {
             const entry = view.show ? activeReference(ctx.getDraft(), role, ctx.getPlayhead()) : null;
-            const key = entry ? ensureLoaded(view.sheet, entry.frame) : null;
+            const key = entry ? ensureLoaded(entry.sheet ?? DEFAULT_SHEET, entry.frame) : null;
             let image = images[role];
             if (!key) { image?.setVisible(false); continue; }
             if (!image) image = images[role] = ctx.scene.add.image(0, 0, key).setOrigin(0.5, 1);

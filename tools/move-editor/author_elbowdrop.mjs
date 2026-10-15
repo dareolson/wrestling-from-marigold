@@ -1,5 +1,5 @@
-// Elbow drop flight, first pass — posed to match the WWF Raw (Genesis) sheet
-// (see Sprite sheets/reference/raw-genesis-44459/INDEX.md): frames 165–167
+// Elbow drop flight, first pass — posed to match the WWF Royal Rumble (SNES) sheet
+// (see Sprite sheets/reference/wwf-royal-rumble-snes/44459-bret-hart/INDEX.md): frames 165–167
 // (up off the mat), 168 (flat in the air, elbow down). Pose reference only.
 //
 //   node tools/move-editor/author_elbowdrop.mjs

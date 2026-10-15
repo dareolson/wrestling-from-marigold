@@ -1,5 +1,5 @@
-// Body slam, first pass — posed to match the WWF Raw (Genesis) sheet (see
-// Sprite sheets/reference/raw-genesis-44459/INDEX.md): attacker frames
+// Body slam, first pass — posed to match the WWF Royal Rumble (SNES) sheet (see
+// Sprite sheets/reference/wwf-royal-rumble-snes/44459-bret-hart/INDEX.md): attacker frames
 // 322–328 (grab, lift, drive down, recover), victim frames 120–121 (arched
 // over, flat on the back). Pose reference only; the frames ride along as
 // editor-only references.

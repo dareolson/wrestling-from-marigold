@@ -86,6 +86,7 @@ numbers are on each wrestler's own sheet. Names are read off the frames by eye.
 | **Head vice (claw)** | Crush 389–397 | |
 | **Running forearm** + flexing poses | Lex Luger 397–399 / 400–404 | |
 | Money toss taunt, reach and grab | Ted DiBiase 393–397 / 387–392 | |
+| **Samoan drop** | Tatanka 386–396 | onto the shoulders, falls back sitting out |
 | On-the-back kicking sell | every sheet but Bret's, 298–306 | the game's standard sell |
 
 ### Saturday Night Slam Masters (sliced 2026-10-15)
@@ -104,6 +105,7 @@ sheet's Hit/Hurt/Down. Read frame numbers off `rows/` when building.
 | Biff Slamkovich | technical | dropkicks, spinning kicks, flying attacks, suplexes |
 | The Great Oni | heel martial artist | kicks, cartwheel, flips, **poison mist** |
 | The Scorpion | masked high-flyer | flying kicks, flips, flipping throws |
+| Gunloc | military technical | spinning backfist, flash-kick style somersault, flips, flying cross-body, suplex-type grapples |
 | Harry Hicks | **referee** (non-playable) | pin count (down on the mat slapping), pointing, signals, arms-crossed / wave-off — a referee character |
 
 Every Slam Masters wrestler also brings his own walk, run, tired idle,
@@ -116,13 +118,9 @@ The site blocks automated downloads, so save these in a browser into
 `Sprite sheets/` (any filename) and they get sliced with
 `tools/sprites/slice_sheet.py`.
 
-Still missing (everything else listed earlier is in and sliced):
-
-| Wrestler | Page (download button / Save Image As) |
-|---|---|
-| Tatanka (Royal Rumble) | https://www.spriters-resource.com/snes/wwfroyal/asset/44467/ |
-| Gunloc (Slam Masters) | https://www.spriters-resource.com/snes/saturdaynightslammasters/asset/27586/ |
-| the referee (Royal Rumble) | https://www.spriters-resource.com/snes/wwfroyal/asset/44748/ |
+Everything listed so far is in and sliced (19 sheets). The Royal Rumble
+referee is optional, since Slam Masters' Harry Hicks already covers a ref:
+https://www.spriters-resource.com/snes/wwfroyal/asset/44748/
 
 Each page has a download button for the sheet; right-click the sheet image
 and Save Image As works too. If a page moves, the game pages list everyone:

@@ -55,6 +55,10 @@ export const george = {
     skinCol: 0xa87858,
     trunksCol: 0x1a1a1a,
     textures: {
+        // Joint attachment takes precedence over legacy idle-only calf/forearm
+        // nudges below. Those values remain historical tuner data; locked
+        // elbows/knees use the painted parent joint in every render pose.
+        lockLimbJoints: true,
         heightScale: 0.825,
         headScale: 0.89,
         head: 'george_head',
@@ -108,12 +112,18 @@ export const george = {
             key: 'george_near_shin',
             box: { w: 69.29863013689331, h: 86.05214511504334 },
             jointPivotFrac: 0.23422963443403397,
+            // Knee-row alpha centroid x=65.5/149. Keep that feature on the
+            // thigh's knee instead of translating the whole calf afterward.
+            pivotOffsetFrac: -0.07887832603592065,
             soleAnchorFrac: { u: 0.6214887064664337, v: 0.8976677194167121 },
         },
         farShin: {
             key: 'george_far_shin',
             box: { w: 69.29863013689331, h: 86.05214511504334 },
             jointPivotFrac: 0.23422963443403397,
+            // Knee-row alpha centroid x=65.5/149. Keep that feature on the
+            // thigh's knee instead of translating the whole calf afterward.
+            pivotOffsetFrac: -0.07887832603592065,
             soleAnchorFrac: { u: 0.6214887064664337, v: 0.8976677194167121 },
         },
         nearForearm: {

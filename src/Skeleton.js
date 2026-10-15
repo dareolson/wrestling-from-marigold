@@ -464,6 +464,10 @@ export default class Skeleton {
         this._nearForearmOffsetY = textures.nearForearmOffsetY ?? 0;
         this._farForearmOffsetX = textures.farForearmOffsetX ?? 0;
         this._farForearmOffsetY = textures.farForearmOffsetY ?? 0;
+        // Production joint-lock mode: child placement is derived only from
+        // the parent's painted joint and the child's registered pivot.
+        // Legacy idle-tuning nudges cannot translate a connected segment.
+        this._lockLimbJoints = textures.lockLimbJoints === true;
         // Per-character thigh nudge, unscaled px. Defaults to 0. Applied on
         // top of HIP_OVERLAP in updateUpright. legOffsetY: + = down (both
         // thighs). legOffsetX: + = toward facing/forward (near thigh only —
@@ -1267,7 +1271,8 @@ export default class Skeleton {
         // Use the procedural foot-locking gait for walking and plain idle. When a move
         // poses the legs (slam, lockup, sleeper, etc.) and the wrestler is essentially
         // stationary, fall back to the original pose-driven FK so those moves are untouched.
-        const poseLegActive = Math.abs(pose.lLeg) + Math.abs(pose.rLeg) > 0.05;
+        const poseLegActive = Math.abs(pose.lLeg) + Math.abs(pose.rLeg) > 0.05
+            || ['lKnee', 'rKnee', 'lShin', 'rShin'].some(key => Number.isFinite(pose[key]));
         const useGait = moveBlend > 0.2 || !poseLegActive;
 
         // ── Hip height ──────────────────────────────────────────────────────────
@@ -1583,15 +1588,18 @@ export default class Skeleton {
         // jointPivotFrac (authored overlap art), _attachChild skips the
         // pull-back and anchors directly at farTrueKnee instead.
         const farShinRender = this._attachChild(this.farShin, farTrueKnee.x, farTrueKnee.y, far.shinAng, s, RIG.KNEE_OVERLAP);
-        farShinRender.x += facing * this._farShinOffsetX * s;
-        farShinRender.y += this._farShinOffsetY * s;
-        const farAnkle = this._end(farKnee.x, farKnee.y, shinH, far.shinAng);
+        if (!this._lockLimbJoints) {
+            farShinRender.x += facing * this._farShinOffsetX * s;
+            farShinRender.y += this._farShinOffsetY * s;
+        }
+        const farKneeAnchor = this._lockLimbJoints ? farTrueKnee : farKnee;
+        const farAnkle = this._end(farKneeAnchor.x, farKneeAnchor.y, shinH, far.shinAng);
         this.jointAttachmentPoints.farAnkle = { ...farAnkle };
         this._placeLimbPart(this.farShin, farKnee, farAnkle, {
             x: farShinRender.x, y: farShinRender.y, w: legW, h: shinH,
             angle: far.shinAng, scale: s * this._farShinScale, facing,
         });
-        this._recordJointAttachment('farKnee', this.farShin, farKnee.x, farKnee.y, far.shinAng);
+        this._recordJointAttachment('farKnee', this.farShin, farKneeAnchor.x, farKneeAnchor.y, far.shinAng);
         if (this.farBoot) {
             if (!this._placeAttachment(this.farBoot, farAnkle, far.bootAng, s, facing, 'farBoot')) {
                 this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, far.bootAng);
@@ -1678,8 +1686,8 @@ export default class Skeleton {
         // Back off along the CHILD forearm's axis. Using the upper-arm angle
         // makes the root orbit the elbow whenever the joint bends.
         const farElbow = this._attachChild(this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA, s, RIG.ELBOW_OVERLAP);
-        const farForearmX = farElbow.x + facing * this._farForearmOffsetX * s;
-        const farForearmY = farElbow.y + this._farForearmOffsetY * s;
+        const farForearmX = farElbow.x + (this._lockLimbJoints ? 0 : facing * this._farForearmOffsetX * s);
+        const farForearmY = farElbow.y + (this._lockLimbJoints ? 0 : this._farForearmOffsetY * s);
         const farWrist = this._end(farTrueElbow.x, farTrueElbow.y, forearmH * RIG.FAR_ARM_SCALE, farFA);
         this.jointAttachmentPoints.farWrist = { ...farWrist };
         this._placeLimbPart(this.farForearm, farTrueElbow, farWrist, {
@@ -1719,15 +1727,18 @@ export default class Skeleton {
             : nearKnee;
         const nearShinRenderAng = near.shinAng + facing * this._nearShinTilt;
         const nearShinRender = this._attachChild(this.nearShin, nearTrueKnee.x, nearTrueKnee.y, nearShinRenderAng, s, RIG.KNEE_OVERLAP);
-        nearShinRender.x += facing * ((this._authoredLegRig ? 0 : RIG.NEAR_SHIN_FWD) + this._nearShinOffsetX) * s;
-        nearShinRender.y += ((this._authoredLegRig ? 0 : -RIG.NEAR_SHIN_UP) + this._nearShinOffsetY) * s;
-        const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, near.shinAng);
+        if (!this._lockLimbJoints) {
+            nearShinRender.x += facing * ((this._authoredLegRig ? 0 : RIG.NEAR_SHIN_FWD) + this._nearShinOffsetX) * s;
+            nearShinRender.y += ((this._authoredLegRig ? 0 : -RIG.NEAR_SHIN_UP) + this._nearShinOffsetY) * s;
+        }
+        const nearKneeAnchor = this._lockLimbJoints ? nearTrueKnee : nearKnee;
+        const nearAnkle = this._end(nearKneeAnchor.x, nearKneeAnchor.y, shinH, near.shinAng);
         this.jointAttachmentPoints.nearAnkle = { ...nearAnkle };
         this._placeLimbPart(this.nearShin, nearKnee, nearAnkle, {
             x: nearShinRender.x, y: nearShinRender.y, w: legW, h: shinH,
             angle: nearShinRenderAng, scale: s * this._nearShinScale, facing,
         });
-        this._recordJointAttachment('nearKnee', this.nearShin, nearKnee.x, nearKnee.y, nearShinRenderAng);
+        this._recordJointAttachment('nearKnee', this.nearShin, nearKneeAnchor.x, nearKneeAnchor.y, nearShinRenderAng);
         if (this.nearBoot) {
             if (!this._placeAttachment(this.nearBoot, nearAnkle, near.bootAng, s, facing, 'nearBoot')) {
                 this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
@@ -1751,8 +1762,8 @@ export default class Skeleton {
         const nearTrueElbow = this.nearUpArm._binding ? nearGraphElbow
             : this._trueDistalEnd(this.nearUpArm, nearShoulderX, armShoulderY, upperArmH, nearUpArmAng, s, facing);
         const nearElbow = this._attachChild(this.nearForearm, nearTrueElbow.x, nearTrueElbow.y, nearFA, s, RIG.ELBOW_OVERLAP);
-        const nearForearmX = nearElbow.x + facing * this._nearForearmOffsetX * s;
-        const nearForearmY = nearElbow.y + this._nearForearmOffsetY * s;
+        const nearForearmX = nearElbow.x + (this._lockLimbJoints ? 0 : facing * this._nearForearmOffsetX * s);
+        const nearForearmY = nearElbow.y + (this._lockLimbJoints ? 0 : this._nearForearmOffsetY * s);
         const nearWrist = this._end(nearTrueElbow.x, nearTrueElbow.y, forearmH, nearFA);
         this.jointAttachmentPoints.nearWrist = { ...nearWrist };
         this._placeLimbPart(this.nearForearm, nearTrueElbow, nearWrist, {
@@ -2019,7 +2030,18 @@ export default class Skeleton {
     // starts from that exact pose, so there is no turn-over pop.
     updateGetUp(x, y, s, facing, t, lying = 'prone') {
         const K = lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
-        this._applyGrounded(x, y, s, facing, Skeleton._sampleKeyposes(K, t));
+        const pose = Skeleton._sampleKeyposes(K, t);
+        if (this._lockLimbJoints) {
+            // The old final key places every character's hips only 88 units
+            // above the mat. Locked calves expose that short generic stand-in
+            // as a jump when a differently sized rig returns upright. Finish
+            // the rise at this body's standing height, continuously after
+            // the final supported key, rather than changing knee attachment.
+            const last = K.at(-1), before = K.at(-2);
+            const u = Math.max(0, Math.min(1, (t - before.t) / (last.t - before.t)));
+            pose.hip += (this.standingHipHeight - last.hip) * u * u * (3 - 2 * u);
+        }
+        this._applyGrounded(x, y, s, facing, pose);
     }
 
     // Place every part from a grounded pose: hip-rooted, torso free to pitch
@@ -2104,13 +2126,14 @@ export default class Skeleton {
                 ? this._trueDistalEnd(thighImg, hipRender.x, hipRender.y, thighH, tA, s, facing)
                 : knee;
             const kneeRender = this._attachChild(shinImg, trueKnee.x, trueKnee.y, sA, s, RIG.KNEE_OVERLAP);
-            const ankle = this._end(knee.x, knee.y, shinH, sA);
+            const kneeAnchor = this._lockLimbJoints ? trueKnee : knee;
+            const ankle = this._end(kneeAnchor.x, kneeAnchor.y, shinH, sA);
             this.jointAttachmentPoints[`${side}Ankle`] = { ...ankle };
             this._placeLimbPart(shinImg, knee, ankle, {
                 x: kneeRender.x, y: kneeRender.y, w: legW, h: shinH,
                 angle: sA, scale: s, facing,
             });
-            this._recordJointAttachment(`${side}Knee`, shinImg, knee.x, knee.y, sA);
+            this._recordJointAttachment(`${side}Knee`, shinImg, kneeAnchor.x, kneeAnchor.y, sA);
             if (bootImg) {
                 if (!this._placeAttachment(bootImg, ankle, sA + f * 0.3, s, facing, `${side}Boot`)) {
                     this._place(bootImg, ankle.x, ankle.y, legW + 4 * s, bootH, sA + f * 0.3);

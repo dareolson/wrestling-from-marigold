@@ -1,0 +1,5424 @@
+{
+  "date": "2026-10-15",
+  "method": "Local Chrome; registered clips through MoveRuntime.seek without events; real Wrestler.draw in holding state; existing joint_attachment_audit alpha sampler applied to final rendered parts; matching preset in both roles; clip keyframes + span midpoints + uniform 20Hz times; both starting facings.",
+  "limitations": [
+    "Diagnostic pose sweep, not full executor/gameplay certification.",
+    "Nearest opaque-pixel pair within a 14px joint neighborhood; alpha >=32; failure above 2.5px. Zero does not establish correct pivot alignment, adequate local coverage, orientation or silhouette.",
+    "Holding-state renderer for each role; flight state-specific overrides, actual transitions and grounded handoffs require additional checks.",
+    "All role combinations use the same character on both sides; mixed pairs remain required."
+  ],
+  "results": [
+    {
+      "character": "george",
+      "clipFacingCombinations": 30,
+      "sampleTimes": 1236,
+      "failures": [],
+      "rows": [
+        {
+          "id": "jab",
+          "facing": -1,
+          "frames": 17,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 438.25179955291713,
+                "y": 279.43194561772776
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.9745014804587,
+                "y": 282.2916196287197
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.8442577535756,
+                "y": 343.7503866293427
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 447.22648360749594,
+                "y": 347.39382126103715
+              }
+            }
+          }
+        },
+        {
+          "id": "jab",
+          "facing": 1,
+          "frames": 17,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 461.74820044708287,
+                "y": 279.43194561772776
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.0254985195413,
+                "y": 282.2916196287197
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 463.0590115395629,
+                "y": 343.155476408096
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.87024709936554,
+                "y": 347.98873148228387
+              }
+            }
+          }
+        },
+        {
+          "id": "hammerlock",
+          "facing": -1,
+          "frames": 71,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 415.49690622561303,
+                "y": 267.6716567546954
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 431.80497028093106,
+                "y": 266.7982874028706
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 448.82808429602915,
+                "y": 345.8700750539754
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 451.1719157039709,
+                "y": 350.1084199069166
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 402.08113531181937,
+                "y": 251.9761106777968
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 378.8566862868677,
+                "y": 266.0685746655489
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 369.2205313147457,
+                "y": 345.8700750539754
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 350.9933724285698,
+                "y": 350.1084199069166
+              }
+            }
+          }
+        },
+        {
+          "id": "hammerlock",
+          "facing": 1,
+          "frames": 71,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 488.87015891185956,
+                "y": 260.77163653430347
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 461.54204407945224,
+                "y": 273.7286962504259
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 459.11357944308793,
+                "y": 345.8700750539754
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 440.886420556912,
+                "y": 350.1084199069166
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 500.6845148292765,
+                "y": 260.0698307464532
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 516.0565405961474,
+                "y": 257.38639314600675
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 538.7211324243713,
+                "y": 345.8700750539754
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 541.0649638323131,
+                "y": 350.1084199069166
+              }
+            }
+          }
+        },
+        {
+          "id": "piledriver",
+          "facing": -1,
+          "frames": 53,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 434.4802922903891,
+                "y": 286.10562488935665
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.482065179716,
+                "y": 282.16537667328873
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 444.5094365905123,
+                "y": 351.431774499876
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 439.65401207544244,
+                "y": 353.19560535047214
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 403.37018672751435,
+                "y": 280.74100389059413
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 369.13523941055905,
+                "y": 285.4320000948012
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 396.4913677700508,
+                "y": 346.59632162544074
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 378.2713801194214,
+                "y": 351.1720855886737
+              }
+            }
+          }
+        },
+        {
+          "id": "piledriver",
+          "facing": 1,
+          "frames": 53,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 481.66519486479876,
+                "y": 276.2836218442541
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 436.60081224328593,
+                "y": 289.70176609501556
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 470.6314830716164,
+                "y": 348.95726049753097
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 445.2050682624289,
+                "y": 355.67011935281715
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 501.4547097106148,
+                "y": 282.26812106593127
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 524.9441801025941,
+                "y": 284.80314102384017
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 511.4431247335197,
+                "y": 346.93374073573256
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 513.7941273770081,
+                "y": 350.8346664783819
+              }
+            }
+          }
+        },
+        {
+          "id": "bodySlam",
+          "facing": -1,
+          "frames": 39,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 436.7317150582084,
+                "y": 284.6636740683415
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 460.2211854501877,
+                "y": 287.1986940262504
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 440.7626094339561,
+                "y": 349.195226899039
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.12487159902884,
+                "y": 352.7773989017641
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 416.9422002123923,
+                "y": 276.2836218442541
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 371.8778175908795,
+                "y": 289.70176609501556
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 405.90848841920996,
+                "y": 348.95726049753097
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 380.48207361002244,
+                "y": 355.67011935281715
+              }
+            }
+          }
+        },
+        {
+          "id": "bodySlam",
+          "facing": 1,
+          "frames": 39,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 468.0931813799208,
+                "y": 283.13655689300435
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 433.8582340629655,
+                "y": 287.8275530972114
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 464.16062354803,
+                "y": 348.53905404882295
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 448.9518954189851,
+                "y": 353.4335717519802
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 499.20328694279556,
+                "y": 286.10562488935665
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 507.20505983212246,
+                "y": 282.16537667328873
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 509.23243124291866,
+                "y": 351.431774499876
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 504.3770067278488,
+                "y": 353.19560535047214
+              }
+            }
+          }
+        },
+        {
+          "id": "suplex",
+          "facing": -1,
+          "frames": 45,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 436.7317150582084,
+                "y": 284.6636740683415
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 460.2211854501877,
+                "y": 287.1986940262504
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 440.7626094339561,
+                "y": 349.195226899039
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.12487159902884,
+                "y": 352.7773989017641
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 416.9422002123923,
+                "y": 276.2836218442541
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 371.8778175908795,
+                "y": 289.70176609501556
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 405.90848841920996,
+                "y": 348.95726049753097
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 380.48207361002244,
+                "y": 355.67011935281715
+              }
+            }
+          }
+        },
+        {
+          "id": "suplex",
+          "facing": 1,
+          "frames": 45,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 468.0931813799208,
+                "y": 283.13655689300435
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 433.8582340629655,
+                "y": 287.8275530972114
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 464.16062354803,
+                "y": 348.53905404882295
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 448.9518954189851,
+                "y": 353.4335717519802
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 499.20328694279556,
+                "y": 286.10562488935665
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 507.20505983212246,
+                "y": 282.16537667328873
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 509.23243124291866,
+                "y": 351.431774499876
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 504.3770067278488,
+                "y": 353.19560535047214
+              }
+            }
+          }
+        },
+        {
+          "id": "dropkick",
+          "facing": -1,
+          "frames": 21,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 436.7317150582084,
+                "y": 284.6636740683415
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 460.2211854501877,
+                "y": 287.1986940262504
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 440.7626094339561,
+                "y": 349.195226899039
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.12487159902884,
+                "y": 352.7773989017641
+              }
+            }
+          }
+        },
+        {
+          "id": "dropkick",
+          "facing": 1,
+          "frames": 21,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 468.0931813799208,
+                "y": 283.13655689300435
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 433.8582340629655,
+                "y": 287.8275530972114
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 464.16062354803,
+                "y": 348.53905404882295
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 448.9518954189851,
+                "y": 353.4335717519802
+              }
+            }
+          }
+        },
+        {
+          "id": "elbowDrop",
+          "facing": -1,
+          "frames": 14,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 482.33724463890866,
+                "y": 259.16657474962676
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 461.125970142789,
+                "y": 285.5023747907129
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 439.8966914485225,
+                "y": 347.2728984979731
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 452.6593635011256,
+                "y": 351.69738075741526
+              }
+            }
+          }
+        },
+        {
+          "id": "elbowDrop",
+          "facing": 1,
+          "frames": 14,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.36442638140863,
+                "y": 281.5690442845928
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 386.8298401904866,
+                "y": 248.01807734338055
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 457.62613164593324,
+                "y": 347.4590359044741
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 449.81781340441864,
+                "y": 351.51124335091424
+              }
+            }
+          }
+        },
+        {
+          "id": "kneeDrop",
+          "facing": -1,
+          "frames": 9,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.73077211933236,
+                "y": 295.4712888308842
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 445.20677072044367,
+                "y": 292.2305725225225
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 407.3312565490841,
+                "y": 342.68630729487
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 439.701232462931,
+                "y": 361.58384175078606
+              }
+            }
+          }
+        },
+        {
+          "id": "kneeDrop",
+          "facing": 1,
+          "frames": 9,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 479.6824924464592,
+                "y": 286.52781055060706
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 414.17496316038586,
+                "y": 294.7039863736591
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 470.58426268412785,
+                "y": 357.3454968978449
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 482.38324830385704,
+                "y": 346.9246521478112
+              }
+            }
+          }
+        },
+        {
+          "id": "divingElbow",
+          "facing": -1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 436.787371808343,
+                "y": 219.74601417787056
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 444.4180748162965,
+                "y": 213.49035860421694
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 434.01377547409015,
+                "y": 358.9143415314934
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 441.8892939617855,
+                "y": 362.5501375841006
+              }
+            }
+          }
+        },
+        {
+          "id": "divingElbow",
+          "facing": 1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 466.9440042528995,
+                "y": 220.85975142949147
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 451.5414262551116,
+                "y": 211.3311875628246
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 468.39620118527336,
+                "y": 358.3117927311594
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 455.700729378851,
+                "y": 363.15268638443456
+              }
+            }
+          }
+        },
+        {
+          "id": "topDive",
+          "facing": -1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 436.787371808343,
+                "y": 219.74601417787056
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 444.4180748162965,
+                "y": 213.49035860421694
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 434.01377547409015,
+                "y": 358.9143415314934
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 441.8892939617855,
+                "y": 362.5501375841006
+              }
+            }
+          }
+        },
+        {
+          "id": "topDive",
+          "facing": 1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 466.9440042528995,
+                "y": 220.85975142949147
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 451.5414262551116,
+                "y": 211.3311875628246
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 468.39620118527336,
+                "y": 358.3117927311594
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 455.700729378851,
+                "y": 363.15268638443456
+              }
+            }
+          }
+        },
+        {
+          "id": "theszPress",
+          "facing": -1,
+          "frames": 15,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 420.90758408342583,
+                "y": 298.46668800978534
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 450.12989240757673,
+                "y": 306.10486703029363
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 435.10747028503465,
+                "y": 370.26994626436453
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 431.42995657608094,
+                "y": 369.45091782916876
+              }
+            }
+          }
+        },
+        {
+          "id": "theszPress",
+          "facing": 1,
+          "frames": 15,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 475.99604437289776,
+                "y": 300.82805651969056
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.99362774836567,
+                "y": 304.10881274709493
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 478.8555385709779,
+                "y": 365.2125729762276
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 454.6070345679065,
+                "y": 374.5082911173057
+              }
+            }
+          }
+        },
+        {
+          "id": "figureFour",
+          "facing": -1,
+          "frames": 103,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 420.90758408342583,
+                "y": 291.52515723765254
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 450.12989240757673,
+                "y": 299.1633362581608
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 423.0210809483772,
+                "y": 359.2391033744609
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 447.4718501722661,
+                "y": 367.9370055167448
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 298.64910654190805,
+                "y": 374.42846370414225
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 300.3936713551972,
+                "y": 403.8850442871234
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 362.9333558312859,
+                "y": 381.24401724226664
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 366.70411304578363,
+                "y": 394.21487809325595
+              }
+            }
+          }
+        },
+        {
+          "id": "figureFour",
+          "facing": 1,
+          "frames": 103,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 475.99604437289776,
+                "y": 293.88652574755776
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.99362774836567,
+                "y": 297.1672819749621
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 462.81364497479274,
+                "y": 363.69866066380365
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 466.693423904564,
+                "y": 363.4774482274021
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 601.3508934580918,
+                "y": 374.42846370414236
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 599.6063286448026,
+                "y": 403.8850442871235
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 537.0065242341365,
+                "y": 383.7274499771977
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 533.3560068887938,
+                "y": 391.7314453583251
+              }
+            }
+          }
+        },
+        {
+          "id": "hipToss",
+          "facing": -1,
+          "frames": 31,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 436.7317150582084,
+                "y": 284.6636740683415
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 460.2211854501877,
+                "y": 287.1986940262504
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 440.7626094339561,
+                "y": 349.195226899039
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.12487159902884,
+                "y": 352.7773989017641
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 418.7400611749592,
+                "y": 276.2836218442541
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 373.67567855344635,
+                "y": 289.70176609501556
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 407.7063493817768,
+                "y": 348.95726049753097
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 382.2799345725893,
+                "y": 355.67011935281715
+              }
+            }
+          }
+        },
+        {
+          "id": "hipToss",
+          "facing": 1,
+          "frames": 31,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 468.0931813799208,
+                "y": 283.13655689300435
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 433.8582340629655,
+                "y": 287.8275530972114
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 464.16062354803,
+                "y": 348.53905404882295
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 448.9518954189851,
+                "y": 353.4335717519802
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 497.4054259802286,
+                "y": 286.10562488935665
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 505.40719886955554,
+                "y": 282.16537667328873
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 507.43457028035175,
+                "y": 351.431774499876
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 502.5791457652819,
+                "y": 353.19560535047214
+              }
+            }
+          }
+        },
+        {
+          "id": "ankleLock",
+          "facing": -1,
+          "frames": 76,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 436.7317150582084,
+                "y": 284.6636740683415
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 460.2211854501877,
+                "y": 287.1986940262504
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 440.7626094339561,
+                "y": 349.195226899039
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.12487159902884,
+                "y": 352.7773989017641
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 298.64910654190805,
+                "y": 374.42846370414225
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 300.3936713551972,
+                "y": 403.8850442871234
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 362.9333558312859,
+                "y": 381.24401724226664
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 366.70411304578363,
+                "y": 394.21487809325595
+              }
+            }
+          }
+        },
+        {
+          "id": "ankleLock",
+          "facing": 1,
+          "frames": 76,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 468.0931813799208,
+                "y": 283.13655689300435
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 433.8582340629655,
+                "y": 287.8275530972114
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 464.16062354803,
+                "y": 348.53905404882295
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 448.9518954189851,
+                "y": 353.4335717519802
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 601.3508934580918,
+                "y": 374.42846370414236
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 599.6063286448026,
+                "y": 403.8850442871235
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 537.0065242341365,
+                "y": 383.7274499771977
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 533.3560068887938,
+                "y": 391.7314453583251
+              }
+            }
+          }
+        },
+        {
+          "id": "armBar",
+          "facing": -1,
+          "frames": 88,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 436.7317150582084,
+                "y": 284.6636740683415
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 460.2211854501877,
+                "y": 287.1986940262504
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 1,
+              "at": 0.65,
+              "joint": {
+                "x": 376.1523294247007,
+                "y": 420.0605714314002
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.12487159902884,
+                "y": 352.7773989017641
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 397.5314594830845,
+                "y": 374.42846370414225
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 399.2760242963737,
+                "y": 403.8850442871234
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 461.81570877246236,
+                "y": 381.24401724226664
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 465.5864659869601,
+                "y": 394.21487809325595
+              }
+            }
+          }
+        },
+        {
+          "id": "armBar",
+          "facing": 1,
+          "frames": 88,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 468.0931813799208,
+                "y": 283.13655689300435
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 433.8582340629655,
+                "y": 287.8275530972114
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 1,
+              "at": 0.6,
+              "joint": {
+                "x": 502.54116702656785,
+                "y": 440.15477838122564
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 448.9518954189851,
+                "y": 353.4335717519802
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 502.4685405169155,
+                "y": 374.42846370414225
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 500.7239757036263,
+                "y": 403.8850442871234
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 438.12417129296017,
+                "y": 383.7274499771977
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 434.4736539476174,
+                "y": 391.7314453583249
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "character": "thesz",
+      "clipFacingCombinations": 30,
+      "sampleTimes": 1236,
+      "failures": [
+        {
+          "clip": "hammerlock",
+          "facing": -1,
+          "roleJoint": "defender.nearElbow",
+          "gapPixels": 2.8284271247461903,
+          "time": 1.05,
+          "worldJoint": {
+            "x": 397.50081890461036,
+            "y": 204.3493584260683
+          }
+        },
+        {
+          "clip": "piledriver",
+          "facing": -1,
+          "roleJoint": "defender.farElbow",
+          "gapPixels": 4,
+          "time": 0.7,
+          "worldJoint": {
+            "x": 429.33323007531845,
+            "y": 351.0512867696445
+          }
+        },
+        {
+          "clip": "piledriver",
+          "facing": -1,
+          "roleJoint": "defender.nearElbow",
+          "gapPixels": 6,
+          "time": 0.72,
+          "worldJoint": {
+            "x": 440.5641501776463,
+            "y": 357.06355273649785
+          }
+        },
+        {
+          "clip": "piledriver",
+          "facing": 1,
+          "roleJoint": "defender.farElbow",
+          "gapPixels": 4,
+          "time": 0.75,
+          "worldJoint": {
+            "x": 476.71290645584145,
+            "y": 349.2068543495941
+          }
+        },
+        {
+          "clip": "piledriver",
+          "facing": 1,
+          "roleJoint": "defender.nearElbow",
+          "gapPixels": 6,
+          "time": 0.72,
+          "worldJoint": {
+            "x": 454.1600934775849,
+            "y": 358.16798409883927
+          }
+        },
+        {
+          "clip": "bodySlam",
+          "facing": -1,
+          "roleJoint": "attacker.farElbow",
+          "gapPixels": 4,
+          "time": 0.66,
+          "worldJoint": {
+            "x": 431.71922289924953,
+            "y": 186.44041365968351
+          }
+        },
+        {
+          "clip": "bodySlam",
+          "facing": -1,
+          "roleJoint": "attacker.nearElbow",
+          "gapPixels": 5,
+          "time": 0.66,
+          "worldJoint": {
+            "x": 440.56123443478657,
+            "y": 182.29221813470772
+          }
+        },
+        {
+          "clip": "bodySlam",
+          "facing": 1,
+          "roleJoint": "attacker.farElbow",
+          "gapPixels": 3.1622776601683795,
+          "time": 0.65,
+          "worldJoint": {
+            "x": 474.55124992272147,
+            "y": 189.34866171021085
+          }
+        },
+        {
+          "clip": "bodySlam",
+          "facing": 1,
+          "roleJoint": "attacker.nearElbow",
+          "gapPixels": 5,
+          "time": 0.6,
+          "worldJoint": {
+            "x": 456.10333817950124,
+            "y": 180.64112493022355
+          }
+        },
+        {
+          "clip": "suplex",
+          "facing": -1,
+          "roleJoint": "attacker.farElbow",
+          "gapPixels": 4,
+          "time": 0.62,
+          "worldJoint": {
+            "x": 440.489387299486,
+            "y": 184.06397436955007
+          }
+        },
+        {
+          "clip": "suplex",
+          "facing": -1,
+          "roleJoint": "attacker.nearElbow",
+          "gapPixels": 6,
+          "time": 0.6,
+          "worldJoint": {
+            "x": 449.3411421233466,
+            "y": 178.3327938271452
+          }
+        },
+        {
+          "clip": "suplex",
+          "facing": -1,
+          "roleJoint": "defender.farElbow",
+          "gapPixels": 3.1622776601683795,
+          "time": 0.85,
+          "worldJoint": {
+            "x": 410.2868438067686,
+            "y": 251.60673912769454
+          }
+        },
+        {
+          "clip": "suplex",
+          "facing": -1,
+          "roleJoint": "defender.nearElbow",
+          "gapPixels": 5,
+          "time": 0.62,
+          "worldJoint": {
+            "x": 435.867416856988,
+            "y": 272.1720413299862
+          }
+        },
+        {
+          "clip": "suplex",
+          "facing": 1,
+          "roleJoint": "attacker.farElbow",
+          "gapPixels": 4,
+          "time": 0.6,
+          "worldJoint": {
+            "x": 466.9973780371566,
+            "y": 185.92206811873493
+          }
+        },
+        {
+          "clip": "suplex",
+          "facing": 1,
+          "roleJoint": "attacker.nearElbow",
+          "gapPixels": 6,
+          "time": 0.62,
+          "worldJoint": {
+            "x": 441.8508986570739,
+            "y": 176.14724308454845
+          }
+        },
+        {
+          "clip": "suplex",
+          "facing": 1,
+          "roleJoint": "defender.farElbow",
+          "gapPixels": 3.1622776601683795,
+          "time": 0.62,
+          "worldJoint": {
+            "x": 479.6587397007473,
+            "y": 264.94166345624046
+          }
+        },
+        {
+          "clip": "suplex",
+          "facing": 1,
+          "roleJoint": "defender.nearElbow",
+          "gapPixels": 4.123105625617661,
+          "time": 0.75,
+          "worldJoint": {
+            "x": 474.7449998049301,
+            "y": 264.3050857697974
+          }
+        },
+        {
+          "clip": "dropkick",
+          "facing": -1,
+          "roleJoint": "attacker.farElbow",
+          "gapPixels": 4,
+          "time": 0.2,
+          "worldJoint": {
+            "x": 463.17036951308825,
+            "y": 141.84470657011224
+          }
+        },
+        {
+          "clip": "dropkick",
+          "facing": -1,
+          "roleJoint": "attacker.nearElbow",
+          "gapPixels": 4,
+          "time": 0.2,
+          "worldJoint": {
+            "x": 469.6252637831197,
+            "y": 143.29596375947648
+          }
+        },
+        {
+          "clip": "dropkick",
+          "facing": 1,
+          "roleJoint": "attacker.farElbow",
+          "gapPixels": 4,
+          "time": 0.22,
+          "worldJoint": {
+            "x": 440.85054032146303,
+            "y": 141.96789204119722
+          }
+        },
+        {
+          "clip": "dropkick",
+          "facing": 1,
+          "roleJoint": "attacker.nearElbow",
+          "gapPixels": 5,
+          "time": 0.22,
+          "worldJoint": {
+            "x": 415.06584104504725,
+            "y": 138.61326900134685
+          }
+        },
+        {
+          "clip": "divingElbow",
+          "facing": -1,
+          "roleJoint": "attacker.farElbow",
+          "gapPixels": 4,
+          "time": 0,
+          "worldJoint": {
+            "x": 431.71922289924953,
+            "y": 187.37729831319777
+          }
+        },
+        {
+          "clip": "divingElbow",
+          "facing": -1,
+          "roleJoint": "attacker.nearElbow",
+          "gapPixels": 5,
+          "time": 0,
+          "worldJoint": {
+            "x": 442.92753937128987,
+            "y": 181.9882820655435
+          }
+        },
+        {
+          "clip": "divingElbow",
+          "facing": 1,
+          "roleJoint": "attacker.farElbow",
+          "gapPixels": 4,
+          "time": 0.3,
+          "worldJoint": {
+            "x": 566.7853631763621,
+            "y": 312.47851405226976
+          }
+        },
+        {
+          "clip": "divingElbow",
+          "facing": 1,
+          "roleJoint": "attacker.nearElbow",
+          "gapPixels": 6,
+          "time": 0.3,
+          "worldJoint": {
+            "x": 572.1354833169563,
+            "y": 285.00351903708554
+          }
+        },
+        {
+          "clip": "topDive",
+          "facing": -1,
+          "roleJoint": "attacker.farElbow",
+          "gapPixels": 4,
+          "time": 0,
+          "worldJoint": {
+            "x": 431.71922289924953,
+            "y": 187.37729831319777
+          }
+        },
+        {
+          "clip": "topDive",
+          "facing": -1,
+          "roleJoint": "attacker.nearElbow",
+          "gapPixels": 5,
+          "time": 0,
+          "worldJoint": {
+            "x": 442.92753937128987,
+            "y": 181.9882820655435
+          }
+        },
+        {
+          "clip": "topDive",
+          "facing": 1,
+          "roleJoint": "attacker.farElbow",
+          "gapPixels": 4,
+          "time": 0.3,
+          "worldJoint": {
+            "x": 566.7853631763621,
+            "y": 312.47851405226976
+          }
+        },
+        {
+          "clip": "topDive",
+          "facing": 1,
+          "roleJoint": "attacker.nearElbow",
+          "gapPixels": 6,
+          "time": 0.3,
+          "worldJoint": {
+            "x": 572.1354833169563,
+            "y": 285.00351903708554
+          }
+        },
+        {
+          "clip": "theszPress",
+          "facing": -1,
+          "roleJoint": "attacker.farElbow",
+          "gapPixels": 3,
+          "time": 0.3,
+          "worldJoint": {
+            "x": 340.8513885405043,
+            "y": 295.8740438503997
+          }
+        },
+        {
+          "clip": "theszPress",
+          "facing": 1,
+          "roleJoint": "attacker.nearElbow",
+          "gapPixels": 3.6055512754639896,
+          "time": 0.26,
+          "worldJoint": {
+            "x": 563.7457654469082,
+            "y": 273.2910747054765
+          }
+        }
+      ],
+      "rows": [
+        {
+          "id": "jab",
+          "facing": -1,
+          "frames": 17,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 443.8398895721089,
+                "y": 274.19363742394336
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 462.09086872248247,
+                "y": 282.1821407955995
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 451.5447775652951,
+                "y": 340.841947922211
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 443.8455791693829,
+                "y": 340.37944087675396
+              }
+            }
+          }
+        },
+        {
+          "id": "jab",
+          "facing": 1,
+          "frames": 17,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 456.1601104278911,
+                "y": 274.19363742394336
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 437.90913127751753,
+                "y": 282.1821407955995
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 456.1544208306171,
+                "y": 340.37944087675396
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 448.4552224347049,
+                "y": 340.841947922211
+              }
+            }
+          }
+        },
+        {
+          "id": "hammerlock",
+          "facing": -1,
+          "frames": 71,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 415.56975881087664,
+                "y": 261.1036328377924
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 421.7690469078857,
+                "y": 258.08657168721686
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.0870838160206,
+                "y": 340.7492983409777
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.9129161839794,
+                "y": 340.7492983409777
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 405.3414113698066,
+                "y": 243.95295406101155
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 2.8284271247461903,
+              "at": 1.05,
+              "joint": {
+                "x": 397.50081890461036,
+                "y": 204.3493584260683
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 363.19403568767837,
+                "y": 340.7492983409777
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 357.0198680556372,
+                "y": 340.7492983409777
+              }
+            }
+          }
+        },
+        {
+          "id": "hammerlock",
+          "facing": 1,
+          "frames": 71,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 490.4336589702984,
+                "y": 253.7124036818182
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 471.1681086436732,
+                "y": 266.7821354001277
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.0870838160206,
+                "y": 340.7492983409777
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.9129161839794,
+                "y": 340.7492983409777
+              }
+            },
+            "defender.farElbow": {
+              "gap": 2,
+              "at": 1,
+              "joint": {
+                "x": 487.2814758359598,
+                "y": 213.0475387789725
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 506.0140944152273,
+                "y": 246.60486625097374
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 542.9801319443628,
+                "y": 340.7492983409777
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 536.8059643123216,
+                "y": 340.7492983409777
+              }
+            }
+          }
+        },
+        {
+          "id": "piledriver",
+          "facing": -1,
+          "frames": 53,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 439.33957135349766,
+                "y": 274.7974308314321
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 433.21573236105644,
+                "y": 271.9033997453946
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 449.7295940313227,
+                "y": 342.080719557032
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 437.958436353518,
+                "y": 340.15693321197955
+              }
+            },
+            "defender.farElbow": {
+              "gap": 4,
+              "at": 0.7,
+              "joint": {
+                "x": 429.33323007531845,
+                "y": 351.0512867696445
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 6,
+              "at": 0.72,
+              "joint": {
+                "x": 440.5641501776463,
+                "y": 357.06355273649785
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 389.9973220351191,
+                "y": 340.6459609407322
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 383.82872960896015,
+                "y": 340.90828407825495
+              }
+            }
+          }
+        },
+        {
+          "id": "piledriver",
+          "facing": 1,
+          "frames": 53,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 480.7039763351032,
+                "y": 265.63803028949985
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 443.2036232994131,
+                "y": 282.6791650888443
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 462.041563646482,
+                "y": 340.15693321197955
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 450.2704059686773,
+                "y": 342.080719557032
+              }
+            },
+            "defender.farElbow": {
+              "gap": 4,
+              "at": 0.75,
+              "joint": {
+                "x": 476.71290645584145,
+                "y": 349.2068543495941
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 6,
+              "at": 0.72,
+              "joint": {
+                "x": 454.1600934775849,
+                "y": 358.16798409883927
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 516.1712703910398,
+                "y": 340.90828407825495
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 510.0026779648809,
+                "y": 340.6459609407322
+              }
+            }
+          }
+        },
+        {
+          "id": "bodySlam",
+          "facing": -1,
+          "frames": 39,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 4,
+              "at": 0.66,
+              "joint": {
+                "x": 431.71922289924953,
+                "y": 186.44041365968351
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 5,
+              "at": 0.66,
+              "joint": {
+                "x": 440.56123443478657,
+                "y": 182.29221813470772
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.8166604555888,
+                "y": 340.8040551451603
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.9891418498016,
+                "y": 340.2939200770041
+              }
+            },
+            "defender.farElbow": {
+              "gap": 1,
+              "at": 0.55,
+              "joint": {
+                "x": 334.73784564140715,
+                "y": 230.094349291629
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 1.4142135623730951,
+              "at": 0.6,
+              "joint": {
+                "x": 326.107351545326,
+                "y": 234.3797650821956
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 397.3185689940756,
+                "y": 340.15693321197955
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 385.5474113162709,
+                "y": 342.080719557032
+              }
+            }
+          }
+        },
+        {
+          "id": "bodySlam",
+          "facing": 1,
+          "frames": 39,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 3.1622776601683795,
+              "at": 0.65,
+              "joint": {
+                "x": 474.55124992272147,
+                "y": 189.34866171021085
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 5,
+              "at": 0.6,
+              "joint": {
+                "x": 456.10333817950124,
+                "y": 180.64112493022355
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 457.0108581501984,
+                "y": 340.2939200770041
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.1833395444112,
+                "y": 340.8040551451603
+              }
+            },
+            "defender.farElbow": {
+              "gap": 1.4142135623730951,
+              "at": 0.55,
+              "joint": {
+                "x": 573.1511975151457,
+                "y": 234.73304653831218
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 497.9387270134628,
+                "y": 271.9033997453946
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 514.4525886837291,
+                "y": 342.080719557032
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 502.6814310059244,
+                "y": 340.15693321197955
+              }
+            }
+          }
+        },
+        {
+          "id": "suplex",
+          "facing": -1,
+          "frames": 45,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 4,
+              "at": 0.62,
+              "joint": {
+                "x": 440.489387299486,
+                "y": 184.06397436955007
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 6,
+              "at": 0.6,
+              "joint": {
+                "x": 449.3411421233466,
+                "y": 178.3327938271452
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.8166604555888,
+                "y": 340.8040551451603
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.9891418498016,
+                "y": 340.2939200770041
+              }
+            },
+            "defender.farElbow": {
+              "gap": 3.1622776601683795,
+              "at": 0.85,
+              "joint": {
+                "x": 410.2868438067686,
+                "y": 251.60673912769454
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 5,
+              "at": 0.62,
+              "joint": {
+                "x": 435.867416856988,
+                "y": 272.1720413299862
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 397.3185689940756,
+                "y": 340.15693321197955
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 385.5474113162709,
+                "y": 342.080719557032
+              }
+            }
+          }
+        },
+        {
+          "id": "suplex",
+          "facing": 1,
+          "frames": 45,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 4,
+              "at": 0.6,
+              "joint": {
+                "x": 466.9973780371566,
+                "y": 185.92206811873493
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 6,
+              "at": 0.62,
+              "joint": {
+                "x": 441.8508986570739,
+                "y": 176.14724308454845
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 457.0108581501984,
+                "y": 340.2939200770041
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.1833395444112,
+                "y": 340.8040551451603
+              }
+            },
+            "defender.farElbow": {
+              "gap": 3.1622776601683795,
+              "at": 0.62,
+              "joint": {
+                "x": 479.6587397007473,
+                "y": 264.94166345624046
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 4.123105625617661,
+              "at": 0.75,
+              "joint": {
+                "x": 474.7449998049301,
+                "y": 264.3050857697974
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 514.4525886837291,
+                "y": 342.080719557032
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 502.6814310059244,
+                "y": 340.15693321197955
+              }
+            }
+          }
+        },
+        {
+          "id": "dropkick",
+          "facing": -1,
+          "frames": 21,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 4,
+              "at": 0.2,
+              "joint": {
+                "x": 463.17036951308825,
+                "y": 141.84470657011224
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 4,
+              "at": 0.2,
+              "joint": {
+                "x": 469.6252637831197,
+                "y": 143.29596375947648
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.8166604555888,
+                "y": 340.8040551451603
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.9891418498016,
+                "y": 340.2939200770041
+              }
+            }
+          }
+        },
+        {
+          "id": "dropkick",
+          "facing": 1,
+          "frames": 21,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 4,
+              "at": 0.22,
+              "joint": {
+                "x": 440.85054032146303,
+                "y": 141.96789204119722
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 5,
+              "at": 0.22,
+              "joint": {
+                "x": 415.06584104504725,
+                "y": 138.61326900134685
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 457.0108581501984,
+                "y": 340.2939200770041
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.1833395444112,
+                "y": 340.8040551451603
+              }
+            }
+          }
+        },
+        {
+          "id": "elbowDrop",
+          "facing": -1,
+          "frames": 14,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 491.5994255386423,
+                "y": 240.35938486093517
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 454.1824230232843,
+                "y": 280.9169198389284
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.1434611143308,
+                "y": 340.67985979932735
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 448.06931770703915,
+                "y": 340.82457047810743
+              }
+            }
+          }
+        },
+        {
+          "id": "elbowDrop",
+          "facing": 1,
+          "frames": 14,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 462.88228927220956,
+                "y": 273.118199610773
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 381.7214419051253,
+                "y": 242.37713778029567
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 451.93068229296085,
+                "y": 340.82457047810743
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.8565388856692,
+                "y": 340.67985979932735
+              }
+            }
+          }
+        },
+        {
+          "id": "kneeDrop",
+          "facing": -1,
+          "frames": 9,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 461.7677287504902,
+                "y": 272.73824058561024
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 436.21883362695905,
+                "y": 273.5643436692402
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 420.82578704949924,
+                "y": 328.20366406269045
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 437.9951473749842,
+                "y": 339.60030548844605
+              }
+            }
+          }
+        },
+        {
+          "id": "kneeDrop",
+          "facing": 1,
+          "frames": 9,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 478.151340259086,
+                "y": 266.96453498486795
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 416.81755577353954,
+                "y": 280.35693849364293
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 462.0048526250158,
+                "y": 339.60030548844605
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 479.17421295050076,
+                "y": 328.20366406269045
+              }
+            }
+          }
+        },
+        {
+          "id": "divingElbow",
+          "facing": -1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 4,
+              "at": 0,
+              "joint": {
+                "x": 431.71922289924953,
+                "y": 187.37729831319777
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 5,
+              "at": 0,
+              "joint": {
+                "x": 442.92753937128987,
+                "y": 181.9882820655435
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 441.56984649344827,
+                "y": 340.9412518291783
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 439.6962340649937,
+                "y": 340.472806246243
+              }
+            }
+          }
+        },
+        {
+          "id": "divingElbow",
+          "facing": 1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 4,
+              "at": 0.3,
+              "joint": {
+                "x": 566.7853631763621,
+                "y": 312.47851405226976
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 6,
+              "at": 0.3,
+              "joint": {
+                "x": 572.1354833169563,
+                "y": 285.00351903708554
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 460.3037659350063,
+                "y": 340.472806246243
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 458.43015350655173,
+                "y": 340.9412518291783
+              }
+            }
+          }
+        },
+        {
+          "id": "topDive",
+          "facing": -1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 4,
+              "at": 0,
+              "joint": {
+                "x": 431.71922289924953,
+                "y": 187.37729831319777
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 5,
+              "at": 0,
+              "joint": {
+                "x": 442.92753937128987,
+                "y": 181.9882820655435
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 441.56984649344827,
+                "y": 340.9412518291783
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 439.6962340649937,
+                "y": 340.472806246243
+              }
+            }
+          }
+        },
+        {
+          "id": "topDive",
+          "facing": 1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 4,
+              "at": 0.3,
+              "joint": {
+                "x": 566.7853631763621,
+                "y": 312.47851405226976
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 6,
+              "at": 0.3,
+              "joint": {
+                "x": 572.1354833169563,
+                "y": 285.00351903708554
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 460.3037659350063,
+                "y": 340.472806246243
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 458.43015350655173,
+                "y": 340.9412518291783
+              }
+            }
+          }
+        },
+        {
+          "id": "theszPress",
+          "facing": -1,
+          "frames": 15,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 3,
+              "at": 0.3,
+              "joint": {
+                "x": 340.8513885405043,
+                "y": 295.8740438503997
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 441.7041810195622,
+                "y": 279.28666216348586
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.4201286664147,
+                "y": 343.16910453444825
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 431.56472605095695,
+                "y": 339.23729987933996
+              }
+            }
+          }
+        },
+        {
+          "id": "theszPress",
+          "facing": 1,
+          "frames": 15,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 473.48879497537325,
+                "y": 272.1895623593326
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 3.6055512754639896,
+              "at": 0.26,
+              "joint": {
+                "x": 563.7457654469082,
+                "y": 273.2910747054765
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 468.43527394904305,
+                "y": 339.23729987933996
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 457.5798713335853,
+                "y": 343.16910453444825
+              }
+            }
+          }
+        },
+        {
+          "id": "figureFour",
+          "facing": -1,
+          "frames": 103,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 422.60174527790883,
+                "y": 269.0753060854962
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 441.7041810195622,
+                "y": 278.48217726033664
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 433.02368526588674,
+                "y": 339.18542452253433
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 444.0363369692539,
+                "y": 342.65246306427883
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 287.3286190032818,
+                "y": 379.1192549429883
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 1,
+              "at": 2.6,
+              "joint": {
+                "x": 240.78779541128307,
+                "y": 328.11345189689933
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 353.7434154851299,
+                "y": 387.0629733190927
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 353.7901551314185,
+                "y": 388.99369344425213
+              }
+            }
+          }
+        },
+        {
+          "id": "figureFour",
+          "facing": 1,
+          "frames": 103,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 473.48879497537325,
+                "y": 271.3850774561834
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 462.8951833883412,
+                "y": 275.76479917717523
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 455.9636630307461,
+                "y": 342.65246306427883
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 466.97631473411326,
+                "y": 339.18542452253433
+              }
+            },
+            "defender.farElbow": {
+              "gap": 1,
+              "at": 2.55,
+              "joint": {
+                "x": 648.3989432383391,
+                "y": 320.4292652882033
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 605.6430353135969,
+                "y": 397.3521907938232
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 546.2098448685815,
+                "y": 388.9936934442522
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 546.25658451487,
+                "y": 387.06297331909275
+              }
+            }
+          }
+        },
+        {
+          "id": "hipToss",
+          "facing": -1,
+          "frames": 31,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.0326805968235,
+                "y": 274.0682610991133
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.1451375392208,
+                "y": 280.72166906601126
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.8166604555888,
+                "y": 340.8040551451603
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.9891418498016,
+                "y": 340.2939200770041
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 417.77884264526364,
+                "y": 265.63803028949985
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 1,
+              "at": 0.54,
+              "joint": {
+                "x": 321.19388542846815,
+                "y": 345.4479841474541
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 399.11642995664243,
+                "y": 340.15693321197955
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 387.34527227883774,
+                "y": 342.080719557032
+              }
+            }
+          }
+        },
+        {
+          "id": "hipToss",
+          "facing": 1,
+          "frames": 31,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 463.76398193366356,
+                "y": 272.96162567941326
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 440.03525948373556,
+                "y": 282.0235930891878
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 457.0108581501984,
+                "y": 340.2939200770041
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.1833395444112,
+                "y": 340.8040551451603
+              }
+            },
+            "defender.farElbow": {
+              "gap": 1,
+              "at": 0.485,
+              "joint": {
+                "x": 504.32576008382574,
+                "y": 349.19308594828834
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 496.1408660508959,
+                "y": 271.9033997453946
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 512.6547277211622,
+                "y": 342.080719557032
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 500.8835700433575,
+                "y": 340.15693321197955
+              }
+            }
+          }
+        },
+        {
+          "id": "ankleLock",
+          "facing": -1,
+          "frames": 76,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.0326805968235,
+                "y": 274.0682610991133
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.1451375392208,
+                "y": 280.72166906601126
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.8166604555888,
+                "y": 340.8040551451603
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.9891418498016,
+                "y": 340.2939200770041
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 287.3286190032818,
+                "y": 379.1192549429883
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 1,
+              "at": 1.95,
+              "joint": {
+                "x": 240.7877954112829,
+                "y": 328.1134518968993
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 353.7434154851299,
+                "y": 387.0629733190927
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 353.7901551314185,
+                "y": 388.99369344425213
+              }
+            }
+          }
+        },
+        {
+          "id": "ankleLock",
+          "facing": 1,
+          "frames": 76,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 463.76398193366356,
+                "y": 272.96162567941326
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 440.03525948373556,
+                "y": 282.0235930891878
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 457.0108581501984,
+                "y": 340.2939200770041
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.1833395444112,
+                "y": 340.8040551451603
+              }
+            },
+            "defender.farElbow": {
+              "gap": 1,
+              "at": 1.95,
+              "joint": {
+                "x": 653.3098452942843,
+                "y": 318.1742781191545
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 605.6430353135969,
+                "y": 397.3521907938232
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 546.2098448685815,
+                "y": 388.9936934442522
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 546.25658451487,
+                "y": 387.06297331909275
+              }
+            }
+          }
+        },
+        {
+          "id": "armBar",
+          "facing": -1,
+          "frames": 88,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.0326805968235,
+                "y": 274.0682610991133
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.1451375392208,
+                "y": 280.72166906601126
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.8166604555888,
+                "y": 340.8040551451603
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.9891418498016,
+                "y": 340.2939200770041
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 386.2109719444583,
+                "y": 379.1192549429883
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 393.2393176275796,
+                "y": 397.3521907938232
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 452.6257684263064,
+                "y": 387.0629733190927
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 452.672508072595,
+                "y": 388.99369344425213
+              }
+            }
+          }
+        },
+        {
+          "id": "armBar",
+          "facing": 1,
+          "frames": 88,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 463.76398193366356,
+                "y": 272.96162567941326
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 440.03525948373556,
+                "y": 282.0235930891878
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 457.0108581501984,
+                "y": 340.2939200770041
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.1833395444112,
+                "y": 340.8040551451603
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 513.7890280555416,
+                "y": 379.1192549429883
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 506.7606823724204,
+                "y": 397.3521907938232
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 447.327491927405,
+                "y": 388.99369344425213
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 447.3742315736936,
+                "y": 387.0629733190927
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "character": "thesz-procreate-v1",
+      "clipFacingCombinations": 30,
+      "sampleTimes": 1236,
+      "failures": [],
+      "rows": [
+        {
+          "id": "jab",
+          "facing": -1,
+          "frames": 17,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 437.1153860601533,
+                "y": 253.85594012458
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 466.24046174003405,
+                "y": 259.2036834867057
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 434.1223011643147,
+                "y": 328.56774657271825
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 459.35017537201406,
+                "y": 331.6371041477608
+              }
+            }
+          }
+        },
+        {
+          "id": "jab",
+          "facing": 1,
+          "frames": 17,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 462.8846139398467,
+                "y": 253.85594012458
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 433.75953825996595,
+                "y": 259.2036834867057
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 465.8776988356853,
+                "y": 328.56774657271825
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 440.64982462798594,
+                "y": 331.6371041477608
+              }
+            }
+          }
+        },
+        {
+          "id": "hammerlock",
+          "facing": -1,
+          "frames": 71,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 414.2395127772326,
+                "y": 241.83623192416712
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 444.00933462723134,
+                "y": 250.6047972305869
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 438.4658291080909,
+                "y": 331.0790439508971
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 461.5341708919091,
+                "y": 333.49346459968206
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 399.0217975447992,
+                "y": 235.24523452122082
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 371.15850327313245,
+                "y": 244.10233081533954
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 371.6411227635669,
+                "y": 331.0790439508971
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 348.57278097974864,
+                "y": 333.49346459968206
+              }
+            }
+          }
+        },
+        {
+          "id": "hammerlock",
+          "facing": 1,
+          "frames": 71,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 485.7604872227674,
+                "y": 241.83623192416712
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 455.99066537276866,
+                "y": 250.6047972305869
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 461.5341708919091,
+                "y": 331.0790439508971
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 438.4658291080909,
+                "y": 333.49346459968206
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 500.97820245520086,
+                "y": 235.24523452122082
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 528.8414967268675,
+                "y": 244.10233081533954
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 528.358877236433,
+                "y": 331.0790439508971
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 551.4272190202513,
+                "y": 333.49346459968206
+              }
+            }
+          }
+        },
+        {
+          "id": "piledriver",
+          "facing": -1,
+          "frames": 53,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 420.69805970099515,
+                "y": 255.03547420662218
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 462.6888841329517,
+                "y": 266.60409485273834
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 425.78576389826725,
+                "y": 334.4578544812382
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 456.7797697187153,
+                "y": 339.59646869200435
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 403.2603691745149,
+                "y": 255.89679459129957
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 370.4632322381768,
+                "y": 262.0053663534138
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 399.1239291526379,
+                "y": 331.8221663723733
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 376.0634821852114,
+                "y": 334.6080518692356
+              }
+            }
+          }
+        },
+        {
+          "id": "piledriver",
+          "facing": 1,
+          "frames": 53,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 479.30194029900485,
+                "y": 255.03547420662218
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 437.3111158670483,
+                "y": 266.60409485273834
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 474.21423610173275,
+                "y": 334.4578544812382
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 443.2202302812847,
+                "y": 339.59646869200435
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 496.73963082548516,
+                "y": 255.89679459129957
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 529.5367677618233,
+                "y": 262.0053663534138
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 500.87607084736214,
+                "y": 331.8221663723733
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 523.9365178147887,
+                "y": 334.6080518692356
+              }
+            }
+          }
+        },
+        {
+          "id": "bodySlam",
+          "facing": -1,
+          "frames": 39,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.01663617307867,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 464.8137731094168,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.9095360159166,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 452.6548860413251,
+                "y": 337.02037029977475
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 414.5789456465984,
+                "y": 255.03547420662218
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 372.58812121464183,
+                "y": 266.60409485273834
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 409.4912414493263,
+                "y": 334.4578544812382
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 378.4972356288783,
+                "y": 339.59646869200435
+              }
+            }
+          }
+        },
+        {
+          "id": "bodySlam",
+          "facing": 1,
+          "frames": 39,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.98336382692133,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 435.1862268905832,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.0904639840834,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 447.3451139586749,
+                "y": 337.02037029977475
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 485.4210543534016,
+                "y": 255.03547420662218
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 527.4118787853581,
+                "y": 266.60409485273834
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 490.50875855067375,
+                "y": 334.4578544812382
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 521.5027643711217,
+                "y": 339.59646869200435
+              }
+            }
+          }
+        },
+        {
+          "id": "suplex",
+          "facing": -1,
+          "frames": 45,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.01663617307867,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 464.8137731094168,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.9095360159166,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 452.6548860413251,
+                "y": 337.02037029977475
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 414.5789456465984,
+                "y": 255.03547420662218
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 372.58812121464183,
+                "y": 266.60409485273834
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 409.4912414493263,
+                "y": 334.4578544812382
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 378.4972356288783,
+                "y": 339.59646869200435
+              }
+            }
+          }
+        },
+        {
+          "id": "suplex",
+          "facing": 1,
+          "frames": 45,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.98336382692133,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 435.1862268905832,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.0904639840834,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 447.3451139586749,
+                "y": 337.02037029977475
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 485.4210543534016,
+                "y": 255.03547420662218
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 527.4118787853581,
+                "y": 266.60409485273834
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 490.50875855067375,
+                "y": 334.4578544812382
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 521.5027643711217,
+                "y": 339.59646869200435
+              }
+            }
+          }
+        },
+        {
+          "id": "dropkick",
+          "facing": -1,
+          "frames": 21,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.01663617307867,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 464.8137731094168,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.9095360159166,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 452.6548860413251,
+                "y": 337.02037029977475
+              }
+            }
+          }
+        },
+        {
+          "id": "dropkick",
+          "facing": 1,
+          "frames": 21,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.98336382692133,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 435.1862268905832,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.0904639840834,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 447.3451139586749,
+                "y": 337.02037029977475
+              }
+            }
+          }
+        },
+        {
+          "id": "elbowDrop",
+          "facing": -1,
+          "frames": 14,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.6073517238354,
+                "y": 256.5977744478521
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 504.2747094960184,
+                "y": 236.38365341659556
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 440.1033610472724,
+                "y": 332.71108291540975
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 451.70159654735323,
+                "y": 334.9205848108746
+              }
+            }
+          }
+        },
+        {
+          "id": "elbowDrop",
+          "facing": 1,
+          "frames": 14,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.3926482761646,
+                "y": 256.5977744478521
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 395.7252905039816,
+                "y": 236.38365341659556
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 459.8966389527276,
+                "y": 332.71108291540975
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 448.29840345264677,
+                "y": 334.9205848108746
+              }
+            }
+          }
+        },
+        {
+          "id": "kneeDrop",
+          "facing": -1,
+          "frames": 9,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 422.3991366483489,
+                "y": 265.96212956809063
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 480.4272344888153,
+                "y": 275.25232114550283
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 425.83774884378323,
+                "y": 344.1099084979177
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 415.85029483231176,
+                "y": 330.3860208152725
+              }
+            }
+          }
+        },
+        {
+          "id": "kneeDrop",
+          "facing": 1,
+          "frames": 9,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 477.6008633516511,
+                "y": 265.96212956809063
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 419.5727655111847,
+                "y": 275.25232114550283
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 474.16225115621677,
+                "y": 344.1099084979177
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 484.14970516768824,
+                "y": 330.3860208152725
+              }
+            }
+          }
+        },
+        {
+          "id": "divingElbow",
+          "facing": -1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 426.79620168321594,
+                "y": 213.6469667094399
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 457.4098275939915,
+                "y": 207.388696316426
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 428.24658671770493,
+                "y": 344.9764496274087
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 445.2250917435666,
+                "y": 348.0542165175541
+              }
+            }
+          }
+        },
+        {
+          "id": "divingElbow",
+          "facing": 1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 473.20379831678406,
+                "y": 213.6469667094399
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.5901724060085,
+                "y": 207.388696316426
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 471.75341328229507,
+                "y": 344.9764496274087
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 454.7749082564334,
+                "y": 348.0542165175541
+              }
+            }
+          }
+        },
+        {
+          "id": "topDive",
+          "facing": -1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 426.79620168321594,
+                "y": 213.6469667094399
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 457.4098275939915,
+                "y": 207.388696316426
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 428.24658671770493,
+                "y": 344.9764496274087
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 445.2250917435666,
+                "y": 348.0542165175541
+              }
+            }
+          }
+        },
+        {
+          "id": "topDive",
+          "facing": 1,
+          "frames": 18,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 473.20379831678406,
+                "y": 213.6469667094399
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 442.5901724060085,
+                "y": 207.388696316426
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 471.75341328229507,
+                "y": 344.9764496274087
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 454.7749082564334,
+                "y": 348.0542165175541
+              }
+            }
+          }
+        },
+        {
+          "id": "theszPress",
+          "facing": -1,
+          "frames": 15,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 425.51092162471076,
+                "y": 281.1438602795194
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 449.518080268271,
+                "y": 284.0118032270654
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 416.7318975538034,
+                "y": 353.44223262981495
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 446.42914084570293,
+                "y": 361.4243177731317
+              }
+            }
+          }
+        },
+        {
+          "id": "theszPress",
+          "facing": 1,
+          "frames": 15,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 474.48907837528924,
+                "y": 281.1438602795194
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 450.481919731729,
+                "y": 284.0118032270654
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 483.2681024461966,
+                "y": 353.44223262981495
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 453.57085915429707,
+                "y": 361.4243177731317
+              }
+            }
+          }
+        },
+        {
+          "id": "figureFour",
+          "facing": -1,
+          "frames": 103,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 425.51092162471076,
+                "y": 272.93710888683614
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 449.518080268271,
+                "y": 275.80505183438214
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 434.39242532422605,
+                "y": 351.2107488051538
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 433.1232294678254,
+                "y": 348.71564085745456
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 293.8225264485922,
+                "y": 372.95953865250465
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 297.66609682670156,
+                "y": 402.04995505707114
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 368.95421476421035,
+                "y": 378.55729139689885
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 370.704344411937,
+                "y": 395.7207775610258
+              }
+            }
+          }
+        },
+        {
+          "id": "figureFour",
+          "facing": 1,
+          "frames": 103,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 474.48907837528924,
+                "y": 272.93710888683614
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 450.481919731729,
+                "y": 275.80505183438214
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 465.60757467577395,
+                "y": 351.2107488051538
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 466.8767705321746,
+                "y": 348.71564085745456
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 606.1774735514076,
+                "y": 372.9595386525048
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 602.3339031732983,
+                "y": 402.04995505707114
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 531.0457852357896,
+                "y": 378.55729139689896
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 529.2956555880629,
+                "y": 395.7207775610258
+              }
+            }
+          }
+        },
+        {
+          "id": "hipToss",
+          "facing": -1,
+          "frames": 31,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.01663617307867,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 464.8137731094168,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.9095360159166,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 452.6548860413251,
+                "y": 337.02037029977475
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 416.37680660916527,
+                "y": 255.03547420662218
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 374.3859821772087,
+                "y": 266.60409485273834
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 411.28910241189317,
+                "y": 334.4578544812382
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 380.29509659144514,
+                "y": 339.59646869200435
+              }
+            }
+          }
+        },
+        {
+          "id": "hipToss",
+          "facing": 1,
+          "frames": 31,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.98336382692133,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 435.1862268905832,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.0904639840834,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 447.3451139586749,
+                "y": 337.02037029977475
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 483.62319339083456,
+                "y": 255.03547420662218
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 525.6140178227913,
+                "y": 266.60409485273834
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 488.71089758810683,
+                "y": 334.4578544812382
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 519.7049034085549,
+                "y": 339.59646869200435
+              }
+            }
+          }
+        },
+        {
+          "id": "ankleLock",
+          "facing": -1,
+          "frames": 76,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.01663617307867,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 464.8137731094168,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.9095360159166,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 452.6548860413251,
+                "y": 337.02037029977475
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 293.8225264485922,
+                "y": 372.95953865250465
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 297.66609682670156,
+                "y": 402.04995505707114
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 368.95421476421035,
+                "y": 378.55729139689885
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 370.704344411937,
+                "y": 395.7207775610258
+              }
+            }
+          }
+        },
+        {
+          "id": "ankleLock",
+          "facing": 1,
+          "frames": 76,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.98336382692133,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 435.1862268905832,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.0904639840834,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 447.3451139586749,
+                "y": 337.02037029977475
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 606.1774735514076,
+                "y": 372.9595386525048
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 602.3339031732983,
+                "y": 402.04995505707114
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 531.0457852357896,
+                "y": 378.55729139689896
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 529.2956555880629,
+                "y": 395.7207775610258
+              }
+            }
+          }
+        },
+        {
+          "id": "armBar",
+          "facing": -1,
+          "frames": 88,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.01663617307867,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 464.8137731094168,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.9095360159166,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 452.6548860413251,
+                "y": 337.02037029977475
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 392.70487938976873,
+                "y": 372.95953865250465
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 396.5484497678781,
+                "y": 402.04995505707114
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.83656770538687,
+                "y": 378.55729139689885
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 469.5866973531135,
+                "y": 395.7207775610257
+              }
+            }
+          }
+        },
+        {
+          "id": "armBar",
+          "facing": 1,
+          "frames": 88,
+          "worst": {
+            "attacker.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.98336382692133,
+                "y": 258.45670726443154
+              }
+            },
+            "attacker.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 435.1862268905832,
+                "y": 264.5652790265458
+              }
+            },
+            "attacker.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 467.0904639840834,
+                "y": 333.8835686693459
+              }
+            },
+            "attacker.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 447.3451139586749,
+                "y": 337.02037029977475
+              }
+            },
+            "defender.farElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 507.29512061023127,
+                "y": 372.95953865250465
+              }
+            },
+            "defender.nearElbow": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 503.4515502321219,
+                "y": 402.04995505707114
+              }
+            },
+            "defender.farKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 432.16343229461313,
+                "y": 378.55729139689885
+              }
+            },
+            "defender.nearKnee": {
+              "gap": 0,
+              "at": 0,
+              "joint": {
+                "x": 430.4133026468865,
+                "y": 395.7207775610257
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

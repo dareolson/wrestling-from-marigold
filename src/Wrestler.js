@@ -445,6 +445,30 @@ export default class Wrestler {
     // Authored facing lands FIRST: which physical arm plays a semantic part
     // slot (workingHand, strikingForearm) depends on facing, so the turn and
     // the art swap on the same keyframe must resolve against the new facing.
+    prepareAnimationClip(track) {
+        this.scene.tweens.killTweensOf(this.pose);
+        this._choreoUntil = 0;
+        // A sparse clip (e.g. jab) must not inherit a previous hold's folded
+        // elbow or knee. Initialize ONLY unowned joints from this character's
+        // neutral stance. Fully authored clips retain all their choreography.
+        const firstPose = track.keyframes[0].state.pose;
+        for (const channel of ['tilt', 'lift']) {
+            if (!Number.isFinite(firstPose[channel])) this.pose[channel] = 0;
+        }
+        const idle = POSES[this.idlePose] ?? POSES.idle;
+        for (const { local, legacy } of ARTICULATION_CHANNEL_PAIRS) {
+            if (Number.isFinite(firstPose[local]) || Number.isFinite(firstPose[legacy])) continue;
+            delete this.pose[local];
+            delete this.pose[legacy];
+            if (Number.isFinite(idle[local])) this.pose[local] = idle[local];
+            else if (Number.isFinite(idle[legacy])) this.pose[legacy] = idle[legacy];
+        }
+        if (track.authorsTransform) {
+            this.scene.tweens.killTweensOf(this);
+            this.vx = this.vy = 0;
+        }
+    }
+
     applyAnimationSample(sample, staging = null, facingAxis = null) {
         if (facingAxis && sample.facing) this.facing = facingAxis * sample.facing;
         if (sample.pose) mergeArticulatedPose(this.pose, sample.pose);
@@ -532,7 +556,16 @@ export default class Wrestler {
         // its own tweenPose call, so a live sequence keeps its ownership.
         this._choreoUntil = 0;
         this.scene.tweens.killTweensOf(this.pose);
-        const p = typeof target === 'string' ? POSES[target] : target;
+        let p = typeof target === 'string' ? POSES[target] : target;
+        if (typeof target === 'string' && (target === 'idle' || target === this.idlePose)) {
+            p = { ...p };
+            // Recovery to neutral must actually unwind a previous hold. Other
+            // sparse authored poses retain their existing merge semantics.
+            for (const { local, legacy } of ARTICULATION_CHANNEL_PAIRS) {
+                if (Number.isFinite(p[local]) || Number.isFinite(p[legacy])) continue;
+                p[local] = local.endsWith('Elbow') ? 0.70 : Math.max(-0.10, -1.6 * (p.crouch ?? 0));
+            }
+        }
         // Normalize so lean/crouch always tween back to 0 for poses that omit them
         const t = { lLeg: p.lLeg ?? 0, rLeg: p.rLeg ?? 0, lArm: p.lArm ?? 0, rArm: p.rArm ?? 0,
                     lean: p.lean ?? 0, crouch: p.crouch ?? 0,
@@ -1294,8 +1327,9 @@ export default class Wrestler {
     _playFlight(clip, motion, land, { state = 'elbowDropping', duration = clip.duration * 1000 } = {}) {
         const runtime = this.scene.moveRuntime;
         this.state = state;
-        this.scene.tweens.add({ targets: this, ...motion, duration });
+        let travel;
         const done = (finished) => {
+            if (!finished) travel?.stop();
             this._activeMove = null;
             if (this.state !== state) return;
             if (!finished) { this._standBackUp(); return; }
@@ -1306,6 +1340,10 @@ export default class Wrestler {
             onComplete: () => done(true),
             onCancel: () => done(false),
         });
+        // Old clip cancellation may have restored standing. Claim the new
+        // state and travel only after the previous owner has been released.
+        this.state = state;
+        travel = this.scene.tweens.add({ targets: this, ...motion, duration });
     }
 
     // Dropkick: a one-wrestler clip posed against the Royal Rumble sheet (frames
@@ -1328,7 +1366,7 @@ export default class Wrestler {
         const kickAt   = dropkickClip.events.find(event => event.type === 'impact').at;
 
         // Across to the target by the time the feet are out.
-        this.scene.tweens.add({ targets: this, x: targetX, duration: kickAt * 1000, ease: 'Sine.easeOut' });
+        let travel;
 
         let landed = false;
         const lie = () => {
@@ -1352,8 +1390,10 @@ export default class Wrestler {
                 if (!landed) this.scene.cameras.main.shake(80, 0.001);
                 lie();
             },
-            onCancel: lie,
+            onCancel: () => { travel?.stop(); lie(); },
         });
+        this.state = 'dropkicking';
+        travel = this.scene.tweens.add({ targets: this, x: targetX, duration: kickAt * 1000, ease: 'Sine.easeOut' });
     }
 
     // A throw played on the clip runtime, posed in the move editor against the
@@ -1397,6 +1437,8 @@ export default class Wrestler {
         });
         this._activeMove  = handle;
         other._activeMove = handle;
+        this.state = other.state = 'holding';
+        this._fixedHold = other._fixedHold = true;
     }
 
     // Hand a body a throw clip left lying back over to the grounded rig.
@@ -1708,6 +1750,8 @@ export default class Wrestler {
         // state cancels the paired move and releaseHold cleans up both.
         this._activeMove  = handle;
         other._activeMove = handle;
+        this.state = other.state = 'holding';
+        this._fixedHold = other._fixedHold = true;
     }
 
     // Rising knee lift — planted close-range strike; creates stagger, not an
@@ -2092,7 +2136,7 @@ export default class Wrestler {
             gfx.fillStyle(0x000000, 0.22);
             gfx.fillEllipse(x, shadowY, 130 * s, 36 * s);
             this.skeleton.setVisible(true);
-            this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, 0, facing * (this.pose.lean ?? 0), 0, 0.5, 0);
+            this.skeleton.updateUpright(x, y, s, facing, this.pose, 0, 0, facing * (this.pose.lean ?? 0), 0, 0.5, 0);
             return;
         }
 
@@ -2125,12 +2169,19 @@ export default class Wrestler {
         const wooze = hurt > 0 && (state === 'standing' || state === 'staggered')
             ? Math.sin(this.scene.time.now * 0.0021 + (this._woozeSeed ??= Math.random() * Math.PI * 2)) * 0.11 * hurt
             : 0;
-        const lean      = this.facing * (0.07 * this.moveBlend + (this.pose.lean ?? 0)) + wooze;
+        // Walking can leave moveBlend and walkPhase frozen when a move takes
+        // over: move() returns early outside standing. Never let that stale
+        // gait replace a held wrestler's authored knees or swing their arms.
+        const choreography = this._choreoOwnsPose();
+        const locomotion = !choreography && (state === 'standing' || state === 'running');
+        const gaitBlend = locomotion ? this.moveBlend : 0;
+        const gaitPhase = locomotion ? this.walkPhase : 0;
+        const lean      = this.facing * (0.07 * gaitBlend + (this.pose.lean ?? 0)) + wooze;
         const liftScale = state === 'running' ? 1.0 : 0.5;
-        const runBlend  = state === 'running' ? this.moveBlend : 0;
+        const runBlend  = state === 'running' ? gaitBlend : 0;
         // Choreography outranks the combat-ready guard — see _choreoOwnsPose().
-        const guard = this._choreoOwnsPose() ? 0 : this.combatBlend;
-        this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, guard, lean, this.moveBlend, liftScale, runBlend);
+        const guard = choreography ? 0 : this.combatBlend;
+        this.skeleton.updateUpright(x, y, s, facing, this.pose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
     }
 
     _nearCorner() {

@@ -5,6 +5,10 @@ export const thesz = {
     skinCol:   0xe8c098,
     trunksCol: 0x484848,
     textures: {
+        // Joint attachment takes precedence over legacy idle-only calf/forearm
+        // nudges below. Those values remain historical tuner data; locked
+        // elbows/knees use the painted parent joint in every render pose.
+        lockLimbJoints: true,
         // Measured alongside george.js's own height fix (Derek, 2026-07-19:
         // real George 5'9" vs real Thesz 6'2", Thesz should have the height
         // advantage — both currently rendered ~7ft, no prior real-world
@@ -205,7 +209,10 @@ export const thesz = {
         // (|lLeg| past ~1.0 backward) a few px of the thigh's knee region show
         // because thesz's PAINTED knee sits ~12px below the bone knee (structural,
         // not tail). See runtime-conformed/REPORT.md's task-1 section.
-        thigh:    { key: 'thesz_thigh', box: { w: 78, h: 71.4 }, pivotOffsetFrac: -0.0767 },
+        // Anatomical knee row from lou_thigh_knee_crop.py: 111.176/126.
+        // Alpha-row centroid at that row is x=86/150, not the bone axis.
+        thigh: { key: 'thesz_thigh', box: { w: 78, h: 71.4 }, pivotOffsetFrac: -0.0767,
+            distalAnchorFrac: { u: 0.5733333333333334, v: 0.8823529411764707 } },
         // Per-character leg bones (2026-07-12, Derek approved the Skeleton.js
         // knob): the shared rig legs (56/64) stand ~18% longer relative to
         // the torso than the reference drawing. Ref targets, torso-ink-

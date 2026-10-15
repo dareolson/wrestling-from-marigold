@@ -1,5 +1,5 @@
-// Piledriver, first pass — posed to match the WWF Raw (Genesis) sheet, frames
-// 140–153 (see Sprite sheets/reference/raw-genesis-44459/INDEX.md). The sheet
+// Piledriver, first pass — posed to match the WWF Royal Rumble (SNES) sheet, frames
+// 140–153 (see Sprite sheets/reference/wwf-royal-rumble-snes/44459-bret-hart/INDEX.md). The sheet
 // is pose reference only: these are our own rig channels, chosen by eye
 // against those frames, and the frames ride along in the draft as editor-only
 // references so the match can be checked and refined in the move editor.

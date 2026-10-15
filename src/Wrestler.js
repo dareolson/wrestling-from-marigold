@@ -1279,7 +1279,7 @@ export default class Wrestler {
         });
     }
 
-    // Dropkick: a one-wrestler clip posed against the WWF Raw sheet (frames
+    // Dropkick: a one-wrestler clip posed against the Royal Rumble sheet (frames
     // 224–232, tools/move-editor/author_dropkick.mjs) — crouch, tuck, both
     // feet out level, down on the back. The clip only poses him; this moves
     // him across to the target, resolves the hit on the clip's `impact`
@@ -1328,7 +1328,7 @@ export default class Wrestler {
     }
 
     // A throw played on the clip runtime, posed in the move editor against the
-    // WWF Raw sheet (tools/move-editor/author_*.mjs). The clip stages both
+    // Royal Rumble sheet (tools/move-editor/author_*.mjs). The clip stages both
     // wrestlers and turns the victim over with the body tilt/lift channels;
     // this owns the gameplay: both are held for the clip, the damage lands on
     // its `impact` marker, and `finish` hands them back when it ends. An

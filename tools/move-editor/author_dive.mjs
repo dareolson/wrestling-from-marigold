@@ -1,5 +1,5 @@
 // Dive flight (diving elbow and top-rope dive), first pass — posed to match
-// the WWF Raw (Genesis) sheet (see Sprite sheets/reference/raw-genesis-44459/
+// the WWF Royal Rumble (SNES) sheet (see Sprite sheets/reference/wwf-royal-rumble-snes/44459-bret-hart/
 // INDEX.md): frames 209 (springing off, arms up), 210–212 (flying flat, arms
 // out), 213 (landing face down). Pose reference only.
 //

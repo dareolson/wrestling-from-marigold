@@ -1,4 +1,4 @@
-// Throws posed in the move editor against the WWF Raw sheet with the body
+// Throws posed in the move editor against the Royal Rumble sheet with the body
 // tilt/lift channels (tools/move-editor/author_piledriver.mjs,
 // author_bodyslam.mjs, author_suplex.mjs). Played by Wrestler._playPairedThrow.
 

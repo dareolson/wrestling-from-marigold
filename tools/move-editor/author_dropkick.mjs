@@ -1,5 +1,5 @@
-// Dropkick, first pass — posed to match the WWF Raw (Genesis) sheet (see
-// Sprite sheets/reference/raw-genesis-44459/INDEX.md): frames 225–226
+// Dropkick, first pass — posed to match the WWF Royal Rumble (SNES) sheet (see
+// Sprite sheets/reference/wwf-royal-rumble-snes/44459-bret-hart/INDEX.md): frames 225–226
 // (crouch, take off), 227 (tucked in the air), 229 (both legs out, leaning
 // back), 231 (landing), 232 (flat on the back). Pose reference only; the
 // frames ride along as editor-only references.

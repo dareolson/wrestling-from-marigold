@@ -1,6 +1,6 @@
 // Thesz press flight, first pass — Lou's flying body press, posed to match
-// the WWF Raw (Genesis) sheet's flying cross-body (see Sprite sheets/
-// reference/raw-genesis-44459/INDEX.md): frames 210 (leaving his feet),
+// the WWF Royal Rumble (SNES) sheet's flying cross-body (see Sprite sheets/
+// reference/wwf-royal-rumble-snes/44459-bret-hart/INDEX.md): frames 210 (leaving his feet),
 // 211–212 (flat in the air, arms out), 213 (down on top). Pose reference only.
 //
 //   node tools/move-editor/author_theszpress.mjs

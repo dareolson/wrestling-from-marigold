@@ -4,8 +4,11 @@
 export const SPECS = {
     suplex: {
         contacts: [
-            { role: 'attacker', source: 'nearWrist', target: 'neck', from: 0.18, to: 1.10, label: 'Lou near hand on George\'s neck (hook → turnover)' },
-            { role: 'attacker', source: 'farWrist', target: 'nearHip', from: 0.18, to: 1.10, label: 'Lou far hand at George\'s waist (hook → turnover)' },
+            // Matches suplex.constraints.mjs: the near hand holds the neck from
+            // the facelock into the fall; the far hand holds the trunks
+            // through the drive (it moves to his back while he's inverted).
+            { role: 'attacker', source: 'nearWrist', target: 'neck', from: 0.22, to: 1.16, label: 'Lou near hand on George\'s neck (hook → fall)' },
+            { role: 'attacker', source: 'farWrist', target: 'nearHip', from: 0.22, to: 0.58, label: 'Lou far hand on George\'s trunks (hook → drive)' },
         ],
         landings: [
             { role: 'defender', part: 'torso', event: 'impact', after: 0.5 },

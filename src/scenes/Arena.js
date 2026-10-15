@@ -926,7 +926,8 @@ export default class Arena extends Phaser.Scene {
             this.time.timeScale   = this.timeScale;
         }
 
-        this.showTitleCard();
+        // ?notitle=1 (debug filming): skip the match-start title card.
+        if (!new URLSearchParams(location.search).has('notitle')) this.showTitleCard();
         this._setupGame();
 
         // HUD camera — renders meters/clock without the vignette so they stay

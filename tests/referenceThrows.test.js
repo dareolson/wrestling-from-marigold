@@ -102,7 +102,9 @@ test('suplex: stood straight up overhead, then over onto his back behind', () =>
     const impactAt = suplexClip.events.find(e => e.type === 'impact').at;
     const up = sampleClip(compiled, 0.8).tracks.defender.pose;
     assert.ok(Math.abs(up.tilt - Math.PI) < 0.1, `held tilt ${up.tilt}`);
-    assert.ok(up.lift > 150, `held lift ${up.lift}`);
+    // Upside down with his head trapped at Lou's chest (the second pass,
+    // stage.mjs-solved), not perched on top of Lou's head as v1 had him.
+    assert.ok(up.lift > 120, `held lift ${up.lift}`);
     const impact = sampleClip(compiled, impactAt).tracks;
     assert.ok(impact.defender.transform.x < -150, `lands behind, x=${impact.defender.transform.x}`);
     assert.ok(impact.attacker.pose.tilt < -1.3, 'the attacker goes over backward too');

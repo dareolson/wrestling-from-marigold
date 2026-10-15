@@ -175,7 +175,7 @@ test('Thesz keeps the moves that were previously Arena-only', () => {
 });
 
 test('kit sizes are what the roster expects', () => {
-    assert.equal(george.moveSet.length, 17);
+    assert.equal(george.moveSet.length, 18); // + figureFour (Derek, 2026-10-14: give George Flair's moves)
     assert.equal(thesz.moveSet.length, 16);
 });
 

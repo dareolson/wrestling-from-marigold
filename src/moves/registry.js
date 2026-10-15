@@ -152,6 +152,12 @@ export const MOVE_SPECS = {
         trigger: 'Arena lockup resolution — right',
         ai: ['lockup', 'holdDrain'],
     },
+    figureFour: {
+        category: C.HOLD, clip: 'figureFour', executor: '_doFigureFour',
+        damageKey: 'figureFour', poseSeq: false, legacyFallback: null, kitGated: true,
+        trigger: 'tryFinisher() — down/possum target in reach',
+        ai: ['vsDown', 'holdDrain', 'finisher'],
+    },
     ankleLock: {
         category: C.HOLD, clip: null, executor: '_doAnkleLock',
         damageKey: 'ankleLock', poseSeq: true, legacyFallback: null, kitGated: true,

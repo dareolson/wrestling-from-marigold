@@ -1,6 +1,6 @@
 """Slice a downloaded sprite sheet into numbered frames for the move editor.
 
-    python3 tools/sprites/slice_sheet.py <sheet image> <sheet id> "<label>"
+    python3 tools/sprites/slice_sheet.py <sheet image> <sheet id> "<label>" [--tight]
 
 e.g. python3 tools/sprites/slice_sheet.py "Sprite sheets/44464.png" \\
          wwf-royal-rumble-snes/44464-ric-flair "Ric Flair — WWF Royal Rumble (SNES)"
@@ -16,7 +16,9 @@ editor's reference panel lists.
 Rows are split on fully blank horizontal bands and frames on blank columns
 within a row (connected components mis-group lying and airborne frames, which
 sit at different heights). The background is the sheet's most common corner
-colour, so black, magenta or blue sheets all work. Pose reference only:
+colour, so black, magenta or blue sheets all work. --tight is for sheets
+whose frames sit only a few pixels apart (Saturday Night Slam Masters): it
+stops neighbouring frames, and the section labels above them, merging. Pose reference only:
 nothing here ships with the game.
 """
 
@@ -58,7 +60,10 @@ def runs(flags, merge):
     return out
 
 
-def main(src, sheet_id, label):
+def main(src, sheet_id, label, tight=False):
+    global ROW_GAP_MERGE, COL_GAP_MERGE
+    if tight:
+        ROW_GAP_MERGE, COL_GAP_MERGE = 2, 2
     im = Image.open(src).convert('RGB')
     w, h = im.size
     bg = background(im)
@@ -134,6 +139,7 @@ def main(src, sheet_id, label):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 4:
+    args = [a for a in sys.argv[1:] if a != '--tight']
+    if len(args) != 3:
         sys.exit(__doc__)
-    main(*sys.argv[1:])
+    main(*args, tight='--tight' in sys.argv)

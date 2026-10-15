@@ -2984,7 +2984,7 @@ export default class Arena extends Phaser.Scene {
         // silently disabling part of a kit.
         const PRESETS = {
             george: {
-                name: 'GEORGE', personality: 'george', idlePose: george.idlePose, begsOff: george.begsOff,
+                name: 'GEORGE', personality: 'george', idlePose: george.idlePose, begsOff: george.begsOff, struts: george.struts,
                 skin: 0xa87858, trunks: 0x1a1a1a,
                 moveSet: george.moveSet,
                 textures: george.textures,
@@ -3034,11 +3034,13 @@ export default class Arena extends Phaser.Scene {
         this.w1.facing   = 1;
         this.w1.idlePose = c1.idlePose;
         this.w1.begsOff  = !!c1.begsOff;
+        this.w1.struts   = !!c1.struts;
 
         this.w2 = new Wrestler(this, 630, 360, c2.skin, c2.trunks, input2, c2.moveSet, c2.textures ?? {});
         this.w2.facing   = -1;
         this.w2.idlePose = c2.idlePose;
         this.w2.begsOff  = !!c2.begsOff;
+        this.w2.struts   = !!c2.struts;
 
         // Seekable move-animation runtime, driven by this Scene's own clock in
         // _tickGame — no second timer. Migrated so far: jab (single-actor) and

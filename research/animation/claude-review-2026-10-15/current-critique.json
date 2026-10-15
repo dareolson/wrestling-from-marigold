@@ -1,0 +1,1855 @@
+[
+ {
+  "id": "jab",
+  "duration": 0.4,
+  "characters": {
+   "attacker": "thesz",
+   "defender": "george"
+  },
+  "heights": {
+   "attacker": 336.9,
+   "defender": 334.5
+  },
+  "floor": {
+   "attacker": {
+    "worstPx": 0,
+    "worstFrac": 0,
+    "worstAt": 0,
+    "worstPart": null,
+    "frames": 0
+   },
+   "defender": {
+    "worstPx": 0,
+    "worstFrac": 0,
+    "worstAt": 0,
+    "worstPart": null,
+    "frames": 0
+   }
+  },
+  "slide": {
+   "attacker": {
+    "totalPx": 31.262943722943646,
+    "totalFrac": 0.09279591487961902,
+    "worst": {
+     "side": "near",
+     "from": 0,
+     "to": 0.01667,
+     "slidePx": 14.933333333333223
+    },
+    "spans": [
+     {
+      "side": "near",
+      "from": 0,
+      "to": 0.01667,
+      "slidePx": 14.933333333333223
+     },
+     {
+      "side": "near",
+      "from": 0.2,
+      "to": 0.4,
+      "slidePx": 14.882943722943764
+     }
+    ]
+   },
+   "defender": {
+    "totalPx": 0,
+    "totalFrac": 0,
+    "worst": null,
+    "spans": []
+   }
+  },
+  "support": {
+   "attacker": {
+    "floatingSec": 0,
+    "spans": []
+   },
+   "defender": {
+    "floatingSec": 0,
+    "spans": []
+   }
+  },
+  "continuity": {
+   "attacker": {
+    "pops": [
+     {
+      "joint": "nearElbow",
+      "at": 0.08333,
+      "px": 75.82054218294343
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.08333,
+      "px": 26.15609577278191
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.08333,
+      "px": 137.28560287179366
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.08333,
+      "px": 47.387723331865516
+     }
+    ],
+    "hitches": [
+     {
+      "joint": "nearElbow",
+      "at": 0.01667,
+      "px": 16.58838136163286
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.03333,
+      "px": 19.814334468553216
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.05,
+      "px": 36.52699881787073
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.06667,
+      "px": 52.73469723144649
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.08333,
+      "px": 78.4304312923483
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.05,
+      "px": 12.359963931545067
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.06667,
+      "px": 13.202445745142992
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.08333,
+      "px": 29.63021954960517
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.01667,
+      "px": 30.027819275184065
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.03333,
+      "px": 35.93879327486776
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.05,
+      "px": 66.11977624796202
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.06667,
+      "px": 95.50040452144525
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.08333,
+      "px": 142.04446458119563
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.16667,
+      "px": 10.94356788986455
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.01667,
+      "px": 11.635816356205082
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.03333,
+      "px": 13.548068986385738
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.05,
+      "px": 22.380297721011136
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.06667,
+      "px": 23.929268090659576
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.08333,
+      "px": 53.735740323491015
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.01667,
+      "px": 9.780674990766075
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.08333,
+      "px": 8.717229097176407
+     }
+    ],
+    "hitchTimes": [
+     0.01667,
+     0.03333,
+     0.05,
+     0.06667,
+     0.08333,
+     0.16667
+    ]
+   },
+   "defender": {
+    "pops": [],
+    "hitches": [],
+    "hitchTimes": []
+   }
+  },
+  "contacts": [],
+  "impacts": [
+   {
+    "event": 0.083,
+    "strike": "attacker nearWrist→part:head",
+    "gapPx": 65.00096358187339,
+    "gapFrac": 0.19293844933770674,
+    "reachFrac": 0.9999999999999997,
+    "closestAt": 0.08333,
+    "offsetSec": 0.00032999999999999696
+   }
+  ],
+  "overlap": null,
+  "stiffness": {
+   "attacker": {
+    "spineTurnRad": 0,
+    "bendRad": 1.3872030551750605,
+    "ratio": null
+   },
+   "defender": {
+    "spineTurnRad": 0,
+    "bendRad": 0,
+    "ratio": null
+   }
+  },
+  "landings": []
+ },
+ {
+  "id": "hammerlock",
+  "duration": 2.4,
+  "characters": {
+   "attacker": "thesz",
+   "defender": "george"
+  },
+  "heights": {
+   "attacker": 336.9,
+   "defender": 334.5
+  },
+  "floor": {
+   "attacker": {
+    "worstPx": 4,
+    "worstFrac": 0.011872959335114277,
+    "worstAt": 0.28333,
+    "worstPart": "nearShin",
+    "frames": 0
+   },
+   "defender": {
+    "worstPx": 1.0399999999999636,
+    "worstFrac": 0.003109118086696453,
+    "worstAt": 0.53333,
+    "worstPart": "nearShin",
+    "frames": 0
+   }
+  },
+  "slide": {
+   "attacker": {
+    "totalPx": 35.55025641025617,
+    "totalFrac": 0.1055216871779643,
+    "worst": {
+     "side": "near",
+     "from": 0.23333,
+     "to": 2.4,
+     "slidePx": 15.770256410256138
+    },
+    "spans": [
+     {
+      "side": "near",
+      "from": 0.23333,
+      "to": 2.4,
+      "slidePx": 15.770256410256138
+     },
+     {
+      "side": "near",
+      "from": 0,
+      "to": 0.01667,
+      "slidePx": 13.080000000000098
+     },
+     {
+      "side": "far",
+      "from": 0.3,
+      "to": 2.4,
+      "slidePx": 6.699999999999932
+     }
+    ]
+   },
+   "defender": {
+    "totalPx": 185.8249422799425,
+    "totalFrac": 0.5555304701941479,
+    "worst": {
+     "side": "far",
+     "from": 0,
+     "to": 2.4,
+     "slidePx": 95.04494227994257
+    },
+    "spans": [
+     {
+      "side": "far",
+      "from": 0,
+      "to": 2.4,
+      "slidePx": 95.04494227994257
+     },
+     {
+      "side": "near",
+      "from": 0,
+      "to": 2.4,
+      "slidePx": 90.77999999999992
+     }
+    ]
+   }
+  },
+  "support": {
+   "attacker": {
+    "floatingSec": 0,
+    "spans": []
+   },
+   "defender": {
+    "floatingSec": 0,
+    "spans": []
+   }
+  },
+  "continuity": {
+   "attacker": {
+    "pops": [
+     {
+      "joint": "nearShoulder",
+      "at": 0.3,
+      "px": 64.30580493850732
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.3,
+      "px": 105.7791159428019
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.3,
+      "px": 134.10435608359464
+     },
+     {
+      "joint": "nearKnee",
+      "at": 0.3,
+      "px": 26.537978288065204
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.3,
+      "px": 32.391783988676494
+     }
+    ],
+    "hitches": [
+     {
+      "joint": "neck",
+      "at": 0.28333,
+      "px": 15.398322137313471
+     },
+     {
+      "joint": "nearShoulder",
+      "at": 0.28333,
+      "px": 51.247925702686416
+     },
+     {
+      "joint": "nearShoulder",
+      "at": 0.3,
+      "px": 64.75736669218438
+     },
+     {
+      "joint": "nearHip",
+      "at": 0.3,
+      "px": 13.53295933148649
+     },
+     {
+      "joint": "farHip",
+      "at": 0.3,
+      "px": 13.53295933148649
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.23333,
+      "px": 19.008676643242396
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.28333,
+      "px": 25.543846354912947
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.3,
+      "px": 41.334319802408615
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.23333,
+      "px": 16.678052066098456
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.28333,
+      "px": 34.6969415486239
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.3,
+      "px": 14.895583569783769
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.23333,
+      "px": 26.01817115820925
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.28333,
+      "px": 112.2305671855911
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.3,
+      "px": 105.94579263709828
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.13333,
+      "px": 13.626278229648177
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.23333,
+      "px": 56.68661785279146
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.25,
+      "px": 14.903521947575081
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.26667,
+      "px": 14.638118259163782
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.28333,
+      "px": 153.60997456997623
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.3,
+      "px": 134.24351186064715
+     },
+     {
+      "joint": "nearKnee",
+      "at": 0.28333,
+      "px": 18.640292207538977
+     },
+     {
+      "joint": "nearKnee",
+      "at": 0.3,
+      "px": 27.03752406656853
+     },
+     {
+      "joint": "farKnee",
+      "at": 0.28333,
+      "px": 32.766691070937284
+     },
+     {
+      "joint": "farKnee",
+      "at": 0.3,
+      "px": 18.06715904761616
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.13333,
+      "px": 10.935924694216482
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.28333,
+      "px": 29.473282642217438
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.3,
+      "px": 32.873443171653435
+     },
+     {
+      "joint": "farAnkle",
+      "at": 0.28333,
+      "px": 21.822285177098777
+     }
+    ],
+    "hitchTimes": [
+     0.28333,
+     0.3,
+     0.23333,
+     0.13333,
+     0.25,
+     0.26667
+    ]
+   },
+   "defender": {
+    "pops": [],
+    "hitches": [
+     {
+      "joint": "nearElbow",
+      "at": 0.3,
+      "px": 9.73462840919121
+     },
+     {
+      "joint": "farElbow",
+      "at": 2.1,
+      "px": 8.727763935828408
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.13333,
+      "px": 14.92120185967516
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.3,
+      "px": 39.84626841825398
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.31667,
+      "px": 9.401408328676567
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.33333,
+      "px": 9.477489129672215
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.35,
+      "px": 9.528838718559946
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.36667,
+      "px": 9.541924631914043
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.38333,
+      "px": 9.530377951442729
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.4,
+      "px": 9.497223333696338
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.41667,
+      "px": 9.427840233106451
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.43333,
+      "px": 9.335624455239088
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.45,
+      "px": 9.239411951388544
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.46667,
+      "px": 9.123196403456511
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.48333,
+      "px": 9.002793871054775
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.5,
+      "px": 8.902309384034718
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.51667,
+      "px": 8.805148054419682
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.53333,
+      "px": 8.730565653721497
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.55,
+      "px": 21.08558943757236
+     },
+     {
+      "joint": "nearWrist",
+      "at": 2.1,
+      "px": 15.0305355519136
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.13333,
+      "px": 10.874192713169723
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.3,
+      "px": 19.553785776112402
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.1,
+      "px": 13.680413713190648
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.35,
+      "px": 17.56067019929081
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.6,
+      "px": 15.663641584990717
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.85,
+      "px": 14.450766967484093
+     },
+     {
+      "joint": "farWrist",
+      "at": 2.1,
+      "px": 19.898415768177404
+     }
+    ],
+    "hitchTimes": [
+     0.3,
+     2.1,
+     0.13333,
+     0.31667,
+     0.33333,
+     0.35,
+     0.36667,
+     0.38333,
+     0.4,
+     0.41667,
+     0.43333,
+     0.45,
+     0.46667,
+     0.48333,
+     0.5,
+     0.51667,
+     0.53333,
+     0.55,
+     1.1,
+     1.35,
+     1.6,
+     1.85
+    ]
+   }
+  },
+  "contacts": [
+   {
+    "label": "attacker nearWrist→nearWrist",
+    "from": 0.55,
+    "to": 2.1,
+    "frames": 94,
+    "worstPx": 48.67817857686426,
+    "worstFrac": 0.1444885086876351,
+    "worstAt": 0.55
+   }
+  ],
+  "impacts": [],
+  "overlap": {
+   "worstFrac": 0.15526738180897454,
+   "worstAt": 0.2,
+   "frames": 9,
+   "sec": 0.15
+  },
+  "stiffness": {
+   "attacker": {
+    "spineTurnRad": 0.13016273716330207,
+    "bendRad": 1.8786304935831353,
+    "ratio": null
+   },
+   "defender": {
+    "spineTurnRad": 0,
+    "bendRad": 3.114444244186046,
+    "ratio": null
+   }
+  },
+  "landings": []
+ },
+ {
+  "id": "suplex",
+  "duration": 1.6,
+  "characters": {
+   "attacker": "thesz",
+   "defender": "george"
+  },
+  "heights": {
+   "attacker": 336.8,
+   "defender": 325.6
+  },
+  "floor": {
+   "attacker": {
+    "worstPx": 15.899999999999977,
+    "worstFrac": 0.04720902612826596,
+    "worstAt": 1.28333,
+    "worstPart": "torso",
+    "frames": 47
+   },
+   "defender": {
+    "worstPx": 17.020000000000095,
+    "worstFrac": 0.05227272727272756,
+    "worstAt": 1.6,
+    "worstPart": "nearUpArm",
+    "frames": 20
+   }
+  },
+  "slide": {
+   "attacker": {
+    "totalPx": 107.12815129315135,
+    "totalFrac": 0.3180764587088817,
+    "worst": {
+     "side": "near",
+     "from": 0,
+     "to": 1.06667,
+     "slidePx": 97.30823232323246
+    },
+    "spans": [
+     {
+      "side": "near",
+      "from": 0,
+      "to": 1.06667,
+      "slidePx": 97.30823232323246
+     },
+     {
+      "side": "near",
+      "from": 1.28333,
+      "to": 1.6,
+      "slidePx": 9.819918969918888
+     }
+    ]
+   },
+   "defender": {
+    "totalPx": 66.21144385026741,
+    "totalFrac": 0.20335210027723405,
+    "worst": {
+     "side": "far",
+     "from": 0,
+     "to": 0.18333,
+     "slidePx": 41.73862745098029
+    },
+    "spans": [
+     {
+      "side": "far",
+      "from": 0,
+      "to": 0.18333,
+      "slidePx": 41.73862745098029
+     },
+     {
+      "side": "near",
+      "from": 0.01667,
+      "to": 0.18333,
+      "slidePx": 24.472816399287126
+     }
+    ]
+   }
+  },
+  "support": {
+   "attacker": {
+    "floatingSec": 0,
+    "spans": [
+     {
+      "from": 1.1,
+      "to": 1.1
+     }
+    ]
+   },
+   "defender": {
+    "floatingSec": 0.016669999999999963,
+    "spans": [
+     {
+      "from": 1.1,
+      "to": 1.11667
+     }
+    ]
+   }
+  },
+  "continuity": {
+   "attacker": {
+    "pops": [],
+    "hitches": [
+     {
+      "joint": "neck",
+      "at": 1.1,
+      "px": 22.140254792343818
+     },
+     {
+      "joint": "neck",
+      "at": 1.28333,
+      "px": 25.31992057859823
+     },
+     {
+      "joint": "nearShoulder",
+      "at": 1.1,
+      "px": 22.50823269537585
+     },
+     {
+      "joint": "nearShoulder",
+      "at": 1.28333,
+      "px": 24.905994697135164
+     },
+     {
+      "joint": "farShoulder",
+      "at": 1.1,
+      "px": 21.57990802071911
+     },
+     {
+      "joint": "farShoulder",
+      "at": 1.28333,
+      "px": 24.818140085322394
+     },
+     {
+      "joint": "nearHip",
+      "at": 1.28333,
+      "px": 13.16585221414633
+     },
+     {
+      "joint": "farHip",
+      "at": 1.28333,
+      "px": 13.16585221414633
+     },
+     {
+      "joint": "nearElbow",
+      "at": 1.1,
+      "px": 31.319260303556753
+     },
+     {
+      "joint": "nearElbow",
+      "at": 1.28333,
+      "px": 29.972218862406965
+     },
+     {
+      "joint": "farElbow",
+      "at": 1.1,
+      "px": 29.27307920267835
+     },
+     {
+      "joint": "farElbow",
+      "at": 1.28333,
+      "px": 29.154801909217635
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.18333,
+      "px": 10.399231682711248
+     },
+     {
+      "joint": "nearWrist",
+      "at": 1.1,
+      "px": 40.5405942618245
+     },
+     {
+      "joint": "nearWrist",
+      "at": 1.28333,
+      "px": 35.83254081507832
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.1,
+      "px": 37.10437618232536
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.28333,
+      "px": 34.13693974166495
+     },
+     {
+      "joint": "farKnee",
+      "at": 1.28333,
+      "px": 8.818382802195684
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 1.1,
+      "px": 14.042095886204589
+     },
+     {
+      "joint": "farAnkle",
+      "at": 1.1,
+      "px": 10.159457592405612
+     }
+    ],
+    "hitchTimes": [
+     1.1,
+     1.28333,
+     0.18333
+    ]
+   },
+   "defender": {
+    "pops": [],
+    "hitches": [
+     {
+      "joint": "neck",
+      "at": 0.18333,
+      "px": 15.129265993406156
+     },
+     {
+      "joint": "neck",
+      "at": 0.61667,
+      "px": 10.395965421488853
+     },
+     {
+      "joint": "neck",
+      "at": 1.1,
+      "px": 13.457524562979701
+     },
+     {
+      "joint": "neck",
+      "at": 1.28333,
+      "px": 35.3384573417456
+     },
+     {
+      "joint": "nearShoulder",
+      "at": 0.18333,
+      "px": 17.49725170192212
+     },
+     {
+      "joint": "nearShoulder",
+      "at": 0.61667,
+      "px": 9.22657947060882
+     },
+     {
+      "joint": "nearShoulder",
+      "at": 1.1,
+      "px": 13.802163071787371
+     },
+     {
+      "joint": "nearShoulder",
+      "at": 1.28333,
+      "px": 34.08724031324709
+     },
+     {
+      "joint": "farShoulder",
+      "at": 0.18333,
+      "px": 12.738788803363638
+     },
+     {
+      "joint": "farShoulder",
+      "at": 0.61667,
+      "px": 11.15297165319228
+     },
+     {
+      "joint": "farShoulder",
+      "at": 1.1,
+      "px": 14.325464048554123
+     },
+     {
+      "joint": "farShoulder",
+      "at": 1.28333,
+      "px": 37.07271831839602
+     },
+     {
+      "joint": "nearHip",
+      "at": 0.18333,
+      "px": 13.87847369328295
+     },
+     {
+      "joint": "nearHip",
+      "at": 0.41667,
+      "px": 8.534799831059994
+     },
+     {
+      "joint": "nearHip",
+      "at": 0.61667,
+      "px": 8.198264733785935
+     },
+     {
+      "joint": "nearHip",
+      "at": 1.1,
+      "px": 26.098027329288552
+     },
+     {
+      "joint": "nearHip",
+      "at": 1.28333,
+      "px": 45.667348666341695
+     },
+     {
+      "joint": "farHip",
+      "at": 0.18333,
+      "px": 11.406111326034697
+     },
+     {
+      "joint": "farHip",
+      "at": 0.41667,
+      "px": 8.24302389371026
+     },
+     {
+      "joint": "farHip",
+      "at": 0.61667,
+      "px": 9.527590986483654
+     },
+     {
+      "joint": "farHip",
+      "at": 1.1,
+      "px": 25.22866379833073
+     },
+     {
+      "joint": "farHip",
+      "at": 1.28333,
+      "px": 45.80869474244827
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.18333,
+      "px": 11.60372090217978
+     },
+     {
+      "joint": "nearElbow",
+      "at": 1.1,
+      "px": 11.149485834460666
+     },
+     {
+      "joint": "nearElbow",
+      "at": 1.2,
+      "px": 8.351385316353447
+     },
+     {
+      "joint": "nearElbow",
+      "at": 1.21667,
+      "px": 9.880846396353487
+     },
+     {
+      "joint": "nearElbow",
+      "at": 1.23333,
+      "px": 11.32900053036788
+     },
+     {
+      "joint": "nearElbow",
+      "at": 1.25,
+      "px": 12.351089471758245
+     },
+     {
+      "joint": "nearElbow",
+      "at": 1.26667,
+      "px": 8.575362143342415
+     },
+     {
+      "joint": "nearElbow",
+      "at": 1.28333,
+      "px": 55.78937961063511
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.61667,
+      "px": 9.70590558110134
+     },
+     {
+      "joint": "farElbow",
+      "at": 1.1,
+      "px": 9.93093790932564
+     },
+     {
+      "joint": "farElbow",
+      "at": 1.21667,
+      "px": 9.775779058107851
+     },
+     {
+      "joint": "farElbow",
+      "at": 1.23333,
+      "px": 11.605292091291208
+     },
+     {
+      "joint": "farElbow",
+      "at": 1.25,
+      "px": 13.080919133288369
+     },
+     {
+      "joint": "farElbow",
+      "at": 1.28333,
+      "px": 55.24971389375234
+     },
+     {
+      "joint": "nearWrist",
+      "at": 1.1,
+      "px": 16.397523403881117
+     },
+     {
+      "joint": "nearWrist",
+      "at": 1.18333,
+      "px": 9.827419611396218
+     },
+     {
+      "joint": "nearWrist",
+      "at": 1.2,
+      "px": 12.816934253962005
+     },
+     {
+      "joint": "nearWrist",
+      "at": 1.21667,
+      "px": 16.019982620436778
+     },
+     {
+      "joint": "nearWrist",
+      "at": 1.23333,
+      "px": 19.348727967574668
+     },
+     {
+      "joint": "nearWrist",
+      "at": 1.25,
+      "px": 22.412425897911987
+     },
+     {
+      "joint": "nearWrist",
+      "at": 1.26667,
+      "px": 16.477458415492844
+     },
+     {
+      "joint": "nearWrist",
+      "at": 1.28333,
+      "px": 76.43709962553945
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.18333,
+      "px": 8.252680454480387
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.61667,
+      "px": 8.576604493773473
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.1,
+      "px": 13.532952132996675
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.18333,
+      "px": 8.970059232374975
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.2,
+      "px": 12.106869947659217
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.21667,
+      "px": 15.510439366534769
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.23333,
+      "px": 19.075612826953133
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.25,
+      "px": 22.389768332666502
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.26667,
+      "px": 15.191544810482712
+     },
+     {
+      "joint": "farWrist",
+      "at": 1.28333,
+      "px": 73.63590436864925
+     },
+     {
+      "joint": "nearKnee",
+      "at": 0.18333,
+      "px": 20.624001624316715
+     },
+     {
+      "joint": "nearKnee",
+      "at": 0.41667,
+      "px": 14.898130950315156
+     },
+     {
+      "joint": "nearKnee",
+      "at": 0.61667,
+      "px": 11.914330391112362
+     },
+     {
+      "joint": "nearKnee",
+      "at": 1.1,
+      "px": 34.28207108228946
+     },
+     {
+      "joint": "nearKnee",
+      "at": 1.28333,
+      "px": 52.038278698700104
+     },
+     {
+      "joint": "farKnee",
+      "at": 0.18333,
+      "px": 18.74823789876629
+     },
+     {
+      "joint": "farKnee",
+      "at": 0.41667,
+      "px": 14.916313635016799
+     },
+     {
+      "joint": "farKnee",
+      "at": 0.61667,
+      "px": 12.956251420857171
+     },
+     {
+      "joint": "farKnee",
+      "at": 1.1,
+      "px": 33.398963643115444
+     },
+     {
+      "joint": "farKnee",
+      "at": 1.28333,
+      "px": 51.70972940926229
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.18333,
+      "px": 26.21775425092273
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.41667,
+      "px": 18.85000201865603
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.61667,
+      "px": 15.505885756457253
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 1.1,
+      "px": 37.83383144121055
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 1.28333,
+      "px": 54.74689996389707
+     },
+     {
+      "joint": "farAnkle",
+      "at": 0.18333,
+      "px": 24.19804219796284
+     },
+     {
+      "joint": "farAnkle",
+      "at": 0.41667,
+      "px": 19.27948479439624
+     },
+     {
+      "joint": "farAnkle",
+      "at": 0.61667,
+      "px": 16.984850871399715
+     },
+     {
+      "joint": "farAnkle",
+      "at": 1.1,
+      "px": 36.827477271331134
+     },
+     {
+      "joint": "farAnkle",
+      "at": 1.28333,
+      "px": 53.82399218255118
+     }
+    ],
+    "hitchTimes": [
+     0.18333,
+     0.61667,
+     1.1,
+     1.28333,
+     0.41667,
+     1.2,
+     1.21667,
+     1.23333,
+     1.25,
+     1.26667,
+     1.18333
+    ]
+   }
+  },
+  "contacts": [
+   {
+    "label": "Lou near hand on George's neck (hook → turnover)",
+    "from": 0.18,
+    "to": 1.1,
+    "frames": 56,
+    "worstPx": 177.00702603003347,
+    "worstFrac": 0.5255553029395293,
+    "worstAt": 1.1
+   },
+   {
+    "label": "Lou far hand at George's waist (hook → turnover)",
+    "from": 0.18,
+    "to": 1.1,
+    "frames": 56,
+    "worstPx": 128.41270224750616,
+    "worstFrac": 0.3812728689058971,
+    "worstAt": 0.18333
+   }
+  ],
+  "impacts": [],
+  "overlap": {
+   "worstFrac": 0.20168930829538742,
+   "worstAt": 0.23333,
+   "frames": 70,
+   "sec": 1.1666666666666667
+  },
+  "stiffness": {
+   "attacker": {
+    "spineTurnRad": 1.52,
+    "bendRad": 2.0596108392104626,
+    "ratio": 1.3550071310595149
+   },
+   "defender": {
+    "spineTurnRad": 4.7600000000000025,
+    "bendRad": 2.7811885421679747,
+    "ratio": 0.5842833071781457
+   }
+  },
+  "landings": [
+   {
+    "label": "defender torso lands",
+    "event": 1.28,
+    "at": 1.28333,
+    "offsetSec": 0.003330000000000055
+   },
+   {
+    "label": "attacker torso lands",
+    "event": 1.28,
+    "at": 1.26667,
+    "offsetSec": -0.013330000000000064
+   }
+  ]
+ },
+ {
+  "id": "dropkick",
+  "duration": 0.62,
+  "characters": {
+   "attacker": "thesz",
+   "defender": "george"
+  },
+  "heights": {
+   "attacker": 336.8,
+   "defender": 325.6
+  },
+  "floor": {
+   "attacker": {
+    "worstPx": 15.899999999999977,
+    "worstFrac": 0.04720902612826596,
+    "worstAt": 0.62,
+    "worstPart": "torso",
+    "frames": 2
+   },
+   "defender": {
+    "worstPx": 0,
+    "worstFrac": 0,
+    "worstAt": 0,
+    "worstPart": null,
+    "frames": 0
+   }
+  },
+  "slide": {
+   "attacker": {
+    "totalPx": 1.2527472527472128,
+    "totalFrac": 0.003719558351387211,
+    "worst": null,
+    "spans": []
+   },
+   "defender": {
+    "totalPx": 0,
+    "totalFrac": 0,
+    "worst": null,
+    "spans": []
+   }
+  },
+  "support": {
+   "attacker": {
+    "floatingSec": 0,
+    "spans": []
+   },
+   "defender": {
+    "floatingSec": 0,
+    "spans": []
+   }
+  },
+  "continuity": {
+   "attacker": {
+    "pops": [],
+    "hitches": [
+     {
+      "joint": "neck",
+      "at": 0.1,
+      "px": 24.214020926059984
+     },
+     {
+      "joint": "neck",
+      "at": 0.48333,
+      "px": 8.57585722275814
+     },
+     {
+      "joint": "neck",
+      "at": 0.61667,
+      "px": 14.152976912129231
+     },
+     {
+      "joint": "nearShoulder",
+      "at": 0.1,
+      "px": 21.170064619733573
+     },
+     {
+      "joint": "nearShoulder",
+      "at": 0.48333,
+      "px": 8.658725619673213
+     },
+     {
+      "joint": "nearShoulder",
+      "at": 0.61667,
+      "px": 14.134550675811884
+     },
+     {
+      "joint": "farShoulder",
+      "at": 0.1,
+      "px": 23.801729562114996
+     },
+     {
+      "joint": "farShoulder",
+      "at": 0.61667,
+      "px": 14.122849180340388
+     },
+     {
+      "joint": "nearHip",
+      "at": 0.1,
+      "px": 24.5829638847709
+     },
+     {
+      "joint": "nearHip",
+      "at": 0.61667,
+      "px": 13.3685857142857
+     },
+     {
+      "joint": "farHip",
+      "at": 0.1,
+      "px": 24.5829638847709
+     },
+     {
+      "joint": "farHip",
+      "at": 0.61667,
+      "px": 13.3685857142857
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.1,
+      "px": 72.34001428290917
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.11667,
+      "px": 47.07853644804358
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.13333,
+      "px": 36.521314716452935
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.15,
+      "px": 27.546184206465572
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.16667,
+      "px": 19.925341820573447
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.18333,
+      "px": 14.583326972771696
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.2,
+      "px": 12.07589993037822
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.48333,
+      "px": 27.614033918142617
+     },
+     {
+      "joint": "nearElbow",
+      "at": 0.61667,
+      "px": 28.366351374531874
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.1,
+      "px": 60.229728109909445
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.11667,
+      "px": 32.47686874440061
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.13333,
+      "px": 26.062170401360376
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.15,
+      "px": 20.508034981315923
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.16667,
+      "px": 15.614375860028565
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.18333,
+      "px": 12.05037851881073
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.2,
+      "px": 10.24441892694243
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.48333,
+      "px": 25.608004329438067
+     },
+     {
+      "joint": "farElbow",
+      "at": 0.61667,
+      "px": 25.962630650112178
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.1,
+      "px": 139.04048669066378
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.11667,
+      "px": 94.53582803178978
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.13333,
+      "px": 71.24941787418132
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.15,
+      "px": 51.41602509538964
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.16667,
+      "px": 35.52697780923428
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.18333,
+      "px": 25.17540657194141
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.2,
+      "px": 20.899991892252494
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.48333,
+      "px": 50.897576801491304
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.5,
+      "px": 9.48291105303948
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.51667,
+      "px": 9.5032674233169
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.53333,
+      "px": 9.557045754780308
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.55,
+      "px": 9.58181591785757
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.56667,
+      "px": 9.59280032335078
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.58333,
+      "px": 9.636404235856318
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.6,
+      "px": 9.65452245092638
+     },
+     {
+      "joint": "nearWrist",
+      "at": 0.61667,
+      "px": 43.48428282306284
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.1,
+      "px": 112.92782197109545
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.11667,
+      "px": 66.9250349667843
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.13333,
+      "px": 51.33681088548177
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.15,
+      "px": 37.98298703585069
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.16667,
+      "px": 27.19527827235384
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.18333,
+      "px": 20.065184203768307
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.2,
+      "px": 16.93413663323974
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.48333,
+      "px": 46.45214788848318
+     },
+     {
+      "joint": "farWrist",
+      "at": 0.61667,
+      "px": 38.476617911515454
+     },
+     {
+      "joint": "nearKnee",
+      "at": 0.1,
+      "px": 37.156947511655986
+     },
+     {
+      "joint": "nearKnee",
+      "at": 0.61667,
+      "px": 14.74696600264775
+     },
+     {
+      "joint": "farKnee",
+      "at": 0.1,
+      "px": 35.50676804333418
+     },
+     {
+      "joint": "farKnee",
+      "at": 0.61667,
+      "px": 14.193277156256553
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.1,
+      "px": 64.48631168395154
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.11667,
+      "px": 19.851318986679722
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.13333,
+      "px": 16.359679645965457
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.15,
+      "px": 13.065128249908069
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.16667,
+      "px": 10.231263774991739
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.21667,
+      "px": 14.961286244925398
+     },
+     {
+      "joint": "nearAnkle",
+      "at": 0.61667,
+      "px": 16.644618230849655
+     },
+     {
+      "joint": "farAnkle",
+      "at": 0.1,
+      "px": 57.82753957153406
+     },
+     {
+      "joint": "farAnkle",
+      "at": 0.11667,
+      "px": 15.127551500750622
+     },
+     {
+      "joint": "farAnkle",
+      "at": 0.13333,
+      "px": 12.951192512101596
+     },
+     {
+      "joint": "farAnkle",
+      "at": 0.15,
+      "px": 10.833671874729013
+     },
+     {
+      "joint": "farAnkle",
+      "at": 0.16667,
+      "px": 8.9626813853798
+     },
+     {
+      "joint": "farAnkle",
+      "at": 0.21667,
+      "px": 11.626434372032076
+     },
+     {
+      "joint": "farAnkle",
+      "at": 0.61667,
+      "px": 15.502516338379822
+     }
+    ],
+    "hitchTimes": [
+     0.1,
+     0.48333,
+     0.61667,
+     0.11667,
+     0.13333,
+     0.15,
+     0.16667,
+     0.18333,
+     0.2,
+     0.5,
+     0.51667,
+     0.53333,
+     0.55,
+     0.56667,
+     0.58333,
+     0.6,
+     0.21667
+    ]
+   },
+   "defender": {
+    "pops": [],
+    "hitches": [],
+    "hitchTimes": []
+   }
+  },
+  "contacts": [],
+  "impacts": [
+   {
+    "event": 0.36,
+    "strike": "attacker nearAnkle→part:torso",
+    "gapPx": 31.955484186687272,
+    "gapFrac": 0.09487970364218311,
+    "reachFrac": 0.9635007166182397,
+    "closestAt": 0.46667,
+    "offsetSec": 0.10666999999999999
+   },
+   {
+    "event": 0.36,
+    "strike": "attacker farAnkle→part:torso",
+    "gapPx": 49.79119101857436,
+    "gapFrac": 0.14783607784612338,
+    "reachFrac": 0.9609655540309044,
+    "closestAt": 0.48333,
+    "offsetSec": 0.12333
+   }
+  ],
+  "overlap": null,
+  "stiffness": {
+   "attacker": {
+    "spineTurnRad": 1.5200000000000002,
+    "bendRad": 4.204767588259571,
+    "ratio": 2.766294465960244
+   },
+   "defender": {
+    "spineTurnRad": 0,
+    "bendRad": 0,
+    "ratio": null
+   }
+  },
+  "landings": [
+   {
+    "label": "attacker torso lands",
+    "event": 0.36,
+    "at": 0.61667,
+    "offsetSec": 0.25667000000000006
+   }
+  ]
+ }
+]

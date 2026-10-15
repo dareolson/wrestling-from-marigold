@@ -1154,6 +1154,8 @@ const DRAFT_LIBRARY = [
     { id: 'elbowDrop', label: 'elbow drop flight — reference pass', file: './drafts/elbowdrop.json' },
     { id: 'divingElbow', label: 'dive flight — reference pass', file: './drafts/dive.json' },
     { id: 'theszPress', label: 'Thesz press flight — reference pass', file: './drafts/theszpress.json' },
+    // George's figure-four, from Flair's sheet (386–403); author_figurefour.mjs.
+    { id: 'figureFour', label: 'figure-four — reference pass', file: './drafts/figurefour.json' },
 ];
 
 // Adopt a loaded draft as the editing session. Shared by the library, the file

@@ -9,6 +9,7 @@ import { compileClip, sampleClip, validateClip } from '../src/animation/Animatio
 import MoveRuntime from '../src/animation/MoveRuntime.js';
 import { REGISTERED_MOVE_CLIPS } from '../src/animation/clips/index.js';
 import { piledriverClip } from '../src/animation/clips/piledriver.js';
+import { figureFourClip } from '../src/animation/clips/figureFour.js';
 import { bodySlamClip } from '../src/animation/clips/bodySlam.js';
 import { suplexClip } from '../src/animation/clips/suplex.js';
 import { MOVE_SPECS } from '../src/moves/registry.js';
@@ -178,4 +179,39 @@ test('kneeDrop: the hop poses are exactly POSES.kneeDropLeap and kneeDropTuck', 
 test('topDive: the diving elbow\'s flight under its own id', () => {
     assert.equal(topDiveClip.id, 'topDive');
     assert.deepEqual({ ...topDiveClip, id: divingElbowClip.id }, divingElbowClip);
+});
+
+// ── Figure-four (George's, from Ric Flair's sheet) ───────────────────────────
+
+test('figureFour: registered, valid, exactly its draft export, references on two sheets', () => {
+    assert.equal(MOVE_SPECS.figureFour.clip, figureFourClip.id);
+    assert.ok(REGISTERED_MOVE_CLIPS.includes(figureFourClip));
+    const result = validateClip(figureFourClip);
+    assert.equal(result.ok, true, result.errors.join('; '));
+    const draft = readDraft('figurefour.json');
+    assert.deepEqual(exportClip(draft), JSON.parse(JSON.stringify(figureFourClip)));
+    assert.deepEqual([...new Set(draft.references.map(ref => ref.sheet))].sort(),
+        ['wwf-royal-rumble-snes/44459-bret-hart', 'wwf-royal-rumble-snes/44464-ric-flair']);
+});
+
+for (const hz of [30, 60, 120]) {
+    test(`figureFour: three squeezes, once each, at ${hz} Hz`, () => {
+        const seen = [];
+        const runtime = new MoveRuntime({ onEvent: e => seen.push(e.type) });
+        runtime.register(figureFourClip);
+        runtime.play('figureFour', { attacker: fakeActor(), defender: fakeActor() });
+        for (let t = 0; t < figureFourClip.duration + 0.1; t += 1 / hz) runtime.update(1 / hz);
+        assert.deepEqual(seen, ['squeeze', 'squeeze', 'squeeze']);
+    });
+}
+
+test('figureFour: the victim lies on his back throughout; George ends on his feet', () => {
+    const compiled = compileClip(figureFourClip);
+    for (const at of [0, 1, 2, 3, figureFourClip.duration]) {
+        const pose = sampleClip(compiled, at).tracks.defender.pose;
+        assert.ok(Math.abs(pose.tilt + 1.52) < 0.3 && pose.lift < -100, `victim at ${at}s: tilt ${pose.tilt} lift ${pose.lift}`);
+    }
+    const end = sampleClip(compiled, figureFourClip.duration).tracks.attacker.pose;
+    assert.equal(end.tilt, 0);
+    assert.equal(end.lift, 0);
 });

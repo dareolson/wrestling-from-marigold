@@ -19,6 +19,9 @@ import {
 const SPEED      = 140;
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
+// Below this a wrestler who begs off (George) begs instead of taunting —
+// the AI's begging-off threshold (AIHandler george.retreatStamina).
+const BEG_STAMINA = 35;
 
 // States where a wrestler is on, or on the way to, the mat. move() must not
 // turn him to face the opponent here: on the ground facing decides which way
@@ -55,6 +58,7 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     clothesline:  12,
     bodySlam:     22,
     piledriver:   30,
+    figureFour:    8, // per squeeze — three while the hold is on
     dropkick:     14,
     elbowDrop:         10,
     doubleAxeHandle:   12,
@@ -128,6 +132,11 @@ export const POSES = {
     // restanced the shipped character to suit a candidate under review.
     theszProcreateIdle: { lLeg: -0.05, rLeg: 0.14, lArm: 0.04, rArm: 0.17, lean: 0.05, crouch: 0.05, lForearm: 0.8, lShin: -0.11, rShin: -0.06 },
     tauntArmsWide:  { lLeg: 0.22,  rLeg:-0.20,  lArm: 2.20,  rArm: 2.00, lean:-0.16 }, // arms raised wide, chest out to the crowd
+    // Begging off, Ric Flair's "no, no, wait" (Royal Rumble sheet 283–286):
+    // hands up in front of the face, palms out, leaning away. The shake
+    // alternates the hands.
+    begPlead:       { lLeg:-0.22,  rLeg: 0.12,  lArm: 1.05,  rArm: 0.95, lElbow: 2.05, rElbow: 2.15, lKnee: 0.30, rKnee: 0.30, lean:-0.18, crouch: 0.25 },
+    begShake:       { lLeg:-0.22,  rLeg: 0.12,  lArm: 1.20,  rArm: 0.85, lElbow: 1.85, rElbow: 2.30, lKnee: 0.30, rKnee: 0.30, lean:-0.24, crouch: 0.30 },
     ropeOneTaunt:   { lLeg: 0.08,  rLeg:-0.06,  lArm: 1.80,  rArm:-1.80  }, // one arm raised to crowd, other grips rope
     axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10, lean:-0.22 }, // arms overhead, back arched for the drop
     axeHandleDown:  { lLeg: 0.30,  rLeg: 0.18,  lArm: 1.20,  rArm: 1.15, lean: 0.40, crouch: 0.20 }, // whole body lurching forward, arms smashing down
@@ -348,6 +357,7 @@ export default class Wrestler {
         this.pose            = { ...POSES.idle, lean: 0, crouch: 0 }; // live joint angles, tweened per move
         this.idlePose        = 'idle';            // character-specific resting stance — override after construction
         this.tauntPose       = 'tauntArmsWide';   // character-specific taunt — override after construction
+        this.begsOff         = false;             // pleads instead of preening when hurt (George)
         this._runStepTimer   = 0;
         this.gfx             = scene.add.graphics();
         this.skeleton        = new Skeleton(scene, skinCol, trunksCol, textures);
@@ -1072,6 +1082,13 @@ export default class Wrestler {
             return 'sleeperHold';
         }
 
+        // Figure-four leglock on a man who is down (George's, from Flair).
+        if (dist <= reach * 1.4 && (other.state === 'down' || other.state === 'possum') &&
+            this.moveSet.includes('figureFour')) {
+            this._doFigureFour(other);
+            return 'figureFour';
+        }
+
         // Thesz press — the flying body press that lands straight into the
         // cover (Lou's original, not the mounted-punches version). A charge
         // move: launches from beyond grapple range; whiffing it (opponent
@@ -1334,7 +1351,7 @@ export default class Wrestler {
     // its `impact` marker, and `finish` hands them back when it ends. An
     // interruption drops the victim with no damage and puts the attacker back
     // on his feet. Nobody is ever left tilted.
-    _playPairedThrow(other, clipId, { damage, shake = [200, 0.003], finish }) {
+    _playPairedThrow(other, clipId, { damage, shake = [200, 0.003], finish, hitEvent = 'impact' }) {
         const runtime = this.scene.moveRuntime;
         if (!runtime) return;
 
@@ -1358,7 +1375,7 @@ export default class Wrestler {
 
         const handle = runtime.play(clipId, { attacker: this, defender: other }, {
             onEvent: (event) => {
-                if (event.type !== 'impact') return;
+                if (event.type !== hitEvent) return;
                 if (this.state !== 'holding' || other.state !== 'holding') return;
                 other._drain(damage);
                 this.scene.cameras.main.shake(...shake);
@@ -1384,6 +1401,22 @@ export default class Wrestler {
         this.pose.lift = 0;
         this.state     = 'standing';
         this.tweenPose(this.idlePose ?? 'idle', 200, 'Linear');
+    }
+
+    // George's figure-four leglock, borrowed from Ric Flair's signature row
+    // (author_figurefour.mjs): struts in, steps over, crosses the legs and
+    // falls back into it. Each of the clip's three `squeeze` markers drains;
+    // the victim is left on his back, George gets back up.
+    _doFigureFour(other) {
+        this._playPairedThrow(other, 'figureFour', {
+            damage: STAMINA_DRAIN.figureFour,
+            hitEvent: 'squeeze',
+            shake: [90, 0.0012],
+            finish: () => {
+                other._layOnBack(DOWN_SEC);
+                this._standBackUp();
+            },
+        });
     }
 
     // George's piledriver: Lou stood on his head, driven into the mat
@@ -1807,6 +1840,21 @@ export default class Wrestler {
 
     _doTaunt() {
         this.state = 'taunting';
+        // A hurt heel doesn't preen, he begs: hands up, "no, no", shaking.
+        if (this.begsOff && this.stamina < BEG_STAMINA) {
+            this._runPoseSequence([
+                { p: 'begPlead', dur: 160, e: 'Cubic.easeOut' },
+                { p: 'begShake', dur: 130, e: 'Sine.easeInOut' },
+                { p: 'begPlead', dur: 130, e: 'Sine.easeInOut' },
+                { p: 'begShake', dur: 130, e: 'Sine.easeInOut' },
+                { p: 'begPlead', dur: 130, e: 'Sine.easeInOut' },
+                { p: 'begShake', dur: 130, e: 'Sine.easeInOut' },
+                { p: this.idlePose ?? 'idle', dur: 300, e: 'Linear' },
+            ], () => {
+                if (this.state === 'taunting') this.state = 'standing';
+            });
+            return;
+        }
         const tauntSeq = MOVE_DEFS.taunt.poseSeq.map(step =>
             step.p === 'tauntArmsWide' ? { ...step, p: this.tauntPose } : step
         );

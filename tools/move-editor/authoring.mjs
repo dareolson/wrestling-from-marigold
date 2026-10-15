@@ -1,7 +1,8 @@
 // Shared helpers for the reference-pass generators (author_piledriver.mjs,
 // author_bodyslam.mjs): a beat table in, an editor draft and its generated
 // clip module out. Each beat is [time, pose, transform x, reference frame or
-// null, ease?, transform y?]; frames become editor-only references.
+// null, ease?]; frames become editor-only references. A frame is a number
+// (on the draft's `sheet`, default Bret Hart's) or { sheet, frame }.
 
 import { writeFileSync } from 'node:fs';
 import { normalizeDraft, exportModule, exportClip } from './model.js';
@@ -11,7 +12,7 @@ export const pose = (fields) => ({
     lean: 0, crouch: 0, tilt: 0, lift: 0, ...fields,
 });
 
-export function buildDraft({ id, duration, attacker, defender, events, characters, transformY = () => 0 }) {
+export function buildDraft({ id, duration, attacker, defender, events, characters, transformY = () => 0, sheet = null }) {
     const track = (beats, role) => ({
         keyframes: beats.map(([at, beatPose, x, , ease = 'linear']) => ({
             at, ease, pose: beatPose, transform: { x, y: transformY(role, at) }, parts: {},
@@ -19,8 +20,10 @@ export function buildDraft({ id, duration, attacker, defender, events, character
     });
     const references = [];
     for (const [role, beats] of [['attacker', attacker], ['defender', defender]]) {
-        for (const [at, , , frame] of beats) {
-            if (frame !== null) references.push({ role, at, frame, dx: 0, dy: 0, scale: 1, flip: false });
+        for (const [at, , , ref] of beats) {
+            if (ref === null) continue;
+            const { sheet: refSheet = sheet, frame } = typeof ref === 'object' ? ref : { frame: ref };
+            references.push({ role, at, ...(refSheet ? { sheet: refSheet } : {}), frame, dx: 0, dy: 0, scale: 1, flip: false });
         }
     }
     return normalizeDraft({

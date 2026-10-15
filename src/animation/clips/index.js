@@ -23,6 +23,8 @@ import { kneeDropClip } from './kneeDrop.js';
 import { divingElbowClip } from './divingElbow.js';
 import { topDiveClip } from './topDive.js';
 import { theszPressClip } from './theszPress.js';
+// George's, from Ric Flair's sheet (tools/move-editor/author_figurefour.mjs).
+import { figureFourClip } from './figureFour.js';
 
 export const REGISTERED_MOVE_CLIPS = [
     jabClip,
@@ -36,4 +38,5 @@ export const REGISTERED_MOVE_CLIPS = [
     divingElbowClip,
     topDiveClip,
     theszPressClip,
+    figureFourClip,
 ];

@@ -163,9 +163,13 @@ export const george = {
     },
     idlePose: 'powerIdle',
     tauntPose: 'tauntArmsWide',
+    // Hurt, he begs off instead of preening — Ric Flair's "no, no"
+    // (Wrestler.POSES.begPlead/begShake).
+    begsOff: true,
     moveSet: [
         'irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop',
         'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag',
         'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop',
+        'figureFour', // Ric Flair's, on a downed opponent (finisher button)
     ],
 };

@@ -45,6 +45,7 @@ const PERSONALITIES = {
         hammerlockStaminaMin: 45,  // below this he keeps hunting his bigger lockup offense instead
         kneeLiftOdds:     0.20,  // substitutes for the close jab this often (never twice in a row)
         kneeDropOdds:     0.40,  // substitutes for the elbow drop pounce this often
+        figureFourOdds:   0.30,  // Flair's figure-four instead of a drop on a downed man
     },
     thesz: {
         // NWA World Heavyweight Champion — the legitimate wall. Technical,
@@ -325,7 +326,9 @@ export default class AIHandler {
             } else if (this._offense <= 0 && (this._pounces ?? 0) < (cfg.pounceBudget ?? 2) && !this._nearRopes(opp)) {
                 // Each drop re-downs them, so cap follow-ups per down-spell and
                 // never chain them at the ropes — back off and let them rise
-                if (self.moveSet.includes('kneeDrop') && Math.random() < (cfg.kneeDropOdds ?? 0)) {
+                if (self.moveSet.includes('figureFour') && Math.random() < (cfg.figureFourOdds ?? 0)) {
+                    this._attack('finisher', 1.2); // figure-four
+                } else if (self.moveSet.includes('kneeDrop') && Math.random() < (cfg.kneeDropOdds ?? 0)) {
                     this._hold('down');
                     this._attack('power', 0.9); // knee drop
                 } else {

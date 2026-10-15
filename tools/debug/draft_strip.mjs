@@ -17,7 +17,7 @@ const times = await page.evaluate(() => [...new Set(window.__MOVE_EDITOR.draft.t
 for (const [i, t] of times.entries()) for (const show of [true, false]) {
   await page.evaluate(([t, show]) => { document.getElementById('refShow').checked = show; document.getElementById('refShow').dispatchEvent(new Event('change')); window.__MOVE_EDITOR.setPlayhead(t); }, [t, show]);
   await page.waitForTimeout(250);
-  await page.screenshot({ path: `${outDir}/${show ? 'ref' : 'rig'}_${i}.png`, clip: { x: 60, y: 60, width: 820, height: 630 } });
+  await page.screenshot({ path: `${outDir}/${show ? 'ref' : 'rig'}_${i}.png`, clip: { x: 60, y: 160, width: 900, height: 530 } });
 }
 console.log('times', times.join(','), 'errors:', errs.join(' | ') || 'none');
 await browser.close();

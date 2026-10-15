@@ -4,7 +4,7 @@
 // the critic's only input (metrics.mjs is pure), so a move is measured on the
 // renderer and forward kinematics the author poses against.
 //
-//   node tools/move-critic/sample.mjs <draftId|path.json> <out.json> [--fps 60] [--strip dir] [--cast thesz,george]
+//   node tools/move-critic/sample.mjs <draftId|path.json> <out.json> [--fps 60] [--strip dir] [--cast thesz,george] [--times 0,0.5]
 //
 // Expects the dev server on 127.0.0.1:5173. --strip saves a clean (handles,
 // bones, references hidden) zoomed-out frame every 1/30 s for eye review.
@@ -17,6 +17,8 @@ const [source, outPath] = args;
 const fps = Number(flag('--fps', 60));
 const stripDir = flag('--strip', null);
 const cast = flag('--cast', null); // attacker,defender character ids
+const zoom = Number(flag('--zoom', 0.8));
+const only = flag('--times', null); // comma list: sample (and strip) just these times
 
 const PARTS = ['head', 'torso', 'trunks', 'nearThigh', 'nearShin', 'nearBoot', 'nearUpArm', 'nearForearm', 'nearHand',
     'farThigh', 'farShin', 'farBoot', 'farUpArm', 'farForearm', 'farHand'];
@@ -81,14 +83,14 @@ await page.evaluate(async () => {
             }
             return out;
         },
-        clean() {
+        clean(zoom) {
             for (const h of E.handleLayer) h.setAlpha(0);
             for (const child of E.scene.children.list) if (child.type === 'Graphics' && child.depth >= 90) child.setAlpha(0);
             const box = document.getElementById('refShow');
             if (box) { box.checked = false; box.dispatchEvent(new Event('change')); }
             const onion = document.getElementById('onionSkin');
             if (onion) { onion.checked = false; onion.dispatchEvent(new Event('change')); }
-            E.scene.cameras.main.setZoom(0.8).centerOn(E.TABLEAU_ORIGIN.x - 20, E.TABLEAU_ORIGIN.y - 190);
+            E.scene.cameras.main.setZoom(zoom).centerOn(E.TABLEAU_ORIGIN.x - 20, E.TABLEAU_ORIGIN.y - 190 * 0.8 / zoom);
         },
     };
 });
@@ -108,14 +110,15 @@ const meta = await page.evaluate(() => {
 const times = [];
 for (let i = 0; i / fps < meta.duration - 1e-9; i++) times.push(Number((i / fps).toFixed(5)));
 times.push(meta.duration);
+if (only) times.splice(0, times.length, ...only.split(',').map(Number));
 
-if (stripDir) { mkdirSync(stripDir, { recursive: true }); await page.evaluate(() => window.__CRITIC.clean()); }
+if (stripDir) { mkdirSync(stripDir, { recursive: true }); await page.evaluate(z => window.__CRITIC.clean(z), zoom); }
 const canvas = await page.$('canvas');
 const frames = [];
 for (const [i, at] of times.entries()) {
     frames.push(await page.evaluate(([at, parts]) => window.__CRITIC.sampleAt(at, parts), [at, PARTS]));
-    if (stripDir && (i % Math.max(1, Math.round(fps / 30)) === 0 || i === times.length - 1)) {
-        await page.evaluate(() => window.__CRITIC.clean());
+    if (stripDir && (only || i % Math.max(1, Math.round(fps / 30)) === 0 || i === times.length - 1)) {
+        await page.evaluate(z => window.__CRITIC.clean(z), zoom);
         await page.waitForTimeout(40);
         await canvas.screenshot({ path: `${stripDir}/f_${String(i).padStart(3, '0')}.png` });
     }

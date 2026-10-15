@@ -223,6 +223,24 @@ const SCENARIOS = {
         },
     },
 
+    suplex: { // lockup, then hold up + grapple — Lou (thesz) suplexes George
+        p1: 'thesz',
+        expect: { move: 'suplex' },
+        async run(h) {
+            await SCENARIOS.lockup.run(h);
+            await h.page.waitForTimeout(200);
+            await hold(h.page, 'w');
+            await tap(h.page, 'f');
+            await releaseAll(h.page);
+        },
+    },
+
+    suplexReverse: { // same move, roles swapped: George suplexes Lou
+        p1: 'george', p2: 'thesz',
+        expect: { move: 'suplex' },
+        async run(h) { await SCENARIOS.suplex.run(h); },
+    },
+
     kneeLift: { // hold up + power vs standing, close range — overrides the jab
         p1: 'george', // kneeLift is george-only (not in thesz's kit)
         expect: { move: 'kneeLift' },
@@ -291,6 +309,17 @@ async function runScenario(h, name) {
     const start = (await h.snap()).eventCount;
     try {
         await sc.run(h);
+        // WFM_SHOTS=<dir>: film the move as it plays (every 80ms for 2.4s),
+        // for eye review of full-speed gameplay rather than editor poses.
+        if (process.env.WFM_SHOTS) {
+            const { mkdirSync } = await import('node:fs');
+            const dir = `${process.env.WFM_SHOTS}/${name}`;
+            mkdirSync(dir, { recursive: true });
+            for (let i = 0; i < 30; i++) {
+                await h.page.screenshot({ path: `${dir}/${String(i).padStart(2, '0')}.png` });
+                await h.page.waitForTimeout(80);
+            }
+        }
         await h.page.waitForTimeout(600); // let delayed sells/logs land
         const logged = await h.events(start);
         const hit = logged.find(e => eventMatches(e, sc.expect));
@@ -329,6 +358,8 @@ for (const name of names) {
     const sc = SCENARIOS[name];
     if (sc.p1) process.env.WFM_P1 = sc.p1; else delete process.env.WFM_P1;
     if (sc.p2) process.env.WFM_P2 = sc.p2; else delete process.env.WFM_P2;
+    // Filming skips the match-start title card (Arena ?notitle=1).
+    if (process.env.WFM_SHOTS) process.env.WFM_QS = [process.env.WFM_QS, 'notitle=1'].filter(Boolean).join('&');
     const h = await launch();
     await h.page.waitForTimeout(400);
     if (!await runScenario(h, name)) failed++;

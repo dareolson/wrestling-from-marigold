@@ -1256,7 +1256,6 @@ export default class Wrestler {
     }
 
     _doElbowDrop(other) {
-        other._drain(STAMINA_DRAIN.elbowDrop);
         // Wind-up: crouch + raise elbow while still upright (skeleton visible)
         this.state = 'slamming';
         this._runPoseSequence([
@@ -1268,6 +1267,9 @@ export default class Wrestler {
             // 165–168, author_elbowdrop.mjs) on the rig; this moves him onto
             // the target over the same 380 ms.
             this._playFlight(elbowDropClip, { x: other.x, ease: 'Sine.easeInOut' }, () => {
+                // Damage lands with the elbow, not at the wind-up, so an
+                // interrupted drop costs the defender nothing (as kneeDrop).
+                other._drain(STAMINA_DRAIN.elbowDrop);
                 other.stateTimer = DOWN_SEC;
                 this.scene.cameras.main.shake(130, 0.002);
                 // Show landing / recovery poses (skeleton visible again)

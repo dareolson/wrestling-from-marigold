@@ -89,6 +89,10 @@ export const theszProcreateV1 = {
     skinCol:   thesz.skinCol,
     trunksCol: thesz.trunksCol,
     textures: {
+        // Joint attachment takes precedence over legacy idle-only calf/forearm
+        // nudges below. Those values remain historical tuner data; locked
+        // elbows/knees use the painted parent joint in every render pose.
+        lockLimbJoints: true,
         // Carried over from shipped Lou UNCHANGED, exactly as thesz_front3q_r1
         // does and for the same reason: this candidate's parts assemble to a
         // different raw height, and re-solving heightScale here would hide the

@@ -1,0 +1,68 @@
+
+══ ARTICULATION CERTIFICATION ══
+
+── refrig — CERTIFIED (524 rendered frames)
+   production contract exercised:
+     ✓ twoAnchorBinding
+     ✓ attachmentSlots
+     ✓ pelvisUnderlayMask
+     ✓ partVariants
+   get-up → upright handoff: 84.96 px at nearWrist (facing 1) — budget 84.96 px +0.5 tolerance
+     a known open defect: this gate stops it worsening, it does not close it
+   sole clearance (OBSERVED, not graded) — best-planted foot per entry
+     furthest from the mat: deep-squat +18.0px, combat-guard +5.3px, sprawl +5.3px
+     grading deferred to the grounded-state migration; see certify.mjs
+
+── george — FINDINGS (524 rendered frames)
+   production contract exercised:
+     ✗ twoAnchorBinding
+     ✗ attachmentSlots
+     ✗ pelvisUnderlayMask
+     ✓ partVariants
+   unmeasurable chains (9):
+     · soles: no boot sole anchors; character has no attachment-slot boots
+     · nearShoulder: nearUpArm has no proximal binding anchor
+     · farShoulder: farUpArm has no proximal binding anchor
+     · nearElbow: nearForearm has no proximal binding anchor
+     · …5 more
+   get-up → upright handoff: 44.23 px at nearWrist (facing 1) — budget 78.75 px +0.5 tolerance
+     (RIG_AND_MOVE_PIPELINE.md records 55.79 px for this defect by an unpreserved method; see certify.mjs)
+     a known open defect: this gate stops it worsening, it does not close it
+   source-artwork: 208
+   binding-geometry: 2
+     distal-anchor-error in: relaxed-stance, combat-guard, straight-jab, bent-elbow-strike, overhead-double-axe, hammerlock, arm-drag-reach, lockup, deep-squat, single-knee-stance, knee-lift, sprawl, back-drop-arch, dropkick-extension, elbow-drop-air, flying-press
+     variant-inert in: variant-swap
+     [source-artwork] distal-anchor-error neck @ relaxed-stance/facing -1 10.81px
+     [source-artwork] distal-anchor-error neck @ combat-guard/facing -1 10.81px
+     [source-artwork] distal-anchor-error neck @ straight-jab/facing -1 10.81px
+     [source-artwork] distal-anchor-error neck @ straight-jab/facing -1 10.81px
+     [source-artwork] distal-anchor-error neck @ straight-jab/facing -1 10.81px
+     [source-artwork] distal-anchor-error neck @ straight-jab/facing -1 10.81px
+     …204 more
+
+── thesz — UNVERIFIED (10 chains unmeasurable) (524 rendered frames)
+   production contract exercised:
+     ✗ twoAnchorBinding
+     ✗ attachmentSlots
+     ✗ pelvisUnderlayMask
+     ✗ partVariants
+   unmeasurable chains (10):
+     · soles: no boot sole anchors; character has no attachment-slot boots
+     · neck: head has no proximal binding anchor
+     · nearShoulder: nearUpArm has no proximal binding anchor
+     · farShoulder: farUpArm has no proximal binding anchor
+     · …6 more
+   get-up → upright handoff: 32.17 px at farWrist (facing 1) — budget 45.30 px +0.5 tolerance
+     (RIG_AND_MOVE_PIPELINE.md records 35.19 px for this defect by an unpreserved method; see certify.mjs)
+     a known open defect: this gate stops it worsening, it does not close it
+
+── matrix coverage: 20/20 entries reach the modular rig
+
+   These states cannot be certified because the rig never draws them.
+   Authoring wrestling moves on them exercises no articulation guarantee.
+
+── posture gaps: 1 entries reach the rig but render a stand-in pose
+   • pinned state (flat on mat) — no arched bridge / pin-escape posture yet; renders the plain supine pose
+
+   The rig draws these; the wrestling posture itself is not authored yet.
+

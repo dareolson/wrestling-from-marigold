@@ -1,0 +1,164 @@
+TAP version 13
+# Subtest: a paired clip takes exclusive ownership of a participating defender
+not ok 1 - a paired clip takes exclusive ownership of a participating defender
+  ---
+  duration_ms: 7.949125
+  type: 'test'
+  location: '/private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:28:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:35:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: clip entry stops the defender recovery tween and drops stale unowned articulation
+not ok 2 - clip entry stops the defender recovery tween and drops stale unowned articulation
+  ---
+  duration_ms: 13.195334
+  type: 'test'
+  location: '/private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:43:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(killed.includes(a.pose))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:47:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: omitted articulation initializes from the character idle, not previous move history
+not ok 3 - omitted articulation initializes from the character idle, not previous move history
+  ---
+  duration_ms: 2.117625
+  type: 'test'
+  location: '/private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:54:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    undefined !== 0.8
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0.8
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:57:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: cancelling a flight stops its travel tween before it can drag a recovered actor
+not ok 4 - cancelling a flight stops its travel tween before it can drag a recovered actor
+  ---
+  duration_ms: 1.483208
+  type: 'test'
+  location: '/private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:61:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:68:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a held receiver renders authored limbs without a frozen walking or guard blend
+not ok 5 - a held receiver renders authored limbs without a frozen walking or guard blend
+  ---
+  duration_ms: 2.460667
+  type: 'test'
+  location: '/private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:71:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    no walk arm swing
+    + actual - expected
+    
+    + 1.5707963267948966
+    - 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1.5707963267948966
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:80:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: returning George to neutral unwinds a hold instead of retaining its folded joints
+not ok 6 - returning George to neutral unwinds a hold instead of retaining its folded joints
+  ---
+  duration_ms: 1.416458
+  type: 'test'
+  location: '/private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:89:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    undefined !== 0.7
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0.7
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///private/tmp/marigold-joint-baseline/tests/moveParticipation.test.js:93:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 0
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 256.347583

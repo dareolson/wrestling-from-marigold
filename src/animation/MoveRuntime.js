@@ -53,6 +53,18 @@ export default class MoveRuntime {
     play(clipId, bindings, { rate = 1, onEvent = null, onComplete = null, onCancel = null } = {}) {
         const clip = this._clips.get(clipId);
         if (!clip) throw new Error(`Unknown animation clip "${clipId}"`);
+        // Participation claims the pose just as tweenPose does. In particular,
+        // a defender must not keep playing its own strike under a paired throw.
+        // Cancel first: old teardown may start recovery tweens, which the new
+        // owner's prepare hook must stop before the first sample is applied.
+        const targets = new Set(Object.keys(clip.tracks).map(role => bindings[role]).filter(Boolean));
+        for (const active of [...this._active.values()]) {
+            const initiator = Object.values(active.bindings).find(target => targets.has(target));
+            if (initiator) this.cancel(active, 'clip-replaced', { initiator });
+        }
+        for (const role of Object.keys(clip.tracks)) {
+            bindings[role]?.prepareAnimationClip?.(clip.tracks[role]);
+        }
         const handle = {
             id: this._nextId++,
             clip,

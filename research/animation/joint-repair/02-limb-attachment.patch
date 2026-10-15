@@ -1,0 +1,231 @@
+--- a/src/Skeleton.js
++++ b/src/Skeleton.js
+@@ -464,6 +464,10 @@
+         this._nearForearmOffsetY = textures.nearForearmOffsetY ?? 0;
+         this._farForearmOffsetX = textures.farForearmOffsetX ?? 0;
+         this._farForearmOffsetY = textures.farForearmOffsetY ?? 0;
++        // Production joint-lock mode: child placement is derived only from
++        // the parent's painted joint and the child's registered pivot.
++        // Legacy idle-tuning nudges cannot translate a connected segment.
++        this._lockLimbJoints = textures.lockLimbJoints === true;
+         // Per-character thigh nudge, unscaled px. Defaults to 0. Applied on
+         // top of HIP_OVERLAP in updateUpright. legOffsetY: + = down (both
+         // thighs). legOffsetX: + = toward facing/forward (near thigh only —
+@@ -1267,7 +1271,8 @@
+         // Use the procedural foot-locking gait for walking and plain idle. When a move
+         // poses the legs (slam, lockup, sleeper, etc.) and the wrestler is essentially
+         // stationary, fall back to the original pose-driven FK so those moves are untouched.
+-        const poseLegActive = Math.abs(pose.lLeg) + Math.abs(pose.rLeg) > 0.05;
++        const poseLegActive = Math.abs(pose.lLeg) + Math.abs(pose.rLeg) > 0.05
++            || ['lKnee', 'rKnee', 'lShin', 'rShin'].some(key => Number.isFinite(pose[key]));
+         const useGait = moveBlend > 0.2 || !poseLegActive;
+ 
+         // ── Hip height ──────────────────────────────────────────────────────────
+@@ -1583,15 +1588,18 @@
+         // jointPivotFrac (authored overlap art), _attachChild skips the
+         // pull-back and anchors directly at farTrueKnee instead.
+         const farShinRender = this._attachChild(this.farShin, farTrueKnee.x, farTrueKnee.y, far.shinAng, s, RIG.KNEE_OVERLAP);
+-        farShinRender.x += facing * this._farShinOffsetX * s;
+-        farShinRender.y += this._farShinOffsetY * s;
+-        const farAnkle = this._end(farKnee.x, farKnee.y, shinH, far.shinAng);
++        if (!this._lockLimbJoints) {
++            farShinRender.x += facing * this._farShinOffsetX * s;
++            farShinRender.y += this._farShinOffsetY * s;
++        }
++        const farKneeAnchor = this._lockLimbJoints ? farTrueKnee : farKnee;
++        const farAnkle = this._end(farKneeAnchor.x, farKneeAnchor.y, shinH, far.shinAng);
+         this.jointAttachmentPoints.farAnkle = { ...farAnkle };
+         this._placeLimbPart(this.farShin, farKnee, farAnkle, {
+             x: farShinRender.x, y: farShinRender.y, w: legW, h: shinH,
+             angle: far.shinAng, scale: s * this._farShinScale, facing,
+         });
+-        this._recordJointAttachment('farKnee', this.farShin, farKnee.x, farKnee.y, far.shinAng);
++        this._recordJointAttachment('farKnee', this.farShin, farKneeAnchor.x, farKneeAnchor.y, far.shinAng);
+         if (this.farBoot) {
+             if (!this._placeAttachment(this.farBoot, farAnkle, far.bootAng, s, facing, 'farBoot')) {
+                 this._place(this.farBoot, farAnkle.x, farAnkle.y, legW + 4 * s, bootH, far.bootAng);
+@@ -1678,8 +1686,8 @@
+         // Back off along the CHILD forearm's axis. Using the upper-arm angle
+         // makes the root orbit the elbow whenever the joint bends.
+         const farElbow = this._attachChild(this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA, s, RIG.ELBOW_OVERLAP);
+-        const farForearmX = farElbow.x + facing * this._farForearmOffsetX * s;
+-        const farForearmY = farElbow.y + this._farForearmOffsetY * s;
++        const farForearmX = farElbow.x + (this._lockLimbJoints ? 0 : facing * this._farForearmOffsetX * s);
++        const farForearmY = farElbow.y + (this._lockLimbJoints ? 0 : this._farForearmOffsetY * s);
+         const farWrist = this._end(farTrueElbow.x, farTrueElbow.y, forearmH * RIG.FAR_ARM_SCALE, farFA);
+         this.jointAttachmentPoints.farWrist = { ...farWrist };
+         this._placeLimbPart(this.farForearm, farTrueElbow, farWrist, {
+@@ -1719,15 +1727,18 @@
+             : nearKnee;
+         const nearShinRenderAng = near.shinAng + facing * this._nearShinTilt;
+         const nearShinRender = this._attachChild(this.nearShin, nearTrueKnee.x, nearTrueKnee.y, nearShinRenderAng, s, RIG.KNEE_OVERLAP);
+-        nearShinRender.x += facing * ((this._authoredLegRig ? 0 : RIG.NEAR_SHIN_FWD) + this._nearShinOffsetX) * s;
+-        nearShinRender.y += ((this._authoredLegRig ? 0 : -RIG.NEAR_SHIN_UP) + this._nearShinOffsetY) * s;
+-        const nearAnkle = this._end(nearKnee.x, nearKnee.y, shinH, near.shinAng);
++        if (!this._lockLimbJoints) {
++            nearShinRender.x += facing * ((this._authoredLegRig ? 0 : RIG.NEAR_SHIN_FWD) + this._nearShinOffsetX) * s;
++            nearShinRender.y += ((this._authoredLegRig ? 0 : -RIG.NEAR_SHIN_UP) + this._nearShinOffsetY) * s;
++        }
++        const nearKneeAnchor = this._lockLimbJoints ? nearTrueKnee : nearKnee;
++        const nearAnkle = this._end(nearKneeAnchor.x, nearKneeAnchor.y, shinH, near.shinAng);
+         this.jointAttachmentPoints.nearAnkle = { ...nearAnkle };
+         this._placeLimbPart(this.nearShin, nearKnee, nearAnkle, {
+             x: nearShinRender.x, y: nearShinRender.y, w: legW, h: shinH,
+             angle: nearShinRenderAng, scale: s * this._nearShinScale, facing,
+         });
+-        this._recordJointAttachment('nearKnee', this.nearShin, nearKnee.x, nearKnee.y, nearShinRenderAng);
++        this._recordJointAttachment('nearKnee', this.nearShin, nearKneeAnchor.x, nearKneeAnchor.y, nearShinRenderAng);
+         if (this.nearBoot) {
+             if (!this._placeAttachment(this.nearBoot, nearAnkle, near.bootAng, s, facing, 'nearBoot')) {
+                 this._place(this.nearBoot, nearAnkle.x, nearAnkle.y, legW + 4 * s, bootH, near.bootAng);
+@@ -1751,8 +1762,8 @@
+         const nearTrueElbow = this.nearUpArm._binding ? nearGraphElbow
+             : this._trueDistalEnd(this.nearUpArm, nearShoulderX, armShoulderY, upperArmH, nearUpArmAng, s, facing);
+         const nearElbow = this._attachChild(this.nearForearm, nearTrueElbow.x, nearTrueElbow.y, nearFA, s, RIG.ELBOW_OVERLAP);
+-        const nearForearmX = nearElbow.x + facing * this._nearForearmOffsetX * s;
+-        const nearForearmY = nearElbow.y + this._nearForearmOffsetY * s;
++        const nearForearmX = nearElbow.x + (this._lockLimbJoints ? 0 : facing * this._nearForearmOffsetX * s);
++        const nearForearmY = nearElbow.y + (this._lockLimbJoints ? 0 : this._nearForearmOffsetY * s);
+         const nearWrist = this._end(nearTrueElbow.x, nearTrueElbow.y, forearmH, nearFA);
+         this.jointAttachmentPoints.nearWrist = { ...nearWrist };
+         this._placeLimbPart(this.nearForearm, nearTrueElbow, nearWrist, {
+@@ -2019,7 +2030,18 @@
+     // starts from that exact pose, so there is no turn-over pop.
+     updateGetUp(x, y, s, facing, t, lying = 'prone') {
+         const K = lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
+-        this._applyGrounded(x, y, s, facing, Skeleton._sampleKeyposes(K, t));
++        const pose = Skeleton._sampleKeyposes(K, t);
++        if (this._lockLimbJoints) {
++            // The old final key places every character's hips only 88 units
++            // above the mat. Locked calves expose that short generic stand-in
++            // as a jump when a differently sized rig returns upright. Finish
++            // the rise at this body's standing height, continuously after
++            // the final supported key, rather than changing knee attachment.
++            const last = K.at(-1), before = K.at(-2);
++            const u = Math.max(0, Math.min(1, (t - before.t) / (last.t - before.t)));
++            pose.hip += (this.standingHipHeight - last.hip) * u * u * (3 - 2 * u);
++        }
++        this._applyGrounded(x, y, s, facing, pose);
+     }
+ 
+     // Place every part from a grounded pose: hip-rooted, torso free to pitch
+@@ -2104,13 +2126,14 @@
+                 ? this._trueDistalEnd(thighImg, hipRender.x, hipRender.y, thighH, tA, s, facing)
+                 : knee;
+             const kneeRender = this._attachChild(shinImg, trueKnee.x, trueKnee.y, sA, s, RIG.KNEE_OVERLAP);
+-            const ankle = this._end(knee.x, knee.y, shinH, sA);
++            const kneeAnchor = this._lockLimbJoints ? trueKnee : knee;
++            const ankle = this._end(kneeAnchor.x, kneeAnchor.y, shinH, sA);
+             this.jointAttachmentPoints[`${side}Ankle`] = { ...ankle };
+             this._placeLimbPart(shinImg, knee, ankle, {
+                 x: kneeRender.x, y: kneeRender.y, w: legW, h: shinH,
+                 angle: sA, scale: s, facing,
+             });
+-            this._recordJointAttachment(`${side}Knee`, shinImg, knee.x, knee.y, sA);
++            this._recordJointAttachment(`${side}Knee`, shinImg, kneeAnchor.x, kneeAnchor.y, sA);
+             if (bootImg) {
+                 if (!this._placeAttachment(bootImg, ankle, sA + f * 0.3, s, facing, `${side}Boot`)) {
+                     this._place(bootImg, ankle.x, ankle.y, legW + 4 * s, bootH, sA + f * 0.3);
+--- a/src/characters/george.js
++++ b/src/characters/george.js
+@@ -55,6 +55,10 @@
+     skinCol: 0xa87858,
+     trunksCol: 0x1a1a1a,
+     textures: {
++        // Joint attachment takes precedence over legacy idle-only calf/forearm
++        // nudges below. Those values remain historical tuner data; locked
++        // elbows/knees use the painted parent joint in every render pose.
++        lockLimbJoints: true,
+         heightScale: 0.825,
+         headScale: 0.89,
+         head: 'george_head',
+@@ -108,12 +112,18 @@
+             key: 'george_near_shin',
+             box: { w: 69.29863013689331, h: 86.05214511504334 },
+             jointPivotFrac: 0.23422963443403397,
++            // Knee-row alpha centroid x=65.5/149. Keep that feature on the
++            // thigh's knee instead of translating the whole calf afterward.
++            pivotOffsetFrac: -0.07887832603592065,
+             soleAnchorFrac: { u: 0.6214887064664337, v: 0.8976677194167121 },
+         },
+         farShin: {
+             key: 'george_far_shin',
+             box: { w: 69.29863013689331, h: 86.05214511504334 },
+             jointPivotFrac: 0.23422963443403397,
++            // Knee-row alpha centroid x=65.5/149. Keep that feature on the
++            // thigh's knee instead of translating the whole calf afterward.
++            pivotOffsetFrac: -0.07887832603592065,
+             soleAnchorFrac: { u: 0.6214887064664337, v: 0.8976677194167121 },
+         },
+         nearForearm: {
+--- a/src/characters/thesz.js
++++ b/src/characters/thesz.js
+@@ -5,6 +5,10 @@
+     skinCol:   0xe8c098,
+     trunksCol: 0x484848,
+     textures: {
++        // Joint attachment takes precedence over legacy idle-only calf/forearm
++        // nudges below. Those values remain historical tuner data; locked
++        // elbows/knees use the painted parent joint in every render pose.
++        lockLimbJoints: true,
+         // Measured alongside george.js's own height fix (Derek, 2026-07-19:
+         // real George 5'9" vs real Thesz 6'2", Thesz should have the height
+         // advantage — both currently rendered ~7ft, no prior real-world
+@@ -205,7 +209,10 @@
+         // (|lLeg| past ~1.0 backward) a few px of the thigh's knee region show
+         // because thesz's PAINTED knee sits ~12px below the bone knee (structural,
+         // not tail). See runtime-conformed/REPORT.md's task-1 section.
+-        thigh:    { key: 'thesz_thigh', box: { w: 78, h: 71.4 }, pivotOffsetFrac: -0.0767 },
++        // Anatomical knee row from lou_thigh_knee_crop.py: 111.176/126.
++        // Alpha-row centroid at that row is x=86/150, not the bone axis.
++        thigh: { key: 'thesz_thigh', box: { w: 78, h: 71.4 }, pivotOffsetFrac: -0.0767,
++            distalAnchorFrac: { u: 0.5733333333333334, v: 0.8823529411764707 } },
+         // Per-character leg bones (2026-07-12, Derek approved the Skeleton.js
+         // knob): the shared rig legs (56/64) stand ~18% longer relative to
+         // the torso than the reference drawing. Ref targets, torso-ink-
+--- a/src/characters/thesz_procreate_v1.js
++++ b/src/characters/thesz_procreate_v1.js
+@@ -89,6 +89,10 @@
+     skinCol:   thesz.skinCol,
+     trunksCol: thesz.trunksCol,
+     textures: {
++        // Joint attachment takes precedence over legacy idle-only calf/forearm
++        // nudges below. Those values remain historical tuner data; locked
++        // elbows/knees use the painted parent joint in every render pose.
++        lockLimbJoints: true,
+         // Carried over from shipped Lou UNCHANGED, exactly as thesz_front3q_r1
+         // does and for the same reason: this candidate's parts assemble to a
+         // different raw height, and re-solving heightScale here would hide the
+--- /dev/null
++++ b/tests/lockedGetUp.test.js
+@@ -0,0 +1,30 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import Skeleton from '../src/Skeleton.js';
++
++test('joint-locked get-ups finish at the actual body height without moving the grounded start', () => {
++    for (const height of [124, 132.19]) for (const lying of ['prone', 'supine']) {
++        let rendered;
++        const rig = { _lockLimbJoints: true, standingHipHeight: height,
++            _applyGrounded(...args) { rendered = args.at(-1); } };
++        const start = lying === 'prone' ? Skeleton.GROUNDED_FLAT : Skeleton.GROUNDED_SUPINE;
++        Skeleton.prototype.updateGetUp.call(rig, 0, 0, 1, 1, 0, lying);
++        assert.equal(rendered.hip, start.hip);
++        let last = rendered.hip;
++        for (let i = 1; i <= 48; i++) {
++            Skeleton.prototype.updateGetUp.call(rig, 0, 0, 1, 1, i / 48, lying);
++            assert.ok(rendered.hip >= last, 'rise stays continuous and monotonic');
++            last = rendered.hip;
++        }
++        assert.ok(Math.abs(rendered.hip - height) < 1e-9);
++        assert.equal(Skeleton.GETUP_POSES.at(-1).hip, 88, 'no global pose mutation');
++    }
++});
++
++test('reference and unmigrated rigs retain their existing get-up geometry', () => {
++    let rendered;
++    const rig = { _lockLimbJoints: false, standingHipHeight: 124,
++        _applyGrounded(...args) { rendered = args.at(-1); } };
++    Skeleton.prototype.updateGetUp.call(rig, 0, 0, 1, 1, 1);
++    assert.equal(rendered.hip, 88);
++});

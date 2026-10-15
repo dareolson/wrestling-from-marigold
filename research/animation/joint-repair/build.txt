@@ -1,0 +1,28 @@
+
+> wrestling-from-marigold@1.0.0 build
+> vite build
+
+vite v8.0.13 building client environment for production...
+[2Ktransforming...✓ 59 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                               0.68 kB │ gzip:  0.43 kB
+dist/assets/marigold-queue-woman-v1-DvKmHz3W.png            234.56 kB
+dist/assets/marigold-queue-man-v1-fpIVbPTu.png              259.93 kB
+dist/assets/dressing-room-v1-BUtPzCJL.jpg                   354.80 kB
+dist/assets/dressing-room-wrist-offered-v1-BRBlx-hY.jpg     474.41 kB
+dist/assets/arrival-guido-closeup-v1-XG-R1Rlz.jpg           540.33 kB
+dist/assets/dressing-room-tape-start-v1-CrRnURSw.jpg        548.46 kB
+dist/assets/dressing-room-guido-reaction-v1-Ce45o0fF.jpg    573.53 kB
+dist/assets/marigold-title-clean-v1-C1m1yiHG.jpg            591.68 kB
+dist/assets/arrival-bus-step-v1-Cj7S1k3D.jpg                628.25 kB
+dist/assets/arrival-side-door-v1-B0g-sBSB.jpg               638.09 kB
+dist/assets/dressing-room-time-to-go-v1-BewL7sp_.jpg        692.40 kB
+dist/assets/dressing-room-two-shot-v1-DTiK5XkE.jpg          718.45 kB
+dist/assets/arrival-entrance-bustle-v1-PzW_E7IP.jpg         774.65 kB
+dist/assets/arrival-walk-v1-ClYd5J6e.jpg                    795.47 kB
+dist/assets/arrival-first-sight-v1-D7e-D8xn.jpg             849.64 kB
+dist/assets/trainer-medium-v1-DHzP3rp1.png                1,079.86 kB
+dist/assets/index-3nF56Rmv.js                               198.27 kB │ gzip: 53.64 kB
+
+✓ built in 365ms

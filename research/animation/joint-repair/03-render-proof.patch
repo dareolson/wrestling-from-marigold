@@ -1,0 +1,165 @@
+--- /dev/null
++++ b/tools/debug/jointInk.js
+@@ -0,0 +1,52 @@
++// Read final rendered images, after mirroring and body tilt. The gap metric
++// complements anchor alignment; an overlapping corner alone is not certification.
++const pixels = new Map();
++function opaque(img, x, y) {
++    let p = pixels.get(img.texture.key);
++    if (!p) {
++        const source = img.texture.getSourceImage();
++        const c = document.createElement('canvas'); c.width = source.width; c.height = source.height;
++        const ctx = c.getContext('2d', { willReadFrequently: true }); ctx.drawImage(source, 0, 0);
++        p = { width: c.width, data: ctx.getImageData(0, 0, c.width, c.height).data }; pixels.set(img.texture.key, p);
++    }
++    const dx = x - img.x, dy = y - img.y, c = Math.cos(img.rotation), s = Math.sin(img.rotation);
++    let u = (dx * c + dy * s) / img.displayWidth + img.originX;
++    let v = (-dx * s + dy * c) / img.displayHeight + img.originY;
++    if (img.flipX) u = 1 - u; if (img.flipY) v = 1 - v;
++    if (u < 0 || u >= 1 || v < 0 || v >= 1) return false;
++    const f = img.frame, px = f.cutX + Math.floor(u * f.cutWidth), py = f.cutY + Math.floor(v * f.cutHeight);
++    return p.data[(py * p.width + px) * 4 + 3] >= 32;
++}
++function world(img, a) {
++    const u = img.flipX ? 1 - a.u : a.u, v = img.flipY ? 1 - a.v : a.v;
++    const x = (u - img.originX) * img.displayWidth, y = (v - img.originY) * img.displayHeight;
++    const c = Math.cos(img.rotation), s = Math.sin(img.rotation);
++    return { x: img.x + x * c - y * s, y: img.y + x * s + y * c };
++}
++export function measureJoints(sk) {
++    const result = {};
++    for (const side of ['near', 'far']) for (const kind of ['Elbow', 'Knee']) {
++        const name = side + kind, joint = sk.jointAttachmentPoints[name];
++        const parent = sk[side + (kind === 'Elbow' ? 'UpArm' : 'Thigh')];
++        const child = sk[side + (kind === 'Elbow' ? 'Forearm' : 'Shin')];
++        const p = child._jointPivotFrac ?? 0;
++        const proximal = child._binding?.proximal ?? { u: 0.5 + (child._pivotOffsetFrac ?? 0) * (1 - p), v: p };
++        const childPoint = world(child, proximal);
++        const parentPoint = parent._binding?.distal ? world(parent, parent._binding.distal)
++            : parent._distalAnchorFrac ? world(parent, parent._distalAnchorFrac) : null;
++        const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
++        const a = [], b = []; let overlap = 0, uncoveredCorePixels = 0;
++        for (let y = Math.floor(joint.y - 10); y <= joint.y + 10; y++) for (let x = Math.floor(joint.x - 10); x <= joint.x + 10; x++) {
++            if ((x - joint.x) ** 2 + (y - joint.y) ** 2 > 100) continue;
++            const pa = opaque(parent, x + 0.5, y + 0.5), pb = opaque(child, x + 0.5, y + 0.5);
++            if (!pa && !pb && (x + 0.5 - joint.x) ** 2 + (y + 0.5 - joint.y) ** 2 <= 4) uncoveredCorePixels++;
++            if (pa) a.push([x,y]); if (pb) b.push([x,y]); if (pa && pb) overlap++;
++        }
++        let gap = overlap ? 0 : Infinity;
++        if (!overlap) for (const [ax, ay] of a) for (const [bx, by] of b) gap = Math.min(gap, Math.hypot(ax-bx, ay-by));
++        result[name] = { childError: distance(childPoint, joint),
++            parentError: parentPoint ? distance(parentPoint, joint) : null,
++            inkGap: Number.isFinite(gap) ? gap : 999, overlap, uncoveredCorePixels };
++    }
++    return result;
++}
+--- /dev/null
++++ b/tools/debug/move_participation_proof.mjs
+@@ -0,0 +1,107 @@
++// Isolated proof: WFM_URL=http://127.0.0.1:5217 node tools/debug/move_participation_proof.mjs <output.json>
++import { launch } from './harness.mjs';
++import { writeFile, mkdir } from 'node:fs/promises';
++const output = process.argv[2] ?? '/tmp/marigold-participation-proof.json';
++const reports = [];
++for (const character of ['george','thesz','thesz-procreate-v1']) {
++    process.env.WFM_P1 = character; process.env.WFM_P2 = character === 'george' ? 'thesz' : 'george';
++    const h = await launch();
++    try {
++        await h.page.waitForFunction(() => window.__WFM_GAME?.scene.scenes[0]?.w1);
++        reports.push(await h.page.evaluate(async character => {
++            const { measureJoints } = await import('/tools/debug/jointInk.js');
++            const { REGISTERED_MOVE_CLIPS } = await import('/src/animation/clips/index.js');
++            const { POSES } = await import('/src/Wrestler.js');
++            const sc = window.__WFM_GAME.scene.scenes[0]; sc.scene.pause();
++            const reset = () => {
++                sc.moveRuntime.shutdown(); sc.tweens.killAll();
++                for (const clip of REGISTERED_MOVE_CLIPS) sc.moveRuntime.register(clip);
++                for (const [i,w] of [sc.w1,sc.w2].entries()) {
++                    Object.assign(w, { state: 'standing', pose: { ...POSES[w.idlePose] }, x: 450+i*75,y:400,
++                        facing: i ? -1:1, moveBlend:0, combatBlend:0,walkPhase:0,stamina:100,_fixedHold:false,
++                        _choreoUntil:0,_activeMove:null, vx:0,vy:0 });
++                    w.skeleton.setPartVariants({});
++                }
++            };
++            const summarize = (w, worst, time, role) => {
++                w.draw();
++                for (const [joint,m] of Object.entries(measureJoints(w.skeleton))) for (const metric of ['childError','parentError','inkGap','uncoveredCorePixels']) {
++                    if (m[metric] === null) continue;
++                    const key = role+'.'+joint+'.'+metric;
++                    if (!worst[key] || m[metric] > worst[key].value) worst[key] = { value:m[metric],time };
++                }
++            };
++            const clips = [];
++            for (const clip of REGISTERED_MOVE_CLIPS) for (const facing of [-1,1]) {
++                reset();sc.w1.facing=facing;sc.w2.facing=-facing;
++                const actors = { attacker:sc.w1,defender:sc.w2 };
++                const handle = sc.moveRuntime.play(clip.id,actors);sc.w1._activeMove=handle;
++                if (clip.tracks.defender) sc.w2._activeMove=handle;
++                const worst={};let frames=0;
++                const times=new Set([0,clip.duration]);
++                for(let t=0;t<clip.duration;t+=1/60)times.add(t);
++                for(const tr of Object.values(clip.tracks))for(let i=0;i<tr.keyframes.length;i++){
++                    times.add(tr.keyframes[i].at);if(i)times.add((tr.keyframes[i-1].at+tr.keyframes[i].at)/2);
++                }
++                for(const t of [...times].sort((a,b)=>a-b)){
++                    sc.moveRuntime.seek(handle,t);
++                    for(const role of Object.keys(clip.tracks))summarize(actors[role],worst,t,role);
++                    frames++;
++                }
++                clips.push({id:clip.id,facing,frames,worst});
++            }
++            const participation=[];
++            for(const method of ['_doHammerlock','_doSuplex','_doDropkick','_doJab'])for(const slot of [0,1])for(const facing of [-1,1]){
++                reset();const a=slot?sc.w2:sc.w1,b=slot?sc.w1:sc.w2;
++                a.facing=facing;b.facing=-facing;
++                for(const w of [a,b]){w.moveBlend=1;w.walkPhase=1.3;w.combatBlend=1;w.tweenPose('block',1500);}
++                // Receiver was still performing its own jab when the grapple began.
++                if(method==='_doHammerlock'||method==='_doSuplex')b._doJab(a);
++                a[method](b);
++                const primary=a._activeMove;const worst={};let duplicateOwners=0;
++                const originalDelta=sc.tweens.getDelta;sc.tweens.getDelta=()=>1000/60;
++                try{
++                    for(let i=0;i<190;i++){
++                        sc.tweens.step(true);sc.moveRuntime.update(1/60);
++                        for(const [role,w]of [['attacker',a],['defender',b]]){
++                            const owners=[...sc.moveRuntime._active.values()].filter(h=>Object.values(h.bindings).includes(w));
++                            duplicateOwners=Math.max(duplicateOwners,owners.length);
++                            summarize(w,worst,i/60,role);
++                        }
++                        if(i>2&&!sc.moveRuntime._active.has(primary?.id))break;
++                    }
++                }finally{sc.tweens.getDelta=originalDelta;}
++                participation.push({method,slot,facing,duplicateOwners,worst,states:[a.state,b.state]});
++            }
++            const postures=[];
++            for(const facing of [-1,1])for(const mode of ['supine','prone','getup-supine','getup-prone','fall-flip','fall-backward']){
++                reset();const w=sc.w1;w.facing=facing;const worst={};
++                for(let i=0;i<=48;i++){
++                    const t=i/48;
++                    if(mode.startsWith('getup-')){w.state='gettingUp';w.lying=mode.slice(6);w.riseT=t;}
++                    else if(mode.startsWith('fall-')){w.state='falling';w._fallVariant=mode.slice(5);w.fallProgress=t;}
++                    else{w.state='down';w.lying=mode;}
++                    summarize(w,worst,t,'actor');
++                }
++                postures.push({mode,facing,worst});
++            }
++            return {character,clips,participation,postures};
++        }, character));
++        console.log(character,'complete');
++    } finally { await h.close(); }
++}
++await writeFile(output,JSON.stringify({method:'60Hz clip sample sweep + real four-pilot executors from moving/recovering state; independent final image transforms and alpha',reports},null,2));
++const errors=[];
++for(const r of reports){
++    let maxChild=0,maxParent=0,maxGap=0,maxUncoveredCore=0;
++    for(const row of [...r.clips,...r.participation,...r.postures])for(const [key,m]of Object.entries(row.worst)){
++        if(key.endsWith('childError'))maxChild=Math.max(maxChild,m.value);
++        if(key.endsWith('parentError'))maxParent=Math.max(maxParent,m.value);
++        if(key.endsWith('inkGap'))maxGap=Math.max(maxGap,m.value);
++        if(key.endsWith('uncoveredCorePixels'))maxUncoveredCore=Math.max(maxUncoveredCore,m.value);
++    }
++    for(const row of r.participation)if(row.duplicateOwners>1)errors.push(`${r.character}/${row.method}: competing clips`);
++    if(maxChild>0.1||maxParent>0.1||maxGap>0||maxUncoveredCore>0)errors.push(`${r.character}: child=${maxChild} parent=${maxParent} ink=${maxGap}`);
++    console.log(JSON.stringify({character:r.character,maxChild,maxParent,maxGap,maxUncoveredCore}));
++}
++if(errors.length){console.error(errors.join('\n'));process.exitCode=1;}

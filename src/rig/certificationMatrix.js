@@ -143,12 +143,15 @@ export const CERTIFICATION_MATRIX = Object.freeze([
         pose: 'dropkickExtended',
         footBearing: false,
     }),
+    // On the rig since 2026-10-14 like the dropkick: the elbow drop flight
+    // clip, flat in the air with the elbow down. The dives and knee drop fly
+    // through the same path.
     Object.freeze({
         id: 'elbow-drop-air',
         label: 'elbow drop / diving elbow, airborne',
-        renderPath: 'unrigged',
-        state: 'elbowDropping',
-        gap: 'Wrestler._drawElbowDropAir draws primitives (also the diving state); skeleton is hidden.',
+        renderPath: 'upright',
+        pose: 'elbowDropAir',
+        footBearing: false,
     }),
     Object.freeze({
         id: 'flying-press',

@@ -42,11 +42,11 @@ test('entries that bypass the rig are declared, not silently certified', () => {
         assert.ok(entry.state, `${entry.id} names no wrestler state`);
         assert.equal(entry.pose, undefined);
     }
-    // The dropkick moved onto the rig (2026-10-14); the elbow drop and the
-    // press flight still bypass it.
+    // The dropkick and the elbow drop / dives moved onto the rig
+    // (2026-10-14); the press flight still bypasses it.
     const ids = gaps.map(entry => entry.id);
-    assert.ok(!ids.includes('dropkick-extension'));
-    assert.ok(ids.includes('elbow-drop-air') && ids.includes('flying-press'));
+    assert.ok(!ids.includes('dropkick-extension') && !ids.includes('elbow-drop-air'));
+    assert.ok(ids.includes('flying-press'));
     // The down and pinned STATE PATHS were migrated onto
     // Skeleton.updateGrounded (2026-08-13) and are no longer gaps.
     assert.ok(!ids.includes('down-state'));

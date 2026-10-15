@@ -161,14 +161,14 @@ export const MOVE_SPECS = {
 
     // ── Aerials ───────────────────────────────────────────────────────────
     elbowDrop: {
-        category: C.AERIAL, clip: null, executor: '_doElbowDrop',
-        damageKey: 'elbowDrop', poseSeq: true, legacyFallback: null, kitGated: true,
+        category: C.AERIAL, clip: 'elbowDrop', executor: '_doElbowDrop',
+        damageKey: 'elbowDrop', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryPower() -> resolvePowerMove() — down/possum target in reach',
         ai: ['vsDown'],
     },
     kneeDrop: {
-        category: C.AERIAL, clip: null, executor: '_doKneeDrop',
-        damageKey: 'kneeDrop', poseSeq: true, legacyFallback: null, kitGated: true,
+        category: C.AERIAL, clip: 'kneeDrop', executor: '_doKneeDrop',
+        damageKey: 'kneeDrop', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryPower() — hold down vs a down/possum opponent',
         ai: ['vsDown'],
     },
@@ -179,13 +179,13 @@ export const MOVE_SPECS = {
         ai: ['finisher', 'lunge', 'intoPin'],
     },
     divingElbow: {
-        category: C.AERIAL, clip: null, executor: '_doDive',
+        category: C.AERIAL, clip: 'divingElbow', executor: '_doDive',
         damageKey: 'divingElbow', poseSeq: false, legacyFallback: null, kitGated: false,
         trigger: 'tryDive() — dive from the turnbuckle; available to every character',
         ai: ['turnbuckle', 'vsDown'],
     },
     topDive: {
-        category: C.AERIAL, clip: null, executor: '_doTopDive',
+        category: C.AERIAL, clip: 'topDive', executor: '_doTopDive',
         damageKey: 'topDive', poseSeq: false, legacyFallback: null, kitGated: false,
         trigger: 'tryDive() — top-rope dive; available to every character',
         ai: ['turnbuckle', 'heavy'],

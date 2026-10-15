@@ -120,6 +120,12 @@ export const MOVE_SPECS = {
         trigger: 'Arena lockup resolution — power',
         ai: ['lockup'],
     },
+    hipToss: {
+        category: C.THROW, clip: 'hipToss', executor: '_doHipToss',
+        damageKey: 'hipToss', poseSeq: false, legacyFallback: null, kitGated: true,
+        trigger: 'Arena lockup resolution — power; takes the slot ahead of armDrag',
+        ai: ['lockup'],
+    },
     backBodyDrop: {
         category: C.THROW, clip: null, executor: '_doBackBodyDrop',
         damageKey: 'backBodyDrop', poseSeq: true, legacyFallback: null, kitGated: true,
@@ -147,10 +153,10 @@ export const MOVE_SPECS = {
         ai: ['lockup', 'holdDrain'],
     },
     armBar: {
-        category: C.HOLD, clip: null, executor: '_doArmBar',
-        damageKey: 'armBar', poseSeq: true, legacyFallback: null, kitGated: true,
-        trigger: 'Arena lockup resolution — right',
-        ai: ['lockup', 'holdDrain'],
+        category: C.HOLD, clip: 'armBar', executor: '_doArmBar',
+        damageKey: 'armBar', poseSeq: false, legacyFallback: null, kitGated: true,
+        trigger: 'tryFinisher() — hold up, down/possum target in reach',
+        ai: ['vsDown', 'holdDrain'],
     },
     figureFour: {
         category: C.HOLD, clip: 'figureFour', executor: '_doFigureFour',
@@ -159,10 +165,10 @@ export const MOVE_SPECS = {
         ai: ['vsDown', 'holdDrain', 'finisher'],
     },
     ankleLock: {
-        category: C.HOLD, clip: null, executor: '_doAnkleLock',
-        damageKey: 'ankleLock', poseSeq: true, legacyFallback: null, kitGated: true,
-        trigger: 'Arena lockup resolution — left',
-        ai: ['lockup', 'holdDrain'],
+        category: C.HOLD, clip: 'ankleLock', executor: '_doAnkleLock',
+        damageKey: 'ankleLock', poseSeq: false, legacyFallback: null, kitGated: true,
+        trigger: 'tryFinisher() — hold down, down/possum target in reach',
+        ai: ['vsDown', 'holdDrain'],
     },
 
     // ── Aerials ───────────────────────────────────────────────────────────

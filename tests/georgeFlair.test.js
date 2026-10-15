@@ -50,3 +50,30 @@ test('healthy George struts forward; hurt George still begs', () => {
     assert.equal(george.struts, true);
     assert.ok(!thesz.struts);
 });
+
+// ── Submissions on a downed man: which one a finisher press picks ───────────
+
+// tryFinisher measures distance with Phaser's helper; Node has no Phaser.
+globalThis.Phaser ??= { Math: { Distance: { Between: (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1) } } };
+
+function finisherOn(moveSet, held) {
+    const calls = [];
+    const self = {
+        state: 'standing', x: 400, y: 380, s: 1, facing: 1, moveSet,
+        input: { justDown: key => key === 'finisher', isDown: key => key === held },
+        _doFigureFour: () => calls.push('figureFour'),
+        _doAnkleLock: () => calls.push('ankleLock'),
+        _doArmBar: () => calls.push('armBar'),
+    };
+    const result = Wrestler.prototype.tryFinisher.call(self, { x: 460, y: 380, state: 'down' });
+    return { result, calls };
+}
+
+test('on a downed man: up is the arm bar, down the ankle lock, neither the first in the kit', () => {
+    const lou = ['armBar', 'ankleLock'];
+    assert.equal(finisherOn(lou, 'up').result, 'armBar');
+    assert.equal(finisherOn(lou, 'down').result, 'ankleLock');
+    assert.equal(finisherOn(lou, null).result, 'ankleLock');
+    assert.equal(finisherOn(['figureFour'], 'up').result, 'figureFour', 'George has no arm bar: his figure-four');
+    assert.deepEqual(finisherOn(['figureFour'], null).calls, ['figureFour']);
+});

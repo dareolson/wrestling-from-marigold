@@ -25,6 +25,10 @@ import { topDiveClip } from './topDive.js';
 import { theszPressClip } from './theszPress.js';
 // George's, from Ric Flair's sheet (tools/move-editor/author_figurefour.mjs).
 import { figureFourClip } from './figureFour.js';
+// Mat wrestling (tools/move-editor/author_hiptoss.mjs, author_groundholds.mjs).
+import { hipTossClip } from './hipToss.js';
+import { ankleLockClip } from './ankleLock.js';
+import { armBarClip } from './armBar.js';
 
 export const REGISTERED_MOVE_CLIPS = [
     jabClip,
@@ -39,4 +43,7 @@ export const REGISTERED_MOVE_CLIPS = [
     topDiveClip,
     theszPressClip,
     figureFourClip,
+    hipTossClip,
+    ankleLockClip,
+    armBarClip,
 ];

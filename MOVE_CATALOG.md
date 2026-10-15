@@ -27,14 +27,15 @@ moves are older stance-to-stance animations on the same rig.
 | `bodySlam` | throw | Grapple at grapple range (reads as a powerbomb; kept) | clip (Bret 120–121, 322–328) | Lou |
 | `piledriver` | throw | Grapple at grapple range, preferred over the slam | clip (Bret 140–153) | George |
 | `suplex` | throw | Lockup + Up | clip (Bret 357–374) | George, Lou |
-| `armDrag` | throw | Lockup + Power | pose sequence | George, Lou |
+| `armDrag` | throw | Lockup + Power (unless the kit has `hipToss`) | pose sequence | George |
+| `hipToss` | throw | Lockup + Power — takes that slot ahead of `armDrag` | clip (Bret 345–356) | Lou |
 | `backBodyDrop` | throw | Grapple vs a runner, with direction | pose sequence | George, Lou |
 | `hammerlock` | hold | Finisher at grapple range in a lockup | clip (Derek's) | George, Lou |
 | `sleeperHold` | hold | Finisher vs a standing opponent in reach | pose sequence | George, Lou |
 | `headlock` | hold | Lockup + Down | pose sequence | George, Lou |
-| `figureFour` | hold | Finisher next to a downed opponent | clip (Flair 386–403) | George |
-| `armBar` | hold | Lockup + Right | pose sequence | **nobody yet** |
-| `ankleLock` | hold | Lockup + Left | pose sequence | **nobody yet** |
+| `figureFour` | hold (mat) | Finisher next to a downed opponent | clip (Flair 386–403) | George |
+| `armBar` | hold (mat) | Finisher + Up next to a downed opponent | clip (first pass) | Lou |
+| `ankleLock` | hold (mat) | Finisher + Down next to a downed opponent | clip (first pass) | Lou |
 | `elbowDrop` | aerial | Power next to a downed opponent | clip (Bret 165–168) | George, Lou |
 | `kneeDrop` | aerial | Hold down + Power next to a downed opponent | clip | George, Lou |
 | `theszPress` | aerial | Finisher at mid range vs a standing opponent | clip (Bret 210–213) | Lou |
@@ -42,6 +43,18 @@ moves are older stance-to-stance animations on the same rig.
 | `pin` | pin | Grapple next to a downed opponent | pose sequence | George, Lou |
 | `divingElbow`, `topDive` | aerial | From the turnbuckle | clip (Bret 209–213) | everyone |
 | `taunt`, `turnbuckleTaunt` | taunt | Finisher with nothing in range / on the turnbuckle | pose sequence | everyone |
+
+**Slots:** the controls have a fixed number of slots, so moves compete for
+them and a kit decides which fills each one. Lockup + Power is `hipToss` or
+`armDrag`; Finisher next to a downed man is the kit's `figureFour`,
+`ankleLock` or `armBar` (Up picks the arm bar, Down the ankle lock, nothing
+the first the kit has). New moves for an occupied slot follow the same
+pattern.
+
+**Portability caveat:** a clip's body lift is tuned on the cast it was posed
+on (e.g. shipped Lou's hips stay at 124 when his legs go forward; George's
+drop). A move given to a differently-built wrestler may sit a little high or
+low until lift is made relative to each rig — a planned follow-up.
 
 Character traits, separate from moves (set in the character file):
 `begsOff` (begs when hurt, Flair's "no, no") and `struts` (Flair's strut as the
@@ -59,7 +72,6 @@ These are identified frame by frame and only need posing and wiring.
 | Shove | Bret 109–114 | |
 | Backward roll (escape) | Bret 239–243 | |
 | Mounted / kneeling punches | Bret 180–183 | on a downed opponent |
-| Arm drag / hip toss (victim's flip) | Bret 350–356 | upgrade of the existing `armDrag` |
 | Back body drop (victim's flip) | Bret 184–193 | upgrade of the existing `backBodyDrop` |
 | Clothesline bump | Bret 54–59 | upgrade of the existing fall |
 | Get up from the back / from the front | Bret 64–68 / 244–258 | upgrade of the get-ups |
@@ -122,9 +134,9 @@ layer takes any images. Reference only, like the sprites.
 
 | Family | Moves | Have |
 |---|---|---|
-| Arm | wristlock, arm wringer, hip toss | `hammerlock`, `armBar` (unassigned), `armDrag` |
+| Arm | wristlock, arm wringer | `hammerlock`, `armBar` (mat), `armDrag`, `hipToss` |
 | Headlock | headlock takeover, flying mare | `headlock` |
-| Leg | step-over toehold, Indian deathlock, Boston crab | `figureFour`, `ankleLock` (unassigned) |
+| Leg | step-over toehold, Indian deathlock, Boston crab | `figureFour`, `ankleLock` (mat) |
 | Body | body scissors, abdominal stretch, cobra twist | |
 | Signatures | Thesz's airplane spin and backdrop suplex; George's flying tackle (confirm in footage) | `theszPress` |
 

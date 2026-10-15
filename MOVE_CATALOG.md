@@ -77,27 +77,29 @@ Bret (measured on Flair: 92% the same). Each adds **one finisher row**, so a
 sheet is worth about one new signature move. The finisher listed is the one
 he used at the time; confirm it on the sheet.
 
-| Wrestler | Expected finisher | Download |
+| Wrestler | Expected finisher | Page (download button / Save Image As) |
 |---|---|---|
-| The Undertaker | Tombstone piledriver | https://www.spriters-resource.com/download/44461/ |
-| Yokozuna | Banzai drop | https://www.spriters-resource.com/download/44462/ |
-| Razor Ramon | Razor's Edge | https://www.spriters-resource.com/download/44460/ |
-| Shawn Michaels | (his era's finisher) | https://www.spriters-resource.com/download/44465/ |
-| Mr. Perfect | Perfect-plex | https://www.spriters-resource.com/download/44466/ |
-| Tatanka | (his era's finisher) | https://www.spriters-resource.com/download/44467/ |
-| Ted DiBiase | Million Dollar Dream | https://www.spriters-resource.com/download/44469/ |
-| Crush | (his era's finisher) | https://www.spriters-resource.com/download/44470/ |
+| The Undertaker | Tombstone piledriver | https://www.spriters-resource.com/snes/wwfroyal/asset/44461/ |
+| Yokozuna | Banzai drop | https://www.spriters-resource.com/snes/wwfroyal/asset/44462/ |
+| Razor Ramon | Razor's Edge | https://www.spriters-resource.com/snes/wwfroyal/asset/44460/ |
+| Shawn Michaels | (his era's finisher) | https://www.spriters-resource.com/snes/wwfroyal/asset/44465/ |
+| Mr. Perfect | Perfect-plex | https://www.spriters-resource.com/snes/wwfroyal/asset/44466/ |
+| Tatanka | (his era's finisher) | https://www.spriters-resource.com/snes/wwfroyal/asset/44467/ |
+| Ted DiBiase | Million Dollar Dream | https://www.spriters-resource.com/snes/wwfroyal/asset/44469/ |
+| Crush | (his era's finisher) | https://www.spriters-resource.com/snes/wwfroyal/asset/44470/ |
 
 **Saturday Night Slam Masters (SNES), Capcom:** a different game with bigger
 sprites and its own throws per character, so each sheet should add several
 moves rather than one.
 
-| Wrestler | Download |
+| Wrestler | Page (download button / Save Image As) |
 |---|---|
-| Mike Haggar | https://www.spriters-resource.com/download/27369/ |
-| Biff Slamkovich | https://www.spriters-resource.com/download/27251/ |
-| Gunloc | https://www.spriters-resource.com/download/27586/ |
+| Mike Haggar | https://www.spriters-resource.com/snes/saturdaynightslammasters/asset/27369/ |
+| Biff Slamkovich | https://www.spriters-resource.com/snes/saturdaynightslammasters/asset/27251/ |
+| Gunloc | https://www.spriters-resource.com/snes/saturdaynightslammasters/asset/27586/ |
 | the rest of the roster | https://www.spriters-resource.com/snes/saturdaynightslammasters/ |
 
-If a download link doesn't save a file, open the same number as
-`https://www.spriters-resource.com/fullview/<number>/` and use Save Image As.
+Each page has a download button for the sheet; right-click the sheet image
+and Save Image As works too. If a page moves, the game pages list everyone:
+https://www.spriters-resource.com/snes/wwfroyal/ and
+https://www.spriters-resource.com/snes/saturdaynightslammasters/.

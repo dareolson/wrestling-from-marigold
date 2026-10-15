@@ -156,9 +156,9 @@ export const CERTIFICATION_MATRIX = Object.freeze([
     Object.freeze({
         id: 'flying-press',
         label: 'Thesz press, airborne',
-        renderPath: 'unrigged',
-        state: 'pressing',
-        gap: 'Wrestler._drawDropkickFront draws primitives for the press flight; skeleton is hidden.',
+        renderPath: 'upright',
+        pose: 'theszPressAir',
+        footBearing: false,
     }),
     // Migrated off Wrestler._drawFlat onto Skeleton.updateGrounded
     // (2026-08-13). These now carry real joints, bindings and parts, and

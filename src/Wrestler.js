@@ -8,6 +8,7 @@ import { elbowDropClip } from './animation/clips/elbowDrop.js';
 import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
+import { theszPressClip } from './animation/clips/theszPress.js';
 import {
     ARTICULATED_CHANNELS,
     ARTICULATION_CHANNEL_PAIRS,
@@ -200,6 +201,9 @@ POSES.dropkickExtended = dropkickClip.tracks.attacker.keyframes
     .find(frame => frame.at === dropkickClip.events.find(event => event.type === 'impact').at).pose;
 // The elbow drop's flat-in-the-air frame, likewise ('elbow-drop-air'): the
 // keyframe with the most tilt before the impact.
+POSES.theszPressAir = theszPressClip.tracks.attacker.keyframes
+    .filter(frame => frame.at < theszPressClip.duration)
+    .reduce((best, frame) => ((frame.pose.tilt ?? 0) > (best.pose.tilt ?? 0) ? frame : best)).pose;
 POSES.elbowDropAir = elbowDropClip.tracks.attacker.keyframes
     .filter(frame => frame.at < elbowDropClip.duration)
     .reduce((best, frame) => ((frame.pose.tilt ?? 0) > (best.pose.tilt ?? 0) ? frame : best)).pose;
@@ -305,7 +309,7 @@ export const MOVE_DEFS = {
 // 'climbing'    tweening up to or down from a turnbuckle corner; no input
 // 'onTurnbuckle' standing on middle rope at corner; power = dive, movement = climb down
 // 'diving'      airborne from turnbuckle dive; posed by the dive clip
-// 'pressing'    Thesz press flight; pressProgress 0→1; lands into pin (hit) or down (whiff)
+// 'pressing'    Thesz press flight, posed by its clip; lands into pin (hit) or down (whiff)
 
 // ─── Wrestler class ───────────────────────────────────────────────────────────
 export default class Wrestler {
@@ -1451,8 +1455,6 @@ export default class Wrestler {
     }
 
     _doTheszPress(other) {
-        this.state         = 'pressing';
-        this.pressProgress = 0;
         this._divLandY     = other.y; // shadow anchor, same as the dives
         // He ends this move lying on top of the opponent — clamp the landing
         // with the downed-body margin like every other flat-ending move
@@ -1460,37 +1462,33 @@ export default class Wrestler {
         const m     = 60 * this.s;
         const landX = Math.max(b.left + m, Math.min(b.right - m, other.x));
 
-        this.scene.tweens.add({
-            targets:       this,
-            pressProgress: 1,
-            x:             landX,
-            y:             other.y,
-            duration:      420,
-            ease:          'Sine.easeIn',
-            onComplete: () => {
-                if (this.state !== 'pressing') return;
-                this.pressProgress = 0;
-                const dist = Math.abs(this.x - other.x);
-                // Blocking doesn't save you from a flying body — evading does
-                const hit  = dist <= 130 * this.s &&
-                             (other.state === 'standing' || other.state === 'staggered' || other.state === 'blocking');
-                if (hit) {
-                    other._drain(STAMINA_DRAIN.theszPress);
-                    // The press IS the cover — victim goes flat underneath
-                    other.x      = this.x;
-                    other.y      = this.y;
-                    other.facing = -this.facing;
-                    this.scene.cameras.main.shake(220, 0.004);
-                    this.scene.startPin(this, other);
-                } else {
-                    // Whiffed — crash and burn, long punish window
-                    this.state      = 'down';
-                    this.lying      = 'prone';
-                    this.stateTimer = 2.6;
-                    this.scene.cameras.main.shake(90, 0.0012);
-                }
-            },
-        });
+        // The flight is the theszPress clip (sheet frames 210–213,
+        // author_theszpress.mjs); this flies him onto the target.
+        this._playFlight(theszPressClip, { x: landX, y: other.y, ease: 'Sine.easeIn' }, () => {
+            const dist = Math.abs(this.x - other.x);
+            // Blocking doesn't save you from a flying body — evading does
+            const hit  = dist <= 130 * this.s &&
+                         (other.state === 'standing' || other.state === 'staggered' || other.state === 'blocking');
+            if (hit) {
+                other._drain(STAMINA_DRAIN.theszPress);
+                // The press IS the cover — victim goes flat underneath
+                other.x      = this.x;
+                other.y      = this.y;
+                other.facing = -this.facing;
+                this.scene.cameras.main.shake(220, 0.004);
+                this.scene.startPin(this, other);
+            } else {
+                // Whiffed — crash and burn, long punish window. (On a hit
+                // the pin's pinHold tween brings tilt/lift back up into
+                // the cover; here he goes straight to the grounded rig.)
+                this.pose.tilt  = 0;
+                this.pose.lift  = 0;
+                this.state      = 'down';
+                this.lying      = 'prone';
+                this.stateTimer = 2.6;
+                this.scene.cameras.main.shake(90, 0.0012);
+            }
+        }, { state: 'pressing' });
     }
 
     _doSleeperHold(other) {
@@ -2030,10 +2028,10 @@ export default class Wrestler {
             return;
         }
 
-        if (state === 'elbowDropping' || state === 'diving') {
-            // Flights posed by one-wrestler clips (_playFlight). The dive's
-            // shadow stays on the landing spot while he comes off the post.
-            const shadowY = state === 'diving' ? this._divLandY : y;
+        if (state === 'elbowDropping' || state === 'diving' || state === 'pressing') {
+            // Flights posed by one-wrestler clips (_playFlight). The dives' and
+            // press's shadow stays on the landing spot while he flies in.
+            const shadowY = state === 'elbowDropping' ? y : this._divLandY;
             gfx.fillStyle(0x000000, 0.22);
             gfx.fillEllipse(x, shadowY, 130 * s, 36 * s);
             this.skeleton.setVisible(true);
@@ -2041,15 +2039,6 @@ export default class Wrestler {
             return;
         }
 
-        if (state === 'pressing') {
-            // Low horizontal leap — body arcs up ~55·s and comes down on the target
-            const arc  = Math.sin(this.pressProgress * Math.PI);
-            const airY = y - arc * 55 * s;
-            gfx.fillStyle(0x000000, 0.15 + this.pressProgress * 0.08);
-            gfx.fillEllipse(x, this._divLandY, (100 + this.pressProgress * 50) * s, (30 + this.pressProgress * 10) * s);
-            this._drawDropkickFront(x, airY, s * 1.15, facing, skinCol, trunksCol);
-            return;
-        }
 
 
         const shadowY = onRopes ? this._corner.matY : y;
@@ -2085,43 +2074,6 @@ export default class Wrestler {
         // Choreography outranks the combat-ready guard — see _choreoOwnsPose().
         const guard = this._choreoOwnsPose() ? 0 : this.combatBlend;
         this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, guard, lean, this.moveBlend, liftScale, runBlend);
-    }
-
-    // Front-facing horizontal view for the dropkick.
-    // Both legs extend toward `facing` (kick direction); head on the opposite side.
-    // "Front-facing" = viewer sees the wrestler's chest while they're airborne.
-    _drawDropkickFront(x, y, s, facing, skinCol, trunksCol) {
-        const gfx     = this.gfx;
-        const legLen  = 92 * s;
-        const shinLen = legLen - 20 * s;  // boot takes the remaining 20s
-        const bootLen = 20 * s;
-        const legW    = 19 * s;           // each leg bar's vertical thickness
-        const legGap  = 13 * s;           // offset above/below center
-        const torsoW  = 72 * s;
-        const torsoH  = 38 * s;
-        const trunkW  = 28 * s;
-        const hR      = 30 * s;
-
-        // Boot is at the kick end; shin is from the hip toward the kick end.
-        const shinLeft = facing > 0 ? x            : x - legLen + bootLen;
-        const bootLeft = facing > 0 ? x + shinLen  : x - legLen;
-
-        // Two legs (upper and lower, side-by-side as seen from front)
-        gfx.fillStyle(skinCol,  1); gfx.fillRect(shinLeft, y - legGap - legW, shinLen, legW);
-        gfx.fillStyle(0x181818, 1); gfx.fillRect(bootLeft, y - legGap - legW, bootLen, legW);
-        gfx.fillStyle(skinCol,  1); gfx.fillRect(shinLeft, y + legGap,        shinLen, legW);
-        gfx.fillStyle(0x181818, 1); gfx.fillRect(bootLeft, y + legGap,        bootLen, legW);
-
-        // Torso: attaches at the hip end, extends away from the kick
-        const torsoLeft = facing > 0 ? x - torsoW : x;
-        gfx.fillStyle(skinCol,   1); gfx.fillRect(torsoLeft, y - torsoH / 2, torsoW, torsoH);
-        gfx.fillStyle(trunksCol, 1);
-        gfx.fillRect(torsoLeft + (torsoW - trunkW) / 2, y - torsoH / 2, trunkW, torsoH);
-
-        // Head: beyond torso, away from kick
-        const headX = facing > 0 ? torsoLeft - hR * 0.8 : torsoLeft + torsoW + hR * 0.8;
-        gfx.fillStyle(skinCol, 1);
-        gfx.fillCircle(headX, y, hR);
     }
 
     _nearCorner() {

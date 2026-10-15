@@ -22,6 +22,7 @@ import { elbowDropClip } from './elbowDrop.js';
 import { kneeDropClip } from './kneeDrop.js';
 import { divingElbowClip } from './divingElbow.js';
 import { topDiveClip } from './topDive.js';
+import { theszPressClip } from './theszPress.js';
 
 export const REGISTERED_MOVE_CLIPS = [
     jabClip,
@@ -34,4 +35,5 @@ export const REGISTERED_MOVE_CLIPS = [
     kneeDropClip,
     divingElbowClip,
     topDiveClip,
+    theszPressClip,
 ];

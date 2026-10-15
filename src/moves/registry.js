@@ -173,7 +173,7 @@ export const MOVE_SPECS = {
         ai: ['vsDown'],
     },
     theszPress: {
-        category: C.AERIAL, clip: null, executor: '_doTheszPress',
+        category: C.AERIAL, clip: 'theszPress', executor: '_doTheszPress',
         damageKey: 'theszPress', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryFinisher() — standing/staggered target beyond reach, within 300*s',
         ai: ['finisher', 'lunge', 'intoPin'],

@@ -166,6 +166,8 @@ export const george = {
     // Hurt, he begs off instead of preening — Ric Flair's "no, no"
     // (Wrestler.POSES.begPlead/begShake).
     begsOff: true,
+    // Healthy, he showboats with Flair's hunched strut (POSES.strutLeft/Right).
+    struts: true,
     moveSet: [
         'irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop',
         'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag',

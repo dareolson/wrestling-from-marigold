@@ -136,6 +136,10 @@ export const POSES = {
     // hands up in front of the face, palms out, leaning away. The shake
     // alternates the hands.
     begPlead:       { lLeg:-0.22,  rLeg: 0.12,  lArm: 1.05,  rArm: 0.95, lElbow: 2.05, rElbow: 2.15, lKnee: 0.30, rKnee: 0.30, lean:-0.18, crouch: 0.25 },
+    // Ric Flair's strut (Royal Rumble sheet 386–389): hunched, stalking, arms
+    // hanging forward; the two alternate the stepping leg.
+    strutLeft:      { lLeg: 0.30,  rLeg:-0.15,  lArm: 0.55,  rArm: 0.35, lElbow: 1.10, rElbow: 1.00, lKnee: 0.45, rKnee: 0.30, lean: 0.45, crouch: 0.30 },
+    strutRight:     { lLeg:-0.15,  rLeg: 0.30,  lArm: 0.35,  rArm: 0.55, lElbow: 1.00, rElbow: 1.10, lKnee: 0.30, rKnee: 0.45, lean: 0.42, crouch: 0.30 },
     begShake:       { lLeg:-0.22,  rLeg: 0.12,  lArm: 1.20,  rArm: 0.85, lElbow: 1.85, rElbow: 2.30, lKnee: 0.30, rKnee: 0.30, lean:-0.24, crouch: 0.30 },
     ropeOneTaunt:   { lLeg: 0.08,  rLeg:-0.06,  lArm: 1.80,  rArm:-1.80  }, // one arm raised to crowd, other grips rope
     axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10, lean:-0.22 }, // arms overhead, back arched for the drop
@@ -358,6 +362,7 @@ export default class Wrestler {
         this.idlePose        = 'idle';            // character-specific resting stance — override after construction
         this.tauntPose       = 'tauntArmsWide';   // character-specific taunt — override after construction
         this.begsOff         = false;             // pleads instead of preening when hurt (George)
+        this.struts          = false;             // taunts with Flair's strut instead of the arms-wide pose (George)
         this._runStepTimer   = 0;
         this.gfx             = scene.add.graphics();
         this.skeleton        = new Skeleton(scene, skinCol, trunksCol, textures);
@@ -1849,6 +1854,20 @@ export default class Wrestler {
                 { p: 'begShake', dur: 130, e: 'Sine.easeInOut' },
                 { p: 'begPlead', dur: 130, e: 'Sine.easeInOut' },
                 { p: 'begShake', dur: 130, e: 'Sine.easeInOut' },
+                { p: this.idlePose ?? 'idle', dur: 300, e: 'Linear' },
+            ], () => {
+                if (this.state === 'taunting') this.state = 'standing';
+            });
+            return;
+        }
+        // Flair's strut: four hunched, stalking steps forward.
+        if (this.struts) {
+            const steps = ['strutLeft', 'strutRight', 'strutLeft', 'strutRight'];
+            const b = ringBoundsAtY(this.y);
+            const toX = Math.max(b.left + 20, Math.min(b.right - 20, this.x + this.facing * 48 * this.s));
+            this.scene.tweens.add({ targets: this, x: toX, duration: 4 * 200, ease: 'Linear' });
+            this._runPoseSequence([
+                ...steps.map((p, i) => ({ p, dur: 200, e: i ? 'Sine.easeInOut' : 'Cubic.easeOut' })),
                 { p: this.idlePose ?? 'idle', dur: 300, e: 'Linear' },
             ], () => {
                 if (this.state === 'taunting') this.state = 'standing';

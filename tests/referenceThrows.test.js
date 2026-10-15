@@ -1,6 +1,6 @@
 // Throws posed in the move editor against the WWF Raw sheet with the body
 // tilt/lift channels (tools/move-editor/author_piledriver.mjs,
-// author_bodyslam.mjs). Played by Wrestler._playPairedThrow.
+// author_bodyslam.mjs, author_suplex.mjs). Played by Wrestler._playPairedThrow.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,6 +10,7 @@ import MoveRuntime from '../src/animation/MoveRuntime.js';
 import { REGISTERED_MOVE_CLIPS } from '../src/animation/clips/index.js';
 import { piledriverClip } from '../src/animation/clips/piledriver.js';
 import { bodySlamClip } from '../src/animation/clips/bodySlam.js';
+import { suplexClip } from '../src/animation/clips/suplex.js';
 import { MOVE_SPECS } from '../src/moves/registry.js';
 import { exportClip } from '../tools/move-editor/model.js';
 
@@ -19,6 +20,7 @@ const fakeActor = () => ({ pose: {}, skeleton: { setPartVariants() {} } });
 const THROWS = [
     { move: 'piledriver', clip: piledriverClip, draft: readDraft('piledriver.json') },
     { move: 'bodySlam', clip: bodySlamClip, draft: readDraft('bodyslam.json') },
+    { move: 'suplex', clip: suplexClip, draft: readDraft('suplex.json') },
 ];
 
 for (const { move, clip, draft } of THROWS) {
@@ -80,4 +82,15 @@ test('body slam: lifted to the shoulders, then flat on his back in front', () =>
     const impact = sampleClip(compiled, impactAt).tracks.defender;
     assert.ok(impact.pose.lift < -100, 'on the mat at impact');
     assert.ok(impact.transform.x > 120, `lands in front, x=${impact.transform.x}`);
+});
+
+test('suplex: stood straight up overhead, then over onto his back behind', () => {
+    const compiled = compileClip(suplexClip);
+    const impactAt = suplexClip.events.find(e => e.type === 'impact').at;
+    const up = sampleClip(compiled, 0.8).tracks.defender.pose;
+    assert.ok(Math.abs(up.tilt - Math.PI) < 0.1, `held tilt ${up.tilt}`);
+    assert.ok(up.lift > 150, `held lift ${up.lift}`);
+    const impact = sampleClip(compiled, impactAt).tracks;
+    assert.ok(impact.defender.transform.x < -150, `lands behind, x=${impact.defender.transform.x}`);
+    assert.ok(impact.attacker.pose.tilt < -1.3, 'the attacker goes over backward too');
 });

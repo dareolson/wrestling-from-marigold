@@ -176,7 +176,7 @@ test('Thesz keeps the moves that were previously Arena-only', () => {
 
 test('kit sizes are what the roster expects', () => {
     assert.equal(george.moveSet.length, 18); // + figureFour (Derek, 2026-10-14: give George Flair's moves)
-    assert.equal(thesz.moveSet.length, 16);
+    assert.equal(thesz.moveSet.length, 18); // armDrag -> hipToss, + armBar, ankleLock (2026-10-15 mat wrestling)
 });
 
 test('the roster keeps its intended differentiation', () => {
@@ -222,15 +222,18 @@ test('validateKit passes a clean kit', () => {
 
 // ─── Orphans ──────────────────────────────────────────────────────────────
 
-// armBar and ankleLock are fully implemented — poses, executors, damage
-// values, and live lockup gating in Arena — but neither character's kit lists
-// them, so no one can reach them. Asserted rather than fixed: adding them to a
-// kit is a roster decision. If that decision gets made, this test is the
-// reminder to update it.
-test('the only unreachable moves are the known armBar/ankleLock pair', () => {
+// Built moves no kit lists yet. That is allowed now — MOVE_CATALOG.md is a
+// pool new wrestlers draw from — but the set is pinned here so a move can't
+// go unreachable by accident (an edited kit dropping its only owner). Update
+// it, and the catalog, when a move is built for the pool or assigned.
+// armBar and ankleLock were the original pair; Lou took them as mat holds
+// on 2026-10-15.
+const UNASSIGNED_POOL = [];
+
+test('built-but-unassigned moves are exactly the catalog pool', () => {
     const orphans = orphanedMoves(george.moveSet, thesz.moveSet);
-    assert.deepEqual(orphans.sort(), ['ankleLock', 'armBar'],
-        'the set of implemented-but-unreachable moves changed');
+    assert.deepEqual(orphans.sort(), [...UNASSIGNED_POOL].sort(),
+        'a move became unreachable, or one was assigned without updating UNASSIGNED_POOL');
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────

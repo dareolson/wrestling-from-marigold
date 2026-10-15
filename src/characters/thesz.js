@@ -346,7 +346,11 @@ export const thesz = {
     // to keep all 16; curating them back out is a separate roster decision.
     moveSet: [
         'irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop',
-        'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag',
+        'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'hipToss',
         'jab', 'theszPress', 'hammerlock', 'backBodyDrop', 'kneeDrop',
+        // Mat wrestling (2026-10-15): the hip toss takes the arm drag's lockup
+        // slot, and the two submissions on a downed man (finisher; up = arm
+        // bar, down = ankle lock) suit the hold-for-hold technician.
+        'armBar', 'ankleLock',
     ],
 };

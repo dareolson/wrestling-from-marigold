@@ -3253,7 +3253,7 @@ export default class Arena extends Phaser.Scene {
             dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
             headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
             jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12, theszPress: 16,
-            hammerlock: 5, kneeLift: 5, backBodyDrop: 10, kneeDrop: 7, figureFour: 14,
+            hammerlock: 5, kneeLift: 5, backBodyDrop: 10, kneeDrop: 7, figureFour: 14, hipToss: 6, armBar: 8, ankleLock: 8,
         };
         const n = bumps[move];
         if (n) this.bumpHeat(n);
@@ -3695,12 +3695,6 @@ export default class Arena extends Phaser.Scene {
             } else if (goUp && ls.attacker.moveSet.includes('suplex')) {
                 ls.attacker._doSuplex(ls.defender);
                 followUp('suplex');
-            } else if (goRight && ls.attacker.moveSet.includes('armBar')) {
-                ls.attacker._doArmBar(ls.defender);
-                followUp('armBar');
-            } else if (goLeft && ls.attacker.moveSet.includes('ankleLock')) {
-                ls.attacker._doAnkleLock(ls.defender);
-                followUp('ankleLock');
             } else if ((goLeft || goRight) && ls.attacker.moveSet.includes('irishWhip')) {
                 ls.attacker._doIrishWhip(ls.defender, dir);
                 followUp('irishWhip');
@@ -3717,14 +3711,17 @@ export default class Arena extends Phaser.Scene {
             return;
         }
 
-        // Arm drag: power button from lockup — quick pivot throw
-        if (ls.attacker.input.justDown('power') && ls.attacker.moveSet.includes('armDrag')) {
+        // Power from the lockup: the kit's hip toss, else its arm drag — two
+        // moves competing for one slot, so the kit decides which a wrestler has.
+        const powerThrow = ['hipToss', 'armDrag'].find(move => ls.attacker.moveSet.includes(move));
+        if (ls.attacker.input.justDown('power') && powerThrow) {
             ls.attacker.state = 'standing';
             ls.defender.state = 'standing';
             this.lockupState  = null;
-            ls.attacker._doArmDrag(ls.defender);
-            this._logEvent('move', { attacker: who, move: 'armDrag', defenderStamina: Math.round(ls.defender.stamina) });
-            this._heatForMove('armDrag');
+            if (powerThrow === 'hipToss') ls.attacker._doHipToss(ls.defender);
+            else ls.attacker._doArmDrag(ls.defender);
+            this._logEvent('move', { attacker: who, move: powerThrow, defenderStamina: Math.round(ls.defender.stamina) });
+            this._heatForMove(powerThrow);
             return;
         }
 

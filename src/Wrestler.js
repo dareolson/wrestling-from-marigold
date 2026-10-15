@@ -23,6 +23,11 @@ const DOWN_SEC   = 4.5;
 // the AI's begging-off threshold (AIHandler george.retreatStamina).
 const BEG_STAMINA = 35;
 
+// Submissions on a downed man, in the order a plain finisher press picks
+// them, and who runs each.
+const GROUND_HOLDS = ['figureFour', 'ankleLock', 'armBar'];
+const GROUND_HOLD_EXECUTORS = { figureFour: '_doFigureFour', ankleLock: '_doAnkleLock', armBar: '_doArmBar' };
+
 // States where a wrestler is on, or on the way to, the mat. move() must not
 // turn him to face the opponent here: on the ground facing decides which way
 // the body lies (head toward facing prone, away from it supine), so re-facing
@@ -65,8 +70,9 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     sleeperHold:       18, // total drained if hold runs full duration
     headlock:         4.0, // per second (applied in Arena._tickHeadlock)
     armDrag:          14,
-    armBar:           16,
-    ankleLock:        14,
+    armBar:            6, // per squeeze — three while the hold is on (the mat arm bar)
+    ankleLock:         5, // per squeeze — three while the hold is on
+    hipToss:          10,
     suplex:            20,
     divingElbow:       18,
     topDive:           28,
@@ -265,14 +271,6 @@ export const MOVE_DEFS = {
                               { p: 'headbutt',       dur:  83, e: 'Cubic.easeIn'  },
                               { p: 'headbuttRecoil', dur: 100, e: 'Linear'        },
                               { p: 'idle',           dur: 183, e: 'Cubic.easeOut' }] },
-    armBar:      { poseSeq: [{ p: 'armBarSetup', dur: 120, e: 'Cubic.easeOut' },
-                              { p: 'armBarLock',  dur: 200, e: 'Cubic.easeOut' },
-                              { p: 'armBarHold',  dur: 800, e: 'Linear'        },
-                              { p: 'idle',        dur: 200, e: 'Linear'        }] },
-    ankleLock:   { poseSeq: [{ p: 'ankleLockSetup', dur: 120, e: 'Cubic.easeOut' },
-                              { p: 'ankleLockTwist', dur: 180, e: 'Cubic.easeOut' },
-                              { p: 'ankleLockHold',  dur: 800, e: 'Linear'        },
-                              { p: 'idle',           dur: 200, e: 'Linear'        }] },
     // ── Four-move blueprint (Codex, 2026-07-24; approved by Derek) ─────────────
     // hammerlock migrated to the seekable clip runtime (2026-08-03) — its
     // choreography and timing now live in src/animation/clips/hammerlock.js, so
@@ -1087,11 +1085,18 @@ export default class Wrestler {
             return 'sleeperHold';
         }
 
-        // Figure-four leglock on a man who is down (George's, from Flair).
-        if (dist <= reach * 1.4 && (other.state === 'down' || other.state === 'possum') &&
-            this.moveSet.includes('figureFour')) {
-            this._doFigureFour(other);
-            return 'figureFour';
+        // A submission on a man who is down. Up takes the arm bar, down the
+        // ankle lock; with neither held, the first one in the kit (George's
+        // figure-four, Lou's ankle lock).
+        if (dist <= reach * 1.4 && (other.state === 'down' || other.state === 'possum')) {
+            const has = move => this.moveSet.includes(move);
+            const hold = this.input.isDown('up') && has('armBar') ? 'armBar'
+                : this.input.isDown('down') && has('ankleLock') ? 'ankleLock'
+                : GROUND_HOLDS.find(has);
+            if (hold) {
+                this[GROUND_HOLD_EXECUTORS[hold]](other);
+                return hold;
+            }
         }
 
         // Thesz press — the flying body press that lands straight into the
@@ -1408,6 +1413,36 @@ export default class Wrestler {
         this.tweenPose(this.idlePose ?? 'idle', 200, 'Linear');
     }
 
+    // Hip toss (author_hiptoss.mjs, Bret's sheet 345–356): hip in, over he
+    // goes, flat on his back in front. Fills the lockup + power slot for a
+    // wrestler who has it, ahead of the arm drag.
+    _doHipToss(other) {
+        this._playPairedThrow(other, 'hipToss', {
+            damage: STAMINA_DRAIN.hipToss,
+            finish: () => {
+                other._layOnBack(DOWN_SEC);
+                this._standBackUp();
+            },
+        });
+    }
+
+    // Mat submissions on a downed man (author_groundholds.mjs): the ankle lock
+    // stands the foot up and wrenches it; the arm bar sits through and lies
+    // back across the chest. Each drains on its three `squeeze` markers.
+    _doAnkleLock(other) {
+        this._playPairedThrow(other, 'ankleLock', {
+            damage: STAMINA_DRAIN.ankleLock, hitEvent: 'squeeze', shake: [80, 0.001],
+            finish: () => { other._layOnBack(DOWN_SEC); this._standBackUp(); },
+        });
+    }
+
+    _doArmBar(other) {
+        this._playPairedThrow(other, 'armBar', {
+            damage: STAMINA_DRAIN.armBar, hitEvent: 'squeeze', shake: [80, 0.001],
+            finish: () => { other._layOnBack(DOWN_SEC); this._standBackUp(); },
+        });
+    }
+
     // George's figure-four leglock, borrowed from Ric Flair's signature row
     // (author_figurefour.mjs): struts in, steps over, crosses the legs and
     // falls back into it. Each of the clip's three `squeeze` markers drains;
@@ -1549,53 +1584,6 @@ export default class Wrestler {
         this._runPoseSequence(MOVE_DEFS.armDrag.poseSeq);
         this.scene.time.delayedCall(90, () => {
             other._doSell('sellChest', 110, () => other.startClotheslineFall(this.facing));
-        });
-    }
-
-    _doArmBar(other) {
-        // Quick submission: attacker locks arm, runs pose sequence, defender shows trapped pose
-        other._drain(STAMINA_DRAIN.armBar);
-        this.state       = 'holding';
-        other.state      = 'holding';
-        // _fixedHold: this hold's release is a plain delayedCall, not an
-        // Arena-tracked state (unlike sleeperState/headlockState) — exempts
-        // it from _orphanWatchdog's 0.6s grace, which would otherwise cut a
-        // 1600ms hold short at 600ms. See _doHammerlock for the same pattern.
-        this._fixedHold  = true;
-        other._fixedHold = true;
-        this._runPoseSequence(MOVE_DEFS.armBar.poseSeq);
-        other.tweenPose('armBarDefender', 200, 'Cubic.easeOut');
-
-        // Hold duration then release to standing (give a small extra drain on release)
-        this.scene.time.delayedCall(1600, () => {
-            if (this.state === 'holding') { this.state = 'standing'; this._fixedHold = false; }
-            if (other.state === 'holding') {
-                other.state = 'standing';
-                other._fixedHold = false;
-                other.tweenPose('idle', 200, 'Linear');
-                other._drain(6);
-            }
-        });
-    }
-
-    _doAnkleLock(other) {
-        other._drain(STAMINA_DRAIN.ankleLock);
-        this.state       = 'holding';
-        other.state      = 'holding';
-        this._fixedHold  = true; // see _doArmBar's comment on _fixedHold
-        other._fixedHold = true;
-        this._runPoseSequence(MOVE_DEFS.ankleLock.poseSeq);
-        other.tweenPose('ankleLockDefender', 200, 'Cubic.easeOut');
-
-        // Hold then release; stronger pain on release
-        this.scene.time.delayedCall(1700, () => {
-            if (this.state === 'holding') { this.state = 'standing'; this._fixedHold = false; }
-            if (other.state === 'holding') {
-                other.state = 'standing';
-                other._fixedHold = false;
-                other.tweenPose('idle', 200, 'Linear');
-                other._drain(8);
-            }
         });
     }
 

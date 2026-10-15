@@ -1156,6 +1156,10 @@ const DRAFT_LIBRARY = [
     { id: 'theszPress', label: 'Thesz press flight — reference pass', file: './drafts/theszpress.json' },
     // George's figure-four, from Flair's sheet (386–403); author_figurefour.mjs.
     { id: 'figureFour', label: 'figure-four — reference pass', file: './drafts/figurefour.json' },
+    // Mat wrestling (2026-10-15): author_hiptoss.mjs, author_groundholds.mjs.
+    { id: 'hipToss', label: 'hip toss — reference pass', file: './drafts/hiptoss.json' },
+    { id: 'ankleLock', label: 'ankle lock (on the mat) — first pass', file: './drafts/anklelock.json' },
+    { id: 'armBar', label: 'arm bar (on the mat) — first pass', file: './drafts/armbar.json' },
 ];
 
 // Adopt a loaded draft as the editing session. Shared by the library, the file

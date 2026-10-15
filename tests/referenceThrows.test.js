@@ -10,6 +10,9 @@ import MoveRuntime from '../src/animation/MoveRuntime.js';
 import { REGISTERED_MOVE_CLIPS } from '../src/animation/clips/index.js';
 import { piledriverClip } from '../src/animation/clips/piledriver.js';
 import { figureFourClip } from '../src/animation/clips/figureFour.js';
+import { hipTossClip } from '../src/animation/clips/hipToss.js';
+import { ankleLockClip } from '../src/animation/clips/ankleLock.js';
+import { armBarClip } from '../src/animation/clips/armBar.js';
 import { bodySlamClip } from '../src/animation/clips/bodySlam.js';
 import { suplexClip } from '../src/animation/clips/suplex.js';
 import { MOVE_SPECS } from '../src/moves/registry.js';
@@ -30,6 +33,7 @@ const THROWS = [
     { move: 'piledriver', clip: piledriverClip, draft: readDraft('piledriver.json') },
     { move: 'bodySlam', clip: bodySlamClip, draft: readDraft('bodyslam.json') },
     { move: 'suplex', clip: suplexClip, draft: readDraft('suplex.json') },
+    { move: 'hipToss', clip: hipTossClip, draft: readDraft('hiptoss.json') },
 ];
 
 for (const { move, clip, draft } of THROWS) {
@@ -215,3 +219,28 @@ test('figureFour: the victim lies on his back throughout; George ends on his fee
     assert.equal(end.tilt, 0);
     assert.equal(end.lift, 0);
 });
+
+// ── Mat submissions (author_groundholds.mjs) ─────────────────────────────────
+
+for (const [move, clip, file] of [['ankleLock', ankleLockClip, 'anklelock.json'], ['armBar', armBarClip, 'armbar.json']]) {
+    test(`${move}: registered, valid, exactly its draft export`, () => {
+        assert.equal(MOVE_SPECS[move].clip, clip.id);
+        assert.ok(REGISTERED_MOVE_CLIPS.includes(clip));
+        const result = validateClip(clip);
+        assert.equal(result.ok, true, result.errors.join('; '));
+        assert.deepEqual(exportClip(readDraft(file)), JSON.parse(JSON.stringify(clip)));
+    });
+    test(`${move}: three squeezes, and the victim stays on his back throughout`, () => {
+        const seen = [];
+        const runtime = new MoveRuntime({ onEvent: e => seen.push(e.type) });
+        runtime.register(clip);
+        runtime.play(clip.id, { attacker: fakeActor(), defender: fakeActor() });
+        for (let t = 0; t < clip.duration + 0.1; t += 1 / 60) runtime.update(1 / 60);
+        assert.deepEqual(seen, ['squeeze', 'squeeze', 'squeeze']);
+        const compiled = compileClip(clip);
+        for (let at = 0; at <= clip.duration; at += 0.25) {
+            const pose = sampleClip(compiled, at).tracks.defender.pose;
+            assert.ok(pose.lift < -100 && pose.tilt < -1.2, `${move} victim at ${at.toFixed(2)}s: tilt ${pose.tilt} lift ${pose.lift}`);
+        }
+    });
+}

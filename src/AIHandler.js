@@ -74,6 +74,7 @@ const PERSONALITIES = {
         hammerlockOdds:      0.25, // lockup-finisher frequency, inside the stamina window below
         hammerlockStaminaMin: 35,
         hammerlockStaminaMax: 75,
+        groundHoldOdds:   0.40,  // works an arm bar or ankle lock on a downed man instead of a drop
         kneeDropOdds:     0.20,  // substitutes for the elbow drop pounce this often (no kneeLift — not in his kit)
     },
 };
@@ -328,6 +329,10 @@ export default class AIHandler {
                 // never chain them at the ropes — back off and let them rise
                 if (self.moveSet.includes('figureFour') && Math.random() < (cfg.figureFourOdds ?? 0)) {
                     this._attack('finisher', 1.2); // figure-four
+                } else if ((self.moveSet.includes('armBar') || self.moveSet.includes('ankleLock')) &&
+                           Math.random() < (cfg.groundHoldOdds ?? 0)) {
+                    if (Math.random() < 0.5) this._hold(Math.random() < 0.5 ? 'up' : 'down'); // arm bar / ankle lock
+                    this._attack('finisher', 1.2); // mat submission
                 } else if (self.moveSet.includes('kneeDrop') && Math.random() < (cfg.kneeDropOdds ?? 0)) {
                     this._hold('down');
                     this._attack('power', 0.9); // knee drop

@@ -1152,6 +1152,7 @@ const DRAFT_LIBRARY = [
     // Flights only (one-wrestler clips); author_elbowdrop.mjs, author_dive.mjs.
     { id: 'elbowDrop', label: 'elbow drop flight — reference pass', file: './drafts/elbowdrop.json' },
     { id: 'divingElbow', label: 'dive flight — reference pass', file: './drafts/dive.json' },
+    { id: 'theszPress', label: 'Thesz press flight — reference pass', file: './drafts/theszpress.json' },
 ];
 
 // Adopt a loaded draft as the editing session. Shared by the library, the file

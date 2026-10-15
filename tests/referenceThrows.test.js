@@ -19,6 +19,7 @@ import { elbowDropClip } from '../src/animation/clips/elbowDrop.js';
 import { kneeDropClip, KNEE_DROP_HOP } from '../src/animation/clips/kneeDrop.js';
 import { divingElbowClip } from '../src/animation/clips/divingElbow.js';
 import { topDiveClip } from '../src/animation/clips/topDive.js';
+import { theszPressClip } from '../src/animation/clips/theszPress.js';
 import { POSES } from '../src/Wrestler.js';
 
 const readDraft = file => JSON.parse(readFileSync(new URL(`../tools/move-editor/drafts/${file}`, import.meta.url), 'utf8'));
@@ -145,6 +146,7 @@ const FLIGHTS = [
     { move: 'kneeDrop', clip: kneeDropClip, draft: null },
     { move: 'divingElbow', clip: divingElbowClip, draft: 'dive.json' },
     { move: 'topDive', clip: topDiveClip, draft: null },
+    { move: 'theszPress', clip: theszPressClip, draft: 'theszpress.json' },
 ];
 
 for (const { move, clip, draft } of FLIGHTS) {

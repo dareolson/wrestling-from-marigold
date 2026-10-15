@@ -34,23 +34,19 @@ test('every pose the matrix names exists in the shipped pose table', () => {
 });
 
 test('entries that bypass the rig are declared, not silently certified', () => {
-    const gaps = coverageGaps();
-    assert.ok(gaps.length > 0);
-    for (const entry of gaps) {
+    for (const entry of coverageGaps()) {
         // A gap must say what draws it instead, or it is not actionable.
         assert.ok(entry.gap, `${entry.id} is a coverage gap with no explanation`);
         assert.ok(entry.state, `${entry.id} names no wrestler state`);
         assert.equal(entry.pose, undefined);
     }
-    // The dropkick and the elbow drop / dives moved onto the rig
-    // (2026-10-14); the press flight still bypasses it.
-    const ids = gaps.map(entry => entry.id);
-    assert.ok(!ids.includes('dropkick-extension') && !ids.includes('elbow-drop-air'));
-    assert.ok(ids.includes('flying-press'));
-    // The down and pinned STATE PATHS were migrated onto
-    // Skeleton.updateGrounded (2026-08-13) and are no longer gaps.
-    assert.ok(!ids.includes('down-state'));
-    assert.ok(!ids.includes('pinned-state'));
+    // Every airborne state moved onto the rig (dropkick, elbow drop / dives,
+    // Thesz press, 2026-10-14), and the down and pinned STATE PATHS onto
+    // Skeleton.updateGrounded (2026-08-13): nothing draws primitives now.
+    const ids = coverageGaps().map(entry => entry.id);
+    for (const id of ['dropkick-extension', 'elbow-drop-air', 'flying-press', 'down-state', 'pinned-state']) {
+        assert.ok(!ids.includes(id), `${id} is back to bypassing the rig`);
+    }
 });
 
 test('lying flat and the get-up first keyframe are the same pose object', () => {

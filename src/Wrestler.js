@@ -3,6 +3,7 @@ import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
 import { resolveSemanticSlots } from './rig/partVariants.js';
+import { dropkickClip } from './animation/clips/dropkick.js';
 import {
     ARTICULATED_CHANNELS,
     ARTICULATION_CHANNEL_PAIRS,
@@ -188,6 +189,12 @@ export const POSES = {
     kneeDropLand:     { lLeg: 1.05,  rLeg: 0.22,  lArm: 0.18,  rArm: 0.28, lean: 0.44, crouch: 0.68 },
 };
 
+// The dropkick's feet-out frame, named so the rig certifier can render it
+// (certificationMatrix 'dropkick-extension'). Read from the clip, never
+// restated, so the certified pose is the one the game draws.
+POSES.dropkickExtended = dropkickClip.tracks.attacker.keyframes
+    .find(frame => frame.at === dropkickClip.events.find(event => event.type === 'impact').at).pose;
+
 // ─── Move definitions ─────────────────────────────────────────────────────────
 // poseSeq drives the attacker's visual. Durations mirror the defender's tween
 // timings so both sides stay in sync.
@@ -209,9 +216,6 @@ export const MOVE_DEFS = {
                               { p: 'elbowLand',   dur:  80, e: 'Cubic.easeIn'  },
                               { p: 'elbowImpact', dur: 100, e: 'Linear'        },
                               { p: 'idle',        dur: 260, e: 'Cubic.easeOut' }] },
-    dropkick:    { poseSeq: [{ p: 'dropkick',    dur: 150, e: 'Cubic.easeOut' },
-                              { p: 'stumble',     dur: 250, e: 'Linear'        },
-                              { p: 'idle',        dur: 300, e: 'Linear'        }] },
     doubleAxeHandle: { poseSeq: [{ p: 'axeHandleUp',     dur: 150, e: 'Cubic.easeOut' },
                                   { p: 'axeHandleUp',     dur: 130, e: 'Linear'        },
                                   { p: 'axeHandleDown',   dur: 100, e: 'Cubic.easeIn'  },
@@ -285,7 +289,7 @@ export const MOVE_DEFS = {
 // 'running'     Irish whip victim; runPhase 'toRope' → 'returning'; no input
 // 'falling'     400ms fall tween before going down; no input
 // 'flipping'    clothesline/dropkick victim arc; flipProgress 0→1; no input
-// 'dropkicking'   attacker airborne during dropkick; dropProgress 0→1
+// 'dropkicking'   attacker airborne during dropkick; posed by the dropkick clip
 // 'elbowDropping' attacker airborne during elbow drop; elbowProgress 0→1
 // 'slamming'    attacker mid-slam, elbow drop, or dropkick launch; no input
 // 'grabbed'     legacy held-victim state; no move sets it since the throws moved to clips (2026-10-13)
@@ -335,7 +339,6 @@ export default class Wrestler {
         this.stamina      = STAMINA_MAX;
         this.flipProgress  = 0;
         this.flipDir       = 1;
-        this.dropProgress  = 0;
         this.elbowProgress = 0;
         this.divProgress   = 0;
         this._corner       = null;
@@ -1263,43 +1266,51 @@ export default class Wrestler {
         });
     }
 
+    // Dropkick: a one-wrestler clip posed against the WWF Raw sheet (frames
+    // 224–232, tools/move-editor/author_dropkick.mjs) — crouch, tuck, both
+    // feet out level, down on the back. The clip only poses him; this moves
+    // him across to the target, resolves the hit on the clip's `impact`
+    // (the frame the feet are out) and lays him down when it ends.
     _doDropkick(other) {
-        this.state        = 'dropkicking';
-        this.dropProgress = 0;
+        const runtime = this.scene.moveRuntime;
+        if (!runtime) return;
+        this.state = 'dropkicking';
         const facing  = this.facing;
-        // The attacker ends this move down/staggered at targetX — against a
+        // The attacker ends this move down at targetX — against a
         // rope-hugging victim that lands him through the rope plane, so clamp
         // with the downed-body margin (still inside the 100·s hit range)
         const b        = ringBoundsAtY(this.y);
         const m        = 60 * this.s;
         const targetX  = Math.max(b.left + m, Math.min(b.right - m, other.x - facing * 35 * this.s));
         const hitRange = 100 * this.s;
+        const kickAt   = dropkickClip.events.find(event => event.type === 'impact').at;
 
-        this.scene.tweens.add({
-            targets: this,
-            dropProgress: 1,
-            x: targetX,
-            duration: 500,
-            ease: 'Sine.easeInOut',
-            onComplete: () => {
+        // Across to the target by the time the feet are out.
+        this.scene.tweens.add({ targets: this, x: targetX, duration: kickAt * 1000, ease: 'Sine.easeOut' });
+
+        let landed = false;
+        const lie = () => {
+            this._activeMove = null;
+            if (this.state !== 'dropkicking') return;
+            this._layOnBack(landed ? 1.5 : 2.8);
+        };
+        this._activeMove = runtime.play('dropkick', { attacker: this }, {
+            onEvent: (event) => {
+                if (event.type !== 'impact' || this.state !== 'dropkicking') return;
                 const dist = Math.abs(this.x - other.x);
-                const hit  = dist <= hitRange &&
-                             (other.state === 'standing' || other.state === 'running' || other.state === 'blocking');
-                if (hit) {
+                landed = dist <= hitRange &&
+                         (other.state === 'standing' || other.state === 'running' || other.state === 'blocking');
+                if (landed) {
                     other._drain(STAMINA_DRAIN.dropkick);
                     other._doSell('sellChest', 140, () => other.startClotheslineFall(facing));
-                    this.state      = 'down';
-                    this.lying      = 'supine';
-                    this.stateTimer = 1.5;
                     this.scene.cameras.main.shake(120, 0.0015);
-                } else {
-                    this.state      = 'down';
-                    this.lying      = 'supine';
-                    this.stateTimer = 2.8;
-                    this.scene.cameras.main.shake(80, 0.001);
                 }
-                this.dropProgress = 0;
             },
+            onComplete: () => {
+                if (!landed) this.scene.cameras.main.shake(80, 0.001);
+                lie();
+            },
+            onCancel: lie,
         });
     }
 
@@ -2036,18 +2047,6 @@ export default class Wrestler {
             gfx.fillEllipse(x, y, (120 + arc * 55) * s, (36 + arc * 10) * s);
             this.skeleton.setVisible(true);
             this.skeleton.updateFall(x, y - arc * (this._flipArcHeight ?? 85) * s, s, facing, 'flip', this.flipProgress);
-            return;
-        }
-
-        if (state === 'dropkicking') {
-            const arcFrac = Math.sin(this.dropProgress * Math.PI);
-            // Scale up the airborne figure — horizontal orientation reads much smaller
-            // than the upright skeleton at the same s, so 1.3× compensates.
-            const ds    = s * 1.3;
-            const airY  = y - arcFrac * 115 * s;
-            gfx.fillStyle(0x000000, 0.22 + arcFrac * 0.08);
-            gfx.fillEllipse(x, y, (120 + arcFrac * 50) * s, (36 + arcFrac * 10) * s);
-            this._drawDropkickFront(x, airY, ds, facing, skinCol, trunksCol);
             return;
         }
 

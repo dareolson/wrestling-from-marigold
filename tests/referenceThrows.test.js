@@ -13,6 +13,8 @@ import { bodySlamClip } from '../src/animation/clips/bodySlam.js';
 import { suplexClip } from '../src/animation/clips/suplex.js';
 import { MOVE_SPECS } from '../src/moves/registry.js';
 import { exportClip } from '../tools/move-editor/model.js';
+import { dropkickClip } from '../src/animation/clips/dropkick.js';
+import { soloClip } from '../tools/move-editor/authoring.mjs';
 
 const readDraft = file => JSON.parse(readFileSync(new URL(`../tools/move-editor/drafts/${file}`, import.meta.url), 'utf8'));
 const fakeActor = () => ({ pose: {}, skeleton: { setPartVariants() {} } });
@@ -93,4 +95,40 @@ test('suplex: stood straight up overhead, then over onto his back behind', () =>
     const impact = sampleClip(compiled, impactAt).tracks;
     assert.ok(impact.defender.transform.x < -150, `lands behind, x=${impact.defender.transform.x}`);
     assert.ok(impact.attacker.pose.tilt < -1.3, 'the attacker goes over backward too');
+});
+
+// ── Dropkick: a one-wrestler clip (authoring.mjs soloClip) ───────────────────
+test('dropkick: registered, valid, and exactly the solo export of its draft', () => {
+    assert.equal(MOVE_SPECS.dropkick.clip, dropkickClip.id);
+    assert.ok(REGISTERED_MOVE_CLIPS.includes(dropkickClip));
+    const result = validateClip(dropkickClip);
+    assert.equal(result.ok, true, result.errors.join('; '));
+    assert.deepEqual(soloClip(readDraft('dropkick.json')), JSON.parse(JSON.stringify(dropkickClip)));
+});
+
+// The executor moves him across and the runtime applies every track to a
+// bound actor, so the clip must pose only the attacker and never place him.
+test('dropkick: attacker only, and no transform', () => {
+    assert.deepEqual(Object.keys(dropkickClip.tracks), ['attacker']);
+    assert.ok(dropkickClip.tracks.attacker.keyframes.every(frame => !('transform' in frame)));
+    assert.equal(compileClip(dropkickClip).authorsTransform, false);
+});
+
+for (const hz of [30, 60, 120]) {
+    test(`dropkick: impact fires exactly once at ${hz} Hz`, () => {
+        const seen = [];
+        const runtime = new MoveRuntime({ onEvent: e => seen.push(e.type) });
+        runtime.register(dropkickClip);
+        runtime.play('dropkick', { attacker: fakeActor() });
+        for (let t = 0; t < dropkickClip.duration + 0.1; t += 1 / hz) runtime.update(1 / hz);
+        assert.deepEqual(seen, ['impact']);
+    });
+}
+
+test('dropkick: feet out at the impact, flat on his back at the end', () => {
+    const compiled = compileClip(dropkickClip);
+    const kick = sampleClip(compiled, dropkickClip.events[0].at).tracks.attacker.pose;
+    assert.ok(kick.tilt < -1 && kick.lift > 40, `kick tilt ${kick.tilt} lift ${kick.lift}`);
+    const end = sampleClip(compiled, dropkickClip.duration).tracks.attacker.pose;
+    assert.ok(Math.abs(end.tilt + 1.52) < 0.1 && end.lift < -100, `end tilt ${end.tilt} lift ${end.lift}`);
 });

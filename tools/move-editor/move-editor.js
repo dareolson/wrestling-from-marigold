@@ -1147,6 +1147,8 @@ const DRAFT_LIBRARY = [
     { id: 'bodySlam', label: 'body slam — reference pass', file: './drafts/bodyslam.json' },
     // Matched to the sheet's frames 370–374 / 357–365; author_suplex.mjs.
     { id: 'suplex', label: 'suplex — reference pass', file: './drafts/suplex.json' },
+    // Matched to the sheet's frames 224–232; author_dropkick.mjs (one-wrestler clip).
+    { id: 'dropkick', label: 'dropkick — reference pass', file: './drafts/dropkick.json' },
 ];
 
 // Adopt a loaded draft as the editing session. Shared by the library, the file

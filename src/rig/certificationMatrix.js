@@ -133,12 +133,29 @@ export const CERTIFICATION_MATRIX = Object.freeze([
         renderPath: 'upright',
         motion: Object.freeze(['backDropBrace', 'backDropDip', 'backDropLaunch', 'backDropRecover']),
     }),
+    // On the rig since 2026-10-14: the dropkick clip poses the upright body
+    // and tilts it back with the body tilt/lift channels. Airborne, so no sole
+    // bears weight.
     Object.freeze({
         id: 'dropkick-extension',
         label: 'dropkick extension',
+        renderPath: 'upright',
+        pose: 'dropkickExtended',
+        footBearing: false,
+    }),
+    Object.freeze({
+        id: 'elbow-drop-air',
+        label: 'elbow drop / diving elbow, airborne',
         renderPath: 'unrigged',
-        state: 'dropkicking',
-        gap: 'Wrestler._drawDropkickFront draws primitives; skeleton is hidden.',
+        state: 'elbowDropping',
+        gap: 'Wrestler._drawElbowDropAir draws primitives (also the diving state); skeleton is hidden.',
+    }),
+    Object.freeze({
+        id: 'flying-press',
+        label: 'Thesz press, airborne',
+        renderPath: 'unrigged',
+        state: 'pressing',
+        gap: 'Wrestler._drawDropkickFront draws primitives for the press flight; skeleton is hidden.',
     }),
     // Migrated off Wrestler._drawFlat onto Skeleton.updateGrounded
     // (2026-08-13). These now carry real joints, bindings and parts, and

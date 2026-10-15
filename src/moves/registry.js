@@ -83,8 +83,8 @@ export const MOVE_SPECS = {
         ai: ['antiRunner', 'knockdown'],
     },
     dropkick: {
-        category: C.STRIKE, clip: null, executor: '_doDropkick',
-        damageKey: 'dropkick', poseSeq: true, legacyFallback: null, kitGated: true,
+        category: C.STRIKE, clip: 'dropkick', executor: '_doDropkick',
+        damageKey: 'dropkick', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryPower() -> resolvePowerMove() — standing/blocking target inside medReach',
         ai: ['midRange', 'knockdown'],
     },

@@ -17,6 +17,7 @@ import { hammerlockWipClip } from './hammerlockWip.js';
 import { piledriverClip } from './piledriver.js';
 import { bodySlamClip } from './bodySlam.js';
 import { suplexClip } from './suplex.js';
+import { dropkickClip } from './dropkick.js';
 
 export const REGISTERED_MOVE_CLIPS = [
     jabClip,
@@ -24,4 +25,5 @@ export const REGISTERED_MOVE_CLIPS = [
     piledriverClip,
     bodySlamClip,
     suplexClip,
+    dropkickClip,
 ];

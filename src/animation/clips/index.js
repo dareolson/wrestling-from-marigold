@@ -18,6 +18,10 @@ import { piledriverClip } from './piledriver.js';
 import { bodySlamClip } from './bodySlam.js';
 import { suplexClip } from './suplex.js';
 import { dropkickClip } from './dropkick.js';
+import { elbowDropClip } from './elbowDrop.js';
+import { kneeDropClip } from './kneeDrop.js';
+import { divingElbowClip } from './divingElbow.js';
+import { topDiveClip } from './topDive.js';
 
 export const REGISTERED_MOVE_CLIPS = [
     jabClip,
@@ -26,4 +30,8 @@ export const REGISTERED_MOVE_CLIPS = [
     bodySlamClip,
     suplexClip,
     dropkickClip,
+    elbowDropClip,
+    kneeDropClip,
+    divingElbowClip,
+    topDiveClip,
 ];

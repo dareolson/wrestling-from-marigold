@@ -15,6 +15,11 @@ import { MOVE_SPECS } from '../src/moves/registry.js';
 import { exportClip } from '../tools/move-editor/model.js';
 import { dropkickClip } from '../src/animation/clips/dropkick.js';
 import { soloClip } from '../tools/move-editor/authoring.mjs';
+import { elbowDropClip } from '../src/animation/clips/elbowDrop.js';
+import { kneeDropClip, KNEE_DROP_HOP } from '../src/animation/clips/kneeDrop.js';
+import { divingElbowClip } from '../src/animation/clips/divingElbow.js';
+import { topDiveClip } from '../src/animation/clips/topDive.js';
+import { POSES } from '../src/Wrestler.js';
 
 const readDraft = file => JSON.parse(readFileSync(new URL(`../tools/move-editor/drafts/${file}`, import.meta.url), 'utf8'));
 const fakeActor = () => ({ pose: {}, skeleton: { setPartVariants() {} } });
@@ -131,4 +136,44 @@ test('dropkick: feet out at the impact, flat on his back at the end', () => {
     assert.ok(kick.tilt < -1 && kick.lift > 40, `kick tilt ${kick.tilt} lift ${kick.lift}`);
     const end = sampleClip(compiled, dropkickClip.duration).tracks.attacker.pose;
     assert.ok(Math.abs(end.tilt + 1.52) < 0.1 && end.lift < -100, `end tilt ${end.tilt} lift ${end.lift}`);
+});
+
+// ── Flights: elbow drop, knee drop, dives (Wrestler._playFlight) ─────────────
+
+const FLIGHTS = [
+    { move: 'elbowDrop', clip: elbowDropClip, draft: 'elbowdrop.json' },
+    { move: 'kneeDrop', clip: kneeDropClip, draft: null },
+    { move: 'divingElbow', clip: divingElbowClip, draft: 'dive.json' },
+    { move: 'topDive', clip: topDiveClip, draft: null },
+];
+
+for (const { move, clip, draft } of FLIGHTS) {
+    test(`${move}: a registered, valid one-wrestler clip with no transform`, () => {
+        assert.equal(MOVE_SPECS[move].clip, clip.id);
+        assert.ok(REGISTERED_MOVE_CLIPS.includes(clip));
+        const result = validateClip(clip);
+        assert.equal(result.ok, true, result.errors.join('; '));
+        assert.deepEqual(Object.keys(clip.tracks), ['attacker']);
+        assert.equal(compileClip(clip).authorsTransform, false);
+    });
+    if (draft) {
+        test(`${move}: exactly the solo export of its draft`, () => {
+            assert.deepEqual(soloClip(readDraft(draft)), JSON.parse(JSON.stringify(clip)));
+        });
+    }
+    test(`${move}: lands tilt/lift-consistent with what the executor hands him to`, () => {
+        const end = sampleClip(compileClip(clip), clip.duration).tracks.attacker.pose;
+        if (move === 'kneeDrop') assert.equal(end.lift, 0, 'lands on his knees, upright');
+        else assert.ok(end.tilt > 1.3 && end.lift < -80, `${move} ends flat face down: tilt ${end.tilt} lift ${end.lift}`);
+    });
+}
+
+test('kneeDrop: the hop poses are exactly POSES.kneeDropLeap and kneeDropTuck', () => {
+    assert.deepEqual(KNEE_DROP_HOP.leap, POSES.kneeDropLeap);
+    assert.deepEqual(KNEE_DROP_HOP.tuck, POSES.kneeDropTuck);
+});
+
+test('topDive: the diving elbow\'s flight under its own id', () => {
+    assert.equal(topDiveClip.id, 'topDive');
+    assert.deepEqual({ ...topDiveClip, id: divingElbowClip.id }, divingElbowClip);
 });

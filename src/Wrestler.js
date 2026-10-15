@@ -4,6 +4,10 @@ import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
 import { resolveSemanticSlots } from './rig/partVariants.js';
 import { dropkickClip } from './animation/clips/dropkick.js';
+import { elbowDropClip } from './animation/clips/elbowDrop.js';
+import { kneeDropClip } from './animation/clips/kneeDrop.js';
+import { divingElbowClip } from './animation/clips/divingElbow.js';
+import { topDiveClip } from './animation/clips/topDive.js';
 import {
     ARTICULATED_CHANNELS,
     ARTICULATION_CHANNEL_PAIRS,
@@ -194,6 +198,11 @@ export const POSES = {
 // restated, so the certified pose is the one the game draws.
 POSES.dropkickExtended = dropkickClip.tracks.attacker.keyframes
     .find(frame => frame.at === dropkickClip.events.find(event => event.type === 'impact').at).pose;
+// The elbow drop's flat-in-the-air frame, likewise ('elbow-drop-air'): the
+// keyframe with the most tilt before the impact.
+POSES.elbowDropAir = elbowDropClip.tracks.attacker.keyframes
+    .filter(frame => frame.at < elbowDropClip.duration)
+    .reduce((best, frame) => ((frame.pose.tilt ?? 0) > (best.pose.tilt ?? 0) ? frame : best)).pose;
 
 // ─── Move definitions ─────────────────────────────────────────────────────────
 // poseSeq drives the attacker's visual. Durations mirror the defender's tween
@@ -211,11 +220,6 @@ export const MOVE_DEFS = {
                               { p: 'clotheslineFollow', dur: 130, e: 'Linear'        },
                               { p: 'idle',              dur: 200, e: 'Cubic.easeOut' }] },
     pin:         { poseSeq: [{ p: 'pinHold',     dur: 200, e: 'Linear'        }] },
-    elbowDrop:   { poseSeq: [{ p: 'elbowCrouch', dur: 130, e: 'Cubic.easeOut' },
-                              { p: 'elbowRaise',  dur: 200, e: 'Cubic.easeOut' },
-                              { p: 'elbowLand',   dur:  80, e: 'Cubic.easeIn'  },
-                              { p: 'elbowImpact', dur: 100, e: 'Linear'        },
-                              { p: 'idle',        dur: 260, e: 'Cubic.easeOut' }] },
     doubleAxeHandle: { poseSeq: [{ p: 'axeHandleUp',     dur: 150, e: 'Cubic.easeOut' },
                                   { p: 'axeHandleUp',     dur: 130, e: 'Linear'        },
                                   { p: 'axeHandleDown',   dur: 100, e: 'Cubic.easeIn'  },
@@ -259,10 +263,9 @@ export const MOVE_DEFS = {
     // misleading second timing source). The hammerlock* POSES it samples stay
     // above; they double as rig-audit reference stances (joint_attachment_audit,
     // lou_preview, comparison shots).
-    // kneeLift/backBodyDrop/kneeDrop are documented here for reference, but the
-    // middle airborne/launch phases of backBodyDrop and kneeDrop don't tween
-    // `pose` directly — they share existing custom draw plumbing (clothesline
-    // fall / elbowDropping) the same way MOVE_DEFS.elbowDrop already does.
+    // kneeLift/backBodyDrop are documented here for reference, but the middle
+    // launch phase of backBodyDrop doesn't tween `pose` directly — it shares
+    // the clothesline fall. (The elbow and knee drops' flights are clips.)
     kneeLift:    { poseSeq: [{ p: 'kneeLiftLoad',    dur: 100, e: 'Cubic.easeOut' },
                               { p: 'kneeLiftChamber', dur:  90, e: 'Cubic.easeIn'  },
                               { p: 'kneeLiftImpact',  dur:  70, e: 'Linear'        },
@@ -271,10 +274,6 @@ export const MOVE_DEFS = {
                               { p: 'backDropDip',     dur: 120, e: 'Cubic.easeIn'  },
                               { p: 'backDropLaunch',  dur: 100, e: 'Cubic.easeOut' },
                               { p: 'backDropRecover', dur: 220, e: 'Cubic.easeOut' }] },
-    kneeDrop:    { poseSeq: [{ p: 'kneeDropSet',     dur: 120, e: 'Cubic.easeOut' },
-                              { p: 'kneeDropLeap',    dur: 140, e: 'Cubic.easeOut' },
-                              { p: 'kneeDropTuck',    dur:  90, e: 'Cubic.easeIn'  },
-                              { p: 'kneeDropLand',    dur: 120, e: 'Linear'        }] },
 };
 
 
@@ -290,7 +289,7 @@ export const MOVE_DEFS = {
 // 'falling'     400ms fall tween before going down; no input
 // 'flipping'    clothesline/dropkick victim arc; flipProgress 0→1; no input
 // 'dropkicking'   attacker airborne during dropkick; posed by the dropkick clip
-// 'elbowDropping' attacker airborne during elbow drop; elbowProgress 0→1
+// 'elbowDropping' attacker airborne during elbow/knee drop; posed by its flight clip
 // 'slamming'    attacker mid-slam, elbow drop, or dropkick launch; no input
 // 'grabbed'     legacy held-victim state; no move sets it since the throws moved to clips (2026-10-13)
 // 'down'        flat on mat; stateTimer counts down to 0 → 'gettingUp' (or 'possum' if holding down)
@@ -305,7 +304,7 @@ export const MOVE_DEFS = {
 // 'lockup'      grapple clinch; attacker follows up with action+direction, defender contests with action
 // 'climbing'    tweening up to or down from a turnbuckle corner; no input
 // 'onTurnbuckle' standing on middle rope at corner; power = dive, movement = climb down
-// 'diving'      airborne from turnbuckle dive; divProgress 0→1
+// 'diving'      airborne from turnbuckle dive; posed by the dive clip
 // 'pressing'    Thesz press flight; pressProgress 0→1; lands into pin (hit) or down (whiff)
 
 // ─── Wrestler class ───────────────────────────────────────────────────────────
@@ -339,8 +338,6 @@ export default class Wrestler {
         this.stamina      = STAMINA_MAX;
         this.flipProgress  = 0;
         this.flipDir       = 1;
-        this.elbowProgress = 0;
-        this.divProgress   = 0;
         this._corner       = null;
         this._divLandY     = 0;
         this._ropeLevel    = 0; // 0=none, 1=middle rope, 2=top rope
@@ -1236,33 +1233,45 @@ export default class Wrestler {
             { p: 'elbowRaise',  dur: 200, e: 'Cubic.easeOut' },
         ], () => {
             if (this.state !== 'slamming') return;
-            // Now jump — switch to elbowDropping (custom draw takes over)
-            this.state          = 'elbowDropping';
-            this._airPeakHeight = 100; // explicit — kneeDrop reuses this same
-                                        // state/draw path with a lower hop (see _doKneeDrop)
-            this.elbowProgress = 0;
-            this.scene.tweens.add({
-                targets:       this,
-                elbowProgress: 1,
-                x:             other.x,
-                duration:      380,
-                ease:          'Sine.easeInOut',
-                onComplete: () => {
-                    if (this.state !== 'elbowDropping') return;
-                    other.stateTimer = DOWN_SEC;
-                    this.scene.cameras.main.shake(130, 0.002);
-                    this.elbowProgress = 0;
-                    // Show landing / recovery poses (skeleton visible again)
-                    this.state = 'slamming';
-                    this._runPoseSequence([
-                        { p: 'elbowLand',   dur:  80, e: 'Cubic.easeIn'  },
-                        { p: 'elbowImpact', dur: 100, e: 'Linear'        },
-                        { p: 'idle',        dur: 260, e: 'Cubic.easeOut' },
-                    ], () => {
-                        if (this.state === 'slamming') this.state = 'standing';
-                    });
-                },
+            // Now jump: the flight is the elbowDrop clip (sheet frames
+            // 165–168, author_elbowdrop.mjs) on the rig; this moves him onto
+            // the target over the same 380 ms.
+            this._playFlight(elbowDropClip, { x: other.x, ease: 'Sine.easeInOut' }, () => {
+                other.stateTimer = DOWN_SEC;
+                this.scene.cameras.main.shake(130, 0.002);
+                // Show landing / recovery poses (skeleton visible again)
+                this.state = 'slamming';
+                this._runPoseSequence([
+                    { p: 'elbowLand',   dur:  80, e: 'Cubic.easeIn'  },
+                    { p: 'elbowImpact', dur: 100, e: 'Linear'        },
+                    { p: 'idle',        dur: 260, e: 'Cubic.easeOut' },
+                ], () => {
+                    if (this.state === 'slamming') this.state = 'standing';
+                });
             });
+        });
+    }
+
+    // An airborne flight posed by a one-wrestler clip (elbow drop, knee drop,
+    // dives): state 'elbowDropping' or 'diving' for the length of the clip
+    // (stretched to `duration` ms when given), with `motion` tweened on the
+    // wrestler itself — the clip never places him. `land` runs when the clip
+    // ends, still in the flight state, with tilt/lift handed back to zero
+    // unless the landing keeps him on the mat.
+    _playFlight(clip, motion, land, { state = 'elbowDropping', duration = clip.duration * 1000 } = {}) {
+        const runtime = this.scene.moveRuntime;
+        this.state = state;
+        this.scene.tweens.add({ targets: this, ...motion, duration });
+        const done = (finished) => {
+            this._activeMove = null;
+            if (this.state !== state) return;
+            if (!finished) { this._standBackUp(); return; }
+            land();
+        };
+        this._activeMove = runtime.play(clip.id, { attacker: this }, {
+            rate: clip.duration * 1000 / duration,
+            onComplete: () => done(true),
+            onCancel: () => done(false),
         });
     }
 
@@ -1387,76 +1396,58 @@ export default class Wrestler {
     }
 
     _doDive(other) {
-        this.state       = 'diving';
-        this.divProgress = 0;
         this._divLandY   = other.y;
-
-        this.scene.tweens.add({
-            targets:     this,
-            divProgress: 1,
-            x:           other.x,
-            y:           other.y,
-            duration:    550,
-            ease:        'Sine.easeIn',
-            onComplete: () => {
-                if (this.state !== 'diving') return;
-                const dist = Math.abs(this.x - other.x);
-                const hit  = dist <= 130 * this.s &&
-                             (other.state === 'standing' || other.state === 'down' || other.state === 'possum' || other.state === 'staggered');
-                if (hit) {
-                    other._drain(STAMINA_DRAIN.divingElbow);
-                    if (other.state === 'down') {
-                        other.stateTimer = DOWN_SEC;
-                    } else {
-                        other._doSell('sellChest', 150, () => other.startClotheslineFall(this.facing));
-                    }
-                    this.scene.cameras.main.shake(180, 0.003);
+        // The flight is the dive clip (sheet frames 209–213, author_dive.mjs)
+        // stretched to 550 ms; this flies him off the turnbuckle onto the target.
+        this._playFlight(divingElbowClip, { x: other.x, y: other.y, ease: 'Sine.easeIn' }, () => {
+            const dist = Math.abs(this.x - other.x);
+            const hit  = dist <= 130 * this.s &&
+                         (other.state === 'standing' || other.state === 'down' || other.state === 'possum' || other.state === 'staggered');
+            if (hit) {
+                other._drain(STAMINA_DRAIN.divingElbow);
+                if (other.state === 'down') {
+                    other.stateTimer = DOWN_SEC;
                 } else {
-                    this.scene.cameras.main.shake(70, 0.001);
+                    other._doSell('sellChest', 150, () => other.startClotheslineFall(this.facing));
                 }
-                this.state       = 'down';
-                this.lying       = 'prone';
-                this.stateTimer  = 2.0;
-                this.divProgress = 0;
-            },
-        });
+                this.scene.cameras.main.shake(180, 0.003);
+            } else {
+                this.scene.cameras.main.shake(70, 0.001);
+            }
+            this.pose.tilt   = 0;
+            this.pose.lift   = 0;
+            this.state       = 'down';
+            this.lying       = 'prone';
+            this.stateTimer  = 2.0;
+        }, { state: 'diving', duration: 550 });
     }
 
     _doTopDive(other) {
-        this.state       = 'diving';
-        this.divProgress = 0;
         this._divLandY   = other.y;
-
-        this.scene.tweens.add({
-            targets:     this,
-            divProgress: 1,
-            x:           other.x,
-            y:           other.y,
-            duration:    700,
-            ease:        'Sine.easeIn',
-            onComplete: () => {
-                if (this.state !== 'diving') return;
-                const dist = Math.abs(this.x - other.x);
-                const inRange = dist <= 140 * this.s;
-                if (inRange && (other.state === 'down' || other.state === 'possum')) {
-                    // Splash on downed opponent — maximum damage, extended down time
-                    other._drain(STAMINA_DRAIN.topDive);
-                    other.stateTimer = DOWN_SEC + 2.0;
-                    this.scene.cameras.main.shake(260, 0.005);
-                } else if (inRange && (other.state === 'standing' || other.state === 'staggered')) {
-                    // Flying cross-body on standing opponent — big knockdown
-                    other._drain(STAMINA_DRAIN.topDive - 6);
-                    other._doSell('sellChest', 120, () => other.startClotheslineFall(this.facing));
-                    this.scene.cameras.main.shake(200, 0.004);
-                } else {
-                    this.scene.cameras.main.shake(110, 0.002);
-                }
-                this.state       = 'down';
-                this.lying       = 'prone';
-                this.stateTimer  = 3.0;
-                this.divProgress = 0;
-            },
-        });
+        // The flight is the dive clip (sheet frames 209–213, author_dive.mjs)
+        // stretched to 700 ms; this flies him off the turnbuckle onto the target.
+        this._playFlight(topDiveClip, { x: other.x, y: other.y, ease: 'Sine.easeIn' }, () => {
+            const dist = Math.abs(this.x - other.x);
+            const inRange = dist <= 140 * this.s;
+            if (inRange && (other.state === 'down' || other.state === 'possum')) {
+                // Splash on downed opponent — maximum damage, extended down time
+                other._drain(STAMINA_DRAIN.topDive);
+                other.stateTimer = DOWN_SEC + 2.0;
+                this.scene.cameras.main.shake(260, 0.005);
+            } else if (inRange && (other.state === 'standing' || other.state === 'staggered')) {
+                // Flying cross-body on standing opponent — big knockdown
+                other._drain(STAMINA_DRAIN.topDive - 6);
+                other._doSell('sellChest', 120, () => other.startClotheslineFall(this.facing));
+                this.scene.cameras.main.shake(200, 0.004);
+            } else {
+                this.scene.cameras.main.shake(110, 0.002);
+            }
+            this.pose.tilt   = 0;
+            this.pose.lift   = 0;
+            this.state       = 'down';
+            this.lying       = 'prone';
+            this.stateTimer  = 3.0;
+        }, { state: 'diving', duration: 700 });
     }
 
     _doTheszPress(other) {
@@ -1747,9 +1738,9 @@ export default class Wrestler {
     }
 
     // Knee drop — measured drop onto a grounded opponent. Directional override
-    // of the elbow drop. Shares elbowDrop's airborne draw plumbing
-    // (elbowDropping / _drawElbowDropAir) with a lower hop and an offset
-    // landing spot, rather than a bespoke new render path.
+    // of the elbow drop. Flies through the same _playFlight plumbing
+    // (state elbowDropping) with its own short hop clip and an offset
+    // landing spot.
     _doKneeDrop(other) {
         this.state  = 'slamming';
         this.facing = Math.sign(other.x - this.x) || this.facing;
@@ -1759,36 +1750,25 @@ export default class Wrestler {
             { p: 'kneeDropSet', dur: 120, e: 'Cubic.easeOut' },
         ], () => {
             if (this.state !== 'slamming') return;
-            this.state          = 'elbowDropping';
-            this._airPeakHeight = 38; // compact hop, vs elbow drop's 100
-            this.elbowProgress  = 0;
             // Settle beside the opponent rather than directly on top, on
             // whichever side the attacker jumped in from.
             const approachDir = Math.sign(this.x - other.x) || this.facing;
             const landX       = other.x + approachDir * 30 * this.s;
 
-            this.scene.tweens.add({
-                targets:  this,
-                elbowProgress: 1,
-                x:        landX,
-                duration: 140 + 90, // kneeDropLeap + kneeDropTuck, collapsed into one airborne tween
-                ease:     'Sine.easeInOut',
-                onComplete: () => {
-                    if (this.state !== 'elbowDropping') return;
-                    this.elbowProgress = 0;
-                    this.state         = 'slamming';
-                    this.scene.cameras.main.shake(110, 0.0018);
-                    // Contact at 350ms total (120 set + 230 airborne) — the
-                    // defender stays in its existing grounded draw state, no
-                    // pose change, no down-timer restart.
-                    other._drain(STAMINA_DRAIN.kneeDrop);
-                    this._runPoseSequence([
-                        { p: 'kneeDropLand', dur: 120, e: 'Linear' },
-                        { p: this.idlePose,  dur: 220, e: 'Cubic.easeOut' },
-                    ], () => {
-                        if (this.state === 'slamming') this.state = 'standing';
-                    });
-                },
+            // The 230 ms hop is the kneeDrop clip: leap → tuck, 38 units up.
+            this._playFlight(kneeDropClip, { x: landX, ease: 'Sine.easeInOut' }, () => {
+                this.state         = 'slamming';
+                this.scene.cameras.main.shake(110, 0.0018);
+                // Contact at 350ms total (120 set + 230 airborne) — the
+                // defender stays in its existing grounded draw state, no
+                // pose change, no down-timer restart.
+                other._drain(STAMINA_DRAIN.kneeDrop);
+                this._runPoseSequence([
+                    { p: 'kneeDropLand', dur: 120, e: 'Linear' },
+                    { p: this.idlePose,  dur: 220, e: 'Cubic.easeOut' },
+                ], () => {
+                    if (this.state === 'slamming') this.state = 'standing';
+                });
             });
         });
     }
@@ -2050,19 +2030,14 @@ export default class Wrestler {
             return;
         }
 
-        if (state === 'elbowDropping') {
-            const arcFrac = Math.sin(this.elbowProgress * Math.PI);
-            const airY    = y - arcFrac * (this._airPeakHeight ?? 100) * s;
-            gfx.fillStyle(0x000000, 0.22 + arcFrac * 0.08);
-            gfx.fillEllipse(x, y, (120 + arcFrac * 50) * s, (36 + arcFrac * 10) * s);
-            this._drawElbowDropAir(x, airY, s, facing, skinCol, trunksCol);
-            return;
-        }
-
-        if (state === 'diving') {
-            gfx.fillStyle(0x000000, 0.15 + this.divProgress * 0.08);
-            gfx.fillEllipse(x, this._divLandY, (100 + this.divProgress * 60) * s, (30 + this.divProgress * 12) * s);
-            this._drawElbowDropAir(x, y, s, facing, skinCol, trunksCol);
+        if (state === 'elbowDropping' || state === 'diving') {
+            // Flights posed by one-wrestler clips (_playFlight). The dive's
+            // shadow stays on the landing spot while he comes off the post.
+            const shadowY = state === 'diving' ? this._divLandY : y;
+            gfx.fillStyle(0x000000, 0.22);
+            gfx.fillEllipse(x, shadowY, 130 * s, 36 * s);
+            this.skeleton.setVisible(true);
+            this.skeleton.updateUpright(x, y, s, facing, this.pose, this.walkPhase, 0, facing * (this.pose.lean ?? 0), 0, 0.5, 0);
             return;
         }
 
@@ -2147,18 +2122,6 @@ export default class Wrestler {
         const headX = facing > 0 ? torsoLeft - hR * 0.8 : torsoLeft + torsoW + hR * 0.8;
         gfx.fillStyle(skinCol, 1);
         gfx.fillCircle(headX, y, hR);
-    }
-
-    _drawElbowDropAir(x, y, s, facing, skinCol, trunksCol) {
-        // Same front-facing horizontal as the dropkick, with one arm hanging straight down
-        this._drawDropkickFront(x, y, s, facing, skinCol, trunksCol);
-        const torsoW      = 72 * s;
-        const torsoH      = 38 * s;
-        const armW        = 18 * s;
-        const armLen      = 60 * s;
-        const torsoCenter = facing > 0 ? x - torsoW / 2 : x + torsoW / 2;
-        this.gfx.fillStyle(skinCol, 1);
-        this.gfx.fillRect(torsoCenter - armW / 2, y + torsoH / 2, armW, armLen);
     }
 
     _nearCorner() {

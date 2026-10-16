@@ -259,6 +259,54 @@ const SCENARIOS = {
         async run(h) { await SCENARIOS.suplex.run(h); },
     },
 
+    // Lockup, then grapple with no direction: the kit's piledriver, else its
+    // body slam. Lou has the slam, George the piledriver. Between them the
+    // scenarios put both Lous (shipped and Procreate) on each end.
+    bodySlam: {
+        p1: 'thesz-procreate-v1',
+        expect: { move: 'bodySlam' },
+        async run(h) {
+            await SCENARIOS.lockup.run(h);
+            await h.page.waitForTimeout(200);
+            await tap(h.page, 'f');
+        },
+    },
+
+    bodySlamLou: {
+        p1: 'thesz', p2: 'thesz-procreate-v1',
+        expect: { move: 'bodySlam' },
+        async run(h) { await SCENARIOS.bodySlam.run(h); },
+    },
+
+    piledriver: {
+        p1: 'george', p2: 'thesz',
+        expect: { move: 'piledriver' },
+        async run(h) { await SCENARIOS.bodySlam.run(h); },
+    },
+
+    piledriverProcreate: {
+        p1: 'george', p2: 'thesz-procreate-v1',
+        expect: { move: 'piledriver' },
+        async run(h) { await SCENARIOS.bodySlam.run(h); },
+    },
+
+    // Lockup, then power: the kit's hip toss (Lou's), else its arm drag.
+    hipToss: {
+        p1: 'thesz-procreate-v1',
+        expect: { move: 'hipToss' },
+        async run(h) {
+            await SCENARIOS.lockup.run(h);
+            await h.page.waitForTimeout(200);
+            await tap(h.page, 'g');
+        },
+    },
+
+    hipTossLou: {
+        p1: 'thesz', p2: 'thesz-procreate-v1',
+        expect: { move: 'hipToss' },
+        async run(h) { await SCENARIOS.hipToss.run(h); },
+    },
+
     kneeLift: { // hold up + power vs standing, close range — overrides the jab
         p1: 'george', // kneeLift is george-only (not in thesz's kit)
         expect: { move: 'kneeLift' },

@@ -167,7 +167,8 @@ To watch a match in a browser:
 | jab | **Done**: v2, short punch to the jaw |
 | dropkick | **v2 approved in look**, behind `?dropkick=v2`; promotion to live is Derek's decision |
 | hammerlock | **Derek's draft. Do not edit.** Only a separate acting candidate, and only if he asks |
-| bodySlam, piledriver, hipToss | Next: paired throws. Reuse the suplex pattern. Keep the body slam's powerbomb look (Derek likes it) |
+| bodySlam | **v2 refined**: grips through an overhead press (the powerbomb look kept), one-way turnover, follow-through. Awaiting Derek's look |
+| piledriver, hipToss | Next: paired throws. Reuse the suplex pattern |
 | figureFour, armBar, ankleLock | Mat holds: purchase, brace, squeeze beats, resistance. Silent foley; the squeeze reads through the bodies |
 | elbowDrop, kneeDrop, divingElbow/topDive, theszPress | Flights: the executor owns travel (solo clips). Add the grounded handoff for prone landings (`_layOnBack` covers supine only) |
 | headbutt, kneeLift, clothesline, doubleAxeHandle, armDrag, backBodyDrop, sleeperHold, headlock, irishWhip, pin, taunts | Still pose sequences in `Wrestler.js`. Migrate each to a clip when it's refined |

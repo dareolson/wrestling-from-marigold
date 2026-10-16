@@ -171,7 +171,7 @@ To watch a match in a browser:
 | hammerlock | **Derek's draft. Do not edit.** Only a separate acting candidate, and only if he asks |
 | bodySlam | **v2 refined**: grips through an overhead press (the powerbomb look kept), one-way turnover, follow-through. Awaiting Derek's look |
 | piledriver | **v2 refined**: grip from the lift to the drop, a suspense beat, the sit-out; Lou crumples forward face down (`_layDown(…, 'prone')`) while George rocks back out from under him. Awaiting Derek's look |
-| hipToss | Next: paired throw. Reuse the suplex pattern |
+| hipToss | **v2 refined**: grip round the waist and on the arm, hips load and pop, George goes over the hip and lands flat *behind* Lou (v1 looped him back round to the front). Awaiting Derek's look |
 | figureFour, armBar, ankleLock | Mat holds: purchase, brace, squeeze beats, resistance. Silent foley; the squeeze reads through the bodies |
 | elbowDrop, kneeDrop, divingElbow/topDive, theszPress | Flights: the executor owns travel (solo clips). Add the grounded handoff for prone landings (`_layOnBack` covers supine only) |
 | headbutt, kneeLift, clothesline, doubleAxeHandle, armDrag, backBodyDrop, sleeperHold, headlock, irishWhip, pin, taunts | Still pose sequences in `Wrestler.js`. Migrate each to a clip when it's refined |

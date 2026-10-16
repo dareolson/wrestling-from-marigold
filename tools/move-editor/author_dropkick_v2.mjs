@@ -47,13 +47,18 @@ const attacker = [
     // The snap: both legs drive out level into the chest (229). Accelerates
     // into contact (easeIn); stage.mjs puts the boots on George's chest.
     [AT.kick, pose({ lArm: 2.00, rArm: 1.80, lElbow: 0.5, rElbow: 0.5, lLeg: 0.40, rLeg: 0.32, lKnee: 0.05, rKnee: 0.08, bend: -0.15, tilt: -1.15, lift: 62 }), GEORGE_X - DROPKICK_V2_REACH, 229, 'easeIn'],
-    // Recoil: the chest pushes back and his knees fold toward him; the boots
-    // come off George (not up his body) as he drops away.
-    [AT.recoil, pose({ lArm: 2.30, rArm: 2.10, lElbow: 0.6, rElbow: 0.6, lLeg: 0.15, rLeg: 0.05, lKnee: 1.10, rKnee: 0.95, bend: 0.10, tilt: -1.25, lift: 40 }), GEORGE_X - DROPKICK_V2_REACH - 10, null, 'easeOut'],
-    // Backside first (231), knees still bent, arms out to break the fall.
-    [AT.land, pose({ lArm: 1.50, rArm: 1.30, lElbow: 0.4, rElbow: 0.4, lLeg: 0.25, rLeg: 0.15, lKnee: 0.80, rKnee: 0.70, tilt: -1.45, lift: 4 }), GEORGE_X - DROPKICK_V2_REACH - 14, 231, 'easeIn'],
-    // Flat on his back (232).
-    [AT.flat, pose({ lArm: 0.30, rArm: 0.25, lElbow: 0.2, rElbow: 0.2, lLeg: 0.10, rLeg: 0.15, lKnee: 0.10, rKnee: 0.10, tilt: -1.52, lift: LYING }), GEORGE_X - DROPKICK_V2_REACH - 14, 232, 'easeOut'],
+    // Recoil: off the chest, thighs dropping and knees folding, so the boots
+    // fall away under him. (Raising the knees threw the boots up into a
+    // backward-somersault look; letting hip and knee interpolate against each
+    // other froze the shins pointing at George's face, then flopped them.)
+    [AT.recoil, pose({ lArm: 2.30, rArm: 2.10, lElbow: 0.6, rElbow: 0.6, lLeg: -0.35, rLeg: -0.40, lKnee: 1.50, rKnee: 1.40, bend: 0.08, tilt: -1.25, lift: 40 }), GEORGE_X - DROPKICK_V2_REACH - 10, null, 'easeOut'],
+    // Backside first (231): legs coming down toward the mat, arms out. Thighs
+    // stay low so the shins keep travelling DOWN from the recoil (raising
+    // them here reversed the shins mid-landing — the wobble Derek saw).
+    [AT.land, pose({ lArm: 1.50, rArm: 1.30, lElbow: 0.4, rElbow: 0.4, lLeg: -0.05, rLeg: -0.08, lKnee: 0.85, rKnee: 0.75, tilt: -1.45, lift: 4 }), GEORGE_X - DROPKICK_V2_REACH - 14, 231, 'easeIn'],
+    // Flat on his back (232), legs straight on the mat — the grounded lying
+    // pose's shape, so the handoff into it has nothing left to move.
+    [AT.flat, pose({ lArm: 0.30, rArm: 0.25, lElbow: 0.2, rElbow: 0.2, lLeg: 0.08, rLeg: 0.12, lKnee: 0.0, rKnee: 0.02, tilt: -1.52, lift: LYING }), GEORGE_X - DROPKICK_V2_REACH - 14, 232, 'easeOut'],
 ];
 
 // The target, standing, for the preview only.

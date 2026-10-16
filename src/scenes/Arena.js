@@ -14,6 +14,7 @@ import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
+import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
 import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
 
 // 2026-07-26 (promoted-george roster change): the roster is now just these
@@ -3053,6 +3054,8 @@ export default class Arena extends Phaser.Scene {
         // nothing survives a Scene restart.
         this.moveRuntime = new MoveRuntime();
         for (const clip of REGISTERED_MOVE_CLIPS) this.moveRuntime.register(clip);
+        // ?dropkick=v2 comparison candidate (Wrestler._doDropkick picks it).
+        if (new URLSearchParams(location.search).get('dropkick') === 'v2') this.moveRuntime.register(dropkickV2Clip);
         this.events.once('shutdown', () => this.moveRuntime.shutdown());
 
         // Both P1 and P2 default to keyboard (Derek, 2026-07-12 — loading the

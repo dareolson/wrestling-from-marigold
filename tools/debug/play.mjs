@@ -309,13 +309,15 @@ async function runScenario(h, name) {
     const start = (await h.snap()).eventCount;
     try {
         await sc.run(h);
-        // WFM_SHOTS=<dir>: film the move as it plays (every 80ms for 2.4s),
+        // WFM_SHOTS=<dir>: film the move as it plays (every 80ms, WFM_SHOTS_N
+        // frames, default 30),
         // for eye review of full-speed gameplay rather than editor poses.
         if (process.env.WFM_SHOTS) {
             const { mkdirSync } = await import('node:fs');
             const dir = `${process.env.WFM_SHOTS}/${name}`;
             mkdirSync(dir, { recursive: true });
-            for (let i = 0; i < 30; i++) {
+            const count = Number(process.env.WFM_SHOTS_N ?? 30);
+            for (let i = 0; i < count; i++) {
                 await h.page.screenshot({ path: `${dir}/${String(i).padStart(2, '0')}.png` });
                 await h.page.waitForTimeout(80);
             }

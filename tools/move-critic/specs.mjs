@@ -27,7 +27,8 @@ export const SPECS = {
     hammerlock: {},
     jab: {
         solo: true,
-        strikes: [{ role: 'attacker', source: 'nearWrist', target: 'part:head' }],
+        // The jab punches with lArm: the near arm facing right.
+        strikes: [{ role: 'attacker', source: 'fist:near', target: 'face' }],
     },
 };
 export const specFor = id => SPECS[id] ?? SPECS[id.replace(/-.*$/, '')] ?? {};

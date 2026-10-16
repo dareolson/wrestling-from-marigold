@@ -55,7 +55,18 @@ const result = await page.evaluate(async ({ plant, stage, hands }) => {
         if (!k) throw new Error(`${role} has no keyframe at ${at}`);
         return k;
     };
-    const point = (role, joint) => E.actors[role].skeleton.jointAttachmentPoints[joint];
+    // Named contact points (fist:near, face) come from metrics.mjs itself, so
+    // the solver and the critic share one definition.
+    const { namedPoint } = await import('/tools/move-critic/metrics.mjs');
+    const { outline: outlineOf } = await import('/tools/move-critic/page-outline.js');
+    const point = (role, joint) => {
+        const actor = E.actors[role], sk = actor.skeleton;
+        if (/^(fist:|face$)/.test(joint)) {
+            return namedPoint({ joints: sk.jointAttachmentPoints, facing: actor.facing,
+                outline: { head: sk.head?.visible ? outlineOf(sk.head) : [] } }, joint);
+        }
+        return sk.jointAttachmentPoints[joint];
+    };
     // Offsets are screen px, or with `frame: 'body'` they turn with the
     // target's spine (hip→neck), so "in front of his chest" stays in front of
     // it while he tilts back into a fall.
@@ -118,24 +129,54 @@ const result = await page.evaluate(async ({ plant, stage, hands }) => {
         k.pose.lift = Math.round(k.pose.lift * 100) / 100;
         log.push(`stage ${c.role} ${c.joint} → ${c.to.role} ${c.to.joint} @${c.at}: ${before.toFixed(1)}px → ${gap(c).d.toFixed(1)}px (x ${k.transform.x}, lift ${k.pose.lift})`);
     }
-    for (const c of hands) {
+    // Hands, in time order per limb. Branch continuity (Codex review,
+    // finding 5): a folded two-bone limb has two mirror solutions, and solving
+    // each key on its own can pick a different one per key, so the hand swings
+    // through space between keys. Each solve is tried from the key's own
+    // authored arm AND seeded from the previous key's solution; the result
+    // nearest the previous solution wins unless it is clearly worse.
+    const sorted = [...hands].sort((a, b) => a.role.localeCompare(b.role) || a.limb.localeCompare(b.limb) || a.at - b.at);
+    const previous = new Map();
+    for (const c of sorted) {
         const k = keyAt(c.role, c.at);
-        const side = c.limb.startsWith('near') ? 'near' : 'far';
-        const kind = c.limb.endsWith('Wrist') ? 'wrist' : 'ankle';
+        const named = c.limb.startsWith('fist:');
+        const side = (named ? c.limb.slice(5) : c.limb).startsWith('near') ? 'near' : 'far';
+        const kind = named || c.limb.endsWith('Wrist') ? 'wrist' : 'ankle';
+        const lane = `${c.role}:${c.limb}`;
+        // The drag IK moves the wrist; to land a named point (the fist) on the
+        // goal, aim the wrist at goal − (point − wrist), re-measured each pass.
+        const wristGoal = () => {
+            const goal = goalOf(c);
+            if (!named) return goal;
+            const sk = E.actors[c.role].skeleton, w = sk.jointAttachmentPoints[`${side}Wrist`], p = point(c.role, c.limb);
+            return { x: goal.x - (p.x - w.x), y: goal.y - (p.y - w.y) };
+        };
         const before = gap(c).d;
-        // Keep the best attempt: near a joint limit the drag IK can land
-        // further away than it started.
-        let best = { d: before, pose: { ...k.pose } };
-        for (let i = 0; i < 5; i++) {
-            load(c.at);
-            const actor = E.actors[c.role];
-            const prev = { ...actor.pose };
-            E.applyChainDrag(c.role, side, kind, goalOf(c));
-            for (const [ch, v] of Object.entries(actor.pose)) if (prev[ch] !== v) k.pose[ch] = Math.round(v * 1000) / 1000;
-            const d = gap(c).d;
-            if (d < best.d) best = { d, pose: { ...k.pose } };
-        }
-        k.pose = best.pose;
+        const authored = { ...k.pose };
+        const solveFrom = seed => {
+            k.pose = { ...authored, ...seed };
+            let best = { d: gap(c).d, pose: { ...k.pose } };
+            for (let i = 0; i < 5; i++) {
+                load(c.at);
+                const actor = E.actors[c.role];
+                const prev = { ...actor.pose };
+                E.applyChainDrag(c.role, side, kind, wristGoal());
+                for (const [ch, v] of Object.entries(actor.pose)) if (prev[ch] !== v) k.pose[ch] = Math.round(v * 1000) / 1000;
+                const d = gap(c).d;
+                if (d < best.d) best = { d, pose: { ...k.pose } };
+            }
+            return best;
+        };
+        const candidates = [solveFrom({})];
+        const last = previous.get(lane);
+        if (last) candidates.push(solveFrom(last));
+        // Which channels this limb drives: whatever the solve changed.
+        const changed = [...new Set(candidates.flatMap(cand => Object.keys(cand.pose).filter(ch => cand.pose[ch] !== authored[ch])))];
+        const distance = cand => last ? changed.reduce((t, ch) => t + Math.abs((cand.pose[ch] ?? 0) - (last[ch] ?? cand.pose[ch] ?? 0)), 0) : 0;
+        const bestGap = Math.min(...candidates.map(cand => cand.d));
+        const pick = candidates.filter(cand => cand.d <= bestGap + 3).sort((a, b) => distance(a) - distance(b))[0];
+        k.pose = pick.pose;
+        previous.set(lane, Object.fromEntries(changed.map(ch => [ch, pick.pose[ch]])));
         log.push(`hand ${c.role} ${c.limb} → ${c.to.role} ${c.to.joint} @${c.at}: ${before.toFixed(1)}px → ${gap(c).d.toFixed(1)}px`);
     }
     return { log, draft: JSON.parse(JSON.stringify(E.draft)) };

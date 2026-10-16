@@ -204,8 +204,38 @@ export function contacts(trace, specs = []) {
     });
 }
 
-// A contact target may be a joint or a part's painted centroid ("part:head").
+// Named contact points (Codex review, finding 1: solve and grade against the
+// SAME definition). `fist:near|far` is the centre of the painted fist: on
+// Lou and George the hand is painted into the forearm image and the "wrist"
+// joint sits at its far end (the knuckles), so the fist centre is a little
+// back from it toward the elbow (12% of the forearm); `face` is the
+// front of the painted head — the head outline's points in its leading
+// quarter (toward where the actor faces), middle band — not the head image's
+// origin, which sits at the neck.
+export function namedPoint(actor, name) {
+    const fist = name.match(/^fist:(near|far)$/);
+    if (fist) {
+        const e = actor.joints[`${fist[1]}Elbow`], w = actor.joints[`${fist[1]}Wrist`];
+        if (!e || !w) return null;
+        return { x: w.x - (w.x - e.x) * 0.12, y: w.y - (w.y - e.y) * 0.12 };
+    }
+    if (name === 'face') {
+        const pts = actor.outline.head;
+        if (!pts?.length) return null;
+        const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+        const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+        const front = actor.facing >= 0 ? x1 - (x1 - x0) * 0.25 : x0 + (x1 - x0) * 0.25;
+        const band = pts.filter(p => (actor.facing >= 0 ? p[0] >= front : p[0] <= front) && p[1] > y0 + (y1 - y0) * 0.3 && p[1] < y0 + (y1 - y0) * 0.75);
+        if (!band.length) return null;
+        return { x: band.reduce((t, p) => t + p[0], 0) / band.length, y: band.reduce((t, p) => t + p[1], 0) / band.length };
+    }
+    return null;
+}
+
+// A contact target may be a joint, a named point, or a part's painted centroid ("part:head").
 function targetPoint(actor, target) {
+    const named = namedPoint(actor, target);
+    if (named) return named;
     if (target.startsWith('part:')) {
         const pts = actor.outline[target.slice(5)];
         if (!pts?.length) return null;
@@ -225,8 +255,9 @@ export function impacts(trace, strikes = []) {
     return events.flatMap(event => strikes.map(s => {
         const partner = s.role === 'attacker' ? 'defender' : 'attacker';
         const series = trace.frames.map(f => {
-            const a = f.actors[s.role], src = a.joints[s.source], tgt = targetPoint(f.actors[partner], s.target);
-            const root = a.joints[s.source.replace(/Wrist$/, 'Shoulder').replace(/Ankle$/, 'Hip')];
+            const a = f.actors[s.role], src = namedPoint(a, s.source) ?? a.joints[s.source], tgt = targetPoint(f.actors[partner], s.target);
+            const limb = s.source.startsWith('fist:') ? `${s.source.slice(5)}Wrist` : s.source;
+            const root = a.joints[limb.replace(/Wrist$/, 'Shoulder').replace(/Ankle$/, 'Hip')];
             return { at: f.at, gap: src && tgt ? dist(src, tgt) : null, reach: src && root ? dist(src, root) : null };
         });
         const at = series.reduce((best, x) => Math.abs(x.at - event.at) < Math.abs(best.at - event.at) ? x : best);

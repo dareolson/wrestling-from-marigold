@@ -1,0 +1,8 @@
+{
+  "src/animation/clips/suplex.js": "87b6c9f2edd060bde4ad3707d3f7cebc2861a722a14fb608660d50e0dc6c0419",
+  "tools/move-editor/author_suplex.mjs": "f40c858744c8c174d8db4aebf29320cae429bc963185794bb01f60c7ec71f65f",
+  "tools/move-editor/suplex.constraints.mjs": "55a5086c5b7140079e582ab790239e529b34ef4ee1ee122895746ffdc22b69de",
+  "tools/move-critic/specs.mjs": "dcb0644f827a0f4bc5351af12fbd3a9fb294af00f705cad932ce76732d909e6e",
+  "src/Wrestler.js": "77e44755d76fe50cd06cb1f9a34247b45a0f672f30d85733ae898161c46d359f",
+  "src/CrowdAudio.js": "9fcf1c85a13218a3cf7b395941ce4ec791067f1fa37ede07e5d3f2bda0304ba8"
+}

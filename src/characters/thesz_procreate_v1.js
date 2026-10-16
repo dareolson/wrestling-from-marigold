@@ -167,7 +167,13 @@ export const theszProcreateV1 = {
         // Calves stack UNDER the thighs, as Derek's layers do.
         shinUnderThigh: true,
         torso:    { key: 'thesz_pv1_torso', box: { w: 67.181, h: 113.228 } },
+        // Inverted, painted crown below the hip pivot, in this rig's own units
+        // (after heightScale; measured
+        // 2026-10-15 at the piledriver impact, tilt PI): a clip's crown-on-mat
+        // contact (floorContacts) reads it, since lift alone scales by hip
+        // height and leaves a shorter trunk short of the mat.
         rigProfile: {
+            crownBelowHip: 136.1,
             sockets: {
                 neck:         { u: 0.526313, v: 0.057178 },
                 // Derek rig-tuner export 2026-10-08: near shoulder u 0.165505 ->

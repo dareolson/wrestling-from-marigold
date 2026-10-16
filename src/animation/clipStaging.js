@@ -77,6 +77,18 @@
 // each tick; the clip's facing is applied after it, so the authored facing is
 // the one that renders. Ring-bounds clamping is the consumer's job, not this
 // module's -- see Wrestler._applyStagedTransform.
+//
+// RING FIT (2026-10-15). Clamping each actor separately crushes a tableau
+// that starts near the ropes: a body slam's 184 px landing shrank to 68 px.
+// So before the clip runs, the anchor may shift the SHARED origin
+// (`stagingFit`, Wrestler implements it) to keep every staged role's whole
+// authored path inside the ring. The shift eases in over the grab
+// (FIT_EASE_SEC), so the pair is walked off the ropes together rather than
+// snapped, and stays a pure function of clip time: seeking stays exact.
+
+import { sampleTrack } from './AnimationClip.js';
+
+export const FIT_EASE_SEC = 0.45;
 
 // Which bound role defines the staging axis. `attacker` first: for a paired
 // move the attacker's facing is the one gameplay already establishes at
@@ -147,10 +159,45 @@ export function captureStagingContext(clip, bindings) {
         originY: anchor.y,
         facing: anchor.facing,
         scale: anchor.scale,
+        fitShift: 0,
+        fitUntil: Math.min(FIT_EASE_SEC, clip.duration ?? FIT_EASE_SEC),
     };
+    const fit = bindings[anchorRole]?.stagingFit?.(frame, transformExtents(clip, staged));
+    if (Number.isFinite(fit) && fit !== 0) frame.fitShift = fit;
     const roles = {};
     for (const role of staged) roles[role] = Object.freeze({ role, ...frame });
     return Object.freeze({ anchorRole, ...frame, roles: Object.freeze(roles) });
+}
+
+/**
+ * The authored transform's extent (rig units) over every staged role, sampled
+ * at the keys and at 60 Hz between them so an ease can't hide an excursion.
+ */
+export function transformExtents(clip, roles) {
+    const ext = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+    const duration = clip.duration ?? 0;
+    for (const role of roles) {
+        const track = clip.tracks[role];
+        const times = new Set(track.keyframes.map(frame => frame.at));
+        for (let t = 0; t <= duration; t += 1 / 60) times.add(t);
+        for (const t of times) {
+            const { x = 0, y = 0 } = sampleTrack(track, t).transform ?? {};
+            if (Number.isFinite(x)) { ext.minX = Math.min(ext.minX, x); ext.maxX = Math.max(ext.maxX, x); }
+            if (Number.isFinite(y)) { ext.minY = Math.min(ext.minY, y); ext.maxY = Math.max(ext.maxY, y); }
+        }
+    }
+    return Number.isFinite(ext.minX) ? ext : null;
+}
+
+/**
+ * A role's staging at clip time `time`: the ring-fit shift eased in over the
+ * grab (smoothstep), so the pair slides off the ropes together. The same
+ * object when there is no shift.
+ */
+export function stagingAt(staging, time) {
+    if (!staging?.fitShift) return staging;
+    const u = Math.max(0, Math.min(1, staging.fitUntil > 0 ? time / staging.fitUntil : 1));
+    return { ...staging, originX: staging.originX + staging.fitShift * u * u * (3 - 2 * u) };
 }
 
 /**

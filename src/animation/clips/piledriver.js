@@ -785,5 +785,55 @@ export const piledriverClip = {
             at: 1.24,
             type: "impact"
         }
+    ],
+    floorContacts: [
+        {
+            role: "defender",
+            point: "crown",
+            in: [
+                1.1,
+                1.24
+            ],
+            out: [
+                1.42,
+                1.62
+            ]
+        }
+    ],
+    grips: [
+        {
+            role: "attacker",
+            arm: "l",
+            to: {
+                role: "defender",
+                joint: "Hip",
+                side: "same"
+            },
+            in: [
+                0.18,
+                0.32
+            ],
+            out: [
+                1.27,
+                1.42
+            ]
+        },
+        {
+            role: "attacker",
+            arm: "r",
+            to: {
+                role: "defender",
+                joint: "Hip",
+                side: "same"
+            },
+            in: [
+                0.18,
+                0.32
+            ],
+            out: [
+                1.27,
+                1.42
+            ]
+        }
     ]
 };

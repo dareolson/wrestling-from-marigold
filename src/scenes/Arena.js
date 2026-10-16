@@ -3437,6 +3437,7 @@ export default class Arena extends Phaser.Scene {
 
         w1.draw();
         w2.draw();
+        this.moveRuntime.afterDraw?.();
         this._updateRopes(dt);
         this._drawStaminaBars();
         this._updateHeat(dt);

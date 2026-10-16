@@ -478,8 +478,10 @@ export function clearReference(draft, role, at) {
 }
 
 export function exportClip(draft) {
-    const { id, duration, tracks, events } = normalizeDraft(draft);
-    return { id, duration, tracks, events };
+    const { id, duration, tracks, events, floorContacts, grips } = normalizeDraft(draft);
+    // Runtime contacts the clip declares (AnimationClip.js floorContacts)
+    // ride along untouched; the draft's own `contacts` are grading notes.
+    return { id, duration, tracks, events, ...(floorContacts?.length ? { floorContacts } : {}), ...(grips?.length ? { grips } : {}) };
 }
 
 export function exportModule(draft) {

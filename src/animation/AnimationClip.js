@@ -80,6 +80,22 @@ export function validateClip(source) {
             }
         }
     }
+    const badWindow = (entry) => {
+        const times = [...(entry?.in ?? []), ...(entry?.out ?? [])];
+        return times.length !== 4 || times.some((t, i) => !Number.isFinite(t) || t < (times[i - 1] ?? 0) || t > source.duration);
+    };
+    for (const [index, contact] of (source?.floorContacts ?? []).entries()) {
+        if (!source.tracks?.[contact?.role]) errors.push(`floorContacts[${index}].role has no track`);
+        if (!FLOOR_POINTS.includes(contact?.point)) errors.push(`floorContacts[${index}].point must be one of ${FLOOR_POINTS.join(', ')}`);
+        if (badWindow(contact)) errors.push(`floorContacts[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
+    }
+    for (const [index, grip] of (source?.grips ?? []).entries()) {
+        if (!source.tracks?.[grip?.role] || !source.tracks?.[grip?.to?.role]) errors.push(`grips[${index}] roles need tracks`);
+        if (!['l', 'r'].includes(grip?.arm)) errors.push(`grips[${index}].arm must be 'l' or 'r'`);
+        if (!GRIP_JOINTS.includes(grip?.to?.joint)) errors.push(`grips[${index}].to.joint must be one of ${GRIP_JOINTS.join(', ')}`);
+        if (!['same', 'other'].includes(grip?.to?.side ?? 'same')) errors.push(`grips[${index}].to.side must be 'same' or 'other'`);
+        if (badWindow(grip)) errors.push(`grips[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
+    }
     let previousEvent = -Infinity;
     for (const [index, event] of (source?.events ?? []).entries()) {
         if (!Number.isFinite(event.at) || event.at < 0 || event.at > source.duration) errors.push(`events[${index}].at is outside the clip`);
@@ -123,7 +139,36 @@ export function compileClip(source) {
         authorsTransform: Object.values(tracks).some(track => track.authorsTransform),
         authorsFacing: Object.values(tracks).some(track => track.authorsFacing),
         events: (source.events ?? []).map((event, index) => ({ ...event, _order: index })),
+        floorContacts: (source.floorContacts ?? []).map(contact => Object.freeze({ ...contact })),
+        grips: (source.grips ?? []).map(grip => Object.freeze({ ...grip, to: Object.freeze({ side: 'same', ...grip.to }) })),
     });
+}
+
+// A clip can hold a point of a body on the mat over a window (2026-10-15):
+// the piledriver's crown. Lift is authored on one reference body and scales
+// with each rig's hip height, so it can't put every cast's crown on the mat;
+// the Wrestler measures the gap and closes it (Wrestler.draw). `in` ramps
+// the hold up, `out` ramps it back off; weights are smoothstepped.
+export const FLOOR_POINTS = Object.freeze(['crown']);
+
+// A clip can also hold a hand on a partner's joint (2026-10-15). The clip's
+// arm angles are solved on one cast; a partner of other proportions moves
+// the joint, so after both bodies draw MoveRuntime.afterDraw pulls the hand
+// back onto it (Wrestler.holdGrips). `arm` is the gripping actor's pose
+// channel ('l'/'r'); `to.side` says whether the joint is on the same depth
+// side as that hand ('same', near hand on near hip) or the other. Each rig
+// decides which side a channel draws on (Skeleton.lChannelSide).
+export const GRIP_JOINTS = Object.freeze(['Hip', 'Knee', 'Ankle', 'Shoulder', 'Elbow', 'Wrist']);
+
+export function floorContactWeight(contact, time) { return windowWeight(contact, time); }
+
+export function windowWeight(contact, time) {
+    const [a, b] = contact.in, [c, d] = contact.out;
+    const ramp = (u) => { const v = Math.max(0, Math.min(1, u)); return v * v * (3 - 2 * v); };
+    if (time <= a || time >= d) return 0;
+    if (time < b) return ramp((time - a) / (b - a));
+    if (time <= c) return 1;
+    return 1 - ramp((time - c) / (d - c));
 }
 
 function sampleNumericGroup(from, to, t) {
@@ -165,7 +210,13 @@ export function sampleClip(clip, time) {
         id: clip.id,
         time: at,
         progress: at / clip.duration,
-        tracks: Object.fromEntries(Object.entries(clip.tracks).map(([role, track]) => [role, sampleTrack(track, at)])),
+        tracks: Object.fromEntries(Object.entries(clip.tracks).map(([role, track]) => {
+            const sample = sampleTrack(track, at);
+            const contacts = (clip.floorContacts ?? []).filter(c => c.role === role)
+                .map(c => ({ point: c.point, w: floorContactWeight(c, at) })).filter(c => c.w > 0);
+            if (contacts.length) sample.floorContacts = contacts;
+            return [role, sample];
+        })),
     };
 }
 

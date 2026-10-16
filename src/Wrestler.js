@@ -19,6 +19,9 @@ import {
 const SPEED      = 140;
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
+// How long a thrown body takes to settle from the clip's last frame into the
+// grounded lying pose (see _layOnBack / Skeleton.groundedPoseFrom).
+const GROUND_HANDOFF_SEC = 0.3;
 // Below this a wrestler who begs off (George) begs instead of taunting —
 // the AI's begging-off threshold (AIHandler george.retreatStamina).
 const BEG_STAMINA = 35;
@@ -126,8 +129,10 @@ export const POSES = {
     staggerBack:    { lLeg: 0.20,  rLeg:-0.16,  lArm:-0.38,  rArm:-0.30, lean:-0.15 }, // counter-sway — reeling back the other way
     jab:            { lLeg: 0.18,  rLeg:-0.12,  lArm: 1.00,  rArm:-0.35, lean: 0.22, crouch: 0.10 }, // near arm punches forward, body drives behind it
     headbutt:       { lLeg: 0.38,  rLeg: 0.15,  lArm: 0.30,  rArm: 0.25, lean: 0.48, crouch: 0.18 }, // whole body lunges forward, head leads
-    sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82, lean:-0.30 }, // chest impact — torso snaps back, arms whip behind
-    sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10 }, // head strike — hands fly up toward face
+    // The sells' `lean` never rendered (it does not move the body); `bend` is
+    // the torso channel that does, so these reactions finally snap back.
+    sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82, lean:-0.30, bend: -0.34 }, // chest impact — torso snaps back, arms whip behind
+    sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10, bend: -0.22 }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
     powerIdle:      { lLeg: -0.18, rLeg: 0.13,  lArm: 0.10,  rArm: 0.59, lean: 0.09, crouch: 0.22 }, // wide, imposing — arms hanging low (rig-tuner pass 2026-07-26, live export; supersedes the prior 2026-07-26 values — used by shipped george via idlePose: 'powerIdle', see Arena.js/george.js; formerly also shared across the now-vaulted george-ai-pilot v1-v9 lineage)
     theszIdle:      { lLeg: 0.04,  rLeg: 0.14,  lArm: 0.04,  rArm: 0.17, lean: 0.05, crouch: 0.05, lForearm: 0.8, lShin: -0.11, rShin: -0.06 }, // Derek rig-tuner export 2026-07-30. Arms low (lArm 0.04) so the corrected shoulder seam shows; lForearm bend + shin bends shape the rest stance.
@@ -452,7 +457,7 @@ export default class Wrestler {
         // elbow or knee. Initialize ONLY unowned joints from this character's
         // neutral stance. Fully authored clips retain all their choreography.
         const firstPose = track.keyframes[0].state.pose;
-        for (const channel of ['tilt', 'lift']) {
+        for (const channel of ['tilt', 'lift', 'bend']) {
             if (!Number.isFinite(firstPose[channel])) this.pose[channel] = 0;
         }
         const idle = POSES[this.idlePose] ?? POSES.idle;
@@ -571,10 +576,13 @@ export default class Wrestler {
                     lean: p.lean ?? 0, crouch: p.crouch ?? 0,
                     // A clip can leave the body tilted or lifted (piledriver,
                     // slams); every ordinary pose sets it back down.
-                    tilt: p.tilt ?? 0, lift: p.lift ?? 0 };
+                    tilt: p.tilt ?? 0, lift: p.lift ?? 0,
+                    // Torso acting likewise settles back over the hips.
+                    bend: p.bend ?? 0 };
         // Seeded so Phaser never tweens from undefined (NaN).
         this.pose.tilt ??= 0;
         this.pose.lift ??= 0;
+        this.pose.bend ??= 0;
         // Articulated channels need a finite value on this.pose to interpolate
         // FROM. A channel the live pose has never carried has none, and Phaser
         // reads that `undefined` as NaN for the whole tween: clampLocalFlex
@@ -1172,6 +1180,7 @@ export default class Wrestler {
                 }
                 other._drain(STAMINA_DRAIN.jab);
                 other._doSell('sellHead', 110, () => other.startStagger());
+                this.scene.crowd?.impact?.('strike', 0.6);
             },
             onComplete: () => { this._activeMove = null; },
             onCancel:   () => { this._activeMove = null; },
@@ -1281,6 +1290,7 @@ export default class Wrestler {
         this._playPairedThrow(other, 'suplex', {
             damage: STAMINA_DRAIN.suplex,
             shake: [180, 0.003],
+            foley: ['mat', 1.0],
             finish: () => {
                 other._layOnBack(DOWN_SEC + 1.0);
                 this._layOnBack(1.5);
@@ -1305,6 +1315,7 @@ export default class Wrestler {
                 other._drain(STAMINA_DRAIN.elbowDrop);
                 other.stateTimer = DOWN_SEC;
                 this.scene.cameras.main.shake(130, 0.002);
+                this.scene.crowd?.impact?.('mat', 0.7);
                 // Show landing / recovery poses (skeleton visible again)
                 this.state = 'slamming';
                 this._runPoseSequence([
@@ -1384,10 +1395,13 @@ export default class Wrestler {
                     other._drain(STAMINA_DRAIN.dropkick);
                     other._doSell('sellChest', 140, () => other.startClotheslineFall(facing));
                     this.scene.cameras.main.shake(120, 0.0015);
+                    this.scene.crowd?.impact?.('kick', 0.9);
                 }
             },
             onComplete: () => {
                 if (!landed) this.scene.cameras.main.shake(80, 0.001);
+                // His own back hitting the mat: lighter than a throw.
+                this.scene.crowd?.impact?.('mat', 0.45);
                 lie();
             },
             onCancel: () => { travel?.stop(); lie(); },
@@ -1403,7 +1417,10 @@ export default class Wrestler {
     // its `impact` marker, and `finish` hands them back when it ends. An
     // interruption drops the victim with no damage and puts the attacker back
     // on his feet. Nobody is ever left tilted.
-    _playPairedThrow(other, clipId, { damage, shake = [200, 0.003], finish, hitEvent = 'impact' }) {
+    // `foley` is the contact sound (CrowdAudio.impact); a throw hits the mat
+    // by default, a submission's squeeze markers stay silent.
+    _playPairedThrow(other, clipId, { damage, shake = [200, 0.003], finish, hitEvent = 'impact',
+        foley = hitEvent === 'impact' ? ['mat', 0.9] : null }) {
         const runtime = this.scene.moveRuntime;
         if (!runtime) return;
 
@@ -1431,6 +1448,7 @@ export default class Wrestler {
                 if (this.state !== 'holding' || other.state !== 'holding') return;
                 other._drain(damage);
                 this.scene.cameras.main.shake(...shake);
+                if (foley) this.scene.crowd?.impact?.(...foley);
             },
             onComplete: () => release(true),
             onCancel: () => release(false),
@@ -1445,14 +1463,20 @@ export default class Wrestler {
     _layOnBack(seconds) {
         this.pose.tilt   = 0;
         this.pose.lift   = 0;
+        this.pose.bend   = 0;
         this.state       = 'down';
         this.lying       = 'supine';
         this.stateTimer  = seconds;
+        // Ease from the clip's last rendered body into the grounded pose
+        // (Skeleton.groundedPoseFrom) instead of cutting to it.
+        const points = this.skeleton?.jointAttachmentPoints;
+        this._groundHandoff = points?.neck ? { joints: JSON.parse(JSON.stringify(points)), from: null, t0: seconds } : null;
     }
 
     _standBackUp() {
         this.pose.tilt = 0;
         this.pose.lift = 0;
+        this.pose.bend = 0;
         this.state     = 'standing';
         this.tweenPose(this.idlePose ?? 'idle', 200, 'Linear');
     }
@@ -1462,6 +1486,7 @@ export default class Wrestler {
     // wrestler who has it, ahead of the arm drag.
     _doHipToss(other) {
         this._playPairedThrow(other, 'hipToss', {
+            foley: ['mat', 0.7],
             damage: STAMINA_DRAIN.hipToss,
             finish: () => {
                 other._layOnBack(DOWN_SEC);
@@ -1509,6 +1534,7 @@ export default class Wrestler {
         this._playPairedThrow(other, 'piledriver', {
             damage: STAMINA_DRAIN.piledriver,
             shake: [220, 0.0035],
+            foley: ['mat', 1.0],
             finish: () => {
                 other._layOnBack(DOWN_SEC + 2.0);
                 this._layOnBack(2.0);
@@ -1829,6 +1855,7 @@ export default class Wrestler {
             this._playFlight(kneeDropClip, { x: landX, ease: 'Sine.easeInOut' }, () => {
                 this.state         = 'slamming';
                 this.scene.cameras.main.shake(110, 0.0018);
+                this.scene.crowd?.impact?.('mat', 0.6);
                 // Contact at 350ms total (120 set + 230 airborne) — the
                 // defender stays in its existing grounded draw state, no
                 // pose change, no down-timer restart.
@@ -2155,6 +2182,20 @@ export default class Wrestler {
             // Lies however he landed (this.lying; Arena.startPin turns a pinned
             // wrestler onto his back). Supine is the prone pose rotated the
             // other way, never reflected (see Skeleton.GROUNDED_SUPINE).
+            const handoff = this._groundHandoff;
+            if (handoff && state === 'down' && this.lying === 'supine') {
+                handoff.from ??= Skeleton.groundedPoseFrom(handoff.joints, x, y, s, facing, Skeleton.GROUNDED_POSES.supine);
+                // Game time (stateTimer counts down in scaled dt), so slow
+                // motion and pauses stretch the blend with everything else.
+                const u = (handoff.t0 - this.stateTimer) / GROUND_HANDOFF_SEC;
+                if (handoff.from && u < 1) {
+                    this.skeleton.updateGroundedBlend(x, y, s, facing, 'supine', handoff.from, u);
+                    return;
+                }
+                this._groundHandoff = null;
+            } else if (handoff) {
+                this._groundHandoff = null;
+            }
             this.skeleton.updateGrounded(x, y, s, facing, this.lying);
             return;
         }

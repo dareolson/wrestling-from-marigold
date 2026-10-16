@@ -1,6 +1,8 @@
 // Procedurally generated crowd audio — no asset files, pure Web Audio API.
 // Murmur: a looped pink-noise bed whose volume and brightness track the crowd
 // heat meter. Pops: gain swells on big match events. Bell: synthesized strikes.
+// Impact: match foley (body on the mat, a fist landing, boots to the chest),
+// fired once from a confirmed gameplay contact — see impact().
 // Everything runs through a ~3.2kHz lowpass so it sits inside the vintage
 // broadcast sound of the recovered-footage aesthetic.
 
@@ -28,6 +30,15 @@ export default class CrowdAudio {
         tone.frequency.value = 3200;
         this._master.connect(tone);
         tone.connect(ctx.destination);
+        // Foley shares the broadcast lowpass but not the crowd's master level,
+        // so a landing reads over the bed rather than inside it.
+        this._fx = ctx.createGain();
+        this._fx.gain.value = 0.45;
+        this._fx.connect(tone);
+        const noiseLen = ctx.sampleRate;
+        this._noise = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
+        const nd = this._noise.getChannelData(0);
+        for (let i = 0; i < noiseLen; i++) nd[i] = Math.random() * 2 - 1;
 
         // 4-second pink-ish noise loop (Paul Kellet style one-pole stack)
         const len = 4 * ctx.sampleRate;
@@ -99,6 +110,47 @@ export default class CrowdAudio {
                 osc.start(t);
                 osc.stop(t + decay);
             }
+        }
+    }
+
+    // Match foley. kind: 'mat' (a body landing — slams, suplexes, drops),
+    // 'strike' (a fist or forearm), 'kick' (boots to the chest). size 0..1.
+    // Gameplay calls this from its confirmed hit handler only, never from a
+    // clip seek, so scrubbing is silent and a cancelled move makes no sound.
+    impact(kind = 'mat', size = 1) {
+        if (!this._ctx) return;
+        const ctx = this._ctx, t = ctx.currentTime, k = Math.max(0, Math.min(1, size));
+        // A pitch-dropping sine: the body of a thud.
+        const thud = (from, to, sweep, vol, decay) => {
+            const osc = ctx.createOscillator(), g = ctx.createGain();
+            osc.frequency.setValueAtTime(from, t);
+            osc.frequency.exponentialRampToValueAtTime(to, t + sweep);
+            g.gain.setValueAtTime(vol * k, t);
+            g.gain.exponentialRampToValueAtTime(0.0008, t + decay);
+            osc.connect(g); g.connect(this._fx);
+            osc.start(t); osc.stop(t + decay + 0.02);
+        };
+        // Filtered noise: the slap of skin, canvas, ring boards.
+        const burst = (type, freq, q, vol, decay, delay = 0) => {
+            const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+            src.buffer = this._noise;
+            f.type = type; f.frequency.value = freq; f.Q.value = q;
+            g.gain.setValueAtTime(vol * k, t + delay);
+            g.gain.exponentialRampToValueAtTime(0.0008, t + delay + decay);
+            src.connect(f); f.connect(g); g.connect(this._fx);
+            src.start(t + delay, Math.random() * 0.5); src.stop(t + delay + decay + 0.02);
+        };
+        if (kind === 'strike') {
+            burst('bandpass', 1900, 1.4, 1.2, 0.05);
+            thud(170, 95, 0.05, 1.0, 0.1);
+        } else if (kind === 'kick') {
+            burst('bandpass', 950, 1.0, 0.6, 0.07);
+            thud(130, 58, 0.09, 0.85, 0.16);
+        } else {
+            thud(115, 40, 0.16, 1.0, 0.38);            // the body
+            burst('bandpass', 1150, 0.8, 0.5, 0.07);    // canvas slap
+            burst('lowpass', 190, 0.7, 0.45, 0.5, 0.01); // ring boards
+            thud(64, 60, 0.4, 0.25, 0.6);               // ring ropes / springs humming
         }
     }
 }

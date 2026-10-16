@@ -87,6 +87,7 @@ const POSE_UI = {
     crouch: { label: 'Crouch', min: 0, max: 1, step: 0.01 },
     tilt:   { label: 'Body tilt', min: -3.15, max: 3.15, step: 0.01 }, // whole body about the hips; ±3.14 upside down
     lift:   { label: 'Body lift', min: 0, max: 260, step: 1 },          // rig units off the mat
+    bend:   { label: 'Torso bend', min: -0.9, max: 0.9, step: 0.01 },   // chest over the hips; + forward
 };
 
 // Draft `transform` is stored in RIG UNITS (unscaled body space), never in

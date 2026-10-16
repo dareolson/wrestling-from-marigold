@@ -18,7 +18,7 @@ export const LYING = hipsAt(14);
 
 export const pose = (fields) => ({
     lArm: 0, rArm: 0, lElbow: 0.7, rElbow: 0.7, lLeg: -0.08, rLeg: 0.08, lKnee: 0.22, rKnee: 0.22,
-    lean: 0, crouch: 0, tilt: 0, lift: 0, ...fields,
+    lean: 0, crouch: 0, tilt: 0, lift: 0, bend: 0, ...fields,
 });
 
 export function buildDraft({ id, duration, attacker, defender, events, characters, transformY = () => 0, sheet = null }) {

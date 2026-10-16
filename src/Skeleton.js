@@ -1035,7 +1035,67 @@ export default class Skeleton {
 
     updateUpright(x, y, s, facing, pose, walkPhase, combatBlend = 0, lean = 0, moveBlend = 0, liftScale = 1, runBlend = 0) {
         this._updateUprightPlaced(x, y, s, facing, pose, walkPhase, combatBlend, lean, moveBlend, liftScale, runBlend);
+        // A drawn (non-image) head is painted in world coordinates and carries
+        // its own transform; bend and tilt compose onto it, so start each
+        // frame from identity.
+        const head = this.head;
+        if (head && !this._headIsImage && (head.x || head.y || head.rotation)) head.setPosition(0, 0).setRotation(0);
+        this._applyTorsoBend(facing, pose?.bend ?? 0);
         this._applyBodyTilt(s, facing, pose?.tilt ?? 0, pose?.lift ?? 0);
+    }
+
+    // The upper body as one rigid group about the hips: the parts a torso
+    // bend carries, and the joints they publish. Each arm moves whole with
+    // the chest, so shoulder and elbow attachments are preserved exactly; the
+    // legs, pelvis layers and trunks stay where the upright pass put them.
+    static UPPER_BODY_PARTS = ['torso', 'head', 'nearUpArm', 'farUpArm', 'nearForearm', 'farForearm', 'nearHand', 'farHand'];
+    static UPPER_BODY_JOINTS = ['neck', 'nearShoulder', 'farShoulder', 'nearElbow', 'farElbow', 'nearWrist', 'farWrist'];
+
+    _hipPivot() {
+        const points = this.jointAttachmentPoints ?? {};
+        return points.nearHip && points.farHip
+            ? { x: (points.nearHip.x + points.farHip.x) / 2, y: (points.nearHip.y + points.farHip.y) / 2 }
+            : points.nearHip ?? points.farHip ?? { x: this.torso.x, y: this.torso.y };
+    }
+
+    // Rotate parts and joint points by r about pivot, then raise by dy.
+    _rotateAbout(parts, points, pivot, r, dy = 0) {
+        const cos = Math.cos(r), sin = Math.sin(r);
+        const move = point => {
+            const px = point.x - pivot.x, py = point.y - pivot.y;
+            point.x = pivot.x + px * cos - py * sin;
+            point.y = pivot.y + px * sin + py * cos + dy;
+        };
+        const head = this.head;
+        for (const part of parts) {
+            if (!part?.visible) continue;
+            if (part === head && !this._headIsImage) {
+                // World-space painting: compose the extra rotation onto the
+                // object's own transform (p' = R(r)(R p + t - P) + P + dy).
+                const t = { x: head.x, y: head.y };
+                const tx = t.x - pivot.x, ty = t.y - pivot.y;
+                head.setPosition(pivot.x + tx * cos - ty * sin, pivot.y + tx * sin + ty * cos + dy).setRotation(head.rotation + r);
+                continue;
+            }
+            const at = { x: part.x, y: part.y };
+            move(at);
+            part.setPosition(at.x, at.y).setRotation(part.rotation + r);
+        }
+        for (const point of points) if (point) move(point);
+    }
+
+    // Torso acting (2026-10-15): `bend` pitches the chest over the hips —
+    // radians, facing-relative, positive forward (head toward facing), like
+    // tilt but for the upper body only. Opt-in: no pose authored before it
+    // carries the channel, and zero/absent leaves the render untouched. This
+    // is what `lean` was meant to do; lean no longer moves the body (its old
+    // screen-space shoulder shift detached the arms) and is left as is so
+    // existing moves keep their look.
+    _applyTorsoBend(facing, bend) {
+        if (!bend) return;
+        const parts = Skeleton.UPPER_BODY_PARTS.map(name => this[name]);
+        const points = Skeleton.UPPER_BODY_JOINTS.map(name => this.jointAttachmentPoints?.[name]);
+        this._rotateAbout(parts, points, this._hipPivot(), (facing >= 0 ? 1 : -1) * bend);
     }
 
     // Whole-body tilt and lift, layered on the upright render (2026-10-13).
@@ -1067,38 +1127,10 @@ export default class Skeleton {
     }
 
     _applyBodyTilt(s, facing, tilt, lift) {
-        const head = this.head;
-        const headIsGraphics = head && !this._headIsImage;
-        if (!tilt && !lift) {
-            // A drawn (non-image) head is painted in world coordinates; clear
-            // any transform a previous tilted frame left on it.
-            if (headIsGraphics && (head.x || head.y || head.rotation)) head.setPosition(0, 0).setRotation(0);
-            return;
-        }
-        const points = this.jointAttachmentPoints ?? {};
-        const pivot = points.nearHip && points.farHip
-            ? { x: (points.nearHip.x + points.farHip.x) / 2, y: (points.nearHip.y + points.farHip.y) / 2 }
-            : points.nearHip ?? points.farHip ?? { x: this.torso.x, y: this.torso.y };
+        if (!tilt && !lift) return;
         const r = (facing >= 0 ? 1 : -1) * tilt;
-        const cos = Math.cos(r), sin = Math.sin(r);
         const dy = -lift * s * (this.standingHipHeight / REFERENCE_HIP_HEIGHT);
-        const move = point => {
-            const px = point.x - pivot.x, py = point.y - pivot.y;
-            point.x = pivot.x + px * cos - py * sin;
-            point.y = pivot.y + px * sin + py * cos + dy;
-        };
-        for (const part of this._parts) {
-            if (!part.visible) continue;
-            if (part === head && headIsGraphics) {
-                // Painted in world space: rotate the graphics object itself.
-                head.setPosition(pivot.x - pivot.x * cos + pivot.y * sin, pivot.y - pivot.x * sin - pivot.y * cos + dy).setRotation(r);
-                continue;
-            }
-            const at = { x: part.x, y: part.y };
-            move(at);
-            part.setPosition(at.x, at.y).setRotation(part.rotation + r);
-        }
-        for (const point of Object.values(points)) move(point);
+        this._rotateAbout(this._parts, Object.values(this.jointAttachmentPoints ?? {}), this._hipPivot(), r, dy);
     }
 
     _updateUprightPlaced(x, y, s, facing, pose, walkPhase, combatBlend, lean, moveBlend, liftScale, runBlend) {
@@ -2016,6 +2048,53 @@ export default class Skeleton {
         const pose = Skeleton.GROUNDED_POSES[poseName];
         if (!pose) throw new RangeError(`unknown grounded pose "${poseName}"`);
         this._applyGrounded(x, y, s, facing, pose);
+    }
+
+    // Clip → grounded handoff (2026-10-15). A throw clip lays a body down on
+    // the upright rig (tilt/lift); the wrestler then switches to this grounded
+    // renderer, whose fixed pose rarely matches the clip's last frame, so the
+    // body popped (arms jumping from overhead to the sides, a raised knee
+    // snapping flat). groundedPoseFrom reads the grounded pose parameters off
+    // the joints the upright render last published — same angle convention
+    // as _applyGrounded: direction (sin a, cos a), a = facing * g — and
+    // updateGroundedBlend eases from that into the named pose.
+    static groundedPoseFrom(points, x, y, s, facing, target) {
+        const f = facing >= 0 ? 1 : -1;
+        const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+        const hip = points.nearHip && points.farHip
+            ? { x: (points.nearHip.x + points.farHip.x) / 2, y: (points.nearHip.y + points.farHip.y) / 2 }
+            : points.nearHip ?? points.farHip;
+        const seg = (from, to, key) => {
+            if (!from || !to) return target[key];
+            const g = f * Math.atan2(to.x - from.x, to.y - from.y);
+            return target[key] + wrap(g - target[key]);
+        };
+        if (!hip || !points.neck) return null;
+        return {
+            dx: hip.x - x,
+            hip: (y - hip.y) / s,
+            torso: seg(hip, points.neck, 'torso'),
+            farThigh: seg(points.farHip, points.farKnee, 'farThigh'),
+            farShin: seg(points.farKnee, points.farAnkle, 'farShin'),
+            nearThigh: seg(points.nearHip, points.nearKnee, 'nearThigh'),
+            nearShin: seg(points.nearKnee, points.nearAnkle, 'nearShin'),
+            farArm: seg(points.farShoulder, points.farElbow, 'farArm'),
+            farFore: seg(points.farElbow, points.farWrist, 'farFore'),
+            nearArm: seg(points.nearShoulder, points.nearElbow, 'nearArm'),
+            nearFore: seg(points.nearElbow, points.nearWrist, 'nearFore'),
+        };
+    }
+
+    /** Grounded pose `poseName`, blended from a groundedPoseFrom() start by u (0→1). */
+    updateGroundedBlend(x, y, s, facing, poseName, from, u) {
+        const target = Skeleton.GROUNDED_POSES[poseName];
+        if (!target) throw new RangeError(`unknown grounded pose "${poseName}"`);
+        const e = u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+        const g = {};
+        for (const key of Object.keys(target)) {
+            g[key] = Number.isFinite(from[key]) ? from[key] + (target[key] - from[key]) * e : target[key];
+        }
+        this._applyGrounded(x + (from.dx ?? 0) * (1 - e), y, s, facing, g);
     }
 
     // The on-back REFLECTION (_mirrorGroundedOnBack, removed 2026-08-17)

@@ -42,6 +42,15 @@ export const SPECS = {
         ],
         landings: [{ role: 'attacker', part: 'torso', event: 'impact', after: 0.6 }],
     },
+    hipToss: {
+        // hiptoss.constraints.mjs: near arm round his waist from the hook
+        // until he is upside down behind Lou.
+        contacts: [
+            { role: 'attacker', source: 'nearWrist', target: 'farHip', from: 0.14, to: 0.52, label: 'Lou near hand at George\'s far hip (hook → down)' },
+            { role: 'attacker', source: 'farWrist', target: 'nearElbow', from: 0.14, to: 0.42, label: 'Lou far hand on George\'s near arm (hook → over)' },
+        ],
+        landings: [{ role: 'defender', part: 'torso', event: 'impact', after: 0.3 }],
+    },
     hammerlock: {},
     jab: {
         solo: true,

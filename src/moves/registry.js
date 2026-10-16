@@ -55,6 +55,11 @@ const C = MOVE_CATEGORY;
  *   trigger   — prose pointer to the function owning the real eligibility rule
  *   ai        — coarse tags describing when the move is relevant; descriptive
  *               only, nothing dispatches on these
+ *   sell      — for a move that can put the defender down: the body part he
+ *               sells on the mat afterward ('head', 'back', 'chest', 'knee',
+ *               'arm') and how hard (0–1). See src/animation/sells.js; the
+ *               tag rides the confirmed hit (Wrestler._hurt), so a move that
+ *               never landed is never sold.
  */
 export const MOVE_SPECS = {
     // ── Strikes ───────────────────────────────────────────────────────────
@@ -66,30 +71,35 @@ export const MOVE_SPECS = {
     },
     headbutt: {
         category: C.STRIKE, clip: null, executor: '_doHeadbutt',
+        sell: { part: 'head', intensity: 0.6 },
         damageKey: 'headbutt', poseSeq: true, legacyFallback: null, kitGated: true,
         trigger: 'tryPower() -> resolvePowerMove() — staggered target inside reach',
         ai: ['vsStaggered', 'pointBlank'],
     },
     kneeLift: {
         category: C.STRIKE, clip: null, executor: '_doKneeLift',
+        sell: { part: 'chest', intensity: 0.6 },
         damageKey: 'kneeLift', poseSeq: true, legacyFallback: null, kitGated: true,
         trigger: 'tryPower() — hold up at point-blank vs a standing opponent; overrides the jab',
         ai: ['pointBlank', 'causesStagger'],
     },
     clothesline: {
         category: C.STRIKE, clip: null, executor: '_doClothesline',
+        sell: { part: 'chest', intensity: 0.7 },
         damageKey: 'clothesline', poseSeq: true, legacyFallback: null, kitGated: true,
         trigger: 'tryAction() — in range, incl. the returning-runner answer',
         ai: ['antiRunner', 'knockdown'],
     },
     dropkick: {
         category: C.STRIKE, clip: 'dropkick', executor: '_doDropkick',
+        sell: { part: 'chest', intensity: 0.7 },
         damageKey: 'dropkick', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryPower() -> resolvePowerMove() — standing/blocking target inside medReach',
         ai: ['midRange', 'knockdown'],
     },
     doubleAxeHandle: {
         category: C.STRIKE, clip: null, executor: '_doDoubleAxeHandle',
+        sell: { part: 'head', intensity: 0.6 },
         damageKey: 'doubleAxeHandle', poseSeq: true, legacyFallback: null, kitGated: true,
         trigger: 'tryRunningAttack() — the running attack, not the standing power button',
         ai: ['pointBlank'],
@@ -98,36 +108,42 @@ export const MOVE_SPECS = {
     // ── Throws ────────────────────────────────────────────────────────────
     bodySlam: {
         category: C.THROW, clip: 'bodySlam', executor: '_doBodySlam',
+        sell: { part: 'back', intensity: 0.8 },
         damageKey: 'bodySlam', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryAction() — grapple range',
         ai: ['grappleFinish', 'knockdown'],
     },
     piledriver: {
         category: C.THROW, clip: 'piledriver', executor: '_doPiledriver',
+        sell: { part: 'head', intensity: 1.0 },
         damageKey: 'piledriver', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryAction() — grapple range, preferred over bodySlam',
         ai: ['grappleFinish', 'knockdown', 'heavy'],
     },
     suplex: {
         category: C.THROW, clip: 'suplex', executor: '_doSuplex',
+        sell: { part: 'back', intensity: 1.0 },
         damageKey: 'suplex', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'Arena lockup resolution — up',
         ai: ['lockup', 'knockdown'],
     },
     armDrag: {
         category: C.THROW, clip: null, executor: '_doArmDrag',
+        sell: { part: 'arm', intensity: 0.5 },
         damageKey: 'armDrag', poseSeq: true, legacyFallback: null, kitGated: true,
         trigger: 'Arena lockup resolution — power',
         ai: ['lockup'],
     },
     hipToss: {
         category: C.THROW, clip: 'hipToss', executor: '_doHipToss',
+        sell: { part: 'back', intensity: 0.6 },
         damageKey: 'hipToss', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'Arena lockup resolution — power; takes the slot ahead of armDrag',
         ai: ['lockup'],
     },
     backBodyDrop: {
         category: C.THROW, clip: null, executor: '_doBackBodyDrop',
+        sell: { part: 'back', intensity: 0.8 },
         damageKey: 'backBodyDrop', poseSeq: true, legacyFallback: null, kitGated: true,
         trigger: 'tryAction() — directional answer to a returning runner',
         ai: ['antiRunner', 'knockdown'],
@@ -136,6 +152,7 @@ export const MOVE_SPECS = {
     // ── Holds ─────────────────────────────────────────────────────────────
     hammerlock: {
         category: C.HOLD, clip: 'hammerlock', executor: '_doHammerlock',
+        sell: { part: 'arm', intensity: 0.8 },
         damageKey: 'hammerlock', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'Arena lockup/finisher handling — finisher input at grapple range',
         ai: ['paired', 'holdDrain'],
@@ -154,18 +171,21 @@ export const MOVE_SPECS = {
     },
     armBar: {
         category: C.HOLD, clip: 'armBar', executor: '_doArmBar',
+        sell: { part: 'arm', intensity: 0.8 },
         damageKey: 'armBar', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryFinisher() — hold up, down/possum target in reach',
         ai: ['vsDown', 'holdDrain'],
     },
     figureFour: {
         category: C.HOLD, clip: 'figureFour', executor: '_doFigureFour',
+        sell: { part: 'knee', intensity: 1.0 },
         damageKey: 'figureFour', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryFinisher() — down/possum target in reach',
         ai: ['vsDown', 'holdDrain', 'finisher'],
     },
     ankleLock: {
         category: C.HOLD, clip: 'ankleLock', executor: '_doAnkleLock',
+        sell: { part: 'knee', intensity: 0.8 },
         damageKey: 'ankleLock', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryFinisher() — hold down, down/possum target in reach',
         ai: ['vsDown', 'holdDrain'],
@@ -174,30 +194,35 @@ export const MOVE_SPECS = {
     // ── Aerials ───────────────────────────────────────────────────────────
     elbowDrop: {
         category: C.AERIAL, clip: 'elbowDrop', executor: '_doElbowDrop',
+        sell: { part: 'chest', intensity: 0.7 },
         damageKey: 'elbowDrop', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryPower() -> resolvePowerMove() — down/possum target in reach',
         ai: ['vsDown'],
     },
     kneeDrop: {
         category: C.AERIAL, clip: 'kneeDrop', executor: '_doKneeDrop',
+        sell: { part: 'chest', intensity: 0.8 },
         damageKey: 'kneeDrop', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryPower() — hold down vs a down/possum opponent',
         ai: ['vsDown'],
     },
     theszPress: {
         category: C.AERIAL, clip: 'theszPress', executor: '_doTheszPress',
+        sell: { part: 'chest', intensity: 0.8 },
         damageKey: 'theszPress', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryFinisher() — standing/staggered target beyond reach, within 300*s',
         ai: ['finisher', 'lunge', 'intoPin'],
     },
     divingElbow: {
         category: C.AERIAL, clip: 'divingElbow', executor: '_doDive',
+        sell: { part: 'chest', intensity: 0.9 },
         damageKey: 'divingElbow', poseSeq: false, legacyFallback: null, kitGated: false,
         trigger: 'tryDive() — dive from the turnbuckle; available to every character',
         ai: ['turnbuckle', 'vsDown'],
     },
     topDive: {
         category: C.AERIAL, clip: 'topDive', executor: '_doTopDive',
+        sell: { part: 'chest', intensity: 0.9 },
         damageKey: 'topDive', poseSeq: false, legacyFallback: null, kitGated: false,
         trigger: 'tryDive() — top-rope dive; available to every character',
         ai: ['turnbuckle', 'heavy'],

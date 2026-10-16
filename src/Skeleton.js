@@ -2097,6 +2097,63 @@ export default class Skeleton {
         this._applyGrounded(x + (from.dx ?? 0) * (1 - e), y, s, facing, g);
     }
 
+    /**
+     * A grounded pose with hands reaching for points on the body (the
+     * down-state clutch sells, src/animation/sells.js). `reach` maps an arm
+     * side ('near' | 'far') to { to, w }: a groundedTarget name and how far
+     * (0–1) the hand has gone from its posed place to it. The pose is drawn
+     * once to measure this body's own joints, each arm is solved with two-bone
+     * IK onto the BLENDED POSITION (blending angles flings the hand), and the
+     * pose is drawn again. Elbows bend away from the mat.
+     */
+    updateGroundedReach(x, y, s, facing, g, reach) {
+        this._applyGrounded(x, y, s, facing, g);
+        const sides = Object.entries(reach ?? {}).filter(([, r]) => r.w > 0.001);
+        if (!sides.length) return;
+        const pts = this.jointAttachmentPoints;
+        const f = facing >= 0 ? 1 : -1;
+        const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+        const dist = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
+        const toAngle = (v, near) => near + wrap(f * Math.atan2(v.x, v.y) - near);
+        const solved = { ...g };
+        for (const [side, r] of sides) {
+            const S = pts[`${side}Shoulder`], E = pts[`${side}Elbow`], W = pts[`${side}Wrist`];
+            const T = Skeleton.groundedTarget(pts, r.to, s);
+            if (!S || !E || !W || !T) continue;
+            const goal = { x: W.x + (T.x - W.x) * r.w, y: W.y + (T.y - W.y) * r.w };
+            const lu = dist(S, E), lf = dist(E, W);
+            const d = Math.max(Math.abs(lu - lf) + 1e-3, Math.min(dist(S, goal), (lu + lf) * 0.999));
+            const base = Math.atan2(goal.y - S.y, goal.x - S.x);
+            const bend = Math.acos(Math.max(-1, Math.min(1, (lu * lu + d * d - lf * lf) / (2 * lu * d))));
+            // Two elbow solutions; keep the one off the mat (smaller y).
+            const elbows = [base + bend, base - bend].map(a => ({ x: S.x + Math.cos(a) * lu, y: S.y + Math.sin(a) * lu }));
+            const elbow = elbows[0].y <= elbows[1].y ? elbows[0] : elbows[1];
+            const hand = { x: elbow.x + (goal.x - elbow.x) * lf / Math.max(1e-6, dist(elbow, goal)), y: elbow.y + (goal.y - elbow.y) * lf / Math.max(1e-6, dist(elbow, goal)) };
+            solved[`${side}Arm`] = toAngle({ x: elbow.x - S.x, y: elbow.y - S.y }, g[`${side}Arm`]);
+            solved[`${side}Fore`] = toAngle({ x: hand.x - elbow.x, y: hand.y - elbow.y }, g[`${side}Fore`]);
+        }
+        this._applyGrounded(x, y, s, facing, solved);
+    }
+
+    // Points on a lying body a hand can clutch: any recorded joint, plus the
+    // head (the painted head's middle, out along the torso from the neck)
+    // and the chest (a third of the way from the neck to the hips).
+    static groundedTarget(points, name, s) {
+        if (points[name]) return points[name];
+        const neck = points.neck;
+        const hip = points.nearHip && points.farHip
+            ? { x: (points.nearHip.x + points.farHip.x) / 2, y: (points.nearHip.y + points.farHip.y) / 2 }
+            : points.nearHip;
+        if (!neck || !hip) return null;
+        if (name === 'chest') return { x: neck.x + (hip.x - neck.x) * 0.35, y: neck.y + (hip.y - neck.y) * 0.35 };
+        if (name === 'head') {
+            const len = Math.hypot(neck.x - hip.x, neck.y - hip.y) || 1;
+            const out = P.headR * s * 0.9;
+            return { x: neck.x + (neck.x - hip.x) / len * out, y: neck.y + (neck.y - hip.y) / len * out };
+        }
+        return null;
+    }
+
     // The on-back REFLECTION (_mirrorGroundedOnBack, removed 2026-08-17)
     // rendered every part PNG upside down while keeping anchors connected, so
     // certification passed. Do not reintroduce a reflection here: face-up is

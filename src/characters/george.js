@@ -178,6 +178,9 @@ export const george = {
     begsOff: true,
     // Healthy, he showboats with Flair's hunched strut (POSES.strutLeft/Right).
     struts: true,
+    // Sells big on the mat: writhing, Flair's kicking flop, rolling away
+    // (src/animation/sells.js). Lou keeps the default, economical.
+    sellStyle: 'theatrical',
     moveSet: [
         'irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop',
         'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag',

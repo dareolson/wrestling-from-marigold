@@ -96,6 +96,8 @@ Each of these cost a round of rework.
 | Painted soles hang below the contact line in 3/4 view (George ~20 px) | The critic calibrates the floor from frame 0 |
 | Wrestlers draw as whole layers by `transform.y` | Swap who is in front between beats when a face or grip must read |
 | When hip and knee interpolate in opposite directions, the shin freezes, then whips | Check the shin angle per frame for reversals after contact |
+| An upside-down body facing its attacker falls forward when let go | Lay it down prone (`_layDown`), or it lands on the attacker |
+| Prone, a positive arm angle points into the mat | The front faces down; trail limp arms slightly back |
 | Strikes fire at in-fighting range (jab ≤ 85 units; bodies nearly touching) | Pose strikes for the real distance, not a textbook silhouette |
 | Play-scenario distances are screen px; wrestlers render at s≈0.81 | 150 px ≈ 185 rig units |
 | Contact poses are cast-specific: Procreate Lou's legs land ~15 px higher than shipped Lou's | Check both Lous |
@@ -168,7 +170,8 @@ To watch a match in a browser:
 | dropkick | **v2 approved in look**, behind `?dropkick=v2`; promotion to live is Derek's decision |
 | hammerlock | **Derek's draft. Do not edit.** Only a separate acting candidate, and only if he asks |
 | bodySlam | **v2 refined**: grips through an overhead press (the powerbomb look kept), one-way turnover, follow-through. Awaiting Derek's look |
-| piledriver, hipToss | Next: paired throws. Reuse the suplex pattern |
+| piledriver | **v2 refined**: grip from the lift to the drop, a suspense beat, the sit-out; Lou crumples forward face down (`_layDown(…, 'prone')`) while George rocks back out from under him. Awaiting Derek's look |
+| hipToss | Next: paired throw. Reuse the suplex pattern |
 | figureFour, armBar, ankleLock | Mat holds: purchase, brace, squeeze beats, resistance. Silent foley; the squeeze reads through the bodies |
 | elbowDrop, kneeDrop, divingElbow/topDive, theszPress | Flights: the executor owns travel (solo clips). Add the grounded handoff for prone landings (`_layOnBack` covers supine only) |
 | headbutt, kneeLift, clothesline, doubleAxeHandle, armDrag, backBodyDrop, sleeperHold, headlock, irishWhip, pin, taunts | Still pose sequences in `Wrestler.js`. Migrate each to a clip when it's refined |

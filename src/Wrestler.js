@@ -1482,12 +1482,16 @@ export default class Wrestler {
     }
 
     // Hand a body a throw clip left lying back over to the grounded rig.
-    _layOnBack(seconds) {
+    _layOnBack(seconds) { this._layDown(seconds, 'supine'); }
+
+    // ...or face down (prone: head toward his facing), as the piledriver's
+    // forward crumple leaves him.
+    _layDown(seconds, lying) {
         this.pose.tilt   = 0;
         this.pose.lift   = 0;
         this.pose.bend   = 0;
         this.state       = 'down';
-        this.lying       = 'supine';
+        this.lying       = lying;
         this.stateTimer  = seconds;
         // Ease from the clip's last rendered body into the grounded pose
         // (Skeleton.groundedPoseFrom) instead of cutting to it.
@@ -1558,7 +1562,8 @@ export default class Wrestler {
             shake: [220, 0.0035],
             foley: ['mat', 1.0],
             finish: () => {
-                other._layOnBack(DOWN_SEC + 2.0);
+                // He crumples forward, face down (author_piledriver.mjs).
+                other._layDown(DOWN_SEC + 2.0, 'prone');
                 this._layOnBack(2.0);
             },
         });
@@ -2205,13 +2210,14 @@ export default class Wrestler {
             // wrestler onto his back). Supine is the prone pose rotated the
             // other way, never reflected (see Skeleton.GROUNDED_SUPINE).
             const handoff = this._groundHandoff;
-            if (handoff && state === 'down' && this.lying === 'supine') {
-                handoff.from ??= Skeleton.groundedPoseFrom(handoff.joints, x, y, s, facing, Skeleton.GROUNDED_POSES.supine);
+            if (handoff && state === 'down') {
+                handoff.lying ??= this.lying;
+                handoff.from ??= Skeleton.groundedPoseFrom(handoff.joints, x, y, s, facing, Skeleton.GROUNDED_POSES[handoff.lying]);
                 // Game time (stateTimer counts down in scaled dt), so slow
                 // motion and pauses stretch the blend with everything else.
                 const u = (handoff.t0 - this.stateTimer) / GROUND_HANDOFF_SEC;
-                if (handoff.from && u < 1) {
-                    this.skeleton.updateGroundedBlend(x, y, s, facing, 'supine', handoff.from, u);
+                if (handoff.from && u < 1 && handoff.lying === this.lying) {
+                    this.skeleton.updateGroundedBlend(x, y, s, facing, this.lying, handoff.from, u);
                     return;
                 }
                 this._groundHandoff = null;

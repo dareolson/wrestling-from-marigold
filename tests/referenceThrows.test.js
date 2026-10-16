@@ -65,13 +65,16 @@ for (const { move, clip, draft } of THROWS) {
         });
     }
 
-    // The executor hands the victim to the grounded supine pose; the clip's
-    // last frame must already be lying back (tilt a quarter turn backward,
-    // hips down at the mat) or the handoff pops.
-    test(`${move}: the victim ends lying on his back`, () => {
+    // The executor hands the victim to a grounded pose; the clip's last
+    // frame must already be lying that way (tilt a quarter turn backward for
+    // supine, forward for prone, hips down at the mat) or the handoff pops.
+    // The piledriver v2 crumples him forward, face down (2026-10-15).
+    const lying = move === 'piledriver' ? 'prone' : 'supine';
+    test(`${move}: the victim ends lying ${lying === 'prone' ? 'face down' : 'on his back'}`, () => {
         const end = sampleClip(compileClip(clip), clip.duration).tracks.defender.pose;
-        const backward = ((end.tilt % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-        assert.ok(Math.abs(backward - (2 * Math.PI - 1.52)) < 0.15, `end tilt ${end.tilt}`);
+        const turn = ((end.tilt % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const want = lying === 'prone' ? Math.PI / 2 : 2 * Math.PI - 1.52;
+        assert.ok(Math.abs(turn - want) < 0.15, `end tilt ${end.tilt}`);
         assert.ok(end.lift < -100, `end lift ${end.lift}`);
     });
 }

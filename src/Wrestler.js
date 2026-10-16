@@ -4,6 +4,8 @@ import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
 import { resolveSemanticSlots } from './rig/partVariants.js';
 import { dropkickClip } from './animation/clips/dropkick.js';
+// ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
+import { dropkickV2Clip } from './animation/clips/dropkickV2.js';
 import { elbowDropClip } from './animation/clips/elbowDrop.js';
 import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
@@ -22,6 +24,10 @@ const DOWN_SEC   = 4.5;
 // How long a thrown body takes to settle from the clip's last frame into the
 // grounded lying pose (see _layOnBack / Skeleton.groundedPoseFrom).
 const GROUND_HANDOFF_SEC = 0.3;
+// The dropkick v2 candidate connects with Lou this far from George (rig units;
+// author_dropkick_v2.mjs DROPKICK_V2_REACH), inside the unchanged hit range.
+const DROPKICK_V2_REACH = 92;
+const dropkickCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('dropkick') === 'v2';
 // Below this a wrestler who begs off (George) begs instead of taunting —
 // the AI's begging-off threshold (AIHandler george.retreatStamina).
 const BEG_STAMINA = 35;
@@ -1372,9 +1378,14 @@ export default class Wrestler {
         // with the downed-body margin (still inside the 100·s hit range)
         const b        = ringBoundsAtY(this.y);
         const m        = 60 * this.s;
-        const targetX  = Math.max(b.left + m, Math.min(b.right - m, other.x - facing * 35 * this.s));
+        // ?dropkick=v2: the comparison candidate, posed to connect at its own
+        // reach instead of passing through the chest. Hit range unchanged.
+        const v2       = dropkickCandidate();
+        const clip     = v2 ? dropkickV2Clip : dropkickClip;
+        const reach    = v2 ? DROPKICK_V2_REACH : 35;
+        const targetX  = Math.max(b.left + m, Math.min(b.right - m, other.x - facing * reach * this.s));
         const hitRange = 100 * this.s;
-        const kickAt   = dropkickClip.events.find(event => event.type === 'impact').at;
+        const kickAt   = clip.events.find(event => event.type === 'impact').at;
 
         // Across to the target by the time the feet are out.
         let travel;
@@ -1385,7 +1396,7 @@ export default class Wrestler {
             if (this.state !== 'dropkicking') return;
             this._layOnBack(landed ? 1.5 : 2.8);
         };
-        this._activeMove = runtime.play('dropkick', { attacker: this }, {
+        this._activeMove = runtime.play(clip.id, { attacker: this }, {
             onEvent: (event) => {
                 if (event.type !== 'impact' || this.state !== 'dropkicking') return;
                 const dist = Math.abs(this.x - other.x);

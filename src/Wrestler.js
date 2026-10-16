@@ -497,6 +497,8 @@ export default class Wrestler {
     applyAnimationSample(sample, staging = null, facingAxis = null) {
         if (facingAxis && sample.facing) this.facing = facingAxis * sample.facing;
         if (sample.pose) mergeArticulatedPose(this.pose, sample.pose);
+        // Read by draw() only while a move is active, so it can't go stale.
+        this._floorContacts = sample.floorContacts ?? null;
         if (sample.parts) this.skeleton.setPartVariants(this._resolveVariantSlots(sample.parts));
         if (staging && sample.transform) this._applyStagedTransform(sample.transform, staging);
     }
@@ -507,6 +509,100 @@ export default class Wrestler {
     // the runtime uses the ANCHOR's for every role so the pair stays rigid.
     captureStagingOrigin() {
         return { x: this.x, y: this.y, facing: this.facing, scale: this.s };
+    }
+
+    // A clip's grips (AnimationClip.js): turn each gripping arm, by two-bone
+    // IK, so its hand lands on the partner's drawn joint, then redraw. The
+    // clip resamples the arms every frame, so nothing accumulates; the turn
+    // per pose channel is measured once per facing (rigs differ in sign and
+    // in which side a channel draws on).
+    holdGrips(list) {
+        const sk = this.skeleton, pts = sk?.jointAttachmentPoints;
+        if (!pts?.nearWrist) return;
+        const flip = side => (side === 'near' ? 'far' : 'near');
+        const angle = (a, b) => Math.atan2(b.y - a.y, b.x - a.x);
+        const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+        const dist = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
+        let moved = false;
+        for (const { arm, partner, joint, side, w } of list) {
+            const handSide = arm === 'l' ? sk.lChannelSide(this.facing) : flip(sk.lChannelSide(this.facing));
+            const to = partner.skeleton.jointAttachmentPoints?.[`${side === 'other' ? flip(handSide) : handSide}${joint}`];
+            const S = pts[`${handSide}Shoulder`], E = pts[`${handSide}Elbow`], W = pts[`${handSide}Wrist`];
+            if (!to || !S || !E || !W) continue;
+            const goal = { x: W.x + (to.x - W.x) * w, y: W.y + (to.y - W.y) * w };
+            if (dist(W, goal) < 0.5) continue;
+            const lu = dist(S, E), lf = dist(E, W);
+            const d = Math.max(Math.abs(lu - lf) + 1e-3, Math.min(dist(S, goal), (lu + lf) * 0.999));
+            const base = angle(S, goal);
+            const bend = Math.acos(Math.max(-1, Math.min(1, (lu * lu + d * d - lf * lf) / (2 * lu * d))));
+            // Of the two elbows, keep the one nearer where it is.
+            const elbows = [base + bend, base - bend].map(a => ({ x: S.x + Math.cos(a) * lu, y: S.y + Math.sin(a) * lu }));
+            const E2 = dist(elbows[0], E) <= dist(elbows[1], E) ? elbows[0] : elbows[1];
+            const dUpper = wrap(angle(S, E2) - angle(S, E));
+            const dFore = wrap(angle(E2, goal) - angle(E, W)) - dUpper;
+            const signs = this._gripSigns(arm, handSide);
+            this.pose[`${arm}Arm`] += signs.arm * dUpper;
+            this.pose[`${arm}Elbow`] += signs.elbow * dFore;
+            moved = true;
+        }
+        if (moved) this.draw();
+    }
+
+    // Screen turn per unit of a pose channel, by probing it once (cached per
+    // arm and facing).
+    _gripSigns(arm, handSide) {
+        const key = `${arm}:${this.facing}`;
+        this._gripSignCache ??= {};
+        if (this._gripSignCache[key]) return this._gripSignCache[key];
+        const pts = () => this.skeleton.jointAttachmentPoints;
+        const angle = (a, b) => Math.atan2(b.y - a.y, b.x - a.x);
+        const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+        const read = () => {
+            const p = pts();
+            const S = p[`${handSide}Shoulder`], E = p[`${handSide}Elbow`], W = p[`${handSide}Wrist`];
+            return { upper: angle(S, E), fore: angle(E, W) - angle(S, E) };
+        };
+        // Two-sided: a channel at its clamp moves only one way.
+        const probe = (channel, part) => {
+            const was = this.pose[channel];
+            let turn = 0;
+            for (const step of [0.05, -0.05]) {
+                this.pose[channel] = was;
+                this.draw();
+                const a = read()[part];
+                this.pose[channel] = was + step;
+                this.draw();
+                turn = wrap(read()[part] - a) / step;
+                if (Math.abs(turn) > 0.05) break;
+            }
+            this.pose[channel] = was;
+            return turn;
+        };
+        const armTurn = probe(`${arm}Arm`, 'upper'), elbowTurn = probe(`${arm}Elbow`, 'fore');
+        const signs = { arm: Math.sign(armTurn) || 1, elbow: Math.sign(elbowTurn) || 1 };
+        if (Math.abs(armTurn) <= 0.05 || Math.abs(elbowTurn) <= 0.05) return signs; // no clean reading: retry next time
+        this._gripSignCache[key] = signs;
+        return signs;
+    }
+
+    // MoveRuntime's ring fit (clipStaging.js): the shift of the shared origin
+    // that keeps the whole authored path of every staged role inside the
+    // ropes, so the tableau is moved as one piece instead of each body being
+    // clamped on its own. `ext` is in rig units along the staging axis.
+    stagingFit(frame, ext) {
+        if (!ext) return 0;
+        const margin = 20;
+        const yA = frame.originY + ext.minY * frame.scale;
+        const yB = frame.originY + ext.maxY * frame.scale;
+        const a = ringBoundsAtY(yA), b = ringBoundsAtY(yB);
+        const left = Math.max(a.left, b.left) + margin;
+        const right = Math.min(a.right, b.right) - margin;
+        const xs = [ext.minX, ext.maxX].map(dx => frame.originX + frame.facing * dx * frame.scale);
+        const lo = Math.min(...xs), hi = Math.max(...xs);
+        if (hi - lo > right - left) return (left + right) / 2 - (lo + hi) / 2;
+        if (lo < left) return left - lo;
+        if (hi > right) return right - hi;
+        return 0;
     }
 
     // Absolute placement from a role-local authored offset. Absolute, not
@@ -1569,7 +1665,9 @@ export default class Wrestler {
         // Ease from the clip's last rendered body into the grounded pose
         // (Skeleton.groundedPoseFrom) instead of cutting to it.
         const points = this.skeleton?.jointAttachmentPoints;
-        this._groundHandoff = points?.neck ? { joints: JSON.parse(JSON.stringify(points)), from: null, t0: seconds } : null;
+        this._groundHandoff = points?.neck
+            ? { joints: { ...JSON.parse(JSON.stringify(points)), art: this.skeleton.artPlacement() }, from: null, t0: seconds }
+            : null;
     }
 
     _standBackUp() {
@@ -2333,6 +2431,10 @@ export default class Wrestler {
         // Choreography outranks the combat-ready guard — see _choreoOwnsPose().
         const guard = choreography ? 0 : this.combatBlend;
         this.skeleton.updateUpright(x, y, s, facing, this.pose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
+        if (this._activeMove && this._floorContacts) {
+            const turn = (this.pose.tilt ?? 0) + (this.pose.bend ?? 0);
+            for (const { point, w } of this._floorContacts) this.skeleton.holdOnFloor(point, y, s, w, turn);
+        }
     }
 
     _nearCorner() {

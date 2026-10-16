@@ -1058,6 +1058,20 @@ export default class Skeleton {
             : points.nearHip ?? points.farHip ?? { x: this.torso.x, y: this.torso.y };
     }
 
+    // A clip's floor contact (AnimationClip.js floorContacts): move the drawn
+    // body so `point` sits on the mat line `floorY`, by weight w. The crown
+    // hangs the rig's measured rigProfile.crownBelowHip under the hip pivot
+    // when upside down (`turn` = tilt + bend = PI), less as the body turns
+    // off vertical. A rig without the measurement is left alone.
+    holdOnFloor(point, floorY, s, w, turn) {
+        if (point !== 'crown' || !(w > 0)) return;
+        const reach = this._textureConfig?.rigProfile?.crownBelowHip;
+        if (!Number.isFinite(reach) || !this.jointAttachmentPoints?.neck) return;
+        const hip = this._hipPivot();
+        const crownY = hip.y - Math.cos(turn) * reach * s;
+        this._rotateAbout(this._parts, Object.values(this.jointAttachmentPoints), hip, 0, (floorY - crownY) * w);
+    }
+
     // Rotate parts and joint points by r about pivot, then raise by dy.
     _rotateAbout(parts, points, pivot, r, dy = 0) {
         const cos = Math.cos(r), sin = Math.sin(r);
@@ -2082,7 +2096,39 @@ export default class Skeleton {
             farFore: seg(points.farElbow, points.farWrist, 'farFore'),
             nearArm: seg(points.nearShoulder, points.nearElbow, 'nearArm'),
             nearFore: seg(points.nearElbow, points.nearWrist, 'nearFore'),
+            // Where the upright render put the shoulders, relative to (x, y).
+            // The grounded renderer may root the arms elsewhere (original
+            // Lou: the torso origin, not his shoulder sockets), so the blend
+            // carries the difference and eases it out (updateGroundedBlend).
+            shoulders: points.nearShoulder && points.farShoulder ? {
+                near: { x: points.nearShoulder.x - x, y: points.nearShoulder.y - y },
+                far: { x: points.farShoulder.x - x, y: points.farShoulder.y - y },
+            } : null,
+            // Same for the knees (original Lou's upright knee is his painted
+            // one; the grounded leg's is geometric).
+            knees: points.nearKnee && points.farKnee ? {
+                near: { x: points.nearKnee.x - x, y: points.nearKnee.y - y },
+                far: { x: points.farKnee.x - x, y: points.farKnee.y - y },
+            } : null,
+            art: points.art ?? null,
         };
+    }
+
+    // Every painted part's placed transform, for the grounded handoff
+    // (updateGroundedBlend): joints alone miss how the art sits on them,
+    // which differs between the two render paths (original Lou's trunks are
+    // painted on his thighs, and his far thigh turns 0.43 rad between them).
+    static ART_PARTS = ['torso', 'pelvisUnderlay', 'pelvisOverlay', 'pelvisMask', 'trunks', 'head',
+        'farThigh', 'farShin', 'farBoot', 'nearThigh', 'nearShin', 'nearBoot',
+        'farUpArm', 'farForearm', 'farHand', 'nearUpArm', 'nearForearm', 'nearHand'];
+    artPlacement() {
+        if (!this._headIsImage) return null;
+        const out = {};
+        for (const key of Skeleton.ART_PARTS) {
+            const img = this[key];
+            if (img?.setPosition) out[key] = { x: img.x, y: img.y, rotation: img.rotation };
+        }
+        return out;
     }
 
     /** Grounded pose `poseName`, blended from a groundedPoseFrom() start by u (0→1). */
@@ -2094,7 +2140,67 @@ export default class Skeleton {
         for (const key of Object.keys(target)) {
             g[key] = Number.isFinite(from[key]) ? from[key] + (target[key] - from[key]) * e : target[key];
         }
-        this._applyGrounded(x + (from.dx ?? 0) * (1 - e), y, s, facing, g);
+        const k = 1 - e;
+        if (k > 0) {
+            // The two render paths place some joints and art differently
+            // (original Lou's upright shoulders are torso sockets, his knees
+            // and trunks are painted ones), so angles alone still pop. Each
+            // difference is measured once at the start pose, in its parent
+            // bone's frame so it turns with it, and eased out with the rest.
+            this._measureHandoff(x, y, s, facing, target, from);
+            for (const j of from.offsets.joints) {
+                (g[j.key] ??= {})[j.side] = this._boneOffset(j, g[j.bone], facing, k);
+            }
+        }
+        this._applyGrounded(x + (from.dx ?? 0) * k, y, s, facing, g);
+        if (k > 0) {
+            for (const part of from.offsets.art) {
+                const img = this[part.key], d = this._boneOffset(part, g.torso, facing, k);
+                img.setPosition(img.x + d.x, img.y + d.y).setRotation(img.rotation + part.r * k);
+            }
+        }
+    }
+
+    // A local (along, across) offset in the frame of a bone at angle `a`,
+    // back to world, scaled by k.
+    _boneOffset(local, a, facing, k) {
+        const f = facing >= 0 ? 1 : -1, sin = Math.sin(f * a), cos = Math.cos(f * a);
+        return { x: (local.a * sin + local.p * cos) * k, y: (local.a * cos - local.p * sin) * k };
+    }
+
+    _measureHandoff(x, y, s, facing, target, from) {
+        if (from.offsets) return;
+        const f = facing >= 0 ? 1 : -1;
+        const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+        const toLocal = (dx, dy, a) => {
+            const sin = Math.sin(f * a), cos = Math.cos(f * a);
+            return { a: dx * sin + dy * cos, p: dx * cos - dy * sin };
+        };
+        const start = {};
+        for (const key of Object.keys(target)) start[key] = Number.isFinite(from[key]) ? from[key] : target[key];
+        const sx = x + (from.dx ?? 0);
+        const joints = [];
+        for (const side of ['near', 'far']) {
+            if (from.shoulders) joints.push({ key: 'shoulderShift', side, rel: from.shoulders[side], point: `${side}Shoulder`, bone: 'torso' });
+            if (from.knees) joints.push({ key: 'kneeShift', side, rel: from.knees[side], point: `${side}Knee`, bone: `${side}Thigh` });
+        }
+        this._applyGrounded(sx, y, s, facing, start);
+        for (const j of joints) {
+            const root = this.jointAttachmentPoints[j.point];
+            Object.assign(j, toLocal(x + j.rel.x - root.x, y + j.rel.y - root.y, start[j.bone]));
+            (start[j.key] ??= {})[j.side] = this._boneOffset(j, start[j.bone], facing, 1);
+        }
+        // The art, with the joints already moved back to where they were.
+        const art = [];
+        if (from.art) {
+            this._applyGrounded(sx, y, s, facing, start);
+            for (const [key, was] of Object.entries(from.art)) {
+                const img = this[key];
+                if (!img?.setPosition) continue;
+                art.push({ key, ...toLocal(was.x - img.x, was.y - img.y, start.torso), r: wrap(was.rotation - img.rotation) });
+            }
+        }
+        from.offsets = { joints, art };
     }
 
     /**
@@ -2250,6 +2356,10 @@ export default class Skeleton {
             const hipRender = this._attachChild(thighImg, rootX, rootY, tA, s, RIG.HIP_OVERLAP);
             const side = thighImg === this.farThigh ? 'far' : 'near';
             const knee = this._end(rootX, rootY, thighH, tA);
+            // Handoff only (updateGroundedBlend): the knee eases from where
+            // the upright render left it.
+            const kneeShift = g.kneeShift?.[side];
+            if (kneeShift) { knee.x += kneeShift.x; knee.y += kneeShift.y; }
             this._placeLimbPart(thighImg, { x: rootX, y: rootY }, knee, {
                 x: hipRender.x, y: hipRender.y, w: legW, h: thighH,
                 angle: tA, scale: s, facing,
@@ -2261,6 +2371,7 @@ export default class Skeleton {
             const trueKnee = thighImg._binding ? knee : thighImg._distalAnchorFrac
                 ? this._trueDistalEnd(thighImg, hipRender.x, hipRender.y, thighH, tA, s, facing)
                 : knee;
+            if (kneeShift && trueKnee !== knee) { trueKnee.x += kneeShift.x; trueKnee.y += kneeShift.y; }
             const kneeRender = this._attachChild(shinImg, trueKnee.x, trueKnee.y, sA, s, RIG.KNEE_OVERLAP);
             const kneeAnchor = this._lockLimbJoints ? trueKnee : knee;
             const ankle = this._end(kneeAnchor.x, kneeAnchor.y, shinH, sA);
@@ -2307,8 +2418,9 @@ export default class Skeleton {
             const uA = ang(up), fA = ang(fore);
             const side = upImg === this.farUpArm ? 'far' : 'near';
             const depthScale = side === 'far' ? RIG.FAR_ARM_SCALE : 1;
-            const rootX = shoulderPoint ? shoulderPoint.x : shX;
-            const rootY = shoulderPoint ? shoulderPoint.y : shY;
+            const shift = g.shoulderShift?.[side];
+            const rootX = (shoulderPoint ? shoulderPoint.x : shX) + (shift?.x ?? 0);
+            const rootY = (shoulderPoint ? shoulderPoint.y : shY) + (shift?.y ?? 0);
             const elbowGraph = this._end(rootX, rootY, upperArmH * depthScale, uA);
             this._placeLimbPart(upImg, { x: rootX, y: rootY }, elbowGraph, {
                 x: rootX, y: rootY, w: armW, h: upperArmH,

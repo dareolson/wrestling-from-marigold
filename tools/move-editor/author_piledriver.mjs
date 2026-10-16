@@ -98,6 +98,13 @@ const draft = buildDraft({
     duration: AT.rest,
     attacker, defender,
     events: [{ at: AT.impact, type: 'impact' }],
+    // Crown on the mat from the drop through the balance beat, let go over
+    // the topple: lift alone leaves a shorter trunk (Procreate Lou, George)
+    // short of the mat (Codex review 2026-10-15).
+    floorContacts: [{ role: 'defender', point: 'crown', in: [AT.rise, AT.impact], out: [AT.balance, AT.topple] }],
+    // ...without letting go of his waist: the hands follow his hips on every
+    // cast (stage.mjs solved them on shipped Lou only).
+    grips: ['l', 'r'].map(arm => ({ role: 'attacker', arm, to: { role: 'defender', joint: 'Hip', side: 'same' }, in: [AT.reach, AT.tuck], out: [AT.compress, AT.balance] })),
     characters: { attacker: 'george', defender: 'thesz' },
     // Upside down, Lou's body reads against George's front, so from the tuck
     // on he draws nearer the camera.

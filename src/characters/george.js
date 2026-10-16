@@ -83,7 +83,13 @@ export const george = {
         // See the shared TORSO_BOX comment above this object.
         torso: { key: 'george_torso', box: TORSO_BOX },
         pelvisOverlay: { key: 'george_pelvis_overlay', box: TORSO_BOX },
+        // Inverted, painted crown below the hip pivot, in this rig's own units
+        // (after heightScale; measured
+        // 2026-10-15 at the piledriver impact, tilt PI): a clip's crown-on-mat
+        // contact (floorContacts) reads it, since lift alone scales by hip
+        // height and leaves a shorter trunk short of the mat.
         rigProfile: {
+            crownBelowHip: 137.6,
             sockets: {
                 neck:         { u: 0.612, v: 0.136 },
                 nearShoulder: { u: 0.21,  v: 0.136 },

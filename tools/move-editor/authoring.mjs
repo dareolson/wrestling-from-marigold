@@ -21,7 +21,7 @@ export const pose = (fields) => ({
     lean: 0, crouch: 0, tilt: 0, lift: 0, bend: 0, ...fields,
 });
 
-export function buildDraft({ id, duration, attacker, defender, events, characters, transformY = () => 0, sheet = null }) {
+export function buildDraft({ id, duration, attacker, defender, events, characters, transformY = () => 0, sheet = null, floorContacts = null, grips = null }) {
     const track = (beats, role) => ({
         keyframes: beats.map(([at, beatPose, x, , ease = 'linear']) => ({
             at, ease, pose: beatPose, transform: { x, y: transformY(role, at) }, parts: {},
@@ -40,6 +40,8 @@ export function buildDraft({ id, duration, attacker, defender, events, character
         tracks: { attacker: track(attacker, 'attacker'), defender: track(defender, 'defender') },
         events, references,
         preview: { facing: { attacker: 1, defender: -1 }, characters },
+        ...(floorContacts ? { floorContacts } : {}),
+        ...(grips ? { grips } : {}),
     });
 }
 

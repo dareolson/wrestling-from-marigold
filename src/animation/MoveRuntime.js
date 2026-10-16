@@ -1,5 +1,5 @@
-import { compileClip, eventsBetween, sampleClip } from './AnimationClip.js';
-import { captureFacingAxis, captureStagingContext, stagedWorldPoint } from './clipStaging.js';
+import { compileClip, eventsBetween, sampleClip, windowWeight } from './AnimationClip.js';
+import { captureFacingAxis, captureStagingContext, stagedWorldPoint, stagingAt } from './clipStaging.js';
 
 // `staging` is the role's immutable playback context, or null when this track
 // authors no transform channels (the clip does not own this actor's position).
@@ -171,10 +171,29 @@ export default class MoveRuntime {
         this._clips.clear();
     }
 
+    // After every bound actor has drawn: pull declared grips onto the
+    // partner's drawn joint (AnimationClip.js grips). The gripping actor
+    // redraws, so this runs once both are placed for the frame.
+    afterDraw() {
+        for (const handle of this._active.values()) {
+            const grips = handle.clip.grips;
+            if (!grips?.length) continue;
+            const byRole = new Map();
+            for (const grip of grips) {
+                const w = windowWeight(grip, handle.time);
+                const actor = handle.bindings[grip.role], partner = handle.bindings[grip.to.role];
+                if (!(w > 0) || !actor?.holdGrips || !partner?.skeleton) continue;
+                if (!byRole.has(actor)) byRole.set(actor, []);
+                byRole.get(actor).push({ arm: grip.arm, partner, joint: grip.to.joint, side: grip.to.side, w });
+            }
+            for (const [actor, list] of byRole) actor.holdGrips(list);
+        }
+    }
+
     _apply(handle) {
         const sampled = sampleClip(handle.clip, handle.time);
         for (const [role, sample] of Object.entries(sampled.tracks)) {
-            applySample(handle.bindings[role], sample, handle.staging?.roles[role] ?? null, handle.facingAxis);
+            applySample(handle.bindings[role], sample, stagingAt(handle.staging?.roles[role] ?? null, handle.time), handle.facingAxis);
         }
         return sampled;
     }

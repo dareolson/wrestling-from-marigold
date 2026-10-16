@@ -72,7 +72,13 @@ export const thesz = {
         // SHOULDER_STAGGER chain below against the default TEX.torso box
         // (82x112, since this torso entry has no box override) — byte-
         // identical rendered output, not a new correction.
+        // Inverted, painted crown below the hip pivot, in this rig's own units
+        // (after heightScale; measured
+        // 2026-10-15 at the piledriver impact, tilt PI): a clip's crown-on-mat
+        // contact (floorContacts) reads it, since lift alone scales by hip
+        // height and leaves a shorter trunk short of the mat.
         rigProfile: {
+            crownBelowHip: 152.1,
             sockets: {
                 // neck socket retuned (final-correction, 2026-07-28) to seat
                 // the head in BOTH facings from one config: u 0.54878->0.530

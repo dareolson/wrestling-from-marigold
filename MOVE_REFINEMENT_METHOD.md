@@ -102,6 +102,9 @@ Each of these cost a round of rework.
 | Strikes fire at in-fighting range (jab ≤ 85 units; bodies nearly touching) | Pose strikes for the real distance, not a textbook silhouette |
 | Play-scenario distances are screen px; wrestlers render at s≈0.81 | 150 px ≈ 185 rig units |
 | Contact poses are cast-specific: Procreate Lou's legs land ~15 px higher than shipped Lou's | Check both Lous |
+| `lift` scales with each rig's hip height; trunks differ (inverted hip-to-crown: Lou 152, Procreate 136, George 138 rig units) | Hold a head-down contact with a clip `floorContacts` crown window, not by tuning lift per cast |
+| stage.mjs solves grips on shipped Lou only | Declare clip `grips` (arm channel + partner joint, same/other side); `MoveRuntime.afterDraw` re-solves them by IK on every cast |
+| Ring bounds used to clamp each actor separately | `Wrestler.stagingFit` shifts the shared origin (eased over 0.45 s) so a rope-side tableau keeps its geometry |
 
 ## Acceptance (per move)
 
@@ -172,7 +175,7 @@ To watch a match in a browser:
 | hammerlock | **Derek's draft. Do not edit.** Only a separate acting candidate, and only if he asks |
 | selling library | **Built**: roll, writhe, Flair kick, clutch by body part; George theatrical, Lou economical; tagged on every knockdown move. Awaiting Derek's look |
 | bodySlam | **v2 refined**: grips through an overhead press (the powerbomb look kept), one-way turnover, follow-through. Awaiting Derek's look |
-| piledriver | **v2 refined**: grip from the lift to the drop, a suspense beat, the sit-out; Lou crumples forward face down (`_layDown(…, 'prone')`) while George rocks back out from under him. Awaiting Derek's look |
+| piledriver | **v2 refined** (+ 2026-10-15: crown held on the mat on every cast, waist grip held by runtime IK): grip from the lift to the drop, a suspense beat, the sit-out; Lou crumples forward face down (`_layDown(…, 'prone')`) while George rocks back out from under him. Awaiting Derek's look |
 | hipToss | **v2 refined**: grip round the waist and on the arm, hips load and pop, George goes over the hip and lands flat *behind* Lou (v1 looped him back round to the front). Awaiting Derek's look |
 | figureFour, armBar, ankleLock | Mat holds: purchase, brace, squeeze beats, resistance. Silent foley; the squeeze reads through the bodies |
 | elbowDrop, kneeDrop, divingElbow/topDive, theszPress | Flights: the executor owns travel (solo clips). Add the grounded handoff for prone landings (`_layOnBack` covers supine only) |

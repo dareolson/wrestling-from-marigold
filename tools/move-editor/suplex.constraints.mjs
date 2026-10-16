@@ -18,14 +18,19 @@ const NECK_AT = {
     [AT.fall]: { dx: 34, dy: -55 },
 };
 
-// Lou's soles stay where they started through the load, lift and tip-back.
-export const plant = [AT.hook, AT.load, AT.drive, AT.up, AT.past, AT.tip]
+// Lou's soles stay where they started through the load, the lift and the
+// landing: he goes straight back over his feet and lands where he stood.
+// (Without the landing keys the tilt swung his feet forward and they skidded
+// along the mat.) Not the mid-air `fall` key: his feet are off the mat there,
+// and planting it swung his hips back and forth; author.mjs sets its x
+// between its neighbours instead.
+export const plant = [AT.step, AT.hook, AT.load, AT.drive, AT.up, AT.past, AT.tip, AT.impact, AT.compress, AT.bounce, AT.rest]
     .flatMap(at => [{ at, role: 'attacker', side: 'near', refAt: AT.stance }]);
 
 export const stage = [
     ...HELD.map(at => ({ at, role: 'defender', joint: 'neck', to: { role: 'attacker', joint: 'nearShoulder', frame: 'body', ...NECK_AT[at] } })),
     // Landed head to head: George's neck just beyond Lou's (behind Lou's back).
-    ...[AT.impact, AT.bounce, AT.rest].map(at => ({ at, role: 'defender', joint: 'neck', to: { role: 'attacker', joint: 'neck', dx: -38, dy: 0 } })),
+    ...[AT.impact, AT.compress, AT.bounce, AT.rest].map(at => ({ at, role: 'defender', joint: 'neck', to: { role: 'attacker', joint: 'neck', dx: -38, dy: 0 } })),
 ];
 
 // With George vertical his trunks are beyond Lou's overhead reach, so the far

@@ -6,15 +6,13 @@
 // Gameplay (Wrestler._doJab's impact handler) still owns legality, damage,
 // stamina, blocking, and selling — the runtime just fires the marker.
 //
-// The numeric pose channels below are the exact facing-relative stance values
-// from Wrestler.js's POSES (idle / jabCock / jab / jabRecoil), normalized to
-// the same six channels Wrestler.tweenPose blends (lLeg, rLeg, lArm, rArm,
-// lean, crouch). They are inlined rather than imported so the animation layer
-// stays free of any Wrestler dependency; keep them in sync with POSES if those
-// stances are ever retuned. Extended channels a character may carry
-// (lForearm/lShin/…, e.g. theszIdle) are deliberately NOT authored here, so
-// they pass through untouched exactly as the legacy tweenPose path left them.
-
+// Second pass (2026-10-15, after the move pilot): the fist now lands on the
+// FACE (it was a chest touch, while gameplay plays sellHead), with a guard on
+// the way in, a shoulder lead from the `bend` torso channel and a rear hand
+// that stays at the chin. That needs the elbows, so both are authored on every
+// key; the first and last keys hold them at 0.75, the bend both wrestlers'
+// idles already show, so entering and leaving the clip does not pop. Graded
+// with tools/move-critic (fist:near → face, specs.mjs) at 60/70/85 units.
 // Legacy timing (MOVE_DEFS.jab.poseSeq, in ms) was
 //   jabCock 83  ->  jab 67  ->  jabRecoil 83  ->  idle 167   (400ms total)
 // with the single delayedCall(83) that applied damage — so damage landed on
@@ -28,12 +26,17 @@ export const JAB_DURATION  = 0.400;
 export const JAB_IMPACT_AT = JAB_AT;
 export const JAB_CLIP_ID    = 'jab';
 
-// Facing-relative stance -> the six blended channels (mirrors tweenPose's own
-// normalization, so lean/crouch default to 0 when a pose omits them).
-const idle      = { lLeg: -0.04, rLeg:  0.16, lArm:  0.00, rArm:  0.00, lean:  0.00, crouch: 0.00 };
-const jabCock   = { lLeg:  0.12, rLeg: -0.10, lArm: -0.55, rArm:  0.26, lean: -0.10, crouch: 0.08 };
-const jab       = { lLeg:  0.18, rLeg: -0.12, lArm:  1.00, rArm: -0.35, lean:  0.22, crouch: 0.10 };
-const jabRecoil = { lLeg:  0.14, rLeg: -0.09, lArm:  0.82, rArm: -0.10, lean:  0.08, crouch: 0.00 };
+// Facing-relative stance.
+const idle      = { lLeg: -0.04, rLeg:  0.16, lArm:  0.00, rArm:  0.00, lElbow: 0.75, rElbow: 0.75, lean: 0.00, crouch: 0.00, bend:  0.00 };
+// Loaded: lead fist drawn back low beside the ribs, shoulder turned away.
+const jabCock   = { lLeg:  0.10, rLeg: -0.08, lArm:  0.40, rArm:  0.55, lElbow: 2.25, rElbow: 2.05, lean: 0.00, crouch: 0.08, bend: -0.10 };
+// Contact: the game strikes at in-fighting range (bodies nearly touching), so
+// this is a short punch to the jaw, not a full-length jab. Arm solved by
+// stage.mjs (fist:near → face) at 70 units; shoulder leading, rear fist still
+// at the chin.
+const jab       = { lLeg:  0.18, rLeg: -0.12, lArm:  1.12, rArm:  0.55, lElbow: 2.06, rElbow: 2.05, lean: 0.00, crouch: 0.10, bend:  0.16 };
+// Snap back toward the guard.
+const jabRecoil = { lLeg:  0.14, rLeg: -0.09, lArm:  0.80, rArm:  0.45, lElbow: 1.85, rElbow: 1.70, lean: 0.00, crouch: 0.04, bend:  0.04 };
 
 // The clip binds the fist to `strikingForearm` — a SEMANTIC slot, not a fixed
 // near/far one. Wrestler.applyAnimationSample maps it to the near OR far

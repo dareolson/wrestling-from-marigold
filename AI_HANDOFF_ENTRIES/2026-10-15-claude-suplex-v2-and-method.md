@@ -16,7 +16,7 @@ All commits are on `story/marigold-opening` and cherry-picked onto
 | `4974be8` / `4d02cfe` | Jab extension on the 83 ms impact frame (damage timing unchanged); elbow-drop damage at landing, not on cancel |
 | `ed882ec` / `27be2f9` | Your joint/participation repair, reviewed and merged unchanged. Derek is redrawing George in Procreate soon, so George's ~10 px shorter shins at rest are accepted |
 | `167c102` / `b63c831` | `tools/move-critic/` (critic + the refine.mjs prototype) and your audit/review evidence |
-| `ef104ec` / (cherry-picked) | **Suplex v2**, `stage.mjs`, `export_draft.mjs`, suplex play scenarios, match filming |
+| `8b67048` / `ef104ec` | **Suplex v2**, `stage.mjs`, `export_draft.mjs`, suplex play scenarios, match filming |
 
 Tests: 658/658 on the story branch. The Lou branch still shows the 6 known
 failures from git-ignored art in a temp checkout; it was not otherwise

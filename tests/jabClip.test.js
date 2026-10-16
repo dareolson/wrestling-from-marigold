@@ -25,19 +25,20 @@ test('jab clip passes validation and compiles', () => {
 
 test('arbitrary-time sampling is deterministic and blends the authored stance', () => {
     const clip = compileClip(jabClip);
-    // Exactly at the impact keyframe: the arm is at full extension with the
-    // fist in, so damage, sell and contact share one beat.
+    // Exactly at the impact keyframe: the contact pose (fist on the face,
+    // solved by stage.mjs) with the fist in, so damage, sell and contact share
+    // one beat.
     const impact = sampleClip(clip, JAB_IMPACT_AT).tracks.attacker;
-    assert.equal(impact.pose.lArm, 1.0);
+    assert.equal(impact.pose.lArm, 1.12);
     assert.equal(impact.parts.strikingForearm, 'fist');
-    // Blends between cock (0.040, lArm -0.55) and extension (0.083, lArm 1.00).
+    // Blends between the load (0.040, lArm 0.40) and contact (0.083, lArm 1.12).
     const mid = sampleClip(clip, (0.040 + 0.083) / 2).tracks.attacker.pose.lArm;
-    assert.ok(mid > -0.55 && mid < 1.0, 'arm extends forward between keyframes');
+    assert.ok(mid > 0.40 && mid < 1.12, 'arm drives forward between keyframes');
     // Same time -> identical output, every time.
     assert.deepEqual(sampleClip(clip, 0.2), sampleClip(clip, 0.2));
     // Recovery lands back on the neutral standing stance.
     const rest = sampleClip(clip, JAB_DURATION).tracks.attacker.pose;
-    assert.deepEqual(rest, { lLeg: -0.04, rLeg: 0.16, lArm: 0, rArm: 0, lean: 0, crouch: 0 });
+    assert.deepEqual(rest, { lLeg: -0.04, rLeg: 0.16, lArm: 0, rArm: 0, lElbow: 0.75, rElbow: 0.75, lean: 0, crouch: 0, bend: 0 });
 });
 
 for (const hz of [30, 60, 120]) {

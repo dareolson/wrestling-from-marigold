@@ -5,6 +5,7 @@ import { compileClip, validateClip } from '../src/animation/AnimationClip.js';
 import { dropkickV2Clip } from '../src/animation/clips/dropkickV2.js';
 import { REGISTERED_MOVE_CLIPS } from '../src/animation/clips/index.js';
 import { soloClip } from '../tools/move-editor/authoring.mjs';
+import { DROPKICK_V2_GATHER_AT } from '../src/Wrestler.js';
 
 // The ?dropkick=v2 comparison candidate: a one-wrestler clip like the live
 // dropkick (the executor owns position), exported from its draft, and NOT a
@@ -21,4 +22,10 @@ test('dropkick v2: valid solo clip, exactly its draft export, no transform', () 
 
 test('dropkick v2 is a candidate, not a registered move', () => {
     assert.equal(REGISTERED_MOVE_CLIPS.includes(dropkickV2Clip), false);
+});
+
+test('the close-range start point is the clip\'s gather keyframe', () => {
+    const keys = dropkickV2Clip.tracks.attacker.keyframes.map(k => k.at);
+    assert.ok(keys.includes(DROPKICK_V2_GATHER_AT), `keys ${keys}`);
+    assert.ok(DROPKICK_V2_GATHER_AT < dropkickV2Clip.events.find(e => e.type === 'impact').at);
 });

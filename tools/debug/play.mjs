@@ -122,6 +122,24 @@ const SCENARIOS = {
         },
     },
 
+    // Distances are screen px; wrestlers render at s≈0.81, so the dropkick
+    // fires from ~69-178 px (85-220 rig units).
+    dropkickFar: { // ~210 units: room for the v2 candidate's run-up
+        expect: { move: 'dropkick' },
+        async run(h) {
+            await approach(h, 170);
+            await tap(h.page, 'g');
+        },
+    },
+
+    dropkickClose: { // ~111 units: v2 starts at its gather (no room to stride)
+        expect: { move: 'dropkick' },
+        async run(h) {
+            await approach(h, 90);
+            await tap(h.page, 'g');
+        },
+    },
+
     lockup: {
         expect: { move: 'lockup' },
         async run(h) {

@@ -1,6 +1,6 @@
 {
   "id": "dropkickV2",
-  "duration": 0.64,
+  "duration": 0.76,
   "posture": "upright",
   "tracks": {
     "attacker": {
@@ -30,8 +30,32 @@
           "parts": {}
         },
         {
-          "at": 0.1,
-          "ease": "easeOut",
+          "at": 0.12,
+          "ease": "easeIn",
+          "pose": {
+            "lArm": -0.35,
+            "rArm": 0.45,
+            "lElbow": 0.9,
+            "rElbow": 0.9,
+            "lLeg": 0.26,
+            "rLeg": -0.3,
+            "lKnee": 0.22,
+            "rKnee": 0.8,
+            "lean": 0,
+            "crouch": 0.18,
+            "tilt": 0,
+            "lift": 0,
+            "bend": 0.18
+          },
+          "transform": {
+            "x": 28,
+            "y": 0
+          },
+          "parts": {}
+        },
+        {
+          "at": 0.22,
+          "ease": "linear",
           "pose": {
             "lArm": -0.55,
             "rArm": -0.45,
@@ -48,13 +72,13 @@
             "bend": 0.3
           },
           "transform": {
-            "x": 8,
+            "x": 52,
             "y": 0
           },
           "parts": {}
         },
         {
-          "at": 0.22,
+          "at": 0.34,
           "ease": "easeOut",
           "pose": {
             "lArm": 2.4,
@@ -72,13 +96,13 @@
             "bend": 0.2
           },
           "transform": {
-            "x": 34,
+            "x": 80,
             "y": 0
           },
           "parts": {}
         },
         {
-          "at": 0.34,
+          "at": 0.46,
           "ease": "easeIn",
           "pose": {
             "lArm": 2,
@@ -96,13 +120,13 @@
             "bend": -0.15
           },
           "transform": {
-            "x": 58,
+            "x": 108,
             "y": 0
           },
           "parts": {}
         },
         {
-          "at": 0.4,
+          "at": 0.52,
           "ease": "easeOut",
           "pose": {
             "lArm": 2.3,
@@ -120,13 +144,13 @@
             "bend": 0.1
           },
           "transform": {
-            "x": 48,
+            "x": 98,
             "y": 0
           },
           "parts": {}
         },
         {
-          "at": 0.5,
+          "at": 0.62,
           "ease": "easeIn",
           "pose": {
             "lArm": 1.5,
@@ -144,13 +168,13 @@
             "bend": 0
           },
           "transform": {
-            "x": 44,
+            "x": 94,
             "y": 0
           },
           "parts": {}
         },
         {
-          "at": 0.64,
+          "at": 0.76,
           "ease": "easeOut",
           "pose": {
             "lArm": 0.3,
@@ -168,7 +192,7 @@
             "bend": 0
           },
           "transform": {
-            "x": 44,
+            "x": 94,
             "y": 0
           },
           "parts": {}
@@ -196,13 +220,13 @@
             "bend": 0
           },
           "transform": {
-            "x": 150,
+            "x": 200,
             "y": 0
           },
           "parts": {}
         },
         {
-          "at": 0.64,
+          "at": 0.76,
           "ease": "linear",
           "pose": {
             "lArm": 0.1,
@@ -220,7 +244,7 @@
             "bend": 0
           },
           "transform": {
-            "x": 150,
+            "x": 200,
             "y": 0
           },
           "parts": {}
@@ -230,7 +254,7 @@
   },
   "events": [
     {
-      "at": 0.34,
+      "at": 0.46,
       "type": "impact"
     }
   ],
@@ -246,7 +270,7 @@
     },
     {
       "role": "attacker",
-      "at": 0.1,
+      "at": 0.22,
       "frame": 225,
       "dx": 0,
       "dy": 0,
@@ -255,7 +279,7 @@
     },
     {
       "role": "attacker",
-      "at": 0.22,
+      "at": 0.34,
       "frame": 227,
       "dx": 0,
       "dy": 0,
@@ -264,7 +288,7 @@
     },
     {
       "role": "attacker",
-      "at": 0.34,
+      "at": 0.46,
       "frame": 229,
       "dx": 0,
       "dy": 0,
@@ -273,7 +297,7 @@
     },
     {
       "role": "attacker",
-      "at": 0.5,
+      "at": 0.62,
       "frame": 231,
       "dx": 0,
       "dy": 0,
@@ -282,7 +306,7 @@
     },
     {
       "role": "attacker",
-      "at": 0.64,
+      "at": 0.76,
       "frame": 232,
       "dx": 0,
       "dy": 0,

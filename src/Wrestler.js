@@ -988,7 +988,11 @@ export default class Wrestler {
     tickRun(dt) {
         if (this.state !== 'running') return;
 
-        const dir = Math.sign(this.runTarget - this.x);
+        // Whipped or bounced while already on his rope target (x === runTarget,
+        // e.g. whipped into the ropes he's standing at), the sign is 0: keep
+        // running his way. A zero here became facing = 0 at the turn, and the
+        // next draw threw, freezing AI-vs-AI matches (Derek, 2026-10-16).
+        const dir = Math.sign(this.runTarget - this.x) || this.runFacing || 1;
         this.x += dir * RUN_SPEED * this.s * dt;
         this.walkPhase = (this.walkPhase + RUN_SPEED * dt * WALK_FREQ * 0.8) % (Math.PI * 2);
         this.moveBlend = Math.min(1, this.moveBlend + dt * 8);

@@ -121,3 +121,16 @@ test('afterDraw hands each gripping actor its grips, weighted, only inside the w
     runtime.afterDraw();
     assert.equal(calls.length, 1, 'a cancelled move holds nothing');
 });
+
+test('a runner already on his rope target turns with a real facing (AI-vs-AI freeze)', () => {
+    for (const runFacing of [1, -1]) {
+        for (const runPhase of ['toRope', 'returning']) {
+            const w = Object.assign(Object.create(Wrestler.prototype), {
+                scene: { triggerRopeBounce: () => {} }, state: 'running', runPhase, runFacing, facing: runFacing,
+                x: 600, y: 360, runTarget: 600, walkPhase: 0, moveBlend: 0,
+            });
+            w.tickRun(1 / 60);
+            assert.ok(w.facing === 1 || w.facing === -1, `${runPhase} ${runFacing}: facing ${w.facing}`);
+        }
+    }
+});

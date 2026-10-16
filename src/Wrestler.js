@@ -27,6 +27,11 @@ const GROUND_HANDOFF_SEC = 0.3;
 // The dropkick v2 candidate connects with Lou this far from George (rig units;
 // author_dropkick_v2.mjs DROPKICK_V2_REACH), inside the unchanged hit range.
 const DROPKICK_V2_REACH = 92;
+// v2 opens with a run-up stride; from closer than this (rig units) there is
+// no room for one, so the clip starts at its gather (author_dropkick_v2.mjs
+// AT.gather) — a crouch and jump from where he stands.
+const DROPKICK_V2_STRIDE_MIN_GAP = 130;
+export const DROPKICK_V2_GATHER_AT = 0.22;
 const dropkickCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('dropkick') === 'v2';
 // Below this a wrestler who begs off (George) begs instead of taunting —
 // the AI's begging-off threshold (AIHandler george.retreatStamina).
@@ -1387,7 +1392,6 @@ export default class Wrestler {
         const hitRange = 100 * this.s;
         const kickAt   = clip.events.find(event => event.type === 'impact').at;
 
-        // Across to the target by the time the feet are out.
         let travel;
 
         let landed = false;
@@ -1418,7 +1422,14 @@ export default class Wrestler {
             onCancel: () => { travel?.stop(); lie(); },
         });
         this.state = 'dropkicking';
-        travel = this.scene.tweens.add({ targets: this, x: targetX, duration: kickAt * 1000, ease: 'Sine.easeOut' });
+        // v2 runs up into the kick when there is room for a stride; from
+        // close in it starts at the gather (seek emits no skipped markers).
+        const gap = Math.abs(other.x - this.x) / this.s;
+        const startAt = v2 && gap < DROPKICK_V2_STRIDE_MIN_GAP ? DROPKICK_V2_GATHER_AT : 0;
+        if (startAt) runtime.seek(this._activeMove, startAt);
+        // Across to the target by the time the feet are out. v2 covers ground
+        // at a steady run (easeIn left the stride running in place).
+        travel = this.scene.tweens.add({ targets: this, x: targetX, duration: (kickAt - startAt) * 1000, ease: v2 ? 'Linear' : 'Sine.easeOut' });
     }
 
     // A throw played on the clip runtime, posed in the move editor against the

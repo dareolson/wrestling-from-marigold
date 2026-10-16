@@ -24,6 +24,15 @@ export const SPECS = {
         ],
         landings: [{ role: 'attacker', part: 'torso', event: 'impact', after: 0.3 }],
     },
+    bodySlam: {
+        // bodyslam.constraints.mjs: near hand under the legs at the hip, far
+        // hand at the shoulders, from the grab through the drive.
+        contacts: [
+            { role: 'attacker', source: 'nearWrist', target: 'nearHip', from: 0.24, to: 0.98, label: 'Lou near hand under George\'s hips (grab → drive)' },
+            { role: 'attacker', source: 'farWrist', target: 'nearShoulder', from: 0.24, to: 0.92, label: 'Lou far hand at George\'s shoulders (grab → hold)' },
+        ],
+        landings: [{ role: 'defender', part: 'torso', event: 'impact', after: 0.4 }],
+    },
     hammerlock: {},
     jab: {
         solo: true,

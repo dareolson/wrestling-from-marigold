@@ -33,6 +33,15 @@ export const SPECS = {
         ],
         landings: [{ role: 'defender', part: 'torso', event: 'impact', after: 0.4 }],
     },
+    piledriver: {
+        // piledriver.constraints.mjs: both hands on Lou's hips from the lift
+        // through the drop.
+        contacts: [
+            { role: 'attacker', source: 'nearWrist', target: 'nearHip', from: 0.62, to: 1.27, label: 'George near hand on Lou\'s hip (lift → impact)' },
+            { role: 'attacker', source: 'farWrist', target: 'farHip', from: 0.62, to: 1.27, label: 'George far hand on Lou\'s far hip (lift → impact)' },
+        ],
+        landings: [{ role: 'attacker', part: 'torso', event: 'impact', after: 0.6 }],
+    },
     hammerlock: {},
     jab: {
         solo: true,

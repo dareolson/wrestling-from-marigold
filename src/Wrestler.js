@@ -11,6 +11,8 @@ import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
+import { SELLS, clutchSell, sampleSell, applyOffsets, planSells } from './animation/sells.js';
+import { MOVE_SPECS } from './moves/registry.js';
 import {
     ARTICULATED_CHANNELS,
     ARTICULATION_CHANNEL_PAIRS,
@@ -24,6 +26,10 @@ const DOWN_SEC   = 4.5;
 // How long a thrown body takes to settle from the clip's last frame into the
 // grounded lying pose (see _layOnBack / Skeleton.groundedPoseFrom).
 const GROUND_HANDOFF_SEC = 0.3;
+// A down-state sell (src/animation/sells.js) starts after the grounded
+// handoff has settled and ends this long before the get-up.
+const SELL_LEAD_SEC = 0.35;
+const SELL_TAIL_SEC = 0.3;
 // The dropkick v2 candidate connects with Lou this far from George (rig units;
 // author_dropkick_v2.mjs DROPKICK_V2_REACH), inside the unchanged hit range.
 const DROPKICK_V2_REACH = 92;
@@ -375,6 +381,9 @@ export default class Wrestler {
         this.pose            = { ...POSES.idle, lean: 0, crouch: 0 }; // live joint angles, tweened per move
         this.idlePose        = 'idle';            // character-specific resting stance — override after construction
         this.tauntPose       = 'tauntArmsWide';   // character-specific taunt — override after construction
+        this.sellStyle       = 'economical';      // how he sells on the mat (sells.js SELL_STYLES) — override after construction
+        this._sellTag        = null;              // move id of the last confirmed hit (_hurt), sold on the mat
+        this._sell           = null;              // the sells playing on this trip to the mat (_tickSell)
         this.begsOff         = false;             // pleads instead of preening when hurt (George)
         this.struts          = false;             // taunts with Flair's strut instead of the arms-wide pose (George)
         this._runStepTimer   = 0;
@@ -797,7 +806,9 @@ export default class Wrestler {
     }
 
     tickDown(dt) {
+        if (this.state !== 'down') this._sell = null; // pinned, picked up, rising: the sell stops
         if (this.state !== 'down' && this.state !== 'staggered') return;
+        if (this.state === 'down') this._tickSell(dt);
         this.stateTimer -= dt;
         if (this.stateTimer <= 0) {
             if (this.state === 'staggered') {
@@ -811,6 +822,59 @@ export default class Wrestler {
                 this._startRiseUp();
             }
         }
+    }
+
+    // Plan the sells for this trip to the mat from the move that put him
+    // here (registry `sell`: body part, intensity) and his style, sized to
+    // the down timer, then advance them. A roll turns him over at its
+    // midpoint: lying and facing flip together, so his head stays put (the
+    // pose there draws identically either way, see sells.js).
+    _tickSell(dt) {
+        if (!this._sell && this._sellTag) {
+            const spec = MOVE_SPECS[this._sellTag]?.sell;
+            this._sellTag = null;
+            if (spec) {
+                const plan = planSells({
+                    style: this.sellStyle, lying: this.lying, part: spec.part, intensity: spec.intensity,
+                    budget: this.stateTimer - SELL_LEAD_SEC - SELL_TAIL_SEC,
+                });
+                if (plan.length) this._sell = { plan, i: 0, t: -SELL_LEAD_SEC };
+            }
+        }
+        const sell = this._sell;
+        if (!sell) return;
+        sell.t += dt;
+        const turnOver = (cur) => {
+            const to = SELLS[cur.lying][cur.name]?.to;
+            if (!to || cur.turned) return;
+            cur.turned = true;
+            this.lying  = to;
+            this.facing = -this.facing;
+        };
+        let cur = sell.plan[sell.i];
+        while (cur && sell.t >= cur.duration) {
+            turnOver(cur);
+            sell.t -= cur.duration;
+            cur = sell.plan[++sell.i];
+        }
+        if (!cur) { this._sell = null; return; }
+        const swapAt = SELLS[cur.lying][cur.name]?.swapAt;
+        if (swapAt !== undefined && sell.t / cur.duration >= swapAt) turnOver(cur);
+    }
+
+    // The grounded pose and hand reaches of the sell playing now, or null.
+    _sellPose() {
+        const sell = this._sell;
+        const cur = sell?.plan[sell.i];
+        if (!cur || sell.t < 0) return null;
+        const u = Math.min(1, sell.t / cur.duration);
+        const def = cur.name === 'clutch' ? clutchSell(cur.lying, cur.part, cur.duration) : SELLS[cur.lying][cur.name];
+        const keys = cur.turned ? def.after : def.keys;
+        const lying = cur.turned ? def.to : cur.lying;
+        const { d, reach } = sampleSell(keys, u, cur.amp);
+        const hands = {};
+        for (const [side, w] of Object.entries(reach)) hands[side] = { to: def.hands[side], w };
+        return { g: applyOffsets(Skeleton.GROUNDED_POSES[lying], d), reach: hands };
     }
 
     tickPossum(dt) {
@@ -1218,7 +1282,7 @@ export default class Wrestler {
                 this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'headbutt' });
                 return;
             }
-            other._drain(STAMINA_DRAIN.headbutt);
+            other._hurt(STAMINA_DRAIN.headbutt, 'headbutt');
             other._doSell('sellHead', 150, () => other.startFall());
         });
     }
@@ -1240,7 +1304,7 @@ export default class Wrestler {
                 this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'doubleAxeHandle' });
                 return;
             }
-            other._drain(STAMINA_DRAIN.doubleAxeHandle);
+            other._hurt(STAMINA_DRAIN.doubleAxeHandle, 'doubleAxeHandle');
             this.scene.cameras.main.shake(80, 0.001);
             other._doSell('sellHead', 130, () => other.startStagger());
         });
@@ -1268,8 +1332,17 @@ export default class Wrestler {
         this.stamina = Math.max(0, this.stamina - amount);
     }
 
+    // A confirmed hit from a move that can put him down: the damage, plus the
+    // move's sell tag (registry `sell`), played once he is on the mat
+    // (_tickSell). Only confirmed hits call this, so a move that never
+    // landed is never sold.
+    _hurt(amount, moveId) {
+        this._drain(amount);
+        this._sellTag = moveId;
+    }
+
     _doClothesline(other) {
-        other._drain(STAMINA_DRAIN.clothesline);
+        other._hurt(STAMINA_DRAIN.clothesline, 'clothesline');
 
         // Step up into delivery position — arm extends at this Y
         const stepY = Math.max(RING.farLeft.y + 20, this.y - 18 * this.s);
@@ -1323,7 +1396,7 @@ export default class Wrestler {
             this._playFlight(elbowDropClip, { x: other.x, ease: 'Sine.easeInOut' }, () => {
                 // Damage lands with the elbow, not at the wind-up, so an
                 // interrupted drop costs the defender nothing (as kneeDrop).
-                other._drain(STAMINA_DRAIN.elbowDrop);
+                other._hurt(STAMINA_DRAIN.elbowDrop, 'elbowDrop');
                 other.stateTimer = DOWN_SEC;
                 this.scene.cameras.main.shake(130, 0.002);
                 this.scene.crowd?.impact?.('mat', 0.7);
@@ -1407,7 +1480,7 @@ export default class Wrestler {
                 landed = dist <= hitRange &&
                          (other.state === 'standing' || other.state === 'running' || other.state === 'blocking');
                 if (landed) {
-                    other._drain(STAMINA_DRAIN.dropkick);
+                    other._hurt(STAMINA_DRAIN.dropkick, 'dropkick');
                     other._doSell('sellChest', 140, () => other.startClotheslineFall(facing));
                     this.scene.cameras.main.shake(120, 0.0015);
                     this.scene.crowd?.impact?.('kick', 0.9);
@@ -1468,7 +1541,7 @@ export default class Wrestler {
             onEvent: (event) => {
                 if (event.type !== hitEvent) return;
                 if (this.state !== 'holding' || other.state !== 'holding') return;
-                other._drain(damage);
+                other._hurt(damage, clipId);
                 this.scene.cameras.main.shake(...shake);
                 if (foley) this.scene.crowd?.impact?.(...foley);
             },
@@ -1578,7 +1651,7 @@ export default class Wrestler {
             const hit  = dist <= 130 * this.s &&
                          (other.state === 'standing' || other.state === 'down' || other.state === 'possum' || other.state === 'staggered');
             if (hit) {
-                other._drain(STAMINA_DRAIN.divingElbow);
+                other._hurt(STAMINA_DRAIN.divingElbow, 'divingElbow');
                 if (other.state === 'down') {
                     other.stateTimer = DOWN_SEC;
                 } else {
@@ -1605,12 +1678,12 @@ export default class Wrestler {
             const inRange = dist <= 140 * this.s;
             if (inRange && (other.state === 'down' || other.state === 'possum')) {
                 // Splash on downed opponent — maximum damage, extended down time
-                other._drain(STAMINA_DRAIN.topDive);
+                other._hurt(STAMINA_DRAIN.topDive, 'topDive');
                 other.stateTimer = DOWN_SEC + 2.0;
                 this.scene.cameras.main.shake(260, 0.005);
             } else if (inRange && (other.state === 'standing' || other.state === 'staggered')) {
                 // Flying cross-body on standing opponent — big knockdown
-                other._drain(STAMINA_DRAIN.topDive - 6);
+                other._hurt(STAMINA_DRAIN.topDive - 6, 'topDive');
                 other._doSell('sellChest', 120, () => other.startClotheslineFall(this.facing));
                 this.scene.cameras.main.shake(200, 0.004);
             } else {
@@ -1640,7 +1713,7 @@ export default class Wrestler {
             const hit  = dist <= 130 * this.s &&
                          (other.state === 'standing' || other.state === 'staggered' || other.state === 'blocking');
             if (hit) {
-                other._drain(STAMINA_DRAIN.theszPress);
+                other._hurt(STAMINA_DRAIN.theszPress, 'theszPress');
                 // The press IS the cover — victim goes flat underneath
                 other.x      = this.x;
                 other.y      = this.y;
@@ -1677,7 +1750,7 @@ export default class Wrestler {
     }
 
     _doArmDrag(other) {
-        other._drain(STAMINA_DRAIN.armDrag);
+        other._hurt(STAMINA_DRAIN.armDrag, 'armDrag');
         this._runPoseSequence(MOVE_DEFS.armDrag.poseSeq);
         this.scene.time.delayedCall(90, () => {
             other._doSell('sellChest', 110, () => other.startClotheslineFall(this.facing));
@@ -1782,7 +1855,7 @@ export default class Wrestler {
                     // First crank drain (was delayedCall(300)). Guarded so a hold
                     // already released or cancelled can never still drain.
                     if (this.state === 'holding' && other.state === 'holding') {
-                        other._drain(STAMINA_DRAIN.hammerlock);
+                        other._hurt(STAMINA_DRAIN.hammerlock, 'hammerlock');
                     }
                 } else if (event.type === 'release-contact') {
                     // Release drain (was the delayedCall(1400)'s +4). Reached only
@@ -1824,7 +1897,7 @@ export default class Wrestler {
                 this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'kneeLift' });
                 return;
             }
-            other._drain(STAMINA_DRAIN.kneeLift);
+            other._hurt(STAMINA_DRAIN.kneeLift, 'kneeLift');
             other._doSell('sellChest', 140, () => other.startStagger());
         });
     }
@@ -1832,7 +1905,7 @@ export default class Wrestler {
     // Back body drop — the defensive answer to a returning runner. Directional
     // override of the returning-runner clothesline (tryAction).
     _doBackBodyDrop(other) {
-        other._drain(STAMINA_DRAIN.backBodyDrop);
+        other._hurt(STAMINA_DRAIN.backBodyDrop, 'backBodyDrop');
         this.state  = 'slamming';
         other.state = 'selling'; // halts the run; blocks other's input/movement like any sell
         this._drain(4); // attacker cost
@@ -1886,7 +1959,7 @@ export default class Wrestler {
                 // Contact at 350ms total (120 set + 230 airborne) — the
                 // defender stays in its existing grounded draw state, no
                 // pose change, no down-timer restart.
-                other._drain(STAMINA_DRAIN.kneeDrop);
+                other._hurt(STAMINA_DRAIN.kneeDrop, 'kneeDrop');
                 this._runPoseSequence([
                     { p: 'kneeDropLand', dur: 120, e: 'Linear' },
                     { p: this.idlePose,  dur: 220, e: 'Cubic.easeOut' },
@@ -1987,6 +2060,8 @@ export default class Wrestler {
     // peel himself off the mat — the get-up itself sells the damage.
     _startRiseUp() {
         this.state = 'gettingUp';
+        this._sell = null;
+        this._sellTag = null;
         this.riseT = 0;
         const hurt = Math.max(0, 1 - this.stamina / 100);
         this.scene.tweens.add({
@@ -2005,6 +2080,8 @@ export default class Wrestler {
 
     _startQuickRise() {
         this.state        = 'risingUp';
+        this._sell = null;
+        this._sellTag = null;
         this._fallVariant = this.lying === 'prone' ? 'forward' : 'backward';
         this.fallProgress = 1;
         this.scene.tweens.add({
@@ -2223,6 +2300,11 @@ export default class Wrestler {
                 this._groundHandoff = null;
             } else if (handoff) {
                 this._groundHandoff = null;
+            }
+            const sold = state === 'down' ? this._sellPose() : null;
+            if (sold) {
+                this.skeleton.updateGroundedReach(x, y, s, facing, sold.g, sold.reach);
+                return;
             }
             this.skeleton.updateGrounded(x, y, s, facing, this.lying);
             return;

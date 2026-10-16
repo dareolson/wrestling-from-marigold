@@ -98,6 +98,7 @@ Each of these cost a round of rework.
 | When hip and knee interpolate in opposite directions, the shin freezes, then whips | Check the shin angle per frame for reversals after contact |
 | An upside-down body facing its attacker falls forward when let go | Lay it down prone (`_layDown`), or it lands on the attacker |
 | Prone, a positive arm angle points into the mat | The front faces down; trail limp arms slightly back |
+| Face down, the 3/4 shoulder and hip sockets swap sides of the spine | A roll's turnover moves the near shoulder ~45 px; keep limbs along the body there |
 | Strikes fire at in-fighting range (jab ≤ 85 units; bodies nearly touching) | Pose strikes for the real distance, not a textbook silhouette |
 | Play-scenario distances are screen px; wrestlers render at s≈0.81 | 150 px ≈ 185 rig units |
 | Contact poses are cast-specific: Procreate Lou's legs land ~15 px higher than shipped Lou's | Check both Lous |
@@ -169,6 +170,7 @@ To watch a match in a browser:
 | jab | **Done**: v2, short punch to the jaw |
 | dropkick | **v2 approved in look**, behind `?dropkick=v2`; promotion to live is Derek's decision |
 | hammerlock | **Derek's draft. Do not edit.** Only a separate acting candidate, and only if he asks |
+| selling library | **Built**: roll, writhe, Flair kick, clutch by body part; George theatrical, Lou economical; tagged on every knockdown move. Awaiting Derek's look |
 | bodySlam | **v2 refined**: grips through an overhead press (the powerbomb look kept), one-way turnover, follow-through. Awaiting Derek's look |
 | piledriver | **v2 refined**: grip from the lift to the drop, a suspense beat, the sit-out; Lou crumples forward face down (`_layDown(…, 'prone')`) while George rocks back out from under him. Awaiting Derek's look |
 | hipToss | **v2 refined**: grip round the waist and on the arm, hips load and pop, George goes over the hip and lands flat *behind* Lou (v1 looped him back round to the front). Awaiting Derek's look |
@@ -176,7 +178,29 @@ To watch a match in a browser:
 | elbowDrop, kneeDrop, divingElbow/topDive, theszPress | Flights: the executor owns travel (solo clips). Add the grounded handoff for prone landings (`_layOnBack` covers supine only) |
 | headbutt, kneeLift, clothesline, doubleAxeHandle, armDrag, backBodyDrop, sleeperHold, headlock, irishWhip, pin, taunts | Still pose sequences in `Wrestler.js`. Migrate each to a clip when it's refined |
 
-## Planned: a shared selling library (Derek, 2026-10-15)
+## Shared selling library (Derek, 2026-10-15; built 2026-10-15)
+
+**Built** in `src/animation/sells.js`. How to use it:
+
+- **Tag a move:** a `sell: { part, intensity }` in `src/moves/registry.js`
+  (parts: head, back, chest, knee, arm). Land its damage through
+  `other._hurt(amount, moveId)` in the confirmed-hit handler; `_drain` alone
+  sells nothing. An interrupted move never reaches that handler, so it never
+  sells.
+- **Playback:** `Wrestler._tickSell` plans the sells when he is down
+  (`planSells`, sized to the down timer minus a 0.35 s lead and a 0.3 s
+  tail), `_sellPose` samples them, `Skeleton.updateGroundedReach` draws them
+  and solves clutching hands onto the hurt part with two-bone IK per cast.
+- **Styles:** `sellStyle` per character preset. George is `theatrical`
+  (writhe, Flair kick, roll, clutch, sometimes chained); everyone else is
+  `economical` (a short clutch, or nothing).
+- **Look at them:** `WFM_P1=… WFM_P2=… WFM_QS=lighting=0 SELL_CLIP='{"x":220,"y":325,"width":740,"height":150}' node tools/debug/sell_strip.mjs <dir>`.
+- **Rig lesson:** face down, the torso art's 3/4 shoulder and hip sockets sit
+  on the other side of the spine, so a roll's turnover moves the near
+  shoulder ~45 px; keep the arms along the body at the swap.
+
+The original plan, for reference:
+
 
 After an impact, receivers currently lie still. Build three or four reusable
 **down-state sells** that every character can play:
@@ -226,3 +250,14 @@ compared behind a URL flag, like `?dropkick=v2`. What it would add:
 - The get-up wrist and posture pop (32 px on Lou, 44 px on George).
 - Torso donor art (an arched or folded trunk) waits for Derek's George redraw.
 - `semanticAnchors` don't rotate with bend or tilt.
+
+
+## Next Claude assignment: entanglement and remaining move defects
+
+Derek assigned this work on 2026-10-15. Read the latest Claude handoff, then
+[Codex's detailed brief](AI_HANDOFF_ENTRIES/2026-10-15-codex-entanglement-and-deep-move-review.md).
+It covers reproducible cast/contact and renderer-transition defects, rope-side
+staging, and the figure-four proof for leg entanglement. Build the locked hold
+first, with shared cross-actor limb ordering and declared trapped contacts;
+then animate threading, pressure, and release. Prove that slice before expanding
+to toe holds. Preserve the current selling work and Derek's hammerlock draft.

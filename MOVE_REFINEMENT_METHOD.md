@@ -172,6 +172,52 @@ To watch a match in a browser:
 | elbowDrop, kneeDrop, divingElbow/topDive, theszPress | Flights: the executor owns travel (solo clips). Add the grounded handoff for prone landings (`_layOnBack` covers supine only) |
 | headbutt, kneeLift, clothesline, doubleAxeHandle, armDrag, backBodyDrop, sleeperHold, headlock, irishWhip, pin, taunts | Still pose sequences in `Wrestler.js`. Migrate each to a clip when it's refined |
 
+## Planned: a shared selling library (Derek, 2026-10-15)
+
+After an impact, receivers currently lie still. Build three or four reusable
+**down-state sells** that every character can play:
+
+| Sell | What it shows |
+|---|---|
+| **roll** | Rolls onto his side or stomach, away from the attacker |
+| **writhe** | Back arching, knees drawing up, a slow sway |
+| **clutch** | A hand holding the hurt part, chosen by the move: knee (figure-four, ankle lock), arm or shoulder (arm bar, hammerlock), back (slam, suplex), head (piledriver) |
+| **kick-out sell** | Flair-style kicking on his back (Flair sheet frames 298–306 in `Sprite sheets/reference/`) |
+
+Design notes:
+
+- **Format:** grounded keypose sequences played during `state === 'down'`,
+  like `Skeleton.FALLS` and `GETUP_POSES`. Each sell starts from the grounded
+  lying pose (or from the clip's last frame, through the
+  `groundedPoseFrom` handoff) and **ends in a pose the get-up can start from**.
+  No new pops.
+- **Data:** add a `sell` tag to each move (registry or executor) for the
+  hurt body part and the intensity, so the right clutch plays.
+- **Variety:** pick per hit with some randomness. Weight per character:
+  George theatrical (more writhing and kicking), Lou economical (a short
+  clutch, then still). Keep the sell inside the existing down timer; it never
+  changes how long a wrestler stays down.
+- **Grounded rig limits:** the grounded renderer has no bend or tilt and
+  poses limbs by absolute angles (`_applyGrounded`). A clutch needs a hand
+  near a knee or shoulder, so solve those keyposes with a measured target the
+  way `stage.mjs` does. Check both Lous and George.
+- **Done when:** filmed in a match after several different moves, the sells
+  read and vary, end cleanly into the get-up, and never fire on an
+  interrupted move.
+
+## Optional: hammerlock acting candidate
+
+Only as a **separate copy** of Derek's draft (his stays live and untouched),
+compared behind a URL flag, like `?dropkick=v2`. What it would add:
+
+- Lou cranks: brace, then two pulses lifting the wrist up the back, chest
+  leaning in with `bend`.
+- George resists: shoulder counter-turn, straightening against it, a
+  purposeful free-hand reach, and relief between cranks. Not one repeated
+  flail.
+- The declared wrist grip holds through the hold (it drifts now).
+- A planted step through the turn at 0.3 s (it whips around in ~0.15 s now).
+
 **Known engine gaps:**
 - The get-up wrist and posture pop (32 px on Lou, 44 px on George).
 - Torso donor art (an arched or folded trunk) waits for Derek's George redraw.

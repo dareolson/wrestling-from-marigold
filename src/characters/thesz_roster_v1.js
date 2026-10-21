@@ -10,8 +10,8 @@ export const theszRosterV1 = {
     "lockLimbJoints": true,
     "heightScale": 1.08526,
     "nearShinScale": 1,
-    "farShinScale": 0.93,
-    "farThighScale": 0.95,
+    "farShinScale": 1,
+    "farThighScale": 1,
     "torsoH": 71.18168998298053,
     "upperArmH": 36.044723323180065,
     "forearmH": 43.84980939417186,
@@ -188,7 +188,7 @@ export const theszRosterV1 = {
     "farShin": {
         "key": "thesz_rv1_far_shin",
         "box": {
-            "w": 51.37004403028408,
+            "w": 38.52753302271306,
             "h": 68.26447027553793
         },
         "jointPivotFrac": 0.14154338184685702,

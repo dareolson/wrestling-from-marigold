@@ -118,3 +118,11 @@ tools/rig-tuner/smoke.mjs`, needs the system Chrome like tools/debug).
 `setPose(name, channel, null)` clears a nullable elbow/knee override back to
 "use the derived angle" (same convention as `setCharKnob(key, null)` for
 `farLegTilt`).
+
+
+## October 18 roster comparison
+
+`/tools/rig-tuner/?char=thesz-roster-v1` opens Derek's new Lou PSD comparison.
+Select `thesz-procreate-v1` for current Lou. Invalid `char` values fall back to
+George. Defaults/runtime art remain unchanged. Review notes and known limits:
+`AI_HANDOFF_ENTRIES/2026-10-18-codex-lou-roster-comparison.md`.

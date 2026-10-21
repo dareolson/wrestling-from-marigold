@@ -483,6 +483,12 @@ export default class Skeleton {
         // layers stack the thigh over the calf (Derek's Procreate Lou,
         // 2026-10-08). Off by default, so existing characters are unchanged.
         this._shinUnderThigh = !!textures.shinUnderThigh;
+        // Opt-in: each forearm draws over its own upper arm (George's PSD paints it
+        // that way). Default stays upper arm over forearm.
+        this._forearmOverUpperArm = !!textures.forearmOverUpperArm;
+        // Opt-in: the far leg draws over the torso and trunks (just under the near leg
+        // and the near arm), as George's PSD paints it. Default keeps it behind the torso.
+        this._farLegOverTorso = !!textures.farLegOverTorso;
         // Near-thigh-only render-angle bias, radians, wrestler-local
         // (mirrored by facing at render time — tune while facing right,
         // e.g. "5 o'clock to 5:30" = +15deg clockwise; the tuned value
@@ -707,6 +713,11 @@ export default class Skeleton {
         this.nearShin.setDepth(base + 0.003);
         this.nearBoot?.setDepth(base + 0.003);
         this.pelvisMask?.setDepth(base + 0.0035);
+        if (this._farLegOverTorso) {
+            this.farThigh.setDepth(base + 0.0027);
+            this.farShin.setDepth(base + 0.0027);
+            this.farBoot?.setDepth(base + 0.0027);
+        }
         // Opt-in: each shin just under its own thigh (see _shinUnderThigh).
         if (this._shinUnderThigh) {
             this.farShin.setDepth(this.farThigh.depth - 0.00001);
@@ -715,6 +726,10 @@ export default class Skeleton {
         this.nearHand?.setDepth(base + 0.00399);
         this.nearForearm.setDepth(base + 0.004);
         this.nearUpArm.setDepth(base + 0.00401);
+        if (this._forearmOverUpperArm) {
+            this.farForearm.setDepth(base + 0.00002);
+            this.nearForearm.setDepth(base + 0.00402);
+        }
     }
 
     setVisible(v) {

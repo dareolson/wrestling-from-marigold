@@ -50,12 +50,14 @@ def parse(path):
         nlen=r.u8(); name=r.raw(nlen).decode('latin1')
         pad=(1+nlen)%4
         if pad: r.raw(4-pad)
-        uni=None
+        uni=None; section_type=0
         while r.i+12<=extra_end:
             asig=r.raw(4)
             if asig not in (b'8BIM',b'8B64'): r.i-=4; break
             key=r.raw(4).decode('latin1'); alen=r.u32()
             adata=r.raw(alen + (alen%2))
+            if key=='lsct' and alen>=4:
+                section_type=struct.unpack_from('>I',adata,0)[0]
             if key=='luni':
                 try:
                     ln=struct.unpack_from('>I',adata,0)[0]
@@ -65,6 +67,7 @@ def parse(path):
         layers.append(dict(top=top,left=left,bottom=bottom,right=right,
             w=max(0,right-left),h=max(0,bottom-top),channels=chans,blend=blend,
             opacity=opacity,clipping=clipping,flags=flags,
+            mask_length=mask_len,blending_ranges_length=blr_len,section_type=section_type,
             visible=not bool(flags & 0x02), name=uni or name))
     # channel image data, in layer order
     for L in layers:

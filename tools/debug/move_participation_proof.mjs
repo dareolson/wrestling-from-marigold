@@ -3,7 +3,10 @@ import { launch } from './harness.mjs';
 import { writeFile, mkdir } from 'node:fs/promises';
 const output = process.argv[2] ?? '/tmp/marigold-participation-proof.json';
 const reports = [];
-for (const character of ['george','thesz','thesz-procreate-v1']) {
+// Optional opt-in comparisons, while retaining the established default roster.
+const characters = process.env.WFM_CHARACTERS?.split(',').map(s => s.trim()).filter(Boolean)
+    ?? ['george','thesz','thesz-procreate-v1'];
+for (const character of characters) {
     process.env.WFM_P1 = character; process.env.WFM_P2 = character === 'george' ? 'thesz' : 'george';
     const h = await launch();
     try {

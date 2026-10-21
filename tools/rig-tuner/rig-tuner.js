@@ -12,6 +12,10 @@ import { POSES } from '/src/Wrestler.js';
 import { george } from '/src/characters/george.js';
 import { thesz } from '/src/characters/thesz.js';
 import { theszProcreateV1 } from '/src/characters/thesz_procreate_v1.js';
+import { theszRosterV1 } from '/src/characters/thesz_roster_v1.js';
+import { georgeRosterV1 } from '/src/characters/george_roster_v1.js';
+import { kowalskiRosterV1 } from '/src/characters/kowalski_roster_v1.js';
+import { guidoRosterV1 } from '/src/characters/guido_roster_v1.js';
 import { enumerateCharacterAssets, RENDER_PART_SLOTS } from '/src/rig/partVariants.js';
 
 // ─── Characters ──────────────────────────────────────────────────────────────
@@ -19,7 +23,7 @@ const placeholder = {
     // idlePose matches Arena's brawler preset — the runtime placeholder kit.
     id: 'placeholder', skinCol: 0xffe4c4, trunksCol: 0x3355aa, textures: {}, idlePose: 'brawlerIdle',
 };
-const CHARS = { george, thesz, 'thesz-procreate-v1': theszProcreateV1, placeholder };
+const CHARS = { george, thesz, 'thesz-procreate-v1': theszProcreateV1, 'thesz-roster-v1': theszRosterV1, 'george-roster-v1': georgeRosterV1, 'kowalski-roster-v1': kowalskiRosterV1, 'guido-roster-v1': guidoRosterV1, placeholder };
 // Roster is now just george/thesz (2026-07-26, promoted-george roster
 // change) -- both ids match their src/characters/ filename base exactly, so
 // no filename override table is needed anymore. The former george-ai-pilot-v8
@@ -29,7 +33,7 @@ const CHARS = { george, thesz, 'thesz-procreate-v1': theszProcreateV1, placehold
 // Most ids match their src/characters/ filename base exactly. The opt-in
 // comparison candidates do not: their ids use hyphens where their filenames use
 // underscores, so the export button would name a file that does not exist.
-const FILENAME_OVERRIDES = { 'thesz-procreate-v1': 'thesz_procreate_v1' };
+const FILENAME_OVERRIDES = { 'thesz-procreate-v1': 'thesz_procreate_v1', 'thesz-roster-v1': 'thesz_roster_v1', 'george-roster-v1': 'george_roster_v1', 'kowalski-roster-v1': 'kowalski_roster_v1', 'guido-roster-v1': 'guido_roster_v1' };
 const charFilename = id => FILENAME_OVERRIDES[id] ?? id;
 const BOX_PARTS = ['torso', 'upperArm', 'forearm', 'thigh', 'shin', 'pelvisOverlay', 'nearForearm', 'farForearm', 'nearShin', 'farShin'];
 // torso/pelvisOverlay each get their own slider row below, but on george
@@ -128,12 +132,14 @@ const POSE_ABS_CH = ['lLeg', 'rLeg', 'lArm', 'rArm', 'lean', 'crouch'];
 const POSE_NULLABLE_CH = ['lElbow', 'rElbow', 'lKnee', 'rKnee', 'lForearm', 'rForearm', 'lShin', 'rShin'];
 
 // ─── Live state ──────────────────────────────────────────────────────────────
+const requestedCharacter = new URLSearchParams(location.search).get('char');
+const initialCharacter = Object.hasOwn(CHARS, requestedCharacter) ? requestedCharacter : 'george';
 const state = {
-    charId: 'george',
+    charId: initialCharacter,
     // Preview the pose the game actually rests in for this character (Codex
     // parity review, 2026-07-14) — tuning against generic `idle` hid a knee
     // regression because the game never shows thesz in it.
-    poseName: CHARS.george.idlePose ?? 'idle',
+    poseName: CHARS[initialCharacter].idlePose ?? 'idle',
     facing: 1,
     zoom: 1.5,
     walkPhase: 0,
@@ -282,7 +288,7 @@ function rebuildSkeleton() {
 const GROUND_Y = 470, CX = 480;
 
 function preload() {
-    for (const char of [george, thesz, theszProcreateV1]) {
+    for (const char of [george, thesz, theszProcreateV1, theszRosterV1, georgeRosterV1, kowalskiRosterV1, guidoRosterV1]) {
         for (const asset of enumerateCharacterAssets(char)) this.load.image(asset.key, `/${asset.file}`);
     }
 }

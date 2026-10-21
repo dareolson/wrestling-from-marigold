@@ -7,6 +7,7 @@ export const BASE_PART_FILES = Object.freeze({
     upperArm: 'upper_arm.png',
     forearm: 'forearm.png',
     thigh: 'thigh.png',
+    farThigh: 'far_thigh.png',
     shin: 'shin.png',
     nearShin: 'near_shin.png',
     farShin: 'far_shin.png',

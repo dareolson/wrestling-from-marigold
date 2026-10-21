@@ -234,3 +234,41 @@ Whenever a move looks wrong, add one row naming:
 
 This turns move review into a growing, evidence-based part list instead of another speculative master sheet.
 
+
+
+## Guido and Kowalski trunk-cut decision — Derek, 2026-10-16
+
+When authoring Guido Moretti's wrestling figure, use the moderate vintage
+wrestling-brief cut Derek accepted on Kowalski v5: high waistband, broad hip
+coverage, and curved medium-height leg openings. Avoid both the tiny/high-cut
+briefs in Kowalski v1/v2 and v4's nearly horizontal shorts-like leg openings.
+This transfers the CUT to Guido, not Kowalski's physique, likeness, or red color;
+Guido's trunk color remains undecided by this instruction.
+
+Visual reference:
+`Sprite sheets/AI Pilot/Kowalski/identity-masters/2026-10-16-v1/kowalski-near-profile-candidate-v5-red-mid-cut.png`.
+Kowalski keeps crimson red and the reduced-bulk v2 physique. Derek's latest
+question concerns hip/source-view suitability for walking, not a request to
+change the accepted trunk cut or regenerate the figure.
+
+
+## Starting roster source batch locked — Derek, 2026-10-16
+
+Derek considers the current source batch enough to start production preparation.
+Use current Lou as the quality benchmark. First bring these sources through
+Procreate layering, hidden-anatomy/overlap painting, calibrated rigging and
+real walk/move verification. Expand the roster once that process produces
+results comparable to current Lou; do not treat source approval as animation
+or runtime approval.
+
+| Character | Selected approved source |
+| --- | --- |
+| Killer Kowalski | `Sprite sheets/AI Pilot/Kowalski/identity-masters/2026-10-16-v1/kowalski-near-profile-candidate-v6-pelvis.png` |
+| Gorgeous George | `Sprite sheets/AI Pilot/George/identity-masters/2026-10-16-v1/george-near-profile-candidate-v6-lower-leg-opening.png` |
+| Guido Moretti | `Sprite sheets/AI Pilot/Guido/identity-masters/2026-10-16-v1/guido-near-profile-candidate-v1.png` |
+
+Preserve full-body masters. George and Guido still have surrounding generated
+halos to remove. Keep opaque interiors and edge quality; fill hidden torso/limb
+surfaces on their own layers. Measure each body's anchors rather than copying
+Lou's offsets. Check both facings, walk, contact poses, falls and recovery in
+the real game. Existing runtime art remains until replacements are verified.

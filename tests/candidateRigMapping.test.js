@@ -63,7 +63,7 @@ test('a whole far limb cannot drive a joint the rig bends', () => {
         'only the near forearm and near shin map cleanly');
 });
 
-test('the twelve-part front3q candidate maps eight parts, and names the other four', () => {
+test('the twelve-part front3q candidate maps nine parts, and names the rest', () => {
     const rows = mapCandidate({
         partNames: ['head', 'torso', 'pelvis_overlay', 'pelvis_underlay',
             'near_upper_arm', 'far_upper_arm', 'near_forearm', 'far_forearm',
@@ -85,32 +85,31 @@ test('the twelve-part front3q candidate maps eight parts, and names the other fo
         assert.equal(byPart[part].status, 'shared-only',
             'the renderer cannot keep the two upper arms apart');
     }
-    for (const part of ['near_thigh', 'far_thigh']) {
-        assert.equal(byPart[part].status, 'no-filename',
-            'the renderer supports split thighs; the loader has no filename for them');
-    }
+    // far_thigh.png was added to BASE_PART_FILES (2026-10-18, Derek: use the
+    // back legs). The near thigh still travels as the shared `thigh.png`.
+    assert.equal(byPart.far_thigh.status, 'mapped', 'the far thigh now has its own filename');
+    assert.equal(byPart.near_thigh.status, 'no-filename',
+        'the near leg uses the shared thigh slot; there is no nearThigh filename');
 
-    assert.equal(rows.filter((r) => r.status === 'mapped').length, 8);
+    assert.equal(rows.filter((r) => r.status === 'mapped').length, 9);
     // Every one of the twelve is accounted for by name; an unrecognised part
     // would come back 'unknown' rather than being quietly dropped.
     assert.ok(rows.every((r) => CANDIDATE_SLOTS[r.part]), 'no part is unrecognised');
 });
 
-test('the shipped rig already shares the families the candidate splits', () => {
+test('the shipped rig already shares the upper-arm family the candidate splits', () => {
     // This is why "8 of 12" is not a blocker. The near painting serves the
     // shared slot, which is exactly what shipped Lou does today -- one upper-arm
     // and one thigh painting, placed twice. Nothing regresses; the candidate's
     // extra far-side perspective simply goes unused, as it always has.
     const rows = mapCandidate({
-        partNames: ['near_upper_arm', 'far_upper_arm', 'near_thigh', 'far_thigh'],
+        partNames: ['near_upper_arm', 'far_upper_arm'],
         splitFamilies: splitCapableFamilies(skeleton),
         loadable: new Set(Object.keys(BASE_PART_FILES)),
     });
     const byPart = Object.fromEntries(rows.map((r) => [r.part, r]));
     assert.match(byPart.near_upper_arm.fallback, /parity/);
-    assert.match(byPart.near_thigh.fallback, /parity/);
     assert.match(byPart.far_upper_arm.fallback, /discarded/);
-    assert.match(byPart.far_thigh.fallback, /discarded/);
 });
 
 test('shipped Lou declares no pelvis layers, so the pelvis findings are not on his path', () => {

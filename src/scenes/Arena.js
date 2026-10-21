@@ -10,6 +10,10 @@ import { thesz } from '../characters/thesz.js';
 // CHARACTERS entry and the PRESETS entry removes it completely.
 import { theszFront3qR1 } from '../characters/thesz_front3q_r1.js';
 import { theszProcreateV1 } from '../characters/thesz_procreate_v1.js';
+import { theszRosterV1 } from '../characters/thesz_roster_v1.js';
+import { georgeRosterV1 } from '../characters/george_roster_v1.js';
+import { kowalskiRosterV1 } from '../characters/kowalski_roster_v1.js';
+import { guidoRosterV1 } from '../characters/guido_roster_v1.js';
 import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
@@ -27,7 +31,7 @@ import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamIn
 // theszFront3qR1 is here so Arena.preload() loads its eight part files. It is a
 // review candidate, not a roster member: it is never selected unless asked for
 // by name, and shipped `thesz` is untouched by its presence.
-const CHARACTERS = [george, thesz, theszFront3qR1, theszProcreateV1];
+const CHARACTERS = [george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, georgeRosterV1, kowalskiRosterV1, guidoRosterV1];
 
 // Named crowd extras: each is one chroma-keyed multi-frame reference sheet
 // cut via tools/audience-cutter into src/assets/audience/<slug>/frame1..N.png
@@ -3006,6 +3010,27 @@ export default class Arena extends Phaser.Scene {
                 skin: 0xe8c098, trunks: 0x484848,
                 moveSet: theszFront3qR1.moveSet,
                 textures: theszFront3qR1.textures,
+            },
+            // Roster comparison rigs (2026-10-18), opt-in by name: `?p1=guido-roster-v1` etc.
+            'guido-roster-v1': {
+                name: 'GUIDO', personality: 'george', idlePose: guidoRosterV1.idlePose, begsOff: guidoRosterV1.begsOff, struts: guidoRosterV1.struts, sellStyle: guidoRosterV1.sellStyle,
+                skin: 0xd9a070, trunks: 0x7a1c22,
+                moveSet: guidoRosterV1.moveSet, textures: guidoRosterV1.textures,
+            },
+            'kowalski-roster-v1': {
+                name: 'KOWALSKI', personality: 'thesz', idlePose: kowalskiRosterV1.idlePose,
+                skin: 0xe8c098, trunks: 0x8a1c24,
+                moveSet: kowalskiRosterV1.moveSet, textures: kowalskiRosterV1.textures,
+            },
+            'george-roster-v1': {
+                name: 'GEORGE', personality: 'george', idlePose: georgeRosterV1.idlePose, begsOff: georgeRosterV1.begsOff, struts: georgeRosterV1.struts, sellStyle: georgeRosterV1.sellStyle,
+                skin: 0xa87858, trunks: 0x1a1a1a,
+                moveSet: georgeRosterV1.moveSet, textures: georgeRosterV1.textures,
+            },
+            'thesz-roster-v1': {
+                name: 'THESZ', personality: 'thesz', idlePose: theszRosterV1.idlePose,
+                skin: 0xe8c098, trunks: 0x484848,
+                moveSet: theszRosterV1.moveSet, textures: theszRosterV1.textures,
             },
             // Temporary, reversible A/B for Derek's review of his Procreate
             // master. Same name, pose, kit, skin and trunks as THESZ -- only the

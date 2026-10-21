@@ -33,6 +33,7 @@ export const theszRosterV1 = {
     "farShinOffsetX": 0,
     "farShinOffsetY": 0,
     "shinUnderThigh": true,
+    "forearmOverUpperArm": true,
     "handInForearm": true,
     "rigProfile": {
         "sockets": {

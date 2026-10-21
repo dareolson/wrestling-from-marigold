@@ -64,7 +64,7 @@ headanchor=th(neck);headanchor[0]+=pad
 textures=dict(lockLimbJoints=True,heightScale=1.085260,nearShinScale=1,farShinScale=1,farThighScale=1,
  torsoH=(sum(p[1] for p in [hip,farhip])/2-neck[1])*k,upperArmH=math.dist(shoulder,elbow)*k,forearmH=math.dist(elbow,wrist)*k,thighH=math.dist(hip,knee)*k,shinH=math.dist(knee,ankle)*k,
  neckInTorso=True,head=f'thesz_rv1_head',headScale=head.height*k/85,headAnchorFrac={'u':headanchor[0]/head.width,'v':headanchor[1]/head.height},headOffsetX=0,headOffsetY=0,armOffsetX=0,armOffsetY=0,
- nearShinOffsetX=0,nearShinOffsetY=0,farShinOffsetX=0,farShinOffsetY=0,shinUnderThigh=True,handInForearm=True,rigProfile={'sockets':sockets})
+ nearShinOffsetX=0,nearShinOffsetY=0,farShinOffsetX=0,farShinOffsetY=0,shinUnderThigh=True,forearmOverUpperArm=True,handInForearm=True,rigProfile={'sockets':sockets})
 textures.update(torso=parts['torso'],upperArm=parts['upper_arm'],forearm=parts['forearm'],thigh=parts['thigh'],shin=parts['shin'],farThigh=parts['far_thigh'],farShin=parts['far_shin'])
 report={'height_scale_note':'Measured rig-tuner ink heights at zoom 1.4: current Procreate Lou 347.7911, candidate at scale 1 318.3254; uniform ratio 1.092563; re-matched to 1.085260 after the back leg was added (350.14 vs 347.79 at 1.092563). No per-part proportion adjustment.', 'source':'LouNew.psd','units_per_source_pixel':k,'anchorsCanvasPx':anchors,'measurement_methods':{'paired_overlap':'alpha >=128 intersection centroid, recomputed from this PSD','shoulders':'manual deltoid/socket landmark, not long overlap centroid','wrist_ankle_sole':'manual anatomical landmarks; tuner review pending'},'parts':records,'textures':textures}
 (EVIDENCE/'measurements.json').write_text(json.dumps(report,indent=2)+'\n')

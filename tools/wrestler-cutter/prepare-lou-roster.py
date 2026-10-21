@@ -61,7 +61,7 @@ head=Image.open(OUT/'head.png');neww=math.ceil(head.height*.8);pad=max(0,(neww-h
 if pad:
  expanded=Image.new('RGBA',(neww,head.height));expanded.paste(head,(pad,0));expanded.save(OUT/'head.png');head=expanded
 headanchor=th(neck);headanchor[0]+=pad
-textures=dict(lockLimbJoints=True,heightScale=1.085260,nearShinScale=1,farShinScale=1,farThighScale=1,
+textures=dict(lockLimbJoints=True,heightScale=1.085260,nearShinScale=1,farShinScale=0.93,farThighScale=0.95,
  torsoH=(sum(p[1] for p in [hip,farhip])/2-neck[1])*k,upperArmH=math.dist(shoulder,elbow)*k,forearmH=math.dist(elbow,wrist)*k,thighH=math.dist(hip,knee)*k,shinH=math.dist(knee,ankle)*k,
  neckInTorso=True,head=f'thesz_rv1_head',headScale=head.height*k/85,headAnchorFrac={'u':headanchor[0]/head.width,'v':headanchor[1]/head.height},headOffsetX=0,headOffsetY=0,armOffsetX=0,armOffsetY=0,
  nearShinOffsetX=0,nearShinOffsetY=0,farShinOffsetX=0,farShinOffsetY=0,shinUnderThigh=True,forearmOverUpperArm=True,handInForearm=True,rigProfile={'sockets':sockets})

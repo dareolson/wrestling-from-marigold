@@ -34,6 +34,7 @@ export const guidoRosterV1 = {
     "farShinOffsetX": 0,
     "farShinOffsetY": 0,
     "shinUnderThigh": true,
+    "headOverTorso": true,
     "handInForearm": true,
     "rigProfile": {
         "sockets": {

@@ -489,6 +489,10 @@ export default class Skeleton {
         // Opt-in: the far leg draws over the torso and trunks (just under the near leg
         // and the near arm), as George's PSD paints it. Default keeps it behind the torso.
         this._farLegOverTorso = !!textures.farLegOverTorso;
+        // Opt-in: the head draws over the torso. For art whose head PNG carries its own
+        // neck and whose torso paints a shoulder hump (Guido), so the hump no longer
+        // covers the neck. Default keeps the head tucked behind the torso collar.
+        this._headOverTorso = !!textures.headOverTorso;
         // Near-thigh-only render-angle bias, radians, wrestler-local
         // (mirrored by facing at render time — tune while facing right,
         // e.g. "5 o'clock to 5:30" = +15deg clockwise; the tuned value
@@ -703,6 +707,7 @@ export default class Skeleton {
         this.farBoot?.setDepth(base + 0.0001);
         this.head.setDepth(base + 0.0005);
         this.torso.setDepth(base + 0.001);
+        if (this._headOverTorso) this.head.setDepth(base + 0.00105);
         this.trunks?.setDepth(base + 0.002);
         // pelvisOverlay (george-ai-pilot only) sits below the near leg now —
         // Derek: "his near leg needs to stack on top of his trunks" — so it

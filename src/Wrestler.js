@@ -12,6 +12,7 @@ import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells } from './animation/sells.js';
+import { staggerFor } from './animation/staggers.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
     ARTICULATED_CHANNELS,
@@ -2200,56 +2201,35 @@ export default class Wrestler {
         });
     }
 
+    // A stagger is one of STAGGER_TYPES (src/animation/staggers.js), chosen by how
+    // hurt he is: rock, stumble, reel, buckle, out on his feet. Each is its own
+    // movement, with real backward steps and a torso that reels (`bend`).
     startStagger() {
         this.state = 'staggered';
-        const hp = this.stamina;
+        const type = staggerFor(this.stamina);
+        this.stateTimer = type.seconds;
+        this._staggerType = type.id;
+        this._runStaggerSteps(type.steps);
+    }
 
-        if (hp > 60) {
-            // Fresh — one quick stumble, recovers fast
-            this.stateTimer = 0.85;
-            this._runPoseSequence([
-                { p: 'stagger',  dur: 140, e: 'Cubic.easeOut' },
-                { p: 'idle',     dur: 220, e: 'Linear'        },
-            ]);
-        } else if (hp > 35) {
-            // Hurting — three-sway wobble; window long enough for an alert
-            // opponent to close in and grab them (stagger = slam-vulnerable)
-            this.stateTimer = 1.35;
-            this._runPoseSequence([
-                { p: 'staggerMed',  dur: 150, e: 'Cubic.easeOut'  },
-                { p: 'staggerBack', dur: 130, e: 'Sine.easeInOut'  },
-                { p: 'staggerMed',  dur: 140, e: 'Sine.easeInOut'  },
-                { p: 'staggerBack', dur: 130, e: 'Sine.easeInOut'  },
-                { p: 'idle',        dur: 300, e: 'Linear'          },
-            ]);
-        } else if (hp > 15) {
-            // Badly hurt — near-buckle swings, stays rubbery the whole window
-            this.stateTimer = 1.9;
-            this._runPoseSequence([
-                { p: 'staggerHeavy', dur: 160, e: 'Cubic.easeOut' },
-                { p: 'staggerBack',  dur: 140, e: 'Sine.easeInOut' },
-                { p: 'staggerHeavy', dur: 150, e: 'Sine.easeInOut' },
-                { p: 'staggerBack',  dur: 140, e: 'Sine.easeInOut' },
-                { p: 'staggerMed',   dur: 150, e: 'Sine.easeInOut' },
-                { p: 'staggerBack',  dur: 130, e: 'Sine.easeInOut' },
-                { p: 'idle',         dur: 330, e: 'Linear'         },
-            ]);
-        } else {
-            // Critical — rubber legs, knees buckling, out on his feet; the
-            // wobble loops until the timer ends so he never freezes upright
-            this.stateTimer = 2.6;
-            this._runPoseSequence([
-                { p: 'staggerCollapse', dur: 180, e: 'Cubic.easeOut' },
-                { p: 'staggerBack',     dur: 155, e: 'Sine.easeInOut' },
-                { p: 'staggerCollapse', dur: 165, e: 'Sine.easeInOut' },
-                { p: 'staggerBack',     dur: 150, e: 'Sine.easeInOut' },
-                { p: 'staggerHeavy',    dur: 170, e: 'Sine.easeInOut' },
-                { p: 'staggerBack',     dur: 150, e: 'Sine.easeInOut' },
-                { p: 'staggerCollapse', dur: 175, e: 'Sine.easeInOut' },
-                { p: 'staggerMed',      dur: 150, e: 'Sine.easeInOut' },
-                { p: 'idle',            dur: 380, e: 'Linear'         },
-            ]);
-        }
+    // Plays pose steps and, on each, the backward travel that goes with it. Travel
+    // stops the moment he is no longer staggered (hit again, grabbed, dropped).
+    _runStaggerSteps(steps) {
+        const [head, ...rest] = steps;
+        if (!head) return;
+        this.tweenPose(head.pose, head.dur, head.e, () => {
+            if (this.state === 'staggered') this._runStaggerSteps(rest);
+        });
+        const total = steps.reduce((ms, st) => ms + st.dur, 0);
+        this._choreoUntil = this.scene.time.now + total;
+        if (!head.dx) return;
+        const b = ringBoundsAtY(this.y);
+        const m = 40 * this.s;
+        const x = Phaser.Math.Clamp(this.x - this.facing * head.dx * this.s, b.left + m, b.right - m);
+        this.scene.tweens.add({
+            targets: this, x, duration: head.dur, ease: 'Sine.easeOut',
+            onUpdate: (tw) => { if (this.state !== 'staggered') tw.stop(); },
+        });
     }
 
     // `fall` is a direction ('backward' / 'forward', a random variant of it,

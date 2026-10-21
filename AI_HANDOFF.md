@@ -29,6 +29,90 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**George figure-four: existing-art pass first — 2026-10-18 (Derek / Codex):**
+Before commissioning limb replacements, solve one readable locked tableau,
+name the straight/crossed/trapping/bracing legs, prove trapped contacts and
+cross-actor over/under order, then animate purchase, threading, pressure and
+release. Preserve valid knee direction and support; rank donor art only from
+remaining demonstrated failures. [Concrete strategy and preserved baseline](AI_HANDOFF_ENTRIES/2026-10-18-codex-figure-four-existing-art-strategy.md).
+Documentation only; no move changes or replacement-art approval.
+
+**Joint direction and limit audit — 2026-10-18 (Derek / Codex):**
+Derek wants protection from backward elbows/knees. Fresh rendered sweep (88,032
+measurements) finds grounded sells bypass limits, near-total knee/elbow folds,
+a knee-sign mismatch between explicit channels and crouch, and a globally broad
+elbow range introduced for hammerlock. [Findings and staged limiter plan](AI_HANDOFF_ENTRIES/2026-10-18-codex-joint-direction-and-limit-audit.md).
+Do not tighten global constants blindly; constrain IK and grounded paths, reconcile
+knee semantics, preserve Derek's hammerlock. Audit/diagnostic only; no runtime
+limits changed. Concrete stagger/sustained-selling solutions are now in the
+[resume strategy](AI_HANDOFF_ENTRIES/2026-10-18-codex-kinesiology-selling-resume-audit.md).
+
+**Next move-refinement session — 2026-10-18 (Derek / Codex):**
+After roster review, continue kinesiology and sustained selling: visible stagger,
+dazed recovery, rolls/clutches and eventually hurt/dazed head swaps. The shared
+selling library and 15 registered clips already exist. Current-source audit finds
+stagger/wooze torso intent still uses inert `lean`, most economical mat sells are
+one short optional clutch, and expression/recovery continuity needs a dedicated
+pass. Start with one complete impact-to-recovery pilot; preserve the figure-four
+entanglement assignment. Ranked limb/torso donor opportunities, completed work,
+implementation limits and acceptance:
+[resume audit and strategy](AI_HANDOFF_ENTRIES/2026-10-18-codex-kinesiology-selling-resume-audit.md).
+This is a documentation audit, not new visual sign-off or animation changes.
+
+**Guido match-result newspaper direction — 2026-10-18 (Derek / Codex):**
+Derek supplied a vintage sports-page clipping and wants future versions reflecting
+Guido's wins and losses. Preserve its bold headline, portrait halftones and narrow
+article columns. [Reference and production notes](research/guido-post-match-sports-page-reference.md).
+The original is a chat attachment; these notes preserve the reference description.
+No pages generated or game integration added yet.
+
+**All four roster comparison rigs built — 2026-10-18 (Claude):**
+`thesz-roster-v1`, `george-roster-v1`, `kowalski-roster-v1`, `guido-roster-v1`,
+opt-in, both legs used (Derek: back legs are his edits; calves stack under
+thighs). 703/703, zero measured joint gaps, real AI matches clean; certifier
+UNVERIFIED as before. George and Kowalski also have knee-lift, forearm-over-arm,
+far-leg-over-torso and moved back shoulders; Guido and Lou still need matching. Placeholder height scales for Kowalski/Guido, Guido has
+only one (taped) forearm, landmarks are manual. Nothing committed. Details and
+open items: [roster four rigs](AI_HANDOFF_ENTRIES/2026-10-18-claude-roster-four-comparison-rigs.md).
+
+**LouNew comparison rig ready — 2026-10-18 (Codex):**
+Derek authorized the first roster rig. Opt-in `thesz-roster-v1` is available in
+Arena and the rig tuner, with measured new-source anchors and preserved masters.
+698 tests/build/rig contracts pass; full walk samples have no measured joint gaps;
+a real AI match has 52 events, both facings, no missing/non-finite parts or page
+errors. Certification remains UNVERIFIED; get-up/handoff limits are documented.
+[Open the review brief](AI_HANDOFF_ENTRIES/2026-10-18-codex-lou-roster-comparison.md).
+Next is Derek's tuner/assembly review, then further candidates. Defaults unchanged.
+
+**Current roster-art preparation — 2026-10-18 (Derek / Codex):**
+Derek delivered completed Procreate PSDs for Lou, George, Guido and Kowalski.
+All 33 art layers are extracted full-canvas with backgrounds excluded, raw and
+separate cleaned copies, reversible measurement crops, inventories and hashes.
+**Claude starts here:** [roster preparation brief](AI_HANDOFF_ENTRIES/2026-10-18-codex-roster-preparation-for-claude.md).
+Next: independently measure/normalize parts and build opt-in comparison rigs,
+using current Lou as the benchmark. Sources unchanged; no runtime replacements.
+Older move/entanglement assignments below remain a separate backlog.
+
+**Next Claude assignment — 2026-10-15 (Derek, recorded by Codex):**
+Reconcile the latest move/selling handoff, address reproduced contact/recovery/
+rope-staging defects, and prove leg entanglement with one figure-four: shared
+cross-actor limb layering, explicit trapped contacts, then threading and release.
+This is the foundation for planned toe holds. Full brief and preserved evidence:
+[deep review and entanglement assignment](AI_HANDOFF_ENTRIES/2026-10-15-codex-entanglement-and-deep-move-review.md).
+Baseline findings predate the unfinished selling pass; reproduce before editing.
+
+**Impact pass landed — 2026-10-15 (Claude, after Codex's impact audit):**
+`bend` torso channel (lean never rendered), synthesized contact foley,
+clip → grounded handoff blend, suplex v3, jab v2 (fist on the face at the
+game's in-fighting range), and a dropkick v2 candidate behind `?dropkick=v2`.
+All committed on both branches, unpushed; 665/665, joint proof clean, all 19
+play scenarios pass. Waiting on Derek: a full-speed review, foley audition
+(WAVs in research/animation/impact-foley-2026-10-15/), dropkick v2 promotion,
+and whether to give his hammerlock an acting candidate. Details:
+[the impact pass](AI_HANDOFF_ENTRIES/2026-10-15-claude-impact-pass.md),
+[Codex's impact audit](AI_HANDOFF_ENTRIES/2026-10-15-codex-impact-refinement-approach.md),
+[the suplex method](AI_HANDOFF_ENTRIES/2026-10-15-claude-suplex-v2-and-method.md).
+
 **Recovery direction, 2026-09-27.** Full-sheet Lou regeneration is no longer
 the default production loop. Recent front3q candidates remain donor/provenance
 material; none replaces shipped Lou. Derek's Procreate cleanup and normalization
@@ -490,6 +574,398 @@ still listed in `SHA256SUMS.txt` at its true hash. Whoever picks this up needs t
 establish what it was meant to be before changing anything.
 
 ## Handoff Log
+
+### 2026-10-18 — Codex: improve George's figure-four before replacement art
+
+Derek requested an actionable existing-art strategy after the visual review.
+[Step-by-step handoff](AI_HANDOFF_ENTRIES/2026-10-18-codex-figure-four-existing-art-strategy.md)
+starts with a locked still, then contacts/layering, purchase and threading,
+pressure acting, release and knee-selling aftermath. Extends the assigned
+entanglement proof; preserves original George/Procreate Lou baseline poses and
+samples in `research/animation/figure-four-review-2026-10-18/`. Replacement
+parts remain evidence-driven follow-up. Documentation/evidence only; no runtime
+changes or new runtime test claims.
+
+
+### 2026-10-18 — Codex: joint direction audit and concrete selling solutions
+
+Added the agreed stagger and mat-selling solutions to the resume strategy.
+Audited rendered elbows/knees across 15 clips, legacy poses, get-ups and grounded
+sells on three supported editor rigs, both facings. Preserved 88,032 measurements
+and a rerunnable diagnostic. [Audit, scope and limiter strategy](AI_HANDOFF_ENTRIES/2026-10-18-codex-joint-direction-and-limit-audit.md).
+Confirmed missing limiter coverage, deep clutch folds and inconsistent knee
+conventions; recommends shared constraints, stable constrained IK and narrow
+projection exceptions. No production animation or hammerlock changes. Existing
+focused tests: **99/99 pass**; passing clamp tests do not certify anatomy.
+
+
+### 2026-10-18 — Codex: kinesiology and selling resume audit
+
+Derek asked for an audit and a practical continuation strategy, especially
+staggering, looking out of it, rolling in pain, future pained heads, and useful
+limb/torso replacements. [Full audit](AI_HANDOFF_ENTRIES/2026-10-18-codex-kinesiology-selling-resume-audit.md)
+records what exists, reconciles later contact/staging repairs with older findings,
+and defines the next impact-through-recovery pilot plus a ranked donor-art plan.
+Preserves the current roster candidates, Derek's hammerlock and the assigned
+figure-four entanglement proof. Documentation only; source and historical evidence
+reviewed, no new live visual approval. Validation: Node 22, `node --test
+tests/sells.test.js tests/partVariants.test.js tests/referenceThrows.test.js
+tests/moveRegistry.test.js` — **119/119 pass**. No runtime changes; no new
+browser captures or full-build claim.
+
+
+### 2026-10-18 — Codex — first roster comparison rig: LouNew
+
+[Full review handoff](AI_HANDOFF_ENTRIES/2026-10-18-codex-lou-roster-comparison.md).
+Candidate `thesz-roster-v1` is registered only as an opt-in in Arena/rig tuner.
+New-source measurements, proportion-preserving geometry, derived textures,
+preparation recipe and browser evidence are saved. Validation includes both-facing
+24-phase walks and a real match; limitations and non-passing proof statuses are
+explicitly recorded. No current Lou/George assets replaced or source art repainted.
+
+### 2026-10-18 — Codex — Claude-ready roster brief and measurement crops
+
+Derek requested any additional preparation and a complete handoff. The
+[focused Claude brief](AI_HANDOFF_ENTRIES/2026-10-18-codex-roster-preparation-for-claude.md)
+now records exact source/layer mappings, completed checks, the existing Lou
+precedent, character-specific hazards and a suggested integration sequence.
+Added clean measurement crops with reversible full-canvas origins for all 33
+parts; no resize, rotation, landmark guesses or anatomy edits. The brief is
+linked at the top of the Status summary so the current art task is discoverable.
+No runtime changes or delegation to Claude performed.
+
+### 2026-10-18 — Codex — roster PSD exports follow Claude's Lou workflow
+
+Derek authorized following Claude's established conventions without involving
+Claude. All four masters are preserved byte-for-byte; 33 art layers exported as
+aligned full-canvas RGBA. Background/hidden references are separate. Raw exports
+and separate alpha-floor-15/largest-component derivatives, transparent composites,
+alpha accounting and hashes are in each character's `extracted-v1/` folder.
+[Extraction report and reproduction command](Sprite%20sheets/RosterNew/2026-10-18/EXTRACTION.md).
+The existing PSD reader exposes mask/group/blend metadata; the new exporter
+rejects unsupported cases and verifies pixel round-trips. All supplied files pass.
+No runtime character/art changes. Next is measured normalization and comparison
+rigging; retain Guido's single wrist tape and Lou's whole-far-arm caveat.
+
+### 2026-10-18 — Codex — four completed Procreate PSDs received
+
+Derek delivered GeorgeNew, GuidoNew, Killer_Kowalski and LouNew in
+`/Users/home/Downloads/RosterNew`. Byte-verified archival copies, layer inventories,
+and visual contact sheets are in
+[the roster intake](Sprite%20sheets/RosterNew/2026-10-18/README.md).
+All four decode. Unnamed layers mapped by numeric ID; sources unchanged.
+Guido/Kowalski visible white backgrounds must be omitted from derived exports;
+Guido's isolated forearm is taped, so preserve the one-wrist canon when mapping
+arms. Lou retains a whole far-arm painting alongside the separated working arm.
+Art normalization, comparison rigging and animation checks remain pending.
+No runtime replacements or anatomy edits made during intake.
+
+### 2026-10-16 — Codex — Derek locked the starting roster source batch
+
+Derek approved Kowalski v6, George v6 and Guido's 2026-10-16 v1 as source
+models. He considers this enough to start: prepare layers/hidden overlaps in
+Procreate, then aim for current Lou's articulation and gameplay quality before
+expanding the roster. Selected filenames and remaining work are recorded in
+[Character Part Inventory](CHARACTER_PART_INVENTORY.md#starting-roster-source-batch-locked--derek-2026-10-16)
+and each character's dated identity-master README. George/Guido halo cleanup
+remains pending. Source identity/design approval does not mean rigging or
+runtime certification. No runtime character assets replaced in this art session.
+
+### 2026-10-15 — Codex — next Claude: entanglement and confirmed move defects
+
+Derek assigned the next Claude to tackle the deeper review and leg-entanglement
+approach. Read the [full assignment](AI_HANDOFF_ENTRIES/2026-10-15-codex-entanglement-and-deep-move-review.md)
+after the latest Claude handoff. It records exact piledriver contact failure on
+Procreate Lou, original Lou's grounded shoulder jump, and rope-side tableau
+compression on committed baseline `1311f8b`, with durable selected evidence.
+It specifies a figure-four proof with cross-actor part ordering, trapped contact
+surfaces, cast/facing checks, entry/release, and narrowly scoped art additions.
+These findings are separate from Claude's in-progress selling work. No runtime
+source was changed for this assignment.
+
+### 2026-10-15 — Claude — impact pass: torso acting, foley, handoff, suplex v3, jab v2
+
+Executed Codex's "concrete next slice":
+- `bend` channel: torso acting that actually renders.
+- Contact foley, fired once from confirmed hits.
+- A smooth thrown-body handoff into the grounded pose.
+- Suplex v3 with acting, phase-continuous timing and a landing compression.
+- Jab v2: fist on the face at in-fighting range.
+- Dropkick v2 as a flag-gated comparison.
+
+Commits (story / Lou): `8ddda31`/`3b2d702`, `2f187fa`/`5e17aec`,
+`55d1c43`/`7bc9fdd`, unpushed. Verified in real matches.
+
+Full record, lessons and open items:
+[AI_HANDOFF_ENTRIES/2026-10-15-claude-impact-pass.md](AI_HANDOFF_ENTRIES/2026-10-15-claude-impact-pass.md).
+
+### 2026-10-15 — Codex — refinement approach audit: impact and personality
+
+Derek wants the existing moves to have impact and look cool. Reviewed current
+suplex v2/staging, sampled its full motion, captured actual gameplay and ran a
+render-channel probe in an isolated snapshot. The sparse body-first method is
+worth retaining. New finding: changing lean from 0 to .6 at the suplex lift
+changes none of the 10 visible part transforms; whole-body tilt does change
+them. Much authored load/back-lean acting is therefore invisible. Also found
+no dedicated strike/body-on-mat sound path beyond crowd/bell and camera shake.
+Next priorities and concrete pilot brief:
+[2026-10-15-codex-impact-refinement-approach.md](AI_HANDOFF_ENTRIES/2026-10-15-codex-impact-refinement-approach.md).
+Includes performance intentions for each pilot, velocity/compression/selling,
+targeted art, semantic contact grading and full entry-to-aftermath review.
+The v2 far-hand score uses a shorter interval/new grip strategy and should not
+be represented as an unchanged-target comparison against the old full hold.
+Evidence: `research/animation/impact-approach-2026-10-15/`. No runtime, move,
+art or tool source was changed. Normal-speed `play.mjs suplex` passes; this
+execution result is not blanket visual approval.
+
+### 2026-10-15 — Claude — suplex v2 and the move-refinement method
+
+Derek's plan: one more round of revisions on the pilot moves, then roll the
+lessons out to the other built moves.
+
+- Suplex rebuilt (`8b67048` story / `ef104ec` Lou, unpushed) by staging the bodies
+  first and solving the grips second, at sparse keys. This is Codex's
+  recommended approach.
+- Grip gaps fell from 53%/38% of body height to 5.5%/7.9%. George now lands
+  head to head beyond Lou.
+- Both role orders verified in filmed matches.
+
+Full method, lessons, open suplex issues, the round-two brief
+(jab ready, dropkick blocked on Derek's distance decision, hammerlock is
+Derek's draft) and the rollout order:
+[AI_HANDOFF_ENTRIES/2026-10-15-claude-suplex-v2-and-method.md](AI_HANDOFF_ENTRIES/2026-10-15-claude-suplex-v2-and-method.md).
+
+### 2026-10-15 — Claude — joint/participation repair merged (uncommitted)
+
+Reviewed and applied Codex's three patches from
+`research/animation/joint-repair/` onto `4974be8` (story branch, working
+tree). All three applied cleanly with no reconciliation: Claude's move
+refinement candidates are still drafts under a temp dir (`tools/move-critic/`
+pilot, see MOVE_REFINEMENT_AUDIT.md), not game source, so nothing overlapped.
+
+Reviewed by hunk. Ownership patch: `MoveRuntime.cancel` already takes the meta
+argument; `ARTICULATION_CHANNEL_PAIRS` and `_choreoOwnsPose` exist. The
+`poseLegActive` change cannot alter shipped idles: `theszIdle` and `idle` already
+exceed the 0.05 leg-angle threshold.
+
+Results against the live dev server (:5173, Node 22):
+- `npm test` 658/658, `npm run build` clean.
+- `move_participation_proof.mjs`: george, thesz, thesz-procreate-v1 all
+  maxGap 0, maxUncoveredCore 0, anchor error < 4e-13 px. Exit 0.
+- `rig/certify.mjs george thesz`: exit 0, legacy findings unchanged; Lou's
+  get-up→upright handoff 32.17 px (budget 45.30). **Still a visible pop.**
+- `play.mjs hammerlock` and `hammerlockReverse`: PASS.
+
+Visual comparison, same editor frames before and after (rest, hammerlock hold,
+suplex lift/turnover, dropkick):
+- No new detachment. Codex's live suplex capture shows a real fix: a frozen
+  walking cycle had splayed Lou's legs mid-turnover.
+- George's knee now reads as connected (the calf no longer hangs below the
+  thigh). Trade-off: his lower legs render ~10 px shorter at rest. The flat top
+  edge of the calf is still visible at the knee; that is the known undersized
+  joint art, not addressed here. **Awaiting Derek's eye on George's leg length.**
+
+Not done: normal-speed review of every move in both facings beyond the proofs
+above; the get-up wrist/posture pop (separate follow-up, not budget-inflated).
+
+### 2026-10-15 — Codex — audit of Claude's integrated repair and cleanup prototype
+
+Derek requested a review of which moves changed, whether they improved, and
+another refinement approach. Shared engine/character files now match the
+tested joint repair; rerun snapshot tests pass 658/658 and the render proof
+passes. Jab's committed .083s contact retiming and elbow-drop landing damage
+are retained improvements. No additional four-pilot clip/draft changes were
+present at the reviewed snapshot. Tested Claude's cleanup tooling on isolated
+copies: jab improves a target-distance proxy, but hammerlock loses grip and
+penetrates the floor; suplex loses waist contact and gains discontinuities.
+Do not mistake local endpoint improvements for full-move approval. Detailed
+findings, measured comparisons, export-ownership concern, and the recommended
+paired-pose/hybrid-art approach:
+[2026-10-15-codex-claude-move-refinement-review.md](AI_HANDOFF_ENTRIES/2026-10-15-codex-claude-move-refinement-review.md).
+Audit evidence lives in `research/animation/claude-review-2026-10-15/`. No
+runtime, authored move, art or tool source changed during this review.
+
+### 2026-10-15 — Codex — Claude: integrate the tested joint repair
+
+Derek explicitly requested this handoff. Claude should integrate the three
+patches in `research/animation/joint-repair/` with his current four-move
+refinements, preserving authored clip/draft changes and reconciling overlapping
+Wrestler.js edits by hunk. Detailed sequence, commands, acceptance and remaining
+get-up limitation:
+[2026-10-15-codex-joint-repair-tested.md](AI_HANDOFF_ENTRIES/2026-10-15-codex-joint-repair-tested.md).
+The isolated implementation passes 658 tests, build, targeted render proof,
+both keyboard hammerlock role orders, and the existing certification runner
+with legacy findings retained. These results must be rerun after integration;
+the shared runtime has not been patched by Codex. Do not replace whole files
+from `/tmp`, increase failure budgets, or describe remaining posture pops as
+fixed attachment. No commit or push performed for this handoff update.
+
+### 2026-10-15 — Codex — elbow/knee attachment audit and repair plan
+
+Derek reports severe move limb defects on George and occasional ones on Lou.
+See [JOINT_ATTACHMENT_REPAIR_PLAN.md](JOINT_ATTACHMENT_REPAIR_PLAN.md). Audited
+legacy post-solve forearm/shin offsets, painted-versus-geometric knee routing,
+grounded placement, local articulation ownership and existing two-anchor path.
+Ran the named-pose alpha audit (failed original Lou overhead elbows), then
+sampled all 15 registered clips at keys/midpoints/20Hz in both facings for
+George, original Lou and Procreate Lou: 3,708 sample times. Original Lou had
+31 role/joint/clip/facing combinations above the old 2.5px gap threshold, up
+to 6px. George and Procreate Lou were within that metric's threshold; this
+does NOT clear the reported defects, since closest ink overlap cannot prove
+pivot alignment, sufficient joint coverage, orientation or runtime handoffs.
+Method, limitations and raw data: `research/animation/joint-attachment-2026-10-15.json`.
+No runtime, character art or move posing changed. Repair is proposed ahead of
+the earlier expression/torso refinement work; exact George gameplay repro and
+stronger acceptance checks remain the first implementation gate.
+
+### 2026-10-15 — Codex — existing move refinement audit
+
+Requested audit/opinion/architecture/action plan, restricted to existing moves:
+see [MOVE_REFINEMENT_AUDIT.md](MOVE_REFINEMENT_AUDIT.md). Reviewed registered
+clips and execution/rendering paths, plus sampled editor visuals for seven
+existing moves. No gameplay or art changes. Proposal prioritizes contact,
+support, timing and defender reactions, then targeted expressions/limb/torso
+donors. Notes jab's wind-up damage marker, elbow drop's early defender drain,
+torso-variant socket limitations, and the distinction between the registered
+hammerlock WIP and retired fixture proofs. Knee drop already drains defender
+at landing. Full-speed gameplay comparison and implementation remain planned;
+no tests were required for this documentation-only audit.
+
+### 2026-10-15 — Codex: dark elevated aisle shot v2
+
+Generated Guido/trainer aisle approach using approved identities and borrowed
+robe. Derek found v1 fans oddly oriented and wanted a darker, downward camera.
+v2 uses elevated framing and crowd mostly from behind with some inward head
+turns. Candidate: `src/assets/story/guido-trainer-aisle-v2.jpg`, full prompt in
+sibling manifest, masters under ignored Story/marigold-aisle/source-masters.
+Standalone preview `/tools/story-preview/?scene=aisle` advances into corner
+advice with Enter/click. No dialogue in aisle, no audio or walking animation.
+Crowd/seating and composition still await review. Ceremony runtime not wired.
+
+
+### 2026-10-14 — Codex: Guido/trainer first-match corner candidate
+
+Generated grayscale corner two-shot using approved Guido/trainer references.
+Guido wears the trainer's old plain dark robe with a small tear at lower hem,
+no lettering; trainer adjusts lapel and gives established crowd/offense advice.
+Corrected tape to right wrist (screen left). Art and full prompt manifest:
+`src/assets/story/guido-trainer-corner-v1.*`; PNG master preserved in ignored
+`Sprite sheets/Story/marigold-corner/source-masters/`. Visual approval pending.
+Standalone preview: `/tools/story-preview/?scene=corner`, with two advice cards
+and modest camera push; reduced motion supported. Advice panel at upper left
+keeps both faces and robe tear visible. No mouth frames, voice, or match ceremony
+runtime added. Named MORETTI robe remains the first booked-loss reward.
+
+
+### 2026-10-14 — Codex: announcer v2 drawn-style revision
+
+Derek found announcer v1 too photorealistic. Generated sibling v2 with heavier
+ink contours, flatter grayscale facial/suit shading and reduced texture using
+approved Guido close-up as style authority only. Same announcer likeness,
+framing and clear mouth preserved; approval pending. Runtime JPEG and full
+prompt manifest: `src/assets/story/ring-announcer-medium-v2.*`. PNG master
+preserved alongside v1 under ignored Story/marigold-announcer/source-masters.
+
+
+### 2026-10-14 — Codex: reusable ring-announcer close-up candidate
+
+Generated a grayscale illustrated announcer medium shot from Derek's attached
+photo: dark formal suit, bow tie, handheld microphone below the unobstructed
+mouth, faint crowd and ropes behind. Saved runtime JPEG and prompt manifest as
+`src/assets/story/ring-announcer-medium-v1.*`; PNG master preserved in ignored
+`Sprite sheets/Story/marigold-announcer/source-masters/`. Visual approval pending.
+No mouth states, recorded voice or runtime introduction ceremony added yet.
+
+
+### 2026-10-14 — Codex: Dempsey v3 visually approved by Derek
+
+Derek approved the latest near-profile candidate: “yeah, the last one is perfect.”
+Lock v3 identity, thinning receded gray hair, mature softer build, white shirt /
+light slacks costume and near-profile orientation. Manifest approval updated.
+Transparency/halo cleanup, joint artwork, parts, walk cycle and runtime referee
+integration remain pending. Preserve the approved appearance through that work.
+
+
+### 2026-10-14 — Codex: Dempsey referee source candidates
+
+User supplied Downloads/Dempsey portrait and group photograph (central man)
+as face and costume/build references. v1 was too young/buff; v2 softened and
+aged him. User then requested thinner, more receded, less brown hair and a more
+side-on source for walking. v3 is the current near-profile review candidate at
+`src/assets/story/dempsey-near-profile-candidate-v3.png`; full prompts are in
+its sibling manifest. Originals and supplied references preserved under ignored
+`Sprite sheets/AI Pilot/Dempsey/identity-masters/2026-10-14-v1/`.
+No identity approval, parts, anatomical landmarks, walk cycle or runtime referee
+integration yet. Generated halo and translucent interior pixels still need
+normalization before cutting; do not treat these candidates as ready sprites.
+
+
+### 2026-10-13 — Codex: cinematic introductions before each match
+
+Derek requested opponent/trainer and Guido/trainer corner preparation mini-scenes,
+then a center-ring announcer introducing hometown, height, weight and name while
+both wrestlers stand in their corners. Announcer also introduces the referee.
+First referee is Jack Dempsey (Derek corrected Jack Johnson). Updated the
+pre-match broadcast ritual in STORY_MODE_SCRIPTING.md. This is a design update;
+new ceremony artwork, period billing verification and runtime implementation
+remain pending. First-match borrowed robe / subsequent MORETTI robe apply.
+
+
+### 2026-10-13 — Codex: first-match robe promise
+
+Derek requested that Guido lacks a robe, borrows the trainer's old one, and
+receives his own with MORETTI on the back after taking the first booked loss.
+Added the exchange to FrontDoor and updated wardrobe progression in
+STORY_MODE_SCRIPTING.md. This supersedes delaying name lettering to contender
+status. Preview contains the promise; post-match reward state and robe artwork
+are not implemented. Current departure art is before donning the borrowed robe.
+
+
+### 2026-10-13 — Codex: remaining opening illustration coverage
+
+Generated six more review compositions with built-in imagegen and staged them
+in Phaser: ticket/entrance bustle, room two-shot, Guido pulling back, tape-start,
+wrist-offered, and departure in wine-red ring gear after an explicit time cut.
+The five approved arrival illustrations and character masters are preserved.
+Full prompts/reference roles: `src/assets/story/marigold-opening-completion-v1.manifest.json`.
+Original PNGs preserved in ignored `Sprite sheets/Story/marigold-opening-completion/source-masters/`.
+These are stills, not registered hand-animation frames. No voice or SFX added.
+Production build and browser walkthrough passed; tape, reaction and departure
+compositions visually inspected at 960×600. No push or publication.
+See STORY_OPENING_IMPLEMENTATION.md for runtime scope.
+
+
+### 2026-10-13 — Codex: arrival art visually approved by Derek
+
+Derek approved the five arrival illustrations: “i like them.” Preserve their
+character identities, costume, palette and compositions in subsequent cleanup
+and animation preparation. Manifest approval updated; this does not imply
+completion of remaining dressing-room shots or animation layers.
+
+
+### 2026-10-13 — Codex: generated arrival art candidates
+
+Generated five arrival illustrations and connected them to New Game: low bus
+step, walk insert, arena reveal, Guido close-up, trainer at service door. The
+October 7 approved Guido cinematic donors were found in the ignored art archive
+and used as face/build authority; previous notes saying they were unavailable
+were stale. Existing trainer master preserved. Full prompts and reference roles:
+`src/assets/story/marigold-arrival-v1.manifest.json`. Full PNGs preserved under
+ignored `Sprite sheets/Story/marigold-arrival/source-masters/`; runtime JPEGs
+are in src/assets/story. User review and production normalization remain pending.
+No sound or character animation added. No push or publication.
+
+
+### 2026-10-13 — Codex: first opening cinematic staging
+
+Connected the animated exterior establishing view to the layered trainer /
+dressing-room scene in Phaser. Updated dialogue per Derek; opening now proceeds
+linearly. Silent sound cues are ready for later licensed assets. Bus / Guido
+shots still need art. First-match win means run failure is a documented campaign
+requirement; the preview does not implement a playable campaign match.
+Build and browser proof passed; trainer composition visually inspected at 960×600.
+See STORY_OPENING_IMPLEMENTATION.md for scope and checks. No push or publication.
+
 
 ### 2026-09-27 — Codex (correct false attribution; character-art recovery audit)
 

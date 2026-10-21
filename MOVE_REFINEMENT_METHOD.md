@@ -1,5 +1,12 @@
 # Move refinement method
 
+**Resume direction (2026-10-18):** Read the [current kinesiology and selling
+audit](AI_HANDOFF_ENTRIES/2026-10-18-codex-kinesiology-selling-resume-audit.md)
+after roster review. Judge the whole impact-to-recovery sequence, including
+sustained pain, dazed/staggered recovery and targeted head/limb/torso donors.
+The selling library below is implemented; it still needs this refinement pass.
+Older status rows and proposed work below retain their original dates.
+
 **Who this is for:** whoever refines a move next, Claude or Codex. Derek
 approved the result on the suplex ("that suplex looks awesome") and on dropkick
 v2. Follow this method for every remaining move.
@@ -77,6 +84,14 @@ v2. Follow this method for every remaining move.
      `thesz-v2-profile-normalization`.
    - Never push without Derek.
 
+## Joint direction and safety follow-up (2026-10-18)
+
+Read the [rendered joint audit and limiter strategy](AI_HANDOFF_ENTRIES/2026-10-18-codex-joint-direction-and-limit-audit.md)
+before changing elbow/knee limits. Existing local limits do not cover grounded
+sells or every composed/legacy path; explicit knees and crouches use opposing
+bend signs. Measure final chains, constrain IK branches and preserve support.
+Derek's hammerlock remains the untouched compatibility control.
+
 ## Rig facts that bite
 
 Each of these cost a round of rework.
@@ -101,7 +116,7 @@ Each of these cost a round of rework.
 | Face down, the 3/4 shoulder and hip sockets swap sides of the spine | A roll's turnover moves the near shoulder ~45 px; keep limbs along the body there |
 | Strikes fire at in-fighting range (jab ≤ 85 units; bodies nearly touching) | Pose strikes for the real distance, not a textbook silhouette |
 | Play-scenario distances are screen px; wrestlers render at s≈0.81 | 150 px ≈ 185 rig units |
-| Contact poses are cast-specific: Procreate Lou's legs land ~15 px higher than shipped Lou's | Check both Lous |
+| Contact poses are cast-specific: Procreate Lou's legs land ~15 px higher than shipped Lou's | Judge on Procreate Lou (Derek, 2026-10-16: he is the art bar; original Lou's and George's art will both be replaced). Original Lou gets only the automated gates; George stays the opponent, but put cast differences in per-rig data (rigProfile, clip grips/contacts), never hand-tuned around his art |
 | `lift` scales with each rig's hip height; trunks differ (inverted hip-to-crown: Lou 152, Procreate 136, George 138 rig units) | Hold a head-down contact with a clip `floorContacts` crown window, not by tuning lift per cast |
 | stage.mjs solves grips on shipped Lou only | Declare clip `grips` (arm channel + partner joint, same/other side); `MoveRuntime.afterDraw` re-solves them by IK on every cast |
 | Ring bounds used to clamp each actor separately | `Wrestler.stagingFit` shifts the shared origin (eased over 0.45 s) so a rope-side tableau keeps its geometry |
@@ -264,3 +279,11 @@ staging, and the figure-four proof for leg entanglement. Build the locked hold
 first, with shared cross-actor limb ordering and declared trapped contacts;
 then animate threading, pressure, and release. Prove that slice before expanding
 to toe holds. Preserve the current selling work and Derek's hammerlock draft.
+
+
+### Figure-four: concrete existing-art refinement order (2026-10-18)
+
+Follow the [locked-tableau-first strategy](AI_HANDOFF_ENTRIES/2026-10-18-codex-figure-four-existing-art-strategy.md):
+solve leg roles and support → trapped contacts and cross-actor layering →
+purchase/threading → pressure/resistance → release and knee-selling aftermath.
+Choose replacement art from the demonstrated remaining silhouette failures.

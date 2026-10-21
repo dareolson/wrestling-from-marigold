@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-14",
+  "tool": "built-in image_gen",
+  "status": "User-approved identity, appearance and near-profile source view on 2026-10-14; production normalization and rigging pending",
+  "asset": "src/assets/story/dempsey-near-profile-candidate-v3.png",
+  "master": "Sprite sheets/AI Pilot/Dempsey/identity-masters/2026-10-14-v1/dempsey-near-profile-candidate-v3.png",
+  "prompt": "Use case: identity-preserve. Revise Image 1, our current Jack Dempsey referee candidate, with TWO user corrections: (1) hair is too thick and brown, needs more recession and much less fullness; (2) body must be more side-on for walking across the ring, closer to the game's current wrestlers, but NOT full profile. Image 2 supplied portrait controls recognizable facial features only. Image 3 supplied group photo controls CENTRAL REFEREE ONLY for mature build and white shirt/light slacks costume; do not borrow wrestler physiques.\nHAIR: distinctly higher receded hairline, deeply receded temples, less dense hair at crown, short sparse flattened gray-brown hair with substantial gray, NO thick pompadour, big swept wave, lush forelock or dark brown helmet. Hair follows skull closely, thinning scalp visible subtly. Preserve Dempsey's recognizable heavy brows, broad nose, mature facial planes, soft jaw/jowls, eye shape; keep older face and softer body, do NOT rejuvenate or make buff. Warm calm serious closed-mouth expression.\nNEW SOURCE VIEW: one complete head-to-sole NEAR-PROFILE THREE-QUARTER figure facing SCREEN RIGHT, torso/pelvis/head aligned approximately 60-65 DEGREES AWAY FROM FRONTAL (25-30 degrees short of true side profile). The torso should look clearly NARROWER from camera, near shoulder in front of far shoulder, far chest plane only a narrow sliver, both legs offset by small natural depth not spread broadly across image. Head faces same direction as torso; far eye only partly visible, NOT front-facing chest with turned head. Show back/side depth of far shoulder, far hip behind near hip. This is a neutral articulated WALK-SOURCE STANCE, NOT an action walk frame: feet grounded modest hip width with small fore-aft stagger, knees softly bent, both arms slightly separated from body so joints are readable, both relaxed open hands visible and separated from trousers, near elbow flexed a little, far arm slightly forward so it does not vanish behind torso. Anatomically consistent shoulder/elbow/wrist/hip/knee/ankle locations, natural shoe perspective, no crossed limbs or cropped soles. Keep ordinary mature waist, modest belly, sloping shoulders, smaller arms with no muscle definition, no bodybuilder V taper.\nWARDROBE MUST STAY: WHITE short-sleeved open-collar tucked shirt; LIGHT GRAY high-waisted full-cut creased slacks; plain BLACK belt; BLACK low lace-up leather shoes. No tie, referee stripes, gloves, badges, jewelry or shorts. Same clearly HAND-INKED sports illustration style, tapered black contours, simple flat painted shadows, warm muted skin, restrained texture. One cohesive character, no detached pieces, bone markers, text, grid, background scenery, ring or other people. Portrait transparent RGBA with 8% margin, complete hair and soles visible.\nCRITICAL ALPHA: TRUE EMPTY TRANSPARENT BACKGROUND, absolutely NO brown/gray halo, vignette, aura, glow, floor shadow or cloudy surrounding paint. Fully OPAQUE figure interiors, only edge antialiasing translucent. Avoid inheriting the original image's halo. This is a source candidate for later separate limb cutting and joint-overlap painting, not an already rigged sprite.",
+  "references": [
+    "src/assets/story/dempsey-front3q-candidate-v2.png",
+    "/Users/home/Downloads/Dempsey/images.jpeg",
+    "/Users/home/Downloads/Dempsey/images (1).jpeg"
+  ],
+  "remaining": [
+    "Remove generated halo and restore opaque character interiors before cutting",
+    "Author anatomical landmarks, separated limbs and painted joint overlaps",
+    "Build and test walk cycle, turns, and referee-specific poses"
+  ],
+  "runtimeIntegrated": false,
+  "approval": {
+    "date": "2026-10-14",
+    "feedback": "yeah, the last one is perfect",
+    "scope": "Lock v3 face, thinning receded gray hair, mature softer build, referee clothes and near-profile orientation. Preserve during cleanup and rigging."
+  }
+}

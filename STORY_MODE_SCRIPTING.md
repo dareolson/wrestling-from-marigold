@@ -198,6 +198,31 @@ directly into a short campaign-specific recap image or the next scheduled
 scene. The arrival belongs to the beginning of Guy's story and becomes less
 powerful if treated as a general loading sequence.
 
+## Opening decisions — October 13, 2026
+
+The first dressing-room exchange now follows the revised dialogue in
+`src/scenes/FrontDoor.js`: Guido challenges the paid loss; the trainer warns,
+“You’ll never work here or anywhere, ever again. That’s the way it is.”
+Guido asks whether he can whip George. The trainer answers “Try if you want,”
+warns that George is tougher than he looks, and tells Guido to get some offense
+in and give the crowd a reason to cheer. This replaces the body-trust exchange.
+The opening proceeds linearly; the earlier accept/talk/refuse branches are on hold.
+
+**First-match result rule, user decision:** Taking the booked loss advances the
+story. Winning ends the run and requires starting over. A separate victory
+storyline is deferred. This is a campaign requirement, not yet a match-runtime
+feature: the current preview still ends before Guido's first playable match.
+
+The arrival shot plan remains: busy exterior establishing view, low bus-step
+shot, walking inserts east on Grace, over-shoulder first sight, entrance bustle,
+Guido close-up, and service-door introduction. Five arrival candidate illustrations were generated on October 13 using the
+approved Guido cinematic masters and are now staged in the opening. See
+`src/assets/story/marigold-arrival-v1.manifest.json`. Six additional entrance/dressing-room coverage illustrations were subsequently
+generated and staged for review; see `marigold-opening-completion-v1.manifest.json`.
+The right wrist is taped; a brief time cut establishes the change into ring
+gear before departure. Wrist-taping animation, sound, separated parallax, and
+the broadcast transition remain unproduced.
+
 ## The premise
 
 You arrive in a 1950s wrestling territory as an unknown wrestler with no name
@@ -363,6 +388,22 @@ The campaign begins with Guy's first sustained opportunity at the Marigold,
 not his professional debut. To the office and most of the audience, a year of
 small bouts still makes him an unknown.
 
+### First-match robe promise — October 13, 2026
+
+Before Guido leaves the dressing room, the trainer asks where his robe is.
+Guido has none. The trainer lends him an old one for tonight, then promises:
+“Take the fall, and I’ll buy you one of your own. MORETTI across the back.”
+After Guido takes the booked loss, the trainer keeps his word and gives him
+his own robe with **MORETTI** on the back. The reward belongs to the first
+post-match scene, not a later reputation tier. Winning still ends the run and
+requires restarting; it does not award the robe. This supersedes the earlier
+plan to reserve name lettering for contender status.
+
+The opening preview includes the promise; the post-match award and owned-robe
+state await the playable campaign. The current departure illustration shows
+Guido before putting on the loaned robe; borrowed-robe entrance art and the
+post-match presentation of the named robe still need to be made.
+
 ### Core character
 
 - **Young and naive:** He understands fighting better than wrestling. He takes
@@ -480,7 +521,8 @@ brown, and black**.
 - plain deep wine-red trunks with no lettering, stars, fringe, or side design;
 - black calf-high lace-up wrestling boots with cream laces;
 - one wrist wrapped in plain white athletic tape by his trainer;
-- no knee pads, jewelry, logo, nickname, or personalized robe;
+- no knee pads, jewelry, logo, or nickname; the trainer lends him an old robe
+  for the first entrance;
 - a clean plain towel over his shoulders for the first job matches.
 
 Wine red is Guy's signature color. The trunks remain recognizable while his
@@ -532,14 +574,14 @@ show that wrestling finally pays him without requiring dialogue.
 #### Presentation progression
 
 ```text
-unknown     → wine trunks, black boots, white wrist tape, plain towel
-recognized  → simple wine-red satin robe with narrow cream piping
-contender   → MORETTI added across the robe after the name begins drawing
+first match → wine trunks, black boots, white wrist tape, trainer’s old borrowed robe
+after loss  → trainer buys his own robe, MORETTI across the back
+rising name → better cloth and fit, restrained trim
 star        → tailored robe and properly fitted charcoal suit
 ```
 
 Do not make his later wardrobe gaudy. Better cloth, cleaner fit, and the earned
-addition of his name communicate progress while flamboyance remains the visual
+robe from his trainer communicate progress while flamboyance remains the visual
 territory of established showmen.
 
 ## Guy's trainer
@@ -611,28 +653,54 @@ introductions become skippable. Important new rule/stipulation text must remain
 available on a pause or match-card screen so skipping never hides gameplay
 information.
 
-### Standard sequence
+### Standard sequence — revised October 13, 2026
 
-1. **Arena establishing image.** Crowd, ring, location caption, night/date if
-   relevant, and match stipulation.
-2. **Announcer cutaway.** A period broadcast announcer addresses the camera and
-   gives the immediate story: why the men are meeting and what is at stake.
-3. **Opponent corner cutaway.** Show a behavior unique to the opponent—quiet
-   focus, showboating, arguing with the referee, testing the ropes, receiving a
-   final instruction, protecting an injured limb, or watching Guy across the
-   ring.
-4. **Guy's corner cutaway.** The trainer finishes taping, adjusts Guy's robe or
-   mouthpiece, and gives one concise line of useful advice. Guy's expression and
-   body language reflect his current confidence, damage, and relationship with
-   the booking.
-5. **Formal ring introductions.** The opponent receives his complete billing.
-   Guy is introduced as **Guido Moretti**.
-6. **Bell and control.** Commentary shifts immediately to **Guy** or **Moretti**.
+Derek wants a miniature cinematic before each match (including each new match
+map), followed by formal introductions inside the ring. These are authored
+illustrated cutscenes using the established modest camera movement, not an
+ordinary gameplay-camera shot of idle wrestlers. The ringside broadcast
+commentator and the center-ring announcer are different presentation roles.
+
+1. **Short establishing view.** Establish the arena/ring and match stipulation.
+   Keep this brief so repeated matches retain momentum.
+2. **Opponent and trainer in their corner.** A close or medium cinematic view
+   shows the opponent preparing with his trainer or corner attendant. Give each
+   pair an opponent-specific action: adjusting a robe, checking a boot, a final
+   instruction, or the wrestler dismissing advice. These are distinct corner
+   characters; do not reuse Guido's trainer as the opponent's trainer.
+3. **Guido and his trainer in the other corner.** Match their condition,
+   relationship and wardrobe to campaign state. On the first night Guido wears
+   the trainer's borrowed old robe; after taking the booked loss he receives
+   his own robe with MORETTI on the back. One concise trainer line can remind
+   the player of a tactical goal. Avoid repeating the dressing-room argument.
+4. **Cut to center ring.** The ring announcer stands in the middle with a period
+   microphone. Both wrestlers are visible standing in their respective corners
+   while the introductions proceed; trainers remain by their corners. Hold
+   the full ring view long enough to establish everyone before closer cuts.
+5. **Formal introductions.** Introduce each wrestler by billed hometown,
+   height, weight and full ring name, with matching editable on-screen billing.
+   Guido is introduced as **Guido Moretti**. Verify each historical wrestler's
+   chosen period billing before writing final hometown/height/weight lines;
+   do not fill missing values with guesses.
+6. **Introduce the referee.** The announcer names **Jack Dempsey** as the first
+   referee, per Derek's correction from Jack Johnson. Give Dempsey a short
+   cinematic cutaway or step forward for acknowledgment. This is the game's
+   casting decision, not a claim that he officiated a documented Marigold bout.
+7. **Clear the ring, bell, control.** The announcer leaves the ring, trainers
+   withdraw, robes are removed, referee checks readiness, then the bell sounds
+   and player control begins. No combat starts while introductions are running.
+
+Suggested first-view pacing: roughly 5–7 seconds per corner and 15–20 seconds
+for introductions/clearance, with actual timing following readable text or
+future recorded lines. Important stipulations remain accessible after skipping.
+The mini-scenes should vary with opponent and campaign state while sharing this
+sequence. Production still needs center-ring announcer and Dempsey references,
+opponent corner/trainer designs, introduction poses and runtime staging.
 
 ### Guy's baseline introduction
 
-> “And in this corner, from New York City, weighing one hundred ninety pounds—
-> Guido Moretti!”
+> “And in this corner, from New York City, standing five feet ten inches tall,
+> weighing one hundred ninety pounds—Guido Moretti!”
 
 Do not insert “Guy” into the ordinary spoken introduction. The contrast is the
 point: **Guido** is the young man standing nervously in the corner; **Guy** is
@@ -645,6 +713,10 @@ Major matches can expand the billing after he earns status:
 
 Avoid adding grand nicknames too early. His name should acquire weight through
 the player's memory of what he survived.
+
+### First referee introduction
+
+> “And your referee for this contest—Jack Dempsey!”
 
 ### Commentary naming rules
 

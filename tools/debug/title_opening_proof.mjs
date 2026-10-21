@@ -9,12 +9,13 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const shots = fileURLToPath(new URL('./shots/title-opening/', import.meta.url));
 await mkdir(shots, { recursive: true });
-const server = await createServer({ root, server: { port: 5207, strictPort: true } });
+const server = await createServer({ root, server: { port: 0, watch: null } });
 await server.listen();
 let browser;
 try {
     browser = await chromium.launch({ channel: 'chrome', headless: true });
     const page = await browser.newPage({ viewport: { width: 960, height: 600 } });
+    const press = async key => { await page.keyboard.press(key); await page.waitForTimeout(100); };
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     // Use the installed identical Phaser version, avoiding CDN dependencies
@@ -24,7 +25,7 @@ try {
     const waitTitle = () => page.waitForFunction(() =>
         window.__WFM_GAME?.scene.getScene('FrontDoor')?.street &&
         window.__WFM_GAME.scene.isActive('FrontDoor'));
-    await page.goto('http://localhost:5207');
+    await page.goto(server.resolvedUrls.local[0]);
     await waitTitle();
     const before = await page.evaluate(() => {
         const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
@@ -56,14 +57,62 @@ try {
     assert(settled.frames.every(frame => frame === 'pose-0'), 'Settled queue returns to standing poses');
     assert.equal(settled.cars, 0, 'Traffic is on hold');
     await page.screenshot({ path: `${shots}queue-settled.png` });
-    await page.keyboard.press('Enter');
+    await press('Enter');
     await page.waitForTimeout(4200);
     assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').state), 'arrival');
     assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').background.scaleX), 1.04);
     await page.screenshot({ path: `${shots}arrival.png` });
-    await page.keyboard.press('Escape');
-    await page.keyboard.press('ArrowUp');
-    await page.keyboard.press('Enter');
+    for (const texture of ['arrival-bus', 'arrival-walk', 'arrival-reveal', 'arrival-bustle', 'arrival-closeup', 'arrival-door']) {
+        await press('Enter');
+        assert.deepEqual(await page.evaluate(() => {
+            const scene = window.__WFM_GAME.scene.getScene('FrontDoor');
+            return { visible: scene.arrivalPlate.visible, texture: scene.arrivalPlate.texture.key };
+        }), { visible: true, texture });
+        await page.screenshot({ path: `${shots}${texture}.png` });
+    }
+
+    await press('s');
+    const booking = await page.evaluate(() => {
+        const scene = window.__WFM_GAME.scene.getScene('FrontDoor');
+        return { state: scene.state, room: scene.room.visible, trainer: scene.trainer.texture.key };
+    });
+    assert.deepEqual(booking, { state: 'booking', room: true, trainer: 'story-trainer' });
+    assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').arrivalPlate.visible), false,
+        'Arrival plate is hidden on entering dressing room');
+    await page.screenshot({ path: `${shots}trainer-booking.png` });
+    const roomTextures = new Set();
+    for (let i = 0; i < 20; i++) {
+        const beat = await page.evaluate(() => {
+            const scene = window.__WFM_GAME.scene.getScene('FrontDoor');
+            return { state: scene.state, texture: scene.roomShot.visible ? scene.roomShot.texture.key : null,
+                texts: scene.panel.list.filter(item => item.type === 'Text').map(item => item.text) };
+        });
+        if (beat.texture && !roomTextures.has(beat.texture)) {
+            roomTextures.add(beat.texture);
+            await page.screenshot({ path: `${shots}${beat.texture}.png` });
+        }
+        if (beat.state === 'ready') break;
+        assert.equal(beat.state, 'booking');
+        await press('Enter');
+    }
+    assert.deepEqual([...roomTextures].sort(),
+        ['room-two-shot', 'room-tape-start', 'room-reaction', 'room-wrist-offered', 'room-departure'].sort(),
+        'Every dressing-room composition appears in the dialogue sequence');
+    assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').state), 'ready',
+        'Revised conversation proceeds linearly to preparation');
+    await press('Escape');
+    assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').room.visible), false);
+    await press('ArrowDown');
+    await page.waitForFunction(() => window.__WFM_GAME.scene.getScene('FrontDoor').selection === 1);
+    await press('Enter');
+    await page.waitForFunction(() => window.__WFM_GAME.scene.getScene('FrontDoor').state === 'ready');
+    assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').room.visible), true,
+        'Continue restores dressing-room staging');
+    assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').roomShot.texture.key), 'room-departure');
+
+    await press('Escape');
+    await press('ArrowUp');
+    await press('Enter');
     await page.waitForFunction(() => window.__WFM_GAME.scene.isActive('Arena'));
     const cleanup = await page.evaluate(() => {
         const street = window.__WFM_GAME.scene.getScene('FrontDoor').street;
@@ -80,11 +129,15 @@ try {
     await page.reload();
     await waitTitle();
     assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').street.motion), false);
-    await page.keyboard.press('Enter');
+    await press('Enter');
     await page.waitForTimeout(300);
     assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').background.scaleX), 1);
+    await press('s');
+    await page.waitForTimeout(300);
+    assert.equal(await page.evaluate(() => window.__WFM_GAME.scene.getScene('FrontDoor').room.scaleX), 1,
+        'Reduced motion also disables dressing-room camera');
     assert.deepEqual(errors, []);
-    console.log(`PASS: queue admission, advance, replenishment and idle poses; arrival camera, scene cleanup/re-entry, reduced motion; screenshots: ${shots}`);
+    console.log(`PASS: queue admission, advance, replenishment and idle poses; arrival camera, layered trainer dialogue, linear preparation, Continue, scene cleanup/re-entry, reduced motion; screenshots: ${shots}`);
 } finally {
     if (browser) await browser.close();
     await server.close();

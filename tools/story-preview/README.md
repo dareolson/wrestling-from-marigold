@@ -29,3 +29,10 @@ the room; stronger parallax needs additional separated depth planes.
 Browser validation: both layers load, written dialogue advances, dolly transform
 runs, reduced motion disables it, no page exceptions. Reviewed screenshot:
 `tools/debug/shots/trainer-preview/scene.png` (ignored).
+
+First-match corner review: open `/tools/story-preview/?scene=corner` after
+starting Vite. Uses the borrowed torn robe illustration and two short advice
+cards. This is a standalone staging preview, not the match ceremony runtime.
+
+Aisle-to-corner review: `/tools/story-preview/?scene=aisle` shows the darker
+elevated aisle candidate. Enter/click advances into the existing corner preview.

@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-14",
+  "tool": "built-in image_gen",
+  "status": "v2 illustrated-style revision for review; v1 was too photorealistic",
+  "asset": "src/assets/story/ring-announcer-medium-v2.jpg",
+  "master": "Sprite sheets/Story/marigold-announcer/source-masters/ring-announcer-medium-v2.png",
+  "references": [
+    "src/assets/story/ring-announcer-medium-v1.jpg: composition and identity",
+    "Sprite sheets/AI Pilot/Guido/cinematic-masters/2026-10-07-v1/guido-closeup-identity-donor-v1.png: ink and simplified shading style only"
+  ],
+  "prompt": "Use case: style-transfer. Redraw IMAGE 1, our grayscale ring announcer, to look MUCH MORE HAND-DRAWN and less photorealistic. IMAGE 2 is STYLE AUTHORITY ONLY: its clear tapered black outlines, simplified facial planes, minimal interior lines, restrained FLAT CEL-SHADOW shapes. Do NOT borrow Image 2 young face, hair, age or body. Translate its rendering into strict BLACK AND WHITE / GRAYSCALE, NO COLOR OR SEPIA.\nKeep image 1 composition, 16:10 landscape canvas, subject scale and placement, mature balding announcer's exact distinctive face/likeness and age, receded hair, formal dark suit, white shirt, bow tie and pocket square, same hand holding same microphone below and to side of chin, mouth unobstructed, same slight three-quarter angle and neutral speaking expression. Same faint low-contrast crowd and three ropes BEHIND him. Full head and mouth visible.\nCHANGE RENDERING DECISIVELY: confident clean BLACK INK outer contours around head, ears, face, hand, suit lapels and microphone. Interior facial lines chosen and sparse, eyes/nose/mouth strongly drawn. Face uses 3-4 flat gray value groups with crisp deliberately shaped shadow boundaries, no photographic modeling or thousands of tiny painted patches. Keep only a few age lines for brow/eyes/mouth, remove pores, skin mottling, painterly speckle, photo grain, cloth weave and smooth realistic gradients. Suit large clean near-black/charcoal shapes with selected lighter gray folds, no glossy lapels. Hand simplified but anatomically correct. Microphone mesh suggested by a few sparse graphic marks, no fine photographic grille texture. Crowd becomes very faint simplified rounded silhouette masses, ropes soft low contrast drawn bands with no fuzzy detailed fibers. Subject still sharper than background. Aim for cohesive INKED SPORTS STORY ILLUSTRATION like the reference, not a photograph run through an oil-paint filter, not a caricature or children's cartoon. Preserve quiet lower 20% for future text. No text, subtitles, logos, station bug, halftone dots, hatching, borders, collage or extra people in foreground. This is an illustrated master for later mouth swaps; no variants sheet or alternate mouths now.",
+  "runtimeIntegrated": false,
+  "mouthStates": "pending approval"
+}

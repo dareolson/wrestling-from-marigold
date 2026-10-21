@@ -1,7 +1,13 @@
 {
   "date": "2026-10-12",
   "tool": "built-in image_gen",
-  "status": "Candidate art for user review, not yet canonical character approval",
+  "status": "Trainer look approved by user as character master on 2026-10-12; illustrated style refinement may be needed to match other game art",
+  "characterApproval": {
+    "date": "2026-10-12",
+    "scope": "Trainer identity and look approved as master; background approval not implied",
+    "styleFeedback": "User likes the look but finds it potentially more photorealistic than the other art; a more drawn treatment may be needed",
+    "variantConstraints": "Preserve the approved master. Derive any illustrated variant from it, keeping facial identity, build, pose, costume and towel consistent."
+  },
   "assets": [
     {
       "asset": "src/assets/story/trainer-medium-v1.png",
@@ -26,6 +32,6 @@
     "preview": "tools/story-preview/",
     "dialogueSource": "Two trainer scouting examples from STORY_MODE_SCRIPTING.md, not a new approved campaign exchange",
     "camera": "12-second 4% push; character and room are separate DOM layers sharing camera container",
-    "future": "No mouth animation or recorded dialogue yet. Establish character approval first; derive registered mouth/head states from this portrait. Guy stays offscreen until an approved identity master is provided."
+    "future": "No mouth animation or recorded dialogue yet. Trainer identity is approved; resolve any drawn-style refinement before deriving registered mouth/head states. Guy stays offscreen until an approved identity master is provided."
   }
 }

@@ -5,7 +5,11 @@ Local branch: `story/marigold-opening`. No push; Claude reviews before publicati
 User requested separate 1950s Chicago character/background art suitable for
 later mouth animation and dolly shots, with written dialogue initially.
 Actor photograph supplies trainer face/build inspiration; Punch-Out trainer
-image supplies towel/corner-man cue. Candidate identity still needs user review.
+image supplies towel/corner-man cue. User approved the trainer look as the
+character master on 2026-10-12. They noted it may be more photorealistic than
+the other game art and may need a more drawn treatment. Preserve this master;
+any style variant should retain his identity, build, pose, costume and towel.
+Resolve the final illustrated treatment before creating mouth states.
 
 New assets: `src/assets/story/trainer-medium-v1.png` (transparent character) and
 `dressing-room-v1.jpg` (clean environment). Masters are ignored under

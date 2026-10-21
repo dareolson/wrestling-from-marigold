@@ -16,6 +16,12 @@
     #line { margin: 12px 0 18px; max-width: 820px; font-size: clamp(16px, 2.4vw, 28px); line-height: 1.35; }
     button { font: inherit; font-size: 14px; color: #f6e4bd; background: #21170f; border: 1px solid #9b7b4a; padding: 8px 14px; cursor: pointer; margin-right: 8px; }
     button:focus-visible { outline: 2px solid #fff2ce; outline-offset: 3px; }
+    .corner #dialogue { inset: 3% auto auto 3%; width: 27%; min-height: 0; padding: 14px; background: rgba(7,8,11,.78); }
+    .corner #speaker { color: #ddd; }
+    .corner #line { color: #fff; font-size: clamp(14px, 1.8vw, 23px); }
+    .corner button { color: #eee; background: #191919; border-color: #888; margin-bottom: 6px; }
+    .aisle #dialogue { min-height: 0; padding: 12px; background: rgba(0,0,0,.65); }
+    .aisle button { color: #eee; background: #191919; border-color: #888; }
     @keyframes dolly { from { transform: scale(1); } to { transform: scale(1.04); } }
     @media (prefers-reduced-motion: reduce) { #world { animation: none; } }
   </style>

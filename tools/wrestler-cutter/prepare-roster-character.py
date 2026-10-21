@@ -35,14 +35,16 @@ SPECS={
   alias={'thigh_b':'right_thigh','shin_a':'right_shin','thigh_a':'left_thigh','shin_b':'left_shin','upper_arm':'right_upper_arm','forearm_hand':'right_forearm_hand'},
   shoulder=[1080,420],farshoulder=[1255,425],wrist=[1095,800],ankle=[1068,1425],sole=[1105,1565],farankle=[1262,1425],farsole=[1295,1550],
   cfg=dict(label='GeorgeNew',arg='george',dir='GeorgeNew',base='george',basefile='george',const='georgeRosterV1',id='george-roster-v1',snake='george_roster_v1',note='Current George remains unchanged.')),
- 'kowalski':dict(dir='Killer_Kowalski',id='kowalski-roster-v1',prefix='kowalski_rv1_',snake='kowalski_roster_v1',heightScale=0.942960,kneeLift=KNEELIFT,forearmOverUpperArm=True,farLegOverTorso=True,
+ 'kowalski':dict(dir='Killer_Kowalski',
+  # Derek 2026-10-20: far shoulder lower+back, same pixels as Guido's (-3,+4 px)
+  socketNudge={'farShoulder':(-0.0522,0.0366)},id='kowalski-roster-v1',prefix='kowalski_rv1_',snake='kowalski_roster_v1',heightScale=0.942960,kneeLift=KNEELIFT,forearmOverUpperArm=True,farLegOverTorso=True,
   heightNote='PLACEHOLDER: matched to current Procreate Lou ink height (347.79 vs 370.27 at scale 1, tuner zoom 1.4; re-matched after the knee lift); Kowalski is meant to be taller, so Derek should set the intended ratio.',
   alias={'thigh_b':'right_thigh','shin_b':'right_shin','thigh_a':'left_thigh','shin_a':'left_shin','upper_arm':'right_upper_arm','forearm_hand':'right_forearm_hand'},
   shoulder=[325,345],farshoulder=[520,355],wrist=[285,810],ankle=[285,1530],sole=[310,1660],farankle=[510,1530],farsole=[535,1650],
   cfg=dict(label='Killer_Kowalski',arg='kowalski',dir='Killer_Kowalski',base='thesz',basefile='thesz',const='kowalskiRosterV1',id='kowalski-roster-v1',snake='kowalski_roster_v1',note='Kowalski has no shipped config; kit and pose are borrowed from Lou (thesz) as a neutral control.')),
  'guido':dict(dir='GuidoNew',id='guido-roster-v1',prefix='guido_rv1_',snake='guido_roster_v1',heightScale=1.003380,headOverTorso=True,
   # Derek 2026-10-20: near shoulder a little down+forward, far shoulder a little lower+back (du,dv in torso-canvas fractions)
-  socketNudge={'nearShoulder':(0.038,0.032),'farShoulder':(-0.057,0.043)},
+  socketNudge={'nearShoulder':(0.057,0.032),'farShoulder':(-0.057,0.043)},
   heightNote='PLACEHOLDER: matched to current George ink height (335.38 vs 334.25 at scale 1, tuner zoom 1.4) (Guido is meant to be compact; Derek should set the intended ratio).',
   alias={'thigh_b':'right_thigh','shin_b':'right_shin','thigh_a':'left_thigh','shin_a':'left_shin','upper_arm':'right_upper_arm','forearm_hand_taped':'right_forearm_hand'},
   shoulder=[1060,415],farshoulder=[1295,420],wrist=[1020,810],ankle=[1072,1440],sole=[1110,1565],farankle=[1262,1440],farsole=[1300,1535],

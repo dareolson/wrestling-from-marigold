@@ -183,25 +183,69 @@ export function continuity(trace, { popFrac = 0.035, hitchFrac = 0.025 } = {}) {
     return out;
 }
 
-/** Declared contacts (draft.contacts) and spec contacts: worst joint gap in the window. */
+// Anatomical joint names. `lKnee`/`rAnkle` name the limb by pose channel, which
+// is the same limb in both facings; `lSide` (Skeleton.lChannelSide) says
+// whether the l channels draw on the near or the far slot for that actor, so
+// the name resolves to nearKnee/farKnee only at measurement time. Near/far
+// names pass through untouched.
+const ANATOMICAL = /^([lr])(Shoulder|Elbow|Wrist|Hip|Knee|Ankle)$/;
+export function resolveJointName(name, lSide) {
+    const m = ANATOMICAL.exec(name);
+    if (!m) return name;
+    const l = lSide ?? 'near';
+    const side = m[1] === 'l' ? l : (l === 'near' ? 'far' : 'near');
+    return `${side}${m[2]}`;
+}
+// lSide of one role at one frame: the frame's own record (facing can change
+// mid-clip), else the trace meta, else the facing-right default.
+const lSideOf = (trace, frame, role) => frame.actors[role].lSide ?? trace.meta.lSide?.[role] ?? 'near';
+
+function pointToSegment(p, a, b) {
+    const dx = b.x - a.x, dy = b.y - a.y, len2 = dx * dx + dy * dy;
+    const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2));
+    return dist(p, { x: a.x + t * dx, y: a.y + t * dy });
+}
+
+/**
+ * Declared contacts (draft.contacts) and spec contacts: worst gap in the window.
+ * A contact may carry `tol` (fraction of the source actor's height; default
+ * DEFAULT_TOL) and `kind` ('purchase' | 'trap' | 'brace' | 'support'); the row
+ * reports both plus pass/fail. `source` and the joints of `target` may be
+ * anatomical (`lAnkle`), and `target` may be `seg:<jointA>-<jointB>`: the
+ * distance to the nearest point of that drawn segment.
+ */
+export const DEFAULT_TOL = 0.08;
 export function contacts(trace, specs = []) {
     const h = standingHeights(trace);
     const declared = (trace.meta.contacts ?? []).map(c => ({ ...c, label: `${c.role} ${c.source}→${c.target}` }));
     return [...declared, ...specs].map(c => {
         const partner = c.role === 'attacker' ? 'defender' : 'attacker';
-        let worst = 0, worstAt = c.from, n = 0;
-        for (const f of trace.frames) {
-            if (f.at < c.from || f.at > c.to) continue;
-            const src = f.actors[c.role].joints[c.source];
-            const tgt = targetPoint(f.actors[partner], c.target);
-            if (!src || !tgt) continue;
+        let worst = 0, worstAt = c.from, worstIndex = null, n = 0;
+        trace.frames.forEach((f, index) => {
+            if (f.at < c.from || f.at > c.to) return;
+            const src = f.actors[c.role].joints[resolveJointName(c.source, lSideOf(trace, f, c.role))];
+            const d = contactGap(f.actors[partner], c.target, src, lSideOf(trace, f, partner));
+            if (!src || d == null) return;
             n++;
-            const d = dist(src, tgt);
-            if (d > worst) { worst = d; worstAt = f.at; }
-        }
+            if (d > worst) { worst = d; worstAt = f.at; worstIndex = index; }
+        });
+        const tol = c.tol ?? DEFAULT_TOL;
         return { label: c.label ?? `${c.role} ${c.source}→${c.target}`, from: c.from, to: c.to, frames: n,
-            worstPx: worst, worstFrac: worst / h[c.role], worstAt };
+            worstPx: worst, worstFrac: worst / h[c.role], worstAt, worstIndex,
+            kind: c.kind ?? null, tol, pass: n > 0 && worst / h[c.role] <= tol };
     });
+}
+
+// Distance from `src` to a contact target on `actor`: a segment, or a point.
+function contactGap(actor, target, src, lSide) {
+    if (!src) return null;
+    const seg = /^seg:([A-Za-z]+)-([A-Za-z]+)$/.exec(target);
+    if (seg) {
+        const a = actor.joints[resolveJointName(seg[1], lSide)], b = actor.joints[resolveJointName(seg[2], lSide)];
+        return a && b ? pointToSegment(src, a, b) : null;
+    }
+    const tgt = targetPoint(actor, resolveJointName(target, lSide));
+    return tgt ? dist(src, tgt) : null;
 }
 
 // Named contact points (Codex review, finding 1: solve and grade against the

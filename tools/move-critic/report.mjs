@@ -24,7 +24,7 @@ for (const file of files) {
         console.log(`  pops: ${c.pops.length}${c.pops.length ? ' ' + c.pops.slice(0, 4).map(p => `${p.joint}@${s(p.at)}`).join(', ') : ''}; velocity hitches at ${c.hitchTimes.length} frames${c.hitchTimes.length ? ': ' + c.hitchTimes.slice(0, 8).map(s).join(', ') : ''}`);
         console.log(`  stiffness: spine turns ${st.spineTurnRad.toFixed(2)} rad, limbs bend ${st.bendRad.toFixed(2)} rad${st.ratio != null ? ` (bend/turn ${st.ratio.toFixed(2)})` : ''}`);
     }
-    for (const c of r.contacts) console.log(`contact ${c.label}: worst gap ${pct(c.worstFrac)} of height @${s(c.worstAt)} over ${c.frames} frames`);
+    for (const c of r.contacts) console.log(`contact ${c.label}: worst gap ${pct(c.worstFrac)} of height @${s(c.worstAt)} over ${c.frames} frames${c.kind ? ` [${c.kind}]` : ''}; tol ${pct(c.tol)} ${c.pass ? 'PASS' : 'FAIL'}${c.worstIndex != null ? `; worst frame #${c.worstIndex}` : ''}`);
     for (const i of r.impacts) console.log(`impact @${s(i.event)} ${i.strike}: gap ${pct(i.gapFrac)}, limb at ${pct(i.reachFrac)} of its max reach; closest approach ${i.offsetSec >= 0 ? '+' : ''}${i.offsetSec.toFixed(3)}s from the event`);
     for (const l of r.landings) console.log(`${l.label}: ${l.at == null ? 'never' : s(l.at)} (event ${l.event == null ? '—' : s(l.event)}, ${l.offsetSec == null ? '' : (l.offsetSec >= 0 ? '+' : '') + l.offsetSec.toFixed(3) + 's'})`);
     if (r.overlap) console.log(`body overlap (torso/head interpenetration > 6% height): ${r.overlap.sec.toFixed(3)}s, worst ${pct(r.overlap.worstFrac)} @${s(r.overlap.worstAt)}`);

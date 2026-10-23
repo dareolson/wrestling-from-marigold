@@ -76,6 +76,7 @@ await page.evaluate(async () => {
                 }
                 out.actors[role] = {
                     floorY: root.y, rootX: root.x, facing: actor.facing,
+                    lSide: sk.lChannelSide(actor.facing),
                     pose: { ...actor.pose }, parts: { ...actor.parts },
                     joints: JSON.parse(JSON.stringify(sk.jointAttachmentPoints ?? {})),
                     outline: outlines,
@@ -102,6 +103,7 @@ const meta = await page.evaluate(() => {
         id: d.id, duration: d.duration, events: d.events, contacts: d.contacts,
         characters: Object.fromEntries(['attacker', 'defender'].map(r => [r, E.actors[r].character])),
         scale: E.SCALE, origin: E.TABLEAU_ORIGIN,
+        lSide: Object.fromEntries(['attacker', 'defender'].map(r => [r, E.actors[r].skeleton.lChannelSide(E.actors[r].facing)])),
         keyTimes: Object.fromEntries(Object.entries(d.tracks).map(([r, t]) => [r, t.keyframes.map(k => k.at)])),
         eases: Object.fromEntries(Object.entries(d.tracks).map(([r, t]) => [r, t.keyframes.map(k => k.ease ?? 'linear')])),
     };

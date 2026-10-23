@@ -5,7 +5,7 @@
 // roll over consistently, and never plays for a move that did not land.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SELLS, SELL_STYLES, clutchSell, sampleSell, planSells, groundedSlot, sideSwap } from '../src/animation/sells.js';
+import { SELLS, SELL_STYLES, clutchSell, sampleSell, planSells, groundedSlot, sideSwap, limitKnees } from '../src/animation/sells.js';
 import { MOVE_SPECS } from '../src/moves/registry.js';
 import Wrestler from '../src/Wrestler.js';
 
@@ -391,4 +391,26 @@ test('compact on a Wrestler follows ?aftermath=v2 and nothing else', () => {
         assert.equal(on.length, 1);
         assert.equal(on[0].compact, true);
     } finally { delete globalThis.location; }
+});
+
+// ── Joint limits (tools/debug/limb_limits_audit.mjs) ───────────────────────
+test('limitKnees: no sell, at any amp, folds a knee past its limit or bends it backward', () => {
+    const base = { supine: { nearThigh: 1.40, nearShin: 1.55, farThigh: 1.45, farShin: 1.60 }, prone: { nearThigh: -1.40, nearShin: -1.55, farThigh: -1.45, farShin: -1.60 } };
+    for (const lying of ['supine', 'prone']) {
+        const defs = [...Object.values(SELLS[lying]).filter(d => d.keys), ...PARTS.map(p => clutchSell(lying, p, 1))];
+        for (const def of defs) for (const slot of ['near', 'far']) for (const amp of [0.6, 1, 1.3, 1.6]) for (let i = 0; i <= 20; i++) {
+            const { d } = sampleSell(def.keys, i / 20, amp);
+            const g = { ...base[lying] };
+            for (const [c, v] of Object.entries(d)) if (c in g) g[c] += v;
+            if (def.to) continue; // a roll keeps its turnover pose exactly
+            limitKnees(g);
+            const flex = g[`${slot}Thigh`] - g[`${slot}Shin`];
+            assert.ok(flex <= 2.55 + 1e-9 && flex >= -0.25 - 1e-9, `${lying} ${slot} ${amp}: ${flex}`);
+        }
+    }
+});
+
+test('limitKnees leaves a pose already inside the limits untouched', () => {
+    const g = { nearThigh: 1.4, nearShin: 0.9, farThigh: 1.45, farShin: 1.6 };
+    assert.deepEqual(limitKnees({ ...g }), g);
 });

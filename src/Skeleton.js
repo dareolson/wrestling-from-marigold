@@ -5,7 +5,7 @@ import {
     solveTwoAnchorBinding,
     transformBoundPoint,
 } from './rig/twoAnchorBinding.js';
-import { childAngleFromLocalFlex, localFlexFromChildAngle } from './rig/articulation.js';
+import { childAngleFromLocalFlex, localFlexFromChildAngle, JOINT_LIMITS } from './rig/articulation.js';
 
 // Proportions in unscaled pixels — multiply by s before placing parts.
 // Lengths originally chosen to match the old single-piece stick-figure totals
@@ -2248,12 +2248,28 @@ export default class Skeleton {
             if (!S || !E || !W || !T) continue;
             const goal = { x: W.x + (T.x - W.x) * r.w, y: W.y + (T.y - W.y) * r.w };
             const lu = dist(S, E), lf = dist(E, W);
-            const d = Math.max(Math.abs(lu - lf) + 1e-3, Math.min(dist(S, goal), (lu + lf) * 0.999));
+            // The hand may not fold the elbow past its limit (articulation.js
+            // JOINT_LIMITS): stop short of a target that would overfold it.
+            const minD = Math.sqrt(lu * lu + lf * lf - 2 * lu * lf * Math.cos(Math.PI - JOINT_LIMITS.elbow.max));
+            const d = Math.max(Math.abs(lu - lf) + 1e-3, minD, Math.min(dist(S, goal), (lu + lf) * 0.999));
             const base = Math.atan2(goal.y - S.y, goal.x - S.x);
             const bend = Math.acos(Math.max(-1, Math.min(1, (lu * lu + d * d - lf * lf) / (2 * lu * d))));
-            // Two elbow solutions; keep the one off the mat (smaller y).
+            // Two elbow solutions. One bends the elbow its anatomical way (the
+            // forearm folds toward the FRONT of the upper arm: the elbow sits on
+            // the back side of the shoulder-hand line, front read off the torso);
+            // the other is hyperextended and reads as a flared elbow. Keep the
+            // anatomical one; the off-the-mat one only breaks a tie.
             const elbows = [base + bend, base - bend].map(a => ({ x: S.x + Math.cos(a) * lu, y: S.y + Math.sin(a) * lu }));
-            const elbow = elbows[0].y <= elbows[1].y ? elbows[0] : elbows[1];
+            const hipMid = pts.nearHip && pts.farHip ? { x: (pts.nearHip.x + pts.farHip.x) / 2, y: (pts.nearHip.y + pts.farHip.y) / 2 } : pts.nearHip;
+            let elbow = elbows[0].y <= elbows[1].y ? elbows[0] : elbows[1];
+            if (hipMid && pts.neck) {
+                const t = { x: pts.neck.x - hipMid.x, y: pts.neck.y - hipMid.y };
+                const front = f > 0 ? { x: -t.y, y: t.x } : { x: t.y, y: -t.x };
+                // Back of the arm: the elbow's offset from the shoulder-hand line points away from front.
+                const sideOf = e => (e.x - (S.x + goal.x) / 2) * front.x + (e.y - (S.y + goal.y) / 2) * front.y;
+                const proper = elbows.filter(e => sideOf(e) <= 0);
+                if (proper.length === 1) elbow = proper[0];
+            }
             const hand = { x: elbow.x + (goal.x - elbow.x) * lf / Math.max(1e-6, dist(elbow, goal)), y: elbow.y + (goal.y - elbow.y) * lf / Math.max(1e-6, dist(elbow, goal)) };
             solved[`${side}Arm`] = toAngle({ x: elbow.x - S.x, y: elbow.y - S.y }, g[`${side}Arm`]);
             solved[`${side}Fore`] = toAngle({ x: hand.x - elbow.x, y: hand.y - elbow.y }, g[`${side}Fore`]);

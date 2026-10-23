@@ -43,7 +43,7 @@ test('flag on, recovering: the skeleton gets a copy with the knee motif; this.po
         assert.notEqual(got, w.pose);
         assert.deepEqual(w.pose, before);
         assert.ok(got.crouch > before.crouch);
-        assert.ok(got.rKnee > 0, 'hurt right knee flexed');
+        assert.equal(got.rKnee, undefined, 'the gait path is not switched to a knee override');
         assert.ok(got.rLeg < before.rLeg && got.lLeg > before.lLeg, 'sound leg takes the weight');
         assert.equal(got.lKnee, undefined);
     });
@@ -59,6 +59,19 @@ test('back motif bends the torso; other parts have no overlay', () => {
             w.draw();
             assert.equal(drawn.at(-1), w.pose, part);
         }
+    });
+});
+
+test('the knee never bends forward: lKnee only goes down to its floor, lShin only more negative', () => {
+    withFlag(ON, () => {
+        const k = standing({ limb: 'rLeg' });
+        k.w.pose = { ...k.w.pose, rKnee: 0.05 };
+        k.w.draw();
+        assert.ok(k.drawn.at(-1).rKnee < 0.05 && k.drawn.at(-1).rKnee >= -0.10);
+        const f = standing({ limb: 'rLeg' });
+        f.w.pose = { ...f.w.pose, rKnee: -0.10 };
+        f.w.draw();
+        assert.equal(f.drawn.at(-1).rKnee, -0.10);
     });
 });
 

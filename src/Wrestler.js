@@ -13,7 +13,7 @@ import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
-import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot } from './animation/sells.js';
+import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees } from './animation/sells.js';
 import { staggerFor } from './animation/staggers.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
@@ -998,7 +998,10 @@ export default class Wrestler {
         const { d, reach } = sampleSell(keys, u, cur.amp);
         const hands = {};
         for (const [side, w] of Object.entries(reach)) hands[side] = { to: def.hands[side], w };
-        return { g: applyOffsets(Skeleton.GROUNDED_POSES[lying], d), reach: hands };
+        // A roll keeps its turnover pose exactly (its halves must meet); every other
+        // sell keeps the knees inside their limits.
+        const g = applyOffsets(Skeleton.GROUNDED_POSES[lying], d);
+        return { g: cur.name === 'roll' ? g : limitKnees(g), reach: hands };
     }
 
     tickPossum(dt) {
@@ -1625,15 +1628,18 @@ export default class Wrestler {
         const pain = this._pain;
         const pose = { ...this.pose };
         if (pain.part === 'knee') {
-            pose.crouch = (pose.crouch ?? 0) + 0.05 * w;
+            pose.crouch = (pose.crouch ?? 0) + 0.08 * w;
             const hurt = pain.limb?.endsWith('Leg') ? pain.limb[0] : null; // 'l' | 'r'
             if (hurt) {
                 const other = hurt === 'l' ? 'r' : 'l';
                 const flex = 0.15 * w;
-                // lKnee is local flex; lShin an absolute shin angle (more negative = more bent)
-                if (pose[`${hurt}Knee`] !== undefined) pose[`${hurt}Knee`] += flex;
+                // Measured (limb_limits_audit.mjs): a POSITIVE lKnee swings the shin
+                // forward of the thigh, and lKnee floors at -0.10, so the knee bends
+                // the right way (shin behind the thigh) through lShin, absolute and
+                // more negative = more bent, or by lowering lKnee within its floor.
+                // A pose with neither (the gait path) gets its bend from crouch.
+                if (pose[`${hurt}Knee`] !== undefined) pose[`${hurt}Knee`] = Math.max(-0.10, pose[`${hurt}Knee`] - flex);
                 else if (pose[`${hurt}Shin`] !== undefined) pose[`${hurt}Shin`] -= flex;
-                else pose[`${hurt}Knee`] = flex;
                 // the sound leg takes the weight: the hurt one steps back off it
                 pose[`${hurt}Leg`] = (pose[`${hurt}Leg`] ?? 0) - 0.06 * w;
                 pose[`${other}Leg`] = (pose[`${other}Leg`] ?? 0) + 0.03 * w;

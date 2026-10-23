@@ -203,6 +203,21 @@ export function sampleSell(keys, u, amp = 1) {
     return { d, reach };
 }
 
+// A knee's flex in these grounded angles is thigh - shin (measured on the
+// rendered rigs, tools/debug/limb_limits_audit.mjs); the rest poses sit 0.15
+// either side of straight. Stay inside the articulation limits plus that rest.
+const KNEE_FLEX_MIN = -0.25;
+const KNEE_FLEX_MAX = 2.55;
+export function limitKnees(g) {
+    for (const side of ['near', 'far']) {
+        const thigh = g[`${side}Thigh`], shin = g[`${side}Shin`];
+        if (!Number.isFinite(thigh) || !Number.isFinite(shin)) continue;
+        const flex = Math.max(KNEE_FLEX_MIN, Math.min(KNEE_FLEX_MAX, thigh - shin));
+        g[`${side}Shin`] = thigh - flex;
+    }
+    return g;
+}
+
 /** A lying pose plus sampled offsets. */
 export function applyOffsets(base, d) {
     const g = { ...base };

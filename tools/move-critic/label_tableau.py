@@ -39,10 +39,10 @@ def leg(role, channel):
     return j[side + 'Knee'], j[side + 'Ankle']
 
 LEGS = [
-    ('defender', 'r', 'S  straight leg (hurt)', (30, 150, 60)),
-    ('defender', 'l', 'C  crossed leg', (220, 130, 20)),
-    ('attacker', 'l', 'T  George trapping leg', (40, 110, 230)),
-    ('attacker', 'r', 'B  George brace leg', (150, 60, 200)),
+    ('defender', 'r', 'H  hurt leg (bent, far)', (30, 150, 60)),
+    ('defender', 'l', 'N  near leg (straight)', (220, 130, 20)),
+    ('attacker', 'l', 'T  George near leg, across H', (40, 110, 230)),
+    ('attacker', 'r', 'B  George far leg, between', (150, 60, 200)),
 ]
 
 im = Image.open(still).convert('RGB').crop(crop)
@@ -70,11 +70,11 @@ for i, (role, ch, text, colour) in enumerate(LEGS):
     tx = (0.04 if ch == ('l' if up else 'r') else 0.52) * im.width
     d.line([mid, (tx + 20 * scale, ty + (12 * scale if up else 0))], fill=colour, width=max(1, scale // 2))
     d.text((tx, ty), text, fill=colour, font=font, stroke_width=1, stroke_fill=(0, 0, 0))
-# the trapped ankle: the receiver's crossed ankle
-_, c_ankle = leg('defender', 'l')
+# the trap: George's near ankle where it lands across the hurt leg
+_, c_ankle = leg('attacker', 'l')
 x, y = at(c_ankle)
 r = 7 * scale
 d.ellipse([x - r, y - r, x + r, y + r], outline=(255, 255, 255), width=max(2, scale - 1))
-d.text((x + r + 4, y - r - 4 * scale), 'trapped ankle', fill=(255, 255, 255), font=font, stroke_width=1, stroke_fill=(0, 0, 0))
+d.text((x + r + 4, y - r - 4 * scale), 'trap', fill=(255, 255, 255), font=font, stroke_width=1, stroke_fill=(0, 0, 0))
 im.save(out, optimize=True)
 print(out, im.size)

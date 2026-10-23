@@ -8,10 +8,11 @@
 //        tools/move-editor/figurefour_tableau.constraints.mjs tools/move-editor/drafts/figurefour-tableau.json
 //
 // Legs are named by pose channel; the ledger is
-// research/animation/figure-four-tableau/LEDGER.md:
-//   receiver (defender)  rLeg = S, straight, hurt, grabbed at purchase
-//                        lLeg = C, crossed: its ankle lies across George's trapping shin
-//   George (attacker)    lLeg = T, trapping leg   rLeg = B, bracing leg
+// research/animation/figure-four-tableau/LEDGER.md (v2, Derek's choreography):
+//   receiver (defender)  rLeg = H, his far leg, bent with the shin pointing south: the hurt leg
+//                        lLeg = N, his near leg, straight, straddling George
+//   George (attacker)    lLeg = T, near leg, lands across H   rLeg = B, far leg, stepped between
+//   George sits up ~42 deg (tilt -0.73) propped on his arms behind him.
 // `bend`, never `lean` (lean does not move the rendered body).
 
 import { writeFileSync } from 'node:fs';
@@ -25,24 +26,24 @@ export const KEYS = [0, DURATION];
 // threaded. Numbers below were found by searching the legs' channels for the
 // ledger contacts, then staged by figurefour_tableau.constraints.mjs.
 export const GEORGE = pose({
-    lArm: -0.223, rArm: -0.50, lElbow: 0.40, rElbow: 0.40,
-    lLeg: 1.014, lKnee: 2.153, rLeg: -0.496, rKnee: 1.331,
-    tilt: -1.44, lift: -80.492,
+    lArm: -0.088, rArm: -0.508, lElbow: 0.339, rElbow: 0.2,
+    lLeg: 1.484, lKnee: 0.274, rLeg: 0.019, rKnee: 1.056,
+    tilt: -0.73, lift: -87.362,
 });
 // The receiver on his back, feet toward George, arms at rest.
 export const RECEIVER = pose({
     lArm: 0.05, rArm: 0.05, lElbow: 0.10, rElbow: 0.10,
-    lLeg: 0.70, lKnee: 1.323, rLeg: 1.172, rKnee: 0.30,
+    lLeg: 0.5, lKnee: 0.2, rLeg: 1.45, rKnee: 2.498,
     tilt: -1.52, lift: LYING,
 });
-const X = { attacker: 53.088, defender: 141.6 };
+const X = { attacker: 82.659, defender: 171.816 };
 
-// The ledger's lock chain (LEDGER.md, 1.60-3.40 s), back -> front: George's
-// pelvis behind the straight leg S; the brace B over S's thigh; the trapping leg
-// T over B; the crossed leg C on top, its ankle across T's shin. Anatomical
-// names, so it holds in both facings and on every rig.
+// The ledger's lock chain, back -> front: the hurt far leg H behind George (he sits
+// between the receiver's legs); George's torso; B; T lying across H; the
+// receiver's near leg N over George's lap. Anatomical names, so it holds in both
+// facings and on every rig.
 export const LOCK_CHAIN = [
-    ['attacker', 'torso'], ['defender', 'rLeg'], ['attacker', 'rLeg'], ['attacker', 'lLeg'], ['defender', 'lLeg'],
+    ['defender', 'rLeg'], ['attacker', 'torso'], ['attacker', 'rLeg'], ['attacker', 'lLeg'], ['defender', 'lLeg'],
 ];
 
 const track = (poseAt, x) => ({ keyframes: KEYS.map(at => ({ at, ease: 'linear', pose: { ...poseAt }, transform: { x, y: 0 }, parts: {} })) });

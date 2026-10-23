@@ -52,14 +52,14 @@ export const SPECS = {
         landings: [{ role: 'defender', part: 'torso', event: 'impact', after: 0.3 }],
     },
     figureFourTableau: {
-        // research/animation/figure-four-tableau/LEDGER.md, locked beat. Legs are
-        // named by channel: George's lLeg is T (trapping), rLeg is B (bracing);
-        // the receiver's lLeg is C (crossed), rLeg is S (straight, hurt).
+        // research/animation/figure-four-tableau/LEDGER.md (v2 roles), locked beat.
+        // Receiver: rLeg = H (hurt, bent, shin southward), lLeg = N (near, straight).
+        // George: lLeg = T (lands across H), rLeg = B (stepped between the legs).
         contacts: [
-            { role: 'defender', source: 'lAnkle', target: 'seg:lKnee-lAnkle', from: 0, to: 1, kind: 'trap', tol: 0.05,
-                label: 'receiver\'s crossed ankle (C) across George\'s trapping shin (T)' },
-            { role: 'attacker', source: 'rAnkle', target: 'seg:rHip-rKnee', from: 0, to: 1, kind: 'brace', tol: 0.08,
-                label: 'George\'s bracing ankle (B) against the straight leg\'s thigh (S)' },
+            { role: 'attacker', source: 'lAnkle', target: 'seg:rKnee-rAnkle', from: 0, to: 1, kind: 'trap', tol: 0.05,
+                label: 'George\'s near ankle (T) across the receiver\'s bent far shin (H)' },
+            { role: 'attacker', source: 'rAnkle', target: 'seg:lHip-lKnee', from: 0, to: 1, kind: 'brace', tol: 0.08,
+                label: 'George\'s far ankle (B), stepped between, against the near thigh (N)' },
         ],
     },
     hammerlock: {},

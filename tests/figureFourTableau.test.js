@@ -39,7 +39,7 @@ test('the critic spec names the ledger contacts by channel with kind and tol', (
     const { contacts } = specFor('figureFourTableau');
     assert.deepEqual(contacts.map(c => c.kind), ['trap', 'brace']);
     assert.ok(contacts.every(c => Number.isFinite(c.tol) && /^[lr]/.test(c.source)));
-    assert.match(contacts[0].target, /^seg:lKnee-lAnkle$/);
+    assert.match(contacts[0].target, /^seg:rKnee-rAnkle$/);
 });
 
 test('the tableau is a draft only: no clip is exported to src/', () => {

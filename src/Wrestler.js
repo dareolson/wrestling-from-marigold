@@ -4,6 +4,8 @@ import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
 import { resolveSemanticSlots } from './rig/partVariants.js';
 import { dropkickClip } from './animation/clips/dropkick.js';
+import { frontKickClip } from './animation/clips/frontKick.js';
+import { shoveClip } from './animation/clips/shove.js';
 // ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
 import { dropkickV2Clip } from './animation/clips/dropkickV2.js';
 import { elbowDropClip } from './animation/clips/elbowDrop.js';
@@ -34,6 +36,19 @@ const SELL_TAIL_SEC = 0.3;
 // The dropkick v2 candidate connects with Lou this far from George (rig units;
 // author_dropkick_v2.mjs DROPKICK_V2_REACH), inside the unchanged hit range.
 const DROPKICK_V2_REACH = 92;
+// Front kick: the attacker settles this far from the target (the distance
+// tools/move-editor/author_frontkick.mjs poses the boot to meet the belly at),
+// may start it from FRONT_KICK_REACH, and the boot still counts at FRONT_KICK_HIT.
+// Same ring-depth lane the separation and combat-blend code use: a target who
+// stepped off the attacker's row during the wind-up is missed, not hit.
+const STRIKE_DEPTH_TOLERANCE = 26;
+const FRONT_KICK_STANDOFF = 84;
+const FRONT_KICK_REACH    = 130;
+const FRONT_KICK_HIT      = 115;
+// Shove: a point-blank guard-breaker (tools/move-editor/author_shove.mjs poses
+// the palms to meet the chest at SHOVE_STANDOFF); still counts out to SHOVE_HIT.
+const SHOVE_STANDOFF = 76;
+const SHOVE_HIT      = 100;
 // v2 opens with a run-up stride; from closer than this (rig units) there is
 // no room for one, so the clip starts at its gather (author_dropkick_v2.mjs
 // AT.gather) — a crouch and jump from where he stands.
@@ -102,6 +117,8 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     kneeLift:           9,
     backBodyDrop:      16,
     kneeDrop:          12,
+    frontKick:          7, // planted push-kick: light damage, a stagger and a step back
+    shove:              4, // two-handed guard-breaker: little damage, opens a blocker and gives ground
 };
 // Kick-out chance: 100% at full stamina, 0% at or below this threshold
 const KICKOUT_FLOOR = 15;
@@ -1155,6 +1172,17 @@ export default class Wrestler {
             return 'kneeDrop';
         }
 
+        // Front kick — directional override (down + power) of the close strikes:
+        // a planted push-kick to the belly from jab range out to a stride away.
+        // Checked here, not in resolvePowerMove, for the same reason as the
+        // knee lift: it reads the held direction, so no default strike can
+        // shadow it.
+        if (this.input.isDown('down') && (other.state === 'standing' || other.state === 'blocking') &&
+            dist <= FRONT_KICK_REACH * this.s && this.moveSet.includes('frontKick')) {
+            this._doFrontKick(other);
+            return 'frontKick';
+        }
+
         const move = resolvePowerMove({
             dist,
             scale:      this.s,
@@ -1165,6 +1193,7 @@ export default class Wrestler {
         switch (move) {
             case 'headbutt':  this._doHeadbutt(other);  return 'headbutt';
             case 'elbowDrop': this._doElbowDrop(other); return 'elbowDrop';
+            case 'shove':     this._doShove(other);     return 'shove';
             case 'jab':       this._doJab(other);       return 'jab';
             case 'dropkick':  this._doDropkick(other);  return 'dropkick';
             default:          return false;
@@ -1360,6 +1389,82 @@ export default class Wrestler {
             },
             onComplete: () => { this._activeMove = null; },
             onCancel:   () => { this._activeMove = null; },
+        });
+    }
+
+    // Front kick — a planted push-kick on the clip runtime (clips/frontKick.js,
+    // author_frontkick.mjs). The attacker first closes to (or backs off to)
+    // the clip's boot-to-belly standoff, so the art connects at any legal
+    // range; damage, stagger and the push-back land on the authored impact
+    // frame only, and only if the target is still in reach then. The
+    // push-back moves the defender, never the attacker.
+    _doFrontKick(other) {
+        const runtime = this.scene.moveRuntime;
+        if (!runtime) return;
+        this._cancelActiveMove('refrontkick');
+        const facing = Math.sign(other.x - this.x) || this.facing;
+        this.facing  = facing;
+        const b       = ringBoundsAtY(this.y);
+        const margin  = 30 * this.s;
+        const clampX  = x => Math.max(b.left + margin, Math.min(b.right - margin, x));
+        const standX  = clampX(other.x - facing * FRONT_KICK_STANDOFF * this.s);
+        const stance  = this.scene.tweens.add({ targets: this, x: standX, duration: 200, ease: 'Sine.easeOut' });
+        this._activeMove = runtime.play(frontKickClip.id, { attacker: this }, {
+            onEvent: (event) => {
+                if (event.type !== 'impact') return;
+                if (other.state === 'evading') {
+                    this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'frontKick' });
+                    return;
+                }
+                const strikable = other.state === 'standing' || other.state === 'blocking' || other.state === 'staggered';
+                if (!strikable || Math.abs(other.y - this.y) > STRIKE_DEPTH_TOLERANCE ||
+                    Math.abs(other.x - this.x) > FRONT_KICK_HIT * this.s) return;
+                other._hurt(STAMINA_DRAIN.frontKick, 'frontKick');
+                other._doSell('sellChest', 110, () => other.startStagger());
+                // The boot shoves him a step away from the attacker.
+                const pushX = Math.max(b.left + margin, Math.min(b.right - margin, other.x + facing * 28 * this.s));
+                this.scene.tweens.add({ targets: other, x: pushX, duration: 105, ease: 'Cubic.easeOut' });
+                this.scene.crowd?.impact?.('kick', 0.7);
+            },
+            onComplete: () => { this._activeMove = null; },
+            onCancel:   () => { stance.stop(); this._activeMove = null; },
+        });
+    }
+
+    // Shove — a two-handed guard-breaker on the clip runtime (clips/shove.js,
+    // author_shove.mjs). Same shape as the front kick: settle to the clip's
+    // palms-to-chest standoff, land damage/stagger/push on the impact frame
+    // only while the target is still in reach, and move the defender, never
+    // the attacker.
+    _doShove(other) {
+        const runtime = this.scene.moveRuntime;
+        if (!runtime) return;
+        this._cancelActiveMove('reshove');
+        const facing = Math.sign(other.x - this.x) || this.facing;
+        this.facing  = facing;
+        const b       = ringBoundsAtY(this.y);
+        const margin  = 30 * this.s;
+        const clampX  = x => Math.max(b.left + margin, Math.min(b.right - margin, x));
+        const standX  = clampX(other.x - facing * SHOVE_STANDOFF * this.s);
+        const stance  = this.scene.tweens.add({ targets: this, x: standX, duration: 150, ease: 'Sine.easeOut' });
+        this._activeMove = runtime.play(shoveClip.id, { attacker: this }, {
+            onEvent: (event) => {
+                if (event.type !== 'impact') return;
+                if (other.state === 'evading') {
+                    this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'shove' });
+                    return;
+                }
+                const strikable = other.state === 'standing' || other.state === 'blocking' || other.state === 'staggered';
+                if (!strikable || Math.abs(other.y - this.y) > STRIKE_DEPTH_TOLERANCE ||
+                    Math.abs(other.x - this.x) > SHOVE_HIT * this.s) return;
+                other._hurt(STAMINA_DRAIN.shove, 'shove');
+                other._doSell('sellChest', 110, () => other.startStagger());
+                const pushX = Math.max(b.left + margin, Math.min(b.right - margin, other.x + facing * 40 * this.s));
+                this.scene.tweens.add({ targets: other, x: pushX, duration: 105, ease: 'Cubic.easeOut' });
+                this.scene.crowd?.impact?.('strike', 0.6);
+            },
+            onComplete: () => { this._activeMove = null; },
+            onCancel:   () => { stance.stop(); this._activeMove = null; },
         });
     }
 

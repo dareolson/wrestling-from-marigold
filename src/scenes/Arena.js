@@ -18,6 +18,7 @@ import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
+import { ROSTER_KITS } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
 import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
 
@@ -3013,14 +3014,14 @@ export default class Arena extends Phaser.Scene {
             },
             // Roster comparison rigs (2026-10-18), opt-in by name: `?p1=guido-roster-v1` etc.
             'guido-roster-v1': {
-                name: 'GUIDO', personality: 'george', idlePose: guidoRosterV1.idlePose, begsOff: guidoRosterV1.begsOff, struts: guidoRosterV1.struts, sellStyle: guidoRosterV1.sellStyle,
+                name: 'GUIDO', personality: 'guido', idlePose: guidoRosterV1.idlePose, begsOff: guidoRosterV1.begsOff, struts: guidoRosterV1.struts, sellStyle: guidoRosterV1.sellStyle,
                 skin: 0xd9a070, trunks: 0x7a1c22,
-                moveSet: guidoRosterV1.moveSet, textures: guidoRosterV1.textures,
+                moveSet: ROSTER_KITS.guido, textures: guidoRosterV1.textures,
             },
             'kowalski-roster-v1': {
-                name: 'KOWALSKI', personality: 'thesz', idlePose: kowalskiRosterV1.idlePose,
+                name: 'KOWALSKI', personality: 'kowalski', idlePose: kowalskiRosterV1.idlePose,
                 skin: 0xe8c098, trunks: 0x8a1c24,
-                moveSet: kowalskiRosterV1.moveSet, textures: kowalskiRosterV1.textures,
+                moveSet: ROSTER_KITS.kowalski, textures: kowalskiRosterV1.textures,
             },
             'george-roster-v1': {
                 name: 'GEORGE', personality: 'george', idlePose: georgeRosterV1.idlePose, begsOff: georgeRosterV1.begsOff, struts: georgeRosterV1.struts, sellStyle: georgeRosterV1.sellStyle,
@@ -3284,7 +3285,7 @@ export default class Arena extends Phaser.Scene {
             dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
             headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
             jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12, theszPress: 16,
-            hammerlock: 5, kneeLift: 5, backBodyDrop: 10, kneeDrop: 7, figureFour: 14, hipToss: 6, armBar: 8, ankleLock: 8,
+            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, figureFour: 14, hipToss: 6, armBar: 8, ankleLock: 8,
         };
         const n = bumps[move];
         if (n) this.bumpHeat(n);

@@ -18,6 +18,8 @@ import { piledriverClip } from './piledriver.js';
 import { bodySlamClip } from './bodySlam.js';
 import { suplexClip } from './suplex.js';
 import { dropkickClip } from './dropkick.js';
+import { frontKickClip } from './frontKick.js';
+import { shoveClip } from './shove.js';
 import { elbowDropClip } from './elbowDrop.js';
 import { kneeDropClip } from './kneeDrop.js';
 import { divingElbowClip } from './divingElbow.js';
@@ -37,6 +39,8 @@ export const REGISTERED_MOVE_CLIPS = [
     bodySlamClip,
     suplexClip,
     dropkickClip,
+    frontKickClip,
+    shoveClip,
     elbowDropClip,
     kneeDropClip,
     divingElbowClip,

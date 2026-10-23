@@ -29,6 +29,17 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**Front kick, roster kits, shove — 2026-10-21 (Claude, local only, unpushed):**
+`frontKick` (Down + Power) and `shove` are on the clip runtime; per-wrestler kits
+now live in `src/characters/rosterKits.js` (outside the generated roster files),
+with first-draft `kowalski`/`guido` AI personalities. Both strike executors
+check ring depth and range at the impact frame, and their push (105 ms) ends
+before the stagger travel starts (110 ms); `tests/frontKick.test.js` now covers
+that executor. Open: Kowalski/Guido identities need Derek's call, boot layers
+over the belly, stagger reads as a push at full stamina, foley unauditioned.
+Next: slot-table move selection, AI branches as data.
+[Details](AI_HANDOFF_ENTRIES/2026-10-21-claude-front-kick-and-kit-architecture.md).
+
 **George figure-four: existing-art pass first — 2026-10-18 (Derek / Codex):**
 Before commissioning limb replacements, solve one readable locked tableau,
 name the straight/crossed/trapping/bracing legs, prove trapped contacts and

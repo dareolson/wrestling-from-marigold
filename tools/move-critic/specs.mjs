@@ -52,6 +52,17 @@ export const SPECS = {
         landings: [{ role: 'defender', part: 'torso', event: 'impact', after: 0.3 }],
     },
     hammerlock: {},
+    frontKick: {
+        solo: true,
+        // The kick leads with lLeg: the near leg facing right. The boot meets
+        // the belly, not the thigh or the ribs.
+        strikes: [{ role: 'attacker', source: 'nearAnkle', target: 'part:torso' }],
+    },
+    shove: {
+        solo: true,
+        // Both palms drive into the chest: the near hand lands on the torso.
+        strikes: [{ role: 'attacker', source: 'nearWrist', target: 'part:torso' }],
+    },
     jab: {
         solo: true,
         // The jab punches with lArm: the near arm facing right.

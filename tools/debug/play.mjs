@@ -319,6 +319,44 @@ const SCENARIOS = {
         },
     },
 
+    // Front kick: hold down + power at a stride's distance. Both facings — P1
+    // kicks facing right, P2 (the keyboard dummy, arrows + Shift) facing left.
+    frontKick: {
+        p1: 'kowalski-roster-v1', p2: 'guido-roster-v1',
+        expect: { move: 'frontKick' },
+        async run(h) {
+            await approach(h, 95);
+            await hold(h.page, 's');
+            await tap(h.page, 'g');
+            await releaseAll(h.page);
+        },
+    },
+
+    frontKickP2: {
+        p1: 'guido-roster-v1', p2: 'kowalski-roster-v1',
+        expect: { move: 'frontKick' },
+        async run(h) {
+            await approach(h, 95);
+            await h.page.keyboard.down('ArrowDown');
+            await tap(h.page, 'Shift');
+            await h.page.keyboard.up('ArrowDown');
+        },
+    },
+
+    // Shove: P2 braces, P1 (Kowalski) presses Power at point blank and breaks the guard.
+    shove: {
+        p1: 'kowalski-roster-v1', p2: 'guido-roster-v1',
+        expect: { move: 'shove' },
+        async run(h) {
+            await approach(h, 70);
+            await hold(h.page, '.'); // P2 block stance
+            await h.page.waitForTimeout(200);
+            await tap(h.page, 'g');
+            await h.page.waitForTimeout(900);
+            await releaseAll(h.page);
+        },
+    },
+
     backBodyDrop: { // hold up + grapple vs a returning runner — overrides the clothesline
         expect: { move: 'backBodyDrop' },
         async run(h) {

@@ -79,6 +79,38 @@ const PERSONALITIES = {
     },
 };
 
+// Roster comparison rigs (2026-10-21). Until now Kowalski played Lou's
+// personality and Guido George's. These start from the closest existing
+// temperament and move it toward the proposed identities; Derek has not signed
+// off on the identities, so treat every number here as a first draft.
+PERSONALITIES.kowalski = {
+    ...PERSONALITIES.thesz,
+    // Power offense: heavier, slower beats; fewer holds and flying moves, more
+    // throws on a stunned man and shoves-with-the-boot to keep him in range.
+    cheapShotOdds:    0.30,
+    dropkickOdds:     0.05,
+    holdOdds:         0.55,
+    cooldownScale:    1.25,
+    staggerSlamOdds:  0.50,
+    blockOdds:        0.20,
+    frontKickOdds:    0.30,
+};
+PERSONALITIES.guido = {
+    ...PERSONALITIES.brawler,
+    // Close-range brawler: he walks in, trades, and follows up on the mat.
+    cheapShotOdds:    0.50,
+    dropkickOdds:     0.05,
+    cooldownScale:    1.0,
+    staggerSlamOdds:  0.40,
+    evadeOdds:        0.08,
+    coverStamina:     55,
+    pinWait:          [1.2, 2.0],
+    kneeLiftOdds:     0.25,
+    kneeDropOdds:     0.35,
+    figureFourOdds:   0.20,
+    frontKickOdds:    0.30,
+};
+
 export default class AIHandler {
     constructor(personality = 'brawler') {
         this._cfg         = PERSONALITIES[personality] ?? PERSONALITIES.brawler;
@@ -431,6 +463,11 @@ export default class AIHandler {
                     this._hold('up');
                     this._attack('power', 0.75); // knee lift
                     this._lastCloseMove = 'kneeLift';
+                } else if (self.moveSet.includes('frontKick') && opp.state === 'standing' &&
+                           this._lastCloseMove !== 'frontKick' && Math.random() < (cfg.frontKickOdds ?? 0)) {
+                    this._hold('down');
+                    this._attack('power', 0.9); // front kick
+                    this._lastCloseMove = 'frontKick';
                 } else {
                     this._attack('power', 0.55); // jab
                     this._lastCloseMove = 'jab';
@@ -454,6 +491,15 @@ export default class AIHandler {
                 opp.stamina < (cfg.pressHuntAt ?? 0) && opp.state === 'standing' &&
                 dist > GRAPPLE_REACH * 1.1 && !this._nearRopes(opp)) {
                 this._attack('finisher', 1.5);
+                return;
+            }
+            // Front kick from a stride away: keeps a stalking opponent honest
+            // and pushes him back out.
+            if (self.moveSet.includes('frontKick') && opp.state === 'standing' &&
+                dist < 125 * scale &&
+                Math.random() < (cfg.frontKickOdds ?? 0)) {
+                this._hold('down');
+                this._attack('power', 0.9); // front kick
                 return;
             }
             if (Math.random() < cfg.dropkickOdds) {

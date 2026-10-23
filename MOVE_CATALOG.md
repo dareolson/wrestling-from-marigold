@@ -19,6 +19,8 @@ moves are older stance-to-stance animations on the same rig.
 | Move id | Kind | How it's triggered | Animation | Who has it |
 |---|---|---|---|---|
 | `jab` | strike | Power, close to a standing opponent | clip | George, Lou |
+| `frontKick` | strike | Hold Down + Power vs a standing/blocking opponent, jab range out to ~130 | clip (Bret 171–175) | Kowalski, Guido (roster rigs; `src/characters/rosterKits.js`) |
+| `shove` | strike | Power, close to a *blocking* opponent (replaces the jab as the guard-breaker) | clip (Bret 109–114) | Kowalski (`rosterKits.js`) |
 | `headbutt` | strike | Power, close to a staggered opponent | pose sequence | George |
 | `kneeLift` | strike | Hold up + Power at point blank | pose sequence | George |
 | `clothesline` | strike | Grapple in range / vs a runner coming off the ropes | pose sequence | George, Lou |
@@ -69,8 +71,8 @@ These are identified frame by frame and only need posing and wiring.
 |---|---|---|
 | **Sharpshooter** (Bret's finisher) | Bret 383–398 | grab the legs, step through, turn him over, sit back |
 | Chair shot | Bret 259–278 | **storyline only** — rare in the era; a one-off moment, not a regular move. Needs a chair prop |
-| Front kick | Bret 171–175, 396 | |
-| Shove | Bret 109–114 | |
+| ~~Front kick~~ | Bret 171–175, 396 | **Built 2026-10-21** (`frontKick`) |
+| ~~Shove~~ | Bret 109–114 | **Built 2026-10-21** (`shove`) |
 | Backward roll (escape) | Bret 239–243 | |
 | Mounted / kneeling punches | Bret 180–183 | on a downed opponent |
 | Back body drop (victim's flip) | Bret 184–193 | upgrade of the existing `backBodyDrop` |

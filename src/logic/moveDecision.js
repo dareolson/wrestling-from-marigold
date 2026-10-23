@@ -31,6 +31,12 @@ export function resolvePowerMove(context) {
         return 'elbowDrop';
     }
 
+    // Shove: the guard-breaker. A man hiding behind his block gets pushed open
+    // instead of jabbed; anyone without it in their kit still jabs.
+    if (otherState === 'blocking' && dist <= jabReach && moveSet.includes('shove')) {
+        return 'shove';
+    }
+
     // Jab: point-blank strike vs standing — staggers, sets up follow-ups.
     // Strikes beat block: a blocking opponent is a legal strike target.
     const strikable = otherState === 'standing' || otherState === 'blocking';

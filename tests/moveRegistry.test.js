@@ -20,6 +20,7 @@ import {
 import Wrestler, { MOVE_DEFS, STAMINA_DRAIN } from '../src/Wrestler.js';
 import { george } from '../src/characters/george.js';
 import { thesz } from '../src/characters/thesz.js';
+import { ROSTER_KITS } from '../src/characters/rosterKits.js';
 import { REGISTERED_MOVE_CLIPS } from '../src/animation/clips/index.js';
 
 const CATEGORIES = new Set(Object.values(MOVE_CATEGORY));
@@ -231,7 +232,8 @@ test('validateKit passes a clean kit', () => {
 const UNASSIGNED_POOL = [];
 
 test('built-but-unassigned moves are exactly the catalog pool', () => {
-    const orphans = orphanedMoves(george.moveSet, thesz.moveSet);
+    // The roster comparison kits count: frontKick is built for them first.
+    const orphans = orphanedMoves(george.moveSet, thesz.moveSet, ...Object.values(ROSTER_KITS));
     assert.deepEqual(orphans.sort(), [...UNASSIGNED_POOL].sort(),
         'a move became unreachable, or one was assigned without updating UNASSIGNED_POOL');
 });

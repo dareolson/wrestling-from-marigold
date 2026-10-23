@@ -36,6 +36,8 @@ Gamepad *mapping* exists in `InputHandler.js` (the table above), but it isn't wi
 | Staggered | Headbutt | 110px | ✓ | ✓ |
 | Downed | Elbow drop | 110px | ✓ | ✓ |
 | Standing — medium | Dropkick | 220px | ✓ | ✓ |
+| Blocking, point-blank | Shove (kit-gated; replaces jab) | 85px | ✓ | ✓ |
+| Standing/blocking, **hold Down** | Front kick (kit-gated) | 130 units | ✓ | ✓ |
 
 ### Finisher (H / Space / Y)
 

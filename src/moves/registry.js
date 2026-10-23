@@ -97,6 +97,20 @@ export const MOVE_SPECS = {
         trigger: 'tryPower() -> resolvePowerMove() — standing/blocking target inside medReach',
         ai: ['midRange', 'knockdown'],
     },
+    frontKick: {
+        category: C.STRIKE, clip: 'frontKick', executor: '_doFrontKick',
+        sell: { part: 'chest', intensity: 0.5 },
+        damageKey: 'frontKick', poseSeq: false, legacyFallback: null, kitGated: true,
+        trigger: 'tryPower() — hold down + power vs a standing/blocking target inside 130 units; directional override like kneeLift',
+        ai: ['midRange', 'push', 'causesStagger'],
+    },
+    shove: {
+        category: C.STRIKE, clip: 'shove', executor: '_doShove',
+        sell: { part: 'chest', intensity: 0.5 },
+        damageKey: 'shove', poseSeq: false, legacyFallback: null, kitGated: true,
+        trigger: 'tryPower() -> resolvePowerMove() — blocking target inside jabReach; replaces the jab as the guard-breaker',
+        ai: ['guardBreak', 'push', 'causesStagger'],
+    },
     doubleAxeHandle: {
         category: C.STRIKE, clip: null, executor: '_doDoubleAxeHandle',
         sell: { part: 'head', intensity: 0.6 },

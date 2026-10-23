@@ -36,6 +36,10 @@ Read that file's figure-four performance sheet before T1.1. Also read
   the tableau is v3 (`064b4eb`) and the ledger has the v2/v3 notes and the failing left-facing/roster
   contacts. Stage 3 stays unstarted. The shared machinery (clipLayers, critic seg:/tol, editor
   layering, `_pain`) is done and reusable. Stage 4 (suplex aftermath) does not depend on G1.
+- 2026-10-23: Claude (Sonnet), Stage 4: T4.2 `eea8ca1` (measured `groundedSlot`, `sideSwap`; NOT flagged),
+  T4.3 `84dc620` and T4.4 `cad833f` (both behind `?aftermath=v2`; flag read only in Wrestler.js, no Arena
+  registration needed because it registers no clip), T4.5 film + stills in
+  `research/animation/aftermath-g3/` (README there). **Stopped at ⛔ G3.**
 
 ## Ground rules for the executor
 

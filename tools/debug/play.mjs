@@ -382,6 +382,32 @@ const SCENARIOS = {
         },
     },
 
+    figureFour: { // George downs Procreate Lou (jab → headbutt), then a plain finisher press on the man down
+        p1: 'george', p2: 'thesz-procreate-v1', // chains through combo, which needs george's headbutt
+        expect: { move: 'figureFour' },
+        async run(h) {
+            await SCENARIOS.combo.run(h);
+            await until(h, s => s.w2.st === 'down', 'w2 down');
+            await approach(h, 75);
+            await tap(h.page, 'h');
+        },
+    },
+
+    figureFourP2: { // roles in the slots swapped: George is P2 (faces left), Procreate Lou is P1
+        p1: 'thesz-procreate-v1', p2: 'george',
+        expect: { move: 'figureFour' },
+        async run(h) {
+            await approach(h, 65);
+            await tap(h.page, 'Shift'); // jab
+            await h.page.waitForTimeout(400);
+            await until(h, s => s.w1.st === 'staggered', 'w1 staggered');
+            await tap(h.page, 'Shift'); // headbutt
+            await until(h, s => s.w1.st === 'down', 'w1 down');
+            await approach(h, 75);
+            await tap(h.page, 'Space');
+        },
+    },
+
     pin: { // jab → headbutt → cover; first fatal cover is always a 2.9 save, so down them again → pinfall
         p1: 'george', // chains through combo, which needs george's headbutt
         expect: { type: 'pinfall' },

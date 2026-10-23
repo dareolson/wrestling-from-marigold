@@ -323,3 +323,72 @@ test('limb null behaves exactly as today', () => {
         assert.deepEqual([...new Set(handTarget(w))], ['nearKnee']); // the near clutch, as before the limb existed
     } finally { Math.random = rand0; }
 });
+
+// ── Compact fallback (T4.3, ?aftermath=v2) ─────────────────────────────────
+// Derek's Q2 is final: economical may skip a reaction only below severity 0.6.
+const noneRand = (style) => (style === 'economical' ? () => 0.1 : () => 0.99); // economical: 'none' band; theatrical: roll (never fits a tiny budget)
+
+test('compact: severity >= 0.6 and an empty plan gives one compact clutch, both styles', () => {
+    for (const style of Object.keys(SELL_STYLES)) for (const lying of ['supine', 'prone']) {
+        for (const intensity of [0.6, 0.8, 1]) {
+            // economical forced to `none`; theatrical's budget too small for any full sell
+            const budget = style === 'economical' ? 3.85 : 0.7;
+            const plan = planSells({ style, lying, part: 'back', intensity, budget, rand: noneRand(style), compact: true });
+            assert.equal(plan.length, 1, `${style} ${lying} ${intensity}`);
+            assert.equal(plan[0].name, 'clutch');
+            assert.equal(plan[0].compact, true);
+            assert.ok(Math.abs(plan[0].duration - 0.55 * SELL_STYLES[style].pace) < 1e-9);
+        }
+    }
+});
+
+test('compact: below severity 0.6 economical may still skip, flag or not', () => {
+    for (const intensity of [0.3, 0.5, 0.59]) {
+        assert.deepEqual(planSells({ style: 'economical', lying: 'supine', part: 'chest', intensity, budget: 3.85, rand: noneRand('economical'), compact: true }), []);
+    }
+});
+
+test('compact: never exceeds the budget; a budget smaller than the compact sell gives nothing', () => {
+    for (const style of Object.keys(SELL_STYLES)) {
+        const need = 0.55 * SELL_STYLES[style].pace;
+        assert.deepEqual(planSells({ style, lying: 'supine', part: 'back', intensity: 1, budget: need - 0.01, rand: noneRand(style), compact: true }), []);
+        let seed = 3;
+        const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+        for (const budget of [0.2, 0.5, 0.6, 0.7, 1.2, 3.85]) for (let i = 0; i < 60; i++) {
+            const plan = planSells({ style, lying: 'prone', part: 'back', intensity: 1, budget, rand, compact: true });
+            assert.ok(plan.reduce((t, p) => t + p.duration, 0) <= budget + 1e-9);
+        }
+    }
+});
+
+test('compact off: the plan is identical to today\'s for the same rand sequence', () => {
+    for (const style of Object.keys(SELL_STYLES)) for (const lying of ['supine', 'prone']) {
+        for (const budget of [0.4, 0.7, 1.5, 3.85]) for (let seed = 1; seed < 30; seed++) {
+            const mk = () => { let s = seed; return () => ((s = (s * 16807) % 2147483647) / 2147483647); };
+            const args = { style, lying, part: 'back', intensity: 1, budget };
+            assert.deepEqual(planSells({ ...args, rand: mk() }), planSells({ ...args, rand: mk(), compact: false }));
+        }
+    }
+    // and with the flag, a plan that was non-empty is untouched
+    const mk = () => { let s = 5; return () => ((s = (s * 16807) % 2147483647) / 2147483647); };
+    const args = { style: 'theatrical', lying: 'supine', part: 'back', intensity: 1, budget: 3.85 };
+    assert.deepEqual(planSells({ ...args, rand: mk() }), planSells({ ...args, rand: mk(), compact: true }));
+});
+
+test('compact on a Wrestler follows ?aftermath=v2 and nothing else', () => {
+    const run = (search) => {
+        globalThis.location = { search };
+        const w = downed({ style: 'economical' });
+        w._hurt(10, 'suplex'); // registry intensity 1.0, part back
+        const rand0 = Math.random; Math.random = () => 0.1; // economical: none
+        try { w.tickDown(1 / 60); } finally { Math.random = rand0; }
+        return w._sell?.plan ?? [];
+    };
+    try {
+        assert.deepEqual(run(''), []);
+        assert.deepEqual(run('?aftermath=v1'), []);
+        const on = run('?aftermath=v2');
+        assert.equal(on.length, 1);
+        assert.equal(on[0].compact, true);
+    } finally { delete globalThis.location; }
+});

@@ -218,14 +218,20 @@ export const SELL_STYLES = {
     theatrical: { amp: 1.3, pace: 1.15, chain: true, weights: { clutch: 0.35, writhe: 0.25, kick: 0.2, roll: 0.2 } },
 };
 
+// ?aftermath=v2 (D4): from this severity up there is always at least a compact
+// clutch (Derek, Q2); economical may still skip a reaction below it.
+export const COMPACT_MIN_SEVERITY = 0.6;
+export const COMPACT_CLUTCH_SEC = 0.55;
+
 /**
  * Plan the sells for one trip to the mat: a list of { name, lying, part,
  * duration, amp } that fits inside `budget` seconds. `rand` is injectable for
  * tests. Prone has no kick and stirs instead of writhing. `limb` rides along
  * on each entry (with `rolls`, the rolls done before it) so the clutch can find
- * its slot.
+ * its slot. `compact` (?aftermath=v2, D4): a hurt of intensity >= 0.6 never
+ * sells nothing; if the plan comes out empty, plan one compact clutch.
  */
-export function planSells({ style = 'economical', lying, part = 'chest', intensity = 0.8, budget, rand = Math.random, limb = null }) {
+export function planSells({ style = 'economical', lying, part = 'chest', intensity = 0.8, budget, rand = Math.random, limb = null, compact = false }) {
     const st = SELL_STYLES[style] ?? SELL_STYLES.economical;
     const amp = st.amp * (0.6 + 0.4 * intensity);
     const pick = (weights) => {
@@ -250,6 +256,10 @@ export function planSells({ style = 'economical', lying, part = 'chest', intensi
         if (!st.chain || plan.length >= 2) break;
         // After a roll, clutch where it hurts; otherwise sometimes nothing more.
         name = plan.at(-1).name === 'roll' ? 'clutch' : pick({ none: 0.4, clutch: 0.4, writhe: 0.2 });
+    }
+    if (compact && !plan.length && intensity >= COMPACT_MIN_SEVERITY) {
+        const duration = COMPACT_CLUTCH_SEC * st.pace;
+        if (duration <= budget) plan.push({ name: 'clutch', lying, part, duration, amp, limb, rolls: 0, compact: true });
     }
     return plan;
 }

@@ -55,6 +55,10 @@ const SHOVE_HIT      = 100;
 const DROPKICK_V2_STRIDE_MIN_GAP = 130;
 export const DROPKICK_V2_GATHER_AT = 0.22;
 const dropkickCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('dropkick') === 'v2';
+// ?aftermath=v2: the compact fallback sell and the protective recovery overlay
+// (PLAN_MOVE_PERFORMANCE.md D4), a comparison until Derek approves it at G3.
+// Flag off, neither exists and nothing below reads _pain beyond today's sells.
+const aftermathCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('aftermath') === 'v2';
 // Below this a wrestler who begs off (George) begs instead of taunting —
 // the AI's begging-off threshold (AIHandler george.retreatStamina).
 const BEG_STAMINA = 35;
@@ -952,7 +956,7 @@ export default class Wrestler {
                 const plan = planSells({
                     style: this.sellStyle, lying: this.lying, part: pain.part, intensity: pain.severity,
                     budget: this.stateTimer - SELL_LEAD_SEC - SELL_TAIL_SEC,
-                    limb: pain.limb,
+                    limb: pain.limb, compact: aftermathCandidate(),
                 });
                 // facing0: the facing he went down with. The hurt limb's slot is
                 // measured from it, plus one flip per roll (groundedSlot).

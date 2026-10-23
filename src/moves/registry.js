@@ -194,7 +194,9 @@ export const MOVE_SPECS = {
     },
     figureFour: {
         category: C.HOLD, clip: 'figureFour', executor: '_doFigureFour',
-        sell: { part: 'knee', intensity: 1.0 },
+        // rLeg is the leg George grabs at purchase (the trap's straight leg):
+        // research/animation/figure-four-tableau/LEDGER.md.
+        sell: { part: 'knee', intensity: 1.0, limb: 'rLeg' },
         damageKey: 'figureFour', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryFinisher() — down/possum target in reach',
         ai: ['vsDown', 'holdDrain', 'finisher'],

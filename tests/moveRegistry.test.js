@@ -264,3 +264,8 @@ test('KIT_ELIGIBLE_IDS excludes the universally-available moves', () => {
     }
     assert.ok(KIT_ELIGIBLE_IDS.includes('jab'));
 });
+
+test('figureFour hurts the leg George grabs: sell.limb is rLeg (LEDGER.md)', () => {
+    assert.equal(MOVE_SPECS.figureFour.sell.limb, 'rLeg');
+    assert.equal(MOVE_SPECS.figureFour.sell.part, 'knee');
+});

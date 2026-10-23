@@ -1,0 +1,17 @@
+<!doctype html><meta charset=utf-8><title>G3 aftermath: off vs on</title>
+<style>body{background:#111;color:#ddd;font:14px system-ui;margin:16px}select,input{margin:0 8px}img{width:49%;vertical-align:top}.row{display:flex;gap:4px}h3{margin:6px 0}</style>
+<div>Scenario <select id=sc><option>suplex<option>suplexReverse<option>figureFour<option>figureFourP2</select>
+Frame <input id=f type=range min=0 max=114 value=0 style="width:50%"> <b id=n>0</b>
+<button id=p>play</button> <small>(← → keys step)</small></div>
+<div class=row><div style="width:50%"><h3>OFF (today)</h3><img id=a style="width:100%"></div><div style="width:50%"><h3>ON (?aftermath=v2)</h3><img id=b style="width:100%"></div></div>
+<h3>Clutch stills</h3><div id=st></div>
+<script>
+const $=i=>document.getElementById(i);let t=null;
+function show(){const n=String($('f').value).padStart(3,'0');$('n').textContent=n;
+$('a').src=`off/${$('sc').value}/${n}.jpg`;$('b').src=`on/${$('sc').value}/${n}.jpg`}
+$('f').oninput=show;$('sc').onchange=show;
+$('p').onclick=()=>{if(t){clearInterval(t);t=null;$('p').textContent='play'}else{$('p').textContent='stop';t=setInterval(()=>{$('f').value=(+$('f').value+1)%115;show()},170)}};
+onkeydown=e=>{if(e.key=='ArrowRight'){$('f').value=Math.min(114,+$('f').value+1);show()}if(e.key=='ArrowLeft'){$('f').value=Math.max(0,+$('f').value-1);show()}};
+$('st').innerHTML=['supine_f+1','supine_f-1','prone_f+1','prone_f-1','supine_f+1_afterRoll'].map(s=>`<div>${s}<br><img style="width:80%" src="clutch_stills/${s}.jpg"></div>`).join('');
+show();
+</script>

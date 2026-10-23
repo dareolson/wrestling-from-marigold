@@ -510,7 +510,9 @@ for (const name of names) {
     // that doesn't leak into the next scenario in an `all` run.
     const sc = SCENARIOS[name];
     // WFM_PROCREATE=1 casts the Procreate Lou (thesz-procreate-v1) wherever a scenario says 'thesz'.
-    const cast = c => (process.env.WFM_PROCREATE && c === 'thesz') ? 'thesz-procreate-v1' : c;
+    // WFM_GEORGE=<preset> casts that rig (e.g. george-roster-v1) wherever a scenario says 'george'.
+    const cast = c => (process.env.WFM_PROCREATE && c === 'thesz') ? 'thesz-procreate-v1'
+        : (process.env.WFM_GEORGE && c === 'george') ? process.env.WFM_GEORGE : c;
     if (sc.p1) process.env.WFM_P1 = cast(sc.p1); else delete process.env.WFM_P1;
     if (sc.p2) process.env.WFM_P2 = cast(sc.p2); else delete process.env.WFM_P2;
     // Filming skips the match-start title card (Arena ?notitle=1).

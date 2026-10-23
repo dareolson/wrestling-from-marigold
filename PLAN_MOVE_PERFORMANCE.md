@@ -27,7 +27,12 @@ Read that file's figure-four performance sheet before T1.1. Also read
   exist; add it in T1.1. Pickup is detected in `_tickPain` (left the mat other
   than by rising after this trip's sells were planned), not at each executor.
   Match reset and scene shutdown call `clearPain()` from `Arena.js`.
-- Next: T2.2 → T1.1 → T1.2 → T2.3 → T2.4 → G1.
+- 2026-10-22 · Claude (Sonnet), second session: T2.2 `7169892`, T1.1 `0d4b3f9`, T1.2 `7937d6b`,
+  T2.3 `2577a9c`, T2.4 (this commit; the G1 package is in
+  `research/animation/figure-four-tableau/g1/`). **Stopped at ⛔ G1.** Results and
+  open failures (left-facing and roster trap contacts) are in
+  `research/animation/figure-four-tableau/LEDGER.md`.
+- Next: Derek's answer at G1. Stage 3 hasn't started.
 
 ## Ground rules for the executor
 

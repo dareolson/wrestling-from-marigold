@@ -9,22 +9,22 @@
           "at": 0,
           "ease": "linear",
           "pose": {
-            "lArm": -0.371,
+            "lArm": -0.223,
             "rArm": -0.5,
             "lElbow": 0.4,
             "rElbow": 0.4,
-            "lLeg": 0.582,
+            "lLeg": 1.014,
             "rLeg": -0.496,
-            "lKnee": 1.971,
-            "rKnee": 1.028,
+            "lKnee": 2.153,
+            "rKnee": 1.331,
             "lean": 0,
             "crouch": 0,
             "tilt": -1.44,
-            "lift": -72.006,
+            "lift": -80.492,
             "bend": 0
           },
           "transform": {
-            "x": 49.2,
+            "x": 53.088,
             "y": 0
           },
           "parts": {}
@@ -33,22 +33,22 @@
           "at": 1,
           "ease": "linear",
           "pose": {
-            "lArm": -0.371,
+            "lArm": -0.223,
             "rArm": -0.5,
             "lElbow": 0.4,
             "rElbow": 0.4,
-            "lLeg": 0.582,
+            "lLeg": 1.014,
             "rLeg": -0.496,
-            "lKnee": 1.971,
-            "rKnee": 1.028,
+            "lKnee": 2.153,
+            "rKnee": 1.331,
             "lean": 0,
             "crouch": 0,
             "tilt": -1.44,
-            "lift": -72.006,
+            "lift": -80.492,
             "bend": 0
           },
           "transform": {
-            "x": 49.2,
+            "x": 53.088,
             "y": 0
           },
           "parts": {}
@@ -66,8 +66,8 @@
             "lElbow": 0.1,
             "rElbow": 0.1,
             "lLeg": 0.7,
-            "rLeg": 0.836,
-            "lKnee": 1.035,
+            "rLeg": 1.172,
+            "lKnee": 1.323,
             "rKnee": 0.3,
             "lean": 0,
             "crouch": 0,
@@ -76,7 +76,7 @@
             "bend": 0
           },
           "transform": {
-            "x": 150,
+            "x": 141.6,
             "y": 0
           },
           "parts": {}
@@ -90,8 +90,8 @@
             "lElbow": 0.1,
             "rElbow": 0.1,
             "lLeg": 0.7,
-            "rLeg": 0.836,
-            "lKnee": 1.035,
+            "rLeg": 1.172,
+            "lKnee": 1.323,
             "rKnee": 0.3,
             "lean": 0,
             "crouch": 0,
@@ -100,7 +100,7 @@
             "bend": 0
           },
           "transform": {
-            "x": 150,
+            "x": 141.6,
             "y": 0
           },
           "parts": {}
@@ -110,6 +110,38 @@
   },
   "events": [],
   "references": [],
+  "layers": [
+    {
+      "from": 0,
+      "to": 1,
+      "order": [
+        [
+          "attacker",
+          "torso"
+        ],
+        [
+          "defender",
+          "rLeg"
+        ],
+        [
+          "attacker",
+          "rLeg"
+        ],
+        [
+          "attacker",
+          "lLeg"
+        ],
+        [
+          "defender",
+          "lLeg"
+        ]
+      ]
+    }
+  ],
+  "layerTie": [
+    "defender",
+    "attacker"
+  ],
   "preview": {
     "facing": {
       "attacker": 1,

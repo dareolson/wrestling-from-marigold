@@ -10,7 +10,7 @@ import { KEYS } from './author_figurefour_tableau.mjs';
 // George's near hip sits this far "in front of" (along the receiver's facing,
 // i.e. toward the receiver's feet) and this far above the receiver's near hip.
 // Screen px, measured on the searched solution.
-const PELVIS = { dx: 119.2, dy: -51.4 };
+const PELVIS = { dx: 104.2, dy: -40.3 };
 
 export const plant = [];
 

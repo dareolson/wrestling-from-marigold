@@ -29,6 +29,15 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**Move performance Stage 0 — 2026-10-22 (Claude, local only, unpushed):**
+Figure-four play scenarios and a baseline reel/depth dump are in
+([plan](PLAN_MOVE_PERFORMANCE.md), [entry](AI_HANDOFF_ENTRIES/2026-10-22-claude-move-performance-stage0.md)).
+Finding: at the locked frame both bodies share base depth and interleave by
+sub-band; exact ties fall to display-list order, so P2 always draws in front.
+The same figure four draws differently with George as P1 vs P2 (the editor
+puts the attacker wholly in front, matching neither). Next: T2.1 clip-scoped
+cross-actor layers, then T4.1 pain context. Evidence only; no visual approval.
+
 **Move performance audit — 2026-10-22 (Codex):**
 Derek requested a high-level production plan for articulation, acting and
 complex interactions. [Current-source audit and staged plan](MOVE_PERFORMANCE_AUDIT.md)
@@ -595,6 +604,16 @@ still listed in `SHA256SUMS.txt` at its true hash. Whoever picks this up needs t
 establish what it was meant to be before changing anything.
 
 ## Handoff Log
+
+### 2026-10-22 — Claude: move performance Stage 0 (baseline and depth evidence)
+
+Executed T0.1/T0.2 of [PLAN_MOVE_PERFORMANCE.md](PLAN_MOVE_PERFORMANCE.md):
+`figureFour`/`figureFourP2` scenarios, baseline filmstrips and a per-part depth
+dump. Both actors share base depth; parts interleave by sub-band; ties follow
+the display list (P2 in front), so layering depends on player slot. Details in
+[the entry](AI_HANDOFF_ENTRIES/2026-10-22-claude-move-performance-stage0.md) and
+`research/animation/move-performance-baseline/README.md`. Tests: 733 pass;
+`play.mjs all` 32 PASS. Commits `8b03ad3`, `cf3cc0b`, `3f8c67a`, local only.
 
 ### 2026-10-22 — Codex: audit moves as two-performer storytelling
 

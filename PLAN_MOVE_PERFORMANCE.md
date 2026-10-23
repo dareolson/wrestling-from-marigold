@@ -8,6 +8,19 @@ Read that file's figure-four performance sheet before T1.1. Also read
 [MOVE_REFINEMENT_METHOD.md](MOVE_REFINEMENT_METHOD.md) "Rig facts that bite" and
 "Commands". Nothing here is implemented yet.
 
+## Progress
+
+2026-10-22 · Claude (Sonnet)
+
+- Docs committed: `8b03ad3`.
+- T0.1 done: `cf3cc0b` (`figureFour` and `figureFourP2` scenarios, both PASS; `play.mjs all` 32 PASS).
+- T0.2 done: `3f8c67a`. Baseline in `research/animation/move-performance-baseline/`.
+  **Correction 1 is confirmed and sharpened:** depth is constant over the whole
+  figure-four clip, parts interleave by sub-band, and the 10 exact cross-actor
+  ties fall to display-list order, which always puts P2 in front of P1. The
+  trap therefore draws differently with George as P1 and as P2.
+- Next: T2.1, then T4.1, then T2.2 → T1.1 → T1.2 → T2.3 → T2.4 → G1.
+
 ## Ground rules for the executor
 
 - **Node 22 for everything.** `source ~/.nvm/nvm.sh && nvm exec 22 npm test`.

@@ -33,6 +33,7 @@ const GROUND_HANDOFF_SEC = 0.3;
 // handoff has settled and ends this long before the get-up.
 const SELL_LEAD_SEC = 0.35;
 const SELL_TAIL_SEC = 0.3;
+const RECOVERY_RAMP_MS = 200; // ?aftermath=v2 protective recovery fades in over this
 // The dropkick v2 candidate connects with Lou this far from George (rig units;
 // author_dropkick_v2.mjs DROPKICK_V2_REACH), inside the unchanged hit range.
 const DROPKICK_V2_REACH = 92;
@@ -1595,7 +1596,54 @@ export default class Wrestler {
         const pain = this._pain;
         if (pain?.phase !== 'rise') return;
         pain.phase = 'recover';
-        pain.until = this.scene.time.now + 2500 * pain.severity;
+        pain.since = this.scene.time.now;
+        pain.until = pain.since + 2500 * pain.severity;
+    }
+
+    // Protective recovery (?aftermath=v2, D4): while the hurt is carried on his
+    // feet, the pose he is already in is drawn with a few offsets that favour
+    // the hurt part. Applies only in the 'recover' phase, standing, with no move
+    // or choreography owning the pose; any of those claims the pose and the
+    // weight is 0 that frame. Returns 0..1 and touches nothing.
+    _recoveryWeight() {
+        const pain = this._pain;
+        if (pain?.phase !== 'recover' || this.state !== 'standing' || this._choreoOwnsPose()) return 0;
+        if (!aftermathCandidate()) return 0;
+        const t = this.scene.time.now;
+        if (t >= pain.until) return 0;
+        const ramp = Math.min(1, (t - pain.since) / RECOVERY_RAMP_MS);
+        const left = (pain.until - t) / (pain.until - pain.since);
+        // knee limps down evenly; back settles slowly (holds, then eases out)
+        return ramp * (pain.part === 'back' ? 1 - (1 - left) * (1 - left) : left);
+    }
+
+    // A COPY of the pose with the motif added, or null when there is nothing to
+    // add. this.pose is never written.
+    _recoveryPose() {
+        const w = this._recoveryWeight();
+        if (w <= 0) return null;
+        const pain = this._pain;
+        const pose = { ...this.pose };
+        if (pain.part === 'knee') {
+            pose.crouch = (pose.crouch ?? 0) + 0.05 * w;
+            const hurt = pain.limb?.endsWith('Leg') ? pain.limb[0] : null; // 'l' | 'r'
+            if (hurt) {
+                const other = hurt === 'l' ? 'r' : 'l';
+                const flex = 0.15 * w;
+                // lKnee is local flex; lShin an absolute shin angle (more negative = more bent)
+                if (pose[`${hurt}Knee`] !== undefined) pose[`${hurt}Knee`] += flex;
+                else if (pose[`${hurt}Shin`] !== undefined) pose[`${hurt}Shin`] -= flex;
+                else pose[`${hurt}Knee`] = flex;
+                // the sound leg takes the weight: the hurt one steps back off it
+                pose[`${hurt}Leg`] = (pose[`${hurt}Leg`] ?? 0) - 0.06 * w;
+                pose[`${other}Leg`] = (pose[`${other}Leg`] ?? 0) + 0.03 * w;
+            }
+        } else if (pain.part === 'back') {
+            pose.bend = (pose.bend ?? 0) + 0.12 * w;
+        } else {
+            return null; // motifs exist for the two pilots only
+        }
+        return pose;
     }
 
     clearPain() {
@@ -2576,7 +2624,8 @@ export default class Wrestler {
         const runBlend  = state === 'running' ? gaitBlend : 0;
         // Choreography outranks the combat-ready guard — see _choreoOwnsPose().
         const guard = choreography ? 0 : this.combatBlend;
-        this.skeleton.updateUpright(x, y, s, facing, this.pose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
+        // ?aftermath=v2: favour the hurt part on a copy of the pose (null otherwise).
+        this.skeleton.updateUpright(x, y, s, facing, this._recoveryPose() ?? this.pose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
         if (this._activeMove && this._floorContacts) {
             const turn = (this.pose.tilt ?? 0) + (this.pose.bend ?? 0);
             for (const { point, w } of this._floorContacts) this.skeleton.holdOnFloor(point, y, s, w, turn);

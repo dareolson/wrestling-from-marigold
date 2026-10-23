@@ -1,4 +1,5 @@
 import { compileClip, eventsBetween, sampleClip, windowWeight } from './AnimationClip.js';
+import { clipLayerDepths } from './clipLayers.js';
 import { captureFacingAxis, captureStagingContext, stagedWorldPoint, stagingAt } from './clipStaging.js';
 
 // `staging` is the role's immutable playback context, or null when this track
@@ -172,8 +173,9 @@ export default class MoveRuntime {
     }
 
     // After every bound actor has drawn: pull declared grips onto the
-    // partner's drawn joint (AnimationClip.js grips). The gripping actor
-    // redraws, so this runs once both are placed for the frame.
+    // partner's drawn joint (AnimationClip.js grips), then apply declared
+    // part layering. The gripping actor redraws, so this runs once both are
+    // placed for the frame.
     afterDraw() {
         for (const handle of this._active.values()) {
             const grips = handle.clip.grips;
@@ -187,6 +189,13 @@ export default class MoveRuntime {
                 byRole.get(actor).push({ arm: grip.arm, partner, joint: grip.to.joint, side: grip.to.side, w });
             }
             for (const [actor, list] of byRole) actor.holdGrips(list);
+        }
+        // Then cross-actor layers (clipLayers.js). After every grip, because a
+        // grip redraws its actor and a draw resets depth. Nothing to undo
+        // later: the next draw() resets depth again.
+        for (const handle of this._active.values()) {
+            if (!handle.clip.layers && !handle.clip.layerTie) continue;
+            for (const [img, depth] of clipLayerDepths(handle.clip, handle.time, handle.bindings)) img.setDepth(depth);
         }
     }
 

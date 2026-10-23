@@ -1,3 +1,5 @@
+import { validateLayers } from './clipLayers.js';
+
 // `facing` is a per-keyframe whole-body facing: +1 faces along the staging
 // axis (the direction the anchor role faced when the clip started, the same
 // axis transform.x uses), -1 faces against it. Discrete like parts -- it holds
@@ -96,6 +98,7 @@ export function validateClip(source) {
         if (!['same', 'other'].includes(grip?.to?.side ?? 'same')) errors.push(`grips[${index}].to.side must be 'same' or 'other'`);
         if (badWindow(grip)) errors.push(`grips[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
     }
+    errors.push(...validateLayers(source).errors);
     let previousEvent = -Infinity;
     for (const [index, event] of (source?.events ?? []).entries()) {
         if (!Number.isFinite(event.at) || event.at < 0 || event.at > source.duration) errors.push(`events[${index}].at is outside the clip`);
@@ -141,6 +144,12 @@ export function compileClip(source) {
         events: (source.events ?? []).map((event, index) => ({ ...event, _order: index })),
         floorContacts: (source.floorContacts ?? []).map(contact => Object.freeze({ ...contact })),
         grips: (source.grips ?? []).map(grip => Object.freeze({ ...grip, to: Object.freeze({ side: 'same', ...grip.to }) })),
+        // Cross-actor part order (clipLayers.js). Absent on most clips.
+        ...(source.layers ? { layers: Object.freeze(source.layers.map(win => Object.freeze({
+            from: win.from, to: win.to,
+            order: Object.freeze(win.order.map(entry => Object.freeze([...entry]))),
+        }))) } : {}),
+        ...(source.layerTie ? { layerTie: Object.freeze([...source.layerTie]) } : {}),
     });
 }
 

@@ -32,7 +32,10 @@ Read that file's figure-four performance sheet before T1.1. Also read
   `research/animation/figure-four-tableau/g1/`). **Stopped at ⛔ G1.** Results and
   open failures (left-facing and roster trap contacts) are in
   `research/animation/figure-four-tableau/LEDGER.md`.
-- Next: Derek's answer at G1. Stage 3 hasn't started.
+- 2026-10-23: **Figure-four track PARKED by Derek** ("revisit it later"). G1 was never approved;
+  the tableau is v3 (`064b4eb`) and the ledger has the v2/v3 notes and the failing left-facing/roster
+  contacts. Stage 3 stays unstarted. The shared machinery (clipLayers, critic seg:/tol, editor
+  layering, `_pain`) is done and reusable. Stage 4 (suplex aftermath) does not depend on G1.
 
 ## Ground rules for the executor
 

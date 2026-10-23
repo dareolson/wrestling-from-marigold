@@ -46,6 +46,13 @@ test('every spec carries the full field set', () => {
     }
 });
 
+test('a sell limb, when declared, is an anatomical limb', () => {
+    for (const [id, spec] of Object.entries(MOVE_SPECS)) {
+        if (spec.sell?.limb === undefined) continue;
+        assert.ok(['lLeg', 'rLeg', 'lArm', 'rArm'].includes(spec.sell.limb), `${id}: sell.limb ${spec.sell.limb}`);
+    }
+});
+
 test('every declared executor exists on Wrestler.prototype', () => {
     for (const id of MOVE_IDS) {
         const { executor } = MOVE_SPECS[id];

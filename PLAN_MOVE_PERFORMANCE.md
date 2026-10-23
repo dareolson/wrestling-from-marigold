@@ -19,7 +19,15 @@ Read that file's figure-four performance sheet before T1.1. Also read
   figure-four clip, parts interleave by sub-band, and the 10 exact cross-actor
   ties fall to display-list order, which always puts P2 in front of P1. The
   trap therefore draws differently with George as P1 and as P2.
-- Next: T2.1, then T4.1, then T2.2 → T1.1 → T1.2 → T2.3 → T2.4 → G1.
+- T2.1 done: `2ccb562` (`src/animation/clipLayers.js`, `tests/clipLayers.test.js`).
+  Tie step 0.000005 is applied to every part of each later `layerTie` role;
+  windows then stack on top of it.
+- T4.1 done (`_pain` replaces `_sellTag`). Deviations: figureFour has **no
+  `sell.limb` yet**, because the T1.1 ledger that names the grabbed leg doesn't
+  exist; add it in T1.1. Pickup is detected in `_tickPain` (left the mat other
+  than by rising after this trip's sells were planned), not at each executor.
+  Match reset and scene shutdown call `clearPain()` from `Arena.js`.
+- Next: T2.2 → T1.1 → T1.2 → T2.3 → T2.4 → G1.
 
 ## Ground rules for the executor
 

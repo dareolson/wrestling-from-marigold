@@ -400,7 +400,7 @@ export default class Wrestler {
         this.idlePose        = 'idle';            // character-specific resting stance — override after construction
         this.tauntPose       = 'tauntArmsWide';   // character-specific taunt — override after construction
         this.sellStyle       = 'economical';      // how he sells on the mat (sells.js SELL_STYLES) — override after construction
-        this._sellTag        = null;              // move id of the last confirmed hit (_hurt), sold on the mat
+        this._pain           = null;              // pain context of the last confirmed hit (_hurt): sold on the mat, carried through the rise
         this._sell           = null;              // the sells playing on this trip to the mat (_tickSell)
         this.begsOff         = false;             // pleads instead of preening when hurt (George)
         this.struts          = false;             // taunts with Flair's strut instead of the arms-wide pose (George)
@@ -920,6 +920,7 @@ export default class Wrestler {
     }
 
     tickDown(dt) {
+        this._tickPain();
         if (this.state !== 'down') this._sell = null; // pinned, picked up, rising: the sell stops
         if (this.state !== 'down' && this.state !== 'staggered') return;
         if (this.state === 'down') this._tickSell(dt);
@@ -944,12 +945,12 @@ export default class Wrestler {
     // midpoint: lying and facing flip together, so his head stays put (the
     // pose there draws identically either way, see sells.js).
     _tickSell(dt) {
-        if (!this._sell && this._sellTag) {
-            const spec = MOVE_SPECS[this._sellTag]?.sell;
-            this._sellTag = null;
-            if (spec) {
+        const pain = this._pain;
+        if (!this._sell && pain?.phase === 'mat' && !pain.planned) {
+            pain.planned = true;
+            if (pain.part) {
                 const plan = planSells({
-                    style: this.sellStyle, lying: this.lying, part: spec.part, intensity: spec.intensity,
+                    style: this.sellStyle, lying: this.lying, part: pain.part, intensity: pain.severity,
                     budget: this.stateTimer - SELL_LEAD_SEC - SELL_TAIL_SEC,
                 });
                 if (plan.length) this._sell = { plan, i: 0, t: -SELL_LEAD_SEC };
@@ -1539,12 +1540,58 @@ export default class Wrestler {
     }
 
     // A confirmed hit from a move that can put him down: the damage, plus the
-    // move's sell tag (registry `sell`), played once he is on the mat
-    // (_tickSell). Only confirmed hits call this, so a move that never
-    // landed is never sold.
-    _hurt(amount, moveId) {
+    // move's pain context (registry `sell`), sold once he is on the mat
+    // (_tickSell) and carried through the rise. Only confirmed hits call
+    // this, so a move that never landed is never sold. The latest hit
+    // replaces the previous one. `limb` (lLeg/rLeg/lArm/rArm, anatomical)
+    // overrides the registry's `sell.limb`.
+    _hurt(amount, moveId, { limb } = {}) {
         this._drain(amount);
-        this._sellTag = moveId;
+        const sell = MOVE_SPECS[moveId]?.sell;
+        this._pain = {
+            source: moveId,
+            part: sell?.part ?? null,
+            limb: limb ?? sell?.limb ?? null,
+            severity: sell?.intensity ?? 0,
+            // 'mat' until the rise, 'rise' during it, then 'recover' until `until`.
+            phase: 'mat',
+            until: null,
+            planned: false, // sells planned for this trip to the mat (once per trip)
+        };
+    }
+
+    // Pain context lifecycle (PLAN_MOVE_PERFORMANCE.md D3). Visual continuity
+    // only: nothing here touches damage, timers or input.
+    //   - A pin clears it.
+    //   - Leaving the mat other than by rising (picked up into a hold or
+    //     throw) after this trip's sells were planned clears it. A hit taken
+    //     standing waits for his next trip down, as the sell tag always did.
+    //   - 'recover' expires at `until`.
+    _tickPain() {
+        const pain = this._pain;
+        if (!pain) return;
+        const onMat = this.state === 'down' || this.state === 'possum';
+        if (this.state === 'pinned'
+            || (pain.phase === 'mat' && pain.planned && !onMat)
+            || (pain.phase === 'recover' && this.scene.time.now >= pain.until)) {
+            this._pain = null;
+        }
+    }
+
+    _painRising() {
+        if (this._pain) this._pain.phase = 'rise';
+    }
+
+    // On his feet: the hurt is carried for up to 2.5 s, scaled by severity.
+    _painRecovering() {
+        const pain = this._pain;
+        if (pain?.phase !== 'rise') return;
+        pain.phase = 'recover';
+        pain.until = this.scene.time.now + 2500 * pain.severity;
+    }
+
+    clearPain() {
+        this._pain = null;
     }
 
     _doClothesline(other) {
@@ -2269,7 +2316,7 @@ export default class Wrestler {
     _startRiseUp() {
         this.state = 'gettingUp';
         this._sell = null;
-        this._sellTag = null;
+        this._painRising();
         this.riseT = 0;
         const hurt = Math.max(0, 1 - this.stamina / 100);
         this.scene.tweens.add({
@@ -2280,6 +2327,7 @@ export default class Wrestler {
             onComplete: () => {
                 if (this.state === 'gettingUp') {
                     this.state = 'standing';
+                    this._painRecovering();
                     this.tweenPose('idle', 150, 'Linear');
                 }
             },
@@ -2289,7 +2337,7 @@ export default class Wrestler {
     _startQuickRise() {
         this.state        = 'risingUp';
         this._sell = null;
-        this._sellTag = null;
+        this._painRising();
         this._fallVariant = this.lying === 'prone' ? 'forward' : 'backward';
         this.fallProgress = 1;
         this.scene.tweens.add({
@@ -2300,6 +2348,7 @@ export default class Wrestler {
             onComplete:   () => {
                 if (this.state === 'risingUp') {
                     this.state = 'standing';
+                    this._painRecovering();
                     this.tweenPose('idle', 120, 'Linear');
                 }
             },

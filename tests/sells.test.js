@@ -88,7 +88,7 @@ function downed({ style = 'theatrical', lying = 'supine', timer = 4.5, facing = 
     return Object.assign(Object.create(Wrestler.prototype), {
         scene: { time: { now: 0 }, tweens: { add: () => ({ stop() {} }) } },
         state: 'down', lying, facing, stateTimer: timer, stamina: 50,
-        sellStyle: style, _sellTag: null, _sell: null, input: { isDown: () => false },
+        sellStyle: style, _pain: null, _sell: null, input: { isDown: () => false },
     });
 }
 
@@ -129,4 +129,97 @@ test('a roll turns him over for the get-up, head staying put', () => {
     // Supine lies head away from facing, prone head toward it: flipping
     // facing keeps the head on the same side.
     assert.equal(w.facing, -1);
+});
+
+// ── Pain context (PLAN_MOVE_PERFORMANCE.md D3) ─────────────────────────────
+// A scene whose tweens can be finished by hand, so the rise completes.
+function risable(opts) {
+    const w = downed(opts);
+    const tweens = [];
+    w.scene = { time: { now: 0 }, tweens: { add: cfg => { tweens.push(cfg); return { stop() {} }; } } };
+    w.tweenPose = () => {};
+    w.finishTweens = () => { while (tweens.length) tweens.shift().onComplete?.(); };
+    return w;
+}
+
+test('a confirmed hit sets a mat pain context from the registry', () => {
+    const w = downed();
+    w._hurt(10, 'figureFour');
+    assert.deepEqual(
+        { source: w._pain.source, part: w._pain.part, severity: w._pain.severity, phase: w._pain.phase },
+        { source: 'figureFour', part: 'knee', severity: MOVE_SPECS.figureFour.sell.intensity, phase: 'mat' },
+    );
+    assert.equal(w._pain.limb, MOVE_SPECS.figureFour.sell.limb ?? null);
+    w._hurt(10, 'figureFour', { limb: 'rLeg' });
+    assert.equal(w._pain.limb, 'rLeg', 'the executor can name the limb');
+});
+
+test('the rise carries pain: rise, then recover until severity x 2.5 s, then it expires', () => {
+    for (const quick of [false, true]) {
+        const w = risable();
+        w._hurt(10, 'suplex');
+        w.tickDown(1 / 60);
+        assert.equal(w._pain.phase, 'mat');
+        if (quick) { w.state = 'possum'; w.tickDown(1 / 60); w._startQuickRise(); }
+        else { while (w.state === 'down') w.tickDown(1 / 60); }
+        assert.equal(w.state, quick ? 'risingUp' : 'gettingUp');
+        assert.equal(w._pain.phase, 'rise');
+        w.tickDown(1 / 60);
+        assert.equal(w._pain?.phase, 'rise', 'rising does not clear it');
+        w.scene.time.now = 1000;
+        w.finishTweens();
+        assert.equal(w.state, 'standing');
+        assert.equal(w._pain.phase, 'recover');
+        const until = 1000 + 2500 * MOVE_SPECS.suplex.sell.intensity;
+        assert.equal(w._pain.until, until);
+        w.scene.time.now = until - 1;
+        w.tickDown(1 / 60);
+        assert.ok(w._pain, 'still recovering just before until');
+        w.scene.time.now = until;
+        w.tickDown(1 / 60);
+        assert.equal(w._pain, null, 'expired');
+    }
+});
+
+test('a new hit replaces the pain context and sells again', () => {
+    const w = downed();
+    w._hurt(10, 'suplex');
+    for (let i = 0; i < 30; i++) w.tickDown(1 / 60);
+    assert.ok(w._pain.planned);
+    w._hurt(5, 'elbowDrop');
+    assert.equal(w._pain.source, 'elbowDrop');
+    assert.equal(w._pain.planned, false);
+});
+
+test('a pin or a pickup clears the pain context', () => {
+    const pinned = downed();
+    pinned._hurt(10, 'suplex');
+    pinned.state = 'pinned';
+    pinned.tickDown(1 / 60);
+    assert.equal(pinned._pain, null, 'pinned');
+    const pinnedAtOnce = downed();
+    pinnedAtOnce._hurt(10, 'theszPress');
+    pinnedAtOnce.state = 'pinned';
+    pinnedAtOnce.tickDown(1 / 60);
+    assert.equal(pinnedAtOnce._pain, null, 'pinned before the sell was planned');
+    const lifted = downed();
+    lifted._hurt(10, 'suplex');
+    lifted.tickDown(1 / 60);
+    lifted.state = 'holding';
+    lifted.tickDown(1 / 60);
+    assert.equal(lifted._pain, null, 'picked up into a hold');
+});
+
+test('an interrupted move leaves no pain context', () => {
+    const w = downed();
+    w._hurt(10, 'suplex');
+    w.tickDown(1 / 60);
+    // Picked up into a hold that never lands its squeeze, then laid back down.
+    w.state = 'holding';
+    w.tickDown(1 / 60);
+    w.pose = {};
+    w._layOnBack(4.5);
+    for (let i = 0; i < 120; i++) w.tickDown(1 / 60);
+    assert.equal(w._pain, null);
+    assert.equal(w._sell, null);
 });

@@ -3084,7 +3084,11 @@ export default class Arena extends Phaser.Scene {
         for (const clip of REGISTERED_MOVE_CLIPS) this.moveRuntime.register(clip);
         // ?dropkick=v2 comparison candidate (Wrestler._doDropkick picks it).
         if (new URLSearchParams(location.search).get('dropkick') === 'v2') this.moveRuntime.register(dropkickV2Clip);
-        this.events.once('shutdown', () => this.moveRuntime.shutdown());
+        this.events.once('shutdown', () => {
+            this.moveRuntime.shutdown();
+            this.w1?.clearPain?.();
+            this.w2?.clearPain?.();
+        });
 
         // Both P1 and P2 default to keyboard (Derek, 2026-07-12 — loading the
         // game for a quick look shouldn't immediately throw them into a
@@ -3802,6 +3806,8 @@ export default class Arena extends Phaser.Scene {
                     this.w2.x = 630; this.w2.y = 360; this.w2.state = 'standing'; this.w2.facing = -1; this.w2.stamina = 100;
                     this.w1.pinSaveUsed = false;
                     this.w2.pinSaveUsed = false;
+                    this.w1.clearPain();
+                    this.w2.clearPain();
                     this._matchTime = 0;
                     // Fresh crowd for the next match — and _lastBumpT must not
                     // outlive the match clock it's compared against

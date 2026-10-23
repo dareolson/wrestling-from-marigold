@@ -59,7 +59,9 @@ const C = MOVE_CATEGORY;
  *               sells on the mat afterward ('head', 'back', 'chest', 'knee',
  *               'arm') and how hard (0–1). See src/animation/sells.js; the
  *               tag rides the confirmed hit (Wrestler._hurt), so a move that
- *               never landed is never sold.
+ *               never landed is never sold. Optional `limb` ('lLeg', 'rLeg',
+ *               'lArm', 'rArm': anatomical, the receiver's own pose channel)
+ *               names the limb he protects; the executor can override it.
  */
 export const MOVE_SPECS = {
     // ── Strikes ───────────────────────────────────────────────────────────

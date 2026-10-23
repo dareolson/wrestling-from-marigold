@@ -13,7 +13,7 @@ import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
-import { SELLS, clutchSell, sampleSell, applyOffsets, planSells } from './animation/sells.js';
+import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot } from './animation/sells.js';
 import { staggerFor } from './animation/staggers.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
@@ -952,8 +952,11 @@ export default class Wrestler {
                 const plan = planSells({
                     style: this.sellStyle, lying: this.lying, part: pain.part, intensity: pain.severity,
                     budget: this.stateTimer - SELL_LEAD_SEC - SELL_TAIL_SEC,
+                    limb: pain.limb,
                 });
-                if (plan.length) this._sell = { plan, i: 0, t: -SELL_LEAD_SEC };
+                // facing0: the facing he went down with. The hurt limb's slot is
+                // measured from it, plus one flip per roll (groundedSlot).
+                if (plan.length) this._sell = { plan, i: 0, t: -SELL_LEAD_SEC, facing0: this.facing };
             }
         }
         const sell = this._sell;
@@ -983,7 +986,8 @@ export default class Wrestler {
         const cur = sell?.plan[sell.i];
         if (!cur || sell.t < 0) return null;
         const u = Math.min(1, sell.t / cur.duration);
-        const def = cur.name === 'clutch' ? clutchSell(cur.lying, cur.part, cur.duration) : SELLS[cur.lying][cur.name];
+        const slot = cur.name === 'clutch' ? groundedSlot(cur.limb, sell.facing0, cur.lying, this.skeleton, cur.rolls) : null;
+        const def = cur.name === 'clutch' ? clutchSell(cur.lying, cur.part, cur.duration, slot ?? 'near') : SELLS[cur.lying][cur.name];
         const keys = cur.turned ? def.after : def.keys;
         const lying = cur.turned ? def.to : cur.lying;
         const { d, reach } = sampleSell(keys, u, cur.amp);

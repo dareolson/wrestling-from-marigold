@@ -5,7 +5,7 @@
 // roll over consistently, and never plays for a move that did not land.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SELLS, SELL_STYLES, clutchSell, sampleSell, planSells } from '../src/animation/sells.js';
+import { SELLS, SELL_STYLES, clutchSell, sampleSell, planSells, groundedSlot, sideSwap } from '../src/animation/sells.js';
 import { MOVE_SPECS } from '../src/moves/registry.js';
 import Wrestler from '../src/Wrestler.js';
 
@@ -222,4 +222,104 @@ test('an interrupted move leaves no pain context', () => {
     for (let i = 0; i < 120; i++) w.tickDown(1 / 60);
     assert.equal(w._pain, null);
     assert.equal(w._sell, null);
+});
+
+// ── Limb-aware clutch (T4.2) ───────────────────────────────────────────────
+// The measured truth table (tools/debug/grounded_slot_probe.mjs): the slot an
+// anatomical limb occupies on the grounded rig. The rig families differ only in
+// Skeleton.lChannelSide: george-style rigs swap at facing -1, the others stay near.
+const swapRig = { lChannelSide: f => (f >= 0 ? 'near' : 'far') };
+const stayRig = { lChannelSide: () => 'near' };
+
+test('groundedSlot: the measured table, both facings, both lyings, before and after a roll', () => {
+    for (const lying of ['supine', 'prone']) {
+        // swapping rigs: george, thesz-roster-v1, front3q-r1
+        assert.equal(groundedSlot('lLeg', 1, lying, swapRig), 'near');
+        assert.equal(groundedSlot('rLeg', 1, lying, swapRig), 'far');
+        assert.equal(groundedSlot('lLeg', -1, lying, swapRig), 'far');
+        assert.equal(groundedSlot('rLeg', -1, lying, swapRig), 'near');
+        // staying rigs: thesz, procreate Lou, george/kowalski/guido-roster
+        for (const f of [1, -1]) {
+            assert.equal(groundedSlot('lArm', f, lying, stayRig), 'near');
+            assert.equal(groundedSlot('rArm', f, lying, stayRig), 'far');
+        }
+        // every roll puts the injured limb on the other slot
+        assert.equal(groundedSlot('rLeg', 1, lying, swapRig, 1), 'near');
+        assert.equal(groundedSlot('rLeg', 1, lying, swapRig, 2), 'far');
+        assert.equal(groundedSlot('lLeg', -1, lying, stayRig, 1), 'far');
+    }
+    assert.equal(groundedSlot(null, 1, 'supine', swapRig), null);
+});
+
+test('sideSwap mirrors near/far in offsets, hands and targets, and swaps back', () => {
+    for (const lying of ['supine', 'prone']) for (const spec of Object.values(SELLS[lying].clutch)) {
+        const swapped = sideSwap(spec);
+        assert.deepEqual(sideSwap(swapped), spec);
+        assert.equal(Object.keys(swapped.d).length, Object.keys(spec.d).length);
+    }
+    const knee = sideSwap(SELLS.supine.clutch.knee);
+    assert.equal(knee.d.farThigh, 1.0);
+    assert.equal(knee.d.nearThigh, 0.15);
+    assert.deepEqual(knee.hands, { far: 'farKnee', near: 'farKnee' });
+    assert.deepEqual(sideSwap(SELLS.prone.clutch.knee).hands, { far: 'farHip' });
+});
+
+test('clutchSell: near is today\'s clutch exactly; far is the swapped one', () => {
+    for (const lying of ['supine', 'prone']) for (const part of PARTS) {
+        assert.deepEqual(clutchSell(lying, part, 1.2), clutchSell(lying, part, 1.2, 'near'));
+        assert.deepEqual(clutchSell(lying, part, 1.2, 'far').hands, sideSwap(SELLS[lying].clutch[part]).hands);
+    }
+});
+
+// The figure four's trapped leg (registry sell.limb rLeg) is the clutched leg.
+function sellingRig(skeleton, { facing, lying = 'supine', limb = 'rLeg' }) {
+    const w = downed({ style: 'economical', lying, facing });
+    w.skeleton = skeleton;
+    w._pain = { source: 'x', part: 'knee', limb, severity: 1, phase: 'mat', until: null, planned: false };
+    w._tickSell(0);
+    return w;
+}
+const handTarget = (w) => { w._sell.t = 0.6; return Object.values(w._sellPose().reach).map(r => r.to); };
+
+test('the trapped leg is the clutched leg in both facings, on both rig families', () => {
+    const rand0 = Math.random;
+    Math.random = () => 0.99; // economical: always clutch
+    try {
+        for (const [rig, expect] of [[swapRig, { 1: 'farKnee', '-1': 'nearKnee' }], [stayRig, { 1: 'farKnee', '-1': 'farKnee' }]]) {
+            for (const facing of [1, -1]) {
+                const w = sellingRig(rig, { facing });
+                assert.deepEqual([...new Set(handTarget(w))], [expect[facing]], `${facing}`);
+            }
+        }
+    } finally { Math.random = rand0; }
+});
+
+test('after a roll the clutch follows the leg to the other slot', () => {
+    const rand0 = Math.random;
+    Math.random = () => 0.99;
+    try {
+        const w = sellingRig(stayRig, { facing: 1 });
+        // hand-build a roll then a clutch the way planSells records it
+        w._sell = { facing0: 1, t: 0.6, i: 1, plan: [
+            { name: 'roll', lying: 'supine', part: 'knee', duration: 1, amp: 1, limb: 'rLeg', rolls: 0, turned: true },
+            { name: 'clutch', lying: 'prone', part: 'knee', duration: 1, amp: 1, limb: 'rLeg', rolls: 1 },
+        ] };
+        assert.deepEqual([...new Set(handTarget(w))], ['nearHip']);
+    } finally { Math.random = rand0; }
+});
+
+test('limb null behaves exactly as today', () => {
+    for (const lying of ['supine', 'prone']) for (const style of Object.keys(SELL_STYLES)) {
+        for (let seed = 1; seed < 40; seed++) {
+            const mk = () => { let s = seed; return () => ((s = (s * 16807) % 2147483647) / 2147483647); };
+            const a = planSells({ style, lying, part: 'knee', budget: 3.85, rand: mk() });
+            const b = planSells({ style, lying, part: 'knee', budget: 3.85, rand: mk(), limb: null });
+            assert.deepEqual(a, b);
+        }
+    }
+    const rand0 = Math.random; Math.random = () => 0.99;
+    try {
+        const w = sellingRig(swapRig, { facing: -1, limb: null });
+        assert.deepEqual([...new Set(handTarget(w))], ['nearKnee']); // the near clutch, as before the limb existed
+    } finally { Math.random = rand0; }
 });

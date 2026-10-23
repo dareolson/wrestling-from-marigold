@@ -130,9 +130,52 @@ export const SELLS = {
     },
 };
 
-/** Clutch spec for a body part on a lying, as a playable sell. */
-export function clutchSell(lying, part, duration) {
-    const spec = SELLS[lying].clutch[part] ?? SELLS[lying].clutch.chest;
+// Limb-aware clutch (PLAN_MOVE_PERFORMANCE.md D3, T4.2). The clutch specs
+// above are written for the NEAR limb. A hurt limb is anatomical ('lLeg'),
+// and which grounded slot it occupies was MEASURED on the rendered rigs
+// (tools/debug/grounded_slot_probe.mjs, 2026-10-23: george, thesz,
+// thesz-procreate-v1, thesz/george/kowalski/guido-roster-v1, front3q-r1):
+//   - Falling hands the upright pose to the grounded rig slot for slot
+//     (Skeleton.groundedPoseFrom). The l-channels land in the slot
+//     Skeleton.lChannelSide(facing) names; the r-channels in the other.
+//     That held on every rig, both facings, both lyings.
+//       rig family                         lLeg/lArm   rLeg/rArm
+//       swaps at facing -1 (george,        f=+1 near   far
+//         thesz-roster-v1, front3q-r1)     f=-1 far    near
+//       stays near (thesz, procreate Lou,  f=+1 near   far
+//         george/kowalski/guido-roster)    f=-1 near   far
+//   - The lying (supine/prone) never changes the slot: the table is the same
+//     in both. Raising nearThigh/farThigh on the grounded rig moves the near/
+//     far sprite in every facing x lying.
+//   - A roll draws supine P facing f and prone -P facing -f at the same slot
+//     angles (ankles within 9-19 px on the rigs in play, 0 on front3q-r1: the
+//     art turns over), so no sprite swaps places, but the BODY turned over:
+//     the injured limb now occupies the other slot. Each roll flips it, on
+//     every rig (lChannelSide alone would miss that on the stay-near rigs).
+// So: slot = lChannelSide(facing when he went down) for an l-limb, the other
+// for an r-limb, flipped once per roll since. `facing` here is the facing the
+// trip started with, not the current one (a roll flips facing too).
+const OTHER_SLOT = { near: 'far', far: 'near' };
+export function groundedSlot(limb, facing, lying, skeleton, rolls = 0) {
+    if (!limb) return null;
+    const l = skeleton?.lChannelSide?.(facing) ?? 'near';
+    const slot = limb.startsWith('l') ? l : OTHER_SLOT[l];
+    return rolls % 2 ? OTHER_SLOT[slot] : slot;
+}
+
+const swapName = (name) => name.replace(/^(near|far)/, m => OTHER_SLOT[m]);
+/** A clutch spec mirrored to the other side of the body: near<->far in the offsets, hands and targets. */
+export function sideSwap(spec) {
+    return {
+        d: Object.fromEntries(Object.entries(spec.d).map(([c, v]) => [swapName(c), v])),
+        hands: Object.fromEntries(Object.entries(spec.hands).map(([side, to]) => [OTHER_SLOT[side], swapName(to)])),
+    };
+}
+
+/** Clutch spec for a body part on a lying, as a playable sell. `slot` 'far' clutches the far-side limb. */
+export function clutchSell(lying, part, duration, slot = 'near') {
+    const base = SELLS[lying].clutch[part] ?? SELLS[lying].clutch.chest;
+    const spec = slot === 'far' ? sideSwap(base) : base;
     return { duration, keys: clutchKeys(spec), hands: spec.hands };
 }
 
@@ -178,9 +221,11 @@ export const SELL_STYLES = {
 /**
  * Plan the sells for one trip to the mat: a list of { name, lying, part,
  * duration, amp } that fits inside `budget` seconds. `rand` is injectable for
- * tests. Prone has no kick and stirs instead of writhing.
+ * tests. Prone has no kick and stirs instead of writhing. `limb` rides along
+ * on each entry (with `rolls`, the rolls done before it) so the clutch can find
+ * its slot.
  */
-export function planSells({ style = 'economical', lying, part = 'chest', intensity = 0.8, budget, rand = Math.random }) {
+export function planSells({ style = 'economical', lying, part = 'chest', intensity = 0.8, budget, rand = Math.random, limb = null }) {
     const st = SELL_STYLES[style] ?? SELL_STYLES.economical;
     const amp = st.amp * (0.6 + 0.4 * intensity);
     const pick = (weights) => {
@@ -193,15 +238,15 @@ export function planSells({ style = 'economical', lying, part = 'chest', intensi
     const resolve = (name, ly) => (ly === 'prone' && name === 'writhe' ? 'stir' : ly === 'prone' && name === 'kick' ? 'stir' : name);
 
     const plan = [];
-    let left = budget, ly = lying;
+    let left = budget, ly = lying, rolls = 0;
     let name = pick(st.weights);
     while (name !== 'none') {
         name = resolve(name, ly);
         const duration = durationOf(name, ly);
         if (duration > left) break;
-        plan.push({ name, lying: ly, part, duration, amp });
+        plan.push({ name, lying: ly, part, duration, amp, limb, rolls });
         left -= duration;
-        if (SELLS[ly][name].to) ly = SELLS[ly][name].to;
+        if (SELLS[ly][name].to) { ly = SELLS[ly][name].to; rolls++; }
         if (!st.chain || plan.length >= 2) break;
         // After a roll, clutch where it hurts; otherwise sometimes nothing more.
         name = plan.at(-1).name === 'roll' ? 'clutch' : pick({ none: 0.4, clutch: 0.4, writhe: 0.2 });

@@ -12,7 +12,7 @@
 //   receiver (defender)  rLeg = H, his far leg, bent with the shin pointing south: the hurt leg
 //                        lLeg = N, his near leg, straight, straddling George
 //   George (attacker)    lLeg = T, near leg, lands across H   rLeg = B, far leg, stepped between
-//   George sits up ~42 deg (tilt -0.73) propped on his arms behind him.
+//   George sits up ~42 deg, Flair 397-style (tilt -0.74) propped on his arms behind him.
 // `bend`, never `lean` (lean does not move the rendered body).
 
 import { writeFileSync } from 'node:fs';
@@ -26,17 +26,17 @@ export const KEYS = [0, DURATION];
 // threaded. Numbers below were found by searching the legs' channels for the
 // ledger contacts, then staged by figurefour_tableau.constraints.mjs.
 export const GEORGE = pose({
-    lArm: -0.088, rArm: -0.508, lElbow: 0.339, rElbow: 0.2,
-    lLeg: 1.484, lKnee: 0.274, rLeg: 0.019, rKnee: 1.056,
-    tilt: -0.73, lift: -87.362,
+    lArm: -0.107, rArm: -0.749, lElbow: 0.2, rElbow: 0.2,
+    lLeg: 1.116, lKnee: 1.001, rLeg: 0.082, rKnee: 0.702,
+    tilt: -0.739, lift: -79,
 });
 // The receiver on his back, feet toward George, arms at rest.
 export const RECEIVER = pose({
     lArm: 0.05, rArm: 0.05, lElbow: 0.10, rElbow: 0.10,
-    lLeg: 0.5, lKnee: 0.2, rLeg: 1.45, rKnee: 2.498,
+    lLeg: 0.801, lKnee: 0.2, rLeg: 1.393, rKnee: 2.5,
     tilt: -1.52, lift: LYING,
 });
-const X = { attacker: 82.659, defender: 171.816 };
+const X = { attacker: 64.493, defender: 159.254 };
 
 // The ledger's lock chain, back -> front: the hurt far leg H behind George (he sits
 // between the receiver's legs); George's torso; B; T lying across H; the

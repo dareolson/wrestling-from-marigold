@@ -9,22 +9,22 @@
           "at": 0,
           "ease": "linear",
           "pose": {
-            "lArm": -0.088,
-            "rArm": -0.508,
-            "lElbow": 0.339,
+            "lArm": -0.107,
+            "rArm": -0.749,
+            "lElbow": 0.2,
             "rElbow": 0.2,
-            "lLeg": 1.484,
-            "rLeg": 0.019,
-            "lKnee": 0.274,
-            "rKnee": 1.056,
+            "lLeg": 1.116,
+            "rLeg": 0.082,
+            "lKnee": 1.001,
+            "rKnee": 0.702,
             "lean": 0,
             "crouch": 0,
-            "tilt": -0.73,
-            "lift": -87.36,
+            "tilt": -0.739,
+            "lift": -79,
             "bend": 0
           },
           "transform": {
-            "x": 82.66,
+            "x": 64.49,
             "y": 0
           },
           "parts": {}
@@ -33,22 +33,22 @@
           "at": 1,
           "ease": "linear",
           "pose": {
-            "lArm": -0.088,
-            "rArm": -0.508,
-            "lElbow": 0.339,
+            "lArm": -0.107,
+            "rArm": -0.749,
+            "lElbow": 0.2,
             "rElbow": 0.2,
-            "lLeg": 1.484,
-            "rLeg": 0.019,
-            "lKnee": 0.274,
-            "rKnee": 1.056,
+            "lLeg": 1.116,
+            "rLeg": 0.082,
+            "lKnee": 1.001,
+            "rKnee": 0.702,
             "lean": 0,
             "crouch": 0,
-            "tilt": -0.73,
-            "lift": -87.36,
+            "tilt": -0.739,
+            "lift": -79,
             "bend": 0
           },
           "transform": {
-            "x": 82.66,
+            "x": 64.49,
             "y": 0
           },
           "parts": {}
@@ -65,10 +65,10 @@
             "rArm": 0.05,
             "lElbow": 0.1,
             "rElbow": 0.1,
-            "lLeg": 0.5,
-            "rLeg": 1.45,
+            "lLeg": 0.801,
+            "rLeg": 1.393,
             "lKnee": 0.2,
-            "rKnee": 2.498,
+            "rKnee": 2.5,
             "lean": 0,
             "crouch": 0,
             "tilt": -1.52,
@@ -76,7 +76,7 @@
             "bend": 0
           },
           "transform": {
-            "x": 171.816,
+            "x": 159.254,
             "y": 0
           },
           "parts": {}
@@ -89,10 +89,10 @@
             "rArm": 0.05,
             "lElbow": 0.1,
             "rElbow": 0.1,
-            "lLeg": 0.5,
-            "rLeg": 1.45,
+            "lLeg": 0.801,
+            "rLeg": 1.393,
             "lKnee": 0.2,
-            "rKnee": 2.498,
+            "rKnee": 2.5,
             "lean": 0,
             "crouch": 0,
             "tilt": -1.52,
@@ -100,7 +100,7 @@
             "bend": 0
           },
           "transform": {
-            "x": 171.816,
+            "x": 159.254,
             "y": 0
           },
           "parts": {}

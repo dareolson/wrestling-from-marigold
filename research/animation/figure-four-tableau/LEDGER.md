@@ -214,3 +214,21 @@ and George's near leg rising across it are visible on still 1, and George sits u
 propped. B is mostly hidden behind George's lap and N, so George's "stepped between"
 leg is the hardest part to find without the label. The left-facing and roster stills
 fail the trap contact, so the legs are visibly off on those.
+
+## v3 (2026-10-23): honed against Flair's sprites
+
+Compared with Flair 397 and 398 (SNES Royal Rumble, pose reference only), side by side in
+`g1/5_vs_flair_397_398.png`. In the sprites Flair sits propped back on his near hand,
+torso roughly 45-50 degrees, hips on the mat, both knees bent with the knee up and the
+shin dropping forward to a low boot. v2 had George's near leg pointing up like a kick; v3
+searched again with his knees bent (T knee 1.0, B knee 0.7) and his ankles no more than
+70 px above his hip, tilt -0.74, arms back (rArm -0.75). The receiver's raised bent far leg
+(Bret 307-310 has the victim's legs up in the air) is kept: H knee 2.50, N hip 0.80.
+
+Critic after v3: George / Procreate Lou facing right: trap 4.3% PASS (tol 5%), brace 0.0% PASS.
+Facing left: trap 6.9% FAIL, brace 9.4% FAIL. Roster pair: trap 26.9% / 27.7% FAIL, brace 0.2% PASS.
+Joints inside limits on Procreate and roster; 756 tests green.
+
+Still unlike Flair 397/398: his near knee is bent much sharper than George's T (1.0), and the
+sprites show only one body, so the victim's leg positions are taken from Bret, not from a
+true two-man reference. Whether it reads is for Derek.

@@ -10,6 +10,7 @@
 // P2's keys directly (comma = evade, period = block).
 
 import { launch } from './harness.mjs';
+import { installDepthProbe } from './depth_probe.mjs';
 
 // P1 controls: WASD move, F grapple, G power, H finisher, R run
 const HELD = new Set();
@@ -437,8 +438,18 @@ function eventMatches(e, expect) {
 async function runScenario(h, name) {
     const sc = SCENARIOS[name];
     const start = (await h.snap()).eventCount;
+    // WFM_DEPTH=<dir>: record every part's draw depth per clip frame to <dir>/<name>.json
+    const probe = process.env.WFM_DEPTH ? await installDepthProbe(h.page) : null;
     try {
         await sc.run(h);
+        // WFM_SLOWMO=0.2: slow the scene once the scenario has triggered the move, so the
+        // scripted setup (which has wall-clock windows) runs at normal speed.
+        if (process.env.WFM_SLOWMO) {
+            await h.page.evaluate(k => {
+                const g = window.__WFM_GAME.scene.scenes[0];
+                g.timeScale = k; g.tweens.timeScale = k; g.time.timeScale = k;
+            }, Number(process.env.WFM_SLOWMO));
+        }
         // WFM_SHOTS=<dir>: film the move as it plays (every 80ms, WFM_SHOTS_N
         // frames, default 30),
         // for eye review of full-speed gameplay rather than editor poses.
@@ -447,10 +458,20 @@ async function runScenario(h, name) {
             const dir = `${process.env.WFM_SHOTS}/${name}`;
             mkdirSync(dir, { recursive: true });
             const count = Number(process.env.WFM_SHOTS_N ?? 30);
+            // WFM_SHOTS_CLIP=x,y,w,h crops the frames and switches them to JPEG (disk).
+            const clip = process.env.WFM_SHOTS_CLIP
+                ? Object.fromEntries(process.env.WFM_SHOTS_CLIP.split(',').map((v, i) => [['x', 'y', 'width', 'height'][i], Number(v)]))
+                : null;
             for (let i = 0; i < count; i++) {
-                await h.page.screenshot({ path: `${dir}/${String(i).padStart(2, '0')}.png` });
+                const n = String(i).padStart(3, '0');
+                await h.page.screenshot(clip ? { path: `${dir}/${n}.jpg`, type: 'jpeg', quality: 80, clip } : { path: `${dir}/${n}.png` });
                 await h.page.waitForTimeout(80);
             }
+        }
+        if (probe) {
+            const { mkdirSync, writeFileSync } = await import('node:fs');
+            mkdirSync(process.env.WFM_DEPTH, { recursive: true });
+            writeFileSync(`${process.env.WFM_DEPTH}/${name}.json`, JSON.stringify(await probe.collect()));
         }
         await h.page.waitForTimeout(600); // let delayed sells/logs land
         const logged = await h.events(start);
@@ -488,8 +509,10 @@ for (const name of names) {
     // pin a P1/P2 kit via its `p1`/`p2` field — set/clear WFM_P1/WFM_P2 before each launch so
     // that doesn't leak into the next scenario in an `all` run.
     const sc = SCENARIOS[name];
-    if (sc.p1) process.env.WFM_P1 = sc.p1; else delete process.env.WFM_P1;
-    if (sc.p2) process.env.WFM_P2 = sc.p2; else delete process.env.WFM_P2;
+    // WFM_PROCREATE=1 casts the Procreate Lou (thesz-procreate-v1) wherever a scenario says 'thesz'.
+    const cast = c => (process.env.WFM_PROCREATE && c === 'thesz') ? 'thesz-procreate-v1' : c;
+    if (sc.p1) process.env.WFM_P1 = cast(sc.p1); else delete process.env.WFM_P1;
+    if (sc.p2) process.env.WFM_P2 = cast(sc.p2); else delete process.env.WFM_P2;
     // Filming skips the match-start title card (Arena ?notitle=1).
     if (process.env.WFM_SHOTS) process.env.WFM_QS = [process.env.WFM_QS, 'notitle=1'].filter(Boolean).join('&');
     const h = await launch();

@@ -370,3 +370,15 @@ test('references survive normalization but never reach the exported clip', () =>
     assert.equal('references' in clip, false);
     assert.doesNotMatch(model.exportModule(draft), /references|frame: 143/);
 });
+
+test('exportClip carries layers/layerTie only when the draft authors them', async () => {
+    const { exportClip, createPairedDraft } = await import('../tools/move-editor/model.js');
+    const plain = exportClip(createPairedDraft());
+    assert.ok(!('layers' in plain) && !('layerTie' in plain));
+    const draft = createPairedDraft();
+    draft.layers = [{ from: 0, to: 1, order: [['defender', 'rLeg'], ['attacker', 'lLeg']] }];
+    draft.layerTie = ['defender', 'attacker'];
+    const clip = exportClip(draft);
+    assert.deepEqual(clip.layers, draft.layers);
+    assert.deepEqual(clip.layerTie, draft.layerTie);
+});

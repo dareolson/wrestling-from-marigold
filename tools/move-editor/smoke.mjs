@@ -80,6 +80,69 @@ try {
         }
     }
 
+    // Game layering (plan D1/T2.3). A draft that declares `layers`/`layerTie` must
+    // render with the depths the runtime resolver gives (src/animation/clipLayers.js),
+    // not the editor's old fixed attacker-on-top order, and a draft that declares
+    // neither must keep that order. Uses the figure-four tableau draft with the
+    // ledger's lock chain; the expected depths come from the pure resolver run on
+    // the reset (ring) depths, independent of what the editor applied.
+    const tableau = await (await page.request.get(new URL('./drafts/figurefour-tableau.json', url).href)).json();
+    const layerPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    layerPage.on('pageerror', error => errors.push(error.message));
+    await layerPage.goto(url, { waitUntil: 'load' });
+    await layerPage.waitForFunction(() => window.__MOVE_EDITOR?.actors?.attacker?.skeleton);
+    const layering = await layerPage.evaluate(async draft => {
+        const editor = window.__MOVE_EDITOR;
+        const { layerDepths, limbParts, LAYER_TIE_STEP } = await import('/src/animation/clipLayers.js');
+        const CHAIN = [['attacker', 'torso'], ['defender', 'rLeg'], ['attacker', 'rLeg'], ['attacker', 'lLeg'], ['defender', 'lLeg']];
+        const load = (layers, layerTie) => {
+            const d = JSON.parse(JSON.stringify(draft));
+            delete d.layers; delete d.layerTie;
+            if (layers) d.layers = layers;
+            if (layerTie) d.layerTie = layerTie;
+            editor.adoptDraft(d);
+            editor.setLayerTime(0.5);
+            for (const role of ['attacker', 'defender']) editor.renderActor(role);
+        };
+        const out = {};
+        // 1. no layers: attacker is wholly in front by the legacy +0.01.
+        load(null, null);
+        const near = role => editor.actors[role].skeleton.nearThigh.depth;
+        out.legacyGap = near('attacker') - near('defender');
+        // 2. layers + tie: editor depths == resolver on reset depths, in both facings.
+        out.facings = [];
+        for (const flip of [1, -1]) {
+            load([{ from: 0, to: 1, order: CHAIN }], ['defender', 'attacker']);
+            for (const role of ['attacker', 'defender']) editor.actors[role].facing *= flip;
+            for (const role of ['attacker', 'defender']) editor.renderActor(role);
+            const actors = { attacker: editor.actors.attacker, defender: editor.actors.defender };
+            const applied = CHAIN.map(([role, limb]) => limbParts(actors[role], limb).map(img => img.depth));
+            const appliedAt = new Map(CHAIN.flatMap(([role, limb]) => limbParts(actors[role], limb)).map(img => [img, img.depth]));
+            // chain order: each limb's lowest part above the previous limb's highest
+            const ordered = applied.every((parts, i) => i === 0 || Math.min(...parts) > Math.max(...applied[i - 1]));
+            // expected: reset, then the pure resolver (tie offsets are 0 for the first role, so skip them)
+            for (const role of ['attacker', 'defender']) {
+                const a = editor.actors[role];
+                a.skeleton.setDepth(15 + (a.transform.y ?? 0) * 0.03);
+            }
+            const expected = layerDepths({ order: CHAIN }, actors);
+            // the editor also applied layerTie offsets (< one sub-depth unit); nothing else may differ
+            const mismatch = [...expected].filter(([img, d]) => Math.abs(appliedAt.get(img) - d) > 4 * LAYER_TIE_STEP).length;
+            out.facings.push({ flip, ordered, parts: expected.size, mismatch });
+            editor.applyGameDepths();
+        }
+        return out;
+    }, tableau);
+    await layerPage.close();
+    if (Math.abs(layering.legacyGap - 0.01) > 1e-9) {
+        throw new Error(`a draft without layers must keep the editor's attacker-on-top +0.01, got ${layering.legacyGap}`);
+    }
+    for (const run of layering.facings) {
+        if (!run.ordered || run.mismatch) {
+            throw new Error(`editor layering disagrees with the runtime resolver (flip ${run.flip}): ${JSON.stringify(run)}`);
+        }
+    }
+
     const canvas = await page.locator('#stage canvas').boundingBox();
     const internal = await page.locator('#stage canvas').evaluate(node => ({ width: node.width, height: node.height }));
     const screen = point => ({
@@ -701,6 +764,7 @@ try {
     console.log(`     autosave: schema-stamped, offered (never silently loaded) after reload, restored on request; an incompatible draft is refused with a reason and left untouched until discarded`);
     console.log(`     hammerlock hold: ${span.severity.toUpperCase()} on the live reference rig; an unreachable REQUIRED contact blocks readiness, the same contact marked optional only warns`);
     console.log(`     hammerlock export matches the shipped clip across 241 sampled frames; declared hold ${hold.role} ${hold.source}→${hold.target} ${hold.from}–${hold.to}s measured over ${hold.measured} live frames, worst gap ${hold.maxGap.toFixed(2)} px at ${hold.worstAt.toFixed(3)}s`);
+    console.log(`     game layering: legacy +0.01 kept without layers; layered tableau chain ordered and equal to the runtime resolver in both facings (${layering.facings[0].parts} parts)`);
     console.log(`     wrist drag: ${elbowDrag.length} drags, forward and folded-behind elbows, both facings, stay on their branch (worst gap ${Math.max(...elbowDrag.map(r => r.maxGap)).toFixed(2)} px)`);
 } finally {
     await browser.close();

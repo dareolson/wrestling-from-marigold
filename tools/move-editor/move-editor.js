@@ -2,6 +2,9 @@ import Skeleton from '/src/Skeleton.js';
 import { george } from '/src/characters/george.js';
 import { thesz } from '/src/characters/thesz.js';
 import { theszProcreateV1 } from '/src/characters/thesz_procreate_v1.js';
+import { theszRosterV1 } from '/src/characters/thesz_roster_v1.js';
+import { georgeRosterV1 } from '/src/characters/george_roster_v1.js';
+import { clipLayerDepths } from '/src/animation/clipLayers.js';
 import { enumerateCharacterAssets, RENDER_PART_SLOTS, SEMANTIC_PART_SLOTS, resolveSemanticSlots } from '/src/rig/partVariants.js';
 import { createReferenceRigSkeleton, REFERENCE_RIG_ID } from '/src/rig/referenceRigRuntime.js';
 import { certifyPose, classifyFinding, measureSample } from '/src/rig/certification.js';
@@ -16,7 +19,10 @@ import { createReferenceLayer, loadSheetList, DEFAULT_SHEET } from './reference.
 import { pickAnchorRole } from '/src/animation/clipStaging.js';
 import { JOINT_LIMITS } from '/src/rig/articulation.js';
 
-const CHARACTERS = { george, thesz, 'thesz-procreate-v1': theszProcreateV1 };
+const CHARACTERS = {
+    george, thesz, 'thesz-procreate-v1': theszProcreateV1,
+    'thesz-roster-v1': theszRosterV1, 'george-roster-v1': georgeRosterV1,
+};
 
 // ONE shared tableau origin for every role — the editor's copy of the runtime's
 // staging frame (src/animation/clipStaging.js). It used to be a base position
@@ -128,7 +134,26 @@ function renderActor(role) {
     // camera (larger transform.y) draws in front. A fixed attacker-on-top order
     // made an actor stepping round BEHIND the other still cover him. Ties go to
     // the attacker, matching the previous fixed order.
-    actor.skeleton.setDepth?.(15 + (actor.transform.y ?? 0) * 0.03 + (role === 'attacker' ? 0.01 : 0));
+    applyGameDepths();
+}
+
+// Depth, the way the game does it. Both actors reset to their ring depth, then a
+// clip that declares `layers`/`layerTie` gets exactly what MoveRuntime.afterDraw
+// gives it (clipLayerDepths, the same resolver). A clip with neither keeps the
+// editor's old attacker-on-top order, so existing drafts preview as before.
+// Re-running is idempotent because every pass starts from the reset.
+// `layerTime` lets a sweep (critic strips) name the time it is rendering; the
+// playhead is used otherwise.
+let layerTime = null;
+function applyGameDepths() {
+    const layered = Boolean(draft?.layers?.length || draft?.layerTie);
+    for (const role of ROLES) {
+        const actor = actors[role];
+        const front = !layered && role === 'attacker' ? 0.01 : 0;
+        actor.skeleton?.setDepth?.(15 + (actor.transform.y ?? 0) * 0.03 + front);
+    }
+    if (!layered || !ROLES.every(role => actors[role].skeleton)) return;
+    for (const [img, depth] of clipLayerDepths(draft, layerTime ?? playhead, actors)) img.setDepth(depth);
 }
 
 // Put one sampled track state on an actor. Every path that previews a sampled
@@ -1396,6 +1421,8 @@ function installUI() {
         // published BY the render, so a solve that reads them without
         // re-rendering is solving against the previous frame.
         renderActor,
+        applyGameDepths,
+        setLayerTime: t => { layerTime = t; },
         adoptDraft,
         undo, redo, mutate,
         get onionSkins() { return onionSkins; },
@@ -1420,7 +1447,7 @@ class EditorScene extends Phaser.Scene {
     constructor() { super('MoveEditor'); }
     preload() {
         const seen = new Set();
-        for (const character of [george, thesz, theszProcreateV1]) {
+        for (const character of Object.values(CHARACTERS)) {
             for (const asset of enumerateCharacterAssets(character)) {
                 if (!seen.has(asset.key)) this.load.image(asset.key, `/${asset.file}`);
                 seen.add(asset.key);

@@ -65,6 +65,7 @@ await page.evaluate(async () => {
                 actor.parts = { ...state.parts };
                 actor.facing = state.facing !== undefined ? E.stagingFacing() * state.facing : (draft.preview?.facing?.[role] ?? actor.facing);
             }
+            E.setLayerTime(at);
             for (const role of ['attacker', 'defender']) {
                 E.renderActor(role);
                 const actor = E.actors[role], sk = actor.skeleton, root = E.actorRoot(role);

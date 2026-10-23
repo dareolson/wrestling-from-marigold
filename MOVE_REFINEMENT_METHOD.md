@@ -1,5 +1,12 @@
 # Move refinement method
 
+**Performance direction (2026-10-22):** Use the
+[current move performance audit](MOVE_PERFORMANCE_AUDIT.md) for the complete
+two-performer production contract, figure-four beat sheet and rollout gates.
+It reconciles older findings with current source: staggers now use `bend`, and
+17 clips are registered. Judge purchase, support, resistance, release and
+recovery together; begin complex entanglement with a proven locked tableau.
+
 **Resume direction (2026-10-18):** Read the [current kinesiology and selling
 audit](AI_HANDOFF_ENTRIES/2026-10-18-codex-kinesiology-selling-resume-audit.md)
 after roster review. Judge the whole impact-to-recovery sequence, including

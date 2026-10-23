@@ -29,6 +29,16 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**Move performance audit — 2026-10-22 (Codex):**
+Derek requested a high-level production plan for articulation, acting and
+complex interactions. [Current-source audit and staged plan](MOVE_PERFORMANCE_AUDIT.md)
+covers all 29 moves (17 clips/12 legacy), the fixed-sequence mat-hold limitation,
+figure-four contact/depth gaps, and side-aware pain through recovery. Start
+with a locked figure-four proof and a complete suplex aftermath; reuse existing
+runtime/staging/IK machinery. Latest staggers already use `bend`; older reports
+of wholly inert stagger torso acting are stale. Documentation only; 80 focused
+existing tests passed, no fresh film or animation approval.
+
 **Front kick, roster kits, shove — 2026-10-21 (Claude, local only, unpushed):**
 `frontKick` (Down + Power) and `shove` are on the clip runtime; per-wrestler kits
 now live in `src/characters/rosterKits.js` (outside the generated roster files),
@@ -585,6 +595,20 @@ still listed in `SHA256SUMS.txt` at its true hash. Whoever picks this up needs t
 establish what it was meant to be before changing anything.
 
 ## Handoff Log
+
+### 2026-10-22 — Codex: audit moves as two-performer storytelling
+
+Added [MOVE_PERFORMANCE_AUDIT.md](MOVE_PERFORMANCE_AUDIT.md): current architecture
+and complete family inventory, ranked gaps, reusable performance sheet,
+ten-beat figure-four direction, implementation stages and acceptance rubric.
+Build locked tableau/contact/depth proof before entry polish; then pressure,
+resistance, unwind and leg-specific aftermath. Keep visual refinement separate
+from the later interactive submission/escape rules and balance comparison.
+Reconciled October 18 findings with current five-tier `bend` staggers,
+supine/selling/grip/ring-fit implementations and 17 registered clips.
+Node 22.23.1 focused animation/runtime/contact/registry/participation/sell/stagger
+suite: 80 passed, 0 failed. Source/documentation audit only; no new footage,
+runtime changes, full-suite/build claim or certification claim.
 
 ### 2026-10-18 — Codex: improve George's figure-four before replacement art
 

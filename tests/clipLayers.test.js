@@ -5,6 +5,7 @@ import Skeleton from '../src/Skeleton.js';
 import { compileClip, validateClip } from '../src/animation/AnimationClip.js';
 import MoveRuntime from '../src/animation/MoveRuntime.js';
 import { limbParts, LAYER_TIE_STEP } from '../src/animation/clipLayers.js';
+import { piledriverClip } from '../src/animation/clips/piledriver.js';
 import { suplexClip } from '../src/animation/clips/suplex.js';
 
 const image = () => ({ depth: null, setDepth(value) { this.depth = value; return this; } });
@@ -186,8 +187,8 @@ test('after cancel and after complete, the next draw restores default depths', (
     }
 });
 
-test('a clip without layers is byte-identical: the suplex keeps its depths', () => {
-    const compiled = compileClip(suplexClip);
+test('a clip without layers is byte-identical: the piledriver keeps its depths', () => {
+    const compiled = compileClip(piledriverClip);
     assert.equal(compiled.layers, undefined);
     assert.equal(compiled.layerTie, undefined);
     const a = wrestler('swap', 1, 360), d = wrestler('near', -1, 360);
@@ -202,4 +203,11 @@ test('a clip without layers is byte-identical: the suplex keeps its depths', () 
         assert.deepEqual(snapshot(a), drawn.a);
         assert.deepEqual(snapshot(d), drawn.d);
     }
+});
+
+test('the suplex keeps the defender\'s head in the attacker\'s near armpit from step-in to impact', () => {
+    const compiled = compileClip(suplexClip);
+    assert.deepEqual(compiled.layers, [{ from: 0.11, to: 1.28,
+        order: [['attacker', 'torso'], ['defender', 'head'], ['attacker', 'lArm']] }]);
+    assert.equal(validateClip(suplexClip).ok, true);
 });

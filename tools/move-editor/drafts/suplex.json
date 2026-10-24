@@ -636,6 +636,26 @@
       ]
     }
   },
+  "layers": [
+    {
+      "from": 0.11,
+      "to": 1.28,
+      "order": [
+        [
+          "attacker",
+          "torso"
+        ],
+        [
+          "defender",
+          "head"
+        ],
+        [
+          "attacker",
+          "lArm"
+        ]
+      ]
+    }
+  ],
   "events": [
     {
       "at": 1.28,

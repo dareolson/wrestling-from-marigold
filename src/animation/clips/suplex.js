@@ -636,6 +636,13 @@ export const suplexClip = {
             ]
         }
     },
+    // Trial (Derek 2026-10-24): the defender's head stays in the attacker's near
+    // armpit, camera side, from the step-in to impact. transform.y still moves the
+    // rest of the defender in front (facelock) and behind (inverted); only the head
+    // is pinned between the attacker's torso and near arm (lArm facing right).
+    layers: [
+        { from: 0.11, to: 1.28, order: [['attacker', 'torso'], ['defender', 'head'], ['attacker', 'lArm']] },
+    ],
     events: [
         {
             at: 1.28,

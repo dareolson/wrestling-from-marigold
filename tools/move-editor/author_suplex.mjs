@@ -108,6 +108,14 @@ const draft = buildDraft({
     transformY: (role, at) => (role !== 'defender' ? 0 : at >= AT.up ? -6 : at >= AT.step ? 4 : 0),
 });
 
+// Derek 2026-10-24: transformY swaps whole bodies, so the defender's head popped
+// from in front of the attacker (facelock) to behind him (inverted). Keep it in
+// the attacker's near armpit, camera side, from the step-in to impact: over his
+// torso, under his near arm (lArm facing right). buildDraft drops layers.
+draft.layers = [
+    { from: AT.step, to: AT.impact, order: [['attacker', 'torso'], ['defender', 'head'], ['attacker', 'lArm']] },
+];
+
 const out = process.argv[2];
 if (!out) throw new Error('usage: author_suplex.mjs <out.json> (then stage.mjs; see header)');
 writeFileSync(out, `${JSON.stringify(draft, null, 2)}\n`);

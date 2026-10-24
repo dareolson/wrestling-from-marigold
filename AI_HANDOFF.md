@@ -29,6 +29,15 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**Body-part replacement coordination — 2026-10-23 (Derek / Codex):**
+Derek wants bent-elbow replacements and unconventional pose-specific solutions
+considered alongside animation. [Next Claude/Codex art brief](AI_HANDOFF_ENTRIES/2026-10-23-codex-body-part-replacement-coordination.md)
+names the current suplex-aftermath pilot, matched flexed segments, local elbow
+patches and short held-pose composite arms, with asset/integration contracts.
+Claude next supplies a named pose/side and reference packet. New art is a
+candidate experiment, not gated on exhausting every IK tweak. No art generated
+or runtime changed; figure four stays parked.
+
 **Clutch solver repaired together with Claude's working changes — 2026-10-23 (Codex):**
 Preserved Claude's uncommitted reach-annulus repair. Added a fixed mirrored
 elbow hinge branch and curved hand trajectory, with explicit head-reach direction.
@@ -36,7 +45,7 @@ Real George/Procreate Lou sweep: worst adjacent elbow travel 81.38→5.24px;
 Kowalski/Guido's head-path seam also repaired (30.54→3.60px worst step).
 [Implementation, evidence and next work for Claude](AI_HANDOFF_ENTRIES/2026-10-23-codex-clutch-solver-repair.md).
 784 tests pass; candidate visual judgment, floor/support and injury-aware rises
-remain open. Runtime edits are local/uncommitted; no art regenerated.
+remain open. Committed locally in `f872009` with Claude's review reply; no art regenerated.
 
 **Latest Claude performance review — 2026-10-23 (Codex):**
 Reviewed `803478f`: 778 tests/build pass, but clutch IK's minimum-distance cap
@@ -623,6 +632,15 @@ still listed in `SHA256SUMS.txt` at its true hash. Whoever picks this up needs t
 establish what it was meant to be before changing anything.
 
 ## Handoff Log
+
+### 2026-10-23 — Codex: coordinate move-specific replacement artwork
+
+Derek suggests better bent elbows/body parts and unconventional solutions.
+[Shared work brief for Claude](AI_HANDOFF_ENTRIES/2026-10-23-codex-body-part-replacement-coordination.md)
+sets one suplex-aftermath pilot, three possible elbow treatments, exact donor
+request contents, composite-arm constraints and deterministic appearance ownership.
+Updated the part inventory to allow these experiments alongside animation work.
+Documentation only; no new artwork, generation or visual approval implied.
 
 ### 2026-10-23 — Codex: direct assistance on Claude's current clutch repair
 

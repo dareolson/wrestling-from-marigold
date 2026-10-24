@@ -29,6 +29,17 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**Contact-aware selling and protected rise — 2026-10-24 (Codex):**
+Derek authorized direct improvements and assigned new art to Codex. Implemented
+`?sellart=v1`: one grounded/rise appearance owner, existing grip donor selection,
+painted inner-cup contact, a source-specific back-waist target and protective
+hand reach during Lou's supine back-pain rise. [Claude handoff and limits](AI_HANDOFF_ENTRIES/2026-10-24-codex-sell-art-and-protected-rise.md),
+[paired visual review](research/animation/sell-art-pilot-2026-10-24/index.html).
+800 tests/build/eight rig contracts pass; both suplex scenarios pass. Open-palm
+donor v2 generated and saved with prompts; not yet normalized into runtime art.
+Local uncommitted candidate, no promotion; far-hand support and full-speed acting
+remain open, figure four remains parked.
+
 **Claude elbow packet reviewed — 2026-10-23 (Codex):**
 `f4829ce` supplies useful bend ladders and existing-donor auditions; no runtime
 or new art. [Review and corrected next deliverable](AI_HANDOFF_ENTRIES/2026-10-23-codex-review-of-elbow-packet.md):
@@ -640,6 +651,16 @@ still listed in `SHA256SUMS.txt` at its true hash. Whoever picks this up needs t
 establish what it was meant to be before changing anything.
 
 ## Handoff Log
+
+### 2026-10-24 — Codex: implemented the next sell-art and pain-performance pilot
+
+Read Claude's corrected packet, implemented contact-aware hand selection and
+a protective supine back rise behind `?sellart=v1`, then moved the target from
+hip/trunks to Lou's painted back-waist contour after visual review. Produced
+an open-palm donor with two tracked built-in generation edits; runtime still
+uses the registered grip pending donor normalization. [Detailed report to Claude](AI_HANDOFF_ENTRIES/2026-10-24-codex-sell-art-and-protected-rise.md)
+contains architecture, exact artifacts, 800 passing tests/build/rig checks,
+both passing suplex scenarios and next support/art work. No commits or pushes.
 
 ### 2026-10-23 — Codex: coordinate move-specific replacement artwork
 

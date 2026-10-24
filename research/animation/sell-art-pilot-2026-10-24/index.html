@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suplex aftermath · paired pose review</title>
+<style>
+  :root { color-scheme: dark; font: 16px/1.5 system-ui, sans-serif; background: #141b23; color: #ecf0f4; }
+  body { margin: 0; padding: 26px; }
+  main { max-width: 1400px; margin: auto; }
+  h1 { margin: 0 0 6px; font-size: clamp(23px, 4vw, 34px); font-weight: 650; }
+  p { margin: 8px 0 18px; color: #bfc9d3; }
+  a { color: #a8d4ff; }
+  .controls, .quick { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin: 18px 0; }
+  label { display: grid; gap: 5px; color: #bfc9d3; font-size: 14px; }
+  select, button { font: inherit; color: #edf1f5; background: #263341; border: 1px solid #516172; border-radius: 5px; padding: 9px 12px; }
+  button { cursor: pointer; }
+  button:hover, select:focus { border-color: #b0dcff; }
+  .quick { align-items: center; font-size: 14px; }
+  .quick button { padding: 6px 10px; }
+  figure { margin: 20px 0 0; background: #1b2530; border: 1px solid #455463; border-radius: 7px; overflow: hidden; }
+  img { display: block; width: 100%; height: auto; background: #56616d; }
+  figcaption { padding: 14px 18px; color: #c1ccd7; font-size: 14px; }
+  .caption-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
+  #legend { margin: 8px 0 0; }
+  .green { color: #73fa9f; } .blue { color: #82bfff; } .orange { color: #ff826d; }
+  .note { max-width: 960px; font-size: 14px; }
+  @media (max-width: 600px) { body { padding: 16px; } select { max-width: calc(100vw - 34px); } }
+</style>
+<main>
+  <h1>Suplex aftermath</h1>
+  <p>Exact authored-pose comparisons through the game renderer. These still images are not live footage.</p>
+  <div class="controls">
+    <label>Pose <select id="phase"></select></label>
+    <label>Facing <select id="facing"><option value="1">Right</option><option value="-1">Left</option></select></label>
+    <label>View <select id="view"><option value="paired">Detail comparison</option><option value="annotated">Annotated detail</option><option value="game">In the arena</option></select></label>
+  </div>
+  <div class="quick">
+    Jump to:
+    <button data-tag="clutch-back-035-fright">Back clutch · hold</button>
+    <button data-tag="rise-back-020-fright">Beginning rise · 0.20</button>
+    <button data-tag="rise-back-034-fright">Seated protection · 0.34</button>
+  </div>
+  <figure>
+    <img id="proof" alt="Paired comparison with the base pose at left and the candidate at right">
+    <figcaption>
+      <div class="caption-row"><span id="caption"></span><span><a id="full" target="_blank" rel="noopener">Open full image</a> · <a id="measurements">Pose measurements</a></span></div>
+      <p id="legend" hidden><span class="green">Green: back-waist target.</span> <span class="orange">Orange: inner grip contour.</span> <span class="blue">Blue: historical hip target.</span> Lines show arm geometry.</p>
+    </figcaption>
+  </figure>
+  <p class="note">Procreate Lou, supine. Base at left; candidate at right. The candidate uses the existing grip artwork and carries lower-back protection into the rise. The other hand’s floor support and the later upright handoff need their own review.</p>
+  <p class="note">Current evidence: <a href="proof-waist/manifest.json">back-waist contact dataset</a>. Earlier <a href="proof/manifest.json">hip-target dataset</a> remains available for comparison.</p>
+</main>
+<script>
+  // Embedded tags keep this review usable directly from disk without fetch.
+  const poses = [
+    ['clutch-back-015', 'Back clutch · approach · 0.15', [1]],
+    ['clutch-back-035', 'Back clutch · hold · 0.35', [1, -1]],
+    ['clutch-back-055', 'Back clutch · squeeze / hold · 0.55', [1]],
+    ['clutch-back-080', 'Back clutch · release · 0.80', [1]],
+    ['clutch-head-035', 'Head clutch diagnostic · hold · 0.35', [1]],
+    ['rise-back-000', 'Back rise · lying flat · 0.00', [1, -1]],
+    ['rise-back-020', 'Back rise · beginning rise · 0.20', [1, -1]],
+    ['rise-back-034', 'Back rise · seated protection · 0.34', [1, -1]],
+    ['rise-back-055', 'Back rise · gathering legs · 0.55', [1, -1]],
+    ['rise-back-070', 'Back rise · releasing hand · 0.70', [1, -1]],
+    ['rise-back-085', 'Back rise · hand released · 0.85', [1, -1]],
+    ['rise-back-100', 'Back rise · endpoint · 1.00', [1, -1]],
+  ];
+  const phase = document.getElementById('phase'), facing = document.getElementById('facing');
+  const view = document.getElementById('view'), proof = document.getElementById('proof');
+  for (const [value, text] of poses) phase.add(new Option(text, value));
+  phase.value = 'clutch-back-035';
+  function render() {
+    const pose = poses.find(p => p[0] === phase.value);
+    for (const option of facing.options) option.disabled = !pose[2].includes(Number(option.value));
+    if (!pose[2].includes(Number(facing.value))) facing.value = '1';
+    const tag = `${pose[0]}-f${facing.value === '1' ? 'right' : 'left'}`;
+    const source = `proof-waist/${tag}-${view.value}.png`;
+    proof.src = source;
+    proof.alt = `${pose[1]}, facing ${facing.value === '1' ? 'right' : 'left'}: base at left, candidate at right`;
+    document.getElementById('full').href = source;
+    document.getElementById('measurements').href = `proof-waist/${tag}.json`;
+    document.getElementById('caption').textContent = `${pose[1]} · facing ${facing.value === '1' ? 'right' : 'left'} · base OFF / candidate ON`;
+    document.getElementById('legend').hidden = view.value !== 'annotated';
+    history.replaceState(null, '', `#${tag}`);
+  }
+  function chooseTag(tag) {
+    const pose = poses.find(p => tag.startsWith(`${p[0]}-f`));
+    if (!pose) return;
+    phase.value = pose[0]; facing.value = tag.endsWith('fleft') ? '-1' : '1'; render();
+  }
+  for (const element of [phase, facing, view]) element.addEventListener('change', render);
+  for (const button of document.querySelectorAll('[data-tag]')) button.addEventListener('click', () => chooseTag(button.dataset.tag));
+  if (location.hash) chooseTag(location.hash.slice(1)); else render();
+  window.addEventListener('hashchange', () => chooseTag(location.hash.slice(1)));
+</script>
+</html>

@@ -166,7 +166,12 @@ export const theszProcreateV1 = {
         //
         // Calves stack UNDER the thighs, as Derek's layers do.
         shinUnderThigh: true,
-        torso:    { key: 'thesz_pv1_torso', box: { w: 67.181, h: 113.228 } },
+        torso: {
+            key: 'thesz_pv1_torso', box: { w: 67.181, h: 113.228 },
+            // Left/back waist contour on this three-quarter source, above the
+            // trunks. Candidate pain acting presses here instead of the hip joint.
+            semanticAnchors: { backWaist: { u: 0.22, v: 0.60 } },
+        },
         // Inverted, painted crown below the hip pivot, in this rig's own units
         // (after heightScale; measured
         // 2026-10-15 at the piledriver impact, tilt PI): a clip's crown-on-mat
@@ -237,7 +242,13 @@ export const theszProcreateV1 = {
         handInForearm: true,
         variants: {
             forearm: {
-                grip: { key: 'thesz_pv1_forearm_grip', file: 'forearm_grip.png' },
+                grip: {
+                    key: 'thesz_pv1_forearm_grip', file: 'forearm_grip.png',
+                    // Inner cup contour measured on the 117x351 donor, separate
+                    // from the baked hand's logical endpoint. Candidate reaches
+                    // use this contact; ordinary clip posing remains unchanged.
+                    semanticAnchors: { clutch: { u: 57 / 117, v: 279 / 351 } },
+                },
             },
         },
         thigh: {

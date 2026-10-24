@@ -14,6 +14,7 @@ import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees } from './animation/sells.js';
+import { backRiseParts, groundedSellParts } from './animation/sellAppearance.js';
 import { staggerFor } from './animation/staggers.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
@@ -60,6 +61,7 @@ const dropkickCandidate = () => typeof location !== 'undefined' && new URLSearch
 // (PLAN_MOVE_PERFORMANCE.md D4), a comparison until Derek approves it at G3.
 // Flag off, neither exists and nothing below reads _pain beyond today's sells.
 const aftermathCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('aftermath') === 'v2';
+const sellArtCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('sellart') === 'v1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
 // the AI's begging-off threshold (AIHandler george.retreatStamina).
 const BEG_STAMINA = 35;
@@ -494,6 +496,7 @@ export default class Wrestler {
     // slot (workingHand, strikingForearm) depends on facing, so the turn and
     // the art swap on the same keyframe must resolve against the new facing.
     prepareAnimationClip(track) {
+        this._syncSellAppearance(true);
         this.scene.tweens.killTweensOf(this.pose);
         this._choreoUntil = 0;
         // A sparse clip (e.g. jab) must not inherit a previous hold's folded
@@ -518,6 +521,9 @@ export default class Wrestler {
     }
 
     applyAnimationSample(sample, staging = null, facingAxis = null) {
+        // The clip is now the appearance owner. prepareAnimationClip has
+        // released any sell donor before the runtime applies its first frame.
+        this._sellArtSelection = null;
         if (facingAxis && sample.facing) this.facing = facingAxis * sample.facing;
         if (sample.pose) mergeArticulatedPose(this.pose, sample.pose);
         // Read by draw() only while a move is active, so it can't go stale.
@@ -690,6 +696,7 @@ export default class Wrestler {
     // makes a valid rig-tuner pose look like broken limb art at runtime.
     // Kills any in-flight pose tween first so sequences don't stack.
     tweenPose(target, duration, ease = 'Linear', onComplete) {
+        this._syncSellAppearance(true);
         // A tweenPose means something other than a clip now owns the stance —
         // getting hit and selling, blocking, a follow-up move, the idle
         // settle. Release any active clip so the two don't fight over the pose
@@ -1002,6 +1009,43 @@ export default class Wrestler {
         // sell keeps the knees inside their limits.
         const g = applyOffsets(Skeleton.GROUNDED_POSES[lying], d);
         return { g: cur.name === 'roll' ? g : limitKnees(g), reach: hands };
+    }
+
+    // The sole grounded-sell appearance writer. Complete selections reset the
+    // other hand automatically. Never write over a MoveRuntime owner; its
+    // prepare hook releases our selection before its own first sample. Every
+    // draw checks state, so pin/pickup/roll/reset also clears an interrupted
+    // sell without depending on tickDown having run first.
+    _syncSellAppearance(release = false) {
+        const enabled = sellArtCandidate();
+        if (!enabled && !this._sellArtSelection) return;
+        if (this._activeMove) {
+            this._sellArtInterrupted = this._sell;
+            this._sellArtSelection = null;
+            return;
+        }
+        const choreo = (this._choreoUntil ?? 0) > (this.scene?.time?.now ?? 0);
+        if (release || this.state !== 'down' || choreo) this._sellArtInterrupted = this._sell;
+        const grounded = !release && enabled && this.state === 'down'
+            && !this._groundHandoff && !choreo && this._sell !== this._sellArtInterrupted;
+        const rising = !release && this._backRiseContext();
+        const exists = this.scene?.textures?.exists;
+        const textureExists = exists ? key => exists.call(this.scene.textures, key) : null;
+        const parts = grounded ? groundedSellParts(this._sell, this.skeleton, textureExists)
+            : rising ? backRiseParts(this.riseT, this.skeleton, textureExists) : {};
+        const selection = Object.keys(parts).length ? JSON.stringify(parts) : null;
+        if (selection === (this._sellArtSelection ?? null)) return;
+        this.skeleton?.setPartVariants?.(parts);
+        this._sellArtSelection = selection;
+    }
+
+    _backRiseContext() {
+        if (!sellArtCandidate() || this.state !== 'gettingUp' || this._activeMove
+            || this.lying !== 'supine'
+            || (this._choreoUntil ?? 0) > (this.scene?.time?.now ?? 0)
+            || this._pain?.phase !== 'rise' || this._pain.part !== 'back'
+            || !Number.isFinite(this._pain.severity) || this._pain.severity <= 0) return null;
+        return { part: 'back', severity: this._pain.severity };
     }
 
     tickPossum(dt) {
@@ -2376,6 +2420,7 @@ export default class Wrestler {
     // skeleton's grounded keyposes. A worn wrestler takes visibly longer to
     // peel himself off the mat — the get-up itself sells the damage.
     _startRiseUp() {
+        this._syncSellAppearance(true);
         this.state = 'gettingUp';
         this._sell = null;
         this._painRising();
@@ -2397,6 +2442,7 @@ export default class Wrestler {
     }
 
     _startQuickRise() {
+        this._syncSellAppearance(true);
         this.state        = 'risingUp';
         this._sell = null;
         this._painRising();
@@ -2513,6 +2559,7 @@ export default class Wrestler {
     // ── Drawing ───────────────────────────────────────────────────────────────
 
     draw() {
+        this._syncSellAppearance();
         const { x, y, facing, state, skinCol, trunksCol } = this;
         // On ropes, size is locked to the corner's mat depth — climbing up the post
         // doesn't move the wrestler deeper into the ring. Also applies during rope taunts.
@@ -2545,7 +2592,7 @@ export default class Wrestler {
             gfx.fillStyle(0x000000, 0.22);
             gfx.fillEllipse(x, y, (170 - this.riseT * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
-            this.skeleton.updateGetUp(x, y, s, facing, this.riseT, this.lying);
+            this.skeleton.updateGetUp(x, y, s, facing, this.riseT, this.lying, this._backRiseContext());
             return;
         }
 
@@ -2601,7 +2648,9 @@ export default class Wrestler {
             }
             const sold = state === 'down' ? this._sellPose() : null;
             if (sold) {
-                this.skeleton.updateGroundedReach(x, y, s, facing, sold.g, sold.reach);
+                this.skeleton.updateGroundedReach(x, y, s, facing, sold.g, sold.reach,
+                    sellArtCandidate() ? { paintedContacts: true,
+                        backContact: this._sell?.plan[this._sell.i]?.part === 'back' } : undefined);
                 return;
             }
             this.skeleton.updateGrounded(x, y, s, facing, this.lying);

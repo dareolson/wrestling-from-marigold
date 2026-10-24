@@ -6,6 +6,7 @@ import {
     transformBoundPoint,
 } from './rig/twoAnchorBinding.js';
 import { childAngleFromLocalFlex, localFlexFromChildAngle, JOINT_LIMITS } from './rig/articulation.js';
+import { backRiseWeight } from './animation/backRisePerformance.js';
 
 // Proportions in unscaled pixels — multiply by s before placing parts.
 // Lengths originally chosen to match the old single-piece stick-figure totals
@@ -2232,7 +2233,7 @@ export default class Skeleton {
      * IK onto a curved hand-position path (not blended joint angles), and the
      * pose is drawn again. The signed elbow hinge branch mirrors with facing.
      */
-    updateGroundedReach(x, y, s, facing, g, reach) {
+    updateGroundedReach(x, y, s, facing, g, reach, { paintedContacts = false, backContact = false } = {}) {
         this._applyGrounded(x, y, s, facing, g);
         const sides = Object.entries(reach ?? {}).filter(([, r]) => r.w > 0.001);
         if (!sides.length) return;
@@ -2244,12 +2245,23 @@ export default class Skeleton {
         const solved = { ...g };
         for (const [side, r] of sides) {
             const S = pts[`${side}Shoulder`], E = pts[`${side}Elbow`], W = pts[`${side}Wrist`];
-            const T = Skeleton.groundedTarget(pts, r.to, s);
+            const back = paintedContacts && backContact && r.to?.endsWith('Hip')
+                && this.torso?._semanticAnchors?.backWaist
+                ? Skeleton.imageAnchorPoint(this.torso, this.torso._semanticAnchors.backWaist) : null;
+            const T = back ?? Skeleton.groundedTarget(pts, r.to, s);
             if (!S || !E || !W || !T) continue;
+            // An authored point on a baked hand is distinct from the logical
+            // forearm endpoint. Only the candidate consumes this metadata.
+            const image = this[`${side}Forearm`];
+            const painted = paintedContacts && image?._semanticAnchors?.clutch
+                ? Skeleton.imageAnchorPoint(image, image._semanticAnchors.clutch) : null;
+            const contact = painted ?? W;
+            const contactAngle = painted ? wrap(Math.atan2(contact.y - E.y, contact.x - E.x)
+                - Math.atan2(W.y - E.y, W.x - E.x)) : 0;
             // A head reach goes around the front of the shoulder consistently,
             // including casts whose start/target directions straddle 180°.
-            const goal = Skeleton.blendReachTarget(S, W, T, r.w, r.to === 'head' ? -f : null);
-            const lu = dist(S, E), lf = dist(E, W);
+            const goal = Skeleton.blendReachTarget(S, contact, T, r.w, r.to === 'head' ? -f : null);
+            const lu = dist(S, E), lf = dist(E, contact);
             let front = null;
             const hipMid = pts.nearHip && pts.farHip ? { x: (pts.nearHip.x + pts.farHip.x) / 2, y: (pts.nearHip.y + pts.farHip.y) / 2 } : pts.nearHip;
             if (hipMid && pts.neck) {
@@ -2259,9 +2271,13 @@ export default class Skeleton {
             // Keep the signed hinge branch through the whole reach. Selecting
             // by torso-front each frame flips the elbow when the hand crosses
             // the torso axis, even though the hand target moves continuously.
-            const { elbow, hand } = Skeleton.solveReachArm(S, lu, lf, goal, front, -f);
+            // The virtual contact segment may be off the painted forearm axis.
+            // Reserve that angle so the real elbow still respects its fold cap.
+            const maxFlex = JOINT_LIMITS.elbow.max - Math.abs(contactAngle);
+            const { elbow, hand } = Skeleton.solveReachArm(S, lu, lf, goal, front, -f, maxFlex);
             solved[`${side}Arm`] = toAngle({ x: elbow.x - S.x, y: elbow.y - S.y }, g[`${side}Arm`]);
-            solved[`${side}Fore`] = toAngle({ x: hand.x - elbow.x, y: hand.y - elbow.y }, g[`${side}Fore`]);
+            const foreAngle = Math.atan2(hand.y - elbow.y, hand.x - elbow.x) - contactAngle;
+            solved[`${side}Fore`] = toAngle({ x: Math.cos(foreAngle), y: Math.sin(foreAngle) }, g[`${side}Fore`]);
         }
         this._applyGrounded(x, y, s, facing, solved);
     }
@@ -2296,8 +2312,8 @@ export default class Skeleton {
      * An explicit `bendSign` locks the signed world-space hinge branch instead;
      * the grounded runtime uses this so torso/target crossings cannot flip it.
      */
-    static solveReachArm(S, lu, lf, goal, front = null, bendSign = null) {
-        const minD = Math.sqrt(lu * lu + lf * lf - 2 * lu * lf * Math.cos(Math.PI - JOINT_LIMITS.elbow.max));
+    static solveReachArm(S, lu, lf, goal, front = null, bendSign = null, maxFlex = JOINT_LIMITS.elbow.max) {
+        const minD = Math.sqrt(lu * lu + lf * lf - 2 * lu * lf * Math.cos(Math.PI - maxFlex));
         const gd = Math.hypot(goal.x - S.x, goal.y - S.y);
         const d = Math.max(Math.abs(lu - lf) + 1e-3, minD, Math.min(gd, (lu + lf) * 0.999));
         // Straight down when the goal sits on the shoulder: any direction is as good.
@@ -2319,6 +2335,18 @@ export default class Skeleton {
         const eg = Math.max(1e-6, Math.hypot(G.x - elbow.x, G.y - elbow.y));
         const hand = { x: elbow.x + (G.x - elbow.x) * lf / eg, y: elbow.y + (G.y - elbow.y) * lf / eg };
         return { elbow, hand };
+    }
+
+    // Normalized source-image anchor -> displayed world point, including the
+    // Image's real origin, flips and transform. Works with legacy and bound art.
+    static imageAnchorPoint(image, anchor) {
+        const frame = image?.frame;
+        if (!frame || !image.getWorldTransformMatrix || !Number.isFinite(anchor?.u)
+            || !Number.isFinite(anchor?.v)) return null;
+        const x = (image.flipX ? 1 - anchor.u : anchor.u) * frame.realWidth - image.displayOriginX;
+        const y = (image.flipY ? 1 - anchor.v : anchor.v) * frame.realHeight - image.displayOriginY;
+        const m = image.getWorldTransformMatrix();
+        return { x: m.a * x + m.c * y + m.tx, y: m.b * x + m.d * y + m.ty };
     }
 
     // Points on a lying body a hand can clutch: any recorded joint, plus the
@@ -2350,7 +2378,7 @@ export default class Skeleton {
     // grounded keyposes. Wrestler swaps to updateUpright when the tween lands.
     // `lying` is how the wrestler is lying ('prone' or 'supine'); each rise
     // starts from that exact pose, so there is no turn-over pop.
-    updateGetUp(x, y, s, facing, t, lying = 'prone') {
+    updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null) {
         const K = lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
         const pose = Skeleton._sampleKeyposes(K, t);
         if (this._lockLimbJoints) {
@@ -2363,7 +2391,11 @@ export default class Skeleton {
             const u = Math.max(0, Math.min(1, (t - before.t) / (last.t - before.t)));
             pose.hip += (this.standingHipHeight - last.hip) * u * u * (3 - 2 * u);
         }
-        this._applyGrounded(x, y, s, facing, pose);
+        const protect = lying === 'supine' && pain?.part === 'back'
+            ? backRiseWeight(t) * Math.max(0, Math.min(1, pain.severity ?? 0)) : 0;
+        if (protect > 0) this.updateGroundedReach(x, y, s, facing, pose,
+            { near: { to: 'nearHip', w: protect } }, { paintedContacts: true, backContact: true });
+        else this._applyGrounded(x, y, s, facing, pose);
     }
 
     // Place every part from a grounded pose: hip-rooted, torso free to pitch

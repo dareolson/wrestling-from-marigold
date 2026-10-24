@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-24",
+  "author": "Codex",
+  "tool": "built-in image_gen",
+  "source": "src/assets/wrestlers/thesz-procreate-v1/forearm.png",
+  "sourceSha256": "d2735a0d9b990154e9f5704c67bc18ac787562df00a8c9da694f530e8d16f2f7",
+  "outputs": [
+    {
+      "file": "open-back-of-hand-donor-v1.png",
+      "sha256": "49f35974788337f440181b6a1a4f9b647bd08bfaa5319e848cbdcfbf1b4f237c",
+      "dimensions": [
+        724,
+        2172
+      ],
+      "status": "superseded donor; wrong hand surface",
+      "transparent": true,
+      "prompt": "prompt-v1.txt"
+    },
+    {
+      "file": "open-palm-donor-v2.png",
+      "sha256": "c434cee270e9396c5f8156fc15fe6df879e75d741204f5e94ddf286908fe0d1b",
+      "dimensions": [
+        724,
+        2172
+      ],
+      "status": "donor",
+      "transparent": true,
+      "prompt": "prompt-v2.txt"
+    }
+  ],
+  "runtimeIntegrated": false,
+  "needs": [
+    "Register source elbow/wrist and palm pad without shortening the forearm",
+    "Check ink and skin match at game scale",
+    "Audition in exact contact pose and both facings",
+    "Derek visual approval before production"
+  ]
+}

@@ -1,0 +1,105 @@
+{
+ "note": "Where the logical elbow/wrist joints fall in the far forearm texture (normalized to its 117x351 canvas), measured at the planted poses.",
+ "stills": [
+  {
+   "facing": 1,
+   "name": "t0",
+   "file": "research/animation/suplex-rise-2026-10/plant/crops/plant-t0-fright-1x-game.png",
+   "t": 0.12,
+   "scale": 0.7640614438502673,
+   "farForearmTexture": "thesz_pv1_far_forearm",
+   "flipX": false,
+   "flipY": false,
+   "elbowUV": {
+    "u": 0.4891,
+    "v": 0.1162
+   },
+   "wristUV": {
+    "u": 0.4891,
+    "v": 0.8867
+   },
+   "forearmPx": 39.07104599272727,
+   "clip": {
+    "x": 327.3112607443255,
+    "y": 407.88739914425025,
+    "width": 302.6769460205997,
+    "height": 149.8584552941254
+   }
+  },
+  {
+   "facing": 1,
+   "name": "mid",
+   "file": "research/animation/suplex-rise-2026-10/plant/crops/plant-mid-fright-1x-game.png",
+   "t": 0.24750000000000008,
+   "scale": 0.7640614438502673,
+   "farForearmTexture": "thesz_pv1_far_forearm",
+   "flipX": false,
+   "flipY": false,
+   "elbowUV": {
+    "u": 0.4891,
+    "v": 0.1162
+   },
+   "wristUV": {
+    "u": 0.4891,
+    "v": 0.8867
+   },
+   "forearmPx": 39.07104599272723,
+   "clip": {
+    "x": 350.2218968503285,
+    "y": 371.87759039143964,
+    "width": 282.745251973736,
+    "height": 172.6353663454154
+   }
+  },
+  {
+   "facing": -1,
+   "name": "t0",
+   "file": "research/animation/suplex-rise-2026-10/plant/crops/plant-t0-fleft-1x-game.png",
+   "t": 0.12,
+   "scale": 0.7640614438502673,
+   "farForearmTexture": "thesz_pv1_far_forearm",
+   "flipX": true,
+   "flipY": false,
+   "elbowUV": {
+    "u": 0.4891,
+    "v": 0.1162
+   },
+   "wristUV": {
+    "u": 0.4891,
+    "v": 0.8867
+   },
+   "forearmPx": 39.07104599272727,
+   "clip": {
+    "x": 286.67845990174146,
+    "y": 407.88739914425025,
+    "width": 302.6769460205996,
+    "height": 149.85845529412546
+   }
+  },
+  {
+   "facing": -1,
+   "name": "mid",
+   "file": "research/animation/suplex-rise-2026-10/plant/crops/plant-mid-fleft-1x-game.png",
+   "t": 0.24750000000000008,
+   "scale": 0.7640614438502673,
+   "farForearmTexture": "thesz_pv1_far_forearm",
+   "flipX": true,
+   "flipY": false,
+   "elbowUV": {
+    "u": 0.4891,
+    "v": 0.1162
+   },
+   "wristUV": {
+    "u": 0.4891,
+    "v": 0.8867
+   },
+   "forearmPx": 39.07104599272728,
+   "clip": {
+    "x": 283.69951784260235,
+    "y": 371.8775903914395,
+    "width": 282.74525197373583,
+    "height": 172.63536634541555
+   }
+  }
+ ]
+}

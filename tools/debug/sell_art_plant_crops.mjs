@@ -122,6 +122,50 @@ try {
             visibility.push({ facing, name: s.name, t: s.t, farArmVisiblePx: s.farArmVisiblePx, plantPoint: s.plantPoint });
         }
     }
+    // Game-scale (1x, the live canvas) stills of the planted rise, plus where the far forearm's elbow
+    // and wrist land in its own 117x351 image space (inverse of the part's world transform).
+    const stills = [];
+    for (const facing of [1, -1]) for (const name of ['t0', 'mid']) {
+        const info = await h.page.evaluate(async ({ facing, name }) => {
+            const { PLANT } = await import('/src/animation/backRisePerformance.js');
+            const sc = window.__WFM_GAME.scene.scenes[0];
+            sc.scene.pause(); sc.tweens.pauseAll();
+            const w = sc.w1, sk = w.skeleton, FLOOR = 430, X = 400, s = w.s * w._heightScale;
+            const plan = sk._plantPlan(s, sk.constructor.GETUP_SUPINE_POSES);
+            const t = name === 't0' ? PLANT.t0 : (PLANT.t0 + PLANT.inSpan + plan.tLift) / 2;
+            const url = new URL(location.href); url.searchParams.set('sellart', 'v1'); history.replaceState(null, '', url);
+            w.x = X; w.y = FLOOR; w.facing = facing; w.lying = 'supine';
+            w._activeMove = null; w._choreoUntil = 0; w._groundHandoff = null; w._sell = null;
+            w._sellArtInterrupted = null; w._sellArtSelection = null; sk.setPartVariants({});
+            w.state = 'gettingUp'; w.riseT = t; w.gfx.clear();
+            w._pain = { source: 'suplex', part: 'back', severity: 1, limb: null, phase: 'rise', planned: true, until: null };
+            w.draw();
+            const img = sk.farForearm, m = img.getWorldTransformMatrix(), f = img.frame;
+            const det = m.a * m.d - m.b * m.c, p = sk.jointAttachmentPoints;
+            const toUV = q => {
+                const dx = q.x - m.tx, dy = q.y - m.ty;
+                let lx = (m.d * dx - m.c * dy) / det + img.displayOriginX, ly = (-m.b * dx + m.a * dy) / det + img.displayOriginY;
+                if (img.flipX) lx = f.realWidth - lx;
+                if (img.flipY) ly = f.realHeight - ly;
+                return { u: +(lx / f.realWidth).toFixed(4), v: +(ly / f.realHeight).toFixed(4) };
+            };
+            const bounds = sk._parts.filter(i => i?.visible && i.texture).map(i => i.getBounds());
+            const L = Math.min(...bounds.map(b => b.left)) - 12, R = Math.max(...bounds.map(b => b.right)) + 12;
+            const T = Math.min(...bounds.map(b => b.top)) - 12, B = Math.max(...bounds.map(b => b.bottom)) + 12;
+            const canvas = window.__WFM_GAME.canvas.getBoundingClientRect(), k = canvas.width / window.__WFM_GAME.scale.gameSize.width;
+            const info = { t, scale: s, farForearmTexture: img.texture.key, flipX: !!img.flipX, flipY: !!img.flipY,
+                elbowUV: toUV(p.farElbow), wristUV: toUV(p.farWrist), forearmPx: Math.hypot(p.farWrist.x - p.farElbow.x, p.farWrist.y - p.farElbow.y),
+                clip: { x: canvas.left + L * k, y: canvas.top + T * k, width: (R - L) * k, height: (B - T) * k } };
+            return info;
+        }, { facing, name });
+        const file = join(OUT, `plant-${name}-f${facing > 0 ? 'right' : 'left'}-1x-game.png`);
+        await h.page.screenshot({ path: file, clip: info.clip });
+        stills.push({ facing, name, file, ...info });
+        console.log(`${file} wristUV ${JSON.stringify(info.wristUV)} elbowUV ${JSON.stringify(info.elbowUV)}`);
+    }
+    await h.page.evaluate(() => { const u = new URL(location.href); u.searchParams.delete('sellart'); history.replaceState(null, '', u); });
+    writeFileSync(join(OUT, 'far-forearm-registration.json'), JSON.stringify({
+        note: 'Where the logical elbow/wrist joints fall in the far forearm texture (normalized to its 117x351 canvas), measured at the planted poses.', stills }, null, 1) + '\n');
     writeFileSync(join(OUT, 'far-arm-visibility.json'), JSON.stringify({
         note: 'Pixels (1x, canvas composite of the skeleton parts only) that change when farUpArm/farForearm/farHand are left out. Geometry-level occlusion check, not an art judgment.',
         rows: visibility }, null, 1) + '\n');

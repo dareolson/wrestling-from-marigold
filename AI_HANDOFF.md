@@ -666,6 +666,9 @@ establish what it was meant to be before changing anything.
 [PLAN_SUPLEX_RISE.md](PLAN_SUPLEX_RISE.md) Progress lists each task and commit; review input
 in [Codex's review](AI_HANDOFF_ENTRIES/2026-10-24-codex-review-of-claude-suplex-rise.md).
 
+Support-hand art request for Codex (gated on a Derek question):
+[2026-10-24-claude-open-support-request.md](AI_HANDOFF_ENTRIES/2026-10-24-claude-open-support-request.md).
+
 ### 2026-10-24 — Codex: implemented the next sell-art and pain-performance pilot
 
 Read Claude's corrected packet, implemented contact-aware hand selection and

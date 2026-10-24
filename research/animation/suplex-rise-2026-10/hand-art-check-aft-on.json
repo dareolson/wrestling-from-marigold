@@ -1,0 +1,133 @@
+{
+ "flickerThresholdMs": 250,
+ "scenarios": {
+  "suplexReverse": {
+   "receiver": "thesz-procreate-v1",
+   "facing": -1,
+   "off": {
+    "gripRuns": [],
+    "gripToGripGaps": [],
+    "flickers": [],
+    "lastGripBeforeRiseEndsMs": null,
+    "riseStartMs": 5516.67,
+    "fistBetweenClutchAndRiseMs": null,
+    "gripReturnsAfterRiseStartMs": null,
+    "gripDroppedAtMs": null
+   },
+   "on": {
+    "gripRuns": [
+     {
+      "fromMs": 366.7,
+      "toMs": 1300
+     },
+     {
+      "fromMs": 5550,
+      "toMs": 6266.7
+     }
+    ],
+    "gripToGripGaps": [
+     {
+      "fromMs": 1316.7,
+      "toMs": 5533.3,
+      "key": "thesz_pv1_forearm",
+      "durationMs": 4250
+     }
+    ],
+    "flickers": [],
+    "lastGripBeforeRiseEndsMs": 1300,
+    "riseStartMs": 5516.67,
+    "fistBetweenClutchAndRiseMs": 4216.7,
+    "gripReturnsAfterRiseStartMs": 33.3,
+    "gripDroppedAtMs": 6266.7
+   }
+  },
+  "suplexReverseFlip": {
+   "receiver": "thesz-procreate-v1",
+   "facing": 1,
+   "off": {
+    "gripRuns": [],
+    "gripToGripGaps": [],
+    "flickers": [],
+    "lastGripBeforeRiseEndsMs": null,
+    "riseStartMs": 5516.67,
+    "fistBetweenClutchAndRiseMs": null,
+    "gripReturnsAfterRiseStartMs": null,
+    "gripDroppedAtMs": null
+   },
+   "on": {
+    "gripRuns": [
+     {
+      "fromMs": 366.7,
+      "toMs": 1300
+     },
+     {
+      "fromMs": 5550,
+      "toMs": 6266.7
+     }
+    ],
+    "gripToGripGaps": [
+     {
+      "fromMs": 1316.7,
+      "toMs": 5533.3,
+      "key": "thesz_pv1_forearm",
+      "durationMs": 4250
+     }
+    ],
+    "flickers": [],
+    "lastGripBeforeRiseEndsMs": 1300,
+    "riseStartMs": 5516.67,
+    "fistBetweenClutchAndRiseMs": 4216.7,
+    "gripReturnsAfterRiseStartMs": 33.3,
+    "gripDroppedAtMs": 6266.7
+   }
+  },
+  "suplex": {
+   "receiver": "george-roster-v1",
+   "facing": -1,
+   "off": {
+    "gripRuns": [],
+    "gripToGripGaps": [],
+    "flickers": [],
+    "lastGripBeforeRiseEndsMs": null,
+    "riseStartMs": 5516.67,
+    "fistBetweenClutchAndRiseMs": null,
+    "gripReturnsAfterRiseStartMs": null,
+    "gripDroppedAtMs": null
+   },
+   "on": {
+    "gripRuns": [],
+    "gripToGripGaps": [],
+    "flickers": [],
+    "lastGripBeforeRiseEndsMs": null,
+    "riseStartMs": 5516.67,
+    "fistBetweenClutchAndRiseMs": null,
+    "gripReturnsAfterRiseStartMs": null,
+    "gripDroppedAtMs": null
+   }
+  },
+  "suplexFlip": {
+   "receiver": "george-roster-v1",
+   "facing": 1,
+   "off": {
+    "gripRuns": [],
+    "gripToGripGaps": [],
+    "flickers": [],
+    "lastGripBeforeRiseEndsMs": null,
+    "riseStartMs": 5516.67,
+    "fistBetweenClutchAndRiseMs": null,
+    "gripReturnsAfterRiseStartMs": null,
+    "gripDroppedAtMs": null
+   },
+   "on": {
+    "gripRuns": [],
+    "gripToGripGaps": [],
+    "flickers": [],
+    "lastGripBeforeRiseEndsMs": null,
+    "riseStartMs": 5516.67,
+    "fistBetweenClutchAndRiseMs": null,
+    "gripReturnsAfterRiseStartMs": null,
+    "gripDroppedAtMs": null
+   }
+  }
+ }
+}

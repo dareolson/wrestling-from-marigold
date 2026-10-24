@@ -1,10 +1,15 @@
 // Pairing sheet + hand-art check for tools/debug/aftermath_film.mjs output
 // (PLAN_SUPLEX_RISE T1.2).
 //
-//   node tools/debug/aftermath_pair.mjs [root=research/animation/suplex-rise-2026-10]
+//   node tools/debug/aftermath_pair.mjs [root=research/animation/suplex-rise-2026-10] [--a off] [--b on]
 //
-// Writes <root>/pair-sheet.html and <root>/hand-art-check.json. Off and on
-// frames are paired by match events, not frame index: the on-run clock is
+// --a / --b name any two configs of aftermath_film.mjs (off | aft | on). The
+// default pair writes <root>/pair-sheet.html and <root>/hand-art-check.json;
+// any other pair writes pair-sheet-<a>-<b>.html / hand-art-check-<a>-<b>.json.
+// `aft` (aftermath=v2 only) vs `on` (sellart=v1&aftermath=v2) attributes a
+// difference to sellart; `off` vs `on` changes two flags at once.
+// A-side (variables named off) and B-side (named on) frames are paired by match
+// events, not frame index: the B-run clock is
 // piecewise-linearly warped onto the off-run clock through every event both
 // runs logged (suplex, impact, clutchPeak, riseStart, rise*, standing,
 // recovery*), then the nearest recorded frame is used. With identical event
@@ -12,7 +17,14 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-const root = process.argv[2] ?? 'research/animation/suplex-rise-2026-10';
+import { CONFIGS } from './aftermath_film.mjs';
+
+const args = process.argv.slice(2);
+const flag = (name, dflt) => { const i = args.indexOf(`--${name}`); return i < 0 ? dflt : args.splice(i, 2)[1]; };
+const A = flag('a', 'off'), B = flag('b', 'on');
+for (const c of [A, B]) if (!(c in CONFIGS)) throw new Error(`unknown config ${c}; have ${Object.keys(CONFIGS).join(', ')}`);
+const root = args[0] ?? 'research/animation/suplex-rise-2026-10';
+const SUFFIX = A === 'off' && B === 'on' ? '' : `-${A}-${B}`;
 const SCENARIOS = ['suplexReverse', 'suplexReverseFlip', 'suplex', 'suplexFlip'];
 const FLICKER_MAX_MS = 250; // a non-grip run shorter than this between two grip runs counts as a flicker
 const SAMPLE_EVERY_MS = 100;
@@ -76,7 +88,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 const check = {};
 const sections = [];
 for (const sc of SCENARIOS) {
-    const off = load('off', sc), on = load('on', sc);
+    const off = load(A, sc), on = load(B, sc);
     if (!off || !on) continue;
     const tOn = warp(off, on);
     check[sc] = { receiver: on.receiver.rig, facing: on.receiverFacing.atImpact, off: handArtCheck(off), on: handArtCheck(on) };
@@ -85,7 +97,7 @@ for (const sc of SCENARIOS) {
         const cell = (m, cfg) => m.events[e]
             ? `<figure><img loading="lazy" src="${cfg}/${sc}/closeups/${e}.png"><figcaption>${fmt(m.events[e].relImpactMs)}</figcaption></figure>`
             : '<figure class="none">event did not occur in this run</figure>';
-        return `<div class="row"><h4>${esc(e)}</h4>${cell(off, 'off')}${cell(on, 'on')}</div>`;
+        return `<div class="row"><h4>${esc(e)}</h4>${cell(off, A)}${cell(on, B)}</div>`;
     }).join('');
 
     const tStart = off.frames[0].relImpactMs, tEnd = off.frames.at(-1).relImpactMs;
@@ -93,7 +105,7 @@ for (const sc of SCENARIOS) {
     for (let t = tStart; t <= tEnd; t += SAMPLE_EVERY_MS) {
         const a = nearest(off.frames, t), b = nearest(on.frames, tOn(t));
         stripRows += `<div class="row"><h4>${fmt(a.relImpactMs)}<small>on ${fmt(b.relImpactMs)}</small></h4>`
-            + `<figure><img loading="lazy" src="off/${sc}/${a.file}"></figure><figure><img loading="lazy" src="on/${sc}/${b.file}"></figure></div>`;
+            + `<figure><img loading="lazy" src="${A}/${sc}/${a.file}"></figure><figure><img loading="lazy" src="${B}/${sc}/${b.file}"></figure></div>`;
     }
 
     const bar = (m, label) => {
@@ -107,21 +119,21 @@ for (const sc of SCENARIOS) {
         return `<div class="bar"><span>${label}</span><div>${segs}${marks}</div></div>`;
     };
     const c = check[sc];
-    const verdict = side => {
+    const verdict = (side, label) => {
         const x = c[side];
-        return `${side}: grip runs ${x.gripRuns.map(r => `${fmt(r.fromMs)}→${fmt(r.toMs)}`).join(', ') || 'none'}; `
+        return `${label}: grip runs ${x.gripRuns.map(r => `${fmt(r.fromMs)}→${fmt(r.toMs)}`).join(', ') || 'none'}; `
             + `fist between clutch and rise ${x.fistBetweenClutchAndRiseMs ?? '—'} ms; grip returns ${x.gripReturnsAfterRiseStartMs ?? '—'} ms after rise start; `
             + `grip-fist-grip flickers (&lt;${FLICKER_MAX_MS} ms): ${x.flickers.length}`;
     };
     sections.push(`<section id="${sc}"><h2>${sc} <small>receiver ${esc(on.receiver.rig)}, facing ${on.receiverFacing.atImpact > 0 ? 'right' : 'left'}</small></h2>
-<p class="meta">commit ${esc(off.git.commit)}${off.git.dirty ? '+dirty' : ''} · off = no flags · on = ${esc(on.urlFlags)} · step ${off.stepMs} ms · times relative to impact</p>
-<div class="bars">${bar(off, 'off')}${bar(on, 'on')}<p class="meta">near-forearm art: <i class="g inl"></i> grip <i class="f inl"></i> base fist/forearm. Ticks: impact, rise start, standing.</p></div>
-<p class="meta">${verdict('off')}<br>${verdict('on')}</p>
+<p class="meta">commit ${esc(off.git.commit)}${off.git.dirty ? '+dirty' : ''} · ${A} = ${esc(off.urlFlags || 'no flags')} · ${B} = ${esc(on.urlFlags || 'no flags')} · step ${off.stepMs} ms · times relative to impact</p>
+<div class="bars">${bar(off, A)}${bar(on, B)}<p class="meta">near-forearm art: <i class="g inl"></i> grip <i class="f inl"></i> base fist/forearm. Ticks: impact, rise start, standing.</p></div>
+<p class="meta">${verdict('off', A)}<br>${verdict('on', B)}</p>
 <h3>Event close-ups</h3>${evRows}<h3>Strip, every ${SAMPLE_EVERY_MS} ms, paired by event</h3>${stripRows}</section>`);
 }
 
-writeFileSync(join(root, 'hand-art-check.json'), JSON.stringify({ flickerThresholdMs: FLICKER_MAX_MS, scenarios: check }, null, 1));
-writeFileSync(join(root, 'pair-sheet.html'), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+writeFileSync(join(root, `hand-art-check${SUFFIX}.json`), JSON.stringify({ flickerThresholdMs: FLICKER_MAX_MS, scenarios: check }, null, 1));
+writeFileSync(join(root, `pair-sheet${SUFFIX}.html`), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Suplex rise pairing sheet</title><style>
 :root{--bg:#fff;--fg:#1c1f24;--mut:#5d6570;--line:#d5d9de;--g:#2f7d4f;--f:#9aa3ad;--tick:#c0392b}
 @media(prefers-color-scheme:dark){:root{--bg:#14171b;--fg:#e6e8eb;--mut:#9aa3ad;--line:#2d333a;--g:#58b47c;--f:#5d6570;--tick:#ff7a68}}
@@ -132,10 +144,10 @@ figure{margin:0;flex:1;min-width:0}figure img{width:100%;display:block;image-ren
 .bar{display:flex;gap:8px;align-items:center;margin:4px 0}.bar span{width:30px}.bar>div{position:relative;flex:1;height:14px;background:var(--line)}
 .bar i{position:absolute;top:0;bottom:0;background:var(--f)}.bar i.g{background:var(--g)}.bar b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--tick)}
 .inl{display:inline-block;width:12px;height:10px;position:static;background:var(--f)}.inl.g{background:var(--g)}
-</style></head><body><h1>Suplex rise: off vs candidate</h1>
+</style></head><body><h1>Suplex rise: ${A} vs ${B}</h1>
 <p class="meta">Each scenario: left = default game, right = <code>?sellart=v1&amp;aftermath=v2</code>. Stepped at fixed 1/60 s; frames paired by match event.</p>
 ${sections.join('\n')}</body></html>`);
-console.log(`wrote ${join(root, 'pair-sheet.html')} and hand-art-check.json`);
+console.log(`wrote ${join(root, `pair-sheet${SUFFIX}.html`)} and hand-art-check${SUFFIX}.json`);
 for (const [sc, c] of Object.entries(check)) {
     console.log(`${sc} (${c.receiver}, facing ${c.facing}): on flickers=${c.on.flickers.length}, fist before rise ${c.on.fistBetweenClutchAndRiseMs} ms, grip returns +${c.on.gripReturnsAfterRiseStartMs} ms after rise start`);
 }

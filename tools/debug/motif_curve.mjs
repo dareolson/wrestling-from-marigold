@@ -1,0 +1,103 @@
+// Near-hand -> back-waist distance curve across the whole suplex aftermath
+// (PLAN_SUPLEX_RISE T4.0 / D4). Reads the manifests aftermath_film.mjs wrote
+// (per-step `backDist`, `sell`, `state`, `riseT`, `nearForearm`) and reports, per
+// run, the ms with distance > THRESH_PX in each window:
+//   lying   clutch end (sell leaves its back clutch) -> rise start
+//   rise    rise start -> riseT 0.85 (end of the protective weight window)
+//   handoff riseT 0.85 -> state 'standing'
+//   standing standing -> +2000 ms
+// plus the near-forearm texture key as runs, so the grip art can be read against
+// distance. Only receivers with a painted backWaist (Lou) have a distance; others
+// report null.
+//
+//   node tools/debug/motif_curve.mjs [root] [configs=aft,on] [scenarios=all] [outPrefix]
+// Writes <root>/motif-curve[-<tag>].json and .svg.
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+export const THRESH_PX = 15;
+const STEP_MS = 1000 / 60;
+const SCENARIOS = ['suplex', 'suplexFlip', 'suplexReverse', 'suplexReverseFlip'];
+
+export function analyse(manifest) {
+    const S = manifest.samples;
+    const idx = pred => S.findIndex(pred);
+    let lastClutch = -1;
+    S.forEach((s, i) => { if (s.sell?.name === 'clutch' && s.sell.part === 'back') lastClutch = i; });
+    const clutchEnd = lastClutch >= 0 ? lastClutch + 1 : null;
+    const riseStart = idx(s => s.state === 'gettingUp');
+    const r85 = idx(s => s.state === 'gettingUp' && s.riseT >= 0.85);
+    const standing = idx(s => s.state === 'standing' && S.indexOf(s) > riseStart);
+    const impact = idx(s => s.state === 'down');
+    const plus2 = standing >= 0 ? idx((s, i) => i >= standing && s.rel - S[standing].rel >= 2000) : -1;
+    const win = (a, b) => {
+        if (a == null || a < 0 || b == null || b < 0 || b < a) return null;
+        const seg = S.slice(a, b);
+        const withD = seg.filter(s => s.backDist != null);
+        if (!withD.length) return { ms: null, spanMs: +(seg.length * STEP_MS).toFixed(1), samples: seg.length, maxPx: null };
+        const far = withD.filter(s => s.backDist > THRESH_PX);
+        return { ms: +(far.length * STEP_MS).toFixed(1), spanMs: +(seg.length * STEP_MS).toFixed(1), samples: seg.length,
+            maxPx: +Math.max(...withD.map(s => s.backDist)).toFixed(2), minPx: +Math.min(...withD.map(s => s.backDist)).toFixed(2) };
+    };
+    const rel = i => (i != null && i >= 0 ? S[i].rel : null);
+    const windows = {
+        lying: win(clutchEnd, riseStart),
+        rise: win(riseStart, r85 >= 0 ? r85 : standing),
+        handoff: win(r85, standing),
+        standing: win(standing, plus2 >= 0 ? plus2 : S.length),
+    };
+    // texture runs on the near forearm
+    const runs = [];
+    for (const s of S) {
+        if (!runs.length || runs.at(-1).key !== s.nearForearm) runs.push({ key: s.nearForearm, fromMs: s.rel, toMs: s.rel });
+        else runs.at(-1).toMs = s.rel;
+    }
+    return { events: { impactMs: rel(impact), clutchEndMs: rel(clutchEnd), riseStartMs: rel(riseStart), rise85Ms: rel(r85), standingMs: rel(standing), plus2sMs: rel(plus2) },
+        windows, textureRuns: runs, hasDistance: S.some(s => s.backDist != null) };
+}
+
+const palette = ['#1b6ca8', '#c0392b', '#2e8b57', '#8e44ad'];
+function svg(runs) {
+    const W = 1100, H = 420, L = 56, R = 16, T = 28, B = 44;
+    const all = runs.flatMap(r => r.curve);
+    const x0 = Math.min(...all.map(p => p[0])), x1 = Math.max(...all.map(p => p[0]));
+    const y1 = Math.max(60, Math.ceil(Math.max(...all.map(p => p[1])) / 10) * 10);
+    const X = v => L + (v - x0) / (x1 - x0) * (W - L - R), Y = v => T + (1 - v / y1) * (H - T - B);
+    let o = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" font-family="system-ui,sans-serif" font-size="11"><rect width="${W}" height="${H}" fill="#fff"/>`;
+    for (let v = 0; v <= y1; v += 10) o += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eee"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end" fill="#555">${v}</text>`;
+    for (let v = Math.ceil(x0 / 1000) * 1000; v <= x1; v += 1000) o += `<line x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${H - B}" stroke="#eee"/><text x="${X(v)}" y="${H - B + 14}" text-anchor="middle" fill="#555">${v} ms</text>`;
+    o += `<line x1="${L}" x2="${W - R}" y1="${Y(THRESH_PX)}" y2="${Y(THRESH_PX)}" stroke="#d00" stroke-dasharray="4 3"/><text x="${W - R}" y="${Y(THRESH_PX) - 4}" text-anchor="end" fill="#d00">${THRESH_PX} px</text>`;
+    o += `<text x="${L}" y="16" fill="#222" font-weight="600">near hand contact → backWaist (px) vs ms from impact; ticks = clutch end, rise start, standing</text>`;
+    runs.forEach((r, k) => {
+        const c = palette[k % palette.length];
+        o += `<polyline fill="none" stroke="${c}" stroke-width="1.4" points="${r.curve.map(p => `${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(' ')}"/>`;
+        for (const [name, ms] of Object.entries({ c: r.events.clutchEndMs, r: r.events.riseStartMs, s: r.events.standingMs }))
+            if (ms != null) o += `<line x1="${X(ms)}" x2="${X(ms)}" y1="${H - B - 6}" y2="${H - B}" stroke="${c}" stroke-width="2"/>`;
+        o += `<rect x="${L + 8 + k * 230}" y="${H - 22}" width="10" height="10" fill="${c}"/><text x="${L + 22 + k * 230}" y="${H - 13}" fill="#222">${r.label}</text>`;
+    });
+    return o + '</svg>';
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    const [root = 'research/animation/suplex-rise-2026-10', cfgArg = 'aft,on', scArg = 'all', tag = ''] = process.argv.slice(2);
+    const configs = cfgArg.split(','), scenarios = scArg === 'all' ? SCENARIOS : scArg.split(',');
+    const out = { tool: 'tools/debug/motif_curve.mjs', thresholdPx: THRESH_PX, stepMs: +STEP_MS.toFixed(3), runs: {} };
+    const plot = [];
+    for (const c of configs) for (const sc of scenarios) {
+        const f = join(root, c, sc, 'manifest.json');
+        if (!existsSync(f)) continue;
+        const m = JSON.parse(readFileSync(f, 'utf8'));
+        const a = analyse(m);
+        out.runs[`${c}/${sc}`] = { git: m.git, receiver: m.receiver, facing: m.receiverFacing, ...a };
+        if (a.hasDistance) plot.push({ label: `${c}/${sc} (facing ${m.receiverFacing.atImpact})`, events: a.events,
+            curve: m.samples.filter(s => s.rel >= 0 && s.backDist != null && (a.events.plus2sMs == null || s.rel <= a.events.plus2sMs)).map(s => [s.rel, s.backDist]) });
+    }
+    const base = join(root, `motif-curve${tag ? '-' + tag : ''}`);
+    writeFileSync(base + '.json', JSON.stringify(out, null, 1));
+    if (plot.length) writeFileSync(base + '.svg', svg(plot));
+    for (const [k, r] of Object.entries(out.runs)) {
+        if (!r.hasDistance) { console.log(`${k}: no backWaist distance (receiver has none)`); continue; }
+        const w = r.windows;
+        console.log(`${k}: >${THRESH_PX}px ms — lying ${w.lying?.ms}/${w.lying?.spanMs}, rise ${w.rise?.ms}/${w.rise?.spanMs}, handoff ${w.handoff?.ms}/${w.handoff?.spanMs}, standing ${w.standing?.ms}/${w.standing?.spanMs}`);
+    }
+}

@@ -115,7 +115,16 @@ const STEP = () => {
     const u = cur ? Math.min(1, Math.max(0, w._sell.t / cur.duration)) : null;
     const pts = sk.jointAttachmentPoints ?? {};
     const pt = p => p ? { x: +p.x.toFixed(2), y: +p.y.toFixed(2) } : null;
+    // Near-hand contact -> back waist (PLAN_SUPLEX_RISE T4.0): the painted clutch
+    // patch of the active near forearm if it has one, else the wrist; the waist is
+    // the torso's painted backWaist. Null on rigs without one (George).
+    const Sk = sk.constructor, near = sk.nearForearm, waistA = sk.torso?._semanticAnchors?.backWaist;
+    const cA = near?._semanticAnchors?.clutch;
+    const contact = (cA && Sk.imageAnchorPoint(near, cA)) || pts.nearWrist || null;
+    const waist = waistA ? Sk.imageAnchorPoint(sk.torso, waistA) : null;
+    const dist = contact && waist ? Math.hypot(contact.x - waist.x, contact.y - waist.y) : null;
     return {
+        nearContact: pt(contact), backWaist: pt(waist), backDist: dist === null ? null : +dist.toFixed(2),
         now: sc.time.now, state: w.state, lying: w.lying, facing: w.facing, riseT: w.riseT,
         x: w.x, y: w.y, s: w.s * (w._heightScale ?? 1),
         sell: cur ? { name: cur.name, part: cur.part, u: +u.toFixed(4) } : null,
@@ -279,7 +288,7 @@ async function film(scenario, configName, outRoot) {
             farForearmTexture: rle(frames, 'farForearm', impactNow),
             frames: frameList,
             samples: frames.map(f => ({ rel: +(f.now - impactNow).toFixed(2), state: f.state, riseT: f.state === 'gettingUp' ? +f.riseT.toFixed(4) : null,
-                sell: f.sell, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
+                sell: f.sell, backDist: f.backDist, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
                 farShoulder: f.farShoulder, farElbow: f.farElbow, rootY: f.y, facing: f.facing })),
         };
         writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 1));

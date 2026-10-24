@@ -24,6 +24,8 @@ Read that entry, then this plan. Read nothing else unless a task names it.
 - T2.2 946254c — D1 plant in `Skeleton.updateGetUp`/`_plantReach`/`_plantPlan`, point-target reach entry with optional `support` anchor; `PLANT`/`plantWeight` in backRisePerformance.js; `tests/plantedRise.test.js` (a-f). 810/810.
 - T2.3 d1c91b7 — geometry prototype, window riseT .17-.325. Film: wrist slide 0.030/0.032 px (facing -1/+1), paused sweep 0.038; elbow flex 22.9-34.4 deg film (22.9-34.9 sweep), anatomical every sample; shoulder-wrist .9556-.9803 of lu+lf (min reach 56.74 px of 59.36 / 62.85 of 65.75; 71.9 paused 68.6); arrival max step 4.0/4.4 px, release max step 15.0/16.7 px per 1/60 s. Far arm only ~32 px visible planted vs 253-406 px base. No stop condition tripped; plant point is 5.8 px toward facing of the hip root (see request).
 - T3.1 60508e7 — `AI_HANDOFF_ENTRIES/2026-10-24-claude-open-support-request.md`; gated on two Derek questions (116 ms hold; plant location).
+- T4.-1 4613c0f — plant parked: `plantCandidate()` (`&plant=1`) adds `plant: true` to `_backRiseContext()`; `updateGetUp` plants only if `pain.plant`. plantedRise tests pass `plant: true`; new test: a back context without it is the protect-only path (no far entry, same pose). T3.1 entry + AI_HANDOFF index line marked ON HOLD. 812/812 (811 at start).
+- T4.-0 c50fdce — re-filmed `off`/`aft`/`on` x 4 scenarios at 4613c0f (+ uncommitted film-tool curve fields). Manifests + close-ups tracked, strips untracked. Lou-as-receiver runs are `suplexReverse`/`suplexReverseFlip` (George throws); `suplex`/`suplexFlip` receive George (no backWaist).
 
 ## Goal
 

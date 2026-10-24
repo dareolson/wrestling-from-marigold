@@ -1,0 +1,496 @@
+{
+ "tool": "tools/debug/motif_curve.mjs",
+ "thresholdPx": 15,
+ "stepMs": 16.667,
+ "runs": {
+  "aft/suplex": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": null,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": null,
+    "rise": {
+     "ms": null,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": null
+    },
+    "handoff": {
+     "ms": null,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": null
+    },
+    "standing": {
+     "ms": null,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": null
+    }
+   },
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": false
+  },
+  "aft/suplexFlip": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": -1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 2766.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": null,
+     "spanMs": 2750,
+     "samples": 165,
+     "maxPx": null
+    },
+    "rise": {
+     "ms": null,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": null
+    },
+    "handoff": {
+     "ms": null,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": null
+    },
+    "standing": {
+     "ms": null,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": null
+    }
+   },
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": false
+  },
+  "aft/suplexReverse": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "thesz-procreate-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 1316.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 4200,
+     "spanMs": 4200,
+     "samples": 252,
+     "maxPx": 42.2,
+     "minPx": 42.2
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 56.21,
+     "minPx": 41.9
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 45.29,
+     "minPx": 41.91
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 51.15,
+     "minPx": 42.53
+    }
+   },
+   "textureRuns": [
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true
+  },
+  "aft/suplexReverseFlip": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "thesz-procreate-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": 1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 1316.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 4200,
+     "spanMs": 4200,
+     "samples": 252,
+     "maxPx": 46.42,
+     "minPx": 46.42
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 61.83,
+     "minPx": 46.08
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 49.81,
+     "minPx": 46.1
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 53.68,
+     "minPx": 46.69
+    }
+   },
+   "textureRuns": [
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": true
+  },
+  "on/suplex": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": null,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": null,
+    "rise": {
+     "ms": null,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": null
+    },
+    "handoff": {
+     "ms": null,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": null
+    },
+    "standing": {
+     "ms": null,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": null
+    }
+   },
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": false
+  },
+  "on/suplexFlip": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": 1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": null,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": null,
+    "rise": {
+     "ms": null,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": null
+    },
+    "handoff": {
+     "ms": null,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": null
+    },
+    "standing": {
+     "ms": null,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": null
+    }
+   },
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": false
+  },
+  "on/suplexReverse": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "thesz-procreate-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 1316.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 4200,
+     "spanMs": 4200,
+     "samples": 252,
+     "maxPx": 42.2,
+     "minPx": 42.2
+    },
+    "rise": {
+     "ms": 366.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 42.2,
+     "minPx": 0.14
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 45.29,
+     "minPx": 41.91
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 51.15,
+     "minPx": 42.53
+    }
+   },
+   "textureRuns": [
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": -1700,
+     "toMs": 350
+    },
+    {
+     "key": "thesz_pv1_forearm_grip",
+     "fromMs": 366.67,
+     "toMs": 1300
+    },
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": 1316.67,
+     "toMs": 5533.33
+    },
+    {
+     "key": "thesz_pv1_forearm_grip",
+     "fromMs": 5550,
+     "toMs": 6266.67
+    },
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": 6283.33,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true
+  },
+  "on/suplexReverseFlip": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "thesz-procreate-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": 1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 1316.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 4200,
+     "spanMs": 4200,
+     "samples": 252,
+     "maxPx": 46.41,
+     "minPx": 46.41
+    },
+    "rise": {
+     "ms": 366.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 46.41,
+     "minPx": 0.16
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 49.81,
+     "minPx": 46.1
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 53.68,
+     "minPx": 46.69
+    }
+   },
+   "textureRuns": [
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": -1700,
+     "toMs": 350
+    },
+    {
+     "key": "thesz_pv1_forearm_grip",
+     "fromMs": 366.67,
+     "toMs": 1300
+    },
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": 1316.67,
+     "toMs": 5533.33
+    },
+    {
+     "key": "thesz_pv1_forearm_grip",
+     "fromMs": 5550,
+     "toMs": 6266.67
+    },
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": 6283.33,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": true
+  }
+ }
+}

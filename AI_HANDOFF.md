@@ -29,6 +29,15 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**Suplex planted-rise plan — 2026-10-24 (Claude/Opus plan, rev 2):**
+Codex's sell-art candidate is committed locally (`b07484d`, not pushed). Stages 0-1
+(event-aligned off/on film, R1 check) are done; [plan and Progress](PLAN_SUPLEX_RISE.md),
+[Codex's review of those stages](AI_HANDOFF_ENTRIES/2026-10-24-codex-review-of-claude-suplex-rise.md).
+Session 2 (T2.0-T3.1) plants Lou's far wrist during the supine back rise behind
+`?sellart=v1` (geometry prototype only, no palm art) and writes Codex's support-art
+request. Flag-off claim is bounded: `tests/sellArtFlagOff.test.js` snapshots pose
+channels, not rendered parts. Nothing promoted; Derek judges at G4.
+
 **Contact-aware selling and protected rise — 2026-10-24 (Codex):**
 Derek authorized direct improvements and assigned new art to Codex. Implemented
 `?sellart=v1`: one grounded/rise appearance owner, existing grip donor selection,
@@ -651,6 +660,11 @@ still listed in `SHA256SUMS.txt` at its true hash. Whoever picks this up needs t
 establish what it was meant to be before changing anything.
 
 ## Handoff Log
+
+### 2026-10-24 — Claude: suplex planted-rise plan, session 2
+
+[PLAN_SUPLEX_RISE.md](PLAN_SUPLEX_RISE.md) Progress lists each task and commit; review input
+in [Codex's review](AI_HANDOFF_ENTRIES/2026-10-24-codex-review-of-claude-suplex-rise.md).
 
 ### 2026-10-24 — Codex: implemented the next sell-art and pain-performance pilot
 

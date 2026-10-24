@@ -1,6 +1,9 @@
 # PLAN: suplex receiver, planted rise (Opus plan, Sonnet executes)
 
 2026-10-24 · Opus · base `361d9bb` + Codex's uncommitted `?sellart=v1` work
+Revised 2026-10-24 (rev 2) after Codex's review of Stages 0–1 through `451361f`:
+[2026-10-24-codex-review-of-claude-suplex-rise.md](AI_HANDOFF_ENTRIES/2026-10-24-codex-review-of-claude-suplex-rise.md).
+Section 1b and the rev-2 tasks (marked **rev 2**) take precedence over older text.
 
 Continues [PLAN_MOVE_PERFORMANCE.md](PLAN_MOVE_PERFORMANCE.md) Stage 4. Source handoff:
 [2026-10-24-codex-sell-art-and-protected-rise.md](AI_HANDOFF_ENTRIES/2026-10-24-codex-sell-art-and-protected-rise.md).
@@ -29,8 +32,9 @@ George follows after Derek approves (Stage 6).
   every shell. Default `node` is v25/v19 and silently breaks PNG checksums.
 - Dev server for Chrome tools: `127.0.0.1:5173` (or set `WFM_URL`). macOS has
   no `timeout`.
-- Everything new stays behind `?sellart=v1`. With the flag off, the game
-  must be byte-for-byte the current behaviour (tests prove it, T0.2).
+- Everything new stays behind `?sellart=v1`. With the flag off, behaviour must
+  not change. Claim only what tests prove: T0.2 covers four query forms for
+  rise context and appearance writes. T2.0 adds a pose snapshot test.
 - No changes to damage, down timers, input locks or get-up duration.
 - **Not in scope:** figure four (parked), hammerlock (Derek's authored clip),
   prone rise, quick rise, faces, George art. Do not touch them.
@@ -67,6 +71,22 @@ Opus review findings (none blocking; each becomes a check below):
   Expected; Stage 6.
 - Codex's evidence is paused-scene stills, not film. Two of Codex's briefs ask
   for event-aligned film. Nothing gets to Derek without it (Stage 1).
+
+## 1b. Codex review of Stages 0–1 (rev 2)
+
+Accepted. Each item maps to a task:
+
+| # | Codex point | Plan response |
+|---|---|---|
+| 1 | "No flicker" ≠ continuous acting: Lou lies ~4217 ms with the near hand off the back (fist) between clutch end and rise start | New **D4** + Stage 4 covers the lying gap as well as the standing gap. Do not just hold the grip art: the art follows measured contact |
+| 2 | Off vs on changes two flags | **T1.3** adds `aft` config (`aftermath=v2` only). Attribute sellart effects as `aft` vs `on` |
+| 3 | Sheet is static | **T5.1** adds synchronized playback at real speed driven by manifest game time (+ 30 fps mp4 if `ffmpeg` exists) |
+| 4 | Raw strips are local/untracked | **T5.1** documents regeneration commands. The G4 artifact must be self-contained: committed downscaled strips or mp4s, not links into untracked folders |
+| 5 | Wrist plant is geometry only | D1 stands as a **prototype**. T2.3 also reports min reach, hinge direction and extension. Palm contact is measured only after Codex registers `support` art (Stage 3 → re-run T2.3) |
+| 6 | Flag-off claim too broad | Ground rule reworded; **T2.0** pose snapshot test |
+| 7 | AI_HANDOFF.md stale | **T2.0** updates the Status summary now; T5.2 again at G4 |
+
+Also: interruption/fallback checks (**T2.2f**, **T4.4**).
 
 ## 2. Design decisions
 
@@ -111,6 +131,36 @@ instead of .55→.85. Gate it by measuring the hand-to-backWaist distance curve
 across the handoff. **Option B** (only if Derek sees the dip at G4): solve the
 IK pose once at t = 1 with weight 1 and feed those arm angles as the
 recovery motif's start, so both sides of the handoff match.
+
+### D4. One motif, impact to standing (rev 2)
+
+Measure first: one curve, near-hand-to-backWaist distance (px) and near-hand
+texture key per strip frame, impact → recovery +2 s (T4.1). Then make the
+motif continuous in two places, both visual-only, under `sellart=v1`:
+
+- **Lying gap (clutch release → rise start).** After a back clutch lets go,
+  the near hand does not return to a neutral rest. It settles to a **low hold**:
+  a reach to `backWaist` at weight `HOLD_W` (start .5, from measurement: the
+  lowest weight that keeps the hand ≤ 15 px from backWaist). Add small authored
+  breathing (≤ ±.08 weight, period ~1.6 s, a pure function of time since
+  release), not a frozen pose. Implemented as a sell-plan tail in
+  `Wrestler`/`sells.js` sampling, not a timer change: down duration, sell plan
+  durations and rise start time are unchanged. Other sells (writhe, roll,
+  kick) still own the hands when they play; the hold applies only while no
+  other sell is active and the last clutch was `part: 'back'`.
+- **Rise start.** `backRiseWeight(t)` starts at the hold weight instead of 0
+  when entered from a hold: `w(t) = max(hold·(1 − smooth(t/.18)), current)`
+  → effectively hold → full reach without a dip. Pass the hold value in the
+  pain context (`_backRiseContext()` → `{ ..., from: holdW }`), so it stays a
+  pure function of `(t, from)`.
+- **Standing.** D3 Option A as written.
+- **Art.** `_syncSellAppearance` selects grip when the measured contact
+  distance is ≤ 15 px (computed from the solved pose, not from phase names),
+  with a 100 ms hysteresis so it cannot flicker. This replaces "grip at any
+  t > 0" in `backRiseParts`.
+
+If the hold reads as a frozen hand in the T4.3 strip, report that; do not
+add more motion than the breathing above. Derek judges.
 
 ## 3. Ordered tasks
 
@@ -158,7 +208,24 @@ recovery motif's start, so both sides of the handoff match.
   fix in `sellAppearance.js`: hold the grip from a back clutch's release
   through into a back rise (one rule, tested). Commit tool + sheet + fix.
 
+- **T1.3 (rev 2) `aft` config.** Add `aft: 'aftermath=v2'` to `CONFIGS` in
+  `aftermath_film.mjs`; `aftermath_pair.mjs` accepts any two configs
+  (`--a off --b on` default; G4 uses `aft` vs `on`). Film `aft` for `suplex` and
+  `suplexReverse` (+Flip). Commit tool change only.
+
 ### Stage 2: plant the support hand (D1)
+
+- **T2.0 (rev 2) Housekeeping + flag-off snapshot.**
+  1. Commit Codex's review entry
+     `AI_HANDOFF_ENTRIES/2026-10-24-codex-review-of-claude-suplex-rise.md` and this plan rev.
+  2. Update the AI_HANDOFF.md Status summary. The sell-art candidate is committed
+     (`b07484d`). Link this plan + Progress and Codex's review. Add an index line.
+  3. New test `tests/sellArtFlagOff.test.js`: build Lou's skeleton the way
+     existing `backRisePerformance.test.js` does. With pain context `null`,
+     snapshot every part's world `x,y,rotation` from `updateGetUp` at t = 0,
+     .1, …, 1 (supine, both facings) and from `_recoveryPose` back at w = .5, 1.
+     Write the fixture **before** any Stage 2 code change and commit it, so the
+     comparison runs against the pre-change behaviour. Tolerance 1e-9.
 
 - **T2.1 Measure.** Extend `sell_art_proof.mjs` (or a sibling) to sample the
   base supine rise at t = 0…1 step .02 for both facings and record per t:
@@ -171,9 +238,16 @@ recovery motif's start, so both sides of the handoff match.
   already provides. Unit tests: (a) contact world point constant within
   0.5 px across `[t0+0.05, tLift]` when reachable; (b) t = 0 and t = 1 poses
   unchanged; (c) elbow fold never exceeds `JOINT_LIMITS.elbow.max`;
-  (d) both facings; (e) flag off unchanged.
+  (d) both facings; (e) flag off unchanged (T2.0 snapshot passes);
+  (f) **rev 2 interruption:** a rise interrupted mid-plant (state leaves
+  `gettingUp`, `_activeMove` starts, choreo starts) leaves no plant weight
+  and no support selection on the next draw. Seeking t backwards gives the same pose.
 - **T2.3 Film** with T1.1, `sellart=v1&aftermath=v2`. Report max hand slide
-  (px) inside the plant window and the elbow fold range. Commit.
+  (px) inside the plant window, elbow fold range (min and max), min
+  shoulder–contact distance vs `lu+lf`, and whether the elbow hinge points
+  the anatomical way in every sampled frame (both facings). Label it a **geometry
+  prototype**. The wrist is not the palm and nothing here proves weight-bearing.
+  Commit a small JSON + one 3× crop per facing at t0, mid and tLift.
 
 If the IK straightens the far arm into an unnatural lock or the shoulder
 visibly pulls away from the plant before `tLift`, **stop** and report with
@@ -194,7 +268,20 @@ stills; do not retune the keyposes (that is a Derek-level choreography call).
   material and repeat Codex's own warning: no uniform rescale onto 117×351.
   Also add the AI_HANDOFF.md index line. Commit.
 
-### Stage 4: carry the motif onto the feet (D3, Option A)
+### Stage 4: one motif, impact to standing (D3 Option A + D4, rev 2)
+
+- **T4.0 (rev 2) Curve tool.** Extend `aftermath_pair.mjs` (or a sibling
+  `motif_curve.mjs`) to record, per strip frame, the near-hand contact point
+  → `backWaist` distance and the near-hand texture key. Capture it in page
+  with `skeleton.jointAttachmentPoints` / `imageAnchorPoint` during the T1.1
+  stepping, then save the manifest. Output a JSON + SVG plot. Run on current
+  `on` and `aft` first: this is the baseline that shows the lying and standing gaps in ms.
+- **T4.0b Lying hold (D4).** Implement the hold, the `from` rise entry and
+  the contact-driven grip with hysteresis. Tests: hold weight is a pure fn of
+  time since release; rise weight continuous at t = 0 when `from` is set and
+  unchanged when it is not; no grip→fist→grip under 250 ms in a synthetic
+  distance trace that hovers at 15 px; other sells still own the hands;
+  T2.0 snapshot passes.
 
 - **T4.1 Probe.** In a paused scene, Lou standing `idle` + `bend` at
   `_recoveryPose` back weight 1: find the upright near-arm channel values
@@ -206,20 +293,38 @@ stills; do not retune the keyposes (that is a Derek-level choreography call).
   tests (endpoints still 0). The near hand's grip art carries into recovery
   through `_syncSellAppearance` (add a `recover` branch; released by the same
   rules plus `pain.until`).
-- **T4.3 Film + curve.** T1.1 run; plot near-hand-to-backWaist distance vs game
-  time from rise .55 to recovery +2 s. Report the gap (ms with distance > 15 px)
-  across the handoff. Commit. Do not attempt Option B unless Derek asks.
+- **T4.3 Film + curve.** T1.1 run + T4.0 curve, **impact → recovery +2 s**
+  (not only rise .55 onward). Report the ms with distance > 15 px in each window:
+  clutch release → rise start, rise, rise → standing, standing → +2 s. Commit.
+  Do not attempt Option B unless Derek asks.
+- **T4.4 (rev 2) Interruption/fallback.** Unit tests plus one film run each,
+  where the harness allows: (a) receiver picked up / pinned while in the
+  lying hold → hold and grip released on the next draw; (b) hit during
+  recovery → recovery motif and grip released; (c) `pain.until` expiry
+  mid-recovery → motif ramps out, no snap > 1 frame; (d) rig without
+  `backWaist` (George) → falls back to the `nearHip` behaviour already in the
+  candidate, and no lying hold. Report results; fix only what fails.
 
 ### Stage 5: G4 package, then STOP
 
 - **T5.1** `research/animation/suplex-rise-2026-10/README.md` + `viewer.html`:
-  off vs candidate, both facings, normal-speed strip and event close-ups,
-  manifest numbers (plant slide, elbow range, handoff gap, R1 result). Same
-  style as `aftermath-g3/`.
+  `aft` vs `on` (and `off` as a third column), both facings, event close-ups,
+  manifest numbers (plant slide, elbow range/hinge/extension, gap ms per
+  window, R1 result) and the T4.3 curve.
+  **rev 2 playback:** the viewer plays the strips in sync at **1× real time**
+  from manifest game ms (requestAnimationFrame + performance.now, frame =
+  last strip frame ≤ elapsed), with play/pause, 0.5×, scrub and event jump
+  buttons. If `ffmpeg` is on PATH, also encode a 30 fps side-by-side mp4 per
+  facing. **Portability:** commit downscaled strips (≤ 480 px wide, WebP or
+  JPEG q80, target < 25 MB total; report the size) under
+  `research/animation/suplex-rise-2026-10/g4/` so the viewer works on a clean
+  checkout. README lists exact regeneration commands (Node 22, dev server,
+  `WFM_PROCREATE=1 WFM_GEORGE=george-roster-v1`, tool invocations).
 - **T5.2** Write `AI_HANDOFF_ENTRIES/2026-10-2x-claude-suplex-rise-g4.md`
   (what changed, measurements, what is not claimed) + index line. Commit.
 - **STOP. G4 questions for Derek:**
-  1. Does the back clutch → rise read as one hurt action, or as separate moves?
+  1. At 1× playback: does impact → clutch → lying hold → rise → stance read as
+     one hurt action, or as separate moves? Does the lying hold look alive or frozen?
   2. Does the far hand look like it takes weight (even with the fist art)?
   3. Is the hand returning to the back on his feet right, too much, or a dip?
   4. Promote `sellart=v1` to default for Lou, or keep iterating?
@@ -231,8 +336,12 @@ George roster: measure his `backWaist` on his own torso, request his own grip
 and support forearms from Codex (Codex's George packet: 426×439, proximal/distal
 locks), then repeat Stages 2–5. Never scale Lou's donors onto George.
 
-## 4. Suggested first Sonnet session
+## 4. Sessions
 
-Stage 0 + Stage 1 (T0.1–T1.2). That lands Codex's work and builds the film
-tool everything else is measured with. Stop there if the session runs long;
-Stage 2 is a clean start point.
+1. **Done:** Stage 0 + Stage 1 (T0.1–T1.2).
+2. **Next (rev 2):** T2.0 → T1.3 → T2.1 → T2.2 → T2.3 → T3.1. Stop after T3.1,
+   or earlier at the Stage 2 stop condition. Stage 3 hands Codex the art request,
+   so Codex can work in parallel with session 3.
+3. Stage 4 (T4.0 → T4.0b → T4.1 → T4.2 → T4.3 → T4.4).
+4. Stage 5 → STOP at G4. If Codex's support art is registered by then, re-run
+   T2.3 with the painted `support` anchor before T5.1.

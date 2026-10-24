@@ -29,6 +29,14 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**Claude elbow packet reviewed — 2026-10-23 (Codex):**
+`f4829ce` supplies useful bend ladders and existing-donor auditions; no runtime
+or new art. [Review and corrected next deliverable](AI_HANDOFF_ENTRIES/2026-10-23-codex-review-of-elbow-packet.md):
+audition grip on the actual suplex back clutch; the head clutch is diagnostic,
+the palm-side donor is a closed fist, and forward-flex art cannot be assumed to
+serve the hammerlock's reverse-fold projection. Next: a reversible grounded-sell
+grip comparison, then named tight-fold donors where the actual pose needs them.
+
 **Body-part replacement coordination — 2026-10-23 (Derek / Codex):**
 Derek wants bent-elbow replacements and unconventional pose-specific solutions
 considered alongside animation. [Next Claude/Codex art brief](AI_HANDOFF_ENTRIES/2026-10-23-codex-body-part-replacement-coordination.md)

@@ -4,9 +4,27 @@ const smooth = x => {
     const u = Math.max(0, Math.min(1, x));
     return u * u * (3 - 2 * u);
 };
-export function backRiseWeight(t) {
-    if (!Number.isFinite(t) || t <= 0 || t >= 0.85) return 0;
-    return smooth(t / 0.18) * (1 - smooth((t - 0.55) / 0.30));
+// `from` (D4): the lying-hold weight the rise starts from. The rise eases from it up
+// to full reach instead of dipping to 0 and back; with no hold (from = 0) this is
+// the original envelope exactly. A pure function of (t, from).
+// `peak` is the reach the rise holds (severity); a hold above it eases down to it.
+export function backRiseWeight(t, from = 0, peak = 1) {
+    const f = Number.isFinite(from) ? Math.max(0, Math.min(1, from)) : 0;
+    if (!Number.isFinite(t) || t >= 0.85) return 0;
+    if (t <= 0) return f;
+    return (f + (peak - f) * smooth(t / 0.18)) * (1 - smooth((t - 0.55) / 0.30));
+}
+
+// Lying hold (D4, ?sellart=v1): after a back clutch lets go, the near hand settles
+// at the small of the back at weight `w` with a slow authored breath, instead of
+// returning to rest. `w` is the lowest centre weight whose breathing trough keeps
+// both hand arts (grip and fist) within 15 px of backWaist on Lou, both facings
+// (tools/debug/hold_weight_sweep.mjs: grip <= 15 px from w .67, fist from w .70;
+// trough = w - breath = .72). A pure function of seconds since the clutch ended.
+export const HOLD = Object.freeze({ w: 0.80, breath: 0.08, periodSec: 1.6 });
+export function holdWeight(sinceReleaseSec) {
+    if (!Number.isFinite(sinceReleaseSec) || sinceReleaseSec < 0) return HOLD.w;
+    return HOLD.w + HOLD.breath * Math.sin(2 * Math.PI * sinceReleaseSec / HOLD.periodSec);
 }
 
 // Far (support) hand plant during the same rise. Visual-only, a pure function of

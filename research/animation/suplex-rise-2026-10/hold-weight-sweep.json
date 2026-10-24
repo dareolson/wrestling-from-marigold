@@ -1,0 +1,513 @@
+{
+ "rig": "thesz-procreate-v1",
+ "facings": {
+  "1": [
+   {
+    "art": "grip",
+    "w": 0,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 45.66
+   },
+   {
+    "art": "grip",
+    "w": 0.05,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 43.39
+   },
+   {
+    "art": "grip",
+    "w": 0.1,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 41.11
+   },
+   {
+    "art": "grip",
+    "w": 0.15,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 38.83
+   },
+   {
+    "art": "grip",
+    "w": 0.2,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 36.55
+   },
+   {
+    "art": "grip",
+    "w": 0.25,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 34.27
+   },
+   {
+    "art": "grip",
+    "w": 0.3,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 31.99
+   },
+   {
+    "art": "grip",
+    "w": 0.35,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 29.71
+   },
+   {
+    "art": "grip",
+    "w": 0.4,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 27.43
+   },
+   {
+    "art": "grip",
+    "w": 0.45,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 25.16
+   },
+   {
+    "art": "grip",
+    "w": 0.5,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 22.88
+   },
+   {
+    "art": "grip",
+    "w": 0.55,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 20.6
+   },
+   {
+    "art": "grip",
+    "w": 0.6,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 18.32
+   },
+   {
+    "art": "grip",
+    "w": 0.65,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 16.05
+   },
+   {
+    "art": "grip",
+    "w": 0.7,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 13.78
+   },
+   {
+    "art": "grip",
+    "w": 0.75,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 11.5
+   },
+   {
+    "art": "grip",
+    "w": 0.8,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 9.23
+   },
+   {
+    "art": "grip",
+    "w": 0.85,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 6.96
+   },
+   {
+    "art": "grip",
+    "w": 0.9,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 4.69
+   },
+   {
+    "art": "grip",
+    "w": 0.95,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 2.42
+   },
+   {
+    "art": "grip",
+    "w": 1,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 0.17
+   },
+   {
+    "art": "fist",
+    "w": 0,
+    "key": "thesz_pv1_forearm",
+    "dist": 51.09
+   },
+   {
+    "art": "fist",
+    "w": 0.05,
+    "key": "thesz_pv1_forearm",
+    "dist": 48.56
+   },
+   {
+    "art": "fist",
+    "w": 0.1,
+    "key": "thesz_pv1_forearm",
+    "dist": 46.01
+   },
+   {
+    "art": "fist",
+    "w": 0.15,
+    "key": "thesz_pv1_forearm",
+    "dist": 43.46
+   },
+   {
+    "art": "fist",
+    "w": 0.2,
+    "key": "thesz_pv1_forearm",
+    "dist": 40.91
+   },
+   {
+    "art": "fist",
+    "w": 0.25,
+    "key": "thesz_pv1_forearm",
+    "dist": 38.36
+   },
+   {
+    "art": "fist",
+    "w": 0.3,
+    "key": "thesz_pv1_forearm",
+    "dist": 35.81
+   },
+   {
+    "art": "fist",
+    "w": 0.35,
+    "key": "thesz_pv1_forearm",
+    "dist": 33.26
+   },
+   {
+    "art": "fist",
+    "w": 0.4,
+    "key": "thesz_pv1_forearm",
+    "dist": 30.71
+   },
+   {
+    "art": "fist",
+    "w": 0.45,
+    "key": "thesz_pv1_forearm",
+    "dist": 28.16
+   },
+   {
+    "art": "fist",
+    "w": 0.5,
+    "key": "thesz_pv1_forearm",
+    "dist": 25.61
+   },
+   {
+    "art": "fist",
+    "w": 0.55,
+    "key": "thesz_pv1_forearm",
+    "dist": 23.06
+   },
+   {
+    "art": "fist",
+    "w": 0.6,
+    "key": "thesz_pv1_forearm",
+    "dist": 20.51
+   },
+   {
+    "art": "fist",
+    "w": 0.65,
+    "key": "thesz_pv1_forearm",
+    "dist": 17.97
+   },
+   {
+    "art": "fist",
+    "w": 0.7,
+    "key": "thesz_pv1_forearm",
+    "dist": 15.42
+   },
+   {
+    "art": "fist",
+    "w": 0.75,
+    "key": "thesz_pv1_forearm",
+    "dist": 12.88
+   },
+   {
+    "art": "fist",
+    "w": 0.8,
+    "key": "thesz_pv1_forearm",
+    "dist": 10.33
+   },
+   {
+    "art": "fist",
+    "w": 0.85,
+    "key": "thesz_pv1_forearm",
+    "dist": 7.79
+   },
+   {
+    "art": "fist",
+    "w": 0.9,
+    "key": "thesz_pv1_forearm",
+    "dist": 5.25
+   },
+   {
+    "art": "fist",
+    "w": 0.95,
+    "key": "thesz_pv1_forearm",
+    "dist": 2.71
+   },
+   {
+    "art": "fist",
+    "w": 1,
+    "key": "thesz_pv1_forearm",
+    "dist": 0.17
+   }
+  ],
+  "-1": [
+   {
+    "art": "grip",
+    "w": 0,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 45.66
+   },
+   {
+    "art": "grip",
+    "w": 0.05,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 43.39
+   },
+   {
+    "art": "grip",
+    "w": 0.1,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 41.11
+   },
+   {
+    "art": "grip",
+    "w": 0.15,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 38.83
+   },
+   {
+    "art": "grip",
+    "w": 0.2,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 36.55
+   },
+   {
+    "art": "grip",
+    "w": 0.25,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 34.27
+   },
+   {
+    "art": "grip",
+    "w": 0.3,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 31.99
+   },
+   {
+    "art": "grip",
+    "w": 0.35,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 29.71
+   },
+   {
+    "art": "grip",
+    "w": 0.4,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 27.43
+   },
+   {
+    "art": "grip",
+    "w": 0.45,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 25.16
+   },
+   {
+    "art": "grip",
+    "w": 0.5,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 22.88
+   },
+   {
+    "art": "grip",
+    "w": 0.55,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 20.6
+   },
+   {
+    "art": "grip",
+    "w": 0.6,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 18.32
+   },
+   {
+    "art": "grip",
+    "w": 0.65,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 16.05
+   },
+   {
+    "art": "grip",
+    "w": 0.7,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 13.78
+   },
+   {
+    "art": "grip",
+    "w": 0.75,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 11.5
+   },
+   {
+    "art": "grip",
+    "w": 0.8,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 9.23
+   },
+   {
+    "art": "grip",
+    "w": 0.85,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 6.96
+   },
+   {
+    "art": "grip",
+    "w": 0.9,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 4.69
+   },
+   {
+    "art": "grip",
+    "w": 0.95,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 2.42
+   },
+   {
+    "art": "grip",
+    "w": 1,
+    "key": "thesz_pv1_forearm_grip",
+    "dist": 0.17
+   },
+   {
+    "art": "fist",
+    "w": 0,
+    "key": "thesz_pv1_forearm",
+    "dist": 51.09
+   },
+   {
+    "art": "fist",
+    "w": 0.05,
+    "key": "thesz_pv1_forearm",
+    "dist": 48.56
+   },
+   {
+    "art": "fist",
+    "w": 0.1,
+    "key": "thesz_pv1_forearm",
+    "dist": 46.01
+   },
+   {
+    "art": "fist",
+    "w": 0.15,
+    "key": "thesz_pv1_forearm",
+    "dist": 43.46
+   },
+   {
+    "art": "fist",
+    "w": 0.2,
+    "key": "thesz_pv1_forearm",
+    "dist": 40.91
+   },
+   {
+    "art": "fist",
+    "w": 0.25,
+    "key": "thesz_pv1_forearm",
+    "dist": 38.36
+   },
+   {
+    "art": "fist",
+    "w": 0.3,
+    "key": "thesz_pv1_forearm",
+    "dist": 35.81
+   },
+   {
+    "art": "fist",
+    "w": 0.35,
+    "key": "thesz_pv1_forearm",
+    "dist": 33.26
+   },
+   {
+    "art": "fist",
+    "w": 0.4,
+    "key": "thesz_pv1_forearm",
+    "dist": 30.71
+   },
+   {
+    "art": "fist",
+    "w": 0.45,
+    "key": "thesz_pv1_forearm",
+    "dist": 28.16
+   },
+   {
+    "art": "fist",
+    "w": 0.5,
+    "key": "thesz_pv1_forearm",
+    "dist": 25.61
+   },
+   {
+    "art": "fist",
+    "w": 0.55,
+    "key": "thesz_pv1_forearm",
+    "dist": 23.06
+   },
+   {
+    "art": "fist",
+    "w": 0.6,
+    "key": "thesz_pv1_forearm",
+    "dist": 20.51
+   },
+   {
+    "art": "fist",
+    "w": 0.65,
+    "key": "thesz_pv1_forearm",
+    "dist": 17.97
+   },
+   {
+    "art": "fist",
+    "w": 0.7,
+    "key": "thesz_pv1_forearm",
+    "dist": 15.42
+   },
+   {
+    "art": "fist",
+    "w": 0.75,
+    "key": "thesz_pv1_forearm",
+    "dist": 12.88
+   },
+   {
+    "art": "fist",
+    "w": 0.8,
+    "key": "thesz_pv1_forearm",
+    "dist": 10.33
+   },
+   {
+    "art": "fist",
+    "w": 0.85,
+    "key": "thesz_pv1_forearm",
+    "dist": 7.79
+   },
+   {
+    "art": "fist",
+    "w": 0.9,
+    "key": "thesz_pv1_forearm",
+    "dist": 5.25
+   },
+   {
+    "art": "fist",
+    "w": 0.95,
+    "key": "thesz_pv1_forearm",
+    "dist": 2.71
+   },
+   {
+    "art": "fist",
+    "w": 1,
+    "key": "thesz_pv1_forearm",
+    "dist": 0.17
+   }
+  ]
+ }
+}

@@ -14,7 +14,8 @@ import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees } from './animation/sells.js';
-import { backRiseParts, groundedSellParts } from './animation/sellAppearance.js';
+import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
+import { HOLD, holdWeight } from './animation/backRisePerformance.js';
 import { staggerFor } from './animation/staggers.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
@@ -527,6 +528,9 @@ export default class Wrestler {
         // The clip is now the appearance owner. prepareAnimationClip has
         // released any sell donor before the runtime applies its first frame.
         this._sellArtSelection = null;
+        this._hold = null;       // ?sellart=v1 lying hold after a back clutch: { t, lying }, t = s since release
+        this._riseFrom = 0;      // hold weight the current back rise eases up from (0 = none)
+        this._gripLatch = null;  // measured-contact art latch for the hand on the back
         if (facingAxis && sample.facing) this.facing = facingAxis * sample.facing;
         if (sample.pose) mergeArticulatedPose(this.pose, sample.pose);
         // Read by draw() only while a move is active, so it can't go stale.
@@ -936,7 +940,7 @@ export default class Wrestler {
 
     tickDown(dt) {
         this._tickPain();
-        if (this.state !== 'down') this._sell = null; // pinned, picked up, rising: the sell stops
+        if (this.state !== 'down') { this._sell = null; this._hold = null; } // pinned, picked up, rising: the sell (and hold) stops
         if (this.state !== 'down' && this.state !== 'staggered') return;
         if (this.state === 'down') this._tickSell(dt);
         this.stateTimer -= dt;
@@ -961,8 +965,10 @@ export default class Wrestler {
     // pose there draws identically either way, see sells.js).
     _tickSell(dt) {
         const pain = this._pain;
+        if (this._hold && !this._sell) this._hold.t += dt;
         if (!this._sell && pain?.phase === 'mat' && !pain.planned) {
             pain.planned = true;
+            this._hold = null;
             if (pain.part) {
                 const plan = planSells({
                     style: this.sellStyle, lying: this.lying, part: pain.part, intensity: pain.severity,
@@ -990,7 +996,16 @@ export default class Wrestler {
             sell.t -= cur.duration;
             cur = sell.plan[++sell.i];
         }
-        if (!cur) { this._sell = null; return; }
+        if (!cur) {
+            this._sell = null;
+            // ?sellart=v1 (D4): a back clutch that was the last sell does not return the hand to
+            // rest; it settles into the lying hold. Needs this rig's painted backWaist.
+            const last = sell.plan.at(-1);
+            if (sellArtCandidate() && last.name === 'clutch' && last.part === 'back'
+                && this.skeleton?.torso?._semanticAnchors?.backWaist)
+                this._hold = { t: Math.max(0, sell.t), lying: this.lying };
+            return;
+        }
         const swapAt = SELLS[cur.lying][cur.name]?.swapAt;
         if (swapAt !== undefined && sell.t / cur.duration >= swapAt) turnOver(cur);
     }
@@ -1002,7 +1017,11 @@ export default class Wrestler {
         if (!cur || sell.t < 0) return null;
         const u = Math.min(1, sell.t / cur.duration);
         const slot = cur.name === 'clutch' ? groundedSlot(cur.limb, sell.facing0, cur.lying, this.skeleton, cur.rolls) : null;
-        const def = cur.name === 'clutch' ? clutchSell(cur.lying, cur.part, cur.duration, slot ?? 'near') : SELLS[cur.lying][cur.name];
+        // The last back clutch ends on the lying hold's weight, not on rest (D4), so the hand
+        // is already where the hold starts when the clutch lets go.
+        const toHold = cur.name === 'clutch' && cur.part === 'back' && sell.i === sell.plan.length - 1
+            && sellArtCandidate() && !!this.skeleton?.torso?._semanticAnchors?.backWaist;
+        const def = cur.name === 'clutch' ? clutchSell(cur.lying, cur.part, cur.duration, slot ?? 'near', toHold ? HOLD.w : 0) : SELLS[cur.lying][cur.name];
         const keys = cur.turned ? def.after : def.keys;
         const lying = cur.turned ? def.to : cur.lying;
         const { d, reach } = sampleSell(keys, u, cur.amp);
@@ -1012,6 +1031,17 @@ export default class Wrestler {
         // sell keeps the knees inside their limits.
         const g = applyOffsets(Skeleton.GROUNDED_POSES[lying], d);
         return { g: cur.name === 'roll' ? g : limitKnees(g), reach: hands };
+    }
+
+    // The lying hold's current reach weight, or null. Applies only on the mat in `down`
+    // with no sell, move, choreography or ground handoff owning the pose; any of those
+    // claims the pose and the hold simply is not drawn that frame.
+    _lyingHold() {
+        const h = this._hold;
+        if (!h || !sellArtCandidate() || this.state !== 'down' || this._sell || this._activeMove
+            || this._groundHandoff || h.lying !== this.lying
+            || (this._choreoUntil ?? 0) > (this.scene?.time?.now ?? 0)) return null;
+        return { w: holdWeight(h.t) };
     }
 
     // The sole grounded-sell appearance writer. Complete selections reset the
@@ -1032,10 +1062,26 @@ export default class Wrestler {
         const grounded = !release && enabled && this.state === 'down'
             && !this._groundHandoff && !choreo && this._sell !== this._sellArtInterrupted;
         const rising = !release && this._backRiseContext();
+        const hold = !release && enabled && this._lyingHold();
         const exists = this.scene?.textures?.exists;
         const textureExists = exists ? key => exists.call(this.scene.textures, key) : null;
-        const parts = grounded ? groundedSellParts(this._sell, this.skeleton, textureExists)
-            : rising ? backRiseParts(this.riseT, this.skeleton, textureExists) : {};
+        const now = this.scene?.time?.now ?? 0;
+        let parts = {};
+        if (grounded && this._sell) {
+            parts = groundedSellParts(this._sell, this.skeleton, textureExists);
+            // the hand that is on the back at clutch time carries into the hold and the rise
+            if (Object.keys(parts).length && this._sell.plan[this._sell.i]?.part === 'back')
+                this._gripLatch = this._gripLatch?.on ? this._gripLatch : newGripLatch(true, now);
+        } else if (hold || rising) {
+            // Art from the measured contact distance (latch with dwell), not from the phase.
+            // A rig that cannot measure keeps the phase rule: grip while the reach is on.
+            const dist = this.skeleton?.backContactDistance?.();
+            if (Number.isFinite(dist)) {
+                this._gripLatch = stepGripLatch(this._gripLatch ?? newGripLatch(false), dist, now);
+                if (this._gripLatch.on) parts = nearGripParts(this.skeleton, textureExists);
+            } else parts = hold ? nearGripParts(this.skeleton, textureExists)
+                : backRiseParts(this.riseT, this.skeleton, textureExists);
+        } else if (!release) this._gripLatch = null;
         const selection = Object.keys(parts).length ? JSON.stringify(parts) : null;
         if (selection === (this._sellArtSelection ?? null)) return;
         this.skeleton?.setPartVariants?.(parts);
@@ -1049,6 +1095,7 @@ export default class Wrestler {
             || this._pain?.phase !== 'rise' || this._pain.part !== 'back'
             || !Number.isFinite(this._pain.severity) || this._pain.severity <= 0) return null;
         const ctx = { part: 'back', severity: this._pain.severity };
+        if (this._riseFrom > 0) ctx.from = this._riseFrom;
         if (plantCandidate()) ctx.plant = true;
         return ctx;
     }
@@ -2425,6 +2472,9 @@ export default class Wrestler {
     // skeleton's grounded keyposes. A worn wrestler takes visibly longer to
     // peel himself off the mat — the get-up itself sells the damage.
     _startRiseUp() {
+        // The rise eases up from the lying hold's weight (D4); no hold, no `from`.
+        this._riseFrom = this._lyingHold()?.w ?? 0;
+        this._hold = null;
         this._syncSellAppearance(true);
         this.state = 'gettingUp';
         this._sell = null;
@@ -2447,6 +2497,8 @@ export default class Wrestler {
     }
 
     _startQuickRise() {
+        this._riseFrom = 0;
+        this._hold = null;
         this._syncSellAppearance(true);
         this.state        = 'risingUp';
         this._sell = null;
@@ -2656,6 +2708,12 @@ export default class Wrestler {
                 this.skeleton.updateGroundedReach(x, y, s, facing, sold.g, sold.reach,
                     sellArtCandidate() ? { paintedContacts: true,
                         backContact: this._sell?.plan[this._sell.i]?.part === 'back' } : undefined);
+                return;
+            }
+            const lyingHold = this._lyingHold();
+            if (lyingHold) {
+                this.skeleton.updateGroundedReach(x, y, s, facing, limitKnees({ ...Skeleton.GROUNDED_POSES[this.lying] }),
+                    { near: { to: 'nearHip', w: lyingHold.w } }, { paintedContacts: true, backContact: true });
                 return;
             }
             this.skeleton.updateGrounded(x, y, s, facing, this.lying);

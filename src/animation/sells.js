@@ -47,7 +47,7 @@ const PRONE_CLUTCH = {
 };
 
 // A clutch: reach in, hold, a squeeze, hold, let go.
-function clutchKeys(spec) {
+function clutchKeys(spec, endReach = 0) {
     const hold = (k) => Object.fromEntries(Object.entries(spec.d).map(([c, v]) => [c, v * k]));
     const w = (v) => Object.fromEntries(Object.keys(spec.hands).map(side => [side, v]));
     return [
@@ -55,7 +55,7 @@ function clutchKeys(spec) {
         { t: 0.25, d: hold(1), reach: w(1) },
         { t: 0.45, d: hold(1.25), reach: w(1) },
         { t: 0.70, d: hold(1), reach: w(1) },
-        { t: 1, d: {}, reach: w(0) },
+        { t: 1, d: {}, reach: w(endReach) },
     ];
 }
 
@@ -172,11 +172,12 @@ export function sideSwap(spec) {
     };
 }
 
-/** Clutch spec for a body part on a lying, as a playable sell. `slot` 'far' clutches the far-side limb. */
-export function clutchSell(lying, part, duration, slot = 'near') {
+/** Clutch spec for a body part on a lying, as a playable sell. `slot` 'far' clutches the far-side limb.
+ *  `endReach` (?sellart=v1 lying hold): how far the hand has gone when the clutch lets go (default 0, back to rest). */
+export function clutchSell(lying, part, duration, slot = 'near', endReach = 0) {
     const base = SELLS[lying].clutch[part] ?? SELLS[lying].clutch.chest;
     const spec = slot === 'far' ? sideSwap(base) : base;
-    return { duration, keys: clutchKeys(spec), hands: spec.hands };
+    return { duration, keys: clutchKeys(spec, endReach), hands: spec.hands };
 }
 
 const smooth = u => u * u * (3 - 2 * u);

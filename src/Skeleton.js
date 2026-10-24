@@ -2339,6 +2339,18 @@ export default class Skeleton {
         return { elbow, hand };
     }
 
+    // Distance (px) from the near hand's contact to the torso's painted backWaist, from
+    // the pose last drawn: the painted clutch patch of the active near forearm if it has
+    // one, else the wrist. Null when the rig has no backWaist or has not been drawn.
+    backContactDistance() {
+        const anchor = this.torso?._semanticAnchors?.backWaist;
+        if (!anchor) return null;
+        const waist = Skeleton.imageAnchorPoint(this.torso, anchor);
+        const near = this.nearForearm, patch = near?._semanticAnchors?.clutch;
+        const contact = (patch && Skeleton.imageAnchorPoint(near, patch)) || this.jointAttachmentPoints?.nearWrist;
+        return waist && contact ? Math.hypot(contact.x - waist.x, contact.y - waist.y) : null;
+    }
+
     // Normalized source-image anchor -> displayed world point, including the
     // Image's real origin, flips and transform. Works with legacy and bound art.
     static imageAnchorPoint(image, anchor) {
@@ -2399,7 +2411,10 @@ export default class Skeleton {
         const K = lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
         const pose = Skeleton._getUpPose(K, t, this._lockLimbJoints, this.standingHipHeight);
         const back = lying === 'supine' && pain?.part === 'back' && (pain.severity ?? 0) > 0;
-        const protect = back ? backRiseWeight(t) * Math.max(0, Math.min(1, pain.severity)) : 0;
+        const sev = back ? Math.max(0, Math.min(1, pain.severity)) : 0;
+        // `from` is the lying-hold weight to ease from (D4): the first rise frame reproduces
+        // the hold's own reach, then it eases to the severity-scaled protection.
+        const protect = !back ? 0 : pain.from > 0 ? backRiseWeight(t, pain.from, sev) : backRiseWeight(t) * sev;
         // The support wrist stays on the mat while the body rises past it (D1).
         const plant = back && pain.plant ? this._plantReach?.(x, y, s, facing, t, K) : null;
         if (protect > 0 || plant) {

@@ -26,6 +26,8 @@ Read that entry, then this plan. Read nothing else unless a task names it.
 - T3.1 60508e7 — `AI_HANDOFF_ENTRIES/2026-10-24-claude-open-support-request.md`; gated on two Derek questions (116 ms hold; plant location).
 - T4.-1 4613c0f — plant parked: `plantCandidate()` (`&plant=1`) adds `plant: true` to `_backRiseContext()`; `updateGetUp` plants only if `pain.plant`. plantedRise tests pass `plant: true`; new test: a back context without it is the protect-only path (no far entry, same pose). T3.1 entry + AI_HANDOFF index line marked ON HOLD. 812/812 (811 at start).
 - T4.-0 c50fdce — re-filmed `off`/`aft`/`on` x 4 scenarios at 4613c0f (+ uncommitted film-tool curve fields). Manifests + close-ups tracked, strips untracked. Lou-as-receiver runs are `suplexReverse`/`suplexReverseFlip` (George throws); `suplex`/`suplexFlip` receive George (no backWaist).
+- T4.0 7b876c7 — `motif_curve.mjs` + `backDist` in film samples (painted clutch patch of the active near forearm, else wrist, to painted backWaist). Baseline `motif-curve-baseline.json/.svg`. Windows (ms > 15 px / span): lying (clutch end -> rise start) `on` 4200/4200, `aft` 4200/4200; rise (start -> riseT .85) `on` 366.7/766.7, `aft` 766.7/766.7; handoff (.85 -> standing) 266.7/266.7 both; standing -> +2 s 2000/2000 both. Same for both facings. `on` grip runs: [366.7,1300] and [5550,6266.7] ms.
+- T4.0b (this commit) — lying hold + rise `from` + contact latch; HOLD.w .80 (see hold-weight-sweep.json).
 
 ## Goal
 

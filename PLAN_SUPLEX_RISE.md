@@ -274,7 +274,32 @@ stills; do not retune the keyposes (that is a Derek-level choreography call).
   material and repeat Codex's own warning: no uniform rescale onto 117×351.
   Also add the AI_HANDOFF.md index line. Commit.
 
+### Derek decisions, 2026-10-24 (after session 2)
+
+- **Support plant PARKED.** The wrist plant holds for 116 ms and sits hidden
+  under the near thigh. Derek: "it looks pretty good, we can revisit later." Keep
+  the code, but take it out of `?sellart=v1`, so it runs only with an extra
+  `&plant=1` (T4.-1). The Codex support-art request (T3.1) is **on hold**; do not
+  send it. Revisit options when it reopens: a revised supine rise keypose with
+  the far hand posted behind the hips (Derek's choreography call).
+- **Suplex head layering fixed** separately by Opus (`eb420e2`): a clip
+  `layers` window keeps the receiver's head in the thrower's near armpit from
+  0.11 s to 1.28 s. Re-film baselines (`off`, `aft`, `on`) before using them as
+  Stage 4/5 evidence; pre-`eb420e2` strips show the old head swap.
+
 ### Stage 4: one motif, impact to standing (D3 Option A + D4, rev 2)
+
+- **T4.-1 (rev 3) Park the plant.** Add `plant: true` to `_backRiseContext()`'s
+  return value only when the URL also has `plant=1` (a `plantCandidate()` next
+  to `sellArtCandidate()`). `Skeleton.updateGetUp` calls `_plantReach` only if
+  `pain?.plant`. `tests/plantedRise.test.js` passes `plant: true` in its contexts.
+  Add one test: a `{ part: 'back', severity: 1 }` context without `plant` gives
+  the same pose as before the plant existed (compare to the protect-only path).
+  T2.0 snapshot still passes. Mark the T3.1 entry and its AI_HANDOFF.md index
+  line "ON HOLD (Derek 2026-10-24: plant parked)". Commit.
+- **T4.-0 Re-film baselines** `off`, `aft`, `on` for all four scenarios at
+  the new HEAD (head-layer fix, plant parked). These replace the earlier strips
+  as the comparison base.
 
 - **T4.0 (rev 2) Curve tool.** Extend `aftermath_pair.mjs` (or a sibling
   `motif_curve.mjs`) to record, per strip frame, the near-hand contact point
@@ -331,7 +356,7 @@ stills; do not retune the keyposes (that is a Derek-level choreography call).
 - **STOP. G4 questions for Derek:**
   1. At 1× playback: does impact → clutch → lying hold → rise → stance read as
      one hurt action, or as separate moves? Does the lying hold look alive or frozen?
-  2. Does the far hand look like it takes weight (even with the fist art)?
+  2. (Plant parked, so no question about the far hand.) Does the lying hold read as pain, or as a frozen hand?
   3. Is the hand returning to the back on his feet right, too much, or a dip?
   4. Promote `sellart=v1` to default for Lou, or keep iterating?
   5. Next: port to George (Stage 6) or ask Codex for the open-palm art first?
@@ -348,6 +373,6 @@ locks), then repeat Stages 2–5. Never scale Lou's donors onto George.
 2. **Next (rev 2):** T2.0 → T1.3 → T2.1 → T2.2 → T2.3 → T3.1. Stop after T3.1,
    or earlier at the Stage 2 stop condition. Stage 3 hands Codex the art request,
    so Codex can work in parallel with session 3.
-3. Stage 4 (T4.0 → T4.0b → T4.1 → T4.2 → T4.3 → T4.4).
-4. Stage 5 → STOP at G4. If Codex's support art is registered by then, re-run
-   T2.3 with the painted `support` anchor before T5.1.
+3. **Next (rev 3):** T4.-1 → T4.-0 → T4.0 → T4.0b → T4.1 → T4.2 → T4.3 → T4.4.
+4. Stage 5 → STOP at G4. The plant is parked: the G4 package shows it as off
+   and lists it under "not in this candidate".

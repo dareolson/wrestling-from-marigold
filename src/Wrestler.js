@@ -62,6 +62,9 @@ const dropkickCandidate = () => typeof location !== 'undefined' && new URLSearch
 // Flag off, neither exists and nothing below reads _pain beyond today's sells.
 const aftermathCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('aftermath') === 'v2';
 const sellArtCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('sellart') === 'v1';
+// ?plant=1 (with sellart=v1): the support-hand plant during the back rise. PARKED by
+// Derek 2026-10-24 (PLAN_SUPLEX_RISE T4.-1); the code stays, off unless asked for.
+const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
 // the AI's begging-off threshold (AIHandler george.retreatStamina).
 const BEG_STAMINA = 35;
@@ -1045,7 +1048,9 @@ export default class Wrestler {
             || (this._choreoUntil ?? 0) > (this.scene?.time?.now ?? 0)
             || this._pain?.phase !== 'rise' || this._pain.part !== 'back'
             || !Number.isFinite(this._pain.severity) || this._pain.severity <= 0) return null;
-        return { part: 'back', severity: this._pain.severity };
+        const ctx = { part: 'back', severity: this._pain.severity };
+        if (plantCandidate()) ctx.plant = true;
+        return ctx;
     }
 
     tickPossum(dt) {

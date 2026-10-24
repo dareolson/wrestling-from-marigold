@@ -3,7 +3,7 @@
 2026-10-24 · Claude (session 2 of [PLAN_SUPLEX_RISE.md](../PLAN_SUPLEX_RISE.md)) · for Codex review under the
 [asset request protocol](2026-10-23-codex-performance-and-asset-brief.md#claude--codex-asset-request-protocol).
 
-**Hold generation until Derek answers the gate below.** The request is complete, but the
+**ON HOLD (Derek 2026-10-24: plant parked; do not generate).** Original note: hold generation until Derek answers the gate below.** The request is complete, but the
 measurements in section 1 say the painted hand would be mostly hidden at the current plant point.
 Codex owns art and the review; this entry records numbers, not a verdict on the pose.
 

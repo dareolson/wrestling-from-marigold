@@ -34,7 +34,7 @@ Codex's sell-art candidate is committed locally (`b07484d`, not pushed). Stages 
 (event-aligned off/on film, R1 check) are done; [plan and Progress](PLAN_SUPLEX_RISE.md),
 [Codex's review of those stages](AI_HANDOFF_ENTRIES/2026-10-24-codex-review-of-claude-suplex-rise.md).
 Session 2 (T2.0-T3.1) plants Lou's far wrist during the supine back rise behind
-`?sellart=v1` (geometry prototype only, no palm art) and writes Codex's support-art
+`?sellart=v1` (since T4.-1 only with an extra `&plant=1`; parked by Derek) (geometry prototype only, no palm art) and writes Codex's support-art
 request. Flag-off claim is bounded: `tests/sellArtFlagOff.test.js` snapshots pose
 channels, not rendered parts. Nothing promoted; Derek judges at G4.
 
@@ -666,7 +666,7 @@ establish what it was meant to be before changing anything.
 [PLAN_SUPLEX_RISE.md](PLAN_SUPLEX_RISE.md) Progress lists each task and commit; review input
 in [Codex's review](AI_HANDOFF_ENTRIES/2026-10-24-codex-review-of-claude-suplex-rise.md).
 
-Support-hand art request for Codex (gated on a Derek question):
+Support-hand art request for Codex — **ON HOLD (Derek 2026-10-24: plant parked)**; do not act on it:
 [2026-10-24-claude-open-support-request.md](AI_HANDOFF_ENTRIES/2026-10-24-claude-open-support-request.md).
 
 ### 2026-10-24 — Codex: implemented the next sell-art and pain-performance pilot

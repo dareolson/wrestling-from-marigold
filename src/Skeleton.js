@@ -2401,7 +2401,7 @@ export default class Skeleton {
         const back = lying === 'supine' && pain?.part === 'back' && (pain.severity ?? 0) > 0;
         const protect = back ? backRiseWeight(t) * Math.max(0, Math.min(1, pain.severity)) : 0;
         // The support wrist stays on the mat while the body rises past it (D1).
-        const plant = back ? this._plantReach?.(x, y, s, facing, t, K) : null;
+        const plant = back && pain.plant ? this._plantReach?.(x, y, s, facing, t, K) : null;
         if (protect > 0 || plant) {
             const reach = {};
             if (protect > 0) reach.near = { to: 'nearHip', w: protect };

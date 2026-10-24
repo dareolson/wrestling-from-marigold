@@ -28,7 +28,7 @@ function rig() {
     };
     return sk;
 }
-const BACK = { part: 'back', severity: 1 };
+const BACK = { part: 'back', severity: 1, plant: true };
 const rise = (sk, facing, t, pain) => { Skeleton.prototype.updateGetUp.call(sk, 400, 430, 1, facing, t, 'supine', pain); return sk.calls.at(-1); };
 const tLiftOf = sk => sk._plantPlan(1, Skeleton.GETUP_SUPINE_POSES).tLift;
 const flex = (S, E, W, facing) => {
@@ -100,6 +100,9 @@ test('interrupting the rise drops the plant: the next draw carries no plant weig
             scene: { time: { now: 1000 } }, state: 'gettingUp', lying: 'supine', _activeMove: null, _choreoUntil: 0,
             _pain: { phase: 'rise', part: 'back', severity: 1 }, ...over });
         assert.deepEqual(make({})._backRiseContext(), { part: 'back', severity: 1 });
+        globalThis.location = { search: '?sellart=v1&plant=1' };
+        assert.deepEqual(make({})._backRiseContext(), { part: 'back', severity: 1, plant: true });
+        globalThis.location = { search: '?sellart=v1' };
         for (const over of [{ state: 'standing' }, { state: 'down' }, { _activeMove: { id: 'x' } },
             { _choreoUntil: 5000 }, { _pain: null }, { _pain: { phase: 'recover', part: 'back', severity: 1 } }])
             assert.equal(make(over)._backRiseContext(), null, JSON.stringify(over));
@@ -110,4 +113,15 @@ test('interrupting the rise drops the plant: the next draw carries no plant weig
         assert.deepEqual(rise(sk, 1, 0.25, null).g, cold);
         assert.equal(sk._plantReach(400, 430, 1, 1, 0.25, Skeleton.GETUP_SUPINE_POSES).w, 1);
     } finally { delete globalThis.location; }
+});
+
+test('a back context without plant:true is the protect-only path: no far entry, same pose as before the plant existed', () => {
+    for (const facing of [1, -1]) for (const t of [0.1, 0.2, 0.3, 0.5, 0.7]) {
+        const sk = rig(), seen = [];
+        sk.updateGroundedReach = function (x, y, s, f, pose, reach) { seen.push(reach); return Skeleton.prototype.updateGroundedReach.call(this, x, y, s, f, pose, reach, { paintedContacts: true, backContact: true }); };
+        const plain = rise(sk, facing, t, { part: 'back', severity: 1 }).g;
+        assert.ok(seen.every(r => !r.far), `t=${t} far entry`);
+        const ref = rig(); ref._plantReach = () => null;
+        assert.deepEqual(rise(ref, facing, t, BACK).g, plain);
+    }
 });

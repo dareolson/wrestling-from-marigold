@@ -6,7 +6,7 @@ import {
     transformBoundPoint,
 } from './rig/twoAnchorBinding.js';
 import { childAngleFromLocalFlex, localFlexFromChildAngle, JOINT_LIMITS } from './rig/articulation.js';
-import { backRiseWeight } from './animation/backRisePerformance.js';
+import { backRiseWeight, PLANT, plantWeight } from './animation/backRisePerformance.js';
 
 // Proportions in unscaled pixels — multiply by s before placing parts.
 // Lengths originally chosen to match the old single-piece stick-figure totals
@@ -2248,13 +2248,15 @@ export default class Skeleton {
             const back = paintedContacts && backContact && r.to?.endsWith('Hip')
                 && this.torso?._semanticAnchors?.backWaist
                 ? Skeleton.imageAnchorPoint(this.torso, this.torso._semanticAnchors.backWaist) : null;
-            const T = back ?? Skeleton.groundedTarget(pts, r.to, s);
+            const T = r.at ?? back ?? Skeleton.groundedTarget(pts, r.to, s);
             if (!S || !E || !W || !T) continue;
             // An authored point on a baked hand is distinct from the logical
             // forearm endpoint. Only the candidate consumes this metadata.
             const image = this[`${side}Forearm`];
-            const painted = paintedContacts && image?._semanticAnchors?.clutch
-                ? Skeleton.imageAnchorPoint(image, image._semanticAnchors.clutch) : null;
+            // A point target (the support plant) uses the painted `support` patch when the
+            // active forearm art has one; none is registered yet, so it solves the wrist.
+            const anchor = image?._semanticAnchors?.[r.at ? 'support' : 'clutch'];
+            const painted = paintedContacts && anchor ? Skeleton.imageAnchorPoint(image, anchor) : null;
             const contact = painted ?? W;
             const contactAngle = painted ? wrap(Math.atan2(contact.y - E.y, contact.x - E.x)
                 - Math.atan2(W.y - E.y, W.x - E.x)) : 0;
@@ -2378,10 +2380,9 @@ export default class Skeleton {
     // grounded keyposes. Wrestler swaps to updateUpright when the tween lands.
     // `lying` is how the wrestler is lying ('prone' or 'supine'); each rise
     // starts from that exact pose, so there is no turn-over pop.
-    updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null) {
-        const K = lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
+    static _getUpPose(K, t, lockLimbJoints, standingHipHeight) {
         const pose = Skeleton._sampleKeyposes(K, t);
-        if (this._lockLimbJoints) {
+        if (lockLimbJoints) {
             // The old final key places every character's hips only 88 units
             // above the mat. Locked calves expose that short generic stand-in
             // as a jump when a differently sized rig returns upright. Finish
@@ -2389,13 +2390,65 @@ export default class Skeleton {
             // the final supported key, rather than changing knee attachment.
             const last = K.at(-1), before = K.at(-2);
             const u = Math.max(0, Math.min(1, (t - before.t) / (last.t - before.t)));
-            pose.hip += (this.standingHipHeight - last.hip) * u * u * (3 - 2 * u);
+            pose.hip += (standingHipHeight - last.hip) * u * u * (3 - 2 * u);
         }
-        const protect = lying === 'supine' && pain?.part === 'back'
-            ? backRiseWeight(t) * Math.max(0, Math.min(1, pain.severity ?? 0)) : 0;
-        if (protect > 0) this.updateGroundedReach(x, y, s, facing, pose,
-            { near: { to: 'nearHip', w: protect } }, { paintedContacts: true, backContact: true });
-        else this._applyGrounded(x, y, s, facing, pose);
+        return pose;
+    }
+
+    updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null) {
+        const K = lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
+        const pose = Skeleton._getUpPose(K, t, this._lockLimbJoints, this.standingHipHeight);
+        const back = lying === 'supine' && pain?.part === 'back' && (pain.severity ?? 0) > 0;
+        const protect = back ? backRiseWeight(t) * Math.max(0, Math.min(1, pain.severity)) : 0;
+        // The support wrist stays on the mat while the body rises past it (D1).
+        const plant = back ? this._plantReach?.(x, y, s, facing, t, K) : null;
+        if (protect > 0 || plant) {
+            const reach = {};
+            if (protect > 0) reach.near = { to: 'nearHip', w: protect };
+            if (plant) reach.far = plant;
+            this.updateGroundedReach(x, y, s, facing, pose, reach, { paintedContacts: true, backContact: true });
+        } else this._applyGrounded(x, y, s, facing, pose);
+    }
+
+    // The far-arm plant entry for updateGroundedReach at rise progress t, or null.
+    // The plant point and tLift come from sampling this rig's own base keyposes
+    // once (cached), so the answer depends only on t, not on frame history.
+    _plantReach(x, y, s, facing, t, K) {
+        if (!(t > PLANT.t0) || t >= PLANT.t1 + PLANT.outSpan) return null;
+        const plan = this._plantPlan(s, K);
+        if (!plan) return null;
+        const weight = plantWeight(t, plan.tLift);
+        if (weight <= 0.001) return null;
+        return { at: { x: x + (facing >= 0 ? 1 : -1) * plan.dx, y: y + plan.dy }, w: weight };
+    }
+
+    _plantPlan(s, K) {
+        const farForearm = this.farForearm;
+        const key = [s, K.length, this._lockLimbJoints ? this.standingHipHeight : 0,
+            farForearm?.texture?.key ?? '', farForearm?._semanticAnchors?.support ? 1 : 0].join('|');
+        if (this._plantCache?.key === key) return this._plantCache.plan;
+        const at = t => {
+            this._applyGrounded(0, 0, s, 1, Skeleton._getUpPose(K, t, this._lockLimbJoints, this.standingHipHeight));
+            const p = this.jointAttachmentPoints, S = p.farShoulder, E = p.farElbow, W = p.farWrist;
+            const support = farForearm?._semanticAnchors?.support;
+            const contact = (support && Skeleton.imageAnchorPoint(farForearm, support)) || W;
+            return S && E && W ? { S, E, contact } : null;
+        };
+        let plan = null;
+        const a = at(PLANT.t0);
+        if (a) {
+            const lu = Math.hypot(a.E.x - a.S.x, a.E.y - a.S.y), lf = Math.hypot(a.contact.x - a.E.x, a.contact.y - a.E.y);
+            // y on the mat line (root y = 0 here), x as the base rise has it at t0
+            const P = { x: a.contact.x, y: 0 };
+            let tLift = PLANT.t1;
+            for (let t = PLANT.t0 + 0.005; t <= PLANT.t1 + 1e-9; t += 0.005) {
+                const q = at(t);
+                if (q && Math.hypot(q.S.x - P.x, q.S.y - P.y) >= PLANT.reach * (lu + lf)) { tLift = t; break; }
+            }
+            plan = { dx: P.x, dy: P.y, tLift };
+        }
+        this._plantCache = { key, plan };
+        return plan;
     }
 
     // Place every part from a grounded pose: hip-rooted, torso free to pitch

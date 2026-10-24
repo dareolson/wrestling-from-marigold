@@ -2229,8 +2229,8 @@ export default class Skeleton {
      * side ('near' | 'far') to { to, w }: a groundedTarget name and how far
      * (0–1) the hand has gone from its posed place to it. The pose is drawn
      * once to measure this body's own joints, each arm is solved with two-bone
-     * IK onto the BLENDED POSITION (blending angles flings the hand), and the
-     * pose is drawn again. Elbows bend away from the mat.
+     * IK onto a curved hand-position path (not blended joint angles), and the
+     * pose is drawn again. The signed elbow hinge branch mirrors with facing.
      */
     updateGroundedReach(x, y, s, facing, g, reach) {
         this._applyGrounded(x, y, s, facing, g);
@@ -2246,35 +2246,79 @@ export default class Skeleton {
             const S = pts[`${side}Shoulder`], E = pts[`${side}Elbow`], W = pts[`${side}Wrist`];
             const T = Skeleton.groundedTarget(pts, r.to, s);
             if (!S || !E || !W || !T) continue;
-            const goal = { x: W.x + (T.x - W.x) * r.w, y: W.y + (T.y - W.y) * r.w };
+            // A head reach goes around the front of the shoulder consistently,
+            // including casts whose start/target directions straddle 180°.
+            const goal = Skeleton.blendReachTarget(S, W, T, r.w, r.to === 'head' ? -f : null);
             const lu = dist(S, E), lf = dist(E, W);
-            // The hand may not fold the elbow past its limit (articulation.js
-            // JOINT_LIMITS): stop short of a target that would overfold it.
-            const minD = Math.sqrt(lu * lu + lf * lf - 2 * lu * lf * Math.cos(Math.PI - JOINT_LIMITS.elbow.max));
-            const d = Math.max(Math.abs(lu - lf) + 1e-3, minD, Math.min(dist(S, goal), (lu + lf) * 0.999));
-            const base = Math.atan2(goal.y - S.y, goal.x - S.x);
-            const bend = Math.acos(Math.max(-1, Math.min(1, (lu * lu + d * d - lf * lf) / (2 * lu * d))));
-            // Two elbow solutions. One bends the elbow its anatomical way (the
-            // forearm folds toward the FRONT of the upper arm: the elbow sits on
-            // the back side of the shoulder-hand line, front read off the torso);
-            // the other is hyperextended and reads as a flared elbow. Keep the
-            // anatomical one; the off-the-mat one only breaks a tie.
-            const elbows = [base + bend, base - bend].map(a => ({ x: S.x + Math.cos(a) * lu, y: S.y + Math.sin(a) * lu }));
+            let front = null;
             const hipMid = pts.nearHip && pts.farHip ? { x: (pts.nearHip.x + pts.farHip.x) / 2, y: (pts.nearHip.y + pts.farHip.y) / 2 } : pts.nearHip;
-            let elbow = elbows[0].y <= elbows[1].y ? elbows[0] : elbows[1];
             if (hipMid && pts.neck) {
                 const t = { x: pts.neck.x - hipMid.x, y: pts.neck.y - hipMid.y };
-                const front = f > 0 ? { x: -t.y, y: t.x } : { x: t.y, y: -t.x };
-                // Back of the arm: the elbow's offset from the shoulder-hand line points away from front.
-                const sideOf = e => (e.x - (S.x + goal.x) / 2) * front.x + (e.y - (S.y + goal.y) / 2) * front.y;
-                const proper = elbows.filter(e => sideOf(e) <= 0);
-                if (proper.length === 1) elbow = proper[0];
+                front = f > 0 ? { x: -t.y, y: t.x } : { x: t.y, y: -t.x };
             }
-            const hand = { x: elbow.x + (goal.x - elbow.x) * lf / Math.max(1e-6, dist(elbow, goal)), y: elbow.y + (goal.y - elbow.y) * lf / Math.max(1e-6, dist(elbow, goal)) };
+            // Keep the signed hinge branch through the whole reach. Selecting
+            // by torso-front each frame flips the elbow when the hand crosses
+            // the torso axis, even though the hand target moves continuously.
+            const { elbow, hand } = Skeleton.solveReachArm(S, lu, lf, goal, front, -f);
             solved[`${side}Arm`] = toAngle({ x: elbow.x - S.x, y: elbow.y - S.y }, g[`${side}Arm`]);
             solved[`${side}Fore`] = toAngle({ x: hand.x - elbow.x, y: hand.y - elbow.y }, g[`${side}Fore`]);
         }
         this._applyGrounded(x, y, s, facing, solved);
+    }
+
+    // Reach around the shoulder rather than through it. A straight hand path
+    // across the inner unreachable disk makes radial projection whip the arm
+    // around as its direction changes near the shoulder. Interpolate the
+    // hand's polar position, not the joint angles, to keep that path clear.
+    static blendReachTarget(shoulder, start, target, weight, turnSign = null) {
+        const a = { x: start.x - shoulder.x, y: start.y - shoulder.y };
+        const b = { x: target.x - shoulder.x, y: target.y - shoulder.y };
+        const ra = Math.hypot(a.x, a.y), rb = Math.hypot(b.x, b.y);
+        const angle = ra > 1e-9 ? Math.atan2(a.y, a.x) : Math.atan2(b.y, b.x);
+        let turn = ra > 1e-9 && rb > 1e-9 ? Math.atan2(a.x * b.y - a.y * b.x, a.x * b.x + a.y * b.y) : 0;
+        if (turnSign === -1 && turn > 0) turn -= 2 * Math.PI;
+        else if (turnSign === 1 && turn < 0) turn += 2 * Math.PI;
+        const radius = ra + (rb - ra) * weight;
+        return { x: shoulder.x + Math.cos(angle + turn * weight) * radius,
+            y: shoulder.y + Math.sin(angle + turn * weight) * radius };
+    }
+
+    /**
+     * Two-bone IK for one clutching arm: shoulder S, bone lengths lu/lf, toward
+     * `goal`. The goal is first PROJECTED onto the reachable annulus (never
+     * closer than the elbow limit in articulation.js JOINT_LIMITS allows, never
+     * past full extension), and that one point drives both the elbow and the
+     * hand, so the bones keep their lengths and the elbow never folds past its
+     * limit; reach yields to anatomy. `front` is the body's front direction
+     * (or null): of the two elbow solutions, the anatomical one has the elbow
+     * on the back side of the shoulder-hand line, the other is hyperextended
+     * and reads as a flared elbow. With no front, the off-the-mat one wins.
+     * An explicit `bendSign` locks the signed world-space hinge branch instead;
+     * the grounded runtime uses this so torso/target crossings cannot flip it.
+     */
+    static solveReachArm(S, lu, lf, goal, front = null, bendSign = null) {
+        const minD = Math.sqrt(lu * lu + lf * lf - 2 * lu * lf * Math.cos(Math.PI - JOINT_LIMITS.elbow.max));
+        const gd = Math.hypot(goal.x - S.x, goal.y - S.y);
+        const d = Math.max(Math.abs(lu - lf) + 1e-3, minD, Math.min(gd, (lu + lf) * 0.999));
+        // Straight down when the goal sits on the shoulder: any direction is as good.
+        const ux = gd > 1e-9 ? (goal.x - S.x) / gd : 0, uy = gd > 1e-9 ? (goal.y - S.y) / gd : 1;
+        const G = { x: S.x + ux * d, y: S.y + uy * d };
+        const base = Math.atan2(uy, ux);
+        const bend = Math.acos(Math.max(-1, Math.min(1, (lu * lu + d * d - lf * lf) / (2 * lu * d))));
+        const elbows = [base + bend, base - bend].map(a => ({ x: S.x + Math.cos(a) * lu, y: S.y + Math.sin(a) * lu }));
+        let elbow = elbows[0].y <= elbows[1].y ? elbows[0] : elbows[1];
+        if (bendSign === 1 || bendSign === -1) {
+            // Signed screen-space cross(upper arm, forearm). Mirror the sign
+            // with facing, not with torso tilt or the shoulder/target slope.
+            elbow = elbows[bendSign < 0 ? 0 : 1];
+        } else if (front) {
+            const sideOf = e => (e.x - (S.x + G.x) / 2) * front.x + (e.y - (S.y + G.y) / 2) * front.y;
+            const proper = elbows.filter(e => sideOf(e) <= 0);
+            if (proper.length === 1) elbow = proper[0];
+        }
+        const eg = Math.max(1e-6, Math.hypot(G.x - elbow.x, G.y - elbow.y));
+        const hand = { x: elbow.x + (G.x - elbow.x) * lf / eg, y: elbow.y + (G.y - elbow.y) * lf / eg };
+        return { elbow, hand };
     }
 
     // Points on a lying body a hand can clutch: any recorded joint, plus the

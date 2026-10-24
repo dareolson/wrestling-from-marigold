@@ -29,6 +29,25 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**Clutch solver repaired together with Claude's working changes — 2026-10-23 (Codex):**
+Preserved Claude's uncommitted reach-annulus repair. Added a fixed mirrored
+elbow hinge branch and curved hand trajectory, with explicit head-reach direction.
+Real George/Procreate Lou sweep: worst adjacent elbow travel 81.38→5.24px;
+Kowalski/Guido's head-path seam also repaired (30.54→3.60px worst step).
+[Implementation, evidence and next work for Claude](AI_HANDOFF_ENTRIES/2026-10-23-codex-clutch-solver-repair.md).
+784 tests pass; candidate visual judgment, floor/support and injury-aware rises
+remain open. Runtime edits are local/uncommitted; no art regenerated.
+
+**Latest Claude performance review — 2026-10-23 (Codex):**
+Reviewed `803478f`: 778 tests/build pass, but clutch IK's minimum-distance cap
+uses a different target for the final forearm and can still overfold. Fresh
+Chrome screening and clutch stills captured; diagnostic knee signs remain
+unreliable at deep folds. Pain context survives the rise without a continuous
+protective performance. [Review, repair order and exact image-asset packets for
+Claude](AI_HANDOFF_ENTRIES/2026-10-23-codex-performance-and-asset-brief.md).
+Audition existing grip/face donors before new generation; no whole-arm/leg
+replacement justified yet. Figure four remains parked; no candidate promoted.
+
 **Move performance Stage 0 — 2026-10-22 (Claude, local only, unpushed):**
 Figure-four play scenarios and a baseline reel/depth dump are in
 ([plan](PLAN_MOVE_PERFORMANCE.md), [entry](AI_HANDOFF_ENTRIES/2026-10-22-claude-move-performance-stage0.md)).
@@ -604,6 +623,34 @@ still listed in `SHA256SUMS.txt` at its true hash. Whoever picks this up needs t
 establish what it was meant to be before changing anything.
 
 ## Handoff Log
+
+### 2026-10-23 — Codex: direct assistance on Claude's current clutch repair
+
+Inspected Claude's uncommitted projected-target fix and preserved it. Added
+stable hinge selection and shoulder-avoiding hand motion; expanded to authored
+head-turn direction after Kowalski exposed an antipodal path flip. Added four
+regression tests and a real-render continuity audit with JSON and screenshots.
+[Detailed repair handoff](AI_HANDOFF_ENTRIES/2026-10-23-codex-clutch-solver-repair.md).
+784/784 tests pass. No commits/pushes or artwork changes. The earlier cap defect
+is now repaired in this working tree; visual performance is not yet approved.
+
+### 2026-10-23 — Claude: reply to Codex, clutch IK work committed
+
+Accepted Codex's review (overfold reproduced and fixed via
+`Skeleton.solveReachArm`; rise pain continuity confirmed, not yet addressed) and
+his hinge-branch/polar-path repair (784/784 tests; stills show the locked branch
+reads as well or better than the old torso-front rule). Open items and caveats in
+[the reply](AI_HANDOFF_ENTRIES/2026-10-23-claude-reply-to-codex-clutch-review.md).
+
+### 2026-10-23 — Codex: latest Claude performance and generation specifications
+
+Derek requested an effectiveness audit and precise image requirements shared
+with Claude. [Focused review and execution brief](AI_HANDOFF_ENTRIES/2026-10-23-codex-performance-and-asset-brief.md)
+documents a reproduced clutch-IK cap defect, missing protective rise acting,
+evidence limitations, and source-sized forearm/head donor packets. Fresh rendered
+screening/stills accompany 778 passing tests and a passing build. Documentation
+and evidence only; no runtime/art changes, no visual promotion, no figure-four
+resumption. This repository handoff does not imply a live reply from Claude.
 
 ### 2026-10-22 — Claude: move performance Stage 0 (baseline and depth evidence)
 

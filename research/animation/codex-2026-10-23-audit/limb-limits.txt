@@ -1,0 +1,37 @@
+Running node v22.23.1 (npm v10.9.8)
+CALIBRATION: pose lKnee 0.5 / lElbow 1.0 (knee reads NEGATIVE = ankle forward of knee: the channel is inverted vs anatomy)
+{"seat":"p1","name":"GEORGE","facing":1,"nearKnee":-0.5,"nearElbow":1,"farKnee":-0.5,"farElbow":1}
+{"seat":"p1","name":"GEORGE","facing":-1,"nearKnee":-0.5,"nearElbow":1,"farKnee":-0.5,"farElbow":1}
+{"seat":"p2","name":"THESZ","facing":1,"nearKnee":-0.5,"nearElbow":1,"farKnee":-0.5,"farElbow":1}
+{"seat":"p2","name":"THESZ","facing":-1,"nearKnee":-0.5,"nearElbow":1,"farKnee":-0.5,"farElbow":1}
+
+62 cases, 29 outside limits
+GEORGE | GEORGE supine writhe | knee -0.15,1.8 elbow -0.44,0.47 | elbow min -0.44
+GEORGE | GEORGE supine kick | knee -0.15,1.4 elbow -1.22,0.32 | elbow min -1.22
+GEORGE | GEORGE supine roll | knee -0.96,0.96 elbow -0.21,0.21 | knee min -0.96
+GEORGE | GEORGE supine clutch knee near | knee -2.55,2.45 elbow -0.09,0.91 | knee min -2.55
+GEORGE | GEORGE supine clutch knee far | knee -2.55,2.26 elbow -0.09,0.08 | knee min -2.55
+GEORGE | GEORGE supine clutch head near | knee -0.15,1.48 elbow 0.07,3.31 | elbow max 3.31
+GEORGE | GEORGE supine clutch head far | knee -0.15,1.48 elbow 0.07,3.31 | elbow max 3.31
+GEORGE | GEORGE supine clutch arm near | knee -0.15,1.15 elbow -2.36,2.3 | elbow min -2.36
+GEORGE | GEORGE prone roll | knee -0.96,0.96 elbow -0.21,0.21 | knee min -0.96
+GEORGE | GEORGE prone clutch head near | knee 0.15,0.8 elbow -0.08,3.03 | elbow max 3.03
+GEORGE | GEORGE prone clutch head far | knee 0.15,0.8 elbow -2.84,2.7 | elbow min -2.84
+GEORGE | GEORGE prone clutch arm near | knee 0.15,0.96 elbow -2.22,1.98 | elbow min -2.22
+GEORGE | GEORGE prone clutch arm far | knee 0.15,0.96 elbow -0.72,2.43 | elbow min -0.72
+THESZ | THESZ supine writhe | knee -0.15,1.8 elbow -0.45,0.46 | elbow min -0.45
+THESZ | THESZ supine kick | knee -0.15,1.4 elbow -1.22,0.32 | elbow min -1.22
+THESZ | THESZ supine roll | knee -0.95,0.96 elbow -0.21,0.21 | knee min -0.95
+THESZ | THESZ supine clutch knee near | knee -2.55,2.26 elbow -0.09,1.83 | knee min -2.55
+THESZ | THESZ supine clutch knee far | knee -2.55,2.26 elbow -0.46,1.5 | knee min -2.55; elbow min -0.46
+THESZ | THESZ supine clutch head near | knee -0.15,1.48 elbow -2.85,3.31 | elbow min -2.85; elbow max 3.31
+THESZ | THESZ supine clutch head far | knee -0.15,1.48 elbow -2.85,3.31 | elbow min -2.85; elbow max 3.31
+THESZ | THESZ supine clutch arm near | knee -0.15,1.15 elbow -2.37,2.05 | elbow min -2.37
+THESZ | THESZ supine clutch chest near | knee -0.15,1.39 elbow -2.69,2.64 | elbow min -2.69
+THESZ | THESZ supine clutch chest far | knee -0.15,1.39 elbow -2.69,2.64 | elbow min -2.69
+THESZ | THESZ prone roll | knee -0.95,0.96 elbow -0.21,0.21 | knee min -0.95
+THESZ | THESZ prone clutch head near | knee 0.15,0.8 elbow -0.08,2.96 | elbow max 2.96
+THESZ | THESZ prone clutch head far | knee 0.15,0.8 elbow -2.79,2.15 | elbow min -2.79
+THESZ | THESZ prone clutch arm near | knee 0.15,0.96 elbow -2.28,1.67 | elbow min -2.28
+THESZ | THESZ prone clutch arm far | knee 0.15,0.96 elbow -0.72,2.47 | elbow min -0.72
+THESZ | THESZ prone clutch chest far | knee 0.15,0.8 elbow -2.69,1.88 | elbow min -2.69

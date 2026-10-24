@@ -414,3 +414,29 @@ test('limitKnees leaves a pose already inside the limits untouched', () => {
     const g = { nearThigh: 1.4, nearShin: 0.9, farThigh: 1.45, farShin: 1.6 };
     assert.deepEqual(limitKnees({ ...g }), g);
 });
+
+// ── Clutch IK keeps the bones' lengths and the elbow's limit ───────────────
+test('solveReachArm: too-close, reachable and too-far goals never overfold the elbow or stretch a bone', async () => {
+    const { default: Skeleton } = await import('../src/Skeleton.js');
+    const { JOINT_LIMITS } = await import('../src/rig/articulation.js');
+    const S = { x: 10, y: -4 };
+    const cases = [[50, 50], [40, 60], [60, 35]];
+    const goals = [0, 5, 19, 30, 60, 99, 140].flatMap(r => [0, 1.1, 2.6, 4.0, 5.5].map(a => ({ x: S.x + Math.cos(a) * r, y: S.y + Math.sin(a) * r })));
+    for (const [lu, lf] of cases) for (const goal of goals) for (const front of [null, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }]) {
+        const { elbow, hand } = Skeleton.solveReachArm(S, lu, lf, goal, front);
+        assert.ok(Math.abs(Math.hypot(elbow.x - S.x, elbow.y - S.y) - lu) < 1e-6, 'upper arm length');
+        assert.ok(Math.abs(Math.hypot(hand.x - elbow.x, hand.y - elbow.y) - lf) < 1e-6, 'forearm length');
+        const a1 = Math.atan2(elbow.y - S.y, elbow.x - S.x), a2 = Math.atan2(hand.y - elbow.y, hand.x - elbow.x);
+        const flex = Math.abs(Math.atan2(Math.sin(a2 - a1), Math.cos(a2 - a1)));
+        assert.ok(flex <= JOINT_LIMITS.elbow.max + 1e-6, `flex ${flex} for ${lu}/${lf} goal ${goal.x},${goal.y}`);
+    }
+});
+
+test('solveReachArm: a reachable goal is met exactly, and one past full extension stops short', async () => {
+    const { default: Skeleton } = await import('../src/Skeleton.js');
+    const S = { x: 0, y: 0 };
+    const near = Skeleton.solveReachArm(S, 50, 50, { x: 60, y: 30 });
+    assert.ok(Math.hypot(near.hand.x - 60, near.hand.y - 30) < 1e-6);
+    const far = Skeleton.solveReachArm(S, 50, 50, { x: 300, y: 0 });
+    assert.ok(Math.hypot(far.hand.x, far.hand.y) <= 100 * 0.999 + 1e-6);
+});

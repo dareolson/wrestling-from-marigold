@@ -10,6 +10,12 @@ Read that entry, then this plan. Read nothing else unless a task names it.
 
 (Executor: append one line per finished task: `T#.# <sha> <one-line result>`.)
 
+- T0.1 — 800/800 tests, build, rig:validate (6 rigs), `git diff --check` clean; `play.mjs suplex`/`suplexReverse` PASS with and without `sellart=v1&aftermath=v2` (Procreate Lou + george-roster-v1).
+- T0.2 b07484d — existing tests covered flag-off appearance writes while down only; added one test for a flag-off back-pain rise (context null, no writes, four non-v1 query forms).
+- T0.3 b07484d — Codex's candidate committed locally (PLAN_SUPLEX_RISE.md included).
+- T1.1 ea61369 — `tools/debug/aftermath_film.mjs`: suplex log hook sleeps the loop, then `game.step` at fixed 1/60 s (tween clock pinned, Math.random seeded in page); strip every 1/30 s named by ms from impact, event close-ups, manifest. 4 scenarios (suplex, suplexReverse, +Flip variants for the other facing) x off/on. No `timeScale` used; stepping replaces it.
+- T1.2 03b0a0a — `aftermath_pair.mjs` -> `pair-sheet.html`, `hand-art-check.json`. **R1 flicker does not occur**: Lou's grip holds 367-1300 ms, fist for ~4217 ms lying, grip returns 33 ms (2 steps) after rise start, drops at rise ~.85. 0 grip-fist-grip runs under 250 ms in all 4 scenarios; no fix made. George (receiver in `suplex`/`suplexFlip`) never shows grip (R4).
+
 ## Goal
 
 The suplex receiver on Procreate Lou reads as one continuous hurt performance:

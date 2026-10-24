@@ -1,0 +1,303 @@
+{
+ "note": "Geometry prototype: far wrist only. Not palm contact, not weight-bearing.",
+ "window": {
+  "t0": 0.12,
+  "inSpan": 0.05,
+  "from": 0.16999999999999998,
+  "tLift": 0.3250000000000002
+ },
+ "film": {
+  "suplexReverse": {
+   "rig": "thesz-procreate-v1",
+   "facing": -1,
+   "commit": {
+    "commit": "946254c",
+    "dirty": true
+   },
+   "summary": {
+    "samples": 7,
+    "riseT": [
+     0.1853,
+     0.3208
+    ],
+    "maxWristSlidePx": 0.03,
+    "wristAboveMatPx": [
+     0.015,
+     0.045
+    ],
+    "elbowFlexDeg": {
+     "min": 22.85,
+     "max": 34.41
+    },
+    "hingeAnatomicalEverySample": true,
+    "reachPx": {
+     "min": 56.74,
+     "max": 58.205
+    },
+    "armLengthPx": {
+     "min": 59.359,
+     "max": 59.381
+    },
+    "minReachOverArm": 0.9556,
+    "maxReachOverArm": 0.9803,
+    "minArmMinusReachPx": 1.168
+   },
+   "wristStepPx": {
+    "arrival": 3.97,
+    "maxEveryStep": 15.04
+   },
+   "trace": [
+    {
+     "t": 0.1114,
+     "x": 348.95,
+     "y": 359.65
+    },
+    {
+     "t": 0.1284,
+     "x": 351.31,
+     "y": 361.13
+    },
+    {
+     "t": 0.1464,
+     "x": 351.9,
+     "y": 358.95
+    },
+    {
+     "t": 0.1654,
+     "x": 350.26,
+     "y": 355.34
+    },
+    {
+     "t": 0.1853,
+     "x": 350.1,
+     "y": 355.1
+    },
+    {
+     "t": 0.2061,
+     "x": 350.1,
+     "y": 355.11
+    },
+    {
+     "t": 0.2277,
+     "x": 350.1,
+     "y": 355.11
+    },
+    {
+     "t": 0.25,
+     "x": 350.1,
+     "y": 355.11
+    },
+    {
+     "t": 0.273,
+     "x": 350.1,
+     "y": 355.12
+    },
+    {
+     "t": 0.2966,
+     "x": 350.1,
+     "y": 355.12
+    },
+    {
+     "t": 0.3208,
+     "x": 350.1,
+     "y": 355.13
+    },
+    {
+     "t": 0.3455,
+     "x": 356.95,
+     "y": 356.81
+    },
+    {
+     "t": 0.3706,
+     "x": 371.96,
+     "y": 355.82
+    },
+    {
+     "t": 0.396,
+     "x": 377.94,
+     "y": 352.23
+    },
+    {
+     "t": 0.4218,
+     "x": 371.88,
+     "y": 351.47
+    }
+   ]
+  },
+  "suplexReverseFlip": {
+   "rig": "thesz-procreate-v1",
+   "facing": 1,
+   "commit": {
+    "commit": "946254c",
+    "dirty": true
+   },
+   "summary": {
+    "samples": 7,
+    "riseT": [
+     0.1853,
+     0.3208
+    ],
+    "maxWristSlidePx": 0.032,
+    "wristAboveMatPx": [
+     0.021,
+     0.051
+    ],
+    "elbowFlexDeg": {
+     "min": 22.87,
+     "max": 34.42
+    },
+    "hingeAnatomicalEverySample": true,
+    "reachPx": {
+     "min": 62.846,
+     "max": 64.462
+    },
+    "armLengthPx": {
+     "min": 65.751,
+     "max": 65.77
+    },
+    "minReachOverArm": 0.9556,
+    "maxReachOverArm": 0.9803,
+    "minArmMinusReachPx": 1.295
+   },
+   "wristStepPx": {
+    "arrival": 4.39,
+    "maxEveryStep": 16.68
+   },
+   "trace": [
+    {
+     "t": 0.1114,
+     "x": 859.75,
+     "y": 398.38
+    },
+    {
+     "t": 0.1284,
+     "x": 857.14,
+     "y": 400.03
+    },
+    {
+     "t": 0.1464,
+     "x": 856.49,
+     "y": 397.61
+    },
+    {
+     "t": 0.1654,
+     "x": 858.3,
+     "y": 393.61
+    },
+    {
+     "t": 0.1853,
+     "x": 858.48,
+     "y": 393.34
+    },
+    {
+     "t": 0.2061,
+     "x": 858.48,
+     "y": 393.35
+    },
+    {
+     "t": 0.2277,
+     "x": 858.48,
+     "y": 393.35
+    },
+    {
+     "t": 0.25,
+     "x": 858.48,
+     "y": 393.36
+    },
+    {
+     "t": 0.273,
+     "x": 858.48,
+     "y": 393.36
+    },
+    {
+     "t": 0.2966,
+     "x": 858.49,
+     "y": 393.37
+    },
+    {
+     "t": 0.3208,
+     "x": 858.49,
+     "y": 393.37
+    },
+    {
+     "t": 0.3455,
+     "x": 850.9,
+     "y": 395.23
+    },
+    {
+     "t": 0.3706,
+     "x": 834.26,
+     "y": 394.14
+    },
+    {
+     "t": 0.396,
+     "x": 827.65,
+     "y": 390.16
+    },
+    {
+     "t": 0.4218,
+     "x": 834.35,
+     "y": 389.32
+    }
+   ]
+  }
+ },
+ "paused": {
+  "1": {
+   "samples": 8,
+   "riseT": [
+    0.18,
+    0.32
+   ],
+   "maxWristSlidePx": 0.038,
+   "wristAboveMatPx": [
+    0.019,
+    0.055
+   ],
+   "elbowFlexDeg": {
+    "min": 22.91,
+    "max": 34.88
+   },
+   "hingeAnatomicalEverySample": true,
+   "reachPx": {
+    "min": 68.598,
+    "max": 70.457
+   },
+   "armLengthPx": {
+    "min": 71.877,
+    "max": 71.877
+   },
+   "minReachOverArm": 0.9544,
+   "maxReachOverArm": 0.9802,
+   "minArmMinusReachPx": 1.42
+  },
+  "-1": {
+   "samples": 8,
+   "riseT": [
+    0.18,
+    0.32
+   ],
+   "maxWristSlidePx": 0.038,
+   "wristAboveMatPx": [
+    0.019,
+    0.055
+   ],
+   "elbowFlexDeg": {
+    "min": 22.91,
+    "max": 34.88
+   },
+   "hingeAnatomicalEverySample": true,
+   "reachPx": {
+    "min": 68.598,
+    "max": 70.457
+   },
+   "armLengthPx": {
+    "min": 71.877,
+    "max": 71.877
+   },
+   "minReachOverArm": 0.9544,
+   "maxReachOverArm": 0.9802,
+   "minArmMinusReachPx": 1.42
+  }
+ }
+}

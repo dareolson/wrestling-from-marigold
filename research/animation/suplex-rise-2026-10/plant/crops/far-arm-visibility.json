@@ -1,0 +1,83 @@
+{
+ "note": "Pixels (1x, canvas composite of the skeleton parts only) that change when farUpArm/farForearm/farHand are left out. Geometry-level occlusion check, not an art judgment.",
+ "rows": [
+  {
+   "facing": 1,
+   "name": "t0",
+   "t": 0.12,
+   "farArmVisiblePx": {
+    "base": 21,
+    "planted": 31
+   },
+   "plantPoint": {
+    "x": 404.8248309302683,
+    "y": 430
+   }
+  },
+  {
+   "facing": 1,
+   "name": "mid",
+   "t": 0.24750000000000008,
+   "farArmVisiblePx": {
+    "base": 253,
+    "planted": 32
+   },
+   "plantPoint": {
+    "x": 404.8248309302683,
+    "y": 430
+   }
+  },
+  {
+   "facing": 1,
+   "name": "tLift",
+   "t": 0.3250000000000002,
+   "farArmVisiblePx": {
+    "base": 284,
+    "planted": 32
+   },
+   "plantPoint": {
+    "x": 404.8248309302683,
+    "y": 430
+   }
+  },
+  {
+   "facing": -1,
+   "name": "t0",
+   "t": 0.12,
+   "farArmVisiblePx": {
+    "base": 31,
+    "planted": 31
+   },
+   "plantPoint": {
+    "x": 394.2376275670886,
+    "y": 430
+   }
+  },
+  {
+   "facing": -1,
+   "name": "mid",
+   "t": 0.24750000000000008,
+   "farArmVisiblePx": {
+    "base": 362,
+    "planted": 32
+   },
+   "plantPoint": {
+    "x": 394.2376275670886,
+    "y": 430
+   }
+  },
+  {
+   "facing": -1,
+   "name": "tLift",
+   "t": 0.3250000000000002,
+   "farArmVisiblePx": {
+    "base": 406,
+    "planted": 32
+   },
+   "plantPoint": {
+    "x": 394.2376275670886,
+    "y": 430
+   }
+  }
+ ]
+}

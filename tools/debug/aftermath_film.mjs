@@ -122,6 +122,7 @@ const STEP = () => {
         nearForearm: sk.nearForearm?.texture?.key ?? null, farForearm: sk.farForearm?.texture?.key ?? null,
         nearHand: sk.nearHand?.texture?.key ?? null, farHand: sk.farHand?.texture?.key ?? null,
         nearWrist: pt(pts.nearWrist), farWrist: pt(pts.farWrist),
+        farShoulder: pt(pts.farShoulder), farElbow: pt(pts.farElbow),
         otherState: (film.receiver === 0 ? sc.w2 : sc.w1).state,
     };
 };
@@ -278,7 +279,8 @@ async function film(scenario, configName, outRoot) {
             farForearmTexture: rle(frames, 'farForearm', impactNow),
             frames: frameList,
             samples: frames.map(f => ({ rel: +(f.now - impactNow).toFixed(2), state: f.state, riseT: f.state === 'gettingUp' ? +f.riseT.toFixed(4) : null,
-                sell: f.sell, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist })),
+                sell: f.sell, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
+                farShoulder: f.farShoulder, farElbow: f.farElbow, rootY: f.y, facing: f.facing })),
         };
         writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 1));
         console.log(`[film] ${configName}/${scenario}: receiver ${rigs[receiverIdx]} facing ${manifest.receiverFacing.atImpact}, `

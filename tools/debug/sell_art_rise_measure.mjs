@@ -114,6 +114,11 @@ try {
             }
             out.facings[facing] = rows;
         }
+        if (mode === 'planted' || mode === 'crops') {
+            const sk = w.skeleton, s = w.s * w._heightScale;
+            const plan = sk._plantPlan(s, sk.constructor.GETUP_SUPINE_POSES);
+            out.plan = { ...plan, s };
+        }
         w.state = 'standing'; w._pain = null; setFlag(false);
         return out;
     }, { mode, STEP });

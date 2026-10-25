@@ -11,7 +11,7 @@ import { applyOffsets, limitKnees } from './animation/sells.js';
 
 // Just behind the torso's sub-depth (base + 0.001, see setDepth) and in front of the head (base + 0.0005).
 const HAND_UNDER_DEPTH = 0.00095;
-import { backSellSupport } from './rig/backSell.js';
+import { AROUND, aroundGoal, backSellSupport } from './rig/backSell.js';
 import { handClearance, handTipOf, silhouetteOf } from './rig/silhouette.js';
 
 // updateUpright draws every arm and forearm this much (facing-signed) past the pose channels.
@@ -303,6 +303,9 @@ function resolveTexEntry(entry, defaultDims) {
 }
 
 export default class Skeleton {
+    // the route's tunable numbers (rig/backSell.js AROUND), exposed so a probe can sweep the SAME object the game reads
+    static AROUND = AROUND;
+
     // textures: optional map of part keys → preloaded texture keys, or
     // { key, box } to override that part's display box (see resolveTexEntry)
     //   { head, torso, pelvisOverlay, pelvisUnderlay, pelvisMask, upperArm, forearm, thigh, shin,
@@ -2289,7 +2292,12 @@ export default class Skeleton {
                 - Math.atan2(W.y - E.y, W.x - E.x)) : 0;
             // A head reach goes around the front of the shoulder consistently,
             // including casts whose start/target directions straddle 180°.
-            const goal = Skeleton.blendReachTarget(S, contact, T, r.w, r.to === 'head' ? -f : null);
+            let goal = Skeleton.blendReachTarget(S, contact, T, r.w, r.to === 'head' ? -f : null);
+            // Rev 3 D9: a rig that draws the hand behind the body goes to the back waist round through its aroundVia point,
+            // outside the painted torso, and back out the same way (rig/backSell.js aroundGoal).
+            const via = back ? this.aroundViaPoint() : null;
+            if (back) this._backReachW = r.w;      // read (and cleared) by Wrestler._handWant on the next draw
+            if (via) goal = aroundGoal(contact, via, T, r.w);
             const lu = dist(S, E), lf = dist(E, contact);
             let front = null;
             const hipMid = pts.nearHip && pts.farHip ? { x: (pts.nearHip.x + pts.farHip.x) / 2, y: (pts.nearHip.y + pts.farHip.y) / 2 } : pts.nearHip;
@@ -2374,6 +2382,14 @@ export default class Skeleton {
         const anchor = this.torso?._semanticAnchors?.backWaist;
         if (!anchor || (!force && !backSellSupport(this).ok)) return null;
         return Skeleton.imageAnchorPoint(this.torso, anchor);
+    }
+
+    // The rig's aroundVia (backSell.aroundVia, torso image fractions) as a world point, or null: only on a rig that supports
+    // the back sell AND draws the hand behind the body (handUnder). Lou has neither, so his reach never sees it.
+    aroundViaPoint() {
+        const support = backSellSupport(this);
+        const via = support.ok && support.data.handUnder === true ? support.data.aroundVia : null;
+        return via ? Skeleton.imageAnchorPoint(this.torso, via) : null;
     }
 
     // The near hand's contact and its distance (px) to the painted backWaist, from the pose last

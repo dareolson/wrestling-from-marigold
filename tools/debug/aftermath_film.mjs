@@ -61,10 +61,10 @@ async function approach(h, dist, timeoutMs = 10000) {
 }
 
 // In-page: hook the suplex log line to sleep the loop, install the film API.
-const INSTALL = () => {
+const INSTALL = async () => {
     const game = window.__WFM_GAME;
     const sc = game.scene.scenes[0];
-    const film = (window.__film = { suplexAt: null, receiver: null, events: [], T: 0 });
+    const film = (window.__film = { suplexAt: null, receiver: null, events: [], T: 0, sil: await import('/src/rig/silhouette.js') });
     const orig = sc._logEvent.bind(sc);
     sc._logEvent = (type, payload = {}) => {
         orig(type, payload);
@@ -134,7 +134,12 @@ const STEP = () => {
         handUnder: w.skeleton._handUnder === undefined ? null : (w.skeleton.nearForearm.depth < w.skeleton.torso.depth ? 1 : 0),
         // Rev 3 D10: how far each hand sample is outside the torso art (game px, 0 = on it), null on a build without it
         clr: (c => c && { min: +c.min.toFixed(2), d: Object.fromEntries(Object.entries(c.distances).map(([k, v]) => [k, +v.toFixed(2)])) })(sk.handClearance?.()),
-        handWant: typeof w._handWant === 'function' ? (w._handWant() ? 1 : 0) : null,
+        // the elbow's distance outside the torso art (D11: it must stay out to keep the forearm over the upper arm there)
+        elbowClr: (e => e ? +film.sil.silhouetteDistance(sk.torso, e, film.sil.silhouetteOf(sk.torso)).toFixed(2) : null)(pts.nearElbow),
+        // the back reach weight the route used for the want (null when this draw solved none), and the standing hand weight
+        reachW: w._handReachSeen ?? null, handHw: +(w._recoveryHandWeight?.() ?? 0).toFixed(3),
+        handPending: w._handPending ? 1 : 0, handSkips: w._handSkips ?? 0,
+        handWant: typeof w._handWant === 'function' ? (w._handWant(false) ? 1 : 0) : null,
         nearContact: pt(contact), backWaist: pt(waist), backDist: dist === null ? null : +dist.toFixed(2),
         now: sc.time.now, state: w.state, lying: w.lying, facing: w.facing, riseT: w.riseT,
         x: w.x, y: w.y, s: w.s * (w._heightScale ?? 1),
@@ -242,7 +247,7 @@ async function film(scenario, configName, outRoot, interrupt = null) {
         const stripFiles = [];   // { file, now }
         const events = {};       // name -> { now, frame }
         const marksLeft = { rise: [...RISE_MARKS], rec: [...RECOVERY_MARKS_MS] };
-        let impactStep = null, standingNow = null, clutchDone = false, step = 0, fired = null, stopAt = null;
+        let endAt = null, impactStep = null, standingNow = null, clutchDone = false, step = 0, fired = null, stopAt = null;
         const t0 = info.suplexAt;
         const mark = async (name, f, i) => {
             if (events[name]) return;
@@ -290,7 +295,8 @@ async function film(scenario, configName, outRoot, interrupt = null) {
                 }
             }
             if (stopAt !== null && f.now >= stopAt) break;
-            if (!interrupt && standingNow !== null && !marksLeft.rec.length) break;
+            // Rev 3: the standing hand weight lets go late, so run on until the pain is over (the swap out) plus half a second
+            if (!interrupt && standingNow !== null && !marksLeft.rec.length && (f.pain === null ? (endAt ??= f.now + 500) <= f.now : f.now - standingNow > 5000)) break;
             if (f.now - t0 > MAX_AFTER_SUPLEX_MS) { console.log(`[film] ${configName}/${scenario}: gave up at +${MAX_AFTER_SUPLEX_MS} ms`); break; }
         }
 
@@ -321,7 +327,7 @@ async function film(scenario, configName, outRoot, interrupt = null) {
             interrupt: fired,
             frames: frameList,
             samples: frames.map(f => ({ rel: +(f.now - impactNow).toFixed(2), state: f.state, riseT: f.state === 'gettingUp' ? +f.riseT.toFixed(4) : null,
-                sell: f.sell, recoveryW: f.recoveryW, holdActive: f.holdActive, dbg: f.dbg, handOnBack: f.handOnBack, combatBlend: f.combatBlend, backDist: f.backDist, latch: f.latch, handUnder: f.handUnder, clr: f.clr, handWant: f.handWant, nearWristW: f.nearWrist, lying: f.lying, pain: f.pain, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
+                sell: f.sell, recoveryW: f.recoveryW, holdActive: f.holdActive, dbg: f.dbg, handOnBack: f.handOnBack, combatBlend: f.combatBlend, backDist: f.backDist, latch: f.latch, handUnder: f.handUnder, clr: f.clr, handWant: f.handWant, elbowClr: f.elbowClr, reachW: f.reachW, handHw: f.handHw, handPending: f.handPending, handSkips: f.handSkips, nearWristW: f.nearWrist, lying: f.lying, pain: f.pain, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
                 farShoulder: f.farShoulder, farElbow: f.farElbow, rootY: f.y, facing: f.facing })),
         };
         writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 1));

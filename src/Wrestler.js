@@ -16,7 +16,7 @@ import { theszPressClip } from './animation/clips/theszPress.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
-import { backSellSupport } from './rig/backSell.js';
+import { AROUND, aroundChannel, backSellSupport, recoveryVia } from './rig/backSell.js';
 import { staggerFor } from './animation/staggers.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
@@ -1049,7 +1049,8 @@ export default class Wrestler {
         // is already where the hold starts when the clutch lets go.
         const backSell = sellArtCandidate() ? this._backSell() : null;
         const toHold = cur.name === 'clutch' && cur.part === 'back' && sell.i === sell.plan.length - 1 && !!backSell?.ok;
-        const def = cur.name === 'clutch' ? clutchSell(cur.lying, cur.part, cur.duration, slot ?? 'near', toHold ? backSell.data.holdW : 0) : SELLS[cur.lying][cur.name];
+        const approach = cur.name === 'clutch' && cur.part === 'back' && backSell?.ok && backSell.data.handUnder === true ? backSell.data.aroundVia?.approach : undefined;
+        const def = cur.name === 'clutch' ? clutchSell(cur.lying, cur.part, cur.duration, slot ?? 'near', toHold ? backSell.data.holdW : 0, approach) : SELLS[cur.lying][cur.name];
         const keys = cur.turned ? def.after : def.keys;
         const lying = cur.turned ? def.to : cur.lying;
         const { d, reach } = sampleSell(keys, u, cur.amp);
@@ -1078,9 +1079,20 @@ export default class Wrestler {
         return backSell.ok && backSell.data.handUnder === true;
     }
 
-    // What the rig WANTS drawn: behind the torso while the grip latch is on (the latch carries the dwell).
-    _handWant() {
-        return this._handContext() && !!this._gripLatch?.on;
+    // What the rig WANTS drawn: behind the torso. Rev 3: not the grip latch (the hand is within contactPx of the waist
+    // only once it is already over the painted art, and measured clear only while 17+ px away, so the latch never
+    // overlaps clearance). The want is the route: true while the hand is past the via point on its way to the waist,
+    // false once it has come back out past it.
+    //   grounded / rise  the back reach weight the skeleton solved last draw (>= AROUND.viaW), or any back clutch item
+    //                    of the sell plan (between two clutches the weight falls to 0 and must not flip the depth)
+    //   standing         the recovery hand weight (>= AROUND.standW)
+    _handWant(consume = true) {
+        if (!this._handContext()) return false;
+        const sk = this.skeleton, reach = sk._backReachW ?? 0;
+        if (consume) { sk._backReachW = 0; this._handReachSeen = reach; }      // `false` is for a tool that only looks
+        if (this.state === 'standing') return this._recoveryHandWeight() >= AROUND.standW;
+        const cur = this._sell?.plan[this._sell.i];
+        return reach >= AROUND.viaW || (cur?.name === 'clutch' && cur.part === 'back');
     }
 
     // Rev 3 D10: what is drawn. The latch decides the WANT, the clearance test decides WHEN: the depth changes only while
@@ -1090,7 +1102,7 @@ export default class Wrestler {
     // `_handSkips` counts changes that were wanted and then dropped without ever clearing.
     _handUnder() {
         if (!this._handContext()) { this._handUnderNow = false; this._handPending = false; return false; }
-        const want = !!this._gripLatch?.on, under = this._handUnderNow === true;
+        const want = this._handWant(), under = this._handUnderNow === true;
         if (want === under) {
             if (this._handPending) this._handSkips = (this._handSkips ?? 0) + 1;
             this._handPending = false;
@@ -1852,15 +1864,27 @@ export default class Wrestler {
                 // D5: absolute near-arm channels, from the rise's end arm into the probed pose
                 const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
                 const to = carriedHandTarget(pain.riseEnd, this.scene.time.now - pain.since, settledBackHand(bs, POSES[this.idlePose] ?? POSES.idle));
-                const arm0 = pose[`${n}Arm`] ?? 0;
-                pose[`${n}Arm`] = arm0 + (to.arm - arm0) * hw;
-                if (Number.isFinite(pose[`${n}Elbow`])) pose[`${n}Elbow`] += (to.elbow - pose[`${n}Elbow`]) * hw;
-                else {
+                const arm0 = pose[`${n}Arm`] ?? 0, via = recoveryVia(bs);
+                if (via && Number.isFinite(pose[`${n}Elbow`])) {
+                    // Rev 3 D9: round through the via pose on the way to and from the back (rig/backSell.js aroundChannel)
+                    pose[`${n}Arm`] = aroundChannel(arm0, via.arm, to.arm, hw);
+                    pose[`${n}Elbow`] = aroundChannel(pose[`${n}Elbow`], via.elbow, to.elbow, hw);
+                } else if (Number.isFinite(pose[`${n}Elbow`])) {
+                    pose[`${n}Arm`] = arm0 + (to.arm - arm0) * hw;
+                    pose[`${n}Elbow`] += (to.elbow - pose[`${n}Elbow`]) * hw;
+                } else {
+                    pose[`${n}Arm`] = arm0 + (to.arm - arm0) * hw;
                     const fore0 = pose[`${n}Forearm`] ?? (arm0 + 0.70);
                     pose[`${n}Forearm`] = fore0 + (to.arm + to.elbow - fore0) * hw;
                 }
             } else if (hw > 0) {
                 const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
+                const via = recoveryVia(bs), arm0 = pose[`${n}Arm`] ?? 0;
+                if (via && Number.isFinite(pose[`${n}Elbow`])) {
+                    pose[`${n}Arm`] = aroundChannel(arm0, via.arm, arm0 + bs.recoveryArm, w);
+                    pose[`${n}Elbow`] = aroundChannel(pose[`${n}Elbow`], via.elbow, pose[`${n}Elbow`] + bs.recoveryElbow, w);
+                    return pose;
+                }
                 pose[`${n}Arm`] = (pose[`${n}Arm`] ?? 0) + bs.recoveryArm * w;
                 // the pose's own elbow owner: local flex if it carries one (the live pose does),
                 // else the legacy absolute forearm, which needs the arm's swing added back
@@ -2898,7 +2922,9 @@ export default class Wrestler {
         // ?sellart=v1: the guard blend REPLACES the arm angles at combatBlend 1 (see
         // _choreoOwnsPose), which would erase the near hand on the back; give it up in
         // proportion to the carried back-hand weight. Off, `guard` is exactly as before.
-        if (this._recoveryHandOnBack()) guard *= 1 - this._recoveryHandWeight();
+        // Rev 3: a rig that goes round through a via pose gives the guard up completely until the hand has passed that pose
+        // (hw >= AROUND.standW) and takes it back over the last of the release, so the via pose is the one that was probed.
+        if (this._recoveryHandOnBack()) guard *= recoveryVia(this._backSell().data) ? 1 - Math.min(1, this._recoveryHandWeight() / AROUND.standW) : 1 - this._recoveryHandWeight();
         // ?aftermath=v2: favour the hurt part on a copy of the pose (null otherwise).
         this.skeleton.updateUpright(x, y, s, facing, this._recoveryPose() ?? this.pose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
         if (this._activeMove && this._floorContacts) {

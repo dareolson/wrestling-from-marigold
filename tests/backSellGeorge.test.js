@@ -8,7 +8,7 @@ import Wrestler, { POSES } from '../src/Wrestler.js';
 import { holdWeight, settledBackHand, carriedHandTarget, ARM_SETTLE_MS } from '../src/animation/backRisePerformance.js';
 import { clutchSell, sampleSell } from '../src/animation/sells.js';
 import { newGripLatch, nearGripParts } from '../src/animation/sellAppearance.js';
-import { backSellSupport } from '../src/rig/backSell.js';
+import { aroundChannel, backSellSupport, recoveryVia } from '../src/rig/backSell.js';
 import { georgeRosterV1 } from '../src/characters/george_roster_v1.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 import { onlyListed } from './support/promotedFlags.js';
@@ -98,17 +98,33 @@ test('carried rise: George\'s rise carries into the recovery and lands on his se
     rec.w.scene.time.now = 1000 + ARM_SETTLE_MS + 100;
     const hw = rec.w._recoveryHandWeight(), p = rec.w._recoveryPose();
     assert.ok(hw > 0.5);
-    assert.ok(Math.abs(p.lArm - (SETTLED.lArm + (settled.arm - SETTLED.lArm) * hw)) < 1e-9);
-    assert.ok(Math.abs(p.lElbow - (0.7 + (settled.elbow - 0.7) * hw)) < 1e-9);
+    // Rev 3 D9: George's channels run through his via pose (aroundChannel); at hw 1 that is exactly the settled target
+    const via = recoveryVia(BS);
+    assert.deepEqual(via, { arm: -0.6, elbow: -0.4 });
+    assert.ok(Math.abs(p.lArm - aroundChannel(SETTLED.lArm, via.arm, settled.arm, hw)) < 1e-9);
+    assert.ok(Math.abs(p.lElbow - aroundChannel(0.7, via.elbow, settled.elbow, hw)) < 1e-9);
+    assert.equal(aroundChannel(SETTLED.lArm, via.arm, settled.arm, 1), settled.arm);
+    // without a via pose (the same rig, no aroundVia) the carried hand takes the straight blend, as before Rev 3
+    const straight = george({ textures: { ...G.textures, backSell: { ...G.textures.backSell, aroundVia: undefined } }, pain: { source: 'suplex', part: 'back', severity: 1, phase: 'recover', since: 1000, until: 3500, planned: true, carried: 1, riseEnd: end } });
+    straight.w.scene.time.now = 1000 + ARM_SETTLE_MS + 100;
+    const q = straight.w._recoveryPose(), hs = straight.w._recoveryHandWeight();
+    assert.ok(Math.abs(q.lArm - (SETTLED.lArm + (settled.arm - SETTLED.lArm) * hs)) < 1e-9);
+    assert.ok(Math.abs(q.lElbow - (0.7 + (settled.elbow - 0.7) * hs)) < 1e-9);
 }));
 
 test('standing back hand: the near l-channels carry George\'s offsets x the recovery weight; an unsupported rig gets the bend only', () => withFlag(BOTH, () => {
     const { w } = george({ now: 1300, pain: { source: 'suplex', part: 'back', severity: 1, phase: 'recover', since: 1000, until: 3500, planned: true } });
     const wt = w._recoveryWeight(), p = w._recoveryPose();
     assert.ok(wt > 0.05);
-    assert.ok(Math.abs(p.lArm - (SETTLED.lArm + BS.recoveryArm * wt)) < 1e-12);
-    assert.ok(Math.abs(p.lElbow - (SETTLED.lElbow + BS.recoveryElbow * wt)) < 1e-12);
+    const via = recoveryVia(BS);
+    assert.ok(Math.abs(p.lArm - aroundChannel(SETTLED.lArm, via.arm, SETTLED.lArm + BS.recoveryArm, wt)) < 1e-12);
+    assert.ok(Math.abs(p.lElbow - aroundChannel(SETTLED.lElbow, via.elbow, SETTLED.lElbow + BS.recoveryElbow, wt)) < 1e-12);
     assert.equal(p.rArm, SETTLED.rArm, 'far arm untouched');
+    // no via pose: the offsets x the recovery weight, exactly as before Rev 3
+    const plain = george({ now: 1300, textures: { ...G.textures, backSell: { ...G.textures.backSell, aroundVia: undefined } }, pain: { source: 'suplex', part: 'back', severity: 1, phase: 'recover', since: 1000, until: 3500, planned: true } });
+    const wp = plain.w._recoveryWeight(), pp = plain.w._recoveryPose();
+    assert.ok(Math.abs(pp.lArm - (SETTLED.lArm + BS.recoveryArm * wp)) < 1e-12);
+    assert.ok(Math.abs(pp.lElbow - (SETTLED.lElbow + BS.recoveryElbow * wp)) < 1e-12);
     assert.ok(p.bend > 0.01, 'the aftermath bend is there');
     const bare = george({ now: 1300, textures: { ...G.textures, backSell: undefined }, pain: { source: 'suplex', part: 'back', severity: 1, phase: 'recover', since: 1000, until: 3500, planned: true } });
     const q = bare.w._recoveryPose();

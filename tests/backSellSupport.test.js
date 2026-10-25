@@ -94,3 +94,28 @@ test('force (measuring tools only) reads the anchor on a rig that is not support
     assert.deepEqual(sk.backContact({ force: true }), { dist: 10, contact: 'wristProxy' });
     assert.equal(sk.backContactDistance(), null);
 });
+
+// Rev 3 D9: the hand's route is a polyline in the reach weight (grounded) and in the recovery hand weight (standing)
+import { aroundChannel as _aroundChannel, aroundGoal, AROUND as _AROUND } from '../src/rig/backSell.js';
+test('aroundGoal: posed place -> via over [0, viaW], via -> target over [viaW, 1], continuous, exact at the ends', () => {
+    const a = { x: 0, y: 0 }, v = { x: 10, y: -20 }, t = { x: 30, y: 0 }, vw = 0.2;
+    assert.deepEqual(aroundGoal(a, v, t, 0, vw), a);
+    assert.deepEqual(aroundGoal(a, v, t, vw, vw), v);
+    assert.deepEqual(aroundGoal(a, v, t, 1, vw), t);
+    const near = (p, q) => assert.ok(Math.hypot(p.x - q.x, p.y - q.y) < 1e-9, JSON.stringify(p));
+    near(aroundGoal(a, v, t, 0.1, vw), { x: 5, y: -10 });
+    near(aroundGoal(a, v, t, 0.6, vw), { x: 20, y: -10 });
+    assert.deepEqual(aroundGoal(a, v, t, -1, vw), a); assert.deepEqual(aroundGoal(a, v, t, 2, vw), t);
+    // continuous across the corner
+    const l = aroundGoal(a, v, t, vw - 1e-9, vw), r = aroundGoal(a, v, t, vw + 1e-9, vw);
+    assert.ok(Math.hypot(l.x - r.x, l.y - r.y) < 1e-6);
+    assert.deepEqual(aroundGoal(a, v, t, 0.5), aroundGoal(a, v, t, 0.5, _AROUND.viaW), 'the default is AROUND.viaW');
+});
+test('aroundChannel: start -> start + via offset over [0, standW], -> target over [standW, 1]', () => {
+    const sw = 0.3;
+    assert.equal(_aroundChannel(0.1, -0.6, -0.6, 0, sw), 0.1);
+    assert.ok(Math.abs(_aroundChannel(0.1, -0.6, -0.6, sw, sw) - -0.5) < 1e-12);
+    assert.equal(_aroundChannel(0.1, -0.6, -0.6, 1, sw), -0.6);
+    assert.ok(Math.abs(_aroundChannel(0.1, -0.6, 0.9, 0.65, sw) - (-0.5 + (0.9 + 0.5) * 0.5)) < 1e-12);
+    assert.ok(Math.abs(_aroundChannel(0.1, -0.6, 0.9, 5, sw) - 0.9) < 1e-12); assert.equal(_aroundChannel(0.1, -0.6, 0.9, -1, sw), 0.1);
+});

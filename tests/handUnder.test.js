@@ -1,7 +1,7 @@
-// backSell.handUnder (PLAN_GEORGE_TRANSFER Rev 2 D6, T6.4/T6.5): while the grip latch is on, the near forearm (and hand)
-// draw BEHIND the torso, in every back-sell phase (back clutch, lying hold, rise, standing recovery) and only
-// there. The depth follows the latch (and so its dwell), and any state that is not a back-sell phase restores the
-// normal order on its first draw. Rigs without the flag (Lou) never change their draw order.
+// backSell.handUnder (PLAN_GEORGE_TRANSFER Rev 2 D6 / Rev 3 D9, D10): the near forearm (and hand) draw BEHIND the torso in every
+// back-sell phase (back clutch, lying hold, rise, standing recovery) and only there. Rev 3: the WANT is the route (past the
+// aroundVia point on the way to the waist; Wrestler._handWant), the WHEN is the clearance test, and any state that is not a
+// back-sell phase restores the normal order on its first draw. Rigs without the flag (Lou) never change their draw order.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Wrestler, { POSES } from '../src/Wrestler.js';
@@ -9,6 +9,7 @@ import Skeleton from '../src/Skeleton.js';
 import { georgeRosterV1 } from '../src/characters/george_roster_v1.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 import { newGripLatch } from '../src/animation/sellAppearance.js';
+import { AROUND } from '../src/rig/backSell.js';
 import { onlyListed } from './support/promotedFlags.js';
 
 const BOTH = '?sellart=v1&aftermath=v2';
@@ -17,7 +18,7 @@ const withFlag = (search, fn) => { globalThis.location = { search: onlyListed(se
 const G = georgeRosterV1, LOU = theszProcreateV1;
 const SETTLED = { lLeg: 0, rLeg: 0.1, lArm: 0.1, rArm: 0.1, lean: 0, crouch: 0, lElbow: 0.7, rElbow: 0.7 };
 
-function rig(character, { state = 'standing', latchOn = true, sell = null, hold = false, dist = 9, clear = true } = {}) {
+function rig(character, { state = 'standing', latchOn = true, sell = null, hold = false, dist = 9, clear = true, reach = 0.7 } = {}) {
     const flags = [], hand = { clear };
     const w = Object.assign(Object.create(Wrestler.prototype), {
         scene: { time: { now: state === 'standing' ? 1500 : 1000 }, tweens: { add: () => ({ stop() {} }), killTweensOf: noop } },
@@ -33,6 +34,7 @@ function rig(character, { state = 'standing', latchOn = true, sell = null, hold 
             setDepth: noop, invalidatePoseChannels: noop, setVisible: noop,
             updateGroundedReach: noop, updateGrounded: noop, updateGetUp: noop, updateFall: noop, updateUpright: noop },
     });
+    w._testReach = reach;
     w._pain = { source: 'suplex', part: 'back', limb: null, severity: 1, phase: state === 'gettingUp' ? 'rise' : 'recover', since: 1000, until: 3500, planned: true };
     return { w, flags, hand };
 }
@@ -44,21 +46,44 @@ const PHASES = {
     'standing recovery': () => rig(G, { state: 'standing' }),
 };
 
-test('George: the forearm goes under the torso in every back-sell phase while the latch is on', () => withFlag(BOTH, () => {
+// the skeleton reports the back reach weight it solved last draw (Skeleton._backReachW); Wrestler._handWant consumes it
+const feed = w => { w.skeleton._backReachW = w._testReach; return w; };
+const draw = w => { feed(w).draw(); };
+const under = w => feed(w)._handUnder();
+const PHASE_WANT = { 'back clutch': 0, 'lying hold': 0.7, 'rise': 0.7, 'standing recovery': 0 };   // reach weights; the clutch wants by the plan, standing by the recovery weight
+
+test('George: the forearm goes under the torso in every back-sell phase once the hand is past the via point and clear', () => withFlag(BOTH, () => {
     for (const [name, make] of Object.entries(PHASES)) {
-        const { w, flags } = make();
-        assert.equal(w._handUnder(), true, name);
-        w.draw();
+        const { w, flags } = make(); w._testReach = PHASE_WANT[name];
+        assert.equal(under(w), true, name);
+        draw(w);
         assert.equal(flags.at(-1), true, `${name}: draw hands the flag to the skeleton`);
     }
 }));
 
-test('George: latch off, or a state that is not a back-sell phase, restores the normal order on the very next draw', () => withFlag(BOTH, () => {
-    const { w, flags } = rig(G, { state: 'down', hold: true });
-    w.draw(); assert.equal(flags.at(-1), true);
-    w._gripLatch = { ...w._gripLatch, on: false };
-    assert.equal(w._handUnder(), false, 'latch off');
-    // every way out of the back sell, from a state where the latch is still on
+test('George: the want is the route, not the grip latch: it follows the reach weight past AROUND.viaW and the recovery weight past AROUND.standW', () => withFlag(BOTH, () => {
+    for (const name of ['lying hold', 'rise']) {
+        const { w } = PHASES[name]();
+        for (const [reach, want] of [[0.7, true], [AROUND.viaW, true], [AROUND.viaW - 0.01, false], [0, false]]) { w._testReach = reach; assert.equal(feed(w)._handWant(), want, `${name} reach ${reach}`); }
+    }
+    // the latch plays no part: on or off, the reach decides
+    const { w } = PHASES['lying hold'](); w._gripLatch = null; w._testReach = 0.7;
+    assert.equal(under(w), true, 'no latch, hand past the via point: under');
+    w._gripLatch = newGripLatch(true, 0); w._testReach = 0.05; w._handUnderNow = false;
+    assert.equal(under(w), false, 'latch on, hand not past the via point: not under');
+    // a back clutch item wants from its first frame, and between two clutches (reach 0) it keeps wanting
+    const c = PHASES['back clutch'](); c.w._testReach = 0;
+    assert.equal(under(c.w), true, 'back clutch at reach 0');
+    c.w._sell = { ...backClutch(), plan: [{ ...backClutch().plan[0], name: 'writhe' }] };
+    assert.equal(under(c.w), false, 'a writhe item on the back wants nothing');
+    // standing: the recovery hand weight against standW
+    const st = PHASES['standing recovery']();
+    assert.ok(st.w._recoveryHandWeight() >= AROUND.standW);
+    st.w.scene.time.now = 3400; assert.ok(st.w._recoveryHandWeight() < AROUND.standW);
+    assert.equal(under(st.w), false, 'standing, hand weight below standW: out');
+}));
+
+test('George: out of context (pinned, picked up, a move, another sell part) restores the normal order on the very next draw', () => withFlag(BOTH, () => {
     const exits = {
         pinned: w => { w.state = 'pinned'; }, possum: w => { w.state = 'possum'; }, falling: w => { w.state = 'falling'; },
         'picked up (grabbed)': w => { w.state = 'grabbed'; }, 'a move': w => { w._activeMove = {}; },
@@ -66,36 +91,30 @@ test('George: latch off, or a state that is not a back-sell phase, restores the 
     };
     for (const [name, exit] of Object.entries(exits)) {
         const r = rig(G, { state: 'down', hold: true });
-        r.w.draw(); assert.equal(r.flags.at(-1), true, `${name}: before`);
-        exit(r.w); r.w._gripLatch = newGripLatch(true, 0);   // the latch is still on: only the state changed
-        r.w.draw();
+        draw(r.w); assert.equal(r.flags.at(-1), true, `${name}: before`);
+        exit(r.w);
+        draw(r.w);
         assert.equal(r.flags.at(-1), false, `${name}: restored on the next draw`);
     }
-    // the flag follows the latch frame by frame: on, off, on
-    const r = rig(G, { state: 'standing' });
-    const seen = [];
-    for (const on of [true, true, false, false, true]) { r.w._gripLatch = on ? newGripLatch(true, 0) : null; r.w.draw(); seen.push(r.flags.at(-1)); }
-    assert.deepEqual(seen, [true, true, false, false, true]);
 }));
 
-test('flags: sellart off, no latch, or a rig without handUnder never swaps the depth (Lou in every phase)', () => {
-    withFlag('?sellart=off', () => { for (const make of Object.values(PHASES)) assert.equal(make().w._handUnder(), false); });
+test('flags: sellart off, a rig without handUnder, or no reach never swaps the depth (Lou in every phase)', () => {
+    withFlag('?sellart=off', () => { for (const make of Object.values(PHASES)) assert.equal(under(make().w), false); });
     withFlag(BOTH, () => {
-        for (const [name, make] of Object.entries(PHASES)) {
-            const { w } = make(); w._gripLatch = null;
-            assert.equal(w._handUnder(), false, `${name}: no latch`);
-        }
         const louPhases = { down: { state: 'down', hold: true }, clutch: { state: 'down', sell: backClutch() }, rise: { state: 'gettingUp' }, standing: { state: 'standing' } };
         for (const [name, opts] of Object.entries(louPhases)) {
             const { w, flags } = rig(LOU, opts);
             assert.equal(w._gripLatch.on, true);
-            assert.equal(w._handUnder(), false, `Lou ${name}: his depths are unchanged`);
-            w.draw(); assert.equal(flags.at(-1), false, `Lou ${name}`);
+            assert.equal(under(w), false, `Lou ${name}: his depths are unchanged`);
+            draw(w); assert.equal(flags.at(-1), false, `Lou ${name}`);
         }
         // handUnder false on George's own data is the same as absent
-        const textures = { ...G.textures, backSell: { ...G.textures.backSell, handUnder: false } };
+        const textures = { ...G.textures, backSell: { ...G.textures.backSell, handUnder: false, aroundVia: undefined } };
         const r = rig({ ...G, textures }, { state: 'standing' });
-        assert.equal(r.w._handUnder(), false);
+        assert.equal(under(r.w), false);
+        // no reach (hand not on the back this frame): not under
+        const n = rig(G, { state: 'down', hold: true, reach: 0 });
+        assert.equal(under(n.w), false);
     });
 });
 
@@ -128,13 +147,13 @@ test('Skeleton.setDepth: handUnder puts the near forearm and hand behind the tor
     assert.deepEqual(self, normal);
 });
 
-// Rev 3 D10 (T8.2): the latch decides the WANT, the clearance test decides WHEN.
-test('D10: a wanted swap waits for the hand to clear the torso art, never happens on the latch alone', () => withFlag(BOTH, () => {
+// Rev 3 D10 (T8.2): the want decides IF, the clearance test decides WHEN.
+test('D10: a wanted swap waits for the hand to clear the torso art, never happens on the want alone', () => withFlag(BOTH, () => {
     for (const [name, make] of Object.entries(PHASES)) {
-        const { w, flags, hand } = make(); hand.clear = false;
-        for (let i = 0; i < 5; i++) { w.draw(); assert.equal(flags.at(-1), false, `${name}: latch on, hand over the art: not under`); }
+        const { w, flags, hand } = make(); w._testReach = PHASE_WANT[name]; hand.clear = false;
+        for (let i = 0; i < 5; i++) { draw(w); assert.equal(flags.at(-1), false, `${name}: wanted, hand over the art: not under`); }
         assert.equal(w._handPending, true, `${name}: pending while it waits`);
-        hand.clear = true; w.draw();
+        hand.clear = true; draw(w);
         assert.equal(flags.at(-1), true, `${name}: swaps on the first clear frame`);
         assert.equal(w._handPending, false);
         assert.equal(w._handSkips ?? 0, 0);
@@ -142,28 +161,28 @@ test('D10: a wanted swap waits for the hand to clear the torso art, never happen
 }));
 
 test('D10: leaving waits for clearance too, and a change dropped before it ever cleared is counted as a skip', () => withFlag(BOTH, () => {
-    const { w, flags, hand } = rig(G, { state: 'standing' });
-    w.draw(); assert.equal(flags.at(-1), true);                    // under (clear)
-    hand.clear = false; w._gripLatch = { ...w._gripLatch, on: false };
-    for (let i = 0; i < 4; i++) { w.draw(); assert.equal(flags.at(-1), true, 'latch off but the hand is still over the art: stays under'); }
-    hand.clear = true; w.draw();
+    const { w, flags, hand } = rig(G, { state: 'down', hold: true });
+    draw(w); assert.equal(flags.at(-1), true);                        // under (clear)
+    hand.clear = false; w._testReach = 0.05;                           // the hand is on its way back out past the via point
+    for (let i = 0; i < 4; i++) { draw(w); assert.equal(flags.at(-1), true, 'no longer wanted but the hand is still over the art: stays under'); }
+    hand.clear = true; draw(w);
     assert.equal(flags.at(-1), false, 'out on the first clear frame');
-    // the latch comes back before the hand ever clears: nothing swapped, one skip
-    hand.clear = false; w._gripLatch = newGripLatch(true, 0);
-    w.draw(); assert.equal(flags.at(-1), false); assert.equal(w._handPending, true);
-    w._gripLatch = { ...w._gripLatch, on: false };
-    w.draw(); assert.equal(flags.at(-1), false); assert.equal(w._handSkips, 1);
+    // wanted again before the hand ever cleared: nothing swapped, one skip
+    hand.clear = false; w._testReach = 0.7;
+    draw(w); assert.equal(flags.at(-1), false); assert.equal(w._handPending, true);
+    w._testReach = 0.05;
+    draw(w); assert.equal(flags.at(-1), false); assert.equal(w._handSkips, 1);
 }));
 
 test('D10: out of context resets at once even when the hand is not clear; an unmeasurable hand never swaps in', () => withFlag(BOTH, () => {
     const { w, flags, hand } = rig(G, { state: 'down', hold: true });
-    w.draw(); assert.equal(flags.at(-1), true);
-    hand.clear = false; w.state = 'pinned'; w.draw();
+    draw(w); assert.equal(flags.at(-1), true);
+    hand.clear = false; w.state = 'pinned'; draw(w);
     assert.equal(flags.at(-1), false, 'pinned: normal order immediately');
     const r = rig(G, { state: 'standing', clear: null });
-    for (let i = 0; i < 3; i++) { r.w.draw(); assert.equal(r.flags.at(-1), false); }
+    for (let i = 0; i < 3; i++) { draw(r.w); assert.equal(r.flags.at(-1), false); }
     assert.equal(r.w._handPending, true);
     // a skeleton with no measurement at all
-    const bare = rig(G, { state: 'standing' }); delete bare.w.skeleton.handClearance; bare.w.draw();
+    const bare = rig(G, { state: 'standing' }); delete bare.w.skeleton.handClearance; draw(bare.w);
     assert.equal(bare.flags.at(-1), false);
 }));

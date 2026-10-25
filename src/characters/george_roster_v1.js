@@ -221,13 +221,20 @@ export const georgeRosterV1 = {
         }
     },
     "backSell": {
-        "holdW": 0.45,
+        "holdW": 0.7,
         "recoveryArm": -0.7,
         "recoveryElbow": 1.1,
         "settledElbow": 0.7,
         "contactPx": 15,
         "handUnder": true,
-        "evidence": "Re-measured at backWaist candidate A (u .2558, v .6077, on the contour) at 2026-10-25, PLAN_GEORGE_TRANSFER T6.4: tools/debug/hold_weight_sweep.mjs (holdW .45, fist wrist proxy, constant weight, first weight within 15 px at every sampled offset of the hold cycle .43 both facings, at .45 worst 14.35 px / rest 13.99 px); tools/debug/recovery_probe.mjs (arm -0.7 / elbow +1.1, wrist proxy 1.94 px both facings, flex 103.1 deg, limit 157.6); contactPx 15 kept (wrist proxy, no grip donor); handUnder: the forearm draws behind the torso while the grip latch is on"
+        "aroundVia": {
+            "u": -0.25,
+            "v": 0.9069,
+            "recoveryArm": -0.6,
+            "recoveryElbow": -0.4,
+            "approach": 0.4
+        },
+        "evidence": "Re-measured at backWaist candidate A (u .2558, v .6077, on the contour) at 2026-10-25, PLAN_GEORGE_TRANSFER T6.4: tools/debug/hold_weight_sweep.mjs (holdW .45, fist wrist proxy, constant weight, first weight within 15 px at every sampled offset of the hold cycle .43 both facings, at .45 worst 14.35 px / rest 13.99 px); tools/debug/recovery_probe.mjs (arm -0.7 / elbow +1.1, wrist proxy 1.94 px both facings, flex 103.1 deg, limit 157.6); contactPx 15 kept (wrist proxy, no grip donor); handUnder: the forearm draws behind the torso while the grip latch is on; holdW .45 -> .7 at T8.3 (the route through aroundVia is longer than the straight path, tools/debug/hold_weight_sweep.mjs now: first weight within 15 px at every sampled offset .695 both facings, at .7 worst 14.52 px, margin .48 px; dist at w .5/.6/.7/.8/.9/1 = 24.2 / 19.36 / 14.52 / 9.68 / 4.84 / 0); aroundVia: tools/debug/around_via_candidates.mjs candidate B (Derek G8a, 1.5 hand lengths = 32.4 game px from backWaist, 18.0 px clear of the paint; recoveryArm -0.6 / recoveryElbow -0.4: tools/debug/around_recovery_probe.mjs, wrist 8.03 px from the via point on both facings, hand clear by 16.0 px; approach .4: the reach of a back clutch takes .4 of the clutch to get in instead of .25, tools/debug/route_probe.mjs, so the longer route keeps the move of the wrist relative to the back waist <= 2.21 px per frame)"
     }
 },
 };

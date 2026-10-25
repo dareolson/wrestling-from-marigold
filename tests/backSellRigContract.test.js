@@ -72,7 +72,24 @@ test('backSell.handUnder is optional but must be a boolean when present (Rev 2 D
         assert.deepEqual([s.ok, s.reason], [false, 'invalid backSell data: handUnder'], JSON.stringify(bad));
     }
     for (const good of [true, false, undefined]) {
-        const s = backSellSupport({ ...view(georgeRosterV1), _textureConfig: { ...georgeRosterV1.textures, backSell: { ...georgeRosterV1.textures.backSell, handUnder: good } } });
+        const s = backSellSupport({ ...view(georgeRosterV1), _textureConfig: { ...georgeRosterV1.textures, backSell: { ...georgeRosterV1.textures.backSell, handUnder: good, aroundVia: undefined } } });
         assert.equal(s.ok, true, String(good));
     }
+});
+
+test('backSell.aroundVia is optional, finite { u, v }, only with handUnder (Rev 3 D9); George has it (G8a B), Lou does not', () => {
+    assert.deepEqual(georgeRosterV1.textures.backSell.aroundVia, { u: -0.25, v: 0.9069, recoveryArm: -0.6, recoveryElbow: -0.4, approach: 0.4 });
+    assert.equal(theszProcreateV1.textures.backSell.aroundVia, undefined);
+    const withData = patch => backSellSupport({ ...view(georgeRosterV1), _textureConfig: { ...georgeRosterV1.textures, backSell: { ...georgeRosterV1.textures.backSell, ...patch } } });
+    for (const bad of ['x', 1, null, {}, { u: 0.1 }, { v: 0.1 }, { u: NaN, v: 0 }, { u: 0, v: Infinity }, { u: '1', v: 0 }])
+        assert.deepEqual([withData({ aroundVia: bad }).ok, withData({ aroundVia: bad }).reason], [false, 'invalid backSell data: aroundVia'], JSON.stringify(bad));
+    assert.equal(withData({ aroundVia: { u: -0.5, v: 1.2 } }).ok, true, 'off the image is fine');
+    assert.equal(withData({ aroundVia: undefined }).ok, true);
+    // the standing via pose: both offsets or neither, finite
+    for (const bad of [{ recoveryArm: -0.6 }, { recoveryElbow: -0.4 }, { recoveryArm: NaN, recoveryElbow: 0 }, { recoveryArm: 0, recoveryElbow: '1' }, { recoveryArm: null, recoveryElbow: 0 }])
+        assert.equal(withData({ aroundVia: { u: 0, v: 0, ...bad } }).reason, 'invalid backSell data: aroundVia', JSON.stringify(bad));
+    assert.equal(withData({ aroundVia: { u: 0, v: 0 } }).ok, true, 'the standing via pose is optional');
+    assert.equal(withData({ aroundVia: { u: 0, v: 0, recoveryArm: 0, recoveryElbow: 0 } }).ok, true);
+    assert.equal(withData({ handUnder: false }).reason, 'invalid backSell data: aroundVia', 'meaningless without handUnder');
+    assert.equal(withData({ handUnder: undefined }).reason, 'invalid backSell data: aroundVia');
 });

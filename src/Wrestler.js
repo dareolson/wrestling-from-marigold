@@ -1068,15 +1068,37 @@ export default class Wrestler {
     }
 
     // Rev 2 D6 (backSell.handUnder): the near forearm and hand draw behind the torso while the grip latch is on.
-    // The latch carries the dwell, so the depth swap cannot flicker faster than the latch does. Evaluated every draw,
-    // so any state that is not a back-sell phase (pinned, picked up, a move, a reset, the latch cleared) restores the
-    // normal order on its first frame.
-    _handUnder() {
-        if (!sellArtCandidate() || !this._gripLatch?.on || this._activeMove) return false;
+    // `_handContext` is everything but the latch: any state that is not a back-sell phase (pinned, picked up, a move, a
+    // reset) is out of context and restores the normal order on its first frame.
+    _handContext() {
+        if (!sellArtCandidate() || this._activeMove) return false;
         if (this.state !== 'down' && this.state !== 'gettingUp' && this.state !== 'standing') return false;
         if (this._sell && this._sell.plan[this._sell.i]?.part !== 'back') return false;
         const backSell = this._backSell();
         return backSell.ok && backSell.data.handUnder === true;
+    }
+
+    // What the rig WANTS drawn: behind the torso while the grip latch is on (the latch carries the dwell).
+    _handWant() {
+        return this._handContext() && !!this._gripLatch?.on;
+    }
+
+    // Rev 3 D10: what is drawn. The latch decides the WANT, the clearance test decides WHEN: the depth changes only while
+    // the near hand's samples (wrist, contact, forearm distal midpoint, hand end) are all outside the torso's painted
+    // art (Skeleton.handClearance, measured from the pose last drawn), else the hand pops in place over the body.
+    // Out of context it resets at once. `_handPending` is true while a wanted change waits for the hand to clear;
+    // `_handSkips` counts changes that were wanted and then dropped without ever clearing.
+    _handUnder() {
+        if (!this._handContext()) { this._handUnderNow = false; this._handPending = false; return false; }
+        const want = !!this._gripLatch?.on, under = this._handUnderNow === true;
+        if (want === under) {
+            if (this._handPending) this._handSkips = (this._handSkips ?? 0) + 1;
+            this._handPending = false;
+            return under;
+        }
+        if (this.skeleton.handClearance?.()?.clear) { this._handUnderNow = want; this._handPending = false; return want; }
+        this._handPending = true;
+        return under;
     }
 
     // The lying hold's current reach weight and pose offsets ({ w, offsets }), or null. Applies only on the mat in `down`

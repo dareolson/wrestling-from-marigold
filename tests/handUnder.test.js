@@ -17,8 +17,8 @@ const withFlag = (search, fn) => { globalThis.location = { search: onlyListed(se
 const G = georgeRosterV1, LOU = theszProcreateV1;
 const SETTLED = { lLeg: 0, rLeg: 0.1, lArm: 0.1, rArm: 0.1, lean: 0, crouch: 0, lElbow: 0.7, rElbow: 0.7 };
 
-function rig(character, { state = 'standing', latchOn = true, sell = null, hold = false, dist = 9 } = {}) {
-    const flags = [];
+function rig(character, { state = 'standing', latchOn = true, sell = null, hold = false, dist = 9, clear = true } = {}) {
+    const flags = [], hand = { clear };
     const w = Object.assign(Object.create(Wrestler.prototype), {
         scene: { time: { now: state === 'standing' ? 1500 : 1000 }, tweens: { add: () => ({ stop() {} }), killTweensOf: noop } },
         x: 400, y: 380, _heightScale: 1, facing: 1, state, lying: 'supine', idlePose: character.idlePose, stateTimer: 3, riseT: 0.3,
@@ -29,12 +29,12 @@ function rig(character, { state = 'standing', latchOn = true, sell = null, hold 
         gfx: { clear: noop, setDepth: noop, fillStyle: noop, fillEllipse: noop },
         skeleton: { _textureConfig: character.textures, lChannelSide: () => 'near', setPartVariants: noop,
             torso: { _semanticAnchors: character.textures.torso.semanticAnchors }, backContactDistance: () => dist,
-            carriedRiseEndArm: () => ({ arm: 0.3, elbow: 1.1 }), setHandUnder: v => flags.push(v),
+            carriedRiseEndArm: () => ({ arm: 0.3, elbow: 1.1 }), setHandUnder: v => flags.push(v), handClearance: () => hand.clear === null ? null : { clear: hand.clear, min: hand.clear ? 5 : 0, distances: {} },
             setDepth: noop, invalidatePoseChannels: noop, setVisible: noop,
             updateGroundedReach: noop, updateGrounded: noop, updateGetUp: noop, updateFall: noop, updateUpright: noop },
     });
     w._pain = { source: 'suplex', part: 'back', limb: null, severity: 1, phase: state === 'gettingUp' ? 'rise' : 'recover', since: 1000, until: 3500, planned: true };
-    return { w, flags };
+    return { w, flags, hand };
 }
 const backClutch = (part = 'back') => ({ plan: [{ name: 'clutch', part, lying: 'supine', limb: null, rolls: 0, duration: 1, amp: 1 }], i: 0, t: 0.5, facing0: 1 });
 const PHASES = {
@@ -127,3 +127,43 @@ test('Skeleton.setDepth: handUnder puts the near forearm and hand behind the tor
     assert.deepEqual(depths(false, { _forearmOverUpperArm: true }), depths(undefined, { _forearmOverUpperArm: true }));
     assert.deepEqual(self, normal);
 });
+
+// Rev 3 D10 (T8.2): the latch decides the WANT, the clearance test decides WHEN.
+test('D10: a wanted swap waits for the hand to clear the torso art, never happens on the latch alone', () => withFlag(BOTH, () => {
+    for (const [name, make] of Object.entries(PHASES)) {
+        const { w, flags, hand } = make(); hand.clear = false;
+        for (let i = 0; i < 5; i++) { w.draw(); assert.equal(flags.at(-1), false, `${name}: latch on, hand over the art: not under`); }
+        assert.equal(w._handPending, true, `${name}: pending while it waits`);
+        hand.clear = true; w.draw();
+        assert.equal(flags.at(-1), true, `${name}: swaps on the first clear frame`);
+        assert.equal(w._handPending, false);
+        assert.equal(w._handSkips ?? 0, 0);
+    }
+}));
+
+test('D10: leaving waits for clearance too, and a change dropped before it ever cleared is counted as a skip', () => withFlag(BOTH, () => {
+    const { w, flags, hand } = rig(G, { state: 'standing' });
+    w.draw(); assert.equal(flags.at(-1), true);                    // under (clear)
+    hand.clear = false; w._gripLatch = { ...w._gripLatch, on: false };
+    for (let i = 0; i < 4; i++) { w.draw(); assert.equal(flags.at(-1), true, 'latch off but the hand is still over the art: stays under'); }
+    hand.clear = true; w.draw();
+    assert.equal(flags.at(-1), false, 'out on the first clear frame');
+    // the latch comes back before the hand ever clears: nothing swapped, one skip
+    hand.clear = false; w._gripLatch = newGripLatch(true, 0);
+    w.draw(); assert.equal(flags.at(-1), false); assert.equal(w._handPending, true);
+    w._gripLatch = { ...w._gripLatch, on: false };
+    w.draw(); assert.equal(flags.at(-1), false); assert.equal(w._handSkips, 1);
+}));
+
+test('D10: out of context resets at once even when the hand is not clear; an unmeasurable hand never swaps in', () => withFlag(BOTH, () => {
+    const { w, flags, hand } = rig(G, { state: 'down', hold: true });
+    w.draw(); assert.equal(flags.at(-1), true);
+    hand.clear = false; w.state = 'pinned'; w.draw();
+    assert.equal(flags.at(-1), false, 'pinned: normal order immediately');
+    const r = rig(G, { state: 'standing', clear: null });
+    for (let i = 0; i < 3; i++) { r.w.draw(); assert.equal(r.flags.at(-1), false); }
+    assert.equal(r.w._handPending, true);
+    // a skeleton with no measurement at all
+    const bare = rig(G, { state: 'standing' }); delete bare.w.skeleton.handClearance; bare.w.draw();
+    assert.equal(bare.flags.at(-1), false);
+}));

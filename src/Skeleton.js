@@ -12,6 +12,7 @@ import { applyOffsets, limitKnees } from './animation/sells.js';
 // Just behind the torso's sub-depth (base + 0.001, see setDepth) and in front of the head (base + 0.0005).
 const HAND_UNDER_DEPTH = 0.00095;
 import { backSellSupport } from './rig/backSell.js';
+import { handClearance, handTipOf, silhouetteOf } from './rig/silhouette.js';
 
 // updateUpright draws every arm and forearm this much (facing-signed) past the pose channels.
 const UPRIGHT_ARM_FWD = 0.09;
@@ -2386,6 +2387,29 @@ export default class Skeleton {
         const painted = patch ? Skeleton.imageAnchorPoint(near, patch) : null;
         const contact = painted || this.jointAttachmentPoints?.nearWrist;
         return contact ? { dist: Math.hypot(contact.x - waist.x, contact.y - waist.y), contact: painted ? 'clutchPatch' : 'wristProxy' } : null;
+    }
+
+    // Rev 3 D10: the near hand's points that must be off the torso's painted art before the depth may swap, from
+    // the pose last drawn: the wrist, the contact (clutch patch or wrist), the forearm's distal midpoint (3/4 of the
+    // way elbow to wrist) and the hand's far end (the last painted point of the forearm art, which has the hand baked
+    // in on a `handInForearm` rig). A point that can't be measured is null.
+    nearHandSamples() {
+        const pts = this.jointAttachmentPoints, near = this.nearForearm;
+        if (!pts?.nearWrist || !pts.nearElbow || !near) return null;
+        const patch = near._semanticAnchors?.clutch;
+        const tip = this._textureConfig?.handInForearm ? handTipOf(near) : null;
+        return {
+            wrist: pts.nearWrist,
+            contact: (patch && Skeleton.imageAnchorPoint(near, patch)) || pts.nearWrist,
+            forearmDistal: { x: pts.nearElbow.x + (pts.nearWrist.x - pts.nearElbow.x) * 0.75, y: pts.nearElbow.y + (pts.nearWrist.y - pts.nearElbow.y) * 0.75 },
+            handEnd: tip ? Skeleton.imageAnchorPoint(near, tip) : pts.nearWrist,
+        };
+    }
+
+    // { clear, min, distances } (game px outside the torso art; rig/silhouette.js), or null when nothing can be measured.
+    handClearance(marginPx = 1) {
+        const samples = this.nearHandSamples(), sil = silhouetteOf(this.torso);
+        return samples && sil ? handClearance(this.torso, samples, sil, marginPx) : null;
     }
 
     backContactDistance() {

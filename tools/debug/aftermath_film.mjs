@@ -132,6 +132,9 @@ const STEP = () => {
         latch: w._gripLatch ? (w._gripLatch.on ? 1 : 0) : null,
         // Rev 2 D6 (backSell.handUnder): 1 while the near forearm is drawn behind the torso (read from the real depths), null on a build without it
         handUnder: w.skeleton._handUnder === undefined ? null : (w.skeleton.nearForearm.depth < w.skeleton.torso.depth ? 1 : 0),
+        // Rev 3 D10: how far each hand sample is outside the torso art (game px, 0 = on it), null on a build without it
+        clr: (c => c && { min: +c.min.toFixed(2), d: Object.fromEntries(Object.entries(c.distances).map(([k, v]) => [k, +v.toFixed(2)])) })(sk.handClearance?.()),
+        handWant: typeof w._handWant === 'function' ? (w._handWant() ? 1 : 0) : null,
         nearContact: pt(contact), backWaist: pt(waist), backDist: dist === null ? null : +dist.toFixed(2),
         now: sc.time.now, state: w.state, lying: w.lying, facing: w.facing, riseT: w.riseT,
         x: w.x, y: w.y, s: w.s * (w._heightScale ?? 1),
@@ -318,7 +321,7 @@ async function film(scenario, configName, outRoot, interrupt = null) {
             interrupt: fired,
             frames: frameList,
             samples: frames.map(f => ({ rel: +(f.now - impactNow).toFixed(2), state: f.state, riseT: f.state === 'gettingUp' ? +f.riseT.toFixed(4) : null,
-                sell: f.sell, recoveryW: f.recoveryW, holdActive: f.holdActive, dbg: f.dbg, handOnBack: f.handOnBack, combatBlend: f.combatBlend, backDist: f.backDist, latch: f.latch, handUnder: f.handUnder, lying: f.lying, pain: f.pain, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
+                sell: f.sell, recoveryW: f.recoveryW, holdActive: f.holdActive, dbg: f.dbg, handOnBack: f.handOnBack, combatBlend: f.combatBlend, backDist: f.backDist, latch: f.latch, handUnder: f.handUnder, clr: f.clr, handWant: f.handWant, nearWristW: f.nearWrist, lying: f.lying, pain: f.pain, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
                 farShoulder: f.farShoulder, farElbow: f.farElbow, rootY: f.y, facing: f.facing })),
         };
         writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 1));

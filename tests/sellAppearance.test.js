@@ -173,7 +173,7 @@ test('back-pain rise passes the optional performance context and uses its shared
     for (const t of [0, 0.1, 0.5, 0.8, 0.85, 1]) {
         w.riseT = t; w.draw();
         assert.deepEqual(rises.at(-1)[6], { part: 'back', severity: 0.8 });
-        assert.deepEqual(backRiseParts(t, w.skeleton), t > 0 && t < 0.85 ? { nearForearm: 'grip' } : {});
+        assert.deepEqual(backRiseParts(t, w.skeleton), t > 0 && t < 1 ? { nearForearm: 'grip' } : {});
     }
     assert.deepEqual(calls, [{ nearForearm: 'grip' }, {}]);
     for (const pain of [null, { phase: 'mat', part: 'back', severity: 1 }, { phase: 'rise', part: 'head', severity: 1 },

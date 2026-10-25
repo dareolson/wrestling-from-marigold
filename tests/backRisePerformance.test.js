@@ -5,10 +5,10 @@ import { backRiseWeight } from '../src/animation/backRisePerformance.js';
 import { JOINT_LIMITS } from '../src/rig/articulation.js';
 
 test('protective back rise has smooth zero endpoints and a deliberate contact hold', () => {
-    for (const t of [-1, 0, 0.85, 1, NaN]) assert.equal(backRiseWeight(t), 0);
-    for (const t of [0.18, 0.3, 0.55]) assert.equal(backRiseWeight(t), 1);
+    for (const t of [-1, 0, 1, 1.5, NaN]) assert.equal(backRiseWeight(t), 0);
+    for (const t of [0.18, 0.3, 0.55, 0.7]) assert.equal(backRiseWeight(t), 1);
     assert.ok(backRiseWeight(0.1) > 0 && backRiseWeight(0.1) < 1);
-    assert.ok(backRiseWeight(0.7) > 0 && backRiseWeight(0.7) < 1);
+    for (const t of [0.75, 0.85, 0.95, 0.999]) assert.ok(backRiseWeight(t) > 0 && backRiseWeight(t) < 1, `eases out late, t=${t}`);
 });
 
 test('get-up keeps original endpoint geometry and only adds a supine back reach', () => {

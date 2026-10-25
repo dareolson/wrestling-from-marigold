@@ -1,5 +1,7 @@
 // Visual-only protective reach during a back-pain rise. Zero endpoints preserve
 // the existing down/rise and rise/upright handoffs; no timers or gameplay locks.
+// The ease-out runs .70 -> 1.0 (was .55 -> .85) so the hand is still on the back when
+// the standing recovery motif (RECOVERY_BACK_HAND) takes over (D3 option A).
 const smooth = x => {
     const u = Math.max(0, Math.min(1, x));
     return u * u * (3 - 2 * u);
@@ -10,9 +12,9 @@ const smooth = x => {
 // `peak` is the reach the rise holds (severity); a hold above it eases down to it.
 export function backRiseWeight(t, from = 0, peak = 1) {
     const f = Number.isFinite(from) ? Math.max(0, Math.min(1, from)) : 0;
-    if (!Number.isFinite(t) || t >= 0.85) return 0;
+    if (!Number.isFinite(t) || t >= 1) return 0;
     if (t <= 0) return f;
-    return (f + (peak - f) * smooth(t / 0.18)) * (1 - smooth((t - 0.55) / 0.30));
+    return (f + (peak - f) * smooth(t / 0.18)) * (1 - smooth((t - 0.70) / 0.30));
 }
 
 // Lying hold (D4, ?sellart=v1): after a back clutch lets go, the near hand settles
@@ -39,3 +41,10 @@ export function plantWeight(t, tLift) {
     if (!Number.isFinite(t) || !Number.isFinite(tLift) || t <= PLANT.t0 || t >= tLift + PLANT.outSpan) return 0;
     return smooth((t - PLANT.t0) / PLANT.inSpan) * (1 - smooth((t - tLift) / PLANT.outSpan));
 }
+
+// Standing recovery, back (D3 option A, ?sellart=v1 + ?aftermath=v2): offsets added x the
+// recovery weight to the near-arm l-channels of the pose he is standing in, so the near
+// hand rests at the back waist while the hurt is carried. Probed on Procreate Lou's own
+// idle pose (tools/debug/recovery_probe.mjs): lArm -1.2 / lForearm +0.3 puts the painted
+// contact 1.59 px from backWaist, both facings, elbow flex 129 deg (limit 157.6).
+export const RECOVERY_BACK_HAND = Object.freeze({ arm: -1.2, fore: 0.3 });

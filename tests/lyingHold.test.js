@@ -57,7 +57,8 @@ test('hold weight is a pure function of time since release, continuous with the 
 
 test('rise weight is continuous at t = 0 when `from` is set and unchanged when it is not', () => {
     const smooth = x => { const u = Math.max(0, Math.min(1, x)); return u * u * (3 - 2 * u); };
-    const old = t => (!Number.isFinite(t) || t <= 0 || t >= 0.85) ? 0 : smooth(t / 0.18) * (1 - smooth((t - 0.55) / 0.30));
+    // the envelope with no hold: ramp .18, hold to .70, ease out by 1.0
+    const old = t => (!Number.isFinite(t) || t <= 0 || t >= 1) ? 0 : smooth(t / 0.18) * (1 - smooth((t - 0.70) / 0.30));
     for (const t of [-1, 0, 0.01, 0.1, 0.18, 0.3, 0.55, 0.7, 0.85, 1, NaN]) {
         assert.equal(backRiseWeight(t), old(t), `no from, t=${t}`);
         assert.equal(backRiseWeight(t, 0), old(t));
@@ -72,7 +73,7 @@ test('rise weight is continuous at t = 0 when `from` is set and unchanged when i
             prev = v;
         }
         assert.equal(backRiseWeight(0.18, from), 1);
-        assert.equal(backRiseWeight(0.85, from), 0);
+        assert.equal(backRiseWeight(1, from), 0);
     }
 });
 

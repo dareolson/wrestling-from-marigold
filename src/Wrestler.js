@@ -15,7 +15,7 @@ import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
-import { HOLD, holdWeight } from './animation/backRisePerformance.js';
+import { HOLD, holdWeight, RECOVERY_BACK_HAND } from './animation/backRisePerformance.js';
 import { staggerFor } from './animation/staggers.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
@@ -1063,6 +1063,7 @@ export default class Wrestler {
             && !this._groundHandoff && !choreo && this._sell !== this._sellArtInterrupted;
         const rising = !release && this._backRiseContext();
         const hold = !release && enabled && this._lyingHold();
+        const recovering = !release && enabled && this._recoveryHandOnBack();
         const exists = this.scene?.textures?.exists;
         const textureExists = exists ? key => exists.call(this.scene.textures, key) : null;
         const now = this.scene?.time?.now ?? 0;
@@ -1072,7 +1073,7 @@ export default class Wrestler {
             // the hand that is on the back at clutch time carries into the hold and the rise
             if (Object.keys(parts).length && this._sell.plan[this._sell.i]?.part === 'back')
                 this._gripLatch = this._gripLatch?.on ? this._gripLatch : newGripLatch(true, now);
-        } else if (hold || rising) {
+        } else if (hold || rising || recovering) {
             // Art from the measured contact distance (latch with dwell), not from the phase.
             // A rig that cannot measure keeps the phase rule: grip while the reach is on.
             const dist = this.skeleton?.backContactDistance?.();
@@ -1716,6 +1717,13 @@ export default class Wrestler {
         return ramp * (pain.part === 'back' ? 1 - (1 - left) * (1 - left) : left);
     }
 
+    // True while the standing back-recovery carries the near hand on the back (?sellart=v1
+    // on top of ?aftermath=v2, a rig with a painted backWaist). Touches nothing.
+    _recoveryHandOnBack() {
+        return sellArtCandidate() && this._pain?.part === 'back' && this._recoveryWeight() > 0
+            && !!this.skeleton?.torso?._semanticAnchors?.backWaist;
+    }
+
     // A COPY of the pose with the motif added, or null when there is nothing to
     // add. this.pose is never written.
     _recoveryPose() {
@@ -1742,6 +1750,13 @@ export default class Wrestler {
             }
         } else if (pain.part === 'back') {
             pose.bend = (pose.bend ?? 0) + 0.12 * w;
+            // ?sellart=v1 (D3 option A): the near hand rests at the back waist. The offsets are
+            // the probed ones for the near l-channels; only a rig with a painted backWaist (Lou).
+            if (this._recoveryHandOnBack()) {
+                const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
+                pose[`${n}Arm`] = (pose[`${n}Arm`] ?? 0) + RECOVERY_BACK_HAND.arm * w;
+                pose[`${n}Forearm`] = (pose[`${n}Forearm`] ?? 0) + RECOVERY_BACK_HAND.fore * w;
+            }
         } else {
             return null; // motifs exist for the two pilots only
         }
@@ -2741,7 +2756,11 @@ export default class Wrestler {
         const liftScale = state === 'running' ? 1.0 : 0.5;
         const runBlend  = state === 'running' ? gaitBlend : 0;
         // Choreography outranks the combat-ready guard — see _choreoOwnsPose().
-        const guard = choreography ? 0 : this.combatBlend;
+        let guard = choreography ? 0 : this.combatBlend;
+        // ?sellart=v1: the guard blend REPLACES the arm angles at combatBlend 1 (see
+        // _choreoOwnsPose), which would erase the near hand on the back; give it up in
+        // proportion to the carried back-hand weight. Off, `guard` is exactly as before.
+        if (this._recoveryHandOnBack()) guard *= 1 - this._recoveryWeight();
         // ?aftermath=v2: favour the hurt part on a copy of the pose (null otherwise).
         this.skeleton.updateUpright(x, y, s, facing, this._recoveryPose() ?? this.pose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
         if (this._activeMove && this._floorContacts) {

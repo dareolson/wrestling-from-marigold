@@ -558,6 +558,7 @@ export default class Wrestler {
         this._sellArtSelection = null;
         this._hold = null;       // ?sellart=v1 lying hold after a back clutch: { t, lying }, t = s since release
         this._riseFrom = 0;      // hold weight the current back rise eases up from (0 = none)
+        this._riseHold = null;   // the lying hold's last pose offsets, eased out over the start of the rise (null = none)
         this._gripLatch = null;  // measured-contact art latch for the hand on the back
         if (facingAxis && sample.facing) this.facing = facingAxis * sample.facing;
         if (sample.pose) mergeArticulatedPose(this.pose, sample.pose);
@@ -2564,7 +2565,9 @@ export default class Wrestler {
     // peel himself off the mat — the get-up itself sells the damage.
     _startRiseUp() {
         // The rise eases up from the lying hold's weight (D4); no hold, no `from`.
-        this._riseFrom = this._lyingHold()?.w ?? 0;
+        const hold = this._lyingHold();
+        this._riseFrom = hold?.w ?? 0;
+        this._riseHold = hold?.offsets ?? null; // the pose offsets the hold last drew, eased out over the rise start
         this._hold = null;
         this._syncSellAppearance(true);
         this.state = 'gettingUp';
@@ -2607,6 +2610,7 @@ export default class Wrestler {
 
     _startQuickRise() {
         this._riseFrom = 0;
+        this._riseHold = null;
         this._hold = null;
         this._syncSellAppearance(true);
         this.state        = 'risingUp';
@@ -2759,7 +2763,7 @@ export default class Wrestler {
             gfx.fillStyle(0x000000, 0.22);
             gfx.fillEllipse(x, y, (170 - this.riseT * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
-            this.skeleton.updateGetUp(x, y, s, facing, this.riseT, this.lying, this._backRiseContext(), this._riseStand(s, facing));
+            this.skeleton.updateGetUp(x, y, s, facing, this.riseT, this.lying, this._backRiseContext(), this._riseStand(s, facing), this._riseHold);
             return;
         }
 

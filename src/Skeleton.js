@@ -6,7 +6,8 @@ import {
     transformBoundPoint,
 } from './rig/twoAnchorBinding.js';
 import { childAngleFromLocalFlex, localFlexFromChildAngle, JOINT_LIMITS } from './rig/articulation.js';
-import { backRiseWeight, PLANT, plantWeight } from './animation/backRisePerformance.js';
+import { backRiseWeight, PLANT, plantWeight, riseHoldCarry } from './animation/backRisePerformance.js';
+import { applyOffsets, limitKnees } from './animation/sells.js';
 import { backSellSupport } from './rig/backSell.js';
 
 // updateUpright draws every arm and forearm this much (facing-signed) past the pose channels.
@@ -2438,9 +2439,13 @@ export default class Skeleton {
         return pose;
     }
 
-    updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null, stand = null) {
+    // `holdOffsets` (Rev 2): the lying hold's last grounded offsets (leg cycle, chest breath). They are carried into
+    // the first part of the rise and eased out (riseHoldCarry), so the rise starts from the pose the hold drew.
+    updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null, stand = null, holdOffsets = null) {
         const K = lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
-        const pose = Skeleton._getUpPose(K, t, this._lockLimbJoints, this.standingHipHeight, stand);
+        let pose = Skeleton._getUpPose(K, t, this._lockLimbJoints, this.standingHipHeight, stand);
+        const carry = holdOffsets ? riseHoldCarry(t) : 0;
+        if (carry > 0) pose = limitKnees(applyOffsets(pose, Object.fromEntries(Object.entries(holdOffsets).map(([c, v]) => [c, v * carry]))));
         const back = lying === 'supine' && pain?.part === 'back' && (pain.severity ?? 0) > 0;
         const sev = back ? Math.max(0, Math.min(1, pain.severity)) : 0;
         // `from` is the lying-hold weight to ease from (D4): the first rise frame reproduces

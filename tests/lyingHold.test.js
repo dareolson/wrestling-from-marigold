@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Wrestler from '../src/Wrestler.js';
 import Skeleton from '../src/Skeleton.js';
-import { backRiseWeight, HOLD_BREATH, HOLD_LEGS, holdOffsets, holdWeight as holdWeightAt } from '../src/animation/backRisePerformance.js';
+import { backRiseWeight, HOLD_BREATH, HOLD_LEGS, RISE_HOLD_EASE, riseHoldCarry, holdOffsets, holdWeight as holdWeightAt } from '../src/animation/backRisePerformance.js';
 import { sampleSell, clutchSell, limitKnees } from '../src/animation/sells.js';
 import { GRIP_REFRACTORY_MS, newGripLatch, stepGripLatch as stepLatchAt } from '../src/animation/sellAppearance.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
@@ -224,6 +224,7 @@ test('the art follows the measured distance with a latch; the rise carries the h
     assert.equal(w._hold, null);
     w.riseT = 0; w.draw();
     assert.deepEqual(rises.at(-1)[6], { part: 'back', severity: 1, from });
+    assert.deepEqual(rises.at(-1)[8], holdOffsets(0.4), 'the hold\'s last offsets ride into the rise (Rev 2 continuity)');
     assert.deepEqual(calls.at(-1), { nearForearm: 'grip' });
     assert.equal(calls.filter(c => Object.keys(c).length === 0).length, 1, 'only the release at rise start, immediately re-selected in the same frame');
 }));
@@ -234,4 +235,21 @@ test('a rise with no hold has no `from`', () => withFlag(ON, () => {
     w.scene.tweens.add = () => ({});
     w._startRiseUp(); w.riseT = 0.3; w.draw();
     assert.deepEqual(rises.at(-1)[6], { part: 'back', severity: 1 });
+    assert.equal(rises.at(-1)[8], null, 'no hold, no offsets to carry');
+}));
+
+test('rise continuity: the carry is 1 at the rise start, eases to 0 by RISE_HOLD_EASE, is pure; the quick rise carries nothing', () => withFlag(ON, () => {
+    assert.equal(riseHoldCarry(0), 1); assert.equal(riseHoldCarry(-1), 1);
+    assert.equal(riseHoldCarry(RISE_HOLD_EASE), 0); assert.equal(riseHoldCarry(0.5), 0); assert.equal(riseHoldCarry(NaN), 0);
+    assert.equal(RISE_HOLD_EASE, 0.15);
+    let prev = 1;
+    for (let t = 0; t <= RISE_HOLD_EASE + 1e-9; t += 0.005) { const c = riseHoldCarry(t); assert.ok(c <= prev + 1e-12 && c >= 0); prev = c; }
+    const { w } = fixture();
+    w._tickSell(0.02); w._tickSell(0.69);
+    w._pain = { phase: 'mat', part: 'back', severity: 1 }; w.scene.tweens.add = () => ({});
+    const t = w._hold.t;
+    w._startRiseUp();
+    assert.deepEqual(w._riseHold, holdOffsets(t));
+    w._startQuickRise();
+    assert.equal(w._riseHold, null);
 }));

@@ -61,6 +61,12 @@ export function holdOffsets(sinceReleaseSec) {
     };
 }
 
+// Rise continuity (Rev 2): the rise starts from the pose the hold last drew, so the hold's leg and torso
+// offsets are carried into the rise and eased out over t in [0, RISE_HOLD_EASE]. 1 at t = 0, 0 from the end.
+// A pure function of t.
+export const RISE_HOLD_EASE = 0.15;
+export const riseHoldCarry = t => !Number.isFinite(t) || t >= RISE_HOLD_EASE ? 0 : t <= 0 ? 1 : 1 - smooth(t / RISE_HOLD_EASE);
+
 // Far (support) hand plant during the same rise. Visual-only, a pure function of
 // rise progress t and the rig's own base keyposes: the far wrist, where the base
 // rise has it at t0 (y on the mat line), stays put until the base shoulder is

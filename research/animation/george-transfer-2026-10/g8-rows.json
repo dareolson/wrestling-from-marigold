@@ -1,0 +1,30 @@
+{
+ "views": [
+  {
+   "id": "suplex",
+   "title": "George, suplex: G7 → Rev 3",
+   "blurb": "Same scenario (Lou throws, George receives), both runs end on a back clutch and stay on his back. Left: G7 (Rev 2, f334b46). Right: Rev 3: the hand goes round the body, the depth swaps only while the hand is clear of the art, and the forearm stays over the upper arm.",
+   "g7": "after-suplex",
+   "rows": ["rev3-suplex"]
+  },
+  {
+   "id": "flip",
+   "title": "George, suplexFlip: G7 → Rev 3",
+   "blurb": "The other side: George faces right at impact.",
+   "g7": "after-flip",
+   "rows": ["rev3-flip"]
+  },
+  {
+   "id": "prone",
+   "title": "George, rolled → prone rise: G7 → Rev 3",
+   "blurb": "A plan where George rolls onto his front first, then clutches his back. The prone rise has no hand on the back (unchanged rule); the hand is held behind the body until it clears, comes out, and goes back round when the standing recovery starts.",
+   "g7": "prone-after",
+   "rows": ["rev3-prone"]
+  }
+ ],
+ "rows": [
+  {"id": "rev3-suplex", "label": "George, suplex, back clutch", "kind": 1, "root": "/private/tmp/claude-501/t8/f6/suplex", "scenario": "suplex", "note": ""},
+  {"id": "rev3-flip", "label": "George, suplexFlip, back clutch", "kind": 1, "root": "/private/tmp/claude-501/t8/f6/flip", "scenario": "suplexFlip", "note": ""},
+  {"id": "rev3-prone", "label": "George, suplexFlip, rolled then back clutch (prone rise)", "kind": 2, "root": "/private/tmp/claude-501/t8/f6/prone", "scenario": "suplexFlip", "note": ""}
+ ]
+}

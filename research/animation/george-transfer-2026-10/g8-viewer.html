@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>George back sell G8 viewer</title>
+<style>
+  :root { --bg:#f6f6f4; --panel:#fff; --ink:#1d1d1b; --mute:#6b6b66; --line:#dcdcd6; --accent:#1b6ca8; --warn:#b3261e; --ok:#2e7d4f; --warnbg:#fdecea; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161616; --panel:#202020; --ink:#ececea; --mute:#9a9a94; --line:#383836; --accent:#6fb1e3; --warn:#ff8a7a; --ok:#6fcf97; --warnbg:#3a1f1c; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui,-apple-system,sans-serif; }
+  main { max-width:1500px; margin:0 auto; padding:16px; }
+  h1 { font-size:18px; margin:0 0 2px; } h2 { font-size:14px; margin:22px 0 8px; }
+  .sub { color:var(--mute); margin:0 0 10px; max-width:110ch; }
+  .miss { background:var(--warnbg); border:1px solid var(--warn); border-radius:8px; padding:10px 14px; margin:10px 0; }
+  .miss h2 { margin:0 0 4px; color:var(--warn); } .miss li { margin:4px 0; }
+  .n { font-variant-numeric:tabular-nums; font-weight:600; }
+  .ask { background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:6px; padding:8px 14px; margin:10px 0; }
+  .ask ol { margin:4px 0 0; padding-left:20px; } .ask li { margin:2px 0; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px; position:sticky; top:0; z-index:5; }
+  button { font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:5px 10px; cursor:pointer; }
+  button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button:focus-visible, input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .scrub { flex:1 1 320px; min-width:200px; } .scrub input { width:100%; }
+  .time { font-variant-numeric:tabular-nums; min-width:92px; text-align:right; }
+  .views, .events { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .cols { display:grid; grid-template-columns:repeat(var(--n,2),1fr); gap:10px; margin-top:12px; }
+  figure { margin:0; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  figure img { display:block; width:100%; height:auto; background:#888; }
+  figure.main img { aspect-ratio:560/340; }
+  figcaption { padding:8px 10px; font-size:13px; } figcaption b { font-size:14px; }
+  .mono { font-variant-numeric:tabular-nums; font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mute); }
+  .tag { display:inline-block; font-size:11px; padding:0 6px; border-radius:4px; border:1px solid var(--line); color:var(--mute); margin-right:4px; }
+  .tag.slow { color:#fff; background:var(--warn); border-color:var(--warn); font-weight:700; }
+  .far { color:var(--warn); font-weight:600; } .near { color:var(--ok); font-weight:600; }
+  svg { width:100%; height:auto; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+  table { border-collapse:collapse; width:100%; background:var(--panel); border:1px solid var(--line); }
+  th, td { text-align:left; padding:4px 9px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; vertical-align:top; }
+  th { color:var(--mute); font-weight:600; } td.num, th.num { text-align:right; }
+  td.bad { color:var(--warn); font-weight:600; } td.good { color:var(--ok); font-weight:600; }
+  .tablewrap { overflow-x:auto; }
+  .notes { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 14px 10px 30px; margin:0; } .notes li { margin:3px 0; }
+  .close { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  @media (max-width:900px) { .cols, .close { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>George, the hand goes around the body (G8)</h1>
+  <p class="sub" id="sub"></p>
+  <div class="ask"><b>The questions for Derek:</b><ol>
+    <li>Does the hand go around his body (lower, then up behind)?</li>
+    <li>Is the elbow bezel gone?</li>
+    <li>Legs: pain, too much, too little?</li>
+    <li>Lou: keep the legs and breath?</li>
+    <li>Approve?</li></ol></div>
+  <div class="miss" id="misses"></div>
+
+  <div class="bar" role="group" aria-label="Playback">
+    <button id="play" aria-label="Play or pause">Play</button>
+    <button id="s1" class="on">1×</button><button id="s05">0.5×</button><button id="s025">0.25×</button>
+    <button id="stepb" title="Back one frame (30 fps)">‹ frame</button><button id="stepf" title="Forward one frame">frame ›</button>
+    <div class="scrub"><input id="scrub" type="range" min="0" max="1" step="1" value="0" aria-label="Scrub"></div>
+    <div class="time" id="time">0 ms</div>
+  </div>
+  <div class="events" id="events" aria-label="Jump to event"></div>
+  <div class="views" id="views" role="group" aria-label="Choose what to compare"></div>
+  <p class="sub" id="blurb" style="margin-top:8px"></p>
+  <div class="cols" id="cols"></div>
+  <p class="sub" style="margin-top:6px">Clock is game ms from impact, from each run's manifest; frames are 30 fps. Left: George at G7 (Rev 2, f334b46); right: Rev 3. The sell plan is chosen per run, so the two films are matched on the kind of run, not frame for frame.</p>
+
+  <h2>Close-ups of the two moments Rev 3 changed (this view, Rev 3 run)</h2>
+  <div class="bar" style="position:static"><button id="cplay">Play close-ups</button><span class="sub" style="margin:0">Each moment plays twice: at 1× and, labelled, slowed to 0.25× (the source is 30 fps, so the slowed one steps about 7 times a second).</span></div>
+  <div id="closeups" class="close" style="margin-top:8px"></div>
+
+  <h2>Near hand contact to painted back waist (px), this view</h2>
+  <div id="curve"></div>
+
+  <h2>Every depth swap</h2>
+  <div class="tablewrap" id="swaptable"></div>
+
+  <h2>Hand travel, forearm pixels inside the torso, cost</h2>
+  <div class="tablewrap" id="steptable"></div>
+  <div class="tablewrap" id="inside" style="margin-top:10px"></div>
+  <div class="tablewrap" id="cost" style="margin-top:10px"></div>
+
+  <h2>What changed in the numbers</h2>
+  <div class="tablewrap" id="nums"></div>
+
+  <h2>Not claimed</h2>
+  <ul class="notes">
+    <li>These are measurements and frames. Whether the hand reads as going around his body, whether the elbow bezel is gone, whether the legs read as pain, and whether Lou keeps the legs and breath are Derek's calls.</li>
+    <li>The sell plan is chosen per run, so a G7 film and a Rev 3 film are matched on the kind of run, not frame for frame.</li>
+    <li>George has no grip donor: his hand is the baked hand and the contact is his wrist.</li>
+    <li>Legs during a lying wait with no hold (writhe last), the prone rise's missing hand and the facing turn are not touched by Rev 3.</li>
+    <li>The compact clutch (a short hurt) is not in these films; in the probe its hand moves faster than 2.5 px a frame, as the straight path already did.</li>
+  </ul>
+</main>
+<script src="g7/data.js"></script>
+<script src="g8/data.js"></script>
+<script>
+(() => {
+  const G7 = window.G7, G8 = window.G8, $ = id => document.getElementById(id);
+  const EVENT_BTNS = [['impact','Impact'],['clutchPeak','Clutch peak'],['hold','Hold'],['riseStart','Rise start'],['rise055','Rise .55'],['rise085','Rise .85'],['standing','Standing'],['recovery+200ms','+0.2 s'],['recovery+1000ms','+1 s'],['recovery+2000ms','+2 s']];
+  const KIND = { 1: 'back clutch last, stays on his back', 2: 'rolled onto his front first, prone rise', 3: 'writhe last, no back clutch' };
+  const rowOf = (id) => G8.rows[id] || G7.rows[id];
+  const base = id => (G8.rows[id] ? 'g8/' : 'g7/');
+  const ev0 = Object.values(G8.rows)[0].events;
+  const gitOf = rows => (rows.find(r => r.git) || { git: {} }).git.commit;
+  let view = G8.views[0], t = ev0.impact, speed = 1, playing = false, last = 0, idx = {};
+  const fmt = v => (v >= 0 ? '+' : '−') + Math.abs(Math.round(v)) + ' ms';
+  const at = (arr, ms) => { let lo = 0, hi = arr.length - 1, k = 0; while (lo <= hi) { const m = (lo + hi) >> 1; if (arr[m][0] <= ms) { k = m; lo = m + 1; } else hi = m - 1; } return arr[k]; };
+  const rowsOf = v => [v.g7, ...v.rows];
+  const tMin = () => Math.max(...rowsOf(view).map(id => rowOf(id).frames[0][0]));
+  const tMax = () => Math.min(...rowsOf(view).map(id => rowOf(id).frames.at(-1)[0]));
+  const g8rows = Object.values(G8.rows);
+  const min1 = x => (x == null ? 'n/a' : (+x).toFixed(1));
+
+  $('sub').textContent = `Rev 3 after G7: the hand goes round through a point outside the painted torso (G8a, candidate B) on its way behind the body and back out; the depth swap happens only while the hand is clear of the art; the forearm stays over the upper arm and a torso-alpha mask hides it where the torso is painted, so the elbow shows no bezel. Rev 3 = ${gitOf(g8rows)} (working tree at the time of the films), G7 = f334b46; config on (sellart + aftermath, both default).`;
+
+  function misses() {
+    const li = [];
+    const all = g8rows;
+    const sw = all.flatMap(r => r.metrics.swaps.map(s => ({ r, s })));
+    const noClear = sw.filter(x => !(x.s.minClearancePx > 0));
+    li.push(`<li><b>The swap is not at the via point.</b> It happens at the first frame the whole hand is clear of the art, not when the hand arrives at the via point: ${sw.map(({ r, s }) => `${r.scenario} ${s.direction} ${fmt(s.ms)} (${s.framesFromVia == null ? 'no crossing' : s.framesFromVia + ' frames from the via weight'}, ${min1(s.minClearancePx)} px clear)`).join('; ')}. Going in, that is the very start of the back clutch, where the hand is clear of the art by only about 2 px; coming out it is at the via pose, 12 px clear.</li>`);
+    li.push(`<li><b>Not 0: forearm pixels still show inside the torso's outline.</b> Counted on rendered frames (forearm hidden vs shown), at the marks listed below: up to ${Math.max(...all.flatMap(r => Object.values(r.metrics.forearmInsideAtMarks).map(c => c.insideTorsoArtPx)))} px inside the art (alpha &gt; 50%), all within about 1.5 px of the torso's outline, where the forearm's own black line meets the torso's: the old depth order has the same ring (control, 46 to 56 px in the probe). None deeper inside.</li>`);
+    li.push(`<li><b>The hold sits 14.5 px from the back waist, margin .5 px.</b> The route is longer than the straight path, so the hold weight moved .45 → .7 (first passing weight .695); the contact is 14.52 px from the back waist against the 15 px line (was 13.99 px, margin .65 px).</li>`);
+    li.push(`<li><b>The back clutch reach takes longer to get in</b> (.4 of the clutch, was .25) so the longer route does not make the hand jump. The body's own offsets in the clutch are keyed on the same time, so they arrive later too.</li>`);
+    li.push(`<li><b>The combat guard is given up completely, then comes back, over the standing release</b> (until the hand has passed its via pose at hand weight .5), where it used to fade with the weight.</li>`);
+    li.push(`<li><b>Cost: about +1 ms a frame</b> for two George wrestlers with the hand behind the body (headless Chrome, software GL; whole game step): ${G8.cost ? G8.cost.msPerFrameMask + ' ms with the mask, ' + G8.cost.msPerFrameDepth + ' ms with the old depth order' : 'n/a'}.</li>`);
+    $('misses').innerHTML = `<h2>Misses first</h2><ul>${li.join('')}</ul>`;
+  }
+
+  function build() {
+    const cols = $('cols'); cols.replaceChildren(); idx = {};
+    const ids = rowsOf(view); cols.style.setProperty('--n', ids.length);
+    for (const id of ids) {
+      const r = rowOf(id), b = base(id);
+      const fig = document.createElement('figure'); fig.className = 'main'; const img = new Image(); img.alt = r.label; fig.append(img);
+      const cap = document.createElement('figcaption'); const g8 = !!G8.rows[id];
+      cap.innerHTML = `<b>${g8 ? 'Rev 3' : 'G7 (Rev 2)'}: ${r.label}</b><div><span class="tag">${g8 ? 'after Rev 3' : 'G7 film'}</span><span class="tag">kind ${r.kind}: ${KIND[r.kind]}</span><span class="tag">${r.scenario}</span></div><div class="mono" data-info></div>`;
+      fig.append(cap); cols.append(fig); idx[id] = { r, b, img, info: cap.querySelector('[data-info]') };
+      for (const [, f] of r.frames) { const p = new Image(); p.src = b + f; }
+    }
+    $('blurb').textContent = view.blurb || '';
+    const ev = $('events'); ev.replaceChildren();
+    for (const [k, label] of EVENT_BTNS) if (ev0[k] != null) { const bt = document.createElement('button'); bt.textContent = label; bt.title = k + ' ' + fmt(ev0[k]); bt.onclick = () => seek(ev0[k]); ev.append(bt); }
+    $('scrub').min = Math.ceil(tMin()); $('scrub').max = Math.floor(tMax());
+    drawCurve(); closeups(); seek(Math.max(tMin(), Math.min(t, tMax())));
+  }
+
+  function render() {
+    for (const { r, b, img, info } of Object.values(idx)) {
+      const f = at(r.frames, t), src = b + f[1]; if (img.getAttribute('src') !== src) img.src = src;
+      const d = r.curve.length ? at(r.curve, t) : null, u = r.under.length ? at(r.under, t) : null;
+      const far = d && d[1] > 15;
+      info.innerHTML = `${fmt(f[0])} · hand→back <span class="${d ? (far ? 'far' : 'near') : ''}">${d ? d[1].toFixed(1) + ' px' : 'n/a'}</span><br>hand behind the body: ${u && u[1] != null ? (u[1] ? 'yes' : 'no') : 'not recorded (G7: forearm depth)'}`;
+    }
+    $('time').textContent = fmt(t); $('scrub').value = Math.round(t);
+    const cur = document.getElementById('cursor'); if (cur) { const x = cx(t); cur.setAttribute('x1', x); cur.setAttribute('x2', x); }
+  }
+  function seek(ms) { t = Math.max(tMin(), Math.min(tMax(), ms)); render(); }
+  function tick(now) { if (!playing) return; t += (now - last) * speed; last = now; if (t >= tMax()) { t = tMax(); setPlaying(false); } render(); if (playing) requestAnimationFrame(tick); }
+  function setPlaying(p) { playing = p; $('play').textContent = p ? 'Pause' : 'Play'; if (p) { if (t >= tMax()) t = tMin(); last = performance.now(); requestAnimationFrame(tick); } }
+
+  // the close-ups: two moments x (1x, 0.25x), each its own looping clock
+  let cplay = false, cl = [];
+  function closeups() {
+    const el = $('closeups'); el.replaceChildren(); cl = [];
+    const r = G8.rows[view.rows[0]];
+    const moments = [['behind', 'The hand going behind the body'], ['out', 'The hand coming out']];
+    for (const [key, title] of moments) {
+      const c = r.close[key]; if (!c) continue;
+      for (const [rate, label] of [[1, '1×'], [0.25, 'SLOWED 0.25×']]) {
+        const fig = document.createElement('figure'), img = new Image(); img.alt = title + ' ' + label; img.style.imageRendering = 'auto'; fig.append(img);
+        const cap = document.createElement('figcaption');
+        cap.innerHTML = `<b>${title}</b><div><span class="tag ${rate < 1 ? 'slow' : ''}">${label}</span><span class="tag">swap ${key === 'behind' ? 'in' : 'out'} at ${fmt(c.atMs)}</span></div><div class="mono" data-t></div>`;
+        fig.append(cap); el.append(fig);
+        cl.push({ c, rate, img, tEl: cap.querySelector('[data-t]'), k: 0, clock: c.frames[0][0] });
+        img.src = G8.rows[view.rows[0]] ? 'g8/' + c.frames[0][1] : '';
+        c.frames.forEach(f => { const p = new Image(); p.src = 'g8/' + f[1]; });
+      }
+    }
+    paintClose();
+  }
+  function paintClose() { for (const o of cl) { const f = at(o.c.frames, o.clock); const s = 'g8/' + f[1]; if (o.img.getAttribute('src') !== s) o.img.src = s; o.tEl.textContent = `${fmt(f[0])} · swap ${fmt(o.c.atMs)} · ${o.rate === 1 ? 'real time' : 'slowed to ' + o.rate + '× real time'}`; } }
+  let clast = 0;
+  function ctick(now) { if (!cplay) return; const dt = now - clast; clast = now; for (const o of cl) { const a = o.c.frames[0][0], b = o.c.frames.at(-1)[0]; o.clock += dt * o.rate; if (o.clock > b) o.clock = a; } paintClose(); requestAnimationFrame(ctick); }
+  $('cplay').onclick = () => { cplay = !cplay; $('cplay').textContent = cplay ? 'Pause close-ups' : 'Play close-ups'; if (cplay) { clast = performance.now(); requestAnimationFrame(ctick); } };
+
+  const W = 1200, H = 270, L = 46, R = 12, T = 14, B = 30; let cx = () => 0;
+  const COL = ['#c0392b', '#1b6ca8', '#2e8b57', '#8e44ad'];
+  function drawCurve() {
+    const ids = rowsOf(view), x0 = tMin(), x1 = tMax(), y1 = 60;
+    cx = v => L + (v - x0) / (x1 - x0) * (W - L - R); const Y = v => T + (1 - Math.min(v, y1) / y1) * (H - T - B);
+    let o = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Distance from the near hand contact to the painted back waist over time">`;
+    for (let v = 0; v <= y1; v += 15) o += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${v === 15 ? '#c0392b' : 'currentColor'}" stroke-opacity="${v === 15 ? .8 : .15}" ${v === 15 ? 'stroke-dasharray="4 3"' : ''}/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end" fill="currentColor" font-size="11" opacity=".7">${v}</text>`;
+    for (let v = Math.ceil(x0 / 1000) * 1000; v <= x1; v += 1000) o += `<text x="${cx(v)}" y="${H - 10}" text-anchor="middle" fill="currentColor" font-size="11" opacity=".7">${v}</text>`;
+    for (const k of ['riseStart', 'standing']) { const x = cx(ev0[k]); o += `<line x1="${x}" x2="${x}" y1="${T}" y2="${H - B}" stroke="currentColor" stroke-opacity=".25"/><text x="${x + 3}" y="${T + 10}" fill="currentColor" font-size="10" opacity=".6">${k}</text>`; }
+    ids.forEach((id, i) => { const r = rowOf(id); if (r.curve.length) o += `<polyline fill="none" stroke="${COL[i % 4]}" stroke-width="1.6" points="${r.curve.map(p => `${cx(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(' ')}"/>`; o += `<rect x="${L + 10 + i * 330}" y="${T + 22}" width="10" height="3" fill="${COL[i % 4]}"/><text x="${L + 24 + i * 330}" y="${T + 27}" fill="currentColor" font-size="11">${G8.rows[id] ? 'Rev 3' : 'G7'}: ${r.label}</text>`; });
+    o += `<line id="cursor" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="currentColor" stroke-width="1.5"/></svg>`;
+    $('curve').innerHTML = o;
+  }
+
+  function swapTable() {
+    let o = `<table><thead><tr><th>Run</th><th>Swap</th><th class="num">At</th><th>Phase</th><th class="num">Route weight</th><th class="num">Frames from the via weight</th><th class="num">Wrist px clear</th><th class="num">Contact</th><th class="num">Forearm distal</th><th class="num">Hand end</th><th class="num">Smallest</th></tr></thead><tbody>`;
+    for (const r of g8rows) for (const s of r.metrics.swaps) { const c = s.clearancePx || {}; o += `<tr><td>${r.label}<div class="mono">${r.scenario} · kind ${r.kind}</div></td><td>${s.direction === 'in' ? 'behind the body' : 'out'}</td><td class="num">${s.ms.toFixed(0)} ms</td><td>${s.state}${s.sell ? ' · ' + s.sell : ''}</td><td class="num">${s.routeWeight}</td><td class="num">${s.framesFromVia == null ? 'n/a' : s.framesFromVia}</td><td class="num">${min1(c.wrist)}</td><td class="num">${min1(c.contact)}</td><td class="num">${min1(c.forearmDistal)}</td><td class="num">${min1(c.handEnd)}</td><td class="num ${s.minClearancePx > 0 ? 'good' : 'bad'}">${min1(s.minClearancePx)}</td></tr>`; }
+    $('swaptable').innerHTML = o + `</tbody></table><p class="sub">Clearance is measured on the frame the swap shows, from the torso art's alpha (≥ 128): the game px between each of the four hand points and the nearest painted pixel. The swap needs all four ≥ 1 px (the clearance is measured from the pose drawn one frame before, so the numbers here can differ by the frame's motion). “Frames from the via weight”: swap frame minus the frame the route weight crossed its via weight (reach .2 on the mat and in the rise; recovery hand weight .5 standing); negative = the swap came first. Swaps skipped (wanted, then dropped before the hand cleared): ${g8rows.map(r => r.metrics.skippedSwaps).join(' / ')}. Frames waiting for clearance: ${g8rows.map(r => r.metrics.pending.frames + ' (longest ' + r.metrics.pending.longestRunMs + ' ms)').join(' / ')}. Shortest gap between two swaps: ${g8rows.map(r => r.metrics.minGapMs == null ? 'n/a' : r.metrics.minGapMs + ' ms').join(' / ')} (flicker would be under 250 ms).</p>`;
+  }
+
+  function stepTable() {
+    const wins = ['clutch', 'hold / wait', 'rise', 'standing'];
+    let o = `<table><thead><tr><th>Run</th>${wins.map(w => `<th class="num">${w}</th>`).join('')}<th class="num">other sells (body moves)</th><th class="num">At the facing turn</th></tr></thead><tbody>`;
+    for (const r of g8rows) { const b = r.metrics.handStepRelWaist.byWindow, oth = Object.entries(b).filter(([k]) => k.startsWith('other')).map(([k, v]) => `${k.replace('other sell ', '')} ${v.px}`).join(', ');
+      o += `<tr><td>${r.label}<div class="mono">${r.scenario}</div></td>${wins.map(w => `<td class="num ${b[w] && b[w].px > 2.5 ? 'bad' : ''}">${b[w] ? b[w].px + ' px' : '—'}</td>`).join('')}<td class="num">${oth || '—'}</td><td class="num">${r.metrics.handStepRelWaist.atFacingTurn.map(x => x.px + ' px').join(', ') || '—'}</td></tr>`; }
+    $('steptable').innerHTML = o + `</tbody></table><p class="sub">Largest frame-to-frame move of the near wrist relative to the painted back waist (the body's own motion removed), game px, per window; limit 2.5 px. At the facing turn the mirror frame is excluded from the windows (the wrist and the waist mirror together, so it is 0 relative to the waist). Other sells (kick, writhe, roll) move the whole body and say nothing about the hand's route.</p>`;
+  }
+
+  function insideTable() {
+    const marks = Object.keys(Object.assign({}, ...g8rows.map(r => r.metrics.forearmInsideAtMarks)));
+    let o = `<table><thead><tr><th>Forearm pixels visibly drawn inside the torso's painted art (alpha ≥ 128) / its interior (alpha ≥ 250)</th>${g8rows.map(r => `<th class="num">${r.scenario} (kind ${r.kind})</th>`).join('')}</tr></thead><tbody>`;
+    for (const k of marks) o += `<tr><td>${k}</td>${g8rows.map(r => { const c = r.metrics.forearmInsideAtMarks[k]; return `<td class="num">${c ? `${c.insideTorsoArtPx} / ${c.insidePaintedInteriorPx} <span class="mono">of ${c.forearmPx}</span>` : 'not behind the body'}</td>`; }).join('')}</tr>`;
+    $('inside').innerHTML = o + `</tbody></table><p class="sub">Rendered, not computed: the canvas at each mark with the near forearm shown (twice, to find the canvas's own speckle) and hidden; the pixels that change are the forearm's visible pixels, mapped through the camera into the torso's alpha. “of N” = the forearm's visible pixels at that mark.</p>`;
+  }
+
+  function costTable() {
+    const c = G8.cost; if (!c) { $('cost').textContent = ''; return; }
+    $('cost').innerHTML = `<table><thead><tr><th>Cost of the torso mask (D11)</th><th class="num">ms / frame</th></tr></thead><tbody><tr><td>Mask on, two George wrestlers with the hand behind the body</td><td class="num">${c.msPerFrameMask}</td></tr><tr><td>Old depth order (no mask)</td><td class="num">${c.msPerFrameDepth}</td></tr></tbody></table><p class="sub">${c.note}. Rounds: mask ${c.roundsMask.join(', ')}; depth ${c.roundsDepth.join(', ')}.</p>`;
+  }
+
+  function nums() {
+    const x = G8.extra || {};
+    $('nums').innerHTML = `<table><thead><tr><th></th><th class="num">G7 (Rev 2)</th><th class="num">Rev 3</th></tr></thead><tbody>
+      <tr><td><code>holdW</code> (lying hold reach weight)</td><td class="num">.45</td><td class="num">.7 (route through the via point is longer)</td></tr>
+      <tr><td>hold contact to the back waist: rest / worst of the leg cycle</td><td class="num">13.99 / 14.35 px</td><td class="num">14.52 / 14.52 px</td></tr>
+      <tr><td>margin to the 15 px line</td><td class="num">.65 px</td><td class="num">.48 px</td></tr>
+      <tr><td>via point (torso image fractions)</td><td class="num">—</td><td class="num">u −0.25, v 0.9069 (G8a B: 1.5 hand lengths, 32.4 game px from the back waist, 18.0 px clear of the paint)</td></tr>
+      <tr><td>standing via pose (arm / elbow offsets)</td><td class="num">—</td><td class="num">−0.6 / −0.4 (wrist 8.0 px from the via point, hand clear by 16 px)</td></tr>
+      <tr><td>back clutch: reach takes</td><td class="num">.25 of the clutch</td><td class="num">.4 of the clutch</td></tr>
+      <tr><td>depth swap when</td><td class="num">the grip latch is on (hand over the art: it popped under in place)</td><td class="num">the hand is past the via point AND clear of the art</td></tr>
+      <tr><td>elbow</td><td class="num">forearm behind the upper arm (bezel)</td><td class="num">forearm over the upper arm, torso mask hides it where the torso is painted</td></tr></tbody></table>`;
+  }
+
+  const vb = $('views');
+  G8.views.forEach(v => { const b = document.createElement('button'); b.textContent = v.title; b.onclick = () => { view = v; [...vb.children].forEach(c => c.className = c === b ? 'on' : ''); setPlaying(false); cplay = false; $('cplay').textContent = 'Play close-ups'; build(); }; if (v === view) b.className = 'on'; vb.append(b); });
+  $('play').onclick = () => setPlaying(!playing);
+  const sp = (id, v) => { $(id).onclick = () => { speed = v; ['s1', 's05', 's025'].forEach(k => $(k).className = k === id ? 'on' : ''); }; };
+  sp('s1', 1); sp('s05', 0.5); sp('s025', 0.25);
+  $('scrub').oninput = e => { setPlaying(false); seek(+e.target.value); };
+  $('stepf').onclick = () => { setPlaying(false); const fr = rowOf(view.rows[0]).frames, k = fr.findIndex(f => f[0] > t + 0.01); seek(fr[k < 0 ? fr.length - 1 : k][0]); };
+  $('stepb').onclick = () => { setPlaying(false); const fr = rowOf(view.rows[0]).frames; let k = fr.length - 1; while (k > 0 && fr[k][0] >= t - 0.01) k--; seek(fr[k][0]); };
+  document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); setPlaying(!playing); } if (e.code === 'ArrowRight') $('stepf').click(); if (e.code === 'ArrowLeft') $('stepb').click(); });
+  misses(); swapTable(); stepTable(); insideTable(); costTable(); nums(); build();
+})();
+</script>
+</body>
+</html>

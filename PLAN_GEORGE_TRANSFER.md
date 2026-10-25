@@ -342,7 +342,7 @@ G8a — (Derek's pick goes here.)
 
 - **T8.2 (D10)** Add the clearance test as a pure helper (`rig/backSell.js` or a new
   `rig/silhouette.js`), taking a world point and the torso image plus an alpha lookup, so it's testable in
-  Node with a stub. `_handUnder()` becomes: want (today's rule) AND (already under, or clear). Leaving: not
+  Node with a stub. `_handUnder()` becomes: want (today's rule) AND (already under, or clear). Sample the hand's far end too (Opus, after T8.1: George's baked hand is OPEN and reaches 21.6 px past the wrist, so wrist + forearm midpoint alone can call it clear while the fingers are still over the torso): add the hand's distal end, e.g. the forearm image's last-alpha point along its axis, to the samples. Leaving: not
   want AND (already out, or clear).
 - **T8.3 (D9)** Add the around path in the grounded reach (`_solveGroundedReach` back target) and in the
   standing recovery release. It's a pure function of the phase weight, and Lou is untouched (no `handUnder`).

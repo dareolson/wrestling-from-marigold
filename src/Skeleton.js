@@ -8,6 +8,9 @@ import {
 import { childAngleFromLocalFlex, localFlexFromChildAngle, JOINT_LIMITS } from './rig/articulation.js';
 import { backRiseWeight, PLANT, plantWeight } from './animation/backRisePerformance.js';
 
+// updateUpright draws every arm and forearm this much (facing-signed) past the pose channels.
+const UPRIGHT_ARM_FWD = 0.09;
+
 // Proportions in unscaled pixels — multiply by s before placing parts.
 // Lengths originally chosen to match the old single-piece stick-figure totals
 // exactly (arm 76, leg 89≈88, torso 112) while splitting at elbow and knee
@@ -1527,7 +1530,7 @@ export default class Skeleton {
         }
 
         // Arms hang slightly in front of the centerline — breaks mirror symmetry.
-        const ARM_FWD = facing * 0.09;
+        const ARM_FWD = facing * UPRIGHT_ARM_FWD;
         lArmAng     += ARM_FWD;
         rArmAng     += ARM_FWD;
         lForearmAng += ARM_FWD;
@@ -2233,10 +2236,17 @@ export default class Skeleton {
      * IK onto a curved hand-position path (not blended joint angles), and the
      * pose is drawn again. The signed elbow hinge branch mirrors with facing.
      */
-    updateGroundedReach(x, y, s, facing, g, reach, { paintedContacts = false, backContact = false } = {}) {
+    updateGroundedReach(x, y, s, facing, g, reach, opts = {}) {
+        const solved = this._solveGroundedReach(x, y, s, facing, g, reach, opts);
+        if (solved) this._applyGrounded(x, y, s, facing, solved);
+    }
+
+    // Draws `g` once (the measuring pass) and returns the pose with each reaching arm's
+    // `${side}Arm` / `${side}Fore` solved, or null when no side reaches. Draws nothing else.
+    _solveGroundedReach(x, y, s, facing, g, reach, { paintedContacts = false, backContact = false } = {}) {
         this._applyGrounded(x, y, s, facing, g);
         const sides = Object.entries(reach ?? {}).filter(([, r]) => r.w > 0.001);
-        if (!sides.length) return;
+        if (!sides.length) return null;
         const pts = this.jointAttachmentPoints;
         const f = facing >= 0 ? 1 : -1;
         const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
@@ -2281,7 +2291,7 @@ export default class Skeleton {
             const foreAngle = Math.atan2(hand.y - elbow.y, hand.x - elbow.x) - contactAngle;
             solved[`${side}Fore`] = toAngle({ x: Math.cos(foreAngle), y: Math.sin(foreAngle) }, g[`${side}Fore`]);
         }
-        this._applyGrounded(x, y, s, facing, solved);
+        return solved;
     }
 
     // Reach around the shoulder rather than through it. A straight hand path
@@ -2464,6 +2474,31 @@ export default class Skeleton {
         }
         this._plantCache = { key, plan };
         return plan;
+    }
+
+    // D5 (carried back rise): the near arm the supine rise ends on at t = 1 with the back reach
+    // at weight `peak`, expressed in the upright l/r channels updateUpright consumes
+    // ({ arm, elbow } = pose channel `Arm` and local-flex `Elbow` of the near side). The
+    // grounded solve is the rise's own (same IK, same painted contact); upright adds
+    // UPRIGHT_ARM_FWD to both bones and takes the forearm as local flex. A pure function of
+    // (scale, facing, peak, the active near-forearm art), cached like _plantPlan. Draws the
+    // grounded pose once to measure; call it outside a draw. Null when nothing reaches.
+    carriedRiseEndArm(s, facing, peak) {
+        const K = Skeleton.GETUP_SUPINE_POSES, f = facing >= 0 ? 1 : -1;
+        const key = [s, f, peak, K.length, this._lockLimbJoints ? this.standingHipHeight : 0,
+            this.nearForearm?.texture?.key ?? ''].join('|');
+        if (this._riseEndCache?.key === key) return this._riseEndCache.arm;
+        const g = Skeleton._getUpPose(K, 1, this._lockLimbJoints, this.standingHipHeight);
+        const solved = this._solveGroundedReach(0, 0, s, f, g, { near: { to: 'nearHip', w: peak } },
+            { paintedContacts: true, backContact: true });
+        let arm = null;
+        if (solved) {
+            const A = solved.nearArm, F = solved.nearFore;
+            arm = { arm: A - UPRIGHT_ARM_FWD, elbow: localFlexFromChildAngle(f * A, f * F, f, 'elbow'),
+                rawElbow: (F - A), groundedArm: A, groundedFore: F };
+        }
+        this._riseEndCache = { key, arm };
+        return arm;
     }
 
     // Place every part from a grounded pose: hip-rooted, torso free to pitch

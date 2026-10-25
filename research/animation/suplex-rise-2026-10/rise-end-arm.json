@@ -1,0 +1,106 @@
+{
+ "peak": 1,
+ "idle": {
+  "lLeg": -0.05,
+  "rLeg": 0.14,
+  "lArm": 0.04,
+  "rArm": 0.17,
+  "lean": 0.05,
+  "crouch": 0.05,
+  "lShin": -0.11,
+  "rShin": -0.06,
+  "lElbow": 0.7,
+  "rElbow": 0.7
+ },
+ "absHand": {
+  "arm": -1.16,
+  "elbow": 2.2
+ },
+ "elbowLimit": {
+  "min": -3,
+  "max": 2.75,
+  "preferred": 0.7
+ },
+ "rows": [
+  {
+   "facing": 1,
+   "end": {
+    "arm": -1.204952146968628,
+    "elbow": 2.2601715168555714,
+    "rawElbow": 2.2601715168555714,
+    "groundedArm": -1.1149521469686279,
+    "groundedFore": 1.1452193698869433
+   },
+   "groundedContactDist": 0.17083401208502058,
+   "groundedFlexDeg": 129.24468750646867,
+   "protectOnlyRiseT1Dist": 45.26431383494871,
+   "riseEndInUpright": {
+    "bend0": {
+     "dist": 0.17084534912608182,
+     "flexDeg": 129.2446815399287
+    },
+    "bend012": {
+     "dist": 0.17083163777924879,
+     "flexDeg": 129.24468153992865
+    }
+   },
+   "recoveryAbs": {
+    "arm": -1.16,
+    "elbow": 2.2,
+    "bend0": {
+     "dist": 2.333203471729522,
+     "flexDeg": 125.79710757720412
+    },
+    "bend012": {
+     "dist": 2.3331813210613266,
+     "flexDeg": 125.79710757720406
+    }
+   },
+   "diff": {
+    "arm": -0.04495214696862804,
+    "elbow": 0.060171516855571205
+   },
+   "elbowWithinLimit": true
+  },
+  {
+   "facing": -1,
+   "end": {
+    "arm": -1.204952146968628,
+    "elbow": 2.2601715168555723,
+    "rawElbow": 2.2601715168555723,
+    "groundedArm": -1.1149521469686279,
+    "groundedFore": 1.1452193698869442
+   },
+   "groundedContactDist": 0.17083401208502058,
+   "groundedFlexDeg": 129.24468750646855,
+   "protectOnlyRiseT1Dist": 45.26431383494872,
+   "riseEndInUpright": {
+    "bend0": {
+     "dist": 0.17084534912608182,
+     "flexDeg": 129.24468153992876
+    },
+    "bend012": {
+     "dist": 0.17083163777924879,
+     "flexDeg": 129.2446815399287
+    }
+   },
+   "recoveryAbs": {
+    "arm": -1.16,
+    "elbow": 2.2,
+    "bend0": {
+     "dist": 2.333203471729522,
+     "flexDeg": 125.79710757720413
+    },
+    "bend012": {
+     "dist": 2.3331813210613266,
+     "flexDeg": 125.79710757720406
+    }
+   },
+   "diff": {
+    "arm": -0.04495214696862804,
+    "elbow": 0.060171516855572094
+   },
+   "elbowWithinLimit": true
+  }
+ ]
+}

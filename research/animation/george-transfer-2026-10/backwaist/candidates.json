@@ -1,0 +1,152 @@
+{
+ "rig": "george-roster-v1",
+ "W": 346,
+ "H": 585,
+ "dispW": 45.32921591272728,
+ "pxPerGame": 7.63304621606861,
+ "yPink": 364,
+ "ySkin": 361,
+ "y": 355,
+ "x0": 88,
+ "cands": [
+  {
+   "name": "A",
+   "insetGamePx": 0,
+   "insetSourcePx": 0,
+   "x": 88,
+   "y": 355,
+   "u": 0.2558,
+   "v": 0.6077,
+   "pixel": "black"
+  },
+  {
+   "name": "B",
+   "insetGamePx": 3,
+   "insetSourcePx": 23,
+   "x": 111,
+   "y": 355,
+   "u": 0.3223,
+   "v": 0.6077,
+   "pixel": "skin"
+  },
+  {
+   "name": "C",
+   "insetGamePx": 6,
+   "insetSourcePx": 46,
+   "x": 134,
+   "y": 355,
+   "u": 0.3887,
+   "v": 0.6077,
+   "pixel": "skin"
+  }
+ ],
+ "profile": [
+  {
+   "y": 325,
+   "contourX": 83,
+   "kind": "skin"
+  },
+  {
+   "y": 331,
+   "contourX": 86,
+   "kind": "skin"
+  },
+  {
+   "y": 337,
+   "contourX": 86,
+   "kind": "skin"
+  },
+  {
+   "y": 343,
+   "contourX": 86,
+   "kind": "skin"
+  },
+  {
+   "y": 349,
+   "contourX": 87,
+   "kind": "skin"
+  },
+  {
+   "y": 355,
+   "contourX": 88,
+   "kind": "skin"
+  },
+  {
+   "y": 361,
+   "contourX": 86,
+   "kind": "skin"
+  },
+  {
+   "y": 367,
+   "contourX": 84,
+   "kind": "other"
+  },
+  {
+   "y": 373,
+   "contourX": 84,
+   "kind": "trunks"
+  },
+  {
+   "y": 379,
+   "contourX": 82,
+   "kind": "trunks"
+  },
+  {
+   "y": 385,
+   "contourX": 79,
+   "kind": "trunks"
+  },
+  {
+   "y": 391,
+   "contourX": 76,
+   "kind": "trunks"
+  }
+ ],
+ "box": {
+  "w": 55.36,
+  "h": 93.60000000000001
+ },
+ "frames": {
+  "r": [
+   {
+    "name": "A",
+    "x": 374.905581941767,
+    "y": 434.3764248330321,
+    "flipX": false
+   },
+   {
+    "name": "B",
+    "x": 375.0883770725377,
+    "y": 430.7809312079873,
+    "flipX": false
+   },
+   {
+    "name": "C",
+    "x": 375.27089732341244,
+    "y": 427.1908443402734,
+    "flipX": false
+   }
+  ],
+  "l": [
+   {
+    "name": "A",
+    "x": 425.094418058233,
+    "y": 434.3764248330321,
+    "flipX": true
+   },
+   {
+    "name": "B",
+    "x": 424.9116229274623,
+    "y": 430.7809312079873,
+    "flipX": true
+   },
+   {
+    "name": "C",
+    "x": 424.72910267658756,
+    "y": 427.1908443402734,
+    "flipX": true
+   }
+  ]
+ },
+ "rule": "see the header of tools/debug/backwaist_candidates.mjs"
+}

@@ -66,6 +66,12 @@ export const georgeRosterV1 = {
         "box": {
             "w": 55.36,
             "h": 93.60000000000001
+        },
+        "semanticAnchors": {
+            "backWaist": {
+                "u": 0.3887,
+                "v": 0.6077
+            }
         }
     },
     "upperArm": {

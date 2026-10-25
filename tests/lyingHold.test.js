@@ -5,8 +5,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Wrestler from '../src/Wrestler.js';
 import Skeleton from '../src/Skeleton.js';
-import { backRiseWeight, HOLD_BREATH, holdOffsets, holdWeight as holdWeightAt } from '../src/animation/backRisePerformance.js';
-import { sampleSell, clutchSell } from '../src/animation/sells.js';
+import { backRiseWeight, HOLD_BREATH, HOLD_LEGS, holdOffsets, holdWeight as holdWeightAt } from '../src/animation/backRisePerformance.js';
+import { sampleSell, clutchSell, limitKnees } from '../src/animation/sells.js';
 import { GRIP_REFRACTORY_MS, newGripLatch, stepGripLatch as stepLatchAt } from '../src/animation/sellAppearance.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 import { onlyListed } from './support/promotedFlags.js';
@@ -56,7 +56,7 @@ test('hold weight is constant; the chest breathes instead (Rev 2 D7), a pure fun
     }
     assert.equal(holdWeight(NaN, HOLD.w), HOLD.w);
     assert.equal(holdOffsets(0).torso, 0, 'zero at the start: no jump at the clutch -> hold handoff');
-    assert.deepEqual(Object.keys(holdOffsets(0.3)), ['torso']);
+    assert.deepEqual(Object.keys(holdOffsets(0.3)).sort(), ['farShin', 'farThigh', 'hip', 'nearShin', 'nearThigh', 'torso']);
     assert.ok(Math.abs(holdOffsets(HOLD_BREATH.periodSec).torso) < 1e-12, 'one full breath');
     assert.ok(Math.abs(holdOffsets(HOLD_BREATH.periodSec / 4).torso - HOLD_BREATH.torso) < 1e-12);
     assert.ok(Math.abs(holdOffsets(3 * HOLD_BREATH.periodSec / 4).torso + HOLD_BREATH.torso) < 1e-12);
@@ -118,6 +118,50 @@ test('art latch: a distance hovering at the threshold cannot make grip -> fist -
     assert.equal(st.on, true);
     assert.equal(stepGripLatch(st, NaN, 500), st, 'no measurement, no change');
 });
+
+test('hold leg cycle (D8): pure in time, zero at the start, peaks equal HOLD_LEGS, ramped in over 400 ms, knees inside limits', () => {
+    const z = holdOffsets(0);
+    for (const k of ['nearThigh', 'nearShin', 'farThigh', 'farShin', 'hip', 'torso']) assert.ok(z[k] === 0, `${k} is 0 at the hold start`);
+    assert.deepEqual(holdOffsets(1.234), holdOffsets(1.234), 'pure');
+    assert.deepEqual(holdOffsets(-1), z); assert.deepEqual(holdOffsets(NaN), z); // -1 and NaN clamp to the start
+    // periodic in the leg cycle (the torso breath has its own period)
+    const a = holdOffsets(2.1), b = holdOffsets(2.1 + HOLD_LEGS.cycleSec);
+    for (const k of ['nearThigh', 'nearShin', 'farThigh', 'farShin', 'hip']) assert.ok(Math.abs(a[k] - b[k]) < 1e-12, k);
+    // peaks: the middle of each window (after the ramp)
+    const mid = ([lo, hi]) => (lo + hi) / 2;
+    const n = holdOffsets(mid(HOLD_LEGS.nearWindow)), f = holdOffsets(mid(HOLD_LEGS.farWindow));
+    assert.ok(Math.abs(n.nearThigh - HOLD_LEGS.near.nearThigh) < 1e-12 && Math.abs(n.nearShin - HOLD_LEGS.near.nearShin) < 1e-12);
+    assert.ok(Math.abs(f.farThigh - HOLD_LEGS.far.farThigh) < 1e-12 && Math.abs(f.farShin - HOLD_LEGS.far.farShin) < 1e-12);
+    assert.ok(Math.abs(n.hip - HOLD_LEGS.hip) < 1e-12 && Math.abs(f.hip - HOLD_LEGS.hip) < 1e-12);
+    assert.ok(n.farThigh === 0 && f.nearThigh === 0, 'one knee at a time');
+    assert.deepEqual([HOLD_LEGS.cycleSec, HOLD_LEGS.rampSec, HOLD_LEGS.hip], [3.6, 0.4, 2]);
+    assert.deepEqual({ ...HOLD_LEGS.near, ...HOLD_LEGS.far }, { nearThigh: 0.40, nearShin: -0.35, farThigh: 0.35, farShin: -0.30 });
+    // the rests: nothing moves between the windows
+    for (const t of [1.5, 1.7, 3.3, 3.5]) assert.ok(holdOffsets(t).nearThigh + holdOffsets(t).farThigh === 0, `rest at ${t}`);
+    // the ramp: during the first 400 ms the offsets rise from 0 and stay under the un-ramped bump
+    let prev = 0;
+    for (let t = 0; t <= HOLD_LEGS.rampSec; t += 0.02) { const v = holdOffsets(t).nearThigh; assert.ok(v >= prev - 1e-12 && v <= HOLD_LEGS.near.nearThigh * Math.sin(Math.PI * t / HOLD_LEGS.nearWindow[1]) ** 2 + 1e-12, `ramp ${t}`); prev = v; }
+    // knees stay inside limits through limitKnees on every rig's lying pose, every 20 ms over 3 cycles
+    for (const lying of ['supine', 'prone']) for (let t = 0; t <= 3 * HOLD_LEGS.cycleSec; t += 0.02) {
+        const base = Skeleton.GROUNDED_POSES[lying], o = holdOffsets(t);
+        const g = limitKnees(Object.fromEntries(Object.entries(base).map(([k, v]) => [k, v + (o[k] ?? 0)])));
+        for (const side of ['near', 'far']) {
+            const flex = g[`${side}Thigh`] - g[`${side}Shin`];
+            assert.ok(flex >= -0.25 - 1e-9 && flex <= 2.55 + 1e-9, `${lying} ${side} flex ${flex} at ${t}`);
+        }
+    }
+});
+
+test('the hold draw passes the pose with the leg and torso offsets, ramped from 0', () => withFlag(ON, () => {
+    const { w, grounded } = fixture();
+    w._tickSell(0.02); w.draw();
+    const base = Skeleton.GROUNDED_POSES.supine;
+    for (const [k, v] of Object.entries(grounded.at(-1)[4])) assert.ok(Math.abs(v - limitKnees({ ...base })[k]) < 2e-3, `${k}: the first hold frame (10 ms in) draws the lying pose`);
+    w._tickSell(0.69); w.draw();
+    const o = holdOffsets(w._hold.t), g = grounded.at(-1)[4];
+    assert.ok(o.nearThigh > 0.3);
+    assert.ok(Math.abs(g.hip - (base.hip + o.hip)) < 1e-9 && Math.abs(g.torso - (base.torso + o.torso)) < 1e-9);
+}));
 
 test('the last back clutch starts the hold; other parts, other rigs and the flag-off path do not', () => {
     withFlag(ON, () => {

@@ -33,11 +33,32 @@ export const HOLD_BREATH = Object.freeze({ torso: 0.04, periodSec: 1.6 });
 export function holdWeight(sinceReleaseSec, holdW) {
     return holdW;
 }
+// Leg life during the hold (Rev 2 D8, Derek at G6: stiff legs read weird). A slow, pained alternating knee
+// draw-up in a `cycleSec` cycle: the near knee goes up and down, a short rest, the far knee goes up and down,
+// a rest. Each lift is a sin^2 bump (smooth in and out, 1 at the middle of its window). Peaks are about half
+// the supine `writhe` key (sells.js). The legs ramp in from 0 over `rampSec` of the hold so the clutch -> hold
+// handoff does not jump. Same for every rig; the knees still go through `limitKnees` when drawn.
+export const HOLD_LEGS = Object.freeze({
+    cycleSec: 3.6, rampSec: 0.4,
+    nearWindow: Object.freeze([0, 1.4]), farWindow: Object.freeze([1.8, 3.2]),
+    near: Object.freeze({ nearThigh: 0.40, nearShin: -0.35 }),
+    far: Object.freeze({ farThigh: 0.35, farShin: -0.30 }),
+    hip: 2,
+});
+const bump = (t, [a, b]) => t <= a || t >= b ? 0 : Math.sin(Math.PI * (t - a) / (b - a)) ** 2;
 // The grounded offsets the hold adds to the lying pose, a pure function of seconds since the clutch ended.
 // Zero at the start, so the clutch -> hold handoff does not jump.
 export function holdOffsets(sinceReleaseSec) {
     const t = Number.isFinite(sinceReleaseSec) && sinceReleaseSec > 0 ? sinceReleaseSec : 0;
-    return { torso: HOLD_BREATH.torso * Math.sin(2 * Math.PI * t / HOLD_BREATH.periodSec) };
+    const ramp = smooth(t / HOLD_LEGS.rampSec);
+    const c = t % HOLD_LEGS.cycleSec;
+    const n = bump(c, HOLD_LEGS.nearWindow) * ramp, f = bump(c, HOLD_LEGS.farWindow) * ramp;
+    return {
+        torso: HOLD_BREATH.torso * Math.sin(2 * Math.PI * t / HOLD_BREATH.periodSec),
+        nearThigh: HOLD_LEGS.near.nearThigh * n, nearShin: HOLD_LEGS.near.nearShin * n,
+        farThigh: HOLD_LEGS.far.farThigh * f, farShin: HOLD_LEGS.far.farShin * f,
+        hip: HOLD_LEGS.hip * Math.max(n, f),
+    };
 }
 
 // Far (support) hand plant during the same rise. Visual-only, a pure function of

@@ -38,6 +38,7 @@ separately from visual approval. Existing grips, layers and painted contacts
 already demonstrate reuse; capability records, strict coverage reporting and
 shared evidence adapters are proposed next work, not implemented tools.
 First runtime consumer remains Lou's support-hand rise; no defaults changed.
+**Update 2026-10-25:** capability records and strict coverage reporting now exist (`tools/move-critic/capabilities.json`, `npm run moves:coverage -- --check`; 29 moves: 5 covered, 3 partial, 19 unverified, 2 not-applicable; 22-gap baseline). See the [coverage entry](AI_HANDOFF_ENTRIES/2026-10-25-claude-pipeline-coverage.md); evidence adapters and `contactTargets.js` are still not built.
 
 **Suplex planted-rise plan — 2026-10-24 (Claude/Opus plan, rev 4; G4 package ready):**
 Codex's sell-art candidate is committed locally (`b07484d`); every commit of this plan is local, nothing pushed
@@ -671,6 +672,10 @@ still listed in `SHA256SUMS.txt` at its true hash. Whoever picks this up needs t
 establish what it was meant to be before changing anything.
 
 ## Handoff Log
+
+### 2026-10-25 — Claude: pipeline coverage (capability index + `moves:coverage`)
+
+[Entry](AI_HANDOFF_ENTRIES/2026-10-25-claude-pipeline-coverage.md): `capabilities.json` (12 capabilities), strict `specStatus`, `npm run moves:coverage [-- --check]` with a 22-gap reasoned baseline, seven new method rows. Local commits, nothing pushed, no gameplay change.
 
 ### 2026-10-24 — Claude: suplex rise G4 package (session 4)
 

@@ -42,14 +42,15 @@ export function backRiseParts(t, skeleton, textureExists = null) {
 // from the MEASURED contact distance, never from a timer or a phase name (D4). A latch:
 // a change needs the wanted state to persist GRIP_DWELL_MS and at least GRIP_REFRACTORY_MS
 // since the last change, so a distance hovering at the threshold cannot flicker the art.
+// The threshold is RIG DATA (textures.backSell.contactPx, rig/backSell.js; Lou's is 15 px,
+// measured to his painted grip cup), passed in by the caller, never defaulted.
 // State is { on, pendingSince, switchedAt }; this returns the next state and mutates nothing.
-export const GRIP_CONTACT_PX = 15;
 export const GRIP_DWELL_MS = 100;
 export const GRIP_REFRACTORY_MS = 250;
 export const newGripLatch = (on = false, now = 0) => ({ on, pendingSince: null, switchedAt: on ? now : -Infinity });
-export function stepGripLatch(state, distancePx, nowMs) {
-    if (!Number.isFinite(distancePx)) return state;
-    const want = distancePx <= GRIP_CONTACT_PX;
+export function stepGripLatch(state, distancePx, nowMs, contactPx) {
+    if (!Number.isFinite(distancePx) || !Number.isFinite(contactPx)) return state;
+    const want = distancePx <= contactPx;
     if (want === state.on) return state.pendingSince === null ? state : { ...state, pendingSince: null };
     const pendingSince = state.pendingSince ?? nowMs;
     if (nowMs - pendingSince >= GRIP_DWELL_MS && nowMs - state.switchedAt >= GRIP_REFRACTORY_MS)

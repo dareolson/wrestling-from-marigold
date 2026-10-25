@@ -4,18 +4,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Wrestler from '../src/Wrestler.js';
-import { RECOVERY_BACK_HAND } from '../src/animation/backRisePerformance.js';
 import { newGripLatch } from '../src/animation/sellAppearance.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 import { onlyListed } from './support/promotedFlags.js';
 
 const noop = () => {};
 const BOTH = '?sellart=v1&aftermath=v2';
+// Lou's numbers live on his rig (textures.backSell); this keeps the tests' old vocabulary.
+const RECOVERY_BACK_HAND = { arm: theszProcreateV1.textures.backSell.recoveryArm, elbow: theszProcreateV1.textures.backSell.recoveryElbow };
 const withFlag = (search, fn) => { globalThis.location = { search: onlyListed(search) }; try { return fn(); } finally { delete globalThis.location; } };
 // the live settled pose (film dbg.pose): local elbow flex, no legacy forearm
 const IDLE = { lLeg: -0.05, rLeg: 0.14, lArm: 0.04, rArm: 0.17, lean: 0.05, crouch: 0.05, lElbow: 0.7, rElbow: 0.7, lShin: -0.11, rShin: -0.06 };
 
-function standing({ backWaist = true, now = 1000, since = 0, until = 3500, dist = 5 } = {}) {
+function standing({ backWaist = true, backSell = true, now = 1000, since = 0, until = 3500, dist = 5 } = {}) {
     const drawn = [], calls = [];
     const w = Object.assign(Object.create(Wrestler.prototype), {
         scene: { time: { now }, tweens: { add: () => ({ stop() {} }) } },
@@ -25,7 +26,7 @@ function standing({ backWaist = true, now = 1000, since = 0, until = 3500, dist 
         stateTimer: 0, input: { isDown: () => false, justDown: () => false },
         gfx: { clear: noop, setDepth: noop, fillStyle: noop, fillEllipse: noop },
         skeleton: {
-            _textureConfig: theszProcreateV1.textures, lChannelSide: () => 'near', setPartVariants: p => calls.push({ ...p }),
+            _textureConfig: backSell ? theszProcreateV1.textures : { ...theszProcreateV1.textures, backSell: undefined }, lChannelSide: () => 'near', setPartVariants: p => calls.push({ ...p }),
             torso: backWaist ? { _semanticAnchors: { backWaist: { u: 0.22, v: 0.6 } } } : {},
             backContactDistance: () => w.__dist,
             setDepth: noop, invalidatePoseChannels: noop, setVisible: noop, updateUpright: (...a) => { drawn.push(a[4]); w.__guard = a[6]; },
@@ -83,6 +84,13 @@ test('aftermath alone keeps its bend-only back motif; sellart alone adds nothing
         const { w, drawn } = standing({ backWaist: false });
         w.draw();
         assert.equal(drawn.at(-1).lArm, IDLE.lArm, 'George-style rig: no hand motif');
+        assert.ok(drawn.at(-1).bend > 0.1);
+    });
+    withFlag(BOTH, () => {
+        const { w, drawn } = standing({ backSell: false });
+        w.draw();
+        assert.equal(drawn.at(-1).lArm, IDLE.lArm, 'a backWaist without backSell data: no hand motif, Lou\'s numbers are not borrowed');
+        assert.equal(drawn.at(-1).lElbow, IDLE.lElbow);
         assert.ok(drawn.at(-1).bend > 0.1);
     });
 });

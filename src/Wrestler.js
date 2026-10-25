@@ -15,7 +15,8 @@ import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
-import { HOLD, holdWeight, RECOVERY_BACK_HAND, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
+import { holdWeight, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
+import { backSellSupport } from './rig/backSell.js';
 import { staggerFor } from './animation/staggers.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
@@ -1026,10 +1027,9 @@ export default class Wrestler {
         if (!cur) {
             this._sell = null;
             // ?sellart=v1 (D4): a back clutch that was the last sell does not return the hand to
-            // rest; it settles into the lying hold. Needs this rig's painted backWaist.
+            // rest; it settles into the lying hold. Needs a rig that supports the back sell.
             const last = sell.plan.at(-1);
-            if (sellArtCandidate() && last.name === 'clutch' && last.part === 'back'
-                && this.skeleton?.torso?._semanticAnchors?.backWaist)
+            if (sellArtCandidate() && last.name === 'clutch' && last.part === 'back' && this._backSell().ok)
                 this._hold = { t: Math.max(0, sell.t), lying: this.lying };
             return;
         }
@@ -1046,9 +1046,9 @@ export default class Wrestler {
         const slot = cur.name === 'clutch' ? groundedSlot(cur.limb, sell.facing0, cur.lying, this.skeleton, cur.rolls) : null;
         // The last back clutch ends on the lying hold's weight, not on rest (D4), so the hand
         // is already where the hold starts when the clutch lets go.
-        const toHold = cur.name === 'clutch' && cur.part === 'back' && sell.i === sell.plan.length - 1
-            && sellArtCandidate() && !!this.skeleton?.torso?._semanticAnchors?.backWaist;
-        const def = cur.name === 'clutch' ? clutchSell(cur.lying, cur.part, cur.duration, slot ?? 'near', toHold ? HOLD.w : 0) : SELLS[cur.lying][cur.name];
+        const backSell = sellArtCandidate() ? this._backSell() : null;
+        const toHold = cur.name === 'clutch' && cur.part === 'back' && sell.i === sell.plan.length - 1 && !!backSell?.ok;
+        const def = cur.name === 'clutch' ? clutchSell(cur.lying, cur.part, cur.duration, slot ?? 'near', toHold ? backSell.data.holdW : 0) : SELLS[cur.lying][cur.name];
         const keys = cur.turned ? def.after : def.keys;
         const lying = cur.turned ? def.to : cur.lying;
         const { d, reach } = sampleSell(keys, u, cur.amp);
@@ -1060,6 +1060,12 @@ export default class Wrestler {
         return { g: cur.name === 'roll' ? g : limitKnees(g), reach: hands };
     }
 
+    // Whether this rig runs the back sell and on what numbers: { ok, reason, gripArt, contact, data }
+    // (rig/backSell.js). The one gate; a rig without its own backSell data never runs it.
+    _backSell() {
+        return backSellSupport(this.skeleton);
+    }
+
     // The lying hold's current reach weight, or null. Applies only on the mat in `down`
     // with no sell, move, choreography or ground handoff owning the pose; any of those
     // claims the pose and the hold simply is not drawn that frame.
@@ -1068,7 +1074,8 @@ export default class Wrestler {
         if (!h || !sellArtCandidate() || this.state !== 'down' || this._sell || this._activeMove
             || this._groundHandoff || h.lying !== this.lying
             || (this._choreoUntil ?? 0) > (this.scene?.time?.now ?? 0)) return null;
-        return { w: holdWeight(h.t) };
+        const backSell = this._backSell();
+        return backSell.ok ? { w: holdWeight(h.t, backSell.data.holdW) } : null;
     }
 
     // The sole grounded-sell appearance writer. Complete selections reset the
@@ -1104,8 +1111,9 @@ export default class Wrestler {
             // Art from the measured contact distance (latch with dwell), not from the phase.
             // A rig that cannot measure keeps the phase rule: grip while the reach is on.
             const dist = this.skeleton?.backContactDistance?.();
-            if (Number.isFinite(dist)) {
-                this._gripLatch = stepGripLatch(this._gripLatch ?? newGripLatch(false), dist, now);
+            const backSell = this._backSell();
+            if (Number.isFinite(dist) && backSell.ok) {
+                this._gripLatch = stepGripLatch(this._gripLatch ?? newGripLatch(false), dist, now, backSell.data.contactPx);
                 if (this._gripLatch.on) parts = nearGripParts(this.skeleton, textureExists);
             } else parts = hold ? nearGripParts(this.skeleton, textureExists)
                 : backRiseParts(this.riseT, this.skeleton, textureExists);
@@ -1126,7 +1134,7 @@ export default class Wrestler {
         if (this._riseFrom > 0) ctx.from = this._riseFrom;
         if (plantCandidate()) ctx.plant = true;
         // D5: a rise that will hand off into a carried recovery keeps its reach to the end
-        if (aftermathCandidate() && this.skeleton?.torso?._semanticAnchors?.backWaist) ctx.carry = true;
+        if (aftermathCandidate() && this._backSell().ok) ctx.carry = true;
         return ctx;
     }
 
@@ -1761,7 +1769,7 @@ export default class Wrestler {
     }
 
     // True while the standing back-recovery carries the near hand on the back (?sellart=v1
-    // on top of ?aftermath=v2, a rig with a painted backWaist). Touches nothing.
+    // on top of ?aftermath=v2, a rig that supports the back sell). Touches nothing.
     _recoveryHandOnBack() {
         return this._recoveryHandWeight() > 0;
     }
@@ -1770,7 +1778,7 @@ export default class Wrestler {
     // (D5), where the hand starts full (carried rise weight x the back envelope, no fade-in).
     _recoveryHandWeight() {
         const pain = this._pain;
-        if (!sellArtCandidate() || pain?.part !== 'back' || !this.skeleton?.torso?._semanticAnchors?.backWaist) return 0;
+        if (!sellArtCandidate() || pain?.part !== 'back' || !this._backSell().ok) return 0;
         return pain.carried > 0 ? pain.carried * this._recoveryWeight(false) : this._recoveryWeight();
     }
 
@@ -1802,11 +1810,13 @@ export default class Wrestler {
         } else if (pain.part === 'back') {
             pose.bend = (pose.bend ?? 0) + 0.12 * w;
             // ?sellart=v1 (D3 option A): the near hand rests at the back waist. The offsets are
-            // the probed ones for the near l-channels; only a rig with a painted backWaist (Lou).
+            // the rig's probed ones for the near l-channels (textures.backSell); hw > 0 means the
+            // rig supports the back sell.
+            const bs = hw > 0 ? this._backSell().data : null;
             if (hw > 0 && pain.carried > 0 && pain.riseEnd) {
                 // D5: absolute near-arm channels, from the rise's end arm into the probed pose
                 const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
-                const to = carriedHandTarget(pain.riseEnd, this.scene.time.now - pain.since);
+                const to = carriedHandTarget(pain.riseEnd, this.scene.time.now - pain.since, settledBackHand(bs, POSES[this.idlePose] ?? POSES.idle));
                 const arm0 = pose[`${n}Arm`] ?? 0;
                 pose[`${n}Arm`] = arm0 + (to.arm - arm0) * hw;
                 if (Number.isFinite(pose[`${n}Elbow`])) pose[`${n}Elbow`] += (to.elbow - pose[`${n}Elbow`]) * hw;
@@ -1816,12 +1826,12 @@ export default class Wrestler {
                 }
             } else if (hw > 0) {
                 const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
-                pose[`${n}Arm`] = (pose[`${n}Arm`] ?? 0) + RECOVERY_BACK_HAND.arm * w;
+                pose[`${n}Arm`] = (pose[`${n}Arm`] ?? 0) + bs.recoveryArm * w;
                 // the pose's own elbow owner: local flex if it carries one (the live pose does),
                 // else the legacy absolute forearm, which needs the arm's swing added back
-                if (Number.isFinite(pose[`${n}Elbow`])) pose[`${n}Elbow`] += RECOVERY_BACK_HAND.elbow * w;
-                else pose[`${n}Forearm`] = (pose[`${n}Forearm`] ?? ((pose[`${n}Arm`] ?? 0) - RECOVERY_BACK_HAND.arm * w + 0.70))
-                    + (RECOVERY_BACK_HAND.elbow + RECOVERY_BACK_HAND.arm) * w;
+                if (Number.isFinite(pose[`${n}Elbow`])) pose[`${n}Elbow`] += bs.recoveryElbow * w;
+                else pose[`${n}Forearm`] = (pose[`${n}Forearm`] ?? ((pose[`${n}Arm`] ?? 0) - bs.recoveryArm * w + 0.70))
+                    + (bs.recoveryElbow + bs.recoveryArm) * w;
             }
         } else {
             return null; // motifs exist for the two pilots only

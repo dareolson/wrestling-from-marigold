@@ -7,6 +7,7 @@ import {
 } from './rig/twoAnchorBinding.js';
 import { childAngleFromLocalFlex, localFlexFromChildAngle, JOINT_LIMITS } from './rig/articulation.js';
 import { backRiseWeight, PLANT, plantWeight } from './animation/backRisePerformance.js';
+import { backSellSupport } from './rig/backSell.js';
 
 // updateUpright draws every arm and forearm this much (facing-signed) past the pose channels.
 const UPRIGHT_ARM_FWD = 0.09;
@@ -2258,9 +2259,7 @@ export default class Skeleton {
         const solved = { ...g };
         for (const [side, r] of sides) {
             const S = pts[`${side}Shoulder`], E = pts[`${side}Elbow`], W = pts[`${side}Wrist`];
-            const back = paintedContacts && backContact && r.to?.endsWith('Hip')
-                && this.torso?._semanticAnchors?.backWaist
-                ? Skeleton.imageAnchorPoint(this.torso, this.torso._semanticAnchors.backWaist) : null;
+            const back = paintedContacts && backContact && r.to?.endsWith('Hip') ? this.backWaistPoint() : null;
             const T = r.at ?? back ?? Skeleton.groundedTarget(pts, r.to, s);
             if (!S || !E || !W || !T) continue;
             // An authored point on a baked hand is distinct from the logical
@@ -2352,16 +2351,29 @@ export default class Skeleton {
         return { elbow, hand };
     }
 
-    // Distance (px) from the near hand's contact to the torso's painted backWaist, from
-    // the pose last drawn: the painted clutch patch of the active near forearm if it has
-    // one, else the wrist. Null when the rig has no backWaist or has not been drawn.
-    backContactDistance() {
-        const anchor = this.torso?._semanticAnchors?.backWaist;
-        if (!anchor) return null;
-        const waist = Skeleton.imageAnchorPoint(this.torso, anchor);
+    // The torso's painted backWaist as a world point, only on a rig that supports the back sell
+    // (rig/backSell.js: the anchor AND its backSell data). A rig with the anchor alone gets null,
+    // so it keeps aiming at the hip joint exactly as it did before it had one.
+    backWaistPoint() {
+        if (!backSellSupport(this).ok) return null;
+        return Skeleton.imageAnchorPoint(this.torso, this.torso._semanticAnchors.backWaist);
+    }
+
+    // The near hand's contact and its distance (px) to the painted backWaist, from the pose last
+    // drawn: { dist, contact } with contact 'clutchPatch' (the painted patch of the active near
+    // forearm) or 'wristProxy' (no patch on the active art: the wrist stands in). Null when the rig
+    // does not support the back sell or has not been drawn.
+    backContact() {
+        const waist = this.backWaistPoint();
+        if (!waist) return null;
         const near = this.nearForearm, patch = near?._semanticAnchors?.clutch;
-        const contact = (patch && Skeleton.imageAnchorPoint(near, patch)) || this.jointAttachmentPoints?.nearWrist;
-        return waist && contact ? Math.hypot(contact.x - waist.x, contact.y - waist.y) : null;
+        const painted = patch ? Skeleton.imageAnchorPoint(near, patch) : null;
+        const contact = painted || this.jointAttachmentPoints?.nearWrist;
+        return contact ? { dist: Math.hypot(contact.x - waist.x, contact.y - waist.y), contact: painted ? 'clutchPatch' : 'wristProxy' } : null;
+    }
+
+    backContactDistance() {
+        return this.backContact()?.dist ?? null;
     }
 
     // Normalized source-image anchor -> displayed world point, including the

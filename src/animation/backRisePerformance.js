@@ -22,15 +22,15 @@ export function backRiseWeight(t, from = 0, peak = 1, carry = false) {
 }
 
 // Lying hold (D4, ?sellart=v1): after a back clutch lets go, the near hand settles
-// at the small of the back at weight `w` with a slow authored breath, instead of
-// returning to rest. `w` is the lowest centre weight whose breathing trough keeps
-// both hand arts (grip and fist) within 15 px of backWaist on Lou, both facings
-// (tools/debug/hold_weight_sweep.mjs: grip <= 15 px from w .67, fist from w .70;
-// trough = w - breath = .72). A pure function of seconds since the clutch ended.
-export const HOLD = Object.freeze({ w: 0.80, breath: 0.08, periodSec: 1.6 });
-export function holdWeight(sinceReleaseSec) {
-    if (!Number.isFinite(sinceReleaseSec) || sinceReleaseSec < 0) return HOLD.w;
-    return HOLD.w + HOLD.breath * Math.sin(2 * Math.PI * sinceReleaseSec / HOLD.periodSec);
+// at the small of the back at weight `holdW` with a slow authored breath, instead of
+// returning to rest. `holdW` is RIG DATA (textures.backSell.holdW, rig/backSell.js): the lowest
+// centre weight whose breathing trough (holdW - breath) keeps the contact within the rig's
+// contactPx of backWaist on both facings (tools/debug/hold_weight_sweep.mjs; Lou: .80). The
+// breath is the same for every rig. A pure function of seconds since the clutch ended.
+export const HOLD_BREATH = Object.freeze({ breath: 0.08, periodSec: 1.6 });
+export function holdWeight(sinceReleaseSec, holdW) {
+    if (!Number.isFinite(sinceReleaseSec) || sinceReleaseSec < 0) return holdW;
+    return holdW + HOLD_BREATH.breath * Math.sin(2 * Math.PI * sinceReleaseSec / HOLD_BREATH.periodSec);
 }
 
 // Far (support) hand plant during the same rise. Visual-only, a pure function of
@@ -48,22 +48,26 @@ export function plantWeight(t, tLift) {
 
 // Standing recovery, back (D3 option A, ?sellart=v1 + ?aftermath=v2): offsets added x the
 // recovery weight to the near-arm l-channels of the pose he is standing in, so the near
-// hand rests at the back waist while the hurt is carried. Probed on Procreate Lou's LIVE
-// settled pose, which carries local elbow flex (tools/debug/recovery_probe.mjs): lArm -1.2 /
-// lElbow +1.5 puts the painted contact 2.33 px from backWaist, both facings, elbow flex
-// 125.8 deg (limit 157.6). A pose that still carries only the legacy absolute forearm
-// takes the same relative bend: forearm offset = elbow - arm.
-export const RECOVERY_BACK_HAND = Object.freeze({ arm: -1.2, elbow: 1.5 });
+// hand rests at the back waist while the hurt is carried. The offsets are RIG DATA
+// (textures.backSell.recoveryArm / recoveryElbow), probed on the rig's LIVE settled pose, which
+// carries local elbow flex (tools/debug/recovery_probe.mjs; Lou: arm -1.2 / elbow +1.5 puts the
+// painted contact 2.33 px from backWaist, both facings, elbow flex 125.8 deg, limit 157.6).
+// A pose that still carries only the legacy absolute forearm takes the same relative bend:
+// forearm offset = elbow - arm.
 
 // D5 (carried rise): the standing hand starts on the arm the rise ended on (`riseEnd`,
 // Skeleton.carriedRiseEndArm, upright channels) and eases over ARM_SETTLE_MS into the probed
-// back-hand pose above, now as absolute channels on Lou's settled idle (lArm .04, lElbow .70
-// plus the probed offsets). Absolute because the live pose is still tweening to idle on the
-// first standing frames. A pure function of (riseEnd, ms since standing).
+// back-hand pose, now as absolute channels on the rig's settled idle (`settledBackHand`).
+// Absolute because the live pose is still tweening to idle on the first standing frames.
+// A pure function of (riseEnd, ms since standing, the settled back hand).
 export const ARM_SETTLE_MS = 300;
-export const RECOVERY_BACK_HAND_ABS = Object.freeze({ arm: 0.04 + RECOVERY_BACK_HAND.arm, elbow: 0.70 + RECOVERY_BACK_HAND.elbow });
-export function carriedHandTarget(riseEnd, sinceMs) {
+// The settled idle plus the rig's probed offsets. The settled arm is DERIVED: the idle pose's own
+// `lArm` (`idle` = POSES[wrestler.idlePose]), which is what the live settled pose carries; the
+// settled elbow is the rig's `backSell.settledElbow`.
+export const settledBackHand = (backSell, idle) => ({
+    arm: (idle?.lArm ?? 0) + backSell.recoveryArm, elbow: backSell.settledElbow + backSell.recoveryElbow });
+export function carriedHandTarget(riseEnd, sinceMs, settled) {
     const u = smooth(sinceMs / ARM_SETTLE_MS);
-    return { arm: riseEnd.arm + (RECOVERY_BACK_HAND_ABS.arm - riseEnd.arm) * u,
-        elbow: riseEnd.elbow + (RECOVERY_BACK_HAND_ABS.elbow - riseEnd.elbow) * u };
+    return { arm: riseEnd.arm + (settled.arm - riseEnd.arm) * u,
+        elbow: riseEnd.elbow + (settled.elbow - riseEnd.elbow) * u };
 }

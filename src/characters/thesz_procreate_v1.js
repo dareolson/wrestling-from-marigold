@@ -172,6 +172,18 @@ export const theszProcreateV1 = {
             // trunks. Candidate pain acting presses here instead of the hip joint.
             semanticAnchors: { backWaist: { u: 0.22, v: 0.60 } },
         },
+        // The back sell's numbers for THIS rig (src/rig/backSell.js is the contract: the sell runs only
+        // with this AND the backWaist above). settledArm is not stored: it is this rig's idle lArm
+        // (POSES.theszProcreateIdle, .04). Values moved here unchanged from backRisePerformance.js /
+        // sellAppearance.js (PLAN_GEORGE_TRANSFER T1.3); tests/backSellLouFixture.test.js pins them.
+        backSell: {
+            holdW: 0.80,          // grip <= 15 px from w .67, fist from w .70; trough = .80 - .08 = .72
+            recoveryArm: -1.2,    // painted contact 2.33 px from backWaist, both facings, elbow flex 125.8 deg (limit 157.6)
+            recoveryElbow: 1.5,
+            settledElbow: 0.70,   // what tweenPose('idle') settles on (REST_POSE.lElbow)
+            contactPx: 15,        // Lou's painted grip cup
+            evidence: 'tools/debug/hold_weight_sweep.mjs (holdW, 81fe5bf 2026-10-24); tools/debug/recovery_probe.mjs (recoveryArm/Elbow, 2fa6c0b + a822721 2026-10-24); contactPx 15: PLAN_SUPLEX_RISE T4.0, measured to the painted grip cup',
+        },
         // Inverted, painted crown below the hip pivot, in this rig's own units
         // (after heightScale; measured
         // 2026-10-15 at the piledriver impact, tilt PI): a clip's crown-on-mat

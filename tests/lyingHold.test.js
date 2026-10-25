@@ -5,20 +5,26 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Wrestler from '../src/Wrestler.js';
 import Skeleton from '../src/Skeleton.js';
-import { backRiseWeight, HOLD, holdWeight } from '../src/animation/backRisePerformance.js';
+import { backRiseWeight, HOLD_BREATH, holdWeight as holdWeightAt } from '../src/animation/backRisePerformance.js';
 import { sampleSell, clutchSell } from '../src/animation/sells.js';
-import { GRIP_CONTACT_PX, GRIP_REFRACTORY_MS, newGripLatch, stepGripLatch } from '../src/animation/sellAppearance.js';
+import { GRIP_REFRACTORY_MS, newGripLatch, stepGripLatch as stepLatchAt } from '../src/animation/sellAppearance.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 import { onlyListed } from './support/promotedFlags.js';
 
 const ON = '?sellart=v1';
+// Lou's numbers live on his rig (textures.backSell); these keep the tests' old vocabulary.
+const BACK_SELL = theszProcreateV1.textures.backSell;
+const HOLD = { w: BACK_SELL.holdW, ...HOLD_BREATH };
+const GRIP_CONTACT_PX = BACK_SELL.contactPx;
+const holdWeight = t => holdWeightAt(t, BACK_SELL.holdW);
+const stepGripLatch = (state, dist, now) => stepLatchAt(state, dist, now, GRIP_CONTACT_PX);
 function withFlag(search, fn) {
     const prior = globalThis.location;
     if (search === undefined) delete globalThis.location; else globalThis.location = { search: onlyListed(search) };
     try { return fn(); } finally { if (prior === undefined) delete globalThis.location; else globalThis.location = prior; }
 }
 const noop = () => {};
-function fixture({ backWaist = true, part = 'back', dist = null } = {}) {
+function fixture({ backWaist = true, backSell = true, part = 'back', dist = null } = {}) {
     const calls = [], grounded = [], rises = [];
     const w = Object.assign(Object.create(Wrestler.prototype), {
         scene: { time: { now: 1000 }, tweens: { killTweensOf: noop, add: () => ({ stop() {} }) } },
@@ -29,7 +35,7 @@ function fixture({ backWaist = true, part = 'back', dist = null } = {}) {
         _pain: { phase: 'mat', part, severity: 1, planned: true },
         gfx: { clear: noop, setDepth: noop, fillStyle: noop, fillEllipse: noop },
         skeleton: {
-            _textureConfig: theszProcreateV1.textures, lChannelSide: () => 'near', setPartVariants: p => calls.push({ ...p }),
+            _textureConfig: backSell ? theszProcreateV1.textures : { ...theszProcreateV1.textures, backSell: undefined }, lChannelSide: () => 'near', setPartVariants: p => calls.push({ ...p }),
             torso: backWaist ? { _semanticAnchors: { backWaist: { u: 0.22, v: 0.6 } } } : {},
             backContactDistance: () => w.__dist,
             setDepth: noop, invalidatePoseChannels: noop, setVisible: noop,
@@ -118,7 +124,7 @@ test('the last back clutch starts the hold; other parts, other rigs and the flag
         w._tickSell(0.5);
         assert.ok(Math.abs(w._hold.t - 0.51) < 1e-9);
         assert.equal(w._lyingHold().w, holdWeight(0.51));
-        for (const over of [{ part: 'head' }, { part: 'knee' }, { backWaist: false }]) {
+        for (const over of [{ part: 'head' }, { part: 'knee' }, { backWaist: false }, { backSell: false }]) {
             const f = fixture(over); f.w._tickSell(0.02);
             assert.equal(f.w._hold, null, JSON.stringify(over));
         }

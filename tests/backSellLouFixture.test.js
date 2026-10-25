@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
-import Wrestler from '../src/Wrestler.js';
+import Wrestler, { POSES } from '../src/Wrestler.js';
 import * as perf from '../src/animation/backRisePerformance.js';
 import * as appearance from '../src/animation/sellAppearance.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
@@ -24,18 +24,19 @@ const IDLE = { lLeg: -0.05, rLeg: 0.14, lArm: 0.04, rArm: 0.17, lean: 0.05, crou
 const range = (a, b, step) => { const out = []; for (let i = 0; a + i * step <= b + 1e-9; i++) out.push(+(a + i * step).toFixed(6)); return out; };
 
 // ── the calls the back sell makes, in one place, so a refactor of their signatures edits this block only ──
-const lou = { textures: theszProcreateV1.textures };
-const hold = sec => perf.holdWeight(sec);
+// (T1.3 moved Lou's numbers from module constants into textures.backSell; the stored shape below is the old one.)
+const lou = { textures: theszProcreateV1.textures, bs: theszProcreateV1.textures.backSell, idle: POSES[theszProcreateV1.idlePose] };
+const hold = sec => perf.holdWeight(sec, lou.bs.holdW);
 const rise = (t, from, peak, carry) => perf.backRiseWeight(t, from, peak, carry);
-const handTarget = (riseEnd, ms) => perf.carriedHandTarget(riseEnd, ms);
-const latchStep = (state, dist, now) => appearance.stepGripLatch(state, dist, now);
-const louValues = () => ({ hold: { ...perf.HOLD }, recoveryBackHand: { ...perf.RECOVERY_BACK_HAND },
-    recoveryBackHandAbs: { ...perf.RECOVERY_BACK_HAND_ABS }, armSettleMs: perf.ARM_SETTLE_MS, gripContactPx: appearance.GRIP_CONTACT_PX });
+const handTarget = (riseEnd, ms) => perf.carriedHandTarget(riseEnd, ms, perf.settledBackHand(lou.bs, lou.idle));
+const latchStep = (state, dist, now) => appearance.stepGripLatch(state, dist, now, lou.bs.contactPx);
+const louValues = () => ({ hold: { w: lou.bs.holdW, ...perf.HOLD_BREATH }, recoveryBackHand: { arm: lou.bs.recoveryArm, elbow: lou.bs.recoveryElbow },
+    recoveryBackHandAbs: { ...perf.settledBackHand(lou.bs, lou.idle) }, armSettleMs: perf.ARM_SETTLE_MS, gripContactPx: lou.bs.contactPx });
 
 function standing({ facing = 1, side = 'near', now = 1000, since = 1000, until = 3500, pose = IDLE } = {}) {
     const w = Object.assign(Object.create(Wrestler.prototype), {
         scene: { time: { now }, tweens: { add: () => ({ stop() {} }) } },
-        x: 400, y: 380, _heightScale: 1, facing, state: 'standing', lying: 'supine',
+        x: 400, y: 380, _heightScale: 1, facing, state: 'standing', lying: 'supine', idlePose: theszProcreateV1.idlePose,
         skinCol: 0, trunksCol: 0, stamina: 100, moveBlend: 0, walkPhase: 0, combatBlend: 0, pose: { ...pose },
         _activeMove: null, _choreoUntil: 0, _floorContacts: null, _sell: null, _groundHandoff: null, _hold: null, _riseFrom: 0, _gripLatch: null,
         stateTimer: 0, input: { isDown: () => false, justDown: () => false },
@@ -107,6 +108,6 @@ test('the snapshot is not vacuous: the hand moves, the hold breathes, the carrie
     const h = s.holdWeight.map(([, v]) => v);
     assert.ok(Math.max(...h) - Math.min(...h) > 0.1);
     const c = s.carriedHandTarget.a;
-    assert.ok(Math.abs(c.at(-1)[1].arm - perf.RECOVERY_BACK_HAND_ABS.arm) < 1e-9);
+    assert.ok(Math.abs(c.at(-1)[1].arm - perf.settledBackHand(lou.bs, lou.idle).arm) < 1e-9);
     assert.ok(s.gripLatch.some(r => r[2]) && s.gripLatch.some(r => !r[2]));
 });

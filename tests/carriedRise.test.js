@@ -5,14 +5,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Skeleton from '../src/Skeleton.js';
-import Wrestler from '../src/Wrestler.js';
-import { backRiseWeight, carriedHandTarget, ARM_SETTLE_MS, RECOVERY_BACK_HAND_ABS, RECOVERY_BACK_HAND } from '../src/animation/backRisePerformance.js';
+import Wrestler, { POSES } from '../src/Wrestler.js';
+import { backRiseWeight, carriedHandTarget as carriedHandTargetTo, ARM_SETTLE_MS, settledBackHand } from '../src/animation/backRisePerformance.js';
 import { JOINT_LIMITS } from '../src/rig/articulation.js';
 import { newGripLatch } from '../src/animation/sellAppearance.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 import { onlyListed } from './support/promotedFlags.js';
 
 const BOTH = '?sellart=v1&aftermath=v2';
+// Lou's numbers live on his rig (textures.backSell); these keep the tests' old vocabulary.
+const BACK_SELL = theszProcreateV1.textures.backSell;
+const RECOVERY_BACK_HAND = { arm: BACK_SELL.recoveryArm, elbow: BACK_SELL.recoveryElbow };
+const RECOVERY_BACK_HAND_ABS = settledBackHand(BACK_SELL, POSES[theszProcreateV1.idlePose]);
+const carriedHandTarget = (riseEnd, ms) => carriedHandTargetTo(riseEnd, ms, RECOVERY_BACK_HAND_ABS);
 const withFlag = (search, fn) => { globalThis.location = { search: onlyListed(search) }; try { return fn(); } finally { delete globalThis.location; } };
 const noop = () => {};
 
@@ -96,17 +101,17 @@ test('the rise-end arm is cached per scale/facing/peak and identical in pose spa
 // ── Wrestler wiring ────────────────────────────────────────────────────────────────────────────
 const IDLE = { lLeg: -0.05, rLeg: 0.14, lArm: 0.04, rArm: 0.17, lean: 0.05, crouch: 0.05, lElbow: 0.7, rElbow: 0.7, lShin: -0.11, rShin: -0.06 };
 const END = { arm: -1.205, elbow: 2.26 };
-function fixture({ backWaist = true, state = 'standing', pain, now = 1000 } = {}) {
+function fixture({ backWaist = true, backSell = true, state = 'standing', pain, now = 1000 } = {}) {
     const drawn = [], guards = [], calls = [];
     const w = Object.assign(Object.create(Wrestler.prototype), {
         scene: { time: { now }, tweens: { add: () => ({ stop() {} }) } },
-        x: 400, y: 380, _heightScale: 1, facing: 1, state, lying: 'supine',
+        x: 400, y: 380, _heightScale: 1, facing: 1, state, lying: 'supine', idlePose: theszProcreateV1.idlePose,
         skinCol: 0, trunksCol: 0, stamina: 100, moveBlend: 0, walkPhase: 0, combatBlend: 0.9, pose: { ...IDLE },
         _activeMove: null, _choreoUntil: 0, _floorContacts: null, _sell: null, _hold: null, _riseFrom: 0, _gripLatch: null,
         stateTimer: 0, input: { isDown: () => false, justDown: () => false },
         gfx: { clear: noop, setDepth: noop, fillStyle: noop, fillEllipse: noop },
         skeleton: {
-            _textureConfig: theszProcreateV1.textures, lChannelSide: () => 'near', setPartVariants: p => calls.push({ ...p }),
+            _textureConfig: backSell ? theszProcreateV1.textures : { ...theszProcreateV1.textures, backSell: undefined }, lChannelSide: () => 'near', setPartVariants: p => calls.push({ ...p }),
             torso: backWaist ? { _semanticAnchors: { backWaist: { u: 0.22, v: 0.6 } } } : {},
             backContactDistance: () => 5, carriedRiseEndArm: () => ({ ...END }),
             setDepth: noop, invalidatePoseChannels: noop, setVisible: noop,
@@ -124,6 +129,7 @@ test('the rise context carries `carry` only with both flags and a painted backWa
     assert.equal(ctxOf(BOTH)?.carry, true);
     assert.equal(ctxOf('?sellart=v1')?.carry, undefined, 'sellart alone: not carried');
     assert.equal(ctxOf(BOTH, { backWaist: false })?.carry, undefined, 'no painted backWaist: not carried');
+    assert.equal(ctxOf(BOTH, { backSell: false })?.carry, undefined, 'backWaist but no backSell data: not carried');
     assert.equal(ctxOf('?aftermath=v2'), null, 'aftermath alone: no rise context at all');
     withFlag(BOTH, () => {
         const { w } = fixture({ state: 'gettingUp', pain: { phase: 'rise', part: 'back', severity: 0.6 } });

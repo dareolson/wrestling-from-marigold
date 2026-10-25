@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>George back sell G7 viewer</title>
+<style>
+  :root { --bg:#f6f6f4; --panel:#fff; --ink:#1d1d1b; --mute:#6b6b66; --line:#dcdcd6; --accent:#1b6ca8; --warn:#b3261e; --ok:#2e7d4f; --warnbg:#fdecea; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161616; --panel:#202020; --ink:#ececea; --mute:#9a9a94; --line:#383836; --accent:#6fb1e3; --warn:#ff8a7a; --ok:#6fcf97; --warnbg:#3a1f1c; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui,-apple-system,sans-serif; }
+  main { max-width:1500px; margin:0 auto; padding:16px; }
+  h1 { font-size:18px; margin:0 0 2px; } h2 { font-size:14px; margin:20px 0 8px; }
+  .sub { color:var(--mute); margin:0 0 10px; max-width:110ch; }
+  .miss { background:var(--warnbg); border:1px solid var(--warn); border-radius:8px; padding:10px 14px; margin:10px 0; }
+  .miss h2 { margin:0 0 4px; color:var(--warn); } .miss li { margin:4px 0; }
+  .miss .n, .n { font-variant-numeric:tabular-nums; font-weight:600; }
+  .proxy { background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:6px; padding:8px 12px; margin:10px 0; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px; position:sticky; top:0; z-index:5; }
+  button { font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:5px 10px; cursor:pointer; }
+  button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button:focus-visible, input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .scrub { flex:1 1 320px; min-width:200px; } .scrub input { width:100%; }
+  .time { font-variant-numeric:tabular-nums; min-width:92px; text-align:right; }
+  .views, .events { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .cols { display:grid; grid-template-columns:repeat(var(--n,3),1fr); gap:10px; margin-top:12px; }
+  figure { margin:0; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  figure img { display:block; width:100%; height:auto; background:#888; aspect-ratio:560/340; }
+  figcaption { padding:8px 10px; font-size:13px; }
+  figcaption b { font-size:14px; }
+  .mono { font-variant-numeric:tabular-nums; font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mute); }
+  .tag { display:inline-block; font-size:11px; padding:0 6px; border-radius:4px; border:1px solid var(--line); color:var(--mute); margin-right:4px; }
+  .far { color:var(--warn); font-weight:600; } .near { color:var(--ok); font-weight:600; }
+  svg { width:100%; height:auto; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+  table { border-collapse:collapse; width:100%; background:var(--panel); border:1px solid var(--line); }
+  th, td { text-align:left; padding:4px 9px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; vertical-align:top; }
+  th { color:var(--mute); font-weight:600; } td.num, th.num { text-align:right; }
+  td.bad { color:var(--warn); font-weight:600; } td.good { color:var(--ok); font-weight:600; }
+  .tablewrap { overflow-x:auto; }
+  .notes { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 14px 10px 30px; margin:0; } .notes li { margin:3px 0; }
+  @media (max-width:900px) { .cols { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>George and Lou, back sell after Rev 2 (G7)</h1>
+  <p class="sub" id="sub"></p>
+
+  <div class="miss" id="misses"></div>
+  <div class="proxy"><b>George's hand:</b> baked fist, wrist proxy, grip art pending from Codex. Rev 2 moves his back-waist anchor from 6 px inside the back contour (candidate C) to the contour itself (candidate A) and draws his near forearm behind the torso while the grip latch is on (<code>backSell.handUnder</code>). The forearm art never changes; the contact is measured from his wrist.</div>
+
+  <div class="bar" role="group" aria-label="Playback">
+    <button id="play" aria-label="Play or pause">Play</button>
+    <button id="s1" class="on">1×</button><button id="s05">0.5×</button>
+    <button id="stepb" title="Back one frame (30 fps)">‹ frame</button><button id="stepf" title="Forward one frame">frame ›</button>
+    <div class="scrub"><input id="scrub" type="range" min="0" max="1" step="1" value="0" aria-label="Scrub"></div>
+    <div class="time" id="time">0 ms</div>
+  </div>
+  <div class="events" id="events" aria-label="Jump to event"></div>
+  <div class="views" id="views" role="group" aria-label="Choose what to compare"></div>
+  <p class="sub" id="blurb" style="margin-top:8px"></p>
+
+  <div class="cols" id="cols"></div>
+  <p class="sub" style="margin-top:6px">Clock is game ms from impact, from each run's manifest; frames are 30 fps. 1× plays the stored game time in real time. Rise start (5517 ms) and standing (6550 ms) are the same in every run; the sell plan before them is not (clutch timing differs between films), which is why each card says which kind of run it is.</p>
+
+  <h2>Near hand contact to painted back waist (px), this view</h2>
+  <div id="curve"></div>
+
+  <h2>Hold → rise: step at the swap, per part (px)</h2>
+  <div class="tablewrap" id="holdrise"></div>
+
+  <h2>George's hold at backWaist A (re-measured, T6.4)</h2>
+  <div class="tablewrap" id="holdnums"></div>
+
+  <h2>Numbers for every run on this page</h2>
+  <div class="tablewrap" id="runtable"></div>
+
+  <h2>Latch flips and depth swaps</h2>
+  <div class="tablewrap" id="swaptable"></div>
+
+  <h2>Not claimed</h2>
+  <ul class="notes">
+    <li>These are measurements and frames. Whether George's hand is under his back (not on his belly) while lying, rising and standing, whether the legs read as pain, and whether Lou keeps the legs and breath are Derek's calls.</li>
+    <li>The sell plan is chosen per run, so a before film and an after film are matched on the kind of run (last sell a back clutch), not frame for frame; the clutch timing differs between them.</li>
+    <li>Legs during a lying wait with no hold (writhe last), the prone rise's missing hand and the facing turn are not touched by Rev 2.</li>
+    <li>George has no grip donor: his hand is the baked fist and the contact is his wrist.</li>
+  </ul>
+</main>
+<script src="g7/data.js"></script>
+<script>
+(() => {
+  const G = window.G7, $ = id => document.getElementById(id);
+  const EVENT_BTNS = [['impact','Impact'],['clutchPeak','Clutch peak'],['riseStart','Rise start'],['rise055','Rise .55'],['rise085','Rise .85'],['standing','Standing'],['recovery+200ms','+0.2 s'],['recovery+1000ms','+1 s'],['recovery+2000ms','+2 s']];
+  const KIND = { 1: 'back clutch last, stays on his back', 2: 'rolled onto his front first, prone rise', 3: 'writhe last, no back clutch' };
+  const ev0 = Object.values(G.rows)[0].events;
+  const all = Object.values(G.rows);
+  const gitOf = s => (all.find(r => r.state === s) || {git: {}}).git.commit;
+  const STATE = { before: `BEFORE Rev 2 (${gitOf('before')})`, after: `AFTER Rev 2 (${gitOf('after')})` };
+  let view = G.views[0], t = ev0.impact, speed = 1, playing = false, last = 0, idx = {};
+  const fmt = v => (v >= 0 ? '+' : '−') + Math.abs(Math.round(v)) + ' ms';
+  const at = (arr, ms) => { let lo = 0, hi = arr.length - 1, k = 0; while (lo <= hi) { const m = (lo + hi) >> 1; if (arr[m][0] <= ms) { k = m; lo = m + 1; } else hi = m - 1; } return arr[k]; };
+  const rowsOf = v => v.rows.map(id => G.rows[id]);
+  const tMin = () => Math.max(...rowsOf(view).map(r => r.frames[0][0]));
+  const tMax = () => Math.min(...rowsOf(view).map(r => r.frames.at(-1)[0]));
+  const win = (r, k) => r.numbers?.windows?.[k];
+  const wtxt = x => x ? `${x.ms ?? 'n/a'} / ${x.spanMs}` : 'n/a';
+  const rig = r => r.rig.startsWith('george') ? 'George' : 'Lou';
+
+  $('sub').textContent = `Rev 2 after G6: George's hand goes under his back (anchor A + handUnder), the hold's reach is constant and the chest breathes, the knees draw up in turn during the hold (all rigs, Lou included), and the rise starts from the pose the hold drew. BEFORE = ${gitOf('before')}, AFTER = ${gitOf('after')}; config on (sellart + aftermath, both default).`;
+
+  function misses() {
+    const li = [];
+    const pairs = [['suplex', 'before-suplex', 'after-suplex'], ['suplexFlip', 'before-flip', 'after-flip']];
+    li.push(`<li><b>The facing-turn step at the swap got bigger for George, because the anchor moved to the contour.</b> The near contact (= the back waist: hand-to-back stays ${pairs.map(([, b, a]) => G.rows[a].backDistAtSwap ?? 0).join('/')} px) jumps in the one frame where the figure mirrors on the first standing frame: ${pairs.map(([n, b, a]) => `${n} ${G.rows[b].swapStep.contact} px → <span class="n">${G.rows[a].swapStep.contact} px</span>`).join('; ')}. Lou's, unchanged: ${G.rows['lou-before'].swapStep.contact} → ${G.rows['lou-after'].swapStep.contact} px. The pose-only stand-up step (rise_handoff_probe, risefix on, George) is still 2.54 px; this is the mirror about the body's centre line, and A sits further from it than C. The turn is untouched code.</li>`);
+    const p = G.rows['prone-after'];
+    if (p) { const w = win(p, 'rise'), h = win(p, 'handoff'); li.push(`<li><b>Prone rise: no hand on the back, and the forearm comes out from under the torso.</b> Rolled-then-clutch run: hand more than 15 px from the back waist for <span class="n">${w?.ms} of ${w?.spanMs} ms</span> of the rise, <span class="n">${h?.ms} of ${h?.spanMs} ms</span> of the handoff; depth swaps ${p.numbers.depth.to.join(', ')}. The rise rule is supine-only (unchanged).</li>`); }
+    const gs = ['after-suplex', 'after-flip'].map(i => G.rows[i]), gb = ['before-suplex', 'before-flip'].map(i => G.rows[i]);
+    li.push(`<li><b>Standing: the hand is more than 15 px from the back for longer.</b> George, standing window: ${gb.map(r => win(r, 'standing').ms).join(' / ')} ms before → <span class="n">${gs.map(r => win(r, 'standing').ms).join(' / ')} ms</span> after, of 2000 ms (suplex / suplexFlip). Lou: ${win(G.rows['lou-before'], 'standing').ms} → ${win(G.rows['lou-after'], 'standing').ms} ms.</li>`);
+    li.push(`<li><b>The hand still travels in the world during the hold.</b> The reach is constant, but the contact point moves with the chest and hips: George hold travel x/y ${gb.map(r => r.numbers.holdMotion.xRangePx + '/' + r.numbers.holdMotion.yRangePx).join(', ')} px before → <span class="n">${gs.map(r => r.numbers.holdMotion.xRangePx + '/' + r.numbers.holdMotion.yRangePx).join(', ')} px</span> after; Lou ${G.rows['lou-before'].numbers.holdMotion.xRangePx}/${G.rows['lou-before'].numbers.holdMotion.yRangePx} → ${G.rows['lou-after'].numbers.holdMotion.xRangePx}/${G.rows['lou-after'].numbers.holdMotion.yRangePx} px. The distance to the back waist varies only ${gs.map(r => (r.numbers.holdMotion.distMaxPx - r.numbers.holdMotion.distMinPx).toFixed(2)).join(' / ')} px (George).</li>`);
+    li.push(`<li><b>Thin margin on George's hold weight:</b> holdW .45 puts the wrist 13.99 px from the back waist at rest and 14.35 px at the worst point of the leg cycle, against the 15 px line (margin .65 px). In the runs here the hold stays ${gs.map(r => `${r.numbers.windows.lying.minPx}–${r.numbers.windows.lying.maxPx}`).join(' / ')} px.</li>`);
+    li.push(`<li><b>Severity below 1 leaves the hand off the back during the rise</b> (probe, before Rev 2; not re-measured): the runs here are severity 1.</li>`);
+    $('misses').innerHTML = `<h2>Misses first</h2><ul>${li.join('')}</ul>`;
+  }
+
+  function build() {
+    const cols = $('cols'); cols.replaceChildren(); cols.style.setProperty('--n', rowsOf(view).length); idx = {};
+    for (const r of rowsOf(view)) {
+      const fig = document.createElement('figure'), img = new Image(); img.alt = r.label; fig.append(img);
+      const cap = document.createElement('figcaption');
+      cap.innerHTML = `<b>${r.label}</b><div><span class="tag">${rig(r)}</span><span class="tag">${r.state}</span><span class="tag">kind ${r.kind}: ${KIND[r.kind]}</span><span class="tag">${r.scenario}</span></div><div class="mono">${STATE[r.state]}${r.note ? ' · ' + r.note : ''}</div><div class="mono" data-info></div>`;
+      fig.append(cap); cols.append(fig); idx[r.id] = { r, img, info: cap.querySelector('[data-info]') };
+      for (const [, f] of r.frames) { const p = new Image(); p.src = 'g7/' + f; }
+    }
+    $('blurb').textContent = view.blurb || '';
+    const ev = $('events'); ev.replaceChildren();
+    for (const [k, label] of EVENT_BTNS) { const b = document.createElement('button'); b.textContent = label; b.title = k + ' ' + fmt(ev0[k]); b.onclick = () => seek(ev0[k]); ev.append(b); }
+    $('scrub').min = Math.ceil(tMin()); $('scrub').max = Math.floor(tMax());
+    drawCurve(); seek(Math.max(tMin(), Math.min(t, tMax())));
+  }
+
+  function render() {
+    for (const { r, img, info } of Object.values(idx)) {
+      const f = at(r.frames, t), src = 'g7/' + f[1]; if (img.getAttribute('src') !== src) img.src = src;
+      const d = r.curve.length ? at(r.curve, t) : null, lt = r.latch.length ? at(r.latch, t) : null, u = r.under.length ? at(r.under, t) : null;
+      const far = d && d[1] > 15;
+      info.innerHTML = `${fmt(f[0])} · hand→back <span class="${d ? (far ? 'far' : 'near') : ''}">${d ? d[1].toFixed(1) + ' px' : 'n/a'}</span> · latch ${lt && lt[1] != null ? (lt[1] ? 'on' : 'off') : '—'}<br>near forearm depth: ${u && u[1] != null ? (u[1] ? 'behind the torso' : 'in front of the torso') : 'not recorded (before Rev 2: in front)'}`;
+    }
+    $('time').textContent = fmt(t); $('scrub').value = Math.round(t);
+    const cur = document.getElementById('cursor'); if (cur) { const x = cx(t); cur.setAttribute('x1', x); cur.setAttribute('x2', x); }
+  }
+  function seek(ms) { t = Math.max(tMin(), Math.min(tMax(), ms)); render(); }
+  function tick(now) { if (!playing) return; t += (now - last) * speed; last = now; if (t >= tMax()) { t = tMax(); setPlaying(false); } render(); if (playing) requestAnimationFrame(tick); }
+  function setPlaying(p) { playing = p; $('play').textContent = p ? 'Pause' : 'Play'; if (p) { if (t >= tMax()) t = tMin(); last = performance.now(); requestAnimationFrame(tick); } }
+
+  const W = 1200, H = 270, L = 46, R = 12, T = 14, B = 30; let cx = () => 0;
+  const COL = ['#1b6ca8', '#c0392b', '#2e8b57', '#8e44ad'];
+  function drawCurve() {
+    const rs = rowsOf(view), x0 = tMin(), x1 = tMax(), y1 = 60;
+    cx = v => L + (v - x0) / (x1 - x0) * (W - L - R); const Y = v => T + (1 - Math.min(v, y1) / y1) * (H - T - B);
+    let o = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Distance from the near hand contact to the painted back waist over time">`;
+    for (let v = 0; v <= y1; v += 15) o += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${v === 15 ? '#c0392b' : 'currentColor'}" stroke-opacity="${v === 15 ? .8 : .15}" ${v === 15 ? 'stroke-dasharray="4 3"' : ''}/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end" fill="currentColor" font-size="11" opacity=".7">${v}</text>`;
+    for (let v = Math.ceil(x0 / 1000) * 1000; v <= x1; v += 1000) o += `<text x="${cx(v)}" y="${H - 10}" text-anchor="middle" fill="currentColor" font-size="11" opacity=".7">${v}</text>`;
+    for (const k of ['riseStart', 'standing']) { const x = cx(ev0[k]); o += `<line x1="${x}" x2="${x}" y1="${T}" y2="${H - B}" stroke="currentColor" stroke-opacity=".25"/><text x="${x + 3}" y="${T + 10}" fill="currentColor" font-size="10" opacity=".6">${k}</text>`; }
+    rs.forEach((r, i) => { if (r.curve.length) o += `<polyline fill="none" stroke="${COL[i % 4]}" stroke-width="1.6" points="${r.curve.map(p => `${cx(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(' ')}"/>`; o += `<rect x="${L + 10 + i * 280}" y="${T + 22}" width="10" height="3" fill="${COL[i % 4]}"/><text x="${L + 24 + i * 280}" y="${T + 27}" fill="currentColor" font-size="11">${r.label} (${r.state})</text>`; });
+    o += `<line id="cursor" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="currentColor" stroke-width="1.5"/></svg>`;
+    $('curve').innerHTML = o;
+  }
+
+  function holdRise() {
+    const d = G.holdRise; if (!d) { $('holdrise').textContent = 'not available'; return; }
+    const key = (rg, sec, f, c) => d.cases.find(x => x.rig === rg && x.holdSec === sec && x.facing === f && x.carry === c);
+    const secs = [...new Set(d.cases.map(c => c.holdSec))], rigs = [...new Set(d.cases.map(c => c.rig))];
+    const label = { 0.7: '0.7 s (near knee at peak)', 1.3: '1.3 s', 2.5: '2.5 s (far knee at peak)', 3.1: '3.1 s', 5.4: '5.4 s' };
+    let o = `<table><thead><tr><th>Seconds into the hold</th>${rigs.map(rg => `<th class="num">${rg.startsWith('george') ? 'George' : 'Lou'}, game (+1 / −1)</th><th class="num">${rg.startsWith('george') ? 'George' : 'Lou'}, without the carry</th>`).join('')}</tr></thead><tbody>`;
+    for (const s of secs) o += `<tr><td>${label[s] || s + ' s'}</td>${rigs.map(rg => { const a = key(rg, s, 1, true), b = key(rg, s, -1, true), n = key(rg, s, 1, false); return `<td class="num ${Math.max(a.swapMax, b.swapMax) <= 3 ? 'good' : 'bad'}">${a.swapMax} / ${b.swapMax} <span class="mono">(${a.swapWorst[0]})</span></td><td class="num ${n.swapMax > 3 ? 'bad' : ''}">${n.swapMax} <span class="mono">(${n.swapWorst[0]})</span></td>`; }).join('')}</tr>`;
+    const nat = rg => `${Math.min(...d.cases.filter(c => c.rig === rg).map(c => c.naturalHoldMax)).toFixed(2)}–${Math.max(...d.cases.filter(c => c.rig === rg).map(c => c.naturalRiseMax)).toFixed(2)}`;
+    $('holdrise').innerHTML = o + `</tbody></table><p class="sub">Largest per-part corner displacement between the last hold frame and the first rise frame (hold_rise_probe.mjs at ${d.git}); the worst part is in brackets. Target ≤ 3 px. “Without the carry” is the rise as it was before Rev 2 (the hold's leg and torso offsets are dropped at the swap). Ordinary frame-to-frame motion next to the swap: Lou ${nat(rigs.find(r => r.startsWith('thesz')))} px, George ${nat(rigs.find(r => r.startsWith('george')))} px (hold min – rise max). In the films here the near-contact step at the first rise frame: ${all.map(r => `${r.label} ${r.state}: ${r.riseStartStep ? r.riseStartStep.contact + ' px' : 'n/a'}`).join('; ')}.</p>`;
+  }
+
+  function holdNums() {
+    $('holdnums').innerHTML = `<table><thead><tr><th></th><th class="num">C (G6, 6 px inside)</th><th class="num">A (Rev 2, on the contour)</th></tr></thead><tbody>
+      <tr><td>first weight with the contact inside 15 px (both facings)</td><td class="num">.47</td><td class="num">.43 (over the whole hold cycle)</td></tr>
+      <tr><td><code>holdW</code></td><td class="num">.55 (breathing ±.08)</td><td class="num">.45 (constant)</td></tr>
+      <tr><td>contact at <code>holdW</code>: rest / worst</td><td class="num">12.56 centre / 14.88 trough px</td><td class="num">13.99 / 14.35 px</td></tr>
+      <tr><td>margin to the 15 px line</td><td class="num">.12 px (trough)</td><td class="num">.65 px</td></tr>
+      <tr><td>standing recovery offsets (arm / elbow)</td><td class="num">−0.5 / +1.0 (2.39 px, flex 97.4°)</td><td class="num">−0.7 / +1.1 (1.94 px, flex 103.1°; limit 157.6°)</td></tr>
+      <tr><td>chest breath / leg cycle</td><td class="num">reach ±.08 / none</td><td class="num">torso ±.04 rad, 1.6 s / near .40,−.35, far .35,−.30, hip +2, 3.6 s (all rigs)</td></tr></tbody></table>`;
+  }
+
+  function runTable() {
+    let o = `<table><thead><tr><th>Run</th><th class="num">Lying &gt;15 px (ms / window)</th><th class="num">Rise</th><th class="num">Handoff</th><th class="num">Standing</th><th class="num">Hold dist px</th><th class="num">Hold travel x / y px</th><th class="num">Longest run &gt;15 px, handoff</th><th class="num">Contact step at the swap</th></tr></thead><tbody>`;
+    for (const r of all) {
+      const n = r.numbers; if (!n) { o += `<tr><td>${r.label}</td><td colspan="8">no numbers</td></tr>`; continue; }
+      const cell = k => { const x = win(r, k); return `<td class="num ${x && x.ms > 0 ? 'bad' : x && x.ms === 0 ? 'good' : ''}">${wtxt(x)}</td>`; };
+      const hm = n.holdMotion;
+      o += `<tr><td>${r.label}<div class="mono">${rig(r)} · ${r.state} · kind ${r.kind}</div></td>${cell('lying')}${cell('rise')}${cell('handoff')}${cell('standing')}<td class="num">${hm && hm.distMinPx != null ? hm.distMinPx + '–' + hm.distMaxPx : 'n/a'}</td><td class="num">${hm ? hm.xRangePx + ' / ' + hm.yRangePx : 'n/a'}</td><td class="num ${n.handoffSpan?.longestRunOverMs > 0 ? 'bad' : ''}">${n.handoffSpan ? n.handoffSpan.longestRunOverMs + ' ms' : 'n/a'}</td><td class="num">${r.swapStep ? r.swapStep.contact + ' px' + (r.turnAtSwap ? ' (facing turn)' : '') : 'n/a'}</td></tr>`;
+    }
+    $('runtable').innerHTML = o + `</tbody></table><p class="sub">Windows: lying = last back clutch ends → rise start; rise = rise start → riseT .85; handoff = riseT .85 → standing; standing = standing → +2 s. The pass line is the rig's <code>contactPx</code> (15 px for both).</p>`;
+  }
+
+  function swapTable() {
+    let o = `<table><thead><tr><th>Run</th><th>Latch flips (ms)</th><th class="num">Shortest latch gap</th><th class="num">Depth swaps</th><th>Depth swaps (ms, game state)</th><th class="num">Shortest swap gap</th><th class="num">Behind the torso for</th></tr></thead><tbody>`;
+    for (const r of all) {
+      const n = r.numbers; if (!n) continue;
+      const d = n.depth;
+      o += `<tr><td>${r.label}<div class="mono">${rig(r)} · ${r.state} · kind ${r.kind}</div></td><td class="mono">${n.latch ? n.latch.flips + ' · ' + n.latch.to.join(', ') : 'n/a'}</td><td class="num">${n.latch?.minGapMs ?? 'n/a'}</td><td class="num">${d ? d.swaps : 'not recorded'}</td><td class="mono">${d ? d.to.join(', ') || '—' : '—'}</td><td class="num ${d && d.minGapMs != null && d.minGapMs < 250 ? 'bad' : ''}">${d ? (d.minGapMs ?? 'n/a') : 'n/a'}</td><td class="num">${d ? d.underMs + ' ms' : 'n/a'}</td></tr>`;
+    }
+    $('swaptable').innerHTML = o + `</tbody></table><p class="sub">The depth is read from the real part depths each frame (near forearm below the torso). Lou does not set <code>handUnder</code>, so 0 swaps. Two swaps inside 250 ms would be flicker.</p>`;
+  }
+
+  const vb = $('views');
+  G.views.forEach(v => { const b = document.createElement('button'); b.textContent = v.title; b.onclick = () => { view = v; [...vb.children].forEach(c => c.className = c === b ? 'on' : ''); setPlaying(false); build(); }; if (v === view) b.className = 'on'; vb.append(b); });
+  $('play').onclick = () => setPlaying(!playing);
+  $('s1').onclick = () => { speed = 1; $('s1').className = 'on'; $('s05').className = ''; };
+  $('s05').onclick = () => { speed = 0.5; $('s05').className = 'on'; $('s1').className = ''; };
+  $('scrub').oninput = e => { setPlaying(false); seek(+e.target.value); };
+  $('stepf').onclick = () => { setPlaying(false); const fr = rowsOf(view)[0].frames, k = fr.findIndex(f => f[0] > t + 0.01); seek(fr[k < 0 ? fr.length - 1 : k][0]); };
+  $('stepb').onclick = () => { setPlaying(false); const fr = rowsOf(view)[0].frames; let k = fr.length - 1; while (k > 0 && fr[k][0] >= t - 0.01) k--; seek(fr[k][0]); };
+  document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); setPlaying(!playing); } if (e.code === 'ArrowRight') $('stepf').click(); if (e.code === 'ArrowLeft') $('stepb').click(); });
+  misses(); holdRise(); holdNums(); runTable(); swapTable(); build();
+})();
+</script>
+</body>
+</html>

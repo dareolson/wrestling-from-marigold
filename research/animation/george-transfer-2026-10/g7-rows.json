@@ -1,0 +1,105 @@
+{
+ "views": [
+  {
+   "id": "suplex",
+   "title": "George, suplex: before Rev 2 \u2192 after",
+   "blurb": "Same scenario (Lou throws, George receives), both runs end on a back clutch and stay on his back. Left: HEAD before Rev 2 (98069ef). Right: Rev 2 (f334b46). The sell plan is not identical between the two films (clutch timing differs).",
+   "rows": [
+    "before-suplex",
+    "after-suplex"
+   ]
+  },
+  {
+   "id": "flip",
+   "title": "George, suplexFlip: before Rev 2 \u2192 after",
+   "blurb": "The other side: George faces right at impact.",
+   "rows": [
+    "before-flip",
+    "after-flip"
+   ]
+  },
+  {
+   "id": "lou",
+   "title": "Lou: before Rev 2 \u2192 after",
+   "blurb": "Lou receives (George throws). Rev 2 D7/D8 give Lou the torso breath and the leg cycle too; his reach weight is now constant. Shown plainly because it changes the look Derek approved at G4.",
+   "rows": [
+    "lou-before",
+    "lou-after"
+   ]
+  },
+  {
+   "id": "prone",
+   "title": "George, rolled \u2192 prone rise (after)",
+   "blurb": "A plan where George rolls onto his front first, then clutches his back; after Rev 2 only.",
+   "rows": [
+    "prone-after"
+   ]
+  }
+ ],
+ "rows": [
+  {
+   "id": "before-suplex",
+   "label": "George, suplex, back clutch",
+   "state": "before",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/35186614-a0b3-406f-92a6-4a39f11ee059/scratchpad/t60/keep/before-george-suplex",
+   "scenario": "suplex",
+   "note": ""
+  },
+  {
+   "id": "after-suplex",
+   "label": "George, suplex, back clutch",
+   "state": "after",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/35186614-a0b3-406f-92a6-4a39f11ee059/scratchpad/t7/keep/after-george-suplex",
+   "scenario": "suplex",
+   "note": ""
+  },
+  {
+   "id": "before-flip",
+   "label": "George, suplexFlip, back clutch",
+   "state": "before",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/35186614-a0b3-406f-92a6-4a39f11ee059/scratchpad/t60/keep/before-george-flip",
+   "scenario": "suplexFlip",
+   "note": ""
+  },
+  {
+   "id": "after-flip",
+   "label": "George, suplexFlip, back clutch",
+   "state": "after",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/35186614-a0b3-406f-92a6-4a39f11ee059/scratchpad/t7/keep/after-george-flip",
+   "scenario": "suplexFlip",
+   "note": ""
+  },
+  {
+   "id": "lou-before",
+   "label": "Lou, suplexReverse, back clutch",
+   "state": "before",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/35186614-a0b3-406f-92a6-4a39f11ee059/scratchpad/t60/keep/before-lou",
+   "scenario": "suplexReverse",
+   "note": ""
+  },
+  {
+   "id": "lou-after",
+   "label": "Lou, suplexReverse, back clutch",
+   "state": "after",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/35186614-a0b3-406f-92a6-4a39f11ee059/scratchpad/t7/keep/after-lou",
+   "scenario": "suplexReverse",
+   "note": ""
+  },
+  {
+   "id": "prone-after",
+   "label": "George, suplexFlip, rolled then back clutch (prone rise)",
+   "state": "after",
+   "kind": 2,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/35186614-a0b3-406f-92a6-4a39f11ee059/scratchpad/t7/keep/after-george-prone",
+   "scenario": "suplexFlip",
+   "note": ""
+  }
+ ],
+ "counts": null
+}

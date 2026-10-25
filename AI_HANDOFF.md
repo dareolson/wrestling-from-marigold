@@ -29,6 +29,16 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**Move pipeline learning architecture — 2026-10-24 (Derek / Codex):**
+Derek wants move discoveries to accumulate as engine capabilities.
+[Architecture and rollout](MOVE_PIPELINE_EVOLUTION.md) adds a required learning
+step to the refinement method: classify the cause, preserve reusable behavior,
+connect authoring/rig requirements and regression evidence, and report coverage
+separately from visual approval. Existing grips, layers and painted contacts
+already demonstrate reuse; capability records, strict coverage reporting and
+shared evidence adapters are proposed next work, not implemented tools.
+First runtime consumer remains Lou's support-hand rise; no defaults changed.
+
 **Suplex planted-rise plan — 2026-10-24 (Claude/Opus plan, rev 4; G4 package ready):**
 Codex's sell-art candidate is committed locally (`b07484d`); every commit of this plan is local, nothing pushed
 or promoted. Done: event-aligned film, lying hold, contact-driven grip, the standing back hand carried across the

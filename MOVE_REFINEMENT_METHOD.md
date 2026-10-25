@@ -1,5 +1,12 @@
 # Move refinement method
 
+**Pipeline evolution (2026-10-24):** Follow
+[Turning move discoveries into engine capabilities](MOVE_PIPELINE_EVOLUTION.md).
+Every refinement records the failure, cause, reusable mechanism or reason it
+stays local, authoring/rig requirements, regression evidence and remaining
+coverage gaps. Mechanical verification and visual approval are separate.
+The architecture includes proposed tooling; those commands are not yet available.
+
 **Performance direction (2026-10-22):** Use the
 [current move performance audit](MOVE_PERFORMANCE_AUDIT.md) for the complete
 two-performer production contract, figure-four beat sheet and rollout gates.
@@ -116,7 +123,7 @@ Each of these cost a round of rework.
 | In 3/4 view the `nearShoulder` sits toward the back | "In front of the chest" is a large dx (~40 px) |
 | An inverted head hangs below the neck | The neck sits above the target for the head to land on it |
 | Painted soles hang below the contact line in 3/4 view (George ~20 px) | The critic calibrates the floor from frame 0 |
-| Wrestlers draw as whole layers by `transform.y` | Swap who is in front between beats when a face or grip must read |
+| Paired actors can interleave by part sub-depth; exact ties can depend on player slot | Use clip `layers` and `layerTie` for explicit cross-actor limb order; whole-actor `transform.y` alone cannot describe an entanglement |
 | When hip and knee interpolate in opposite directions, the shin freezes, then whips | Check the shin angle per frame for reversals after contact |
 | An upside-down body facing its attacker falls forward when let go | Lay it down prone (`_layDown`), or it lands on the attacker |
 | Prone, a positive arm angle points into the mat | The front faces down; trail limp arms slightly back |

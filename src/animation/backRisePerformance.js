@@ -10,8 +10,12 @@ const smooth = x => {
 // to full reach instead of dipping to 0 and back; with no hold (from = 0) this is
 // the original envelope exactly. A pure function of (t, from).
 // `peak` is the reach the rise holds (severity); a hold above it eases down to it.
-export function backRiseWeight(t, from = 0, peak = 1) {
+// `carry` (D5, a rise that hands off into the carried standing recovery): no ease-out; the
+// weight keeps climbing to `peak` and stays there through t = 1, so the arm leaves the rise
+// where the recovery picks it up. Without it the envelope is exactly the original.
+export function backRiseWeight(t, from = 0, peak = 1, carry = false) {
     const f = Number.isFinite(from) ? Math.max(0, Math.min(1, from)) : 0;
+    if (carry) return !Number.isFinite(t) ? 0 : t <= 0 ? f : f + (peak - f) * smooth(t / 0.18);
     if (!Number.isFinite(t) || t >= 1) return 0;
     if (t <= 0) return f;
     return (f + (peak - f) * smooth(t / 0.18)) * (1 - smooth((t - 0.70) / 0.30));
@@ -50,3 +54,16 @@ export function plantWeight(t, tLift) {
 // 125.8 deg (limit 157.6). A pose that still carries only the legacy absolute forearm
 // takes the same relative bend: forearm offset = elbow - arm.
 export const RECOVERY_BACK_HAND = Object.freeze({ arm: -1.2, elbow: 1.5 });
+
+// D5 (carried rise): the standing hand starts on the arm the rise ended on (`riseEnd`,
+// Skeleton.carriedRiseEndArm, upright channels) and eases over ARM_SETTLE_MS into the probed
+// back-hand pose above, now as absolute channels on Lou's settled idle (lArm .04, lElbow .70
+// plus the probed offsets). Absolute because the live pose is still tweening to idle on the
+// first standing frames. A pure function of (riseEnd, ms since standing).
+export const ARM_SETTLE_MS = 300;
+export const RECOVERY_BACK_HAND_ABS = Object.freeze({ arm: 0.04 + RECOVERY_BACK_HAND.arm, elbow: 0.70 + RECOVERY_BACK_HAND.elbow });
+export function carriedHandTarget(riseEnd, sinceMs) {
+    const u = smooth(sinceMs / ARM_SETTLE_MS);
+    return { arm: riseEnd.arm + (RECOVERY_BACK_HAND_ABS.arm - riseEnd.arm) * u,
+        elbow: riseEnd.elbow + (RECOVERY_BACK_HAND_ABS.elbow - riseEnd.elbow) * u };
+}

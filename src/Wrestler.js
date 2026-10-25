@@ -15,7 +15,7 @@ import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
-import { HOLD, holdWeight, RECOVERY_BACK_HAND } from './animation/backRisePerformance.js';
+import { HOLD, holdWeight, RECOVERY_BACK_HAND, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
 import { staggerFor } from './animation/staggers.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
@@ -1098,7 +1098,19 @@ export default class Wrestler {
         const ctx = { part: 'back', severity: this._pain.severity };
         if (this._riseFrom > 0) ctx.from = this._riseFrom;
         if (plantCandidate()) ctx.plant = true;
+        // D5: a rise that will hand off into a carried recovery keeps its reach to the end
+        if (aftermathCandidate() && this.skeleton?.torso?._semanticAnchors?.backWaist) ctx.carry = true;
         return ctx;
+    }
+
+    // Called as the back rise lands, still in 'gettingUp': the weight the rise ended on and the
+    // near arm it ended with (upright channels), or null when this is not a carried rise.
+    _carriedRiseEnd() {
+        const ctx = this._backRiseContext();
+        if (!ctx?.carry) return null;
+        const arm = this.skeleton.carriedRiseEndArm?.(this.s * this._heightScale, this.facing, ctx.severity);
+        if (!arm) return null;
+        return { w: backRiseWeight(1, ctx.from > 0 ? ctx.from : 0, ctx.severity, true), arm: arm.arm, elbow: arm.elbow };
     }
 
     tickPossum(dt) {
@@ -1692,12 +1704,14 @@ export default class Wrestler {
     }
 
     // On his feet: the hurt is carried for up to 2.5 s, scaled by severity.
-    _painRecovering() {
+    // `carried` (D5): the back rise's end weight and near arm, so the hand starts where the rise left it.
+    _painRecovering(carried = null) {
         const pain = this._pain;
         if (pain?.phase !== 'rise') return;
         pain.phase = 'recover';
         pain.since = this.scene.time.now;
         pain.until = pain.since + 2500 * pain.severity;
+        if (carried) { pain.carried = carried.w; pain.riseEnd = { arm: carried.arm, elbow: carried.elbow }; }
     }
 
     // Protective recovery (?aftermath=v2, D4): while the hurt is carried on his
@@ -1705,13 +1719,14 @@ export default class Wrestler {
     // the hurt part. Applies only in the 'recover' phase, standing, with no move
     // or choreography owning the pose; any of those claims the pose and the
     // weight is 0 that frame. Returns 0..1 and touches nothing.
-    _recoveryWeight() {
+    // `ramped` false drops the RECOVERY_RAMP_MS fade-in: the carried hand (D5) is full at entry.
+    _recoveryWeight(ramped = true) {
         const pain = this._pain;
         if (pain?.phase !== 'recover' || this.state !== 'standing' || this._choreoOwnsPose()) return 0;
         if (!aftermathCandidate()) return 0;
         const t = this.scene.time.now;
         if (t >= pain.until) return 0;
-        const ramp = Math.min(1, (t - pain.since) / RECOVERY_RAMP_MS);
+        const ramp = ramped ? Math.min(1, (t - pain.since) / RECOVERY_RAMP_MS) : 1;
         const left = (pain.until - t) / (pain.until - pain.since);
         // knee limps down evenly; back settles slowly (holds, then eases out)
         return ramp * (pain.part === 'back' ? 1 - (1 - left) * (1 - left) : left);
@@ -1720,15 +1735,23 @@ export default class Wrestler {
     // True while the standing back-recovery carries the near hand on the back (?sellart=v1
     // on top of ?aftermath=v2, a rig with a painted backWaist). Touches nothing.
     _recoveryHandOnBack() {
-        return sellArtCandidate() && this._pain?.part === 'back' && this._recoveryWeight() > 0
-            && !!this.skeleton?.torso?._semanticAnchors?.backWaist;
+        return this._recoveryHandWeight() > 0;
+    }
+
+    // How much of the hand-on-back motif is on: the recovery weight, except after a carried rise
+    // (D5), where the hand starts full (carried rise weight x the back envelope, no fade-in).
+    _recoveryHandWeight() {
+        const pain = this._pain;
+        if (!sellArtCandidate() || pain?.part !== 'back' || !this.skeleton?.torso?._semanticAnchors?.backWaist) return 0;
+        return pain.carried > 0 ? pain.carried * this._recoveryWeight(false) : this._recoveryWeight();
     }
 
     // A COPY of the pose with the motif added, or null when there is nothing to
     // add. this.pose is never written.
     _recoveryPose() {
         const w = this._recoveryWeight();
-        if (w <= 0) return null;
+        const hw = this._recoveryHandWeight();
+        if (w <= 0 && hw <= 0) return null;
         const pain = this._pain;
         const pose = { ...this.pose };
         if (pain.part === 'knee') {
@@ -1752,7 +1775,18 @@ export default class Wrestler {
             pose.bend = (pose.bend ?? 0) + 0.12 * w;
             // ?sellart=v1 (D3 option A): the near hand rests at the back waist. The offsets are
             // the probed ones for the near l-channels; only a rig with a painted backWaist (Lou).
-            if (this._recoveryHandOnBack()) {
+            if (hw > 0 && pain.carried > 0 && pain.riseEnd) {
+                // D5: absolute near-arm channels, from the rise's end arm into the probed pose
+                const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
+                const to = carriedHandTarget(pain.riseEnd, this.scene.time.now - pain.since);
+                const arm0 = pose[`${n}Arm`] ?? 0;
+                pose[`${n}Arm`] = arm0 + (to.arm - arm0) * hw;
+                if (Number.isFinite(pose[`${n}Elbow`])) pose[`${n}Elbow`] += (to.elbow - pose[`${n}Elbow`]) * hw;
+                else {
+                    const fore0 = pose[`${n}Forearm`] ?? (arm0 + 0.70);
+                    pose[`${n}Forearm`] = fore0 + (to.arm + to.elbow - fore0) * hw;
+                }
+            } else if (hw > 0) {
                 const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
                 pose[`${n}Arm`] = (pose[`${n}Arm`] ?? 0) + RECOVERY_BACK_HAND.arm * w;
                 // the pose's own elbow owner: local flex if it carries one (the live pose does),
@@ -2507,8 +2541,9 @@ export default class Wrestler {
             ease:     'Sine.easeInOut',
             onComplete: () => {
                 if (this.state === 'gettingUp') {
+                    const carried = this._carriedRiseEnd();
                     this.state = 'standing';
-                    this._painRecovering();
+                    this._painRecovering(carried);
                     this.tweenPose('idle', 150, 'Linear');
                 }
             },
@@ -2764,7 +2799,7 @@ export default class Wrestler {
         // ?sellart=v1: the guard blend REPLACES the arm angles at combatBlend 1 (see
         // _choreoOwnsPose), which would erase the near hand on the back; give it up in
         // proportion to the carried back-hand weight. Off, `guard` is exactly as before.
-        if (this._recoveryHandOnBack()) guard *= 1 - this._recoveryWeight();
+        if (this._recoveryHandOnBack()) guard *= 1 - this._recoveryHandWeight();
         // ?aftermath=v2: favour the hurt part on a copy of the pose (null otherwise).
         this.skeleton.updateUpright(x, y, s, facing, this._recoveryPose() ?? this.pose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
         if (this._activeMove && this._floorContacts) {

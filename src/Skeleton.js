@@ -2424,7 +2424,9 @@ export default class Skeleton {
         const sev = back ? Math.max(0, Math.min(1, pain.severity)) : 0;
         // `from` is the lying-hold weight to ease from (D4): the first rise frame reproduces
         // the hold's own reach, then it eases to the severity-scaled protection.
-        const protect = !back ? 0 : pain.from > 0 ? backRiseWeight(t, pain.from, sev) : backRiseWeight(t) * sev;
+        // `carry` (D5): the reach is held to t = 1 so the standing recovery can take the arm over
+        const protect = !back ? 0 : pain.carry ? backRiseWeight(t, pain.from > 0 ? pain.from : 0, sev, true)
+            : pain.from > 0 ? backRiseWeight(t, pain.from, sev) : backRiseWeight(t) * sev;
         // The support wrist stays on the mat while the body rises past it (D1).
         const plant = back && pain.plant ? this._plantReach?.(x, y, s, facing, t, K) : null;
         if (protect > 0 || plant) {

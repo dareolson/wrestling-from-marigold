@@ -198,6 +198,96 @@ G6a — Derek 2026-10-25: candidate **C** (u .3887, v .6077, 6 px inside the con
 
 G6 — Derek 2026-10-25: **not approved.** "He kind of rubs his tummy" (the near hand reads as on the belly, moving), and "he should kick his legs too, if his legs are stiff, it reads weird". Recorded by Opus. Opus's diagnosis: candidate C is 6 px inside the contour of a three-quarter-FRONT torso, so supine it sits on the visible belly. The wrist proxy puts the baked fist even further inward. The hold's breath moves the hand ~3 px, which reads as rubbing. Fix plan pending.
 
+## Rev 2 (2026-10-25, after G6): fix the tummy rub, add leg life
+
+Derek at G6: "he kind of rubs his tummy" and "he should kick his legs too, if his legs are stiff, it reads
+weird". Derek approved this fix ("let's do it"), with Opus's defaults: D6 for George only (rig data),
+D7 and D8 for every rig, Lou included.
+
+Causes (Opus, from the art and G6 frames):
+- (a) George's torso is painted three-quarter FRONT. Supine, his real back is against the mat, so a point
+  6 px inside the outline (candidate C) is on the visible belly.
+- (b) The wrist proxy aims the wrist at the point, and the baked fist extends past it, further across the
+  belly.
+- (c) `holdWeight` breathes the REACH (±.08), so the hand slides ~3 px back and forth: a rub.
+- (d) The lying hold draws the static `GROUNDED_POSES[lying]` legs.
+
+Decisions:
+- **D6. Hand under the body (rig data, George only).** George's `backWaist` moves to candidate **A**
+  (u .2558, v .6077, on the contour). A new `backSell.handUnder: true` puts the near forearm (and near hand,
+  if the rig has one) BEHIND the torso while the grip latch is on (`_gripLatch.on`), in every back-sell
+  phase: back clutch, lying hold, rise, standing recovery. Leave the near upper arm in front. The depth
+  swap follows the latch, so it inherits the latch's no-flicker dwell. Lou has no `handUnder`, so his
+  draw order is unchanged.
+- **D7. Hand still, chest breathes (all rigs).** The hold's reach weight is constant `holdW`. The breath
+  moves the torso instead: same period, a grounded `torso` offset `HOLD_BREATH.torso × sin`. Start at
+  `torso` .04 and report it. Because the reach re-solves each frame, the hand follows the body.
+- **D8. Leg life during the lying hold (all rigs).** A slow, pained alternating knee draw-up: near knee up
+  and down, a short rest, far knee up and down, a rest, in a 3.6 s cycle. Peak offsets about half the
+  supine `writhe` key: near `nearThigh .40, nearShin -.35`, far `farThigh .35, farShin -.30`, `hip +2`
+  at each peak. Smooth in and out, through `limitKnees`. Ramp it in from 0 over the first 400 ms of the hold,
+  so the clutch → hold handoff doesn't jump. Put the constants in one exported object, `HOLD_LEGS`,
+  next to `HOLD_BREATH`.
+- **Rise continuity.** The rise must start from the pose the hold last drew, so the legs and torso don't
+  pop at the hold → rise swap. Carry the hold's last offsets into the rise and ease them out over
+  t ∈ [0, .15], beside `_riseFrom`. Target: every part ≤ 3 px per frame step at the swap, both rigs,
+  both facings.
+
+### Stage 6: implement (no tuning by eye; report numbers)
+
+- **T6.0** Before any src change, re-film George `after` (one kind-1 `suplex`) and Lou `suplexReverse` `on`
+  at HEAD as the before-Rev-2 reference, the same way as T3.5. Keep the frames for the G7 viewer.
+- **T6.1 (D7)** Make the hold weight constant and move the breath to the torso. The Lou fixture (T1.2)
+  will change in `holdWeight` only. Regenerate it deliberately (`WFM_UPDATE_FIXTURE=1`) in this commit,
+  and show in the Progress line that every other section of the JSON is byte-identical
+  (`git diff --stat` + a per-key comparison). Any other section that changes: STOP.
+- **T6.2 (D8)** Add `HOLD_LEGS` and the leg cycle in the `_lyingHold` draw path (Wrestler.js, the
+  `updateGroundedReach(..., limitKnees({...GROUNDED_POSES[lying]}) ...)` call) plus the 400 ms ramp-in.
+  Unit tests: the cycle is pure in time; offsets are 0 at hold start; peaks equal `HOLD_LEGS`; knees stay
+  inside limits.
+- **T6.3 (rise continuity)** Carry the hold's last offsets into the rise and ease them out. Measure with
+  `rise_handoff_probe.mjs` (or extend it): the per-part step at the hold → rise frame, for Lou and George,
+  both facings. Target ≤ 3 px. If it misses: STOP and report.
+- **T6.4 (D6)** Add `handUnder` to `backSell` (schema in `rig/backSell.js` + the BACK_SELL doc comment,
+  optional boolean, default false). Make the depth swap in `Skeleton.setDepth` (or wherever depth is
+  assigned per frame), driven by a flag the Wrestler sets from the latch. Then move George's anchor to
+  candidate A (generator SPECS + generated file + the agreement test), set `handUnder: true`, and
+  RE-MEASURE George's `holdW` and recovery offsets with the shared tools (T3.2 recipe). The old numbers
+  were measured at C, so don't reuse them. Write the new numbers and `evidence` into George's `backSell`.
+  Stop condition as in T3.2.
+- **T6.5** Tests: `handUnder` puts the near forearm below torso depth only while the latch is on, and
+  restores it exactly when the latch goes off or the state leaves the back sell (pin, pickup, move,
+  reset). Lou's depths are unchanged in every phase.
+  Rig contract test: `handUnder` must be a boolean when present. `capabilities.json`: George's entries
+  record `handUnder` and the new anchor; add `lying-hold` leg life and torso breath as a change with
+  visual `unverified` (G7). `moves:coverage -- --check` passes.
+
+### Stage 7: G7 package, then STOP
+
+- **T7.1** Build the viewer at `research/animation/george-transfer-2026-10/g7-viewer.html` (copy
+  `g6_package.py`, 1×, self-contained, ≤ 20 MB).
+  Views:
+  - George before-Rev-2 (T6.0) vs after, kind 1, `suplex` and `suplexFlip`;
+  - Lou before-Rev-2 vs after (the legs and breath changed his approved look, so show it plainly);
+  - one kind-2 (prone) run, after.
+  Numbers table, misses first:
+  - hold → rise step;
+  - George's new hold distances and margin;
+  - latch flips and depth swaps (count, shortest gap);
+  - the facing-turn step (unchanged).
+- **T7.2** Write a handoff entry, `AI_HANDOFF_ENTRIES/2026-10-25-claude-george-transfer-rev2.md`, and add a Status summary
+  pointer.
+- **STOP. G7 questions for Derek:**
+  1. Is George's hand now under his back, not on his belly (lying, rise, standing)?
+  2. Do the legs read as pain, or as too much or too little?
+  3. Lou with legs and breath: keep it?
+  4. Approve?
+
+G7 — (Derek's verdict goes here.)
+
+Still out of scope: legs during a lying wait with no hold (kind 3, writhe last), the prone rise's
+missing hand, and the facing turn. Each is a separate call for Derek after G7.
+
 ## Stage 5 (later, when Codex delivers George's grip donor)
 
 Register it as `textures.variants.forearm.grip` on George, with its `clutch` anchor, exactly as Lou's is.

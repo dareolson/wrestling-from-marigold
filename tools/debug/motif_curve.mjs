@@ -86,7 +86,11 @@ export function analyse(manifest, thresh = contactPxFor(manifest.receiver?.rig))
         if (!runs.length || runs.at(-1).key !== s.nearForearm) runs.push({ key: s.nearForearm, fromMs: s.rel, toMs: s.rel });
         else runs.at(-1).toMs = s.rel;
     }
-    return { events: { impactMs: rel(impact), clutchEndMs: rel(clutchEnd), riseStartMs: rel(riseStart), rise85Ms: rel(r85), standingMs: rel(standing), plus2sMs: rel(plus2) },
+    // the contact latch (needs `latch` in the samples, aftermath_film.mjs): flips and the shortest gap between two
+    const flips = [];
+    S.forEach((x, i) => { const p = S[i - 1]; if (x.latch != null && p?.latch != null && x.latch !== p.latch) flips.push({ atMs: x.rel, to: x.latch }); });
+    const latch = S.some(x => x.latch != null) ? { flips: flips.length, to: flips.map(f => `${f.to ? 'on' : 'off'}@${f.atMs}`), minGapMs: flips.length > 1 ? +Math.min(...flips.slice(1).map((f, i) => f.atMs - flips[i].atMs)).toFixed(1) : null } : null;
+    return { latch, events: { impactMs: rel(impact), clutchEndMs: rel(clutchEnd), riseStartMs: rel(riseStart), rise85Ms: rel(r85), standingMs: rel(standing), plus2sMs: rel(plus2) },
         windows, handoffSpan, holdMotion, standingArrivalMs, textureRuns: runs, hasDistance: S.some(s => s.backDist != null), thresholdPx: thresh, thresholdFromRig: RIGS[manifest.receiver?.rig] != null };
 }
 
@@ -133,6 +137,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         if (!r.hasDistance) { console.log(`${k}: no backWaist distance (receiver has none)`); continue; }
         const w = r.windows;
         const px = r.thresholdPx;
-        console.log(`${k}${r.thresholdFromRig ? '' : ' (pass line ' + px + ' px: rig has no backSell, default)'}: >${px}px ms — lying ${w.lying?.ms}/${w.lying?.spanMs}, rise ${w.rise?.ms}/${w.rise?.spanMs}, handoff ${w.handoff?.ms}/${w.handoff?.spanMs}, standing ${w.standing?.ms}/${w.standing?.spanMs}; hold travel x ${r.holdMotion.xRangePx} y ${r.holdMotion.yRangePx} px, dist ${r.holdMotion.distMinPx}-${r.holdMotion.distMaxPx}; hand back within ${px}px ${r.standingArrivalMs} ms after standing; handoff (.85 -> standing+400): longest run >${px}px ${r.handoffSpan?.longestRunOverMs} ms, max step ${r.handoffSpan?.maxStepPx} px at ${r.handoffSpan?.maxStepAtMs}`);
+        console.log(`${k}${r.thresholdFromRig ? '' : ' (pass line ' + px + ' px: rig has no backSell, default)'}: >${px}px ms — lying ${w.lying?.ms}/${w.lying?.spanMs}, rise ${w.rise?.ms}/${w.rise?.spanMs}, handoff ${w.handoff?.ms}/${w.handoff?.spanMs}, standing ${w.standing?.ms}/${w.standing?.spanMs}; hold travel x ${r.holdMotion.xRangePx} y ${r.holdMotion.yRangePx} px, dist ${r.holdMotion.distMinPx}-${r.holdMotion.distMaxPx}; latch flips ${r.latch ? r.latch.flips + ' ' + JSON.stringify(r.latch.to) + ' min gap ' + r.latch.minGapMs : 'n/a'}; hand back within ${px}px ${r.standingArrivalMs} ms after standing; handoff (.85 -> standing+400): longest run >${px}px ${r.handoffSpan?.longestRunOverMs} ms, max step ${r.handoffSpan?.maxStepPx} px at ${r.handoffSpan?.maxStepAtMs}`);
     }
 }

@@ -1,0 +1,1057 @@
+{
+ "note": "tools/debug/motif_curve.mjs output for George (george-roster-v1) as the suplex receiver; before = aa33af3 (anchor, no backSell, sell unsupported), after = 303ef02 (backSell, supported). Film runs live in the scratchpad and are not kept. a1..a5 = five repeats of after/on/suplex (the sell plan varies run to run, deterministically in three kinds).",
+ "before": {
+  "off/suplex": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "latch": null,
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 3350,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 2166.7,
+     "spanMs": 2166.7,
+     "samples": 130,
+     "maxPx": 23.99,
+     "minPx": 23.99
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 47.21,
+     "minPx": 18.5
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 20.78,
+     "minPx": 15.8
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 26.02,
+     "minPx": 15.85
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 683.3,
+    "maxStepPx": 3.73,
+    "maxStepAtMs": 6300
+   },
+   "holdMotion": {
+    "samples": 130,
+    "xRangePx": 0,
+    "yRangePx": 0,
+    "distMinPx": 23.99,
+    "distMaxPx": 23.99
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  },
+  "off/suplexFlip": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": 1
+   },
+   "latch": null,
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 3233.33,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 2283.3,
+     "spanMs": 2283.3,
+     "samples": 137,
+     "maxPx": 26.59,
+     "minPx": 26.59
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 52.33,
+     "minPx": 20.51
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 23.04,
+     "minPx": 17.51
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 25.79,
+     "minPx": 17.57
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 683.3,
+    "maxStepPx": 4.13,
+    "maxStepAtMs": 6300
+   },
+   "holdMotion": {
+    "samples": 137,
+    "xRangePx": 0,
+    "yRangePx": 0,
+    "distMinPx": 26.59,
+    "distMaxPx": 26.59
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  },
+  "on/suplex": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "latch": null,
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 3116.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 2400,
+     "spanMs": 2400,
+     "samples": 144,
+     "maxPx": 23.99,
+     "minPx": 23.99
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 25.12,
+     "minPx": 18.53
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 18.85,
+     "minPx": 15.8
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 26.02,
+     "minPx": 15.85
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 683.3,
+    "maxStepPx": 4.3,
+    "maxStepAtMs": 6300
+   },
+   "holdMotion": {
+    "samples": 144,
+    "xRangePx": 0,
+    "yRangePx": 0,
+    "distMinPx": 23.99,
+    "distMaxPx": 23.99
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  },
+  "on/suplexFlip": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": 1
+   },
+   "latch": null,
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": null,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": null,
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 27.62,
+     "minPx": 20.37
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 20.72,
+     "minPx": 17.37
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 25.82,
+     "minPx": 17.42
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 683.3,
+    "maxStepPx": 4.74,
+    "maxStepAtMs": 6300
+   },
+   "holdMotion": {
+    "samples": 0,
+    "xRangePx": null,
+    "yRangePx": null,
+    "distMinPx": null,
+    "distMaxPx": null
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  }
+ },
+ "after": {
+  "off/suplex": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "latch": null,
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 1733.33,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 3783.3,
+     "spanMs": 3783.3,
+     "samples": 227,
+     "maxPx": 35.25,
+     "minPx": 18.19
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 47.21,
+     "minPx": 18.5
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 20.78,
+     "minPx": 15.8
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 26.02,
+     "minPx": 15.85
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 683.3,
+    "maxStepPx": 3.73,
+    "maxStepAtMs": 6300
+   },
+   "holdMotion": {
+    "samples": 227,
+    "xRangePx": 22.49,
+    "yRangePx": 58.4,
+    "distMinPx": 18.19,
+    "distMaxPx": 35.25
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  },
+  "off/suplexFlip": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": -1
+   },
+   "latch": null,
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 2766.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 2750,
+     "spanMs": 2750,
+     "samples": 165,
+     "maxPx": 23.13,
+     "minPx": 23.13
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 43.62,
+     "minPx": 20.37
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 29.9,
+     "minPx": 17.51
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 25.79,
+     "minPx": 17.56
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 683.3,
+    "maxStepPx": 7.03,
+    "maxStepAtMs": 6300
+   },
+   "holdMotion": {
+    "samples": 165,
+    "xRangePx": 0,
+    "yRangePx": 0,
+    "distMinPx": 23.13,
+    "distMaxPx": 23.13
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  },
+  "on/suplex": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": 1
+   },
+   "latch": {
+    "flips": 3,
+    "to": [
+     "on@2883.33",
+     "on@6716.67",
+     "off@8333.33"
+    ],
+    "minGapMs": 1616.7
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 2766.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 0,
+     "spanMs": 2750,
+     "samples": 165,
+     "maxPx": 10.87,
+     "minPx": 7.54
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 39.37,
+     "minPx": 18.39
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 26.98,
+     "minPx": 15.8
+    },
+    "standing": {
+     "ms": 383.3,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 19.5,
+     "minPx": 1.8
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 300,
+    "maxStepPx": 6.34,
+    "maxStepAtMs": 6300
+   },
+   "holdMotion": {
+    "samples": 165,
+    "xRangePx": 3.25,
+    "yRangePx": 0.78,
+    "distMinPx": 7.54,
+    "distMaxPx": 10.87
+   },
+   "standingArrivalMs": 33.3,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  },
+  "on/suplexFlip": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": 1
+   },
+   "latch": {
+    "flips": 2,
+    "to": [
+     "on@5866.67",
+     "off@8316.67"
+    ],
+    "minGapMs": 2450
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": null,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": null,
+    "rise": {
+     "ms": 216.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 26.98,
+     "minPx": 0
+    },
+    "handoff": {
+     "ms": 0,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 0,
+     "minPx": 0
+    },
+    "standing": {
+     "ms": 350,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 19.37,
+     "minPx": 0
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 0,
+    "maxStepPx": 15.03,
+    "maxStepAtMs": 6550
+   },
+   "holdMotion": {
+    "samples": 0,
+    "xRangePx": null,
+    "yRangePx": null,
+    "distMinPx": null,
+    "distMaxPx": null
+   },
+   "standingArrivalMs": 0,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  }
+ },
+ "repeats": {
+  "a1": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "latch": {
+    "flips": 2,
+    "to": [
+     "on@5866.67",
+     "off@8333.33"
+    ],
+    "minGapMs": 2466.7
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 1733.33,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 3783.3,
+     "spanMs": 3783.3,
+     "samples": 227,
+     "maxPx": 35.25,
+     "minPx": 18.19
+    },
+    "rise": {
+     "ms": 216.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 24.36,
+     "minPx": 0
+    },
+    "handoff": {
+     "ms": 0,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 0,
+     "minPx": 0
+    },
+    "standing": {
+     "ms": 350,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 19.5,
+     "minPx": 0
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 0,
+    "maxStepPx": 13.57,
+    "maxStepAtMs": 6550
+   },
+   "holdMotion": {
+    "samples": 227,
+    "xRangePx": 22.49,
+    "yRangePx": 58.4,
+    "distMinPx": 18.19,
+    "distMaxPx": 35.25
+   },
+   "standingArrivalMs": 0,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  },
+  "a2": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": 1
+   },
+   "latch": {
+    "flips": 3,
+    "to": [
+     "on@2883.33",
+     "on@6716.67",
+     "off@8333.33"
+    ],
+    "minGapMs": 1616.7
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 2766.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 0,
+     "spanMs": 2750,
+     "samples": 165,
+     "maxPx": 10.87,
+     "minPx": 7.54
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 39.37,
+     "minPx": 18.39
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 26.98,
+     "minPx": 15.8
+    },
+    "standing": {
+     "ms": 383.3,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 19.5,
+     "minPx": 1.8
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 300,
+    "maxStepPx": 6.34,
+    "maxStepAtMs": 6300
+   },
+   "holdMotion": {
+    "samples": 165,
+    "xRangePx": 3.25,
+    "yRangePx": 0.78,
+    "distMinPx": 7.54,
+    "distMaxPx": 10.87
+   },
+   "standingArrivalMs": 33.3,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  },
+  "a3": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "latch": {
+    "flips": 2,
+    "to": [
+     "on@5866.67",
+     "off@8333.33"
+    ],
+    "minGapMs": 2466.7
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": null,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": null,
+    "rise": {
+     "ms": 216.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 24.36,
+     "minPx": 0
+    },
+    "handoff": {
+     "ms": 0,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 0,
+     "minPx": 0
+    },
+    "standing": {
+     "ms": 350,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 19.5,
+     "minPx": 0
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 0,
+    "maxStepPx": 13.57,
+    "maxStepAtMs": 6550
+   },
+   "holdMotion": {
+    "samples": 0,
+    "xRangePx": null,
+    "yRangePx": null,
+    "distMinPx": null,
+    "distMaxPx": null
+   },
+   "standingArrivalMs": 0,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  },
+  "a4": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "latch": {
+    "flips": 2,
+    "to": [
+     "on@3233.33",
+     "off@8333.33"
+    ],
+    "minGapMs": 5100
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 3116.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 0,
+     "spanMs": 2400,
+     "samples": 144,
+     "maxPx": 12.29,
+     "minPx": 8.48
+    },
+    "rise": {
+     "ms": 0,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 10.56,
+     "minPx": 0
+    },
+    "handoff": {
+     "ms": 0,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 0,
+     "minPx": 0
+    },
+    "standing": {
+     "ms": 350,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 19.5,
+     "minPx": 0
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 0,
+    "maxStepPx": 13.57,
+    "maxStepAtMs": 6550
+   },
+   "holdMotion": {
+    "samples": 144,
+    "xRangePx": 3.16,
+    "yRangePx": 2.2,
+    "distMinPx": 8.48,
+    "distMaxPx": 12.29
+   },
+   "standingArrivalMs": 0,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  },
+  "a5": {
+   "git": {
+    "commit": "2f290ac",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": 1
+   },
+   "latch": {
+    "flips": 3,
+    "to": [
+     "on@2883.33",
+     "on@6716.67",
+     "off@8333.33"
+    ],
+    "minGapMs": 1616.7
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 2766.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 0,
+     "spanMs": 2750,
+     "samples": 165,
+     "maxPx": 10.87,
+     "minPx": 7.54
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 39.37,
+     "minPx": 18.39
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 26.98,
+     "minPx": 15.8
+    },
+    "standing": {
+     "ms": 383.3,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 19.5,
+     "minPx": 1.8
+    }
+   },
+   "handoffSpan": {
+    "fromMs": 6283.33,
+    "toMs": 6950,
+    "longestRunOverMs": 300,
+    "maxStepPx": 6.34,
+    "maxStepAtMs": 6300
+   },
+   "holdMotion": {
+    "samples": 165,
+    "xRangePx": 3.25,
+    "yRangePx": 0.78,
+    "distMinPx": 7.54,
+    "distMaxPx": 10.87
+   },
+   "standingArrivalMs": 33.3,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true,
+   "thresholdPx": 15,
+   "thresholdFromRig": true
+  }
+ }
+}

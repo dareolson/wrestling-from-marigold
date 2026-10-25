@@ -6,9 +6,11 @@
 //   - the contact is Skeleton.backContact(): the painted clutch patch of the active forearm art if it has one,
 //     else the wrist ('wristProxy'). Rigs with a grip donor are swept with the grip art AND the baked fist; rigs
 //     without one, with the fist only, and the criterion is then the fist's wrist proxy;
-//   - the suggested holdW is the smallest 0.05 step with holdW - breath >= the worst first-pass weight over
-//     facings and arts, AND every sampled weight from the trough up to holdW + breath inside contactPx.
-//     It must be <= 1, otherwise the tool says STOP and prints the closest distances. It never moves the anchor.
+//   - since Rev 2 (D7) the hold's reach weight is constant and the CHEST breathes (a grounded torso offset of
+//     +-HOLD_BREATH.torso); each weight is measured at torso -T, 0 and +T and scored by the WORST of the three;
+//   - the suggested holdW is the smallest 0.05 step >= the worst first-pass weight over facings and arts (every
+//     larger weight stays inside contactPx at all three torso offsets). It must be <= 1, otherwise the tool says
+//     STOP and prints the closest distances. It never moves the anchor.
 //
 //   WFM_URL=http://127.0.0.1:5173 WFM_P1=george-roster-v1 node tools/debug/hold_weight_sweep.mjs [out.json]
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -26,7 +28,7 @@ try {
     await h.page.waitForFunction(() => window.__WFM_GAME?.scene?.scenes?.[0]?.w1?.skeleton, null, { timeout: 30000 });
     const install = await h.page.evaluate(INSTALL_PROVISIONAL_BACK_SELL);
     if (!install.ok) throw new Error(`${install.rig}: back sell not measurable: ${install.reason}`);
-    const result = await h.page.evaluate(({ STEPS }) => {
+    const result = await h.page.evaluate(({ STEPS, TORSO }) => {
         const sc = window.__WFM_GAME.scene.scenes[0];
         sc.scene.pause(); sc.tweens.pauseAll();
         const w = sc.w1, sk = w.skeleton, Sk = sk.constructor;
@@ -38,20 +40,25 @@ try {
                 const wt = i / STEPS;
                 w.x = 400; w.y = 430; w.facing = facing; w.lying = 'supine'; w.state = 'down';
                 sk.setPartVariants(art === 'grip' ? { nearForearm: 'grip' } : {});
-                const g = { ...Sk.GROUNDED_POSES.supine };
-                sk.updateGroundedReach(400, 430, w.s * (w._heightScale ?? 1), facing, g, { near: { to: 'nearHip', w: wt } }, { paintedContacts: true, backContact: true });
-                const c = sk.backContact();
-                rows.push({ art, w: wt, key: sk.nearForearm.texture.key, contact: c.contact, dist: +c.dist.toFixed(2) });
+                let worst = null, atRest = null;
+                for (const dt of [-TORSO, 0, TORSO]) {
+                    const g = { ...Sk.GROUNDED_POSES.supine }; g.torso += dt;
+                    sk.updateGroundedReach(400, 430, w.s * (w._heightScale ?? 1), facing, g, { near: { to: 'nearHip', w: wt } }, { paintedContacts: true, backContact: true });
+                    const c = sk.backContact();
+                    if (!worst || c.dist > worst.dist) worst = { dist: c.dist, contact: c.contact };
+                    if (dt === 0) atRest = c.dist;
+                }
+                rows.push({ art, w: wt, key: sk.nearForearm.texture.key, contact: worst.contact, dist: +worst.dist.toFixed(2), distRest: +atRest.toFixed(2) });
             }
             res.facings[facing] = rows;
         }
         res.arts = arts;
         return res;
-    }, { STEPS });
-    const px = install.contactPx, { breath } = HOLD_BREATH;
+    }, { STEPS, TORSO: HOLD_BREATH.torso });
+    const px = install.contactPx, { torso } = HOLD_BREATH;
     // first weight (from below) after which every larger weight stays within px, per facing and art
     const firstOk = rows => { for (let i = 0; i < rows.length; i++) if (rows.slice(i).every(r => r.dist <= px)) return rows[i].w; return null; };
-    const summary = { contactPx: px, provisionalContactPx: install.provisional, breath, arts: result.arts, perFacingArt: {}, closest: {} };
+    const summary = { contactPx: px, provisionalContactPx: install.provisional, torsoBreath: torso, arts: result.arts, perFacingArt: {}, closest: {} };
     for (const [f, rows] of Object.entries(result.facings)) for (const art of result.arts) {
         const r = rows.filter(x => x.art === art);
         summary.perFacingArt[`${f}/${art}`] = { firstWeightWithin: firstOk(r), contact: r[0].contact,
@@ -60,16 +67,17 @@ try {
     }
     const worst = Math.max(...Object.values(summary.perFacingArt).map(v => v.firstWeightWithin ?? Infinity));
     let holdW = null;
-    for (let c = 0.05; c <= 1.0001; c += 0.05) if (c - breath >= worst - 1e-9) { holdW = +c.toFixed(2); break; }
+    for (let c = 0.05; c <= 1.0001; c += 0.05) if (c >= worst - 1e-9) { holdW = +c.toFixed(2); break; }
     summary.worstFirstWeight = Number.isFinite(worst) ? worst : null;
     summary.holdW = holdW;
-    summary.troughWeight = holdW == null ? null : +(holdW - breath).toFixed(2);
+    summary.distAtHoldW = holdW == null ? null : Object.fromEntries(Object.entries(result.facings).flatMap(([f, rows]) => result.arts.map(art => {
+        const r = rows.find(x => x.art === art && Math.abs(x.w - holdW) < 1e-9); return [`${f}/${art}`, { worstOverBreath: r.dist, atRest: r.distRest }]; })));
     summary.stop = holdW == null;
     result.install = install; result.summary = summary;
-    for (const [k, v] of Object.entries(summary.perFacingArt)) console.log(`${k}: contact ${v.contact}; first weight from which every larger weight is within ${px} px = ${v.firstWeightWithin}; dist at w .5/.6/.7/.8/.9/1 = ${v.atWeight.map(a => a[1]).join(' / ')}`);
+    for (const [k, v] of Object.entries(summary.perFacingArt)) console.log(`${k}: contact ${v.contact}; first weight from which every larger weight is within ${px} px at torso +-${torso} = ${v.firstWeightWithin}; dist at w .5/.6/.7/.8/.9/1 = ${v.atWeight.map(a => a[1]).join(' / ')}`);
     console.log(`install ${JSON.stringify(install)}`);
-    console.log(summary.stop ? `STOP: no holdW <= 1 keeps the trough inside ${px} px on both facings; closest: ${JSON.stringify(summary.closest)}`
-        : `suggested holdW ${holdW} (trough ${summary.troughWeight}, peak ${(holdW + breath).toFixed(2)}) for contactPx ${px}`);
+    console.log(summary.stop ? `STOP: no holdW <= 1 keeps the contact inside ${px} px on both facings; closest: ${JSON.stringify(summary.closest)}`
+        : `suggested holdW ${holdW} for contactPx ${px}; dist at holdW (worst over torso +-${torso}, at rest): ${JSON.stringify(summary.distAtHoldW)}`);
     mkdirSync(dirname(out), { recursive: true });
     writeFileSync(out, JSON.stringify(result, null, 1));
 } finally { await h.close(); }

@@ -22,15 +22,22 @@ export function backRiseWeight(t, from = 0, peak = 1, carry = false) {
 }
 
 // Lying hold (D4, ?sellart=v1): after a back clutch lets go, the near hand settles
-// at the small of the back at weight `holdW` with a slow authored breath, instead of
-// returning to rest. `holdW` is RIG DATA (textures.backSell.holdW, rig/backSell.js): the lowest
-// centre weight whose breathing trough (holdW - breath) keeps the contact within the rig's
-// contactPx of backWaist on both facings (tools/debug/hold_weight_sweep.mjs; Lou: .80). The
-// breath is the same for every rig. A pure function of seconds since the clutch ended.
-export const HOLD_BREATH = Object.freeze({ breath: 0.08, periodSec: 1.6 });
+// at the small of the back at a CONSTANT reach weight `holdW` instead of returning to rest.
+// `holdW` is RIG DATA (textures.backSell.holdW, rig/backSell.js): the lowest weight that keeps the
+// contact within the rig's contactPx of backWaist on both facings (tools/debug/hold_weight_sweep.mjs;
+// Lou: .80). The hand does not move on its own (Rev 2 D7, Derek at G6: a breathing reach read as
+// rubbing the belly); the CHEST breathes instead, a grounded `torso` offset, and the reach re-solves
+// each frame so the hand follows the body. The breath is the same for every rig.
+export const HOLD_BREATH = Object.freeze({ torso: 0.04, periodSec: 1.6 });
+// Constant in time. `sinceReleaseSec` stays in the signature (the callers and the T1.2 fixture pass it).
 export function holdWeight(sinceReleaseSec, holdW) {
-    if (!Number.isFinite(sinceReleaseSec) || sinceReleaseSec < 0) return holdW;
-    return holdW + HOLD_BREATH.breath * Math.sin(2 * Math.PI * sinceReleaseSec / HOLD_BREATH.periodSec);
+    return holdW;
+}
+// The grounded offsets the hold adds to the lying pose, a pure function of seconds since the clutch ended.
+// Zero at the start, so the clutch -> hold handoff does not jump.
+export function holdOffsets(sinceReleaseSec) {
+    const t = Number.isFinite(sinceReleaseSec) && sinceReleaseSec > 0 ? sinceReleaseSec : 0;
+    return { torso: HOLD_BREATH.torso * Math.sin(2 * Math.PI * t / HOLD_BREATH.periodSec) };
 }
 
 // Far (support) hand plant during the same rise. Visual-only, a pure function of

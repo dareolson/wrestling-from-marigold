@@ -15,7 +15,7 @@ import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
-import { holdWeight, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
+import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
 import { backSellSupport } from './rig/backSell.js';
 import { staggerFor } from './animation/staggers.js';
 import { MOVE_SPECS } from './moves/registry.js';
@@ -1066,7 +1066,7 @@ export default class Wrestler {
         return backSellSupport(this.skeleton);
     }
 
-    // The lying hold's current reach weight, or null. Applies only on the mat in `down`
+    // The lying hold's current reach weight and pose offsets ({ w, offsets }), or null. Applies only on the mat in `down`
     // with no sell, move, choreography or ground handoff owning the pose; any of those
     // claims the pose and the hold simply is not drawn that frame.
     _lyingHold() {
@@ -1075,7 +1075,7 @@ export default class Wrestler {
             || this._groundHandoff || h.lying !== this.lying
             || (this._choreoUntil ?? 0) > (this.scene?.time?.now ?? 0)) return null;
         const backSell = this._backSell();
-        return backSell.ok ? { w: holdWeight(h.t, backSell.data.holdW) } : null;
+        return backSell.ok ? { w: holdWeight(h.t, backSell.data.holdW), offsets: holdOffsets(h.t) } : null;
     }
 
     // The sole grounded-sell appearance writer. Complete selections reset the
@@ -2822,7 +2822,7 @@ export default class Wrestler {
             }
             const lyingHold = this._lyingHold();
             if (lyingHold) {
-                this.skeleton.updateGroundedReach(x, y, s, facing, limitKnees({ ...Skeleton.GROUNDED_POSES[this.lying] }),
+                this.skeleton.updateGroundedReach(x, y, s, facing, limitKnees(applyOffsets(Skeleton.GROUNDED_POSES[this.lying], lyingHold.offsets)),
                     { near: { to: 'nearHip', w: lyingHold.w } }, { paintedContacts: true, backContact: true });
                 return;
             }

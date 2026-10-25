@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Wrestler from '../src/Wrestler.js';
 import Skeleton from '../src/Skeleton.js';
-import { backRiseWeight, HOLD_BREATH, holdWeight as holdWeightAt } from '../src/animation/backRisePerformance.js';
+import { backRiseWeight, HOLD_BREATH, holdOffsets, holdWeight as holdWeightAt } from '../src/animation/backRisePerformance.js';
 import { sampleSell, clutchSell } from '../src/animation/sells.js';
 import { GRIP_REFRACTORY_MS, newGripLatch, stepGripLatch as stepLatchAt } from '../src/animation/sellAppearance.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
@@ -14,7 +14,7 @@ import { onlyListed } from './support/promotedFlags.js';
 const ON = '?sellart=v1';
 // Lou's numbers live on his rig (textures.backSell); these keep the tests' old vocabulary.
 const BACK_SELL = theszProcreateV1.textures.backSell;
-const HOLD = { w: BACK_SELL.holdW, ...HOLD_BREATH };
+const HOLD = { w: BACK_SELL.holdW };
 const GRIP_CONTACT_PX = BACK_SELL.contactPx;
 const holdWeight = t => holdWeightAt(t, BACK_SELL.holdW);
 const stepGripLatch = (state, dist, now) => stepLatchAt(state, dist, now, GRIP_CONTACT_PX);
@@ -47,15 +47,20 @@ function fixture({ backWaist = true, backSell = true, part = 'back', dist = null
     return { w, calls, grounded, rises };
 }
 
-test('hold weight is a pure function of time since release, continuous with the clutch end', () => {
+test('hold weight is constant; the chest breathes instead (Rev 2 D7), a pure function of time since release', () => {
     assert.equal(holdWeight(0), HOLD.w, 'starts where the clutch ends');
-    for (let t = 0; t < 6; t += 0.05) {
-        assert.equal(holdWeight(t), holdWeight(t), 'same input, same output');
-        assert.ok(Math.abs(holdWeight(t) - HOLD.w) <= HOLD.breath + 1e-12);
+    for (let t = -1; t < 6; t += 0.05) {
+        assert.equal(holdWeight(t), HOLD.w, 'the reach does not breathe');
+        assert.deepEqual(holdOffsets(t), holdOffsets(t), 'same input, same output');
+        assert.ok(Math.abs(holdOffsets(t).torso) <= HOLD_BREATH.torso + 1e-12);
     }
-    assert.ok(Math.abs(holdWeight(HOLD.periodSec) - HOLD.w) < 1e-12, 'one full breath');
-    assert.ok(Math.abs(holdWeight(HOLD.periodSec / 4) - (HOLD.w + HOLD.breath)) < 1e-12);
-    assert.ok(HOLD.breath <= 0.08);
+    assert.equal(holdWeight(NaN, HOLD.w), HOLD.w);
+    assert.equal(holdOffsets(0).torso, 0, 'zero at the start: no jump at the clutch -> hold handoff');
+    assert.deepEqual(Object.keys(holdOffsets(0.3)), ['torso']);
+    assert.ok(Math.abs(holdOffsets(HOLD_BREATH.periodSec).torso) < 1e-12, 'one full breath');
+    assert.ok(Math.abs(holdOffsets(HOLD_BREATH.periodSec / 4).torso - HOLD_BREATH.torso) < 1e-12);
+    assert.ok(Math.abs(holdOffsets(3 * HOLD_BREATH.periodSec / 4).torso + HOLD_BREATH.torso) < 1e-12);
+    assert.equal(HOLD_BREATH.torso, 0.04);
     // the clutch hands over at the hold weight
     const { keys } = clutchSell('supine', 'back', 1, 'near', HOLD.w);
     assert.equal(sampleSell(keys, 1).reach.near, HOLD.w);

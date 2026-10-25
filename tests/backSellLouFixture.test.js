@@ -30,7 +30,9 @@ const hold = sec => perf.holdWeight(sec, lou.bs.holdW);
 const rise = (t, from, peak, carry) => perf.backRiseWeight(t, from, peak, carry);
 const handTarget = (riseEnd, ms) => perf.carriedHandTarget(riseEnd, ms, perf.settledBackHand(lou.bs, lou.idle));
 const latchStep = (state, dist, now) => appearance.stepGripLatch(state, dist, now, lou.bs.contactPx);
-const louValues = () => ({ hold: { w: lou.bs.holdW, ...perf.HOLD_BREATH }, recoveryBackHand: { arm: lou.bs.recoveryArm, elbow: lou.bs.recoveryElbow },
+// `breath` .08 is the retired reach breath (Rev 2 D7 moved the breath to the torso): kept as the recorded value
+// so the `values` section of the JSON stays byte-identical; nothing reads it any more.
+const louValues = () => ({ hold: { w: lou.bs.holdW, breath: 0.08, periodSec: perf.HOLD_BREATH.periodSec }, recoveryBackHand: { arm: lou.bs.recoveryArm, elbow: lou.bs.recoveryElbow },
     recoveryBackHandAbs: { ...perf.settledBackHand(lou.bs, lou.idle) }, armSettleMs: perf.ARM_SETTLE_MS, gripContactPx: lou.bs.contactPx });
 
 function standing({ facing = 1, side = 'near', now = 1000, since = 1000, until = 3500, pose = IDLE } = {}) {
@@ -100,13 +102,13 @@ test('the back sell on Procreate Lou matches the pre-refactor snapshot', () => {
     compare(now, JSON.parse(readFileSync(FIXTURE, 'utf8')));
 });
 
-test('the snapshot is not vacuous: the hand moves, the hold breathes, the carried target travels', () => {
+test('the snapshot is not vacuous: the hand moves, the hold weight is constant, the carried target travels', () => {
     const s = snapshot();
     const w = s.recoveryPose['facing=1/l=near/elbow/plain'].at(2);
     assert.ok(w.handWeight > 0.1 && Math.abs(w.pose.lArm - IDLE.lArm) > 0.05);
     assert.ok(s.recoveryPose['facing=-1/l=far/elbow/plain'].at(2).pose.rArm !== IDLE.rArm);
     const h = s.holdWeight.map(([, v]) => v);
-    assert.ok(Math.max(...h) - Math.min(...h) > 0.1);
+    assert.ok(h.every(v => v === lou.bs.holdW), 'Rev 2 D7: the hold reach weight is constant');
     const c = s.carriedHandTarget.a;
     assert.ok(Math.abs(c.at(-1)[1].arm - perf.settledBackHand(lou.bs, lou.idle).arm) < 1e-9);
     assert.ok(s.gripLatch.some(r => r[2]) && s.gripLatch.some(r => !r[2]));

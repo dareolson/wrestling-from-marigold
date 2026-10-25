@@ -5,7 +5,8 @@
 Every refinement records the failure, cause, reusable mechanism or reason it
 stays local, authoring/rig requirements, regression evidence and remaining
 coverage gaps. Mechanical verification and visual approval are separate.
-The architecture includes proposed tooling; those commands are not yet available.
+The architecture includes proposed tooling. Available so far: `npm run moves:coverage` (add `-- --check` to
+fail on new or changed gaps) and the capability index `tools/move-critic/capabilities.json`; the rest is not yet built.
 
 **Performance direction (2026-10-22):** Use the
 [current move performance audit](MOVE_PERFORMANCE_AUDIT.md) for the complete
@@ -134,6 +135,13 @@ Each of these cost a round of rework.
 | `lift` scales with each rig's hip height; trunks differ (inverted hip-to-crown: Lou 152, Procreate 136, George 138 rig units) | Hold a head-down contact with a clip `floorContacts` crown window, not by tuning lift per cast |
 | stage.mjs solves grips on shipped Lou only | Declare clip `grips` (arm channel + partner joint, same/other side); `MoveRuntime.afterDraw` re-solves them by IK on every cast |
 | Ring bounds used to clamp each actor separately | `Wrestler.stagingFit` shifts the shared origin (eased over 0.45 s) so a rope-side tableau keeps its geometry |
+| A whole-body `transform.y` swap moves the receiver's head with the body (suplex: head popped front -> behind) | Pin the head with a clip `layers` window (PLAN_SUPLEX_RISE, `eb420e2`) |
+| A state swap draws from whatever `this.pose` holds, which can be a stale pose from the last move (suplex left rKnee .6, lLeg .1) | Reset or derive the pose at the swap (`_standFromRise` starts from REST_POSE; PLAN_RISE_HANDOFF H1) |
+| The grounded renderer's final key and the upright draw disagree per rig (hips, knees, shoulders; 20-28 px on some rigs) | End the segment on the rig's own upright geometry with `Skeleton.standingChannels`, not a shared final key (H2/H3) |
+| A standing wrestler re-faces the opponent on the first frame, mirroring the whole figure (31-35 px on Lou) | It is a whole-figure mirror, not a pose step: measure the swap with the turn removed (H5); the turn itself is Derek's call and stays |
+| Screenshots taken while the game runs race the clock; runs differ by tens of ms | Step the game at a fixed 1/60 s and pair runs by event, not wall time (PLAN_SUPLEX_RISE T1.1; `aftermath_film.mjs`) |
+| Comparing all flags on against all off cannot say which flag did what | Film each flag alone as well (the `aft` config isolates `aftermath` from `sellart`; Codex review of the suplex rise) |
+| Art chosen by phase lies when the hand is not where the art says it is | Choose by measured painted contact with a dwell and refractory latch (`stepGripLatch`, PLAN_SUPLEX_RISE D4) |
 
 ## Acceptance (per move)
 

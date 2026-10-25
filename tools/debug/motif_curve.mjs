@@ -49,6 +49,24 @@ export function analyse(manifest) {
     if (standing >= 0) for (let i = standing; i < S.length; i++) if (S[i].backDist != null && S[i].backDist <= THRESH_PX) { arrive = i; break; }
     const standingArrivalMs = arrive >= 0 ? +(S[arrive].rel - S[standing].rel).toFixed(1) : null;
     const rel = i => (i != null && i >= 0 ? S[i].rel : null);
+    // D5 (T4.7): across the handoff, riseT .85 -> standing + 400 ms: the longest unbroken stretch
+    // with the hand > THRESH_PX from the back, and the largest per-step jump of the near contact.
+    let handoffSpan = null;
+    if (r85 >= 0 && standing >= 0) {
+        const end = idx((s, i) => i >= standing && s.rel - S[standing].rel >= 400);
+        const seg = S.slice(r85, end >= 0 ? end + 1 : S.length);
+        let run = 0, best = 0, jump = 0, jumpAt = null;
+        seg.forEach((s, i) => {
+            if (s.backDist != null && s.backDist > THRESH_PX) { run++; best = Math.max(best, run); } else run = 0;
+            const prev = seg[i - 1];
+            if (prev?.nearContact && s.nearContact) {
+                const d = Math.hypot(s.nearContact.x - prev.nearContact.x, s.nearContact.y - prev.nearContact.y);
+                if (d > jump) { jump = d; jumpAt = s.rel; }
+            }
+        });
+        handoffSpan = { fromMs: S[r85].rel, toMs: seg.at(-1).rel, longestRunOverMs: +(best * STEP_MS).toFixed(1),
+            maxStepPx: +jump.toFixed(2), maxStepAtMs: jumpAt };
+    }
     const windows = {
         lying: win(clutchEnd, riseStart),
         rise: win(riseStart, r85 >= 0 ? r85 : standing),
@@ -62,7 +80,7 @@ export function analyse(manifest) {
         else runs.at(-1).toMs = s.rel;
     }
     return { events: { impactMs: rel(impact), clutchEndMs: rel(clutchEnd), riseStartMs: rel(riseStart), rise85Ms: rel(r85), standingMs: rel(standing), plus2sMs: rel(plus2) },
-        windows, holdMotion, standingArrivalMs, textureRuns: runs, hasDistance: S.some(s => s.backDist != null) };
+        windows, handoffSpan, holdMotion, standingArrivalMs, textureRuns: runs, hasDistance: S.some(s => s.backDist != null) };
 }
 
 const palette = ['#1b6ca8', '#c0392b', '#2e8b57', '#8e44ad'];
@@ -107,6 +125,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     for (const [k, r] of Object.entries(out.runs)) {
         if (!r.hasDistance) { console.log(`${k}: no backWaist distance (receiver has none)`); continue; }
         const w = r.windows;
-        console.log(`${k}: >${THRESH_PX}px ms — lying ${w.lying?.ms}/${w.lying?.spanMs}, rise ${w.rise?.ms}/${w.rise?.spanMs}, handoff ${w.handoff?.ms}/${w.handoff?.spanMs}, standing ${w.standing?.ms}/${w.standing?.spanMs}; hold travel x ${r.holdMotion.xRangePx} y ${r.holdMotion.yRangePx} px, dist ${r.holdMotion.distMinPx}-${r.holdMotion.distMaxPx}; hand back within ${THRESH_PX}px ${r.standingArrivalMs} ms after standing`);
+        console.log(`${k}: >${THRESH_PX}px ms — lying ${w.lying?.ms}/${w.lying?.spanMs}, rise ${w.rise?.ms}/${w.rise?.spanMs}, handoff ${w.handoff?.ms}/${w.handoff?.spanMs}, standing ${w.standing?.ms}/${w.standing?.spanMs}; hold travel x ${r.holdMotion.xRangePx} y ${r.holdMotion.yRangePx} px, dist ${r.holdMotion.distMinPx}-${r.holdMotion.distMaxPx}; hand back within ${THRESH_PX}px ${r.standingArrivalMs} ms after standing; handoff (.85 -> standing+400): longest run >${THRESH_PX}px ${r.handoffSpan?.longestRunOverMs} ms, max step ${r.handoffSpan?.maxStepPx} px at ${r.handoffSpan?.maxStepAtMs}`);
     }
 }

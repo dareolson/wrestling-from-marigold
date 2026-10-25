@@ -31,11 +31,12 @@ import os
 KNEELIFT=float(os.environ.get('KNEELIFT',22))
 SPECS={
  'george':dict(dir='GeorgeNew',id='george-roster-v1',prefix='george_rv1_',snake='george_roster_v1',heightScale=1.012010,kneeLift=KNEELIFT,forearmOverUpperArm=True,farLegOverTorso=True,
-  # Derek 2026-10-25 (PLAN_GEORGE_TRANSFER G6a): candidate C, 6 game px inside the back contour at the top of the trunks
-  # (tools/debug/backwaist_candidates.mjs, research/animation/george-transfer-2026-10/backwaist/). Torso-canvas fractions.
-  backWaist={'u':0.3887,'v':0.6077},
-  # Measured with tools/debug/{hold_weight_sweep,recovery_probe}.mjs on this rig (PLAN_GEORGE_TRANSFER T3.2/T3.3); fist art only, so the contact is the wrist proxy.
-  backSell={'holdW':0.55,'recoveryArm':-0.5,'recoveryElbow':1.0,'settledElbow':0.7,'contactPx':15,'evidence':'tools/debug/hold_weight_sweep.mjs (holdW .55, fist wrist proxy, first weight within 15 px .47 both facings, trough 14.88 px, aa33af3 2026-10-25); tools/debug/recovery_probe.mjs (arm -0.5 / elbow +1.0, wrist proxy 2.39 px both facings, flex 97.4 deg, aa33af3 2026-10-25); contactPx 15 kept (wrist proxy, no grip donor)'},
+  # Derek 2026-10-25 (PLAN_GEORGE_TRANSFER G6a) picked candidate C (6 game px inside the back contour at the top of the trunks);
+  # Rev 2 D6 (after G6: C is on the visible belly supine) moved it to candidate A, ON the contour, with the hand drawn under the
+  # body (backSell handUnder). tools/debug/backwaist_candidates.mjs, research/animation/george-transfer-2026-10/backwaist/. Torso-canvas fractions.
+  backWaist={'u':0.2558,'v':0.6077},
+  # Measured with tools/debug/{hold_weight_sweep,recovery_probe}.mjs on this rig (PLAN_GEORGE_TRANSFER T3.2/T3.3, re-measured at anchor A in T6.4); fist art only, so the contact is the wrist proxy.
+  backSell={'holdW':0.45,'recoveryArm':-0.7,'recoveryElbow':1.1,'settledElbow':0.7,'contactPx':15,'handUnder':True,'evidence':'Re-measured at backWaist candidate A (u .2558, v .6077, on the contour) at 2026-10-25, PLAN_GEORGE_TRANSFER T6.4: tools/debug/hold_weight_sweep.mjs (holdW .45, fist wrist proxy, constant weight, first weight within 15 px at every sampled offset of the hold cycle .43 both facings, at .45 worst 14.35 px / rest 13.99 px); tools/debug/recovery_probe.mjs (arm -0.7 / elbow +1.1, wrist proxy 1.94 px both facings, flex 103.1 deg, limit 157.6); contactPx 15 kept (wrist proxy, no grip donor); handUnder: the forearm draws behind the torso while the grip latch is on'},
   heightNote='heightScale set by matching rig-tuner idle ink height at zoom 1.4 (facing 1) to current George: 335.3805 vs 332.87 at scale 1.00445 (after the 22px shin pivot lift); uniform, no per-part adjustment.',
   alias={'thigh_b':'right_thigh','shin_a':'right_shin','thigh_a':'left_thigh','shin_b':'left_shin','upper_arm':'right_upper_arm','forearm_hand':'right_forearm_hand'},
   shoulder=[1080,420],farshoulder=[1255,425],wrist=[1095,800],ankle=[1068,1425],sole=[1105,1565],farankle=[1262,1425],farsole=[1295,1550],

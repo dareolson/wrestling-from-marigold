@@ -1067,6 +1067,18 @@ export default class Wrestler {
         return backSellSupport(this.skeleton);
     }
 
+    // Rev 2 D6 (backSell.handUnder): the near forearm and hand draw behind the torso while the grip latch is on.
+    // The latch carries the dwell, so the depth swap cannot flicker faster than the latch does. Evaluated every draw,
+    // so any state that is not a back-sell phase (pinned, picked up, a move, a reset, the latch cleared) restores the
+    // normal order on its first frame.
+    _handUnder() {
+        if (!sellArtCandidate() || !this._gripLatch?.on || this._activeMove) return false;
+        if (this.state !== 'down' && this.state !== 'gettingUp' && this.state !== 'standing') return false;
+        if (this._sell && this._sell.plan[this._sell.i]?.part !== 'back') return false;
+        const backSell = this._backSell();
+        return backSell.ok && backSell.data.handUnder === true;
+    }
+
     // The lying hold's current reach weight and pose offsets ({ w, offsets }), or null. Applies only on the mat in `down`
     // with no sell, move, choreography or ground handoff owning the pose; any of those
     // claims the pose and the hold simply is not drawn that frame.
@@ -2745,6 +2757,7 @@ export default class Wrestler {
         const depth = 12 + (onRopes ? this._corner.matY : y) * 0.03;
         gfx.clear();
         gfx.setDepth(depth);
+        this.skeleton.setHandUnder?.(this._handUnder());
         this.skeleton.setDepth(depth);
         this.skeleton.invalidatePoseChannels();
         this.skeleton.setVisible(false); // shown only for upright states below

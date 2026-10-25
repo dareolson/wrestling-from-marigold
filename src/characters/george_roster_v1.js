@@ -69,7 +69,7 @@ export const georgeRosterV1 = {
         },
         "semanticAnchors": {
             "backWaist": {
-                "u": 0.3887,
+                "u": 0.2558,
                 "v": 0.6077
             }
         }
@@ -221,12 +221,13 @@ export const georgeRosterV1 = {
         }
     },
     "backSell": {
-        "holdW": 0.55,
-        "recoveryArm": -0.5,
-        "recoveryElbow": 1.0,
+        "holdW": 0.45,
+        "recoveryArm": -0.7,
+        "recoveryElbow": 1.1,
         "settledElbow": 0.7,
         "contactPx": 15,
-        "evidence": "tools/debug/hold_weight_sweep.mjs (holdW .55, fist wrist proxy, first weight within 15 px .47 both facings, trough 14.88 px, aa33af3 2026-10-25); tools/debug/recovery_probe.mjs (arm -0.5 / elbow +1.0, wrist proxy 2.39 px both facings, flex 97.4 deg, aa33af3 2026-10-25); contactPx 15 kept (wrist proxy, no grip donor)"
+        "handUnder": true,
+        "evidence": "Re-measured at backWaist candidate A (u .2558, v .6077, on the contour) at 2026-10-25, PLAN_GEORGE_TRANSFER T6.4: tools/debug/hold_weight_sweep.mjs (holdW .45, fist wrist proxy, constant weight, first weight within 15 px at every sampled offset of the hold cycle .43 both facings, at .45 worst 14.35 px / rest 13.99 px); tools/debug/recovery_probe.mjs (arm -0.7 / elbow +1.1, wrist proxy 1.94 px both facings, flex 103.1 deg, limit 157.6); contactPx 15 kept (wrist proxy, no grip donor); handUnder: the forearm draws behind the torso while the grip latch is on"
     }
 },
 };

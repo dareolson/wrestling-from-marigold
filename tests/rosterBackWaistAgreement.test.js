@@ -16,7 +16,7 @@ const specs = Object.fromEntries([...py.matchAll(/^ '(\w+)':dict\(/gm)].map((m, 
     [m[1], py.slice(m.index, all[i + 1]?.index ?? py.indexOf('\n}\n', m.index))]));
 const specBackWaist = text => { const m = text.match(/backWaist=\{'u':([\d.]+),'v':([\d.]+)\}/); return m ? { u: +m[1], v: +m[2] } : null; };
 
-const specBackSell = text => { const m = text.match(/backSell=(\{[^}]*\})/); return m ? JSON.parse(m[1].replace(/'/g, '"')) : null; };
+const specBackSell = text => { const m = text.match(/backSell=(\{[^}]*\})/); return m ? JSON.parse(m[1].replace(/'/g, '"').replace(/:True/g, ':true').replace(/:False/g, ':false')) : null; };
 
 test('the generator SPECS and the generated file give every roster rig the same backSell (or none)', () => {
     for (const [name, rig] of Object.entries(GENERATED))
@@ -32,10 +32,10 @@ test('the generator SPECS and the generated file give every roster rig the same 
     }
 });
 
-test('George has the anchor Derek picked at G6a (candidate C) and his measured backSell (T3.2/T3.3)', () => {
-    assert.deepEqual(georgeRosterV1.textures.torso.semanticAnchors, { backWaist: { u: 0.3887, v: 0.6077 } });
+test('George has backWaist candidate A (Rev 2 D6, on the contour; G6a had picked C) and his backSell re-measured there (T6.4)', () => {
+    assert.deepEqual(georgeRosterV1.textures.torso.semanticAnchors, { backWaist: { u: 0.2558, v: 0.6077 } });
     const b = georgeRosterV1.textures.backSell;
-    assert.deepEqual({ ...b, evidence: undefined }, { holdW: 0.55, recoveryArm: -0.5, recoveryElbow: 1.0, settledElbow: 0.7, contactPx: 15, evidence: undefined });
+    assert.deepEqual({ ...b, evidence: undefined }, { holdW: 0.45, recoveryArm: -0.7, recoveryElbow: 1.1, settledElbow: 0.7, contactPx: 15, handUnder: true, evidence: undefined });
     assert.match(b.evidence, /hold_weight_sweep/);
     assert.match(b.evidence, /recovery_probe/);
 });

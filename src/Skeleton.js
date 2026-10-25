@@ -8,6 +8,9 @@ import {
 import { childAngleFromLocalFlex, localFlexFromChildAngle, JOINT_LIMITS } from './rig/articulation.js';
 import { backRiseWeight, PLANT, plantWeight, riseHoldCarry } from './animation/backRisePerformance.js';
 import { applyOffsets, limitKnees } from './animation/sells.js';
+
+// Just behind the torso's sub-depth (base + 0.001, see setDepth) and in front of the head (base + 0.0005).
+const HAND_UNDER_DEPTH = 0.00095;
 import { backSellSupport } from './rig/backSell.js';
 
 // updateUpright draws every arm and forearm this much (facing-signed) past the pose channels.
@@ -741,7 +744,17 @@ export default class Skeleton {
             this.farForearm.setDepth(base + 0.00002);
             this.nearForearm.setDepth(base + 0.00402);
         }
+        // Rev 2 D6 (backSell.handUnder): the near forearm and hand behind the torso, the upper arm stays in front.
+        // Applied last so it wins over the opt-ins above; the Wrestler sets the flag every draw, so it is restored
+        // by the next draw whenever the condition ends.
+        if (this._handUnder) {
+            this.nearForearm.setDepth(base + HAND_UNDER_DEPTH);
+            this.nearHand?.setDepth(base + HAND_UNDER_DEPTH - 0.00001);
+        }
     }
+
+    /** Whether the near forearm/hand draw behind the torso (takes effect at the next setDepth). */
+    setHandUnder(on) { this._handUnder = !!on; }
 
     setVisible(v) {
         this._parts.forEach(p => p.setVisible(v));

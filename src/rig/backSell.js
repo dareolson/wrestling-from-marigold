@@ -10,6 +10,8 @@
 //     settledElbow,   the elbow the settled pose carries (what tweenPose('idle') settles on)
 //     contactPx,      the distance at which the hand counts as on the back (grip art latch threshold)
 //     evidence,       the tool and date that measured these
+//     handUnder,      OPTIONAL boolean, default false (Rev 2 D6): while the grip latch is on, the near forearm (and
+//                     near hand) draw BEHIND the torso, so a hand at the back contour reads as under the body
 //   }
 // The settled arm is not stored: it is the rig's idle pose `lArm` (see settledBackHand in
 // backRisePerformance.js), the same value the live settled pose carries.
@@ -39,5 +41,6 @@ export function backSellSupport(skeleton) {
     for (const k of BACK_SELL_FIELDS) if (!Number.isFinite(data[k])) return no(`invalid backSell data: ${k}`);
     if (!(data.holdW > 0 && data.holdW <= 1) || !(data.contactPx > 0)) return no('invalid backSell data: range');
     if (typeof data.evidence !== 'string' || !data.evidence) return no('invalid backSell data: evidence');
+    if (data.handUnder !== undefined && typeof data.handUnder !== 'boolean') return no('invalid backSell data: handUnder');
     return { ok: true, reason: null, gripArt, contact, data };
 }

@@ -54,7 +54,7 @@ test('support: George is supported on his own numbers, with no grip donor and th
     assert.deepEqual([bare.ok, bare.reason, bare.data], [false, 'no backSell data', null]);
 });
 
-test('lying hold: the last back clutch ends on George\'s holdW and the hold breathes around it', () => withFlag('?sellart=v1', () => {
+test('lying hold: the last back clutch ends on George\'s holdW and the hold keeps it (the chest breathes, not the reach)', () => withFlag('?sellart=v1', () => {
     const { w } = george({ state: 'down', sell: true });
     w._tickSell(0.02);
     assert.ok(w._hold, 'the hold starts');
@@ -62,7 +62,8 @@ test('lying hold: the last back clutch ends on George\'s holdW and the hold brea
     assert.equal(w._lyingHold().w, holdWeight(0.51, BS.holdW));
     assert.notEqual(w._lyingHold().w, holdWeight(0.51, LOU.holdW));
     assert.equal(holdWeight(0, BS.holdW), BS.holdW, 'starts where the clutch ends');
-    assert.equal(sampleSell(clutchSell('supine', 'back', 1, 'near', BS.holdW).keys, 1).reach.near, BS.holdW);
+    assert.ok(Math.abs(sampleSell(clutchSell('supine', 'back', 1, 'near', BS.holdW).keys, 1).reach.near - BS.holdW) < 1e-12);
+    assert.equal(w._lyingHold().w, BS.holdW, 'the reach weight is constant');
     // the clutch the sell is playing is built to end on that weight
     const f = george({ state: 'down', sell: true }); f.w._sell.t = 0.999;
     const pose = f.w._sellPose();

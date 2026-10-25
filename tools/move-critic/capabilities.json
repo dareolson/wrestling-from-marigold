@@ -117,9 +117,9 @@
       "fallbacks": "other sells, rigs without both `backWaist` and `backSell` (their numbers are never borrowed), flag off: no hold is drawn",
       "regression": ["tests/lyingHold.test.js", "tests/backSellLouFixture.test.js", "tests/backSellSupport.test.js", "tests/backSellRigContract.test.js", "tests/backSellGeorge.test.js", "tests/handUnder.test.js"],
       "maturity": "pilot",
-      "mechanical": { "status": "pass", "date": "2026-10-25", "evidence": "tests/lyingHold.test.js (constant weight, torso breath, HOLD_LEGS cycle, rise carry); tools/debug/hold_rise_probe.mjs: hold -> rise step <= 0.36 px on Lou and George, both facings (0.7 / 1.3 / 2.5 / 3.1 / 5.4 s into the hold; 23.96 px without the carry); T4.3 film (before Rev 2): motif > 15 px for 0 of 4200 ms lying" },
-      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou supine back sell, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George (george-roster-v1): G6 (2026-10-25) was NOT approved (hand read as rubbing the belly, stiff legs); Rev 2 changes the hold (anchor A + handUnder, constant reach with the chest breathing, leg life); Derek has not seen it (PLAN_GEORGE_TRANSFER G7)" }, { "status": "unverified", "reason": "Lou: Rev 2 D7/D8 give his approved hold a torso breath and leg cycle (hand weight now constant); Derek has not seen it (G7)" } ],
-      "gap": "Back only; Lou and George (George: no grip donor, wrist proxy contact, hand under the body via backSell.handUnder at backWaist candidate A; unverified until G7). Rev 2 change, all rigs: the reach no longer breathes (the chest does), the legs draw up in turn (HOLD_LEGS: near .40/-.35, far .35/-.30, hip +2, 3.6 s). Not covered: legs during a lying wait with no hold (writhe last)"
+      "mechanical": { "status": "pass", "date": "2026-10-25", "evidence": "tests/lyingHold.test.js (constant weight, torso breath, HOLD_LEGS cycle, rise carry); tools/debug/hold_rise_probe.mjs: hold -> rise step <= 0.36 px on Lou and George, both facings (0.7 / 1.3 / 2.5 / 3.1 / 5.4 s into the hold; 23.96 px without the carry); T4.3 film (before Rev 2): motif > 15 px for 0 of 4200 ms lying; Rev 3 T8.3: George holdW .45 -> .7 (hold_weight_sweep.mjs: first weight within 15 px at every sampled offset .695 both facings, at .7 worst 14.52 px, margin .48 px) because the hand now reaches the waist round through backSell.aroundVia" },
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou supine back sell, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George (george-roster-v1): G6 (2026-10-25) was NOT approved (hand read as rubbing the belly, stiff legs); G7 'not yet' (the hand vanished, an elbow bezel); Rev 3 puts the hold on a longer route (holdW .7 through backSell.aroundVia) and keeps the forearm over the upper arm; Derek has not seen it (PLAN_GEORGE_TRANSFER G8)" }, { "status": "unverified", "reason": "Lou: Rev 2 D7/D8 give his approved hold a torso breath and leg cycle (hand weight now constant); Derek has not seen it (G7)" } ],
+      "gap": "Back only; Lou and George (George: no grip donor, wrist proxy contact, hand under the body via backSell.handUnder at backWaist candidate A; unverified until G7). Rev 2 change, all rigs: the reach no longer breathes (the chest does), the legs draw up in turn (HOLD_LEGS: near .40/-.35, far .35/-.30, hip +2, 3.6 s). Not covered: legs during a lying wait with no hold (writhe last). Rev 3: George's hold weight is .7 (the route to the waist is longer than the straight path); hold contact 14.52 px from the back waist, margin .48 px to the 15 px line"
     },
     {
       "id": "contact-latched-art",
@@ -131,13 +131,13 @@
         { "kind": "adapter", "id": "sell:lyingHold" },
         { "kind": "adapter", "id": "rise:back" }
       ],
-      "supported": "back contact on a rig with painted backWaist and backSell data: Lou with his grip donor (gripArt painted, clutchPatch contact) and George without one (gripArt none: the baked fist stays, contact wristProxy, the latch still runs and never selects art). Rev 2: a rig with `backSell.handUnder` (George, anchor A) draws the near forearm behind the torso while the latch is on (Wrestler._handUnder -> Skeleton.setHandUnder -> setDepth), in the back clutch, hold, rise and standing recovery; Lou does not set it",
+      "supported": "back contact on a rig with painted backWaist and backSell data: Lou with his grip donor (gripArt painted, clutchPatch contact) and George without one (gripArt none: the baked fist stays, contact wristProxy, the latch still runs and never selects art). Rev 2: a rig with `backSell.handUnder` (George, anchor A) draws the near forearm behind the torso, in the back clutch, hold, rise and standing recovery (Wrestler._handUnder -> Skeleton.setHandUnder); Lou does not set it. Rev 3: the depth no longer follows the latch (the wrist is within contactPx of the waist only once it is already over the painted art, never clear of it): see `around-path`, `clearance-swap` and `torso-mask-no-bezel`",
       "fallbacks": "no donor: base art and the wrist as the contact (labelled `wristProxy`); no anchor or no backSell data: unsupported, sell off",
       "regression": ["tests/lyingHold.test.js", "tests/sellAppearance.test.js", "tests/backSellSupport.test.js", "tests/backSellGeorge.test.js", "tests/handUnder.test.js", "tests/backSellRigContract.test.js"],
       "maturity": "pilot",
       "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/lyingHold.test.js latch test; T1.2/T4.3 film: 0 grip-fist-grip runs under 250 ms in 4 scenarios" },
-      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George (fist art, wristProxy contact): G6 not approved; Rev 2 adds handUnder (the forearm behind the torso while the latch is on) and moves backWaist to the contour (candidate A); Derek has not seen it (PLAN_GEORGE_TRANSFER G7)" } ],
-      "gap": "The depth swap follows the latch and so inherits its dwell (100 ms) and refractory (250 ms); the swap counts and the shortest gap are in PLAN_GEORGE_TRANSFER T7.1. Grip donor exists for Lou only; George's arrives from Codex (Stage 5, no code change expected). George T3.5: latch flips >= 1616.7 ms apart, never inside the 250 ms refractory"
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George (fist art, wristProxy contact): G6 not approved; Rev 2 added handUnder and moved backWaist to the contour (candidate A); G7 'not yet'; Rev 3 changes when the hand goes behind the body (the route and the clearance test, not the latch); Derek has not seen it (PLAN_GEORGE_TRANSFER G8)" } ],
+      "gap": "The latch still switches the grip art (Lou) and runs, unused, on George (no donor); Rev 3: George's depth swap no longer follows it (swap counts, clearances and gaps: PLAN_GEORGE_TRANSFER T8.5). Grip donor exists for Lou only; George's arrives from Codex (Stage 5, no code change expected). George T3.5: latch flips >= 1616.7 ms apart, never inside the 250 ms refractory"
     },
     {
       "id": "carried-rise",
@@ -151,8 +151,8 @@
       "regression": ["tests/carriedRise.test.js", "tests/backSellLouFixture.test.js", "tests/backSellGeorge.test.js"],
       "maturity": "pilot",
       "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/carriedRise.test.js (11); T4.7 film: hand-to-backWaist 0.14-0.16 px at the swap" },
-      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou back rise, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George runs this from 2026-10-25: G6 not approved; Rev 2 starts the rise from the hold's leg and torso offsets and re-measures his recovery at anchor A (arm -0.7, elbow +1.1); Derek has not seen it (PLAN_GEORGE_TRANSFER G7)" } ],
-      "gap": "Lou and George (George unverified until G7). George T3.5, supine runs: rise 0 ms and handoff 0 ms > 15 px, longest run across the handoff 0 ms, hand-to-back 0 px at the swap; a rolled (prone) receiver: rise 766.7 ms > 15 px (no protected prone rise, unchanged)"
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou back rise, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George runs this from 2026-10-25: G6 not approved; Rev 2 starts the rise from the hold's leg and torso offsets and re-measures his recovery at anchor A (arm -0.7, elbow +1.1); G7 'not yet'; Rev 3 gives his standing recovery a via pose on the way to and from the back (arm -0.6 / elbow -0.4) and gives the combat guard up until the hand has passed it; Derek has not seen it (PLAN_GEORGE_TRANSFER G8)" } ],
+      "gap": "Lou and George (George unverified until G7). George T3.5, supine runs: rise 0 ms and handoff 0 ms > 15 px, longest run across the handoff 0 ms, hand-to-back 0 px at the swap; a rolled (prone) receiver: rise 766.7 ms > 15 px (no protected prone rise, unchanged). Rev 3: George's standing channels run start -> via pose -> settled over the recovery hand weight (aroundChannel, standW .5, fade-in .8 s on a rig with a via pose); the settled target at hand weight 1 is unchanged"
     },
     {
       "id": "rise-standing-channels",
@@ -204,6 +204,51 @@
       "mechanical": { "status": "unverified", "reason": "no automated test; the T1.2 replication check (re-draw equals the game's first standing frame, 0.00 px) was run by hand and the tools were used for two gates" },
       "visual": [ { "status": "not-applicable", "reason": "capture tool" } ],
       "gap": "Two tools share code by copy; manifests not in the common envelope"
+    }
+    ,{
+      "id": "around-path",
+      "summary": "A rig that draws the hand behind the body (backSell.handUnder) takes it to the back waist, and back out, round through a point outside the painted torso (backSell.aroundVia): a polyline in the reach weight on the mat and in the rise, a via pose in the standing recovery's arm channels",
+      "origin": { "failure": "G7: the hand vanished in place when the depth swapped, because it was over the painted torso at that moment (the wrist is within 15 px of the waist only once it is on the art)", "evidence": "PLAN_GEORGE_TRANSFER G7 and Rev 3 D9; tools/debug/around_via_candidates.mjs (G8a: candidate B); tools/debug/route_probe.mjs" },
+      "implementation": ["src/rig/backSell.js", "src/Skeleton.js", "src/Wrestler.js", "src/animation/sells.js"],
+      "authoring": "backSell.aroundVia { u, v, recoveryArm, recoveryElbow, approach } in the rig's textures (generator SPECS and the generated file, identically); candidates: tools/debug/around_via_candidates.mjs; standing via pose: tools/debug/around_recovery_probe.mjs; AROUND.viaW / standW / rampMs and the approach swept with tools/debug/route_probe.mjs",
+      "consumers": [ { "kind": "adapter", "id": "sell:lyingHold" }, { "kind": "adapter", "id": "rise:back" }, { "kind": "tool", "id": "tools/debug/route_probe.mjs" } ],
+      "supported": "a rig with backSell.handUnder AND backSell.aroundVia: George (george-roster-v1: via u -0.25 / v 0.9069, standing via pose arm -0.6 / elbow -0.4, back clutch reach takes .4 of the clutch, recovery fade-in .8 s)",
+      "fallbacks": "no aroundVia (Lou) or handUnder off: the straight reach and the straight recovery blend, exactly as before",
+      "regression": ["tests/aroundRoute.test.js", "tests/backSellSupport.test.js", "tests/backSellRigContract.test.js", "tests/backSellGeorge.test.js", "tests/handUnder.test.js", "tests/backSellLouFixture.test.js"],
+      "maturity": "pilot",
+      "mechanical": { "status": "pass", "date": "2026-10-25", "evidence": "tools/debug/route_probe.mjs (real Wrestler draw, frame by frame, both facings): back clutch 1.38 s max wrist step relative to the back waist 2.21 px (straight path 1.89), standing release after the first 30 frames 1.94 px; T8.5 films (suplex, suplexFlip kind 1, prone kind 2): 2 / 2 / 4 swaps, all clear (smallest 1.94 px), 0 skipped, no two swaps within 866 ms; max wrist step relative to the back waist 1.82 / 2.00 supine (prone clutch 3.26, prone rise start 16.63 not met); Lou's fixture unchanged" },
+      "visual": [ { "status": "unverified", "reason": "Derek has not seen it (PLAN_GEORGE_TRANSFER G8)" } ],
+      "gap": "George only. The compact clutch (.63 s) still moves the hand faster than 2.5 px a frame (probe: 4.83, the straight path already 4.12), and the entry into the standing recovery after a prone rise (no carried hand) steps 3.88 px a frame (straight 4.46). The back clutch reach takes .4 of the clutch (was .25) and the squeeze/release keys move up with it"
+    },
+    {
+      "id": "clearance-swap",
+      "summary": "The hand's depth changes only while its four sample points (wrist, contact, forearm distal midpoint, hand end) are all outside the torso's painted alpha; the route decides whether (Wrestler._handWant), the clearance decides when",
+      "origin": { "failure": "G7: a swap made while the hand was over the painted torso made it pop under in place", "evidence": "PLAN_GEORGE_TRANSFER G7 and Rev 3 D10; HEAD film: the wrist is on the art (0 px outside) at every grip-latch moment" },
+      "implementation": ["src/rig/silhouette.js", "src/Skeleton.js", "src/Wrestler.js"],
+      "authoring": "none; Wrestler._handWant / _handUnder, Skeleton.handClearance / nearHandSamples, rig/silhouette.js (distance field of the torso alpha >= 128)",
+      "consumers": [ { "kind": "adapter", "id": "sell:lyingHold" }, { "kind": "adapter", "id": "rise:back" }, { "kind": "tool", "id": "tools/debug/aftermath_film.mjs" } ],
+      "supported": "a rig with backSell.handUnder (George); an unmeasurable hand (no pixels) never swaps in",
+      "fallbacks": "out of context (pinned, a move, another sell part, ...) resets at once without waiting for clearance; Lou has no handUnder",
+      "regression": ["tests/silhouette.test.js", "tests/handUnder.test.js"],
+      "maturity": "pilot",
+      "mechanical": { "status": "pass", "date": "2026-10-25", "evidence": "tests/silhouette.test.js, tests/handUnder.test.js (D10); T8.5 films (suplex, suplexFlip kind 1, prone kind 2): 2 / 2 / 4 swaps, all clear (smallest 1.94 px), 0 skipped, no two swaps within 866 ms; max wrist step relative to the back waist 1.82 / 2.00 supine (prone clutch 3.26, prone rise start 16.63 not met)" },
+      "visual": [ { "status": "unverified", "reason": "Derek has not seen it (PLAN_GEORGE_TRANSFER G8)" } ],
+      "gap": "The clearance is measured from the pose drawn the frame before. The swap in happens at the first clear frame (at the very start of the back clutch the hand is clear by about 2 px), not at the via point"
+    },
+    {
+      "id": "torso-mask-no-bezel",
+      "summary": "While the hand is behind the body the forearm keeps its depth over the upper arm (no elbow bezel) and an inverted torso-alpha mask (Phaser 4 per-object Mask filter) hides it where the torso is painted",
+      "origin": { "failure": "G7: behind the upper arm the forearm's top showed the upper arm's own end (an elbow bezel); over the upper arm and behind the torso is a cycle no single depth order can draw", "evidence": "PLAN_GEORGE_TRANSFER G7 and Rev 3 D11; tools/debug/forearm_inside_probe.mjs" },
+      "implementation": ["src/Skeleton.js"],
+      "authoring": "none; backSell.handUnder with the rig's forearmOverUpperArm; the mask must be viewed through the filter's own camera (through the main camera it lines up with nothing)",
+      "consumers": [ { "kind": "tool", "id": "tools/debug/forearm_inside_probe.mjs" }, { "kind": "tool", "id": "tools/debug/forearm_count.mjs" } ],
+      "supported": "a rig with backSell.handUnder AND forearmOverUpperArm (George) on a WebGL renderer",
+      "fallbacks": "no forearmOverUpperArm, or a part that cannot take filters (Canvas, a test stand-in): the Rev 2 depth order (forearm behind the torso)",
+      "regression": ["tests/handUnder.test.js"],
+      "maturity": "pilot",
+      "mechanical": { "status": "pass", "date": "2026-10-25", "evidence": "tests/handUnder.test.js (D11); tools/debug/forearm_inside_probe.mjs: forearm pixels inside the torso art equal the Rev 2 depth order's to within a few px; +1.0 ms/frame for two wrestlers (headless, software GL); T8.5 films (suplex, suplexFlip kind 1, prone kind 2): 2 / 2 / 4 swaps, all clear (smallest 1.94 px), 0 skipped, no two swaps within 866 ms; max wrist step relative to the back waist 1.82 / 2.00 supine (prone clutch 3.26, prone rise start 16.63 not met)" },
+      "visual": [ { "status": "unverified", "reason": "Derek has not seen it (PLAN_GEORGE_TRANSFER G8)" } ],
+      "gap": "Forearm pixels still show along the torso's outline (about 1.5 px deep, where the forearm's own black line meets the torso's); the old depth order has the same ring. Costs about 1 ms a frame (headless Chrome, software GL) for two wrestlers with the hand behind the body"
     }
   ],
   "localDecisions": [

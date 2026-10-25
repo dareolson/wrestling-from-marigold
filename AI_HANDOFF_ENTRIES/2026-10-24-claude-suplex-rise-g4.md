@@ -1,5 +1,7 @@
 # Suplex receiver rise: G4 package (Lou, `?sellart=v1` + `?aftermath=v2`)
 
+**Update 2026-10-24: Derek approved at G4 and promoted both flags to default.** They are on in the game unless the URL has `?sellart=off` / `?aftermath=off`. The support plant stays parked behind `&plant=1`.
+
 2026-10-24 · Claude (Sonnet, session 4 of [PLAN_SUPLEX_RISE.md](../PLAN_SUPLEX_RISE.md), rev 4) · for Derek's G4 review.
 All commits are local on `story/marigold-opening`; nothing is pushed or promoted. 838 tests pass.
 

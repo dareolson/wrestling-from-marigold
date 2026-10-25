@@ -3,6 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Wrestler from '../src/Wrestler.js';
+import { onlyListed } from './support/promotedFlags.js';
 
 function standing({ part = 'knee', limb = 'rLeg', severity = 1, now = 1000 } = {}) {
     const drawn = [];
@@ -23,7 +24,7 @@ function standing({ part = 'knee', limb = 'rLeg', severity = 1, now = 1000 } = {
     w._pain = { source: 'x', part, limb, severity, phase: 'recover', since: now - 1000, until: now + 1500, planned: true };
     return { w, drawn, scene };
 }
-const withFlag = (search, fn) => { globalThis.location = { search }; try { return fn(); } finally { delete globalThis.location; } };
+const withFlag = (search, fn) => { globalThis.location = { search: onlyListed(search) }; try { return fn(); } finally { delete globalThis.location; } };
 const ON = '?aftermath=v2';
 
 test('flag off: draw hands the skeleton this.pose itself, byte for byte', () => {

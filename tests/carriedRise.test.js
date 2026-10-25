@@ -10,9 +10,10 @@ import { backRiseWeight, carriedHandTarget, ARM_SETTLE_MS, RECOVERY_BACK_HAND_AB
 import { JOINT_LIMITS } from '../src/rig/articulation.js';
 import { newGripLatch } from '../src/animation/sellAppearance.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
+import { onlyListed } from './support/promotedFlags.js';
 
 const BOTH = '?sellart=v1&aftermath=v2';
-const withFlag = (search, fn) => { globalThis.location = { search }; try { return fn(); } finally { delete globalThis.location; } };
+const withFlag = (search, fn) => { globalThis.location = { search: onlyListed(search) }; try { return fn(); } finally { delete globalThis.location; } };
 const noop = () => {};
 
 // ── backRiseWeight(t, from, peak, carry) ────────────────────────────────────────────────────────
@@ -138,6 +139,20 @@ test('the rise context carries `carry` only with both flags and a painted backWa
         q._painRecovering();
         assert.equal(q._pain.carried, undefined);
     });
+});
+
+test('promoted (Derek 2026-10-24): in the game both flags are on unless the URL turns one off', () => {
+    const rawCtx = (search) => {
+        globalThis.location = { search };
+        try { return fixture({ state: 'gettingUp', pain: { phase: 'rise', part: 'back', severity: 1 } }).w._backRiseContext(); }
+        finally { delete globalThis.location; }
+    };
+    assert.equal(rawCtx('')?.carry, true, 'no flags in the URL: both on, carried');
+    assert.equal(rawCtx('?p1=thesz-procreate-v1')?.carry, true, 'unrelated params: still on');
+    assert.equal(rawCtx('?aftermath=off')?.carry, undefined, 'aftermath off: not carried');
+    assert.equal(rawCtx('?sellart=off'), null, 'sellart off: no rise context');
+    assert.equal(fixture({ state: 'gettingUp', pain: { phase: 'rise', part: 'back', severity: 1 } }).w._backRiseContext(), null,
+        'Node without location: off');
 });
 
 test('first standing draw: hand already at full weight on the rise-end arm; guard fully given up; art carried', () => withFlag(BOTH, () => {

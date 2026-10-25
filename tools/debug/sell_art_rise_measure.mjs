@@ -55,7 +55,7 @@ try {
         const out = { mode, rig: new URLSearchParams(location.search).get('p1'), flags: location.search, floor: FLOOR, step: STEP, facings: {} };
         const setFlag = on => {
             const url = new URL(location.href);
-            if (on) url.searchParams.set('sellart', 'v1'); else url.searchParams.delete('sellart');
+            if (on) url.searchParams.set('sellart', 'v1'); else url.searchParams.set('sellart', 'off');
             history.replaceState(null, '', url);
         };
         const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);

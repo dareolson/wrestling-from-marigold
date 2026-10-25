@@ -7,12 +7,13 @@ import { backRiseParts, clutchArtPhase, groundedSellParts } from '../src/animati
 import { MOVE_SPECS } from '../src/moves/registry.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 import { george } from '../src/characters/george.js';
+import { onlyListed } from './support/promotedFlags.js';
 
 const ON = '?sellart=v1';
 function withFlag(search, fn) {
     const prior = globalThis.location;
     if (search === undefined) delete globalThis.location;
-    else globalThis.location = { search };
+    else globalThis.location = { search: onlyListed(search) };
     try { return fn(); }
     finally {
         if (prior === undefined) delete globalThis.location;

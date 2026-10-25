@@ -73,7 +73,7 @@ try {
             const toggle = enabled => {
                 const url = new URL(location.href);
                 if (enabled) url.searchParams.set('sellart', 'v1');
-                else url.searchParams.delete('sellart');
+                else url.searchParams.set('sellart', 'off');
                 history.replaceState(null, '', url);
             };
             const prepare = (w, x) => {

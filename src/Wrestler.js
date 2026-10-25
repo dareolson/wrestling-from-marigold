@@ -58,12 +58,22 @@ const SHOVE_HIT      = 100;
 const DROPKICK_V2_STRIDE_MIN_GAP = 130;
 export const DROPKICK_V2_GATHER_AT = 0.22;
 const dropkickCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('dropkick') === 'v2';
-// ?aftermath=v2: the compact fallback sell and the protective recovery overlay
-// (PLAN_MOVE_PERFORMANCE.md D4), a comparison until Derek approves it at G3.
-// Flag off, neither exists and nothing below reads _pain beyond today's sells.
-const aftermathCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('aftermath') === 'v2';
-const sellArtCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('sellart') === 'v1';
-// ?plant=1 (with sellart=v1): the support-hand plant during the back rise. PARKED by
+// Promoted to default by Derek 2026-10-24 (PLAN_SUPLEX_RISE G4): in the game both
+// are on unless the URL says `?aftermath=off` / `?sellart=off` (any other value
+// also turns one off, so old `?aftermath=v1`-style links get the previous look).
+// Node without `location` (unit tests, tools) keeps them off; tests opt in with
+// a search string.
+//   aftermath: the compact fallback sell and the protective recovery overlay
+//     (PLAN_MOVE_PERFORMANCE.md D4).
+//   sellart: grip art, lying hold, protected/carried rise (PLAN_SUPLEX_RISE.md).
+const defaultOnFlag = (name, value) => {
+    if (typeof location === 'undefined') return false;
+    const v = new URLSearchParams(location.search).get(name);
+    return v === null || v === value;
+};
+const aftermathCandidate = () => defaultOnFlag('aftermath', 'v2');
+const sellArtCandidate = () => defaultOnFlag('sellart', 'v1');
+// ?plant=1 (with sellart on): the support-hand plant during the back rise. PARKED by
 // Derek 2026-10-24 (PLAN_SUPLEX_RISE T4.-1); the code stays, off unless asked for.
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —

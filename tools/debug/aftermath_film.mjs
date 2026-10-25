@@ -3,7 +3,7 @@
 //   WFM_URL=http://127.0.0.1:5173 node tools/debug/aftermath_film.mjs [scenario|all] [config|all] [outRoot]
 //     scenario: suplex (Lou throws, roster George receives) | suplexReverse (George throws, Lou receives)
 //               | suplexFlip / suplexReverseFlip (same, thrower starts on the other side: receiver faces right)
-//     config:   off (no flags) | aft (aftermath=v2 only) | on (sellart=v1&aftermath=v2)
+//     config:   off (both flags =off) | aft (aftermath=v2 only) | on (sellart=v1&aftermath=v2)
 //
 // The real-time part (approach, lockup, hold-up + grapple) is driven like
 // play.mjs. The moment the suplex is logged, an in-page hook puts the Phaser
@@ -21,7 +21,8 @@ import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { launch } from './harness.mjs';
 
-export const CONFIGS = { off: '', aft: 'aftermath=v2', on: 'sellart=v1&aftermath=v2' };
+// Both flags are on by default since Derek's G4 (2026-10-24), so `off`/`aft` turn them off explicitly.
+export const CONFIGS = { off: 'sellart=off&aftermath=off', aft: 'sellart=off&aftermath=v2', on: 'sellart=v1&aftermath=v2' };
 // flip: P1 first walks round to P2's far side, so the receiver ends up facing the other way.
 const SCENARIOS = {
     suplex: { p1: 'thesz', p2: 'george' }, suplexReverse: { p1: 'george', p2: 'thesz' },

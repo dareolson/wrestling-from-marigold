@@ -24,7 +24,7 @@ try {
             const w = sc.w1, FLOOR = 430, X = 400, K = 3;
             const setFlag = on => {
                 const url = new URL(location.href);
-                if (on) url.searchParams.set('sellart', 'v1'); else url.searchParams.delete('sellart');
+                if (on) url.searchParams.set('sellart', 'v1'); else url.searchParams.set('sellart', 'off');
                 history.replaceState(null, '', url);
             };
             const s = w.s * w._heightScale, sk = w.skeleton;
@@ -163,7 +163,7 @@ try {
         stills.push({ facing, name, file, ...info });
         console.log(`${file} wristUV ${JSON.stringify(info.wristUV)} elbowUV ${JSON.stringify(info.elbowUV)}`);
     }
-    await h.page.evaluate(() => { const u = new URL(location.href); u.searchParams.delete('sellart'); history.replaceState(null, '', u); });
+    await h.page.evaluate(() => { const u = new URL(location.href); u.searchParams.set('sellart', 'off'); history.replaceState(null, '', u); });
     writeFileSync(join(OUT, 'far-forearm-registration.json'), JSON.stringify({
         note: 'Where the logical elbow/wrist joints fall in the far forearm texture (normalized to its 117x351 canvas), measured at the planted poses.', stills }, null, 1) + '\n');
     writeFileSync(join(OUT, 'far-arm-visibility.json'), JSON.stringify({

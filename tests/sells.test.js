@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import { SELLS, SELL_STYLES, clutchSell, sampleSell, planSells, groundedSlot, sideSwap, limitKnees } from '../src/animation/sells.js';
 import { MOVE_SPECS } from '../src/moves/registry.js';
 import Wrestler from '../src/Wrestler.js';
+import { onlyListed } from './support/promotedFlags.js';
 
 const PARTS = ['knee', 'head', 'arm', 'back', 'chest'];
 const playable = () => {
@@ -377,7 +378,7 @@ test('compact off: the plan is identical to today\'s for the same rand sequence'
 
 test('compact on a Wrestler follows ?aftermath=v2 and nothing else', () => {
     const run = (search) => {
-        globalThis.location = { search };
+        globalThis.location = { search: onlyListed(search) };
         const w = downed({ style: 'economical' });
         w._hurt(10, 'suplex'); // registry intensity 1.0, part back
         const rand0 = Math.random; Math.random = () => 0.1; // economical: none

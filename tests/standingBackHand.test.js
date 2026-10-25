@@ -7,10 +7,11 @@ import Wrestler from '../src/Wrestler.js';
 import { RECOVERY_BACK_HAND } from '../src/animation/backRisePerformance.js';
 import { newGripLatch } from '../src/animation/sellAppearance.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
+import { onlyListed } from './support/promotedFlags.js';
 
 const noop = () => {};
 const BOTH = '?sellart=v1&aftermath=v2';
-const withFlag = (search, fn) => { globalThis.location = { search }; try { return fn(); } finally { delete globalThis.location; } };
+const withFlag = (search, fn) => { globalThis.location = { search: onlyListed(search) }; try { return fn(); } finally { delete globalThis.location; } };
 // the live settled pose (film dbg.pose): local elbow flex, no legacy forearm
 const IDLE = { lLeg: -0.05, rLeg: 0.14, lArm: 0.04, rArm: 0.17, lean: 0.05, crouch: 0.05, lElbow: 0.7, rElbow: 0.7, lShin: -0.11, rShin: -0.06 };
 

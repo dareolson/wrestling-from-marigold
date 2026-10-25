@@ -9,11 +9,12 @@ import { backRiseWeight, HOLD, holdWeight } from '../src/animation/backRisePerfo
 import { sampleSell, clutchSell } from '../src/animation/sells.js';
 import { GRIP_CONTACT_PX, GRIP_REFRACTORY_MS, newGripLatch, stepGripLatch } from '../src/animation/sellAppearance.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
+import { onlyListed } from './support/promotedFlags.js';
 
 const ON = '?sellart=v1';
 function withFlag(search, fn) {
     const prior = globalThis.location;
-    if (search === undefined) delete globalThis.location; else globalThis.location = { search };
+    if (search === undefined) delete globalThis.location; else globalThis.location = { search: onlyListed(search) };
     try { return fn(); } finally { if (prior === undefined) delete globalThis.location; else globalThis.location = prior; }
 }
 const noop = () => {};

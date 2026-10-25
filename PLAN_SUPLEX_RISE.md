@@ -39,6 +39,7 @@ Read that entry, then this plan. Read nothing else unless a task names it.
 - T5.2 (this commit) — `AI_HANDOFF_ENTRIES/2026-10-24-claude-suplex-rise-g4.md` (the T4.7 jump miss first; what changed; measurements; guard deviation; what is not claimed; plant parked; G4 questions) + AI_HANDOFF.md Status paragraph and Handoff Log index line for this plan (Codex's uncommitted hunk left unstaged). Stopped for Derek's G4 verdict. 838 tests.
 
 - G4 — Derek 2026-10-24, after the viewer: "it looks good." Visual approval of the `on` candidate (Lou). Promotion to default, the standing-frame body jump, and Stage 6 are not yet decided.
+- PROMOTE — Derek 2026-10-24: "make it default" (both flags, incl. the aftermath knee limp). `sellart` and `aftermath` are on in the game unless the URL says `=off`. Node without `location` stays off. Tests keep one-flag-at-a-time meaning through `tests/support/promotedFlags.js`. Film tools' `off`/`aft` set `=off` explicitly. The plant stays parked (`&plant=1`).
 
 ## Goal
 

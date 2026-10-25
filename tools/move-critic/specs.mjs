@@ -81,3 +81,12 @@ export const SPECS = {
     },
 };
 export const specFor = id => SPECS[id] ?? SPECS[id.replace(/-.*$/, '')] ?? {};
+// Strict sibling of specFor: says whether a move has a spec at all, instead of
+// returning {} for both "nothing to check" and "nobody wrote one". Same lookup
+// (exact id, then the id up to its first '-').
+export function specStatus(id) {
+    const key = [id, id.replace(/-.*$/, '')].find(k => Object.hasOwn(SPECS, k));
+    if (key === undefined) return { status: 'missing', spec: {} };
+    const spec = SPECS[key];
+    return { status: Object.keys(spec).length ? 'specified' : 'empty', spec };
+}

@@ -291,7 +291,90 @@ Decisions:
   3. Lou with legs and breath: keep it?
   4. Approve?
 
-G7 — (Derek's verdict goes here.)
+G7 — Derek 2026-10-25: **not approved yet** ("ultimately it's not bad"). Two defects: (1) "the hand just
+disappears to behind him, but it has to go around his torso, so it should lower then raise and be behind his
+back"; (2) "the stack of layers changes ... now it's showing the bezel as the lower arm seems stacked on the upper
+arm after that keyframe". Legs and Lou (G7 questions 2-3) not answered yet. Recorded by Opus.
+
+## Rev 3 (2026-10-25, after G7): the hand goes around the body; no elbow bezel
+
+Causes (Opus):
+- (1) T6.4 swaps the forearm's depth the moment the latch turns on. At that moment the hand is over the
+  painted torso, so it vanishes in place.
+- (2) George has `forearmOverUpperArm` (forearm .00402 over upper arm .00401 hides the elbow bezel). handUnder
+  puts the forearm at .00095, under the upper arm, and that shows the bezel. "Forearm over upper arm, upper arm
+  over torso, torso over forearm" is a cycle, so no single depth order can do it.
+
+Decisions:
+- **D9. Around path.** For a `handUnder` rig, every move of the hand to behind the body, or back out, goes via
+  a point OUTSIDE the torso silhouette: lower first (toward the mat when supine, down and away from the
+  hip when standing), then rise to the anchor. Rig data `backSell.aroundVia: { u, v }` on the torso image,
+  outside the painted art, below and outboard of `backWaist`. Sonnet proposes it from the art (same method as
+  T2.1, three candidates); Derek picks it at G8a before anything is tuned against it. Path:
+  - Going in: target = via, then (at the swap) eases via → anchor.
+  - Coming out: anchor → via, swap, then the hand goes on to its rest or idle.
+  This applies in the back clutch approach and release, the lying hold entry, and the standing recovery
+  release. The rise and the standing carry keep the hand behind and need no path.
+- **D10. Swap only when clear.** The depth swap may happen only while the near hand and the distal half of
+  the forearm are outside the torso's painted silhouette. Test it with an alpha lookup of the torso texture
+  at the wrist, the contact point and the forearm's distal midpoint, inverse-transformed into torso image
+  space. Never swap on the latch alone. The latch decides the WANT; the clearance test decides WHEN. If the
+  hand never clears (a path bug), don't swap, and count it as a miss in the film metrics.
+- **D11. No bezel while behind.** Keep the forearm visually over the upper arm at the elbow while its hand
+  half is behind the torso. Preferred: the forearm stays at its `forearmOverUpperArm` depth (.00402), with
+  its pixels hidden only where they lie inside the torso silhouette, by a mask from the torso's alpha (Phaser
+  4 filters/masks; `arenaLighting.js` already uses a mask). Fallback if Phaser 4 can't do an inverse alpha
+  mask per Image at reasonable cost: an elbow-cap copy of the forearm (same texture, cropped to the elbow end)
+  at .00402 over the real forearm at .00095, with the crop line kept outside the torso silhouette. Pick one,
+  say why, and measure the cost (ms per frame, 2 wrestlers).
+
+### Stage 8: around path, clearance swap, no bezel
+
+- **T8.0** Before any src change, keep the G7 `after` frames as this stage's before reference.
+- **T8.1 (D9 propose)** Write `tools/debug/around_via_candidates.mjs`. It gives three `aroundVia` candidates
+  for George (outside the contour, below and outboard of anchor A, by about a fist length / 1.5 / 2 fist
+  lengths), drawn on the torso at 4× and on supine and standing frames, both facings, plus a page
+  `research/animation/george-transfer-2026-10/around/index.html`. **STOP for G8a.**
+
+G8a — (Derek's pick goes here.)
+
+- **T8.2 (D10)** Add the clearance test as a pure helper (`rig/backSell.js` or a new
+  `rig/silhouette.js`), taking a world point and the torso image plus an alpha lookup, so it's testable in
+  Node with a stub. `_handUnder()` becomes: want (today's rule) AND (already under, or clear). Leaving: not
+  want AND (already out, or clear).
+- **T8.3 (D9)** Add the around path in the grounded reach (`_solveGroundedReach` back target) and in the
+  standing recovery release. It's a pure function of the phase weight, and Lou is untouched (no `handUnder`).
+  The Lou fixture must stay unchanged.
+- **T8.4 (D11)** Remove the bezel using the method you picked. Test: with `handUnder` on and
+  `forearmOverUpperArm`, the forearm draws over the upper arm at the elbow, and no forearm pixel draws inside
+  the torso silhouette. Write a browser probe that counts forearm pixels inside the torso alpha.
+- **T8.5** Film George `suplex` and `suplexFlip` (kind 1) plus one kind 2 (prone). Metrics:
+  - depth swaps, and at each swap: the hand's distance outside the silhouette (must be > 0) and frames from
+    via arrival;
+  - swaps skipped for no clearance;
+  - frame-to-frame hand travel (no jump > the rise's own 2.5 px step except at the facing turn);
+  - forearm-inside-torso pixel count (must be 0 while under);
+  - the per-frame cost of D11.
+  Re-run `hold_weight_sweep`/`recovery_probe` only if the path changes the settled contact. It shouldn't.
+- **T8.6** Write `capabilities.json` records (around path, clearance swap, bezel fix; visual `unverified`).
+  `moves:coverage -- --check` passes.
+
+### Stage 9: G8 package, then STOP
+
+- **T9.1** Build the viewer at `research/animation/george-transfer-2026-10/g8-viewer.html` (the g7 pattern):
+  - George G7 vs Rev 3, `suplex`, `suplexFlip`, prone;
+  - a slowed (0.25×) close-up row of the going-behind and coming-out moments, labelled as slowed, next to
+    the 1× row.
+- **T9.2** Write a handoff entry `AI_HANDOFF_ENTRIES/2026-10-25-claude-george-transfer-rev3.md` and add the
+  Status pointer.
+- **STOP. G8 questions:**
+  1. Does the hand go around his body (lower, then up behind)?
+  2. Is the elbow bezel gone?
+  3. Legs: pain, too much, too little?
+  4. Lou: keep the legs and breath?
+  5. Approve?
+
+G8 — (Derek's verdict goes here.)
 
 Still out of scope: legs during a lying wait with no hold (kind 3, writhe last), the prone rise's
 missing hand, and the facing turn. Each is a separate call for Derek after G7.

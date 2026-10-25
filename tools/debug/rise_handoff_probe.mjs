@@ -32,7 +32,7 @@ export const CASES = [
 const POST = 10;
 
 // In-page: take over the clock, seed random, park the other wrestler.
-const INSTALL = () => {
+export const INSTALL = () => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0];
     game.loop.sleep();
     sc.tweens.getDelta = () => 1000 / 60;
@@ -44,7 +44,6 @@ const INSTALL = () => {
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
     const w = window.__rw = sc.w1;
-    sc.w2.x = 1000; sc.w2.y = w.y; sc.w2.state = 'standing';
     window.__T = sc.time.now;
     // part names from the skeleton's own fields
     const sk = w.skeleton, names = [];
@@ -55,10 +54,14 @@ const INSTALL = () => {
 };
 
 // In-page: put the receiver down the way a knockdown leaves it, then start the rise.
-const BEGIN = ({ kind, lying, pain, facing, pose }) => {
+export const BEGIN = ({ kind, lying, pain, facing, pose, opp = 'front' }) => {
     const sc = window.__WFM_GAME.scene.scenes[0], w = window.__rw;
     w.scene.tweens.killTweensOf(w); w.scene.tweens.killTweensOf(w.pose);
     w.x = 520; w.y = 355; w.facing = facing; w.lying = lying;
+    // Wrestler.move() turns a standing wrestler to face the other one. `opp: 'front'` puts the opponent on the side
+    // the receiver faces (no turn at the swap: pure pose continuity); `'behind'` puts him on the other side, which is
+    // where a suplex thrower stands (the receiver turns to face him on the first standing frame: the mirror, H5).
+    sc.w2.x = w.x + (opp === 'front' ? facing : -facing) * 200; sc.w2.y = w.y; sc.w2.state = 'standing'; sc.w2.vx = 0; sc.w2.vy = 0;
     w._activeMove = null; w._choreoUntil = 0; w._groundHandoff = null; w._sell = null; w._hold = null;
     w._sellArtInterrupted = null; w._sellArtSelection = null; w.skeleton.setPartVariants?.({}); w._gripLatch = null;
     w._pain = null; w.stamina = 100; w.combatBlend = 0; w.moveBlend = 0;
@@ -74,7 +77,7 @@ const BEGIN = ({ kind, lying, pain, facing, pose }) => {
     return { pain: w._pain ? { ...w._pain } : null };
 };
 
-const STEP = () => {
+export const STEP = () => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0], w = window.__rw, sk = w.skeleton;
     window.__T += 1000 / 60;
     game.step(window.__T, 1000 / 60);
@@ -84,7 +87,7 @@ const STEP = () => {
         const fw = img.width, fh = img.height, ox = img.originX * fw, oy = img.originY * fh;
         const c = [[-ox, -oy], [fw - ox, -oy], [fw - ox, fh - oy], [-ox, fh - oy]]
             .map(([x, y]) => [+(m.a * x + m.c * y + m.tx).toFixed(3), +(m.b * x + m.d * y + m.ty).toFixed(3)]);
-        return { n: window.__names[i], tex: img.texture?.key ?? null, vis: !!img.visible, x: +m.tx.toFixed(3), y: +m.ty.toFixed(3), rot: +m.rotation.toFixed(5), c };
+        return { n: window.__names[i], vis: !!img.visible, c: c.map(q => [+q[0].toFixed(2), +q[1].toFixed(2)]) };
     });
     const pts = {};
     for (const [k, p] of Object.entries(sk.jointAttachmentPoints ?? {})) if (p) pts[k] = { x: +p.x.toFixed(3), y: +p.y.toFixed(3) };
@@ -94,20 +97,23 @@ const STEP = () => {
     const contact = (cA && Sk.imageAnchorPoint(near, cA)) || sk.jointAttachmentPoints?.nearWrist || null;
     const pt = p => p ? { x: +p.x.toFixed(3), y: +p.y.toFixed(3) } : null;
     return {
-        now: sc.time.now, state: w.state, riseT: +(w.riseT ?? 0).toFixed(5), fallProgress: +(w.fallProgress ?? 0).toFixed(5),
+        now: sc.time.now, state: w.state, facing: w.facing, riseT: +(w.riseT ?? 0).toFixed(5), fallProgress: +(w.fallProgress ?? 0).toFixed(5),
         pose: JSON.parse(JSON.stringify(w.pose)), combatBlend: +(w.combatBlend ?? 0).toFixed(4),
         recoveryW: +(w._recoveryWeight?.() ?? 0).toFixed(4), handW: +(w._recoveryHandWeight?.() ?? 0).toFixed(4),
         pain: w._pain ? { part: w._pain.part, phase: w._pain.phase, carried: w._pain.carried ?? null } : null,
+        torsoRot: +sk.torso.getWorldTransformMatrix().rotation.toFixed(5),
         x: w.x, y: w.y, s: w.s * (w._heightScale ?? 1), parts, pts, backWaist: pt(bw), contact: pt(contact),
         backDist: bw && contact ? +Math.hypot(contact.x - bw.x, contact.y - bw.y).toFixed(3) : null,
     };
 };
 
 // Largest corner-set (Hausdorff) displacement per part between two recorded frames.
-export function partSteps(a, b) {
+export function partSteps(a, b, mirrorX = null) {
     const out = {};
-    a.parts.forEach((pa, i) => {
+    const mx = c => mirrorX === null ? c : [2 * mirrorX - c[0], c[1]];
+    a.parts.forEach((pa0, i) => {
         const pb = b.parts[i];
+        const pa = { ...pa0, c: pa0.c.map(mx) };
         if (!pa.vis || !pb.vis) return;
         // Corner sets compared as sets (Hausdorff), so a flipX toggle between the grounded and upright
         // renderers is not counted as a jump of the sprite's own corners.
@@ -116,13 +122,13 @@ export function partSteps(a, b) {
     });
     return out;
 }
-export const pointSteps = (a, b) => Object.fromEntries(Object.keys(a.pts).filter(k => b.pts[k])
-    .map(k => [k, +Math.hypot(a.pts[k].x - b.pts[k].x, a.pts[k].y - b.pts[k].y).toFixed(2)]));
+export const pointSteps = (a, b, mirrorX = null) => Object.fromEntries(Object.keys(a.pts).filter(k => b.pts[k])
+    .map(k => [k, +Math.hypot((mirrorX === null ? a.pts[k].x : 2 * mirrorX - a.pts[k].x) - b.pts[k].x, a.pts[k].y - b.pts[k].y).toFixed(2)]));
 
 const gitInfo = () => { const sh = c => execSync(c, { encoding: 'utf8' }).trim();
     return { commit: sh('git rev-parse --short HEAD'), dirty: sh('git status --porcelain --untracked-files=no') !== '' }; };
 
-export async function probeRig(rig, flagName, { shots = null, facings = [-1, 1], pose = 'stale' } = {}) {
+export async function probeRig(rig, flagName, { shots = null, facings = [-1, 1], pose = 'stale', opps = ['front', 'behind'] } = {}) {
     process.env.WFM_P1 = rig; process.env.WFM_P2 = 'george';
     process.env.WFM_QS = ['notitle=1', FLAGS[flagName]].filter(Boolean).join('&');
     const h = await launch();
@@ -135,8 +141,8 @@ export async function probeRig(rig, flagName, { shots = null, facings = [-1, 1],
         const clip = () => { const cx = box.x + 520 * box.w / box.gw, bottom = box.y + (355 + 30) * box.h / box.gh;
             return { x: Math.round(cx - 150), y: Math.round(bottom - 330), width: 300, height: 330 }; };
         const cases = [];
-        for (const c of CASES) for (const facing of facings) {
-            const begin = await page.evaluate(BEGIN, { ...c, facing, pose });
+        for (const c of CASES) for (const facing of facings) for (const opp of opps) {
+            const begin = await page.evaluate(BEGIN, { ...c, facing, pose, opp });
             const frames = [];
             let swapAt = null;
             for (let i = 0; i < 400; i++) {
@@ -145,21 +151,24 @@ export async function probeRig(rig, flagName, { shots = null, facings = [-1, 1],
                 if (swapAt === null && f.state === 'standing') {
                     swapAt = i;
                     if (shots) {
-                        await page.screenshot({ path: join(shots, `${rig}__${c.id}__f${facing}__standing.png`), clip: clip() });
+                        await page.screenshot({ path: join(shots, `${rig}__${c.id}__f${facing}${opp === 'behind' ? 'b' : ''}__standing.png`), clip: clip() });
                     }
                 }
                 if (swapAt === null && shots && frames.length >= 2) {
                     // keep the last two rising frames' shot: overwritten until the swap
-                    await page.screenshot({ path: join(shots, `${rig}__${c.id}__f${facing}__rise.png`), clip: clip() });
+                    await page.screenshot({ path: join(shots, `${rig}__${c.id}__f${facing}${opp === 'behind' ? 'b' : ''}__rise.png`), clip: clip() });
                 }
                 if (swapAt !== null && i - swapAt >= POST - 1) break;
             }
-            if (swapAt === null || swapAt === 0) { cases.push({ ...c, facing, error: `no swap (swapAt ${swapAt})` }); continue; }
+            if (swapAt === null || swapAt === 0) { cases.push({ ...c, facing, opp, error: `no swap (swapAt ${swapAt})` }); continue; }
             const last = frames[swapAt - 1], prev = frames[swapAt - 2], first = frames[swapAt];
             const standing = frames.slice(swapAt, swapAt + POST);
+            const turned = last.facing !== first.facing, mx = turned ? last.x : null;
             cases.push({
-                ...c, facing, pain: begin.pain, swapStep: swapAt, riseFrames: swapAt,
+                ...c, facing, opp, turned, pain: begin.pain, swapStep: swapAt, riseFrames: swapAt,
                 lastRising: last, standing: standing.map((f, k) => k < 1 ? f : { ...f, parts: undefined }),
+                // swap = raw step the player sees; swapPose = the same with the facing mirror taken out (== swap when no turn)
+                swapPose: { parts: partSteps(last, first, mx), points: pointSteps(last, first, mx) },
                 swap: { parts: partSteps(last, first), points: pointSteps(last, first), backWaist: last.backWaist && first.backWaist
                     ? +Math.hypot(last.backWaist.x - first.backWaist.x, last.backWaist.y - first.backWaist.y).toFixed(2) : null,
                     carriedDistLast: last.backDist, carriedDistFirst: first.backDist },
@@ -183,7 +192,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         const r = await probeRig(rig, f, { shots: f === flags[0] ? join(outDir, 'shots') : null });
         runs.push(r);
         console.log(`[probe] ${rig} ${f}: ` + r.cases.map(c => c.error ? `${c.id}/${c.facing} ERROR ${c.error}`
-            : `${c.id}/${c.facing} max ${maxOf(c.swap.parts)} (nat ${maxOf(c.natural.parts)})`).join(' | '));
+            : `${c.id}/${c.facing}/${c.opp} max ${maxOf(c.swap.parts)}${c.turned ? ` pose-only ${maxOf(c.swapPose.parts)} TURN` : ''} (nat ${maxOf(c.natural.parts)})`).join(' | '));
     }
     writeFileSync(join(outDir, 'handoff.json'), JSON.stringify({ tool: 'tools/debug/rise_handoff_probe.mjs', git: gitInfo(), runs }));
     process.exit(0);

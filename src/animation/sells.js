@@ -50,11 +50,15 @@ const PRONE_CLUTCH = {
 function clutchKeys(spec, endReach = 0, approach = 0.25) {
     const hold = (k) => Object.fromEntries(Object.entries(spec.d).map(([c, v]) => [c, v * k]));
     const w = (v) => Object.fromEntries(Object.keys(spec.hands).map(side => [side, v]));
+    // A slower approach (a rig whose hand goes round through a via point) keeps the squeeze and the relax .1 apart behind the
+    // reach arriving, so the body's own offsets do not jerk, and gives what is left to the let-go: the let-go is the hand's way
+    // back out, and the longer route needs the longer time. At the default .25 the keys are exactly the original ones.
+    const squeeze = approach === 0.25 ? 0.45 : approach + 0.1, relax = approach === 0.25 ? 0.70 : approach + 0.2;
     return [
         { t: 0, d: {}, reach: w(0) },
         { t: approach, d: hold(1), reach: w(1) },
-        { t: 0.45, d: hold(1.25), reach: w(1) },
-        { t: 0.70, d: hold(1), reach: w(1) },
+        { t: squeeze, d: hold(1.25), reach: w(1) },
+        { t: relax, d: hold(1), reach: w(1) },
         { t: 1, d: {}, reach: w(endReach) },
     ];
 }

@@ -24,10 +24,10 @@ test('Skeleton.aroundViaPoint: George\'s aroundVia as a world point (off the art
     assert.equal(Skeleton.prototype.aroundViaPoint.call(view({ ...georgeRosterV1, textures: noUnder }, torso)), null);
 });
 
-test('clutchSell: the reach takes `approach` of the clutch to get in (default .25, so every other rig is unchanged); the rest of the keys stay', () => {
+test('clutchSell: the reach takes `approach` of the clutch to get in (default .25, so every other rig is unchanged); the let-go gets what is left', () => {
     const base = clutchSell('supine', 'back', 1.38, 'near', 0.7), slow = clutchSell('supine', 'back', 1.38, 'near', 0.7, 0.4);
     assert.deepEqual(base.keys.map(k => k.t), [0, 0.25, 0.45, 0.7, 1]);
-    assert.deepEqual(slow.keys.map(k => k.t), [0, 0.4, 0.45, 0.7, 1]);
+    assert.deepEqual(slow.keys.map(k => +k.t.toFixed(6)), [0, 0.4, 0.5, 0.6, 1], 'squeeze and relax .1 apart behind the reach; the let-go gets what is left');
     assert.deepEqual(clutchSell('supine', 'back', 1.38, 'near', 0.7, undefined).keys, base.keys, 'undefined = the default');
     for (const u of [0, 0.1, 0.25, 0.4]) assert.ok(sampleSell(slow.keys, u).reach.near <= sampleSell(base.keys, u).reach.near + 1e-12, `slower in at u ${u}`);
     assert.equal(sampleSell(slow.keys, 0.4).reach.near, 1); assert.equal(sampleSell(slow.keys, 1).reach.near, 0.7);

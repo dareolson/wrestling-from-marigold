@@ -8,7 +8,7 @@ import Wrestler, { POSES } from '../src/Wrestler.js';
 import { holdWeight, settledBackHand, carriedHandTarget, ARM_SETTLE_MS } from '../src/animation/backRisePerformance.js';
 import { clutchSell, sampleSell } from '../src/animation/sells.js';
 import { newGripLatch, nearGripParts } from '../src/animation/sellAppearance.js';
-import { aroundChannel, backSellSupport, recoveryVia } from '../src/rig/backSell.js';
+import { AROUND, aroundChannel, backSellSupport, recoveryVia } from '../src/rig/backSell.js';
 import { georgeRosterV1 } from '../src/characters/george_roster_v1.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 import { onlyListed } from './support/promotedFlags.js';
@@ -131,4 +131,16 @@ test('standing back hand: the near l-channels carry George\'s offsets x the reco
     assert.equal(q.lArm, SETTLED.lArm);
     assert.equal(q.lElbow, SETTLED.lElbow);
     assert.ok(q.bend > 0.01);
+}));
+
+test('Rev 3: the standing recovery fades in over AROUND.rampMs on a rig with a via pose (a longer route needs more time), over 200 ms otherwise', () => withFlag(BOTH, () => {
+    const pain = since => ({ source: 'suplex', part: 'back', limb: null, severity: 1, phase: 'recover', since, until: since + 2500, planned: true });
+    const at = (ms, textures) => { const r = george({ now: 1000 + ms, textures, pain: pain(1000) }); return r.w._recoveryWeight(); };
+    const plain = { ...G.textures, backSell: { ...G.textures.backSell, aroundVia: undefined } };
+    const full = at(AROUND.rampMs, G.textures), half = at(AROUND.rampMs / 2, G.textures);
+    assert.ok(half < full * 0.55 && half > full * 0.4, `half way through the ramp: ${half} vs ${full}`);
+    // the straight rig (same data without a via point) has the 200 ms ramp
+    const ramp200 = at(200, plain), ramp100 = at(100, plain);
+    assert.ok(Math.abs(ramp100 / ramp200 - 0.5) < 0.02, 'the straight rig ramps over 200 ms');
+    assert.ok(at(200, G.textures) < ramp200 * 0.5, 'the via rig is not yet half way at 200 ms');
 }));

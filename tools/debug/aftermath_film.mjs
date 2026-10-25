@@ -20,6 +20,7 @@ import { mkdirSync, writeFileSync, renameSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { launch } from './harness.mjs';
+import { countForearmInside } from './forearm_count.mjs';
 
 // Both flags are on by default since Derek's G4 (2026-10-24), so `off`/`aft` turn them off explicitly.
 export const CONFIGS = { off: 'sellart=off&aftermath=off', aft: 'sellart=off&aftermath=v2', on: 'sellart=v1&aftermath=v2' };
@@ -61,8 +62,10 @@ async function approach(h, dist, timeoutMs = 10000) {
 }
 
 // In-page: hook the suplex log line to sleep the loop, install the film API.
-const INSTALL = async () => {
+const INSTALL = async depthControl => {
     const game = window.__WFM_GAME;
+    // WFM_DEPTH_CONTROL=1: draw the hand behind the body by depth (the Rev 2 order) instead of the Rev 3 torso mask, as a control for the forearm counts
+    if (depthControl) for (const w of [game.scene.scenes[0].w1, game.scene.scenes[0].w2]) w.skeleton._forearmOverUpperArm = false;
     const sc = game.scene.scenes[0];
     const film = (window.__film = { suplexAt: null, receiver: null, events: [], T: 0, sil: await import('/src/rig/silhouette.js') });
     const orig = sc._logEvent.bind(sc);
@@ -130,8 +133,8 @@ const STEP = () => {
         // the contact-latch state (null when no latch exists this frame); the art never changes on a rig with no grip donor, the latch still must not chatter
         pain: w._pain ? { part: w._pain.part, severity: w._pain.severity, phase: w._pain.phase } : null,
         latch: w._gripLatch ? (w._gripLatch.on ? 1 : 0) : null,
-        // Rev 2 D6 (backSell.handUnder): 1 while the near forearm is drawn behind the torso (read from the real depths), null on a build without it
-        handUnder: w.skeleton._handUnder === undefined ? null : (w.skeleton.nearForearm.depth < w.skeleton.torso.depth ? 1 : 0),
+        // Rev 2 D6 / Rev 3 (backSell.handUnder): 1 while the hand is drawn behind the body (the flag the Wrestler hands the skeleton: by depth, or by the D11 torso mask), null on a build without it
+        handUnder: w.skeleton._handUnder === undefined ? null : (w.skeleton._handUnder ? 1 : 0),
         // Rev 3 D10: how far each hand sample is outside the torso art (game px, 0 = on it), null on a build without it
         clr: (c => c && { min: +c.min.toFixed(2), d: Object.fromEntries(Object.entries(c.distances).map(([k, v]) => [k, +v.toFixed(2)])) })(sk.handClearance?.()),
         // the elbow's distance outside the torso art (D11: it must stay out to keep the forearm over the upper arm there)
@@ -194,7 +197,7 @@ async function film(scenario, configName, outRoot, interrupt = null) {
     try {
         const page = h.page;
         await page.waitForTimeout(400);
-        await page.evaluate(INSTALL);
+        await page.evaluate(INSTALL, !!process.env.WFM_DEPTH_CONTROL);
         if (sc.flip) {
             // Walk round (down-screen, then right) until P1 is clear of P2's right side.
             const dl = Date.now() + 8000;
@@ -247,12 +250,14 @@ async function film(scenario, configName, outRoot, interrupt = null) {
         const stripFiles = [];   // { file, now }
         const events = {};       // name -> { now, frame }
         const marksLeft = { rise: [...RISE_MARKS], rec: [...RECOVERY_MARKS_MS] };
-        let endAt = null, impactStep = null, standingNow = null, clutchDone = false, step = 0, fired = null, stopAt = null;
+        let endAt = null, holdSince = null, impactStep = null, standingNow = null, clutchDone = false, step = 0, fired = null, stopAt = null;
         const t0 = info.suplexAt;
         const mark = async (name, f, i) => {
             if (events[name]) return;
             events[name] = { now: f.now, step: i };
             await page.screenshot({ path: join(dir, 'closeups', `${name}.png`), clip: clipFor(f) });
+            // Rev 3 D11: while the hand is behind the body, how many forearm pixels are visibly drawn inside the torso's painted art
+            if (f.handUnder === 1) events[name].forearmInside = await countForearmInside(page, clipFor(f), receiverIdx === 0 ? 'w1' : 'w2', process.env.WFM_COUNT_DEBUG ? join(process.env.WFM_COUNT_DEBUG, name) : null);
         };
 
         while (true) {
@@ -261,14 +266,16 @@ async function film(scenario, configName, outRoot, interrupt = null) {
             frames.push(f);
             if (step % STRIP_EVERY === 0) {
                 const file = `raw-${String(step).padStart(5, '0')}.jpg`;
-                await page.screenshot({ path: join(dir, 'strip', file), type: 'jpeg', quality: 92, clip: clipFor(f) });
-                stripFiles.push({ file, now: f.now, step });
+                const clip = clipFor(f);
+                await page.screenshot({ path: join(dir, 'strip', file), type: 'jpeg', quality: 92, clip });
+                stripFiles.push({ file, now: f.now, step, clip: [clip.x, clip.y] });
             }
             if (!events.suplex) await mark('suplex', f, step);
             if (!events.impact && f.state === 'down') { impactStep = step; await mark('impact', f, step); }
             if (events.impact && !clutchDone && f.sell?.name === 'clutch' && f.sell.u >= 0.35) {
                 clutchDone = true; await mark('clutchPeak', f, step);
             }
+            if (!events.hold && f.holdActive && events.impact) { holdSince ??= f.now; if (f.now - holdSince >= 800) await mark('hold', f, step); }
             if (!events.riseStart && f.state === 'gettingUp') await mark('riseStart', f, step);
             if (f.state === 'gettingUp') {
                 for (const m of [...marksLeft.rise]) if (f.riseT >= m) {
@@ -307,20 +314,20 @@ async function film(scenario, configName, outRoot, interrupt = null) {
             const rel = Math.round(sf.now - impactNow);
             const name = `t${rel < 0 ? '-' : '+'}${String(Math.abs(rel)).padStart(5, '0')}ms.jpg`;
             renameSync(join(dir, 'strip', sf.file), join(dir, 'strip', name));
-            return { file: `strip/${name}`, gameMs: +sf.now.toFixed(2), relImpactMs: rel, step: sf.step };
+            return { file: `strip/${name}`, gameMs: +sf.now.toFixed(2), relImpactMs: rel, step: sf.step, clip: sf.clip };
         });
         const rel = e => ({ gameMs: +e.now.toFixed(2), relImpactMs: +(e.now - impactNow).toFixed(2), step: e.step ?? null });
         const manifest = {
             tool: 'tools/debug/aftermath_film.mjs',
             git: gitInfo(),
-            scenario, config: configName, urlFlags: flags,
+            scenario, config: configName, urlFlags: flags, canvasBox, cropSize: CROP,
             casts: { p1: process.env.WFM_P1, p2: process.env.WFM_P2 }, rigs,
             receiver: { index: receiverIdx, rig: rigs[receiverIdx] },
             stepMs: +STEP_MS.toFixed(4), stripEverySteps: STRIP_EVERY,
             attackerLogged: info.attacker,
             receiverFacing: { atImpact: frames.find(f => f.state === 'down')?.facing, atRise: frames.find(f => f.state === 'gettingUp')?.facing },
             receiverLying: frames.find(f => f.state === 'down')?.lying,
-            events: Object.fromEntries(Object.entries(events).map(([k, v]) => [k, rel(v)])),
+            events: Object.fromEntries(Object.entries(events).map(([k, v]) => [k, { ...rel(v), ...(v.forearmInside ? { forearmInside: v.forearmInside } : {}) }])),
             riseStartCalls: inPageEvents.map(e => ({ ...e, relImpactMs: +(e.now - impactNow).toFixed(2) })),
             nearForearmTexture: rle(frames, 'nearForearm', impactNow),
             farForearmTexture: rle(frames, 'farForearm', impactNow),

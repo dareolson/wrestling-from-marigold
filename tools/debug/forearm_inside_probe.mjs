@@ -14,7 +14,7 @@ process.env.WFM_P1 ??= 'george-roster-v1';
 process.env.WFM_P2 ??= process.env.WFM_P1;
 const out = process.argv[2] ?? null, shotDir = process.argv[3] ?? null;
 if (shotDir) mkdirSync(shotDir, { recursive: true });
-const ZOOM = 3;
+const ZOOM = +(process.env.ZOOM ?? 3), PART = process.env.PART ?? 'nearForearm';   // PART=torso: hide the TORSO instead, a self-check of the world -> torso-alpha mapping (every changed pixel should map inside the art)
 const h = await launch();
 try {
     await h.page.waitForFunction(() => window.__WFM_GAME?.scene?.scenes?.[0]?.w1?.skeleton?.torso, null, { timeout: 30000 });
@@ -28,6 +28,8 @@ try {
         ['hold', f => ({ state: 'down', lying: 'supine', hold: { t: 1, lying: 'supine' }, reach: 0.7 })],
         ['clutch u.5', f => ({ state: 'down', lying: 'supine', sell: { u: 0.5, dur: 1.38 } })],
         ['rise .4', f => ({ state: 'gettingUp', lying: 'supine', riseT: 0.4, reach: 0.9 })],
+        ['rise .55', f => ({ state: 'gettingUp', lying: 'supine', riseT: 0.55, reach: 1 })],
+        ['rise .85', f => ({ state: 'gettingUp', lying: 'supine', riseT: 0.85, reach: 1 })],
         ['standing hw 1', f => ({ state: 'standing', hw: 1 })],
         ['standing hw .6', f => ({ state: 'standing', hw: 0.6 })],
         ['standing hw .5', f => ({ state: 'standing', hw: 0.5 })],
@@ -65,12 +67,12 @@ try {
             return { under: sk.nearForearm.depth < sk.torso.depth, masked: !!sk.nearForearm._torsoMask?.active, forearmDepth: sk.nearForearm.depth, torsoDepth: sk.torso.depth,
                 elbowClr: +window.__sil.silhouetteDistance(sk.torso, sk.jointAttachmentPoints.nearElbow, window.__sil.silhouetteOf(sk.torso)).toFixed(2), handUnder: sk._handUnder };
         }, { spec: spec(facing), facing, mode, ZOOM });
-        const clip = { x: 100, y: 100, width: 900, height: 500 };
+        const clip = ZOOM >= 2 ? { x: 100, y: 100, width: 900, height: 500 } : { x: 300, y: 150, width: 560, height: 340 };
         const shot = async () => { await h.page.waitForTimeout(120); return (await h.page.screenshot({ clip })).toString('base64'); };
         const s1 = await shot(), s2 = await shot();
-        await h.page.evaluate(() => window.__WFM_GAME.scene.scenes[0].w1.skeleton.nearForearm.setVisible(false));
+        await h.page.evaluate(part => window.__WFM_GAME.scene.scenes[0].w1.skeleton[part].setVisible(false), PART);
         const s3 = await shot();
-        await h.page.evaluate(() => window.__WFM_GAME.scene.scenes[0].w1.skeleton.nearForearm.setVisible(true));
+        await h.page.evaluate(part => window.__WFM_GAME.scene.scenes[0].w1.skeleton[part].setVisible(true), PART);
         if (shotDir) { const { writeFileSync: wf } = await import('node:fs'); wf(join(shotDir, `${key.replace(/[ .]/g, '_')}.png`), Buffer.from(s1, 'base64')); }
         const count = await h.page.evaluate(async ({ s1, s2, s3, clip }) => {
             const sc = window.__WFM_GAME.scene.scenes[0], sk = sc.w1.skeleton, cam = sc.cameras.main, g = window.__WFM_GAME.scale.gameSize;

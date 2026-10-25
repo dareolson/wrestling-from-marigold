@@ -1809,7 +1809,8 @@ export default class Wrestler {
         if (!aftermathCandidate()) return 0;
         const t = this.scene.time.now;
         if (t >= pain.until) return 0;
-        const ramp = ramped ? Math.min(1, (t - pain.since) / RECOVERY_RAMP_MS) : 1;
+        const rampMs = pain.part === 'back' && recoveryVia(this._backSell().data) ? AROUND.rampMs : RECOVERY_RAMP_MS;
+        const ramp = ramped ? Math.min(1, (t - pain.since) / rampMs) : 1;
         const left = (pain.until - t) / (pain.until - pain.since);
         // knee limps down evenly; back settles slowly (holds, then eases out)
         return ramp * (pain.part === 'back' ? 1 - (1 - left) * (1 - left) : left);

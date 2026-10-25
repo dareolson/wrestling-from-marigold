@@ -63,7 +63,7 @@ export function backSellSupport(skeleton) {
 // [0, viaW], then the via point to the waist over [viaW, 1]. It runs backwards as the hand lets go. The route is longer
 // than the straight line, so the clutch reach takes longer to get in (`aroundVia.approach`). `viaW` and `standW` (the
 // standing route's via weight) are the numbers tools/debug/route_probe.mjs sweeps, through Skeleton.AROUND.
-export const AROUND = { viaW: 0.2, standW: 0.5 };
+export const AROUND = { viaW: 0.2, standW: 0.5, rampMs: 800 };   // rampMs: the standing recovery's fade-in on a rig with a via pose (Wrestler.RECOVERY_RAMP_MS is 200 otherwise)
 // the standing recovery's via pose as { arm, elbow } offsets, or null when the rig has none
 export const recoveryVia = backSell => Number.isFinite(backSell?.aroundVia?.recoveryArm) && backSell.handUnder === true
     ? { arm: backSell.aroundVia.recoveryArm, elbow: backSell.aroundVia.recoveryElbow } : null;

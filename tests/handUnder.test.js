@@ -147,6 +147,53 @@ test('Skeleton.setDepth: handUnder puts the near forearm and hand behind the tor
     assert.deepEqual(self, normal);
 });
 
+// Rev 3 D11: a rig whose forearm draws over the upper arm keeps that depth while its hand is behind the body, and a torso-alpha
+// mask hides the forearm where the torso is painted. A part that can't take filters falls back to the Rev 2 depth order.
+function maskable(extra = {}) {
+    const masks = [];
+    const names = ['farForearm', 'farHand', 'farUpArm', 'pelvisUnderlay', 'farThigh', 'farShin', 'farBoot', 'head', 'torso', 'trunks', 'pelvisOverlay',
+        'nearThigh', 'nearShin', 'nearBoot', 'pelvisMask', 'nearHand', 'nearForearm', 'nearUpArm'];
+    const self = { ...extra };
+    for (const n of names) self[n] = { depth: null, setDepth(d) { this.depth = d; } };
+    for (const n of ['nearForearm', 'nearHand']) {
+        const part = self[n];
+        part.enableFilters = () => { part.filters = { internal: { camera: { tag: `${n}-filter-camera` },
+            addMask: (mask, invert, camera) => { const m = { mask, invert, camera, active: true, setActive(v) { this.active = v; } }; masks.push(m); return m; } } }; };
+    }
+    return { self, masks };
+}
+
+test('D11: with forearmOverUpperArm the forearm keeps its depth over the upper arm and an inverted torso mask is switched on; off restores it', () => {
+    const { self, masks } = maskable({ _forearmOverUpperArm: true });
+    Skeleton.prototype.setHandUnder.call(self, true); Skeleton.prototype.setDepth.call(self, 10);
+    assert.ok(self.nearForearm.depth > self.nearUpArm.depth, 'forearm still over the upper arm: no bezel at the elbow');
+    assert.ok(self.nearForearm.depth > self.torso.depth, 'not moved behind the torso by depth');
+    assert.equal(masks.length, 2, 'one mask for the forearm, one for a separate hand');
+    for (const m of masks) { assert.equal(m.mask, self.torso); assert.equal(m.invert, true); assert.equal(m.active, true); assert.match(m.camera.tag, /filter-camera/, 'viewed through the filter\'s own camera'); }
+    // while it stays on, no new mask is made
+    Skeleton.prototype.setDepth.call(self, 10); assert.equal(masks.length, 2);
+    // off: the masks go inactive (free), the depth is the normal one
+    Skeleton.prototype.setHandUnder.call(self, false); Skeleton.prototype.setDepth.call(self, 10);
+    assert.ok(masks.every(m => m.active === false));
+    assert.equal(self.nearForearm.depth, 10 + 0.00402);
+    // on again: the same masks are reused
+    Skeleton.prototype.setHandUnder.call(self, true); Skeleton.prototype.setDepth.call(self, 10);
+    assert.equal(masks.length, 2); assert.ok(masks.every(m => m.active === true));
+});
+
+test('D11: a rig without forearmOverUpperArm, or a part that can\'t take filters, goes behind the torso by depth as in Rev 2 and makes no mask', () => {
+    const plain = maskable({ _forearmOverUpperArm: false });
+    Skeleton.prototype.setHandUnder.call(plain.self, true); Skeleton.prototype.setDepth.call(plain.self, 10);
+    assert.ok(plain.self.nearForearm.depth < plain.self.torso.depth); assert.equal(plain.masks.length, 0);
+    const noFilters = maskable({ _forearmOverUpperArm: true });
+    delete noFilters.self.nearForearm.enableFilters;
+    Skeleton.prototype.setHandUnder.call(noFilters.self, true); Skeleton.prototype.setDepth.call(noFilters.self, 10);
+    assert.ok(noFilters.self.nearForearm.depth < noFilters.self.torso.depth, 'falls back to depth');
+    // and going back out of the fallback restores the normal depth
+    Skeleton.prototype.setHandUnder.call(noFilters.self, false); Skeleton.prototype.setDepth.call(noFilters.self, 10);
+    assert.ok(noFilters.self.nearForearm.depth > noFilters.self.torso.depth);
+});
+
 // Rev 3 D10 (T8.2): the want decides IF, the clearance test decides WHEN.
 test('D10: a wanted swap waits for the hand to clear the torso art, never happens on the want alone', () => withFlag(BOTH, () => {
     for (const [name, make] of Object.entries(PHASES)) {

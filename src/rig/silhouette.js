@@ -82,12 +82,13 @@ export function handClearance(image, samples, silhouette, marginPx = 1) {
 
 // ── browser seam (not used by the Node tests) ──────────────────────────────────────────────────────────────
 const cache = new Map();
-const ALPHA = { threshold: 128 };
 
-/** The silhouette of an Image's current texture, built once per texture key; null if the pixels can't be read. */
-export function silhouetteOf(image) {
-    const key = image?.texture?.key;
-    if (!key) return null;
+/** The silhouette of an Image's current texture (art with alpha >= `threshold`, 128 by default), built once per texture key and
+ *  threshold; null if the pixels can't be read. */
+export function silhouetteOf(image, threshold = 128) {
+    const tex = image?.texture?.key;
+    if (!tex) return null;
+    const key = threshold === 128 ? tex : `${tex}@${threshold}`;
     if (cache.has(key)) return cache.get(key);
     let built = null;
     try {
@@ -96,7 +97,7 @@ export function silhouetteOf(image) {
         const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(src, 0, 0);
         const rgba = g.getImageData(0, 0, c.width, c.height).data, a = new Uint8Array(c.width * c.height);
         for (let i = 0; i < a.length; i++) a[i] = rgba[i * 4 + 3];
-        built = buildSilhouette(c.width, c.height, a, ALPHA);
+        built = buildSilhouette(c.width, c.height, a, { threshold });
     } catch { built = null; }
     cache.set(key, built);
     return built;

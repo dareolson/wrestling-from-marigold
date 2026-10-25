@@ -14,6 +14,26 @@ const HAND_UNDER_DEPTH = 0.00095;
 import { AROUND, aroundGoal, backSellSupport } from './rig/backSell.js';
 import { handClearance, handTipOf, silhouetteOf } from './rig/silhouette.js';
 
+// The near forearm's (and hand's) inverse torso mask: a per-object Phaser 4 Mask filter whose mask is the torso Image,
+// inverted, so the part is visible only where the torso is NOT painted. Created on first use, then only switched
+// active/inactive (an inactive filter costs nothing). The mask must be viewed through the filter's own camera: through
+// the main camera it lines up with nothing. Returns whether the mask is on (false when a part can't take filters).
+function syncHandMask(skeleton, on) {
+    let ok = on;
+    for (const part of [skeleton.nearForearm, skeleton.nearHand]) {
+        if (!part) continue;
+        if (!part._torsoMask) {
+            if (!on) continue;
+            if (typeof part.enableFilters !== 'function') { ok = false; continue; }
+            part.enableFilters();
+            if (!part.filters?.internal?.addMask) { ok = false; continue; }
+            part._torsoMask = part.filters.internal.addMask(skeleton.torso, true, part.filters.internal.camera);
+        }
+        part._torsoMask.setActive(on);
+    }
+    return ok;
+}
+
 // updateUpright draws every arm and forearm this much (facing-signed) past the pose channels.
 const UPRIGHT_ARM_FWD = 0.09;
 
@@ -751,10 +771,16 @@ export default class Skeleton {
         // Rev 2 D6 (backSell.handUnder): the near forearm and hand behind the torso, the upper arm stays in front.
         // Applied last so it wins over the opt-ins above; the Wrestler sets the flag every draw, so it is restored
         // by the next draw whenever the condition ends.
-        if (this._handUnder) {
+        // Rev 3 D11: a rig whose forearm draws over the upper arm (`forearmOverUpperArm`) keeps that depth, so the elbow
+        // shows no bezel (behind the upper arm the forearm's top would expose the upper arm's own end), and a torso-alpha
+        // mask hides the forearm (and a separate hand) wherever the torso is painted: behind the body by pixels, not by depth.
+        // Any other rig, or a skeleton that has no filters (Canvas, a test stand-in), goes behind by depth as in Rev 2.
+        const masked = this._handUnder && this._forearmOverUpperArm && syncHandMask(this, true);
+        if (this._handUnder && !masked) {
             this.nearForearm.setDepth(base + HAND_UNDER_DEPTH);
             this.nearHand?.setDepth(base + HAND_UNDER_DEPTH - 0.00001);
         }
+        if (!masked) syncHandMask(this, false);
     }
 
     /** Whether the near forearm/hand draw behind the torso (takes effect at the next setDepth). */

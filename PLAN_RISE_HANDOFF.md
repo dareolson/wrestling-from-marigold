@@ -11,6 +11,8 @@ else unless a task names it.
 
 (Executor: append one line per finished task: `T#.# <sha> <one-line result>`.)
 
+- T1.1 (this commit) — `tools/debug/rise_handoff_probe.mjs` + `rise_handoff_pairs.py`; baseline `research/animation/rise-handoff-2026-10/baseline/` (handoff.json, 40 3x pairs). 8 rigs x 5 rise types x 2 facings x flags default/off. Forced rises (receiver put down in page, game's own `_startRiseUp`/`_startQuickRise`), stale `this.pose` = the pose a real suplex receiver carries (measured live). 839 tests.
+
 ## Goal
 
 On the frame a wrestler goes from `gettingUp` (or `risingUp`) to `standing`, no body

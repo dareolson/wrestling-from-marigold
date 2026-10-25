@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildCoverage, classifyMove, fingerprint, formatReport } from '../tools/move-critic/coverage.mjs';
+import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { baselineFor, buildCoverage, checkCoverage, classifyMove, fingerprint, formatReport } from '../tools/move-critic/coverage.mjs';
 import { specStatus } from '../tools/move-critic/specs.mjs';
 
 const clip = (id, extra = {}) => ({ id, duration: 1, events: [{ at: 0.5, type: 'impact' }],
@@ -86,4 +88,57 @@ test('the real repo: every registry move is reported, and hammerlock (empty spec
     assert.equal(byId(r, 'armBar').status, 'unverified');
     assert.equal(byId(r, 'taunt').status, 'not-applicable');
     assert.equal(r.adapters.length, 5);
+});
+
+// --- baseline + --check ----------------------------------------------------
+const report = moves => ({ moves: moves.map(([id, status, fingerprint]) => ({ id, status, fingerprint, reason: 'r' })) });
+const entry = (fingerprint, status = 'unverified', reason = 'historical') => ({ fingerprint, status, reason });
+
+test('check: a baselined gap with an unchanged fingerprint passes', () => {
+    const r = checkCoverage(report([['a', 'unverified', 'f1']]), { a: entry('f1') });
+    assert.equal(r.ok, true);
+});
+
+test('check: a new uncovered move fails', () => {
+    const r = checkCoverage(report([['a', 'unverified', 'f1'], ['b', 'partial', 'f2']]), { a: entry('f1') });
+    assert.equal(r.ok, false);
+    assert.match(r.failures[0], /^b: new partial gap/);
+});
+
+test('check: a changed fingerprint re-opens the debt and fails', () => {
+    const r = checkCoverage(report([['a', 'unverified', 'f9']]), { a: entry('f1') });
+    assert.equal(r.ok, false);
+    assert.match(r.failures[0], /a: requirements changed/);
+});
+
+test('check: a baseline entry with no reason fails, even for a covered move', () => {
+    assert.equal(checkCoverage(report([['a', 'unverified', 'f1']]), { a: entry('f1', 'unverified', '  ') }).ok, false);
+    assert.equal(checkCoverage(report([['a', 'covered', 'f1']]), { a: entry('f1', 'unverified', '') }).ok, false);
+});
+
+test('check: a baselined move that is now covered is reported, not failed', () => {
+    const r = checkCoverage(report([['a', 'covered', 'f1']]), { a: entry('f1') });
+    assert.equal(r.ok, true);
+    assert.match(r.notes[0], /a: now covered; remove from baseline/);
+});
+
+test('check: a partial move that worsens to unverified fails; an invalid capability file or a reasonless waiver fails', () => {
+    assert.equal(checkCoverage(report([['a', 'unverified', 'f1']]), { a: entry('f1', 'partial') }).ok, false);
+    assert.equal(checkCoverage(report([]), {}, { capabilityErrors: ['bad'] }).ok, false);
+    assert.equal(checkCoverage(report([]), {}, { waivers: { taunt: { reason: '' } } }).ok, false);
+});
+
+test('baselineFor keeps a reason only while the fingerprint is unchanged, so it cannot hide a new failure', () => {
+    const old = { a: entry('f1', 'unverified', 'kept'), b: entry('f2', 'unverified', 'stale') };
+    const next = baselineFor(report([['a', 'unverified', 'f1'], ['b', 'unverified', 'f3'], ['c', 'covered', 'f4']]), old);
+    assert.deepEqual(Object.keys(next), ['a', 'b']);
+    assert.equal(next.a.reason, 'kept');
+    assert.equal(next.b.reason, '');
+});
+
+test('the real repo passes `moves:coverage --check` and the committed baseline has a reason on every entry', () => {
+    const run = spawnSync(process.execPath, ['tools/move-critic/coverage.mjs', '--check'], { encoding: 'utf8' });
+    assert.equal(run.status, 0, run.stdout + run.stderr);
+    const baseline = JSON.parse(readFileSync('tools/move-critic/coverage-baseline.json', 'utf8'));
+    for (const [id, e] of Object.entries(baseline)) assert.ok(e.reason.trim(), id);
 });

@@ -14,6 +14,7 @@ unless a task names it.
 
 T1.1 f008251 specStatus(id) added beside unchanged specFor; tests/specStatus.test.js (+3); npm test 854 pass.
 T1.2 604261f capabilities.json (12 capabilities, 2 local decisions) + capabilities.mjs validator + adapters.mjs (adapter id list, split out of coverage.mjs to avoid an import cycle); tests/capabilities.test.js (+9); npm test 863 pass.
+T1.3 24b04a2 tools/move-critic/coverage.mjs + coverage-waivers.json (2 waivers: taunt, turnbuckleTaunt) + tests/moveCoverage.test.js (+10); real repo: 29 moves = 5 covered, 3 partial, 19 unverified, 2 not-applicable; 5/5 adapters have a capability record and existing tests; npm test 873 pass.
 
 ## Goal
 

@@ -1,0 +1,112 @@
+{
+  "jab": {
+    "fingerprint": "cde091f87656",
+    "status": "partial",
+    "reason": "historical: strike is checked; the strikingForearm base/fist part-variant requests have no critic metric"
+  },
+  "headbutt": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: legacy pose sequence (no clip), no critic spec; the critic traces clips only"
+  },
+  "kneeLift": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: legacy pose sequence (no clip), no critic spec; the critic traces clips only"
+  },
+  "clothesline": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: legacy pose sequence (no clip), no critic spec; the critic traces clips only"
+  },
+  "doubleAxeHandle": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: legacy pose sequence (no clip), no critic spec; the critic traces clips only"
+  },
+  "piledriver": {
+    "fingerprint": "8588aa6de320",
+    "status": "partial",
+    "reason": "historical: contacts and landing are checked; the clip's 2 grips and crown floor contact have no critic metric (mechanism covered by tests/moveContacts.test.js, not by the critic)"
+  },
+  "suplex": {
+    "fingerprint": "661557516285",
+    "status": "partial",
+    "reason": "historical: contacts and landings are checked; the clip's `layers` window has no critic metric (mechanism covered by tests/clipLayers.test.js, not by the critic)"
+  },
+  "armDrag": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: legacy pose sequence (no clip), no critic spec; the critic traces clips only"
+  },
+  "backBodyDrop": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: legacy pose sequence (no clip), no critic spec; the critic traces clips only"
+  },
+  "hammerlock": {
+    "fingerprint": "22326887a02a",
+    "status": "unverified",
+    "reason": "historical: SPECS.hammerlock is an empty placeholder; the clip declares part variants (workingHand, head) and acquire/release-contact events, none asserted"
+  },
+  "sleeperHold": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: legacy pose sequence (no clip), no critic spec; the critic traces clips only"
+  },
+  "headlock": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: legacy pose sequence (no clip), no critic spec; the critic traces clips only"
+  },
+  "armBar": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: hold clip with squeeze events but no critic spec; no contact windows asserted"
+  },
+  "figureFour": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: hold clip with squeeze events but no critic spec; no contact windows asserted (SPECS has figureFourTableau for the parked draft, not for this registered clip)"
+  },
+  "ankleLock": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: hold clip with squeeze events but no critic spec; no contact windows asserted"
+  },
+  "elbowDrop": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: aerial clip with an impact event but no critic spec (no landing or strike assertions written)"
+  },
+  "kneeDrop": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: aerial clip with an impact event but no critic spec (no landing or strike assertions written)"
+  },
+  "theszPress": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: aerial clip with an impact event but no critic spec (no landing or strike assertions written)"
+  },
+  "divingElbow": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: aerial clip with an impact event but no critic spec (no landing or strike assertions written)"
+  },
+  "topDive": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: aerial clip with an impact event but no critic spec (no landing or strike assertions written)"
+  },
+  "irishWhip": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: legacy pose sequence (no clip), no critic spec; the critic traces clips only"
+  },
+  "pin": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "historical: legacy cover (no clip), no critic spec; not waived because a pin does involve body contact"
+  }
+}

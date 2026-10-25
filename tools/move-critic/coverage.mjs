@@ -5,6 +5,9 @@
 //
 //   npm run moves:coverage                   print the report
 //   npm run moves:coverage -- --json out.json
+//   npm run moves:coverage -- --check            fail only on NEW or CHANGED gaps
+//   npm run moves:coverage -- --write-baseline   regenerate coverage-baseline.json
+//                                                (then write each `reason` by hand)
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -13,11 +16,12 @@ import { MOVE_SPECS } from '../../src/moves/registry.js';
 import { REGISTERED_MOVE_CLIPS } from '../../src/animation/clips/index.js';
 import { specStatus } from './specs.mjs';
 import { ADAPTERS } from './adapters.mjs';
-import { loadCapabilities } from './capabilities.mjs';
+import { loadCapabilities, validateCapabilities } from './capabilities.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
 export const WAIVERS_PATH = resolve(HERE, 'coverage-waivers.json');
+export const BASELINE_PATH = resolve(HERE, 'coverage-baseline.json');
 export { ADAPTERS };
 
 // What metrics.mjs critique() measures from a spec. Each is a requirement the
@@ -145,11 +149,75 @@ export function formatReport(report) {
     return lines.join('\n');
 }
 
+export function loadBaseline(path = BASELINE_PATH) {
+    return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {};
+}
+
+const GAPS = ['unverified', 'partial'];
+const SEVERITY = { covered: 0, 'not-applicable': 0, partial: 1, unverified: 2 };
+
+/**
+ * Historical debt lives in the baseline. Fails on a gap that is new, whose
+ * requirements changed (fingerprint), that got worse, or that has no reason;
+ * on a waiver without a reason; and on an invalid capabilities.json.
+ * Entries that no longer apply are reported as notes, never failures.
+ */
+export function checkCoverage(report, baseline, { capabilityErrors = [], waivers = {} } = {}) {
+    const failures = capabilityErrors.map(e => `capabilities.json: ${e}`);
+    const notes = [];
+    const byId = new Map(report.moves.map(m => [m.id, m]));
+    for (const [id, w] of Object.entries(waivers)) {
+        if (!w?.reason?.trim()) failures.push(`${id}: waiver has no reason`);
+    }
+    for (const m of report.moves) {
+        if (!GAPS.includes(m.status)) continue;
+        const entry = baseline[m.id];
+        if (!entry) { failures.push(`${m.id}: new ${m.status} gap (${m.reason}); fix it, waive it, or baseline it with a reason`); continue; }
+        if (entry.fingerprint !== m.fingerprint) failures.push(`${m.id}: requirements changed since the baseline (was ${entry.fingerprint}, now ${m.fingerprint}); the debt is re-opened`);
+        else if (SEVERITY[m.status] > (SEVERITY[entry.status] ?? 2)) failures.push(`${m.id}: got worse (${entry.status} -> ${m.status})`);
+    }
+    for (const [moveId, entry] of Object.entries(baseline)) {
+        if (!entry?.reason?.trim()) failures.push(`${moveId}: baseline entry has no reason`);
+        const m = byId.get(moveId);
+        if (!m) notes.push(`${moveId}: baseline entry for a move that no longer exists; remove from baseline`);
+        else if (!GAPS.includes(m.status)) notes.push(`${moveId}: now ${m.status}; remove from baseline`);
+    }
+    return { ok: failures.length === 0, failures, notes };
+}
+
+/** Baseline for the current report. A reason is kept only if the requirements are unchanged. */
+export function baselineFor(report, previous = {}) {
+    const out = {};
+    for (const m of report.moves) {
+        if (!GAPS.includes(m.status)) continue;
+        const old = previous[m.id];
+        out[m.id] = { fingerprint: m.fingerprint, status: m.status,
+            reason: old && old.fingerprint === m.fingerprint ? old.reason : '' };
+    }
+    return out;
+}
+
 function main(argv) {
     const report = buildCoverage();
     const jsonAt = argv.indexOf('--json');
     if (jsonAt >= 0) writeFileSync(resolve(argv[jsonAt + 1]), JSON.stringify(report, null, 2) + '\n');
     console.log(formatReport(report));
+    if (argv.includes('--write-baseline')) {
+        const baseline = baselineFor(report, loadBaseline());
+        writeFileSync(BASELINE_PATH, JSON.stringify(baseline, null, 2) + '\n');
+        const blank = Object.values(baseline).filter(e => !e.reason).length;
+        console.log(`\nwrote ${BASELINE_PATH} (${Object.keys(baseline).length} entries, ${blank} without a reason yet)`);
+    }
+    if (argv.includes('--check')) {
+        const result = checkCoverage(report, loadBaseline(), {
+            capabilityErrors: validateCapabilities(loadCapabilities()), waivers: loadWaivers() });
+        for (const n of result.notes) console.log(`note: ${n}`);
+        if (!result.ok) {
+            for (const f of result.failures) console.error(`FAIL: ${f}`);
+            console.error(`\nmoves:coverage --check failed (${result.failures.length})`);
+            process.exitCode = 1;
+        } else console.log(`\nmoves:coverage --check passed (${Object.keys(loadBaseline()).length} baselined gaps, ${result.notes.length} notes)`);
+    }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main(process.argv.slice(2));

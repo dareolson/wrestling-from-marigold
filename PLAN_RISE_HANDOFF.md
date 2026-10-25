@@ -19,6 +19,7 @@ else unless a task names it.
 - T3.1 (this commit) — `research/animation/rise-handoff-2026-10/viewer.html` + `README.md` + `g5/` (1115 downscaled WebP frames, 9.3 MB; regeneration commands in the README). `tools/debug/rise_handoff_film.mjs` (forced rises, 1/60 s stepping, 250 ms before the swap to 400 ms after, both facings, default vs `risefix=1`; per-frame part step with the mirror removed) feeds `g4_package.py`, extended with `--configs/--scenarios/--out/--var/--t0/--max-w` (no fork; with no options it still writes the G4 package). Rows: Lou suplex receiver (thrower behind: turns), Lou back, Lou front, Lou quick rise, George back, George front, George thrower-behind (turns). Swap-frame numbers in the film equal the probe's (Lou 65.7 -> 0.63, George 58.7 -> 2.55). Raw `g5-film/` (26 MB) and `fixed/shots/` left untracked.
 - T3.2 (this commit) — `AI_HANDOFF_ENTRIES/2026-10-25-claude-rise-handoff-g5.md`: misses first (thesz 19.9 px, thesz-front3q-r1 25.5 px, the turn untouched), cause table, changes, before/after, not-claimed, the four G5 questions. STOPPED for Derek's G5.
 - G5 — Derek 2026-10-25: "looks good". The turn stays as is (no change). `thesz` and `thesz-front3q-r1` are ignored for verification (old models), so their misses don't count. Promotion of `risefix` to default not yet confirmed.
+- PROMOTED to default (Derek 2026-10-25, PLAN_GEORGE_TRANSFER D1), commit 82b71a8. `?risefix=off` disables.
 
 ## Goal
 

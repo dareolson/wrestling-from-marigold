@@ -159,18 +159,18 @@
       "summary": "End the rise on the rig's own upright geometry and reset the pose at the swap, so no part jumps on the first standing frame",
       "origin": { "failure": "Stand-up whole-body jump: stale this.pose, and the grounded end pose differs from the upright draw per rig", "evidence": "PLAN_RISE_HANDOFF.md T1.2, T2.1, T2.2" },
       "implementation": ["src/Skeleton.js", "src/Wrestler.js"],
-      "authoring": "none; `?risefix=1` (riseFixCandidate), Skeleton.standingChannels + Wrestler._standFromRise",
+      "authoring": "none; default-on since 2026-10-25, `?risefix=off` disables (riseFixCandidate), Skeleton.standingChannels + Wrestler._standFromRise",
       "consumers": [
         { "kind": "adapter", "id": "rise:handoff" },
         { "kind": "adapter", "id": "rise:quick" }
       ],
       "supported": "every rig x supine/prone/quick/gait rise, both facings; swap-frame step <= 3 px on Lou, george, george-roster-v1, thesz-roster-v1, guido-roster-v1, kowalski-roster-v1",
-      "fallbacks": "flag off: the old swap, unchanged (pinned by tests/riseFixFlagOff.test.js)",
+      "fallbacks": "`?risefix=off` (or Node without location): the old swap, unchanged (pinned by tests/riseFixFlagOff.test.js)",
       "regression": ["tests/riseFix.test.js", "tests/riseFixFlagOff.test.js"],
       "maturity": "pilot",
       "mechanical": { "status": "pass", "date": "2026-10-25", "evidence": "tests/riseFix.test.js; 56-93 -> <= 3 px on 6 rigs (PLAN_RISE_HANDOFF.md T2.2)", "scope": "thesz (19.9 px) and thesz-front3q-r1 (25.5 px) miss but are ignored for verification by Derek, 2026-10-25" },
-      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-25", "scope": "G5: 'looks good' for the risefix=1 candidate; promotion to default not decided" } ],
-      "gap": "Not default; the facing turn (standing-facing-turn) is untouched"
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-25", "scope": "G5: 'looks good' for the risefix=1 candidate" }, { "status": "approved", "by": "Derek", "date": "2026-10-25", "scope": "promotion to default (PLAN_GEORGE_TRANSFER D1, after G5); commit 82b71a8" } ],
+      "gap": "The facing turn (standing-facing-turn) is untouched"
     },
     {
       "id": "support-plant",

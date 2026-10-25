@@ -7,7 +7,8 @@ Step 3 of the Revised sequence in [MOVE_PIPELINE_EVOLUTION.md](MOVE_PIPELINE_EVO
 
 (Sonnet: one line per task: id, commit, result. Gate lines are written by Opus/Derek only.)
 
--
+- T0.1 82b71a8 risefix default-on via `defaultOnFlag('risefix','1')`; promotedFlags lists it; URL-semantics test (absent/=1 on, =off/=0/no location off); rise_handoff_probe/film pass `risefix=off` for pre-fix configs; aftermath_film CONFIGS untouched (now film with the fix on). 882 tests.
+- T0.2 (this commit) capabilities.json `rise-standing-channels`: default promotion recorded (Derek 2026-10-25, 82b71a8); PLAN_RISE_HANDOFF Progress line added. 882 tests.
 
 ## Goal
 

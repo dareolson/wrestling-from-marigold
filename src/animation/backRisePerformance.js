@@ -44,7 +44,9 @@ export function plantWeight(t, tLift) {
 
 // Standing recovery, back (D3 option A, ?sellart=v1 + ?aftermath=v2): offsets added x the
 // recovery weight to the near-arm l-channels of the pose he is standing in, so the near
-// hand rests at the back waist while the hurt is carried. Probed on Procreate Lou's own
-// idle pose (tools/debug/recovery_probe.mjs): lArm -1.2 / lForearm +0.3 puts the painted
-// contact 1.59 px from backWaist, both facings, elbow flex 129 deg (limit 157.6).
-export const RECOVERY_BACK_HAND = Object.freeze({ arm: -1.2, fore: 0.3 });
+// hand rests at the back waist while the hurt is carried. Probed on Procreate Lou's LIVE
+// settled pose, which carries local elbow flex (tools/debug/recovery_probe.mjs): lArm -1.2 /
+// lElbow +1.5 puts the painted contact 2.33 px from backWaist, both facings, elbow flex
+// 125.8 deg (limit 157.6). A pose that still carries only the legacy absolute forearm
+// takes the same relative bend: forearm offset = elbow - arm.
+export const RECOVERY_BACK_HAND = Object.freeze({ arm: -1.2, elbow: 1.5 });

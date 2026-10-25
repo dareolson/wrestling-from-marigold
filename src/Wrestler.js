@@ -1755,7 +1755,11 @@ export default class Wrestler {
             if (this._recoveryHandOnBack()) {
                 const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
                 pose[`${n}Arm`] = (pose[`${n}Arm`] ?? 0) + RECOVERY_BACK_HAND.arm * w;
-                pose[`${n}Forearm`] = (pose[`${n}Forearm`] ?? 0) + RECOVERY_BACK_HAND.fore * w;
+                // the pose's own elbow owner: local flex if it carries one (the live pose does),
+                // else the legacy absolute forearm, which needs the arm's swing added back
+                if (Number.isFinite(pose[`${n}Elbow`])) pose[`${n}Elbow`] += RECOVERY_BACK_HAND.elbow * w;
+                else pose[`${n}Forearm`] = (pose[`${n}Forearm`] ?? ((pose[`${n}Arm`] ?? 0) - RECOVERY_BACK_HAND.arm * w + 0.70))
+                    + (RECOVERY_BACK_HAND.elbow + RECOVERY_BACK_HAND.arm) * w;
             }
         } else {
             return null; // motifs exist for the two pilots only

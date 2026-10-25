@@ -11,7 +11,8 @@ import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 const noop = () => {};
 const BOTH = '?sellart=v1&aftermath=v2';
 const withFlag = (search, fn) => { globalThis.location = { search }; try { return fn(); } finally { delete globalThis.location; } };
-const IDLE = { lLeg: -0.05, rLeg: 0.14, lArm: 0.04, rArm: 0.17, lean: 0.05, crouch: 0.05, lForearm: 0.8, lShin: -0.11, rShin: -0.06 };
+// the live settled pose (film dbg.pose): local elbow flex, no legacy forearm
+const IDLE = { lLeg: -0.05, rLeg: 0.14, lArm: 0.04, rArm: 0.17, lean: 0.05, crouch: 0.05, lElbow: 0.7, rElbow: 0.7, lShin: -0.11, rShin: -0.06 };
 
 function standing({ backWaist = true, now = 1000, since = 0, until = 3500, dist = 5 } = {}) {
     const drawn = [], calls = [];
@@ -45,9 +46,23 @@ test('with both flags the near l-channels carry the back-waist offsets x recover
         assert.notEqual(got, w.pose);
         assert.deepEqual(w.pose, before);
         assert.ok(Math.abs(got.lArm - (IDLE.lArm + RECOVERY_BACK_HAND.arm * w0)) < 1e-12);
-        assert.ok(Math.abs(got.lForearm - (IDLE.lForearm + RECOVERY_BACK_HAND.fore * w0)) < 1e-12);
+        assert.ok(Math.abs(got.lElbow - (IDLE.lElbow + RECOVERY_BACK_HAND.elbow * w0)) < 1e-12);
+        assert.equal(got.lForearm, undefined, 'the elbow owner is not duplicated');
         assert.ok(got.bend > 0.1, 'the aftermath bend is still there');
         assert.equal(got.rArm, IDLE.rArm, 'far arm untouched');
+    });
+});
+
+test('a pose that still carries only the legacy forearm gets the same relative elbow bend', () => {
+    withFlag(BOTH, () => {
+        const { w, drawn } = standing({ now: 1000 });
+        const { lElbow, rElbow, ...legacy } = IDLE;
+        w.pose = { ...legacy, lForearm: 0.8 };
+        const w0 = w._recoveryWeight();
+        w.draw();
+        const got = drawn.at(-1);
+        const rel = (got.lForearm - got.lArm) - (0.8 - IDLE.lArm);
+        assert.ok(Math.abs(rel - RECOVERY_BACK_HAND.elbow * w0) < 1e-12);
     });
 });
 
@@ -56,7 +71,7 @@ test('aftermath alone keeps its bend-only back motif; sellart alone adds nothing
         const { w, drawn } = standing();
         w.draw();
         assert.equal(drawn.at(-1).lArm, IDLE.lArm);
-        assert.equal(drawn.at(-1).lForearm, IDLE.lForearm);
+        assert.equal(drawn.at(-1).lElbow, IDLE.lElbow);
     });
     withFlag('?sellart=v1', () => {
         const { w, drawn } = standing();

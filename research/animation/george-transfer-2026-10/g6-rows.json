@@ -1,0 +1,162 @@
+{
+ "views": [
+  {
+   "id": "suplex",
+   "title": "George, suplex: before \u2192 after",
+   "blurb": "Same scenario (Lou throws, George receives), both runs end on a back clutch and stay on his back. Left: the back sell is off for George. Right: it runs.",
+   "rows": [
+    "before-k1-suplex",
+    "after-k1-suplex"
+   ]
+  },
+  {
+   "id": "flip",
+   "title": "George, suplexFlip: before \u2192 after",
+   "blurb": "The other side: George faces right at impact. Both runs end on a back clutch and stay on his back.",
+   "rows": [
+    "before-k1-flip",
+    "after-k1-flip"
+   ]
+  },
+  {
+   "id": "prone",
+   "title": "Rolled, prone rise: before \u2192 after",
+   "blurb": "A sell plan where George rolls onto his front first, then clutches his back. The rise from his front is the ordinary prone rise in both runs.",
+   "rows": [
+    "before-k2-flip",
+    "after-k2-flip"
+   ]
+  },
+  {
+   "id": "kinds",
+   "title": "After: the three sell kinds",
+   "blurb": "The three sell plans that came up, all AFTER: back clutch and stays on his back; rolls onto his front first; writhe last with no back clutch.",
+   "rows": [
+    "after-k1-suplex",
+    "after-k2-flip",
+    "after-k3-suplex"
+   ]
+  },
+  {
+   "id": "lou",
+   "title": "Lou receiving (regression reference)",
+   "blurb": "Lou receives the same kind of suplex at HEAD (George throws), next to George AFTER. Lou runs the same code on his own back-sell data and his own grip art.",
+   "rows": [
+    "lou-k1",
+    "after-k1-suplex"
+   ]
+  }
+ ],
+ "rows": [
+  {
+   "id": "before-k1-suplex",
+   "label": "George, suplex, back clutch",
+   "state": "before",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/769eda0c-80d1-40d0-8b73-8377fafee4f3/scratchpad/t4/before/suplex-r1",
+   "scenario": "suplex",
+   "note": ""
+  },
+  {
+   "id": "after-k1-suplex",
+   "label": "George, suplex, back clutch",
+   "state": "after",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/769eda0c-80d1-40d0-8b73-8377fafee4f3/scratchpad/t4/after/suplex-r3",
+   "scenario": "suplex",
+   "note": ""
+  },
+  {
+   "id": "before-k1-flip",
+   "label": "George, suplexFlip, back clutch",
+   "state": "before",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/769eda0c-80d1-40d0-8b73-8377fafee4f3/scratchpad/t4/before/suplexFlip-r4",
+   "scenario": "suplexFlip",
+   "note": ""
+  },
+  {
+   "id": "after-k1-flip",
+   "label": "George, suplexFlip, back clutch",
+   "state": "after",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/769eda0c-80d1-40d0-8b73-8377fafee4f3/scratchpad/t4/after/suplexFlip-r1",
+   "scenario": "suplexFlip",
+   "note": ""
+  },
+  {
+   "id": "before-k2-flip",
+   "label": "George, suplexFlip, rolls then clutch",
+   "state": "before",
+   "kind": 2,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/769eda0c-80d1-40d0-8b73-8377fafee4f3/scratchpad/t4/before/suplexFlip-r2",
+   "scenario": "suplexFlip",
+   "note": ""
+  },
+  {
+   "id": "after-k2-flip",
+   "label": "George, suplexFlip, rolls then clutch",
+   "state": "after",
+   "kind": 2,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/769eda0c-80d1-40d0-8b73-8377fafee4f3/scratchpad/t4/after/suplexFlip-r2",
+   "scenario": "suplexFlip",
+   "note": ""
+  },
+  {
+   "id": "after-k3-suplex",
+   "label": "George, suplex, writhe last",
+   "state": "after",
+   "kind": 3,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/769eda0c-80d1-40d0-8b73-8377fafee4f3/scratchpad/t4/after/suplex-r1",
+   "scenario": "suplex",
+   "note": "plan: kick, writhe (no back clutch)"
+  },
+  {
+   "id": "lou-k1",
+   "label": "Lou, suplexReverse, back clutch",
+   "state": "lou",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/769eda0c-80d1-40d0-8b73-8377fafee4f3/scratchpad/t4/lou/suplexReverse-r1",
+   "scenario": "suplexReverse",
+   "note": "painted grip art"
+  }
+ ],
+ "counts": {
+  "after": {
+   "suplex": {
+    "1": 3,
+    "2": 0,
+    "3": 4,
+    "runs": 7
+   },
+   "suplexFlip": {
+    "1": 3,
+    "2": 2,
+    "3": 0,
+    "runs": 5
+   }
+  },
+  "before": {
+   "suplex": {
+    "1": 1,
+    "2": 3,
+    "3": 1,
+    "runs": 5
+   },
+   "suplexFlip": {
+    "1": 1,
+    "2": 3,
+    "3": 1,
+    "runs": 5
+   }
+  },
+  "lou": {
+   "suplexReverse": {
+    "1": 2,
+    "2": 0,
+    "3": 0,
+    "runs": 2
+   }
+  }
+ }
+}

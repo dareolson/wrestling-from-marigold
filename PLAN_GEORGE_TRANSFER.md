@@ -149,7 +149,7 @@ G5 was approved ("looks good"). Follow the `b8b274b` pattern exactly (read `git 
 - **STOP.** Reply to Derek with the three candidates and the page path. Don't add the anchor to the rig
   yet.
 
-G6a — (Derek's pick goes here.)
+G6a — Derek 2026-10-25: candidate **C** (u .3887, v .6077, 6 px inside the contour), given in chat after de6bdaf; applied in 8119db6. Recorded by Opus.
 
 ## Stage 3: run it on George (after G6a)
 

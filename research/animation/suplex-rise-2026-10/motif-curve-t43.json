@@ -1,0 +1,570 @@
+{
+ "tool": "tools/debug/motif_curve.mjs",
+ "thresholdPx": 15,
+ "stepMs": 16.667,
+ "runs": {
+  "aft/suplex": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": null,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": null,
+    "rise": {
+     "ms": null,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": null
+    },
+    "handoff": {
+     "ms": null,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": null
+    },
+    "standing": {
+     "ms": null,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": null
+    }
+   },
+   "holdMotion": {
+    "samples": 0,
+    "xRangePx": null,
+    "yRangePx": null,
+    "distMinPx": null,
+    "distMaxPx": null
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": false
+  },
+  "aft/suplexFlip": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": -1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 2766.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": null,
+     "spanMs": 2750,
+     "samples": 165,
+     "maxPx": null
+    },
+    "rise": {
+     "ms": null,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": null
+    },
+    "handoff": {
+     "ms": null,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": null
+    },
+    "standing": {
+     "ms": null,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": null
+    }
+   },
+   "holdMotion": {
+    "samples": 165,
+    "xRangePx": 0,
+    "yRangePx": 0,
+    "distMinPx": 0,
+    "distMaxPx": 0
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": false
+  },
+  "aft/suplexReverse": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "thesz-procreate-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 1316.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 4200,
+     "spanMs": 4200,
+     "samples": 252,
+     "maxPx": 42.2,
+     "minPx": 42.2
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 56.21,
+     "minPx": 41.9
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 45.29,
+     "minPx": 41.91
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 51.15,
+     "minPx": 42.53
+    }
+   },
+   "holdMotion": {
+    "samples": 252,
+    "xRangePx": 0,
+    "yRangePx": 0,
+    "distMinPx": 42.2,
+    "distMaxPx": 42.2
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true
+  },
+  "aft/suplexReverseFlip": {
+   "git": {
+    "commit": "4613c0f",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "thesz-procreate-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": 1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 1316.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 4200,
+     "spanMs": 4200,
+     "samples": 252,
+     "maxPx": 46.42,
+     "minPx": 46.42
+    },
+    "rise": {
+     "ms": 766.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 61.83,
+     "minPx": 46.08
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 49.81,
+     "minPx": 46.1
+    },
+    "standing": {
+     "ms": 2000,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 53.68,
+     "minPx": 46.69
+    }
+   },
+   "holdMotion": {
+    "samples": 252,
+    "xRangePx": 0,
+    "yRangePx": 0,
+    "distMinPx": 46.42,
+    "distMaxPx": 46.42
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": true
+  },
+  "on/suplex": {
+   "git": {
+    "commit": "f56bf2c",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 3233.33,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": null,
+     "spanMs": 2283.3,
+     "samples": 137,
+     "maxPx": null
+    },
+    "rise": {
+     "ms": null,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": null
+    },
+    "handoff": {
+     "ms": null,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": null
+    },
+    "standing": {
+     "ms": null,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": null
+    }
+   },
+   "holdMotion": {
+    "samples": 137,
+    "xRangePx": 0,
+    "yRangePx": 0,
+    "distMinPx": 0,
+    "distMaxPx": 0
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1683.33,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": false
+  },
+  "on/suplexFlip": {
+   "git": {
+    "commit": "f56bf2c",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "george-roster-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": -1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 2766.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": null,
+     "spanMs": 2750,
+     "samples": 165,
+     "maxPx": null
+    },
+    "rise": {
+     "ms": null,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": null
+    },
+    "handoff": {
+     "ms": null,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": null
+    },
+    "standing": {
+     "ms": null,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": null
+    }
+   },
+   "holdMotion": {
+    "samples": 165,
+    "xRangePx": 0,
+    "yRangePx": 0,
+    "distMinPx": 0,
+    "distMaxPx": 0
+   },
+   "standingArrivalMs": null,
+   "textureRuns": [
+    {
+     "key": "george_rv1_forearm",
+     "fromMs": -1700,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": false
+  },
+  "on/suplexReverse": {
+   "git": {
+    "commit": "f56bf2c",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "thesz-procreate-v1"
+   },
+   "facing": {
+    "atImpact": -1,
+    "atRise": -1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 1316.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 0,
+     "spanMs": 4200,
+     "samples": 252,
+     "maxPx": 10.63,
+     "minPx": 4.62
+    },
+    "rise": {
+     "ms": 16.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 17.16,
+     "minPx": 0.14
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 41.92,
+     "minPx": 20.77
+    },
+    "standing": {
+     "ms": 1083.3,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 42.53,
+     "minPx": 2.91
+    }
+   },
+   "holdMotion": {
+    "samples": 252,
+    "xRangePx": 5.96,
+    "yRangePx": 0.74,
+    "distMinPx": 4.62,
+    "distMaxPx": 10.63
+   },
+   "standingArrivalMs": 183.3,
+   "textureRuns": [
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": -1700,
+     "toMs": 350
+    },
+    {
+     "key": "thesz_pv1_forearm_grip",
+     "fromMs": 366.67,
+     "toMs": 6383.33
+    },
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": 6400,
+     "toMs": 6850
+    },
+    {
+     "key": "thesz_pv1_forearm_grip",
+     "fromMs": 6866.67,
+     "toMs": 7766.67
+    },
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": 7783.33,
+     "toMs": 8566.67
+    }
+   ],
+   "hasDistance": true
+  },
+  "on/suplexReverseFlip": {
+   "git": {
+    "commit": "f56bf2c",
+    "dirty": true
+   },
+   "receiver": {
+    "index": 1,
+    "rig": "thesz-procreate-v1"
+   },
+   "facing": {
+    "atImpact": 1,
+    "atRise": 1
+   },
+   "events": {
+    "impactMs": 0,
+    "clutchEndMs": 1316.67,
+    "riseStartMs": 5516.67,
+    "rise85Ms": 6283.33,
+    "standingMs": 6550,
+    "plus2sMs": 8550
+   },
+   "windows": {
+    "lying": {
+     "ms": 0,
+     "spanMs": 4200,
+     "samples": 252,
+     "maxPx": 11.74,
+     "minPx": 5.11
+    },
+    "rise": {
+     "ms": 16.7,
+     "spanMs": 766.7,
+     "samples": 46,
+     "maxPx": 18.96,
+     "minPx": 0.16
+    },
+    "handoff": {
+     "ms": 266.7,
+     "spanMs": 266.7,
+     "samples": 16,
+     "maxPx": 46.3,
+     "minPx": 22.94
+    },
+    "standing": {
+     "ms": 1083.3,
+     "spanMs": 2000,
+     "samples": 120,
+     "maxPx": 46.89,
+     "minPx": 3.13
+    }
+   },
+   "holdMotion": {
+    "samples": 252,
+    "xRangePx": 6.58,
+    "yRangePx": 0.82,
+    "distMinPx": 5.11,
+    "distMaxPx": 11.74
+   },
+   "standingArrivalMs": 183.3,
+   "textureRuns": [
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": -1700,
+     "toMs": 350
+    },
+    {
+     "key": "thesz_pv1_forearm_grip",
+     "fromMs": 366.67,
+     "toMs": 6383.33
+    },
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": 6400,
+     "toMs": 6850
+    },
+    {
+     "key": "thesz_pv1_forearm_grip",
+     "fromMs": 6866.67,
+     "toMs": 7750
+    },
+    {
+     "key": "thesz_pv1_forearm",
+     "fromMs": 7766.67,
+     "toMs": 8550
+    }
+   ],
+   "hasDistance": true
+  }
+ }
+}

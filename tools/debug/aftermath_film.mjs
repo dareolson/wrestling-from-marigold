@@ -124,6 +124,8 @@ const STEP = () => {
     const waist = waistA ? Sk.imageAnchorPoint(sk.torso, waistA) : null;
     const dist = contact && waist ? Math.hypot(contact.x - waist.x, contact.y - waist.y) : null;
     return {
+        recoveryW: +(w._recoveryWeight?.() ?? 0).toFixed(4), handOnBack: !!w._recoveryHandOnBack?.(), holdActive: !!w._lyingHold?.(), combatBlend: +(w.combatBlend ?? 0).toFixed(3),
+        dbg: { pose: { lArm: w.pose?.lArm, lForearm: w.pose?.lForearm, lElbow: w.pose?.lElbow, rElbow: w.pose?.rElbow, bend: w.pose?.bend }, rec: (r => r && { lArm: r.lArm, lForearm: r.lForearm, lElbow: r.lElbow, bend: r.bend })(w._recoveryPose?.()), idle: w.idlePose },
         nearContact: pt(contact), backWaist: pt(waist), backDist: dist === null ? null : +dist.toFixed(2),
         now: sc.time.now, state: w.state, lying: w.lying, facing: w.facing, riseT: w.riseT,
         x: w.x, y: w.y, s: w.s * (w._heightScale ?? 1),
@@ -134,6 +136,18 @@ const STEP = () => {
         farShoulder: pt(pts.farShoulder), farElbow: pt(pts.farElbow),
         otherState: (film.receiver === 0 ? sc.w2 : sc.w1).state,
     };
+};
+
+// In-page: interrupt the receiver the way the game does (PLAN_SUPLEX_RISE T4.4).
+//   a  pinned while in the lying hold          b  hit during recovery (pain replaced, staggered)
+//   c  natural pain.until expiry: nothing is touched, filming just runs through it (moving `until`
+//      by hand would retroactively rescale the recovery weight, which no game path does)
+const INTERRUPT = kind => {
+    const sc = window.__WFM_GAME.scene.scenes[0];
+    const w = window.__film.receiver === 0 ? sc.w1 : sc.w2;
+    if (kind === 'a') w.state = 'pinned';
+    else if (kind === 'b') { w._hurt(5, 'jab'); w.state = 'staggered'; w.stateTimer = 0.4; }
+    return { now: sc.time.now, state: w.state, painUntil: w._pain?.until ?? null, painSince: w._pain?.since ?? null };
 };
 
 function gitInfo() {
@@ -151,7 +165,7 @@ const rle = (frames, field, impactNow) => {
     return out;
 };
 
-async function film(scenario, configName, outRoot) {
+async function film(scenario, configName, outRoot, interrupt = null) {
     const sc = SCENARIOS[scenario];
     const flags = CONFIGS[configName];
     process.env.WFM_P1 = cast(sc.p1);
@@ -219,7 +233,7 @@ async function film(scenario, configName, outRoot) {
         const stripFiles = [];   // { file, now }
         const events = {};       // name -> { now, frame }
         const marksLeft = { rise: [...RISE_MARKS], rec: [...RECOVERY_MARKS_MS] };
-        let impactStep = null, standingNow = null, clutchDone = false, step = 0;
+        let impactStep = null, standingNow = null, clutchDone = false, step = 0, fired = null, stopAt = null;
         const t0 = info.suplexAt;
         const mark = async (name, f, i) => {
             if (events[name]) return;
@@ -258,7 +272,16 @@ async function film(scenario, configName, outRoot) {
                 }
             }
             step++;
-            if (standingNow !== null && !marksLeft.rec.length) break;
+            // T4.4: fire the interruption at <anchor>+ms, then film one more second
+            if (interrupt && !fired) {
+                const base = interrupt.anchor === 'standing' ? standingNow : events.impact?.now;
+                if (base != null && f.now - base >= interrupt.ms) {
+                    fired = { kind: interrupt.kind, atMs: +(f.now - (events.impact?.now ?? 0)).toFixed(2), step, ...(await page.evaluate(INTERRUPT, interrupt.kind)) };
+                    stopAt = f.now + 1000;
+                }
+            }
+            if (stopAt !== null && f.now >= stopAt) break;
+            if (!interrupt && standingNow !== null && !marksLeft.rec.length) break;
             if (f.now - t0 > MAX_AFTER_SUPLEX_MS) { console.log(`[film] ${configName}/${scenario}: gave up at +${MAX_AFTER_SUPLEX_MS} ms`); break; }
         }
 
@@ -286,9 +309,10 @@ async function film(scenario, configName, outRoot) {
             riseStartCalls: inPageEvents.map(e => ({ ...e, relImpactMs: +(e.now - impactNow).toFixed(2) })),
             nearForearmTexture: rle(frames, 'nearForearm', impactNow),
             farForearmTexture: rle(frames, 'farForearm', impactNow),
+            interrupt: fired,
             frames: frameList,
             samples: frames.map(f => ({ rel: +(f.now - impactNow).toFixed(2), state: f.state, riseT: f.state === 'gettingUp' ? +f.riseT.toFixed(4) : null,
-                sell: f.sell, backDist: f.backDist, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
+                sell: f.sell, recoveryW: f.recoveryW, holdActive: f.holdActive, dbg: f.dbg, handOnBack: f.handOnBack, combatBlend: f.combatBlend, backDist: f.backDist, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
                 farShoulder: f.farShoulder, farElbow: f.farElbow, rootY: f.y, facing: f.facing })),
         };
         writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 1));
@@ -304,6 +328,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const [scArg = 'all', cfgArg = 'all', outRoot = 'research/animation/suplex-rise-2026-10'] = process.argv.slice(2);
     const scenarios = scArg === 'all' ? Object.keys(SCENARIOS) : [scArg];
     const configs = cfgArg === 'all' ? Object.keys(CONFIGS) : [cfgArg];
-    for (const s of scenarios) for (const c of configs) await film(s, c, outRoot);
+    // WFM_INTERRUPT="a@impact+2500" | "b@standing+500" | "c@standing+500"
+    const m = /^([abc])@(impact|standing)\+(\d+)$/.exec(process.env.WFM_INTERRUPT ?? '');
+    const interrupt = m ? { kind: m[1], anchor: m[2], ms: +m[3] } : null;
+    for (const s of scenarios) for (const c of configs) await film(s, c, interrupt ? join(outRoot, `interrupt-${m[1]}`) : outRoot, interrupt);
     process.exit(0);
 }

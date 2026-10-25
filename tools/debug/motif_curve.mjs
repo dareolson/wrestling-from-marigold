@@ -39,6 +39,15 @@ export function analyse(manifest) {
         return { ms: +(far.length * STEP_MS).toFixed(1), spanMs: +(seg.length * STEP_MS).toFixed(1), samples: seg.length,
             maxPx: +Math.max(...withD.map(s => s.backDist)).toFixed(2), minPx: +Math.min(...withD.map(s => s.backDist)).toFixed(2) };
     };
+    // lying-hold liveness: how far the contact point travels while the hand is held (px), and
+    // the first time after standing that the contact is back within the threshold for good
+    const holdSeg = clutchEnd != null && riseStart > clutchEnd ? S.slice(clutchEnd, riseStart).filter(x => x.nearContact) : [];
+    const range = k => holdSeg.length ? +(Math.max(...holdSeg.map(x => x.nearContact[k])) - Math.min(...holdSeg.map(x => x.nearContact[k]))).toFixed(2) : null;
+    const holdMotion = { samples: holdSeg.length, xRangePx: range('x'), yRangePx: range('y'),
+        distMinPx: holdSeg.length ? Math.min(...holdSeg.map(x => x.backDist)) : null, distMaxPx: holdSeg.length ? Math.max(...holdSeg.map(x => x.backDist)) : null };
+    let arrive = -1;
+    if (standing >= 0) for (let i = standing; i < S.length; i++) if (S[i].backDist != null && S[i].backDist <= THRESH_PX) { arrive = i; break; }
+    const standingArrivalMs = arrive >= 0 ? +(S[arrive].rel - S[standing].rel).toFixed(1) : null;
     const rel = i => (i != null && i >= 0 ? S[i].rel : null);
     const windows = {
         lying: win(clutchEnd, riseStart),
@@ -53,7 +62,7 @@ export function analyse(manifest) {
         else runs.at(-1).toMs = s.rel;
     }
     return { events: { impactMs: rel(impact), clutchEndMs: rel(clutchEnd), riseStartMs: rel(riseStart), rise85Ms: rel(r85), standingMs: rel(standing), plus2sMs: rel(plus2) },
-        windows, textureRuns: runs, hasDistance: S.some(s => s.backDist != null) };
+        windows, holdMotion, standingArrivalMs, textureRuns: runs, hasDistance: S.some(s => s.backDist != null) };
 }
 
 const palette = ['#1b6ca8', '#c0392b', '#2e8b57', '#8e44ad'];
@@ -98,6 +107,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     for (const [k, r] of Object.entries(out.runs)) {
         if (!r.hasDistance) { console.log(`${k}: no backWaist distance (receiver has none)`); continue; }
         const w = r.windows;
-        console.log(`${k}: >${THRESH_PX}px ms — lying ${w.lying?.ms}/${w.lying?.spanMs}, rise ${w.rise?.ms}/${w.rise?.spanMs}, handoff ${w.handoff?.ms}/${w.handoff?.spanMs}, standing ${w.standing?.ms}/${w.standing?.spanMs}`);
+        console.log(`${k}: >${THRESH_PX}px ms — lying ${w.lying?.ms}/${w.lying?.spanMs}, rise ${w.rise?.ms}/${w.rise?.spanMs}, handoff ${w.handoff?.ms}/${w.handoff?.spanMs}, standing ${w.standing?.ms}/${w.standing?.spanMs}; hold travel x ${r.holdMotion.xRangePx} y ${r.holdMotion.yRangePx} px, dist ${r.holdMotion.distMinPx}-${r.holdMotion.distMaxPx}; hand back within ${THRESH_PX}px ${r.standingArrivalMs} ms after standing`);
     }
 }

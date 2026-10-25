@@ -38,6 +38,8 @@ Read that entry, then this plan. Read nothing else unless a task names it.
 - T5.1 (this commit) — `research/animation/suplex-rise-2026-10/viewer.html` + `README.md` + `g4/` (1635 frames, 480 px WebP q80, impact -500 ms -> +2 s, 30 fps; event close-ups; `data.js`; **15.49 MB**) built by `tools/debug/g4_package.py` (Pillow; no cwebp/ffmpeg on PATH, so **no mp4s**). `aft` / `off` re-filmed at fa9969f for `suplexReverse` and `suplexReverseFlip` (manifests + close-ups tracked, strips not) so all three columns share a commit. Viewer checked in Chrome from `file://`: 0 broken images, 0 console errors, 1x playback advanced +2028 ms over 2 s wall, both facings, event jumps land on the manifest times.
 - T5.2 (this commit) — `AI_HANDOFF_ENTRIES/2026-10-24-claude-suplex-rise-g4.md` (the T4.7 jump miss first; what changed; measurements; guard deviation; what is not claimed; plant parked; G4 questions) + AI_HANDOFF.md Status paragraph and Handoff Log index line for this plan (Codex's uncommitted hunk left unstaged). Stopped for Derek's G4 verdict. 838 tests.
 
+- G4 — Derek 2026-10-24, after the viewer: "it looks good." Visual approval of the `on` candidate (Lou). Promotion to default, the standing-frame body jump, and Stage 6 are not yet decided.
+
 ## Goal
 
 The suplex receiver on Procreate Lou reads as one continuous hurt performance:

@@ -113,46 +113,46 @@
       "implementation": ["src/animation/backRisePerformance.js", "src/animation/sells.js", "src/Wrestler.js"],
       "authoring": "none; `clutchSell(..., endReach)` and `_hold`",
       "consumers": [ { "kind": "adapter", "id": "sell:lyingHold" } ],
-      "supported": "back sell only; one rig with `backWaist` (Lou, both facings)",
-      "fallbacks": "other sells, other rigs, flag off: no hold is drawn",
-      "regression": ["tests/lyingHold.test.js"],
+      "supported": "back sell only; rigs with `backWaist` AND `textures.backSell` (src/rig/backSell.js): Lou (both facings) and George (george-roster-v1, fist art, wrist proxy contact)",
+      "fallbacks": "other sells, rigs without both `backWaist` and `backSell` (their numbers are never borrowed), flag off: no hold is drawn",
+      "regression": ["tests/lyingHold.test.js", "tests/backSellLouFixture.test.js", "tests/backSellSupport.test.js", "tests/backSellRigContract.test.js", "tests/backSellGeorge.test.js"],
       "maturity": "pilot",
       "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/lyingHold.test.js; T4.3 film: motif > 15 px for 0 of 4200 ms lying" },
-      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou supine back sell, `on` candidate; default since PROMOTE" } ],
-      "gap": "Back only; Lou only"
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou supine back sell, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George (george-roster-v1) runs this from 2026-10-25; Derek has not seen it (PLAN_GEORGE_TRANSFER G6)" } ],
+      "gap": "Back only; Lou and George (George: no grip donor, wrist proxy contact; unverified until G6). Mechanical for George: tests/backSellGeorge.test.js and PLAN_GEORGE_TRANSFER T3.5 (last sell a back clutch, supine: 0 ms > 15 px lying, hold 8.5-13.5 px)"
     },
     {
       "id": "contact-latched-art",
       "summary": "Switch grip/fist art on measured painted-contact distance with a dwell and refractory latch, not by phase",
       "origin": { "failure": "Grip art chosen by phase can flicker or lie when the hand is not there", "evidence": "4adb53c..81fe5bf; 03b0a0a (R1 flicker did not occur)" },
       "implementation": ["src/animation/sellAppearance.js", "src/Skeleton.js"],
-      "authoring": "none; stepGripLatch (15 px, 100 ms dwell, 250 ms refractory) fed by Skeleton.backContactDistance",
+      "authoring": "none; stepGripLatch (the rig's `backSell.contactPx`, 100 ms dwell, 250 ms refractory) fed by Skeleton.backContact (clutchPatch or wristProxy)",
       "consumers": [
         { "kind": "adapter", "id": "sell:lyingHold" },
         { "kind": "adapter", "id": "rise:back" }
       ],
-      "supported": "back contact on a rig with painted backWaist and a grip donor (Lou)",
-      "fallbacks": "no donor or anchor: base art",
-      "regression": ["tests/lyingHold.test.js", "tests/sellAppearance.test.js"],
+      "supported": "back contact on a rig with painted backWaist and backSell data: Lou with his grip donor (gripArt painted, clutchPatch contact) and George without one (gripArt none: the baked fist stays, contact wristProxy, the latch still runs and never selects art)",
+      "fallbacks": "no donor: base art and the wrist as the contact (labelled `wristProxy`); no anchor or no backSell data: unsupported, sell off",
+      "regression": ["tests/lyingHold.test.js", "tests/sellAppearance.test.js", "tests/backSellSupport.test.js", "tests/backSellGeorge.test.js"],
       "maturity": "pilot",
       "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/lyingHold.test.js latch test; T1.2/T4.3 film: 0 grip-fist-grip runs under 250 ms in 4 scenarios" },
-      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou, `on` candidate; default since PROMOTE" } ],
-      "gap": "Grip donor exists for Lou only"
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George (fist art, wristProxy contact) runs this from 2026-10-25; Derek has not seen it (PLAN_GEORGE_TRANSFER G6)" } ],
+      "gap": "Grip donor exists for Lou only; George's arrives from Codex (Stage 5, no code change expected). George T3.5: latch flips >= 1616.7 ms apart, never inside the 250 ms refractory"
     },
     {
       "id": "carried-rise",
       "summary": "The rise's own IK end pose hands the back hand to the standing recovery with absolute targets (no dip)",
       "origin": { "failure": "Rise -> stance motif dip", "evidence": "fa9969f; motif-curve-t47.json (handoff 266.7 -> 0 ms; longest unbroken stretch 450 -> 0 ms)" },
       "implementation": ["src/animation/backRisePerformance.js", "src/Skeleton.js"],
-      "authoring": "none; `carriedRiseEndArm`, `carriedHandTarget`, RECOVERY_BACK_HAND_ABS",
+      "authoring": "none; `carriedRiseEndArm`, `carriedHandTarget`, `settledBackHand(backSell, idle pose)`",
       "consumers": [ { "kind": "adapter", "id": "rise:back" } ],
-      "supported": "Lou back rise (needs `backWaist` + grip art), aftermath=v2",
-      "fallbacks": "aft only, no backWaist or quick rise: the offset recovery path",
-      "regression": ["tests/carriedRise.test.js"],
+      "supported": "back rise from supine on a rig with `backWaist` + `backSell`: Lou and George (aftermath=v2). A rolled (prone) receiver gets the ordinary prone rise, as before",
+      "fallbacks": "aft only, no backWaist or backSell, or quick rise: the offset recovery path",
+      "regression": ["tests/carriedRise.test.js", "tests/backSellLouFixture.test.js", "tests/backSellGeorge.test.js"],
       "maturity": "pilot",
       "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/carriedRise.test.js (11); T4.7 film: hand-to-backWaist 0.14-0.16 px at the swap" },
-      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou back rise, `on` candidate; default since PROMOTE" } ],
-      "gap": "Lou only"
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou back rise, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George runs this from 2026-10-25; Derek has not seen it (PLAN_GEORGE_TRANSFER G6)" } ],
+      "gap": "Lou and George (George unverified until G6). George T3.5, supine runs: rise 0 ms and handoff 0 ms > 15 px, longest run across the handoff 0 ms, hand-to-back 0 px at the swap; a rolled (prone) receiver: rise 766.7 ms > 15 px (no protected prone rise, unchanged)"
     },
     {
       "id": "rise-standing-channels",

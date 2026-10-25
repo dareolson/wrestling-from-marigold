@@ -32,6 +32,50 @@ for an unknown move; a report can therefore omit intended contact checks
 without explicitly saying coverage is missing. Documentation also contains
 superseded whole-actor layering guidance. These are pipeline reliability gaps.
 
+## Refresh 2026-10-25 (Claude, Derek's direction)
+
+The suplex-rise work ([PLAN_SUPLEX_RISE.md](PLAN_SUPLEX_RISE.md)) and the
+rise-handoff work ([PLAN_RISE_HANDOFF.md](PLAN_RISE_HANDOFF.md)) landed after this
+document was written. Where they differ, this section supersedes "Current evidence" and
+"First implementation sequence". The decision, loop, boundaries, contact
+intent, records and evidence envelope stand unchanged.
+
+### Evidence since 2026-10-24
+
+| Discovery | Shared implementation | Consumers | Mechanical | Derek's visual | Gap |
+| --- | --- | --- | --- | --- | --- |
+| Whole-body `transform.y` swap pops the receiver's head front→behind | Clip `layers` window (`clipLayers.js`); `eb420e2` | figureFourTableau, suplex | tests + 4-direction film | suplex approved 2026-10-24 | Other throws not audited for the same swap |
+| Hand drops the pain motif while down (4.2 s) | Lying hold (`holdWeight`, `clutchSell(..., endReach)`) | Lou supine back | `lyingHold.test.js`, motif curve 4200→0 ms | approved (G4), **default** | Back only; one rig with `backWaist` |
+| Grip art by phase can flicker / lie | Contact-latched art (`stepGripLatch`, `Skeleton.backContactDistance`) | lying hold, rise, recovery | tests; 0 flickers in film | approved (G4), default | Grip donor exists for Lou only |
+| Rise → stance motif dip | Carried rise D5 (`carriedRiseEndArm`, absolute recovery targets) | Lou back rise | `carriedRise.test.js`; handoff 450→0 ms | approved (G4), default | Lou only (needs `backWaist` + grip art) |
+| Stand-up whole-body jump (stale `this.pose`; grounded end ≠ upright draw) | `Skeleton.standingChannels` + `_standFromRise` behind `?risefix=1` | every rig × supine/prone/quick/gait rise | `riseFix*.test.js`; 56–93 → ≤ 3 px on 6 rigs | "looks good" (G5); default not yet decided | `thesz`, `thesz-front3q-r1` ignored (Derek) |
+| Support plant: wrist proxy reachable only 116 ms, hidden by thigh | `_plantPlan` point-target reach (D1) | none (parked) | `plantedRise.test.js` | **parked** by Derek | Needs a choreography change before art; Codex request on hold |
+| Facing turn mirrors on the first standing frame | none, kept as is | all rises | measured (H5) | Derek: keep | Local decision, recorded |
+| Screenshots race the game clock; untracked frames are not portable | Frame-stepped capture (`aftermath_film.mjs`, `rise_handoff_film.mjs`), `motif_curve.mjs`, packaged viewer (`g4_package.py`) | suplex-rise G4, rise-handoff G5 | used for two gates | n/a | Two capture tools share code by copy; manifests not yet in the common envelope |
+
+Flags `?sellart` and `?aftermath` are default-on since `b8b274b` (Derek, G4).
+
+### Revised sequence (replaces "First implementation sequence")
+
+1. **Make coverage honest (unchanged, next).** Capability records seeded from both
+   tables above, `npm run moves:coverage` with strict spec status and a committed
+   baseline of historical debt. No gameplay change. Plan:
+   [PLAN_PIPELINE_COVERAGE.md](PLAN_PIPELINE_COVERAGE.md).
+2. **Record today's rig/runtime lessons in the method** (part of step 1's plan):
+   whole-body layering, stale pose at state swaps, grounded vs upright renderer
+   agreement, stepping capture, flag-attribution configs.
+3. **Prove transfer with George** (replaces the parked support pilot as the
+   second consumer): measure George's `backWaist`, request his grip donor from
+   Codex, and run the lying hold / contact-latched art / carried rise on a
+   second rig. That proves the anchor contract and the art fallbacks on a
+   distinct rig.
+4. **Contact intent (`contactTargets.js`)** extracted when step 3 or the next move
+   gives a second contact consumer. The back clutch, carried rise and parked plant are
+   the existing first consumers. Keep the plant parked until Derek reopens it.
+5. **Evidence envelope + one capture tool.** Merge the two stepped capture tools
+   behind the envelope when a third scenario needs capture. Keep both existing
+   scenarios as regression fixtures.
+
 ## The learning loop
 
 1. Reproduce a named failure in the real game; preserve baseline, cast,
@@ -154,6 +198,8 @@ packaged viewer for Derek; a sheet pointing to untracked local frames is not
 a portable review artifact.
 
 ## First implementation sequence
+
+*(Superseded 2026-10-25 by "Revised sequence" above; kept for the record.)*
 
 1. **Make coverage honest.** Seed capability records and implement the coverage
    command with strict spec status and historical baseline. Verify that an

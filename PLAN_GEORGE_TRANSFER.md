@@ -10,7 +10,7 @@ Step 3 of the Revised sequence in [MOVE_PIPELINE_EVOLUTION.md](MOVE_PIPELINE_EVO
 - T0.1 82b71a8 risefix default-on via `defaultOnFlag('risefix','1')`; promotedFlags lists it; URL-semantics test (absent/=1 on, =off/=0/no location off); rise_handoff_probe/film pass `risefix=off` for pre-fix configs; aftermath_film CONFIGS untouched (now film with the fix on). 882 tests.
 - T0.2 5812e37 capabilities.json `rise-standing-channels`: default promotion recorded (Derek 2026-10-25, 82b71a8); PLAN_RISE_HANDOFF Progress line added. 882 tests.
 
-- T1.1 (this commit) inventory, no code. **T1.1 table** (rig data = moves to the rig · mechanism = stays shared · tool fix = the tool must stop assuming Lou):
+- T1.1 e8f2734 inventory, no code. **T1.1 table** (rig data = moves to the rig · mechanism = stays shared · tool fix = the tool must stop assuming Lou):
 
   | # | Where | What it assumes | Mark |
   |---|---|---|---|
@@ -30,6 +30,7 @@ Step 3 of the Revised sequence in [MOVE_PIPELINE_EVOLUTION.md](MOVE_PIPELINE_EVO
   | 14 | `tools/debug/hold_weight_sweep.mjs` | `dist <= 15` literal, grip-art criterion, default rig Lou | **tool fix** (T3.2) |
   | 15 | `tools/debug/motif_curve.mjs` `THRESH_PX = 15` | literal | **tool fix** (read `contactPx` from the rig) |
   | 16 | `tests/lyingHold|carriedRise|standingBackHand.test.js` | stub a bare `backWaist` on the torso and expect the sell to run | **test fix**: stubs must carry `backSell` too |
+- T1.2 (this commit) `tests/backSellLouFixture.test.js` + `tests/fixtures/backSellLou.json`, committed before any src change: holdWeight 0-3.2 s, backRiseWeight (carry x peak x from x t), carriedHandTarget -50..400 ms, `_recoveryPose` back (2 facings x 2 l-channel owners x elbow/legacy x plain/carried x 7 weights), the grip latch over a sweep, and Lou's values. 1e-9. Test code calls go through one adapter block; the JSON is the contract.
 
 
 ## Goal

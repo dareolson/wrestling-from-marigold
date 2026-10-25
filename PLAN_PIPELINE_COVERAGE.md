@@ -12,6 +12,8 @@ unless a task names it.
 
 (Executor: append one line per finished task: `T#.# <sha> <one-line result>`.)
 
+T1.1 f008251 specStatus(id) added beside unchanged specFor; tests/specStatus.test.js (+3); npm test 854 pass.
+
 ## Goal
 
 1. A small, maintained **capability index** says what the engine has learned, who uses it,

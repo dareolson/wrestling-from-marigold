@@ -1,0 +1,213 @@
+{
+  "version": 1,
+  "seeded": "2026-10-25 from MOVE_PIPELINE_EVOLUTION.md: Codex's six rows (2026-10-24) and the Refresh's eight (2026-10-25), merged where they name one mechanism.",
+  "capabilities": [
+    {
+      "id": "clip-grips",
+      "summary": "A clip declares a hand-to-joint grip window; the runtime holds the hand on the partner's joint",
+      "origin": { "failure": "Staged hands miss on different casts", "evidence": "MOVE_PIPELINE_EVOLUTION.md row 1; commits 7fd491f, ecd37fc" },
+      "implementation": ["src/animation/AnimationClip.js", "src/animation/MoveRuntime.js"],
+      "authoring": "clip `grips` [{ role, arm, to: { role, joint, side }, in, out }]; validated by validateClip",
+      "consumers": [ { "kind": "clip", "id": "piledriver" } ],
+      "supported": "bone-endpoint hand targets on a partner joint; both facings",
+      "fallbacks": "no `grips`: hands follow the authored pose",
+      "regression": ["tests/moveContacts.test.js"],
+      "maturity": "pilot",
+      "mechanical": { "status": "pass", "date": "2026-10-25", "evidence": "tests/moveContacts.test.js: window validation and afterDraw weighting, inside the 851-test run", "scope": "window logic only; reach to the painted surface on each cast is not measured" },
+      "visual": [ { "status": "unverified", "reason": "no gate line in PLAN_SUPLEX_RISE.md / PLAN_RISE_HANDOFF.md approves the piledriver grips" } ]
+    },
+    {
+      "id": "clip-layers",
+      "summary": "Per-limb cross-actor draw order inside a paired clip (replaces the whole-body y-sort and player-slot ties)",
+      "origin": { "failure": "Figure-four depth depends on player slot; a whole-body transform.y swap pops the receiver's head front -> behind in the suplex", "evidence": "2ccb562, d0312f3, eb420e2" },
+      "implementation": ["src/animation/clipLayers.js", "src/animation/MoveRuntime.js", "src/animation/AnimationClip.js"],
+      "authoring": "clip `layers` windows / `layerTie` (tools/move-editor draft fields)",
+      "consumers": [
+        { "kind": "clip", "id": "suplex" },
+        { "kind": "tool", "id": "tools/move-editor/drafts/figurefour-tableau.json" }
+      ],
+      "supported": "any paired clip; anatomical limbs (lLeg rLeg lArm rArm torso head)",
+      "fallbacks": "no `layers`: y-sorted whole bodies, sub-depth ties by player slot (every other clip is byte-identical)",
+      "regression": ["tests/clipLayers.test.js", "tests/figureFourTableau.test.js"],
+      "maturity": "reused",
+      "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/clipLayers.test.js; eb420e2 film, 4 directions (PLAN_SUPLEX_RISE.md)" },
+      "visual": [
+        { "status": "unverified", "scope": "suplex head layering (eb420e2)", "reason": "no gate line approves the layering on its own; G4 (2026-10-24 'it looks good') approved the suplex-rise `on` candidate viewed with eb420e2 in place" },
+        { "status": "not-approved", "scope": "figure-four tableau", "reason": "G1 never approved; track parked by Derek 2026-10-23 (PLAN_MOVE_PERFORMANCE.md)" }
+      ],
+      "gap": "Other throws are not audited for the same transform.y swap"
+    },
+    {
+      "id": "painted-anchors",
+      "summary": "Resolve a painted contact point (backWaist, grip patch) from the drawn image instead of a wrist or joint proxy",
+      "origin": { "failure": "A wrist is not the painted grasp", "evidence": "MOVE_PIPELINE_EVOLUTION.md row 3; b07484d" },
+      "implementation": ["src/Skeleton.js"],
+      "authoring": "rig `_semanticAnchors` on the part image (Skeleton.imageAnchorPoint); no authoring UI",
+      "consumers": [
+        { "kind": "adapter", "id": "sell:clutch" },
+        { "kind": "adapter", "id": "rise:back" }
+      ],
+      "supported": "rigs whose torso/forearm art registers the anchor (Procreate Lou)",
+      "fallbacks": "no anchor: joint proxy or base art; unsupported rigs keep base art",
+      "regression": ["tests/backRisePerformance.test.js", "tests/sellAppearance.test.js"],
+      "maturity": "pilot",
+      "mechanical": { "status": "pass", "date": "2026-10-25", "evidence": "tests/backRisePerformance.test.js 'painted hand landmark follows the actual image transform, origin and flips'", "scope": "transform/flip math and Lou's backWaist; no second rig yet" },
+      "visual": [ { "status": "unverified", "reason": "approvals are recorded on the consuming capabilities (lying-hold, carried-rise), not on the anchor lookup" } ],
+      "gap": "Contact intent and the unsupported-rig fallback have no explicit contract (contactTargets.js is a later step)"
+    },
+    {
+      "id": "sell-appearance",
+      "summary": "One owner for sell-time art swaps (grip / fist hand) with reset on every state exit",
+      "origin": { "failure": "Selling art can fight move art", "evidence": "MOVE_PIPELINE_EVOLUTION.md row 4; b07484d" },
+      "implementation": ["src/animation/sellAppearance.js", "src/animation/sells.js"],
+      "authoring": "none; driven by the sell spec and rig donors",
+      "consumers": [
+        { "kind": "adapter", "id": "sell:clutch" },
+        { "kind": "adapter", "id": "sell:lyingHold" }
+      ],
+      "supported": "grounded back and head clutch sells on rigs with a grip donor",
+      "fallbacks": "unavailable donor, absent image, unloaded texture or unsupported rig keep base art",
+      "regression": ["tests/sellAppearance.test.js", "tests/sellArtFlagOff.test.js", "tests/sells.test.js"],
+      "maturity": "pilot",
+      "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/sellAppearance.test.js (ownership, reset, flag off); tests/sellArtFlagOff.test.js snapshots" },
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: suplex-rise `on` candidate, Procreate Lou receiving; default since PROMOTE (b8b274b)" } ],
+      "gap": "Grip donor exists for Lou only"
+    },
+    {
+      "id": "protected-back-rise",
+      "summary": "Back-pain rise with a protective hand envelope and an optional standing recovery performance",
+      "origin": { "failure": "Pain ends before the recovery performance does", "evidence": "MOVE_PIPELINE_EVOLUTION.md row 5; b07484d, f56bf2c" },
+      "implementation": ["src/animation/backRisePerformance.js", "src/Skeleton.js", "src/Wrestler.js"],
+      "authoring": "none; `_pain` context built by Wrestler._backRiseContext",
+      "consumers": [ { "kind": "adapter", "id": "rise:back" } ],
+      "supported": "back-pain rise on a rig with painted backWaist (Lou); aftermath=v2 for the recovery",
+      "fallbacks": "no backWaist or flag off: the base rise, bend-only recovery",
+      "regression": ["tests/backRisePerformance.test.js", "tests/standingBackHand.test.js", "tests/sellArtFlagOff.test.js"],
+      "maturity": "pilot",
+      "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/backRisePerformance.test.js, tests/standingBackHand.test.js" },
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou back rise + recovery, `on` candidate; default since PROMOTE" } ],
+      "gap": "Support plant is parked (support-plant); standing motif still dips after the swap on some frames"
+    },
+    {
+      "id": "critic-traces",
+      "summary": "Critic traces and metrics over a clip (contacts, strikes, landings, floor, continuity)",
+      "origin": { "failure": "Engine preview differs from gameplay", "evidence": "MOVE_PIPELINE_EVOLUTION.md row 6" },
+      "implementation": ["tools/move-critic/sample.mjs", "tools/move-critic/metrics.mjs", "tools/move-critic/specs.mjs"],
+      "authoring": "tools/move-critic/specs.mjs SPECS (per-move assertions)",
+      "consumers": [
+        { "kind": "tool", "id": "tools/move-critic/report.mjs" },
+        { "kind": "tool", "id": "tools/move-critic/stage.mjs" }
+      ],
+      "supported": "clip-only traces of registered clips",
+      "fallbacks": "a move with no spec is reported by moves:coverage as unverified, not as passing",
+      "regression": ["tests/criticMetrics.test.js", "tests/specStatus.test.js"],
+      "maturity": "reused",
+      "mechanical": { "status": "pass", "date": "2026-10-25", "evidence": "tests/criticMetrics.test.js, tests/specStatus.test.js", "scope": "metric functions on fixtures; most registry moves have no spec (see moves:coverage)" },
+      "visual": [ { "status": "not-applicable", "reason": "measurement tool" } ],
+      "gap": "Clip-only; aftermath and play captures use separate formats"
+    },
+    {
+      "id": "lying-hold",
+      "summary": "Hand stays on the back after the last clutch while down, breathing at holdWeight, and the rise eases up from it",
+      "origin": { "failure": "Hand drops the pain motif while down (4.2 s)", "evidence": "81fe5bf; research/animation/suplex-rise-2026-10/motif-curve-t43.json (lying 4200 -> 0 ms)" },
+      "implementation": ["src/animation/backRisePerformance.js", "src/animation/sells.js", "src/Wrestler.js"],
+      "authoring": "none; `clutchSell(..., endReach)` and `_hold`",
+      "consumers": [ { "kind": "adapter", "id": "sell:lyingHold" } ],
+      "supported": "back sell only; one rig with `backWaist` (Lou, both facings)",
+      "fallbacks": "other sells, other rigs, flag off: no hold is drawn",
+      "regression": ["tests/lyingHold.test.js"],
+      "maturity": "pilot",
+      "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/lyingHold.test.js; T4.3 film: motif > 15 px for 0 of 4200 ms lying" },
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou supine back sell, `on` candidate; default since PROMOTE" } ],
+      "gap": "Back only; Lou only"
+    },
+    {
+      "id": "contact-latched-art",
+      "summary": "Switch grip/fist art on measured painted-contact distance with a dwell and refractory latch, not by phase",
+      "origin": { "failure": "Grip art chosen by phase can flicker or lie when the hand is not there", "evidence": "4adb53c..81fe5bf; 03b0a0a (R1 flicker did not occur)" },
+      "implementation": ["src/animation/sellAppearance.js", "src/Skeleton.js"],
+      "authoring": "none; stepGripLatch (15 px, 100 ms dwell, 250 ms refractory) fed by Skeleton.backContactDistance",
+      "consumers": [
+        { "kind": "adapter", "id": "sell:lyingHold" },
+        { "kind": "adapter", "id": "rise:back" }
+      ],
+      "supported": "back contact on a rig with painted backWaist and a grip donor (Lou)",
+      "fallbacks": "no donor or anchor: base art",
+      "regression": ["tests/lyingHold.test.js", "tests/sellAppearance.test.js"],
+      "maturity": "pilot",
+      "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/lyingHold.test.js latch test; T1.2/T4.3 film: 0 grip-fist-grip runs under 250 ms in 4 scenarios" },
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou, `on` candidate; default since PROMOTE" } ],
+      "gap": "Grip donor exists for Lou only"
+    },
+    {
+      "id": "carried-rise",
+      "summary": "The rise's own IK end pose hands the back hand to the standing recovery with absolute targets (no dip)",
+      "origin": { "failure": "Rise -> stance motif dip", "evidence": "fa9969f; motif-curve-t47.json (handoff 266.7 -> 0 ms; longest unbroken stretch 450 -> 0 ms)" },
+      "implementation": ["src/animation/backRisePerformance.js", "src/Skeleton.js"],
+      "authoring": "none; `carriedRiseEndArm`, `carriedHandTarget`, RECOVERY_BACK_HAND_ABS",
+      "consumers": [ { "kind": "adapter", "id": "rise:back" } ],
+      "supported": "Lou back rise (needs `backWaist` + grip art), aftermath=v2",
+      "fallbacks": "aft only, no backWaist or quick rise: the offset recovery path",
+      "regression": ["tests/carriedRise.test.js"],
+      "maturity": "pilot",
+      "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/carriedRise.test.js (11); T4.7 film: hand-to-backWaist 0.14-0.16 px at the swap" },
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou back rise, `on` candidate; default since PROMOTE" } ],
+      "gap": "Lou only"
+    },
+    {
+      "id": "rise-standing-channels",
+      "summary": "End the rise on the rig's own upright geometry and reset the pose at the swap, so no part jumps on the first standing frame",
+      "origin": { "failure": "Stand-up whole-body jump: stale this.pose, and the grounded end pose differs from the upright draw per rig", "evidence": "PLAN_RISE_HANDOFF.md T1.2, T2.1, T2.2" },
+      "implementation": ["src/Skeleton.js", "src/Wrestler.js"],
+      "authoring": "none; `?risefix=1` (riseFixCandidate), Skeleton.standingChannels + Wrestler._standFromRise",
+      "consumers": [
+        { "kind": "adapter", "id": "rise:handoff" },
+        { "kind": "adapter", "id": "rise:quick" }
+      ],
+      "supported": "every rig x supine/prone/quick/gait rise, both facings; swap-frame step <= 3 px on Lou, george, george-roster-v1, thesz-roster-v1, guido-roster-v1, kowalski-roster-v1",
+      "fallbacks": "flag off: the old swap, unchanged (pinned by tests/riseFixFlagOff.test.js)",
+      "regression": ["tests/riseFix.test.js", "tests/riseFixFlagOff.test.js"],
+      "maturity": "pilot",
+      "mechanical": { "status": "pass", "date": "2026-10-25", "evidence": "tests/riseFix.test.js; 56-93 -> <= 3 px on 6 rigs (PLAN_RISE_HANDOFF.md T2.2)", "scope": "thesz (19.9 px) and thesz-front3q-r1 (25.5 px) miss but are ignored for verification by Derek, 2026-10-25" },
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-25", "scope": "G5: 'looks good' for the risefix=1 candidate; promotion to default not decided" } ],
+      "gap": "Not default; the facing turn (standing-facing-turn) is untouched"
+    },
+    {
+      "id": "support-plant",
+      "summary": "Far support hand planted on the mat during the supine rise (point-target reach)",
+      "origin": { "failure": "Wrist proxy reachable only 116 ms and hidden by the thigh", "evidence": "946254c, d1c91b7; AI_HANDOFF_ENTRIES/2026-10-24-claude-open-support-request.md" },
+      "implementation": ["src/Skeleton.js", "src/animation/backRisePerformance.js"],
+      "authoring": "none; `&plant=1` (plantCandidate)",
+      "consumers": [],
+      "supported": "Lou supine rise, geometry study only",
+      "fallbacks": "without `plant`, the protect-only path (no far entry)",
+      "regression": ["tests/plantedRise.test.js"],
+      "maturity": "parked",
+      "parkedReason": "Derek parked it (PLAN_SUPLEX_RISE.md T4.-1); needs a choreography change before art; Codex request on hold",
+      "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/plantedRise.test.js; film wrist slide 0.030/0.032 px", "scope": "geometry on a joint proxy, not a painted palm" },
+      "visual": [ { "status": "not-approved", "reason": "parked by Derek; never shown at a gate" } ]
+    },
+    {
+      "id": "stepped-capture",
+      "summary": "Frame-stepped capture at a fixed 1/60 s, paired by event, with motif curves and a packaged viewer",
+      "origin": { "failure": "Screenshots race the game clock; untracked frames are not portable", "evidence": "PLAN_SUPLEX_RISE.md T1.1, T5.1; PLAN_RISE_HANDOFF.md T3.1" },
+      "implementation": ["tools/debug/aftermath_film.mjs", "tools/debug/rise_handoff_film.mjs", "tools/debug/motif_curve.mjs", "tools/debug/g4_package.py"],
+      "authoring": "command-line tools; scenario and config flags",
+      "consumers": [
+        { "kind": "tool", "id": "tools/debug/aftermath_film.mjs" },
+        { "kind": "tool", "id": "tools/debug/rise_handoff_film.mjs" }
+      ],
+      "supported": "suplex aftermath (G4) and forced rises (G5)",
+      "fallbacks": "none; manifests are not yet in the common evidence envelope",
+      "regression": [],
+      "maturity": "reused",
+      "mechanical": { "status": "unverified", "reason": "no automated test; the T1.2 replication check (re-draw equals the game's first standing frame, 0.00 px) was run by hand and the tools were used for two gates" },
+      "visual": [ { "status": "not-applicable", "reason": "capture tool" } ],
+      "gap": "Two tools share code by copy; manifests not in the common envelope"
+    }
+  ],
+  "localDecisions": [
+    { "id": "standing-facing-turn", "decision": "kept as is: a standing wrestler mirrors toward the opponent on the first standing frame", "by": "Derek", "date": "2026-10-25", "evidence": "PLAN_RISE_HANDOFF.md G5 line (H5)" },
+    { "id": "ignore-old-lou-rigs", "decision": "thesz and thesz-front3q-r1 are ignored for verification (old models)", "by": "Derek", "date": "2026-10-25", "evidence": "PLAN_RISE_HANDOFF.md G5 line" }
+  ]
+}

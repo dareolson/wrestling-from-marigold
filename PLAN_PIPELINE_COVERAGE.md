@@ -13,6 +13,7 @@ unless a task names it.
 (Executor: append one line per finished task: `T#.# <sha> <one-line result>`.)
 
 T1.1 f008251 specStatus(id) added beside unchanged specFor; tests/specStatus.test.js (+3); npm test 854 pass.
+T1.2 604261f capabilities.json (12 capabilities, 2 local decisions) + capabilities.mjs validator + adapters.mjs (adapter id list, split out of coverage.mjs to avoid an import cycle); tests/capabilities.test.js (+9); npm test 863 pass.
 
 ## Goal
 

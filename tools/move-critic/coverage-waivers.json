@@ -1,0 +1,4 @@
+{
+  "taunt": { "reason": "Taunt: no contact and no damage by definition (registry MOVE_CATEGORY.TAUNT); nothing for the critic to check.", "by": "Claude", "date": "2026-10-25" },
+  "turnbuckleTaunt": { "reason": "Taunt: no contact and no damage by definition (registry MOVE_CATEGORY.TAUNT); nothing for the critic to check.", "by": "Claude", "date": "2026-10-25" }
+}

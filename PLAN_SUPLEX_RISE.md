@@ -344,6 +344,63 @@ stills; do not retune the keyposes (that is a Derek-level choreography call).
   `backWaist` (George) → falls back to the `nearHip` behaviour already in the
   candidate, and no lying hold. Report results; fix only what fails.
 
+### Stage 4b (rev 4): close the stand-up dip (D3 Option B, Derek 2026-10-24)
+
+T4.3 left one stretch of 466.7 ms where the hand is more than 15 px from the back
+(max 41.9/46.3 px). It runs from riseT .85 to 183 ms after standing, and the strip
+shows Lou standing with both arms hanging before the hand returns. The causes:
+the rise eases the reach out to 0 by t = 1, then recovery ramps the hand in from
+0 over `RECOVERY_RAMP_MS`, and the recovery uses FK offsets
+(`RECOVERY_BACK_HAND`) that do not match the rise's IK arm. Derek chose to
+close it before G4.
+
+**D5. One arm across the handoff.** Only when the back rise will hand off into
+a carried recovery: `sellArtCandidate()` && `aftermathCandidate()` && the rig has
+a painted `backWaist` && pain part back && severity > 0. Call this a **carried rise**.
+
+1. **Rise keeps the reach to the end.** `_backRiseContext()` adds `carry: true`.
+   `backRiseWeight(t, from, peak, carry)` skips the ease-out when `carry` is set:
+   weight = `f + (peak − f)·smooth(t/.18)` up to and including t = 1. Without
+   `carry`, behaviour is exactly the current one (existing tests unchanged).
+2. **Recovery starts where the rise ended.** At t = 1 (base pose, this rig, this
+   facing), solve the near arm with the same `updateGroundedReach` path at weight
+   `peak`. Convert the solved near upper-arm/forearm into the upright channels
+   the live pose uses (`{n}Arm`, `{n}Elbow` local flex, with
+   `localFlexFromChildAngle` from `rig/articulation.js`). Cache per rig + facing +
+   scale on the Skeleton, like `_plantPlan`. Call this `riseEndArm`.
+3. **Recovery hand = absolute angles, not offsets.** In `_recoveryPose`, replace
+   the `RECOVERY_BACK_HAND` addition with a blend toward absolute targets:
+   `pose[nArm] = lerp(pose[nArm], target.arm, wHand)`, same for the elbow (and the
+   legacy forearm branch). `target` is `riseEndArm` for the first `ARM_SETTLE_MS`
+   (start at 300) after standing, eased into the probed `RECOVERY_BACK_HAND`
+   pose. Convert the probe's offsets once to absolute values on Lou's idle pose
+   (T4.1 numbers) so both targets are absolute.
+4. **Hand weight starts full.** `wHand = carried × handEnvelope`, where `carried`
+   is the rise's weight at t = 1. Store it on `_pain` at `_painRecovering()`.
+   `handEnvelope` is the back recovery's own shape *without* the
+   `RECOVERY_RAMP_MS` ramp, so it is 1 at entry and eases out with `left` as
+   now. `bend` keeps its existing ramp. The guard scale uses `wHand`.
+5. Not carried (flag off, `aft` only, George, no backWaist): nothing changes.
+   The T2.0 snapshot and all existing tests must pass untouched, apart from
+   `backRiseWeight` tests that gain the `carry` cases.
+
+- **T4.5 Measure first.** Paused scene, Lou, both facings: report `riseEndArm`
+  (arm, elbow flex), its painted contact distance to backWaist, the
+  `RECOVERY_BACK_HAND` absolute pose and its distance, and the angle difference
+  between the two. If `riseEndArm` contact is > 6 px or the elbow is
+  out of `JOINT_LIMITS`, **stop and report**.
+- **T4.6 Implement D5.** Tests: (a) `backRiseWeight` with `carry` is
+  monotone and equals `peak` at t = 1 when `from` ≤ `peak`; (b) the near hand's
+  contact point at rise t = 1 and on the first standing draw differs by ≤ 2 px
+  (unit test with a stubbed scene clock); (c) near arm/elbow channel step across
+  the handoff ≤ .05 rad; (d) `aft`-only, George, flag off: identical to before
+  (snapshot); (e) T4.4 interruptions still release (re-run those tests).
+- **T4.7 Film + curve.** Re-film `on` for `suplexReverse` and `suplexReverseFlip`,
+  then run `motif_curve.mjs`. Report the same four windows as T4.3, plus the
+  largest per-frame near-hand jump (px) in riseT .85 → standing + 400 ms.
+  Targets: no window > 15 px for more than 50 ms across the handoff, and max jump ≤ 4 px.
+  Report misses with stills; do not retune the getup keyposes. Commit.
+
 ### Stage 5: G4 package, then STOP
 
 - **T5.1** `research/animation/suplex-rise-2026-10/README.md` + `viewer.html`:
@@ -382,5 +439,10 @@ locks), then repeat Stages 2–5. Never scale Lou's donors onto George.
    or earlier at the Stage 2 stop condition. Stage 3 hands Codex the art request,
    so Codex can work in parallel with session 3.
 3. **Next (rev 3):** T4.-1 → T4.-0 → T4.0 → T4.0b → T4.1 → T4.2 → T4.3 → T4.4.
-4. Stage 5 → STOP at G4. The plant is parked: the G4 package shows it as off
-   and lists it under "not in this candidate".
+3b. **Done:** session 3 (T4.-1 → T4.4), `4613c0f`..`3d2662a`, 827 tests.
+4. **Next (rev 4):** T4.5 → T4.6 → T4.7 → Stage 5 (T5.1, T5.2) → STOP at G4.
+   If T4.5 or T4.7 trips a stop, finish Stage 5 anyway with what exists, and put
+   the miss first in the G4 entry. The plant is parked: the G4 package shows it
+   off and lists it under "not in this candidate". The G4 entry also flags the
+   guard deviation (T4.2): during the carried recovery the combat guard is
+   scaled by (1 − hand weight), so both arms relax. Drawing only.

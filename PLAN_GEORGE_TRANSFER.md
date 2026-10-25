@@ -8,7 +8,29 @@ Step 3 of the Revised sequence in [MOVE_PIPELINE_EVOLUTION.md](MOVE_PIPELINE_EVO
 (Sonnet: one line per task: id, commit, result. Gate lines are written by Opus/Derek only.)
 
 - T0.1 82b71a8 risefix default-on via `defaultOnFlag('risefix','1')`; promotedFlags lists it; URL-semantics test (absent/=1 on, =off/=0/no location off); rise_handoff_probe/film pass `risefix=off` for pre-fix configs; aftermath_film CONFIGS untouched (now film with the fix on). 882 tests.
-- T0.2 (this commit) capabilities.json `rise-standing-channels`: default promotion recorded (Derek 2026-10-25, 82b71a8); PLAN_RISE_HANDOFF Progress line added. 882 tests.
+- T0.2 5812e37 capabilities.json `rise-standing-channels`: default promotion recorded (Derek 2026-10-25, 82b71a8); PLAN_RISE_HANDOFF Progress line added. 882 tests.
+
+- T1.1 (this commit) inventory, no code. **T1.1 table** (rig data = moves to the rig · mechanism = stays shared · tool fix = the tool must stop assuming Lou):
+
+  | # | Where | What it assumes | Mark |
+  |---|---|---|---|
+  | 1 | `backRisePerformance.js` `HOLD.w` .80 | swept on Lou (`hold_weight_sweep.mjs`, trough .72 keeps grip and fist ≤ 15 px) | **rig data** `holdW` |
+  | 2 | same, `HOLD.breath` .08, `periodSec` 1.6 | authored breath; the sweep's trough is `w - breath` | **mechanism** |
+  | 3 | `RECOVERY_BACK_HAND` arm -1.2, elbow +1.5 | probed on Lou's live settled pose (`recovery_probe.mjs`), 2.33 px | **rig data** `recoveryArm`, `recoveryElbow` |
+  | 4 | `RECOVERY_BACK_HAND_ABS` = .04 + arm, .70 + elbow | the .04 is Lou's idle `lArm` (`POSES.theszProcreateIdle`); the .70 is the elbow `tweenPose('idle')` fills in | `.04` **derived** from the rig's idle pose (so no `settledArm`); `.70` **rig data** `settledElbow` (equals `REST_POSE.lElbow`, pinned by a test) |
+  | 5 | `ARM_SETTLE_MS` 300, `backRiseWeight` envelope (.18 / .70), `carriedHandTarget` shape | timing and easing, not geometry | **mechanism** |
+  | 6 | `sellAppearance.js` `GRIP_CONTACT_PX` 15 | measured to Lou's painted grip cup | **rig data** `contactPx` |
+  | 7 | `GRIP_DWELL_MS`, `GRIP_REFRACTORY_MS`, `GROUNDED_SELL_ART` (donor name `grip`) | latch timing; which donor variant to look for | **mechanism** (a rig without the variant gets `{}` from `supportedHands`) |
+  | 8 | `Wrestler.js` 1030 (hold starts), 1050 (`toHold`), 1129 (`ctx.carry`), 1773 (`_recoveryHandWeight`) | "torso has `backWaist`" means "back sell supported" | **mechanism**, 4 scattered gates → one `backSellSupport` |
+  | 9 | `Wrestler.js` 1051 `clutchSell(.., HOLD.w)`, 1071 `holdWeight(h.t)`, 1809-1824 `carriedHandTarget` / `RECOVERY_BACK_HAND` | read the module constants | **mechanism**, must read the rig's values |
+  | 10 | `Skeleton.js` 2262 (`_solveGroundedReach` back target), 2359 (`backContactDistance`) | use `backWaist` whenever the torso has it; `carriedRiseEndArm` goes through 2262 | **mechanism**: same gate (found, not in the plan's list). A rig with the anchor but no `backSell` must fall back to the hip joint target and report no distance, or George's rise changes at T3.1 |
+  | 11 | `Skeleton.backContactDistance` falls back to the wrist when the forearm has no `clutch` patch | an unlabelled proxy | **mechanism**, label it (`contact: 'clutchPatch' \| 'wristProxy'`) |
+  | 12 | `Wrestler._backRiseContext` (non-carried rise reach) | NOT gated on `backWaist`: runs on every rig under `sellart` (hip-joint target, no grip art off Lou) | **mechanism**, left as is (gating it would change the game on other rigs) |
+  | 13 | `tools/debug/recovery_probe.mjs` | offsets `lArm`/`lElbow` and `lElbow: .7` are hard-coded (it prints `lChannelSide` but never uses it); default rig Lou | **tool fix** (T3.2) |
+  | 14 | `tools/debug/hold_weight_sweep.mjs` | `dist <= 15` literal, grip-art criterion, default rig Lou | **tool fix** (T3.2) |
+  | 15 | `tools/debug/motif_curve.mjs` `THRESH_PX = 15` | literal | **tool fix** (read `contactPx` from the rig) |
+  | 16 | `tests/lyingHold|carriedRise|standingBackHand.test.js` | stub a bare `backWaist` on the torso and expect the sell to run | **test fix**: stubs must carry `backSell` too |
+
 
 ## Goal
 

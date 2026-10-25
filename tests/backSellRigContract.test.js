@@ -1,6 +1,6 @@
 // The back sell's rig contract (PLAN_GEORGE_TRANSFER T1.4): every registered character either has BOTH
 // textures.torso.semanticAnchors.backWaist and textures.backSell (and they validate), or NEITHER, or is
-// named in WAIVERS below with a reason. Today only Procreate Lou has both. A rig that gets the anchor
+// named in WAIVERS below with a reason. Today Procreate Lou and George (george-roster-v1) have both. A rig that gets the anchor
 // first (George, at T3.1) needs a waiver until its data lands; a waiver that is no longer needed fails.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -17,9 +17,7 @@ import { guidoRosterV1 } from '../src/characters/guido_roster_v1.js';
 
 const BY_NAME = { george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, georgeRosterV1, kowalskiRosterV1, guidoRosterV1 };
 // id -> reason. Delete an entry when its data lands (a waiver for a rig that satisfies the contract fails).
-const WAIVERS = {
-    'george-roster-v1': 'backWaist added at T3.1 (Derek G6a, candidate C); backSell data comes from T3.2 measurement, so the sell stays off until T3.3',
-};
+const WAIVERS = {};
 
 const registered = () => {
     const src = readFileSync(new URL('../src/scenes/Arena.js', import.meta.url), 'utf8');
@@ -49,14 +47,15 @@ test('every registered character has both backWaist and backSell, or neither, or
     }
 });
 
-test('today only Procreate Lou supports the back sell; every other rig is unsupported with a reason, never on Lou\'s numbers', () => {
-    const reasonFor = c => c === georgeRosterV1 ? 'no backSell data' : 'no backWaist anchor';
+test('Procreate Lou and George support the back sell, each on its own numbers; every other rig is unsupported, never on borrowed ones', () => {
     const supported = Object.values(BY_NAME).filter(c => backSellSupport(view(c)).ok).map(c => c.id);
-    assert.deepEqual(supported, ['thesz-procreate-v1']);
-    for (const c of Object.values(BY_NAME)) if (c !== theszProcreateV1) {
+    assert.deepEqual(supported.sort(), ['george-roster-v1', 'thesz-procreate-v1']);
+    assert.notDeepEqual(georgeRosterV1.textures.backSell, theszProcreateV1.textures.backSell, 'George does not carry Lou\'s numbers');
+    assert.equal(georgeRosterV1.textures.backSell.holdW === theszProcreateV1.textures.backSell.holdW, false);
+    for (const c of Object.values(BY_NAME)) if (c !== theszProcreateV1 && c !== georgeRosterV1) {
         const s = backSellSupport(view(c));
         assert.equal(s.ok, false, c.id);
         assert.equal(s.data, null, `${c.id}: no data borrowed`);
-        assert.equal(s.reason, reasonFor(c), c.id);
+        assert.equal(s.reason, 'no backWaist anchor', c.id);
     }
 });

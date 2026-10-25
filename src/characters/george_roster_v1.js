@@ -219,6 +219,14 @@ export const georgeRosterV1 = {
             "u": 0.6528383815372137,
             "v": 0.9106814666277037
         }
+    },
+    "backSell": {
+        "holdW": 0.55,
+        "recoveryArm": -0.5,
+        "recoveryElbow": 1.0,
+        "settledElbow": 0.7,
+        "contactPx": 15,
+        "evidence": "tools/debug/hold_weight_sweep.mjs (holdW .55, fist wrist proxy, first weight within 15 px .47 both facings, trough 14.88 px, aa33af3 2026-10-25); tools/debug/recovery_probe.mjs (arm -0.5 / elbow +1.0, wrist proxy 2.39 px both facings, flex 97.4 deg, aa33af3 2026-10-25); contactPx 15 kept (wrist proxy, no grip donor)"
     }
 },
 };

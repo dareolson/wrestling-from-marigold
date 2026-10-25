@@ -29,6 +29,8 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
+**George back-sell transfer Rev 2 — 2026-10-25 (Claude):** after G6 (not approved): hand under the body (`backSell.handUnder`, anchor A), constant reach with the chest breathing, a leg cycle in the lying hold (all rigs, Lou included), the rise starts from the hold's pose (hold -> rise step .36 px); waiting for Derek's G7 on [the viewer](research/animation/george-transfer-2026-10/g7-viewer.html). Misses first in [the entry](AI_HANDOFF_ENTRIES/2026-10-25-claude-george-transfer-rev2.md) (George's facing-turn step grew 13.6 -> 25.5 px with the anchor on the contour).
+
 **George back-sell transfer — 2026-10-25 (Claude):** the suplex back sell now runs on `george-roster-v1` from per-rig `textures.backSell` data and one support rule (anchor AND data); Lou unchanged; waiting for Derek's G6 on [the viewer](research/animation/george-transfer-2026-10/viewer.html). Misses first in [the handoff entry](AI_HANDOFF_ENTRIES/2026-10-25-claude-george-transfer.md) (prone rise gets no protected reach; the swap step is the facing turn).
 
 **Move pipeline learning architecture — 2026-10-24 (Derek / Codex):**

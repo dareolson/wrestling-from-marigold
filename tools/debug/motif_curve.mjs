@@ -1,7 +1,7 @@
 // Near-hand -> back-waist distance curve across the whole suplex aftermath
 // (PLAN_SUPLEX_RISE T4.0 / D4). Reads the manifests aftermath_film.mjs wrote
 // (per-step `backDist`, `sell`, `state`, `riseT`, `nearForearm`) and reports, per
-// run, the ms with distance > THRESH_PX in each window:
+// run, the ms with distance > the rig's contactPx in each window:
 //   lying   clutch end (sell leaves its back clutch) -> rise start
 //   rise    rise start -> riseT 0.85 (end of the protective weight window)
 //   handoff riseT 0.85 -> state 'standing'
@@ -14,12 +14,19 @@
 // Writes <root>/motif-curve[-<tag>].json and .svg.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { theszProcreateV1 } from '../../src/characters/thesz_procreate_v1.js';
+import { georgeRosterV1 } from '../../src/characters/george_roster_v1.js';
 
-export const THRESH_PX = 15;
+// The pass line is the rig's own (textures.backSell.contactPx, PLAN_GEORGE_TRANSFER T3.2). A rig that has no
+// backSell yet is measured against DEFAULT_PX and the output says so; it is a reporting line, not rig data.
+export const DEFAULT_PX = 15;
+export const THRESH_PX = DEFAULT_PX;
+const RIGS = Object.fromEntries([theszProcreateV1, georgeRosterV1].map(c => [c.id, c.textures.backSell?.contactPx ?? null]));
+export const contactPxFor = rig => RIGS[rig] ?? DEFAULT_PX;
 const STEP_MS = 1000 / 60;
 const SCENARIOS = ['suplex', 'suplexFlip', 'suplexReverse', 'suplexReverseFlip'];
 
-export function analyse(manifest) {
+export function analyse(manifest, thresh = contactPxFor(manifest.receiver?.rig)) {
     const S = manifest.samples;
     const idx = pred => S.findIndex(pred);
     let lastClutch = -1;
@@ -35,7 +42,7 @@ export function analyse(manifest) {
         const seg = S.slice(a, b);
         const withD = seg.filter(s => s.backDist != null);
         if (!withD.length) return { ms: null, spanMs: +(seg.length * STEP_MS).toFixed(1), samples: seg.length, maxPx: null };
-        const far = withD.filter(s => s.backDist > THRESH_PX);
+        const far = withD.filter(s => s.backDist > thresh);
         return { ms: +(far.length * STEP_MS).toFixed(1), spanMs: +(seg.length * STEP_MS).toFixed(1), samples: seg.length,
             maxPx: +Math.max(...withD.map(s => s.backDist)).toFixed(2), minPx: +Math.min(...withD.map(s => s.backDist)).toFixed(2) };
     };
@@ -46,7 +53,7 @@ export function analyse(manifest) {
     const holdMotion = { samples: holdSeg.length, xRangePx: range('x'), yRangePx: range('y'),
         distMinPx: holdSeg.length ? Math.min(...holdSeg.map(x => x.backDist)) : null, distMaxPx: holdSeg.length ? Math.max(...holdSeg.map(x => x.backDist)) : null };
     let arrive = -1;
-    if (standing >= 0) for (let i = standing; i < S.length; i++) if (S[i].backDist != null && S[i].backDist <= THRESH_PX) { arrive = i; break; }
+    if (standing >= 0) for (let i = standing; i < S.length; i++) if (S[i].backDist != null && S[i].backDist <= thresh) { arrive = i; break; }
     const standingArrivalMs = arrive >= 0 ? +(S[arrive].rel - S[standing].rel).toFixed(1) : null;
     const rel = i => (i != null && i >= 0 ? S[i].rel : null);
     // D5 (T4.7): across the handoff, riseT .85 -> standing + 400 ms: the longest unbroken stretch
@@ -57,7 +64,7 @@ export function analyse(manifest) {
         const seg = S.slice(r85, end >= 0 ? end + 1 : S.length);
         let run = 0, best = 0, jump = 0, jumpAt = null;
         seg.forEach((s, i) => {
-            if (s.backDist != null && s.backDist > THRESH_PX) { run++; best = Math.max(best, run); } else run = 0;
+            if (s.backDist != null && s.backDist > thresh) { run++; best = Math.max(best, run); } else run = 0;
             const prev = seg[i - 1];
             if (prev?.nearContact && s.nearContact) {
                 const d = Math.hypot(s.nearContact.x - prev.nearContact.x, s.nearContact.y - prev.nearContact.y);
@@ -80,7 +87,7 @@ export function analyse(manifest) {
         else runs.at(-1).toMs = s.rel;
     }
     return { events: { impactMs: rel(impact), clutchEndMs: rel(clutchEnd), riseStartMs: rel(riseStart), rise85Ms: rel(r85), standingMs: rel(standing), plus2sMs: rel(plus2) },
-        windows, handoffSpan, holdMotion, standingArrivalMs, textureRuns: runs, hasDistance: S.some(s => s.backDist != null) };
+        windows, handoffSpan, holdMotion, standingArrivalMs, textureRuns: runs, hasDistance: S.some(s => s.backDist != null), thresholdPx: thresh, thresholdFromRig: RIGS[manifest.receiver?.rig] != null };
 }
 
 const palette = ['#1b6ca8', '#c0392b', '#2e8b57', '#8e44ad'];
@@ -93,7 +100,7 @@ function svg(runs) {
     let o = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" font-family="system-ui,sans-serif" font-size="11"><rect width="${W}" height="${H}" fill="#fff"/>`;
     for (let v = 0; v <= y1; v += 10) o += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eee"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end" fill="#555">${v}</text>`;
     for (let v = Math.ceil(x0 / 1000) * 1000; v <= x1; v += 1000) o += `<line x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${H - B}" stroke="#eee"/><text x="${X(v)}" y="${H - B + 14}" text-anchor="middle" fill="#555">${v} ms</text>`;
-    o += `<line x1="${L}" x2="${W - R}" y1="${Y(THRESH_PX)}" y2="${Y(THRESH_PX)}" stroke="#d00" stroke-dasharray="4 3"/><text x="${W - R}" y="${Y(THRESH_PX) - 4}" text-anchor="end" fill="#d00">${THRESH_PX} px</text>`;
+    for (const px of new Set(runs.map(r => r.thresh))) o += `<line x1="${L}" x2="${W - R}" y1="${Y(px)}" y2="${Y(px)}" stroke="#d00" stroke-dasharray="4 3"/><text x="${W - R}" y="${Y(px) - 4}" text-anchor="end" fill="#d00">${px} px</text>`;
     o += `<text x="${L}" y="16" fill="#222" font-weight="600">near hand contact → backWaist (px) vs ms from impact; ticks = clutch end, rise start, standing</text>`;
     runs.forEach((r, k) => {
         const c = palette[k % palette.length];
@@ -108,7 +115,7 @@ function svg(runs) {
 if (import.meta.url === `file://${process.argv[1]}`) {
     const [root = 'research/animation/suplex-rise-2026-10', cfgArg = 'aft,on', scArg = 'all', tag = ''] = process.argv.slice(2);
     const configs = cfgArg.split(','), scenarios = scArg === 'all' ? SCENARIOS : scArg.split(',');
-    const out = { tool: 'tools/debug/motif_curve.mjs', thresholdPx: THRESH_PX, stepMs: +STEP_MS.toFixed(3), runs: {} };
+    const out = { tool: 'tools/debug/motif_curve.mjs', defaultThresholdPx: DEFAULT_PX, stepMs: +STEP_MS.toFixed(3), runs: {} };
     const plot = [];
     for (const c of configs) for (const sc of scenarios) {
         const f = join(root, c, sc, 'manifest.json');
@@ -116,7 +123,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         const m = JSON.parse(readFileSync(f, 'utf8'));
         const a = analyse(m);
         out.runs[`${c}/${sc}`] = { git: m.git, receiver: m.receiver, facing: m.receiverFacing, ...a };
-        if (a.hasDistance) plot.push({ label: `${c}/${sc} (facing ${m.receiverFacing.atImpact})`, events: a.events,
+        if (a.hasDistance) plot.push({ thresh: a.thresholdPx, label: `${c}/${sc} (facing ${m.receiverFacing.atImpact})`, events: a.events,
             curve: m.samples.filter(s => s.rel >= 0 && s.backDist != null && (a.events.plus2sMs == null || s.rel <= a.events.plus2sMs)).map(s => [s.rel, s.backDist]) });
     }
     const base = join(root, `motif-curve${tag ? '-' + tag : ''}`);
@@ -125,6 +132,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     for (const [k, r] of Object.entries(out.runs)) {
         if (!r.hasDistance) { console.log(`${k}: no backWaist distance (receiver has none)`); continue; }
         const w = r.windows;
-        console.log(`${k}: >${THRESH_PX}px ms — lying ${w.lying?.ms}/${w.lying?.spanMs}, rise ${w.rise?.ms}/${w.rise?.spanMs}, handoff ${w.handoff?.ms}/${w.handoff?.spanMs}, standing ${w.standing?.ms}/${w.standing?.spanMs}; hold travel x ${r.holdMotion.xRangePx} y ${r.holdMotion.yRangePx} px, dist ${r.holdMotion.distMinPx}-${r.holdMotion.distMaxPx}; hand back within ${THRESH_PX}px ${r.standingArrivalMs} ms after standing; handoff (.85 -> standing+400): longest run >${THRESH_PX}px ${r.handoffSpan?.longestRunOverMs} ms, max step ${r.handoffSpan?.maxStepPx} px at ${r.handoffSpan?.maxStepAtMs}`);
+        const px = r.thresholdPx;
+        console.log(`${k}${r.thresholdFromRig ? '' : ' (pass line ' + px + ' px: rig has no backSell, default)'}: >${px}px ms — lying ${w.lying?.ms}/${w.lying?.spanMs}, rise ${w.rise?.ms}/${w.rise?.spanMs}, handoff ${w.handoff?.ms}/${w.handoff?.spanMs}, standing ${w.standing?.ms}/${w.standing?.spanMs}; hold travel x ${r.holdMotion.xRangePx} y ${r.holdMotion.yRangePx} px, dist ${r.holdMotion.distMinPx}-${r.holdMotion.distMaxPx}; hand back within ${px}px ${r.standingArrivalMs} ms after standing; handoff (.85 -> standing+400): longest run >${px}px ${r.handoffSpan?.longestRunOverMs} ms, max step ${r.handoffSpan?.maxStepPx} px at ${r.handoffSpan?.maxStepAtMs}`);
     }
 }

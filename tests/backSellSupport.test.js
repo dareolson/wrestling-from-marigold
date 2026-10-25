@@ -86,3 +86,11 @@ test('backContact reports which contact it measured; backContactDistance is its 
     assert.equal(skeleton({ backSell: null }).backContact(), null);
     assert.equal(skeleton({ backSell: null }).backContactDistance(), null);
 });
+
+test('force (measuring tools only) reads the anchor on a rig that is not supported; the game path never does', () => {
+    const sk = skeleton({ backSell: null });
+    assert.equal(sk.backWaistPoint(), null);
+    assert.deepEqual(sk.backWaistPoint(true), { x: 200, y: 300 });
+    assert.deepEqual(sk.backContact({ force: true }), { dist: 10, contact: 'wristProxy' });
+    assert.equal(sk.backContactDistance(), null);
+});

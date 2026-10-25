@@ -2353,18 +2353,20 @@ export default class Skeleton {
 
     // The torso's painted backWaist as a world point, only on a rig that supports the back sell
     // (rig/backSell.js: the anchor AND its backSell data). A rig with the anchor alone gets null,
-    // so it keeps aiming at the hip joint exactly as it did before it had one.
-    backWaistPoint() {
-        if (!backSellSupport(this).ok) return null;
-        return Skeleton.imageAnchorPoint(this.torso, this.torso._semanticAnchors.backWaist);
+    // so it keeps aiming at the hip joint exactly as it did before it had one. `force` is for
+    // measuring tools only: the point on a rig that has the anchor but is not (yet) supported.
+    backWaistPoint(force = false) {
+        const anchor = this.torso?._semanticAnchors?.backWaist;
+        if (!anchor || (!force && !backSellSupport(this).ok)) return null;
+        return Skeleton.imageAnchorPoint(this.torso, anchor);
     }
 
     // The near hand's contact and its distance (px) to the painted backWaist, from the pose last
     // drawn: { dist, contact } with contact 'clutchPatch' (the painted patch of the active near
     // forearm) or 'wristProxy' (no patch on the active art: the wrist stands in). Null when the rig
-    // does not support the back sell or has not been drawn.
-    backContact() {
-        const waist = this.backWaistPoint();
+    // does not support the back sell (unless `force`, for measuring tools) or has not been drawn.
+    backContact({ force = false } = {}) {
+        const waist = this.backWaistPoint(force);
         if (!waist) return null;
         const near = this.nearForearm, patch = near?._semanticAnchors?.clutch;
         const painted = patch ? Skeleton.imageAnchorPoint(near, patch) : null;

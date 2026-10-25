@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>G5 stand-up handoff</title>
+<style>
+  :root { --bg:#16181b; --panel:#1f2226; --ink:#e8e9ea; --dim:#9aa0a6; --line:#33373d; --accent:#e0a93b; --bad:#e5604d; --ok:#6bbf7a; }
+  @media (prefers-color-scheme: light) { :root { --bg:#f3f1ec; --panel:#fff; --ink:#1d1f22; --dim:#666b72; --line:#d6d3cb; --accent:#a8731a; --bad:#b53a28; --ok:#2f7d41; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 -apple-system, system-ui, sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:16px; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  p.note { color:var(--dim); margin:0 0 12px; max-width:70ch; }
+  .bar { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; align-items:center; }
+  button { background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 10px; font:inherit; cursor:pointer; }
+  button.on { border-color:var(--accent); color:var(--accent); }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .col { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px; }
+  .col h2 { font-size:13px; margin:0 0 6px; font-weight:600; }
+  .col img { width:100%; height:auto; display:block; background:#000; border-radius:4px; image-rendering:auto; }
+  .stat { display:flex; justify-content:space-between; color:var(--dim); font-variant-numeric:tabular-nums; margin-top:6px; font-size:12.5px; }
+  .big { font-size:20px; font-weight:600; color:var(--ink); }
+  .bad { color:var(--bad); } .ok { color:var(--ok); }
+  input[type=range] { width:100%; }
+  table { border-collapse:collapse; width:100%; margin-top:16px; font-variant-numeric:tabular-nums; }
+  th, td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--dim); font-weight:500; }
+  td.n { text-align:right; }
+  @media (max-width:560px) { .cols { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Stand-up handoff: default vs <code>?risefix=1</code></h1>
+  <p class="note" id="note"></p>
+  <div class="bar" id="rows"></div>
+  <div class="bar" id="face"></div>
+  <div class="cols">
+    <div class="col"><h2>default (no flag)</h2><img id="imgA" alt=""><div class="stat"><span id="tA"></span><span class="big" id="sA"></span></div></div>
+    <div class="col"><h2><code>risefix=1</code></h2><img id="imgB" alt=""><div class="stat"><span id="tB"></span><span class="big" id="sB"></span></div></div>
+  </div>
+  <div class="bar" style="margin-top:12px">
+    <button id="play1">&#9654; 1&times;</button><button id="play05">&#9654; 0.5&times;</button><button id="pause">&#10073;&#10073;</button>
+    <button id="prev">&larr; frame</button><button id="next">frame &rarr;</button><button id="jump">jump to swap</button>
+    <button id="loop" class="on">loop</button>
+  </div>
+  <input type="range" id="scrub" min="0" max="1" step="1" value="0">
+  <table id="tbl"></table>
+</main>
+<script src="g5/data.js"></script>
+<script>
+(function () {
+  const D = window.G5, COLS = ['default', 'risefix'];
+  const rowOrder = [], seen = new Set();
+  for (const k of Object.keys(D.runs)) { const r = D.runs[k].row; if (r && !seen.has(r.name)) { seen.add(r.name); rowOrder.push(r); } }
+  const ORDER = ['lou-suplex', 'lou-supine', 'lou-prone', 'lou-quick', 'george-supine', 'george-prone', 'george-suplex'];
+  rowOrder.sort((a, b) => ORDER.indexOf(a.name) - ORDER.indexOf(b.name));
+  const $ = id => document.getElementById(id);
+  let row = rowOrder[0], side = 'l', t = 0, playing = 0, last = 0, loop = true, frames = [];
+  const run = (col, r = row, s = side) => D.runs[`${col}/${r.name}-${s}`];
+  $('note').textContent = 'Both columns are the same rise, stepped at 1/60 s, the swap to standing at 0 ms. The number under each picture is the largest step of any body part from the previous frame (px, on this crop), with the mirror of a turn taken out; at the swap frame it is the pop. "turn" rows: the opponent stands behind the receiver, so he turns to face him on the swap frame (the mirror is the same in both columns).';
+  function pick(col) {
+    const R = run(col); if (!R) return null;
+    let best = 0; for (let i = 0; i < R.frames.length; i++) if (Math.abs(R.frames[i][0] - t) < Math.abs(R.frames[best][0] - t)) best = i;
+    return R.frames[best];
+  }
+  function show() {
+    for (const [col, id] of [['default', 'A'], ['risefix', 'B']]) {
+      const f = pick(col);
+      if (!f) continue;
+      $('img' + id).src = 'g5/' + f[1];
+      $('t' + id).textContent = (f[0] >= 0 ? '+' : '') + f[0].toFixed(0) + ' ms' + (Math.abs(f[0]) < 8 ? '  (swap)' : '');
+      const el = $('s' + id); el.textContent = f[2] != null ? f[2].toFixed(1) + ' px' : '';
+      el.className = 'big ' + (f[2] > 3 ? 'bad' : 'ok');
+    }
+    $('scrub').value = String(frames.findIndex(f => f[0] >= t - 1e-6) < 0 ? frames.length - 1 : frames.findIndex(f => f[0] >= t - 1e-6));
+  }
+  function load() {
+    frames = (run('default') || run('risefix')).frames;
+    $('scrub').max = String(frames.length - 1);
+    t = frames[0][0]; show();
+  }
+  function buttons() {
+    $('rows').innerHTML = ''; $('face').innerHTML = '';
+    for (const r of rowOrder) { const b = document.createElement('button'); b.textContent = r.label; b.className = r === row ? 'on' : '';
+      b.onclick = () => { row = r; buttons(); load(); }; $('rows').appendChild(b); }
+    for (const [s, label] of [['l', 'facing left (-1)'], ['r', 'facing right (+1)']]) { const b = document.createElement('button'); b.textContent = label; b.className = s === side ? 'on' : '';
+      b.onclick = () => { side = s; buttons(); load(); }; $('face').appendChild(b); }
+  }
+  function table() {
+    const head = '<tr><th>row</th><th>facing</th><th class="n">default: swap step</th><th class="n">risefix=1: swap step</th><th class="n">default: as drawn (turn in)</th><th class="n">risefix=1: as drawn (turn in)</th></tr>';
+    let h = head;
+    for (const r of rowOrder) for (const s of ['l', 'r']) {
+      const at = col => { const R = run(col, r, s); const f = R && R.frames.find(x => Math.abs(x[0]) < 8); return f; };
+      const a = at('default'), b = at('risefix');
+      const c = x => x ? `<td class="n ${x[2] > 3 ? 'bad' : 'ok'}">${x[2].toFixed(1)} px</td>` : '<td class="n">-</td>';
+      const raw = x => x ? `<td class="n">${x[3].toFixed(1)} px</td>` : '<td class="n">-</td>';
+      h += `<tr><td>${r.label}</td><td>${s === 'l' ? '-1' : '+1'}</td>${c(a)}${c(b)}${raw(a)}${raw(b)}</tr>`;
+    }
+    $('tbl').innerHTML = h;
+  }
+  function tick(now) {
+    if (playing) {
+      const dt = (now - last) * playing; last = now; t += dt;
+      const end = frames[frames.length - 1][0];
+      if (t > end) { if (loop) t = frames[0][0]; else { t = end; playing = 0; } }
+      show();
+    }
+    requestAnimationFrame(tick);
+  }
+  function play(rate) { playing = rate; last = performance.now(); document.querySelectorAll('#play1,#play05').forEach(b => b.classList.remove('on')); (rate === 1 ? $('play1') : $('play05')).classList.add('on'); }
+  $('play1').onclick = () => play(1); $('play05').onclick = () => play(0.5);
+  $('pause').onclick = () => { playing = 0; document.querySelectorAll('#play1,#play05').forEach(b => b.classList.remove('on')); };
+  $('jump').onclick = () => { playing = 0; t = 0; show(); };
+  $('prev').onclick = () => { playing = 0; const i = Math.max(0, frames.findIndex(f => f[0] >= t - 1e-6) - 1); t = frames[i][0]; show(); };
+  $('next').onclick = () => { playing = 0; const i = Math.min(frames.length - 1, frames.findIndex(f => f[0] >= t - 1e-6) + 1); t = frames[i][0]; show(); };
+  $('loop').onclick = () => { loop = !loop; $('loop').classList.toggle('on', loop); };
+  $('scrub').oninput = e => { playing = 0; t = frames[+e.target.value][0]; show(); };
+  buttons(); load(); table(); requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

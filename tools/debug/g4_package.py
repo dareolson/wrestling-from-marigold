@@ -5,19 +5,30 @@ manifests), downsizes the strip frames and event close-ups to <= 480 px wide Web
 research/animation/suplex-rise-2026-10/g4/, and writes g4/data.js for viewer.html (frame times,
 events, hand-to-back curves, the measured numbers). Re-runnable; wipes g4/ first.
 
-  python3 -I tools/debug/g4_package.py [root] [fromMs]
+  python3 -I tools/debug/g4_package.py [root] [fromMs] [--configs a,b] [--scenarios s1,s2] [--out dir] [--var G4] [--t0 impact]
 
-root defaults to research/animation/suplex-rise-2026-10, fromMs (impact-relative) to -500.
+root defaults to research/animation/suplex-rise-2026-10, fromMs (t0-relative) to -500. The options let another film
+reuse this (PLAN_RISE_HANDOFF G5: tools/debug/rise_handoff_film.mjs writes the same manifests with t0 = swap and a
+per-frame `step`, which is carried through as frames[i][2] / [3]); with none of them the output is the G4 package.
 """
 import json, os, shutil, sys
 from PIL import Image
 
-ROOT = sys.argv[1] if len(sys.argv) > 1 else 'research/animation/suplex-rise-2026-10'
-FROM_MS = float(sys.argv[2]) if len(sys.argv) > 2 else -500.0
-MAX_W = 480
-CONFIGS = ['aft', 'on', 'off']
-SCENARIOS = ['suplexReverse', 'suplexReverseFlip']  # Lou receives; facing -1 / +1
-OUT = os.path.join(ROOT, 'g4')
+_a = sys.argv[1:]
+_opts = {}
+for _k in ('--configs', '--scenarios', '--out', '--var', '--t0', '--max-w'):
+    if _k in _a:
+        _i = _a.index(_k)
+        _opts[_k] = _a[_i + 1]
+        del _a[_i:_i + 2]
+ROOT = _a[0] if len(_a) > 0 else 'research/animation/suplex-rise-2026-10'
+FROM_MS = float(_a[1]) if len(_a) > 1 else -500.0
+MAX_W = int(_opts.get('--max-w', 480))
+CONFIGS = _opts['--configs'].split(',') if '--configs' in _opts else ['aft', 'on', 'off']
+SCENARIOS = _opts['--scenarios'].split(',') if '--scenarios' in _opts else ['suplexReverse', 'suplexReverseFlip']  # Lou receives; facing -1 / +1
+OUT = os.path.join(ROOT, _opts.get('--out', 'g4'))
+VAR = _opts.get('--var', 'G4')
+T0 = _opts.get('--t0', 'impact')
 
 
 def load(path):
@@ -39,7 +50,7 @@ for cfg in CONFIGS:
     for sc in SCENARIOS:
         src = os.path.join(ROOT, cfg, sc)
         m = load(os.path.join(src, 'manifest.json'))
-        t0 = m['events']['impact']['gameMs']
+        t0 = m['events'][T0]['gameMs']
         key = f'{cfg}/{sc}'
         d = f'{cfg}-{sc}'
         os.makedirs(os.path.join(OUT, d, 'closeups'))
@@ -50,7 +61,7 @@ for cfg in CONFIGS:
                 continue
             name = os.path.basename(fr['file']).rsplit('.', 1)[0] + '.webp'
             small(os.path.join(src, fr['file']), os.path.join(OUT, d, name))
-            frames.append([rel, f'{d}/{name}'])
+            frames.append([rel, f'{d}/{name}'] + ([fr['step'], fr['rawStep']] if 'step' in fr else []))
         total_frames += len(frames)
         closeups = {}
         for ev in m['events']:
@@ -69,7 +80,7 @@ for cfg in CONFIGS:
                 tex.append([round(s['rel'], 2), s['nearForearm']])
                 last = s['nearForearm']
         runs[key] = dict(dir=d, config=cfg, scenario=sc, facing=m['receiverFacing']['atImpact'], git=m['git'],
-                         urlFlags=m['urlFlags'], frames=frames, closeups=closeups, curve=curve, art=tex,
+                         urlFlags=m['urlFlags'], **({'row': m['row']} if 'row' in m else {}), frames=frames, closeups=closeups, curve=curve, art=tex,
                          events={k: round(v['relImpactMs'], 2) for k, v in m['events'].items()})
 
 numbers = {}
@@ -86,7 +97,7 @@ p = os.path.join(ROOT, 'hand-art-check-aft-on.json')
 if os.path.exists(p):
     numbers['r1'] = load(p)
 with open(os.path.join(OUT, 'data.js'), 'w') as f:
-    f.write('window.G4 = ' + json.dumps(dict(runs=runs, numbers=numbers, fromMs=FROM_MS, configs=CONFIGS,
+    f.write(f'window.{VAR} = ' + json.dumps(dict(runs=runs, numbers=numbers, fromMs=FROM_MS, configs=CONFIGS,
                                               scenarios=SCENARIOS), separators=(',', ':')) + ';\n')
 size = sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fs in os.walk(OUT) for f in fs)
 print(f'{total_frames} frames, g4/ = {size / 1e6:.2f} MB')

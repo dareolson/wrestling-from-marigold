@@ -196,7 +196,7 @@ G6a — Derek 2026-10-25: candidate **C** (u .3887, v .6077, 6 px inside the con
   2. Does the baked fist on his back work until Codex's grip art arrives?
   3. Approve the transfer?
 
-G6 — (Derek's verdict goes here.)
+G6 — Derek 2026-10-25: **not approved.** "He kind of rubs his tummy" (the near hand reads as on the belly, moving), and "he should kick his legs too, if his legs are stiff, it reads weird". Recorded by Opus. Opus's diagnosis: candidate C is 6 px inside the contour of a three-quarter-FRONT torso, so supine it sits on the visible belly. The wrist proxy puts the baked fist even further inward. The hold's breath moves the hand ~3 px, which reads as rubbing. Fix plan pending.
 
 ## Stage 5 (later, when Codex delivers George's grip donor)
 

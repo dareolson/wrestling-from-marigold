@@ -2063,10 +2063,13 @@ export default class Skeleton {
     }
 
     /** Draw fall `variant` (a Skeleton.FALLS key) at progress t (0 standing → 1 lying). */
-    updateFall(x, y, s, facing, variant, t) {
+    // `stand` (?risefix=1, the quick rise only): the standing end of the fall (t = 0) is replaced by the grounded
+    // channels that draw this rig's upright idle, so the first segment, which the rise ends on, converges on it.
+    updateFall(x, y, s, facing, variant, t, stand = null) {
         const fall = Skeleton.FALLS[variant];
         if (!fall) throw new RangeError(`unknown fall "${variant}"`);
-        this._applyGrounded(x, y, s, facing, Skeleton._sampleKeyposes(fall.keys, t));
+        const keys = stand ? [{ ...stand, t: 0 }, ...fall.keys.slice(1)] : fall.keys;
+        this._applyGrounded(x, y, s, facing, Skeleton._sampleKeyposes(keys, t));
     }
 
     /**
@@ -2402,7 +2405,11 @@ export default class Skeleton {
     // grounded keyposes. Wrestler swaps to updateUpright when the tween lands.
     // `lying` is how the wrestler is lying ('prone' or 'supine'); each rise
     // starts from that exact pose, so there is no turn-over pop.
-    static _getUpPose(K, t, lockLimbJoints, standingHipHeight) {
+    // `stand` (?risefix=1): the grounded channels that draw this rig's own upright idle (standingChannels).
+    // They replace the final key, so only the last segment changes (second-to-last key -> t = 1 converges
+    // on what the first standing frame draws); the hip finish below is already in `stand.hip`.
+    static _getUpPose(K, t, lockLimbJoints, standingHipHeight, stand = null) {
+        if (stand) return Skeleton._sampleKeyposes([...K.slice(0, -1), { ...stand, t: K.at(-1).t }], t);
         const pose = Skeleton._sampleKeyposes(K, t);
         if (lockLimbJoints) {
             // The old final key places every character's hips only 88 units
@@ -2417,9 +2424,9 @@ export default class Skeleton {
         return pose;
     }
 
-    updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null) {
+    updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null, stand = null) {
         const K = lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
-        const pose = Skeleton._getUpPose(K, t, this._lockLimbJoints, this.standingHipHeight);
+        const pose = Skeleton._getUpPose(K, t, this._lockLimbJoints, this.standingHipHeight, stand);
         const back = lying === 'supine' && pain?.part === 'back' && (pain.severity ?? 0) > 0;
         const sev = back ? Math.max(0, Math.min(1, pain.severity)) : 0;
         // `from` is the lying-hold weight to ease from (D4): the first rise frame reproduces
@@ -2485,12 +2492,12 @@ export default class Skeleton {
     // UPRIGHT_ARM_FWD to both bones and takes the forearm as local flex. A pure function of
     // (scale, facing, peak, the active near-forearm art), cached like _plantPlan. Draws the
     // grounded pose once to measure; call it outside a draw. Null when nothing reaches.
-    carriedRiseEndArm(s, facing, peak) {
+    carriedRiseEndArm(s, facing, peak, stand = null) {
         const K = Skeleton.GETUP_SUPINE_POSES, f = facing >= 0 ? 1 : -1;
         const key = [s, f, peak, K.length, this._lockLimbJoints ? this.standingHipHeight : 0,
-            this.nearForearm?.texture?.key ?? ''].join('|');
+            this.nearForearm?.texture?.key ?? '', stand ? Object.values(stand).join(',') : ''].join('|');
         if (this._riseEndCache?.key === key) return this._riseEndCache.arm;
-        const g = Skeleton._getUpPose(K, 1, this._lockLimbJoints, this.standingHipHeight);
+        const g = Skeleton._getUpPose(K, 1, this._lockLimbJoints, this.standingHipHeight, stand);
         const solved = this._solveGroundedReach(0, 0, s, f, g, { near: { to: 'nearHip', w: peak } },
             { paintedContacts: true, backContact: true });
         let arm = null;
@@ -2501,6 +2508,69 @@ export default class Skeleton {
         }
         this._riseEndCache = { key, arm };
         return arm;
+    }
+
+    // ?risefix=1: the grounded channels ({ hip, torso, farThigh .. nearFore }) for which _applyGrounded draws what
+    // updateUpright draws for `pose` (the pose the first standing frame holds), so a rise that ends on them hands
+    // off with nothing to jump. Solved on this rig's own art: draw the upright pose once, then walk the grounded
+    // channels until every recorded joint (hips, knees, ankles, shoulders, elbows, wrists) lands where the upright
+    // one did. A pure function of (scale, facing, pose, rig), cached like _plantPlan. Draws both renderers once to
+    // measure, so call it from a draw that is about to overwrite every part (Wrestler.draw does); it clears the
+    // upright pose-channel seeds it touches. `errPx` is the largest corner-set distance between the two renders
+    // on this rig's visible parts (what is left that channels cannot reach); null when nothing could be measured.
+    standingChannels(s, facing, pose) {
+        const f = facing >= 0 ? 1 : -1;
+        const key = [s, f, JSON.stringify(pose), this._lockLimbJoints ? 1 : 0, this.standingHipHeight,
+            this.torso?.texture?.key ?? '', this.nearForearm?.texture?.key ?? '', this.farForearm?.texture?.key ?? ''].join('|');
+        if (this._standCache?.key === key) return this._standCache.value;
+        let value = null;
+        try {
+            this.invalidatePoseChannels();
+            this.updateUpright(0, 0, s, f, pose, 0, 0, pose.lean ? f * pose.lean : 0, 0, 0.5, 0);
+            const T = { ...this.jointAttachmentPoints }, TP = this._partCorners();
+            const need = ['nearHip', 'farHip', 'nearKnee', 'farKnee', 'nearAnkle', 'farAnkle', 'nearShoulder', 'farShoulder', 'nearElbow', 'farElbow', 'nearWrist', 'farWrist'];
+            if (need.every(k => T[k])) {
+                const last = Skeleton.GETUP_POSES.at(-1);
+                const g = { ...last, hip: -T.nearHip.y / s };
+                const dir = (a, b) => Math.atan2(b.x - a.x, b.y - a.y);
+                const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+                const segs = [['farThigh', 'farHip', 'farKnee'], ['farShin', 'farKnee', 'farAnkle'], ['nearThigh', 'nearHip', 'nearKnee'], ['nearShin', 'nearKnee', 'nearAnkle'],
+                    ['farArm', 'farShoulder', 'farElbow'], ['farFore', 'farElbow', 'farWrist'], ['nearArm', 'nearShoulder', 'nearElbow'], ['nearFore', 'nearElbow', 'nearWrist']];
+                for (const [ch, a, b] of segs) g[ch] = f * dir(T[a], T[b]);
+                for (let it = 0; it < 12; it++) {
+                    this._applyGrounded(0, 0, s, f, g);
+                    const G = this.jointAttachmentPoints;
+                    if (!need.every(k => G[k])) break;
+                    let worst = 0;
+                    const dy = (G.nearHip.y + G.farHip.y - T.nearHip.y - T.farHip.y) / 2;
+                    g.hip += dy / s; worst = Math.max(worst, Math.abs(dy));
+                    for (const [ch, a, b] of segs) {
+                        const d = wrap(dir(T[a], T[b]) - dir(G[a], G[b]));
+                        g[ch] += f * d; worst = Math.max(worst, Math.abs(d) * 40 * s);
+                    }
+                    if (worst < 0.01) break;
+                }
+                this._applyGrounded(0, 0, s, f, g);
+                const GP = this._partCorners();
+                const near = (c, set) => Math.min(...set.map(d => Math.hypot(c[0] - d[0], c[1] - d[1])));
+                let errPx = 0;
+                TP.forEach((a, i) => { const b = GP[i]; if (!a || !b) return;
+                    errPx = Math.max(errPx, ...a.map(c => near(c, b)), ...b.map(c => near(c, a))); });
+                value = { g, errPx };
+            }
+        } catch (e) { value = null; }
+        this.invalidatePoseChannels();
+        this._standCache = { key, value };
+        return value;
+    }
+
+    // World corners of every visible part, in _parts order (null for a hidden one). Measurement helper.
+    _partCorners() {
+        return this._parts.map(img => {
+            if (!img.visible) return null;
+            const m = img.getWorldTransformMatrix(), fw = img.width, fh = img.height, ox = img.originX * fw, oy = img.originY * fh;
+            return [[-ox, -oy], [fw - ox, -oy], [fw - ox, fh - oy], [-ox, fh - oy]].map(([a, b]) => [m.a * a + m.c * b + m.tx, m.b * a + m.d * b + m.ty]);
+        });
     }
 
     // Place every part from a grounded pose: hip-rooted, torso free to pitch

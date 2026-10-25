@@ -75,6 +75,11 @@ const aftermathCandidate = () => defaultOnFlag('aftermath', 'v2');
 const sellArtCandidate = () => defaultOnFlag('sellart', 'v1');
 // ?plant=1 (with sellart on): the support-hand plant during the back rise. PARKED by
 // Derek 2026-10-24 (PLAN_SUPLEX_RISE T4.-1); the code stays, off unless asked for.
+// ?risefix=1 (PLAN_RISE_HANDOFF): the rise and the quick rise end on the pose the first standing frame draws, and the
+// swap to standing starts from that pose with nothing stale (pose, gait) carried in. Off unless asked for, until G5.
+const riseFixCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('risefix') === '1';
+// Overlays that switch on at the swap (the drunken sway of a worn wrestler) fade in over this instead.
+const RISE_OVERLAY_RAMP_MS = 300;
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
 // the AI's begging-off threshold (AIHandler george.retreatStamina).
@@ -273,6 +278,14 @@ export const POSES = {
     kneeDropTuck:     { lLeg: 1.38,  rLeg: 0.50,  lArm: 0.30,  rArm: 0.65, lean: 0.28, crouch: 0.50 },
     kneeDropLand:     { lLeg: 1.05,  rLeg: 0.22,  lArm: 0.18,  rArm: 0.28, lean: 0.44, crouch: 0.68 },
 };
+
+// What tweenPose('idle') settles on, written out (a test pins it against the real call): the pose a rise hands
+// off to, and so the pose the rise's last segment has to draw (Skeleton.standingChannels).
+export const REST_POSE = Object.freeze({
+    lLeg: POSES.idle.lLeg ?? 0, rLeg: POSES.idle.rLeg ?? 0, lArm: POSES.idle.lArm ?? 0, rArm: POSES.idle.rArm ?? 0,
+    lean: 0, crouch: 0, tilt: 0, lift: 0, bend: 0,
+    lElbow: 0.70, rElbow: 0.70, lKnee: 0, rKnee: 0,
+});
 
 // The dropkick's feet-out frame, named so the rig certifier can render it
 // (certificationMatrix 'dropkick-extension'). Read from the clip, never
@@ -475,6 +488,8 @@ export default class Wrestler {
     // Smoothly ramp combatBlend toward 1 when standing close to the opponent,
     // toward 0 otherwise. Only active in neutral standing states.
     updateCombatBlend(dt, opponent) {
+        // ?risefix=1: the swap frame draws the pose the rise ended on; the guard starts to come in on the next one
+        if (this._riseSwapAt === this.scene.time.now && riseFixCandidate()) return;
         const NEAR = 130, FAR = 240;
         const neutralState = this.state === 'standing' || this.state === 'staggered';
         const depthDiff = Math.abs(this.y - opponent.y);
@@ -1118,7 +1133,8 @@ export default class Wrestler {
     _carriedRiseEnd() {
         const ctx = this._backRiseContext();
         if (!ctx?.carry) return null;
-        const arm = this.skeleton.carriedRiseEndArm?.(this.s * this._heightScale, this.facing, ctx.severity);
+        const s = this.s * this._heightScale;
+        const arm = this.skeleton.carriedRiseEndArm?.(s, this.facing, ctx.severity, this._riseStand(s, this.facing));
         if (!arm) return null;
         return { w: backRiseWeight(1, ctx.from > 0 ? ctx.from : 0, ctx.severity, true), arm: arm.arm, elbow: arm.elbow };
     }
@@ -2554,10 +2570,26 @@ export default class Wrestler {
                     const carried = this._carriedRiseEnd();
                     this.state = 'standing';
                     this._painRecovering(carried);
-                    this.tweenPose('idle', 150, 'Linear');
+                    if (riseFixCandidate()) this._standFromRise();
+                    else this.tweenPose('idle', 150, 'Linear');
                 }
             },
         });
+    }
+
+    // ?risefix=1: the swap to standing. The rise ended on the grounded channels that draw REST_POSE
+    // (Skeleton.standingChannels), so the first standing frame is drawn from that pose, not from whatever pose the
+    // wrestler carried to the mat (the tween used to start from it), and from a gait at rest (moveBlend is frozen
+    // while he is down, so a wrestler floored mid-stride would otherwise stand up mid-stride).
+    _standFromRise() {
+        this.tweenPose('idle', 0, 'Linear');
+        this.moveBlend = 0;
+        this._riseSwapAt = this.scene.time.now;
+    }
+
+    // ?risefix=1: the grounded channels the rise's last segment converges on (null: draw the rise as authored).
+    _riseStand(s, facing) {
+        return riseFixCandidate() ? (this.skeleton?.standingChannels?.(s, facing, REST_POSE)?.g ?? null) : null;
     }
 
     _startQuickRise() {
@@ -2578,7 +2610,8 @@ export default class Wrestler {
                 if (this.state === 'risingUp') {
                     this.state = 'standing';
                     this._painRecovering();
-                    this.tweenPose('idle', 120, 'Linear');
+                    if (riseFixCandidate()) this._standFromRise();
+                    else this.tweenPose('idle', 120, 'Linear');
                 }
             },
         });
@@ -2704,7 +2737,7 @@ export default class Wrestler {
             gfx.fillStyle(0x000000, 0.22);
             gfx.fillEllipse(x, y, (120 + p * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
-            this.skeleton.updateFall(x, y, s, facing, this._fallVariant, p);
+            this.skeleton.updateFall(x, y, s, facing, this._fallVariant, p, state === 'risingUp' ? this._riseStand(s, facing) : null);
             return;
         }
 
@@ -2713,7 +2746,7 @@ export default class Wrestler {
             gfx.fillStyle(0x000000, 0.22);
             gfx.fillEllipse(x, y, (170 - this.riseT * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
-            this.skeleton.updateGetUp(x, y, s, facing, this.riseT, this.lying, this._backRiseContext());
+            this.skeleton.updateGetUp(x, y, s, facing, this.riseT, this.lying, this._backRiseContext(), this._riseStand(s, facing));
             return;
         }
 
@@ -2791,9 +2824,13 @@ export default class Wrestler {
         // plus a slow drunken sway once stamina sinks below 35 — hurt wrestlers
         // visibly wobble on their feet even between staggers
         const hurt  = Math.max(0, 1 - this.stamina / 35);
-        const wooze = hurt > 0 && (state === 'standing' || state === 'staggered')
+        let wooze = hurt > 0 && (state === 'standing' || state === 'staggered')
             ? Math.sin(this.scene.time.now * 0.0021 + (this._woozeSeed ??= Math.random() * Math.PI * 2)) * 0.11 * hurt
             : 0;
+        // ?risefix=1: the sway fades in from the swap instead of entering at full weight
+        if (wooze && this._riseSwapAt != null && riseFixCandidate()) {
+            wooze *= Math.min(1, Math.max(0, (this.scene.time.now - this._riseSwapAt) / RISE_OVERLAY_RAMP_MS));
+        }
         // Walking can leave moveBlend and walkPhase frozen when a move takes
         // over: move() returns early outside standing. Never let that stale
         // gait replace a held wrestler's authored knees or swing their arms.

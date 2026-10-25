@@ -1,7 +1,7 @@
 // Rise -> standing handoff probe (PLAN_RISE_HANDOFF T1.1).
 //
 //   WFM_URL=http://127.0.0.1:5173 node tools/debug/rise_handoff_probe.mjs [outDir] [rig,rig,...|all] [flags,...]
-//     flags: default | off  (off = sellart=off&aftermath=off); add "fix" for ?risefix=1 (T2.2),
+//     flags: default | off  (default = risefix=off; off = sellart=off&aftermath=off&risefix=off); add "fix" for ?risefix=1 (T2.2),
 //            "fixoff" for risefix with both flags off.
 //
 // Nothing in src/ is touched. The game loop is put to sleep and advanced by hand in fixed 1/60 s
@@ -20,7 +20,8 @@ import { execSync } from 'node:child_process';
 import { launch } from './harness.mjs';
 
 export const RIGS = ['thesz-procreate-v1', 'george-roster-v1', 'thesz', 'george', 'thesz-roster-v1', 'guido-roster-v1', 'kowalski-roster-v1', 'thesz-front3q-r1'];
-export const FLAGS = { default: '', off: 'sellart=off&aftermath=off', fix: 'risefix=1', fixoff: 'sellart=off&aftermath=off&risefix=1' };
+// risefix is default-on (Derek 2026-10-25): the pre-fix configs ask for risefix=off explicitly.
+export const FLAGS = { default: 'risefix=off', off: 'sellart=off&aftermath=off&risefix=off', fix: 'risefix=1', fixoff: 'sellart=off&aftermath=off&risefix=1' };
 // kind: gettingUp = _startRiseUp; quick = _startQuickRise. pain: the back pain a suplex leaves (supine only).
 export const CASES = [
     { id: 'supine-pain', kind: 'gettingUp', lying: 'supine', pain: true },

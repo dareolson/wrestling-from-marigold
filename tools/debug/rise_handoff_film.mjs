@@ -6,14 +6,15 @@
 // screenshots every step from 250 ms before the swap to 400 ms after it and writes
 // <outRoot>/<column>/<row>-<l|r>/{manifest.json, strip/}, in the shape tools/debug/g4_package.py reads
 // (events.swap is t0; samples carry the per-frame largest part step as `step`).
-//   column: default (no flag) | risefix (?risefix=1)        l = receiver facing -1, r = facing +1
+//   column: default (?risefix=off, the pre-fix look) | risefix (?risefix=1)        l = receiver facing -1, r = facing +1
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { launch } from './harness.mjs';
 import { INSTALL, BEGIN, STEP, partSteps } from './rise_handoff_probe.mjs';
 
-export const COLUMNS = { default: '', risefix: 'risefix=1' };
+// risefix is default-on (Derek 2026-10-25): the `default` (pre-fix) column asks for risefix=off explicitly.
+export const COLUMNS = { default: 'risefix=off', risefix: 'risefix=1' };
 // opp 'behind' is where a suplex thrower stands: the receiver turns on the first standing frame
 export const ROWS = {
     'lou-suplex':        { rig: 'thesz-procreate-v1', kind: 'gettingUp', lying: 'supine', pain: true, opp: 'behind', label: 'Lou, suplex receiver (thrower behind: he turns)' },

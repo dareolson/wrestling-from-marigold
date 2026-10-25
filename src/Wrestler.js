@@ -75,9 +75,11 @@ const aftermathCandidate = () => defaultOnFlag('aftermath', 'v2');
 const sellArtCandidate = () => defaultOnFlag('sellart', 'v1');
 // ?plant=1 (with sellart on): the support-hand plant during the back rise. PARKED by
 // Derek 2026-10-24 (PLAN_SUPLEX_RISE T4.-1); the code stays, off unless asked for.
-// ?risefix=1 (PLAN_RISE_HANDOFF): the rise and the quick rise end on the pose the first standing frame draws, and the
-// swap to standing starts from that pose with nothing stale (pose, gait) carried in. Off unless asked for, until G5.
-const riseFixCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('risefix') === '1';
+// risefix (PLAN_RISE_HANDOFF): the rise and the quick rise end on the pose the first standing frame draws, and the
+// swap to standing starts from that pose with nothing stale (pose, gait) carried in. Promoted to default by Derek
+// 2026-10-25 (G5, PLAN_GEORGE_TRANSFER D1): on unless the URL says `?risefix=off` (any value but `1` turns it off).
+// Node without `location` stays off; tests opt in with a search string.
+const riseFixCandidate = () => defaultOnFlag('risefix', '1');
 // Overlays that switch on at the swap (the drunken sway of a worn wrestler) fade in over this instead.
 const RISE_OVERLAY_RAMP_MS = 300;
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';

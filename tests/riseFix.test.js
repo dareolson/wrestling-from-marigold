@@ -162,3 +162,13 @@ test('?risefix=1: the guard starts to come in the frame after the swap, not on i
     assert.ok(off.combatBlend > 0, 'flag off: the same frame ticks as before');
     delete globalThis.Phaser;
 });
+
+test('risefix is on by default: absent and =1 on, =off and anything else off, no location off', () => {
+    const { w } = wrestler({ skeleton: { standingChannels: () => ({ g: 'stand' }) } });
+    const at = search => withFlag(search, () => w._riseStand(1, 1));
+    assert.equal(at(''), 'stand', 'absent: on');
+    assert.equal(at('?risefix=1'), 'stand', '=1: on');
+    assert.equal(at('?risefix=off'), null, '=off: off');
+    assert.equal(at('?risefix=0'), null, 'any other value: off');
+    assert.equal(w._riseStand(1, 1), null, 'Node without location: off');
+});

@@ -338,7 +338,7 @@ Decisions:
   lengths), drawn on the torso at 4× and on supine and standing frames, both facings, plus a page
   `research/animation/george-transfer-2026-10/around/index.html`. **STOP for G8a.**
 
-G8a — (Derek's pick goes here.)
+G8a — Derek 2026-10-25: "looks good" to Opus's recommendation, candidate **B** (u -0.25, v 0.9069; 1.5 hand lengths, 18.0 game px clear of the paint). Recorded by Opus.
 
 - **T8.2 (D10)** Add the clearance test as a pure helper (`rig/backSell.js` or a new
   `rig/silhouette.js`), taking a world point and the torso image plus an alpha lookup, so it's testable in

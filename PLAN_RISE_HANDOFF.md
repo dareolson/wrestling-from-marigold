@@ -135,6 +135,20 @@ Choose the fix from T1.2's attribution. The intended shapes:
   changed, before/after steps per case, any misses first, what is not claimed. Commit.
 - **STOP. G5 questions for Derek:** (1) At 1×, is the stand-up seamless now, with `risefix=1`
   vs default? (2) Any rig or rise type that still pops? (3) Promote `risefix` to default?
+  (4) **The facing turn (H5, out of scope here):** a wrestler who stands up facing away from
+  the opponent mirrors to face them on the first standing frame. That is Lou's 31–35 px in
+  T4.7. Options: leave it; turn over a few frames; or choose the sit-up direction at rise start
+  so he stands up already facing the opponent. The G5 viewer must show at least one
+  `turn` case (opponent behind), default vs `risefix=1`, so Derek can judge it at 1×.
+
+## Resume note (Opus, 2026-10-24)
+
+Session 1 ended during T2.2, most likely out of context. At handover the tree held
+uncommitted, unverified work: `_standFromRise` resets `walkPhase` (+ its test line), probe
+and `g4_package.py` edits, a re-run `baseline/` (a new `supine-gait` case), an incomplete
+`fixed/shots/` with no `handoff.json`, `viewer.html`, `rise_handoff_film.mjs`, and
+`rise_handoff_report.py`. The resuming session treats all of it as a draft: verify it, keep
+what is right, and commit it under the task it belongs to.
 
 ## 3. Suggested session
 

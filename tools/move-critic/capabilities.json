@@ -32,7 +32,7 @@
       "maturity": "reused",
       "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/clipLayers.test.js; eb420e2 film, 4 directions (PLAN_SUPLEX_RISE.md)" },
       "visual": [
-        { "status": "unverified", "scope": "suplex head layering (eb420e2)", "reason": "no gate line approves the layering on its own; G4 (2026-10-24 'it looks good') approved the suplex-rise `on` candidate viewed with eb420e2 in place" },
+        { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "suplex head layering (eb420e2), Procreate Lou + George roster, four directions", "evidence": "eb420e2 commit message ('Approved by Derek'); Derek in session: 'i think it looks good'" },
         { "status": "not-approved", "scope": "figure-four tableau", "reason": "G1 never approved; track parked by Derek 2026-10-23 (PLAN_MOVE_PERFORMANCE.md)" }
       ],
       "gap": "Other throws are not audited for the same transform.y swap"

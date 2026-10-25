@@ -29,14 +29,15 @@ Avoid a large rewrite.
 
 ## Status summary — Thesz canonical-v2 art pipeline
 
-**Suplex planted-rise plan — 2026-10-24 (Claude/Opus plan, rev 2):**
-Codex's sell-art candidate is committed locally (`b07484d`, not pushed). Stages 0-1
-(event-aligned off/on film, R1 check) are done; [plan and Progress](PLAN_SUPLEX_RISE.md),
-[Codex's review of those stages](AI_HANDOFF_ENTRIES/2026-10-24-codex-review-of-claude-suplex-rise.md).
-Session 2 (T2.0-T3.1) plants Lou's far wrist during the supine back rise behind
-`?sellart=v1` (since T4.-1 only with an extra `&plant=1`; parked by Derek) (geometry prototype only, no palm art) and writes Codex's support-art
-request. Flag-off claim is bounded: `tests/sellArtFlagOff.test.js` snapshots pose
-channels, not rendered parts. Nothing promoted; Derek judges at G4.
+**Suplex planted-rise plan — 2026-10-24 (Claude/Opus plan, rev 4; G4 package ready):**
+Codex's sell-art candidate is committed locally (`b07484d`); every commit of this plan is local, nothing pushed
+or promoted. Done: event-aligned film, lying hold, contact-driven grip, the standing back hand carried across the
+rise -> standing handoff (D5), and the G4 viewer. [Plan and Progress](PLAN_SUPLEX_RISE.md),
+[G4 entry](AI_HANDOFF_ENTRIES/2026-10-24-claude-suplex-rise-g4.md),
+[viewer](research/animation/suplex-rise-2026-10/viewer.html). **One T4.7 target missed:** the contact steps 31 / 35 px
+at the first standing frame; it is a whole-body step present in aft and flag-off too (hand-to-back stays 0.14-0.16 px),
+not retuned. The support plant stays parked (`&plant=1` only); Codex's support-art request is on hold. Flag-off claim
+is bounded: `tests/sellArtFlagOff.test.js` snapshots pose channels, not rendered parts. 838 tests. Derek judges at G4.
 
 **Contact-aware selling and protected rise — 2026-10-24 (Codex):**
 Derek authorized direct improvements and assigned new art to Codex. Implemented
@@ -660,6 +661,12 @@ still listed in `SHA256SUMS.txt` at its true hash. Whoever picks this up needs t
 establish what it was meant to be before changing anything.
 
 ## Handoff Log
+
+### 2026-10-24 — Claude: suplex rise G4 package (session 4)
+
+[G4 entry](AI_HANDOFF_ENTRIES/2026-10-24-claude-suplex-rise-g4.md) (miss first, what changed, measurements, guard
+deviation, what is not claimed) and the [viewer](research/animation/suplex-rise-2026-10/viewer.html); T4.5 `befa6ea`,
+T4.6 `fa9969f`, T4.7 `b94ac3f`, T5.1 `9be1205`. Stopped for Derek's G4 verdict.
 
 ### 2026-10-24 — Claude: suplex planted-rise plan, session 2
 

@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suplex rise G4 viewer</title>
+<style>
+  :root { --bg:#f6f6f4; --panel:#fff; --ink:#1d1d1b; --mute:#6b6b66; --line:#dcdcd6; --accent:#1b6ca8; --warn:#c0392b; --ok:#2e8b57; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161616; --panel:#202020; --ink:#ececea; --mute:#9a9a94; --line:#383836; --accent:#6fb1e3; --warn:#ff7b6b; --ok:#6fcf97; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui,-apple-system,sans-serif; }
+  main { max-width:1500px; margin:0 auto; padding:16px; }
+  h1 { font-size:18px; margin:0 0 2px; } h2 { font-size:14px; margin:18px 0 8px; }
+  .sub { color:var(--mute); margin:0 0 12px; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px; position:sticky; top:0; z-index:5; }
+  button, select { font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:5px 10px; cursor:pointer; }
+  button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button:focus-visible, input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .scrub { flex:1 1 320px; min-width:200px; }
+  .scrub input { width:100%; }
+  .time { font-variant-numeric:tabular-nums; min-width:92px; text-align:right; }
+  .events { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .cols { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; }
+  figure { margin:0; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  figure img { display:block; width:100%; height:auto; background:#888; }
+  figcaption { padding:8px 10px; font-size:13px; }
+  figcaption b { font-size:14px; } .mono { font-variant-numeric:tabular-nums; font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mute); }
+  .far { color:var(--warn); } .near { color:var(--ok); }
+  svg { width:100%; height:auto; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+  table { border-collapse:collapse; width:100%; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+  th, td { text-align:left; padding:5px 10px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; }
+  th { color:var(--mute); font-weight:600; } td.num, th.num { text-align:right; }
+  .miss { color:var(--warn); font-weight:600; } .met { color:var(--ok); font-weight:600; }
+  .notes { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 14px; }
+  .notes li { margin:3px 0; }
+  .tablewrap { overflow-x:auto; }
+  @media (max-width:760px) { .cols { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Suplex receiver: planted rise, G4 review</h1>
+  <p class="sub" id="sub"></p>
+
+  <div class="bar" role="group" aria-label="Playback">
+    <button id="play" aria-label="Play or pause">Play</button>
+    <button id="s1" class="on">1×</button><button id="s05">0.5×</button>
+    <button id="stepb" title="Back one frame (30 fps)">‹ frame</button><button id="stepf" title="Forward one frame">frame ›</button>
+    <label>Facing <select id="facing"></select></label>
+    <div class="scrub"><input id="scrub" type="range" min="0" max="1" step="1" value="0" aria-label="Scrub"></div>
+    <div class="time" id="time">0 ms</div>
+  </div>
+  <div class="events" id="events" aria-label="Jump to event"></div>
+
+  <div class="cols" id="cols"></div>
+  <p class="sub" style="margin-top:6px">Clock is game ms from impact, taken from each run's manifest; frames are 30 fps. 1× plays the stored game time in real time. Event buttons jump to the <b>on</b> run's event times; <i>clutch peak</i> differs by up to 183 ms between runs (sell plan), rise start, standing and recovery marks are identical in all three.</p>
+
+  <h2>Near hand to painted back waist (px)</h2>
+  <div id="curve"></div>
+
+  <h2>Event close-ups <span class="sub" id="closeLabel"></span></h2>
+  <div class="cols" id="closeups"></div>
+
+  <h2>Measurements</h2>
+  <div class="tablewrap" id="numbers"></div>
+
+  <h2>Not claimed</h2>
+  <ul class="notes">
+    <li>These are measurements and frames. Whether the sequence reads as one hurt action is Derek's call.</li>
+    <li><b>Support plant: parked</b> (Derek, 2026-10-24). It is not in this candidate (<code>&amp;plant=1</code> only); the far hand in these films is the base rise.</li>
+    <li>George as receiver is unchanged: no painted back waist, no hold, no hand on the back.</li>
+    <li>The rise-to-standing swap still re-poses the whole body in one frame in every config, flag off included; see the handoff row.</li>
+    <li>Lou only. Combat guard is scaled by (1 − hand weight) during the carried recovery, so both arms relax (drawing only).</li>
+  </ul>
+</main>
+<script src="g4/data.js"></script>
+<script>
+(() => {
+  const G = window.G4, $ = id => document.getElementById(id);
+  const CFG_LABEL = { aft: 'aft', on: 'on', off: 'off' };
+  const CFG_DESC = { aft: 'aftermath=v2 only', on: 'sellart=v1 + aftermath=v2', off: 'no flags' };
+  const EVENT_BTNS = [['impact','Impact'],['clutchPeak','Clutch peak'],['riseStart','Rise start'],['rise055','Rise .55'],['rise085','Rise .85'],['standing','Standing'],['recovery+200ms','+0.2 s'],['recovery+1000ms','+1 s'],['recovery+2000ms','+2 s']];
+  const facings = [...new Set(Object.values(G.runs).map(r => r.facing))].sort();
+  let facing = facings[0], t = 0, speed = 1, playing = false, last = 0, closeEv = 'standing', idx = {};
+
+  const runOf = (cfg) => Object.values(G.runs).find(r => r.config === cfg && r.facing === facing);
+  const ref = () => runOf('on');
+  const tMin = () => Math.min(...G.configs.map(c => runOf(c).frames[0][0]));
+  const tMax = () => Math.min(...G.configs.map(c => runOf(c).frames.at(-1)[0]));
+  const fmt = v => (v >= 0 ? '+' : '−') + Math.abs(Math.round(v)) + ' ms';
+  const at = (arr, ms) => { let lo = 0, hi = arr.length - 1, k = 0; while (lo <= hi) { const m = (lo + hi) >> 1; if (arr[m][0] <= ms) { k = m; lo = m + 1; } else hi = m - 1; } return arr[k]; };
+
+  for (const f of facings) { const o = document.createElement('option'); o.value = f; o.textContent = f < 0 ? '−1 (receiver faces left)' : '+1 (receiver faces right)'; $('facing').append(o); }
+  const g0 = ref(); $('sub').textContent = `Procreate Lou receives the suplex (George throws). on = ${g0.urlFlags}; film commit ${g0.git.commit}${g0.git.dirty ? ' + working tree' : ''}. Aft and off were re-filmed with the same tool.`;
+
+  function build() {
+    const cols = $('cols'); cols.replaceChildren();
+    idx = {};
+    for (const cfg of G.configs) {
+      const r = runOf(cfg), fig = document.createElement('figure');
+      const img = new Image(); img.alt = `${cfg} run`; fig.append(img);
+      const cap = document.createElement('figcaption'); cap.innerHTML = `<b>${CFG_LABEL[cfg]}</b> <span class="mono">${CFG_DESC[cfg]}</span><div class="mono" data-info></div>`;
+      fig.append(cap); cols.append(fig); idx[cfg] = { r, img, info: cap.querySelector('[data-info]') };
+      for (const [, f] of r.frames) { const p = new Image(); p.src = 'g4/' + f; } // preload
+    }
+    const ev = $('events'); ev.replaceChildren();
+    for (const [k, label] of EVENT_BTNS) { const b = document.createElement('button'); b.textContent = label; b.title = k + ' ' + fmt(ref().events[k]); b.onclick = () => seek(ref().events[k]); ev.append(b); }
+    $('scrub').min = Math.ceil(tMin()); $('scrub').max = Math.floor(tMax());
+    drawCurve(); drawCloseups(); drawNumbers(); seek(Math.max(tMin(), Math.min(t, tMax())));
+  }
+
+  function render() {
+    for (const cfg of G.configs) {
+      const { r, img, info } = idx[cfg];
+      const f = at(r.frames, t); const src = 'g4/' + f[1]; if (img.getAttribute('src') !== src) img.src = src;
+      const d = r.curve.length ? at(r.curve, t) : null, art = at(r.art, t);
+      const far = d && d[1] > 15;
+      info.innerHTML = `${fmt(f[0])} · hand→back <span class="${far ? 'far' : 'near'}">${d ? d[1].toFixed(1) + ' px' : 'n/a'}</span><br>near forearm: ${art[1].replace('thesz_pv1_', '')}`;
+    }
+    $('time').textContent = fmt(t); $('scrub').value = Math.round(t);
+    const cur = document.getElementById('cursor'); if (cur) { const x = cx(t); cur.setAttribute('x1', x); cur.setAttribute('x2', x); }
+  }
+  function seek(ms) { t = Math.max(tMin(), Math.min(tMax(), ms)); render(); }
+  function tick(now) {
+    if (!playing) return;
+    t += (now - last) * speed; last = now;
+    if (t >= tMax()) { t = tMax(); setPlaying(false); }
+    render(); if (playing) requestAnimationFrame(tick);
+  }
+  function setPlaying(p) { playing = p; $('play').textContent = p ? 'Pause' : 'Play'; if (p) { if (t >= tMax()) t = tMin(); last = performance.now(); requestAnimationFrame(tick); } }
+
+  // curve
+  const W = 1200, H = 260, L = 46, R = 12, T = 14, B = 30; let cx = () => 0;
+  function drawCurve() {
+    const x0 = tMin(), x1 = tMax(), y1 = 60;
+    cx = v => L + (v - x0) / (x1 - x0) * (W - L - R); const Y = v => T + (1 - Math.min(v, y1) / y1) * (H - T - B);
+    const col = { aft: '#c0392b', on: '#1b6ca8', off: '#8a8a84' };
+    let o = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Distance from the near hand contact to the painted back waist over time">`;
+    for (let v = 0; v <= y1; v += 15) o += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${v === 15 ? '#c0392b' : 'currentColor'}" stroke-opacity="${v === 15 ? .8 : .15}" ${v === 15 ? 'stroke-dasharray="4 3"' : ''}/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end" fill="currentColor" font-size="11" opacity=".7">${v}</text>`;
+    for (let v = Math.ceil(x0 / 1000) * 1000; v <= x1; v += 1000) o += `<text x="${cx(v)}" y="${H - 10}" text-anchor="middle" fill="currentColor" font-size="11" opacity=".7">${v}</text>`;
+    for (const [k] of EVENT_BTNS.filter(e => ['riseStart', 'standing'].includes(e[0]))) { const x = cx(ref().events[k]); o += `<line x1="${x}" x2="${x}" y1="${T}" y2="${H - B}" stroke="currentColor" stroke-opacity=".25"/><text x="${x + 3}" y="${T + 10}" fill="currentColor" font-size="10" opacity=".6">${k}</text>`; }
+    for (const cfg of G.configs) { const r = runOf(cfg); if (r.curve.length) o += `<polyline fill="none" stroke="${col[cfg]}" stroke-width="1.6" points="${r.curve.map(p => `${cx(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(' ')}"/>`; }
+    G.configs.forEach((cfg, i) => { o += `<rect x="${L + 10 + i * 90}" y="${T + 4}" width="10" height="3" fill="${col[cfg]}"/><text x="${L + 24 + i * 90}" y="${T + 9}" fill="currentColor" font-size="11">${cfg}</text>`; });
+    o += `<line id="cursor" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="currentColor" stroke-width="1.5"/></svg>`;
+    $('curve').innerHTML = o;
+  }
+
+  function drawCloseups() {
+    const el = $('closeups'); el.replaceChildren(); $('closeLabel').textContent = `(${closeEv}; pick another with the buttons)`;
+    for (const cfg of G.configs) { const r = runOf(cfg), fig = document.createElement('figure'); const img = new Image(); img.src = 'g4/' + r.closeups[closeEv]; img.alt = cfg + ' ' + closeEv; fig.append(img); const c = document.createElement('figcaption'); c.innerHTML = `<b>${cfg}</b> <span class="mono">${closeEv} at ${fmt(r.events[closeEv])}</span>`; fig.append(c); el.append(fig); }
+    const row = document.createElement('div'); row.className = 'events'; row.style.gridColumn = '1 / -1';
+    Object.keys(ref().closeups).forEach(k => { const b = document.createElement('button'); b.textContent = k; if (k === closeEv) b.className = 'on'; b.onclick = () => { closeEv = k; drawCloseups(); }; row.append(b); });
+    el.append(row);
+  }
+
+  function drawNumbers() {
+    const n = G.numbers, key = (cfg) => `${cfg}/${runOf(cfg).scenario}`, rows = [];
+    const w = (tag, cfg, name) => { const x = n[tag]?.[key(cfg)]?.windows?.[name]; return x ? `${x.ms} / ${x.spanMs}` : '—'; };
+    const names = [['lying', 'Lying: clutch end → rise start'], ['rise', 'Rise: start → riseT .85'], ['handoff', 'Handoff: riseT .85 → standing'], ['standing', 'Standing → +2 s']];
+    for (const [k, label] of names) rows.push([label, w('t43', 'aft', k), w('t43', 'on', k), w('t47', 'on', k)]);
+    const hs = tag => n[tag]?.[key('on')]?.handoffSpan, hsa = n.t47?.[key('aft')]?.handoffSpan;
+    let o = `<table><thead><tr><th>ms with hand &gt; 15 px from the back / window ms</th><th class="num">aft (T4.3)</th><th class="num">on (T4.3, before D5)</th><th class="num">on (T4.7, D5)</th></tr></thead><tbody>`;
+    for (const r of rows) o += `<tr><td>${r[0]}</td>${r.slice(1).map(v => `<td class="num">${v}</td>`).join('')}</tr>`;
+    // motif-curve-t43.json predates handoffSpan; these two were recomputed from the T4.3 manifests (a822721 film) before they were re-filmed
+    const T43 = { '-1': { run: 450, step: 12.12 }, '1': { run: 450, step: 14.19 } }[facing];
+    const run43 = n.t43?.[key('on')]?.handoffSpan?.longestRunOverMs ?? T43.run, run47 = hs('t47')?.longestRunOverMs;
+    o += `<tr><td>Longest unbroken stretch &gt; 15 px, riseT .85 → standing + 400 ms (target ≤ 50 ms)</td><td class="num">${hsa ? hsa.longestRunOverMs : '—'}</td><td class="num">${run43 ?? '—'}</td><td class="num ${run47 <= 50 ? 'met' : 'miss'}">${run47 ?? '—'} ${run47 <= 50 ? 'met' : 'missed'}</td></tr>`;
+    const st = hs('t47'), step43 = n.t43?.[key('on')]?.handoffSpan?.maxStepPx ?? T43.step;
+    o += `<tr><td>Largest per-step near-contact jump in that span, px (target ≤ 4)</td><td class="num">${hsa ? hsa.maxStepPx : '—'}</td><td class="num">${step43 ?? '—'}</td><td class="num ${st && st.maxStepPx <= 4 ? 'met' : 'miss'}">${st ? st.maxStepPx + ' at ' + st.maxStepAtMs + ' ms' : '—'} ${st && st.maxStepPx <= 4 ? 'met' : 'missed'}</td></tr></tbody></table>`;
+    const rea = n.riseEndArm?.rows?.[0];
+    let extra = `<ul class="notes" style="margin-top:10px">`;
+    extra += `<li><b>Handoff miss:</b> the contact steps ${st ? st.maxStepPx : '?'} px at ${st ? st.maxStepAtMs : '?'} ms (first standing frame). Hand-to-back distance stays 0.14–0.16 px across the swap; the painted back waist steps by the same amount (31.4 / 34.7 px), the far shoulder 18.0 / 20.0 px, in <b>aft</b> and <b>off</b> too. It is the rise → standing re-pose, not the hand.</li>`;
+    if (rea) extra += `<li><b>Rise end vs standing target (T4.5):</b> rise-end arm lArm ${rea.end.arm.toFixed(3)} / lElbow ${rea.end.elbow.toFixed(3)} (elbow flex ${rea.groundedFlexDeg.toFixed(1)}°, limit 157.6°), contact ${rea.groundedContactDist.toFixed(2)} px from the back waist; probed standing hand lArm ${rea.recoveryAbs.arm.toFixed(3)} / lElbow ${rea.recoveryAbs.elbow.toFixed(3)}, ${rea.recoveryAbs.bend0.dist.toFixed(2)} px; difference ${rea.diff.arm.toFixed(3)} / ${rea.diff.elbow.toFixed(3)} rad. Rise at t = 1 without D5: 45.3 px.</li>`;
+    const onR = runOf('on'), arts = onR.art.map(a => `${a[1].replace('thesz_pv1_', '')} from ${Math.round(a[0])} ms`).join(' → ');
+    extra += `<li><b>Hand art (R1), on, this facing:</b> ${arts}. One grip run from clutch to the recovery; no grip → fist → grip flicker.</li>`;
+    extra += `</ul>`;
+    $('numbers').innerHTML = o + extra;
+  }
+
+  $('play').onclick = () => setPlaying(!playing);
+  $('s1').onclick = () => { speed = 1; $('s1').className = 'on'; $('s05').className = ''; };
+  $('s05').onclick = () => { speed = 0.5; $('s05').className = 'on'; $('s1').className = ''; };
+  $('scrub').oninput = e => { setPlaying(false); seek(+e.target.value); };
+  $('stepf').onclick = () => { setPlaying(false); const fr = ref().frames, k = fr.findIndex(f => f[0] > t + 0.01); seek(fr[k < 0 ? fr.length - 1 : k][0]); };
+  $('stepb').onclick = () => { setPlaying(false); const fr = ref().frames; let k = fr.length - 1; while (k > 0 && fr[k][0] >= t - 0.01) k--; seek(fr[k][0]); };
+  $('facing').onchange = e => { facing = +e.target.value; setPlaying(false); build(); };
+  document.addEventListener('keydown', e => { if (e.target.tagName === 'SELECT') return; if (e.code === 'Space') { e.preventDefault(); setPlaying(!playing); } if (e.code === 'ArrowRight') $('stepf').click(); if (e.code === 'ArrowLeft') $('stepb').click(); });
+  t = ref().events.impact; build();
+})();
+</script>
+</body>
+</html>

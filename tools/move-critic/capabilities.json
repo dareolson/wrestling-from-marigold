@@ -108,18 +108,18 @@
     },
     {
       "id": "lying-hold",
-      "summary": "Hand stays on the back after the last clutch while down, breathing at holdWeight, and the rise eases up from it",
+      "summary": "Hand stays on the back after the last clutch while down at a constant reach weight (holdW) while the chest breathes and the knees draw up in turn (HOLD_BREATH, HOLD_LEGS); the rise eases up from it, carrying the hold's leg and torso offsets for its first 15%",
       "origin": { "failure": "Hand drops the pain motif while down (4.2 s)", "evidence": "81fe5bf; research/animation/suplex-rise-2026-10/motif-curve-t43.json (lying 4200 -> 0 ms)" },
-      "implementation": ["src/animation/backRisePerformance.js", "src/animation/sells.js", "src/Wrestler.js"],
-      "authoring": "none; `clutchSell(..., endReach)` and `_hold`",
+      "implementation": ["src/animation/backRisePerformance.js", "src/animation/sells.js", "src/Wrestler.js", "src/Skeleton.js"],
+      "authoring": "none; `clutchSell(..., endReach)`, `_hold`, `HOLD_BREATH` (torso .04, 1.6 s), `HOLD_LEGS` (3.6 s cycle, near/far knee draw-up, hip +2, 400 ms ramp), `riseHoldCarry`",
       "consumers": [ { "kind": "adapter", "id": "sell:lyingHold" } ],
       "supported": "back sell only; rigs with `backWaist` AND `textures.backSell` (src/rig/backSell.js): Lou (both facings) and George (george-roster-v1, fist art, wrist proxy contact)",
       "fallbacks": "other sells, rigs without both `backWaist` and `backSell` (their numbers are never borrowed), flag off: no hold is drawn",
-      "regression": ["tests/lyingHold.test.js", "tests/backSellLouFixture.test.js", "tests/backSellSupport.test.js", "tests/backSellRigContract.test.js", "tests/backSellGeorge.test.js"],
+      "regression": ["tests/lyingHold.test.js", "tests/backSellLouFixture.test.js", "tests/backSellSupport.test.js", "tests/backSellRigContract.test.js", "tests/backSellGeorge.test.js", "tests/handUnder.test.js"],
       "maturity": "pilot",
-      "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/lyingHold.test.js; T4.3 film: motif > 15 px for 0 of 4200 ms lying" },
-      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou supine back sell, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George (george-roster-v1) runs this from 2026-10-25; Derek has not seen it (PLAN_GEORGE_TRANSFER G6)" } ],
-      "gap": "Back only; Lou and George (George: no grip donor, wrist proxy contact; unverified until G6). Mechanical for George: tests/backSellGeorge.test.js and PLAN_GEORGE_TRANSFER T3.5 (last sell a back clutch, supine: 0 ms > 15 px lying, hold 8.5-13.5 px)"
+      "mechanical": { "status": "pass", "date": "2026-10-25", "evidence": "tests/lyingHold.test.js (constant weight, torso breath, HOLD_LEGS cycle, rise carry); tools/debug/hold_rise_probe.mjs: hold -> rise step <= 0.36 px on Lou and George, both facings (0.7 / 1.3 / 2.5 / 3.1 / 5.4 s into the hold; 23.96 px without the carry); T4.3 film (before Rev 2): motif > 15 px for 0 of 4200 ms lying" },
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou supine back sell, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George (george-roster-v1): G6 (2026-10-25) was NOT approved (hand read as rubbing the belly, stiff legs); Rev 2 changes the hold (anchor A + handUnder, constant reach with the chest breathing, leg life); Derek has not seen it (PLAN_GEORGE_TRANSFER G7)" }, { "status": "unverified", "reason": "Lou: Rev 2 D7/D8 give his approved hold a torso breath and leg cycle (hand weight now constant); Derek has not seen it (G7)" } ],
+      "gap": "Back only; Lou and George (George: no grip donor, wrist proxy contact, hand under the body via backSell.handUnder at backWaist candidate A; unverified until G7). Rev 2 change, all rigs: the reach no longer breathes (the chest does), the legs draw up in turn (HOLD_LEGS: near .40/-.35, far .35/-.30, hip +2, 3.6 s). Not covered: legs during a lying wait with no hold (writhe last)"
     },
     {
       "id": "contact-latched-art",
@@ -131,13 +131,13 @@
         { "kind": "adapter", "id": "sell:lyingHold" },
         { "kind": "adapter", "id": "rise:back" }
       ],
-      "supported": "back contact on a rig with painted backWaist and backSell data: Lou with his grip donor (gripArt painted, clutchPatch contact) and George without one (gripArt none: the baked fist stays, contact wristProxy, the latch still runs and never selects art)",
+      "supported": "back contact on a rig with painted backWaist and backSell data: Lou with his grip donor (gripArt painted, clutchPatch contact) and George without one (gripArt none: the baked fist stays, contact wristProxy, the latch still runs and never selects art). Rev 2: a rig with `backSell.handUnder` (George, anchor A) draws the near forearm behind the torso while the latch is on (Wrestler._handUnder -> Skeleton.setHandUnder -> setDepth), in the back clutch, hold, rise and standing recovery; Lou does not set it",
       "fallbacks": "no donor: base art and the wrist as the contact (labelled `wristProxy`); no anchor or no backSell data: unsupported, sell off",
-      "regression": ["tests/lyingHold.test.js", "tests/sellAppearance.test.js", "tests/backSellSupport.test.js", "tests/backSellGeorge.test.js"],
+      "regression": ["tests/lyingHold.test.js", "tests/sellAppearance.test.js", "tests/backSellSupport.test.js", "tests/backSellGeorge.test.js", "tests/handUnder.test.js", "tests/backSellRigContract.test.js"],
       "maturity": "pilot",
       "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/lyingHold.test.js latch test; T1.2/T4.3 film: 0 grip-fist-grip runs under 250 ms in 4 scenarios" },
-      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George (fist art, wristProxy contact) runs this from 2026-10-25; Derek has not seen it (PLAN_GEORGE_TRANSFER G6)" } ],
-      "gap": "Grip donor exists for Lou only; George's arrives from Codex (Stage 5, no code change expected). George T3.5: latch flips >= 1616.7 ms apart, never inside the 250 ms refractory"
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George (fist art, wristProxy contact): G6 not approved; Rev 2 adds handUnder (the forearm behind the torso while the latch is on) and moves backWaist to the contour (candidate A); Derek has not seen it (PLAN_GEORGE_TRANSFER G7)" } ],
+      "gap": "The depth swap follows the latch and so inherits its dwell (100 ms) and refractory (250 ms); the swap counts and the shortest gap are in PLAN_GEORGE_TRANSFER T7.1. Grip donor exists for Lou only; George's arrives from Codex (Stage 5, no code change expected). George T3.5: latch flips >= 1616.7 ms apart, never inside the 250 ms refractory"
     },
     {
       "id": "carried-rise",
@@ -151,8 +151,8 @@
       "regression": ["tests/carriedRise.test.js", "tests/backSellLouFixture.test.js", "tests/backSellGeorge.test.js"],
       "maturity": "pilot",
       "mechanical": { "status": "pass", "date": "2026-10-24", "evidence": "tests/carriedRise.test.js (11); T4.7 film: hand-to-backWaist 0.14-0.16 px at the swap" },
-      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou back rise, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George runs this from 2026-10-25; Derek has not seen it (PLAN_GEORGE_TRANSFER G6)" } ],
-      "gap": "Lou and George (George unverified until G6). George T3.5, supine runs: rise 0 ms and handoff 0 ms > 15 px, longest run across the handoff 0 ms, hand-to-back 0 px at the swap; a rolled (prone) receiver: rise 766.7 ms > 15 px (no protected prone rise, unchanged)"
+      "visual": [ { "status": "approved", "by": "Derek", "date": "2026-10-24", "scope": "G4: Lou back rise, `on` candidate; default since PROMOTE" }, { "status": "unverified", "reason": "George runs this from 2026-10-25: G6 not approved; Rev 2 starts the rise from the hold's leg and torso offsets and re-measures his recovery at anchor A (arm -0.7, elbow +1.1); Derek has not seen it (PLAN_GEORGE_TRANSFER G7)" } ],
+      "gap": "Lou and George (George unverified until G7). George T3.5, supine runs: rise 0 ms and handoff 0 ms > 15 px, longest run across the handoff 0 ms, hand-to-back 0 px at the swap; a rolled (prone) receiver: rise 766.7 ms > 15 px (no protected prone rise, unchanged)"
     },
     {
       "id": "rise-standing-channels",

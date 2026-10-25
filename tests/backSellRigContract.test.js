@@ -59,3 +59,20 @@ test('Procreate Lou and George support the back sell, each on its own numbers; e
         assert.equal(s.reason, 'no backWaist anchor', c.id);
     }
 });
+
+test('backSell.handUnder is optional but must be a boolean when present (Rev 2 D6); only George sets it, Lou does not', () => {
+    for (const c of Object.values(BY_NAME)) {
+        const h = c.textures?.backSell?.handUnder;
+        assert.ok(h === undefined || typeof h === 'boolean', `${c.id}: handUnder ${JSON.stringify(h)}`);
+    }
+    assert.equal(georgeRosterV1.textures.backSell.handUnder, true);
+    assert.equal(theszProcreateV1.textures.backSell.handUnder, undefined, 'Lou\'s draw order is unchanged');
+    for (const bad of ['yes', 1, null, {}]) {
+        const s = backSellSupport({ ...view(georgeRosterV1), _textureConfig: { ...georgeRosterV1.textures, backSell: { ...georgeRosterV1.textures.backSell, handUnder: bad } } });
+        assert.deepEqual([s.ok, s.reason], [false, 'invalid backSell data: handUnder'], JSON.stringify(bad));
+    }
+    for (const good of [true, false, undefined]) {
+        const s = backSellSupport({ ...view(georgeRosterV1), _textureConfig: { ...georgeRosterV1.textures, backSell: { ...georgeRosterV1.textures.backSell, handUnder: good } } });
+        assert.equal(s.ok, true, String(good));
+    }
+});

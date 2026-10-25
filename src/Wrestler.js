@@ -2584,6 +2584,7 @@ export default class Wrestler {
     _standFromRise() {
         this.tweenPose('idle', 0, 'Linear');
         this.moveBlend = 0;
+        this.walkPhase = 0;
         this._riseSwapAt = this.scene.time.now;
     }
 

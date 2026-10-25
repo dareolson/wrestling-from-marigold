@@ -28,6 +28,8 @@ export const CASES = [
     { id: 'prone', kind: 'gettingUp', lying: 'prone', pain: false },
     { id: 'quick-supine', kind: 'quick', lying: 'supine', pain: false },
     { id: 'quick-prone', kind: 'quick', lying: 'prone', pain: false },
+    // floored mid-stride: moveBlend is frozen while he is down, so the stand-up inherits a gait
+    { id: 'supine-gait', kind: 'gettingUp', lying: 'supine', pain: false, gait: true },
 ];
 const POST = 10;
 
@@ -54,7 +56,7 @@ export const INSTALL = () => {
 };
 
 // In-page: put the receiver down the way a knockdown leaves it, then start the rise.
-export const BEGIN = ({ kind, lying, pain, facing, pose, opp = 'front' }) => {
+export const BEGIN = ({ kind, lying, pain, facing, pose, opp = 'front', gait = false }) => {
     const sc = window.__WFM_GAME.scene.scenes[0], w = window.__rw;
     w.scene.tweens.killTweensOf(w); w.scene.tweens.killTweensOf(w.pose);
     w.x = 520; w.y = 355; w.facing = facing; w.lying = lying;
@@ -64,7 +66,7 @@ export const BEGIN = ({ kind, lying, pain, facing, pose, opp = 'front' }) => {
     sc.w2.x = w.x + (opp === 'front' ? facing : -facing) * 200; sc.w2.y = w.y; sc.w2.state = 'standing'; sc.w2.vx = 0; sc.w2.vy = 0;
     w._activeMove = null; w._choreoUntil = 0; w._groundHandoff = null; w._sell = null; w._hold = null;
     w._sellArtInterrupted = null; w._sellArtSelection = null; w.skeleton.setPartVariants?.({}); w._gripLatch = null;
-    w._pain = null; w.stamina = 100; w.combatBlend = 0; w.moveBlend = 0;
+    w._pain = null; w.stamina = 100; w.combatBlend = 0; w.moveBlend = gait ? 1 : 0; w.walkPhase = gait ? 1.3 : 0;
     // The pose a real suplex receiver carries to the rise: measured live (aftermath_film.mjs, Lou receiving,
     // 2026-10-24: this.pose at the last rising frame). `pose: 'idle'` is a rested wrestler instead.
     Object.assign(w.pose, pose === 'idle'
@@ -161,11 +163,12 @@ export async function probeRig(rig, flagName, { shots = null, facings = [-1, 1],
                 if (swapAt !== null && i - swapAt >= POST - 1) break;
             }
             if (swapAt === null || swapAt === 0) { cases.push({ ...c, facing, opp, error: `no swap (swapAt ${swapAt})` }); continue; }
+            const standErr = await page.evaluate(() => window.__rw.skeleton._standCache?.value?.errPx ?? null);
             const last = frames[swapAt - 1], prev = frames[swapAt - 2], first = frames[swapAt];
             const standing = frames.slice(swapAt, swapAt + POST);
             const turned = last.facing !== first.facing, mx = turned ? last.x : null;
             cases.push({
-                ...c, facing, opp, turned, pain: begin.pain, swapStep: swapAt, riseFrames: swapAt,
+                ...c, facing, opp, turned, pain: begin.pain, standErrPx: standErr === null ? null : +standErr.toFixed(2), swapStep: swapAt, riseFrames: swapAt,
                 lastRising: last, standing: standing.map((f, k) => k < 1 ? f : { ...f, parts: undefined }),
                 // swap = raw step the player sees; swapPose = the same with the facing mirror taken out (== swap when no turn)
                 swapPose: { parts: partSteps(last, first, mx), points: pointSteps(last, first, mx) },

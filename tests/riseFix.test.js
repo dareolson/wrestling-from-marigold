@@ -134,6 +134,7 @@ test('?risefix=1: both rises hand the first standing frame REST_POSE, a gait at 
         assert.equal(w.state, 'standing');
         for (const [k, v] of Object.entries(REST_POSE)) near(w.pose[k], v, 1e-12, `${kind} ${k}`);
         assert.equal(w.moveBlend, 0);
+        assert.equal(w.walkPhase, 0);
         assert.equal(w._riseSwapAt, 1234);
     }
 });

@@ -7380,6 +7380,1482 @@
   }
  },
  {
+  "rig": "thesz-procreate-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "front",
+  "turned": false,
+  "painted": true,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 143.76999999999998,
+   "finalHip": 88,
+   "s": 0.6308686631016043,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 16.6,
+   "farShoulder": 16.6,
+   "farWrist": 41.92,
+   "head": 16.6,
+   "maxPart": 43.66,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.6
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     43.7
+    ],
+    [
+     "farShin",
+     38.7
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     32.3
+    ],
+    [
+     "farThigh",
+     24.5
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 16.6,
+   "farShoulder": 16.6,
+   "farWrist": 41.92,
+   "head": 16.6,
+   "maxPart": 43.66,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.6
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     43.7
+    ],
+    [
+     "farShin",
+     38.7
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     32.3
+    ],
+    [
+     "farThigh",
+     24.5
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 11.37,
+   "farShoulder": 11.37,
+   "farWrist": 11.37,
+   "head": 11.37,
+   "maxPart": 54.67,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.37
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.7
+    ],
+    [
+     "nearShin",
+     48.6
+    ],
+    [
+     "farThigh",
+     20.2
+    ],
+    [
+     "nearThigh",
+     11.7
+    ],
+    [
+     "farUpArm",
+     11.4
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.91,
+   "head": 0,
+   "maxPart": 3.15,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.1
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "nearUpArm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.72,
+   "farShoulder": 11.72,
+   "farWrist": 20.37,
+   "head": 11.72,
+   "maxPart": 54.35,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.72
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.3
+    ],
+    [
+     "nearForearm",
+     29.4
+    ],
+    [
+     "nearShin",
+     24.2
+    ],
+    [
+     "farForearm",
+     23.1
+    ],
+    [
+     "farThigh",
+     17.6
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 16.95,
+   "farShoulder": 16.95,
+   "farWrist": 50.1,
+   "head": 16.95,
+   "maxPart": 52.93,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.95
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     52.9
+    ],
+    [
+     "nearShin",
+     42.4
+    ],
+    [
+     "farShin",
+     28.8
+    ],
+    [
+     "nearThigh",
+     27.7
+    ],
+    [
+     "nearForearm",
+     24.5
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 35.18,
+   "farShoulder": 35.18,
+   "farWrist": 35.18,
+   "head": 35.18,
+   "maxPart": 35.18,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 35.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     35.2
+    ],
+    [
+     "farShin",
+     35.2
+    ],
+    [
+     "farUpArm",
+     35.2
+    ],
+    [
+     "farForearm",
+     35.2
+    ],
+    [
+     "torso",
+     35.2
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.35,
+   "farShoulder": 0.35,
+   "farWrist": 8.67,
+   "head": 0.35,
+   "maxPart": 25.88,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.35
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     25.9
+    ],
+    [
+     "farShin",
+     24.1
+    ],
+    [
+     "farThigh",
+     23.5
+    ],
+    [
+     "nearForearm",
+     20.1
+    ],
+    [
+     "farForearm",
+     11
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz-procreate-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "behind",
+  "turned": true,
+  "painted": true,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 143.76999999999998,
+   "finalHip": 88,
+   "s": 0.6308686631016043,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 35.34,
+   "farShoulder": 24.31,
+   "farWrist": 69.85,
+   "head": 16.88,
+   "maxPart": 67.72,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.6
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     67.7
+    ],
+    [
+     "nearUpArm",
+     44.5
+    ],
+    [
+     "nearForearm",
+     42.2
+    ],
+    [
+     "farUpArm",
+     41.6
+    ],
+    [
+     "farShin",
+     36.8
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 16.6,
+   "farShoulder": 16.6,
+   "farWrist": 41.92,
+   "head": 16.6,
+   "maxPart": 43.66,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.6
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     43.7
+    ],
+    [
+     "farShin",
+     38.7
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     32.3
+    ],
+    [
+     "farThigh",
+     24.5
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 11.37,
+   "farShoulder": 11.37,
+   "farWrist": 11.37,
+   "head": 11.37,
+   "maxPart": 54.67,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.37
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.7
+    ],
+    [
+     "nearShin",
+     48.6
+    ],
+    [
+     "farThigh",
+     20.2
+    ],
+    [
+     "nearThigh",
+     11.7
+    ],
+    [
+     "farUpArm",
+     11.4
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.91,
+   "head": 0,
+   "maxPart": 3.15,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.1
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "nearUpArm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.72,
+   "farShoulder": 11.72,
+   "farWrist": 20.37,
+   "head": 11.72,
+   "maxPart": 54.35,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.72
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.3
+    ],
+    [
+     "nearForearm",
+     29.4
+    ],
+    [
+     "nearShin",
+     24.2
+    ],
+    [
+     "farForearm",
+     23.1
+    ],
+    [
+     "farThigh",
+     17.6
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 16.95,
+   "farShoulder": 16.95,
+   "farWrist": 50.1,
+   "head": 16.95,
+   "maxPart": 52.93,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.95
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     52.9
+    ],
+    [
+     "nearShin",
+     42.4
+    ],
+    [
+     "farShin",
+     28.8
+    ],
+    [
+     "nearThigh",
+     27.7
+    ],
+    [
+     "nearForearm",
+     24.5
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 35.18,
+   "farShoulder": 35.18,
+   "farWrist": 35.18,
+   "head": 35.18,
+   "maxPart": 35.18,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 35.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     35.2
+    ],
+    [
+     "farShin",
+     35.2
+    ],
+    [
+     "farUpArm",
+     35.2
+    ],
+    [
+     "farForearm",
+     35.2
+    ],
+    [
+     "torso",
+     35.2
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.35,
+   "farShoulder": 0.35,
+   "farWrist": 8.67,
+   "head": 0.35,
+   "maxPart": 25.88,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.35
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     25.9
+    ],
+    [
+     "farShin",
+     24.1
+    ],
+    [
+     "farThigh",
+     23.5
+    ],
+    [
+     "nearForearm",
+     20.1
+    ],
+    [
+     "farForearm",
+     11
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz-procreate-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "front",
+  "turned": false,
+  "painted": true,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 143.76999999999998,
+   "finalHip": 88,
+   "s": 0.6308686631016043,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 16.6,
+   "farShoulder": 16.6,
+   "farWrist": 41.92,
+   "head": 16.6,
+   "maxPart": 43.66,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.6
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     43.7
+    ],
+    [
+     "farShin",
+     38.7
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     32.4
+    ],
+    [
+     "farThigh",
+     24.5
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 16.6,
+   "farShoulder": 16.6,
+   "farWrist": 41.92,
+   "head": 16.6,
+   "maxPart": 43.66,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.6
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     43.7
+    ],
+    [
+     "farShin",
+     38.7
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     32.4
+    ],
+    [
+     "farThigh",
+     24.5
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 11.37,
+   "farShoulder": 11.37,
+   "farWrist": 11.37,
+   "head": 11.37,
+   "maxPart": 54.67,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.37
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.7
+    ],
+    [
+     "nearShin",
+     48.6
+    ],
+    [
+     "farThigh",
+     20.2
+    ],
+    [
+     "nearThigh",
+     11.7
+    ],
+    [
+     "farUpArm",
+     11.4
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.91,
+   "head": 0,
+   "maxPart": 3.15,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.1
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "nearUpArm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.72,
+   "farShoulder": 11.72,
+   "farWrist": 20.37,
+   "head": 11.72,
+   "maxPart": 54.35,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.72
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.3
+    ],
+    [
+     "nearForearm",
+     29.4
+    ],
+    [
+     "nearShin",
+     24.2
+    ],
+    [
+     "farForearm",
+     23.1
+    ],
+    [
+     "farThigh",
+     17.6
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 16.95,
+   "farShoulder": 16.95,
+   "farWrist": 50.1,
+   "head": 16.95,
+   "maxPart": 52.93,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.95
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     52.9
+    ],
+    [
+     "nearShin",
+     42.4
+    ],
+    [
+     "farShin",
+     28.8
+    ],
+    [
+     "nearThigh",
+     27.7
+    ],
+    [
+     "nearForearm",
+     24.5
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 35.18,
+   "farShoulder": 35.18,
+   "farWrist": 35.18,
+   "head": 35.18,
+   "maxPart": 35.18,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 35.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     35.2
+    ],
+    [
+     "farShin",
+     35.2
+    ],
+    [
+     "farUpArm",
+     35.2
+    ],
+    [
+     "farForearm",
+     35.2
+    ],
+    [
+     "torso",
+     35.2
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.35,
+   "farShoulder": 0.35,
+   "farWrist": 8.67,
+   "head": 0.35,
+   "maxPart": 25.88,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.35
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     25.9
+    ],
+    [
+     "farShin",
+     24.1
+    ],
+    [
+     "farThigh",
+     23.5
+    ],
+    [
+     "nearForearm",
+     20.1
+    ],
+    [
+     "farForearm",
+     11
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz-procreate-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "behind",
+  "turned": true,
+  "painted": true,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 143.76999999999998,
+   "finalHip": 88,
+   "s": 0.6308686631016043,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 35.34,
+   "farShoulder": 24.31,
+   "farWrist": 69.85,
+   "head": 16.88,
+   "maxPart": 67.72,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.6
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     67.7
+    ],
+    [
+     "nearUpArm",
+     44.5
+    ],
+    [
+     "nearForearm",
+     42.2
+    ],
+    [
+     "farUpArm",
+     41.6
+    ],
+    [
+     "farShin",
+     36.8
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 16.6,
+   "farShoulder": 16.6,
+   "farWrist": 41.92,
+   "head": 16.6,
+   "maxPart": 43.66,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.6
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     43.7
+    ],
+    [
+     "farShin",
+     38.7
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     32.4
+    ],
+    [
+     "farThigh",
+     24.5
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 11.37,
+   "farShoulder": 11.37,
+   "farWrist": 11.37,
+   "head": 11.37,
+   "maxPart": 54.67,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.37
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.7
+    ],
+    [
+     "nearShin",
+     48.6
+    ],
+    [
+     "farThigh",
+     20.2
+    ],
+    [
+     "nearThigh",
+     11.7
+    ],
+    [
+     "farUpArm",
+     11.4
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.91,
+   "head": 0,
+   "maxPart": 3.15,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.1
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "nearUpArm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.72,
+   "farShoulder": 11.72,
+   "farWrist": 20.37,
+   "head": 11.72,
+   "maxPart": 54.35,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.72
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.3
+    ],
+    [
+     "nearForearm",
+     29.4
+    ],
+    [
+     "nearShin",
+     24.2
+    ],
+    [
+     "farForearm",
+     23.1
+    ],
+    [
+     "farThigh",
+     17.6
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 16.95,
+   "farShoulder": 16.95,
+   "farWrist": 50.1,
+   "head": 16.95,
+   "maxPart": 52.93,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -16.95
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     52.9
+    ],
+    [
+     "nearShin",
+     42.4
+    ],
+    [
+     "farShin",
+     28.8
+    ],
+    [
+     "nearThigh",
+     27.7
+    ],
+    [
+     "nearForearm",
+     24.5
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 35.18,
+   "farShoulder": 35.18,
+   "farWrist": 35.18,
+   "head": 35.18,
+   "maxPart": 35.18,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 35.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     35.2
+    ],
+    [
+     "farShin",
+     35.2
+    ],
+    [
+     "farUpArm",
+     35.2
+    ],
+    [
+     "farForearm",
+     35.2
+    ],
+    [
+     "torso",
+     35.2
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.35,
+   "farShoulder": 0.35,
+   "farWrist": 8.67,
+   "head": 0.35,
+   "maxPart": 25.88,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.35
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     25.9
+    ],
+    [
+     "farShin",
+     24.1
+    ],
+    [
+     "farThigh",
+     23.5
+    ],
+    [
+     "nearForearm",
+     20.1
+    ],
+    [
+     "farForearm",
+     11
+    ]
+   ]
+  }
+ },
+ {
   "rig": "george-roster-v1",
   "flags": "default",
   "case": "supine-pain",
@@ -14755,6 +16231,1482 @@
     [
      "farThigh",
      20.5
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "george-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 122.58617322957002,
+   "finalHip": 88,
+   "s": 0.8074432727272728,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 8.23,
+   "farShoulder": 8.23,
+   "farWrist": 22.2,
+   "head": 8.23,
+   "maxPart": 36.11,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.23
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     36.1
+    ],
+    [
+     "farForearm",
+     35.3
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     20.7
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 8.23,
+   "farShoulder": 8.23,
+   "farWrist": 22.2,
+   "head": 8.23,
+   "maxPart": 36.11,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.23
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     36.1
+    ],
+    [
+     "farForearm",
+     35.3
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     20.7
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 8.84,
+   "farShoulder": 8.84,
+   "farWrist": 8.84,
+   "head": 8.84,
+   "maxPart": 45.08,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.84
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     45.1
+    ],
+    [
+     "farShin",
+     40.1
+    ],
+    [
+     "farThigh",
+     19.3
+    ],
+    [
+     "nearThigh",
+     17.7
+    ],
+    [
+     "farUpArm",
+     8.8
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.52,
+   "head": 0,
+   "maxPart": 3.62,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.6
+    ],
+    [
+     "farForearm",
+     1.2
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.26,
+   "farShoulder": 12.26,
+   "farWrist": 15.53,
+   "head": 12.26,
+   "maxPart": 50.01,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.26
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     50
+    ],
+    [
+     "nearForearm",
+     29.5
+    ],
+    [
+     "farForearm",
+     26.8
+    ],
+    [
+     "nearShin",
+     25.3
+    ],
+    [
+     "farThigh",
+     19.2
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 4.82,
+   "farShoulder": 4.82,
+   "farWrist": 23.33,
+   "head": 4.81,
+   "maxPart": 34.71,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.82
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     34.7
+    ],
+    [
+     "nearShin",
+     31.8
+    ],
+    [
+     "farShin",
+     19.7
+    ],
+    [
+     "nearThigh",
+     18.2
+    ],
+    [
+     "nearForearm",
+     16.5
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 27.93,
+   "farShoulder": 27.93,
+   "farWrist": 27.93,
+   "head": 27.93,
+   "maxPart": 27.93,
+   "maxPartName": "nearThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 27.93
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     27.9
+    ],
+    [
+     "farShin",
+     27.9
+    ],
+    [
+     "farUpArm",
+     27.9
+    ],
+    [
+     "farForearm",
+     27.9
+    ],
+    [
+     "torso",
+     27.9
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.42,
+   "farShoulder": 3.42,
+   "farWrist": 6.33,
+   "head": 3.42,
+   "maxPart": 30.06,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.42
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     30.1
+    ],
+    [
+     "farShin",
+     28.2
+    ],
+    [
+     "nearForearm",
+     28.2
+    ],
+    [
+     "farThigh",
+     24.8
+    ],
+    [
+     "nearThigh",
+     17.3
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "george-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 122.58617322957002,
+   "finalHip": 88,
+   "s": 0.8074432727272728,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 8.99,
+   "farShoulder": 14.46,
+   "farWrist": 45.03,
+   "head": 9.62,
+   "maxPart": 53.69,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.23
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     53.7
+    ],
+    [
+     "nearUpArm",
+     39.6
+    ],
+    [
+     "nearForearm",
+     39
+    ],
+    [
+     "farShin",
+     34.1
+    ],
+    [
+     "farUpArm",
+     32.2
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 8.23,
+   "farShoulder": 8.23,
+   "farWrist": 22.2,
+   "head": 8.23,
+   "maxPart": 36.11,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.23
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     36.1
+    ],
+    [
+     "farForearm",
+     35.3
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     20.7
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 8.84,
+   "farShoulder": 8.84,
+   "farWrist": 8.84,
+   "head": 8.84,
+   "maxPart": 45.08,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.84
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     45.1
+    ],
+    [
+     "farShin",
+     40.1
+    ],
+    [
+     "farThigh",
+     19.3
+    ],
+    [
+     "nearThigh",
+     17.7
+    ],
+    [
+     "farUpArm",
+     8.8
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.52,
+   "head": 0,
+   "maxPart": 3.62,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.6
+    ],
+    [
+     "farForearm",
+     1.2
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.26,
+   "farShoulder": 12.26,
+   "farWrist": 15.53,
+   "head": 12.26,
+   "maxPart": 50.01,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.26
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     50
+    ],
+    [
+     "nearForearm",
+     29.5
+    ],
+    [
+     "farForearm",
+     26.8
+    ],
+    [
+     "nearShin",
+     25.3
+    ],
+    [
+     "farThigh",
+     19.2
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 4.82,
+   "farShoulder": 4.82,
+   "farWrist": 23.33,
+   "head": 4.81,
+   "maxPart": 34.71,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.82
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     34.7
+    ],
+    [
+     "nearShin",
+     31.8
+    ],
+    [
+     "farShin",
+     19.7
+    ],
+    [
+     "nearThigh",
+     18.2
+    ],
+    [
+     "nearForearm",
+     16.5
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 27.93,
+   "farShoulder": 27.93,
+   "farWrist": 27.93,
+   "head": 27.93,
+   "maxPart": 27.93,
+   "maxPartName": "nearThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 27.93
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     27.9
+    ],
+    [
+     "farShin",
+     27.9
+    ],
+    [
+     "farUpArm",
+     27.9
+    ],
+    [
+     "farForearm",
+     27.9
+    ],
+    [
+     "torso",
+     27.9
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.42,
+   "farShoulder": 3.42,
+   "farWrist": 6.33,
+   "head": 3.42,
+   "maxPart": 30.06,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.42
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     30.1
+    ],
+    [
+     "farShin",
+     28.2
+    ],
+    [
+     "nearForearm",
+     28.2
+    ],
+    [
+     "farThigh",
+     24.8
+    ],
+    [
+     "nearThigh",
+     17.3
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "george-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 122.58617322957002,
+   "finalHip": 88,
+   "s": 0.8074432727272728,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 8.23,
+   "farShoulder": 8.23,
+   "farWrist": 22.2,
+   "head": 8.23,
+   "maxPart": 36.12,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.23
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     36.1
+    ],
+    [
+     "farForearm",
+     35.3
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     20.7
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 8.23,
+   "farShoulder": 8.23,
+   "farWrist": 22.2,
+   "head": 8.23,
+   "maxPart": 36.12,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.23
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     36.1
+    ],
+    [
+     "farForearm",
+     35.3
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     20.7
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 8.84,
+   "farShoulder": 8.84,
+   "farWrist": 8.84,
+   "head": 8.84,
+   "maxPart": 45.08,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.84
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     45.1
+    ],
+    [
+     "farShin",
+     40.1
+    ],
+    [
+     "farThigh",
+     19.3
+    ],
+    [
+     "nearThigh",
+     17.7
+    ],
+    [
+     "farUpArm",
+     8.8
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.52,
+   "head": 0,
+   "maxPart": 3.62,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.6
+    ],
+    [
+     "farForearm",
+     1.2
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.26,
+   "farShoulder": 12.26,
+   "farWrist": 15.53,
+   "head": 12.26,
+   "maxPart": 50.01,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.26
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     50
+    ],
+    [
+     "nearForearm",
+     29.5
+    ],
+    [
+     "farForearm",
+     26.8
+    ],
+    [
+     "nearShin",
+     25.3
+    ],
+    [
+     "farThigh",
+     19.2
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 4.82,
+   "farShoulder": 4.82,
+   "farWrist": 23.33,
+   "head": 4.81,
+   "maxPart": 34.71,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.82
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     34.7
+    ],
+    [
+     "nearShin",
+     31.8
+    ],
+    [
+     "farShin",
+     19.7
+    ],
+    [
+     "nearThigh",
+     18.2
+    ],
+    [
+     "nearForearm",
+     16.5
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 27.93,
+   "farShoulder": 27.93,
+   "farWrist": 27.93,
+   "head": 27.93,
+   "maxPart": 27.93,
+   "maxPartName": "nearThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 27.93
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     27.9
+    ],
+    [
+     "farShin",
+     27.9
+    ],
+    [
+     "farUpArm",
+     27.9
+    ],
+    [
+     "farForearm",
+     27.9
+    ],
+    [
+     "torso",
+     27.9
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.42,
+   "farShoulder": 3.42,
+   "farWrist": 6.33,
+   "head": 3.42,
+   "maxPart": 30.06,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.42
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     30.1
+    ],
+    [
+     "farShin",
+     28.2
+    ],
+    [
+     "nearForearm",
+     28.2
+    ],
+    [
+     "farThigh",
+     24.8
+    ],
+    [
+     "nearThigh",
+     17.3
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "george-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 122.58617322957002,
+   "finalHip": 88,
+   "s": 0.8074432727272728,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 8.99,
+   "farShoulder": 14.46,
+   "farWrist": 45.03,
+   "head": 9.62,
+   "maxPart": 53.69,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.23
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     53.7
+    ],
+    [
+     "nearUpArm",
+     39.6
+    ],
+    [
+     "nearForearm",
+     39
+    ],
+    [
+     "farShin",
+     34.1
+    ],
+    [
+     "farUpArm",
+     32.2
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 8.23,
+   "farShoulder": 8.23,
+   "farWrist": 22.2,
+   "head": 8.23,
+   "maxPart": 36.12,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.23
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     36.1
+    ],
+    [
+     "farForearm",
+     35.3
+    ],
+    [
+     "nearThigh",
+     35
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     20.7
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 8.84,
+   "farShoulder": 8.84,
+   "farWrist": 8.84,
+   "head": 8.84,
+   "maxPart": 45.08,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 8.84
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     45.1
+    ],
+    [
+     "farShin",
+     40.1
+    ],
+    [
+     "farThigh",
+     19.3
+    ],
+    [
+     "nearThigh",
+     17.7
+    ],
+    [
+     "farUpArm",
+     8.8
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.52,
+   "head": 0,
+   "maxPart": 3.62,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.6
+    ],
+    [
+     "farForearm",
+     1.2
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.26,
+   "farShoulder": 12.26,
+   "farWrist": 15.53,
+   "head": 12.26,
+   "maxPart": 50.01,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.26
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     50
+    ],
+    [
+     "nearForearm",
+     29.5
+    ],
+    [
+     "farForearm",
+     26.8
+    ],
+    [
+     "nearShin",
+     25.3
+    ],
+    [
+     "farThigh",
+     19.2
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 4.82,
+   "farShoulder": 4.82,
+   "farWrist": 23.33,
+   "head": 4.81,
+   "maxPart": 34.71,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.82
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     34.7
+    ],
+    [
+     "nearShin",
+     31.8
+    ],
+    [
+     "farShin",
+     19.7
+    ],
+    [
+     "nearThigh",
+     18.2
+    ],
+    [
+     "nearForearm",
+     16.5
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 27.93,
+   "farShoulder": 27.93,
+   "farWrist": 27.93,
+   "head": 27.93,
+   "maxPart": 27.93,
+   "maxPartName": "nearThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 27.93
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     27.9
+    ],
+    [
+     "farShin",
+     27.9
+    ],
+    [
+     "farUpArm",
+     27.9
+    ],
+    [
+     "farForearm",
+     27.9
+    ],
+    [
+     "torso",
+     27.9
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.42,
+   "farShoulder": 3.42,
+   "farWrist": 6.33,
+   "head": 3.42,
+   "maxPart": 30.06,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.42
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     30.1
+    ],
+    [
+     "farShin",
+     28.2
+    ],
+    [
+     "nearForearm",
+     28.2
+    ],
+    [
+     "farThigh",
+     24.8
+    ],
+    [
+     "nearThigh",
+     17.3
     ]
    ]
   }
@@ -22140,6 +25092,1482 @@
   }
  },
  {
+  "rig": "thesz",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 124,
+   "finalHip": 88,
+   "s": 0.699724064171123,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 3.88,
+   "farShoulder": 17.3,
+   "farWrist": 24.32,
+   "head": 8.32,
+   "maxPart": 34.8,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     34.8
+    ],
+    [
+     "nearForearm",
+     25.6
+    ],
+    [
+     "nearUpArm",
+     25.5
+    ],
+    [
+     "farUpArm",
+     23.4
+    ],
+    [
+     "farForearm",
+     21.5
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 3.88,
+   "farShoulder": 17.3,
+   "farWrist": 24.32,
+   "head": 8.32,
+   "maxPart": 34.8,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     34.8
+    ],
+    [
+     "nearForearm",
+     25.6
+    ],
+    [
+     "nearUpArm",
+     25.5
+    ],
+    [
+     "farUpArm",
+     23.4
+    ],
+    [
+     "farForearm",
+     21.5
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 3.88,
+   "head": 3.88,
+   "maxPart": 57.73,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     57.7
+    ],
+    [
+     "nearShin",
+     36.4
+    ],
+    [
+     "nearThigh",
+     17.4
+    ],
+    [
+     "farThigh",
+     12.5
+    ],
+    [
+     "farUpArm",
+     3.9
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 3.02,
+   "head": 0,
+   "maxPart": 2.67,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     2.7
+    ],
+    [
+     "farUpArm",
+     1.2
+    ],
+    [
+     "nearForearm",
+     1.1
+    ],
+    [
+     "nearUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 18.56,
+   "head": 0,
+   "maxPart": 53.23,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     53.2
+    ],
+    [
+     "farShin",
+     23.1
+    ],
+    [
+     "farForearm",
+     15.3
+    ],
+    [
+     "nearForearm",
+     10.3
+    ],
+    [
+     "nearThigh",
+     9.2
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 0,
+   "farShoulder": 13.46,
+   "farWrist": 9.21,
+   "head": 4.58,
+   "maxPart": 33.65,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     33.6
+    ],
+    [
+     "nearShin",
+     31.4
+    ],
+    [
+     "nearForearm",
+     30.4
+    ],
+    [
+     "nearUpArm",
+     24.2
+    ],
+    [
+     "nearThigh",
+     23.8
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 25.19,
+   "farShoulder": 25.19,
+   "farWrist": 25.19,
+   "head": 25.19,
+   "maxPart": 25.19,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 25.19
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     25.2
+    ],
+    [
+     "farShin",
+     25.2
+    ],
+    [
+     "farUpArm",
+     25.2
+    ],
+    [
+     "farForearm",
+     25.2
+    ],
+    [
+     "torso",
+     25.2
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 17.19,
+   "head": 3.88,
+   "maxPart": 55.53,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     55.5
+    ],
+    [
+     "nearThigh",
+     25.7
+    ],
+    [
+     "nearShin",
+     21.3
+    ],
+    [
+     "farForearm",
+     15.8
+    ],
+    [
+     "nearForearm",
+     13.3
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 124,
+   "finalHip": 88,
+   "s": 0.699724064171123,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 3.88,
+   "farShoulder": 17.3,
+   "farWrist": 59.75,
+   "head": 10.9,
+   "maxPart": 50.05,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     50
+    ],
+    [
+     "farShin",
+     38.1
+    ],
+    [
+     "farUpArm",
+     28.1
+    ],
+    [
+     "nearUpArm",
+     28
+    ],
+    [
+     "nearForearm",
+     26.3
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 3.88,
+   "farShoulder": 17.3,
+   "farWrist": 40.27,
+   "head": 8.32,
+   "maxPart": 35.37,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     35.4
+    ],
+    [
+     "farShin",
+     34.8
+    ],
+    [
+     "farForearm",
+     33
+    ],
+    [
+     "nearUpArm",
+     31.2
+    ],
+    [
+     "farUpArm",
+     24.9
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 3.88,
+   "head": 3.88,
+   "maxPart": 46.87,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     46.9
+    ],
+    [
+     "farShin",
+     44.5
+    ],
+    [
+     "farThigh",
+     14.2
+    ],
+    [
+     "nearThigh",
+     8.8
+    ],
+    [
+     "farUpArm",
+     3.9
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 1.09,
+   "head": 0,
+   "maxPart": 3.14,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.1
+    ],
+    [
+     "nearUpArm",
+     1.4
+    ],
+    [
+     "farForearm",
+     0.9
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 9.84,
+   "head": 0,
+   "maxPart": 53.23,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     53.2
+    ],
+    [
+     "nearShin",
+     23.1
+    ],
+    [
+     "nearForearm",
+     18
+    ],
+    [
+     "farThigh",
+     9.2
+    ],
+    [
+     "farForearm",
+     8.8
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 0,
+   "farShoulder": 13.46,
+   "farWrist": 44.78,
+   "head": 4.58,
+   "maxPart": 34.46,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     34.5
+    ],
+    [
+     "nearUpArm",
+     33.4
+    ],
+    [
+     "nearForearm",
+     33.3
+    ],
+    [
+     "farUpArm",
+     22.5
+    ],
+    [
+     "nearShin",
+     20.3
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 25.19,
+   "farShoulder": 25.19,
+   "farWrist": 25.19,
+   "head": 25.19,
+   "maxPart": 25.19,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 25.19
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     25.2
+    ],
+    [
+     "farShin",
+     25.2
+    ],
+    [
+     "farUpArm",
+     25.2
+    ],
+    [
+     "farForearm",
+     25.2
+    ],
+    [
+     "torso",
+     25.2
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 12.57,
+   "head": 3.88,
+   "maxPart": 27.16,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     27.2
+    ],
+    [
+     "farThigh",
+     22.5
+    ],
+    [
+     "farShin",
+     19.4
+    ],
+    [
+     "nearForearm",
+     18.1
+    ],
+    [
+     "farForearm",
+     11.9
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 124,
+   "finalHip": 88,
+   "s": 0.699724064171123,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 3.88,
+   "farShoulder": 17.3,
+   "farWrist": 40.27,
+   "head": 8.32,
+   "maxPart": 35.37,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     35.4
+    ],
+    [
+     "farShin",
+     34.8
+    ],
+    [
+     "farForearm",
+     33
+    ],
+    [
+     "nearUpArm",
+     31.2
+    ],
+    [
+     "farUpArm",
+     24.9
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 3.88,
+   "farShoulder": 17.3,
+   "farWrist": 40.27,
+   "head": 8.32,
+   "maxPart": 35.37,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     35.4
+    ],
+    [
+     "farShin",
+     34.8
+    ],
+    [
+     "farForearm",
+     33
+    ],
+    [
+     "nearUpArm",
+     31.2
+    ],
+    [
+     "farUpArm",
+     24.9
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 3.88,
+   "head": 3.88,
+   "maxPart": 46.87,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     46.9
+    ],
+    [
+     "farShin",
+     44.5
+    ],
+    [
+     "farThigh",
+     14.2
+    ],
+    [
+     "nearThigh",
+     8.8
+    ],
+    [
+     "farUpArm",
+     3.9
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 1.09,
+   "head": 0,
+   "maxPart": 3.14,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.1
+    ],
+    [
+     "nearUpArm",
+     1.4
+    ],
+    [
+     "farForearm",
+     0.9
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 9.84,
+   "head": 0,
+   "maxPart": 53.23,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     53.2
+    ],
+    [
+     "nearShin",
+     23.1
+    ],
+    [
+     "nearForearm",
+     18
+    ],
+    [
+     "farThigh",
+     9.2
+    ],
+    [
+     "farForearm",
+     8.8
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 0,
+   "farShoulder": 13.46,
+   "farWrist": 44.78,
+   "head": 4.58,
+   "maxPart": 34.46,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     34.5
+    ],
+    [
+     "nearUpArm",
+     33.4
+    ],
+    [
+     "nearForearm",
+     33.3
+    ],
+    [
+     "farUpArm",
+     22.5
+    ],
+    [
+     "nearShin",
+     20.3
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 25.19,
+   "farShoulder": 25.19,
+   "farWrist": 25.19,
+   "head": 25.19,
+   "maxPart": 25.19,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 25.19
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     25.2
+    ],
+    [
+     "farShin",
+     25.2
+    ],
+    [
+     "farUpArm",
+     25.2
+    ],
+    [
+     "farForearm",
+     25.2
+    ],
+    [
+     "torso",
+     25.2
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 12.57,
+   "head": 3.88,
+   "maxPart": 27.16,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     27.2
+    ],
+    [
+     "farThigh",
+     22.5
+    ],
+    [
+     "farShin",
+     19.4
+    ],
+    [
+     "nearForearm",
+     18.1
+    ],
+    [
+     "farForearm",
+     11.9
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 124,
+   "finalHip": 88,
+   "s": 0.699724064171123,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 3.88,
+   "farShoulder": 17.3,
+   "farWrist": 17.19,
+   "head": 10.89,
+   "maxPart": 39.2,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     39.2
+    ],
+    [
+     "farShin",
+     38.1
+    ],
+    [
+     "nearUpArm",
+     27.2
+    ],
+    [
+     "nearShin",
+     22.4
+    ],
+    [
+     "farThigh",
+     20.9
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 3.88,
+   "farShoulder": 17.3,
+   "farWrist": 24.32,
+   "head": 8.32,
+   "maxPart": 34.8,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     34.8
+    ],
+    [
+     "nearForearm",
+     25.6
+    ],
+    [
+     "nearUpArm",
+     25.5
+    ],
+    [
+     "farUpArm",
+     23.4
+    ],
+    [
+     "farForearm",
+     21.5
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 3.88,
+   "head": 3.88,
+   "maxPart": 57.73,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     57.7
+    ],
+    [
+     "nearShin",
+     36.4
+    ],
+    [
+     "nearThigh",
+     17.4
+    ],
+    [
+     "farThigh",
+     12.5
+    ],
+    [
+     "farUpArm",
+     3.9
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 3.02,
+   "head": 0,
+   "maxPart": 2.67,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     2.7
+    ],
+    [
+     "farUpArm",
+     1.2
+    ],
+    [
+     "nearForearm",
+     1.1
+    ],
+    [
+     "nearUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 18.56,
+   "head": 0,
+   "maxPart": 53.23,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     53.2
+    ],
+    [
+     "farShin",
+     23.1
+    ],
+    [
+     "farForearm",
+     15.3
+    ],
+    [
+     "nearForearm",
+     10.3
+    ],
+    [
+     "nearThigh",
+     9.2
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 0,
+   "farShoulder": 13.46,
+   "farWrist": 9.21,
+   "head": 4.58,
+   "maxPart": 33.65,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     33.6
+    ],
+    [
+     "nearShin",
+     31.4
+    ],
+    [
+     "nearForearm",
+     30.4
+    ],
+    [
+     "nearUpArm",
+     24.2
+    ],
+    [
+     "nearThigh",
+     23.8
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 25.19,
+   "farShoulder": 25.19,
+   "farWrist": 25.19,
+   "head": 25.19,
+   "maxPart": 25.19,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 25.19
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     25.2
+    ],
+    [
+     "farShin",
+     25.2
+    ],
+    [
+     "farUpArm",
+     25.2
+    ],
+    [
+     "farForearm",
+     25.2
+    ],
+    [
+     "torso",
+     25.2
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 17.19,
+   "head": 3.88,
+   "maxPart": 55.53,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     55.5
+    ],
+    [
+     "nearThigh",
+     25.7
+    ],
+    [
+     "nearShin",
+     21.3
+    ],
+    [
+     "farForearm",
+     15.8
+    ],
+    [
+     "nearForearm",
+     13.3
+    ]
+   ]
+  }
+ },
+ {
   "rig": "george",
   "flags": "default",
   "case": "supine-pain",
@@ -29515,6 +33943,1482 @@
     [
      "nearUpArm",
      18.1
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "george",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 132.19,
+   "finalHip": 88,
+   "s": 0.658235294117647,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 1.86,
+   "farShoulder": 1.86,
+   "farWrist": 12.1,
+   "head": 1.86,
+   "maxPart": 51.22,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.86
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     51.2
+    ],
+    [
+     "farShin",
+     38.8
+    ],
+    [
+     "nearShin",
+     33.1
+    ],
+    [
+     "nearThigh",
+     26.1
+    ],
+    [
+     "nearUpArm",
+     22.5
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 1.86,
+   "farShoulder": 1.86,
+   "farWrist": 12.1,
+   "head": 1.86,
+   "maxPart": 51.22,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.86
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     51.2
+    ],
+    [
+     "farShin",
+     38.8
+    ],
+    [
+     "nearShin",
+     33.1
+    ],
+    [
+     "nearThigh",
+     26.1
+    ],
+    [
+     "nearUpArm",
+     22.5
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 10.27,
+   "farShoulder": 10.27,
+   "farWrist": 10.27,
+   "head": 10.27,
+   "maxPart": 42.98,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.27
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     43
+    ],
+    [
+     "farShin",
+     41.7
+    ],
+    [
+     "nearThigh",
+     31.2
+    ],
+    [
+     "farThigh",
+     14
+    ],
+    [
+     "farUpArm",
+     10.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 2.75,
+   "head": 0,
+   "maxPart": 3.15,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     3.1
+    ],
+    [
+     "nearForearm",
+     1.3
+    ],
+    [
+     "farUpArm",
+     1.1
+    ],
+    [
+     "nearUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.33,
+   "farShoulder": 11.33,
+   "farWrist": 22.46,
+   "head": 11.33,
+   "maxPart": 50.46,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     50.5
+    ],
+    [
+     "farForearm",
+     26.6
+    ],
+    [
+     "farShin",
+     24.9
+    ],
+    [
+     "nearForearm",
+     24.3
+    ],
+    [
+     "nearThigh",
+     17
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 2.92,
+   "farShoulder": 2.92,
+   "farWrist": 6.54,
+   "head": 2.92,
+   "maxPart": 49.98,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -2.92
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     50
+    ],
+    [
+     "farShin",
+     33.1
+    ],
+    [
+     "nearShin",
+     19.8
+    ],
+    [
+     "farThigh",
+     16.3
+    ],
+    [
+     "nearUpArm",
+     16.3
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 29.09,
+   "farShoulder": 29.09,
+   "farWrist": 29.09,
+   "head": 29.09,
+   "maxPart": 29.09,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 29.09
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     29.1
+    ],
+    [
+     "farShin",
+     29.1
+    ],
+    [
+     "farUpArm",
+     29.1
+    ],
+    [
+     "farForearm",
+     29.1
+    ],
+    [
+     "torso",
+     29.1
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "head",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 1.06,
+   "farShoulder": 1.06,
+   "farWrist": 14.97,
+   "head": 1.06,
+   "maxPart": 47.38,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.06
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     47.4
+    ],
+    [
+     "nearShin",
+     34.4
+    ],
+    [
+     "nearThigh",
+     33.8
+    ],
+    [
+     "farForearm",
+     19.7
+    ],
+    [
+     "nearForearm",
+     12.9
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "george",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 132.19,
+   "finalHip": 88,
+   "s": 0.658235294117647,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 6.66,
+   "farShoulder": 7.25,
+   "farWrist": 65.93,
+   "head": 17.81,
+   "maxPart": 58.59,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.86
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     58.6
+    ],
+    [
+     "nearForearm",
+     43.4
+    ],
+    [
+     "nearUpArm",
+     42.7
+    ],
+    [
+     "farShin",
+     41
+    ],
+    [
+     "farUpArm",
+     34.4
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 1.86,
+   "farShoulder": 1.86,
+   "farWrist": 44.99,
+   "head": 1.86,
+   "maxPart": 49.29,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.86
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     49.3
+    ],
+    [
+     "farShin",
+     38.8
+    ],
+    [
+     "nearShin",
+     33.1
+    ],
+    [
+     "nearThigh",
+     26.1
+    ],
+    [
+     "farUpArm",
+     25.4
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 10.27,
+   "farShoulder": 10.27,
+   "farWrist": 10.27,
+   "head": 10.27,
+   "maxPart": 48.98,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.27
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     49
+    ],
+    [
+     "farShin",
+     33.4
+    ],
+    [
+     "farThigh",
+     17.7
+    ],
+    [
+     "nearThigh",
+     13.2
+    ],
+    [
+     "farUpArm",
+     10.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.97,
+   "head": 0,
+   "maxPart": 3.55,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.6
+    ],
+    [
+     "nearUpArm",
+     1.3
+    ],
+    [
+     "farForearm",
+     1.2
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.33,
+   "farShoulder": 11.33,
+   "farWrist": 18.69,
+   "head": 11.33,
+   "maxPart": 50.46,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     50.5
+    ],
+    [
+     "nearForearm",
+     30.7
+    ],
+    [
+     "nearShin",
+     24.9
+    ],
+    [
+     "farForearm",
+     22.8
+    ],
+    [
+     "farThigh",
+     17
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 2.92,
+   "farShoulder": 2.92,
+   "farWrist": 50.7,
+   "head": 2.92,
+   "maxPart": 47.26,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -2.92
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     47.3
+    ],
+    [
+     "nearShin",
+     33.1
+    ],
+    [
+     "farUpArm",
+     20.4
+    ],
+    [
+     "farShin",
+     19.8
+    ],
+    [
+     "nearForearm",
+     18.7
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 29.09,
+   "farShoulder": 29.09,
+   "farWrist": 29.09,
+   "head": 29.09,
+   "maxPart": 29.09,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 29.09
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     29.1
+    ],
+    [
+     "farShin",
+     29.1
+    ],
+    [
+     "farUpArm",
+     29.1
+    ],
+    [
+     "farForearm",
+     29.1
+    ],
+    [
+     "torso",
+     29.1
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "head",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 1.06,
+   "farShoulder": 1.06,
+   "farWrist": 7.83,
+   "head": 1.06,
+   "maxPart": 34.27,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.06
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     34.3
+    ],
+    [
+     "farShin",
+     32.6
+    ],
+    [
+     "nearForearm",
+     21.5
+    ],
+    [
+     "farThigh",
+     20.5
+    ],
+    [
+     "farForearm",
+     11.5
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "george",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 132.19,
+   "finalHip": 88,
+   "s": 0.658235294117647,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 1.86,
+   "farShoulder": 1.86,
+   "farWrist": 44.99,
+   "head": 1.86,
+   "maxPart": 49.29,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.86
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     49.3
+    ],
+    [
+     "farShin",
+     38.8
+    ],
+    [
+     "nearShin",
+     33.1
+    ],
+    [
+     "nearThigh",
+     26.1
+    ],
+    [
+     "farUpArm",
+     25.4
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 1.86,
+   "farShoulder": 1.86,
+   "farWrist": 44.99,
+   "head": 1.86,
+   "maxPart": 49.29,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.86
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     49.3
+    ],
+    [
+     "farShin",
+     38.8
+    ],
+    [
+     "nearShin",
+     33.1
+    ],
+    [
+     "nearThigh",
+     26.1
+    ],
+    [
+     "farUpArm",
+     25.4
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 10.27,
+   "farShoulder": 10.27,
+   "farWrist": 10.27,
+   "head": 10.27,
+   "maxPart": 48.98,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.27
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     49
+    ],
+    [
+     "farShin",
+     33.4
+    ],
+    [
+     "farThigh",
+     17.7
+    ],
+    [
+     "nearThigh",
+     13.2
+    ],
+    [
+     "farUpArm",
+     10.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.97,
+   "head": 0,
+   "maxPart": 3.55,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.6
+    ],
+    [
+     "nearUpArm",
+     1.3
+    ],
+    [
+     "farForearm",
+     1.2
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.33,
+   "farShoulder": 11.33,
+   "farWrist": 18.69,
+   "head": 11.33,
+   "maxPart": 50.46,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     50.5
+    ],
+    [
+     "nearForearm",
+     30.7
+    ],
+    [
+     "nearShin",
+     24.9
+    ],
+    [
+     "farForearm",
+     22.8
+    ],
+    [
+     "farThigh",
+     17
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 2.92,
+   "farShoulder": 2.92,
+   "farWrist": 50.7,
+   "head": 2.92,
+   "maxPart": 47.26,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -2.92
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     47.3
+    ],
+    [
+     "nearShin",
+     33.1
+    ],
+    [
+     "farUpArm",
+     20.4
+    ],
+    [
+     "farShin",
+     19.8
+    ],
+    [
+     "nearForearm",
+     18.7
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 29.09,
+   "farShoulder": 29.09,
+   "farWrist": 29.09,
+   "head": 29.09,
+   "maxPart": 29.09,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 29.09
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     29.1
+    ],
+    [
+     "farShin",
+     29.1
+    ],
+    [
+     "farUpArm",
+     29.1
+    ],
+    [
+     "farForearm",
+     29.1
+    ],
+    [
+     "torso",
+     29.1
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "head",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 1.06,
+   "farShoulder": 1.06,
+   "farWrist": 7.83,
+   "head": 1.06,
+   "maxPart": 34.27,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.06
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     34.3
+    ],
+    [
+     "farShin",
+     32.6
+    ],
+    [
+     "nearForearm",
+     21.5
+    ],
+    [
+     "farThigh",
+     20.5
+    ],
+    [
+     "farForearm",
+     11.5
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "george",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 132.19,
+   "finalHip": 88,
+   "s": 0.658235294117647,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 6.66,
+   "farShoulder": 7.25,
+   "farWrist": 10.7,
+   "head": 17.81,
+   "maxPart": 41.04,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.86
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     41
+    ],
+    [
+     "nearUpArm",
+     35.7
+    ],
+    [
+     "nearForearm",
+     31.9
+    ],
+    [
+     "nearShin",
+     31.4
+    ],
+    [
+     "farThigh",
+     20.7
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 1.86,
+   "farShoulder": 1.86,
+   "farWrist": 12.1,
+   "head": 1.86,
+   "maxPart": 51.22,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.86
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     51.2
+    ],
+    [
+     "farShin",
+     38.8
+    ],
+    [
+     "nearShin",
+     33.1
+    ],
+    [
+     "nearThigh",
+     26.1
+    ],
+    [
+     "nearUpArm",
+     22.5
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 10.27,
+   "farShoulder": 10.27,
+   "farWrist": 10.27,
+   "head": 10.27,
+   "maxPart": 42.98,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.27
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     43
+    ],
+    [
+     "farShin",
+     41.7
+    ],
+    [
+     "nearThigh",
+     31.2
+    ],
+    [
+     "farThigh",
+     14
+    ],
+    [
+     "farUpArm",
+     10.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 2.75,
+   "head": 0,
+   "maxPart": 3.15,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     3.1
+    ],
+    [
+     "nearForearm",
+     1.3
+    ],
+    [
+     "farUpArm",
+     1.1
+    ],
+    [
+     "nearUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.33,
+   "farShoulder": 11.33,
+   "farWrist": 22.46,
+   "head": 11.33,
+   "maxPart": 50.46,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     50.5
+    ],
+    [
+     "farForearm",
+     26.6
+    ],
+    [
+     "farShin",
+     24.9
+    ],
+    [
+     "nearForearm",
+     24.3
+    ],
+    [
+     "nearThigh",
+     17
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 2.92,
+   "farShoulder": 2.92,
+   "farWrist": 6.54,
+   "head": 2.92,
+   "maxPart": 49.98,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -2.92
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     50
+    ],
+    [
+     "farShin",
+     33.1
+    ],
+    [
+     "nearShin",
+     19.8
+    ],
+    [
+     "farThigh",
+     16.3
+    ],
+    [
+     "nearUpArm",
+     16.3
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 29.09,
+   "farShoulder": 29.09,
+   "farWrist": 29.09,
+   "head": 29.09,
+   "maxPart": 29.09,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 29.09
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     29.1
+    ],
+    [
+     "farShin",
+     29.1
+    ],
+    [
+     "farUpArm",
+     29.1
+    ],
+    [
+     "farForearm",
+     29.1
+    ],
+    [
+     "torso",
+     29.1
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "head",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 1.06,
+   "farShoulder": 1.06,
+   "farWrist": 14.97,
+   "head": 1.06,
+   "maxPart": 47.38,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -1.06
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     47.4
+    ],
+    [
+     "nearShin",
+     34.4
+    ],
+    [
+     "nearThigh",
+     33.8
+    ],
+    [
+     "farForearm",
+     19.7
+    ],
+    [
+     "nearForearm",
+     12.9
     ]
    ]
   }
@@ -36900,6 +42804,1482 @@
   }
  },
  {
+  "rig": "thesz-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 134.49259674070896,
+   "finalHip": 88,
+   "s": 0.8658865882352941,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 14.17,
+   "farShoulder": 14.17,
+   "farWrist": 29.29,
+   "head": 14.17,
+   "maxPart": 35.8,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.17
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     35.8
+    ],
+    [
+     "nearThigh",
+     32.1
+    ],
+    [
+     "farForearm",
+     30.3
+    ],
+    [
+     "nearShin",
+     25.7
+    ],
+    [
+     "farUpArm",
+     24.3
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 14.17,
+   "farShoulder": 14.17,
+   "farWrist": 29.29,
+   "head": 14.17,
+   "maxPart": 35.8,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.17
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     35.8
+    ],
+    [
+     "nearThigh",
+     32.1
+    ],
+    [
+     "farForearm",
+     30.3
+    ],
+    [
+     "nearShin",
+     25.7
+    ],
+    [
+     "farUpArm",
+     24.3
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 11.57,
+   "farShoulder": 11.57,
+   "farWrist": 11.57,
+   "head": 11.57,
+   "maxPart": 54.39,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.57
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.4
+    ],
+    [
+     "nearShin",
+     46.2
+    ],
+    [
+     "farThigh",
+     22.6
+    ],
+    [
+     "nearThigh",
+     13.7
+    ],
+    [
+     "farUpArm",
+     11.6
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.91,
+   "head": 0,
+   "maxPart": 3.34,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.3
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.28,
+   "farShoulder": 12.28,
+   "farWrist": 20.97,
+   "head": 12.28,
+   "maxPart": 55.55,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.28
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     55.5
+    ],
+    [
+     "nearForearm",
+     33.2
+    ],
+    [
+     "nearShin",
+     26.3
+    ],
+    [
+     "farForearm",
+     25.6
+    ],
+    [
+     "farThigh",
+     19.1
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 13.47,
+   "farShoulder": 13.47,
+   "farWrist": 33.57,
+   "head": 13.47,
+   "maxPart": 36.87,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 13.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     36.9
+    ],
+    [
+     "nearShin",
+     36.9
+    ],
+    [
+     "farShin",
+     25.5
+    ],
+    [
+     "nearThigh",
+     23.8
+    ],
+    [
+     "nearUpArm",
+     23.1
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 40.26,
+   "farShoulder": 40.26,
+   "farWrist": 40.26,
+   "head": 40.26,
+   "maxPart": 40.26,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 40.26
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     40.3
+    ],
+    [
+     "farShin",
+     40.3
+    ],
+    [
+     "farUpArm",
+     40.3
+    ],
+    [
+     "farForearm",
+     40.3
+    ],
+    [
+     "torso",
+     40.3
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.7,
+   "farShoulder": 0.7,
+   "farWrist": 9.06,
+   "head": 0.7,
+   "maxPart": 29.03,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.7
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     29
+    ],
+    [
+     "nearShin",
+     26.5
+    ],
+    [
+     "farThigh",
+     25.5
+    ],
+    [
+     "nearForearm",
+     22.8
+    ],
+    [
+     "farForearm",
+     13.1
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 134.49259674070896,
+   "finalHip": 88,
+   "s": 0.8658865882352941,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 14.83,
+   "farShoulder": 24.87,
+   "farWrist": 65.3,
+   "head": 15.36,
+   "maxPart": 68.53,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.17
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     68.5
+    ],
+    [
+     "farUpArm",
+     40
+    ],
+    [
+     "nearUpArm",
+     39.6
+    ],
+    [
+     "farShin",
+     38.9
+    ],
+    [
+     "nearForearm",
+     38.1
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 14.17,
+   "farShoulder": 14.17,
+   "farWrist": 29.29,
+   "head": 14.17,
+   "maxPart": 35.8,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.17
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     35.8
+    ],
+    [
+     "nearThigh",
+     32.1
+    ],
+    [
+     "farForearm",
+     30.3
+    ],
+    [
+     "nearShin",
+     25.7
+    ],
+    [
+     "farUpArm",
+     24.3
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 11.57,
+   "farShoulder": 11.57,
+   "farWrist": 11.57,
+   "head": 11.57,
+   "maxPart": 54.39,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.57
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.4
+    ],
+    [
+     "nearShin",
+     46.2
+    ],
+    [
+     "farThigh",
+     22.6
+    ],
+    [
+     "nearThigh",
+     13.7
+    ],
+    [
+     "farUpArm",
+     11.6
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.91,
+   "head": 0,
+   "maxPart": 3.34,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.3
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.28,
+   "farShoulder": 12.28,
+   "farWrist": 20.97,
+   "head": 12.28,
+   "maxPart": 55.55,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.28
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     55.5
+    ],
+    [
+     "nearForearm",
+     33.2
+    ],
+    [
+     "nearShin",
+     26.3
+    ],
+    [
+     "farForearm",
+     25.6
+    ],
+    [
+     "farThigh",
+     19.1
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 13.47,
+   "farShoulder": 13.47,
+   "farWrist": 33.57,
+   "head": 13.47,
+   "maxPart": 36.87,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 13.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     36.9
+    ],
+    [
+     "nearShin",
+     36.9
+    ],
+    [
+     "farShin",
+     25.5
+    ],
+    [
+     "nearThigh",
+     23.8
+    ],
+    [
+     "nearUpArm",
+     23.1
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 40.26,
+   "farShoulder": 40.26,
+   "farWrist": 40.26,
+   "head": 40.26,
+   "maxPart": 40.26,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 40.26
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     40.3
+    ],
+    [
+     "farShin",
+     40.3
+    ],
+    [
+     "farUpArm",
+     40.3
+    ],
+    [
+     "farForearm",
+     40.3
+    ],
+    [
+     "torso",
+     40.3
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.7,
+   "farShoulder": 0.7,
+   "farWrist": 9.06,
+   "head": 0.7,
+   "maxPart": 29.03,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.7
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     29
+    ],
+    [
+     "nearShin",
+     26.5
+    ],
+    [
+     "farThigh",
+     25.5
+    ],
+    [
+     "nearForearm",
+     22.8
+    ],
+    [
+     "farForearm",
+     13.1
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 134.49259674070896,
+   "finalHip": 88,
+   "s": 0.8658865882352941,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 14.17,
+   "farShoulder": 14.17,
+   "farWrist": 29.29,
+   "head": 14.17,
+   "maxPart": 35.8,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.17
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     35.8
+    ],
+    [
+     "nearThigh",
+     32.1
+    ],
+    [
+     "farForearm",
+     30.3
+    ],
+    [
+     "nearShin",
+     25.7
+    ],
+    [
+     "farUpArm",
+     24.3
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 14.17,
+   "farShoulder": 14.17,
+   "farWrist": 29.29,
+   "head": 14.17,
+   "maxPart": 35.8,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.17
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     35.8
+    ],
+    [
+     "nearThigh",
+     32.1
+    ],
+    [
+     "farForearm",
+     30.3
+    ],
+    [
+     "nearShin",
+     25.7
+    ],
+    [
+     "farUpArm",
+     24.3
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 11.57,
+   "farShoulder": 11.57,
+   "farWrist": 11.57,
+   "head": 11.57,
+   "maxPart": 54.39,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.57
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.4
+    ],
+    [
+     "nearShin",
+     46.2
+    ],
+    [
+     "farThigh",
+     22.6
+    ],
+    [
+     "nearThigh",
+     13.7
+    ],
+    [
+     "farUpArm",
+     11.6
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.91,
+   "head": 0,
+   "maxPart": 3.34,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.3
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.28,
+   "farShoulder": 12.28,
+   "farWrist": 20.97,
+   "head": 12.28,
+   "maxPart": 55.55,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.28
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     55.5
+    ],
+    [
+     "nearForearm",
+     33.2
+    ],
+    [
+     "nearShin",
+     26.3
+    ],
+    [
+     "farForearm",
+     25.6
+    ],
+    [
+     "farThigh",
+     19.1
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 13.47,
+   "farShoulder": 13.47,
+   "farWrist": 33.57,
+   "head": 13.47,
+   "maxPart": 36.87,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 13.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     36.9
+    ],
+    [
+     "nearShin",
+     36.9
+    ],
+    [
+     "farShin",
+     25.5
+    ],
+    [
+     "nearThigh",
+     23.8
+    ],
+    [
+     "nearUpArm",
+     23.1
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 40.26,
+   "farShoulder": 40.26,
+   "farWrist": 40.26,
+   "head": 40.26,
+   "maxPart": 40.26,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 40.26
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     40.3
+    ],
+    [
+     "farShin",
+     40.3
+    ],
+    [
+     "farUpArm",
+     40.3
+    ],
+    [
+     "farForearm",
+     40.3
+    ],
+    [
+     "torso",
+     40.3
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.7,
+   "farShoulder": 0.7,
+   "farWrist": 9.06,
+   "head": 0.7,
+   "maxPart": 29.03,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.7
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     29
+    ],
+    [
+     "nearShin",
+     26.5
+    ],
+    [
+     "farThigh",
+     25.5
+    ],
+    [
+     "nearForearm",
+     22.8
+    ],
+    [
+     "farForearm",
+     13.1
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 134.49259674070896,
+   "finalHip": 88,
+   "s": 0.8658865882352941,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 14.83,
+   "farShoulder": 24.87,
+   "farWrist": 65.3,
+   "head": 15.36,
+   "maxPart": 68.53,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.17
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     68.5
+    ],
+    [
+     "farUpArm",
+     40
+    ],
+    [
+     "nearUpArm",
+     39.6
+    ],
+    [
+     "farShin",
+     38.9
+    ],
+    [
+     "nearForearm",
+     38.1
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 14.17,
+   "farShoulder": 14.17,
+   "farWrist": 29.29,
+   "head": 14.17,
+   "maxPart": 35.8,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.17
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     35.8
+    ],
+    [
+     "nearThigh",
+     32.1
+    ],
+    [
+     "farForearm",
+     30.3
+    ],
+    [
+     "nearShin",
+     25.7
+    ],
+    [
+     "farUpArm",
+     24.3
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 11.57,
+   "farShoulder": 11.57,
+   "farWrist": 11.57,
+   "head": 11.57,
+   "maxPart": 54.39,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.57
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.4
+    ],
+    [
+     "nearShin",
+     46.2
+    ],
+    [
+     "farThigh",
+     22.6
+    ],
+    [
+     "nearThigh",
+     13.7
+    ],
+    [
+     "farUpArm",
+     11.6
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.91,
+   "head": 0,
+   "maxPart": 3.34,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.3
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.28,
+   "farShoulder": 12.28,
+   "farWrist": 20.97,
+   "head": 12.28,
+   "maxPart": 55.55,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.28
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     55.5
+    ],
+    [
+     "nearForearm",
+     33.2
+    ],
+    [
+     "nearShin",
+     26.3
+    ],
+    [
+     "farForearm",
+     25.6
+    ],
+    [
+     "farThigh",
+     19.1
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 13.47,
+   "farShoulder": 13.47,
+   "farWrist": 33.57,
+   "head": 13.47,
+   "maxPart": 36.87,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 13.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     36.9
+    ],
+    [
+     "nearShin",
+     36.9
+    ],
+    [
+     "farShin",
+     25.5
+    ],
+    [
+     "nearThigh",
+     23.8
+    ],
+    [
+     "nearUpArm",
+     23.1
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 40.26,
+   "farShoulder": 40.26,
+   "farWrist": 40.26,
+   "head": 40.26,
+   "maxPart": 40.26,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 40.26
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     40.3
+    ],
+    [
+     "farShin",
+     40.3
+    ],
+    [
+     "farUpArm",
+     40.3
+    ],
+    [
+     "farForearm",
+     40.3
+    ],
+    [
+     "torso",
+     40.3
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.7,
+   "farShoulder": 0.7,
+   "farWrist": 9.06,
+   "head": 0.7,
+   "maxPart": 29.03,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.7
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     29
+    ],
+    [
+     "nearShin",
+     26.5
+    ],
+    [
+     "farThigh",
+     25.5
+    ],
+    [
+     "nearForearm",
+     22.8
+    ],
+    [
+     "farForearm",
+     13.1
+    ]
+   ]
+  }
+ },
+ {
   "rig": "guido-roster-v1",
   "flags": "default",
   "case": "supine-pain",
@@ -44280,6 +51660,1482 @@
   }
  },
  {
+  "rig": "guido-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 131.31084778445447,
+   "finalHip": 88,
+   "s": 0.8005577326203208,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 11.41,
+   "farShoulder": 11.41,
+   "farWrist": 22.23,
+   "head": 11.41,
+   "maxPart": 35.08,
+   "maxPartName": "nearThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.41
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearThigh",
+     35.1
+    ],
+    [
+     "farShin",
+     33.3
+    ],
+    [
+     "farForearm",
+     31.3
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     23.7
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 11.41,
+   "farShoulder": 11.41,
+   "farWrist": 22.23,
+   "head": 11.41,
+   "maxPart": 35.08,
+   "maxPartName": "nearThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.41
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearThigh",
+     35.1
+    ],
+    [
+     "farShin",
+     33.3
+    ],
+    [
+     "farForearm",
+     31.3
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     23.7
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 10.33,
+   "farShoulder": 10.33,
+   "farWrist": 10.33,
+   "head": 10.33,
+   "maxPart": 47.83,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     47.8
+    ],
+    [
+     "farShin",
+     43.1
+    ],
+    [
+     "farThigh",
+     20.4
+    ],
+    [
+     "nearThigh",
+     14.5
+    ],
+    [
+     "farUpArm",
+     10.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.55,
+   "head": 0,
+   "maxPart": 3.26,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.3
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.18,
+   "farShoulder": 11.18,
+   "farWrist": 15.07,
+   "head": 11.18,
+   "maxPart": 49.3,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     49.3
+    ],
+    [
+     "nearForearm",
+     32.6
+    ],
+    [
+     "nearShin",
+     25.4
+    ],
+    [
+     "farForearm",
+     23.4
+    ],
+    [
+     "farThigh",
+     18.9
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 10.56,
+   "farShoulder": 10.56,
+   "farWrist": 22.74,
+   "head": 10.56,
+   "maxPart": 37.8,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.56
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     37.8
+    ],
+    [
+     "nearShin",
+     34.9
+    ],
+    [
+     "nearThigh",
+     23.5
+    ],
+    [
+     "farShin",
+     22.6
+    ],
+    [
+     "nearUpArm",
+     21.2
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 34.67,
+   "farShoulder": 34.67,
+   "farWrist": 34.67,
+   "head": 34.67,
+   "maxPart": 34.67,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 34.67
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     34.7
+    ],
+    [
+     "farShin",
+     34.7
+    ],
+    [
+     "farUpArm",
+     34.7
+    ],
+    [
+     "farForearm",
+     34.7
+    ],
+    [
+     "torso",
+     34.7
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "nearUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.85,
+   "farShoulder": 0.85,
+   "farWrist": 4.35,
+   "head": 0.85,
+   "maxPart": 31.93,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.85
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     31.9
+    ],
+    [
+     "farShin",
+     30.1
+    ],
+    [
+     "farThigh",
+     25.3
+    ],
+    [
+     "nearForearm",
+     22.8
+    ],
+    [
+     "nearThigh",
+     13.3
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "guido-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 131.31084778445447,
+   "finalHip": 88,
+   "s": 0.8005577326203208,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 11.53,
+   "farShoulder": 20.72,
+   "farWrist": 50.6,
+   "head": 11.99,
+   "maxPart": 63.02,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.41
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     63
+    ],
+    [
+     "nearUpArm",
+     40.5
+    ],
+    [
+     "nearForearm",
+     39.3
+    ],
+    [
+     "farUpArm",
+     36.5
+    ],
+    [
+     "farShin",
+     34.6
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 11.41,
+   "farShoulder": 11.41,
+   "farWrist": 22.23,
+   "head": 11.41,
+   "maxPart": 35.08,
+   "maxPartName": "nearThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.41
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearThigh",
+     35.1
+    ],
+    [
+     "farShin",
+     33.3
+    ],
+    [
+     "farForearm",
+     31.3
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     23.7
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 10.33,
+   "farShoulder": 10.33,
+   "farWrist": 10.33,
+   "head": 10.33,
+   "maxPart": 47.83,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     47.8
+    ],
+    [
+     "farShin",
+     43.1
+    ],
+    [
+     "farThigh",
+     20.4
+    ],
+    [
+     "nearThigh",
+     14.5
+    ],
+    [
+     "farUpArm",
+     10.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.55,
+   "head": 0,
+   "maxPart": 3.26,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.3
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.18,
+   "farShoulder": 11.18,
+   "farWrist": 15.07,
+   "head": 11.18,
+   "maxPart": 49.3,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     49.3
+    ],
+    [
+     "nearForearm",
+     32.6
+    ],
+    [
+     "nearShin",
+     25.4
+    ],
+    [
+     "farForearm",
+     23.4
+    ],
+    [
+     "farThigh",
+     18.9
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 10.56,
+   "farShoulder": 10.56,
+   "farWrist": 22.74,
+   "head": 10.56,
+   "maxPart": 37.8,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.56
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     37.8
+    ],
+    [
+     "nearShin",
+     34.9
+    ],
+    [
+     "nearThigh",
+     23.5
+    ],
+    [
+     "farShin",
+     22.6
+    ],
+    [
+     "nearUpArm",
+     21.2
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 34.67,
+   "farShoulder": 34.67,
+   "farWrist": 34.67,
+   "head": 34.67,
+   "maxPart": 34.67,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 34.67
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     34.7
+    ],
+    [
+     "farShin",
+     34.7
+    ],
+    [
+     "farUpArm",
+     34.7
+    ],
+    [
+     "farForearm",
+     34.7
+    ],
+    [
+     "torso",
+     34.7
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "nearUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.85,
+   "farShoulder": 0.85,
+   "farWrist": 4.35,
+   "head": 0.85,
+   "maxPart": 31.93,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.85
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     31.9
+    ],
+    [
+     "farShin",
+     30.1
+    ],
+    [
+     "farThigh",
+     25.3
+    ],
+    [
+     "nearForearm",
+     22.8
+    ],
+    [
+     "nearThigh",
+     13.3
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "guido-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 131.31084778445447,
+   "finalHip": 88,
+   "s": 0.8005577326203208,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 11.41,
+   "farShoulder": 11.41,
+   "farWrist": 22.23,
+   "head": 11.41,
+   "maxPart": 35.08,
+   "maxPartName": "nearThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.41
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearThigh",
+     35.1
+    ],
+    [
+     "farShin",
+     33.3
+    ],
+    [
+     "farForearm",
+     31.3
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     23.7
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 11.41,
+   "farShoulder": 11.41,
+   "farWrist": 22.23,
+   "head": 11.41,
+   "maxPart": 35.08,
+   "maxPartName": "nearThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.41
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearThigh",
+     35.1
+    ],
+    [
+     "farShin",
+     33.3
+    ],
+    [
+     "farForearm",
+     31.3
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     23.7
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 10.33,
+   "farShoulder": 10.33,
+   "farWrist": 10.33,
+   "head": 10.33,
+   "maxPart": 47.83,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     47.8
+    ],
+    [
+     "farShin",
+     43.1
+    ],
+    [
+     "farThigh",
+     20.4
+    ],
+    [
+     "nearThigh",
+     14.5
+    ],
+    [
+     "farUpArm",
+     10.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.55,
+   "head": 0,
+   "maxPart": 3.26,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.3
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.18,
+   "farShoulder": 11.18,
+   "farWrist": 15.07,
+   "head": 11.18,
+   "maxPart": 49.3,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     49.3
+    ],
+    [
+     "nearForearm",
+     32.6
+    ],
+    [
+     "nearShin",
+     25.4
+    ],
+    [
+     "farForearm",
+     23.4
+    ],
+    [
+     "farThigh",
+     18.9
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 10.56,
+   "farShoulder": 10.56,
+   "farWrist": 22.74,
+   "head": 10.56,
+   "maxPart": 37.8,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.56
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     37.8
+    ],
+    [
+     "nearShin",
+     34.9
+    ],
+    [
+     "nearThigh",
+     23.5
+    ],
+    [
+     "farShin",
+     22.6
+    ],
+    [
+     "nearUpArm",
+     21.2
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 34.67,
+   "farShoulder": 34.67,
+   "farWrist": 34.67,
+   "head": 34.67,
+   "maxPart": 34.67,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 34.67
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     34.7
+    ],
+    [
+     "farShin",
+     34.7
+    ],
+    [
+     "farUpArm",
+     34.7
+    ],
+    [
+     "farForearm",
+     34.7
+    ],
+    [
+     "torso",
+     34.7
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "nearUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.85,
+   "farShoulder": 0.85,
+   "farWrist": 4.35,
+   "head": 0.85,
+   "maxPart": 31.93,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.85
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     31.9
+    ],
+    [
+     "farShin",
+     30.1
+    ],
+    [
+     "farThigh",
+     25.3
+    ],
+    [
+     "nearForearm",
+     22.8
+    ],
+    [
+     "nearThigh",
+     13.3
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "guido-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.005400000000000005,
+   "lockLimbJoints": true,
+   "standingHipHeight": 131.31084778445447,
+   "finalHip": 88,
+   "s": 0.8005577326203208,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 11.53,
+   "farShoulder": 20.72,
+   "farWrist": 50.6,
+   "head": 11.99,
+   "maxPart": 63.02,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.41
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     63
+    ],
+    [
+     "nearUpArm",
+     40.5
+    ],
+    [
+     "nearForearm",
+     39.3
+    ],
+    [
+     "farUpArm",
+     36.5
+    ],
+    [
+     "farShin",
+     34.6
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 11.41,
+   "farShoulder": 11.41,
+   "farWrist": 22.23,
+   "head": 11.41,
+   "maxPart": 35.08,
+   "maxPartName": "nearThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 11.41
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearThigh",
+     35.1
+    ],
+    [
+     "farShin",
+     33.3
+    ],
+    [
+     "farForearm",
+     31.3
+    ],
+    [
+     "nearShin",
+     28.1
+    ],
+    [
+     "farUpArm",
+     23.7
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 10.33,
+   "farShoulder": 10.33,
+   "farWrist": 10.33,
+   "head": 10.33,
+   "maxPart": 47.83,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     47.8
+    ],
+    [
+     "farShin",
+     43.1
+    ],
+    [
+     "farThigh",
+     20.4
+    ],
+    [
+     "nearThigh",
+     14.5
+    ],
+    [
+     "farUpArm",
+     10.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.55,
+   "head": 0,
+   "maxPart": 3.26,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.3
+    ],
+    [
+     "nearUpArm",
+     1.2
+    ],
+    [
+     "farForearm",
+     1.1
+    ],
+    [
+     "farUpArm",
+     0.1
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 11.18,
+   "farShoulder": 11.18,
+   "farWrist": 15.07,
+   "head": 11.18,
+   "maxPart": 49.3,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -11.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     49.3
+    ],
+    [
+     "nearForearm",
+     32.6
+    ],
+    [
+     "nearShin",
+     25.4
+    ],
+    [
+     "farForearm",
+     23.4
+    ],
+    [
+     "farThigh",
+     18.9
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 10.56,
+   "farShoulder": 10.56,
+   "farWrist": 22.74,
+   "head": 10.56,
+   "maxPart": 37.8,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 10.56
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     37.8
+    ],
+    [
+     "nearShin",
+     34.9
+    ],
+    [
+     "nearThigh",
+     23.5
+    ],
+    [
+     "farShin",
+     22.6
+    ],
+    [
+     "nearUpArm",
+     21.2
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 34.67,
+   "farShoulder": 34.67,
+   "farWrist": 34.67,
+   "head": 34.67,
+   "maxPart": 34.67,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 34.67
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     34.7
+    ],
+    [
+     "farShin",
+     34.7
+    ],
+    [
+     "farUpArm",
+     34.7
+    ],
+    [
+     "farForearm",
+     34.7
+    ],
+    [
+     "torso",
+     34.7
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "nearUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 0.85,
+   "farShoulder": 0.85,
+   "farWrist": 4.35,
+   "head": 0.85,
+   "maxPart": 31.93,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -0.85
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     31.9
+    ],
+    [
+     "farShin",
+     30.1
+    ],
+    [
+     "farThigh",
+     25.3
+    ],
+    [
+     "nearForearm",
+     22.8
+    ],
+    [
+     "nearThigh",
+     13.3
+    ]
+   ]
+  }
+ },
+ {
   "rig": "kowalski-roster-v1",
   "flags": "default",
   "case": "supine-pain",
@@ -51655,6 +60511,1482 @@
     [
      "farThigh",
      21.4
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "kowalski-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 145.91274686501544,
+   "finalHip": 88,
+   "s": 0.752350973262032,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 4.45,
+   "farShoulder": 4.46,
+   "farWrist": 24.53,
+   "head": 4.46,
+   "maxPart": 38.62,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     38.6
+    ],
+    [
+     "farShin",
+     27
+    ],
+    [
+     "nearThigh",
+     21.6
+    ],
+    [
+     "farThigh",
+     20.8
+    ],
+    [
+     "farUpArm",
+     20
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 4.45,
+   "farShoulder": 4.46,
+   "farWrist": 24.53,
+   "head": 4.46,
+   "maxPart": 38.62,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     38.6
+    ],
+    [
+     "farShin",
+     27
+    ],
+    [
+     "nearThigh",
+     21.6
+    ],
+    [
+     "farThigh",
+     20.8
+    ],
+    [
+     "farUpArm",
+     20
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 14.33,
+   "farShoulder": 14.33,
+   "farWrist": 14.33,
+   "head": 14.33,
+   "maxPart": 54.71,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.7
+    ],
+    [
+     "nearShin",
+     48.3
+    ],
+    [
+     "farThigh",
+     29.4
+    ],
+    [
+     "nearThigh",
+     17
+    ],
+    [
+     "farUpArm",
+     14.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.68,
+   "head": 0,
+   "maxPart": 3.51,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.5
+    ],
+    [
+     "nearUpArm",
+     1.3
+    ],
+    [
+     "farForearm",
+     1.2
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.14,
+   "farShoulder": 12.14,
+   "farWrist": 17.9,
+   "head": 12.14,
+   "maxPart": 54.2,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.14
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.2
+    ],
+    [
+     "nearForearm",
+     35.8
+    ],
+    [
+     "nearShin",
+     27.7
+    ],
+    [
+     "farForearm",
+     27
+    ],
+    [
+     "farThigh",
+     19.7
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 6.64,
+   "farShoulder": 6.64,
+   "farWrist": 27.14,
+   "head": 6.64,
+   "maxPart": 43.69,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 6.64
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     43.7
+    ],
+    [
+     "nearShin",
+     35.3
+    ],
+    [
+     "farShin",
+     21.7
+    ],
+    [
+     "nearThigh",
+     20.6
+    ],
+    [
+     "nearUpArm",
+     18.8
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 43.57,
+   "farShoulder": 43.57,
+   "farWrist": 43.57,
+   "head": 43.57,
+   "maxPart": 43.57,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 43.57
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     43.6
+    ],
+    [
+     "farShin",
+     43.6
+    ],
+    [
+     "farUpArm",
+     43.6
+    ],
+    [
+     "farForearm",
+     43.6
+    ],
+    [
+     "torso",
+     43.6
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "nearUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 2.18,
+   "farShoulder": 2.18,
+   "farWrist": 3.48,
+   "head": 2.18,
+   "maxPart": 31.21,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 2.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     31.2
+    ],
+    [
+     "farShin",
+     29.9
+    ],
+    [
+     "nearShin",
+     29.5
+    ],
+    [
+     "nearForearm",
+     24.3
+    ],
+    [
+     "farForearm",
+     11.6
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "kowalski-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 145.91274686501544,
+   "finalHip": 88,
+   "s": 0.752350973262032,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 4.52,
+   "farShoulder": 13.98,
+   "farWrist": 49.89,
+   "head": 6.21,
+   "maxPart": 59.09,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     59.1
+    ],
+    [
+     "farUpArm",
+     35.6
+    ],
+    [
+     "nearUpArm",
+     35.3
+    ],
+    [
+     "nearForearm",
+     34
+    ],
+    [
+     "farShin",
+     32.9
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 4.45,
+   "farShoulder": 4.46,
+   "farWrist": 24.53,
+   "head": 4.46,
+   "maxPart": 38.62,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     38.6
+    ],
+    [
+     "farShin",
+     27
+    ],
+    [
+     "nearThigh",
+     21.6
+    ],
+    [
+     "farThigh",
+     20.8
+    ],
+    [
+     "farUpArm",
+     20
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 14.33,
+   "farShoulder": 14.33,
+   "farWrist": 14.33,
+   "head": 14.33,
+   "maxPart": 54.71,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.7
+    ],
+    [
+     "nearShin",
+     48.3
+    ],
+    [
+     "farThigh",
+     29.4
+    ],
+    [
+     "nearThigh",
+     17
+    ],
+    [
+     "farUpArm",
+     14.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.68,
+   "head": 0,
+   "maxPart": 3.51,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.5
+    ],
+    [
+     "nearUpArm",
+     1.3
+    ],
+    [
+     "farForearm",
+     1.2
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.14,
+   "farShoulder": 12.14,
+   "farWrist": 17.9,
+   "head": 12.14,
+   "maxPart": 54.2,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.14
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.2
+    ],
+    [
+     "nearForearm",
+     35.8
+    ],
+    [
+     "nearShin",
+     27.7
+    ],
+    [
+     "farForearm",
+     27
+    ],
+    [
+     "farThigh",
+     19.7
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 6.64,
+   "farShoulder": 6.64,
+   "farWrist": 27.14,
+   "head": 6.64,
+   "maxPart": 43.69,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 6.64
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     43.7
+    ],
+    [
+     "nearShin",
+     35.3
+    ],
+    [
+     "farShin",
+     21.7
+    ],
+    [
+     "nearThigh",
+     20.6
+    ],
+    [
+     "nearUpArm",
+     18.8
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 43.57,
+   "farShoulder": 43.57,
+   "farWrist": 43.57,
+   "head": 43.57,
+   "maxPart": 43.57,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 43.57
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     43.6
+    ],
+    [
+     "farShin",
+     43.6
+    ],
+    [
+     "farUpArm",
+     43.6
+    ],
+    [
+     "farForearm",
+     43.6
+    ],
+    [
+     "torso",
+     43.6
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "nearUpArm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 2.18,
+   "farShoulder": 2.18,
+   "farWrist": 3.48,
+   "head": 2.18,
+   "maxPart": 31.21,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 2.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     31.2
+    ],
+    [
+     "farShin",
+     29.9
+    ],
+    [
+     "nearShin",
+     29.5
+    ],
+    [
+     "nearForearm",
+     24.3
+    ],
+    [
+     "farForearm",
+     11.6
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "kowalski-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 145.91274686501544,
+   "finalHip": 88,
+   "s": 0.752350973262032,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 4.45,
+   "farShoulder": 4.46,
+   "farWrist": 24.53,
+   "head": 4.46,
+   "maxPart": 38.62,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     38.6
+    ],
+    [
+     "farShin",
+     27
+    ],
+    [
+     "nearThigh",
+     21.6
+    ],
+    [
+     "farThigh",
+     20.8
+    ],
+    [
+     "farUpArm",
+     20
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 4.45,
+   "farShoulder": 4.46,
+   "farWrist": 24.53,
+   "head": 4.46,
+   "maxPart": 38.62,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     38.6
+    ],
+    [
+     "farShin",
+     27
+    ],
+    [
+     "nearThigh",
+     21.6
+    ],
+    [
+     "farThigh",
+     20.8
+    ],
+    [
+     "farUpArm",
+     20
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 14.33,
+   "farShoulder": 14.33,
+   "farWrist": 14.33,
+   "head": 14.33,
+   "maxPart": 54.71,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.7
+    ],
+    [
+     "nearShin",
+     48.3
+    ],
+    [
+     "farThigh",
+     29.4
+    ],
+    [
+     "nearThigh",
+     17
+    ],
+    [
+     "farUpArm",
+     14.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.68,
+   "head": 0,
+   "maxPart": 3.51,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.5
+    ],
+    [
+     "nearUpArm",
+     1.3
+    ],
+    [
+     "farForearm",
+     1.2
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.14,
+   "farShoulder": 12.14,
+   "farWrist": 17.9,
+   "head": 12.14,
+   "maxPart": 54.2,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.14
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.2
+    ],
+    [
+     "nearForearm",
+     35.8
+    ],
+    [
+     "nearShin",
+     27.7
+    ],
+    [
+     "farForearm",
+     27
+    ],
+    [
+     "farThigh",
+     19.7
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 6.64,
+   "farShoulder": 6.64,
+   "farWrist": 27.14,
+   "head": 6.64,
+   "maxPart": 43.69,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 6.64
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     43.7
+    ],
+    [
+     "nearShin",
+     35.3
+    ],
+    [
+     "farShin",
+     21.7
+    ],
+    [
+     "nearThigh",
+     20.6
+    ],
+    [
+     "nearUpArm",
+     18.8
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 43.57,
+   "farShoulder": 43.57,
+   "farWrist": 43.57,
+   "head": 43.57,
+   "maxPart": 43.57,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 43.57
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     43.6
+    ],
+    [
+     "farShin",
+     43.6
+    ],
+    [
+     "farUpArm",
+     43.6
+    ],
+    [
+     "farForearm",
+     43.6
+    ],
+    [
+     "torso",
+     43.6
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 2.18,
+   "farShoulder": 2.18,
+   "farWrist": 3.48,
+   "head": 2.18,
+   "maxPart": 31.21,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 2.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     31.2
+    ],
+    [
+     "farShin",
+     29.9
+    ],
+    [
+     "nearShin",
+     29.5
+    ],
+    [
+     "nearForearm",
+     24.3
+    ],
+    [
+     "farForearm",
+     11.6
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "kowalski-roster-v1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.0030000000000000027,
+   "lockLimbJoints": true,
+   "standingHipHeight": 145.91274686501544,
+   "finalHip": 88,
+   "s": 0.752350973262032,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 4.52,
+   "farShoulder": 13.98,
+   "farWrist": 49.89,
+   "head": 6.21,
+   "maxPart": 59.09,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     59.1
+    ],
+    [
+     "farUpArm",
+     35.6
+    ],
+    [
+     "nearUpArm",
+     35.3
+    ],
+    [
+     "nearForearm",
+     34
+    ],
+    [
+     "farShin",
+     32.9
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 4.45,
+   "farShoulder": 4.46,
+   "farWrist": 24.53,
+   "head": 4.46,
+   "maxPart": 38.62,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 4.46
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     38.6
+    ],
+    [
+     "farShin",
+     27
+    ],
+    [
+     "nearThigh",
+     21.6
+    ],
+    [
+     "farThigh",
+     20.8
+    ],
+    [
+     "farUpArm",
+     20
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 14.33,
+   "farShoulder": 14.33,
+   "farWrist": 14.33,
+   "head": 14.33,
+   "maxPart": 54.71,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 14.33
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.7
+    ],
+    [
+     "nearShin",
+     48.3
+    ],
+    [
+     "farThigh",
+     29.4
+    ],
+    [
+     "nearThigh",
+     17
+    ],
+    [
+     "farUpArm",
+     14.3
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0.68,
+   "head": 0,
+   "maxPart": 3.51,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.5
+    ],
+    [
+     "nearUpArm",
+     1.3
+    ],
+    [
+     "farForearm",
+     1.2
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 12.14,
+   "farShoulder": 12.14,
+   "farWrist": 17.9,
+   "head": 12.14,
+   "maxPart": 54.2,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -12.14
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.2
+    ],
+    [
+     "nearForearm",
+     35.8
+    ],
+    [
+     "nearShin",
+     27.7
+    ],
+    [
+     "farForearm",
+     27
+    ],
+    [
+     "farThigh",
+     19.7
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 6.64,
+   "farShoulder": 6.64,
+   "farWrist": 27.14,
+   "head": 6.64,
+   "maxPart": 43.69,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 6.64
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     43.7
+    ],
+    [
+     "nearShin",
+     35.3
+    ],
+    [
+     "farShin",
+     21.7
+    ],
+    [
+     "nearThigh",
+     20.6
+    ],
+    [
+     "nearUpArm",
+     18.8
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 43.57,
+   "farShoulder": 43.57,
+   "farWrist": 43.57,
+   "head": 43.57,
+   "maxPart": 43.57,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 43.57
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     43.6
+    ],
+    [
+     "farShin",
+     43.6
+    ],
+    [
+     "farUpArm",
+     43.6
+    ],
+    [
+     "farForearm",
+     43.6
+    ],
+    [
+     "torso",
+     43.6
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 2.18,
+   "farShoulder": 2.18,
+   "farWrist": 3.48,
+   "head": 2.18,
+   "maxPart": 31.21,
+   "maxPartName": "farThigh",
+   "hipD": {
+    "dx": 0,
+    "dy": 2.18
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     31.2
+    ],
+    [
+     "farShin",
+     29.9
+    ],
+    [
+     "nearShin",
+     29.5
+    ],
+    [
+     "nearForearm",
+     24.3
+    ],
+    [
+     "farForearm",
+     11.6
     ]
    ]
   }
@@ -59035,6 +69367,1482 @@
     [
      "nearUpArm",
      8.2
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz-front3q-r1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.0030000000000000027,
+   "lockLimbJoints": false,
+   "standingHipHeight": 124,
+   "finalHip": 88,
+   "s": 0.699724064171123,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 21.31,
+   "farShoulder": 14.65,
+   "farWrist": 5.01,
+   "head": 21.31,
+   "maxPart": 39.88,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -21.31
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     39.9
+    ],
+    [
+     "nearForearm",
+     35.9
+    ],
+    [
+     "nearShin",
+     32.1
+    ],
+    [
+     "nearThigh",
+     25.8
+    ],
+    [
+     "farThigh",
+     23.3
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 21.31,
+   "farShoulder": 14.65,
+   "farWrist": 5.01,
+   "head": 21.31,
+   "maxPart": 39.88,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -21.31
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     39.9
+    ],
+    [
+     "nearForearm",
+     35.9
+    ],
+    [
+     "nearShin",
+     32.1
+    ],
+    [
+     "nearThigh",
+     25.8
+    ],
+    [
+     "farThigh",
+     23.3
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 3.88,
+   "head": 3.88,
+   "maxPart": 63.51,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     63.5
+    ],
+    [
+     "nearShin",
+     41.8
+    ],
+    [
+     "nearThigh",
+     14.4
+    ],
+    [
+     "farThigh",
+     9.9
+    ],
+    [
+     "farUpArm",
+     3.9
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 3.03,
+   "head": 0,
+   "maxPart": 2.75,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     2.8
+    ],
+    [
+     "farUpArm",
+     1.4
+    ],
+    [
+     "nearForearm",
+     1.1
+    ],
+    [
+     "nearUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 18.55,
+   "head": 0,
+   "maxPart": 59.3,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     59.3
+    ],
+    [
+     "farShin",
+     23.3
+    ],
+    [
+     "farForearm",
+     16.7
+    ],
+    [
+     "nearForearm",
+     12.2
+    ],
+    [
+     "nearUpArm",
+     7.4
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 25.19,
+   "farShoulder": 15.45,
+   "farWrist": 13.82,
+   "head": 25.19,
+   "maxPart": 43.48,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -25.19
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     43.5
+    ],
+    [
+     "nearShin",
+     32.1
+    ],
+    [
+     "nearForearm",
+     31.7
+    ],
+    [
+     "farThigh",
+     27.7
+    ],
+    [
+     "nearThigh",
+     26.6
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "head",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 17.16,
+   "head": 3.88,
+   "maxPart": 57.25,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     57.3
+    ],
+    [
+     "nearShin",
+     21.7
+    ],
+    [
+     "nearThigh",
+     21.5
+    ],
+    [
+     "farForearm",
+     17.6
+    ],
+    [
+     "nearForearm",
+     14.7
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz-front3q-r1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": -1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.0030000000000000027,
+   "lockLimbJoints": false,
+   "standingHipHeight": 124,
+   "finalHip": 88,
+   "s": 0.699724064171123,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 21.31,
+   "farShoulder": 14.65,
+   "farWrist": 75.16,
+   "head": 21.49,
+   "maxPart": 56.06,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -21.31
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     56.1
+    ],
+    [
+     "farUpArm",
+     46.6
+    ],
+    [
+     "nearShin",
+     35
+    ],
+    [
+     "farShin",
+     33
+    ],
+    [
+     "nearThigh",
+     26.2
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 21.31,
+   "farShoulder": 14.65,
+   "farWrist": 55.7,
+   "head": 21.31,
+   "maxPart": 49.98,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -21.31
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     50
+    ],
+    [
+     "farShin",
+     39.9
+    ],
+    [
+     "farUpArm",
+     38.1
+    ],
+    [
+     "nearShin",
+     32.1
+    ],
+    [
+     "nearForearm",
+     30.1
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 3.88,
+   "head": 3.88,
+   "maxPart": 54.75,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     54.8
+    ],
+    [
+     "farShin",
+     52.7
+    ],
+    [
+     "farThigh",
+     12.3
+    ],
+    [
+     "nearThigh",
+     7.5
+    ],
+    [
+     "farUpArm",
+     3.9
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 1.1,
+   "head": 0,
+   "maxPart": 3.22,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.2
+    ],
+    [
+     "nearUpArm",
+     1.6
+    ],
+    [
+     "farForearm",
+     1
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 9.8,
+   "head": 0,
+   "maxPart": 54.79,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.8
+    ],
+    [
+     "nearShin",
+     25
+    ],
+    [
+     "nearForearm",
+     19.5
+    ],
+    [
+     "farForearm",
+     10.6
+    ],
+    [
+     "farThigh",
+     7.2
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 25.19,
+   "farShoulder": 15.45,
+   "farWrist": 63.33,
+   "head": 25.19,
+   "maxPart": 47.62,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -25.19
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     47.6
+    ],
+    [
+     "farForearm",
+     46.5
+    ],
+    [
+     "farShin",
+     33.2
+    ],
+    [
+     "farUpArm",
+     32.1
+    ],
+    [
+     "nearForearm",
+     31.6
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "head",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 12.53,
+   "head": 3.88,
+   "maxPart": 29.95,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     29.9
+    ],
+    [
+     "nearForearm",
+     19.9
+    ],
+    [
+     "farThigh",
+     19.4
+    ],
+    [
+     "farShin",
+     19.3
+    ],
+    [
+     "farForearm",
+     13.2
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz-front3q-r1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "front",
+  "turned": false,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": 0.0030000000000000027,
+   "lockLimbJoints": false,
+   "standingHipHeight": 124,
+   "finalHip": 88,
+   "s": 0.699724064171123,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 21.31,
+   "farShoulder": 14.65,
+   "farWrist": 55.7,
+   "head": 21.31,
+   "maxPart": 49.98,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -21.31
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     50
+    ],
+    [
+     "farShin",
+     39.9
+    ],
+    [
+     "farUpArm",
+     38.1
+    ],
+    [
+     "nearShin",
+     32.1
+    ],
+    [
+     "nearForearm",
+     30.1
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 21.31,
+   "farShoulder": 14.65,
+   "farWrist": 55.7,
+   "head": 21.31,
+   "maxPart": 49.98,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -21.31
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     50
+    ],
+    [
+     "farShin",
+     39.9
+    ],
+    [
+     "farUpArm",
+     38.1
+    ],
+    [
+     "nearShin",
+     32.1
+    ],
+    [
+     "nearForearm",
+     30.1
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 3.88,
+   "head": 3.88,
+   "maxPart": 54.75,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     54.8
+    ],
+    [
+     "farShin",
+     52.7
+    ],
+    [
+     "farThigh",
+     12.3
+    ],
+    [
+     "nearThigh",
+     7.5
+    ],
+    [
+     "farUpArm",
+     3.9
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 1.1,
+   "head": 0,
+   "maxPart": 3.22,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     3.2
+    ],
+    [
+     "nearUpArm",
+     1.6
+    ],
+    [
+     "farForearm",
+     1
+    ],
+    [
+     "farUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 9.8,
+   "head": 0,
+   "maxPart": 54.79,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     54.8
+    ],
+    [
+     "nearShin",
+     25
+    ],
+    [
+     "nearForearm",
+     19.5
+    ],
+    [
+     "farForearm",
+     10.6
+    ],
+    [
+     "farThigh",
+     7.2
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 25.19,
+   "farShoulder": 15.45,
+   "farWrist": 63.33,
+   "head": 25.19,
+   "maxPart": 47.62,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -25.19
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     47.6
+    ],
+    [
+     "farForearm",
+     46.5
+    ],
+    [
+     "farShin",
+     33.2
+    ],
+    [
+     "farUpArm",
+     32.1
+    ],
+    [
+     "nearForearm",
+     31.6
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "head",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 12.53,
+   "head": 3.88,
+   "maxPart": 29.95,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     29.9
+    ],
+    [
+     "nearForearm",
+     19.9
+    ],
+    [
+     "farThigh",
+     19.4
+    ],
+    [
+     "farShin",
+     19.3
+    ],
+    [
+     "farForearm",
+     13.2
+    ]
+   ]
+  }
+ },
+ {
+  "rig": "thesz-front3q-r1",
+  "flags": "default",
+  "case": "supine-gait",
+  "facing": 1,
+  "opp": "behind",
+  "turned": true,
+  "painted": false,
+  "ctx": {
+   "guard": 0.030303030303030304,
+   "lean0": -0.0030000000000000027,
+   "lockLimbJoints": false,
+   "standingHipHeight": 124,
+   "finalHip": 88,
+   "s": 0.699724064171123,
+   "recovering": false,
+   "combatBlend": 0.030303030303030304
+  },
+  "total": {
+   "backWaist": 21.31,
+   "farShoulder": 14.65,
+   "farWrist": 15.42,
+   "head": 21.49,
+   "maxPart": 37.84,
+   "maxPartName": "nearForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": -21.31
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearForearm",
+     37.8
+    ],
+    [
+     "nearShin",
+     35
+    ],
+    [
+     "farShin",
+     33
+    ],
+    [
+     "nearUpArm",
+     26.3
+    ],
+    [
+     "nearThigh",
+     26.2
+    ]
+   ]
+  },
+  "totalPoseOnly": {
+   "backWaist": 21.31,
+   "farShoulder": 14.65,
+   "farWrist": 5.01,
+   "head": 21.31,
+   "maxPart": 39.88,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -21.31
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     39.9
+    ],
+    [
+     "nearForearm",
+     35.9
+    ],
+    [
+     "nearShin",
+     32.1
+    ],
+    [
+     "nearThigh",
+     25.8
+    ],
+    [
+     "farThigh",
+     23.3
+    ]
+   ]
+  },
+  "replication": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 3.88,
+   "head": 3.88,
+   "maxPart": 63.51,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     63.5
+    ],
+    [
+     "nearShin",
+     41.8
+    ],
+    [
+     "nearThigh",
+     14.4
+    ],
+    [
+     "farThigh",
+     9.9
+    ],
+    [
+     "farUpArm",
+     3.9
+    ]
+   ]
+  },
+  "H4recovery": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "H4guard": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 3.03,
+   "head": 0,
+   "maxPart": 2.75,
+   "maxPartName": "farForearm",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farForearm",
+     2.8
+    ],
+    [
+     "farUpArm",
+     1.4
+    ],
+    [
+     "nearForearm",
+     1.1
+    ],
+    [
+     "nearUpArm",
+     0.2
+    ],
+    [
+     "farThigh",
+     0
+    ]
+   ]
+  },
+  "H1stale": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 18.55,
+   "head": 0,
+   "maxPart": 59.3,
+   "maxPartName": "nearShin",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "nearShin",
+     59.3
+    ],
+    [
+     "farShin",
+     23.3
+    ],
+    [
+     "farForearm",
+     16.7
+    ],
+    [
+     "nearForearm",
+     12.2
+    ],
+    [
+     "nearUpArm",
+     7.4
+    ]
+   ]
+  },
+  "residual": {
+   "backWaist": 25.19,
+   "farShoulder": 15.45,
+   "farWrist": 13.82,
+   "head": 25.19,
+   "maxPart": 43.48,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -25.19
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     43.5
+    ],
+    [
+     "nearShin",
+     32.1
+    ],
+    [
+     "nearForearm",
+     31.7
+    ],
+    [
+     "farThigh",
+     27.7
+    ],
+    [
+     "nearThigh",
+     26.6
+    ]
+   ]
+  },
+  "H3hipFinish": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0,
+   "maxPartName": null,
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "rise_vs_G": {
+   "backWaist": 0,
+   "farShoulder": 0,
+   "farWrist": 0,
+   "head": 0,
+   "maxPart": 0.01,
+   "maxPartName": "head",
+   "hipD": {
+    "dx": 0,
+    "dy": 0
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farThigh",
+     0
+    ],
+    [
+     "farShin",
+     0
+    ],
+    [
+     "farUpArm",
+     0
+    ],
+    [
+     "farForearm",
+     0
+    ],
+    [
+     "torso",
+     0
+    ]
+   ]
+  },
+  "F_vs_V3": {
+   "backWaist": 3.88,
+   "farShoulder": 3.88,
+   "farWrist": 17.16,
+   "head": 3.88,
+   "maxPart": 57.25,
+   "maxPartName": "farShin",
+   "hipD": {
+    "dx": 0,
+    "dy": -3.88
+   },
+   "torsoRotDeg": 0,
+   "top": [
+    [
+     "farShin",
+     57.3
+    ],
+    [
+     "nearShin",
+     21.7
+    ],
+    [
+     "nearThigh",
+     21.5
+    ],
+    [
+     "farForearm",
+     17.6
+    ],
+    [
+     "nearForearm",
+     14.7
     ]
    ]
   }

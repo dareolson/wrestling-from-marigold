@@ -6,7 +6,7 @@ so one fix reaches the whole roster. Sonnet executes; Opus reviews at gates; Der
 ## Progress
 (one line per task: `- T1.1 <sha>: result; misses`)
 - T1.1 ec718f6: tools/debug/gait_film.mjs (+gait_pack.py, harness WFM_INIT_SCRIPT); 12 runs (2 rigs x 2 facings x walk/run/whip), seed before init. Miss: lean not measurable (torso.rotation reads 0); whip is started with `_doIrishWhip`.
-- T1.2 8f74d1c: A-G confirmed (F's ~5% was ~9%); new H: gait phase uses s but the rig draws at s*_heightScale, so Lou's planted foot creeps 21% of body speed at a walk (George 1%). Viewer research/animation/gait-2026-10/g1.html. STOP at G1.
+- T1.2 039e74a: A-G confirmed (F's ~5% was ~9%); new H: gait phase uses s but the rig draws at s*_heightScale, so Lou's planted foot creeps 21% of body speed at a walk (George 1%). Viewer research/animation/gait-2026-10/g1.html. STOP at G1.
 
 ## Rules
 - Rigs: Procreate Lou (`thesz-procreate-v1`) and `george-roster-v1`, both facings. Ignore `thesz`, `thesz-front3q-r1`.

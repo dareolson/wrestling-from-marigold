@@ -1571,8 +1571,16 @@ export default class Skeleton {
         // it doesn't always stay in front.
         if (runBlend > 0) {
             const RUN_ELBOW = Math.PI * 0.13;
-            lForearmAng += (lArmAng * 2.3 + facing * RUN_ELBOW - lForearmAng) * runBlend;
-            rForearmAng += (rArmAng * 2.3 + facing * RUN_ELBOW - rForearmAng) * runBlend;
+            let lRunFore = lArmAng * 2.3 + facing * RUN_ELBOW, rRunFore = rArmAng * 2.3 + facing * RUN_ELBOW;
+            if (this._gaitParams) {
+                // ?gait=v2: on the backstroke the 2.3 follow opened the elbow to about straight and threw the wrist far back;
+                // keep it bent (never less than RUN_ELBOW_MIN relative to the upper arm)
+                const RUN_ELBOW_MIN = 0.9;
+                if ((lRunFore - lArmAng) * facing < RUN_ELBOW_MIN) lRunFore = lArmAng + facing * RUN_ELBOW_MIN;
+                if ((rRunFore - rArmAng) * facing < RUN_ELBOW_MIN) rRunFore = rArmAng + facing * RUN_ELBOW_MIN;
+            }
+            lForearmAng += (lRunFore - lForearmAng) * runBlend;
+            rForearmAng += (rRunFore - rForearmAng) * runBlend;
         }
 
         // Arms hang slightly in front of the centerline — breaks mirror symmetry.

@@ -269,7 +269,9 @@ async function filmRun(scenario, rig, facing, outRoot, ringInfo) {
             const jump = (f) => Math.max(...w.slice(1).map((q, i) => Math.abs(f(q) - f(w[i]))));
             metrics.ropeTurn = { windowFrames: w.length, maxFootStepPx: round(Math.max(jump(q => q.near.x - q.x), jump(q => q.far.x - q.x))), maxHipStepPx: round(jump(q => q.hipY)),
                 maxFootLiftStepPx: round(Math.max(jump(q => q.near.y), jump(q => q.far.y))), bodyXAtTurn: samples[ti].x, facingBefore: samples[ti - 1].facing, facingAfter: samples[ti].facing,
-                plantedFootWorldSlipPx: round(Math.max(...['near', 'far'].map(f => { const xs = w.filter(q => q[f].planted).map(q => q[f].x - q.x); return xs.length ? Math.max(...xs) - Math.min(...xs) : 0; }))) };
+                turnFootWorldStepPx: round(Math.max(...['near', 'far'].map(f => samples[ti - 1][f].planted && samples[ti][f].planted ? Math.abs(samples[ti][f].x - samples[ti - 1][f].x) : 0))),
+                turnBothFeetWorldStepPx: round(Math.max(...['near', 'far'].map(f => Math.abs(samples[ti][f].x - samples[ti - 1][f].x)))),
+                plantedFootBodyRelRangePx: round(Math.max(...['near', 'far'].map(f => { const xs = w.filter(q => q[f].planted).map(q => q[f].x - q.x); return xs.length ? Math.max(...xs) - Math.min(...xs) : 0; }))) };
         }
         // D / lean: the Wrestler.draw coefficient (read from source in the viewer table), measured torso rotation here
         writeFileSync(join(dir, 'metrics.json'), JSON.stringify(metrics, null, 1));

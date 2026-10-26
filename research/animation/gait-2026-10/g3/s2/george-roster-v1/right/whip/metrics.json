@@ -1,0 +1,129 @@
+{
+ "scenario": "whip",
+ "rig": "george-roster-v1",
+ "facing": 1,
+ "segments": {
+  "idle0": {
+   "frames": 20,
+   "vmax": 0,
+   "heightScale": 1.01201
+  },
+  "toRope": {
+   "frames": 107,
+   "vmax": 275.1,
+   "heightScale": 1.01201,
+   "steadyFrames": 106,
+   "perFoot": {
+    "near": {
+     "stances": 3,
+     "driftMedian": 0,
+     "driftMax": 0,
+     "netMedian": 0
+    },
+    "far": {
+     "stances": 4,
+     "driftMedian": 0,
+     "driftMax": 0,
+     "netMedian": 0
+    }
+   },
+   "driftMedian": 0,
+   "driftMax": 0,
+   "cadenceStepsPerS": 4.53,
+   "stanceFraction": 0.604,
+   "doubleSupportFraction": 0.104,
+   "flightFraction": 0,
+   "stanceFrames": 13,
+   "hipBobPx": 7.01,
+   "hipAtNearMidStancePx": -1.75,
+   "hipMax": 4.96,
+   "hipMin": -2.05,
+   "moveBlend": 1,
+   "torsoRotMedian": 0.25,
+   "leanBendRad": 0.25,
+   "armLenVarPx": 0,
+   "phaseRadPerPx": 0.0469,
+   "bodyXPerFootSweepRatio": null,
+   "plantedFootSpeedMedian": 0,
+   "plantedFootSpeedPctOfBody": 0
+  },
+  "returning": {
+   "frames": 150,
+   "vmax": 275.1,
+   "heightScale": 1.01201,
+   "steadyFrames": 149,
+   "perFoot": {
+    "near": {
+     "stances": 6,
+     "driftMedian": 0,
+     "driftMax": 0,
+     "netMedian": 0
+    },
+    "far": {
+     "stances": 5,
+     "driftMedian": 0,
+     "driftMax": 0,
+     "netMedian": 0
+    }
+   },
+   "driftMedian": 0,
+   "driftMax": 0,
+   "cadenceStepsPerS": 4.83,
+   "stanceFraction": 0.523,
+   "doubleSupportFraction": 0.094,
+   "flightFraction": 0,
+   "stanceFrames": 13,
+   "hipBobPx": 6.99,
+   "hipAtNearMidStancePx": -1.87,
+   "hipMax": 4.95,
+   "hipMin": -2.04,
+   "moveBlend": 1,
+   "torsoRotMedian": -0.25,
+   "leanBendRad": 0.25,
+   "armLenVarPx": 0,
+   "phaseRadPerPx": 0.0469,
+   "bodyXPerFootSweepRatio": null,
+   "plantedFootSpeedMedian": 0,
+   "plantedFootSpeedPctOfBody": 0
+  },
+  "after": {
+   "frames": 40,
+   "vmax": 0,
+   "heightScale": 1.01201
+  }
+ },
+ "stopSlide": {
+  "after": {
+   "stillFrames": 40,
+   "bodyMovedPx": 0,
+   "footTravelPx": {
+    "near": 11.66,
+    "far": 4.96
+   },
+   "footNetPx": {
+    "near": -11.66,
+    "far": 4.96
+   },
+   "walkPhaseStart": 5.479,
+   "walkPhaseEnd": 5.479
+  }
+ },
+ "maxStep": {
+  "hipYPx": 1.81,
+  "nearFootRelXPx": 49.92,
+  "nearFootYPx": 9.7,
+  "farFootYPx": 5.24
+ },
+ "ropeTurn": {
+  "windowFrames": 25,
+  "maxFootStepPx": 56.52,
+  "maxHipStepPx": 1.81,
+  "maxFootLiftStepPx": 5.19,
+  "bodyXAtTurn": 818.142,
+  "facingBefore": -1,
+  "facingAfter": -1,
+  "turnFootWorldStepPx": 0,
+  "turnBothFeetWorldStepPx": 2.34,
+  "plantedFootBodyRelRangePx": 55.02
+ }
+}

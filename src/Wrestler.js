@@ -100,8 +100,16 @@ export function gaitV2Config() {
     const stride = num('gaitStride', GAIT_V2_DEFAULTS.stride);
     const params = { STRIDE: GAIT.STRIDE * stride, STANCE: GAIT.STANCE, LIFT: GAIT.LIFT };
     return { stride, knee: num('gaitKnee', GAIT_V2_DEFAULTS.knee), leanWalk: num('leanWalk', GAIT_LEAN.walk), leanRun: num('leanRun', GAIT_LEAN.run),
-        params, freq: params.STANCE * Math.PI * 2 / params.STRIDE };
+        params, freq: params.STANCE * Math.PI * 2 / params.STRIDE,
+        run: { on: q.get('runGait') !== 'off', speed: num('runSpeed', RUN_SPEED), stance: num('runStance', RUN_GAIT.STANCE), cadence: num('runCadence', RUN_GAIT.CADENCE),
+            stride: num('runStride', 1), lift: num('runLift', RUN_GAIT.LIFT), hipBase: RUN_GAIT.HIP_BASE, hipDrop: RUN_GAIT.HIP_DROP } };
 }
+// ?gait=v2 Stage 3: the run's own gait. STANCE < .5 gives a flight phase (both feet off the mat). The stride is DERIVED from a
+// target cadence (steps/s) so it fits each body: cycles/s = speed * STANCE / (heightScale * STRIDE) and a step is half a cycle, so
+// STRIDE = 2 * speed * STANCE / (cadence * heightScale). Knobs: &runCadence= &runStance= &runLift= &runSpeed= and &runStride=
+// (a multiplier on the derived stride; cadence then falls as it rises). &runGait=off = Stage 2's run (the walk gait, no turn mirror). HIP_*: the run hip sits HIP_BASE px below the straight-leg
+// height in flight and drops a further HIP_DROP px at mid-stance (unscaled px).
+const RUN_GAIT = { STANCE: 0.40, CADENCE: 3.25, LIFT: 32, HIP_BASE: 4, HIP_DROP: 9 };
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
 // the AI's begging-off threshold (AIHandler george.retreatStamina).
@@ -450,6 +458,7 @@ export default class Wrestler {
         this._gaitRest    = 1; // v2: 0 walking .. 1 settled into the rest stance
         this._gaitLift    = 1; // v2: swing-foot lift weight, eases to 0 when the body is still
         this._gaitLeanExtra = 0; // v2: smoothed accel/brake lean, rad
+        this._gaitRunW    = 0; // v2: run-gait weight (follows moveBlend while running, fades out after)
         this.stamina      = STAMINA_MAX;
         this.flipProgress  = 0;
         this.flipDir       = 1;
@@ -938,13 +947,14 @@ export default class Wrestler {
             // v2: the feet are drawn at s * _heightScale, so travel is measured in that scale or the planted foot creeps
             const g = this._gaitV2;
             const unscaled = travelSpeed / (g ? this.s * this._heightScale : this.s);
-            this.walkPhase = ((this.walkPhase + this._walkPhaseDir * unscaled * dt * (g ? g.freq : WALK_FREQ)) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+            this.walkPhase = ((this.walkPhase + this._walkPhaseDir * unscaled * dt * (g ? this._gaitParamsAt(this._gaitRunW).freq : WALK_FREQ)) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
             this._clamp();
         } else if (!this._gaitV2) {
             this.walkPhase *= Math.pow(0.85, dt * 60);
         }
         if (this._gaitV2) {
             // still: the phase stays frozen (feet world-fixed) and a swing foot is set down where it is
+            this._gaitRunW *= Math.exp(-dt * 8);
             this._gaitLift += ((travelSpeed > 0.5 ? 1 : 0) - this._gaitLift) * (1 - Math.exp(-dt * 10));
             this._gaitRest += ((travelSpeed > 0.5 ? 0 : 1) - this._gaitRest) * (1 - Math.exp(-dt * (travelSpeed > 0.5 ? 14 : 6)));
             const along = Math.sign(this.vx) * (this.vx - vx0) / (WALK_ACCEL * this.s * dt);
@@ -1242,6 +1252,16 @@ export default class Wrestler {
         if (this.stateTimer <= 0) this._startRiseUp();
     }
 
+    // ?gait=v2: the gait block for run weight `w` (0 = the walk's, 1 = the run's own), with the lock frequency to match.
+    _gaitParamsAt(w) {
+        const g = this._gaitV2, wk = g.params;
+        if (!(w > 0)) return { ...wk, freq: g.freq };
+        const r = g.run;
+        const run = { STRIDE: 2 * r.speed * r.stance / (r.cadence * this._heightScale) * r.stride, STANCE: r.stance, LIFT: r.lift };
+        const mix = { STRIDE: wk.STRIDE + (run.STRIDE - wk.STRIDE) * w, STANCE: wk.STANCE + (run.STANCE - wk.STANCE) * w, LIFT: wk.LIFT + (run.LIFT - wk.LIFT) * w };
+        return { ...mix, freq: mix.STANCE * Math.PI * 2 / mix.STRIDE };
+    }
+
     tickRun(dt) {
         if (this.state !== 'running') return;
 
@@ -1250,11 +1270,17 @@ export default class Wrestler {
         // running his way. A zero here became facing = 0 at the turn, and the
         // next draw threw, freezing AI-vs-AI matches (Derek, 2026-10-16).
         const dir = Math.sign(this.runTarget - this.x) || this.runFacing || 1;
-        this.x += dir * RUN_SPEED * this.s * dt;
-        if (this._gaitV2) {
-            // same lock as the walk: travel over the draw scale, direction against facing, no 0.8
+        const g2 = this._gaitV2;
+        const runSpeed = g2 ? g2.run.speed : RUN_SPEED;
+        const x0 = this.x;
+        this.x += dir * runSpeed * this.s * dt;
+        if (g2) {
+            // same lock as the walk: travel over the draw scale, direction against facing, no 0.8. The run's own gait blends in
+            // by moveBlend; travel stops at the turn point (the body is put on it below) so the planted foot is not dragged.
             const phaseDir = dir === this.facing ? 1 : -1;
-            this.walkPhase = ((this.walkPhase + phaseDir * (RUN_SPEED * dt / this._heightScale) * this._gaitV2.freq) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+            const travel = g2.run.on ? Math.min(runSpeed * dt, Math.abs(this.runTarget - x0) / this.s) : runSpeed * dt;
+            this._gaitRunW = g2.run.on ? this.moveBlend : 0;
+            this.walkPhase = ((this.walkPhase + phaseDir * (travel / this._heightScale) * this._gaitParamsAt(this._gaitRunW).freq) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
             this._gaitLift = 1;
             this._gaitRest = 0;
         } else {
@@ -1270,6 +1296,9 @@ export default class Wrestler {
             const b = ringBoundsAtY(this.y);
             this.runFacing = -dir;
             this.facing    = -dir;
+            // v2: facing flips, so the stride mirrors about the hip. phase -> STANCE*2pi - phase maps every foot offset to its
+            // negative (stance and swing alike), which keeps both feet where they were on the mat: the planted one stays planted
+            if (g2?.run.on) this.walkPhase = (((this._gaitParamsAt(this._gaitRunW).STANCE * Math.PI * 2 - this.walkPhase) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
             this.runTarget = dir > 0 ? b.left + 20 : b.right - 20;
             this.runPhase  = 'returning';
             this.scene.triggerRopeBounce?.('far');
@@ -2974,7 +3003,12 @@ export default class Wrestler {
         let drawPose = this._recoveryPose() ?? this.pose;
         const g2 = this._gaitV2;
         if (g2) {
-            this.skeleton._gaitParams = g2.params;
+            // the run gait's weight; a wrestler no longer running fades back to the walk's stride over ~.12 s (no foot snap)
+            if (!locomotion) this._gaitRunW = 0;
+            const rw = locomotion ? this._gaitRunW : 0;
+            this.skeleton._gaitParams = this._gaitParamsAt(rw);
+            this.skeleton._gaitRun = rw > 0 ? { w: rw, base: g2.run.hipBase, drop: g2.run.hipDrop } : null;
+            if (rw > 0) liftScale = (0.5 + 0.5 * rw);
             this.skeleton._gaitHold = locomotion;
             this.skeleton._gaitRest = locomotion ? this._gaitRest : 0;
             liftScale *= this._gaitLift;

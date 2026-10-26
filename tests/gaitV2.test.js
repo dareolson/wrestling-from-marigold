@@ -58,7 +58,8 @@ test('run: no 0.8, the planted foot stays put, direction follows travel against 
     for (const hs of [0.79, 1.012]) for (const facing of [1, -1]) {
         const { w } = walker('?gait=v2', { _heightScale: hs, state: 'running', runPhase: 'toRope', runTarget: facing > 0 ? 800 : 0, runFacing: facing, facing,
             scene: { time: { now: 1000 }, triggerRopeBounce: noop }, x: 400 });
-        const g = w._gaitV2.params;
+        for (let i = 0; i < 20; i++) w.tickRun(1 / 60); // the run's own gait blends in with moveBlend; measure once it has
+        const g = w._gaitParamsAt(w._gaitRunW);
         let prev = null, worst = 0;
         for (let i = 0; i < 60; i++) {
             w.tickRun(1 / 60);

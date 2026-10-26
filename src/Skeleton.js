@@ -239,6 +239,20 @@ export function footGait(phase, g = GAIT) {
     return { fx: g.STRIDE * (-0.5 + e), lift: g.LIFT * liftFrac, liftFrac };
 }
 
+// ?gait=v2 run hip (PLAN_GAIT Stage 3): 1 at mid-stance of whichever foot is down, 0 when both feet are off the mat.
+// The run hip is lowest at mid-stance (the stance leg bends under the body) and highest in flight.
+export function runStanceWeight(phase, stance) {
+    let w = 0;
+    for (const off of [0, Math.PI]) {
+        const t = ((((phase + off) % TAU) + TAU) % TAU) / TAU;
+        if (t < stance) w = Math.max(w, Math.sin(Math.PI * t / stance));
+    }
+    return w;
+}
+
+// Smooth max(a, b): never below the hard max, so a leg that has to reach stays reachable, but without the corner.
+const softMax = (a, b, k) => (a + b + Math.sqrt((a - b) * (a - b) + k * k)) / 2;
+
 // Two-bone IK (law of cosines). Root at (hx,hy), target at (fx,fy); bone lengths
 // L1 (thigh) and L2 (shin). kneeDir (±1) picks which way the knee points.
 // Angles use the skeleton convention: 0 = straight down, +angle rotates toward +x
@@ -1459,12 +1473,27 @@ export default class Skeleton {
                     y - nearHipOffset.y - nearMax * 0.99,
                     y - farHipOffset.y - farMax * 0.99,
                 );
+                const gr = this._gaitRun;
+                if (gr && gr.w > 0) {
+                    // ?gait=v2 run hip: never above what the lifted feet allow, otherwise a stance dip and a flight rise
+                    const liftA = footA.lift * s * liftScale + (footA.liftAbs ?? 0) * s, liftB = footB.lift * s * liftScale + (footB.liftAbs ?? 0) * s;
+                    const con = Math.max(y - liftA - nearHipOffset.y - reachA, y - liftB - farHipOffset.y - reachB);
+                    const top = hipYstand + (gr.base + gr.drop * runStanceWeight(walkPhase, (this._gaitParams ?? GAIT).STANCE)) * s;
+                    hipYwalk += (softMax(con, top, 3 * s) - hipYwalk) * gr.w;
+                }
             } else {
                 const dxA = footA.fx * s, dxB = footB.fx * s;
                 const reachA = Math.sqrt(Math.max(0, LMAX * LMAX - dxA * dxA));
                 const reachB = Math.sqrt(Math.max(0, LMAX * LMAX - dxB * dxB));
                 hipYwalk = ankleGndY - Math.min(reachA, reachB);
                 hipYstand = ankleGndY - LMAX * 0.99;
+                const gr = this._gaitRun;
+                if (gr && gr.w > 0) {
+                    const liftA = footA.lift * s * liftScale + (footA.liftAbs ?? 0) * s, liftB = footB.lift * s * liftScale + (footB.liftAbs ?? 0) * s;
+                    const con = Math.max(ankleGndY - liftA - reachA, ankleGndY - liftB - reachB);
+                    const top = hipYstand + (gr.base + gr.drop * runStanceWeight(walkPhase, (this._gaitParams ?? GAIT).STANCE)) * s;
+                    hipYwalk += (softMax(con, top, 3 * s) - hipYwalk) * gr.w;
+                }
             }
             hipY = hipYstand + (hipYwalk - hipYstand) * Math.min(1, moveBlend);
             hipY += crouch * legLen * 0.22; // milder while moving; IK bends the knees

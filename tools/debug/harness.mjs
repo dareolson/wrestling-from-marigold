@@ -12,6 +12,8 @@
 //              advances WFM_TS× faster than wall time
 //   WFM_P1 / WFM_P2 — character preset per side (?p1=/?p2= params), e.g.
 //              WFM_P1=thesz to sim Thesz vs George
+//   WFM_INIT_SCRIPT — path to a JS file run in the page before any game code
+//              (page.addInitScript), e.g. to seed Math.random before game init
 //   WFM_QS   — raw extra querystring appended as-is, e.g. WFM_QS=lighting=0
 //              (arena-lighting dev toggle, see src/scenes/arenaLighting.js)
 
@@ -59,6 +61,7 @@ export async function launch() {
         args: ['--autoplay-policy=no-user-gesture-required'],
     });
     const page = await browser.newPage({ viewport: { width: 1100, height: 700 } });
+    if (process.env.WFM_INIT_SCRIPT) await page.addInitScript({ path: process.env.WFM_INIT_SCRIPT });
     page.on('pageerror', e => console.log(`[PAGEERROR] ${e.message}`));
     page.on('console', m => { if (m.type() === 'error') console.log(`[CONSOLE ERR] ${m.text()}`); });
 

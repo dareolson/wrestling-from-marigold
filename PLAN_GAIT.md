@@ -45,8 +45,38 @@ so one fix reaches the whole roster. Sonnet executes; Opus reviews at gates; Der
   scurrying, no weight, knees, arms, run = fast walk, lean, starts/stops, turnaround at ropes. Only the issues he
   names go forward; drop the rest.
 
-## Stage 2: walk (behind `?gait=v2`)
-Fix only what G1 named. Candidates and their knobs:
+## G1 verdict (Derek 2026-10-25, recorded by Opus)
+1. **More forward lean in every gait, more in the run.** "He's 90 degrees": the body is dead vertical.
+   Cause (Opus, from source): `lean` is passed to `updateUpright` but never drawn (Skeleton.js:1174, the torso is
+   a rigid upright block; the old shoulder shift was removed). D's 0.07 has done nothing. The existing pitch is
+   `bend` (`_applyTorsoBend`, upper body about the hip pivot, used by moves).
+2. **"Something about the gait is still a little off."** He hasn't named it. Opus's read of the strips: stride short
+   for the leg, knees nearly straight, run looks like walking in place. Treat as a hypothesis; answer it with the A/B in T2.2.
+3. Mechanical faults go in regardless (Opus): H, A, E, R. Feet must not slide.
+
+## Stage 2: lean + foot lock (behind `?gait=v2`), Derek's #1 first
+- T2.1 Foot lock: phase advance uses the DRAW scale (`this.s * this._heightScale`) in walk and run (H).
+  Run phase from travel and `_walkPhaseDir`, no `* 0.8` (A). Stop: no phase decay while still; finish the
+  swing foot to plant, then blend to idle (E). Target: drift ≤ 1 px per stance on both rigs, walk/run/stop.
+- T2.2 Lean through `bend`. In `Wrestler.draw`, with the flag on, add a gait bend to the pose passed to the skeleton:
+  `bend += GAIT_LEAN.walk * gaitBlend * (1 - runBlend) + GAIT_LEAN.run * runBlend`.
+  - Start values: walk .10, run .25 rad.
+  - Accel/brake: lean scales with |accel| (into a start, back on a brake), at most ±.06 extra.
+  - Facing-relative like the rest of `bend`. Copy the pose; never mutate `this.pose`.
+  - Leave the old `lean` arg alone when the flag is off.
+  - Hips stay over the planted feet (bend pitches above the hip, so feet/IK are untouched; check foot drift is still ≤ 1 px).
+  - Arms and head ride the bend (UPPER_BODY_PARTS); check the shoulder joints don't open.
+- T2.3 A/B page for item 2: four columns, each in a normal-speed loop on Lou:
+  - v2 lean only
+  - plus stride ×1.3 (WALK_FREQ re-derived, so cadence drops)
+  - plus knee flex (more crouch while moving, ~.1)
+  - plus all three
+  - Same for the run. Use URL params for the knobs (`&gaitStride=`, `&gaitKnee=`, `&leanWalk=`, `&leanRun=`) so Derek can scrub values himself.
+- **G2 (Derek):** pick the lean values and which A/B column fixes "a little off". Open the page in his browser
+  (`open <path>`) and give a `file:///` link.
+
+## Stage 2b: walk weight (only what G2 picks)
+Candidates and their knobs:
 - Weight: STANCE .55 → ~.62 (real double support), slower cadence by longer STRIDE (re-derive WALK_FREQ; keep foot lock).
   Start from measured leg length; SPEED stays 140 unless Derek asks.
 - Stop slide (E): settle the feet to idle by planting, not by decaying the phase. Finish the current swing,
@@ -60,7 +90,7 @@ Fix only what G1 named. Candidates and their knobs:
 - `RUN_GAIT = { STRIDE, STANCE < .5, LIFT }` with its own derived frequency. Blend walk→run gait params by `runBlend`.
 - A: remove the `* 0.8`; advance the phase from actual travel and direction like the walk (`_walkPhaseDir`).
 - C: run hip model, lowest at mid-stance and highest in flight (flight fraction from STANCE).
-- D: run lean ~.15–.2 (pick from film); arm pump stays (RUN_ELBOW), amplitude from stride.
+- D: run lean = G2's value (T2.2); arm pump stays (RUN_ELBOW), amplitude from stride. Knee drive (swing knee higher) if G2 picked knee flex.
 - Rope rebound: the turn at the ropes keeps one foot planted through the bounce (measure drift).
 - Checks: drift ≤ 1 px per stance, flight fraction > 0, cadence target agreed at G1 (big-man run ~3–3.5 steps/s).
 - **G3 (Derek):** quick loop, v1 vs v2, run + whip + rebound.

@@ -218,22 +218,23 @@ export const GAIT = {
     get WALK_FREQ() { return this.STANCE * TAU / this.STRIDE; },
 };
 
-// Foot offset for one leg at a given gait phase.
+// Foot offset for one leg at a given gait phase. `g` is the gait block ({ STRIDE, STANCE, LIFT }); the
+// default is the global GAIT, ?gait=v2 hands each Wrestler's own (Skeleton._gaitParams).
 //   fx       — horizontal offset from the hip, unscaled px (+ = forward of hip)
 //   lift     — vertical lift off the mat, unscaled px
 //   liftFrac — 0 planted … 1 peak of swing
-export function footGait(phase) {
+export function footGait(phase, g = GAIT) {
     const t = (((phase % TAU) + TAU) % TAU) / TAU; // 0..1
-    if (t < GAIT.STANCE) {
+    if (t < g.STANCE) {
         // Stance: foot planted, sweeping linearly from front to back at ground speed.
-        const u = t / GAIT.STANCE;
-        return { fx: GAIT.STRIDE * (0.5 - u), lift: 0, liftFrac: 0 };
+        const u = t / g.STANCE;
+        return { fx: g.STRIDE * (0.5 - u), lift: 0, liftFrac: 0 };
     }
     // Swing: foot lifts in a sine arc and eases forward to the next plant.
-    const u = (t - GAIT.STANCE) / (1 - GAIT.STANCE);
+    const u = (t - g.STANCE) / (1 - g.STANCE);
     const e = u * u * (3 - 2 * u);                 // smoothstep — accelerate then settle
     const liftFrac = Math.sin(Math.PI * u);
-    return { fx: GAIT.STRIDE * (-0.5 + e), lift: GAIT.LIFT * liftFrac, liftFrac };
+    return { fx: g.STRIDE * (-0.5 + e), lift: g.LIFT * liftFrac, liftFrac };
 }
 
 // Two-bone IK (law of cosines). Root at (hx,hy), target at (fx,fy); bone lengths
@@ -1404,8 +1405,8 @@ export default class Skeleton {
         const ankleGndY  = y - ankleRest;
         const LMAX       = legLen * 0.985;        // never fully lock the knee
 
-        const footA = footGait(walkPhase);
-        const footB = footGait(walkPhase + Math.PI);
+        const footA = footGait(walkPhase, this._gaitParams ?? GAIT);
+        const footB = footGait(walkPhase + Math.PI, this._gaitParams ?? GAIT);
 
         // Crouch: pose-driven knee bend — hip drops by the vertical extent the
         // bent legs lose, so feet stay planted at the mat.

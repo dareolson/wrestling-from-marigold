@@ -83,6 +83,23 @@ const sellArtCandidate = () => defaultOnFlag('sellart', 'v1');
 const riseFixCandidate = () => defaultOnFlag('risefix', '1');
 // Overlays that switch on at the swap (the drunken sway of a worn wrestler) fade in over this instead.
 const RISE_OVERLAY_RAMP_MS = 300;
+// ?gait=v2 (PLAN_GAIT Stage 2), opt-in until Derek promotes it. Off = null, and every v2 branch below is skipped.
+//   foot lock: the phase advances from travel over the DRAW scale (s * _heightScale), the run has no 0.8, a stop freezes
+//     the phase (feet stay put) and the swing foot is set down where it is (_gaitLift).
+//   lean: `bend` (the torso pitch Skeleton actually draws; `lean` is not drawn). Knobs for the A/B page:
+//     &leanWalk= &leanRun= (rad), &gaitStride= (x STRIDE, WALK_FREQ re-derived), &gaitKnee= (extra crouch while moving).
+export const GAIT_LEAN = { walk: 0.10, run: 0.25 };
+const GAIT_LEAN_ACCEL = 0.06; // at most this much extra into a start / back on a brake
+export function gaitV2Config() {
+    if (typeof location === 'undefined') return null;
+    const q = new URLSearchParams(location.search);
+    if (q.get('gait') !== 'v2') return null;
+    const num = (name, d) => { const v = parseFloat(q.get(name)); return Number.isFinite(v) ? v : d; };
+    const stride = num('gaitStride', 1);
+    const params = { STRIDE: GAIT.STRIDE * stride, STANCE: GAIT.STANCE, LIFT: GAIT.LIFT };
+    return { stride, knee: num('gaitKnee', 0), leanWalk: num('leanWalk', GAIT_LEAN.walk), leanRun: num('leanRun', GAIT_LEAN.run),
+        params, freq: params.STANCE * Math.PI * 2 / params.STRIDE };
+}
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
 // the AI's begging-off threshold (AIHandler george.retreatStamina).
@@ -427,6 +444,9 @@ export default class Wrestler {
         this.vx           = 0; // walk velocity, px/s — ramps toward/away from target speed
         this.vy           = 0;
         this._walkPhaseDir = 1; // last stride direction, held through brake-to-stop frames
+        this._gaitV2      = gaitV2Config(); // null unless ?gait=v2
+        this._gaitLift    = 1; // v2: swing-foot lift weight, eases to 0 when the body is still
+        this._gaitLeanExtra = 0; // v2: smoothed accel/brake lean, rad
         this.stamina      = STAMINA_MAX;
         this.flipProgress  = 0;
         this.flipDir       = 1;
@@ -880,6 +900,7 @@ export default class Wrestler {
         // with input held, braking toward zero with none) — this is what gives
         // starts/stops/reversals real time instead of snapping to target speed.
         const rate = (len > 0 ? WALK_ACCEL : WALK_BRAKE) * this.s * dt;
+        const vx0 = this.vx;
         const dvx = targetVx - this.vx, dvy = targetVy - this.vy;
         const dv = Math.hypot(dvx, dvy);
         if (dv <= rate || dv === 0) {
@@ -911,11 +932,20 @@ export default class Wrestler {
         if (travelSpeed > 0.5) {
             this.x += this.vx * dt;
             this.y += this.vy * dt;
-            const unscaled = travelSpeed / this.s;
-            this.walkPhase = ((this.walkPhase + this._walkPhaseDir * unscaled * dt * WALK_FREQ) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+            // v2: the feet are drawn at s * _heightScale, so travel is measured in that scale or the planted foot creeps
+            const g = this._gaitV2;
+            const unscaled = travelSpeed / (g ? this.s * this._heightScale : this.s);
+            this.walkPhase = ((this.walkPhase + this._walkPhaseDir * unscaled * dt * (g ? g.freq : WALK_FREQ)) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
             this._clamp();
-        } else {
+        } else if (!this._gaitV2) {
             this.walkPhase *= Math.pow(0.85, dt * 60);
+        }
+        if (this._gaitV2) {
+            // still: the phase stays frozen (feet world-fixed) and a swing foot is set down where it is
+            this._gaitLift += ((travelSpeed > 0.5 ? 1 : 0) - this._gaitLift) * (1 - Math.exp(-dt * 10));
+            const along = Math.sign(this.vx) * (this.vx - vx0) / (WALK_ACCEL * this.s * dt);
+            const target = GAIT_LEAN_ACCEL * Math.max(-1, Math.min(1, along)) * this._walkPhaseDir;
+            this._gaitLeanExtra += (target - this._gaitLeanExtra) * (1 - Math.exp(-dt * 12));
         }
 
         if (len > 0) {
@@ -1217,7 +1247,14 @@ export default class Wrestler {
         // next draw threw, freezing AI-vs-AI matches (Derek, 2026-10-16).
         const dir = Math.sign(this.runTarget - this.x) || this.runFacing || 1;
         this.x += dir * RUN_SPEED * this.s * dt;
-        this.walkPhase = (this.walkPhase + RUN_SPEED * dt * WALK_FREQ * 0.8) % (Math.PI * 2);
+        if (this._gaitV2) {
+            // same lock as the walk: travel over the draw scale, direction against facing, no 0.8
+            const phaseDir = dir === this.facing ? 1 : -1;
+            this.walkPhase = ((this.walkPhase + phaseDir * (RUN_SPEED * dt / this._heightScale) * this._gaitV2.freq) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+            this._gaitLift = 1;
+        } else {
+            this.walkPhase = (this.walkPhase + RUN_SPEED * dt * WALK_FREQ * 0.8) % (Math.PI * 2);
+        }
         this.moveBlend = Math.min(1, this.moveBlend + dt * 8);
 
         const past = dir > 0 ? this.x >= this.runTarget : this.x <= this.runTarget;
@@ -2916,7 +2953,7 @@ export default class Wrestler {
         const gaitBlend = locomotion ? this.moveBlend : 0;
         const gaitPhase = locomotion ? this.walkPhase : 0;
         const lean      = this.facing * (0.07 * gaitBlend + (this.pose.lean ?? 0)) + wooze;
-        const liftScale = state === 'running' ? 1.0 : 0.5;
+        let liftScale   = state === 'running' ? 1.0 : 0.5;
         const runBlend  = state === 'running' ? gaitBlend : 0;
         // Choreography outranks the combat-ready guard — see _choreoOwnsPose().
         let guard = choreography ? 0 : this.combatBlend;
@@ -2926,8 +2963,20 @@ export default class Wrestler {
         // Rev 3: a rig that goes round through a via pose gives the guard up completely until the hand has passed that pose
         // (hw >= AROUND.standW) and takes it back over the last of the release, so the via pose is the one that was probed.
         if (this._recoveryHandOnBack()) guard *= recoveryVia(this._backSell().data) ? 1 - Math.min(1, this._recoveryHandWeight() / AROUND.standW) : 1 - this._recoveryHandWeight();
+        // ?gait=v2: torso pitch through `bend` on a copy of the pose (this.pose is never touched), knee flex through
+        // `crouch`, the swing foot lowered when still, and this wrestler's own stride handed to the skeleton.
         // ?aftermath=v2: favour the hurt part on a copy of the pose (null otherwise).
-        this.skeleton.updateUpright(x, y, s, facing, this._recoveryPose() ?? this.pose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
+        let drawPose = this._recoveryPose() ?? this.pose;
+        const g2 = this._gaitV2;
+        if (g2) {
+            this.skeleton._gaitParams = g2.params;
+            liftScale *= this._gaitLift;
+            if (locomotion && gaitBlend > 0) {
+                const gaitLean = g2.leanWalk * gaitBlend * (1 - runBlend) + g2.leanRun * runBlend + (state === 'running' ? 0 : this._gaitLeanExtra * gaitBlend);
+                drawPose = { ...drawPose, bend: (drawPose.bend ?? 0) + gaitLean, crouch: (drawPose.crouch ?? 0) + g2.knee * gaitBlend };
+            }
+        }
+        this.skeleton.updateUpright(x, y, s, facing, drawPose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
         if (this._activeMove && this._floorContacts) {
             const turn = (this.pose.tilt ?? 0) + (this.pose.bend ?? 0);
             for (const { point, w } of this._floorContacts) this.skeleton.holdOnFloor(point, y, s, w, turn);

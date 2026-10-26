@@ -4,6 +4,9 @@
 //     scenario: walk (walk toward the other rig, stop, back away, stop) | run (run key: to the ropes, rebound, back)
 //               | whip (the subject is Irish-whipped by the other rig)
 //     rig:      thesz-procreate-v1 | george-roster-v1
+//   WFM_FACINGS=right  film only the right-facing runs (default both)
+//   WFM_GAIT_QS="gait=v2&gaitStride=1.3"  extra query flags (default: none = today's gait)
+//   node tools/debug/gait_film.mjs --compare <dirA> <dirB>   exact diff of two runs' samples.json (flag-off identity check)
 //
 // Like aftermath_film.mjs the page is driven by hand: the Phaser loop is put to sleep right after
 // init and the game advances in fixed 1/60 s steps (game.step), so every frame is a known game time
@@ -28,18 +31,20 @@ const CAPTURE_EVERY = 2;
 const CROP = { w: 440, h: 300 };
 const TAU = Math.PI * 2;
 
-const INIT_SCRIPT = `(() => { let a = ${SEED}; Math.random = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a);
+const INIT_SCRIPT = `(() => { let a = ${SEED}; window.__reseed = () => { a = ${SEED}; }; Math.random = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();`;
 
 // In-page: put the loop to sleep, park the pair, install the step/sample function.
 const SETUP = ({ subjectX, subjectY, facing, otherX, otherY }) => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0];
     game.loop.sleep();
+    window.__reseed(); // frames that ran before the sleep consumed a load-time-dependent number of draws
     sc.tweens.getDelta = () => 1000 / 60;
     const w = sc.w1, o = sc.w2;
     w.x = subjectX; w.y = subjectY; w.facing = facing;
     o.x = otherX; o.y = otherY;
-    const st = (window.__gait = { T: sc.time.now, prev: { x: w.x, y: w.y } });
+    // the stepped clock starts at a fixed time: idle sway reads scene.time.now, which otherwise depends on page load time
+    const st = (window.__gait = { T: 100000, prev: { x: w.x, y: w.y } });
     st.step = () => {
         st.T += 1000 / 60;
         game.step(st.T, 1000 / 60);
@@ -51,6 +56,7 @@ const SETUP = ({ subjectX, subjectY, facing, otherX, otherY }) => {
             hs: w._heightScale ?? 1, moveBlend: +w.moveBlend.toFixed(4), walkPhase: +w.walkPhase.toFixed(4), s: w.s,
             near: f(sk.nearFoot), far: f(sk.farFoot), hipY: hip ? +hip.y.toFixed(3) : null, hipX: hip ? +hip.x.toFixed(3) : null,
             torsoRot: +(sk.torso?.rotation ?? 0).toFixed(4), pose: !!w.pose,
+            pts: Object.fromEntries(['neck', 'nearShoulder', 'farShoulder', 'nearElbow', 'farElbow', 'nearWrist', 'farWrist'].map(k => [k, p[k] ? [+p[k].x.toFixed(3), +p[k].y.toFixed(3)] : null])),
         };
         return out;
     };
@@ -138,6 +144,8 @@ function analyse(samples, labels, dt) {
                 hipAtNearMidStancePx: round(midHip), // + = lower than mean (y down). Walk model: hip highest mid-stance -> negative
                 hipMax: round(Math.max(...hip) - hipMean), hipMin: round(Math.min(...hip) - hipMean),
                 moveBlend: round(median(win.map(s => s.moveBlend)), 3), torsoRotMedian: round(median(win.map(s => s.torsoRot)), 4),
+                leanBendRad: round(median(win.map(s => s.torsoRot * s.facing)), 4), // bend = facing * torso rotation; 0 = upright
+                armLenVarPx: round(Math.max(...['near', 'far'].flatMap(side => ['Shoulder>Elbow', 'Elbow>Wrist'].map(pair => { const [a, b] = pair.split('>'); const d = win.map(q => q.pts[side + a] && q.pts[side + b] ? Math.hypot(q.pts[side + a][0] - q.pts[side + b][0], q.pts[side + a][1] - q.pts[side + b][1]) : null).filter(v => v != null); return d.length ? Math.max(...d) - Math.min(...d) : 0; })))),
                 phaseRadPerPx: round(median(win.slice(1).map((s, i) => { const dx = Math.abs(s.x - win[i].x) ; let dp = Math.abs(s.walkPhase - win[i].walkPhase); if (dp > Math.PI) dp = TAU - dp; return dx > 0.05 ? dp / dx * s.s : null; }).filter(q => q != null)), 5),
                 bodyXPerFootSweepRatio: null,
             });
@@ -170,7 +178,7 @@ function stopSlide(samples, labels, dt, seg) {
 async function filmRun(scenario, rig, facing, outRoot, ringInfo) {
     const other = rig === 'george-roster-v1' ? 'thesz-procreate-v1' : 'george-roster-v1';
     process.env.WFM_P1 = rig; process.env.WFM_P2 = other;
-    process.env.WFM_QS = 'notitle=1&sellart=off&aftermath=off';
+    process.env.WFM_QS = ['notitle=1', 'sellart=off', 'aftermath=off', process.env.WFM_GAIT_QS].filter(Boolean).join('&');
     const dir = join(outRoot, rig, facing > 0 ? 'right' : 'left', scenario);
     rmSync(dir, { recursive: true, force: true });
     mkdirSync(join(dir, 'frames'), { recursive: true });
@@ -187,6 +195,8 @@ async function filmRun(scenario, rig, facing, outRoot, ringInfo) {
         // the game turns each wrestler to face the other, so `facing` is set by parking the other rig at that end, back row, out of frame
         const mid = (b.left + b.right) / 2;
         await page.evaluate(SETUP, { subjectX: mid - facing * 150, subjectY: 360, facing, otherX: facing > 0 ? b.right - 20 : b.left + 20, otherY: 150 });
+        // settle: entrance poses and tweens that were running in real time finish in stepped time, so every run starts from the same state
+        await page.evaluate(() => { for (let i = 0; i < 300; i++) window.__gait.step(); });
         const kDir = facing > 0 ? 'd' : 'a', kRev = facing > 0 ? 'a' : 'd';
 
         const samples = [], labels = [], shots = [];
@@ -250,6 +260,8 @@ async function filmRun(scenario, rig, facing, outRoot, ringInfo) {
 
         const dt = STEP_MS / 1000;
         const metrics = { scenario, rig, facing, ...analyse(samples, labels, dt), stopSlide: {} };
+        const stepMax = f => Math.max(0, ...samples.slice(1).map((q, i) => Math.abs(f(q) - f(samples[i]))));
+        metrics.maxStep = { hipYPx: round(stepMax(q => q.hipY)), nearFootRelXPx: round(stepMax(q => q.near.x - q.x)), nearFootYPx: round(stepMax(q => q.near.y)), farFootYPx: round(stepMax(q => q.far.y)) };
         for (const seg of ['stop1', 'stop2', 'after', 'faceStop']) { const r = stopSlide(samples, labels, dt, seg); if (r) metrics.stopSlide[seg] = r; }
         const ti = labels.indexOf('returning');
         if (ti > 12) {
@@ -301,6 +313,22 @@ function pickStrip(metrics, samples, labels, shots) {
         .map(si => { const j = shots.findIndex(s => s.step >= si); return j < 0 ? shots.length - 1 : j; });
 }
 
+if (import.meta.url === `file://${process.argv[1]}` && process.argv[2] === '--compare') {
+    // exact diff of two runs' samples.json, every field; used to prove a flag-off build still draws the old gait
+    const [, , , a, b] = process.argv;
+    const { readFileSync: rf, readdirSync: rd, statSync: st } = await import('node:fs');
+    const files = (d, out = []) => { for (const n of rd(d)) { const p = join(d, n); if (st(p).isDirectory()) files(p, out); else if (n === 'samples.json') out.push(p.slice(d.length + 1 > 0 ? 0 : 0)); } return out; };
+    let worst = 0, n = 0, bad = 0;
+    const walk = (da, db, x, y, path) => {
+        if (typeof x === 'number' && typeof y === 'number') { const d = Math.abs(x - y); if (d > worst) worst = d; if (d > 0) bad++; return; }
+        if (x && typeof x === 'object' && y && typeof y === 'object') { for (const k of Object.keys(x)) walk(da, db, x[k], y[k], path + '/' + k); return; }
+        if (x !== y) { bad++; if (bad < 5) console.log('  differs at', path, x, y); }
+    };
+    const rel = d => files(d).map(p => p.slice(d.length + 1));
+    for (const f of rel(a)) { const A = JSON.parse(rf(join(a, f))), B = JSON.parse(rf(join(b, f))); n++; walk(a, b, A, B, f); }
+    console.log(`[compare] ${n} runs, ${bad} differing values, worst abs diff ${worst}`);
+    process.exit(bad ? 1 : 0);
+}
 if (import.meta.url === `file://${process.argv[1]}`) {
     const [scArg = 'all', rigArg = 'all', outRoot = 'research/animation/gait-2026-10/g1'] = process.argv.slice(2);
     const scenarios = scArg === 'all' ? SCENARIOS : [scArg];
@@ -309,6 +337,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const initPath = join(outRoot, 'seed-init.js');
     writeFileSync(initPath, INIT_SCRIPT);
     process.env.WFM_INIT_SCRIPT = initPath;
-    for (const rig of rigs) for (const sc of scenarios) for (const facing of [1, -1]) await filmRun(sc, rig, facing, outRoot);
+    for (const rig of rigs) for (const sc of scenarios) for (const facing of (process.env.WFM_FACINGS === 'right' ? [1] : [1, -1])) await filmRun(sc, rig, facing, outRoot);
     process.exit(0);
 }

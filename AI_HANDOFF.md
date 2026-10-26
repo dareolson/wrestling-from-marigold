@@ -32,6 +32,7 @@ Avoid a large rewrite.
 
 - **HEAD** `5724542` (T9.2) on `story/marigold-opening`; 929+ tests pass (930 at T9.1). Tree clean except untracked `research/`.
 - **Pushed vs local:** origin tip is `e76fe73`; the 39 commits after it (George transfer T0.1–T9.2, Rev 2, Rev 3) are **local only**. Push via the SSH URL (HTTPS returns 400).
+- **Gait (2026-10-25):** [PLAN_GAIT.md](PLAN_GAIT.md) Stage 1 done, stopped at **G1**: Derek watches the [G1 viewer](research/animation/gait-2026-10/g1.html) and ranks what is bad. No src/ change yet.
 - **Active plan:** [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) (back sell on `george-roster-v1`), Rev 3, stopped at **⛔ G8**. Next task: none until Derek judges G8; then Opus writes Rev 4 or the push/promote step. Stage 5 (George grip donor) waits on Codex ([request](AI_HANDOFF_ENTRIES/2026-10-25-claude-codex-george-grip-request.md)).
 - **Awaiting Derek:** G8 on the [G8 viewer](research/animation/george-transfer-2026-10/g8-viewer.html) (George `suplex`, `suplexFlip`, prone; G7 beside Rev 3). Misses first in the [Rev 3 entry](AI_HANDOFF_ENTRIES/2026-10-25-claude-george-transfer-rev3.md). Also open: whether to push the 39 local commits.
 - **Open misses (G8):** prone run misses the 2.5 px/frame step limit (3.26, 16.63, 2.85 px; the prone rise has no hand route); forearm pixels still show inside the torso outline in the rise (1–80 px counted); the latch cannot decide the swap (want = the route); swap-in is at the start of the clutch, not at the via point; holdW .7 leaves a .48 px margin to the 15 px line; about +1 ms a frame.

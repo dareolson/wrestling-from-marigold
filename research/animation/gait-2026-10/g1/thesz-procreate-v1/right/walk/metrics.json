@@ -1,0 +1,126 @@
+{
+ "scenario": "walk",
+ "rig": "thesz-procreate-v1",
+ "facing": 1,
+ "segments": {
+  "idle0": {
+   "frames": 20,
+   "vmax": 0,
+   "heightScale": 0.7907
+  },
+  "walkA": {
+   "frames": 150,
+   "vmax": 113.3,
+   "heightScale": 0.7907,
+   "steadyFrames": 143,
+   "perFoot": {
+    "near": {
+     "stances": 2,
+     "driftMedian": 9.09,
+     "driftMax": 9.09,
+     "netMedian": 9.09
+    },
+    "far": {
+     "stances": 3,
+     "driftMedian": 9.09,
+     "driftMax": 9.09,
+     "netMedian": 9.09
+    }
+   },
+   "driftMedian": 9.09,
+   "driftMax": 9.09,
+   "cadenceStepsPerS": 2.52,
+   "stanceFraction": 0.587,
+   "doubleSupportFraction": 0.091,
+   "flightFraction": 0,
+   "stanceFrames": 24,
+   "hipBobPx": 2.7,
+   "hipAtNearMidStancePx": -0.64,
+   "hipMax": 1.92,
+   "hipMin": -0.78,
+   "moveBlend": 1,
+   "torsoRotMedian": 0,
+   "phaseRadPerPx": 0.06171,
+   "bodyXPerFootSweepRatio": null,
+   "plantedFootSpeedMedian": 23.7,
+   "plantedFootSpeedPctOfBody": 20.9
+  },
+  "stop1": {
+   "frames": 40,
+   "vmax": 92.3,
+   "heightScale": 0.7907
+  },
+  "walkB": {
+   "frames": 150,
+   "vmax": 113.3,
+   "heightScale": 0.7907,
+   "steadyFrames": 143,
+   "perFoot": {
+    "near": {
+     "stances": 3,
+     "driftMedian": 9.09,
+     "driftMax": 9.09,
+     "netMedian": -9.09
+    },
+    "far": {
+     "stances": 2,
+     "driftMedian": 9.09,
+     "driftMax": 9.09,
+     "netMedian": -9.09
+    }
+   },
+   "driftMedian": 9.09,
+   "driftMax": 9.09,
+   "cadenceStepsPerS": 2.52,
+   "stanceFraction": 0.503,
+   "doubleSupportFraction": 0.091,
+   "flightFraction": 0,
+   "stanceFrames": 24,
+   "hipBobPx": 2.69,
+   "hipAtNearMidStancePx": -0.43,
+   "hipMax": 1.96,
+   "hipMin": -0.73,
+   "moveBlend": 1,
+   "torsoRotMedian": 0,
+   "phaseRadPerPx": 0.06171,
+   "bodyXPerFootSweepRatio": null,
+   "plantedFootSpeedMedian": 23.7,
+   "plantedFootSpeedPctOfBody": 20.9
+  },
+  "stop2": {
+   "frames": 40,
+   "vmax": 92.3,
+   "heightScale": 0.7907
+  }
+ },
+ "stopSlide": {
+  "stop1": {
+   "stillFrames": 35,
+   "bodyMovedPx": 0,
+   "footTravelPx": {
+    "near": 39.48,
+    "far": 34.72
+   },
+   "footNetPx": {
+    "near": -4.13,
+    "far": 9.46
+   },
+   "walkPhaseStart": 2.191,
+   "walkPhaseEnd": 0.009
+  },
+  "stop2": {
+   "stillFrames": 35,
+   "bodyMovedPx": 0,
+   "footTravelPx": {
+    "near": 50.39,
+    "far": 44.93
+   },
+   "footNetPx": {
+    "near": 5.97,
+    "far": 0.1
+   },
+   "walkPhaseStart": 3.157,
+   "walkPhaseEnd": 0.013
+  }
+ }
+}

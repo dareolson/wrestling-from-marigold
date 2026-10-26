@@ -1,0 +1,46 @@
+{
+ "tool": "tools/debug/gait_film.mjs",
+ "git": {
+  "commit": "6eee993",
+  "dirty": true
+ },
+ "scenario": "walk",
+ "rig": "george-roster-v1",
+ "facing": -1,
+ "casts": {
+  "p1": "george-roster-v1",
+  "p2": "thesz-procreate-v1"
+ },
+ "seed": {
+  "value": 1592594996,
+  "algo": "mulberry32",
+  "installedBefore": "game init (page.addInitScript)",
+  "math": "Math.random"
+ },
+ "stepMs": 16.6667,
+ "captureEverySteps": 2,
+ "urlFlags": "notitle=1&sellart=off&aftermath=off",
+ "ring": {
+  "left": 117.27272727272727,
+  "right": 842.7272727272727,
+  "s": 0.8090909090909091
+ },
+ "crop": {
+  "w": 440,
+  "h": 300
+ },
+ "frames": 200,
+ "steps": 400,
+ "otherAtEnd": {
+  "x": 137.27272727272725,
+  "y": 150,
+  "state": "standing"
+ },
+ "segments": {
+  "idle0": 20,
+  "walkA": 150,
+  "stop1": 40,
+  "walkB": 150,
+  "stop2": 40
+ }
+}

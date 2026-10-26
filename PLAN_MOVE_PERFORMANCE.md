@@ -10,28 +10,13 @@ Read that file's figure-four performance sheet before T1.1. Also read
 
 ## Progress
 
-2026-10-22 · Claude (Sonnet)
 
-- Docs committed: `8b03ad3`.
-- T0.1 done: `cf3cc0b` (`figureFour` and `figureFourP2` scenarios, both PASS; `play.mjs all` 32 PASS).
-- T0.2 done: `3f8c67a`. Baseline in `research/animation/move-performance-baseline/`.
-  **Correction 1 is confirmed and sharpened:** depth is constant over the whole
-  figure-four clip, parts interleave by sub-band, and the 10 exact cross-actor
-  ties fall to display-list order, which always puts P2 in front of P1. The
-  trap therefore draws differently with George as P1 and as P2.
-- T2.1 done: `2ccb562` (`src/animation/clipLayers.js`, `tests/clipLayers.test.js`).
-  Tie step 0.000005 is applied to every part of each later `layerTie` role;
-  windows then stack on top of it.
-- T4.1 done (`_pain` replaces `_sellTag`). Deviations: figureFour has **no
-  `sell.limb` yet**, because the T1.1 ledger that names the grabbed leg doesn't
-  exist; add it in T1.1. Pickup is detected in `_tickPain` (left the mat other
-  than by rising after this trip's sells were planned), not at each executor.
-  Match reset and scene shutdown call `clearPain()` from `Arena.js`.
-- 2026-10-22 · Claude (Sonnet), second session: T2.2 `7169892`, T1.1 `0d4b3f9`, T1.2 `7937d6b`,
-  T2.3 `2577a9c`, T2.4 (this commit; the G1 package is in
-  `research/animation/figure-four-tableau/g1/`). **Stopped at ⛔ G1.** Results and
-  open failures (left-facing and roster trap contacts) are in
-  `research/animation/figure-four-tableau/LEDGER.md`.
+- Docs 8b03ad3: plan docs committed; misses: none noted
+- T0.1 cf3cc0b: figureFour and figureFourP2 scenarios, both PASS; misses: none noted
+- T0.2 3f8c67a: baseline filmed; depth constant over figure-four clip, P2 always drawn in front of P1; misses: see commit
+- T2.1 2ccb562: clipLayers.js layer ties and windows; misses: none noted
+- T4.1 e68e471: _pain replaces _sellTag; misses: figureFour sell.limb deferred to T1.1 (done in 0d4b3f9)
+- T2.2 7169892, T1.1 0d4b3f9, T1.2 7937d6b, T2.3 2577a9c, T2.4 d0312f3: G1 package; stopped at G1; misses: left-facing and roster trap contacts fail (LEDGER.md)
 - 2026-10-23: **Figure-four track PARKED by Derek** ("revisit it later"). G1 was never approved;
   the tableau is v3 (`064b4eb`) and the ledger has the v2/v3 notes and the failing left-facing/roster
   contacts. Stage 3 stays unstarted. The shared machinery (clipLayers, critic seg:/tol, editor

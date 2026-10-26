@@ -109,7 +109,7 @@ export function gaitV2Config() {
 // STRIDE = 2 * speed * STANCE / (cadence * heightScale). Knobs: &runCadence= &runStance= &runLift= &runSpeed= and &runStride=
 // (a multiplier on the derived stride; cadence then falls as it rises). &runGait=off = Stage 2's run (the walk gait, no turn mirror). HIP_*: the run hip sits HIP_BASE px below the straight-leg
 // height in flight and drops a further HIP_DROP px at mid-stance (unscaled px).
-const RUN_GAIT = { STANCE: 0.40, CADENCE: 3.25, LIFT: 32, HIP_BASE: 4, HIP_DROP: 9 };
+const RUN_GAIT = { STANCE: 0.35, CADENCE: 3.6, LIFT: 32, HIP_BASE: 4, HIP_DROP: 9 };
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
 // the AI's begging-off threshold (AIHandler george.retreatStamina).

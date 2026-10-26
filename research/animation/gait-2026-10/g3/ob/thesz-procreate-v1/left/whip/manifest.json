@@ -1,0 +1,45 @@
+{
+ "tool": "tools/debug/gait_film.mjs",
+ "git": {
+  "commit": "23c5fbd",
+  "dirty": false
+ },
+ "scenario": "whip",
+ "rig": "thesz-procreate-v1",
+ "facing": -1,
+ "casts": {
+  "p1": "thesz-procreate-v1",
+  "p2": "george-roster-v1"
+ },
+ "seed": {
+  "value": 1592594996,
+  "algo": "mulberry32",
+  "installedBefore": "game init (page.addInitScript)",
+  "math": "Math.random"
+ },
+ "stepMs": 16.6667,
+ "captureEverySteps": 2,
+ "urlFlags": "notitle=1&sellart=off&aftermath=off&gait=v2&runStance=0.40&runSpeed=260&runCadence=3.0",
+ "ring": {
+  "left": 117.27272727272727,
+  "right": 842.7272727272727,
+  "s": 0.8090909090909091
+ },
+ "crop": {
+  "w": 440,
+  "h": 300
+ },
+ "frames": 198,
+ "steps": 396,
+ "otherAtEnd": {
+  "x": 713.2562408170965,
+  "y": 332.8187940799545,
+  "state": "standing"
+ },
+ "segments": {
+  "idle0": 20,
+  "toRope": 140,
+  "returning": 196,
+  "after": 40
+ }
+}

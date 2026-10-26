@@ -211,6 +211,8 @@ export const RIG = {
 // forward speed. Working that through (see BUILDLOG), the lock condition is:
 //     WALK_FREQ = STANCE * 2π / STRIDE
 // and it is independent of SPEED — so the same stride locks at walk and run pace.
+// ?gait=v2: half the foot spacing of the rest stance a stopped wrestler settles into, unscaled px
+const GAIT_REST_FX = 6;
 export const GAIT = {
     STRIDE: 56,   // step length — long enough to slow the cadence, short enough not to lunge
     STANCE: 0.55, // a touch less ground time so the forward recovery swing reads
@@ -1389,7 +1391,7 @@ export default class Skeleton {
         // stationary, fall back to the original pose-driven FK so those moves are untouched.
         const poseLegActive = Math.abs(pose.lLeg) + Math.abs(pose.rLeg) > 0.05
             || ['lKnee', 'rKnee', 'lShin', 'rShin'].some(key => Number.isFinite(pose[key]));
-        const useGait = moveBlend > 0.2 || !poseLegActive;
+        const useGait = moveBlend > 0.2 || !poseLegActive || this._gaitHold === true;
 
         // ── Hip height ──────────────────────────────────────────────────────────
         // In gait mode the hip rides on whichever leg is bearing weight, so the body
@@ -1405,8 +1407,17 @@ export default class Skeleton {
         const ankleGndY  = y - ankleRest;
         const LMAX       = legLen * 0.985;        // never fully lock the knee
 
-        const footA = footGait(walkPhase, this._gaitParams ?? GAIT);
-        const footB = footGait(walkPhase + Math.PI, this._gaitParams ?? GAIT);
+        let footA = footGait(walkPhase, this._gaitParams ?? GAIT);
+        let footB = footGait(walkPhase + Math.PI, this._gaitParams ?? GAIT);
+        // ?gait=v2 stop (PLAN_GAIT T2.5): once the body is still the feet ease from the frozen stride to a tidy rest stance,
+        // each lifted a little on the way, instead of snapping to the pose-driven idle legs. `_gaitRest` is 0..1, undefined flag-off.
+        const gaitRest = this._gaitRest;
+        if (gaitRest > 0) {
+            const bump = GAIT.LIFT * 0.3 * 4 * gaitRest * (1 - gaitRest);
+            const toRest = (f, fx) => ({ ...f, fx: f.fx + (fx - f.fx) * gaitRest, liftAbs: bump });
+            footA = toRest(footA, GAIT_REST_FX);
+            footB = toRest(footB, -GAIT_REST_FX);
+        }
 
         // Crouch: pose-driven knee bend — hip drops by the vertical extent the
         // bent legs lose, so feet stay planted at the mat.
@@ -2897,7 +2908,7 @@ export default class Skeleton {
     // call before this existed) = root is exactly (x, hipY), byte-identical.
     _gaitLeg(foot, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale = 1, hipPoint = null, soleImg = null, soleScale = s, bootImg = null) {
         const footX = x + facing * foot.fx * s;
-        const footY = ankleGndY - foot.lift * s * liftScale;
+        const footY = ankleGndY - foot.lift * s * liftScale - (foot.liftAbs ?? 0) * s;
         const rootX = hipPoint ? hipPoint.x : x;
         const rootY = hipPoint ? hipPoint.y : hipY;
         let soleVector = soleImg?._soleAnchorFrac

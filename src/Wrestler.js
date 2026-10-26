@@ -445,6 +445,7 @@ export default class Wrestler {
         this.vy           = 0;
         this._walkPhaseDir = 1; // last stride direction, held through brake-to-stop frames
         this._gaitV2      = gaitV2Config(); // null unless ?gait=v2
+        this._gaitRest    = 1; // v2: 0 walking .. 1 settled into the rest stance
         this._gaitLift    = 1; // v2: swing-foot lift weight, eases to 0 when the body is still
         this._gaitLeanExtra = 0; // v2: smoothed accel/brake lean, rad
         this.stamina      = STAMINA_MAX;
@@ -943,6 +944,7 @@ export default class Wrestler {
         if (this._gaitV2) {
             // still: the phase stays frozen (feet world-fixed) and a swing foot is set down where it is
             this._gaitLift += ((travelSpeed > 0.5 ? 1 : 0) - this._gaitLift) * (1 - Math.exp(-dt * 10));
+            this._gaitRest += ((travelSpeed > 0.5 ? 0 : 1) - this._gaitRest) * (1 - Math.exp(-dt * (travelSpeed > 0.5 ? 14 : 6)));
             const along = Math.sign(this.vx) * (this.vx - vx0) / (WALK_ACCEL * this.s * dt);
             const target = GAIT_LEAN_ACCEL * Math.max(-1, Math.min(1, along)) * this._walkPhaseDir;
             this._gaitLeanExtra += (target - this._gaitLeanExtra) * (1 - Math.exp(-dt * 12));
@@ -1252,6 +1254,7 @@ export default class Wrestler {
             const phaseDir = dir === this.facing ? 1 : -1;
             this.walkPhase = ((this.walkPhase + phaseDir * (RUN_SPEED * dt / this._heightScale) * this._gaitV2.freq) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
             this._gaitLift = 1;
+            this._gaitRest = 0;
         } else {
             this.walkPhase = (this.walkPhase + RUN_SPEED * dt * WALK_FREQ * 0.8) % (Math.PI * 2);
         }
@@ -2970,6 +2973,8 @@ export default class Wrestler {
         const g2 = this._gaitV2;
         if (g2) {
             this.skeleton._gaitParams = g2.params;
+            this.skeleton._gaitHold = locomotion;
+            this.skeleton._gaitRest = locomotion ? this._gaitRest : 0;
             liftScale *= this._gaitLift;
             if (locomotion && gaitBlend > 0) {
                 const gaitLean = g2.leanWalk * gaitBlend * (1 - runBlend) + g2.leanRun * runBlend + (state === 'running' ? 0 : this._gaitLeanExtra * gaitBlend);

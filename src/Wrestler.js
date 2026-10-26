@@ -89,15 +89,17 @@ const RISE_OVERLAY_RAMP_MS = 300;
 //   lean: `bend` (the torso pitch Skeleton actually draws; `lean` is not drawn). Knobs for the A/B page:
 //     &leanWalk= &leanRun= (rad), &gaitStride= (x STRIDE, WALK_FREQ re-derived), &gaitKnee= (extra crouch while moving).
 export const GAIT_LEAN = { walk: 0.10, run: 0.25 };
+// Derek picked A/B column D at G2 (2026-10-25): stride x1.3 and knee flex .1 are the v2 defaults; the URL knobs still override.
+export const GAIT_V2_DEFAULTS = { stride: 1.3, knee: 0.1 };
 const GAIT_LEAN_ACCEL = 0.06; // at most this much extra into a start / back on a brake
 export function gaitV2Config() {
     if (typeof location === 'undefined') return null;
     const q = new URLSearchParams(location.search);
     if (q.get('gait') !== 'v2') return null;
     const num = (name, d) => { const v = parseFloat(q.get(name)); return Number.isFinite(v) ? v : d; };
-    const stride = num('gaitStride', 1);
+    const stride = num('gaitStride', GAIT_V2_DEFAULTS.stride);
     const params = { STRIDE: GAIT.STRIDE * stride, STANCE: GAIT.STANCE, LIFT: GAIT.LIFT };
-    return { stride, knee: num('gaitKnee', 0), leanWalk: num('leanWalk', GAIT_LEAN.walk), leanRun: num('leanRun', GAIT_LEAN.run),
+    return { stride, knee: num('gaitKnee', GAIT_V2_DEFAULTS.knee), leanWalk: num('leanWalk', GAIT_LEAN.walk), leanRun: num('leanRun', GAIT_LEAN.run),
         params, freq: params.STANCE * Math.PI * 2 / params.STRIDE };
 }
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';

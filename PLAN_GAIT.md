@@ -12,6 +12,7 @@ so one fix reaches the whole roster. Sonnet executes; Opus reviews at gates; Der
 - T2.2 544b795: lean via `bend` .10 walk / .25 run (+/-.06 accel); measured .10/.25 rad, arm segment lengths unchanged (0 px). T2.3 5da5a03: A/B page research/animation/gait-2026-10/g2.html (v1 + 4 columns, Lou walk+run, URL knobs). STOP at G2.
 - T2.4 (Derek, after G2): run elbow kept bent under ?gait=v2 (floor .9 rad vs the upper arm): Lou run elbow max 180 -> 140 deg, back-most wrist x -37 -> -4 px. No new footage; applies to every rig.
 - T2.5 (stop snap, v2 only): legs stay in gait mode while still; feet ease to a rest stance (+-6 px) with a small lift. Largest one-frame foot step in the stop 27/41 -> 3.5/3.7 px (Lou/George walk), hip step 4-9 -> ~1 px. Misses: George run stop 42 px (rope-turn flip, Stage 3); the shuffle moves feet 5-16 px; idle in v2 is the rest stance, not the old FK idle.
+- G2 (Derek 2026-10-25): picked A/B column D (stride x1.3 + knee .1 + lean .10/.25). Now the ?gait=v2 defaults; URL knobs still override.
 
 ## Rules
 - Rigs: Procreate Lou (`thesz-procreate-v1`) and `george-roster-v1`, both facings. Ignore `thesz`, `thesz-front3q-r1`.

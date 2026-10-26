@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { footGait, GAIT } from '../src/Skeleton.js';
-import Wrestler, { gaitV2Config, GAIT_LEAN } from '../src/Wrestler.js';
+import Wrestler, { gaitV2Config, GAIT_LEAN, GAIT_V2_DEFAULTS } from '../src/Wrestler.js';
 
 const noop = () => {};
 const TAU = Math.PI * 2;
@@ -27,7 +27,8 @@ test('config: null without the flag, defaults and URL knobs with it', () => {
     assert.equal(gaitV2Config(), null);
     assert.equal(withFlag('?gait=v1', gaitV2Config), null);
     const c = withFlag('?gait=v2', gaitV2Config);
-    assert.equal(c.leanWalk, GAIT_LEAN.walk); assert.equal(c.leanRun, GAIT_LEAN.run); assert.equal(c.knee, 0); assert.equal(c.stride, 1);
+    assert.equal(c.leanWalk, GAIT_LEAN.walk); assert.equal(c.leanRun, GAIT_LEAN.run); assert.equal(c.knee, GAIT_V2_DEFAULTS.knee); assert.equal(c.stride, GAIT_V2_DEFAULTS.stride);
+    assert.equal(GAIT_V2_DEFAULTS.stride, 1.3); assert.equal(GAIT_V2_DEFAULTS.knee, 0.1); // column D
     const k = withFlag('?gait=v2&gaitStride=1.3&gaitKnee=0.1&leanWalk=0.2&leanRun=0.3', gaitV2Config);
     assert.equal(k.params.STRIDE, GAIT.STRIDE * 1.3);
     assert.ok(Math.abs(k.freq - GAIT.STANCE * TAU / (GAIT.STRIDE * 1.3)) < 1e-12, 'WALK_FREQ re-derived from the stride');
@@ -36,7 +37,7 @@ test('config: null without the flag, defaults and URL knobs with it', () => {
 
 // A planted foot's world x = body x + facing * fx * s_draw; over a stance it must not move.
 test('walk: the planted foot stays put at the draw scale (hs 0.79 and 1.01), stride knob included', () => {
-    for (const search of ['?gait=v2', '?gait=v2&gaitStride=1.3']) for (const hs of [0.79, 1.012]) {
+    for (const search of ['?gait=v2', '?gait=v2&gaitStride=1']) for (const hs of [0.79, 1.012]) {
         const { w, keys } = walker(search, { _heightScale: hs });
         keys.add('right');
         const g = w._gaitV2.params, sDraw = () => w.s * hs;
@@ -95,7 +96,7 @@ function drawn(search, extra = {}) {
 }
 
 test('lean: walk bend = leanWalk x moveBlend, run bend = leanRun, knee adds crouch; this.pose is never touched', () => {
-    const q = '?gait=v2&gaitKnee=0.1';
+    const q = '?gait=v2';
     const { w, out } = drawn(q, { moveBlend: 1 });
     const before = structuredClone(w.pose);
     w.draw();

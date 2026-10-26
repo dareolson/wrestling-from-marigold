@@ -222,7 +222,7 @@ export const GAIT = {
 //   fx       — horizontal offset from the hip, unscaled px (+ = forward of hip)
 //   lift     — vertical lift off the mat, unscaled px
 //   liftFrac — 0 planted … 1 peak of swing
-function footGait(phase) {
+export function footGait(phase) {
     const t = (((phase % TAU) + TAU) % TAU) / TAU; // 0..1
     if (t < GAIT.STANCE) {
         // Stance: foot planted, sweeping linearly from front to back at ground speed.

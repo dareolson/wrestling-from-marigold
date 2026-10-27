@@ -40,6 +40,9 @@ Step 3 of the Revised sequence in [MOVE_PIPELINE_EVOLUTION.md](MOVE_PIPELINE_EVO
 - T8.6 3aa023b: tools/move-critic/capabilities.json: three new records, all pilot, mechanical pass, visual unverified; misses: none noted
 - T9.1 2a1ed73: G8 viewer: research/animation/george-transfer-2026-10/g8-viewer.html (28 KB) + g8/; misses: see commit
 - T9.2 5724542: AI_HANDOFF_ENTRIES/2026-10-25-claude-george-transfer-rev3.md; misses: see commit
+- T5.1 b0d14cd: build_george_grip.mjs (Node zlib), rows 0-244 byte-exact from forearm.png, 0 differing bytes; misses: none noted
+- T5.2 97aff37: forearm.grip registered on George, backSellSupport gripArt painted / contact clutchPatch, no runtime change, Lou fixture unchanged, 942/942; misses: none noted
+- T5.3 (this commit): hold sweep unchanged (holdW .7, 14.52 px); films before/after + G9 viewer; misses: CONTRACT GAP, the art latch engages at 367 ms 34 px away and flips 5 times in the standing recovery; clutch hand step 3.3-4.7 px (limit 2.5); G8 forearm-inside miss not fixed
 
 ## Goal
 
@@ -373,6 +376,37 @@ Register it as `textures.variants.forearm.grip` on George, with its `clutch` anc
 `backSellSupport` should then report `gripArt: 'painted'` and `contact: 'clutchPatch'` with no code
 change. Re-run T3.2's sweep (the cup moves the contact) and T3.5, then go to Derek. If the drop-in needs a
 code change, report that as a contract gap.
+
+Delivered 2026-10-26 ([Codex entry](AI_HANDOFF_ENTRIES/2026-10-26-codex-george-grip-donor.md)): `forearm_grip.png`
+426 × 439, `clutch` { u: 254/426, v: 344/439 }. Opus review: canvas, size and bbox match; alpha above row 245
+is identical, but 895 edge pixels above 245 differ by ≤ 4 RGB (canvas premultiply round trip), so "zero changed
+bytes" is not true against the file on disk. Miss Codex named: darker, flatter finger shading than the base hand.
+
+- **T5.1 Byte-exact elbow end.** Change `tools/debug/build_george_grip.mjs` so rows 0–244 are copied from
+  `forearm.png` as raw PNG bytes (decode with `sharp` or `pngjs` in Node, not a browser canvas), blend rows 245–259
+  as now. Check: a script compares the two files' RGBA rows 0–244 and prints 0 differing bytes. Commit the tool,
+  the PNG and Codex's source folder entry.
+- **T5.2 Register.** Add `variants.forearm.grip` to George in the generator SPECS
+  (`tools/wrestler-cutter/prepare-roster-character.py`, or wherever George's `textures` come from) and in
+  `src/characters/george_roster_v1.js`, matching Lou's block in `src/characters/thesz_procreate_v1.js`:
+  `key: 'george_rv1_forearm_grip'`, `file: 'forearm_grip.png'`, `semanticAnchors: { clutch: { u: 254 / 426, v: 344 / 439 } }`.
+  Regenerate, then `node tools/rig/validate-character-rigs.mjs`. Check: `backSellSupport` on George reports
+  `gripArt: 'painted'`, `contact: 'clutchPatch'` with no runtime code change. Any code change needed = contract gap: stop and report.
+  Lou fixture unchanged.
+- **T5.3 Re-measure and film.** Re-run T3.2's sweep (`WFM_P1=george-roster-v1`) and T3.5's films (`suplex`, `suplexFlip`,
+  George receiving), before = HEAD before T5.2. Report: clutch-to-back distance per frame, swap-in frame, forearm pixels
+  inside the torso outline (the G8 miss), max per-frame hand step. Add a G9 column to the G8 viewer: baked fist vs grip, 1× and
+  normal speed, both facings. **⛔ G9: Derek judges the hand at 1×.** No promote, no push.
+
+Done 2026-10-26 (Sonnet, after the Opus session was lost): viewer `research/animation/george-transfer-2026-10/g9-viewer.html`
+(frames in `g9/`, rows in `g9-rows.json`; baked fist at b0d14cd against grip at 97aff37, same scenarios and sell kinds,
+different random rolls). Hold sweep identical (the reach solves the contact onto the path, so distance does not depend on the art).
+Registration needed no runtime change, but the film found a runtime problem: with the grip registered the art latch
+(`stepGripLatch`, distance of the contact it is showing) engages at 367 ms with the hand 34.4/38.0 px away and flips
+five more times in the standing recovery, and the clutch-window hand step is 3.33/3.67/4.68 px (suplex/flip/prone; limit 2.5)
+against 1.83/2.02/3.29 with the fist. Any fix is runtime code = a contract gap, so nothing was changed. Opus decides.
+
+G9 — (Derek's verdict goes here.)
 
 ## Done means
 

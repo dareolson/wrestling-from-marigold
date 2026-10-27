@@ -33,7 +33,7 @@ Avoid a large rewrite.
 - **HEAD** `5724542` (T9.2) on `story/marigold-opening`; 929+ tests pass (930 at T9.1). Tree clean except untracked `research/`.
 - **Pushed vs local:** origin tip is `e76fe73`; the 39 commits after it (George transfer T0.1–T9.2, Rev 2, Rev 3) are **local only**. Push via the SSH URL (HTTPS returns 400).
 - **Gait (2026-10-26):** [PLAN_GAIT.md](PLAN_GAIT.md) Stage 3 (run as its own gait) built behind `?gait=v2` (`&runGait=off` = Stage 2 run; flag off byte-identical), stopped at **G3**: Derek judges the [G3 page](research/animation/gait-2026-10/g3.html). Stage 2 commits local only. Open: whip-start facing flip (Stage 4), George hip step 3.3 px.
-- **Active plan:** [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) (back sell on `george-roster-v1`), Rev 3, stopped at **⛔ G8**. Next task: none until Derek judges G8; then Opus writes Rev 4 or the push/promote step. Stage 5 (George grip donor) waits on Codex ([request](AI_HANDOFF_ENTRIES/2026-10-25-claude-codex-george-grip-request.md)).
+- **Active plan:** [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) (back sell on `george-roster-v1`), Rev 3, stopped at **⛔ G8**. Next task: none until Derek judges G8; then Opus writes Rev 4 or the push/promote step. Stage 5 (George grip): T5.1-T5.3 done, stopped at **⛔ G9** ([viewer](research/animation/george-transfer-2026-10/g9-viewer.html)). Registered with no runtime change, but the films show a **contract gap**: the grip art latch engages 34 px early and chatters in the standing recovery, and the clutch hand step is 3.3-4.7 px (limit 2.5). Derek judges at 1×; any fix is runtime work for Opus.
 - **Awaiting Derek:** G8 on the [G8 viewer](research/animation/george-transfer-2026-10/g8-viewer.html) (George `suplex`, `suplexFlip`, prone; G7 beside Rev 3). Misses first in the [Rev 3 entry](AI_HANDOFF_ENTRIES/2026-10-25-claude-george-transfer-rev3.md). Also open: whether to push the 39 local commits.
 - **Open misses (G8):** prone run misses the 2.5 px/frame step limit (3.26, 16.63, 2.85 px; the prone rise has no hand route); forearm pixels still show inside the torso outline in the rise (1–80 px counted); the latch cannot decide the swap (want = the route); swap-in is at the start of the clutch, not at the via point; holdW .7 leaves a .48 px margin to the 15 px line; about +1 ms a frame.
 - **Feature flags:** `risefix`, `sellart` (v1) and `aftermath` (v2) are **promoted** (default on, `=off` disables; risefix 82b71a8, others Derek 2026-10-24). `?plant=1` (support-hand plant) is **opt-in only**, parked.
@@ -44,6 +44,7 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-10-26 · Codex · [George grip donor ready for Claude registration](AI_HANDOFF_ENTRIES/2026-10-26-codex-george-grip-donor.md)
 - 2026-10-25 · Claude · [Rise -> standing handoff: G5 package (`?risefix=1`)](AI_HANDOFF_ENTRIES/2026-10-25-claude-rise-handoff-g5.md)
 - 2026-10-25 · Claude · [Pipeline coverage: capability index, `moves:coverage`, baseline](AI_HANDOFF_ENTRIES/2026-10-25-claude-pipeline-coverage.md)
 - 2026-10-25 · Claude · [George transfer Rev 3: the hand goes around the body, swaps only when clear, no elbow beze](AI_HANDOFF_ENTRIES/2026-10-25-claude-george-transfer-rev3.md)

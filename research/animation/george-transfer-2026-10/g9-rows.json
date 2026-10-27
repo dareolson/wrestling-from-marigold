@@ -1,0 +1,81 @@
+{
+ "views": [
+  {
+   "id": "suplex",
+   "title": "George, suplex (faces left)",
+   "blurb": "Left: the baked fist (Rev 3 at b0d14cd). Right: Codex's grip art registered (97aff37). Same scenario and sell kind, different random rolls, so matched on kind and events, not frame for frame.",
+   "g7": "before-suplex",
+   "rows": [
+    "after-suplex"
+   ]
+  },
+  {
+   "id": "flip",
+   "title": "George, suplexFlip (faces right)",
+   "blurb": "Left: the baked fist (Rev 3 at b0d14cd). Right: Codex's grip art registered (97aff37). Same scenario and sell kind, different random rolls, so matched on kind and events, not frame for frame.",
+   "g7": "before-flip",
+   "rows": [
+    "after-flip"
+   ]
+  },
+  {
+   "id": "prone",
+   "title": "George, rolled then back clutch (prone rise)",
+   "blurb": "Left: the baked fist (Rev 3 at b0d14cd). Right: Codex's grip art registered (97aff37). Same scenario and sell kind, different random rolls, so matched on kind and events, not frame for frame.",
+   "g7": "before-prone",
+   "rows": [
+    "after-prone"
+   ]
+  }
+ ],
+ "rows": [
+  {
+   "id": "before-suplex",
+   "label": "George, suplex (faces left): baked fist",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/b45de20b-d0e3-4341-bb7a-827415de5457/scratchpad/t53/before/suplex",
+   "scenario": "suplex",
+   "note": ""
+  },
+  {
+   "id": "after-suplex",
+   "label": "George, suplex (faces left): grip art",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/b45de20b-d0e3-4341-bb7a-827415de5457/scratchpad/t53/after/suplex",
+   "scenario": "suplex",
+   "note": ""
+  },
+  {
+   "id": "before-flip",
+   "label": "George, suplexFlip (faces right): baked fist",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/b45de20b-d0e3-4341-bb7a-827415de5457/scratchpad/t53/before/flip",
+   "scenario": "suplexFlip",
+   "note": ""
+  },
+  {
+   "id": "after-flip",
+   "label": "George, suplexFlip (faces right): grip art",
+   "kind": 1,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/b45de20b-d0e3-4341-bb7a-827415de5457/scratchpad/t53/after/flip",
+   "scenario": "suplexFlip",
+   "note": ""
+  },
+  {
+   "id": "before-prone",
+   "label": "George, rolled then back clutch (prone rise): baked fist",
+   "kind": 2,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/b45de20b-d0e3-4341-bb7a-827415de5457/scratchpad/t53/before/prone",
+   "scenario": "suplexFlip",
+   "note": ""
+  },
+  {
+   "id": "after-prone",
+   "label": "George, rolled then back clutch (prone rise): grip art",
+   "kind": 2,
+   "root": "/private/tmp/claude-501/-Users-home-Documents-wrestling-from-marigold/b45de20b-d0e3-4341-bb7a-827415de5457/scratchpad/t53/after/prone",
+   "scenario": "suplexFlip",
+   "note": ""
+  }
+ ]
+}

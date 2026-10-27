@@ -30,7 +30,7 @@ export const %(snake)s = %(const)s;
 import os
 KNEELIFT=float(os.environ.get('KNEELIFT',22))
 SPECS={
- 'george':dict(dir='GeorgeNew',id='george-roster-v1',prefix='george_rv1_',snake='george_roster_v1',heightScale=1.012010,kneeLift=KNEELIFT,forearmOverUpperArm=True,farLegOverTorso=True,
+ 'george':dict(dir='GeorgeNew',forearmGrip=dict(key='george_rv1_forearm_grip',file='forearm_grip.png',semanticAnchors=dict(clutch=dict(u=254/426,v=344/439))),id='george-roster-v1',prefix='george_rv1_',snake='george_roster_v1',heightScale=1.012010,kneeLift=KNEELIFT,forearmOverUpperArm=True,farLegOverTorso=True,
   # Derek 2026-10-25 (PLAN_GEORGE_TRANSFER G6a) picked candidate C (6 game px inside the back contour at the top of the trunks);
   # Rev 2 D6 (after G6: C is on the visible belly supine) moved it to candidate A, ON the contour, with the hand drawn under the
   # body (backSell handUnder). tools/debug/backwaist_candidates.mjs, research/animation/george-transfer-2026-10/backwaist/. Torso-canvas fractions.
@@ -130,6 +130,7 @@ if SPEC.get('headOverTorso'):textures['headOverTorso']=True
 textures.update(torso=parts['torso'],upperArm=parts['upper_arm'],forearm=parts['forearm'],thigh=parts['thigh'],shin=parts['shin'],farThigh=parts['far_thigh'],farShin=parts['far_shin'])
 if SPEC.get('backWaist'):textures['torso']=dict(textures['torso'],semanticAnchors={'backWaist':SPEC['backWaist']})  # the back sell's anchor; backSell (below) is its measured data
 if SPEC.get('backSell'):textures['backSell']=dict(SPEC['backSell'])
+if SPEC.get('forearmGrip'):textures['variants']={'forearm':{'grip':dict(SPEC['forearmGrip'])}}  # grip donor art (PLAN_GEORGE_TRANSFER T5.2); the clutch anchor is the back sell's painted contact
 report={'height_scale_note':SPEC['heightNote'], 'source':SPEC['dir']+'.psd','units_per_source_pixel':k,'anchorsCanvasPx':anchors,'measurement_methods':{'paired_overlap':'alpha >=128 intersection centroid, recomputed from this PSD','shoulders':'manual deltoid/socket landmark, not long overlap centroid','wrist_ankle_sole':'manual anatomical landmarks; tuner review pending'},'parts':records,'textures':textures}
 (EVIDENCE/'measurements.json').write_text(json.dumps(report,indent=2)+'\n')
 config=CONFIG_TMPL%SPEC['cfg']

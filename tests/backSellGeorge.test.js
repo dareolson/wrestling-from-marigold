@@ -43,11 +43,12 @@ function george({ state = 'standing', now = 1000, dist = 9, textures = G.texture
     return { w, calls, drawn, grounded };
 }
 
-test('support: George is supported on his own numbers, with no grip donor and the wrist as the contact', () => {
+test('support: George is supported on his own numbers, with his grip donor and the painted clutch patch as the contact', () => {
     const s = backSellSupport({ _textureConfig: G.textures, torso: { _semanticAnchors: G.textures.torso.semanticAnchors } });
-    assert.deepEqual({ ok: s.ok, reason: s.reason, gripArt: s.gripArt, contact: s.contact }, { ok: true, reason: null, gripArt: 'none', contact: 'wristProxy' });
+    assert.deepEqual({ ok: s.ok, reason: s.reason, gripArt: s.gripArt, contact: s.contact }, { ok: true, reason: null, gripArt: 'painted', contact: 'clutchPatch' });
     assert.equal(s.data, BS);
-    assert.deepEqual(nearGripParts({ _textureConfig: G.textures }), {}, 'no grip variant: the baked fist stays');
+    assert.deepEqual(nearGripParts({ _textureConfig: G.textures }), { nearForearm: 'grip' }, 'the grip variant is registered on the near forearm (T5.2)');
+    assert.deepEqual(G.textures.variants.forearm.grip.semanticAnchors.clutch, { u: 254 / 426, v: 344 / 439 }, 'Codex\'s measured contact point');
     for (const k of ['holdW', 'recoveryArm', 'recoveryElbow']) assert.notEqual(BS[k], LOU[k], `${k} is George's, not Lou's`);
     // the same rig with its data stripped is unsupported, and nothing falls back to Lou's numbers
     const bare = backSellSupport({ _textureConfig: { ...G.textures, backSell: undefined }, torso: { _semanticAnchors: G.textures.torso.semanticAnchors } });
@@ -70,14 +71,14 @@ test('lying hold: the last back clutch ends on George\'s holdW and the hold keep
     assert.ok(Math.abs(pose.reach.near.w - BS.holdW) < 0.02, `clutch end weight ${pose.reach.near.w}`);
 }));
 
-test('contact-latched art: George\'s latch uses his contactPx and, with no grip donor, never selects art', () => withFlag('?sellart=v1', () => {
+test('contact-latched art: George\'s latch uses his contactPx and selects the grip art exactly while it is on', () => withFlag('?sellart=v1', () => {
     for (const [contactPx, dist, on] of [[15, 14, true], [15, 16, false], [10, 14, false], [10, 9, true]]) {
         const textures = { ...G.textures, backSell: { ...BS, contactPx } };
         const { w, calls } = george({ state: 'down', textures, dist });
         w._hold = { t: 0.3, lying: 'supine' };
         for (let now = 1000; now <= 1400; now += 50) { w.scene.time.now = now; w.draw(); }
         assert.equal(w._gripLatch?.on ?? false, on, `contactPx ${contactPx}, dist ${dist}`);
-        assert.ok(calls.every(c => Object.keys(c).length === 0), 'gripArt none: no art is ever selected');
+        assert.equal(calls.some(c => c.nearForearm === 'grip'), on, 'the grip art is selected while the latch is on, never otherwise');
     }
 }));
 

@@ -42,7 +42,7 @@ Step 3 of the Revised sequence in [MOVE_PIPELINE_EVOLUTION.md](MOVE_PIPELINE_EVO
 - T9.2 5724542: AI_HANDOFF_ENTRIES/2026-10-25-claude-george-transfer-rev3.md; misses: see commit
 - T5.1 b0d14cd: build_george_grip.mjs (Node zlib), rows 0-244 byte-exact from forearm.png, 0 differing bytes; misses: none noted
 - T5.2 97aff37: forearm.grip registered on George, backSellSupport gripArt painted / contact clutchPatch, no runtime change, Lou fixture unchanged, 942/942; misses: none noted
-- T5.3 (this commit): hold sweep unchanged (holdW .7, 14.52 px); films before/after + G9 viewer; misses: CONTRACT GAP, the art latch engages at 367 ms 34 px away and flips 5 times in the standing recovery; clutch hand step 3.3-4.7 px (limit 2.5); G8 forearm-inside miss not fixed
+- T5.3 32454b0: hold sweep unchanged (holdW .7, 14.52 px); films before/after + G9 viewer; misses: CONTRACT GAP, the art latch engages at 367 ms 34 px away and flips 5 times in the standing recovery; clutch hand step 3.3-4.7 px (limit 2.5); G8 forearm-inside miss not fixed
 
 ## Goal
 

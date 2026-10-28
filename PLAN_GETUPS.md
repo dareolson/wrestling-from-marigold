@@ -225,10 +225,39 @@ is not controlled and swings down. A via point can't fix that. The route must be
   instead of drawn over it. Report the frames where it acts (target: none after T2.6).
 - Page `g1-rev2/index.html`: George today | T2.6 | T2.6 + T2.7, 1×, both facings. **⛔ G1-rev2 (Derek).**
 
+T2.6-T2.7 done at 11f2f36 as a runtime patch (George's rig data unchanged). [Codex review](AI_HANDOFF_ENTRIES/2026-10-28-codex-current-getups-advice.md)
+says the numbers aren't proven yet. Opus accepts all six points. Derek can judge G1-rev2 by eye now; T2.8 runs either way,
+and its result goes next to his verdict.
+
+- **T2.8 Evidence pass (no new candidates, no tuning).**
+  1. *Painted pixels, not samples.* `getups_route.mjs` measures hand samples (wrist, contact, distal, tip centroid). On the
+     worst 10 frames per facing, render the near hand + forearm alone, losslessly (PNG, not the JPEG films), and report the
+     lowest painted pixel vs the hem, and painted hand pixels over each thigh's painted pixels (visible ones, after masks).
+     Relabel the existing numbers "sampled geometry".
+  2. *Union mask control.* Render the mask source alone, and a forced hand-over-thigh pose with torso-only vs union masks,
+     both thighs, both facings. Confirm parents are identity on current rigs, make the copies carry alpha (A3), test a
+     parent transform if any rig has one. Measure active-mask cost: median and p95 ms per frame after a 2 s warmup, including
+     `solveRouteHand`'s extra `updateUpright` calls.
+  3. *IK residual of the drawn pose.* `solveRouteHand` reports the error from before its last pass. Re-measure on the pose it
+     returns.
+  4. *No missing steps.* Report world displacement for every consecutive frame (steps are now dropped when x changes, then
+     summarised as 0); body-relative steps separately; count missing values, never fill them with 0. Re-report the turn's
+     feet jump (52-79 px) and the knee drift (6-8 px) with this.
+  5. *The 36.5 px hand-end jump (frame 138 → 139).* Log variant key, handUnder, contact anchor, wrist and tip on both frames;
+     re-run with the art frozen, then with depth frozen. Say which one causes it, and whether the new route exposes it more
+     than today's. Don't tune the latch.
+  6. *Scope.* State at the gate: IK covers the standing release above `standW` only; below it and in the rise the via/channel
+     route still runs.
+  Write the results into the G1-rev2 page as a "verified" section, misses first.
+- **If Derek accepts G1-rev2:** register `route.json` in George's data (generator SPECS + generated file + agreement test),
+  record the scope (6), and keep direct prone landing, no-turn, both facings, and the two IK blend-in/out frames in every
+  later check.
+
 ## Stage 3: `frontKnee` and `backTuck`, then STOP (G2)
 
 Same pattern as Stage 2 (pose sheet ⛔ G2a, implement, film, viewer). `frontKnee` must also report the near forearm's step at
-the roll swap and at hold → rise on George (today 33-44 px; target ≤ 3 px).
+hold → rise on George from a direct face-down landing (today 40-44 px; target ≤ 3 px). There is no sell roll under
+`?getups=v1` (D7), so the roll-swap number is history only (B1).
 
 ## Stage 3b: the fatigue stall (D8), then STOP (G2b)
 
@@ -242,7 +271,7 @@ the roll swap and at hold → rise on George (today 33-44 px; target ≤ 3 px).
 ## Stage 4: selection on, then STOP (G3)
 
 - **T4.0** `chooseGetUp(ctx, prevId, rand)` (D4 + B2 + B6), pure, with tests.
-- **T4.1** Wire `chooseGetUp` into `_startRiseUp` / `_startQuickRise` under `?getups=v1`. Film 10 seeded matches' worth of
+- **T4.1** Wire `chooseGetUp` into `_startRiseUp` only, under `?getups=v1`; `_startQuickRise` keeps the legacy route (B3). Film 10 seeded matches' worth of
   rises (Lou and George), list which get-up was chosen and why, and the repeat count.
 - **⛔ G3:** Derek watches a normal-speed reel. Promote `getups` to default? (Then the legacy entries stay as the `=off` path.)
 
@@ -251,8 +280,8 @@ the roll swap and at hold → rise on George (today 33-44 px; target ≤ 3 px).
 - **T5.1** Re-film George's back sell (`suplex`, `suplexFlip`, both kinds) with `?getups=v1` on, same seed and sell plan, and
   put it beside the G9 films. Report the parked George misses again: peak knee flex, near forearm/hand pixels over the thighs
   or trunks while the hand is behind him, the near-forearm step at the rise start.
-- **⛔ G4 (Derek):** does George still need `legScale` (G10a) or the thigh mask (Stage 11)? Anything still needed goes back
-  to PLAN_GEORGE_TRANSFER as Rev 5.
+- **⛔ G4 (Derek):** does George still need `legScale` (G10a)? Keep or promote the torso ∪ thighs mask built at T2.7 (it
+  replaces the George plan's Stage 11)? Anything still needed goes back to PLAN_GEORGE_TRANSFER as Rev 5.
 
 ## Done means
 

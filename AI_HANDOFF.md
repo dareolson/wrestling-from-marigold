@@ -44,6 +44,7 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-10-28 · Codex · [G1-rev2 advice for Opus: route, mask and measurement limits](AI_HANDOFF_ENTRIES/2026-10-28-codex-current-getups-advice.md)
 - 2026-10-28 · Claude · [Get-ups G1-rev2: George's hand route above the hem (T2.6), thigh backstop (T2.7)](AI_HANDOFF_ENTRIES/2026-10-28-claude-getups-g1-rev2.md)
 - 2026-10-28 · Claude · [Get-ups G1-rev: Lou's forearm (T2.4), George's elbow-out (T2.5)](AI_HANDOFF_ENTRIES/2026-10-28-claude-getups-g1-rev.md)
 - 2026-10-27 · Claude · [Get-ups G1: backKneeHurt and its back-sell variant (`?getups=v1`)](AI_HANDOFF_ENTRIES/2026-10-27-claude-getups-g1.md)

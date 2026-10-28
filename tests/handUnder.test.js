@@ -32,7 +32,8 @@ function rig(character, { state = 'standing', latchOn = true, sell = null, hold 
             torso: { _semanticAnchors: character.textures.torso.semanticAnchors }, backContactDistance: () => dist,
             carriedRiseEndArm: () => ({ arm: 0.3, elbow: 1.1 }), setHandUnder: v => flags.push(v), handClearance: () => hand.clear === null ? null : { clear: hand.clear, min: hand.clear ? 5 : 0, distances: {} },
             setDepth: noop, invalidatePoseChannels: noop, setVisible: noop,
-            updateGroundedReach: noop, updateGrounded: noop, updateGetUp: noop, updateFall: noop, updateUpright: noop },
+            updateGroundedReach: noop, updateGrounded: noop, updateGetUp: noop, updateFall: noop, updateUpright: noop,
+            solveRouteHand: () => null },   // George's aroundVia.path (T2.9): nothing measurable on a stand-in, the channel blend runs
     });
     w._testReach = reach;
     w._pain = { source: 'suplex', part: 'back', limb: null, severity: 1, phase: state === 'gettingUp' ? 'rise' : 'recover', since: 1000, until: 3500, planned: true };

@@ -1,5 +1,6 @@
 // Rev 3 D9 (T8.3): the hand's route round through backSell.aroundVia. Pure pieces and the seams only; the whole route on the
 // real Wrestler draw is measured by tools/debug/route_probe.mjs (numbers in the plan's Progress line).
+import { JOINT_LIMITS } from '../src/rig/articulation.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Skeleton from '../src/Skeleton.js';
@@ -36,8 +37,9 @@ test('clutchSell: the reach takes `approach` of the clutch to get in (default .2
 test('George\'s route numbers: viaW and standW in range, a via pose with elbow inside its limit, an approach that leaves the key order intact', () => {
     assert.ok(AROUND.viaW > 0 && AROUND.viaW < 1 && AROUND.standW > 0 && AROUND.standW < 1);
     const b = georgeRosterV1.textures.backSell;
-    assert.deepEqual(recoveryVia(b), { arm: -0.6, elbow: -0.4 });
-    assert.ok(b.settledElbow + b.aroundVia.recoveryElbow >= 0, 'the via elbow stays a bent elbow');
+    assert.deepEqual(recoveryVia(b), { arm: -0.45, elbow: -1.8 });   // PLAN_GETUPS T2.9: the T2.6 via pose (was -0.6 / -0.4)
+    const viaElbow = b.settledElbow + b.aroundVia.recoveryElbow;
+    assert.ok(viaElbow >= JOINT_LIMITS.elbow.min && viaElbow <= JOINT_LIMITS.elbow.max, 'the via elbow (folded behind the upper arm) stays inside its limit');
     assert.ok(b.aroundVia.approach > 0.25 && b.aroundVia.approach < 0.45);
     assert.equal(recoveryVia(theszProcreateV1.textures.backSell), null);
 });

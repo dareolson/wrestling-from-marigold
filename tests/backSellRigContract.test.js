@@ -78,7 +78,7 @@ test('backSell.handUnder is optional but must be a boolean when present (Rev 2 D
 });
 
 test('backSell.aroundVia is optional, finite { u, v }, only with handUnder (Rev 3 D9); George has it (G8a B), Lou does not', () => {
-    assert.deepEqual(georgeRosterV1.textures.backSell.aroundVia, { u: -0.25, v: 0.9069, recoveryArm: -0.6, recoveryElbow: -0.4, approach: 0.4 });
+    assert.deepEqual(georgeRosterV1.textures.backSell.aroundVia, { u: -0.4772, v: 0.6358, recoveryArm: -0.45, recoveryElbow: -1.8, approach: 0.4, path: [{ u: -0.4772, v: 0.6358 }] });
     assert.equal(theszProcreateV1.textures.backSell.aroundVia, undefined);
     const withData = patch => backSellSupport({ ...view(georgeRosterV1), _textureConfig: { ...georgeRosterV1.textures, backSell: { ...georgeRosterV1.textures.backSell, ...patch } } });
     for (const bad of ['x', 1, null, {}, { u: 0.1 }, { v: 0.1 }, { u: NaN, v: 0 }, { u: 0, v: Infinity }, { u: '1', v: 0 }])

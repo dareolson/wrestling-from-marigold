@@ -44,6 +44,7 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-10-27 · Codex · [Current get-up issues: opinion and contracts for Opus](AI_HANDOFF_ENTRIES/2026-10-27-codex-getups-review.md)
 - 2026-10-27 · Codex · [Notes for Opus: Rev 4 / Rev 4b runtime and plan review](AI_HANDOFF_ENTRIES/2026-10-27-codex-notes-for-opus.md)
 - 2026-10-26 · Codex · [George grip donor ready for Claude registration](AI_HANDOFF_ENTRIES/2026-10-26-codex-george-grip-donor.md)
 - 2026-10-25 · Claude · [Rise -> standing handoff: G5 package (`?risefix=1`)](AI_HANDOFF_ENTRIES/2026-10-25-claude-rise-handoff-g5.md)

@@ -23,6 +23,38 @@ plus the quick rise. Measured problems they cause:
   hold → rise (T10.3 films, `research/animation/george-transfer-2026-10/g10a/rows.json`).
 Reference: [MOVE_CATALOG.md](MOVE_CATALOG.md) line 80, Bret sheet frames 64-68 (from the back) and 244-258 (from the front).
 
+## Amendments after Codex's review (Opus 2026-10-27; these override the text below)
+
+[Codex review](AI_HANDOFF_ENTRIES/2026-10-27-codex-getups-review.md). Decisions:
+- **B1. Two kinds of comparison.** (a) *Behaviour*: old vs new full scenario; the sell plans differ on purpose (D7 removes
+  rolls) and the viewer labels that. (b) *Rise only*: identical starting pose, hold offsets, pain and stamina, forced rise
+  (the `rise_handoff_probe` way), old route vs new. Every gate shows both. Keep a direct face-down landing case (a fall that
+  lands prone): no rolls means fewer prone rises, not a fixed prone route. The old roll-swap number is history, not a target.
+- **B2. Route frozen at rise start.** `chooseGetUp` picks the entry, and `needsTurn` is decided once, at rise start; neither
+  changes during the rise. This replaces the "re-decided until `flipAt`" text in D4. If the opponent crosses during the rise,
+  the normal `move()` re-face happens after standing: the one accepted exception to "ends facing the opponent". Tests: cross
+  once, cross twice, opponent inside the 12 px deadband at start, opponent moving into it.
+- **B3. Quick rise unchanged this round.** `_startQuickRise` (160 ms) keeps the legacy route; no authored entry is squeezed
+  into it, and its vulnerability window does not change. Authored entries use today's `_startRiseUp` timing
+  (850 + 750 × hurt ms). Report real milliseconds in every film, not only t.
+- **B4. The pivot moves the wrestler, not just the drawing.** At `flipAt` the mirror would move the planted knee; the
+  correction is applied to the Wrestler's x (one write, in the flip), so collision, opponent distance and rope bounds follow
+  and the skeleton never carries a lasting offset. If ring bounds clamp it, report the clamp. Measure BOTH planted contacts
+  (knee and other foot) across the flip. Tests: a frame step that jumps over `flipAt` without landing on it; interruption
+  right after the correction.
+- **B5. Support hands are data.** Each entry's `hands`: `{ near|far: { target, space: 'world'|'thighLocal', push: [t0, t1],
+  w, release: [t1, t2] } }`, where `target` is a mat point (world, fixed at push start) or a thigh-local anchor. In a `backSell`
+  variant the near hand belongs to the carried back reach and must not appear in `hands` (the validator rejects it); the far
+  hand supports. Measure the DRAWN frames (after IK, knee limits, masks, contact state): hold → first rise frame, push
+  window, last rise frame → standing.
+- **B6. Selection never forces a bad route.** `chooseGetUp(ctx, prevId, rand)` filters eligibility first, avoids `prevId`
+  only when another eligible entry remains, ignores `nearRopes` this round (there is no rope route), and falls back to the
+  legacy entry for that lying when nothing is eligible. Tests: zero, one and several eligible entries.
+- **B7. Order: prototype first.** Stage 1 is only T1.1-T1.3. Selection (T1.4) moves to Stage 4. At G1a Derek sees the pose
+  sheet AND a normal-speed strip of a rough `backKneeHurt` (both facings, turn and no turn), because weight and the turn
+  can only be judged in motion. George's lying leg peaks and the thigh/trunks overlap stay separate observations at G4: a
+  new rise can't show them fixed.
+
 ## Decisions (Opus defaults; Derek can overrule at any gate)
 
 - **D1. Get-ups are grounded keypose tables, not MoveRuntime clips.** Clips pose the upright channels (`lLeg, crouch, lean,
@@ -85,12 +117,14 @@ Later, not this plan: rope pull-up, kip-up, climbing the opponent.
   (it is already in `GROUNDED_FACING_LOCK`) or on its first standing frame when the get-up already turned. Tests: one flip,
   at `flipAt`; pivot point within 1 px across the flip (Node stub rig); interruption (pin, pickup, reset) restores facing,
   hand and depth state; no double flip.
-- **T1.4** `chooseGetUp(ctx)` (D4), pure, with tests: eligibility per field, deadband, no repeat, seeded.
+- *(T1.4 moved to Stage 4 by B7.)*
 
 ## Stage 2: `backKneeHurt`, then STOP (G1)
 
 - **T2.1** Pose sheet first: draw the reference frames (Bret 64-68) next to Lou and George posed by the proposed keys, both
-  facings, at `t` of each key, as one page `research/animation/getups-2026-10/g1a/index.html`. Keys only, no film.
+  facings, at `t` of each key, as one page `research/animation/getups-2026-10/g1a/index.html`. Plus (B7) a rough
+  normal-speed strip of those keys running in the game under `?getups=v1`, Lou and George, both facings, turn and no turn,
+  forced rise (B1b). Rough means untuned: no measuring pass yet.
   **⛔ G1a: Derek OKs the keys** before anything is tuned.
 - **T2.2** Implement `backKneeHurt` and its `backSell` variant. Film Lou and George, suplex receiver, opponent behind (turn)
   and in front (no turn), 1×, both facings, from the last down frame to 2 s standing. Before = today.
@@ -108,6 +142,7 @@ the roll swap and at hold → rise on George (today 33-44 px; target ≤ 3 px).
 
 ## Stage 4: selection on, then STOP (G3)
 
+- **T4.0** `chooseGetUp(ctx, prevId, rand)` (D4 + B2 + B6), pure, with tests.
 - **T4.1** Wire `chooseGetUp` into `_startRiseUp` / `_startQuickRise` under `?getups=v1`. Film 10 seeded matches' worth of
   rises (Lou and George), list which get-up was chosen and why, and the repeat count.
 - **⛔ G3:** Derek watches a normal-speed reel. Promote `getups` to default? (Then the legacy entries stay as the `=off` path.)

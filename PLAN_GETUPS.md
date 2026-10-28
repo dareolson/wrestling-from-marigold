@@ -158,7 +158,7 @@ little when the knee is folded.
 G1b — Derek 2026-10-27: **E** ("e looks the best"), from a simplified page (`g1b/decide.html`: the three worst moments,
 A-E side by side). Opus check afterwards: **E is the same as A (today).** Both rigs already carry `shinUnderThigh: true`, so
 `kneeOrder=thigh` changed nothing; A vs E frames differ only by film grain (same pixel counts as frame 0, 2 px at s0034).
-So Derek preferred today's knee to every tuck amount. **Decision: no knee tuck.** `kneeTuck` / `kneeOrder` stay in the code,
+So Derek preferred today's knee to every tuck amount (Derek: "A also looked the best, the other ones were all jacked up ... there's a gap, but i'm not that worried"). **Decision: no knee tuck.** `kneeTuck` / `kneeOrder` stay in the code,
 off unless asked for (URL only). The knee break Derek saw at G1a is not fixed by this; it is parked in IDEAS.md (bent-knee
 variant art, or bendable limbs). Next: T2.2.
 - **T2.2** Implement `backKneeHurt` and its `backSell` variant. Film Lou and George, suplex receiver, opponent behind (turn)

@@ -4,8 +4,10 @@
 // An entry: { id, from: 'supine'|'prone', duration (s, full stamina), keys, flipAt?, after?, pivot?, hands?, tags }.
 //   keys    t ascending from 0, the last key is the standing key (t = 1), or, with a flip, the pose at `flipAt`.
 //   flipAt  (D2) the rise turns to face the other way at this t. `after` then holds the keys from flipAt to 1, authored
-//           for the NEW facing; its first key is the mirror of the last of `keys` (mirrorPose), so the two halves draw
-//           the same body. A supine pose P facing f draws what the mirrored pose facing -f draws (sells.js roll).
+//           for the NEW facing; its first key is the last of `keys` (turnedPose): channels are facing-relative, so the
+//           same channels with the facing flipped draw the body reflected about the hip, and the pivot hold moves x so
+//           the planted joint stays put. (Not the sells.js roll: negated angles with a flipped facing draw the SAME world
+//           body with the art turned over, which does not turn him to face the other way.)
 //   pivot   the joint (a Skeleton.jointAttachmentPoints name, e.g. 'nearKnee') that stays put across the flip; the
 //           Wrestler's x is corrected so it does (B4).
 //   hands   B5, support hands as data: { near|far: { target, space, push: [t0, t1], w, release: [t1, t2] } }.
@@ -14,12 +16,8 @@ import Skeleton from '../Skeleton.js';
 
 const CHANNELS = ['hip', 'torso', 'farThigh', 'farShin', 'nearThigh', 'nearShin', 'farArm', 'farFore', 'nearArm', 'nearFore'];
 
-/** The same body drawn for the other facing: every angle negated, the torso about vertical (2π - torso), hip kept. */
-export function mirrorPose(p) {
-    const m = {};
-    for (const [c, v] of Object.entries(p)) m[c] = c === 't' || c === 'hip' ? v : c === 'torso' ? 2 * Math.PI - v : -v;
-    return m;
-}
+/** The pose a flip hands the second half: the same facing-relative channels (the facing flips, so the body is reflected). */
+export const turnedPose = (p) => ({ ...p });
 
 /** The key table a rise at this stage samples: before the flip `keys`, from it `after` (or `keys` without a flip). */
 export const keysFor = (entry, flipped = false) => (entry.after && flipped ? entry.after : entry.keys);
@@ -52,8 +50,8 @@ export function validateGetUp(e) {
             if (!ordered(e.after)) bad.push('after out of order');
             if (e.after[0].t !== e.flipAt) bad.push('after must start at flipAt');
             if (e.after.at(-1).t !== 1) bad.push('missing standing key (after must end at t = 1)');
-            const m = mirrorPose(e.keys.at(-1));
-            for (const c of CHANNELS) if (!(Math.abs(m[c] - e.after[0][c]) < 1e-9)) bad.push(`after[0].${c} is not the mirror of the flip key`);
+            const m = turnedPose(e.keys.at(-1));
+            for (const c of CHANNELS) if (!(Math.abs(m[c] - e.after[0][c]) < 1e-9)) bad.push(`after[0].${c} is not the flip key`);
         }
     } else if (e.keys.at(-1).t !== 1) bad.push('missing standing key (last key must be t = 1)');
     const standing = (hasFlip ? e.after?.at(-1) : e.keys.at(-1));
@@ -80,7 +78,7 @@ const SITUP = { t: 0.24, hip: 16, torso: P + 0.30, farThigh: 1.95, farShin: -0.3
 const KNEEL = { t: 0.46, hip: 36, torso: P - 0.85, farThigh: 1.15, farShin: -0.25, nearThigh: 0.10, nearShin: -1.50, farArm: 0.95, farFore: 0.95, nearArm: 0.20, nearFore: 0.30 };
 const PUSH = { t: 0.72, hip: 58, torso: P - 0.45, farThigh: 0.95, farShin: -0.10, nearThigh: 0.30, nearShin: -0.95, farArm: 0.70, farFore: 0.75, nearArm: 0.10, nearFore: 0.20 };
 const STAND = Skeleton.GETUP_POSES.at(-1);
-const flipKey = { ...mirrorPose(KNEEL), t: KNEEL.t };
+const flipKey = turnedPose(KNEEL);
 const keyed = (...ks) => ks.map((k) => ({ ...k }));
 
 const backKneeHurtBase = {

@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Skeleton from '../src/Skeleton.js';
 import Wrestler from '../src/Wrestler.js';
-import { GETUPS, legacySupine, legacyProne, legacyFor, validateGetUp, mirrorPose, sampleGetUp } from '../src/animation/getUps.js';
+import { GETUPS, legacySupine, legacyProne, legacyFor, validateGetUp, turnedPose, sampleGetUp } from '../src/animation/getUps.js';
 
 const withFlag = (search, fn) => { globalThis.location = { search }; try { return fn(); } finally { delete globalThis.location; } };
 const clone = (e) => JSON.parse(JSON.stringify(e));
@@ -22,7 +22,7 @@ test('validator rejects a missing standing key, a flipAt without after, keys out
     const flip = clone(GETUPS.backKneeHurt);
     assert.ok(validateGetUp({ ...flip, pivot: undefined }).some(m => /pivot/.test(m)));
     flip.after[0].torso += 0.1;
-    assert.ok(validateGetUp(flip).some(m => /not the mirror/.test(m)));
+    assert.ok(validateGetUp(flip).some(m => /not the flip key/.test(m)));
     const back = { ...clone(e), tags: ['backSell'], hands: { near: { target: 'x', space: 'world', push: [0.4, 0.7], w: 1, release: [0.7, 0.8] } } };
     assert.ok(validateGetUp(back).some(m => /backSell/.test(m)));
 });
@@ -60,10 +60,10 @@ test('updateGetUp with a legacy entry draws exactly what it drew without one', (
     }
 });
 
-test('the flip pose is the mirror of the last key before it, so both halves draw one body', () => {
+test('the second half starts on the flip key channels, so only the facing changes', () => {
     const e = GETUPS.backKneeHurt;
     const a = sampleGetUp(e, e.flipAt, false), b = sampleGetUp(e, e.flipAt, true);
-    const m = mirrorPose(a);
+    const m = turnedPose(a);
     for (const c of Object.keys(m)) assert.ok(Math.abs(m[c] - b[c]) < 1e-9, c);
     // the first-half table never reaches standing, the second ends on it
     assert.equal(sampleGetUp(e, 1, true).torso, Math.PI);

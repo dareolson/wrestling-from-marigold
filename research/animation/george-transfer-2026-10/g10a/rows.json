@@ -1,0 +1,458 @@
+{
+ "suplex/1": {
+  "plan": [
+   "holding",
+   "down:supine",
+   "roll:back:supine",
+   "roll:back:prone",
+   "clutch:back:prone",
+   "hold:prone",
+   "gettingUp",
+   "standing"
+  ],
+  "peakFlex": {
+   "near": 1.123,
+   "far": 0.8,
+   "atMs": 2066.67,
+   "src": "sell:clutch:back"
+  },
+  "rollSwap": {
+   "atMs": 883.33,
+   "step": 33.34,
+   "part": "nearForearm",
+   "naturalMax": 1.55,
+   "from": "supine",
+   "to": "prone"
+  },
+  "holdRise": {
+   "atMs": 5516.67,
+   "step": 40.11,
+   "part": "nearForearm",
+   "naturalMax": 2.47
+  },
+  "latch": {
+   "firstOnMs": 1400,
+   "distAtFirstOn": 34.41,
+   "flips": 2
+  },
+  "receiverFacing": {
+   "atImpact": -1,
+   "atRise": 1
+  },
+  "events": {
+   "suplex": -1700,
+   "impact": 0,
+   "clutchPeak": 1883.33,
+   "hold": 3583.33,
+   "riseStart": 5516.67,
+   "rise020": 5833.33,
+   "rise034": 5933.33,
+   "rise055": 6066.67,
+   "rise085": 6283.33,
+   "standing": 6550,
+   "recovery+200ms": 6766.67,
+   "recovery+1000ms": 7566.67,
+   "recovery+2000ms": 8566.67
+  },
+  "planMatchesToday": true
+ },
+ "suplex/0.7": {
+  "plan": [
+   "holding",
+   "down:supine",
+   "roll:back:supine",
+   "roll:back:prone",
+   "clutch:back:prone",
+   "hold:prone",
+   "gettingUp",
+   "standing"
+  ],
+  "peakFlex": {
+   "near": 0.831,
+   "far": 0.605,
+   "atMs": 2066.67,
+   "src": "sell:clutch:back"
+  },
+  "rollSwap": {
+   "atMs": 883.33,
+   "step": 33.35,
+   "part": "nearForearm",
+   "naturalMax": 1.05,
+   "from": "supine",
+   "to": "prone"
+  },
+  "holdRise": {
+   "atMs": 5516.67,
+   "step": 40.1,
+   "part": "nearForearm",
+   "naturalMax": 2.49
+  },
+  "latch": {
+   "firstOnMs": 1400,
+   "distAtFirstOn": 34.41,
+   "flips": 2
+  },
+  "receiverFacing": {
+   "atImpact": -1,
+   "atRise": 1
+  },
+  "events": {
+   "suplex": -1700,
+   "impact": 0,
+   "clutchPeak": 1883.33,
+   "hold": 3583.33,
+   "riseStart": 5516.67,
+   "rise020": 5833.33,
+   "rise034": 5933.33,
+   "rise055": 6066.67,
+   "rise085": 6283.33,
+   "standing": 6550,
+   "recovery+200ms": 6766.67,
+   "recovery+1000ms": 7566.67,
+   "recovery+2000ms": 8566.67
+  },
+  "planMatchesToday": true
+ },
+ "suplex/0.55": {
+  "plan": [
+   "holding",
+   "down:supine",
+   "roll:back:supine",
+   "roll:back:prone",
+   "clutch:back:prone",
+   "hold:prone",
+   "gettingUp",
+   "standing"
+  ],
+  "peakFlex": {
+   "near": 0.685,
+   "far": 0.507,
+   "atMs": 2066.67,
+   "src": "sell:clutch:back"
+  },
+  "rollSwap": {
+   "atMs": 883.33,
+   "step": 33.36,
+   "part": "nearForearm",
+   "naturalMax": 0.81,
+   "from": "supine",
+   "to": "prone"
+  },
+  "holdRise": {
+   "atMs": 5516.67,
+   "step": 40.1,
+   "part": "nearForearm",
+   "naturalMax": 2.5
+  },
+  "latch": {
+   "firstOnMs": 1400,
+   "distAtFirstOn": 34.41,
+   "flips": 2
+  },
+  "receiverFacing": {
+   "atImpact": -1,
+   "atRise": 1
+  },
+  "events": {
+   "suplex": -1700,
+   "impact": 0,
+   "clutchPeak": 1883.33,
+   "hold": 3583.33,
+   "riseStart": 5516.67,
+   "rise020": 5833.33,
+   "rise034": 5933.33,
+   "rise055": 6066.67,
+   "rise085": 6283.33,
+   "standing": 6550,
+   "recovery+200ms": 6766.67,
+   "recovery+1000ms": 7566.67,
+   "recovery+2000ms": 8566.67
+  },
+  "planMatchesToday": true
+ },
+ "suplex/0.4": {
+  "plan": [
+   "holding",
+   "down:supine",
+   "roll:back:supine",
+   "roll:back:prone",
+   "clutch:back:prone",
+   "hold:prone",
+   "gettingUp",
+   "standing"
+  ],
+  "peakFlex": {
+   "near": 0.539,
+   "far": 0.41,
+   "atMs": 2066.67,
+   "src": "sell:clutch:back"
+  },
+  "rollSwap": {
+   "atMs": 883.33,
+   "step": 33.36,
+   "part": "nearForearm",
+   "naturalMax": 0.58,
+   "from": "supine",
+   "to": "prone"
+  },
+  "holdRise": {
+   "atMs": 5516.67,
+   "step": 40.1,
+   "part": "nearForearm",
+   "naturalMax": 2.51
+  },
+  "latch": {
+   "firstOnMs": 1400,
+   "distAtFirstOn": 34.41,
+   "flips": 2
+  },
+  "receiverFacing": {
+   "atImpact": -1,
+   "atRise": 1
+  },
+  "events": {
+   "suplex": -1700,
+   "impact": 0,
+   "clutchPeak": 1883.33,
+   "hold": 3583.33,
+   "riseStart": 5516.67,
+   "rise020": 5833.33,
+   "rise034": 5933.33,
+   "rise055": 6066.67,
+   "rise085": 6283.33,
+   "standing": 6550,
+   "recovery+200ms": 6766.67,
+   "recovery+1000ms": 7566.67,
+   "recovery+2000ms": 8566.67
+  },
+  "planMatchesToday": true
+ },
+ "suplexFlip/1": {
+  "plan": [
+   "holding",
+   "down:supine",
+   "roll:back:supine",
+   "roll:back:prone",
+   "clutch:back:prone",
+   "hold:prone",
+   "gettingUp",
+   "standing"
+  ],
+  "peakFlex": {
+   "near": 1.123,
+   "far": 0.8,
+   "atMs": 2066.67,
+   "src": "sell:clutch:back"
+  },
+  "rollSwap": {
+   "atMs": 883.33,
+   "step": 36.78,
+   "part": "nearForearm",
+   "naturalMax": 1.71,
+   "from": "supine",
+   "to": "prone"
+  },
+  "holdRise": {
+   "atMs": 5516.67,
+   "step": 44.25,
+   "part": "nearForearm",
+   "naturalMax": 2.73
+  },
+  "latch": {
+   "firstOnMs": 1400,
+   "distAtFirstOn": 37.96,
+   "flips": 2
+  },
+  "receiverFacing": {
+   "atImpact": 1,
+   "atRise": -1
+  },
+  "events": {
+   "suplex": -1700,
+   "impact": 0,
+   "clutchPeak": 1883.33,
+   "hold": 3583.33,
+   "riseStart": 5516.67,
+   "rise020": 5833.33,
+   "rise034": 5933.33,
+   "rise055": 6066.67,
+   "rise085": 6283.33,
+   "standing": 6550,
+   "recovery+200ms": 6766.67,
+   "recovery+1000ms": 7550,
+   "recovery+2000ms": 8550
+  },
+  "planMatchesToday": true
+ },
+ "suplexFlip/0.7": {
+  "plan": [
+   "holding",
+   "down:supine",
+   "roll:back:supine",
+   "roll:back:prone",
+   "clutch:back:prone",
+   "hold:prone",
+   "gettingUp",
+   "standing"
+  ],
+  "peakFlex": {
+   "near": 0.831,
+   "far": 0.605,
+   "atMs": 2066.67,
+   "src": "sell:clutch:back"
+  },
+  "rollSwap": {
+   "atMs": 883.33,
+   "step": 36.59,
+   "part": "nearForearm",
+   "naturalMax": 1.15,
+   "from": "supine",
+   "to": "prone"
+  },
+  "holdRise": {
+   "atMs": 5516.67,
+   "step": 44,
+   "part": "nearForearm",
+   "naturalMax": 2.73
+  },
+  "latch": {
+   "firstOnMs": 1400,
+   "distAtFirstOn": 37.75,
+   "flips": 2
+  },
+  "receiverFacing": {
+   "atImpact": 1,
+   "atRise": -1
+  },
+  "events": {
+   "suplex": -1700,
+   "impact": 0,
+   "clutchPeak": 1883.33,
+   "hold": 3583.33,
+   "riseStart": 5516.67,
+   "rise020": 5833.33,
+   "rise034": 5933.33,
+   "rise055": 6066.67,
+   "rise085": 6283.33,
+   "standing": 6550,
+   "recovery+200ms": 6766.67,
+   "recovery+1000ms": 7550,
+   "recovery+2000ms": 8550
+  },
+  "planMatchesToday": true
+ },
+ "suplexFlip/0.55": {
+  "plan": [
+   "holding",
+   "down:supine",
+   "roll:back:supine",
+   "roll:back:prone",
+   "clutch:back:prone",
+   "hold:prone",
+   "gettingUp",
+   "standing"
+  ],
+  "peakFlex": {
+   "near": 0.685,
+   "far": 0.507,
+   "atMs": 2066.67,
+   "src": "sell:clutch:back"
+  },
+  "rollSwap": {
+   "atMs": 883.33,
+   "step": 36.67,
+   "part": "nearForearm",
+   "naturalMax": 0.89,
+   "from": "supine",
+   "to": "prone"
+  },
+  "holdRise": {
+   "atMs": 5516.67,
+   "step": 44.08,
+   "part": "nearForearm",
+   "naturalMax": 2.75
+  },
+  "latch": {
+   "firstOnMs": 1400,
+   "distAtFirstOn": 37.82,
+   "flips": 2
+  },
+  "receiverFacing": {
+   "atImpact": 1,
+   "atRise": -1
+  },
+  "events": {
+   "suplex": -1700,
+   "impact": 0,
+   "clutchPeak": 1883.33,
+   "hold": 3583.33,
+   "riseStart": 5516.67,
+   "rise020": 5833.33,
+   "rise034": 5933.33,
+   "rise055": 6066.67,
+   "rise085": 6283.33,
+   "standing": 6550,
+   "recovery+200ms": 6766.67,
+   "recovery+1000ms": 7550,
+   "recovery+2000ms": 8550
+  },
+  "planMatchesToday": true
+ },
+ "suplexFlip/0.4": {
+  "plan": [
+   "holding",
+   "down:supine",
+   "roll:back:supine",
+   "roll:back:prone",
+   "clutch:back:prone",
+   "hold:prone",
+   "gettingUp",
+   "standing"
+  ],
+  "peakFlex": {
+   "near": 0.539,
+   "far": 0.41,
+   "atMs": 2066.67,
+   "src": "sell:clutch:back"
+  },
+  "rollSwap": {
+   "atMs": 883.33,
+   "step": 36.69,
+   "part": "nearForearm",
+   "naturalMax": 0.64,
+   "from": "supine",
+   "to": "prone"
+  },
+  "holdRise": {
+   "atMs": 5516.67,
+   "step": 44.1,
+   "part": "nearForearm",
+   "naturalMax": 2.76
+  },
+  "latch": {
+   "firstOnMs": 1400,
+   "distAtFirstOn": 37.84,
+   "flips": 2
+  },
+  "receiverFacing": {
+   "atImpact": 1,
+   "atRise": -1
+  },
+  "events": {
+   "suplex": -1700,
+   "impact": 0,
+   "clutchPeak": 1883.33,
+   "hold": 3583.33,
+   "riseStart": 5516.67,
+   "rise020": 5833.33,
+   "rise034": 5933.33,
+   "rise055": 6066.67,
+   "rise085": 6283.33,
+   "standing": 6550,
+   "recovery+200ms": 6766.67,
+   "recovery+1000ms": 7566.67,
+   "recovery+2000ms": 8550
+  },
+  "planMatchesToday": true
+ }
+}

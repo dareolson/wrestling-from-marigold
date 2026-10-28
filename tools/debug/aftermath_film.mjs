@@ -81,12 +81,31 @@ const INSTALL = async depthControl => {
 };
 
 // In-page: choose the receiver, wrap its rise starts, take over the clock.
-const TAKE_OVER = receiverIdx => {
+const TAKE_OVER = ({ receiverIdx, legScale, planSeed }) => {
     const game = window.__WFM_GAME;
     const sc = game.scene.scenes[0];
     const film = window.__film;
     const w = receiverIdx === 0 ? sc.w1 : sc.w2;
     film.receiver = receiverIdx;
+    // PLAN_GEORGE_TRANSFER T10.3: WFM_LEGSCALE puts a candidate `backSell.legScale` on the receiver's live config only (never saved)
+    if (legScale) w.skeleton._textureConfig.backSell.legScale = legScale;
+    const sk0 = w.skeleton, names = sk0._parts.map(() => null);
+    for (const [k, v] of Object.entries(sk0)) { const i = sk0._parts.indexOf(v); if (i >= 0 && !names[i]) names[i] = k; }
+    film.names = names.map((n, i) => n ?? `part${i}`);
+    film.prevParts = null;
+    // T10.3 (A2a): the sell plan draws from Math.random, whose state at that moment depends on the live approach. Re-seed the
+    // stream the instant the plan is drawn so every candidate gets the same logged plan (the test compares the manifests).
+    if (planSeed !== null) {
+        const tick = w._tickSell.bind(w);
+        w._tickSell = dt => {
+            if (!w._sell && w._pain?.phase === 'mat' && !w._pain.planned) {
+                let a = planSeed;
+                Math.random = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a);
+                    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+            }
+            return tick(dt);
+        };
+    }
     for (const name of ['_startRiseUp', '_startQuickRise']) {
         const fn = w[name].bind(w);
         w[name] = (...a) => { film.events.push({ name, now: sc.time.now, riseStart: true }); return fn(...a); };
@@ -144,7 +163,25 @@ const STEP = () => {
         }
         if (lh) legs.hold = Object.fromEntries(legCh.map(c => [c, r3(lh.offsets[c] ?? 0)]));
     }
+    // T10.3 (A2): the largest per-part drawn step since the last frame (corner-set Hausdorff, rise_handoff_probe.partSteps)
+    const parts = sk._parts.map((img, i) => {
+        const m = img.getWorldTransformMatrix(), ox = img.originX * img.width, oy = img.originY * img.height;
+        return { n: film.names[i], vis: !!img.visible, c: [[-ox, -oy], [img.width - ox, -oy], [img.width - ox, img.height - oy], [-ox, img.height - oy]]
+            .map(([x, y]) => [m.a * x + m.c * y + m.tx, m.b * x + m.d * y + m.ty]) };
+    });
+    let pstep = null, pstepPart = null;
+    if (film.prevParts) {
+        pstep = 0;
+        const near = (c, set) => Math.min(...set.map(d => Math.hypot(c[0] - d[0], c[1] - d[1])));
+        parts.forEach((b, i) => { const a = film.prevParts[i];
+            if (!a.vis || !b.vis) return;
+            const v = Math.max(...a.c.map(c => near(c, b.c)), ...b.c.map(c => near(c, a.c)));
+            if (v > pstep) { pstep = v; pstepPart = b.n; } });
+        pstep = +pstep.toFixed(2);
+    }
+    film.prevParts = parts;
     return {
+        pstep, pstepPart,
         legs,
         recoveryW: +(w._recoveryWeight?.() ?? 0).toFixed(4), handOnBack: !!w._recoveryHandOnBack?.(), holdActive: !!w._lyingHold?.(), combatBlend: +(w.combatBlend ?? 0).toFixed(3),
         dbg: { pose: { lArm: w.pose?.lArm, lForearm: w.pose?.lForearm, lElbow: w.pose?.lElbow, rElbow: w.pose?.rElbow, bend: w.pose?.bend }, rec: (r => r && { lArm: r.lArm, lForearm: r.lForearm, lElbow: r.lElbow, bend: r.bend })(w._recoveryPose?.()), idle: w.idlePose },
@@ -250,7 +287,8 @@ async function film(scenario, configName, outRoot, interrupt = null) {
         // The attacker owns the active move at the log line; the other is the receiver.
         const receiverIdx = info.attackerBusy[0] && !info.attackerBusy[1] ? 1
             : info.attackerBusy[1] && !info.attackerBusy[0] ? 0 : (String(info.attacker).includes('1') ? 1 : 0);
-        await page.evaluate(TAKE_OVER, receiverIdx);
+        await page.evaluate(TAKE_OVER, { receiverIdx, legScale: process.env.WFM_LEGSCALE ? +process.env.WFM_LEGSCALE : null,
+            planSeed: process.env.WFM_PLANSEED ? +process.env.WFM_PLANSEED : null });
         const rigs = [process.env.WFM_P1, process.env.WFM_P2];
 
         const canvasBox = await page.evaluate(() => { const r = document.querySelector('canvas').getBoundingClientRect();
@@ -352,7 +390,7 @@ async function film(scenario, configName, outRoot, interrupt = null) {
             interrupt: fired,
             frames: frameList,
             samples: frames.map(f => ({ rel: +(f.now - impactNow).toFixed(2), state: f.state, riseT: f.state === 'gettingUp' ? +f.riseT.toFixed(4) : null,
-                sell: f.sell, recoveryW: f.recoveryW, holdActive: f.holdActive, dbg: f.dbg, handOnBack: f.handOnBack, combatBlend: f.combatBlend, backDist: f.backDist, latch: f.latch, handUnder: f.handUnder, clr: f.clr, handWant: f.handWant, elbowClr: f.elbowClr, reachW: f.reachW, handHw: f.handHw, handPending: f.handPending, handSkips: f.handSkips, nearWristW: f.nearWrist, lying: f.lying, pain: f.pain, legs: f.legs, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
+                sell: f.sell, recoveryW: f.recoveryW, holdActive: f.holdActive, dbg: f.dbg, handOnBack: f.handOnBack, combatBlend: f.combatBlend, backDist: f.backDist, latch: f.latch, handUnder: f.handUnder, clr: f.clr, handWant: f.handWant, elbowClr: f.elbowClr, reachW: f.reachW, handHw: f.handHw, handPending: f.handPending, handSkips: f.handSkips, nearWristW: f.nearWrist, lying: f.lying, pain: f.pain, legs: f.legs, pstep: f.pstep, pstepPart: f.pstepPart, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
                 farShoulder: f.farShoulder, farElbow: f.farElbow, rootY: f.y, facing: f.facing })),
         };
         writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 1));

@@ -44,7 +44,8 @@ Step 3 of the Revised sequence in [MOVE_PIPELINE_EVOLUTION.md](MOVE_PIPELINE_EVO
 - T5.2 97aff37: forearm.grip registered on George, backSellSupport gripArt painted / contact clutchPatch, no runtime change, Lou fixture unchanged, 942/942; misses: none noted
 - T5.3 32454b0: hold sweep unchanged (holdW .7, 14.52 px); films before/after + G9 viewer; misses: CONTRACT GAP, the art latch engages at 367 ms 34 px away and flips 5 times in the standing recovery; clutch hand step 3.3-4.7 px (limit 2.5); G8 forearm-inside miss not fixed
 - T10.1 0dda0fd (Sonnet filmed, Opus wrote it up): legs logged in aftermath_film.mjs; one George `suplex` (roll then clutch): knee flex peaks clutch:back 1.12, roll .96, hold .90 (rest .15). Not only `CLUTCH.back`: D12 widened. Miss: G8 rise-pixels-over-thigh check not done
-- T10.2 (this commit): `backSell.legScale` (optional, 0<x<=1) scales leg+hip offsets of every sell and the hold (`scaleLegs`, Wrestler `_sellPose`/`_lyingHold`), all lyings incl. prone clutch; no rig carries it; 6 new tests + Lou fixture/backSell suites 75/75; misses: not run in the live game (T10.3 films it), full suite not run
+- T10.2 9813653: `backSell.legScale` (optional, 0<x<=1) scales leg+hip offsets of every sell and the hold (`scaleLegs`, Wrestler `_sellPose`/`_lyingHold`), all lyings incl. prone clutch; no rig carries it; 6 new tests + Lou fixture/backSell suites 75/75; misses: not run in the live game (T10.3 films it), full suite not run
+- T10.3 (this commit): films ls 1/.7/.55/.4 x suplex/suplexFlip, same seeded sell plan (roll→clutch prone, all match); peak knee flex 1.12/.83/.69/.54; misses: no G10a page yet, no supine run; roll swap 33-37 px and hold→rise 40-44 px near forearm (real wrist motion, same at every scale: prone path, not legScale); raw films excluded locally
 
 ## Goal
 
@@ -438,6 +439,38 @@ Decisions (Opus defaults, Derek can overrule at G10a):
   torso OR either thigh is painted. The clearance test samples the same union, so the swap happens only outside all three.
   Lou is untouched (no `handUnder`).
 
+### Amendments after Codex's review (Opus 2026-10-27; Sonnet: these override the task text below)
+
+[Codex notes](AI_HANDOFF_ENTRIES/2026-10-27-codex-notes-for-opus.md). Accepted, with these decisions:
+- **A1. G9 latch stays an open, measured limitation.** Derek approved the forearm switch by eye. Don't tune the latch in Rev 4.
+  Keep reporting early engagement and flips in every film; a fix needs Derek to ask for it (Codex note 1 has the method).
+- **A2. T10.3 adds:** (a) the before and every candidate use the same seed AND the same logged sell plan (compare the
+  `sell` sequence in the manifests; a mismatch is a re-film, not a footnote); (b) the roll's swap frame: the largest per-part
+  drawn step at the supine → prone swap for each `legScale` (target ≤ 3 px; T10.2's test checks offsets, not the drawn pose);
+  (c) the hold → rise step per candidate (the rise carries the scaled hold offsets; target ≤ 3 px). `legScale` scales every
+  sell George draws while down, not only the back ones, on purpose (Derek's note was about falling in general).
+- **A3. T11.2 mask acceptance:** the mask copies keep world transform, origin, frame, flip and alpha in the filter camera, in
+  both facings; they never draw in the main scene; they are created once, reused, and destroyed with the skeleton (test).
+  The overlap probe uses the same alpha cutoff as the mask, or the difference is written down. Cost: after a 2 s warmup, with
+  masking active, against D11 in the same scene: median and 95th percentile ms per frame.
+- **A4. T11.3 fails closed.** The swap is allowed only when every sample against every occluder (torso, near thigh, far thigh)
+  is a finite, usable distance. An unusable transform, a missing silhouette or `Infinity` means NOT clear. Tests: a missing
+  thigh, an unusable transform. The rendered overlap count (A3) is the acceptance evidence, plus the frame right after each swap.
+- **A5. G10 promotes only Rev 4:** George's `legScale` value and the D13 mask/clearance (no new flag). `riseturn` stays its own
+  flag and gate (G11). No push without Derek.
+- **A6. Rev 4b policy (decided):**
+  - D15 (lean, then lift, knee push) applies to every supine rise under `?riseturn=1`, turn or not.
+  - `turn` is decided at rise start from the opponent's x vs ours, with a deadband: |dx| < 12 px = no turn. It may be
+    re-decided until the flip point (t .70); after the flip, facing is frozen until the first standing frame. If the opponent
+    crosses after that, the normal `move()` re-face happens (a real crossing, not this defect).
+  - Tests: opponent crosses before and after t .70; |dx| inside the deadband; rise interrupted (pin, pickup, reset) restores
+    facing and the hand/depth state; no double flip.
+  - The protecting hand and its depth/mask state carry through the flip (re-solved in the new facing on the same frame).
+- **A7. Rev 4b metrics and order:** at the flip, report both feet's world displacement (target ≤ 3 px while planted), the
+  contact hand's displacement and its waist-contact error, alongside the per-part steps. The knee-push hand is on its target
+  only inside its push window. Do T13.2 (A) first and put a normal-speed A strip in front of Derek before building B
+  (T13.3). If he rejects the mirror, B still mirrors, so stop and ask.
+
 ### Stage 10: legs, then STOP (G10a)
 
 - **T10.1 Attribute, no src change.** Re-film George `suplex` (kind 1) at HEAD with a probe that logs per frame: the active
@@ -479,6 +512,9 @@ G10a — (Derek's pick goes here.)
 G10 — (Derek's verdict goes here.)
 
 ### Rev 4b (Derek 2026-10-27): turn toward Lou while getting up, and give the rise some weight
+
+**SUPERSEDED 2026-10-27 (Derek): do not build Rev 4b / Stage 13.** The turn and the weight move to the get-up library,
+[PLAN_GETUPS.md](PLAN_GETUPS.md), which starts after G10. Kept below as the record of what was measured.
 
 Derek: "george should switch directions while he's getting up, during that transition, currently he stands up, but then
 switches toward lou ... him facing lou by the time he stands up, right now he kind of wills himself up in an antigravity way".

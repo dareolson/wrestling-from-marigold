@@ -13,7 +13,7 @@ import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
-import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees } from './animation/sells.js';
+import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
 import { AROUND, aroundChannel, backSellSupport, recoveryVia } from './rig/backSell.js';
@@ -1097,7 +1097,8 @@ export default class Wrestler {
         const def = cur.name === 'clutch' ? clutchSell(cur.lying, cur.part, cur.duration, slot ?? 'near', toHold ? backSell.data.holdW : 0, approach) : SELLS[cur.lying][cur.name];
         const keys = cur.turned ? def.after : def.keys;
         const lying = cur.turned ? def.to : cur.lying;
-        const { d, reach } = sampleSell(keys, u, cur.amp);
+        const sampled = sampleSell(keys, u, cur.amp), reach = sampled.reach;
+        const d = scaleLegs(sampled.d, backSell?.ok ? backSell.data.legScale : undefined);
         const hands = {};
         for (const [side, w] of Object.entries(reach)) hands[side] = { to: def.hands[side], w };
         // A roll keeps its turnover pose exactly (its halves must meet); every other
@@ -1166,7 +1167,7 @@ export default class Wrestler {
             || this._groundHandoff || h.lying !== this.lying
             || (this._choreoUntil ?? 0) > (this.scene?.time?.now ?? 0)) return null;
         const backSell = this._backSell();
-        return backSell.ok ? { w: holdWeight(h.t, backSell.data.holdW), offsets: holdOffsets(h.t) } : null;
+        return backSell.ok ? { w: holdWeight(h.t, backSell.data.holdW), offsets: scaleLegs(holdOffsets(h.t), backSell.data.legScale) } : null;
     }
 
     // The sole grounded-sell appearance writer. Complete selections reset the

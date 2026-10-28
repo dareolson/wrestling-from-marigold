@@ -19,6 +19,9 @@
 //                     near-arm pose OFFSETS, like recoveryArm / recoveryElbow, that put the standing wrist at that point
 //                     (tools/debug/around_recovery_probe.mjs), the via pose of the standing recovery's route. approach (optional, in
 //                     (.05, .45)): the fraction of a back clutch the reach takes to get in (sells.js clutchSell, default .25)
+//     legScale,       OPTIONAL number in (0, 1], default 1 (Rev 4 D12): scales the leg and hip offsets (nearThigh, nearShin,
+//                     farThigh, farShin, hip) of every sell and of the lying hold's legs, so this rig's knees bend less
+//                     while down; torso, arms and hands are unchanged (sells.js scaleLegs)
 //   }
 // The settled arm is not stored: it is the rig's idle pose `lArm` (see settledBackHand in
 // backRisePerformance.js), the same value the live settled pose carries.
@@ -49,6 +52,7 @@ export function backSellSupport(skeleton) {
     if (!(data.holdW > 0 && data.holdW <= 1) || !(data.contactPx > 0)) return no('invalid backSell data: range');
     if (typeof data.evidence !== 'string' || !data.evidence) return no('invalid backSell data: evidence');
     if (data.handUnder !== undefined && typeof data.handUnder !== 'boolean') return no('invalid backSell data: handUnder');
+    if (data.legScale !== undefined && !(Number.isFinite(data.legScale) && data.legScale > 0 && data.legScale <= 1)) return no('invalid backSell data: legScale');
     if (data.aroundVia !== undefined) {
         const via = data.aroundVia, arm = via?.recoveryArm, elbow = via?.recoveryElbow;
         if (!Number.isFinite(via?.u) || !Number.isFinite(via?.v) || data.handUnder !== true

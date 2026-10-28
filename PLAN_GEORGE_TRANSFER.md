@@ -43,6 +43,8 @@ Step 3 of the Revised sequence in [MOVE_PIPELINE_EVOLUTION.md](MOVE_PIPELINE_EVO
 - T5.1 b0d14cd: build_george_grip.mjs (Node zlib), rows 0-244 byte-exact from forearm.png, 0 differing bytes; misses: none noted
 - T5.2 97aff37: forearm.grip registered on George, backSellSupport gripArt painted / contact clutchPatch, no runtime change, Lou fixture unchanged, 942/942; misses: none noted
 - T5.3 32454b0: hold sweep unchanged (holdW .7, 14.52 px); films before/after + G9 viewer; misses: CONTRACT GAP, the art latch engages at 367 ms 34 px away and flips 5 times in the standing recovery; clutch hand step 3.3-4.7 px (limit 2.5); G8 forearm-inside miss not fixed
+- T10.1 0dda0fd (Sonnet filmed, Opus wrote it up): legs logged in aftermath_film.mjs; one George `suplex` (roll then clutch): knee flex peaks clutch:back 1.12, roll .96, hold .90 (rest .15). Not only `CLUTCH.back`: D12 widened. Miss: G8 rise-pixels-over-thigh check not done
+- T10.2 (this commit): `backSell.legScale` (optional, 0<x<=1) scales leg+hip offsets of every sell and the hold (`scaleLegs`, Wrestler `_sellPose`/`_lyingHold`), all lyings incl. prone clutch; no rig carries it; 6 new tests + Lou fixture/backSell suites 75/75; misses: not run in the live game (T10.3 films it), full suite not run
 
 ## Goal
 
@@ -365,7 +367,7 @@ G8a — Derek 2026-10-25: "looks good" to Opus's recommendation, candidate **B**
   4. Lou: keep the legs and breath?
   5. Approve?
 
-G8 — (Derek's verdict goes here.)
+G8 — Derek 2026-10-27 (at G9): two defects, "the legs bent too far on falling" and "the hand appearing through his trunks". Rev 4 fixes them. Recorded by Opus.
 
 Still out of scope: legs during a lying wait with no hold (kind 3, writhe last), the prone rise's
 missing hand, and the facing turn. Each is a separate call for Derek after G7.
@@ -406,7 +408,119 @@ Registration needed no runtime change, but the film found a runtime problem: wit
 five more times in the standing recovery, and the clutch-window hand step is 3.33/3.67/4.68 px (suplex/flip/prone; limit 2.5)
 against 1.83/2.02/3.29 with the fist. Any fix is runtime code = a contract gap, so nothing was changed. Opus decides.
 
-G9 — (Derek's verdict goes here.)
+G9 — Derek 2026-10-27: approved. "The forearm switch is totally seamless, it looks great." Measured misses (early latch, standing-recovery flips, 3.3-4.7 px hand step) not visible to Derek at 1×.
+
+## Rev 4 (2026-10-27, after G9): legs bent too far, hand through the trunks
+
+Derek, looking at G9: "the legs bent too far on falling, and the hand appearing through his trunks, can we fix them".
+The forearm switch itself is approved (G9).
+
+Causes (Opus, from the G9 `after-suplex` frames):
+- (1) **Legs.** At 0.8-1.4 s and 2.1-2.7 s after landing, both of George's knees fold into a high, sharp peak
+  (thigh near vertical). Both legs rise together, which matches the shared supine `CLUTCH.back` key in
+  `src/animation/sells.js` (`nearThigh .6, nearShin -.5, farThigh .5, farShin -.45`, ×1.25 at the squeeze:
+  knee flex about 1.38 rad), not `HOLD_LEGS` (one leg at a time, flex .75). T10.1 confirms this before anything changes.
+  Lou has the same key and was approved at G4, so the fix is George's rig data, not the shared key.
+- (2) **Trunks.** In `close-out` (7.8 s, 8.4-8.7 s) the hand comes out from behind him over the near thigh, just below
+  the trunks line. The D11 mask (`syncHandMask` in `src/Skeleton.js`) hides the forearm only where `torso` is painted. The
+  thighs draw over the torso there, and where the thigh's top shows below the painted trunks the masked forearm (depth .00402)
+  draws on top of it. The D10 clearance test (`rig/silhouette.js`) also looks at the torso only, so it can call the hand
+  "clear" while it is over a thigh. That may also be G8's unexplained 1-80 px in the rise: T10.1 checks.
+
+Decisions (Opus defaults, Derek can overrule at G10a):
+- **D12. George's back-sell legs bend less (rig data, George only).** `backSell.legScale` (number in (0, 1], default 1)
+  scales the leg channels (`nearThigh, nearShin, farThigh, farShin`, and `hip`) of every offset George draws over the lying
+  base while down: all supine sells (clutch, writhe, kick, and both halves of the roll, so its swap symmetry holds) and
+  `holdOffsets`. T10.1 found the peaks come from three sources (clutch:back 1.12 rad knee flex, roll .96, hold .90; rest .15),
+  so scaling only the clutch would leave the others. Torso, arms and hands are unchanged. Lou has no `legScale`, so the Lou fixture is unchanged.
+  Derek picks the value at G10a from .4 / .55 / .7.
+- **D13. "Behind the back" means behind the thighs too.** While the mask is on, the forearm and hand are hidden wherever the
+  torso OR either thigh is painted. The clearance test samples the same union, so the swap happens only outside all three.
+  Lou is untouched (no `handUnder`).
+
+### Stage 10: legs, then STOP (G10a)
+
+- **T10.1 Attribute, no src change.** Re-film George `suplex` (kind 1) at HEAD with a probe that logs per frame: the active
+  sell key (clutch `back` / writhe / kick / hold), its leg channel values, `holdOffsets` legs, and the knee flex
+  (thigh - shin) for each leg after `limitKnees`. Say which source makes the 0.8-1.4 s and 2.1-2.7 s peaks. Also, for G8's
+  rise frames with forearm pixels inside the outline, say whether those pixels lie over a thigh. If the legs are not
+  `CLUTCH.back`, STOP and report: D12 then needs a new call.
+- **T10.2 `legScale`.** Add it to the `backSell` schema (`rig/backSell.js` + the BACK_SELL doc comment; optional number,
+  0 < x ≤ 1), apply it where the back clutch keys and `holdOffsets` are sampled for this wrestler. Unit tests: scale 1 is
+  byte-identical to today; the scale touches only leg and hip channels; Lou fixture unchanged. Rig contract test for the type.
+- **T10.3 Candidates page.** Film George `suplex` and `suplexFlip` with `legScale` .4, .55, .7 and today (1) side by side,
+  1×, both facings, from landing to standing. Page: `research/animation/george-transfer-2026-10/g10a/index.html`, peak knee
+  flex per candidate under each column. No value goes in George's data yet. **⛔ G10a: Derek picks the value.**
+
+### Stage 11: the hand behind the thighs (after G10a)
+
+- **T11.1** Put Derek's `legScale` in George's `backSell` (generator SPECS + generated file + the agreement test).
+- **T11.2 (D13) Mask.** Hide the near forearm and hand where torso ∪ near thigh ∪ far thigh is painted. Phaser 4's Mask
+  filter takes one GameObject: try a Container/Layer holding render-only copies of the three parts, synced each frame; if
+  that can't work, a DynamicTexture the three parts are stamped into each frame, used as the mask. Pick one, say why, measure
+  ms per frame with 2 wrestlers (budget: the D11 cost + 1 ms). Extend the forearm-inside probe to count pixels inside the union.
+- **T11.3 (D13) Clearance.** `handClearance` samples the same union (min distance over the three silhouettes). Unit test with
+  stubs: a point over a thigh and outside the torso is NOT clear. Lou fixture unchanged.
+- **T11.4 Film and measure.** George `suplex`, `suplexFlip`, prone, against the G9 `after` frames. Report misses first:
+  forearm/hand pixels inside the union while under (target 0), swaps and the hand's distance outside the union at each
+  (> 0), swaps skipped, peak knee flex, max hand step, ms per frame. Capabilities records (visual `unverified`),
+  `moves:coverage -- --check`.
+
+### Stage 12: G10 package, then STOP
+
+- **T12.1** Viewer `research/animation/george-transfer-2026-10/g10-viewer.html` (the g9 pattern): G9 vs Rev 4 for all three
+  scenarios at 1×, plus a 0.25× close-up of the hand coming out (labelled slowed). Before it, a normal-speed loop strip in
+  both facings (CLAUDE.md rule).
+- **T12.2** Handoff entry `AI_HANDOFF_ENTRIES/2026-10-27-claude-george-transfer-rev4.md` and the Status pointer.
+- **⛔ G10 questions:** 1. Do the legs bend the right amount on landing? 2. Does the hand still show over the trunks or thighs
+   at any point? 3. Approve (then the promote/push step)?
+
+G10a — (Derek's pick goes here.)
+G10 — (Derek's verdict goes here.)
+
+### Rev 4b (Derek 2026-10-27): turn toward Lou while getting up, and give the rise some weight
+
+Derek: "george should switch directions while he's getting up, during that transition, currently he stands up, but then
+switches toward lou ... him facing lou by the time he stands up, right now he kind of wills himself up in an antigravity way".
+
+What the G9 `after-suplex` frames show (Opus): George lies feet-left, with Lou behind his head. He sits up and squats facing left,
+with his back to Lou (6.03-6.30 s), stands up still facing left (6.37 s), then mirrors to face Lou on a standing frame
+(about 6.43-6.50 s). This is H5 from [PLAN_RISE_HANDOFF.md](PLAN_RISE_HANDOFF.md) (`Wrestler.move()` re-faces a standing
+wrestler; the rise is in `GROUNDED_FACING_LOCK`). It is the same on every rig, Lou included. "Antigravity": in
+`GETUP_SUPINE_POSES` the hips go from the crouch (t .70, hip 46) straight up to standing with the torso upright. The near
+hand is on his back (the back sell) and the far hand pushes on nothing, so nothing visibly lifts him.
+
+Decisions (Opus defaults):
+- **D14. Face the opponent before standing (all rigs, flag `?riseturn=1`, off = today byte-identical).** At rise start,
+  decide `turn` = (the opponent is on the other side of the facing he will stand with). If `turn`, the mirror happens INSIDE
+  the rise, at its most compact moment, about the hip point (the art is a mirrored 3/4 sprite, so a flip can't be eased; it
+  is hidden where the figure is smallest and lowest). Two candidates for Derek:
+  - **A. Pivot in the crouch.** Same keys. Flip `facing` at the crouch key (t .70), mirrored about the hip x, so the hips and
+    feet stay put. Cheapest.
+  - **B. Turn over onto a knee.** New supine route when `turn`: sit up (.34) → turn onto the near knee and far foot, facing the
+    opponent (the flip happens here, kneeling) → hand on the front knee, push up → stand. Uses new keys
+    `GETUP_SUPINE_TURN_POSES`; the back-sell hand stays on the back, the other hand does the push.
+  No `turn` = today's route.
+- **D15. Weight in the rise (all rigs, same flag).** Between the crouch and standing, the torso leans forward over the feet
+  first and the hips lift second, and the free hand pushes off the front knee (a `nearHip`-style contact target on the thigh
+  just above the knee, the same hand-contact machinery as the clutch). Keep the rise's total duration unchanged.
+
+### Stage 13: the turning rise (after G10), then STOP (G11)
+
+- **T13.1** Measure, no src change: for the supine rise with the opponent behind, the per-part step and the facing frame, on
+  George and Lou, both facings (`rise_handoff_film.mjs`, `turn` cases). This is the before.
+- **T13.2 (D14 A + D15)** Behind `?riseturn=1`: the `turn` decision at `_startRiseUp`, the mirror at t .70 about the hip, the
+  lean-then-lift and knee push. `move()` must not re-face on the first standing frame (it already faces the opponent). Unit
+  tests: flag off byte-identical (`riseFixFlagOff` fixture unchanged); `turn` false = no flip; the flip happens once, at .70;
+  hip x the same on both sides of the flip (within 1 px); the rise duration is unchanged.
+- **T13.3 (D14 B)** Same flag, `&riseturn=knee`: the turn-over keys. Same tests, plus the knee pose stays inside `limitKnees`.
+- **T13.4** Film George (`suplex`, `suplexFlip`) and Lou (`suplexReverse`) for: today, A, B. 1×, both facings, from the hold to
+  2 s standing. Report misses first: the largest per-part step at the flip and anywhere else in the rise; frames between the
+  flip and the first standing frame; the knee-push hand's distance to its target; the turn on the standing frame (target: none).
+- **T13.5** Viewer `research/animation/george-transfer-2026-10/g11-viewer.html` (today | A | B per row) and a short handoff entry.
+- **⛔ G11 questions:** 1. A, B or neither? 2. Does he still rise "antigravity"? 3. Lou too (the flag is for every rig)?
+
+G11 — (Derek's verdict goes here.)
 
 ## Done means
 

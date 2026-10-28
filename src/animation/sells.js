@@ -225,6 +225,17 @@ export function limitKnees(g) {
     return g;
 }
 
+// Rev 4 D12: a rig's `backSell.legScale` shrinks the leg and hip offsets a sell or the hold draws over the lying base
+// (torso, arms and hands are untouched). A roll's two halves take the same scale, so its swap symmetry holds.
+// Undefined or 1 returns `d` itself.
+export const LEG_CHANNELS = Object.freeze(['nearThigh', 'nearShin', 'farThigh', 'farShin', 'hip']);
+export function scaleLegs(d, k) {
+    if (k === undefined || k === 1) return d;
+    const out = { ...d };
+    for (const c of LEG_CHANNELS) if (c in out) out[c] *= k;
+    return out;
+}
+
 /** A lying pose plus sampled offsets. */
 export function applyOffsets(base, d) {
     const g = { ...base };

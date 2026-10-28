@@ -13,6 +13,7 @@ import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
+import { GETUPS } from './animation/getUps.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
@@ -75,6 +76,8 @@ const defaultOnFlag = (name, value) => {
 const aftermathCandidate = () => defaultOnFlag('aftermath', 'v2');
 // ?getups=v1 (PLAN_GETUPS): authored get-ups; opt-in until Derek approves the set. D7: no roll while selling.
 const getUpsCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('getups') === 'v1';
+// PLAN_GETUPS B2: the opponent counts as behind a rising wrestler only past this many px of x (decided once, at rise start).
+const GETUP_TURN_DEADBAND = 12;
 const sellArtCandidate = () => defaultOnFlag('sellart', 'v1');
 // ?plant=1 (with sellart on): the support-hand plant during the back rise. PARKED by
 // Derek 2026-10-24 (PLAN_SUPLEX_RISE T4.-1); the code stays, off unless asked for.
@@ -871,6 +874,7 @@ export default class Wrestler {
     // ── Core game tick ────────────────────────────────────────────────────────
 
     move(dt, other) {
+        this._lastOther = other;
         // A bound clip owns facing: the executor sets it before play() and
         // keyframes may author it. Arena ticks move() BEFORE moveRuntime.update,
         // so re-facing here undid any facing a clip didn't re-author every
@@ -1014,6 +1018,7 @@ export default class Wrestler {
     }
 
     tickDown(dt) {
+        this._tickRiseFlip();
         this._tickPain();
         if (this.state !== 'down') { this._sell = null; this._hold = null; } // pinned, picked up, rising: the sell (and hold) stops
         if (this.state !== 'down' && this.state !== 'staggered') return;
@@ -2707,6 +2712,8 @@ export default class Wrestler {
         this._sell = null;
         this._painRising();
         this.riseT = 0;
+        this._getUp = this._pickGetUp();
+        this._riseFlip = null;
         const hurt = Math.max(0, 1 - this.stamina / 100);
         this.scene.tweens.add({
             targets:  this,
@@ -2723,6 +2730,51 @@ export default class Wrestler {
                 }
             },
         });
+    }
+
+    // ?getups=v1 (PLAN_GETUPS T1.3): the authored get-up this rise plays, chosen once at rise start (B2), or null (today's
+    // rise). Rough pick until chooseGetUp (T4.0): from the back, backKneeHurt, turning only if the opponent is behind him.
+    _pickGetUp() {
+        if (!getUpsCandidate() || this.lying !== 'supine') return null;
+        const other = this._lastOther ?? (this.scene.w1 === this ? this.scene.w2 : this.scene.w1);
+        const dx = other ? other.x - this.x : 0;
+        const turn = Math.abs(dx) > GETUP_TURN_DEADBAND && Math.sign(dx) !== this.facing;
+        return turn ? GETUPS.backKneeHurt : GETUPS.backKneeHurtStraight;
+    }
+
+    // Once per frame while down (tickDown): turn at flipAt, and undo the turn if the rise is interrupted. The flip is one
+    // write of facing; `>=` so a frame step that jumps over flipAt still flips exactly once. The pivot point (B4) is
+    // held in place by moving the wrestler's x on the next draw (_holdRisePivot), the skeleton keeps no offset.
+    _tickRiseFlip() {
+        const up = this._getUp;
+        if (!up) return;
+        const f = this._riseFlip;
+        if (this.state === 'gettingUp') {
+            if (up.after && !f && this.riseT >= up.flipAt) {
+                const at = this.skeleton.jointAttachmentPoints?.[up.pivot];
+                this._riseFlip = { facing0: this.facing, x0: this.x, pivotX: at ? at.x : null, dx: 0, pending: at != null, clamped: false };
+                this.facing = -this.facing;
+            }
+            return;
+        }
+        // standing: the rise finished and the new facing stands. Anything else: interrupted, put the old facing back.
+        if (f && this.state !== 'standing') { this.facing = f.facing0; this.x -= f.dx; }
+        this._getUp = null; this._riseFlip = null;
+    }
+
+    // After the first flipped frame is drawn: slide x so the pivot joint is where it was (B4), within the ring.
+    _holdRisePivot(s) {
+        const f = this._riseFlip, up = this._getUp;
+        if (!f?.pending) return 0;
+        f.pending = false;
+        const now = this.skeleton.jointAttachmentPoints?.[up.pivot];
+        if (!now || f.pivotX == null) return 0;
+        const b = ringBoundsAtY(this.y), m = 40 * this.s;
+        const want = this.x + (f.pivotX - now.x), x = Phaser.Math.Clamp(want, b.left + m, b.right - m);
+        f.clamped = x !== want;
+        f.dx = x - this.x;
+        this.x = x;
+        return f.dx;
     }
 
     // ?risefix=1: the swap to standing. The rise ended on the grounded channels that draw REST_POSE
@@ -2897,7 +2949,11 @@ export default class Wrestler {
             gfx.fillStyle(0x000000, 0.22);
             gfx.fillEllipse(x, y, (170 - this.riseT * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
-            this.skeleton.updateGetUp(x, y, s, facing, this.riseT, this.lying, this._backRiseContext(), this._riseStand(s, facing), this._riseHold);
+            const flipped = !!this._riseFlip;
+            const draw = (px) => this.skeleton.updateGetUp(px, y, s, facing, this.riseT, this.lying, this._backRiseContext(), this._riseStand(s, facing), this._riseHold, this._getUp, flipped);
+            draw(x);
+            const dx = flipped ? this._holdRisePivot(s) : 0;
+            if (dx) draw(x + dx);
             return;
         }
 

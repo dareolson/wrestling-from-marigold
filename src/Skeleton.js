@@ -2551,7 +2551,10 @@ export default class Skeleton {
     // `stand` (?risefix=1): the grounded channels that draw this rig's own upright idle (standingChannels).
     // They replace the final key, so only the last segment changes (second-to-last key -> t = 1 converges
     // on what the first standing frame draws); the hip finish below is already in `stand.hip`.
-    static _getUpPose(K, t, lockLimbJoints, standingHipHeight, stand = null) {
+    // `final` false (PLAN_GETUPS T1.2): K is the first half of a get-up that flips, whose last key is not the standing
+    // key, so neither the standing replacement nor the hip finish applies.
+    static _getUpPose(K, t, lockLimbJoints, standingHipHeight, stand = null, final = true) {
+        if (!final) return Skeleton._sampleKeyposes(K, t);
         if (stand) return Skeleton._sampleKeyposes([...K.slice(0, -1), { ...stand, t: K.at(-1).t }], t);
         const pose = Skeleton._sampleKeyposes(K, t);
         if (lockLimbJoints) {
@@ -2569,9 +2572,12 @@ export default class Skeleton {
 
     // `holdOffsets` (Rev 2): the lying hold's last grounded offsets (leg cycle, chest breath). They are carried into
     // the first part of the rise and eased out (riseHoldCarry), so the rise starts from the pose the hold drew.
-    updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null, stand = null, holdOffsets = null) {
-        const K = lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
-        let pose = Skeleton._getUpPose(K, t, this._lockLimbJoints, this.standingHipHeight, stand);
+    // `entry` (?getups=v1, getUps.js): the authored get-up to draw instead of today's table for `lying`; `flipped` says
+    // which half of a flipping entry is playing. No entry = the legacy table, byte-identical.
+    updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null, stand = null, holdOffsets = null, entry = null, flipped = false) {
+        const K = entry ? (entry.after && flipped ? entry.after : entry.keys)
+            : lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
+        let pose = Skeleton._getUpPose(K, t, this._lockLimbJoints, this.standingHipHeight, stand, !(entry?.after && !flipped));
         const carry = holdOffsets ? riseHoldCarry(t) : 0;
         if (carry > 0) pose = limitKnees(applyOffsets(pose, Object.fromEntries(Object.entries(holdOffsets).map(([c, v]) => [c, v * carry]))));
         const back = lying === 'supine' && pain?.part === 'back' && (pain.severity ?? 0) > 0;

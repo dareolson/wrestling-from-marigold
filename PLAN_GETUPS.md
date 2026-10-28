@@ -11,6 +11,7 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
 - T1.0: `planSells({ noRoll })`, `getups=v1` flag in Wrestler; 1000 seeded theatrical plans (supine, prone) have no roll, control plans still roll; sells.test.js 45/45. Misses: none; no film.
 - T1.1-T1.3: 21442f0 (+ flip fix, next commit): getUps.js, `updateGetUp(entry, flipped)`, `_tickRiseFlip` + pivot hold; getUps.test.js 12/12, rise tests 96/96. Finding: negated angles + flipped facing (the roll's swap) keep the world body, so a turn is the SAME channels with the facing flipped (a reflection); fixed.
 - T2.1: pose sheet + rough strips `research/animation/getups-2026-10/g1a/index.html` (tools/debug/getups_film.mjs). Rough keys, no measuring pass; flip is a reflection at t .46 about the near knee, other foot not measured. ⛔ G1a waits for Derek.
+- T2.1b: knee tuck by flex (`setKneeTuck`, URL `?getups=v1&kneeTuck=6|10|14`, `&kneeOrder=thigh`), off unless asked; page `research/animation/getups-2026-10/g1b/index.html`. Gap px (r 8, rise t .1-.8) Lou near/far L 63/93 -> 22/37 at 14; George 53/92 -> 27/40 (min at 10: 23/23). Bound art (George) needed both binding anchors slid. Full suite 967/967 (Node 22). ⛔ G1b waits for Derek.
 
 ## Why (Derek 2026-10-27)
 

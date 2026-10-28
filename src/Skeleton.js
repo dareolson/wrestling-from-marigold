@@ -555,6 +555,7 @@ export default class Skeleton {
         // unscaled px, same +X = forward/+Y = down convention as the leg
         // offsets above (george.js, 2026-07-12).
         this._nearShinOffsetX = textures.nearShinOffsetX ?? 0;
+        this._kneeFlexTuckRig = textures.kneeFlexTuck;
         this._nearShinOffsetY = textures.nearShinOffsetY ?? 0;
         // Near-shin-only render-angle bias, same wrestler-local,
         // facing-mirrored convention as nearLegTilt above (e.g. "6 o'clock
@@ -774,7 +775,7 @@ export default class Skeleton {
             this.farBoot?.setDepth(base + 0.0027);
         }
         // Opt-in: each shin just under its own thigh (see _shinUnderThigh).
-        if (this._shinUnderThigh) {
+        if (this._shinUnderThigh || this._kneeTuckCfg?.thighOver) {
             this.farShin.setDepth(this.farThigh.depth - 0.00001);
             this.nearShin.setDepth(this.nearThigh.depth - 0.00001);
         }
@@ -930,9 +931,31 @@ export default class Skeleton {
     // didn't apply this correction at all, which is why a knee/elbow that
     // looked connected standing could pop open while getting up (see
     // AI_HANDOFF.md's 2026-07-19 Codex entries).
-    _attachChild(childImg, jointX, jointY, backoffAngle, s, overlapPx) {
-        if (childImg._jointPivotFrac) return { x: jointX, y: jointY };
-        return this._end(jointX, jointY, -overlapPx * s, backoffAngle);
+    // `tuckPx` (PLAN_GETUPS T2.1b, ?getups=v1): extra pull up the bone on top of the overlap, also for art with its own
+    // jointPivotFrac; 0 everywhere unless setKneeTuck is on, so the result is unchanged.
+    _attachChild(childImg, jointX, jointY, backoffAngle, s, overlapPx, tuckPx = 0) {
+        if (childImg._jointPivotFrac) return tuckPx ? this._end(jointX, jointY, -tuckPx * s, backoffAngle) : { x: jointX, y: jointY };
+        return this._end(jointX, jointY, -(overlapPx + tuckPx) * s, backoffAngle);
+    }
+
+    // Knee tuck by flex (T2.1b): { tuck px, f0, f1 rad } or null. The shin image slides further up its own axis into the
+    // thigh as the knee folds (flex = |thigh angle - shin angle|): KNEE_OVERLAP alone leaves a gap at deep flex. Render
+    // only; the ankle chain does not move. `thighOver` draws each thigh over its shin (the _shinUnderThigh order). A rig's own `kneeFlexTuck` (textures) overrides the amount.
+    // Bound art (two-anchor bindings) ignores the render origin, so the same slide is applied to both anchors of the
+    // shin's binding: the whole shin moves `tuckPx` up its own axis (the boot is placed at the ankle on its own).
+    _tuckBound(img, knee, ankle, ang, s, tuckPx) {
+        if (!tuckPx || !img._binding) return [knee, ankle];
+        const dx = -Math.sin(ang) * tuckPx * s, dy = -Math.cos(ang) * tuckPx * s;
+        return [{ x: knee.x + dx, y: knee.y + dy }, { x: ankle.x + dx, y: ankle.y + dy }];
+    }
+    setKneeTuck(cfg) { this._kneeTuckCfg = cfg ?? null; }
+    _kneeTuckPx(thighAng, shinAng) {
+        const c = this._kneeTuckCfg;
+        if (!c) return 0;
+        const tuck = this._kneeFlexTuckRig ?? c.tuck;
+        if (!(tuck > 0)) return 0;
+        const u = Math.min(1, Math.max(0, (Math.abs(thighAng - shinAng) - c.f0) / (c.f1 - c.f0)));
+        return tuck * u * u * (3 - 2 * u);
     }
 
     // Debug/verification seam for the all-joint attachment contract. Reports
@@ -1751,7 +1774,7 @@ export default class Skeleton {
         // anchors off the true farKnee, untouched. If farShin carries
         // jointPivotFrac (authored overlap art), _attachChild skips the
         // pull-back and anchors directly at farTrueKnee instead.
-        const farShinRender = this._attachChild(this.farShin, farTrueKnee.x, farTrueKnee.y, far.shinAng, s, RIG.KNEE_OVERLAP);
+        const farShinRender = this._attachChild(this.farShin, farTrueKnee.x, farTrueKnee.y, far.shinAng, s, RIG.KNEE_OVERLAP, this._kneeTuckPx(far.thighAng, far.shinAng));
         if (!this._lockLimbJoints) {
             farShinRender.x += facing * this._farShinOffsetX * s;
             farShinRender.y += this._farShinOffsetY * s;
@@ -1759,7 +1782,8 @@ export default class Skeleton {
         const farKneeAnchor = this._lockLimbJoints ? farTrueKnee : farKnee;
         const farAnkle = this._end(farKneeAnchor.x, farKneeAnchor.y, shinH, far.shinAng);
         this.jointAttachmentPoints.farAnkle = { ...farAnkle };
-        this._placeLimbPart(this.farShin, farKnee, farAnkle, {
+        const [farShinP, farShinD] = this._tuckBound(this.farShin, farKnee, farAnkle, far.shinAng, s, this._kneeTuckPx(far.thighAng, far.shinAng));
+        this._placeLimbPart(this.farShin, farShinP, farShinD, {
             x: farShinRender.x, y: farShinRender.y, w: legW, h: shinH,
             angle: far.shinAng, scale: s * this._farShinScale, facing,
         });
@@ -1890,7 +1914,7 @@ export default class Skeleton {
             ? this._trueDistalEnd(this.nearThigh, nearHipRender.x, nearHipRender.y, thighH, nearRenderAng, s, facing)
             : nearKnee;
         const nearShinRenderAng = near.shinAng + facing * this._nearShinTilt;
-        const nearShinRender = this._attachChild(this.nearShin, nearTrueKnee.x, nearTrueKnee.y, nearShinRenderAng, s, RIG.KNEE_OVERLAP);
+        const nearShinRender = this._attachChild(this.nearShin, nearTrueKnee.x, nearTrueKnee.y, nearShinRenderAng, s, RIG.KNEE_OVERLAP, this._kneeTuckPx(near.thighAng, near.shinAng));
         if (!this._lockLimbJoints) {
             nearShinRender.x += facing * ((this._authoredLegRig ? 0 : RIG.NEAR_SHIN_FWD) + this._nearShinOffsetX) * s;
             nearShinRender.y += ((this._authoredLegRig ? 0 : -RIG.NEAR_SHIN_UP) + this._nearShinOffsetY) * s;
@@ -1898,7 +1922,8 @@ export default class Skeleton {
         const nearKneeAnchor = this._lockLimbJoints ? nearTrueKnee : nearKnee;
         const nearAnkle = this._end(nearKneeAnchor.x, nearKneeAnchor.y, shinH, near.shinAng);
         this.jointAttachmentPoints.nearAnkle = { ...nearAnkle };
-        this._placeLimbPart(this.nearShin, nearKnee, nearAnkle, {
+        const [nearShinP, nearShinD] = this._tuckBound(this.nearShin, nearKnee, nearAnkle, near.shinAng, s, this._kneeTuckPx(near.thighAng, near.shinAng));
+        this._placeLimbPart(this.nearShin, nearShinP, nearShinD, {
             x: nearShinRender.x, y: nearShinRender.y, w: legW, h: shinH,
             angle: nearShinRenderAng, scale: s * this._nearShinScale, facing,
         });
@@ -2812,11 +2837,12 @@ export default class Skeleton {
                 ? this._trueDistalEnd(thighImg, hipRender.x, hipRender.y, thighH, tA, s, facing)
                 : knee;
             if (kneeShift && trueKnee !== knee) { trueKnee.x += kneeShift.x; trueKnee.y += kneeShift.y; }
-            const kneeRender = this._attachChild(shinImg, trueKnee.x, trueKnee.y, sA, s, RIG.KNEE_OVERLAP);
+            const kneeRender = this._attachChild(shinImg, trueKnee.x, trueKnee.y, sA, s, RIG.KNEE_OVERLAP, this._kneeTuckPx(tA, sA));
             const kneeAnchor = this._lockLimbJoints ? trueKnee : knee;
             const ankle = this._end(kneeAnchor.x, kneeAnchor.y, shinH, sA);
             this.jointAttachmentPoints[`${side}Ankle`] = { ...ankle };
-            this._placeLimbPart(shinImg, knee, ankle, {
+            const [shinP, shinD] = this._tuckBound(shinImg, knee, ankle, sA, s, this._kneeTuckPx(tA, sA));
+            this._placeLimbPart(shinImg, shinP, shinD, {
                 x: kneeRender.x, y: kneeRender.y, w: legW, h: shinH,
                 angle: sA, scale: s, facing,
             });

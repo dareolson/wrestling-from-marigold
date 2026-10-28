@@ -76,6 +76,15 @@ const defaultOnFlag = (name, value) => {
 const aftermathCandidate = () => defaultOnFlag('aftermath', 'v2');
 // ?getups=v1 (PLAN_GETUPS): authored get-ups; opt-in until Derek approves the set. D7: no roll while selling.
 const getUpsCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('getups') === 'v1';
+// ?getups=v1&kneeTuck=<px> (PLAN_GETUPS T2.1b): the knee tuck candidates for G1b (0 / 6 / 10 / 14, flex .6 -> 1.6 rad).
+// No kneeTuck param = off, until Derek picks at G1b. `&kneeF0=`, `&kneeF1=` override the flex range; `&kneeOrder=thigh` draws the thigh over the shin (an extra G1b column).
+const kneeTuckConfig = () => {
+    if (!getUpsCandidate()) return null;
+    const q = new URLSearchParams(location.search), tuck = parseFloat(q.get('kneeTuck')) || 0, thighOver = q.get('kneeOrder') === 'thigh';
+    if (!(tuck > 0) && !thighOver) return null;
+    const f0 = parseFloat(q.get('kneeF0')), f1 = parseFloat(q.get('kneeF1'));
+    return { tuck, thighOver, f0: Number.isFinite(f0) ? f0 : 0.6, f1: Number.isFinite(f1) ? f1 : 1.6 };
+};
 // PLAN_GETUPS B2: the opponent counts as behind a rising wrestler only past this many px of x (decided once, at rise start).
 const GETUP_TURN_DEADBAND = 12;
 const sellArtCandidate = () => defaultOnFlag('sellart', 'v1');
@@ -2931,6 +2940,7 @@ export default class Wrestler {
         gfx.clear();
         gfx.setDepth(depth);
         this.skeleton.setHandUnder?.(this._handUnder());
+        this.skeleton.setKneeTuck?.(kneeTuckConfig());
         this.skeleton.setDepth(depth);
         this.skeleton.invalidatePoseChannels();
         this.skeleton.setVisible(false); // shown only for upright states below

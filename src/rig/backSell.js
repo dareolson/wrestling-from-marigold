@@ -22,6 +22,10 @@
 //                     channel moves, eased; the arm leading and the elbow following swings the elbow out first and then the forearm
 //                     round, instead of both channels sweeping together. approach (optional, in
 //                     (.05, .45)): the fraction of a back clutch the reach takes to get in (sells.js clutchSell, default .25)
+//                     path (optional, T2.6): 1-4 { u, v } torso-image points, the hand's route in space from the waist OUT (standing
+//                     release, hw standW..1): the wrist goes backWaist -> path[0] -> ..., each frame solved by IK, never through
+//                     a channel blend, so the hand cannot swing down on the way. Put the points where the hand stays above the
+//                     trunks' lower edge. path[0] should equal { u, v } (the rise's reach goes through the same point).
 //     legScale,       OPTIONAL number in (0, 1], default 1 (Rev 4 D12): scales the leg and hip offsets (nearThigh, nearShin,
 //                     farThigh, farShin, hip) of every sell and of the lying hold's legs, so this rig's knees bend less
 //                     while down; torso, arms and hands are unchanged (sells.js scaleLegs)
@@ -61,6 +65,8 @@ export function backSellSupport(skeleton) {
         if (!Number.isFinite(via?.u) || !Number.isFinite(via?.v) || data.handUnder !== true
             || (arm === undefined) !== (elbow === undefined) || (arm !== undefined && !(Number.isFinite(arm) && Number.isFinite(elbow)))
             || (via.approach !== undefined && !(via.approach > 0.05 && via.approach < 0.45))
+            || (via.path !== undefined && !(Array.isArray(via.path) && via.path.length >= 1 && via.path.length <= 4
+                && via.path.every(q => Number.isFinite(q?.u) && Number.isFinite(q?.v))))
             || (via.phase !== undefined && !(['arm', 'elbow'].every(k => Array.isArray(via.phase?.[k]) && via.phase[k].length === 2
                 && via.phase[k][0] >= 0 && via.phase[k][0] < via.phase[k][1] && via.phase[k][1] <= 1)))) return no('invalid backSell data: aroundVia');
     }
@@ -85,6 +91,18 @@ export function aroundChannel(start, viaOffset, target, hw, standW = AROUND.stan
     let u = standW > 0 ? k / standW : 1;
     if (phase) { const x = Math.max(0, Math.min(1, (u - phase[0]) / (phase[1] - phase[0]))); u = x * x * (3 - 2 * x); }
     return start + viaOffset * u;
+}
+// T2.6: the point at fraction t (0 = start, 1 = the last point) along the polyline start -> pts..., by arc length.
+export function pathPoint(start, pts, t) {
+    const line = [start, ...pts], k = Math.max(0, Math.min(1, t));
+    const len = line.slice(1).map((p, i) => Math.hypot(p.x - line[i].x, p.y - line[i].y)), total = len.reduce((a, b) => a + b, 0);
+    if (!(total > 0)) return { ...start };
+    let at = k * total;
+    for (let i = 0; i < len.length; i++) {
+        if (at <= len[i] || i === len.length - 1) { const u = len[i] > 0 ? Math.min(1, at / len[i]) : 1; return { x: line[i].x + (line[i + 1].x - line[i].x) * u, y: line[i].y + (line[i + 1].y - line[i].y) * u }; }
+        at -= len[i];
+    }
+    return { ...line.at(-1) };
 }
 const lerp = (a, b, k) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
 export function aroundGoal(start, via, target, w, viaW = AROUND.viaW) {

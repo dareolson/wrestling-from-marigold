@@ -11,7 +11,7 @@ import { applyOffsets, limitKnees } from './animation/sells.js';
 
 // Just behind the torso's sub-depth (base + 0.001, see setDepth) and in front of the head (base + 0.0005).
 const HAND_UNDER_DEPTH = 0.00095;
-import { AROUND, aroundGoal, backSellSupport } from './rig/backSell.js';
+import { AROUND, aroundGoal, backSellSupport, pathPoint } from './rig/backSell.js';
 import { handClearance, handTipOf, silhouetteOf } from './rig/silhouette.js';
 
 // The near forearm's (and hand's) inverse torso mask: a per-object Phaser 4 Mask filter whose mask is the torso Image,
@@ -20,18 +20,52 @@ import { handClearance, handTipOf, silhouetteOf } from './rig/silhouette.js';
 // the main camera it lines up with nothing. Returns whether the mask is on (false when a part can't take filters).
 function syncHandMask(skeleton, on) {
     let ok = on;
+    const union = on && skeleton._handUnion ? handUnionSource(skeleton) : null;
     for (const part of [skeleton.nearForearm, skeleton.nearHand]) {
         if (!part) continue;
-        if (!part._torsoMask) {
-            if (!on) continue;
-            if (typeof part.enableFilters !== 'function') { ok = false; continue; }
-            part.enableFilters();
-            if (!part.filters?.internal?.addMask) { ok = false; continue; }
-            part._torsoMask = part.filters.internal.addMask(skeleton.torso, true, part.filters.internal.camera);
+        // PLAN_GETUPS T2.7 (D13): the mask is torso U near thigh U far thigh while the union is on; one controller each, only one active
+        for (const [key, source] of [['_torsoMask', skeleton.torso], ['_unionMask', union]]) {
+            const wanted = on && (key === '_unionMask' ? !!union : !union);
+            if (!part[key]) {
+                if (!wanted || !source) continue;
+                if (typeof part.enableFilters !== 'function') { ok = false; continue; }
+                part.enableFilters();
+                if (!part.filters?.internal?.addMask) { ok = false; continue; }
+                part[key] = part.filters.internal.addMask(source, true, part.filters.internal.camera);
+            }
+            part[key].setActive(wanted);
         }
-        part._torsoMask.setActive(on);
     }
     return ok;
+}
+
+// The union mask source: a Container of render-only copies of the torso and both thighs (never in the display list), synced to
+// the real parts' world transform, origin, frame, flip and scale just before each render. Created once per skeleton, destroyed
+// with it. Null when the scene cannot make one (a Node stand-in).
+function handUnionSource(skeleton) {
+    if (skeleton._handUnionSrc !== undefined) return skeleton._handUnionSrc;
+    const scene = skeleton._scene;
+    let src = null;
+    if (scene?.make?.container && scene?.make?.image && scene?.events) {
+        const parts = [skeleton.torso, skeleton.nearThigh, skeleton.farThigh];
+        const copies = parts.map(() => scene.make.image({ x: 0, y: 0, key: '__WHITE' }, false));
+        const container = scene.make.container({ x: 0, y: 0 }, false);
+        container.add(copies);
+        const sync = () => {
+            parts.forEach((part, i) => {
+                const c = copies[i];
+                if (!part?.visible || !part.texture) { c.setVisible(false); return; }
+                c.setVisible(true).setTexture(part.texture.key, part.frame.name)
+                    .setOrigin(part.originX, part.originY).setPosition(part.x, part.y)
+                    .setScale(part.scaleX, part.scaleY).setRotation(part.rotation).setFlip(part.flipX, part.flipY);
+            });
+        };
+        scene.events.on('prerender', sync);
+        src = { container, copies, sync, off: () => scene.events.off('prerender', sync) };
+    }
+    skeleton._handUnionSrc = src && src.container;
+    skeleton._handUnionParts = src;
+    return skeleton._handUnionSrc;
 }
 
 // updateUpright draws every arm and forearm this much (facing-signed) past the pose channels.
@@ -350,6 +384,7 @@ export default class Skeleton {
     // Parts with a texture use the PNG; others fall back to sk_pixel + tint.
     // Providing 'torso' hides the trunks block; providing 'shin' hides the boot block.
     constructor(scene, skinCol, trunksCol, textures = {}) {
+        this._scene = scene;
         ensureTexture(scene);
         this._headCol  = skinCol;
         this.skinCol   = skinCol;
@@ -803,6 +838,9 @@ export default class Skeleton {
 
     /** Whether the near forearm/hand draw behind the torso (takes effect at the next setDepth). */
     setHandUnder(on) { this._handUnder = !!on; }
+    // PLAN_GETUPS T2.7 (D13, ?getups=v1): behind the body means behind the thighs too. The hand mask and the clearance test both
+    // use torso U near thigh U far thigh. Off = today (the torso alone).
+    setHandUnion(on) { this._handUnion = !!on; }
 
     setVisible(v) {
         this._parts.forEach(p => p.setVisible(v));
@@ -2492,6 +2530,50 @@ export default class Skeleton {
         return via ? Skeleton.imageAnchorPoint(this.torso, via) : null;
     }
 
+    // T2.6: the rig's aroundVia.path as world points on the torso last drawn (or null: no path, or not a back-sell rig that draws
+    // the hand behind the body).
+    aroundPathPoints() {
+        const support = backSellSupport(this);
+        const path = support.ok && support.data.handUnder === true ? support.data.aroundVia?.path : null;
+        if (!path) return null;
+        const pts = path.map(q => Skeleton.imageAnchorPoint(this.torso, q));
+        return pts.every(Boolean) ? pts : null;
+    }
+
+    // T2.6: the standing pose with the near wrist ON the route, by IK each frame (no channel blend). `chan` is the near arm's
+    // l/r channel, `t` the fraction along backWaist -> aroundVia.path (0 at the waist). Draws the pose (updateUpright, the
+    // arguments the caller will draw with), measures the near shoulder, elbow and wrist, solves the two-bone arm onto the
+    // target (the elbow branch nearest the current flex, so the elbow never flips), and corrects the pose's arm and elbow
+    // channels from the drawn arm; three passes, since the swing and guard terms are not in the solve. Returns the new pose
+    // and the last wrist error in px ({ pose, err }), or null when nothing can be measured. The caller draws the result.
+    solveRouteHand(args, pose, chan, t) {
+        const [x, y, s, facing, , ...rest] = args, f = facing >= 0 ? 1 : -1;
+        const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+        let p = { ...pose }, err = null;
+        for (let pass = 0; pass < 3; pass++) {
+            this.updateUpright(x, y, s, facing, p, ...rest);
+            const pts = this.jointAttachmentPoints, S = pts?.nearShoulder, E = pts?.nearElbow, W = pts?.nearWrist;
+            const waist = this.backWaistPoint?.(), via = this.aroundPathPoints();
+            if (!S || !E || !W || !waist || !via) return null;
+            const G = pathPoint(waist, via, t);
+            err = Math.hypot(W.x - G.x, W.y - G.y);
+            if (err < 0.4) break;
+            const lu = Math.hypot(E.x - S.x, E.y - S.y), lf = Math.hypot(W.x - E.x, W.y - E.y);
+            const armCur = Math.atan2(E.x - S.x, E.y - S.y), foreCur = Math.atan2(W.x - E.x, W.y - E.y), flexCur = (foreCur - armCur) * f;
+            let best = null;
+            for (const sign of [-1, 1]) {
+                const { elbow, hand } = Skeleton.solveReachArm(S, lu, lf, G, null, sign, JOINT_LIMITS.elbow.max);
+                const armNew = Math.atan2(elbow.x - S.x, elbow.y - S.y), foreNew = Math.atan2(hand.x - elbow.x, hand.y - elbow.y);
+                const flex = wrap((foreNew - armNew) * f);
+                const cost = Math.abs(wrap(flex - flexCur));
+                if (!best || cost < best.cost) best = { cost, armNew, flex };
+            }
+            p[`${chan}Arm`] = (p[`${chan}Arm`] ?? 0) + f * wrap(best.armNew - armCur);
+            p[`${chan}Elbow`] = Math.max(JOINT_LIMITS.elbow.min, Math.min(JOINT_LIMITS.elbow.max, best.flex));
+        }
+        return { pose: p, err };
+    }
+
     // The near hand's contact and its distance (px) to the painted backWaist, from the pose last
     // drawn: { dist, contact } with contact 'clutchPatch' (the painted patch of the active near
     // forearm) or 'wristProxy' (no patch on the active art: the wrist stands in). Null when the rig
@@ -2524,8 +2606,22 @@ export default class Skeleton {
 
     // { clear, min, distances } (game px outside the torso art; rig/silhouette.js), or null when nothing can be measured.
     handClearance(marginPx = 1) {
-        const samples = this.nearHandSamples(), sil = silhouetteOf(this.torso);
-        return samples && sil ? handClearance(this.torso, samples, sil, marginPx) : null;
+        const samples = this.nearHandSamples();
+        if (!this._handUnion) {
+            const sil = silhouetteOf(this.torso);
+            return samples && sil ? handClearance(this.torso, samples, sil, marginPx) : null;
+        }
+        // The union fails closed (George plan A4): every sample against every occluder must be a finite, usable distance; a
+        // missing part or silhouette, an unusable transform or Infinity means NOT clear.
+        if (!samples) return null;
+        const distances = {}; let min = Infinity;
+        for (const [name, part] of [['torso', this.torso], ['nearThigh', this.nearThigh], ['farThigh', this.farThigh]]) {
+            const sil = part ? silhouetteOf(part) : null;
+            const r = sil ? handClearance(part, samples, sil, marginPx) : null;
+            if (!r || !Number.isFinite(r.min)) return { clear: false, min: -Infinity, distances: { ...distances, [name]: null } };
+            distances[name] = r.min; if (r.min < min) min = r.min;
+        }
+        return { clear: min >= marginPx, min, distances };
     }
 
     backContactDistance() {
@@ -3023,6 +3119,8 @@ export default class Skeleton {
     }
 
     destroy() {
+        this._handUnionParts?.off();
+        this._handUnionParts?.container.destroy(true);
         this._parts.forEach(p => p.destroy());
     }
 }

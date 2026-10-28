@@ -234,3 +234,72 @@ test('rise start picks the backSell variant when the rise carries back pain', ()
     start(s);
     assert.equal(s._getUp.id, 'backKneeHurtBackStraight');
 });
+
+// ── T2.6: the hand route out from the back ────────────────────────────────────────────────────────
+import { pathPoint, backSellSupport } from '../src/rig/backSell.js';
+
+test('pathPoint walks the polyline by arc length, ends on the last point, and a zero-length path stays put', () => {
+    const a = { x: 0, y: 0 }, pts = [{ x: 10, y: 0 }, { x: 10, y: 10 }];
+    assert.deepEqual(pathPoint(a, pts, 0), a);
+    assert.deepEqual(pathPoint(a, pts, 0.5), { x: 10, y: 0 });
+    assert.deepEqual(pathPoint(a, pts, 0.75), { x: 10, y: 5 });
+    assert.deepEqual(pathPoint(a, pts, 1), { x: 10, y: 10 });
+    assert.deepEqual(pathPoint(a, pts, 2), { x: 10, y: 10 });
+    assert.deepEqual(pathPoint(a, [a], 0.5), a);
+});
+
+test('aroundVia.path is validated: 1-4 finite points, handUnder only', () => {
+    const skel = (path) => ({ _textureConfig: { backSell: { holdW: 0.7, recoveryArm: -0.7, recoveryElbow: 1.1, settledElbow: 0.7, contactPx: 15, evidence: 'x', handUnder: true,
+        aroundVia: { u: -0.25, v: 0.9, recoveryArm: -0.6, recoveryElbow: -0.4, ...(path === undefined ? {} : { path }) } } }, torso: { _semanticAnchors: { backWaist: { u: 0.25, v: 0.6 } } } });
+    assert.equal(backSellSupport(skel(undefined)).ok, true);
+    assert.equal(backSellSupport(skel([{ u: -0.4, v: 0.6 }])).ok, true);
+    for (const bad of [[], 'x', [{ u: 1 }], [{ u: NaN, v: 0 }], [1, 2, 3, 4, 5].map(() => ({ u: 0, v: 0 }))]) assert.equal(backSellSupport(skel(bad)).ok, false, JSON.stringify(bad));
+});
+
+// a two-bone arm rooted at a fixed shoulder: world angle = facing * channel, forearm = arm + facing * flex (the real conventions)
+function armRig() {
+    const sk = Object.assign(Object.create(Skeleton.prototype), { jointAttachmentPoints: {}, _lockLimbJoints: false });
+    const S = { x: 100, y: 200 }, LU = 40, LF = 30;
+    let wasteTarget = { x: 70, y: 260 };
+    sk.updateUpright = (x, y, s, facing, pose) => {
+        const f = facing >= 0 ? 1 : -1, A = f * pose.lArm, F = A + f * pose.lElbow;
+        const E = { x: S.x + Math.sin(A) * LU, y: S.y + Math.cos(A) * LU }, W = { x: E.x + Math.sin(F) * LF, y: E.y + Math.cos(F) * LF };
+        sk.jointAttachmentPoints = { nearShoulder: S, nearElbow: E, nearWrist: W };
+    };
+    sk.backWaistPoint = () => ({ x: 95, y: 255 });
+    sk.aroundPathPoints = () => [wasteTarget];
+    return { sk, setVia: (p) => { wasteTarget = p; } };
+}
+
+test('solveRouteHand puts the wrist on the path point in both facings, keeping the elbow branch', () => {
+    for (const facing of [1, -1]) {
+        const { sk, setVia } = armRig();
+        setVia({ x: 60, y: 250 });
+        const pose = { lArm: 0.1, lElbow: -0.6 };
+        for (const t of [0, 0.3, 0.7, 1]) {
+            const r = sk.solveRouteHand([0, 0, 1, facing, pose, 0, 0, 0, 0, 0.5, 0], pose, 'l', t);
+            assert.ok(r.err < 0.5, `facing ${facing} t ${t}: err ${r.err}`);
+            const G = pathPoint({ x: 95, y: 255 }, [{ x: 60, y: 250 }], t);
+            sk.updateUpright(0, 0, 1, facing, r.pose);
+            const W = sk.jointAttachmentPoints.nearWrist;
+            assert.ok(Math.hypot(W.x - G.x, W.y - G.y) < 0.5);
+            assert.ok(r.pose.lElbow < 0.3, 'the elbow stays folded the way it started (behind), it did not flip');
+        }
+    }
+});
+
+test('solveRouteHand with nothing measurable returns null', () => {
+    const { sk } = armRig(); sk.aroundPathPoints = () => null;
+    assert.equal(sk.solveRouteHand([0, 0, 1, 1, {}, 0, 0, 0, 0, 0.5, 0], { lArm: 0, lElbow: 0 }, 'l', 0.5), null);
+});
+
+test('the union clearance fails closed: a missing silhouette is not clear; off, the torso alone as before', () => {
+    const sk = Object.assign(Object.create(Skeleton.prototype), { torso: { texture: { key: 't' } }, nearThigh: null, farThigh: null });
+    sk.nearHandSamples = () => ({ wrist: { x: 0, y: 0 } });
+    sk.setHandUnion(true);
+    const r = sk.handClearance(1);
+    assert.equal(r.clear, false);
+    assert.equal(r.min, -Infinity);
+    sk.setHandUnion(false);
+    assert.equal(sk.handClearance(1), null, 'union off: the torso alone, no silhouette in Node, null as before');
+});

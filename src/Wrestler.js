@@ -85,6 +85,8 @@ const kneeTuckConfig = () => {
     const f0 = parseFloat(q.get('kneeF0')), f1 = parseFloat(q.get('kneeF1'));
     return { tuck, thighOver, f0: Number.isFinite(f0) ? f0 : 0.6, f1: Number.isFinite(f1) ? f1 : 1.6 };
 };
+// ?getups=v1 hides a hand that is behind the body behind the thighs too (T2.7, D13); `&handUnion=off` is the G1-rev2 before.
+const unionCandidate = () => new URLSearchParams(location.search).get('handUnion') !== 'off';
 // PLAN_GETUPS B2: the opponent counts as behind a rising wrestler only past this many px of x (decided once, at rise start).
 const GETUP_TURN_DEADBAND = 12;
 const sellArtCandidate = () => defaultOnFlag('sellart', 'v1');
@@ -1918,6 +1920,25 @@ export default class Wrestler {
         return pain.carried > 0 ? pain.carried * this._recoveryWeight(false) : this._recoveryWeight();
     }
 
+    // T2.6: the pose with the near hand on the route out from the back (hw standW..1), or null. The IK takes over from the
+    // channel blend over the first .1 of hw above standW (a smoothstep), so the via pose and the route meet without a step.
+    // `this._routeErr` records the last wrist error (px) for the measuring tools.
+    _routeHandDraw(x, y, s, facing, drawPose, ...rest) {
+        this._routeErr = null;
+        if (this.state !== 'standing' || !sellArtCandidate() || this._pain?.part !== 'back') return null;
+        const hw = this._recoveryHandWeight(), bs = this._backSell();
+        if (!(hw > AROUND.standW) || !bs.ok || !bs.data.aroundVia?.path) return null;
+        const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
+        const t = Math.min(1, Math.max(0, (1 - hw) / (1 - AROUND.standW)));
+        const solved = this.skeleton.solveRouteHand([x, y, s, facing, drawPose, ...rest], drawPose, n, t);
+        if (!solved) return null;
+        this._routeErr = solved.err;
+        const k = Math.min(1, (hw - AROUND.standW) / 0.1), e = k * k * (3 - 2 * k);
+        const out = { ...drawPose };
+        for (const c of [`${n}Arm`, `${n}Elbow`]) { const from = drawPose[c] ?? solved.pose[c]; out[c] = from + (solved.pose[c] - from) * e; }
+        return out;
+    }
+
     // A COPY of the pose with the motif added, or null when there is nothing to
     // add. this.pose is never written.
     _recoveryPose() {
@@ -2941,6 +2962,7 @@ export default class Wrestler {
         const depth = 12 + (onRopes ? this._corner.matY : y) * 0.03;
         gfx.clear();
         gfx.setDepth(depth);
+        this.skeleton.setHandUnion?.(getUpsCandidate() && unionCandidate());
         this.skeleton.setHandUnder?.(this._handUnder());
         this.skeleton.setKneeTuck?.(kneeTuckConfig());
         this.skeleton.setDepth(depth);
@@ -3088,6 +3110,9 @@ export default class Wrestler {
                 drawPose = { ...drawPose, bend: (drawPose.bend ?? 0) + gaitLean, crouch: (drawPose.crouch ?? 0) + g2.knee * gaitBlend };
             }
         }
+        // T2.6: a rig whose aroundVia has a `path` takes the hand out from the back along it, solved by IK each frame
+        const routed = this._routeHandDraw(x, y, s, facing, drawPose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
+        if (routed) drawPose = routed;
         this.skeleton.updateUpright(x, y, s, facing, drawPose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
         if (this._activeMove && this._floorContacts) {
             const turn = (this.pose.tilt ?? 0) + (this.pose.bend ?? 0);

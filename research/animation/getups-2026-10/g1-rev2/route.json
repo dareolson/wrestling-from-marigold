@@ -1,0 +1,21 @@
+{
+ "fistPx": 26.46,
+ "torsoH": 91.53,
+ "hemV": 0.9795,
+ "via": {
+  "u": -0.4772,
+  "v": 0.6358
+ },
+ "viaPose": {
+  "recoveryArm": -0.45,
+  "recoveryElbow": -1.8,
+  "wristErrPx": 0.25
+ },
+ "today": {
+  "u": -0.25,
+  "v": 0.9069,
+  "recoveryArm": -0.6,
+  "recoveryElbow": -0.4,
+  "approach": 0.4
+ }
+}

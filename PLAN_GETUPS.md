@@ -12,6 +12,7 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
 - T1.1-T1.3: 21442f0 (+ flip fix, next commit): getUps.js, `updateGetUp(entry, flipped)`, `_tickRiseFlip` + pivot hold; getUps.test.js 12/12, rise tests 96/96. Finding: negated angles + flipped facing (the roll's swap) keep the world body, so a turn is the SAME channels with the facing flipped (a reflection); fixed.
 - T2.1: pose sheet + rough strips `research/animation/getups-2026-10/g1a/index.html` (tools/debug/getups_film.mjs). Rough keys, no measuring pass; flip is a reflection at t .46 about the near knee, other foot not measured. ⛔ G1a waits for Derek.
 - T2.1b: knee tuck by flex (`setKneeTuck`, URL `?getups=v1&kneeTuck=6|10|14`, `&kneeOrder=thigh`), off unless asked; page `research/animation/getups-2026-10/g1b/index.html`. Gap px (r 8, rise t .1-.8) Lou near/far L 63/93 -> 22/37 at 14; George 53/92 -> 27/40 (min at 10: 23/23). Bound art (George) needed both binding anchors slid. Full suite 967/967 (Node 22). ⛔ G1b waits for Derek.
+- T2.2-T2.3: `backKneeHurt` + `Back` variants, far-hand push as data, films+measures (`tools/debug/getups_t22.mjs`), [strip](research/animation/getups-2026-10/g1-strip.html), [viewer](research/animation/getups-2026-10/g1-viewer.html), entry `2026-10-27-claude-getups-g1.md`. Misses: flip moves far ankle 57-79 px and near ankle 52-75 (target 3); George push hand 17 px off the knee; near knee drifts 6-8 px. Faces opponent at stand 8/8, rise 917 ms = today. ⛔ G1 waits for Derek.
 
 ## Why (Derek 2026-10-27)
 

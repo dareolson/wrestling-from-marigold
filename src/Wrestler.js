@@ -2748,6 +2748,8 @@ export default class Wrestler {
         const other = this._lastOther ?? (this.scene.w1 === this ? this.scene.w2 : this.scene.w1);
         const dx = other ? other.x - this.x : 0;
         const turn = Math.abs(dx) > GETUP_TURN_DEADBAND && Math.sign(dx) !== this.facing;
+        // A rise that carries back pain keeps the near hand on the back (the backSell variant, D5)
+        if (this._backRiseContext()) return turn ? GETUPS.backKneeHurtBack : GETUPS.backKneeHurtBackStraight;
         return turn ? GETUPS.backKneeHurt : GETUPS.backKneeHurtStraight;
     }
 

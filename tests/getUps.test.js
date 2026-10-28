@@ -46,7 +46,7 @@ function stubSkeleton() {
         sk.drawn = { ...g };
         const f = facing >= 0 ? 1 : -1, hip = { x, y: y - g.hip * s };
         const knee = { x: hip.x + dir(f, g.nearThigh).x * 40 * s, y: hip.y + dir(f, g.nearThigh).y * 40 * s };
-        sk.jointAttachmentPoints = { nearHip: hip, nearKnee: knee };
+        sk.jointAttachmentPoints = { nearHip: hip, nearKnee: knee, farKnee: sk.farKneeAt ?? knee };
     };
     return sk;
 }
@@ -180,4 +180,57 @@ test('a pin or pickup after the flip puts the old facing and x back; a finished 
     done.state = 'standing'; done._tickRiseFlip();
     assert.equal(done.facing, -1);
     assert.equal(done._getUp, null);
+});
+
+test('the back-sell variants keep the near hand for the back reach and push with the far hand', () => {
+    for (const id of ['backKneeHurtBack', 'backKneeHurtBackStraight']) {
+        const e = GETUPS[id];
+        assert.deepEqual(validateGetUp(e), [], id);
+        assert.ok(e.tags.includes('backSell'));
+        assert.deepEqual(Object.keys(e.hands), ['far']);
+        assert.deepEqual(e.keys, GETUPS[id.replace('Back', '')].keys, 'same keys as the plain variant');
+    }
+});
+
+test('the support hand weight eases in before the push, holds through it and releases', () => {
+    const h = GETUPS.backKneeHurt.hands.far, w = (t) => Skeleton.getUpHandWeight(h, t);
+    assert.equal(w(0), 0);
+    assert.equal(w(0.3), 0);
+    assert.ok(w(0.41) > 0 && w(0.41) < 1);
+    for (const t of [0.46, 0.55, 0.72]) assert.equal(w(t), 1);
+    assert.ok(w(0.8) > 0 && w(0.8) < 1);
+    assert.equal(w(0.86), 0);
+    assert.equal(w(1), 0);
+});
+
+test('updateGetUp reaches the far hand for the far knee in the push window, and a legacy entry has no hands', () => {
+    const sk = stubSkeleton(); let seen = null;
+    sk.updateGroundedReach = (x, y, s, f, g, reach) => { seen = reach; };
+    sk.farKneeAt = { x: 5, y: -20 };
+    const e = GETUPS.backKneeHurtStraight;
+    sk.updateGetUp(0, 0, 1, 1, 0.5, 'supine', null, null, null, e, false);
+    assert.deepEqual(seen.far.at, { x: 5, y: -20 }); assert.equal(seen.far.w, 1); assert.equal(seen.near, undefined);
+    seen = null;
+    sk.updateGetUp(0, 0, 1, 1, 0.5, 'supine', null, null, null, legacySupine, false);
+    assert.equal(seen, null);
+});
+
+test('a back rise keeps the near-hand back reach on a backSell entry and drops it on a plain one', () => {
+    const calls = [];
+    const sk = stubSkeleton(); sk.updateGroundedReach = (x, y, s, f, g, reach) => calls.push(reach);
+    const pain = { part: 'back', severity: 1, carry: true };
+    sk.updateGetUp(0, 0, 1, 1, 0.3, 'supine', pain, null, null, GETUPS.backKneeHurtBackStraight, false);
+    assert.equal(calls.at(-1).near.to, 'nearHip');
+    calls.length = 0;
+    sk.updateGetUp(0, 0, 1, 1, 0.3, 'supine', pain, null, null, GETUPS.backKneeHurtStraight, false);
+    assert.equal(calls.length, 0, 'no reach at all at t .3 on the plain entry');
+});
+
+test('rise start picks the backSell variant when the rise carries back pain', () => {
+    const w = wrestler({ _lastOther: { x: 300 }, _backRiseContext: () => ({ part: 'back', severity: 1 }) });
+    start(w);
+    assert.equal(w._getUp.id, 'backKneeHurtBack');
+    const s = wrestler({ _lastOther: { x: 700 }, _backRiseContext: () => ({ part: 'back', severity: 1 }) });
+    start(s);
+    assert.equal(s._getUp.id, 'backKneeHurtBackStraight');
 });

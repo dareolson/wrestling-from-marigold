@@ -2605,7 +2605,8 @@ export default class Skeleton {
         let pose = Skeleton._getUpPose(K, t, this._lockLimbJoints, this.standingHipHeight, stand, !(entry?.after && !flipped));
         const carry = holdOffsets ? riseHoldCarry(t) : 0;
         if (carry > 0) pose = limitKnees(applyOffsets(pose, Object.fromEntries(Object.entries(holdOffsets).map(([c, v]) => [c, v * carry]))));
-        const back = lying === 'supine' && pain?.part === 'back' && (pain.severity ?? 0) > 0;
+        const back = lying === 'supine' && pain?.part === 'back' && (pain.severity ?? 0) > 0
+            && (!entry || entry.tags?.includes('backSell')); // an authored entry without the tag has no back reach
         const sev = back ? Math.max(0, Math.min(1, pain.severity)) : 0;
         // `from` is the lying-hold weight to ease from (D4): the first rise frame reproduces
         // the hold's own reach, then it eases to the severity-scaled protection.
@@ -2614,12 +2615,31 @@ export default class Skeleton {
             : pain.from > 0 ? backRiseWeight(t, pain.from, sev) : backRiseWeight(t) * sev;
         // The support wrist stays on the mat while the body rises past it (D1).
         const plant = back && pain.plant ? this._plantReach?.(x, y, s, facing, t, K) : null;
-        if (protect > 0 || plant) {
-            const reach = {};
-            if (protect > 0) reach.near = { to: 'nearHip', w: protect };
-            if (plant) reach.far = plant;
-            this.updateGroundedReach(x, y, s, facing, pose, reach, { paintedContacts: true, backContact: true });
-        } else this._applyGrounded(x, y, s, facing, pose);
+        const reach = {};
+        if (protect > 0) reach.near = { to: 'nearHip', w: protect };
+        if (plant) reach.far = plant;
+        // B5 (PLAN_GETUPS): the entry's support hands. The target is a joint of this body measured on the pose just posed,
+        // so it follows the leg it rests on. A backSell entry never lists the near hand (the validator), the back reach owns it.
+        for (const [side, h] of Object.entries(entry?.hands ?? {})) {
+            const w = Skeleton.getUpHandWeight(h, t);
+            if (!(w > 0.001) || reach[side]) continue;
+            this._applyGrounded(x, y, s, facing, pose);
+            const at = this.jointAttachmentPoints[h.target];
+            if (at) reach[side] = { at: { x: at.x, y: at.y }, w };
+        }
+        if (Object.keys(reach).length) this.updateGroundedReach(x, y, s, facing, pose, reach, { paintedContacts: true, backContact: true });
+        else this._applyGrounded(x, y, s, facing, pose);
+    }
+
+    // How far (0-1) a support hand has gone to its target at rise progress t: eases in over HAND_LEAD before push[0],
+    // full through the push window, eased out over `release`. Times are t of the whole rise.
+    static getUpHandWeight(h, t) {
+        const ss = (u) => { u = Math.min(1, Math.max(0, u)); return u * u * (3 - 2 * u); };
+        const [p0, p1] = h.push, [r0, r1] = h.release ?? [p1, p1];
+        const lead = h.lead ?? 0.10;
+        const up = ss((t - (p0 - lead)) / lead);
+        const down = t <= r0 ? 1 : r1 > r0 ? 1 - ss((t - r0) / (r1 - r0)) : 0;
+        return (h.w ?? 1) * up * down;
     }
 
     // The far-arm plant entry for updateGroundedReach at rise progress t, or null.

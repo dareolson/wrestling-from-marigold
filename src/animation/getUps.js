@@ -97,4 +97,9 @@ export const backKneeHurtStraight = Object.freeze({
     keys: keyed(Skeleton.GROUNDED_SUPINE, SITUP, KNEEL, PUSH, { ...STAND, t: 1 }),
 });
 
-export const GETUPS = Object.freeze({ legacySupine, legacyProne, backKneeHurt, backKneeHurtStraight });
+// The back-sell variants (D5): same keys; the near hand stays on the back (the carried back reach, Skeleton.updateGetUp)
+// and only the far hand pushes. Chosen when the rise carries back pain.
+export const backKneeHurtBack = Object.freeze({ ...backKneeHurt, id: 'backKneeHurtBack', tags: ['knee', 'backSell'] });
+export const backKneeHurtBackStraight = Object.freeze({ ...backKneeHurtStraight, id: 'backKneeHurtBackStraight', tags: ['knee', 'backSell'] });
+
+export const GETUPS = Object.freeze({ legacySupine, legacyProne, backKneeHurt, backKneeHurtStraight, backKneeHurtBack, backKneeHurtBackStraight });

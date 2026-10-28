@@ -509,7 +509,7 @@ Decisions (Opus defaults, Derek can overrule at G10a):
 - **⛔ G10 questions:** 1. Do the legs bend the right amount on landing? 2. Does the hand still show over the trunks or thighs
    at any point? 3. Approve (then the promote/push step)?
 
-G10a — (Derek's pick goes here.)
+G10a — **PARKED (Derek 2026-10-27):** "if we're about to do the get ups, maybe we should just do that and this will look better after without any more tinkering". `legScale` stays in the code with no rig value; Stage 11 not started. Re-checked at [PLAN_GETUPS.md](PLAN_GETUPS.md) G4.
 G10 — (Derek's verdict goes here.)
 
 ### Rev 4b (Derek 2026-10-27): turn toward Lou while getting up, and give the rise some weight

@@ -1,8 +1,8 @@
 # Get-up library: authored rises with variations
 
 2026-10-27 · Claude (Opus) plan, Sonnet executes · Derek judges every visual result.
-**Starts after G10 of [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md)** (Rev 4 finished, approved or parked). It replaces
-that plan's Rev 4b / Stage 13 (the turn inside today's rise); nothing in Stage 13 is built.
+**Starts now** (Derek 2026-10-27: do the get-ups first, no more tinkering on George). [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md)
+is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is replaced by this plan and was never built.
 
 ## Progress
 
@@ -40,6 +40,11 @@ Reference: [MOVE_CATALOG.md](MOVE_CATALOG.md) line 80, Bret sheet frames 64-68 (
   then frozen until standing (same policy as the George plan's A6).
 - **D5. Back sell compatible.** A get-up tagged `backSell` keeps the near hand on the back the whole way (today's carried hand)
   and pushes with the far hand. Lou's and George's back-sell numbers (`holdW`, recovery) must not change.
+- **D7. Sell on the back, turn over only to get up (Derek 2026-10-27).** "I wanted him to sell longer on his back rather
+  than just flip on his stomach right away, he can flip right before he gets up". Under `?getups=v1`, `planSells` never plans
+  a `roll` (today `theatrical` picks it first 20% of the time, `SELL_STYLES` in `sells.js`); its weight goes to `writhe` and
+  `clutch`. A supine wrestler stays supine through every sell and the hold; turning over is part of the get-up
+  (`backKneeHurt` turns onto the knee). Kind-2 (prone) trips to the mat from a fall that lands face down are unchanged.
 - **D6. Behind a flag** `?getups=v1` until Derek approves the set; off = today byte-identical (the `riseFixFlagOff` fixture
   must not change).
 
@@ -64,6 +69,9 @@ Later, not this plan: rope pull-up, kip-up, climbing the opponent.
 - New raw film folders: add them to `.git/info/exclude` (raw frames are not committed; VS Code's 10k item limit).
 
 ## Stage 1: the table and the runner (no new look yet)
+
+- **T1.0 (D7)** Under `?getups=v1`, drop `roll` from `planSells` (weights renormalised over the rest); flag off byte-identical.
+  Tests: 1000 seeded plans for `theatrical` supine contain no roll with the flag on, and equal today's plans with it off.
 
 - **T1.1** `src/animation/getUps.js`: the schema (D1), a validator (`validateGetUp`), and today's two rises re-expressed as
   `legacySupine` / `legacyProne` entries that sample to exactly `GETUP_SUPINE_POSES` / `GETUP_POSES`. Tests: validator
@@ -101,6 +109,14 @@ the roll swap and at hold → rise on George (today 33-44 px; target ≤ 3 px).
 - **T4.1** Wire `chooseGetUp` into `_startRiseUp` / `_startQuickRise` under `?getups=v1`. Film 10 seeded matches' worth of
   rises (Lou and George), list which get-up was chosen and why, and the repeat count.
 - **⛔ G3:** Derek watches a normal-speed reel. Promote `getups` to default? (Then the legacy entries stay as the `=off` path.)
+
+## Stage 5: re-check George's parked items, then STOP (G4)
+
+- **T5.1** Re-film George's back sell (`suplex`, `suplexFlip`, both kinds) with `?getups=v1` on, same seed and sell plan, and
+  put it beside the G9 films. Report the parked George misses again: peak knee flex, near forearm/hand pixels over the thighs
+  or trunks while the hand is behind him, the near-forearm step at the rise start.
+- **⛔ G4 (Derek):** does George still need `legScale` (G10a) or the thigh mask (Stage 11)? Anything still needed goes back
+  to PLAN_GEORGE_TRANSFER as Rev 5.
 
 ## Done means
 

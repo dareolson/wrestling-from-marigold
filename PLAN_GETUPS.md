@@ -154,6 +154,18 @@ little when the knee is folded.
   thigh's side. Measure: a probe that counts background pixels inside the knee's convex hull (thigh end ∪ shin top) per
   frame, Lou and George, both facings, through `backKneeHurt`. Page: the G1a strips with each candidate side by side at 1×,
   and a 3× crop of the knee. **⛔ G1b: Derek picks.** Standing poses must not change for flex < f0 (test).
+
+G1b — Derek 2026-10-27: **E, thigh drawn on top of the shin, no tuck** ("e looks the best"), from a simplified page
+(`g1b/decide.html`: the three worst moments, A-E side by side). The gap probe could not see draw order, so E was not in its
+numbers: eye over measurement. The tuck candidates are not adopted.
+
+- **T2.1c Thigh over shin as rig data, checked in every pose.** E is the existing rig opt-in `shinUnderThigh` (Skeleton.js,
+  shin depth just under its thigh), which applies in EVERY pose, not only the get-up. Before adopting it: film Lou and George
+  with and without it in idle, walk, run (`?gait=v2`), the front kick, the dropkick and `backKneeHurt`, both facings, 1×,
+  as a normal-speed loop strip page `research/animation/getups-2026-10/g1c/index.html` (two columns: today | thigh on top).
+  Then, if Derek OKs it, set `shinUnderThigh: true` for `thesz-procreate-v1` and `george-roster-v1` in the generator SPECS and
+  the generated files (agreement test), and remove the `kneeTuck` / `kneeOrder` URL candidates or leave them off by default
+  (say which). **⛔ G1c: Derek OKs thigh-on-top outside the get-up.**
 - **T2.2** Implement `backKneeHurt` and its `backSell` variant. Film Lou and George, suplex receiver, opponent behind (turn)
   and in front (no turn), 1×, both facings, from the last down frame to 2 s standing. Before = today.
   Report misses first: largest per-part step anywhere in the rise and at the flip; both feet's world displacement while

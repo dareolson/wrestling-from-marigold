@@ -171,6 +171,36 @@ variant art, or bendable limbs). Next: T2.2.
   `research/animation/getups-2026-10/g1-viewer.html` (today | new, per row) and a handoff entry.
 - **⛔ G1 questions:** 1. Does he face the opponent by the time he stands? 2. Does he still rise "antigravity"? 3. Keep?
 
+G1 — Derek 2026-10-27: **not approved yet, two fixes** (turn and weight not objected to).
+1. Lou: "his forearm is too small in the first position, then abruptly is bigger when it changes, which makes it more obvious,
+   try to match it to the size of the second forearm". Opus, `g1/frames/new/lou-l-behind` s0016-s0025 vs s0026+: the back-sell
+   forearm before the flip (t < .46) draws visibly shorter than after it; the change lands on the flip frame.
+2. George: "his hand goes below his trunks and shows under there above his leg ... pull his elbow out while he pulls his hand
+   from his back to his front so that he doesn't have to reach so low to get around his torso". That is George's
+   `aroundVia` route (candidate B, chosen at G8a: 1.5 hand lengths BELOW and outboard of `backWaist`), used when the hand
+   leaves the back after the rise.
+Open, not yet raised by Derek: the flip moves both feet 52-79 px (Sonnet's entry, miss 1). Ask at G1-rev.
+
+- **T2.4 Lou's forearm size across the flip.** First find the cause, no fix yet. Per frame across `backKneeHurtBack`
+  (Lou, both facings): the near forearm's texture key (base / grip), drawn length on screen (image height × scaleY, and
+  elbow → wrist distance), any two-anchor binding stretch, and which forearm object (near / far) holds the back reach.
+  Report the frame where it changes and by how much. Likely causes to rule in or out: the grip variant swapping on the
+  flip; the reflection drawing the far forearm (smaller art box) on the back before the flip; foreshortening from the reach.
+  Fix: before the flip, it draws at the size it has after the flip (Derek: "match it to the size of the second forearm"),
+  with no size change at the flip frame (target: drawn forearm length changes ≤ 2 % frame to frame). Lou fixture: report any
+  change; any change outside the get-up = STOP.
+- **T2.5 George: elbow out, not hand low.** New route for the hand leaving the back (`recoveryVia` / the standing release
+  through `aroundVia`): the elbow flares out to the side first (the upper arm swings away from the body, raised), then the
+  forearm swings the hand around the hip at waist height and to the front. The hand stays above the trunks' bottom edge.
+  Rig data on George only: `aroundVia.elbowOut` (an upper-arm/elbow offset pose for the via, like `recoveryArm` /
+  `recoveryElbow`) plus a higher via point. Propose 3 candidates (elbow out about 0.4 / 0.6 / 0.8 rad, via at waist
+  height, 1.0-1.5 hand lengths outboard), each filmed at 1× in both facings through the G1 get-up and the standing
+  recovery, next to today's B. Measure the hand's lowest point relative to the trunks' bottom edge (target: never below)
+  and its distance outside the torso ∪ thighs silhouette at the depth swap (> 0, fail closed as in the George plan A4).
+  Page `research/animation/getups-2026-10/g1-rev/index.html` with T2.4's before/after for Lou.
+- **⛔ G1-rev (Derek):** 1. Lou's forearm the same size all the way? 2. Which George elbow-out candidate? 3. The feet jump at
+  the turn: does it show at 1×?
+
 ## Stage 3: `frontKnee` and `backTuck`, then STOP (G2)
 
 Same pattern as Stage 2 (pose sheet ⛔ G2a, implement, film, viewer). `frontKnee` must also report the near forearm's step at

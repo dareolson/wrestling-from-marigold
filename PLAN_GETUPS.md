@@ -204,7 +204,7 @@ Open, not yet raised by Derek: the flip moves both feet 52-79 px (Sonnet's entry
 
 G1-rev — Derek 2026-10-28: "really liking the movement", but George's hand still goes below the trunks: "we need to not let his
 hand cross below his trunks because it is stacked above the upper leg and shows through". No candidate adopted (all dip
-8.3-12.5 px below the hem, T2.5). Lou's forearm and the feet jump not raised again.
+8.3-12.5 px below the hem, T2.5). Lou's forearm: Derek accepts it as is ("i knew it didn't change, but i just accepted it"): closed, no fix. The feet jump not raised again.
 
 Why the candidates failed (Opus): the route is a blend of arm CHANNELS between poses, so the hand's path between the poses
 is not controlled and swings down. A via point can't fix that. The route must be a path for the HAND, solved by IK each frame.

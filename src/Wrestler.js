@@ -1956,8 +1956,8 @@ export default class Wrestler {
                 const arm0 = pose[`${n}Arm`] ?? 0, via = recoveryVia(bs);
                 if (via && Number.isFinite(pose[`${n}Elbow`])) {
                     // Rev 3 D9: round through the via pose on the way to and from the back (rig/backSell.js aroundChannel)
-                    pose[`${n}Arm`] = aroundChannel(arm0, via.arm, to.arm, hw);
-                    pose[`${n}Elbow`] = aroundChannel(pose[`${n}Elbow`], via.elbow, to.elbow, hw);
+                    pose[`${n}Arm`] = aroundChannel(arm0, via.arm, to.arm, hw, undefined, via.phase?.arm);
+                    pose[`${n}Elbow`] = aroundChannel(pose[`${n}Elbow`], via.elbow, to.elbow, hw, undefined, via.phase?.elbow);
                 } else if (Number.isFinite(pose[`${n}Elbow`])) {
                     pose[`${n}Arm`] = arm0 + (to.arm - arm0) * hw;
                     pose[`${n}Elbow`] += (to.elbow - pose[`${n}Elbow`]) * hw;
@@ -1970,8 +1970,8 @@ export default class Wrestler {
                 const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
                 const via = recoveryVia(bs), arm0 = pose[`${n}Arm`] ?? 0;
                 if (via && Number.isFinite(pose[`${n}Elbow`])) {
-                    pose[`${n}Arm`] = aroundChannel(arm0, via.arm, arm0 + bs.recoveryArm, w);
-                    pose[`${n}Elbow`] = aroundChannel(pose[`${n}Elbow`], via.elbow, pose[`${n}Elbow`] + bs.recoveryElbow, w);
+                    pose[`${n}Arm`] = aroundChannel(arm0, via.arm, arm0 + bs.recoveryArm, w, undefined, via.phase?.arm);
+                    pose[`${n}Elbow`] = aroundChannel(pose[`${n}Elbow`], via.elbow, pose[`${n}Elbow`] + bs.recoveryElbow, w, undefined, via.phase?.elbow);
                     return pose;
                 }
                 pose[`${n}Arm`] = (pose[`${n}Arm`] ?? 0) + bs.recoveryArm * w;

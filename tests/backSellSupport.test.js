@@ -119,3 +119,29 @@ test('aroundChannel: start -> start + via offset over [0, standW], -> target ove
     assert.ok(Math.abs(_aroundChannel(0.1, -0.6, 0.9, 0.65, sw) - (-0.5 + (0.9 + 0.5) * 0.5)) < 1e-12);
     assert.ok(Math.abs(_aroundChannel(0.1, -0.6, 0.9, 5, sw) - 0.9) < 1e-12); assert.equal(_aroundChannel(0.1, -0.6, 0.9, -1, sw), 0.1);
 });
+
+// T2.5: aroundVia.phase, the channels of the route moving one after the other
+test('aroundChannel with a phase: the channel moves only inside its share of the way to the via pose, eased, same ends', () => {
+    const sw = _AROUND.standW;
+    assert.equal(_aroundChannel(0.1, -0.6, -0.6, 0, sw, [0, 0.5]), 0.1);
+    assert.ok(Math.abs(_aroundChannel(0.1, -0.6, -0.6, sw, sw, [0.4, 1]) - (0.1 - 0.6)) < 1e-12, 'reaches the via pose at standW');
+    assert.equal(_aroundChannel(0.2, -1, -1, sw * 0.3, sw, [0.5, 1]), 0.2, 'a channel that starts at .5 has not moved at .3');
+    const half = _aroundChannel(0, -1, -1, sw * 0.25, sw, [0, 0.5]);
+    assert.ok(Math.abs(half - -0.5) < 1e-12, 'smoothstep midpoint');
+    assert.equal(_aroundChannel(0, -1, 0.4, 0.8, sw, [0, 0.5]), _aroundChannel(0, -1, 0.4, 0.8, sw), 'past standW the phase is not used');
+    for (let k = 0; k <= 1; k += 0.05) assert.equal(_aroundChannel(0.3, -0.6, 0.1, k, sw, null), _aroundChannel(0.3, -0.6, 0.1, k, sw), 'null phase = today');
+});
+
+test('aroundVia.phase is validated and passed through recoveryVia', async () => {
+    const { backSellSupport, recoveryVia } = await import('../src/rig/backSell.js');
+    const skel = (via) => ({ _textureConfig: { backSell: { holdW: 0.7, recoveryArm: -0.7, recoveryElbow: 1.1, settledElbow: 0.7, contactPx: 15, evidence: 'x', handUnder: true, aroundVia: { u: -0.25, v: 0.9, recoveryArm: -0.6, recoveryElbow: -0.4, ...via } } },
+        torso: { _semanticAnchors: { backWaist: { u: 0.25, v: 0.6 } } } });
+    assert.equal(backSellSupport(skel({})).ok, true);
+    const ph = { arm: [0, 0.55], elbow: [0.35, 1] };
+    const ok = backSellSupport(skel({ phase: ph }));
+    assert.equal(ok.ok, true);
+    assert.deepEqual(recoveryVia(ok.data).phase, ph);
+    assert.equal('phase' in recoveryVia(backSellSupport(skel({})).data), false, 'no phase, no key: today\'s object');
+    for (const bad of [{ arm: [0.5, 0.5], elbow: [0, 1] }, { arm: [0, 1.2], elbow: [0, 1] }, { arm: [0, 1] }, { arm: 'x', elbow: [0, 1] }, { arm: [-0.1, 1], elbow: [0, 1] }])
+        assert.equal(backSellSupport(skel({ phase: bad })).ok, false, JSON.stringify(bad));
+});

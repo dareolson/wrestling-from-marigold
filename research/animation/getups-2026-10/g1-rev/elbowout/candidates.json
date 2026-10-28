@@ -1,0 +1,113 @@
+{
+ "fistPx": 26.46,
+ "torsoDisplayW": 54.14,
+ "backWaist": {
+  "u": 0.2558,
+  "v": 0.6077
+ },
+ "today": {
+  "u": -0.25,
+  "v": 0.9069,
+  "recoveryArm": -0.6,
+  "recoveryElbow": -0.4,
+  "approach": 0.4
+ },
+ "candidates": [
+  {
+   "id": "C1",
+   "fists": 1,
+   "via": {
+    "u": -0.2329,
+    "v": 0.6077,
+    "approach": 0.4,
+    "recoveryArm": -0.35,
+    "recoveryElbow": -2
+   },
+   "asked": {
+    "dArm": -0.4,
+    "dElbow": -1.9,
+    "worst": 11.6,
+    "d1": 11.6,
+    "dM1": 11.6
+   },
+   "bestReachable": {
+    "dArm": -1.3,
+    "dElbow": 0.9,
+    "worst": 0.63,
+    "d1": 0.63,
+    "dM1": 0.63
+   },
+   "solved": {
+    "dArm": -0.35,
+    "dElbow": -2,
+    "worst": 9.83,
+    "d1": 9.83,
+    "dM1": 9.83
+   }
+  },
+  {
+   "id": "C2",
+   "fists": 1.25,
+   "via": {
+    "u": -0.355,
+    "v": 0.6077,
+    "approach": 0.4,
+    "recoveryArm": -0.5,
+    "recoveryElbow": -1.8
+   },
+   "asked": {
+    "dArm": -0.6,
+    "dElbow": -1.55,
+    "worst": 11.54,
+    "d1": 11.54,
+    "dM1": 11.54
+   },
+   "bestReachable": {
+    "dArm": -1.4,
+    "dElbow": 0.75,
+    "worst": 0.8,
+    "d1": 0.8,
+    "dM1": 0.8
+   },
+   "solved": {
+    "dArm": -0.5,
+    "dElbow": -1.8,
+    "worst": 8.5,
+    "d1": 8.5,
+    "dM1": 8.5
+   }
+  },
+  {
+   "id": "C3",
+   "fists": 1.5,
+   "via": {
+    "u": -0.4772,
+    "v": 0.6077,
+    "approach": 0.4,
+    "recoveryArm": -0.8,
+    "recoveryElbow": -1.1
+   },
+   "asked": {
+    "dArm": -0.8,
+    "dElbow": -1.1,
+    "worst": 9.91,
+    "d1": 9.91,
+    "dM1": 9.91
+   },
+   "bestReachable": {
+    "dArm": -0.45,
+    "dElbow": -1.9,
+    "worst": 0.28,
+    "d1": 0.28,
+    "dM1": 0.28
+   },
+   "solved": {
+    "dArm": -0.8,
+    "dElbow": -1.1,
+    "worst": 9.91,
+    "d1": 9.91,
+    "dM1": 9.91
+   }
+  }
+ ]
+}

@@ -87,7 +87,7 @@ Reference: [MOVE_CATALOG.md](MOVE_CATALOG.md) line 80, Bret sheet frames 64-68 (
   hold through it. Not used by the quick rise (B3).
   Gameplay (Opus default, Derek can overrule): today nothing in the game attacks a `gettingUp` wrestler, so the stall
   makes him safe for longer. This round it is a look only, capped at 1400 ms extra. Letting the opponent attack a stalled
-  wrestler (a kick to the ribs, a front facelock) is gameplay work for a later plan.
+  wrestler (a kick to the ribs, a front facelock) is gameplay work for a later plan (Derek 2026-10-27: "we'll make it punishable later").
 - **D6. Behind a flag** `?getups=v1` until Derek approves the set; off = today byte-identical (the `riseFixFlagOff` fixture
   must not change).
 

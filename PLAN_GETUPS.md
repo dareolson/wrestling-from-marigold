@@ -137,6 +137,22 @@ Later, not this plan: rope pull-up, kip-up, climbing the opponent.
   normal-speed strip of those keys running in the game under `?getups=v1`, Lou and George, both facings, turn and no turn,
   forced rise (B1b). Rough means untuned: no measuring pass yet.
   **⛔ G1a: Derek OKs the keys** before anything is tuned.
+
+G1a — Derek 2026-10-27: **keys OK** ("it mostly looks good"). Miss: "sometimes around the knees there's some art issues ... on Lou
+especially ... nudging the lower leg a little closer during the transition". Opus, from `frames/new/lou-l-behind` s0018-s0026
+and s0030-s0034: at deep knee flex (sitting up onto the knee, and the push up) the thigh's cut end and the shin's top separate
+at the knee. `RIG.KNEE_OVERLAP` is a constant 18 px (Skeleton.js), so the overlap that hides the joint standing is too
+little when the knee is folded.
+
+- **T2.1b Knee tuck by flex (all rigs, under `?getups=v1` first).** In the grounded leg (`Skeleton._applyGrounded`'s `leg`
+  closure) and `updateUpright`, the shin's pull-up becomes `KNEE_OVERLAP + KNEE_FLEX_TUCK × smoothstep(f0, f1, flex)`,
+  flex = thigh angle − shin angle. Rig data can override per rig (`kneeFlexTuck`, in the generator SPECS + generated file
+  like other rig data). The ankle chain does not move (render only: the shin image slides up its own axis into the thigh,
+  same as `KNEE_OVERLAP`). Candidates: tuck 0 (today) / 6 / 10 / 14 px, f0 .6, f1 1.6 rad. Also report the knee's draw
+  order at deep flex (thigh over shin or shin over thigh) and try the other order as one extra column if the gap is on the
+  thigh's side. Measure: a probe that counts background pixels inside the knee's convex hull (thigh end ∪ shin top) per
+  frame, Lou and George, both facings, through `backKneeHurt`. Page: the G1a strips with each candidate side by side at 1×,
+  and a 3× crop of the knee. **⛔ G1b: Derek picks.** Standing poses must not change for flex < f0 (test).
 - **T2.2** Implement `backKneeHurt` and its `backSell` variant. Film Lou and George, suplex receiver, opponent behind (turn)
   and in front (no turn), 1×, both facings, from the last down frame to 2 s standing. Before = today.
   Report misses first: largest per-part step anywhere in the rise and at the flip; both feet's world displacement while

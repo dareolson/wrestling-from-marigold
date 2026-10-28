@@ -67,7 +67,7 @@ const INSTALL = async depthControl => {
     // WFM_DEPTH_CONTROL=1: draw the hand behind the body by depth (the Rev 2 order) instead of the Rev 3 torso mask, as a control for the forearm counts
     if (depthControl) for (const w of [game.scene.scenes[0].w1, game.scene.scenes[0].w2]) w.skeleton._forearmOverUpperArm = false;
     const sc = game.scene.scenes[0];
-    const film = (window.__film = { suplexAt: null, receiver: null, events: [], T: 0, sil: await import('/src/rig/silhouette.js') });
+    const film = (window.__film = { suplexAt: null, receiver: null, events: [], T: 0, sil: await import('/src/rig/silhouette.js'), sells: await import('/src/animation/sells.js') });
     const orig = sc._logEvent.bind(sc);
     sc._logEvent = (type, payload = {}) => {
         orig(type, payload);
@@ -127,7 +127,25 @@ const STEP = () => {
     const contact = (cA && Sk.imageAnchorPoint(near, cA)) || pts.nearWrist || null;
     const waist = waistA ? Sk.imageAnchorPoint(sk.torso, waistA) : null;
     const dist = contact && waist ? Math.hypot(contact.x - waist.x, contact.y - waist.y) : null;
+    // PLAN_GEORGE_TRANSFER T10.1: where the leg channels come from this frame. `src` is the owner of the grounded pose
+    // (sell:<name>:<part> | hold | none); `g` the leg channels it drew (after limitKnees), `off` the offsets over the lying base,
+    // `hold` the hold's own leg offsets (only while a hold is on); flex = thigh - shin per leg as drawn.
+    const legCh = ['nearThigh', 'nearShin', 'farThigh', 'farShin', 'hip'];
+    const r3 = v => +v.toFixed(3);
+    let legs = null;
+    if (w.state === 'down') {
+        const base = sk.constructor.GROUNDED_POSES[w.lying], sp = w._sellPose?.(), lh = sp ? null : w._lyingHold?.();
+        const g = sp ? sp.g : lh ? film.sells.limitKnees(film.sells.applyOffsets(base, lh.offsets)) : null;
+        legs = { src: sp ? `sell:${cur.name}:${cur.part ?? ''}` : lh ? 'hold' : 'none' };
+        if (g) {
+            legs.g = Object.fromEntries(legCh.map(c => [c, r3(g[c])]));
+            legs.off = Object.fromEntries(legCh.map(c => [c, r3(g[c] - base[c])]));
+            legs.flex = { near: r3(g.nearThigh - g.nearShin), far: r3(g.farThigh - g.farShin) };
+        }
+        if (lh) legs.hold = Object.fromEntries(legCh.map(c => [c, r3(lh.offsets[c] ?? 0)]));
+    }
     return {
+        legs,
         recoveryW: +(w._recoveryWeight?.() ?? 0).toFixed(4), handOnBack: !!w._recoveryHandOnBack?.(), holdActive: !!w._lyingHold?.(), combatBlend: +(w.combatBlend ?? 0).toFixed(3),
         dbg: { pose: { lArm: w.pose?.lArm, lForearm: w.pose?.lForearm, lElbow: w.pose?.lElbow, rElbow: w.pose?.rElbow, bend: w.pose?.bend }, rec: (r => r && { lArm: r.lArm, lForearm: r.lForearm, lElbow: r.lElbow, bend: r.bend })(w._recoveryPose?.()), idle: w.idlePose },
         // the contact-latch state (null when no latch exists this frame); the art never changes on a rig with no grip donor, the latch still must not chatter
@@ -334,7 +352,7 @@ async function film(scenario, configName, outRoot, interrupt = null) {
             interrupt: fired,
             frames: frameList,
             samples: frames.map(f => ({ rel: +(f.now - impactNow).toFixed(2), state: f.state, riseT: f.state === 'gettingUp' ? +f.riseT.toFixed(4) : null,
-                sell: f.sell, recoveryW: f.recoveryW, holdActive: f.holdActive, dbg: f.dbg, handOnBack: f.handOnBack, combatBlend: f.combatBlend, backDist: f.backDist, latch: f.latch, handUnder: f.handUnder, clr: f.clr, handWant: f.handWant, elbowClr: f.elbowClr, reachW: f.reachW, handHw: f.handHw, handPending: f.handPending, handSkips: f.handSkips, nearWristW: f.nearWrist, lying: f.lying, pain: f.pain, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
+                sell: f.sell, recoveryW: f.recoveryW, holdActive: f.holdActive, dbg: f.dbg, handOnBack: f.handOnBack, combatBlend: f.combatBlend, backDist: f.backDist, latch: f.latch, handUnder: f.handUnder, clr: f.clr, handWant: f.handWant, elbowClr: f.elbowClr, reachW: f.reachW, handHw: f.handHw, handPending: f.handPending, handSkips: f.handSkips, nearWristW: f.nearWrist, lying: f.lying, pain: f.pain, legs: f.legs, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
                 farShoulder: f.farShoulder, farElbow: f.farElbow, rootY: f.y, facing: f.facing })),
         };
         writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 1));

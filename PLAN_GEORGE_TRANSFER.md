@@ -46,6 +46,7 @@ Step 3 of the Revised sequence in [MOVE_PIPELINE_EVOLUTION.md](MOVE_PIPELINE_EVO
 - T10.1 0dda0fd (Sonnet filmed, Opus wrote it up): legs logged in aftermath_film.mjs; one George `suplex` (roll then clutch): knee flex peaks clutch:back 1.12, roll .96, hold .90 (rest .15). Not only `CLUTCH.back`: D12 widened. Miss: G8 rise-pixels-over-thigh check not done
 - T10.2 9813653: `backSell.legScale` (optional, 0<x<=1) scales leg+hip offsets of every sell and the hold (`scaleLegs`, Wrestler `_sellPose`/`_lyingHold`), all lyings incl. prone clutch; no rig carries it; 6 new tests + Lou fixture/backSell suites 75/75; misses: not run in the live game (T10.3 films it), full suite not run
 - T10.3 (this commit): films ls 1/.7/.55/.4 x suplex/suplexFlip, same seeded sell plan (roll→clutch prone, all match); peak knee flex 1.12/.83/.69/.54; misses: no G10a page yet, no supine run; roll swap 33-37 px and hold→rise 40-44 px near forearm (real wrist motion, same at every scale: prone path, not legScale); raw films excluded locally
+- T10.3b (this commit): G10a page `g10a/index.html` (3 runs x 4 scales, sprite sheets); face-up run (seed 7: back clutch, no roll) per scale, same plan in all 4; face-up peak knee flex 1.64/1.10/.83/.56 (near); misses: roll swap 33-37 px and roll-run hold→rise 40-44 px (near forearm, same at every scale); face-up hold→rise .3-.6 px; leg parts on the mat max 6.8 px (face-up); latch 367 ms/34 px/5 flips face-up; not in the page: Derek's pick. ⛔ G10a
 
 ## Goal
 

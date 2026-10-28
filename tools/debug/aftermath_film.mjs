@@ -169,19 +169,20 @@ const STEP = () => {
         return { n: film.names[i], vis: !!img.visible, c: [[-ox, -oy], [img.width - ox, -oy], [img.width - ox, img.height - oy], [-ox, img.height - oy]]
             .map(([x, y]) => [m.a * x + m.c * y + m.tx, m.b * x + m.d * y + m.ty]) };
     });
-    let pstep = null, pstepPart = null;
+    let pstep = null, pstepPart = null, legStep = null;
     if (film.prevParts) {
-        pstep = 0;
+        pstep = 0; legStep = 0;
         const near = (c, set) => Math.min(...set.map(d => Math.hypot(c[0] - d[0], c[1] - d[1])));
         parts.forEach((b, i) => { const a = film.prevParts[i];
             if (!a.vis || !b.vis) return;
             const v = Math.max(...a.c.map(c => near(c, b.c)), ...b.c.map(c => near(c, a.c)));
-            if (v > pstep) { pstep = v; pstepPart = b.n; } });
-        pstep = +pstep.toFixed(2);
+            if (v > pstep) { pstep = v; pstepPart = b.n; }
+            if (/^(near|far)(Thigh|Shin|Foot)$/.test(b.n) && v > legStep) legStep = v; });
+        pstep = +pstep.toFixed(2); legStep = +legStep.toFixed(2);
     }
     film.prevParts = parts;
     return {
-        pstep, pstepPart,
+        pstep, pstepPart, legStep,
         legs,
         recoveryW: +(w._recoveryWeight?.() ?? 0).toFixed(4), handOnBack: !!w._recoveryHandOnBack?.(), holdActive: !!w._lyingHold?.(), combatBlend: +(w.combatBlend ?? 0).toFixed(3),
         dbg: { pose: { lArm: w.pose?.lArm, lForearm: w.pose?.lForearm, lElbow: w.pose?.lElbow, rElbow: w.pose?.rElbow, bend: w.pose?.bend }, rec: (r => r && { lArm: r.lArm, lForearm: r.lForearm, lElbow: r.lElbow, bend: r.bend })(w._recoveryPose?.()), idle: w.idlePose },
@@ -390,7 +391,7 @@ async function film(scenario, configName, outRoot, interrupt = null) {
             interrupt: fired,
             frames: frameList,
             samples: frames.map(f => ({ rel: +(f.now - impactNow).toFixed(2), state: f.state, riseT: f.state === 'gettingUp' ? +f.riseT.toFixed(4) : null,
-                sell: f.sell, recoveryW: f.recoveryW, holdActive: f.holdActive, dbg: f.dbg, handOnBack: f.handOnBack, combatBlend: f.combatBlend, backDist: f.backDist, latch: f.latch, handUnder: f.handUnder, clr: f.clr, handWant: f.handWant, elbowClr: f.elbowClr, reachW: f.reachW, handHw: f.handHw, handPending: f.handPending, handSkips: f.handSkips, nearWristW: f.nearWrist, lying: f.lying, pain: f.pain, legs: f.legs, pstep: f.pstep, pstepPart: f.pstepPart, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
+                sell: f.sell, recoveryW: f.recoveryW, holdActive: f.holdActive, dbg: f.dbg, handOnBack: f.handOnBack, combatBlend: f.combatBlend, backDist: f.backDist, latch: f.latch, handUnder: f.handUnder, clr: f.clr, handWant: f.handWant, elbowClr: f.elbowClr, reachW: f.reachW, handHw: f.handHw, handPending: f.handPending, handSkips: f.handSkips, nearWristW: f.nearWrist, lying: f.lying, pain: f.pain, legs: f.legs, pstep: f.pstep, legStep: f.legStep, pstepPart: f.pstepPart, nearContact: f.nearContact, backWaist: f.backWaist, nearForearm: f.nearForearm, farForearm: f.farForearm, nearWrist: f.nearWrist, farWrist: f.farWrist,
                 farShoulder: f.farShoulder, farElbow: f.farElbow, rootY: f.y, facing: f.facing })),
         };
         writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 1));

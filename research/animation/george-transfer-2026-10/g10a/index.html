@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>George legScale G10a</title>
+<style>
+  :root { --bg:#f6f6f4; --panel:#fff; --ink:#1d1d1b; --mute:#6b6b66; --line:#dcdcd6; --accent:#1b6ca8; --warn:#b3261e; --ok:#2e7d4f; --warnbg:#fdecea; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161616; --panel:#202020; --ink:#ececea; --mute:#9a9a94; --line:#383836; --accent:#6fb1e3; --warn:#ff8a7a; --ok:#6fcf97; --warnbg:#3a1f1c; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui,-apple-system,sans-serif; }
+  main { max-width:1500px; margin:0 auto; padding:16px; }
+  h1 { font-size:18px; margin:0 0 2px; } h2 { font-size:14px; margin:22px 0 8px; }
+  .sub { color:var(--mute); margin:0 0 10px; max-width:110ch; }
+  .miss { background:var(--warnbg); border:1px solid var(--warn); border-radius:8px; padding:10px 14px; margin:10px 0; }
+  .miss h2 { margin:0 0 4px; color:var(--warn); } .miss li { margin:4px 0; }
+  .ask { background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:6px; padding:8px 14px; margin:10px 0; }
+  .ask ol { margin:4px 0 0; padding-left:20px; } .ask li { margin:2px 0; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px; position:sticky; top:0; z-index:5; }
+  button { font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:5px 10px; cursor:pointer; }
+  button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button:focus-visible, input:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .scrub { flex:1 1 320px; min-width:200px; } .scrub input { width:100%; }
+  .time { font-variant-numeric:tabular-nums; min-width:92px; text-align:right; }
+  .events { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .cols { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:12px; }
+  @media (max-width:900px) { .cols { grid-template-columns:repeat(2,1fr); } }
+  figure { margin:0; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .spr { width:100%; aspect-ratio:336/204; background-color:#888; background-repeat:no-repeat; }
+  figcaption { padding:8px 10px; font-size:13px; } figcaption b { font-size:14px; }
+  .mono { font-variant-numeric:tabular-nums; font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mute); }
+  .tag { display:inline-block; font-size:11px; padding:0 6px; border-radius:4px; border:1px solid var(--line); color:var(--mute); margin-right:4px; }
+  .tag.slow { color:#fff; background:var(--warn); border-color:var(--warn); font-weight:700; }
+  table { border-collapse:collapse; width:100%; background:var(--panel); border:1px solid var(--line); }
+  th, td { text-align:left; padding:4px 9px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; vertical-align:top; }
+  th { color:var(--mute); font-weight:600; } td.num, th.num { text-align:right; }
+  td.bad { color:var(--warn); font-weight:600; } td.good { color:var(--ok); font-weight:600; }
+  .note { color:var(--mute); font-size:12px; max-width:120ch; }
+</style>
+</head>
+<body>
+<main>
+<h1>George's legs on the mat: legScale candidates (G10a)</h1>
+<p class="sub">George falling from a suplex, 1&times; speed, landing to standing, four values of <code>legScale</code> side by side. <b>1</b> is today. The scale shrinks the leg and hip movement of every sell and of the lying hold; nothing else moves. No value is in George's data yet.</p>
+
+<div class="miss" id="miss">
+  <h2>Misses (measured, not judged)</h2>
+  <ul id="missList"></ul>
+</div>
+
+<div class="ask"><b>G10a: Derek picks the value.</b>
+  <ol>
+    <li>Which column bends the legs the right amount on landing: 1 (today), 0.7, 0.55 or 0.4?</li>
+    <li>Is the answer the same in the roll runs and the face-up run?</li>
+  </ol>
+  <div class="note">I make no claim about how any column reads. The numbers under each column are the measured knee bend.</div>
+</div>
+
+<div class="bar">
+  <span id="runBtns"></span>
+  <button id="play">Pause</button>
+  <button id="slow">0.25&times; (slowed)</button>
+  <span class="scrub"><input id="scrub" type="range" min="0" max="1" value="0" step="1" aria-label="time"></span>
+  <span class="time mono" id="time"></span>
+</div>
+<div class="events" id="events"></div>
+<div class="cols" id="cols"></div>
+
+<h2>Numbers per candidate</h2>
+<div id="tables"></div>
+<p class="note" id="foot"></p>
+</main>
+<script src="data.js"></script>
+<script>
+(() => {
+  const D = window.G10A, COLS = D.cols, [CW, CH] = D.size;
+  const RUN_LABEL = { 'roll-left': 'Roll, facing left', 'roll-right': 'Roll, facing right', 'faceup': 'Face-up, no roll' };
+  const RUN_BLURB = {
+    'roll-left': 'George rolls onto his front, clutches his back face-down, then holds (the plan every candidate shares).',
+    'roll-right': 'The same plan with the thrower on the other side: George faces right.',
+    'faceup': 'No roll: George stays on his back, clutches it face-up, then holds.' };
+  const el = (tag, props = {}, kids = []) => { const e = Object.assign(document.createElement(tag), props); for (const k of [].concat(kids)) e.append(k); return e; };
+  const f2 = v => v == null ? 'n/a' : (+v).toFixed(2);
+  const scaleName = s => s === '1' ? '1 (today)' : s;
+  let run = 'roll-left', t = 0, playing = true, speed = 1, last = null;
+  const cols = document.getElementById('cols'), scrub = document.getElementById('scrub');
+
+  // misses first
+  const ml = document.getElementById('missList');
+  const rr = D.runs['roll-left'], rw = Object.values(rr).map(r => r.rollSwap?.step).filter(Boolean), hr = Object.values(D.runs['roll-left']).map(r => r.holdRise?.step).filter(Boolean);
+  const rng = a => !a.length ? 'n/a' : Math.min(...a).toFixed(1) === Math.max(...a).toFixed(1) ? Math.min(...a).toFixed(1) : `${Math.min(...a).toFixed(1)}-${Math.max(...a).toFixed(1)}`;
+  const allRoll = [], allHr = [];
+  for (const id of ['roll-left', 'roll-right']) for (const r of Object.values(D.runs[id])) { if (r.rollSwap) allRoll.push(r.rollSwap.step); if (r.holdRise) allHr.push(r.holdRise.step); }
+  const up = D.runs.faceup || {};
+  const upHr = Object.values(up).map(r => r.holdRise?.step).filter(v => v != null);
+  const upLeg = Object.values(up).map(r => r.maxLegStep).filter(v => v != null);
+  [`Roll swap (supine to prone): largest drawn per-part step ${rng(allRoll)} px at every candidate, target 3 px. The part is the near forearm, and the step is the same at 1, 0.7, 0.55 and 0.4.`,
+   `Hold to rise: ${rng(allHr)} px in the roll runs${upHr.length ? `, ${rng(upHr)} px face-up` : ''}, target 3 px. In the roll runs the part is the near forearm (grip art goes back to plain), and it does not change with legScale. Face-up it is within target.`,
+   upLeg.length ? `Leg parts only (thigh, shin, foot), face-up run, every frame on the mat (down, after landing): largest step ${rng(upLeg)} px. At the hold-to-rise frame itself the leg parts step ${rng(Object.values(up).map(r => r.holdRise?.legStep).filter(v => v != null))} px.` : 'Leg-part steps were recorded only for the face-up run.',
+   `Grip latch (A1, not tuned), the same at every candidate: roll runs engage at ${rr['1'].latch.firstOnMs} ms with the hand ${f2(rr['1'].latch.dist)} px from the back and flip ${rr['1'].latch.flips} times; face-up run${up['1'] ? ` engages at ${up['1'].latch.firstOnMs} ms with the hand ${f2(up['1'].latch.dist)} px away and flips ${up['1'].latch.flips} times` : ' not filmed'}.`
+  ].forEach(s => ml.append(el('li', { textContent: s })));
+
+  const btns = document.getElementById('runBtns');
+  for (const id of Object.keys(D.runs)) {
+    const b = el('button', { textContent: RUN_LABEL[id], title: RUN_BLURB[id] }); b.dataset.run = id;
+    b.onclick = () => { run = id; build(); }; btns.append(b);
+  }
+  document.getElementById('play').onclick = e => { playing = !playing; e.target.textContent = playing ? 'Pause' : 'Play'; last = null; };
+  document.getElementById('slow').onclick = e => { speed = speed === 1 ? 0.25 : 1; e.target.classList.toggle('on', speed !== 1); build(true); };
+
+  function build(keepTime) {
+    const runs = D.runs[run];
+    for (const b of btns.children) b.classList.toggle('on', b.dataset.run === run);
+    const any = Object.values(runs)[0];
+    if (!keepTime) t = any.t[0];
+    scrub.max = any.t.at(-1) - any.t[0]; scrub.value = t - any.t[0];
+    cols.replaceChildren();
+    for (const s of D.scales) {
+      const r = runs[s]; if (!r) continue;
+      const spr = el('div', { className: 'spr' });
+      const rows = Math.ceil(r.n / COLS);
+      spr.style.backgroundImage = `url(${r.sheet})`;
+      spr.style.backgroundSize = `${COLS * 100}% ${rows * 100}%`;
+      spr.setAttribute('role', 'img'); spr.setAttribute('aria-label', `legScale ${s}`);
+      const live = el('div', { className: 'mono' }), peak = el('div', { className: 'mono', textContent: `peak knee bend ${f2(r.peakNear)} near / ${f2(r.peakFar)} far rad` });
+      const cap = el('figcaption', {}, [el('b', { textContent: `legScale ${scaleName(s)}` }), speed !== 1 ? el('span', { className: 'tag slow', textContent: 'SLOWED 0.25x' }) : '', live, peak]);
+      cols.append(el('figure', {}, [spr, cap]));
+      r._spr = spr; r._live = live; r._rows = rows;
+    }
+    document.getElementById('events').replaceChildren(...Object.entries(any.events).filter(([k]) => /impact|clutchPeak|hold|riseStart|standing/.test(k)).map(([k, v]) => {
+      const b = el('button', { textContent: `${k} ${(v / 1000).toFixed(2)}s` }); b.onclick = () => { t = v; draw(); }; return b; }));
+    tables(); draw();
+  }
+
+  function draw() {
+    const runs = D.runs[run], any = Object.values(runs)[0];
+    t = Math.max(any.t[0], Math.min(any.t.at(-1), t));
+    for (const s of D.scales) {
+      const r = runs[s]; if (!r) continue;
+      let i = 0; while (i < r.n - 1 && r.t[i + 1] <= t) i++;
+      const col = i % COLS, row = Math.floor(i / COLS);
+      r._spr.style.backgroundPosition = `${COLS > 1 ? col / (COLS - 1) * 100 : 0}% ${r._rows > 1 ? row / (r._rows - 1) * 100 : 0}%`;
+      r._live.textContent = r.flexNear[i] == null ? `${(t / 1000).toFixed(2)} s, not on the mat` : `${(t / 1000).toFixed(2)} s  now ${f2(r.flexNear[i])} / ${f2(r.flexFar[i])}  (${r.src[i]})`;
+    }
+    scrub.value = t - any.t[0];
+    document.getElementById('time').textContent = `${(t / 1000).toFixed(2)} s`;
+  }
+  scrub.oninput = () => { t = +scrub.value + Object.values(D.runs[run])[0].t[0]; draw(); };
+
+  function tables() {
+    const runs = D.runs[run], box = document.getElementById('tables'); box.replaceChildren();
+    const head = ['legScale', 'peak knee bend near / far (rad)', 'peak by source (rad, either leg)', 'roll swap step (px)', 'hold to rise step (px)', 'leg parts max step on the mat (px)', 'latch first on / flips'];
+    const tb = el('table'); tb.append(el('tr', {}, head.map((h, k) => el('th', { className: k && k !== 2 && k !== 6 ? 'num' : '', textContent: h }))));
+    for (const s of D.scales) {
+      const r = runs[s]; if (!r) continue;
+      const src = Object.entries(r.peakBySource).filter(([k]) => /roll|clutch|hold/.test(k)).map(([k, v]) => `${k} ${f2(v.flex)}`).join(', ');
+      const step = x => x ? `${f2(x.step)} (${x.part})` : 'n/a';
+      tb.append(el('tr', {}, [
+        el('td', { textContent: scaleName(s) }), el('td', { className: 'num', textContent: `${f2(r.peakNear)} / ${f2(r.peakFar)}` }), el('td', { textContent: src }),
+        el('td', { className: 'num' + (r.rollSwap && r.rollSwap.step > 3 ? ' bad' : ''), textContent: step(r.rollSwap) }),
+        el('td', { className: 'num' + (r.holdRise && r.holdRise.step > 3 ? ' bad' : ''), textContent: step(r.holdRise) }),
+        el('td', { className: 'num', textContent: r.maxLegStep == null ? 'not recorded' : f2(r.maxLegStep) }),
+        el('td', { textContent: `${r.latch.firstOnMs} ms at ${f2(r.latch.dist)} px / ${r.latch.flips}` })]));
+    }
+    box.append(el('p', { className: 'note', textContent: RUN_BLURB[run] + ' Sell plan: ' + Object.values(runs)[0].plan.join(' > ') + (Object.values(runs).every(r => r.plan.join() === Object.values(runs)[0].plan.join()) ? ' (identical in all four columns).' : ' (DIFFERS between columns).') }), tb);
+  }
+
+  function tick(ts) {
+    if (playing) { if (last != null) { t += (ts - last) * speed; const end = Object.values(D.runs[run])[0].t.at(-1); if (t > end) t = Object.values(D.runs[run])[0].t[0]; draw(); } last = ts; } else last = null;
+    requestAnimationFrame(tick);
+  }
+  build(); requestAnimationFrame(tick);
+  const c = Object.values(D.runs['roll-left'])[0];
+  document.getElementById('foot').textContent = `Films at ${c.commit}${c.dirty ? ' (tree dirty)' : ''}; frames every 1/30 s from the game clock stepped by hand, played back at the clock's speed. Frames are the films' raw JPEGs scaled down.`;
+})();
+</script>
+</body>
+</html>

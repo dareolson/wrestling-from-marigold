@@ -39,8 +39,21 @@ function syncHandMask(skeleton, on) {
     return ok;
 }
 
+// One mask copy follows its part in WORLD terms (PLAN_GETUPS A3): the world transform (a parent Container's offset, scale and
+// rotation included), the product of the part's and its parents' alpha, and hidden when the part or any parent is. A part that
+// is itself invisible or has no texture hides its copy.
+export function syncUnionCopy(c, part) {
+    let visible = !!part?.visible && !!part.texture, alpha = part?.alpha ?? 1;
+    for (let p = part?.parentContainer; p; p = p.parentContainer) { visible = visible && p.visible; alpha *= p.alpha; }
+    if (!visible) { c.setVisible(false); return; }
+    const d = part.getWorldTransformMatrix().decomposeMatrix();
+    c.setVisible(true).setTexture(part.texture.key, part.frame.name)
+        .setOrigin(part.originX, part.originY).setPosition(d.translateX, d.translateY)
+        .setScale(d.scaleX, d.scaleY).setRotation(d.rotation).setFlip(part.flipX, part.flipY).setAlpha(alpha);
+}
+
 // The union mask source: a Container of render-only copies of the torso and both thighs (never in the display list), synced to
-// the real parts' world transform, origin, frame, flip and scale just before each render. Created once per skeleton, destroyed
+// the real parts' world transform, origin, frame, flip and alpha just before each render (syncUnionCopy). Created once per skeleton, destroyed
 // with it. Null when the scene cannot make one (a Node stand-in).
 function handUnionSource(skeleton) {
     if (skeleton._handUnionSrc !== undefined) return skeleton._handUnionSrc;
@@ -51,15 +64,7 @@ function handUnionSource(skeleton) {
         const copies = parts.map(() => scene.make.image({ x: 0, y: 0, key: '__WHITE' }, false));
         const container = scene.make.container({ x: 0, y: 0 }, false);
         container.add(copies);
-        const sync = () => {
-            parts.forEach((part, i) => {
-                const c = copies[i];
-                if (!part?.visible || !part.texture) { c.setVisible(false); return; }
-                c.setVisible(true).setTexture(part.texture.key, part.frame.name)
-                    .setOrigin(part.originX, part.originY).setPosition(part.x, part.y)
-                    .setScale(part.scaleX, part.scaleY).setRotation(part.rotation).setFlip(part.flipX, part.flipY);
-            });
-        };
+        const sync = () => parts.forEach((part, i) => syncUnionCopy(copies[i], part));
         scene.events.on('prerender', sync);
         src = { container, copies, sync, off: () => scene.events.off('prerender', sync) };
     }

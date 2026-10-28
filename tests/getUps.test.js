@@ -1,7 +1,7 @@
 // PLAN_GETUPS T1.1-T1.3: the get-up tables, the validator, the entry-driven rise and the flip.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import Skeleton from '../src/Skeleton.js';
+import Skeleton, { syncUnionCopy } from '../src/Skeleton.js';
 import Wrestler from '../src/Wrestler.js';
 import { GETUPS, legacySupine, legacyProne, legacyFor, validateGetUp, turnedPose, sampleGetUp } from '../src/animation/getUps.js';
 
@@ -302,4 +302,31 @@ test('the union clearance fails closed: a missing silhouette is not clear; off, 
     assert.equal(r.min, -Infinity);
     sk.setHandUnion(false);
     assert.equal(sk.handClearance(1), null, 'union off: the torso alone, no silhouette in Node, null as before');
+});
+
+// T2.8 item 2: the union mask's copies follow their parts in world terms (A3): alpha and a parent's transform included.
+const copyStub = () => { const c = { calls: {} }; for (const k of ['setVisible', 'setTexture', 'setOrigin', 'setPosition', 'setScale', 'setRotation', 'setFlip', 'setAlpha']) c[k] = (...a) => { c.calls[k] = a; return c; }; return c; };
+const partStub = (o = {}) => ({ visible: true, alpha: 1, texture: { key: 'tex' }, frame: { name: 'f' }, originX: 0.5, originY: 0.25, flipX: true, flipY: false, parentContainer: null,
+    getWorldTransformMatrix: () => ({ decomposeMatrix: () => ({ translateX: 10, translateY: 20, scaleX: 2, scaleY: 3, rotation: 0.4 }) }), ...o });
+
+test('a union copy takes the part\'s world transform, flip, frame and alpha', () => {
+    const c = copyStub(); syncUnionCopy(c, partStub({ alpha: 0.5 }));
+    assert.deepEqual(c.calls.setVisible, [true]);
+    assert.deepEqual(c.calls.setTexture, ['tex', 'f']);
+    assert.deepEqual(c.calls.setPosition, [10, 20]);
+    assert.deepEqual(c.calls.setScale, [2, 3]);
+    assert.deepEqual(c.calls.setRotation, [0.4]);
+    assert.deepEqual(c.calls.setFlip, [true, false]);
+    assert.deepEqual(c.calls.setAlpha, [0.5]);
+});
+
+test('a union copy multiplies the parents\' alpha and hides with a hidden part or parent', () => {
+    const c = copyStub(), parent = { visible: true, alpha: 0.5, parentContainer: { visible: true, alpha: 0.5, parentContainer: null } };
+    syncUnionCopy(c, partStub({ alpha: 0.8, parentContainer: parent }));
+    assert.ok(Math.abs(c.calls.setAlpha[0] - 0.2) < 1e-9);
+    for (const part of [partStub({ visible: false }), partStub({ texture: null }), partStub({ parentContainer: { visible: false, alpha: 1, parentContainer: null } })]) {
+        const h = copyStub(); syncUnionCopy(h, part);
+        assert.deepEqual(h.calls.setVisible, [false]);
+        assert.equal(h.calls.setPosition, undefined, 'a hidden copy is not moved');
+    }
 });

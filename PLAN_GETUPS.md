@@ -28,6 +28,7 @@ plus the quick rise. Measured problems they cause:
 - The front (prone) path has no hand route: George's near forearm steps 33-37 px at the roll swap and 40-44 px at
   hold → rise (T10.3 films, `research/animation/george-transfer-2026-10/g10a/rows.json`).
 Reference: [MOVE_CATALOG.md](MOVE_CATALOG.md) line 80, Bret sheet frames 64-68 (from the back) and 244-258 (from the front).
+- T2.8: 48fe603 painted-pixel evidence, [g1-rev2 page](research/animation/getups-2026-10/g1-rev2/index.html#verified), entry `2026-10-28-claude-getups-t28.md`. R: lowest painted hand pixel 5.2-9.9 px above the hem, 0 visible px over a thigh (153 frames); union mask copies lacked alpha/parent transform (fixed, `syncUnionCopy`). Misses: the 36.5 px jump is the IK elbow branch flipping (not latch/art/depth); wrist jumps 15.3 px on the first standing frame (frame 55); turn feet 57-76 px as before.
 
 ## Amendments after Codex's review (Opus 2026-10-27; these override the text below)
 

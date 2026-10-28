@@ -8,6 +8,8 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
 
 (Sonnet: one line per task: id, commit, result, misses. Gate lines are written by Opus/Derek only.)
 
+- T1.0: `planSells({ noRoll })`, `getups=v1` flag in Wrestler; 1000 seeded theatrical plans (supine, prone) have no roll, control plans still roll; sells.test.js 45/45. Misses: none; no film.
+
 ## Why (Derek 2026-10-27)
 
 "george should switch directions while he's getting up ... facing lou by the time he stands up, right now he kind of wills

@@ -73,6 +73,8 @@ const defaultOnFlag = (name, value) => {
     return v === null || v === value;
 };
 const aftermathCandidate = () => defaultOnFlag('aftermath', 'v2');
+// ?getups=v1 (PLAN_GETUPS): authored get-ups; opt-in until Derek approves the set. D7: no roll while selling.
+const getUpsCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('getups') === 'v1';
 const sellArtCandidate = () => defaultOnFlag('sellart', 'v1');
 // ?plant=1 (with sellart on): the support-hand plant during the back rise. PARKED by
 // Derek 2026-10-24 (PLAN_SUPLEX_RISE T4.-1); the code stays, off unless asked for.
@@ -1046,7 +1048,7 @@ export default class Wrestler {
                 const plan = planSells({
                     style: this.sellStyle, lying: this.lying, part: pain.part, intensity: pain.severity,
                     budget: this.stateTimer - SELL_LEAD_SEC - SELL_TAIL_SEC,
-                    limb: pain.limb, compact: aftermathCandidate(),
+                    limb: pain.limb, compact: aftermathCandidate(), noRoll: getUpsCandidate(),
                 });
                 // facing0: the facing he went down with. The hurt limb's slot is
                 // measured from it, plus one flip per roll (groundedSlot).

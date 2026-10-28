@@ -441,3 +441,18 @@ test('solveReachArm: a reachable goal is met exactly, and one past full extensio
     const far = Skeleton.solveReachArm(S, 50, 50, { x: 300, y: 0 });
     assert.ok(Math.hypot(far.hand.x, far.hand.y) <= 100 * 0.999 + 1e-6);
 });
+
+test('?getups=v1 (D7): no plan contains a roll; flag off still rolls', () => {
+    const mk = () => { let seed = 7; return () => ((seed = (seed * 16807) % 2147483647) / 2147483647); };
+    for (const lying of ['supine', 'prone']) {
+        const on = mk(), off = mk();
+        let rolls = 0;
+        for (let i = 0; i < 1000; i++) {
+            const a = planSells({ style: 'theatrical', lying, part: 'knee', budget: 3.85, rand: on, noRoll: true });
+            assert.ok(a.every((p) => p.name !== 'roll'), `${lying} ${i}`);
+            const b = planSells({ style: 'theatrical', lying, part: 'knee', budget: 3.85, rand: off });
+            rolls += b.filter((p) => p.name === 'roll').length;
+        }
+        assert.ok(rolls > 0, `${lying}: control plans do roll`);
+    }
+});

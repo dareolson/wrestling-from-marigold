@@ -262,13 +262,15 @@ export const COMPACT_CLUTCH_SEC = 0.55;
  * tests. Prone has no kick and stirs instead of writhing. `limb` rides along
  * on each entry (with `rolls`, the rolls done before it) so the clutch can find
  * its slot. `compact` (?aftermath=v2, D4): a hurt of intensity >= 0.6 never
- * sells nothing; if the plan comes out empty, plan one compact clutch.
+ * sells nothing; if the plan comes out empty, plan one compact clutch. `noRoll`
+ * (?getups=v1, PLAN_GETUPS D7) removes `roll` from the weights; off is byte-identical.
  */
-export function planSells({ style = 'economical', lying, part = 'chest', intensity = 0.8, budget, rand = Math.random, limb = null, compact = false }) {
+export function planSells({ style = 'economical', lying, part = 'chest', intensity = 0.8, budget, rand = Math.random, limb = null, compact = false, noRoll = false }) {
     const st = SELL_STYLES[style] ?? SELL_STYLES.economical;
     const amp = st.amp * (0.6 + 0.4 * intensity);
     const pick = (weights) => {
-        const entries = Object.entries(weights);
+        // ?getups=v1 (PLAN_GETUPS D7): no roll; its weight goes to the rest by renormalising (the sum below).
+        const entries = Object.entries(weights).filter(([n]) => !(noRoll && n === 'roll'));
         let r = rand() * entries.reduce((sum, [, w]) => sum + w, 0);
         for (const [name, w] of entries) { if ((r -= w) <= 0) return name; }
         return entries.at(-1)[0];

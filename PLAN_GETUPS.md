@@ -251,6 +251,9 @@ and its result goes next to his verdict.
   Write the results into the G1-rev2 page as a "verified" section, misses first.
 G1-rev2 — Derek 2026-10-28: **approved** ("it's good"), the T2.6 hand path (R column). Scope: IK in the standing release
 above `standW` only; the rise and below `standW` still use the via/channel route. T2.7 union mask kept as a candidate (G4).
+**G1 (backKneeHurt) approved** with G1-rev2. The turn's feet jump (52-79 px on the flip frame): Derek "cant really tell" at 1×,
+so accepted, not fixed. Keep reporting it (T2.8 item 4 and every later get-up with a turn); if a later get-up makes it
+visible, it comes back.
 
 - **T2.9 (after T2.8) Register it.** Derek accepted G1-rev2: register `route.json` in George's data (generator SPECS + generated file + agreement test),
   record the scope (6), and keep direct prone landing, no-turn, both facings, and the two IK blend-in/out frames in every

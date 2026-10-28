@@ -202,6 +202,28 @@ Open, not yet raised by Derek: the flip moves both feet 52-79 px (Sonnet's entry
 - **⛔ G1-rev (Derek):** 1. Lou's forearm the same size all the way? 2. Which George elbow-out candidate? 3. The feet jump at
   the turn: does it show at 1×?
 
+G1-rev — Derek 2026-10-28: "really liking the movement", but George's hand still goes below the trunks: "we need to not let his
+hand cross below his trunks because it is stacked above the upper leg and shows through". No candidate adopted (all dip
+8.3-12.5 px below the hem, T2.5). Lou's forearm and the feet jump not raised again.
+
+Why the candidates failed (Opus): the route is a blend of arm CHANNELS between poses, so the hand's path between the poses
+is not controlled and swings down. A via point can't fix that. The route must be a path for the HAND, solved by IK each frame.
+
+- **T2.6 George: a hand path that never goes below the hem.** For a `handUnder` rig, the hand leaving (and entering) the
+  back follows a path in torso-image space (u, v): from `backWaist`, outboard around the hip, to the front rest, with every
+  point's v at least 3 px (game) above the trunks' lower edge (T2.5's hem line). Each frame, the hand target = that path at
+  the route's progress, IK solves the arm (the existing reach, `updateGroundedReach` / the standing recovery reach). Where
+  IK can't reach a path point, the path moves INWARD toward the body (never down) for that rig, decided once when the path
+  is built, not per frame. The elbow is whatever IK gives (no channel blend). Rig data: `aroundVia.path` (2-4 (u, v) points,
+  George only), replacing the via + channel offsets for George; Lou unchanged.
+  Measure every drawn frame, both facings, through the G1 get-up and the standing recovery: the hand's lowest drawn pixel
+  vs the hem (target ≥ 0 px above, every frame), the IK reach error at each frame, the per-frame hand step (≤ 2.5 px),
+  and the distance outside torso ∪ thighs at the depth swap (> 0, fail closed).
+- **T2.7 Backstop: hide the hand behind the thighs too.** The parked George plan D13 (mask by torso ∪ near thigh ∪ far
+  thigh, with its A3/A4 rules) is done here for `handUnder` rigs, so if any frame still dips it is hidden behind the leg
+  instead of drawn over it. Report the frames where it acts (target: none after T2.6).
+- Page `g1-rev2/index.html`: George today | T2.6 | T2.6 + T2.7, 1×, both facings. **⛔ G1-rev2 (Derek).**
+
 ## Stage 3: `frontKnee` and `backTuck`, then STOP (G2)
 
 Same pattern as Stage 2 (pose sheet ⛔ G2a, implement, film, viewer). `frontKnee` must also report the near forearm's step at

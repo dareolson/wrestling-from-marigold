@@ -249,7 +249,10 @@ and its result goes next to his verdict.
   6. *Scope.* State at the gate: IK covers the standing release above `standW` only; below it and in the rise the via/channel
      route still runs.
   Write the results into the G1-rev2 page as a "verified" section, misses first.
-- **If Derek accepts G1-rev2:** register `route.json` in George's data (generator SPECS + generated file + agreement test),
+G1-rev2 — Derek 2026-10-28: **approved** ("it's good"), the T2.6 hand path (R column). Scope: IK in the standing release
+above `standW` only; the rise and below `standW` still use the via/channel route. T2.7 union mask kept as a candidate (G4).
+
+- **T2.9 (after T2.8) Register it.** Derek accepted G1-rev2: register `route.json` in George's data (generator SPECS + generated file + agreement test),
   record the scope (6), and keep direct prone landing, no-turn, both facings, and the two IK blend-in/out frames in every
   later check.
 

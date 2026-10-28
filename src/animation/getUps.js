@@ -102,4 +102,44 @@ export const backKneeHurtStraight = Object.freeze({
 export const backKneeHurtBack = Object.freeze({ ...backKneeHurt, id: 'backKneeHurtBack', tags: ['knee', 'backSell'] });
 export const backKneeHurtBackStraight = Object.freeze({ ...backKneeHurtStraight, id: 'backKneeHurtBackStraight', tags: ['knee', 'backSell'] });
 
-export const GETUPS = Object.freeze({ legacySupine, legacyProne, backKneeHurt, backKneeHurtStraight, backKneeHurtBack, backKneeHurtBackStraight });
+// ── frontKnee (Bret 244-258, from the front): push up with both hands, bring a knee under, hand on the knee, stand. Replaces
+// the prone path that has no hand route. Rough keys for G2a, untuned. A prone body lies torso π - 1.62, legs trailing (negative).
+const PUSHUP = { t: 0.22, hip: 22, torso: P - 1.15, farThigh: -1.40, farShin: -1.55, nearThigh: -1.35, nearShin: -1.50, farArm: 0.15, farFore: 0.10, nearArm: 0.05, nearFore: 0.0 };
+// all fours: the legacy prone rise's own key (thighs vertical, shins flat behind, arms straight down)
+const ALLFOURS = { ...Skeleton.GETUP_POSES[2], t: 0.42 };
+// one knee under, the far foot planted, the near hand on the mat ahead, the far hand reaching its knee (the flip pose)
+const KNEEL_F = { t: 0.62, hip: 40, torso: P - 0.95, farThigh: 1.10, farShin: -0.25, nearThigh: 0.10, nearShin: -1.50, farArm: 0.80, farFore: 0.75, nearArm: 0.40, nearFore: 0.40 };
+const PUSH_F = { ...PUSH, t: 0.82 };
+const frontKneeBase = {
+    from: 'prone', duration: 0.85, pivot: 'nearKnee', tags: ['knee'],
+    hands: { far: { target: 'farKnee', space: 'thighLocal', push: [0.62, 0.82], w: 1, release: [0.82, 0.92] } },
+};
+export const frontKnee = Object.freeze({
+    id: 'frontKnee', ...frontKneeBase, flipAt: KNEEL_F.t,
+    keys: keyed(Skeleton.GROUNDED_FLAT, PUSHUP, ALLFOURS, KNEEL_F),
+    after: keyed(turnedPose(KNEEL_F), PUSH_F, { ...STAND, t: 1 }),
+});
+export const frontKneeStraight = Object.freeze({
+    id: 'frontKneeStraight', ...frontKneeBase,
+    keys: keyed(Skeleton.GROUNDED_FLAT, PUSHUP, ALLFOURS, KNEEL_F, PUSH_F, { ...STAND, t: 1 }),
+});
+
+// ── backTuck: today's rise from the back with the weight added: both hands propped behind, the feet drawn in under him, the
+// body leans forward over them and the hands leave the mat to the knees as he stands. No turn (a fresh wrestler who is
+// already facing the opponent). Rough keys for G2a, untuned.
+const PROP = { t: 0.30, hip: 16, torso: P + 0.45, farThigh: 1.42, farShin: 1.58, nearThigh: 1.34, nearShin: 1.52, farArm: -0.38, farFore: -0.55, nearArm: -0.30, nearFore: -0.48 };
+const TUCK = { t: 0.52, hip: 28, torso: P + 0.12, farThigh: 1.85, farShin: -0.45, nearThigh: 1.75, nearShin: -0.55, farArm: -0.30, farFore: -0.40, nearArm: -0.25, nearFore: -0.35 };
+const LEAN = { t: 0.74, hip: 52, torso: P - 0.50, farThigh: 1.25, farShin: -0.20, nearThigh: 1.05, nearShin: -0.30, farArm: 0.85, farFore: 0.90, nearArm: 0.75, nearFore: 0.80 };
+export const backTuck = Object.freeze({
+    id: 'backTuck', from: 'supine', duration: 0.85, tags: ['noTurn'],
+    keys: keyed(Skeleton.GROUNDED_SUPINE, PROP, TUCK, LEAN, { ...STAND, t: 1 }),
+});
+
+/** The turn / straight variants of each get-up family, for the dev override `?getups=v1&getup=<family>` (until chooseGetUp, T4.0). */
+export const GETUP_SETS = Object.freeze({
+    backKneeHurt: { from: 'supine', turn: backKneeHurt, straight: backKneeHurtStraight },
+    frontKnee: { from: 'prone', turn: frontKnee, straight: frontKneeStraight },
+    backTuck: { from: 'supine', straight: backTuck },
+});
+
+export const GETUPS = Object.freeze({ legacySupine, legacyProne, backKneeHurt, backKneeHurtStraight, backKneeHurtBack, backKneeHurtBackStraight, frontKnee, frontKneeStraight, backTuck });

@@ -13,7 +13,7 @@ import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
-import { GETUPS } from './animation/getUps.js';
+import { GETUPS, GETUP_SETS } from './animation/getUps.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
@@ -2765,10 +2765,15 @@ export default class Wrestler {
     // ?getups=v1 (PLAN_GETUPS T1.3): the authored get-up this rise plays, chosen once at rise start (B2), or null (today's
     // rise). Rough pick until chooseGetUp (T4.0): from the back, backKneeHurt, turning only if the opponent is behind him.
     _pickGetUp() {
-        if (!getUpsCandidate() || this.lying !== 'supine') return null;
+        if (!getUpsCandidate()) return null;
         const other = this._lastOther ?? (this.scene.w1 === this ? this.scene.w2 : this.scene.w1);
         const dx = other ? other.x - this.x : 0;
         const turn = Math.abs(dx) > GETUP_TURN_DEADBAND && Math.sign(dx) !== this.facing;
+        // dev override for the G2a films: ?getups=v1&getup=<family> forces that family when it fits how he is lying (a family
+        // with no turning variant plays straight); no such param, or one that does not fit, falls through to the rough pick
+        const set = GETUP_SETS[new URLSearchParams(location.search).get('getup')];
+        if (set && set.from === this.lying) return turn ? (set.turn ?? set.straight) : set.straight;
+        if (this.lying !== 'supine') return null;
         // A rise that carries back pain keeps the near hand on the back (the backSell variant, D5)
         if (this._backRiseContext()) return turn ? GETUPS.backKneeHurtBack : GETUPS.backKneeHurtBackStraight;
         return turn ? GETUPS.backKneeHurt : GETUPS.backKneeHurtStraight;

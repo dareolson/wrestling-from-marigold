@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Skeleton, { syncUnionCopy } from '../src/Skeleton.js';
 import Wrestler from '../src/Wrestler.js';
-import { GETUPS, legacySupine, legacyProne, legacyFor, validateGetUp, turnedPose, sampleGetUp } from '../src/animation/getUps.js';
+import { GETUPS, GETUP_SETS, legacySupine, legacyProne, legacyFor, validateGetUp, turnedPose, sampleGetUp } from '../src/animation/getUps.js';
 
 const withFlag = (search, fn) => { globalThis.location = { search }; try { return fn(); } finally { delete globalThis.location; } };
 const clone = (e) => JSON.parse(JSON.stringify(e));
@@ -329,4 +329,31 @@ test('a union copy multiplies the parents\' alpha and hides with a hidden part o
         assert.deepEqual(h.calls.setVisible, [false]);
         assert.equal(h.calls.setPosition, undefined, 'a hidden copy is not moved');
     }
+});
+
+// PLAN_GETUPS Stage 3 (G2a): frontKnee and backTuck rough keys, and the dev override that plays them.
+test('frontKnee and backTuck end on the standing key; frontKnee turns on its knee, backTuck does not turn', () => {
+    const stand = GETUPS.legacySupine.keys.at(-1);
+    for (const id of ['frontKnee', 'frontKneeStraight', 'backTuck']) {
+        const e = GETUPS[id], last = (e.after ?? e.keys).at(-1);
+        for (const c of ['hip', 'torso', 'farThigh', 'nearShin', 'farArm']) assert.equal(last[c], stand[c], `${id}.${c}`);
+    }
+    assert.equal(GETUPS.frontKnee.from, 'prone'); assert.equal(GETUPS.backTuck.from, 'supine');
+    assert.equal(GETUPS.frontKnee.pivot, 'nearKnee');
+    assert.equal(GETUPS.backTuck.flipAt, undefined);
+    assert.equal(sampleGetUp(GETUPS.frontKnee, 0).torso, Skeleton.GROUNDED_FLAT.torso, 'starts flat on the face');
+    assert.equal(sampleGetUp(GETUPS.backTuck, 0).torso, Skeleton.GROUNDED_SUPINE.torso, 'starts flat on the back');
+});
+
+test('?getup=<family> plays that family when it fits how he lies, turning by the same deadband rule; no param keeps the rough pick', () => {
+    const pick = (search, props) => withFlag(search, () => { const w = wrestler(props); w._startRiseUp(); return w._getUp?.id ?? null; });
+    assert.equal(pick('?getups=v1&getup=frontKnee', { lying: 'prone', _lastOther: { x: 300 } }), 'frontKnee');
+    assert.equal(pick('?getups=v1&getup=frontKnee', { lying: 'prone', _lastOther: { x: 700 } }), 'frontKneeStraight');
+    assert.equal(pick('?getups=v1&getup=backTuck', { lying: 'supine', _lastOther: { x: 700 } }), 'backTuck');
+    assert.equal(pick('?getups=v1&getup=backTuck', { lying: 'supine', _lastOther: { x: 300 } }), 'backTuck', 'no turning variant: plays straight');
+    assert.equal(pick('?getups=v1&getup=frontKnee', { lying: 'supine', _lastOther: { x: 300 } }), 'backKneeHurt', 'does not fit a supine wrestler: the rough pick');
+    assert.equal(pick('?getups=v1&getup=nonsense', { lying: 'prone' }), null);
+    assert.equal(pick('?getups=v1', { lying: 'prone' }), null, 'prone keeps today\'s rise without the override');
+    assert.equal(pick('?getup=frontKnee', { lying: 'prone' }), null, 'flag off: the override is ignored');
+    assert.deepEqual(Object.keys(GETUP_SETS).sort(), ['backKneeHurt', 'backTuck', 'frontKnee']);
 });

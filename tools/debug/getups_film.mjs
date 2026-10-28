@@ -1,6 +1,8 @@
 // G1a film (PLAN_GETUPS T2.1): the authored get-up under ?getups=v1 next to today's rise, forced rises (B1b), 1/60 s steps.
 //
-//   WFM_URL=http://127.0.0.1:5173 node tools/debug/getups_film.mjs [outRoot] [rig,rig]
+//   WFM_URL=http://127.0.0.1:5173 node tools/debug/getups_film.mjs [outRoot] [rig,rig] [family=backKneeHurt|frontKnee|backTuck]
+//   (family: the get-up forced with &getup=<family>, lying as the family needs; `today` = the legacy rise of that lying. backTuck has no turn,
+//   so only the opponent-in-front case is filmed for it.)
 //
 // Per rig x column (today | new) x facing x opponent (front = no turn, behind = turn) it writes
 //   <outRoot>/frames/<column>/<rig>-<l|r>-<front|behind>/sNNNN.jpg   every step from the last down frame to 2 s standing
@@ -13,10 +15,11 @@ import { launch } from './harness.mjs';
 import { INSTALL, BEGIN, STEP, partSteps } from './rise_handoff_probe.mjs';
 
 const RIGS = { lou: 'thesz-procreate-v1', george: 'george-roster-v1' };
-const COLUMNS = { today: 'notitle=1', new: 'notitle=1&getups=v1' };
+const FAMILY = { backKneeHurt: { lying: 'supine', opps: ['front', 'behind'] }, frontKnee: { lying: 'prone', opps: ['front', 'behind'] }, backTuck: { lying: 'supine', opps: ['front'] } };
 const STAND_MS = 2000, STEP_MS = 1000 / 60;
 
-async function filmRig(name, rig, outRoot, results) {
+async function filmRig(name, rig, outRoot, results, family) {
+    const COLUMNS = { today: 'notitle=1', new: `notitle=1&getups=v1&getup=${family}` }, { lying, opps } = FAMILY[family];
     for (const [column, qs] of Object.entries(COLUMNS)) {
         process.env.WFM_P1 = rig; process.env.WFM_P2 = 'george'; process.env.WFM_QS = qs;
         const h = await launch();
@@ -27,11 +30,11 @@ async function filmRig(name, rig, outRoot, results) {
             const box = await page.evaluate(() => { const r = document.querySelector('canvas').getBoundingClientRect();
                 const g = window.__WFM_GAME.scale.gameSize; return { x: r.x, y: r.y, w: r.width, h: r.height, gw: g.width, gh: g.height }; });
             const clip = { width: 340, height: 330, x: Math.round(box.x + 520 * box.w / box.gw - 170), y: Math.round(box.y + (355 + 30) * box.h / box.gh - 330) };
-            for (const facing of [-1, 1]) for (const opp of ['front', 'behind']) {
+            for (const facing of [-1, 1]) for (const opp of opps) {
                 const id = `${name}-${facing < 0 ? 'l' : 'r'}-${opp}`;
                 const dir = join(outRoot, 'frames', column, id);
                 rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
-                const begin = await page.evaluate(BEGIN, { kind: 'gettingUp', lying: 'supine', pain: false, facing, pose: 'stale', opp });
+                const begin = await page.evaluate(BEGIN, { kind: 'gettingUp', lying, pain: false, facing, pose: 'stale', opp });
                 const rows = []; let prev = null, standAt = null, flipI = null, getUp = null;
                 for (let i = 0; i < 400; i++) {
                     const f = await page.evaluate(STEP);
@@ -55,7 +58,7 @@ async function filmRig(name, rig, outRoot, results) {
                     // the keys, one still each; the flip key twice (just before, on it)
                     const pdir = join(outRoot, 'poses', id);
                     rmSync(pdir, { recursive: true, force: true }); mkdirSync(pdir, { recursive: true });
-                    await page.evaluate(BEGIN, { kind: 'gettingUp', lying: 'supine', pain: false, facing, pose: 'stale', opp });
+                    await page.evaluate(BEGIN, { kind: 'gettingUp', lying, pain: false, facing, pose: 'stale', opp });
                     const times = await page.evaluate(() => {
                         const e = window.__rw._getUp, ts = e.keys.map(k => k.t).concat(e.after ? e.after.slice(1).map(k => k.t) : []);
                         return e.flipAt === undefined ? ts : [...ts.slice(0, e.keys.length - 1), e.flipAt - 0.002, e.flipAt, ...ts.slice(e.keys.length)];
@@ -72,8 +75,8 @@ async function filmRig(name, rig, outRoot, results) {
     }
 }
 
-const [outRoot = 'research/animation/getups-2026-10/g1a', rigArg = 'lou,george'] = process.argv.slice(2);
+const [outRoot = 'research/animation/getups-2026-10/g1a', rigArg = 'lou,george', family = 'backKneeHurt'] = process.argv.slice(2);
 const results = [];
-for (const n of rigArg.split(',')) await filmRig(n, RIGS[n], outRoot, results);
+for (const n of rigArg.split(',')) await filmRig(n, RIGS[n], outRoot, results, family);
 writeFileSync(join(outRoot, 'film.json'), JSON.stringify(results));
 process.exit(0);

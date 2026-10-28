@@ -79,6 +79,15 @@ Reference: [MOVE_CATALOG.md](MOVE_CATALOG.md) line 80, Bret sheet frames 64-68 (
   a `roll` (today `theatrical` picks it first 20% of the time, `SELL_STYLES` in `sells.js`); its weight goes to `writhe` and
   `clutch`. A supine wrestler stays supine through every sell and the hold; turning over is part of the get-up
   (`backKneeHurt` turns onto the knee). Kind-2 (prone) trips to the mat from a fall that lands face down are unchanged.
+- **D8. A fatigue stall (Derek 2026-10-27: "a mid getup prone state for times of severe fatigue").** Each authored entry
+  names one `stall` key: its most stable halfway pose (`frontKnee`: on all fours; `backKneeHurt`: on one knee, hand on the
+  knee). When the wrestler is badly worn (stamina ≤ 25 %), the rise stops at that key for a `stallMs` scaled by fatigue
+  (600 ms at 25 % up to 1400 ms at 0 %): breathing on the torso (the `HOLD_BREATH` motion), head down, no hand moving off
+  its target. It is a pause inside `gettingUp`, not a new state: the facing lock, the frozen route (B2) and every rule above
+  hold through it. Not used by the quick rise (B3).
+  Gameplay (Opus default, Derek can overrule): today nothing in the game attacks a `gettingUp` wrestler, so the stall
+  makes him safe for longer. This round it is a look only, capped at 1400 ms extra. Letting the opponent attack a stalled
+  wrestler (a kick to the ribs, a front facelock) is gameplay work for a later plan.
 - **D6. Behind a flag** `?getups=v1` until Derek approves the set; off = today byte-identical (the `riseFixFlagOff` fixture
   must not change).
 
@@ -139,6 +148,15 @@ Later, not this plan: rope pull-up, kip-up, climbing the opponent.
 
 Same pattern as Stage 2 (pose sheet ⛔ G2a, implement, film, viewer). `frontKnee` must also report the near forearm's step at
 the roll swap and at hold → rise on George (today 33-44 px; target ≤ 3 px).
+
+## Stage 3b: the fatigue stall (D8), then STOP (G2b)
+
+- **T3b.1** `stall` key + `stallMs(stamina)` (pure; tests: 0 above 25 %, 600 at 25 %, 1400 at 0 %, monotonic). The rise clock
+  holds at the stall key; the breath and head-down are offsets on top. Tests: stamina 100 is byte-identical to no stall; an
+  interruption during the stall (pin, pickup, reset) behaves as in T1.3; the total rise time = today's + `stallMs`.
+- **T3b.2** Film `backKneeHurt` and `frontKnee` at stamina 100 / 25 / 5 (forced rise, B1b), Lou and George, both facings, 1×.
+  Report real ms of each phase and the largest per-part step entering and leaving the stall.
+- **⛔ G2b:** Is the stall the right length? Should the opponent be able to punish it (later gameplay plan)?
 
 ## Stage 4: selection on, then STOP (G3)
 

@@ -32,7 +32,7 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
   Misses: face-down landing near forearm hold->rise Lou 31.5 (today 31.5), George 47.6 (today 40.1, target 3); flip feet jump 52-93 px; wrist-to-knee George 25-35; frontKneeBack George elbow step 34.9 px in the standing recovery. Gates: 1000/1000, build ok, coverage 22 gaps.
 - T3b.1: 6d9e253 fatigue stall (one tween, held stretch); focused 122/122 (getUps 52). Droop sign -1 (shoulder y = hipY + cos(torso)·torsoH, both stall keys in (π/2, π)). Hands AT the stall (schedule math from T3.4b tLift): Lou frontKnee (t .42) near lifting w .50, far planted w 1; George near released (lift .13), far w .04 (lift .28); backKneeHurt far at the knee w 1.
   Misses: Lou's half-lifted near hand through the stall (G2b Q2), not fixed; real-rig numbers come with the T3b.2 films.
-- T3b.2: (sha in next commit) [G2b page](research/animation/getups-2026-10/g2b/index.html) + [strip](research/animation/getups-2026-10/g2b/strip.html), 36 films (Lou, George; 100/25/5 %; bkh, fk, fkb; both facings). Gates: 1012/1012, build ok, coverage 22 gaps.
+- T3b.2: f4017a5 [G2b page](research/animation/getups-2026-10/g2b/index.html) + [strip](research/animation/getups-2026-10/g2b/strip.html), 36 films (Lou, George; 100/25/5 %; bkh, fk, fkb; both facings). Gates: 1012/1012, build ok, coverage 22 gaps.
   Misses: Lou frontKnee near hand half-lifted through the stall (w .62, reach ratio .96-1.01, cannot reach at the breath extreme); droop is torso + sag only; enter/leave steps 7-14 px/frame, below the unstalled rise's own. Stopped at G2b.
 
 ## Why (Derek 2026-10-27)

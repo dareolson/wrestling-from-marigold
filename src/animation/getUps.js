@@ -158,6 +158,20 @@ export const frontKneeStraight = Object.freeze({
     keys: keyed(Skeleton.GROUNDED_FLAT, PUSHUP, ALLFOURS, KNEEL_F, PUSH_F, { ...STAND, t: 1 }),
 });
 
+// T3.5 / E3: the back-sell variants of frontKnee: same keys, the near hand stays on the back, so only the far hand's schedule
+// (mat, then the far knee) remains. backTuck is two-handed and has no Back variant (see eligibleForBackSell).
+const farHandOnly = (e) => ({ far: e.hands.far });
+export const frontKneeBack = Object.freeze({ ...frontKnee, id: 'frontKneeBack', tags: ['knee', 'backSell'], hands: farHandOnly(frontKnee) });
+export const frontKneeBackStraight = Object.freeze({ ...frontKneeStraight, id: 'frontKneeBackStraight', tags: ['knee', 'backSell'], hands: farHandOnly(frontKneeStraight) });
+
+/** True when the entry schedules the near hand at all (any phase). */
+export const usesNearHand = (entry) => {
+    const n = entry?.hands?.near;
+    return Array.isArray(n) ? n.length > 0 : !!n;
+};
+/** A back sell keeps the near hand on the back, so only an entry that never uses it can play with one (T4.0's chooseGetUp reads this). */
+export const eligibleForBackSell = (entry) => !!entry && !usesNearHand(entry);
+
 // ── backTuck: today's rise from the back with the weight added: both hands propped behind, the feet drawn in under him, the
 // body leans forward over them and the hands leave the mat to the knees as he stands. No turn (a fresh wrestler who is
 // already facing the opponent). Rough keys for G2a, untuned.
@@ -183,9 +197,9 @@ export const backTuck = Object.freeze({
 
 /** The turn / straight variants of each get-up family, for the dev override `?getups=v1&getup=<family>` (until chooseGetUp, T4.0). */
 export const GETUP_SETS = Object.freeze({
-    backKneeHurt: { from: 'supine', turn: backKneeHurt, straight: backKneeHurtStraight },
-    frontKnee: { from: 'prone', turn: frontKnee, straight: frontKneeStraight },
+    backKneeHurt: { from: 'supine', turn: backKneeHurt, straight: backKneeHurtStraight, turnBack: backKneeHurtBack, straightBack: backKneeHurtBackStraight },
+    frontKnee: { from: 'prone', turn: frontKnee, straight: frontKneeStraight, turnBack: frontKneeBack, straightBack: frontKneeBackStraight },
     backTuck: { from: 'supine', straight: backTuck },
 });
 
-export const GETUPS = Object.freeze({ legacySupine, legacyProne, backKneeHurt, backKneeHurtStraight, backKneeHurtBack, backKneeHurtBackStraight, frontKnee, frontKneeStraight, backTuck });
+export const GETUPS = Object.freeze({ legacySupine, legacyProne, backKneeHurt, backKneeHurtStraight, backKneeHurtBack, backKneeHurtBackStraight, frontKnee, frontKneeStraight, frontKneeBack, frontKneeBackStraight, backTuck });

@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Skeleton, { syncUnionCopy } from '../src/Skeleton.js';
 import Wrestler from '../src/Wrestler.js';
-import { GETUPS, GETUP_SETS, legacySupine, legacyProne, legacyFor, validateGetUp, turnedPose, sampleGetUp } from '../src/animation/getUps.js';
+import { GETUPS, GETUP_SETS, legacySupine, legacyProne, legacyFor, validateGetUp, turnedPose, sampleGetUp, usesNearHand, eligibleForBackSell } from '../src/animation/getUps.js';
 
 const withFlag = (search, fn) => { globalThis.location = { search }; try { return fn(); } finally { delete globalThis.location; } };
 const clone = (e) => JSON.parse(JSON.stringify(e));
@@ -493,4 +493,47 @@ test('no hands, no hold: legacy and hand-less entries keep no world state', () =
     const sk = stubSkeleton(); sk.updateGroundedReach = () => {};
     sk.updateGetUp(0, 0, 1, 1, 0.3, 'supine', null, null, null, legacySupine, false);
     assert.equal(sk._getUpHold ?? null, null);
+});
+
+// ── T3.5: back-sell variants and eligibility (E3) ─────────────────────────────────────────────────────────
+test('frontKneeBack(Straight): same keys as frontKnee, tagged backSell, far-hand schedule only; every backSell entry has no near-hand phase', () => {
+    for (const [id, base] of [['frontKneeBack', 'frontKnee'], ['frontKneeBackStraight', 'frontKneeStraight']]) {
+        const e = GETUPS[id];
+        assert.deepEqual(validateGetUp(e), [], id);
+        assert.ok(e.tags.includes('backSell'));
+        assert.deepEqual(Object.keys(e.hands), ['far']);
+        assert.deepEqual(e.hands.far, GETUPS[base].hands.far);
+        assert.equal(e.keys, GETUPS[base].keys); assert.equal(e.after, GETUPS[base].after);
+        assert.equal(e.flipAt, GETUPS[base].flipAt);
+    }
+    for (const e of Object.values(GETUPS).filter(x => x.tags?.includes('backSell'))) assert.equal(usesNearHand(e), false, e.id);
+});
+
+test('usesNearHand and eligibleForBackSell: backTuck and frontKnee use the near hand; backKneeHurt and the Back variants do not', () => {
+    assert.equal(usesNearHand(GETUPS.backTuck), true);
+    assert.equal(usesNearHand(GETUPS.frontKnee), true);
+    assert.equal(usesNearHand(GETUPS.backKneeHurt), false);
+    assert.equal(usesNearHand(GETUPS.legacySupine), false);
+    assert.equal(usesNearHand({ hands: { near: [] } }), false);
+    assert.equal(eligibleForBackSell(GETUPS.backTuck), false);
+    assert.equal(eligibleForBackSell(GETUPS.frontKneeBack), true);
+    assert.equal(eligibleForBackSell(GETUPS.backKneeHurt), true);
+    assert.equal(eligibleForBackSell(null), false);
+});
+
+test('?getup=<family> while back-selling: the Back variant plays; backTuck is refused and falls back to the legacy rise, logging why', () => {
+    const back = { _backRiseContext: () => ({ part: 'back', severity: 1 }) };
+    const pick = (search, props) => withFlag(search, () => { const w = wrestler({ ...back, ...props }); w._startRiseUp(); return w._getUp?.id ?? null; });
+    assert.equal(pick('?getups=v1&getup=frontKnee', { lying: 'prone', _lastOther: { x: 300 } }), 'frontKneeBack');
+    assert.equal(pick('?getups=v1&getup=frontKnee', { lying: 'prone', _lastOther: { x: 700 } }), 'frontKneeBackStraight');
+    assert.equal(pick('?getups=v1&getup=backKneeHurt', { lying: 'supine', _lastOther: { x: 300 } }), 'backKneeHurtBack');
+    const warned = [], warn = console.warn; console.warn = (m) => warned.push(m);
+    try {
+        assert.equal(pick('?getups=v1&getup=backTuck', { lying: 'supine', _lastOther: { x: 700 } }), 'legacySupine');
+    } finally { console.warn = warn; }
+    assert.equal(warned.length, 1); assert.match(warned[0], /backTuck.*near hand/);
+    // not back-selling: unchanged
+    const plain = (search, props) => withFlag(search, () => { const w = wrestler(props); w._startRiseUp(); return w._getUp?.id ?? null; });
+    assert.equal(plain('?getups=v1&getup=frontKnee', { lying: 'prone', _lastOther: { x: 300 } }), 'frontKnee');
+    assert.equal(plain('?getups=v1&getup=backTuck', { lying: 'supine', _lastOther: { x: 700 } }), 'backTuck');
 });

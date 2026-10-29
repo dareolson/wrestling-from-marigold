@@ -26,6 +26,8 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
   Misses: the real `_backRiseContext` needs a supine wrestler, so the override also counts a rise-phase back pain on a prone one; no Skeleton reach for a prone back sell yet.
 - T3.4b: 2d0397c `_worldHandLift` (0.97 x arm from the posed joints, checked from push start); tLift t/ms: Lou frontKnee near .36/150 far none, backTuck .48/250 and .09/0; George frontKnee .13/0 and .28/100, backTuck .20/83 and .09/0. Slip planted Lou <=.14 px, George 0; focused 109/109.
   Misses: George frontKnee near and both backTuck far hands lift at push start (never planted); lift wrist step 7-25 px/frame (Lou 15-25, George 7-21); wrist-to-knee max Lou 9-20, George 25-35.
+- T3.6a: 2e8e924 page research/animation/getups-2026-10/g2-strip/index.html (keys hands-off via dev `&handsOff=1` | T3.4b, Lou and George, frontKnee turn + backTuck, both facings) + wrist-step table.
+  Never plant: Lou backTuck far, George frontKnee near, George backTuck far (slip 5.3 px on its one frame). Lift step T3.4b vs keys: 10.5-25.0 vs 3.7-15.0 px. Stopped for Derek.
 
 ## Why (Derek 2026-10-27)
 

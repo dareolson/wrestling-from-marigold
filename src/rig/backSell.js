@@ -22,6 +22,8 @@
 //                     channel moves, eased; the arm leading and the elbow following swings the elbow out first and then the forearm
 //                     round, instead of both channels sweeping together. approach (optional, in
 //                     (.05, .45)): the fraction of a back clutch the reach takes to get in (sells.js clutchSell, default .25)
+//                     getups (optional, T3.3): an overlay of the fields above (u, v, recoveryArm/Elbow, approach, path, phase) used only while
+//                     ?getups=v1 is on; resolveAroundVia(backSell, getups) is the one reader, the flag is passed in
 //                     path (optional, T2.6): 1-4 { u, v } torso-image points, the hand's route in space from the waist OUT (standing
 //                     release, hw standW..1): the wrist goes backWaist -> path[0] -> ..., each frame solved by IK, never through
 //                     a channel blend, so the hand cannot swing down on the way. Put the points where the hand stays above the
@@ -61,16 +63,35 @@ export function backSellSupport(skeleton) {
     if (data.handUnder !== undefined && typeof data.handUnder !== 'boolean') return no('invalid backSell data: handUnder');
     if (data.legScale !== undefined && !(Number.isFinite(data.legScale) && data.legScale > 0 && data.legScale <= 1)) return no('invalid backSell data: legScale');
     if (data.aroundVia !== undefined) {
-        const via = data.aroundVia, arm = via?.recoveryArm, elbow = via?.recoveryElbow;
-        if (!Number.isFinite(via?.u) || !Number.isFinite(via?.v) || data.handUnder !== true
-            || (arm === undefined) !== (elbow === undefined) || (arm !== undefined && !(Number.isFinite(arm) && Number.isFinite(elbow)))
-            || (via.approach !== undefined && !(via.approach > 0.05 && via.approach < 0.45))
-            || (via.path !== undefined && !(Array.isArray(via.path) && via.path.length >= 1 && via.path.length <= 4
-                && via.path.every(q => Number.isFinite(q?.u) && Number.isFinite(q?.v))))
-            || (via.phase !== undefined && !(['arm', 'elbow'].every(k => Array.isArray(via.phase?.[k]) && via.phase[k].length === 2
-                && via.phase[k][0] >= 0 && via.phase[k][0] < via.phase[k][1] && via.phase[k][1] <= 1)))) return no('invalid backSell data: aroundVia');
+        // T3.3: `aroundVia.getups` (optional) overlays u / v / recoveryArm / recoveryElbow / approach / path / phase while
+        // ?getups=v1 is on (resolveAroundVia); the base alone and the base with the overlay applied must both be valid.
+        const g = data.aroundVia?.getups;
+        if (g !== undefined && (!g || typeof g !== 'object' || Array.isArray(g) || 'getups' in g)) return no('invalid backSell data: aroundVia');
+        if (!validAroundVia(data.aroundVia, data.handUnder)) return no('invalid backSell data: aroundVia');
+        if (g !== undefined && !validAroundVia({ ...data.aroundVia, ...g, getups: undefined }, data.handUnder)) return no('invalid backSell data: aroundVia');
     }
     return { ok: true, reason: null, gripArt, contact, data };
+}
+
+// the shape check of one aroundVia (base, or base + getups overlay)
+function validAroundVia(via, handUnder) {
+    const arm = via?.recoveryArm, elbow = via?.recoveryElbow;
+    return !(!Number.isFinite(via?.u) || !Number.isFinite(via?.v) || handUnder !== true
+        || (arm === undefined) !== (elbow === undefined) || (arm !== undefined && !(Number.isFinite(arm) && Number.isFinite(elbow)))
+        || (via.approach !== undefined && !(via.approach > 0.05 && via.approach < 0.45))
+        || (via.path !== undefined && !(Array.isArray(via.path) && via.path.length >= 1 && via.path.length <= 4
+            && via.path.every(q => Number.isFinite(q?.u) && Number.isFinite(q?.v))))
+        || (via.phase !== undefined && !(['arm', 'elbow'].every(k => Array.isArray(via.phase?.[k]) && via.phase[k].length === 2
+            && via.phase[k][0] >= 0 && via.phase[k][0] < via.phase[k][1] && via.phase[k][1] <= 1))));
+}
+
+// T3.3: THE reader of a rig's aroundVia. `getups` (the ?getups=v1 flag, passed in; src/rig/ never reads `location`) picks
+// the `getups` overlay over the base; off, or no overlay, it is the base exactly. Returns undefined when the rig has none.
+export function resolveAroundVia(backSell, getups) {
+    const via = backSell?.aroundVia;
+    if (!via) return undefined;
+    const { getups: overlay, ...base } = via;
+    return getups && overlay ? { ...base, ...overlay } : base;
 }
 
 // Rev 3 D9: the hand's route to the back waist for a rig with `aroundVia`, as a polyline in the reach weight w (the
@@ -80,8 +101,10 @@ export function backSellSupport(skeleton) {
 // standing route's via weight) are the numbers tools/debug/route_probe.mjs sweeps, through Skeleton.AROUND.
 export const AROUND = { viaW: 0.2, standW: 0.5, rampMs: 800 };   // rampMs: the standing recovery's fade-in on a rig with a via pose (Wrestler.RECOVERY_RAMP_MS is 200 otherwise)
 // the standing recovery's via pose as { arm, elbow } offsets, or null when the rig has none
-export const recoveryVia = backSell => Number.isFinite(backSell?.aroundVia?.recoveryArm) && backSell.handUnder === true
-    ? { arm: backSell.aroundVia.recoveryArm, elbow: backSell.aroundVia.recoveryElbow, ...(backSell.aroundVia.phase ? { phase: backSell.aroundVia.phase } : {}) } : null;
+export function recoveryVia(backSell, getups) {
+    const via = backSell?.handUnder === true ? resolveAroundVia(backSell, getups) : null;
+    return Number.isFinite(via?.recoveryArm) ? { arm: via.recoveryArm, elbow: via.recoveryElbow, ...(via.phase ? { phase: via.phase } : {}) } : null;
+}
 // One near-arm channel of the standing route at recovery hand weight hw: `start` (hw 0) to start + viaOffset (hw standW)
 // to `target` (hw 1), linear in hw each way. Runs backwards as the hand lets go. `phase` ([a, b] or null, T2.5): the channel
 // moves only over that share of the way to the via pose, eased (smoothstep), so two channels can follow one another.

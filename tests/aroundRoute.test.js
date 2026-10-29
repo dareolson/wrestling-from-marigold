@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Skeleton from '../src/Skeleton.js';
 import { clutchSell, sampleSell } from '../src/animation/sells.js';
-import { AROUND, recoveryVia } from '../src/rig/backSell.js';
+import { AROUND, recoveryVia, resolveAroundVia } from '../src/rig/backSell.js';
 import { georgeRosterV1 } from '../src/characters/george_roster_v1.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 
@@ -37,9 +37,15 @@ test('clutchSell: the reach takes `approach` of the clutch to get in (default .2
 test('George\'s route numbers: viaW and standW in range, a via pose with elbow inside its limit, an approach that leaves the key order intact', () => {
     assert.ok(AROUND.viaW > 0 && AROUND.viaW < 1 && AROUND.standW > 0 && AROUND.standW < 1);
     const b = georgeRosterV1.textures.backSell;
-    assert.deepEqual(recoveryVia(b), { arm: -0.45, elbow: -1.8 });   // PLAN_GETUPS T2.9: the T2.6 via pose (was -0.6 / -0.4)
-    const viaElbow = b.settledElbow + b.aroundVia.recoveryElbow;
-    assert.ok(viaElbow >= JOINT_LIMITS.elbow.min && viaElbow <= JOINT_LIMITS.elbow.max, 'the via elbow (folded behind the upper arm) stays inside its limit');
+    assert.deepEqual(recoveryVia(b), { arm: -0.6, elbow: -0.4 });   // getups off: the pre-T2.9 via pose (PLAN_GETUPS T3.3)
+    assert.deepEqual(recoveryVia(b, true), { arm: -0.45, elbow: -1.8 });   // ?getups=v1: the T2.6 via pose from aroundVia.getups
+    assert.ok(b.settledElbow + b.aroundVia.recoveryElbow >= 0, 'the base via elbow stays a bent elbow');
+    const viaElbow = b.settledElbow + resolveAroundVia(b, true).recoveryElbow;
+    assert.ok(viaElbow >= JOINT_LIMITS.elbow.min && viaElbow <= JOINT_LIMITS.elbow.max, 'the getups via elbow (folded behind the upper arm) stays inside its limit');
+    assert.equal(resolveAroundVia(b, false).path, undefined, 'getups off: no path');
+    assert.deepEqual(resolveAroundVia(b, true).path, [{ u: -0.4772, v: 0.6358 }]);
+    assert.equal(resolveAroundVia(b, true).approach, 0.4, 'the overlay keeps the base fields it does not name');
+    assert.equal(resolveAroundVia(theszProcreateV1.textures.backSell, true), undefined);
     assert.ok(b.aroundVia.approach > 0.25 && b.aroundVia.approach < 0.45);
     assert.equal(recoveryVia(theszProcreateV1.textures.backSell), null);
 });

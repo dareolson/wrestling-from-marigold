@@ -17,7 +17,7 @@ import { GETUPS, GETUP_SETS } from './animation/getUps.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
-import { AROUND, aroundChannel, backSellSupport, recoveryVia } from './rig/backSell.js';
+import { AROUND, aroundChannel, backSellSupport, recoveryVia, resolveAroundVia } from './rig/backSell.js';
 import { staggerFor } from './animation/staggers.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
@@ -1111,7 +1111,7 @@ export default class Wrestler {
         // is already where the hold starts when the clutch lets go.
         const backSell = sellArtCandidate() ? this._backSell() : null;
         const toHold = cur.name === 'clutch' && cur.part === 'back' && sell.i === sell.plan.length - 1 && !!backSell?.ok;
-        const approach = cur.name === 'clutch' && cur.part === 'back' && backSell?.ok && backSell.data.handUnder === true ? backSell.data.aroundVia?.approach : undefined;
+        const approach = cur.name === 'clutch' && cur.part === 'back' && backSell?.ok && backSell.data.handUnder === true ? resolveAroundVia(backSell.data, getUpsCandidate())?.approach : undefined;
         const def = cur.name === 'clutch' ? clutchSell(cur.lying, cur.part, cur.duration, slot ?? 'near', toHold ? backSell.data.holdW : 0, approach) : SELLS[cur.lying][cur.name];
         const keys = cur.turned ? def.after : def.keys;
         const lying = cur.turned ? def.to : cur.lying;
@@ -1899,7 +1899,7 @@ export default class Wrestler {
         if (!aftermathCandidate()) return 0;
         const t = this.scene.time.now;
         if (t >= pain.until) return 0;
-        const rampMs = pain.part === 'back' && recoveryVia(this._backSell().data) ? AROUND.rampMs : RECOVERY_RAMP_MS;
+        const rampMs = pain.part === 'back' && recoveryVia(this._backSell().data, getUpsCandidate()) ? AROUND.rampMs : RECOVERY_RAMP_MS;
         const ramp = ramped ? Math.min(1, (t - pain.since) / rampMs) : 1;
         const left = (pain.until - t) / (pain.until - pain.since);
         // knee limps down evenly; back settles slowly (holds, then eases out)
@@ -1927,7 +1927,7 @@ export default class Wrestler {
         this._routeErr = null;
         if (this.state !== 'standing' || !sellArtCandidate() || this._pain?.part !== 'back') return null;
         const hw = this._recoveryHandWeight(), bs = this._backSell();
-        if (!(hw > AROUND.standW) || !bs.ok || !bs.data.aroundVia?.path) return null;
+        if (!(hw > AROUND.standW) || !bs.ok || !resolveAroundVia(bs.data, getUpsCandidate())?.path) return null;
         const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
         const t = Math.min(1, Math.max(0, (1 - hw) / (1 - AROUND.standW)));
         const solved = this.skeleton.solveRouteHand([x, y, s, facing, drawPose, ...rest], drawPose, n, t);
@@ -1974,7 +1974,7 @@ export default class Wrestler {
                 // D5: absolute near-arm channels, from the rise's end arm into the probed pose
                 const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
                 const to = carriedHandTarget(pain.riseEnd, this.scene.time.now - pain.since, settledBackHand(bs, POSES[this.idlePose] ?? POSES.idle));
-                const arm0 = pose[`${n}Arm`] ?? 0, via = recoveryVia(bs);
+                const arm0 = pose[`${n}Arm`] ?? 0, via = recoveryVia(bs, getUpsCandidate());
                 if (via && Number.isFinite(pose[`${n}Elbow`])) {
                     // Rev 3 D9: round through the via pose on the way to and from the back (rig/backSell.js aroundChannel)
                     pose[`${n}Arm`] = aroundChannel(arm0, via.arm, to.arm, hw, undefined, via.phase?.arm);
@@ -1989,7 +1989,7 @@ export default class Wrestler {
                 }
             } else if (hw > 0) {
                 const n = this.skeleton.lChannelSide?.(this.facing) === 'far' ? 'r' : 'l';
-                const via = recoveryVia(bs), arm0 = pose[`${n}Arm`] ?? 0;
+                const via = recoveryVia(bs, getUpsCandidate()), arm0 = pose[`${n}Arm`] ?? 0;
                 if (via && Number.isFinite(pose[`${n}Elbow`])) {
                     pose[`${n}Arm`] = aroundChannel(arm0, via.arm, arm0 + bs.recoveryArm, w, undefined, via.phase?.arm);
                     pose[`${n}Elbow`] = aroundChannel(pose[`${n}Elbow`], via.elbow, pose[`${n}Elbow`] + bs.recoveryElbow, w, undefined, via.phase?.elbow);
@@ -2968,6 +2968,7 @@ export default class Wrestler {
         gfx.clear();
         gfx.setDepth(depth);
         this.skeleton.setHandUnion?.(getUpsCandidate() && unionCandidate());
+        this.skeleton.setGetUps?.(getUpsCandidate());
         this.skeleton.setHandUnder?.(this._handUnder());
         this.skeleton.setKneeTuck?.(kneeTuckConfig());
         this.skeleton.setDepth(depth);
@@ -3094,7 +3095,7 @@ export default class Wrestler {
         // proportion to the carried back-hand weight. Off, `guard` is exactly as before.
         // Rev 3: a rig that goes round through a via pose gives the guard up completely until the hand has passed that pose
         // (hw >= AROUND.standW) and takes it back over the last of the release, so the via pose is the one that was probed.
-        if (this._recoveryHandOnBack()) guard *= recoveryVia(this._backSell().data) ? 1 - Math.min(1, this._recoveryHandWeight() / AROUND.standW) : 1 - this._recoveryHandWeight();
+        if (this._recoveryHandOnBack()) guard *= recoveryVia(this._backSell().data, getUpsCandidate()) ? 1 - Math.min(1, this._recoveryHandWeight() / AROUND.standW) : 1 - this._recoveryHandWeight();
         // ?gait=v2: torso pitch through `bend` on a copy of the pose (this.pose is never touched), knee flex through
         // `crouch`, the swing foot lowered when still, and this wrestler's own stride handed to the skeleton.
         // ?aftermath=v2: favour the hurt part on a copy of the pose (null otherwise).

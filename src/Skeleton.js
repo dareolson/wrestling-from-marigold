@@ -11,7 +11,7 @@ import { applyOffsets, limitKnees } from './animation/sells.js';
 
 // Just behind the torso's sub-depth (base + 0.001, see setDepth) and in front of the head (base + 0.0005).
 const HAND_UNDER_DEPTH = 0.00095;
-import { AROUND, aroundGoal, backSellSupport, pathPoint } from './rig/backSell.js';
+import { AROUND, aroundGoal, backSellSupport, pathPoint, resolveAroundVia } from './rig/backSell.js';
 import { handClearance, handTipOf, silhouetteOf } from './rig/silhouette.js';
 
 // The near forearm's (and hand's) inverse torso mask: a per-object Phaser 4 Mask filter whose mask is the torso Image,
@@ -846,6 +846,8 @@ export default class Skeleton {
     // PLAN_GETUPS T2.7 (D13, ?getups=v1): behind the body means behind the thighs too. The hand mask and the clearance test both
     // use torso U near thigh U far thigh. Off = today (the torso alone).
     setHandUnion(on) { this._handUnion = !!on; }
+    // T3.3: ?getups=v1, set by the Wrestler each draw: picks George's aroundVia.getups overlay (rig/backSell.js resolveAroundVia)
+    setGetUps(on) { this._getUps = !!on; }
 
     setVisible(v) {
         this._parts.forEach(p => p.setVisible(v));
@@ -2531,7 +2533,7 @@ export default class Skeleton {
     // the back sell AND draws the hand behind the body (handUnder). Lou has neither, so his reach never sees it.
     aroundViaPoint() {
         const support = backSellSupport(this);
-        const via = support.ok && support.data.handUnder === true ? support.data.aroundVia : null;
+        const via = support.ok && support.data.handUnder === true ? resolveAroundVia(support.data, this._getUps) : null;
         return via ? Skeleton.imageAnchorPoint(this.torso, via) : null;
     }
 
@@ -2539,7 +2541,7 @@ export default class Skeleton {
     // the hand behind the body).
     aroundPathPoints() {
         const support = backSellSupport(this);
-        const path = support.ok && support.data.handUnder === true ? support.data.aroundVia?.path : null;
+        const path = support.ok && support.data.handUnder === true ? resolveAroundVia(support.data, this._getUps)?.path : null;
         if (!path) return null;
         const pts = path.map(q => Skeleton.imageAnchorPoint(this.torso, q));
         return pts.every(Boolean) ? pts : null;

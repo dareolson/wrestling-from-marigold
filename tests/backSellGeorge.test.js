@@ -101,7 +101,7 @@ test('carried rise: George\'s rise carries into the recovery and lands on his se
     assert.ok(hw > 0.5);
     // Rev 3 D9: George's channels run through his via pose (aroundChannel); at hw 1 that is exactly the settled target
     const via = recoveryVia(BS);
-    assert.deepEqual(via, { arm: -0.45, elbow: -1.8 });   // PLAN_GETUPS T2.9
+    assert.deepEqual(via, { arm: -0.6, elbow: -0.4 });   // getups off (T3.3: the T2.9 pose is aroundVia.getups)
     assert.ok(Math.abs(p.lArm - aroundChannel(SETTLED.lArm, via.arm, settled.arm, hw)) < 1e-9);
     assert.ok(Math.abs(p.lElbow - aroundChannel(0.7, via.elbow, settled.elbow, hw)) < 1e-9);
     assert.equal(aroundChannel(SETTLED.lArm, via.arm, settled.arm, 1), settled.arm);

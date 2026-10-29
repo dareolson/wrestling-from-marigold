@@ -43,6 +43,7 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-10-28 · Codex · [G2 measuring-pass advice: contact coverage, prone context and fatigue-stall boundaries](AI_HANDOFF_ENTRIES/2026-10-28-codex-g2-measuring-advice.md)
 - 2026-10-28 · Codex · [Planning advice after T2.9 / G2a: rollout boundary, contact continuity and Stage 3 support](AI_HANDOFF_ENTRIES/2026-10-28-codex-stage3-planning-advice.md)
 - 2026-10-28 · Claude · [Get-ups T2.8: evidence pass on George's hand route](AI_HANDOFF_ENTRIES/2026-10-28-claude-getups-t28.md)
 - 2026-10-28 · Codex · [G1-rev2 advice for Opus: route, mask and measurement limits](AI_HANDOFF_ENTRIES/2026-10-28-codex-current-getups-advice.md)

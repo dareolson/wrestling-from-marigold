@@ -366,7 +366,7 @@ G2a — Derek 2026-10-28: **approved** ("they look great"), `frontKnee` and `bac
   `frontKnee` (turn) and `backTuck`, columns T3.2 keys (hands off) | T3.4b; plus, per hand, the largest wrist step of the KEYED
   arm (no hand targets) next to the T3.4b lift step, so Derek sees how much the lift adds. **⛔ Stop for Derek** before T3.6.
 
-G2-strip — Derek 2026-10-28: **A, fine as is** (T3.4b lift kept; hands that never plant and the lift steps accepted for now). Go to T3.6.
+G2-strip — Derek 2026-10-28: **option A of Opus's four (A fine as is / B lower the shoulders / C drop mat contact / D other), not a page column**: the right-hand column, T3.4b (2d0397c, hand lifts at full reach), is kept; hands that never plant and the lift steps accepted for now. Go to T3.6.
 
 - **T3.6 Measuring pass + G2 package.** Cases: `frontKnee` (turn, straight, Back), `backTuck`; Lou and George; both facings;
   direct face-down landing and no-turn included (B1 rise-only comparison, forced rise). Report from the DRAWN frames:

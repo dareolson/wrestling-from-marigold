@@ -13,8 +13,10 @@
 //   hands   B5/E2, support hands as data: { near|far: phase | [phase, ...] }, phase = { target, space: 'world'|'thighLocal',
 //           push: [t0, t1], w, release: [t1, t2], lead? (the ease-in span before t0, default .10) }. A `world` phase holds a mat point taken once at its push start (its
 //           `target` is a label only); `thighLocal` follows the named joint. Phases are in order and only overlap in a hand-over.
+//   stall   (D8, T3b.1) a t at one of the keys where a worn wrestler stalls (stallMs, STALL); see stallTimeline.
 //   tags    ['backSell'] keeps the near hand for the carried back reach, so `hands.near` is rejected there.
 import Skeleton from '../Skeleton.js';
+import { HOLD_BREATH } from './backRisePerformance.js';
 
 const CHANNELS = ['hip', 'torso', 'farThigh', 'farShin', 'nearThigh', 'nearShin', 'farArm', 'farFore', 'nearArm', 'nearFore'];
 
@@ -41,6 +43,10 @@ export function validateGetUp(e) {
     for (const k of e.keys) for (const c of CHANNELS) if (!Number.isFinite(k[c])) bad.push(`key t=${k.t} lacks ${c}`);
     if (e.keys[0].t !== 0) bad.push('first key must be t = 0');
     if (!ordered(e.keys)) bad.push('keys out of order');
+    if (e.stall !== undefined) {
+        if (!(e.stall > 0 && e.stall < 1)) bad.push('stall must be inside (0, 1)');
+        else if (!e.keys.some((k) => k.t === e.stall)) bad.push('stall must be the t of a key in keys');
+    }
     const hasFlip = e.flipAt !== undefined, hasAfter = e.after !== undefined;
     if (hasFlip !== hasAfter) bad.push('flipAt and after go together');
     if (hasFlip) {
@@ -107,7 +113,7 @@ const flipKey = turnedPose(KNEEL);
 const keyed = (...ks) => ks.map((k) => ({ ...k }));
 
 const backKneeHurtBase = {
-    from: 'supine', duration: 0.85, pivot: 'nearKnee', tags: ['knee'],
+    from: 'supine', duration: 0.85, pivot: 'nearKnee', tags: ['knee'], stall: KNEEL.t,
     hands: { far: { target: 'farKnee', space: 'thighLocal', push: [0.46, 0.72], w: 1, release: [0.72, 0.86] } },
 };
 // Turning: the flip happens on the knee; the after half is drawn for the new facing.
@@ -136,7 +142,7 @@ const ALLFOURS = { ...Skeleton.GETUP_POSES[2], t: 0.42 };
 const KNEEL_F = { t: 0.62, hip: 40, torso: P - 0.95, farThigh: 1.10, farShin: -0.25, nearThigh: 0.10, nearShin: -1.50, farArm: 0.80, farFore: 0.75, nearArm: 0.40, nearFore: 0.40 };
 const PUSH_F = { ...PUSH, t: 0.82 };
 const frontKneeBase = {
-    from: 'prone', duration: 0.85, pivot: 'nearKnee', tags: ['knee'],
+    from: 'prone', duration: 0.85, pivot: 'nearKnee', tags: ['knee'], stall: ALLFOURS.t,
     // E2 / T3.4: both hands on the mat (a world point held under where each wrist is at t .12) while he pushes up to all fours
     // (key .42), released before the flip (.62); then the far hand goes to the far knee as before.
     hands: {
@@ -203,3 +209,59 @@ export const GETUP_SETS = Object.freeze({
 });
 
 export const GETUPS = Object.freeze({ legacySupine, legacyProne, backKneeHurt, backKneeHurtStraight, backKneeHurtBack, backKneeHurtBackStraight, frontKnee, frontKneeStraight, frontKneeBack, frontKneeBackStraight, backTuck });
+
+// ── The fatigue stall (D8, PLAN_GETUPS Rev 5 T3b.1). A worn wrestler stops at the entry's `stall` key, breathing with his head
+// down, then finishes the rise. Still ONE tween on riseT: its duration is today's plus the stall, and its ease holds riseT on the
+// stall key for the stall's length, so riseT never runs backwards and the total time is fixed at rise start.
+export const STALL = Object.freeze({ staminaPct: 25, minMs: 600, maxMs: 1400, easeMs: 200, droop: 0.10, sag: 3 });
+
+/** How long the stall holds at this stamina (percent of max): 0 above STALL.staminaPct, minMs at it, maxMs at 0. */
+export function stallMs(staminaPct) {
+    if (!(staminaPct <= STALL.staminaPct)) return 0;
+    const s = Math.max(0, staminaPct);
+    return STALL.minMs + (STALL.maxMs - STALL.minMs) * (STALL.staminaPct - s) / STALL.staminaPct;
+}
+
+/** Sine.InOut, the curve the rise tween uses today (Phaser.Math.Easing.Sine.InOut is the same function). */
+export const sineInOut = (k) => 0.5 * (1 - Math.cos(Math.PI * k));
+/** Its inverse, for sineInOut only: the k at which it reaches v. */
+const sineInOutInverse = (v) => Math.acos(1 - 2 * Math.min(1, Math.max(0, v))) / Math.PI;
+
+/**
+ * The tween's ease and clock for a rise with a stall. `durMs` is today's rise duration, `ease` the base curve (sineInOut).
+ * Returns { totalMs, startMs, riseAt(k), stallElapsedMs(k) }: k = 0..1 is the tween's progress over totalMs.
+ * riseAt is ease(ms / durMs) before startMs, stallT through [startMs, startMs + stallMs], ease((ms - stallMs) / durMs) after.
+ */
+export function stallTimeline(stallT, durMs, stallLen, ease = sineInOut) {
+    const totalMs = durMs + stallLen, startMs = durMs * sineInOutInverse(stallT);
+    const msOf = (k) => Math.min(1, Math.max(0, k)) * totalMs;
+    return {
+        totalMs, startMs,
+        riseAt(k) {
+            const ms = msOf(k);
+            if (ms <= startMs) return ease(ms / durMs);
+            if (ms <= startMs + stallLen) return stallT;
+            return ease((ms - stallLen) / durMs);
+        },
+        stallElapsedMs(k) {
+            const ms = msOf(k);
+            return ms >= startMs && ms <= startMs + stallLen ? ms - startMs : null;
+        },
+    };
+}
+
+const smooth01 = (u) => { u = Math.min(1, Math.max(0, u)); return u * u * (3 - 2 * u); };
+/**
+ * The grounded offsets drawn on top of the stall pose, `elapsedMs` into a stall of `totalStallMs`: the chest breath
+ * (HOLD_BREATH, as in the lying hold), a droop of the torso toward the mat and a hip sag. The envelope is 0 at both ends,
+ * so entering and leaving the stall has no step. Droop sign: torso is the hip -> shoulder angle from straight down, so the
+ * shoulder's y (down the screen) is hipY + cos(torso) * torsoH; at ALLFOURS (1.92) and KNEEL (2.29), both in (π/2, π), a
+ * SMALLER torso lowers the chest toward the mat. sign = -1 (checked in tests/getUps.test.js, both facings).
+ */
+export const STALL_DROOP_SIGN = -1;
+export function stallOffsets(elapsedMs, totalStallMs) {
+    const e = elapsedMs, S = totalStallMs;
+    const env = smooth01(e / STALL.easeMs) * smooth01((S - e) / STALL.easeMs);
+    const breath = HOLD_BREATH.torso * Math.sin(2 * Math.PI * (e / 1000) / HOLD_BREATH.periodSec);
+    return { torso: (breath + STALL.droop * STALL_DROOP_SIGN) * env, hip: -STALL.sag * env };
+}

@@ -13,7 +13,7 @@ import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
-import { GETUPS, GETUP_SETS, eligibleForBackSell, legacyFor } from './animation/getUps.js';
+import { GETUPS, GETUP_SETS, eligibleForBackSell, legacyFor, stallMs, stallTimeline, stallOffsets, sineInOut } from './animation/getUps.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
@@ -2749,21 +2749,49 @@ export default class Wrestler {
         this._riseFlip = null;
         this.skeleton?.clearGetUpHands?.();
         const hurt = Math.max(0, 1 - this.stamina / 100);
+        const onComplete = () => {
+            if (this.state === 'gettingUp') {
+                const carried = this._carriedRiseEnd();
+                this.state = 'standing';
+                this._painRecovering(carried);
+                if (riseFixCandidate()) this._standFromRise();
+                else this.tweenPose('idle', 150, 'Linear');
+            }
+        };
+        // D8 / PLAN_GETUPS Rev 5 S2: a worn wrestler stalls at the entry's stall key. Still one tween: today's duration plus the
+        // stall, with an ease that holds riseT on the key. No stall (flag off, stamina above 25 %, entry without `stall`) is
+        // today's tween call, untouched.
+        const stall = this._getUp?.stall !== undefined ? stallMs(this.stamina / STAMINA_MAX * 100) : 0;
+        this._riseTween?.stop?.(); this._riseTween = null; // a stall tween left over from an earlier rise never drives this one
+        this._riseStall = null; this._riseK = 0;
+        if (stall > 0) {
+            const tl = stallTimeline(this._getUp.stall, 850 + 750 * hurt, stall, globalThis.Phaser?.Math?.Easing?.Sine?.InOut ?? sineInOut);
+            this._riseStall = { tl, ms: stall };
+            const tween = this.scene.tweens.add({
+                targets:  this,
+                riseT:    1,
+                duration: tl.totalMs,
+                ease:     (k) => { this._riseK = k; return tl.riseAt(k); },
+                onComplete: () => { if (this._riseTween === tween) onComplete(); },
+            });
+            this._riseTween = tween;
+            return;
+        }
         this.scene.tweens.add({
             targets:  this,
             riseT:    1,
             duration: 850 + 750 * hurt,
             ease:     'Sine.easeInOut',
-            onComplete: () => {
-                if (this.state === 'gettingUp') {
-                    const carried = this._carriedRiseEnd();
-                    this.state = 'standing';
-                    this._painRecovering(carried);
-                    if (riseFixCandidate()) this._standFromRise();
-                    else this.tweenPose('idle', 150, 'Linear');
-                }
-            },
+            onComplete,
         });
+    }
+
+    // The stall's drawn offsets for this frame (breath, droop, sag), or null outside a stall / without one.
+    _stallDraw() {
+        const st = this._riseStall;
+        if (!st) return null;
+        const e = st.tl.stallElapsedMs(this._riseK);
+        return e == null ? null : stallOffsets(e, st.ms);
     }
 
     // ?getups=v1 (PLAN_GETUPS T1.3): the authored get-up this rise plays, chosen once at rise start (B2), or null (today's
@@ -2814,6 +2842,10 @@ export default class Wrestler {
             return;
         }
         // standing: the rise finished and the new facing stands. Anything else: interrupted, put the old facing back.
+        if (this._riseStall) { // a stall tween must not outlive its rise: stop it, and the token check mutes its onComplete
+            if (this.state !== 'standing') this._riseTween?.stop?.();
+            this._riseTween = null; this._riseStall = null; this._riseK = 0;
+        }
         if (f && this.state !== 'standing') { this.facing = f.facing0; this.x -= f.dx; }
         this._getUp = null; this._riseFlip = null;
         this.skeleton?.clearGetUpHands?.(); // E2: pinned, picked up, reset or finished: no world hand target outlives the rise
@@ -3010,7 +3042,7 @@ export default class Wrestler {
             gfx.fillEllipse(x, y, (170 - this.riseT * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
             const flipped = !!this._riseFlip;
-            const draw = (px) => this.skeleton.updateGetUp(px, y, s, facing, this.riseT, this.lying, this._backRiseContext(), this._riseStand(s, facing), this._riseHold, handsOffCandidate() ? withoutHands(this._getUp) : this._getUp, flipped);
+            const draw = (px) => this.skeleton.updateGetUp(px, y, s, facing, this.riseT, this.lying, this._backRiseContext(), this._riseStand(s, facing), this._riseHold, handsOffCandidate() ? withoutHands(this._getUp) : this._getUp, flipped, this._stallDraw());
             draw(x);
             const dx = flipped ? this._holdRisePivot(s) : 0;
             if (dx) { this.skeleton.clearGetUpHands?.(); draw(x + dx); } // the pivot moved x: take the world targets at the final x

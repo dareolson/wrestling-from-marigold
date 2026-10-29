@@ -2701,8 +2701,8 @@ export default class Skeleton {
     // `holdOffsets` (Rev 2): the lying hold's last grounded offsets (leg cycle, chest breath). They are carried into
     // the first part of the rise and eased out (riseHoldCarry), so the rise starts from the pose the hold drew.
     // `entry` (?getups=v1, getUps.js): the authored get-up to draw instead of today's table for `lying`; `flipped` says
-    // which half of a flipping entry is playing. No entry = the legacy table, byte-identical.
-    updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null, stand = null, holdOffsets = null, entry = null, flipped = false) {
+    // which half of a flipping entry is playing. `stallOffsets` (T3b.1): the fatigue stall's grounded offsets, or null. No entry = the legacy table, byte-identical.
+    updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null, stand = null, holdOffsets = null, entry = null, flipped = false, stallOffsets = null) {
         const K = entry ? (entry.after && flipped ? entry.after : entry.keys)
             : lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
         const final = !(entry?.after && !flipped);
@@ -2713,7 +2713,9 @@ export default class Skeleton {
             if (c > 0) p = limitKnees(applyOffsets(p, Object.fromEntries(Object.entries(holdOffsets).map(([k, v]) => [k, v * c]))));
             return p;
         };
-        const pose = poseAt(t);
+        const keyPose = poseAt(t); // S3: the hand checks below read this pose, without the stall's breath
+        // T3b.1: during a fatigue stall the breath, droop and sag are drawn on top; the targets and lifts keep seeing the key pose
+        const pose = stallOffsets ? limitKnees(applyOffsets(keyPose, stallOffsets)) : keyPose;
         const back = lying === 'supine' && pain?.part === 'back' && (pain.severity ?? 0) > 0
             && (!entry || entry.tags?.includes('backSell')); // an authored entry without the tag has no back reach
         const sev = back ? Math.max(0, Math.min(1, pain.severity)) : 0;
@@ -2744,7 +2746,7 @@ export default class Skeleton {
                 if (h.space === 'world') {
                     const key = `${side}${i}`;
                     at = this._worldHandTarget(hold, key, side, h, x, y, s, facing, t, flipped, poseAt);
-                    if (at) w *= this._worldHandLift(hold, key, side, h, at, x, y, s, facing, t, pose);
+                    if (at) w *= this._worldHandLift(hold, key, side, h, at, x, y, s, facing, t, keyPose);
                     measured = false; // the two calls above posed the body elsewhere; a joint target measures afresh
                     if (!(w > 0.001)) return;
                 } else {

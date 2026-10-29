@@ -3,7 +3,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Skeleton, { syncUnionCopy } from '../src/Skeleton.js';
 import Wrestler from '../src/Wrestler.js';
-import { GETUPS, GETUP_SETS, legacySupine, legacyProne, legacyFor, validateGetUp, turnedPose, sampleGetUp, usesNearHand, eligibleForBackSell } from '../src/animation/getUps.js';
+import { GETUPS, GETUP_SETS, legacySupine, legacyProne, legacyFor, validateGetUp, turnedPose, sampleGetUp, usesNearHand, eligibleForBackSell, STALL, STALL_DROOP_SIGN, stallMs, stallTimeline, stallOffsets, sineInOut } from '../src/animation/getUps.js';
+import { readFileSync } from 'node:fs';
 
 const withFlag = (search, fn) => { globalThis.location = { search }; try { return fn(); } finally { delete globalThis.location; } };
 const clone = (e) => JSON.parse(JSON.stringify(e));
@@ -593,4 +594,190 @@ test('?getup=<family> while back-selling: the Back variant plays; backTuck is re
     const plain = (search, props) => withFlag(search, () => { const w = wrestler(props); w._startRiseUp(); return w._getUp?.id ?? null; });
     assert.equal(plain('?getups=v1&getup=frontKnee', { lying: 'prone', _lastOther: { x: 300 } }), 'frontKnee');
     assert.equal(plain('?getups=v1&getup=backTuck', { lying: 'supine', _lastOther: { x: 700 } }), 'backTuck');
+});
+
+// ── T3b.1: the fatigue stall (D8) ─────────────────────────────────────────────────────────────────────────
+const near1 = (a, b, m) => assert.ok(Math.abs(a - b) < 1e-9, m ?? `${a} vs ${b}`);
+
+test('stallMs: 0 above 25 %, 600 at 25, 1400 at 0, monotonic', () => {
+    assert.equal(stallMs(100), 0); assert.equal(stallMs(26), 0); assert.equal(stallMs(25.0001), 0);
+    assert.equal(stallMs(25), 600); assert.equal(stallMs(0), 1400); assert.equal(stallMs(-5), 1400);
+    let prev = 0; for (let s = 25; s >= 0; s--) { const v = stallMs(s); assert.ok(v >= prev); prev = v; }
+    near1(stallMs(5), 600 + 800 * 20 / 25);
+});
+
+test('the stall field: shipped ones validate on backKneeHurt* (KNEEL) and frontKnee* (ALLFOURS); backTuck and legacy have none; a non-key t is rejected', () => {
+    for (const id of ['backKneeHurt', 'backKneeHurtStraight', 'backKneeHurtBack', 'backKneeHurtBackStraight']) assert.equal(GETUPS[id].stall, 0.46, id);
+    for (const id of ['frontKnee', 'frontKneeStraight', 'frontKneeBack', 'frontKneeBackStraight']) assert.equal(GETUPS[id].stall, 0.42, id);
+    for (const id of ['backTuck', 'legacySupine', 'legacyProne']) assert.equal(GETUPS[id].stall, undefined, id);
+    for (const e of Object.values(GETUPS)) assert.deepEqual(validateGetUp(e), [], e.id);
+    for (const [stall, why] of [[0.43, 'not a key'], [0, 'zero'], [1, 'one'], [-0.1, 'negative']]) {
+        const e = clone(GETUPS.frontKneeStraight); e.stall = stall;
+        assert.ok(validateGetUp(e).some((b) => /stall/.test(b)), why);
+    }
+    const flip = clone(GETUPS.backKneeHurt); flip.stall = 0.72; // a key of `after`, not of `keys`
+    assert.ok(validateGetUp(flip).some((b) => /stall/.test(b)), 'with a flip the stall is at or before flipAt');
+});
+
+test('Phaser Sine.InOut is 0.5 (1 - cos pi k), the curve the tween and the stall base use', () => {
+    const m = { exports: {} }; // the package's exports map hides the file, so read the CJS source itself
+    new Function('module', readFileSync(new URL('../node_modules/phaser/src/math/easing/sine/InOut.js', import.meta.url), 'utf8'))(m);
+    const InOut = m.exports;
+    for (let i = 0; i <= 100; i++) near1(InOut(i / 100), sineInOut(i / 100), `k ${i / 100}`);
+});
+
+test('stallTimeline: monotonic, the base curve outside the stall (shifted), stallT inside, total = dur + stall, startMs lands on stallT', () => {
+    for (const [stallT, dur, len] of [[0.46, 1500, 1200], [0.42, 850, 600], [0.46, 1600, 1400]]) {
+        const tl = stallTimeline(stallT, dur, len, sineInOut);
+        near1(tl.totalMs, dur + len);
+        near1(sineInOut(tl.startMs / dur), stallT, 'startMs lands on stallT');
+        let prev = -1;
+        for (let i = 0; i <= 2000; i++) {
+            const k = i / 2000, ms = k * tl.totalMs, v = tl.riseAt(k);
+            assert.ok(v >= prev - 1e-12, `monotonic at ${k}`); prev = v;
+            if (ms < tl.startMs) near1(v, sineInOut(ms / dur));
+            else if (ms > tl.startMs + len) near1(v, sineInOut((ms - len) / dur));
+            else near1(v, stallT);
+        }
+        near1(tl.riseAt(0), 0); near1(tl.riseAt(1), 1);
+        assert.equal(tl.stallElapsedMs(0), null); assert.equal(tl.stallElapsedMs(1), null);
+        near1(tl.stallElapsedMs((tl.startMs + len / 2) / tl.totalMs), len / 2);
+    }
+});
+
+test('stallOffsets: zero at both ends, droops the chest toward the mat (sign -1 for the shipped stall keys, both facings), sags the hip', () => {
+    const S = 1000;
+    for (const e of [0, S]) { const o = stallOffsets(e, S); near1(o.torso, 0); near1(o.hip, 0); }
+    const mid = stallOffsets(S / 2, S);
+    assert.ok(mid.hip < 0 && Math.abs(mid.torso + 0.10) < 0.05);
+    // the real _applyGrounded puts the shoulder at hipY + cos(f * torso) * torsoH (y down the screen); the chest is toward the mat when y grows
+    const shoulderY = (torso, facing) => Math.cos(facing * torso);
+    for (const key of [GETUPS.frontKnee.keys.find((k) => k.t === 0.42), GETUPS.backKneeHurt.keys.find((k) => k.t === 0.46)]) for (const f of [1, -1]) {
+        assert.equal(STALL_DROOP_SIGN, -1);
+        assert.ok(shoulderY(key.torso + STALL.droop * STALL_DROOP_SIGN, f) > shoulderY(key.torso, f), `t ${key.t} facing ${f}: chest lower`);
+    }
+});
+
+// a scene whose tweens.add records the config and hands back a tween
+function recordingWrestler(extra = {}) {
+    const adds = [], tweens = { add(cfg) { const tw = { cfg, stopped: false, stop() { this.stopped = true; } }; adds.push(tw); return tw; }, killTweensOf() {} };
+    const w = wrestler({ scene: { tweens, time: { now: 0 } }, tweenPose() {}, ...extra });
+    return { w, adds };
+}
+const startWith = (w, search = '?getups=v1') => withFlag(search, () => w._startRiseUp());
+
+test('stamina 100: the tween config is today\'s (850, Sine.easeInOut); the same at stamina 5 without the flag', () => {
+    for (const [stamina, search] of [[100, '?getups=v1'], [5, '']]) {
+        const { w, adds } = recordingWrestler({ stamina });
+        startWith(w, search);
+        assert.equal(adds.length, 1);
+        const c = adds[0].cfg;
+        assert.equal(c.duration, 850 + 750 * (1 - stamina / 100)); assert.equal(c.ease, 'Sine.easeInOut'); assert.equal(c.riseT, 1); assert.equal(c.targets, w);
+        assert.equal(w._riseStall, null);
+    }
+    const { w: legacy, adds } = recordingWrestler({ stamina: 5, lying: 'prone' }); // an entry without a stall: legacy prone, flag on
+    startWith(legacy); assert.equal(adds[0].cfg.ease, 'Sine.easeInOut');
+});
+
+test('stamina 5: one tween, duration = today\'s + stallMs(5); backTuck at stamina 5 gets no stall', () => {
+    const { w, adds } = recordingWrestler({ stamina: 5 });
+    startWith(w);
+    assert.equal(adds.length, 1);
+    near1(adds[0].cfg.duration, 850 + 750 * 0.95 + stallMs(5));
+    assert.equal(typeof adds[0].cfg.ease, 'function');
+    const { w: t, adds: a2 } = recordingWrestler({ stamina: 5 });
+    withFlag('?getups=v1&getup=backTuck', () => t._startRiseUp());
+    assert.equal(t._getUp.id, 'backTuck'); assert.equal(a2[0].cfg.ease, 'Sine.easeInOut');
+});
+
+// run the recorded ease at k, as the tween would, with the wrestler's own riseT written
+const stepRise = (w, adds, k) => { const c = adds.at(-1).cfg; w.riseT = c.ease(k); w._tickRiseFlip(); return w.riseT; };
+
+test('backKneeHurt turning at stamina 5: one flip on arriving at .46, the stall draws flipped, no second flip, a jump over the whole stall still finishes', () => {
+    const { w, adds } = recordingWrestler({ stamina: 5, _lastOther: { x: 300 } });
+    startWith(w); w.state = 'gettingUp';
+    const tl = w._riseStall.tl, kStart = tl.startMs / tl.totalMs, kEnd = (tl.startMs + w._riseStall.ms) / tl.totalMs;
+    stepRise(w, adds, kStart * 0.9); assert.equal(w.facing, 1, 'not yet');
+    stepRise(w, adds, kStart + 1e-6); assert.equal(w.facing, -1, 'flipped on arriving at .46');
+    const f = w._riseFlip;
+    for (const k of [kStart + 0.01, (kStart + kEnd) / 2, kEnd - 1e-6]) { assert.equal(stepRise(w, adds, k), 0.46); assert.equal(w._riseFlip, f); assert.equal(w.facing, -1); }
+    stepRise(w, adds, 1); assert.equal(w.riseT, 1); assert.equal(w.facing, -1, 'no second flip');
+    // a frame step that jumps from before the stall to after it flips exactly once
+    const { w: j, adds: aj } = recordingWrestler({ stamina: 5, _lastOther: { x: 300 } });
+    startWith(j); j.state = 'gettingUp';
+    stepRise(j, aj, 0.01); stepRise(j, aj, 0.99); assert.equal(j.facing, -1); stepRise(j, aj, 1); assert.equal(j.facing, -1);
+    aj[0].cfg.onComplete(); assert.equal(j.state, 'standing');
+});
+
+test('pin / pickup / reset during the stall: facing and x restored, hands cleared, tween stopped, its onComplete does nothing', () => {
+    const { w, adds } = recordingWrestler({ stamina: 5, _lastOther: { x: 300 } });
+    startWith(w); w.state = 'gettingUp';
+    const tl = w._riseStall.tl; stepRise(w, adds, (tl.startMs + 100) / tl.totalMs);
+    assert.equal(w.facing, -1); w._riseFlip.dx = 7; w.x += 7;
+    w.skeleton._getUpHold = { fake: true };
+    w.state = 'pinned'; w._tickRiseFlip();
+    assert.equal(w.facing, 1); assert.equal(w.x, 500); assert.equal(w.skeleton._getUpHold, null);
+    assert.equal(adds[0].stopped, true); assert.equal(w._riseStall, null); assert.equal(w._getUp, null);
+    adds[0].cfg.onComplete(); assert.equal(w.state, 'pinned', 'a stopped tween never stands him up');
+    // a stale tween from an earlier rise does not stand up a later rise either
+    const { w: s, adds: a2 } = recordingWrestler({ stamina: 5 });
+    startWith(s); const old = a2[0]; s.state = 'gettingUp'; startWith(s); s.state = 'gettingUp';
+    assert.equal(old.stopped, true); old.cfg.onComplete(); assert.equal(s.state, 'gettingUp');
+});
+
+test('the stall draws the offsets on the pose and only then; _stallDraw is null outside the stall and without one', () => {
+    const { w, adds } = recordingWrestler({ stamina: 5 });
+    startWith(w); w.state = 'gettingUp';
+    const tl = w._riseStall.tl;
+    w._riseK = 0.01; assert.equal(w._stallDraw(), null);
+    w._riseK = (tl.startMs + w._riseStall.ms / 2) / tl.totalMs; const o = w._stallDraw();
+    assert.ok(o && o.hip < 0 && o.torso < 0);
+    const { w: n } = recordingWrestler({ stamina: 100 }); startWith(n); assert.equal(n._stallDraw(), null);
+});
+
+// the hand state of an entry across a list of t, with the stall's offsets on or off
+function stallRun(entry, arm, ts, offs, opts = {}) {
+    const sk = armStub(arm); let seen = null;
+    let pose = null;
+    sk.updateGroundedReach = (_x, _y, _s, _f, g, reach) => { seen = reach; pose = { ...g }; };
+    sk.farKneeAt = { x: 5, y: -20 };
+    return { sk, out: ts.map((t, i) => { seen = null; pose = null; sk.updateGetUp(0, 0, 1, opts.facing ?? 1, t, 'prone', null, null, null, entry, false, offs?.[i] ?? null); return { reach: seen, drawn: pose ?? { ...sk.drawn } }; }) };
+}
+
+test('through the stall on frontKnee and frontKneeBack the targets and lifts are those of the key pose: identical at stall start and end, no re-plant, far hand only on the Back variant', () => {
+    for (const [entry, sides] of [[GETUPS.frontKneeStraight, ['near', 'far']], [GETUPS.frontKneeBackStraight, ['far']]]) for (const arm of [1, 60, 5000]) for (const facing of [1, -1]) {
+        const lead = [0.1, 0.2, 0.3], stall = Array(40).fill(0.42), tail = [0.5, 0.6];
+        const ts = [...lead, ...stall, ...tail];
+        const offs = ts.map((t, i) => (t === 0.42 && i >= lead.length ? stallOffsets(((i - lead.length) / (stall.length - 1)) * 1000, 1000) : null));
+        const a = stallRun(entry, arm, ts, offs, { facing }), b = stallRun(entry, arm, ts, null, { facing });
+        assert.deepEqual(Object.keys(a.sk._getUpHold.pts), Object.keys(b.sk._getUpHold.pts));
+        assert.deepEqual(a.sk._getUpHold.pts, b.sk._getUpHold.pts, 'world targets identical to the no-stall run');
+        assert.deepEqual(a.sk._getUpHold.lift ?? {}, b.sk._getUpHold.lift ?? {}, 'tLift identical');
+        const i0 = lead.length, i1 = lead.length + stall.length - 1;
+        // the reach weights are the key pose's (the lift factor reads the unbreathed pose); no weight rises during the stall
+        for (const side of sides) {
+            const w = a.out.slice(i0, i1 + 1).map((o) => o.reach?.[side]?.w ?? 0);
+            for (let i = 1; i < w.length; i++) assert.ok(w[i] <= w[i - 1] + 1e-9, `${entry.id} ${side} arm ${arm}: weight ${w[i]} after ${w[i - 1]}`);
+            assert.deepEqual(a.out.slice(i0, i1 + 1).map((o) => o.reach?.[side]?.w ?? 0), b.out.slice(i0, i1 + 1).map((o) => o.reach?.[side]?.w ?? 0), 'weights as with no stall');
+        }
+        if (entry.id === 'frontKneeBackStraight') assert.ok(a.out.every((o) => !o.reach?.near), 'only the far hand is scheduled');
+        // the pose really is breathed mid-stall and the key pose at the ends
+        const mid = a.out[Math.floor((i0 + i1) / 2)].drawn, key = b.out[Math.floor((i0 + i1) / 2)].drawn;
+        assert.ok(mid.hip < key.hip && mid.torso < key.torso, 'breath, droop and sag are drawn on the pose');
+        near1(a.out[i0].drawn.hip, b.out[i0].drawn.hip); near1(a.out[i1].drawn.torso, b.out[i1].drawn.torso);
+    }
+});
+
+test('a skipped frame across push start (.12) and release (.46) gives the same target and at most one tLift per phase; 30 Hz and 60 Hz walks lift the same phases', () => {
+    const entry = GETUPS.frontKneeStraight;
+    const walk = (dt, arm) => { const ts = []; for (let t = 0; t < 0.7 + 1e-9; t += dt) ts.push(+t.toFixed(4)); return stallRun(entry, arm, ts, null).sk._getUpHold; };
+    for (const arm of [1, 60, 5000]) {
+        const h60 = walk(1 / 60 * 0.0 + 0.01, arm), h30 = walk(0.02, arm);
+        assert.deepEqual(Object.keys(h60.lift ?? {}).sort(), Object.keys(h30.lift ?? {}).sort(), `arm ${arm}: same lifted phases`);
+        for (const k of Object.keys(h60.lift ?? {})) assert.ok(Math.abs(h60.lift[k] - h30.lift[k]) <= 0.02 + 1e-9, `arm ${arm} ${k}: lift t within a frame`);
+        assert.deepEqual(h60.pts, h30.pts, `arm ${arm}: same held targets`);
+    }
+    const skip = stallRun(entry, 60, [0.05, 0.5], null).sk._getUpHold, full = stallRun(entry, 60, [0.05, 0.12, 0.5], null).sk._getUpHold;
+    assert.deepEqual(skip.pts.near0.x, full.pts.near0.x);
+    for (const v of Object.values(skip.lift ?? {})) assert.ok(Number.isFinite(v));
 });

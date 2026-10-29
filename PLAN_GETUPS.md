@@ -34,6 +34,8 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
   Misses: Lou's half-lifted near hand through the stall (G2b Q2), not fixed; real-rig numbers come with the T3b.2 films.
 - T3b.2: f4017a5 [G2b page](research/animation/getups-2026-10/g2b/index.html) + [strip](research/animation/getups-2026-10/g2b/strip.html), 36 films (Lou, George; 100/25/5 %; bkh, fk, fkb; both facings). Gates: 1012/1012, build ok, coverage 22 gaps.
   Misses: Lou frontKnee near hand half-lifted through the stall (w .62, reach ratio .96-1.01, cannot reach at the breath extreme); droop is torso + sag only; enter/leave steps 7-14 px/frame, below the unstalled rise's own. Stopped at G2b.
+- T4.0: f9fbfc3 `chooseGetUp` + `GETUP_WEIGHTS` in getUps.js (C1-C3: families, order lying / noTurn / nearHandReserved / noStall, fallback to legacy, repeat avoidance); getUps.test.js 58/58 (6 new).
+  Misses: none known; not wired yet (T4.1).
 
 ## Why (Derek 2026-10-27)
 

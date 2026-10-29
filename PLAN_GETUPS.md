@@ -17,7 +17,7 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
 - T2.6-T2.7: [g1-rev2](research/animation/getups-2026-10/g1-rev2/index.html), entry `2026-10-28-claude-getups-g1-rev2.md`. T2.6: `aroundVia.path` + per-frame IK for the standing release: hand 8.3 px ABOVE the hem on every frame behind the body (today 8.8 below), IK err <= .23, wrist step <= 1.2. Misses: 12 frames still touch a thigh's art (today 47), one 36.5 px hand-end jump (frame 139, latch), runtime patch only. T2.7: union mask + fail-closed clearance (`?getups=v1`, `&handUnion=off`); it changes 1 frame (9 px) on the new route. ⛔ G1-rev2 waits for Derek.
 - T2.8: 4747b66 painted-pixel evidence, [g1-rev2 page](research/animation/getups-2026-10/g1-rev2/index.html#verified), entry `2026-10-28-claude-getups-t28.md`. R: lowest painted hand pixel 5.2-9.9 px above the hem, 0 visible px over a thigh (153 frames); union mask copies lacked alpha/parent transform (fixed, `syncUnionCopy`). Misses: the 36.5 px jump is the IK elbow branch flipping (not latch/art/depth); wrist jumps 15.3 px on the first standing frame (frame 55); turn feet 57-76 px as before.
 - T2.9: 794cfd1 George's R route registered (`aroundVia` u -.4772 / v .6358, via pose -.45 / -1.8, `path`) in SPECS, `george_roster_v1.js` and the agreement test; scope: IK in the standing release above `standW` only. Applies with `getups` OFF too (the route code is not flag-gated): George's lying back-clutch reach step goes 4.0 -> 8.3 px/frame (compact clutch 8.6 -> 17.4), hold margin .48 -> .09 px at holdW .7; release depth swap clearance 15.8 -> 32.7 px. Full suite 981/981.
-- T3.1-T3.2: eabce3f (keys) / 733161f (page): rough `frontKnee` (turn + straight) and `backTuck` keys, `?getups=v1&getup=<family>` dev override (default picks unchanged), [G2a page](research/animation/getups-2026-10/g2a/index.html) (Bret refs, keys on Lou/George both facings, 1x loops today | new). Rise 867 ms both; largest part step frontKnee 17.3 (Lou) / 19.3 (George), backTuck 21.5 / 21.9 (today 18.5). Misses: no measuring pass, mat-point push-up hand target not built. ⛔ G2a waits for Derek.
+- T3.1-T3.2: eabce3f (keys) / 733161f (page): rough `frontKnee` (turn + straight) and `backTuck` keys, `?getups=v1&getup=<family>` dev override (default picks unchanged), [G2a page](research/animation/getups-2026-10/g2a/index.html) (Bret refs, keys on Lou/George both facings, 1x loops today | new). Rise 867 ms both; largest part step frontKnee 17.3 (Lou) / 19.3 (George), backTuck 21.5 / 21.9 (today 18.5). Misses: no measuring pass, mat-point push-up hand target not built. G2a approved (Derek 2026-10-28).
 
 ## Why (Derek 2026-10-27)
 
@@ -307,6 +307,8 @@ Derek's G2a verdict (key changes he asks for go in first, as T3.3b); then the G2
 
 - **T3.3b (only if Derek's G2a verdict changes keys).** Apply his notes to `frontKnee` / `backTuck`, refilm the G2a page,
   stop again. If he approves the keys as they are, skip.
+
+G2a — Derek 2026-10-28: **approved** ("they look great"), `frontKnee` and `backTuck` keys as filmed. T3.3b skipped.
 
 - **T3.4 Support-hand schedule (E2).**
   1. `getUps.js`: `hands.<side>` accepts an object or an ordered array of phases `{ target, space, push, w, release }`;

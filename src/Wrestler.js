@@ -87,6 +87,9 @@ const kneeTuckConfig = () => {
 };
 // ?getups=v1 hides a hand that is behind the body behind the thighs too (T2.7, D13); `&handUnion=off` is the G1-rev2 before.
 const unionCandidate = () => new URLSearchParams(location.search).get('handUnion') !== 'off';
+// ?getups=v1&handsOff=1 (PLAN_GETUPS T3.6a, dev only): draw the entry without its hand targets, i.e. the T3.2 keys' own arms.
+const handsOffCandidate = () => getUpsCandidate() && new URLSearchParams(location.search).get('handsOff') === '1';
+const withoutHands = (e) => { if (!e?.hands) return e; const { hands, ...rest } = e; return rest; };
 // PLAN_GETUPS B2: the opponent counts as behind a rising wrestler only past this many px of x (decided once, at rise start).
 const GETUP_TURN_DEADBAND = 12;
 const sellArtCandidate = () => defaultOnFlag('sellart', 'v1');
@@ -3007,7 +3010,7 @@ export default class Wrestler {
             gfx.fillEllipse(x, y, (170 - this.riseT * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
             const flipped = !!this._riseFlip;
-            const draw = (px) => this.skeleton.updateGetUp(px, y, s, facing, this.riseT, this.lying, this._backRiseContext(), this._riseStand(s, facing), this._riseHold, this._getUp, flipped);
+            const draw = (px) => this.skeleton.updateGetUp(px, y, s, facing, this.riseT, this.lying, this._backRiseContext(), this._riseStand(s, facing), this._riseHold, handsOffCandidate() ? withoutHands(this._getUp) : this._getUp, flipped);
             draw(x);
             const dx = flipped ? this._holdRisePivot(s) : 0;
             if (dx) { this.skeleton.clearGetUpHands?.(); draw(x + dx); } // the pivot moved x: take the world targets at the final x

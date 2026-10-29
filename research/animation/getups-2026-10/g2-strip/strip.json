@@ -1,0 +1,466 @@
+[
+ {
+  "id": "lou-frontKnee-l",
+  "rig": "lou",
+  "family": "frontKnee",
+  "facing": -1,
+  "frames": 174,
+  "riseMs": 866.67,
+  "hands": {
+   "near": {
+    "push": [
+     0.12,
+     0.46
+    ],
+    "release": [
+     0.46,
+     0.58
+    ],
+    "tLift": 0.36,
+    "msFromPush": 150,
+    "plantedFrames": 9,
+    "slipMax": 0.14,
+    "neverPlants": false,
+    "window": [
+     0.36,
+     0.58
+    ],
+    "lifted": true,
+    "keysStep": 3.72,
+    "t34bStep": 16.21,
+    "keysWhole": 10.16,
+    "t34bWhole": 16.21
+   },
+   "far": {
+    "push": [
+     0.12,
+     0.46
+    ],
+    "release": [
+     0.46,
+     0.62
+    ],
+    "tLift": null,
+    "msFromPush": null,
+    "plantedFrames": 13,
+    "slipMax": 0.12,
+    "neverPlants": false,
+    "window": [
+     0.12,
+     0.62
+    ],
+    "lifted": false,
+    "keysStep": 10.28,
+    "t34bStep": 10.73,
+    "keysWhole": 10.39,
+    "t34bWhole": 13.17
+   }
+  }
+ },
+ {
+  "id": "lou-frontKnee-r",
+  "rig": "lou",
+  "family": "frontKnee",
+  "facing": 1,
+  "frames": 173,
+  "riseMs": 866.67,
+  "hands": {
+   "near": {
+    "push": [
+     0.12,
+     0.46
+    ],
+    "release": [
+     0.46,
+     0.58
+    ],
+    "tLift": 0.36,
+    "msFromPush": 150,
+    "plantedFrames": 9,
+    "slipMax": 0.14,
+    "neverPlants": false,
+    "window": [
+     0.36,
+     0.58
+    ],
+    "lifted": true,
+    "keysStep": 3.72,
+    "t34bStep": 16.21,
+    "keysWhole": 10.16,
+    "t34bWhole": 16.21
+   },
+   "far": {
+    "push": [
+     0.12,
+     0.46
+    ],
+    "release": [
+     0.46,
+     0.62
+    ],
+    "tLift": null,
+    "msFromPush": null,
+    "plantedFrames": 13,
+    "slipMax": 0.12,
+    "neverPlants": false,
+    "window": [
+     0.12,
+     0.62
+    ],
+    "lifted": false,
+    "keysStep": 10.28,
+    "t34bStep": 10.73,
+    "keysWhole": 10.39,
+    "t34bWhole": 13.17
+   }
+  }
+ },
+ {
+  "id": "lou-backTuck-l",
+  "rig": "lou",
+  "family": "backTuck",
+  "facing": -1,
+  "frames": 174,
+  "riseMs": 866.67,
+  "hands": {
+   "near": {
+    "push": [
+     0.08,
+     0.5
+    ],
+    "release": [
+     0.5,
+     0.66
+    ],
+    "tLift": 0.48,
+    "msFromPush": 250,
+    "plantedFrames": 16,
+    "slipMax": 0.14,
+    "neverPlants": false,
+    "window": [
+     0.48,
+     0.66
+    ],
+    "lifted": true,
+    "keysStep": 14.95,
+    "t34bStep": 15.41,
+    "keysWhole": 14.95,
+    "t34bWhole": 15.41
+   },
+   "far": {
+    "push": [
+     0.08,
+     0.5
+    ],
+    "release": [
+     0.5,
+     0.66
+    ],
+    "tLift": 0.09,
+    "msFromPush": 0,
+    "plantedFrames": 1,
+    "slipMax": 0.12,
+    "neverPlants": true,
+    "window": [
+     0.09,
+     0.66
+    ],
+    "lifted": true,
+    "keysStep": 14.06,
+    "t34bStep": 25.04,
+    "keysWhole": 14.06,
+    "t34bWhole": 25.04
+   }
+  }
+ },
+ {
+  "id": "lou-backTuck-r",
+  "rig": "lou",
+  "family": "backTuck",
+  "facing": 1,
+  "frames": 173,
+  "riseMs": 866.67,
+  "hands": {
+   "near": {
+    "push": [
+     0.08,
+     0.5
+    ],
+    "release": [
+     0.5,
+     0.66
+    ],
+    "tLift": 0.48,
+    "msFromPush": 250,
+    "plantedFrames": 16,
+    "slipMax": 0.14,
+    "neverPlants": false,
+    "window": [
+     0.48,
+     0.66
+    ],
+    "lifted": true,
+    "keysStep": 14.95,
+    "t34bStep": 15.41,
+    "keysWhole": 14.95,
+    "t34bWhole": 15.41
+   },
+   "far": {
+    "push": [
+     0.08,
+     0.5
+    ],
+    "release": [
+     0.5,
+     0.66
+    ],
+    "tLift": 0.09,
+    "msFromPush": 0,
+    "plantedFrames": 1,
+    "slipMax": 0.12,
+    "neverPlants": true,
+    "window": [
+     0.09,
+     0.66
+    ],
+    "lifted": true,
+    "keysStep": 14.06,
+    "t34bStep": 25.04,
+    "keysWhole": 14.06,
+    "t34bWhole": 25.04
+   }
+  }
+ },
+ {
+  "id": "george-frontKnee-l",
+  "rig": "george",
+  "family": "frontKnee",
+  "facing": -1,
+  "frames": 174,
+  "riseMs": 866.67,
+  "hands": {
+   "near": {
+    "push": [
+     0.12,
+     0.46
+    ],
+    "release": [
+     0.46,
+     0.58
+    ],
+    "tLift": 0.13,
+    "msFromPush": 0,
+    "plantedFrames": 0,
+    "slipMax": 0,
+    "neverPlants": true,
+    "window": [
+     0.13,
+     0.58
+    ],
+    "lifted": true,
+    "keysStep": 6.95,
+    "t34bStep": 10.54,
+    "keysWhole": 7.18,
+    "t34bWhole": 10.54
+   },
+   "far": {
+    "push": [
+     0.12,
+     0.46
+    ],
+    "release": [
+     0.46,
+     0.62
+    ],
+    "tLift": 0.28,
+    "msFromPush": 100,
+    "plantedFrames": 7,
+    "slipMax": 0,
+    "neverPlants": false,
+    "window": [
+     0.28,
+     0.62
+    ],
+    "lifted": true,
+    "keysStep": 5.54,
+    "t34bStep": 7.22,
+    "keysWhole": 7.79,
+    "t34bWhole": 9.49
+   }
+  }
+ },
+ {
+  "id": "george-frontKnee-r",
+  "rig": "george",
+  "family": "frontKnee",
+  "facing": 1,
+  "frames": 173,
+  "riseMs": 866.67,
+  "hands": {
+   "near": {
+    "push": [
+     0.12,
+     0.46
+    ],
+    "release": [
+     0.46,
+     0.58
+    ],
+    "tLift": 0.13,
+    "msFromPush": 0,
+    "plantedFrames": 0,
+    "slipMax": 0,
+    "neverPlants": true,
+    "window": [
+     0.13,
+     0.58
+    ],
+    "lifted": true,
+    "keysStep": 6.95,
+    "t34bStep": 10.54,
+    "keysWhole": 7.18,
+    "t34bWhole": 10.54
+   },
+   "far": {
+    "push": [
+     0.12,
+     0.46
+    ],
+    "release": [
+     0.46,
+     0.62
+    ],
+    "tLift": 0.28,
+    "msFromPush": 100,
+    "plantedFrames": 7,
+    "slipMax": 0,
+    "neverPlants": false,
+    "window": [
+     0.28,
+     0.62
+    ],
+    "lifted": true,
+    "keysStep": 5.54,
+    "t34bStep": 7.22,
+    "keysWhole": 7.79,
+    "t34bWhole": 9.49
+   }
+  }
+ },
+ {
+  "id": "george-backTuck-l",
+  "rig": "george",
+  "family": "backTuck",
+  "facing": -1,
+  "frames": 174,
+  "riseMs": 866.67,
+  "hands": {
+   "near": {
+    "push": [
+     0.08,
+     0.5
+    ],
+    "release": [
+     0.5,
+     0.66
+    ],
+    "tLift": 0.2,
+    "msFromPush": 83.33,
+    "plantedFrames": 6,
+    "slipMax": 0,
+    "neverPlants": false,
+    "window": [
+     0.2,
+     0.66
+    ],
+    "lifted": true,
+    "keysStep": 12.81,
+    "t34bStep": 21.33,
+    "keysWhole": 12.81,
+    "t34bWhole": 21.33
+   },
+   "far": {
+    "push": [
+     0.08,
+     0.5
+    ],
+    "release": [
+     0.5,
+     0.66
+    ],
+    "tLift": 0.09,
+    "msFromPush": 0,
+    "plantedFrames": 1,
+    "slipMax": 5.32,
+    "neverPlants": true,
+    "window": [
+     0.09,
+     0.66
+    ],
+    "lifted": true,
+    "keysStep": 11.88,
+    "t34bStep": 18.43,
+    "keysWhole": 11.88,
+    "t34bWhole": 18.43
+   }
+  }
+ },
+ {
+  "id": "george-backTuck-r",
+  "rig": "george",
+  "family": "backTuck",
+  "facing": 1,
+  "frames": 173,
+  "riseMs": 866.67,
+  "hands": {
+   "near": {
+    "push": [
+     0.08,
+     0.5
+    ],
+    "release": [
+     0.5,
+     0.66
+    ],
+    "tLift": 0.2,
+    "msFromPush": 83.33,
+    "plantedFrames": 6,
+    "slipMax": 0,
+    "neverPlants": false,
+    "window": [
+     0.2,
+     0.66
+    ],
+    "lifted": true,
+    "keysStep": 12.81,
+    "t34bStep": 21.33,
+    "keysWhole": 12.81,
+    "t34bWhole": 21.33
+   },
+   "far": {
+    "push": [
+     0.08,
+     0.5
+    ],
+    "release": [
+     0.5,
+     0.66
+    ],
+    "tLift": 0.09,
+    "msFromPush": 0,
+    "plantedFrames": 1,
+    "slipMax": 5.32,
+    "neverPlants": true,
+    "window": [
+     0.09,
+     0.66
+    ],
+    "lifted": true,
+    "keysStep": 11.88,
+    "t34bStep": 18.43,
+    "keysWhole": 11.88,
+    "t34bWhole": 18.43
+   }
+  }
+ }
+]

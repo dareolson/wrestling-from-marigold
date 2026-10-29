@@ -265,3 +265,46 @@ export function stallOffsets(elapsedMs, totalStallMs) {
     const breath = HOLD_BREATH.torso * Math.sin(2 * Math.PI * (e / 1000) / HOLD_BREATH.periodSec);
     return { torso: (breath + STALL.droop * STALL_DROOP_SIGN) * env, hip: -STALL.sag * env };
 }
+
+// ── Selection (PLAN_GETUPS Rev 6 T4.0). Pure: which authored get-up a rise plays, chosen once at rise start (B2).
+// Weights by number so Derek can tune them: h = 1 - stamina% / 100 (0 fresh, 1 spent). From the back a fresh wrestler tucks and
+// a worn one hurts; from the front there is one family.
+export const GETUP_WEIGHTS = Object.freeze({
+    backTuck: (h) => 1 - h,
+    backKneeHurt: (h) => 0.2 + h,
+    frontKnee: () => 1,
+});
+
+/**
+ * ctx = { lying, needsTurn, staminaPct, nearHandReserved }; prevFamily = the family this wrestler played last (or null);
+ * rand = () => [0, 1); `families` is for tests only. Returns { entry, family, reason, eligible, refused }.
+ * Refusals, in order, each by name: lying (wrong side to be lying on), noTurn (needs a turn, the family has no turning variant),
+ * nearHandReserved (a back sell keeps the near hand and the family has no Back variant), noStall (stamina <= STALL.staminaPct
+ * and the family has no stall). reason: pick | onlyEligible | avoidedRepeat | fallback:<refusals>.
+ */
+export function chooseGetUp(ctx, prevFamily, rand, families = GETUP_SETS) {
+    const eligible = [], refused = {};
+    for (const [family, set] of Object.entries(families)) {
+        const plain = set.straight ?? set.turn;
+        if (set.from !== ctx.lying) refused[family] = 'lying';
+        else if (ctx.needsTurn && !set.turn) refused[family] = 'noTurn';
+        else if (ctx.nearHandReserved && !(set.turnBack || set.straightBack)) refused[family] = 'nearHandReserved';
+        else if (ctx.staminaPct <= STALL.staminaPct && plain?.stall === undefined) refused[family] = 'noStall';
+        else eligible.push(family);
+    }
+    if (!eligible.length) {
+        const why = Object.entries(refused).map(([f, r]) => `${f}=${r}`).join(',');
+        return { entry: legacyFor(ctx.lying), family: null, reason: `fallback:${why}`, eligible, refused };
+    }
+    const h = Math.min(1, Math.max(0, 1 - ctx.staminaPct / 100));
+    let pool = eligible, reason = eligible.length === 1 ? 'onlyEligible' : 'pick';
+    if (eligible.length > 1 && prevFamily && eligible.includes(prevFamily)) { pool = eligible.filter((f) => f !== prevFamily); reason = 'avoidedRepeat'; }
+    let family = pool[0];
+    if (pool.length > 1) {
+        const w = pool.map((f) => Math.max(0, GETUP_WEIGHTS[f]?.(h) ?? 1)), sum = w.reduce((a, b) => a + b, 0);
+        if (sum > 0) { let r = rand() * sum; family = pool.find((_, i) => (r -= w[i]) < 0) ?? pool.at(-1); }
+    }
+    const set = families[family];
+    const entry = ctx.nearHandReserved ? (ctx.needsTurn ? set.turnBack : set.straightBack) : (ctx.needsTurn ? set.turn : set.straight);
+    return { entry, family, reason, eligible, refused };
+}

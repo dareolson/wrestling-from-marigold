@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Skeleton, { syncUnionCopy } from '../src/Skeleton.js';
 import Wrestler from '../src/Wrestler.js';
-import { GETUPS, GETUP_SETS, legacySupine, legacyProne, legacyFor, validateGetUp, turnedPose, sampleGetUp, usesNearHand, eligibleForBackSell, STALL, STALL_DROOP_SIGN, stallMs, stallTimeline, stallOffsets, sineInOut } from '../src/animation/getUps.js';
+import { GETUPS, GETUP_SETS, legacySupine, legacyProne, legacyFor, validateGetUp, turnedPose, sampleGetUp, usesNearHand, eligibleForBackSell, STALL, STALL_DROOP_SIGN, stallMs, stallTimeline, stallOffsets, sineInOut, chooseGetUp, GETUP_WEIGHTS } from '../src/animation/getUps.js';
 import { readFileSync } from 'node:fs';
 
 const withFlag = (search, fn) => { globalThis.location = { search }; try { return fn(); } finally { delete globalThis.location; } };
@@ -780,4 +780,72 @@ test('a skipped frame across push start (.12) and release (.46) gives the same t
     const skip = stallRun(entry, 60, [0.05, 0.5], null).sk._getUpHold, full = stallRun(entry, 60, [0.05, 0.12, 0.5], null).sk._getUpHold;
     assert.deepEqual(skip.pts.near0.x, full.pts.near0.x);
     for (const v of Object.values(skip.lift ?? {})) assert.ok(Number.isFinite(v));
+});
+
+// ── T4.0: chooseGetUp (Rev 6) ─────────────────────────────────────────────────────────────────────────────
+function lcg(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const ctxOf = (o) => ({ lying: 'supine', needsTurn: false, staminaPct: 100, nearHandReserved: false, ...o });
+
+test('chooseGetUp: nothing eligible gives the legacy entry for that lying and a fallback reason naming the refusals', () => {
+    const c = chooseGetUp(ctxOf({ lying: 'sideways' }), null, lcg(1));
+    assert.equal(c.family, null); assert.equal(c.entry, legacyFor('sideways')); assert.match(c.reason, /^fallback:/); assert.match(c.reason, /backTuck=lying/);
+    const forced = chooseGetUp(ctxOf({}), null, lcg(1), { backTuck: GETUP_SETS.backTuck });
+    assert.equal(forced.family, 'backTuck');
+    const none = chooseGetUp(ctxOf({ needsTurn: true }), null, lcg(1), { backTuck: GETUP_SETS.backTuck });
+    assert.equal(none.entry, legacySupine); assert.equal(none.reason, 'fallback:backTuck=noTurn');
+});
+
+test('chooseGetUp: supine that needs a turn has one family, every draw, repeats allowed', () => {
+    const r = lcg(2);
+    for (let i = 0; i < 50; i++) {
+        const c = chooseGetUp(ctxOf({ needsTurn: true }), 'backKneeHurt', r);
+        assert.equal(c.family, 'backKneeHurt'); assert.equal(c.entry.id, 'backKneeHurt'); assert.equal(c.reason, 'onlyEligible');
+        assert.equal(c.refused.backTuck, 'noTurn'); assert.equal(c.refused.frontKnee, 'lying');
+    }
+});
+
+test('chooseGetUp: supine, no turn, fresh: both families appear over 1000 draws; none repeats when prevFamily is fed back', () => {
+    const r = lcg(3), seen = {}; let prev = null;
+    for (let i = 0; i < 1000; i++) {
+        const c = chooseGetUp(ctxOf({ staminaPct: 80 }), prev, r);
+        seen[c.family] = (seen[c.family] ?? 0) + 1;
+        if (prev) assert.notEqual(c.family, prev, 'no family twice in a row while another is eligible');
+        assert.equal(c.entry.from, 'supine'); assert.deepEqual(validateGetUp(c.entry), []);
+        prev = c.family;
+    }
+    assert.ok(seen.backTuck > 100 && seen.backKneeHurt > 100, JSON.stringify(seen));
+    // without the repeat rule the weights show: fresh favours backTuck, worn favours backKneeHurt
+    const tally = (pct) => { const rr = lcg(4), n = { backTuck: 0, backKneeHurt: 0 }; for (let i = 0; i < 2000; i++) n[chooseGetUp(ctxOf({ staminaPct: pct }), null, rr).family]++; return n; };
+    assert.ok(tally(100).backTuck > tally(100).backKneeHurt * 2); assert.ok(tally(30).backKneeHurt > tally(30).backTuck);
+    assert.equal(GETUP_WEIGHTS.backTuck(0), 1); assert.equal(GETUP_WEIGHTS.backKneeHurt(1), 1.2);
+});
+
+test('chooseGetUp: a reserved near hand picks the Back variants and never backTuck', () => {
+    const r = lcg(5);
+    for (const needsTurn of [true, false]) for (let i = 0; i < 200; i++) {
+        const c = chooseGetUp(ctxOf({ needsTurn, nearHandReserved: true }), null, r);
+        assert.equal(c.family, 'backKneeHurt'); assert.equal(c.entry.id, needsTurn ? 'backKneeHurtBack' : 'backKneeHurtBackStraight');
+        assert.equal(c.refused.backTuck, needsTurn ? 'noTurn' : 'nearHandReserved');
+    }
+    const p = chooseGetUp(ctxOf({ lying: 'prone', nearHandReserved: true, needsTurn: true }), null, r);
+    assert.equal(p.entry.id, 'frontKneeBack');
+});
+
+test('chooseGetUp: stamina 25 never picks backTuck, 26 can', () => {
+    const r = lcg(6); let at26 = 0;
+    for (let i = 0; i < 500; i++) {
+        assert.notEqual(chooseGetUp(ctxOf({ staminaPct: 25 }), null, r).family, 'backTuck');
+        assert.equal(chooseGetUp(ctxOf({ staminaPct: 0 }), null, r).refused.backTuck, 'noStall');
+        if (chooseGetUp(ctxOf({ staminaPct: 26 }), null, r).family === 'backTuck') at26++;
+    }
+    assert.ok(at26 > 0);
+});
+
+test('chooseGetUp: prone plays frontKnee (turn or straight by needsTurn); every entry validates and lies on the right side', () => {
+    const r = lcg(7);
+    for (const needsTurn of [true, false]) for (const staminaPct of [100, 25, 3]) {
+        const c = chooseGetUp(ctxOf({ lying: 'prone', needsTurn, staminaPct }), 'frontKnee', r);
+        assert.equal(c.entry.id, needsTurn ? 'frontKnee' : 'frontKneeStraight'); assert.equal(c.entry.from, 'prone'); assert.deepEqual(validateGetUp(c.entry), []);
+        assert.equal(c.reason, 'onlyEligible');
+    }
 });

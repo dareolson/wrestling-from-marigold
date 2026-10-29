@@ -328,6 +328,19 @@ G2a — Derek 2026-10-28: **approved** ("they look great"), `frontKnee` and `bac
   4. Tests: a world target doesn't move in world space during its push (Lou and George, both facings, with a frame step that
      jumps over push start); interruption mid-push clears it; old single-object entries (`backKneeHurt`) are byte-identical.
 
+- **T3.4b Hand lifts at full reach (Derek 2026-10-28, after T3.4: George's 52 px arm can't hold the mat while the keys lift
+  his shoulder 47-77 px; wrist 9-29 px off).** One rule for every rig, keys unchanged:
+  1. Skeleton, `world` phases only: each frame, shoulder → held target distance vs that arm's length (upper + fore, from the
+     rig). Over `0.97 × arm` the phase lifts: record `tLift` in the hold (once; reset with the hold), then the phase weight is
+     multiplied by `1 − ease((t − tLift) / releaseSpan)` with releaseSpan = the phase's own `release` length. Once lifted it
+     stays lifted (no re-plant, no oscillation). A hand-over to the next phase blends from the drawn hand as now.
+  2. No rig or family names; Lou keeps his numbers where he can reach.
+  3. Tests: a stand-in with a short arm lifts once and never re-plants; a long arm never lifts (output identical to T3.4);
+     a frame step over the reach crossing gives `tLift` within one step; the hold reset clears `tLift`.
+  4. Browser, Lou and George, both facings, frontKnee (near, far) and backTuck (near, far): `tLift` as t and real ms from push
+     start, wrist slip while planted (target ≤ 1 px), largest wrist step in the lift. Also report wrist-to-knee max in the knee
+     phase (T3.4: George 25-35 px) without fixing it.
+
 - **T3.5 Back-sell variants and eligibility (E3).**
   1. `frontKneeBack` and `frontKneeBackStraight`: same keys, tags + `backSell`, far-hand schedule only. Add them to the family
      table and `GETUPS`.
@@ -336,6 +349,10 @@ G2a — Derek 2026-10-28: **approved** ("they look great"), `frontKnee` and `bac
      override picks the Back variant when the wrestler is back-selling, and refuses `backTuck` (falls back to the legacy entry
      and logs why).
   3. Lou's and George's back-sell numbers (`holdW`, recovery) unchanged (D5): existing tests.
+
+- **E5 (Opus 2026-10-28, from T3.5).** No back reach is drawn while prone (Skeleton's back reach is supine-only), so in
+  `frontKneeBack` the near hand just follows the keys. T3.6 films it and says so at G2; Derek decides if a prone back reach is
+  needed.
 
 - **T3.6 Measuring pass + G2 package.** Cases: `frontKnee` (turn, straight, Back), `backTuck`; Lou and George; both facings;
   direct face-down landing and no-turn included (B1 rise-only comparison, forced rise). Report from the DRAWN frames:

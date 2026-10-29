@@ -30,6 +30,8 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
   Never plant: Lou backTuck far, George frontKnee near, George backTuck far (slip 5.3 px on its one frame). Lift step T3.4b vs keys: 10.5-25.0 vs 3.7-15.0 px. Stopped for Derek.
 - T3.6: 7a5b9d5 [G2 page](research/animation/getups-2026-10/g2/index.html) (tools/debug/getups_g2.mjs, drawn frames, today | new, both rigs and facings). Slip planted Lou <=.14, George 0 (backTuck far 5.3-5.8 on 1 frame); last rise->standing 2.5 px George / .6 Lou (today 45 / 56 turn).
   Misses: face-down landing near forearm hold->rise Lou 31.5 (today 31.5), George 47.6 (today 40.1, target 3); flip feet jump 52-93 px; wrist-to-knee George 25-35; frontKneeBack George elbow step 34.9 px in the standing recovery. Gates: 1000/1000, build ok, coverage 22 gaps.
+- T3b.1: 6d9e253 fatigue stall (one tween, held stretch); focused 122/122 (getUps 52). Droop sign -1 (shoulder y = hipY + cos(torso)·torsoH, both stall keys in (π/2, π)). Hands AT the stall (schedule math from T3.4b tLift): Lou frontKnee (t .42) near lifting w .50, far planted w 1; George near released (lift .13), far w .04 (lift .28); backKneeHurt far at the knee w 1.
+  Misses: Lou's half-lifted near hand through the stall (G2b Q2), not fixed; real-rig numbers come with the T3b.2 films.
 
 ## Why (Derek 2026-10-27)
 

@@ -24,6 +24,8 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
   Browser (drawn wrist, mat push): Lou slip <= 1.4 px (backTuck far 4.9, reach limit); George misses: wrist 9-29 px off the target (arm 52 px vs keyed shoulder 47-77 px above the mat). Wrist-to-knee max: Lou 9-20 px, George 25-35.
 - T3.5: 1602de2 `frontKneeBack` / `frontKneeBackStraight` (same keys, far schedule only), `usesNearHand` / `eligibleForBackSell`; override picks the Back variant when back-selling, refuses `backTuck` (legacy rise + console.warn); focused set 99/99.
   Misses: the real `_backRiseContext` needs a supine wrestler, so the override also counts a rise-phase back pain on a prone one; no Skeleton reach for a prone back sell yet.
+- T3.4b: 2d0397c `_worldHandLift` (0.97 x arm from the posed joints, checked from push start); tLift t/ms: Lou frontKnee near .36/150 far none, backTuck .48/250 and .09/0; George frontKnee .13/0 and .28/100, backTuck .20/83 and .09/0. Slip planted Lou <=.14 px, George 0; focused 109/109.
+  Misses: George frontKnee near and both backTuck far hands lift at push start (never planted); lift wrist step 7-25 px/frame (Lou 15-25, George 7-21); wrist-to-knee max Lou 9-20, George 25-35.
 
 ## Why (Derek 2026-10-27)
 

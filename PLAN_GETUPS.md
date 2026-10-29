@@ -386,26 +386,94 @@ good" (E5: no prone back reach needed). Go forward to Stage 3b.
 
 ## Stage 3b: the fatigue stall (D8), then STOP (G2b)
 
-- **T3b.1** `stall` key + `stallMs(stamina)` (pure; tests: 0 above 25 %, 600 at 25 %, 1400 at 0 %, monotonic). The rise clock
-  holds at the stall key; the breath and head-down are offsets on top. (Rev 3) Stamina and `stallMs` are captured once at rise start;
-  during the stall normalised rise progress is frozen and a separate elapsed clock runs, so recovery can't shorten or cancel
-  it. Supporting hands are re-solved every frame of the breath. `backKneeHurt`'s stall key is its turn key: the flip and
-  pivot correction happen once on arrival, then the stall; test a frame step that jumps past that key and an interruption there.
-  (Rev 4, [Codex G2 note](AI_HANDOFF_ENTRIES/2026-10-28-codex-g2-measuring-advice.md) 4-5) The stall keeps the support state:
-  captured world targets and any `tLift` stay as they are (no re-capture, no re-plant); a hand already lifted is never
-  reported as bearing weight. Check reach at the stall pose WITH the breath offsets. Include `frontKneeBack` (far hand only).
-  Test a skipped frame around push start and release, and a coarse cadence (e.g. 30 Hz) vs 60 Hz: one lift, no re-plant, same
-  ownership; report ms and px/s besides px/frame. Tests: stamina 100 is byte-identical to no stall; an
-  interruption during the stall (pin, pickup, reset) behaves as in T1.3; the total rise time = today's + `stallMs`.
-- **T3b.2** Film `backKneeHurt` and `frontKnee` at stamina 100 / 25 / 5 (forced rise, B1b), Lou and George, both facings, 1×.
-  Report real ms of each phase and the largest per-part step entering and leaving the stall.
-- **⛔ G2b:** Is the stall the right length? Should the opponent be able to punish it (later gameplay plan)?
+### Rev 5: T3b execution brief (Opus 2026-10-28; replaces the earlier T3b.1 / T3b.2 text, Rev 3 and Rev 4 points are folded in)
+
+Decisions for this stage (Derek can overrule at G2b):
+- **S1. Which entries stall.** `backKneeHurt*` at its flip key (KNEEL, t .46; Rev 3), `frontKnee*` at all fours (ALLFOURS,
+  t .42; D8), so the four Back variants get it too through the spread. `backTuck` and the legacy entries get **no** stall:
+  backTuck is the fresh-wrestler rise (The set), and T4.0 must not choose it at stamina ≤ 25 % (added to T4.0 below).
+- **S2. One tween, a held stretch inside it.** Today's rise is one Phaser tween on `riseT` (`_startRiseUp`, 850 + 750 × hurt
+  ms, `Sine.easeInOut`). With a stall it is still ONE tween, `duration = today's + stallMs`, with a custom ease that is
+  today's curve before the stall, exactly `stall` t through it, and today's curve after it. So `riseT` is monotonic, it never
+  runs backwards (that resets the hand hold, `_getUpHandHold`), it lands exactly on the stall key, the total time is fixed at
+  rise start (recovering stamina can't shorten it), and there is no second tween to go stale. No stall (flag off, stamina
+  > 25 %, entry without `stall`) = today's tween config unchanged, byte for byte.
+- **S3. Support state is frozen with t.** The breath and head-down are drawn on top of the stall pose; the hand checks
+  (`_worldHandTarget`, `_worldHandLift`) keep seeing the key pose without the breath. So no target is re-taken, no new `tLift`
+  is recorded, nothing re-plants during the stall; a lift already running stays where it is until t moves again.
+- **S4. Head down** has no grounded channel (grounded channels are hip, torso, thighs, shins, arms, fores). Use a small
+  torso droop toward the mat plus a hip sag. Do not add a head channel; if it doesn't show, say so at G2b.
+
+- **T3b.1** Code + node tests. One commit `T3b.1: ...`.
+  1. `src/animation/getUps.js`:
+     - `export const STALL = Object.freeze({ staminaPct: 25, minMs: 600, maxMs: 1400, easeMs: 200, droop: 0.10, sag: 3 })`.
+     - `export function stallMs(staminaPct)`: 0 above 25; `600 + 800 × (25 − s) / 25` for s in [0, 25] (clamp s to 0).
+     - Entry field `stall` (a t). `validateGetUp`: if present it must be in (0, 1) and equal the `t` of a key in `keys`
+       (with a flip, `stall ≤ flipAt`, so it is always in `keys`). Add `stall: KNEEL.t` to `backKneeHurtBase` and
+       `stall: ALLFOURS.t` to `frontKneeBase`. Nothing on backTuck or legacy.
+     - `export function stallTimeline(stallT, durMs, stallMs, ease)` (pure; `ease` = the base curve, passed in): returns
+       `{ totalMs, startMs, riseAt(k), stallElapsedMs(k) }` where `startMs = durMs × inverse(ease)(stallT)` (for Sine.InOut,
+       `acos(1 − 2·stallT) / π`; compute the inverse for that curve only, document it). `riseAt(k)`, k = 0..1 over totalMs:
+       `ease(ms / durMs)` before startMs, `stallT` in [startMs, startMs + stallMs], `ease((ms − stallMs) / durMs)` after.
+       `stallElapsedMs(k)` = ms into the stall, or null outside it.
+     - `export function stallOffsets(elapsedMs, totalStallMs)` (pure): env = smooth(e / easeMs) × smooth((S − e) / easeMs)
+       (0 at both ends, so entering and leaving the stall has no step); returns `{ torso: (HOLD_BREATH.torso × sin(2π e /
+       HOLD_BREATH.periodSec) + droop × sign) × env, hip: −sag × env }` with `sign` chosen so the chest goes toward the mat
+       (find it with a node check on the drawn neck/head joint y at ALLFOURS and at KNEEL, both facings; write the sign down).
+       Import `HOLD_BREATH` from `backRisePerformance.js`.
+  2. `src/Wrestler.js` `_startRiseUp`: after `_pickGetUp`, if `this._getUp?.stall !== undefined` and `stallMs(pct) > 0`
+     (pct = stamina / STAMINA_MAX × 100, read once here), build the timeline with Phaser's own Sine.InOut (check the name
+     under Phaser 4.1: `Phaser.Math.Easing.Sine.InOut`; assert in a test that it equals `0.5 × (1 − cos πk)`), and add the
+     tween with `duration: tl.totalMs, ease: (k) => { this._riseK = k; return tl.riseAt(k); }`. Store
+     `this._riseStall = { tl, ms }` and `this._riseTween` (the returned tween). Same `onComplete` as today, plus a token
+     check (`this._riseTween === tween`) so a stale tween never stands up a later rise. Else: today's `tweens.add` call,
+     untouched; `_riseStall = null`.
+  3. Interruption: in `_tickRiseFlip`'s not-`gettingUp` branch (where `_getUp` is cleared), stop `_riseTween` if it is a stall
+     tween and clear `_riseStall` / `_riseK`. Facing and x go back exactly as T1.3 does.
+  4. Draw (`state === 'gettingUp'` in the draw code): `const so = this._riseStall ? stallOffsets(...) : null` from
+     `tl.stallElapsedMs(this._riseK)`; pass it to `skeleton.updateGetUp` as a new last parameter `stallOffsets = null`.
+     `Skeleton.updateGetUp`: `pose` = `poseAt(t)` then, if `stallOffsets`, `limitKnees(applyOffsets(pose, stallOffsets))`;
+     keep the un-breathed pose and pass THAT to `_worldHandLift` (S3). Thigh-local targets read the drawn pose (the hand
+     follows the knee as it breathes). With `stallOffsets` null the function is unchanged.
+  5. `_startQuickRise` untouched (B3).
+  6. Tests (extend `tests/getUps.test.js`; its fake scene's `tweens.add() {}` becomes a recorder for these tests):
+     `stallMs` 0 at 26/100, 600 at 25, 1400 at 0, monotonic; validator rejects a stall that is not a key t, accepts the
+     shipped ones; `stallTimeline`: riseAt monotonic, equals the base curve outside the stall (shifted), equals stallT inside,
+     totalMs = dur + stall, startMs lands on stallT within 1e-9; `stallOffsets` 0 at both ends; stamina 100 → the recorded
+     tween config deep-equals today's (`duration` 850, `ease: 'Sine.easeInOut'`), and the same with `?getups` off at
+     stamina 5 (no stall without the flag); stamina 5 → duration = 850 + 750 × .95 + stallMs(5); backKneeHurt turning at
+     stamina 5: one flip on arriving at .46, pivot held as before, no second flip after the stall; a stall-tween `ease` k that
+     jumps from before startMs to after the stall end still flips once and finishes; pin / pickup / reset during the stall:
+     facing and x restored, hands cleared, tween stopped, its onComplete does nothing; frontKnee and frontKneeBack through
+     the stall on a real Skeleton (the riseFix/getUps test rig): the world targets object and `hold.lift` are identical at
+     stall start and stall end, no hand weight rises after its tLift (no re-plant), frontKneeBack schedules only the far hand;
+     a skipped frame across push start (.12) and release (.46) gives the same target and at most one tLift per phase; a 30 Hz
+     vs 60 Hz walk of k gives the same set of lifted phases and the same ownership (lift t may differ by one frame).
+     Focused set: getUps, riseFix, riseFixFlagOff, lockedGetUp, carriedRise, plantedRise, backRisePerformance, backSell*.
+  7. Progress line: sha, focused counts, the droop sign, and each hand's state AT the stall for Lou and George (planted /
+     lifting with weight w / released), from the node rig. Known going in (T3.4b numbers): Lou's frontKnee near hand starts
+     lifting at .36 so it is half-lifted (w ≈ .5) through the whole stall; George's frontKnee near never plants and his far
+     hand lifts at .28. Report these, do not fix them (G2b question).
+- **T3b.2** Film + page. One commit `T3b.2: ...`.
+  - Extend `tools/debug/getups_g2.mjs` (or a sibling `getups_g2b.mjs`) with a stamina option set before `_startRiseUp`
+    (it resets stamina to 100 today). Forced rise (B1b), `?getups=v1&getup=<family>`: `backKneeHurt` (turn) and `frontKnee`
+    (turn), plus `frontKneeBack` at 5 %, stamina 100 / 25 / 5, Lou (`thesz-procreate-v1`) and George, both facings, 1×.
+    Add new raw film folders to `.git/info/exclude`.
+  - First the normal-speed loop strip, both facings (CLAUDE.md), then the page
+    `research/animation/getups-2026-10/g2b/index.html`: misses first; 1× loops 100 | 25 | 5 per row; then a table per film:
+    real ms of each phase (before stall, stall, after), total vs today + stallMs, the largest per-part step entering and
+    leaving the stall (px/frame AND px/s), each hand's state through the stall, and the reach ratio (shoulder → held target
+    ÷ arm) at the breath's extremes for every world hand still weighted (> .97 = would lift if checked; > 1 = can't reach).
+  - Full suite, build, `moves:coverage -- --check` (gate). Handoff entry in `AI_HANDOFF_ENTRIES/`, Status ≤ 40 lines.
+- **⛔ G2b (Derek):** (1) Is the stall the right length (600-1400 ms)? (2) Lou's frontKnee near hand half-lifted through the
+  stall: keep, move frontKnee's stall to the push-up key (t .22, both Lou hands planted), or let a running lift finish on
+  the stall clock? (3) Is the droop enough for "head down"? (4) Punishable later (gameplay plan), confirmed as look only now?
 
 ## Stage 4: selection on, then STOP (G3)
 
 - **T4.0** `chooseGetUp(ctx, prevId, rand)` (D4 + B2 + B6), pure, with tests. (Rev 4, Codex note 3/6) One back-sell context helper shared by eligibility,
   entry choice and reach ownership, prone included (a prone back sell picks `frontKneeBack`; no prone reach, Derek G2). Log
-  the chosen entry and the eligibility / fallback reason. Never pick a two-hand entry for variety when the near hand is reserved.
+  the chosen entry and the eligibility / fallback reason. Never pick a two-hand entry for variety when the near hand is reserved. (Rev 5 S1) Never pick `backTuck` at stamina ≤ 25 % (it has no stall).
 - **T4.1** Wire `chooseGetUp` into `_startRiseUp` only, under `?getups=v1`; `_startQuickRise` keeps the legacy route (B3). Film 10 seeded matches' worth of
   rises (Lou and George), list which get-up was chosen and why, and the repeat count.
 - **⛔ G3:** Derek watches a normal-speed reel. Promote `getups` to default? (Then the legacy entries stay as the `=off` path.)

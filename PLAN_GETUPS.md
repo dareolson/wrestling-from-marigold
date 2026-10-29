@@ -267,6 +267,8 @@ visible, it comes back.
 Same pattern as Stage 2 (pose sheet ⛔ G2a, implement, film, viewer). `frontKnee` must also report the near forearm's step at
 hold → rise on George from a direct face-down landing (today 40-44 px; target ≤ 3 px). There is no sell roll under
 `?getups=v1` (D7), so the roll-swap number is history only (B1).
+- T3.3: e1c6d72 George's T2.9 route behind `?getups=v1` (`aroundVia.getups` overlay, one reader `resolveAroundVia`, flag passed in); fixture `georgeClutchFlagOff` recorded from 794cfd1^. Getups off again: clutch step 4.02 / compact 8.61 px, hold margin .48, release swap clearance 15.8; focused tests 81/81.
+  Getups on: 8.27 / 17.4, clearance 32.69, hold margin .09 px (worst 14.91 of 15; same at hurt 0/.5/1 and both facings, hurt does not enter the hold). Misses: none over contactPx; fixture is Node-bounded (reach weight + hand goal, not drawn wrist px).
 
 ### Rev 3 (Opus 2026-10-28, after [Codex's planning note](AI_HANDOFF_ENTRIES/2026-10-28-codex-stage3-planning-advice.md))
 

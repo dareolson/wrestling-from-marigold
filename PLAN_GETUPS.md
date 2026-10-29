@@ -473,14 +473,74 @@ Decisions for this stage (Derek can overrule at G2b):
   stall: keep, move frontKnee's stall to the push-up key (t .22, both Lou hands planted), or let a running lift finish on
   the stall clock? (3) Is the droop enough for "head down"? (4) Punishable later (gameplay plan), confirmed as look only now?
 
+G2b — Derek 2026-10-28: **approved** ("they look great"). Taken as approved as filmed: stall length as built (600-1400 ms),
+Lou's half-lifted frontKnee near hand kept, the droop is enough for head down, the stall stays look-only (punishing it is
+a later gameplay plan). Go forward to Stage 4.
+
 ## Stage 4: selection on, then STOP (G3)
 
-- **T4.0** `chooseGetUp(ctx, prevId, rand)` (D4 + B2 + B6), pure, with tests. (Rev 4, Codex note 3/6) One back-sell context helper shared by eligibility,
-  entry choice and reach ownership, prone included (a prone back sell picks `frontKneeBack`; no prone reach, Derek G2). Log
-  the chosen entry and the eligibility / fallback reason. Never pick a two-hand entry for variety when the near hand is reserved. (Rev 5 S1) Never pick `backTuck` at stamina ≤ 25 % (it has no stall).
-- **T4.1** Wire `chooseGetUp` into `_startRiseUp` only, under `?getups=v1`; `_startQuickRise` keeps the legacy route (B3). Film 10 seeded matches' worth of
-  rises (Lou and George), list which get-up was chosen and why, and the repeat count.
-- **⛔ G3:** Derek watches a normal-speed reel. Promote `getups` to default? (Then the legacy entries stay as the `=off` path.)
+### Rev 6: Stage 4 execution brief (Opus 2026-10-28; replaces the earlier T4.0 / T4.1 text, Rev 4 and Rev 5 points folded in)
+
+Decisions (Derek can overrule at G3):
+- **C1. Families, not ids.** Selection picks a family from `GETUP_SETS` (`backKneeHurt`, `backTuck` from the back;
+  `frontKnee` from the front), then the variant: turn or straight from `needsTurn`, Back or plain from the back-sell state.
+  "Never the same twice in a row" compares families (backKneeHurt then backKneeHurtStraight counts as a repeat).
+- **C2. Eligibility, in this order, each refusal logged by name:** `from` ≠ lying → `lying`; needs a turn and the family has
+  no turning variant (backTuck) → `noTurn` (D2: every get-up ends facing the opponent); near hand reserved and the family
+  has no Back variant (backTuck) → `nearHandReserved`; stamina ≤ 25 % and the family has no `stall` (backTuck) → `noStall`
+  (Rev 5 S1). `nearRopes` is ignored this round (B6). No rig capability filter: both rigs play every family (G2a/G2).
+- **C3. Weights (seeded, Opus default):** with h = 1 − stamina%/100, `backTuck` = 1 − h (fresh), `backKneeHurt` = .2 + h,
+  `frontKnee` = 1 (alone from the front). Then avoid the wrestler's previous family when another eligible family remains.
+  Nothing eligible → the legacy entry for that lying, reason `fallback:<refusals>`. Today that can't happen (backKneeHurt and
+  frontKnee are always eligible); it is tested with a forced empty context.
+- **C4. One back-sell state.** `Wrestler._backSellRiseState()` → `{ reserved, drawnReach, reason }`: `reserved` = the rise
+  carries back pain (`_pain.phase === 'rise'`, part back, severity > 0) or `_backRiseContext()` is set; `drawnReach` =
+  `!!_backRiseContext()` (supine only: no prone back reach, Derek G2/E5). Both `chooseGetUp` and the `?getup=` override read
+  `reserved` from it (replace the inline `backSelling` in `_pickGetUp`); the Skeleton's reach keeps reading
+  `_backRiseContext()` + the `backSell` tag as now. So a prone back sell plays `frontKneeBack` with the near arm on its keys,
+  and the log says `drawnReach: false`.
+- **C6. One rise-start snapshot** ([Codex G2b note](AI_HANDOFF_ENTRIES/2026-10-28-codex-fatigue-stall-review.md)): `_startRiseUp`
+  reads stamina %, the back-sell state and `needsTurn` once into `this._riseSnap`; `chooseGetUp`, the stall length and the
+  log all use that snapshot (no second stamina read for `stallMs`).
+- **C7. Parked, not built:** Codex's candidate for Lou's half-lifted hand (finish a release already under way on the stall
+  clock, never re-plant). Derek accepted the stall as filmed; build it only if he asks.
+- **C5. What stays.** The `?getup=<family>` override still wins (films stay reproducible). `_startQuickRise` keeps the legacy
+  route (B3). The route is chosen once at rise start (B2). Flag off: `_pickGetUp` returns null before any of this.
+
+- **T4.0** `chooseGetUp` (pure) + tests. One commit `T4.0: ...`.
+  1. `src/animation/getUps.js`: `export function chooseGetUp(ctx, prevFamily, rand)`, ctx = `{ lying, needsTurn,
+     staminaPct, nearHandReserved }`. Returns `{ entry, family, reason, eligible: [family...], refused: { family: reason } }`;
+     `reason` is `pick`, `onlyEligible`, `avoidedRepeat` or `fallback:...`. Weights and order exactly as C2 / C3, in a
+     frozen `GETUP_WEIGHTS` so Derek can tune them by number.
+  2. Tests (`tests/getUps.test.js`): zero eligible (forced: e.g. a `families` override argument for tests only, or a ctx with
+     an unknown lying) → legacy + `fallback`; one eligible (supine, needsTurn) → backKneeHurt every draw, repeats allowed;
+     several (supine, no turn, fresh) → both appear over 1000 seeded draws and none repeats when `prevFamily` is passed each
+     time; reserved → `backKneeHurtBack*` / `frontKneeBack*`, never backTuck; stamina 25 → never backTuck, 26 → can be;
+     prone → frontKnee (turn/straight by needsTurn); every returned entry validates and has `from === lying`.
+- **T4.1** Wire it + seeded reel. One commit for the code (`T4.1: ...`), one for the page.
+  1. `Wrestler._pickGetUp`: after the override block, `chooseGetUp({ lying, needsTurn: turn, staminaPct,
+     nearHandReserved: this._backSellRiseState().reserved }, this._lastGetUpFamily, Math.random)`; set
+     `this._lastGetUpFamily`; push `{ t: scene.time.now, id, family, reason, refused, staminaPct, needsTurn, lying,
+     drawnReach }` onto `this._getUpLog` (keep the last 50). The prone `return null` (legacy prone rise) goes away under the
+     flag: prone now plays frontKnee. Log the quick rise too (`{ quick: true }` from `_startQuickRise`, no behaviour change).
+     Update the B2 / deadband / override tests that assumed prone → null.
+  2. Focused set as T3b.1 plus sells. Flag-off fixtures (`riseFixFlagOff`, `georgeClutchFlagOff`) must pass unchanged.
+  3. Tool `tools/debug/getups_g3.mjs` built on `live_match_check.mjs` (both sides AI) and the gait film's seeding
+     (mulberry32 installed before game init): 10 seeds, Lou (`thesz-procreate-v1`) vs George, `?getups=v1`, each match until
+     6 rises per wrestler or 180 s of game time. Read both `_getUpLog`s; film every rise at 1× from rise start to standing
+     plus .3 s (raw frames in `.git/info/exclude`). Record also: how he got down (move / fall kind), direct face-down
+     landings, rises interrupted (pin, pickup) and stalls. The 25 % stall threshold adds 600 ms in one step (an authored tier,
+     do not smooth it): list natural rises on both sides of it (stamina 20-30 %); if the seeds give none, say so.
+  4. First a normal-speed loop strip of 4 rises (one per family plus a stall), both facings (CLAUDE.md). Then the page
+     `research/animation/getups-2026-10/g3/index.html`: misses first; the reel (every rise, 1×, labelled seed / wrestler /
+     entry / reason / stamina); then the table: count per entry and rig, quick vs full, repeats of a family in a row per
+     wrestler (with whether an alternative was eligible), fallbacks, prone rises (natural count), interruptions, stall count,
+     the largest per-part step at rise start, entering and leaving a stall (joint named, the two adjacent frames linked) and at
+     standing per entry. The same 10 seeds with `getups` off for the counts
+     only (how often each lying and the quick rise happen), labelled B1a: the sell plans differ on purpose (no rolls).
+  5. Gates: full suite, build, `moves:coverage -- --check`. Handoff entry, Status ≤ 40 lines, Progress lines.
+- **⛔ G3 (Derek):** watch the reel. (1) Is the mix right (weights C3)? (2) Promote `getups` to default (legacy stays as
+  `getups=off`)? (3) Anything in the reel that looks wrong, even if the numbers don't show it.
 
 ## Stage 5: re-check George's parked items, then STOP (G4)
 

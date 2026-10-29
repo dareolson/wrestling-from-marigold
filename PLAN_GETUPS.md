@@ -380,13 +380,22 @@ G2-strip — Derek 2026-10-28: **option A of Opus's four (A fine as is / B lower
   Page `research/animation/getups-2026-10/g2/index.html`: misses first, then 1× loops today | new, both facings, then the
   numbers. Before the full page, one normal-speed loop strip in both facings for Derek (CLAUDE.md). **⛔ G2 (Derek).**
 
+G2 — Derek 2026-10-28: **approved**. frontKnee and backTuck have weight, keep them; George's face-down hold → rise forearm
+step (47.6 px) not noticed; backTuck's mat → knee hand-over "seamless"; frontKneeBack with the near hand on the keys "looks
+good" (E5: no prone back reach needed). Go forward to Stage 3b.
+
 ## Stage 3b: the fatigue stall (D8), then STOP (G2b)
 
 - **T3b.1** `stall` key + `stallMs(stamina)` (pure; tests: 0 above 25 %, 600 at 25 %, 1400 at 0 %, monotonic). The rise clock
   holds at the stall key; the breath and head-down are offsets on top. (Rev 3) Stamina and `stallMs` are captured once at rise start;
   during the stall normalised rise progress is frozen and a separate elapsed clock runs, so recovery can't shorten or cancel
   it. Supporting hands are re-solved every frame of the breath. `backKneeHurt`'s stall key is its turn key: the flip and
-  pivot correction happen once on arrival, then the stall; test a frame step that jumps past that key and an interruption there. Tests: stamina 100 is byte-identical to no stall; an
+  pivot correction happen once on arrival, then the stall; test a frame step that jumps past that key and an interruption there.
+  (Rev 4, [Codex G2 note](AI_HANDOFF_ENTRIES/2026-10-28-codex-g2-measuring-advice.md) 4-5) The stall keeps the support state:
+  captured world targets and any `tLift` stay as they are (no re-capture, no re-plant); a hand already lifted is never
+  reported as bearing weight. Check reach at the stall pose WITH the breath offsets. Include `frontKneeBack` (far hand only).
+  Test a skipped frame around push start and release, and a coarse cadence (e.g. 30 Hz) vs 60 Hz: one lift, no re-plant, same
+  ownership; report ms and px/s besides px/frame. Tests: stamina 100 is byte-identical to no stall; an
   interruption during the stall (pin, pickup, reset) behaves as in T1.3; the total rise time = today's + `stallMs`.
 - **T3b.2** Film `backKneeHurt` and `frontKnee` at stamina 100 / 25 / 5 (forced rise, B1b), Lou and George, both facings, 1×.
   Report real ms of each phase and the largest per-part step entering and leaving the stall.
@@ -394,7 +403,9 @@ G2-strip — Derek 2026-10-28: **option A of Opus's four (A fine as is / B lower
 
 ## Stage 4: selection on, then STOP (G3)
 
-- **T4.0** `chooseGetUp(ctx, prevId, rand)` (D4 + B2 + B6), pure, with tests.
+- **T4.0** `chooseGetUp(ctx, prevId, rand)` (D4 + B2 + B6), pure, with tests. (Rev 4, Codex note 3/6) One back-sell context helper shared by eligibility,
+  entry choice and reach ownership, prone included (a prone back sell picks `frontKneeBack`; no prone reach, Derek G2). Log
+  the chosen entry and the eligibility / fallback reason. Never pick a two-hand entry for variety when the near hand is reserved.
 - **T4.1** Wire `chooseGetUp` into `_startRiseUp` only, under `?getups=v1`; `_startQuickRise` keeps the legacy route (B3). Film 10 seeded matches' worth of
   rises (Lou and George), list which get-up was chosen and why, and the repeat count.
 - **⛔ G3:** Derek watches a normal-speed reel. Promote `getups` to default? (Then the legacy entries stay as the `=off` path.)

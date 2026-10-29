@@ -13,7 +13,7 @@ import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
-import { GETUPS, GETUP_SETS, eligibleForBackSell, legacyFor, stallMs, stallTimeline, stallOffsets, sineInOut } from './animation/getUps.js';
+import { GETUPS, GETUP_SETS, eligibleForBackSell, legacyFor, chooseGetUp, stallMs, stallTimeline, stallOffsets, sineInOut } from './animation/getUps.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
@@ -2745,6 +2745,8 @@ export default class Wrestler {
         this._sell = null;
         this._painRising();
         this.riseT = 0;
+        // Rev 6 C6: stamina, the back-sell state and the turn are read once here; the choice, the stall and the log use this
+        this._riseSnap = getUpsCandidate() ? { staminaPct: this.stamina / STAMINA_MAX * 100, backSell: this._backSellRiseState(), needsTurn: this._riseNeedsTurn() } : null;
         this._getUp = this._pickGetUp();
         this._riseFlip = null;
         this.skeleton?.clearGetUpHands?.();
@@ -2761,7 +2763,7 @@ export default class Wrestler {
         // D8 / PLAN_GETUPS Rev 5 S2: a worn wrestler stalls at the entry's stall key. Still one tween: today's duration plus the
         // stall, with an ease that holds riseT on the key. No stall (flag off, stamina above 25 %, entry without `stall`) is
         // today's tween call, untouched.
-        const stall = this._getUp?.stall !== undefined ? stallMs(this.stamina / STAMINA_MAX * 100) : 0;
+        const stall = this._getUp?.stall !== undefined && this._riseSnap ? stallMs(this._riseSnap.staminaPct) : 0;
         this._riseTween?.stop?.(); this._riseTween = null; // a stall tween left over from an earlier rise never drives this one
         this._riseStall = null; this._riseK = 0;
         if (stall > 0) {
@@ -2797,32 +2799,57 @@ export default class Wrestler {
     // ?getups=v1 (PLAN_GETUPS T1.3): the authored get-up this rise plays, chosen once at rise start (B2), or null (today's
     // rise). Rough pick until chooseGetUp (T4.0): from the back, backKneeHurt, turning only if the opponent is behind him.
     _pickGetUp() {
-        if (!getUpsCandidate()) return null;
-        const other = this._lastOther ?? (this.scene.w1 === this ? this.scene.w2 : this.scene.w1);
-        const dx = other ? other.x - this.x : 0;
-        const turn = Math.abs(dx) > GETUP_TURN_DEADBAND && Math.sign(dx) !== this.facing;
+        const snap = this._riseSnap;
+        if (!getUpsCandidate() || !snap) return null;
+        const turn = snap.needsTurn, rs = snap.backSell;
         // dev override for the G2a films: ?getups=v1&getup=<family> forces that family when it fits how he is lying (a family
-        // with no turning variant plays straight); no such param, or one that does not fit, falls through to the rough pick
-        const set = GETUP_SETS[new URLSearchParams(location.search).get('getup')];
+        // with no turning variant plays straight); no such param, or one that does not fit, falls through to chooseGetUp
+        const override = new URLSearchParams(location.search).get('getup');
+        const set = GETUP_SETS[override];
         if (set && set.from === this.lying) {
             // T3.5 / E3: a wrestler who is back-selling keeps his near hand on the back, so the family's Back variant plays;
             // a family that needs the near hand (backTuck) is refused and the legacy rise plays
-            const pain = this._pain;
-            const backSelling = !!this._backRiseContext() || (pain?.phase === 'rise' && pain.part === 'back' && pain.severity > 0);
             const plain = turn ? (set.turn ?? set.straight) : set.straight;
-            if (!backSelling) return plain;
-            const back = turn ? (set.turnBack ?? set.straightBack) : set.straightBack;
-            if (back) return back;
-            if (!eligibleForBackSell(plain)) {
-                console.warn(`getup=${new URLSearchParams(location.search).get('getup')}: ${plain.id} uses the near hand, which a back sell keeps for the back; playing the legacy rise`);
-                return legacyFor(this.lying);
+            let entry = plain;
+            if (rs.reserved) {
+                const back = turn ? (set.turnBack ?? set.straightBack) : set.straightBack;
+                if (back) entry = back;
+                else if (!eligibleForBackSell(plain)) {
+                    console.warn(`getup=${override}: ${plain.id} uses the near hand, which a back sell keeps for the back; playing the legacy rise`);
+                    entry = legacyFor(this.lying);
+                }
             }
-            return plain;
+            this._logGetUp(entry, override, 'override', {}, []);
+            return entry;
         }
-        if (this.lying !== 'supine') return null;
-        // A rise that carries back pain keeps the near hand on the back (the backSell variant, D5)
-        if (this._backRiseContext()) return turn ? GETUPS.backKneeHurtBack : GETUPS.backKneeHurtBackStraight;
-        return turn ? GETUPS.backKneeHurt : GETUPS.backKneeHurtStraight;
+        const c = chooseGetUp({ lying: this.lying, needsTurn: turn, staminaPct: snap.staminaPct, nearHandReserved: rs.reserved }, this._lastGetUpFamily ?? null, Math.random);
+        this._logGetUp(c.entry, c.family, c.reason, c.refused, c.eligible);
+        return c.entry;
+    }
+
+    // Rev 6 C4: the one back-sell state of a rise. `reserved`: the rise carries back pain, so the near hand stays on the back
+    // (eligibility, entry choice); `drawnReach`: the Skeleton actually draws that reach (supine only, no prone back reach, G2 / E5).
+    _backSellRiseState() {
+        const ctx = !!this._backRiseContext(), pain = this._pain;
+        const painRise = pain?.phase === 'rise' && pain.part === 'back' && pain.severity > 0;
+        return { reserved: ctx || painRise, drawnReach: ctx, reason: ctx ? 'backRiseContext' : painRise ? 'painRise' : null };
+    }
+
+    // PLAN_GETUPS B2: the opponent counts as behind past the deadband and on the other side of where he faces; decided once.
+    _riseNeedsTurn() {
+        const other = this._lastOther ?? (this.scene.w1 === this ? this.scene.w2 : this.scene.w1);
+        const dx = other ? other.x - this.x : 0;
+        return Math.abs(dx) > GETUP_TURN_DEADBAND && Math.sign(dx) !== this.facing;
+    }
+
+    // The last 50 rises' choices (T4.1), read by tools/debug/getups_g3.mjs. An override is logged but does not set the family memory.
+    _logGetUp(entry, family, reason, refused, eligible) {
+        const snap = this._riseSnap;
+        if (reason !== 'override') this._lastGetUpFamily = family;
+        const log = (this._getUpLog ??= []);
+        log.push({ t: this.scene?.time?.now ?? 0, id: entry?.id ?? null, family, reason, refused, eligible, staminaPct: snap?.staminaPct ?? null,
+            needsTurn: snap?.needsTurn ?? null, lying: this.lying, drawnReach: snap?.backSell?.drawnReach ?? false, reserved: snap?.backSell?.reserved ?? false });
+        if (log.length > 50) log.shift();
     }
 
     // Once per frame while down (tickDown): turn at flipAt, and undo the turn if the rise is interrupted. The flip is one
@@ -2883,6 +2910,7 @@ export default class Wrestler {
     }
 
     _startQuickRise() {
+        if (getUpsCandidate()) (this._getUpLog ??= []).push({ t: this.scene?.time?.now ?? 0, quick: true, lying: this.lying, staminaPct: this.stamina / STAMINA_MAX * 100 });
         this._riseFrom = 0;
         this._riseHold = null;
         this._hold = null;

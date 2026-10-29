@@ -116,11 +116,13 @@ test('the route is chosen once at rise start: turn only when the opponent is beh
         [508, -1, 'backKneeHurtStraight'], [492, 1, 'backKneeHurtStraight'], [487, 1, 'backKneeHurt']]) {
         const w = wrestler({ _lastOther: { x: ox }, facing });
         start(w);
-        assert.equal(w._getUp.id, id, `opp ${ox} facing ${facing}`);
+        // Rev 6: a straight rise from the back may be backTuck too (chooseGetUp); a turning one is always backKneeHurt
+        if (id === 'backKneeHurtStraight') assert.ok([id, 'backTuck'].includes(w._getUp.id), `opp ${ox} facing ${facing}: ${w._getUp.id}`);
+        else assert.equal(w._getUp.id, id, `opp ${ox} facing ${facing}`);
     }
     const prone = wrestler({ lying: 'prone' });
     start(prone);
-    assert.equal(prone._getUp, null, 'prone keeps today\'s rise this round');
+    assert.equal(prone._getUp.id, 'frontKneeStraight', 'T4.1: prone plays frontKnee under the flag');
 });
 
 test('opponent crossing during the rise changes nothing (B2)', () => {
@@ -354,9 +356,9 @@ test('?getup=<family> plays that family when it fits how he lies, turning by the
     assert.equal(pick('?getups=v1&getup=frontKnee', { lying: 'prone', _lastOther: { x: 700 } }), 'frontKneeStraight');
     assert.equal(pick('?getups=v1&getup=backTuck', { lying: 'supine', _lastOther: { x: 700 } }), 'backTuck');
     assert.equal(pick('?getups=v1&getup=backTuck', { lying: 'supine', _lastOther: { x: 300 } }), 'backTuck', 'no turning variant: plays straight');
-    assert.equal(pick('?getups=v1&getup=frontKnee', { lying: 'supine', _lastOther: { x: 300 } }), 'backKneeHurt', 'does not fit a supine wrestler: the rough pick');
-    assert.equal(pick('?getups=v1&getup=nonsense', { lying: 'prone' }), null);
-    assert.equal(pick('?getups=v1', { lying: 'prone' }), null, 'prone keeps today\'s rise without the override');
+    assert.equal(pick('?getups=v1&getup=frontKnee', { lying: 'supine', _lastOther: { x: 300 } }), 'backKneeHurt', 'does not fit a supine wrestler: chooseGetUp');
+    assert.equal(pick('?getups=v1&getup=nonsense', { lying: 'prone' }), 'frontKneeStraight');
+    assert.equal(pick('?getups=v1', { lying: 'prone' }), 'frontKneeStraight', 'no override: chooseGetUp');
     assert.equal(pick('?getup=frontKnee', { lying: 'prone' }), null, 'flag off: the override is ignored');
     assert.deepEqual(Object.keys(GETUP_SETS).sort(), ['backKneeHurt', 'backTuck', 'frontKnee']);
 });
@@ -675,8 +677,6 @@ test('stamina 100: the tween config is today\'s (850, Sine.easeInOut); the same 
         assert.equal(c.duration, 850 + 750 * (1 - stamina / 100)); assert.equal(c.ease, 'Sine.easeInOut'); assert.equal(c.riseT, 1); assert.equal(c.targets, w);
         assert.equal(w._riseStall, null);
     }
-    const { w: legacy, adds } = recordingWrestler({ stamina: 5, lying: 'prone' }); // an entry without a stall: legacy prone, flag on
-    startWith(legacy); assert.equal(adds[0].cfg.ease, 'Sine.easeInOut');
 });
 
 test('stamina 5: one tween, duration = today\'s + stallMs(5); backTuck at stamina 5 gets no stall', () => {
@@ -848,4 +848,57 @@ test('chooseGetUp: prone plays frontKnee (turn or straight by needsTurn); every 
         assert.equal(c.entry.id, needsTurn ? 'frontKnee' : 'frontKneeStraight'); assert.equal(c.entry.from, 'prone'); assert.deepEqual(validateGetUp(c.entry), []);
         assert.equal(c.reason, 'onlyEligible');
     }
+});
+
+// ── T4.1: chooseGetUp wired into _startRiseUp (Rev 6 C4-C6) ────────────────────────────────────────────────
+test('T4.1: the rise start logs the choice, remembers the family, and never repeats it while another is eligible', () => {
+    const { w } = recordingWrestler({ stamina: 80 });
+    let prev = null;
+    for (let i = 0; i < 40; i++) {
+        startWith(w);
+        const e = w._getUpLog.at(-1);
+        assert.equal(e.id, w._getUp.id); assert.equal(e.lying, 'supine'); assert.equal(e.needsTurn, false); assert.equal(e.staminaPct, 80);
+        assert.equal(e.drawnReach, false); assert.ok(['pick', 'avoidedRepeat'].includes(e.reason), e.reason); assert.ok(e.refused && typeof e.refused === 'object');
+        if (prev) assert.notEqual(e.family, prev);
+        prev = e.family; assert.equal(w._lastGetUpFamily, prev);
+    }
+    assert.equal(w._getUpLog.length, 40);
+    for (let i = 0; i < 20; i++) startWith(w); assert.equal(w._getUpLog.length, 50, 'the last 50');
+});
+
+test('T4.1: stamina is read once per rise; a change after the snapshot moves neither the choice nor the stall', () => {
+    const { w, adds } = recordingWrestler({ stamina: 5 });
+    startWith(w);
+    assert.equal(w._riseSnap.staminaPct, 5);
+    near1(adds[0].cfg.duration, 850 + 750 * 0.95 + stallMs(5));
+    assert.equal(w._getUpLog.at(-1).staminaPct, 5);
+    assert.equal(w._getUpLog.at(-1).refused.backTuck, 'noStall');
+});
+
+test('T4.1: the back-sell state: pain rise reserves the near hand; a prone one plays frontKneeBack with drawnReach false', () => {
+    const { w } = recordingWrestler({ lying: 'prone', _pain: { phase: 'rise', part: 'back', severity: 0.7 }, _lastOther: { x: 300 } });
+    startWith(w);
+    assert.equal(w._getUp.id, 'frontKneeBack');
+    const e = w._getUpLog.at(-1);
+    assert.equal(e.reserved, true); assert.equal(e.drawnReach, false);
+    assert.deepEqual(w._backSellRiseState(), { reserved: true, drawnReach: false, reason: 'painRise' });
+    const s = recordingWrestler({ _pain: { phase: 'rise', part: 'back', severity: 0.7 }, _lastOther: { x: 700 } }).w;
+    for (let i = 0; i < 30; i++) { startWith(s); assert.notEqual(s._getUp.id, 'backTuck'); assert.ok(s._getUp.tags.includes('backSell')); }
+    const none = recordingWrestler({}).w; assert.deepEqual(none._backSellRiseState(), { reserved: false, drawnReach: false, reason: null });
+});
+
+test('T4.1: the override still wins, is logged as override, and does not touch the family memory; flag off logs nothing and picks nothing', () => {
+    const { w } = recordingWrestler({ stamina: 100 });
+    withFlag('?getups=v1&getup=backTuck', () => w._startRiseUp());
+    assert.equal(w._getUp.id, 'backTuck'); assert.equal(w._getUpLog.at(-1).reason, 'override'); assert.equal(w._getUpLog.at(-1).family, 'backTuck');
+    assert.equal(w._lastGetUpFamily, undefined);
+    const off = recordingWrestler({}).w; off._startRiseUp();
+    assert.equal(off._getUp ?? null, null); assert.equal(off._getUpLog, undefined); assert.equal(off._riseSnap, null);
+});
+
+test('T4.1: the quick rise is logged under the flag and behaves as before', () => {
+    const { w } = recordingWrestler({ stamina: 60, tweenPose() {} });
+    withFlag('?getups=v1', () => w._startQuickRise());
+    assert.deepEqual(w._getUpLog.map(({ t, ...r }) => r), [{ quick: true, lying: 'supine', staminaPct: 60 }]);
+    assert.equal(w.state, 'risingUp'); assert.equal(w._getUp ?? null, null);
 });

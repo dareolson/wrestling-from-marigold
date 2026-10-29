@@ -1,0 +1,899 @@
+{
+ "seed": 6,
+ "seedValue": 1592637850,
+ "off": false,
+ "steps": 10626,
+ "matchT": 177.5,
+ "matchOver": false,
+ "starts": {
+  "w1": 9,
+  "w2": 6
+ },
+ "rises": [
+  {
+   "seed": 6,
+   "who": "w2",
+   "rig": "george-roster-v1",
+   "k": 1,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 100,
+   "id": "backTuck",
+   "log": {
+    "t": 107300.00000000212,
+    "id": "backTuck",
+    "family": "backTuck",
+    "reason": "pick",
+    "refused": {
+     "frontKnee": "lying"
+    },
+    "eligible": [
+     "backKneeHurt",
+     "backTuck"
+    ],
+    "staminaPct": 100,
+    "needsTurn": false,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "dropkick",
+    "attacker": "p2",
+    "ageS": 1.7
+   },
+   "fallVariant": "backward",
+   "matchT": 7.7,
+   "startN": 438,
+   "endN": 491,
+   "endTo": "standing",
+   "frames": 72,
+   "dir": "frames/seed06/w2-r01",
+   "interrupted": false,
+   "lastRiseT": 1,
+   "facing": -1,
+   "facingEnd": -1,
+   "otherSide": null,
+   "riseMs": 883.33,
+   "startStep": {
+    "v": 10.78,
+    "part": "nearForearm",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 0.99,
+    "part": "nearShin",
+    "i": 53
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w1",
+   "rig": "thesz-procreate-v1",
+   "k": 1,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 86,
+   "id": "backKneeHurt",
+   "log": {
+    "t": 110566.66666666974,
+    "id": "backKneeHurt",
+    "family": "backKneeHurt",
+    "reason": "onlyEligible",
+    "refused": {
+     "frontKnee": "lying",
+     "backTuck": "noTurn"
+    },
+    "eligible": [
+     "backKneeHurt"
+    ],
+    "staminaPct": 86,
+    "needsTurn": true,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "taunt",
+    "attacker": "p2",
+    "ageS": 0.9
+   },
+   "fallVariant": "flip",
+   "matchT": 10.9,
+   "startN": 634,
+   "endN": 693,
+   "endTo": "standing",
+   "frames": 78,
+   "dir": "frames/seed06/w1-r01",
+   "interrupted": false,
+   "lastRiseT": 0.99993,
+   "facing": -1,
+   "facingEnd": 1,
+   "otherSide": null,
+   "riseMs": 983.33,
+   "startStep": {
+    "v": 0,
+    "part": "farThigh",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 1.07,
+    "part": "nearShin",
+    "i": 59
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w2",
+   "rig": "george-roster-v1",
+   "k": 2,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 100,
+   "id": "backKneeHurtStraight",
+   "log": {
+    "t": 124100.00000000701,
+    "id": "backKneeHurtStraight",
+    "family": "backKneeHurt",
+    "reason": "avoidedRepeat",
+    "refused": {
+     "frontKnee": "lying"
+    },
+    "eligible": [
+     "backKneeHurt",
+     "backTuck"
+    ],
+    "staminaPct": 100,
+    "needsTurn": false,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "dropkick",
+    "attacker": "p2",
+    "ageS": 2.5
+   },
+   "fallVariant": "backward",
+   "matchT": 24.5,
+   "startN": 1446,
+   "endN": 1499,
+   "endTo": "standing",
+   "frames": 72,
+   "dir": "frames/seed06/w2-r02",
+   "interrupted": false,
+   "lastRiseT": 1,
+   "facing": -1,
+   "facingEnd": -1,
+   "otherSide": null,
+   "riseMs": 883.33,
+   "startStep": {
+    "v": 0,
+    "part": "farThigh",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 0.94,
+    "part": "nearShin",
+    "i": 53
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w1",
+   "rig": "thesz-procreate-v1",
+   "k": 2,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 60.1,
+   "id": "backKneeHurt",
+   "log": {
+    "t": 127366.66666667463,
+    "id": "backKneeHurt",
+    "family": "backKneeHurt",
+    "reason": "onlyEligible",
+    "refused": {
+     "frontKnee": "lying",
+     "backTuck": "noTurn"
+    },
+    "eligible": [
+     "backKneeHurt"
+    ],
+    "staminaPct": 60.09999999999931,
+    "needsTurn": true,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "dropkick",
+    "attacker": "p2",
+    "ageS": 5.7
+   },
+   "fallVariant": "flip",
+   "matchT": 27.7,
+   "startN": 1642,
+   "endN": 1712,
+   "endTo": "standing",
+   "frames": 89,
+   "dir": "frames/seed06/w1-r02",
+   "interrupted": false,
+   "lastRiseT": 0.99953,
+   "facing": -1,
+   "facingEnd": 1,
+   "otherSide": null,
+   "riseMs": 1166.67,
+   "startStep": {
+    "v": 0,
+    "part": "farThigh",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 1.24,
+    "part": "nearShin",
+    "i": 70
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w1",
+   "rig": "thesz-procreate-v1",
+   "k": 3,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 63,
+   "id": "backTuck",
+   "log": {
+    "t": 131133.33333334234,
+    "id": "backTuck",
+    "family": "backTuck",
+    "reason": "avoidedRepeat",
+    "refused": {
+     "frontKnee": "lying"
+    },
+    "eligible": [
+     "backKneeHurt",
+     "backTuck"
+    ],
+    "staminaPct": 62.99999999999935,
+    "needsTurn": false,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "dropkick",
+    "attacker": "p1",
+    "ageS": 2.5
+   },
+   "fallVariant": "flip",
+   "matchT": 31.5,
+   "startN": 1868,
+   "endN": 1937,
+   "endTo": "standing",
+   "frames": 88,
+   "dir": "frames/seed06/w1-r03",
+   "interrupted": false,
+   "lastRiseT": 0.99977,
+   "facing": 1,
+   "facingEnd": 1,
+   "otherSide": null,
+   "riseMs": 1150,
+   "startStep": {
+    "v": 6.85,
+    "part": "nearForearm",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 1.1,
+    "part": "nearShin",
+    "i": 69
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w2",
+   "rig": "george-roster-v1",
+   "k": 3,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 86,
+   "id": "backKneeHurt",
+   "log": {
+    "t": 134400.0000000071,
+    "id": "backKneeHurt",
+    "family": "backKneeHurt",
+    "reason": "onlyEligible",
+    "refused": {
+     "frontKnee": "lying",
+     "backTuck": "noTurn"
+    },
+    "eligible": [
+     "backKneeHurt"
+    ],
+    "staminaPct": 86,
+    "needsTurn": true,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "dropkick",
+    "attacker": "p1",
+    "ageS": 5.8
+   },
+   "fallVariant": "flip",
+   "matchT": 34.8,
+   "startN": 2064,
+   "endN": 2123,
+   "endTo": "standing",
+   "frames": 78,
+   "dir": "frames/seed06/w2-r03",
+   "interrupted": false,
+   "lastRiseT": 0.99993,
+   "facing": 1,
+   "facingEnd": -1,
+   "otherSide": null,
+   "riseMs": 983.33,
+   "startStep": {
+    "v": 0,
+    "part": "farThigh",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 1.04,
+    "part": "nearShin",
+    "i": 59
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w1",
+   "rig": "thesz-procreate-v1",
+   "k": 4,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 100,
+   "id": "backKneeHurtStraight",
+   "log": {
+    "t": 148466.66666666558,
+    "id": "backKneeHurtStraight",
+    "family": "backKneeHurt",
+    "reason": "avoidedRepeat",
+    "refused": {
+     "frontKnee": "lying"
+    },
+    "eligible": [
+     "backKneeHurt",
+     "backTuck"
+    ],
+    "staminaPct": 100,
+    "needsTurn": false,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "dropkick",
+    "attacker": "p1",
+    "ageS": 1.8
+   },
+   "fallVariant": "flip",
+   "matchT": 48.8,
+   "startN": 2908,
+   "endN": 2961,
+   "endTo": "slamming",
+   "frames": 72,
+   "dir": "frames/seed06/w1-r04",
+   "interrupted": false,
+   "lastRiseT": 1,
+   "facing": 1,
+   "facingEnd": 1,
+   "otherSide": null,
+   "riseMs": 883.33,
+   "startStep": {
+    "v": 0,
+    "part": "farThigh",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 24.1,
+    "part": "nearShin",
+    "i": 53
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w2",
+   "rig": "george-roster-v1",
+   "k": 4,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 74,
+   "id": "backKneeHurt",
+   "log": {
+    "t": 151733.33333333035,
+    "id": "backKneeHurt",
+    "family": "backKneeHurt",
+    "reason": "onlyEligible",
+    "refused": {
+     "frontKnee": "lying",
+     "backTuck": "noTurn"
+    },
+    "eligible": [
+     "backKneeHurt"
+    ],
+    "staminaPct": 74,
+    "needsTurn": true,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "knockdown",
+    "move": "kneeDrop",
+    "attacker": "p1",
+    "ageS": 2.1
+   },
+   "fallVariant": "flip",
+   "matchT": 52.1,
+   "startN": 3104,
+   "endN": 3168,
+   "endTo": "taunting",
+   "frames": 83,
+   "dir": "frames/seed06/w2-r04",
+   "interrupted": false,
+   "lastRiseT": 0.99969,
+   "facing": 1,
+   "facingEnd": -1,
+   "otherSide": null,
+   "riseMs": 1066.67,
+   "startStep": {
+    "v": 0,
+    "part": "farThigh",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 0.18,
+    "part": "nearShin",
+    "i": 64
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w1",
+   "rig": "thesz-procreate-v1",
+   "k": 5,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 100,
+   "id": "backTuck",
+   "log": {
+    "t": 188266.6666666424,
+    "id": "backTuck",
+    "family": "backTuck",
+    "reason": "avoidedRepeat",
+    "refused": {
+     "frontKnee": "lying"
+    },
+    "eligible": [
+     "backKneeHurt",
+     "backTuck"
+    ],
+    "staminaPct": 100,
+    "needsTurn": false,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "dropkick",
+    "attacker": "p1",
+    "ageS": 1.6
+   },
+   "fallVariant": "flip",
+   "matchT": 88.6,
+   "startN": 5296,
+   "endN": 5349,
+   "endTo": "standing",
+   "frames": 72,
+   "dir": "frames/seed06/w1-r05",
+   "interrupted": false,
+   "lastRiseT": 1,
+   "facing": -1,
+   "facingEnd": -1,
+   "otherSide": null,
+   "riseMs": 883.33,
+   "startStep": {
+    "v": 4.82,
+    "part": "nearForearm",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 0.79,
+    "part": "nearShin",
+    "i": 53
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w2",
+   "rig": "george-roster-v1",
+   "k": 5,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 76,
+   "id": "backTuck",
+   "log": {
+    "t": 194516.66666663878,
+    "id": "backTuck",
+    "family": "backTuck",
+    "reason": "avoidedRepeat",
+    "refused": {
+     "frontKnee": "lying"
+    },
+    "eligible": [
+     "backKneeHurt",
+     "backTuck"
+    ],
+    "staminaPct": 76,
+    "needsTurn": false,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "knockdown",
+    "move": "elbowDrop",
+    "attacker": "p1",
+    "ageS": 4.9
+   },
+   "fallVariant": "flip",
+   "matchT": 94.9,
+   "startN": 5671,
+   "endN": 5734,
+   "endTo": "evading",
+   "frames": 82,
+   "dir": "frames/seed06/w2-r05",
+   "interrupted": false,
+   "lastRiseT": 0.99959,
+   "facing": -1,
+   "facingEnd": -1,
+   "otherSide": null,
+   "riseMs": 1050,
+   "startStep": {
+    "v": 7.91,
+    "part": "nearForearm",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 0.14,
+    "part": "nearShin",
+    "i": 63
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w1",
+   "rig": "thesz-procreate-v1",
+   "k": 6,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 100,
+   "id": "backKneeHurtStraight",
+   "log": {
+    "t": 217299.99999995885,
+    "id": "backKneeHurtStraight",
+    "family": "backKneeHurt",
+    "reason": "avoidedRepeat",
+    "refused": {
+     "frontKnee": "lying"
+    },
+    "eligible": [
+     "backKneeHurt",
+     "backTuck"
+    ],
+    "staminaPct": 100,
+    "needsTurn": false,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "dropkick",
+    "attacker": "p1",
+    "ageS": 1.7
+   },
+   "fallVariant": "flip",
+   "matchT": 117.7,
+   "startN": 7038,
+   "endN": 7091,
+   "endTo": "standing",
+   "frames": 72,
+   "dir": "frames/seed06/w1-r06",
+   "interrupted": false,
+   "lastRiseT": 1,
+   "facing": -1,
+   "facingEnd": -1,
+   "otherSide": null,
+   "riseMs": 883.33,
+   "startStep": {
+    "v": 0,
+    "part": "farThigh",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 0.85,
+    "part": "nearShin",
+    "i": 53
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w1",
+   "rig": "thesz-procreate-v1",
+   "k": 7,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 100,
+   "id": "backTuck",
+   "log": {
+    "t": 228149.99999995253,
+    "id": "backTuck",
+    "family": "backTuck",
+    "reason": "avoidedRepeat",
+    "refused": {
+     "frontKnee": "lying"
+    },
+    "eligible": [
+     "backKneeHurt",
+     "backTuck"
+    ],
+    "staminaPct": 100,
+    "needsTurn": false,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "dropkick",
+    "attacker": "p1",
+    "ageS": 2.5
+   },
+   "fallVariant": "flip",
+   "matchT": 128.5,
+   "startN": 7689,
+   "endN": 7742,
+   "endTo": "standing",
+   "frames": 72,
+   "dir": "frames/seed06/w1-r07",
+   "interrupted": false,
+   "lastRiseT": 1,
+   "facing": -1,
+   "facingEnd": -1,
+   "otherSide": null,
+   "riseMs": 883.33,
+   "startStep": {
+    "v": 5.05,
+    "part": "nearForearm",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 0.83,
+    "part": "nearShin",
+    "i": 53
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w1",
+   "rig": "thesz-procreate-v1",
+   "k": 8,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 100,
+   "id": "backKneeHurtStraight",
+   "log": {
+    "t": 233383.33333328282,
+    "id": "backKneeHurtStraight",
+    "family": "backKneeHurt",
+    "reason": "avoidedRepeat",
+    "refused": {
+     "frontKnee": "lying"
+    },
+    "eligible": [
+     "backKneeHurt",
+     "backTuck"
+    ],
+    "staminaPct": 100,
+    "needsTurn": false,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "dropkick",
+    "attacker": "p1",
+    "ageS": 1.8
+   },
+   "fallVariant": "flip",
+   "matchT": 133.8,
+   "startN": 8003,
+   "endN": 8056,
+   "endTo": "standing",
+   "frames": 72,
+   "dir": "frames/seed06/w1-r08",
+   "interrupted": false,
+   "lastRiseT": 1,
+   "facing": -1,
+   "facingEnd": -1,
+   "otherSide": null,
+   "riseMs": 883.33,
+   "startStep": {
+    "v": 0,
+    "part": "farThigh",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 0.82,
+    "part": "nearShin",
+    "i": 53
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w1",
+   "rig": "thesz-procreate-v1",
+   "k": 9,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 100,
+   "id": "backTuck",
+   "log": {
+    "t": 269616.66666660813,
+    "id": "backTuck",
+    "family": "backTuck",
+    "reason": "avoidedRepeat",
+    "refused": {
+     "frontKnee": "lying"
+    },
+    "eligible": [
+     "backKneeHurt",
+     "backTuck"
+    ],
+    "staminaPct": 100,
+    "needsTurn": false,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "move",
+    "move": "dropkick",
+    "attacker": "p1",
+    "ageS": 2
+   },
+   "fallVariant": "flip",
+   "matchT": 170,
+   "startN": 10177,
+   "endN": 10230,
+   "endTo": "slamming",
+   "frames": 72,
+   "dir": "frames/seed06/w1-r09",
+   "interrupted": false,
+   "lastRiseT": 1,
+   "facing": 1,
+   "facingEnd": 1,
+   "otherSide": null,
+   "riseMs": 883.33,
+   "startStep": {
+    "v": 4.96,
+    "part": "nearForearm",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 17.93,
+    "part": "nearShin",
+    "i": 53
+   }
+  },
+  {
+   "seed": 6,
+   "who": "w2",
+   "rig": "george-roster-v1",
+   "k": 6,
+   "quick": false,
+   "lying": "supine",
+   "stamina": 76,
+   "id": "backKneeHurtStraight",
+   "log": {
+    "t": 275749.9999999486,
+    "id": "backKneeHurtStraight",
+    "family": "backKneeHurt",
+    "reason": "avoidedRepeat",
+    "refused": {
+     "frontKnee": "lying"
+    },
+    "eligible": [
+     "backKneeHurt",
+     "backTuck"
+    ],
+    "staminaPct": 76,
+    "needsTurn": false,
+    "lying": "supine",
+    "drawnReach": false,
+    "reserved": false
+   },
+   "stallMs": 0,
+   "cause": {
+    "type": "knockdown",
+    "move": "elbowDrop",
+    "attacker": "p1",
+    "ageS": 5.1
+   },
+   "fallVariant": "flip",
+   "matchT": 176.1,
+   "startN": 10545,
+   "endN": 10608,
+   "endTo": "dropkicking",
+   "frames": 82,
+   "dir": "frames/seed06/w2-r06",
+   "interrupted": false,
+   "lastRiseT": 0.99959,
+   "facing": 1,
+   "facingEnd": 1,
+   "otherSide": null,
+   "riseMs": 1050,
+   "startStep": {
+    "v": 0,
+    "part": "farThigh",
+    "a": "pre-rise (last down frame)",
+    "b": "frame 0"
+   },
+   "standStep": {
+    "v": 32.17,
+    "part": "nearShin",
+    "i": 63
+   }
+  }
+ ]
+}

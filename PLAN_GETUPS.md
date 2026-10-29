@@ -36,6 +36,8 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
   Misses: Lou frontKnee near hand half-lifted through the stall (w .62, reach ratio .96-1.01, cannot reach at the breath extreme); droop is torso + sag only; enter/leave steps 7-14 px/frame, below the unstalled rise's own. Stopped at G2b.
 - T4.0: f9fbfc3 `chooseGetUp` + `GETUP_WEIGHTS` in getUps.js (C1-C3: families, order lying / noTurn / nearHandReserved / noStall, fallback to legacy, repeat avoidance); getUps.test.js 58/58 (6 new).
   Misses: none known; not wired yet (T4.1).
+- T4.1: 18489d7 wired (snapshot, `_backSellRiseState`, `_getUpLog`); [G3 page](research/animation/getups-2026-10/g3/index.html) + [strip](research/animation/getups-2026-10/g3/strip.html), 10 seeds, 124 rises (backTuck 55, backKneeHurt* 67, frontKnee 2). Gates 1023/1023, build ok, coverage 22.
+  Misses: 4 rises step 35-63 px into standing, 16 change pose >5 px on the AI's next action, 19 start steps >10 px (backTuck), no natural stamina 20-30 % rise. Stopped at G3.
 
 ## Why (Derek 2026-10-27)
 

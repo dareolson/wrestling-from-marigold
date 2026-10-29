@@ -356,6 +356,12 @@ G2a — Derek 2026-10-28: **approved** ("they look great"), `frontKnee` and `bac
   `frontKneeBack` the near hand just follows the keys. T3.6 films it and says so at G2; Derek decides if a prone back reach is
   needed.
 
+- **T3.6a Loop strip first (Opus 2026-10-28, after T3.4b).** T3.4b: some hands never plant (backTuck far on both rigs, George
+  frontKnee near: the keyed shoulder is past reach at push start) and the wrist moves 7-25 px/frame in the lift. Before the
+  full measuring pass: one page `research/animation/getups-2026-10/g2-strip/index.html`, 1× loops, both facings, Lou and George,
+  `frontKnee` (turn) and `backTuck`, columns T3.2 keys (hands off) | T3.4b; plus, per hand, the largest wrist step of the KEYED
+  arm (no hand targets) next to the T3.4b lift step, so Derek sees how much the lift adds. **⛔ Stop for Derek** before T3.6.
+
 - **T3.6 Measuring pass + G2 package.** Cases: `frontKnee` (turn, straight, Back), `backTuck`; Lou and George; both facings;
   direct face-down landing and no-turn included (B1 rise-only comparison, forced rise). Report from the DRAWN frames:
   1. Support hand slip in WORLD space during each mat contact (target ≤ 1 px), and hand → knee distance during knee contact.

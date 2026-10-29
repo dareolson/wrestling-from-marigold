@@ -22,6 +22,8 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
   Getups on: 8.27 / 17.4, clearance 32.69, hold margin .09 px (worst 14.91 of 15; same at hurt 0/.5/1 and both facings, hurt does not enter the hold). Misses: none over contactPx; fixture is Node-bounded (reach weight + hand goal, not drawn wrist px).
 - T3.4: 167af7a `hands.<side>` = phase or ordered array (validator, hand-over, flip/interruption reset, no family names); frontKnee mat push t .12-.46 (release to .58 near / .62 far) then far knee .62-.82; backTuck mat .08-.50 (release to .66) then both knees .66-.84; tests 35/35, focused set 108/108.
   Browser (drawn wrist, mat push): Lou slip <= 1.4 px (backTuck far 4.9, reach limit); George misses: wrist 9-29 px off the target (arm 52 px vs keyed shoulder 47-77 px above the mat). Wrist-to-knee max: Lou 9-20 px, George 25-35.
+- T3.5: 1602de2 `frontKneeBack` / `frontKneeBackStraight` (same keys, far schedule only), `usesNearHand` / `eligibleForBackSell`; override picks the Back variant when back-selling, refuses `backTuck` (legacy rise + console.warn); focused set 99/99.
+  Misses: the real `_backRiseContext` needs a supine wrestler, so the override also counts a rise-phase back pain on a prone one; no Skeleton reach for a prone back sell yet.
 
 ## Why (Derek 2026-10-27)
 

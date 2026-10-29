@@ -495,6 +495,63 @@ test('no hands, no hold: legacy and hand-less entries keep no world state', () =
     assert.equal(sk._getUpHold ?? null, null);
 });
 
+// ── T3.4b: a world hand lifts when the shoulder passes full reach ─────────────────────────────────────────
+// a stub whose shoulder rides the keyed hip (so it rises with the rise) and whose arm has the given length
+function armStub(arm) {
+    const sk = stubSkeleton(), base = sk._applyGrounded;
+    sk._applyGrounded = (x, y, s, facing, g) => {
+        base(x, y, s, facing, g);
+        const J = sk.jointAttachmentPoints, S = { x: J.nearHip.x, y: J.nearHip.y - 20 * s };
+        // both arms: shoulder on the keyed hip, wrist where the keyed arm swings it but at exactly `arm` from the shoulder, elbow midway
+        for (const side of ['near', 'far']) {
+            const k = J[`${side}Wrist`], d = Math.hypot(k.x - S.x, k.y - S.y) || 1;
+            const W = { x: S.x + (k.x - S.x) / d * arm, y: S.y + (k.y - S.y) / d * arm };
+            J[`${side}Shoulder`] = S; J[`${side}Wrist`] = W; J[`${side}Elbow`] = { x: (S.x + W.x) / 2, y: (S.y + W.y) / 2 };
+        }
+    };
+    return sk;
+}
+
+test('T3.4b: a short arm lifts once and never re-plants; a long arm never lifts and draws exactly as before', () => {
+    const entry = GETUPS.frontKneeStraight, ts = [];
+    for (let t = 0.05; t <= 0.7 + 1e-9; t += 0.01) ts.push(+t.toFixed(3));
+    const run = (sk) => reachesAt(entry, ts, { sk }).map(r => r?.near ?? null);
+    const plain = run(stubSkeleton());                       // no shoulder joints: nothing to measure, T3.4 behaviour
+    assert.ok(plain.every(r => r === null || !('lift' in r)));
+    const keep = Skeleton.GETUP_LIFT_REACH; Skeleton.GETUP_LIFT_REACH = Infinity;
+    const t34 = run(armStub(5000)); Skeleton.GETUP_LIFT_REACH = keep;   // the same arm with the lift switched off = T3.4
+    const long = armStub(5000); const longRun = run(long);
+    assert.deepEqual(longRun, t34, 'a long arm never lifts: output identical to T3.4');
+    assert.equal(Object.keys(long._getUpHold.lift ?? {}).length, 0);
+    const short = armStub(1); const shortRun = run(short);
+    const lift = short._getUpHold.lift.near0;
+    assert.ok(Number.isFinite(lift) && lift >= 0.05, `tLift ${lift}`);
+    // weight never rises again after the lift started (no re-plant); it reaches zero over the release span
+    const h0 = entry.hands.near[0];
+    const post = ts.map((t, i) => [t, (shortRun[i]?.w ?? 0) / (Skeleton.getUpHandWeight(h0, t) || 1)]).filter(([t]) => t >= lift && t <= h0.release[1]);
+    assert.ok(post.length > 5 && post[0][1] > 0.99 && post[post.length - 1][1] < 0.01, 'the lift factor runs 1 -> 0 over the release span');
+    for (let i = 1; i < post.length; i++) assert.ok(post[i][1] <= post[i - 1][1] + 1e-9, `no re-plant at ${post[i][0]}`);
+});
+
+test('T3.4b: a frame step over the crossing records tLift within one step; the hold reset clears it', () => {
+    const entry = GETUPS.frontKneeStraight, sk = armStub(1);
+    sk.updateGroundedReach = () => {}; sk.farKneeAt = { x: 5, y: -20 };
+    const step = (t) => sk.updateGetUp(0, 0, 1, 1, t, 'prone', null, null, null, entry, false);
+    step(0.12); const first = sk._getUpHold.lift.near0;
+    assert.equal(first, 0.12, 'recorded on the frame it is seen');
+    step(0.40); assert.equal(sk._getUpHold.lift.near0, first, 'recorded once');
+    // jump over the crossing: a long arm that crosses late
+    const sk2 = armStub(60); sk2.updateGroundedReach = () => {};
+    let prev = null, crossed = null;
+    for (let t = 0.1; t <= 0.46; t += 0.01) { sk2.updateGetUp(0, 0, 1, 1, +t.toFixed(3), 'prone', null, null, null, entry, false); const l = sk2._getUpHold.lift?.near0; if (l !== undefined && crossed === null) crossed = l; prev = t; }
+    const sk3 = armStub(60); sk3.updateGroundedReach = () => {};
+    sk3.updateGetUp(0, 0, 1, 1, 0.1, 'prone', null, null, null, entry, false);
+    sk3.updateGetUp(0, 0, 1, 1, 0.46, 'prone', null, null, null, entry, false);
+    if (crossed !== null) { const l3 = sk3._getUpHold.lift.near0; assert.ok(l3 - crossed <= 0.36 + 1e-9 && l3 >= crossed - 1e-9); assert.equal(l3, 0.46, 'the jump records the first frame it sees past the crossing'); }
+    sk.clearGetUpHands(); step(0.30);
+    assert.equal(sk._getUpHold.lift.near0, 0.30, 'a fresh hold has a fresh tLift');
+});
+
 // ── T3.5: back-sell variants and eligibility (E3) ─────────────────────────────────────────────────────────
 test('frontKneeBack(Straight): same keys as frontKnee, tagged backSell, far-hand schedule only; every backSell entry has no near-hand phase', () => {
     for (const [id, base] of [['frontKneeBack', 'frontKnee'], ['frontKneeBackStraight', 'frontKneeStraight']]) {

@@ -2738,11 +2738,16 @@ export default class Skeleton {
             if (reach[side]) continue;
             const live = [];
             (Array.isArray(spec) ? spec : [spec]).forEach((h, i) => {
-                const w = Skeleton.getUpHandWeight(h, t);
+                let w = Skeleton.getUpHandWeight(h, t);
                 if (!(w > 0.001)) return;
                 let at = null;
-                if (h.space === 'world') at = this._worldHandTarget(hold, `${side}${i}`, side, h, x, y, s, facing, t, flipped, poseAt);
-                else {
+                if (h.space === 'world') {
+                    const key = `${side}${i}`;
+                    at = this._worldHandTarget(hold, key, side, h, x, y, s, facing, t, flipped, poseAt);
+                    if (at) w *= this._worldHandLift(hold, key, side, h, at, x, y, s, facing, t, pose);
+                    measured = false; // the two calls above posed the body elsewhere; a joint target measures afresh
+                    if (!(w > 0.001)) return;
+                } else {
                     if (!measured) { this._applyGrounded(x, y, s, facing, pose); measured = true; }
                     const p = this.jointAttachmentPoints[h.target];
                     if (p) at = { x: p.x, y: p.y };
@@ -2783,6 +2788,27 @@ export default class Skeleton {
         if (!wrist) return null;
         return (hold.pts[key] = { x: wrist.x, y });
     }
+
+    // T3.4b: a world phase holds the mat only while the shoulder is within reach of the held point. Each frame the shoulder -> target
+    // distance is compared with this arm's length (upper + fore, measured off the posed joints); past LIFT_REACH x length the phase
+    // lifts: `tLift` is recorded once in the hold (it resets with the hold) and the phase weight is multiplied by
+    // 1 - ease((t - tLift) / span), span = the phase's own release length. Once lifted it stays lifted. Returns the multiplier 0-1.
+    _worldHandLift(hold, key, side, h, at, x, y, s, facing, t, pose) {
+        const lift = hold.lift ?? (hold.lift = {});
+        if (lift[key] === undefined) {
+            if (t < h.push[0] - 1e-9) return 1; // still arriving (the lead-in): nothing is held yet
+            this._applyGrounded(x, y, s, facing, pose);
+            const P = this.jointAttachmentPoints, S = P[`${side}Shoulder`], E = P[`${side}Elbow`], W = P[`${side}Wrist`];
+            if (!S || !E || !W) return 1; // nothing to measure: the hand holds as before
+            const arm = Math.hypot(E.x - S.x, E.y - S.y) + Math.hypot(W.x - E.x, W.y - E.y);
+            if (Math.hypot(at.x - S.x, at.y - S.y) <= Skeleton.GETUP_LIFT_REACH * arm) return 1;
+            lift[key] = t;
+        }
+        const span = h.release ? h.release[1] - h.release[0] : 0;
+        const u = span > 1e-9 ? Math.min(1, Math.max(0, (t - lift[key]) / span)) : (t > lift[key] ? 1 : 0);
+        return 1 - u * u * (3 - 2 * u);
+    }
+    static GETUP_LIFT_REACH = 0.97;
 
     // How far (0-1) a support hand has gone to its target at rise progress t: eases in over HAND_LEAD before push[0],
     // full through the push window, eased out over `release`. Times are t of the whole rise.

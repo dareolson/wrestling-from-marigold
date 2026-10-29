@@ -28,12 +28,12 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Status (2026-10-25, replace this block; ≤ 40 lines)
+## Status (2026-10-28, replace this block; ≤ 40 lines)
 
 - **HEAD** see `git log` (get-ups T3.x on top of T9.2 work) on `story/marigold-opening`; 929+ tests pass (930 at T9.1). Tree clean except untracked `research/`.
 - **Pushed vs local:** origin tip is `e76fe73`; the 39 commits after it (George transfer T0.1–T9.2, Rev 2, Rev 3) are **local only**. Push via the SSH URL (HTTPS returns 400).
 - **Gait (2026-10-26):** [PLAN_GAIT.md](PLAN_GAIT.md) Stage 3 (run as its own gait) built behind `?gait=v2` (`&runGait=off` = Stage 2 run; flag off byte-identical), stopped at **G3**: Derek judges the [G3 page](research/animation/gait-2026-10/g3.html). Stage 2 commits local only. Open: whip-start facing flip (Stage 4), George hip step 3.3 px.
-- **Active plan:** [PLAN_GETUPS.md](PLAN_GETUPS.md) (authored get-ups, `?getups=v1`). G1 and G1-rev2 approved; T2.8 (evidence pass: the 36.5 px jump is the IK elbow branch flipping; wrist jumps 15.3 px on the first standing frame) and T2.9 (George's route registered; it also changes George with getups OFF, see the Progress line) done. Stage 3 rough keys for `frontKnee` and `backTuck` built; **⛔ G2a waits for Derek**: [G2a page](research/animation/getups-2026-10/g2a/index.html). [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) parked at G10a. Side ideas: [IDEAS.md](IDEAS.md).
+- **Active plan:** [PLAN_GETUPS.md](PLAN_GETUPS.md) (authored get-ups, `?getups=v1`). G1 and G1-rev2 approved. Stage 3 rough keys for `frontKnee` and `backTuck` built; **⛔ G2a waits for Derek**: [G2a page](research/animation/getups-2026-10/g2a/index.html). Rev 3 (Codex note 2026-10-28) adds T3.3-T3.6: **next T3.3** gates George's T2.9 route behind `getups` (794cfd1 changed George with getups OFF), then support-hand schedule, `frontKneeBack` variants, measuring pass, G2. [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) parked at G10a. Side ideas: [IDEAS.md](IDEAS.md).
 - **Awaiting Derek:** whether to push the local commits.
 - **Open misses (G8):** prone run misses the 2.5 px/frame step limit (3.26, 16.63, 2.85 px; the prone rise has no hand route); forearm pixels still show inside the torso outline in the rise (1–80 px counted); the latch cannot decide the swap (want = the route); swap-in is at the start of the clutch, not at the via point; holdW .7 leaves a .48 px margin to the 15 px line; about +1 ms a frame.
 - **Feature flags:** `risefix`, `sellart` (v1) and `aftermath` (v2) are **promoted** (default on, `=off` disables; risefix 82b71a8, others Derek 2026-10-24). `?plant=1` (support-hand plant) is **opt-in only**, parked.
@@ -44,6 +44,7 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-10-28 · Codex · [Planning advice after T2.9 / G2a: rollout boundary, contact continuity and Stage 3 support](AI_HANDOFF_ENTRIES/2026-10-28-codex-stage3-planning-advice.md)
 - 2026-10-28 · Claude · [Get-ups T2.8: evidence pass on George's hand route](AI_HANDOFF_ENTRIES/2026-10-28-claude-getups-t28.md)
 - 2026-10-28 · Codex · [G1-rev2 advice for Opus: route, mask and measurement limits](AI_HANDOFF_ENTRIES/2026-10-28-codex-current-getups-advice.md)
 - 2026-10-28 · Claude · [Get-ups G1-rev2: George's hand route above the hem (T2.6), thigh backstop (T2.7)](AI_HANDOFF_ENTRIES/2026-10-28-claude-getups-g1-rev2.md)

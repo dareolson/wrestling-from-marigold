@@ -15,6 +15,9 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
 - T2.2-T2.3: `backKneeHurt` + `Back` variants, far-hand push as data, films+measures (`tools/debug/getups_t22.mjs`), [strip](research/animation/getups-2026-10/g1-strip.html), [viewer](research/animation/getups-2026-10/g1-viewer.html), entry `2026-10-27-claude-getups-g1.md`. Misses: flip moves far ankle 57-79 px and near ankle 52-75 (target 3); George push hand 17 px off the knee; near knee drifts 6-8 px. Faces opponent at stand 8/8, rise 917 ms = today. ⛔ G1 waits for Derek.
 - T2.4-T2.5: [g1-rev](research/animation/getups-2026-10/g1-rev/index.html), entry `2026-10-28-claude-getups-g1-rev.md`. T2.4: drawn forearm size is constant through the flip (49.26 px box, 37.95 elbow->wrist), cause not found, no fix; asks which frame/arm. T2.5: 6 George candidates (waist-height via, elbow out .4/.6/.8, `aroundVia.phase`): hand still 8-12.5 px below the trunks edge on the route (B 10.3, best P3 8.3); via unreachable as asked (8.5-9.9 px). ⛔ G1-rev waits for Derek.
 - T2.6-T2.7: [g1-rev2](research/animation/getups-2026-10/g1-rev2/index.html), entry `2026-10-28-claude-getups-g1-rev2.md`. T2.6: `aroundVia.path` + per-frame IK for the standing release: hand 8.3 px ABOVE the hem on every frame behind the body (today 8.8 below), IK err <= .23, wrist step <= 1.2. Misses: 12 frames still touch a thigh's art (today 47), one 36.5 px hand-end jump (frame 139, latch), runtime patch only. T2.7: union mask + fail-closed clearance (`?getups=v1`, `&handUnion=off`); it changes 1 frame (9 px) on the new route. ⛔ G1-rev2 waits for Derek.
+- T2.8: 4747b66 painted-pixel evidence, [g1-rev2 page](research/animation/getups-2026-10/g1-rev2/index.html#verified), entry `2026-10-28-claude-getups-t28.md`. R: lowest painted hand pixel 5.2-9.9 px above the hem, 0 visible px over a thigh (153 frames); union mask copies lacked alpha/parent transform (fixed, `syncUnionCopy`). Misses: the 36.5 px jump is the IK elbow branch flipping (not latch/art/depth); wrist jumps 15.3 px on the first standing frame (frame 55); turn feet 57-76 px as before.
+- T2.9: 794cfd1 George's R route registered (`aroundVia` u -.4772 / v .6358, via pose -.45 / -1.8, `path`) in SPECS, `george_roster_v1.js` and the agreement test; scope: IK in the standing release above `standW` only. Applies with `getups` OFF too (the route code is not flag-gated): George's lying back-clutch reach step goes 4.0 -> 8.3 px/frame (compact clutch 8.6 -> 17.4), hold margin .48 -> .09 px at holdW .7; release depth swap clearance 15.8 -> 32.7 px. Full suite 981/981.
+- T3.1-T3.2: eabce3f (keys) / 733161f (page): rough `frontKnee` (turn + straight) and `backTuck` keys, `?getups=v1&getup=<family>` dev override (default picks unchanged), [G2a page](research/animation/getups-2026-10/g2a/index.html) (Bret refs, keys on Lou/George both facings, 1x loops today | new). Rise 867 ms both; largest part step frontKnee 17.3 (Lou) / 19.3 (George), backTuck 21.5 / 21.9 (today 18.5). Misses: no measuring pass, mat-point push-up hand target not built. ⛔ G2a waits for Derek.
 
 ## Why (Derek 2026-10-27)
 
@@ -28,9 +31,6 @@ plus the quick rise. Measured problems they cause:
 - The front (prone) path has no hand route: George's near forearm steps 33-37 px at the roll swap and 40-44 px at
   hold → rise (T10.3 films, `research/animation/george-transfer-2026-10/g10a/rows.json`).
 Reference: [MOVE_CATALOG.md](MOVE_CATALOG.md) line 80, Bret sheet frames 64-68 (from the back) and 244-258 (from the front).
-- T2.8: 4747b66 painted-pixel evidence, [g1-rev2 page](research/animation/getups-2026-10/g1-rev2/index.html#verified), entry `2026-10-28-claude-getups-t28.md`. R: lowest painted hand pixel 5.2-9.9 px above the hem, 0 visible px over a thigh (153 frames); union mask copies lacked alpha/parent transform (fixed, `syncUnionCopy`). Misses: the 36.5 px jump is the IK elbow branch flipping (not latch/art/depth); wrist jumps 15.3 px on the first standing frame (frame 55); turn feet 57-76 px as before.
-- T2.9: 794cfd1 George's R route registered (`aroundVia` u -.4772 / v .6358, via pose -.45 / -1.8, `path`) in SPECS, `george_roster_v1.js` and the agreement test; scope: IK in the standing release above `standW` only. Applies with `getups` OFF too (the route code is not flag-gated): George's lying back-clutch reach step goes 4.0 -> 8.3 px/frame (compact clutch 8.6 -> 17.4), hold margin .48 -> .09 px at holdW .7; release depth swap clearance 15.8 -> 32.7 px. Full suite 981/981.
-- T3.1-T3.2: eabce3f (keys) / 733161f (page): rough `frontKnee` (turn + straight) and `backTuck` keys, `?getups=v1&getup=<family>` dev override (default picks unchanged), [G2a page](research/animation/getups-2026-10/g2a/index.html) (Bret refs, keys on Lou/George both facings, 1x loops today | new). Rise 867 ms both; largest part step frontKnee 17.3 (Lou) / 19.3 (George), backTuck 21.5 / 21.9 (today 18.5). Misses: no measuring pass, mat-point push-up hand target not built. ⛔ G2a waits for Derek.
 
 ## Amendments after Codex's review (Opus 2026-10-27; these override the text below)
 
@@ -268,10 +268,86 @@ Same pattern as Stage 2 (pose sheet ⛔ G2a, implement, film, viewer). `frontKne
 hold → rise on George from a direct face-down landing (today 40-44 px; target ≤ 3 px). There is no sell roll under
 `?getups=v1` (D7), so the roll-swap number is history only (B1).
 
+### Rev 3 (Opus 2026-10-28, after [Codex's planning note](AI_HANDOFF_ENTRIES/2026-10-28-codex-stage3-planning-advice.md))
+
+Opus accepts the note. G1 / G1-rev2 stay approved and closed. Order: **T3.3 now** (does not touch G2a); T3.4-T3.6 after
+Derek's G2a verdict (key changes he asks for go in first, as T3.3b); then the G2 package.
+
+- **E1. Rollout boundary (decision).** T2.9 changed George with getups OFF (lying back-clutch reach 4.0 → 8.3 px/frame,
+  compact 8.6 → 17.4, hold margin .48 → .09 px). That breaks D6. Opus default: **the new route lives behind `?getups=v1`**;
+  getups off draws George exactly as before 794cfd1. The route becomes George's default only when `getups` is promoted (G3).
+  Derek can overrule ("make George's route default now"), in which case D6 is restated as "flag-off = today, except
+  George's approved route".
+- **E2. Support hands are a schedule.** One target per side is not enough: `frontKnee` pushes on the mat, then the hand moves
+  to the knee. `hands.<side>` may be one entry (today) or an ordered array of non-overlapping phases. A `space: 'world'` target
+  is captured once at that phase's push start and held fixed in world space until release; the next phase acquires from the
+  hand's DRAWN position. No family-name conditionals in Skeleton or Wrestler; everything is data.
+- **E3. Near hand reserved.** A `backSell` entry never uses the near hand (validator already rejects `hands.near`). `backTuck`
+  is two-handed, so it is ineligible for a back sell; there is no `backTuckBack`. `frontKnee` gets `frontKneeBack` /
+  `frontKneeBackStraight`: far hand only, mat then knee.
+- **E4. Not scheduled: two solver candidates.** (a) elbow branch continuity (the 36.5 px jump at frames 138-139),
+  (b) one contact point through the rise → standing boundary (the 15.3 px wrist jump, frame 55). Both are approved-as-is at
+  1×. Each becomes a bounded task only if Derek asks or a G2 film shows it; Codex's note has the method. Keep reporting both
+  numbers at every gate.
+
+- **T3.3 Gate George's route behind `getups` (E1). Start now.**
+  1. Restore George's pre-794cfd1 `aroundVia` (u -.25 / v .9069, recoveryArm -.6 / recoveryElbow -.4, approach .4, no `path`)
+     as the base data. Put the T2.9 values in an overlay, `aroundVia.getups: { u, v, recoveryArm, recoveryElbow, path }`, in
+     SPECS + the generated `george_roster_v1.js` + the agreement test. Validate the overlay in `src/rig/backSell.js` the same
+     way as the base.
+  2. One reader picks the overlay when `getups` is on (pass the flag in; don't read `location` inside `src/rig/`). Every
+     current `aroundVia` reader (Skeleton 2439-2550, Wrestler 1114 / 1930 / 3118, `recoveryVia`) goes through it.
+  3. New fixture test `tests/georgeClutchFlagOff.test.js`: George, compact and normal back clutch, both facings, getups off:
+     per-frame wrist / hand positions equal 794cfd1^ (record the fixture from that commit, say so in the test). Check that
+     `riseFixFlagOff` passes unchanged.
+  4. With getups on, report (don't tune) the hold margin across the real range: holdW .7 at hurt 0 / .5 / 1 and each hold
+     offset, both facings. Today's single number is .09 px. If any case goes over `contactPx`, it's a miss; stop and say so.
+  5. Focused tests: backSell*, aroundRoute, riseFixFlagOff, the new fixture. Progress line: sha, the getups-off step numbers
+     (should be 4.0 / 8.6 / .48 again), the getups-on margin table's worst case.
+
+- **T3.3b (only if Derek's G2a verdict changes keys).** Apply his notes to `frontKnee` / `backTuck`, refilm the G2a page,
+  stop again. If he approves the keys as they are, skip.
+
+- **T3.4 Support-hand schedule (E2).**
+  1. `getUps.js`: `hands.<side>` accepts an object or an ordered array of phases `{ target, space, push, w, release }`;
+     validator rejects overlapping phases and a second phase that starts before the first one's release starts. Tests.
+  2. Skeleton/Wrestler: capture a `world` target once at its push start (wrestler-independent world point on the mat line),
+     hold it through the push, blend out over `release`; the next phase blends in from the drawn hand position. Reset on
+     interruption (pin, pickup, reset), facing flip (re-capture after the flip, not before), and rise end.
+  3. Data: `frontKnee`: both hands on the mat (world) for the push-up, then the far hand to `farKnee` (thighLocal) as now.
+     `backTuck`: both hands on the mat behind him, then both to the knees. Use the G2a keys' timing; write the t values in
+     the progress line.
+  4. Tests: a world target doesn't move in world space during its push (Lou and George, both facings, with a frame step that
+     jumps over push start); interruption mid-push clears it; old single-object entries (`backKneeHurt`) are byte-identical.
+
+- **T3.5 Back-sell variants and eligibility (E3).**
+  1. `frontKneeBack` and `frontKneeBackStraight`: same keys, tags + `backSell`, far-hand schedule only. Add them to the family
+     table and `GETUPS`.
+  2. Pure helper `usesNearHand(entry)` and `eligibleForBackSell(entry)` in `getUps.js` (T4.0's `chooseGetUp` will use them).
+     Tests: `backTuck` is not eligible with a back sell; every `backSell` entry has no near-hand phase; the `?getup=<family>`
+     override picks the Back variant when the wrestler is back-selling, and refuses `backTuck` (falls back to the legacy entry
+     and logs why).
+  3. Lou's and George's back-sell numbers (`holdW`, recovery) unchanged (D5): existing tests.
+
+- **T3.6 Measuring pass + G2 package.** Cases: `frontKnee` (turn, straight, Back), `backTuck`; Lou and George; both facings;
+  direct face-down landing and no-turn included (B1 rise-only comparison, forced rise). Report from the DRAWN frames:
+  1. Support hand slip in WORLD space during each mat contact (target ≤ 1 px), and hand → knee distance during knee contact.
+  2. Elbow residual after limits on every support hand.
+  3. Steps at hold → first rise frame, phase hand-overs, last rise frame → standing (all parts; near forearm on George from a
+     face-down landing: today 40-44 px, target ≤ 3 px).
+  4. The flip: both planted contacts (B4), feet jump (as T2.8 item 4).
+  5. The E4 numbers (elbow branch jump, first-standing wrist jump) wherever a back-sell variant runs.
+  6. Real ms of each phase.
+  Page `research/animation/getups-2026-10/g2/index.html`: misses first, then 1× loops today | new, both facings, then the
+  numbers. Before the full page, one normal-speed loop strip in both facings for Derek (CLAUDE.md). **⛔ G2 (Derek).**
+
 ## Stage 3b: the fatigue stall (D8), then STOP (G2b)
 
 - **T3b.1** `stall` key + `stallMs(stamina)` (pure; tests: 0 above 25 %, 600 at 25 %, 1400 at 0 %, monotonic). The rise clock
-  holds at the stall key; the breath and head-down are offsets on top. Tests: stamina 100 is byte-identical to no stall; an
+  holds at the stall key; the breath and head-down are offsets on top. (Rev 3) Stamina and `stallMs` are captured once at rise start;
+  during the stall normalised rise progress is frozen and a separate elapsed clock runs, so recovery can't shorten or cancel
+  it. Supporting hands are re-solved every frame of the breath. `backKneeHurt`'s stall key is its turn key: the flip and
+  pivot correction happen once on arrival, then the stall; test a frame step that jumps past that key and an interruption there. Tests: stamina 100 is byte-identical to no stall; an
   interruption during the stall (pin, pickup, reset) behaves as in T1.3; the total rise time = today's + `stallMs`.
 - **T3b.2** Film `backKneeHurt` and `frontKnee` at stamina 100 / 25 / 5 (forced rise, B1b), Lou and George, both facings, 1×.
   Report real ms of each phase and the largest per-part step entering and leaving the stall.
@@ -294,5 +370,6 @@ hold → rise on George from a direct face-down landing (today 40-44 px; target 
 
 ## Done means
 
-Under `?getups=v1` every rise in a match is one of the authored get-ups, ends facing the opponent with no standing-frame
-mirror, and has a visible push; Derek approved G1-G3; flag-off is byte-identical to today.
+Under `?getups=v1` every rise from `_startRiseUp` is one of the authored get-ups (the quick rise stays legacy, B3), ends
+facing the opponent with no standing-frame mirror, and has a visible push; Derek approved G1-G3; flag-off is byte-identical
+to before this plan, George's back sell included (T3.3 restores it; until T3.3 lands, 794cfd1 breaks this).

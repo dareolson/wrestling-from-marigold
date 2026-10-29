@@ -28,6 +28,8 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
   Misses: George frontKnee near and both backTuck far hands lift at push start (never planted); lift wrist step 7-25 px/frame (Lou 15-25, George 7-21); wrist-to-knee max Lou 9-20, George 25-35.
 - T3.6a: 2e8e924 page research/animation/getups-2026-10/g2-strip/index.html (keys hands-off via dev `&handsOff=1` | T3.4b, Lou and George, frontKnee turn + backTuck, both facings) + wrist-step table.
   Never plant: Lou backTuck far, George frontKnee near, George backTuck far (slip 5.3 px on its one frame). Lift step T3.4b vs keys: 10.5-25.0 vs 3.7-15.0 px. Stopped for Derek.
+- T3.6: 7a5b9d5 [G2 page](research/animation/getups-2026-10/g2/index.html) (tools/debug/getups_g2.mjs, drawn frames, today | new, both rigs and facings). Slip planted Lou <=.14, George 0 (backTuck far 5.3-5.8 on 1 frame); last rise->standing 2.5 px George / .6 Lou (today 45 / 56 turn).
+  Misses: face-down landing near forearm hold->rise Lou 31.5 (today 31.5), George 47.6 (today 40.1, target 3); flip feet jump 52-93 px; wrist-to-knee George 25-35; frontKneeBack George elbow step 34.9 px in the standing recovery. Gates: 1000/1000, build ok, coverage 22 gaps.
 
 ## Why (Derek 2026-10-27)
 

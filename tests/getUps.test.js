@@ -46,7 +46,9 @@ function stubSkeleton() {
         sk.drawn = { ...g };
         const f = facing >= 0 ? 1 : -1, hip = { x, y: y - g.hip * s };
         const knee = { x: hip.x + dir(f, g.nearThigh).x * 40 * s, y: hip.y + dir(f, g.nearThigh).y * 40 * s };
-        sk.jointAttachmentPoints = { nearHip: hip, nearKnee: knee, farKnee: sk.farKneeAt ?? knee };
+        // wrists swing with the arm channels (so a world target taken off the keyed wrist depends on the pose and the facing)
+        const wrist = (a, b) => ({ x: hip.x + f * (Math.sin(a) * 50 + Math.sin(b) * 30) * s, y: hip.y - 40 * s + (Math.cos(a) * 50 + Math.cos(b) * 30) * s });
+        sk.jointAttachmentPoints = { nearHip: hip, nearKnee: knee, farKnee: sk.farKneeAt ?? knee, nearWrist: wrist(g.nearArm, g.nearFore), farWrist: wrist(g.farArm, g.farFore) };
     };
     return sk;
 }
@@ -356,4 +358,139 @@ test('?getup=<family> plays that family when it fits how he lies, turning by the
     assert.equal(pick('?getups=v1', { lying: 'prone' }), null, 'prone keeps today\'s rise without the override');
     assert.equal(pick('?getup=frontKnee', { lying: 'prone' }), null, 'flag off: the override is ignored');
     assert.deepEqual(Object.keys(GETUP_SETS).sort(), ['backKneeHurt', 'backTuck', 'frontKnee']);
+});
+
+// ── T3.4: the support-hand schedule (E2) ──────────────────────────────────────────────────────────────────
+const phase = (push, release, extra = {}) => ({ target: 'mat', space: 'world', push, w: 1, release, ...extra });
+
+test('hands.<side> takes one phase or an ordered array; overlapping phases and a phase that starts before the last releases are rejected', () => {
+    const base = clone(GETUPS.frontKneeStraight);
+    const ok = { ...base, hands: { far: [phase([0.1, 0.4], [0.4, 0.5]), { target: 'farKnee', space: 'thighLocal', push: [0.6, 0.8], w: 1, release: [0.8, 0.9] }] } };
+    assert.deepEqual(validateGetUp(ok), []);
+    assert.deepEqual(validateGetUp({ ...base, hands: { far: phase([0.1, 0.4], [0.4, 0.5]) } }), [], 'a single object is still fine');
+    const overlap = { ...base, hands: { far: [phase([0.1, 0.5], [0.5, 0.6]), phase([0.4, 0.7], [0.7, 0.8])] } };
+    assert.ok(validateGetUp(overlap).some(m => /overlaps/.test(m)));
+    const early = { ...base, hands: { far: [phase([0.1, 0.3], [0.5, 0.6]), phase([0.4, 0.7], [0.7, 0.8])] } };
+    assert.ok(validateGetUp(early).some(m => /before hands\.far\[0\] releases/.test(m)));
+    assert.ok(validateGetUp({ ...base, hands: { far: [] } }).some(m => /no phases/.test(m)));
+    assert.ok(validateGetUp({ ...base, hands: { far: [phase([0.5, 0.2], [0.5, 0.6])] } }).some(m => /push/.test(m)));
+    assert.ok(validateGetUp({ ...base, hands: { far: [{ ...phase([0.1, 0.3], [0.3, 0.4]), space: 'sky' }] } }).some(m => /space/.test(m)));
+    const back = { ...base, tags: ['backSell'], hands: { near: [phase([0.1, 0.3], [0.3, 0.4])] } };
+    assert.ok(validateGetUp(back).some(m => /backSell/.test(m)), 'an array does not get the near hand past a backSell entry');
+});
+
+test('frontKnee: both hands on the mat then the far hand to the knee; backTuck: both on the mat then both to the knees; backKneeHurt stays one object', () => {
+    for (const id of ['frontKnee', 'frontKneeStraight']) {
+        const h = GETUPS[id].hands;
+        assert.deepEqual(h.near.map(p => p.space), ['world']);
+        assert.deepEqual(h.far.map(p => [p.space, p.target]), [['world', 'mat'], ['thighLocal', 'farKnee']]);
+    }
+    const t = GETUPS.backTuck.hands;
+    assert.deepEqual(t.near.map(p => [p.space, p.target]), [['world', 'mat'], ['thighLocal', 'nearKnee']]);
+    assert.deepEqual(t.far.map(p => [p.space, p.target]), [['world', 'mat'], ['thighLocal', 'farKnee']]);
+    assert.equal(JSON.stringify(GETUPS.backKneeHurt.hands), JSON.stringify({ far: { target: 'farKnee', space: 'thighLocal', push: [0.46, 0.72], w: 1, release: [0.72, 0.86] } }));
+    assert.equal(JSON.stringify(GETUPS.backKneeHurtStraight.hands), JSON.stringify(GETUPS.backKneeHurt.hands));
+    assert.equal(JSON.stringify(GETUPS.backKneeHurtBack.hands), JSON.stringify(GETUPS.backKneeHurt.hands));
+});
+
+// updateGetUp over a list of t, returning the reach each frame asked for
+function reachesAt(entry, ts, { x = 0, y = 0, s = 1, facing = 1, lying = 'prone', flipped = false, sk = stubSkeleton() } = {}) {
+    let seen = null;
+    sk.updateGroundedReach = (_x, _y, _s, _f, _g, reach) => { seen = reach; };
+    sk.farKneeAt = { x: 5, y: -20 };
+    return ts.map((t) => { seen = null; sk.updateGetUp(x, y, s, facing, t, lying, null, null, null, entry, flipped); return seen; });
+}
+
+test('a world target does not move in world space during its push, in both facings and two body sizes, even when a frame step jumps over push start', () => {
+    // stand-ins for Lou and George in Node: two scales and root positions (the real rigs are measured in the browser, T3.6)
+    const bodies = [{ s: 1, x: 300, y: 355 }, { s: 1.12, x: 640, y: 372 }];
+    const cases = [['frontKneeStraight', 'prone', 'near', 0.12, 0.46], ['frontKneeStraight', 'prone', 'far', 0.12, 0.46],
+        ['backTuck', 'supine', 'near', 0.08, 0.50], ['backTuck', 'supine', 'far', 0.08, 0.50]];
+    for (const [id, lying, side, p0, p1] of cases) for (const facing of [1, -1]) for (const b of bodies) {
+        const entry = GETUPS[id], inPush = [];
+        for (let t = p0; t <= p1 + 1e-9; t += 0.02) inPush.push(+t.toFixed(3));
+        const stepped = reachesAt(entry, [0, 0.02, ...inPush], { ...b, facing, lying });
+        const jumped = reachesAt(entry, [0, 0.25, ...inPush], { ...b, facing, lying });   // 0 -> .25 jumps over push start
+        const fromStart = stepped.slice(2).map(r => r[side].at), fromJump = jumped.slice(2).map(r => r[side].at);
+        for (const at of [...fromStart, ...fromJump]) {
+            assert.equal(at.x, fromStart[0].x, `${id} ${side} facing ${facing} x`);
+            assert.equal(at.y, b.y, `${id} ${side} on the mat line`);
+            assert.equal(at.y, fromStart[0].y);
+        }
+        for (const r of [...stepped.slice(2), ...jumped.slice(2)]) assert.equal(r[side].w, 1, 'full weight through the push');
+    }
+});
+
+test('the two facings put the hand target on the same side of the root as the keyed wrist', () => {
+    const a = reachesAt(GETUPS.frontKneeStraight, [0.3], { facing: 1 })[0].near.at, b = reachesAt(GETUPS.frontKneeStraight, [0.3], { facing: -1 })[0].near.at;
+    assert.ok(Math.abs(a.x + b.x) < 1e-9 && a.x !== 0);
+});
+
+test('the next phase blends in from the held hand: the hand-over moves the target from the mat point to the knee, weight never dips', () => {
+    const sk = stubSkeleton();
+    const rs = reachesAt(GETUPS.frontKneeStraight, [0.3, 0.46, 0.50, 0.54, 0.58, 0.62, 0.7], { sk }).map(r => r.far);
+    const mat = rs[0].at, knee = { x: 5, y: -20 };
+    assert.deepEqual(rs[1].at, mat, 'at the end of the push: still the mat point');
+    const toKnee = (r) => Math.hypot(r.at.x - knee.x, r.at.y - knee.y);
+    for (const r of rs.slice(0, 5)) assert.ok(Math.abs(r.w - 1) < 1e-9, `weight stays 1 through the hand-over (${r.w})`);
+    assert.ok(toKnee(rs[2]) < toKnee(rs[1]) && toKnee(rs[3]) < toKnee(rs[2]) && toKnee(rs[4]) < toKnee(rs[3]), 'moving toward the knee');
+    assert.deepEqual(rs[5].at, knee); assert.deepEqual(rs[6].at, knee);
+});
+
+test('single-object entries ask for the same reach as before: backKneeHurt far hand is the knee at the posed weight', () => {
+    for (const id of ['backKneeHurt', 'backKneeHurtStraight', 'backKneeHurtBack']) {
+        const e = GETUPS[id];
+        for (let t = 0; t <= 1.0001; t += 0.05) {
+            const [r] = reachesAt(e, [Math.min(1, t)], { lying: 'supine', flipped: !!e.after && t >= e.flipAt });
+            const w = Skeleton.getUpHandWeight(e.hands.far, Math.min(1, t));
+            if (w > 0.001) assert.deepEqual(r, { far: { at: { x: 5, y: -20 }, w } }, `${id} t=${t}`);
+            else assert.equal(r, null);
+        }
+    }
+});
+
+test('interruption mid-push clears the held world target (pin, pickup, reset); a restart takes a new one', () => {
+    for (const state of ['pinned', 'carried', 'down', 'standing']) {
+        const w = wrestler({ lying: 'prone', _lastOther: { x: 700 } });
+        withFlag('?getups=v1&getup=frontKnee', () => w._startRiseUp());
+        assert.equal(w._getUp.id, 'frontKneeStraight');
+        w.state = 'gettingUp'; w.riseT = 0.3; w._tickRiseFlip(); drawFrame(w);
+        assert.ok(w.skeleton._getUpHold, 'held at mid-push');
+        w.state = state; w._tickRiseFlip();
+        assert.equal(w.skeleton._getUpHold, null, state);
+    }
+    // restart from a different root: the target is the new one, not the stale one
+    const sk = stubSkeleton(); sk.updateGroundedReach = () => {};
+    sk.updateGetUp(100, 0, 1, 1, 0.3, 'prone', null, null, null, GETUPS.frontKneeStraight, false);
+    const first = sk._getUpHold.pts.near0.x;
+    sk.updateGetUp(400, 0, 1, 1, 0.3, 'prone', null, null, null, GETUPS.frontKneeStraight, false);
+    assert.equal(sk._getUpHold.pts.near0.x, first, 'same rise: held');
+    sk.updateGetUp(400, 0, 1, 1, 0.1, 'prone', null, null, null, GETUPS.frontKneeStraight, false); // t ran backwards = a new rise
+    sk.updateGetUp(400, 0, 1, 1, 0.3, 'prone', null, null, null, GETUPS.frontKneeStraight, false);
+    assert.equal(sk._getUpHold.pts.near0.x, first + 300);
+});
+
+test('the facing flip re-captures a world target after the flip (not before) and holds it from then on; the pivot move re-takes it at the final x', () => {
+    const entry = { ...clone(GETUPS.backKneeHurt), hands: { far: [phase([0.30, 0.66], [0.66, 0.80])] } };
+    assert.deepEqual(validateGetUp(entry), []);
+    for (const facing of [1, -1]) {
+        const w = wrestler({ facing, lying: 'supine', _lastOther: { x: facing > 0 ? 300 : 700 }, _getUp: entry });
+        w.state = 'gettingUp'; w._riseFlip = null; w.skeleton.updateGroundedReach = () => {};
+        const targets = [];
+        for (const t of [0.35, 0.40, 0.44, 0.47, 0.5, 0.56, 0.62, 0.66]) {
+            w.riseT = t; w._tickRiseFlip(); drawFrame(w);
+            targets.push({ t, flipped: !!w._riseFlip, at: { ...w.skeleton._getUpHold.pts.far0 }, x: w.x });
+        }
+        const before = targets.filter(r => !r.flipped), after = targets.filter(r => r.flipped);
+        assert.ok(before.length >= 3 && after.length >= 3);
+        for (const r of before) assert.deepEqual(r.at, before[0].at, 'held before the flip');
+        for (const r of after) assert.deepEqual(r.at, after[0].at, 'held after the flip');
+        assert.notDeepEqual(after[0].at, before[0].at, 'taken again after the flip');
+    }
+});
+
+test('no hands, no hold: legacy and hand-less entries keep no world state', () => {
+    const sk = stubSkeleton(); sk.updateGroundedReach = () => {};
+    sk.updateGetUp(0, 0, 1, 1, 0.3, 'supine', null, null, null, legacySupine, false);
+    assert.equal(sk._getUpHold ?? null, null);
 });

@@ -2705,9 +2705,15 @@ export default class Skeleton {
     updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null, stand = null, holdOffsets = null, entry = null, flipped = false) {
         const K = entry ? (entry.after && flipped ? entry.after : entry.keys)
             : lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
-        let pose = Skeleton._getUpPose(K, t, this._lockLimbJoints, this.standingHipHeight, stand, !(entry?.after && !flipped));
-        const carry = holdOffsets ? riseHoldCarry(t) : 0;
-        if (carry > 0) pose = limitKnees(applyOffsets(pose, Object.fromEntries(Object.entries(holdOffsets).map(([c, v]) => [c, v * carry]))));
+        const final = !(entry?.after && !flipped);
+        // the pose at progress tt: the keyed pose with the hold's offsets carried (a world hand target is read off it at its push start)
+        const poseAt = (tt) => {
+            let p = Skeleton._getUpPose(K, tt, this._lockLimbJoints, this.standingHipHeight, stand, final);
+            const c = holdOffsets ? riseHoldCarry(tt) : 0;
+            if (c > 0) p = limitKnees(applyOffsets(p, Object.fromEntries(Object.entries(holdOffsets).map(([k, v]) => [k, v * c]))));
+            return p;
+        };
+        const pose = poseAt(t);
         const back = lying === 'supine' && pain?.part === 'back' && (pain.severity ?? 0) > 0
             && (!entry || entry.tags?.includes('backSell')); // an authored entry without the tag has no back reach
         const sev = back ? Math.max(0, Math.min(1, pain.severity)) : 0;
@@ -2723,15 +2729,59 @@ export default class Skeleton {
         if (plant) reach.far = plant;
         // B5 (PLAN_GETUPS): the entry's support hands. The target is a joint of this body measured on the pose just posed,
         // so it follows the leg it rests on. A backSell entry never lists the near hand (the validator), the back reach owns it.
-        for (const [side, h] of Object.entries(entry?.hands ?? {})) {
-            const w = Skeleton.getUpHandWeight(h, t);
-            if (!(w > 0.001) || reach[side]) continue;
-            this._applyGrounded(x, y, s, facing, pose);
-            const at = this.jointAttachmentPoints[h.target];
-            if (at) reach[side] = { at: { x: at.x, y: at.y }, w };
+        // E2: `hands.<side>` is one phase or an ordered array. A `world` phase aims at a mat point taken once (_worldHandTarget);
+        // two phases live at once (a hand-over) aim at their weighted mean point, so the hand travels from where it was held.
+        if (!entry?.hands && this._getUpHold) this._getUpHold = null;
+        const hold = entry?.hands ? this._getUpHandHold(entry, flipped, t) : null;
+        let measured = false;
+        for (const [side, spec] of Object.entries(entry?.hands ?? {})) {
+            if (reach[side]) continue;
+            const live = [];
+            (Array.isArray(spec) ? spec : [spec]).forEach((h, i) => {
+                const w = Skeleton.getUpHandWeight(h, t);
+                if (!(w > 0.001)) return;
+                let at = null;
+                if (h.space === 'world') at = this._worldHandTarget(hold, `${side}${i}`, side, h, x, y, s, facing, t, flipped, poseAt);
+                else {
+                    if (!measured) { this._applyGrounded(x, y, s, facing, pose); measured = true; }
+                    const p = this.jointAttachmentPoints[h.target];
+                    if (p) at = { x: p.x, y: p.y };
+                }
+                if (at) live.push({ at, w });
+            });
+            if (!live.length) continue;
+            if (live.length === 1) { reach[side] = { at: live[0].at, w: live[0].w }; continue; }
+            const sum = live.reduce((a, l) => a + l.w, 0);
+            reach[side] = {
+                at: { x: live.reduce((a, l) => a + l.at.x * l.w, 0) / sum, y: live.reduce((a, l) => a + l.at.y * l.w, 0) / sum },
+                w: Math.min(1, sum),
+            };
         }
         if (Object.keys(reach).length) this.updateGroundedReach(x, y, s, facing, pose, reach, { paintedContacts: true, backContact: true });
         else this._applyGrounded(x, y, s, facing, pose);
+    }
+
+    // The world-space hand targets of the rise being drawn (E2). Reset (null) on interruption (Wrestler), on the facing flip
+    // (`flipped` changes) and when the rise starts over (entry changes, or t runs backwards); a frame step needs no history,
+    // the point is a function of the entry, the root and the facing.
+    clearGetUpHands() { this._getUpHold = null; }
+
+    _getUpHandHold(entry, flipped, t) {
+        const h = this._getUpHold;
+        if (!h || h.entry !== entry || h.flipped !== flipped || t < h.t - 1e-9) this._getUpHold = { entry, flipped, t, pts: {} };
+        else h.t = t;
+        return this._getUpHold;
+    }
+
+    // The mat point a `world` phase holds: under where the keyed wrist is at the phase's push start (or, after a flip,
+    // where it is when the new half first draws it), on the mat line y. Captured once, then fixed until the hold resets.
+    _worldHandTarget(hold, key, side, h, x, y, s, facing, t, flipped, poseAt) {
+        if (hold.pts[key]) return hold.pts[key];
+        const tc = flipped ? t : h.push[0];
+        this._applyGrounded(x, y, s, facing, poseAt(Math.max(tc, 0)));
+        const wrist = this.jointAttachmentPoints[`${side}Wrist`];
+        if (!wrist) return null;
+        return (hold.pts[key] = { x: wrist.x, y });
     }
 
     // How far (0-1) a support hand has gone to its target at rise progress t: eases in over HAND_LEAD before push[0],

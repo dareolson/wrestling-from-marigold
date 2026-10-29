@@ -10,7 +10,9 @@
 //           body with the art turned over, which does not turn him to face the other way.)
 //   pivot   the joint (a Skeleton.jointAttachmentPoints name, e.g. 'nearKnee') that stays put across the flip; the
 //           Wrestler's x is corrected so it does (B4).
-//   hands   B5, support hands as data: { near|far: { target, space, push: [t0, t1], w, release: [t1, t2] } }.
+//   hands   B5/E2, support hands as data: { near|far: phase | [phase, ...] }, phase = { target, space: 'world'|'thighLocal',
+//           push: [t0, t1], w, release: [t1, t2], lead? (the ease-in span before t0, default .10) }. A `world` phase holds a mat point taken once at its push start (its
+//           `target` is a label only); `thighLocal` follows the named joint. Phases are in order and only overlap in a hand-over.
 //   tags    ['backSell'] keeps the near hand for the carried back reach, so `hands.near` is rejected there.
 import Skeleton from '../Skeleton.js';
 
@@ -56,10 +58,33 @@ export function validateGetUp(e) {
     } else if (e.keys.at(-1).t !== 1) bad.push('missing standing key (last key must be t = 1)');
     const standing = (hasFlip ? e.after?.at(-1) : e.keys.at(-1));
     if (standing && Math.abs(standing.torso - Math.PI) > 1e-9) bad.push('the last key must be the standing key (torso π)');
-    for (const [side, h] of Object.entries(e.hands ?? {})) {
+    for (const [side, spec] of Object.entries(e.hands ?? {})) {
         if (side !== 'near' && side !== 'far') bad.push(`hands.${side}: near or far`);
         if (side === 'near' && e.tags?.includes('backSell')) bad.push('a backSell variant keeps the near hand for the back reach');
-        if (!Array.isArray(h.push) || !(h.push[0] < h.push[1])) bad.push(`hands.${side}.push must be [t0, t1]`);
+        // E2: one phase, or an ordered array of phases
+        const phases = Array.isArray(spec) ? spec : [spec];
+        if (!phases.length) bad.push(`hands.${side} has no phases`);
+        phases.forEach((h, i) => {
+            const at = `hands.${side}${Array.isArray(spec) ? `[${i}]` : ''}`;
+            if (!h || typeof h !== 'object') return bad.push(`${at} must be a phase`);
+            if (!Array.isArray(h.push) || !(h.push[0] < h.push[1])) bad.push(`${at}.push must be [t0, t1]`);
+            if (Array.isArray(spec)) {
+                if (h.space !== 'world' && h.space !== 'thighLocal') bad.push(`${at}.space must be world or thighLocal`);
+                if (h.space === 'thighLocal' && typeof h.target !== 'string') bad.push(`${at}.target needs a joint name`);
+                if (h.lead !== undefined && !(h.lead > 0)) bad.push(`${at}.lead must be positive`);
+                if (h.release !== undefined && !(Array.isArray(h.release) && h.release[0] <= h.release[1])) bad.push(`${at}.release must be [t1, t2]`);
+            }
+        });
+        if (Array.isArray(spec)) {
+            // phases run in order: a phase's push ends before its release starts (or with it), and the next phase's push starts
+            // no sooner than the previous release starts, so two phases are only live together in a hand-over
+            for (let i = 1; i < phases.length; i++) {
+                const a = phases[i - 1], b = phases[i];
+                if (!Array.isArray(a?.push) || !Array.isArray(b?.push)) continue;
+                if (b.push[0] < a.push[1]) bad.push(`hands.${side}[${i}] overlaps hands.${side}[${i - 1}]`);
+                else if (b.push[0] < (a.release?.[0] ?? a.push[1])) bad.push(`hands.${side}[${i}] starts before hands.${side}[${i - 1}] releases`);
+            }
+        }
     }
     return bad;
 }
@@ -112,7 +137,16 @@ const KNEEL_F = { t: 0.62, hip: 40, torso: P - 0.95, farThigh: 1.10, farShin: -0
 const PUSH_F = { ...PUSH, t: 0.82 };
 const frontKneeBase = {
     from: 'prone', duration: 0.85, pivot: 'nearKnee', tags: ['knee'],
-    hands: { far: { target: 'farKnee', space: 'thighLocal', push: [0.62, 0.82], w: 1, release: [0.82, 0.92] } },
+    // E2 / T3.4: both hands on the mat (a world point held under where each wrist is at t .12) while he pushes up to all fours
+    // (key .42), released before the flip (.62); then the far hand goes to the far knee as before.
+    hands: {
+        near: [{ target: 'mat', space: 'world', push: [0.12, 0.46], w: 1, release: [0.46, 0.58] }],
+        far: [
+            { target: 'mat', space: 'world', push: [0.12, 0.46], w: 1, release: [0.46, 0.62] },
+            // lead = the mat phase's release span, so the two ramps are complementary: the hand travels mat -> knee, never back to the keyed pose
+            { target: 'farKnee', space: 'thighLocal', push: [0.62, 0.82], w: 1, release: [0.82, 0.92], lead: 0.16 },
+        ],
+    },
 };
 export const frontKnee = Object.freeze({
     id: 'frontKnee', ...frontKneeBase, flipAt: KNEEL_F.t,
@@ -132,6 +166,18 @@ const TUCK = { t: 0.52, hip: 28, torso: P + 0.12, farThigh: 1.85, farShin: -0.45
 const LEAN = { t: 0.74, hip: 52, torso: P - 0.50, farThigh: 1.25, farShin: -0.20, nearThigh: 1.05, nearShin: -0.30, farArm: 0.85, farFore: 0.90, nearArm: 0.75, nearFore: 0.80 };
 export const backTuck = Object.freeze({
     id: 'backTuck', from: 'supine', duration: 0.85, tags: ['noTurn'],
+    // E2 / T3.4: both hands on the mat behind him (a world point held under each wrist at t .08) through the tuck (key .52),
+    // then both to their knees as the lean takes him over his feet (key .74).
+    hands: {
+        near: [
+            { target: 'mat', space: 'world', push: [0.08, 0.50], w: 1, release: [0.50, 0.66] },
+            { target: 'nearKnee', space: 'thighLocal', push: [0.66, 0.84], w: 1, release: [0.84, 0.96], lead: 0.16 },
+        ],
+        far: [
+            { target: 'mat', space: 'world', push: [0.08, 0.50], w: 1, release: [0.50, 0.66] },
+            { target: 'farKnee', space: 'thighLocal', push: [0.66, 0.84], w: 1, release: [0.84, 0.96], lead: 0.16 },
+        ],
+    },
     keys: keyed(Skeleton.GROUNDED_SUPINE, PROP, TUCK, LEAN, { ...STAND, t: 1 }),
 });
 

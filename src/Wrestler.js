@@ -2744,6 +2744,7 @@ export default class Wrestler {
         this.riseT = 0;
         this._getUp = this._pickGetUp();
         this._riseFlip = null;
+        this.skeleton?.clearGetUpHands?.();
         const hurt = Math.max(0, 1 - this.stamina / 100);
         this.scene.tweens.add({
             targets:  this,
@@ -2791,12 +2792,14 @@ export default class Wrestler {
                 const at = this.skeleton.jointAttachmentPoints?.[up.pivot];
                 this._riseFlip = { facing0: this.facing, x0: this.x, pivotX: at ? at.x : null, dx: 0, pending: at != null, clamped: false };
                 this.facing = -this.facing;
+                this.skeleton.clearGetUpHands?.(); // E2: a world hand target is taken again after the flip, not before
             }
             return;
         }
         // standing: the rise finished and the new facing stands. Anything else: interrupted, put the old facing back.
         if (f && this.state !== 'standing') { this.facing = f.facing0; this.x -= f.dx; }
         this._getUp = null; this._riseFlip = null;
+        this.skeleton?.clearGetUpHands?.(); // E2: pinned, picked up, reset or finished: no world hand target outlives the rise
     }
 
     // After the first flipped frame is drawn: slide x so the pivot joint is where it was (B4), within the ring.
@@ -2993,7 +2996,7 @@ export default class Wrestler {
             const draw = (px) => this.skeleton.updateGetUp(px, y, s, facing, this.riseT, this.lying, this._backRiseContext(), this._riseStand(s, facing), this._riseHold, this._getUp, flipped);
             draw(x);
             const dx = flipped ? this._holdRisePivot(s) : 0;
-            if (dx) draw(x + dx);
+            if (dx) { this.skeleton.clearGetUpHands?.(); draw(x + dx); } // the pivot moved x: take the world targets at the final x
             return;
         }
 

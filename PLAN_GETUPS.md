@@ -18,6 +18,8 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
 - T2.8: 4747b66 painted-pixel evidence, [g1-rev2 page](research/animation/getups-2026-10/g1-rev2/index.html#verified), entry `2026-10-28-claude-getups-t28.md`. R: lowest painted hand pixel 5.2-9.9 px above the hem, 0 visible px over a thigh (153 frames); union mask copies lacked alpha/parent transform (fixed, `syncUnionCopy`). Misses: the 36.5 px jump is the IK elbow branch flipping (not latch/art/depth); wrist jumps 15.3 px on the first standing frame (frame 55); turn feet 57-76 px as before.
 - T2.9: 794cfd1 George's R route registered (`aroundVia` u -.4772 / v .6358, via pose -.45 / -1.8, `path`) in SPECS, `george_roster_v1.js` and the agreement test; scope: IK in the standing release above `standW` only. Applies with `getups` OFF too (the route code is not flag-gated): George's lying back-clutch reach step goes 4.0 -> 8.3 px/frame (compact clutch 8.6 -> 17.4), hold margin .48 -> .09 px at holdW .7; release depth swap clearance 15.8 -> 32.7 px. Full suite 981/981.
 - T3.1-T3.2: eabce3f (keys) / 733161f (page): rough `frontKnee` (turn + straight) and `backTuck` keys, `?getups=v1&getup=<family>` dev override (default picks unchanged), [G2a page](research/animation/getups-2026-10/g2a/index.html) (Bret refs, keys on Lou/George both facings, 1x loops today | new). Rise 867 ms both; largest part step frontKnee 17.3 (Lou) / 19.3 (George), backTuck 21.5 / 21.9 (today 18.5). Misses: no measuring pass, mat-point push-up hand target not built. G2a approved (Derek 2026-10-28).
+- T3.3: e1c6d72 George's T2.9 route behind `?getups=v1` (`aroundVia.getups` overlay, one reader `resolveAroundVia`, flag passed in); fixture `georgeClutchFlagOff` recorded from 794cfd1^. Getups off again: clutch step 4.02 / compact 8.61 px, hold margin .48, release swap clearance 15.8; focused tests 81/81.
+  Getups on: 8.27 / 17.4, clearance 32.69, hold margin .09 px (worst 14.91 of 15; same at hurt 0/.5/1 and both facings, hurt does not enter the hold). Misses: none over contactPx; fixture is Node-bounded (reach weight + hand goal, not drawn wrist px).
 
 ## Why (Derek 2026-10-27)
 
@@ -267,8 +269,6 @@ visible, it comes back.
 Same pattern as Stage 2 (pose sheet ⛔ G2a, implement, film, viewer). `frontKnee` must also report the near forearm's step at
 hold → rise on George from a direct face-down landing (today 40-44 px; target ≤ 3 px). There is no sell roll under
 `?getups=v1` (D7), so the roll-swap number is history only (B1).
-- T3.3: e1c6d72 George's T2.9 route behind `?getups=v1` (`aroundVia.getups` overlay, one reader `resolveAroundVia`, flag passed in); fixture `georgeClutchFlagOff` recorded from 794cfd1^. Getups off again: clutch step 4.02 / compact 8.61 px, hold margin .48, release swap clearance 15.8; focused tests 81/81.
-  Getups on: 8.27 / 17.4, clearance 32.69, hold margin .09 px (worst 14.91 of 15; same at hurt 0/.5/1 and both facings, hurt does not enter the hold). Misses: none over contactPx; fixture is Node-bounded (reach weight + hand goal, not drawn wrist px).
 
 ### Rev 3 (Opus 2026-10-28, after [Codex's planning note](AI_HANDOFF_ENTRIES/2026-10-28-codex-stage3-planning-advice.md))
 

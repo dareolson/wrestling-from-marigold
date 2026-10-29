@@ -30,10 +30,10 @@ Avoid a large rewrite.
 
 ## Status (2026-10-28, replace this block; ≤ 40 lines)
 
-- **HEAD** see `git log` on `story/marigold-opening`; full suite 1000/1000 at T3.6 (Node 22: `nvm use`; shell default is 25). Tree clean except untracked `research/`.
+- **HEAD** see `git log` on `story/marigold-opening`; full suite 1012/1012 at T3b.2 (Node 22: `nvm use`; shell default is 25). Tree clean except untracked `research/`.
 - **Pushed vs local:** pushed through `178d79b` 2026-10-28; later plan/status commits may be local. Push via the SSH URL (HTTPS returns 400).
 - **Gait (2026-10-26):** [PLAN_GAIT.md](PLAN_GAIT.md) Stage 3 (run as its own gait) built behind `?gait=v2` (`&runGait=off` = Stage 2 run; flag off byte-identical), stopped at **G3**: Derek judges the [G3 page](research/animation/gait-2026-10/g3.html). Stage 2 commits local only. Open: whip-start facing flip (Stage 4), George hip step 3.3 px.
-- **Active plan:** [PLAN_GETUPS.md](PLAN_GETUPS.md) (authored get-ups, `?getups=v1`). G1, G1-rev2, G2a and **G2 approved** (Derek 2026-10-28; [G2 page](research/animation/getups-2026-10/g2/index.html)). Stage 3 done: T3.3 George's route behind `getups` (flag-off George restored), T3.4 support-hand schedule, T3.4b hand lifts at full reach, T3.5 `frontKneeBack`, T3.6 measuring pass (suite 1000/1000, build, coverage 22). **Next: T3b.1** fatigue stall, executable brief in the plan's Stage 3b **Rev 5** (one tween with a held stretch, support state frozen, backTuck no stall), then T3b.2 films and G2b, then Stage 4. [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) parked at G10a. Side ideas: [IDEAS.md](IDEAS.md).
+- **Active plan:** [PLAN_GETUPS.md](PLAN_GETUPS.md) (authored get-ups, `?getups=v1`). G1, G1-rev2, G2a and G2 approved (Derek 2026-10-28). Stage 3 done. **Stage 3b built: T3b.1** fatigue stall (6d9e253: one tween with a held stretch at KNEEL / ALLFOURS, stamina <= 25 %, 600-1400 ms, torso droop + hip sag, hand checks frozen on the key pose; backTuck no stall) and **T3b.2** films + [G2b page](research/animation/getups-2026-10/g2b/index.html) ([loop strip](research/animation/getups-2026-10/g2b/strip.html)); suite 1012/1012, build, coverage 22. **⛔ G2b (Derek) is next**: stall length, Lou's frontKnee near hand half-lifted through the stall (w .62, cannot reach at the breath extreme), droop enough for head down, look only for now. Then Stage 4 (`chooseGetUp`; must never pick backTuck at stamina <= 25 %). [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) parked at G10a. Side ideas: [IDEAS.md](IDEAS.md).
 - **Open misses (G8):** prone run misses the 2.5 px/frame step limit (3.26, 16.63, 2.85 px; the prone rise has no hand route); forearm pixels still show inside the torso outline in the rise (1–80 px counted); the latch cannot decide the swap (want = the route); swap-in is at the start of the clutch, not at the via point; holdW .7 leaves a .48 px margin to the 15 px line; about +1 ms a frame.
 - **Feature flags:** `risefix`, `sellart` (v1) and `aftermath` (v2) are **promoted** (default on, `=off` disables; risefix 82b71a8, others Derek 2026-10-24). `?plant=1` (support-hand plant) is **opt-in only**, parked.
 - **Parked (Derek):** figure-four track (2026-10-23, G1 never approved, revisit later, see [PLAN_MOVE_PERFORMANCE.md](PLAN_MOVE_PERFORMANCE.md) and `research/animation/figure-four-tableau/LEDGER.md`); support-hand plant and Codex's support-art request; old rigs `thesz` and `thesz-front3q-r1` (don't fix, don't retire).
@@ -43,6 +43,7 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-10-28 · Claude · [Get-ups T3b: the fatigue stall, G2b package](AI_HANDOFF_ENTRIES/2026-10-28-claude-getups-t3b.md)
 - 2026-10-28 · Codex · [G2 measuring-pass advice: contact coverage, prone context and fatigue-stall boundaries](AI_HANDOFF_ENTRIES/2026-10-28-codex-g2-measuring-advice.md)
 - 2026-10-28 · Codex · [Planning advice after T2.9 / G2a: rollout boundary, contact continuity and Stage 3 support](AI_HANDOFF_ENTRIES/2026-10-28-codex-stage3-planning-advice.md)
 - 2026-10-28 · Claude · [Get-ups T2.8: evidence pass on George's hand route](AI_HANDOFF_ENTRIES/2026-10-28-claude-getups-t28.md)

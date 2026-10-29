@@ -1,0 +1,2198 @@
+[
+ {
+  "rig": "lou",
+  "scn": "bkh",
+  "facing": -1,
+  "frames": 114,
+  "entry": "backKneeHurt",
+  "stamina": 100,
+  "stallT": 0.46,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 16.52,
+   "part": "nearShin"
+  },
+  "keyWindowStep": {
+   "perFrame": 16.52,
+   "part": "nearShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "lou",
+  "scn": "bkh",
+  "facing": 1,
+  "frames": 113,
+  "entry": "backKneeHurt",
+  "stamina": 100,
+  "stallT": 0.46,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 16.52,
+   "part": "nearShin"
+  },
+  "keyWindowStep": {
+   "perFrame": 16.52,
+   "part": "nearShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "lou",
+  "scn": "fk",
+  "facing": -1,
+  "frames": 113,
+  "entry": "frontKnee",
+  "stamina": 100,
+  "stallT": 0.42,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 17.82,
+   "part": "nearForearm"
+  },
+  "keyWindowStep": {
+   "perFrame": 17.82,
+   "part": "nearForearm"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "lou",
+  "scn": "fk",
+  "facing": 1,
+  "frames": 114,
+  "entry": "frontKnee",
+  "stamina": 100,
+  "stallT": 0.42,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 17.82,
+   "part": "nearForearm"
+  },
+  "keyWindowStep": {
+   "perFrame": 17.82,
+   "part": "nearForearm"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "lou",
+  "scn": "fkb",
+  "facing": -1,
+  "frames": 210,
+  "entry": "frontKneeBack",
+  "stamina": 100,
+  "stallT": 0.42,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 17.32,
+   "part": "farShin"
+  },
+  "keyWindowStep": {
+   "perFrame": 16.79,
+   "part": "farShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "lou",
+  "scn": "fkb",
+  "facing": 1,
+  "frames": 210,
+  "entry": "frontKneeBack",
+  "stamina": 100,
+  "stallT": 0.42,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 17.3,
+   "part": "farShin"
+  },
+  "keyWindowStep": {
+   "perFrame": 16.79,
+   "part": "farShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "lou",
+  "scn": "bkh",
+  "facing": -1,
+  "frames": 182,
+  "entry": "backKneeHurt",
+  "stamina": 25,
+  "stallT": 0.46,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 683.33,
+   "stallMs": 600,
+   "afterMs": 733.33,
+   "enter": {
+    "perFrame": 10.13,
+    "perSec": 607.8,
+    "part": "nearShin",
+    "i": 40,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 3.39,
+    "perSec": 203.4,
+    "part": "head",
+    "i": 78,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.15,
+    "perSec": 9,
+    "part": "head",
+    "i": 54,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 3.05,
+    "perSec": 183,
+    "part": "head",
+    "i": 41,
+    "turned": true
+   },
+   "flipAtStall": true,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "on the knee",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 10.13,
+   "part": "nearShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "lou",
+  "scn": "bkh",
+  "facing": 1,
+  "frames": 182,
+  "entry": "backKneeHurt",
+  "stamina": 25,
+  "stallT": 0.46,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 683.33,
+   "stallMs": 600,
+   "afterMs": 733.33,
+   "enter": {
+    "perFrame": 10.13,
+    "perSec": 607.8,
+    "part": "nearShin",
+    "i": 40,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 3.39,
+    "perSec": 203.4,
+    "part": "head",
+    "i": 78,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.15,
+    "perSec": 9,
+    "part": "head",
+    "i": 54,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 3.05,
+    "perSec": 183,
+    "part": "head",
+    "i": 41,
+    "turned": true
+   },
+   "flipAtStall": true,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "on the knee",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 10.13,
+   "part": "nearShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "lou",
+  "scn": "fk",
+  "facing": -1,
+  "frames": 182,
+  "entry": "frontKnee",
+  "stamina": 25,
+  "stallT": 0.42,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 650,
+   "stallMs": 600,
+   "afterMs": 766.67,
+   "enter": {
+    "perFrame": 9.04,
+    "perSec": 542.4,
+    "part": "nearForearm",
+    "i": 38,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 10.58,
+    "perSec": 634.8,
+    "part": "nearForearm",
+    "i": 76,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.14,
+    "perSec": 8.4,
+    "part": "head",
+    "i": 52,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.54,
+    "perSec": 32.4,
+    "part": "head",
+    "i": 40,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "near",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "lifting",
+     "w": 0.56,
+     "tLift": 0.37,
+     "wStart": 0.56,
+     "wEnd": 0.56,
+     "reachRatioMin": 0.98,
+     "reachRatioMax": 1.01,
+     "reachVerdict": "cannot reach"
+    },
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "planted",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1,
+     "reachRatioMin": 0.76,
+     "reachRatioMax": 0.81,
+     "reachVerdict": "within reach"
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 10.58,
+   "part": "nearForearm"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "lou",
+  "scn": "fk",
+  "facing": 1,
+  "frames": 182,
+  "entry": "frontKnee",
+  "stamina": 25,
+  "stallT": 0.42,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 650,
+   "stallMs": 600,
+   "afterMs": 766.67,
+   "enter": {
+    "perFrame": 9.04,
+    "perSec": 542.4,
+    "part": "nearForearm",
+    "i": 38,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 10.58,
+    "perSec": 634.8,
+    "part": "nearForearm",
+    "i": 76,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.14,
+    "perSec": 8.4,
+    "part": "head",
+    "i": 52,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.54,
+    "perSec": 32.4,
+    "part": "head",
+    "i": 40,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "near",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "lifting",
+     "w": 0.56,
+     "tLift": 0.37,
+     "wStart": 0.56,
+     "wEnd": 0.56,
+     "reachRatioMin": 0.98,
+     "reachRatioMax": 1.01,
+     "reachVerdict": "cannot reach"
+    },
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "planted",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1,
+     "reachRatioMin": 0.76,
+     "reachRatioMax": 0.81,
+     "reachVerdict": "within reach"
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 10.58,
+   "part": "nearForearm"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "lou",
+  "scn": "fkb",
+  "facing": -1,
+  "frames": 278,
+  "entry": "frontKneeBack",
+  "stamina": 25,
+  "stallT": 0.42,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 650,
+   "stallMs": 600,
+   "afterMs": 766.67,
+   "enter": {
+    "perFrame": 7.73,
+    "perSec": 463.8,
+    "part": "farThigh",
+    "i": 38,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 10.24,
+    "perSec": 614.4,
+    "part": "farShin",
+    "i": 77,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.14,
+    "perSec": 8.4,
+    "part": "head",
+    "i": 52,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.54,
+    "perSec": 32.4,
+    "part": "head",
+    "i": 40,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "planted",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1,
+     "reachRatioMin": 0.76,
+     "reachRatioMax": 0.81,
+     "reachVerdict": "within reach"
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 10.16,
+   "part": "farShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "lou",
+  "scn": "fkb",
+  "facing": 1,
+  "frames": 279,
+  "entry": "frontKneeBack",
+  "stamina": 25,
+  "stallT": 0.42,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 650,
+   "stallMs": 600,
+   "afterMs": 766.67,
+   "enter": {
+    "perFrame": 7.73,
+    "perSec": 463.8,
+    "part": "farThigh",
+    "i": 38,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 10.24,
+    "perSec": 614.4,
+    "part": "farShin",
+    "i": 77,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.14,
+    "perSec": 8.4,
+    "part": "head",
+    "i": 52,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.54,
+    "perSec": 32.4,
+    "part": "head",
+    "i": 40,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "planted",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1,
+     "reachRatioMin": 0.76,
+     "reachRatioMax": 0.81,
+     "reachVerdict": "within reach"
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 10.16,
+   "part": "farShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "lou",
+  "scn": "bkh",
+  "facing": -1,
+  "frames": 231,
+  "entry": "backKneeHurt",
+  "stamina": 5,
+  "stallT": 0.46,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 750,
+   "stallMs": 1233.33,
+   "afterMs": 833.33,
+   "enter": {
+    "perFrame": 9.1,
+    "perSec": 546,
+    "part": "nearShin",
+    "i": 44,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 3.07,
+    "perSec": 184.2,
+    "part": "head",
+    "i": 120,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.23,
+    "perSec": 13.8,
+    "part": "head",
+    "i": 89,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 6.07,
+    "perSec": 364.2,
+    "part": "head",
+    "i": 45,
+    "turned": true
+   },
+   "flipAtStall": true,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "on the knee",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 9.1,
+   "part": "nearShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "lou",
+  "scn": "bkh",
+  "facing": 1,
+  "frames": 231,
+  "entry": "backKneeHurt",
+  "stamina": 5,
+  "stallT": 0.46,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 750,
+   "stallMs": 1233.33,
+   "afterMs": 833.33,
+   "enter": {
+    "perFrame": 9.1,
+    "perSec": 546,
+    "part": "nearShin",
+    "i": 44,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 3.07,
+    "perSec": 184.2,
+    "part": "head",
+    "i": 120,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.24,
+    "perSec": 14.4,
+    "part": "head",
+    "i": 92,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 6.07,
+    "perSec": 364.2,
+    "part": "head",
+    "i": 45,
+    "turned": true
+   },
+   "flipAtStall": true,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "on the knee",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 9.1,
+   "part": "nearShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "lou",
+  "scn": "fk",
+  "facing": -1,
+  "frames": 231,
+  "entry": "frontKnee",
+  "stamina": 5,
+  "stallT": 0.42,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 716.67,
+   "stallMs": 1233.33,
+   "afterMs": 866.67,
+   "enter": {
+    "perFrame": 7.84,
+    "perSec": 470.4,
+    "part": "nearForearm",
+    "i": 42,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 10.09,
+    "perSec": 605.4,
+    "part": "nearForearm",
+    "i": 118,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.24,
+    "perSec": 14.4,
+    "part": "head",
+    "i": 89,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.69,
+    "perSec": 41.4,
+    "part": "nearForearm",
+    "i": 43,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "near",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "lifting",
+     "w": 0.62,
+     "tLift": 0.37,
+     "wStart": 0.62,
+     "wEnd": 0.62,
+     "reachRatioMin": 0.96,
+     "reachRatioMax": 1.01,
+     "reachVerdict": "cannot reach"
+    },
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "planted",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1,
+     "reachRatioMin": 0.73,
+     "reachRatioMax": 0.81,
+     "reachVerdict": "within reach"
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 10.09,
+   "part": "nearForearm"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "lou",
+  "scn": "fk",
+  "facing": 1,
+  "frames": 231,
+  "entry": "frontKnee",
+  "stamina": 5,
+  "stallT": 0.42,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 716.67,
+   "stallMs": 1233.33,
+   "afterMs": 866.67,
+   "enter": {
+    "perFrame": 7.84,
+    "perSec": 470.4,
+    "part": "nearForearm",
+    "i": 42,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 10.09,
+    "perSec": 605.4,
+    "part": "nearForearm",
+    "i": 118,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.24,
+    "perSec": 14.4,
+    "part": "head",
+    "i": 89,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.69,
+    "perSec": 41.4,
+    "part": "nearForearm",
+    "i": 43,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "near",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "lifting",
+     "w": 0.62,
+     "tLift": 0.37,
+     "wStart": 0.62,
+     "wEnd": 0.62,
+     "reachRatioMin": 0.96,
+     "reachRatioMax": 1.01,
+     "reachVerdict": "cannot reach"
+    },
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "planted",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1,
+     "reachRatioMin": 0.73,
+     "reachRatioMax": 0.81,
+     "reachVerdict": "within reach"
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 10.09,
+   "part": "nearForearm"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "lou",
+  "scn": "fkb",
+  "facing": -1,
+  "frames": 327,
+  "entry": "frontKneeBack",
+  "stamina": 5,
+  "stallT": 0.42,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 716.67,
+   "stallMs": 1233.33,
+   "afterMs": 866.67,
+   "enter": {
+    "perFrame": 6.99,
+    "perSec": 419.4,
+    "part": "farThigh",
+    "i": 42,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 9.21,
+    "perSec": 552.6,
+    "part": "farShin",
+    "i": 119,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.24,
+    "perSec": 14.4,
+    "part": "head",
+    "i": 89,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.54,
+    "perSec": 32.4,
+    "part": "farThigh",
+    "i": 43,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "planted",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1,
+     "reachRatioMin": 0.73,
+     "reachRatioMax": 0.81,
+     "reachVerdict": "within reach"
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 9.14,
+   "part": "farShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "lou",
+  "scn": "fkb",
+  "facing": 1,
+  "frames": 327,
+  "entry": "frontKneeBack",
+  "stamina": 5,
+  "stallT": 0.42,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 716.67,
+   "stallMs": 1233.33,
+   "afterMs": 866.67,
+   "enter": {
+    "perFrame": 6.99,
+    "perSec": 419.4,
+    "part": "farThigh",
+    "i": 42,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 9.21,
+    "perSec": 552.6,
+    "part": "farShin",
+    "i": 119,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.24,
+    "perSec": 14.4,
+    "part": "head",
+    "i": 89,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.54,
+    "perSec": 32.4,
+    "part": "farThigh",
+    "i": 43,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "planted",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1,
+     "reachRatioMin": 0.73,
+     "reachRatioMax": 0.81,
+     "reachVerdict": "within reach"
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 9.14,
+   "part": "farShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "george",
+  "scn": "bkh",
+  "facing": -1,
+  "frames": 114,
+  "entry": "backKneeHurt",
+  "stamina": 100,
+  "stallT": 0.46,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 22.93,
+   "part": "farForearm"
+  },
+  "keyWindowStep": {
+   "perFrame": 22.93,
+   "part": "farForearm"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "george",
+  "scn": "bkh",
+  "facing": 1,
+  "frames": 113,
+  "entry": "backKneeHurt",
+  "stamina": 100,
+  "stallT": 0.46,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 22.93,
+   "part": "farForearm"
+  },
+  "keyWindowStep": {
+   "perFrame": 22.93,
+   "part": "farForearm"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "george",
+  "scn": "fk",
+  "facing": -1,
+  "frames": 113,
+  "entry": "frontKnee",
+  "stamina": 100,
+  "stallT": 0.42,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 18.38,
+   "part": "nearForearm"
+  },
+  "keyWindowStep": {
+   "perFrame": 15.96,
+   "part": "farShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "george",
+  "scn": "fk",
+  "facing": 1,
+  "frames": 114,
+  "entry": "frontKnee",
+  "stamina": 100,
+  "stallT": 0.42,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 18.38,
+   "part": "nearForearm"
+  },
+  "keyWindowStep": {
+   "perFrame": 15.96,
+   "part": "farShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "george",
+  "scn": "fkb",
+  "facing": -1,
+  "frames": 210,
+  "entry": "frontKneeBack",
+  "stamina": 100,
+  "stallT": 0.42,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 16.33,
+   "part": "farShin"
+  },
+  "keyWindowStep": {
+   "perFrame": 15.96,
+   "part": "farShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "george",
+  "scn": "fkb",
+  "facing": 1,
+  "frames": 210,
+  "entry": "frontKneeBack",
+  "stamina": 100,
+  "stallT": 0.42,
+  "stallMsAsked": 0,
+  "expectedTotalMs": 850,
+  "todayMs": 850,
+  "totalMs": 866.67,
+  "stall": null,
+  "maxRiseStep": {
+   "perFrame": 16.33,
+   "part": "farShin"
+  },
+  "keyWindowStep": {
+   "perFrame": 15.96,
+   "part": "farShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "george",
+  "scn": "bkh",
+  "facing": -1,
+  "frames": 182,
+  "entry": "backKneeHurt",
+  "stamina": 25,
+  "stallT": 0.46,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 683.33,
+   "stallMs": 600,
+   "afterMs": 733.33,
+   "enter": {
+    "perFrame": 15.34,
+    "perSec": 920.4,
+    "part": "farForearm",
+    "i": 39,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 3.91,
+    "perSec": 234.6,
+    "part": "head",
+    "i": 78,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.17,
+    "perSec": 10.2,
+    "part": "head",
+    "i": 54,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 3.07,
+    "perSec": 184.2,
+    "part": "head",
+    "i": 41,
+    "turned": true
+   },
+   "flipAtStall": true,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "on the knee",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 15.34,
+   "part": "farForearm"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "george",
+  "scn": "bkh",
+  "facing": 1,
+  "frames": 182,
+  "entry": "backKneeHurt",
+  "stamina": 25,
+  "stallT": 0.46,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 683.33,
+   "stallMs": 600,
+   "afterMs": 733.33,
+   "enter": {
+    "perFrame": 15.34,
+    "perSec": 920.4,
+    "part": "farForearm",
+    "i": 39,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 3.91,
+    "perSec": 234.6,
+    "part": "head",
+    "i": 78,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.17,
+    "perSec": 10.2,
+    "part": "head",
+    "i": 54,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 3.07,
+    "perSec": 184.2,
+    "part": "head",
+    "i": 41,
+    "turned": true
+   },
+   "flipAtStall": true,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "on the knee",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 15.34,
+   "part": "farForearm"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "george",
+  "scn": "fk",
+  "facing": -1,
+  "frames": 182,
+  "entry": "frontKnee",
+  "stamina": 25,
+  "stallT": 0.42,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 650,
+   "stallMs": 600,
+   "afterMs": 766.67,
+   "enter": {
+    "perFrame": 7.92,
+    "perSec": 475.2,
+    "part": "farThigh",
+    "i": 38,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 9.72,
+    "perSec": 583.2,
+    "part": "farShin",
+    "i": 77,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.17,
+    "perSec": 10.2,
+    "part": "head",
+    "i": 52,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.62,
+    "perSec": 37.2,
+    "part": "head",
+    "i": 40,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "near",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.13,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.26,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 9.66,
+   "part": "farShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "george",
+  "scn": "fk",
+  "facing": 1,
+  "frames": 182,
+  "entry": "frontKnee",
+  "stamina": 25,
+  "stallT": 0.42,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 650,
+   "stallMs": 600,
+   "afterMs": 766.67,
+   "enter": {
+    "perFrame": 7.91,
+    "perSec": 474.6,
+    "part": "farThigh",
+    "i": 38,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 9.72,
+    "perSec": 583.2,
+    "part": "farShin",
+    "i": 77,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.17,
+    "perSec": 10.2,
+    "part": "head",
+    "i": 52,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.62,
+    "perSec": 37.2,
+    "part": "head",
+    "i": 40,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "near",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.13,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.26,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 9.66,
+   "part": "farShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "george",
+  "scn": "fkb",
+  "facing": -1,
+  "frames": 278,
+  "entry": "frontKneeBack",
+  "stamina": 25,
+  "stallT": 0.42,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 650,
+   "stallMs": 600,
+   "afterMs": 766.67,
+   "enter": {
+    "perFrame": 7.92,
+    "perSec": 475.2,
+    "part": "farThigh",
+    "i": 38,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 9.72,
+    "perSec": 583.2,
+    "part": "farShin",
+    "i": 77,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.17,
+    "perSec": 10.2,
+    "part": "head",
+    "i": 52,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.62,
+    "perSec": 37.2,
+    "part": "head",
+    "i": 40,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.26,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 9.66,
+   "part": "farShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "george",
+  "scn": "fkb",
+  "facing": 1,
+  "frames": 279,
+  "entry": "frontKneeBack",
+  "stamina": 25,
+  "stallT": 0.42,
+  "stallMsAsked": 600,
+  "expectedTotalMs": 2012.5,
+  "todayMs": 1412.5,
+  "totalMs": 2016.67,
+  "stall": {
+   "frames": 36,
+   "beforeMs": 650,
+   "stallMs": 600,
+   "afterMs": 766.67,
+   "enter": {
+    "perFrame": 7.91,
+    "perSec": 474.6,
+    "part": "farThigh",
+    "i": 38,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 9.72,
+    "perSec": 583.2,
+    "part": "farShin",
+    "i": 77,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.17,
+    "perSec": 10.2,
+    "part": "head",
+    "i": 52,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.62,
+    "perSec": 37.2,
+    "part": "head",
+    "i": 40,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.26,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 9.66,
+   "part": "farShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "george",
+  "scn": "bkh",
+  "facing": -1,
+  "frames": 231,
+  "entry": "backKneeHurt",
+  "stamina": 5,
+  "stallT": 0.46,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 750,
+   "stallMs": 1233.33,
+   "afterMs": 833.33,
+   "enter": {
+    "perFrame": 13.91,
+    "perSec": 834.6,
+    "part": "farForearm",
+    "i": 43,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 3.53,
+    "perSec": 211.8,
+    "part": "head",
+    "i": 120,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.26,
+    "perSec": 15.6,
+    "part": "head",
+    "i": 90,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 6.08,
+    "perSec": 364.8,
+    "part": "head",
+    "i": 45,
+    "turned": true
+   },
+   "flipAtStall": true,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "on the knee",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 13.91,
+   "part": "farForearm"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "george",
+  "scn": "bkh",
+  "facing": 1,
+  "frames": 231,
+  "entry": "backKneeHurt",
+  "stamina": 5,
+  "stallT": 0.46,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 750,
+   "stallMs": 1233.33,
+   "afterMs": 833.33,
+   "enter": {
+    "perFrame": 13.91,
+    "perSec": 834.6,
+    "part": "farForearm",
+    "i": 43,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 3.53,
+    "perSec": 211.8,
+    "part": "head",
+    "i": 120,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.26,
+    "perSec": 15.6,
+    "part": "head",
+    "i": 90,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 6.08,
+    "perSec": 364.8,
+    "part": "head",
+    "i": 45,
+    "turned": true
+   },
+   "flipAtStall": true,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "on the knee",
+     "w": 1,
+     "tLift": null,
+     "wStart": 1,
+     "wEnd": 1
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 13.91,
+   "part": "farForearm"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "george",
+  "scn": "fk",
+  "facing": -1,
+  "frames": 231,
+  "entry": "frontKnee",
+  "stamina": 5,
+  "stallT": 0.42,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 716.67,
+   "stallMs": 1233.33,
+   "afterMs": 866.67,
+   "enter": {
+    "perFrame": 7.15,
+    "perSec": 429,
+    "part": "farThigh",
+    "i": 42,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 8.75,
+    "perSec": 525,
+    "part": "farShin",
+    "i": 119,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.26,
+    "perSec": 15.6,
+    "part": "head",
+    "i": 89,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.61,
+    "perSec": 36.6,
+    "part": "head",
+    "i": 44,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "near",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.13,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.26,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 8.69,
+   "part": "farShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "george",
+  "scn": "fk",
+  "facing": 1,
+  "frames": 231,
+  "entry": "frontKnee",
+  "stamina": 5,
+  "stallT": 0.42,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 716.67,
+   "stallMs": 1233.33,
+   "afterMs": 866.67,
+   "enter": {
+    "perFrame": 7.15,
+    "perSec": 429,
+    "part": "farThigh",
+    "i": 42,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 8.75,
+    "perSec": 525,
+    "part": "farShin",
+    "i": 119,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.26,
+    "perSec": 15.6,
+    "part": "head",
+    "i": 89,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.61,
+    "perSec": 36.6,
+    "part": "head",
+    "i": 44,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "near",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.13,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.26,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 8.69,
+   "part": "farShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ },
+ {
+  "rig": "george",
+  "scn": "fkb",
+  "facing": -1,
+  "frames": 327,
+  "entry": "frontKneeBack",
+  "stamina": 5,
+  "stallT": 0.42,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 716.67,
+   "stallMs": 1233.33,
+   "afterMs": 866.67,
+   "enter": {
+    "perFrame": 7.15,
+    "perSec": 429,
+    "part": "farThigh",
+    "i": 42,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 8.75,
+    "perSec": 525,
+    "part": "farShin",
+    "i": 119,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.26,
+    "perSec": 15.6,
+    "part": "head",
+    "i": 89,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.61,
+    "perSec": 36.6,
+    "part": "head",
+    "i": 44,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.26,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 8.69,
+   "part": "farShin"
+  },
+  "facingStart": -1,
+  "facingStand": 1
+ },
+ {
+  "rig": "george",
+  "scn": "fkb",
+  "facing": 1,
+  "frames": 327,
+  "entry": "frontKneeBack",
+  "stamina": 5,
+  "stallT": 0.42,
+  "stallMsAsked": 1240,
+  "expectedTotalMs": 2802.5,
+  "todayMs": 1562.5,
+  "totalMs": 2816.67,
+  "stall": {
+   "frames": 74,
+   "beforeMs": 716.67,
+   "stallMs": 1233.33,
+   "afterMs": 866.67,
+   "enter": {
+    "perFrame": 7.15,
+    "perSec": 429,
+    "part": "farThigh",
+    "i": 42,
+    "turned": false
+   },
+   "leave": {
+    "perFrame": 8.75,
+    "perSec": 525,
+    "part": "farShin",
+    "i": 119,
+    "turned": false
+   },
+   "inside": {
+    "perFrame": 0.26,
+    "perSec": 15.6,
+    "part": "head",
+    "i": 89,
+    "turned": false
+   },
+   "enterAtStartFrame": {
+    "perFrame": 0.61,
+    "perSec": 36.6,
+    "part": "head",
+    "i": 44,
+    "turned": false
+   },
+   "flipAtStall": false,
+   "hands": [
+    {
+     "side": "far",
+     "phase": 0,
+     "space": "world",
+     "target": "mat",
+     "state": "released",
+     "w": 0,
+     "tLift": 0.26,
+     "wStart": 0,
+     "wEnd": 0
+    },
+    {
+     "side": "far",
+     "phase": 1,
+     "space": "thighLocal",
+     "target": "farKnee",
+     "state": "not yet",
+     "w": 0,
+     "tLift": null,
+     "wStart": 0,
+     "wEnd": 0
+    }
+   ]
+  },
+  "keyWindowStep": {
+   "perFrame": 8.69,
+   "part": "farShin"
+  },
+  "facingStart": 1,
+  "facingStand": -1
+ }
+]

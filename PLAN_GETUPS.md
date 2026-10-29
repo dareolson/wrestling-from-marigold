@@ -20,6 +20,8 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
 - T3.1-T3.2: eabce3f (keys) / 733161f (page): rough `frontKnee` (turn + straight) and `backTuck` keys, `?getups=v1&getup=<family>` dev override (default picks unchanged), [G2a page](research/animation/getups-2026-10/g2a/index.html) (Bret refs, keys on Lou/George both facings, 1x loops today | new). Rise 867 ms both; largest part step frontKnee 17.3 (Lou) / 19.3 (George), backTuck 21.5 / 21.9 (today 18.5). Misses: no measuring pass, mat-point push-up hand target not built. G2a approved (Derek 2026-10-28).
 - T3.3: e1c6d72 George's T2.9 route behind `?getups=v1` (`aroundVia.getups` overlay, one reader `resolveAroundVia`, flag passed in); fixture `georgeClutchFlagOff` recorded from 794cfd1^. Getups off again: clutch step 4.02 / compact 8.61 px, hold margin .48, release swap clearance 15.8; focused tests 81/81.
   Getups on: 8.27 / 17.4, clearance 32.69, hold margin .09 px (worst 14.91 of 15; same at hurt 0/.5/1 and both facings, hurt does not enter the hold). Misses: none over contactPx; fixture is Node-bounded (reach weight + hand goal, not drawn wrist px).
+- T3.4: 167af7a `hands.<side>` = phase or ordered array (validator, hand-over, flip/interruption reset, no family names); frontKnee mat push t .12-.46 (release to .58 near / .62 far) then far knee .62-.82; backTuck mat .08-.50 (release to .66) then both knees .66-.84; tests 35/35, focused set 108/108.
+  Browser (drawn wrist, mat push): Lou slip <= 1.4 px (backTuck far 4.9, reach limit); George misses: wrist 9-29 px off the target (arm 52 px vs keyed shoulder 47-77 px above the mat). Wrist-to-knee max: Lou 9-20 px, George 25-35.
 
 ## Why (Derek 2026-10-27)
 

@@ -1,114 +1,122 @@
 [
  {
   "attacker": "thesz-procreate-v1",
-  "defender": "george",
+  "defender": "george-roster-v1",
   "facing": 1,
-  "gap": 44,
-  "worst": {
-   "attacker.collar": 1.6077746776921858e-13,
-   "attacker.elbow": 5.684341886080802e-14,
-   "defender.collar": 0,
-   "defender.elbow": 5.684341886080802e-14
-  },
-  "unreachable": {},
-  "flex": {
-   "min": 0.5892364925377421,
-   "max": 0.5892364925377421
-  },
-  "headGap": {
-   "min": 60.29616903746867,
-   "max": 60.29616903746867
-  },
-  "neckGapX": {
-   "min": 53.992726970172825,
-   "max": 53.992726970172825
-  },
-  "s": 0.8989304812834225,
-  "lSide": "near",
-  "lSideD": "far"
- },
- {
-  "attacker": "thesz-procreate-v1",
-  "defender": "george",
-  "facing": -1,
-  "gap": 44,
-  "worst": {
-   "attacker.collar": 1.1368683772161603e-13,
-   "attacker.elbow": 1.1368683772161603e-13,
-   "defender.collar": 5.684341886080802e-14,
-   "defender.elbow": 1.2710574864626038e-13
-  },
-  "unreachable": {},
-  "flex": {
-   "min": 1.0871303772860463,
-   "max": 1.0871303772860463
-  },
-  "headGap": {
-   "min": 52.21096759524997,
-   "max": 52.21096759524997
-  },
-  "neckGapX": {
-   "min": 45.09345197017276,
-   "max": 45.09345197017276
-  },
-  "s": 0.8989304812834225,
-  "lSide": "near",
-  "lSideD": "near"
- },
- {
-  "attacker": "george",
-  "defender": "thesz-procreate-v1",
-  "facing": 1,
-  "gap": 44,
+  "gap": 42.25682177262982,
+  "gapUsed": 42.25682177262982,
+  "armLen": 87.50974538947114,
   "worst": {
    "attacker.collar": 5.684341886080802e-14,
    "attacker.elbow": 0,
    "defender.collar": 5.684341886080802e-14,
-   "defender.elbow": 1.1368683772161603e-13
+   "defender.elbow": 1.6077746776921858e-13
   },
   "unreachable": {},
   "flex": {
-   "min": 1.3932957208935233,
-   "max": 1.3932957208935233
+   "min": 0.8728746088180701,
+   "max": 0.8728746088180701
   },
   "headGap": {
-   "min": 52.21096759524997,
-   "max": 52.21096759524997
+   "min": 53.13379932278655,
+   "max": 53.13379932278655
   },
   "neckGapX": {
-   "min": 45.09345197017276,
-   "max": 45.09345197017276
+   "min": 51.67978933497633,
+   "max": 51.67978933497633
   },
   "s": 0.8989304812834225,
   "lSide": "near",
   "lSideD": "near"
  },
  {
-  "attacker": "george",
-  "defender": "thesz-procreate-v1",
+  "attacker": "thesz-procreate-v1",
+  "defender": "george-roster-v1",
   "facing": -1,
-  "gap": 44,
+  "gap": 42.25682177262978,
+  "gapUsed": 42.25682177262978,
+  "armLen": 87.50974538947108,
   "worst": {
    "attacker.collar": 8.038873388460929e-14,
-   "attacker.elbow": 0.04987067917627627,
-   "defender.collar": 5.684341886080802e-14,
-   "defender.elbow": 1.2710574864626038e-13
+   "attacker.elbow": 1.1718571004216928e-13,
+   "defender.collar": 2.842170943040401e-14,
+   "defender.elbow": 0
   },
   "unreachable": {},
   "flex": {
-   "min": 1.3932957208935213,
-   "max": 1.3932957208935213
+   "min": 0.8728746088180774,
+   "max": 0.8728746088180774
   },
   "headGap": {
-   "min": 60.29616903746867,
-   "max": 60.29616903746867
+   "min": 53.133799322786366,
+   "max": 53.133799322786366
   },
   "neckGapX": {
-   "min": 53.992726970172825,
-   "max": 53.992726970172825
+   "min": 51.679789334976135,
+   "max": 51.679789334976135
   },
   "s": 0.8989304812834225,
-  "lSide": "far",
+  "lSide": "near",
+  "lSideD": "near"
+ },
+ {
+  "attacker": "george-roster-v1",
+  "defender": "thesz-procreate-v1",
+  "facing": 1,
+  "gap": 26.646029077046222,
+  "gapUsed": 26.646029077046222,
+  "armLen": 65.20861296720886,
+  "worst": {
+   "attacker.collar": 5.684341886080802e-14,
+   "attacker.elbow": 1.1368683772161603e-13,
+   "defender.collar": 0,
+   "defender.elbow": 1.1368683772161603e-13
+  },
+  "unreachable": {},
+  "flex": {
+   "min": 0.5941510353580668,
+   "max": 0.5941510353580668
+  },
+  "headGap": {
+   "min": 38.12312321071213,
+   "max": 38.12312321071213
+  },
+  "neckGapX": {
+   "min": 36.068996639392644,
+   "max": 36.068996639392644
+  },
+  "s": 0.8989304812834225,
+  "lSide": "near",
+  "lSideD": "near"
+ },
+ {
+  "attacker": "george-roster-v1",
+  "defender": "thesz-procreate-v1",
+  "facing": -1,
+  "gap": 26.646029077046194,
+  "gapUsed": 26.646029077046194,
+  "armLen": 65.20861296720888,
+  "worst": {
+   "attacker.collar": 0,
+   "attacker.elbow": 1.1368683772161603e-13,
+   "defender.collar": 1.1718571004216928e-13,
+   "defender.elbow": 5.684341886080802e-14
+  },
+  "unreachable": {},
+  "flex": {
+   "min": 0.5941510353580602,
+   "max": 0.5941510353580602
+  },
+  "headGap": {
+   "min": 38.12312321071226,
+   "max": 38.12312321071226
+  },
+  "neckGapX": {
+   "min": 36.06899663939277,
+   "max": 36.06899663939277
+  },
+  "s": 0.8989304812834225,
+  "lSide": "near",
   "lSideD": "near"
  }
 ]

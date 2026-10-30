@@ -1,7 +1,7 @@
 // PLAN_GRAPPLES T1.1: the lockup's pure data and math (src/animation/lockup.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LOCKUP, lockupPhase, lockupGrips, lockupPoseChannels, tugSchedule, stepAt } from '../src/animation/lockup.js';
+import { LOCKUP, holdGapFor, lockupPhase, lockupGrips, lockupPoseChannels, tugSchedule, stepAt } from '../src/animation/lockup.js';
 
 const DT = 1 / 60;
 const run = (extra = {}, from = 0, to = LOCKUP.timeout) => {
@@ -183,4 +183,12 @@ test('legRel: the planted foot holds its world place while the body travels; the
         }
     }
     assert.deepEqual(legRel({ index: -1, u: null }, 1), { lead: 0, rear: 0 });
+});
+
+test('holdGapFor: the gap follows the attacker\'s arm, with a floor and a fallback', () => {
+    assert.ok(Math.abs(holdGapFor(87.5) - 42.25) < 1e-9);
+    assert.ok(Math.abs(holdGapFor(65.2) - 26.64) < 1e-9);
+    assert.ok(holdGapFor(65.2) < holdGapFor(87.5));
+    assert.equal(holdGapFor(10), LOCKUP.holdGapFromArm.min);
+    assert.equal(holdGapFor(NaN), LOCKUP.holdGap);
 });

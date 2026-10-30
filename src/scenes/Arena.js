@@ -18,7 +18,7 @@ import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
-import { lockupGrips, lockupPhase, lockupPoseChannels, legRel, LOCKUP } from '../animation/lockup.js';
+import { lockupGrips, lockupPhase, holdGapFor, lockupPoseChannels, legRel, LOCKUP } from '../animation/lockup.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
@@ -3694,6 +3694,22 @@ export default class Arena extends Phaser.Scene {
         for (const [img, depth] of layerDepths({ order }, { attacker, defender })) img.setDepth(depth);
     }
 
+    // The attacker's near arm (shoulder-elbow + elbow-wrist, px at s = 1), read with the arms at the lockup's start values so it does not
+    // depend on the pose he walked in with; cached per wrestler and facing. holdGapFor() turns it into the hold gap (D9).
+    _lockupArmLength(w) {
+        const key = `${w.facing}`;
+        w._lockupArmLen ??= {};
+        if (w._lockupArmLen[key] !== undefined) return w._lockupArmLen[key];
+        const arms = ['lArm', 'rArm', 'lElbow', 'rElbow'], saved = Object.fromEntries(arms.map(k => [k, w.pose[k]]));
+        Object.assign(w.pose, lockupPoseChannels({ even: 1, attacker: 0, defender: 0 }, w.skeleton.lChannelSide(w.facing)));
+        w.draw();
+        const p = w.skeleton.jointAttachmentPoints, len = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
+        const out = p?.nearWrist ? (len(p.nearShoulder, p.nearElbow) + len(p.nearElbow, p.nearWrist)) / w.s : NaN;
+        Object.assign(w.pose, saved);
+        w.draw();
+        return (w._lockupArmLen[key] = out);
+    }
+
     // PLAN_GRAPPLES D6 (`?grapples=v1`): one frame of the tie-up: the engage closure, the tugs, the step-pulse drive with the rope
     // stall, the steal and the break, all from lockupPhase. Sets the pair's x, both poses and the grip weights _holdLockupGrips
     // reads after the draw. Returns true when the break has finished and the lockup is over.
@@ -3703,6 +3719,7 @@ export default class Arena extends Phaser.Scene {
         if (!g.init) {
             g.init = true;
             g.a0 = A.x; g.d0 = D.x; g.gap0 = Math.abs(D.x - A.x);
+            g.holdGap = holdGapFor(this._lockupArmLength(A));
             g.grabber = A; g.grabbed = D;
             g.from = new Map([[A, { ...A.pose }], [D, { ...D.pose }]]);
             g.legRel = new Map(); g.breakP = 0;
@@ -3718,7 +3735,7 @@ export default class Arena extends Phaser.Scene {
         // pair moves as one (tugs, drive pulses); the break separates them by one step each.
         const smooth = (u) => { const v = Math.max(0, Math.min(1, u)); return v * v * (3 - 2 * v); };
         if (g.t < LOCKUP.engageEnd) {
-            const room = g.gap0 - LOCKUP.holdGap * s;
+            const room = g.gap0 - g.holdGap * s;
             A.x = g.a0 + dirA * (room * ph.close.attacker + ph.jolt * s / 2);
             D.x = g.d0 - dirA * (room * ph.close.defender + ph.jolt * s / 2);
         } else if (ph.phase === 'break') {

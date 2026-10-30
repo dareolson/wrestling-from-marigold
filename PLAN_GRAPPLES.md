@@ -7,8 +7,10 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 
 (Sonnet: one line per task: id, commit, result, misses. ≤ 3 lines. Gate lines are written by Opus/Derek only.)
 
-- T1.0: SHA0 [reference page](research/animation/grapples-2026-10/reference.html): Bret f130-139, f322-326, f345-350 and Haggar f3/f30/f98 beside lockup-now.png, a line per point.
+- T1.0: 72b380a [reference page](research/animation/grapples-2026-10/reference.html): Bret f130-139, f322-326, f345-350 and Haggar f3/f30/f98 beside lockup-now.png, a line per point.
   Misses: all sheets are one wrestler, so no frame shows a hand on a neck or elbow, heads, arrival, drive or a reversal (points 1-3, 6-10); Haggar (f0-179) has no lockup row; other Slam Masters not opened.
+- T1.1: SHA1 `src/animation/lockup.js` + tests/lockup.test.js 13/13 (grab order, D4 sides both lSide x facing, collar point, step-only travel, stall, steal hitch, break, seeded tugs, 70/30 closure).
+  Misses: pure math only, nothing drawn yet; lead leg = the near-side leg by my choice (not measured on a rig until T1.2); `holdGrips` has no `at` yet, so the collar entries (joint 'Neck') do nothing until T1.2.
 
 ## Why (Derek 2026-10-29)
 

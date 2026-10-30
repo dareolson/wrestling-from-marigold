@@ -359,7 +359,7 @@ test('?getup=<family> plays that family when it fits how he lies, turning by the
     assert.equal(pick('?getups=v1&getup=frontKnee', { lying: 'supine', _lastOther: { x: 300 } }), 'backKneeHurt', 'does not fit a supine wrestler: chooseGetUp');
     assert.equal(pick('?getups=v1&getup=nonsense', { lying: 'prone' }), 'frontKneeStraight');
     assert.equal(pick('?getups=v1', { lying: 'prone' }), 'frontKneeStraight', 'no override: chooseGetUp');
-    assert.equal(pick('?getup=frontKnee', { lying: 'prone' }), null, 'flag off: the override is ignored');
+    assert.equal(pick('?getups=off&getup=frontKnee', { lying: 'prone' }), null, 'flag off: the override is ignored');
     assert.deepEqual(Object.keys(GETUP_SETS).sort(), ['backKneeHurt', 'backTuck', 'frontKnee']);
 });
 
@@ -669,7 +669,7 @@ function recordingWrestler(extra = {}) {
 const startWith = (w, search = '?getups=v1') => withFlag(search, () => w._startRiseUp());
 
 test('stamina 100: the tween config is today\'s (850, Sine.easeInOut); the same at stamina 5 without the flag', () => {
-    for (const [stamina, search] of [[100, '?getups=v1'], [5, '']]) {
+    for (const [stamina, search] of [[100, '?getups=v1'], [5, '?getups=off']]) {
         const { w, adds } = recordingWrestler({ stamina });
         startWith(w, search);
         assert.equal(adds.length, 1);
@@ -901,4 +901,15 @@ test('T4.1: the quick rise is logged under the flag and behaves as before', () =
     withFlag('?getups=v1', () => w._startQuickRise());
     assert.deepEqual(w._getUpLog.map(({ t, ...r }) => r), [{ quick: true, lying: 'supine', staminaPct: 60 }]);
     assert.equal(w.state, 'risingUp'); assert.equal(w._getUp ?? null, null);
+});
+
+test('T4.4: getups is on by default: absent and =v1 on, =off and anything else off, no location off', () => {
+    const picks = (search) => { const { w } = recordingWrestler({ stamina: 80 }); startWith(w, search); return w._getUp?.id ?? null; };
+    assert.ok(picks(''), 'absent: on');
+    assert.ok(picks('?getups=v1'), '=v1: on');
+    assert.equal(picks('?getups=off'), null, '=off: legacy');
+    assert.equal(picks('?getups=1'), null, 'any other value: off');
+    const { w } = recordingWrestler({ stamina: 80 });
+    w._startRiseUp();
+    assert.equal(w._getUp ?? null, null, 'Node without location: off');
 });

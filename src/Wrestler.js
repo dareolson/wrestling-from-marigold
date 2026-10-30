@@ -63,11 +63,13 @@ const dropkickCandidate = () => typeof location !== 'undefined' && new URLSearch
 // Promoted to default by Derek 2026-10-24 (PLAN_SUPLEX_RISE G4): in the game both
 // are on unless the URL says `?aftermath=off` / `?sellart=off` (any other value
 // also turns one off, so old `?aftermath=v1`-style links get the previous look).
+// `getups` joined them 2026-10-29 (PLAN_GETUPS G3, T4.4): on unless `?getups=off`.
 // Node without `location` (unit tests, tools) keeps them off; tests opt in with
 // a search string.
 //   aftermath: the compact fallback sell and the protective recovery overlay
 //     (PLAN_MOVE_PERFORMANCE.md D4).
 //   sellart: grip art, lying hold, protected/carried rise (PLAN_SUPLEX_RISE.md).
+//   getups: the authored get-ups, no roll while selling, the knee clamp and the eased separation (PLAN_GETUPS).
 const defaultOnFlag = (name, value) => {
     if (typeof location === 'undefined') return false;
     const v = new URLSearchParams(location.search).get(name);
@@ -79,8 +81,9 @@ const aftermathCandidate = () => defaultOnFlag('aftermath', 'v2');
 // rise reaches standing the separation eases instead, by at most SEP_EASE_PX * s px per 1/60 s.
 const SEP_EASE_MS = 250;
 const SEP_EASE_PX = 6;
-// ?getups=v1 (PLAN_GETUPS): authored get-ups; opt-in until Derek approves the set. D7: no roll while selling.
-const getUpsCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('getups') === 'v1';
+// getups (PLAN_GETUPS): authored get-ups. Promoted to default by Derek 2026-10-29 (G3, T4.4): on unless the URL says `?getups=off`
+// (any value but `v1` turns it off; `getups=off` is the legacy rise). D7: no roll while selling. Node without `location` stays off.
+const getUpsCandidate = () => defaultOnFlag('getups', 'v1');
 // ?getups=v1&kneeTuck=<px> (PLAN_GETUPS T2.1b): the knee tuck candidates for G1b (0 / 6 / 10 / 14, flex .6 -> 1.6 rad).
 // No kneeTuck param = off, until Derek picks at G1b. `&kneeF0=`, `&kneeF1=` override the flex range; `&kneeOrder=thigh` draws the thigh over the shin (an extra G1b column).
 const kneeTuckConfig = () => {

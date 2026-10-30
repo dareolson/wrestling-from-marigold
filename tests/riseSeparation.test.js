@@ -71,14 +71,14 @@ test('T4.2: past the 250 ms window the old hard snap is back; without a stamp it
 test('T4.2: flag off is the old snap, even inside the window', () => {
     for (const gap of [0, 30]) {
         const { w, other } = setup({ gap });
-        const { steps } = run(w, other, 1, '');
+        const { steps } = run(w, other, 1, '?getups=off');
         assert.ok(Math.abs(steps[0] - (80 * w.s - gap)) < 1e-9, `gap ${gap}: step ${steps[0]}`);
         assert.ok(Math.abs(Math.hypot(w.x - other.x, w.y - other.y) - 80 * w.s) < 1e-9);
     }
 });
 
 test('T4.2: the rise end stamps the clock under the flag only (full and quick rise)', () => {
-    for (const [fn, key] of [['_startRiseUp', 'riseT'], ['_startQuickRise', 'fallProgress']]) for (const [search, stamped] of [['?getups=v1', true], ['', false]]) {
+    for (const [fn, key] of [['_startRiseUp', 'riseT'], ['_startQuickRise', 'fallProgress']]) for (const [search, stamped] of [['?getups=v1', true], ['?getups=off', false]]) {
         let cfg = null;
         const w = Object.assign(Object.create(Wrestler.prototype), {
             scene: { tweens: { add: c => { cfg = c; return { stop() {} }; }, killTweensOf() {} }, time: { now: 777 } },

@@ -31,6 +31,7 @@ Avoid a large rewrite.
 ## Status (2026-10-28, replace this block; ≤ 40 lines)
 
 - **HEAD** see `git log` on `story/marigold-opening`; full suite 1023/1023 at T4.1 (Node 22: `nvm use`; shell default is 25). Tree clean except untracked `research/`.
+- **Next (Opus 2026-10-29):** [PLAN_GETUPS.md](PLAN_GETUPS.md) Rev 7 **T4.2** for Sonnet: prove the 35-63 px standing steps are the separation snap on the first standing frame (not a facing flip; facing unchanged in all 4), then ease it under `getups=v1`. Codex review: [entry](AI_HANDOFF_ENTRIES/2026-10-29-codex-review-for-new-opus.md). G3 still awaits Derek.
 - **Pushed vs local:** pushed through `178d79b` 2026-10-28; later plan/status commits may be local. Push via the SSH URL (HTTPS returns 400).
 - **Gait (2026-10-26):** [PLAN_GAIT.md](PLAN_GAIT.md) Stage 3 (run as its own gait) built behind `?gait=v2` (`&runGait=off` = Stage 2 run; flag off byte-identical), stopped at **G3**: Derek judges the [G3 page](research/animation/gait-2026-10/g3.html). Stage 2 commits local only. Open: whip-start facing flip (Stage 4), George hip step 3.3 px.
 - **Active plan:** [PLAN_GETUPS.md](PLAN_GETUPS.md) (authored get-ups, `?getups=v1`). G1, G1-rev2, G2a, G2 and G2b approved (Derek 2026-10-28). **Stage 4 built:** T4.0 `chooseGetUp` (f9fbfc3: families, eligibility with named refusals, `GETUP_WEIGHTS`, repeat avoidance, no backTuck at stamina <= 25 %) and T4.1 wiring (18489d7: one rise-start snapshot, one back-sell state, `_getUpLog`, prone plays frontKnee) plus the [G3 reel](research/animation/getups-2026-10/g3/index.html) ([strip](research/animation/getups-2026-10/g3/strip.html)): 10 seeded Lou vs George matches, 124 rises. Suite 1023/1023, build, coverage 22. **⛔ G3 (Derek) is next:** is the mix right, promote `getups` to default, anything that looks wrong. Misses on the page: 4 rises step 35-63 px into standing, 16 more change pose by >5 px because the AI acts the next step, almost no natural prone or low-stamina rises. Then Stage 5 (George re-check, G4). [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) parked at G10a. Side ideas: [IDEAS.md](IDEAS.md).
@@ -43,6 +44,7 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-10-29 · Codex · [New Opus review: G3 findings, next diagnostic and efficiency](AI_HANDOFF_ENTRIES/2026-10-29-codex-review-for-new-opus.md)
 - 2026-10-29 · Claude · [Get-ups T4.0 / T4.1: selection on, G3 reel](AI_HANDOFF_ENTRIES/2026-10-29-claude-getups-t41.md)
 - 2026-10-28 · Codex · [G2b fatigue-stall opinion: release continuity and selection boundaries](AI_HANDOFF_ENTRIES/2026-10-28-codex-fatigue-stall-review.md)
 - 2026-10-28 · Claude · [Get-ups T3b: the fatigue stall, G2b package](AI_HANDOFF_ENTRIES/2026-10-28-claude-getups-t3b.md)

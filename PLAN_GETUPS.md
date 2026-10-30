@@ -543,6 +543,36 @@ Decisions (Derek can overrule at G3):
      standing per entry. The same 10 seeds with `getups` off for the counts
      only (how often each lying and the quick rise happen), labelled B1a: the sell plans differ on purpose (no rolls).
   5. Gates: full suite, build, `moves:coverage -- --check`. Handoff entry, Status ≤ 40 lines, Progress lines.
+### Rev 7: T4.2 the snap into standing (Opus 2026-10-29, after [Codex's G3 review](AI_HANDOFF_ENTRIES/2026-10-29-codex-review-for-new-opus.md))
+
+The 4 standing steps of 35-63 px (seed 2 George r2, seed 8 George r3, seed 10 George r5, seed 10 Lou r4) are **not** a facing
+flip: all four record facing -1 → -1, needsTurn false. In all four the opponent is standing over the riser (elbowDrop ×3,
+dropkick ×1), and the root moves: the G3 crop follows root x/y and the whole background jumps ~70 px at
+`seed10/w1-r04` s0057 → s0058. Opus hypothesis: `Wrestler.move()` returns early while not standing (Wrestler.js ~902), so
+the separation block (~1003-1018, `dist < 80 * s` → set x/y to exactly `minDist` away) never runs during the rise, then
+snaps the riser out in one frame on the first standing frame. **Prove it before fixing it.**
+
+- **T4.2** One commit for the probe + fix (`T4.2: ...`), one for the strip.
+  1. **Probe** (new `tools/debug/getups_snap.mjs`; reuse `getups_g3.mjs`'s sampler, do not refactor it). Forced, not
+     seeded: put a wrestler supine, place the opponent standing at the same x/y (overlap), start a full backTuck rise and
+     step to standing +20 frames. Log per frame for both wrestlers: state, facing, x, y, riseT, and `dist`/`depthDiff`
+     between them. Cases: Lou rising, George rising; each in both facings; each with the opponent overlapping AND with the
+     opponent standing 150 px clear (control). Also record `other.x`/`other.y` in `getups_g3.mjs`'s sample (`otherSide` is
+     always null today); no recapture of G3.
+  2. **Confirmed** = in the overlap cases the root x/y jumps by ≈ `80 * s - dist` on the first standing frame and the
+     control shows no jump. If not confirmed: stop, report the per-frame log and the frame where the jump happens, no fix.
+  3. **Fix (default, Derek can switch to "push the opponent" at the gate):** under `getUpsCandidate()` only, for 250 ms
+     after a rise reaches standing (`_riseSwapAt`, or a stamp set where the state becomes standing), the hard separation
+     snap becomes an ease: move toward the separated x/y by at most 6 * s px per frame. Flag off byte-identical.
+     Do not touch the rise keys, AI timing or the half-depth ease branch.
+  4. **Tests** (focused): a new case in `tests/getUps.test.js` (or a new `tests/riseSeparation.test.js`): overlap rise →
+     no frame-to-frame root step > 6 * s px in the 250 ms window, and wrestlers are ≥ `80 * s` apart by its end; control
+     case unchanged; flag off → same snap as today. Run that file, `getUps`, `riseFix`, `riseFixFlagOff`,
+     `georgeClutchFlagOff`. Full suite/build/coverage are NOT needed (not a gate).
+  5. **Strip:** one normal-speed loop strip (both facings, Lou and George, overlap case before/after) next to the G3 page:
+     `research/animation/getups-2026-10/g3/snap-strip.html`. Report the before/after root step per case.
+  6. Progress line (≤ 3 lines: sha, result, misses), handoff entry, Status line. **STOP for Derek.** The 16 other >5 px
+     steps (AI's next action) and the 19 backTuck start steps are not this task.
 - **⛔ G3 (Derek):** watch the reel. (1) Is the mix right (weights C3)? (2) Promote `getups` to default (legacy stays as
   `getups=off`)? (3) Anything in the reel that looks wrong, even if the numbers don't show it.
 

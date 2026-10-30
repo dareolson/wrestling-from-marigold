@@ -601,6 +601,26 @@ leg; frontKnee never. Upright is already held at `JOINT_LIMITS.knee.min` (−0.1
      the worst sell from the audit (the 0.45 far leg; name the sell). `research/animation/getups-2026-10/knee/knee-strip.html`.
   5. Progress line (≤ 3 lines; record the audit 34b3d71 in it too), handoff entry, Status line. **STOP for Derek**: does a
      straight knee read better, or does he want a slight bend (e.g. clamp at 0.05 rad flexed) instead?
+### Rev 9: T4.4 promote `getups` (Derek 2026-10-29: G3 passed without a re-film; mix fine, refine later; Stage 5 parked)
+
+- **T4.4** One commit `T4.4: promote getups to default (Derek, G3)`. Follow the precedent of 82b71a8 (risefix) and
+  b8b274b (sellart/aftermath); read those two diffs first, nothing else.
+  1. `src/Wrestler.js`: `getUpsCandidate = () => defaultOnFlag('getups', 'v1')` (default on, `?getups=off` disables; Node
+     without `location` stays off, as the other promoted flags). Update the comment block above `defaultOnFlag` to list it.
+     The skeleton follows via `setGetUps(getUpsCandidate())`; check nothing else reads `get('getups')` directly
+     (`grep -rn "getups" src tools/debug`) and route any such read through the same rule.
+  2. Tests: any test that means "flag off" with an empty search (`''`) now gets getups ON. Change those to
+     `'?getups=off'` (known: `tests/riseSeparation.test.js`, `tests/groundedKnee.test.js`; grep for the rest). Add one
+     test: empty search → on, `?getups=off` → off, no `location` → off. Flag-off fixtures (`riseFixFlagOff`,
+     `georgeClutchFlagOff`) must still pass unchanged; if one changes, stop and report.
+  3. Record the promotion where 5812e37 recorded risefix's (capabilities file / plan), and in the Status "Feature flags"
+     line.
+  4. Gates: full suite, `npm run build`, `npm run moves:coverage -- --check` (22 baseline). One live check: dev server with
+     no query string, one Lou vs George match, confirm `_getUpLog` fills (a rise was chosen by `chooseGetUp`).
+  5. Progress line, Status (Active plan: Stage 4 done and promoted; Stage 5 parked by Derek), short handoff entry. Stop.
+     No push.
+- **G3 passed (Derek 2026-10-29)** without a re-film: T4.2 and T4.3 approved from their strips, mix accepted, refine later.
+  Stage 5 (George re-check) parked; George's leftovers go on a polish list, not a stage.
 - **⛔ G3 (Derek):** watch the reel. (1) Is the mix right (weights C3)? (2) Promote `getups` to default (legacy stays as
   `getups=off`)? (3) Anything in the reel that looks wrong, even if the numbers don't show it.
 

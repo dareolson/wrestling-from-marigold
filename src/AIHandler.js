@@ -4,6 +4,8 @@
 // opponent is vulnerable.
 
 import { ringBoundsAtY } from './constants.js';
+import { grapplesCandidate } from './Wrestler.js';
+import { LOCKUP } from './animation/lockup.js';
 
 const PERSONALITIES = {
     brawler: {
@@ -179,7 +181,8 @@ export default class AIHandler {
             return;
         }
         this._contested  = false; // lockup over — next one gets a fresh contest roll
-        this._lockupBeat = 0.15 + Math.random() * 0.3; // decision delay for the next lockup
+        // decision delay for the next lockup; with ?grapples=v1 it starts when the engage ends (PLAN_GRAPPLES D2): 0.35-0.9 s after it
+        this._lockupBeat = grapplesCandidate() ? LOCKUP.engageEnd + 0.35 + Math.random() * 0.55 : 0.15 + Math.random() * 0.3;
 
         // Mid block stance: keep the key held for the decided window (keys are
         // cleared every tick, so the hold has to be re-pressed each frame).

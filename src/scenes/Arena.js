@@ -18,7 +18,7 @@ import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
-import { lockupGrips } from '../animation/lockup.js';
+import { lockupGrips, lockupPhase, lockupPoseChannels, legRel, LOCKUP } from '../animation/lockup.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
@@ -3676,7 +3676,8 @@ export default class Arena extends Phaser.Scene {
     _holdLockupGrips() {
         const ls = this.lockupState, g = ls.grapple;
         if (!g.grips) return;
-        const { attacker, defender } = ls;
+        // D5: a steal swaps who is in control, not who holds what, so the grips stay with the men who grabbed first.
+        const attacker = g.grabber ?? ls.attacker, defender = g.grabbed ?? ls.defender;
         const lists = lockupGrips(attacker, defender, g.grips);
         for (const pass of [['attacker', attacker], ['defender', defender], ['attacker', attacker], ['defender', defender], ['attacker', attacker], ['defender', defender]]) {
             const [role, actor] = pass;
@@ -3693,21 +3694,107 @@ export default class Arena extends Phaser.Scene {
         for (const [img, depth] of layerDepths({ order }, { attacker, defender })) img.setDepth(depth);
     }
 
+    // PLAN_GRAPPLES D6 (`?grapples=v1`): one frame of the tie-up: the engage closure, the tugs, the step-pulse drive with the rope
+    // stall, the steal and the break, all from lockupPhase. Sets the pair's x, both poses and the grip weights _holdLockupGrips
+    // reads after the draw. Returns true when the break has finished and the lockup is over.
+    _tickGrapple(ls, g, dt) {
+        const LEG_RAMP = 0.15;
+        const A = ls.attacker, D = ls.defender, s = A.s, dirA = A.facing;
+        if (!g.init) {
+            g.init = true;
+            g.a0 = A.x; g.d0 = D.x; g.gap0 = Math.abs(D.x - A.x);
+            g.grabber = A; g.grabbed = D;
+            g.from = new Map([[A, { ...A.pose }], [D, { ...D.pose }]]);
+            g.legRel = new Map(); g.breakP = 0;
+        }
+        g.t += dt;
+        if (g.breakAt === null && g.t >= LOCKUP.timeout) g.breakAt = g.t;
+        const b = ringBoundsAtY(D.y), thr = 34 * D.s;     // the AI's _nearRopes range, on the side the drive pushes toward
+        const nearRopes = dirA > 0 ? D.x >= b.right - thr : D.x <= b.left + thr;
+        const ph = lockupPhase({ t: g.t, dt, seed: g.seed, stealAt: g.stealAt, nearRopes, breakAt: g.breakAt });
+        g.phase = ph.phase; g.grips = ph.grips; g.step = ph.step;
+
+        // x: the engage closes the gap to holdGap (70 % by the attacker, 30 % by the defender) with the chest jolt; after that the
+        // pair moves as one (tugs, drive pulses); the break separates them by one step each.
+        const smooth = (u) => { const v = Math.max(0, Math.min(1, u)); return v * v * (3 - 2 * v); };
+        if (g.t < LOCKUP.engageEnd) {
+            const room = g.gap0 - LOCKUP.holdGap * s;
+            A.x = g.a0 + dirA * (room * ph.close.attacker + ph.jolt * s / 2);
+            D.x = g.d0 - dirA * (room * ph.close.defender + ph.jolt * s / 2);
+        } else if (ph.phase === 'break') {
+            const p = smooth(ph.step.u ?? 0), dp = p - g.breakP;
+            g.breakP = p;
+            A.x -= dirA * dp * LOCKUP.breakStepPx * s / 2;
+            D.x += dirA * dp * LOCKUP.breakStepPx * s / 2;
+        } else {
+            A.x += dirA * ph.dx * s; D.x += dirA * ph.dx * s;
+        }
+        A._clamp(); D._clamp();
+
+        // Poses: the role keys mixed by lockupPhase, the stepping foot's offset, blended in from the pose each man had at the grab.
+        const k = smooth(g.t / LOCKUP.engageEnd);
+        for (const [w, role, dirRel] of [[A, 'attacker', 1], [D, 'defender', -1]]) {
+            w.scene.tweens.killTweensOf(w.pose);
+            // Each drive (and the break) starts from the offsets held before it and eases onto the pulse pattern over
+            // LEG_RAMP, so entering it does not snap a planted foot by half a pulse.
+            let rel = g.legRel.get(w) ?? { lead: 0, rear: 0 };
+            if (ph.phase === 'drive' || ph.phase === 'break') {
+                if (g.legPhase !== ph.phase || g.legDrive !== g.stealAt) { g.legStart = new Map([...g.legRel]); g.legPhaseT = g.t; }
+                const target = ph.phase === 'drive' ? legRel(ph.step, dirRel) : legRel({ index: 0, u: ph.step.u ?? 0 }, -1);
+                const r = smooth((g.t - g.legPhaseT) / LEG_RAMP), from = g.legStart.get(w) ?? { lead: 0, rear: 0 };
+                rel = { lead: from.lead + (target.lead - from.lead) * r, rear: from.rear + (target.rear - from.rear) * r };
+                g.legRel.set(w, rel);
+            }
+            const ch = lockupPoseChannels(ph.weights[role], w.skeleton.lChannelSide(w.facing), { lean: ph.lean[role], dip: ph.dip[role], legRel: rel });
+            const from = g.from.get(w);
+            for (const key of Object.keys(ch)) w.pose[key] = k < 1 ? (from[key] ?? 0) * (1 - k) + ch[key] * k : ch[key];
+            w.pose.tilt = 0; w.pose.lift = 0; w.pose.bend = 0;
+        }
+
+        if (ph.phase === 'drive' || ph.phase === 'break') { g.legPhase = ph.phase; g.legDrive = g.stealAt; }
+        else g.legPhase = null;
+        if (ph.phase === 'break' && g.t >= g.breakAt + LOCKUP.breakGrip + LOCKUP.breakStep) {
+            A.state = 'standing'; D.state = 'standing';
+            A.tweenPose('idle', 220, 'Linear'); D.tweenPose('idle', 220, 'Linear');
+            this.lockupState = null;
+            return true;
+        }
+        return false;
+    }
+
     _tickLockup(dt) {
         const ls = this.lockupState;
         ls.timer += dt;
 
-        // Hold them at arm's length facing each other — gap of ~100 scaled units
-        const s      = ls.attacker.s;
-        const midX   = (ls.attacker.x + ls.defender.x) / 2;
-        const halfGap = 50 * s; // half of 100*s total gap
-        const dir    = ls.attacker.facing; // points from attacker toward defender
-        ls.attacker.x += (midX - dir * halfGap - ls.attacker.x) * 0.18;
-        ls.defender.x  += (midX + dir * halfGap - ls.defender.x)  * 0.18;
-        // The drift aims at an unclamped midpoint — at a wall it walks bodies
-        // through the rope plane (probes logged lockups at x≈890)
-        ls.attacker._clamp();
-        ls.defender._clamp();
+        const g = ls.grapple && grapplesCandidate() ? ls.grapple : null;
+        let consumed = null;
+        if (g) {
+            if (this._tickGrapple(ls, g, dt)) return;
+            // D2: input during the engage is buffered and fires when it ends (you can't suplex someone you haven't grabbed).
+            if (g.t < LOCKUP.engageEnd) {
+                for (const w of [ls.attacker, ls.defender]) for (const k of ['finisher', 'action', 'power']) {
+                    if (w.input.justDown(k)) { g.pending ??= new Map(); if (!g.pending.has(w)) g.pending.set(w, new Set()); g.pending.get(w).add(k); }
+                }
+                return;
+            }
+            if (g.breakAt !== null) return;   // the break is a release, not a window for follow-ups
+            consumed = g.pending ?? null;
+            g.pending = null;
+        }
+        const just = (w, k) => w.input.justDown(k) || !!consumed?.get(w)?.has(k);
+        if (!g) {
+            // Hold them at arm's length facing each other — gap of ~100 scaled units
+            const s      = ls.attacker.s;
+            const midX   = (ls.attacker.x + ls.defender.x) / 2;
+            const halfGap = 50 * s; // half of 100*s total gap
+            const dir    = ls.attacker.facing; // points from attacker toward defender
+            ls.attacker.x += (midX - dir * halfGap - ls.attacker.x) * 0.18;
+            ls.defender.x  += (midX + dir * halfGap - ls.defender.x)  * 0.18;
+            // The drift aims at an unclamped midpoint — at a wall it walks bodies
+            // through the rope plane (probes logged lockups at x≈890)
+            ls.attacker._clamp();
+            ls.defender._clamp();
+        }
 
         const who = ls.attacker === this.w1 ? 'p1' : 'p2';
 
@@ -3716,7 +3803,7 @@ export default class Arena extends Phaser.Scene {
         // unused in here — standing finisher still resolves to
         // sleeper/Thesz press/taunt outside a lockup, tryFinisher requires
         // state === 'standing').
-        if (ls.attacker.input.justDown('finisher') && ls.attacker.moveSet.includes('hammerlock')) {
+        if (just(ls.attacker, 'finisher') && ls.attacker.moveSet.includes('hammerlock')) {
             const attacker = ls.attacker, defender = ls.defender;
             this.lockupState = null;
             attacker._doHammerlock(defender);
@@ -3726,15 +3813,16 @@ export default class Arena extends Phaser.Scene {
         }
 
         // Defender contests by pressing grapple — steals the lockup
-        if (ls.defender.input.justDown('action')) {
+        if (just(ls.defender, 'action') && (!g || g.stealAt === null || g.t - g.stealAt > LOCKUP.stealHitch + LOCKUP.stealCrossfade)) {
             [ls.attacker, ls.defender] = [ls.defender, ls.attacker];
+            if (g) { g.stealAt = g.t; return; }   // D6: the hitch, the dip and the cross-fade come from lockupPhase; no re-tween
             ls.timer = 0;
             ls.attacker.tweenPose('lockup', 150, 'Cubic.easeOut');
             return;
         }
 
         // Attacker executes follow-up: grapple again + optional direction
-        if (ls.attacker.input.justDown('action')) {
+        if (just(ls.attacker, 'action')) {
             const goUp    = ls.attacker.input.isDown('up');
             const goDown  = ls.attacker.input.isDown('down');
             const goLeft  = ls.attacker.input.isDown('left');
@@ -3779,7 +3867,7 @@ export default class Arena extends Phaser.Scene {
         // Power from the lockup: the kit's hip toss, else its arm drag — two
         // moves competing for one slot, so the kit decides which a wrestler has.
         const powerThrow = ['hipToss', 'armDrag'].find(move => ls.attacker.moveSet.includes(move));
-        if (ls.attacker.input.justDown('power') && powerThrow) {
+        if (just(ls.attacker, 'power') && powerThrow) {
             ls.attacker.state = 'standing';
             ls.defender.state = 'standing';
             this.lockupState  = null;
@@ -3790,8 +3878,8 @@ export default class Arena extends Phaser.Scene {
             return;
         }
 
-        // Timeout — break the clinch
-        if (ls.timer >= 0.8) {
+        // Timeout — break the clinch (with grapples on, _tickGrapple runs the break at LOCKUP.timeout)
+        if (!g && ls.timer >= 0.8) {
             ls.attacker.state = 'standing';
             ls.defender.state = 'standing';
             ls.attacker.tweenPose('idle', 220, 'Linear');

@@ -158,3 +158,29 @@ test('pose channels: lead leg is the near-side leg per facing, weights mix', () 
     assert.ok(Math.abs(half.crouch - (0.32 + 0.14) / 2) < 1e-12);
     assert.equal(lockupPoseChannels(w, 'near', { dip: 0.06 }).crouch, 0.38);
 });
+
+test('legRel: the planted foot holds its world place while the body travels; the stepper gains 2 pulses; offsets stay bounded', async () => {
+    const { legRel, PULSE_PX } = await import('../src/animation/lockup.js');
+    for (const dirRel of [1, -1]) {
+        let prevWorld = null;
+        for (let k = 0; k < 4; k++) {
+            const body0 = dirRel * k * PULSE_PX;
+            const worlds = [];
+            for (let i = 0; i <= 20; i++) {
+                const u = i / 20, step = { index: k, foot: k % 2 ? 'rear' : 'lead', u };
+                const rel = legRel(step, dirRel);
+                const p = u * u * (3 - 2 * u);
+                const body = body0 + dirRel * PULSE_PX * p;
+                const planted = k % 2 === 0 ? rel.rear : rel.lead, stepper = k % 2 === 0 ? rel.lead : rel.rear;
+                worlds.push({ planted: body + planted, stepper: body + stepper });
+                assert.ok(Math.abs(planted) <= PULSE_PX / 2 + 1e-9 && Math.abs(stepper) <= PULSE_PX / 2 + 1e-9);
+            }
+            for (const w of worlds) assert.ok(Math.abs(w.planted - worlds[0].planted) < 1e-9, 'planted foot slid');
+            assert.ok(Math.abs(Math.abs(worlds.at(-1).stepper - worlds[0].stepper) - 2 * PULSE_PX) < 1e-9);
+            // the stepper becomes the next pulse's planted foot at the same world place
+            if (prevWorld !== null) assert.ok(Math.abs(worlds[0].planted - prevWorld) < 1e-9, `k ${k}: ${worlds[0].planted} vs ${prevWorld}`);
+            prevWorld = worlds.at(-1).stepper;
+        }
+    }
+    assert.deepEqual(legRel({ index: -1, u: null }, 1), { lead: 0, rear: 0 });
+});

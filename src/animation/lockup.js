@@ -23,6 +23,7 @@ export const LOCKUP = Object.freeze({
     strainHz: 9, strainLean: 0.02,      // the stalled push
     stealHitch: 0.12, stealCrossfade: 0.20, stealDip: 0.06,
     breakGrip: 0.10, breakStep: 0.25, breakStepPx: 14,
+    legGain: Object.freeze({ lead: 72, rear: 90 }),   // px of ankle travel per rad of leg channel at s = 1 (probed on Lou, George 7% lower)
     holdGap: 44,                        // px at s = 1 between the pair's x while held; measured in T1.2 (D9): both hands <= 1.8 px, collar flex .4-1.8 rad
     collarBack: 9, collarDrop: 6,       // px at s = 1: the collar point is the partner's neck, back of it and lower (D7)
 });
@@ -195,14 +196,15 @@ export function lockupPhase(state) {
 // Mix a role's pose key weights into the leg/lean/crouch channels. `lSide` is skeleton.lChannelSide(facing): which depth
 // side the 'l' channels draw on. The lead leg is the near-side leg, the rear leg the far-side leg.
 export function lockupPoseChannels(weights, lSide, extra = {}) {
+    const legs = extra.legRel ?? { lead: 0, rear: 0 };
     const mix = (field) => weights.even * LOCKUP_POSES.even[field] + weights.attacker * LOCKUP_POSES.attacker[field] + weights.defender * LOCKUP_POSES.defender[field];
     const nearCh = lSide === 'far' ? 'r' : 'l', farCh = nearCh === 'l' ? 'r' : 'l';
     return {
         lArm: LOCKUP_ARMS.arm, rArm: LOCKUP_ARMS.arm, lElbow: LOCKUP_ARMS.elbow, rElbow: LOCKUP_ARMS.elbow,
         lean: mix('lean') + (extra.lean ?? 0),
         crouch: mix('crouch') + (extra.dip ?? 0),
-        [`${nearCh}Leg`]: mix('lead'), [`${nearCh}Knee`]: mix('leadKnee'),
-        [`${farCh}Leg`]: mix('rear'), [`${farCh}Knee`]: mix('rearKnee'),
+        [`${nearCh}Leg`]: mix('lead') + legs.lead / LOCKUP.legGain.lead, [`${nearCh}Knee`]: mix('leadKnee'),
+        [`${farCh}Leg`]: mix('rear') + legs.rear / LOCKUP.legGain.rear, [`${farCh}Knee`]: mix('rearKnee'),
     };
 }
 
@@ -229,4 +231,17 @@ export function lockupGrips(attacker, defender, grips) {
         attacker: list(attacker, defender, grips.attacker, nearArm(attacker), farArm(attacker)),
         defender: list(defender, attacker, grips.defender, farArm(defender), nearArm(defender)),
     };
+}
+
+// Foot offsets (px at s = 1, along the wrestler's facing) relative to the pose's base leg angles, so a planted foot holds its
+// place in the world while the body travels. Each pulse moves the body by PULSE_PX; the stepping foot gains 2 * PULSE_PX in the
+// world, i.e. +PULSE_PX against the hips, and the planted one loses PULSE_PX against the hips; they swap each pulse, so the
+// offsets stay within +-PULSE_PX / 2. `dirRel` is +1 when the body travels along its facing (the attacker), -1 against it (the
+// defender, and both men in the break).
+export const PULSE_PX = LOCKUP.driveSpeed * LOCKUP.walkSpeed * LOCKUP.stepMoving;
+export function legRel(step, dirRel) {
+    if (!step || step.index < 0) return { lead: 0, rear: 0 };
+    const p = smooth(step.u ?? 1);
+    const stepper = -dirRel * PULSE_PX * (0.5 - p), planted = dirRel * PULSE_PX * (0.5 - p);
+    return step.index % 2 === 0 ? { lead: stepper, rear: planted } : { lead: planted, rear: stepper };
 }

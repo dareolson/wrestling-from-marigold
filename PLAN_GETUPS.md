@@ -39,7 +39,7 @@ is parked at G10a; its Rev 4b / Stage 13 (the turn inside today's rise) is repla
 - T4.1: 18489d7 wired (snapshot, `_backSellRiseState`, `_getUpLog`); [G3 page](research/animation/getups-2026-10/g3/index.html) + [strip](research/animation/getups-2026-10/g3/strip.html), 10 seeds, 124 rises (backTuck 55, backKneeHurt* 67, frontKnee 2). Gates 1023/1023, build ok, coverage 22.
   Misses: 4 rises step 35-63 px into standing, 16 change pose >5 px on the AI's next action, 19 start steps >10 px (backTuck), no natural stamina 20-30 % rise. Stopped at G3.
 - T4.2: 19ab04f probe + eased separation (`_riseStandAt`, 6*s px per 1/60 s for 250 ms, flag on only), b1249e6 [snap strip](research/animation/getups-2026-10/g3/snap-strip.html). Hypothesis confirmed only with a NON-standing opponent: first standing frame jumps exactly 80*s - dist (63.83 / 33.83 px at gap 0 / 30, both rigs, both facings); standing opponent and 150 px control 0. After: 4.79 px, ends 63.83 apart; flag off still 33.83. 85/85 focused.
-  Misses: the plan's standing-opponent overlap case cannot show the snap (the opponent separates itself on frame 0), so the busy case (`elbowDropping`) is the test; the 4 real G3 steps not re-checked (no recapture); the pair still overlaps for ~11 frames while easing; 16 AI-action and 19 start steps untouched. Stopped for Derek.
+  Misses: the plan's standing-opponent overlap case cannot show the snap (the opponent separates itself on frame 0), so the busy case (`elbowDropping`) is the test; the 4 real G3 steps not re-checked (no recapture); the pair still overlaps for ~11 frames while easing; 16 AI-action and 19 start steps untouched. Derek approved the ease from the strip 2026-10-29 (ease kept, not push-the-opponent).
 
 ## Why (Derek 2026-10-27)
 

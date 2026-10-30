@@ -33,7 +33,7 @@ const SETUP = ({ perWrestler, maxMatchS, tol }) => {
         if (n > TOL || f > TOL) part.over++;
         if (n > part.worst.near) part.worst.near = +n.toFixed(3);
         if (f > part.worst.far) part.worst.far = +f.toFixed(3);
-        if (Math.max(n, f) >= Math.max(part.worst.near, part.worst.far) && Math.max(n, f) > TOL) part.at = { riseT: +(w.riseT ?? 0).toFixed(3), tag };
+        if (Math.max(n, f) >= Math.max(part.worst.near, part.worst.far) && Math.max(n, f) > TOL) part.at = { riseT: +(w.riseT ?? 0).toFixed(3), tag, sell: w._sell?.plan?.[w._sell.i]?.name ?? null, sellT: w._sell ? +w._sell.t.toFixed(2) : null, hold: w._hold ? +w._hold.t.toFixed(2) : null, fv: w._fallVariant ?? null, fp: +(w.fallProgress ?? 0).toFixed(2), lying: w.lying, stateTimer: +(w.stateTimer ?? 0).toFixed(2), possum: w.state === 'possum' };
     };
     let T = 100000, n = 0;
     window.__km = { R, U, run: (k) => {

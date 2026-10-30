@@ -24,7 +24,7 @@ export const LOCKUP = Object.freeze({
     stealHitch: 0.12, stealCrossfade: 0.20, stealDip: 0.06,
     breakGrip: 0.10, breakStep: 0.25, breakStepPx: 14,
     legGain: Object.freeze({ lead: 72, rear: 90 }),   // px of ankle travel per rad of leg channel at s = 1 (probed on Lou, George 7% lower)
-    holdGapFromArm: Object.freeze({ slope: 0.7, base: -19, min: 20 }),   // D9: gap = slope * (attacker's arm length) + base, px at s = 1; fitted on five rigs (T1.2)
+    holdGapFromArm: Object.freeze({ slope: 0.7, base: -21, min: 20 }),   // D9: gap = slope * (attacker's arm length) + base, px at s = 1; fitted on five rigs (T1.2)
     holdGap: 44,                        // px at s = 1 between the pair's x while held; measured in T1.2 (D9): both hands <= 1.8 px, collar flex .4-1.8 rad
     collarBack: 9, collarDrop: 6,       // px at s = 1: the collar point is the partner's neck, back of it and lower (D7)
 });
@@ -43,9 +43,9 @@ export function holdGapFor(armLen) {
 export const LOCKUP_ARMS = Object.freeze({ arm: 0.3, elbow: 0.7 });
 
 export const LOCKUP_POSES = Object.freeze({
-    even:     Object.freeze({ lean: 0.32, crouch: 0.24, lead: 0.30, leadKnee: 0.35, rear: -0.22, rearKnee: 0.20 }),
-    attacker: Object.freeze({ lean: 0.45, crouch: 0.32, lead: 0.35, leadKnee: 0.45, rear: -0.30, rearKnee: 0.10 }),
-    defender: Object.freeze({ lean: 0.02, crouch: 0.14, lead: 0.10, leadKnee: 0.20, rear: -0.15, rearKnee: 0.30 }),
+    even:     Object.freeze({ lean: 0.32, crouch: 0.24, lead: -0.06, leadKnee: 0.35, rear: -0.34, rearKnee: 0.20 }),
+    attacker: Object.freeze({ lean: 0.45, crouch: 0.32, lead: -0.02, leadKnee: 0.45, rear: -0.40, rearKnee: 0.10 }),
+    defender: Object.freeze({ lean: 0.02, crouch: 0.14, lead: -0.12, leadKnee: 0.20, rear: -0.26, rearKnee: 0.30 }),
 });
 
 const smooth = (u) => { const v = Math.max(0, Math.min(1, u)); return v * v * (3 - 2 * v); };

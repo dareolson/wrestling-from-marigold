@@ -16,7 +16,7 @@ for (const [ra, rd] of PAIRS) {
     const h = await launch();
     await h.page.waitForTimeout(3500);
     for (const gap of gaps) for (const facing of [1, -1]) {
-        const res = await h.page.evaluate(async ({ gap, facing, armsArg }) => {
+        const res = await h.page.evaluate(async ({ gap, facing, armsArg, driveArg }) => {
             const { LOCKUP, LOCKUP_ARMS, lockupPoseChannels, lockupGrips, holdGapFor } = await import('/src/animation/lockup.js');
             const { grapplesCandidate } = await import('/src/Wrestler.js');
             const game = window.__WFM_GAME, sc = game.scene.scenes[0];
@@ -36,7 +36,8 @@ for (const [ra, rd] of PAIRS) {
             const setPose = () => {
                 for (const w of [a, d]) {
                     const lSide = w.skeleton.lChannelSide(w.facing);
-                    Object.assign(w.pose, arms, lockupPoseChannels({ even: 1, attacker: 0, defender: 0 }, lSide));
+                    const key = driveArg ? (w === a ? 'attacker' : 'defender') : 'even';
+                    Object.assign(w.pose, arms, lockupPoseChannels({ even: key === 'even' ? 1 : 0, attacker: key === 'attacker' ? 1 : 0, defender: key === 'defender' ? 1 : 0 }, lSide));
                 }
             };
             let T = performance.now();
@@ -73,7 +74,7 @@ for (const [ra, rd] of PAIRS) {
             const pp = a.skeleton.jointAttachmentPoints, armLen = (Math.hypot(pp.nearElbow.x - pp.nearShoulder.x, pp.nearElbow.y - pp.nearShoulder.y) + Math.hypot(pp.nearWrist.x - pp.nearElbow.x, pp.nearWrist.y - pp.nearElbow.y)) / a.s;
             const draw = { aOutline: null };
             return { gapUsed: gap, armLen, worst, unreachable, flex, headGap: { min: Math.min(...heads), max: Math.max(...heads) }, neckGapX: { min: Math.min(...necks), max: Math.max(...necks) }, s: a.s, lSide: a.skeleton.lChannelSide(a.facing), lSideD: d.skeleton.lChannelSide(d.facing) };
-        }, { gap, facing, armsArg: process.env.ARMS });
+        }, { gap, facing, armsArg: process.env.ARMS, driveArg: process.env.POSES === 'drive' });
         if (process.env.SHOT) await h.screenshot(process.env.SHOT.replace('.png', `-${ra.slice(0, 4)}-${facing > 0 ? 'R' : 'L'}-${gap}.png`));
         rows.push({ attacker: ra, defender: rd, facing, gap: res.gapUsed ?? gap, ...res });
         const r = rows.at(-1), f2 = (x) => x.toFixed(1);

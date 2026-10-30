@@ -151,8 +151,8 @@ test('engage: the attacker closes 70 % and the defender 30 %, the jolt peaks nea
 test('pose channels: lead leg is the near-side leg per facing, weights mix', () => {
     const w = { even: 0, attacker: 1, defender: 0 };
     const near = lockupPoseChannels(w, 'near'), far = lockupPoseChannels(w, 'far');
-    assert.equal(near.lLeg, 0.35); assert.equal(near.rLeg, -0.30);
-    assert.equal(far.rLeg, 0.35); assert.equal(far.lLeg, -0.30);
+    assert.equal(near.lLeg, -0.02); assert.equal(near.rLeg, -0.40);
+    assert.equal(far.rLeg, -0.02); assert.equal(far.lLeg, -0.40);
     assert.equal(near.lean, 0.45);
     const half = lockupPoseChannels({ even: 0, attacker: 0.5, defender: 0.5 }, 'near');
     assert.ok(Math.abs(half.crouch - (0.32 + 0.14) / 2) < 1e-12);
@@ -186,8 +186,8 @@ test('legRel: the planted foot holds its world place while the body travels; the
 });
 
 test('holdGapFor: the gap follows the attacker\'s arm, with a floor and a fallback', () => {
-    assert.ok(Math.abs(holdGapFor(87.5) - 42.25) < 1e-9);
-    assert.ok(Math.abs(holdGapFor(65.2) - 26.64) < 1e-9);
+    assert.ok(Math.abs(holdGapFor(87.5) - 40.25) < 1e-9);
+    assert.ok(Math.abs(holdGapFor(65.2) - 24.64) < 1e-9);
     assert.ok(holdGapFor(65.2) < holdGapFor(87.5));
     assert.equal(holdGapFor(10), LOCKUP.holdGapFromArm.min);
     assert.equal(holdGapFor(NaN), LOCKUP.holdGap);

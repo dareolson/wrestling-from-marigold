@@ -1,0 +1,2828 @@
+{
+ "tol": 0.02,
+ "rises": [
+  {
+   "seed": 4,
+   "k": 1,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "backward",
+   "matchT": 8.1,
+   "down": {
+    "frames": 169,
+    "over": 169,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 5,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 4,
+   "k": 2,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 47,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 36.5,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 77,
+    "over": 30,
+    "worst": {
+     "near": 0.179,
+     "far": 0.16
+    },
+    "at": {
+     "riseT": 0.232,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 4,
+   "k": 3,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 67,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 50.1,
+   "down": {
+    "frames": 270,
+    "over": 249,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 67,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 4,
+   "k": 4,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 95,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 66.9,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 55,
+    "over": 22,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.284,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 4,
+   "k": 5,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 80.7,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 5,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 4,
+   "k": 6,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 87,
+   "pain": "head",
+   "fallVariant": "backward",
+   "matchT": 92.4,
+   "down": {
+    "frames": 270,
+    "over": 225,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 58,
+    "over": 23,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.251,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 4,
+   "k": 7,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 86,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 135.3,
+   "down": {
+    "frames": 270,
+    "over": 224,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 59,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 4,
+   "k": 1,
+   "who": "w2",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 91,
+   "pain": null,
+   "fallVariant": "backward",
+   "matchT": 31.7,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 56,
+    "over": 22,
+    "worst": {
+     "near": 0.179,
+     "far": 0.16
+    },
+    "at": {
+     "riseT": 0.294,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 4,
+   "k": 2,
+   "who": "w2",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 72,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 36.7,
+   "down": {
+    "frames": 466,
+    "over": 313,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 65,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 4,
+   "k": 3,
+   "who": "w2",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 92,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 49.8,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 56,
+    "over": 22,
+    "worst": {
+     "near": 0.18,
+     "far": 0.16
+    },
+    "at": {
+     "riseT": 0.27,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 4,
+   "k": 4,
+   "who": "w2",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 76,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 67.2,
+   "down": {
+    "frames": 469,
+    "over": 242,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 63,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 4,
+   "k": 5,
+   "who": "w2",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 99,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 135,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 21,
+    "worst": {
+     "near": 0.18,
+     "far": 0.16
+    },
+    "at": {
+     "riseT": 0.272,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 1,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 76,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 1.9,
+   "down": {
+    "frames": 466,
+    "over": 374,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 63,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 2,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 83,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 12.6,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 60,
+    "over": 24,
+    "worst": {
+     "near": 0.179,
+     "far": 0.16
+    },
+    "at": {
+     "riseT": 0.261,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 3,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 23.4,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 5,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 4,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 100,
+   "pain": "arm",
+   "fallVariant": "flip",
+   "matchT": 49.8,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 21,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.25,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 5,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 87,
+   "pain": "head",
+   "fallVariant": "sitBack",
+   "matchT": 61.4,
+   "down": {
+    "frames": 270,
+    "over": 225,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 58,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 6,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 100,
+   "pain": "arm",
+   "fallVariant": "sitBack",
+   "matchT": 106.4,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 5,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 7,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "sitBack",
+   "matchT": 118.9,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 21,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.25,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 8,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "sitBack",
+   "matchT": 122.9,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 5,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 1,
+   "who": "w2",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "backward",
+   "matchT": 1.7,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 21,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.25,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 2,
+   "who": "w2",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 76,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 12.8,
+   "down": {
+    "frames": 473,
+    "over": 250,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 63,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 3,
+   "who": "w2",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 60,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 23.7,
+   "down": {
+    "frames": 442,
+    "over": 215,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 70,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 4,
+   "who": "w2",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 76,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 50.1,
+   "down": {
+    "frames": 467,
+    "over": 155,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 63,
+    "over": 25,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.281,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 5,
+   "k": 5,
+   "who": "w2",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 60,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 80.4,
+   "down": {
+    "frames": 333,
+    "over": 180,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 71,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 1,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "backward",
+   "matchT": 7.2,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 21,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.25,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 2,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 68,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 51,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 67,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 3,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 79,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 57.5,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 62,
+    "over": 24,
+    "worst": {
+     "near": 0.179,
+     "far": 0.16
+    },
+    "at": {
+     "riseT": 0.292,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 4,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 66,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 70.7,
+   "down": {
+    "frames": 270,
+    "over": 249,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 68,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 5,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 66,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 76.9,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 68,
+    "over": 27,
+    "worst": {
+     "near": 0.179,
+     "far": 0.16
+    },
+    "at": {
+     "riseT": 0.291,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 6,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 82,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 86,
+   "down": {
+    "frames": 270,
+    "over": 249,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 61,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 7,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 98,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 106.5,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 21,
+    "worst": {
+     "near": 0.18,
+     "far": 0.16
+    },
+    "at": {
+     "riseT": 0.243,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 8,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 119.1,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.22,
+     "far": 0.15
+    },
+    "at": null
+   },
+   "rise": {
+    "frames": 53,
+    "over": 5,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 9,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 87,
+   "pain": "head",
+   "fallVariant": "backward",
+   "matchT": 144.3,
+   "down": {
+    "frames": 270,
+    "over": 249,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 58,
+    "over": 23,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.251,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 10,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 87,
+   "pain": "head",
+   "fallVariant": "backward",
+   "matchT": 150.4,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 58,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 1,
+   "who": "w2",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 98,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 36.9,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 21,
+    "worst": {
+     "near": 0.18,
+     "far": 0.16
+    },
+    "at": {
+     "riseT": 0.243,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 2,
+   "who": "w2",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 74,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 51.3,
+   "down": {
+    "frames": 270,
+    "over": 102,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 64,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 3,
+   "who": "w2",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 86,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 77.2,
+   "down": {
+    "frames": 270,
+    "over": 115,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 59,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 4,
+   "who": "w2",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "flip",
+   "matchT": 85.7,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 21,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.25,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 7,
+   "k": 5,
+   "who": "w2",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 78,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 94.9,
+   "down": {
+    "frames": 498,
+    "over": 174,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 62,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 9,
+   "k": 1,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "backward",
+   "matchT": 14,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 21,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.25,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 9,
+   "k": 2,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "backward",
+   "matchT": 68.2,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 5,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 9,
+   "k": 3,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "backward",
+   "matchT": 77.1,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 21,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.25,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 9,
+   "k": 4,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 100,
+   "pain": null,
+   "fallVariant": "backward",
+   "matchT": 84.1,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.22,
+     "far": 0.15
+    },
+    "at": null
+   },
+   "rise": {
+    "frames": 53,
+    "over": 5,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 9,
+   "k": 5,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurt",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 88,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 109.5,
+   "down": {
+    "frames": 270,
+    "over": 249,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 58,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 9,
+   "k": 6,
+   "who": "w1",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 94,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 116.6,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 55,
+    "over": 22,
+    "worst": {
+     "near": 0.178,
+     "far": 0.159
+    },
+    "at": {
+     "riseT": 0.254,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 9,
+   "k": 7,
+   "who": "w1",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": 1,
+   "stamina": 100,
+   "pain": "arm",
+   "fallVariant": "flip",
+   "matchT": 150.5,
+   "down": {
+    "frames": 91,
+    "over": 91,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 53,
+    "over": 5,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 9,
+   "k": 1,
+   "who": "w2",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 78,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 5.3,
+   "down": {
+    "frames": 371,
+    "over": 129,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 62,
+    "over": 25,
+    "worst": {
+     "near": 0.179,
+     "far": 0.16
+    },
+    "at": {
+     "riseT": 0.243,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 9,
+   "k": 2,
+   "who": "w2",
+   "state0": "down",
+   "id": "backKneeHurtStraight",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 76,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 116.9,
+   "down": {
+    "frames": 469,
+    "over": 176,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 63,
+    "over": 6,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 0,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  },
+  {
+   "seed": 9,
+   "k": 3,
+   "who": "w2",
+   "state0": "down",
+   "id": "backTuck",
+   "lying": "supine",
+   "facing": -1,
+   "stamina": 61,
+   "pain": "chest",
+   "fallVariant": "flip",
+   "matchT": 156.4,
+   "down": {
+    "frames": 336,
+    "over": 141,
+    "worst": {
+     "near": 0.15,
+     "far": 0.15
+    },
+    "at": {
+     "riseT": 1,
+     "tag": "down"
+    }
+   },
+   "rise": {
+    "frames": 70,
+    "over": 27,
+    "worst": {
+     "near": 0.179,
+     "far": 0.16
+    },
+    "at": {
+     "riseT": 0.294,
+     "tag": "rise"
+    },
+    "riseT": null
+   }
+  }
+ ],
+ "upright": [
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "standing",
+   "frames": 3440,
+   "over": 313,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "lockup",
+   "frames": 329,
+   "over": 82,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "holding",
+   "frames": 1381,
+   "over": 28,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "blocking",
+   "frames": 150,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "headlocked",
+   "frames": 39,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "dropkicking",
+   "frames": 148,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.05
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "selling",
+   "frames": 123,
+   "over": 37,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "staggered",
+   "frames": 316,
+   "over": 30,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "sleeping",
+   "frames": 127,
+   "over": 25,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "evading",
+   "frames": 42,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": -0.017
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "slamming",
+   "frames": 150,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "elbowDropping",
+   "frames": 66,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.159
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "running",
+   "frames": 170,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 4,
+   "who": "w1",
+   "state": "pinning",
+   "frames": 13,
+   "over": 13,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "standing",
+   "frames": 3377,
+   "over": 261,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "lockup",
+   "frames": 329,
+   "over": 112,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "headlocked",
+   "frames": 97,
+   "over": 21,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "evading",
+   "frames": 168,
+   "over": 21,
+   "overLimit": 0,
+   "minFlex": -0.026
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "holding",
+   "frames": 1450,
+   "over": 248,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "taunting",
+   "frames": 355,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "slamming",
+   "frames": 158,
+   "over": 22,
+   "overLimit": 0,
+   "minFlex": -0.073
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "elbowDropping",
+   "frames": 44,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.159
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "pinning",
+   "frames": 17,
+   "over": 6,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "selling",
+   "frames": 79,
+   "over": 24,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "staggered",
+   "frames": 191,
+   "over": 95,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "dropkicking",
+   "frames": 111,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.05
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "blocking",
+   "frames": 5,
+   "over": 5,
+   "overLimit": 0,
+   "minFlex": -0.046
+  },
+  {
+   "seed": 4,
+   "who": "w2",
+   "state": "running",
+   "frames": 409,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 9
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "standing",
+   "frames": 3541,
+   "over": 99,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "selling",
+   "frames": 45,
+   "over": 4,
+   "overLimit": 0,
+   "minFlex": -0.071
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "dropkicking",
+   "frames": 222,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.05
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "slamming",
+   "frames": 200,
+   "over": 22,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "elbowDropping",
+   "frames": 88,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.159
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "blocking",
+   "frames": 168,
+   "over": 65,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "holding",
+   "frames": 940,
+   "over": 1,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "lockup",
+   "frames": 239,
+   "over": 31,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "staggered",
+   "frames": 80,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "evading",
+   "frames": 21,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "running",
+   "frames": 207,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.15
+  },
+  {
+   "seed": 5,
+   "who": "w1",
+   "state": "pinning",
+   "frames": 11,
+   "over": 2,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "standing",
+   "frames": 2410,
+   "over": 95,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "dropkicking",
+   "frames": 74,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.05
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "slamming",
+   "frames": 50,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "elbowDropping",
+   "frames": 22,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.159
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "taunting",
+   "frames": 426,
+   "over": 2,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "selling",
+   "frames": 77,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "sleeping",
+   "frames": 26,
+   "over": 23,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "evading",
+   "frames": 63,
+   "over": 21,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "lockup",
+   "frames": 239,
+   "over": 12,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "running",
+   "frames": 277,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 9
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "headlocked",
+   "frames": 38,
+   "over": 1,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "blocking",
+   "frames": 89,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "staggered",
+   "frames": 50,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 5,
+   "who": "w2",
+   "state": "holding",
+   "frames": 876,
+   "over": 278,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "standing",
+   "frames": 3804,
+   "over": 205,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "evading",
+   "frames": 63,
+   "over": 42,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "dropkicking",
+   "frames": 222,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.05
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "holding",
+   "frames": 1354,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "pinning",
+   "frames": 26,
+   "over": 23,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "lockup",
+   "frames": 224,
+   "over": 62,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "headlocked",
+   "frames": 42,
+   "over": 10,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "blocking",
+   "frames": 246,
+   "over": 3,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "selling",
+   "frames": 78,
+   "over": 25,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "slamming",
+   "frames": 132,
+   "over": 23,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "elbowDropping",
+   "frames": 57,
+   "over": 13,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "staggered",
+   "frames": 232,
+   "over": 100,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w1",
+   "state": "running",
+   "frames": 544,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "standing",
+   "frames": 3754,
+   "over": 235,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "evading",
+   "frames": 105,
+   "over": 63,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "selling",
+   "frames": 69,
+   "over": 6,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "holding",
+   "frames": 1351,
+   "over": 32,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "lockup",
+   "frames": 224,
+   "over": 65,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "running",
+   "frames": 493,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.1
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "taunting",
+   "frames": 355,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "headlocked",
+   "frames": 45,
+   "over": 12,
+   "overLimit": 0,
+   "minFlex": -0.047
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "dropkicking",
+   "frames": 74,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.05
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "slamming",
+   "frames": 50,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "elbowDropping",
+   "frames": 22,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.159
+  },
+  {
+   "seed": 7,
+   "who": "w2",
+   "state": "pinning",
+   "frames": 19,
+   "over": 19,
+   "overLimit": 0,
+   "minFlex": -0.047
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "standing",
+   "frames": 5012,
+   "over": 418,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "lockup",
+   "frames": 468,
+   "over": 214,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "slamming",
+   "frames": 200,
+   "over": 62,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "elbowDropping",
+   "frames": 88,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.159
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "headlocked",
+   "frames": 19,
+   "over": 2,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "blocking",
+   "frames": 267,
+   "over": 16,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "dropkicking",
+   "frames": 185,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0.05
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "holding",
+   "frames": 1570,
+   "over": 6,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "pinning",
+   "frames": 94,
+   "over": 35,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "selling",
+   "frames": 65,
+   "over": 25,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "staggered",
+   "frames": 296,
+   "over": 100,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "running",
+   "frames": 1204,
+   "over": 4,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "sleeping",
+   "frames": 50,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 9,
+   "who": "w1",
+   "state": "evading",
+   "frames": 42,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  },
+  {
+   "seed": 9,
+   "who": "w2",
+   "state": "standing",
+   "frames": 3943,
+   "over": 272,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w2",
+   "state": "lockup",
+   "frames": 468,
+   "over": 229,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w2",
+   "state": "running",
+   "frames": 1097,
+   "over": 2,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w2",
+   "state": "selling",
+   "frames": 101,
+   "over": 25,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w2",
+   "state": "holding",
+   "frames": 1606,
+   "over": 335,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w2",
+   "state": "staggered",
+   "frames": 114,
+   "over": 43,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w2",
+   "state": "taunting",
+   "frames": 568,
+   "over": 4,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w2",
+   "state": "evading",
+   "frames": 84,
+   "over": 19,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w2",
+   "state": "headlocked",
+   "frames": 33,
+   "over": 6,
+   "overLimit": 0,
+   "minFlex": -0.1
+  },
+  {
+   "seed": 9,
+   "who": "w2",
+   "state": "blocking",
+   "frames": 38,
+   "over": 0,
+   "overLimit": 0,
+   "minFlex": 0
+  }
+ ]
+}

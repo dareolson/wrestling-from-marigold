@@ -575,6 +575,29 @@ snaps the riser out in one frame on the first standing frame. **Prove it before 
      `research/animation/getups-2026-10/g3/snap-strip.html`. Report the before/after root step per case.
   6. Progress line (≤ 3 lines: sha, result, misses), handoff entry, Status line. **STOP for Derek.** The 16 other >5 px
      steps (AI's next action) and the 19 backTuck start steps are not this task.
+### Rev 8: T4.3 knees past straight on the ground (Opus 2026-10-29, after Derek's G3 "gumby legs" and audit 34b3d71)
+
+Audit (34b3d71, `tools/debug/getups_knee.mjs`, `getups_knee_match.mjs`): knee = shin channel − thigh channel as
+`_applyGrounded` is handed them. Every supine lying pose holds the knee 0.15 rad past straight (authored, e.g. Skeleton.js
+~2102: farThigh −1.45 / farShin −1.60), backKneeHurt and backTuck carry 0.15-0.18 through the rise, sells reach 0.45 on a far
+leg; frontKnee never. Upright is already held at `JOINT_LIMITS.knee.min` (−0.10). Nothing limits the grounded path.
+
+- **T4.3** One clamp, one place, flag on only. One commit for code + tests (`T4.3: ...`), one for the strip.
+  1. In `Skeleton._applyGrounded` (every lying, sell and rise frame passes through it; the audit wrapped it and saw all
+     of them), under `getUpsCandidate()`-equivalent flag check: for each leg, if the knee is past straight, set the shin
+     channel to the thigh channel (knee exactly straight, 0 rad). The thigh keeps its angle; only the shin moves. Use the
+     same sign convention as `getups_knee.mjs` (past straight = its positive `v`, after its facing handling): derive it
+     from that tool, don't guess, and assert it in a test for both facings. Do not edit authored keys, sells or
+     `JOINT_LIMITS`; do not touch the upright path. Flag off byte-identical.
+  2. Re-run `getups_knee.mjs` (forced, both rigs, both facings) into `knee/knee-audit-after.json`: every case `over` 0.
+     Report the largest boot/ankle move the clamp causes per case (px) and whether any boot now leaves the mat (lying
+     pose: foot y vs ankle ground line). A boot lifted > 3 px is a miss to report, not something to fix here.
+  3. Focused tests: a new `tests/groundedKnee.test.js` (clamp on, both facings, a bent knee untouched, flag off untouched)
+     plus `getUps`, `riseFix`, `riseFixFlagOff`, `georgeClutchFlagOff`, `riseSeparation`. No full suite (not a gate).
+  4. Strip: one normal-speed loop, both facings, Lou and George, before/after side by side: lying + backTuck rise, and
+     the worst sell from the audit (the 0.45 far leg; name the sell). `research/animation/getups-2026-10/knee/knee-strip.html`.
+  5. Progress line (≤ 3 lines; record the audit 34b3d71 in it too), handoff entry, Status line. **STOP for Derek**: does a
+     straight knee read better, or does he want a slight bend (e.g. clamp at 0.05 rad flexed) instead?
 - **⛔ G3 (Derek):** watch the reel. (1) Is the mix right (weights C3)? (2) Promote `getups` to default (legacy stays as
   `getups=off`)? (3) Anything in the reel that looks wrong, even if the numbers don't show it.
 

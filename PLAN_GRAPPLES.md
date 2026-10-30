@@ -17,7 +17,7 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
   Planted-foot slide max 0.85 / 1.10 px/frame (Lou/George, both facings, drive; 4.99 before a 0.15 s leg ramp); pair travels 46 px in a 0.85 s drive. Misses: Arena has no Node test (Phaser), the browser film checks it; steal and break slide not measured yet (T1.4); legGain 72/90 is Lou's, George's is 7% lower.
 - T1.3b: df660be hold gap from the attacker's arm (D9, `holdGapFor`, 0.7*arm-19): T1.2's fixed 44 was measured on the old `george` pilot; on `george-roster-v1` it left the collar 12.7 px short. Now Lou 42.3 / George 26.6 px: every grip 0.0 px, collar flex Lou .87 / George .59, head-centre gap 53 / 38 px (both facings).
   Misses: Guido (arm 64.7) still 19.9 px short on the far elbow, flex .09 (not a Stage 1 rig); the fit is by eye on 4 rigs.
-- T1.4: SHA4 [G1 page](research/animation/grapples-2026-10/g1/index.html), grapples_film/page tools, 60 runs; suite 1053/1053, build, coverage 22, flag-off identical. Held-pose grips 0.0 px; planted slide 1.98-2.21 px/frame; engage step 56-74 (today 36); +0.3-0.8 ms/step.
+- T1.4: fe0b6be [G1 page](research/animation/grapples-2026-10/g1/index.html), grapples_film/page tools, 60 runs; suite 1053/1053, build, coverage 22, flag-off identical. Held-pose grips 0.0 px; planted slide 1.98-2.21 px/frame; engage step 56-74 (today 36); +0.3-0.8 ms/step.
   Misses: in the film the attacker hands miss (Lou collar 9-14 px, George 22-27 px, George 54 frames >3 px); case (d) at 60 px never reaches the stall (a 40 px `d2` run does: 7-26 stall frames, x constant); George's feet cross 27 px. Details in the G1 entry.
 
 ## Why (Derek 2026-10-29)

@@ -24,21 +24,57 @@ const CASES = [
     { id: 'frontKnee-straight', family: 'frontKnee', lying: 'prone', pain: false, opp: 'front' },
 ];
 
-// in-page: the knee of both legs as the skeleton is handed it. _applyGrounded is wrapped to keep the channels of its last call, so
-// this is exactly what is drawn (key tables, stall droop, hold blend, hand routing), not the table alone. (Reading the parts' world
-// rotations is not usable: the near and far images carry different base angles.) d = shin - thigh, table convention.
+// in-page: the knee of both legs, twice. `handed` = the channels _applyGrounded is given (shin - thigh; key tables, stall droop, hold blend,
+// hand routing); `drawn` = the angles it draws the legs with (_recordJointAttachment Hip / Knee: with T4.3's clamp these differ). Reading the
+// parts' world rotations is not usable: the near and far images carry different base angles. d = shin - thigh, table convention:
+// < 0 flexed, 0 straight, > 0 past straight. Under the clamp each frame is also drawn once unclamped (`_getUps` off, same hand pose: the
+// legs do not depend on it) and then clamped, and the ankle and boot-bottom moves between the two are recorded (px, screen y down; a
+// boot "lift" is its lowest point rising).
 const WRAP = () => {
     const sk = window.__rw.skeleton;
     if (sk.__kneeWrapped) return;
-    const orig = sk._applyGrounded.bind(sk);
-    sk._applyGrounded = (x, y, s, facing, g) => { sk.__lastG = { nearThigh: g.nearThigh, nearShin: g.nearShin, farThigh: g.farThigh, farShin: g.farShin, frame: window.__film?.n ?? 0 }; return orig(x, y, s, facing, g); };
+    const orig = sk._applyGrounded.bind(sk), recOrig = sk._recordJointAttachment.bind(sk);
+    let cap = null;
+    sk._recordJointAttachment = (name, img, x, y, angle) => { if (cap && /^(near|far)(Hip|Knee)$/.test(name)) cap[name] = angle; return recOrig(name, img, x, y, angle); };
+    const snap = () => {
+        const out = {};
+        for (const side of ['near', 'far']) {
+            const b = sk[`${side}Boot`] ?? sk[`${side}Shin`], a = sk.jointAttachmentPoints?.[`${side}Ankle`]; // Lou and George paint the boot into the shin: no boot image
+            let bottom = null;
+            if (b?.visible) { const m = b.getWorldTransformMatrix(), fw = b.width, fh = b.height, ox = b.originX * fw, oy = b.originY * fh;
+                bottom = Math.max(...[[-ox, -oy], [fw - ox, -oy], [fw - ox, fh - oy], [-ox, fh - oy]].map(([p, q]) => m.b * p + m.d * q + m.ty)); }
+            out[side] = { ax: a?.x ?? null, ay: a?.y ?? null, bottom };
+        }
+        let all = -1e9;
+        for (const img of sk._parts) if (img.visible) { const m = img.getWorldTransformMatrix(), fw = img.width, fh = img.height, ox = img.originX * fw, oy = img.originY * fh;
+            all = Math.max(all, ...[[-ox, -oy], [fw - ox, -oy], [fw - ox, fh - oy], [-ox, fh - oy]].map(([p, q]) => m.b * p + m.d * q + m.ty)); }
+        out.all = all;
+        return out;
+    };
+    sk._applyGrounded = (x, y, s, facing, g) => {
+        const handed = { near: g.nearShin - g.nearThigh, far: g.farShin - g.farThigh }, f = facing >= 0 ? 1 : -1;
+        let before = null;
+        if (sk._getUps) { sk._getUps = false; orig(x, y, s, facing, g); before = snap(); sk._getUps = true; }
+        cap = {}; orig(x, y, s, facing, g); const after = snap(), c = cap; cap = null;
+        const move = (side) => (before && before[side].ax !== null && after[side].ax !== null ? Math.hypot(after[side].ax - before[side].ax, after[side].ay - before[side].ay) : 0);
+        const lift = (side) => (before && before[side].bottom !== null && after[side].bottom !== null ? before[side].bottom - after[side].bottom : 0);
+        const foot = (o) => (o ? Math.max(o.near.bottom ?? -1e9, o.far.bottom ?? -1e9) - y : null); // lowest foot point vs the ground line y (+ = below it)
+        sk.__lastG = { handed, drawn: { near: f * (c.nearKnee - c.nearHip), far: f * (c.farKnee - c.farHip) },
+            footBelow: { before: foot(before), after: foot(after), body: after.all - y },
+            ankleMove: { near: move('near'), far: move('far') }, bootLift: { near: lift('near'), far: lift('far') } };
+    };
     sk.__kneeWrapped = true;
 };
 const KNEE = () => {
     const w = window.__rw, sk = w.skeleton, g = sk.__lastG;
     sk.__lastG = null; // a frame that does not go through _applyGrounded (standing) reports null
+    const r4 = (v) => +v.toFixed(4);
     return { state: w.state, riseT: +(w.riseT ?? 0).toFixed(4), facing: w.facing,
-        near: g ? +(g.nearShin - g.nearThigh).toFixed(4) : null, far: g ? +(g.farShin - g.farThigh).toFixed(4) : null };
+        near: g ? r4(g.handed.near) : null, far: g ? r4(g.handed.far) : null,
+        dnear: g ? r4(g.drawn.near) : null, dfar: g ? r4(g.drawn.far) : null,
+        ankleMove: g ? +Math.max(g.ankleMove.near, g.ankleMove.far).toFixed(2) : null,
+        bootLift: g ? +Math.max(g.bootLift.near, g.bootLift.far).toFixed(2) : null,
+        footBefore: g?.footBelow.before != null ? +g.footBelow.before.toFixed(2) : null, footAfter: g ? +g.footBelow.after.toFixed(2) : null, bodyBelow: g ? +g.footBelow.body.toFixed(2) : null, bootSink: g ? +Math.max(-g.bootLift.near, -g.bootLift.far).toFixed(2) : null };
 };
 
 const results = [];
@@ -65,10 +101,13 @@ for (const [name, rig] of Object.entries(RIGS)) {
                 }
                 const worst = (key) => rows.reduce((m, r) => (r[key] !== null && r[key] > m.v ? { v: r[key], i: r.i, t: r.riseT, st: r.state } : m), { v: -9 });
                 const over = (key) => rows.filter(r => r[key] !== null && r[key] > TOL).length;
+                const maxOf = (key) => rows.reduce((m, r) => (r[key] !== null && r[key] > m.v ? { v: r[key], i: r.i, t: r.riseT, st: r.state } : m), { v: 0, i: -1 });
                 const res = { rig: name, case: c.id, getUp: id, facing, frames: rows.length, standI, near: worst('near'), far: worst('far'), nearOver: over('near'), farOver: over('far'),
-                    flexMin: { near: Math.min(...rows.filter(r => r.near !== null).map(r => r.near)), far: Math.min(...rows.filter(r => r.far !== null).map(r => r.far)) }, rows };
+                    drawnNear: worst('dnear'), drawnFar: worst('dfar'), drawnNearOver: over('dnear'), drawnFarOver: over('dfar'),
+                    ankleMove: maxOf('ankleMove'), bootLift: maxOf('bootLift'), bootSink: maxOf('bootSink'),
+                    footBefore: maxOf('footBefore'), footAfter: maxOf('footAfter'), bodyBelow: maxOf('bodyBelow'), rows };
                 results.push(res);
-                console.log(`[knee] ${name.padEnd(6)} ${c.id.padEnd(26)} f${facing > 0 ? '+' : '-'} ${String(id).padEnd(22)} near worst ${res.near.v.toFixed(3)} @${res.near.i} (riseT ${res.near.t}, ${res.near.st}) over ${res.nearOver} | far worst ${res.far.v.toFixed(3)} @${res.far.i} over ${res.farOver}`);
+                console.log(`[knee] ${name.padEnd(6)} ${c.id.padEnd(26)} f${facing > 0 ? '+' : '-'} ${String(id).padEnd(22)} handed worst n ${res.near.v.toFixed(3)} f ${res.far.v.toFixed(3)} | DRAWN worst n ${res.drawnNear.v.toFixed(3)} f ${res.drawnFar.v.toFixed(3)} over ${res.drawnNearOver}/${res.drawnFarOver} | ankle move max ${res.ankleMove.v} px @${res.ankleMove.i}, foot lift ${res.bootLift.v} sink ${res.bootSink.v} | lowest foot vs ground y: before ${res.footBefore.v} after ${res.footAfter.v} (body ${res.bodyBelow.v})`);
             }
         } finally { await h.close(); }
     }

@@ -3016,7 +3016,9 @@ export default class Skeleton {
         // up (see AI_HANDOFF.md's 2026-07-19 Codex entries).
         const leg = (thigh, shin, imgs, hipPoint) => {
             const [thighImg, shinImg, bootImg] = imgs;
-            const tA = ang(thigh), sA = ang(shin);
+            // ?getups=v1 (PLAN_GETUPS Rev 8 T4.3): a knee never goes past straight on the mat. The channels are facing-independent
+            // (`ang` mirrors them below), shin - thigh > 0 is past straight in both facings; the shin comes back to the thigh.
+            const tA = ang(thigh), sA = ang(this._getUps && shin > thigh ? thigh : shin);
             const rootX = hipPoint ? hipPoint.x : hipX;
             const rootY = hipPoint ? hipPoint.y : hipY;
             const hipRender = this._attachChild(thighImg, rootX, rootY, tA, s, RIG.HIP_OVERLAP);

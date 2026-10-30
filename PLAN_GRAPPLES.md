@@ -9,8 +9,10 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 
 - T1.0: 72b380a [reference page](research/animation/grapples-2026-10/reference.html): Bret f130-139, f322-326, f345-350 and Haggar f3/f30/f98 beside lockup-now.png, a line per point.
   Misses: all sheets are one wrestler, so no frame shows a hand on a neck or elbow, heads, arrival, drive or a reversal (points 1-3, 6-10); Haggar (f0-179) has no lockup row; other Slam Masters not opened.
-- T1.1: SHA1 `src/animation/lockup.js` + tests/lockup.test.js 13/13 (grab order, D4 sides both lSide x facing, collar point, step-only travel, stall, steal hitch, break, seeded tugs, 70/30 closure).
+- T1.1: 27a1d4e `src/animation/lockup.js` + tests/lockup.test.js 13/13 (grab order, D4 sides both lSide x facing, collar point, step-only travel, stall, steal hitch, break, seeded tugs, 70/30 closure).
   Misses: pure math only, nothing drawn yet; lead leg = the near-side leg by my choice (not measured on a rig until T1.2); `holdGrips` has no `at` yet, so the collar entries (joint 'Neck') do nothing until T1.2.
+- T1.2: SHA2 `grapplesCandidate`, `at` in `holdGrips`, Arena `_holdLockupGrips` (grips A,D,A,D,A,D + D8 layers); flag-off fixture tests/fixtures/grapplesFlagOff.json (60 frames, recorded before the change, same after). D9: holdGap 44, arms start lArm .3 / lElbow .7 (1.1/1.0 left Lou's far hand 41-47 px short).
+  Held in `even`, 4 cases: hand-to-target 0.0 px on all 4 grips, 0 unreachable frames; attacker collar flex Lou .59 R / 1.09 L, George 1.39 / 1.39; head-centre gap 52-60 px. Misses: poses not compared in the browser check (the tween runs on the wall clock); at gap 52 a debug shot showed the two lead feet crossing (not measured at 44); George flex 1.39 is 0.01 under the 1.4 limit.
 
 ## Why (Derek 2026-10-29)
 

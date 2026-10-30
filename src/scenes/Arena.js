@@ -1,5 +1,5 @@
 import { W, H, RING, ringBoundsAtY } from '../constants.js';
-import Wrestler from '../Wrestler.js';
+import Wrestler, { grapplesCandidate } from '../Wrestler.js';
 import InputHandler from '../InputHandler.js';
 import AIHandler from '../AIHandler.js';
 import CrowdAudio from '../CrowdAudio.js';
@@ -17,6 +17,8 @@ import { guidoRosterV1 } from '../characters/guido_roster_v1.js';
 import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
+import { layerDepths } from '../animation/clipLayers.js';
+import { lockupGrips } from '../animation/lockup.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
@@ -3431,8 +3433,10 @@ export default class Arena extends Phaser.Scene {
 
         if ((r1 === 'lockup') && !this.lockupState) {
             this.lockupState = { attacker: w1, defender: w2, timer: 0 };
+            if (grapplesCandidate()) this.lockupState.grapple = { seed: (Math.random() * 2 ** 31) >>> 0, t: 0, stealAt: null, breakAt: null, grips: null };
         } else if ((r2 === 'lockup') && !this.lockupState) {
             this.lockupState = { attacker: w2, defender: w1, timer: 0 };
+            if (grapplesCandidate()) this.lockupState.grapple = { seed: (Math.random() * 2 ** 31) >>> 0, t: 0, stealAt: null, breakAt: null, grips: null };
         }
 
         if (this.lockupState) this._tickLockup(dt);
@@ -3468,6 +3472,7 @@ export default class Arena extends Phaser.Scene {
         w1.draw();
         w2.draw();
         this.moveRuntime.afterDraw?.();
+        if (this.lockupState?.grapple && grapplesCandidate()) this._holdLockupGrips();
         this._updateRopes(dt);
         this._drawStaminaBars();
         this._updateHeat(dt);
@@ -3663,6 +3668,29 @@ export default class Arena extends Phaser.Scene {
             release(false); return;
         }
         if (hs.timer >= 3.0)                 { release(true);  return; }
+    }
+
+    // PLAN_GRAPPLES D7/D8 (`?grapples=v1`): after both draw, turn each gripping arm onto its target (lockup.js lockupGrips), then
+    // stack the parts. The attacker goes first, then the defender (who cups the elbow the attacker's reach just moved), then the
+    // attacker again, because the defender's far hand moves the elbow the attacker's far hand is on; holdGrips is incremental.
+    _holdLockupGrips() {
+        const ls = this.lockupState, g = ls.grapple;
+        if (!g.grips) return;
+        const { attacker, defender } = ls;
+        const lists = lockupGrips(attacker, defender, g.grips);
+        for (const pass of [['attacker', attacker], ['defender', defender], ['attacker', attacker], ['defender', defender], ['attacker', attacker], ['defender', defender]]) {
+            const [role, actor] = pass;
+            if (lists[role].length) actor.holdGrips(lists[role]);
+        }
+        const nearArm = (a) => ((a.skeleton?.lChannelSide?.(a.facing) ?? 'near') === 'near' ? 'lArm' : 'rArm');
+        const farArm = (a) => (nearArm(a) === 'lArm' ? 'rArm' : 'lArm');
+        // D8 default, back to front: defender far arm, attacker far arm, attacker body, defender body, attacker near arm,
+        // defender near arm. `?grapplesLayer=alt` puts the defender's near arm behind the attacker's.
+        const alt = new URLSearchParams(location.search).get('grapplesLayer') === 'alt';
+        const order = [['defender', farArm(defender)], ['attacker', farArm(attacker)], ['attacker', 'torso'], ['attacker', 'head'],
+            ['defender', 'torso'], ['defender', 'head'],
+            ...(alt ? [['defender', nearArm(defender)], ['attacker', nearArm(attacker)]] : [['attacker', nearArm(attacker)], ['defender', nearArm(defender)]])];
+        for (const [img, depth] of layerDepths({ order }, { attacker, defender })) img.setDepth(depth);
     }
 
     _tickLockup(dt) {

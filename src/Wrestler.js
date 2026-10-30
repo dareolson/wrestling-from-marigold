@@ -101,6 +101,9 @@ const withoutHands = (e) => { if (!e?.hands) return e; const { hands, ...rest } 
 // PLAN_GETUPS B2: the opponent counts as behind a rising wrestler only past this many px of x (decided once, at rise start).
 const GETUP_TURN_DEADBAND = 12;
 const sellArtCandidate = () => defaultOnFlag('sellart', 'v1');
+// ?grapples=v1 (PLAN_GRAPPLES D1): the collar-and-elbow tie-up (src/animation/lockup.js, Arena._tickLockup). Opt-in; flag off is
+// byte-identical (tests/fixtures/grapplesFlagOff.json). Node without `location` stays off.
+export const grapplesCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('grapples') === 'v1';
 // ?plant=1 (with sellart on): the support-hand plant during the back rise. PARKED by
 // Derek 2026-10-24 (PLAN_SUPLEX_RISE T4.-1); the code stays, off unless asked for.
 // risefix (PLAN_RISE_HANDOFF): the rise and the quick rise end on the pose the first standing frame draws, and the
@@ -648,9 +651,10 @@ export default class Wrestler {
         const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
         const dist = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
         let moved = false;
-        for (const { arm, partner, joint, side, w } of list) {
+        for (const { arm, partner, joint, side, w, at } of list) {
             const handSide = arm === 'l' ? sk.lChannelSide(this.facing) : flip(sk.lChannelSide(this.facing));
-            const to = partner.skeleton.jointAttachmentPoints?.[`${side === 'other' ? flip(handSide) : handSide}${joint}`];
+            // `at` (PLAN_GRAPPLES D7): a world point in place of a partner joint (the collar, behind the neck).
+            const to = at ?? partner.skeleton.jointAttachmentPoints?.[`${side === 'other' ? flip(handSide) : handSide}${joint}`];
             const S = pts[`${handSide}Shoulder`], E = pts[`${handSide}Elbow`], W = pts[`${handSide}Wrist`];
             if (!to || !S || !E || !W) continue;
             const goal = { x: W.x + (to.x - W.x) * w, y: W.y + (to.y - W.y) * w };

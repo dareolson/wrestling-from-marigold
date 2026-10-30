@@ -23,12 +23,16 @@ export const LOCKUP = Object.freeze({
     strainHz: 9, strainLean: 0.02,      // the stalled push
     stealHitch: 0.12, stealCrossfade: 0.20, stealDip: 0.06,
     breakGrip: 0.10, breakStep: 0.25, breakStepPx: 14,
-    holdGap: 70,                        // px at s = 1 between the pair's x while held (T1.2 tunes it from the arm, D9)
+    holdGap: 44,                        // px at s = 1 between the pair's x while held; measured in T1.2 (D9): both hands <= 1.8 px, collar flex .4-1.8 rad
     collarBack: 9, collarDrop: 6,       // px at s = 1: the collar point is the partner's neck, back of it and lower (D7)
 });
 
 // Pose keys (D6). Legs, knees, lean, crouch only; the arms come from the IK. `lead` / `rear` are the near-side and
 // far-side leg channels (resolved per facing by lockupPoseChannels).
+// The arms start here every frame and the IK (holdGrips) turns them onto their targets; the start decides which way the elbow
+// folds (measured T1.2: lArm 1.1 / lElbow 1.0 leaves Lou's far hand 41-47 px short of the far elbow, 0.3 / 0.7 reaches it).
+export const LOCKUP_ARMS = Object.freeze({ arm: 0.3, elbow: 0.7 });
+
 export const LOCKUP_POSES = Object.freeze({
     even:     Object.freeze({ lean: 0.32, crouch: 0.24, lead: 0.30, leadKnee: 0.35, rear: -0.22, rearKnee: 0.20 }),
     attacker: Object.freeze({ lean: 0.45, crouch: 0.32, lead: 0.35, leadKnee: 0.45, rear: -0.30, rearKnee: 0.10 }),
@@ -194,6 +198,7 @@ export function lockupPoseChannels(weights, lSide, extra = {}) {
     const mix = (field) => weights.even * LOCKUP_POSES.even[field] + weights.attacker * LOCKUP_POSES.attacker[field] + weights.defender * LOCKUP_POSES.defender[field];
     const nearCh = lSide === 'far' ? 'r' : 'l', farCh = nearCh === 'l' ? 'r' : 'l';
     return {
+        lArm: LOCKUP_ARMS.arm, rArm: LOCKUP_ARMS.arm, lElbow: LOCKUP_ARMS.elbow, rElbow: LOCKUP_ARMS.elbow,
         lean: mix('lean') + (extra.lean ?? 0),
         crouch: mix('crouch') + (extra.dip ?? 0),
         [`${nearCh}Leg`]: mix('lead'), [`${nearCh}Knee`]: mix('leadKnee'),

@@ -48,8 +48,9 @@ const SETUP = ({ perWrestler, maxMatchS }) => {
         });
         const pts = {};
         for (const [k, p] of Object.entries(sk.jointAttachmentPoints ?? {})) if (p) pts[k] = { x: +p.x.toFixed(2), y: +p.y.toFixed(2) };
+        const o = W[who === 'w1' ? 'w2' : 'w1'];
         const held = !!(w._riseStall && w._getUp && Math.abs(w.riseT - w._getUp.stall) < 1e-9);
-        return { now: sc.time.now, state: w.state, facing: w.facing, riseT: +(w.riseT ?? 0).toFixed(5), fp: +(w.fallProgress ?? 0).toFixed(4), x: w.x, y: w.y, held, parts, pts };
+        return { now: sc.time.now, state: w.state, facing: w.facing, riseT: +(w.riseT ?? 0).toFixed(5), fp: +(w.fallProgress ?? 0).toFixed(4), x: w.x, y: w.y, ox: o.x, oy: o.y, oState: o.state, held, parts, pts };
     };
     const cause = () => { const ev = sc.matchEvents ?? []; for (let i = ev.length - 1; i >= 0; i--) if (ev[i].move) return { type: ev[i].type, move: ev[i].move, attacker: ev[i].attacker ?? null, ageS: Math.round((sc._matchTime - ev[i].t) * 10) / 10 }; return null; };
     const g = (window.__g3 = { n: 0, T: 100000, prev: { w1: null, w2: null }, starts: { w1: 0, w2: 0 }, lastDown: {}, sampleOf, done: false });
@@ -137,7 +138,7 @@ const out = rises.map((win) => {
     row.interrupted = f[lastRise] ? (win.quick ? f[lastRise].fp > 0.05 : f[lastRise].riseT < 0.98) : false;
     row.lastRiseT = f[lastRise] ? (win.quick ? f[lastRise].fp : f[lastRise].riseT) : null;
     const iStand = row.interrupted || lastRise < 0 || lastRise + 1 >= f.length ? -1 : lastRise + 1;
-    row.facing = f[0].facing; row.facingEnd = f[Math.max(0, lastRise)].facing; row.otherSide = null;
+    row.facing = f[0].facing; row.facingEnd = f[Math.max(0, lastRise)].facing; row.otherSide = f[Math.max(0, iStand)] ? { x: r2(f[Math.max(0, iStand)].ox), y: r2(f[Math.max(0, iStand)].oy), state: f[Math.max(0, iStand)].oState } : null;
     row.riseMs = rise.length ? r2((rise.length) * 1000 / 60) : null;
     if (win.pre && f[0]) row.startStep = { ...step(win.pre, f[0]), a: 'pre-rise (last down frame)', b: 'frame 0' };
     if (iStand > 0) row.standStep = { ...step(f[iStand - 1], f[iStand]), i: iStand };

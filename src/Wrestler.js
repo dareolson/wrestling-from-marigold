@@ -74,6 +74,11 @@ const defaultOnFlag = (name, value) => {
     return v === null || v === value;
 };
 const aftermathCandidate = () => defaultOnFlag('aftermath', 'v2');
+// ?getups=v1 (PLAN_GETUPS Rev 7 T4.2): move() cannot separate a wrestler who is not standing, so a rise that ends on top of an opponent
+// who is also not standing (mid-move) used to be snapped out to `minDist` on the first standing frame. For this long after the
+// rise reaches standing the separation eases instead, by at most SEP_EASE_PX * s px per 1/60 s.
+const SEP_EASE_MS = 250;
+const SEP_EASE_PX = 6;
 // ?getups=v1 (PLAN_GETUPS): authored get-ups; opt-in until Derek approves the set. D7: no roll while selling.
 const getUpsCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('getups') === 'v1';
 // ?getups=v1&kneeTuck=<px> (PLAN_GETUPS T2.1b): the knee tuck candidates for G1b (0 / 6 / 10 / 14, flex .6 -> 1.6 rad).
@@ -1013,8 +1018,15 @@ export default class Wrestler {
                 const ang = dist > 0
                     ? Phaser.Math.Angle.Between(other.x, other.y, this.x, this.y)
                     : (this.facing > 0 ? Math.PI : 0);
-                this.x = other.x + Math.cos(ang) * minDist;
-                this.y = other.y + Math.sin(ang) * minDist;
+                const tx = other.x + Math.cos(ang) * minDist, ty = other.y + Math.sin(ang) * minDist;
+                if (this._riseStandAt != null && this.scene.time.now - this._riseStandAt < SEP_EASE_MS && getUpsCandidate()) {
+                    const gap = Math.hypot(tx - this.x, ty - this.y), cap = SEP_EASE_PX * this.s * dt * 60, k = gap > cap ? cap / gap : 1;
+                    this.x += (tx - this.x) * k;
+                    this.y += (ty - this.y) * k;
+                } else {
+                    this.x = tx;
+                    this.y = ty;
+                }
                 this._clamp();
             }
         } else if (depthDiff < 48 && (other.state === 'standing' || other.state === 'staggered')) {
@@ -2755,6 +2767,7 @@ export default class Wrestler {
             if (this.state === 'gettingUp') {
                 const carried = this._carriedRiseEnd();
                 this.state = 'standing';
+                if (getUpsCandidate()) this._riseStandAt = this.scene.time.now;
                 this._painRecovering(carried);
                 if (riseFixCandidate()) this._standFromRise();
                 else this.tweenPose('idle', 150, 'Linear');
@@ -2928,6 +2941,7 @@ export default class Wrestler {
             onComplete:   () => {
                 if (this.state === 'risingUp') {
                     this.state = 'standing';
+                    if (getUpsCandidate()) this._riseStandAt = this.scene.time.now;
                     this._painRecovering();
                     if (riseFixCandidate()) this._standFromRise();
                     else this.tweenPose('idle', 120, 'Linear');

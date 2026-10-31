@@ -144,7 +144,7 @@ for (const [att, def] of [[LOU, GEORGE], [GEORGE, LOU]]) {
 }
 
 // 14: D13 layers, on the real rigs: through a drive each man's far leg draws behind his own torso and his near leg in front of it (and every part of the
-// first man's body behind the second's torso), both facings.
+// first man's body behind the second's torso), both facings. A rig with farLegOverTorso (George) draws the far leg over the torso.
 for (const [att, def] of [[LOU, GEORGE], [GEORGE, LOU]]) {
     const { h, page } = await fresh(att, def);
     for (const facing of [1, -1]) {
@@ -153,12 +153,12 @@ for (const [att, def] of [[LOU, GEORGE], [GEORGE, LOU]]) {
         for (let i = 0; i < 80; i++) {
             await page.evaluate(STEP, { press: { a: [], d: [] }, hold: { a: [], d: [] }, legs: null });
             if (i < 20 || i % 10) continue;
-            const d = await page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; return [sc.w1, sc.w2].map(w => { const k = w.skeleton, z = (n) => k[n].depth; return { farBehind: Math.max(z('farThigh'), z('farShin')) < z('torso'), nearFront: Math.min(z('nearThigh'), z('nearShin')) > z('torso'), top: Math.max(...['farThigh', 'farShin', 'nearThigh', 'nearShin', 'torso', 'head'].map(z)), low: Math.min(...['farThigh', 'farShin', 'nearThigh', 'nearShin', 'torso', 'head'].map(z)) }; }); });
+            const d = await page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; return [sc.w1, sc.w2].map(w => { const k = w.skeleton, z = (n) => k[n].depth; return { farBehind: k._farLegOverTorso ? Math.min(z('farThigh'), z('farShin')) > z('torso') : Math.max(z('farThigh'), z('farShin')) < z('torso'), nearFront: Math.min(z('nearThigh'), z('nearShin')) > z('torso'), top: Math.max(...['farThigh', 'farShin', 'nearThigh', 'nearShin', 'torso', 'head'].map(z)), low: Math.min(...['farThigh', 'farShin', 'nearThigh', 'nearShin', 'torso', 'head'].map(z)) }; }); });
             for (const [k, m] of d.entries()) if (!m.farBehind || !m.nearFront) bad.push({ i, man: k, ...m });
             const [first, second] = d[0].low < d[1].low ? d : [d[1], d[0]];
             if (first.top > second.low) bad.push({ i, bodies: [first.top, second.low] });
         }
-        check(`${att === LOU ? 'Lou' : 'George'} attacking, facing ${facing}: each far leg behind its torso, each near leg in front, one body behind the other`, bad.length === 0, bad.slice(0, 3));
+        check(`${att === LOU ? 'Lou' : 'George'} attacking, facing ${facing}: each far leg on its rig's side of the torso (George over, Lou behind), each near leg in front, one body behind the other`, bad.length === 0, bad.slice(0, 3));
     }
     await h.close();
 }

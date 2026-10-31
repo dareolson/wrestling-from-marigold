@@ -2,13 +2,13 @@
  "tool": "tools/debug/grapples_film.mjs",
  "timing": {
   "lou-george/new": {
-   "medianMs": 3.1,
-   "meanMs": 4.238,
+   "medianMs": 4.1,
+   "meanMs": 4.038,
    "n": 330
   },
   "george-lou/new": {
-   "medianMs": 2.5,
-   "meanMs": 3.47,
+   "medianMs": 3.9,
+   "meanMs": 3.892,
    "n": 330
   }
  },
@@ -17100,7 +17100,7 @@
       },
       "hipAngle": {
        "near": -0.0066,
-       "far": -0.3094
+       "far": -0.3093
       },
       "trunks": 49.71,
       "sole": {
@@ -19206,7 +19206,7 @@
       },
       "hipAngle": {
        "near": -0.0066,
-       "far": -0.3094
+       "far": -0.3093
       },
       "trunks": 49.71,
       "sole": {
@@ -21212,7 +21212,7 @@
       },
       "hipAngle": {
        "near": -0.0066,
-       "far": -0.3094
+       "far": -0.3093
       },
       "trunks": 49.71,
       "sole": {
@@ -23318,7 +23318,7 @@
       },
       "hipAngle": {
        "near": -0.0066,
-       "far": -0.3094
+       "far": -0.3093
       },
       "trunks": 49.71,
       "sole": {
@@ -25315,7 +25315,7 @@
       },
       "hipAngle": {
        "near": -0.0066,
-       "far": -0.3094
+       "far": -0.3093
       },
       "trunks": 49.71,
       "sole": {
@@ -27421,7 +27421,7 @@
       },
       "hipAngle": {
        "near": -0.0066,
-       "far": -0.3094
+       "far": -0.3093
       },
       "trunks": 49.71,
       "sole": {
@@ -29427,7 +29427,7 @@
       },
       "hipAngle": {
        "near": -0.0066,
-       "far": -0.3094
+       "far": -0.3093
       },
       "trunks": 49.71,
       "sole": {
@@ -31533,7 +31533,7 @@
       },
       "hipAngle": {
        "near": -0.0066,
-       "far": -0.3094
+       "far": -0.3093
       },
       "trunks": 49.71,
       "sole": {

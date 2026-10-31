@@ -3697,12 +3697,12 @@ export default class Arena extends Phaser.Scene {
         const farArm = (a) => (nearArm(a) === 'lArm' ? 'rArm' : 'lArm');
         // D8 default, back to front: defender far arm, attacker far arm, attacker body, defender body, attacker near arm,
         // defender near arm. `?grapplesLayer=alt` puts the defender's near arm behind the attacker's. D13: each body is its far leg,
-        // torso, head, near leg, so a man's own far leg stays behind his trunks and his near leg in front (the legs used to keep their
+        // torso, head, near leg, so a man's own far leg stays behind his trunks and his near leg in front, unless the rig's art has the far leg over the torso (the legs used to keep their
         // own bands while the torso moved, and the far thigh came out over the trunks).
         const nearLeg = (a) => (nearArm(a) === 'lArm' ? 'lLeg' : 'rLeg');
         const farLeg = (a) => (nearLeg(a) === 'lLeg' ? 'rLeg' : 'lLeg');
         const alt = new URLSearchParams(location.search).get('grapplesLayer') === 'alt';
-        const body = (role, a) => [[role, farLeg(a)], [role, 'torso'], [role, 'head'], [role, nearLeg(a)]];
+        const body = (role, a) => (a.skeleton._farLegOverTorso ? [[role, 'torso'], [role, 'head'], [role, farLeg(a)], [role, nearLeg(a)]] : [[role, farLeg(a)], [role, 'torso'], [role, 'head'], [role, nearLeg(a)]]);   // a rig whose art wants both legs over the torso (George) keeps that
         const order = [['defender', farArm(defender)], ['attacker', farArm(attacker)], ...body('attacker', attacker), ...body('defender', defender),
             ...(alt ? [['defender', nearArm(defender)], ['attacker', nearArm(attacker)]] : [['attacker', nearArm(attacker)], ['defender', nearArm(defender)]])];
         for (const [img, depth] of layerDepths({ order }, { attacker, defender })) img.setDepth(depth);

@@ -18,7 +18,7 @@ import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
-import { lockupGrips, lockupPhase, lockupPoseChannels, legRel, LOCKUP } from '../animation/lockup.js';
+import { lockupGrips, lockupPhase, lockupPoseChannels, exitBlendPose, legRel, LOCKUP } from '../animation/lockup.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
@@ -3439,7 +3439,10 @@ export default class Arena extends Phaser.Scene {
             if (grapplesCandidate()) this.lockupState.grapple = { seed: (Math.random() * 2 ** 31) >>> 0, t: 0, stealAt: null, breakAt: null, grips: null };
         }
 
+        const grappleBefore = this.lockupState?.grapple ?? null;
         if (this.lockupState) this._tickLockup(dt);
+        // Stage 3: a follow-up (anything but the break) leaves the tie-up through the draw blend.
+        if (grappleBefore?.held && !this.lockupState && grappleBefore.phase !== 'break') this._exitBlend = { t: 0, held: grappleBefore.held };
 
         if (r1 === 'pin' && !this.pinState) {
             this.pinState = { attacker: w1, defender: w2, timer: 0 };
@@ -3469,9 +3472,11 @@ export default class Arena extends Phaser.Scene {
         // impact markers fire against this frame's already-resolved states.
         this.moveRuntime.update(dt);
 
+        const undoBlend = this._exitBlend ? this._applyExitBlend(dt) : null;
         w1.draw();
         w2.draw();
         this.moveRuntime.afterDraw?.();
+        undoBlend?.();
         if (this.lockupState?.grapple && grapplesCandidate()) this._holdLockupGrips();
         this._updateRopes(dt);
         this._drawStaminaBars();
@@ -3692,6 +3697,25 @@ export default class Arena extends Phaser.Scene {
             ['defender', 'torso'], ['defender', 'head'],
             ...(alt ? [['defender', nearArm(defender)], ['attacker', nearArm(attacker)]] : [['attacker', nearArm(attacker)], ['defender', nearArm(defender)]])];
         for (const [img, depth] of layerDepths({ order }, { attacker, defender })) img.setDepth(depth);
+        g.held = new Map([attacker, defender].map(w => [w, { pose: { ...w.pose }, x: w.x, y: w.y, facing: w.facing }]));
+    }
+
+    // Stage 3: draw this frame eased from the held tie-up; the returned function puts the move's real pose and place back straight after the
+    // draw, so nothing but the picture changes. A man the move turned around can't be eased across the flip, so he goes straight to the move.
+    _applyExitBlend(dt) {
+        const b = this._exitBlend;
+        b.t += dt;
+        const dur = LOCKUP.exitBlend.default;
+        if (b.t >= dur) { this._exitBlend = null; return null; }
+        const undo = [];
+        for (const [w, held] of b.held) {
+            if (held.facing !== w.facing) continue;
+            const real = { pose: w.pose, x: w.x, y: w.y };
+            const shown = exitBlendPose(held, real, b.t / dur);
+            w.pose = shown.pose; w.x = shown.x; w.y = shown.y;
+            undo.push(() => { w.pose = real.pose; w.x = real.x; w.y = real.y; });
+        }
+        return () => undo.forEach(f => f());
     }
 
     // PLAN_GRAPPLES D6 (`?grapples=v1`): one frame of the tie-up: the engage closure, the tugs, the step-pulse drive with the rope
@@ -3903,7 +3927,7 @@ export default class Arena extends Phaser.Scene {
         this.matchOver = true;
         // Kill any in-flight hold/pin state — a pin attempt sneaking in on the
         // final frame otherwise survives the banner and ticks into the next match
-        this.pinState = this.sleeperState = this.headlockState = this.lockupState = null;
+        this.pinState = this.sleeperState = this.headlockState = this.lockupState = this._exitBlend = null;
         this.pinText.setAlpha(0);
         this.crowd.bell(3);
         this._ringTimekeeperBell();

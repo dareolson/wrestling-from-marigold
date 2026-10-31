@@ -215,7 +215,7 @@ async function runCase(page, ctx, spec, shotDir, clipAt) {
             if (spec.exit.dir) hold.a.push(spec.facing > 0 ? 'right' : 'left');
         }
         // direction keys stay held through the exit frame only
-        const row = await page.evaluate(STEP, { press, hold, mask: !!shotDir && (i % 3 === 0 || spec.maskEvery) });
+        const row = await page.evaluate(STEP, { press, hold, mask: !!shotDir && !spec.noMasks && i % 3 === 0 });
         row.i = i;
         rows.push(row);
         if (row.mask?.image && spec.keepMasks === false) delete row.mask.image;
@@ -278,29 +278,28 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             } finally { await h.close(); }
         }
     }
-    // (e) exits, new only. A move leaves clips, holds and positions behind (and a page reload was measured to start the next lockup
-    // wrong), so every exit gets a fresh launch.
-    if (cases.includes('e')) for (const pair of pairs) {
-        const hq = async () => { process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = 'notitle=1&grapples=v1'; const h = await launch(); await h.page.waitForTimeout(2500); return h; };
-        let h0 = await hq(); const ms = (await h0.page.evaluate(INSTALL)).moveSets.a; await h0.close();
+    // (e) exits, in both columns: `today` is Stage 3's target. A move leaves clips, holds and positions behind (and a page reload was measured to
+    // start the next lockup wrong), so every exit gets a fresh launch. WFM_EXITS=suplex,whip films a subset; WFM_EXIT_COLS=new skips today.
+    const only = process.env.WFM_EXITS?.split(','), exitCols = (process.env.WFM_EXIT_COLS ?? 'today,new').split(',');
+    if (cases.includes('e')) for (const pair of pairs) for (const column of exitCols) {
+        const hq = async () => { process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = column === 'new' ? 'notitle=1&grapples=v1' : 'notitle=1'; const h = await launch(); await h.page.waitForTimeout(2500); return h; };
+        const h0 = await hq(); const ms = (await h0.page.evaluate(INSTALL)).moveSets.a; await h0.close();
         for (const ex of EXITS) {
-            if (!ms.includes(ex.move) || (ex.needsNo && ms.includes(ex.needsNo))) continue;
+            if (!ms.includes(ex.move) || (ex.needsNo && ms.includes(ex.needsNo)) || (only && !only.includes(ex.id))) continue;
             for (const facing of [-1, 1]) {
                 const F = facing < 0 ? 'l' : 'r', h = await hq();
                 try {
                     const page = h.page; const info = await page.evaluate(INSTALL);
+                    await page.evaluate(INSTALL_MASKS);
                     const id = `e-${ex.id}-${pair.id}-${F}`;
-                    const rows = await runCase(page, info, { id: 'e', midX: 520, facing, flag: true, exit: { frame: 48, keys: ex.keys, dir: ex.dir }, tail: 14 }, null, null);
+                    const bx = info.box, clipAt = (x) => ({ width: 380, height: 330, x: Math.max(0, Math.round(bx.x + x * bx.w / bx.gw - 190)), y: Math.round(bx.y + 430 * bx.h / bx.gh - 330) });
+                    const rows = await runCase(page, info, { id: 'e', midX: 520, facing, flag: column === 'new', exit: { frame: column === 'new' ? 48 : 36, keys: ex.keys, dir: ex.dir }, tail: 60, noMasks: true }, join(outRoot, 'frames', column, id), clipAt);
                     const ei = rows.findIndex(r => !r.locked);
-                    const stepsOf = (k) => (ei > 0 ? maxPart({ parts: rows[ei - 1 + k].a.parts }, { parts: rows[ei + k].a.parts }) : null);
-                    const stepsD = (k) => (ei > 0 ? maxPart({ parts: rows[ei - 1 + k].d.parts }, { parts: rows[ei + k].d.parts }) : null);
-                    const first3 = [0, 1, 2].map(k => (ei > 0 && rows[ei + k] ? Math.max(stepsOf(k), stepsD(k)) : null));
-                    const firstA = ei > 0 ? stepsOf(0) : null, firstD = ei > 0 ? stepsD(0) : null;
-                    results.push({ id, case: 'e', exit: ex.id, move: ex.move, pair: pair.id, facing, column: 'new', exitFrame: ei, exitMs: ei < 0 ? null : Math.round((rows[ei - 1].g?.t ?? ei / 60) * 1000),
-                        firstFrameStep: ei > 0 ? +Math.max(firstA, firstD).toFixed(2) : null, firstFrameStepAttacker: firstA === null ? null : +firstA.toFixed(2), firstFrameStepDefender: firstD === null ? null : +firstD.toFixed(2),
-                        first3: first3.map(x => (x === null ? null : +x.toFixed(2))), stateAfter: ei > 0 ? [rows[ei].a.state, rows[ei].d.state] : null });
+                    const stepAt = (k) => (ei > 0 && rows[ei + k] ? Math.max(maxPart({ parts: rows[ei - 1 + k].a.parts }, { parts: rows[ei + k].a.parts }), maxPart({ parts: rows[ei - 1 + k].d.parts }, { parts: rows[ei + k].d.parts })) : null);
+                    const firsts = Array.from({ length: 12 }, (_, k) => stepAt(k)).filter(x => x !== null);
+                    results.push({ id, case: 'e', exit: ex.id, move: ex.move, pair: pair.id, facing, column, frames: rows.length, exitFrame: ei, firstFrameStep: firsts[0] === undefined ? null : +firsts[0].toFixed(2), maxStep200ms: firsts.length ? +Math.max(...firsts).toFixed(2) : null, first12: firsts.map(x => +x.toFixed(1)), stateAfter: ei > 0 ? [rows[ei].a.state, rows[ei].d.state] : null });
                     const r = results.at(-1);
-                    console.log(`[film] new/${id}: exit at frame ${ei}, first-frame step ${r.firstFrameStep} (a ${r.firstFrameStepAttacker}, d ${r.firstFrameStepDefender}), states ${r.stateAfter}`);
+                    console.log(`[film] ${column}/${id}: exit at frame ${ei}, first step ${r.firstFrameStep}, max in 0.2 s ${r.maxStep200ms}, states ${r.stateAfter}`);
                 } finally { await h.close(); }
             }
         }

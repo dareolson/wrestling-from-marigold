@@ -1,7 +1,7 @@
 // PLAN_GRAPPLES T1.1: the lockup's pure data and math (src/animation/lockup.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LOCKUP, LOCKUP_POSES, gripTarget, lockupPhase, lockupGrips, lockupPoseChannels, tugSchedule, stepAt } from '../src/animation/lockup.js';
+import { LOCKUP, LOCKUP_POSES, gripTarget, exitBlendPose, lockupPhase, lockupGrips, lockupPoseChannels, tugSchedule, stepAt } from '../src/animation/lockup.js';
 
 const DT = 1 / 60;
 const run = (extra = {}, from = 0, to = LOCKUP.timeout) => {
@@ -206,4 +206,13 @@ test('gripTarget: `at` wins, a joint is the joint, `above` moves along the partn
     assert.deepEqual(gripTarget({ ...it, above: 0.25 }, 'near'), { x: 100, y: 40 });
     assert.deepEqual(gripTarget({ ...it, above: -0.5 }, 'near'), { x: 100, y: 70 });
     assert.deepEqual(gripTarget({ ...it, side: 'other', above: 0.5 }, 'near'), { x: 0, y: 0 });
+});
+
+test('exitBlendPose: starts on the held tie-up, ends on the move, and leaves the move\'s own pose alone', () => {
+    const held = { pose: { lArm: 1, bend: 0.4, name: 'x' }, x: 100, y: 400 }, now = { pose: { lArm: 0, tilt: 2 }, x: 200, y: 400 };
+    const start = exitBlendPose(held, now, 0), end = exitBlendPose(held, now, 1), mid = exitBlendPose(held, now, 0.5);
+    assert.deepEqual([start.pose.lArm, start.pose.bend, start.x], [1, 0.4, 100]);
+    assert.deepEqual([end.pose.lArm, end.pose.bend, end.x, end.pose.tilt], [0, 0, 200, 2]);
+    assert.deepEqual([mid.pose.lArm, mid.x], [0.5, 150]);
+    assert.deepEqual(now, { pose: { lArm: 0, tilt: 2 }, x: 200, y: 400 });
 });

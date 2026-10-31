@@ -21,6 +21,7 @@ export const LOCKUP = Object.freeze({
     driveSpeed: 0.35,                   // x the walk speed while a step is moving
     walkSpeed: 140,                     // px/s at s = 1 (Wrestler SPEED)
     strainHz: 9, strainLean: 0.02,      // the stalled push
+    exitBlend: Object.freeze({ default: 0.14 }),   // s the draw eases from the held tie-up onto a follow-up (Stage 3); per move entries by move name
     stealHitch: 0.12, stealCrossfade: 0.20, stealDip: 0.06,
     breakGrip: 0.10, breakStep: 0.25, breakStepPx: 14,
     breakRelease: 0.16, breakArm: -0.12,   // the torsos come up and the arms go home this fast, so hands that let go don't drop onto the other man (D12)
@@ -247,6 +248,19 @@ export function gripTarget({ partner, joint, side, at, above }, handSide) {
     if (!p || !above) return p;   // `above` < 0 goes past the joint
     const q = pts[`${on}Shoulder`];
     return q ? { x: p.x + (q.x - p.x) * above, y: p.y + (q.y - p.y) * above } : p;
+}
+
+// Stage 3: what the man looks like this frame on the way out of the tie-up. `held` is his pose and place in the last held frame, `now` where
+// the move has him, u 0..1 through the lead-in. Only for the draw: the move's own pose and x are put back after it, so timing and damage
+// don't move. A channel only one side has eases from or to its value on the other side.
+export function exitBlendPose(held, now, u) {
+    const k = smooth(u), pose = { ...now.pose };
+    for (const key of Object.keys(held.pose)) {
+        const a = held.pose[key], b = now.pose[key];
+        if (typeof a !== 'number') continue;
+        pose[key] = typeof b === 'number' ? a + (b - a) * k : a * (1 - k);
+    }
+    return { pose, x: held.x + (now.x - held.x) * k, y: held.y + (now.y - held.y) * k };
 }
 
 // Foot offsets (px at s = 1, along the wrestler's facing) relative to the pose's base leg angles, so a planted foot holds its

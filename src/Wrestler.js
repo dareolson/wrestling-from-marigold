@@ -367,6 +367,10 @@ POSES.elbowDropAir = elbowDropClip.tracks.attacker.keyframes
 // timings so both sides stay in sync.
 // Defender spatial logic stays in _doXxx — it varies too much per move to
 // collapse into data without a more complex DSL.
+// Candidate whip (grapples=v1): ms from the press to the receiver's first run step.
+const WHIP_RELEASE_SAME_MS = 170;
+const WHIP_RELEASE_CROSS_MS = 240;
+
 export const MOVE_DEFS = {
     irishWhip:   { poseSeq: [{ p: 'whipGrab',    dur: 100, e: 'Cubic.easeOut' },
                               { p: 'whipLoad',    dur: 120, e: 'Linear'        },
@@ -908,7 +912,9 @@ export default class Wrestler {
         // so re-facing here undid any facing a clip didn't re-author every
         // frame — the shipped hammerlock's back-to-the-attacker defender lasted
         // one frame and played as a face-to-face clinch.
-        if (this.state !== 'running' && !this._activeMove && !GROUNDED_FACING_LOCK.has(this.state)) {
+        // The candidate whip's throw owns facing too: both men turned as the
+        // receiver passed, a one-frame pop of up to 74 px.
+        if (this.state !== 'running' && !this._activeMove && !this._whip && !GROUNDED_FACING_LOCK.has(this.state)) {
             const dx = other.x - this.x;
             if (dx !== 0) this.facing = Math.sign(dx);
         }
@@ -1836,6 +1842,7 @@ export default class Wrestler {
     }
 
     _doIrishWhip(other, dir = this.facing) {
+        if (grapplesCandidate()) return this._doIrishWhipLeadIn(other, dir);
         const b = ringBoundsAtY(other.y);
 
         other.state     = 'running';
@@ -1851,6 +1858,60 @@ export default class Wrestler {
         this.scene.tweens.add({ targets: this, y: stepY, duration: 180, ease: 'Cubic.easeOut' });
 
         this._runPoseSequence(MOVE_DEFS.irishWhip.poseSeq);
+    }
+
+    // Candidate whip: gather the arm before release. A rope behind the attacker
+    // needs a pull across his body; choosing a direction never changes mid-move.
+    _doIrishWhipLeadIn(other, direction) {
+        const dir = Math.sign(direction) || this.facing || 1;
+        const crossBody = dir !== (Math.sign(other.x - this.x) || this.facing);
+        const token = {};
+        this._whip = other._whip = token;
+        this.state = 'slamming';
+        other.state = 'grabbed';
+        other.runPhase = null;
+        // Arm snap lands as the exit blend (LOCKUP.exitBlend, 140 ms) ends; the
+        // run starts at the release. MOVE_DEFS.irishWhip stays as it is.
+        const releaseAt = crossBody ? WHIP_RELEASE_CROSS_MS : WHIP_RELEASE_SAME_MS;
+        const throwSeq = [{ ...MOVE_DEFS.irishWhip.poseSeq[0], dur: 60 },
+                          { ...MOVE_DEFS.irishWhip.poseSeq[1], dur: crossBody ? 120 : 60 },
+                          { ...MOVE_DEFS.irishWhip.poseSeq[2], dur: 60 },
+                          { ...MOVE_DEFS.irishWhip.poseSeq[3], dur: 120 },
+                          MOVE_DEFS.irishWhip.poseSeq[4]];
+        this._runPoseSequence(throwSeq, () => {
+            if (this._whip !== token) return;
+            this._whip = null;
+            if (this.state === 'slamming') this.state = 'standing';
+        });
+        // Tuck the receiver's arms before the turn instead of mirroring the
+        // extended collar-and-elbow pose. The existing exit blend ends at 140 ms.
+        other.tweenPose('idle', WHIP_RELEASE_SAME_MS, 'Sine.easeInOut');
+        const stepY = Math.max(RING.farLeft.y + 20, this.y - 22 * this.s);
+        this.scene.tweens.add({ targets: this, y: stepY, duration: WHIP_RELEASE_SAME_MS, ease: 'Sine.easeInOut' });
+        if (crossBody) {
+            const b = ringBoundsAtY(other.y);
+            const target = Math.max(b.left + 20, Math.min(b.right - 20, this.x + dir * 45 * this.s));
+            this.scene.tweens.add({
+                targets: other, x: target, duration: releaseAt, ease: 'Sine.easeInOut',
+                onUpdate: (tw) => { if (other._whip !== token || other.state !== 'grabbed' || this.state !== 'slamming') tw.stop(); },
+            });
+        }
+        this.scene.time.delayedCall(releaseAt, () => {
+            if (this._whip !== token || other._whip !== token) return;
+            other._whip = null;
+            if (this.state !== 'slamming' || other.state !== 'grabbed') {
+                if (other.state === 'grabbed') { other.state = 'standing'; other.tweenPose('idle', 120); }
+                return;
+            }
+            const b = ringBoundsAtY(other.y);
+            other.state = 'running';
+            other.runPhase = 'toRope';
+            other.runFacing = other.facing = dir;
+            other.runTarget = dir > 0 ? b.right - 20 : b.left + 20;
+            other.moveBlend = 0;
+            this.scene._logEvent?.('whipRelease', { direction: dir, crossBody });
+        });
+        return { direction: dir, crossBody, releaseAt };
     }
 
     _drain(amount) {

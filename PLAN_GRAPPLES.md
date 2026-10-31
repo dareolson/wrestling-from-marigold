@@ -39,6 +39,18 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - **G1c: approved by Derek 2026-10-31** after watching the G1c material and a live Lou vs George match on the flag. Current values stand (1.4 s, default layering, far hand on the forearm, .22 s torso release) until he says otherwise. `grapples` stays opt-in.
 - T3b.1-T3b.3: e830e98 + next commit, no game code changed. Settle: no move keeps a lockup shin (assert 38/38), knee/stagger equal the move's own; first-frame step from the settle is up to +30 px over idle at 0 ms. Hit timing: clip moves land at 533 ms or later; headlock, whip (+0) and arm drag (+0, sell +83 ms, 17.3 px off true) act inside the 0.14 s lead-in.
   Misses: whip turn 120.5 / 118.7 at +8 (today 98.6 / 108.4) is the flip alone; turning at +0 gives Lou 126, George 103.6, so left for Derek. [G3b page](research/animation/grapples-2026-10/g3b/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-claude-grapples-g3b.md). STOPPED at G3b.
+- T3c.0a: a4ba0e1 (includes Codex's candidate), release 183 / 250 ms, direction 8/8, at most 1 still frame, first-run peak 55.2 / 47.9 (Lou on George), 65.0 / 36.1 (George on Lou), rechecked by Opus. Beat gone in the numbers; Derek to judge.
+  Misses (Opus review): the 74 px pop moved to 583 ms (58.7 px) when the lock ends, past the proof table's 550 ms; attacker faces away from the throw until then; lock can stick if the attacker is interrupted. See T3c.0b.
+- T3c.0b: d22ec32, cross-body flip on the release frame (250 ms, attacker 69.5 Lou / 68.2 George), largest attacker step after it 10.1 / 11.9, no late pop, direction 8/8, whip tests 6/6, rechecked by Opus.
+  Misses: the 69 px step is a one-frame flip, not a drawn turn; arm follow-through peaks 50 ms after the flip; cross-body hips still overlap (3c.0); no wrist contact.
+- **Whip: approved by Derek 2026-10-31** ("it looks good now") after watching the viewer. Hip overlap and wrist contact go on the polish list.
+- T3c.1-T3c.4: 1f8efce, 8e16101, b22e520, 80917cf. Corner runs 16/16, worst miss 0.05 px, arrival 1200-1450 ms; clothesline connects 60 px off line. Opus reran: suite 1080/1080, build, coverage 22, flag-off identical.
+  Misses: a diagonal press in a lockup is now a whip, not the suplex or headlock; corner hit is a stand-in. [Strip](research/animation/whip-2026-10/corners.html).
+- **G3c: approved by Derek 2026-10-31** ("starting to look really great"). Notes: sell the rope hit, stuck in the corner, running attack. Next T3c.5, stop at G3d.
+- T3c.5: 70c7fe3, rope hit copies the corner hit (no flip, first stagger step, then turn): recoil 117 / 133 / 150 / 167 / 183 ms (rock to outOnFeet), flip-frame pose step 12-27 px, focused tests 36/36, flag-off identical. [Strip](research/animation/whip-2026-10/rope.html).
+  Misses: travel is 14.8-17.4 px for every type (the 40·s clamp in `_runStaggerSteps`); in the press 6-8 frames, at half or more 3-4, out of it by the last frame or two. Front-on hit, Derek's first note said back-first. STOPPED at G3d.
+- Whip candidate (Codex, now in a4ba0e1, under `grapples=v1`): release at 310 ms, cross-body pull at 400 ms, real-input direction 8/8, defender peak 55-66 px/frame. [Viewer](research/animation/whip-2026-10/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-codex-irish-whip-direction.md).
+  Misses (Opus review): cross-body pull fuses the bodies at about 300 ms, about 20 px of depth apart, against D12; receiver's arms go to idle, so no wrist contact. See Stage 3c.
 
 ## Why (Derek 2026-10-29)
 
@@ -443,6 +455,108 @@ Never promote `grapples`.
   these. Then the steal as a visible shove, with a re-grip if Derek wants D5 changed.
 - **Stage 3: every exit starts from the tie-up.** Headlock, whip, suplex, hip toss / arm drag, hammerlock, and
   piledriver / slam each get a lead-in from the Stage 1 pose. The (e) jumps are the work list.
+- **Stage 3c: whip routes (Derek 2026-10-31: "eventually").** Corner whips and diagonal runs that land where they were aimed.
+  Whip direction, timing and diagonals approved by Derek 2026-10-31. Next: T3c.5 (stop at G3d), then T3c.6-T3c.7 (stop at G3e). All of it stays under `grapples=v1`; flag off stays identical.
+  - **T3c.0a The beat before the run (Derek 2026-10-31: "he does the motion, then there's a beat, then George runs"; written in
+    full, ready for Sonnet).** Measured Lou on George, facing right: both men's big motion ends by 133 ms, the exit blend's end
+    (`LOCKUP.exitBlend.default`, 140 ms). Attacker peak part step is then under 5 px/frame, defender's falls to 0 at 250-300 ms,
+    and the run starts at 317 ms: 184 ms with almost no motion. Cross-body shows the same gap before its 400 ms release, plus a
+    one-frame pop at 267 ms (attacker 74.0, defender 47.5 px): both auto-face as the receiver passes (`move()`,
+    `src/Wrestler.js:911`).
+    In `_doIrishWhipLeadIn` (`src/Wrestler.js`, Codex's uncommitted candidate):
+    1. Build the throw so the arm snap lands as the exit blend ends: start from whipGrab 60, whipLoad 60, whipRelease 60,
+       whipFollow 120 ms for this path only, leaving `MOVE_DEFS.irishWhip` as it is (flag off must not change). Cross-body adds
+       60 ms to whipLoad. Name the two release times as constants: same-side about 170 ms, cross-body about 240 ms.
+    2. Fit the rest to them: the receiver's `tweenPose('idle', 220)` and the attacker's 220 ms y step to at most the same-side
+       release, and the receiver's cross-body x tween already follows `releaseAt`.
+    3. Fix the pop: skip the auto-face at line 911 while `this._whip` is set. Only this candidate sets `_whip`, so flag off is safe.
+       Check the attacker still ends up facing the right way once the sequence ends.
+    4. Update `tests/irish-whip.test.js` (it asserts 310 and 400), then rerun `tools/debug/whip_direction_proof.mjs`. Add a
+       frame table to it: attacker and defender peak `partSteps` per frame from the press to 300 ms after release.
+    Done when: direction proof 8/8; release at most 183 ms same-side and 250 ms cross-body; no more than 3 frames in a row between
+    press and release with both men under 3 px/frame; no pop after the blend (nothing over 30 px between blend end and release).
+    Report the new first-run peak (54.6-65.8 now): the turn gets closer to the exit blend, so it may rise. Flag-off check identical,
+    focused tests only. If the throw now feels rushed, try 200 / 270 before anything else. Commit locally, then STOP for Derek.
+  - **T3c.0b The attacker's turn on the cross-body whip (Opus review of a4ba0e1; written in full, ready for Sonnet).** The facing
+    lock did not remove the 74 px pop, it moved it: Lou on George cross-body, the attacker stays facing the old way, arms reaching
+    away from the receiver, until `_whip` clears at the end of the sequence, then flips in one frame at 583 ms (58.7 px). The proof's
+    frame table stops at 550 ms, so T3c.0a's check could not see it. In `_doIrishWhipLeadIn` (`src/Wrestler.js`):
+    1. Derek 2026-10-31: "he should flip just as George is running away to make it look like he generated the force with his
+       flip, rather than throwing him, standing a beat, then flipping." The flip is what throws him. On cross-body, set
+       `this.facing = dir` inside the release callback, in the branch that sends the receiver running, so the turn shares the
+       frame with the run's own first-frame step and `whipFollow` reaches after him. Check the attacker's and receiver's flips are
+       on the same frame, and that the arm's follow-through keeps moving after the flip with no hold. Same-side needs no turn.
+    2. The lock can stick: the sequence's `onDone` is the only thing clearing the attacker's `_whip`, and a superseding `tweenPose`
+       kills it, leaving him never auto-facing again. Change the check at `move()` so the lock only holds while the state is
+       `slamming` or `grabbed`, and add a test: interrupt the attacker, then confirm auto-face works.
+    3. Extend the proof's frame table to 800 ms after the press, and report the largest attacker step after release.
+    Done when: direction proof 8/8; after release, no attacker step over 30 px except on the release frame; report that frame's
+    value; 4 existing whip tests plus the new one pass; flag-off check run and reported (a4ba0e1 does not mention it). Commit locally, STOP.
+  - **3c.0 Cross-body pull: on the polish list (Derek 2026-10-31 "it looks good now").** The hip overlap and missing wrist contact
+    stand unless he raises them. Do not work on them now.
+  - **T3c.1 A run follows a line (full task, Sonnet).** All of T3c.1-T3c.4 sit behind `grapplesCandidate()`; flag off stays identical.
+    In `src/Wrestler.js`: add `runTargetY` (null = today's flat run). In `tickRun`, when it is set, keep x at today's speed and
+    set y from x progress between the run's start and target, so the line is straight and the foot lock, which reads x travel, is
+    untouched. Mid-ring to a corner is 12-19 degrees on screen, so the two facings hold; facing stays the sign of x.
+    Steep case: if |dy| / |dx| is over 0.5, slow x so y never moves faster than 0.5 x speed; the line stays straight. If dx is
+    0, use the chosen direction's sign. Read the rope's x at the target y (`ringBoundsAtY`), not the start y: the side ropes slant.
+    Unit tests: end point reached exactly, straight line, both slopes, the steep case, null is the old path. Check both
+    gaits (default and `?gait=v2`).
+  - **T3c.2 Depth gates (full task, Sonnet).** Do this before any diagonal can happen in play. These test x only and work only
+    because a runner shares the attacker's y: clothesline and back body drop (`tryAction`, `src/Wrestler.js:1409`), double axe
+    handle (`tryRunningAttack`), dropkick's impact, and the AI's rebound check (`src/AIHandler.js:430`). Flag on, also
+    require `Math.abs(other.y - this.y) < 48` (the code's existing half-depth figure; the whip's own 22·s step must pass). Search for any other
+    x-only test on a `running` target and list it in the report. Test: runner 100 px away in depth is not hit; same depth still is.
+  - **T3c.3 Diagonal input and the corner route (full task, Sonnet).** In `Arena` `_tickLockup`'s follow-up chain
+    (`src/scenes/Arena.js`, the `goDown` / `goUp` branches), before those branches, flag on: up or down held with left or right,
+    and the kit has `irishWhip`, calls `_doIrishWhip(defender, dir, depth)` with depth -1 for up, +1 for down. Plain up, down, left and
+    right keep today's moves. Stored buffer input already holds all four (T1.9). The AI holds one direction, so it is unaffected.
+    Risk to report: a player walking diagonally now gets a whip, not the suplex or headlock.
+    `_doIrishWhipLeadIn` gets `depth`. The same-side / cross-body logic and release times are unchanged. At release, a non-zero
+    depth sets the target to that corner: y = `RING.farLeft.y + 6` or `RING.nearLeft.y - 6`, x = rope at that y, 20 px in, and
+    `runPhase = 'toCorner'`. Move the corner table out of `_nearCorner` so both share it. In `tickRun`, arrival at `toCorner`
+    logs `cornerHit`, calls `triggerRopeBounce` on the far or near side as fits, and for now calls `startStagger()` as a stand-in for
+    the daze. Direction proof: 2 rigs, 2 facings, 4 corners, real input; each must end within 2 px of its corner point.
+  - **T3c.4 Runs and rebounds on a line (full task, Sonnet).** `toRope` arrival flag on: `returning` gets `runTargetY` = the
+    attacker's y at that moment, clamped to the ring, x read at that y, so the return meets him wherever he stepped. A run with no
+    opponent move is unchanged: same y means a flat line. `tryRun` flag on: up or down held aims the rope point 70·s px up or down the
+    ring, clamped. Test the clothesline on the return with the attacker 60 px off the runner's y. Then a normal-speed strip, both
+    facings, all four corners and a rope rebound, on the whip viewer. Full suite, build, coverage at this gate. Commit locally,
+    **STOP at G3c** for Derek: does the diagonal read, and is up/down + left/right the right input.
+  - **T3c.5 Rope hit (full task, Sonnet; flag on only).** Derek 2026-10-31: "hitting the ropes is actually painful ... rather than
+    just switch running directions"; then "the way they presently hit the turnbuckle is also how they should hit the ropes". The
+    current corner hit is the reference: he arrives with no flip, still facing his run, and plays the first step of
+    `staggerFor(this.stamina)`, the pose plus its `dx` travel back off the rope, so harder hits show on a worn man.
+    In `tickRun`'s `toRope` arrival: do not flip. Set `runPhase = 'ropeRecoil'` and play that first step, with `_choreoUntil` set
+    as `_runStaggerSteps` does so the run gait does not draw over it. The x tween stops if the state leaves `running`. While
+    `ropeRecoil`, `tickRun` only counts down and returns. At the end, run today's flip block: `runFacing`, `facing`, the walkPhase mirror,
+    `runTarget`, `returning`, `_setRunLine` to the attacker, then `moveBlend = 0`. Self-started runs use the same path. `ropeRecoil`
+    is not `returning`, so nobody can clothesline him during it. Side ropes already bow through `_ropePresses`: confirm he is
+    still inside the press during the hit. No stamina cost. Flag off identical.
+    Tests: recoil before the flip, return line reads the attacker's y at the end of the recoil, dropkick during the recoil leaves
+    no stuck phase. Report recoil length per stagger type and the flip-frame step. Strip: Lou and George, both ropes, fresh
+    and worn, normal speed. Focused tests. Commit locally, **STOP at G3d**. Note for Derek: this hit is front-on, his first note said back-first.
+  - **T3c.6 Stuck in the corner (full task, Sonnet; flag on only).** Derek: lean against it in a daze for a bit, "out of it and
+    stuck", the set-up for a running attack. Keep the current hit (first stagger step, no flip), then replace the rest of `startStagger()`
+    with new state `cornered`: at the end of that step set facing to the corner's inward facing (`RING_CORNERS`) and ease back onto
+    the corner point. New pose `cornerDaze`: slumped, feet planted, knees soft, head loose with a slow sway. Only `bend` pitches the
+    torso, `lean` is not drawn. Hands on the top rope through `holdGrips` `at` before any art request; report if they cannot reach.
+    Length `Math.max(1.5, staggerFor(stamina).seconds)`; Derek sets it by eye. Timer in the tick at `src/Wrestler.js:1083`.
+    End: tween to idle and step forward about 30·s px. Do not use `startStagger`, its backward travel goes into the post.
+    Add `cornered` to the strikable lists (`Wrestler.js` 1729, 1795, 1833, 2499, 2529) and list any others found. A grapple on him
+    does nothing for now. Add the state to the state comment and fix the stale `grabbed` comment. Check the near corners first: he
+    draws behind the post and near ropes (depth 25.7). `triggerRopeBounce` stays as it is.
+    Tests: full timeline, no input, sold strike leaves no stuck state, facing inward in all 4 corners.
+  - **T3c.7 Running attack into the corner (full task, Sonnet; flag on only).** Run key with `_lastOther` in `cornered` and more than
+    120·s px away: `tryRun` charges at him instead of running to the rope behind. `runPhase = 'charge'`, `_setRunLine` to a point
+    `CORNER_HIT_GAP` short of him (start 46·s px, arm's reach, no hip contact, D12). Arrival with him still cornered: new `_doCornerCharge`,
+    the `clothesline` pose sequence, `STAMINA_DRAIN.cornerCharge` 14, the `sellChest` pose back to `cornerDaze`, camera shake as the
+    clothesline, and the daze extended once by 0.6 s. He is still dazed when the attacker backs off. Arrival with him gone: the attacker runs
+    on to the corner point and takes `toCorner` himself: the miss is free. Register `cornerCharge` in `src/moves/registry.js`, in
+    the Lou and George kits and the heat table (`Arena.js`, near line 3290), and keep `moves:coverage` at 22 gaps. AI: an opponent
+    `cornered` beyond 120·s px presses run at about 0.6 odds, otherwise it strikes. Real-input proof: 2 rigs, 4 corners, hit and miss.
+    Full suite, build, coverage, flag-off at this gate. Normal-speed strip. Commit locally, **STOP at G3e**.
+  - **Later (Derek picks):** running splash, corner strikes, grapple in the corner, whip reversals.
 - **Stage 4: the lockup vocabulary**, so more moves can grow from it: rope break (clean break / cheap shot), shove-off,
   go-behind waistlock, wrist lock / arm wringer, side headlock takeover. Derek picks the order.
 - **Stage 5: promote** `grapples` to default after Derek approves a live match.

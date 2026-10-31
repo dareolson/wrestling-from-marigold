@@ -55,6 +55,11 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
   Misses: 52 slope-limited cases land on the 0.5 line, up to 107.5 px off his y; behind him or within 60·s px in x is the old single line.
 - T3c.5b: 6bed0b8, back into the rope: 31 px past the rope point (34·s, 22.5-33.7 by depth), middle strand bow 32.7-37 px, return peak 1.66x, contact to launch 350 ms (400 worn), no strand draws in front of him, suite 1092/1092, flag-off identical. [Strip](research/animation/whip-2026-10/rope.html), normal and quarter.
   Misses: launch frame steps 30-80 px raw (pose to run gait, no flip there); turn frame 77-137 raw, 7.6-15.7 mirrored; hands not put on the top rope; far depth bow is perspective-light. STOPPED at G3d-2.
+- **G3d-2: approved by Derek 2026-10-31** ("the lean back against the ropes, that's what i was envisioning"). Opus reran at f0e4771: suite 1092/1092, build, coverage 22, flag-off identical. The corner now uses the same lean. Next T3c.6-T3c.7, stop at G3e.
+- T3c.6: a96c34f (one commit with T3c.7), stuck in the corner: back in 12·s px (11.8 near, 7.1 far, never past it), no spring, daze 1517 ms (rock, stumble) / 1917 reel / 2417 buckle / 3017 out on feet, exit step 29.6 px near / 17.8 far (30·s). Hands reach the top rope at both points, 0.0 px miss, all 4 corners, both kits. Near corners: he draws behind the post (25.17 vs 25.7) and near rope (25.5), no side strand in front. [Strip](research/animation/whip-2026-10/corner-daze.html), normal and quarter.
+  Misses: frames local (36 MB, not committed); the exit step has no walk cycle; `stepForwardPx` 18 in the results is net of the 12 px load, in units of s.
+- T3c.7: a96c34f, running attack: charge 900-1433 ms over 249-493 px, stops 45.4 near / 27.3 far (46·s) short, hit 100 ms after arrival, 14 drain, daze +0.6 s once, one damage event; miss runs on and corners the attacker, 0 damage. AI real match: Lou 6/6 charged, 3 hit, 2 missed; George 1/5 charged, 0 hit. Suite 1108/1108, build, flag off identical A/B against HEAD.
+  Misses: coverage 23 gaps, not 22 (new move, baselined); a 1.5 s daze ends before most charges land from far; the committed flag-off fixture already differed at HEAD (re-recorded A/B identical). STOPPED at G3e.
 - Whip candidate (Codex, now in a4ba0e1, under `grapples=v1`): release at 310 ms, cross-body pull at 400 ms, real-input direction 8/8, defender peak 55-66 px/frame. [Viewer](research/animation/whip-2026-10/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-codex-irish-whip-direction.md).
   Misses (Opus review): cross-body pull fuses the bodies at about 300 ms, about 20 px of depth apart, against D12; receiver's arms go to idle, so no wrist contact. See Stage 3c.
 
@@ -462,7 +467,7 @@ Never promote `grapples`.
 - **Stage 3: every exit starts from the tie-up.** Headlock, whip, suplex, hip toss / arm drag, hammerlock, and
   piledriver / slam each get a lead-in from the Stage 1 pose. The (e) jumps are the work list.
 - **Stage 3c: whip routes (Derek 2026-10-31: "eventually").** Corner whips and diagonal runs that land where they were aimed.
-  Whip direction, timing and diagonals approved by Derek 2026-10-31. Next: T3c.4b, T3c.5b (stop at G3d-2), then T3c.6-T3c.7 (stop at G3e). All of it stays under `grapples=v1`; flag off stays identical.
+  Whip direction, timing and diagonals approved by Derek 2026-10-31. T3c.6-T3c.7 done, stopped at G3e (Derek judges the corner strip). All of it stays under `grapples=v1`; flag off stays identical.
   - **T3c.0a The beat before the run (Derek 2026-10-31: "he does the motion, then there's a beat, then George runs"; written in
     full, ready for Sonnet).** Measured Lou on George, facing right: both men's big motion ends by 133 ms, the exit blend's end
     (`LOCKUP.exitBlend.default`, 140 ms). Attacker peak part step is then under 5 px/frame, defender's falls to 0 at 250-300 ms,
@@ -579,9 +584,11 @@ Never promote `grapples`.
     hit about 350 ms from contact to launch; both sides; focused tests; flag-off identical. Strip with normal AND quarter speed, Lou and
     George, both ropes, fresh and worn, framed tight enough to see the rope. Commit locally, **STOP at G3d-2**.
   - **T3c.6 Stuck in the corner (full task, Sonnet; flag on only).** Derek: lean against it in a daze for a bit, "out of it and
-    stuck", the set-up for a running attack. Keep the current hit (first stagger step, no flip), then replace the rest of `startStagger()`
-    with new state `cornered`: at the end of that step set facing to the corner's inward facing (`RING_CORNERS`) and ease back onto
-    the corner point. New pose `cornerDaze`: slumped, feet planted, knees soft, head loose with a slow sway. Only `bend` pitches the
+    stuck", the set-up for a running attack. Derek approved the rope's lean back at G3d-2 ("that's what i was envisioning"), so the corner hit changes to match
+    and `startStagger()` goes: reuse T3c.5b's turn and load (`_turnBack` 40·s px short, `ropeHitAt` / `ropeHitPose` through load and taut,
+    the corner's inward facing from `RING_CORNERS`), but no spring: he stays in the lean as new state `cornered`, easing from the load pose
+    into the daze. Give the corner its own smaller load depth, starting at 12·s px past the corner point, so he never draws through the
+    post, and stop the side-rope spring from ringing him out. New pose `cornerDaze`: slumped, feet planted, knees soft, head loose with a slow sway. Only `bend` pitches the
     torso, `lean` is not drawn. Hands on the top rope through `holdGrips` `at` before any art request; report if they cannot reach.
     Length `Math.max(1.5, staggerFor(stamina).seconds)`; Derek sets it by eye. Timer in the tick at `src/Wrestler.js:1083`.
     End: tween to idle and step forward about 30·s px. Do not use `startStagger`, its backward travel goes into the post.
@@ -591,7 +598,7 @@ Never promote `grapples`.
     **Episode guards (Codex):** give each corner stay a small id, `_cornerEpisode`. `_doSell` callbacks, the return-to-corner move and the exit
     step all check it, so a fall, new move, reset or escape cancels a pending restore. The daze clock keeps running through a sell; a
     restore keeps the remaining time. Any exit clears the rope grips and pose ownership: a fallen man must not keep a hand pinned to
-    the rope. The first stagger step clamps x at 40·s from the rope while the corner point is 20 px in, so measure the walk back.
+    the rope.
     Tests: full timeline, no input, sold strike leaves no stuck state, facing inward in all 4 corners, grips clear after a fall.
     Build one episode first, Lou at a near corner, then expand to both kits and all corners.
   - **T3c.7 Running attack into the corner (full task, Sonnet; flag on only).** Run key with `_lastOther` in `cornered` and more than

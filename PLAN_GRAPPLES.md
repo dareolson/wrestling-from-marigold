@@ -319,6 +319,93 @@ Derek did not pick the Stage 4 order. These two come first because they add no b
 Full gates, then one entry `AI_HANDOFF_ENTRIES/<date>-claude-grapples-run.md`: misses first, every choice made, every number
 that fell short, and clickable links to the G1b, G3 and G4a pages in the order Derek should watch them. Replace the Status Next line.
 
+## Stage 1c: legs that are legs (D13): stance check G1c-a, then G1c
+
+Derek's G1b note 2026-10-30, after the unattended run: better, but the legs are wrong, on many frames. On George attacking Lou
+(daylight 15.3, under the belt 285, torso 0) George's leg hyperextends, "gumby legs". On Lou attacking George (daylight 40.1,
+under the belt 82, torso 0) both of Lou's legs suddenly stack over his trunks. Those caption numbers are the worst engage frames
+and describe neither fault: nothing in the film measures a knee, the stance or the trunks. That gap is why the run reported clean.
+
+Opus measured the held poses (hip, knee, ankle in px at s = 1, along the facing, both rigs, both facings):
+- **The knees bend backward.** In `_updateUprightCore`, shin = thigh + facing * lKnee, and the thigh channel is positive toward
+  the facing, so a positive `lKnee` swings the shin forward and leaves the knee behind the hip-ankle line. The knee's offset from
+  that line is +0.1 to +0.5 px at idle, and in the held poses -2.1 to -11.1 px on every leg (worst: attacker near leg, George
+  -11.1, Lou -9.5; shin 16 px forward of the knee). Every `leadKnee` / `rearKnee` in `LOCKUP_POSES` is positive. The natural
+  direction is negative, which `JOINT_LIMITS.knee.min` stops at -0.10 even though the same table treats positive as flex.
+  With no knee channel the crouch path bends the shin back; Lou's idle uses the absolute `lShin: -0.11`.
+- **The stance collapsed.** Near and far ankles are 34.6 px apart at idle, and 2.2 px apart in Lou's attacker pose (19.0 even,
+  35.8 defender). Far hip and near hip stay 16 px apart, so the attacker's legs converge to one column.
+- **Trunks.** Lou's trunks are painted in the torso image. `bend` .38 rotates that image about the hip, but crouch adds forward
+  angle to the thighs, so they come out about -.15 rad rather than -.4, and they cover what the rotated trunks left behind.
+
+- **D13. Legs (Derek 2026-10-30).** Every frame of a grapple, both rigs, both facings, all phases including engage and break:
+  a knee never sits behind the hip-ankle line, and the two legs stay readable as two legs, a real stagger. The trunks stay in
+  place over the thighs. D12 still holds. Lou is the bar. Do not touch `JOINT_LIMITS`, `Skeleton`, or anything flag off.
+
+**Current values (these replace the older numbers above):** `bend` carries the torso pitch (`lean` is not drawn), gap 80 fixed for
+all pairs (D9 gone), engage .30 s, `elbowCup` -.6, timeout 1.4 s. Unattended mode is over: Derek is back. Read D12, D13, the Rules
+and this stage; skip the finished stages unless a task names one.
+
+**Two sign-offs, in this order.** Stance first (G1c-a), then the expansion (G1c). Nothing downstream is built or recaptured until
+Derek accepts the stance. Codex's review: [efficiency review](AI_HANDOFF_ENTRIES/2026-10-30-codex-sonnet-efficiency-review.md).
+
+### T1.11 Leg measures, defined, with the baseline
+
+Add to `grapples_film.mjs` and the sweep. All px at s = 1, along the facing, per leg, worst per phase, with the frame and leg saved.
+Geometry is every frame; masks are sampled phases, and the page says which. Report G1b and idle on both rigs first. If idle or the
+frames walking in fail a threshold, report that conflict; do not retune idle and do not silently exempt frames. The thresholds
+stand in for D13; Derek's eye decides it.
+- **Knee line:** signed perpendicular distance from the knee to the hip-ankle line, positive toward the facing. If hip to ankle is
+  under 1 px, record null. Keep the signed flex (shin minus thigh, wrapped to +-pi, times facing) beside it. Pass: at least -0.5 px.
+- **Stagger:** signed horizontal lead-minus-rear offset for ankles and knees, absolute value tested. Pass: ankles at least 20 px,
+  knees at least 14 px (idle: Lou 34.6 / 28.1, George 34.8 / 25.0).
+- **Hip angle:** torso pitch minus thigh pitch, world frame, wrapped, sign by facing. Report only, with idle as the reference.
+- **Trunks:** torso image px with alpha at least 128 below the waist line (define the line per rig, in the image), share covered by
+  the same man's own thighs, as percentage points against that rig and facing at idle. Pass: within 10 points. Sampled phases.
+- **Feet:** sole y from the painted sole anchor, or say which fallback you used, at the same root y and scale as idle. Pass: support
+  foot within 1.5 px. The stepping foot in the drive is exempt, and the page says so. Planted-foot x stays under 2.5 px/frame.
+- **Sensitivity first:** before using a channel, change it alone and report what moves in the render. The dead `lean` axis cost a sweep.
+
+### T1.12 One stance, then STOP (G1c-a)
+
+Solve in this order, one family at a time. Tune with numbers, no screenshots, and keep the best two or three candidates only.
+1. **Joint owner.** Remove `lKnee` / `rKnee` from the lockup channels (`leadKnee`, `rearKnee` go). Author the bend through the crouch path
+   or absolute `lShin` / `rShin`, as Lou's idle does. One owner per joint (`ARTICULATION_CHANNEL_PAIRS`).
+2. **Lifecycle.** `_tickGrapple` writes with a plain assign, so a stale key survives: delete the losing channel on entry. It blends
+   `from[key] ?? 0`, so a channel the entry pose lacks starts from 0, not from the drawn angle, and pops: seed `from` with the angle
+   actually drawn (George has no `lShin` at idle, Lou does). Keep ownership through steal and endings, and hand the pose back clean at exit.
+3. **Stagger and trunks.** Lead foot under or ahead of the hip, rear foot behind it, in all three keys. The attacker is the worst
+   today. Then lower `bend` or match the thighs to it until the trunks pass. Leave `tilt` at 0: `bodyPlacementWeight` is already .33 at
+   .1 rad and it moves the feet. Add tilt only if nothing simpler passes, and measure the feet.
+4. **Gap and reach, last.** Start from 80, not a sacred value. D12 and D13 beat the hands: if the arms cannot reach, report the miss.
+5. **Transition.** Derek said "suddenly". Report the largest frame-to-frame change of hip angle and knee line through engage and
+   break, and ramp whatever snaps.
+
+Scope: engage, even, drive and break only, Lou and George both attacking, both facings. Tests: a rendered check in
+`grapples_assert` on real Lou and George, both facings, that fails on a backward knee or collapsed stance, plus a small data guard
+if useful. A missing key alone proves nothing.
+
+**Checkpoint page** `research/animation/grapples-2026-10/g1c-a/index.html`: normal-speed strips first (G1b | new), a 3x hip crop of
+the held pose beside idle for each man, then the misses, generated from the data. Focused tests and `grapples_assert` only; no
+full suite here. Commit, give Derek a clickable link, **STOP**. If no candidate passes on Lou, show the best two and stop the same way.
+
+### T1.13 After Derek accepts the stance: the rest of the phases
+
+Extend to steal, stall, rope break and shove with D12 and D13 held. Then re-measure the exits once from the accepted stance, and
+repair only what this change broke. No new exit work, and no per-parameter recaptures.
+
+### T1.14 G1c, then STOP
+
+- Page `research/animation/grapples-2026-10/g1c/index.html` from one manifest: commit plus dirty flag, rigs, flags, seed, constants,
+  and frame and phase of each maximum. Strips first, misses from data, then the table. Re-measure a baseline if a metric's
+  definition changed; old numbers do not carry over.
+- Gates, once: focused tests, `grapples_assert`, flag-off, full suite, `npm run build`, `npm run moves:coverage -- --check`.
+- Entry `AI_HANDOFF_ENTRIES/<date>-claude-grapples-g1c.md`: chosen values, worst misses with frames, what remains. Progress lines.
+  Give Derek a clickable link and **STOP**. Ask the run entry's open questions again.
+
+Not this stage (polish list): sharing a browser across `grapples_assert` cases, and removing `wantLock`. Touch them only if a task
+already needs that code.
+
 ## Later stages (outline, written in full after G1)
 
 - **Stage 2: hands and the steal.** A Codex art request from Derek's G1 hand list. Likely: a hand gripping the back of a
@@ -329,3 +416,5 @@ that fell short, and clickable links to the G1b, G3 and G4a pages in the order D
 - **Stage 4: the lockup vocabulary**, so more moves can grow from it: rope break (clean break / cheap shot), shove-off,
   go-behind waistlock, wrist lock / arm wringer, side headlock takeover. Derek picks the order.
 - **Stage 5: promote** `grapples` to default after Derek approves a live match.
+  Before that, measure each exit's hit frame against drawn contact and the frame the lead-in releases facing: the 0.14 s lead-in is
+  drawn only while the move clock runs, and the whip turn is 119-121 px/frame. Decide then whether any move needs its own transition.

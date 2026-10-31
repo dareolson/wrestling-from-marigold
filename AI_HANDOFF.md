@@ -31,7 +31,7 @@ Avoid a large rewrite.
 ## Status (2026-10-30, replace this block; ≤ 40 lines)
 
 - **HEAD** see `git log` on `story/marigold-opening`; full suite 1057/1057 (Node 22: `nvm use`; shell default is 25). Tree clean except untracked `research/`, `STORY_ART_AND_FEUD_DIRECTION.md`.
-- **Next (2026-10-30):** the unattended grapples run is done (Stages 1b, 3, 4a, all behind `?grapples=v1`, local, nothing judged): Derek watches [G1b](research/animation/grapples-2026-10/g1b/index.html), [G3](research/animation/grapples-2026-10/g3/index.html), [G4a](research/animation/grapples-2026-10/g4a/index.html), then answers the five questions in the [run entry](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-run.md). Stage 2 waits on his hand list. Known: whip's turn 119-121 px; far hand sits on the forearm. Suite 1057/1057.
+- **Next (Opus 2026-10-30):** [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) **Stage 1c** (T1.11-T1.14, D13) for Sonnet, stops at the stance check G1c-a, then G1c. Derek's G1b note: legs hyperextend (George) and stack over the trunks (Lou) on many frames. Measured: knees 2-11 px behind the hip-ankle line in every held pose (positive `lKnee` bends backward upright), attacker ankles 2.2 px apart. Stages 1b, 3, 4a done, local, unpushed: [run entry](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-run.md), suite 1057/1057. Derek's length, hands and layering answers still open.
 - **Pushed vs local:** pushed through `178d79b` 2026-10-28; later plan/status commits may be local. Push via the SSH URL (HTTPS returns 400).
 - **Gait (2026-10-26):** [PLAN_GAIT.md](PLAN_GAIT.md) Stage 3 (run as its own gait) built behind `?gait=v2` (`&runGait=off` = Stage 2 run; flag off byte-identical), stopped at **G3**: Derek judges the [G3 page](research/animation/gait-2026-10/g3.html). Stage 2 commits local only. Open: whip-start facing flip (Stage 4), George hip step 3.3 px.
 - **Active plan:** [PLAN_GETUPS.md](PLAN_GETUPS.md) (authored get-ups; default on since T4.4, `?getups=off` = legacy). Stage 4 done and promoted: G1, G1-rev2, G2a, G2, G2b and G3 approved (Derek 2026-10-28/29). **Stage 5 (George re-check, G4) parked by Derek**; George's leftovers go on a polish list, not a stage. [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) parked at G10a. Side ideas: [IDEAS.md](IDEAS.md).
@@ -44,6 +44,7 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-10-30 · Codex · [Opus/Sonnet efficiency review: smaller leg proof, precise metrics, reusable capture](AI_HANDOFF_ENTRIES/2026-10-30-codex-sonnet-efficiency-review.md)
 - 2026-10-30 · Claude · [Grapples unattended run: Stages 1b, 3, 4a](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-run.md)
 - 2026-10-30 · Claude · [Grapples Stage 1b: upper body only](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-g1b.md)
 - 2026-10-30 · Codex · [Opus review: grapple defects, evidence limits, next block and story continuity](AI_HANDOFF_ENTRIES/2026-10-30-codex-review-for-opus.md)

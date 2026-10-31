@@ -14,6 +14,8 @@ import { launch } from './harness.mjs';
 import { partSteps } from './rise_handoff_probe.mjs';
 import { INSTALL_MASKS, worstMask } from './grapples_masks.mjs';
 import { breakKind } from '../../src/animation/lockup.js';
+import { INSTALL_LEGS, TRUNKS_V, legSummary, legFails } from './grapples_legs.mjs';
+import { idleOf } from './grapples_legs_run.mjs';
 
 const shoveSeed = (() => { for (let k = 1; ; k++) if (breakKind(k, false) === 'shove') return k; })();
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
@@ -49,6 +51,7 @@ export const SETUP = async ({ facing, midX, startGap, defRope, flag, layer, seed
         w.scene.tweens.killTweensOf(w); w.scene.tweens.killTweensOf(w.pose);
         w._activeMove = null; w._choreoUntil = 0; w._sell = null; w._hold = null; w._gripLatch = null; w._groundHandoff = null; w._pain = null;
         w.state = 'standing'; w.stamina = 100; w.vx = 0; w.vy = 0; w.combatBlend = 0; w.moveBlend = 0; w.walkPhase = 0; w.lying = null;
+        for (const k of Object.keys(w.pose)) if (!(k in window.__idle)) delete w.pose[k];   // a run's lKnee/bend must not seed the next run's blend
         Object.assign(w.pose, window.__idle);
         w.skeleton.setPartVariants?.({});
     }
@@ -69,7 +72,7 @@ export const SETUP = async ({ facing, midX, startGap, defRope, flag, layer, seed
     return { x0: [a.x, d.x], s, bounds: b };
 };
 
-export const STEP = async ({ press, hold, mask }) => {
+export const STEP = async ({ press, hold, mask, legs }) => {   // legs: { a, d } = each man's TRUNKS_V to mask the trunks this frame, or null (grapples_legs.mjs)
     const game = window.__WFM_GAME, sc = game.scene.scenes[0], a = sc.w1, d = sc.w2;
     window.__keys.a = new Set(press?.a ?? []); window.__keys.d = new Set(press?.d ?? []);
     window.__keys.ad = new Set(hold?.a ?? []); window.__keys.dd = new Set(hold?.d ?? []);
@@ -89,7 +92,7 @@ export const STEP = async ({ press, hold, mask }) => {
         head: w.skeleton.head ? { x: +w.skeleton.head.x.toFixed(2), y: +w.skeleton.head.y.toFixed(2) } : null,
     });
     const ls = sc.lockupState, g = ls?.grapple ?? null;
-    const row = { ms, mask: mask && ls ? window.__maskOverlap(a, d, true) : null, locked: !!ls, a: mk(a, window.__names.a), d: mk(d, window.__names.d), who: ls ? (ls.attacker === a ? 'a' : 'd') : null };
+    const row = { ms, legs: legs && window.__legs ? { a: window.__legs(a, legs.a ?? null), d: window.__legs(d, legs.d ?? null) } : null, mask: mask && ls ? window.__maskOverlap(a, d, true) : null, locked: !!ls, a: mk(a, window.__names.a), d: mk(d, window.__names.d), who: ls ? (ls.attacker === a ? 'a' : 'd') : null };
     if (g) {
         row.g = { t: g.t, phase: g.phase ?? null, grips: g.grips ?? null, step: g.step ?? null, stealAt: g.stealAt, breakAt: g.breakAt, holdGap: g.holdGap ?? null };
         if (g.grips && g.grabber) {
@@ -217,7 +220,7 @@ async function runCase(page, ctx, spec, shotDir, clipAt) {
             if (spec.exit.dir) hold.a.push(spec.facing > 0 ? 'right' : 'left');
         }
         // direction keys stay held through the exit frame only
-        const row = await page.evaluate(STEP, { press, hold, mask: !!shotDir && !spec.noMasks && i % 3 === 0 });
+        const row = await page.evaluate(STEP, { press, hold, mask: !!shotDir && !spec.noMasks && i % 3 === 0, legs: spec.legs ? (i % 3 === 0 ? spec.legs.tv : { a: null, d: null }) : null });
         row.i = i;
         rows.push(row);
         if (row.mask?.image && spec.keepMasks === false) delete row.mask.image;
@@ -240,7 +243,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
                 const page = h.page;
                 await page.waitForTimeout(2500);
                 const info = await page.evaluate(INSTALL);
-                await page.evaluate(INSTALL_MASKS);
+                await page.evaluate(INSTALL_MASKS); await page.evaluate(INSTALL_LEGS);
                 const bx = info.box, mX = (x) => bx.x + x * bx.w / bx.gw, mY = (y) => bx.y + y * bx.h / bx.gh;
                 const clipAt = (x) => ({ width: 380, height: 330, x: Math.max(0, Math.round(mX(x) - 190)), y: Math.round(mY(400 + 30) - 330) });
                 const bounds = (await page.evaluate(async () => { const { ringBoundsAtY } = await import('/src/constants.js'); return ringBoundsAtY(400); }));
@@ -260,9 +263,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
                         const cols = spec.id === 'b' && column === 'new' ? [['new', false], ['alt', true]] : [[column, false]];
                         for (const [col, alt] of cols) {
                             if (alt) { await page.evaluate(() => { history.replaceState(null, '', location.pathname + location.search + '&grapplesLayer=alt'); }); }
-                            const rows = await runCase(page, info, { ...spec, flag: column === 'new', layer: alt }, join(outRoot, 'frames', col, id), clipAt);
+                            const tv = { a: TRUNKS_V[pair.att], d: TRUNKS_V[pair.def] }, legs = column === 'new' ? { tv, idle: await idleOf(page, facing, tv) } : null;   // D13 leg measures (T1.11), new column only
+                            const rows = await runCase(page, info, { ...spec, flag: column === 'new', layer: alt, legs }, join(outRoot, 'frames', col, id), clipAt);
                             if (alt) { await page.evaluate(() => { history.replaceState(null, '', location.pathname + location.search.replace('&grapplesLayer=alt', '')); }); }
                             const r = { id, case: spec.id, pair: pair.id, facing, column: col, ...summarize(rows, column === 'new' ? 'new' : 'today'), rows: undefined };
+                            if (legs) { r.legs = legSummary(rows, legs.idle); r.legFails = legFails(r.legs); }
                             const wm = worstMask(rows);
                             if (wm?.image) writeFileSync(join(outRoot, 'frames', col, `${id}-mask.png`), Buffer.from(wm.image.split(',')[1], 'base64'));
                             // the worst sample of each phase, so a residual can be looked at

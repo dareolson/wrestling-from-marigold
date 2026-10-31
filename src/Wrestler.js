@@ -48,6 +48,9 @@ const DROPKICK_V2_REACH = 92;
 // Same ring-depth lane the separation and combat-blend code use: a target who
 // stepped off the attacker's row during the wind-up is missed, not hit.
 const STRIKE_DEPTH_TOLERANCE = 26;
+// grapples=v1: a runner only meets an attacker within this much depth (the whip's own 22 px step passes).
+export const RUNNER_DEPTH_GATE = 48;
+export const sharesDepth = (a, b) => !grapplesCandidate() || Math.abs(a.y - b.y) < RUNNER_DEPTH_GATE;
 const FRONT_KICK_STANDOFF = 84;
 const FRONT_KICK_REACH    = 130;
 const FRONT_KICK_HIT      = 115;
@@ -1441,7 +1444,7 @@ export default class Wrestler {
             // Positive = P2 has run past P1's X in the run direction
             const pastDist = (other.x - this.x) * other.runFacing;
             // Window: within ~4 ring-feet approaching, forgiving ~1 foot past
-            const inRange = xDist < 160 * this.s && pastDist < 45 * this.s;
+            const inRange = xDist < 160 * this.s && pastDist < 45 * this.s && sharesDepth(this, other);
 
             // Directional override: holding `up` answers the rebound with a
             // back body drop instead of a clothesline.
@@ -1569,7 +1572,7 @@ export default class Wrestler {
     tryRunningAttack(other) {
         if (this.state !== 'running' || this.runPhase !== 'returning') return false;
         if (!this.input.justDown('power')) return false;
-        if (Math.abs(other.x - this.x) > 170 * this.s) return false;
+        if (Math.abs(other.x - this.x) > 170 * this.s || !sharesDepth(this, other)) return false;
         if (this.moveSet.includes('doubleAxeHandle')) {
             this._doDoubleAxeHandle(other);
             return 'doubleAxeHandle';
@@ -2264,7 +2267,7 @@ export default class Wrestler {
             onEvent: (event) => {
                 if (event.type !== 'impact' || this.state !== 'dropkicking') return;
                 const dist = Math.abs(this.x - other.x);
-                landed = dist <= hitRange &&
+                landed = dist <= hitRange && sharesDepth(this, other) &&
                          (other.state === 'standing' || other.state === 'running' || other.state === 'blocking');
                 if (landed) {
                     other._hurt(STAMINA_DRAIN.dropkick, 'dropkick');

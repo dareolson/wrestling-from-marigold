@@ -4,7 +4,7 @@
 // opponent is vulnerable.
 
 import { ringBoundsAtY } from './constants.js';
-import { grapplesCandidate } from './Wrestler.js';
+import { grapplesCandidate, sharesDepth } from './Wrestler.js';
 import { LOCKUP } from './animation/lockup.js';
 
 const PERSONALITIES = {
@@ -427,7 +427,7 @@ export default class AIHandler {
         // Whipped opponent returning off the ropes — clothesline the rebound,
         // or matador-sidestep the charge (George's favorite trick)
         if (opp.state === 'running' && opp.runPhase === 'returning') {
-            if (Math.abs(opp.x - self.x) < 130 * scale) {
+            if (Math.abs(opp.x - self.x) < 130 * scale && sharesDepth(self, opp)) {
                 if (Math.random() < (cfg.evadeOdds ?? 0) * 1.5 && self._evadeCooldown <= 0) {
                     this._press('evade');
                     this._cooldown = 0.6;

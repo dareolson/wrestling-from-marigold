@@ -19,6 +19,7 @@ import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGrip
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
 import { AROUND, aroundChannel, backSellSupport, recoveryVia, resolveAroundVia } from './rig/backSell.js';
 import { staggerFor } from './animation/staggers.js';
+import { ROPE_HIT, ropeHitAt, ropeHitPose } from './animation/ropeHit.js';
 import { gripTarget } from './animation/lockup.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
@@ -1327,21 +1328,14 @@ export default class Wrestler {
 
     tickRun(dt) {
         if (this.state !== 'running') {
-            if (this.runPhase === 'ropeRecoil') this.runPhase = null; // hit during the recoil: no stuck phase
+            this._ropeTension = 0; // an interrupted rope hit clears itself: the rope reads this only while he is running
             this._returnVia = null;
+            this._runBoost = 0;
+            this._ropeTurned = false;
+            if (this.runPhase === 'ropeHit') this.runPhase = null;
             return;
         }
-        if (this.runPhase === 'ropeRecoil') {
-            this._ropeRecoilLeft -= dt;
-            if (this._ropeRecoilLeft > 0) {
-                this._choreoUntil = this.scene.time.now + 50; // the pose holds until the flip, whatever the frame rounding does to the step's own deadline
-                return;
-            }
-            this._choreoUntil = 0;
-            this._flipAtRope(this.runFacing || 1); // the recoil never turned him: runFacing is still the run's direction
-            this.moveBlend = 0;
-            return;
-        }
+        if (this.runPhase === 'ropeHit') { this._tickRopeHit(dt); return; }
 
         // Whipped or bounced while already on his rope target (x === runTarget,
         // e.g. whipped into the ropes he's standing at), the sign is 0: keep
@@ -1354,7 +1348,7 @@ export default class Wrestler {
         // A run on a line (grapples=v1): x keeps its speed, y follows the straight line. Past a slope of 0.5, x slows so
         // y never moves faster than 0.5 x speed; the foot lock reads x travel only, so it is untouched.
         const lineY = this.runTargetY != null;
-        const slow = lineY ? this._runLineSlow() : 1;
+        const slow = (lineY ? this._runLineSlow() : 1) * this._returnBoost(dt);
         this.x += dir * runSpeed * this.s * dt * slow;
         if (g2) {
             // same lock as the walk: travel over the draw scale, direction against facing, no 0.8. The run's own gait blends in
@@ -1371,6 +1365,11 @@ export default class Wrestler {
         this.moveBlend = Math.min(1, this.moveBlend + dt * 8);
 
         const past = dir > 0 ? this.x >= this.runTarget : this.x <= this.runTarget;
+        // grapples=v1 (T3c.5b): his back reaches the rope first. 40 px short he turns away from it and carries on at run speed.
+        if (!past && this.runPhase === 'toRope' && grapplesCandidate() && !this._ropeTurned && Math.abs(this.runTarget - this.x) <= ROPE_HIT.turnBefore * this.s) {
+            this._ropeTurned = true;
+            this._turnBack(dir);
+        }
         if (lineY) {
             const span = this.runTarget - this._runStartX;
             const t = past || !span ? 1 : Math.max(0, Math.min(1, (this.x - this._runStartX) / span));
@@ -1388,12 +1387,12 @@ export default class Wrestler {
         }
         this.runTargetY = null;
         if (this.runPhase === 'toRope' && grapplesCandidate()) {
-            // grapples=v1 (T3c.5): the rope hit copies the corner hit. No flip on arrival, still facing his run, the first step of
-            // his stagger (pose and dx travel back off the rope); tickRun counts it down, then _flipAtRope turns him round.
-            const first = staggerFor(this.stamina).steps[0];
-            this.runPhase = 'ropeRecoil';
-            this._ropeRecoilLeft = first.dur / 1000;
-            this._runStaggerSteps([first], 'running');
+            // grapples=v1 (T3c.5b): contact. He goes on into the rope, it goes taut, it throws him back (_tickRopeHit).
+            if (!this._ropeTurned) this._turnBack(dir); // arrived inside the turn distance already (a run that started at the rope)
+            this._ropeTurned = false;
+            this.runPhase = 'ropeHit';
+            this._ropeHit = { ms: 0, dir, x: this.runTarget, from: { ...this.pose } };
+            this._ropeTension = 0;
             this.scene.triggerRopeBounce?.('far');
         } else if (this.runPhase === 'toRope') {
             this._flipAtRope(dir);
@@ -1412,20 +1411,65 @@ export default class Wrestler {
         }
     }
 
-    // The turn at the rope: flip, mirror the stride, aim the return. Flag off runs it on arrival; grapples=v1 after the recoil.
+    // The turn at the rope: flip, mirror the stride, aim the return. Flag off runs it on arrival; grapples=v1 turns early (_turnBack)
+    // and launches (_launchReturn) after the hit.
     _flipAtRope(dir) {
-        const b = ringBoundsAtY(this.y);
+        this._turnBack(dir);
+        this._setReturn(dir);
+    }
+
+    // Face away from the rope he is running at (dir is the run's x direction). v2: the stride mirrors about the hip. phase ->
+    // STANCE*2pi - phase maps every foot offset to its negative (stance and swing alike), which keeps both feet where they were on
+    // the mat: the planted one stays planted.
+    _turnBack(dir) {
         const g2 = this._gaitV2;
-        this.runFacing = -dir;
-        this.facing    = -dir;
-        // v2: facing flips, so the stride mirrors about the hip. phase -> STANCE*2pi - phase maps every foot offset to its
-        // negative (stance and swing alike), which keeps both feet where they were on the mat: the planted one stays planted
+        this.facing = -dir;
         if (g2?.run.on) this.walkPhase = (((this._gaitParamsAt(this._gaitRunW).STANCE * Math.PI * 2 - this.walkPhase) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    }
+
+    _setReturn(dir) {
+        const b = ringBoundsAtY(this.y);
+        this.runFacing = -dir;
         this.runTarget = dir > 0 ? b.left + 20 : b.right - 20;
         this.runPhase  = 'returning';
-        // grapples=v1: the return aims at the man he was whipped by, wherever that man stands in depth.
+        // grapples=v1: the return passes through the man he was whipped by, wherever that man stands in depth.
         this._returnVia = null;
         if (grapplesCandidate() && this._lastOther) this._setReturnRoute(-dir, this._lastOther);
+    }
+
+    // grapples=v1 (T3c.5b): one tick of the hit. Position and pose come from the pure timeline in src/animation/ropeHit.js.
+    _tickRopeHit(dt) {
+        const h = this._ropeHit;
+        h.ms += dt * 1000;
+        const r = ropeHitAt(h.ms, this.stamina);
+        if (r.phase === 'done') { this._launchReturn(h); return; }
+        this.x = h.x + h.dir * r.offset * this.s;
+        this._ropeTension = r.tension;
+        this._ropeSide = h.dir;
+        const pose = ropeHitPose(h.ms, this.stamina), blend = Math.min(1, h.ms / 50);
+        for (const k of Object.keys(pose)) this.pose[k] = (h.from[k] ?? 0) + (pose[k] - (h.from[k] ?? 0)) * blend;
+        this._choreoUntil = this.scene.time.now + 50; // the pose is his until the launch
+    }
+
+    _launchReturn(h) {
+        this.x = h.x;
+        this._ropeTension = 0;
+        this._choreoUntil = 0;
+        this._ropeHit = null;
+        this._setReturn(h.dir);
+        this.moveBlend = ROPE_HIT.launchBlend;
+        this._runBoost = ROPE_HIT.boost;
+        this._runBoostLeft = ROPE_HIT.boostMs / 1000;
+    }
+
+    // Speed multiplier for the return: 1.7 at launch down to 1 over 260 ms. Reaches x and, through `slow`, the gait's travel.
+    _returnBoost(dt) {
+        if (!this._runBoost) return 1;
+        const left = Math.max(0, this._runBoostLeft - dt);
+        const m = 1 + (this._runBoost - 1) * (left / (ROPE_HIT.boostMs / 1000));
+        this._runBoostLeft = left;
+        if (left <= 0) this._runBoost = 0;
+        return m;
     }
 
     // grapples=v1 (T3c.4b): the return passes through the point the attacker stands on at launch, a snapshot, not a homing:

@@ -22,6 +22,7 @@ import { lockupGrips, lockupPhase, lockupPoseChannels, exitBlendPose, breakKind,
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
+import { ROPE_HIT, stepRopeSpring } from '../animation/ropeHit.js';
 import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
 
 // 2026-07-26 (promoted-george roster change): the roster is now just these
@@ -2202,7 +2203,7 @@ export default class Arena extends Phaser.Scene {
         // 2026-07-07 (f5c96b5) and restored 2026-10-08 at Derek's request:
         // without it the near strands had nothing to show contact but a
         // depth flip, which put the rope behind the body.
-        const out = { near: [], far: [], side: { '-1': [], 1: [] } };
+        const out = { near: [], far: [], side: { '-1': [], 1: [] }, hit: [] };
         for (const w of [this.w1, this.w2]) {
             if (!w || SKIP.has(w.state)) continue;
             // per-strand weight bottom→top: an upright back bends the middle
@@ -2219,6 +2220,8 @@ export default class Arena extends Phaser.Scene {
             if (kFar)  out.far.push({ x: w.x, k: kFar, w: wRope });
             if (kL)    out.side[-1].push({ t, k: kL, depth, w: wRope });
             if (kR)    out.side[1].push({ t, k: kR, depth, w: wRope });
+            // grapples=v1 (T3c.5b): a runner taking the rope's weight. The rope springs from this; it reads only while he is running.
+            if (w.state === 'running' && w._ropeTension > 0) out.hit.push({ dir: w._ropeSide, t, tension: w._ropeTension, w: wRope });
         }
         return out;
     }
@@ -2248,6 +2251,14 @@ export default class Arena extends Phaser.Scene {
         // Local rope deformation: wrestlers pressed into a wall bow the
         // strands around their position with a smooth cosine falloff.
         const presses = this._ropePresses();
+        // The side ropes' hit spring (T3c.5b): tracks the runner's tension while he is in the hit and rings out after. Zero otherwise.
+        this._ropeHitSpring ??= { '-1': { val: 0, vel: 0, t: 0.5, w: [0.8, 1, 0.85] }, 1: { val: 0, vel: 0, t: 0.5, w: [0.8, 1, 0.85] } };
+        for (const dir of [-1, 1]) {
+            const sp = this._ropeHitSpring[dir], hit = presses.hit.filter(h => h.dir === dir).sort((a, b) => b.tension - a.tension)[0];
+            if (hit) { sp.t = hit.t; sp.w = hit.w; }
+            stepRopeSpring(sp, hit ? ROPE_HIT.ropeBow * hit.tension : 0, Math.min(dt, 1 / 30));
+            if (!hit && Math.abs(sp.val) < 0.01 && Math.abs(sp.vel) < 0.01) { sp.val = 0; sp.vel = 0; }
+        }
         const bump = (u, c, r) => {
             const q = Math.abs(u - c) / r;
             return q >= 1 ? 0 : 0.5 + 0.5 * Math.cos(q * Math.PI);
@@ -2409,8 +2420,10 @@ export default class Arena extends Phaser.Scene {
             for (const dir of [-1, 1]) {
                 const nearP = dir < 0 ? nearLeft : nearRight;
                 const farP  = dir < 0 ? farLeft  : farRight;
+                const hs = this._ropeHitSpring[dir];
                 const warpX = t => dir * presses.side[dir].reduce(
-                    (a, p) => a + p.k * p.w[ri] * 8 * (1 - 0.42 * t) * bump(t, p.t, 0.28), 0);
+                    (a, p) => a + p.k * p.w[ri] * 8 * (1 - 0.42 * t) * bump(t, p.t, 0.28), 0)
+                    + (hs.val ? dir * hs.w[ri] * hs.val * bump(t, hs.t, 0.28) : 0);
                 const pts = [], ref = [], hw = [];
                 for (let i = 0; i <= BANDS; i++) {
                     const t = i / BANDS;
@@ -2423,6 +2436,8 @@ export default class Arena extends Phaser.Scene {
                 fillRibbonBands(this.sideRopeBands, pts, hw, 0x36362f, 0.85, 0x82827a, 0.75);
             }
         });
+
+        this._sidePtsDebug = { pts: sidePtsByRi, ref: sideRefByRi };   // read by tools/debug/whip_rope_hit.mjs only
 
         // Dynamic mat-clipped rope shadows — one thin, merged line per ring
         // side (near/far/left/right), anchored to the BOTTOM rope's own

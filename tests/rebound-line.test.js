@@ -11,7 +11,7 @@ const withFlag = (on, fn) => {
 };
 const base = (o) => Object.assign(Object.create(Wrestler.prototype), {
     scene: { triggerRopeBounce: () => {}, time: { delayedCall: () => {} }, tweens: { add: () => {} }, _logEvent: () => {} },
-    _runStaggerSteps() {}, facing: 1, walkPhase: 0, moveBlend: 1, _heightScale: 1, _gaitV2: null, runTargetY: null, ...o });
+    pose: {}, stamina: 100, _runStaggerSteps() {}, facing: 1, walkPhase: 0, moveBlend: 1, _heightScale: 1, _gaitV2: null, runTargetY: null, ...o });
 
 test('flag on: the clothesline connects on the return when the attacker is 60 px off in depth', () => {
     withFlag(true, () => {

@@ -49,6 +49,12 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - **G3c: approved by Derek 2026-10-31** ("starting to look really great"). Notes: sell the rope hit, stuck in the corner, running attack. Next T3c.5, stop at G3d.
 - T3c.5: 70c7fe3, rope hit copies the corner hit (no flip, first stagger step, then turn): recoil 117 / 133 / 150 / 167 / 183 ms (rock to outOnFeet), flip-frame pose step 12-27 px, focused tests 36/36, flag-off identical. [Strip](research/animation/whip-2026-10/rope.html).
   Misses: travel is 14.8-17.4 px for every type (the 40·s clamp in `_runStaggerSteps`); in the press 6-8 frames, at half or more 3-4, out of it by the last frame or two. Front-on hit, Derek's first note said back-first. STOPPED at G3d.
+- **G3d: not approved** (Derek 2026-10-31, "a little better"): he wants his back into the rope, the rope taut, then sprung forward, and noticeable. Next T3c.5b, stop at G3d-2.
+- Codex review 2026-10-31 ([note](AI_HANDOFF_ENTRIES/2026-10-31-codex-corner-rebound-review-for-opus.md)): return line misses the attacker by 62+ px; folded in as T3c.4b and guards in T3c.6-T3c.7. T3c.5's flip step is raw 99.8-139.7, mirrored 12.2-23.1.
+- T3c.4b: 6bafbf1, return passes through the attacker's snapshot x and y: worst y error 0.000 px at the crossing over 192 cases (x, y, both ropes, both gaits), clothesline test kept, flag-off identical.
+  Misses: 52 slope-limited cases land on the 0.5 line, up to 107.5 px off his y; behind him or within 60·s px in x is the old single line.
+- T3c.5b: 6bed0b8, back into the rope: 31 px past the rope point (34·s, 22.5-33.7 by depth), middle strand bow 32.7-37 px, return peak 1.66x, contact to launch 350 ms (400 worn), no strand draws in front of him, suite 1092/1092, flag-off identical. [Strip](research/animation/whip-2026-10/rope.html), normal and quarter.
+  Misses: launch frame steps 30-80 px raw (pose to run gait, no flip there); turn frame 77-137 raw, 7.6-15.7 mirrored; hands not put on the top rope; far depth bow is perspective-light. STOPPED at G3d-2.
 - Whip candidate (Codex, now in a4ba0e1, under `grapples=v1`): release at 310 ms, cross-body pull at 400 ms, real-input direction 8/8, defender peak 55-66 px/frame. [Viewer](research/animation/whip-2026-10/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-codex-irish-whip-direction.md).
   Misses (Opus review): cross-body pull fuses the bodies at about 300 ms, about 20 px of depth apart, against D12; receiver's arms go to idle, so no wrist contact. See Stage 3c.
 
@@ -456,7 +462,7 @@ Never promote `grapples`.
 - **Stage 3: every exit starts from the tie-up.** Headlock, whip, suplex, hip toss / arm drag, hammerlock, and
   piledriver / slam each get a lead-in from the Stage 1 pose. The (e) jumps are the work list.
 - **Stage 3c: whip routes (Derek 2026-10-31: "eventually").** Corner whips and diagonal runs that land where they were aimed.
-  Whip direction, timing and diagonals approved by Derek 2026-10-31. Next: T3c.5 (stop at G3d), then T3c.6-T3c.7 (stop at G3e). All of it stays under `grapples=v1`; flag off stays identical.
+  Whip direction, timing and diagonals approved by Derek 2026-10-31. Next: T3c.4b, T3c.5b (stop at G3d-2), then T3c.6-T3c.7 (stop at G3e). All of it stays under `grapples=v1`; flag off stays identical.
   - **T3c.0a The beat before the run (Derek 2026-10-31: "he does the motion, then there's a beat, then George runs"; written in
     full, ready for Sonnet).** Measured Lou on George, facing right: both men's big motion ends by 133 ms, the exit blend's end
     (`LOCKUP.exitBlend.default`, 140 ms). Attacker peak part step is then under 5 px/frame, defender's falls to 0 at 250-300 ms,
@@ -536,6 +542,42 @@ Never promote `grapples`.
     Tests: recoil before the flip, return line reads the attacker's y at the end of the recoil, dropkick during the recoil leaves
     no stuck phase. Report recoil length per stagger type and the flip-frame step. Strip: Lou and George, both ropes, fresh
     and worn, normal speed. Focused tests. Commit locally, **STOP at G3d**. Note for Derek: this hit is front-on, his first note said back-first.
+  - **T3c.4b The return passes through the attacker (full task, Sonnet; flag on only; Codex review 2026-10-31).** T3c.4 was specified
+    wrong: `_setRunLine` aims at the OPPOSITE ROPE at the attacker's y, so the runner reaches that depth at the rope, not at the attacker's x.
+    Reproduced: receiver at y 300, attacker y 430, x 400: 62.3 px off at the crossing, outside the 48 px gate; x 600: 100.7 px.
+    `tests/rebound-line.test.js` passes because 60 px at x 300 fits the gate. Fix:
+    1. At launch off the rope, snapshot the attacker's x AND y once. Do not home on him; a sidestep after that must still work.
+    2. Two segments: launch point to the snapshot point, then flat at that y to the rope (`_setRunLine`). Add a one-shot waypoint in
+       `tickRun`: arrival at it starts the second segment instead of ending the run. Phase stays `returning` throughout.
+    3. Limits: slope over 0.5 clamps the waypoint's y toward the runner to a slope of 0.5, so the run keeps its speed and a man far off
+       in depth and close in x can be missed. Attacker behind the runner, or within 60·s px in x: today's single line, no waypoint.
+    4. Same y stays the old flat run, flag off identical. `_setRunLine`, `_runLineSlow` and corner runs are unchanged.
+    Tests: vary attacker x AND y, both ropes, both gaits, and assert y error at the frame crossing the attacker's x (under 3 px within
+    the slope limit), not at the endpoint or through an attack window. Replace the weak T3c.4 test. Clothesline connecting is a separate test.
+    Each commit message and report gives what the check proves. Commit locally, no stop: go on to T3c.5b.
+  - **T3c.5b Back into the rope, taut, sprung out (full task, Sonnet; flag on only). Replaces T3c.5's `ropeRecoil`.** Derek at G3d:
+    "a little better... he needs to hit the rope with his back then the rope kind of gets taut, then it springs him forward, it needs
+    to be noticeable." This overrides the front-on hit for ropes. Why T3c.5 was weak: he travels 15-17 px for 117-183 ms, and the side
+    rope bows 8 px at most (`warpX`, `src/scenes/Arena.js:2412`). The body and the rope both need to move much further.
+    Put the timeline in a pure module, `src/animation/ropeHit.js`, with tests: `ropeHitAt(ms, stamina)` returns body offset, tension
+    and phase. All values are starting points, in rig px times `this.s`; drive it from a timer in `tickRun`, not tweens, so an
+    interruption cannot strand it. Phases:
+    1. **Turn:** 40·s px before `runTarget`, flip to face away from the rope using today's flip block (walkPhase mirror included)
+       and carry on at run speed, so his back arrives first. Report the flip-frame step BOTH ways: raw and mirrored (T3c.5's raw was 99.8-139.7 px, mirrored 12.2-23.1; the mirrored number alone does not show a smooth turn).
+    2. **Load, 170 ms:** at `runTarget` he keeps going, 34·s px past it, easing out as the rope takes his weight (`Cubic.easeOut`).
+       Tension 0 to 1. Pose: `bend` back into the rope, arms flung out; hands to the top rope through `holdGrips` `at` if they reach.
+    3. **Taut, 70 ms (110 ms worn, stamina under 45):** full depth, tension 1, a 1 px tremble, nothing else moves.
+    4. **Spring, 110 ms:** tension releases and he is thrown back to `runTarget` with `Cubic.easeIn`, pose `bend` forward, arms trailing.
+       The rope overshoots inward about 10 px and rings out over about 400 ms: use a spring like `_updateRopes`' sag, per side.
+    5. **Launch:** at `runTarget` start `returning` on the T3c.4b route (snapshot taken here, at launch), with `moveBlend` from .7, not 0, and
+       `_runBoost` from 1.7 down to 1 over 260 ms. The boost must reach `travel` as well as x, or the feet skate under `?gait=v2`.
+    Rope: `_ropePresses` reads the tension only while `state === 'running'` in these phases, so an interrupted hit clears itself. Side bow
+    becomes `(8 + 30 * tension)`, so the middle strand reaches about 38 px around him. Keep flag-off values identical. He must stay
+    drawn against the rope, not through it: check all 3 strands, both sides, near and far on the rope. Clothesline stays impossible until
+    `returning`. No stamina cost. Corners keep the current hit for now.
+    Done when: body past `runTarget` at least 30·s px; middle-strand bow at least 30 px at full tension; return speed peak at least 1.6x;
+    hit about 350 ms from contact to launch; both sides; focused tests; flag-off identical. Strip with normal AND quarter speed, Lou and
+    George, both ropes, fresh and worn, framed tight enough to see the rope. Commit locally, **STOP at G3d-2**.
   - **T3c.6 Stuck in the corner (full task, Sonnet; flag on only).** Derek: lean against it in a daze for a bit, "out of it and
     stuck", the set-up for a running attack. Keep the current hit (first stagger step, no flip), then replace the rest of `startStagger()`
     with new state `cornered`: at the end of that step set facing to the corner's inward facing (`RING_CORNERS`) and ease back onto
@@ -546,15 +588,22 @@ Never promote `grapples`.
     Add `cornered` to the strikable lists (`Wrestler.js` 1729, 1795, 1833, 2499, 2529) and list any others found. A grapple on him
     does nothing for now. Add the state to the state comment and fix the stale `grabbed` comment. Check the near corners first: he
     draws behind the post and near ropes (depth 25.7). `triggerRopeBounce` stays as it is.
-    Tests: full timeline, no input, sold strike leaves no stuck state, facing inward in all 4 corners.
+    **Episode guards (Codex):** give each corner stay a small id, `_cornerEpisode`. `_doSell` callbacks, the return-to-corner move and the exit
+    step all check it, so a fall, new move, reset or escape cancels a pending restore. The daze clock keeps running through a sell; a
+    restore keeps the remaining time. Any exit clears the rope grips and pose ownership: a fallen man must not keep a hand pinned to
+    the rope. The first stagger step clamps x at 40·s from the rope while the corner point is 20 px in, so measure the walk back.
+    Tests: full timeline, no input, sold strike leaves no stuck state, facing inward in all 4 corners, grips clear after a fall.
+    Build one episode first, Lou at a near corner, then expand to both kits and all corners.
   - **T3c.7 Running attack into the corner (full task, Sonnet; flag on only).** Run key with `_lastOther` in `cornered` and more than
-    120·s px away: `tryRun` charges at him instead of running to the rope behind. `runPhase = 'charge'`, `_setRunLine` to a point
-    `CORNER_HIT_GAP` short of him (start 46·s px, arm's reach, no hip contact, D12). Arrival with him still cornered: new `_doCornerCharge`,
+    120·s px away: `tryRun` charges at him instead of running to the rope behind. `runPhase = 'charge'`, a new `_setRunSegment(x, y)` to a point
+    `CORNER_HIT_GAP` short of him (start 46·s px, arm's reach, no hip contact, D12); `_setRunLine` cannot do this, it always ends at a rope.
+    Same-x: under 40·s px of x gap there is no charge, the run key behaves as usual; never reuse the dx-0 y snap. Arrival with him still cornered: new `_doCornerCharge`,
     the `clothesline` pose sequence, `STAMINA_DRAIN.cornerCharge` 14, the `sellChest` pose back to `cornerDaze`, camera shake as the
-    clothesline, and the daze extended once by 0.6 s. He is still dazed when the attacker backs off. Arrival with him gone: the attacker runs
+    clothesline, and the daze extended by 0.6 s, once per episode (latched: two hits in a row test). Before damage, recheck target, episode, range and depth at impact. He is still dazed when the attacker backs off. Arrival with him gone: the attacker runs
     on to the corner point and takes `toCorner` himself: the miss is free. Register `cornerCharge` in `src/moves/registry.js`, in
-    the Lou and George kits and the heat table (`Arena.js`, near line 3290), and keep `moves:coverage` at 22 gaps. AI: an opponent
-    `cornered` beyond 120·s px presses run at about 0.6 odds, otherwise it strikes. Real-input proof: 2 rigs, 4 corners, hit and miss.
+    the Lou and George kits and the heat table (`Arena.js`, near line 3290), and keep `moves:coverage` at 22 gaps. AI: add the corner branch in
+    `_chooseAction` BEFORE its standing/blocking rejection, and make the movement decision close on a cornered man instead of backing off.
+    Beyond 120·s px press run at about 0.6 odds, per decision beat through `_attack` and the offense cooldown; closer, an explicit strike. Real-input proof: Lou near corner first (arrive, hold, hit, restore, escape, miss after he escapes; one damage event, at most one extension, no stale callback or grip), then 2 rigs, 4 corners.
     Full suite, build, coverage, flag-off at this gate. Normal-speed strip. Commit locally, **STOP at G3e**.
   - **Later (Derek picks):** running splash, corner strikes, grapple in the corner, whip reversals.
 - **Stage 4: the lockup vocabulary**, so more moves can grow from it: rope break (clean break / cheap shot), shove-off,

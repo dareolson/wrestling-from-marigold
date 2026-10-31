@@ -3701,7 +3701,7 @@ export default class Arena extends Phaser.Scene {
     }
 
     // Stage 3: draw this frame eased from the held tie-up; the returned function puts the move's real pose and place back straight after the
-    // draw, so nothing but the picture changes. A man the move turned around can't be eased across the flip, so he goes straight to the move.
+    // draw, so nothing but the picture changes. A man the move turned around stays drawn in his held facing and turns when the lead-in ends.
     _applyExitBlend(dt) {
         const b = this._exitBlend;
         b.t += dt;
@@ -3709,11 +3709,10 @@ export default class Arena extends Phaser.Scene {
         if (b.t >= dur) { this._exitBlend = null; return null; }
         const undo = [];
         for (const [w, held] of b.held) {
-            if (held.facing !== w.facing) continue;
-            const real = { pose: w.pose, x: w.x, y: w.y };
+            const real = { pose: w.pose, x: w.x, y: w.y, facing: w.facing };
             const shown = exitBlendPose(held, real, b.t / dur);
-            w.pose = shown.pose; w.x = shown.x; w.y = shown.y;
-            undo.push(() => { w.pose = real.pose; w.x = real.x; w.y = real.y; });
+            w.pose = shown.pose; w.x = shown.x; w.y = shown.y; w.facing = held.facing;
+            undo.push(() => { w.pose = real.pose; w.x = real.x; w.y = real.y; w.facing = real.facing; });
         }
         return () => undo.forEach(f => f());
     }

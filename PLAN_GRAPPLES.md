@@ -36,6 +36,7 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
   Misses: Lou's planted sole 1.9 px off idle (1.5); George's collar 9.0 px (unchanged); D12 body overlap engage frames 0-12 (George 53-187 px, G1b 135-368) and break 85-87. STOPPED at G1c-a.
 - T1.13: 8de0472 steal, stall, rope break, shove through the legs measures: 0 knee/stagger misses, trunks <= 5.9 (f102 was 12.3 at G1b), hip step 0.171 -> 0.090 (`breakBendRelease` .22). Leaks fixed: lockup shins left on whip/headlock/arm drag (24 exits clean), far thigh over Lou's torso (layers).
   Misses: Lou's planted sole 1.5-1.9 px; D12 overlap break 34-147 px (the release trade). T1.14: [G1c page](research/animation/grapples-2026-10/g1c/index.html), suite 1060/1060, build, coverage, flag-off identical. STOPPED at G1c.
+- **G1c: approved by Derek 2026-10-31** after watching the G1c material and a live Lou vs George match on the flag. Current values stand (1.4 s, default layering, far hand on the forearm, .22 s torso release) until he says otherwise. `grapples` stays opt-in.
 
 ## Why (Derek 2026-10-29)
 
@@ -411,6 +412,27 @@ repair only what this change broke. No new exit work, and no per-parameter recap
 
 Not this stage (polish list): sharing a browser across `grapples_assert` cases, and removing `wantLock`. Touch them only if a task
 already needs that code.
+
+## Stage 3b: exit checks before promotion, then STOP (G3b)
+
+Codex's recommendation, accepted by Opus 2026-10-31: the G1c stance is approved, so stop retuning it. **Do not change `LOCKUP_POSES`,
+the gap or the hold.** This stage measures three open risks and fixes only a real failure, the smallest way, behind the flag. Lou and
+George both attacking, both facings. Tool: extend `grapples_assert.mjs` or `grapples_film.mjs`; no new framework, no full G-package.
+
+- **T3b.1 A move inside the break's 220 ms settle.** Start each standing move the kit allows at 0, 60, 120 and 200 ms into the settle.
+  Report any leftover `lShin` / `rShin` / `lKnee`, knee-line miss, stagger miss and first-frame part step. Assert the leftovers.
+- **T3b.2 Hit timing against the picture.** For each of the eight exits, find the move's impact or marker frame and the frame the
+  0.14 s lead-in releases. At the impact frame, report the distance between the drawn contact parts, and the drawn pose's distance from
+  the true pose. Flag any impact inside the lead-in. If a move fails, try a per-move `LOCKUP.exitBlend` entry first. Do not change hit
+  timing or damage, and do not add a timing system.
+- **T3b.3 The whip turn.** Find what moves 119-121 px/frame at frame 9 (today 99-108), and report whether it is the flip alone. Fix it
+  only if a per-move change gets it to today's number or better. Otherwise report the options and leave it for Derek.
+
+Stop rule: if a fix needs a new system or a change outside the flag, leave it and report it.
+Page `research/animation/grapples-2026-10/g3b/index.html`: normal-speed strips of anything changed or failing, then the misses from the
+data, then the table. Gates, once: focused tests, `grapples_assert`, flag-off, full suite, `npm run build`,
+`npm run moves:coverage -- --check`. Entry `AI_HANDOFF_ENTRIES/<date>-claude-grapples-g3b.md`, Progress lines. Clickable link, **STOP**.
+Never promote `grapples`.
 
 ## Later stages (outline, written in full after G1)
 

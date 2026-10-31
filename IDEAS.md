@@ -40,3 +40,12 @@ Derek: "will we ever be able to use a mesh or similar concept to make the limbs 
 ## Punishable fatigue stall (2026-10-27)
 
 PLAN_GETUPS D8 stall is look-only this round. Later: the opponent can punish it (a kick to the ribs, a front facelock).
+
+## PROGRESS.md: document how the game got made (2026-10-30)
+
+Derek's idea, banked, not started. A simple timeline: date, what changed, a before/after clip, and his note on what was wrong.
+- Rebuild the old versions from git (579 commits back to May) in a separate worktree; pick 8-12 milestones, recorded at the same
+  camera and length. July onward should run; May-June may need fixes. Not test-run yet.
+- Many captured frames are in `.git/info/exclude`, so they exist only on this Mac (G1 and G1b strips included). Copy keepers to an
+  external drive before any disk cleanup.
+- From now on, save one normal-speed clip at each approval.

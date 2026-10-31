@@ -30,6 +30,10 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
   Misses: whip's turn 119-121 at frame 9 (today 99-108); arm drag first frame 5.5 (today .01), worst better.
 - T4a.1-2: 907fd53 rope break, shove-off; assert 17/17, suite 1057/1057, build, coverage 22, flag-off identical. [G4a page](research/animation/grapples-2026-10/g4a/index.html).
   Misses: rope break slide 2.93 / 2.53; break overlap 5-105 px. [Run entry](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-run.md).
+- T1.11: c8ab31b `grapples_legs.mjs` (+ run, sensitivity, film and sweep): G1b baseline knee line -6.4..-11.0, attacker ankle stagger 0.04-0.85 in the drive, knee stagger 6.1; idle passes every threshold.
+  Sensitivity: `bend` moves only the hip angle (1:1); `crouch` shifts both legs together; `tilt` .1 moves the soles 7-12 px (left at 0). Misses: trunks share never moved (<= 3.4 points, Lou break 12.3), so the stack Derek sees is the stagger.
+- T1.12: 8740c33 one owner (absolute `lShin`/`rShin`), natural knees, solved stagger, per-rig leg gain, clean hand-back; [G1c-a page](research/animation/grapples-2026-10/g1c-a/index.html). Knee line >= 1.8, ankles >= 20.8, knees >= 24.2, planted slide 1.2-1.5.
+  Misses: Lou's planted sole 1.9 px off idle (1.5); George's collar 9.0 px (unchanged); D12 body overlap engage frames 0-12 (George 53-187 px, G1b 135-368) and break 85-87. STOPPED at G1c-a.
 
 ## Why (Derek 2026-10-29)
 

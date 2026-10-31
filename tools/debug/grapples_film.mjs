@@ -24,7 +24,7 @@ const EXITS = [
 ];
 
 // ---- in page ---------------------------------------------------------------------------------------------------------------
-const INSTALL = () => {
+export const INSTALL = () => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0];
     game.loop.sleep();
     sc.tweens.getDelta = () => 1000 / 60;
@@ -37,7 +37,7 @@ const INSTALL = () => {
     return { box: { x: box.x, y: box.y, w: box.width, h: box.height, gw: g.width, gh: g.height }, moveSets: { a: sc.w1.moveSet, d: sc.w2.moveSet } };
 };
 
-const SETUP = async ({ facing, midX, startGap, defRope, flag, layer, seed }) => {
+export const SETUP = async ({ facing, midX, startGap, defRope, flag, layer, seed }) => {
     const { ringBoundsAtY } = await import('/src/constants.js');
     const game = window.__WFM_GAME, sc = game.scene.scenes[0], a = sc.w1, d = sc.w2;
     let a0 = 0x5eed1234;
@@ -67,7 +67,7 @@ const SETUP = async ({ facing, midX, startGap, defRope, flag, layer, seed }) => 
     return { x0: [a.x, d.x], s, bounds: b };
 };
 
-const STEP = async ({ press, hold, mask }) => {
+export const STEP = async ({ press, hold, mask }) => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0], a = sc.w1, d = sc.w2;
     window.__keys.a = new Set(press?.a ?? []); window.__keys.d = new Set(press?.d ?? []);
     window.__keys.ad = new Set(hold?.a ?? []); window.__keys.dd = new Set(hold?.d ?? []);

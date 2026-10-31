@@ -13,7 +13,9 @@ import { join } from 'node:path';
 import { launch } from './harness.mjs';
 import { partSteps } from './rise_handoff_probe.mjs';
 import { INSTALL_MASKS, worstMask } from './grapples_masks.mjs';
+import { breakKind } from '../../src/animation/lockup.js';
 
+const shoveSeed = (() => { for (let k = 1; ; k++) if (breakKind(k, false) === 'shove') return k; })();
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const PAIRS = { lg: { id: 'lou-george', att: LOU, def: GEORGE }, gl: { id: 'george-lou', att: GEORGE, def: LOU } };
 const EXITS = [
@@ -202,7 +204,7 @@ function summarize(rows, kind) {
 
 async function runCase(page, ctx, spec, shotDir, clipAt) {
     const { flag, layer = false } = spec;
-    const set = await page.evaluate(SETUP, { facing: spec.facing, midX: spec.midX, startGap: 90, defRope: spec.defRope ?? null, flag, layer, seed: 11 });
+    const set = await page.evaluate(SETUP, { facing: spec.facing, midX: spec.midX, startGap: 90, defRope: spec.defRope ?? null, flag, layer, seed: spec.seed ?? 11 });
     const clip = clipAt ? clipAt((set.x0[0] + set.x0[1]) / 2) : null;
     if (shotDir) { rmSync(shotDir, { recursive: true, force: true }); mkdirSync(shotDir, { recursive: true }); }
     const rows = []; let endAt = null;
@@ -250,6 +252,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
                     if (cases.includes('b')) defs.push({ id: 'b', midX: facing > 0 ? bounds.left + 150 + 100 : bounds.right - 150 - 100, facing });
                     if (cases.includes('c')) defs.push({ id: 'c', midX: mid, facing, steal: 42 });
                     if (cases.includes('d')) defs.push({ id: 'd', defRope: 60, facing });
+                    if (cases.includes('rope')) defs.push({ id: 'rope', defRope: 40, facing });
+                    if (cases.includes('shove')) defs.push({ id: 'shove', midX: mid, facing, seed: shoveSeed });
                     if (cases.includes('d2')) defs.push({ id: 'd2', defRope: 40, facing });   // inside reach of the 34*s stall zone after a few px of drive
                     for (const spec of defs) {
                         const id = `${spec.id}-${pair.id}-${F}`;

@@ -1,7 +1,7 @@
 // PLAN_GRAPPLES T1.1: the lockup's pure data and math (src/animation/lockup.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LOCKUP, LOCKUP_POSES, gripTarget, exitBlendPose, lockupPhase, lockupGrips, lockupPoseChannels, tugSchedule, stepAt } from '../src/animation/lockup.js';
+import { LOCKUP, LOCKUP_POSES, gripTarget, exitBlendPose, breakKind, breakTravel, lockupPhase, lockupGrips, lockupPoseChannels, tugSchedule, stepAt } from '../src/animation/lockup.js';
 
 const DT = 1 / 60;
 const run = (extra = {}, from = 0, to = LOCKUP.timeout) => {
@@ -215,4 +215,21 @@ test('exitBlendPose: starts on the held tie-up, ends on the move, and leaves the
     assert.deepEqual([end.pose.lArm, end.pose.bend, end.x, end.pose.tilt], [0, 0, 200, 2]);
     assert.deepEqual([mid.pose.lArm, mid.x], [0.5, 150]);
     assert.deepEqual(now, { pose: { lArm: 0, tilt: 2 }, x: 200, y: 400 });
+});
+
+test('T4a endings: a stall is always a rope break, a shove is seeded at about one in three, no stamina is involved', () => {
+    for (let i = 1; i < 50; i++) assert.equal(breakKind(i * 977, true), 'rope');
+    let shoves = 0;
+    for (let i = 1; i <= 3000; i++) if (breakKind(i * 7919, false) === 'shove') shoves++;
+    assert.ok(shoves > 850 && shoves < 1150, `${shoves}`);
+    assert.equal(breakKind(5, false), breakKind(5, false));
+});
+
+test('T4a poses: the rope break raises the attacker\'s hands, the shove pushes the defender back, the plain break is unchanged', () => {
+    const w = { even: 0, attacker: 1, defender: 0 };
+    const rope = lockupPoseChannels(w, 'near', { ending: { kind: 'rope', role: 'attacker', u: 1 } });
+    assert.equal(rope.lArm, LOCKUP.ropeBreak.handsUp); assert.equal(rope.bend, 0);
+    const shoved = lockupPoseChannels({ even: 0, attacker: 0, defender: 1 }, 'near', { ending: { kind: 'shove', role: 'defender', u: 1 } });
+    assert.ok(Math.abs(shoved.bend - LOCKUP.shove.stumbleLean) < 1e-12);
+    assert.ok(breakTravel('shove').defender > breakTravel('plain').defender && breakTravel('rope').defender === 0);
 });

@@ -22,6 +22,8 @@ export const LOCKUP = Object.freeze({
     walkSpeed: 140,                     // px/s at s = 1 (Wrestler SPEED)
     strainHz: 9, strainLean: 0.02,      // the stalled push
     exitBlend: Object.freeze({ default: 0.14 }),   // s the draw eases from the held tie-up onto a follow-up (Stage 3); per move entries by move name
+    ropeBreak: Object.freeze({ stepPx: 34, handsUp: 1.5, elbow: 1.3 }),   // a stall that times out (D6, T4a.1): hands off, he steps well back, hands raised
+    shove: Object.freeze({ odds: 1 / 3, stepPx: 44, attackerPx: 6, arm: 1.5, elbow: 0.25, stumbleLean: -0.3 }),   // T4a.2: two hands, the defender stumbles back, the attacker keeps his feet
     stealHitch: 0.12, stealCrossfade: 0.20, stealDip: 0.06,
     breakGrip: 0.10, breakStep: 0.25, breakStepPx: 14,
     breakRelease: 0.16, breakArm: -0.12,   // the torsos come up and the arms go home this fast, so hands that let go don't drop onto the other man (D12)
@@ -56,6 +58,12 @@ export function seededRandom(seed) {
         t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
+}
+
+// How a timeout ends (T4a): a stall is a clean rope break; away from the ropes, one seeded break in three is a shove-off. Seeded apart from the tugs.
+export function breakKind(seed, stalled) {
+    if (stalled) return 'rope';
+    return seededRandom((seed ^ 0x5bd1e995) >>> 0)() < LOCKUP.shove.odds ? 'shove' : 'plain';
 }
 
 // The even-phase tug schedule from a seed: [{ at, to }] where `to` is the pair's x offset (px at s = 1, signed along the
@@ -204,14 +212,32 @@ export function lockupPoseChannels(weights, lSide, extra = {}) {
     const legs = extra.legRel ?? { lead: 0, rear: 0 };
     const mix = (field) => weights.even * LOCKUP_POSES.even[field] + weights.attacker * LOCKUP_POSES.attacker[field] + weights.defender * LOCKUP_POSES.defender[field];
     const nearCh = lSide === 'far' ? 'r' : 'l', farCh = nearCh === 'l' ? 'r' : 'l';
+    if (extra.ending?.role) return { ...endingPose(weights, extra), ...legChannels(mix, nearCh, farCh, legs) };
     const release = extra.release ?? 0, arm = LOCKUP_ARMS.arm + (LOCKUP.breakArm - LOCKUP_ARMS.arm) * Math.min(1, release * 2.5);   // the arms go first
     return {
         lArm: arm, rArm: arm, lElbow: LOCKUP_ARMS.elbow, rElbow: LOCKUP_ARMS.elbow,
         bend: (mix('bend') + (extra.lean ?? 0)) * (1 - release),
         crouch: mix('crouch') + (extra.dip ?? 0),
+        ...legChannels(mix, nearCh, farCh, legs),
+    };
+}
+
+function legChannels(mix, nearCh, farCh, legs) {
+    return {
         [`${nearCh}Leg`]: mix('lead') + legs.lead / LOCKUP.legGain.lead, [`${nearCh}Knee`]: mix('leadKnee'),
         [`${farCh}Leg`]: mix('rear') + legs.rear / LOCKUP.legGain.rear, [`${farCh}Knee`]: mix('rearKnee'),
     };
+}
+
+// Arms and torso of the rope break and the shove, from the A-frame (even-weighted bend) by `u` 0..1. ending = { kind, role, u }.
+function endingPose(weights, { ending: { kind, role, u }, lean = 0, dip = 0 }) {
+    const bend0 = LOCKUP_POSES.even.bend, crouch = weights.even * LOCKUP_POSES.even.crouch + weights.attacker * LOCKUP_POSES.attacker.crouch + weights.defender * LOCKUP_POSES.defender.crouch;
+    const k = smooth(u), to = (a, b) => a + (b - a) * k;
+    let arm = to(LOCKUP_ARMS.arm, LOCKUP.breakArm), elbow = LOCKUP_ARMS.elbow, bend = to(bend0, 0);
+    if (kind === 'rope' && role === 'attacker') { arm = to(LOCKUP_ARMS.arm, LOCKUP.ropeBreak.handsUp); elbow = to(LOCKUP_ARMS.elbow, LOCKUP.ropeBreak.elbow); }
+    if (kind === 'shove' && role === 'attacker') { arm = to(LOCKUP_ARMS.arm, LOCKUP.shove.arm); elbow = to(LOCKUP_ARMS.elbow, LOCKUP.shove.elbow); }
+    if (kind === 'shove' && role === 'defender') bend = to(bend0, LOCKUP.shove.stumbleLean);
+    return { lArm: arm, rArm: arm, lElbow: elbow, rElbow: elbow, bend: bend + lean, crouch: crouch + dip };
 }
 
 // The D4 grip list, in Wrestler.holdGrips form, for each role's actor. Near arm = the arm whose channel draws on the near
@@ -237,6 +263,13 @@ export function lockupGrips(attacker, defender, grips) {
         attacker: list(attacker, defender, grips.attacker, nearArm(attacker), farArm(attacker)),
         defender: list(defender, attacker, grips.defender, farArm(defender), nearArm(defender)),
     };
+}
+
+// What each man travels in an ending (px at s = 1, backward, away from the other man) by kind.
+export function breakTravel(kind) {
+    if (kind === 'rope') return { attacker: LOCKUP.ropeBreak.stepPx, defender: 0 };
+    if (kind === 'shove') return { attacker: LOCKUP.shove.attackerPx, defender: LOCKUP.shove.stepPx };
+    return { attacker: LOCKUP.breakStepPx / 2, defender: LOCKUP.breakStepPx / 2 };
 }
 
 // Where a holdGrips entry's hand goes, for a hand on `handSide`: its `at`, else the partner's joint on that side (or the other side), moved

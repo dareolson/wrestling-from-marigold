@@ -18,7 +18,7 @@ import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
-import { lockupGrips, lockupPhase, lockupPoseChannels, exitBlendPose, legRel, LOCKUP } from '../animation/lockup.js';
+import { lockupGrips, lockupPhase, lockupPoseChannels, exitBlendPose, breakKind, breakTravel, legRel, LOCKUP } from '../animation/lockup.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
@@ -3732,7 +3732,7 @@ export default class Arena extends Phaser.Scene {
             g.legRel = new Map(); g.breakP = 0;
         }
         g.t += dt;
-        if (g.breakAt === null && g.t >= LOCKUP.timeout) g.breakAt = g.t;
+        if (g.breakAt === null && g.t >= LOCKUP.timeout) { g.breakAt = g.t; g.ending = breakKind(g.seed, g.phase === 'stall'); }
         const b = ringBoundsAtY(D.y), thr = 34 * D.s;     // the AI's _nearRopes range, on the side the drive pushes toward
         const nearRopes = dirA > 0 ? D.x >= b.right - thr : D.x <= b.left + thr;
         const ph = lockupPhase({ t: g.t, dt, seed: g.seed, stealAt: g.stealAt, nearRopes, breakAt: g.breakAt });
@@ -3748,8 +3748,9 @@ export default class Arena extends Phaser.Scene {
         } else if (ph.phase === 'break') {
             const p = smooth(ph.step.u ?? 0), dp = p - g.breakP;
             g.breakP = p;
-            A.x -= dirA * dp * LOCKUP.breakStepPx * s / 2;
-            D.x += dirA * dp * LOCKUP.breakStepPx * s / 2;
+            const go = breakTravel(g.ending);
+            A.x -= dirA * dp * go.attacker * s;
+            D.x += dirA * dp * go.defender * s;
         } else {
             A.x += dirA * ph.dx * s; D.x += dirA * ph.dx * s;
         }
@@ -3769,7 +3770,8 @@ export default class Arena extends Phaser.Scene {
                 rel = { lead: from.lead + (target.lead - from.lead) * r, rear: from.rear + (target.rear - from.rear) * r };
                 g.legRel.set(w, rel);
             }
-            const ch = lockupPoseChannels(ph.weights[role], w.skeleton.lChannelSide(w.facing), { lean: ph.lean[role], dip: ph.dip[role], legRel: rel, release: ph.release });
+            const ch = lockupPoseChannels(ph.weights[role], w.skeleton.lChannelSide(w.facing), { lean: ph.lean[role], dip: ph.dip[role], legRel: rel, release: ph.release,
+                ending: ph.phase === 'break' && g.ending !== 'plain' ? { kind: g.ending, role, u: ph.release } : null });
             const from = g.from.get(w);
             for (const key of Object.keys(ch)) w.pose[key] = k < 1 ? (from[key] ?? 0) * (1 - k) + ch[key] * k : ch[key];
             w.pose.tilt = 0; w.pose.lift = 0;

@@ -2,7 +2,7 @@
 //   WFM_URL=http://localhost:5173 node tools/debug/grapples_assert.mjs
 import { launch } from './harness.mjs';
 import { INSTALL, SETUP, STEP } from './grapples_film.mjs';
-import { LOCKUP } from '../../src/animation/lockup.js';
+import { LOCKUP, breakKind } from '../../src/animation/lockup.js';
 
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const ENGAGE_F = Math.ceil(LOCKUP.engageEnd * 60);
@@ -76,8 +76,8 @@ for (const [name, keys, want, moveKey] of [['up+action gives the suplex', ['up']
     await clear(page);
     await start(page);
     const f = Math.ceil(LOCKUP.timeout * 60) + 3;
-    const rows = await run(page, (i) => (i === f ? { press: { a: ['action'] } } : {}), f + 30);
-    check('a press during the break does nothing', (await calls(page)).length === 0 && rows[f].g?.phase === 'break', [await calls(page), rows[f].g?.phase]);
+    const rows = await run(page, (i) => (i === f ? { press: { a: ['action'] } } : {}), f + 48);
+    check('a press during the break does nothing', (await calls(page)).length === 0 && rows[f].g?.phase === 'break', [await calls(page), rows[f].g?.phase]);   // the run outlasts the 220 ms idle tween
     const end = rows.at(-1);
     check('break cleanup: lockup over, both standing', !end.locked && end.a.state === 'standing' && end.d.state === 'standing', [end.locked, end.a.state, end.d.state]);
     check('break cleanup: the torso settles back', Math.abs(end.a.pose.bend ?? 0) < 0.02 && Math.abs(end.d.pose.bend ?? 0) < 0.02, [end.a.pose.bend, end.d.pose.bend]);
@@ -105,6 +105,25 @@ for (const [name, keys, want, moveKey] of [['up+action gives the suplex', ['up']
     check('the ropes stop the drive', st.length >= 5, st.length);
     const xs = st.map(r => r.a.x + r.d.x);
     check('the pair does not move in the stall', st.length > 1 && Math.max(...xs) - Math.min(...xs) < 0.01, xs.slice(0, 4));
+    await h.close();
+}
+
+// 10-12: the endings. Seeds picked by breakKind so each kind is filmed on purpose; no stamina moves.
+{
+    const { h, page } = await fresh();
+    const seedFor = (want) => { for (let s = 1; s < 500; s++) if (breakKind(s, false) === want) return s; };
+    const T = Math.ceil(LOCKUP.timeout * 60) + 30;
+    await start(page, { defRope: 40 });
+    let rows = await run(page, () => ({}), T);
+    let last = rows.findLast(r => r.locked);
+    check('a stall that times out is a rope break: the attacker backs off, the defender stays', last.g.phase === 'break' && Math.abs(last.a.x - rows[60].a.x) > 25 && Math.abs(last.d.x - rows[60].d.x) < 1, [last.a.x, rows[60].a.x, last.d.x, rows[60].d.x]);
+    await start(page, { seed: seedFor('shove'), facing: 1, midX: 480 });
+    rows = await run(page, () => ({}), T);
+    last = rows.findLast(r => r.locked);
+    const dGo = Math.abs(last.d.x - rows[83].d.x), aGo = Math.abs(last.a.x - rows[83].a.x);
+    check('the shove sends the defender back and the attacker keeps his feet', dGo > 30 && aGo < 10, [dGo, aGo]);
+    check('no stamina change in either ending', last.a.state && rows.at(-1).a.state === 'standing' && (await page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; return sc.w1.stamina === 100 && sc.w2.stamina === 100; })), 'stamina');
+    check('no pending moves from an ending', (await calls(page)).length === 0, await calls(page));
     await h.close();
 }
 

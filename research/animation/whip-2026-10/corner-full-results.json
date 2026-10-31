@@ -1,0 +1,125 @@
+{
+  "runs": [
+    {
+      "id": "lou-george-left-near-full",
+      "pair": "lou-george",
+      "cornerKey": "left-near",
+      "scenario": "full",
+      "arrivedFrame": 135,
+      "dazeMs": 5117,
+      "depthPx": 11.8,
+      "depthOverS": 12,
+      "facing": 1,
+      "scale": 0.987,
+      "bodyDepth": 25.173,
+      "nearRopeDepth": 25.5,
+      "nearPostDepth": 25.7,
+      "sideBandsInFront": 0,
+      "sideBandsConsidered": 2,
+      "drawsBehindNearPost": true,
+      "drawsBehindNearRope": true,
+      "handMissPx": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "pressedFrame": 150,
+      "chargeStartX": 547,
+      "startDistance": 493.4,
+      "chargeMs": 1450,
+      "arrivalGap": 45.4,
+      "arrivalGapOverS": 46,
+      "arrivalDepthDiff": 0,
+      "victimStillCornered": true,
+      "hitFrame": 243,
+      "damage": 14,
+      "gapAtImpact": 45.4,
+      "gapAtImpactOverS": 46.02,
+      "depthDiffAtImpact": 0,
+      "impactMsAfterArrival": 100,
+      "extensionSeen": 0.6,
+      "stillDazedAfter": true,
+      "damageEvents": 1,
+      "epIdsAcrossHit": [
+        1
+      ],
+      "dazeMsAfterHit": 5117,
+      "attackerCorneredFrame": 471,
+      "attackerDamage": 0,
+      "defenderDamageTotal": 4.9,
+      "epIdsAll": [
+        1
+      ],
+      "extensionJumps": 2,
+      "damageEventsAll": 1,
+      "endStates": {
+        "d": "standing",
+        "a": "cornered",
+        "dHasEpisode": false,
+        "aHasEpisode": true
+      },
+      "secondChargeFrame": 425
+    },
+    {
+      "id": "george-lou-left-near-full",
+      "pair": "george-lou",
+      "cornerKey": "left-near",
+      "scenario": "full",
+      "arrivedFrame": 135,
+      "dazeMs": 5117,
+      "depthPx": 11.8,
+      "depthOverS": 12,
+      "facing": 1,
+      "scale": 0.987,
+      "bodyDepth": 25.17,
+      "nearRopeDepth": 25.5,
+      "nearPostDepth": 25.7,
+      "sideBandsInFront": 0,
+      "sideBandsConsidered": 2,
+      "drawsBehindNearPost": true,
+      "drawsBehindNearRope": true,
+      "handMissPx": {
+        "min": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "pressedFrame": 150,
+      "chargeStartX": 547,
+      "startDistance": 493.4,
+      "chargeMs": 1450,
+      "arrivalGap": 45.4,
+      "arrivalGapOverS": 46,
+      "arrivalDepthDiff": 0,
+      "victimStillCornered": true,
+      "hitFrame": 243,
+      "damage": 14,
+      "gapAtImpact": 45.4,
+      "gapAtImpactOverS": 46.02,
+      "depthDiffAtImpact": 0,
+      "impactMsAfterArrival": 100,
+      "extensionSeen": 0.6,
+      "stillDazedAfter": true,
+      "damageEvents": 1,
+      "epIdsAcrossHit": [
+        1
+      ],
+      "dazeMsAfterHit": 5117,
+      "attackerCorneredFrame": 471,
+      "attackerDamage": 0,
+      "defenderDamageTotal": 4.9,
+      "epIdsAll": [
+        1
+      ],
+      "extensionJumps": 2,
+      "damageEventsAll": 1,
+      "endStates": {
+        "d": "standing",
+        "a": "cornered",
+        "dHasEpisode": false,
+        "aHasEpisode": true
+      },
+      "secondChargeFrame": 425
+    }
+  ],
+  "films": []
+}

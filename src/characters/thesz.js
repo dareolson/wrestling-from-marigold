@@ -358,7 +358,7 @@ export const thesz = {
     // Arena consume this array is a no-op rather than a quiet nerf. Derek chose
     // to keep all 16; curating them back out is a separate roster decision.
     moveSet: [
-        'irishWhip', 'clothesline', 'bodySlam', 'suplex', 'pin', 'elbowDrop',
+        'irishWhip', 'clothesline', 'cornerCharge', 'bodySlam', 'suplex', 'pin', 'elbowDrop',
         'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'hipToss',
         'jab', 'theszPress', 'hammerlock', 'backBodyDrop', 'kneeDrop',
         // Mat wrestling (2026-10-15): the hip toss takes the arm drag's lockup

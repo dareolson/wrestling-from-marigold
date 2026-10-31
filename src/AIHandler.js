@@ -263,7 +263,9 @@ export default class AIHandler {
 
         // Stall — randomly decide to back off (George does this constantly).
         // stallChance is per-frame-at-60fps, scaled by dt for time-scale safety.
-        if (!lowStam && this._stallTimer <= 0 && dist < FAR) {
+        // A cornered man is a window, not a threat: grapples=v1 (T3c.7) closes on him instead of backing off
+        const cornered = grapplesCandidate() && opp.state === 'cornered';
+        if (!lowStam && !cornered && this._stallTimer <= 0 && dist < FAR) {
             if (Math.random() < cfg.stallChance * 60 * dt) {
                 this._stallTimer = 1.2 + Math.random() * 1.4;
             }
@@ -434,6 +436,18 @@ export default class AIHandler {
                     return;
                 }
                 this._attack('action', 1.0); // clothesline
+            }
+            return;
+        }
+
+        // grapples=v1 (T3c.7): a dazed man in the corner. Far: run at him, about 6 beats in 10 (rolled per beat, through the offense
+        // cooldown). Close: an explicit strike. Between, the movement above closes the gap.
+        if (grapplesCandidate() && opp.state === 'cornered') {
+            if (dist > 120 * scale) {
+                if (self.canCornerCharge(opp) && Math.random() < 0.6) this._attack('run', 1.0);
+                else this._cooldown = 0.4;
+            } else if (dist < JAB_REACH) {
+                this._attack('power', 0.7); // jab
             }
             return;
         }

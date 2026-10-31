@@ -183,8 +183,8 @@ test('Thesz keeps the moves that were previously Arena-only', () => {
 });
 
 test('kit sizes are what the roster expects', () => {
-    assert.equal(george.moveSet.length, 18); // + figureFour (Derek, 2026-10-14: give George Flair's moves)
-    assert.equal(thesz.moveSet.length, 18); // armDrag -> hipToss, + armBar, ankleLock (2026-10-15 mat wrestling)
+    assert.equal(george.moveSet.length, 19); // + figureFour (Derek, 2026-10-14: give George Flair's moves), + cornerCharge (grapples=v1, T3c.7)
+    assert.equal(thesz.moveSet.length, 19); // armDrag -> hipToss, + armBar, ankleLock (2026-10-15 mat wrestling), + cornerCharge (grapples=v1, T3c.7)
 });
 
 test('the roster keeps its intended differentiation', () => {

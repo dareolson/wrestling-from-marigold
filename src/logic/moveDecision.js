@@ -39,7 +39,7 @@ export function resolvePowerMove(context) {
 
     // Jab: point-blank strike vs standing — staggers, sets up follow-ups.
     // Strikes beat block: a blocking opponent is a legal strike target.
-    const strikable = otherState === 'standing' || otherState === 'blocking';
+    const strikable = otherState === 'standing' || otherState === 'blocking' || otherState === 'cornered'; // cornered: grapples=v1 (T3c.6)
     if (strikable && dist <= jabReach && moveSet.includes('jab')) {
         return 'jab';
     }

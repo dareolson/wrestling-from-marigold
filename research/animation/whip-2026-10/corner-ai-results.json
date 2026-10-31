@@ -1,0 +1,304 @@
+[
+  {
+    "pair": "lou-ai-vs-george",
+    "corner": "left-near",
+    "corneredAtMs": 600,
+    "chargeHits": 0,
+    "cornerHitEvents": 1,
+    "chargeMisses": 0,
+    "attackerPhases": [
+      "standing",
+      "running:charge",
+      "slamming",
+      "lockup",
+      "elbowDropping"
+    ],
+    "moves": [
+      "move:lockup",
+      "move:irishWhip",
+      "move:clothesline",
+      "knockdown:kneeDrop"
+    ],
+    "minDistWhileCornered": 45
+  },
+  {
+    "pair": "lou-ai-vs-george",
+    "corner": "right-far",
+    "corneredAtMs": 1100,
+    "chargeHits": 0,
+    "cornerHitEvents": 2,
+    "chargeMisses": 1,
+    "attackerPhases": [
+      "standing",
+      "running:charge",
+      "running:toCorner",
+      "cornered",
+      "selling",
+      "lockup",
+      "grabbed",
+      "running:ropeHit",
+      "running:returning"
+    ],
+    "moves": [
+      "move:jab",
+      "move:taunt",
+      "move:lockup",
+      "move:irishWhip",
+      "move:taunt"
+    ],
+    "minDistWhileCornered": 143
+  },
+  {
+    "pair": "lou-ai-vs-george",
+    "corner": "left-far",
+    "corneredAtMs": 1100,
+    "chargeHits": 1,
+    "cornerHitEvents": 1,
+    "chargeMisses": 0,
+    "attackerPhases": [
+      "standing",
+      "running:charge",
+      "slamming",
+      "selling",
+      "staggered",
+      "lockup"
+    ],
+    "moves": [
+      "move:cornerCharge",
+      "move:jab",
+      "move:lockup",
+      "move:irishWhip",
+      "move:jab",
+      "move:lockup"
+    ],
+    "minDistWhileCornered": 27
+  },
+  {
+    "pair": "lou-ai-vs-george",
+    "corner": "right-near",
+    "corneredAtMs": 600,
+    "chargeHits": 0,
+    "cornerHitEvents": 2,
+    "chargeMisses": 1,
+    "attackerPhases": [
+      "standing",
+      "running:charge",
+      "running:toCorner",
+      "cornered",
+      "selling",
+      "evading",
+      "lockup",
+      "blocking"
+    ],
+    "moves": [
+      "move:jab",
+      "move:taunt",
+      "move:lockup",
+      "move:headlock",
+      "move:jab"
+    ],
+    "minDistWhileCornered": 187
+  },
+  {
+    "pair": "lou-ai-vs-george",
+    "corner": "left-near",
+    "corneredAtMs": 600,
+    "chargeHits": 1,
+    "cornerHitEvents": 1,
+    "chargeMisses": 0,
+    "attackerPhases": [
+      "standing",
+      "running:charge",
+      "slamming",
+      "selling",
+      "staggered",
+      "falling",
+      "down",
+      "holding",
+      "pinned"
+    ],
+    "moves": [
+      "move:cornerCharge",
+      "move:jab",
+      "move:jab",
+      "stagger:headbutt",
+      "move:figureFour",
+      "knockdown:elbowDrop",
+      "move:pin"
+    ],
+    "minDistWhileCornered": 45
+  },
+  {
+    "pair": "lou-ai-vs-george",
+    "corner": "right-far",
+    "corneredAtMs": 1100,
+    "chargeHits": 1,
+    "cornerHitEvents": 1,
+    "chargeMisses": 0,
+    "attackerPhases": [
+      "running:charge",
+      "slamming",
+      "standing",
+      "blocking",
+      "selling",
+      "staggered",
+      "lockup",
+      "holding"
+    ],
+    "moves": [
+      "move:cornerCharge",
+      "move:jab",
+      "move:lockup",
+      "move:irishWhip",
+      "move:taunt",
+      "move:lockup",
+      "move:headlock",
+      "move:jab"
+    ],
+    "minDistWhileCornered": 27
+  },
+  {
+    "pair": "george-ai-vs-lou",
+    "corner": "left-near",
+    "corneredAtMs": 600,
+    "chargeHits": 0,
+    "cornerHitEvents": 1,
+    "chargeMisses": 0,
+    "attackerPhases": [
+      "running:charge",
+      "slamming",
+      "standing",
+      "lockup",
+      "headlocked",
+      "taunting",
+      "evading"
+    ],
+    "moves": [
+      "move:lockup",
+      "move:headlock",
+      "move:taunt",
+      "move:lockup",
+      "move:headlock"
+    ],
+    "minDistWhileCornered": 45
+  },
+  {
+    "pair": "george-ai-vs-lou",
+    "corner": "right-far",
+    "corneredAtMs": 1100,
+    "chargeHits": 0,
+    "cornerHitEvents": 1,
+    "chargeMisses": 0,
+    "attackerPhases": [
+      "standing",
+      "taunting",
+      "evading",
+      "lockup",
+      "grabbed",
+      "running:toRope",
+      "running:ropeHit",
+      "running:returning",
+      "selling:returning",
+      "flipping:returning"
+    ],
+    "moves": [
+      "move:taunt",
+      "move:lockup",
+      "move:irishWhip",
+      "move:clothesline"
+    ],
+    "minDistWhileCornered": 325
+  },
+  {
+    "pair": "george-ai-vs-lou",
+    "corner": "left-far",
+    "corneredAtMs": 1100,
+    "chargeHits": 0,
+    "cornerHitEvents": 1,
+    "chargeMisses": 0,
+    "attackerPhases": [
+      "taunting",
+      "standing",
+      "lockup",
+      "grabbed",
+      "running:toRope",
+      "running:ropeHit",
+      "running:returning",
+      "selling:returning",
+      "flipping:returning",
+      "down:returning",
+      "holding:returning"
+    ],
+    "moves": [
+      "move:taunt",
+      "move:lockup",
+      "move:irishWhip",
+      "move:clothesline",
+      "move:ankleLock"
+    ],
+    "minDistWhileCornered": 322
+  },
+  {
+    "pair": "george-ai-vs-lou",
+    "corner": "right-near",
+    "corneredAtMs": null,
+    "chargeHits": 0,
+    "cornerHitEvents": 0,
+    "chargeMisses": 0,
+    "attackerPhases": [
+      "standing",
+      "down",
+      "gettingUp",
+      "lockup"
+    ],
+    "moves": [
+      "knockdown:elbowDrop",
+      "move:lockup",
+      "move:headlock"
+    ],
+    "minDistWhileCornered": 9999
+  },
+  {
+    "pair": "george-ai-vs-lou",
+    "corner": "left-near",
+    "corneredAtMs": 600,
+    "chargeHits": 0,
+    "cornerHitEvents": 1,
+    "chargeMisses": 0,
+    "attackerPhases": [
+      "standing",
+      "taunting",
+      "evading",
+      "selling",
+      "flipping",
+      "down"
+    ],
+    "moves": [
+      "move:taunt",
+      "move:dropkick",
+      "knockdown:elbowDrop"
+    ],
+    "minDistWhileCornered": 622
+  },
+  {
+    "pair": "george-ai-vs-lou",
+    "corner": "right-far",
+    "corneredAtMs": 1100,
+    "chargeHits": 0,
+    "cornerHitEvents": 1,
+    "chargeMisses": 0,
+    "attackerPhases": [
+      "standing",
+      "lockup",
+      "grabbed",
+      "running:ropeHit",
+      "running:returning"
+    ],
+    "moves": [
+      "move:jab",
+      "move:lockup",
+      "move:irishWhip"
+    ],
+    "minDistWhileCornered": 382
+  }
+]

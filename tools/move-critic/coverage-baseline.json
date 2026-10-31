@@ -19,6 +19,11 @@
     "status": "unverified",
     "reason": "historical: legacy pose sequence (no clip), no critic spec; the critic traces clips only"
   },
+  "cornerCharge": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "legacy pose sequence (no clip), no critic spec; the critic traces clips only. Added with T3c.7 (grapples=v1). Reuses the clothesline's look; its timeline is covered by tests/corner-daze.test.js and tests/corner-charge.test.js"
+  },
   "doubleAxeHandle": {
     "fingerprint": "39ad43d67325",
     "status": "unverified",

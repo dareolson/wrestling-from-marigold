@@ -20,6 +20,7 @@ import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTa
 import { AROUND, aroundChannel, backSellSupport, recoveryVia, resolveAroundVia } from './rig/backSell.js';
 import { staggerFor } from './animation/staggers.js';
 import { ROPE_HIT, ropeHitAt, ropeHitPose } from './animation/ropeHit.js';
+import { CORNER, CORNER_CHARGE, CORNER_DAZE_POSE, cornerDazeSeconds, cornerOffsetAt, cornerPoseAt } from './animation/cornerDaze.js';
 import { gripTarget } from './animation/lockup.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
@@ -198,6 +199,7 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     jab:          5,
     headbutt:     8,
     clothesline:  12,
+    cornerCharge: 14, // grapples=v1: the running attack at a cornered man
     bodySlam:     22,
     piledriver:   30,
     figureFour:    8, // per squeeze — three while the hold is on
@@ -267,6 +269,7 @@ export const POSES = {
     headbutt:       { lLeg: 0.38,  rLeg: 0.15,  lArm: 0.30,  rArm: 0.25, lean: 0.48, crouch: 0.18 }, // whole body lunges forward, head leads
     // The sells' `lean` never rendered (it does not move the body); `bend` is
     // the torso channel that does, so these reactions finally snap back.
+    cornerDaze:     CORNER_DAZE_POSE, // grapples=v1 (T3c.6): slumped in the corner, feet planted, knees soft; the sway is cornerPoseAt's
     sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82, lean:-0.30, bend: -0.34 }, // chest impact — torso snaps back, arms whip behind
     sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10, bend: -0.22 }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
@@ -438,6 +441,10 @@ export const MOVE_DEFS = {
                               { p: 'kneeLiftChamber', dur:  90, e: 'Cubic.easeIn'  },
                               { p: 'kneeLiftImpact',  dur:  70, e: 'Linear'        },
                               { p: 'kneeLiftRecover', dur: 180, e: 'Cubic.easeOut' }] },
+    cornerCharge:{ poseSeq: [{ p: 'clotheslineCock',   dur: 100, e: 'Cubic.easeOut' },   // grapples=v1 (T3c.7): the clothesline's look at a cornered man
+                              { p: 'clothesline',       dur:  80, e: 'Cubic.easeIn'  },
+                              { p: 'clotheslineFollow', dur: 130, e: 'Linear'        },
+                              { p: 'idle',              dur: 200, e: 'Cubic.easeOut' }] },
     backBodyDrop:{ poseSeq: [{ p: 'backDropBrace',   dur: 110, e: 'Cubic.easeOut' },
                               { p: 'backDropDip',     dur: 120, e: 'Cubic.easeIn'  },
                               { p: 'backDropLaunch',  dur: 100, e: 'Cubic.easeOut' },
@@ -459,7 +466,9 @@ export const MOVE_DEFS = {
 // 'dropkicking'   attacker airborne during dropkick; posed by the dropkick clip
 // 'elbowDropping' attacker airborne during elbow/knee drop; posed by its flight clip
 // 'slamming'    attacker mid-slam, elbow drop, or dropkick launch; no input
-// 'grabbed'     legacy held-victim state; no move sets it since the throws moved to clips (2026-10-13)
+// 'grabbed'     Irish whip victim, held through the lead-in until the release (_doIrishWhipLeadIn); the throws moved to clips (2026-10-13)
+// 'cornered'    grapples=v1: dazed and stuck in a corner after a whip (_beginCorner), episode _cornerEp; strikes land and he comes back to it,
+//               a grapple on him does nothing; the daze ends on a timer (_leaveCorner) or by any fall, move or reset (_endCorner)
 // 'down'        flat on mat; stateTimer counts down to 0 → 'gettingUp' (or 'possum' if holding down)
 // 'possum'      faking unconscious; hold down key to stay flat; action/power = quick spring up
 // 'gettingUp'   staged rise: flat → sit up → all fours → standing (riseT 0→1, slower when hurt); no input
@@ -513,6 +522,9 @@ export default class Wrestler {
         this.flipProgress  = 0;
         this.flipDir       = 1;
         this._corner       = null;
+        this._cornerEp     = null; // the corner stay (T3c.6), not the climb corner above
+        this._cornerEpN    = 0;
+        this._charge       = null;
         this._divLandY     = 0;
         this._ropeLevel    = 0; // 0=none, 1=middle rope, 2=top rope
         this.pose            = { ...POSES.idle, lean: 0, crouch: 0 }; // live joint angles, tweened per move
@@ -929,7 +941,7 @@ export default class Wrestler {
         // one frame and played as a face-to-face clinch.
         // The candidate whip's throw owns facing too: both men turned as the
         // receiver passed, a one-frame pop of up to 74 px.
-        if (this.state !== 'running' && !this._activeMove && !(this._whip && (this.state === 'slamming' || this.state === 'grabbed')) && !GROUNDED_FACING_LOCK.has(this.state)) {
+        if (this.state !== 'running' && !this._cornerEp && !this._activeMove && !(this._whip && (this.state === 'slamming' || this.state === 'grabbed')) && !GROUNDED_FACING_LOCK.has(this.state)) {
             const dx = other.x - this.x;
             if (dx !== 0) this.facing = Math.sign(dx);
         }
@@ -1059,7 +1071,7 @@ export default class Wrestler {
                 }
                 this._clamp();
             }
-        } else if (depthDiff < 48 && (other.state === 'standing' || other.state === 'staggered')) {
+        } else if (depthDiff < 48 && (other.state === 'standing' || other.state === 'staggered' || other.state === 'cornered')) {
             // Half-depth overlap: sprites are ~2.5× taller than the 26px gate, so
             // two upright wrestlers 26–48px apart in depth still fuse into one
             // silhouette. Ease them apart in y — gentle enough that a deliberate
@@ -1327,7 +1339,9 @@ export default class Wrestler {
     }
 
     tickRun(dt) {
+        this._tickCorner(dt);
         if (this.state !== 'running') {
+            this._charge = null;
             this._ropeTension = 0; // an interrupted rope hit clears itself: the rope reads this only while he is running
             this._returnVia = null;
             this._runBoost = 0;
@@ -1366,7 +1380,7 @@ export default class Wrestler {
 
         const past = dir > 0 ? this.x >= this.runTarget : this.x <= this.runTarget;
         // grapples=v1 (T3c.5b): his back reaches the rope first. 40 px short he turns away from it and carries on at run speed.
-        if (!past && this.runPhase === 'toRope' && grapplesCandidate() && !this._ropeTurned && Math.abs(this.runTarget - this.x) <= ROPE_HIT.turnBefore * this.s) {
+        if (!past && (this.runPhase === 'toRope' || this.runPhase === 'toCorner') && grapplesCandidate() && !this._ropeTurned && Math.abs(this.runTarget - this.x) <= ROPE_HIT.turnBefore * this.s) {
             this._ropeTurned = true;
             this._turnBack(dir);
         }
@@ -1397,6 +1411,13 @@ export default class Wrestler {
         } else if (this.runPhase === 'toRope') {
             this._flipAtRope(dir);
             this.scene.triggerRopeBounce?.('far');
+        } else if (this.runPhase === 'toCorner' && grapplesCandidate()) {
+            // grapples=v1 (T3c.6): the rope hit's turn and load, no spring; he stays in it, dazed
+            if (!this._ropeTurned) this._turnBack(dir);
+            this._ropeTurned = false;
+            this._beginCorner(dir);
+        } else if (this.runPhase === 'charge') {
+            this._arriveCharge();
         } else if (this.runPhase === 'toCorner') {
             // Stand-in for the corner daze (3c.5): the hit, the rope shake, a stagger.
             const side = this.y < (RING.farLeft.y + RING.nearLeft.y) / 2 ? 'far' : 'near';
@@ -1470,6 +1491,202 @@ export default class Wrestler {
         this._runBoostLeft = left;
         if (left <= 0) this._runBoost = 0;
         return m;
+    }
+
+    // ── grapples=v1 (T3c.6): stuck in the corner ──────────────────────────────
+    // One corner stay is an episode (_cornerEp, with an id). Everything that outlives a tick (a sell's callback, the exit step)
+    // carries the id and does nothing once the episode is gone, so a fall, a new move or a reset cancels it.
+
+    // He has run back into the corner point and turned (tickRun): the rope hit's load, smaller, and then he stays in it.
+    _beginCorner(dir) {
+        const far = this.y < (RING.farLeft.y + RING.nearLeft.y) / 2;
+        const corner = RING_CORNERS.find(c => c.facing === -dir && c.matY === (far ? RING.farLeft.y : RING.nearLeft.y));
+        this.runPhase = null;
+        this.runTargetY = null;
+        this.state = 'cornered';
+        this.facing = corner.facing;
+        this._ropeTension = 0; // no spring: the side rope is only pressed, as for any man at the wall
+        this._cornerExitTok = null;
+        this._cornerEp = {
+            id: ++this._cornerEpN, corner, dir, x: this.x, ms: 0, left: cornerDazeSeconds(this.stamina), extended: false,
+            mix: { from: { ...this.pose }, ms: 0, dur: 50 }, gripMiss: null,
+        };
+        this.scene._logEvent?.('cornerHit', { wrestler: this.scene.w1 === this ? 'p1' : 'p2', side: far ? 'far' : 'near', dir });
+        this.scene.triggerRopeBounce?.(far ? 'far' : 'near');
+    }
+
+    // One tick of the stay, every frame (the first line of tickRun). The daze clock runs through a sell; a restore keeps what is left.
+    _tickCorner(dt) {
+        const ep = this._cornerEp;
+        if (!ep) return;
+        if (this.state !== 'cornered' && this.state !== 'selling') { this._endCorner(); return; }
+        ep.ms += dt * 1000;
+        ep.left -= dt;
+        this.facing = ep.corner.facing;
+        if (this.state === 'selling') return; // the sell's tween has the pose and the place
+        if (ep.left <= 0) { this._leaveCorner(); return; }
+        const want = ep.x + ep.dir * cornerOffsetAt(ep.ms) * this.s;
+        this.x = ep.ms < ROPE_HIT.loadMs ? want : this.x + (want - this.x) * (1 - Math.exp(-dt * 14)); // eases back from a shove
+        const target = { ...cornerPoseAt(ep.ms), tilt: 0, lift: 0 }, mix = ep.mix;
+        mix.ms += dt * 1000;
+        const k = Math.min(1, mix.ms / mix.dur);
+        for (const key of Object.keys(target)) this.pose[key] = (mix.from[key] ?? 0) + (target[key] - (mix.from[key] ?? 0)) * k;
+        for (const e of ['lElbow', 'rElbow']) this.pose[e] = (mix.from[e] ?? 0.7) * (1 - k) + 0.7 * k; // holdGrips adds to these; they start clean each frame
+        this._choreoUntil = this.scene.time.now + 50; // the pose is his
+    }
+
+    // A sell on a cornered man ends here instead of in a stagger (startStagger): back into the daze, with the time he had left.
+    _restoreCorner() {
+        const ep = this._cornerEp;
+        if (!ep || this.state !== 'selling') return false;
+        this.state = 'cornered';
+        ep.mix = { from: { ...this.pose }, ms: 0, dur: 140 };
+        return true;
+    }
+
+    // A connected charge adds CORNER.extendS to the daze, once per episode.
+    extendCorner() {
+        const ep = this._cornerEp;
+        if (!ep || ep.extended) return false;
+        ep.extended = true;
+        ep.left += CORNER.extendS;
+        return true;
+    }
+
+    // The daze is over: ease to idle and step forward out of the post. Not startStagger: its travel goes backward, into the post.
+    _leaveCorner() {
+        const ep = this._cornerEp;
+        if (!ep) return;
+        this._cornerEp = null;
+        this._choreoUntil = 0;
+        this.state = 'standing';
+        this.tweenPose('idle', CORNER.exitMs, 'Sine.easeInOut');
+        const tok = this._cornerExitTok = {};
+        const b = ringBoundsAtY(this.y), m = 20;
+        const x = Math.max(b.left + m, Math.min(b.right - m, this.x + ep.corner.facing * CORNER.exitStep * this.s));
+        this.scene.tweens.add({
+            targets: this, x, duration: CORNER.exitMs, ease: 'Sine.easeOut',
+            onUpdate: (tw) => { if (this._cornerExitTok !== tok || this.state !== 'standing') tw.stop(); },
+        });
+        this.scene._logEvent?.('cornerLeave', { wrestler: this.scene.w1 === this ? 'p1' : 'p2' });
+    }
+
+    // He is out of the stay by something else (a fall, a new move, a reset): drop the episode and its hold on the pose.
+    _endCorner() {
+        this._cornerEp = null;
+        this._cornerExitTok = null;
+        this._choreoUntil = 0;
+        if (this.state === 'standing') this.tweenPose('idle', 180, 'Linear');
+    }
+
+    // Hands up on the top rope behind him (holdGrips `at`), after both draw (Arena). Stores how far each wrist is from its point.
+    holdCornerGrips() {
+        const ep = this._cornerEp, sk = this.skeleton;
+        if (!ep || this.state !== 'cornered' || !sk?.jointAttachmentPoints?.nearWrist) return null;
+        const w = Math.min(1, ep.ms / CORNER.handsMs);
+        const edge = (y) => { const b = ringBoundsAtY(y); return ep.corner.facing > 0 ? b.left : b.right; };
+        const topAt = (y) => {
+            const t = Math.max(0, Math.min(1, (RING.nearLeft.y - y) / (RING.nearLeft.y - RING.farLeft.y))), r = RING.ropes[2];
+            return { x: edge(y), y: r.nearY + (r.farY - r.nearY) * t };
+        };
+        const at = { l: topAt(this.y - 6), r: topAt(this.y - 6 - CORNER.handSpread) }; // both along the rope toward its far end: past the near mat edge there is no rope
+        this.holdGrips([{ arm: 'l', at: at.l, w }, { arm: 'r', at: at.r, w }]);
+        const flip = side => (side === 'near' ? 'far' : 'near'), pts = sk.jointAttachmentPoints;
+        ep.gripMiss = ['l', 'r'].map(arm => {
+            const side = arm === 'l' ? sk.lChannelSide(this.facing) : flip(sk.lChannelSide(this.facing)), p = pts[`${side}Wrist`];
+            return p ? Math.hypot(p.x - at[arm].x, p.y - at[arm].y) : null;
+        });
+        return ep.gripMiss;
+    }
+
+    // ── grapples=v1 (T3c.7): the running attack at a cornered man ─────────────
+
+    // Can the run key charge him from here? Past 120·s, and the run itself covers at least 40·s of x (a near-vertical run would
+    // crawl: x slows to keep the slope under 0.5), and what depth the slope cannot cover is inside the hit's depth.
+    // Where the cornered man will be once his load has finished: the charge aims there, not at a man still settling into it.
+    _cornerPlaceX(o) {
+        const ep = o._cornerEp;
+        return ep.x + ep.dir * CORNER.depth * o.s;
+    }
+
+    canCornerCharge(other = this._lastOther) {
+        if (!grapplesCandidate() || !other || other.state !== 'cornered' || !other._cornerEp) return false;
+        if (!this.moveSet?.includes('cornerCharge')) return false;
+        const s = this.s, dx = this._cornerPlaceX(other) - this.x, dy = other.y - this.y;
+        if (Math.hypot(dx, dy) <= CORNER_CHARGE.minDist * s) return false;
+        const travel = Math.abs(dx) - CORNER_CHARGE.gap * other.s;
+        if (travel < CORNER_CHARGE.minTravelX * s) return false;
+        return Math.abs(dy) <= 0.5 * travel + (STRIKE_DEPTH_TOLERANCE - 4);
+    }
+
+    // A run to the point CORNER_CHARGE.gap short of him, at his depth as far as the 0.5 slope reaches. A snapshot of where he stands,
+    // like the return route: not a homing.
+    _startCornerCharge() {
+        const o = this._lastOther, ox = this._cornerPlaceX(o), dir = Math.sign(ox - this.x);
+        const gap = CORNER_CHARGE.gap * o.s; // at his depth, where the run ends
+        const travel = Math.abs(ox - this.x) - gap;
+        const ey = this.y + Math.max(-0.5 * travel, Math.min(0.5 * travel, o.y - this.y));
+        this.state = 'running';
+        this.runPhase = 'charge';
+        this.runFacing = this.facing = dir;
+        this._returnVia = null;
+        this._setRunSegment(ox - dir * gap, clampRunY(ey));
+        this._charge = { target: o, epId: o._cornerEp.id, corner: o._cornerEp.corner, dir };
+    }
+
+    // The target is still in the stay it was charged in.
+    _stillCornered(o, epId) {
+        return !!o._cornerEp && o._cornerEp.id === epId && (o.state === 'cornered' || o.state === 'selling');
+    }
+
+    // The charge reached its point (tickRun). Hit if he is still there; if he is gone, run on to the corner and take it himself.
+    _arriveCharge() {
+        const ch = this._charge, s = this.s;
+        this._charge = null;
+        this.runPhase = null;
+        const o = ch?.target;
+        if (!o) { this.state = 'standing'; return; }
+        if (this._stillCornered(o, ch.epId)) {
+            this.state = 'standing';
+            if (Math.abs(o.x - this.x) <= CORNER_CHARGE.hitRange * s && Math.abs(o.y - this.y) < STRIKE_DEPTH_TOLERANCE) this._doCornerCharge(o, ch.epId);
+            else this.tweenPose('idle', 180, 'Linear'); // short of him in range or depth: a free miss
+            return;
+        }
+        // gone: on to the corner point, the same run a whipped man takes
+        const depth = ch.corner.matY === RING.farLeft.y ? -1 : 1;
+        this.state = 'running';
+        this.runPhase = 'toCorner';
+        this.runFacing = this.facing = ch.dir;
+        this._setRunLine(ch.dir, cornerRunY(depth));
+        this.scene._logEvent?.('cornerChargeMiss', { wrestler: this.scene.w1 === this ? 'p1' : 'p2' });
+    }
+
+    // The clothesline's look; the damage, the daze extension and the sell land at the impact beat, after he is rechecked.
+    // 'slamming' while it plays: a standing man is pushed out to 80·s from the other (move()), which would undo the gap before the
+    // impact beat. He backs off by his own tween afterwards instead of being snapped out.
+    _doCornerCharge(other, epId) {
+        this.state = 'slamming';
+        this._runPoseSequence(MOVE_DEFS.cornerCharge.poseSeq, () => {
+            if (this.state !== 'slamming') return;
+            const b = ringBoundsAtY(this.y), dir = Math.sign(other.x - this.x) || -this.facing;
+            const x = Math.max(b.left + 20, Math.min(b.right - 20, other.x - dir * CORNER_CHARGE.backOff * this.s));
+            this.scene.tweens.add({
+                targets: this, x, duration: CORNER_CHARGE.backOffMs, ease: 'Sine.easeOut',
+                onUpdate: (tw) => { if (this.state !== 'slamming') tw.stop(); },
+                onComplete: () => { if (this.state === 'slamming') this.state = 'standing'; },
+            });
+        });
+        this.scene.time.delayedCall(CORNER_CHARGE.windupMs, () => {
+            if (this.state !== 'slamming' || !this._stillCornered(other, epId)) return;
+            if (Math.abs(other.x - this.x) > CORNER_CHARGE.hitRange * this.s || Math.abs(other.y - this.y) >= STRIKE_DEPTH_TOLERANCE) return;
+            other._hurt(STAMINA_DRAIN.cornerCharge, 'cornerCharge');
+            other.extendCorner();
+            this.scene.cameras.main.shake(...CORNER_CHARGE.shake);
+            this.scene.crowd?.impact?.('strike', 0.9);
+            this.scene._logEvent?.('move', { attacker: this.scene.w1 === this ? 'p1' : 'p2', move: 'cornerCharge', defenderStamina: Math.round(other.stamina) });
+            this.scene._heatForMove?.('cornerCharge');
+            other._doSell('sellChest', 150, () => other.startStagger());
+        });
     }
 
     // grapples=v1 (T3c.4b): the return passes through the point the attacker stands on at launch, a snapshot, not a homing:
@@ -1633,7 +1850,7 @@ export default class Wrestler {
 
         const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
 
-        if (this.input.isDown('up') && other.state === 'standing' && dist <= 85 * this.s &&
+        if (this.input.isDown('up') && (other.state === 'standing' || other.state === 'cornered') && dist <= 85 * this.s &&
             this.moveSet.includes('kneeLift')) {
             this._doKneeLift(other);
             return 'kneeLift';
@@ -1649,7 +1866,7 @@ export default class Wrestler {
         // Checked here, not in resolvePowerMove, for the same reason as the
         // knee lift: it reads the held direction, so no default strike can
         // shadow it.
-        if (this.input.isDown('down') && (other.state === 'standing' || other.state === 'blocking') &&
+        if (this.input.isDown('down') && (other.state === 'standing' || other.state === 'blocking' || other.state === 'cornered') &&
             dist <= FRONT_KICK_REACH * this.s && this.moveSet.includes('frontKick')) {
             this._doFrontKick(other);
             return 'frontKick';
@@ -1676,6 +1893,7 @@ export default class Wrestler {
     tryRun() {
         if (this.state !== 'standing') return false;
         if (!this.input.justDown('run')) return false;
+        if (this.canCornerCharge()) { this._startCornerCharge(); return 'run'; } // grapples=v1 (T3c.7)
         const b       = ringBoundsAtY(this.y);
         const backDir = -this.facing; // run to the rope behind you, bounce back toward opponent
         this.state     = 'running';
@@ -1892,7 +2110,7 @@ export default class Wrestler {
                     this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'frontKick' });
                     return;
                 }
-                const strikable = other.state === 'standing' || other.state === 'blocking' || other.state === 'staggered';
+                const strikable = other.state === 'standing' || other.state === 'blocking' || other.state === 'staggered' || other.state === 'cornered';
                 if (!strikable || Math.abs(other.y - this.y) > STRIKE_DEPTH_TOLERANCE ||
                     Math.abs(other.x - this.x) > FRONT_KICK_HIT * this.s) return;
                 other._hurt(STAMINA_DRAIN.frontKick, 'frontKick');
@@ -1930,7 +2148,7 @@ export default class Wrestler {
                     this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: 'shove' });
                     return;
                 }
-                const strikable = other.state === 'standing' || other.state === 'blocking' || other.state === 'staggered';
+                const strikable = other.state === 'standing' || other.state === 'blocking' || other.state === 'staggered' || other.state === 'cornered';
                 if (!strikable || Math.abs(other.y - this.y) > STRIKE_DEPTH_TOLERANCE ||
                     Math.abs(other.x - this.x) > SHOVE_HIT * this.s) return;
                 other._hurt(STAMINA_DRAIN.shove, 'shove');
@@ -2391,7 +2609,7 @@ export default class Wrestler {
                 if (event.type !== 'impact' || this.state !== 'dropkicking') return;
                 const dist = Math.abs(this.x - other.x);
                 landed = dist <= hitRange && sharesDepth(this, other) &&
-                         (other.state === 'standing' || other.state === 'running' || other.state === 'blocking');
+                         (other.state === 'standing' || other.state === 'running' || other.state === 'blocking' || other.state === 'cornered');
                 if (landed) {
                     other._hurt(STAMINA_DRAIN.dropkick, 'dropkick');
                     other._doSell('sellChest', 140, () => other.startClotheslineFall(facing));
@@ -2564,7 +2782,7 @@ export default class Wrestler {
         this._playFlight(divingElbowClip, { x: other.x, y: other.y, ease: 'Sine.easeIn' }, () => {
             const dist = Math.abs(this.x - other.x);
             const hit  = dist <= 130 * this.s &&
-                         (other.state === 'standing' || other.state === 'down' || other.state === 'possum' || other.state === 'staggered');
+                         (other.state === 'standing' || other.state === 'down' || other.state === 'possum' || other.state === 'staggered' || other.state === 'cornered');
             if (hit) {
                 other._hurt(STAMINA_DRAIN.divingElbow, 'divingElbow');
                 if (other.state === 'down') {
@@ -2626,7 +2844,7 @@ export default class Wrestler {
             const dist = Math.abs(this.x - other.x);
             // Blocking doesn't save you from a flying body — evading does
             const hit  = dist <= 130 * this.s &&
-                         (other.state === 'standing' || other.state === 'staggered' || other.state === 'blocking');
+                         (other.state === 'standing' || other.state === 'staggered' || other.state === 'blocking' || other.state === 'cornered');
             if (hit) {
                 other._hurt(STAMINA_DRAIN.theszPress, 'theszPress');
                 // The press IS the cover — victim goes flat underneath
@@ -2964,8 +3182,10 @@ export default class Wrestler {
         // two-body move. Interrupting those strands the partner in 'grabbed'/
         // 'pinned' with no ticker to free them — no-sell instead.
         if (UNSELLABLE_STATES.has(this.state)) return;
+        const ep = this._cornerEp?.id ?? null;
         this.state = 'selling';
         this.tweenPose(poseName, duration, 'Cubic.easeOut', () => {
+            if (ep !== null && this._cornerEp?.id !== ep) return; // the corner stay this sell began in is over
             onDone();
         });
     }
@@ -3181,6 +3401,7 @@ export default class Wrestler {
     // hurt he is: rock, stumble, reel, buckle, out on his feet. Each is its own
     // movement, with real backward steps and a torso that reels (`bend`).
     startStagger() {
+        if (this._cornerEp && this._restoreCorner()) return; // a hit on a cornered man leaves him in the corner
         this.state = 'staggered';
         const type = staggerFor(this.stamina);
         this.stateTimer = type.seconds;

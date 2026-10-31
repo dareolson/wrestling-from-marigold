@@ -3302,7 +3302,7 @@ export default class Arena extends Phaser.Scene {
 
     _heatForMove(move) {
         const bumps = {
-            irishWhip: 2, clothesline: 8, bodySlam: 12, piledriver: 15,
+            irishWhip: 2, clothesline: 8, cornerCharge: 8, bodySlam: 12, piledriver: 15,
             dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
             headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
             jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12, theszPress: 16,
@@ -3498,6 +3498,7 @@ export default class Arena extends Phaser.Scene {
         this.moveRuntime.afterDraw?.();
         undoBlend?.();
         if (this.lockupState?.grapple && grapplesCandidate()) this._holdLockupGrips();
+        if (grapplesCandidate()) { w1.holdCornerGrips(); w2.holdCornerGrips(); } // T3c.6: a cornered man's hands on the top rope
         this._updateRopes(dt);
         this._drawStaminaBars();
         this._updateHeat(dt);

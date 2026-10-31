@@ -188,7 +188,7 @@ export const george = {
     // (src/animation/sells.js). Lou keeps the default, economical.
     sellStyle: 'theatrical',
     moveSet: [
-        'irishWhip', 'clothesline', 'piledriver', 'suplex', 'pin', 'elbowDrop',
+        'irishWhip', 'clothesline', 'cornerCharge', 'piledriver', 'suplex', 'pin', 'elbowDrop',
         'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag',
         'jab', 'headbutt', 'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop',
         'figureFour', // Ric Flair's, on a downed opponent (finisher button)

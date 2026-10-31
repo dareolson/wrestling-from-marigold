@@ -92,6 +92,13 @@ export const MOVE_SPECS = {
         trigger: 'tryAction() — in range, incl. the returning-runner answer',
         ai: ['antiRunner', 'knockdown'],
     },
+    cornerCharge: {
+        category: C.STRIKE, clip: null, executor: '_doCornerCharge',
+        sell: { part: 'chest', intensity: 0.7 },
+        damageKey: 'cornerCharge', poseSeq: true, legacyFallback: null, kitGated: true,
+        trigger: 'tryRun() -> canCornerCharge() — grapples=v1: run key at a cornered man farther than 120 px; the clothesline look at the end of the run',
+        ai: ['cornerRun', 'causesStagger'],
+    },
     dropkick: {
         category: C.STRIKE, clip: 'dropkick', executor: '_doDropkick',
         sell: { part: 'chest', intensity: 0.7 },

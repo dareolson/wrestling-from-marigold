@@ -31,7 +31,7 @@ Avoid a large rewrite.
 ## Status (2026-10-29, replace this block; ≤ 40 lines)
 
 - **HEAD** see `git log` on `story/marigold-opening`; full suite 1035/1035 at T4.4 (Node 22: `nvm use`; shell default is 25). Tree clean except untracked `research/`, `STORY_ART_AND_FEUD_DIRECTION.md`.
-- **Next (Opus 2026-10-30):** [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 1 built (T1.0-T1.4, Sonnet, local commits) and **stopped at G1**: Derek judges the [G1 page](research/animation/grapples-2026-10/g1/index.html) (1.4 s length, failing hands, layering order). Entry: [grapples G1](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-g1.md). Open: attacker hands miss in the film (Lou 9-14 px, George 22-27 px), case (d) at 60 px never reaches the stall (a 40 px run stalls, x constant), George's feet cross. Suite 1053/1053.
+- **Next (Opus 2026-10-30):** [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) **Stage 1b** (T1.5-T1.10) is written for Sonnet: Derek's G1 note is upper body only, no fusing (D12), plus [Codex's review](AI_HANDOFF_ENTRIES/2026-10-30-codex-review-for-opus.md). Unattended run: Stages 1b, 3 and 4a with stop rules, Stage 2 skipped; nothing has been judged by Derek. Stage 1: [G1 page](research/animation/grapples-2026-10/g1/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-g1.md). Derek's other G1 answers (1.4 s length, hands, layering) are still open. Suite 1053/1053.
 - **Pushed vs local:** pushed through `178d79b` 2026-10-28; later plan/status commits may be local. Push via the SSH URL (HTTPS returns 400).
 - **Gait (2026-10-26):** [PLAN_GAIT.md](PLAN_GAIT.md) Stage 3 (run as its own gait) built behind `?gait=v2` (`&runGait=off` = Stage 2 run; flag off byte-identical), stopped at **G3**: Derek judges the [G3 page](research/animation/gait-2026-10/g3.html). Stage 2 commits local only. Open: whip-start facing flip (Stage 4), George hip step 3.3 px.
 - **Active plan:** [PLAN_GETUPS.md](PLAN_GETUPS.md) (authored get-ups; default on since T4.4, `?getups=off` = legacy). Stage 4 done and promoted: G1, G1-rev2, G2a, G2, G2b and G3 approved (Derek 2026-10-28/29). **Stage 5 (George re-check, G4) parked by Derek**; George's leftovers go on a polish list, not a stage. [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) parked at G10a. Side ideas: [IDEAS.md](IDEAS.md).
@@ -44,6 +44,7 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-10-30 · Codex · [Opus review: grapple defects, evidence limits, next block and story continuity](AI_HANDOFF_ENTRIES/2026-10-30-codex-review-for-opus.md)
 - 2026-10-30 · Claude · [Grapples Stage 1 (T1.0-T1.4), stopped at G1](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-g1.md)
 - 2026-10-29 · Claude · [Handoff: get-ups closed, grapples next](AI_HANDOFF_ENTRIES/2026-10-29-claude-grapples-handoff.md)
 - 2026-10-29 · Claude · [Get-ups T4.4: getups promoted to default](AI_HANDOFF_ENTRIES/2026-10-29-claude-getups-t44.md)

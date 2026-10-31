@@ -93,6 +93,12 @@ so nothing visible changes. The lockup times out at 0.8 s, and the AI decides af
   piledriver / slam) start from the new pose, and their first-frame jumps are measured and reported. Stage 3 fixes them.
 - **D11. Stage 1 uses existing art** (Lou `thesz-procreate-v1`, George). At G1 Derek names the hands that fail, and that
   becomes the Codex art request in Stage 2.
+- **D12. Upper body only (Derek 2026-10-30, overrides D9).** The men touch with hands, forearms and at most shoulders and
+  heads. Nothing touches from the belt down, in any frame, in any case: no pelvis, thigh, shin or foot of one man overlaps
+  any part of the other, and neither torso passes through the other. Derek's reasons: Lou phases through George, and close
+  lower bodies read as too intimate. The shape is an A-frame: heads and hands meet, hips and feet stay apart, each man
+  leaning in from his own side. D9's rule (gap from the attacker's arm) goes: spacing now comes from clearing the lower
+  bodies, and the arms must reach across that gap. The defender keeps leaning in while he is driven; he does not stand up.
 
 ## Rules
 
@@ -172,6 +178,135 @@ the page opens and lists frame numbers. Don't pose from these yet.
 - Gates: full suite, `npm run build`, `npm run moves:coverage -- --check` (baseline 22).
 - Handoff entry `AI_HANDOFF_ENTRIES/<date>-claude-grapples-g1.md`, the Progress line, and then **STOP for Derek (G1)**.
   Ask him: is 1.4 s the right length, which hands fail as art, and which layering order he wants.
+
+## Stage 1b: keep the bodies apart (D12), repair Codex's findings, then the G1b page
+
+Derek's G1 note 2026-10-30, on George attacking Lou (locked 1750 ms, travel 37.8 px, feet overlap 27.2 px): Lou phases
+through George, and grapples are upper body only. Codex's review:
+[2026-10-30-codex-review-for-opus.md](AI_HANDOFF_ENTRIES/2026-10-30-codex-review-for-opus.md). Opus read the code and confirms
+Codex's points 1 and 2 by reading; points 3 and 4 are open until measured.
+
+Why it happens (measured from film.json and the code): the held gap is `holdGapFor(attacker's arm)`, Lou 40.3 px and George
+24.6 px, against 100 px today. The film's `gapHeld` 54.1 / 38.5 is that gap plus the 14 px break step. The two men's lead
+ankles reach about 47-52 px in the current stance, so the feet cross by 7 / 27 px. Locked 1750 ms is not a bug: 1.4 s timeout
++ 0.35 s break.
+
+Order differs from Codex's suggestion on purpose: the George contact diagnosis (T1.8) comes after the spacing change, because
+diagnosing hand misses at a gap we are abandoning is wasted. All of Stage 1b is flag-on only. Do not touch the exits (Stage 3),
+get-ups, or George Stage 5. Do not retune `timeout`: Derek still owes the G1 length answer.
+
+### T1.5 Side-effect-free arm measure
+
+- `_lockupArmLength` assigns lean, crouch, legs and knees, and restores only the arms, so `g.from` is captured from a changed
+  pose on a cache miss, and first use differs from cached use. It also runs before the engage, so it may be part of the 56-74 px
+  engage step.
+- Move the measure into a helper that takes the wrestler (in `lockup.js`, so a Node stub can test it). Snapshot the whole pose,
+  restore every field including key absence, and redraw.
+- Test: pose is deep-equal after a cache miss and after a hit, both facings and `lChannelSide` values.
+- Report the engage step before and after, for all four attacker/facing runs.
+
+### T1.6 Body-clearance measures
+
+Add these to `grapples_film.mjs`. Do this before any tuning, so T1.7 is judged by them. Report the current build first as the baseline.
+- **Ankle daylight:** the existing `footOverlap`, as a worst-frame number over every locked frame, including engage, drive
+  steps, steal and break. Label it on the page as daylight (positive = clear).
+- **Silhouette overlap:** quads are too loose (transparent margins), so on sampled frames (mid even, mid drive, mid steal if the
+  case has one, last frame before the break) render each man alone and AND the two opaque masks. Report overlapping px split
+  into below the belt, torso on torso, and above (arms, heads). Belt = the hip height of the man concerned. Save the mask images.
+- **Reach:** a separate number for each grip: target distance against the arm's reachable range. Rename the page's
+  `unreachable` column to `contact misses (> 3 px)`, since that is what it counts (Codex 3).
+
+### T1.7 The A-frame and the new gap (D12)
+
+- Pull the lead feet back toward or under the hips in `LOCKUP_POSES`, and have both men lean in. Raise the defender's lean
+  (.02 today) so he does not stand up in the drive. Check first how `lean` and `crouch` move the shoulders and neck on each rig.
+- Replace `holdGapFor(armLen)`. Sweep held poses on Lou vs George and George vs Lou, both facings: gap 52, 60, 68, 76 px by lean
+  +0, +.1, +.2 by lead-foot pullback (three values you choose). Save the sweep table.
+- **Pick the smallest gap that passes:** below-belt overlap 0 px, torso-on-torso overlap 0 px, ankle daylight at least 8 px on
+  every locked frame, every grip within 3 px when held. If no cell passes, Lou is the bar: pass on Lou, and report George's
+  misses. Do not tune the misses away by shrinking the gap; D12 beats the contacts.
+- One gap for all pairs is preferred. Per-rig is allowed only if the sweep shows one number cannot pass.
+- The stepping foot in the drive and the 3 px jolt must not break clearance. If they do, change the step or the jolt.
+- Report the numbers for the other two roster rigs, without tuning for them.
+- Update `tests/lockup.test.js` for the gap (and any tests pinned to `holdGapFor`).
+
+### T1.8 George's hand misses, on the new spacing (Codex 3)
+
+- One George-attacker run: after each of the six passes in `_holdLockupGrips`, log shoulders, elbows, wrists, target, target
+  distance, arm lengths, grip weight and error. Check the solved channels survive the redraw. Keep partial-weight engage frames
+  separate from fully held frames. Run Lou as the control.
+- Name the cause from this list, with numbers: target moved after the last solve, elbow branch, renderer, or out of reach.
+  Only then fix it, the smallest way. Art is not a cause until the other four are ruled out.
+- Target: fully held frames at most 3 px on all grips, Lou and George. A miss may stand if you report it.
+
+### T1.9 Buffered input keeps its direction (Codex 2), and the checks
+
+- Decision: a button pressed in the engage stores its direction on the frame it was pressed, and fires once when the engage
+  ends, even if the keys are released by then. A break or interruption discards it. Priority between the two men does not
+  change, and add no new timing rule. The follow-up branches read the stored direction, not the live one.
+- Add `tools/debug/grapples_assert.mjs`, a stepped-browser script that fails nonzero. It covers up+action released before
+  .22 s gives the suplex, down and a whip direction likewise, each fires once, a simultaneous press by both men keeps today's
+  priority, the pending input dies on a break, steal role rights, break cleanup, and one real stall.
+- `grapples_flagoff.mjs`: a length mismatch must fail (today it can pass), and compare poses too, using the film's fixed tween
+  delta, so D1's byte-identical claim is really checked (Codex 4). If poses differ flag off, stop and report it.
+
+### T1.10 Strip and G1b page
+
+- Add case (d2) to the film: 40·s px from the ropes, with the stall asserted. Recapture only (a) even, (b) drive, (c) steal and
+  (d2), not the exits.
+- Page `research/animation/grapples-2026-10/g1b/index.html`: normal-speed loop strips first, Lou attacker and George attacker,
+  both facings, today | G1 | new, so the change is visible beside what Derek saw. Then the misses, then the table, including
+  the silhouette masks of the worst frame.
+- Gates: focused tests, `grapples_assert`, flag-off, then full suite, `npm run build`, `npm run moves:coverage -- --check`.
+- Handoff entry `AI_HANDOFF_ENTRIES/<date>-claude-grapples-g1b.md` and Progress lines, misses first. Put the three G1 questions
+  again in the entry: length, which hands fail, which layering order. **Do not stop: Derek is away. Go on to Stage 3.**
+
+## Unattended run (Derek 2026-10-30)
+
+Derek is away and wants Stages 1b, 3 and 4a done in one run, with no check-ins. Stage 2 is skipped because it needs his hand list.
+Stages 3 and 4a are built on G1b before he has judged it, so keep every value a constant that can be retuned, and expect some rework.
+
+**Decide and go on for:** tuning choices, missed targets that have a reported number, and rigs other than Lou missing.
+Write each choice in the handoff entry. Do not ask.
+
+**Stop the whole run and write up where you are if:**
+- no T1.7 cell passes on Lou (the spacing is the base of everything after it);
+- flag-off x, state or poses differ from the fixture;
+- `grapples_assert` or the full suite fails at a gate and you cannot fix it in the task's scope;
+- a task needs a change outside the flag, or to `STORY_*`, the get-ups or George Stage 5.
+
+Never judge a look as approved, and never promote `grapples`. All of it stays behind `?grapples=v1`, in local commits, unpushed.
+
+## Stage 3: every exit starts from the tie-up (no stop)
+
+D12 covers the hold. The moves themselves keep their contact; a lead-in must not walk one man through the other before the
+move's own contact begins. The G1 first-frame steps are the work list: headlock 99-102, suplex 73-80, whip 82-99, body slam 73,
+piledriver 81, hip toss 75, arm drag 82, hammerlock 62-69 px/frame.
+
+- **T3.1 One lead-in mechanism.** Read how each exit starts (`MoveRuntime`, `Wrestler._do*`), then add one shared, flag-on way to
+  go from the held pose and gap to the move's first pose and spacing. Prefer data per move over new code per move. Grips ramp off
+  over the lead-in. Prove it on the suplex, Lou and George, both facings.
+- **T3.2 The rest of the list**, one commit per move or small group: headlock, whip, body slam, piledriver, hip toss, arm drag,
+  hammerlock. Re-measure every exit; the new spacing changes all the numbers.
+- **Target:** first-frame max part step no worse than the same exit from today's lockup (measure that, flag off), and no pose
+  or x pop in the first 0.2 s. Follow-up input, hit timing and damage stay as they are. A move that misses goes in the
+  table and you move on: this is the polish-list rule.
+- **T3.3 Page** `research/animation/grapples-2026-10/g3/index.html`: normal-speed loop strips of each exit, both attackers, both
+  facings, then the table, misses first. Focused tests per task; full gates at the end.
+
+## Stage 4a: the two endings that need no new controls (no stop)
+
+Derek did not pick the Stage 4 order. These two come first because they add no buttons and no story rules.
+- **T4a.1 Rope break.** A lockup that ends in the `stall` breaks cleanly: hands off, the attacker steps back with hands
+  raised. No cheap shot.
+- **T4a.2 Shove-off.** Some timeout breaks away from the ropes become a two-hand shove: the defender stumbles back, and the
+  attacker keeps his feet. Seeded, about one in three, no damage, and no stamina change.
+- D12 holds through both. Add both to `grapples_assert` and to a page `research/animation/grapples-2026-10/g4a/index.html` (strips first).
+
+## End of the run
+
+Full gates, then one entry `AI_HANDOFF_ENTRIES/<date>-claude-grapples-run.md`: misses first, every choice made, every number
+that fell short, and clickable links to the G1b, G3 and G4a pages in the order Derek should watch them. Replace the Status Next line.
 
 ## Later stages (outline, written in full after G1)
 

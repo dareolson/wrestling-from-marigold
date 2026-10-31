@@ -1,0 +1,350 @@
+[
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "headlock",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "headlocked"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "headlock",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "headlocked"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "suplex",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "suplex",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "whip",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "standing",
+   "running"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "whip",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "standing",
+   "running"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "bodySlam",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [
+   "a.lShin=-0.11",
+   "a.rShin=-0.06"
+  ],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "bodySlam",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [
+   "a.lShin=-0.11",
+   "a.rShin=-0.06"
+  ],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "hipToss",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [
+   "a.lShin=-0.11",
+   "a.rShin=-0.06"
+  ],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "hipToss",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [
+   "a.lShin=-0.11",
+   "a.rShin=-0.06"
+  ],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "hammerlock",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "lou-george",
+  "exit": "hammerlock",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "headlock",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "headlocked"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "headlock",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "headlocked"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "suplex",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "suplex",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "whip",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "standing",
+   "running"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "whip",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "standing",
+   "running"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "piledriver",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "piledriver",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "armDrag",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "standing",
+   "selling"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "armDrag",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "standing",
+   "selling"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "hammerlock",
+  "facing": -1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ },
+ {
+  "kind": "exit",
+  "pair": "george-lou",
+  "exit": "hammerlock",
+  "facing": 1,
+  "exitFrame": 48,
+  "atExit": [],
+  "plus6": [],
+  "plus120": [],
+  "moveAfter": [
+   "holding",
+   "holding"
+  ]
+ }
+]

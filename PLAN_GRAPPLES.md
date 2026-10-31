@@ -34,6 +34,8 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
   Sensitivity: `bend` moves only the hip angle (1:1); `crouch` shifts both legs together; `tilt` .1 moves the soles 7-12 px (left at 0). Misses: trunks share never moved (<= 3.4 points, Lou break 12.3), so the stack Derek sees is the stagger.
 - T1.12: 8740c33 one owner (absolute `lShin`/`rShin`), natural knees, solved stagger, per-rig leg gain, clean hand-back; [G1c-a page](research/animation/grapples-2026-10/g1c-a/index.html). Knee line >= 1.8, ankles >= 20.8, knees >= 24.2, planted slide 1.2-1.5.
   Misses: Lou's planted sole 1.9 px off idle (1.5); George's collar 9.0 px (unchanged); D12 body overlap engage frames 0-12 (George 53-187 px, G1b 135-368) and break 85-87. STOPPED at G1c-a.
+- T1.13: 8de0472 steal, stall, rope break, shove through the legs measures: 0 knee/stagger misses, trunks <= 5.9 (f102 was 12.3 at G1b), hip step 0.171 -> 0.090 (`breakBendRelease` .22). Leaks fixed: lockup shins left on whip/headlock/arm drag (24 exits clean), far thigh over Lou's torso (layers).
+  Misses: Lou's planted sole 1.5-1.9 px; D12 overlap break 34-147 px (the release trade). T1.14: [G1c page](research/animation/grapples-2026-10/g1c/index.html), suite 1060/1060, build, coverage, flag-off identical. STOPPED at G1c.
 
 ## Why (Derek 2026-10-29)
 

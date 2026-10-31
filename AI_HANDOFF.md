@@ -28,10 +28,10 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Status (2026-10-30, replace this block; ≤ 40 lines)
+## Status (2026-10-31, replace this block; ≤ 40 lines)
 
-- **HEAD** see `git log` on `story/marigold-opening`; full suite 1057/1057 (Node 22: `nvm use`; shell default is 25). Tree clean except untracked `research/`, `STORY_ART_AND_FEUD_DIRECTION.md`.
-- **Next (2026-10-30):** [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 1c stopped at **G1c-a**: Derek judges the stance on the [G1c-a page](research/animation/grapples-2026-10/g1c-a/index.html) (T1.11 c8ab31b, T1.12 8740c33, local). Only after he accepts it: T1.13 (steal, stall, rope break, shove, exits) and T1.14 (G1c). Measured: knee line >= 1.8 px (G1b -6.4..-11.0), ankles >= 20.8, knees >= 24.2, planted slide 1.2-1.5. Misses: Lou's planted sole 1.9 px (limit 1.5), George's collar 9.0 px, D12 body overlap in engage frames 0-12 and break 85-87. Exits to moves are not checked for a leftover `lShin`/`rShin` (T1.13). Stages 1b, 3, 4a done, local, unpushed: [run entry](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-run.md). Derek's length, hands and layering answers still open.
+- **HEAD** see `git log` on `story/marigold-opening`; full suite 1060/1060 (Node 22: `nvm use`; shell default is 25). Tree clean except untracked `research/`, `STORY_ART_AND_FEUD_DIRECTION.md`.
+- **Next (2026-10-31):** [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 1c stopped at **G1c**: Derek judges the [G1c page](research/animation/grapples-2026-10/g1c/index.html) ([entry](AI_HANDOFF_ENTRIES/2026-10-31-claude-grapples-g1c.md); T1.13, T1.14 local, unpushed). Legs measured through steal, stall, rope break, shove and every exit: 0 knee/stagger misses, trunks <= 5.9, hip step <= 0.09. Misses: Lou's planted sole 1.5-1.9 px, D12 overlap (engage, break), George's collar 9.0 px. Fixed: lockup shins leaked into the whip, headlock and arm drag; leg layers (far thigh drew over Lou's torso). Derek's length, hands, layering and break-trade answers still open. Stages 1b, 3, 4a: [run entry](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-run.md).
 - **Pushed vs local:** pushed through `178d79b` 2026-10-28; later plan/status commits may be local. Push via the SSH URL (HTTPS returns 400).
 - **Gait (2026-10-26):** [PLAN_GAIT.md](PLAN_GAIT.md) Stage 3 (run as its own gait) built behind `?gait=v2` (`&runGait=off` = Stage 2 run; flag off byte-identical), stopped at **G3**: Derek judges the [G3 page](research/animation/gait-2026-10/g3.html). Stage 2 commits local only. Open: whip-start facing flip (Stage 4), George hip step 3.3 px.
 - **Active plan:** [PLAN_GETUPS.md](PLAN_GETUPS.md) (authored get-ups; default on since T4.4, `?getups=off` = legacy). Stage 4 done and promoted: G1, G1-rev2, G2a, G2, G2b and G3 approved (Derek 2026-10-28/29). **Stage 5 (George re-check, G4) parked by Derek**; George's leftovers go on a polish list, not a stage. [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) parked at G10a. Side ideas: [IDEAS.md](IDEAS.md).
@@ -44,6 +44,7 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-10-31 · Claude · [Grapples G1c: legs through every phase and exit](AI_HANDOFF_ENTRIES/2026-10-31-claude-grapples-g1c.md)
 - 2026-10-30 · Codex · [Opus/Sonnet efficiency review: smaller leg proof, precise metrics, reusable capture](AI_HANDOFF_ENTRIES/2026-10-30-codex-sonnet-efficiency-review.md)
 - 2026-10-30 · Claude · [Grapples unattended run: Stages 1b, 3, 4a](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-run.md)
 - 2026-10-30 · Claude · [Grapples Stage 1b: upper body only](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-g1b.md)

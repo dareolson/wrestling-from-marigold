@@ -1,0 +1,626 @@
+[
+ {
+  "pair": "lou-george",
+  "exit": "headlock",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 120.68,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "hold applied",
+    "frame": 0,
+    "ms": 0,
+    "insideLeadIn": true,
+    "drawnVsTrue": 120.68,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "lou-george",
+  "exit": "headlock",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 120.68,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "hold applied",
+    "frame": 0,
+    "ms": 0,
+    "insideLeadIn": true,
+    "drawnVsTrue": 120.68,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "lou-george",
+  "exit": "suplex",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 70.53,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "impact",
+    "frame": 76,
+    "ms": 1267,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "nearUpArm"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "lou-george",
+  "exit": "suplex",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 70.53,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "impact",
+    "frame": 76,
+    "ms": 1267,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "nearUpArm"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "lou-george",
+  "exit": "whip",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 139.74,
+  "peakAt": 3,
+  "marks": [
+   {
+    "name": "defender sent running",
+    "frame": 0,
+    "ms": 0,
+    "insideLeadIn": true,
+    "drawnVsTrue": 120.68,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "lou-george",
+  "exit": "whip",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 139.74,
+  "peakAt": 3,
+  "marks": [
+   {
+    "name": "defender sent running",
+    "frame": 0,
+    "ms": 0,
+    "insideLeadIn": true,
+    "drawnVsTrue": 120.68,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "lou-george",
+  "exit": "bodySlam",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 113.28,
+  "peakAt": 122,
+  "marks": [
+   {
+    "name": "impact",
+    "frame": 64,
+    "ms": 1067,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 28.4,
+     "hand": "farWrist",
+     "part": "farShin"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "lou-george",
+  "exit": "bodySlam",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 71.36,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "impact",
+    "frame": 64,
+    "ms": 1067,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 28.4,
+     "hand": "farWrist",
+     "part": "farShin"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "lou-george",
+  "exit": "hipToss",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 111.36,
+  "peakAt": 91,
+  "marks": [
+   {
+    "name": "impact",
+    "frame": 37,
+    "ms": 617,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 40.9,
+     "hand": "nearWrist",
+     "part": "head"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "lou-george",
+  "exit": "hipToss",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 71.78,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "impact",
+    "frame": 37,
+    "ms": 617,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 40.9,
+     "hand": "nearWrist",
+     "part": "head"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "lou-george",
+  "exit": "hammerlock",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 58.32,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "acquire-contact",
+    "frame": 32,
+    "ms": 533,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "nearUpArm"
+    }
+   },
+   {
+    "name": "apply-drain",
+    "frame": 41,
+    "ms": 683,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "nearUpArm"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "lou-george",
+  "exit": "hammerlock",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 58.32,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "acquire-contact",
+    "frame": 32,
+    "ms": 533,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "nearUpArm"
+    }
+   },
+   {
+    "name": "apply-drain",
+    "frame": 41,
+    "ms": 683,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "nearUpArm"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "headlock",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 95.8,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "hold applied",
+    "frame": 0,
+    "ms": 0,
+    "insideLeadIn": true,
+    "drawnVsTrue": 95.8,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "headlock",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 95.8,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "hold applied",
+    "frame": 0,
+    "ms": 0,
+    "insideLeadIn": true,
+    "drawnVsTrue": 95.8,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "suplex",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 87.15,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "impact",
+    "frame": 76,
+    "ms": 1267,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "farWrist",
+     "part": "head"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "suplex",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 87.15,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "impact",
+    "frame": 76,
+    "ms": 1267,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "farWrist",
+     "part": "head"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "whip",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 124.58,
+  "peakAt": 4,
+  "marks": [
+   {
+    "name": "defender sent running",
+    "frame": 0,
+    "ms": 0,
+    "insideLeadIn": true,
+    "drawnVsTrue": 95.8,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "whip",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 124.58,
+  "peakAt": 4,
+  "marks": [
+   {
+    "name": "defender sent running",
+    "frame": 0,
+    "ms": 0,
+    "insideLeadIn": true,
+    "drawnVsTrue": 95.8,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "piledriver",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 87.71,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "impact",
+    "frame": 74,
+    "ms": 1233,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "piledriver",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 87.71,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "impact",
+    "frame": 74,
+    "ms": 1233,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "armDrag",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 72.8,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "damage",
+    "frame": 0,
+    "ms": 0,
+    "insideLeadIn": true,
+    "drawnVsTrue": 72.8,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   },
+   {
+    "name": "sell + fall",
+    "frame": 5,
+    "ms": 83,
+    "insideLeadIn": true,
+    "drawnVsTrue": 17.3,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "farUpArm"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "armDrag",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 72.8,
+  "peakAt": 0,
+  "marks": [
+   {
+    "name": "damage",
+    "frame": 0,
+    "ms": 0,
+    "insideLeadIn": true,
+    "drawnVsTrue": 72.8,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "torso"
+    }
+   },
+   {
+    "name": "sell + fall",
+    "frame": 5,
+    "ms": 83,
+    "insideLeadIn": true,
+    "drawnVsTrue": 17.3,
+    "contact": {
+     "d": 0,
+     "hand": "nearWrist",
+     "part": "farUpArm"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "hammerlock",
+  "facing": 1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 60.86,
+  "peakAt": 1,
+  "marks": [
+   {
+    "name": "acquire-contact",
+    "frame": 32,
+    "ms": 533,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "farWrist",
+     "part": "torso"
+    }
+   },
+   {
+    "name": "apply-drain",
+    "frame": 41,
+    "ms": 683,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "farWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ },
+ {
+  "pair": "george-lou",
+  "exit": "hammerlock",
+  "facing": -1,
+  "exitFrame": 48,
+  "leadInReleasedAt": 8,
+  "leadInPeakDiff": 60.86,
+  "peakAt": 1,
+  "marks": [
+   {
+    "name": "acquire-contact",
+    "frame": 32,
+    "ms": 533,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "farWrist",
+     "part": "torso"
+    }
+   },
+   {
+    "name": "apply-drain",
+    "frame": 41,
+    "ms": 683,
+    "insideLeadIn": false,
+    "drawnVsTrue": 0,
+    "contact": {
+     "d": 0,
+     "hand": "farWrist",
+     "part": "torso"
+    }
+   }
+  ]
+ }
+]

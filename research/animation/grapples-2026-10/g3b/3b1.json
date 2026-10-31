@@ -1,0 +1,2288 @@
+[
+ {
+  "att": "Lou",
+  "facing": 1,
+  "move": "jab",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     -0.11,
+     -0.06
+    ],
+    "kneeLine": 0.12,
+    "ankleStagger": 0.4,
+    "kneeStagger": 0.4,
+    "firstStep": 49.24,
+    "maxStep12": 49.24
+   },
+   "60": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     -0.11,
+     -0.06
+    ],
+    "kneeLine": 0.12,
+    "ankleStagger": 0.4,
+    "kneeStagger": 0.4,
+    "firstStep": 29.61,
+    "maxStep12": 30.01
+   },
+   "120": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     -0.11,
+     -0.06
+    ],
+    "kneeLine": 0.12,
+    "ankleStagger": 0.4,
+    "kneeStagger": 0.4,
+    "firstStep": 35.44,
+    "maxStep12": 35.44
+   },
+   "200": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     -0.11,
+     -0.06
+    ],
+    "kneeLine": 0.12,
+    "ankleStagger": 0.4,
+    "kneeStagger": 0.4,
+    "firstStep": 41.73,
+    "maxStep12": 41.73
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 72,
+   "startFrame": 0,
+   "leftoverFrames": 40,
+   "leftoverLast": 39,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    null,
+    null
+   ],
+   "shinEnd": [
+    -0.11,
+    -0.06
+   ],
+   "kneeLine": 0.12,
+   "ankleStagger": 0.4,
+   "kneeStagger": 0.4,
+   "firstStep": 34.54,
+   "maxStep12": 34.54
+  }
+ },
+ {
+  "att": "Lou",
+  "facing": 1,
+  "move": "dropkick",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -29.39,
+    "ankleStagger": 6.3,
+    "kneeStagger": 5.5,
+    "firstStep": 99.02,
+    "maxStep12": 99.02
+   },
+   "60": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -29.39,
+    "ankleStagger": 6.3,
+    "kneeStagger": 5.5,
+    "firstStep": 82.06,
+    "maxStep12": 84.83
+   },
+   "120": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -29.39,
+    "ankleStagger": 6.3,
+    "kneeStagger": 5.5,
+    "firstStep": 70.59,
+    "maxStep12": 84.83
+   },
+   "200": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -29.39,
+    "ankleStagger": 6.3,
+    "kneeStagger": 5.5,
+    "firstStep": 58.02,
+    "maxStep12": 84.83
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 135,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    0.367,
+    0.367
+   ],
+   "kneesEnd": [
+    0.1,
+    0.1
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": -29.39,
+   "ankleStagger": 6.3,
+   "kneeStagger": 5.5,
+   "firstStep": 68.69,
+   "maxStep12": 84.83
+  }
+ },
+ {
+  "att": "Lou",
+  "facing": 1,
+  "move": "lockup",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 14,
+    "leftoverLast": 14,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -4.69,
+    "ankleStagger": 34,
+    "kneeStagger": 33.9,
+    "firstStep": 17.28,
+    "maxStep12": 24.9
+   },
+   "60": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 14,
+    "leftoverLast": 14,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -4.69,
+    "ankleStagger": 34,
+    "kneeStagger": 33.9,
+    "firstStep": 10.93,
+    "maxStep12": 20.02
+   },
+   "120": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 13,
+    "leftoverLast": 13,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -4.69,
+    "ankleStagger": 33.9,
+    "kneeStagger": 32.6,
+    "firstStep": 7.82,
+    "maxStep12": 18.8
+   },
+   "200": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 1,
+    "leftoverLast": 1,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -4.69,
+    "ankleStagger": 33.9,
+    "kneeStagger": 29,
+    "firstStep": 2.77,
+    "maxStep12": 21.76
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 72,
+   "startFrame": 0,
+   "leftoverFrames": 17,
+   "leftoverLast": 16,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    0.22,
+    0.22
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": -4.69,
+   "ankleStagger": 33.7,
+   "kneeStagger": 27.5,
+   "firstStep": 3.59,
+   "maxStep12": 19.48
+  }
+ },
+ {
+  "att": "Lou",
+  "facing": 1,
+  "move": "taunt",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0.01,
+    "ankleStagger": 1.1,
+    "kneeStagger": 1,
+    "firstStep": 12.55,
+    "maxStep12": 12.55
+   },
+   "60": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0.01,
+    "ankleStagger": 0.5,
+    "kneeStagger": 0.3,
+    "firstStep": 10.94,
+    "maxStep12": 30.67
+   },
+   "120": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0.01,
+    "ankleStagger": 1.7,
+    "kneeStagger": 0.2,
+    "firstStep": 9.31,
+    "maxStep12": 36.34
+   },
+   "200": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0.01,
+    "ankleStagger": 0.4,
+    "kneeStagger": 1,
+    "firstStep": 9.22,
+    "maxStep12": 22.46
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 360,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    null,
+    null
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": 0.01,
+   "ankleStagger": 0.6,
+   "kneeStagger": 0.6,
+   "firstStep": 0,
+   "maxStep12": 22.73
+  }
+ },
+ {
+  "att": "Lou",
+  "facing": -1,
+  "move": "jab",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     -0.11,
+     -0.06
+    ],
+    "kneeLine": 0.12,
+    "ankleStagger": 0.4,
+    "kneeStagger": 0.4,
+    "firstStep": 49.24,
+    "maxStep12": 49.24
+   },
+   "60": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     -0.11,
+     -0.06
+    ],
+    "kneeLine": 0.12,
+    "ankleStagger": 0.4,
+    "kneeStagger": 0.4,
+    "firstStep": 29.61,
+    "maxStep12": 30.01
+   },
+   "120": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     -0.11,
+     -0.06
+    ],
+    "kneeLine": 0.12,
+    "ankleStagger": 0.4,
+    "kneeStagger": 0.4,
+    "firstStep": 35.44,
+    "maxStep12": 35.44
+   },
+   "200": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     -0.11,
+     -0.06
+    ],
+    "kneeLine": 0.12,
+    "ankleStagger": 0.4,
+    "kneeStagger": 0.4,
+    "firstStep": 41.73,
+    "maxStep12": 41.73
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 72,
+   "startFrame": 0,
+   "leftoverFrames": 40,
+   "leftoverLast": 39,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    null,
+    null
+   ],
+   "shinEnd": [
+    -0.11,
+    -0.06
+   ],
+   "kneeLine": 0.12,
+   "ankleStagger": 0.4,
+   "kneeStagger": 0.4,
+   "firstStep": 34.54,
+   "maxStep12": 34.54
+  }
+ },
+ {
+  "att": "Lou",
+  "facing": -1,
+  "move": "dropkick",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -29.39,
+    "ankleStagger": 6.3,
+    "kneeStagger": 5.5,
+    "firstStep": 99.02,
+    "maxStep12": 99.02
+   },
+   "60": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -29.39,
+    "ankleStagger": 6.3,
+    "kneeStagger": 5.5,
+    "firstStep": 82.06,
+    "maxStep12": 84.83
+   },
+   "120": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -29.39,
+    "ankleStagger": 6.3,
+    "kneeStagger": 5.5,
+    "firstStep": 70.59,
+    "maxStep12": 84.83
+   },
+   "200": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -29.39,
+    "ankleStagger": 6.3,
+    "kneeStagger": 5.5,
+    "firstStep": 58.02,
+    "maxStep12": 84.83
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 135,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    0.367,
+    0.367
+   ],
+   "kneesEnd": [
+    0.1,
+    0.1
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": -29.39,
+   "ankleStagger": 6.3,
+   "kneeStagger": 5.5,
+   "firstStep": 68.69,
+   "maxStep12": 84.83
+  }
+ },
+ {
+  "att": "Lou",
+  "facing": -1,
+  "move": "lockup",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 14,
+    "leftoverLast": 14,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -4.69,
+    "ankleStagger": 34,
+    "kneeStagger": 33.9,
+    "firstStep": 17.28,
+    "maxStep12": 24.9
+   },
+   "60": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 14,
+    "leftoverLast": 14,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -4.69,
+    "ankleStagger": 34,
+    "kneeStagger": 33.9,
+    "firstStep": 10.93,
+    "maxStep12": 20.02
+   },
+   "120": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 13,
+    "leftoverLast": 13,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -4.69,
+    "ankleStagger": 33.9,
+    "kneeStagger": 32.6,
+    "firstStep": 7.82,
+    "maxStep12": 18.8
+   },
+   "200": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 1,
+    "leftoverLast": 1,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -4.69,
+    "ankleStagger": 33.9,
+    "kneeStagger": 29,
+    "firstStep": 2.77,
+    "maxStep12": 21.76
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 72,
+   "startFrame": 0,
+   "leftoverFrames": 17,
+   "leftoverLast": 16,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    0.22,
+    0.22
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": -4.69,
+   "ankleStagger": 33.7,
+   "kneeStagger": 27.5,
+   "firstStep": 3.59,
+   "maxStep12": 19.48
+  }
+ },
+ {
+  "att": "Lou",
+  "facing": -1,
+  "move": "taunt",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0.01,
+    "ankleStagger": 1.1,
+    "kneeStagger": 1,
+    "firstStep": 12.55,
+    "maxStep12": 12.55
+   },
+   "60": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0.01,
+    "ankleStagger": 0.5,
+    "kneeStagger": 0.3,
+    "firstStep": 10.94,
+    "maxStep12": 30.67
+   },
+   "120": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0.01,
+    "ankleStagger": 1.7,
+    "kneeStagger": 0.2,
+    "firstStep": 9.31,
+    "maxStep12": 36.34
+   },
+   "200": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0.01,
+    "ankleStagger": 0.4,
+    "kneeStagger": 1,
+    "firstStep": 9.22,
+    "maxStep12": 22.46
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 360,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    null,
+    null
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": 0.01,
+   "ankleStagger": 0.6,
+   "kneeStagger": 0.6,
+   "firstStep": 0,
+   "maxStep12": 22.73
+  }
+ },
+ {
+  "att": "George",
+  "facing": 1,
+  "move": "jab",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0,
+    "ankleStagger": 2.2,
+    "kneeStagger": 0.1,
+    "firstStep": 56.11,
+    "maxStep12": 56.11
+   },
+   "60": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0,
+    "ankleStagger": 2.2,
+    "kneeStagger": 0.1,
+    "firstStep": 45.92,
+    "maxStep12": 45.92
+   },
+   "120": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0,
+    "ankleStagger": 2.2,
+    "kneeStagger": 0.1,
+    "firstStep": 42.5,
+    "maxStep12": 42.5
+   },
+   "200": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0,
+    "ankleStagger": 2.2,
+    "kneeStagger": 0.1,
+    "firstStep": 41.88,
+    "maxStep12": 41.88
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 72,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    null,
+    null
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": 0,
+   "ankleStagger": 2.2,
+   "kneeStagger": 0.1,
+   "firstStep": 35.13,
+   "maxStep12": 38.9
+  }
+ },
+ {
+  "att": "George",
+  "facing": 1,
+  "move": "kneeLift",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 3.94,
+    "ankleStagger": 10.8,
+    "kneeStagger": 1.9,
+    "firstStep": 19.13,
+    "maxStep12": 58.56
+   },
+   "60": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 3.94,
+    "ankleStagger": 10.8,
+    "kneeStagger": 1.9,
+    "firstStep": 10.08,
+    "maxStep12": 48.34
+   },
+   "120": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 3.94,
+    "ankleStagger": 10.8,
+    "kneeStagger": 1.9,
+    "firstStep": 17.78,
+    "maxStep12": 36.23
+   },
+   "200": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 1.15,
+    "ankleStagger": 10.8,
+    "kneeStagger": 1.9,
+    "firstStep": 49.47,
+    "maxStep12": 49.47
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 72,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    null,
+    null
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": 3.94,
+   "ankleStagger": 10.8,
+   "kneeStagger": 1.9,
+   "firstStep": 43.76,
+   "maxStep12": 43.76
+  }
+ },
+ {
+  "att": "George",
+  "facing": 1,
+  "move": "dropkick",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -35.32,
+    "ankleStagger": 8.2,
+    "kneeStagger": 7.1,
+    "firstStep": 91.8,
+    "maxStep12": 94.57
+   },
+   "60": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -35.32,
+    "ankleStagger": 8.2,
+    "kneeStagger": 7.1,
+    "firstStep": 76.13,
+    "maxStep12": 94.57
+   },
+   "120": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -35.32,
+    "ankleStagger": 8.2,
+    "kneeStagger": 7.1,
+    "firstStep": 68.42,
+    "maxStep12": 94.57
+   },
+   "200": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -35.32,
+    "ankleStagger": 8.2,
+    "kneeStagger": 7.1,
+    "firstStep": 61.21,
+    "maxStep12": 94.57
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 135,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    0.367,
+    0.367
+   ],
+   "kneesEnd": [
+    0.1,
+    0.1
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": -35.32,
+   "ankleStagger": 8.2,
+   "kneeStagger": 7.1,
+   "firstStep": 68.59,
+   "maxStep12": 94.57
+  }
+ },
+ {
+  "att": "George",
+  "facing": 1,
+  "move": "lockup",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 13,
+    "leftoverLast": 13,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -5.41,
+    "ankleStagger": 29.7,
+    "kneeStagger": 29.6,
+    "firstStep": 18.17,
+    "maxStep12": 19.96
+   },
+   "60": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 13,
+    "leftoverLast": 13,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -5.41,
+    "ankleStagger": 29.7,
+    "kneeStagger": 29.6,
+    "firstStep": 10.29,
+    "maxStep12": 28.66
+   },
+   "120": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 12,
+    "leftoverLast": 12,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -5.41,
+    "ankleStagger": 29.7,
+    "kneeStagger": 29.3,
+    "firstStep": 7.29,
+    "maxStep12": 25.67
+   },
+   "200": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 13,
+    "leftoverLast": 13,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -5.41,
+    "ankleStagger": 29.6,
+    "kneeStagger": 25.9,
+    "firstStep": 2.25,
+    "maxStep12": 31.17
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 72,
+   "startFrame": 0,
+   "leftoverFrames": 17,
+   "leftoverLast": 16,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    0.22,
+    0.22
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": -5.41,
+   "ankleStagger": 29.7,
+   "kneeStagger": 29.6,
+   "firstStep": 4.65,
+   "maxStep12": 29.05
+  }
+ },
+ {
+  "att": "George",
+  "facing": 1,
+  "move": "taunt",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     -0.1,
+     -0.1
+    ],
+    "kneesEnd": [
+     0.45,
+     0.3
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -11,
+    "ankleStagger": 1.8,
+    "kneeStagger": 0.5,
+    "firstStep": 40.4,
+    "maxStep12": 40.4
+   },
+   "60": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     -0.1,
+     -0.1
+    ],
+    "kneesEnd": [
+     0.45,
+     0.3
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -11,
+    "ankleStagger": 0.4,
+    "kneeStagger": 0,
+    "firstStep": 28.63,
+    "maxStep12": 28.63
+   },
+   "120": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     -0.1,
+     -0.1
+    ],
+    "kneesEnd": [
+     0.45,
+     0.3
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -11,
+    "ankleStagger": 2.1,
+    "kneeStagger": 0.4,
+    "firstStep": 18,
+    "maxStep12": 26.17
+   },
+   "200": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     -0.065,
+     -0.1
+    ],
+    "kneesEnd": [
+     0.45,
+     0.3
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -11,
+    "ankleStagger": 3.2,
+    "kneeStagger": 1,
+    "firstStep": 10.26,
+    "maxStep12": 25.87
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 360,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    -0.1,
+    -0.1
+   ],
+   "kneesEnd": [
+    0.45,
+    0.3
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": -11,
+   "ankleStagger": 1.3,
+   "kneeStagger": 0.2,
+   "firstStep": 19.04,
+   "maxStep12": 25.18
+  }
+ },
+ {
+  "att": "George",
+  "facing": -1,
+  "move": "jab",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0,
+    "ankleStagger": 2.2,
+    "kneeStagger": 0.1,
+    "firstStep": 56.11,
+    "maxStep12": 56.11
+   },
+   "60": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0,
+    "ankleStagger": 2.2,
+    "kneeStagger": 0.1,
+    "firstStep": 45.92,
+    "maxStep12": 45.92
+   },
+   "120": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0,
+    "ankleStagger": 2.2,
+    "kneeStagger": 0.1,
+    "firstStep": 42.5,
+    "maxStep12": 42.5
+   },
+   "200": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 0,
+    "ankleStagger": 2.2,
+    "kneeStagger": 0.1,
+    "firstStep": 41.88,
+    "maxStep12": 41.88
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 72,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    null,
+    null
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": 0,
+   "ankleStagger": 2.2,
+   "kneeStagger": 0.1,
+   "firstStep": 35.13,
+   "maxStep12": 38.9
+  }
+ },
+ {
+  "att": "George",
+  "facing": -1,
+  "move": "kneeLift",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 3.94,
+    "ankleStagger": 10.8,
+    "kneeStagger": 1.9,
+    "firstStep": 19.13,
+    "maxStep12": 58.56
+   },
+   "60": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 3.94,
+    "ankleStagger": 10.8,
+    "kneeStagger": 1.9,
+    "firstStep": 10.08,
+    "maxStep12": 48.34
+   },
+   "120": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 3.94,
+    "ankleStagger": 10.8,
+    "kneeStagger": 1.9,
+    "firstStep": 17.78,
+    "maxStep12": 36.23
+   },
+   "200": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     null,
+     null
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": 1.15,
+    "ankleStagger": 10.8,
+    "kneeStagger": 1.9,
+    "firstStep": 49.47,
+    "maxStep12": 49.47
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 72,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    null,
+    null
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": 3.94,
+   "ankleStagger": 10.8,
+   "kneeStagger": 1.9,
+   "firstStep": 43.76,
+   "maxStep12": 43.76
+  }
+ },
+ {
+  "att": "George",
+  "facing": -1,
+  "move": "dropkick",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -35.32,
+    "ankleStagger": 8.2,
+    "kneeStagger": 7.1,
+    "firstStep": 91.8,
+    "maxStep12": 94.57
+   },
+   "60": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -35.32,
+    "ankleStagger": 8.2,
+    "kneeStagger": 7.1,
+    "firstStep": 76.13,
+    "maxStep12": 94.57
+   },
+   "120": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -35.32,
+    "ankleStagger": 8.2,
+    "kneeStagger": 7.1,
+    "firstStep": 68.42,
+    "maxStep12": 94.57
+   },
+   "200": {
+    "started": true,
+    "dist": 135,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     0.367,
+     0.367
+    ],
+    "kneesEnd": [
+     0.1,
+     0.1
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -35.32,
+    "ankleStagger": 8.2,
+    "kneeStagger": 7.1,
+    "firstStep": 61.21,
+    "maxStep12": 94.57
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 135,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    0.367,
+    0.367
+   ],
+   "kneesEnd": [
+    0.1,
+    0.1
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": -35.32,
+   "ankleStagger": 8.2,
+   "kneeStagger": 7.1,
+   "firstStep": 68.59,
+   "maxStep12": 94.57
+  }
+ },
+ {
+  "att": "George",
+  "facing": -1,
+  "move": "lockup",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 13,
+    "leftoverLast": 13,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -5.41,
+    "ankleStagger": 29.7,
+    "kneeStagger": 29.6,
+    "firstStep": 18.17,
+    "maxStep12": 19.96
+   },
+   "60": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 13,
+    "leftoverLast": 13,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -5.41,
+    "ankleStagger": 29.7,
+    "kneeStagger": 29.6,
+    "firstStep": 10.29,
+    "maxStep12": 28.66
+   },
+   "120": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 12,
+    "leftoverLast": 12,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -5.41,
+    "ankleStagger": 29.7,
+    "kneeStagger": 29.3,
+    "firstStep": 7.29,
+    "maxStep12": 25.67
+   },
+   "200": {
+    "started": true,
+    "dist": 72,
+    "startFrame": 0,
+    "leftoverFrames": 13,
+    "leftoverLast": 13,
+    "kneesStart": [
+     null,
+     null
+    ],
+    "kneesEnd": [
+     0.22,
+     0.22
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -5.41,
+    "ankleStagger": 29.6,
+    "kneeStagger": 25.9,
+    "firstStep": 2.25,
+    "maxStep12": 31.17
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 72,
+   "startFrame": 0,
+   "leftoverFrames": 17,
+   "leftoverLast": 16,
+   "kneesStart": [
+    null,
+    null
+   ],
+   "kneesEnd": [
+    0.22,
+    0.22
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": -5.41,
+   "ankleStagger": 29.7,
+   "kneeStagger": 29.6,
+   "firstStep": 4.65,
+   "maxStep12": 29.05
+  }
+ },
+ {
+  "att": "George",
+  "facing": -1,
+  "move": "taunt",
+  "at": {
+   "0": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     -0.1,
+     -0.1
+    ],
+    "kneesEnd": [
+     0.45,
+     0.3
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -11,
+    "ankleStagger": 1.8,
+    "kneeStagger": 0.5,
+    "firstStep": 40.4,
+    "maxStep12": 40.4
+   },
+   "60": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     -0.1,
+     -0.1
+    ],
+    "kneesEnd": [
+     0.45,
+     0.3
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -11,
+    "ankleStagger": 0.4,
+    "kneeStagger": 0,
+    "firstStep": 28.63,
+    "maxStep12": 28.63
+   },
+   "120": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     -0.1,
+     -0.1
+    ],
+    "kneesEnd": [
+     0.45,
+     0.3
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -11,
+    "ankleStagger": 2.1,
+    "kneeStagger": 0.4,
+    "firstStep": 18,
+    "maxStep12": 26.17
+   },
+   "200": {
+    "started": true,
+    "dist": 360,
+    "startFrame": 0,
+    "leftoverFrames": 0,
+    "leftoverLast": null,
+    "kneesStart": [
+     -0.065,
+     -0.1
+    ],
+    "kneesEnd": [
+     0.45,
+     0.3
+    ],
+    "shinEnd": [
+     null,
+     null
+    ],
+    "kneeLine": -11,
+    "ankleStagger": 3.2,
+    "kneeStagger": 1,
+    "firstStep": 10.26,
+    "maxStep12": 25.87
+   }
+  },
+  "base": {
+   "started": true,
+   "dist": 360,
+   "startFrame": 0,
+   "leftoverFrames": 0,
+   "leftoverLast": null,
+   "kneesStart": [
+    -0.1,
+    -0.1
+   ],
+   "kneesEnd": [
+    0.45,
+    0.3
+   ],
+   "shinEnd": [
+    null,
+    null
+   ],
+   "kneeLine": -11,
+   "ankleStagger": 1.3,
+   "kneeStagger": 0.2,
+   "firstStep": 19.04,
+   "maxStep12": 25.18
+  }
+ }
+]

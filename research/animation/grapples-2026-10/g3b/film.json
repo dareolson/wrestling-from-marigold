@@ -1,0 +1,647 @@
+{
+ "tool": "tools/debug/grapples_film.mjs",
+ "timing": {
+  "lou-george/today": {
+   "medianMs": 2.3,
+   "meanMs": 3.405,
+   "n": 156
+  },
+  "lou-george/new": {
+   "medianMs": 2.5,
+   "meanMs": 3.611,
+   "n": 330
+  },
+  "george-lou/today": {
+   "medianMs": 2.3,
+   "meanMs": 3.953,
+   "n": 156
+  },
+  "george-lou/new": {
+   "medianMs": 2.6,
+   "meanMs": 3.553,
+   "n": 330
+  }
+ },
+ "runs": [
+  {
+   "id": "e-headlock-lou-george-l",
+   "case": "e",
+   "exit": "headlock",
+   "move": "headlock",
+   "pair": "lou-george",
+   "facing": -1,
+   "column": "today",
+   "frames": 97,
+   "exitFrame": 36,
+   "firstFrameStep": 98.62,
+   "maxStep200ms": 98.62,
+   "first12": [
+    98.6,
+    98.6,
+    36.8,
+    32.2,
+    27.8,
+    23.5,
+    19.5,
+    15.9,
+    27.2,
+    22.7,
+    18.5,
+    14.9
+   ],
+   "stateAfter": [
+    "holding",
+    "headlocked"
+   ]
+  },
+  {
+   "id": "e-headlock-lou-george-r",
+   "case": "e",
+   "exit": "headlock",
+   "move": "headlock",
+   "pair": "lou-george",
+   "facing": 1,
+   "column": "today",
+   "frames": 97,
+   "exitFrame": 36,
+   "firstFrameStep": 98.62,
+   "maxStep200ms": 98.62,
+   "first12": [
+    98.6,
+    98.6,
+    36.8,
+    32.2,
+    27.8,
+    23.5,
+    19.5,
+    15.9,
+    27.2,
+    22.7,
+    18.5,
+    14.9
+   ],
+   "stateAfter": [
+    "holding",
+    "headlocked"
+   ]
+  },
+  {
+   "id": "e-whip-lou-george-l",
+   "case": "e",
+   "exit": "whip",
+   "move": "irishWhip",
+   "pair": "lou-george",
+   "facing": -1,
+   "column": "today",
+   "frames": 97,
+   "exitFrame": 36,
+   "firstFrameStep": 98.62,
+   "maxStep200ms": 98.62,
+   "first12": [
+    98.6,
+    19,
+    26.7,
+    17.6,
+    16,
+    16.4,
+    16.4,
+    15.5,
+    14.1,
+    13.1,
+    13.7,
+    15.5
+   ],
+   "stateAfter": [
+    "standing",
+    "running"
+   ]
+  },
+  {
+   "id": "e-whip-lou-george-r",
+   "case": "e",
+   "exit": "whip",
+   "move": "irishWhip",
+   "pair": "lou-george",
+   "facing": 1,
+   "column": "today",
+   "frames": 97,
+   "exitFrame": 36,
+   "firstFrameStep": 98.62,
+   "maxStep200ms": 98.62,
+   "first12": [
+    98.6,
+    19,
+    26.7,
+    17.6,
+    16,
+    16.4,
+    16.4,
+    15.5,
+    14.1,
+    13.1,
+    13.7,
+    15.5
+   ],
+   "stateAfter": [
+    "standing",
+    "running"
+   ]
+  },
+  {
+   "id": "e-headlock-lou-george-l",
+   "case": "e",
+   "exit": "headlock",
+   "move": "headlock",
+   "pair": "lou-george",
+   "facing": -1,
+   "column": "new",
+   "frames": 109,
+   "exitFrame": 48,
+   "firstFrameStep": 5.86,
+   "maxStep200ms": 33.56,
+   "first12": [
+    5.9,
+    15.7,
+    23.4,
+    29.3,
+    31.9,
+    33.6,
+    28.4,
+    17.3,
+    26.9,
+    22.7,
+    18.5,
+    14.9
+   ],
+   "stateAfter": [
+    "holding",
+    "headlocked"
+   ]
+  },
+  {
+   "id": "e-headlock-lou-george-r",
+   "case": "e",
+   "exit": "headlock",
+   "move": "headlock",
+   "pair": "lou-george",
+   "facing": 1,
+   "column": "new",
+   "frames": 109,
+   "exitFrame": 48,
+   "firstFrameStep": 5.86,
+   "maxStep200ms": 33.56,
+   "first12": [
+    5.9,
+    15.7,
+    23.4,
+    29.3,
+    31.9,
+    33.6,
+    28.4,
+    17.3,
+    26.9,
+    22.7,
+    18.5,
+    14.9
+   ],
+   "stateAfter": [
+    "holding",
+    "headlocked"
+   ]
+  },
+  {
+   "id": "e-whip-lou-george-l",
+   "case": "e",
+   "exit": "whip",
+   "move": "irishWhip",
+   "pair": "lou-george",
+   "facing": -1,
+   "column": "new",
+   "frames": 109,
+   "exitFrame": 48,
+   "firstFrameStep": 5.86,
+   "maxStep200ms": 120.52,
+   "first12": [
+    5.9,
+    15.5,
+    47.1,
+    23.4,
+    25.2,
+    25.5,
+    23.2,
+    18.5,
+    120.5,
+    17.6,
+    20.5,
+    22
+   ],
+   "stateAfter": [
+    "standing",
+    "running"
+   ]
+  },
+  {
+   "id": "e-whip-lou-george-r",
+   "case": "e",
+   "exit": "whip",
+   "move": "irishWhip",
+   "pair": "lou-george",
+   "facing": 1,
+   "column": "new",
+   "frames": 109,
+   "exitFrame": 48,
+   "firstFrameStep": 5.86,
+   "maxStep200ms": 120.52,
+   "first12": [
+    5.9,
+    15.5,
+    47.1,
+    23.4,
+    25.2,
+    25.5,
+    23.2,
+    18.5,
+    120.5,
+    17.6,
+    20.5,
+    22
+   ],
+   "stateAfter": [
+    "standing",
+    "running"
+   ]
+  },
+  {
+   "id": "e-headlock-george-lou-l",
+   "case": "e",
+   "exit": "headlock",
+   "move": "headlock",
+   "pair": "george-lou",
+   "facing": -1,
+   "column": "today",
+   "frames": 97,
+   "exitFrame": 36,
+   "firstFrameStep": 108.39,
+   "maxStep200ms": 108.39,
+   "first12": [
+    108.4,
+    108.4,
+    37,
+    27.8,
+    24,
+    20.4,
+    17,
+    13.8,
+    31.8,
+    26.5,
+    21.7,
+    17.4
+   ],
+   "stateAfter": [
+    "holding",
+    "headlocked"
+   ]
+  },
+  {
+   "id": "e-headlock-george-lou-r",
+   "case": "e",
+   "exit": "headlock",
+   "move": "headlock",
+   "pair": "george-lou",
+   "facing": 1,
+   "column": "today",
+   "frames": 97,
+   "exitFrame": 36,
+   "firstFrameStep": 108.39,
+   "maxStep200ms": 108.39,
+   "first12": [
+    108.4,
+    108.4,
+    37,
+    27.8,
+    24,
+    20.4,
+    17,
+    13.8,
+    31.8,
+    26.5,
+    21.7,
+    17.4
+   ],
+   "stateAfter": [
+    "holding",
+    "headlocked"
+   ]
+  },
+  {
+   "id": "e-whip-george-lou-l",
+   "case": "e",
+   "exit": "whip",
+   "move": "irishWhip",
+   "pair": "george-lou",
+   "facing": -1,
+   "column": "today",
+   "frames": 97,
+   "exitFrame": 36,
+   "firstFrameStep": 108.39,
+   "maxStep200ms": 108.39,
+   "first12": [
+    108.4,
+    13.6,
+    31.7,
+    21.1,
+    12.6,
+    11.7,
+    12.1,
+    11.9,
+    11.3,
+    10.6,
+    10.4,
+    11.9
+   ],
+   "stateAfter": [
+    "standing",
+    "running"
+   ]
+  },
+  {
+   "id": "e-whip-george-lou-r",
+   "case": "e",
+   "exit": "whip",
+   "move": "irishWhip",
+   "pair": "george-lou",
+   "facing": 1,
+   "column": "today",
+   "frames": 97,
+   "exitFrame": 36,
+   "firstFrameStep": 108.39,
+   "maxStep200ms": 108.39,
+   "first12": [
+    108.4,
+    13.6,
+    31.7,
+    21.1,
+    12.6,
+    11.7,
+    12.1,
+    11.9,
+    11.3,
+    10.6,
+    10.4,
+    11.9
+   ],
+   "stateAfter": [
+    "standing",
+    "running"
+   ]
+  },
+  {
+   "id": "e-armDrag-george-lou-l",
+   "case": "e",
+   "exit": "armDrag",
+   "move": "armDrag",
+   "pair": "george-lou",
+   "facing": -1,
+   "column": "today",
+   "frames": 97,
+   "exitFrame": 36,
+   "firstFrameStep": 0.01,
+   "maxStep200ms": 42.86,
+   "first12": [
+    0,
+    12.6,
+    35.5,
+    22.7,
+    12.7,
+    6.2,
+    1.3,
+    42.9,
+    35.3,
+    22.7,
+    14.5,
+    11.4
+   ],
+   "stateAfter": [
+    "standing",
+    "standing"
+   ]
+  },
+  {
+   "id": "e-armDrag-george-lou-r",
+   "case": "e",
+   "exit": "armDrag",
+   "move": "armDrag",
+   "pair": "george-lou",
+   "facing": 1,
+   "column": "today",
+   "frames": 97,
+   "exitFrame": 36,
+   "firstFrameStep": 0.01,
+   "maxStep200ms": 42.86,
+   "first12": [
+    0,
+    12.6,
+    35.5,
+    22.7,
+    12.7,
+    6.2,
+    1.3,
+    42.9,
+    35.3,
+    22.7,
+    14.5,
+    11.4
+   ],
+   "stateAfter": [
+    "standing",
+    "standing"
+   ]
+  },
+  {
+   "id": "e-headlock-george-lou-l",
+   "case": "e",
+   "exit": "headlock",
+   "move": "headlock",
+   "pair": "george-lou",
+   "facing": -1,
+   "column": "new",
+   "frames": 109,
+   "exitFrame": 48,
+   "firstFrameStep": 5.44,
+   "maxStep200ms": 31.27,
+   "first12": [
+    5.4,
+    14.3,
+    11.7,
+    14.6,
+    17.8,
+    19.2,
+    17.2,
+    11.2,
+    31.3,
+    26.5,
+    21.7,
+    17.4
+   ],
+   "stateAfter": [
+    "holding",
+    "headlocked"
+   ]
+  },
+  {
+   "id": "e-headlock-george-lou-r",
+   "case": "e",
+   "exit": "headlock",
+   "move": "headlock",
+   "pair": "george-lou",
+   "facing": 1,
+   "column": "new",
+   "frames": 109,
+   "exitFrame": 48,
+   "firstFrameStep": 5.44,
+   "maxStep200ms": 31.27,
+   "first12": [
+    5.4,
+    14.3,
+    11.7,
+    14.6,
+    17.8,
+    19.2,
+    17.2,
+    11.2,
+    31.3,
+    26.5,
+    21.7,
+    17.4
+   ],
+   "stateAfter": [
+    "holding",
+    "headlocked"
+   ]
+  },
+  {
+   "id": "e-whip-george-lou-l",
+   "case": "e",
+   "exit": "whip",
+   "move": "irishWhip",
+   "pair": "george-lou",
+   "facing": -1,
+   "column": "new",
+   "frames": 109,
+   "exitFrame": 48,
+   "firstFrameStep": 5.43,
+   "maxStep200ms": 118.73,
+   "first12": [
+    5.4,
+    28.7,
+    35.3,
+    21.8,
+    13.5,
+    10.8,
+    11.2,
+    10.5,
+    118.7,
+    15.6,
+    17.9,
+    18.9
+   ],
+   "stateAfter": [
+    "standing",
+    "running"
+   ]
+  },
+  {
+   "id": "e-whip-george-lou-r",
+   "case": "e",
+   "exit": "whip",
+   "move": "irishWhip",
+   "pair": "george-lou",
+   "facing": 1,
+   "column": "new",
+   "frames": 109,
+   "exitFrame": 48,
+   "firstFrameStep": 5.43,
+   "maxStep200ms": 118.73,
+   "first12": [
+    5.4,
+    28.7,
+    35.3,
+    21.8,
+    13.5,
+    10.8,
+    11.2,
+    10.5,
+    118.7,
+    15.6,
+    17.9,
+    18.9
+   ],
+   "stateAfter": [
+    "standing",
+    "running"
+   ]
+  },
+  {
+   "id": "e-armDrag-george-lou-l",
+   "case": "e",
+   "exit": "armDrag",
+   "move": "armDrag",
+   "pair": "george-lou",
+   "facing": -1,
+   "column": "new",
+   "frames": 109,
+   "exitFrame": 48,
+   "firstFrameStep": 5.43,
+   "maxStep200ms": 28,
+   "first12": [
+    5.4,
+    14.6,
+    13.3,
+    13.1,
+    11.7,
+    11.1,
+    9.9,
+    28,
+    19.8,
+    12.7,
+    7.6,
+    11.4
+   ],
+   "stateAfter": [
+    "standing",
+    "standing"
+   ]
+  },
+  {
+   "id": "e-armDrag-george-lou-r",
+   "case": "e",
+   "exit": "armDrag",
+   "move": "armDrag",
+   "pair": "george-lou",
+   "facing": 1,
+   "column": "new",
+   "frames": 109,
+   "exitFrame": 48,
+   "firstFrameStep": 5.43,
+   "maxStep200ms": 28,
+   "first12": [
+    5.4,
+    14.6,
+    13.3,
+    13.1,
+    11.7,
+    11.1,
+    9.9,
+    28,
+    19.8,
+    12.7,
+    7.6,
+    11.4
+   ],
+   "stateAfter": [
+    "standing",
+    "standing"
+   ]
+  }
+ ]
+}

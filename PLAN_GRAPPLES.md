@@ -37,6 +37,8 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - T1.13: 8de0472 steal, stall, rope break, shove through the legs measures: 0 knee/stagger misses, trunks <= 5.9 (f102 was 12.3 at G1b), hip step 0.171 -> 0.090 (`breakBendRelease` .22). Leaks fixed: lockup shins left on whip/headlock/arm drag (24 exits clean), far thigh over Lou's torso (layers).
   Misses: Lou's planted sole 1.5-1.9 px; D12 overlap break 34-147 px (the release trade). T1.14: [G1c page](research/animation/grapples-2026-10/g1c/index.html), suite 1060/1060, build, coverage, flag-off identical. STOPPED at G1c.
 - **G1c: approved by Derek 2026-10-31** after watching the G1c material and a live Lou vs George match on the flag. Current values stand (1.4 s, default layering, far hand on the forearm, .22 s torso release) until he says otherwise. `grapples` stays opt-in.
+- T3b.1-T3b.3: e830e98 + next commit, no game code changed. Settle: no move keeps a lockup shin (assert 38/38), knee/stagger equal the move's own; first-frame step from the settle is up to +30 px over idle at 0 ms. Hit timing: clip moves land at 533 ms or later; headlock, whip (+0) and arm drag (+0, sell +83 ms, 17.3 px off true) act inside the 0.14 s lead-in.
+  Misses: whip turn 120.5 / 118.7 at +8 (today 98.6 / 108.4) is the flip alone; turning at +0 gives Lou 126, George 103.6, so left for Derek. [G3b page](research/animation/grapples-2026-10/g3b/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-claude-grapples-g3b.md). STOPPED at G3b.
 
 ## Why (Derek 2026-10-29)
 

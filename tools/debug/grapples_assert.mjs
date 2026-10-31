@@ -3,6 +3,8 @@
 import { launch } from './harness.mjs';
 import { INSTALL, SETUP, STEP } from './grapples_film.mjs';
 import { LOCKUP, breakKind } from '../../src/animation/lockup.js';
+import { INSTALL_LEGS, legFails } from './grapples_legs.mjs';
+import { runLegs } from './grapples_legs_run.mjs';
 
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const ENGAGE_F = Math.ceil(LOCKUP.engageEnd * 60);
@@ -81,6 +83,7 @@ for (const [name, keys, want, moveKey] of [['up+action gives the suplex', ['up']
     const end = rows.at(-1);
     check('break cleanup: lockup over, both standing', !end.locked && end.a.state === 'standing' && end.d.state === 'standing', [end.locked, end.a.state, end.d.state]);
     check('break cleanup: the torso settles back', Math.abs(end.a.pose.bend ?? 0) < 0.02 && Math.abs(end.d.pose.bend ?? 0) < 0.02, [end.a.pose.bend, end.d.pose.bend]);
+    check('break cleanup: the legs are handed back (no absolute shin left, the knee owner is back at 0 flex)', [end.a, end.d].every(w => w.pose.lShin === undefined && w.pose.rShin === undefined && w.pose.lKnee === 0 && w.pose.rKnee === 0), [end.a.pose.lShin, end.a.pose.lKnee, end.d.pose.rShin, end.d.pose.rKnee]);
     await h.close();
 }
 
@@ -124,6 +127,19 @@ for (const [name, keys, want, moveKey] of [['up+action gives the suplex', ['up']
     check('the shove sends the defender back and the attacker keeps his feet', dGo > 30 && aGo < 10, [dGo, aGo]);
     check('no stamina change in either ending', last.a.state && rows.at(-1).a.state === 'standing' && (await page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; return sc.w1.stamina === 100 && sc.w2.stamina === 100; })), 'stamina');
     check('no pending moves from an ending', (await calls(page)).length === 0, await calls(page));
+    await h.close();
+}
+
+// 13: D13, rendered on the real rigs: no knee behind the hip-ankle line and two readable legs, both men, both facings, engage / even / drive / break.
+// (Sole height and trunks are measured by grapples_legs_run.mjs and reported, not asserted.)
+for (const [att, def] of [[LOU, GEORGE], [GEORGE, LOU]]) {
+    const { h, page } = await fresh(att, def);
+    await page.evaluate(INSTALL_LEGS);
+    for (const facing of [1, -1]) {
+        const { summary } = await runLegs({ att, def, facing, page });
+        const bad = legFails(summary).filter(f => ['kneeLine', 'ankleStagger', 'kneeStagger'].includes(f.measure));
+        check(`${att === LOU ? 'Lou' : 'George'} attacking, facing ${facing}: no backward knee, ankles 20 / knees 14 px apart in every phase`, bad.length === 0, bad.slice(0, 3));
+    }
     await h.close();
 }
 

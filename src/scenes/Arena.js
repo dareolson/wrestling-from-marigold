@@ -1,5 +1,5 @@
 import { W, H, RING, ringBoundsAtY } from '../constants.js';
-import Wrestler, { grapplesCandidate } from '../Wrestler.js';
+import Wrestler, { grapplesCandidate, POSES } from '../Wrestler.js';
 import InputHandler from '../InputHandler.js';
 import AIHandler from '../AIHandler.js';
 import CrowdAudio from '../CrowdAudio.js';
@@ -3730,6 +3730,17 @@ export default class Arena extends Phaser.Scene {
             g.grabber = A; g.grabbed = D;
             g.from = new Map([[A, { ...A.pose }], [D, { ...D.pose }]]);
             g.legRel = new Map(); g.breakP = 0;
+            // D13: the lockup owns each shin through the absolute lShin / rShin. Drop the local-flex owner (a stale lKnee would win over it,
+            // Skeleton gives local flex precedence) and start the shin blend from the angle drawn this frame: a rig without lShin at idle
+            // (George) would otherwise blend from 0, and Lou's absolute idle shin would pop if it lost its owner.
+            for (const w of [A, D]) {
+                const from = g.from.get(w);
+                for (const side of ['l', 'r']) {
+                    delete w.pose[`${side}Knee`]; delete from[`${side}Knee`];
+                    const drawn = w.skeleton.currentPoseChannel?.(`${side}Shin`);
+                    from[`${side}Shin`] = Number.isFinite(drawn) ? drawn : (w.pose[`${side}Leg`] ?? 0) - 0.75 * (w.pose.crouch ?? 0);
+                }
+            }
         }
         g.t += dt;
         if (g.breakAt === null && g.t >= LOCKUP.timeout) { g.breakAt = g.t; g.ending = breakKind(g.seed, g.phase === 'stall'); }
@@ -3770,7 +3781,7 @@ export default class Arena extends Phaser.Scene {
                 rel = { lead: from.lead + (target.lead - from.lead) * r, rear: from.rear + (target.rear - from.rear) * r };
                 g.legRel.set(w, rel);
             }
-            const ch = lockupPoseChannels(ph.weights[role], w.skeleton.lChannelSide(w.facing), { lean: ph.lean[role], dip: ph.dip[role], legRel: rel, release: ph.release,
+            const ch = lockupPoseChannels(ph.weights[role], w.skeleton.lChannelSide(w.facing), { lean: ph.lean[role], dip: ph.dip[role], legRel: rel, legLen: w.skeleton._thighH + w.skeleton._shinH, release: ph.release,
                 ending: ph.phase === 'break' && g.ending !== 'plain' ? { kind: g.ending, role, u: ph.release } : null });
             const from = g.from.get(w);
             for (const key of Object.keys(ch)) w.pose[key] = k < 1 ? (from[key] ?? 0) * (1 - k) + ch[key] * k : ch[key];
@@ -3781,11 +3792,21 @@ export default class Arena extends Phaser.Scene {
         else g.legPhase = null;
         if (ph.phase === 'break' && g.t >= g.breakAt + LOCKUP.breakGrip + LOCKUP.breakStep) {
             A.state = 'standing'; D.state = 'standing';
-            A.tweenPose('idle', 220, 'Linear'); D.tweenPose('idle', 220, 'Linear');
+            this._lockupLegsHome(A, 220); this._lockupLegsHome(D, 220);
             this.lockupState = null;
             return true;
         }
         return false;
+    }
+
+    // D13: the idle settle after a grapple. The lockup owns each shin as an absolute lShin / rShin; tweenPose('idle') would seed its own
+    // local-flex owner from the rendered flex clamped at JOINT_LIMITS.knee.min (-0.10), which pops a natural bend. So the shins ease to
+    // the idle stance's shin first, then the joint goes to the owner tweenPose('idle') leaves (lKnee, 0 flex): same end state as before.
+    _lockupLegsHome(w, ms) {
+        const idle = POSES.idle, rest = (side) => (idle[`${side}Leg`] ?? 0) - 0.75 * (idle.crouch ?? 0);
+        w.tweenPose({ ...idle, lShin: rest('l'), rShin: rest('r') }, ms, 'Linear', () => {
+            for (const side of ['l', 'r']) { delete w.pose[`${side}Shin`]; w.pose[`${side}Knee`] = Math.max(-0.10, -1.6 * (idle.crouch ?? 0)); }
+        });
     }
 
     _tickLockup(dt) {

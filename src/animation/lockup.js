@@ -27,23 +27,26 @@ export const LOCKUP = Object.freeze({
     stealHitch: 0.12, stealCrossfade: 0.20, stealDip: 0.06,
     breakGrip: 0.10, breakStep: 0.25, breakStepPx: 14,
     breakRelease: 0.16, breakArm: -0.12,   // the torsos come up and the arms go home this fast, so hands that let go don't drop onto the other man (D12)
-    legGain: Object.freeze({ lead: 72, rear: 90 }),   // px of ankle travel per rad of leg channel at s = 1 (probed on Lou, George 7% lower)
+    legGain: 1.086,                     // ankle travel per rad of a leg channel, as a share of that rig's thigh + shin length (T1.12 probe at s = 1: Lou 129 px over 118.8, George 106 over 97.6, every role key)
     holdGap: 80,                        // px at s = 1 between the pair's x while held. D12 sweep (T1.7): no overlap under the belt or torso on torso, every grip 0 px; 78 also passes, but on the edge of the band, where the tugs and the strain leave it
     collarBack: 9, collarDrop: 6,       // px at s = 1: the collar point is the partner's neck, back of it and lower (D7)
     elbowCup: -0.6,                     // where the far hand cups, as a share of the partner's upper arm from the elbow toward his shoulder; negative = past the elbow, onto his forearm. Solved on the elbow itself, Lou's far hand flips to a fold the rig's elbow can't draw and misses by 30 px (T1.8)
 });
 
-// Pose keys (D6). Legs, knees, bend, crouch only; the arms come from the IK. `bend` is the torso pitch the rig draws (`lean` is not
-// drawn): D12's A-frame, heads and hands meet across the gap while the hips stay apart, so the defender keeps it while he is driven. `lead` / `rear` are the near-side and
-// far-side leg channels (resolved per facing by lockupPoseChannels).
-// The arms start here every frame and the IK (holdGrips) turns them onto their targets; the start decides which way the elbow
-// folds (measured T1.2: lArm 1.1 / lElbow 1.0 leaves Lou's far hand 41-47 px short of the far elbow, 0.3 / 0.7 reaches it).
+// Pose keys (D6, D13). Legs, shins, bend, crouch only; the arms come from the IK. `bend` is the torso pitch the rig draws (`lean` is not
+// drawn): D12's A-frame, heads and hands meet across the gap while the hips stay apart, so the defender keeps it while he is driven.
+// `lead` / `rear` are the near-side and far-side leg channels (resolved per facing by lockupPoseChannels); on the 3/4 rigs the far
+// hip sits ahead of the near one, so the far leg is the one that stands under its hip and the near leg trails behind it. Each
+// `*Shin` is the shin's angle relative to its own leg channel, written as the absolute `lShin` / `rShin`: the lockup owns that
+// joint outright (a local-flex `lKnee` cannot bend the natural way, JOINT_LIMITS.knee.min is -0.10), so the shin follows its leg
+// through the drive's foot offsets. Values solved on both rigs by tools/debug/grapples_legs_solve.mjs (T1.12): knees ahead of the
+// hip-ankle line, ankles >= 26 px and knees >= 18 px apart, soles on the idle ground line, hip height as in G1b.
 export const LOCKUP_ARMS = Object.freeze({ arm: 0.3, elbow: 0.7 });
 
 export const LOCKUP_POSES = Object.freeze({
-    even:     Object.freeze({ bend: 0.38, crouch: 0.24, lead: -0.42, leadKnee: 0.35, rear: -0.34, rearKnee: 0.20 }),
-    attacker: Object.freeze({ bend: 0.38, crouch: 0.32, lead: -0.38, leadKnee: 0.45, rear: -0.42, rearKnee: 0.10 }),
-    defender: Object.freeze({ bend: 0.38, crouch: 0.14, lead: -0.48, leadKnee: 0.20, rear: -0.30, rearKnee: 0.30 }),
+    even:     Object.freeze({ bend: 0.38, crouch: 0.24, lead: -0.20, leadShin: -0.10, rear: 0.10, rearShin: -0.40 }),
+    attacker: Object.freeze({ bend: 0.38, crouch: 0.32, lead: -0.25, leadShin: -0.10, rear: 0.05, rearShin: -0.40 }),
+    defender: Object.freeze({ bend: 0.38, crouch: 0.14, lead: -0.15, leadShin: -0.10, rear: 0.15, rearShin: -0.40 }),
 });
 
 const smooth = (u) => { const v = Math.max(0, Math.min(1, u)); return v * v * (3 - 2 * v); };
@@ -206,26 +209,28 @@ export function lockupPhase(state) {
     return out;
 }
 
+const LEG_LEN_DEFAULT = 118.8;   // Lou's thigh + shin at s = 1; Arena passes the real rig's
 // Mix a role's pose key weights into the leg/lean/crouch channels. `lSide` is skeleton.lChannelSide(facing): which depth
 // side the 'l' channels draw on. The lead leg is the near-side leg, the rear leg the far-side leg.
 export function lockupPoseChannels(weights, lSide, extra = {}) {
-    const legs = extra.legRel ?? { lead: 0, rear: 0 };
+    const legs = extra.legRel ?? { lead: 0, rear: 0 }, legLen = extra.legLen ?? LEG_LEN_DEFAULT;
     const mix = (field) => weights.even * LOCKUP_POSES.even[field] + weights.attacker * LOCKUP_POSES.attacker[field] + weights.defender * LOCKUP_POSES.defender[field];
     const nearCh = lSide === 'far' ? 'r' : 'l', farCh = nearCh === 'l' ? 'r' : 'l';
-    if (extra.ending?.role) return { ...endingPose(weights, extra), ...legChannels(mix, nearCh, farCh, legs) };
+    if (extra.ending?.role) return { ...endingPose(weights, extra), ...legChannels(mix, nearCh, farCh, legs, legLen) };
     const release = extra.release ?? 0, arm = LOCKUP_ARMS.arm + (LOCKUP.breakArm - LOCKUP_ARMS.arm) * Math.min(1, release * 2.5);   // the arms go first
     return {
         lArm: arm, rArm: arm, lElbow: LOCKUP_ARMS.elbow, rElbow: LOCKUP_ARMS.elbow,
         bend: (mix('bend') + (extra.lean ?? 0)) * (1 - release),
         crouch: mix('crouch') + (extra.dip ?? 0),
-        ...legChannels(mix, nearCh, farCh, legs),
+        ...legChannels(mix, nearCh, farCh, legs, legLen),
     };
 }
 
-function legChannels(mix, nearCh, farCh, legs) {
+function legChannels(mix, nearCh, farCh, legs, legLen) {
+    const gain = LOCKUP.legGain * legLen, near = mix('lead') + legs.lead / gain, far = mix('rear') + legs.rear / gain;
     return {
-        [`${nearCh}Leg`]: mix('lead') + legs.lead / LOCKUP.legGain.lead, [`${nearCh}Knee`]: mix('leadKnee'),
-        [`${farCh}Leg`]: mix('rear') + legs.rear / LOCKUP.legGain.rear, [`${farCh}Knee`]: mix('rearKnee'),
+        [`${nearCh}Leg`]: near, [`${nearCh}Shin`]: near + mix('leadShin'),
+        [`${farCh}Leg`]: far, [`${farCh}Shin`]: far + mix('rearShin'),
     };
 }
 

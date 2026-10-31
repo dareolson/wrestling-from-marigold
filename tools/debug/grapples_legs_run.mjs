@@ -3,7 +3,7 @@
 // Prints, per pair and facing, idle and the worst of each measure per phase, then every threshold miss.
 import { writeFileSync } from 'node:fs';
 import { launch } from './harness.mjs';
-import { INSTALL, SETUP, STEP } from './grapples_film.mjs';
+import { INSTALL, SETUP, STEP, plantedSlide } from './grapples_film.mjs';
 import { INSTALL_LEGS, TRUNKS_V, legSummary, legFails } from './grapples_legs.mjs';
 
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
@@ -24,6 +24,17 @@ export async function idleOf(page, facing, tv) {
     }, { facing });
     const row = await page.evaluate(STEP, { legs: tv });
     return row.legs;
+}
+
+// Worst ankle daylight between the men (px at s = 1, > 0 = clear), as the film's ankleDaylight: the front-most ankle of each past the other's.
+export function ankleDaylight(rows) {
+    let over = -1e9;
+    for (const r of rows.filter(x => x.locked)) {
+        const f = Math.sign(r.d.x - r.a.x) || 1, sep = (r.d.x - r.a.x) * f;
+        const reach = (side, dir) => Math.max(...['nearAnkle', 'farAnkle'].map(k => (r[side].pts[k]?.x - r[side].x) * dir));
+        over = Math.max(over, (reach('a', f) + reach('d', -f) - sep) / r.a.s);
+    }
+    return +(-over).toFixed(1);
 }
 
 export async function runLegs({ att, def, facing, frames = 200, seed = 11, flag = true, page }) {
@@ -51,9 +62,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             await h.page.evaluate(INSTALL_LEGS);
             for (const facing of [1, -1]) {
                 const { rows, idle, summary } = await runLegs({ ...pair, facing, flag: flagArg === '1', page: h.page });
-                const fails = legFails(summary);
-                results.push({ pair: pair.id, facing, idle, summary, fails, series: rows.map(r => ({ i: r.i, phase: r.g?.phase ?? null, locked: r.locked, a: r.legs && { k: [r.legs.a.near.kneeLine, r.legs.a.far.kneeLine], h: r.legs.a.hipAngle, st: r.legs.a.stagger }, d: r.legs && { k: [r.legs.d.near.kneeLine, r.legs.d.far.kneeLine], h: r.legs.d.hipAngle, st: r.legs.d.stagger } })) });
-                console.log(`\n== ${pair.id} facing ${facing}: ${rows.length} frames, ${fails.length} misses`);
+                const fails = legFails(summary), engEnd = rows.findIndex(r => r.g && r.g.t >= 0.30), slide = plantedSlide(rows, engEnd < 0 ? 0 : engEnd);
+                results.push({ pair: pair.id, facing, idle, summary, fails, plantedSlide: slide, ankleDaylight: ankleDaylight(rows), series: rows.map(r => ({ i: r.i, phase: r.g?.phase ?? null, locked: r.locked, a: r.legs && { k: [r.legs.a.near.kneeLine, r.legs.a.far.kneeLine], h: r.legs.a.hipAngle, st: r.legs.a.stagger }, d: r.legs && { k: [r.legs.d.near.kneeLine, r.legs.d.far.kneeLine], h: r.legs.d.hipAngle, st: r.legs.d.stagger } })) });
+                console.log(`\n== ${pair.id} facing ${facing}: ${rows.length} frames, ${fails.length} misses, planted slide ${slide} px/frame, ankle daylight ${ankleDaylight(rows)}`);
                 for (const side of ['a', 'd']) console.log(`  ${side} idle: kneeLine ${idle[side].near.kneeLine}/${idle[side].far.kneeLine} flex ${idle[side].near.flex}/${idle[side].far.flex} stagger ankle ${idle[side].stagger.ankle} knee ${idle[side].stagger.knee} hip ${idle[side].near.hipAngle ?? idle[side].hipAngle.near}/${idle[side].hipAngle.far} trunks ${idle[side].trunks?.share} sole y ${idle[side].sole.near.y}/${idle[side].sole.far.y}`);
                 for (const side of ['a', 'd']) for (const [ph, o] of Object.entries(summary[side])) if (ph !== 'idle') console.log(`  ${side} ${ph.padEnd(6)} n${String(o.frames).padStart(3)} knee ${o.kneeLine?.v}@${o.kneeLine?.i}${o.kneeLine?.leg?.[0]} flex+ ${o.flexMax?.v} ankle ${o.ankleStagger?.v}@${o.ankleStagger?.i} kneeSt ${o.kneeStagger?.v}@${o.kneeStagger?.i} hip ${o.hipAngleMin?.v}..${o.hipAngleMax?.v} trunks ${o.trunksDelta?.v}@${o.trunksDelta?.i} sole ${o.soleDelta?.v}@${o.soleDelta?.i}${o.soleDelta?.leg?.[0] ?? ''} snap hip ${o.snapHip?.v}@${o.snapHip?.i} knee ${o.snapKnee?.v}@${o.snapKnee?.i}`);
             }

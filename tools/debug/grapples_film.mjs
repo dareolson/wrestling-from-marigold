@@ -125,7 +125,7 @@ const FPS_MS = 1000 / 60;
 const maxPart = (p, c) => Math.max(0, ...Object.values(partSteps(p, c)));
 
 // Planted foot slide (px/frame at s=1): ankle x movement of the foot that is not stepping. Today: both always planted.
-function plantedSlide(rows, from) {
+export function plantedSlide(rows, from) {
     let worst = 0;
     for (let i = Math.max(1, from); i < rows.length; i++) {
         const p = rows[i - 1], c = rows[i];

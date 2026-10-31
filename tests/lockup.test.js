@@ -155,8 +155,8 @@ test('engage: the attacker closes 70 % and the defender 30 %, the jolt peaks nea
 test('pose channels: lead leg is the near-side leg per facing, weights mix', () => {
     const w = { even: 0, attacker: 1, defender: 0 };
     const near = lockupPoseChannels(w, 'near'), far = lockupPoseChannels(w, 'far');
-    assert.equal(near.lLeg, -0.38); assert.equal(near.rLeg, -0.42);
-    assert.equal(far.rLeg, -0.38); assert.equal(far.lLeg, -0.42);
+    assert.equal(near.lLeg, -0.25); assert.equal(near.rLeg, 0.05);
+    assert.equal(far.rLeg, -0.25); assert.equal(far.lLeg, 0.05);
     assert.equal(near.bend, 0.38);
     assert.equal(near.lean, undefined, 'lean is not drawn');
     const half = lockupPoseChannels({ even: 0, attacker: 0.5, defender: 0.5 }, 'near');
@@ -188,6 +188,20 @@ test('legRel: the planted foot holds its world place while the body travels; the
         }
     }
     assert.deepEqual(legRel({ index: -1, u: null }, 1), { lead: 0, rear: 0 });
+});
+
+test('D13: one owner per leg joint: the shins are absolute channels, bent back of their legs, and no local-flex knee is written', () => {
+    for (const lSide of ['near', 'far']) for (const weights of [{ even: 1, attacker: 0, defender: 0 }, { even: 0, attacker: 1, defender: 0 }, { even: 0, attacker: 0, defender: 1 }, { even: 0.4, attacker: 0.3, defender: 0.3 }]) {
+        for (const extra of [{}, { legRel: { lead: 4, rear: -4 }, legLen: 98 }, { ending: { kind: 'shove', role: 'attacker', u: 0.5 } }]) {
+            const ch = lockupPoseChannels(weights, lSide, extra);
+            assert.deepEqual(Object.keys(ch).filter(k => /Knee$/.test(k)), []);
+            for (const side of ['l', 'r']) assert.ok(ch[`${side}Shin`] < ch[`${side}Leg`], `${side}: the shin swings back of its leg (the knee bends forward)`);
+        }
+    }
+    // The foot offsets move a leg and its shin together, so the knee bend is the same through the drive.
+    const a = lockupPoseChannels({ even: 1, attacker: 0, defender: 0 }, 'near', { legRel: { lead: 0, rear: 0 } }), b = lockupPoseChannels({ even: 1, attacker: 0, defender: 0 }, 'near', { legRel: { lead: 5, rear: -5 }, legLen: 100 });
+    assert.ok(Math.abs((a.lShin - a.lLeg) - (b.lShin - b.lLeg)) < 1e-12 && Math.abs((a.rShin - a.rLeg) - (b.rShin - b.rLeg)) < 1e-12);
+    assert.ok(b.lLeg !== a.lLeg && b.rLeg !== a.rLeg);
 });
 
 test('D12: the defender keeps the A-frame while he is driven, and the hold gap keeps the bodies apart', () => {

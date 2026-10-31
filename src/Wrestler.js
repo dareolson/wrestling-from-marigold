@@ -1326,7 +1326,21 @@ export default class Wrestler {
     }
 
     tickRun(dt) {
-        if (this.state !== 'running') return;
+        if (this.state !== 'running') {
+            if (this.runPhase === 'ropeRecoil') this.runPhase = null; // hit during the recoil: no stuck phase
+            return;
+        }
+        if (this.runPhase === 'ropeRecoil') {
+            this._ropeRecoilLeft -= dt;
+            if (this._ropeRecoilLeft > 0) {
+                this._choreoUntil = this.scene.time.now + 50; // the pose holds until the flip, whatever the frame rounding does to the step's own deadline
+                return;
+            }
+            this._choreoUntil = 0;
+            this._flipAtRope(this.runFacing || 1); // the recoil never turned him: runFacing is still the run's direction
+            this.moveBlend = 0;
+            return;
+        }
 
         // Whipped or bounced while already on his rope target (x === runTarget,
         // e.g. whipped into the ropes he's standing at), the sign is 0: keep
@@ -1365,17 +1379,16 @@ export default class Wrestler {
 
         this.x = this.runTarget;
         this.runTargetY = null;
-        if (this.runPhase === 'toRope') {
-            const b = ringBoundsAtY(this.y);
-            this.runFacing = -dir;
-            this.facing    = -dir;
-            // v2: facing flips, so the stride mirrors about the hip. phase -> STANCE*2pi - phase maps every foot offset to its
-            // negative (stance and swing alike), which keeps both feet where they were on the mat: the planted one stays planted
-            if (g2?.run.on) this.walkPhase = (((this._gaitParamsAt(this._gaitRunW).STANCE * Math.PI * 2 - this.walkPhase) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-            this.runTarget = dir > 0 ? b.left + 20 : b.right - 20;
-            this.runPhase  = 'returning';
-            // grapples=v1: the return aims at the man he was whipped by, wherever that man stands in depth.
-            if (grapplesCandidate() && this._lastOther) this._setRunLine(-dir, clampRunY(this._lastOther.y));
+        if (this.runPhase === 'toRope' && grapplesCandidate()) {
+            // grapples=v1 (T3c.5): the rope hit copies the corner hit. No flip on arrival, still facing his run, the first step of
+            // his stagger (pose and dx travel back off the rope); tickRun counts it down, then _flipAtRope turns him round.
+            const first = staggerFor(this.stamina).steps[0];
+            this.runPhase = 'ropeRecoil';
+            this._ropeRecoilLeft = first.dur / 1000;
+            this._runStaggerSteps([first], 'running');
+            this.scene.triggerRopeBounce?.('far');
+        } else if (this.runPhase === 'toRope') {
+            this._flipAtRope(dir);
             this.scene.triggerRopeBounce?.('far');
         } else if (this.runPhase === 'toCorner') {
             // Stand-in for the corner daze (3c.5): the hit, the rope shake, a stagger.
@@ -1389,6 +1402,21 @@ export default class Wrestler {
             this.runPhase = null;
             this.scene.triggerRopeBounce?.('near');
         }
+    }
+
+    // The turn at the rope: flip, mirror the stride, aim the return. Flag off runs it on arrival; grapples=v1 after the recoil.
+    _flipAtRope(dir) {
+        const b = ringBoundsAtY(this.y);
+        const g2 = this._gaitV2;
+        this.runFacing = -dir;
+        this.facing    = -dir;
+        // v2: facing flips, so the stride mirrors about the hip. phase -> STANCE*2pi - phase maps every foot offset to its
+        // negative (stance and swing alike), which keeps both feet where they were on the mat: the planted one stays planted
+        if (g2?.run.on) this.walkPhase = (((this._gaitParamsAt(this._gaitRunW).STANCE * Math.PI * 2 - this.walkPhase) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+        this.runTarget = dir > 0 ? b.left + 20 : b.right - 20;
+        this.runPhase  = 'returning';
+        // grapples=v1: the return aims at the man he was whipped by, wherever that man stands in depth.
+        if (grapplesCandidate() && this._lastOther) this._setRunLine(-dir, clampRunY(this._lastOther.y));
     }
 
     // Point the run at the rope's x at targetY (the side ropes slant), 20 px in. dir is the x direction of the run.
@@ -3090,11 +3118,11 @@ export default class Wrestler {
 
     // Plays pose steps and, on each, the backward travel that goes with it. Travel
     // stops the moment he is no longer staggered (hit again, grabbed, dropped).
-    _runStaggerSteps(steps) {
+    _runStaggerSteps(steps, state = 'staggered') {
         const [head, ...rest] = steps;
         if (!head) return;
         this.tweenPose(head.pose, head.dur, head.e, () => {
-            if (this.state === 'staggered') this._runStaggerSteps(rest);
+            if (this.state === state) this._runStaggerSteps(rest, state);
         });
         const total = steps.reduce((ms, st) => ms + st.dur, 0);
         this._choreoUntil = this.scene.time.now + total;
@@ -3104,7 +3132,7 @@ export default class Wrestler {
         const x = Phaser.Math.Clamp(this.x - this.facing * head.dx * this.s, b.left + m, b.right - m);
         this.scene.tweens.add({
             targets: this, x, duration: head.dur, ease: 'Sine.easeOut',
-            onUpdate: (tw) => { if (this.state !== 'staggered') tw.stop(); },
+            onUpdate: (tw) => { if (this.state !== state) tw.stop(); },
         });
     }
 

@@ -33,7 +33,7 @@ for (const [pair, att, def] of [['lou-george', 'thesz-procreate-v1', 'george-ros
             // Frame table: peak part step per frame for both men, press to 300 ms after release.
             const stepAt = (who, j) => Math.max(...Object.values(partSteps({ parts: rows[j - 1][who].parts }, { parts: rows[j][who].parts })));
             const table = [];
-            for (let j = 49; j <= Math.min(released + 18, rows.length - 1); j++) table.push({ ms: Math.round((j - 48) * 1000 / 60), a: +stepAt('a', j).toFixed(1), d: +stepAt('d', j).toFixed(1) });
+            for (let j = 49; j <= Math.min(48 + 48, rows.length - 1); j++) table.push({ ms: Math.round((j - 48) * 1000 / 60), a: +stepAt('a', j).toFixed(1), d: +stepAt('d', j).toFixed(1) });
             const rel = table.findIndex(t => t.ms >= Math.round((released - 48) * 1000 / 60));
             const gather = table.slice(0, rel + 1);
             let still = 0, maxStill = 0;
@@ -42,7 +42,15 @@ for (const [pair, att, def] of [['lou-george', 'thesz-procreate-v1', 'george-ros
             const popAfterBlend = Math.max(0, ...gather.slice(blendEnd, -1).flatMap(t => [t.a, t.d]));
             assert.ok(maxStill <= 3, `${id}: ${maxStill} still frames between press and release`);
             assert.ok(popAfterBlend <= 30, `${id}: pop ${popAfterBlend} px after the blend`);
-            const run = { frameTable: table, maxStillFrames: maxStill, popAfterBlend, id, pair, facing, direction, crossBody: direction !== facing, releaseMs: Math.round((released - 48) * 1000 / 60), peakDefenderStep: +Math.max(...steps).toFixed(1), frames: 42 };
+            // After release: attacker's biggest step off the release frame, and the frames both men flip on.
+            const releaseMs = Math.round((released - 48) * 1000 / 60);
+            const afterRelease = table.filter(t => t.ms > releaseMs);
+            const attackerAfterRelease = Math.max(0, ...afterRelease.map(t => t.a));
+            const releaseFrameAttacker = table.find(t => t.ms === releaseMs)?.a;
+            assert.ok(attackerAfterRelease <= 30, `${id}: attacker step ${attackerAfterRelease} px after release`);
+            const flipFrame = (who) => rows.findIndex((r, j) => j > 48 && j < 96 && r[who].facing !== rows[j - 1][who].facing);
+            if (direction !== facing) assert.equal(flipFrame('a'), released, `${id}: attacker flips on the receiver's first run frame`);
+            const run = { attackerAfterRelease, releaseFrameAttacker, frameTable: table, maxStillFrames: maxStill, popAfterBlend, id, pair, facing, direction, crossBody: direction !== facing, releaseMs: Math.round((released - 48) * 1000 / 60), peakDefenderStep: +Math.max(...steps).toFixed(1), frames: 42 };
             runs.push(run); console.log(run);
         }
     } finally { await h.close(); }

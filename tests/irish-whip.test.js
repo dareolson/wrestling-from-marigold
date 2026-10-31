@@ -41,3 +41,20 @@ test('interrupted attacker releases a receiver still grabbed', () => {
     assert.equal(a.state, 'down');
     assert.equal(d.state, 'standing');
 });
+test('cross-body release turns the attacker with the receiver; same-side leaves him', () => {
+    for (const [direction, turns] of [[-1, true], [1, false]]) {
+        const { a, d, calls } = pair();
+        a._doIrishWhipLeadIn(d, direction);
+        calls[0].fn();
+        assert.equal(a.facing, turns ? direction : 1);
+        assert.equal(d.facing, direction);
+    }
+});
+test('an interrupted attacker auto-faces again even with _whip left set', () => {
+    const { a, d } = pair();
+    a._doIrishWhipLeadIn(d, -1);
+    a.state = 'staggered';
+    a.facing = -1;
+    a.move(16, d);
+    assert.equal(a.facing, 1);
+});

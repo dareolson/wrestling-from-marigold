@@ -914,7 +914,7 @@ export default class Wrestler {
         // one frame and played as a face-to-face clinch.
         // The candidate whip's throw owns facing too: both men turned as the
         // receiver passed, a one-frame pop of up to 74 px.
-        if (this.state !== 'running' && !this._activeMove && !this._whip && !GROUNDED_FACING_LOCK.has(this.state)) {
+        if (this.state !== 'running' && !this._activeMove && !(this._whip && (this.state === 'slamming' || this.state === 'grabbed')) && !GROUNDED_FACING_LOCK.has(this.state)) {
             const dx = other.x - this.x;
             if (dx !== 0) this.facing = Math.sign(dx);
         }
@@ -1909,6 +1909,9 @@ export default class Wrestler {
             other.runFacing = other.facing = dir;
             other.runTarget = dir > 0 ? b.right - 20 : b.left + 20;
             other.moveBlend = 0;
+            // The flip throws him: the attacker turns on the frame the receiver
+            // starts running, and whipFollow reaches after him.
+            if (crossBody) this.facing = dir;
             this.scene._logEvent?.('whipRelease', { direction: dir, crossBody });
         });
         return { direction: dir, crossBody, releaseAt };

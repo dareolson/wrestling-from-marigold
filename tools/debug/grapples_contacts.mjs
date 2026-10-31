@@ -17,7 +17,7 @@ for (const [ra, rd] of PAIRS) {
     await h.page.waitForTimeout(3500);
     for (const gap of gaps) for (const facing of [1, -1]) {
         const res = await h.page.evaluate(async ({ gap, facing, armsArg, driveArg }) => {
-            const { LOCKUP, LOCKUP_ARMS, lockupPoseChannels, lockupGrips, holdGapFor } = await import('/src/animation/lockup.js');
+            const { LOCKUP, LOCKUP_ARMS, lockupPoseChannels, lockupGrips, holdGapFor, measureArmLength } = await import('/src/animation/lockup.js');
             const { grapplesCandidate } = await import('/src/Wrestler.js');
             const game = window.__WFM_GAME, sc = game.scene.scenes[0];
             game.loop.sleep(); sc._p1AI = null; sc._p2AI = null;
@@ -25,7 +25,7 @@ for (const [ra, rd] of PAIRS) {
             for (const w of [a, d]) { w.state = 'standing'; w.stamina = 100; w.vx = 0; w.scene.tweens.killTweensOf(w.pose); }
             a.y = d.y = 400; a.facing = facing; d.facing = -facing;
             const mid = 520, s = a.s;
-            if (gap === 'auto') { gap = holdGapFor(sc._lockupArmLength(a)); a.x = mid - facing * gap * s / 2; d.x = mid + facing * gap * s / 2; }
+            if (gap === 'auto') { gap = holdGapFor(measureArmLength(a)); a.x = mid - facing * gap * s / 2; d.x = mid + facing * gap * s / 2; }
             a.x = mid - facing * gap * s / 2; d.x = mid + facing * gap * s / 2;
             a.state = d.state = 'lockup';
             sc.lockupState = { attacker: a, defender: d, timer: 0, grapple: { seed: 1, t: 0, stealAt: null, breakAt: null, grips: { attacker: { collar: 1, elbow: 1 }, defender: { collar: 1, elbow: 1 } } } };

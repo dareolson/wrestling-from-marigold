@@ -1,5 +1,5 @@
 // The collar-and-elbow tie-up (PLAN_GRAPPLES Stage 1, D1-D9). Pure data and math, behind `?grapples=v1`: nothing here
-// touches POSES or a Wrestler, so flag off is untouched. Arena._tickLockup asks lockupPhase() what the pair does this
+// touches POSES, and only measureArmLength touches a Wrestler, so flag off is untouched. Arena._tickLockup asks lockupPhase() what the pair does this
 // frame; lockupGrips() says where each hand goes (Wrestler.holdGrips does the IK). All times in seconds, all lengths in
 // px at s = 1 (the caller multiplies by the wrestler's perspective scale `s`).
 
@@ -34,6 +34,24 @@ export const LOCKUP = Object.freeze({
 export function holdGapFor(armLen) {
     const { slope, base, min } = LOCKUP.holdGapFromArm;
     return Number.isFinite(armLen) ? Math.max(min, slope * armLen + base) : LOCKUP.holdGap;
+}
+
+// The wrestler's near arm (shoulder-elbow + elbow-wrist, px at s = 1), read in the `even` pose so it does not depend on the pose he
+// walked in with; cached per wrestler and facing. It draws him in that pose, then puts every pose field back (keys it added are
+// removed) and redraws, so a cache miss and a hit leave the same pose (Codex 2026-10-30: this used to leak lean, crouch and legs).
+export function measureArmLength(w) {
+    const key = `${w.facing}`;
+    w._lockupArmLen ??= {};
+    if (w._lockupArmLen[key] !== undefined) return w._lockupArmLen[key];
+    const saved = { ...w.pose };
+    Object.assign(w.pose, lockupPoseChannels({ even: 1, attacker: 0, defender: 0 }, w.skeleton.lChannelSide(w.facing)));
+    w.draw();
+    const p = w.skeleton.jointAttachmentPoints, len = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
+    const out = p?.nearWrist ? (len(p.nearShoulder, p.nearElbow) + len(p.nearElbow, p.nearWrist)) / w.s : NaN;
+    for (const k of Object.keys(w.pose)) if (!(k in saved)) delete w.pose[k];
+    Object.assign(w.pose, saved);
+    w.draw();
+    return (w._lockupArmLen[key] = out);
 }
 
 // Pose keys (D6). Legs, knees, lean, crouch only; the arms come from the IK. `lead` / `rear` are the near-side and

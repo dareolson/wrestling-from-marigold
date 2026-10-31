@@ -1,7 +1,7 @@
 // PLAN_GRAPPLES T1.1: the lockup's pure data and math (src/animation/lockup.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LOCKUP, holdGapFor, lockupPhase, lockupGrips, lockupPoseChannels, tugSchedule, stepAt } from '../src/animation/lockup.js';
+import { LOCKUP, holdGapFor, measureArmLength, lockupPhase, lockupGrips, lockupPoseChannels, tugSchedule, stepAt } from '../src/animation/lockup.js';
 
 const DT = 1 / 60;
 const run = (extra = {}, from = 0, to = LOCKUP.timeout) => {
@@ -191,4 +191,27 @@ test('holdGapFor: the gap follows the attacker\'s arm, with a floor and a fallba
     assert.ok(holdGapFor(65.2) < holdGapFor(87.5));
     assert.equal(holdGapFor(10), LOCKUP.holdGapFromArm.min);
     assert.equal(holdGapFor(NaN), LOCKUP.holdGap);
+});
+
+test('measureArmLength leaves the pose exactly as it found it, on a cache miss and on a hit, both facings and sides', () => {
+    for (const facing of [1, -1]) for (const lSide of ['near', 'far']) {
+        const pose = { lArm: 0.1, rArm: 0.2, lElbow: 0.3, rElbow: 0.4, lean: 0.11, crouch: 0.12, lLeg: 0.13, rKnee: 0.16, tilt: 0.5 };
+        const drawn = [];
+        const w = {
+            facing, s: 0.8, pose: { ...pose },
+            skeleton: {
+                lChannelSide: () => lSide,
+                jointAttachmentPoints: { nearShoulder: { x: 0, y: 0 }, nearElbow: { x: 32, y: 0 }, nearWrist: { x: 32, y: 40 } },
+            },
+            draw() { drawn.push({ ...this.pose }); },
+        };
+        assert.equal(measureArmLength(w), 90);
+        assert.ok(drawn.length >= 2 && drawn[0].rLeg !== undefined, 'measured in the even pose');
+        assert.deepEqual(w.pose, pose, 'miss');
+        assert.deepEqual(drawn.at(-1), pose, 'last draw is the restored pose');
+        const n = drawn.length;
+        assert.equal(measureArmLength(w), 90);
+        assert.equal(drawn.length, n, 'a hit does not draw');
+        assert.deepEqual(w.pose, pose, 'hit');
+    }
 });

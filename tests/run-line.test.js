@@ -69,3 +69,18 @@ test('dx 0 reaches the target y at once', () => {
     w.tickRun(1 / 60);
     assert.equal(w.y, 300);
 });
+test('toCorner arrival: logs cornerHit, shakes the rope on that side, staggers', () => {
+    for (const [ty, side] of [[264, 'far'], [439, 'near']]) {
+        const events = [], bounces = [];
+        const w = runner(300, 350);
+        w.scene = { triggerRopeBounce: s => bounces.push(s), _logEvent: (n, d) => events.push([n, d]), w1: w };
+        let staggered = 0; w.startStagger = () => staggered++;
+        w.runPhase = 'toCorner';
+        w._setRunLine(1, ty);
+        for (let i = 0; i < 600 && !staggered; i++) w.tickRun(1 / 60);
+        assert.equal(w.y, ty);
+        assert.deepEqual(bounces, [side]);
+        assert.equal(events[0][0], 'cornerHit'); assert.equal(events[0][1].side, side);
+        assert.equal(staggered, 1);
+    }
+});

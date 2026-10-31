@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-31",
+  "author": "Codex",
+  "tool": "built-in image_gen",
+  "status": "Style candidate for Derek's review; original approved identity master retained; not registered in game",
+  "asset": "src/assets/story/trainer-medium-handdrawn-v2-candidate.png",
+  "identityReference": "src/assets/story/trainer-medium-v1.png",
+  "styleReference": "Sprite sheets/RosterNew/2026-10-18/LouNew/extracted-v1/figure.png",
+  "request": "Redraw Carl with the roster's hand-drawn look, preserving face, stocky build, pose, brown shirt, off-white towel, trousers and tape roll.",
+  "treatment": "Stronger black contours, broad flat shadow shapes, simpler cloth folds and reduced skin/fabric detail. Follow-up background extraction requested; original generated alpha retained.",
+  "format": "1024x1536 RGBA PNG",
+  "reviewNotes": "Judge facial identity and age against original master and style against Lou before adopting. Generated contours and face have shifted; no exact registration claim. Empty-space alpha samples are zero; visible character sample alpha is 254. No replacement or mouth-state derivation yet."
+}

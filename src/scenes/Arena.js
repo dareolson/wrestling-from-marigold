@@ -3911,7 +3911,12 @@ export default class Arena extends Phaser.Scene {
                 this._heatForMove(move);
             };
 
-            if (goDown && ls.attacker.moveSet.includes('headlock')) {
+            // grapples=v1: up or down with left or right and grapple whips to that corner.
+            const toCorner = g && (goUp || goDown) && (goLeft || goRight) && ls.attacker.moveSet.includes('irishWhip');
+            if (toCorner) {
+                ls.attacker._doIrishWhip(ls.defender, dir, goUp ? -1 : 1);
+                followUp('irishWhip');
+            } else if (goDown && ls.attacker.moveSet.includes('headlock')) {
                 ls.attacker._doHeadlock(ls.defender);
                 this.headlockState = { attacker: ls.attacker, defender: ls.defender, timer: 0 };
                 followUp('headlock');

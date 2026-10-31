@@ -50,6 +50,15 @@ const DROPKICK_V2_REACH = 92;
 const STRIKE_DEPTH_TOLERANCE = 26;
 // grapples=v1: a runner only meets an attacker within this much depth (the whip's own 22 px step passes).
 export const RUNNER_DEPTH_GATE = 48;
+// The four turnbuckles: climb positions (x, y, topY), the mat row (matY) and the facing that looks into the ring.
+const RING_CORNERS = [
+    { x: RING.nearLeft.x,  y: RING.ropes[1].nearY, topY: RING.ropes[2].nearY, matY: RING.nearLeft.y,  facing:  1 },
+    { x: RING.nearRight.x, y: RING.ropes[1].nearY, topY: RING.ropes[2].nearY, matY: RING.nearRight.y, facing: -1 },
+    { x: RING.farLeft.x,   y: RING.ropes[1].farY,  topY: RING.ropes[2].farY,  matY: RING.farLeft.y,   facing:  1 },
+    { x: RING.farRight.x,  y: RING.ropes[1].farY,  topY: RING.ropes[2].farY,  matY: RING.farRight.y,  facing: -1 },
+];
+// Row a whipped man runs to for a corner: 6 px in from the mat's far or near edge. depth -1 = far (up), +1 = near (down).
+const cornerRunY = (depth) => depth < 0 ? RING.farLeft.y + 6 : RING.nearLeft.y - 6;
 export const sharesDepth = (a, b) => !grapplesCandidate() || Math.abs(a.y - b.y) < RUNNER_DEPTH_GATE;
 const FRONT_KICK_STANDOFF = 84;
 const FRONT_KICK_REACH    = 130;
@@ -1365,6 +1374,13 @@ export default class Wrestler {
             this.runTarget = dir > 0 ? b.left + 20 : b.right - 20;
             this.runPhase  = 'returning';
             this.scene.triggerRopeBounce?.('far');
+        } else if (this.runPhase === 'toCorner') {
+            // Stand-in for the corner daze (3c.5): the hit, the rope shake, a stagger.
+            const side = this.y < (RING.farLeft.y + RING.nearLeft.y) / 2 ? 'far' : 'near';
+            this.runPhase = null;
+            this.scene._logEvent?.('cornerHit', { wrestler: this.scene.w1 === this ? 'p1' : 'p2', side, dir });
+            this.scene.triggerRopeBounce?.(side);
+            this.startStagger();
         } else {
             this.state    = 'standing';
             this.runPhase = null;
@@ -1870,8 +1886,8 @@ export default class Wrestler {
         });
     }
 
-    _doIrishWhip(other, dir = this.facing) {
-        if (grapplesCandidate()) return this._doIrishWhipLeadIn(other, dir);
+    _doIrishWhip(other, dir = this.facing, depth = 0) {
+        if (grapplesCandidate()) return this._doIrishWhipLeadIn(other, dir, depth);
         const b = ringBoundsAtY(other.y);
 
         other.state     = 'running';
@@ -1892,7 +1908,7 @@ export default class Wrestler {
 
     // Candidate whip: gather the arm before release. A rope behind the attacker
     // needs a pull across his body; choosing a direction never changes mid-move.
-    _doIrishWhipLeadIn(other, direction) {
+    _doIrishWhipLeadIn(other, direction, depth = 0) {
         const dir = Math.sign(direction) || this.facing || 1;
         const crossBody = dir !== (Math.sign(other.x - this.x) || this.facing);
         const token = {};
@@ -1935,15 +1951,16 @@ export default class Wrestler {
             }
             const b = ringBoundsAtY(other.y);
             other.state = 'running';
-            other.runPhase = 'toRope';
+            other.runPhase = depth ? 'toCorner' : 'toRope';
             other.runFacing = other.facing = dir;
             other.runTarget = dir > 0 ? b.right - 20 : b.left + 20;
             other.runTargetY = null;
+            if (depth) other._setRunLine(dir, cornerRunY(depth));
             other.moveBlend = 0;
             // The flip throws him: the attacker turns on the frame the receiver
             // starts running, and whipFollow reaches after him.
             if (crossBody) this.facing = dir;
-            this.scene._logEvent?.('whipRelease', { direction: dir, crossBody });
+            this.scene._logEvent?.('whipRelease', { direction: dir, crossBody, depth });
         });
         return { direction: dir, crossBody, releaseAt };
     }
@@ -3325,12 +3342,7 @@ export default class Wrestler {
     }
 
     _nearCorner() {
-        const corners = [
-            { x: RING.nearLeft.x,  y: RING.ropes[1].nearY, topY: RING.ropes[2].nearY, matY: RING.nearLeft.y,  facing:  1 },
-            { x: RING.nearRight.x, y: RING.ropes[1].nearY, topY: RING.ropes[2].nearY, matY: RING.nearRight.y, facing: -1 },
-            { x: RING.farLeft.x,   y: RING.ropes[1].farY,  topY: RING.ropes[2].farY,  matY: RING.farLeft.y,   facing:  1 },
-            { x: RING.farRight.x,  y: RING.ropes[1].farY,  topY: RING.ropes[2].farY,  matY: RING.farRight.y,  facing: -1 },
-        ];
+        const corners = RING_CORNERS;
         const b = ringBoundsAtY(this.y);
         for (const c of corners) {
             const edgeX = c.facing > 0 ? b.left : b.right;

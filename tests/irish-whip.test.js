@@ -58,3 +58,14 @@ test('an interrupted attacker auto-faces again even with _whip left set', () => 
     a.move(16, d);
     assert.equal(a.facing, 1);
 });
+test('depth whip: release sends the receiver on a line to the corner row; no depth keeps the flat rope run', () => {
+    for (const [depth, y] of [[-1, 264], [1, 439], [0, null]]) {
+        const { a, d, calls } = pair();
+        d._setRunLine = Wrestler.prototype._setRunLine;
+        a._doIrishWhipLeadIn(d, 1, depth);
+        calls[0].fn();
+        assert.equal(d.runPhase, depth ? 'toCorner' : 'toRope');
+        assert.equal(d.runTargetY, y);
+        assert.equal(d.facing, 1);
+    }
+});

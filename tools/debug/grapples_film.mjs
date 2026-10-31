@@ -91,7 +91,7 @@ const STEP = async ({ press, hold, mask }) => {
     if (g) {
         row.g = { t: g.t, phase: g.phase ?? null, grips: g.grips ?? null, step: g.step ?? null, stealAt: g.stealAt, breakAt: g.breakAt, holdGap: g.holdGap ?? null };
         if (g.grips && g.grabber) {
-            const { lockupGrips } = await import('/src/animation/lockup.js');
+            const { lockupGrips, gripTarget } = await import('/src/animation/lockup.js');
             const lists = lockupGrips(g.grabber, g.grabbed, g.grips);
             const dist = (p, q) => Math.hypot(p.x - q.x, p.y - q.y);
             const errs = {};
@@ -99,7 +99,7 @@ const STEP = async ({ press, hold, mask }) => {
                 const pts = actor.skeleton.jointAttachmentPoints, lSide = actor.skeleton.lChannelSide(actor.facing);
                 for (const it of lists[role]) {
                     const handSide = it.arm === 'l' ? lSide : (lSide === 'near' ? 'far' : 'near');
-                    const target = it.at ?? it.partner.skeleton.jointAttachmentPoints[`${handSide}${it.joint}`];
+                    const target = gripTarget(it, handSide);
                     const S = pts[`${handSide}Shoulder`], E = pts[`${handSide}Elbow`], W = pts[`${handSide}Wrist`], lu = dist(S, E), lf = dist(E, W);
                     // reach: the target against the arm's reachable range (T1.6): `over` > 0 = out of reach, whatever the hand did.
                     errs[`${role}.${it.joint === 'Neck' ? 'collar' : 'elbow'}`] = { err: +(dist(W, target)).toFixed(3), w: +it.w.toFixed(3), over: +(dist(S, target) - (lu + lf)).toFixed(2) };
@@ -144,10 +144,15 @@ function summarize(rows, kind) {
     const last = endLock < 0 ? rows.length - 1 : endLock - 1;
     const out = { frames: rows.length, lockedFrames: n, lockMs: +(n * FPS_MS).toFixed(0) };
     const wm = worstMask(rows);
-    if (wm) { const { image, ...rest } = wm; out.silhouette = rest; }
+    if (wm) {
+        const { image, ...rest } = wm; out.silhouette = rest;
+        // worst per phase, so a hold and a break are not one number
+        out.byPhase = {};
+        for (const r of rows) if (r.mask) { const k = r.g?.phase ?? (r.locked ? 'locked' : 'after'), p = out.byPhase[k] ??= { below: 0, belowBody: 0, torso: 0, above: 0 }; for (const f of ['below', 'belowBody', 'torso', 'above']) p[f] = Math.max(p[f], r.mask[f]); }
+    }
     const mid = (r) => (r.a.x + r.d.x) / 2;
     // phases
-    const engEnd = rows.findIndex(r => r.g && r.g.t >= 0.22);
+    const engEnd = rows.findIndex(r => r.g && r.g.t >= 0.30);
     out.travel = { total: +(mid(rows[last]) - mid(rows[0])).toFixed(1), afterEngage: engEnd < 0 ? null : +(mid(rows[last]) - mid(rows[engEnd])).toFixed(1) };
     out.gapStart = +(Math.abs(rows[0].d.x - rows[0].a.x) / rows[0].a.s).toFixed(1);
     out.gapHeld = +(Math.abs(rows[Math.max(0, last)].d.x - rows[Math.max(0, last)].a.x) / rows[0].a.s).toFixed(1);
@@ -167,12 +172,14 @@ function summarize(rows, kind) {
         out[name] = +m.toFixed(2);
     };
     if (kind === 'new') {
-        stepOver('stepEngage', (r) => r.g && r.g.t <= 0.30 && r.locked);
+        stepOver('stepEngage', (r) => r.g && r.g.t <= 0.36 && r.locked);
         stepOver('stepSteal', (r) => r.g && r.g.stealAt !== null && r.g.t <= r.g.stealAt + 0.12 + 0.20 + 0.05);
         stepOver('stepBreak', (r) => r.g && r.g.breakAt !== null);
         const first = (key) => locked.find(r => r.g?.errs?.[key]?.w >= 0.99);
         out.grabMs = Object.fromEntries(['attacker.collar', 'attacker.elbow', 'defender.collar', 'defender.elbow'].map(k => { const f = first(k); return [k, f ? +(f.g.t * 1000).toFixed(0) : null]; }));
         const held = locked.filter(r => r.g?.errs);
+        // every full-weight frame more than 3 px off: "<phase> t <grip> err (over the arm's reach by)"
+        out.missLog = held.flatMap(r => Object.entries(r.g.errs).filter(([, x]) => x.w >= 0.99 && x.err > 3).map(([k, x]) => `${r.g.phase} ${r.g.t.toFixed(2)} ${k} ${x.err} (${x.over})`));
         out.handErr = {}; out.contactMisses = {}; out.outOfReach = {};
         for (const k of ['attacker.collar', 'attacker.elbow', 'defender.collar', 'defender.elbow']) {
             const e = held.map(r => r.g.errs[k]).filter(x => x && x.w >= 0.99).map(x => x.err);
@@ -208,7 +215,7 @@ async function runCase(page, ctx, spec, shotDir, clipAt) {
             if (spec.exit.dir) hold.a.push(spec.facing > 0 ? 'right' : 'left');
         }
         // direction keys stay held through the exit frame only
-        const row = await page.evaluate(STEP, { press, hold, mask: !!shotDir && i % 3 === 0 });
+        const row = await page.evaluate(STEP, { press, hold, mask: !!shotDir && (i % 3 === 0 || spec.maskEvery) });
         row.i = i;
         rows.push(row);
         if (row.mask?.image && spec.keepMasks === false) delete row.mask.image;
@@ -254,8 +261,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
                             const r = { id, case: spec.id, pair: pair.id, facing, column: col, ...summarize(rows, column === 'new' ? 'new' : 'today'), rows: undefined };
                             const wm = worstMask(rows);
                             if (wm?.image) writeFileSync(join(outRoot, 'frames', col, `${id}-mask.png`), Buffer.from(wm.image.split(',')[1], 'base64'));
+                            // the worst sample of each phase, so a residual can be looked at
+                            for (const ph of Object.keys(r.byPhase ?? {})) {
+                                const w = worstMask(rows.filter(x => (x.g?.phase ?? 'locked') === ph));
+                                if (w?.image && w.below + w.torso > 0) writeFileSync(join(outRoot, 'frames', col, `${id}-mask-${ph}.png`), Buffer.from(w.image.split(',')[1], 'base64'));
+                            }
                             results.push({ ...r, series: rows.map((x, k) => ({ i: x.i, step: k ? +Math.max(maxPart({ parts: rows[k - 1].a.parts }, { parts: x.a.parts }), maxPart({ parts: rows[k - 1].d.parts }, { parts: x.d.parts })).toFixed(1) : 0, state: x.a.state, locked: x.locked, who: x.who, ax: +x.a.x.toFixed(2), dx: +x.d.x.toFixed(2), phase: x.g?.phase ?? null, t: x.g?.t ?? null })) });
-                            console.log(`[film] ${col}/${id}: ${r.frames} frames, locked ${r.lockMs} ms, travel ${r.travel.total}, planted slide ${r.plantedSlide}, ankle daylight ${r.ankleDaylight}, silhouette below ${r.silhouette?.below} torso ${r.silhouette?.torso} above ${r.silhouette?.above}, engage step ${r.stepEngage}${r.stepSteal !== undefined ? `, steal ${r.stepSteal}, break ${r.stepBreak}` : ''}`);
+                            console.log(`[film] ${col}/${id}: ${r.frames} frames, locked ${r.lockMs} ms, travel ${r.travel.total}, planted slide ${r.plantedSlide}, ankle daylight ${r.ankleDaylight}, silhouette below ${r.silhouette?.below} (body ${r.silhouette?.belowBody}) torso ${r.silhouette?.torso} above ${r.silhouette?.above}, engage step ${r.stepEngage}${r.stepSteal !== undefined ? `, steal ${r.stepSteal}, break ${r.stepBreak}` : ''}`);
                         }
                     }
                 }

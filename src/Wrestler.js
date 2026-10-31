@@ -19,6 +19,7 @@ import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGrip
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
 import { AROUND, aroundChannel, backSellSupport, recoveryVia, resolveAroundVia } from './rig/backSell.js';
 import { staggerFor } from './animation/staggers.js';
+import { gripTarget } from './animation/lockup.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
     ARTICULATED_CHANNELS,
@@ -651,10 +652,11 @@ export default class Wrestler {
         const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
         const dist = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
         let moved = false;
-        for (const { arm, partner, joint, side, w, at } of list) {
+        for (const item of list) {
+            const { arm, w } = item;
             const handSide = arm === 'l' ? sk.lChannelSide(this.facing) : flip(sk.lChannelSide(this.facing));
-            // `at` (PLAN_GRAPPLES D7): a world point in place of a partner joint (the collar, behind the neck).
-            const to = at ?? partner.skeleton.jointAttachmentPoints?.[`${side === 'other' ? flip(handSide) : handSide}${joint}`];
+            // `at` (PLAN_GRAPPLES D7): a world point in place of a partner joint (the collar, behind the neck). `above`: up his arm from it.
+            const to = gripTarget(item, handSide);
             const S = pts[`${handSide}Shoulder`], E = pts[`${handSide}Elbow`], W = pts[`${handSide}Wrist`];
             if (!to || !S || !E || !W) continue;
             const goal = { x: W.x + (to.x - W.x) * w, y: W.y + (to.y - W.y) * w };

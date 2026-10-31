@@ -1,7 +1,7 @@
 // PLAN_GRAPPLES T1.1: the lockup's pure data and math (src/animation/lockup.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LOCKUP, holdGapFor, measureArmLength, lockupPhase, lockupGrips, lockupPoseChannels, tugSchedule, stepAt } from '../src/animation/lockup.js';
+import { LOCKUP, LOCKUP_POSES, gripTarget, lockupPhase, lockupGrips, lockupPoseChannels, tugSchedule, stepAt } from '../src/animation/lockup.js';
 
 const DT = 1 / 60;
 const run = (extra = {}, from = 0, to = LOCKUP.timeout) => {
@@ -123,6 +123,10 @@ test('break: grips ramp to 0 over breakGrip, then one step back', () => {
     const gone = frames.find(f => f.t >= breakAt + LOCKUP.breakGrip);
     assert.equal(gone.grips.attacker.collar, 0);
     assert.ok(frames.some(f => f.step.u !== null && f.step.u > 0.9));
+    assert.equal(frames.at(-1).release, 1);
+    const off = lockupPoseChannels({ even: 0, attacker: 1, defender: 0 }, 'near', { release: 1 });
+    assert.equal(off.bend, 0);
+    assert.equal(off.lArm, LOCKUP.breakArm);
 });
 
 test('the same seed gives the same tugs; different seeds differ', () => {
@@ -151,9 +155,10 @@ test('engage: the attacker closes 70 % and the defender 30 %, the jolt peaks nea
 test('pose channels: lead leg is the near-side leg per facing, weights mix', () => {
     const w = { even: 0, attacker: 1, defender: 0 };
     const near = lockupPoseChannels(w, 'near'), far = lockupPoseChannels(w, 'far');
-    assert.equal(near.lLeg, -0.02); assert.equal(near.rLeg, -0.40);
-    assert.equal(far.rLeg, -0.02); assert.equal(far.lLeg, -0.40);
-    assert.equal(near.lean, 0.45);
+    assert.equal(near.lLeg, -0.38); assert.equal(near.rLeg, -0.42);
+    assert.equal(far.rLeg, -0.38); assert.equal(far.lLeg, -0.42);
+    assert.equal(near.bend, 0.38);
+    assert.equal(near.lean, undefined, 'lean is not drawn');
     const half = lockupPoseChannels({ even: 0, attacker: 0.5, defender: 0.5 }, 'near');
     assert.ok(Math.abs(half.crouch - (0.32 + 0.14) / 2) < 1e-12);
     assert.equal(lockupPoseChannels(w, 'near', { dip: 0.06 }).crouch, 0.38);
@@ -185,33 +190,20 @@ test('legRel: the planted foot holds its world place while the body travels; the
     assert.deepEqual(legRel({ index: -1, u: null }, 1), { lead: 0, rear: 0 });
 });
 
-test('holdGapFor: the gap follows the attacker\'s arm, with a floor and a fallback', () => {
-    assert.ok(Math.abs(holdGapFor(87.5) - 40.25) < 1e-9);
-    assert.ok(Math.abs(holdGapFor(65.2) - 24.64) < 1e-9);
-    assert.ok(holdGapFor(65.2) < holdGapFor(87.5));
-    assert.equal(holdGapFor(10), LOCKUP.holdGapFromArm.min);
-    assert.equal(holdGapFor(NaN), LOCKUP.holdGap);
+test('D12: the defender keeps the A-frame while he is driven, and the hold gap keeps the bodies apart', () => {
+    for (const key of ['even', 'attacker', 'defender']) assert.ok(LOCKUP_POSES[key].bend >= 0.3, key);
+    assert.ok(LOCKUP.holdGap >= 76);
+    const held = lockupPoseChannels({ even: 0, attacker: 0, defender: 1 }, 'near', { lean: 0.02 });
+    assert.ok(Math.abs(held.bend - 0.40) < 1e-12, 'tugs and strain go on the drawn channel');
 });
 
-test('measureArmLength leaves the pose exactly as it found it, on a cache miss and on a hit, both facings and sides', () => {
-    for (const facing of [1, -1]) for (const lSide of ['near', 'far']) {
-        const pose = { lArm: 0.1, rArm: 0.2, lElbow: 0.3, rElbow: 0.4, lean: 0.11, crouch: 0.12, lLeg: 0.13, rKnee: 0.16, tilt: 0.5 };
-        const drawn = [];
-        const w = {
-            facing, s: 0.8, pose: { ...pose },
-            skeleton: {
-                lChannelSide: () => lSide,
-                jointAttachmentPoints: { nearShoulder: { x: 0, y: 0 }, nearElbow: { x: 32, y: 0 }, nearWrist: { x: 32, y: 40 } },
-            },
-            draw() { drawn.push({ ...this.pose }); },
-        };
-        assert.equal(measureArmLength(w), 90);
-        assert.ok(drawn.length >= 2 && drawn[0].rLeg !== undefined, 'measured in the even pose');
-        assert.deepEqual(w.pose, pose, 'miss');
-        assert.deepEqual(drawn.at(-1), pose, 'last draw is the restored pose');
-        const n = drawn.length;
-        assert.equal(measureArmLength(w), 90);
-        assert.equal(drawn.length, n, 'a hit does not draw');
-        assert.deepEqual(w.pose, pose, 'hit');
-    }
+test('gripTarget: `at` wins, a joint is the joint, `above` moves along the partner\'s upper arm, negative goes past the elbow', () => {
+    const partner = { skeleton: { jointAttachmentPoints: { nearElbow: { x: 100, y: 50 }, nearShoulder: { x: 100, y: 10 }, farElbow: { x: 0, y: 0 } } } };
+    const it = { partner, joint: 'Elbow', side: 'same' };
+    assert.deepEqual(gripTarget({ ...it, at: { x: 1, y: 2 } }, 'near'), { x: 1, y: 2 });
+    assert.deepEqual(gripTarget(it, 'near'), { x: 100, y: 50 });
+    assert.deepEqual(gripTarget({ ...it, side: 'other' }, 'near'), { x: 0, y: 0 });
+    assert.deepEqual(gripTarget({ ...it, above: 0.25 }, 'near'), { x: 100, y: 40 });
+    assert.deepEqual(gripTarget({ ...it, above: -0.5 }, 'near'), { x: 100, y: 70 });
+    assert.deepEqual(gripTarget({ ...it, side: 'other', above: 0.5 }, 'near'), { x: 0, y: 0 });
 });

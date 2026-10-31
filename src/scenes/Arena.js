@@ -18,7 +18,7 @@ import { enumerateCharacterAssets } from '../rig/partVariants.js';
 import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
-import { lockupGrips, lockupPhase, holdGapFor, measureArmLength, lockupPoseChannels, legRel, LOCKUP } from '../animation/lockup.js';
+import { lockupGrips, lockupPhase, lockupPoseChannels, legRel, LOCKUP } from '../animation/lockup.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
@@ -3703,7 +3703,7 @@ export default class Arena extends Phaser.Scene {
         if (!g.init) {
             g.init = true;
             g.a0 = A.x; g.d0 = D.x; g.gap0 = Math.abs(D.x - A.x);
-            g.holdGap = holdGapFor(measureArmLength(A));
+            g.holdGap = LOCKUP.holdGap;
             g.grabber = A; g.grabbed = D;
             g.from = new Map([[A, { ...A.pose }], [D, { ...D.pose }]]);
             g.legRel = new Map(); g.breakP = 0;
@@ -3746,10 +3746,10 @@ export default class Arena extends Phaser.Scene {
                 rel = { lead: from.lead + (target.lead - from.lead) * r, rear: from.rear + (target.rear - from.rear) * r };
                 g.legRel.set(w, rel);
             }
-            const ch = lockupPoseChannels(ph.weights[role], w.skeleton.lChannelSide(w.facing), { lean: ph.lean[role], dip: ph.dip[role], legRel: rel });
+            const ch = lockupPoseChannels(ph.weights[role], w.skeleton.lChannelSide(w.facing), { lean: ph.lean[role], dip: ph.dip[role], legRel: rel, release: ph.release });
             const from = g.from.get(w);
             for (const key of Object.keys(ch)) w.pose[key] = k < 1 ? (from[key] ?? 0) * (1 - k) + ch[key] * k : ch[key];
-            w.pose.tilt = 0; w.pose.lift = 0; w.pose.bend = 0;
+            w.pose.tilt = 0; w.pose.lift = 0;
         }
 
         if (ph.phase === 'drive' || ph.phase === 'break') { g.legPhase = ph.phase; g.legDrive = g.stealAt; }
@@ -3771,10 +3771,14 @@ export default class Arena extends Phaser.Scene {
         let consumed = null;
         if (g) {
             if (this._tickGrapple(ls, g, dt)) return;
-            // D2: input during the engage is buffered and fires when it ends (you can't suplex someone you haven't grabbed).
+            // D2: input during the engage is buffered and fires once when it ends (you can't suplex someone you haven't grabbed). Each
+            // button keeps the direction it was pressed with, so letting go before the engage ends doesn't turn a suplex into a slam.
             if (g.t < LOCKUP.engageEnd) {
                 for (const w of [ls.attacker, ls.defender]) for (const k of ['finisher', 'action', 'power']) {
-                    if (w.input.justDown(k)) { g.pending ??= new Map(); if (!g.pending.has(w)) g.pending.set(w, new Set()); g.pending.get(w).add(k); }
+                    if (!w.input.justDown(k)) continue;
+                    g.pending ??= new Map();
+                    if (!g.pending.has(w)) g.pending.set(w, new Map());
+                    g.pending.get(w).set(k, Object.fromEntries(['up', 'down', 'left', 'right'].map(d => [d, w.input.isDown(d)])));
                 }
                 return;
             }
@@ -3824,10 +3828,12 @@ export default class Arena extends Phaser.Scene {
 
         // Attacker executes follow-up: grapple again + optional direction
         if (just(ls.attacker, 'action')) {
-            const goUp    = ls.attacker.input.isDown('up');
-            const goDown  = ls.attacker.input.isDown('down');
-            const goLeft  = ls.attacker.input.isDown('left');
-            const goRight = ls.attacker.input.isDown('right');
+            const stored  = ls.attacker.input.justDown('action') ? null : consumed?.get(ls.attacker)?.get('action');
+            const held    = (d) => stored?.[d] ?? ls.attacker.input.isDown(d);
+            const goUp    = held('up');
+            const goDown  = held('down');
+            const goLeft  = held('left');
+            const goRight = held('right');
             const dir     = goLeft ? -1 : goRight ? 1 : ls.attacker.facing;
 
             ls.attacker.state = 'standing';

@@ -1,19 +1,19 @@
 // The collar-and-elbow tie-up (PLAN_GRAPPLES Stage 1, D1-D9). Pure data and math, behind `?grapples=v1`: nothing here
-// touches POSES, and only measureArmLength touches a Wrestler, so flag off is untouched. Arena._tickLockup asks lockupPhase() what the pair does this
+// touches POSES or a Wrestler, so flag off is untouched. Arena._tickLockup asks lockupPhase() what the pair does this
 // frame; lockupGrips() says where each hand goes (Wrestler.holdGrips does the IK). All times in seconds, all lengths in
 // px at s = 1 (the caller multiplies by the wrestler's perspective scale `s`).
 
 export const LOCKUP = Object.freeze({
     timeout: 1.4,                       // D2: was 0.8 s
-    engageEnd: 0.22,
+    engageEnd: 0.30,
     engageClose: Object.freeze({ attacker: 0.7, defender: 0.3 }),   // share of the closing distance each man walks
     // Grip weight 1 lands at these times (the ramp starts GRIP_RAMP earlier).
     gripLand: Object.freeze({
-        attacker: Object.freeze({ collar: 0.10, elbow: 0.13 }),
-        defender: Object.freeze({ collar: 0.17, elbow: 0.20 }),
+        attacker: Object.freeze({ collar: 0.20, elbow: 0.23 }),   // not before the closing gap puts the neck in reach (T1.8)
+        defender: Object.freeze({ collar: 0.26, elbow: 0.29 }),
     }),
-    gripRamp: 0.04,
-    joltAt: 0.12, joltPx: 3, joltWidth: 0.06,
+    gripRamp: 0.10,
+    joltAt: 0.17, joltPx: 3, joltWidth: 0.06,
     evenEnd: 0.55,
     tugPx: Object.freeze([2, 5]), tugEvery: Object.freeze([0.15, 0.30]), tugLean: 0.04,
     driveBlend: 0.18,                   // even -> role pose, after evenEnd
@@ -23,47 +23,24 @@ export const LOCKUP = Object.freeze({
     strainHz: 9, strainLean: 0.02,      // the stalled push
     stealHitch: 0.12, stealCrossfade: 0.20, stealDip: 0.06,
     breakGrip: 0.10, breakStep: 0.25, breakStepPx: 14,
+    breakRelease: 0.16, breakArm: -0.12,   // the torsos come up and the arms go home this fast, so hands that let go don't drop onto the other man (D12)
     legGain: Object.freeze({ lead: 72, rear: 90 }),   // px of ankle travel per rad of leg channel at s = 1 (probed on Lou, George 7% lower)
-    holdGapFromArm: Object.freeze({ slope: 0.7, base: -21, min: 20 }),   // D9: gap = slope * (attacker's arm length) + base, px at s = 1; fitted on five rigs (T1.2)
-    holdGap: 44,                        // px at s = 1 between the pair's x while held; measured in T1.2 (D9): both hands <= 1.8 px, collar flex .4-1.8 rad
+    holdGap: 80,                        // px at s = 1 between the pair's x while held. D12 sweep (T1.7): no overlap under the belt or torso on torso, every grip 0 px; 78 also passes, but on the edge of the band, where the tugs and the strain leave it
     collarBack: 9, collarDrop: 6,       // px at s = 1: the collar point is the partner's neck, back of it and lower (D7)
+    elbowCup: -0.6,                     // where the far hand cups, as a share of the partner's upper arm from the elbow toward his shoulder; negative = past the elbow, onto his forearm. Solved on the elbow itself, Lou's far hand flips to a fold the rig's elbow can't draw and misses by 30 px (T1.8)
 });
 
-// D9: the hold gap from the attacker's arm (shoulder-elbow + elbow-wrist, px at s = 1), so the collar elbow bends on every rig:
-// a fixed 44 reaches Lou (arm 87.5) and leaves George (65.2) 12.7 px short of the collar.
-export function holdGapFor(armLen) {
-    const { slope, base, min } = LOCKUP.holdGapFromArm;
-    return Number.isFinite(armLen) ? Math.max(min, slope * armLen + base) : LOCKUP.holdGap;
-}
-
-// The wrestler's near arm (shoulder-elbow + elbow-wrist, px at s = 1), read in the `even` pose so it does not depend on the pose he
-// walked in with; cached per wrestler and facing. It draws him in that pose, then puts every pose field back (keys it added are
-// removed) and redraws, so a cache miss and a hit leave the same pose (Codex 2026-10-30: this used to leak lean, crouch and legs).
-export function measureArmLength(w) {
-    const key = `${w.facing}`;
-    w._lockupArmLen ??= {};
-    if (w._lockupArmLen[key] !== undefined) return w._lockupArmLen[key];
-    const saved = { ...w.pose };
-    Object.assign(w.pose, lockupPoseChannels({ even: 1, attacker: 0, defender: 0 }, w.skeleton.lChannelSide(w.facing)));
-    w.draw();
-    const p = w.skeleton.jointAttachmentPoints, len = (a, b) => Math.hypot(b.x - a.x, b.y - a.y);
-    const out = p?.nearWrist ? (len(p.nearShoulder, p.nearElbow) + len(p.nearElbow, p.nearWrist)) / w.s : NaN;
-    for (const k of Object.keys(w.pose)) if (!(k in saved)) delete w.pose[k];
-    Object.assign(w.pose, saved);
-    w.draw();
-    return (w._lockupArmLen[key] = out);
-}
-
-// Pose keys (D6). Legs, knees, lean, crouch only; the arms come from the IK. `lead` / `rear` are the near-side and
+// Pose keys (D6). Legs, knees, bend, crouch only; the arms come from the IK. `bend` is the torso pitch the rig draws (`lean` is not
+// drawn): D12's A-frame, heads and hands meet across the gap while the hips stay apart, so the defender keeps it while he is driven. `lead` / `rear` are the near-side and
 // far-side leg channels (resolved per facing by lockupPoseChannels).
 // The arms start here every frame and the IK (holdGrips) turns them onto their targets; the start decides which way the elbow
 // folds (measured T1.2: lArm 1.1 / lElbow 1.0 leaves Lou's far hand 41-47 px short of the far elbow, 0.3 / 0.7 reaches it).
 export const LOCKUP_ARMS = Object.freeze({ arm: 0.3, elbow: 0.7 });
 
 export const LOCKUP_POSES = Object.freeze({
-    even:     Object.freeze({ lean: 0.32, crouch: 0.24, lead: -0.06, leadKnee: 0.35, rear: -0.34, rearKnee: 0.20 }),
-    attacker: Object.freeze({ lean: 0.45, crouch: 0.32, lead: -0.02, leadKnee: 0.45, rear: -0.40, rearKnee: 0.10 }),
-    defender: Object.freeze({ lean: 0.02, crouch: 0.14, lead: -0.12, leadKnee: 0.20, rear: -0.26, rearKnee: 0.30 }),
+    even:     Object.freeze({ bend: 0.38, crouch: 0.24, lead: -0.42, leadKnee: 0.35, rear: -0.34, rearKnee: 0.20 }),
+    attacker: Object.freeze({ bend: 0.38, crouch: 0.32, lead: -0.38, leadKnee: 0.45, rear: -0.42, rearKnee: 0.10 }),
+    defender: Object.freeze({ bend: 0.38, crouch: 0.14, lead: -0.48, leadKnee: 0.20, rear: -0.30, rearKnee: 0.30 }),
 });
 
 const smooth = (u) => { const v = Math.max(0, Math.min(1, u)); return v * v * (3 - 2 * v); };
@@ -135,7 +112,7 @@ const idleWeights = { even: 0, attacker: 0, defender: 0 };
 //   breakAt     t when the break began, or null (set by the caller at `timeout`)
 // Returns { phase, weights: { attacker, defender }, dip, lean: { attacker, defender }, grips: { attacker: {collar,elbow},
 //   defender: {collar,elbow} }, dx (px at s = 1 this frame, signed along the attacker's facing), jolt (px at s = 1, the
-//   compression of the gap, >= 0), step: { index, foot, u }, close: { attacker, defender } (fraction of the closure) }.
+//   compression of the gap, >= 0), release (0..1, the break's let-go: torsos up, arms home), step: { index, foot, u }, close: { attacker, defender } (fraction of the closure) }.
 export function lockupPhase(state) {
     const { t, dt = 1 / 60, seed = 1, stealAt = null, nearRopes = false, breakAt = null } = state;
     const grips = {
@@ -144,7 +121,7 @@ export function lockupPhase(state) {
     };
     const out = {
         phase: 'engage', weights: { attacker: { ...idleWeights }, defender: { ...idleWeights } }, dip: { attacker: 0, defender: 0 },
-        lean: { attacker: 0, defender: 0 }, grips, dx: 0, jolt: 0, step: { index: -1, foot: null, u: null },
+        lean: { attacker: 0, defender: 0 }, release: 0, grips, dx: 0, jolt: 0, step: { index: -1, foot: null, u: null },
         close: { attacker: 0, defender: 0 },
     };
     // Engage: the closure is shared 70 / 30, smoothed over the engage window, and the chests meet at joltAt.
@@ -167,6 +144,7 @@ export function lockupPhase(state) {
         const tb = t - breakAt;
         out.phase = 'break';
         out.weights = roleWeights('attacker', 'defender', 1, 1);
+        out.release = smooth(tb / LOCKUP.breakRelease);
         const g = 1 - smooth(tb / LOCKUP.breakGrip);
         for (const r of ['attacker', 'defender']) for (const k of ['collar', 'elbow']) out.grips[r][k] = g;
         out.step = { index: 0, foot: 'lead', u: tb > LOCKUP.breakGrip ? Math.min(1, (tb - LOCKUP.breakGrip) / LOCKUP.breakStep) : null };
@@ -225,9 +203,10 @@ export function lockupPoseChannels(weights, lSide, extra = {}) {
     const legs = extra.legRel ?? { lead: 0, rear: 0 };
     const mix = (field) => weights.even * LOCKUP_POSES.even[field] + weights.attacker * LOCKUP_POSES.attacker[field] + weights.defender * LOCKUP_POSES.defender[field];
     const nearCh = lSide === 'far' ? 'r' : 'l', farCh = nearCh === 'l' ? 'r' : 'l';
+    const release = extra.release ?? 0, arm = LOCKUP_ARMS.arm + (LOCKUP.breakArm - LOCKUP_ARMS.arm) * Math.min(1, release * 2.5);   // the arms go first
     return {
-        lArm: LOCKUP_ARMS.arm, rArm: LOCKUP_ARMS.arm, lElbow: LOCKUP_ARMS.elbow, rElbow: LOCKUP_ARMS.elbow,
-        lean: mix('lean') + (extra.lean ?? 0),
+        lArm: arm, rArm: arm, lElbow: LOCKUP_ARMS.elbow, rElbow: LOCKUP_ARMS.elbow,
+        bend: (mix('bend') + (extra.lean ?? 0)) * (1 - release),
         crouch: mix('crouch') + (extra.dip ?? 0),
         [`${nearCh}Leg`]: mix('lead') + legs.lead / LOCKUP.legGain.lead, [`${nearCh}Knee`]: mix('leadKnee'),
         [`${farCh}Leg`]: mix('rear') + legs.rear / LOCKUP.legGain.rear, [`${farCh}Knee`]: mix('rearKnee'),
@@ -250,13 +229,24 @@ export function lockupGrips(attacker, defender, grips) {
         const out = [];
         const at = collarAt(partner);
         if (at && g.collar > 0) out.push({ arm: collarArm, partner, joint: 'Neck', side: 'same', at, w: g.collar });
-        if (g.elbow > 0) out.push({ arm: elbowArm, partner, joint: 'Elbow', side: 'same', w: g.elbow });
+        if (g.elbow > 0) out.push({ arm: elbowArm, partner, joint: 'Elbow', side: 'same', above: LOCKUP.elbowCup, w: g.elbow });
         return out;
     };
     return {
         attacker: list(attacker, defender, grips.attacker, nearArm(attacker), farArm(attacker)),
         defender: list(defender, attacker, grips.defender, farArm(defender), nearArm(defender)),
     };
+}
+
+// Where a holdGrips entry's hand goes, for a hand on `handSide`: its `at`, else the partner's joint on that side (or the other side), moved
+// `above` of the way up to the partner's shoulder. Read fresh each pass, because the partner's own grips move his joints.
+export function gripTarget({ partner, joint, side, at, above }, handSide) {
+    if (at) return at;
+    const pts = partner.skeleton.jointAttachmentPoints, on = side === 'other' ? (handSide === 'near' ? 'far' : 'near') : handSide;
+    const p = pts?.[`${on}${joint}`];
+    if (!p || !above) return p;   // `above` < 0 goes past the joint
+    const q = pts[`${on}Shoulder`];
+    return q ? { x: p.x + (q.x - p.x) * above, y: p.y + (q.y - p.y) * above } : p;
 }
 
 // Foot offsets (px at s = 1, along the wrestler's facing) relative to the pose's base leg angles, so a planted foot holds its

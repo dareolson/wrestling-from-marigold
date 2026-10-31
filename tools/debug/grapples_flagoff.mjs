@@ -14,6 +14,7 @@ export async function recordLockup(h, frames = 60) {
         const game = window.__WFM_GAME, sc = game.scene.scenes[0];
         game.loop.sleep();
         sc._p1AI = null; sc._p2AI = null;
+        sc.tweens.getDelta = () => 1000 / 60;   // the film's fixed tween delta: poses repeat exactly, so they can be compared (Codex 2026-10-30)
         const a = sc.w1, b = sc.w2;
         for (const w of [a, b]) { w.state = 'standing'; w.stamina = 100; w.vx = 0; }
         a.x = 480; b.x = 600; a.y = b.y = 400; a.facing = 1; b.facing = -1;
@@ -40,13 +41,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         console.log('recorded', rows.length, 'frames; locked at end:', rows.at(-1).locked);
     } else {
         const want = JSON.parse(readFileSync(FIXTURE, 'utf8'));
-        // The pose tweens (lockup in, idle out) run on the wall clock, so poses differ run to run even for the same code: they are
-        // recorded for the eye but only x, state and the lockup timeout are compared (exact to 1e-4).
         const TOL = 1e-4;
-        const eq = (a, b, tol) => (typeof a === 'number' && typeof b === 'number' ? Math.abs(a - b) <= (tol ?? TOL) : a && typeof a === 'object' ? Object.keys({ ...a, ...b }).every(k => eq(a[k], b?.[k], tol)) : a === b);
-        const strip = (r) => ({ ...r, ap: undefined, bp: undefined });
-        const bad = want.findIndex((r, k) => !eq(strip(r), strip(rows[k])));
-        console.log(bad < 0 && want.length === rows.length ? `flag off identical over ${rows.length} frames (x, state and timeout exact to 1e-4; poses not compared)` : 'DIFFERENT');
-        if (bad >= 0) { console.log('first diff at frame', bad, JSON.stringify(want[bad]), JSON.stringify(rows[bad])); process.exit(1); }
+        const eq = (a, b) => (typeof a === 'number' && typeof b === 'number' ? Math.abs(a - b) <= TOL : a && typeof a === 'object' ? Object.keys({ ...a, ...b }).every(k => eq(a[k], b?.[k])) : a === b);
+        const bad = want.findIndex((r, k) => !eq(r, rows[k]));
+        const same = bad < 0 && want.length === rows.length;
+        console.log(same ? `flag off identical over ${rows.length} frames (x, state, timeout and every pose channel, exact to 1e-4)` : `DIFFERENT (${rows.length} frames vs ${want.length})`);
+        if (!same) { console.log('first diff at frame', bad, JSON.stringify(want[bad]), JSON.stringify(rows[bad])); process.exit(1); }
     }
 }

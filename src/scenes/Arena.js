@@ -3442,7 +3442,12 @@ export default class Arena extends Phaser.Scene {
         const grappleBefore = this.lockupState?.grapple ?? null;
         if (this.lockupState) this._tickLockup(dt);
         // Stage 3: a follow-up (anything but the break) leaves the tie-up through the draw blend.
-        if (grappleBefore?.held && !this.lockupState && grappleBefore.phase !== 'break') this._exitBlend = { t: 0, held: grappleBefore.held };
+        if (grappleBefore?.held && !this.lockupState && grappleBefore.phase !== 'break') {
+            this._exitBlend = { t: 0, held: grappleBefore.held };
+            for (const w of [w1, w2]) this._dropLockupShins(w);   // D13: the move owns the legs now, not the lockup's absolute shins
+        }
+        // a move that starts inside the break's 220 ms settle takes the tween with it: drop the shins it would have eased out
+        for (const w of [w1, w2]) if (w._shinHome && w.state !== 'standing') this._dropLockupShins(w);
 
         if (r1 === 'pin' && !this.pinState) {
             this.pinState = { attacker: w1, defender: w2, timer: 0 };
@@ -3691,10 +3696,14 @@ export default class Arena extends Phaser.Scene {
         const nearArm = (a) => ((a.skeleton?.lChannelSide?.(a.facing) ?? 'near') === 'near' ? 'lArm' : 'rArm');
         const farArm = (a) => (nearArm(a) === 'lArm' ? 'rArm' : 'lArm');
         // D8 default, back to front: defender far arm, attacker far arm, attacker body, defender body, attacker near arm,
-        // defender near arm. `?grapplesLayer=alt` puts the defender's near arm behind the attacker's.
+        // defender near arm. `?grapplesLayer=alt` puts the defender's near arm behind the attacker's. D13: each body is its far leg,
+        // torso, head, near leg, so a man's own far leg stays behind his trunks and his near leg in front (the legs used to keep their
+        // own bands while the torso moved, and the far thigh came out over the trunks).
+        const nearLeg = (a) => (nearArm(a) === 'lArm' ? 'lLeg' : 'rLeg');
+        const farLeg = (a) => (nearLeg(a) === 'lLeg' ? 'rLeg' : 'lLeg');
         const alt = new URLSearchParams(location.search).get('grapplesLayer') === 'alt';
-        const order = [['defender', farArm(defender)], ['attacker', farArm(attacker)], ['attacker', 'torso'], ['attacker', 'head'],
-            ['defender', 'torso'], ['defender', 'head'],
+        const body = (role, a) => [[role, farLeg(a)], [role, 'torso'], [role, 'head'], [role, nearLeg(a)]];
+        const order = [['defender', farArm(defender)], ['attacker', farArm(attacker)], ...body('attacker', attacker), ...body('defender', defender),
             ...(alt ? [['defender', nearArm(defender)], ['attacker', nearArm(attacker)]] : [['attacker', nearArm(attacker)], ['defender', nearArm(defender)]])];
         for (const [img, depth] of layerDepths({ order }, { attacker, defender })) img.setDepth(depth);
         g.held = new Map([attacker, defender].map(w => [w, { pose: { ...w.pose }, x: w.x, y: w.y, facing: w.facing }]));
@@ -3781,7 +3790,7 @@ export default class Arena extends Phaser.Scene {
                 rel = { lead: from.lead + (target.lead - from.lead) * r, rear: from.rear + (target.rear - from.rear) * r };
                 g.legRel.set(w, rel);
             }
-            const ch = lockupPoseChannels(ph.weights[role], w.skeleton.lChannelSide(w.facing), { lean: ph.lean[role], dip: ph.dip[role], legRel: rel, legLen: w.skeleton._thighH + w.skeleton._shinH, release: ph.release,
+            const ch = lockupPoseChannels(ph.weights[role], w.skeleton.lChannelSide(w.facing), { lean: ph.lean[role], dip: ph.dip[role], legRel: rel, legLen: w.skeleton._thighH + w.skeleton._shinH, release: ph.release, releaseBend: ph.releaseBend,
                 ending: ph.phase === 'break' && g.ending !== 'plain' ? { kind: g.ending, role, u: ph.release } : null });
             const from = g.from.get(w);
             for (const key of Object.keys(ch)) w.pose[key] = k < 1 ? (from[key] ?? 0) * (1 - k) + ch[key] * k : ch[key];
@@ -3804,9 +3813,17 @@ export default class Arena extends Phaser.Scene {
     // the idle stance's shin first, then the joint goes to the owner tweenPose('idle') leaves (lKnee, 0 flex): same end state as before.
     _lockupLegsHome(w, ms) {
         const idle = POSES.idle, rest = (side) => (idle[`${side}Leg`] ?? 0) - 0.75 * (idle.crouch ?? 0);
+        w._shinHome = true;
         w.tweenPose({ ...idle, lShin: rest('l'), rShin: rest('r') }, ms, 'Linear', () => {
+            if (!w._shinHome) return;
+            w._shinHome = false;
             for (const side of ['l', 'r']) { delete w.pose[`${side}Shin`]; w.pose[`${side}Knee`] = Math.max(-0.10, -1.6 * (idle.crouch ?? 0)); }
         });
+    }
+
+    _dropLockupShins(w) {
+        w._shinHome = false;
+        delete w.pose.lShin; delete w.pose.rShin;
     }
 
     _tickLockup(dt) {

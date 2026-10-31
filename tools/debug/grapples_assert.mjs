@@ -143,5 +143,39 @@ for (const [att, def] of [[LOU, GEORGE], [GEORGE, LOU]]) {
     await h.close();
 }
 
+// 14: D13 layers, on the real rigs: through a drive each man's far leg draws behind his own torso and his near leg in front of it (and every part of the
+// first man's body behind the second's torso), both facings.
+for (const [att, def] of [[LOU, GEORGE], [GEORGE, LOU]]) {
+    const { h, page } = await fresh(att, def);
+    for (const facing of [1, -1]) {
+        await page.evaluate(SETUP, { facing, midX: 520, startGap: 90, defRope: null, flag: true, seed: 11 });
+        const bad = [];
+        for (let i = 0; i < 80; i++) {
+            await page.evaluate(STEP, { press: { a: [], d: [] }, hold: { a: [], d: [] }, legs: null });
+            if (i < 20 || i % 10) continue;
+            const d = await page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; return [sc.w1, sc.w2].map(w => { const k = w.skeleton, z = (n) => k[n].depth; return { farBehind: Math.max(z('farThigh'), z('farShin')) < z('torso'), nearFront: Math.min(z('nearThigh'), z('nearShin')) > z('torso'), top: Math.max(...['farThigh', 'farShin', 'nearThigh', 'nearShin', 'torso', 'head'].map(z)), low: Math.min(...['farThigh', 'farShin', 'nearThigh', 'nearShin', 'torso', 'head'].map(z)) }; }); });
+            for (const [k, m] of d.entries()) if (!m.farBehind || !m.nearFront) bad.push({ i, man: k, ...m });
+            const [first, second] = d[0].low < d[1].low ? d : [d[1], d[0]];
+            if (first.top > second.low) bad.push({ i, bodies: [first.top, second.low] });
+        }
+        check(`${att === LOU ? 'Lou' : 'George'} attacking, facing ${facing}: each far leg behind its torso, each near leg in front, one body behind the other`, bad.length === 0, bad.slice(0, 3));
+    }
+    await h.close();
+}
+
+// 15: D13 exits: a move taken out of the lockup (the whip) does not inherit the lockup's absolute shins, for either rig, both men.
+for (const [att, def] of [[LOU, GEORGE], [GEORGE, LOU]]) {
+    const { h, page } = await fresh(att, def);
+    await page.evaluate(SPY);
+    await page.evaluate(SETUP, { facing: 1, midX: 520, startGap: 90, defRope: null, flag: true, seed: 11 });
+    let gone = null;
+    for (let i = 0; i < 80; i++) {
+        const row = await page.evaluate(STEP, { press: { a: i === 48 ? ['action'] : [], d: [] }, hold: { a: i === 48 ? ['right'] : [], d: [] }, legs: null });
+        if (!row.locked && i >= 54) { gone = [row.a, row.d].map(w => [w.pose.lShin, w.pose.rShin]); break; }
+    }
+    check(`${att === LOU ? 'Lou' : 'George'} attacking: after the whip no lockup shin is left on either man`, gone !== null && gone.flat().every(v => v === undefined), gone);
+    await h.close();
+}
+
 console.log(fails ? `${fails} FAILED` : 'all passed');
 process.exit(fails ? 1 : 0);

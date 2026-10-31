@@ -247,3 +247,19 @@ test('T4a poses: the rope break raises the attacker\'s hands, the shove pushes t
     assert.ok(Math.abs(shoved.bend - LOCKUP.shove.stumbleLean) < 1e-12);
     assert.ok(breakTravel('shove').defender > breakTravel('plain').defender && breakTravel('rope').defender === 0);
 });
+
+test('D13 exits: a shin the move does not own eases to the crouch-path shin, not to 0', () => {
+    const held = { pose: { lShin: -0.3, rShin: -0.4, lLeg: -0.2, rLeg: 0.1, crouch: 0.3 }, x: 0, y: 0 }, now = { pose: { lLeg: 0.1, rLeg: 0.2, crouch: 0 }, x: 0, y: 0 };
+    assert.equal(exitBlendPose(held, now, 0).pose.lShin, -0.3);
+    assert.ok(Math.abs(exitBlendPose(held, now, 1).pose.lShin - 0.1) < 1e-12 && Math.abs(exitBlendPose(held, now, 1).pose.rShin - 0.2) < 1e-12);
+});
+
+test('D13 break: the torso comes up slower than the arms let go, so the hip has no one-frame snap', () => {
+    const w = { even: 0, attacker: 1, defender: 0 };
+    const at = (tb) => { const p = lockupPhase({ t: 1.4 + tb, seed: 11, breakAt: 1.4 }); return lockupPoseChannels(w, 'near', { release: p.release, releaseBend: p.releaseBend }); };
+    let worst = 0;
+    for (let f = 1; f < 40; f++) worst = Math.max(worst, Math.abs(at(f / 60).bend - at((f - 1) / 60).bend));
+    assert.ok(worst < 0.05, `${worst}`);   // the 0.16 s release stepped 0.059 rad/frame here
+    assert.equal(at(LOCKUP.breakBendRelease).bend, 0);
+    assert.equal(at(LOCKUP.breakRelease).lArm, LOCKUP.breakArm);   // the arms are still home by breakRelease
+});

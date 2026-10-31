@@ -26,7 +26,7 @@ export const LOCKUP = Object.freeze({
     shove: Object.freeze({ odds: 1 / 3, stepPx: 44, attackerPx: 6, arm: 1.5, elbow: 0.25, stumbleLean: -0.3 }),   // T4a.2: two hands, the defender stumbles back, the attacker keeps his feet
     stealHitch: 0.12, stealCrossfade: 0.20, stealDip: 0.06,
     breakGrip: 0.10, breakStep: 0.25, breakStepPx: 14,
-    breakRelease: 0.16, breakArm: -0.12,   // the torsos come up and the arms go home this fast, so hands that let go don't drop onto the other man (D12)
+    breakRelease: 0.16, breakBendRelease: 0.22, breakArm: -0.12,   // the torsos come up and the arms go home this fast, so hands that let go don't drop onto the other man (D12)
     legGain: 1.086,                     // ankle travel per rad of a leg channel, as a share of that rig's thigh + shin length (T1.12 probe at s = 1: Lou 129 px over 118.8, George 106 over 97.6, every role key)
     holdGap: 80,                        // px at s = 1 between the pair's x while held. D12 sweep (T1.7): no overlap under the belt or torso on torso, every grip 0 px; 78 also passes, but on the edge of the band, where the tugs and the strain leave it
     collarBack: 9, collarDrop: 6,       // px at s = 1: the collar point is the partner's neck, back of it and lower (D7)
@@ -157,6 +157,7 @@ export function lockupPhase(state) {
         out.phase = 'break';
         out.weights = roleWeights('attacker', 'defender', 1, 1);
         out.release = smooth(tb / LOCKUP.breakRelease);
+        out.releaseBend = smooth(tb / LOCKUP.breakBendRelease);   // the torso comes up slower than the arms let go: no one-frame hip snap
         const g = 1 - smooth(tb / LOCKUP.breakGrip);
         for (const r of ['attacker', 'defender']) for (const k of ['collar', 'elbow']) out.grips[r][k] = g;
         out.step = { index: 0, foot: 'lead', u: tb > LOCKUP.breakGrip ? Math.min(1, (tb - LOCKUP.breakGrip) / LOCKUP.breakStep) : null };
@@ -220,7 +221,7 @@ export function lockupPoseChannels(weights, lSide, extra = {}) {
     const release = extra.release ?? 0, arm = LOCKUP_ARMS.arm + (LOCKUP.breakArm - LOCKUP_ARMS.arm) * Math.min(1, release * 2.5);   // the arms go first
     return {
         lArm: arm, rArm: arm, lElbow: LOCKUP_ARMS.elbow, rElbow: LOCKUP_ARMS.elbow,
-        bend: (mix('bend') + (extra.lean ?? 0)) * (1 - release),
+        bend: (mix('bend') + (extra.lean ?? 0)) * (1 - (extra.releaseBend ?? release)),
         crouch: mix('crouch') + (extra.dip ?? 0),
         ...legChannels(mix, nearCh, farCh, legs, legLen),
     };
@@ -235,13 +236,13 @@ function legChannels(mix, nearCh, farCh, legs, legLen) {
 }
 
 // Arms and torso of the rope break and the shove, from the A-frame (even-weighted bend) by `u` 0..1. ending = { kind, role, u }.
-function endingPose(weights, { ending: { kind, role, u }, lean = 0, dip = 0 }) {
+function endingPose(weights, { ending: { kind, role, u }, releaseBend, lean = 0, dip = 0 }) {
     const bend0 = LOCKUP_POSES.even.bend, crouch = weights.even * LOCKUP_POSES.even.crouch + weights.attacker * LOCKUP_POSES.attacker.crouch + weights.defender * LOCKUP_POSES.defender.crouch;
     const k = smooth(u), to = (a, b) => a + (b - a) * k;
-    let arm = to(LOCKUP_ARMS.arm, LOCKUP.breakArm), elbow = LOCKUP_ARMS.elbow, bend = to(bend0, 0);
+    let arm = to(LOCKUP_ARMS.arm, LOCKUP.breakArm), elbow = LOCKUP_ARMS.elbow, bend = releaseBend === undefined ? to(bend0, 0) : bend0 * (1 - releaseBend);
     if (kind === 'rope' && role === 'attacker') { arm = to(LOCKUP_ARMS.arm, LOCKUP.ropeBreak.handsUp); elbow = to(LOCKUP_ARMS.elbow, LOCKUP.ropeBreak.elbow); }
     if (kind === 'shove' && role === 'attacker') { arm = to(LOCKUP_ARMS.arm, LOCKUP.shove.arm); elbow = to(LOCKUP_ARMS.elbow, LOCKUP.shove.elbow); }
-    if (kind === 'shove' && role === 'defender') bend = to(bend0, LOCKUP.shove.stumbleLean);
+    if (kind === 'shove' && role === 'defender') bend = bend0 + (LOCKUP.shove.stumbleLean - bend0) * (releaseBend ?? k);
     return { lArm: arm, rArm: arm, lElbow: elbow, rElbow: elbow, bend: bend + lean, crouch: crouch + dip };
 }
 
@@ -296,7 +297,9 @@ export function exitBlendPose(held, now, u) {
     for (const key of Object.keys(held.pose)) {
         const a = held.pose[key], b = now.pose[key];
         if (typeof a !== 'number') continue;
-        pose[key] = typeof b === 'number' ? a + (b - a) * k : a * (1 - k);
+        // D13: the move has no absolute shin; its shin is the crouch path's, leg minus .75 crouch, which is what the drawn blend lands on
+        const away = key === 'lShin' || key === 'rShin' ? (now.pose[`${key[0]}Leg`] ?? 0) - 0.75 * (now.pose.crouch ?? 0) : 0;
+        pose[key] = typeof b === 'number' ? a + (b - a) * k : a * (1 - k) + away * k;
     }
     return { pose, x: held.x + (now.x - held.x) * k, y: held.y + (now.y - held.y) * k };
 }

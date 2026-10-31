@@ -20,7 +20,7 @@ import { idleOf } from './grapples_legs_run.mjs';
 const shoveSeed = (() => { for (let k = 1; ; k++) if (breakKind(k, false) === 'shove') return k; })();
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const PAIRS = { lg: { id: 'lou-george', att: LOU, def: GEORGE }, gl: { id: 'george-lou', att: GEORGE, def: LOU } };
-const EXITS = [
+export const EXITS = [
     { id: 'headlock', move: 'headlock', keys: ['down', 'action'] }, { id: 'suplex', move: 'suplex', keys: ['up', 'action'] },
     { id: 'whip', move: 'irishWhip', keys: ['action'], dir: 'facing' }, { id: 'piledriver', move: 'piledriver', keys: ['action'] },
     { id: 'bodySlam', move: 'bodySlam', keys: ['action'], needsNo: 'piledriver' }, { id: 'hipToss', move: 'hipToss', keys: ['power'] },
@@ -236,7 +236,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const cases = casesArg.split(','), pairs = pairsArg.split(',').map(k => PAIRS[k]);
     const results = [], timing = {};
     for (const pair of pairs) {
-        for (const column of ['today', 'new']) {
+        for (const column of (process.env.WFM_COLS ?? 'today,new').split(',')) {   // WFM_COLS=new skips the flag-off column
             process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = column === 'new' ? 'notitle=1&grapples=v1' : 'notitle=1';
             const h = await launch();
             try {

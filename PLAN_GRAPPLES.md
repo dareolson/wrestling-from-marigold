@@ -19,6 +19,13 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
   Misses: Guido (arm 64.7) still 19.9 px short on the far elbow, flex .09 (not a Stage 1 rig); the fit is by eye on 4 rigs.
 - T1.4: fe0b6be [G1 page](research/animation/grapples-2026-10/g1/index.html), grapples_film/page tools, 60 runs; suite 1053/1053, build, coverage 22, flag-off identical. Held-pose grips 0.0 px; planted slide 1.98-2.21 px/frame; engage step 56-74 (today 36); +0.3-0.8 ms/step.
   Misses: in the film the attacker hands miss (Lou collar 9-14 px, George 22-27 px, George 54 frames >3 px); case (d) at 60 px never reaches the stall (a 40 px `d2` run does: 7-26 stall frames, x constant); George's feet cross 27 px. Details in the G1 entry.
+- T1.5: d9a5b01 `measureArmLength` restores every pose field, test on miss and hit. Engage step 73.6 -> 71.2, 61.7 -> 63.2, 68.6 -> 67.8, 57.0 -> 56.1.
+  Misses: the leak was not the cause of the engage step. Helper deleted in T1.7 (one gap, nothing reads arm length).
+- T1.6: 4053b8e ankle daylight, silhouette masks, reach apart from contact misses. Baseline: daylight -7 / -27, below the belt 720-1534, torso 0-663; today daylight 16-41, below 82-267 (frame 0 boots).
+  Misses: boots reach 25-30 px past the ankle, so daylight 8 does not mean no overlap; added `belowBody` (a leg or pelvis in it).
+- T1.7-T1.9: 50b4d13 `lean` is not drawn: A-frame is `bend` .38, lead feet back, gap 80, one for both pairs. Far hand on the forearm (`elbowCup` -.6): cause was the renderer's elbow limit. Engage .30. Buffered direction, real flag-off proof from 910e69f.
+  Even, drive, steal, stall 0 under the belt, torso 0 everywhere. Misses: engage 81-368 (frame 0 boots), break 21-139, daylight 6.3 once, George collar 2 frames, Guido/Kowalski torso 50-166.
+- T1.10: ea8c542 [G1b page](research/animation/grapples-2026-10/g1b/index.html), `grapples_assert` 13/13, suite 1054/1054, build, coverage 22, flag-off identical.
 
 ## Why (Derek 2026-10-29)
 

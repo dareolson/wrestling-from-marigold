@@ -26,6 +26,10 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - T1.7-T1.9: 50b4d13 `lean` is not drawn: A-frame is `bend` .38, lead feet back, gap 80, one for both pairs. Far hand on the forearm (`elbowCup` -.6): cause was the renderer's elbow limit. Engage .30. Buffered direction, real flag-off proof from 910e69f.
   Even, drive, steal, stall 0 under the belt, torso 0 everywhere. Misses: engage 81-368 (frame 0 boots), break 21-139, daylight 6.3 once, George collar 2 frames, Guido/Kowalski torso 50-166.
 - T1.10: ea8c542 [G1b page](research/animation/grapples-2026-10/g1b/index.html), `grapples_assert` 13/13, suite 1054/1054, build, coverage 22, flag-off identical.
+- T3.1-T3.3: 5b21d3e + next commit, 907fd53 one drawn lead-in for all exits. First-frame step 62-102 -> 3-6. [G3 page](research/animation/grapples-2026-10/g3/index.html).
+  Misses: whip's turn 119-121 at frame 9 (today 99-108); arm drag first frame 5.5 (today .01), worst better.
+- T4a.1-2: 907fd53 rope break, shove-off; assert 17/17, suite 1057/1057, build, coverage 22, flag-off identical. [G4a page](research/animation/grapples-2026-10/g4a/index.html).
+  Misses: rope break slide 2.93 / 2.53; break overlap 5-105 px. [Run entry](AI_HANDOFF_ENTRIES/2026-10-30-claude-grapples-run.md).
 
 ## Why (Derek 2026-10-29)
 

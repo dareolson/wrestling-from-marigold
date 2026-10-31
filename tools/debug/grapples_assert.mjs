@@ -5,6 +5,7 @@ import { INSTALL, SETUP, STEP } from './grapples_film.mjs';
 import { LOCKUP, breakKind } from '../../src/animation/lockup.js';
 import { INSTALL_LEGS, legFails } from './grapples_legs.mjs';
 import { runLegs } from './grapples_legs_run.mjs';
+import { settleRun, summarize, MOVES, OFFSETS_MS } from './grapples_3b1.mjs';
 
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const ENGAGE_F = Math.ceil(LOCKUP.engageEnd * 60);
@@ -175,6 +176,28 @@ for (const [att, def] of [[LOU, GEORGE], [GEORGE, LOU]]) {
     }
     check(`${att === LOU ? 'Lou' : 'George'} attacking: after the whip no lockup shin is left on either man`, gone !== null && gone.flat().every(v => v === undefined), gone);
     await h.close();
+}
+
+
+// 16: T3b.1, a standing move started 0 / 60 / 120 / 200 ms into the break's settle inherits no lockup shin: any absolute shin on the mover is one the same
+// move leaves when started from plain idle (jab and the like author their own). A new lockup is left out: it owns the shins by design.
+for (const [att, def] of [[LOU, GEORGE], [GEORGE, LOU]]) {
+    for (const mv of MOVES.filter(m => m.move !== 'lockup')) {
+        const first = await fresh(att, def);
+        if (mv.move !== 'taunt' && !first.moveSets.a.includes(mv.move)) { await first.h.close(); continue; }
+        await first.page.evaluate(INSTALL_LEGS);
+        const baseRes = await settleRun(first.page, { facing: 1, move: mv, offsetMs: 400, att, flag: false });
+        await first.h.close();
+        const bad = [];
+        for (const ms of OFFSETS_MS) {
+            const { h, page } = await fresh(att, def);
+            await page.evaluate(INSTALL_LEGS);
+            const sum = summarize(await settleRun(page, { facing: 1, move: mv, offsetMs: ms, att }), baseRes);
+            if (!sum.started || sum.leftoverFrames > 0) bad.push({ ms, sum: sum.started ? sum.leftoverFrames : 'no start' });
+            await h.close();
+        }
+        check(`${att === LOU ? 'Lou' : 'George'}: ${mv.id} started in the break settle (0/60/120/200 ms) leaves no lockup shin`, bad.length === 0, bad);
+    }
 }
 
 console.log(fails ? `${fails} FAILED` : 'all passed');

@@ -12,6 +12,7 @@ import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { launch } from './harness.mjs';
 import { partSteps } from './rise_handoff_probe.mjs';
+import { INSTALL_MASKS, worstMask } from './grapples_masks.mjs';
 
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const PAIRS = { lg: { id: 'lou-george', att: LOU, def: GEORGE }, gl: { id: 'george-lou', att: GEORGE, def: LOU } };
@@ -66,7 +67,7 @@ const SETUP = async ({ facing, midX, startGap, defRope, flag, layer, seed }) => 
     return { x0: [a.x, d.x], s, bounds: b };
 };
 
-const STEP = async ({ press, hold, wantLock }) => {
+const STEP = async ({ press, hold, mask }) => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0], a = sc.w1, d = sc.w2;
     window.__keys.a = new Set(press?.a ?? []); window.__keys.d = new Set(press?.d ?? []);
     window.__keys.ad = new Set(hold?.a ?? []); window.__keys.dd = new Set(hold?.d ?? []);
@@ -86,7 +87,7 @@ const STEP = async ({ press, hold, wantLock }) => {
         head: w.skeleton.head ? { x: +w.skeleton.head.x.toFixed(2), y: +w.skeleton.head.y.toFixed(2) } : null,
     });
     const ls = sc.lockupState, g = ls?.grapple ?? null;
-    const row = { ms, locked: !!ls, a: mk(a, window.__names.a), d: mk(d, window.__names.d), who: ls ? (ls.attacker === a ? 'a' : 'd') : null };
+    const row = { ms, mask: mask && ls ? window.__maskOverlap(a, d, true) : null, locked: !!ls, a: mk(a, window.__names.a), d: mk(d, window.__names.d), who: ls ? (ls.attacker === a ? 'a' : 'd') : null };
     if (g) {
         row.g = { t: g.t, phase: g.phase ?? null, grips: g.grips ?? null, step: g.step ?? null, stealAt: g.stealAt, breakAt: g.breakAt, holdGap: g.holdGap ?? null };
         if (g.grips && g.grabber) {
@@ -99,7 +100,9 @@ const STEP = async ({ press, hold, wantLock }) => {
                 for (const it of lists[role]) {
                     const handSide = it.arm === 'l' ? lSide : (lSide === 'near' ? 'far' : 'near');
                     const target = it.at ?? it.partner.skeleton.jointAttachmentPoints[`${handSide}${it.joint}`];
-                    errs[`${role}.${it.joint === 'Neck' ? 'collar' : 'elbow'}`] = { err: +(dist(pts[`${handSide}Wrist`], target)).toFixed(3), w: +it.w.toFixed(3) };
+                    const S = pts[`${handSide}Shoulder`], E = pts[`${handSide}Elbow`], W = pts[`${handSide}Wrist`], lu = dist(S, E), lf = dist(E, W);
+                    // reach: the target against the arm's reachable range (T1.6): `over` > 0 = out of reach, whatever the hand did.
+                    errs[`${role}.${it.joint === 'Neck' ? 'collar' : 'elbow'}`] = { err: +(dist(W, target)).toFixed(3), w: +it.w.toFixed(3), over: +(dist(S, target) - (lu + lf)).toFixed(2) };
                 }
             }
             const p = g.grabber.skeleton.jointAttachmentPoints, S = p.nearShoulder, E = p.nearElbow, Wr = p.nearWrist;
@@ -140,6 +143,8 @@ function summarize(rows, kind) {
     const endLock = rows.findIndex(r => !r.locked);
     const last = endLock < 0 ? rows.length - 1 : endLock - 1;
     const out = { frames: rows.length, lockedFrames: n, lockMs: +(n * FPS_MS).toFixed(0) };
+    const wm = worstMask(rows);
+    if (wm) { const { image, ...rest } = wm; out.silhouette = rest; }
     const mid = (r) => (r.a.x + r.d.x) / 2;
     // phases
     const engEnd = rows.findIndex(r => r.g && r.g.t >= 0.22);
@@ -155,6 +160,7 @@ function summarize(rows, kind) {
         over = Math.max(over, (reach('a', f) + reach('d', -f) - sep) / r.a.s);
     }
     out.footOverlap = +over.toFixed(1);
+    out.ankleDaylight = +(-over).toFixed(1);   // worst locked frame; positive = clear
     const stepOver = (name, pred) => {
         let m = 0;
         for (let i = 1; i < rows.length; i++) if (pred(rows[i], i)) m = Math.max(m, maxPart({ parts: rows[i - 1].a.parts }, { parts: rows[i].a.parts }), maxPart({ parts: rows[i - 1].d.parts }, { parts: rows[i].d.parts }));
@@ -167,10 +173,11 @@ function summarize(rows, kind) {
         const first = (key) => locked.find(r => r.g?.errs?.[key]?.w >= 0.99);
         out.grabMs = Object.fromEntries(['attacker.collar', 'attacker.elbow', 'defender.collar', 'defender.elbow'].map(k => { const f = first(k); return [k, f ? +(f.g.t * 1000).toFixed(0) : null]; }));
         const held = locked.filter(r => r.g?.errs);
-        out.handErr = {}; out.unreachable = {};
+        out.handErr = {}; out.contactMisses = {}; out.outOfReach = {};
         for (const k of ['attacker.collar', 'attacker.elbow', 'defender.collar', 'defender.elbow']) {
             const e = held.map(r => r.g.errs[k]).filter(x => x && x.w >= 0.99).map(x => x.err);
-            out.handErr[k] = e.length ? +Math.max(...e).toFixed(2) : null; out.unreachable[k] = e.filter(x => x > 3).length;
+            out.handErr[k] = e.length ? +Math.max(...e).toFixed(2) : null; out.contactMisses[k] = e.filter(x => x > 3).length;
+            out.outOfReach[k] = held.map(r => r.g.errs[k]).filter(x => x && x.w >= 0.99 && x.over > 0).length;
         }
         const flex = held.filter(r => r.g.errs['attacker.collar']?.w >= 0.99).map(r => r.g.flex);
         out.flex = flex.length ? { min: +Math.min(...flex).toFixed(2), max: +Math.max(...flex).toFixed(2) } : null;
@@ -201,9 +208,10 @@ async function runCase(page, ctx, spec, shotDir, clipAt) {
             if (spec.exit.dir) hold.a.push(spec.facing > 0 ? 'right' : 'left');
         }
         // direction keys stay held through the exit frame only
-        const row = await page.evaluate(STEP, { press, hold });
+        const row = await page.evaluate(STEP, { press, hold, mask: !!shotDir && i % 3 === 0 });
         row.i = i;
         rows.push(row);
+        if (row.mask?.image && spec.keepMasks === false) delete row.mask.image;
         if (shotDir) await page.screenshot({ path: join(shotDir, `s${String(i).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 82, clip });
         if (!row.locked && endAt === null) endAt = i;
         if (endAt !== null && i - endAt >= (spec.tail ?? 24)) break;
@@ -223,6 +231,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
                 const page = h.page;
                 await page.waitForTimeout(2500);
                 const info = await page.evaluate(INSTALL);
+                await page.evaluate(INSTALL_MASKS);
                 const bx = info.box, mX = (x) => bx.x + x * bx.w / bx.gw, mY = (y) => bx.y + y * bx.h / bx.gh;
                 const clipAt = (x) => ({ width: 380, height: 330, x: Math.max(0, Math.round(mX(x) - 190)), y: Math.round(mY(400 + 30) - 330) });
                 const bounds = (await page.evaluate(async () => { const { ringBoundsAtY } = await import('/src/constants.js'); return ringBoundsAtY(400); }));
@@ -243,8 +252,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
                             const rows = await runCase(page, info, { ...spec, flag: column === 'new', layer: alt }, join(outRoot, 'frames', col, id), clipAt);
                             if (alt) { await page.evaluate(() => { history.replaceState(null, '', location.pathname + location.search.replace('&grapplesLayer=alt', '')); }); }
                             const r = { id, case: spec.id, pair: pair.id, facing, column: col, ...summarize(rows, column === 'new' ? 'new' : 'today'), rows: undefined };
+                            const wm = worstMask(rows);
+                            if (wm?.image) writeFileSync(join(outRoot, 'frames', col, `${id}-mask.png`), Buffer.from(wm.image.split(',')[1], 'base64'));
                             results.push({ ...r, series: rows.map((x, k) => ({ i: x.i, step: k ? +Math.max(maxPart({ parts: rows[k - 1].a.parts }, { parts: x.a.parts }), maxPart({ parts: rows[k - 1].d.parts }, { parts: x.d.parts })).toFixed(1) : 0, state: x.a.state, locked: x.locked, who: x.who, ax: +x.a.x.toFixed(2), dx: +x.d.x.toFixed(2), phase: x.g?.phase ?? null, t: x.g?.t ?? null })) });
-                            console.log(`[film] ${col}/${id}: ${r.frames} frames, locked ${r.lockMs} ms, travel ${r.travel.total}, planted slide ${r.plantedSlide}, foot overlap ${r.footOverlap}, engage step ${r.stepEngage}${r.stepSteal !== undefined ? `, steal ${r.stepSteal}, break ${r.stepBreak}` : ''}`);
+                            console.log(`[film] ${col}/${id}: ${r.frames} frames, locked ${r.lockMs} ms, travel ${r.travel.total}, planted slide ${r.plantedSlide}, ankle daylight ${r.ankleDaylight}, silhouette below ${r.silhouette?.below} torso ${r.silhouette?.torso} above ${r.silhouette?.above}, engage step ${r.stepEngage}${r.stepSteal !== undefined ? `, steal ${r.stepSteal}, break ${r.stepBreak}` : ''}`);
                         }
                     }
                 }

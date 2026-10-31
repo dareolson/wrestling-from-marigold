@@ -9,7 +9,8 @@
     "hitY": 264,
     "wantY": 264,
     "arrivedMs": 1317,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
   },
   {
     "id": "lou-george-1-left-down",
@@ -21,7 +22,19 @@
     "hitY": 439,
     "wantY": 439,
     "arrivedMs": 1450,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
+  },
+  {
+    "id": "lou-george-1-left-rope",
+    "pair": "lou-george",
+    "facing": 1,
+    "dirKey": "left",
+    "vert": "rope",
+    "rebound": true,
+    "endMs": 3883,
+    "endY": 380.2,
+    "frames": 79
   },
   {
     "id": "lou-george-1-right-up",
@@ -33,7 +46,8 @@
     "hitY": 264,
     "wantY": 264,
     "arrivedMs": 1267,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
   },
   {
     "id": "lou-george-1-right-down",
@@ -45,7 +59,19 @@
     "hitY": 439,
     "wantY": 439,
     "arrivedMs": 1200,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
+  },
+  {
+    "id": "lou-george-1-right-rope",
+    "pair": "lou-george",
+    "facing": 1,
+    "dirKey": "right",
+    "vert": "rope",
+    "rebound": true,
+    "endMs": 3617,
+    "endY": 380.2,
+    "frames": 79
   },
   {
     "id": "lou-george--1-left-up",
@@ -57,7 +83,8 @@
     "hitY": 264,
     "wantY": 264,
     "arrivedMs": 1267,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
   },
   {
     "id": "lou-george--1-left-down",
@@ -69,7 +96,19 @@
     "hitY": 439,
     "wantY": 439,
     "arrivedMs": 1450,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
+  },
+  {
+    "id": "lou-george--1-left-rope",
+    "pair": "lou-george",
+    "facing": -1,
+    "dirKey": "left",
+    "vert": "rope",
+    "rebound": true,
+    "endMs": 3883,
+    "endY": 380.2,
+    "frames": 79
   },
   {
     "id": "lou-george--1-right-up",
@@ -81,7 +120,8 @@
     "hitY": 264,
     "wantY": 264,
     "arrivedMs": 1317,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
   },
   {
     "id": "lou-george--1-right-down",
@@ -93,7 +133,19 @@
     "hitY": 439,
     "wantY": 439,
     "arrivedMs": 1200,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
+  },
+  {
+    "id": "lou-george--1-right-rope",
+    "pair": "lou-george",
+    "facing": -1,
+    "dirKey": "right",
+    "vert": "rope",
+    "rebound": true,
+    "endMs": 3617,
+    "endY": 380.2,
+    "frames": 79
   },
   {
     "id": "george-lou-1-left-up",
@@ -105,7 +157,8 @@
     "hitY": 264,
     "wantY": 264,
     "arrivedMs": 1317,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
   },
   {
     "id": "george-lou-1-left-down",
@@ -117,7 +170,19 @@
     "hitY": 439,
     "wantY": 439,
     "arrivedMs": 1450,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
+  },
+  {
+    "id": "george-lou-1-left-rope",
+    "pair": "george-lou",
+    "facing": 1,
+    "dirKey": "left",
+    "vert": "rope",
+    "rebound": true,
+    "endMs": 3883,
+    "endY": 380.2,
+    "frames": 79
   },
   {
     "id": "george-lou-1-right-up",
@@ -129,7 +194,8 @@
     "hitY": 264,
     "wantY": 264,
     "arrivedMs": 1267,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
   },
   {
     "id": "george-lou-1-right-down",
@@ -141,7 +207,19 @@
     "hitY": 439,
     "wantY": 439,
     "arrivedMs": 1200,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
+  },
+  {
+    "id": "george-lou-1-right-rope",
+    "pair": "george-lou",
+    "facing": 1,
+    "dirKey": "right",
+    "vert": "rope",
+    "rebound": true,
+    "endMs": 3617,
+    "endY": 380.2,
+    "frames": 79
   },
   {
     "id": "george-lou--1-left-up",
@@ -153,7 +231,8 @@
     "hitY": 264,
     "wantY": 264,
     "arrivedMs": 1267,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
   },
   {
     "id": "george-lou--1-left-down",
@@ -165,7 +244,19 @@
     "hitY": 439,
     "wantY": 439,
     "arrivedMs": 1450,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
+  },
+  {
+    "id": "george-lou--1-left-rope",
+    "pair": "george-lou",
+    "facing": -1,
+    "dirKey": "left",
+    "vert": "rope",
+    "rebound": true,
+    "endMs": 3883,
+    "endY": 380.2,
+    "frames": 79
   },
   {
     "id": "george-lou--1-right-up",
@@ -177,7 +268,8 @@
     "hitY": 264,
     "wantY": 264,
     "arrivedMs": 1317,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
   },
   {
     "id": "george-lou--1-right-down",
@@ -189,6 +281,18 @@
     "hitY": 439,
     "wantY": 439,
     "arrivedMs": 1200,
-    "state": "staggered"
+    "state": "staggered",
+    "frames": 79
+  },
+  {
+    "id": "george-lou--1-right-rope",
+    "pair": "george-lou",
+    "facing": -1,
+    "dirKey": "right",
+    "vert": "rope",
+    "rebound": true,
+    "endMs": 3617,
+    "endY": 380.2,
+    "frames": 79
   }
 ]

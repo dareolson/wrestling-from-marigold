@@ -58,6 +58,7 @@ const RING_CORNERS = [
     { x: RING.farRight.x,  y: RING.ropes[1].farY,  topY: RING.ropes[2].farY,  matY: RING.farRight.y,  facing: -1 },
 ];
 // Row a whipped man runs to for a corner: 6 px in from the mat's far or near edge. depth -1 = far (up), +1 = near (down).
+const clampRunY = (y) => Math.max(cornerRunY(-1), Math.min(cornerRunY(1), y));
 const cornerRunY = (depth) => depth < 0 ? RING.farLeft.y + 6 : RING.nearLeft.y - 6;
 export const sharesDepth = (a, b) => !grapplesCandidate() || Math.abs(a.y - b.y) < RUNNER_DEPTH_GATE;
 const FRONT_KICK_STANDOFF = 84;
@@ -1373,6 +1374,8 @@ export default class Wrestler {
             if (g2?.run.on) this.walkPhase = (((this._gaitParamsAt(this._gaitRunW).STANCE * Math.PI * 2 - this.walkPhase) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
             this.runTarget = dir > 0 ? b.left + 20 : b.right - 20;
             this.runPhase  = 'returning';
+            // grapples=v1: the return aims at the man he was whipped by, wherever that man stands in depth.
+            if (grapplesCandidate() && this._lastOther) this._setRunLine(-dir, clampRunY(this._lastOther.y));
             this.scene.triggerRopeBounce?.('far');
         } else if (this.runPhase === 'toCorner') {
             // Stand-in for the corner daze (3c.5): the hit, the rope shake, a stagger.
@@ -1581,6 +1584,9 @@ export default class Wrestler {
         this.facing    = backDir;
         this.runTarget = backDir > 0 ? b.right - 20 : b.left + 20;
         this.runTargetY = null;
+        // grapples=v1: up or down held aims the rope point 70 px up or down the ring.
+        const aim = (this.input.isDown('down') ? 1 : 0) - (this.input.isDown('up') ? 1 : 0);
+        if (aim && grapplesCandidate()) this._setRunLine(backDir, clampRunY(this.y + aim * 70 * this.s));
         return 'run';
     }
 

@@ -483,6 +483,7 @@ export default class Wrestler {
         this._fallVariant = 'backward';
         this.runPhase     = null;
         this.runTarget    = 0;
+        this.runTargetY   = null; // grapples=v1: a run along a line; null = today's flat run
         this.runFacing    = 1;
         this.walkPhase    = 0;
         this.moveBlend    = 0;
@@ -1322,12 +1323,16 @@ export default class Wrestler {
         const g2 = this._gaitV2;
         const runSpeed = g2 ? g2.run.speed : RUN_SPEED;
         const x0 = this.x;
-        this.x += dir * runSpeed * this.s * dt;
+        // A run on a line (grapples=v1): x keeps its speed, y follows the straight line. Past a slope of 0.5, x slows so
+        // y never moves faster than 0.5 x speed; the foot lock reads x travel only, so it is untouched.
+        const lineY = this.runTargetY != null;
+        const slow = lineY ? this._runLineSlow() : 1;
+        this.x += dir * runSpeed * this.s * dt * slow;
         if (g2) {
             // same lock as the walk: travel over the draw scale, direction against facing, no 0.8. The run's own gait blends in
             // by moveBlend; travel stops at the turn point (the body is put on it below) so the planted foot is not dragged.
             const phaseDir = dir === this.facing ? 1 : -1;
-            const travel = g2.run.on ? Math.min(runSpeed * dt, Math.abs(this.runTarget - x0) / this.s) : runSpeed * dt;
+            const travel = g2.run.on ? Math.min(runSpeed * dt * slow, Math.abs(this.runTarget - x0) / this.s) : runSpeed * dt * slow;
             this._gaitRunW = g2.run.on ? this.moveBlend : 0;
             this.walkPhase = ((this.walkPhase + phaseDir * (travel / this._heightScale) * this._gaitParamsAt(this._gaitRunW).freq) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
             this._gaitLift = 1;
@@ -1338,9 +1343,15 @@ export default class Wrestler {
         this.moveBlend = Math.min(1, this.moveBlend + dt * 8);
 
         const past = dir > 0 ? this.x >= this.runTarget : this.x <= this.runTarget;
+        if (lineY) {
+            const span = this.runTarget - this._runStartX;
+            const t = past || !span ? 1 : Math.max(0, Math.min(1, (this.x - this._runStartX) / span));
+            this.y = this._runStartY + (this.runTargetY - this._runStartY) * t;
+        }
         if (!past) return;
 
         this.x = this.runTarget;
+        this.runTargetY = null;
         if (this.runPhase === 'toRope') {
             const b = ringBoundsAtY(this.y);
             this.runFacing = -dir;
@@ -1356,6 +1367,20 @@ export default class Wrestler {
             this.runPhase = null;
             this.scene.triggerRopeBounce?.('near');
         }
+    }
+
+    // Point the run at the rope's x at targetY (the side ropes slant), 20 px in. dir is the x direction of the run.
+    _setRunLine(dir, targetY) {
+        const b = ringBoundsAtY(targetY);
+        this.runTarget  = dir > 0 ? b.right - 20 : b.left + 20;
+        this.runTargetY = targetY;
+        this._runStartX = this.x;
+        this._runStartY = this.y;
+    }
+
+    _runLineSlow() {
+        const dx = Math.abs(this.runTarget - this._runStartX), dy = Math.abs(this.runTargetY - this._runStartY);
+        return dy > 0.5 * dx && dy > 0 ? 0.5 * dx / dy : 1;
     }
 
     // ── Input ─────────────────────────────────────────────────────────────────
@@ -1536,6 +1561,7 @@ export default class Wrestler {
         this.runFacing = backDir;
         this.facing    = backDir;
         this.runTarget = backDir > 0 ? b.right - 20 : b.left + 20;
+        this.runTargetY = null;
         return 'run';
     }
 
@@ -1850,6 +1876,7 @@ export default class Wrestler {
         other.runFacing = dir;
         other.facing    = dir;
         other.runTarget = dir > 0 ? b.right - 20 : b.left + 20;
+        other.runTargetY = null;
 
         this.facing = dir;
 
@@ -1908,6 +1935,7 @@ export default class Wrestler {
             other.runPhase = 'toRope';
             other.runFacing = other.facing = dir;
             other.runTarget = dir > 0 ? b.right - 20 : b.left + 20;
+            other.runTargetY = null;
             other.moveBlend = 0;
             // The flip throws him: the attacker turns on the frame the receiver
             // starts running, and whipFollow reaches after him.

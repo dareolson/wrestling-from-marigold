@@ -13,7 +13,7 @@ const base = (o) => Object.assign(Object.create(Wrestler.prototype), {
     scene: { triggerRopeBounce: () => {}, time: { delayedCall: () => {} }, tweens: { add: () => {} }, _logEvent: () => {} },
     _runStaggerSteps() {}, facing: 1, walkPhase: 0, moveBlend: 1, _heightScale: 1, _gaitV2: null, runTargetY: null, ...o });
 
-test('flag on: the return from the rope meets the attacker 60 px off in depth, and the clothesline connects', () => {
+test('flag on: the clothesline connects on the return when the attacker is 60 px off in depth', () => {
     withFlag(true, () => {
         const att = base({ x: 300, y: 410, state: 'standing', input: { justDown: k => k === 'action', isDown: () => false }, moveSet: ['clothesline'], _runPoseSequence() {}, _hurt() {} });
         const r = base({ x: 450, y: 350, state: 'running', runPhase: 'toRope', runFacing: 1, _lastOther: att, _hurt() {}, _doSell() {} });
@@ -24,7 +24,6 @@ test('flag on: the return from the rope meets the attacker 60 px off in depth, a
             if (r.runPhase === 'returning' && Math.abs(r.x - att.x) < 120) hit = att.tryAction(r);
         }
         assert.equal(hit, 'clothesline');
-        assert.ok(Math.abs(r.y - att.y) < 48, `runner y ${r.y} vs attacker 410`);
     });
 });
 test('flag off: the return is flat, so a runner across the lane keeps his own y', () => {
@@ -57,4 +56,56 @@ test('tryRun: up or down held aims the rope point 70 px up or down, clamped; non
     });
     const off = mk('up'); off.tryRun();
     assert.equal(off.runTargetY, null);
+});
+
+// T3c.4b: what this proves is the run's own path: at the frame the runner crosses the attacker's x, his y is the attacker's y
+// (the slope-limited y where 0.5 x slope cannot reach it), whatever the rope depth. Not an attack window, not the endpoint.
+const RUN_G2 = { params: { STRIDE: 60, STANCE: 0.6, LIFT: 1 }, freq: 6, run: { on: true, speed: 520, stance: 0.6, cadence: 3, stride: 1, lift: 1 } };
+test('T3c.4b: the return crosses the attacker\'s x at the attacker\'s y; slope-limited cases land on the 0.5 line', () => {
+    let worst = 0, limited = 0, n = 0, missMax = 0;
+    withFlag(true, () => {
+        for (const g2 of [null, RUN_G2]) for (const dir of [1, -1]) for (const ry of [300, 350, 420]) for (const oy of [270, 330, 380, 435]) for (const gap of [90, 200, 330, 500]) {
+            const hitY = ry;
+            const b = ringBoundsAtY(hitY);
+            const att = { x: 0, y: oy };
+            const r = base({ x: dir > 0 ? b.right - 20 : b.left + 20, y: hitY, state: 'running', runPhase: 'toRope', runFacing: dir, _lastOther: att, _gaitV2: g2 });
+            att.x = r.x - dir * gap * r.s;
+            r._flipAtRope(dir);
+            const want = Math.abs(oy - hitY) <= 0.5 * Math.abs(att.x - r.x) ? oy : hitY + Math.sign(oy - hitY) * 0.5 * Math.abs(att.x - r.x);
+            const wantC = Math.max(264, Math.min(439, want));
+            let cross = null;
+            for (let i = 0; i < 1500 && r.runPhase === 'returning' && r.state === 'running'; i++) {
+                const px = r.x; r.tickRun(1 / 60);
+                if (cross === null && (px - att.x) * (r.x - att.x) <= 0) cross = r.y;
+            }
+            n++;
+            if (gap * r.s < 60 * r.s) continue;   // within 60: the one line, covered below
+            assert.notEqual(cross, null, 'crossed him');
+            const err = Math.abs(cross - wantC);
+            worst = Math.max(worst, err);
+            if (Math.abs(oy - hitY) > 0.5 * gap * r.s) { limited++; missMax = Math.max(missMax, Math.abs(cross - oy)); }
+            assert.ok(err < 3, `g2 ${!!g2} dir ${dir} ry ${ry} oy ${oy} gap ${gap}: crossed at y ${cross}, want ${wantC}`);
+        }
+    });
+    console.log(`T3c.4b crossing: ${n} cases, worst y error ${worst.toFixed(3)} px, ${limited} slope-limited (miss his y by up to ${missMax.toFixed(1)} px)`);
+});
+test('T3c.4b: a sidestep after launch is not followed (snapshot, not homing)', () => {
+    withFlag(true, () => {
+        const att = { x: 300, y: 300 };
+        const r = base({ x: 800, y: 400, state: 'running', runPhase: 'toRope', runFacing: 1, _lastOther: att });
+        r._flipAtRope(1);
+        att.y = 430; att.x = 250;
+        let cross = null;
+        for (let i = 0; i < 1500 && r.state === 'running'; i++) { const px = r.x; r.tickRun(1 / 60); if (cross === null && (px - 300) * (r.x - 300) <= 0) cross = r.y; }
+        assert.ok(Math.abs(cross - 300) < 3, `crossed x 300 at y ${cross}`);
+    });
+});
+test('T3c.4b: attacker behind the runner, within 60 px, or at his depth: no waypoint', () => {
+    withFlag(true, () => {
+        for (const [ax, ay] of [[900, 300], [760, 300], [500, 400]]) {
+            const r = base({ x: 800, y: 400, state: 'running', runPhase: 'toRope', runFacing: 1, _lastOther: { x: ax, y: ay } });
+            r._flipAtRope(1);
+            assert.equal(r._returnVia, null);
+        }
+    });
 });

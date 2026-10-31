@@ -1328,6 +1328,7 @@ export default class Wrestler {
     tickRun(dt) {
         if (this.state !== 'running') {
             if (this.runPhase === 'ropeRecoil') this.runPhase = null; // hit during the recoil: no stuck phase
+            this._returnVia = null;
             return;
         }
         if (this.runPhase === 'ropeRecoil') {
@@ -1378,6 +1379,13 @@ export default class Wrestler {
         if (!past) return;
 
         this.x = this.runTarget;
+        if (this._returnVia && this.runPhase === 'returning') {
+            // T3c.4b: the first segment ended on the attacker's snapshot point; the second goes flat at that y to the rope.
+            const v = this._returnVia;
+            this._returnVia = null;
+            this._setRunLine(v.dir, this.y);
+            return;
+        }
         this.runTargetY = null;
         if (this.runPhase === 'toRope' && grapplesCandidate()) {
             // grapples=v1 (T3c.5): the rope hit copies the corner hit. No flip on arrival, still facing his run, the first step of
@@ -1416,7 +1424,27 @@ export default class Wrestler {
         this.runTarget = dir > 0 ? b.left + 20 : b.right - 20;
         this.runPhase  = 'returning';
         // grapples=v1: the return aims at the man he was whipped by, wherever that man stands in depth.
-        if (grapplesCandidate() && this._lastOther) this._setRunLine(-dir, clampRunY(this._lastOther.y));
+        this._returnVia = null;
+        if (grapplesCandidate() && this._lastOther) this._setReturnRoute(-dir, this._lastOther);
+    }
+
+    // grapples=v1 (T3c.4b): the return passes through the point the attacker stands on at launch, a snapshot, not a homing:
+    // a sidestep afterwards still works. Two segments, launch point to that point (slope capped at 0.5 so the run keeps its
+    // speed), then flat at that y to the rope. Behind him, within 60 px in x, or at his depth: the one line to the rope.
+    _setReturnRoute(dir, other) {
+        const oy = clampRunY(other.y), ox = other.x, dx = (ox - this.x) * dir;
+        if (dx < 60 * this.s || Math.abs(oy - this.y) < 0.5) { this._setRunLine(dir, oy); return; }
+        const reach = 0.5 * dx, wy = this.y + Math.max(-reach, Math.min(reach, oy - this.y));
+        this._setRunSegment(ox, wy);
+        this._returnVia = { dir };
+    }
+
+    // Run to the point (x, y) on a straight line. The rope at the other end is a separate segment (`_setRunLine`).
+    _setRunSegment(x, y) {
+        this.runTarget  = x;
+        this.runTargetY = y;
+        this._runStartX = this.x;
+        this._runStartY = this.y;
     }
 
     // Point the run at the rope's x at targetY (the side ropes slant), 20 px in. dir is the x direction of the run.

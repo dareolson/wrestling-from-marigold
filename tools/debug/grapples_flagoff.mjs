@@ -2,7 +2,8 @@
 // 60 fixed frames, and records both wrestlers' pose and x per frame.
 //   node tools/debug/grapples_flagoff.mjs --record     writes tests/fixtures/grapplesFlagOff.json (do this BEFORE a change)
 //   node tools/debug/grapples_flagoff.mjs              compares a fresh run to the fixture (exact)
-// WFM_URL=http://localhost:5173 WFM_P1=thesz-procreate-v1
+// WFM_URL=http://localhost:5173 (optional; without it the harness starts its own server)
+// The fixture was recorded on the old `thesz` / `george` rigs, so the run names them (Arena's default is now the roster rigs).
 import { writeFileSync, readFileSync } from 'node:fs';
 import { launch } from './harness.mjs';
 
@@ -33,6 +34,7 @@ export async function recordLockup(h, frames = 60) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+    process.env.WFM_P1 ??= 'thesz'; process.env.WFM_P2 ??= 'george';
     process.env.WFM_QS = [process.env.WFM_QS, 'grapples=off'].filter(Boolean).join('&');   // grapples is on by default (T5.3): this tool proves the old path
     const h = await launch();
     const rows = await recordLockup(h);

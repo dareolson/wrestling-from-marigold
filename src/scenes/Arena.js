@@ -3072,8 +3072,8 @@ export default class Arena extends Phaser.Scene {
             throw new Error(`Invalid character moveSet:\n  ${kitProblems.join('\n  ')}`);
         }
         const q  = new URLSearchParams(location.search);
-        const c1 = this._preset1 = PRESETS[q.get('p1')] ?? PRESETS.thesz;
-        const c2 = this._preset2 = PRESETS[q.get('p2')] ?? PRESETS.george;
+        const c1 = this._preset1 = PRESETS[q.get('p1')] ?? PRESETS['thesz-procreate-v1'];
+        const c2 = this._preset2 = PRESETS[q.get('p2')] ?? PRESETS['george-roster-v1'];
 
         this.w1 = new Wrestler(this, 330, 360, c1.skin, c1.trunks, input1, c1.moveSet, c1.textures ?? {});
         this.w1.facing   = 1;

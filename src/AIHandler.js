@@ -3,7 +3,7 @@
 // stalls, seeks ropes, cheap-shots, and turns aggressive only when the
 // opponent is vulnerable.
 
-import { ringBoundsAtY } from './constants.js';
+import { ringBoundsAtY, RING } from './constants.js';
 import { grapplesCandidate, sharesDepth } from './Wrestler.js';
 import { LOCKUP } from './animation/lockup.js';
 
@@ -31,6 +31,7 @@ const PERSONALITIES = {
         dropkickOdds:     0.10,  // rarely leaves his feet — he's a staller
         lockupPreference: 'headlock', // drain stamina with holds
         holdOdds:         0.70,  // lockup → headlock this often (attrition is the game plan)
+        cornerWhipOdds:   0.35,  // grapples=v1 (T5.1): of the open-ring whips, this share also holds up or down: the corner nearer the receiver
         tauntOdds:        0.35,  // preens and poses often when safe
         showboatAfter:    2,     // backs off to preen after landing 2 moves
         ropeSeek:         true,  // drifts toward ropes when hurt
@@ -60,6 +61,7 @@ const PERSONALITIES = {
         dropkickOdds:     0.12,  // has one (really), throws it sparingly
         lockupPreference: 'headlock',
         holdOdds:         0.75,  // hold-for-hold the best in the world
+        cornerWhipOdds:   0.35,
         tauntOdds:        0.04,  // barely acknowledges the crowd
         showboatAfter:    0,
         attrition:        true,  // the sleeper is his submission proxy
@@ -616,6 +618,10 @@ export default class AIHandler {
             } else {
                 // Whip in the facing direction
                 this._hold(this._self.facing > 0 ? 'right' : 'left');
+                // grapples=v1 (T5.1): sometimes to the corner nearer the receiver (far corner = up). The ropes-escape whip above stays flat.
+                if (grapplesCandidate() && Math.random() < (cfg.cornerWhipOdds ?? 0)) {
+                    this._hold(this._opp.y < (RING.farLeft.y + RING.nearLeft.y) / 2 ? 'up' : 'down');
+                }
                 this._press('action'); // → irish whip
             }
         } else {

@@ -444,7 +444,7 @@ export default class AIHandler {
         // cooldown). Close: an explicit strike. Between, the movement above closes the gap.
         if (grapplesCandidate() && opp.state === 'cornered') {
             if (dist > 120 * scale) {
-                if (self.canCornerCharge(opp) && Math.random() < 0.6) this._attack('run', 1.0);
+                if (self.canCornerCharge(opp) && Math.random() < 0.6) { if (Math.random() < 0.5) this._hold('down'); this._attack('run', 1.0); } // down held at the press: the stomach
                 else this._cooldown = 0.4;
             } else if (dist < JAB_REACH) {
                 this._attack('power', 0.7); // jab

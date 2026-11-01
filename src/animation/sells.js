@@ -34,6 +34,8 @@ const SUPINE_CLUTCH = {
     back: { d: { hip: 8, torso: 0.18, nearThigh: 0.6, nearShin: -0.5, farThigh: 0.5, farShin: -0.45 }, hands: { near: 'nearHip' } },
     // Curled over the chest, both hands on it.
     chest: { d: { torso: -0.22, nearThigh: 0.5, nearShin: -0.45, farThigh: 0.35, farShin: -0.3 }, hands: { near: 'chest', far: 'chest' } },
+    // Folded over the stomach: knees drawn right up, both hands low on the belly (T3c.8).
+    gut: { d: { torso: -0.40, nearThigh: 0.95, nearShin: -0.9, farThigh: 0.8, farShin: -0.75, hip: 3 }, hands: { near: 'gut', far: 'gut' } },
 };
 
 const PRONE_CLUTCH = {
@@ -44,6 +46,8 @@ const PRONE_CLUTCH = {
     arm: { d: { torso: 0.20, nearShin: -0.5, nearArm: 0.4 }, hands: { far: 'nearShoulder' } },
     back: { d: { torso: 0.15, hip: 3, nearShin: -0.6, farShin: -0.3, farArm: 1.0, farFore: 1.2 }, hands: { near: 'nearHip' } },
     chest: { d: { torso: 0.35, hip: 4, farArm: 1.3, farFore: 1.4, nearShin: -0.4 }, hands: { near: 'chest' } },
+    // Face down, hips up and the knee drawn under him, near hand under to the stomach (T3c.8).
+    gut: { d: { torso: 0.15, hip: 9, nearThigh: 0.7, nearShin: -1.0, farShin: -0.5 }, hands: { near: 'gut' } },
 };
 
 // A clutch: reach in, hold, a squeeze, hold, let go.
@@ -265,7 +269,7 @@ export const COMPACT_CLUTCH_SEC = 0.55;
  * sells nothing; if the plan comes out empty, plan one compact clutch. `noRoll`
  * (?getups=v1, PLAN_GETUPS D7) removes `roll` from the weights; off is byte-identical.
  */
-export function planSells({ style = 'economical', lying, part = 'chest', intensity = 0.8, budget, rand = Math.random, limb = null, compact = false, noRoll = false }) {
+export function planSells({ style = 'economical', lying, part = 'chest', intensity = 0.8, budget, rand = Math.random, limb = null, compact = false, noRoll = false, force = false }) {
     const st = SELL_STYLES[style] ?? SELL_STYLES.economical;
     const amp = st.amp * (0.6 + 0.4 * intensity);
     const pick = (weights) => {
@@ -277,6 +281,9 @@ export function planSells({ style = 'economical', lying, part = 'chest', intensi
     };
     const durationOf = (name, ly) => (name === 'clutch' ? 1.2 : SELLS[ly][name].duration) * st.pace;
     const resolve = (name, ly) => (ly === 'prone' && name === 'writhe' ? 'stir' : ly === 'prone' && name === 'kick' ? 'stir' : name);
+
+    // T3c.8 (`force`): a hit that must be read from the sell alone (the corner charge): one clutch at the part, whatever the style.
+    if (force) return [{ name: 'clutch', lying, part, duration: durationOf('clutch', lying), amp, limb, rolls: 0, forced: true }];
 
     const plan = [];
     let left = budget, ly = lying, rolls = 0;

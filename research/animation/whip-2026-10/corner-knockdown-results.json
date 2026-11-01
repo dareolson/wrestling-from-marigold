@@ -1,0 +1,1894 @@
+{
+  "runs": [
+    {
+      "id": "lou-george-left-near-face",
+      "pair": "lou-george",
+      "cornerKey": "left-near",
+      "part": "face",
+      "arrived": 135,
+      "pressed": 150,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 1450,
+      "landing": {
+        "x": 163.8,
+        "downMargin60s": 59.2,
+        "toLeftRope": 21.3,
+        "toRightRope": 675.2,
+        "bodyMinX": 66.8,
+        "bodyMaxX": 239.3,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -27.7,
+      "tightestRopeMargin": {
+        "falling": -12.4,
+        "lying": 20.9
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 139.9
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 94.5,
+        "min": 94
+      },
+      "attackerMinGapToJoints": 127.1,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 18.9,
+          "max": 19.5
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 651
+    },
+    {
+      "id": "lou-george-left-near-gut",
+      "pair": "lou-george",
+      "cornerKey": "left-near",
+      "part": "gut",
+      "arrived": 135,
+      "pressed": 150,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 1433,
+      "landing": {
+        "x": 163.8,
+        "downMargin60s": 59.2,
+        "toLeftRope": 21.3,
+        "toRightRope": 675.2,
+        "bodyMinX": 66.8,
+        "bodyMaxX": 239.3,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -27.6,
+      "tightestRopeMargin": {
+        "falling": -12.4,
+        "lying": 21.3
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 139.9
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 94.5,
+        "min": 94
+      },
+      "attackerMinGapToJoints": 139.9,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0,
+          "max": 0.2
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 665
+    },
+    {
+      "id": "lou-george-right-near-face",
+      "pair": "lou-george",
+      "cornerKey": "right-near",
+      "part": "face",
+      "arrived": 120,
+      "pressed": 135,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 1183,
+      "landing": {
+        "x": 796.2,
+        "downMargin60s": 59.2,
+        "toLeftRope": 675.2,
+        "toRightRope": 21.3,
+        "bodyMinX": 720.7,
+        "bodyMaxX": 893.2,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -26,
+      "tightestRopeMargin": {
+        "falling": -12.4,
+        "lying": 20.9
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 139.9
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 94.5,
+        "min": 94
+      },
+      "attackerMinGapToJoints": 127.1,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 18.9,
+          "max": 19.5
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      }
+    },
+    {
+      "id": "lou-george-right-near-gut",
+      "pair": "lou-george",
+      "cornerKey": "right-near",
+      "part": "gut",
+      "arrived": 120,
+      "pressed": 135,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 1183,
+      "landing": {
+        "x": 796.2,
+        "downMargin60s": 59.2,
+        "toLeftRope": 675.2,
+        "toRightRope": 21.3,
+        "bodyMinX": 720.7,
+        "bodyMaxX": 893.2,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -26,
+      "tightestRopeMargin": {
+        "falling": -12.4,
+        "lying": 21.3
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 139.9
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 94.5,
+        "min": 94
+      },
+      "attackerMinGapToJoints": 139.9,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0,
+          "max": 0.2
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      }
+    },
+    {
+      "id": "lou-george-left-far-face",
+      "pair": "lou-george",
+      "cornerKey": "left-far",
+      "part": "face",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 1233,
+      "landing": {
+        "x": 275.8,
+        "downMargin60s": 35.6,
+        "toLeftRope": 12.8,
+        "toRightRope": 434.3,
+        "bodyMinX": 217.4,
+        "bodyMaxX": 321.2,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -7.9,
+      "tightestRopeMargin": {
+        "falling": 0.5,
+        "lying": 12.6
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 137.5,
+        "toNearestJoint": 92.1
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 64.8,
+        "min": 64.5
+      },
+      "attackerMinGapToJoints": 84.4,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 11.4,
+          "max": 11.7
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      }
+    },
+    {
+      "id": "lou-george-left-far-gut",
+      "pair": "lou-george",
+      "cornerKey": "left-far",
+      "part": "gut",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 1267,
+      "landing": {
+        "x": 275.8,
+        "downMargin60s": 35.6,
+        "toLeftRope": 12.8,
+        "toRightRope": 434.3,
+        "bodyMinX": 217.4,
+        "bodyMaxX": 321.2,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -8,
+      "tightestRopeMargin": {
+        "falling": 0.5,
+        "lying": 12.8
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 137.5,
+        "toNearestJoint": 92.1
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 64.8,
+        "min": 64.5
+      },
+      "attackerMinGapToJoints": 92.1,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0,
+          "max": 0.1
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      }
+    },
+    {
+      "id": "lou-george-right-far-face",
+      "pair": "lou-george",
+      "cornerKey": "right-far",
+      "part": "face",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 933,
+      "landing": {
+        "x": 684.2,
+        "downMargin60s": 35.6,
+        "toLeftRope": 434.3,
+        "toRightRope": 12.8,
+        "bodyMinX": 638.8,
+        "bodyMaxX": 742.6,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -6.7,
+      "tightestRopeMargin": {
+        "falling": 0.5,
+        "lying": 12.6
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 139.9,
+        "toNearestJoint": 94.5
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 67.2,
+        "min": 66.9
+      },
+      "attackerMinGapToJoints": 86.8,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 11.4,
+          "max": 11.7
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 620
+    },
+    {
+      "id": "lou-george-right-far-gut",
+      "pair": "lou-george",
+      "cornerKey": "right-far",
+      "part": "gut",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 933,
+      "landing": {
+        "x": 684.2,
+        "downMargin60s": 35.6,
+        "toLeftRope": 434.3,
+        "toRightRope": 12.8,
+        "bodyMinX": 638.8,
+        "bodyMaxX": 742.6,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -6.7,
+      "tightestRopeMargin": {
+        "falling": 0.5,
+        "lying": 12.8
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 140.1,
+        "toNearestJoint": 94.7
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 67.4,
+        "min": 67.1
+      },
+      "attackerMinGapToJoints": 94.7,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0,
+          "max": 0.1
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 635
+    },
+    {
+      "id": "george-lou-left-near-face",
+      "pair": "george-lou",
+      "cornerKey": "left-near",
+      "part": "face",
+      "arrived": 135,
+      "pressed": 150,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 1450,
+      "landing": {
+        "x": 163.8,
+        "downMargin60s": 59.2,
+        "toLeftRope": 24.9,
+        "toRightRope": 680,
+        "bodyMinX": 70.4,
+        "bodyMaxX": 234.5,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -26.8,
+      "tightestRopeMargin": {
+        "falling": -13.4,
+        "lying": 24.3
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 144.7
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 106.6,
+        "min": 105.7
+      },
+      "attackerMinGapToJoints": 119.1,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 5.4,
+          "max": 5.7
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 651
+    },
+    {
+      "id": "george-lou-left-near-gut",
+      "pair": "george-lou",
+      "cornerKey": "left-near",
+      "part": "gut",
+      "arrived": 135,
+      "pressed": 150,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 1433,
+      "landing": {
+        "x": 163.8,
+        "downMargin60s": 59.2,
+        "toLeftRope": 24.9,
+        "toRightRope": 680,
+        "bodyMinX": 70.4,
+        "bodyMaxX": 234.5,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -26.8,
+      "tightestRopeMargin": {
+        "falling": -13.4,
+        "lying": 24.9
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 144.7
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 106.6,
+        "min": 105.7
+      },
+      "attackerMinGapToJoints": 144.7,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0.2,
+          "max": 0.4
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 665
+    },
+    {
+      "id": "george-lou-right-near-face",
+      "pair": "george-lou",
+      "cornerKey": "right-near",
+      "part": "face",
+      "arrived": 120,
+      "pressed": 135,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 1183,
+      "landing": {
+        "x": 796.2,
+        "downMargin60s": 59.2,
+        "toLeftRope": 680,
+        "toRightRope": 24.9,
+        "bodyMinX": 725.5,
+        "bodyMaxX": 889.6,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -25.4,
+      "tightestRopeMargin": {
+        "falling": -13.4,
+        "lying": 24.3
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 144.7
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 106.6,
+        "min": 105.7
+      },
+      "attackerMinGapToJoints": 119.1,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 5.4,
+          "max": 5.7
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      }
+    },
+    {
+      "id": "george-lou-right-near-gut",
+      "pair": "george-lou",
+      "cornerKey": "right-near",
+      "part": "gut",
+      "arrived": 120,
+      "pressed": 135,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 1183,
+      "landing": {
+        "x": 796.2,
+        "downMargin60s": 59.2,
+        "toLeftRope": 680,
+        "toRightRope": 24.9,
+        "bodyMinX": 725.5,
+        "bodyMaxX": 889.6,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -25.4,
+      "tightestRopeMargin": {
+        "falling": -13.4,
+        "lying": 24.9
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 144.7
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 106.6,
+        "min": 105.7
+      },
+      "attackerMinGapToJoints": 144.7,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0.2,
+          "max": 0.4
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      }
+    },
+    {
+      "id": "george-lou-left-far-face",
+      "pair": "george-lou",
+      "cornerKey": "left-far",
+      "part": "face",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 1233,
+      "landing": {
+        "x": 275.8,
+        "downMargin60s": 35.6,
+        "toLeftRope": 15,
+        "toRightRope": 437.2,
+        "bodyMinX": 219.5,
+        "bodyMaxX": 318.3,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -7.5,
+      "tightestRopeMargin": {
+        "falling": -0.1,
+        "lying": 14.6
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 137.5,
+        "toNearestJoint": 95
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 72.1,
+        "min": 71.6
+      },
+      "attackerMinGapToJoints": 79.6,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 3.3,
+          "max": 3.5
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      }
+    },
+    {
+      "id": "george-lou-left-far-gut",
+      "pair": "george-lou",
+      "cornerKey": "left-far",
+      "part": "gut",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 1267,
+      "landing": {
+        "x": 275.8,
+        "downMargin60s": 35.6,
+        "toLeftRope": 15,
+        "toRightRope": 437.2,
+        "bodyMinX": 219.5,
+        "bodyMaxX": 318.3,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -7.6,
+      "tightestRopeMargin": {
+        "falling": -0.1,
+        "lying": 15
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 137.5,
+        "toNearestJoint": 95
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 72.1,
+        "min": 71.6
+      },
+      "attackerMinGapToJoints": 95,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0.1,
+          "max": 0.2
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      }
+    },
+    {
+      "id": "george-lou-right-far-face",
+      "pair": "george-lou",
+      "cornerKey": "right-far",
+      "part": "face",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 933,
+      "landing": {
+        "x": 684.2,
+        "downMargin60s": 35.6,
+        "toLeftRope": 437.2,
+        "toRightRope": 15,
+        "bodyMinX": 641.7,
+        "bodyMaxX": 740.5,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -6.4,
+      "tightestRopeMargin": {
+        "falling": -0.1,
+        "lying": 14.6
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 139.9,
+        "toNearestJoint": 97.4
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 74.5,
+        "min": 74
+      },
+      "attackerMinGapToJoints": 82,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 3.3,
+          "max": 3.5
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 620
+    },
+    {
+      "id": "george-lou-right-far-gut",
+      "pair": "george-lou",
+      "cornerKey": "right-far",
+      "part": "gut",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 933,
+      "landing": {
+        "x": 684.2,
+        "downMargin60s": 35.6,
+        "toLeftRope": 437.2,
+        "toRightRope": 15,
+        "bodyMinX": 641.7,
+        "bodyMaxX": 740.5,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -6.4,
+      "tightestRopeMargin": {
+        "falling": -0.1,
+        "lying": 15
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 140.1,
+        "toNearestJoint": 97.6
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 74.7,
+        "min": 74.2
+      },
+      "attackerMinGapToJoints": 97.6,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0.1,
+          "max": 0.2
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 635
+    }
+  ],
+  "films": [
+    {
+      "id": "lou-george-left-near-face",
+      "pair": "lou-george",
+      "cornerKey": "left-near",
+      "part": "face",
+      "arrived": 135,
+      "pressed": 150,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 1450,
+      "landing": {
+        "x": 163.8,
+        "downMargin60s": 59.2,
+        "toLeftRope": 21.3,
+        "toRightRope": 675.2,
+        "bodyMinX": 66.8,
+        "bodyMaxX": 239.3,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -27.7,
+      "tightestRopeMargin": {
+        "falling": -12.4,
+        "lying": 20.9
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 139.9
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 94.5,
+        "min": 94
+      },
+      "attackerMinGapToJoints": 127.1,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 18.9,
+          "max": 19.5
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 651
+    },
+    {
+      "id": "lou-george-left-near-gut",
+      "pair": "lou-george",
+      "cornerKey": "left-near",
+      "part": "gut",
+      "arrived": 135,
+      "pressed": 150,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 1433,
+      "landing": {
+        "x": 163.8,
+        "downMargin60s": 59.2,
+        "toLeftRope": 21.3,
+        "toRightRope": 675.2,
+        "bodyMinX": 66.8,
+        "bodyMaxX": 239.3,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -27.6,
+      "tightestRopeMargin": {
+        "falling": -12.4,
+        "lying": 21.3
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 139.9
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 94.5,
+        "min": 94
+      },
+      "attackerMinGapToJoints": 139.9,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0,
+          "max": 0.2
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 665
+    },
+    {
+      "id": "lou-george-right-far-face",
+      "pair": "lou-george",
+      "cornerKey": "right-far",
+      "part": "face",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 933,
+      "landing": {
+        "x": 684.2,
+        "downMargin60s": 35.6,
+        "toLeftRope": 434.3,
+        "toRightRope": 12.8,
+        "bodyMinX": 638.8,
+        "bodyMaxX": 742.6,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -6.7,
+      "tightestRopeMargin": {
+        "falling": 0.5,
+        "lying": 12.6
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 139.9,
+        "toNearestJoint": 94.5
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 67.2,
+        "min": 66.9
+      },
+      "attackerMinGapToJoints": 86.8,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 11.4,
+          "max": 11.7
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 620
+    },
+    {
+      "id": "lou-george-right-far-gut",
+      "pair": "lou-george",
+      "cornerKey": "right-far",
+      "part": "gut",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 933,
+      "landing": {
+        "x": 684.2,
+        "downMargin60s": 35.6,
+        "toLeftRope": 434.3,
+        "toRightRope": 12.8,
+        "bodyMinX": 638.8,
+        "bodyMaxX": 742.6,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -6.7,
+      "tightestRopeMargin": {
+        "falling": 0.5,
+        "lying": 12.8
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 140.1,
+        "toNearestJoint": 94.7
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 67.4,
+        "min": 67.1
+      },
+      "attackerMinGapToJoints": 94.7,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 1.38,
+        "frames": 103,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0,
+          "max": 0.1
+        },
+        "farHand": null,
+        "heldFrames": 40
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 635
+    },
+    {
+      "id": "george-lou-left-near-face",
+      "pair": "george-lou",
+      "cornerKey": "left-near",
+      "part": "face",
+      "arrived": 135,
+      "pressed": 150,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 1450,
+      "landing": {
+        "x": 163.8,
+        "downMargin60s": 59.2,
+        "toLeftRope": 24.9,
+        "toRightRope": 680,
+        "bodyMinX": 70.4,
+        "bodyMaxX": 234.5,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -26.8,
+      "tightestRopeMargin": {
+        "falling": -13.4,
+        "lying": 24.3
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 144.7
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 106.6,
+        "min": 105.7
+      },
+      "attackerMinGapToJoints": 119.1,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 5.4,
+          "max": 5.7
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 651
+    },
+    {
+      "id": "george-lou-left-near-gut",
+      "pair": "george-lou",
+      "cornerKey": "left-near",
+      "part": "gut",
+      "arrived": 135,
+      "pressed": 150,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": 1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 1433,
+      "landing": {
+        "x": 163.8,
+        "downMargin60s": 59.2,
+        "toLeftRope": 24.9,
+        "toRightRope": 680,
+        "bodyMinX": 70.4,
+        "bodyMaxX": 234.5,
+        "ropeLeft": 45.5,
+        "ropeRight": 914.5
+      },
+      "corneredMargin": -26.8,
+      "tightestRopeMargin": {
+        "falling": -13.4,
+        "lying": 24.9
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 215.3,
+        "toNearestJoint": 144.7
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 106.6,
+        "min": 105.7
+      },
+      "attackerMinGapToJoints": 144.7,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0.2,
+          "max": 0.4
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 665
+    },
+    {
+      "id": "george-lou-right-far-face",
+      "pair": "george-lou",
+      "cornerKey": "right-far",
+      "part": "face",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "forward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 483,
+      "chargeMs": 933,
+      "landing": {
+        "x": 684.2,
+        "downMargin60s": 35.6,
+        "toLeftRope": 437.2,
+        "toRightRope": 15,
+        "bodyMinX": 641.7,
+        "bodyMaxX": 740.5,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -6.4,
+      "tightestRopeMargin": {
+        "falling": -0.1,
+        "lying": 14.6
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 139.9,
+        "toNearestJoint": 97.4
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 74.5,
+        "min": 74
+      },
+      "attackerMinGapToJoints": 82,
+      "sellPlayed": true,
+      "sell": {
+        "part": "head",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 3.3,
+          "max": 3.5
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 620
+    },
+    {
+      "id": "george-lou-right-far-gut",
+      "pair": "george-lou",
+      "cornerKey": "right-far",
+      "part": "gut",
+      "arrived": 124,
+      "pressed": 139,
+      "landed": true,
+      "states": [
+        "cornered",
+        "selling",
+        "falling",
+        "down",
+        "gettingUp",
+        "standing"
+      ],
+      "neverCorneredAfterHit": true,
+      "damageEvents": 1,
+      "variant": "kneesForward",
+      "lying": "prone",
+      "facingOnLanding": -1,
+      "reactionMs": 150,
+      "fallMs": 733,
+      "chargeMs": 933,
+      "landing": {
+        "x": 684.2,
+        "downMargin60s": 35.6,
+        "toLeftRope": 437.2,
+        "toRightRope": 15,
+        "bodyMinX": 641.7,
+        "bodyMaxX": 740.5,
+        "ropeLeft": 204.5,
+        "ropeRight": 755.5
+      },
+      "corneredMargin": -6.4,
+      "tightestRopeMargin": {
+        "falling": -0.1,
+        "lying": 15
+      },
+      "attackerGapOnLanding": {
+        "hipToHip": 140.1,
+        "toNearestJoint": 97.6
+      },
+      "attackerGapToHeadSprite": {
+        "onLanding": 74.7,
+        "min": 74.2
+      },
+      "attackerMinGapToJoints": 97.6,
+      "sellPlayed": true,
+      "sell": {
+        "part": "gut",
+        "forced": true,
+        "durationS": 0.96,
+        "frames": 78,
+        "startedMsAfterDown": 0,
+        "downTimeAtLanding": 5.88,
+        "severity": 0.7
+      },
+      "wristToTarget": {
+        "nearHand": {
+          "min": 0.1,
+          "max": 0.2
+        },
+        "farHand": null,
+        "heldFrames": 28
+      },
+      "getUp": "frontKneeStraight",
+      "gotUp": true,
+      "sellEndedBeforeRise": true,
+      "leftovers": {
+        "episode": null,
+        "knock": false,
+        "attackerCharge": false,
+        "attackerEpisode": false,
+        "defenderState": "standing",
+        "attackerState": "standing"
+      },
+      "frames": 635
+    }
+  ]
+}

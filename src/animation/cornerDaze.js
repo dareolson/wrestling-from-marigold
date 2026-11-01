@@ -9,7 +9,6 @@ export const CORNER = Object.freeze({
     depth: 12,          // px past the corner point at full load, so he never draws through the post (the rope's is 34)
     settleMs: 200,      // from the load pose into the daze
     minDazeS: 2.2,      // length is max(this, the stagger type's seconds); 1.5 ended before most charges from far landed (T3c.6b)
-    extendS: 0.6,       // a charge that connects adds this, once per episode
     exitStep: 30,       // px forward when the daze ends
     exitMs: 260,
     swayBend: 0.05, swayPeriodS: 2.7,     // slow sway of the torso
@@ -24,8 +23,13 @@ export const CORNER_CHARGE = Object.freeze({
     minDist: 120,       // farther than this and the run key charges him
     minTravelX: 40,     // the run itself must cover at least this much x, or there is no charge (a near-vertical run would crawl)
     hitRange: 70,       // x gap at impact that still connects
-    backOff: 84,        // px from him the attacker settles to afterwards (separation holds men 80·s apart)
-    backOffMs: 160,
+    backOff: 330,       // px from where he stood the attacker settles to, from the impact on a hit: the body goes down and inward (T3c.8)
+    backOffMs: 450,
+    missBackOff: 84,    // a whiff: the step T3c.7 had (separation holds standing men 80·s apart)
+    missBackOffMs: 160,
+    landMargin: 120,    // px·s from the rope to his hips when he lands: the legs lie about 94·s behind them (measured), so the feet stay inside
+    reactMs: 150,       // the hit's reaction before the fall
+    sellRoomS: 1.4,     // down time on top of DOWN_SEC, so the forced clutch does not eat the rest
     windupMs: 100,      // the clothesline cock; damage and sell land after it
     shake: [150, 0.002],
 });

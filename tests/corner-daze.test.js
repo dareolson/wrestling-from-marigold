@@ -4,11 +4,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Wrestler, { STAMINA_DRAIN } from '../src/Wrestler.js';
 import { RING, ringBoundsAtY } from '../src/constants.js';
+import Skeleton from '../src/Skeleton.js';
+import { planSells, SELLS, clutchSell } from '../src/animation/sells.js';
 import { CORNER, CORNER_CHARGE, cornerDazeSeconds, cornerOffsetAt, cornerPoseAt } from '../src/animation/cornerDaze.js';
 import { ROPE_HIT } from '../src/animation/ropeHit.js';
 import { STAGGER_TYPES, staggerFor } from '../src/animation/staggers.js';
 
 globalThis.Phaser ??= { Math: { Distance: { Between: (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1) } } };
+globalThis.Phaser.Math.Clamp ??= (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const withFlag = (fn) => { globalThis.location = { search: '?grapples=v1' }; try { return fn(); } finally { delete globalThis.location; } };
 const DT = 1 / 60;
 const NEAR_Y = RING.nearLeft.y - 6, FAR_Y = RING.farLeft.y + 6;
@@ -207,18 +210,6 @@ test('all four corners, both kits: back to the corner, facing in, loaded 12 px a
     });
 });
 
-test('daze extension: once per episode, so two connected charges cannot keep him stuck', () => {
-    withFlag(() => {
-        const sc = world();
-        const w = man(sc, 'lou', { x: 300, y: NEAR_Y });
-        runToCorner(w, -1); untilState(sc, w, 'cornered');
-        const base = w._cornerEp.left;
-        assert.equal(w.extendCorner(), true);
-        assert.equal(w.extendCorner(), false);
-        assert.ok(Math.abs(w._cornerEp.left - (base + CORNER.extendS)) < 1e-9);
-    });
-});
-
 // ── the charge ────────────────────────────────────────────────────────────────
 
 function chargeSetup(kitA = 'george', kitD = 'lou', ax = 700, daze = 6) {
@@ -226,57 +217,12 @@ function chargeSetup(kitA = 'george', kitD = 'lou', ax = 700, daze = 6) {
     const d = man(sc, kitD, { x: 300, y: NEAR_Y, stamina: 80 });
     runToCorner(d, -1); untilState(sc, d, 'cornered');
     d._cornerEp.left = daze; // long enough for the run to get there: the run is slower than a short daze
-    const hurts = []; d._hurt = (n, id) => hurts.push([n, id]);
-    const keys = new Set();
-    const a = man(sc, kitA, { x: ax, y: NEAR_Y - 10, facing: -1, input: { justDown: k => keys.delete(k), isDown: () => false } });
+    const hurts = [], realHurt = d._hurt.bind(d); d._hurt = (n, id, o) => { hurts.push([n, id, o]); return realHurt(n, id, o); };
+    const keys = new Set(), held = new Set();
+    const a = man(sc, kitA, { x: ax, y: NEAR_Y - 10, facing: -1, input: { justDown: k => keys.delete(k), isDown: k => held.has(k) } });
     a._lastOther = d; d._lastOther = a;
-    return { sc, a, d, hurts, press: k => keys.add(k) };
+    return { sc, a, d, hurts, press: k => keys.add(k), hold: k => held.add(k) };
 }
-
-test('charge: run key at a cornered man far away charges to 46 px short; one damage event, one extension; he is still dazed after', () => {
-    withFlag(() => {
-        const { sc, a, d, hurts, press } = chargeSetup();
-        const left0 = d._cornerEp.left, id0 = d._cornerEp.id, t0 = sc.time.now;
-        assert.equal(a.canCornerCharge(d), true);
-        press('run');
-        assert.equal(a.tryRun(), 'run');
-        assert.equal(a.runPhase, 'charge');
-        assert.equal(a.facing, -1);
-        const targetX = a._cornerPlaceX(d) + CORNER_CHARGE.gap * d.s;
-        assert.ok(Math.abs(a.runTarget - targetX) < 1e-6, `target ${a.runTarget} vs ${targetX}`);
-        let frames = 0;
-        while (a.runPhase === 'charge' && frames < 600) { sc.frame(); frames++; }
-        assert.ok(Math.abs(a.x - targetX) < 1e-6);
-        assert.ok(Math.abs(Math.abs(a.x - d.x) - CORNER_CHARGE.gap * d.s) < 2, `stopped ${Math.abs(a.x - d.x)} px from him, arm's reach is ${CORNER_CHARGE.gap * d.s}`);
-        for (let i = 0; i < 90; i++) sc.frame(); // past the end of the move
-        assert.equal(hurts.length, 1, 'one damage event');
-        assert.deepEqual(hurts[0], [STAMINA_DRAIN.cornerCharge, 'cornerCharge']);
-        assert.equal(d._cornerEp.id, id0);
-        assert.equal(d._cornerEp.extended, true);
-        const elapsed = (sc.time.now - t0) / 1000;
-        assert.ok(Math.abs(d._cornerEp.left - (left0 - elapsed + CORNER.extendS)) < 0.05, `left ${d._cornerEp.left} after ${elapsed} s of ${left0}, +${CORNER.extendS} once`);
-        assert.equal(d.state === 'cornered' || d.state === 'selling', true, 'still dazed when the attacker backs off');
-        const moves = sc.events.filter(([n, e]) => n === 'move' && e.move === 'cornerCharge');
-        assert.equal(moves.length, 1);
-    });
-});
-
-test('charge: a second hit in the same episode does not extend again', () => {
-    withFlag(() => {
-        const { sc, a, d, hurts, press } = chargeSetup();
-        d._cornerEp.left = 6;
-        for (const round of [0, 1]) {
-            a.x = 700; a.y = NEAR_Y - 10; a.state = 'standing'; a.runPhase = null;
-            sc.frame();
-            press('run'); assert.equal(a.tryRun(), 'run');
-            for (let i = 0; i < 400 && a.runPhase === 'charge'; i++) sc.frame();
-            for (let i = 0; i < 60; i++) sc.frame();
-        }
-        assert.equal(hurts.length, 2);
-        assert.equal(d._cornerEp.extended, true);
-        assert.ok(d._cornerEp.left <= 6 + CORNER.extendS, `left ${d._cornerEp.left}: at most one +${CORNER.extendS}`);
-    });
-});
 
 test('charge: he escapes before it lands (the daze ends mid-run): a free miss, the attacker runs on to the corner and is cornered himself', () => {
     withFlag(() => {
@@ -318,5 +264,110 @@ test('charge: the attacker is knocked down in the run: no stale charge, no damag
         assert.equal(a._charge, null);
         for (let i = 0; i < 400; i++) sc.frame();
         assert.equal(hurts.length, 0);
+    });
+});
+
+// ── T3c.8: the charge puts him down ───────────────────────────────────────────
+
+const knock = (low, { kitD = 'lou', kitA = 'george', y = NEAR_Y, left = true } = {}) => {
+    const sc = world();
+    const d = man(sc, kitD, { x: left ? 300 : 650, y, stamina: 80, sellStyle: 'economical', lying: 'prone' });
+    runToCorner(d, left ? -1 : 1); untilState(sc, d, 'cornered');
+    d._cornerEp.left = 6;
+    const hurts = [], realHurt = d._hurt.bind(d); d._hurt = (n, id, o) => { hurts.push([n, id, o]); return realHurt(n, id, o); };
+    const keys = new Set(), held = new Set(low ? ['down'] : []);
+    const a = man(sc, kitA, { x: left ? 700 : 250, y: y - 10, facing: left ? -1 : 1, input: { justDown: k => keys.delete(k), isDown: k => held.has(k) } });
+    a._lastOther = d; d._lastOther = a;
+    keys.add('run'); assert.equal(a.tryRun(), 'run');
+    const states = [];
+    for (let i = 0; i < 700; i++) {
+        sc.frame(); d.tickDown(DT);
+        if (states.at(-1) !== d.state) states.push(d.state);
+        if (d.state === 'down' && i > 200) break;
+    }
+    return { sc, a, d, hurts, states };
+};
+
+test('face hit: one damage event with part head, a reaction, a forward fall, down prone facing in, the episode gone for good', () => {
+    withFlag(() => {
+        const { sc, a, d, hurts, states } = knock(false);
+        assert.equal(hurts.length, 1);
+        assert.deepEqual(hurts[0], [STAMINA_DRAIN.cornerCharge, 'cornerCharge', { part: 'head' }]);
+        assert.deepEqual(states.slice(states.indexOf('cornered')), ['cornered', 'selling', 'falling', 'down'], `states ${states}`);
+        assert.equal(d._fallVariant, 'forward');
+        assert.equal(d.lying, 'prone'); assert.equal(d.facing, 1, 'head toward the ring');
+        assert.equal(d._cornerEp, null); assert.equal(a._charge, null);
+        for (let i = 0; i < 200; i++) { sc.frame(); d.tickDown(DT); assert.notEqual(d.state, 'cornered', 'never back in the corner'); }
+        d.startStagger(); assert.equal(d._cornerEp, null, 'startStagger cannot put him back'); assert.notEqual(d.state, 'cornered');
+        assert.equal(d._pain.part, 'head');
+    });
+});
+
+test('stomach hit (down held at the press): part gut, kneesForward, same lifecycle', () => {
+    withFlag(() => {
+        const { d, hurts, states } = knock(true);
+        assert.equal(hurts[0][2].part, 'gut');
+        assert.equal(d._fallVariant, 'kneesForward');
+        assert.equal(d.lying, 'prone');
+        assert.deepEqual(states.slice(states.indexOf('cornered')), ['cornered', 'selling', 'falling', 'down']);
+        assert.equal(d._pain.part, 'gut');
+    });
+});
+
+test('the sell always plays: a forced clutch at the part, whatever the style and the dice, with room in the down time', () => {
+    withFlag(() => {
+        for (const part of ['head', 'gut']) for (const low of [part === 'gut']) {
+            for (const style of ['economical', 'theatrical']) {
+                const { sc, d } = knock(low, { kitD: style === 'economical' ? 'lou' : 'george' });
+                d.sellStyle = style;
+                for (let i = 0; i < 60 && !d._sell; i++) { sc.frame(); d.tickDown(DT); }
+                assert.ok(d._sell, `${style} ${part}: a sell is planned`);
+                assert.equal(d._sell.plan.length, 1);
+                const cur = d._sell.plan[0];
+                assert.equal(cur.name, 'clutch'); assert.equal(cur.part, part); assert.equal(cur.lying, 'prone');
+                assert.ok(d.stateTimer - 0.65 >= cur.duration, `down time ${d.stateTimer} holds the ${cur.duration} s clutch`);
+                assert.ok(d._pain.severity >= 0.6);
+            }
+        }
+        for (const style of ['economical', 'theatrical']) for (const lying of ['supine', 'prone']) {
+            const plan = planSells({ style, lying, part: 'gut', intensity: 0.7, budget: 4, rand: () => 0.05, force: true });
+            assert.deepEqual(plan.map(p => [p.name, p.part, p.lying]), [['clutch', 'gut', lying]]);
+        }
+        assert.ok(SELLS.prone.clutch.gut && SELLS.supine.clutch.gut);
+        assert.notDeepEqual(clutchSell('prone', 'gut', 1).hands, clutchSell('prone', 'chest', 1).hands);
+    });
+});
+
+test('landing: inside both ropes with the 60·s margin in all 4 corners, both kits; the attacker is clear of the body', () => {
+    withFlag(() => {
+        for (const kitD of ['lou', 'george']) for (const [y, near] of [[NEAR_Y, true], [FAR_Y, false]]) for (const left of [true, false]) for (const low of [false, true]) {
+            const { d, a } = knock(low, { kitD, y, left });
+            const b = ringBoundsAtY(d.y), m = 60 * d.s, id = `${kitD} ${near ? 'near' : 'far'} ${left ? 'left' : 'right'} ${low ? 'gut' : 'face'}`;
+            assert.ok(d.x >= b.left + m - 1 && d.x <= b.right - m + 1, `${id}: x ${d.x} between ${b.left + m} and ${b.right - m}`);
+            assert.equal(d.facing, left ? 1 : -1, id);
+            assert.equal(d._charge, null);
+            assert.equal(a._charge, null, id);
+            assert.ok(Math.abs(a.x - d.x) >= 200 * d.s - 60 * d.s, `${id}: attacker ${Math.abs(a.x - d.x)} px from his hips`);
+        }
+    });
+});
+
+test('a pin or a grab during the reaction owns him: the fall does not start, no episode, no stale fall tween', () => {
+    withFlag(() => {
+        const sc = world();
+        const d = man(sc, 'lou', { x: 300, y: NEAR_Y, sellStyle: 'economical', lying: 'prone' });
+        runToCorner(d, -1); untilState(sc, d, 'cornered');
+        d._hurt(14, 'cornerCharge', { part: 'head' });
+        d._cornerKnockdown('head');
+        d.state = 'pinned';
+        for (let i = 0; i < 80; i++) sc.frame();
+        assert.equal(d.state, 'pinned'); assert.equal(d._cornerEp, null);
+        // a fall interrupted by something else stops the inward travel
+        const e = man(sc, 'george', { x: 300, y: NEAR_Y, sellStyle: 'economical', lying: 'prone' });
+        e._hurt(14, 'cornerCharge', { part: 'gut' });
+        e._fallFromCorner(1, 'gut');
+        sc.step(); const x0 = e.x; e.state = 'down';
+        for (let i = 0; i < 60; i++) sc.step();
+        assert.ok(Math.abs(e.x - x0) < 40, 'the travel stopped when something else took him');
     });
 });

@@ -2658,6 +2658,7 @@ export default class Skeleton {
             : points.nearHip;
         if (!neck || !hip) return null;
         if (name === 'chest') return { x: neck.x + (hip.x - neck.x) * 0.35, y: neck.y + (hip.y - neck.y) * 0.35 };
+        if (name === 'gut') return { x: neck.x + (hip.x - neck.x) * 0.72, y: neck.y + (hip.y - neck.y) * 0.72 };   // T3c.8: low on the belly
         if (name === 'head') {
             const len = Math.hypot(neck.x - hip.x, neck.y - hip.y) || 1;
             const out = P.headR * s * 0.9;

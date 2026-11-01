@@ -269,6 +269,13 @@ export const POSES = {
     headbutt:       { lLeg: 0.38,  rLeg: 0.15,  lArm: 0.30,  rArm: 0.25, lean: 0.48, crouch: 0.18 }, // whole body lunges forward, head leads
     // The sells' `lean` never rendered (it does not move the body); `bend` is
     // the torso channel that does, so these reactions finally snap back.
+    // grapples=v1 (T3c.8): the charge's hit on him, 150 ms before the fall (face: head and torso snap back; gut: folds over, arms in),
+    // and the attacker's dropped-shoulder version (`down` held at the run press)
+    cornerHitFace:  { lLeg:-0.10, rLeg: 0.10, lArm: 0.70, rArm: 0.60, crouch: 0.08, bend: -0.42 },
+    cornerHitGut:   { lLeg: 0.10, rLeg: 0.18, lArm: 0.55, rArm: 0.45, crouch: 0.40, bend: 0.50 },
+    cornerShoulderCock:   { lLeg:-0.15, rLeg: 0.30, lArm:-0.50, rArm:-0.30, crouch: 0.30, bend: 0.20 },
+    cornerShoulder:       { lLeg:-0.20, rLeg: 0.42, lArm:-0.60, rArm: 0.10, crouch: 0.55, bend: 0.65 },
+    cornerShoulderFollow: { lLeg:-0.25, rLeg: 0.46, lArm:-0.30, rArm: 0.20, crouch: 0.40, bend: 0.50 },
     cornerDaze:     CORNER_DAZE_POSE, // grapples=v1 (T3c.6): slumped in the corner, feet planted, knees soft, arms hanging (T3c.6b); the sway is cornerPoseAt's
     sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82, lean:-0.30, bend: -0.34 }, // chest impact — torso snaps back, arms whip behind
     sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10, bend: -0.22 }, // head strike — hands fly up toward face
@@ -450,7 +457,9 @@ export const MOVE_DEFS = {
                               { p: 'backDropLaunch',  dur: 100, e: 'Cubic.easeOut' },
                               { p: 'backDropRecover', dur: 220, e: 'Cubic.easeOut' }] },
 };
-
+// grapples=v1 (T3c.8): the charge with the dropped shoulder, same timeline as MOVE_DEFS.cornerCharge (a registry move has one poseSeq)
+const CORNER_SHOULDER_SEQ = [{ p: 'cornerShoulderCock', dur: 100, e: 'Cubic.easeOut' }, { p: 'cornerShoulder', dur: 80, e: 'Cubic.easeIn' },
+                             { p: 'cornerShoulderFollow', dur: 130, e: 'Linear' }, { p: 'idle', dur: 200, e: 'Cubic.easeOut' }];
 
 // ─── State machine reference ──────────────────────────────────────────────────
 // 'standing'    default; can move, accept input, initiate moves
@@ -1121,7 +1130,7 @@ export default class Wrestler {
                 const plan = planSells({
                     style: this.sellStyle, lying: this.lying, part: pain.part, intensity: pain.severity,
                     budget: this.stateTimer - SELL_LEAD_SEC - SELL_TAIL_SEC,
-                    limb: pain.limb, compact: aftermathCandidate(), noRoll: getUpsCandidate(),
+                    limb: pain.limb, compact: aftermathCandidate(), noRoll: getUpsCandidate(), force: !!pain.forceClutch,
                 });
                 // facing0: the facing he went down with. The hurt limb's slot is
                 // measured from it, plus one flip per roll (groundedSlot).
@@ -1508,7 +1517,7 @@ export default class Wrestler {
         this._ropeTension = 0; // no spring: the side rope is only pressed, as for any man at the wall
         this._cornerExitTok = null;
         this._cornerEp = {
-            id: ++this._cornerEpN, corner, dir, x: this.x, ms: 0, left: cornerDazeSeconds(this.stamina), extended: false,
+            id: ++this._cornerEpN, corner, dir, x: this.x, ms: 0, left: cornerDazeSeconds(this.stamina),
             mix: { from: { ...this.pose }, ms: 0, dur: 50 },
         };
         this.scene._logEvent?.('cornerHit', { wrestler: this.scene.w1 === this ? 'p1' : 'p2', side: far ? 'far' : 'near', dir });
@@ -1540,15 +1549,6 @@ export default class Wrestler {
         if (!ep || this.state !== 'selling') return false;
         this.state = 'cornered';
         ep.mix = { from: { ...this.pose }, ms: 0, dur: 140 };
-        return true;
-    }
-
-    // A connected charge adds CORNER.extendS to the daze, once per episode.
-    extendCorner() {
-        const ep = this._cornerEp;
-        if (!ep || ep.extended) return false;
-        ep.extended = true;
-        ep.left += CORNER.extendS;
         return true;
     }
 
@@ -1600,7 +1600,7 @@ export default class Wrestler {
 
     // A run to the point CORNER_CHARGE.gap short of him, at his depth as far as the 0.5 slope reaches. A snapshot of where he stands,
     // like the return route: not a homing.
-    _startCornerCharge() {
+    _startCornerCharge(low = false) {
         const o = this._lastOther, ox = this._cornerPlaceX(o), dir = Math.sign(ox - this.x);
         const gap = CORNER_CHARGE.gap * o.s; // at his depth, where the run ends
         const travel = Math.abs(ox - this.x) - gap;
@@ -1610,7 +1610,7 @@ export default class Wrestler {
         this.runFacing = this.facing = dir;
         this._returnVia = null;
         this._setRunSegment(ox - dir * gap, clampRunY(ey));
-        this._charge = { target: o, epId: o._cornerEp.id, corner: o._cornerEp.corner, dir };
+        this._charge = { target: o, epId: o._cornerEp.id, corner: o._cornerEp.corner, dir, low }; // low: `down` held at the press, the stomach
     }
 
     // The target is still in the stay it was charged in.
@@ -1627,7 +1627,7 @@ export default class Wrestler {
         if (!o) { this.state = 'standing'; return; }
         if (this._stillCornered(o, ch.epId)) {
             this.state = 'standing';
-            if (Math.abs(o.x - this.x) <= CORNER_CHARGE.hitRange * s && Math.abs(o.y - this.y) < STRIKE_DEPTH_TOLERANCE) this._doCornerCharge(o, ch.epId);
+            if (Math.abs(o.x - this.x) <= CORNER_CHARGE.hitRange * s && Math.abs(o.y - this.y) < STRIKE_DEPTH_TOLERANCE) this._doCornerCharge(o, ch.epId, ch.low);
             else this.tweenPose('idle', 180, 'Linear'); // short of him in range or depth: a free miss
             return;
         }
@@ -1643,28 +1643,70 @@ export default class Wrestler {
     // The clothesline's look; the damage, the daze extension and the sell land at the impact beat, after he is rechecked.
     // 'slamming' while it plays: a standing man is pushed out to 80·s from the other (move()), which would undo the gap before the
     // impact beat. He backs off by his own tween afterwards instead of being snapped out.
-    _doCornerCharge(other, epId) {
+    _doCornerCharge(other, epId, low = false) {
         this.state = 'slamming';
-        this._runPoseSequence(MOVE_DEFS.cornerCharge.poseSeq, () => {
-            if (this.state !== 'slamming') return;
+        let hit = false;
+        // he backs off to `gap` px from where the other man stands, by his own tween (a standing man would be snapped out to 80·s)
+        const backOff = (gap, ms) => {
             const b = ringBoundsAtY(this.y), dir = Math.sign(other.x - this.x) || -this.facing;
-            const x = Math.max(b.left + 20, Math.min(b.right - 20, other.x - dir * CORNER_CHARGE.backOff * this.s));
+            const x = Math.max(b.left + 20, Math.min(b.right - 20, other.x - dir * gap * this.s));
             this.scene.tweens.add({
-                targets: this, x, duration: CORNER_CHARGE.backOffMs, ease: 'Sine.easeOut',
+                targets: this, x, duration: ms, ease: 'Sine.easeOut',
                 onUpdate: (tw) => { if (this.state !== 'slamming') tw.stop(); },
                 onComplete: () => { if (this.state === 'slamming') this.state = 'standing'; },
             });
+        };
+        this._runPoseSequence(low ? CORNER_SHOULDER_SEQ : MOVE_DEFS.cornerCharge.poseSeq, () => {
+            if (this.state === 'slamming' && !hit) backOff(CORNER_CHARGE.missBackOff, CORNER_CHARGE.missBackOffMs);   // a whiff: the old short step
         });
         this.scene.time.delayedCall(CORNER_CHARGE.windupMs, () => {
             if (this.state !== 'slamming' || !this._stillCornered(other, epId)) return;
             if (Math.abs(other.x - this.x) > CORNER_CHARGE.hitRange * this.s || Math.abs(other.y - this.y) >= STRIKE_DEPTH_TOLERANCE) return;
-            other._hurt(STAMINA_DRAIN.cornerCharge, 'cornerCharge');
-            other.extendCorner();
+            const part = low ? 'gut' : 'head';
+            other._hurt(STAMINA_DRAIN.cornerCharge, 'cornerCharge', { part });
             this.scene.cameras.main.shake(...CORNER_CHARGE.shake);
             this.scene.crowd?.impact?.('strike', 0.9);
-            this.scene._logEvent?.('move', { attacker: this.scene.w1 === this ? 'p1' : 'p2', move: 'cornerCharge', defenderStamina: Math.round(other.stamina) });
+            this.scene._logEvent?.('move', { attacker: this.scene.w1 === this ? 'p1' : 'p2', move: 'cornerCharge', part, defenderStamina: Math.round(other.stamina) });
             this.scene._heatForMove?.('cornerCharge');
-            other._doSell('sellChest', 150, () => other.startStagger());
+            hit = true;
+            backOff(CORNER_CHARGE.backOff, CORNER_CHARGE.backOffMs);   // from the impact: the body is going down and inward
+            other._cornerKnockdown(part);
+        });
+    }
+
+    // T3c.8: the hit puts him down. The episode ends here, one way (startStagger and _restoreCorner find none), he reacts for
+    // CORNER_CHARGE.reactMs, then falls forward, inward, and lands prone; the sell is forced and names the part.
+    _cornerKnockdown(part) {
+        const ep = this._cornerEp;
+        if (!ep) return;
+        this._cornerEp = null;
+        this._cornerExitTok = null;
+        this._pain.forceClutch = true;
+        this.state = 'selling';
+        this.facing = ep.corner.facing;
+        this.tweenPose(part === 'gut' ? 'cornerHitGut' : 'cornerHitFace', CORNER_CHARGE.reactMs, 'Cubic.easeOut');
+        const tok = this._cornerKnock = {};
+        this.scene.time.delayedCall(CORNER_CHARGE.reactMs, () => {
+            if (this._cornerKnock !== tok) return;
+            this._cornerKnock = null;
+            if (this.state !== 'selling' && this.state !== 'staggered') return; // taken by something else meanwhile (a pin, a grab): that owns him
+            this._fallFromCorner(ep.corner.facing, part);
+        });
+    }
+
+    // startFall forward (head toward the ring, which is where the corner faces), and inward over the fall to CORNER_CHARGE.landMargin·s
+    // from the rope at his y. Measured: the hips are the anchor, the body lies about 94·s behind them and 71·s ahead (joints), so the
+    // 60·s of startClotheslineFall's downMargin would leave the feet 34 px through the rope.
+    _fallFromCorner(facing, part) {
+        const variant = part === 'gut' ? 'kneesForward' : 'forward';
+        this.facing = facing;
+        this.startFall(DOWN_SEC + CORNER_CHARGE.sellRoomS, variant, true);
+        this._cornerFallTok = {};
+        const tok = this._cornerFallTok, b = ringBoundsAtY(this.y), margin = CORNER_CHARGE.landMargin * this.s;
+        const x = facing > 0 ? Math.max(this.x, b.left + margin) : Math.min(this.x, b.right - margin);
+        this.scene.tweens.add({
+            targets: this, x, duration: Skeleton.FALLS[variant].duration, ease: 'Sine.easeOut',
+            onUpdate: (tw) => { if (this._cornerFallTok !== tok || this.state !== 'falling') tw.stop(); },
         });
     }
 
@@ -1872,7 +1914,7 @@ export default class Wrestler {
     tryRun() {
         if (this.state !== 'standing') return false;
         if (!this.input.justDown('run')) return false;
-        if (this.canCornerCharge()) { this._startCornerCharge(); return 'run'; } // grapples=v1 (T3c.7)
+        if (this.canCornerCharge()) { this._startCornerCharge(this.input.isDown('down')); return 'run'; } // grapples=v1 (T3c.7)
         const b       = ringBoundsAtY(this.y);
         const backDir = -this.facing; // run to the rope behind you, bounce back toward opponent
         this.state     = 'running';
@@ -2278,12 +2320,12 @@ export default class Wrestler {
     // this, so a move that never landed is never sold. The latest hit
     // replaces the previous one. `limb` (lLeg/rLeg/lArm/rArm, anatomical)
     // overrides the registry's `sell.limb`.
-    _hurt(amount, moveId, { limb } = {}) {
+    _hurt(amount, moveId, { limb, part } = {}) {
         this._drain(amount);
         const sell = MOVE_SPECS[moveId]?.sell;
         this._pain = {
             source: moveId,
-            part: sell?.part ?? null,
+            part: part ?? sell?.part ?? null,
             limb: limb ?? sell?.limb ?? null,
             severity: sell?.intensity ?? 0,
             // 'mat' until the rise, 'rise' during it, then 'recover' until `until`.
@@ -3410,8 +3452,9 @@ export default class Wrestler {
 
     // `fall` is a direction ('backward' / 'forward', a random variant of it,
     // see Skeleton.FALL_VARIANTS) or one Skeleton.FALLS variant by name.
-    startFall(downTime = DOWN_SEC, fall = 'backward') {
-        const variants = Skeleton.FALL_VARIANTS[fall];
+    // `exact` (T3c.8): `fall` is one Skeleton.FALLS variant even where its name is also a direction ('forward').
+    startFall(downTime = DOWN_SEC, fall = 'backward', exact = false) {
+        const variants = exact ? null : Skeleton.FALL_VARIANTS[fall];
         const variant  = variants ? variants[Math.floor(Math.random() * variants.length)] : fall;
         const spec     = Skeleton.FALLS[variant];
         if (!spec) throw new RangeError(`unknown fall "${fall}"`);

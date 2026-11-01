@@ -1,0 +1,99 @@
+{
+  "mode": "soak",
+  "pair": "george-kow",
+  "gait": "default",
+  "grapples": "off",
+  "wallMin": 19.5,
+  "gameMin": 19.37,
+  "fps": 59.3,
+  "maxPollGapSec": 4,
+  "pageSec": 1171,
+  "chainsStarted": 0,
+  "chainsComplete": 0,
+  "chainByEnd": {},
+  "chainFarthestStage": [],
+  "cornerWhips": 0,
+  "flatWhips": 0,
+  "ropesEscapeWhips": 0,
+  "cornerWhipRate": null,
+  "cornerWhipRateOpenRing": null,
+  "charge": {
+    "gut": 0,
+    "head": 0,
+    "miss": 0
+  },
+  "lockups": 124,
+  "lockupsPerGameMin": 6.4,
+  "matches": [
+    {
+      "len": 64,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 600,
+      "how": "timeLimitDraw",
+      "winner": null
+    },
+    {
+      "len": 498.2,
+      "how": "sleeperKO",
+      "winner": "p1"
+    }
+  ],
+  "meanMatchLen": 387.4,
+  "moves": {
+    "move:dropkick": 25,
+    "knockdown:elbowDrop": 36,
+    "move:taunt": 53,
+    "move:lockup": 124,
+    "move:irishWhip": 57,
+    "move:headlock": 58,
+    "move:frontKick": 16,
+    "move:jab": 66,
+    "stagger:headbutt": 15,
+    "move:figureFour": 16,
+    "move:pin": 26,
+    "move:piledriver": 3,
+    "move:clothesline": 23,
+    "knockdown:kneeDrop": 8,
+    "move:kneeLift": 8,
+    "move:shove": 5,
+    "move:sleeperHold": 7,
+    "move:hammerlock": 8,
+    "move:ankleLock": 8,
+    "move:armBar": 2,
+    "knockdown:piledriver": 1
+  },
+  "maxStateSec": {
+    "standing": 10.9,
+    "dropkicking": 0.6,
+    "selling": 0.15,
+    "flipping": 0.38,
+    "down": 10.42,
+    "gettingUp": 3,
+    "slamming": 0.5,
+    "elbowDropping": 0.37,
+    "taunting": 1.73,
+    "evading": 0.33,
+    "blocking": 0.78,
+    "lockup": 0.73,
+    "running": 4.75,
+    "headlocked": 1.75,
+    "holding": 4.1,
+    "staggered": 2.98,
+    "falling": 0.7,
+    "pinning": 2.53,
+    "pinned": 2.53,
+    "sleeping": 3.98
+  },
+  "maxExcess": {
+    "x": 27.6,
+    "yFar": 0,
+    "yNear": 0
+  },
+  "failures": [],
+  "pageErrors": [],
+  "lostFlow": null,
+  "chains": []
+}

@@ -1,0 +1,213 @@
+{
+  "mode": "keyboard",
+  "pair": "lou-george",
+  "gait": "default",
+  "grapples": "v1",
+  "results": [
+    {
+      "dirName": "right",
+      "corner": "up",
+      "low": false,
+      "finishedPhase": "done",
+      "whipped": true,
+      "events": [
+        "move:lockup",
+        "move:irishWhip",
+        "whipRelease:d-1",
+        "cornerHit",
+        "move:cornerCharge:head"
+      ],
+      "chain": {
+        "rec": "p2",
+        "whipper": "p1",
+        "at0": 5868.8,
+        "depth": -1,
+        "dir": 1,
+        "stages": {
+          "whip": true,
+          "corner": true,
+          "charge": true,
+          "sell": true,
+          "down": true
+        },
+        "cornerAt": 800,
+        "part": "head",
+        "chargeAt": 1683,
+        "downAt": 2333,
+        "fall": {
+          "facing": -1,
+          "lying": "prone",
+          "variant": "forward",
+          "x": 684,
+          "y": 264
+        },
+        "resolved": "recovery",
+        "end": "complete",
+        "endAt": 9216
+      },
+      "aState": "standing",
+      "dState": "standing",
+      "failures": 0
+    },
+    {
+      "dirName": "left",
+      "corner": "up",
+      "low": true,
+      "finishedPhase": "done",
+      "whipped": true,
+      "events": [
+        "move:lockup",
+        "move:irishWhip",
+        "whipRelease:d-1",
+        "cornerHit",
+        "move:cornerCharge:head",
+        "move:lockup",
+        "move:irishWhip",
+        "whipRelease:d-1",
+        "cornerHit",
+        "move:cornerCharge:gut"
+      ],
+      "chain": {
+        "rec": "p2",
+        "whipper": "p1",
+        "at0": 18351.6,
+        "depth": -1,
+        "dir": -1,
+        "stages": {
+          "whip": true,
+          "corner": true,
+          "charge": true,
+          "sell": true,
+          "down": true
+        },
+        "cornerAt": 800,
+        "part": "gut",
+        "chargeAt": 1700,
+        "downAt": 2600,
+        "fall": {
+          "facing": 1,
+          "lying": "prone",
+          "variant": "kneesForward",
+          "x": 276,
+          "y": 264
+        },
+        "resolved": "recovery",
+        "end": "complete",
+        "endAt": 9483
+      },
+      "aState": "standing",
+      "dState": "standing",
+      "failures": 0
+    },
+    {
+      "dirName": "right",
+      "corner": "down",
+      "low": true,
+      "finishedPhase": "done",
+      "whipped": true,
+      "events": [
+        "move:irishWhip",
+        "whipRelease:d-1",
+        "cornerHit",
+        "move:cornerCharge:head",
+        "move:lockup",
+        "move:irishWhip",
+        "whipRelease:d-1",
+        "cornerHit",
+        "move:cornerCharge:gut",
+        "move:lockup",
+        "move:irishWhip",
+        "whipRelease:d1",
+        "cornerHit",
+        "move:cornerCharge:gut"
+      ],
+      "chain": {
+        "rec": "p2",
+        "whipper": "p1",
+        "at0": 30834.5,
+        "depth": 1,
+        "dir": 1,
+        "stages": {
+          "whip": true,
+          "corner": true,
+          "charge": true,
+          "sell": true,
+          "down": true
+        },
+        "cornerAt": 883,
+        "part": "gut",
+        "chargeAt": 2133,
+        "downAt": 3033,
+        "fall": {
+          "facing": -1,
+          "lying": "prone",
+          "variant": "kneesForward",
+          "x": 796,
+          "y": 439
+        },
+        "resolved": "recovery",
+        "end": "complete",
+        "endAt": 9916
+      },
+      "aState": "standing",
+      "dState": "standing",
+      "failures": 0
+    },
+    {
+      "dirName": "left",
+      "corner": "down",
+      "low": false,
+      "finishedPhase": "done",
+      "whipped": true,
+      "events": [
+        "move:irishWhip",
+        "whipRelease:d-1",
+        "cornerHit",
+        "move:cornerCharge:gut",
+        "move:lockup",
+        "move:irishWhip",
+        "whipRelease:d1",
+        "cornerHit",
+        "move:cornerCharge:gut",
+        "move:lockup",
+        "move:irishWhip",
+        "whipRelease:d1",
+        "cornerHit",
+        "move:cornerCharge:head"
+      ],
+      "chain": {
+        "rec": "p2",
+        "whipper": "p1",
+        "at0": 43417.3,
+        "depth": 1,
+        "dir": -1,
+        "stages": {
+          "whip": true,
+          "corner": true,
+          "charge": true,
+          "sell": true,
+          "down": true
+        },
+        "cornerAt": 883,
+        "part": "head",
+        "chargeAt": 2133,
+        "downAt": 2783,
+        "fall": {
+          "facing": 1,
+          "lying": "prone",
+          "variant": "forward",
+          "x": 164,
+          "y": 439
+        },
+        "resolved": "recovery",
+        "end": "complete",
+        "endAt": 9666
+      },
+      "aState": "standing",
+      "dState": "standing",
+      "failures": 0
+    }
+  ],
+  "failures": [],
+  "pageErrors": []
+}

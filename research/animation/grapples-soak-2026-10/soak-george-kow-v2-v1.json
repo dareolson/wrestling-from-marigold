@@ -1,0 +1,328 @@
+{
+  "mode": "soak",
+  "pair": "george-kow",
+  "gait": "v2",
+  "grapples": "v1",
+  "wallMin": 20.1,
+  "gameMin": 20,
+  "fps": 60,
+  "maxPollGapSec": 2.1,
+  "pageSec": 1204,
+  "chainsStarted": 12,
+  "chainsComplete": 3,
+  "chainByEnd": {
+    "superseded": 3,
+    "expired": 6,
+    "complete": 3
+  },
+  "chainFarthestStage": [
+    "whip>corner",
+    "whip>corner",
+    "whip>corner",
+    "whip>corner",
+    "whip>corner",
+    "whip>corner",
+    "whip>corner>charge>sell>down",
+    "whip>corner>charge>sell>down",
+    "whip>corner>charge>sell>down",
+    "whip>corner",
+    "whip>corner",
+    "whip>corner"
+  ],
+  "cornerWhips": 12,
+  "flatWhips": 48,
+  "ropesEscapeWhips": 23,
+  "cornerWhipRate": 0.2,
+  "cornerWhipRateOpenRing": 0.324,
+  "charge": {
+    "gut": 1,
+    "head": 2,
+    "miss": 1
+  },
+  "lockups": 124,
+  "lockupsPerGameMin": 6.2,
+  "matches": [
+    {
+      "len": 600,
+      "how": "timeLimitDraw",
+      "winner": null
+    },
+    {
+      "len": 600,
+      "how": "timeLimitDraw",
+      "winner": null
+    }
+  ],
+  "meanMatchLen": 600,
+  "moves": {
+    "move:jab": 70,
+    "move:lockup": 124,
+    "move:headlock": 55,
+    "move:irishWhip": 60,
+    "move:clothesline": 23,
+    "knockdown:elbowDrop": 32,
+    "move:taunt": 48,
+    "move:frontKick": 22,
+    "dodge:frontKick": 3,
+    "move:pin": 24,
+    "move:shove": 7,
+    "move:hammerlock": 8,
+    "move:kneeLift": 6,
+    "stagger:headbutt": 9,
+    "move:ankleLock": 8,
+    "move:dropkick": 23,
+    "move:figureFour": 17,
+    "move:sleeperHold": 10,
+    "move:armBar": 2,
+    "dodge:jab": 1,
+    "knockdown:kneeDrop": 2,
+    "move:piledriver": 1,
+    "move:cornerCharge": 3,
+    "knockdown:bodySlam": 1
+  },
+  "maxStateSec": {
+    "standing": 9.55,
+    "blocking": 0.78,
+    "selling": 0.15,
+    "staggered": 1.33,
+    "lockup": 1.37,
+    "headlocked": 1.07,
+    "holding": 4.08,
+    "grabbed": 0.17,
+    "slamming": 0.57,
+    "running": 5.03,
+    "flipping": 0.37,
+    "down": 8.18,
+    "elbowDropping": 0.35,
+    "gettingUp": 2.22,
+    "evading": 0.35,
+    "taunting": 1.17,
+    "pinned": 1.17,
+    "pinning": 1.17,
+    "falling": 0.72,
+    "dropkicking": 0.6,
+    "sleeping": 0.48,
+    "cornered": 2.2
+  },
+  "maxExcess": {
+    "x": 14,
+    "yFar": 0,
+    "yNear": 0
+  },
+  "failures": [],
+  "pageErrors": [],
+  "lostFlow": null,
+  "chains": [
+    {
+      "rec": "p2",
+      "whipper": "p1",
+      "at0": 213235.4,
+      "depth": -1,
+      "dir": -1,
+      "stages": {
+        "whip": true,
+        "corner": true
+      },
+      "cornerAt": 1950,
+      "end": "superseded",
+      "endAt": 36299
+    },
+    {
+      "rec": "p2",
+      "whipper": "p1",
+      "at0": 249533.9,
+      "depth": -1,
+      "dir": -1,
+      "stages": {
+        "whip": true,
+        "corner": true
+      },
+      "cornerAt": 133,
+      "end": "superseded",
+      "endAt": 40315
+    },
+    {
+      "rec": "p2",
+      "whipper": "p1",
+      "at0": 289849,
+      "depth": -1,
+      "dir": 1,
+      "stages": {
+        "whip": true,
+        "corner": true
+      },
+      "cornerAt": 1967,
+      "end": "expired",
+      "endAt": 45015
+    },
+    {
+      "rec": "p1",
+      "whipper": "p2",
+      "at0": 336413.8,
+      "depth": -1,
+      "dir": 1,
+      "stages": {
+        "whip": true,
+        "corner": true
+      },
+      "cornerAt": 583,
+      "end": "expired",
+      "endAt": 45015
+    },
+    {
+      "rec": "p1",
+      "whipper": "p2",
+      "at0": 430810,
+      "depth": -1,
+      "dir": -1,
+      "stages": {
+        "whip": true,
+        "corner": true
+      },
+      "cornerAt": 333,
+      "end": "expired",
+      "endAt": 45015
+    },
+    {
+      "rec": "p2",
+      "whipper": "p1",
+      "at0": 435593.2,
+      "depth": -1,
+      "dir": 1,
+      "stages": {
+        "whip": true,
+        "corner": true
+      },
+      "cornerAt": 2217,
+      "missed": 1,
+      "end": "expired",
+      "endAt": 45015
+    },
+    {
+      "rec": "p1",
+      "whipper": "p2",
+      "at0": 568387.8,
+      "depth": -1,
+      "dir": 1,
+      "stages": {
+        "whip": true,
+        "corner": true,
+        "charge": true,
+        "sell": true,
+        "down": true
+      },
+      "cornerAt": 1500,
+      "part": "gut",
+      "chargeAt": 2800,
+      "downAt": 3700,
+      "fall": {
+        "facing": -1,
+        "lying": "prone",
+        "variant": "kneesForward",
+        "x": 684,
+        "y": 264
+      },
+      "resolved": "recovery",
+      "end": "complete",
+      "endAt": 14149
+    },
+    {
+      "rec": "p1",
+      "whipper": "p2",
+      "at0": 744347.4,
+      "depth": -1,
+      "dir": 1,
+      "stages": {
+        "whip": true,
+        "corner": true,
+        "charge": true,
+        "sell": true,
+        "down": true
+      },
+      "cornerAt": 983,
+      "part": "head",
+      "chargeAt": 2100,
+      "downAt": 2750,
+      "fall": {
+        "facing": -1,
+        "lying": "prone",
+        "variant": "forward",
+        "x": 684,
+        "y": 264
+      },
+      "resolved": "recovery",
+      "end": "complete",
+      "endAt": 9750
+    },
+    {
+      "rec": "p1",
+      "whipper": "p2",
+      "at0": 799511.9,
+      "depth": -1,
+      "dir": 1,
+      "stages": {
+        "whip": true,
+        "corner": true,
+        "charge": true,
+        "sell": true,
+        "down": true
+      },
+      "cornerAt": 500,
+      "part": "head",
+      "chargeAt": 1600,
+      "downAt": 2233,
+      "fall": {
+        "facing": -1,
+        "lying": "prone",
+        "variant": "forward",
+        "x": 684,
+        "y": 264
+      },
+      "resolved": "recovery",
+      "end": "complete",
+      "endAt": 10033
+    },
+    {
+      "rec": "p2",
+      "whipper": "p1",
+      "at0": 839077,
+      "depth": -1,
+      "dir": 1,
+      "stages": {
+        "whip": true,
+        "corner": true
+      },
+      "cornerAt": 183,
+      "end": "superseded",
+      "endAt": 18883
+    },
+    {
+      "rec": "p2",
+      "whipper": "p1",
+      "at0": 857959.6,
+      "depth": 1,
+      "dir": -1,
+      "stages": {
+        "whip": true,
+        "corner": true
+      },
+      "cornerAt": 1033,
+      "end": "expired",
+      "endAt": 45015
+    },
+    {
+      "rec": "p1",
+      "whipper": "p2",
+      "at0": 1088483.7,
+      "depth": 1,
+      "dir": 1,
+      "stages": {
+        "whip": true,
+        "corner": true
+      },
+      "cornerAt": 283,
+      "end": "expired",
+      "endAt": 45015
+    }
+  ]
+}

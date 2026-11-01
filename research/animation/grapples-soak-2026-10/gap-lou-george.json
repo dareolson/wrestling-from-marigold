@@ -1,0 +1,93 @@
+{
+  "mode": "soak",
+  "pair": "lou-george",
+  "gait": "default",
+  "grapples": "v1",
+  "wallMin": 15.3,
+  "gameMin": 4.05,
+  "fps": 60.1,
+  "maxPollGapSec": 2.1,
+  "pageSec": 240,
+  "chainsStarted": 0,
+  "chainsComplete": 0,
+  "chainByEnd": {},
+  "chainFarthestStage": [],
+  "cornerWhips": 0,
+  "flatWhips": 8,
+  "ropesEscapeWhips": 6,
+  "cornerWhipRate": 0,
+  "cornerWhipRateOpenRing": 0,
+  "charge": {
+    "gut": 0,
+    "head": 0,
+    "miss": 0
+  },
+  "lockGapPx": {
+    "p1": {
+      "n": 459,
+      "min": 47.5,
+      "mean": 62.7,
+      "max": 78.5
+    },
+    "p2": {
+      "n": 218,
+      "min": 56.4,
+      "mean": 67.8,
+      "max": 78.2
+    }
+  },
+  "lockups": 33,
+  "lockupsPerGameMin": 8.15,
+  "matches": [],
+  "meanMatchLen": null,
+  "moves": {
+    "move:jab": 11,
+    "move:lockup": 33,
+    "move:headlock": 22,
+    "move:dropkick": 11,
+    "move:armBar": 1,
+    "knockdown:elbowDrop": 6,
+    "move:pin": 7,
+    "move:taunt": 8,
+    "move:irishWhip": 8,
+    "move:clothesline": 4,
+    "knockdown:kneeDrop": 2,
+    "stagger:headbutt": 2,
+    "move:figureFour": 3,
+    "move:sleeperHold": 3,
+    "move:hammerlock": 2,
+    "move:ankleLock": 2
+  },
+  "maxStateSec": {
+    "standing": 8.13,
+    "selling": 0.15,
+    "staggered": 0.83,
+    "lockup": 1.75,
+    "holding": 4.08,
+    "headlocked": 0.75,
+    "blocking": 0.78,
+    "dropkicking": 0.6,
+    "flipping": 0.37,
+    "down": 7.85,
+    "gettingUp": 1.33,
+    "slamming": 0.5,
+    "elbowDropping": 0.35,
+    "pinning": 0.37,
+    "pinned": 0.37,
+    "taunting": 1.13,
+    "grabbed": 0.17,
+    "running": 4.02,
+    "evading": 0.33,
+    "falling": 0.68,
+    "sleeping": 1.15
+  },
+  "maxExcess": {
+    "x": 14,
+    "yFar": 0,
+    "yNear": 0
+  },
+  "failures": [],
+  "pageErrors": [],
+  "lostFlow": null,
+  "chains": []
+}

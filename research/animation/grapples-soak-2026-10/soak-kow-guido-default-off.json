@@ -1,0 +1,96 @@
+{
+  "mode": "soak",
+  "pair": "kow-guido",
+  "gait": "default",
+  "grapples": "off",
+  "wallMin": 8.2,
+  "gameMin": 4.25,
+  "fps": 57,
+  "maxPollGapSec": 3.7,
+  "pageSec": 264,
+  "chainsStarted": 0,
+  "chainsComplete": 0,
+  "chainByEnd": {},
+  "chainFarthestStage": [],
+  "cornerWhips": 0,
+  "flatWhips": 0,
+  "ropesEscapeWhips": 0,
+  "cornerWhipRate": null,
+  "cornerWhipRateOpenRing": null,
+  "charge": {
+    "gut": 0,
+    "head": 0,
+    "miss": 0
+  },
+  "lockups": 26,
+  "lockupsPerGameMin": 6.12,
+  "matches": [
+    {
+      "len": 111.4,
+      "how": "pinfall",
+      "winner": "p2"
+    },
+    {
+      "len": 93.9,
+      "how": "pinfall",
+      "winner": "p2"
+    },
+    {
+      "len": 49.8,
+      "how": "pinfall",
+      "winner": "p2"
+    }
+  ],
+  "meanMatchLen": 85,
+  "moves": {
+    "move:lockup": 26,
+    "knockdown:piledriver": 13,
+    "move:figureFour": 3,
+    "move:pin": 22,
+    "move:dropkick": 3,
+    "knockdown:elbowDrop": 2,
+    "move:headlock": 6,
+    "move:irishWhip": 5,
+    "knockdown:kneeDrop": 1,
+    "move:hammerlock": 2,
+    "move:kneeLift": 1,
+    "move:taunt": 3,
+    "move:piledriver": 3,
+    "move:shove": 3,
+    "stagger:headbutt": 6,
+    "move:frontKick": 6,
+    "move:jab": 7,
+    "move:clothesline": 2,
+    "move:ankleLock": 2
+  },
+  "maxStateSec": {
+    "standing": 8.02,
+    "lockup": 0.5,
+    "holding": 4.1,
+    "down": 9.2,
+    "gettingUp": 3.02,
+    "pinned": 2.53,
+    "pinning": 2.53,
+    "evading": 0.33,
+    "dropkicking": 0.6,
+    "selling": 0.15,
+    "flipping": 0.38,
+    "slamming": 0.47,
+    "elbowDropping": 0.35,
+    "headlocked": 0.7,
+    "blocking": 0.75,
+    "running": 2.98,
+    "taunting": 1.75,
+    "staggered": 2.53,
+    "falling": 0.7
+  },
+  "maxExcess": {
+    "x": 0,
+    "yFar": 0,
+    "yNear": 0
+  },
+  "failures": [],
+  "pageErrors": [],
+  "lostFlow": null,
+  "chains": []
+}

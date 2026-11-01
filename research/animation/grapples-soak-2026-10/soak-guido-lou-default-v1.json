@@ -1,0 +1,221 @@
+{
+  "mode": "soak",
+  "pair": "guido-lou",
+  "gait": "default",
+  "grapples": "v1",
+  "wallMin": 17.4,
+  "gameMin": 16.68,
+  "fps": 60,
+  "chainsStarted": 3,
+  "chainsComplete": 3,
+  "chainByEnd": {
+    "complete": 3
+  },
+  "chainFarthestStage": [
+    "whip>corner>charge>sell>down",
+    "whip>corner>charge>sell>down",
+    "whip>corner>charge>sell>down"
+  ],
+  "cornerWhips": 3,
+  "flatWhips": 8,
+  "ropesEscapeWhips": 3,
+  "cornerWhipRate": 0.273,
+  "cornerWhipRateOpenRing": 0.375,
+  "charge": {
+    "gut": 2,
+    "head": 1,
+    "miss": 0
+  },
+  "lockups": 82,
+  "lockupsPerGameMin": 4.92,
+  "matches": [
+    {
+      "len": 73.8,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 78.9,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 52.8,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 141.7,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 64.7,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 124.9,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 126.2,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 132.3,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 107.3,
+      "how": "pinfall",
+      "winner": "p1"
+    }
+  ],
+  "meanMatchLen": 100.3,
+  "moves": {
+    "move:lockup": 82,
+    "knockdown:piledriver": 36,
+    "knockdown:elbowDrop": 20,
+    "move:jab": 42,
+    "stagger:headbutt": 25,
+    "move:pin": 63,
+    "move:dropkick": 15,
+    "move:armBar": 2,
+    "move:headlock": 32,
+    "move:figureFour": 3,
+    "move:frontKick": 14,
+    "move:piledriver": 16,
+    "move:irishWhip": 11,
+    "move:cornerCharge": 3,
+    "knockdown:kneeDrop": 4,
+    "move:kneeLift": 10,
+    "move:theszPress": 1,
+    "move:ankleLock": 11,
+    "move:hammerlock": 2,
+    "move:clothesline": 4,
+    "move:sleeperHold": 1,
+    "dodge:jab": 1
+  },
+  "maxStateSec": {
+    "standing": 12.2,
+    "evading": 0.33,
+    "blocking": 0.7,
+    "lockup": 1.75,
+    "holding": 4.08,
+    "down": 9.5,
+    "gettingUp": 3.02,
+    "slamming": 0.57,
+    "elbowDropping": 0.35,
+    "selling": 0.15,
+    "staggered": 2.98,
+    "falling": 0.72,
+    "pinning": 2.53,
+    "pinned": 2.53,
+    "dropkicking": 0.6,
+    "flipping": 0.37,
+    "headlocked": 1.1,
+    "grabbed": 0.17,
+    "running": 3.93,
+    "cornered": 2.05,
+    "pressing": 0.4,
+    "sleeping": 0.18
+  },
+  "maxExcess": {
+    "x": 8,
+    "yFar": 0,
+    "yNear": 0
+  },
+  "failures": [],
+  "pageErrors": [],
+  "lostFlow": null,
+  "chains": [
+    {
+      "rec": "p1",
+      "whipper": "p2",
+      "at0": 129510.3,
+      "depth": 1,
+      "dir": -1,
+      "stages": {
+        "whip": true,
+        "corner": true,
+        "charge": true,
+        "sell": true,
+        "down": true
+      },
+      "cornerAt": 1767,
+      "part": "head",
+      "chargeAt": 3216,
+      "downAt": 3866,
+      "fall": {
+        "facing": 1,
+        "lying": "prone",
+        "variant": "forward",
+        "x": 164,
+        "y": 439
+      },
+      "resolved": "recovery",
+      "end": "complete",
+      "endAt": 10783
+    },
+    {
+      "rec": "p1",
+      "whipper": "p2",
+      "at0": 311753,
+      "depth": 1,
+      "dir": 1,
+      "stages": {
+        "whip": true,
+        "corner": true,
+        "charge": true,
+        "sell": true,
+        "down": true
+      },
+      "cornerAt": 2233,
+      "part": "gut",
+      "chargeAt": 4183,
+      "downAt": 5066,
+      "fall": {
+        "facing": -1,
+        "lying": "prone",
+        "variant": "kneesForward",
+        "x": 796,
+        "y": 439
+      },
+      "resolved": "recovery",
+      "end": "complete",
+      "endAt": 15666
+    },
+    {
+      "rec": "p1",
+      "whipper": "p2",
+      "at0": 1032690.8,
+      "depth": -1,
+      "dir": 1,
+      "stages": {
+        "whip": true,
+        "corner": true,
+        "charge": true,
+        "sell": true,
+        "down": true
+      },
+      "cornerAt": 1250,
+      "part": "gut",
+      "chargeAt": 3317,
+      "downAt": 4217,
+      "fall": {
+        "facing": -1,
+        "lying": "prone",
+        "variant": "kneesForward",
+        "x": 684,
+        "y": 264
+      },
+      "resolved": "recovery",
+      "end": "complete",
+      "endAt": 11666
+    }
+  ]
+}

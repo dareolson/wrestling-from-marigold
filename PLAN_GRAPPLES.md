@@ -66,6 +66,7 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - **G3e-2: approved by Derek 2026-10-31** ("i like what we have so far"). Note: the charge should put him down, falling forward, then sell the face or stomach. Opus reran at 4554a94: suite 1108/1108, flag-off identical. Next T3c.8, stop at G3f.
 - T3c.8: dc73b78, the charge puts him down: 150 ms reaction, fall forward 483 ms (face) / kneesForward 733 ms (stomach), lands prone facing in, 12.6-24.9 px inside the rope (hips 120·s in), forced sell on all 16 runs (clutch 1.38 s George / 0.96 s Lou in 5.88 s down), one damage event, get-up frontKneeStraight, no episode or `_charge` left. Wrist to target: stomach 0-0.4 px, face 3.3-5.4 px Lou, 11.4-18.9 px George. Suite 1110/1110, build, coverage 23, flag-off identical (A/B). [Strip](research/animation/whip-2026-10/corner-knockdown.html).
   Misses: mid-fall the body swings 12.4-13.4 px past the rope at near corners (standing there is -27); face sell is the near hand only (a far hand changes every prone head sell, and the sell-art test); George's hand 11-19 px short of the head; attacker 65-107 px from the head sprite. STOPPED at G3f.
+- **G3f: approved by Derek 2026-10-31** ("i like it"). Opus reran at 1dcffb4: suite 1110/1110, build, coverage 23, flag-off identical. Stage 3c done through T3c.8. Polish list adds: body past the rope mid-fall at near corners, George's face sell 11-19 px short, face sell one hand.
 - Whip candidate (Codex, now in a4ba0e1, under `grapples=v1`): release at 310 ms, cross-body pull at 400 ms, real-input direction 8/8, defender peak 55-66 px/frame. [Viewer](research/animation/whip-2026-10/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-codex-irish-whip-direction.md).
   Misses (Opus review): cross-body pull fuses the bodies at about 300 ms, about 20 px of depth apart, against D12; receiver's arms go to idle, so no wrist contact. See Stage 3c.
 
@@ -659,5 +660,8 @@ Never promote `grapples`.
 - **Stage 4: the lockup vocabulary**, so more moves can grow from it: rope break (clean break / cheap shot), shove-off,
   go-behind waistlock, wrist lock / arm wringer, side headlock takeover. Derek picks the order.
 - **Stage 5: promote** `grapples` to default after Derek approves a live match.
+  Codex's G3f review adds this gate: a compact live run of whip, corner, charge, down and sell, then a pin attempt or recovery, with AI and
+  controller input, both gaits, including interrupted reaction, fall and get-up. The scripted proofs disable the AI, so they do not establish
+  match flow. Judge the charge gap and the attacker's retreat (`CORNER_CHARGE.backOff` 330 px over 450 ms) as one sequence, not as poses.
   Before that, measure each exit's hit frame against drawn contact and the frame the lead-in releases facing: the 0.14 s lead-in is
   drawn only while the move clock runs, and the whip turn is 119-121 px/frame. Decide then whether any move needs its own transition.

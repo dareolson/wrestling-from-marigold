@@ -40,7 +40,7 @@ export function turnTable(rows) {
 if (import.meta.url === `file://${process.argv[1]}`) {
     const out = process.argv[2] ?? '/tmp/3b3.json', ex = EXITS.find(e => e.id === (process.env.WFM_EXITS ?? 'whip')), results = [];
     for (const [att, def] of [[LOU, GEORGE], [GEORGE, LOU]]) for (const facing of [1]) for (const [col, flag, blend] of [['today', false, true], ['new', true, true], ['new-noblend', true, false]]) {
-        process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = flag ? 'notitle=1&grapples=v1' : 'notitle=1';
+        process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = flag ? 'notitle=1&grapples=v1' : 'notitle=1&grapples=off';
         const h = await launch();
         try {
             await h.page.waitForTimeout(2500); await h.page.evaluate(INSTALL);

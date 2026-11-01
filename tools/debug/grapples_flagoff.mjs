@@ -33,6 +33,7 @@ export async function recordLockup(h, frames = 60) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+    process.env.WFM_QS = [process.env.WFM_QS, 'grapples=off'].filter(Boolean).join('&');   // grapples is on by default (T5.3): this tool proves the old path
     const h = await launch();
     const rows = await recordLockup(h);
     await h.close();

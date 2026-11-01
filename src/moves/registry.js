@@ -96,7 +96,7 @@ export const MOVE_SPECS = {
         category: C.STRIKE, clip: null, executor: '_doCornerCharge',
         sell: { part: 'head', intensity: 0.7 },
         damageKey: 'cornerCharge', poseSeq: true, legacyFallback: null, kitGated: true,
-        trigger: 'tryRun() -> canCornerCharge() — grapples=v1: run key at a cornered man farther than 120 px; the clothesline look at the end of the run',
+        trigger: 'tryRun() -> canCornerCharge() — grapples (default on, =off disables): run key at a cornered man farther than 120 px; the clothesline look at the end of the run',
         ai: ['cornerRun', 'causesStagger'],
     },
     dropkick: {

@@ -54,7 +54,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const [out = 'legs.json', flagArg = '1'] = process.argv.slice(2);
     const results = [];
     for (const pair of PAIRS) {
-        process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = flagArg === '1' ? 'notitle=1&grapples=v1' : 'notitle=1';
+        process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = flagArg === '1' ? 'notitle=1&grapples=v1' : 'notitle=1&grapples=off';
         const h = await launch();
         try {
             await h.page.waitForTimeout(2500);

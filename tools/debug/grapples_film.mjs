@@ -1,4 +1,4 @@
-// G1 film (PLAN_GRAPPLES T1.4): the lockup today (flag off) next to `?grapples=v1`, forced lockups, 1/60 s steps, deterministic
+// G1 film (PLAN_GRAPPLES T1.4): the lockup before grapples was the default (`grapples=off`) next to `?grapples=v1`, forced lockups, 1/60 s steps, deterministic
 // (loop asleep, seeded Math.random, fixed tween delta, AIs nulled, input scripted).
 //
 //   WFM_URL=http://localhost:5173 node tools/debug/grapples_film.mjs [outRoot=research/animation/grapples-2026-10/g1] [cases=a,b,c,d,e] [pairs=lg,gl]
@@ -237,7 +237,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const results = [], timing = {};
     for (const pair of pairs) {
         for (const column of (process.env.WFM_COLS ?? 'today,new').split(',')) {   // WFM_COLS=new skips the flag-off column
-            process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = column === 'new' ? 'notitle=1&grapples=v1' : 'notitle=1';
+            process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = column === 'new' ? 'notitle=1&grapples=v1' : 'notitle=1&grapples=off';
             const h = await launch();
             try {
                 const page = h.page;
@@ -291,7 +291,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     // start the next lockup wrong), so every exit gets a fresh launch. WFM_EXITS=suplex,whip films a subset; WFM_EXIT_COLS=new skips today.
     const only = process.env.WFM_EXITS?.split(','), exitCols = (process.env.WFM_EXIT_COLS ?? 'today,new').split(',');
     if (cases.includes('e')) for (const pair of pairs) for (const column of exitCols) {
-        const hq = async () => { process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = column === 'new' ? 'notitle=1&grapples=v1' : 'notitle=1'; const h = await launch(); await h.page.waitForTimeout(2500); return h; };
+        const hq = async () => { process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = column === 'new' ? 'notitle=1&grapples=v1' : 'notitle=1&grapples=off'; const h = await launch(); await h.page.waitForTimeout(2500); return h; };
         const h0 = await hq(); const ms = (await h0.page.evaluate(INSTALL)).moveSets.a; await h0.close();
         for (const ex of EXITS) {
             if (!ms.includes(ex.move) || (ex.needsNo && ms.includes(ex.needsNo)) || (only && !only.includes(ex.id))) continue;

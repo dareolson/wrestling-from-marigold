@@ -28,6 +28,8 @@ Gamepad *mapping* exists in `InputHandler.js` (the table above), but it isn't wi
 | Running (returning from rope) | Clothesline | 150px | ✓ | ✓ |
 | Downed | Pin | 110px | ✓ | ✓ |
 
+**Lockup and corner (on by default; `?grapples=off` is the old tie-up).** Grapple ties up collar-and-elbow. From the lockup, Grapple + Left/Right is the Irish whip along the ropes; add Up (far corner) or Down (near corner) and he is whipped to that corner, where he hits the pad and is dazed for at least 2.2 s. Run (R / /) at a dazed man 120 px or more away is the corner charge; hold Down while pressing Run for the shoulder charge. Either puts him down: the clothesline version sells to the face, the shoulder version to the stomach.
+
 ### Power (G / Shift / X)
 
 | Opponent State | Move | Range | P1 | P2 |

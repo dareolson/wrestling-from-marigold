@@ -117,9 +117,10 @@ const withoutHands = (e) => { if (!e?.hands) return e; const { hands, ...rest } 
 // PLAN_GETUPS B2: the opponent counts as behind a rising wrestler only past this many px of x (decided once, at rise start).
 const GETUP_TURN_DEADBAND = 12;
 const sellArtCandidate = () => defaultOnFlag('sellart', 'v1');
-// ?grapples=v1 (PLAN_GRAPPLES D1): the collar-and-elbow tie-up (src/animation/lockup.js, Arena._tickLockup). Opt-in; flag off is
-// byte-identical (tests/fixtures/grapplesFlagOff.json). Node without `location` stays off.
-export const grapplesCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('grapples') === 'v1';
+// grapples (PLAN_GRAPPLES D1): the collar-and-elbow tie-up (src/animation/lockup.js, Arena._tickLockup), the whip to the corner, the corner daze,
+// the charge and its face / stomach sell. On by default (Derek 2026-10-31, T5.3): on unless the URL says `?grapples=off` (any value but `v1`
+// turns it off). `=off` stays byte-identical to the old lockup (tests/fixtures/grapplesFlagOff.json). Node without `location` stays off.
+export const grapplesCandidate = () => defaultOnFlag('grapples', 'v1');
 // ?plant=1 (with sellart on): the support-hand plant during the back rise. PARKED by
 // Derek 2026-10-24 (PLAN_SUPLEX_RISE T4.-1); the code stays, off unless asked for.
 // risefix (PLAN_RISE_HANDOFF): the rise and the quick rise end on the pose the first standing frame draws, and the

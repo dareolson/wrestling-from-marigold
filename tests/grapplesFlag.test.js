@@ -1,4 +1,4 @@
-// PLAN_GRAPPLES T1.2: the flag is opt-in, and holdGrips takes a world point (`at`) in place of a partner joint.
+// PLAN_GRAPPLES T1.2 / T5.3: the flag is on by default (off with ?grapples=off), and holdGrips takes a world point (`at`) in place of a partner joint.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Wrestler, { grapplesCandidate } from '../src/Wrestler.js';
@@ -8,12 +8,13 @@ const withSearch = (search, fn) => {
     try { return fn(); } finally { delete globalThis.location; }
 };
 
-test('grapples is opt-in: off without location, off by default, on only for grapples=v1', () => {
-    assert.equal(grapplesCandidate(), false);
-    assert.equal(withSearch('', grapplesCandidate), false);
-    assert.equal(withSearch('?getups=v1', grapplesCandidate), false);
-    assert.equal(withSearch('?grapples=off', grapplesCandidate), false);
+test('grapples is on by default in the game: absent and =v1 are on, any other value is off, no location is off', () => {
+    assert.equal(grapplesCandidate(), false, 'Node with no location');
+    assert.equal(withSearch('', grapplesCandidate), true);
+    assert.equal(withSearch('?getups=v1', grapplesCandidate), true);
     assert.equal(withSearch('?grapples=v1', grapplesCandidate), true);
+    assert.equal(withSearch('?grapples=off', grapplesCandidate), false);
+    assert.equal(withSearch('?grapples=1', grapplesCandidate), false);
 });
 
 // A two-bone near arm that a pose channel turns, so holdGrips' own IK is exercised without Phaser.

@@ -17,7 +17,7 @@ const CASES = [{ id: 'steal', steal: 42 }, { id: 'rope', defRope: 40 }, { id: 's
 const LEG_KEYS = ['lShin', 'rShin'];
 
 async function launchPair(pair, flag = true) {
-    process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = flag ? 'notitle=1&grapples=v1' : 'notitle=1';
+    process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = flag ? 'notitle=1&grapples=v1' : 'notitle=1&grapples=off';
     const h = await launch();
     await h.page.waitForTimeout(2500);
     await h.page.evaluate(INSTALL); await h.page.evaluate(INSTALL_LEGS);

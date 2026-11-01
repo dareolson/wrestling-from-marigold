@@ -85,7 +85,8 @@ test('timeline: 12 px deep at most, eases from the rope hit load into the daze, 
     for (const t of STAGGER_TYPES) {
         const st = t.minStamina === -Infinity ? 1 : t.minStamina + 1;
         assert.equal(staggerFor(st).id, t.id);
-        assert.equal(cornerDazeSeconds(st), Math.max(1.5, t.seconds), t.id);
+        assert.equal(cornerDazeSeconds(st), Math.max(CORNER.minDazeS, t.seconds), t.id);
+        assert.ok(cornerDazeSeconds(st) >= 2.2);
     }
 });
 
@@ -154,33 +155,36 @@ test('a fall during the sell ends the episode: no restore, no grips, no stale st
         for (let i = 0; i < 60; i++) sc.frame();
         assert.equal(called, 0, 'the sell callback of a finished episode does nothing');
         assert.equal(w.state, 'falling');
-        assert.equal(w.holdCornerGrips(), null);
         // a new sell on someone not cornered still calls back
         const o = man(sc, 'george'); let c2 = 0; o._doSell('sellChest', 50, () => { c2++; });
         for (let i = 0; i < 10; i++) sc.step(); assert.equal(c2, 1);
     });
 });
 
-test('hands: holdGrips gets the top rope behind him while cornered, and nothing once he is down', () => {
+test('arms: flung in the load, fall over 320 ms after it (no bounce, never lifting), hang with limp elbows, in every corner and both kits', () => {
     withFlag(() => {
-        const sc = world();
-        const w = man(sc, 'lou', { x: 300, y: NEAR_Y });
-        const calls = [];
-        w.skeleton = { jointAttachmentPoints: { nearWrist: { x: 0, y: 0 }, farWrist: { x: 0, y: 0 } }, lChannelSide: () => 'near' };
-        w.holdGrips = (list) => calls.push(list);
-        runToCorner(w, -1); untilState(sc, w, 'cornered');
-        for (let i = 0; i < 20; i++) sc.frame();
-        assert.ok(w.holdCornerGrips());
-        assert.equal(calls.length, 1);
-        const top = RING.ropes[2];
-        for (const g of calls[0]) {
-            assert.ok(g.at.y >= top.farY && g.at.y <= top.nearY, `hand y ${g.at.y} on the top rope`);
-            assert.ok(g.at.x >= ringBoundsAtY(NEAR_Y).left - 1 && g.at.x < ringBoundsAtY(NEAR_Y - 40).left, `hand x ${g.at.x} on the side rope, toward its far end`);
+        const at = (ms) => cornerPoseAt(ms);
+        const load = ROPE_HIT.loadMs;
+        assert.ok(at(load).lArm > 0.9 && at(load).rArm > 0.8, 'flung at the end of the load');
+        let prev = at(load);
+        for (let ms = load + 5; ms <= load + CORNER.armFallMs; ms += 5) {
+            const p = at(ms);
+            assert.ok(p.lArm <= prev.lArm + 1e-9 && p.rArm <= prev.rArm + 1e-9, `arms only fall (${ms} ms)`);
+            assert.ok(p.lElbow <= prev.lElbow + 1e-9, 'elbows only ease toward limp');
+            prev = p;
         }
-        assert.notEqual(calls[0][0].at.y, calls[0][1].at.y, 'two hands, two points on the rope');
-        w.state = 'down'; sc.frame();
-        assert.equal(w.holdCornerGrips(), null);
-        assert.equal(calls.length, 1, 'no hand pinned to the rope after a fall');
+        const end = at(load + CORNER.armFallMs);
+        assert.ok(end.lArm < -0.09 && end.rArm < 0.03, `arms hang: ${end.lArm}, ${end.rArm}`);
+        assert.ok(Math.abs(end.lElbow - CORNER.elbow) < 1e-9);
+        assert.ok(at(load + CORNER.settleMs).lArm > 0.2, 'the arms are still falling when the torso has settled');
+        for (let ms = load + CORNER.armFallMs; ms < 6000; ms += 17) { const p = at(ms); assert.ok(p.lArm <= -0.0999 && p.rArm <= 0.0201, 'they never lift on their own'); }
+        for (const kit of ['lou', 'george']) for (const y of [NEAR_Y, FAR_Y]) for (const dir of [-1, 1]) {
+            const sc = world(), w = man(sc, kit, { x: dir < 0 ? 300 : 650, y });
+            runToCorner(w, dir); untilState(sc, w, 'cornered');
+            for (let i = 0; i < 40; i++) sc.frame();
+            assert.ok(w.pose.lArm < -0.09 && w.pose.rArm < 0.03 && Math.abs(w.pose.lElbow - CORNER.elbow) < 0.02, `${kit} ${y} ${dir}: ${w.pose.lArm} ${w.pose.rArm} ${w.pose.lElbow}`);
+        }
+        assert.equal(Wrestler.prototype.holdCornerGrips, undefined, 'no hands on the rope');
     });
 });
 

@@ -6,7 +6,7 @@
       "cornerKey": "left-near",
       "scenario": "daze",
       "arrivedFrame": 135,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -18,11 +18,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1.7,
+          3.2
+        ],
+        "farWristBelowHip": [
+          -15.2,
+          -13.6
+        ],
+        "nearWristToHip": 14.8,
+        "farWristToHip": 21.5,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -36,7 +68,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 183
+      "frames": 225
     },
     {
       "id": "lou-george-left-near-hit",
@@ -44,7 +76,7 @@
       "cornerKey": "left-near",
       "scenario": "hit",
       "arrivedFrame": 135,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -56,11 +88,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1.7,
+          8.6
+        ],
+        "farWristBelowHip": [
+          -15.2,
+          -8.5
+        ],
+        "nearWristToHip": 14.8,
+        "farWristToHip": 9.8,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 119,
+          "far": 124,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 1
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 9.9,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 150,
       "chargeStartX": 546.2,
       "startDistance": 492.6,
@@ -81,12 +145,13 @@
       "epIdsAcrossHit": [
         2
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 433,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         2
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -94,7 +159,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 267
+      "frames": 261
     },
     {
       "id": "lou-george-left-near-miss",
@@ -102,7 +167,7 @@
       "cornerKey": "left-near",
       "scenario": "miss",
       "arrivedFrame": 135,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -114,12 +179,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1.7,
+          3.2
+        ],
+        "farWristBelowHip": [
+          -15.2,
+          -13.6
+        ],
+        "nearWristToHip": 14.8,
+        "farWristToHip": 21.5,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 212,
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 254,
       "chargeStartX": 543.9,
       "startDistance": 490.3,
       "chargeMs": 1433,
@@ -128,7 +225,7 @@
       "arrivalDepthDiff": 0,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 304,
+      "attackerCorneredFrame": 346,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -142,7 +239,7 @@
         "dHasEpisode": false,
         "aHasEpisode": true
       },
-      "frames": 231
+      "frames": 273
     },
     {
       "id": "lou-george-right-near-daze",
@@ -150,7 +247,7 @@
       "cornerKey": "right-near",
       "scenario": "daze",
       "arrivedFrame": 120,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": -1,
@@ -162,11 +259,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1.7,
+          3.2
+        ],
+        "farWristBelowHip": [
+          -15.2,
+          -13.6
+        ],
+        "nearWristToHip": 14.8,
+        "farWristToHip": 21.5,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -187,7 +316,7 @@
       "cornerKey": "right-near",
       "scenario": "hit",
       "arrivedFrame": 120,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": -1,
@@ -199,11 +328,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1.7,
+          8.2
+        ],
+        "farWristBelowHip": [
+          -15.2,
+          -8.6
+        ],
+        "nearWristToHip": 14.8,
+        "farWristToHip": 9.8,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 119,
+          "far": 124,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 1
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 9.9,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 135,
       "chargeStartX": 493.8,
       "startDistance": 412.6,
@@ -224,12 +385,13 @@
       "epIdsAcrossHit": [
         5
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 683,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         5
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -244,7 +406,7 @@
       "cornerKey": "right-near",
       "scenario": "miss",
       "arrivedFrame": 120,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": -1,
@@ -256,12 +418,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1.7,
+          3.2
+        ],
+        "farWristBelowHip": [
+          -15.2,
+          -13.6
+        ],
+        "nearWristToHip": 14.8,
+        "farWristToHip": 21.5,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 197,
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 239,
       "chargeStartX": 496.1,
       "startDistance": 410.3,
       "chargeMs": 1183,
@@ -270,7 +464,7 @@
       "arrivalDepthDiff": 0,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 274,
+      "attackerCorneredFrame": 316,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -291,7 +485,7 @@
       "cornerKey": "left-far",
       "scenario": "daze",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": 1,
@@ -303,11 +497,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1,
+          1.9
+        ],
+        "farWristBelowHip": [
+          -9.1,
+          -8.2
+        ],
+        "nearWristToHip": 8.9,
+        "farWristToHip": 12.9,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -328,7 +554,7 @@
       "cornerKey": "left-far",
       "scenario": "hit",
       "arrivedFrame": 124,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": 1,
@@ -340,11 +566,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1,
+          5
+        ],
+        "farWristBelowHip": [
+          -9.1,
+          -5.2
+        ],
+        "nearWristToHip": 8.9,
+        "farWristToHip": 5.9,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 119,
+          "far": 124,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 1
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 9.9,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 139,
       "chargeStartX": 546.2,
       "startDistance": 328.8,
@@ -365,12 +623,13 @@
       "epIdsAcrossHit": [
         8
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 617,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         8
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -385,7 +644,7 @@
       "cornerKey": "left-far",
       "scenario": "miss",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": 1,
@@ -397,12 +656,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1,
+          1.9
+        ],
+        "farWristBelowHip": [
+          -9.1,
+          -8.2
+        ],
+        "nearWristToHip": 8.9,
+        "farWristToHip": 12.9,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 201,
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 243,
       "chargeStartX": 550.8,
       "startDistance": 333.3,
       "chargeMs": 1267,
@@ -411,7 +702,7 @@
       "arrivalDepthDiff": 0,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 283,
+      "attackerCorneredFrame": 325,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -432,7 +723,7 @@
       "cornerKey": "right-far",
       "scenario": "daze",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -444,11 +735,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1,
+          1.9
+        ],
+        "farWristBelowHip": [
+          -9.1,
+          -8.2
+        ],
+        "nearWristToHip": 8.9,
+        "farWristToHip": 12.9,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -462,7 +785,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 183
+      "frames": 225
     },
     {
       "id": "lou-george-right-far-hit",
@@ -470,7 +793,7 @@
       "cornerKey": "right-far",
       "scenario": "hit",
       "arrivedFrame": 124,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -482,11 +805,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1,
+          4.6
+        ],
+        "farWristBelowHip": [
+          -9.1,
+          -5.3
+        ],
+        "nearWristToHip": 8.9,
+        "farWristToHip": 5.9,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 119,
+          "far": 124,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 1
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 9.9,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 139,
       "chargeStartX": 493.8,
       "startDistance": 248.8,
@@ -507,12 +862,13 @@
       "epIdsAcrossHit": [
         11
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 967,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         11
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -520,7 +876,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 267
+      "frames": 261
     },
     {
       "id": "lou-george-right-far-miss",
@@ -528,7 +884,7 @@
       "cornerKey": "right-far",
       "scenario": "miss",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -540,12 +896,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1,
+          1.9
+        ],
+        "farWristBelowHip": [
+          -9.1,
+          -8.2
+        ],
+        "nearWristToHip": 8.9,
+        "farWristToHip": 12.9,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 201,
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 243,
       "chargeStartX": 489.5,
       "startDistance": 253,
       "chargeMs": 933,
@@ -554,7 +942,7 @@
       "arrivalDepthDiff": 3.4,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 263,
+      "attackerCorneredFrame": 305,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -568,14 +956,14 @@
         "dHasEpisode": false,
         "aHasEpisode": true
       },
-      "frames": 201
+      "frames": 243
     },
     {
       "id": "lou-george-type-rock",
       "pair": "lou-george",
       "type": "rock",
       "stamina": 100,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8
     },
     {
@@ -583,7 +971,7 @@
       "pair": "lou-george",
       "type": "stumble",
       "stamina": 55,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8
     },
     {
@@ -591,7 +979,7 @@
       "pair": "lou-george",
       "type": "reel",
       "stamina": 35,
-      "dazeMs": 1917,
+      "dazeMs": 2217,
       "depthPx": 11.8
     },
     {
@@ -616,7 +1004,7 @@
       "cornerKey": "left-near",
       "scenario": "daze",
       "arrivedFrame": 135,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -628,11 +1016,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          29,
+          29.4
+        ],
+        "farWristBelowHip": [
+          5,
+          8.1
+        ],
+        "nearWristToHip": 29.5,
+        "farWristToHip": 31.7,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -646,7 +1066,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 183
+      "frames": 225
     },
     {
       "id": "george-lou-left-near-hit",
@@ -654,7 +1074,7 @@
       "cornerKey": "left-near",
       "scenario": "hit",
       "arrivedFrame": 135,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -666,11 +1086,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          29,
+          37.4
+        ],
+        "farWristBelowHip": [
+          5,
+          14.8
+        ],
+        "nearWristToHip": 29.5,
+        "farWristToHip": 14.4,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 3,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 14.6,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 150,
       "chargeStartX": 546.2,
       "startDistance": 492.6,
@@ -691,12 +1143,13 @@
       "epIdsAcrossHit": [
         2
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 433,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         2
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -704,7 +1157,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 267
+      "frames": 261
     },
     {
       "id": "george-lou-left-near-miss",
@@ -712,7 +1165,7 @@
       "cornerKey": "left-near",
       "scenario": "miss",
       "arrivedFrame": 135,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -724,12 +1177,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          29,
+          29.4
+        ],
+        "farWristBelowHip": [
+          5,
+          8.1
+        ],
+        "nearWristToHip": 29.5,
+        "farWristToHip": 31.7,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 212,
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 254,
       "chargeStartX": 543.9,
       "startDistance": 490.3,
       "chargeMs": 1433,
@@ -738,7 +1223,7 @@
       "arrivalDepthDiff": 0,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 304,
+      "attackerCorneredFrame": 346,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -752,7 +1237,7 @@
         "dHasEpisode": false,
         "aHasEpisode": true
       },
-      "frames": 231
+      "frames": 273
     },
     {
       "id": "george-lou-right-near-daze",
@@ -760,7 +1245,7 @@
       "cornerKey": "right-near",
       "scenario": "daze",
       "arrivedFrame": 120,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": -1,
@@ -772,11 +1257,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          29,
+          29.4
+        ],
+        "farWristBelowHip": [
+          5,
+          8.1
+        ],
+        "nearWristToHip": 29.5,
+        "farWristToHip": 31.7,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -797,7 +1314,7 @@
       "cornerKey": "right-near",
       "scenario": "hit",
       "arrivedFrame": 120,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": -1,
@@ -809,11 +1326,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          29,
+          37.1
+        ],
+        "farWristBelowHip": [
+          5,
+          14.8
+        ],
+        "nearWristToHip": 29.5,
+        "farWristToHip": 14.4,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 3,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 14.6,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 135,
       "chargeStartX": 493.8,
       "startDistance": 412.6,
@@ -834,12 +1383,13 @@
       "epIdsAcrossHit": [
         5
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 683,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         5
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -854,7 +1404,7 @@
       "cornerKey": "right-near",
       "scenario": "miss",
       "arrivedFrame": 120,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": -1,
@@ -866,12 +1416,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          29,
+          29.4
+        ],
+        "farWristBelowHip": [
+          5,
+          8.1
+        ],
+        "nearWristToHip": 29.5,
+        "farWristToHip": 31.7,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 197,
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 239,
       "chargeStartX": 496.1,
       "startDistance": 410.3,
       "chargeMs": 1183,
@@ -880,7 +1462,7 @@
       "arrivalDepthDiff": 0,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 274,
+      "attackerCorneredFrame": 316,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -901,7 +1483,7 @@
       "cornerKey": "left-far",
       "scenario": "daze",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": 1,
@@ -913,11 +1495,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          17.4,
+          17.7
+        ],
+        "farWristBelowHip": [
+          3,
+          4.9
+        ],
+        "nearWristToHip": 17.8,
+        "farWristToHip": 19.1,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -938,7 +1552,7 @@
       "cornerKey": "left-far",
       "scenario": "hit",
       "arrivedFrame": 124,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": 1,
@@ -950,11 +1564,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          17.4,
+          22.4
+        ],
+        "farWristBelowHip": [
+          3,
+          8.9
+        ],
+        "nearWristToHip": 17.8,
+        "farWristToHip": 8.7,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 3,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 14.6,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 139,
       "chargeStartX": 546.2,
       "startDistance": 328.8,
@@ -975,12 +1621,13 @@
       "epIdsAcrossHit": [
         8
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 617,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         8
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -995,7 +1642,7 @@
       "cornerKey": "left-far",
       "scenario": "miss",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": 1,
@@ -1007,12 +1654,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          17.4,
+          17.7
+        ],
+        "farWristBelowHip": [
+          3,
+          4.9
+        ],
+        "nearWristToHip": 17.8,
+        "farWristToHip": 19.1,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 201,
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 243,
       "chargeStartX": 550.8,
       "startDistance": 333.3,
       "chargeMs": 1267,
@@ -1021,7 +1700,7 @@
       "arrivalDepthDiff": 0,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 283,
+      "attackerCorneredFrame": 325,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -1042,7 +1721,7 @@
       "cornerKey": "right-far",
       "scenario": "daze",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -1054,11 +1733,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          17.4,
+          17.7
+        ],
+        "farWristBelowHip": [
+          3,
+          4.9
+        ],
+        "nearWristToHip": 17.8,
+        "farWristToHip": 19.1,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -1072,7 +1783,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 183
+      "frames": 225
     },
     {
       "id": "george-lou-right-far-hit",
@@ -1080,7 +1791,7 @@
       "cornerKey": "right-far",
       "scenario": "hit",
       "arrivedFrame": 124,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -1092,11 +1803,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          17.4,
+          22
+        ],
+        "farWristBelowHip": [
+          3,
+          8.9
+        ],
+        "nearWristToHip": 17.8,
+        "farWristToHip": 8.7,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 3,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 14.6,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 139,
       "chargeStartX": 493.8,
       "startDistance": 248.8,
@@ -1117,12 +1860,13 @@
       "epIdsAcrossHit": [
         11
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 967,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         11
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -1130,7 +1874,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 267
+      "frames": 261
     },
     {
       "id": "george-lou-right-far-miss",
@@ -1138,7 +1882,7 @@
       "cornerKey": "right-far",
       "scenario": "miss",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -1150,12 +1894,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          17.4,
+          17.7
+        ],
+        "farWristBelowHip": [
+          3,
+          4.9
+        ],
+        "nearWristToHip": 17.8,
+        "farWristToHip": 19.1,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 201,
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 243,
       "chargeStartX": 489.5,
       "startDistance": 253,
       "chargeMs": 933,
@@ -1164,7 +1940,7 @@
       "arrivalDepthDiff": 3.4,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 263,
+      "attackerCorneredFrame": 305,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -1178,14 +1954,14 @@
         "dHasEpisode": false,
         "aHasEpisode": true
       },
-      "frames": 201
+      "frames": 243
     },
     {
       "id": "george-lou-type-rock",
       "pair": "george-lou",
       "type": "rock",
       "stamina": 100,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8
     },
     {
@@ -1193,7 +1969,7 @@
       "pair": "george-lou",
       "type": "stumble",
       "stamina": 55,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8
     },
     {
@@ -1201,7 +1977,7 @@
       "pair": "george-lou",
       "type": "reel",
       "stamina": 35,
-      "dazeMs": 1917,
+      "dazeMs": 2217,
       "depthPx": 11.8
     },
     {
@@ -1228,7 +2004,7 @@
       "cornerKey": "left-near",
       "scenario": "daze",
       "arrivedFrame": 135,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -1240,11 +2016,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1.7,
+          3.2
+        ],
+        "farWristBelowHip": [
+          -15.2,
+          -13.6
+        ],
+        "nearWristToHip": 14.8,
+        "farWristToHip": 21.5,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -1258,7 +2066,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 183
+      "frames": 225
     },
     {
       "id": "lou-george-left-near-hit",
@@ -1266,7 +2074,7 @@
       "cornerKey": "left-near",
       "scenario": "hit",
       "arrivedFrame": 135,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -1278,11 +2086,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1.7,
+          8.6
+        ],
+        "farWristBelowHip": [
+          -15.2,
+          -8.5
+        ],
+        "nearWristToHip": 14.8,
+        "farWristToHip": 9.8,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 119,
+          "far": 124,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 1
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 9.9,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 150,
       "chargeStartX": 546.2,
       "startDistance": 492.6,
@@ -1303,12 +2143,13 @@
       "epIdsAcrossHit": [
         2
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 433,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         2
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -1316,7 +2157,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 267
+      "frames": 261
     },
     {
       "id": "lou-george-left-near-miss",
@@ -1324,7 +2165,7 @@
       "cornerKey": "left-near",
       "scenario": "miss",
       "arrivedFrame": 135,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -1336,12 +2177,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1.7,
+          3.2
+        ],
+        "farWristBelowHip": [
+          -15.2,
+          -13.6
+        ],
+        "nearWristToHip": 14.8,
+        "farWristToHip": 21.5,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 212,
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 254,
       "chargeStartX": 543.9,
       "startDistance": 490.3,
       "chargeMs": 1433,
@@ -1350,7 +2223,7 @@
       "arrivalDepthDiff": 0,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 304,
+      "attackerCorneredFrame": 346,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -1364,7 +2237,7 @@
         "dHasEpisode": false,
         "aHasEpisode": true
       },
-      "frames": 231
+      "frames": 273
     },
     {
       "id": "lou-george-right-far-daze",
@@ -1372,7 +2245,7 @@
       "cornerKey": "right-far",
       "scenario": "daze",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -1384,11 +2257,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1,
+          1.9
+        ],
+        "farWristBelowHip": [
+          -9.1,
+          -8.2
+        ],
+        "nearWristToHip": 8.9,
+        "farWristToHip": 12.9,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -1402,7 +2307,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 183
+      "frames": 225
     },
     {
       "id": "lou-george-right-far-hit",
@@ -1410,7 +2315,7 @@
       "cornerKey": "right-far",
       "scenario": "hit",
       "arrivedFrame": 124,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -1422,11 +2327,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1,
+          4.6
+        ],
+        "farWristBelowHip": [
+          -9.1,
+          -5.3
+        ],
+        "nearWristToHip": 8.9,
+        "farWristToHip": 5.9,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 119,
+          "far": 124,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 1
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 9.9,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 139,
       "chargeStartX": 493.8,
       "startDistance": 248.8,
@@ -1447,12 +2384,13 @@
       "epIdsAcrossHit": [
         11
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 967,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         11
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -1460,7 +2398,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 267
+      "frames": 261
     },
     {
       "id": "lou-george-right-far-miss",
@@ -1468,7 +2406,7 @@
       "cornerKey": "right-far",
       "scenario": "miss",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -1480,12 +2418,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          1,
+          1.9
+        ],
+        "farWristBelowHip": [
+          -9.1,
+          -8.2
+        ],
+        "nearWristToHip": 8.9,
+        "farWristToHip": 12.9,
+        "elbowBend": [
+          14.3,
+          14.3
+        ],
+        "framesWristInTorsoBox": {
+          "near": 97,
+          "far": 97,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 15,
+        "farWristToHipOverS": 21.8,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 201,
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 243,
       "chargeStartX": 489.5,
       "startDistance": 253,
       "chargeMs": 933,
@@ -1494,7 +2464,7 @@
       "arrivalDepthDiff": 3.4,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 263,
+      "attackerCorneredFrame": 305,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -1508,7 +2478,7 @@
         "dHasEpisode": false,
         "aHasEpisode": true
       },
-      "frames": 201
+      "frames": 243
     },
     {
       "id": "george-lou-left-near-daze",
@@ -1516,7 +2486,7 @@
       "cornerKey": "left-near",
       "scenario": "daze",
       "arrivedFrame": 135,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -1528,11 +2498,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          29,
+          29.4
+        ],
+        "farWristBelowHip": [
+          5,
+          8.1
+        ],
+        "nearWristToHip": 29.5,
+        "farWristToHip": 31.7,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -1546,7 +2548,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 183
+      "frames": 225
     },
     {
       "id": "george-lou-left-near-hit",
@@ -1554,7 +2556,7 @@
       "cornerKey": "left-near",
       "scenario": "hit",
       "arrivedFrame": 135,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -1566,11 +2568,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          29,
+          37.4
+        ],
+        "farWristBelowHip": [
+          5,
+          14.8
+        ],
+        "nearWristToHip": 29.5,
+        "farWristToHip": 14.4,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 3,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 14.6,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 150,
       "chargeStartX": 546.2,
       "startDistance": 492.6,
@@ -1591,12 +2625,13 @@
       "epIdsAcrossHit": [
         2
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 433,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         2
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -1604,7 +2639,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 267
+      "frames": 261
     },
     {
       "id": "george-lou-left-near-miss",
@@ -1612,7 +2647,7 @@
       "cornerKey": "left-near",
       "scenario": "miss",
       "arrivedFrame": 135,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 11.8,
       "depthOverS": 12,
       "facing": 1,
@@ -1624,12 +2659,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": true,
       "drawsBehindNearRope": true,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          29,
+          29.4
+        ],
+        "farWristBelowHip": [
+          5,
+          8.1
+        ],
+        "nearWristToHip": 29.5,
+        "farWristToHip": 31.7,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 212,
+      "armFallMs": 297,
+      "scaleHip": 0.987,
+      "stepFromLoadedPx": 29.6,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 254,
       "chargeStartX": 543.9,
       "startDistance": 490.3,
       "chargeMs": 1433,
@@ -1638,7 +2705,7 @@
       "arrivalDepthDiff": 0,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 304,
+      "attackerCorneredFrame": 346,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -1652,7 +2719,7 @@
         "dHasEpisode": false,
         "aHasEpisode": true
       },
-      "frames": 231
+      "frames": 273
     },
     {
       "id": "george-lou-right-far-daze",
@@ -1660,7 +2727,7 @@
       "cornerKey": "right-far",
       "scenario": "daze",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -1672,11 +2739,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          17.4,
+          17.7
+        ],
+        "farWristBelowHip": [
+          3,
+          4.9
+        ],
+        "nearWristToHip": 17.8,
+        "farWristToHip": 19.1,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "stayed": true,
       "stepForwardPx": 18,
       "epIdsAll": [
@@ -1690,7 +2789,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 183
+      "frames": 225
     },
     {
       "id": "george-lou-right-far-hit",
@@ -1698,7 +2797,7 @@
       "cornerKey": "right-far",
       "scenario": "hit",
       "arrivedFrame": 124,
-      "dazeMs": 2917,
+      "dazeMs": 2817,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -1710,11 +2809,43 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          17.4,
+          22
+        ],
+        "farWristBelowHip": [
+          3,
+          8.9
+        ],
+        "nearWristToHip": 17.8,
+        "farWristToHip": 8.7,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 3,
+          "of": 124
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 14.6,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
       "pressedFrame": 139,
       "chargeStartX": 493.8,
       "startDistance": 248.8,
@@ -1735,12 +2866,13 @@
       "epIdsAcrossHit": [
         11
       ],
-      "dazeMsAfterHit": 2917,
+      "dazeMsAfterHit": 2817,
+      "dazeLeftAtImpactMs": 967,
       "defenderDamageTotal": 4.9,
       "epIdsAll": [
         11
       ],
-      "extensionJumps": 2,
+      "extensionJumps": 1,
       "damageEventsAll": 1,
       "endStates": {
         "d": "standing",
@@ -1748,7 +2880,7 @@
         "dHasEpisode": false,
         "aHasEpisode": false
       },
-      "frames": 267
+      "frames": 261
     },
     {
       "id": "george-lou-right-far-miss",
@@ -1756,7 +2888,7 @@
       "cornerKey": "right-far",
       "scenario": "miss",
       "arrivedFrame": 124,
-      "dazeMs": 1517,
+      "dazeMs": 2217,
       "depthPx": 7.1,
       "depthOverS": 12,
       "facing": -1,
@@ -1768,12 +2900,44 @@
       "sideBandsConsidered": 2,
       "drawsBehindNearPost": null,
       "drawsBehindNearRope": null,
-      "handMissPx": {
-        "min": 0,
-        "max": 0,
-        "mean": 0
+      "arms": {
+        "nearWristBelowHip": [
+          17.4,
+          17.7
+        ],
+        "farWristBelowHip": [
+          3,
+          4.9
+        ],
+        "nearWristToHip": 17.8,
+        "farWristToHip": 19.1,
+        "elbowBend": [
+          14.1,
+          14.1
+        ],
+        "framesWristInTorsoBox": {
+          "near": 0,
+          "far": 0,
+          "of": 97
+        },
+        "restsOnHipFrames": {
+          "near": 0,
+          "far": 0
+        },
+        "nearWristToHipOverS": 29.9,
+        "farWristToHipOverS": 32.2,
+        "hangPose": [
+          -0.1,
+          0.02,
+          0.25,
+          0.25
+        ]
       },
-      "pressedFrame": 201,
+      "armFallMs": 297,
+      "scaleHip": 0.593,
+      "stepFromLoadedPx": 17.8,
+      "stepFromLoadedOverS": 30,
+      "pressedFrame": 243,
       "chargeStartX": 489.5,
       "startDistance": 253,
       "chargeMs": 933,
@@ -1782,7 +2946,7 @@
       "arrivalDepthDiff": 3.4,
       "victimStillCornered": false,
       "hit": false,
-      "attackerCorneredFrame": 263,
+      "attackerCorneredFrame": 305,
       "attackerDamage": 0,
       "defenderDamageTotal": 0,
       "epIdsAll": [
@@ -1796,7 +2960,7 @@
         "dHasEpisode": false,
         "aHasEpisode": true
       },
-      "frames": 201
+      "frames": 243
     }
   ]
 }

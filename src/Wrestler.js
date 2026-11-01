@@ -269,7 +269,7 @@ export const POSES = {
     headbutt:       { lLeg: 0.38,  rLeg: 0.15,  lArm: 0.30,  rArm: 0.25, lean: 0.48, crouch: 0.18 }, // whole body lunges forward, head leads
     // The sells' `lean` never rendered (it does not move the body); `bend` is
     // the torso channel that does, so these reactions finally snap back.
-    cornerDaze:     CORNER_DAZE_POSE, // grapples=v1 (T3c.6): slumped in the corner, feet planted, knees soft; the sway is cornerPoseAt's
+    cornerDaze:     CORNER_DAZE_POSE, // grapples=v1 (T3c.6): slumped in the corner, feet planted, knees soft, arms hanging (T3c.6b); the sway is cornerPoseAt's
     sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82, lean:-0.30, bend: -0.34 }, // chest impact — torso snaps back, arms whip behind
     sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10, bend: -0.22 }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
@@ -1509,7 +1509,7 @@ export default class Wrestler {
         this._cornerExitTok = null;
         this._cornerEp = {
             id: ++this._cornerEpN, corner, dir, x: this.x, ms: 0, left: cornerDazeSeconds(this.stamina), extended: false,
-            mix: { from: { ...this.pose }, ms: 0, dur: 50 }, gripMiss: null,
+            mix: { from: { ...this.pose }, ms: 0, dur: 50 },
         };
         this.scene._logEvent?.('cornerHit', { wrestler: this.scene.w1 === this ? 'p1' : 'p2', side: far ? 'far' : 'near', dir });
         this.scene.triggerRopeBounce?.(far ? 'far' : 'near');
@@ -1530,8 +1530,7 @@ export default class Wrestler {
         const target = { ...cornerPoseAt(ep.ms), tilt: 0, lift: 0 }, mix = ep.mix;
         mix.ms += dt * 1000;
         const k = Math.min(1, mix.ms / mix.dur);
-        for (const key of Object.keys(target)) this.pose[key] = (mix.from[key] ?? 0) + (target[key] - (mix.from[key] ?? 0)) * k;
-        for (const e of ['lElbow', 'rElbow']) this.pose[e] = (mix.from[e] ?? 0.7) * (1 - k) + 0.7 * k; // holdGrips adds to these; they start clean each frame
+        for (const key of Object.keys(target)) { const from = mix.from[key] ?? (key.endsWith('Elbow') ? 0.7 : 0); this.pose[key] = from + (target[key] - from) * k; }
         this._choreoUntil = this.scene.time.now + 50; // the pose is his
     }
 
@@ -1577,26 +1576,6 @@ export default class Wrestler {
         this._cornerExitTok = null;
         this._choreoUntil = 0;
         if (this.state === 'standing') this.tweenPose('idle', 180, 'Linear');
-    }
-
-    // Hands up on the top rope behind him (holdGrips `at`), after both draw (Arena). Stores how far each wrist is from its point.
-    holdCornerGrips() {
-        const ep = this._cornerEp, sk = this.skeleton;
-        if (!ep || this.state !== 'cornered' || !sk?.jointAttachmentPoints?.nearWrist) return null;
-        const w = Math.min(1, ep.ms / CORNER.handsMs);
-        const edge = (y) => { const b = ringBoundsAtY(y); return ep.corner.facing > 0 ? b.left : b.right; };
-        const topAt = (y) => {
-            const t = Math.max(0, Math.min(1, (RING.nearLeft.y - y) / (RING.nearLeft.y - RING.farLeft.y))), r = RING.ropes[2];
-            return { x: edge(y), y: r.nearY + (r.farY - r.nearY) * t };
-        };
-        const at = { l: topAt(this.y - 6), r: topAt(this.y - 6 - CORNER.handSpread) }; // both along the rope toward its far end: past the near mat edge there is no rope
-        this.holdGrips([{ arm: 'l', at: at.l, w }, { arm: 'r', at: at.r, w }]);
-        const flip = side => (side === 'near' ? 'far' : 'near'), pts = sk.jointAttachmentPoints;
-        ep.gripMiss = ['l', 'r'].map(arm => {
-            const side = arm === 'l' ? sk.lChannelSide(this.facing) : flip(sk.lChannelSide(this.facing)), p = pts[`${side}Wrist`];
-            return p ? Math.hypot(p.x - at[arm].x, p.y - at[arm].y) : null;
-        });
-        return ep.gripMiss;
     }
 
     // ── grapples=v1 (T3c.7): the running attack at a cornered man ─────────────

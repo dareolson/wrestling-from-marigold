@@ -8,14 +8,14 @@ import { staggerFor } from './staggers.js';
 export const CORNER = Object.freeze({
     depth: 12,          // px past the corner point at full load, so he never draws through the post (the rope's is 34)
     settleMs: 200,      // from the load pose into the daze
-    minDazeS: 1.5,      // length is max(this, the stagger type's seconds)
+    minDazeS: 2.2,      // length is max(this, the stagger type's seconds); 1.5 ended before most charges from far landed (T3c.6b)
     extendS: 0.6,       // a charge that connects adds this, once per episode
     exitStep: 30,       // px forward when the daze ends
     exitMs: 260,
     swayBend: 0.05, swayPeriodS: 2.7,     // slow sway of the torso
     swayCrouch: 0.025, swayCrouchPeriodS: 1.8,
-    handsMs: 170,       // hands reach the top rope over the load
-    handSpread: 24,     // px between the two hands along the rope
+    armFallMs: 320,     // the arms drop from the load's flung pose, slower than the torso's settle (T3c.6b)
+    elbow: 0.25,        // limp: not the idle .7
 });
 
 // The running attack at a cornered man (T3c.7).
@@ -35,8 +35,8 @@ const clamp01 = u => Math.max(0, Math.min(1, u));
 
 export const cornerDazeSeconds = stamina => Math.max(CORNER.minDazeS, staggerFor(stamina).seconds);
 
-// Slumped, weight back against the post, knees soft, feet planted; hands go up to the top rope (holdGrips refines them).
-export const CORNER_DAZE_POSE = Object.freeze({ bend: -0.22, crouch: 0.16, lLeg: -0.08, rLeg: 0.12, lArm: 0.95, rArm: 0.85 });
+// Slumped, weight back against the post, knees soft, feet planted, arms hanging.
+export const CORNER_DAZE_POSE = Object.freeze({ bend: -0.22, crouch: 0.16, lLeg: -0.08, rLeg: 0.12, lArm: -0.1, rArm: 0.02 });   // arms hang as dead weight. lArm is the near arm in both facings; -0.1 swings it clear of George's hip (.06 put his wrist 4.9 px from it)
 
 // ms since contact: px past the corner point (toward the post). Eases out over the load, then holds.
 export function cornerOffsetAt(ms) {
@@ -48,9 +48,12 @@ export function cornerPoseAt(ms) {
     const load = ropeHitPose(Math.min(ms, ROPE_HIT.loadMs), 100);
     const k = easeOut(clamp01((ms - ROPE_HIT.loadMs) / CORNER.settleMs));
     const out = {};
+    const ua = clamp01((ms - ROPE_HIT.loadMs) / CORNER.armFallMs), ka = ua * ua * (3 - 2 * ua);   // the arms fall slower than the torso settles, with no bounce
     for (const key of new Set([...Object.keys(load), ...Object.keys(CORNER_DAZE_POSE)])) {
-        out[key] = (load[key] ?? 0) * (1 - k) + (CORNER_DAZE_POSE[key] ?? 0) * k;
+        const w = key === 'lArm' || key === 'rArm' ? ka : k;
+        out[key] = (load[key] ?? 0) * (1 - w) + (CORNER_DAZE_POSE[key] ?? 0) * w;
     }
+    for (const e of ['lElbow', 'rElbow']) out[e] = 0.7 * (1 - ka) + CORNER.elbow * ka;
     const t = Math.max(0, ms - ROPE_HIT.loadMs) / 1000;
     out.bend += CORNER.swayBend * k * Math.sin(2 * Math.PI * t / CORNER.swayPeriodS);
     out.crouch += CORNER.swayCrouch * k * Math.sin(2 * Math.PI * t / CORNER.swayCrouchPeriodS + 0.8);

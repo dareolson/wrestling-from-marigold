@@ -28,7 +28,11 @@ const READ = () => {
     return {
         a: { x: a.x, y: a.y, s: a.s, state: a.state, phase: a.runPhase, stamina: a.stamina, facing: a.facing },
         d: { x: d.x, y: d.y, s: d.s, state: d.state, phase: d.runPhase, stamina: d.stamina, facing: d.facing, bend: d.pose.bend, crouch: d.pose.crouch, depth: bodyDepth(d), box: bb(d) },
-        ep: ep ? { id: ep.id, ms: ep.ms, left: ep.left, extended: ep.extended, grip: ep.gripMiss, x: ep.x, dir: ep.dir } : null,
+        ep: ep ? { id: ep.id, ms: ep.ms, left: ep.left, extended: ep.extended, x: ep.x, dir: ep.dir } : null,
+        arms: (() => { const p = d.skeleton.jointAttachmentPoints, tr = d.skeleton.torso, m = tr?.getWorldTransformMatrix(), fw = tr?.width, fh = tr?.height, ox = tr ? tr.originX * fw : 0, oy = tr ? tr.originY * fh : 0, o = { x: 0, y: 0 };
+            const hip = { x: (p.nearHip.x + p.farHip.x) / 2, y: (p.nearHip.y + p.farHip.y) / 2 };
+            const side = (n) => { const S = p[n + 'Shoulder'], E = p[n + 'Elbow'], W = p[n + 'Wrist']; const a1 = Math.atan2(E.y - S.y, E.x - S.x), a2 = Math.atan2(W.y - E.y, W.x - E.x); let b = Math.abs(a2 - a1); if (b > Math.PI) b = 2 * Math.PI - b; if (m) m.applyInverse(W.x, W.y, o); return { wristBelowHip: W.y - hip.y, wristToHip: Math.hypot(W.x - hip.x, W.y - hip.y), wristX: W.x - hip.x, elbowBend: b * 180 / Math.PI, inTrunks: m ? (o.x >= -ox && o.x <= fw - ox && o.y >= -oy && o.y <= fh - oy) : null }; };
+            return { near: side('near'), far: side('far'), poseArms: [d.pose.lArm, d.pose.rArm, d.pose.lElbow, d.pose.rElbow], torsoH: d.skeleton._torsoH ?? null }; })(),
         aep: aep ? { id: aep.id } : null,
         nearRope: sc.nearRopeBands[0].depth, side: sc.sideRopeBands.map(b => b.depth),
         scr: { x: box.x + (d.x - cam.worldView.x) * cam.zoom * k, y: box.y + (d.y - cam.worldView.y) * cam.zoom * k, k: cam.zoom * k },
@@ -71,7 +75,6 @@ const runCase = async (h, { cornerKey, dirKey, vert, scenario, stamina = 100, sh
         rows.push({ i, ...m, st: row.d.state, ax: row.a.x, hit: prev ? m.d.stamina < prev.d.stamina - 5 : false });
         if (arrived < 0 && m.d.state === 'cornered') {
             arrived = i;
-            if (scenario === 'hit') await h.page.evaluate(FORCE_LEFT, 2.3);
             if (scenario === 'full') await h.page.evaluate(FORCE_LEFT, 4.5);   // a short daze can end before a long run gets there; the real length is reported separately
         }
         if (shots && arrived >= 0 && i >= arrived - 25) {
@@ -110,8 +113,23 @@ const sum = (rows, arrived, pressed, scenario, cornerKey) => {
     out.sideBandsInFront = bands.filter(b => b.b >= dd).length; out.sideBandsConsidered = bands.length;
     const near = cornerKey.includes('near');
     out.drawsBehindNearPost = near ? dd < 25.7 : null; out.drawsBehindNearRope = near ? dd < r0.nearRope : null;
-    const grips = cornered.filter(r => r.ep?.grip && r.ep.ms > 200).map(r => r.ep.grip).filter(g => g.every(v => v != null));
-    if (grips.length) { const all = grips.flat(); out.handMissPx = { min: +Math.min(...all).toFixed(1), max: +Math.max(...all).toFixed(1), mean: +(all.reduce((x, y) => x + y, 0) / all.length).toFixed(1) }; }
+    // arms at the end of the fall (load 170 ms + 320 ms, measured from 600 ms in): wrists against the hip, elbow bend, trunks overlap
+    const settled = cornered.filter(r => r.ep && r.ep.ms >= 600 && r.d.state === 'cornered');
+    if (settled.length) {
+        const m = (pick) => settled.map(pick), mx = (a) => +Math.max(...a).toFixed(1), mn = (a) => +Math.min(...a).toFixed(1);
+        out.arms = {
+            nearWristBelowHip: [mn(m(r => r.arms.near.wristBelowHip)), mx(m(r => r.arms.near.wristBelowHip))], farWristBelowHip: [mn(m(r => r.arms.far.wristBelowHip)), mx(m(r => r.arms.far.wristBelowHip))],
+            nearWristToHip: mn(m(r => r.arms.near.wristToHip)), farWristToHip: mn(m(r => r.arms.far.wristToHip)),
+            elbowBend: [mn(m(r => Math.min(r.arms.near.elbowBend, r.arms.far.elbowBend))), mx(m(r => Math.max(r.arms.near.elbowBend, r.arms.far.elbowBend)))],
+            framesWristInTorsoBox: { near: settled.filter(r => r.arms.near.inTrunks).length, far: settled.filter(r => r.arms.far.inTrunks).length, of: settled.length },
+            restsOnHipFrames: { near: settled.filter(r => r.arms.near.wristToHip < 10 * r.d.s).length, far: settled.filter(r => r.arms.far.wristToHip < 10 * r.d.s).length },
+            nearWristToHipOverS: +(mn(m(r => r.arms.near.wristToHip / r.d.s))).toFixed(1), farWristToHipOverS: +(mn(m(r => r.arms.far.wristToHip / r.d.s))).toFixed(1),
+            hangPose: settled[0].arms.poseArms.map(v => +v.toFixed(3)),
+        };
+        const fall = cornered.findIndex(r => r.ep && r.ep.ms > 170 && Math.abs(r.arms.poseArms[0] + 0.1) < 0.02 && Math.abs(r.arms.poseArms[1] - 0.02) < 0.02);
+        out.armFallMs = fall < 0 ? null : Math.round(cornered[fall].ep.ms - 170);   // from the end of the load to both arms within 0.02 rad of hanging
+        out.scaleHip = +(r0.d.s).toFixed(3);
+    }
     if (endI > 0) { out.stepFromLoadedPx = +Math.abs(rows[Math.min(rows.length - 1, endI + 30)].d.x - rows[endI].d.x).toFixed(1); out.stepFromLoadedOverS = +(out.stepFromLoadedPx / s).toFixed(1); }
     if (scenario === 'daze') { out.stayed = cornered.every(r => r.d.state === 'cornered'); out.stepForwardPx = endI < 0 ? null : +(Math.abs(rows[Math.min(rows.length - 1, endI + 30)].d.x - rope) / s).toFixed(1); }
     if (pressed >= 0) {
@@ -135,7 +153,7 @@ const sum = (rows, arrived, pressed, scenario, cornerKey) => {
                 out.stillDazedAfter = rows.slice(hitI + 2, hitI + 20).every(r => r.d.state === 'cornered' || r.d.state === 'selling');
                 out.damageEvents = rows.filter((r, k) => k > 0 && r.d.stamina < rows[k - 1].d.stamina - 5).length;
                 out.epIdsAcrossHit = [...new Set(rows.slice(arrived, hitI + 40).map(r => r.ep?.id).filter(Boolean))];
-                out.dazeMsAfterHit = out.dazeMs;
+                out.dazeMsAfterHit = out.dazeMs; out.dazeLeftAtImpactMs = Math.round((rows[hitI - 1].ep?.left ?? 0) * 1000);
             } else { out.hit = false; }
         }
         const am = rows.findIndex(r => r.aep);

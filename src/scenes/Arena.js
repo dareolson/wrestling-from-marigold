@@ -3498,7 +3498,6 @@ export default class Arena extends Phaser.Scene {
         this.moveRuntime.afterDraw?.();
         undoBlend?.();
         if (this.lockupState?.grapple && grapplesCandidate()) this._holdLockupGrips();
-        if (grapplesCandidate()) { w1.holdCornerGrips(); w2.holdCornerGrips(); } // T3c.6: a cornered man's hands on the top rope
         this._updateRopes(dt);
         this._drawStaminaBars();
         this._updateHeat(dt);

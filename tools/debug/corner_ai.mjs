@@ -31,14 +31,16 @@ for (const [pair, p1, p2] of [['lou-ai-vs-george', 'thesz-procreate-v1', 'george
             const log = [];
             for (let k = 0; k < 110; k++) {   // 11 s real time
                 await h.page.waitForTimeout(100);
-                log.push(await h.page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; return { a: sc.w1.state + (sc.w1.runPhase ? ':' + sc.w1.runPhase : ''), d: sc.w2.state, dx: Math.round(Math.abs(sc.w1.x - sc.w2.x)), ds: Math.round(sc.w2.stamina), ev: sc.matchEvents.slice(window.__trial.moves0).map(e => e.type + (e.move ? ':' + e.move : '')) }; }));
+                log.push(await h.page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; return { a: sc.w1.state + (sc.w1.runPhase ? ':' + sc.w1.runPhase : ''), d: sc.w2.state, dx: Math.round(Math.abs(sc.w1.x - sc.w2.x)), ds: Math.round(sc.w2.stamina), ai: { stall: +(sc._p1AI._stallTimer).toFixed(2), cd: +(sc._p1AI._cooldown).toFixed(2), off: +(sc._p1AI._offense).toFixed(2), show: !!sc._p1AI._showboat }, ev: sc.matchEvents.slice(window.__trial.moves0).map(e => e.type + (e.move ? ':' + e.move : '')) }; }));
             }
             const first = log.findIndex(r => r.d === 'cornered');
+            const win = log.slice(Math.max(0, first), Math.max(0, first) + 22).filter(r => r.a.startsWith('standing'));   // the first 2.2 s of the daze, while the attacker is free to decide
+            const gate = first < 0 ? null : { standingSamples: win.length, stalling: win.filter(r => r.ai.stall > 0).length, cooldown: win.filter(r => r.ai.cd > 0).length, offenseCooldown: win.filter(r => r.ai.off > 0).length, showboat: win.filter(r => r.ai.show).length };
             const ev = log.at(-1).ev;
             const charged = ev.filter(e => e === 'move:cornerCharge').length;
             const row = { pair, corner: corner.join('-'), corneredAtMs: first < 0 ? null : first * 100, chargeHits: charged, cornerHitEvents: ev.filter(e => e === 'cornerHit').length, chargeMisses: ev.filter(e => e === 'cornerChargeMiss').length,
                 attackerPhases: [...new Set(log.slice(Math.max(0, first)).map(r => r.a))].slice(0, 12), moves: ev.filter(e => e.startsWith('move:') || e.startsWith('stagger') || e.startsWith('knockdown')).slice(0, 8), minDistWhileCornered: Math.min(...log.filter(r => r.d === 'cornered').map(r => r.dx), 9999) };
-            results.push(row); console.log(JSON.stringify(row));
+            row.gate = gate; results.push(row); console.log(JSON.stringify(row));
         }
     } finally { await h.close(); }
 }

@@ -7,7 +7,7 @@ import { ringBoundsAtY, RING } from './constants.js';
 import { grapplesCandidate, sharesDepth } from './Wrestler.js';
 import { LOCKUP } from './animation/lockup.js';
 
-const PERSONALITIES = {
+export const PERSONALITIES = {
     brawler: {
         stallChance:      0.003, // ~once per 5s at 60fps
         retreatStamina:   20,    // backs off below this %

@@ -20,7 +20,7 @@ import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
 import { lockupGrips, lockupPhase, lockupPoseChannels, exitBlendPose, breakKind, breakTravel, legRel, LOCKUP } from '../animation/lockup.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
-import { ROSTER_KITS } from '../characters/rosterKits.js';
+import { ROSTER_KITS, ROSTER_PERSONALITIES } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
 import { ROPE_HIT, stepRopeSpring } from '../animation/ropeHit.js';
 import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
@@ -3031,17 +3031,17 @@ export default class Arena extends Phaser.Scene {
             },
             // Roster comparison rigs (2026-10-18), opt-in by name: `?p1=guido-roster-v1` etc.
             'guido-roster-v1': {
-                name: 'GUIDO', personality: 'guido', idlePose: guidoRosterV1.idlePose, begsOff: guidoRosterV1.begsOff, struts: guidoRosterV1.struts, sellStyle: guidoRosterV1.sellStyle,
+                name: 'GUIDO', personality: ROSTER_PERSONALITIES.guido, idlePose: guidoRosterV1.idlePose, begsOff: guidoRosterV1.begsOff, struts: guidoRosterV1.struts, sellStyle: guidoRosterV1.sellStyle,
                 skin: 0xd9a070, trunks: 0x7a1c22,
                 moveSet: ROSTER_KITS.guido, textures: guidoRosterV1.textures,
             },
             'kowalski-roster-v1': {
-                name: 'KOWALSKI', personality: 'kowalski', idlePose: kowalskiRosterV1.idlePose,
+                name: 'KOWALSKI', personality: ROSTER_PERSONALITIES.kowalski, idlePose: kowalskiRosterV1.idlePose,
                 skin: 0xe8c098, trunks: 0x8a1c24,
                 moveSet: ROSTER_KITS.kowalski, textures: kowalskiRosterV1.textures,
             },
             'george-roster-v1': {
-                name: 'GEORGE', personality: 'george', idlePose: georgeRosterV1.idlePose, begsOff: georgeRosterV1.begsOff, struts: georgeRosterV1.struts, sellStyle: georgeRosterV1.sellStyle,
+                name: 'GEORGE', personality: ROSTER_PERSONALITIES.george, idlePose: georgeRosterV1.idlePose, begsOff: georgeRosterV1.begsOff, struts: georgeRosterV1.struts, sellStyle: georgeRosterV1.sellStyle,
                 skin: 0xa87858, trunks: 0x1a1a1a,
                 moveSet: ROSTER_KITS.george, textures: georgeRosterV1.textures,
             },
@@ -3055,7 +3055,7 @@ export default class Arena extends Phaser.Scene {
             // art differs, so anything that reads differently on screen is the
             // art. `?p1=thesz-procreate-v1`.
             'thesz-procreate-v1': {
-                name: 'THESZ', personality: 'thesz', idlePose: theszProcreateV1.idlePose,
+                name: 'THESZ', personality: ROSTER_PERSONALITIES.thesz, idlePose: theszProcreateV1.idlePose,
                 skin: 0xe8c098, trunks: 0x484848,
                 moveSet: ROSTER_KITS.thesz,
                 textures: theszProcreateV1.textures,

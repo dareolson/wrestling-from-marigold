@@ -107,18 +107,7 @@ stop a flying body.
 
 Each wrestler is constructed with a `moveSet` array. `tryAction`, `tryPower`, and `tryFinisher` only execute moves that appear in the set — this is the character differentiation hook.
 
-**Source of truth:** each character module's own `moveSet` — [`src/characters/george.js`](src/characters/george.js) and [`src/characters/thesz.js`](src/characters/thesz.js). `Arena.js` consumes those arrays directly and validates them against [`src/moves/registry.js`](src/moves/registry.js), which is the canonical list of every move ID and what it is (category, clip, executor, damage key). Don't transcribe kits into this table — it will drift. Arena used to keep its own copies and they did exactly that.
-
-The live roster is George vs Thesz (the older Brawler/Powerhouse archetypes were retired when George was promoted, 2026-07-26):
-
-| Character | Kit size | Identity moves | Deliberately lacks |
-|---|---|---|---|
-| **George** (`?p1=george`) | 17 | Piledriver, headbutt, knee lift — brawler pressure | Thesz press, body slam |
-| **Thesz** (`?p1=thesz`) | 16 | **Thesz press** (finisher), suplex, body slam, the holds | Piledriver, headbutt, knee lift |
-
-Both carry the shared base — Irish whip, clothesline, pin, elbow drop, dropkick, double axe handle, sleeper hold, headlock, arm drag, jab — plus hammerlock, back body drop, and knee drop.
-
-`armBar` and `ankleLock` are fully implemented (poses, executors, damage values, lockup gating) but appear in **neither** kit, so they are currently unreachable in game. `tests/moveRegistry.test.js` asserts that set, so adding either to a kit is a deliberate roster decision rather than an accident.
+**Source of truth:** [`src/characters/rosterKits.js`](src/characters/rosterKits.js) holds the four roster kits (Lou, George, Kowalski, Guido); `Arena.js` reads them for the default and roster presets and validates every kit against [`src/moves/registry.js`](src/moves/registry.js), the canonical list of every move ID and what it is (category, clip, executor, damage key). The older `moveSet` fields in `thesz.js` and `george.js` only feed the old `?p1=thesz` / `?p2=george` rigs. Don't transcribe kits into this file: the generated block in [MOVE_CATALOG.md](MOVE_CATALOG.md) lists, per move, who holds it, its slot and its coverage (`npm run moves:kits`).
 
 ---
 

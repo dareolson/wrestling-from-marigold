@@ -352,3 +352,53 @@ export function orphanedMoves(...kits) {
     const claimed = new Set(kits.flat());
     return KIT_ELIGIBLE_IDS.filter(id => !claimed.has(id));
 }
+
+/**
+ * Slots where kit-gated moves compete for one control and the first one the kit
+ * holds wins, so a kit holding two of a slot can never use the later one. Read
+ * from the code, in priority order:
+ *   lockupPower — Arena._tickLockup: `['hipToss', 'armDrag'].find(...)`
+ *   grapple     — Wrestler (grab on a staggered man) and Arena._tickLockup (no
+ *                 direction held): piledriver is tried before bodySlam
+ * Not slots, because a held direction picks each: the mat holds (Up arm bar,
+ * Down ankle lock, else the first of figureFour / ankleLock / armBar) and the
+ * lockup throws (Up suplex, Down headlock, Left/Right whip). Distance- or
+ * state-gated pairs (headbutt / elbowDrop, sleeperHold / theszPress) never
+ * compete for the same moment.
+ */
+export const KIT_SLOTS = Object.freeze({
+    lockupPower: Object.freeze(['hipToss', 'armDrag']),
+    grapple:     Object.freeze(['piledriver', 'bodySlam']),
+});
+
+/**
+ * Moves a kit holds that a slot makes unreachable: every held move of a slot
+ * after the first one held. Returns `{ move, slot, shadowedBy }` rows.
+ */
+export function shadowedMoves(kit) {
+    const out = [];
+    for (const [slot, order] of Object.entries(KIT_SLOTS)) {
+        const held = order.filter(id => kit.includes(id));
+        for (const move of held.slice(1)) out.push({ move, slot, shadowedBy: held[0] });
+    }
+    return out;
+}
+
+/**
+ * The AIHandler personality value that makes the AI use a kit move. Without a
+ * positive value the move sits in the kit and only a human ever plays it. Read
+ * from AIHandler.js (the `cfg.*` that gates each move):
+ *   armBar / ankleLock — groundHoldOdds; cornerCharge — cornerWhipOdds (the
+ *   charge follows a corner whip); the rest are named for their move.
+ */
+export const KIT_AI_ODDS = Object.freeze({
+    figureFour: 'figureFourOdds',
+    armBar:     'groundHoldOdds',
+    ankleLock:  'groundHoldOdds',
+    kneeDrop:   'kneeDropOdds',
+    kneeLift:   'kneeLiftOdds',
+    frontKick:  'frontKickOdds',
+    theszPress: 'pressHuntAt',
+    hammerlock: 'hammerlockOdds',
+    cornerCharge: 'cornerWhipOdds',
+});

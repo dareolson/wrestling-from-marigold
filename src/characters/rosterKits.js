@@ -34,3 +34,11 @@ export const ROSTER_KITS = {
         'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop', 'figureFour', 'frontKick',
     ],
 };
+
+// The AIHandler personality each roster member plays (Arena.js presets read this).
+export const ROSTER_PERSONALITIES = {
+    thesz:    'thesz',
+    george:   'george',
+    kowalski: 'kowalski',
+    guido:    'guido',
+};

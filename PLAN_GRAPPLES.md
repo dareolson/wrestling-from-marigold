@@ -76,6 +76,8 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - T5.3: aa0532f, `grapples` on by default, `=off` the old lockup. Suite 1115/1115, build, coverage 23 baselined, `grapples_assert` all passed, flag-off identical (60 frames; a default launch differs, `=off` matches). Live: no flag, Lou vs George, 19 of 19 lockups carry the new tie-up. STOPPED at G5.
   Misses: `MOVE_CATALOG.md` edited, not committed (another session's changes in it); AI chains: George rarely follows a corner whip with the charge.
 - **G5: approved by Derek 2026-11-01** ("it's good enough to keep moving forward") after a no-flag match on Procreate Lou and `george-roster-v1`. Current values stand: match pace, `CORNER_CHARGE.backOff` 330 px, the diagonal press, polish list parked. Opus reran at ca9bca5: suite 1115/1115, build, coverage 23, `grapples_assert`, `=off` identical. Next T6.1-T6.3, stop at G6.
+- T6.1-T6.3: 4774ed4, 3454930, T6.3 commit. Default fighters Procreate Lou and `george-roster-v1`; `rosterKits.js` is the one kit file; `moves:kits` table and kit checks. Suite 1124/1124, build, coverage 23, kits, `grapples_assert` all passed. STOPPED at G6.
+  Misses: Guido has no `hammerlockOdds` or `cornerWhipOdds` (allow-listed, not retuned); no shadowed moves; `grapples_flagoff` with no `WFM_URL` (self-started server) prints DIFFERENT at frame 0 (about 1e-5 in pose) also on the code before T6.1, identical with `WFM_URL=http://localhost:5173` (flagoff now pins `thesz`/`george`).
 
 ## Why (Derek 2026-10-29)
 

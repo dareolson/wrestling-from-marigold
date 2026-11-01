@@ -69,6 +69,12 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - **G3f: approved by Derek 2026-10-31** ("i like it"). Opus reran at 1dcffb4: suite 1110/1110, build, coverage 23, flag-off identical. Stage 3c done through T3c.8. Polish list adds: body past the rope mid-fall at near corners, George's face sell 11-19 px short, face sell one hand.
 - Whip candidate (Codex, now in a4ba0e1, under `grapples=v1`): release at 310 ms, cross-body pull at 400 ms, real-input direction 8/8, defender peak 55-66 px/frame. [Viewer](research/animation/whip-2026-10/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-codex-irish-whip-direction.md).
   Misses (Opus review): cross-body pull fuses the bodies at about 300 ms, about 20 px of depth apart, against D12; receiver's arms go to idle, so no wrist contact. See Stage 3c.
+- T5.1: c4d657d, the AI's open-ring whip (George, Thesz, Kowalski; Guido's brawler has none) also holds up or down on `cornerWhipOdds` .35, toward the nearer corner; the ropes-escape whip stays flat. Soak: 46 corner / 199 flat whips (96 at the ropes), .188 of all, .309 of the rest. The low charge does reach `tryRun`: 11 stomach, 13 face, 2 misses.
+  Misses: below .35 for George and Lou pairs (.26); George charged in 2 of 12 corner chains he sent, Lou 10 of 12, Kowalski 12 of 22 (his stall and showboat gates).
+- T5.2: be87a8f, `grapples_soak.mjs`: 8 flag-on soaks (4 pairs, both gaits) each reached 3 full chains, 0 page errors, no stuck state, no leftover field, ring excess 14 px; interrupted hit, fall, get-up and pin 19 of 20 clean on Lou vs George and George vs Lou (the 20th stayed down 12 s under a mat hold); keyboard 4 of 4 both directions, high and low.
+  Misses: 2 `orphanRescue` at the 10:00 time limit in a lockup (`_endMatch` clears `lockupState`; 1 of 7 flag-on draws, 0 of 3 `=off`); Guido pairs' matches 1.4-1.5x longer flag on (mean 100-125 s vs 72-85 s; 1.5-1.9x at gait v2); Guido's collar 19.9 px short (T1.3b) not re-measured; page clock ran slower than wall on 3 runs (4 browsers).
+- T5.3: aa0532f, `grapples` on by default, `=off` the old lockup. Suite 1115/1115, build, coverage 23 baselined, `grapples_assert` all passed, flag-off identical (60 frames; a default launch differs, `=off` matches). Live: no flag, Lou vs George, 19 of 19 lockups carry the new tie-up. STOPPED at G5.
+  Misses: `MOVE_CATALOG.md` edited, not committed (another session's changes in it); AI chains: George rarely follows a corner whip with the charge.
 
 ## Why (Derek 2026-10-29)
 
@@ -659,9 +665,24 @@ Never promote `grapples`.
   - **Later (Derek picks):** running splash, corner strikes, grapple in the corner, whip reversals.
 - **Stage 4: the lockup vocabulary**, so more moves can grow from it: rope break (clean break / cheap shot), shove-off,
   go-behind waistlock, wrist lock / arm wringer, side headlock takeover. Derek picks the order.
-- **Stage 5: promote** `grapples` to default after Derek approves a live match.
-  Codex's G3f review adds this gate: a compact live run of whip, corner, charge, down and sell, then a pin attempt or recovery, with AI and
-  controller input, both gaits, including interrupted reaction, fall and get-up. The scripted proofs disable the AI, so they do not establish
-  match flow. Judge the charge gap and the attacker's retreat (`CORNER_CHARGE.backOff` 330 px over 450 ms) as one sequence, not as poses.
-  Before that, measure each exit's hit frame against drawn contact and the frame the lead-in releases facing: the 0.14 s lead-in is
-  drawn only while the move clock runs, and the whip turn is 119-121 px/frame. Decide then whether any move needs its own transition.
+- **Stage 5: integrate `grapples` (Derek 2026-10-31: "let's get the grapples integrated"). Written in full, for Sonnet; stop at G5.**
+  Exit timing from the old outline was measured at G3b and the whip has since been rebuilt, so it is closed. Order matters: fix the gap, prove the flow, then flip.
+  - **T5.1 The AI uses the corner.** Today the chain only happens with a player attacking: the AI's whips (`src/AIHandler.js:592`, `:618`) hold
+    left or right only, so it never sends anyone to a corner in a real match, and T3c.7's AI proof forced the corner by hand. Flag on: at `:618`, about 35% of
+    whips also `_hold` up or down, whichever corner is nearer the receiver, a `_cfg` value per style so George and Lou can differ. Leave the ropes-escape whip at `:592`
+    alone. Check the AI's low charge from T3c.8 really reaches `tryRun`; the code has no `down` hold for it that I could find. Fix it if not. Tests.
+  - **T5.2 The live soak.** New `tools/debug/grapples_soak.mjs` on `?grapples=v1`, real time, both sides AI, real AI input, nothing placed by hand. Pairs from the four roster
+    rigs (`thesz-procreate-v1`, `george-roster-v1`, `kowalski-roster-v1`, `guido-roster-v1`; read the real keys in `src/characters`), both facings as they fall, default gait and
+    `?gait=v2`. Run until each pair has at least 3 full chains: whip, corner, charge, down and sell, then a pin or a recovery. Fail on: any page error; non-finite x, y or pose;
+    `facing` 0; `orphanRescue`; a state unchanged past its limit (`grabbed` 1 s, `cornered` 4 s, `running` 6 s); a leftover `_cornerEp`, `_charge`, `_whip` or `_returnVia` once standing or down; x or y out of the ring
+    beyond the known fall swing. Interrupted cases: force a hit during the reaction, the fall, and the get-up, and a pin during the sell. Add one real-input run: keyboard
+    through the same chain, driven through the input object, both directions. Report per pair: chains, moves used, lockups per minute, match length against `grapples=off`, charge
+    hit and miss counts, George's gap. Keep frames out; keep JSON. Guido's collar was 19.9 px short at T1.3b: report it, fix nothing cosmetic.
+    A crash, stuck state or lost match flow blocks T5.3: stop and report. A look issue goes on the polish list.
+  - **T5.3 Flip it.** `grapplesCandidate = () => defaultOnFlag('grapples', 'v1')`, as 6bfb66c did for getups: on in the game, any other value off, Node with no `location` off.
+    Update the comment at D1's flag, `tests/grapplesFlag.test.js` (absent, `=v1`, `=off`, `=1`, no location), and `tests/support/promotedFlags.js` `onlyListed`. Every tool that meant "flag off" by leaving it out
+    must now say `grapples=off`: `grapples_flagoff.mjs`, `grapples_film.mjs`, `grapples_3b*.mjs`, `grapples_contacts.mjs`, and search for others. `grapples_flagoff.mjs` then proves `=off` matches
+    the fixture. Docs: add the corner whip, charge and face / stomach sell to `MOVE_CATALOG.md` and `MOVES.md` with their inputs, in small edits, as those files hold other sessions' changes;
+    Status "Feature flags". Keep the `=off` path; no code deletion in this stage.
+    Live check: dev server, no query string, Lou vs George, confirm lockups run the new tie-up. Full suite, build, coverage, `grapples_assert.mjs`, flag-off. Commit locally, do not push, **STOP at G5**: Derek plays a match with no flag.
+    G5 asks him: match pace, the attacker's long retreat after the charge (`CORNER_CHARGE.backOff` 330 px), the diagonal press replacing a suplex or headlock, and the polish list.

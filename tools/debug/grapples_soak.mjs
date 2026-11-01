@@ -83,13 +83,13 @@ function installMonitor() {
                         S.cornerWhips++;
                         if (rec) {
                             if (active[rec]) finish(active[rec], 'superseded');
-                            const c = { rec, whipper: other(rec), at0: now, depth: e.depth, dir: e.direction, stages: { whip: true } };
+                            const c = { rec, whipper: other(rec), at0: now, depth: e.depth, dir: e.direction, stages: { whip: true }, after: [] };
                             S.chains.push(c); active[rec] = c;
                         }
                     } else { S.flatWhips++; if (ropes) S.ropesWhips++; }
                 }
                 if (e.type === 'cornerHit' && e.hand && !active[e.wrestler]) {   // --interrupts: the run into the corner was placed by hand, the chain opens here
-                    const c = { rec: e.wrestler, whipper: other(e.wrestler), at0: now, depth: 0, dir: 0, stages: { whip: true }, hand: true }; S.chains.push(c); active[e.wrestler] = c;
+                    const c = { rec: e.wrestler, whipper: other(e.wrestler), at0: now, depth: 0, dir: 0, stages: { whip: true }, after: [], hand: true }; S.chains.push(c); active[e.wrestler] = c;
                 }
                 if (e.type === 'cornerHit') { const c = active[e.wrestler]; if (c && !c.stages.corner) { c.stages.corner = true; c.cornerAt = Math.round(now - c.at0); } }
                 if (e.type === 'move' && e.move === 'cornerCharge') {
@@ -97,17 +97,24 @@ function installMonitor() {
                     const c = active[other(e.attacker)]; if (c) { c.stages.charge = true; c.part = e.part; c.chargeAt = Math.round(now - c.at0); }
                 }
                 if (e.type === 'cornerChargeMiss') { S.charge.miss++; const c = active[other(e.wrestler)]; if (c) c.missed = (c.missed ?? 0) + 1; }
-                if (e.type === 'pinAttempt') { const c = active[other(e.attacker)]; if (c && c.stages.down && !c.resolved) { c.resolved = 'pin'; finish(c, 'complete'); } }
+                for (const c of Object.values(active)) if (c.stages.charge && !(e.type === 'move' && e.move === 'cornerCharge') && c.after.length < 10 && !['cornerHit', 'cornerLeave', 'whipRelease'].includes(e.type)) c.after.push(e.type + (e.move ? ':' + e.move : ''));
+                if (e.type === 'pinAttempt') { const c = active[other(e.attacker)]; if (c && c.stages.down && !c.resolved) { c.resolved = 'pin'; finish(c, c.stages.sell ? 'complete' : 'noSell'); } }
             }
             // chain stages that come from states
             for (const c of Object.values(active)) {
                 const w = wOf(c.rec);
-                if (c.stages.charge && !c.stages.sell && (w.state === 'selling')) { c.stages.sell = true; }
+                if (c.stages.charge && !c.stages.react && (w.state === 'selling')) { c.stages.react = true; }   // the 150 ms hit reaction
+                if (c.stages.down && w._sell?.plan?.length) {   // the sell on the mat: the plan the down body is running
+                    const p0 = w._sell.plan[0];
+                    c.stages.sell = true;
+                    if (p0.forced) { c.forcedSeen = true; c.forcedPlan = `${p0.name}:${p0.part}:${p0.duration?.toFixed?.(2)}`; c.forcedMaxT = +Math.max(c.forcedMaxT ?? 0, w._sell.t ?? 0).toFixed(2); }
+                    else { c.otherPlan = w._sell.plan.map(e => `${e.name}:${e.part}:${e.duration?.toFixed?.(2)}`); }   // a later hit's own sell (a new _pain loses forceClutch)
+                }
                 if (c.stages.charge && !c.stages.down && w.state === 'down') {
                     c.stages.down = true; c.downAt = Math.round(now - c.at0);
                     c.fall = { facing: w.facing, lying: w.lying, variant: w._fallVariant, x: Math.round(w.x), y: Math.round(w.y) };
                 }
-                if (c.stages.down && !c.resolved && w.state === 'standing') { c.resolved = 'recovery'; finish(c, 'complete'); }
+                if (c.stages.down && !c.resolved && w.state === 'standing') { c.resolved = 'recovery'; finish(c, c.stages.sell ? 'complete' : 'noSell'); }
                 if (now - c.at0 > 45000) finish(c, 'expired');
             }
 
@@ -170,6 +177,8 @@ const pageErrors = [];
 async function open() {
     const h = await launch();
     h.page.on('pageerror', e => pageErrors.push(e.message));
+    h.page.on('crash', () => { pageErrors.push('PAGE CRASH'); console.log('[PAGE CRASH]'); });
+    h.page.on('close', () => console.log('[PAGE CLOSED]', new Date().toISOString()));
     h.page.on('console', m => { if (m.type() === 'error') pageErrors.push(`console: ${m.text()}`); });
     await h.page.waitForTimeout(2500);
     return h;

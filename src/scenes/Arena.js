@@ -3043,7 +3043,7 @@ export default class Arena extends Phaser.Scene {
             'george-roster-v1': {
                 name: 'GEORGE', personality: 'george', idlePose: georgeRosterV1.idlePose, begsOff: georgeRosterV1.begsOff, struts: georgeRosterV1.struts, sellStyle: georgeRosterV1.sellStyle,
                 skin: 0xa87858, trunks: 0x1a1a1a,
-                moveSet: georgeRosterV1.moveSet, textures: georgeRosterV1.textures,
+                moveSet: ROSTER_KITS.george, textures: georgeRosterV1.textures,
             },
             'thesz-roster-v1': {
                 name: 'THESZ', personality: 'thesz', idlePose: theszRosterV1.idlePose,
@@ -3057,7 +3057,7 @@ export default class Arena extends Phaser.Scene {
             'thesz-procreate-v1': {
                 name: 'THESZ', personality: 'thesz', idlePose: theszProcreateV1.idlePose,
                 skin: 0xe8c098, trunks: 0x484848,
-                moveSet: theszProcreateV1.moveSet,
+                moveSet: ROSTER_KITS.thesz,
                 textures: theszProcreateV1.textures,
             },
         };

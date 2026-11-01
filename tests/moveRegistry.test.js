@@ -172,30 +172,36 @@ test('Thesz\'s kit is valid', () => {
     assert.deepEqual(validateKit(thesz.moveSet, 'thesz'), []);
 });
 
+test('the four roster kits are valid', () => {
+    for (const [name, kit] of Object.entries(ROSTER_KITS)) assert.deepEqual(validateKit(kit, name), []);
+});
+
 // Locks in the reconciliation. Thesz's module list had silently lost these
 // three; if a future edit drops them again this fails instead of quietly
 // nerfing him — and hammerlock in particular is the only paired-clip move in
 // the default Thesz-vs-George matchup.
 test('Thesz keeps the moves that were previously Arena-only', () => {
     for (const id of ['hammerlock', 'backBodyDrop', 'kneeDrop']) {
-        assert.ok(thesz.moveSet.includes(id), `thesz.moveSet lost ${id}`);
+        assert.ok(ROSTER_KITS.thesz.includes(id), `ROSTER_KITS.thesz lost ${id}`);
     }
 });
 
 test('kit sizes are what the roster expects', () => {
-    assert.equal(george.moveSet.length, 19); // + figureFour (Derek, 2026-10-14: give George Flair's moves), + cornerCharge (grapples=v1, T3c.7)
-    assert.equal(thesz.moveSet.length, 19); // armDrag -> hipToss, + armBar, ankleLock (2026-10-15 mat wrestling), + cornerCharge (grapples=v1, T3c.7)
+    assert.equal(ROSTER_KITS.george.length, 19); // + figureFour (Derek, 2026-10-14: give George Flair's moves), + cornerCharge (grapples=v1, T3c.7)
+    assert.equal(ROSTER_KITS.thesz.length, 19); // armDrag -> hipToss, + armBar, ankleLock (2026-10-15 mat wrestling), + cornerCharge (grapples=v1, T3c.7)
+    assert.equal(ROSTER_KITS.kowalski.length, 21);
+    assert.equal(ROSTER_KITS.guido.length, 20);
 });
 
 test('the roster keeps its intended differentiation', () => {
     // George brawls, Thesz converts — these are the identity moves, not an
     // arbitrary snapshot.
-    assert.ok(george.moveSet.includes('piledriver') && george.moveSet.includes('headbutt'),
+    assert.ok(ROSTER_KITS.george.includes('piledriver') && ROSTER_KITS.george.includes('headbutt'),
         'George lost a brawler identity move');
-    assert.ok(!thesz.moveSet.includes('piledriver') && !thesz.moveSet.includes('headbutt'),
+    assert.ok(!ROSTER_KITS.thesz.includes('piledriver') && !ROSTER_KITS.thesz.includes('headbutt'),
         'Thesz picked up a brawler move — check this was deliberate');
-    assert.ok(thesz.moveSet.includes('theszPress'), 'Thesz lost his finisher');
-    assert.ok(!george.moveSet.includes('theszPress'), 'George picked up the Thesz press');
+    assert.ok(ROSTER_KITS.thesz.includes('theszPress'), 'Thesz lost his finisher');
+    assert.ok(!ROSTER_KITS.george.includes('theszPress'), 'George picked up the Thesz press');
 });
 
 // ─── Validation behaviour ─────────────────────────────────────────────────

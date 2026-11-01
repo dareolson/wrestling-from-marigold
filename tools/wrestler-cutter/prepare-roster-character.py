@@ -19,7 +19,9 @@ import { %(base)s } from './%(basefile)s.js';
 export const %(const)s = {
     id: '%(id)s', skinCol: %(base)s.skinCol, trunksCol: %(base)s.trunksCol,
     idlePose: %(base)s.idlePose, tauntPose: %(base)s.tauntPose, begsOff: %(base)s.begsOff, struts: %(base)s.struts,
-    sellStyle: %(base)s.sellStyle, moveSet: %(base)s.moveSet,
+    sellStyle: %(base)s.sellStyle,
+    // The game reads roster kits from src/characters/rosterKits.js, not this moveSet.
+    moveSet: %(base)s.moveSet,
     textures: @@TEXTURES@@,
 };
 export const %(snake)s = %(const)s;

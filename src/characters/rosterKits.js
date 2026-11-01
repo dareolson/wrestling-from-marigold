@@ -1,19 +1,36 @@
-// Explicit move kits for the four roster comparison rigs. The generated
-// *_roster_v1.js files (tools/wrestler-cutter/prepare-roster-character.py)
-// borrow Lou's or George's kit as a neutral control; this file is where a
-// roster member's own kit is decided, so regenerating a rig never touches it.
-// Moves are shared implementations (src/moves/registry.js); a kit is only the
-// list a wrestler may use, and AIHandler's per-wrestler personality decides how
-// often and when.
-import { thesz } from './thesz.js';
-import { george } from './george.js';
-
+// The one place the four roster kits are decided. The game reads these lists
+// (Arena.js presets thesz-procreate-v1, george-roster-v1, kowalski-roster-v1,
+// guido-roster-v1); the moveSet fields in thesz.js, george.js and the generated
+// *_roster_v1.js files (tools/wrestler-cutter/prepare-roster-character.py) are
+// not read for these four, so editing one of them changes nothing in play.
+// Each list is written out in full on purpose: a change to one wrestler never
+// changes another. Moves are shared implementations (src/moves/registry.js); a
+// kit is only the list a wrestler may use, and AIHandler's per-wrestler
+// personality decides how often and when. To move a move between wrestlers: edit
+// the list here, set its AI value in the personality (KIT_AI_ODDS in the
+// registry names which), then run `npm run moves:kits`.
 export const ROSTER_KITS = {
-    // Lou and George: unchanged from the shipped kits until Derek assigns more.
-    thesz:     [...thesz.moveSet],
-    george:    [...george.moveSet],
-    // Kowalski and Guido start from their borrowed base plus the front kick, the
-    // first move of the shared library batch (2026-10-21).
-    kowalski:  [...thesz.moveSet, 'frontKick', 'shove'],
-    guido:     [...george.moveSet, 'frontKick'],
+    // Lou (Procreate rig) and George (roster rig): the shipped kits until Derek assigns more.
+    thesz: [
+        'irishWhip', 'clothesline', 'cornerCharge', 'bodySlam', 'suplex', 'pin', 'elbowDrop',
+        'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'hipToss', 'jab', 'theszPress',
+        'hammerlock', 'backBodyDrop', 'kneeDrop', 'armBar', 'ankleLock',
+    ],
+    george: [
+        'irishWhip', 'clothesline', 'cornerCharge', 'piledriver', 'suplex', 'pin', 'elbowDrop',
+        'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt',
+        'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop', 'figureFour',
+    ],
+    // Kowalski and Guido started from Lou's and George's kits plus the front kick, the
+    // first move of the shared library batch (2026-10-21); Kowalski also has the shove.
+    kowalski: [
+        'irishWhip', 'clothesline', 'cornerCharge', 'bodySlam', 'suplex', 'pin', 'elbowDrop',
+        'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'hipToss', 'jab', 'theszPress',
+        'hammerlock', 'backBodyDrop', 'kneeDrop', 'armBar', 'ankleLock', 'frontKick', 'shove',
+    ],
+    guido: [
+        'irishWhip', 'clothesline', 'cornerCharge', 'piledriver', 'suplex', 'pin', 'elbowDrop',
+        'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt',
+        'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop', 'figureFour', 'frontKick',
+    ],
 };

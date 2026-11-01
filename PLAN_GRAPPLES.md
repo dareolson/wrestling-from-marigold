@@ -60,6 +60,9 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
   Misses: frames local (36 MB, not committed); the exit step has no walk cycle; `stepForwardPx` 18 in the results is net of the 12 px load, in units of s.
 - T3c.7: a96c34f, running attack: charge 900-1433 ms over 249-493 px, stops 45.4 near / 27.3 far (46·s) short, hit 100 ms after arrival, 14 drain, daze +0.6 s once, one damage event; miss runs on and corners the attacker, 0 damage. AI real match: Lou 6/6 charged, 3 hit, 2 missed; George 1/5 charged, 0 hit. Suite 1108/1108, build, flag off identical A/B against HEAD.
   Misses: coverage 23 gaps, not 22 (new move, baselined); a 1.5 s daze ends before most charges land from far; the committed flag-off fixture already differed at HEAD (re-recorded A/B identical). STOPPED at G3e.
+- **G3e note from Derek 2026-10-31:** corner stance should be arms down, hands up reads as guarding. Opus reran at a81b802: suite 1108/1108, coverage 23, flag-off identical. Next T3c.6b, stop at G3e-2.
+- T3c.6b: d7bb349, arms down: hands off the rope, near arm -.1 / far .02, elbows .25 (14 deg bend), fall 297 ms after the load, daze 2217 ms (rock, stumble, reel), 2417 buckle, 3017 out on feet. Charges land inside it: 8/8, 433-967 ms of daze left at impact. Wrist vs hip (px, + = below): George near wrist +1 to +3, far wrist -8 to -15; Lou near +17 to +29, far +3 to +8; none within 10·s of the hip. Focused tests 60/60, flag off identical (A/B). [Strip](research/animation/whip-2026-10/corner-daze.html), normal and quarter.
+  Misses: George's wrists sit at hip height (his arm art is short), his wrist is inside the coarse torso-sprite box; frames local. George charged 5 of 8 at 2.2 s (1 of 5 at 1.5 s), Lou 8 of 8: his stall/showboat timers and 2-2.2 s taunt cooldowns gate `_chooseAction`; AI untouched. STOPPED at G3e-2.
 - Whip candidate (Codex, now in a4ba0e1, under `grapples=v1`): release at 310 ms, cross-body pull at 400 ms, real-input direction 8/8, defender peak 55-66 px/frame. [Viewer](research/animation/whip-2026-10/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-codex-irish-whip-direction.md).
   Misses (Opus review): cross-body pull fuses the bodies at about 300 ms, about 20 px of depth apart, against D12; receiver's arms go to idle, so no wrist contact. See Stage 3c.
 
@@ -612,6 +615,21 @@ Never promote `grapples`.
     `_chooseAction` BEFORE its standing/blocking rejection, and make the movement decision close on a cornered man instead of backing off.
     Beyond 120·s px press run at about 0.6 odds, per decision beat through `_attack` and the offense cooldown; closer, an explicit strike. Real-input proof: Lou near corner first (arrive, hold, hit, restore, escape, miss after he escapes; one damage event, at most one extension, no stale callback or grip), then 2 rigs, 4 corners.
     Full suite, build, coverage, flag-off at this gate. Normal-speed strip. Commit locally, **STOP at G3e**.
+  - **T3c.6b Arms down in the corner (full task, Sonnet; flag on only).** Derek at G3e: "his dazed in the corner stance should probably be
+    arms down, he looks like he's ready to defend himself." Cause: T3c.6 raises both hands to the top rope beside his head (`holdCornerGrips`)
+    on `lArm` .95 / `rArm` .85. Nothing else in the hit or the charge changes.
+    1. Remove the hands from the rope: delete `holdCornerGrips`, its call (`src/scenes/Arena.js:3501`), `gripMiss`, `CORNER.handsMs`,
+       `handSpread`, and their tests and proof fields. Search for other uses.
+    2. `CORNER_DAZE_POSE` arms hang as dead weight at his sides: `lArm` .06, `rArm` .02. In `_tickCorner` (the `lElbow` / `rElbow` line) ease
+       the elbows to a limp `CORNER.elbow` .25, not the idle .7. Read how the rig takes the near and far arm in this facing, in all 4 corners,
+       and make sure neither hand crosses the trunks or rests on the hip.
+    3. The arms fall: they drop from the load's flung pose over about 320 ms, slower than the torso's 200 ms `settleMs`, with no
+       bounce. A small lag of the torso sway in the arms is fine; they never lift on their own.
+    4. Raise `CORNER.minDazeS` from 1.5 to 2.2. T3c.7 reports a 1.5 s daze ending before most charges from far land (charge up to 1433 ms
+       plus the press). Derek still sets the final length by eye; keep it one constant.
+    Measure both wrists' height against the hip at the end of the fall, all 4 corners, both kits, and the elbow bend. Report any trunk or hip
+    overlap. Tests and proof updated, hit and miss still pass. Rerun the corner strip at normal and quarter speed. Focused tests, flag-off.
+    Also report why George charged only 1 of 5 real-match chances against Lou's 6 of 6; do not change the AI. Commit locally, **STOP at G3e-2**.
   - **Later (Derek picks):** running splash, corner strikes, grapple in the corner, whip reversals.
 - **Stage 4: the lockup vocabulary**, so more moves can grow from it: rope break (clean break / cheap shot), shove-off,
   go-behind waistlock, wrist lock / arm wringer, side headlock takeover. Derek picks the order.

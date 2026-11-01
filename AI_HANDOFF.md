@@ -30,11 +30,19 @@ Avoid a large rewrite.
 
 ## Status (2026-10-31, replace this block; ≤ 40 lines)
 
+- **Opening scene specified (Derek 2026-10-31):** skyline/CHICAGO 1952, radio and obscured picket-line inserts, kitchen wall-phone/union call, landlord’s $100-by-tomorrow demand, girlfriend sends Guido out for the money. [Dialogue/brief](STORY_CARNIVAL_OPENING.md), [Opus note](AI_HANDOFF_ENTRIES/2026-10-31-codex-kitchen-opening-scene.md). Docs only; moves remain priority.
+
+- **Visual direction settled (Derek 2026-10-31):** entire game monochrome, including story/carnival/bar fight/exhibition; supersedes color-world/B&W-TV split. Generate new art in color, retain color masters, and derive/tune monochrome separately; [decision](AI_HANDOFF_ENTRIES/2026-10-31-codex-monochrome-decision.md), [standard](CINEMATIC_ART_STANDARD.md). Docs updated; runtime treatment pending; moves remain priority.
+
+- **Venues/crowds/exhibition (Derek 2026-10-31):** [plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md), [Opus note](AI_HANDOFF_ENTRIES/2026-10-31-codex-venue-crowd-exhibition-direction.md). Refresh audiences via seeded rules; carnival and convention recipes. Story carnival unlocks as an exhibition venue; completed bar fight becomes a replayable special encounter. Preserve meta unlocks and isolate replay rewards. Planning only; active grapple work unchanged.
+
+- **New opening (Derek 2026-10-31):** [carnival/strike brief](STORY_CARNIVAL_OPENING.md), [Opus handoff](AI_HANDOFF_ENTRIES/2026-10-31-codex-carnival-origin.md). Guido is a striking steelworker under rent pressure; $100 carnival challenge is first playable match, then Carl recruits him for paid work. Ring and champion profile concepts saved; runtime pending. Kohler naming bridge explicitly unresolved.
+
 - **Codex review for Opus (2026-10-31):** [corner/rebound note](AI_HANDOFF_ENTRIES/2026-10-31-codex-corner-rebound-review-for-opus.md). Confirmed return-line geometry can miss the attacker by 62+ px in depth; existing 16 focused tests pass but miss this case. Also: corner episode cancellation, one-time daze extension, charge endpoint/vertical approach and AI gates. Advice only; G3d review boundary retained.
 
 - **Carl / Guy, saved for later (Derek 2026-10-31):** full-body coaching/cheering sheet approved. [Opus note](AI_HANDOFF_ENTRIES/2026-10-31-codex-carl-ringside-for-opus.md), [sheet](research/art/carl-ringside-2026-10-31/carl-ringside-sheet-v1.png). Later: add Carl as Guy’s named ringside trainer during his matches; extraction, foot alignment and match integration remain. Current grapple priorities unchanged.
 
-- **Irish whip (Codex, Derek request 2026-10-31):** [direction viewer](research/animation/whip-2026-10/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-codex-irish-whip-direction.md). Candidate under `grapples=v1`, committed local in a4ba0e1 and d22ec32 (T3c.0a, T3c.0b): release 183 / 250 ms, cross-body flip on the release frame, direction 8/8, approved by Derek, no promotion. Polish list: cross-body hip overlap, wrist contact. Diagonals and corner runs T3c.1-T3c.4 done, G3c approved, suite 1080/1080. **T3c.4b, T3c.5b done, G3d-2 approved by Derek; T3c.6-T3c.7 (corner daze on the rope's lean, running attack) done at a96c34f; Derek at G3e: arms down in the corner, **T3c.6b done at d7bb349 (hands off the rope, arms hang, daze 2.2 s minimum), stopped at G3e-2**; [corner strip](research/animation/whip-2026-10/corner-daze.html) (frames local); suite 1108/1108, coverage 23 gaps (cornerCharge baselined)** in [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 3c, which also holds corners, the corner daze and diagonals.
+- **Irish whip (Codex, Derek request 2026-10-31):** [direction viewer](research/animation/whip-2026-10/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-codex-irish-whip-direction.md). Candidate under `grapples=v1`, committed local in a4ba0e1 and d22ec32 (T3c.0a, T3c.0b): release 183 / 250 ms, cross-body flip on the release frame, direction 8/8, approved by Derek, no promotion. Polish list: cross-body hip overlap, wrist contact. Diagonals and corner runs T3c.1-T3c.4 done, G3c approved, suite 1080/1080. **T3c.4b, T3c.5b done, G3d-2 approved by Derek; T3c.6-T3c.7 (corner daze on the rope's lean, running attack) done at a96c34f; Derek at G3e: arms down in the corner, **T3c.6b done at d7bb349 (hands off the rope, arms hang, daze 2.2 s minimum), G3e-2 approved by Derek; next is T3c.8 (charge puts him down, face or stomach sell), stop at G3f**; [corner strip](research/animation/whip-2026-10/corner-daze.html) (frames local); suite 1108/1108, coverage 23 gaps (cornerCharge baselined)** in [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 3c, which also holds corners, the corner daze and diagonals.
 - **HEAD** see `git log` on `story/marigold-opening`; full suite 1108/1108 at a96c34f (T3c.6b: focused tests 60/60) (Node 22: `nvm use`; shell default is 25). Uncommitted: story docs, the Carl entry, `research/story/`, `STORY_ART_AND_FEUD_DIRECTION.md`.
 - **Next (Opus 2026-10-31):** [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) **G1c approved by Derek**; stages 1b, 1c, 3, 3b and 4a are done, local, unpushed, `grapples` still opt-in. **Stage 3b stopped at G3b** ([page](research/animation/grapples-2026-10/g3b/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-claude-grapples-g3b.md)): no game code changed; no move keeps a lockup shin from the break settle; clip moves land after the 0.14 s lead-in, but headlock, whip and arm drag act inside it; the whip turn is 120.5 / 118.7 px/frame (today 98.6 / 108.4), the flip alone, no per-move timing fixes Lou. Needs Derek: the whip turn and arm-drag sell choice, his failing-hands list (Stage 2) or the order for Stage 4. Open misses: Lou's planted sole 1.5-1.9 px, overlap in engage and break (up to 147 px), George's collar 9.0 px for 2 frames, first-frame step from the break settle up to +30 px over idle at 0 ms.
 - **Pushed vs local:** pushed through `178d79b` 2026-10-28; later plan/status commits may be local. Push via the SSH URL (HTTPS returns 400).
@@ -48,6 +56,14 @@ Avoid a large rewrite.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) (old Status summary + Handoff Log, plus archived plan Progress).
 
 ## Entry index
+
+- 2026-10-31 · Codex · [Detailed skyline and kitchen opening scene](AI_HANDOFF_ENTRIES/2026-10-31-codex-kitchen-opening-scene.md)
+
+- 2026-10-31 · Codex · [Entire game monochrome — Derek’s final visual direction](AI_HANDOFF_ENTRIES/2026-10-31-codex-monochrome-decision.md)
+
+- 2026-10-31 · Codex · [Audience generator, reusable venues and exhibition encounters](AI_HANDOFF_ENTRIES/2026-10-31-codex-venue-crowd-exhibition-direction.md)
+
+- 2026-10-31 · Codex · [Carnival first match, steelworker origin and profile opponent concept](AI_HANDOFF_ENTRIES/2026-10-31-codex-carnival-origin.md)
 
 - 2026-10-31 · Codex · [For Opus: rebound geometry and corner implementation review](AI_HANDOFF_ENTRIES/2026-10-31-codex-corner-rebound-review-for-opus.md)
 

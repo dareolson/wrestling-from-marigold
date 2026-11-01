@@ -63,6 +63,9 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - **G3e note from Derek 2026-10-31:** corner stance should be arms down, hands up reads as guarding. Opus reran at a81b802: suite 1108/1108, coverage 23, flag-off identical. Next T3c.6b, stop at G3e-2.
 - T3c.6b: d7bb349, arms down: hands off the rope, near arm -.1 / far .02, elbows .25 (14 deg bend), fall 297 ms after the load, daze 2217 ms (rock, stumble, reel), 2417 buckle, 3017 out on feet. Charges land inside it: 8/8, 433-967 ms of daze left at impact. Wrist vs hip (px, + = below): George near wrist +1 to +3, far wrist -8 to -15; Lou near +17 to +29, far +3 to +8; none within 10·s of the hip. Focused tests 60/60, flag off identical (A/B). [Strip](research/animation/whip-2026-10/corner-daze.html), normal and quarter.
   Misses: George's wrists sit at hip height (his arm art is short), his wrist is inside the coarse torso-sprite box; frames local. George charged 5 of 8 at 2.2 s (1 of 5 at 1.5 s), Lou 8 of 8: his stall/showboat timers and 2-2.2 s taunt cooldowns gate `_chooseAction`; AI untouched. STOPPED at G3e-2.
+- **G3e-2: approved by Derek 2026-10-31** ("i like what we have so far"). Note: the charge should put him down, falling forward, then sell the face or stomach. Opus reran at 4554a94: suite 1108/1108, flag-off identical. Next T3c.8, stop at G3f.
+- T3c.8: dc73b78, the charge puts him down: 150 ms reaction, fall forward 483 ms (face) / kneesForward 733 ms (stomach), lands prone facing in, 12.6-24.9 px inside the rope (hips 120·s in), forced sell on all 16 runs (clutch 1.38 s George / 0.96 s Lou in 5.88 s down), one damage event, get-up frontKneeStraight, no episode or `_charge` left. Wrist to target: stomach 0-0.4 px, face 3.3-5.4 px Lou, 11.4-18.9 px George. Suite 1110/1110, build, coverage 23, flag-off identical (A/B). [Strip](research/animation/whip-2026-10/corner-knockdown.html).
+  Misses: mid-fall the body swings 12.4-13.4 px past the rope at near corners (standing there is -27); face sell is the near hand only (a far hand changes every prone head sell, and the sell-art test); George's hand 11-19 px short of the head; attacker 65-107 px from the head sprite. STOPPED at G3f.
 - Whip candidate (Codex, now in a4ba0e1, under `grapples=v1`): release at 310 ms, cross-body pull at 400 ms, real-input direction 8/8, defender peak 55-66 px/frame. [Viewer](research/animation/whip-2026-10/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-codex-irish-whip-direction.md).
   Misses (Opus review): cross-body pull fuses the bodies at about 300 ms, about 20 px of depth apart, against D12; receiver's arms go to idle, so no wrist contact. See Stage 3c.
 
@@ -630,6 +633,28 @@ Never promote `grapples`.
     Measure both wrists' height against the hip at the end of the fall, all 4 corners, both kits, and the elbow bend. Report any trunk or hip
     overlap. Tests and proof updated, hit and miss still pass. Rerun the corner strip at normal and quarter speed. Focused tests, flag-off.
     Also report why George charged only 1 of 5 real-match chances against Lou's 6 of 6; do not change the AI. Commit locally, **STOP at G3e-2**.
+  - **T3c.8 The charge puts him down, face or stomach (full task, Sonnet; flag on only).** Derek at G3e-2: "the charge hit should cause
+    them to fall forward and down, instead of remaining standing, then they should sell whether they got hit in the face or stomach."
+    Replaces the charge's outcome in `_doCornerCharge`; the charge itself, the miss, the daze and the rope hit do not change.
+    1. **Where it lands (Opus's choice, Derek can overrule).** Press and impact stay as they are by default: the clothesline, high, `part: 'head'`,
+       the face. `down` held at the run press gives the low version, a dropped-shoulder pose (new `cornerShoulder`, `crouch` and `bend`
+       forward, no hip contact, D12), `part: 'gut'`. Store it on `_charge` at the press. The AI rolls 50/50 per charge. `_hurt` needs a `part` override next to `limb`.
+    2. **The hit.** At impact, after the existing rechecks, drop the daze extension (`extendCorner`, `extendS`, the latch and its tests: he no
+       longer stays). End the episode through a one-way path, so `startStagger` and `_restoreCorner` cannot put him back. Then a short reaction,
+       about 150 ms: head: head and torso snap back into the buckle (`bend` back); gut: folds over (`bend` forward, arms in).
+    3. **The fall.** `startFall` with a forward variant from `Skeleton.FALL_VARIANTS.forward`, read which ones suit a fall away from the post. He lands
+       `prone`, head toward the ring, `facing` = the corner's inward facing, `state: 'down'`. Downed bodies are about 200·s long, so
+       move him inward over the fall until `downMargin` (60·s, see `startClotheslineFall`) clears both ropes at his y; he must not hang through a rope or post.
+    4. **The attacker** backs off far enough at impact that the falling body does not land on him: raise `CORNER_CHARGE.backOff`, measure the gap on landing.
+    5. **The sell.** It must always happen and name the place. `pain` carries the part; `planSells` can pick no clutch, so for this move
+       force a clutch first, at the part, whatever the style. Severity at or above `COMPACT_MIN_SEVERITY` .6, and make sure `downTime` leaves
+       the budget: `DOWN_SEC` plus what the clutch needs. Face: `clutch.head` prone exists, near hand to the head; try the far hand too if the
+       rig reaches, and read it first in `PRONE_CLUTCH`. Stomach: new `gut` in `SUPINE_CLUTCH` and `PRONE_CLUTCH`, a new `gut` target in
+       Skeleton's clutch-target lookup (`src/Skeleton.js:2660`, where `chest` is .35 of neck to hip; start `gut` at .72; `CLUTCH_TARGETS` is only a comment), near hand under him to the stomach, curled up off the mat, knee drawn. It must not look like `chest`:
+       measure the wrist against the target on both rigs. Registry: `cornerCharge`'s `sell.part` default head.
+    6. Lifecycle: interrupted fall, a pin on him while he sells, the get-up after a prone sell (`getups` routes), no leftover episode or `_charge`.
+    Tests: both parts reach the clutch, one damage event, no daze extension, never back in `cornered`, landing inside margins in 4 corners, the
+    attacker clear. Full suite, build, coverage, flag-off. Strip at normal and quarter speed: Lou and George, near and far, face and stomach. Commit locally, **STOP at G3f**.
   - **Later (Derek picks):** running splash, corner strikes, grapple in the corner, whip reversals.
 - **Stage 4: the lockup vocabulary**, so more moves can grow from it: rope break (clean break / cheap shot), shove-off,
   go-behind waistlock, wrist lock / arm wringer, side headlock takeover. Derek picks the order.

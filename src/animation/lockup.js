@@ -227,7 +227,7 @@ export function lockupPoseChannels(weights, lSide, extra = {}) {
     };
 }
 
-function legChannels(mix, nearCh, farCh, legs, legLen) {
+export function legChannels(mix, nearCh, farCh, legs, legLen) {
     const gain = LOCKUP.legGain * legLen, near = mix('lead') + legs.lead / gain, far = mix('rear') + legs.rear / gain;
     return {
         [`${nearCh}Leg`]: near, [`${nearCh}Shin`]: near + mix('leadShin'),

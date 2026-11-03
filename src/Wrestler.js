@@ -157,6 +157,9 @@ export function gaitV2Config() {
 // (a multiplier on the derived stride; cadence then falls as it rises). &runGait=off = Stage 2's run (the walk gait, no turn mirror). HIP_*: the run hip sits HIP_BASE px below the straight-leg
 // height in flight and drops a further HIP_DROP px at mid-stance (unscaled px).
 const RUN_GAIT = { STANCE: 0.35, CADENCE: 3.6, LIFT: 32, HIP_BASE: 4, HIP_DROP: 9 };
+// ?waistlock=v1 (PLAN_GRAPPLES Stage 4b W1): the go-behind waistlock from the tie-up (src/animation/waistlock.js, Arena._tickWaistlock). Opt-in
+// like ?plant=1, on only for `v1`; off in Node with no `location`. Flag off is byte-identical (grapples_flagoff.mjs).
+export const waistlockCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('waistlock') === 'v1';
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
 // the AI's begging-off threshold (AIHandler george.retreatStamina).
@@ -951,7 +954,7 @@ export default class Wrestler {
         // one frame and played as a face-to-face clinch.
         // The candidate whip's throw owns facing too: both men turned as the
         // receiver passed, a one-frame pop of up to 74 px.
-        if (this.state !== 'running' && !this._cornerEp && !this._activeMove && !(this._whip && (this.state === 'slamming' || this.state === 'grabbed')) && !GROUNDED_FACING_LOCK.has(this.state)) {
+        if (this.state !== 'running' && !this._cornerEp && !this._activeMove && !this._facingLock && !(this._whip && (this.state === 'slamming' || this.state === 'grabbed')) && !GROUNDED_FACING_LOCK.has(this.state)) {
             const dx = other.x - this.x;
             if (dx !== 0) this.facing = Math.sign(dx);
         }

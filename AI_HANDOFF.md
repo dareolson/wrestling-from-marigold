@@ -32,6 +32,8 @@ Avoid a large rewrite.
 
 - **Opening scene specified (Derek 2026-10-31):** skyline/CHICAGO 1952, radio and obscured picket-line inserts, kitchen wall-phone/union call, landlord’s $100-by-tomorrow demand, girlfriend sends Guido out for the money. [Dialogue/brief](STORY_CARNIVAL_OPENING.md), [Opus note](AI_HANDOFF_ENTRIES/2026-10-31-codex-kitchen-opening-scene.md). Docs only; moves remain priority.
 
+- **Waistlock (Stage 4b, 2026-11-03, local, unpushed):** opt-in `?waistlock=v1` go-behind from the tie-up (power + up/down), endings switch / shove-off / rope break, AI uses it; G4b-a approved, **stopped at G4b**: [page](research/animation/grapples-2026-10/g4b/index.html), plan [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 4b. Circle footwork, turn and route stay on the polish list. Never promote.
+
 - **Visual direction settled (Derek 2026-10-31):** entire game monochrome, including story/carnival/bar fight/exhibition; supersedes color-world/B&W-TV split. Generate new art in color, retain color masters, and derive/tune monochrome separately; [decision](AI_HANDOFF_ENTRIES/2026-10-31-codex-monochrome-decision.md), [standard](CINEMATIC_ART_STANDARD.md). Docs updated; runtime treatment pending; moves remain priority.
 
 - **Venues/crowds/exhibition (Derek 2026-10-31):** [plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md), [Opus note](AI_HANDOFF_ENTRIES/2026-10-31-codex-venue-crowd-exhibition-direction.md). Refresh audiences via seeded rules; carnival and convention recipes. Story carnival unlocks as an exhibition venue; completed bar fight becomes a replayable special encounter. Preserve meta unlocks and isolate replay rewards. Planning only; active grapple work unchanged.

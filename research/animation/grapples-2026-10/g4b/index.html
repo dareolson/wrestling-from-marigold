@@ -1,0 +1,101 @@
+<!doctype html><meta charset="utf-8"><title>G4b: go-behind waistlock endings</title>
+<style>:root{--bg:#1c1c1c;--fg:#ddd;--panel:#2a2a2a;--line:#444}body{font:14px system-ui;margin:20px;background:var(--bg);color:var(--fg);max-width:1240px}h2{margin-top:26px}h3{margin:18px 0 4px;color:#9ad}.pair{display:flex;gap:10px;flex-wrap:wrap}.cap{font-size:12px;color:#aaa;max-width:760px}canvas{background:#000;display:block;max-width:100%}.note{background:var(--panel);padding:8px 12px;border-left:3px solid #c84;margin:10px 0}table{border-collapse:collapse;font-size:12px}td,th{border:1px solid var(--line);padding:3px 7px;text-align:right}th{background:var(--panel)}td:first-child{text-align:left}button{font:inherit;padding:4px 10px}pre{background:var(--panel);padding:8px;overflow:auto;font-size:12px}li{margin:4px 0}</style>
+<h1>G4b: the go-behind waistlock and its endings</h1><div class="note"><b>For Derek to judge.</b> Four endings, both attackers, both facings, normal-speed loops from the tie-up. Nothing here says the look is right. Misses first, then the soak and gates, then the table. <code>?waistlock=v1</code> stays opt-in; power with up or down held in a tie-up goes behind, the defender's action reverses it.</div>
+<p><button id="pp">pause</button> <button id="sl">slow (0.25&times;)</button></p>
+<h2>Misses</h2><ul><li><b>The circle (unchanged, polish list):</b> overlap while he passes up to 2816 px under the belt and 1914 px torso on torso (every frame); ankle movement up to 8.11 px/frame plus 53.05 on the flip frame. Footwork, turn and route are not worked on.</li><li><b>The hold, every ending:</b> overlap under the belt 0 px and torso on torso 0 px, worst of 16 runs; George's near hand out of reach by up to 4.4 px (D12 wins).</li><li><b>The let-go:</b> leg/pelvis overlap for a few frames as the hands leave, up to 238 px; the defender's planted soles slide up to 3.15 px/frame in the shove; the turn after it is one frame (the game's own idle flip).</li><li><b>Switch:</b> the new attacker's facing flips in one frame when the hitch ends (he turns to face the man he is going behind).</li><li><b>Rope break:</b> the defender walks off the rope (the attacker's back is to it) rather than the attacker stepping back. A go-behind whose spot would be past the ropes is denied, so the tie-up goes on; it is not a rope break.</li><li><b>AI:</b> the AI attacker never ends a hold early (the timeout's shove only); the AI defender rolls its reversal once per hold. The odds are first drafts: Lou go-behind .20 / switch .30, George .10 / .15.</li><li><b>Coverage:</b> the baseline goes 23 -> 24 gaps (goBehind, unverified: no clip, no critic spec).</li></ul>
+<h2>AI soak (waistlock=v1, both orders, WFM_TS=3, MAX_MIN 7, stopped at 8 go-behinds or the cap, one pair at a time; an earlier two-at-once attempt lost both browsers at about 3 minutes (cause unknown) and was discarded)</h2><pre>[
+ {
+  "pair": "lou-george",
+  "wallMin": 6.1,
+  "gameMin": 18.2,
+  "waistlock": {
+   "starts": 8,
+   "switches": 1,
+   "denied": 0,
+   "ends": {
+    "timeout": 8
+   }
+  },
+  "lockups": 103,
+  "failures": [],
+  "pageErrors": [],
+  "lostFlow": null
+ },
+ {
+  "pair": "george-lou",
+  "wallMin": 7,
+  "gameMin": 21.02,
+  "waistlock": {
+   "starts": 7,
+   "switches": 2,
+   "denied": 0,
+   "ends": {
+    "timeout": 5,
+    "rope": 1
+   }
+  },
+  "lockups": 153,
+  "failures": [],
+  "pageErrors": [],
+  "lostFlow": null
+ }
+]</pre>
+<h2>Gates</h2><pre>npm test: 1139/1139 pass (Node 22)
+npm run build: ok
+npm run moves:coverage -- --check: passed, 24 baselined gaps (was 23; goBehind added, unverified)
+npm run moves:kits -- --check: passed
+tools/debug/grapples_assert.mjs: all passed (the first run of this gate sequence crashed with a Node error under load; rerun passed)
+tools/debug/grapples_flagoff.mjs (own server): flag off identical over 60 frames
+tools/debug/waistlock_assert.mjs: all passed (every ending, 15 checks)
+tools/debug/waistlock_cleanup.mjs: all passed (12 checks)
+soak, waistlock=v1, 3x speed: Lou on George 8 go-behinds, 1 switch, 8 timeouts; George on Lou 7 go-behinds, 2 switches, 5 timeouts, 1 rope break; 0 failures, 0 page errors, no orphanRescue, no stuck state, no facing lock left on</pre>
+<h2>Timeout</h2><p class="cap">no input: the hold lets go on its own at 1.6 s and pushes him forward</p><h3>Lou attacking George</h3><div class="pair"><div><canvas data-dir="frames/timeout-lou-george-l-up" data-n="220" width="380" height="330"></canvas><div class="cap">timeout-lou-george-l-up: held 2550 ms</div></div><div><canvas data-dir="frames/timeout-lou-george-r-up" data-n="220" width="380" height="330"></canvas><div class="cap">timeout-lou-george-r-up: held 2550 ms</div></div></div><h3>George attacking Lou</h3><div class="pair"><div><canvas data-dir="frames/timeout-george-lou-l-up" data-n="220" width="380" height="330"></canvas><div class="cap">timeout-george-lou-l-up: held 2550 ms</div></div><div><canvas data-dir="frames/timeout-george-lou-r-up" data-n="220" width="380" height="330"></canvas><div class="cap">timeout-george-lou-r-up: held 2550 ms</div></div></div><h2>Shove-off</h2><p class="cap">the attacker presses action 20 frames into the hold</p><h3>Lou attacking George</h3><div class="pair"><div><canvas data-dir="frames/shove-lou-george-l-up" data-n="145" width="380" height="330"></canvas><div class="cap">shove-lou-george-l-up: held 1300 ms</div></div><div><canvas data-dir="frames/shove-lou-george-r-up" data-n="145" width="380" height="330"></canvas><div class="cap">shove-lou-george-r-up: held 1300 ms</div></div></div><h3>George attacking Lou</h3><div class="pair"><div><canvas data-dir="frames/shove-george-lou-l-up" data-n="145" width="380" height="330"></canvas><div class="cap">shove-george-lou-l-up: held 1300 ms</div></div><div><canvas data-dir="frames/shove-george-lou-r-up" data-n="145" width="380" height="330"></canvas><div class="cap">shove-george-lou-r-up: held 1300 ms</div></div></div><h2>Switch</h2><p class="cap">the defender presses action 20 frames into the hold; the new attacker goes behind, and the hold then times out</p><h3>Lou attacking George</h3><div class="pair"><div><canvas data-dir="frames/switch-lou-george-l-up" data-n="284" width="380" height="330"></canvas><div class="cap">switch-lou-george-l-up: held 3600 ms</div></div><div><canvas data-dir="frames/switch-lou-george-r-up" data-n="284" width="380" height="330"></canvas><div class="cap">switch-lou-george-r-up: held 3600 ms</div></div></div><h3>George attacking Lou</h3><div class="pair"><div><canvas data-dir="frames/switch-george-lou-l-up" data-n="284" width="380" height="330"></canvas><div class="cap">switch-george-lou-l-up: held 3600 ms</div></div><div><canvas data-dir="frames/switch-george-lou-r-up" data-n="284" width="380" height="330"></canvas><div class="cap">switch-george-lou-r-up: held 3600 ms</div></div></div><h2>Rope break</h2><p class="cap">the defender starts 125 px inside the rope behind him, so the attacker's spot is inside the rope's reach</p><h3>Lou attacking George</h3><div class="pair"><div><canvas data-dir="frames/rope-lou-george-l-up" data-n="123" width="380" height="330"></canvas><div class="cap">rope-lou-george-l-up: held 933 ms</div></div><div><canvas data-dir="frames/rope-lou-george-r-up" data-n="123" width="380" height="330"></canvas><div class="cap">rope-lou-george-r-up: held 933 ms</div></div></div><h3>George attacking Lou</h3><div class="pair"><div><canvas data-dir="frames/rope-george-lou-l-up" data-n="123" width="380" height="330"></canvas><div class="cap">rope-george-lou-l-up: held 933 ms</div></div><div><canvas data-dir="frames/rope-george-lou-r-up" data-n="123" width="380" height="330"></canvas><div class="cap">rope-george-lou-r-up: held 933 ms</div></div></div>
+<h2>Table (px at scale 1; px/frame at 60 fps; masks every frame)</h2><table><tr><th>run</th><th>held ms</th><th>circle: under belt / torso</th><th>hold: under belt / torso</th><th>let-go: under belt</th><th>near hand to waist</th><th>hold sole slide</th><th>defender slide in the let-go</th><th>part step: first / circle / hold / let-go / after</th></tr><tr><td>timeout-lou-george-l-up</td><td>2550</td><td>2807 / 1247</td><td>0 / 0</td><td>188</td><td>0</td><td>3.27</td><td>3.14</td><td>5.88 / 83.94 / 4.57 / 30.3 / 10.26</td></tr><tr><td>timeout-lou-george-r-up</td><td>2550</td><td>2812 / 1247</td><td>0 / 0</td><td>187</td><td>0</td><td>3.27</td><td>3.14</td><td>5.88 / 83.94 / 4.57 / 30.3 / 10.26</td></tr><tr><td>shove-lou-george-l-up</td><td>1300</td><td>2812 / 1247</td><td>0 / 0</td><td>187</td><td>0</td><td>3.27</td><td>3.14</td><td>5.88 / 83.94 / 4.57 / 30.3 / 10.26</td></tr><tr><td>shove-lou-george-r-up</td><td>1300</td><td>2812 / 1247</td><td>0 / 0</td><td>187</td><td>0</td><td>3.27</td><td>3.14</td><td>5.88 / 83.94 / 4.57 / 30.3 / 10.26</td></tr><tr><td>switch-lou-george-l-up</td><td>3600</td><td>2812 / 1914</td><td>0 / 0</td><td>231</td><td>3.87</td><td>3.27</td><td>0.43</td><td>5.88 / 83.94 / 4.57 / 33.08 / 10.98</td></tr><tr><td>switch-lou-george-r-up</td><td>3600</td><td>2816 / 1911</td><td>0 / 0</td><td>238</td><td>3.87</td><td>3.27</td><td>0.43</td><td>5.87 / 83.93 / 4.57 / 33.08 / 10.97</td></tr><tr><td>rope-lou-george-l-up</td><td>933</td><td>2815 / 1247</td><td>&ndash; (no such phase) / &ndash; (no such phase)</td><td>198</td><td>0</td><td>&ndash;</td><td>2.43</td><td>5.87 / 83.93 / 0 / 27.24 / 12.37</td></tr><tr><td>rope-lou-george-r-up</td><td>933</td><td>2815 / 1249</td><td>&ndash; (no such phase) / &ndash; (no such phase)</td><td>193</td><td>0</td><td>&ndash;</td><td>2.44</td><td>5.88 / 83.93 / 0 / 27.25 / 12.38</td></tr><tr><td>timeout-george-lou-l-up</td><td>2550</td><td>2589 / 1836</td><td>0 / 0</td><td>234</td><td>3.67</td><td>3.41</td><td>3.14</td><td>5.34 / 80.99 / 3.42 / 35.12 / 10.97</td></tr><tr><td>timeout-george-lou-r-up</td><td>2550</td><td>2592 / 1836</td><td>0 / 0</td><td>231</td><td>3.67</td><td>3.41</td><td>3.15</td><td>5.34 / 80.98 / 3.42 / 35.12 / 10.97</td></tr><tr><td>shove-george-lou-l-up</td><td>1300</td><td>2592 / 1836</td><td>0 / 0</td><td>231</td><td>3.67</td><td>3.41</td><td>3.15</td><td>5.34 / 80.98 / 3.42 / 35.12 / 10.97</td></tr><tr><td>shove-george-lou-r-up</td><td>1300</td><td>2592 / 1836</td><td>0 / 0</td><td>231</td><td>3.67</td><td>3.41</td><td>3.15</td><td>5.34 / 80.98 / 3.42 / 35.12 / 10.97</td></tr><tr><td>switch-george-lou-l-up</td><td>3600</td><td>2783 / 1836</td><td>0 / 0</td><td>186</td><td>3.67</td><td>3.41</td><td>0.43</td><td>5.34 / 80.98 / 3.42 / 31.93 / 10.25</td></tr><tr><td>switch-george-lou-r-up</td><td>3600</td><td>2785 / 1832</td><td>0 / 0</td><td>186</td><td>3.67</td><td>3.41</td><td>0.43</td><td>5.34 / 80.98 / 3.42 / 31.93 / 10.25</td></tr><tr><td>rope-george-lou-l-up</td><td>933</td><td>2585 / 1832</td><td>&ndash; (no such phase) / &ndash; (no such phase)</td><td>164</td><td>4.45</td><td>&ndash;</td><td>2.44</td><td>5.34 / 80.98 / 0 / 30.58 / 15.15</td></tr><tr><td>rope-george-lou-r-up</td><td>933</td><td>2575 / 1831</td><td>&ndash; (no such phase) / &ndash; (no such phase)</td><td>165</td><td>4.45</td><td>&ndash;</td><td>2.44</td><td>5.34 / 80.98 / 0 / 30.58 / 15.15</td></tr></table>
+<h2>Manifest</h2><pre>{
+ "commit": "bfc4184",
+ "dirty": true,
+ "branch": "story/marigold-opening",
+ "rigs": "thesz-procreate-v1 (Lou), george-roster-v1 (George)",
+ "flags": "grapples=v1 (default) and waistlock=v1",
+ "tool": "tools/debug/grapples_waistlock.mjs (WL_CASES)",
+ "seed": 11,
+ "input": "frame 36: the attacker presses power with up (far side) held; each case then scripts its ending as described above",
+ "constants": {
+  "WAISTLOCK": {
+   "goBehind": 0.6,
+   "timeout": 1.6,
+   "holdBehind": 82,
+   "upstage": 12,
+   "lane": 40,
+   "gripRamp": 0.16,
+   "waistRise": 36,
+   "waistFront": 12,
+   "strainHz": 7,
+   "strainLean": 0.02,
+   "turnBeat": 0.3,
+   "release": {
+    "dur": 0.35
+   }
+  },
+  "WAISTLOCK_POSES": {
+   "attacker": {
+    "bend": 0.75,
+    "crouch": 0.3,
+    "lead": -0.25,
+    "leadShin": -0.1,
+    "rear": 0.05,
+    "rearShin": -0.4
+   },
+   "defender": {
+    "bend": 0.1,
+    "crouch": 0.12,
+    "lead": -0.1,
+    "leadShin": -0.1,
+    "rear": 0.1,
+    "rearShin": -0.4
+   }
+  }
+ }
+}</pre>
+<script>const cvs=[...document.querySelectorAll('canvas')];let paused=false,rate=1;const imgs=cvs.map(c=>Array.from({length:+c.dataset.n},(_,i)=>{const im=new Image();im.src=c.dataset.dir+'/s'+String(i).padStart(4,'0')+'.jpg';return im}));let f=0,last=0;function tick(t){if(!paused&&t-last>=1000/60/rate){last=t;cvs.forEach((c,k)=>{const a=imgs[k],im=a[f%a.length];if(im.complete)c.getContext('2d').drawImage(im,0,0)});f++}requestAnimationFrame(tick)}
+requestAnimationFrame(tick);document.getElementById('pp').onclick=e=>{paused=!paused;e.target.textContent=paused?'play':'pause'};document.getElementById('sl').onclick=e=>{rate=rate===1?0.25:1;e.target.textContent=rate===1?'slow (0.25\u00d7)':'normal speed'};</script>

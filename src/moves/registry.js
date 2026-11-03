@@ -164,6 +164,14 @@ export const MOVE_SPECS = {
         trigger: 'Arena lockup resolution — power; takes the slot ahead of armDrag',
         ai: ['lockup'],
     },
+    // PLAN_GRAPPLES Stage 4b: the go-behind waistlock. Opt-in (`?waistlock=v1`), run inline by Arena._tickWaistlock, no damage of its own.
+    goBehind: {
+        category: C.GRAPPLE, clip: null, executor: null,
+        sell: null,
+        damageKey: null, poseSeq: false, legacyFallback: null, kitGated: true,
+        trigger: 'Arena._tickLockup — power with up or down held (flag waistlock=v1); the defender\'s action reverses it (Arena._waistlockEndings)',
+        ai: ['lockup'],
+    },
     backBodyDrop: {
         category: C.THROW, clip: null, executor: '_doBackBodyDrop',
         sell: { part: 'back', intensity: 0.8 },
@@ -358,6 +366,7 @@ export function orphanedMoves(...kits) {
  * holds wins, so a kit holding two of a slot can never use the later one. Read
  * from the code, in priority order:
  *   lockupPower — Arena._tickLockup: `['hipToss', 'armDrag'].find(...)`
+ *   lockupPowerDir — Arena._tickLockup: power with up or down held (goBehind); power alone stays lockupPower
  *   grapple     — Wrestler (grab on a staggered man) and Arena._tickLockup (no
  *                 direction held): piledriver is tried before bodySlam
  * Not slots, because a held direction picks each: the mat holds (Up arm bar,
@@ -368,6 +377,7 @@ export function orphanedMoves(...kits) {
  */
 export const KIT_SLOTS = Object.freeze({
     lockupPower: Object.freeze(['hipToss', 'armDrag']),
+    lockupPowerDir: Object.freeze(['goBehind']),
     grapple:     Object.freeze(['piledriver', 'bodySlam']),
 });
 
@@ -401,4 +411,5 @@ export const KIT_AI_ODDS = Object.freeze({
     theszPress: 'pressHuntAt',
     hammerlock: 'hammerlockOdds',
     cornerCharge: 'cornerWhipOdds',
+    goBehind:   'goBehindOdds',   // the defender's reversal is `switchOdds`, read only when his kit holds goBehind
 });

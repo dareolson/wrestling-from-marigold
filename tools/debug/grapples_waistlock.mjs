@@ -14,7 +14,10 @@ import { INSTALL, SETUP } from './grapples_film.mjs';
 
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const PAIRS = { lg: { id: 'lou-george', att: LOU, def: GEORGE }, gl: { id: 'george-lou', att: GEORGE, def: LOU } };
-const PRESS_AT = 36;
+const PRESS_AT = 36, HOLD_AT = PRESS_AT + 36;
+// WL_CASES=timeout,shove,switch,rope (T4b.5): the ending each run scripts. timeout = no input; shove = the attacker presses action 20 frames into the hold;
+// switch = the defender does; rope = the defender starts 125 px inside the rope behind him, so the attacker's spot is inside the rope's reach.
+const CASES = process.env.WL_CASES?.split(',') ?? [null];
 const TAG = process.env.WL_TAG ?? '', ONLY = process.env.WL_ONLY?.split(',') ?? null;   // WL_TAG=2b prefixes the ids and writes film-2b.json; WL_ONLY=lou-george-up,... films a subset
 
 export const STEP = async ({ press, hold, mask }) => {
@@ -111,15 +114,17 @@ function summarize(rows) {
 }
 
 async function run(page, info, spec, shotDir) {
-    await page.evaluate(SETUP, { facing: spec.facing, midX: 520, startGap: 90, defRope: null, flag: true, layer: false, seed: 11 });
+    await page.evaluate(SETUP, { facing: spec.facing, midX: 520, startGap: 90, defRope: spec.case === 'rope' ? 125 : null, flag: true, layer: false, seed: 11 });
     const bx = info.box, mX = (x) => bx.x + x * bx.w / bx.gw, mY = (y) => bx.y + y * bx.h / bx.gh;
     const mid = await page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; return (sc.w1.x + sc.w2.x) / 2; });
     const clip = { width: 380, height: 330, x: Math.max(0, Math.round(mX(mid) - 190)), y: Math.round(mY(430) - 330) };
     if (shotDir) { rmSync(shotDir, { recursive: true, force: true }); mkdirSync(shotDir, { recursive: true }); }
     const rows = []; let endAt = null;
-    for (let i = 0; i < 320; i++) {
+    for (let i = 0; i < 420; i++) {
         const press = { a: [], d: [] }, hold = { a: [], d: [] };
         if (i === PRESS_AT) { press.a.push('power'); hold.a.push(spec.side < 0 ? 'up' : 'down'); }
+        if (spec.case === 'shove' && i === HOLD_AT + 20) press.a.push('action');
+        if (spec.case === 'switch' && i === HOLD_AT + 20) press.d.push('action');
         const row = await page.evaluate(STEP, { press, hold, mask: true });
         row.i = i; rows.push(row);
         if (shotDir) await page.screenshot({ path: join(shotDir, `s${String(i).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 82, clip });
@@ -140,11 +145,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             await page.waitForTimeout(2500);
             const info = await page.evaluate(INSTALL);
             await page.evaluate(INSTALL_MASKS);
-            for (const facing of [-1, 1]) for (const side of [-1, 1]) {
-                const id = `${TAG ? TAG + '-' : ''}${pair.id}-${facing < 0 ? 'l' : 'r'}-${side < 0 ? 'up' : 'down'}`;
+            for (const cs of CASES) for (const facing of [-1, 1]) for (const side of [-1, 1]) {
+                const id = `${TAG ? TAG + '-' : ''}${cs ? cs + '-' : ''}${pair.id}-${facing < 0 ? 'l' : 'r'}-${side < 0 ? 'up' : 'down'}`;
                 if (ONLY && !ONLY.includes(`${pair.id}-${side < 0 ? 'up' : 'down'}`)) continue;
-                const rows = await run(page, info, { facing, side }, shots === '1' ? join(outRoot, 'frames', id) : null);
-                const r = { id, pair: pair.id, facing, side: side < 0 ? 'up (far)' : 'down (near)', ...summarize(rows) };
+                const rows = await run(page, info, { facing, side, case: cs }, shots === '1' ? join(outRoot, 'frames', id) : null);
+                const r = { id, case: cs, pair: pair.id, facing, side: side < 0 ? 'up (far)' : 'down (near)', ...summarize(rows) };
                 if (shots === '1') for (const ph of ['goBehind', 'hold']) {   // the worst masked sample of the phase, as an image: red attacker, blue defender, white under the belt, yellow torso on torso, green above
                     const w = rows.filter(x => x.mask && x.wl?.phase === ph).sort((x, y) => (y.mask.belowBody + y.mask.torso) - (x.mask.belowBody + x.mask.torso))[0];
                     if (w) writeFileSync(join(outRoot, 'frames', `${id}-mask-${ph}.png`), Buffer.from(w.mask.image.split(',')[1], 'base64'));

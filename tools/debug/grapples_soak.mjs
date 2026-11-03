@@ -6,6 +6,8 @@
 //   ... node tools/debug/grapples_soak.mjs --keyboard        the chain through the input object, both directions
 // Env: PAIR (lou-george, george-lou, kow-guido, guido-kow, lou-guido, george-kow), GAIT (default|v2), GRAPPLES (v1|off),
 //      MAX_MIN (wall minutes cap, 20), MIN_CHAINS (3), MIN_MATCHES (2), OUT (json path).
+//      WAISTLOCK=v1 (PLAN_GRAPPLES T4b.4): adds ?waistlock=v1, counts go-behinds, switches and each ending, fails a waistlock alive past 6 s or a facing
+//      lock left on after it; the run then ends at MIN_WL (8) go-behinds or MAX_MIN, not at chains. WFM_TS=3 runs the game at 3x.
 // Fails: page error; non-finite x, y or pose; facing 0; orphanRescue; a state past its limit (grabbed 1 s, cornered 4 s, running 6 s);
 // a leftover _cornerEp, _charge, _whip or _returnVia after 0.5 s standing or down; x or y outside the ring beyond the fall swing.
 import { writeFileSync, mkdirSync } from 'node:fs';
@@ -18,13 +20,15 @@ const MODE = argv.includes('--interrupts') ? 'interrupts' : argv.includes('--key
 const PAIR = process.env.PAIR ?? 'lou-george';
 const GAIT = process.env.GAIT ?? 'default';
 const GRAPPLES = process.env.GRAPPLES ?? 'v1';
+const WAISTLOCK = process.env.WAISTLOCK === 'v1';
+const MIN_WL = Number(process.env.MIN_WL ?? 8);
 const MAX_MIN = Number(process.env.MAX_MIN ?? 20);
 const MIN_CHAINS = Number(process.env.MIN_CHAINS ?? 3);
 const MIN_MATCHES = Number(process.env.MIN_MATCHES ?? 2);
 const [a, b] = PAIR.split('-');
 process.env.WFM_P1 = RIGS[a]; process.env.WFM_P2 = RIGS[b];
-process.env.WFM_QS = ['notitle=1', `grapples=${GRAPPLES}`, GAIT === 'v2' ? 'gait=v2' : ''].filter(Boolean).join('&');
-const OUT = process.env.OUT ?? `research/animation/grapples-soak-2026-10/${MODE}-${PAIR}-${GAIT}-${GRAPPLES}.json`;
+process.env.WFM_QS = ['notitle=1', `grapples=${GRAPPLES}`, GAIT === 'v2' ? 'gait=v2' : '', WAISTLOCK ? 'waistlock=v1' : ''].filter(Boolean).join('&');
+const OUT = process.env.OUT ?? `research/animation/grapples-soak-2026-10/${MODE}-${PAIR}-${GAIT}-${GRAPPLES}${WAISTLOCK ? '-waistlock' : ''}.json`;
 
 // ── The page side ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // Installed once. window.__soak holds everything; polled from Node as plain JSON.
@@ -35,7 +39,7 @@ function installMonitor() {
         const S = window.__soak = {
             t0: sc.time.now, frames: 0, failures: [], chains: [], whips: [], flatWhips: 0, cornerWhips: 0, ropesWhips: 0, moves: {}, lockups: 0, matches: [],
             charge: { gut: 0, head: 0, miss: 0 }, maxStateSec: {}, maxExcess: { x: 0, yFar: 0, yNear: 0 }, gameSec: 0, events: 0, idx: 0,
-            fallLog: [], interrupt: null, interruptLog: [], lockGap: { p1: [], p2: [] },
+            fallLog: [], wl: { starts: 0, switches: 0, denied: 0, ends: {} }, wlSince: null, lockSince: {}, interrupt: null, interruptLog: [], lockGap: { p1: [], p2: [] },
         };
         const LIMIT = { grabbed: 1, cornered: 4, running: 6 };
         const W = () => [['p1', sc.w1], ['p2', sc.w2]];
@@ -75,6 +79,10 @@ function installMonitor() {
                 S.events++;
                 if (e.move) { const k = `${e.type}:${e.move}`; S.moves[k] = (S.moves[k] ?? 0) + 1; }
                 if (e.type === 'orphanRescue') fail('orphanRescue', e.wrestler, e.from);
+                if (e.type === 'waistlockStart') S.wl.starts++;
+                if (e.type === 'waistlockSwitch') S.wl.switches++;
+                if (e.type === 'waistlockDenied') S.wl.denied++;
+                if (e.type === 'waistlockEnd') S.wl.ends[e.kind] = (S.wl.ends[e.kind] ?? 0) + 1;
                 if (e.type === 'whipRelease') {
                     const rec = W().find(([, w]) => w.state === 'running' && w.runPhase !== 'returning' && w._whip === null)?.[0] ?? null;
                     const rw = rec && wOf(rec), bnd = rw && ringBoundsAtY(rw.y);
@@ -116,6 +124,17 @@ function installMonitor() {
                 }
                 if (c.stages.down && !c.resolved && w.state === 'standing') { c.resolved = 'recovery'; finish(c, c.stages.sell ? 'complete' : 'noSell'); }
                 if (now - c.at0 > 45000) finish(c, 'expired');
+            }
+
+            // the waistlock: alive no longer than a hold can last (circle + hold + let-go, over several switches: 6 s without a new switch), and no facing lock left behind
+            {
+                const ws = sc.waistlockState;
+                if (ws) { if (S.wlSince?.ws !== ws) S.wlSince = { ws, at: now }; else if (now - S.wlSince.at > 6000 && !sc.matchOver) fail('waistlockStuck', 'both', `${ws.phase} t ${ws.t.toFixed(2)}`); }
+                for (const [id, w] of W()) {
+                    const stale = w._facingLock === true && !ws;
+                    S.lockSince[id] = stale ? (S.lockSince[id] ?? now) : null;
+                    if (S.lockSince[id] && now - S.lockSince[id] > 500) fail('facingLock', id, 'left on after the waistlock');
+                }
             }
 
             // per wrestler checks
@@ -163,7 +182,7 @@ const snapshot = (page) => page.evaluate(() => {
     const S = window.__soak, sc = window.__WFM_GAME.scene.scenes[0];
     const complete = S.chains.filter(c => c.end === 'complete');
     return { frames: S.frames, wallSec: Math.round((sc.time.now - S.t0) / 1000), gameSec: Math.round(S.gameSec), matchTime: sc._matchTime, over: sc.matchOver, matches: S.matches, failures: S.failures,
-        chains: S.chains.length, complete: complete.length, cornerWhips: S.cornerWhips, flatWhips: S.flatWhips, ropesWhips: S.ropesWhips, lockups: S.lockups, charge: S.charge,
+        chains: S.chains.length, complete: complete.length, cornerWhips: S.cornerWhips, flatWhips: S.flatWhips, ropesWhips: S.ropesWhips, lockups: S.lockups, charge: S.charge, wl: S.wl,
         p1: sc.w1.state, p2: sc.w2.state };
 });
 
@@ -202,7 +221,7 @@ async function soak() {
         if (Date.now() - stuckSince > 15000) { lost = `match clock frozen at ${s.matchTime} for 15 s (${s.p1}/${s.p2})`; break; }
         const el = (Date.now() - start) / 60000;
         if (Math.round(el * 30) % 30 === 0) console.log(`${PAIR} ${GAIT} ${GRAPPLES} ${el.toFixed(1)}min chains ${s.complete}/${s.chains} matches ${s.matches.length} failures ${s.failures.length} gameSec ${s.gameSec}`);
-        const enough = GRAPPLES === 'off' ? s.matches.length >= MIN_MATCHES + 1 : s.complete >= MIN_CHAINS && s.matches.length >= MIN_MATCHES;
+        const enough = WAISTLOCK ? s.wl.starts >= MIN_WL : GRAPPLES === 'off' ? s.matches.length >= MIN_MATCHES + 1 : s.complete >= MIN_CHAINS && s.matches.length >= MIN_MATCHES;
         if (enough || el >= MAX_MIN) break;
     }
     const S = await h.page.evaluate(() => { const s = window.__soak; return { lockGap: Object.fromEntries(Object.entries(s.lockGap).map(([k, v]) => [k, v.length ? { n: v.length, min: Math.min(...v), mean: +(v.reduce((a, b) => a + b, 0) / v.length).toFixed(1), max: Math.max(...v) } : null])), chains: s.chains, moves: s.moves, maxStateSec: s.maxStateSec, maxExcess: s.maxExcess, events: s.events, frames: s.frames }; });
@@ -216,7 +235,7 @@ async function soak() {
         cornerWhips: finalSnap.cornerWhips, flatWhips: finalSnap.flatWhips, ropesEscapeWhips: finalSnap.ropesWhips,
         cornerWhipRate: finalSnap.cornerWhips + finalSnap.flatWhips ? +(finalSnap.cornerWhips / (finalSnap.cornerWhips + finalSnap.flatWhips)).toFixed(3) : null,
         cornerWhipRateOpenRing: finalSnap.cornerWhips + finalSnap.flatWhips - finalSnap.ropesWhips ? +(finalSnap.cornerWhips / (finalSnap.cornerWhips + finalSnap.flatWhips - finalSnap.ropesWhips)).toFixed(3) : null,
-        charge: finalSnap.charge, lockGapPx: S.lockGap, lockups: finalSnap.lockups, lockupsPerGameMin: finalSnap.gameSec ? +(finalSnap.lockups / (finalSnap.gameSec / 60)).toFixed(2) : null,
+        charge: finalSnap.charge, waistlock: WAISTLOCK ? finalSnap.wl : undefined, lockGapPx: S.lockGap, lockups: finalSnap.lockups, lockupsPerGameMin: finalSnap.gameSec ? +(finalSnap.lockups / (finalSnap.gameSec / 60)).toFixed(2) : null,
         matches: finalSnap.matches, meanMatchLen: matchLens.length ? +(matchLens.reduce((x, y) => x + y, 0) / matchLens.length).toFixed(1) : null,
         moves: S.moves, maxStateSec: S.maxStateSec, maxExcess: S.maxExcess, failures: finalSnap.failures, pageErrors, lostFlow: lost, chains: S.chains,
     };

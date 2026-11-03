@@ -44,6 +44,11 @@
     "status": "unverified",
     "reason": "historical: legacy pose sequence (no clip), no critic spec; the critic traces clips only"
   },
+  "goBehind": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "no clip, no critic spec; the critic traces clips only. Added with PLAN_GRAPPLES T4b.4 (waistlock=v1, opt-in). Covered by tests/waistlock.test.js and tools/debug/waistlock_assert.mjs, waistlock_cleanup.mjs"
+  },
   "backBodyDrop": {
     "fingerprint": "39ad43d67325",
     "status": "unverified",

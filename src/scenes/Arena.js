@@ -3960,7 +3960,7 @@ export default class Arena extends Phaser.Scene {
 
         // Stage 4b W2 (`?waistlock=v1`): power with up or down held goes behind (up round the far side, down the near); power alone stays the
         // kit's hip toss / arm drag. The AI never presses power in a lockup (AIHandler._handleLockup), so only a player's held direction can start it.
-        if (g && waistlockCandidate() && just(ls.attacker, 'power') && (g.stealAt === null || g.t - g.stealAt > LOCKUP.stealHitch + LOCKUP.stealCrossfade)) {
+        if (g && waistlockCandidate() && ls.attacker.moveSet.includes('goBehind') && just(ls.attacker, 'power') && (g.stealAt === null || g.t - g.stealAt > LOCKUP.stealHitch + LOCKUP.stealCrossfade)) {
             const stored = ls.attacker.input.justDown('power') ? null : consumed?.get(ls.attacker)?.get('power');
             const held = (d) => stored?.[d] ?? ls.attacker.input.isDown(d);
             if ((held('up') || held('down')) && !behindSpotFits(ls.defender, ls.defender.facing, ringBoundsAtY(ls.defender.y))) {
@@ -4019,7 +4019,7 @@ export default class Arena extends Phaser.Scene {
         if (!hold) return false;
         const letGo = (kind) => { ws.ending = kind; ws.holdEnd = ws.t; this._logEvent('waistlockEnd', { attacker: A === this.w1 ? 'p1' : 'p2', kind, switches: ws.switches }); };
         if (atRopes(D, ringBoundsAtY(D.y)) || atRopes(A, ringBoundsAtY(A.y))) { letGo('rope'); return false; }
-        if (D.input.justDown('action')) {
+        if (D.input.justDown('action') && D.moveSet.includes('goBehind')) {
             if (!behindSpotFits(A, ws.dFacing, ringBoundsAtY(A.y))) { letGo('rope'); return false; }   // no room behind him: the ropes break it
             this._logEvent('waistlockSwitch', { attacker: D === this.w1 ? 'p1' : 'p2' });
             this._startWaistlock(D, A, ws.side, -LOCKUP.stealHitch, ws.switches + 1, ws.baseY);
@@ -4067,6 +4067,7 @@ export default class Arena extends Phaser.Scene {
             }
             return;
         }
+        if (!ws.ending) this._logEvent('waistlockEnd', { attacker: A === this.w1 ? 'p1' : 'p2', kind: 'timeout', switches: ws.switches });
         this._endWaistlock(WAISTLOCK.turnBeat);
     }
 

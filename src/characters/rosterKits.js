@@ -14,12 +14,12 @@ export const ROSTER_KITS = {
     thesz: [
         'irishWhip', 'clothesline', 'cornerCharge', 'bodySlam', 'suplex', 'pin', 'elbowDrop',
         'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'hipToss', 'jab', 'theszPress',
-        'hammerlock', 'backBodyDrop', 'kneeDrop', 'armBar', 'ankleLock',
+        'hammerlock', 'backBodyDrop', 'kneeDrop', 'armBar', 'ankleLock', 'goBehind',
     ],
     george: [
         'irishWhip', 'clothesline', 'cornerCharge', 'piledriver', 'suplex', 'pin', 'elbowDrop',
         'dropkick', 'doubleAxeHandle', 'sleeperHold', 'headlock', 'armDrag', 'jab', 'headbutt',
-        'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop', 'figureFour',
+        'hammerlock', 'kneeLift', 'backBodyDrop', 'kneeDrop', 'figureFour', 'goBehind',
     ],
     // Kowalski and Guido started from Lou's and George's kits plus the front kick, the
     // first move of the shared library batch (2026-10-21); Kowalski also has the shove.

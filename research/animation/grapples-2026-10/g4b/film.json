@@ -1,0 +1,1373 @@
+{
+ "tool": "tools/debug/grapples_waistlock.mjs",
+ "runs": [
+  {
+   "id": "timeout-lou-george-l-up",
+   "case": "timeout",
+   "pair": "lou-george",
+   "facing": -1,
+   "side": "up (far)",
+   "frames": 220,
+   "startFrame": 36,
+   "endFrame": 189,
+   "heldMs": 2550,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2807,
+     "below": 2807,
+     "torso": 1247,
+     "above": 1793
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 829
+    },
+    "release": {
+     "belowBody": 188,
+     "below": 191,
+     "torso": 0,
+     "above": 832
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -2.78
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -28.72
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 7.91,
+    "defender.goBehind": 0.3,
+    "attacker.goBehind.facingFlipFrame": 44.82,
+    "attacker.hold": 3.27,
+    "defender.hold": 0.01,
+    "attacker.release": 0.43,
+    "defender.release": 3.14
+   },
+   "closestXJoints": 0.1,
+   "stepFirst": 5.88,
+   "stepGoBehind": 83.94,
+   "stepHold": 4.57,
+   "stepRelease": 30.3,
+   "stepTieUpWorst": 32.56,
+   "stepAfter": 10.26,
+   "stepTurn": 90.95,
+   "turnFrame": 19,
+   "holdGapX": 82,
+   "holdDy": -10.8,
+   "holdFacing": [
+    1,
+    1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "timeout-lou-george-r-up",
+   "case": "timeout",
+   "pair": "lou-george",
+   "facing": 1,
+   "side": "up (far)",
+   "frames": 220,
+   "startFrame": 36,
+   "endFrame": 189,
+   "heldMs": 2550,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2812,
+     "below": 2812,
+     "torso": 1247,
+     "above": 1789
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 829
+    },
+    "release": {
+     "belowBody": 187,
+     "below": 191,
+     "torso": 0,
+     "above": 825
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -2.78
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -28.72
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 7.91,
+    "defender.goBehind": 0.29,
+    "attacker.goBehind.facingFlipFrame": 44.83,
+    "attacker.hold": 3.27,
+    "defender.hold": 0,
+    "attacker.release": 0.43,
+    "defender.release": 3.14
+   },
+   "closestXJoints": 0.1,
+   "stepFirst": 5.88,
+   "stepGoBehind": 83.94,
+   "stepHold": 4.57,
+   "stepRelease": 30.3,
+   "stepTieUpWorst": 32.64,
+   "stepAfter": 10.26,
+   "stepTurn": 90.95,
+   "turnFrame": 19,
+   "holdGapX": 82,
+   "holdDy": -10.8,
+   "holdFacing": [
+    -1,
+    -1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "shove-lou-george-l-up",
+   "case": "shove",
+   "pair": "lou-george",
+   "facing": -1,
+   "side": "up (far)",
+   "frames": 145,
+   "startFrame": 36,
+   "endFrame": 114,
+   "heldMs": 1300,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2812,
+     "below": 2812,
+     "torso": 1247,
+     "above": 1789
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 829
+    },
+    "release": {
+     "belowBody": 187,
+     "below": 191,
+     "torso": 0,
+     "above": 829
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 0,
+     "frames": 22,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -2.78
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 22,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -28.72
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 22,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 7.91,
+    "defender.goBehind": 0.29,
+    "attacker.goBehind.facingFlipFrame": 44.83,
+    "attacker.hold": 3.27,
+    "defender.hold": 0,
+    "attacker.release": 0.43,
+    "defender.release": 3.14
+   },
+   "closestXJoints": 0.1,
+   "stepFirst": 5.88,
+   "stepGoBehind": 83.94,
+   "stepHold": 4.57,
+   "stepRelease": 30.3,
+   "stepTieUpWorst": 32.64,
+   "stepAfter": 10.26,
+   "stepTurn": 90.95,
+   "turnFrame": 19,
+   "holdGapX": 82,
+   "holdDy": -10.8,
+   "holdFacing": [
+    1,
+    1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "shove-lou-george-r-up",
+   "case": "shove",
+   "pair": "lou-george",
+   "facing": 1,
+   "side": "up (far)",
+   "frames": 145,
+   "startFrame": 36,
+   "endFrame": 114,
+   "heldMs": 1300,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2812,
+     "below": 2812,
+     "torso": 1247,
+     "above": 1789
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 829
+    },
+    "release": {
+     "belowBody": 187,
+     "below": 191,
+     "torso": 0,
+     "above": 829
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 0,
+     "frames": 22,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -2.78
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 22,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -28.72
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 22,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 7.91,
+    "defender.goBehind": 0.29,
+    "attacker.goBehind.facingFlipFrame": 44.83,
+    "attacker.hold": 3.27,
+    "defender.hold": 0,
+    "attacker.release": 0.43,
+    "defender.release": 3.14
+   },
+   "closestXJoints": 0.1,
+   "stepFirst": 5.88,
+   "stepGoBehind": 83.94,
+   "stepHold": 4.57,
+   "stepRelease": 30.3,
+   "stepTieUpWorst": 32.64,
+   "stepAfter": 10.26,
+   "stepTurn": 90.95,
+   "turnFrame": 19,
+   "holdGapX": 82,
+   "holdDy": -10.8,
+   "holdFacing": [
+    -1,
+    -1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "switch-lou-george-l-up",
+   "case": "switch",
+   "pair": "lou-george",
+   "facing": -1,
+   "side": "up (far)",
+   "frames": 284,
+   "startFrame": 36,
+   "endFrame": 253,
+   "heldMs": 3600,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2812,
+     "below": 2812,
+     "torso": 1914,
+     "above": 2104
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 2099
+    },
+    "release": {
+     "belowBody": 231,
+     "below": 231,
+     "torso": 0,
+     "above": 2097
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 3.87,
+     "frames": 118,
+     "over3": 97,
+     "outOfReach": 97,
+     "maxOver": 3.82
+    },
+    "attacker.far": {
+     "max": 0.07,
+     "frames": 118,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -17.71
+    },
+    "defender.near": {
+     "max": 0.11,
+     "frames": 118,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 7.91,
+    "defender.goBehind": 7.85,
+    "attacker.goBehind.facingFlipFrame": 44.83,
+    "attacker.hold": 3.27,
+    "defender.hold": 0.68,
+    "defender.goBehind.facingFlipFrame": 47.6,
+    "attacker.release": 3.15,
+    "defender.release": 0.43
+   },
+   "closestXJoints": 0.1,
+   "stepFirst": 5.88,
+   "stepGoBehind": 83.94,
+   "stepHold": 4.57,
+   "stepRelease": 33.08,
+   "stepTieUpWorst": 32.64,
+   "stepAfter": 10.98,
+   "stepTurn": 89.85,
+   "turnFrame": -254,
+   "holdGapX": 84.3,
+   "holdDy": 10.8,
+   "holdFacing": [
+    1,
+    1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "switch-lou-george-r-up",
+   "case": "switch",
+   "pair": "lou-george",
+   "facing": 1,
+   "side": "up (far)",
+   "frames": 284,
+   "startFrame": 36,
+   "endFrame": 253,
+   "heldMs": 3600,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2816,
+     "below": 2816,
+     "torso": 1911,
+     "above": 2093
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 2101
+    },
+    "release": {
+     "belowBody": 238,
+     "below": 238,
+     "torso": 0,
+     "above": 2100
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 3.87,
+     "frames": 118,
+     "over3": 97,
+     "outOfReach": 97,
+     "maxOver": 3.82
+    },
+    "attacker.far": {
+     "max": 0.07,
+     "frames": 118,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -17.71
+    },
+    "defender.near": {
+     "max": 0.11,
+     "frames": 118,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 7.91,
+    "defender.goBehind": 7.85,
+    "attacker.goBehind.facingFlipFrame": 44.82,
+    "attacker.hold": 3.27,
+    "defender.hold": 0.68,
+    "defender.goBehind.facingFlipFrame": 47.6,
+    "attacker.release": 3.14,
+    "defender.release": 0.43
+   },
+   "closestXJoints": 0.1,
+   "stepFirst": 5.87,
+   "stepGoBehind": 83.93,
+   "stepHold": 4.57,
+   "stepRelease": 33.08,
+   "stepTieUpWorst": 32.65,
+   "stepAfter": 10.97,
+   "stepTurn": 89.85,
+   "turnFrame": -254,
+   "holdGapX": 84.3,
+   "holdDy": 10.8,
+   "holdFacing": [
+    -1,
+    -1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "rope-lou-george-l-up",
+   "case": "rope",
+   "pair": "lou-george",
+   "facing": -1,
+   "side": "up (far)",
+   "frames": 123,
+   "startFrame": 36,
+   "endFrame": 92,
+   "heldMs": 933,
+   "phases": [
+    "goBehind",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2815,
+     "below": 2815,
+     "torso": 1247,
+     "above": 1788
+    },
+    "release": {
+     "belowBody": 198,
+     "below": 219,
+     "torso": 0,
+     "above": 850
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 0,
+     "frames": 1,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -1.4
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 1,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -27.24
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 1,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 7.91,
+    "defender.goBehind": 0.29,
+    "attacker.goBehind.facingFlipFrame": 44.82,
+    "attacker.release": 0.01,
+    "defender.release": 2.43
+   },
+   "closestXJoints": 0.1,
+   "stepFirst": 5.87,
+   "stepGoBehind": 83.93,
+   "stepHold": 0,
+   "stepRelease": 27.24,
+   "stepTieUpWorst": 32.65,
+   "stepAfter": 12.37,
+   "stepTurn": 90.95,
+   "turnFrame": 19,
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "rope-lou-george-r-up",
+   "case": "rope",
+   "pair": "lou-george",
+   "facing": 1,
+   "side": "up (far)",
+   "frames": 123,
+   "startFrame": 36,
+   "endFrame": 92,
+   "heldMs": 933,
+   "phases": [
+    "goBehind",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2815,
+     "below": 2815,
+     "torso": 1249,
+     "above": 1789
+    },
+    "release": {
+     "belowBody": 193,
+     "below": 216,
+     "torso": 0,
+     "above": 856
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 0,
+     "frames": 1,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -1.4
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 1,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -27.24
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 1,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 7.91,
+    "defender.goBehind": 0.29,
+    "attacker.goBehind.facingFlipFrame": 44.82,
+    "attacker.release": 0.02,
+    "defender.release": 2.44
+   },
+   "closestXJoints": 0.1,
+   "stepFirst": 5.88,
+   "stepGoBehind": 83.93,
+   "stepHold": 0,
+   "stepRelease": 27.25,
+   "stepTieUpWorst": 32.63,
+   "stepAfter": 12.38,
+   "stepTurn": 90.95,
+   "turnFrame": 19,
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "timeout-george-lou-l-up",
+   "case": "timeout",
+   "pair": "george-lou",
+   "facing": -1,
+   "side": "up (far)",
+   "frames": 220,
+   "startFrame": 36,
+   "endFrame": 189,
+   "heldMs": 2550,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2589,
+     "below": 2589,
+     "torso": 1836,
+     "above": 2066
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 2101
+    },
+    "release": {
+     "belowBody": 234,
+     "below": 234,
+     "torso": 0,
+     "above": 2091
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 3.67,
+     "frames": 97,
+     "over3": 97,
+     "outOfReach": 97,
+     "maxOver": 3.61
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -17.81
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -48.65
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 8.1,
+    "defender.goBehind": 0.33,
+    "attacker.goBehind.facingFlipFrame": 53.05,
+    "attacker.hold": 3.41,
+    "defender.hold": 0.02,
+    "attacker.release": 0.43,
+    "defender.release": 3.14
+   },
+   "closestXJoints": 0,
+   "stepFirst": 5.34,
+   "stepGoBehind": 80.99,
+   "stepHold": 3.42,
+   "stepRelease": 35.12,
+   "stepTieUpWorst": 31.13,
+   "stepAfter": 10.97,
+   "stepTurn": 89.85,
+   "turnFrame": 19,
+   "holdGapX": 82,
+   "holdDy": -10.8,
+   "holdFacing": [
+    1,
+    1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "timeout-george-lou-r-up",
+   "case": "timeout",
+   "pair": "george-lou",
+   "facing": 1,
+   "side": "up (far)",
+   "frames": 220,
+   "startFrame": 36,
+   "endFrame": 189,
+   "heldMs": 2550,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2592,
+     "below": 2592,
+     "torso": 1836,
+     "above": 2067
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 2108
+    },
+    "release": {
+     "belowBody": 231,
+     "below": 231,
+     "torso": 0,
+     "above": 2094
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 3.67,
+     "frames": 97,
+     "over3": 97,
+     "outOfReach": 97,
+     "maxOver": 3.61
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -17.81
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -48.65
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 8.1,
+    "defender.goBehind": 0.32,
+    "attacker.goBehind.facingFlipFrame": 53.05,
+    "attacker.hold": 3.41,
+    "defender.hold": 0.01,
+    "attacker.release": 0.43,
+    "defender.release": 3.15
+   },
+   "closestXJoints": 0,
+   "stepFirst": 5.34,
+   "stepGoBehind": 80.98,
+   "stepHold": 3.42,
+   "stepRelease": 35.12,
+   "stepTieUpWorst": 31.05,
+   "stepAfter": 10.97,
+   "stepTurn": 89.86,
+   "turnFrame": 19,
+   "holdGapX": 82,
+   "holdDy": -10.8,
+   "holdFacing": [
+    -1,
+    -1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "shove-george-lou-l-up",
+   "case": "shove",
+   "pair": "george-lou",
+   "facing": -1,
+   "side": "up (far)",
+   "frames": 145,
+   "startFrame": 36,
+   "endFrame": 114,
+   "heldMs": 1300,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2592,
+     "below": 2592,
+     "torso": 1836,
+     "above": 2067
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 2108
+    },
+    "release": {
+     "belowBody": 231,
+     "below": 231,
+     "torso": 0,
+     "above": 2108
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 3.67,
+     "frames": 22,
+     "over3": 22,
+     "outOfReach": 22,
+     "maxOver": 3.61
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 22,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -17.81
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 22,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -48.65
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 8.1,
+    "defender.goBehind": 0.32,
+    "attacker.goBehind.facingFlipFrame": 53.05,
+    "attacker.hold": 3.41,
+    "defender.hold": 0.01,
+    "attacker.release": 0.43,
+    "defender.release": 3.15
+   },
+   "closestXJoints": 0,
+   "stepFirst": 5.34,
+   "stepGoBehind": 80.98,
+   "stepHold": 3.42,
+   "stepRelease": 35.12,
+   "stepTieUpWorst": 31.05,
+   "stepAfter": 10.97,
+   "stepTurn": 89.86,
+   "turnFrame": 19,
+   "holdGapX": 82,
+   "holdDy": -10.8,
+   "holdFacing": [
+    1,
+    1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "shove-george-lou-r-up",
+   "case": "shove",
+   "pair": "george-lou",
+   "facing": 1,
+   "side": "up (far)",
+   "frames": 145,
+   "startFrame": 36,
+   "endFrame": 114,
+   "heldMs": 1300,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2592,
+     "below": 2592,
+     "torso": 1836,
+     "above": 2067
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 2108
+    },
+    "release": {
+     "belowBody": 231,
+     "below": 231,
+     "torso": 0,
+     "above": 2108
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 3.67,
+     "frames": 22,
+     "over3": 22,
+     "outOfReach": 22,
+     "maxOver": 3.61
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 22,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -17.81
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 22,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -48.65
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 8.1,
+    "defender.goBehind": 0.32,
+    "attacker.goBehind.facingFlipFrame": 53.05,
+    "attacker.hold": 3.41,
+    "defender.hold": 0.01,
+    "attacker.release": 0.43,
+    "defender.release": 3.15
+   },
+   "closestXJoints": 0,
+   "stepFirst": 5.34,
+   "stepGoBehind": 80.98,
+   "stepHold": 3.42,
+   "stepRelease": 35.12,
+   "stepTieUpWorst": 31.05,
+   "stepAfter": 10.97,
+   "stepTurn": 89.86,
+   "turnFrame": 19,
+   "holdGapX": 82,
+   "holdDy": -10.8,
+   "holdFacing": [
+    -1,
+    -1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "switch-george-lou-l-up",
+   "case": "switch",
+   "pair": "george-lou",
+   "facing": -1,
+   "side": "up (far)",
+   "frames": 284,
+   "startFrame": 36,
+   "endFrame": 253,
+   "heldMs": 3600,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2783,
+     "below": 2783,
+     "torso": 1836,
+     "above": 2341
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 2108
+    },
+    "release": {
+     "belowBody": 186,
+     "below": 193,
+     "torso": 0,
+     "above": 831
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 3.67,
+     "frames": 118,
+     "over3": 21,
+     "outOfReach": 21,
+     "maxOver": 3.61
+    },
+    "attacker.far": {
+     "max": 0.06,
+     "frames": 118,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -17.81
+    },
+    "defender.near": {
+     "max": 0.03,
+     "frames": 118,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 8.1,
+    "defender.goBehind": 7.79,
+    "attacker.goBehind.facingFlipFrame": 53.05,
+    "attacker.hold": 3.41,
+    "defender.hold": 0.65,
+    "defender.goBehind.facingFlipFrame": 41.16,
+    "attacker.release": 3.15,
+    "defender.release": 0.43
+   },
+   "closestXJoints": 0,
+   "stepFirst": 5.34,
+   "stepGoBehind": 80.98,
+   "stepHold": 3.42,
+   "stepRelease": 31.93,
+   "stepTieUpWorst": 31.05,
+   "stepAfter": 10.25,
+   "stepTurn": 90.95,
+   "turnFrame": -254,
+   "holdGapX": 84.3,
+   "holdDy": 10.8,
+   "holdFacing": [
+    1,
+    1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "switch-george-lou-r-up",
+   "case": "switch",
+   "pair": "george-lou",
+   "facing": 1,
+   "side": "up (far)",
+   "frames": 284,
+   "startFrame": 36,
+   "endFrame": 253,
+   "heldMs": 3600,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2785,
+     "below": 2785,
+     "torso": 1832,
+     "above": 2339
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 2103
+    },
+    "release": {
+     "belowBody": 186,
+     "below": 194,
+     "torso": 0,
+     "above": 823
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 3.67,
+     "frames": 118,
+     "over3": 21,
+     "outOfReach": 21,
+     "maxOver": 3.61
+    },
+    "attacker.far": {
+     "max": 0.06,
+     "frames": 118,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -17.81
+    },
+    "defender.near": {
+     "max": 0.03,
+     "frames": 118,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 8.11,
+    "defender.goBehind": 7.79,
+    "attacker.goBehind.facingFlipFrame": 53.05,
+    "attacker.hold": 3.41,
+    "defender.hold": 0.65,
+    "defender.goBehind.facingFlipFrame": 41.16,
+    "attacker.release": 3.15,
+    "defender.release": 0.43
+   },
+   "closestXJoints": 0,
+   "stepFirst": 5.34,
+   "stepGoBehind": 80.98,
+   "stepHold": 3.42,
+   "stepRelease": 31.93,
+   "stepTieUpWorst": 31.03,
+   "stepAfter": 10.25,
+   "stepTurn": 90.95,
+   "turnFrame": -254,
+   "holdGapX": 84.3,
+   "holdDy": 10.8,
+   "holdFacing": [
+    -1,
+    -1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "rope-george-lou-l-up",
+   "case": "rope",
+   "pair": "george-lou",
+   "facing": -1,
+   "side": "up (far)",
+   "frames": 123,
+   "startFrame": 36,
+   "endFrame": 92,
+   "heldMs": 933,
+   "phases": [
+    "goBehind",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2585,
+     "below": 2585,
+     "torso": 1832,
+     "above": 2075
+    },
+    "release": {
+     "belowBody": 164,
+     "below": 164,
+     "torso": 0,
+     "above": 2076
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 4.45,
+     "frames": 1,
+     "over3": 1,
+     "outOfReach": 1,
+     "maxOver": 4.4
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 1,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -17.54
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 1,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -49.38
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 8.1,
+    "defender.goBehind": 0.33,
+    "attacker.goBehind.facingFlipFrame": 53.04,
+    "attacker.release": 0,
+    "defender.release": 2.44
+   },
+   "closestXJoints": 0,
+   "stepFirst": 5.34,
+   "stepGoBehind": 80.98,
+   "stepHold": 0,
+   "stepRelease": 30.58,
+   "stepTieUpWorst": 31.03,
+   "stepAfter": 15.15,
+   "stepTurn": 89.85,
+   "turnFrame": 19,
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "rope-george-lou-r-up",
+   "case": "rope",
+   "pair": "george-lou",
+   "facing": 1,
+   "side": "up (far)",
+   "frames": 123,
+   "startFrame": 36,
+   "endFrame": 92,
+   "heldMs": 933,
+   "phases": [
+    "goBehind",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2575,
+     "below": 2575,
+     "torso": 1831,
+     "above": 2101
+    },
+    "release": {
+     "belowBody": 165,
+     "below": 165,
+     "torso": 0,
+     "above": 2081
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 4.45,
+     "frames": 1,
+     "over3": 1,
+     "outOfReach": 1,
+     "maxOver": 4.4
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 1,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -17.54
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 1,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -49.38
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 8.1,
+    "defender.goBehind": 0.32,
+    "attacker.goBehind.facingFlipFrame": 53.04,
+    "attacker.release": 0,
+    "defender.release": 2.44
+   },
+   "closestXJoints": 0,
+   "stepFirst": 5.34,
+   "stepGoBehind": 80.98,
+   "stepHold": 0,
+   "stepRelease": 30.58,
+   "stepTieUpWorst": 31.06,
+   "stepAfter": 15.15,
+   "stepTurn": 89.85,
+   "turnFrame": 19,
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  }
+ ]
+}

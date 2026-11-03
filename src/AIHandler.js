@@ -4,8 +4,9 @@
 // opponent is vulnerable.
 
 import { ringBoundsAtY, RING } from './constants.js';
-import { grapplesCandidate, sharesDepth } from './Wrestler.js';
+import { grapplesCandidate, waistlockCandidate, sharesDepth } from './Wrestler.js';
 import { LOCKUP } from './animation/lockup.js';
+import { WAISTLOCK, behindSpotFits } from './animation/waistlock.js';
 
 export const PERSONALITIES = {
     brawler: {
@@ -49,6 +50,8 @@ export const PERSONALITIES = {
         kneeLiftOdds:     0.20,  // substitutes for the close jab this often (never twice in a row)
         kneeDropOdds:     0.40,  // substitutes for the elbow drop pounce this often
         figureFourOdds:   0.30,  // Flair's figure-four instead of a drop on a downed man
+        goBehindOdds:     0.10,  // waistlock=v1 (Stage 4b W7): of his lockups, this share he goes behind
+        switchOdds:       0.15,  // waistlock=v1: the defender reverses a waistlock this often
     },
     thesz: {
         // NWA World Heavyweight Champion — the legitimate wall. Technical,
@@ -80,6 +83,8 @@ export const PERSONALITIES = {
         hammerlockStaminaMax: 75,
         groundHoldOdds:   0.40,  // works an arm bar or ankle lock on a downed man instead of a drop
         kneeDropOdds:     0.20,  // substitutes for the elbow drop pounce this often (no kneeLift — not in his kit)
+        goBehindOdds:     0.20,  // waistlock=v1 (Stage 4b W7): of his lockups, this share he goes behind
+        switchOdds:       0.30,  // waistlock=v1: the defender reverses a waistlock this often
     },
 };
 
@@ -543,7 +548,21 @@ export default class AIHandler {
         return w.x <= b.left + thr || w.x >= b.right - thr;
     }
 
+    // waistlock=v1 (Stage 4b W7): the AI inside a waistlock. The attacker presses nothing (the hold times out into the shove); the defender
+    // decides once per hold, a beat after it closes, whether to reverse it (switchOdds). A reversal creates a new waistlockState, so the
+    // new defender gets his own roll.
+    _handleWaistlock(dt, ws) {
+        if (this._wlSeen !== ws) { this._wlSeen = ws; this._wlBeat = 0.25 + Math.random() * 0.45; this._wlDecided = false; }
+        if (ws.defender !== this._self || ws.phase !== 'hold' || this._wlDecided) return;
+        this._wlBeat -= dt;
+        if (this._wlBeat > 0) return;
+        this._wlDecided = true;
+        if (this._self.moveSet.includes('goBehind') && Math.random() < (this._cfg.switchOdds ?? 0)) this._press('action');
+    }
+
     _handleLockup(dt) {
+        const ws = this._self.scene?.waistlockState;
+        if (ws) { this._handleWaistlock(dt, ws); return; }
         // Wait a beat before committing — but on the lockup's own clock, NOT
         // the global _cooldown: the grapple press that created this lockup set
         // _cooldown to 0.8–0.9s, which outlives the 0.8s lockup timeout (the
@@ -571,6 +590,20 @@ export default class AIHandler {
         }
 
         const cfg = this._cfg;
+
+        // Go behind (waistlock=v1, Stage 4b W7): power with up or down held, on this share of his lockups, when his spot behind the man is in the ring.
+        // Rolled once per lockup (this._wlRolled), before the follow-ups below.
+        if (waistlockCandidate() && this._self.moveSet.includes('goBehind') && this._wlRolled !== ls) {
+            this._wlRolled = ls;
+            if (Math.random() < (cfg.goBehindOdds ?? 0) && ls && behindSpotFits(this._opp, this._opp.facing, ringBoundsAtY(this._opp.y))) {
+                this._hold(Math.random() < 0.5 ? 'up' : 'down');
+                this._press('power');
+                this._cooldown = 0.8;
+                this._offense = 1.1 + Math.random() * 0.9;
+                this._landed++;
+                return;
+            }
+        }
 
         // Hammerlock — finisher-slot follow-up, rolled independently of (and
         // before) the action-based follow-ups below, same as the human

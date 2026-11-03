@@ -1,0 +1,40 @@
+{
+ "note": "WFM_TS=3, MAX_MIN 7, stopped at 8 go-behinds or the cap, one pair at a time; an earlier two-at-once attempt lost both browsers at about 3 minutes (cause unknown) and was discarded",
+ "runs": [
+  {
+   "pair": "lou-george",
+   "wallMin": 6.1,
+   "gameMin": 18.2,
+   "waistlock": {
+    "starts": 8,
+    "switches": 1,
+    "denied": 0,
+    "ends": {
+     "timeout": 8
+    }
+   },
+   "lockups": 103,
+   "failures": [],
+   "pageErrors": [],
+   "lostFlow": null
+  },
+  {
+   "pair": "george-lou",
+   "wallMin": 7,
+   "gameMin": 21.02,
+   "waistlock": {
+    "starts": 7,
+    "switches": 2,
+    "denied": 0,
+    "ends": {
+     "timeout": 5,
+     "rope": 1
+    }
+   },
+   "lockups": 153,
+   "failures": [],
+   "pageErrors": [],
+   "lostFlow": null
+  }
+ ]
+}

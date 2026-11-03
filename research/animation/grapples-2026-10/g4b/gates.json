@@ -1,0 +1,13 @@
+{
+ "lines": [
+  "npm test: 1139/1139 pass (Node 22)",
+  "npm run build: ok",
+  "npm run moves:coverage -- --check: passed, 24 baselined gaps (was 23; goBehind added, unverified)",
+  "npm run moves:kits -- --check: passed",
+  "tools/debug/grapples_assert.mjs: all passed (the first run of this gate sequence crashed with a Node error under load; rerun passed)",
+  "tools/debug/grapples_flagoff.mjs (own server): flag off identical over 60 frames",
+  "tools/debug/waistlock_assert.mjs: all passed (every ending, 15 checks)",
+  "tools/debug/waistlock_cleanup.mjs: all passed (12 checks)",
+  "soak, waistlock=v1, 3x speed: Lou on George 8 go-behinds, 1 switch, 8 timeouts; George on Lou 7 go-behinds, 2 switches, 5 timeouts, 1 rope break; 0 failures, 0 page errors, no orphanRescue, no stuck state, no facing lock left on"
+ ]
+}

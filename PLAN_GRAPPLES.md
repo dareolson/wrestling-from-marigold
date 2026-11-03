@@ -76,7 +76,12 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - T5.3: aa0532f, `grapples` on by default, `=off` the old lockup. Suite 1115/1115, build, coverage 23 baselined, `grapples_assert` all passed, flag-off identical (60 frames; a default launch differs, `=off` matches). Live: no flag, Lou vs George, 19 of 19 lockups carry the new tie-up. STOPPED at G5.
   Misses: `MOVE_CATALOG.md` edited, not committed (another session's changes in it); AI chains: George rarely follows a corner whip with the charge.
 - **G5: approved by Derek 2026-11-01** ("it's good enough to keep moving forward") after a no-flag match on Procreate Lou and `george-roster-v1`. Current values stand: match pace, `CORNER_CHARGE.backOff` 330 px, the diagonal press, polish list parked. Opus reran at ca9bca5: suite 1115/1115, build, coverage 23, `grapples_assert`, `=off` identical. Next T6.1-T6.3, stop at G6.
-- T6.1-T6.3: 4774ed4, 3454930, T6.3 commit. Default fighters Procreate Lou and `george-roster-v1`; `rosterKits.js` is the one kit file; `moves:kits` table and kit checks. Suite 1124/1124, build, coverage 23, kits, `grapples_assert` all passed. STOPPED at G6.
+- T4b.1-T4b.2: 452805f, 76b0de4. Hold 0 / 0 px overlap below the belt / torso on both rigs; George's near hand 3.67 px short.
+  Misses: the circle overlaps (up to 3806 px below the belt), ankles slide 6.6-8.1 px/frame, facing-flip pop 44-53 px; let-go turn 57-59 px/frame.
+- **G4b-a: approved by Derek 2026-11-03** ("good enough to move forward"): the A-frame hold, W4 layering and the circle as built stand. The circle's overlap stays reported (D12 is not waived for other moves). Polish list adds Codex's circle recipe: stepping footwork (plant/swing), an authored turn, a staged route (clear in depth, cross behind, close in) with ring-edge handling. Next T4b.2b, then T4b.3-T4b.5, stop at G4b.
+- T4b.2b: (this commit). Match-end leak fixed (`_endWaistlock`; `waistlock_cleanup.mjs` failed 9 of 12 before, passes 12 of 12: circle, hold, let-go); W4 stack only from the grip ramp; defender keeps his facing 300 ms after the let-go (first 8 frames standing 56.6 -> 10.3 px/frame).
+  Misses: the turn itself is one frame, 91 px/frame (an idle flip measures 96.5); the circle overlap is unchanged (2807 / 1247 px, every frame now); the depth order flips at the grip ramp; ankle movement not support-classified.
+- T6.1-T6.3: 4774ed4, 3454930, de33540. Default fighters Procreate Lou and `george-roster-v1`; `rosterKits.js` is the one kit file; `moves:kits` table and kit checks. Suite 1124/1124, build, coverage 23, kits, `grapples_assert` all passed. STOPPED at G6.
   Misses: Guido has no `hammerlockOdds` or `cornerWhipOdds` (allow-listed, not retuned); no shadowed moves; `grapples_flagoff` with no `WFM_URL` (self-started server) prints DIFFERENT at frame 0 (about 1e-5 in pose) also on the code before T6.1, identical with `WFM_URL=http://localhost:5173` (flagoff now pins `thesz`/`george`).
 
 ## Why (Derek 2026-10-29)
@@ -474,6 +479,72 @@ Page `research/animation/grapples-2026-10/g3b/index.html`: normal-speed strips o
 data, then the table. Gates, once: focused tests, `grapples_assert`, flag-off, full suite, `npm run build`,
 `npm run moves:coverage -- --check`. Entry `AI_HANDOFF_ENTRIES/<date>-claude-grapples-g3b.md`, Progress lines. Clickable link, **STOP**.
 Never promote `grapples`.
+
+## Stage 4b: the go-behind waistlock (Derek 2026-11-02 picked it first), stop at G4b-a, then G4b
+
+Written in full, for Sonnet. From the tie-up the attacker slips round and takes a rear waistlock. It is the base for the back
+suplex, German suplex and rollup later (Stage 4c, Derek picks). This stage builds the go-behind, the hold and its endings, no throw.
+
+**Decisions (Opus; Derek can overrule at G4b-a):**
+- **W1. Flag** `?waistlock=v1`, **opt-in** (`grapples` is promoted, so the new branch must not change a default match). Add
+  `waistlockCandidate` beside `grapplesCandidate` (`src/Wrestler.js:123`), opt-in like `?plant=1`: on only for `v1`, off in Node with no
+  `location`. Flag off is byte-identical: `grapples_flagoff.mjs` (default launch, its fixture) still passes unchanged.
+- **W2. Input.** In the lockup, the attacker's `power` with up or down held = go-behind. `power` with no up or down stays the kit's
+  hip toss / arm drag. Up circles round the far side, down the near (camera) side. Read the AI's `power` presses in a lockup first:
+  if any can hold up or down by accident, report it and make it explicit.
+- **W3. D12 holds** (Derek 2026-10-30): no pelvis, thigh, shin or foot of one man overlaps the other, in any frame, and no torso through
+  a torso. So this is an A-frame waistlock: same facing, the attacker a step behind and a little upstage (smaller y, so he draws
+  behind on whole-body depth), hips back, bent at the waist, arms reaching round the defender's waist. The circle travels on a
+  depth lane (y offset) so it never walks through him. If D12 and a hand on the waist can't both be met, D12 wins: report the
+  hand miss in px. Derek judges at G4b-a whether the A-frame shape is a waistlock at all.
+- **W4. Layering** (D8's `layerDepths`, resolved per facing), back to front: attacker far arm, defender far arm, attacker body,
+  defender body, defender near arm, attacker near arm (his near hand shows across the defender's belly).
+- **W5. Contacts** use `holdGrips` with `at` points (D7): both attacker hands at the defender's waist, the near on his front, the far
+  hidden behind him. The defender's near hand goes to the attacker's near wrist (prying). Lou is the bar; tune for Lou and report George.
+- **W6. Endings** (T4b.3): (a) **switch**: the defender's `action` reverses it, he goes behind with the same go-behind, roles swap,
+  with the steal's hitch (`LOCKUP.stealHitch`) so it can't chain every frame; (b) **shove-off**: the attacker's `action`, or the hold's
+  timeout (1.6 s, a constant), pushes the defender away forward: reuse T4a.2's stumble, no damage, no stamina change; (c) **rope break**:
+  the defender within the rope reach of T4a.1 breaks it cleanly, reuse T4a.1. A throw from the waistlock is Stage 4c.
+- **W7. Kits and AI.** New registry id `goBehind`, in the Lou and George kits only (`rosterKits.js`), slot `lockupPowerDir` (no
+  conflict with `lockupPower`; add it to `KIT_SLOTS`). Personalities: `goBehindOdds` Lou .20, George .10; `switchOdds` (defender)
+  Lou .30, George .15. Add both to `KIT_AI_ODDS`. Regenerate the `moves:kits` block in `MOVE_CATALOG.md` with `git add -p` (other
+  sessions' edits are in that file). The coverage baseline goes from 23: report the new count, don't fix the gap here.
+- **W8. Arena state** `waistlockState`, like `headlockState`: cleared in `_endMatch` (`Arena.js:3989`), known to `_orphanWatchdog`
+  (`:3512`) so no `orphanRescue` fires during a hold or at the 10:00 limit in one.
+
+**Measures** (numbers, not judgements; px/frame at 60 fps): `grapples_masks.mjs` `belowBody` and `torso` overlap, every frame (want 0);
+attacker hands to the defender's waist points (px); the go-behind's first-frame max part step against the same exit's from the tie-up;
+planted soles against the 2.5 px/frame limit; the circle's closest approach below the belt.
+
+- **T4b.1 Pure data and math.** `src/animation/waistlock.js` + `tests/waistlock.test.js`: the go-behind path (lane y, x, the time
+  along it, both sides, both facings), the hold spacing, the hold pose keys, the timeout and the W4 layer list. Pure, like `lockup.js`.
+- **T4b.2 The go-behind and the hold, flag on, then STOP (G4b-a).** Arena branch (W2), `waistlockState` (W8), the contacts (W5), the
+  layering (W4). Lou on George and George on Lou, both facings, both sides. The hold just times out and lets go with the T4a.2
+  stumble (no other endings yet). Measures above. One normal-speed loop strip per attacker in both facings,
+  `research/animation/grapples-2026-10/g4b-a/index.html`, misses first, then the numbers. Focused tests, `grapples_flagoff`.
+  Commit locally, **STOP at G4b-a**: Derek judges the shape (W3) and the layering (W4) before any more is built.
+- **T4b.2b Repairs before the endings** (Codex review `AI_HANDOFF_ENTRIES/2026-11-02-codex-waistlock-review-for-opus.md`, Opus's cut;
+  Derek 2026-11-03: "good enough to move forward"). No switch, rope break, AI or kits here.
+  1. **Cleanup.** One `_endWaistlock(reason)` helper, used by the timeout and `_endMatch`: clear both `_facingLock`, null the state, put a
+     man still in `lockup` back to standing with `_lockupLegsHome`; never overwrite a down, selling or move state. `_tickWaistlock`
+     bails to it if either man is no longer in `lockup`. At match end, leave no callback that can touch the next match. Browser
+     test: end the match in the circle, the hold and the release; after the reset both locks are false, no `orphanRescue`, and
+     crossing the opponent turns each man as normal.
+  2. **Layering by phase.** Apply `waistlockLayerOrder` only once the hold's grips are on (the `gripRamp` start); before that, the
+     whole-body order from depth, so the near-side pass draws the attacker in front.
+  3. **The let-go turn.** After the release the defender keeps his facing for a beat and turns with the game's normal turn, not a
+     one-frame flip: whole-body step for 8 frames after `done` reported raw, want under the tie-up's worst after the engage (32.6 px).
+  4. **Honest measures.** Masks every frame. Rename `circleClosestLow` to what it is (closest x between joint pairs). Label the
+     slide numbers "ankle movement, both feet, no support classification".
+  One Lou-on-George strip, far side, both facings, through the release plus 8 standing frames, on the G4b-a page above the old
+  strips. Focused tests, `grapples_flagoff`. Commit locally; **no stop**, go on to T4b.3.
+- **T4b.3 Endings** (W6), after Derek accepts G4b-a. Each ending a test; the switch can swap back.
+- **T4b.4 Kits and AI** (W7). The AI attacker goes behind on `goBehindOdds`; the AI defender switches on `switchOdds`. A short
+  `grapples_soak.mjs` run with `waistlock=v1` on Lou vs George, both orders: go-behinds, switches, shove-offs, rope breaks counted;
+  fail on page errors, `orphanRescue`, stuck states.
+- **T4b.5 G4b page** `research/animation/grapples-2026-10/g4b/index.html`: normal-speed loop strips of each ending, both attackers,
+  both facings; then the table, misses first. Gates: focused tests, `grapples_assert`, `grapples_flagoff`, full suite, build,
+  coverage, `moves:kits -- --check`. Progress lines, Status. Commit locally, do not push, **STOP at G4b**. Never promote `waistlock`.
 
 ## Later stages (outline, written in full after G1)
 

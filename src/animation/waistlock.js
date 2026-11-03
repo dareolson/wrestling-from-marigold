@@ -14,6 +14,7 @@ export const WAISTLOCK = Object.freeze({
     gripRamp: 0.16,                     // s before the circle ends that the hands start to close; they are full when it ends
     waistRise: 36, waistFront: 12,       // the defender's waist point: above the hip joints, and how far in front of his hips the near hand lands
     strainHz: 7, strainLean: 0.02,      // the defender's struggle
+    turnBeat: 0.30,                     // after the let-go the defender keeps his facing this long while his pose comes home, then turns
     release: Object.freeze({ dur: 0.35 }),   // let go and push: LOCKUP.breakGrip + LOCKUP.breakStep
 });
 

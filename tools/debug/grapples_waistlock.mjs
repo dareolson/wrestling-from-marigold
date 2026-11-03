@@ -15,6 +15,7 @@ import { INSTALL, SETUP } from './grapples_film.mjs';
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const PAIRS = { lg: { id: 'lou-george', att: LOU, def: GEORGE }, gl: { id: 'george-lou', att: GEORGE, def: LOU } };
 const PRESS_AT = 36;
+const TAG = process.env.WL_TAG ?? '', ONLY = process.env.WL_ONLY?.split(',') ?? null;   // WL_TAG=2b prefixes the ids and writes film-2b.json; WL_ONLY=lou-george-up,... films a subset
 
 export const STEP = async ({ press, hold, mask }) => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0], a = sc.w1, d = sc.w2;
@@ -67,7 +68,7 @@ function summarize(rows) {
     out.hands = {};
     for (const r of wl) for (const [k, e] of Object.entries(r.wl.errs)) if (e.w >= 0.99) { const h = out.hands[k] ??= { max: 0, frames: 0, over3: 0, outOfReach: 0, maxOver: -1e9 }; h.max = Math.max(h.max, e.err); h.frames++; if (e.err > 3) h.over3++; if (e.over > 0) h.outOfReach++; h.maxOver = Math.max(h.maxOver, e.over); }
     for (const h of Object.values(out.hands)) { h.max = +h.max.toFixed(2); h.maxOver = +h.maxOver.toFixed(2); }
-    // planted soles: ankle travel per frame at s = 1, per phase, per man
+    // ANKLE MOVEMENT, both feet, no support classification (px per frame at s = 1, per phase, per man); there are no steps yet, so a planted sole and a swinging one are not told apart
     out.slide = {};
     for (let i = Math.max(1, n0); i < rows.length; i++) {
         const p = rows[i - 1], c = rows[i];
@@ -81,14 +82,14 @@ function summarize(rows) {
             out.slide[key] = Math.max(out.slide[key] ?? 0, +v.toFixed(2));
         }
     }
-    // the circle's closest approach below the belt: smallest gap between the two men's ankles and hips in x (px at s = 1) and the most body overlap
+    // closest x between any two of the men's ankle, knee and hip joints in the circle (NOT silhouette clearance: two men can share an x and be apart in depth): smallest gap between the two men's ankles and hips in x (px at s = 1) and the most body overlap
     const lowGap = (r) => {
         const xs = (side) => ['nearAnkle', 'farAnkle', 'nearHip', 'farHip', 'nearKnee', 'farKnee'].map(k => r[side].pts[k]?.x).filter(Number.isFinite);
         const A = xs('a'), D = xs('d');
         return Math.min(...A.flatMap(x => D.map(y => Math.abs(x - y)))) / r.a.s;
     };
     const circle = wl.filter(r => r.wl.phase === 'goBehind');
-    out.circleClosestLow = circle.length ? +Math.min(...circle.map(lowGap)).toFixed(1) : null;
+    out.closestXJoints = circle.length ? +Math.min(...circle.map(lowGap)).toFixed(1) : null;
     // first-frame and worst whole-body part step (px/frame) in the go-behind, against the same man's step over the rest of the tie-up
     const step = (i) => Math.max(maxPart({ parts: rows[i - 1].a.parts }, { parts: rows[i].a.parts }), maxPart({ parts: rows[i - 1].d.parts }, { parts: rows[i].d.parts }));
     out.stepFirst = n0 > 0 ? +step(n0).toFixed(2) : null;
@@ -98,7 +99,9 @@ function summarize(rows) {
     // the tie-up's own worst step after the engage (frame 12 on), for scale
     out.stepTieUpWorst = +Math.max(0, ...rows.map((r, i) => (i >= 12 && i < n0 && r.lockup && rows[i - 1].lockup ? step(i) : 0))).toFixed(2);
     // the let-go back to standing: move() turns the defender round to face the man behind him
-    out.stepAfter = end > 0 ? +Math.max(0, ...rows.map((r, i) => (i >= end && i < end + 8 ? step(i) : 0))).toFixed(2) : null;
+    out.stepAfter = end > 0 ? +Math.max(0, ...rows.map((r, i) => (i >= end && i < end + 8 ? step(i) : 0))).toFixed(2) : null;   // the first 8 frames standing
+    out.stepTurn = end > 0 ? +Math.max(0, ...rows.map((r, i) => (i >= end + 8 && i < end + 40 ? step(i) : 0))).toFixed(2) : null;   // the rest of the tail, where the turn beat ends and move() turns the defender
+    out.turnFrame = end > 0 ? rows.findIndex((r, i) => i >= end && r.d.facing !== rows[end].d.facing) - end : null;
     // spacing and depth in the hold
     const hold = wl.filter(r => r.wl.phase === 'hold');
     if (hold.length) { const r = hold[Math.floor(hold.length / 2)]; out.holdGapX = +(Math.abs(r.a.x - r.d.x) / r.d.s).toFixed(1); out.holdDy = +(r.a.y - r.d.y).toFixed(1); out.holdFacing = [r.a.facing, r.d.facing]; }
@@ -117,7 +120,7 @@ async function run(page, info, spec, shotDir) {
     for (let i = 0; i < 320; i++) {
         const press = { a: [], d: [] }, hold = { a: [], d: [] };
         if (i === PRESS_AT) { press.a.push('power'); hold.a.push(spec.side < 0 ? 'up' : 'down'); }
-        const row = await page.evaluate(STEP, { press, hold, mask: i % 3 === 0 });
+        const row = await page.evaluate(STEP, { press, hold, mask: true });
         row.i = i; rows.push(row);
         if (shotDir) await page.screenshot({ path: join(shotDir, `s${String(i).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 82, clip });
         if (i > PRESS_AT && !row.locked && endAt === null) endAt = i;
@@ -138,7 +141,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             const info = await page.evaluate(INSTALL);
             await page.evaluate(INSTALL_MASKS);
             for (const facing of [-1, 1]) for (const side of [-1, 1]) {
-                const id = `${pair.id}-${facing < 0 ? 'l' : 'r'}-${side < 0 ? 'up' : 'down'}`;
+                const id = `${TAG ? TAG + '-' : ''}${pair.id}-${facing < 0 ? 'l' : 'r'}-${side < 0 ? 'up' : 'down'}`;
+                if (ONLY && !ONLY.includes(`${pair.id}-${side < 0 ? 'up' : 'down'}`)) continue;
                 const rows = await run(page, info, { facing, side }, shots === '1' ? join(outRoot, 'frames', id) : null);
                 const r = { id, pair: pair.id, facing, side: side < 0 ? 'up (far)' : 'down (near)', ...summarize(rows) };
                 if (shots === '1') for (const ph of ['goBehind', 'hold']) {   // the worst masked sample of the phase, as an image: red attacker, blue defender, white under the belt, yellow torso on torso, green above
@@ -147,11 +151,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
                 }
                 for (const x of rows) if (x.mask) delete x.mask.image;
                 results.push(r);
-                console.log(`[waistlock] ${id}: held ${r.heldMs} ms, circle closest below the belt ${r.circleClosestLow}, overlap by phase ${JSON.stringify(r.byPhase)}, hands ${JSON.stringify(r.hands)}, slide ${JSON.stringify(r.slide)}`);
+                console.log(`[waistlock] ${id}: held ${r.heldMs} ms, closest x between joints in the circle ${r.closestXJoints}, overlap by phase ${JSON.stringify(r.byPhase)}, hands ${JSON.stringify(r.hands)}, slide ${JSON.stringify(r.slide)}`);
             }
         } finally { await h.close(); }
     }
     mkdirSync(outRoot, { recursive: true });
-    writeFileSync(join(outRoot, 'film.json'), JSON.stringify({ tool: 'tools/debug/grapples_waistlock.mjs', runs: results }, null, 1));
-    console.log('wrote', join(outRoot, 'film.json'), results.length, 'runs');
+    writeFileSync(join(outRoot, TAG ? `film-${TAG}.json` : 'film.json'), JSON.stringify({ tool: 'tools/debug/grapples_waistlock.mjs', runs: results }, null, 1));
+    console.log('wrote', join(outRoot, TAG ? `film-${TAG}.json` : 'film.json'), results.length, 'runs');
 }

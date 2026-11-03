@@ -2,6 +2,7 @@
 // down = the near side), then the misses from the data, then the table.   node tools/debug/grapples_g4b_a_page.mjs
 // reads research/animation/grapples-2026-10/g4b-a/film.json (grapples_waistlock.mjs).
 import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { WAISTLOCK, WAISTLOCK_POSES } from '../../src/animation/waistlock.js';
 
@@ -12,6 +13,12 @@ const NAME = { 'lou-george': ['Lou', 'George'], 'george-lou': ['George', 'Lou'] 
 const ph = (r, p, k) => r.byPhase?.[p]?.[k] ?? 0;
 const cell = (r) => `<div><canvas data-dir="frames/${r.id}" data-n="${r.frames}" width="380" height="330"></canvas><div class="cap">${r.id}: held ${r.heldMs} ms (circle ${WAISTLOCK.goBehind * 1000} ms, hold ${WAISTLOCK.timeout * 1000} ms, release ${WAISTLOCK.release.dur * 1000} ms)</div></div>`;
 
+// T4b.2b: Lou on George, far side, both facings, through the let-go and the standing frames after it; masks every frame, phase layering, the turn beat.
+let repair = '';
+if (existsSync(`${root}/film-2b.json`)) {
+    const rr = JSON.parse(readFileSync(`${root}/film-2b.json`, 'utf8')).runs;
+    repair = `<h2>T4b.2b: Lou on George, far side, after the repairs</h2><p>Layering by phase (the W4 stack only once the hands start to close), the defender keeps his facing ${WAISTLOCK.turnBeat * 1000} ms after the let-go, masks every frame. Run through the release and ${Math.min(...rr.map(r => r.frames - r.endFrame))} frames of standing.</p><div class="pair">${rr.map(cell).join('')}</div><ul>${rr.map(r => `<li>${r.id}: part step in the first 8 frames standing ${r.stepAfter} px/frame (G4b-a: 56.56); the turn, ${r.turnFrame} frames later, ${r.stepTurn} px/frame (the game's own idle facing flip, measured on two idle men: 96.5); tie-up worst after the engage ${r.stepTieUpWorst}. Under the belt / torso on torso, every frame: circle ${ph(r, 'goBehind', 'belowBody')} / ${ph(r, 'goBehind', 'torso')}, hold ${ph(r, 'hold', 'belowBody')} / ${ph(r, 'hold', 'torso')}, let-go ${ph(r, 'release', 'belowBody')} / ${ph(r, 'release', 'torso')}.</li>`).join('')}</ul><h2>G4b-a strips (as approved)</h2>`;
+}
 let strips = '';
 for (const [side, label] of [['up', 'Up: round the far side'], ['down', 'Down: round the near side']]) {
     strips += `<h2>${label}</h2>`;
@@ -26,8 +33,8 @@ const misses = [];
 for (const pair of ['lou-george', 'george-lou']) {
     const [A, D] = NAME[pair], rs = runs.filter(r => r.pair === pair);
     const m = (f) => Math.max(...rs.map(f));
-    misses.push(`<b>${A} on ${D}, the circle (D12):</b> the bodies overlap on screen while he passes: up to ${m(r => ph(r, 'goBehind', 'belowBody'))} px under the belt (leg or pelvis) and ${m(r => ph(r, 'goBehind', 'torso'))} px torso on torso, worst masked frame (every third frame). The depth lane (${WAISTLOCK.lane} px) moves him on screen, not apart, so passing him overlaps whatever the lane. Closest low-body approach in x ${m(r => r.circleClosestLow)} px.`);
-    misses.push(`<b>${A} on ${D}, the circle's feet:</b> no steps in the circle, so his planted soles slide ${Math.min(...rs.map(r => r.slide['attacker.goBehind']))}-${m(r => r.slide['attacker.goBehind'])} px/frame (limit 2.5), plus ${Math.min(...rs.map(r => r.slide['attacker.goBehind.facingFlipFrame']))}-${m(r => r.slide['attacker.goBehind.facingFlipFrame'])} px on the one frame his facing flips as he passes the defender. Whole-body part step in the circle ${Math.min(...rs.map(r => r.stepGoBehind))}-${m(r => r.stepGoBehind)} px/frame (the tie-up's worst after the engage: ${m(r => r.stepTieUpWorst)}); first frame ${m(r => r.stepFirst)}.`);
+    misses.push(`<b>${A} on ${D}, the circle (D12):</b> the bodies overlap on screen while he passes: up to ${m(r => ph(r, 'goBehind', 'belowBody'))} px under the belt (leg or pelvis) and ${m(r => ph(r, 'goBehind', 'torso'))} px torso on torso, worst masked frame (every third frame in this film). The depth lane (${WAISTLOCK.lane} px) moves him on screen, not apart, so passing him overlaps whatever the lane. Closest x between any two joints (not silhouette clearance) ${m(r => r.closestXJoints ?? r.circleClosestLow)} px.`);
+    misses.push(`<b>${A} on ${D}, the circle's feet:</b> no steps in the circle, so ankle movement (both feet, no support classification) is ${Math.min(...rs.map(r => r.slide['attacker.goBehind']))}-${m(r => r.slide['attacker.goBehind'])} px/frame (limit 2.5), plus ${Math.min(...rs.map(r => r.slide['attacker.goBehind.facingFlipFrame']))}-${m(r => r.slide['attacker.goBehind.facingFlipFrame'])} px on the one frame his facing flips as he passes the defender. Whole-body part step in the circle ${Math.min(...rs.map(r => r.stepGoBehind))}-${m(r => r.stepGoBehind)} px/frame (the tie-up's worst after the engage: ${m(r => r.stepTieUpWorst)}); first frame ${m(r => r.stepFirst)}.`);
     misses.push(`<b>${A} on ${D}, the hold:</b> overlap under the belt ${m(r => ph(r, 'hold', 'belowBody'))} px, torso on torso ${m(r => ph(r, 'hold', 'torso'))} px (want 0 / 0). Near hand to the waist point: max ${m(r => r.hands['attacker.near'].max)} px${m(r => r.hands['attacker.near'].outOfReach) ? `, out of the arm's reach by ${m(r => r.hands['attacker.near'].maxOver)} px in ${m(r => r.hands['attacker.near'].outOfReach)} frames (D12 wins, the bodies stay apart)` : ', in reach'}; far hand ${m(r => r.hands['attacker.far'].max)} px; the defender's hand on the attacker's wrist ${m(r => r.hands['defender.near'].max)} px. The hold's last circle frame still slides his soles ${m(r => r.slide['attacker.hold'])} px/frame, then 0.`);
     misses.push(`<b>${A} on ${D}, the let-go:</b> ${m(r => ph(r, 'release', 'belowBody'))} px of leg/pelvis overlap for a few frames as the hands leave (as in G4a's shove); the defender's planted soles slide ${m(r => r.slide['defender.release'])} px/frame in the push (no foot steps); when he is let go, move() turns him round to face the man behind him: whole-body step up to ${m(r => r.stepAfter)} px/frame in the next 8 frames.`);
 }
@@ -46,7 +53,7 @@ const html = `<!doctype html><meta charset="utf-8"><title>G4b-a: go-behind waist
 <h1>G4b-a: the go-behind waistlock</h1><div class="note"><b>For Derek to judge.</b> Whether the A-frame shape is a waistlock at all (W3) and the layering (W4). Strips run at normal speed, a loop from the tie-up through the circle, the hold, and the let-go; nothing here says the shape is right. Misses first, then the table.</div>
 <p><button id="pp">pause</button> <button id="sl">slow (0.25&times;)</button></p>
 <h2>Misses</h2><ul>${misses.map(m => `<li>${m}</li>`).join('')}</ul>
-${strips}
+${repair}${strips}
 <h2>Table (px at scale 1; px/frame at 60 fps)</h2><table><tr><th>run</th><th>circle: under belt</th><th>circle: torso</th><th>hold: under belt</th><th>hold: torso</th><th>release: under belt</th><th>near hand to waist</th><th>far hand</th><th>defender hand to wrist</th><th>circle sole slide / flip frame</th><th>hold sole slide</th><th>release slide (defender)</th><th>part step: first / circle / hold / release / after</th><th>hold gap x / dy</th></tr>${rows}</table>
 <h2>Manifest</h2><pre>${JSON.stringify(manifest, null, 1)}</pre>
 <script>const cvs=[...document.querySelectorAll('canvas')];let paused=false,rate=1;const imgs=cvs.map(c=>Array.from({length:+c.dataset.n},(_,i)=>{const im=new Image();im.src=c.dataset.dir+'/s'+String(i).padStart(4,'0')+'.jpg';return im}));let f=0,last=0;function tick(t){if(!paused&&t-last>=1000/60/rate){last=t;cvs.forEach((c,k)=>{const a=imgs[k],im=a[f%a.length];if(im.complete)c.getContext('2d').drawImage(im,0,0)});f++}requestAnimationFrame(tick)}

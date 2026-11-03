@@ -954,6 +954,8 @@ export default class Wrestler {
         // one frame and played as a face-to-face clinch.
         // The candidate whip's throw owns facing too: both men turned as the
         // receiver passed, a one-frame pop of up to 74 px.
+        // _facingLock: true holds the facing (the waistlock), a number holds it that many seconds (the let-go's turn beat). Unset with the flag off.
+        if (typeof this._facingLock === 'number') { this._facingLock -= dt; if (this._facingLock <= 0) this._facingLock = false; }
         if (this.state !== 'running' && !this._cornerEp && !this._activeMove && !this._facingLock && !(this._whip && (this.state === 'slamming' || this.state === 'grabbed')) && !GROUNDED_FACING_LOCK.has(this.state)) {
             const dx = other.x - this.x;
             if (dx !== 0) this.facing = Math.sign(dx);

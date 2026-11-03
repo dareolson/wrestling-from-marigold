@@ -19,7 +19,7 @@ import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
 import { lockupGrips, lockupPhase, lockupPoseChannels, exitBlendPose, breakKind, breakTravel, legRel, LOCKUP } from '../animation/lockup.js';
-import { waistlockPhase, goBehindOffset, waistlockPoseChannels, waistlockGrips, waistlockLayerOrder, releaseTravel } from '../animation/waistlock.js';
+import { WAISTLOCK, waistlockPhase, goBehindOffset, waistlockPoseChannels, waistlockGrips, waistlockLayerOrder, releaseTravel } from '../animation/waistlock.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS, ROSTER_PERSONALITIES } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
@@ -4008,6 +4008,7 @@ export default class Arena extends Phaser.Scene {
     // both poses and the grip weights _holdWaistlockGrips reads after the draw.
     _tickWaistlock(dt) {
         const ws = this.waistlockState, A = ws.attacker, D = ws.defender;
+        if (A.state !== 'lockup' || D.state !== 'lockup') { this._endWaistlock(); return; }
         ws.t += dt;
         const ph = waistlockPhase(ws.t);
         ws.phase = ph.phase; ws.grips = ph.grips;
@@ -4038,8 +4039,20 @@ export default class Arena extends Phaser.Scene {
             }
             return;
         }
-        for (const w of [A, D]) { w._facingLock = false; w.state = 'standing'; this._lockupLegsHome(w, 220); }
+        this._endWaistlock(WAISTLOCK.turnBeat);
+    }
+
+    // Stage 4b T4b.2b: the one way out of the waistlock (the timeout's let-go, a match end, a man pulled out of the hold). Gives facing back to
+    // move(), drops the state, and puts a man still in the hold back to standing; a man a move or a sell has taken over keeps his state.
+    // `turnBeat` (the timeout's let-go only): the defender keeps his facing this many seconds while his pose comes home, then move() turns him round.
+    _endWaistlock(turnBeat = 0) {
+        const ws = this.waistlockState;
+        if (!ws) return;
         this.waistlockState = null;
+        for (const w of [ws.attacker, ws.defender]) {
+            w._facingLock = w === ws.defender && w.state === 'lockup' && turnBeat > 0 ? turnBeat : false;
+            if (w.state === 'lockup') { w.state = 'standing'; this._lockupLegsHome(w, 220); }
+        }
     }
 
     // W4/W5: after both draw, turn each gripping arm onto its target (waistlock.js waistlockGrips), then stack the parts (waistlockLayerOrder).
@@ -4048,7 +4061,9 @@ export default class Arena extends Phaser.Scene {
         if (!ws.grips) return;
         const lists = waistlockGrips(A, D, ws.grips);
         for (const [role, actor] of [['attacker', A], ['defender', D], ['attacker', A], ['defender', D], ['attacker', A], ['defender', D]]) if (lists[role].length) actor.holdGrips(lists[role]);
-        for (const [img, depth] of layerDepths({ order: waistlockLayerOrder(A, D) }, { attacker: A, defender: D })) img.setDepth(depth);
+        // T4b.2b: the W4 stack only from the moment the hands start to close; on the approach the order is the whole-body depth from y, so on the
+        // near-side pass the attacker draws in front.
+        if (ws.grips.attacker.near > 0) for (const [img, depth] of layerDepths({ order: waistlockLayerOrder(A, D) }, { attacker: A, defender: D })) img.setDepth(depth);
     }
 
     _showWin(player) {
@@ -4059,7 +4074,9 @@ export default class Arena extends Phaser.Scene {
         this.matchOver = true;
         // Kill any in-flight hold/pin state — a pin attempt sneaking in on the
         // final frame otherwise survives the banner and ticks into the next match
-        this.pinState = this.sleeperState = this.headlockState = this.lockupState = this.waistlockState = this._exitBlend = null;
+        this._endWaistlock();
+        for (const w of [this.w1, this.w2]) w._facingLock = false;   // a let-go turn beat must not outlive the match
+        this.pinState = this.sleeperState = this.headlockState = this.lockupState = this._exitBlend = null;
         this.pinText.setAlpha(0);
         this.crowd.bell(3);
         this._ringTimekeeperBell();

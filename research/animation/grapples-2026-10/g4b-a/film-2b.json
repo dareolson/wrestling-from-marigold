@@ -1,0 +1,181 @@
+{
+ "tool": "tools/debug/grapples_waistlock.mjs",
+ "runs": [
+  {
+   "id": "2b-lou-george-l-up",
+   "pair": "lou-george",
+   "facing": -1,
+   "side": "up (far)",
+   "frames": 220,
+   "startFrame": 36,
+   "endFrame": 189,
+   "heldMs": 2550,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2807,
+     "below": 2807,
+     "torso": 1247,
+     "above": 1793
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 829
+    },
+    "release": {
+     "belowBody": 188,
+     "below": 191,
+     "torso": 0,
+     "above": 832
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -2.78
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -28.72
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 7.91,
+    "defender.goBehind": 0.3,
+    "attacker.goBehind.facingFlipFrame": 44.82,
+    "attacker.hold": 3.27,
+    "defender.hold": 0.01,
+    "attacker.release": 0.43,
+    "defender.release": 3.14
+   },
+   "closestXJoints": 0.1,
+   "stepFirst": 5.88,
+   "stepGoBehind": 83.94,
+   "stepHold": 4.57,
+   "stepRelease": 30.3,
+   "stepTieUpWorst": 32.56,
+   "stepAfter": 10.26,
+   "stepTurn": 90.95,
+   "turnFrame": 19,
+   "holdGapX": 82,
+   "holdDy": -10.8,
+   "holdFacing": [
+    1,
+    1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  },
+  {
+   "id": "2b-lou-george-r-up",
+   "pair": "lou-george",
+   "facing": 1,
+   "side": "up (far)",
+   "frames": 220,
+   "startFrame": 36,
+   "endFrame": 189,
+   "heldMs": 2550,
+   "phases": [
+    "goBehind",
+    "hold",
+    "release"
+   ],
+   "byPhase": {
+    "goBehind": {
+     "belowBody": 2812,
+     "below": 2812,
+     "torso": 1247,
+     "above": 1789
+    },
+    "hold": {
+     "belowBody": 0,
+     "below": 0,
+     "torso": 0,
+     "above": 829
+    },
+    "release": {
+     "belowBody": 187,
+     "below": 191,
+     "torso": 0,
+     "above": 825
+    }
+   },
+   "hands": {
+    "attacker.near": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -2.78
+    },
+    "attacker.far": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -28.72
+    },
+    "defender.near": {
+     "max": 0,
+     "frames": 97,
+     "over3": 0,
+     "outOfReach": 0,
+     "maxOver": -22.07
+    }
+   },
+   "slide": {
+    "attacker.goBehind": 7.91,
+    "defender.goBehind": 0.29,
+    "attacker.goBehind.facingFlipFrame": 44.83,
+    "attacker.hold": 3.27,
+    "defender.hold": 0,
+    "attacker.release": 0.43,
+    "defender.release": 3.14
+   },
+   "closestXJoints": 0.1,
+   "stepFirst": 5.88,
+   "stepGoBehind": 83.94,
+   "stepHold": 4.57,
+   "stepRelease": 30.3,
+   "stepTieUpWorst": 32.64,
+   "stepAfter": 10.26,
+   "stepTurn": 90.95,
+   "turnFrame": 19,
+   "holdGapX": 82,
+   "holdDy": -10.8,
+   "holdFacing": [
+    -1,
+    -1
+   ],
+   "after": {
+    "states": [
+     "standing",
+     "standing"
+    ]
+   }
+  }
+ ]
+}

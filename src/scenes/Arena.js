@@ -1,5 +1,5 @@
 import { W, H, RING, ringBoundsAtY } from '../constants.js';
-import Wrestler, { grapplesCandidate, POSES } from '../Wrestler.js';
+import Wrestler, { grapplesCandidate, waistlockCandidate, POSES } from '../Wrestler.js';
 import InputHandler from '../InputHandler.js';
 import AIHandler from '../AIHandler.js';
 import CrowdAudio from '../CrowdAudio.js';
@@ -19,6 +19,7 @@ import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
 import { lockupGrips, lockupPhase, lockupPoseChannels, exitBlendPose, breakKind, breakTravel, legRel, LOCKUP } from '../animation/lockup.js';
+import { waistlockPhase, goBehindOffset, waistlockPoseChannels, waistlockGrips, waistlockLayerOrder, releaseTravel } from '../animation/waistlock.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS, ROSTER_PERSONALITIES } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
@@ -3147,6 +3148,7 @@ export default class Arena extends Phaser.Scene {
         this.sleeperState  = null; // { attacker, defender, timer }
         this.headlockState = null; // { attacker, defender, timer }
         this.lockupState   = null; // { attacker, defender, timer }
+        this.waistlockState = null; // ?waistlock=v1 (Stage 4b W8): { attacker, defender, side, t, ... }
 
         // Crowd heat — 0–100, bumped by big moves, taunts, nearfalls. Cools
         // exponentially toward a floor that big spots ratchet upward, so a
@@ -3483,6 +3485,7 @@ export default class Arena extends Phaser.Scene {
         if (this.pinState)      this._tickPin(dt);
         if (this.sleeperState)  this._tickSleeper(dt);
         if (this.headlockState) this._tickHeadlock(dt);
+        if (this.waistlockState) this._tickWaistlock(dt);
 
         this._orphanWatchdog(w1, w2, dt);
         this._orphanWatchdog(w2, w1, dt);
@@ -3498,6 +3501,7 @@ export default class Arena extends Phaser.Scene {
         this.moveRuntime.afterDraw?.();
         undoBlend?.();
         if (this.lockupState?.grapple && grapplesCandidate()) this._holdLockupGrips();
+        if (this.waistlockState) this._holdWaistlockGrips();
         this._updateRopes(dt);
         this._drawStaminaBars();
         this._updateHeat(dt);
@@ -3517,7 +3521,7 @@ export default class Arena extends Phaser.Scene {
             (w.state === 'sleeping'   && !this.sleeperState)       ||
             (w.state === 'headlocked' && !this.headlockState)      ||
             (w.state === 'holding'    && !this.sleeperState && !this.headlockState && !w._fixedHold) ||
-            (w.state === 'lockup'     && !this.lockupState);
+            (w.state === 'lockup'     && !this.lockupState && !this.waistlockState);
 
         if (!orphaned) { w._orphanT = 0; return; }
         w._orphanT = (w._orphanT ?? 0) + dt;
@@ -3954,6 +3958,18 @@ export default class Arena extends Phaser.Scene {
             return;
         }
 
+        // Stage 4b W2 (`?waistlock=v1`): power with up or down held goes behind (up round the far side, down the near); power alone stays the
+        // kit's hip toss / arm drag. The AI never presses power in a lockup (AIHandler._handleLockup), so only a player's held direction can start it.
+        if (g && waistlockCandidate() && just(ls.attacker, 'power') && (g.stealAt === null || g.t - g.stealAt > LOCKUP.stealHitch + LOCKUP.stealCrossfade)) {
+            const stored = ls.attacker.input.justDown('power') ? null : consumed?.get(ls.attacker)?.get('power');
+            const held = (d) => stored?.[d] ?? ls.attacker.input.isDown(d);
+            if (held('up') || held('down')) {
+                this._beginWaistlock(ls, held('up') ? -1 : 1);
+                this._logEvent('waistlockStart', { attacker: who, side: held('up') ? 'far' : 'near' });
+                return;
+            }
+        }
+
         // Power from the lockup: the kit's hip toss, else its arm drag — two
         // moves competing for one slot, so the kit decides which a wrestler has.
         const powerThrow = ['hipToss', 'armDrag'].find(move => ls.attacker.moveSet.includes(move));
@@ -3978,6 +3994,63 @@ export default class Arena extends Phaser.Scene {
         }
     }
 
+    // Stage 4b: the lockup hands over to the waistlock. Both men stay in state 'lockup' (the orphan watchdog knows waistlockState), their facing
+    // is locked (move() would turn the defender round to the man behind him), and the poses blend on from the tie-up's last frame.
+    _beginWaistlock(ls, side) {
+        const A = ls.attacker, D = ls.defender;
+        this.lockupState = null;
+        const from = new Map([[A, { ...A.pose }], [D, { ...D.pose }]]);
+        this.waistlockState = { attacker: A, defender: D, side, t: 0, from, grips: null, lastU: 0, start: { fwd: (A.x - D.x) * D.facing, dy: A.y - D.y }, d0: { x: D.x, y: D.y }, dFacing: D.facing, travelled: 0 };
+        for (const w of [A, D]) { w._facingLock = true; w.scene.tweens.killTweensOf(w.pose); }
+    }
+
+    // One frame of the waistlock (W3, W6): the circle round the defender, the hold, then the timeout's let-go and push. Sets the pair's place,
+    // both poses and the grip weights _holdWaistlockGrips reads after the draw.
+    _tickWaistlock(dt) {
+        const ws = this.waistlockState, A = ws.attacker, D = ws.defender;
+        ws.t += dt;
+        const ph = waistlockPhase(ws.t);
+        ws.phase = ph.phase; ws.grips = ph.grips;
+        const done = ph.phase === 'done';
+        if (!done) {
+            const sA = A.s, sD = D.s;
+            // the defender stays; the attacker goes round him on the lane, or follows him through the push
+            if (ph.phase === 'release') {
+                const go = releaseTravel(), prev = ws.relP ?? 0;
+                ws.relP = ph.release;
+                D.x += ws.dFacing * (ph.release - prev) * go.defender * sD;
+                A.x += ws.dFacing * (ph.release - prev) * go.attacker * sA;
+            }
+            if (ph.phase !== 'release') {
+                const off = goBehindOffset(ph.u, ws.side, ws.start, sD);
+                A.x = D.x + ws.dFacing * off.fwd;
+                A.y = ws.d0.y + off.dy;
+                A.facing = off.facesDefenderWay ? ws.dFacing : -ws.dFacing;
+                D.facing = ws.dFacing;
+            } else { A.facing = D.facing = ws.dFacing; }
+            A._clamp(); D._clamp();
+            for (const [w, role] of [[A, 'attacker'], [D, 'defender']]) {
+                w.scene.tweens.killTweensOf(w.pose);
+                const ch = waistlockPoseChannels(role, w.skeleton.lChannelSide(w.facing), { strain: ph.strain, release: ph.release, legLen: w.skeleton._thighH + w.skeleton._shinH });
+                const from = ws.from.get(w), k = ph.pose;
+                for (const key of Object.keys(ch)) w.pose[key] = k < 1 ? (from[key] ?? 0) * (1 - k) + ch[key] * k : ch[key];
+                w.pose.tilt = 0; w.pose.lift = 0;
+            }
+            return;
+        }
+        for (const w of [A, D]) { w._facingLock = false; w.state = 'standing'; this._lockupLegsHome(w, 220); }
+        this.waistlockState = null;
+    }
+
+    // W4/W5: after both draw, turn each gripping arm onto its target (waistlock.js waistlockGrips), then stack the parts (waistlockLayerOrder).
+    _holdWaistlockGrips() {
+        const ws = this.waistlockState, A = ws.attacker, D = ws.defender;
+        if (!ws.grips) return;
+        const lists = waistlockGrips(A, D, ws.grips);
+        for (const [role, actor] of [['attacker', A], ['defender', D], ['attacker', A], ['defender', D], ['attacker', A], ['defender', D]]) if (lists[role].length) actor.holdGrips(lists[role]);
+        for (const [img, depth] of layerDepths({ order: waistlockLayerOrder(A, D) }, { attacker: A, defender: D })) img.setDepth(depth);
+    }
+
     _showWin(player) {
         this._endMatch(`PLAYER ${player} WINS`);
     }
@@ -3986,7 +4059,7 @@ export default class Arena extends Phaser.Scene {
         this.matchOver = true;
         // Kill any in-flight hold/pin state — a pin attempt sneaking in on the
         // final frame otherwise survives the banner and ticks into the next match
-        this.pinState = this.sleeperState = this.headlockState = this.lockupState = this._exitBlend = null;
+        this.pinState = this.sleeperState = this.headlockState = this.lockupState = this.waistlockState = this._exitBlend = null;
         this.pinText.setAlpha(0);
         this.crowd.bell(3);
         this._ringTimekeeperBell();

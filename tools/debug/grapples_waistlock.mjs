@@ -36,7 +36,7 @@ export const STEP = async ({ press, hold, mask }) => {
     });
     const ws = sc.waistlockState, ls = sc.lockupState;
     const row = { ms, held: !!ws, locked: !!(ws || ls), lockup: !!ls, mask: mask && (ws || ls) ? window.__maskOverlap(a, d, true) : null, a: mk(a, window.__names.a), d: mk(d, window.__names.d), wl: null };
-    if (ws) {
+    if (ws?.grips) {
         const { waistlockGrips } = await import('/src/animation/waistlock.js'), { gripTarget } = await import('/src/animation/lockup.js');
         const dist = (p, q) => Math.hypot(p.x - q.x, p.y - q.y);
         const lists = waistlockGrips(ws.attacker, ws.defender, ws.grips);

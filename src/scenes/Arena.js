@@ -19,7 +19,7 @@ import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
 import { lockupGrips, lockupPhase, lockupPoseChannels, exitBlendPose, breakKind, breakTravel, legRel, LOCKUP } from '../animation/lockup.js';
-import { WAISTLOCK, waistlockPhase, goBehindOffset, waistlockPoseChannels, waistlockGrips, waistlockLayerOrder, releaseTravel } from '../animation/waistlock.js';
+import { WAISTLOCK, atRopes, behindSpotFits, waistlockPhase, goBehindOffset, waistlockPoseChannels, waistlockGrips, waistlockLayerOrder, releaseTravel } from '../animation/waistlock.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS, ROSTER_PERSONALITIES } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
@@ -3963,6 +3963,10 @@ export default class Arena extends Phaser.Scene {
         if (g && waistlockCandidate() && just(ls.attacker, 'power') && (g.stealAt === null || g.t - g.stealAt > LOCKUP.stealHitch + LOCKUP.stealCrossfade)) {
             const stored = ls.attacker.input.justDown('power') ? null : consumed?.get(ls.attacker)?.get('power');
             const held = (d) => stored?.[d] ?? ls.attacker.input.isDown(d);
+            if ((held('up') || held('down')) && !behindSpotFits(ls.defender, ls.defender.facing, ringBoundsAtY(ls.defender.y))) {
+                this._logEvent('waistlockDenied', { attacker: who });   // his spot is past the ropes: he can't get behind him, the tie-up goes on
+                return;
+            }
             if (held('up') || held('down')) {
                 this._beginWaistlock(ls, held('up') ? -1 : 1);
                 this._logEvent('waistlockStart', { attacker: who, side: held('up') ? 'far' : 'near' });
@@ -3997,11 +4001,32 @@ export default class Arena extends Phaser.Scene {
     // Stage 4b: the lockup hands over to the waistlock. Both men stay in state 'lockup' (the orphan watchdog knows waistlockState), their facing
     // is locked (move() would turn the defender round to the man behind him), and the poses blend on from the tie-up's last frame.
     _beginWaistlock(ls, side) {
-        const A = ls.attacker, D = ls.defender;
         this.lockupState = null;
+        this._startWaistlock(ls.attacker, ls.defender, side, 0, 0);
+    }
+
+    // `t0` < 0 is a hitch before the circle (the switch: both men stop, the new attacker's hands let go); `switches` counts the reversals so far.
+    _startWaistlock(A, D, side, t0, switches, baseY = D.y) {
         const from = new Map([[A, { ...A.pose }], [D, { ...D.pose }]]);
-        this.waistlockState = { attacker: A, defender: D, side, t: 0, from, grips: null, lastU: 0, start: { fwd: (A.x - D.x) * D.facing, dy: A.y - D.y }, d0: { x: D.x, y: D.y }, dFacing: D.facing, travelled: 0 };
+        this.waistlockState = { attacker: A, defender: D, side, t: t0, from, grips: null, start: { fwd: (A.x - D.x) * D.facing, dy: A.y - D.y }, d0: { x: D.x, y: D.y }, dFacing: D.facing, holdEnd: WAISTLOCK.goBehind + WAISTLOCK.timeout, ending: null, switches, relP: 0, baseY };
         for (const w of [A, D]) { w._facingLock = true; w.scene.tweens.killTweensOf(w.pose); }
+    }
+
+    // W6 (b) and (c), from inside the hold: the attacker's action, or the rope, lets go early; the defender's action reverses it (a).
+    _waistlockEndings(ws) {
+        const A = ws.attacker, D = ws.defender;
+        const hold = ws.t >= WAISTLOCK.goBehind && ws.t < ws.holdEnd;
+        if (!hold) return false;
+        const letGo = (kind) => { ws.ending = kind; ws.holdEnd = ws.t; this._logEvent('waistlockEnd', { attacker: A === this.w1 ? 'p1' : 'p2', kind, switches: ws.switches }); };
+        if (atRopes(D, ringBoundsAtY(D.y)) || atRopes(A, ringBoundsAtY(A.y))) { letGo('rope'); return false; }
+        if (D.input.justDown('action')) {
+            if (!behindSpotFits(A, ws.dFacing, ringBoundsAtY(A.y))) { letGo('rope'); return false; }   // no room behind him: the ropes break it
+            this._logEvent('waistlockSwitch', { attacker: D === this.w1 ? 'p1' : 'p2' });
+            this._startWaistlock(D, A, ws.side, -LOCKUP.stealHitch, ws.switches + 1, ws.baseY);
+            return true;
+        }
+        if (A.input.justDown('action')) letGo('shove');
+        return false;
     }
 
     // One frame of the waistlock (W3, W6): the circle round the defender, the hold, then the timeout's let-go and push. Sets the pair's place,
@@ -4010,29 +4035,32 @@ export default class Arena extends Phaser.Scene {
         const ws = this.waistlockState, A = ws.attacker, D = ws.defender;
         if (A.state !== 'lockup' || D.state !== 'lockup') { this._endWaistlock(); return; }
         ws.t += dt;
-        const ph = waistlockPhase(ws.t);
+        if (this._waistlockEndings(ws)) return;
+        const ph = waistlockPhase(ws.t, ws.holdEnd);
         ws.phase = ph.phase; ws.grips = ph.grips;
         const done = ph.phase === 'done';
         if (!done) {
             const sA = A.s, sD = D.s;
             // the defender stays; the attacker goes round him on the lane, or follows him through the push
             if (ph.phase === 'release') {
-                const go = releaseTravel(), prev = ws.relP ?? 0;
+                const go = releaseTravel(ws.ending ?? 'shove'), prev = ws.relP ?? 0;
                 ws.relP = ph.release;
                 D.x += ws.dFacing * (ph.release - prev) * go.defender * sD;
                 A.x += ws.dFacing * (ph.release - prev) * go.attacker * sA;
             }
             if (ph.phase !== 'release') {
                 const off = goBehindOffset(ph.u, ws.side, ws.start, sD);
+                // the defender settles onto the lane's base line as the circle goes, so a switch's new attacker never ends upstage of an upstage man
+                const k = Math.max(0, Math.min(1, ph.u)); D.y = ws.d0.y + (ws.baseY - ws.d0.y) * k * k * (3 - 2 * k);
                 A.x = D.x + ws.dFacing * off.fwd;
-                A.y = ws.d0.y + off.dy;
+                A.y = D.y + off.dy;
                 A.facing = off.facesDefenderWay ? ws.dFacing : -ws.dFacing;
                 D.facing = ws.dFacing;
             } else { A.facing = D.facing = ws.dFacing; }
             A._clamp(); D._clamp();
             for (const [w, role] of [[A, 'attacker'], [D, 'defender']]) {
                 w.scene.tweens.killTweensOf(w.pose);
-                const ch = waistlockPoseChannels(role, w.skeleton.lChannelSide(w.facing), { strain: ph.strain, release: ph.release, legLen: w.skeleton._thighH + w.skeleton._shinH });
+                const ch = waistlockPoseChannels(role, w.skeleton.lChannelSide(w.facing), { strain: ph.strain, release: ph.release, kind: ws.ending, legLen: w.skeleton._thighH + w.skeleton._shinH });
                 const from = ws.from.get(w), k = ph.pose;
                 for (const key of Object.keys(ch)) w.pose[key] = k < 1 ? (from[key] ?? 0) * (1 - k) + ch[key] * k : ch[key];
                 w.pose.tilt = 0; w.pose.lift = 0;

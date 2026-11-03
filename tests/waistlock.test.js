@@ -1,7 +1,7 @@
 // PLAN_GRAPPLES T4b.1: the go-behind waistlock's pure data and math (src/animation/waistlock.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { WAISTLOCK, WAISTLOCK_POSES, goBehindOffset, waistlockPhase, waistlockPoseChannels, waistlockGrips, waistlockLayerOrder, waistPoint, releaseTravel } from '../src/animation/waistlock.js';
+import { WAISTLOCK, WAISTLOCK_POSES, goBehindOffset, waistlockPhase, waistlockPoseChannels, waistlockGrips, waistlockLayerOrder, waistPoint, releaseTravel, atRopes, behindSpotFits } from '../src/animation/waistlock.js';
 import { LOCKUP } from '../src/animation/lockup.js';
 import { waistlockCandidate } from '../src/Wrestler.js';
 
@@ -71,6 +71,7 @@ test('the release straightens the attacker and leans the defender forward', () =
     assert.equal(a.bend, 0); assert.equal(a.lArm, LOCKUP.shove.arm);
     assert.ok(d.bend > WAISTLOCK_POSES.defender.bend);
     assert.deepEqual(releaseTravel(), { attacker: LOCKUP.shove.attackerPx, defender: LOCKUP.shove.stepPx });
+    assert.deepEqual(releaseTravel('shove'), releaseTravel());
 });
 
 test('W5 grips in both facings and both channel sides: attacker near hand on the front of the waist, far hand at the middle, defender near hand on the attacker\'s near wrist', () => {
@@ -109,4 +110,47 @@ test('W1: waistlock is opt-in: only =v1 turns it on, an absent flag and no locat
     assert.equal(withSearch('?waistlock=v1'), true);
     assert.equal(withSearch('?waistlock=off'), false);
     assert.equal(withSearch('?waistlock=1'), false);
+});
+
+test('W6: an early holdEnd moves the let-go forward; the release then runs its own length', () => {
+    const early = WAISTLOCK.goBehind + 0.3;
+    assert.equal(waistlockPhase(early - DT, early).phase, 'hold');
+    assert.equal(waistlockPhase(early, early).phase, 'release');
+    assert.equal(waistlockPhase(early + WAISTLOCK.release.dur - DT, early).phase, 'release');
+    assert.equal(waistlockPhase(early + WAISTLOCK.release.dur, early).phase, 'done');
+    assert.equal(waistlockPhase(early, early).grips.attacker.near, 1, 'the hands open over breakGrip, not at once');
+});
+
+test('W6 (c): the rope break walks the defender away and leaves the attacker; hands up, no forward lean', () => {
+    assert.deepEqual(releaseTravel('rope'), { attacker: 0, defender: LOCKUP.ropeBreak.stepPx });
+    const a = waistlockPoseChannels('attacker', 'near', { release: 1, kind: 'rope' }), d = waistlockPoseChannels('defender', 'near', { release: 1, kind: 'rope' });
+    assert.equal(a.lArm, LOCKUP.ropeBreak.handsUp); assert.equal(a.lElbow, LOCKUP.ropeBreak.elbow);
+    assert.equal(d.bend, 0, 'he stands up');
+    assert.ok(waistlockPoseChannels('defender', 'near', { release: 1 }).bend > 0, 'the shove leans him forward');
+});
+
+test('atRopes: within 34 px at his scale of either side rope', () => {
+    const b = { left: 100, right: 900 };
+    assert.equal(atRopes({ x: 500, s: 1 }, b), false);
+    assert.equal(atRopes({ x: 900 - 33, s: 1 }, b), true);
+    assert.equal(atRopes({ x: 900 - 35, s: 1 }, b), false);
+    assert.equal(atRopes({ x: 100 + 0.8 * 34 - 1, s: 0.8 }, b), true);
+    assert.equal(atRopes({ x: 100 + 0.8 * 34 + 1, s: 0.8 }, b), false);
+});
+
+test('a switch starts before the circle: a negative t is the hitch, the pose and hands unchanged', () => {
+    const p = waistlockPhase(-LOCKUP.stealHitch);
+    assert.equal(p.phase, 'goBehind'); assert.equal(p.pose, 0); assert.equal(p.grips.attacker.near, 0);
+    const o = goBehindOffset(p.u, 1, START);
+    assert.equal(o.fwd, START.fwd); assert.equal(o.dy, START.dy);
+});
+
+test('behindSpotFits: the spot behind a man has to be 20 px inside the side ropes, whichever way he faces', () => {
+    const b = { left: 100, right: 900 }, hb = WAISTLOCK.holdBehind;
+    assert.equal(behindSpotFits({ x: 500, s: 1 }, 1, b), true);
+    assert.equal(behindSpotFits({ x: 900 - hb + 19, s: 1 }, -1, b), false);   // facing left, the spot is to his right
+    assert.equal(behindSpotFits({ x: 900 - hb - 21 + 41, s: 1 }, -1, b), false);
+    assert.equal(behindSpotFits({ x: 900 - hb - 21, s: 1 }, -1, b), true);
+    assert.equal(behindSpotFits({ x: 100 + hb * 0.8 + 19, s: 0.8 }, 1, b), false);   // facing right, the spot is to his left
+    assert.equal(behindSpotFits({ x: 100 + hb * 0.8 + 21, s: 0.8 }, 1, b), true);
 });

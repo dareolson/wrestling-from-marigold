@@ -42,8 +42,9 @@ export function goBehindOffset(u, side, start, s = 1) {
 // What the pair does at time `t` since the go-behind began. Returns { phase: 'goBehind' | 'hold' | 'release' | 'done', u (0..1 round the
 // circle), pose (0..1 the poses are in the hold's), grips: { attacker: { near, far }, defender: { pry } } (weights), strain (the defender's
 // lean), release (0..1) }.
-export function waistlockPhase(t) {
-    const W = WAISTLOCK, holdEnd = W.goBehind + W.timeout;
+// `holdEnd` is when the hold lets go: the timeout by default, earlier when an ending (the attacker's shove, a rope break) calls it.
+export function waistlockPhase(t, holdEnd = WAISTLOCK.goBehind + WAISTLOCK.timeout) {
+    const W = WAISTLOCK;
     const out = { phase: 'goBehind', u: Math.min(1, t / W.goBehind), pose: smooth(t / W.goBehind), release: 0, strain: 0, grips: { attacker: { near: 0, far: 0 }, defender: { pry: 0 } } };
     const closing = smooth((t - (W.goBehind - W.gripRamp)) / W.gripRamp);
     out.grips = { attacker: { near: closing, far: closing }, defender: { pry: closing } };
@@ -60,20 +61,42 @@ export function waistlockPhase(t) {
 }
 
 // Channels for one role: arms, torso, legs. `lSide` is skeleton.lChannelSide(facing). extra: { strain, release, legLen }. In the release the
-// attacker's arms go straight out (T4a.2's shove) and the defender is pushed forward onto his toes, leaning into the stumble.
+// attacker's arms go straight out (T4a.2's shove) and the defender is pushed forward onto his toes, leaning into the stumble. extra.kind
+// 'rope' (T4a.1's rope break): the attacker's hands go up and open, the defender is not pushed and just stands up.
 export function waistlockPoseChannels(role, lSide, extra = {}) {
     const P = WAISTLOCK_POSES[role], base = WAISTLOCK_ARMS[role], rel = extra.release ?? 0, legLen = extra.legLen ?? 118.8;
     const mix = (field) => P[field];
     const nearCh = lSide === 'far' ? 'r' : 'l', farCh = nearCh === 'l' ? 'r' : 'l';
     let arm = base.arm, elbow = base.elbow, bend = P.bend + (extra.strain ?? 0) * (role === 'defender' ? 1 : -0.5);
-    if (role === 'attacker') { arm = base.arm + (LOCKUP.shove.arm - base.arm) * rel; elbow = base.elbow + (LOCKUP.shove.elbow - base.elbow) * rel; bend = P.bend * (1 - rel); }
-    else { arm = base.arm + (LOCKUP.breakArm - base.arm) * rel; bend = P.bend + (-LOCKUP.shove.stumbleLean - P.bend) * rel; }   // pushed from behind: the lean is forward
+    const rope = extra.kind === 'rope';
+    if (role === 'attacker') {
+        const to = rope ? { arm: LOCKUP.ropeBreak.handsUp, elbow: LOCKUP.ropeBreak.elbow } : LOCKUP.shove;
+        arm = base.arm + (to.arm - base.arm) * rel; elbow = base.elbow + (to.elbow - base.elbow) * rel; bend = P.bend * (1 - rel);
+    } else {
+        arm = base.arm + (LOCKUP.breakArm - base.arm) * rel;
+        bend = rope ? P.bend * (1 - rel) : P.bend + (-LOCKUP.shove.stumbleLean - P.bend) * rel;   // pushed from behind: the lean is forward
+    }
     return { lArm: arm, rArm: arm, lElbow: elbow, rElbow: elbow, bend, crouch: P.crouch, ...legChannels(mix, nearCh, farCh, { lead: 0, rear: 0 }, legLen) };
 }
 
-// The two men's travel in the release (px at s = 1): the defender is pushed forward along his facing, the attacker follows a little.
-export function releaseTravel() {
+// The two men's travel in the release (px at s = 1, along the defender's facing): a shove (the timeout's, or the attacker's action) pushes the
+// defender forward and the attacker follows a little; a rope break leaves the attacker where he is (the rope is behind him) and walks the defender well away, hands up, no push.
+export function releaseTravel(kind = 'shove') {
+    if (kind === 'rope') return { attacker: 0, defender: LOCKUP.ropeBreak.stepPx };
     return { attacker: LOCKUP.shove.attackerPx, defender: LOCKUP.shove.stepPx };
+}
+
+// Can a man go behind `man`, who faces `facing`? His spot is holdBehind behind him; it has to be inside the ring (Wrestler._clamp keeps 20 px
+// from the side ropes), or the clamp would push the attacker into the man he is meant to be behind. `bounds` = ringBoundsAtY(man.y).
+export function behindSpotFits(man, facing, bounds) {
+    const x = man.x - facing * WAISTLOCK.holdBehind * (man.s ?? 1);
+    return x >= bounds.left + 20 && x <= bounds.right - 20;
+}
+
+// Is a man within the rope reach of T4a.1 (34 px at his scale) of either side rope? `bounds` = ringBoundsAtY(his y).
+export function atRopes(man, bounds) {
+    const thr = 34 * (man.s ?? 1);
+    return man.x >= bounds.right - thr || man.x <= bounds.left + thr;
 }
 
 // The defender's waist: between his hip joints, a little up, as a world point. `front` moves it along his facing (px at s = 1).

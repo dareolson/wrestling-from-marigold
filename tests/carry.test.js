@@ -77,9 +77,9 @@ test('outside its window the carry does nothing: no redraws, the sampled pose st
     assert.equal(rider.x, x);
 });
 
-test('the atomic drop carries the defender and leaves his lift track at zero through the carry', () => {
-    assert.equal(atomicDropClip.carry.length, 1);
+test('the atomic drop carries the defender and leaves his lift track at zero while the torso carry holds him (the thigh carry takes over from its release)', () => {
+    assert.equal(atomicDropClip.carry.length, 2, 'the torso carry, then the hand-over to the raised thigh (T4c.4j)');
     const c = atomicDropClip.carry[0];
     assert.equal(c.role, 'defender'); assert.equal(c.on, 'attacker'); assert.ok(c.tilt > 1 && c.tilt < 1.5);
-    for (const k of atomicDropClip.tracks.defender.keyframes.filter(k => k.at >= c.in[0] && k.at <= c.out[1])) assert.equal(k.pose.lift ?? 0, 0, `lift at ${k.at}`);
+    for (const k of atomicDropClip.tracks.defender.keyframes.filter(k => k.at >= c.in[0] && k.at <= c.out[0])) assert.equal(k.pose.lift ?? 0, 0, `lift at ${k.at}`);
 });

@@ -100,7 +100,9 @@ export function validateClip(source) {
     }
     for (const [index, c] of (source?.carry ?? []).entries()) {
         if (!source.tracks?.[c?.role] || !source.tracks?.[c?.on] || c.role === c.on) errors.push(`carry[${index}] role and on need two different tracks`);
-        if (!Number.isFinite(c?.tilt)) errors.push(`carry[${index}].tilt is the ratio of his torso angle to the carrier's`);
+        if (c?.frame !== undefined && c.frame !== 'thigh') errors.push(`carry[${index}].frame must be 'thigh' or absent (the carrier's torso)`);
+        if (c?.frame === 'thigh') { if (!['l', 'r'].includes(c.leg)) errors.push(`carry[${index}].leg must be 'l' or 'r' (the carrier's clip channel) for a thigh frame`); }
+        else if (!Number.isFinite(c?.tilt)) errors.push(`carry[${index}].tilt is the ratio of his torso angle to the carrier's`);
         if (badWindow(c)) errors.push(`carry[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
     }
     for (const [index, plant] of (source?.plants ?? []).entries()) {

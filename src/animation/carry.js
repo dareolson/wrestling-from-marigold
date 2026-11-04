@@ -33,3 +33,12 @@ export function carryTarget({ carrierPts, carrierFacing, anchor, natural, natura
     const frame = torsoFrame(carrierPts, carrierFacing), held = fromFrame(frame, anchor);
     return { x: lerp(natural.x, held.x, w), y: lerp(natural.y, held.y, w), tilt: lerp(naturalTilt, ratio * leanFromVertical(carrierPts, carrierFacing), w) };
 }
+
+// The platform a thigh makes (T4c.4j): the point on the TOP of the knee end of a raised thigh, `hip` -> `knee` in world px. It sits `back` of the way back from the knee toward
+// the hip and `up` over the thigh's axis on the side that points up the screen, both as shares of the thigh's length.
+export function thighTop(hip, knee, { back = 0.14, up = 0.13 } = {}) {
+    const dx = knee.x - hip.x, dy = knee.y - hip.y, len = Math.hypot(dx, dy) || 1;
+    let nx = -dy / len, ny = dx / len;
+    if (ny > 0) { nx = -nx; ny = -ny; }
+    return { x: knee.x - dx * back + nx * up * len, y: knee.y - dy * back + ny * up * len };
+}

@@ -1,6 +1,6 @@
 import { compileClip, eventsBetween, sampleClip, windowWeight } from './AnimationClip.js';
 import { clipLayerDepths } from './clipLayers.js';
-import { carryTarget, pelvisOf, toFrame, torsoFrame } from './carry.js';
+import { carryTarget, pelvisOf, thighTop, toFrame, torsoFrame } from './carry.js';
 import { captureFacingAxis, captureStagingContext, stagedWorldPoint, stagingAt } from './clipStaging.js';
 
 // `staging` is the role's immutable playback context, or null when this track
@@ -86,6 +86,8 @@ export default class MoveRuntime {
             cancelled: false,
             // One row per plant per frame (the solve's target, sole and residual); kept for the probes, null on clips with no plants.
             plantLog: clip.plants?.length ? [] : null,
+            // One row per carry per frame for the probes (kept only where a carry has a thigh frame).
+            carryLog: clip.carry?.some(c => c.frame === 'thigh') ? [] : null,
             // Per-role staging frame, captured ONCE here from the bound actors'
             // live positions and the anchor's facing/scale, then never rewritten
             // for the life of the handle. Capturing at play() rather than on
@@ -263,24 +265,42 @@ export default class MoveRuntime {
         const w = windowWeight(carry, handle.time);
         const carrier = handle.bindings[carry.on], man = handle.bindings[carry.role];
         if (!(w > 0) || !carrier?.skeleton?.jointAttachmentPoints?.neck || !man?.skeleton?.jointAttachmentPoints?.nearHip || typeof man.draw !== 'function') return;
-        const state = ((handle._carry ??= [])[index] ??= {
-            anchor: toFrame(torsoFrame(carrier.skeleton.jointAttachmentPoints, carrier.facing), pelvisOf(man.skeleton.jointAttachmentPoints)),
-        });
         const pelvis = () => pelvisOf(man.skeleton.jointAttachmentPoints);
-        const want = carryTarget({ carrierPts: carrier.skeleton.jointAttachmentPoints, carrierFacing: carrier.facing, anchor: state.anchor, natural: pelvis(), naturalTilt: man.pose.tilt ?? 0, ratio: carry.tilt, w });
+        let want, contact = null, point = pelvis;
+        if (carry.frame === 'thigh') {
+            // T4c.4j: he sits on the carrier's raised thigh. The target is the top of that thigh's knee end; his SEAT (Skeleton.seatWorld) is the point that goes there, his tilt left
+            // to his own keys. `leg` is the carrier's clip channel ('l' | 'r'); which limb draws it is the rig's (lChannelSide).
+            const cp = carrier.skeleton.jointAttachmentPoints, sk = carrier.skeleton;
+            const side = (sk.lChannelSide(carrier.facing) === 'near') === (carry.leg === 'l') ? 'near' : 'far';
+            if (!cp[`${side}Hip`] || !cp[`${side}Knee`] || !man.skeleton.seatWorld?.()) return;
+            contact = thighTop(cp[`${side}Hip`], cp[`${side}Knee`]);
+            const seat0 = man.skeleton.seatWorld();
+            point = () => man.skeleton.seatWorld();
+            want = { x: seat0.x + (contact.x - seat0.x) * w, y: seat0.y + (contact.y - seat0.y) * w, tilt: man.pose.tilt ?? 0 };
+        } else {
+            const state = ((handle._carry ??= [])[index] ??= {
+                anchor: toFrame(torsoFrame(carrier.skeleton.jointAttachmentPoints, carrier.facing), pelvisOf(man.skeleton.jointAttachmentPoints)),
+            });
+            want = carryTarget({ carrierPts: carrier.skeleton.jointAttachmentPoints, carrierFacing: carrier.facing, anchor: state.anchor, natural: pelvis(), naturalTilt: man.pose.tilt ?? 0, ratio: carry.tilt, w });
+        }
         man.pose.tilt = want.tilt;
         man.draw();
-        man.x += want.x - pelvis().x;
-        const lift0 = man.pose.lift ?? 0;
-        man.pose.lift = lift0;
+        man.x += want.x - point().x;
         man.draw();
-        const p = pelvis();
-        man.pose.lift = lift0 + 10;
-        man.draw();
-        const unit = (p.y - pelvis().y) / 10;
-        man.pose.lift = Math.abs(unit) > 1e-6 ? lift0 + (p.y - want.y) / unit : lift0;
-        man.draw();
-        handle.carryLog?.push({ time: handle.time, index, w, lift: man.pose.lift, x: man.x, tilt: man.pose.tilt });
+        // The pose `lift` is not linear in the drawn height (the rig blends its hip toward the canonical height as the lift grows), so the correction is re-measured: a few
+        // passes of "move it by the height a 10-unit lift buys", stopping when the point is on the target.
+        for (let pass = 0; pass < 6; pass++) {
+            const p = point(), err = p.y - want.y;
+            if (pass > 0 && Math.abs(err) < 0.3) break;
+            const lift0 = man.pose.lift ?? 0;
+            man.pose.lift = lift0 + 10;
+            man.draw();
+            const unit = (p.y - point().y) / 10;
+            man.pose.lift = Math.abs(unit) > 1e-6 ? lift0 + err / unit : lift0;
+            man.draw();
+        }
+        const seat = contact ? man.skeleton.seatWorld() : null;
+        handle.carryLog?.push({ time: handle.time, index, w, lift: man.pose.lift, x: man.x, tilt: man.pose.tilt, ...(contact && seat ? { gap: Math.hypot(seat.x - contact.x, seat.y - contact.y), seat, contact } : {}) });
     }
 
     _apply(handle) {

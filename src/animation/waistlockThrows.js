@@ -8,9 +8,9 @@ import { WAISTLOCK } from './waistlock.js';
 export const ATOMIC = Object.freeze({
     lift: 0.42,                         // (a) the attacker sits into the squat and stands with the man locked to his chest, back leaning, legs kicking up
     hitch: 0.06,                        // the small stall at the top before the drop (T4c.4f)
-    drop: 0.12,                         // (b) he comes down seated on the raised knee
-    impact: 0.60,                       // lift + hitch + drop
-    sell: 0.50,                         // (c) pops forward off the knee, hands to his backside, stumbles on his feet
+    drop: 0.07,                         // (b) he comes down seated on the raised knee (T4c.4j: was 0.12; first contact, seat-to-knee gap under 3 px, measured at 0.55 s)
+    impact: 0.55,                       // lift + hitch + drop (was 0.60): the first contact, which is also the damage marker
+    sell: 0.55,                         // (c) pops forward off the knee, hands to his backside, stumbles on his feet
     duration: 1.10,                     // impact + sell
     reverseWindow: 0.20,                // A3: the defender's reversal counts from the lift's start until this far in
     damageKey: 'atomicDrop',            // STAMINA_DRAIN key, 12

@@ -1133,6 +1133,15 @@ export default class Skeleton {
         return { x: p.x, y: p.y };
     }
 
+    // The seat: the lowest point of the torso art at the hip line (this rig has no painted seat or tailbone anchor), the bottom edge of the torso image at its centre, read
+    // through the torso's live transform so a turned or tilted body carries it. A man sitting on something rests here (MoveRuntime._carry, frame 'thigh').
+    seatWorld() {
+        const img = this.torso;
+        if (!img || typeof img.getWorldTransformMatrix !== 'function') return null;
+        const p = img.getWorldTransformMatrix().transformPoint((0.5 - img.originX) * img.width, ((img.flipY ? 0 : 1) - img.originY) * img.height);
+        return { x: p.x, y: p.y };
+    }
+
     // Inverse of _socketPoint: solves the torso's own render origin (the
     // px,py normally handed to _placePart) so that the torso's measured
     // near/far-hip socket MIDPOINT lands exactly on `pelvisX, pelvisY` — the

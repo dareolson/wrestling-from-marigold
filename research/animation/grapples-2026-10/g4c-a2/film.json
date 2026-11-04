@@ -1,0 +1,660 @@
+{
+ "tool": "tools/debug/grapples_g4c_a.mjs",
+ "commit": "89177ad",
+ "runs": [
+  {
+   "id": "drop-lou-george-l",
+   "kind": "drop",
+   "facing": -1,
+   "frames": 143,
+   "clipStart": 80,
+   "stepFirst": 36.4,
+   "stepTieUpWorst": 32.6,
+   "stepHold": 0,
+   "stepClipMax": 45.1,
+   "stepAfter": 72.3,
+   "mask": {
+    "lift": {
+     "belowBody": 434,
+     "torso": 0,
+     "total": 658,
+     "n": 17,
+     "overTorso": 0
+    },
+    "drop": {
+     "belowBody": 581,
+     "torso": 0,
+     "total": 915,
+     "n": 8,
+     "overTorso": 0
+    },
+    "sell": {
+     "belowBody": 750,
+     "torso": 0,
+     "total": 1646,
+     "n": 30,
+     "overTorso": 0
+    }
+   },
+   "maskFrames": {},
+   "ankle": {
+    "att.near.lift": 5.15,
+    "att.far.lift": 4.22,
+    "def.near.lift": 13.05,
+    "def.far.lift": 13.75,
+    "att.near.drop": 14.55,
+    "att.far.drop": 11.16,
+    "def.near.drop": 10.82,
+    "def.far.drop": 8.73,
+    "att.near.sell": 4.73,
+    "att.far.sell": 2.47,
+    "def.near.sell": 29.35,
+    "def.far.sell": 29.43
+   },
+   "pelvisToKnee": 12.8,
+   "impactFrame": 105,
+   "liftTop": {
+    "frame": 97,
+    "pelvisOverAttackerPelvis": 58.3,
+    "attackerChestOverPelvis": 58.4
+   },
+   "handsToHip": 0,
+   "endStates": [
+    "standing",
+    "standing"
+   ]
+  },
+  {
+   "id": "drop-lou-george-r",
+   "kind": "drop",
+   "facing": 1,
+   "frames": 143,
+   "clipStart": 80,
+   "stepFirst": 36.4,
+   "stepTieUpWorst": 32.8,
+   "stepHold": 0,
+   "stepClipMax": 45.1,
+   "stepAfter": 72.3,
+   "mask": {
+    "lift": {
+     "belowBody": 432,
+     "torso": 0,
+     "total": 661,
+     "n": 17,
+     "overTorso": 0
+    },
+    "drop": {
+     "belowBody": 587,
+     "torso": 0,
+     "total": 916,
+     "n": 8,
+     "overTorso": 0
+    },
+    "sell": {
+     "belowBody": 758,
+     "torso": 0,
+     "total": 1657,
+     "n": 30,
+     "overTorso": 0
+    }
+   },
+   "maskFrames": {},
+   "ankle": {
+    "att.near.lift": 5.15,
+    "att.far.lift": 4.22,
+    "def.near.lift": 13.06,
+    "def.far.lift": 13.75,
+    "att.near.drop": 14.54,
+    "att.far.drop": 11.16,
+    "def.near.drop": 10.81,
+    "def.far.drop": 8.74,
+    "att.near.sell": 4.73,
+    "att.far.sell": 2.47,
+    "def.near.sell": 29.34,
+    "def.far.sell": 29.43
+   },
+   "pelvisToKnee": 12.8,
+   "impactFrame": 105,
+   "liftTop": {
+    "frame": 97,
+    "pelvisOverAttackerPelvis": 58.3,
+    "attackerChestOverPelvis": 58.4
+   },
+   "handsToHip": 0,
+   "endStates": [
+    "standing",
+    "standing"
+   ]
+  },
+  {
+   "id": "snapmare-lou-george-l",
+   "kind": "snapmare",
+   "facing": -1,
+   "frames": 171,
+   "clipStart": 86,
+   "stepFirst": 15.6,
+   "stepTieUpWorst": 32.8,
+   "stepHold": 36.4,
+   "stepClipMax": 74.8,
+   "stepAfter": 6.6,
+   "mask": {
+    "reach": {
+     "belowBody": 463,
+     "torso": 79,
+     "total": 1725,
+     "n": 8,
+     "overTorso": 4
+    },
+    "pull": {
+     "belowBody": 1238,
+     "torso": 72,
+     "total": 2302,
+     "n": 12,
+     "overTorso": 4
+    },
+    "flip": {
+     "belowBody": 1515,
+     "torso": 81,
+     "total": 2624,
+     "n": 28,
+     "overTorso": 2
+    },
+    "landing": {
+     "belowBody": 281,
+     "torso": 0,
+     "total": 281,
+     "n": 29,
+     "overTorso": 0
+    }
+   },
+   "maskFrames": {},
+   "ankle": {
+    "att.near.reach": 4.75,
+    "att.far.reach": 5.17,
+    "def.near.reach": 11.01,
+    "def.far.reach": 11.46,
+    "att.near.pull": 4.86,
+    "att.far.pull": 4.54,
+    "def.near.pull": 8.38,
+    "def.far.pull": 4.69,
+    "att.near.flip": 45.86,
+    "att.far.flip": 46.45,
+    "def.near.flip": 0.67,
+    "def.far.flip": 0.76,
+    "att.near.landing": 14.68,
+    "att.far.landing": 14.87,
+    "def.near.landing": 5.04,
+    "def.far.landing": 3.54
+   },
+   "headGripFrames": 13,
+   "handsToHead": 0,
+   "handsToHeadReach": 91.5,
+   "landFrame": 134,
+   "flipTiltMax": 4.71,
+   "landTilt": 4.71,
+   "landX": 671,
+   "ringBounds": [
+    81,
+    879
+   ],
+   "landMargin": 208,
+   "throwerX": 491,
+   "landDistance": 181,
+   "endStates": [
+    "down",
+    "standing"
+   ],
+   "flip": {
+    "tiltEnd": 4.66,
+    "radPerFrameMax": 0.19,
+    "degrees": 267
+   },
+   "throwerArmsWristToPelvis": {
+    "landing": 72.6,
+    "plus100ms": 54.8,
+    "plus200ms": 39.2,
+    "plus300ms": 39.3
+   },
+   "bootToHeadMin": {
+    "px": 41.5,
+    "frame": 134,
+    "atLanding": 41.5
+   },
+   "flipOverlapFrames": [
+    {
+     "i": 106,
+     "t": 0.35,
+     "torso": 81,
+     "belowBody": 1473,
+     "total": 2624
+    },
+    {
+     "i": 107,
+     "t": 0.3667,
+     "torso": 3,
+     "belowBody": 1515,
+     "total": 2254
+    },
+    {
+     "i": 108,
+     "t": 0.3833,
+     "torso": 0,
+     "belowBody": 1329,
+     "total": 2067
+    },
+    {
+     "i": 109,
+     "t": 0.4,
+     "torso": 0,
+     "belowBody": 1302,
+     "total": 2051
+    },
+    {
+     "i": 110,
+     "t": 0.4167,
+     "torso": 0,
+     "belowBody": 1207,
+     "total": 1892
+    },
+    {
+     "i": 111,
+     "t": 0.4333,
+     "torso": 0,
+     "belowBody": 1373,
+     "total": 2011
+    },
+    {
+     "i": 112,
+     "t": 0.45,
+     "torso": 0,
+     "belowBody": 1372,
+     "total": 2047
+    },
+    {
+     "i": 113,
+     "t": 0.4667,
+     "torso": 0,
+     "belowBody": 1270,
+     "total": 1837
+    },
+    {
+     "i": 114,
+     "t": 0.4833,
+     "torso": 0,
+     "belowBody": 1122,
+     "total": 1470
+    },
+    {
+     "i": 115,
+     "t": 0.5,
+     "torso": 0,
+     "belowBody": 988,
+     "total": 1294
+    },
+    {
+     "i": 116,
+     "t": 0.5167,
+     "torso": 0,
+     "belowBody": 892,
+     "total": 1129
+    },
+    {
+     "i": 117,
+     "t": 0.5333,
+     "torso": 0,
+     "belowBody": 908,
+     "total": 1130
+    },
+    {
+     "i": 118,
+     "t": 0.55,
+     "torso": 0,
+     "belowBody": 897,
+     "total": 1063
+    },
+    {
+     "i": 119,
+     "t": 0.5667,
+     "torso": 0,
+     "belowBody": 809,
+     "total": 959
+    },
+    {
+     "i": 120,
+     "t": 0.5833,
+     "torso": 0,
+     "belowBody": 512,
+     "total": 633
+    },
+    {
+     "i": 121,
+     "t": 0.6,
+     "torso": 0,
+     "belowBody": 180,
+     "total": 325
+    },
+    {
+     "i": 122,
+     "t": 0.6167,
+     "torso": 0,
+     "belowBody": 30,
+     "total": 142
+    },
+    {
+     "i": 123,
+     "t": 0.6333,
+     "torso": 0,
+     "belowBody": 3,
+     "total": 125
+    },
+    {
+     "i": 124,
+     "t": 0.65,
+     "torso": 0,
+     "belowBody": 2,
+     "total": 111
+    },
+    {
+     "i": 125,
+     "t": 0.6667,
+     "torso": 0,
+     "belowBody": 15,
+     "total": 118
+    },
+    {
+     "i": 126,
+     "t": 0.6833,
+     "torso": 0,
+     "belowBody": 13,
+     "total": 95
+    },
+    {
+     "i": 127,
+     "t": 0.7,
+     "torso": 0,
+     "belowBody": 4,
+     "total": 120
+    },
+    {
+     "i": 132,
+     "t": 0.7833,
+     "torso": 0,
+     "belowBody": 2,
+     "total": 152
+    },
+    {
+     "i": 133,
+     "t": 0.8,
+     "torso": 0,
+     "belowBody": 213,
+     "total": 232
+    }
+   ]
+  },
+  {
+   "id": "snapmare-lou-george-r",
+   "kind": "snapmare",
+   "facing": 1,
+   "frames": 171,
+   "clipStart": 86,
+   "stepFirst": 15.6,
+   "stepTieUpWorst": 32.7,
+   "stepHold": 36.4,
+   "stepClipMax": 74.8,
+   "stepAfter": 6.6,
+   "mask": {
+    "reach": {
+     "belowBody": 463,
+     "torso": 89,
+     "total": 1738,
+     "n": 8,
+     "overTorso": 4
+    },
+    "pull": {
+     "belowBody": 1248,
+     "torso": 75,
+     "total": 2314,
+     "n": 12,
+     "overTorso": 5
+    },
+    "flip": {
+     "belowBody": 1519,
+     "torso": 81,
+     "total": 2624,
+     "n": 28,
+     "overTorso": 2
+    },
+    "landing": {
+     "belowBody": 282,
+     "torso": 0,
+     "total": 282,
+     "n": 29,
+     "overTorso": 0
+    }
+   },
+   "maskFrames": {},
+   "ankle": {
+    "att.near.reach": 4.75,
+    "att.far.reach": 5.17,
+    "def.near.reach": 11.01,
+    "def.far.reach": 11.46,
+    "att.near.pull": 4.86,
+    "att.far.pull": 4.54,
+    "def.near.pull": 8.38,
+    "def.far.pull": 4.69,
+    "att.near.flip": 45.86,
+    "att.far.flip": 46.45,
+    "def.near.flip": 0.67,
+    "def.far.flip": 0.76,
+    "att.near.landing": 14.68,
+    "att.far.landing": 14.87,
+    "def.near.landing": 5.04,
+    "def.far.landing": 3.54
+   },
+   "headGripFrames": 13,
+   "handsToHead": 0,
+   "handsToHeadReach": 91.5,
+   "landFrame": 134,
+   "flipTiltMax": 4.71,
+   "landTilt": 4.71,
+   "landX": 369,
+   "ringBounds": [
+    81,
+    879
+   ],
+   "landMargin": 288,
+   "throwerX": 550,
+   "landDistance": 181,
+   "endStates": [
+    "down",
+    "standing"
+   ],
+   "flip": {
+    "tiltEnd": 4.66,
+    "radPerFrameMax": 0.19,
+    "degrees": 267
+   },
+   "throwerArmsWristToPelvis": {
+    "landing": 72.6,
+    "plus100ms": 54.8,
+    "plus200ms": 39.2,
+    "plus300ms": 39.3
+   },
+   "bootToHeadMin": {
+    "px": 41.5,
+    "frame": 134,
+    "atLanding": 41.5
+   },
+   "flipOverlapFrames": [
+    {
+     "i": 106,
+     "t": 0.35,
+     "torso": 81,
+     "belowBody": 1470,
+     "total": 2624
+    },
+    {
+     "i": 107,
+     "t": 0.3667,
+     "torso": 4,
+     "belowBody": 1519,
+     "total": 2251
+    },
+    {
+     "i": 108,
+     "t": 0.3833,
+     "torso": 0,
+     "belowBody": 1341,
+     "total": 2077
+    },
+    {
+     "i": 109,
+     "t": 0.4,
+     "torso": 0,
+     "belowBody": 1307,
+     "total": 2052
+    },
+    {
+     "i": 110,
+     "t": 0.4167,
+     "torso": 0,
+     "belowBody": 1204,
+     "total": 1890
+    },
+    {
+     "i": 111,
+     "t": 0.4333,
+     "torso": 0,
+     "belowBody": 1391,
+     "total": 2026
+    },
+    {
+     "i": 112,
+     "t": 0.45,
+     "torso": 0,
+     "belowBody": 1374,
+     "total": 2043
+    },
+    {
+     "i": 113,
+     "t": 0.4667,
+     "torso": 0,
+     "belowBody": 1267,
+     "total": 1835
+    },
+    {
+     "i": 114,
+     "t": 0.4833,
+     "torso": 0,
+     "belowBody": 1123,
+     "total": 1470
+    },
+    {
+     "i": 115,
+     "t": 0.5,
+     "torso": 0,
+     "belowBody": 983,
+     "total": 1288
+    },
+    {
+     "i": 116,
+     "t": 0.5167,
+     "torso": 0,
+     "belowBody": 893,
+     "total": 1131
+    },
+    {
+     "i": 117,
+     "t": 0.5333,
+     "torso": 0,
+     "belowBody": 905,
+     "total": 1133
+    },
+    {
+     "i": 118,
+     "t": 0.55,
+     "torso": 0,
+     "belowBody": 890,
+     "total": 1061
+    },
+    {
+     "i": 119,
+     "t": 0.5667,
+     "torso": 0,
+     "belowBody": 816,
+     "total": 965
+    },
+    {
+     "i": 120,
+     "t": 0.5833,
+     "torso": 0,
+     "belowBody": 512,
+     "total": 634
+    },
+    {
+     "i": 121,
+     "t": 0.6,
+     "torso": 0,
+     "belowBody": 184,
+     "total": 328
+    },
+    {
+     "i": 122,
+     "t": 0.6167,
+     "torso": 0,
+     "belowBody": 34,
+     "total": 144
+    },
+    {
+     "i": 123,
+     "t": 0.6333,
+     "torso": 0,
+     "belowBody": 5,
+     "total": 128
+    },
+    {
+     "i": 124,
+     "t": 0.65,
+     "torso": 0,
+     "belowBody": 3,
+     "total": 113
+    },
+    {
+     "i": 125,
+     "t": 0.6667,
+     "torso": 0,
+     "belowBody": 12,
+     "total": 124
+    },
+    {
+     "i": 126,
+     "t": 0.6833,
+     "torso": 0,
+     "belowBody": 10,
+     "total": 91
+    },
+    {
+     "i": 127,
+     "t": 0.7,
+     "torso": 0,
+     "belowBody": 2,
+     "total": 117
+    },
+    {
+     "i": 132,
+     "t": 0.7833,
+     "torso": 0,
+     "belowBody": 2,
+     "total": 155
+    },
+    {
+     "i": 133,
+     "t": 0.8,
+     "torso": 0,
+     "belowBody": 212,
+     "total": 232
+    }
+   ]
+  }
+ ]
+}

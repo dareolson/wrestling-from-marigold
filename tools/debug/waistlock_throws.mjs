@@ -74,7 +74,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
                 const rows = await film(page, info, { facing, case: cs, denied: cs === 'denied', rev: Number(process.env.WT_REV ?? (cs === 'late' ? 20 : 6)), mask: true }, shots === '1' ? join(outRoot, 'frames', id) : null);
                 for (const x of rows) if (x.mask) delete x.mask.image;
                 results.push({ id, case: cs, pair: pair.id, facing, rows: rows.length });
-                writeFileSync(join(mkdirSync(outRoot, { recursive: true }) ?? outRoot, `rows-${id}.json`), JSON.stringify(rows));
+                mkdirSync(outRoot, { recursive: true });
+                writeFileSync(join(outRoot, `rows-${id}.json`), JSON.stringify(rows));
                 console.log(`[throws] ${id}: ${rows.length} frames`);
             }
         } finally { await h.close(); }

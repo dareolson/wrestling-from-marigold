@@ -239,6 +239,30 @@ test('T4a endings: a stall is always a rope break, a shove is seeded at about on
     assert.equal(breakKind(5, false), breakKind(5, false));
 });
 
+test('exit blend preserves the displayed shin when a throw takes knee ownership', () => {
+    for (const facing of [-1, 1]) {
+        const held = { pose: { lLeg: -.2, lShin: -.4, crouch: .3 }, x: 0, y: 0, facing };
+        const now = { pose: { lLeg: .1, lKnee: .6, crouch: .2 }, x: 0, y: 0, facing };
+        for (const u of [0, .01, .5, .99, 1]) {
+            const p = exitBlendPose(held, now, u).pose;
+            assert.equal(p.lKnee, undefined, 'draw bridge has one knee owner, never a local override hiding the shin');
+            const k = u*u*(3-2*u), target = .1 + .85*.2 + .6;
+            assert.ok(Math.abs(p.lShin - (-.4 + (target+.4)*k)) < 1e-10);
+        }
+        assert.equal(now.pose.lKnee, .6, 'the live throw keeps its own joint ownership');
+    }
+});
+
+test('exit blend bridges back to a legacy shin without retaining a competing knee', () => {
+    const held = { pose: { rLeg: .2, rKnee: 8, crouch: .1 }, x: 0, y: 0 };
+    const now = { pose: { rLeg: -.1, rShin: -.3, crouch: .2 }, x: 0, y: 0 };
+    const start = exitBlendPose(held, now, 0).pose;
+    assert.equal(start.rKnee, undefined);
+    assert.ok(Math.abs(start.rShin - (.2+.085+2.55)) < 1e-10, 'matches the held renderer-clamped knee');
+    assert.equal(exitBlendPose(held, now, 1).pose.rShin, -.3);
+    assert.equal(held.pose.rKnee, 8, 'draw bridge leaves its input untouched');
+});
+
 test('T4a poses: the rope break raises the attacker\'s hands, the shove pushes the defender back, the plain break is unchanged', () => {
     const w = { even: 0, attacker: 1, defender: 0 };
     const rope = lockupPoseChannels(w, 'near', { ending: { kind: 'rope', role: 'attacker', u: 1 } });

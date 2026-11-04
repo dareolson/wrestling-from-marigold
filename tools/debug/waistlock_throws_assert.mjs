@@ -33,7 +33,7 @@ for (const [label, att, def] of PAIRS) {
             check(`${tag}: the defender is down 12 stamina at the knee (before it regenerates)`, Math.abs(100 - low - 12) < 0.5, low);
             // reversal inside the lift
             rows = await film(page, info, { facing, case: 'reverse', rev: 6 });
-            const e2 = last(rows), landed = rows.find(r => r.t.clip === 'snapmare' && r.t.time >= SNAPMARE.land - 0.01);
+            const e2 = last(rows), landed = rows.find(r => r.t.clip === 'snapmare' && r.t.time >= SNAPMARE.land);
             check(`${tag}: a press 0.1 s into the lift reverses it into the snapmare, once`, JSON.stringify(clipsOf(rows)) === '["atomicDrop","snapmare"]' && types(rows).includes('snapmare') && !types(rows).includes('orphanRescue'), { clips: clipsOf(rows), types: types(rows) });
             check(`${tag}: the thrown man (the old attacker) ends down on his back, the thrower stands, nobody tilted`, e2.t.states[0] === 'down' && e2.t.lying[0] === 'supine' && e2.t.states[1] === 'standing' && e2.t.tilt.every(v => v === 0), { s: e2.t.states, l: e2.t.lying, t: e2.t.tilt });
             const low2 = Math.min(...rows.map(r => r.t.stamina[0]));

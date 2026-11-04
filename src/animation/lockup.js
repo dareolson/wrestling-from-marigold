@@ -3,6 +3,8 @@
 // frame; lockupGrips() says where each hand goes (Wrestler.holdGrips does the IK). All times in seconds, all lengths in
 // px at s = 1 (the caller multiplies by the wrestler's perspective scale `s`).
 
+import { clampLocalFlex } from '../rig/articulation.js';
+
 export const LOCKUP = Object.freeze({
     timeout: 1.4,                       // D2: was 0.8 s
     engageEnd: 0.30,
@@ -300,6 +302,21 @@ export function exitBlendPose(held, now, u) {
         // D13: the move has no absolute shin; its shin is the crouch path's, leg minus .75 crouch, which is what the drawn blend lands on
         const away = key === 'lShin' || key === 'rShin' ? (now.pose[`${key[0]}Leg`] ?? 0) - 0.75 * (now.pose.crouch ?? 0) : 0;
         pose[key] = typeof b === 'number' ? a + (b - a) * k : a * (1 - k) + away * k;
+    }
+    // Bridge a change of knee representation in rendered angle space. A local
+    // knee otherwise wins immediately over the interpolated legacy shin, and
+    // converting the held shin to local flex clamps away its natural bend.
+    // Keep this temporary absolute owner only in the returned draw pose.
+    for (const side of ['l', 'r']) {
+        const shin = side + 'Shin', knee = side + 'Knee';
+        const legacyToLocal = Number.isFinite(held.pose[shin]) && !Number.isFinite(held.pose[knee]) && Number.isFinite(now.pose[knee]);
+        const localToLegacy = Number.isFinite(held.pose[knee]) && Number.isFinite(now.pose[shin]) && !Number.isFinite(now.pose[knee]);
+        if (!legacyToLocal && !localToLegacy) continue;
+        const angle = p => Number.isFinite(p[knee])
+            ? (p[side + 'Leg'] ?? 0) + .85 * (p.crouch ?? 0) + clampLocalFlex(p[knee], 'knee')
+            : p[shin];
+        pose[shin] = angle(held.pose) * (1-k) + angle(now.pose) * k;
+        delete pose[knee];
     }
     return { pose, x: held.x + (now.x - held.x) * k, y: held.y + (now.y - held.y) * k };
 }

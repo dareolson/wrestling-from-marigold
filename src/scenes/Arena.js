@@ -3502,10 +3502,12 @@ export default class Arena extends Phaser.Scene {
         w1.draw();
         w2.draw();
         this.moveRuntime.afterDraw?.();
-        undoBlend?.();
         if (this.lockupState?.grapple && grapplesCandidate()) this._holdLockupGrips();
         if (this.waistlockState) this._holdWaistlockGrips();
         if (this.dropState?.kind === 'snap') this._holdSnapmareGrips();
+        // Grip solving may redraw the entire rig. Keep the temporary lead-in
+        // pose installed until every post-draw grip has used it.
+        undoBlend?.();
         this._updateRopes(dt);
         this._drawStaminaBars();
         this._updateHeat(dt);

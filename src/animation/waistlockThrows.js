@@ -14,6 +14,7 @@ export const ATOMIC = Object.freeze({
     reverseWindow: 0.20,                // A3: the defender's reversal counts from the lift's start until this far in
     damageKey: 'atomicDrop',            // STAMINA_DRAIN key, 12
     sellSpec: Object.freeze({ part: 'back', intensity: 0.7 }),
+    liftPeak: 80,                     // px the defender's pelvis rises over standing at the top of the lift (G4c-a: was 55, Derek wanted him higher)
     stumbleFwd: 36,                     // px the defender is carried forward off the knee, along the facing
 });
 
@@ -22,11 +23,11 @@ export const ATOMIC = Object.freeze({
 export const SNAPMARE = Object.freeze({
     reach: 0.15,                        // (a) feet down, both hands back to the head
     pull: 0.20,                         // (b) down to the near knee, the head pulled over the near shoulder
-    flip: 0.46,                         // (c) one full forward turn plus the landing angle, path above the shoulder line
+    flip: 0.46,                         // (c) one forward turn to the landing angle (270 degrees, flat on his back), path above the shoulder line
     land: 0.15 + 0.20 + 0.46,           // the impact frame
     duration: 1.30,                     // the landing, then the thrower's rise from the knee
-    turns: 1,                           // whole forward turns before the landing angle
-    landFwd: 185,                       // px in front of the thrower (along the facing) that the thrown man lands
+    turns: 0,                           // whole forward turns before the landing angle (G4c-a: Derek wants one flip, not two)
+    landFwd: 215,                      // px in front of the thrower (along the facing) that the thrown man lands
     damageKey: 'snapmare',              // STAMINA_DRAIN key, 16
     sellSpec: Object.freeze({ part: 'back', intensity: 1.0 }),
 });

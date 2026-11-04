@@ -1,6 +1,6 @@
 // The snapmare reversal of the atomic drop (PLAN_GRAPPLES Stage 4c A4/A5), hand-posed for ?waistlock=v1. Roles are swapped from the drop: the
 // `attacker` track is the man who was lifted (he lands on his feet, reaches back for the head and pulls), the `defender` track the man who
-// held him (he is thrown over the first man's shoulder, one forward turn plus the landing angle, and lands flat on his back in front). Both
+// held him (he is thrown over the first man's shoulder, one forward turn to the landing angle, and lands flat on his back in front). Both
 // face the same way throughout. Tableau: rig units from the thrower's place at play(), x along the shared facing, y world down; the thrown
 // man enters behind him (x < 0) and `upstage` away from the camera. Beats on waistlockThrows.js SNAPMARE: reach to 0.15, pull to 0.35, flip to
 // 0.81 (`impact`: his back meets the mat), then the thrower rises from the knee.
@@ -11,6 +11,7 @@ const U = WAISTLOCK.upstage;
 const R = SNAPMARE.reach, P = R + SNAPMARE.pull, I = SNAPMARE.land, D = SNAPMARE.duration;
 const GAP = 62;                       // the thrown man's entry gap behind the thrower: where the lift left the pair, 0.1-0.2 s in
 const LAND_ANGLE = 1.5 * Math.PI;     // forward turns end here: flat on his back, head toward the thrower (tilt is clockwise for a man facing right)
+const PULL_TILT = 0.4;                // the thrown man's tilt at the pull's end; the flip carries on from it, so with no whole turn it still never runs back
 const PEAK = 110, HIP_DROP = 100;     // the thrown man's hips peak this far above standing and finish this far below (on the mat)
 
 const kf = (at, ease, pose, x = 0, y = 0) => ({ at, ease, pose, transform: { x, y }, parts: {} });
@@ -24,7 +25,7 @@ for (let t = P + FLIP_STEP; t < I - 1e-9; t += FLIP_STEP) {
     flipFrames.push(kf(t, 'linear', {
         lArm: lerp(1.6, 0.8, tuck), rArm: lerp(1.6, 0.8, tuck), lElbow: lerp(0.4, 1.2, tuck), rElbow: lerp(0.4, 1.2, tuck),
         lLeg: lerp(0.3, 1.2, tuck), rLeg: lerp(0.2, 1.1, tuck), lKnee: lerp(0.4, 1.6, tuck), rKnee: lerp(0.4, 1.5, tuck),
-        lean: 0, crouch: 0, tilt: flipTilt(u, LAND_ANGLE), lift: PEAK * 4 * u * (1 - u) - HIP_DROP * u ** 3, bend: lerp(0.2, 0.1, u),
+        lean: 0, crouch: 0, tilt: PULL_TILT + flipTilt(u, LAND_ANGLE - PULL_TILT), lift: PEAK * 4 * u * (1 - u) - HIP_DROP * u ** 3, bend: lerp(0.9, 0.1, u),
     }, lerp(-34, SNAPMARE.landFwd, u), lerp(-U, 0, u)));
 }
 const landed = { lArm: 0.4, rArm: 0.35, lElbow: 0.3, rElbow: 0.3, lLeg: 0.45, rLeg: 0.35, lKnee: 0.55, rKnee: 0.45, lean: 0, crouch: 0, tilt: flipTilt(1, LAND_ANGLE), lift: -HIP_DROP, bend: 0.06 };
@@ -40,6 +41,8 @@ export const snapmareClip = {
                 kf(R, 'easeOut', { lArm: 2.2, rArm: 2.2, lElbow: 0.5, rElbow: 0.5, lLeg: 0.15, rLeg: -0.05, lKnee: 0.25, rKnee: 0.25, lean: 0.05, crouch: 0.25, tilt: 0, lift: 0, bend: 0.20 }, 0, 0),
                 kf(P, 'easeInOut', { lArm: 1.6, rArm: 1.6, lElbow: 0.6, rElbow: 0.6, lLeg: 0.7, rLeg: -0.9, lKnee: 0.2, rKnee: 1.4, lean: 0.20, crouch: 0.60, tilt: 0, lift: 0, bend: 0.55 }, 12, 0),
                 kf(I, 'easeOut', { lArm: 0.9, rArm: 0.9, lElbow: 0.5, rElbow: 0.5, lLeg: 0.7, rLeg: -0.9, lKnee: 0.2, rKnee: 1.4, lean: 0.15, crouch: 0.60, tilt: 0, lift: 0, bend: 0.50 }, 14, 0),
+                // The head grip let go in the flip: the arms follow through and are at his sides by the time he rises (T4c.4b-4, 0.2 s).
+                kf(I + 0.20, 'easeInOut', { lArm: 0.10, rArm: 0.20, lElbow: 0.6, rElbow: 0.6, lLeg: 0.35, rLeg: -0.4, lKnee: 0.22, rKnee: 0.8, lean: 0.10, crouch: 0.30, tilt: 0, lift: 0, bend: 0.25 }, 14, 0),
                 kf(D, 'easeInOut', { lArm: 0.04, rArm: 0.17, lElbow: 0.7, rElbow: 0.7, lLeg: -0.04, rLeg: 0.16, lKnee: 0.22, rKnee: 0.22, lean: 0.05, crouch: 0.05, tilt: 0, lift: 0, bend: 0 }, 10, 0),
             ],
         },
@@ -48,7 +51,9 @@ export const snapmareClip = {
             keyframes: [
                 kf(0, 'linear', { lArm: 0.9, rArm: 0.9, lElbow: 0.5, rElbow: 0.5, lLeg: -0.05, rLeg: 0.10, lKnee: 0.1, rKnee: 0.1, lean: -0.05, crouch: 0.30, tilt: 0, lift: 0, bend: 0.50 }, -GAP, -U),
                 kf(R, 'easeOut', { lArm: 0.9, rArm: 0.9, lElbow: 0.5, rElbow: 0.5, lLeg: -0.15, rLeg: 0.05, lKnee: 0.1, rKnee: 0.1, lean: 0, crouch: 0.35, tilt: 0, lift: 0, bend: 0.75 }, -GAP, -U),
-                kf(P, 'easeIn', { lArm: 1.3, rArm: 1.3, lElbow: 0.4, rElbow: 0.4, lLeg: 0.1, rLeg: 0.2, lKnee: 0.3, rKnee: 0.3, lean: 0, crouch: 0.10, tilt: 0.4, lift: 6, bend: 0.40 }, -34, -U),
+                // Bring his head down with the kneeling thrower; arm IK alone
+                // cannot keep the far hand attached to a head left standing.
+                kf(P, 'easeIn', { lArm: 1.3, rArm: 1.3, lElbow: 0.4, rElbow: 0.4, lLeg: 0.1, rLeg: 0.2, lKnee: 0.3, rKnee: 0.3, lean: 0, crouch: 0.50, tilt: PULL_TILT, lift: 0, bend: 0.90 }, -34, -U),
                 ...flipFrames,
                 kf(I, 'linear', landed, SNAPMARE.landFwd, 0),
                 kf(D, 'easeOut', { ...landed, lArm: 0.05, rArm: 0.08, lElbow: 0.1, rElbow: 0.1, lLeg: 0.06, rLeg: 0.22, lKnee: 0.1, rKnee: 0.4, bend: 0 }, SNAPMARE.landFwd, 0),

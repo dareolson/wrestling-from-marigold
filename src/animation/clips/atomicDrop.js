@@ -8,6 +8,7 @@ import { ATOMIC } from '../waistlockThrows.js';
 const kf = (at, ease, pose, x = 0, y = 0) => ({ at, ease, pose, transform: { x, y }, parts: {} });
 const H = WAISTLOCK.holdBehind, U = WAISTLOCK.upstage;
 const L = ATOMIC.lift, I = ATOMIC.impact, D = ATOMIC.duration;
+const LIFT = ATOMIC.liftPeak;
 
 export const atomicDropClip = {
     id: 'atomicDrop',
@@ -26,7 +27,7 @@ export const atomicDropClip = {
         defender: {
             keyframes: [
                 kf(0, 'linear', { lArm: 0.15, rArm: 0.15, lElbow: 0.6, rElbow: 0.6, lLeg: -0.10, rLeg: 0.10, lKnee: 0.1, rKnee: 0.1, lean: 0, crouch: 0.12, tilt: 0, lift: 0, bend: 0.10 }, H, U),
-                kf(L, 'easeOut', { lArm: 0.7, rArm: 0.7, lElbow: 0.9, rElbow: 0.9, lLeg: 0.12, rLeg: 0.22, lKnee: 0.35, rKnee: 0.30, lean: -0.08, crouch: 0, tilt: 0, lift: 55, bend: -0.05 }, H, U),
+                kf(L, 'easeOut', { lArm: 0.7, rArm: 0.7, lElbow: 0.9, rElbow: 0.9, lLeg: 0.12, rLeg: 0.22, lKnee: 0.35, rKnee: 0.30, lean: -0.08, crouch: 0, tilt: 0, lift: LIFT, bend: -0.05 }, H, U),
                 kf(I, 'easeIn', { lArm: 0.3, rArm: 0.2, lElbow: 0.6, rElbow: 0.6, lLeg: 0.70, rLeg: 0.55, lKnee: 0.6, rKnee: 0.6, lean: 0, crouch: 0.20, tilt: 0, lift: 22, bend: 0.25 }, H - 5, U),
                 kf(I + 0.10, 'easeOut', { lArm: -0.9, rArm: -0.8, lElbow: 0.3, rElbow: 0.3, lLeg: 0.30, rLeg: 0.15, lKnee: 0.4, rKnee: 0.3, lean: 0.12, crouch: 0.18, tilt: 0, lift: 0, bend: 0.28 }, H + 12, U),
                 kf(I + 0.26, 'easeInOut', { lArm: -0.8, rArm: -0.7, lElbow: 0.3, rElbow: 0.3, lLeg: 0.20, rLeg: -0.08, lKnee: 0.3, rKnee: 0.2, lean: 0.10, crouch: 0.10, tilt: 0, lift: 0, bend: 0.22 }, H + 28, U),

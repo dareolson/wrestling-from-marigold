@@ -19,6 +19,7 @@ import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
 import { lockupGrips, lockupPhase, lockupPoseChannels, exitBlendPose, breakKind, breakTravel, legRel, LOCKUP } from '../animation/lockup.js';
+import { dropAvailable, reversalOpen } from '../animation/waistlockThrows.js';
 import { WAISTLOCK, atRopes, behindSpotFits, waistlockPhase, goBehindOffset, waistlockPoseChannels, waistlockGrips, waistlockLayerOrder, releaseTravel } from '../animation/waistlock.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS, ROSTER_PERSONALITIES } from '../characters/rosterKits.js';
@@ -3149,6 +3150,7 @@ export default class Arena extends Phaser.Scene {
         this.headlockState = null; // { attacker, defender, timer }
         this.lockupState   = null; // { attacker, defender, timer }
         this.waistlockState = null; // ?waistlock=v1 (Stage 4b W8): { attacker, defender, side, t, ... }
+        this.dropState = null;      // ?waistlock=v1 (Stage 4c): the atomic drop's clip in flight, { attacker, defender, handle }, while the reversal can still come
 
         // Crowd heat — 0–100, bumped by big moves, taunts, nearfalls. Cools
         // exponentially toward a floor that big spots ratchet upward, so a
@@ -3308,7 +3310,7 @@ export default class Arena extends Phaser.Scene {
             dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
             headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
             jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12, theszPress: 16,
-            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, figureFour: 14, hipToss: 6, armBar: 8, ankleLock: 8,
+            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, figureFour: 14, hipToss: 6, atomicDrop: 7, armBar: 8, ankleLock: 8,
         };
         const n = bumps[move];
         if (n) this.bumpHeat(n);
@@ -3486,6 +3488,7 @@ export default class Arena extends Phaser.Scene {
         if (this.sleeperState)  this._tickSleeper(dt);
         if (this.headlockState) this._tickHeadlock(dt);
         if (this.waistlockState) this._tickWaistlock(dt);
+        if (this.dropState) this._tickDrop(dt);
 
         this._orphanWatchdog(w1, w2, dt);
         this._orphanWatchdog(w2, w1, dt);
@@ -4019,6 +4022,8 @@ export default class Arena extends Phaser.Scene {
         if (!hold) return false;
         const letGo = (kind) => { ws.ending = kind; ws.holdEnd = ws.t; this._logEvent('waistlockEnd', { attacker: A === this.w1 ? 'p1' : 'p2', kind, switches: ws.switches }); };
         if (atRopes(D, ringBoundsAtY(D.y)) || atRopes(A, ringBoundsAtY(A.y))) { letGo('rope'); return false; }
+        // Stage 4c A1: the attacker's power in the hold lifts and drops him. The defender's power, inside the lift, is _tickDrop's.
+        if (dropAvailable(ws) && A.moveSet.includes('atomicDrop') && A.input.justDown('power')) { this._beginAtomicDrop(ws); return true; }
         if (D.input.justDown('action') && D.moveSet.includes('goBehind')) {
             if (!behindSpotFits(A, ws.dFacing, ringBoundsAtY(A.y))) { letGo('rope'); return false; }   // no room behind him: the ropes break it
             this._logEvent('waistlockSwitch', { attacker: D === this.w1 ? 'p1' : 'p2' });
@@ -4071,14 +4076,36 @@ export default class Arena extends Phaser.Scene {
         this._endWaistlock(WAISTLOCK.turnBeat);
     }
 
+    // Stage 4c A2: the hold hands both men to the atomic drop's clip. The draw blends from the hold's last frame (the Stage 3 lead-in), the
+    // absolute shins the hold set are dropped, and the facing lock goes with the state.
+    _beginAtomicDrop(ws) {
+        const A = ws.attacker, D = ws.defender, who = A === this.w1 ? 'p1' : 'p2';
+        const held = new Map([A, D].map(w => [w, { pose: { ...w.pose }, x: w.x, y: w.y, facing: w.facing }]));
+        this._endWaistlock(0, true);
+        for (const w of [A, D]) this._dropLockupShins(w);
+        A._doAtomicDrop(D);
+        this._exitBlend = { t: 0, held };
+        this.dropState = { attacker: A, defender: D, handle: A._activeMove };
+        this._logEvent('move', { attacker: who, move: 'atomicDrop', defenderStamina: Math.round(D.stamina) });
+        this._heatForMove('atomicDrop');
+    }
+
+    // One frame of the atomic drop's watch: gone when the clip is (finished, cancelled, or replaced).
+    _tickDrop(dt) {
+        const ds = this.dropState, A = ds.attacker;
+        if (!A._activeMove || A._activeMove !== ds.handle || !this.moveRuntime._active.has(ds.handle.id)) { this.dropState = null; return; }
+    }
+
     // Stage 4b T4b.2b: the one way out of the waistlock (the timeout's let-go, a match end, a man pulled out of the hold). Gives facing back to
     // move(), drops the state, and puts a man still in the hold back to standing; a man a move or a sell has taken over keeps his state.
     // `turnBeat` (the timeout's let-go only): the defender keeps his facing this many seconds while his pose comes home, then move() turns him round.
-    _endWaistlock(turnBeat = 0) {
+    // `toMove` (Stage 4c): a throw takes both men over, so nobody is put back to standing and the legs are not sent home.
+    _endWaistlock(turnBeat = 0, toMove = false) {
         const ws = this.waistlockState;
         if (!ws) return;
         this.waistlockState = null;
         for (const w of [ws.attacker, ws.defender]) {
+            if (toMove) { w._facingLock = false; continue; }
             w._facingLock = w === ws.defender && w.state === 'lockup' && turnBeat > 0 ? turnBeat : false;
             if (w.state === 'lockup') { w.state = 'standing'; this._lockupLegsHome(w, 220); }
         }
@@ -4104,6 +4131,7 @@ export default class Arena extends Phaser.Scene {
         // Kill any in-flight hold/pin state — a pin attempt sneaking in on the
         // final frame otherwise survives the banner and ticks into the next match
         this._endWaistlock();
+        this.dropState = null;
         for (const w of [this.w1, this.w2]) w._facingLock = false;   // a let-go turn beat must not outlive the match
         this.pinState = this.sleeperState = this.headlockState = this.lockupState = this._exitBlend = null;
         this.pinText.setAlpha(0);

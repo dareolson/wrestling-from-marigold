@@ -172,6 +172,15 @@ export const MOVE_SPECS = {
         trigger: 'Arena._tickLockup — power with up or down held (flag waistlock=v1); the defender\'s action reverses it (Arena._waistlockEndings)',
         ai: ['lockup'],
     },
+    // PLAN_GRAPPLES Stage 4c: the throws out of the waistlock. Opt-in (`?waistlock=v1`): the attacker's power in the hold, the defender's power
+    // inside the lift reverses it. Run by Arena._tickWaistlock / _tickDrop, not by a button of their own.
+    atomicDrop: {
+        category: C.THROW, clip: 'atomicDrop', executor: '_doAtomicDrop',
+        sell: { part: 'back', intensity: 0.7 },
+        damageKey: 'atomicDrop', poseSeq: false, legacyFallback: null, kitGated: true,
+        trigger: 'Arena._waistlockEndings — the attacker\'s power in the waistlock hold (flag waistlock=v1)',
+        ai: ['lockup'],
+    },
     backBodyDrop: {
         category: C.THROW, clip: null, executor: '_doBackBodyDrop',
         sell: { part: 'back', intensity: 0.8 },

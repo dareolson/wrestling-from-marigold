@@ -1,0 +1,76 @@
+// PLAN_GRAPPLES Stage 4c: the atomic drop and the snapmare reversal out of the waistlock, forced from a real tie-up, ?waistlock=v1, 1/60 s steps,
+// deterministic (loop asleep, seeded Math.random, fixed tween delta, AIs nulled, input scripted).
+//
+//   WFM_URL=http://localhost:5173 node tools/debug/waistlock_throws.mjs [outRoot] [pairs=lg,gl] [cases=drop,reverse] [shots=1]
+//
+// Per attacker (Lou on George = lg, George on Lou = gl) and facing: the attacker presses power with up held at frame 36 (the go-behind), then power
+// again in the hold (frame 80). Case `drop` = nobody answers; `reverse` = the defender presses power inside the lift (WT_REV frames in, default 6);
+// `late` = he presses after the window (WT_REV=20 gives the same with a late press). Writes <outRoot>/frames/<id>/sNNNN.jpg and <outRoot>/film.json.
+import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { launch } from './harness.mjs';
+import { INSTALL_MASKS } from './grapples_masks.mjs';
+import { INSTALL, SETUP } from './grapples_film.mjs';
+import { STEP as BASE_STEP } from './grapples_waistlock.mjs';
+
+const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
+const PAIRS = { lg: { id: 'lou-george', att: LOU, def: GEORGE }, gl: { id: 'george-lou', att: GEORGE, def: LOU } };
+export const PRESS_AT = 36, DROP_AT = 80, F = 60;
+
+// what the throws add to a base row (clip time, states, tilt/lift of both men), read in the page after the step
+const EXTRAS = () => {
+    const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
+    const h = a._activeMove ?? d._activeMove;
+    return {
+        t: { clip: h?.clip?.id ?? null, time: h ? +h.time.toFixed(4) : null, drop: !!sc.dropState, states: [a.state, d.state], tilt: [a.pose.tilt, d.pose.tilt], lift: [a.pose.lift, d.pose.lift], xy: [[a.x, a.y], [d.x, d.y]], facing: [a.facing, d.facing], lying: [a.lying, d.lying], blend: !!sc._exitBlend },
+        events: sc.matchEvents.splice(0).filter(e => ['move', 'atomicDrop', 'snapmare', 'snapmareDenied', 'orphanRescue', 'waistlockEnd'].includes(e.type)),
+    };
+};
+export const STEP = async (page, arg) => ({ ...(await page.evaluate(BASE_STEP, arg)), ...(await page.evaluate(EXTRAS)) });
+
+export async function film(page, info, spec, shotDir, { frames = 330, quiet = 40 } = {}) {
+    await page.evaluate(SETUP, { facing: spec.facing, midX: spec.midX ?? 520, startGap: 90, defRope: null, flag: true, layer: false, seed: 11 });
+    await page.evaluate((moves) => { const sc = window.__WFM_GAME.scene.scenes[0]; for (const w of [sc.w1, sc.w2]) for (const m of moves) if (!w.moveSet.includes(m)) w.moveSet.push(m); sc.matchEvents.length = 0; }, ['goBehind', 'atomicDrop', 'snapmare']);
+    const bx = info.box, mX = (x) => bx.x + x * bx.w / bx.gw, mY = (y) => bx.y + y * bx.h / bx.gh;
+    const mid = await page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; return (sc.w1.x + sc.w2.x) / 2; });
+    const clip = { width: 460, height: 360, x: Math.max(0, Math.round(mX(mid) - 230)), y: Math.round(mY(440) - 360) };
+    if (shotDir) { rmSync(shotDir, { recursive: true, force: true }); mkdirSync(shotDir, { recursive: true }); }
+    const rows = []; let calm = 0, started = false;
+    for (let i = 0; i < frames; i++) {
+        const press = { a: [], d: [] }, hold = { a: [], d: [] };
+        if (i === PRESS_AT) { press.a.push('power'); hold.a.push('up'); }
+        if (i === DROP_AT) press.a.push('power');
+        if (spec.case !== 'drop' && i === DROP_AT + (spec.rev ?? 6)) press.d.push('power');
+        const row = await STEP(page, { press, hold, mask: !!spec.mask });
+        row.i = i; rows.push(row);
+        if (shotDir) await page.screenshot({ path: join(shotDir, `s${String(i).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 82, clip });
+        if (row.t.clip) started = true;
+        if (started && !row.t.clip && row.t.states.every(s => s === 'standing' || s === 'down')) calm++; else calm = 0;
+        if (calm >= quiet) break;
+    }
+    return rows;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    const [outRoot = 'research/animation/grapples-2026-10/g4c-a', pairsArg = 'lg,gl', casesArg = 'drop,reverse', shots = '1'] = process.argv.slice(2);
+    const results = [];
+    for (const pair of pairsArg.split(',').map(k => PAIRS[k])) {
+        process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = 'notitle=1&grapples=v1&waistlock=v1';
+        const h = await launch();
+        try {
+            const page = h.page;
+            await page.waitForTimeout(2500);
+            const info = await page.evaluate(INSTALL);
+            await page.evaluate(INSTALL_MASKS);
+            for (const cs of casesArg.split(',')) for (const facing of [-1, 1]) {
+                const id = `${cs}-${pair.id}-${facing < 0 ? 'l' : 'r'}`;
+                const rows = await film(page, info, { facing, case: cs, rev: Number(process.env.WT_REV ?? (cs === 'late' ? 20 : 6)), mask: true }, shots === '1' ? join(outRoot, 'frames', id) : null);
+                for (const x of rows) if (x.mask) delete x.mask.image;
+                results.push({ id, case: cs, pair: pair.id, facing, rows: rows.length });
+                writeFileSync(join(mkdirSync(outRoot, { recursive: true }) ?? outRoot, `rows-${id}.json`), JSON.stringify(rows));
+                console.log(`[throws] ${id}: ${rows.length} frames`);
+            }
+        } finally { await h.close(); }
+    }
+    writeFileSync(join(outRoot, 'film.json'), JSON.stringify({ tool: 'tools/debug/waistlock_throws.mjs', runs: results }, null, 1));
+}

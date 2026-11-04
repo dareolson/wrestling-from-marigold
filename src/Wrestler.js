@@ -216,6 +216,7 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     armBar:            6, // per squeeze — three while the hold is on (the mat arm bar)
     ankleLock:         5, // per squeeze — three while the hold is on
     hipToss:          10,
+    atomicDrop:       12, // waistlock=v1 (Stage 4c): a middle-tier throw, he stays on his feet
     suplex:            20,
     divingElbow:       18,
     topDive:           28,
@@ -2672,14 +2673,17 @@ export default class Wrestler {
     // on his feet. Nobody is ever left tilted.
     // `foley` is the contact sound (CrowdAudio.impact); a throw hits the mat
     // by default, a submission's squeeze markers stay silent.
+    // `faceToFace` false (the waistlock's throws, Stage 4c): both men already face the same way, the attacker behind; nobody is turned.
+    // `superseded`: a function; true when a cancel is a hand-over to another clip (the snapmare), so the cancel path lays nobody down.
+    // `onAbort`: replaces the cancel path's lay-down (the atomic drop is not a knockdown: a torn-down drop stands both men up).
     _playPairedThrow(other, clipId, { damage, shake = [200, 0.003], finish, hitEvent = 'impact',
-        foley = hitEvent === 'impact' ? ['mat', 0.9] : null }) {
+        foley = hitEvent === 'impact' ? ['mat', 0.9] : null, faceToFace = true, superseded = null, onAbort = null }) {
         const runtime = this.scene.moveRuntime;
         if (!runtime) return;
 
         this.state       = 'holding';
         other.state      = 'holding';
-        other.facing     = -this.facing; // face to face for the grab
+        if (faceToFace) other.facing = -this.facing; // face to face for the grab
         // Exempt from _orphanWatchdog like the hammerlock: the release is the
         // clip's end, not an Arena-tracked hold.
         this._fixedHold  = true;
@@ -2691,6 +2695,8 @@ export default class Wrestler {
             this._fixedHold   = false;
             other._fixedHold  = false;
             if (finished) { finish(); return; }
+            if (superseded?.()) return;
+            if (onAbort) { onAbort(); return; }
             if (other.state === 'holding') other._layOnBack(DOWN_SEC);
             if (this.state === 'holding') this._standBackUp();
         };
@@ -2750,6 +2756,27 @@ export default class Wrestler {
             finish: () => {
                 other._layOnBack(DOWN_SEC);
                 this._standBackUp();
+            },
+        });
+    }
+
+    // Atomic drop (Stage 4c, Derek 2026-11-03), out of the waistlock: lifted from behind, dropped seated on the raised knee, and he pops forward
+    // off it onto his feet, a hand to his backside. A middle-tier move: he is hurt (a back sell carried on his feet) but not knocked down. Arena
+    // hands the pair over from the hold and watches the lift for the defender's snapmare reversal (`_reversed`: a cancel into that clip lays
+    // nobody down).
+    _doAtomicDrop(other) {
+        this._reversed = false;
+        this._playPairedThrow(other, 'atomicDrop', {
+            damage: STAMINA_DRAIN.atomicDrop,
+            shake: [140, 0.0025],
+            foley: ['mat', 0.8],
+            faceToFace: false,
+            superseded: () => this._reversed,
+            onAbort: () => { if (other.state === 'holding') other._standBackUp(); if (this.state === 'holding') this._standBackUp(); },
+            finish: () => {
+                other._standBackUp();
+                this._standBackUp();
+                other._painRising(); other._painRecovering();   // the hurt is carried on his feet (aftermath v2's protective recovery)
             },
         });
     }

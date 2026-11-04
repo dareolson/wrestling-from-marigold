@@ -69,6 +69,7 @@ kits in `src/characters/rosterKits.js` and the registry, so it cannot drift.
 | `armDrag` | yes | George, Guido | lockupPower | unverified |
 | `hipToss` | yes | Lou, Kowalski | lockupPower | covered |
 | `goBehind` | yes | Lou, George | lockupPowerDir | unverified |
+| `atomicDrop` | yes | none | - | unverified |
 | `backBodyDrop` | yes | Lou, George, Kowalski, Guido | - | unverified |
 | `hammerlock` | yes | Lou, George, Kowalski, Guido | - | unverified |
 | `sleeperHold` | yes | Lou, George, Kowalski, Guido | - | unverified |

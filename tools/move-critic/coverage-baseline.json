@@ -49,6 +49,11 @@
     "status": "unverified",
     "reason": "no clip, no critic spec; the critic traces clips only. Added with PLAN_GRAPPLES T4b.4 (waistlock=v1, opt-in). Covered by tests/waistlock.test.js and tools/debug/waistlock_assert.mjs, waistlock_cleanup.mjs"
   },
+  "atomicDrop": {
+    "fingerprint": "969060796e44",
+    "status": "unverified",
+    "reason": "hand-posed clip (not from a sheet), no critic spec. Added with PLAN_GRAPPLES T4c.2 (waistlock=v1, opt-in). Covered by tests/atomicDrop.test.js and tools/debug/waistlock_throws.mjs"
+  },
   "backBodyDrop": {
     "fingerprint": "39ad43d67325",
     "status": "unverified",

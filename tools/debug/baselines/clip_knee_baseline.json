@@ -1,5 +1,5 @@
 {
- "about": "clip_knee_audit baseline: knee failures that shipped before the guard (T4c.4d). New or worse ones fail.",
+ "about": "clip_knee_audit baseline: knee failures that shipped before the guard (T4c.4d). New or worse ones fail. Saturation (T4c.4h): a keyed lKnee/rKnee outside JOINT_LIMITS.knee is a failure; none ship today. Reading changed in T4c.4h (front of the bone, not the torso): piledriver attacker nearKnee re-listed at -1.399.",
  "limits": {
   "knee": {
    "min": -0.25,
@@ -22,9 +22,9 @@
    "frames": 33
   },
   "piledriver|thesz-procreate-v1|attacker|R|nearKnee": {
-   "worst": -1.311,
-   "frame": 102,
-   "frames": 21
+   "worst": -1.399,
+   "frame": 97,
+   "frames": 30
   },
   "piledriver|thesz-procreate-v1|attacker|R|farKnee": {
    "worst": -1.299,
@@ -192,9 +192,9 @@
    "frames": 33
   },
   "piledriver|thesz-procreate-v1|attacker|L|nearKnee": {
-   "worst": -1.311,
-   "frame": 102,
-   "frames": 21
+   "worst": -1.399,
+   "frame": 97,
+   "frames": 30
   },
   "piledriver|thesz-procreate-v1|attacker|L|farKnee": {
    "worst": -1.299,
@@ -362,9 +362,9 @@
    "frames": 33
   },
   "piledriver|george-roster-v1|attacker|R|nearKnee": {
-   "worst": -1.344,
-   "frame": 101,
-   "frames": 23
+   "worst": -1.399,
+   "frame": 97,
+   "frames": 30
   },
   "piledriver|george-roster-v1|attacker|R|farKnee": {
    "worst": -1.299,
@@ -532,9 +532,9 @@
    "frames": 33
   },
   "piledriver|george-roster-v1|attacker|L|nearKnee": {
-   "worst": -1.344,
-   "frame": 101,
-   "frames": 23
+   "worst": -1.399,
+   "frame": 97,
+   "frames": 30
   },
   "piledriver|george-roster-v1|attacker|L|farKnee": {
    "worst": -1.299,
@@ -691,5 +691,6 @@
    "frame": 141,
    "frames": 49
   }
- }
+ },
+ "saturation": {}
 }

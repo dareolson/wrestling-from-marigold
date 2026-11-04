@@ -15,6 +15,7 @@ import { film, PRESS_AT } from './waistlock_throws.mjs';
 
 const BASELINE = new URL('./baselines/clip_knee_baseline.json', import.meta.url).pathname;
 const TOL = 0.05;
+const LIM_SAT = { min: -0.10, max: 2.55 };   // JOINT_LIMITS.knee
 const LIM = { knee: { min: -0.25, max: 2.55 }, elbow: { min: -0.25, max: 2.75 } };
 const argv = process.argv.slice(2), has = (f) => argv.includes(f), val = (f) => (argv.includes(f) ? argv[argv.indexOf(f) + 1] : null);
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
@@ -26,7 +27,11 @@ function flexes(sk, facing) {
     const t = { x: p.neck.x - hip.x, y: p.neck.y - hip.y };
     const n = facing >= 0 ? { x: -t.y, y: t.x } : { x: t.y, y: -t.x };
     const dot = (a, b) => a.x * b.x + a.y * b.y, sub = (a, b) => ({ x: a.x - b.x, y: a.y - b.y });
-    const flex = (a, b, c) => { const u = sub(b, a), l = sub(c, b); let q = { x: -u.y, y: u.x }; if (dot(q, n) < 0) q = { x: -q.x, y: -q.y }; return Math.atan2(dot(l, q), dot(l, u)); };
+    // q is the front of the bone: the bone turned a quarter so a bone hanging straight down has the facing side as its front. It follows the bone, not the
+    // torso: choosing q by its dot with the torso front (the first version) is ill-conditioned once a thigh points forward (a raised knee read as -0.9 rad
+    // when the geometry was a normal bend, T4c.4h). A body turned by tilt keeps its handedness, so the facing alone says which way q goes.
+    const hand = facing >= 0 ? 1 : -1;
+    const flex = (a, b, c) => { const u = sub(b, a), l = sub(c, b); const q = hand > 0 ? { x: u.y, y: -u.x } : { x: -u.y, y: u.x }; return Math.atan2(dot(l, q), dot(l, u)); };
     const r = {};
     for (const sd of ['near', 'far']) {
         if (p[`${sd}Hip`] && p[`${sd}Knee`] && p[`${sd}Ankle`]) { r[`${sd}Knee`] = -flex(p[`${sd}Hip`], p[`${sd}Knee`], p[`${sd}Ankle`]); if (r[`${sd}Knee`] < -2.6) r[`${sd}Knee`] += 2 * Math.PI; }
@@ -42,18 +47,19 @@ const rowsOf = (move, rig, role, facing, frame, t, f) => Object.entries(f).map((
 
 process.env.WFM_P1 = LOU; process.env.WFM_P2 = GEORGE; process.env.WFM_QS = 'notitle=1&grapples=v1&waistlock=v1';
 const h = await launch();
-let rows;
+let rows, sat;
 try {
     const page = h.page;
     await page.waitForFunction(() => { const sc = window.__WFM_GAME?.scene?.scenes?.[0]; return !!(sc?.w1?.skeleton && sc?.w2?.skeleton); }, { timeout: 20000 });
     await page.waitForTimeout(800);
-    rows = await page.evaluate(async ({ LIM, FLEX }) => {
+    ({ rows, sat } = await page.evaluate(async ({ LIM, FLEX }) => {
         const sc = window.__WFM_GAME.scene.scenes[0];
         sc.scene.pause();
         const { REGISTERED_MOVE_CLIPS } = await import('/src/animation/clips/index.js');
         const { sampleClip, compileClip } = await import('/src/animation/AnimationClip.js');
         const flexes = (0, eval)('(' + FLEX + ')');
-        const out = [];
+        const out = [], sat = {};
+        const { JOINT_LIMITS } = await import('/src/rig/articulation.js');
         for (const [seat, w] of [['p1', sc.w1], ['p2', sc.w2]]) {
             const rig = seat === 'p1' ? 'thesz-procreate-v1' : 'george-roster-v1';
             const idle = JSON.parse(JSON.stringify(w.pose));
@@ -71,6 +77,14 @@ try {
                     for (let i = 0; i <= Math.ceil(clip.duration * 60); i++) {
                         const t = Math.min(clip.duration, i / 60), s = sampleClip(clip, t);
                         for (const [role, state] of Object.entries(s.tracks)) {
+                            // T4c.4h: a keyed lKnee/rKnee outside JOINT_LIMITS.knee is eaten by the clamp (a fold that never draws): a miss, not a pass
+                            for (const j of ['lKnee', 'rKnee']) {
+                                const v = state.pose?.[j];
+                                if (!Number.isFinite(v) || (v >= JOINT_LIMITS.knee.min && v <= JOINT_LIMITS.knee.max)) continue;
+                                const k = `${clip.id}|${role}|${j}`, e = sat[k] ??= { worst: v, frames: new Set() };
+                                if (Math.abs(v) > Math.abs(e.worst)) e.worst = v;
+                                e.frames.add(i);
+                            }
                             w.pose = JSON.parse(JSON.stringify(idle));
                             Object.assign(w.pose, state.pose ?? {});
                             w.facing = facing * (state.facing ?? 1);
@@ -88,8 +102,9 @@ try {
             delete w._choreoOwnsPose;
             w.pose = idle;
         }
-        return out;
-    }, { LIM, FLEX });
+        for (const e of Object.values(sat)) e.frames = e.frames.size;
+        return { rows: out, sat };
+    }, { LIM, FLEX }));
 } finally { await h.close(); }
 
 // The live pass: the waistlock hold, the drop, the snapmare and the rear sleeper (every stage to the KO) as the game plays them (lead-in blends, hand-over and all), read off the stepped
@@ -143,9 +158,19 @@ console.log(`\n${rows.length} samples; ${kneeGroups} knee failure runs (${[...gr
 if (val('--json')) writeFileSync(val('--json'), JSON.stringify({ summary, failures: rows.filter(r => r.bad) }, null, 1));
 if (has('--write-baseline')) {
     const failures = Object.fromEntries([...groups].filter(([, g]) => g[0].kind === 'knee').map(([k, g]) => [k, { worst: summary[k].worst, frame: summary[k].frame, frames: g.length }]));
-    writeFileSync(BASELINE, JSON.stringify({ about: 'clip_knee_audit baseline: knee failures that shipped before the guard (T4c.4d). New or worse ones fail.', limits: LIM, failures }, null, 1) + '\n');
+    writeFileSync(BASELINE, JSON.stringify({ about: 'clip_knee_audit baseline: knee failures that shipped before the guard (T4c.4d). New or worse ones fail.', limits: LIM, failures, saturation: Object.fromEntries(Object.entries(sat).map(([k, e]) => [k, { worst: +e.worst.toFixed(3), frames: e.frames }])) }, null, 1) + '\n');
     console.log('wrote', BASELINE);
     process.exit(0);
 }
+// saturation: keyed knee values the clamp removes (static scan of every registered clip, both rigs and facings sample the same keys, so counted once per frame)
+const satBase = base.saturation ?? {}, satNew = [], satLines = [];
+for (const [k, e] of Object.entries(sat)) {
+    const listed = satBase[k], worse = !listed || Math.abs(e.worst) > Math.abs(listed.worst) + TOL;
+    if (worse) satNew.push(k);
+    satLines.push(`${worse ? 'NEW     ' : 'baseline'} saturated ${k.replaceAll('|', ' | ')} | keyed ${e.worst.toFixed(3)} (limit ${LIM_SAT.min}..${LIM_SAT.max}), ${e.frames} frames`);
+}
+satLines.sort(); for (const l of satLines) console.log(l);
+console.log(`${Object.keys(sat).length} saturated clip knee track(s)`);
+if (satNew.length) { console.log(`FAIL: ${satNew.length} saturated knee track(s) not in the baseline: ${satNew.join(', ')}`); process.exit(1); }
 if (newFails.length) { console.log(`FAIL: ${newFails.length} knee failure run(s) not in the baseline`); process.exit(1); }
 console.log('ok: no new knee failures');

@@ -64,7 +64,11 @@ test('sleeperChannels: arms by stage, near/far channels follow lChannelSide, kne
         const fight = sleeperChannels('defender', side, 0.5), limp = sleeperChannels('defender', side, 3.5);
         assert.ok(fight[`${nearCh}Arm`] > 1.3 && fight[`${farCh}Arm`] > 1.3, 'both hands up at the forearm');
         assert.ok(limp[`${nearCh}Arm`] < 0.3 && limp[`${farCh}Arm`] < 0.3, 'hanging when limp');
-        for (const t of [0, 0.5, 2.0, 3.5]) for (const role of ['attacker', 'defender']) { const c = sleeperChannels(role, side, t); assert.ok(c.lKnee <= 0 && c.rKnee <= 0, `${role} ${t}`); }
+        for (const t of [0, 0.5, 2.0, 3.5]) for (const role of ['attacker', 'defender']) {
+            const c = sleeperChannels(role, side, t);
+            assert.ok(!('lKnee' in c) && !('rKnee' in c), 'the shins are absolute, no local-flex owner');
+            for (const ch of ['l', 'r']) assert.ok(c[`${ch}Shin`] <= c[`${ch}Leg`] + 0.85 * c.crouch, `${role} ${t} ${ch}: never past straight`);
+        }
     }
     assert.deepEqual(sleeperChannels('defender', 'near', 2.0, 5), sleeperChannels('defender', 'near', 2.0, 5));
     assert.notDeepEqual(sleeperChannels('defender', 'near', 2.0, 5), sleeperChannels('defender', 'near', 2.0, 6));

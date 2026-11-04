@@ -3616,8 +3616,7 @@ export default class Arena extends Phaser.Scene {
 
         // Rope break
         if (this._isAtRopes(ss.defender)) {
-            ss.attacker.tweenPose('idle', 200, 'Linear');
-            ss.defender.tweenPose('idle', 200, 'Linear');
+            this._sleeperLegsHome(ss, 200);
             ss.attacker.state = 'standing';
             ss.defender.state = 'standing';
             this.pinText.setAlpha(0);
@@ -3634,8 +3633,7 @@ export default class Arena extends Phaser.Scene {
         this.pinText.setText(zText).setAlpha(1);
 
         const release = (toDown) => {
-            ss.attacker.tweenPose('idle', 200, 'Linear');
-            ss.defender.tweenPose('idle', 200, 'Linear');
+            this._sleeperLegsHome(ss, 200);
             ss.attacker.state = 'standing';
             if (toDown) {
                 ss.defender.state      = 'down';
@@ -3853,6 +3851,13 @@ export default class Arena extends Phaser.Scene {
             w._shinHome = false;
             for (const side of ['l', 'r']) { delete w.pose[`${side}Shin`]; w.pose[`${side}Knee`] = Math.max(-0.10, -1.6 * (idle.crouch ?? 0)); }
         });
+    }
+
+    // The rear sleeper owns each shin as an absolute lShin / rShin (T4c.4h: a local-flex lKnee fold is clamped away), so its exits settle like the lockup's.
+    _sleeperLegsHome(ss, ms) {
+        for (const w of [ss.attacker, ss.defender]) {
+            if (ss.rear) this._lockupLegsHome(w, ms); else w.tweenPose('idle', ms, 'Linear');
+        }
     }
 
     _dropLockupShins(w) {
@@ -4109,6 +4114,12 @@ export default class Arena extends Phaser.Scene {
     _beginSleeperFromHold(ws) {
         const A = ws.attacker, D = ws.defender, who = A === this.w1 ? 'p1' : 'p2';
         const from = new Map([A, D].map(w => [w, { ...w.pose }]));
+        // the shin blend starts from the angle drawn now (a rig with no lShin at idle would blend from 0), like the lockup's
+        for (const w of [A, D]) for (const side of ['l', 'r']) {
+            const drawn = w.skeleton.currentPoseChannel?.(`${side}Shin`), f = from.get(w);
+            delete f[`${side}Knee`];
+            f[`${side}Shin`] = Number.isFinite(drawn) ? drawn : (f[`${side}Leg`] ?? 0) - 0.75 * (f.crouch ?? 0);
+        }
         const spacing0 = Math.abs(A.x - D.x) / (A.s || 1);
         this._endWaistlock(0, true);
         for (const w of [A, D]) this._dropLockupShins(w);
@@ -4128,6 +4139,7 @@ export default class Arena extends Phaser.Scene {
         for (const [w, role] of [[A, 'attacker'], [D, 'defender']]) {
             w.scene.tweens.killTweensOf(w.pose);
             const ch = sleeperChannels(role, w.skeleton.lChannelSide(w.facing), ss.timer, ss.seed), from = ss.from.get(w);
+            delete w.pose.lKnee; delete w.pose.rKnee;   // the shins are absolute here: a stale local-flex owner would win over them
             for (const key of Object.keys(ch)) w.pose[key] = k < 1 ? (from[key] ?? 0) * (1 - e) + ch[key] * e : ch[key];
             w.pose.tilt = 0; w.pose.lift = 0;
         }

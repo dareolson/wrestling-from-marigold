@@ -1,8 +1,9 @@
 // The rear sleeper out of the waistlock (PLAN_GRAPPLES Stage 4d, S1-S7). Pure data and math, behind `?waistlock=v1`, like waistlock.js and
 // waistlockThrows.js: nothing here touches a Wrestler or a POSE. Times in seconds, lengths in px at s = 1 (the caller scales).
-// KNEES: on the upright path a NEGATIVE lKnee/rKnee folds the heel back (see the note at the top of clips/index.js); every knee value here is
-// negative or zero, and tools/debug/clip_knee_audit.mjs is the check, not the sign you expect.
+// KNEES: the `knee` values below are heel folds (negative = folded); sleeperChannels writes them as absolute shins through foldShin, because the clamp
+// at JOINT_LIMITS.knee.min eats a local-flex lKnee (see the note at the top of clips/index.js). tools/debug/clip_knee_audit.mjs is the check.
 import { WAISTLOCK } from './waistlock.js';
+import { foldShin } from '../rig/articulation.js';
 
 // S2: the gameplay timings stay those of Arena._tickSleeper (z under 1.4 s, zz under 2.8 s, zzz after, the KO at 4.0 s, 4.5 stamina/s).
 export const SLEEPER = Object.freeze({
@@ -61,7 +62,9 @@ export function sleeperSink(t, role = 'defender') {
 // skeleton.lChannelSide(facing). `seed` picks the flail. Arm channels are the base the fight's IK (Arena._holdSleeperGrips) pulls the hands off.
 export function sleeperChannels(role, lSide, t, seed = 1) {
     const k = sleeperSink(t, role), nearCh = lSide === 'far' ? 'r' : 'l', farCh = nearCh === 'l' ? 'r' : 'l';
-    const out = { bend: k.bend, crouch: k.crouch, [`${nearCh}Leg`]: k.lead, [`${farCh}Leg`]: k.rear, lKnee: k.knee, rKnee: k.knee };
+    const out = { bend: k.bend, crouch: k.crouch, [`${nearCh}Leg`]: k.lead, [`${farCh}Leg`]: k.rear };
+    // `knee` is negative = folded; the shins are absolute (T4c.4h: the clamp eats a local-flex lKnee), each following its own thigh
+    out[`${nearCh}Shin`] = foldShin(k.lead, k.crouch, -k.knee); out[`${farCh}Shin`] = foldShin(k.rear, k.crouch, -k.knee);
     if (role === 'attacker') return out;
     const stage = sleeperStage(t).id, A = SLEEPER_ARMS;
     const arms = (near, far) => Object.assign(out, { [`${nearCh}Arm`]: near.arm, [`${nearCh}Elbow`]: near.elbow, [`${farCh}Arm`]: far.arm, [`${farCh}Elbow`]: far.elbow });

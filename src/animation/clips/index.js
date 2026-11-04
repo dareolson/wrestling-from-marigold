@@ -1,6 +1,8 @@
 // The clips that are actually registered with the scene MoveRuntime.
 //
-// KNEES AND ELBOWS (read before you pose a leg). On the upright draw path a NEGATIVE `lKnee`/`rKnee` folds the heel BACK behind the knee (the way a
+// KNEES AND ELBOWS (read before you pose a leg). THE CLAMP EATS A KNEE FOLD: `JOINT_LIMITS.knee.min` is -0.10, so a local-flex `lKnee` of -0.2..-1.6 draws as -0.10 (0 px
+// difference). A clip that needs a real fold owns the shin as the absolute `lShin`/`rShin` through `foldShin` / `shinsFromFolds` (rig/articulation.js; atomicDrop and
+// snapmare key `lFold`/`rFold`); tools/debug/knee_fold_sweep.mjs proves the fold renders. On the upright draw path a NEGATIVE `lKnee`/`rKnee` folds the heel BACK behind the knee (the way a
 // knee bends); a POSITIVE one swings the shin FORWARD of the knee, a knee bent backward, which Derek calls "breaking the art". Elbows are the other
 // way round: a positive `lElbow`/`rElbow` bends the forearm toward the front of the upper arm. `JOINT_LIMITS` clamps the number, not the drawn bend, so
 // the clamp does not protect you: check the RENDERED joint. `node tools/debug/clip_knee_audit.mjs` (WFM_URL set) reads every clip, the waistlock

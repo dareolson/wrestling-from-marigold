@@ -78,3 +78,22 @@ export function childAngleFromLocalFlex(parentWorldAngle, localFlex, facing, joi
 export function localFlexFromChildAngle(parentWorldAngle, childWorldAngle, facing, joint) {
     return clampLocalFlex((childWorldAngle - parentWorldAngle) * facing, joint);
 }
+
+// The upright draw path clamps a local-flex `lKnee`/`rKnee` at JOINT_LIMITS.knee.min (-0.10), and the natural fold is negative, so a keyed -0.2..-1.6 draws
+// as -0.10. Clips that fold a knee own the shin outright as the absolute `lShin`/`rShin` (the way lockup.js does). `fold > 0` = heel toward the back of the
+// thigh; the thigh is `leg + .85 * crouch` (Skeleton's cThigh), so the shin follows its leg through the clip's crouch and leg keys.
+export function foldShin(leg, crouch, fold) {
+    return (leg ?? 0) + 0.85 * (crouch ?? 0) - fold;
+}
+
+// A keyed pose with `lFold`/`rFold` (heel fold, radians, >= 0) becomes one with `lShin`/`rShin`; every other key passes through.
+export function shinsFromFolds(pose) {
+    const out = { ...pose };
+    for (const side of ['l', 'r']) {
+        const key = `${side}Fold`;
+        if (!(key in out)) continue;
+        out[`${side}Shin`] = foldShin(out[`${side}Leg`], out.crouch, out[key]);
+        delete out[key];
+    }
+    return out;
+}

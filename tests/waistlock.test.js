@@ -154,3 +154,54 @@ test('behindSpotFits: the spot behind a man has to be 20 px inside the side rope
     assert.equal(behindSpotFits({ x: 100 + hb * 0.8 + 19, s: 0.8 }, 1, b), false);   // facing right, the spot is to his left
     assert.equal(behindSpotFits({ x: 100 + hb * 0.8 + 21, s: 0.8 }, 1, b), true);
 });
+
+// PLAN_GRAPPLES T4c.1: the throws out of the hold (src/animation/waistlockThrows.js).
+import { ATOMIC, SNAPMARE, reversalOpen, snapmareLandingX, snapmareFits, flipTilt, dropAvailable } from '../src/animation/waistlockThrows.js';
+
+test('the drop is lift + drop + sell, the impact is where the drop ends, and the reverse window is inside the lift', () => {
+    assert.ok(Math.abs(ATOMIC.lift + ATOMIC.drop - ATOMIC.impact) < 1e-9);
+    assert.ok(Math.abs(ATOMIC.impact + ATOMIC.sell - ATOMIC.duration) < 1e-9);
+    assert.ok(ATOMIC.reverseWindow > 0 && ATOMIC.reverseWindow < ATOMIC.lift);
+    assert.ok(Math.abs(SNAPMARE.reach + SNAPMARE.pull + SNAPMARE.flip - SNAPMARE.land) < 1e-9 && SNAPMARE.land < SNAPMARE.duration);
+});
+
+test('the reversal is open from the lift\'s start to reverseWindow and not before or after', () => {
+    assert.equal(reversalOpen(-0.01), false);
+    assert.equal(reversalOpen(0), true);
+    assert.equal(reversalOpen(ATOMIC.reverseWindow - 1e-6), true);
+    assert.equal(reversalOpen(ATOMIC.reverseWindow), false);
+    assert.equal(reversalOpen(0.5), false);
+});
+
+test('the snapmare lands one body length in front of the thrower, scaled, both facings, and is denied past the ropes', () => {
+    const b = { left: 100, right: 900 };
+    for (const f of [1, -1]) {
+        const m = { x: 500, s: 0.8 };
+        assert.equal(snapmareLandingX(m, f), 500 + f * SNAPMARE.landFwd * 0.8);
+        assert.equal(snapmareFits(m, f, b), true);
+    }
+    assert.equal(snapmareFits({ x: 850, s: 1 }, 1, b), false);
+    assert.equal(snapmareFits({ x: 150, s: 1 }, -1, b), false);
+    assert.equal(snapmareFits({ x: 850, s: 1 }, -1, b), true);   // the room is on the facing side only
+    // the margin matches behindSpotFits: exactly 20 px inside the rope still fits, 21 px short does not
+    assert.equal(snapmareFits({ x: b.right - 20 - SNAPMARE.landFwd, s: 1 }, 1, b), true);
+    assert.equal(snapmareFits({ x: b.right - 19 - SNAPMARE.landFwd, s: 1 }, 1, b), false);
+});
+
+test('flipTilt runs 0 to a whole turn plus the landing angle, never goes backward and never stalls', () => {
+    const land = 1.2, total = 2 * Math.PI * SNAPMARE.turns + land;
+    assert.equal(flipTilt(0, land), 0);
+    assert.ok(Math.abs(flipTilt(1, land) - total) < 1e-9);
+    let prev = 0;
+    for (let u = 0.01; u <= 1.0001; u += 0.01) { const v = flipTilt(u, land); assert.ok(v > prev, `${u}`); prev = v; }
+});
+
+test('one try per hold: the drop is only available inside the hold, once', () => {
+    const ws = { t: WAISTLOCK.goBehind + 0.1, holdEnd: WAISTLOCK.goBehind + WAISTLOCK.timeout, ending: null, threw: false };
+    assert.equal(dropAvailable(ws), true);
+    assert.equal(dropAvailable({ ...ws, t: WAISTLOCK.goBehind - 0.01 }), false);   // still in the circle
+    assert.equal(dropAvailable({ ...ws, t: ws.holdEnd }), false);                   // the let-go
+    assert.equal(dropAvailable({ ...ws, ending: 'shove' }), false);
+    assert.equal(dropAvailable({ ...ws, threw: true }), false);
+    assert.equal(dropAvailable(null), false);
+});

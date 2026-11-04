@@ -26,7 +26,7 @@ export const SNAPMARE = Object.freeze({
     land: 0.15 + 0.20 + 0.46,           // the impact frame
     duration: 1.30,                     // the landing, then the thrower's rise from the knee
     turns: 1,                           // whole forward turns before the landing angle
-    landFwd: 150,                       // px in front of the thrower (along the facing) that the thrown man lands
+    landFwd: 185,                       // px in front of the thrower (along the facing) that the thrown man lands
     damageKey: 'snapmare',              // STAMINA_DRAIN key, 16
     sellSpec: Object.freeze({ part: 'back', intensity: 1.0 }),
 });
@@ -58,4 +58,12 @@ export function flipTilt(u, landAngle) {
 // Can the hold throw at all: it is a hold (grips closed), not the circle or the let-go, and not already thrown once. (A1: one try per hold.)
 export function dropAvailable(ws) {
     return !!ws && !ws.ending && !ws.threw && ws.t >= WAISTLOCK.goBehind && ws.t < ws.holdEnd;
+}
+
+// How closed the thrower's hands are on the thrown man's head at clip time `t` of the snapmare (0..1): they close over the reach, hold through
+// the pull and let go as the flip takes him (A4 a-c).
+export function snapmareHeadGrip(t) {
+    const smooth = (u) => { const v = Math.max(0, Math.min(1, u)); return v * v * (3 - 2 * v); };
+    const reachEnd = SNAPMARE.reach, pullEnd = SNAPMARE.reach + SNAPMARE.pull;
+    return smooth((t - 0.04) / (reachEnd - 0.04)) * (1 - smooth((t - pullEnd) / 0.08));
 }

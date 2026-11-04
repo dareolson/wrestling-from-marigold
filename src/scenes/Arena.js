@@ -19,7 +19,7 @@ import { validateKit } from '../moves/registry.js';
 import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
 import { lockupGrips, lockupPhase, lockupPoseChannels, exitBlendPose, breakKind, breakTravel, legRel, LOCKUP } from '../animation/lockup.js';
-import { dropAvailable, reversalOpen } from '../animation/waistlockThrows.js';
+import { dropAvailable, reversalOpen, snapmareFits, snapmareHeadGrip } from '../animation/waistlockThrows.js';
 import { WAISTLOCK, atRopes, behindSpotFits, waistlockPhase, goBehindOffset, waistlockPoseChannels, waistlockGrips, waistlockLayerOrder, releaseTravel } from '../animation/waistlock.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS, ROSTER_PERSONALITIES } from '../characters/rosterKits.js';
@@ -3310,7 +3310,7 @@ export default class Arena extends Phaser.Scene {
             dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
             headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
             jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12, theszPress: 16,
-            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, figureFour: 14, hipToss: 6, atomicDrop: 7, armBar: 8, ankleLock: 8,
+            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, figureFour: 14, hipToss: 6, atomicDrop: 7, snapmare: 12, armBar: 8, ankleLock: 8,
         };
         const n = bumps[move];
         if (n) this.bumpHeat(n);
@@ -3505,6 +3505,7 @@ export default class Arena extends Phaser.Scene {
         undoBlend?.();
         if (this.lockupState?.grapple && grapplesCandidate()) this._holdLockupGrips();
         if (this.waistlockState) this._holdWaistlockGrips();
+        if (this.dropState?.kind === 'snap') this._holdSnapmareGrips();
         this._updateRopes(dt);
         this._drawStaminaBars();
         this._updateHeat(dt);
@@ -4085,15 +4086,53 @@ export default class Arena extends Phaser.Scene {
         for (const w of [A, D]) this._dropLockupShins(w);
         A._doAtomicDrop(D);
         this._exitBlend = { t: 0, held };
-        this.dropState = { attacker: A, defender: D, handle: A._activeMove };
+        this.dropState = { kind: 'drop', attacker: A, defender: D, handle: A._activeMove, denied: false };
         this._logEvent('move', { attacker: who, move: 'atomicDrop', defenderStamina: Math.round(D.stamina) });
         this._heatForMove('atomicDrop');
     }
 
-    // One frame of the atomic drop's watch: gone when the clip is (finished, cancelled, or replaced).
+    // One frame of the atomic drop's watch: gone when the clip is (finished, cancelled, or replaced). While it is in its lift (A3) the defender's
+    // power reverses it into the snapmare, unless the landing is past the ropes (A6): then the drop completes and the denial is logged once.
     _tickDrop(dt) {
-        const ds = this.dropState, A = ds.attacker;
+        const ds = this.dropState, A = ds.attacker, D = ds.defender;
         if (!A._activeMove || A._activeMove !== ds.handle || !this.moveRuntime._active.has(ds.handle.id)) { this.dropState = null; return; }
+        if (ds.kind !== 'drop' || !reversalOpen(ds.handle.time) || !D.moveSet.includes('snapmare') || !D.input.justDown('power')) return;
+        if (!snapmareFits(D, D.facing, ringBoundsAtY(D.y))) {
+            if (!ds.denied) this._logEvent('snapmareDenied', { defender: D === this.w1 ? 'p1' : 'p2' });
+            ds.denied = true;
+            return;
+        }
+        this._beginSnapmare(ds);
+    }
+
+    // Stage 4c A4: the lifted man comes down and throws the man who lifted him. The draw blends from what was on screen this frame (the drop's own
+    // lead-in blend included), so the hand-over has no pop; the clip it replaces is told it was superseded and lays nobody down.
+    _beginSnapmare(ds) {
+        const A = ds.attacker, D = ds.defender, who = D === this.w1 ? 'p1' : 'p2';
+        const b = this._exitBlend;
+        const held = new Map([A, D].map(w => {
+            const real = { pose: { ...w.pose }, x: w.x, y: w.y, facing: w.facing };
+            const was = b?.held.get(w);
+            if (!was) return [w, real];
+            const shown = exitBlendPose(was, real, b.t / LOCKUP.exitBlend.default);
+            return [w, { pose: shown.pose, x: shown.x, y: shown.y, facing: was.facing }];
+        }));
+        A._reversed = true;
+        D._doSnapmare(A);
+        this._exitBlend = { t: 0, held };
+        this.dropState = { kind: 'snap', attacker: D, defender: A, handle: D._activeMove };
+        this._logEvent('snapmare', { attacker: who, defenderStamina: Math.round(A.stamina) });
+        this._logEvent('move', { attacker: who, move: 'snapmare', defenderStamina: Math.round(A.stamina) });
+        this._heatForMove('snapmare');
+    }
+
+    // The snapmare's hands: after both men draw, both of the thrower's hands go to the thrown man's neck from the reach to the start of the flip
+    // (snapmareHeadGrip says how closed they are at this clip time).
+    _holdSnapmareGrips() {
+        const ds = this.dropState, T = ds.attacker, X = ds.defender, neck = X.skeleton?.jointAttachmentPoints?.neck;
+        const w = snapmareHeadGrip(ds.handle.time);
+        if (!neck || w <= 0) return;
+        T.holdGrips([{ arm: 'l', partner: X, at: neck, w }, { arm: 'r', partner: X, at: neck, w }]);
     }
 
     // Stage 4b T4b.2b: the one way out of the waistlock (the timeout's let-go, a match end, a man pulled out of the hold). Gives facing back to

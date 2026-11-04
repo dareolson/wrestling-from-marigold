@@ -181,6 +181,13 @@ export const MOVE_SPECS = {
         trigger: 'Arena._waistlockEndings — the attacker\'s power in the waistlock hold (flag waistlock=v1)',
         ai: ['lockup'],
     },
+    snapmare: {
+        category: C.THROW, clip: 'snapmare', executor: '_doSnapmare',
+        sell: { part: 'back', intensity: 1.0 },
+        damageKey: 'snapmare', poseSeq: false, legacyFallback: null, kitGated: true,
+        trigger: 'Arena._tickDrop — the defender\'s power inside the atomic drop\'s lift (flag waistlock=v1); denied when the landing is past the ropes',
+        ai: ['reversal', 'knockdown'],
+    },
     backBodyDrop: {
         category: C.THROW, clip: null, executor: '_doBackBodyDrop',
         sell: { part: 'back', intensity: 0.8 },

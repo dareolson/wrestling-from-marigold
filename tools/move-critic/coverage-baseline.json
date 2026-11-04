@@ -54,6 +54,11 @@
     "status": "unverified",
     "reason": "hand-posed clip (not from a sheet), no critic spec. Added with PLAN_GRAPPLES T4c.2 (waistlock=v1, opt-in). Covered by tests/atomicDrop.test.js and tools/debug/waistlock_throws.mjs"
   },
+  "snapmare": {
+    "fingerprint": "fb2dc16fe044",
+    "status": "unverified",
+    "reason": "hand-posed clip (not from a sheet), no critic spec. Added with PLAN_GRAPPLES T4c.3 (waistlock=v1, opt-in). Covered by tests/snapmare.test.js and tools/debug/waistlock_throws_assert.mjs"
+  },
   "backBodyDrop": {
     "fingerprint": "39ad43d67325",
     "status": "unverified",

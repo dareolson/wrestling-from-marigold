@@ -33,6 +33,7 @@ import { ankleLockClip } from './ankleLock.js';
 import { armBarClip } from './armBar.js';
 // Out of the waistlock (waistlock=v1, PLAN_GRAPPLES Stage 4c).
 import { atomicDropClip } from './atomicDrop.js';
+import { snapmareClip } from './snapmare.js';
 
 export const REGISTERED_MOVE_CLIPS = [
     jabClip,
@@ -53,4 +54,5 @@ export const REGISTERED_MOVE_CLIPS = [
     ankleLockClip,
     armBarClip,
     atomicDropClip,
+    snapmareClip,
 ];

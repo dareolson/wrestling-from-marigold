@@ -217,6 +217,7 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     ankleLock:         5, // per squeeze — three while the hold is on
     hipToss:          10,
     atomicDrop:       12, // waistlock=v1 (Stage 4c): a middle-tier throw, he stays on his feet
+    snapmare:         16, // the drop's reversal (waistlock=v1): a bigger spot than the move it stopped
     suplex:            20,
     divingElbow:       18,
     topDive:           28,
@@ -2777,6 +2778,23 @@ export default class Wrestler {
                 other._standBackUp();
                 this._standBackUp();
                 other._painRising(); other._painRecovering();   // the hurt is carried on his feet (aftermath v2's protective recovery)
+            },
+        });
+    }
+
+    // Snapmare (Stage 4c A4), the reversal of the atomic drop: `this` was being lifted, comes down on his feet, takes the head of the man who
+    // held him and throws him over his shoulder; `other` turns one forward flip and lands flat on his back in front. Arena calls it from inside
+    // the drop's lift, after marking the drop's attacker `_reversed` so the clip it replaces lays nobody down.
+    _doSnapmare(other) {
+        this._playPairedThrow(other, 'snapmare', {
+            damage: STAMINA_DRAIN.snapmare,
+            shake: [220, 0.0035],
+            foley: ['mat', 1.0],
+            faceToFace: false,
+            onAbort: () => { if (other.state === 'holding') other._layOnBack(DOWN_SEC); if (this.state === 'holding') this._standBackUp(); },
+            finish: () => {
+                other._layOnBack(DOWN_SEC + 0.5);
+                this._standBackUp();
             },
         });
     }

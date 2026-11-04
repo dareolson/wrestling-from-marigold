@@ -19,15 +19,16 @@ const PAIRS = { lg: { id: 'lou-george', att: LOU, def: GEORGE }, gl: { id: 'geor
 export const PRESS_AT = 36, DROP_AT = 80, F = 60;
 
 // what the throws add to a base row (clip time, states, tilt/lift of both men), read in the page after the step
-const EXTRAS = () => {
+const EXTRAS = (maskOn) => {
     const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
     const h = a._activeMove ?? d._activeMove;
     return {
         t: { clip: h?.clip?.id ?? null, time: h ? +h.time.toFixed(4) : null, drop: !!sc.dropState, states: [a.state, d.state], tilt: [a.pose.tilt, d.pose.tilt], lift: [a.pose.lift, d.pose.lift], xy: [[a.x, a.y], [d.x, d.y]], facing: [a.facing, d.facing], stamina: [a.stamina, d.stamina], lying: [a.lying, d.lying], blend: !!sc._exitBlend },
+        mask: maskOn && h ? window.__maskOverlap(a, d, false) : null,
         events: sc.matchEvents.splice(0).filter(e => ['move', 'atomicDrop', 'snapmare', 'snapmareDenied', 'orphanRescue', 'waistlockEnd'].includes(e.type)),
     };
 };
-export const STEP = async (page, arg) => ({ ...(await page.evaluate(BASE_STEP, arg)), ...(await page.evaluate(EXTRAS)) });
+export const STEP = async (page, arg) => ({ ...(await page.evaluate(BASE_STEP, arg)), ...(await page.evaluate(EXTRAS, !!arg.maskClip)) });
 
 export async function film(page, info, spec, shotDir, { frames = 330, quiet = 40 } = {}) {
     // spec.denied: the defender (who faces against the attacker's first facing) stands 90 px inside the rope he faces, so the snapmare has no room
@@ -47,7 +48,7 @@ export async function film(page, info, spec, shotDir, { frames = 330, quiet = 40
         if (i === PRESS_AT) { press.a.push('power'); hold.a.push('up'); }
         if (i === DROP_AT) press.a.push('power');
         if (spec.case !== 'drop' && i === (revAt ?? DROP_AT + (spec.rev ?? 6))) press.d.push('power');
-        const row = await STEP(page, { press, hold, mask: !!spec.mask });
+        const row = await STEP(page, { press, hold, mask: false, maskClip: !!spec.mask });
         row.i = i; rows.push(row);
         if (shotDir) await page.screenshot({ path: join(shotDir, `s${String(i).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 82, clip });
         if (row.t.clip) started = true;

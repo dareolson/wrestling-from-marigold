@@ -85,6 +85,10 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
   Misses: a go-behind whose spot is past the ropes is denied (tie-up goes on), not a rope break; rope break walks the defender off the rope (the attacker is against it); switch flips the new attacker's facing in one frame.
 - T4b.4-T4b.5: (this commit). `goBehind` in the registry (slot `lockupPowerDir`) and the Lou and George kits; AI go-behind (Lou .20, George .10) and reversal (.30, .15), AI never ends a hold early. Soak (3x, one pair at a time): Lou on George 8 go-behinds, 1 switch, 8 timeouts; George on Lou 7, 2, 5 timeouts + 1 rope break; 0 failures, 0 page errors. Suite 1139/1139, build, coverage 24 (goBehind baselined), kits check, `grapples_assert`, `grapples_flagoff`, `waistlock_assert`, `waistlock_cleanup`. STOPPED at G4b.
   Misses: the circle's overlap, slide and flip are unchanged (polish list); George's near hand 3.7 px short; AI odds are first drafts; two soaks at once lost both browsers at about 3 min (cause unknown, discarded); one `grapples_assert` crash under load, rerun passed.
+- **G4b: approved by Derek 2026-11-03** ("I really like what I see"). `waistlock` stays opt-in. Derek picked Stage 4c's first pair: the atomic drop from the hold, and its reversal into a snapmare that front-flips the attacker. Next T4c.1-T4c.4, stop at G4c-a.
+- T4c.1-T4c.3: 2d3fa8b, 0eb52f1, e2d6a1e. `waistlockThrows.js`; atomic drop (attacker's power in the hold, damage 12, back sell carried on his feet); snapmare (defender's power inside 0.20 s of the lift, flip 1 turn + 270 degrees, damage 16, denied at the ropes). `waistlock_throws_assert` 36/36, `waistlock_cleanup` 28/28, `grapples_flagoff` identical, coverage 26.
+  Misses: lead-in first frame steps 45 px vs the tie-up's 32.7 (knee beats shin, tried two fixes, reverted); D12 overlap in every beat and the flip; soles over 2.5 px/frame; hands to the head up to 32 px.
+- T4c.4: (this commit). [G4c-a page](research/animation/grapples-2026-10/g4c-a/index.html), four strips, misses first. STOPPED at G4c-a: Derek judges the drop, the flip (`SNAPMARE.turns` 1 or 0) and the A7 frames.
 - T6.1-T6.3: 4774ed4, 3454930, de33540. Default fighters Procreate Lou and `george-roster-v1`; `rosterKits.js` is the one kit file; `moves:kits` table and kit checks. Suite 1124/1124, build, coverage 23, kits, `grapples_assert` all passed. STOPPED at G6.
   Misses: Guido has no `hammerlockOdds` or `cornerWhipOdds` (allow-listed, not retuned); no shadowed moves; `grapples_flagoff` with no `WFM_URL` (self-started server) prints DIFFERENT at frame 0 (about 1e-5 in pose) also on the code before T6.1, identical with `WFM_URL=http://localhost:5173` (flagoff now pins `thesz`/`george`).
 
@@ -549,6 +553,192 @@ planted soles against the 2.5 px/frame limit; the circle's closest approach belo
 - **T4b.5 G4b page** `research/animation/grapples-2026-10/g4b/index.html`: normal-speed loop strips of each ending, both attackers,
   both facings; then the table, misses first. Gates: focused tests, `grapples_assert`, `grapples_flagoff`, full suite, build,
   coverage, `moves:kits -- --check`. Progress lines, Status. Commit locally, do not push, **STOP at G4b**. Never promote `waistlock`.
+
+## Stage 4c: the atomic drop and the snapmare reversal (Derek 2026-11-03), stop at G4c-a, then G4c
+
+Written in full, for Sonnet. Derek's spot: from the waistlock the attacker lifts the defender and drops him tailbone-first on
+his knee (atomic drop). If the defender reverses it during the lift, he lands on his feet, reaches back for the attacker's head
+and snapmares him over his shoulder; the attacker turns a **full front flip** in the toss and lands hard. Derek: "really
+impactful", "no new parts". Everything stays behind `?waistlock=v1` (opt-in, never promoted here). Back suplex, German suplex,
+rollup and Derek's other waistlock ideas come after G4c, in an order he picks.
+
+**Decisions (Opus; Derek can overrule at G4c-a):**
+- **A1. Input.** In the hold (`ws.phase === 'hold'`, grips closed), the attacker's `power` = atomic drop. The defender's `power`
+  during the lift window (A3) = the snapmare reversal. `action` keeps the Stage 4b endings (attacker shove-off, defender switch).
+  Read `_waistlockEndings` first and route the new inputs through it, so one place owns every way out of the hold.
+- **A2. The atomic drop** (`src/animation/clips/atomicDrop.js`, a two-track clip like `suplex.js`, run by MoveRuntime from the
+  hold pose with the Stage 3 lead-in, 0.14 s). Beats: (a) **lift**, about 0.30 s: the attacker straightens from the A-frame,
+  the defender rises with `lift`, legs hanging, the attacker's hands stay at his waist (`holdGrips`, W5's points); (b) **drop**,
+  about 0.12 s: the defender comes down seated; the attacker's near knee comes up (the `kneeLift` pose, `knee_chamber` parts as
+  `kneeLift` uses them) so the defender's pelvis meets it on the impact frame; (c) **sell**: the defender pops forward off the knee,
+  hands to his backside, and stumbles forward on his feet (reuse T4a.2's stumble or `staggers.js`; read which one fits first). He
+  stays standing: it is a middle-tier move, not a knockdown. Damage `atomicDrop: 12` in `STAMINA_DRAIN`, sell `{ part: 'back',
+  intensity: 0.7 }`. The hold ends through `_endWaistlock` when the clip takes over (state no longer `lockup`).
+- **A3. The reversal window.** From the lift's start until 0.20 s in (a constant, `ATOMIC.reverseWindow`), before the defender
+  is past the top. Late input does nothing. The attacker can't chain the drop: one try per hold.
+- **A4. The snapmare** (`src/animation/clips/snapmare.js`, roles swapped: the old defender is the clip's attacker). Beats:
+  (a) **land and reach**, about 0.15 s: the lift reverses, his feet come down, both hands go back over his shoulders to the
+  attacker's head (`holdGrips` at the head; Stage 2's hand art is not made, so use the base hands and report the contact in px);
+  (b) **the pull**: he drops to his near knee and pulls the head down over his near shoulder; (c) **the flip**: the thrown man
+  goes over in a forward whole-body rotation (the `tilt` track, like the suplex defender's 0 -> 4.76, but forward: one full turn
+  plus the landing angle), path arcing **above** the thrower's shoulder line, not through his torso; (d) **landing**: flat on his
+  back in front of the thrower, on the thrower's facing side, into the existing down state with a forced back sell
+  (`{ part: 'back', intensity: 1.0 }`). Damage `snapmare: 16` (a reversal is a big spot, more than the drop it stopped).
+  The thrower gets up from the knee with the existing rise. No new parts: base parts rotated only. If a beat can't be posed
+  without a new part, report the frame and what is missing; no art request without Derek.
+- **A5. Layering.** The thrown man starts upstage (behind, W3). Use `clipLayers` windows: whole body behind the thrower until the
+  flip's top, in front after it. Near arm over the shoulder in front of the thrower's head through the pull.
+- **A6. Room.** The snapmare lands the man about one body length forward. If that spot is past the ropes
+  (`behindSpotFits`-style check on the landing x, both facings), the reversal is denied and the drop completes. Report how often.
+- **A7. D12 during the flip.** D12 (no overlap) was written for standing contact. A body flipping over a shoulder may cross the
+  thrower's head or shoulder in screen space. Measure masks every frame and report the overlap frames raw; do not waive D12 and
+  do not claim draw order fixes it. Derek judges the exact frames at G4c-a.
+- **A8. Kits and AI** (T4c.5, after G4c-a). Registry ids `atomicDrop` (slot `waistlockPower`) and `snapmare` (slot
+  `waistlockReverse`), both in `KIT_SLOTS`, in the Lou and George kits. Odds in `KIT_AI_ODDS`: `atomicDropOdds` Lou .25,
+  George .30; `snapmareOdds` (defender, rolled once per drop) Lou .25, George .10. First drafts.
+
+**Measures** (numbers, not judgements; px/frame at 60 fps, both facings, both attackers):
+the lead-in's first-frame max part step against the tie-up's worst (32.6 px); the defender's pelvis to the attacker's raised knee
+on the impact frame (px); the snapmare hands to the head (px); the flip's total rotation (rad) and the landing frame; the landing
+x against the ring bounds; `grapples_masks.mjs` overlap every frame, flip frames listed separately; planted soles of the
+standing man against the 2.5 px/frame limit.
+
+- **T4c.1 Pure data.** `ATOMIC` constants (beat times, `reverseWindow`, damage keys) and the landing-room check in
+  `src/animation/waistlock.js` (or a sibling `waistlockThrows.js` if it gets long), with tests. Pure, like `lockup.js`.
+- **T4c.2 The atomic drop**, flag on: input (A1), the clip (A2), damage and sell, `_endWaistlock` handoff. Browser check: the
+  drop from the hold on both rigs, both facings; a match end mid-clip leaves no state (rerun `waistlock_cleanup.mjs` plus a
+  drop case). Focused tests. Commit locally; no stop.
+- **T4c.3 The snapmare reversal**: window (A3), clip (A4), layering (A5), room (A6). Browser check: reversal inside the window,
+  late press ignored, denied near the ropes. Focused tests, `grapples_flagoff`. Commit locally; no stop.
+- **T4c.4 G4c-a page** `research/animation/grapples-2026-10/g4c-a/index.html`: one normal-speed loop strip per move, Lou on
+  George, both facings (four strips), each through 8 frames after the man is back up or down; misses first, then the
+  measures. Commit locally, **STOP at G4c-a**: Derek judges the drop, the flip and the A7 frames.
+- **T4c.5 Kits, AI, soak** (A8), after G4c-a. `grapples_soak.mjs` with `waistlock=v1`, one pair at a time (two at once crashed in
+  T4b.4): drops, reversals, denied reversals counted; fail on page errors, `orphanRescue`, stuck states.
+- **T4c.6 G4c page**: strips of both moves, both attackers, both facings; table, misses first. Gates: focused tests,
+  `grapples_assert`, `grapples_flagoff`, `waistlock_assert`, `waistlock_cleanup`, full suite, build, coverage (report the new
+  count), `moves:kits -- --check` (regenerate the `MOVE_CATALOG.md` block with `git add -p`; other sessions' edits are in it).
+  Progress lines, Status. Commit locally, do not push, **STOP at G4c**. Never promote `waistlock`.
+
+## Stage 4d: a real sleeper from the waistlock, and the small snapmare (Derek 2026-11-03), stop at G4d-a, then G4d
+
+Written in full, for Sonnet. **Order (Derek 2026-11-03): Sonnet starts T4d.1 as soon as 4c stops at G4c-a, without waiting for
+the G4c-a verdict.** When Derek's G4c-a answer arrives, its changes come first, then T4c.5-T4c.6, then back to 4d. Derek: "our current sleeper hold is not a sleeper hold at all."
+Today `_doSleeperHold` (`src/Wrestler.js:2897`) is applied **from the front** (finisher input, 120 px reach), and `_tickSleeper`
+pins the attacker 50 px in front of the defender's face with two pose tweens. A sleeper is a rear hold: the attacker behind,
+his near arm round the neck (crook of the elbow under the chin), the other hand pushing the head into it, and the defender sinking.
+The waistlock already gets the attacker behind, so the sleeper starts from there. Stays behind `?waistlock=v1`; flag off
+byte-identical (the old front sleeper remains for flag off).
+
+**Decisions (Opus; Derek can overrule at G4d-a):**
+- **S1. Input.** In the waistlock hold, the attacker's **finisher** input = sleeper (the key the old sleeper uses; `power` is the
+  atomic drop, `action` the shove-off). With the flag on, the front sleeper in `tryFinisher` is **off**: the sleeper only comes
+  from behind. Read `tryFinisher` and the AI's `_attack('finisher')` (`AIHandler.js:475`) first and report every path that reaches
+  `_doSleeperHold`.
+- **S2. Keep the gameplay, replace the look.** `_tickSleeper`'s drain (4.5/s), z text, `tryEscape` mash, `_comeback`, rope
+  break and the slump to `down` stay as they are. What changes is the entry (from the hold, through `_endWaistlock`), the spacing
+  (behind, like W3, not 50 px in front) and the pose.
+- **S3. The pose** (pose keys in `waistlock.js` beside `WAISTLOCK_POSES`). Attacker: chest close behind the
+  defender's upper back, near arm over the near shoulder and round the neck, far hand at the back of the head.
+  **The wrap needs new art (Derek 2026-11-03):** the choking forearm runs across the throat *into depth*, perpendicular to the
+  picture, and a side-painted forearm rotated in 2D can't show that. So the near arm is the base upper arm (along the near side
+  of the defender's neck, elbow under his chin) plus a new **`forearm.sleeper_wrap`** variant: the elbow crook under the chin,
+  the forearm foreshortened going away from the camera across the throat, the hand hidden behind the far side of the neck.
+  Made like `forearm_grip.png` (`src/characters/thesz_procreate_v1.js` `variants.forearm`): same 117x351 canvas and elbow
+  pivot as `forearm.png`, so it swaps in by variant with no rig change. **One drawing for every rig (Derek 2026-11-03):** it is
+  mostly the elbow crook and a short foreshortened stub, so one master is fitted to each rig's forearm canvas, not regenerated.
+  Lou and George both at G4d-a. T4d.0. Defender: chin up, both hands up pulling at the choking forearm, knees soft. D12 still holds below
+  the belt: the attacker stays upstage and a half step back at the hips (lean in with `bend`, not the feet). The torso can't keep
+  the A-frame's gap and still reach the neck: measure torso overlap every frame and report it; if it can't be 0, show Derek the
+  frame at G4d-a and ask, as A7.
+- **S3b. The defender's arms fight, flail, then go limp (Derek 2026-11-03).** In Codex's T4d.0 still, George's far arm is
+  folded into his own torso ("all mangled"): that is a miss, in the still and in any game frame. The arms tell the story of the hold:
+  - `z` **fight**: both hands up at the choking forearm, prying (the near hand on it, the far hand reaching up behind it on the
+    far side), elbows out, small fast tugs.
+  - `zz` **flail**: the grip breaks; the arms swing and reach, uneven and off-beat, a hand slapping at the forearm or the
+    attacker's head, then slower each time. Authored loops with a seeded pick per swing so it never repeats in step, not one
+    sine.
+  - `zzz` **limp**: the hands slide down and the arms hang dead from the shoulders, swaying with the body's sink.
+  - An escape tick brings them back up one stage (limp -> flail -> fight), so the mash shows in the arms first.
+  Far arm rule: the far upper arm and forearm stay outside his own torso outline (the G8 forearm-in-torso count, want 0
+  pixels) or are hidden behind the attacker; never folded into his chest. Measure that every frame, both facings, both rigs.
+- **S4. The sink.** The z stages drive it: `z` standing, `zz` the defender's knees bend and his hands slow, `zzz` he is down to his
+  knees (get-ups' `KNEEL` key as the target) and the attacker follows him down into a crouch. An escape mash rises him back a stage
+  (one stage per successful `tryEscape` tick, no instant pop). The final slump to `down` (prone) goes from the knees.
+- **S5. Layering.** W4's order, except the attacker's near arm draws in front of the defender's head and neck; his far hand behind
+  the head.
+- **S6. Reversal: the small snapmare.** The defender's `power` while at `z` or `zz` (not `zzz`: too far gone). He grabs the arm at
+  his neck, drops to a knee and snaps the attacker over the shoulder. **Small** = not 4c's flip: about a half turn, the thrown man
+  lands **seated** (`pileSit`-like, legs forward, back to the thrower), stays seated a beat (0.8 s), then rises with the existing
+  get-up. Build it from 4c's snapmare clip with one option (`flip: 'full' | 'small'`), not a second copy. Damage `snapmareSmall: 7`,
+  sell `{ part: 'back', intensity: 0.5 }`. A6's room check applies. While he is seated, the thrower gets one free move:
+  later stages fill it (a rear chinlock, a kick to the back); for now he just gets up first.
+- **S7. AI.** The attrition AI used to sleeper from the front; with the flag on, its sleeper hunt goes tie-up -> go-behind ->
+  sleeper. `snapmareSmallOdds` (defender, rolled each z stage) Lou .20, George .10. Registry: `sleeperHold` gets a second trigger
+  line for the flag; `snapmareSmall` in the Lou and George kits, slot `sleeperReverse`.
+
+**Measures:** the attacker's near hand to the far side of the defender's neck (px), every frame of the hold; below-belt and torso
+overlap every frame; the step from the waistlock hold into the sleeper (first frame, max part) against 32.6 px; the sink's knee
+angles at each z stage; the small snapmare's rotation (rad), seat landing frame and landing x against the ring.
+
+- **T4d.0 (Codex, art; can run now, alongside 4c)** `forearm.sleeper_wrap` per S3, **one master, fitted to each rig**:
+  1. Generate one master donor (Lou's style is the bar), saved with a REPORT.md under
+     `Sprite sheets/AI Pilot/shared/articulation-donors/2026-11-03-sleeper-wrap-v1/`.
+  2. A fit script, like `tools/debug/build_george_grip.mjs`: per rig, scale the master whole-canvas onto that rig's `forearm.png`
+     canvas (Procreate Lou 117x351, `george-roster-v1` 426x439; never a tight bbox), line the crook up with the rig's elbow pivot,
+     keep the rig's own elbow-cap pixels (as the George grip kept its original elbow), and match the line weight and tone to the
+     rig's base forearm. Output `forearm_sleeper_wrap.png` beside each rig's `forearm.png`. One command rebuilds both.
+  3. Stills: Lou choking George and George choking Lou, base upper arm, both facings (four), at 1x and 3x. The defender's arms
+     in the S3b `z` fight pose (near hand prying the forearm, far hand up behind it), never folded into his torso. List misses
+     (seams at the elbow, line weight, tone) in px; no "reads" claims.
+  If George's fit fails Derek's eye, then and only then a George-specific donor. Derek approves before it is wired
+  (T4d.2b: `variants.forearm.sleeperWrap`, `semanticAnchors.crook` at the inside of the elbow, per rig). Art and the fit script only: no
+  game code, don't commit on top of Sonnet's work, don't push.
+- **T4d.1** Pure data: sleeper pose keys and spacing, the z-stage sink targets, `flip: 'small'` option values, tests.
+- **T4d.2** The sleeper from the hold (S1-S5) and the defender's arms (S3b), flag on, flag-off identity. **The wrap art is not
+  approved yet: build with each rig's base forearm**, the pose asking for `workingHand`/variant `sleeperWrap` so it falls back to the
+  base forearm when no such variant is registered. Don't install or register Codex's PNGs. Browser checks: escape, rope break, slump, match end
+  mid-hold leaves no state (`waistlock_cleanup.mjs` gets a sleeper case). Commit locally; no stop.
+- **T4d.2b** Only once Derek has approved the T4d.0 art (it will be in the Status): register `sleeperWrap` per rig from the fit
+  script's output, measure the crook to the defender's neck (px) both facings, commit. If not approved by T4d.4, skip it and
+  say so on the page; the G4d-a strips then show the base forearm.
+- **T4d.3** The small snapmare (S6), after 4c's snapmare clip (T4c.3). Commit locally; no stop.
+- **T4d.4** G4d-a page `research/animation/grapples-2026-10/g4d-a/index.html`: normal-speed loops, Lou on George, both facings:
+  sleeper through the sink to the slump; sleeper escaped; small snapmare. Misses first. **STOP at G4d-a.**
+- **T4d.5-T4d.6** after G4d-a: AI and kits (S7) and a one-pair soak; G4d page and the full gates as T4c.6. **STOP at G4d.**
+
+## Stage 4e: wristlock chains (Derek 2026-11-03), outline, written in full after G4d
+
+Derek: the sleeper "could be reversed into ... longer wrist locks that can lead to a follow-up or reversal." The idea is a chain of
+standing holds that pass back and forth, the 1950s technical style (Lou is the bar).
+- **Entry:** the defender in a sleeper (or waistlock) peels the arm off and turns out into a **wristlock** on it. Likely also from
+  the tie-up later (`MOVE_CATALOG.md` 2b lists wristlock and arm wringer as lockup transitions).
+- **The hold:** longer than the waistlock (a working hold, a few seconds), the held man bent, selling the arm, stamina drain.
+- **Follow-ups for the holder:** into `hammerlock` (built), `armDrag` (built), an arm wringer, later the mat `armBar`.
+- **Reversals for the held man:** roll/turn through and take a wristlock back (roles swap, like the switch, with the steal hitch so
+  it can't chain every frame); maybe a reversal into a go-behind, which closes the loop to the waistlock.
+- **Questions for Derek before it is written:** how long a wristlock may last; how many swaps a chain may run before someone has
+  to break it; which follow-ups first; whether the held man can strike out of it (a back elbow).
+
+## Stage 4f: the German suplex, then the bridging German (Derek 2026-11-03), outline, written in full after G4c
+
+Derek picked the German from 4b's "later" list (back suplex and rollup still wait). Behind `?waistlock=v1`, from the hold.
+- **Input:** to decide when written; the hold's `power` is the atomic drop, so likely `power` with up held, or the finisher key
+  once the sleeper (4d) has its own. Settle it with 4d's S1 so the keys don't collide.
+- **4f-1, the German (release):** the attacker keeps his waistlock grip, drops his hips and arches back; the defender goes over
+  backward, a full rotation like the suplex clip's defender `tilt` (0 -> 4.76) but from behind, and lands on his shoulders and
+  upper back, then flat into the down state with a big back sell. The attacker lets go at the top of the arch and rolls or sits
+  back out of it. Damage near `suplex` (20); a late-match move (MOVE_CATALOG 2b tiers: earned by wear-down).
+  New `germanSuplex.js` clip, two tracks, base parts. Reversal window like A3 if Derek wants one (back elbows, or landing on his feet).
+- **4f-2, the bridging German ("eventually"):** the same throw, but the attacker doesn't let go: he holds the arch as a bridge
+  (head and feet on the mat, belly up) with the defender's shoulders pinned, and the count goes straight in through
+  `Arena.startPin` (`Arena.js:3283`, the Thesz press's path) with a bridge pose in place of `pinHold`. The kick-out breaks the
+  bridge: both men fall flat.
+- **Risk to check first:** a full bridge (torso upside down, head on the mat, knees bent) has never been posed on these rigs. `bend`
+  is the only torso pitch that draws (`lean` isn't drawn), so the bridge likely needs whole-body `tilt` plus `bend` plus knee
+  angles. 4f-2 starts with a one-pose spike on Procreate Lou, both facings, shown to Derek before any throw is built on it. If base
+  parts can't hold a bridge, report the frame and what's missing; no art request without Derek.
+- **D12 during the throw:** as A7: overlap frames reported raw, Derek judges.
 
 ## Later stages (outline, written in full after G1)
 

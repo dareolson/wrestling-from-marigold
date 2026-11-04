@@ -1,0 +1,60 @@
+<!doctype html><meta charset="utf-8"><title>G4c-a r3: far arm, knees, speed, fridge lift</title>
+<style>:root{--bg:#1c1c1c;--fg:#ddd;--panel:#2a2a2a;--line:#444}body{font:14px system-ui;margin:20px;background:var(--bg);color:var(--fg);max-width:1240px}h2{margin-top:26px}.pair{display:flex;gap:10px;flex-wrap:wrap}.cap{font-size:12px;color:#aaa;max-width:620px}canvas{background:#000;display:block;max-width:100%}.note{background:var(--panel);padding:8px 12px;border-left:3px solid #c84;margin:10px 0}table{border-collapse:collapse;font-size:12px;margin:8px 0}td,th{border:1px solid var(--line);padding:3px 7px;text-align:left;vertical-align:top}th{background:var(--panel)}button{font:inherit;padding:4px 10px}pre{background:var(--panel);padding:8px;overflow:auto;font-size:12px}li{margin:4px 0}a{color:#9ad}</style>
+<h1>G4c-a, revision 3: far arm, knees, snapmare speed, fridge lift</h1><div class="note"><b>For Derek to judge.</b> Normal-speed loops from the tie-up. Misses first, then the measures. Earlier pages: <a href="../g4c-a2/index.html">r2</a>, <a href="../g4c-a/index.html">first page</a>. <b>Pick the snapmare speed:</b> 1.5x is in the code, 2x is in the strips beside it.</div>
+<p><button id="pp">pause</button> <button id="sl">slow (0.25&times;)</button></p>
+<h2>Misses</h2><ul><li><b>Locked arms are not locked:</b> through the lift the attacker's near hand moves 26.2 px along his own torso and 17.1 px across it (far hand 15.8 / 15.4), 17 frames from the end of the lead-in to the top. The hands are IK'd onto the defender's hip (the clip's grips), and his hip rises 80 px while the attacker's own chest rises less. A deeper squat brought it from 42 to 26 px.</li><li><b>The lift peaks lower than r2:</b> the defender's pelvis tops out 59 px over the attacker's pelvis (r2: 58.3), because the attacker now leans back 29&deg;, so his chest is 49.7 px over his pelvis (r2: 58.4). Defender's pelvis is above his chest by 9.3 px.</li><li><b>Lead-in step still there:</b> first clip frame max part step 36.6 px (drop), 40.7 px (snapmare 1.5x), 40.7 px (2x), against the tie-up's worst 32.7 px. The snapmare number is bigger than r2's 15.6 px: its reach is now 0.10 s, so the same pose change happens in fewer frames.</li><li><b>D12 overlap not cleared (not waived, layering does not fix it):</b> drop below-belt max 1718 px, torso 196 px (r2: 758 / 0); snapmare 1.5x below-belt 1838 px, torso 543 px; 2x 1744 / 587. The wrap puts chest on back (chest to back 32.3 px at the wrap, 51.2 px at the top); Derek judges those frames (A7).</li><li><b>Elbows and the old moves:</b> the knee audit's baseline lists 136 knee-failure runs in shipped moves (armBar, figureFour, piledriver, suplex, ...), not fixed here: <code>research/animation/grapples-2026-10/knee-audit-first-run.txt</code>. Elbows are counted by the audit but never fail it.</li><li><b>Still open from before:</b> hands to the head, foot support, the supported kneel, the snapmare's rise facing snap. Not touched.</li></ul>
+<h2>Atomic drop, the fridge lift (T4c.4f) with the knees fixed (T4c.4d): Lou on George</h2><div class="pair"><div><canvas data-dir="./frames/drop-lou-george-l" data-n="153" width="620" height="360"></canvas><div class="cap">drop-lou-george-l: attacker first facing left; clip starts at frame 80</div></div><div><canvas data-dir="./frames/drop-lou-george-r" data-n="153" width="620" height="360"></canvas><div class="cap">drop-lou-george-r: attacker first facing right; clip starts at frame 80</div></div></div>
+<h2>The old lift (r2), the toddler lift, for comparison</h2><div class="pair"><div><canvas data-dir="../g4c-a2/frames/drop-lou-george-l" data-n="143" width="620" height="360"></canvas><div class="cap">drop-lou-george-l: attacker first facing left; clip starts at frame 80 (r2)</div></div><div><canvas data-dir="../g4c-a2/frames/drop-lou-george-r" data-n="143" width="620" height="360"></canvas><div class="cap">drop-lou-george-r: attacker first facing right; clip starts at frame 80 (r2)</div></div></div>
+<h2>Snapmare at 1.5x (shipped), landing 260 px in front: Lou on George, George reverses inside the lift</h2><div class="pair"><div><canvas data-dir="./frames/snapmare-lou-george-l" data-n="155" width="620" height="360"></canvas><div class="cap">snapmare-lou-george-l: attacker first facing left; clip starts at frame 86</div></div><div><canvas data-dir="./frames/snapmare-lou-george-r" data-n="155" width="620" height="360"></canvas><div class="cap">snapmare-lou-george-r: attacker first facing right; clip starts at frame 86</div></div></div>
+<h2>Snapmare at 2x</h2><div class="pair"><div><canvas data-dir="../g4c-a3-2x/frames/snapmare-lou-george-l" data-n="147" width="620" height="360"></canvas><div class="cap">snapmare-lou-george-l: attacker first facing left; clip starts at frame 86</div></div><div><canvas data-dir="../g4c-a3-2x/frames/snapmare-lou-george-r" data-n="147" width="620" height="360"></canvas><div class="cap">snapmare-lou-george-r: attacker first facing right; clip starts at frame 86</div></div></div>
+<h2>Measures (px at scale 1)</h2><table><tr><th>fix</th><th>measure</th><th>value</th></tr>
+<tr><td>4c far arm</td><td>far-arm pixels drawn over his own torso, worst frame, both men, every clip frame (61 frames)</td><td>snapmare now 0 px, 0 frames over; r2 layers: 541-643 px, over in every one of 61 frames (measured on the r2 layer order, same probe). Drop (no layers, default stacking): 0 px.</td></tr>
+<tr><td>4c order across the end</td><td>far arm over torso, last clip frame vs first frame after</td><td>[0,0] vs [0,0] (a, d): no pop. r2 order: [541,630] then [0,0], the pop.</td></tr>
+<tr><td>4d knees</td><td>flex of the drawn knees over each clip, min to max (proper bend &gt; 0; below -0.25 fails)</td><td>see knee table; <code>clip_knee_audit</code> passes, no atomicDrop or snapmare run in its failures</td></tr>
+<tr><td>4f lift</td><td>torso from vertical at the top; chest to back; defender's thigh from vertical; feet over the mat</td><td>-29&deg;; 32.3 to 51.2 px; near 55.1&deg; / far 49.3&deg;; 113 px (highest foot 120.5)</td></tr>
+<tr><td>4f timing</td><td>reverse window vs lift</td><td>window 0.2 s from the lift's start; lift now 0.42 s plus 0.06 s hitch (r2: 0.30 s), so the window covers 48% of the lift (r2 67%): it closes while he is still on the way up. Say if that feels short.</td></tr>
+<tr><td>4f planted soles</td><td>standing man's ankle px/frame, lift beat</td><td>att.near.lift 15.45, att.far.lift 15.37 (limit 2.5)</td></tr></table>
+<h2>Snapmare speed and travel</h2><table><tr><th></th><th>flip</th><th>rad/frame max</th><th>peak tilt</th><th>landing x</th><th>boot to head, min</th><th>first-frame step</th></tr><tr><td>1.5x (shipped), George throws Lou, facing right</td><td>267&deg; in 0.307 s</td><td>0.29</td><td>4.71</td><td>700 (thrower 479, 221 px in front; ring margin 179)</td><td>92.2</td><td>40.7</td></tr><tr><td>2x</td><td>267&deg; in 0.230 s</td><td>0.39</td><td>4.71</td><td>700 (thrower 479, 221 px in front; ring margin 179)</td><td>92.2</td><td>40.7</td></tr><tr><td>r2 (1x, landFwd 215)</td><td>267&deg; in 0.460 s</td><td>0.19</td><td>4.71</td><td>671 (thrower 491, 181 px in front; ring margin 208)</td><td>41.5</td><td>15.6</td></tr></table>
+<h2>Knee flex through each clip (drawn joints, rad)</h2><table><tr><th>strip</th><th>w1 (Lou)</th><th>w2 (George)</th></tr><tr><td>drop-lou-george-l</td><td>-0.1 to 0.63</td><td>0.1 to 0.49</td></tr><tr><td>drop-lou-george-r</td><td>-0.1 to 0.63</td><td>0.1 to 0.49</td></tr><tr><td>snapmare-lou-george-l</td><td>-0.1 to 0.21</td><td>-0.1 to 0.18</td></tr><tr><td>snapmare-lou-george-r</td><td>-0.1 to 0.21</td><td>-0.1 to 0.18</td></tr></table>
+<h2>Manifest</h2><pre>{
+ "commit": "d248c04",
+ "dirty": true,
+ "branch": "story/marigold-opening",
+ "rigs": "Lou (thesz-procreate-v1) on George (george-roster-v1)",
+ "tool": "tools/debug/grapples_g4c_a.mjs (WFM_SNAPMARE_SPEED=2 for the 2x run)",
+ "constants": {
+  "ATOMIC": {
+   "lift": 0.42,
+   "hitch": 0.06,
+   "drop": 0.12,
+   "impact": 0.6,
+   "sell": 0.5,
+   "duration": 1.1,
+   "reverseWindow": 0.2,
+   "damageKey": "atomicDrop",
+   "sellSpec": {
+    "part": "back",
+    "intensity": 0.7
+   },
+   "liftPeak": 80,
+   "stumbleFwd": 36
+  },
+  "SNAPMARE": {
+   "speed": 1.5,
+   "reach": 0.09999999999999999,
+   "pull": 0.13333333333333333,
+   "flip": 0.3066666666666667,
+   "land": 0.54,
+   "duration": 1.03,
+   "turns": 0,
+   "landFwd": 260,
+   "damageKey": "snapmare",
+   "sellSpec": {
+    "part": "back",
+    "intensity": 1
+   }
+  }
+ }
+}</pre>
+<script>const cvs=[...document.querySelectorAll('canvas')];let paused=false,rate=1;const imgs=cvs.map(c=>Array.from({length:+c.dataset.n},(_,i)=>{const im=new Image();im.src=c.dataset.dir+'/s'+String(i).padStart(4,'0')+'.jpg';return im}));let f=0,last=0;function tick(t){if(!paused&&t-last>=1000/60/rate){last=t;cvs.forEach((c,k)=>{const a=imgs[k],im=a[f%a.length];if(im.complete)c.getContext('2d').drawImage(im,0,0)});f++}requestAnimationFrame(tick)}
+requestAnimationFrame(tick);document.getElementById('pp').onclick=e=>{paused=!paused;e.target.textContent=paused?'play':'pause'};document.getElementById('sl').onclick=e=>{rate=rate===1?0.25:1;e.target.textContent=rate===1?'slow (0.25\u00d7)':'normal speed'};</script>

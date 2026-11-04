@@ -1,0 +1,16 @@
+Knee audit, first run on the shipped moves (2026-11-03, T4c.4d). Hyperextended past -0.25 rad (a knee bent backward) or flexed past 2.55. Worst angle per move, frames failing (both rigs, both facings, every track). Not fixed here.
+
+armBar: worst -1.60 rad, 1964 frames
+dropkick: worst -1.60 rad, 160 frames
+frontKick: worst -1.55 rad, 80 frames
+piledriver: worst -1.34 rad, 516 frames
+figureFour: worst -1.30 rad, 2996 frames
+suplex: worst -0.95 rad, 798 frames
+kneeDrop: worst -0.80 rad, 26 frames
+hipToss: worst -0.80 rad, 320 frames
+ankleLock: worst -0.80 rad, 1424 frames
+bodySlam: worst -0.80 rad, 454 frames
+elbowDrop: worst -0.60 rad, 132 frames
+theszPress: worst -0.50 rad, 88 frames
+divingElbow: worst -0.40 rad, 32 frames
+topDive: worst -0.40 rad, 32 frames

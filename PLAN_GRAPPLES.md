@@ -89,6 +89,13 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - T4c.1-T4c.3: 2d3fa8b, 0eb52f1, e2d6a1e. `waistlockThrows.js`; atomic drop (attacker's power in the hold, damage 12, back sell carried on his feet); snapmare (defender's power inside 0.20 s of the lift, flip 1 turn + 270 degrees, damage 16, denied at the ropes). `waistlock_throws_assert` 36/36, `waistlock_cleanup` 28/28, `grapples_flagoff` identical, coverage 26.
   Misses: lead-in first frame steps 45 px vs the tie-up's 32.7 (knee beats shin, tried two fixes, reverted); D12 overlap in every beat and the flip; soles over 2.5 px/frame; hands to the head up to 32 px.
 - T4c.4: (this commit). [G4c-a page](research/animation/grapples-2026-10/g4c-a/index.html), four strips, misses first. STOPPED at G4c-a: Derek judges the drop, the flip (`SNAPMARE.turns` 1 or 0) and the A7 frames.
+- **G4c-a: notes from Derek 2026-11-03, not approved:** the atomic drop should lift higher; the snapmare flips twice, want once (`SNAPMARE.turns` 0); layering is off, e.g. George's arm after the snap. Opus saw more on the same frames (snapmare-lou-george-r): see T4c.4b. Next T4c.4b, then straight on to 4d (Derek's order); T4c.5-T4c.6 after G4c-a passes.
+- T4c.4b: d248c04 (with Codex's local repairs: knee bridge in `exitBlendPose`, grip redraw before `undoBlend`, head lowered with the pull). Lift 80 (chest 58.3 px over pelvis), one flip 267 deg, arms down by +0.2 s, boot 41.5 px clear (`landFwd` 215). Opus reran the suite on Node 22: 1158/1158. [G4c-a r2](research/animation/grapples-2026-10/g4c-a2/index.html).
+  Misses: lead-in step 36.4 px (drop) vs 32.8; D12 overlap (drop 758, snapmare 1519 below the belt, 89 torso); `grapples_assert` not run after Codex's `lockup.js` change, which reaches the default game.
+- **Derek on r2 (2026-11-03):** after the snapmare Lou's far (back) arm pops in front of his torso for a moment. Cause (Opus): the snapmare's `layers` windows list `lArm`, `rArm` after each man's own torso, so whichever is the far arm in that facing draws over his body until the window ends at `D`. T4c.4c.
+- **Derek on r2 (2026-11-03): George's legs "go gumby" when he is lifted; it breaks the art, fix it and prevent it.** Opus, from `g4c-a2/frames/drop-lou-george-r` 84-105: his shins swing forward of his knees through the lift (knees bent backward). Same trap as G1b: on the upright path a positive `lKnee` puts the ankle forward of the knee (`limb_limits_audit.mjs` header), and `JOINT_LIMITS` clamps the number, not the drawn bend. T4c.4d.
+- T4c.4c-T4c.4f: (this commit). [G4c-a r3](research/animation/grapples-2026-10/g4c-a3/index.html): far arm 0 px over his torso (was 541-643, with a pop at the end), knees fixed + `clip_knee_audit` (baseline lists 14 shipped moves, not fixed), snapmare 1.5x shipped (2x beside it, `landFwd` 260), fridge lift. Gates: `waistlock_throws_assert`, `grapples_assert`, `waistlock_cleanup`, `grapples_flagoff`, focused tests 71/71.
+  Misses: locked arms 26/16 px drift along his torso; D12 overlap; lead-in step 36.6 / 40.7 px; reverse window is now 48% of the lift. Derek picks 1.5x or 2x.
 - T6.1-T6.3: 4774ed4, 3454930, de33540. Default fighters Procreate Lou and `george-roster-v1`; `rosterKits.js` is the one kit file; `moves:kits` table and kit checks. Suite 1124/1124, build, coverage 23, kits, `grapples_assert` all passed. STOPPED at G6.
   Misses: Guido has no `hammerlockOdds` or `cornerWhipOdds` (allow-listed, not retuned); no shadowed moves; `grapples_flagoff` with no `WFM_URL` (self-started server) prints DIFFERENT at frame 0 (about 1e-5 in pose) also on the code before T6.1, identical with `WFM_URL=http://localhost:5173` (flagoff now pins `thesz`/`george`).
 
@@ -180,6 +187,7 @@ so nothing visible changes. The lockup times out at 0.8 s, and the AI decides af
 - Commit each task locally. Don't push. Keep `STORY_*.md` and `research/story/` out of every commit: another session is
   editing them.
 - Use px/frame at 60 fps. The planted-foot limit is 2.5 px/frame (the get-ups' step limit).
+- **No knee bends backward, ever** (Derek 2026-11-03: "we break the art"). From T4c.4d on, `clip_knee_audit` passes before any strip goes to Derek; a positive `lKnee` on the upright path is a hyperextension, whatever the clamp allows. Run `WFM_URL=... node tools/debug/clip_knee_audit.mjs`; the baseline lists the old failures (`research/animation/grapples-2026-10/knee-audit-first-run.txt`).
 
 ## Stage 1: the tie-up, the drive and the steal, then STOP (G1)
 
@@ -613,6 +621,75 @@ standing man against the 2.5 px/frame limit.
 - **T4c.4 G4c-a page** `research/animation/grapples-2026-10/g4c-a/index.html`: one normal-speed loop strip per move, Lou on
   George, both facings (four strips), each through 8 frames after the man is back up or down; misses first, then the
   measures. Commit locally, **STOP at G4c-a**: Derek judges the drop, the flip and the A7 frames.
+- **T4c.4b G4c-a fixes (Derek 2026-11-03).** Frame numbers below are `g4c-a/frames/snapmare-lou-george-r` (George throws Lou).
+  1. **Lift higher.** The drop's lift peaks at `lift: 55` (`atomicDrop.js`, key at `L`). Raise it so the defender's pelvis rises to
+     about the attacker's chest (try ~100; report the pelvis height over the attacker's pelvis at the top, both rigs). Lengthen `L`
+     only if the speed looks wrong to you; `reverseWindow` stays 0.20. The snapmare starts from the drop's lift **at the moment of
+     the reversal** (today its first key assumes `lift: 20`): read the live value, so a higher lift doesn't pop. Report the first-frame step.
+  2. **One flip.** `SNAPMARE.turns = 0` (270 degrees, flat on his back). Keep the flip's duration; report the peak and rad/frame.
+     Lower `PEAK` only if the single turn looks floaty at 110; say what you chose.
+  3. **The thrower's arms over the thrown man** (Derek's note), frames ~124-132: George's near forearm and hand draw in front of
+     Lou's inverted torso and face during the flip and the landing, and in 132 his arm crosses Lou's chest up to his own chin. The
+     A5 window puts the thrower behind from mid-pull, so find why the arms escape it (an arm part missing from `order`, `holdGrips`
+     stacking after the clip, or the arm segments drawn by a different key) and report the cause before the fix. Through the flip
+     and landing the thrower's arms draw behind the thrown man.
+  4. **His arms hang out after the snap** (Opus, same frames): from the landing (~136) to ~150 the thrower's arms stay stretched
+     forward at the fallen man. Once the head grip lets go, the arms follow through and drop to his sides within 0.2 s as he rises.
+  5. **His boot lands on the man's head** (Opus, frame ~150): the thrower's rise from the knee plants his near boot over Lou's head.
+     Report the boot-to-head distance after the landing; the rise steps clear (or the landing goes a little further: `landFwd`).
+  Redo the four strips on the G4c-a page (keep the old ones below, labelled), misses first, these five measured. Focused tests,
+  `waistlock_throws_assert`, `grapples_flagoff`. Commit locally, then go straight on to Stage 4d (Derek's order).
+- **T4c.4c The far arm (Derek 2026-11-03).** In `snapmare.js` `layers`, each man's arms are listed anatomically (`lArm`, `rArm`) after
+  his own torso, so his far arm draws in front of his body, in one facing or the other, until the window ends and normal stacking puts
+  it back: Derek's "Lou's back arm pops in front of his torso". Rebuild both windows per facing like W4 (`waistlockLayerOrder`
+  resolves near/far): each man is far arm, far leg, torso, head, near leg, near arm, and the window order between the two men stays
+  as A5. Lying on his back after the landing, the thrown man's far arm stays behind his torso to the end of the clip and after it (no
+  pop at `D`). This is very likely also r2's "his own arms crossing his chest" (item 3): recheck that frame after the fix, don't
+  change the tuck. Measure: far-arm pixels drawn over his own torso, every frame, both men, both facings (want 0), and the
+  depth order on the last clip frame vs the first frame after. Read the atomic drop for the same pattern (it has no `layers` today:
+  say what its arms do). Gates: focused tests, `waistlock_throws_assert`, `grapples_flagoff`, and **`grapples_assert`** (Codex's
+  `exitBlendPose` change reaches every default tie-up exit). Add the strips to the r2 page as r3, commit locally, then on to 4d.
+- **T4c.4d Knees bend the right way, and a guard so no move breaks one again (Derek 2026-11-03, before 4d).**
+  1. **Fix the lift.** The lifted man's legs hang: thighs a little forward, knees softly bent with the heels *behind* the knees,
+     the way a man's legs hang when he is lifted by the waist. Fix the atomic drop's defender keys (`lKnee`/`rKnee` 0.35 / 0.30
+     at `L`, 0.6 at `I`, and the rest) by the rendered result, not the sign you expect. Check the snapmare's flip tuck (`lKnee`
+     0.4 -> 1.6) and the thrower's kneel (`rKnee` 1.4) the same way.
+  2. **The guard, a permanent check.** `tools/debug/clip_knee_audit.mjs`, built on `limb_limits_audit.mjs`'s rendered-joint
+     reading (flex off the drawn hip, knee and ankle, front taken from the torso, so it holds lying or upside down): for **every
+     clip in `src/animation/clips/index.js`** plus the waistlock hold, the sleeper's poses when they exist, and the get-ups, sample
+     every frame at 60 fps, both facings, on Procreate Lou and `george-roster-v1`. Fail on any knee hyperextended past -0.25 rad
+     or flexed past 2.55; also report elbows the same way. Print each failure as move, rig, facing, frame, joint and angle.
+     First run: report every existing failure in the shipped moves as a list for Opus, and **don't fix those here** except the
+     two waistlock throws. Add a baseline file like the coverage one so old failures are listed but new ones fail.
+  3. **Make it a gate.** Add `clip_knee_audit` to the gates of every G-package from now on (T4c.6, T4d, all later stages) and to
+     the Rules section's checks. A move that bends a knee backward doesn't go to Derek.
+  Write the convention down once, where an author will see it: a comment block at the top of `src/animation/clips/index.js`
+  (which sign of `lKnee`/`rKnee` folds the heel back on the upright path, and that the clamp doesn't protect the art). Strips of
+  the fixed lift both facings on the r2 page as r3 (with T4c.4c), knee angles listed per frame. Commit locally, then on to 4d.
+- **T4c.4e Snapmare faster, Lou carried further (Derek 2026-11-03).** "Lou should travel a little more with the snapmare and it
+  should probably be 2x speed, or 1.5x." Put the speed in one constant (`SNAPMARE.speed`, scaling reach, pull and flip; the
+  thrower's rise after the landing can stay as is) and the travel in `landFwd` (215 today: try about 260, keep A6's ring check
+  and the boot clearance of T4c.4b). Make the r3 snapmare strips at **both 1.5x and 2x**, side by side, both facings, and list for
+  each the flip's rad/frame, the peak, the landing x and the boot-to-head gap. Derek picks; ship 1.5x in code until he does.
+- **T4c.4f The lift is a fridge lift, not a toddler lift (Derek 2026-11-03).** "Lou lifts him like he's a toddler; normally they
+  wrap them up and lift them kind of like a fridge, meaning it's more back than arms." Today the attacker's arms rise (`lArm` 0.7 ->
+  1.0) while his body only straightens. Rebuild the drop's first beats:
+  - **Wrap** (in the lead-in): he steps in from the A-frame, chest to the defender's back, both arms locked tight round the waist
+    (forearms level across the belly, hands together in front), and **sits into a squat** (knees bent the right way: T4c.4d's audit).
+  - **Lift with legs and back:** the knees drive straight, the hips come forward and the torso **leans back**, and the defender rises
+    *with* his chest, pressed to it. The arms stay locked: shoulder and elbow fixed relative to his torso through the lift (the arms
+    don't do the lifting). His feet stay planted. It is heavy: slower off the floor, a small hitch at the top before the drop. Keep
+    `reverseWindow` 0.20 s from the lift's start; say if the new lift's timing makes that window feel wrong on the strips.
+  - The defender's legs **kick up** as he goes up (Derek 2026-11-03: "George's legs would kick up higher too"): as his weight tips
+    back onto the attacker's chest his feet swing forward and up, thighs well forward of his hips at the top (knees bent the right
+    way, T4c.4d), then they drop for the seat on the knee. Report his thigh angle from vertical and his feet's height over the mat
+    at the top of the lift.
+  - Check first which sign of `bend` leans the torso back on this rig (`lean` isn't drawn); read it off the render.
+  - **D12:** a wrap is chest to back. Keep the attacker's hips a half step back as long as possible (lean, don't step under early)
+    and report below-the-belt and torso overlap per beat; Derek judges those frames (A7). Don't hide them with layering.
+  Measures: his hands' position relative to his own torso through the lift (want near constant: locked arms); his torso angle from
+  vertical at the top; the gap from his chest to the defender's back (px); his planted soles against 2.5 px/frame; the knee audit.
+  On the r3 page with the other fixes, old lift strip beside the new one.
 - **T4c.5 Kits, AI, soak** (A8), after G4c-a. `grapples_soak.mjs` with `waistlock=v1`, one pair at a time (two at once crashed in
   T4b.4): drops, reversals, denied reversals counted; fail on page errors, `orphanRescue`, stuck states.
 - **T4c.6 G4c page**: strips of both moves, both attackers, both facings; table, misses first. Gates: focused tests,

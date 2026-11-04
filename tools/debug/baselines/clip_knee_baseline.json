@@ -1,0 +1,695 @@
+{
+ "about": "clip_knee_audit baseline: knee failures that shipped before the guard (T4c.4d). New or worse ones fail.",
+ "limits": {
+  "knee": {
+   "min": -0.25,
+   "max": 2.55
+  },
+  "elbow": {
+   "min": -0.25,
+   "max": 2.75
+  }
+ },
+ "failures": {
+  "piledriver|thesz-procreate-v1|defender|R|nearKnee": {
+   "worst": -0.549,
+   "frame": 85,
+   "frames": 41
+  },
+  "piledriver|thesz-procreate-v1|defender|R|farKnee": {
+   "worst": -0.449,
+   "frame": 85,
+   "frames": 33
+  },
+  "piledriver|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -1.311,
+   "frame": 102,
+   "frames": 21
+  },
+  "piledriver|thesz-procreate-v1|attacker|R|farKnee": {
+   "worst": -1.299,
+   "frame": 97,
+   "frames": 33
+  },
+  "bodySlam|thesz-procreate-v1|defender|R|nearKnee": {
+   "worst": -0.796,
+   "frame": 67,
+   "frames": 64
+  },
+  "bodySlam|thesz-procreate-v1|defender|R|farKnee": {
+   "worst": -0.646,
+   "frame": 67,
+   "frames": 49
+  },
+  "suplex|thesz-procreate-v1|defender|R|farKnee": {
+   "worst": -0.797,
+   "frame": 79,
+   "frames": 67
+  },
+  "suplex|thesz-procreate-v1|defender|R|nearKnee": {
+   "worst": -0.946,
+   "frame": 79,
+   "frames": 67
+  },
+  "suplex|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -0.847,
+   "frame": 79,
+   "frames": 35
+  },
+  "suplex|thesz-procreate-v1|attacker|R|farKnee": {
+   "worst": -0.647,
+   "frame": 79,
+   "frames": 30
+  },
+  "dropkick|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -1.599,
+   "frame": 13,
+   "frames": 20
+  },
+  "dropkick|thesz-procreate-v1|attacker|R|farKnee": {
+   "worst": -1.499,
+   "frame": 13,
+   "frames": 20
+  },
+  "frontKick|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -1.548,
+   "frame": 13,
+   "frames": 20
+  },
+  "elbowDrop|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -0.599,
+   "frame": 7,
+   "frames": 20
+  },
+  "elbowDrop|thesz-procreate-v1|attacker|R|farKnee": {
+   "worst": -0.499,
+   "frame": 7,
+   "frames": 13
+  },
+  "kneeDrop|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -0.8,
+   "frame": 9,
+   "frames": 7
+  },
+  "divingElbow|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "divingElbow|thesz-procreate-v1|attacker|R|farKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "topDive|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "topDive|thesz-procreate-v1|attacker|R|farKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "theszPress|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -0.5,
+   "frame": 0,
+   "frames": 10
+  },
+  "theszPress|thesz-procreate-v1|attacker|R|farKnee": {
+   "worst": -0.5,
+   "frame": 0,
+   "frames": 12
+  },
+  "figureFour|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -1.3,
+   "frame": 36,
+   "frames": 242
+  },
+  "figureFour|thesz-procreate-v1|attacker|R|farKnee": {
+   "worst": -0.9,
+   "frame": 57,
+   "frames": 236
+  },
+  "figureFour|thesz-procreate-v1|defender|R|nearKnee": {
+   "worst": -0.9,
+   "frame": 78,
+   "frames": 144
+  },
+  "figureFour|thesz-procreate-v1|defender|R|farKnee": {
+   "worst": -0.3,
+   "frame": 78,
+   "frames": 127
+  },
+  "hipToss|thesz-procreate-v1|defender|R|nearKnee": {
+   "worst": -0.8,
+   "frame": 39,
+   "frames": 43
+  },
+  "hipToss|thesz-procreate-v1|defender|R|farKnee": {
+   "worst": -0.65,
+   "frame": 39,
+   "frames": 37
+  },
+  "ankleLock|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -0.8,
+   "frame": 18,
+   "frames": 178
+  },
+  "ankleLock|thesz-procreate-v1|attacker|R|farKnee": {
+   "worst": -0.8,
+   "frame": 18,
+   "frames": 178
+  },
+  "armBar|thesz-procreate-v1|attacker|R|nearKnee": {
+   "worst": -1.6,
+   "frame": 36,
+   "frames": 205
+  },
+  "armBar|thesz-procreate-v1|attacker|R|farKnee": {
+   "worst": -1.4,
+   "frame": 36,
+   "frames": 202
+  },
+  "armBar|thesz-procreate-v1|defender|R|nearKnee": {
+   "worst": -0.6,
+   "frame": 78,
+   "frames": 35
+  },
+  "armBar|thesz-procreate-v1|defender|R|farKnee": {
+   "worst": -0.7,
+   "frame": 141,
+   "frames": 49
+  },
+  "piledriver|thesz-procreate-v1|defender|L|nearKnee": {
+   "worst": -0.549,
+   "frame": 85,
+   "frames": 41
+  },
+  "piledriver|thesz-procreate-v1|defender|L|farKnee": {
+   "worst": -0.449,
+   "frame": 85,
+   "frames": 33
+  },
+  "piledriver|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -1.311,
+   "frame": 102,
+   "frames": 21
+  },
+  "piledriver|thesz-procreate-v1|attacker|L|farKnee": {
+   "worst": -1.299,
+   "frame": 97,
+   "frames": 33
+  },
+  "bodySlam|thesz-procreate-v1|defender|L|nearKnee": {
+   "worst": -0.796,
+   "frame": 67,
+   "frames": 64
+  },
+  "bodySlam|thesz-procreate-v1|defender|L|farKnee": {
+   "worst": -0.646,
+   "frame": 67,
+   "frames": 49
+  },
+  "suplex|thesz-procreate-v1|defender|L|farKnee": {
+   "worst": -0.797,
+   "frame": 79,
+   "frames": 67
+  },
+  "suplex|thesz-procreate-v1|defender|L|nearKnee": {
+   "worst": -0.946,
+   "frame": 79,
+   "frames": 67
+  },
+  "suplex|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -0.847,
+   "frame": 79,
+   "frames": 35
+  },
+  "suplex|thesz-procreate-v1|attacker|L|farKnee": {
+   "worst": -0.647,
+   "frame": 79,
+   "frames": 30
+  },
+  "dropkick|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -1.599,
+   "frame": 13,
+   "frames": 20
+  },
+  "dropkick|thesz-procreate-v1|attacker|L|farKnee": {
+   "worst": -1.499,
+   "frame": 13,
+   "frames": 20
+  },
+  "frontKick|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -1.548,
+   "frame": 13,
+   "frames": 20
+  },
+  "elbowDrop|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -0.599,
+   "frame": 7,
+   "frames": 20
+  },
+  "elbowDrop|thesz-procreate-v1|attacker|L|farKnee": {
+   "worst": -0.499,
+   "frame": 7,
+   "frames": 13
+  },
+  "kneeDrop|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -0.8,
+   "frame": 9,
+   "frames": 7
+  },
+  "divingElbow|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "divingElbow|thesz-procreate-v1|attacker|L|farKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "topDive|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "topDive|thesz-procreate-v1|attacker|L|farKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "theszPress|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -0.5,
+   "frame": 0,
+   "frames": 10
+  },
+  "theszPress|thesz-procreate-v1|attacker|L|farKnee": {
+   "worst": -0.5,
+   "frame": 0,
+   "frames": 12
+  },
+  "figureFour|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -1.3,
+   "frame": 36,
+   "frames": 242
+  },
+  "figureFour|thesz-procreate-v1|attacker|L|farKnee": {
+   "worst": -0.9,
+   "frame": 57,
+   "frames": 236
+  },
+  "figureFour|thesz-procreate-v1|defender|L|nearKnee": {
+   "worst": -0.9,
+   "frame": 78,
+   "frames": 144
+  },
+  "figureFour|thesz-procreate-v1|defender|L|farKnee": {
+   "worst": -0.3,
+   "frame": 78,
+   "frames": 127
+  },
+  "hipToss|thesz-procreate-v1|defender|L|nearKnee": {
+   "worst": -0.8,
+   "frame": 39,
+   "frames": 43
+  },
+  "hipToss|thesz-procreate-v1|defender|L|farKnee": {
+   "worst": -0.65,
+   "frame": 39,
+   "frames": 37
+  },
+  "ankleLock|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -0.8,
+   "frame": 18,
+   "frames": 178
+  },
+  "ankleLock|thesz-procreate-v1|attacker|L|farKnee": {
+   "worst": -0.8,
+   "frame": 18,
+   "frames": 178
+  },
+  "armBar|thesz-procreate-v1|attacker|L|nearKnee": {
+   "worst": -1.6,
+   "frame": 36,
+   "frames": 205
+  },
+  "armBar|thesz-procreate-v1|attacker|L|farKnee": {
+   "worst": -1.4,
+   "frame": 36,
+   "frames": 202
+  },
+  "armBar|thesz-procreate-v1|defender|L|nearKnee": {
+   "worst": -0.6,
+   "frame": 78,
+   "frames": 35
+  },
+  "armBar|thesz-procreate-v1|defender|L|farKnee": {
+   "worst": -0.7,
+   "frame": 141,
+   "frames": 49
+  },
+  "piledriver|george-roster-v1|defender|R|nearKnee": {
+   "worst": -0.55,
+   "frame": 85,
+   "frames": 41
+  },
+  "piledriver|george-roster-v1|defender|R|farKnee": {
+   "worst": -0.45,
+   "frame": 85,
+   "frames": 33
+  },
+  "piledriver|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -1.344,
+   "frame": 101,
+   "frames": 23
+  },
+  "piledriver|george-roster-v1|attacker|R|farKnee": {
+   "worst": -1.299,
+   "frame": 97,
+   "frames": 33
+  },
+  "bodySlam|george-roster-v1|defender|R|nearKnee": {
+   "worst": -0.797,
+   "frame": 67,
+   "frames": 65
+  },
+  "bodySlam|george-roster-v1|defender|R|farKnee": {
+   "worst": -0.647,
+   "frame": 67,
+   "frames": 49
+  },
+  "suplex|george-roster-v1|defender|R|farKnee": {
+   "worst": -0.797,
+   "frame": 79,
+   "frames": 68
+  },
+  "suplex|george-roster-v1|defender|R|nearKnee": {
+   "worst": -0.947,
+   "frame": 79,
+   "frames": 67
+  },
+  "suplex|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -0.847,
+   "frame": 79,
+   "frames": 35
+  },
+  "suplex|george-roster-v1|attacker|R|farKnee": {
+   "worst": -0.648,
+   "frame": 79,
+   "frames": 30
+  },
+  "dropkick|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -1.599,
+   "frame": 13,
+   "frames": 20
+  },
+  "dropkick|george-roster-v1|attacker|R|farKnee": {
+   "worst": -1.499,
+   "frame": 13,
+   "frames": 20
+  },
+  "frontKick|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -1.548,
+   "frame": 13,
+   "frames": 20
+  },
+  "elbowDrop|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -0.6,
+   "frame": 7,
+   "frames": 20
+  },
+  "elbowDrop|george-roster-v1|attacker|R|farKnee": {
+   "worst": -0.5,
+   "frame": 7,
+   "frames": 13
+  },
+  "kneeDrop|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -0.8,
+   "frame": 9,
+   "frames": 6
+  },
+  "divingElbow|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "divingElbow|george-roster-v1|attacker|R|farKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "topDive|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "topDive|george-roster-v1|attacker|R|farKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "theszPress|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -0.5,
+   "frame": 0,
+   "frames": 10
+  },
+  "theszPress|george-roster-v1|attacker|R|farKnee": {
+   "worst": -0.5,
+   "frame": 0,
+   "frames": 12
+  },
+  "figureFour|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -1.3,
+   "frame": 36,
+   "frames": 242
+  },
+  "figureFour|george-roster-v1|attacker|R|farKnee": {
+   "worst": -0.9,
+   "frame": 57,
+   "frames": 236
+  },
+  "figureFour|george-roster-v1|defender|R|nearKnee": {
+   "worst": -0.9,
+   "frame": 78,
+   "frames": 144
+  },
+  "figureFour|george-roster-v1|defender|R|farKnee": {
+   "worst": -0.3,
+   "frame": 78,
+   "frames": 127
+  },
+  "hipToss|george-roster-v1|defender|R|nearKnee": {
+   "worst": -0.8,
+   "frame": 39,
+   "frames": 43
+  },
+  "hipToss|george-roster-v1|defender|R|farKnee": {
+   "worst": -0.65,
+   "frame": 39,
+   "frames": 37
+  },
+  "ankleLock|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -0.8,
+   "frame": 18,
+   "frames": 178
+  },
+  "ankleLock|george-roster-v1|attacker|R|farKnee": {
+   "worst": -0.8,
+   "frame": 18,
+   "frames": 178
+  },
+  "armBar|george-roster-v1|attacker|R|nearKnee": {
+   "worst": -1.6,
+   "frame": 36,
+   "frames": 205
+  },
+  "armBar|george-roster-v1|attacker|R|farKnee": {
+   "worst": -1.4,
+   "frame": 36,
+   "frames": 202
+  },
+  "armBar|george-roster-v1|defender|R|nearKnee": {
+   "worst": -0.6,
+   "frame": 78,
+   "frames": 35
+  },
+  "armBar|george-roster-v1|defender|R|farKnee": {
+   "worst": -0.7,
+   "frame": 141,
+   "frames": 49
+  },
+  "piledriver|george-roster-v1|defender|L|nearKnee": {
+   "worst": -0.55,
+   "frame": 85,
+   "frames": 41
+  },
+  "piledriver|george-roster-v1|defender|L|farKnee": {
+   "worst": -0.45,
+   "frame": 85,
+   "frames": 33
+  },
+  "piledriver|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -1.344,
+   "frame": 101,
+   "frames": 23
+  },
+  "piledriver|george-roster-v1|attacker|L|farKnee": {
+   "worst": -1.299,
+   "frame": 97,
+   "frames": 33
+  },
+  "bodySlam|george-roster-v1|defender|L|nearKnee": {
+   "worst": -0.797,
+   "frame": 67,
+   "frames": 65
+  },
+  "bodySlam|george-roster-v1|defender|L|farKnee": {
+   "worst": -0.647,
+   "frame": 67,
+   "frames": 49
+  },
+  "suplex|george-roster-v1|defender|L|farKnee": {
+   "worst": -0.797,
+   "frame": 79,
+   "frames": 68
+  },
+  "suplex|george-roster-v1|defender|L|nearKnee": {
+   "worst": -0.947,
+   "frame": 79,
+   "frames": 67
+  },
+  "suplex|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -0.847,
+   "frame": 79,
+   "frames": 35
+  },
+  "suplex|george-roster-v1|attacker|L|farKnee": {
+   "worst": -0.648,
+   "frame": 79,
+   "frames": 30
+  },
+  "dropkick|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -1.599,
+   "frame": 13,
+   "frames": 20
+  },
+  "dropkick|george-roster-v1|attacker|L|farKnee": {
+   "worst": -1.499,
+   "frame": 13,
+   "frames": 20
+  },
+  "frontKick|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -1.548,
+   "frame": 13,
+   "frames": 20
+  },
+  "elbowDrop|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -0.6,
+   "frame": 7,
+   "frames": 20
+  },
+  "elbowDrop|george-roster-v1|attacker|L|farKnee": {
+   "worst": -0.5,
+   "frame": 7,
+   "frames": 13
+  },
+  "kneeDrop|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -0.8,
+   "frame": 9,
+   "frames": 6
+  },
+  "divingElbow|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "divingElbow|george-roster-v1|attacker|L|farKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "topDive|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "topDive|george-roster-v1|attacker|L|farKnee": {
+   "worst": -0.4,
+   "frame": 0,
+   "frames": 4
+  },
+  "theszPress|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -0.5,
+   "frame": 0,
+   "frames": 10
+  },
+  "theszPress|george-roster-v1|attacker|L|farKnee": {
+   "worst": -0.5,
+   "frame": 0,
+   "frames": 12
+  },
+  "figureFour|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -1.3,
+   "frame": 36,
+   "frames": 242
+  },
+  "figureFour|george-roster-v1|attacker|L|farKnee": {
+   "worst": -0.9,
+   "frame": 57,
+   "frames": 236
+  },
+  "figureFour|george-roster-v1|defender|L|nearKnee": {
+   "worst": -0.9,
+   "frame": 78,
+   "frames": 144
+  },
+  "figureFour|george-roster-v1|defender|L|farKnee": {
+   "worst": -0.3,
+   "frame": 78,
+   "frames": 127
+  },
+  "hipToss|george-roster-v1|defender|L|nearKnee": {
+   "worst": -0.8,
+   "frame": 39,
+   "frames": 43
+  },
+  "hipToss|george-roster-v1|defender|L|farKnee": {
+   "worst": -0.65,
+   "frame": 39,
+   "frames": 37
+  },
+  "ankleLock|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -0.8,
+   "frame": 18,
+   "frames": 178
+  },
+  "ankleLock|george-roster-v1|attacker|L|farKnee": {
+   "worst": -0.8,
+   "frame": 18,
+   "frames": 178
+  },
+  "armBar|george-roster-v1|attacker|L|nearKnee": {
+   "worst": -1.6,
+   "frame": 36,
+   "frames": 205
+  },
+  "armBar|george-roster-v1|attacker|L|farKnee": {
+   "worst": -1.4,
+   "frame": 36,
+   "frames": 202
+  },
+  "armBar|george-roster-v1|defender|L|nearKnee": {
+   "worst": -0.6,
+   "frame": 78,
+   "frames": 35
+  },
+  "armBar|george-roster-v1|defender|L|farKnee": {
+   "worst": -0.7,
+   "frame": 141,
+   "frames": 49
+  }
+ }
+}

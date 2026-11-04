@@ -211,3 +211,26 @@ test('the suplex keeps the defender\'s head in the attacker\'s near armpit from 
         order: [['attacker', 'torso'], ['defender', 'head'], ['attacker', 'lArm']] }]);
     assert.equal(validateClip(suplexClip).ok, true);
 });
+
+// T4c.4c: facing-relative limbs. `farArm` / `body` / `nearArm` resolve per actor per frame, so one authored order puts each man's far arm behind his
+// own torso and his near arm in front of it in both facings and on both rig kinds.
+test('relative limbs: far arm behind the actor\'s own torso, near arm in front, in both facings and both rig kinds', async () => {
+    const { layerDepths } = await import('../src/animation/clipLayers.js');
+    for (const kind of ['swap', 'stay']) for (const facing of [1, -1]) {
+        const a = wrestler(kind, facing), b = wrestler(kind, -facing);
+        a.draw(); b.draw();
+        const order = [['b', 'farArm'], ['b', 'body'], ['b', 'nearArm'], ['a', 'farArm'], ['a', 'body'], ['a', 'nearArm']];
+        for (const [img, d] of layerDepths({ order }, { a, b })) img.setDepth(d);
+        for (const w of [a, b]) {
+            const sk = w.skeleton;
+            for (const n of ['farUpArm', 'farForearm', 'farHand']) assert.ok(sk[n].depth < sk.torso.depth, `${kind} ${facing}: ${n} behind his torso`);
+            for (const n of ['nearUpArm', 'nearForearm', 'nearHand']) assert.ok(sk[n].depth > sk.torso.depth, `${kind} ${facing}: ${n} in front of his torso`);
+        }
+        assert.ok(b.skeleton.nearHand.depth < a.skeleton.farUpArm.depth, 'the whole of b stays behind the whole of a');
+    }
+});
+test('the snapmare\'s layers use only relative limbs and validate', async () => {
+    const { snapmareClip } = await import('../src/animation/clips/snapmare.js');
+    assert.ok(snapmareClip.layers.length === 2);
+    for (const win of snapmareClip.layers) for (const [, limb] of win.order) assert.ok(['farArm', 'nearArm', 'body'].includes(limb), limb);
+});

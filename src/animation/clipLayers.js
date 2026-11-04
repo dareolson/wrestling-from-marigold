@@ -18,6 +18,18 @@
 // need no teardown: the first draw after the clip ends restores defaults.
 
 export const LAYER_LIMBS = Object.freeze(['lLeg', 'rLeg', 'lArm', 'rArm', 'torso', 'head']);
+// Facing-relative names for a clip whose order must hold in both facings (the near/far side of an actor depends on his facing and rig, so `lArm`
+// is the far arm in one facing and the near arm in the other). Resolved per actor per frame, like the anatomical limbs:
+//   nearArm, farArm, nearLeg, farLeg, and `body` = his far leg, torso, head, near leg (a rig whose art wants both legs over the torso, George, gets
+//   torso, head, far leg, near leg), the W4 stack of the waistlock.
+export const LAYER_RELATIVE = Object.freeze(['nearArm', 'farArm', 'nearLeg', 'farLeg', 'body']);
+const resolveLimb = (actor, limb) => {
+    const near = (actor?.skeleton?.lChannelSide?.(actor.facing ?? 1) ?? 'near') === 'near';
+    const side = { nearArm: near ? 'lArm' : 'rArm', farArm: near ? 'rArm' : 'lArm', nearLeg: near ? 'lLeg' : 'rLeg', farLeg: near ? 'rLeg' : 'lLeg' };
+    if (limb === 'body') return actor?.skeleton?._farLegOverTorso ? ['torso', 'head', side.farLeg, side.nearLeg] : [side.farLeg, 'torso', 'head', side.nearLeg];
+    return [side[limb] ?? limb];
+};
+const expandOrder = (order, actors) => order.flatMap(([role, limb]) => resolveLimb(actors[role], limb).map(l => [role, l]));
 
 // Gap between stacked limbs. Sub-depths are multiples of 0.00001, so this
 // clears any one limb's top part.
@@ -76,7 +88,7 @@ export function validateLayers(source) {
         for (const entry of win.order) {
             const [role, limb] = Array.isArray(entry) ? entry : [];
             if (!tracks[role]) errors.push(`${at}.order role "${role}" has no track`);
-            if (!LAYER_LIMBS.includes(limb)) errors.push(`${at}.order limb "${limb}" must be one of ${LAYER_LIMBS.join(', ')}`);
+            if (!LAYER_LIMBS.includes(limb) && !LAYER_RELATIVE.includes(limb)) errors.push(`${at}.order limb "${limb}" must be one of ${[...LAYER_LIMBS, ...LAYER_RELATIVE].join(', ')}`);
             const key = `${role}.${limb}`;
             if (seen.has(key)) errors.push(`${at}.order lists ${key} twice`);
             seen.add(key);
@@ -148,7 +160,7 @@ function findCycle(windows) {
 // caller chain windows on top of earlier overrides. Unlisted parts are absent
 // from the result.
 export function layerDepths(window, actors, depthOf = img => img.depth) {
-    const limbs = window.order.map(([role, limb]) => limbParts(actors[role], limb)).filter(parts => parts.length);
+    const limbs = expandOrder(window.order, actors).map(([role, limb]) => limbParts(actors[role], limb)).filter(parts => parts.length);
     const out = new Map();
     if (!limbs.length) return out;
     let cursor = Math.min(...limbs.flat().map(depthOf));

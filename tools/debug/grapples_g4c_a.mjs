@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { launch } from './harness.mjs';
 import { INSTALL_MASKS } from './grapples_masks.mjs';
+import { INSTALL_FARARM } from './far_arm_probe.mjs';
 import { INSTALL } from './grapples_film.mjs';
 import { film, PRESS_AT, DROP_AT } from './waistlock_throws.mjs';
 import { partSteps } from './rise_handoff_probe.mjs';
@@ -36,6 +37,17 @@ function measure(rows, kind) {
     // overlap per beat, flip separate
     const beat = (t) => kind === 'drop' ? (t < ATOMIC.lift ? 'lift' : t < ATOMIC.impact ? 'drop' : 'sell')
         : (t < SNAPMARE.reach ? 'reach' : t < SNAPMARE.reach + SNAPMARE.pull ? 'pull' : t < SNAPMARE.land ? 'flip' : 'landing');
+    // T4c.4c: far-arm pixels drawn over his own torso, every clip frame, both men (a = w1 the attacker of the drop / thrown man of the snapmare)
+    const clipRows = rows.filter(r => isClip(r) && r.far);
+    out.farArm = { a: Math.max(0, ...clipRows.map(r => r.far[0])), d: Math.max(0, ...clipRows.map(r => r.far[1])), framesOver: clipRows.filter(r => r.far[0] > 0 || r.far[1] > 0).length, of: clipRows.length };
+    const lastClip = rows.findLastIndex(isClip);
+    out.farArmEnd = { lastClipFrame: rows[lastClip].far, firstAfter: rows[lastClip + 1]?.far ?? null };
+    // T4c.4d: the knees through the clip, read off the drawn joints (the permanent guard is clip_knee_audit.mjs)
+    out.knees = {};
+    for (const [side, who] of [['a', 'w1'], ['d', 'w2']]) {
+        const vals = rows.filter(isClip).map((r) => { const f = kneeFlex(r[side].pts, r.t.facing[side === 'a' ? 0 : 1]); return Math.min(f.nearKnee ?? 9, f.farKnee ?? 9); });
+        out.knees[who] = { minFlex: r2(Math.min(...vals)), maxFlex: r2(Math.max(...rows.filter(isClip).map((r) => { const f = kneeFlex(r[side].pts, r.t.facing[side === 'a' ? 0 : 1]); return Math.max(f.nearKnee ?? -9, f.farKnee ?? -9); }))) };
+    }
     out.mask = {}; out.maskFrames = {};
     for (const r of rows) if (r.mask && isClip(r)) {
         const b = beat(r.t.time), m = out.mask[b] ??= { belowBody: 0, torso: 0, total: 0, n: 0, overTorso: 0 };
@@ -64,6 +76,20 @@ function measure(rows, kind) {
         const top = rows.find(r => isClip(r) && r.t.time >= ATOMIC.lift), mid = (r, a, b) => ({ x: (r.pts[a].x + r.pts[b].x) / 2, y: (r.pts[a].y + r.pts[b].y) / 2 });
         const ap = mid(top.a, 'nearHip', 'farHip'), dp = mid(top.d, 'nearHip', 'farHip'), ac = mid(top.a, 'nearShoulder', 'farShoulder');
         out.liftTop = { frame: top.i, pelvisOverAttackerPelvis: r1((ap.y - dp.y) / top.a.s), attackerChestOverPelvis: r1((ap.y - ac.y) / top.a.s) };
+        // T4c.4f: the fridge lift. Attacker = a (w1), defender = d (w2).
+        const lift = rows.filter(r => isClip(r) && r.t.time >= 0.14 && r.t.time <= ATOMIC.lift);
+        const inOwnTorso = (r) => { const p = r.a.pts, hip = pmid(p, 'nearHip', 'farHip'), ax = { x: p.neck.x - hip.x, y: p.neck.y - hip.y }, len = Math.hypot(ax.x, ax.y), u = { x: ax.x / len, y: ax.y / len };
+            return [p.nearWrist, p.farWrist].map(w => ({ along: ((w.x - hip.x) * u.x + (w.y - hip.y) * u.y) / r.a.s, across: ((w.x - hip.x) * -u.y + (w.y - hip.y) * u.x) / r.a.s })); };
+        const hs = lift.map(inOwnTorso), span = (k, j) => r1(Math.max(...hs.map(h => h[k][j])) - Math.min(...hs.map(h => h[k][j])));
+        out.armsInTorsoFrame = { nearAlongRange: span(0, 'along'), nearAcrossRange: span(0, 'across'), farAlongRange: span(1, 'along'), farAcrossRange: span(1, 'across'), frames: lift.length };
+        const tops = rows.find(r => isClip(r) && r.t.time >= ATOMIC.lift), ph = pmid(tops.a.pts, 'nearHip', 'farHip'), pn = tops.a.pts.neck;
+        const facing = tops.t.facing[0];
+        out.attackerTorsoAtTop = { degreesFromVertical: r1(Math.atan2((pn.x - ph.x) * facing, ph.y - pn.y) * 180 / Math.PI), note: 'negative = leaning back, away from the facing' };
+        const sh = (p) => pmid(p, 'nearShoulder', 'farShoulder'), wrap = rows.find(r => isClip(r) && r.t.time >= 0.14);
+        out.chestToBack = { atWrap: r1(Math.abs(sh(wrap.a.pts).x - sh(wrap.d.pts).x) / wrap.a.s), atTop: r1(Math.abs(sh(tops.a.pts).x - sh(tops.d.pts).x) / tops.a.s) };
+        const dd = tops.d.pts, thigh = (k) => Math.abs(Math.atan2(dd[`${k}Knee`].x - dd[`${k}Hip`].x, dd[`${k}Knee`].y - dd[`${k}Hip`].y) * 180 / Math.PI);
+        const floorY = rows[Math.max(0, i0 - 1)].d.pts.nearAnkle.y;
+        out.defenderLegsAtTop = { thighFromVerticalDeg: { near: r1(thigh('near')), far: r1(thigh('far')) }, feetOverMat: r1((floorY - Math.max(dd.nearAnkle.y, dd.farAnkle.y)) / tops.d.s), feetOverMatHighest: r1((floorY - Math.min(dd.nearAnkle.y, dd.farAnkle.y)) / tops.d.s) };
         const g = rows.filter(r => r.t.clip && r.t.time > 0.05 && r.t.time < ATOMIC.lift && r.wl === null);
         // hands (wrist) to the defender's hip while lifting: the clip's grips target the hip joint
         out.handsToHip = r1(Math.max(...g.map(r => Math.min(dist(r.a.pts.nearWrist, r.d.pts.nearHip), dist(r.a.pts.nearWrist, r.d.pts.farHip))) ) / g[0].a.s);
@@ -95,14 +121,29 @@ function measure(rows, kind) {
     return out;
 }
 
+// a knee's flex from the drawn joints: > 0 = bent the proper way, < 0 = backward (same reading as clip_knee_audit.mjs)
+function kneeFlex(p, facing) {
+    const hip = { x: (p.nearHip.x + p.farHip.x) / 2, y: (p.nearHip.y + p.farHip.y) / 2 }, t = { x: p.neck.x - hip.x, y: p.neck.y - hip.y };
+    const n = facing >= 0 ? { x: -t.y, y: t.x } : { x: t.y, y: -t.x }, dot = (a, b) => a.x * b.x + a.y * b.y, sub = (a, b) => ({ x: a.x - b.x, y: a.y - b.y });
+    const out = {};
+    for (const sd of ['near', 'far']) {
+        const u = sub(p[`${sd}Knee`], p[`${sd}Hip`]), l = sub(p[`${sd}Ankle`], p[`${sd}Knee`]);
+        let q = { x: -u.y, y: u.x }; if (dot(q, n) < 0) q = { x: -q.x, y: -q.y };
+        out[`${sd}Knee`] = -Math.atan2(dot(l, q), dot(l, u));
+    }
+    return out;
+}
+const pmid = (p, a, b) => ({ x: (p[a].x + p[b].x) / 2, y: (p[a].y + p[b].y) / 2 });
+
 const runs = [];
-process.env.WFM_P1 = LOU; process.env.WFM_P2 = GEORGE; process.env.WFM_QS = 'notitle=1&grapples=v1&waistlock=v1';
+process.env.WFM_P1 = LOU; process.env.WFM_P2 = GEORGE; process.env.WFM_QS = `notitle=1&grapples=v1&waistlock=v1${process.env.WFM_SNAPMARE_SPEED ? `&snapmareSpeed=${process.env.WFM_SNAPMARE_SPEED}` : ''}`;
 const h = await launch();
 try {
     const page = h.page;
     await page.waitForTimeout(2500);
     const info = await page.evaluate(INSTALL);
     await page.evaluate(INSTALL_MASKS);
+    await page.evaluate(INSTALL_FARARM);
     for (const [kind, cs] of [['drop', 'drop'], ['snapmare', 'reverse']]) for (const facing of [-1, 1]) {
         const id = `${kind}-lou-george-${facing < 0 ? 'l' : 'r'}`;
         const rows = await film(page, info, { facing, case: cs, rev: 6, mask: true }, join(outRoot, 'frames', id), { quiet: 8 });

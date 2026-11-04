@@ -6,11 +6,12 @@ import { WAISTLOCK } from './waistlock.js';
 // A2 / A3: the drop's beats on the clip's own clock (the Stage 3 lead-in is the Arena's draw blend over the clip's first 0.14 s, so the
 // reverse window and the beats run from the clip's start). `impact` is when the defender's pelvis meets the knee.
 export const ATOMIC = Object.freeze({
-    lift: 0.30,                         // (a) the attacker straightens, the defender rises, legs hanging
+    lift: 0.42,                         // (a) the attacker sits into the squat and stands with the man locked to his chest, back leaning, legs kicking up
+    hitch: 0.06,                        // the small stall at the top before the drop (T4c.4f)
     drop: 0.12,                         // (b) he comes down seated on the raised knee
-    impact: 0.42,                       // lift + drop
+    impact: 0.60,                       // lift + hitch + drop
     sell: 0.50,                         // (c) pops forward off the knee, hands to his backside, stumbles on his feet
-    duration: 0.92,                     // impact + sell
+    duration: 1.10,                     // impact + sell
     reverseWindow: 0.20,                // A3: the defender's reversal counts from the lift's start until this far in
     damageKey: 'atomicDrop',            // STAMINA_DRAIN key, 12
     sellSpec: Object.freeze({ part: 'back', intensity: 0.7 }),
@@ -20,14 +21,19 @@ export const ATOMIC = Object.freeze({
 
 // A4 / A6: the snapmare's beats (the old defender is the clip's attacker, the old attacker the thrown man). `flip` runs from the pull's end
 // to the landing.
+// `speed` scales the reach, the pull and the flip (T4c.4e: Derek wants 1.5x or 2x, ships 1.5 until he picks); the thrower's rise after the landing keeps its
+// own time. `?snapmareSpeed=2` is the page's way to film the other candidate; nothing else reads it.
+const RISE = 0.49;
+const SPEED = (() => { const q = Number(globalThis.location ? new URLSearchParams(globalThis.location.search).get('snapmareSpeed') : globalThis.process?.env?.WFM_SNAPMARE_SPEED); return q > 0 ? q : 1.5; })();
 export const SNAPMARE = Object.freeze({
-    reach: 0.15,                        // (a) feet down, both hands back to the head
-    pull: 0.20,                         // (b) down to the near knee, the head pulled over the near shoulder
-    flip: 0.46,                         // (c) one forward turn to the landing angle (270 degrees, flat on his back), path above the shoulder line
-    land: 0.15 + 0.20 + 0.46,           // the impact frame
-    duration: 1.30,                     // the landing, then the thrower's rise from the knee
+    speed: SPEED,
+    reach: 0.15 / SPEED,                // (a) feet down, both hands back to the head
+    pull: 0.20 / SPEED,                 // (b) down to the near knee, the head pulled over the near shoulder
+    flip: 0.46 / SPEED,                 // (c) one forward turn to the landing angle (270 degrees, flat on his back), path above the shoulder line
+    land: (0.15 + 0.20 + 0.46) / SPEED, // the impact frame
+    duration: (0.15 + 0.20 + 0.46) / SPEED + RISE,   // the landing, then the thrower's rise from the knee
     turns: 0,                           // whole forward turns before the landing angle (G4c-a: Derek wants one flip, not two)
-    landFwd: 215,                      // px in front of the thrower (along the facing) that the thrown man lands
+    landFwd: 260,                       // px in front of the thrower (along the facing) that the thrown man lands (T4c.4e: was 215, Derek wants him carried further)
     damageKey: 'snapmare',              // STAMINA_DRAIN key, 16
     sellSpec: Object.freeze({ part: 'back', intensity: 1.0 }),
 });
@@ -66,5 +72,6 @@ export function dropAvailable(ws) {
 export function snapmareHeadGrip(t) {
     const smooth = (u) => { const v = Math.max(0, Math.min(1, u)); return v * v * (3 - 2 * v); };
     const reachEnd = SNAPMARE.reach, pullEnd = SNAPMARE.reach + SNAPMARE.pull;
-    return smooth((t - 0.04) / (reachEnd - 0.04)) * (1 - smooth((t - pullEnd) / 0.08));
+    const k = SNAPMARE.speed;
+    return smooth((t - 0.04 / k) / (reachEnd - 0.04 / k)) * (1 - smooth((t - pullEnd) / (0.08 / k)));
 }

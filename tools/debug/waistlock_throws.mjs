@@ -10,6 +10,7 @@ import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { launch } from './harness.mjs';
 import { INSTALL_MASKS } from './grapples_masks.mjs';
+import { INSTALL_FARARM } from './far_arm_probe.mjs';
 import { INSTALL, SETUP } from './grapples_film.mjs';
 import { STEP as BASE_STEP } from './grapples_waistlock.mjs';
 import { ringBoundsAtY, perspectiveScale } from '../../src/constants.js';
@@ -25,6 +26,7 @@ const EXTRAS = (maskOn) => {
     return {
         t: { clip: h?.clip?.id ?? null, time: h ? +h.time.toFixed(4) : null, drop: !!sc.dropState, states: [a.state, d.state], tilt: [a.pose.tilt, d.pose.tilt], lift: [a.pose.lift, d.pose.lift], xy: [[a.x, a.y], [d.x, d.y]], facing: [a.facing, d.facing], stamina: [a.stamina, d.stamina], lying: [a.lying, d.lying], blend: !!sc._exitBlend },
         mask: maskOn && h ? window.__maskOverlap(a, d, false) : null,
+        far: maskOn && window.__farArmOverTorso ? [window.__farArmOverTorso(a).px, window.__farArmOverTorso(d).px] : null,
         events: sc.matchEvents.splice(0).filter(e => ['move', 'atomicDrop', 'snapmare', 'snapmareDenied', 'orphanRescue', 'waistlockEnd'].includes(e.type)),
     };
 };
@@ -39,7 +41,7 @@ export async function film(page, info, spec, shotDir, { frames = 330, quiet = 40
     await page.evaluate((moves) => { const sc = window.__WFM_GAME.scene.scenes[0]; for (const w of [sc.w1, sc.w2]) for (const m of moves) if (!w.moveSet.includes(m)) w.moveSet.push(m); sc.matchEvents.length = 0; }, ['goBehind', 'atomicDrop', 'snapmare']);
     const bx = info.box, mX = (x) => bx.x + x * bx.w / bx.gw, mY = (y) => bx.y + y * bx.h / bx.gh;
     const mid = await page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; return (sc.w1.x + sc.w2.x) / 2; });
-    const clip = { width: 460, height: 360, x: Math.max(0, Math.round(mX(mid) - 230)), y: Math.round(mY(440) - 360) };
+    const clip = { width: 620, height: 360, x: Math.max(0, Math.round(mX(mid) - 310)), y: Math.round(mY(440) - 360) };   // wide: the snapmare carries the thrown man 260 px along
     if (shotDir) { rmSync(shotDir, { recursive: true, force: true }); mkdirSync(shotDir, { recursive: true }); }
     const rows = []; let calm = 0, started = false;
     const revAt = spec.revAt;   // absolute frame the defender presses power, else DROP_AT + rev
@@ -69,6 +71,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             await page.waitForTimeout(2500);
             const info = await page.evaluate(INSTALL);
             await page.evaluate(INSTALL_MASKS);
+            await page.evaluate(INSTALL_FARARM);
             for (const cs of casesArg.split(',')) for (const facing of [-1, 1]) {
                 const id = `${cs}-${pair.id}-${facing < 0 ? 'l' : 'r'}`;
                 const rows = await film(page, info, { facing, case: cs, denied: cs === 'denied', rev: Number(process.env.WT_REV ?? (cs === 'late' ? 20 : 6)), mask: true }, shots === '1' ? join(outRoot, 'frames', id) : null);

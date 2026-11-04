@@ -159,7 +159,7 @@ test('behindSpotFits: the spot behind a man has to be 20 px inside the side rope
 import { ATOMIC, SNAPMARE, reversalOpen, snapmareLandingX, snapmareFits, flipTilt, dropAvailable } from '../src/animation/waistlockThrows.js';
 
 test('the drop is lift + drop + sell, the impact is where the drop ends, and the reverse window is inside the lift', () => {
-    assert.ok(Math.abs(ATOMIC.lift + ATOMIC.drop - ATOMIC.impact) < 1e-9);
+    assert.ok(Math.abs(ATOMIC.lift + ATOMIC.hitch + ATOMIC.drop - ATOMIC.impact) < 1e-9);
     assert.ok(Math.abs(ATOMIC.impact + ATOMIC.sell - ATOMIC.duration) < 1e-9);
     assert.ok(ATOMIC.reverseWindow > 0 && ATOMIC.reverseWindow < ATOMIC.lift);
     assert.ok(Math.abs(SNAPMARE.reach + SNAPMARE.pull + SNAPMARE.flip - SNAPMARE.land) < 1e-9 && SNAPMARE.land < SNAPMARE.duration);

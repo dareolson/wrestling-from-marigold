@@ -1,5 +1,14 @@
 // The clips that are actually registered with the scene MoveRuntime.
 //
+// KNEES AND ELBOWS (read before you pose a leg). On the upright draw path a NEGATIVE `lKnee`/`rKnee` folds the heel BACK behind the knee (the way a
+// knee bends); a POSITIVE one swings the shin FORWARD of the knee, a knee bent backward, which Derek calls "breaking the art". Elbows are the other
+// way round: a positive `lElbow`/`rElbow` bends the forearm toward the front of the upper arm. `JOINT_LIMITS` clamps the number, not the drawn bend, so
+// the clamp does not protect you: check the RENDERED joint. `node tools/debug/clip_knee_audit.mjs` (WFM_URL set) reads every clip, the waistlock
+// hold and the get-ups off the drawn hip/knee/ankle on both rigs and both facings; it fails on a knee past -0.25 rad or 2.55, and a new failure that
+// is not in tools/debug/baselines/clip_knee_baseline.json (the failures that shipped before the guard) fails the run. No G-package goes to Derek
+// without it passing.
+//
+//
 // This is the single registration list. Arena registers from it rather than
 // naming clips one by one, and tests/moveRegistry.test.js checks it against
 // the registry's `clip` fields — so a migrated move that never gets registered

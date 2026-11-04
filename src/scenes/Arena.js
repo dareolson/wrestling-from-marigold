@@ -20,6 +20,7 @@ import MoveRuntime from '../animation/MoveRuntime.js';
 import { layerDepths } from '../animation/clipLayers.js';
 import { lockupGrips, lockupPhase, lockupPoseChannels, exitBlendPose, breakKind, breakTravel, legRel, LOCKUP } from '../animation/lockup.js';
 import { dropAvailable, reversalOpen, snapmareFits, snapmareHeadGrip } from '../animation/waistlockThrows.js';
+import { SLEEPER, sleeperStage, sleeperChannels, stageRestartTime } from '../animation/sleeper.js';
 import { WAISTLOCK, atRopes, behindSpotFits, waistlockPhase, goBehindOffset, waistlockPoseChannels, waistlockGrips, waistlockLayerOrder, releaseTravel } from '../animation/waistlock.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS, ROSTER_PERSONALITIES } from '../characters/rosterKits.js';
@@ -3505,6 +3506,7 @@ export default class Arena extends Phaser.Scene {
         if (this.lockupState?.grapple && grapplesCandidate()) this._holdLockupGrips();
         if (this.waistlockState) this._holdWaistlockGrips();
         if (this.dropState?.kind === 'snap') this._holdSnapmareGrips();
+        if (this.sleeperState?.rear) this._holdSleeperGrips();
         // Grip solving may redraw the entire rig. Keep the temporary lead-in
         // pose installed until every post-draw grip has used it.
         undoBlend?.();
@@ -3608,8 +3610,9 @@ export default class Arena extends Phaser.Scene {
         const ss = this.sleeperState;
         ss.timer += dt;
 
-        // Keep attacker hugged to the defender
-        ss.attacker.x = ss.defender.x - ss.attacker.facing * 50 * ss.attacker.s;
+        // Keep attacker hugged to the defender (the rear hold, Stage 4d: behind him and upstage, both poses driven by sleeper.js)
+        if (ss.rear) this._poseSleeper(ss);
+        else ss.attacker.x = ss.defender.x - ss.attacker.facing * 50 * ss.attacker.s;
 
         // Rope break
         if (this._isAtRopes(ss.defender)) {
@@ -3645,6 +3648,12 @@ export default class Arena extends Phaser.Scene {
             this.sleeperState = null;
         };
 
+        if (ss.rear && sleeperStage(ss.timer).id !== 'fight' && ss.defender.tryEscape()) {
+            // S4: a mash rises him one stage (limp -> flail -> fight), not out of the hold
+            ss.timer = stageRestartTime(sleeperStage(ss.timer).id);
+            this._logEvent('sleeperStageUp', { wrestler: ss.defender === this.w1 ? 'p1' : 'p2', stage: sleeperStage(ss.timer).id });
+            return;
+        }
         if (ss.defender.tryEscape()) {
             this._logEvent('sleeperEscape', { wrestler: ss.defender === this.w1 ? 'p1' : 'p2' });
             this._comeback(ss.defender, 10);
@@ -4027,6 +4036,8 @@ export default class Arena extends Phaser.Scene {
         if (atRopes(D, ringBoundsAtY(D.y)) || atRopes(A, ringBoundsAtY(A.y))) { letGo('rope'); return false; }
         // Stage 4c A1: the attacker's power in the hold lifts and drops him. The defender's power, inside the lift, is _tickDrop's.
         if (dropAvailable(ws) && A.moveSet.includes('atomicDrop') && A.input.justDown('power')) { this._beginAtomicDrop(ws); return true; }
+        // Stage 4d S1: the attacker's finisher in the hold is the rear sleeper.
+        if (dropAvailable(ws) && A.moveSet.includes('sleeperHold') && A.input.justDown('finisher')) { this._beginSleeperFromHold(ws); return true; }
         if (D.input.justDown('action') && D.moveSet.includes('goBehind')) {
             if (!behindSpotFits(A, ws.dFacing, ringBoundsAtY(A.y))) { letGo('rope'); return false; }   // no room behind him: the ropes break it
             this._logEvent('waistlockSwitch', { attacker: D === this.w1 ? 'p1' : 'p2' });
@@ -4091,6 +4102,53 @@ export default class Arena extends Phaser.Scene {
         this.dropState = { kind: 'drop', attacker: A, defender: D, handle: A._activeMove, denied: false };
         this._logEvent('move', { attacker: who, move: 'atomicDrop', defenderStamina: Math.round(D.stamina) });
         this._heatForMove('atomicDrop');
+    }
+
+    // Stage 4d S1/S2: the hold hands both men to the sleeper. The gameplay (Arena._tickSleeper: drain, z text, escape, rope break, the slump) is the old one;
+    // `rear` makes it a rear hold: the attacker behind (SLEEPER.behind), both poses driven every frame from sleeper.js, hands placed after the draw.
+    _beginSleeperFromHold(ws) {
+        const A = ws.attacker, D = ws.defender, who = A === this.w1 ? 'p1' : 'p2';
+        const from = new Map([A, D].map(w => [w, { ...w.pose }]));
+        const spacing0 = Math.abs(A.x - D.x) / (A.s || 1);
+        this._endWaistlock(0, true);
+        for (const w of [A, D]) this._dropLockupShins(w);
+        A._doSleeperHold(D, true);
+        this._sleeperSeq = (this._sleeperSeq ?? 0) + 1;
+        this.sleeperState = { attacker: A, defender: D, timer: 0, rear: true, from, spacing0, seed: 7919 * this._sleeperSeq + 13 };
+        this._logEvent('sleeperApplied', { attacker: who, rear: true });
+        this._heatForMove('sleeperHold');
+    }
+
+    // The rear sleeper's frame: the attacker behind and upstage (eased in from the hold's spacing), both poses from sleeper.js (eased in from the hold's pose).
+    _poseSleeper(ss) {
+        const A = ss.attacker, D = ss.defender, k = Math.max(0, Math.min(1, ss.timer / SLEEPER.enter)), e = k * k * (3 - 2 * k);
+        A.facing = D.facing;
+        A.x = D.x - D.facing * (ss.spacing0 + (SLEEPER.behind - ss.spacing0) * e) * A.s;
+        A.y = D.y - SLEEPER.upstage * A.s;
+        for (const [w, role] of [[A, 'attacker'], [D, 'defender']]) {
+            w.scene.tweens.killTweensOf(w.pose);
+            const ch = sleeperChannels(role, w.skeleton.lChannelSide(w.facing), ss.timer, ss.seed), from = ss.from.get(w);
+            for (const key of Object.keys(ch)) w.pose[key] = k < 1 ? (from[key] ?? 0) * (1 - e) + ch[key] * e : ch[key];
+            w.pose.tilt = 0; w.pose.lift = 0;
+        }
+    }
+
+    // After both draw: the attacker's near hand across the throat (the crook of the arm under the chin), his far hand at the back of the head; in the
+    // fight stage the defender's hands pull at the choking forearm. Then the W4 stack (attacker's near arm in front of the defender's head and neck).
+    _holdSleeperGrips() {
+        const ss = this.sleeperState, A = ss.attacker, D = ss.defender, neck = D.skeleton?.jointAttachmentPoints?.neck;
+        if (!neck) return;
+        const nearCh = (w) => (w.skeleton.lChannelSide(w.facing) === 'near' ? 'l' : 'r'), farCh = (w) => (nearCh(w) === 'l' ? 'r' : 'l');
+        const f = D.facing, s = D.s, k = Math.max(0, Math.min(1, ss.timer / SLEEPER.enter)), w = k * k * (3 - 2 * k);
+        A.holdGrips([
+            { arm: nearCh(A), partner: D, joint: 'Wrist', side: 'same', at: { x: neck.x + f * 9 * s, y: neck.y + 5 * s }, w },
+            { arm: farCh(A), partner: D, joint: 'Wrist', side: 'same', at: { x: neck.x - f * 12 * s, y: neck.y - 16 * s }, w },
+        ]);
+        if (sleeperStage(ss.timer).id === 'fight') D.holdGrips([
+            { arm: nearCh(D), partner: A, joint: 'Wrist', side: 'same', w },
+            { arm: farCh(D), partner: A, joint: 'Elbow', side: 'same', w },
+        ]);
+        for (const [img, depth] of layerDepths({ order: waistlockLayerOrder(A, D) }, { attacker: A, defender: D })) img.setDepth(depth);
     }
 
     // One frame of the atomic drop's watch: gone when the clip is (finished, cancelled, or replaced). While it is in its lift (A3) the defender's
@@ -4174,6 +4232,8 @@ export default class Arena extends Phaser.Scene {
         this._endWaistlock();
         this.dropState = null;
         for (const w of [this.w1, this.w2]) w._facingLock = false;   // a let-go turn beat must not outlive the match
+        // Stage 4d: a match that ends inside the rear sleeper puts both men back on their feet, so the watchdog has nothing to rescue after the reset.
+        if (this.sleeperState?.rear) for (const w of [this.sleeperState.attacker, this.sleeperState.defender]) if (w.state === 'holding' || w.state === 'sleeping') w.state = 'standing';
         this.pinState = this.sleeperState = this.headlockState = this.lockupState = this._exitBlend = null;
         this.pinText.setAlpha(0);
         this.crowd.bell(3);

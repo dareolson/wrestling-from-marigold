@@ -2050,6 +2050,8 @@ export default class Wrestler {
         }
 
         if (dist <= reach && other.state === 'standing' && this.moveSet.includes('sleeperHold')) {
+            // Stage 4d S1 (?waistlock=v1): a sleeper is a rear hold, so the front one is off; it comes only from the waistlock (Arena._beginSleeperFromHold)
+            if (waistlockCandidate()) return false;
             this._doSleeperHold(other);
             return 'sleeperHold';
         }
@@ -2939,9 +2941,11 @@ export default class Wrestler {
         }, { state: 'pressing' });
     }
 
-    _doSleeperHold(other) {
+    _doSleeperHold(other, rear = false) {
         this.state  = 'holding';
         other.state = 'sleeping';
+        // From the waistlock (rear = true) the Arena drives both poses every frame (sleeper.js), so no pose sequence and no tween.
+        if (rear) { this.scene.tweens.killTweensOf(this.pose); this.scene.tweens.killTweensOf(other.pose); return; }
         this._runPoseSequence(MOVE_DEFS.sleeperHold.poseSeq);
         other.tweenPose('sleeping', 300, 'Linear');
     }

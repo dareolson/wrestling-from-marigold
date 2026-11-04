@@ -30,19 +30,20 @@ export function stageRestartTime(stageId) {
     return i <= 1 ? 0 : SLEEPER.stages[i - 2].until;
 }
 
-// Pose keys (same channels and conventions as WAISTLOCK_POSES). The attacker leans in with `bend`, his hips stay half a step back (D12); the
+// Pose keys (the channel names of WAISTLOCK_POSES, but the legs are direct: no absolute shins, so the knee audit reads what is set). The attacker leans in with `bend`, his hips stay half a step back (D12); the
 // defender's chin is up and his knees soften more each stage. `crouch` is the whole-body sink; the get-ups' KNEEL key is the 'limp' target
 // (checked on the render at T4d.2, not assumed from these numbers).
 export const SLEEPER_POSES = Object.freeze({
+    // `lead` is the near-side leg's thigh, `rear` the far-side one's (resolved to lLeg/rLeg by sleeperChannels); both knees take `knee` (negative).
     attacker: Object.freeze({
-        fight: Object.freeze({ bend: 0.45, crouch: 0.20, lead: -0.20, leadShin: -0.10, rear: 0.05, rearShin: -0.40, lKnee: -0.30, rKnee: -0.30 }),
-        flail: Object.freeze({ bend: 0.50, crouch: 0.40, lead: -0.25, leadShin: -0.10, rear: 0.05, rearShin: -0.45, lKnee: -0.50, rKnee: -0.50 }),
-        limp: Object.freeze({ bend: 0.55, crouch: 0.65, lead: -0.30, leadShin: -0.10, rear: 0.05, rearShin: -0.60, lKnee: -0.80, rKnee: -0.80 }),
+        fight: Object.freeze({ bend: 0.45, crouch: 0.20, lead: -0.20, rear: 0.05, knee: -0.30 }),
+        flail: Object.freeze({ bend: 0.50, crouch: 0.40, lead: -0.25, rear: 0.05, knee: -0.50 }),
+        limp: Object.freeze({ bend: 0.55, crouch: 0.65, lead: -0.30, rear: 0.05, knee: -0.80 }),
     }),
     defender: Object.freeze({
-        fight: Object.freeze({ bend: -0.05, crouch: 0.10, lKnee: -0.15, rKnee: -0.15, lLeg: -0.05, rLeg: 0.08 }),
-        flail: Object.freeze({ bend: 0.05, crouch: 0.35, lKnee: -0.50, rKnee: -0.50, lLeg: 0.05, rLeg: 0.12 }),
-        limp: Object.freeze({ bend: 0.15, crouch: 0.70, lKnee: -1.40, rKnee: -1.40, lLeg: 0.35, rLeg: 0.30 }),
+        fight: Object.freeze({ bend: -0.05, crouch: 0.10, lead: -0.05, rear: 0.08, knee: -0.15 }),
+        flail: Object.freeze({ bend: 0.05, crouch: 0.35, lead: 0.05, rear: 0.12, knee: -0.50 }),
+        limp: Object.freeze({ bend: 0.15, crouch: 0.70, lead: 0.35, rear: 0.30, knee: -1.40 }),
     }),
 });
 
@@ -53,6 +54,31 @@ export function sleeperSink(t, role = 'defender') {
     const since = t - (i > 0 ? SLEEPER.stages[i - 1].until : 0), k = Math.max(0, Math.min(1, since / SLEEPER.sinkBlend)), e = k * k * (3 - 2 * k);
     const out = {};
     for (const ch of Object.keys(keys[ids[i]])) out[ch] = (keys[prev][ch] ?? 0) + ((keys[ids[i]][ch] ?? 0) - (keys[prev][ch] ?? 0)) * e;
+    return out;
+}
+
+// Pose channels for one role at timer `t`: sink (body and legs, eased between stages) plus the defender's arms for the stage (S3b). `lSide` is
+// skeleton.lChannelSide(facing). `seed` picks the flail. Arm channels are the base the fight's IK (Arena._holdSleeperGrips) pulls the hands off.
+export function sleeperChannels(role, lSide, t, seed = 1) {
+    const k = sleeperSink(t, role), nearCh = lSide === 'far' ? 'r' : 'l', farCh = nearCh === 'l' ? 'r' : 'l';
+    const out = { bend: k.bend, crouch: k.crouch, [`${nearCh}Leg`]: k.lead, [`${farCh}Leg`]: k.rear, lKnee: k.knee, rKnee: k.knee };
+    if (role === 'attacker') return out;
+    const stage = sleeperStage(t).id, A = SLEEPER_ARMS;
+    const arms = (near, far) => Object.assign(out, { [`${nearCh}Arm`]: near.arm, [`${nearCh}Elbow`]: near.elbow, [`${farCh}Arm`]: far.arm, [`${farCh}Elbow`]: far.elbow });
+    if (stage === 'fight') {
+        const tug = Math.sin(2 * Math.PI * A.fight.tugHz * t) * A.fight.tug;
+        arms({ arm: A.fight.near.arm + tug, elbow: A.fight.near.elbow }, { arm: A.fight.far.arm - tug, elbow: A.fight.far.elbow });
+    } else if (stage === 'flail') {
+        const swings = flailSwings(seed), cur = swings.find(w => t >= w.at && t < w.at + w.dur) ?? swings.at(-1);
+        const u = Math.max(0, Math.min(1, (t - cur.at) / cur.dur)), env = Math.sin(Math.PI * u);
+        const hang = A.limp.near;
+        const reach = { arm: hang.arm + (cur.arm - hang.arm) * env, elbow: hang.elbow + (cur.elbow - hang.elbow) * env };
+        const rest = { arm: A.fight.near.arm * 0.5, elbow: A.fight.near.elbow * 0.6 };
+        arms(cur.side === 'near' ? reach : rest, cur.side === 'far' ? reach : rest);
+    } else {
+        const sway = Math.sin(t * 2.2) * A.limp.sway;
+        arms({ arm: A.limp.near.arm + sway, elbow: A.limp.near.elbow }, { arm: A.limp.far.arm - sway, elbow: A.limp.far.elbow });
+    }
     return out;
 }
 

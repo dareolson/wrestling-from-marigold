@@ -96,7 +96,12 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - **Derek on r2 (2026-11-03): George's legs "go gumby" when he is lifted; it breaks the art, fix it and prevent it.** Opus, from `g4c-a2/frames/drop-lou-george-r` 84-105: his shins swing forward of his knees through the lift (knees bent backward). Same trap as G1b: on the upright path a positive `lKnee` puts the ankle forward of the knee (`limb_limits_audit.mjs` header), and `JOINT_LIMITS` clamps the number, not the drawn bend. T4c.4d.
 - T4c.4c-T4c.4f: (this commit). [G4c-a r3](research/animation/grapples-2026-10/g4c-a3/index.html): far arm 0 px over his torso (was 541-643, with a pop at the end), knees fixed + `clip_knee_audit` (baseline lists 14 shipped moves, not fixed), snapmare 1.5x shipped (2x beside it, `landFwd` 260), fridge lift. Gates: `waistlock_throws_assert`, `grapples_assert`, `waistlock_cleanup`, `grapples_flagoff`, focused tests 71/71.
   Misses: locked arms 26/16 px drift along his torso; D12 overlap; lead-in step 36.6 / 40.7 px; reverse window is now 48% of the lift. Derek picks 1.5x or 2x.
-- T4d.1: (this commit). `src/animation/sleeper.js` (stages, sink, seeded flail, small-snapmare option) + `tests/sleeper.test.js` 8/8. S1 paths to `_doSleeperHold`: only `tryFinisher` (Wrestler.js:2052, standing target in 120 px reach), reached from `Arena` (finisher key, line 3412) and `AIHandler._attack('finisher')` (line 475, attrition). Next T4d.2; T4d.0 art is Codex's.
+- T4c.4g: (commit after ff4db67). [G4c-a r4](research/animation/grapples-2026-10/g4c-a4/index.html): `carry` on the clip (carry.js, MoveRuntime.afterDraw before grips); he rides the chest, pelvis path a curve (rel x 14-46, y 12-45 px), arms 4.7/0.5 px along/across his torso (r3: 26/17), torso 56 vs 40 deg. Suite 1174 (coverage fingerprints re-taken), build, `waistlock_throws_assert`, `waistlock_cleanup`, `grapples_assert`, `grapples_flagoff`, `clip_knee_audit` pass.
+  Misses: height 45 px over his pelvis (r2 58); defender angle 1.4x not 1.3x; chest-to-back 38-59 px, not steady; D12 overlap; legs near horizontal at the top.
+- T4d.1: ff4db67. `src/animation/sleeper.js` (stages, sink, seeded flail, small-snapmare option) + `tests/sleeper.test.js` 8/8. S1 paths to `_doSleeperHold`: only `tryFinisher` (Wrestler.js:2052, standing target in 120 px reach), reached from `Arena` (finisher key, line 3412) and `AIHandler._attack('finisher')` (line 475, attrition). Next T4d.2; T4d.0 art is Codex's.
+- **Derek on r3 (2026-11-03): the atomic drop still lifts straight up; it should be an arc, George leaning back as Lou leans back, Lou's legs and back doing the work. Lou looks like he lifts 200 lbs with his arms.** Opus, from the r3 table: defender `tilt` 0 and x fixed while `lift` adds 80 px; hands ride up 26 px on the hip IK; Lou leans 29 deg, George 0; chest-to-back opens 32 -> 51 px. T4c.4g (a `carry`).
+- T4d.2: (this commit). Rear sleeper from the hold, flag on: finisher in the hold -> `_beginSleeperFromHold`; attacker 50 px behind and upstage, poses and hands per frame (`sleeper.js`, `_poseSleeper`, `_holdSleeperGrips`); front sleeper off (`tryFinisher` returns false); mash rises one stage; base forearm (no wrap art). `sleeper_assert` 26/26, `waistlock_cleanup` +2 sleeper cases, knee audit passes.
+  Misses: D12 below the belt 1113 px, torso 525 px (attacker 50 px behind); far arm over his own torso 0; hand to far side of neck not measured yet (T4d.4); AI and kits are T4d.5.
 - T6.1-T6.3: 4774ed4, 3454930, de33540. Default fighters Procreate Lou and `george-roster-v1`; `rosterKits.js` is the one kit file; `moves:kits` table and kit checks. Suite 1124/1124, build, coverage 23, kits, `grapples_assert` all passed. STOPPED at G6.
   Misses: Guido has no `hammerlockOdds` or `cornerWhipOdds` (allow-listed, not retuned); no shadowed moves; `grapples_flagoff` with no `WFM_URL` (self-started server) prints DIFFERENT at frame 0 (about 1e-5 in pose) also on the code before T6.1, identical with `WFM_URL=http://localhost:5173` (flagoff now pins `thesz`/`george`).
 
@@ -691,6 +696,30 @@ standing man against the 2.5 px/frame limit.
   Measures: his hands' position relative to his own torso through the lift (want near constant: locked arms); his torso angle from
   vertical at the top; the gap from his chest to the defender's back (px); his planted soles against 2.5 px/frame; the knee audit.
   On the r3 page with the other fixes, old lift strip beside the new one.
+- **T4c.4g The lift is an arc: he rides the attacker's chest (Derek on r3, 2026-11-03).** "Lou lifts him straight up, but it should
+  be more of an arc: George leans back as Lou leans back, because Lou is using his legs and back to generate power. The current Lou
+  looks like he lifts George with his arms, which is physically impossible: George weighs 200 lbs." The r3 numbers say the same:
+  the defender's `tilt` stays 0 and his x stays at `H - 14` while `lift` raises him 80 px, so he goes up like an elevator; the
+  attacker's hands are IK'd to his hip, so they ride up with it (26 px along the attacker's torso: the arms lift him); the attacker
+  leans back 29 deg but the defender doesn't follow; the chest-to-back gap opens 32 -> 51 px; his pelvis ends 9 px above the
+  attacker's chest. Keyframing the two men separately can't hold them together, so:
+  - **Carry:** from the end of the wrap to the end of the hitch the defender **rides the attacker's torso**. His pelvis sits at a fixed
+    point in the attacker's torso frame (the spot it has at the wrap: low belly, pressed to it), and his torso angle follows the
+    attacker's lean back, a little past it at the top (about 1.3x: Lou 29 deg back, George about 38 deg back), his legs kicking up as
+    in T4c.4f. The rise then comes only from the attacker's knees straightening, hips forward and the lean back: the defender's
+    pelvis travels **up and back over the attacker**, a curve. Add it as a `carry` entry on the clip (role, the anchor point in the
+    carrier's torso frame, the tilt ratio, the window, a blend in and out), resolved in MoveRuntime beside `grips`, with a focused
+    test; the suplex and the German will want the same thing. Read how `grips` resolve first and resolve `carry` before them, so the
+    hands follow a hip that no longer moves against the attacker.
+  - **The drop continues the arc:** at the end of the hitch the attacker swings him forward and down onto the raised knee, the
+    defender's tilt coming back past upright as he falls; up and back, then forward and down. No vertical elevator either way.
+  - **Height** is what the carry gives. Report it against r2's 58 px; if it is short, a deeper squat or more lean, never the `lift`
+    track. (`liftPeak` stays only if something else still reads it; say which.)
+  Measures (from the render): the defender's pelvis path frame by frame drawn as a trace on one still per facing (want a curve, not a
+  vertical line) with its x and y travel; his torso angle against the attacker's, per frame; the attacker's hands along and across his
+  own torso through the lift (want under 5 px: locked arms); the chest-to-back gap (want steady, within 5 px); planted soles; the knee
+  audit; D12 overlap per beat, raw (A7). r4 page: r3 lift beside the new one, both facings, normal speed, plus the trace stills.
+  Then back to Stage 4d at T4d.2.
 - **T4c.5 Kits, AI, soak** (A8), after G4c-a. `grapples_soak.mjs` with `waistlock=v1`, one pair at a time (two at once crashed in
   T4b.4): drops, reversals, denied reversals counted; fail on page errors, `orphanRescue`, stuck states.
 - **T4c.6 G4c page**: strips of both moves, both attackers, both facings; table, misses first. Gates: focused tests,

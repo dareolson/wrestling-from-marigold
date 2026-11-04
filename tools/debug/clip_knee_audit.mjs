@@ -92,7 +92,7 @@ try {
     }, { LIM, FLEX });
 } finally { await h.close(); }
 
-// The live pass: the waistlock hold, the drop and the snapmare as the game plays them (lead-in blends, hand-over and all), read off the stepped
+// The live pass: the waistlock hold, the drop, the snapmare and the rear sleeper (every stage to the KO) as the game plays them (lead-in blends, hand-over and all), read off the stepped
 // film's joint points. Both attackers, both facings. `hold` = frames before a clip owns the pair.
 for (const [label, att, def] of [['Lou on George', LOU, GEORGE], ['George on Lou', GEORGE, LOU]]) {
     process.env.WFM_P1 = att; process.env.WFM_P2 = def;
@@ -100,11 +100,11 @@ for (const [label, att, def] of [['Lou on George', LOU, GEORGE], ['George on Lou
     try {
         await h2.page.waitForTimeout(2500);
         const info = await h2.page.evaluate(INSTALL);
-        for (const facing of [-1, 1]) for (const cs of ['drop', 'reverse']) {
+        for (const facing of [-1, 1]) for (const cs of ['drop', 'reverse', 'sleeper']) {
             const film_ = await film(h2.page, info, { facing, case: cs, rev: 6 }, null, { quiet: 8 });
             film_.forEach((r, i) => {
                 const hold = !r.t.clip && i >= PRESS_AT && r.wl !== null ? 'hold' : null;
-                const move = r.t.clip ?? (hold ? 'waistlock hold' : null);
+                const move = r.t.clip ?? (r.t.sleeper ? 'rear sleeper' : hold ? 'waistlock hold' : null);
                 if (!move) return;
                 for (const [side, role, rig] of [['a', 'attacker', att], ['d', 'defender', def]]) {
                     if (!r[side].pts.nearKnee) continue;

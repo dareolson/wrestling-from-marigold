@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SLEEPER, SLEEPER_POSES, SLEEPER_ARMS, sleeperStage, stageRestartTime, sleeperSink, flailSwings, seeded, SNAPMARE_SMALL, snapmareFlipAngle, smallSnapmareOpen } from '../src/animation/sleeper.js';
+import { SLEEPER, SLEEPER_POSES, SLEEPER_ARMS, sleeperStage, stageRestartTime, sleeperSink, sleeperChannels, flailSwings, seeded, SNAPMARE_SMALL, snapmareFlipAngle, smallSnapmareOpen } from '../src/animation/sleeper.js';
 
 test('stages follow the old timings: z under 1.4 s, zz under 2.8 s, zzz after, the KO at 4.0', () => {
     assert.deepEqual([0, 1.39, 1.4, 2.79, 2.8, 3.99, 5].map(t => sleeperStage(t).z), ['z', 'z', 'zz', 'zz', 'zzz', 'zzz', 'zzz']);
@@ -56,4 +56,17 @@ test('an escape tick restarts one stage up: limp -> the flail\'s start, flail an
     assert.equal(stageRestartTime('flail'), 0);
     assert.equal(stageRestartTime('fight'), 0);
     assert.equal(sleeperStage(stageRestartTime('limp')).id, 'flail');
+});
+
+test('sleeperChannels: arms by stage, near/far channels follow lChannelSide, knees never positive, same seed same flail', () => {
+    for (const side of ['near', 'far']) {
+        const nearCh = side === 'far' ? 'r' : 'l', farCh = nearCh === 'l' ? 'r' : 'l';
+        const fight = sleeperChannels('defender', side, 0.5), limp = sleeperChannels('defender', side, 3.5);
+        assert.ok(fight[`${nearCh}Arm`] > 1.3 && fight[`${farCh}Arm`] > 1.3, 'both hands up at the forearm');
+        assert.ok(limp[`${nearCh}Arm`] < 0.3 && limp[`${farCh}Arm`] < 0.3, 'hanging when limp');
+        for (const t of [0, 0.5, 2.0, 3.5]) for (const role of ['attacker', 'defender']) { const c = sleeperChannels(role, side, t); assert.ok(c.lKnee <= 0 && c.rKnee <= 0, `${role} ${t}`); }
+    }
+    assert.deepEqual(sleeperChannels('defender', 'near', 2.0, 5), sleeperChannels('defender', 'near', 2.0, 5));
+    assert.notDeepEqual(sleeperChannels('defender', 'near', 2.0, 5), sleeperChannels('defender', 'near', 2.0, 6));
+    assert.ok(sleeperChannels('attacker', 'near', 3.5).crouch > sleeperChannels('attacker', 'near', 0.1).crouch);
 });

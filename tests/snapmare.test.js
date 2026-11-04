@@ -4,6 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import MoveRuntime from '../src/animation/MoveRuntime.js';
 import { atomicDropClip } from '../src/animation/clips/atomicDrop.js';
+import { validateClip, compileClip } from '../src/animation/AnimationClip.js';
 import { snapmareClip } from '../src/animation/clips/snapmare.js';
 import { REGISTERED_MOVE_CLIPS } from '../src/animation/clips/index.js';
 import { ATOMIC, SNAPMARE, flipTilt, snapmareHeadGrip } from '../src/animation/waistlockThrows.js';
@@ -111,4 +112,24 @@ test('the drop still does its own damage if the reversal never comes (the window
     run(runtime, ATOMIC.reverseWindow + 0.05);
     run(runtime, ATOMIC.duration);
     assert.deepEqual(drained, [['D', STAMINA_DRAIN.atomicDrop]]);
+});
+
+test('plants (T4c.4i): the thrower\'s forward foot is planted from its landing, through the throw and released over 0.10 s', () => {
+    const result = validateClip(snapmareClip);
+    assert.deepEqual(result.errors ?? [], [], 'the shipped clip validates');
+    const [fwd] = snapmareClip.plants;
+    assert.equal(snapmareClip.plants.length, 1);
+    assert.equal(fwd.role, 'attacker'); assert.equal(fwd.leg, 'l');
+    assert.ok(fwd.out[0] >= SNAPMARE.land, 'the forward foot holds past the impact, until his weight is back over it');
+    assert.ok(Math.abs((fwd.out[1] - fwd.out[0]) - 0.10) < 1e-9, 'and lets go over 0.10 s');
+    assert.ok(compileClip(snapmareClip).plants.length === 1);
+});
+
+test('plants are validated like carry: a leg channel, a real track, and an ordered window', () => {
+    const base = { id: 'x', duration: 1, tracks: { a: { keyframes: [{ at: 0, pose: {}, transform: { x: 0, y: 0 }, parts: {} }, { at: 1, pose: {}, transform: { x: 0, y: 0 }, parts: {} }] } } };
+    const errs = (plants) => (validateClip({ ...base, plants }).errors ?? []).filter(e => e.startsWith('plants'));
+    assert.deepEqual(errs([{ role: 'a', leg: 'l', in: [0.1, 0.2], out: [0.5, 0.6] }]), []);
+    assert.equal(errs([{ role: 'b', leg: 'l', in: [0.1, 0.2], out: [0.5, 0.6] }]).length, 1, 'no such track');
+    assert.equal(errs([{ role: 'a', leg: 'near', in: [0.1, 0.2], out: [0.5, 0.6] }]).length, 1, 'leg is the clip channel, not a depth side');
+    assert.equal(errs([{ role: 'a', leg: 'r', in: [0.3, 0.2], out: [0.5, 0.6] }]).length, 1, 'window out of order');
 });

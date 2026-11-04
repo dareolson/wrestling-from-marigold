@@ -84,6 +84,8 @@ export default class MoveRuntime {
             onComplete,
             onCancel,
             cancelled: false,
+            // One row per plant per frame (the solve's target, sole and residual); kept for the probes, null on clips with no plants.
+            plantLog: clip.plants?.length ? [] : null,
             // Per-role staging frame, captured ONCE here from the bound actors'
             // live positions and the anchor's facing/scale, then never rewritten
             // for the life of the handle. Capturing at play() rather than on
@@ -178,7 +180,13 @@ export default class MoveRuntime {
     // part layering. The gripping actor redraws, so this runs once both are
     // placed for the frame.
     afterDraw() {
-        // Carry first (carry.js): the carried man is placed on the carrier's torso and redrawn, so the grips below pull onto a hip that is already where it stays.
+        // Planted soles first (_plant): the leg is solved onto its held point before anything is placed from the body's drawn joints.
+        // The two legs of one man share his pelvis (the rig sinks it to the soles' mean), so solving one moves the other's sole: sweep the list until it settles.
+        for (const handle of this._active.values()) {
+            const plants = handle.clip.plants ?? [], passes = plants.length > 1 ? 3 : 1;
+            for (let pass = 1; pass <= passes; pass++) for (const [index, plant] of plants.entries()) this._plant(handle, plant, index, pass === passes);
+        }
+        // Carry (carry.js): the carried man is placed on the carrier's torso and redrawn, so the grips below pull onto a hip that is already where it stays.
         for (const handle of this._active.values()) {
             for (const [index, carry] of (handle.clip.carry ?? []).entries()) this._carry(handle, carry, index);
         }
@@ -202,6 +210,50 @@ export default class MoveRuntime {
             if (!handle.clip.layers && !handle.clip.layerTie) continue;
             for (const [img, depth] of clipLayerDepths(handle.clip, handle.time, handle.bindings)) img.setDepth(depth);
         }
+    }
+
+    // One frame of one plant (AnimationClip.js plants): over its window a sole holds the world point it had the first frame the weight is above zero (a
+    // frame where that foot is on the mat, which `plantLog` records). The clip's `leg` channel ('l' | 'r') is solved by two unknowns, its thigh (`lLeg`)
+    // and its absolute shin (`lShin`, the clip owns the shin: T4c.4h), by damped Newton on the DRAWN painted sole (Skeleton.soleWorld), so the pelvis
+    // re-solve that follows a leg change is in the loop. The solved channels stay in the pose (the next frame's sample rewrites them). At weight w the
+    // sole goes to the sampled sole blended w of the way to the held point. A target out of the leg's reach stops at the nearest the solve gets; the
+    // residual is logged and the clip's x keys are the fix, not a pelvis solver.
+    _plant(handle, plant, index, last = true) {
+        const w = windowWeight(plant, handle.time), man = handle.bindings[plant.role], sk = man?.skeleton;
+        if (!(w > 0.001) || !sk?.soleWorld || typeof man.draw !== 'function') return;
+        const side = sk.lChannelSide(man.facing) === 'near' ? (plant.leg === 'l' ? 'near' : 'far') : (plant.leg === 'l' ? 'far' : 'near');
+        const legKey = `${plant.leg}Leg`, shinKey = `${plant.leg}Shin`;
+        if (!Number.isFinite(man.pose[legKey]) || !Number.isFinite(man.pose[shinKey])) return;
+        const natural = sk.soleWorld(side);
+        if (!natural) return;
+        const state = ((handle._plants ??= [])[index] ??= { target: { ...natural }, onMat: Math.abs(natural.y - man.y) });
+        const want = { x: natural.x + (state.target.x - natural.x) * w, y: natural.y + (state.target.y - natural.y) * w };
+        // Start from last frame's solution (the target is fixed, so it is close) blended with the sampled legs by the weight; Jacobian by finite difference each step.
+        const natural2 = [man.pose[legKey], man.pose[shinKey]];
+        let cur = state.last ? natural2.map((v, k) => v + (state.last[k] - v) * Math.min(1, w * 1.5)) : natural2;
+        // The shin stays inside the knee's range against its own thigh (leg + .85 crouch): no hyperextension, no fold past FOLD_MAX (JOINT_LIMITS.knee.max, less a margin).
+        const thighOf = (a) => a + 0.85 * (man.pose.crouch ?? 0);
+        const at = (a, b) => { b = Math.max(thighOf(a) - 2.45, Math.min(thighOf(a), b)); man.pose[legKey] = a; man.pose[shinKey] = b; man.draw(); return sk.soleWorld(side); };
+        const EPS = 0.02, miss = (q) => Math.hypot(want.x - q.x, want.y - q.y);
+        let p = at(cur[0], cur[1]);
+        for (let it = 0; it < 6 && miss(p) > 0.2; it++) {
+            const pa = at(cur[0] + EPS, cur[1]), pb = at(cur[0], cur[1] + EPS);
+            const J = [[(pa.x - p.x) / EPS, (pb.x - p.x) / EPS], [(pa.y - p.y) / EPS, (pb.y - p.y) / EPS]];
+            const det = J[0][0] * J[1][1] - J[0][1] * J[1][0];
+            if (Math.abs(det) < 1e-6) { p = at(cur[0], cur[1]); break; }
+            const ex = want.x - p.x, ey = want.y - p.y;
+            let da = (J[1][1] * ex - J[0][1] * ey) / det, db = (-J[1][0] * ex + J[0][0] * ey) / det;
+            const big = Math.max(Math.abs(da), Math.abs(db)); if (big > 0.5) { da *= 0.5 / big; db *= 0.5 / big; }
+            let k = 1, next = cur, q = p;
+            for (let h = 0; h < 4; h++, k /= 2) {   // halve the step until the miss shrinks
+                next = [cur[0] + da * k, cur[1] + db * k]; q = at(next[0], next[1]);
+                if (miss(q) < miss(p)) break;
+            }
+            if (!(miss(q) < miss(p))) { p = at(cur[0], cur[1]); break; }
+            cur = next; p = q;
+        }
+        state.last = cur;
+        if (last) handle.plantLog?.push({ time: handle.time, index, w, side, target: state.target, sole: p, want, onMat: state.onMat, err: Math.hypot(want.x - p.x, want.y - p.y), leg: cur[0], shin: cur[1], thigh: thighOf(cur[0]), hip: { ...sk.jointAttachmentPoints[`${side}Hip`] } });
     }
 
     // One frame of one carry: weight from its window; captures the anchor the first frame the weight is above zero; then turns the carried man to the

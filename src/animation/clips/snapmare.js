@@ -41,8 +41,8 @@ export const snapmareClip = {
             keyframes: [
                 kf(0, 'linear', { lArm: 0.7, rArm: 0.7, lElbow: 0.9, rElbow: 0.9, lLeg: 0.12, rLeg: 0.22, lFold: 0.35, rFold: 0.30, lean: -0.08, crouch: 0, tilt: 0, lift: 20, bend: -0.05 }, 0, 0),
                 kf(R, 'easeOut', { lArm: 2.2, rArm: 2.2, lElbow: 0.5, rElbow: 0.5, lLeg: 0.15, rLeg: -0.05, lFold: 0.25, rFold: 0.25, lean: 0.05, crouch: 0.25, tilt: 0, lift: 0, bend: 0.20 }, 0, 0),
-                kf(P, 'easeInOut', { lArm: 1.6, rArm: 1.6, lElbow: 0.6, rElbow: 0.6, lLeg: 0.7, rLeg: -0.9, lFold: 0.2, rFold: 1.4, lean: 0.20, crouch: 0.60, tilt: 0, lift: 0, bend: 0.55 }, 12, 0),
-                kf(I, 'easeOut', { lArm: 0.9, rArm: 0.9, lElbow: 0.5, rElbow: 0.5, lLeg: 0.7, rLeg: -0.9, lFold: 0.2, rFold: 1.4, lean: 0.15, crouch: 0.60, tilt: 0, lift: 0, bend: 0.50 }, 14, 0),
+                kf(P, 'easeInOut', { lArm: 1.6, rArm: 1.6, lElbow: 0.6, rElbow: 0.6, lLeg: 0.7, rLeg: -0.9, lFold: 0.2, rFold: 1.4, lean: 0.20, crouch: 0.60, tilt: 0, lift: 6, bend: 0.55 }, 12, 0),
+                kf(I, 'easeOut', { lArm: 0.9, rArm: 0.9, lElbow: 0.5, rElbow: 0.5, lLeg: 0.7, rLeg: -0.9, lFold: 0.2, rFold: 1.4, lean: 0.15, crouch: 0.60, tilt: 0, lift: 6, bend: 0.50 }, 14, 0),
                 // The head grip let go in the flip: the arms follow through and are at his sides by the time he rises (T4c.4b-4, 0.2 s).
                 kf(I + 0.20, 'easeInOut', { lArm: 0.10, rArm: 0.20, lElbow: 0.6, rElbow: 0.6, lLeg: 0.35, rLeg: -0.4, lFold: 0.22, rFold: 0.8, lean: 0.10, crouch: 0.30, tilt: 0, lift: 0, bend: 0.25 }, 14, 0),
                 kf(D, 'easeInOut', { lArm: 0.04, rArm: 0.17, lElbow: 0.7, rElbow: 0.7, lLeg: -0.04, rLeg: 0.16, lFold: 0.22, rFold: 0.22, lean: 0.05, crouch: 0.05, tilt: 0, lift: 0, bend: 0 }, 10, 0),
@@ -62,6 +62,13 @@ export const snapmareClip = {
             ],
         },
     },
+    // T4c.4i: the thrower's forward (l) foot stops sliding: planted from its landing to the rise, released over 0.10 s once his weight is back over it. `leg` is the clip's
+    // own channel (which limb draws it is the rig's, lChannelSide). The rear (r) foot is not planted: it goes to the knee at once, and a short plant there only made a pop
+    // when it let go. `lift: 6` on his pull and throw keys: with the rear knee down the rig's sole-mean hip solve sinks his pelvis 70 px, too low for a planted leg to
+    // reach without folding past the knee's range; the little lift hands the hip to the canonical height, a lunge the front leg can hold.
+    plants: [
+        { role: 'attacker', leg: 'l', in: [R, R + 0.03], out: [I + 0.15, I + 0.25] },
+    ],
     // A5: the thrown man behind the thrower until the flip is over his head, in front of him after.
     layers: [
         // Each man is far arm, far leg, torso, head, near leg, near arm (clipLayers.js `farArm` / `body` / `nearArm`, resolved per facing and rig), so his far arm

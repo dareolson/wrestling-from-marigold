@@ -103,6 +103,11 @@ export function validateClip(source) {
         if (!Number.isFinite(c?.tilt)) errors.push(`carry[${index}].tilt is the ratio of his torso angle to the carrier's`);
         if (badWindow(c)) errors.push(`carry[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
     }
+    for (const [index, plant] of (source?.plants ?? []).entries()) {
+        if (!source.tracks?.[plant?.role]) errors.push(`plants[${index}].role has no track`);
+        if (!['l', 'r'].includes(plant?.leg)) errors.push(`plants[${index}].leg must be 'l' or 'r' (the clip's own leg channel; the sole is whichever limb that channel draws)`);
+        if (badWindow(plant)) errors.push(`plants[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
+    }
     errors.push(...validateLayers(source).errors);
     let previousEvent = -Infinity;
     for (const [index, event] of (source?.events ?? []).entries()) {
@@ -151,6 +156,8 @@ export function compileClip(source) {
         grips: (source.grips ?? []).map(grip => Object.freeze({ ...grip, to: Object.freeze({ side: 'same', ...grip.to }) })),
         // One man riding another's torso (carry.js); resolved in MoveRuntime.afterDraw before grips.
         carry: (source.carry ?? []).map(c => Object.freeze({ ...c, in: Object.freeze([...c.in]), out: Object.freeze([...c.out]) })),
+        // A sole held on the mat over a window (MoveRuntime._plant); resolved in afterDraw before carry and grips.
+        plants: (source.plants ?? []).map(p => Object.freeze({ ...p, in: Object.freeze([...p.in]), out: Object.freeze([...p.out]) })),
         // Cross-actor part order (clipLayers.js). Absent on most clips.
         ...(source.layers ? { layers: Object.freeze(source.layers.map(win => Object.freeze({
             from: win.from, to: win.to,

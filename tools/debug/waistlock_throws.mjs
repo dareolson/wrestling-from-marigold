@@ -24,7 +24,9 @@ const EXTRAS = (maskOn) => {
     const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
     const h = a._activeMove ?? d._activeMove;
     return {
-        t: { sleeper: sc.sleeperState ? { timer: +sc.sleeperState.timer.toFixed(3), rear: !!sc.sleeperState.rear } : null, clip: h?.clip?.id ?? null, time: h ? +h.time.toFixed(4) : null, drop: !!sc.dropState, states: [a.state, d.state], tilt: [a.pose.tilt, d.pose.tilt], lift: [a.pose.lift, d.pose.lift], xy: [[a.x, a.y], [d.x, d.y]], facing: [a.facing, d.facing], stamina: [a.stamina, d.stamina], lying: [a.lying, d.lying], blend: !!sc._exitBlend },
+        t: { sleeper: sc.sleeperState ? { timer: +sc.sleeperState.timer.toFixed(3), rear: !!sc.sleeperState.rear } : null, clip: h?.clip?.id ?? null, time: h ? +h.time.toFixed(4) : null, plant: h?.plantLog?.length ? h.plantLog.filter(r => r.time === h.time).map(r => ({ i: r.index, w: +r.w.toFixed(3), side: r.side, err: +r.err.toFixed(2), onMat: +r.onMat.toFixed(1) })) : null, drop: !!sc.dropState, states: [a.state, d.state], tilt: [a.pose.tilt, d.pose.tilt], lift: [a.pose.lift, d.pose.lift], xy: [[a.x, a.y], [d.x, d.y]], facing: [a.facing, d.facing], stamina: [a.stamina, d.stamina], lying: [a.lying, d.lying], blend: !!sc._exitBlend },
+        // both soles as the skeleton reads them after the step (painted anchor through the shin's live transform; the art variant in use sets the anchor)
+        soles: [a, d].map(w => ['near', 'far'].map(n => w.skeleton.soleWorld?.(n) ?? null)),
         mask: maskOn && (h || sc.sleeperState) ? window.__maskOverlap(a, d, false) : null,
         far: maskOn && window.__farArmOverTorso ? [window.__farArmOverTorso(a).px, window.__farArmOverTorso(d).px] : null,
         events: sc.matchEvents.splice(0).filter(e => ['move', 'atomicDrop', 'snapmare', 'snapmareDenied', 'orphanRescue', 'waistlockEnd', 'sleeperApplied', 'sleeperStageUp', 'sleeperEscape', 'sleeperKO', 'ropeBreak'].includes(e.type)),

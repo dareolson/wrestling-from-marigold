@@ -1123,6 +1123,16 @@ export default class Skeleton {
         };
     }
 
+    // World position of a leg's painted sole ('near' | 'far'), read off the shin image as drawn this frame (its transform, its flips): the point a
+    // planted foot must hold (MoveRuntime._plant). Null on a rig with no painted sole. Same u/v convention and flip handling as the sole sweep.
+    soleWorld(side) {
+        const img = this[`${side}Shin`], a = img?._soleAnchorFrac;
+        if (!a || typeof img.getWorldTransformMatrix !== 'function') return null;
+        const u = img.flipX ? 1 - a.u : a.u, v = img.flipY ? 1 - a.v : a.v;
+        const p = img.getWorldTransformMatrix().transformPoint((u - img.originX) * img.width, (v - img.originY) * img.height);
+        return { x: p.x, y: p.y };
+    }
+
     // Inverse of _socketPoint: solves the torso's own render origin (the
     // px,py normally handed to _placePart) so that the torso's measured
     // near/far-hip socket MIDPOINT lands exactly on `pelvisX, pelvisY` — the

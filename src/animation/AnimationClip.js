@@ -98,6 +98,11 @@ export function validateClip(source) {
         if (!['same', 'other'].includes(grip?.to?.side ?? 'same')) errors.push(`grips[${index}].to.side must be 'same' or 'other'`);
         if (badWindow(grip)) errors.push(`grips[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
     }
+    for (const [index, c] of (source?.carry ?? []).entries()) {
+        if (!source.tracks?.[c?.role] || !source.tracks?.[c?.on] || c.role === c.on) errors.push(`carry[${index}] role and on need two different tracks`);
+        if (!Number.isFinite(c?.tilt)) errors.push(`carry[${index}].tilt is the ratio of his torso angle to the carrier's`);
+        if (badWindow(c)) errors.push(`carry[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
+    }
     errors.push(...validateLayers(source).errors);
     let previousEvent = -Infinity;
     for (const [index, event] of (source?.events ?? []).entries()) {
@@ -144,6 +149,8 @@ export function compileClip(source) {
         events: (source.events ?? []).map((event, index) => ({ ...event, _order: index })),
         floorContacts: (source.floorContacts ?? []).map(contact => Object.freeze({ ...contact })),
         grips: (source.grips ?? []).map(grip => Object.freeze({ ...grip, to: Object.freeze({ side: 'same', ...grip.to }) })),
+        // One man riding another's torso (carry.js); resolved in MoveRuntime.afterDraw before grips.
+        carry: (source.carry ?? []).map(c => Object.freeze({ ...c, in: Object.freeze([...c.in]), out: Object.freeze([...c.out]) })),
         // Cross-actor part order (clipLayers.js). Absent on most clips.
         ...(source.layers ? { layers: Object.freeze(source.layers.map(win => Object.freeze({
             from: win.from, to: win.to,

@@ -24,32 +24,37 @@ const EXTRAS = (maskOn) => {
     const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
     const h = a._activeMove ?? d._activeMove;
     return {
-        t: { clip: h?.clip?.id ?? null, time: h ? +h.time.toFixed(4) : null, drop: !!sc.dropState, states: [a.state, d.state], tilt: [a.pose.tilt, d.pose.tilt], lift: [a.pose.lift, d.pose.lift], xy: [[a.x, a.y], [d.x, d.y]], facing: [a.facing, d.facing], stamina: [a.stamina, d.stamina], lying: [a.lying, d.lying], blend: !!sc._exitBlend },
-        mask: maskOn && h ? window.__maskOverlap(a, d, false) : null,
+        t: { sleeper: sc.sleeperState ? { timer: +sc.sleeperState.timer.toFixed(3), rear: !!sc.sleeperState.rear } : null, clip: h?.clip?.id ?? null, time: h ? +h.time.toFixed(4) : null, drop: !!sc.dropState, states: [a.state, d.state], tilt: [a.pose.tilt, d.pose.tilt], lift: [a.pose.lift, d.pose.lift], xy: [[a.x, a.y], [d.x, d.y]], facing: [a.facing, d.facing], stamina: [a.stamina, d.stamina], lying: [a.lying, d.lying], blend: !!sc._exitBlend },
+        mask: maskOn && (h || sc.sleeperState) ? window.__maskOverlap(a, d, false) : null,
         far: maskOn && window.__farArmOverTorso ? [window.__farArmOverTorso(a).px, window.__farArmOverTorso(d).px] : null,
-        events: sc.matchEvents.splice(0).filter(e => ['move', 'atomicDrop', 'snapmare', 'snapmareDenied', 'orphanRescue', 'waistlockEnd'].includes(e.type)),
+        events: sc.matchEvents.splice(0).filter(e => ['move', 'atomicDrop', 'snapmare', 'snapmareDenied', 'orphanRescue', 'waistlockEnd', 'sleeperApplied', 'sleeperStageUp', 'sleeperEscape', 'sleeperKO', 'ropeBreak'].includes(e.type)),
     };
 };
 export const STEP = async (page, arg) => ({ ...(await page.evaluate(BASE_STEP, arg)), ...(await page.evaluate(EXTRAS, !!arg.maskClip)) });
 
-export async function film(page, info, spec, shotDir, { frames = 330, quiet = 40 } = {}) {
+// the last film's game-px to screenshot-px mapping: shot px = x0 + gameX * kx (and y), so a tool can draw on the frames afterwards
+export let lastShot = null;
+export async function film(page, info, spec, shotDir, { frames = spec.case?.startsWith('sleeper') ? 420 : 330, quiet = 40 } = {}) {
     // spec.denied: the defender (who faces against the attacker's first facing) stands 90 px inside the rope he faces, so the snapmare has no room
     // to land but the hold's rope reach (34 px) is not met
     const gap2 = 45 * perspectiveScale(400), bnd = ringBoundsAtY(400);
     const midX = spec.denied ? (spec.facing > 0 ? bnd.left + 90 * perspectiveScale(400) - gap2 : bnd.right - 90 * perspectiveScale(400) + gap2) : (spec.midX ?? 520);
     await page.evaluate(SETUP, { facing: spec.facing, midX, startGap: 90, defRope: null, flag: true, layer: false, seed: 11 });
-    await page.evaluate((moves) => { const sc = window.__WFM_GAME.scene.scenes[0]; for (const w of [sc.w1, sc.w2]) for (const m of moves) if (!w.moveSet.includes(m)) w.moveSet.push(m); sc.matchEvents.length = 0; }, ['goBehind', 'atomicDrop', 'snapmare']);
+    await page.evaluate((moves) => { const sc = window.__WFM_GAME.scene.scenes[0]; for (const w of [sc.w1, sc.w2]) for (const m of moves) if (!w.moveSet.includes(m)) w.moveSet.push(m); sc.matchEvents.length = 0; }, ['goBehind', 'atomicDrop', 'snapmare', 'sleeperHold']);
     const bx = info.box, mX = (x) => bx.x + x * bx.w / bx.gw, mY = (y) => bx.y + y * bx.h / bx.gh;
     const mid = await page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; return (sc.w1.x + sc.w2.x) / 2; });
     const clip = { width: 620, height: 360, x: Math.max(0, Math.round(mX(mid) - 310)), y: Math.round(mY(440) - 360) };   // wide: the snapmare carries the thrown man 260 px along
+    lastShot = { x0: bx.x - clip.x, y0: bx.y - clip.y, kx: bx.w / bx.gw, ky: bx.h / bx.gh, width: clip.width, height: clip.height };
     if (shotDir) { rmSync(shotDir, { recursive: true, force: true }); mkdirSync(shotDir, { recursive: true }); }
     const rows = []; let calm = 0, started = false;
     const revAt = spec.revAt;   // absolute frame the defender presses power, else DROP_AT + rev
     for (let i = 0; i < frames; i++) {
         const press = { a: [], d: [] }, hold = { a: [], d: [] };
         if (i === PRESS_AT) { press.a.push('power'); hold.a.push('up'); }
-        if (i === DROP_AT) press.a.push('power');
-        if (spec.case !== 'drop' && i === (revAt ?? DROP_AT + (spec.rev ?? 6))) press.d.push('power');
+        if (i === DROP_AT) press.a.push(spec.case?.startsWith('sleeper') ? 'finisher' : 'power');
+        // sleeperMash: the defender mashes action every 5 frames from sleeperFrom (default 1 s after the hold)
+        if (spec.case === 'sleeperMash' && rows.length && rows[rows.length - 1].t.sleeper && i >= DROP_AT + (spec.sleeperFrom ?? 60) && (i - DROP_AT) % 5 === 0) press.d.push('action');
+        if (spec.case !== 'drop' && !spec.case?.startsWith('sleeper') && i === (revAt ?? DROP_AT + (spec.rev ?? 6))) press.d.push('power');
         const row = await STEP(page, { press, hold, mask: false, maskClip: !!spec.mask });
         row.i = i; rows.push(row);
         if (shotDir) await page.screenshot({ path: join(shotDir, `s${String(i).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 82, clip });

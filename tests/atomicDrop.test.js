@@ -45,8 +45,9 @@ test('the clip follows the beats: impact where the drop ends, the defender rises
     assert.deepEqual(atomicDropClip.events, [{ at: ATOMIC.impact, type: 'impact' }]);
     const att = atomicDropClip.tracks.attacker.keyframes, def = atomicDropClip.tracks.defender.keyframes;
     const at = (kfs, t) => kfs.find(k => Math.abs(k.at - t) < 1e-9);
-    assert.ok(at(def, ATOMIC.lift).pose.lift > at(def, 0).pose.lift + 20, 'he is lifted by the lift beat');
-    assert.ok(at(def, ATOMIC.impact).pose.lift < at(def, ATOMIC.lift).pose.lift, 'and has come down by the impact');
+    // T4c.4g: the rise is the carry's (his own lift track stays 0), so he is lifted by leaning back with the attacker, and has come forward past upright by the impact
+    assert.ok(at(def, ATOMIC.lift).pose.tilt < -0.3, 'he leans back by the lift beat');
+    assert.ok(at(def, ATOMIC.impact).pose.tilt > 0.1, 'and has come forward past upright by the impact');
     assert.ok(at(att, ATOMIC.impact).pose.lLeg > 1, 'the attacker\'s near knee is up at the impact');
     // he enters where the hold left him: holdBehind ahead of the attacker, `upstage` nearer the camera
     assert.equal(def[0].transform.x, WAISTLOCK.holdBehind);
@@ -54,7 +55,9 @@ test('the clip follows the beats: impact where the drop ends, the defender rises
     assert.deepEqual([att[0].transform.x, att[0].transform.y], [0, 0]);
     // nobody is turned and nobody ends tilted
     assert.ok(![...att, ...def].some(k => 'facing' in k));
-    assert.ok([...att, ...def].every(k => k.pose.tilt === 0));
+    assert.ok(att.every(k => k.pose.tilt === 0));
+    assert.equal(def.at(-1).pose.tilt, 0);   // the defender is tilted only through the carry and the fall onto the knee, upright again after (T4c.4g)
+    assert.ok(def.filter(k => k.at >= ATOMIC.impact + 0.10).every(k => k.pose.tilt === 0));
     assert.deepEqual(atomicDropClip.grips.map(g => [g.role, g.to.role, g.to.joint]), [['attacker', 'defender', 'Hip'], ['attacker', 'defender', 'Hip']]);
 });
 

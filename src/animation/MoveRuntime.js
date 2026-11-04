@@ -1,5 +1,6 @@
 import { compileClip, eventsBetween, sampleClip, windowWeight } from './AnimationClip.js';
 import { clipLayerDepths } from './clipLayers.js';
+import { carryTarget, pelvisOf, toFrame, torsoFrame } from './carry.js';
 import { captureFacingAxis, captureStagingContext, stagedWorldPoint, stagingAt } from './clipStaging.js';
 
 // `staging` is the role's immutable playback context, or null when this track
@@ -177,6 +178,10 @@ export default class MoveRuntime {
     // part layering. The gripping actor redraws, so this runs once both are
     // placed for the frame.
     afterDraw() {
+        // Carry first (carry.js): the carried man is placed on the carrier's torso and redrawn, so the grips below pull onto a hip that is already where it stays.
+        for (const handle of this._active.values()) {
+            for (const [index, carry] of (handle.clip.carry ?? []).entries()) this._carry(handle, carry, index);
+        }
         for (const handle of this._active.values()) {
             const grips = handle.clip.grips;
             if (!grips?.length) continue;
@@ -197,6 +202,33 @@ export default class MoveRuntime {
             if (!handle.clip.layers && !handle.clip.layerTie) continue;
             for (const [img, depth] of clipLayerDepths(handle.clip, handle.time, handle.bindings)) img.setDepth(depth);
         }
+    }
+
+    // One frame of one carry: weight from its window; captures the anchor the first frame the weight is above zero; then turns the carried man to the
+    // carrier's lean, moves him so his drawn pelvis lands on the target (x by the wrestler's x, y by the pose `lift`, measured per frame because a rig
+    // scales lift), and redraws him. Nothing is kept between frames but the anchor: the next sample rewrites x, tilt and lift.
+    _carry(handle, carry, index) {
+        const w = windowWeight(carry, handle.time);
+        const carrier = handle.bindings[carry.on], man = handle.bindings[carry.role];
+        if (!(w > 0) || !carrier?.skeleton?.jointAttachmentPoints?.neck || !man?.skeleton?.jointAttachmentPoints?.nearHip || typeof man.draw !== 'function') return;
+        const state = ((handle._carry ??= [])[index] ??= {
+            anchor: toFrame(torsoFrame(carrier.skeleton.jointAttachmentPoints, carrier.facing), pelvisOf(man.skeleton.jointAttachmentPoints)),
+        });
+        const pelvis = () => pelvisOf(man.skeleton.jointAttachmentPoints);
+        const want = carryTarget({ carrierPts: carrier.skeleton.jointAttachmentPoints, carrierFacing: carrier.facing, anchor: state.anchor, natural: pelvis(), naturalTilt: man.pose.tilt ?? 0, ratio: carry.tilt, w });
+        man.pose.tilt = want.tilt;
+        man.draw();
+        man.x += want.x - pelvis().x;
+        const lift0 = man.pose.lift ?? 0;
+        man.pose.lift = lift0;
+        man.draw();
+        const p = pelvis();
+        man.pose.lift = lift0 + 10;
+        man.draw();
+        const unit = (p.y - pelvis().y) / 10;
+        man.pose.lift = Math.abs(unit) > 1e-6 ? lift0 + (p.y - want.y) / unit : lift0;
+        man.draw();
+        handle.carryLog?.push({ time: handle.time, index, w, lift: man.pose.lift, x: man.x, tilt: man.pose.tilt });
     }
 
     _apply(handle) {

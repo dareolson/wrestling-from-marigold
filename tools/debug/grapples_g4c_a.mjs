@@ -8,10 +8,11 @@ import { launch } from './harness.mjs';
 import { INSTALL_MASKS } from './grapples_masks.mjs';
 import { INSTALL_FARARM } from './far_arm_probe.mjs';
 import { INSTALL } from './grapples_film.mjs';
-import { film, PRESS_AT, DROP_AT } from './waistlock_throws.mjs';
+import { film, PRESS_AT, DROP_AT, lastShot } from './waistlock_throws.mjs';
 import { partSteps } from './rise_handoff_probe.mjs';
 import { ATOMIC, SNAPMARE, snapmareHeadGrip } from '../../src/animation/waistlockThrows.js';
 import { WAISTLOCK } from '../../src/animation/waistlock.js';
+import { torsoFrame, toFrame } from '../../src/animation/carry.js';
 import { ringBoundsAtY } from '../../src/constants.js';
 
 const outRoot = process.argv[2] ?? 'research/animation/grapples-2026-10/g4c-a';
@@ -90,6 +91,19 @@ function measure(rows, kind) {
         const dd = tops.d.pts, thigh = (k) => Math.abs(Math.atan2(dd[`${k}Knee`].x - dd[`${k}Hip`].x, dd[`${k}Knee`].y - dd[`${k}Hip`].y) * 180 / Math.PI);
         const floorY = rows[Math.max(0, i0 - 1)].d.pts.nearAnkle.y;
         out.defenderLegsAtTop = { thighFromVerticalDeg: { near: r1(thigh('near')), far: r1(thigh('far')) }, feetOverMat: r1((floorY - Math.max(dd.nearAnkle.y, dd.farAnkle.y)) / tops.d.s), feetOverMatHighest: r1((floorY - Math.min(dd.nearAnkle.y, dd.farAnkle.y)) / tops.d.s) };
+        // T4c.4g: the carry. The defender's pelvis path through the lift (game px, then drawn on a still by the page tool), his torso angle against the attacker's,
+        // and the chest-to-back gap in the attacker's torso frame (shoulder mid to shoulder mid, across his torso).
+        const carryRows = rows.filter(r => isClip(r) && r.t.time >= 0.14 && r.t.time <= ATOMIC.lift + ATOMIC.hitch);
+        const lean = (p, f) => { const o = pmid(p, 'nearHip', 'farHip'); return Math.atan2((p.neck.x - o.x) * (f >= 0 ? 1 : -1), o.y - p.neck.y) * 180 / Math.PI; };
+        out.carryTrace = carryRows.map(r => { const q = pmid(r.d.pts, 'nearHip', 'farHip'), a = pmid(r.a.pts, 'nearHip', 'farHip'); return { i: r.i, x: r1(q.x), y: r1(q.y), relX: r1((q.x - a.x) * r.t.facing[0] / r.a.s), relY: r1((a.y - q.y) / r.a.s) }; });
+        const ys = out.carryTrace.map(p => p.relY), xs = out.carryTrace.map(p => p.relX);
+        out.carryPath = { relXRange: [Math.min(...xs), Math.max(...xs)], relYRange: [Math.min(...ys), Math.max(...ys)], note: 'defender pelvis relative to the attacker pelvis, px at s = 1, x along the facing (negative = back over the attacker), y up' };
+        out.carryAngles = carryRows.filter((r, k) => k % 6 === 0).map(r => ({ i: r.i, attacker: r1(lean(r.a.pts, r.t.facing[0])), defender: r1(lean(r.d.pts, r.t.facing[1])) }));
+        const gap = (r) => { const fr = torsoFrame(r.a.pts, r.t.facing[0]), sa = toFrame(fr, pmid(r.a.pts, 'nearShoulder', 'farShoulder')), sd = toFrame(fr, pmid(r.d.pts, 'nearShoulder', 'farShoulder')); return Math.hypot(sd.along - sa.along, sd.across - sa.across) / r.a.s; };
+        const gaps = carryRows.map(gap);
+        out.carryGap = { min: r1(Math.min(...gaps)), max: r1(Math.max(...gaps)), atWrap: r1(gaps[0]), atTop: r1(gaps[gaps.length - 1]), note: 'defender shoulder-mid to attacker shoulder-mid, px at s = 1, through the carry' };
+        out.carryAbsolute = { pelvisHeightOverMatAtTop: r1((rows[Math.max(0, i0 - 1)].d.pts.nearHip.y - pmid(carryRows[carryRows.length - 1].d.pts, 'nearHip', 'farHip').y) / tops.d.s) };
+        out.shot = lastShot;
         const g = rows.filter(r => r.t.clip && r.t.time > 0.05 && r.t.time < ATOMIC.lift && r.wl === null);
         // hands (wrist) to the defender's hip while lifting: the clip's grips target the hip joint
         out.handsToHip = r1(Math.max(...g.map(r => Math.min(dist(r.a.pts.nearWrist, r.d.pts.nearHip), dist(r.a.pts.nearWrist, r.d.pts.farHip))) ) / g[0].a.s);

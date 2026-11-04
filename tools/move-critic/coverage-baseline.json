@@ -50,14 +50,14 @@
     "reason": "no clip, no critic spec; the critic traces clips only. Added with PLAN_GRAPPLES T4b.4 (waistlock=v1, opt-in). Covered by tests/waistlock.test.js and tools/debug/waistlock_assert.mjs, waistlock_cleanup.mjs"
   },
   "atomicDrop": {
-    "fingerprint": "969060796e44",
+    "fingerprint": "c0a28edd8422",
     "status": "unverified",
-    "reason": "hand-posed clip (not from a sheet), no critic spec. Added with PLAN_GRAPPLES T4c.2 (waistlock=v1, opt-in). Covered by tests/atomicDrop.test.js and tools/debug/waistlock_throws.mjs"
+    "reason": "hand-posed clip (not from a sheet), no critic spec. Added with PLAN_GRAPPLES T4c.2 (waistlock=v1, opt-in); fingerprint re-taken at T4c.4g (carry). Covered by tests/atomicDrop.test.js, tests/carry.test.js and tools/debug/waistlock_throws.mjs"
   },
   "snapmare": {
-    "fingerprint": "fb2dc16fe044",
+    "fingerprint": "9c4c6fe84ce7",
     "status": "unverified",
-    "reason": "hand-posed clip (not from a sheet), no critic spec. Added with PLAN_GRAPPLES T4c.3 (waistlock=v1, opt-in). Covered by tests/snapmare.test.js and tools/debug/waistlock_throws_assert.mjs"
+    "reason": "hand-posed clip (not from a sheet), no critic spec. Added with PLAN_GRAPPLES T4c.3 (waistlock=v1, opt-in); fingerprint re-taken at T4c.4c (relative layer limbs). Covered by tests/snapmare.test.js and tools/debug/waistlock_throws_assert.mjs"
   },
   "backBodyDrop": {
     "fingerprint": "39ad43d67325",

@@ -1,0 +1,1617 @@
+{
+ "chamber": "lift",
+ "runs": [
+  {
+   "series": [
+    {
+     "t": 0.1,
+     "pelA": 319.8,
+     "pelD": 322.9,
+     "nearY": 0.2,
+     "nearX": -10,
+     "farX": -10.8,
+     "farY": 0,
+     "plant": ""
+    },
+    {
+     "t": 0.12,
+     "pelA": 323.8,
+     "pelD": 323.1,
+     "nearY": 0,
+     "nearX": -3.9,
+     "farX": -3.9,
+     "farY": 0.1,
+     "plant": ""
+    },
+    {
+     "t": 0.13,
+     "pelA": 326.2,
+     "pelD": 323.3,
+     "nearY": -0.1,
+     "nearX": -0.6,
+     "farX": -0.3,
+     "farY": 0.1,
+     "plant": ""
+    },
+    {
+     "t": 0.15,
+     "pelA": 326.4,
+     "pelD": 323.3,
+     "nearY": 0,
+     "nearX": 0,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.17,
+     "pelA": 326.6,
+     "pelD": 322.1,
+     "nearY": -0.1,
+     "nearX": 1.8,
+     "farX": 0,
+     "farY": -0.1,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.18,
+     "pelA": 327.3,
+     "pelD": 319.4,
+     "nearY": -0.5,
+     "nearX": 5,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.04"
+    },
+    {
+     "t": 0.2,
+     "pelA": 327.9,
+     "pelD": 315.9,
+     "nearY": -0.6,
+     "nearX": 9.3,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.05"
+    },
+    {
+     "t": 0.22,
+     "pelA": 328.5,
+     "pelD": 311.3,
+     "nearY": -0.4,
+     "nearX": 14.7,
+     "farX": -0.1,
+     "farY": 0,
+     "plant": "far:0.07"
+    },
+    {
+     "t": 0.23,
+     "pelA": 329.1,
+     "pelD": 306,
+     "nearY": 0.3,
+     "nearX": 20.8,
+     "farX": -0.1,
+     "farY": 0.1,
+     "plant": "far:0.09"
+    },
+    {
+     "t": 0.25,
+     "pelA": 329.4,
+     "pelD": 299.8,
+     "nearY": 1.6,
+     "nearX": 27.4,
+     "farX": -0.1,
+     "farY": 0.1,
+     "plant": "far:0.1"
+    },
+    {
+     "t": 0.27,
+     "pelA": 329.7,
+     "pelD": 293.5,
+     "nearY": 3.5,
+     "nearX": 34.3,
+     "farX": -0.1,
+     "farY": 0.1,
+     "plant": "far:0.1"
+    },
+    {
+     "t": 0.28,
+     "pelA": 329.8,
+     "pelD": 287.2,
+     "nearY": 6,
+     "nearX": 41.3,
+     "farX": -0.1,
+     "farY": 0.1,
+     "plant": "far:0.1"
+    },
+    {
+     "t": 0.3,
+     "pelA": 329.9,
+     "pelD": 281.1,
+     "nearY": 8.9,
+     "nearX": 48,
+     "farX": -0.1,
+     "farY": 0.1,
+     "plant": "far:0.09"
+    },
+    {
+     "t": 0.32,
+     "pelA": 330,
+     "pelD": 275.7,
+     "nearY": 12.1,
+     "nearX": 54.4,
+     "farX": -0.1,
+     "farY": 0.1,
+     "plant": "far:0.09"
+    },
+    {
+     "t": 0.33,
+     "pelA": 330.1,
+     "pelD": 271.1,
+     "nearY": 15.4,
+     "nearX": 60.3,
+     "farX": -0.1,
+     "farY": 0,
+     "plant": "far:0.07"
+    },
+    {
+     "t": 0.35,
+     "pelA": 330.3,
+     "pelD": 267.4,
+     "nearY": 18.6,
+     "nearX": 65.4,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.06"
+    },
+    {
+     "t": 0.37,
+     "pelA": 330.5,
+     "pelD": 264.6,
+     "nearY": 21.4,
+     "nearX": 69.6,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.04"
+    },
+    {
+     "t": 0.38,
+     "pelA": 330.6,
+     "pelD": 262.7,
+     "nearY": 23.7,
+     "nearX": 72.9,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.4,
+     "pelA": 330.8,
+     "pelD": 261.6,
+     "nearY": 25.3,
+     "nearX": 75,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.42,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.43,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.45,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.47,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.48,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.5,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.52,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.53,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.55,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.57,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.58,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.6,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.62,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.63,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.65,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.67,
+     "pelA": 330.9,
+     "pelD": 263.5,
+     "nearY": 26.1,
+     "nearX": 76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.03"
+    }
+   ],
+   "id": "lg-l",
+   "soles": [
+    {
+     "name": "near",
+     "maxHeightToL": 26,
+     "maxHeightToT": 26,
+     "firstOffMat": 0.2667,
+     "maxSlideToL": 76,
+     "maxSlideToImpact": 79.1
+    },
+    {
+     "name": "far",
+     "maxHeightToL": 0.1,
+     "maxHeightToT": 0.1,
+     "firstOffMat": null,
+     "maxSlideToL": 0.1,
+     "maxSlideToImpact": 0.1
+    }
+   ],
+   "receiverPelvisRangeHitch": 0,
+   "attackerPelvisRangeHitch": 0,
+   "attackerLiftPose": [
+    8,
+    8,
+    8
+   ],
+   "steps": {
+    "liftEnd": {
+     "t": 0.42,
+     "attacker": 1.06,
+     "receiver": 2.32
+    },
+    "chamberEnd": {
+     "t": 0.57,
+     "attacker": 0,
+     "receiver": 0
+    },
+    "impact": {
+     "t": 0.73,
+     "attacker": 27.26,
+     "receiver": 38.56
+    }
+   },
+   "thighAtT": {
+    "near": 1.25,
+    "far": 0.94
+   },
+   "seatGapAtImpact": 0,
+   "supportSoleDrift": 0.2
+  },
+  {
+   "series": [
+    {
+     "t": 0.1,
+     "pelA": 319.8,
+     "pelD": 322.9,
+     "nearY": 0.2,
+     "nearX": 10,
+     "farX": 10.8,
+     "farY": 0,
+     "plant": ""
+    },
+    {
+     "t": 0.12,
+     "pelA": 323.8,
+     "pelD": 323.1,
+     "nearY": 0,
+     "nearX": 3.9,
+     "farX": 3.9,
+     "farY": 0.1,
+     "plant": ""
+    },
+    {
+     "t": 0.13,
+     "pelA": 326.2,
+     "pelD": 323.3,
+     "nearY": -0.1,
+     "nearX": 0.6,
+     "farX": 0.3,
+     "farY": 0.1,
+     "plant": ""
+    },
+    {
+     "t": 0.15,
+     "pelA": 326.4,
+     "pelD": 323.3,
+     "nearY": 0,
+     "nearX": 0,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.17,
+     "pelA": 326.6,
+     "pelD": 322.1,
+     "nearY": -0.1,
+     "nearX": -1.8,
+     "farX": 0,
+     "farY": -0.1,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.18,
+     "pelA": 327.3,
+     "pelD": 319.4,
+     "nearY": -0.5,
+     "nearX": -5,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.04"
+    },
+    {
+     "t": 0.2,
+     "pelA": 327.9,
+     "pelD": 315.9,
+     "nearY": -0.6,
+     "nearX": -9.3,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.05"
+    },
+    {
+     "t": 0.22,
+     "pelA": 328.5,
+     "pelD": 311.3,
+     "nearY": -0.4,
+     "nearX": -14.7,
+     "farX": 0.1,
+     "farY": 0,
+     "plant": "far:0.07"
+    },
+    {
+     "t": 0.23,
+     "pelA": 329.1,
+     "pelD": 306,
+     "nearY": 0.3,
+     "nearX": -20.8,
+     "farX": 0.1,
+     "farY": 0.1,
+     "plant": "far:0.09"
+    },
+    {
+     "t": 0.25,
+     "pelA": 329.4,
+     "pelD": 299.8,
+     "nearY": 1.6,
+     "nearX": -27.4,
+     "farX": 0.1,
+     "farY": 0.1,
+     "plant": "far:0.1"
+    },
+    {
+     "t": 0.27,
+     "pelA": 329.7,
+     "pelD": 293.5,
+     "nearY": 3.5,
+     "nearX": -34.3,
+     "farX": 0.1,
+     "farY": 0.1,
+     "plant": "far:0.1"
+    },
+    {
+     "t": 0.28,
+     "pelA": 329.8,
+     "pelD": 287.2,
+     "nearY": 6,
+     "nearX": -41.3,
+     "farX": 0.1,
+     "farY": 0.1,
+     "plant": "far:0.1"
+    },
+    {
+     "t": 0.3,
+     "pelA": 329.9,
+     "pelD": 281.1,
+     "nearY": 8.9,
+     "nearX": -48,
+     "farX": 0.1,
+     "farY": 0.1,
+     "plant": "far:0.09"
+    },
+    {
+     "t": 0.32,
+     "pelA": 330,
+     "pelD": 275.7,
+     "nearY": 12.1,
+     "nearX": -54.4,
+     "farX": 0.1,
+     "farY": 0.1,
+     "plant": "far:0.09"
+    },
+    {
+     "t": 0.33,
+     "pelA": 330.1,
+     "pelD": 271.1,
+     "nearY": 15.4,
+     "nearX": -60.3,
+     "farX": 0.1,
+     "farY": 0,
+     "plant": "far:0.07"
+    },
+    {
+     "t": 0.35,
+     "pelA": 330.3,
+     "pelD": 267.4,
+     "nearY": 18.6,
+     "nearX": -65.4,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.06"
+    },
+    {
+     "t": 0.37,
+     "pelA": 330.5,
+     "pelD": 264.6,
+     "nearY": 21.4,
+     "nearX": -69.6,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.04"
+    },
+    {
+     "t": 0.38,
+     "pelA": 330.6,
+     "pelD": 262.7,
+     "nearY": 23.7,
+     "nearX": -72.9,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.4,
+     "pelA": 330.8,
+     "pelD": 261.6,
+     "nearY": 25.3,
+     "nearX": -75,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.42,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.43,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.45,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.47,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.48,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.5,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.52,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.53,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.55,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.57,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.58,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.6,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.62,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.63,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.65,
+     "pelA": 330.9,
+     "pelD": 261.1,
+     "nearY": 26,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.67,
+     "pelA": 330.9,
+     "pelD": 263.5,
+     "nearY": 26.1,
+     "nearX": -76,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.03"
+    }
+   ],
+   "id": "lg-r",
+   "soles": [
+    {
+     "name": "near",
+     "maxHeightToL": 26,
+     "maxHeightToT": 26,
+     "firstOffMat": 0.2667,
+     "maxSlideToL": 76,
+     "maxSlideToImpact": 79.1
+    },
+    {
+     "name": "far",
+     "maxHeightToL": 0.1,
+     "maxHeightToT": 0.1,
+     "firstOffMat": null,
+     "maxSlideToL": 0.1,
+     "maxSlideToImpact": 0.1
+    }
+   ],
+   "receiverPelvisRangeHitch": 0,
+   "attackerPelvisRangeHitch": 0,
+   "attackerLiftPose": [
+    8,
+    8,
+    8
+   ],
+   "steps": {
+    "liftEnd": {
+     "t": 0.42,
+     "attacker": 1.05,
+     "receiver": 2.33
+    },
+    "chamberEnd": {
+     "t": 0.57,
+     "attacker": 0,
+     "receiver": 0
+    },
+    "impact": {
+     "t": 0.73,
+     "attacker": 27.25,
+     "receiver": 38.55
+    }
+   },
+   "thighAtT": {
+    "near": 1.25,
+    "far": 0.94
+   },
+   "seatGapAtImpact": 0,
+   "supportSoleDrift": 0.2
+  },
+  {
+   "series": [
+    {
+     "t": 0.1,
+     "pelA": 333.5,
+     "pelD": 306.2,
+     "nearY": 0.3,
+     "nearX": -9.2,
+     "farX": -9.9,
+     "farY": 0.1,
+     "plant": ""
+    },
+    {
+     "t": 0.12,
+     "pelA": 336.9,
+     "pelD": 306.4,
+     "nearY": 0,
+     "nearX": -3.6,
+     "farX": -3.6,
+     "farY": 0.1,
+     "plant": ""
+    },
+    {
+     "t": 0.13,
+     "pelA": 339,
+     "pelD": 306.5,
+     "nearY": -0.1,
+     "nearX": -0.6,
+     "farX": -0.3,
+     "farY": 0.1,
+     "plant": ""
+    },
+    {
+     "t": 0.15,
+     "pelA": 339.2,
+     "pelD": 306.7,
+     "nearY": 0,
+     "nearX": 0,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.17,
+     "pelA": 339,
+     "pelD": 305.6,
+     "nearY": 0.3,
+     "nearX": 1.6,
+     "farX": 0,
+     "farY": -0.1,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.18,
+     "pelA": 338.9,
+     "pelD": 301.7,
+     "nearY": 0.7,
+     "nearX": 4.3,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.2,
+     "pelA": 338.5,
+     "pelD": 297.3,
+     "nearY": 1.5,
+     "nearX": 8.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.22,
+     "pelA": 337.9,
+     "pelD": 291.8,
+     "nearY": 2.8,
+     "nearX": 12.8,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.23,
+     "pelA": 337.1,
+     "pelD": 285.6,
+     "nearY": 4.8,
+     "nearX": 18.1,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.25,
+     "pelA": 336.1,
+     "pelD": 278.9,
+     "nearY": 7.3,
+     "nearX": 23.9,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.27,
+     "pelA": 334.9,
+     "pelD": 272,
+     "nearY": 10.4,
+     "nearX": 29.9,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.28,
+     "pelA": 333.7,
+     "pelD": 265.5,
+     "nearY": 13.9,
+     "nearX": 36,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.3,
+     "pelA": 332.5,
+     "pelD": 259.5,
+     "nearY": 17.7,
+     "nearX": 41.9,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.32,
+     "pelA": 331.4,
+     "pelD": 254.4,
+     "nearY": 21.7,
+     "nearX": 47.4,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.33,
+     "pelA": 330.4,
+     "pelD": 250.2,
+     "nearY": 25.6,
+     "nearX": 52.5,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.35,
+     "pelA": 329.7,
+     "pelD": 247.1,
+     "nearY": 29.2,
+     "nearX": 56.9,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.37,
+     "pelA": 329.2,
+     "pelD": 244.9,
+     "nearY": 32.4,
+     "nearX": 60.6,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.38,
+     "pelA": 328.8,
+     "pelD": 243.6,
+     "nearY": 34.9,
+     "nearX": 63.5,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.4,
+     "pelA": 328.6,
+     "pelD": 242.9,
+     "nearY": 36.6,
+     "nearX": 65.4,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.42,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.43,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.45,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.47,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.48,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.5,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.52,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.53,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.55,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.57,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.58,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.6,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.62,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.63,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.65,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.67,
+     "pelA": 328.5,
+     "pelD": 245.5,
+     "nearY": 37.4,
+     "nearX": 66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.04"
+    }
+   ],
+   "id": "gl-l",
+   "soles": [
+    {
+     "name": "near",
+     "maxHeightToL": 37.4,
+     "maxHeightToT": 37.4,
+     "firstOffMat": 0.2167,
+     "maxSlideToL": 66.2,
+     "maxSlideToImpact": 68.8
+    },
+    {
+     "name": "far",
+     "maxHeightToL": 0,
+     "maxHeightToT": 0,
+     "firstOffMat": null,
+     "maxSlideToL": 0,
+     "maxSlideToImpact": 0
+    }
+   ],
+   "receiverPelvisRangeHitch": 0,
+   "attackerPelvisRangeHitch": 0,
+   "attackerLiftPose": [
+    8,
+    8,
+    8
+   ],
+   "steps": {
+    "liftEnd": {
+     "t": 0.42,
+     "attacker": 1.21,
+     "receiver": 2.94
+    },
+    "chamberEnd": {
+     "t": 0.57,
+     "attacker": 0,
+     "receiver": 0
+    },
+    "impact": {
+     "t": 0.73,
+     "attacker": 20.61,
+     "receiver": 38.01
+    }
+   },
+   "thighAtT": {
+    "near": 1.25,
+    "far": 0.59
+   },
+   "seatGapAtImpact": 0,
+   "supportSoleDrift": 0.1
+  },
+  {
+   "series": [
+    {
+     "t": 0.1,
+     "pelA": 333.5,
+     "pelD": 306.2,
+     "nearY": 0.3,
+     "nearX": 9.2,
+     "farX": 9.9,
+     "farY": 0.1,
+     "plant": ""
+    },
+    {
+     "t": 0.12,
+     "pelA": 336.9,
+     "pelD": 306.4,
+     "nearY": 0,
+     "nearX": 3.6,
+     "farX": 3.6,
+     "farY": 0.1,
+     "plant": ""
+    },
+    {
+     "t": 0.13,
+     "pelA": 339,
+     "pelD": 306.5,
+     "nearY": -0.1,
+     "nearX": 0.6,
+     "farX": 0.3,
+     "farY": 0.1,
+     "plant": ""
+    },
+    {
+     "t": 0.15,
+     "pelA": 339.2,
+     "pelD": 306.7,
+     "nearY": 0,
+     "nearX": 0,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.17,
+     "pelA": 339,
+     "pelD": 305.6,
+     "nearY": 0.3,
+     "nearX": -1.6,
+     "farX": 0,
+     "farY": -0.1,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.18,
+     "pelA": 338.9,
+     "pelD": 301.7,
+     "nearY": 0.7,
+     "nearX": -4.3,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.2,
+     "pelA": 338.5,
+     "pelD": 297.3,
+     "nearY": 1.5,
+     "nearX": -8.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.22,
+     "pelA": 337.9,
+     "pelD": 291.8,
+     "nearY": 2.8,
+     "nearX": -12.8,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.23,
+     "pelA": 337.1,
+     "pelD": 285.6,
+     "nearY": 4.8,
+     "nearX": -18.1,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.25,
+     "pelA": 336.1,
+     "pelD": 278.9,
+     "nearY": 7.3,
+     "nearX": -23.9,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.27,
+     "pelA": 334.9,
+     "pelD": 272,
+     "nearY": 10.4,
+     "nearX": -29.9,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.28,
+     "pelA": 333.7,
+     "pelD": 265.5,
+     "nearY": 13.9,
+     "nearX": -36,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.02"
+    },
+    {
+     "t": 0.3,
+     "pelA": 332.5,
+     "pelD": 259.5,
+     "nearY": 17.7,
+     "nearX": -41.9,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.32,
+     "pelA": 331.4,
+     "pelD": 254.4,
+     "nearY": 21.7,
+     "nearX": -47.4,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.33,
+     "pelA": 330.4,
+     "pelD": 250.2,
+     "nearY": 25.6,
+     "nearX": -52.5,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.35,
+     "pelA": 329.7,
+     "pelD": 247.1,
+     "nearY": 29.2,
+     "nearX": -56.9,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.37,
+     "pelA": 329.2,
+     "pelD": 244.9,
+     "nearY": 32.4,
+     "nearX": -60.6,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.38,
+     "pelA": 328.8,
+     "pelD": 243.6,
+     "nearY": 34.9,
+     "nearX": -63.5,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.4,
+     "pelA": 328.6,
+     "pelD": 242.9,
+     "nearY": 36.6,
+     "nearX": -65.4,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.42,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0"
+    },
+    {
+     "t": 0.43,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.45,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.47,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.48,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.5,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.52,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.53,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.55,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.57,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.58,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.6,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.62,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.63,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.65,
+     "pelA": 328.5,
+     "pelD": 242.6,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.01"
+    },
+    {
+     "t": 0.67,
+     "pelA": 328.5,
+     "pelD": 245.5,
+     "nearY": 37.4,
+     "nearX": -66.2,
+     "farX": 0,
+     "farY": 0,
+     "plant": "far:0.04"
+    }
+   ],
+   "id": "gl-r",
+   "soles": [
+    {
+     "name": "near",
+     "maxHeightToL": 37.4,
+     "maxHeightToT": 37.4,
+     "firstOffMat": 0.2167,
+     "maxSlideToL": 66.2,
+     "maxSlideToImpact": 68.8
+    },
+    {
+     "name": "far",
+     "maxHeightToL": 0,
+     "maxHeightToT": 0,
+     "firstOffMat": null,
+     "maxSlideToL": 0,
+     "maxSlideToImpact": 0
+    }
+   ],
+   "receiverPelvisRangeHitch": 0,
+   "attackerPelvisRangeHitch": 0,
+   "attackerLiftPose": [
+    8,
+    8,
+    8
+   ],
+   "steps": {
+    "liftEnd": {
+     "t": 0.42,
+     "attacker": 1.21,
+     "receiver": 2.95
+    },
+    "chamberEnd": {
+     "t": 0.57,
+     "attacker": 0,
+     "receiver": 0
+    },
+    "impact": {
+     "t": 0.73,
+     "attacker": 20.61,
+     "receiver": 38.01
+    }
+   },
+   "thighAtT": {
+    "near": 1.25,
+    "far": 0.59
+   },
+   "seatGapAtImpact": 0,
+   "supportSoleDrift": 0.1
+  }
+ ]
+}

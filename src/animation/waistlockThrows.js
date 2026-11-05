@@ -28,10 +28,10 @@ export const ATOMIC = Object.freeze({
 
 // A4 / A6: the snapmare's beats (the old defender is the clip's attacker, the old attacker the thrown man). `flip` runs from the pull's end
 // to the landing.
-// `speed` scales the reach, the pull and the flip (T4c.4e: Derek wants 1.5x or 2x, ships 1.5 until he picks); the thrower's rise after the landing keeps its
+// `speed` scales the reach, the pull and the flip (T4c.4e: Derek wants 1.5x or 2x, ships 2 (Derek 2026-11-05)); the thrower's rise after the landing keeps its
 // own time. `?snapmareSpeed=2` is the page's way to film the other candidate; nothing else reads it.
 const RISE = 0.49;
-const SPEED = (() => { const q = Number(globalThis.location ? new URLSearchParams(globalThis.location.search).get('snapmareSpeed') : globalThis.process?.env?.WFM_SNAPMARE_SPEED); return q > 0 ? q : 1.5; })();
+const SPEED = (() => { const q = Number(globalThis.location ? new URLSearchParams(globalThis.location.search).get('snapmareSpeed') : globalThis.process?.env?.WFM_SNAPMARE_SPEED); return q > 0 ? q : 2; })();
 export const SNAPMARE = Object.freeze({
     speed: SPEED,
     reach: 0.15 / SPEED,                // (a) feet down, both hands back to the head

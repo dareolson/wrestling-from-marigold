@@ -106,7 +106,7 @@ function measure(rows, kind, thrower) {
 mkdirSync(outRoot, { recursive: true });
 const runs = [];
 for (const [pid, label, att, def] of PAIRS) {
-    process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = 'notitle=1&grapples=v1&waistlock=v1';
+    process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = 'notitle=1&grapples=v1&waistlock=v1' + (process.env.WFM_ATOMIC_CHAMBER ? '&atomicChamber=' + process.env.WFM_ATOMIC_CHAMBER : '');
     const h = await launch();
     try {
         const page = h.page;

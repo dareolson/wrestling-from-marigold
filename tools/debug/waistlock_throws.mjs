@@ -71,7 +71,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const [outRoot = 'research/animation/grapples-2026-10/g4c-a', pairsArg = 'lg,gl', casesArg = 'drop,reverse', shots = '1'] = process.argv.slice(2);
     const results = [];
     for (const pair of pairsArg.split(',').map(k => PAIRS[k])) {
-        process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = 'notitle=1&grapples=v1&waistlock=v1';
+        process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = 'notitle=1&grapples=v1&waistlock=v1' + (process.env.WFM_ATOMIC_CHAMBER ? '&atomicChamber=' + process.env.WFM_ATOMIC_CHAMBER : '');
         const h = await launch();
         try {
             const page = h.page;

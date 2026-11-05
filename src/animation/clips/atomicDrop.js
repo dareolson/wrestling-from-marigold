@@ -6,6 +6,7 @@
 // KNEES: the clamp at JOINT_LIMITS.knee.min (-0.10) eats a local-flex lKnee/rKnee fold, so this clip owns each shin as the absolute lShin/rShin. Keys are
 // written `lFold`/`rFold` (heel fold in radians, > 0 = heel toward the back of the thigh) and kf() turns them into shins with foldShin (rig/articulation.js).
 import { shinsFromFolds } from '../../rig/articulation.js';
+import { compileClip, sampleTrack } from '../AnimationClip.js';
 import { WAISTLOCK } from '../waistlock.js';
 import { ATOMIC } from '../waistlockThrows.js';
 
@@ -15,6 +16,41 @@ const HITCH = ATOMIC.chamber === 'hitch', CH = 0.14, HLIFT = 13;   // HLIFT: the
 const W = 0.14;                                        // the wrap is done as the Stage 3 lead-in ends
 const L = ATOMIC.lift, T = L + ATOMIC.hitch, I = ATOMIC.impact, D = ATOMIC.duration;
 const ARMS = { lArm: 0.95, rArm: 0.95, lElbow: 0.8, rElbow: 0.8 };   // locked round the waist: the same through the lift, the back does the work
+
+// T4c.4o: the receiver's arms, flailing as he loses his balance. Each arm channel has its own sparse timeline (shoulders lead, elbows a beat behind, the two arms
+// 0.04-0.08 s apart with different amplitudes: a reach up as he leaves the mat, a smaller grab in the held peak, a sag as the drop starts) and runs through a Hermite
+// spline, so nothing stops at a key. flailKeys() bakes those onto the defender's keys every 1/120 s from the wrap to the impact (the clip format blends every channel
+// of a key with one ease, so arms on their own times need the other channels sampled at the same instants); legs, torso, tilt, lift and transform stay the base keys' curves.
+const FLAIL = {
+    lArm:   [[W, 0.25], [0.24, 0.62], [0.33, 1.02], [0.45, 0.74], [0.55, 0.88], [0.63, 0.58], [0.69, 0.50], [I, 0.30]],
+    rArm:   [[W, 0.25], [0.29, 0.58], [0.39, 0.90], [0.50, 0.58], [0.60, 0.80], [0.66, 0.64], [0.70, 0.40], [I, 0.20]],
+    lElbow: [[W, 0.70], [0.31, 0.82], [0.40, 0.46], [0.51, 0.98], [0.61, 0.62], [0.67, 0.80], [0.71, 0.74], [I, 0.60]],
+    rElbow: [[W, 0.70], [0.36, 0.84], [0.46, 0.96], [0.55, 0.52], [0.64, 0.92], [0.69, 0.50], [0.71, 0.66], [I, 0.60]],
+};
+const hermite = (keys, t) => {
+    if (t <= keys[0][0]) return keys[0][1];
+    if (t >= keys.at(-1)[0]) return keys.at(-1)[1];
+    let i = 1; while (keys[i][0] < t) i++;
+    const [t0, p0] = keys[i - 1], [t1, p1] = keys[i], h = t1 - t0, u = (t - t0) / h;
+    const slope = (j) => (j <= 0 || j >= keys.length - 1) ? 0 : (keys[j + 1][1] - keys[j - 1][1]) / (keys[j + 1][0] - keys[j - 1][0]);
+    const m0 = slope(i - 1) * h, m1 = slope(i) * h, u2 = u * u, u3 = u2 * u;
+    return (2 * u3 - 3 * u2 + 1) * p0 + (u3 - 2 * u2 + u) * m0 + (-2 * u3 + 3 * u2) * p1 + (u3 - u2) * m1;
+};
+function flailKeys(base) {
+    const sample = compileClip({ id: 'atomicDropBase', duration: D, tracks: { defender: { keyframes: base } } }).tracks.defender;
+    const out = base.filter(k => k.at <= W);
+    const STEP = 1 / 120, grid = [];
+    for (let t = W + STEP; t < I - 1e-9; t += STEP) grid.push(+t.toFixed(5));
+    // the base keys' own instants stay on the track (the beats the tests and probes read)
+    const times = [...new Set([...grid, ...base.filter(k => k.at > W && k.at < I).map(k => k.at)])].sort((a, b) => a - b);
+    for (const t of times) {
+        const s = sampleTrack(sample, t);
+        const pose = { ...s.pose };
+        for (const ch of Object.keys(FLAIL)) pose[ch] = hermite(FLAIL[ch], t);
+        out.push({ at: t, ease: 'linear', pose, transform: { ...s.transform }, parts: {} });
+    }
+    return [...out, ...base.filter(k => k.at >= I)];
+}
 
 export const atomicDropClip = {
     id: 'atomicDrop',
@@ -38,7 +74,7 @@ export const atomicDropClip = {
         },
         // The man in front: held at the waist, lifted with his back to the chest and his legs kicking up, dropped seated, then popped forward onto his feet.
         defender: {
-            keyframes: [
+            keyframes: flailKeys([
                 kf(0, 'linear', { lArm: 0.15, rArm: 0.15, lElbow: 0.6, rElbow: 0.6, lLeg: -0.10, rLeg: 0.10, lFold: 0.1, rFold: 0.1, lean: 0, crouch: 0.12, tilt: 0, lift: 0, bend: 0.10 }, H, U),
                 kf(W, 'easeOut', { lArm: 0.25, rArm: 0.25, lElbow: 0.7, rElbow: 0.7, lLeg: -0.10, rLeg: 0.10, lFold: 0.1, rFold: 0.1, lean: 0, crouch: 0.12, tilt: 0, lift: 0, bend: 0.12 }, H - 14, U),
                 kf(L, 'easeInOut', { lArm: 0.7, rArm: 0.7, lElbow: 0.9, rElbow: 0.9, lLeg: 0.65, rLeg: 0.55, lFold: 0.55, rFold: 0.45, lean: 0, crouch: 0, tilt: -0.65, lift: 0, bend: 0 }, H - 14, U),
@@ -49,7 +85,7 @@ export const atomicDropClip = {
                 kf(I + 0.12, 'easeOut', { lArm: -0.9, rArm: -0.8, lElbow: 0.3, rElbow: 0.3, lLeg: 0.30, rLeg: 0.15, lFold: 0.4, rFold: 0.3, lean: 0.12, crouch: 0.18, tilt: 0, lift: 0, bend: -0.12 }, H + 12, U),
                 kf(I + 0.26, 'easeInOut', { lArm: -0.8, rArm: -0.7, lElbow: 0.3, rElbow: 0.3, lLeg: 0.20, rLeg: -0.08, lFold: 0.3, rFold: 0.2, lean: 0.10, crouch: 0.10, tilt: 0, lift: 0, bend: 0.22 }, H + 28, U),
                 kf(D, 'easeInOut', { lArm: -0.3, rArm: -0.2, lElbow: 0.5, rElbow: 0.5, lLeg: -0.04, rLeg: 0.16, lFold: 0.22, rFold: 0.22, lean: 0.06, crouch: 0.05, tilt: 0, lift: 0, bend: 0.10 }, H + ATOMIC.stumbleFwd, U),
-            ],
+            ]),
         },
     },
     // From the wrap to the hitch he rides the torso and slides higher along it

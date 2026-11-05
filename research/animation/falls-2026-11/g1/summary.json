@@ -1,0 +1,2704 @@
+{
+ "tool": "tools/debug/falls_probe.mjs",
+ "flags": "falls=v1",
+ "g": {
+  "value": 1709.88,
+  "unit": "px/s^2 at scale 1",
+  "standingPelvisPx": 136.8,
+  "freeFallSec": 0.4
+ },
+ "runs": [
+  {
+   "id": "backward-george-l",
+   "path": "backward",
+   "kind": "fall",
+   "victim": "george",
+   "attacker": "lou",
+   "facing": -1,
+   "rowsFile": "rows-backward-george-l.json",
+   "frames": 94,
+   "m": {
+    "frames": 94,
+    "start": 8,
+    "contact": 39,
+    "rest": 81,
+    "s": 0.9,
+    "standingPelvisPx": 109.4,
+    "restPelvisPx": 9.1,
+    "fallFrames": 31,
+    "fallSec": 0.52,
+    "pelvisPath": [
+     80.1,
+     80,
+     79.9,
+     79.7,
+     79.4,
+     79.1,
+     78.6,
+     78.1,
+     77.6,
+     76.9,
+     76.2,
+     75.4,
+     74.5,
+     73.6,
+     72.6,
+     71.6,
+     70.5,
+     69.3,
+     65.7,
+     61.5,
+     57.2,
+     52.7,
+     48.2,
+     43.5,
+     38.6,
+     33.7,
+     29.3,
+     25.5,
+     21.6,
+     17.7,
+     13.8,
+     9.9
+    ],
+    "gravity": {
+     "dropsPx": [
+      0,
+      0.1,
+      0.2,
+      0.3,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      0.9,
+      1,
+      1,
+      1.1,
+      1.2,
+      3.6,
+      4.2,
+      4.3,
+      4.5,
+      4.6,
+      4.7,
+      4.8,
+      4.9,
+      4.5,
+      3.8,
+      3.9,
+      3.9,
+      3.9,
+      3.9
+     ],
+     "decreasingSteps": 2,
+     "fastestFrameIsLast": false,
+     "fastestFrame": 25,
+     "ofFrames": 31,
+     "fallSec": 0.52,
+     "freeFallSec": 0.32,
+     "ratio": 1.6,
+     "pelvisDropPx": 70.2
+    },
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 26.8,
+      "far": 16.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -62.2,
+      "far": 6.8
+     },
+     "rest": {
+      "near": -66.7,
+      "far": 5.3
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -27.4,
+       "far": 36.3
+      },
+      "rest": {
+       "near": -30.9,
+       "far": 33.9
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 40,
+      "px": 3.65,
+      "joint": "nearWrist"
+     },
+     "blend": {
+      "px": 3.65,
+      "joint": "nearWrist",
+      "frame": 40
+     },
+     "wholeFall": {
+      "px": 18.88,
+      "joint": "nearWrist",
+      "frame": 37
+     },
+     "intoRise": {
+      "frame": 82,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 1.07,
+       "joint": "neck",
+       "frame": 85
+      }
+     }
+    },
+    "sold": false
+   }
+  },
+  {
+   "id": "backward-george-r",
+   "path": "backward",
+   "kind": "fall",
+   "victim": "george",
+   "attacker": "lou",
+   "facing": 1,
+   "rowsFile": "rows-backward-george-r.json",
+   "frames": 94,
+   "m": {
+    "frames": 94,
+    "start": 8,
+    "contact": 39,
+    "rest": 81,
+    "s": 0.9,
+    "standingPelvisPx": 109.4,
+    "restPelvisPx": 9.1,
+    "fallFrames": 31,
+    "fallSec": 0.52,
+    "pelvisPath": [
+     80.1,
+     80,
+     79.9,
+     79.7,
+     79.4,
+     79.1,
+     78.6,
+     78.1,
+     77.6,
+     76.9,
+     76.2,
+     75.4,
+     74.5,
+     73.6,
+     72.6,
+     71.6,
+     70.5,
+     69.3,
+     65.7,
+     61.5,
+     57.2,
+     52.7,
+     48.2,
+     43.5,
+     38.6,
+     33.7,
+     29.3,
+     25.5,
+     21.6,
+     17.7,
+     13.8,
+     9.9
+    ],
+    "gravity": {
+     "dropsPx": [
+      0,
+      0.1,
+      0.2,
+      0.3,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      0.9,
+      1,
+      1,
+      1.1,
+      1.2,
+      3.6,
+      4.2,
+      4.3,
+      4.5,
+      4.6,
+      4.7,
+      4.8,
+      4.9,
+      4.5,
+      3.8,
+      3.9,
+      3.9,
+      3.9,
+      3.9
+     ],
+     "decreasingSteps": 2,
+     "fastestFrameIsLast": false,
+     "fastestFrame": 25,
+     "ofFrames": 31,
+     "fallSec": 0.52,
+     "freeFallSec": 0.32,
+     "ratio": 1.6,
+     "pelvisDropPx": 70.2
+    },
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 26.8,
+      "far": 16.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -62.2,
+      "far": 6.8
+     },
+     "rest": {
+      "near": -66.7,
+      "far": 5.3
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -27.4,
+       "far": 36.3
+      },
+      "rest": {
+       "near": -30.9,
+       "far": 33.9
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 40,
+      "px": 3.65,
+      "joint": "nearWrist"
+     },
+     "blend": {
+      "px": 3.65,
+      "joint": "nearWrist",
+      "frame": 40
+     },
+     "wholeFall": {
+      "px": 18.88,
+      "joint": "nearWrist",
+      "frame": 37
+     },
+     "intoRise": {
+      "frame": 82,
+      "px": 9.51,
+      "joint": "farElbow",
+      "firstFrames": {
+       "px": 9.51,
+       "joint": "farElbow",
+       "frame": 82
+      }
+     }
+    },
+    "sold": false
+   }
+  },
+  {
+   "id": "backward-lou-l",
+   "path": "backward",
+   "kind": "fall",
+   "victim": "lou",
+   "attacker": "george",
+   "facing": -1,
+   "rowsFile": "rows-backward-lou-l.json",
+   "frames": 94,
+   "m": {
+    "frames": 94,
+    "start": 8,
+    "contact": 39,
+    "rest": 81,
+    "s": 0.9,
+    "standingPelvisPx": 123,
+    "restPelvisPx": 7.1,
+    "fallFrames": 31,
+    "fallSec": 0.52,
+    "pelvisPath": [
+     62.5,
+     62.5,
+     62.4,
+     62.3,
+     62.1,
+     61.8,
+     61.4,
+     61,
+     60.6,
+     60.1,
+     59.5,
+     58.9,
+     58.2,
+     57.5,
+     56.7,
+     55.9,
+     55.1,
+     54.2,
+     51.3,
+     48.1,
+     44.7,
+     41.2,
+     37.6,
+     33.9,
+     30.2,
+     26.4,
+     22.9,
+     19.9,
+     16.9,
+     13.8,
+     10.8,
+     7.7
+    ],
+    "gravity": {
+     "dropsPx": [
+      0,
+      0.1,
+      0.2,
+      0.2,
+      0.3,
+      0.3,
+      0.4,
+      0.4,
+      0.5,
+      0.6,
+      0.6,
+      0.7,
+      0.7,
+      0.8,
+      0.8,
+      0.9,
+      0.9,
+      2.8,
+      3.3,
+      3.4,
+      3.5,
+      3.6,
+      3.7,
+      3.8,
+      3.8,
+      3.5,
+      3,
+      3,
+      3,
+      3.1,
+      3.1
+     ],
+     "decreasingSteps": 2,
+     "fastestFrameIsLast": false,
+     "fastestFrame": 25,
+     "ofFrames": 31,
+     "fallSec": 0.52,
+     "freeFallSec": 0.29,
+     "ratio": 1.81,
+     "pelvisDropPx": 54.8
+    },
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 21.1,
+      "far": 15.4
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -43.6,
+      "far": 27.1
+     },
+     "rest": {
+      "near": -47.8,
+      "far": 25.9
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -33.8,
+       "far": 39.4
+      },
+      "rest": {
+       "near": -37.9,
+       "far": 36.8
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 40,
+      "px": 4.13,
+      "joint": "nearWrist"
+     },
+     "blend": {
+      "px": 4.13,
+      "joint": "nearWrist",
+      "frame": 40
+     },
+     "wholeFall": {
+      "px": 21.23,
+      "joint": "nearWrist",
+      "frame": 37
+     },
+     "intoRise": {
+      "frame": 82,
+      "px": 13.53,
+      "joint": "farElbow",
+      "firstFrames": {
+       "px": 13.53,
+       "joint": "farElbow",
+       "frame": 82
+      }
+     }
+    },
+    "sold": false
+   }
+  },
+  {
+   "id": "backward-lou-r",
+   "path": "backward",
+   "kind": "fall",
+   "victim": "lou",
+   "attacker": "george",
+   "facing": 1,
+   "rowsFile": "rows-backward-lou-r.json",
+   "frames": 94,
+   "m": {
+    "frames": 94,
+    "start": 8,
+    "contact": 39,
+    "rest": 81,
+    "s": 0.9,
+    "standingPelvisPx": 123,
+    "restPelvisPx": 7.1,
+    "fallFrames": 31,
+    "fallSec": 0.52,
+    "pelvisPath": [
+     62.5,
+     62.5,
+     62.4,
+     62.3,
+     62.1,
+     61.8,
+     61.4,
+     61,
+     60.6,
+     60.1,
+     59.5,
+     58.9,
+     58.2,
+     57.5,
+     56.7,
+     55.9,
+     55.1,
+     54.2,
+     51.3,
+     48.1,
+     44.7,
+     41.2,
+     37.6,
+     33.9,
+     30.2,
+     26.4,
+     22.9,
+     19.9,
+     16.9,
+     13.8,
+     10.8,
+     7.7
+    ],
+    "gravity": {
+     "dropsPx": [
+      0,
+      0.1,
+      0.2,
+      0.2,
+      0.3,
+      0.3,
+      0.4,
+      0.4,
+      0.5,
+      0.6,
+      0.6,
+      0.7,
+      0.7,
+      0.8,
+      0.8,
+      0.9,
+      0.9,
+      2.8,
+      3.3,
+      3.4,
+      3.5,
+      3.6,
+      3.7,
+      3.8,
+      3.8,
+      3.5,
+      3,
+      3,
+      3,
+      3.1,
+      3.1
+     ],
+     "decreasingSteps": 2,
+     "fastestFrameIsLast": false,
+     "fastestFrame": 25,
+     "ofFrames": 31,
+     "fallSec": 0.52,
+     "freeFallSec": 0.29,
+     "ratio": 1.81,
+     "pelvisDropPx": 54.8
+    },
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 21.1,
+      "far": 15.4
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -43.6,
+      "far": 27.1
+     },
+     "rest": {
+      "near": -47.8,
+      "far": 25.9
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -33.8,
+       "far": 39.4
+      },
+      "rest": {
+       "near": -37.9,
+       "far": 36.8
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 40,
+      "px": 4.13,
+      "joint": "nearWrist"
+     },
+     "blend": {
+      "px": 4.13,
+      "joint": "nearWrist",
+      "frame": 40
+     },
+     "wholeFall": {
+      "px": 21.23,
+      "joint": "nearWrist",
+      "frame": 37
+     },
+     "intoRise": {
+      "frame": 82,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 0.98,
+       "joint": "neck",
+       "frame": 85
+      }
+     }
+    },
+    "sold": false
+   }
+  },
+  {
+   "id": "bodySlam-george-l",
+   "path": "bodySlam",
+   "kind": "throw",
+   "victim": "george",
+   "attacker": "lou",
+   "facing": -1,
+   "rowsFile": "rows-bodySlam-george-l.json",
+   "frames": 152,
+   "m": {
+    "frames": 152,
+    "start": 8,
+    "contact": 72,
+    "rest": 139,
+    "s": 0.9,
+    "standingPelvisPx": 109.4,
+    "restPelvisPx": 9.1,
+    "fallFrames": 64,
+    "fallSec": 1.07,
+    "pelvisPath": [
+     100.7,
+     100.8,
+     100.9,
+     101.1,
+     101.3,
+     101.5,
+     101.9,
+     106.4,
+     111.3,
+     115.2,
+     118.2,
+     120.5,
+     121.9,
+     122.6,
+     122.9,
+     124.1,
+     126.1,
+     128.6,
+     130.6,
+     132.6,
+     134.5,
+     136.1,
+     137.1,
+     137.5,
+     138.2,
+     140.4,
+     144,
+     149,
+     155.5,
+     163.4,
+     172.9,
+     183.8,
+     196.3,
+     209.3,
+     220.5,
+     230.6,
+     239.5,
+     247.3,
+     253.9,
+     259.5,
+     263.9,
+     267.1,
+     269.3,
+     270.3,
+     270.4,
+     270.1,
+     269.8,
+     269.3,
+     268.8,
+     268.2,
+     267.7,
+     267.3,
+     267.1,
+     266.9,
+     266,
+     263.1,
+     258.3,
+     251.6,
+     243,
+     232.5,
+     186.4,
+     140.4,
+     94.6,
+     49,
+     12.6
+    ],
+    "bounce": {
+     "count": 1,
+     "peakPx": 6.3
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 26.8,
+      "far": 16.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -6.7,
+      "far": 15.6
+     },
+     "rest": {
+      "near": -66.7,
+      "far": 5.3
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": 39,
+       "far": 54.6
+      },
+      "rest": {
+       "near": -30.9,
+       "far": 33.9
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 98,
+      "px": 19,
+      "joint": "farAnkle"
+     },
+     "blend": {
+      "px": 19,
+      "joint": "farAnkle",
+      "frame": 98
+     },
+     "wholeFall": {
+      "px": 52.71,
+      "joint": "nearHip",
+      "frame": 68
+     },
+     "intoRise": {
+      "frame": 140,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 0.75,
+       "joint": "neck",
+       "frame": 143
+      }
+     }
+    },
+    "sold": true
+   }
+  },
+  {
+   "id": "bodySlam-george-r",
+   "path": "bodySlam",
+   "kind": "throw",
+   "victim": "george",
+   "attacker": "lou",
+   "facing": 1,
+   "rowsFile": "rows-bodySlam-george-r.json",
+   "frames": 152,
+   "m": {
+    "frames": 152,
+    "start": 8,
+    "contact": 72,
+    "rest": 139,
+    "s": 0.9,
+    "standingPelvisPx": 109.4,
+    "restPelvisPx": 9.1,
+    "fallFrames": 64,
+    "fallSec": 1.07,
+    "pelvisPath": [
+     100.7,
+     100.8,
+     100.9,
+     101.1,
+     101.3,
+     101.5,
+     101.9,
+     106.4,
+     111.3,
+     115.2,
+     118.2,
+     120.5,
+     121.9,
+     122.6,
+     122.9,
+     124.1,
+     126.1,
+     128.6,
+     130.6,
+     132.6,
+     134.5,
+     136.1,
+     137.1,
+     137.5,
+     138.2,
+     140.4,
+     144,
+     149,
+     155.5,
+     163.4,
+     172.9,
+     183.8,
+     196.3,
+     209.3,
+     220.5,
+     230.6,
+     239.5,
+     247.3,
+     253.9,
+     259.5,
+     263.9,
+     267.1,
+     269.3,
+     270.3,
+     270.4,
+     270.1,
+     269.8,
+     269.3,
+     268.8,
+     268.2,
+     267.7,
+     267.3,
+     267.1,
+     266.9,
+     266,
+     263.1,
+     258.3,
+     251.6,
+     243,
+     232.5,
+     186.4,
+     140.4,
+     94.6,
+     49,
+     12.6
+    ],
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 26.8,
+      "far": 16.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -6.7,
+      "far": 15.6
+     },
+     "rest": {
+      "near": -66.7,
+      "far": 5.3
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": 39,
+       "far": 54.6
+      },
+      "rest": {
+       "near": -30.9,
+       "far": 33.9
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 98,
+      "px": 19,
+      "joint": "farAnkle"
+     },
+     "blend": {
+      "px": 19,
+      "joint": "farAnkle",
+      "frame": 98
+     },
+     "wholeFall": {
+      "px": 52.71,
+      "joint": "nearHip",
+      "frame": 68
+     },
+     "intoRise": {
+      "frame": 140,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 0.75,
+       "joint": "neck",
+       "frame": 143
+      }
+     }
+    },
+    "sold": true
+   }
+  },
+  {
+   "id": "bodySlam-lou-l",
+   "path": "bodySlam",
+   "kind": "throw",
+   "victim": "lou",
+   "attacker": "george",
+   "facing": -1,
+   "rowsFile": "rows-bodySlam-lou-l.json",
+   "frames": 152,
+   "m": {
+    "frames": 152,
+    "start": 8,
+    "contact": 103,
+    "rest": 139,
+    "s": 0.9,
+    "standingPelvisPx": 123,
+    "restPelvisPx": 7.1,
+    "fallFrames": 95,
+    "fallSec": 1.58,
+    "pelvisPath": [
+     116.3,
+     116.4,
+     116.5,
+     116.7,
+     116.9,
+     117.2,
+     117.5,
+     117.7,
+     117.7,
+     117.7,
+     117.6,
+     117.6,
+     117.5,
+     117.5,
+     117.5,
+     117.4,
+     117.4,
+     117.8,
+     119.6,
+     121.5,
+     123.3,
+     124.7,
+     125.7,
+     126,
+     126.7,
+     128.7,
+     131.9,
+     136.5,
+     142.5,
+     149.8,
+     158.4,
+     168.4,
+     179.9,
+     191.8,
+     202.1,
+     211.3,
+     219.4,
+     226.6,
+     232.7,
+     237.8,
+     241.8,
+     244.8,
+     246.8,
+     247.7,
+     247.7,
+     247.5,
+     247.2,
+     246.8,
+     246.3,
+     245.8,
+     245.3,
+     245,
+     244.7,
+     244.6,
+     243.7,
+     241.1,
+     236.7,
+     230.6,
+     222.7,
+     213.1,
+     170.8,
+     128.7,
+     86.7,
+     44.9,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.4,
+     11.2,
+     11,
+     10.7
+    ],
+    "bounce": {
+     "count": 1,
+     "peakPx": 4.9
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 21.1,
+      "far": 15.4
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -17.4,
+      "far": 20.6
+     },
+     "rest": {
+      "near": -47.8,
+      "far": 25.9
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -2.4,
+       "far": 36.2
+      },
+      "rest": {
+       "near": -37.9,
+       "far": 36.8
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 98,
+      "px": 13.24,
+      "joint": "farAnkle"
+     },
+     "blend": {
+      "px": 13.24,
+      "joint": "farAnkle",
+      "frame": 98
+     },
+     "wholeFall": {
+      "px": 49.61,
+      "joint": "farWrist",
+      "frame": 71
+     },
+     "intoRise": {
+      "frame": 140,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 0.69,
+       "joint": "neck",
+       "frame": 143
+      }
+     }
+    },
+    "sold": true
+   }
+  },
+  {
+   "id": "bodySlam-lou-r",
+   "path": "bodySlam",
+   "kind": "throw",
+   "victim": "lou",
+   "attacker": "george",
+   "facing": 1,
+   "rowsFile": "rows-bodySlam-lou-r.json",
+   "frames": 152,
+   "m": {
+    "frames": 152,
+    "start": 8,
+    "contact": 103,
+    "rest": 139,
+    "s": 0.9,
+    "standingPelvisPx": 123,
+    "restPelvisPx": 7.1,
+    "fallFrames": 95,
+    "fallSec": 1.58,
+    "pelvisPath": [
+     116.3,
+     116.4,
+     116.5,
+     116.7,
+     116.9,
+     117.2,
+     117.5,
+     117.7,
+     117.7,
+     117.7,
+     117.6,
+     117.6,
+     117.5,
+     117.5,
+     117.5,
+     117.4,
+     117.4,
+     117.8,
+     119.6,
+     121.5,
+     123.3,
+     124.7,
+     125.7,
+     126,
+     126.7,
+     128.7,
+     131.9,
+     136.5,
+     142.5,
+     149.8,
+     158.4,
+     168.4,
+     179.9,
+     191.8,
+     202.1,
+     211.3,
+     219.4,
+     226.6,
+     232.7,
+     237.8,
+     241.8,
+     244.8,
+     246.8,
+     247.7,
+     247.7,
+     247.5,
+     247.2,
+     246.8,
+     246.3,
+     245.8,
+     245.3,
+     245,
+     244.7,
+     244.6,
+     243.7,
+     241.1,
+     236.7,
+     230.6,
+     222.7,
+     213.1,
+     170.8,
+     128.7,
+     86.7,
+     44.9,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.5,
+     11.4,
+     11.2,
+     11,
+     10.7
+    ],
+    "bounce": {
+     "count": 1,
+     "peakPx": 4.3
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 21.1,
+      "far": 15.4
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -17.4,
+      "far": 20.6
+     },
+     "rest": {
+      "near": -47.8,
+      "far": 25.9
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -2.4,
+       "far": 36.2
+      },
+      "rest": {
+       "near": -37.9,
+       "far": 36.8
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 98,
+      "px": 13.24,
+      "joint": "farAnkle"
+     },
+     "blend": {
+      "px": 13.24,
+      "joint": "farAnkle",
+      "frame": 98
+     },
+     "wholeFall": {
+      "px": 49.61,
+      "joint": "farWrist",
+      "frame": 71
+     },
+     "intoRise": {
+      "frame": 140,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 0.69,
+       "joint": "neck",
+       "frame": 143
+      }
+     }
+    },
+    "sold": true
+   }
+  },
+  {
+   "id": "forward-george-l",
+   "path": "forward",
+   "kind": "fall",
+   "victim": "george",
+   "attacker": "lou",
+   "facing": -1,
+   "rowsFile": "rows-forward-george-l.json",
+   "frames": 91,
+   "m": {
+    "frames": 91,
+    "start": 8,
+    "contact": 37,
+    "rest": 78,
+    "s": 0.9,
+    "standingPelvisPx": 109.4,
+    "restPelvisPx": 9.1,
+    "fallFrames": 29,
+    "fallSec": 0.48,
+    "pelvisPath": [
+     80.1,
+     80,
+     80,
+     79.9,
+     79.7,
+     79.5,
+     79.3,
+     79.1,
+     78.8,
+     78.4,
+     78.1,
+     77.7,
+     77.2,
+     76.8,
+     76.3,
+     75.7,
+     75.2,
+     74.6,
+     69.1,
+     63.3,
+     57.4,
+     51.3,
+     45,
+     38.6,
+     32.1,
+     26.1,
+     21.7,
+     17.2,
+     12.7,
+     9.1
+    ],
+    "gravity": {
+     "dropsPx": [
+      0,
+      0.1,
+      0.1,
+      0.1,
+      0.2,
+      0.2,
+      0.3,
+      0.3,
+      0.3,
+      0.4,
+      0.4,
+      0.4,
+      0.5,
+      0.5,
+      0.5,
+      0.6,
+      0.6,
+      5.5,
+      5.7,
+      5.9,
+      6.1,
+      6.3,
+      6.4,
+      6.5,
+      6,
+      4.4,
+      4.5,
+      4.5,
+      3.6
+     ],
+     "decreasingSteps": 3,
+     "fastestFrameIsLast": false,
+     "fastestFrame": 24,
+     "ofFrames": 29,
+     "fallSec": 0.48,
+     "freeFallSec": 0.32,
+     "ratio": 1.5,
+     "pelvisDropPx": 71
+    },
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 81.1,
+      "far": 71.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -38.6,
+      "far": 3.9
+     },
+     "rest": {
+      "near": -38.6,
+      "far": 3.9
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -4.1,
+       "far": 31.1
+      },
+      "rest": {
+       "near": -4.1,
+       "far": 31.1
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 37,
+      "px": 15.74,
+      "joint": "farWrist"
+     },
+     "blend": {
+      "px": 15.74,
+      "joint": "farWrist",
+      "frame": 37
+     },
+     "wholeFall": {
+      "px": 18.99,
+      "joint": "farWrist",
+      "frame": 36
+     },
+     "intoRise": {
+      "frame": 79,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 1.02,
+       "joint": "farWrist",
+       "frame": 82
+      }
+     }
+    },
+    "sold": false
+   }
+  },
+  {
+   "id": "forward-george-r",
+   "path": "forward",
+   "kind": "fall",
+   "victim": "george",
+   "attacker": "lou",
+   "facing": 1,
+   "rowsFile": "rows-forward-george-r.json",
+   "frames": 91,
+   "m": {
+    "frames": 91,
+    "start": 8,
+    "contact": 37,
+    "rest": 78,
+    "s": 0.9,
+    "standingPelvisPx": 109.4,
+    "restPelvisPx": 9.1,
+    "fallFrames": 29,
+    "fallSec": 0.48,
+    "pelvisPath": [
+     80.1,
+     80,
+     80,
+     79.9,
+     79.7,
+     79.5,
+     79.3,
+     79.1,
+     78.8,
+     78.4,
+     78.1,
+     77.7,
+     77.2,
+     76.8,
+     76.3,
+     75.7,
+     75.2,
+     74.6,
+     69.1,
+     63.3,
+     57.4,
+     51.3,
+     45,
+     38.6,
+     32.1,
+     26.1,
+     21.7,
+     17.2,
+     12.7,
+     9.1
+    ],
+    "gravity": {
+     "dropsPx": [
+      0,
+      0.1,
+      0.1,
+      0.1,
+      0.2,
+      0.2,
+      0.3,
+      0.3,
+      0.3,
+      0.4,
+      0.4,
+      0.4,
+      0.5,
+      0.5,
+      0.5,
+      0.6,
+      0.6,
+      5.5,
+      5.7,
+      5.9,
+      6.1,
+      6.3,
+      6.4,
+      6.5,
+      6,
+      4.4,
+      4.5,
+      4.5,
+      3.6
+     ],
+     "decreasingSteps": 3,
+     "fastestFrameIsLast": false,
+     "fastestFrame": 24,
+     "ofFrames": 29,
+     "fallSec": 0.48,
+     "freeFallSec": 0.32,
+     "ratio": 1.5,
+     "pelvisDropPx": 71
+    },
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 81.1,
+      "far": 71.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -38.6,
+      "far": 3.9
+     },
+     "rest": {
+      "near": -38.6,
+      "far": 3.9
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -4.1,
+       "far": 31.1
+      },
+      "rest": {
+       "near": -4.1,
+       "far": 31.1
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 37,
+      "px": 15.74,
+      "joint": "farWrist"
+     },
+     "blend": {
+      "px": 15.74,
+      "joint": "farWrist",
+      "frame": 37
+     },
+     "wholeFall": {
+      "px": 18.99,
+      "joint": "farWrist",
+      "frame": 36
+     },
+     "intoRise": {
+      "frame": 79,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 1.02,
+       "joint": "farWrist",
+       "frame": 82
+      }
+     }
+    },
+    "sold": false
+   }
+  },
+  {
+   "id": "forward-lou-l",
+   "path": "forward",
+   "kind": "fall",
+   "victim": "lou",
+   "attacker": "george",
+   "facing": -1,
+   "rowsFile": "rows-forward-lou-l.json",
+   "frames": 91,
+   "m": {
+    "frames": 91,
+    "start": 8,
+    "contact": 36,
+    "rest": 78,
+    "s": 0.9,
+    "standingPelvisPx": 123,
+    "restPelvisPx": 7.1,
+    "fallFrames": 28,
+    "fallSec": 0.47,
+    "pelvisPath": [
+     62.5,
+     62.5,
+     62.5,
+     62.4,
+     62.3,
+     62.2,
+     62,
+     61.8,
+     61.6,
+     61.3,
+     61,
+     60.7,
+     60.3,
+     60,
+     59.6,
+     59.2,
+     58.7,
+     58.3,
+     54,
+     49.5,
+     44.8,
+     40.1,
+     35.2,
+     30.2,
+     25.1,
+     20.4,
+     16.9,
+     13.4,
+     9.9
+    ],
+    "gravity": {
+     "dropsPx": [
+      0,
+      0,
+      0.1,
+      0.1,
+      0.1,
+      0.2,
+      0.2,
+      0.2,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.5,
+      4.3,
+      4.5,
+      4.6,
+      4.8,
+      4.9,
+      5,
+      5.1,
+      4.7,
+      3.5,
+      3.5,
+      3.5
+     ],
+     "decreasingSteps": 2,
+     "fastestFrameIsLast": false,
+     "fastestFrame": 24,
+     "ofFrames": 28,
+     "fallSec": 0.47,
+     "freeFallSec": 0.29,
+     "ratio": 1.64,
+     "pelvisDropPx": 52.6
+    },
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 58.7,
+      "far": 47.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -27.9,
+      "far": 0.4
+     },
+     "rest": {
+      "near": -18.7,
+      "far": 17.9
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -17.1,
+       "far": 9.3
+      },
+      "rest": {
+       "near": -9,
+       "far": 26.8
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 37,
+      "px": 21.36,
+      "joint": "farWrist"
+     },
+     "blend": {
+      "px": 21.36,
+      "joint": "farWrist",
+      "frame": 37
+     },
+     "wholeFall": {
+      "px": 27.19,
+      "joint": "farWrist",
+      "frame": 36
+     },
+     "intoRise": {
+      "frame": 79,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 1.27,
+       "joint": "farWrist",
+       "frame": 82
+      }
+     }
+    },
+    "sold": false
+   }
+  },
+  {
+   "id": "forward-lou-r",
+   "path": "forward",
+   "kind": "fall",
+   "victim": "lou",
+   "attacker": "george",
+   "facing": 1,
+   "rowsFile": "rows-forward-lou-r.json",
+   "frames": 91,
+   "m": {
+    "frames": 91,
+    "start": 8,
+    "contact": 36,
+    "rest": 78,
+    "s": 0.9,
+    "standingPelvisPx": 123,
+    "restPelvisPx": 7.1,
+    "fallFrames": 28,
+    "fallSec": 0.47,
+    "pelvisPath": [
+     62.5,
+     62.5,
+     62.5,
+     62.4,
+     62.3,
+     62.2,
+     62,
+     61.8,
+     61.6,
+     61.3,
+     61,
+     60.7,
+     60.3,
+     60,
+     59.6,
+     59.2,
+     58.7,
+     58.3,
+     54,
+     49.5,
+     44.8,
+     40.1,
+     35.2,
+     30.2,
+     25.1,
+     20.4,
+     16.9,
+     13.4,
+     9.9
+    ],
+    "gravity": {
+     "dropsPx": [
+      0,
+      0,
+      0.1,
+      0.1,
+      0.1,
+      0.2,
+      0.2,
+      0.2,
+      0.3,
+      0.3,
+      0.3,
+      0.3,
+      0.4,
+      0.4,
+      0.4,
+      0.4,
+      0.5,
+      4.3,
+      4.5,
+      4.6,
+      4.8,
+      4.9,
+      5,
+      5.1,
+      4.7,
+      3.5,
+      3.5,
+      3.5
+     ],
+     "decreasingSteps": 2,
+     "fastestFrameIsLast": false,
+     "fastestFrame": 24,
+     "ofFrames": 28,
+     "fallSec": 0.47,
+     "freeFallSec": 0.29,
+     "ratio": 1.64,
+     "pelvisDropPx": 52.6
+    },
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 58.7,
+      "far": 47.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -27.9,
+      "far": 0.4
+     },
+     "rest": {
+      "near": -18.7,
+      "far": 17.9
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -17.1,
+       "far": 9.3
+      },
+      "rest": {
+       "near": -9,
+       "far": 26.8
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 37,
+      "px": 21.36,
+      "joint": "farWrist"
+     },
+     "blend": {
+      "px": 21.36,
+      "joint": "farWrist",
+      "frame": 37
+     },
+     "wholeFall": {
+      "px": 27.19,
+      "joint": "farWrist",
+      "frame": 36
+     },
+     "intoRise": {
+      "frame": 79,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 1.27,
+       "joint": "farWrist",
+       "frame": 82
+      }
+     }
+    },
+    "sold": false
+   }
+  },
+  {
+   "id": "piledriver-george-l",
+   "path": "piledriver",
+   "kind": "throw",
+   "victim": "george",
+   "attacker": "lou",
+   "facing": -1,
+   "rowsFile": "rows-piledriver-george-l.json",
+   "frames": 182,
+   "m": {
+    "frames": 182,
+    "start": 8,
+    "contact": 112,
+    "rest": 169,
+    "s": 0.91,
+    "standingPelvisPx": 109.4,
+    "restPelvisPx": 9.2,
+    "fallFrames": 104,
+    "fallSec": 1.73,
+    "pelvisPath": [
+     105.4,
+     105.3,
+     105.3,
+     105.2,
+     105,
+     104.9,
+     104.7,
+     104.5,
+     104.2,
+     103.9,
+     103.6,
+     103.6,
+     103.7,
+     103.7,
+     103.7,
+     103.7,
+     103.7,
+     103.7,
+     103.7,
+     103.7,
+     103.8,
+     103.9,
+     104.1,
+     104.2,
+     104.4,
+     104.5,
+     104.5,
+     104.7,
+     106.4,
+     109.9,
+     115.2,
+     120.6,
+     124.9,
+     130,
+     136,
+     142.8,
+     150.5,
+     158.2,
+     165.8,
+     173.5,
+     181.1,
+     188.7,
+     194.3,
+     196.6,
+     198.3,
+     199.6,
+     200.3,
+     200.6,
+     200.5,
+     200.5,
+     200.5,
+     200.5,
+     200.4,
+     200.4,
+     200.3,
+     200.3,
+     200.2,
+     200.2,
+     200.2,
+     200.2,
+     200.1,
+     202.5,
+     204.8,
+     206.4,
+     207.4,
+     207.8,
+     206.8,
+     203.8,
+     198.9,
+     191.9,
+     183,
+     172.1,
+     159.3,
+     144.4,
+     135.9,
+     134.4,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.2,
+     133.6,
+     132.6,
+     131.2,
+     129.4,
+     127.1,
+     124.4,
+     121.3,
+     117.7,
+     113.7,
+     109.3,
+     104.5,
+     93.4,
+     80.8,
+     68.2,
+     55.6,
+     43,
+     30.4,
+     17.8,
+     12.7
+    ],
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 81.1,
+      "far": 71.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -15.6,
+      "far": -30.8
+     },
+     "rest": {
+      "near": -38.9,
+      "far": 4
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": 22.9,
+       "far": 1
+      },
+      "rest": {
+       "near": -4.2,
+       "far": 31.4
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 128,
+      "px": 6.44,
+      "joint": "farAnkle"
+     },
+     "blend": {
+      "px": 8.04,
+      "joint": "nearWrist",
+      "frame": 136
+     },
+     "wholeFall": {
+      "px": 42,
+      "joint": "farAnkle",
+      "frame": 44
+     },
+     "intoRise": {
+      "frame": 170,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 0.63,
+       "joint": "farWrist",
+       "frame": 173
+      }
+     }
+    },
+    "sold": true
+   }
+  },
+  {
+   "id": "piledriver-george-r",
+   "path": "piledriver",
+   "kind": "throw",
+   "victim": "george",
+   "attacker": "lou",
+   "facing": 1,
+   "rowsFile": "rows-piledriver-george-r.json",
+   "frames": 182,
+   "m": {
+    "frames": 182,
+    "start": 8,
+    "contact": 112,
+    "rest": 169,
+    "s": 0.91,
+    "standingPelvisPx": 109.4,
+    "restPelvisPx": 9.2,
+    "fallFrames": 104,
+    "fallSec": 1.73,
+    "pelvisPath": [
+     105.4,
+     105.3,
+     105.3,
+     105.2,
+     105,
+     104.9,
+     104.7,
+     104.5,
+     104.2,
+     103.9,
+     103.6,
+     103.6,
+     103.7,
+     103.7,
+     103.7,
+     103.7,
+     103.7,
+     103.7,
+     103.7,
+     103.7,
+     103.8,
+     103.9,
+     104.1,
+     104.2,
+     104.4,
+     104.5,
+     104.5,
+     104.7,
+     106.4,
+     109.9,
+     115.2,
+     120.6,
+     124.9,
+     130,
+     136,
+     142.8,
+     150.5,
+     158.2,
+     165.8,
+     173.5,
+     181.1,
+     188.7,
+     194.3,
+     196.6,
+     198.3,
+     199.6,
+     200.3,
+     200.6,
+     200.5,
+     200.5,
+     200.5,
+     200.5,
+     200.4,
+     200.4,
+     200.3,
+     200.3,
+     200.2,
+     200.2,
+     200.2,
+     200.2,
+     200.1,
+     202.5,
+     204.8,
+     206.4,
+     207.4,
+     207.8,
+     206.8,
+     203.8,
+     198.9,
+     191.9,
+     183,
+     172.1,
+     159.3,
+     144.4,
+     135.9,
+     134.4,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.3,
+     134.2,
+     133.6,
+     132.6,
+     131.2,
+     129.4,
+     127.1,
+     124.4,
+     121.3,
+     117.7,
+     113.7,
+     109.3,
+     104.5,
+     93.4,
+     80.8,
+     68.2,
+     55.6,
+     43,
+     30.4,
+     17.8,
+     12.7
+    ],
+    "bounce": {
+     "count": 1,
+     "peakPx": 4.1
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 81.1,
+      "far": 71.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -15.6,
+      "far": -30.8
+     },
+     "rest": {
+      "near": -38.9,
+      "far": 4
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": 22.9,
+       "far": 1
+      },
+      "rest": {
+       "near": -4.2,
+       "far": 31.4
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 128,
+      "px": 6.44,
+      "joint": "farAnkle"
+     },
+     "blend": {
+      "px": 8.04,
+      "joint": "nearWrist",
+      "frame": 136
+     },
+     "wholeFall": {
+      "px": 42,
+      "joint": "farAnkle",
+      "frame": 44
+     },
+     "intoRise": {
+      "frame": 170,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 0.63,
+       "joint": "farWrist",
+       "frame": 173
+      }
+     }
+    },
+    "sold": true
+   }
+  },
+  {
+   "id": "piledriver-lou-l",
+   "path": "piledriver",
+   "kind": "throw",
+   "victim": "lou",
+   "attacker": "george",
+   "facing": -1,
+   "rowsFile": "rows-piledriver-lou-l.json",
+   "frames": 182,
+   "m": {
+    "frames": 182,
+    "start": 8,
+    "contact": 133,
+    "rest": 169,
+    "s": 0.91,
+    "standingPelvisPx": 123,
+    "restPelvisPx": 7.2,
+    "fallFrames": 125,
+    "fallSec": 2.08,
+    "pelvisPath": [
+     121.3,
+     121.2,
+     121.1,
+     121,
+     120.9,
+     120.8,
+     120.6,
+     120.4,
+     120.1,
+     119.8,
+     119.5,
+     119.6,
+     119.6,
+     119.7,
+     119.7,
+     119.7,
+     119.7,
+     119.7,
+     119.7,
+     119.7,
+     119.8,
+     120,
+     120.1,
+     120.3,
+     120.4,
+     120.5,
+     120.6,
+     120.5,
+     119.2,
+     116.5,
+     112.3,
+     110.5,
+     114.4,
+     119.1,
+     124.6,
+     130.9,
+     137.9,
+     145,
+     152,
+     159,
+     166,
+     172.9,
+     178.1,
+     180.1,
+     181.7,
+     182.9,
+     183.5,
+     183.8,
+     183.8,
+     183.7,
+     183.7,
+     183.7,
+     183.6,
+     183.6,
+     183.6,
+     183.5,
+     183.5,
+     183.5,
+     183.4,
+     183.4,
+     183.4,
+     185.5,
+     187.6,
+     189.2,
+     190.1,
+     190.4,
+     185.9,
+     174,
+     157.6,
+     139.5,
+     122.8,
+     109.5,
+     101.2,
+     97.8,
+     97.4,
+     96.9,
+     96.9,
+     97,
+     97.1,
+     97.2,
+     97.3,
+     97.3,
+     97.4,
+     97.4,
+     97.4,
+     97.8,
+     99.1,
+     100.9,
+     103,
+     104.8,
+     106.1,
+     106.5,
+     106.1,
+     104.7,
+     102.5,
+     99.6,
+     95.7,
+     85.6,
+     74,
+     62.5,
+     50.9,
+     39.4,
+     27.8,
+     16.3,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.5,
+     11.3,
+     11.1,
+     10.8
+    ],
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 58.7,
+      "far": 47.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -17.7,
+      "far": -26.5
+     },
+     "rest": {
+      "near": -18.9,
+      "far": 18.1
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -6.5,
+       "far": -17
+      },
+      "rest": {
+       "near": -9.1,
+       "far": 27.1
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 128,
+      "px": 4.49,
+      "joint": "nearAnkle"
+     },
+     "blend": {
+      "px": 12.37,
+      "joint": "nearWrist",
+      "frame": 136
+     },
+     "wholeFall": {
+      "px": 39.54,
+      "joint": "farAnkle",
+      "frame": 44
+     },
+     "intoRise": {
+      "frame": 170,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 0.8,
+       "joint": "farWrist",
+       "frame": 173
+      }
+     }
+    },
+    "sold": true
+   }
+  },
+  {
+   "id": "piledriver-lou-r",
+   "path": "piledriver",
+   "kind": "throw",
+   "victim": "lou",
+   "attacker": "george",
+   "facing": 1,
+   "rowsFile": "rows-piledriver-lou-r.json",
+   "frames": 182,
+   "m": {
+    "frames": 182,
+    "start": 8,
+    "contact": 133,
+    "rest": 169,
+    "s": 0.91,
+    "standingPelvisPx": 123,
+    "restPelvisPx": 7.2,
+    "fallFrames": 125,
+    "fallSec": 2.08,
+    "pelvisPath": [
+     121.3,
+     121.2,
+     121.1,
+     121,
+     120.9,
+     120.8,
+     120.6,
+     120.4,
+     120.1,
+     119.8,
+     119.5,
+     119.6,
+     119.6,
+     119.7,
+     119.7,
+     119.7,
+     119.7,
+     119.7,
+     119.7,
+     119.7,
+     119.8,
+     120,
+     120.1,
+     120.3,
+     120.4,
+     120.5,
+     120.6,
+     120.5,
+     119.2,
+     116.5,
+     112.3,
+     110.5,
+     114.4,
+     119.1,
+     124.6,
+     130.9,
+     137.9,
+     145,
+     152,
+     159,
+     166,
+     172.9,
+     178.1,
+     180.1,
+     181.7,
+     182.9,
+     183.5,
+     183.8,
+     183.8,
+     183.7,
+     183.7,
+     183.7,
+     183.6,
+     183.6,
+     183.6,
+     183.5,
+     183.5,
+     183.5,
+     183.4,
+     183.4,
+     183.4,
+     185.5,
+     187.6,
+     189.2,
+     190.1,
+     190.4,
+     185.9,
+     174,
+     157.6,
+     139.5,
+     122.8,
+     109.5,
+     101.2,
+     97.8,
+     97.4,
+     96.9,
+     96.9,
+     97,
+     97.1,
+     97.2,
+     97.3,
+     97.3,
+     97.4,
+     97.4,
+     97.4,
+     97.8,
+     99.1,
+     100.9,
+     103,
+     104.8,
+     106.1,
+     106.5,
+     106.1,
+     104.7,
+     102.5,
+     99.6,
+     95.7,
+     85.6,
+     74,
+     62.5,
+     50.9,
+     39.4,
+     27.8,
+     16.3,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.6,
+     11.5,
+     11.3,
+     11.1,
+     10.8
+    ],
+    "bounce": {
+     "count": 0,
+     "peakPx": 0
+    },
+    "armsAtRest": {
+     "offTorsoDeg": {
+      "near": 58.7,
+      "far": 47.5
+     },
+     "missile": false
+    },
+    "handGapPx": {
+     "contact": {
+      "near": -17.7,
+      "far": -26.5
+     },
+     "rest": {
+      "near": -18.9,
+      "far": 18.1
+     },
+     "wristAboveMat": {
+      "contact": {
+       "near": -6.5,
+       "far": -17
+      },
+      "rest": {
+       "near": -9.1,
+       "far": 27.1
+      }
+     },
+     "note": "mat line minus the arm part's lowest drawn-box corner (the forearm part carries the hand; its bbox, not the painted palm): 0 = on the mat, positive = above it. wristAboveMat is the wrist joint"
+    },
+    "steps": {
+     "intoDown": {
+      "frame": 128,
+      "px": 4.49,
+      "joint": "nearAnkle"
+     },
+     "blend": {
+      "px": 12.37,
+      "joint": "nearWrist",
+      "frame": 136
+     },
+     "wholeFall": {
+      "px": 39.54,
+      "joint": "farAnkle",
+      "frame": 44
+     },
+     "intoRise": {
+      "frame": 170,
+      "px": 0,
+      "joint": null,
+      "firstFrames": {
+       "px": 0.8,
+       "joint": "farWrist",
+       "frame": 173
+      }
+     }
+    },
+    "sold": true
+   }
+  }
+ ]
+}

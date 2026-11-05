@@ -1,0 +1,73 @@
+{
+  "baseline": "5b6dfed",
+  "timing": {
+    "before": {
+      "lift": 0.42,
+      "hitch": 0.06,
+      "impact": 0.55,
+      "duration": 1.1
+    },
+    "after": {
+      "lift": 0.42,
+      "hitch": 0.24,
+      "drop": 0.07,
+      "impact": 0.73,
+      "sell": 0.55,
+      "duration": 1.28,
+      "reverseWindow": 0.2,
+      "damageKey": "atomicDrop",
+      "sellSpec": {
+        "part": "back",
+        "intensity": 0.7
+      },
+      "liftPeak": 80,
+      "stumbleFwd": 36
+    }
+  },
+  "runs": [
+    {
+      "side": "l",
+      "frames": 196,
+      "addedHeightGamePx": 19.24,
+      "peakHoldSeconds": 0.24,
+      "peakVerticalRangeGamePx": 0,
+      "impactTime": 0.7333,
+      "seatGapAtImpactGamePx": 0,
+      "receiverLandingFoldDegrees": {
+        "before": [
+          34.38,
+          34.37
+        ],
+        "after": [
+          56.27,
+          52.94
+        ]
+      },
+      "peakFrame": 105,
+      "impactFrame": 123,
+      "compressionFrame": 126
+    },
+    {
+      "side": "r",
+      "frames": 196,
+      "addedHeightGamePx": 19.24,
+      "peakHoldSeconds": 0.24,
+      "peakVerticalRangeGamePx": 0,
+      "impactTime": 0.7333,
+      "seatGapAtImpactGamePx": 0,
+      "receiverLandingFoldDegrees": {
+        "before": [
+          34.38,
+          34.37
+        ],
+        "after": [
+          56.26,
+          52.94
+        ]
+      },
+      "peakFrame": 105,
+      "impactFrame": 123,
+      "compressionFrame": 126
+    }
+  ]
+}

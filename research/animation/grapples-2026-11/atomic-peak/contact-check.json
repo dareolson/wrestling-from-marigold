@@ -1,0 +1,154 @@
+[
+ {
+  "label": "Lou on George",
+  "facing": -1,
+  "firstContact": 0.7167,
+  "impactConst": 0.73,
+  "minGapBeforeRecoil": 0,
+  "gapsHeld": [
+   1.8,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "knee": {
+   "side": "near",
+   "thighFromVertical": 1.4,
+   "fold": 1.13,
+   "shinFromVertical": 0.27,
+   "ankleAheadOfKnee": 7.7
+  },
+  "supportSoleDrift": [
+   68.9,
+   0.1
+  ],
+  "supportSoleMaxStep": [
+   7.28,
+   0.19
+  ],
+  "events": [
+   {
+    "t": 0.0167,
+    "e": "move"
+   }
+  ]
+ },
+ {
+  "label": "Lou on George",
+  "facing": 1,
+  "firstContact": 0.7167,
+  "impactConst": 0.73,
+  "minGapBeforeRecoil": 0,
+  "gapsHeld": [
+   1.8,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "knee": {
+   "side": "near",
+   "thighFromVertical": 1.4,
+   "fold": 1.13,
+   "shinFromVertical": 0.27,
+   "ankleAheadOfKnee": 7.7
+  },
+  "supportSoleDrift": [
+   68.9,
+   0.1
+  ],
+  "supportSoleMaxStep": [
+   7.28,
+   0.19
+  ],
+  "events": [
+   {
+    "t": 0.0167,
+    "e": "move"
+   }
+  ]
+ },
+ {
+  "label": "George on Lou",
+  "facing": -1,
+  "firstContact": 0.7167,
+  "impactConst": 0.73,
+  "minGapBeforeRecoil": 0,
+  "gapsHeld": [
+   2.1,
+   0,
+   0.1,
+   0,
+   0,
+   0,
+   0,
+   1.8
+  ],
+  "knee": {
+   "side": "near",
+   "thighFromVertical": 1.4,
+   "fold": 1.13,
+   "shinFromVertical": 0.27,
+   "ankleAheadOfKnee": 11
+  },
+  "supportSoleDrift": [
+   64.1,
+   0.1
+  ],
+  "supportSoleMaxStep": [
+   6.79,
+   0.14
+  ],
+  "events": [
+   {
+    "t": 0.0167,
+    "e": "move"
+   }
+  ]
+ },
+ {
+  "label": "George on Lou",
+  "facing": 1,
+  "firstContact": 0.7167,
+  "impactConst": 0.73,
+  "minGapBeforeRecoil": 0,
+  "gapsHeld": [
+   2.1,
+   0,
+   0.1,
+   0,
+   0,
+   0,
+   0,
+   1.8
+  ],
+  "knee": {
+   "side": "near",
+   "thighFromVertical": 1.4,
+   "fold": 1.13,
+   "shinFromVertical": 0.27,
+   "ankleAheadOfKnee": 11
+  },
+  "supportSoleDrift": [
+   64.1,
+   0.1
+  ],
+  "supportSoleMaxStep": [
+   6.79,
+   0.14
+  ],
+  "events": [
+   {
+    "t": 0.0167,
+    "e": "move"
+   }
+  ]
+ }
+]

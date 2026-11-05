@@ -1,0 +1,6 @@
+61 focused tests: PASS
+Production build: PASS
+Throw browser assertions: PASS
+Both-pair, both-facing knee-seat probe: completed; see contact-check.json
+flag off identical over 60 frames (x, state, timeout and every pose channel, exact to 1e-4)
+git diff --check: PASS

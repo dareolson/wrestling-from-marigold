@@ -83,3 +83,32 @@ test('the atomic drop carries the defender and leaves his lift track at zero whi
     assert.equal(c.role, 'defender'); assert.equal(c.on, 'attacker'); assert.ok(c.tilt > 1 && c.tilt < 1.5);
     for (const k of atomicDropClip.tracks.defender.keyframes.filter(k => k.at >= c.in[0] && k.at <= c.out[0])) assert.equal(k.pose.lift ?? 0, 0, `lift at ${k.at}`);
 });
+
+test('a carried rise follows the tilted torso and stops climbing during the peak beat, both facings and scales', () => {
+    for (const facing of [-1, 1]) for (const scale of [.6, 1.4]) {
+        const runtime = new MoveRuntime(), carrier = man(300, 360, facing), rider = man(300 + facing*40, 360, facing);
+        carrier.s = scale;
+        runtime.register(clip([{ role: 'rider', on: 'carrier', tilt: 1.3, slide: { along: 24, in: [0, .4] }, in: [0,.05], out: [.8,.9] }]));
+        const h = runtime.play('carryTest', { carrier, rider });
+        let held = null;
+        for (let i = 0; i < 42; i++) {
+            runtime.update(1/60); carrier.draw(); rider.draw(); runtime.afterDraw();
+            if (h.time < .4) continue;
+            const q = toFrame(torsoFrame(carrier.skeleton.jointAttachmentPoints, facing), pelvisOf(rider.skeleton.jointAttachmentPoints));
+            const anchor = h._carry[0].anchor;
+            assert.ok(Math.abs(q.along-anchor.along-24*scale) < .5, 'requested added height in carrier space');
+            assert.ok(Math.abs(q.across-anchor.across) < .5, 'does not drift away from the chest');
+            if (held) assert.ok(Math.abs(q.along-held.along) < .5, 'no continued rise through the hitch');
+            held = q;
+        }
+    }
+});
+
+test('carry slide validation rejects invalid rise windows and freezes the authored settings', () => {
+    const entry = { role:'rider', on:'carrier', tilt:1.3, in:[0,.05], out:[.8,.9] };
+    for (const slide of [{along:24,in:[.4,.4]}, {along:24,in:[0,.85]}, {along:NaN,in:[0,.4]}, {along:24,in:[-.1,.4]}]) {
+        assert.throws(()=>clip([{...entry,slide}]));
+    }
+    const c = clip([{...entry,slide:{along:24,in:[0,.4]}}]).carry[0];
+    assert.ok(Object.isFrozen(c.slide) && Object.isFrozen(c.slide.in));
+});

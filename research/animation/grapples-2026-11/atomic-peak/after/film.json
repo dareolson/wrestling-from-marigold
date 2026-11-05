@@ -1,0 +1,19 @@
+{
+ "tool": "tools/debug/waistlock_throws.mjs",
+ "runs": [
+  {
+   "id": "drop-lou-george-l",
+   "case": "drop",
+   "pair": "lou-george",
+   "facing": -1,
+   "rows": 196
+  },
+  {
+   "id": "drop-lou-george-r",
+   "case": "drop",
+   "pair": "lou-george",
+   "facing": 1,
+   "rows": 196
+  }
+ ]
+}

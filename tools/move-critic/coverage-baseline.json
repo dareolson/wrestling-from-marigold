@@ -50,9 +50,9 @@
     "reason": "no clip, no critic spec; the critic traces clips only. Added with PLAN_GRAPPLES T4b.4 (waistlock=v1, opt-in). Covered by tests/waistlock.test.js and tools/debug/waistlock_assert.mjs, waistlock_cleanup.mjs"
   },
   "atomicDrop": {
-    "fingerprint": "c0a28edd8422",
+    "fingerprint": "7ba5418ae518",
     "status": "unverified",
-    "reason": "hand-posed clip (not from a sheet), no critic spec. Added with PLAN_GRAPPLES T4c.2 (waistlock=v1, opt-in); fingerprint re-taken at T4c.4g (carry). Covered by tests/atomicDrop.test.js, tests/carry.test.js and tools/debug/waistlock_throws.mjs"
+    "reason": "hand-posed clip (not from a sheet), no critic spec. Added with PLAN_GRAPPLES T4c.2 (waistlock=v1, opt-in); fingerprint re-taken at T4c.4g (carry). Covered by tests/atomicDrop.test.js, tests/carry.test.js and tools/debug/waistlock_throws.mjs; re-taken at T4c.4l (slide, held hitch)"
   },
   "snapmare": {
     "fingerprint": "9c4c6fe84ce7",

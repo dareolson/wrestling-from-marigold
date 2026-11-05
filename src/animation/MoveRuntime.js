@@ -1,6 +1,6 @@
 import { compileClip, eventsBetween, sampleClip, windowWeight } from './AnimationClip.js';
 import { clipLayerDepths } from './clipLayers.js';
-import { carryTarget, pelvisOf, thighTop, toFrame, torsoFrame } from './carry.js';
+import { carryTarget, carrySlideAt, pelvisOf, thighTop, toFrame, torsoFrame } from './carry.js';
 import { captureFacingAxis, captureStagingContext, stagedWorldPoint, stagingAt } from './clipStaging.js';
 
 // `staging` is the role's immutable playback context, or null when this track
@@ -281,7 +281,7 @@ export default class MoveRuntime {
             const state = ((handle._carry ??= [])[index] ??= {
                 anchor: toFrame(torsoFrame(carrier.skeleton.jointAttachmentPoints, carrier.facing), pelvisOf(man.skeleton.jointAttachmentPoints)),
             });
-            want = carryTarget({ carrierPts: carrier.skeleton.jointAttachmentPoints, carrierFacing: carrier.facing, anchor: state.anchor, natural: pelvis(), naturalTilt: man.pose.tilt ?? 0, ratio: carry.tilt, w });
+            want = carryTarget({ carrierPts: carrier.skeleton.jointAttachmentPoints, carrierFacing: carrier.facing, anchor: state.anchor, natural: pelvis(), naturalTilt: man.pose.tilt ?? 0, ratio: carry.tilt, w, slideAlong: carrySlideAt(carry, handle.time) * (carrier.s ?? 1) });
         }
         man.pose.tilt = want.tilt;
         man.draw();

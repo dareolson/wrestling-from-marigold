@@ -104,6 +104,10 @@ export function validateClip(source) {
         if (c?.frame === 'thigh') { if (!['l', 'r'].includes(c.leg)) errors.push(`carry[${index}].leg must be 'l' or 'r' (the carrier's clip channel) for a thigh frame`); }
         else if (!Number.isFinite(c?.tilt)) errors.push(`carry[${index}].tilt is the ratio of his torso angle to the carrier's`);
         if (badWindow(c)) errors.push(`carry[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
+        if (c?.slide && (c.frame === 'thigh' || !Number.isFinite(c.slide.along) || !Array.isArray(c.slide.in) || c.slide.in.length !== 2
+            || !c.slide.in.every(Number.isFinite) || c.slide.in[0] < c.in?.[0] || c.slide.in[1] <= c.slide.in[0] || c.slide.in[1] > c.out?.[0])) {
+            errors.push(`carry[${index}].slide needs a finite along and increasing in-window within the torso carry before release`);
+        }
     }
     for (const [index, plant] of (source?.plants ?? []).entries()) {
         if (!source.tracks?.[plant?.role]) errors.push(`plants[${index}].role has no track`);
@@ -157,7 +161,7 @@ export function compileClip(source) {
         floorContacts: (source.floorContacts ?? []).map(contact => Object.freeze({ ...contact })),
         grips: (source.grips ?? []).map(grip => Object.freeze({ ...grip, to: Object.freeze({ side: 'same', ...grip.to }) })),
         // One man riding another's torso (carry.js); resolved in MoveRuntime.afterDraw before grips.
-        carry: (source.carry ?? []).map(c => Object.freeze({ ...c, in: Object.freeze([...c.in]), out: Object.freeze([...c.out]) })),
+        carry: (source.carry ?? []).map(c => Object.freeze({ ...c, in: Object.freeze([...c.in]), out: Object.freeze([...c.out]), ...(c.slide ? { slide: Object.freeze({ ...c.slide, in: Object.freeze([...c.slide.in]) }) } : {}) })),
         // A sole held on the mat over a window (MoveRuntime._plant); resolved in afterDraw before carry and grips.
         plants: (source.plants ?? []).map(p => Object.freeze({ ...p, in: Object.freeze([...p.in]), out: Object.freeze([...p.out]) })),
         // Cross-actor part order (clipLayers.js). Absent on most clips.

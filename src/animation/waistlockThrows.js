@@ -7,11 +7,11 @@ import { WAISTLOCK } from './waistlock.js';
 // reverse window and the beats run from the clip's start). `impact` is when the defender's pelvis meets the knee.
 export const ATOMIC = Object.freeze({
     lift: 0.42,                         // (a) the attacker sits into the squat and stands with the man locked to his chest, back leaning, legs kicking up
-    hitch: 0.06,                        // the small stall at the top before the drop (T4c.4f)
+    hitch: 0.24,                        // readable peak beat after the quick lift (Derek 2026-11-04)
     drop: 0.07,                         // (b) he comes down seated on the raised knee (T4c.4j: was 0.12; first contact, seat-to-knee gap under 3 px, measured at 0.55 s)
-    impact: 0.55,                       // lift + hitch + drop (was 0.60): the first contact, which is also the damage marker
+    impact: 0.73,                       // lift + hitch + drop; contact and damage move with the longer peak beat
     sell: 0.55,                         // (c) pops forward off the knee, hands to his backside, stumbles on his feet
-    duration: 1.10,                     // impact + sell
+    duration: 1.28,                     // impact + sell; preserve the lift, drop and recovery speeds
     reverseWindow: 0.20,                // A3: the defender's reversal counts from the lift's start until this far in
     damageKey: 'atomicDrop',            // STAMINA_DRAIN key, 12
     sellSpec: Object.freeze({ part: 'back', intensity: 0.7 }),

@@ -159,6 +159,9 @@ export function gaitV2Config() {
 const RUN_GAIT = { STANCE: 0.35, CADENCE: 3.6, LIFT: 32, HIP_BASE: 4, HIP_DROP: 9 };
 // ?waistlock=v1 (PLAN_GRAPPLES Stage 4b W1): the go-behind waistlock from the tie-up (src/animation/waistlock.js, Arena._tickWaistlock). Opt-in
 // like ?plant=1, on only for `v1`; off in Node with no `location`. Flag off is byte-identical (grapples_flagoff.mjs).
+// falls (PLAN_FALLS D1): the rest pose (arms on the mat, near knee up) in place of the missile pose. Opt-in: `?falls=v1`; flag off is byte-identical.
+// Node without `location` stays off.
+export const fallsCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('falls') === 'v1';
 export const waistlockCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('waistlock') === 'v1';
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
@@ -1138,7 +1141,7 @@ export default class Wrestler {
                 const plan = planSells({
                     style: this.sellStyle, lying: this.lying, part: pain.part, intensity: pain.severity,
                     budget: this.stateTimer - SELL_LEAD_SEC - SELL_TAIL_SEC,
-                    limb: pain.limb, compact: aftermathCandidate(), noRoll: getUpsCandidate(), force: !!pain.forceClutch,
+                    limb: pain.limb, compact: aftermathCandidate(), noRoll: getUpsCandidate() || fallsCandidate(), force: !!pain.forceClutch,
                 });
                 // facing0: the facing he went down with. The hurt limb's slot is
                 // measured from it, plus one flip per roll (groundedSlot).
@@ -1195,7 +1198,7 @@ export default class Wrestler {
         for (const [side, w] of Object.entries(reach)) hands[side] = { to: def.hands[side], w };
         // A roll keeps its turnover pose exactly (its halves must meet); every other
         // sell keeps the knees inside their limits.
-        const g = applyOffsets(Skeleton.GROUNDED_POSES[lying], d);
+        const g = applyOffsets(Skeleton.lyingBase(lying, fallsCandidate()), d);
         return { g: cur.name === 'roll' ? g : limitKnees(g), reach: hands };
     }
 
@@ -3588,6 +3591,7 @@ export default class Wrestler {
         gfx.setDepth(depth);
         this.skeleton.setHandUnion?.(getUpsCandidate() && unionCandidate());
         this.skeleton.setGetUps?.(getUpsCandidate());
+        this.skeleton.setFalls?.(fallsCandidate());
         this.skeleton.setHandUnder?.(this._handUnder());
         this.skeleton.setKneeTuck?.(kneeTuckConfig());
         this.skeleton.setDepth(depth);
@@ -3654,7 +3658,7 @@ export default class Wrestler {
             const handoff = this._groundHandoff;
             if (handoff && state === 'down') {
                 handoff.lying ??= this.lying;
-                handoff.from ??= Skeleton.groundedPoseFrom(handoff.joints, x, y, s, facing, Skeleton.GROUNDED_POSES[handoff.lying]);
+                handoff.from ??= Skeleton.groundedPoseFrom(handoff.joints, x, y, s, facing, Skeleton.lyingBase(handoff.lying, fallsCandidate()));
                 // Game time (stateTimer counts down in scaled dt), so slow
                 // motion and pauses stretch the blend with everything else.
                 const u = (handoff.t0 - this.stateTimer) / GROUND_HANDOFF_SEC;
@@ -3675,7 +3679,7 @@ export default class Wrestler {
             }
             const lyingHold = this._lyingHold();
             if (lyingHold) {
-                this.skeleton.updateGroundedReach(x, y, s, facing, limitKnees(applyOffsets(Skeleton.GROUNDED_POSES[this.lying], lyingHold.offsets)),
+                this.skeleton.updateGroundedReach(x, y, s, facing, limitKnees(applyOffsets(Skeleton.lyingBase(this.lying, fallsCandidate()), lyingHold.offsets)),
                     { near: { to: 'nearHip', w: lyingHold.w } }, { paintedContacts: true, backContact: true });
                 return;
             }

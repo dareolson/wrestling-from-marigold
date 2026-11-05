@@ -1,0 +1,1282 @@
+[
+ {
+  "lying": "supine",
+  "part": "knee",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 37.5
+    },
+    {
+     "side": "far",
+     "d": 32.4
+    }
+   ],
+   "maxStepPerFrame": 5.1
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 17.6
+    },
+    {
+     "side": "far",
+     "d": 7.8
+    }
+   ],
+   "maxStepPerFrame": 7.4
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "knee",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 37.5
+    },
+    {
+     "side": "far",
+     "d": 32.4
+    }
+   ],
+   "maxStepPerFrame": 5.1
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 17.6
+    },
+    {
+     "side": "far",
+     "d": 7.8
+    }
+   ],
+   "maxStepPerFrame": 7.4
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "knee",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 37.1
+    },
+    {
+     "side": "near",
+     "d": 45.4
+    }
+   ],
+   "maxStepPerFrame": 5.8
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 35.3
+    },
+    {
+     "side": "near",
+     "d": 44.1
+    }
+   ],
+   "maxStepPerFrame": 6.9
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "knee",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 37.1
+    },
+    {
+     "side": "near",
+     "d": 45.4
+    }
+   ],
+   "maxStepPerFrame": 5.8
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 35.3
+    },
+    {
+     "side": "near",
+     "d": 44.1
+    }
+   ],
+   "maxStepPerFrame": 6.9
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "head",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 16.1
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 16.6
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "head",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 16.1
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 16.6
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "head",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 16.1
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 16.6
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "head",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 16.1
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 16.6
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "arm",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 7.2
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 7.9
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "arm",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 7.2
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 7.9
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "arm",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 8.9
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 9.6
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "arm",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 8.9
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 9.6
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "back",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 2.8
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 3.8
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "back",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 2.8
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 3.8
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "back",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 1
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 1
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "back",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 1
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 1
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "chest",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.3
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.9
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "chest",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.3
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.9
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "chest",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.3
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.9
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "chest",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.3
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.9
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "gut",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 4.5
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5.3
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "gut",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 4.5
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    },
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5.3
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "gut",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 4.5
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5.3
+  }
+ },
+ {
+  "lying": "supine",
+  "part": "gut",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 4.5
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    },
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5.3
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "knee",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 1.3
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 8.6
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "knee",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 1.3
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 8.6
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "knee",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 1
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 9.9
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "knee",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 1
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 9.9
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "head",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 15.7
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.9
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "head",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 15.7
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.9
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "head",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 19
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 20.7
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "head",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 19
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 20.7
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "arm",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 7.7
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 1.7
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "arm",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 7.7
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 1.7
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "arm",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 7.7
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 2.6
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "arm",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 7.7
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 2.6
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "back",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 0.9
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 8.8
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "back",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 0.9
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 1.6
+    }
+   ],
+   "maxStepPerFrame": 8.8
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "back",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 0.8
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 9.6
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "back",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 0.8
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 8.9
+    }
+   ],
+   "maxStepPerFrame": 9.6
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "chest",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5.3
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "chest",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5.3
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "chest",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5.2
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 3.1
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "chest",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5.2
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 3.1
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "gut",
+  "slot": "near",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 2.2
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.4
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "gut",
+  "slot": "near",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 2.2
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "near",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 6.4
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "gut",
+  "slot": "far",
+  "facing": 1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 2.5
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5.9
+  }
+ },
+ {
+  "lying": "prone",
+  "part": "gut",
+  "slot": "far",
+  "facing": -1,
+  "missile": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 2.5
+  },
+  "rest": {
+   "atFullReach": [
+    {
+     "side": "far",
+     "d": 0
+    }
+   ],
+   "maxStepPerFrame": 5.9
+  }
+ }
+]

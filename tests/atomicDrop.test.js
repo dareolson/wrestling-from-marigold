@@ -60,7 +60,7 @@ test('the clip follows the beats: impact where the drop ends, the defender rises
     assert.ok(att.every(k => k.pose.tilt === 0));
     assert.equal(def.at(-1).pose.tilt, 0);   // the defender is tilted only through the carry and the fall onto the knee, upright again after (T4c.4g)
     assert.ok(def.filter(k => k.at >= ATOMIC.impact + 0.10).every(k => k.pose.tilt === 0));
-    assert.deepEqual(atomicDropClip.grips.map(g => [g.role, g.to.role, g.to.joint]), [['attacker', 'defender', 'Hip'], ['attacker', 'defender', 'Hip']]);
+    assert.deepEqual(atomicDropClip.grips.map(g => [g.role, g.to.role, g.to.joint]), [['attacker', 'defender', 'Hip'], ['attacker', 'defender', 'Hip'], ['defender', 'defender', 'Hip']]);   // T4c.4p: the third is the receiver's own hand on his backside
 });
 
 test('a landed drop hurts once for the damage key with a back sell, and both men end on their feet, facing as they were', () => {

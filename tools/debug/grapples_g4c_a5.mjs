@@ -30,7 +30,7 @@ function measure(rows, kind, thrower) {
     const clip = rows.filter(r => r.t.clip === clipId);
     const [t0, t1] = WINDOW[kind];
     const inWin = rows.filter(r => r.t.clip === clipId && r.t.time >= t0 && r.t.time <= t1);
-    const first = Math.max(0, inWin[0].i - 6), last = Math.min(rows.length - 1, inWin.at(-1).i + 6);
+    const first = Math.max(0, inWin[0].i - 6), last = Math.min(rows.length - 1, inWin.at(-1).i + Number(process.env.WFM_TAIL ?? 6));   // WFM_TAIL: frames kept after the clip (r7 keeps the hand-off)
     const beat = (t) => kind === 'drop' ? (t < ATOMIC.lift ? 'lift' : t < ATOMIC.impact ? 'drop' : 'sell')
         : (t < SNAPMARE.reach ? 'reach' : t < SNAPMARE.reach + SNAPMARE.pull ? 'pull' : t < SNAPMARE.land ? 'flip' : 'landing');
     const out = { first, last, frames: last - first + 1, clipFrames: [inWin[0].i, inWin.at(-1).i] };
@@ -114,9 +114,9 @@ for (const [pid, label, att, def] of PAIRS) {
         const info = await page.evaluate(INSTALL);
         await page.evaluate(INSTALL_MASKS);
         await page.evaluate(INSTALL_FARARM);
-        for (const [kind, cs] of [['drop', 'drop'], ['snapmare', 'reverse']]) for (const facing of [-1, 1]) {
+        for (const [kind, cs] of [['drop', 'drop'], ['snapmare', 'reverse']].filter(([k]) => !process.env.WFM_KINDS || process.env.WFM_KINDS.split(',').includes(k))) for (const facing of [-1, 1]) {
             const id = `${kind}-${pid}-${facing < 0 ? 'l' : 'r'}`, dir = join(outRoot, 'frames', id);
-            const rows = await film(page, info, { facing, case: cs, rev: 6, mask: true }, dir, { quiet: 8 });
+            const rows = await film(page, info, { facing, case: cs, rev: 6, mask: true }, dir, { quiet: Number(process.env.WFM_TAIL ?? 6) + 2 });
             for (const r of rows) if (r.mask) delete r.mask.image;
             const m = measure(rows, kind);
             // keep only the loop's frames, renumbered nowhere: the page loops first..last

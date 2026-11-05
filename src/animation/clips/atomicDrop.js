@@ -131,6 +131,8 @@ export const atomicDropClip = {
     grips: [
         { role: 'attacker', arm: 'l', to: { role: 'defender', joint: 'Hip', side: 'same' }, in: [0, 0.02], out: [T, T + 0.06] },
         { role: 'attacker', arm: 'r', to: { role: 'defender', joint: 'Hip', side: 'same' }, in: [0, 0.02], out: [T, T + 0.06] },
+        // T4c.4p: the receiver's near hand (l) on his own backside through the pain and the steps (his own hip joint, a little below it), off before the turn
+        { role: 'defender', arm: 'l', to: { role: 'defender', joint: 'Hip', side: 'same', above: -0.12 }, in: [I + 0.14, I + 0.26], out: [1.50, 1.58] },
     ],
     events: [{ at: I, type: 'impact' }],
 };

@@ -1,7 +1,7 @@
 // T4c.4o / T4c.4p: the atomic drop's receiver arms and pelvis path. Films the drop for both pairs and both facings (waistlock_throws film, 1/60 s) and measures, per frame
 // of the clip, in game px unless noted:
 //   pelvis path (receiver, y and x over the clip, for the "arm keys only" check against a saved run: pass a baseline json as argv[3]),
-//   max hand step (px/frame, both wrists, receiver), L/R arm angle difference (shoulder->wrist, degrees; the longest run of frames under 3 degrees over lift + hitch),
+//   max hand step to the impact (px/frame, both wrists, receiver; the sell's turn is atomic_walk_probe's), L/R arm angle difference (shoulder->wrist, degrees; the longest run of frames under 3 degrees over lift + hitch),
 //   arm parts (upper arm, forearm, hand) drawn inside his own torso (depth above it) and inside the attacker's torso (any depth), pixels counted as G8's forearm count.
 //   WFM_URL=http://127.0.0.1:5173 node tools/debug/atomic_arms_probe.mjs out.json [baseline.json]
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -66,7 +66,7 @@ for (const [pid, att, def] of PAIRS) {
             const wr = (r, n) => r.d.pts[`${n}Wrist`], sh = (r, n) => r.d.pts[`${n}Shoulder`];
             let maxHand = { step: 0 }, maxRel = { step: 0 }, flat = 0, longestFlat = 0;
             for (let i = 1; i < clip.length; i++) {
-                for (const n of ['near', 'far']) { const s = Math.hypot(wr(clip[i], n).x - wr(clip[i - 1], n).x, wr(clip[i], n).y - wr(clip[i - 1], n).y); if (s > maxHand.step) maxHand = { step: r2(s), t: r2(clip[i].t.time), arm: n };
+                for (const n of ['near', 'far']) { const s = Math.hypot(wr(clip[i], n).x - wr(clip[i - 1], n).x, wr(clip[i], n).y - wr(clip[i - 1], n).y); if (clip[i].t.time <= ATOMIC.impact && s > maxHand.step) maxHand = { step: r2(s), t: r2(clip[i].t.time), arm: n };
                     const rel = (r) => ({ x: wr(r, n).x - sh(r, n).x, y: wr(r, n).y - sh(r, n).y }), ra = rel(clip[i]), rb = rel(clip[i - 1]), sr = Math.hypot(ra.x - rb.x, ra.y - rb.y); if (clip[i].t.time <= ATOMIC.impact && sr > maxRel.step) maxRel = { step: r2(sr), t: r2(clip[i].t.time), arm: n }; }
                 const t = clip[i].t.time;
                 if (t >= 0.14 && t <= T) {
@@ -79,7 +79,8 @@ for (const [pid, att, def] of PAIRS) {
             const insideFrames = { own: clip.filter(r => r.mask?.own > 0).length, other: clip.filter(r => r.mask?.other > 0).length };
             const ang = clip.filter((_, i) => i % 6 === 0).map(r => ({ t: r2(r.t.time), near: r1(dir(sh(r, 'near'), wr(r, 'near')) * 180 / Math.PI), far: r1(dir(sh(r, 'far'), wr(r, 'far')) * 180 / Math.PI) }));
             const run = { id, frames: clip.length, maxHandStep: maxHand, maxHandStepOverShoulderToImpact: maxRel, longestSimilarArmFrames: longestFlat, farArmInsideOwnTorsoToImpactMaxPx: insideOwn, armPartsInsideAttackerTorsoMaxPx: insideOther, insideFrames, ang, pelvis: pel };
-            if (base) { const b = base.runs.find(x => x.id === id); run.pelvisDiffVsBaseline = r2(Math.max(...pel.map((p, i) => { const q = b.pelvis[i]; return q ? Math.hypot(p.x - q.x, p.y - q.y) : 0; }))); }
+            // pelvis path compared up to 0.10 s past the impact (the arm pass and the compression); T4c.4p changes the recoil's end and the sell after it
+            if (base) { const b = base.runs.find(x => x.id === id); run.pelvisDiffVsBaseline = r2(Math.max(...pel.map((p, i) => { const q = b.pelvis[i]; return q && p.t <= ATOMIC.impact + 0.10 ? Math.hypot(p.x - q.x, p.y - q.y) : 0; }))); }
             out.runs.push(run);
         }
     } finally { await h.close(); }

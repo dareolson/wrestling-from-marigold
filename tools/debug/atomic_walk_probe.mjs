@@ -60,6 +60,8 @@ for (const [pid, att, def] of PAIRS) {
                 handOffJointStepMax: r1(Math.max(...post, 0)), before12Max: r1(Math.max(...pre)), after: after.length,
                 facingStart: clip[0].d.facing, facingEnd: clip.at(-1).d.facing, attackerFacing: [clip[0].a.facing, clip.at(-1).a.facing],
                 defenderX: { atImpact: r1(at(ATOMIC.impact).d.x), atTurn: r1(turn.d.x), max: r1(Math.max(...clip.map(r => r.d.x))), min: r1(Math.min(...clip.map(r => r.d.x))) }, attackerX: { first: r1(clip[0].a.x), atTurn: r1(turn.a.x) }, ring: { left: r1(ringBoundsAtY(clip[0].d.y).left), right: r1(ringBoundsAtY(clip[0].d.y).right) },
+                // the hands mid-walk (t = 1.30), as the drawn wrists over the pelvis (mean of the hips): x along his facing (negative = behind him), y down; the tailbone hand should be behind and low
+                handsAtPain: ((r) => { const f = r.d.facing, pv = { x: (r.d.pts.nearHip.x + r.d.pts.farHip.x) / 2, y: (r.d.pts.nearHip.y + r.d.pts.farHip.y) / 2 }; return Object.fromEntries(['near', 'far'].map(n => [n, { behind: r1((r.d.pts[`${n}Wrist`].x - pv.x) * f / r.d.s), down: r1((r.d.pts[`${n}Wrist`].y - pv.y) / r.d.s) }])); })(at(1.30)),
                 receiverStatesInClip: [...new Set(clip.map(r => r.t.states[1]))], staminaLostOverClip: r1(clip[0].t.stamina[1] - clip.at(-1).t.stamina[1]), damageSteps: clip.filter((r, i) => i && r.t.stamina[1] < clip[i - 1].t.stamina[1] - 1).length,   // one 12-point drop, on the impact frame
                 dxPerFrame: clip.filter(r => r.t.time >= 0.99).map((r, i, arr) => i ? r2(Math.abs(r.d.x - arr[i - 1].d.x)) : 0).slice(1).reduce((m, v) => Math.max(m, v), 0),
             });

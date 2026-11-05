@@ -15,6 +15,7 @@ const H = WAISTLOCK.holdBehind, U = WAISTLOCK.upstage;
 const HITCH = ATOMIC.chamber === 'hitch', CH = 0.14, HLIFT = 13;   // HLIFT: the hitch variant's `lift` over the chamber, tuned so the carried man's pelvis drop is least over both rigs (measured at T4c.4m: it still failed support, see the Codex chamber review)
 const W = 0.14;                                        // the wrap is done as the Stage 3 lead-in ends
 const L = ATOMIC.lift, T = L + ATOMIC.hitch, I = ATOMIC.impact, D = ATOMIC.duration, G = I + ATOMIC.getUp, TURN = ATOMIC.turnAt;   // G: the attacker is up and the pop is over
+const ARM_CLEAR = 1.08;                                // T4c.4r: the carrier's near forearm stays over the receiver's trunks until it has left them (see `layers`)
 const ARMS = { lArm: 0.95, rArm: 0.95, lElbow: 0.8, rElbow: 0.8 };   // locked round the waist: the same through the lift, the back does the work
 
 // T4c.4o: the receiver's arms, flailing as he loses his balance. Each arm channel has its own sparse timeline (shoulders lead, elbows a beat behind, the two arms
@@ -133,6 +134,13 @@ export const atomicDropClip = {
         { role: 'attacker', arm: 'r', to: { role: 'defender', joint: 'Hip', side: 'same' }, in: [0, 0.02], out: [T, T + 0.06] },
         // T4c.4p: the receiver's near hand (l) on his own backside through the pain and the steps (his own hip joint, a little below it), off before the turn
         { role: 'defender', arm: 'l', to: { role: 'defender', joint: 'Hip', side: 'same', above: -0.12 }, in: [I + 0.14, I + 0.26], out: [1.50, 1.58] },
+    ],
+    // T4c.4r (Derek 2026-11-04): the attacker's camera-side (near) wrapping forearm draws over the receiver's trunks while he holds him, so the hold stays visible. Draw order only:
+    // the grip target and carry are unchanged. `nearArm` resolves per rig and facing (clipLayers.js); the next draw() restores every depth outside the window. The far arm keeps
+    // its default order behind the body. The window outlasts the grips (T+0.06) to ARM_CLEAR: ending it with the grip put the forearm behind the trunks in one frame (343 px, measured)
+    // while the arm still lay across them, as the receiver sits on the knee and recoils. ARM_CLEAR is the first frame no trunks pixel is under that forearm in either pair (probe: atomic_forearm_probe).
+    layers: [
+        { from: 0, to: ARM_CLEAR, order: [['defender', 'torso'], ['attacker', 'nearArm']] },
     ],
     events: [{ at: I, type: 'impact' }],
 };

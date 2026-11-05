@@ -102,3 +102,18 @@ test('a drop handed over to another clip (the snapmare) lays nobody down and lea
     runtime.cancel(atk._activeMove);
     assert.equal(atk.state, 'holding'); assert.equal(def.state, 'holding');
 });
+
+test('T4c.4r layers: the attacker\'s camera-side arm over the receiver\'s torso, scoped to the grip window, valid', async () => {
+    const { validateLayers, clipLayerDepths } = await import('../src/animation/clipLayers.js');
+    assert.equal(validateLayers(atomicDropClip).ok, true);
+    const grips = atomicDropClip.grips.filter(g => g.role === 'attacker');
+    const release = Math.max(...grips.map(g => g.out[1]));
+    assert.equal(atomicDropClip.layers.length, 1);
+    const [win] = atomicDropClip.layers;
+    assert.equal(win.from, 0); assert.ok(win.to > release, 'the order outlasts the grips: the arm still lies across the trunks at the release');
+    assert.ok(win.to < ATOMIC.turnAt, 'and ends well before the receiver turns');
+    assert.deepEqual(win.order, [['defender', 'torso'], ['attacker', 'nearArm']]);
+    // nothing outside the window
+    const parts = { torso: { depth: 1 }, head: { depth: 1 } };
+    assert.equal(clipLayerDepths(atomicDropClip, win.to, { attacker: { skeleton: parts }, defender: { skeleton: parts } }).size, 0);
+});

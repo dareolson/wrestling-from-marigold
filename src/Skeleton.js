@@ -848,6 +848,7 @@ export default class Skeleton {
     setHandUnion(on) { this._handUnion = !!on; }
     // T3.3: ?getups=v1, set by the Wrestler each draw: picks George's aroundVia.getups overlay (rig/backSell.js resolveAroundVia)
     setGetUps(on) { this._getUps = !!on; }
+    setFalls(on) { this._falls = !!on; }   // ?falls=v1: lyingBase, the fall's last key and the get-up's first key are the rest pose
 
     setVisible(v) {
         this._parts.forEach(p => p.setVisible(v));
@@ -2147,6 +2148,34 @@ export default class Skeleton {
         supine: Skeleton.GROUNDED_SUPINE,
     });
 
+    // PLAN_FALLS D2 (?falls=v1): where a man lies when he is not in the missile pose above. The missile stays (the certifier, the legacy
+    // get-ups and the flag-off game all key off it); these are what `lyingBase` returns with the flag on. Same channels, `t: 0` like the
+    // poses they replace, so they can be a get-up's first key. Torso, hip height and the far leg's line are the missile's own (a pin's cover
+    // and the neck, hip and shoulder joints are unchanged: measured by tests/restPoses.test.js); what changes is the arms (out from the body
+    // with the forearms on the mat, not along it) and the near knee (drawn up, foot flat; prone: out to the side).
+    // SUPINE: the arms splay about 45 degrees off the torso's line, near arm toward the camera (lower on screen), far arm away (higher).
+    // PRONE: forearms on the mat forward of the shoulders, elbows out, one knee drawn out to the side.
+    static REST_POSES = Object.freeze({
+        supine: Object.freeze({
+            t: 0.00,
+            hip: 10, torso: Math.PI + 1.52,
+            farThigh: 1.50, farShin: 1.55, nearThigh: 1.97, nearShin: 0.47,
+            farArm: 1.85, farFore: 1.62, nearArm: 1.15, nearFore: 1.50,
+        }),
+        prone: Object.freeze({
+            t: 0.00,
+            hip: 10, torso: 1.62,
+            farThigh: -1.45, farShin: -1.60, nearThigh: -0.95, nearShin: -1.75,
+            farArm: -2.60, farFore: 1.60, nearArm: -0.40, nearFore: 1.45,
+        }),
+    });
+
+    /** The pose a man lies in: the rest pose with `falls` on (?falls=v1), the missile (GROUNDED_POSES) without. `lying`: supine | prone | flat. */
+    static lyingBase(lying, falls) {
+        const key = lying === 'supine' ? 'supine' : 'prone';
+        return falls ? Skeleton.REST_POSES[key] : Skeleton.GROUNDED_POSES[lying];
+    }
+
     static GETUP_POSES = [
         //         hips on mat, torso barely off it, arms at sides, legs away
         //         from facing. THE SAME OBJECT as GROUNDED_FLAT, not a copy —
@@ -2251,7 +2280,9 @@ export default class Skeleton {
     updateFall(x, y, s, facing, variant, t, stand = null) {
         const fall = Skeleton.FALLS[variant];
         if (!fall) throw new RangeError(`unknown fall "${variant}"`);
-        const keys = stand ? [{ ...stand, t: 0 }, ...fall.keys.slice(1)] : fall.keys;
+        let keys = stand ? [{ ...stand, t: 0 }, ...fall.keys.slice(1)] : fall.keys;
+        // ?falls=v1: the fall ends on the rest pose (the key is the lying pose by identity otherwise)
+        if (this._falls) keys = [...keys.slice(0, -1), { ...Skeleton.lyingBase(fall.lands, true), t: 1 }];
         this._applyGrounded(x, y, s, facing, Skeleton._sampleKeyposes(keys, t));
     }
 
@@ -2269,7 +2300,7 @@ export default class Skeleton {
      * cutting from primitives to a full skeleton.
      */
     updateGrounded(x, y, s, facing, poseName = 'flat') {
-        const pose = Skeleton.GROUNDED_POSES[poseName];
+        const pose = Skeleton.GROUNDED_POSES[poseName] && Skeleton.lyingBase(poseName, this._falls);
         if (!pose) throw new RangeError(`unknown grounded pose "${poseName}"`);
         this._applyGrounded(x, y, s, facing, pose);
     }
@@ -2343,7 +2374,7 @@ export default class Skeleton {
 
     /** Grounded pose `poseName`, blended from a groundedPoseFrom() start by u (0→1). */
     updateGroundedBlend(x, y, s, facing, poseName, from, u) {
-        const target = Skeleton.GROUNDED_POSES[poseName];
+        const target = Skeleton.GROUNDED_POSES[poseName] && Skeleton.lyingBase(poseName, this._falls);
         if (!target) throw new RangeError(`unknown grounded pose "${poseName}"`);
         const e = u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
         const g = {};
@@ -2723,8 +2754,11 @@ export default class Skeleton {
     // `entry` (?getups=v1, getUps.js): the authored get-up to draw instead of today's table for `lying`; `flipped` says
     // which half of a flipping entry is playing. `stallOffsets` (T3b.1): the fatigue stall's grounded offsets, or null. No entry = the legacy table, byte-identical.
     updateGetUp(x, y, s, facing, t, lying = 'prone', pain = null, stand = null, holdOffsets = null, entry = null, flipped = false, stallOffsets = null) {
-        const K = entry ? (entry.after && flipped ? entry.after : entry.keys)
+        let K = entry ? (entry.after && flipped ? entry.after : entry.keys)
             : lying === 'supine' ? Skeleton.GETUP_SUPINE_POSES : Skeleton.GETUP_POSES;
+        // ?falls=v1: the rise starts from where he lies, the rest pose (the entry's other keys are unchanged). The first key is the lying pose when it is the missile's hip height and torso angle; a flipped half starts on its own turned pose)
+        const lyingKey = (k) => k?.hip === Skeleton.GROUNDED_FLAT.hip && (k.torso === Skeleton.GROUNDED_FLAT.torso || k.torso === Skeleton.GROUNDED_SUPINE.torso);
+        if (this._falls && !(entry?.after && flipped) && lyingKey(K[0])) K = [{ ...Skeleton.lyingBase(K[0].torso > Math.PI ? 'supine' : 'prone', true), t: K[0].t }, ...K.slice(1)];
         const final = !(entry?.after && !flipped);
         // the pose at progress tt: the keyed pose with the hold's offsets carried (a world hand target is read off it at its push start)
         const poseAt = (tt) => {

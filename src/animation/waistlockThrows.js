@@ -5,8 +5,8 @@ import { WAISTLOCK } from './waistlock.js';
 
 // A2 / A3: the drop's beats on the clip's own clock (the Stage 3 lead-in is the Arena's draw blend over the clip's first 0.14 s, so the
 // reverse window and the beats run from the clip's start). `impact` is when the defender's pelvis meets the knee.
-// T4c.4m: where the near knee chambers. 'lift' (Codex, default): during the lift, so he finishes it on one leg; 'hitch': both feet on the mat through the lift, the thigh
-// comes up in the first 0.14 s of the hitch. Derek picks. `?atomicChamber=hitch` is the page's way to film the other one; nothing else reads it.
+// T4c.4m: where the near knee chambers. 'lift' (Codex, default): during the lift, so he finishes it on one leg; 'hitch': r5's legs through the lift, the thigh
+// comes up in the first 0.14 s of the hitch (measured at T4c.4m: the near sole still left the mat early and the support sole slid; a failed experiment, kept as a record). `?atomicChamber=hitch` is the page's way to film the other one; nothing else reads it.
 const CHAMBER = (() => { const q = globalThis.location ? new URLSearchParams(globalThis.location.search).get('atomicChamber') : globalThis.process?.env?.WFM_ATOMIC_CHAMBER; return q === 'hitch' ? 'hitch' : 'lift'; })();
 export const ATOMIC = Object.freeze({
     chamber: CHAMBER,

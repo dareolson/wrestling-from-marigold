@@ -1,5 +1,5 @@
 // T4c.4m: where the atomic drop's near knee chambers (ATOMIC.chamber 'lift' | 'hitch'). Films the drop for both pairs and both facings and measures, per frame from the wrap to
-// the end of the plant: both attacker soles (height over the mat, x slide from the wrap), the receiver's pelvis vertical range over the hitch, the largest joint step at
+// the end of the plant: both attacker soles (displacement from the wrap, not a plant-error or true mat height: height is scaled units = px / attacker s, x slide is raw game px), the receiver's pelvis vertical range over the hitch, the largest joint step at
 // lift-end / chamber-end / impact, the chambered thigh's angle at T, the seat gap at impact, D12 per beat is the page tool's.
 //   WFM_ATOMIC_CHAMBER=hitch WFM_URL=http://localhost:5173 node tools/debug/atomic_chamber_probe.mjs [out.json]
 import { writeFileSync } from 'node:fs';
@@ -31,7 +31,7 @@ for (const [pid, att, def] of PAIRS) {
             const w = clip.filter(r => r.t.time >= 0.14 && r.t.time <= I + 0.2);
             // mat = the lower of the attacker's soles at the wrap (both down); height = mat - sole y over the attacker's scale
             const s = clip[0].a.s;   // each sole's own height at the wrap (w[0]) is its mat: the two soles stand at different depths
-            const sole = (k) => { const ser = w.map(r => ({ t: r.t.time, h: (w[0].soles[0][k].y - r.soles[0][k].y) / s, dx: Math.abs(r.soles[0][k].x - w[0].soles[0][k].x) })); return { name: k === 0 ? 'near' : 'far', maxHeightToL: r1(Math.max(...ser.filter(x => x.t <= L).map(x => x.h))), maxHeightToT: r1(Math.max(...ser.filter(x => x.t <= T).map(x => x.h))), firstOffMat: (ser.find(x => x.h > 2) ?? {}).t ?? null, maxSlideToL: r1(Math.max(...ser.filter(x => x.t <= L).map(x => x.dx))), maxSlideToImpact: r1(Math.max(...ser.filter(x => x.t <= I).map(x => x.dx))) }; };
+            const sole = (k) => { const ser = w.map(r => ({ t: r.t.time, h: (w[0].soles[0][k].y - r.soles[0][k].y) / s, dx: Math.abs(r.soles[0][k].x - w[0].soles[0][k].x) })); return { name: k === 0 ? 'near (displacement from the wrap)' : 'far (displacement from the wrap)', maxHeightToL: r1(Math.max(...ser.filter(x => x.t <= L).map(x => x.h))), maxHeightToT: r1(Math.max(...ser.filter(x => x.t <= T).map(x => x.h))), firstOffMat: (ser.find(x => x.h > 2) ?? {}).t ?? null, maxSlideToL: r1(Math.max(...ser.filter(x => x.t <= L).map(x => x.dx))), maxSlideToImpact: r1(Math.max(...ser.filter(x => x.t <= I).map(x => x.dx))) }; };
             const hitch = clip.filter(r => r.t.time >= L && r.t.time <= T), pv = hitch.map(r => pelvisY(r.d) / r.d.s);
             const stepAt = (t) => { const i = clip.indexOf(near(clip, t)); return { t: r2(clip[i].t.time), attacker: r2(step(clip[i - 1].a, clip[i].a)), receiver: r2(step(clip[i - 1].d, clip[i].d)) }; };
             const at = near(clip, T), p = at.a.pts, f = at.a.facing, thigh = (n) => { const hp = p[`${n}Hip`], k = p[`${n}Knee`]; return Math.abs(Math.atan2(k.x - hp.x, k.y - hp.y) * f); };

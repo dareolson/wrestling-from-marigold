@@ -11,7 +11,7 @@ import { ATOMIC } from '../waistlockThrows.js';
 
 const kf = (at, ease, pose, x = 0, y = 0) => ({ at, ease, pose: shinsFromFolds(pose), transform: { x, y }, parts: {} });
 const H = WAISTLOCK.holdBehind, U = WAISTLOCK.upstage;
-const HITCH = ATOMIC.chamber === 'hitch', CH = 0.14, HLIFT = 13;   // HLIFT: the hitch variant's `lift` over the chamber, tuned so the carried man's pelvis drop is least over both rigs (Lou drops ~9 px, George ~0)
+const HITCH = ATOMIC.chamber === 'hitch', CH = 0.14, HLIFT = 13;   // HLIFT: the hitch variant's `lift` over the chamber, tuned so the carried man's pelvis drop is least over both rigs (measured at T4c.4m: it still failed support, see the Codex chamber review)
 const W = 0.14;                                        // the wrap is done as the Stage 3 lead-in ends
 const L = ATOMIC.lift, T = L + ATOMIC.hitch, I = ATOMIC.impact, D = ATOMIC.duration;
 const ARMS = { lArm: 0.95, rArm: 0.95, lElbow: 0.8, rElbow: 0.8 };   // locked round the waist: the same through the lift, the back does the work
@@ -25,7 +25,7 @@ export const atomicDropClip = {
             keyframes: [
                 kf(0, 'linear', { lArm: 0.7, rArm: 0.7, lElbow: 0.5, rElbow: 0.5, lLeg: -0.25, rLeg: 0.05, lFold: 0.2, rFold: 0.2, lean: 0, crouch: 0.40, tilt: 0, lift: 0, bend: 0.75 }, 0, 0),
                 kf(W, 'easeOut', { ...ARMS, lLeg: -0.20, rLeg: 0.05, lFold: 1.1, rFold: 1.1, lean: 0, crouch: 1.0, tilt: 0, lift: 0, bend: 0.35 }, 22, 0),
-                // T4c.4m: ATOMIC.chamber 'hitch' keeps r5's legs at the top of the lift (both feet down) and chambers the thigh over the first CH s of the hitch
+                // T4c.4m: ATOMIC.chamber 'hitch' keeps r5's legs at the top of the lift and chambers the thigh over the first CH s of the hitch. Both feet down is the intent, not what was measured: the near sole left the mat 16.1 px before L and the support sole moved 19.5 px (a failed experiment, 'lift' is the default)
                 kf(L, 'easeInOut', { ...ARMS, lLeg: HITCH ? 0.45 : 1.25, rLeg: 0.10, lFold: HITCH ? 0.45 : 1.0, rFold: 0.1, lean: 0, crouch: 0.0, tilt: 0, lift: 8, bend: -0.60 }, 34, 0),
                 ...(HITCH ? [kf(L + CH, 'easeOut', { ...ARMS, lLeg: 1.25, rLeg: 0.10, lFold: 1.0, rFold: 0.1, lean: 0, crouch: 0.0, tilt: 0, lift: HLIFT, bend: -0.60 }, 34, 0)] : []),
                 kf(T, 'easeOut', { ...ARMS, lLeg: 1.25, rLeg: 0.10, lFold: 1.0, rFold: 0.1, lean: 0, crouch: 0.0, tilt: 0, lift: HITCH ? HLIFT : 8, bend: -0.60 }, 34, 0),
@@ -62,7 +62,7 @@ export const atomicDropClip = {
         { role: 'defender', on: 'attacker', frame: 'thigh', leg: 'l', in: [T, I], out: [I + 0.10, I + 0.22] },
     ],
     // T4c.4j: the attacker's support (r) foot holds the mat from the wrap to the catch, released over 0.10 s once the weight has gone.
-    // T4c.4m 'hitch': the near (l) foot stays on the mat too until the lift is done; the chamber then starts.
+    // Only the support (r) leg is anchored. Under 'hitch' the near (l) foot was meant to stay down until L, but nothing plants it, and the body solve moved it (measured, T4c.4m).
     plants: [{ role: 'attacker', leg: 'r', in: [W, W + 0.04], out: [I + 0.20, I + 0.30] }],
     grips: [
         { role: 'attacker', arm: 'l', to: { role: 'defender', joint: 'Hip', side: 'same' }, in: [0, 0.02], out: [T, T + 0.06] },

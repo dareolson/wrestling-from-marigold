@@ -14,7 +14,7 @@ const kf = (at, ease, pose, x = 0, y = 0) => ({ at, ease, pose: shinsFromFolds(p
 const H = WAISTLOCK.holdBehind, U = WAISTLOCK.upstage;
 const HITCH = ATOMIC.chamber === 'hitch', CH = 0.14, HLIFT = 13;   // HLIFT: the hitch variant's `lift` over the chamber, tuned so the carried man's pelvis drop is least over both rigs (measured at T4c.4m: it still failed support, see the Codex chamber review)
 const W = 0.14;                                        // the wrap is done as the Stage 3 lead-in ends
-const L = ATOMIC.lift, T = L + ATOMIC.hitch, I = ATOMIC.impact, D = ATOMIC.duration;
+const L = ATOMIC.lift, T = L + ATOMIC.hitch, I = ATOMIC.impact, D = ATOMIC.duration, G = I + ATOMIC.getUp, TURN = ATOMIC.turnAt;   // G: the attacker is up and the pop is over
 const ARMS = { lArm: 0.95, rArm: 0.95, lElbow: 0.8, rElbow: 0.8 };   // locked round the waist: the same through the lift, the back does the work
 
 // T4c.4o: the receiver's arms, flailing as he loses his balance. Each arm channel has its own sparse timeline (shoulders lead, elbows a beat behind, the two arms
@@ -52,6 +52,24 @@ function flailKeys(base) {
     return [...out, ...base.filter(k => k.at >= I)];
 }
 
+// T4c.4p: after the pain he walks away still facing away, four planted steps (the l side the hurt one, shorter), then turns on his feet together and settles.
+// Legs are authored as a real gait: the swing leg lifts and lands, the stance leg runs from its touchdown angle to its trailing one while the clip's x carries the pelvis
+// over it. The `plants` below hold each stance sole where it touched down, so the sole doesn't slide (measured by atomic_walk_probe).
+const PAIN = { lArm: -0.8, rArm: 0.45, lElbow: 0.3, rElbow: 0.5, lean: 0.10, crouch: 0.16, tilt: 0, lift: 0, bend: 0.30 };
+const step = (at, pose, x, ease = 'linear') => kf(at, ease, { ...PAIN, ...pose }, H + 22 + x, U);
+const WALK = [
+    step(1.07, { lLeg: 0.34, lFold: 0.70, rLeg: -0.02, rFold: 0.25, rArm: 0.55, rElbow: 0.45 }, 4),
+    step(1.17, { lLeg: 0.15, lFold: 0.32, rLeg: -0.08, rFold: 0.35, rArm: 0.40, rElbow: 0.60 }, 8),
+    step(1.27, { lLeg: 0.06, lFold: 0.30, rLeg: 0.36, rFold: 0.75, rArm: 0.58, rElbow: 0.42 }, 13),
+    step(1.36, { lLeg: -0.08, lFold: 0.36, rLeg: 0.21, rFold: 0.36, rArm: 0.46, rElbow: 0.55 }, 18),
+    step(1.45, { lLeg: 0.30, lFold: 0.65, rLeg: 0.06, rFold: 0.30, rArm: 0.52, rElbow: 0.48 }, 22.5),
+    step(1.54, { lLeg: 0.15, lFold: 0.32, rLeg: -0.08, rFold: 0.35, lArm: -0.55, lElbow: 0.45, rArm: 0.42, rElbow: 0.52 }, 27),
+    // the hand comes off his back and both arms hang before the turn: the flip mirrors the pose, and a hand on his backside would land on his front
+    step(1.62, { lLeg: 0.08, lFold: 0.15, rLeg: 0.22, rFold: 0.45, lArm: 0.05, lElbow: 0.45, rArm: 0.10, rElbow: 0.45, bend: 0.14, crouch: 0.10, lean: 0.06 }, 32),
+    { ...step(TURN, { lLeg: 0.0, lFold: 0.15, rLeg: 0.12, rFold: 0.14, lArm: 0.05, lElbow: 0.45, rArm: 0.05, rElbow: 0.45, bend: 0.06, crouch: 0.08, lean: 0.04 }, 37), facing: -1 },
+    kf(D, 'easeInOut', { lArm: -0.3, rArm: -0.2, lElbow: 0.5, rElbow: 0.5, lLeg: -0.04, rLeg: 0.16, lFold: 0.22, rFold: 0.22, lean: 0.06, crouch: 0.05, tilt: 0, lift: 0, bend: 0.10 }, H + 22 + ATOMIC.walkAway, U),
+];
+
 export const atomicDropClip = {
     id: 'atomicDrop',
     duration: D,
@@ -69,7 +87,9 @@ export const atomicDropClip = {
                 // the support leg gives 3-5 px as the weight lands; the knee holds until the recoil has started, then drops away (T4c.4j)
                 kf(I + 0.04, 'easeOut', { lArm: 0.8, rArm: 0.8, lElbow: 0.5, rElbow: 0.5, lLeg: 1.35, rLeg: -0.05, lFold: 1.2, rFold: 0.1, lean: 0.10, crouch: 0.19, tilt: 0, lift: 8, bend: 0.15 }, 34, 0),
                 kf(I + 0.14, 'easeInOut', { lArm: 0.8, rArm: 0.8, lElbow: 0.5, rElbow: 0.5, lLeg: 1.35, rLeg: -0.05, lFold: 1.2, rFold: 0.1, lean: 0.10, crouch: 0.17, tilt: 0, lift: 8, bend: 0.15 }, 34, 0),
-                kf(D, 'easeInOut', { lArm: 0.04, rArm: 0.17, lElbow: 0.7, rElbow: 0.7, lLeg: -0.04, rLeg: 0.16, lFold: 0.22, rFold: 0.22, lean: 0.05, crouch: 0.05, tilt: 0, lift: 0, bend: 0 }, 18, 0),
+                kf(G, 'easeInOut', { lArm: 0.04, rArm: 0.17, lElbow: 0.7, rElbow: 0.7, lLeg: -0.04, rLeg: 0.16, lFold: 0.22, rFold: 0.22, lean: 0.05, crouch: 0.05, tilt: 0, lift: 0, bend: 0 }, 18, 0),
+                // T4c.4p: he is up in the same time and holds his place and his facing while the receiver hurts, walks off and turns
+                kf(D, 'linear', { lArm: 0.04, rArm: 0.17, lElbow: 0.7, rElbow: 0.7, lLeg: -0.04, rLeg: 0.16, lFold: 0.22, rFold: 0.22, lean: 0.05, crouch: 0.05, tilt: 0, lift: 0, bend: 0 }, 18, 0),
             ],
         },
         // The man in front: held at the waist, lifted with his back to the chest and his legs kicking up, dropped seated, then popped forward onto his feet.
@@ -83,8 +103,9 @@ export const atomicDropClip = {
                 // T4c.4j: impact, then compression (hips and torso fold onto the knee, the arms lag a frame behind), then the recoil (arch, pops forward, hands to his backside).
                 kf(I + 0.04, 'easeOut', { lArm: 0.3, rArm: 0.2, lElbow: 0.6, rElbow: 0.6, lLeg: 0.72, rLeg: 0.55, lFold: 1.15, rFold: 1.05, lean: 0, crouch: 0.38, tilt: 0.30, lift: 0, bend: 0.50 }, H - 5, U),
                 kf(I + 0.12, 'easeOut', { lArm: -0.9, rArm: -0.8, lElbow: 0.3, rElbow: 0.3, lLeg: 0.30, rLeg: 0.15, lFold: 0.4, rFold: 0.3, lean: 0.12, crouch: 0.18, tilt: 0, lift: 0, bend: -0.12 }, H + 12, U),
-                kf(I + 0.26, 'easeInOut', { lArm: -0.8, rArm: -0.7, lElbow: 0.3, rElbow: 0.3, lLeg: 0.20, rLeg: -0.08, lFold: 0.3, rFold: 0.2, lean: 0.10, crouch: 0.10, tilt: 0, lift: 0, bend: 0.22 }, H + 28, U),
-                kf(D, 'easeInOut', { lArm: -0.3, rArm: -0.2, lElbow: 0.5, rElbow: 0.5, lLeg: -0.04, rLeg: 0.16, lFold: 0.22, rFold: 0.22, lean: 0.06, crouch: 0.05, tilt: 0, lift: 0, bend: 0.10 }, H + ATOMIC.stumbleFwd, U),
+                // T4c.4p: the tailbone. The near hand (the l channel) stays on it, the far arm comes out for balance; hips tucked, torso short and guarded.
+                kf(I + 0.26, 'easeInOut', { lArm: -0.8, rArm: 0.45, lElbow: 0.3, rElbow: 0.5, lLeg: 0.20, rLeg: -0.08, lFold: 0.3, rFold: 0.2, lean: 0.10, crouch: 0.16, tilt: 0, lift: 0, bend: 0.30 }, H + 22, U),
+                ...WALK,
             ]),
         },
     },
@@ -99,7 +120,14 @@ export const atomicDropClip = {
     ],
     // T4c.4j: the attacker's support (r) foot holds the mat from the wrap to the catch, released over 0.10 s once the weight has gone.
     // Only the support (r) leg is anchored. Under 'hitch' the near (l) foot was meant to stay down until L, but nothing plants it, and the body solve moved it (measured, T4c.4m).
-    plants: [{ role: 'attacker', leg: 'r', in: [W, W + 0.04], out: [I + 0.20, I + 0.30] }],
+    plants: [
+        { role: 'attacker', leg: 'r', in: [W, W + 0.04], out: [I + 0.20, I + 0.30] },
+        // T4c.4p: the receiver's stance sole over each step (r, l, r, l): each window opens when that foot lands (its key) and overlaps the last one's end
+        { role: 'defender', leg: 'r', in: [I + 0.26, I + 0.28], out: [1.17, 1.21] },
+        { role: 'defender', leg: 'l', in: [1.17, 1.20], out: [1.36, 1.40] },
+        { role: 'defender', leg: 'r', in: [1.36, 1.39], out: [1.54, 1.58] },
+        { role: 'defender', leg: 'l', in: [1.54, 1.57], out: [TURN, TURN + 0.04] },
+    ],
     grips: [
         { role: 'attacker', arm: 'l', to: { role: 'defender', joint: 'Hip', side: 'same' }, in: [0, 0.02], out: [T, T + 0.06] },
         { role: 'attacker', arm: 'r', to: { role: 'defender', joint: 'Hip', side: 'same' }, in: [0, 0.02], out: [T, T + 0.06] },

@@ -6,6 +6,7 @@ import { launch } from './harness.mjs';
 import { INSTALL, SETUP } from './grapples_film.mjs';
 import { STEP } from './grapples_waistlock.mjs';
 import { WAISTLOCK } from '../../src/animation/waistlock.js';
+import { ATOMIC } from '../../src/animation/waistlockThrows.js';
 
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const PRESS_AT = 36, DROP_AT = 80, F = (s) => Math.round(s * 60);
@@ -18,6 +19,8 @@ const CASES = [
     ['the let-go', PRESS_AT + F(WAISTLOCK.goBehind + WAISTLOCK.timeout + 0.1)],
     ['the drop\'s lift', DROP_AT + F(0.15), true],
     ['the drop\'s sell', DROP_AT + F(0.65), true],
+    ['the drop\'s walk away', DROP_AT + F(1.30), true],   // T4c.4p: the receiver is mid-step, facing away, his soles planted
+    ['the drop\'s turn', DROP_AT + F(ATOMIC.turnAt + 0.02), true],   // ... and a frame after his facing flipped
     ['the snapmare\'s pull', DROP_AT + 6 + F(0.25), true, true],   // T4c.3: the defender reverses 0.1 s into the lift
     ['the snapmare\'s flip', DROP_AT + 6 + F(0.6), true, true],
     ['the sleeper\'s fight', DROP_AT + F(0.5), false, false, true],   // T4d.2: the attacker presses the finisher in the hold

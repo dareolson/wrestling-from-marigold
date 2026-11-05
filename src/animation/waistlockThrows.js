@@ -14,13 +14,16 @@ export const ATOMIC = Object.freeze({
     hitch: 0.24,                        // readable peak beat after the quick lift (Derek 2026-11-04)
     drop: 0.07,                         // (b) he comes down seated on the raised knee (T4c.4j: was 0.12; first contact, seat-to-knee gap under 3 px, measured at 0.55 s)
     impact: 0.73,                       // lift + hitch + drop; contact and damage move with the longer peak beat
-    sell: 0.55,                         // (c) pops forward off the knee, hands to his backside, stumbles on his feet
-    duration: 1.28,                     // impact + sell; preserve the lift, drop and recovery speeds
+    getUp: 0.55,                        // (c) the attacker's rise off his knee, and the receiver's pop forward off it, hands to his backside (the old sell)
+    sell: 1.17,                         // (c) T4c.4p: that, then his pain (hand to the tailbone), four planted steps away still facing away, the turn and the settle (was 0.55)
+    turnAt: 1.70,                       // the clip time the receiver turns back on his feet, feet together (T4c.4p), after the steps
+    duration: 1.90,                     // impact + sell
     reverseWindow: 0.20,                // A3: the defender's reversal counts from the lift's start until this far in
     damageKey: 'atomicDrop',            // STAMINA_DRAIN key, 12
     sellSpec: Object.freeze({ part: 'back', intensity: 0.7 }),
     liftPeak: 80,                     // px the defender's pelvis rises over standing at the top of the lift (G4c-a: was 55, Derek wanted him higher)
-    stumbleFwd: 36,                     // px the defender is carried forward off the knee, along the facing
+    stumbleFwd: 36,                     // px the defender is carried forward off the knee, along the facing (the pop; the steps away add `walkAway` to it)
+    walkAway: 37,                       // px the four steps carry him along the facing: 10 + 15 + 9 + 3 (the hurt side shorter); the gap to the attacker at the turn is 123 = 1.5 x holdBehind
 });
 
 // A4 / A6: the snapmare's beats (the old defender is the clip's attacker, the old attacker the thrown man). `flip` runs from the pull's end

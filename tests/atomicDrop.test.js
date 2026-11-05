@@ -54,7 +54,9 @@ test('the clip follows the beats: impact where the drop ends, the defender rises
     assert.equal(def[0].transform.y, WAISTLOCK.upstage);
     assert.deepEqual([att[0].transform.x, att[0].transform.y], [0, 0]);
     // nobody is turned and nobody ends tilted
-    assert.ok(![...att, ...def].some(k => 'facing' in k));
+    // T4c.4p: only the receiver turns, once, after the steps (feet together), and the attacker never does
+    assert.ok(!att.some(k => 'facing' in k));
+    assert.deepEqual(def.filter(k => 'facing' in k).map(k => [k.at, k.facing]), [[ATOMIC.turnAt, -1]]);
     assert.ok(att.every(k => k.pose.tilt === 0));
     assert.equal(def.at(-1).pose.tilt, 0);   // the defender is tilted only through the carry and the fall onto the knee, upright again after (T4c.4g)
     assert.ok(def.filter(k => k.at >= ATOMIC.impact + 0.10).every(k => k.pose.tilt === 0));

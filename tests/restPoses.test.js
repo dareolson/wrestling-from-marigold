@@ -46,10 +46,14 @@ test('rest pose legs sit inside the knee limits (limitKnees changes nothing) and
     }
 });
 
-test('rest pose elbows are bent inside the joint limits and the missile test passes: no arm within 15 degrees of the torso line', () => {
+// The signed flex the audit reads off the drawn joints (tools/debug/falls_flex_probe.mjs agrees with it to 0.01 rad on both rigs): forearm minus upper arm, wrapped; > 0 = bent the normal way.
+// JOINT_LIMITS.elbow.min (-3.0) is the hammerlock allowance, so it would pass a backward fold of 2 rad; an ordinary lying elbow floors at the editor's -0.12.
+const ORDINARY_ELBOW_MIN = -0.12;
+test('rest pose elbows are bent the normal way inside the limits (signed) and the missile test passes: no arm within 15 degrees of the torso line', () => {
     for (const [name, rest] of Object.entries(Skeleton.REST_POSES)) {
         for (const side of ['near', 'far']) {
-            const d = rest[`${side}Fore`] - rest[`${side}Arm`], flex = Math.abs(Math.atan2(Math.sin(d), Math.cos(d)));   // the angles wrap
+            const d = rest[`${side}Fore`] - rest[`${side}Arm`], flex = Math.atan2(Math.sin(d), Math.cos(d));   // signed; the angles wrap
+            assert.ok(flex >= ORDINARY_ELBOW_MIN && flex >= JOINT_LIMITS.elbow.min, `${name} ${side} elbow ${flex} below the floor`);
             assert.ok(flex <= JOINT_LIMITS.elbow.max, `${name} ${side} elbow ${flex}`);
         }
     }

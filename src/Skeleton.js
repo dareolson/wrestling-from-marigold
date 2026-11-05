@@ -2160,13 +2160,13 @@ export default class Skeleton {
             t: 0.00,
             hip: 10, torso: Math.PI + 1.52,
             farThigh: 1.50, farShin: 1.55, nearThigh: 1.97, nearShin: 0.47,
-            farArm: 2.05, farFore: 1.65, nearArm: 0.95, nearFore: 1.40,
+            farArm: 1.85, farFore: 2.00, nearArm: 0.95, nearFore: 1.40,
         }),
         prone: Object.freeze({
             t: 0.00,
             hip: 10, torso: 1.62,
             farThigh: -1.45, farShin: -1.60, nearThigh: -0.95, nearShin: -1.75,
-            farArm: -2.60, farFore: 1.60, nearArm: -0.40, nearFore: 1.45,
+            farArm: -0.75, farFore: 1.60, nearArm: -0.40, nearFore: 1.45,
         }),
     });
 

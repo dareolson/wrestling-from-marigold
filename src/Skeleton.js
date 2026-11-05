@@ -2286,6 +2286,12 @@ export default class Skeleton {
         this._applyGrounded(x, y, s, facing, Skeleton._sampleKeyposes(keys, t));
     }
 
+    /** The pelvis's speed at the end of fall `variant`, px/s at s = 1: the last key interval's drop rate times the easeIn's closing factor (pi/2). */
+    static fallClosingSpeed(variant) {
+        const fall = Skeleton.FALLS[variant], keys = fall.keys, a = keys[keys.length - 2], b = keys[keys.length - 1];
+        return ((a.hip - b.hip) / ((b.t - a.t) * fall.duration / 1000)) * (Math.PI / 2);
+    }
+
     /**
      * Draw a static grounded pose — flat on the mat — through the modular rig.
      *
@@ -2373,9 +2379,10 @@ export default class Skeleton {
     }
 
     /** Grounded pose `poseName`, blended from a groundedPoseFrom() start by u (0→1). */
-    updateGroundedBlend(x, y, s, facing, poseName, from, u) {
-        const target = Skeleton.GROUNDED_POSES[poseName] && Skeleton.lyingBase(poseName, this._falls);
+    updateGroundedBlend(x, y, s, facing, poseName, from, u, landing = null) {
+        let target = Skeleton.GROUNDED_POSES[poseName] && Skeleton.lyingBase(poseName, this._falls);
         if (!target) throw new RangeError(`unknown grounded pose "${poseName}"`);
+        if (landing) { target = { ...target }; for (const [c, v] of Object.entries(landing)) if (c in target) target[c] += v; }   // ?falls=v1: the landing's offsets ride the blend's target
         const e = u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
         const g = {};
         for (const key of Object.keys(target)) {

@@ -69,3 +69,22 @@ test('unknown kind throws; every channel is finite', () => {
     for (const c of CASES) for (const r of samples(c)) for (const v of Object.values(r.d)) assert.ok(Number.isFinite(v));
     assert.deepEqual(Object.keys(KINDS).sort(), ['back', 'front']);
 });
+
+test('Skeleton.fallClosingSpeed reads the backward fall\'s closing pelvis speed off its keys (px/s at s = 1)', () => {
+    const v = Skeleton.fallClosingSpeed('backward');
+    assert.ok(v > 0 && v < REF_VY, `${v}`);   // the fall is not yet gravity-timed (T2.6), so it closes slower than free fall's 684
+});
+
+test('MoveRuntime.releaseRole lets one actor go and the clip keeps playing for the other', async () => {
+    const { default: MoveRuntime } = await import('../src/animation/MoveRuntime.js');
+    const rt = new MoveRuntime();
+    rt.register({ id: 'x', duration: 1, tracks: { attacker: { keyframes: [{ at: 0, pose: { lean: 0 } }, { at: 1, pose: { lean: 1 } }] }, defender: { keyframes: [{ at: 0, pose: { lean: 0 } }, { at: 1, pose: { lean: 1 } }] } }, events: [] });
+    const a = { pose: { lean: 0 } }, d = { pose: { lean: 0 } };
+    const h = rt.play('x', { attacker: a, defender: d });
+    rt.seek(h, 0.5);
+    const frozen = d.pose.lean;
+    rt.releaseRole(h, 'defender');
+    rt.seek(h, 1);
+    assert.equal(d.pose.lean, frozen);
+    assert.ok(a.pose.lean > 0.9);
+});

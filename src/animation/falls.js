@@ -12,8 +12,8 @@
 // Angle sense as in sells.js, facing right (the renderer mirrors): supine torso + presses the shoulders down, - lifts them; prone torso + lifts the chest.
 // A knee's flex is thigh - shin and an elbow's is forearm - arm, both > 0 when bent the proper way.
 
-export const GRAVITY = 1100;   // px/s^2 at s = 1: a standing man (pelvis 88 px) free-falls in 0.40 s (D4)
-export const REF_VY = 440;     // px/s at s = 1: the pelvis's speed at the end of that free fall; the incoming speed that scales the rebound is read against it
+export const GRAVITY = 1710;   // px/s^2 at s = 1: D4's g, picked once so a standing man (pelvis 136.7 px, falls_probe) free-falls in 0.40 s
+export const REF_VY = 684;     // px/s at s = 1: the pelvis's speed at the end of that free fall (g * 0.40); the incoming speed that scales the rebound is read against it
 export const REBOUND_PX = 11;  // rebound height per unit intensity at the reference speed: Lou at 0.7 hops 7.7 px (the 6-10 px tuning target)
 const REBOUND_MAX = 14;
 const COMPRESS_SEC = 0.05;

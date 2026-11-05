@@ -640,6 +640,10 @@ export const bodySlamClip = {
         {
             at: 1.08,
             type: "impact"
+        },
+        {
+            at: 1.367,
+            type: "contact"
         }
     ]
 };

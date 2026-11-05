@@ -325,6 +325,16 @@ export default class MoveRuntime {
         }
     }
 
+    // Let one role go before the clip ends (PLAN_FALLS T2.2: a thrown man leaves the clip at its impact and lands on the grounded rig). The clip keeps
+    // playing for the other roles. Only for clips with no grips, plants, carry or layers on that role (bodySlam has none).
+    releaseRole(handle, role) {
+        const target = handle.bindings[role];
+        if (!target) return;
+        delete handle.bindings[role];
+        const stillOwned = [...this._active.values()].some(active => Object.values(active.bindings).includes(target));
+        if (!stillOwned) target.skeleton?.setPartVariants?.({});
+    }
+
     _release(handle) {
         for (const target of Object.values(handle.bindings)) {
             const stillOwned = [...this._active.values()]

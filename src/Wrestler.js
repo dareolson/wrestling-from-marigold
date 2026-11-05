@@ -14,6 +14,7 @@ import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { GETUPS, GETUP_SETS, eligibleForBackSell, legacyFor, chooseGetUp, stallMs, stallTimeline, stallOffsets, sineInOut } from './animation/getUps.js';
+import { landingResponse, landingDuration, REF_VY } from './animation/falls.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
@@ -516,6 +517,7 @@ export default class Wrestler {
         this.state        = 'standing';
         this.stateTimer   = 0;
         this.fallProgress = 0;
+        this._landing     = null;   // ?falls=v1 (PLAN_FALLS T2.2): { kind, intensity, vy, t } from contact until the response ends
         // How a downed wrestler lies: 'supine' (on the back, feet toward
         // facing) or 'prone' (face down, head toward facing). Set by every
         // path that puts a wrestler on the mat; read by the grounded render
@@ -1108,7 +1110,11 @@ export default class Wrestler {
     tickDown(dt) {
         this._tickRiseFlip();
         this._tickPain();
-        if (this.state !== 'down') { this._sell = null; this._hold = null; } // pinned, picked up, rising: the sell (and hold) stops
+        if (this.state !== 'down') { this._sell = null; this._hold = null; this._landing = null; } // pinned, picked up, rising: the sell (and hold) stops, and so does the landing
+        if (this._landing && this.state === 'down') {
+            this._landing.t += dt;
+            if (this._landing.t >= landingDuration(this._landing.kind, this._landing.intensity, this._landing.vy)) this._landing = null;
+        }
         if (this.state !== 'down' && this.state !== 'staggered') return;
         if (this.state === 'down') this._tickSell(dt);
         this.stateTimer -= dt;
@@ -1175,6 +1181,24 @@ export default class Wrestler {
         }
         const swapAt = SELLS[cur.lying][cur.name]?.swapAt;
         if (swapAt !== undefined && sell.t / cur.duration >= swapAt) turnOver(cur);
+    }
+
+    // ?falls=v1 (PLAN_FALLS T2.2): the landing starts at contact. `kind` 'back' | 'front'; intensity from the pain context (the move's sell), vy the
+    // pelvis speed at contact in px/s at s = 1. No-op with the flag off.
+    _startLanding(kind, vy = REF_VY) {
+        if (!fallsCandidate()) return;
+        this._landing = { kind, intensity: this._pain?.severity || 0.6, vy, t: 0 };
+    }
+
+    // True from contact until the landing response ends: AI actions and pins wait (the man is still hitting the mat).
+    isLanding() { return !!this._landing; }
+
+    // The landing's offsets over the lying pose right now, or null.
+    _landingOffsets() {
+        const l = this._landing;
+        if (!l || this.state !== 'down') return null;
+        const r = landingResponse(l.kind, l.intensity, l.vy, l.t);
+        return r.done ? null : r.d;
     }
 
     // The grounded pose and hand reaches of the sell playing now, or null.
@@ -1840,7 +1864,7 @@ export default class Wrestler {
             return 'grappleBlocked';
         }
 
-        if ((other.state === 'down' || other.state === 'possum') && this.moveSet.includes('pin')) {
+        if ((other.state === 'down' || other.state === 'possum') && !other.isLanding() && this.moveSet.includes('pin')) {
             this.state  = 'pinning';
             other.state = 'pinned';
             this._runPoseSequence(MOVE_DEFS.pin.poseSeq);
@@ -2525,8 +2549,9 @@ export default class Wrestler {
     _doBodySlam(other) {
         this._playPairedThrow(other, 'bodySlam', {
             damage: STAMINA_DRAIN.bodySlam,
+            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back'); },
             finish: () => {
-                other._layOnBack(DOWN_SEC);
+                if (other.state === 'holding') other._layOnBack(DOWN_SEC);   // flag off, or the landing already laid him down at the impact
                 this._standBackUp();
             },
         });
@@ -2683,7 +2708,7 @@ export default class Wrestler {
     // `superseded`: a function; true when a cancel is a hand-over to another clip (the snapmare), so the cancel path lays nobody down.
     // `onAbort`: replaces the cancel path's lay-down (the atomic drop is not a knockdown: a torn-down drop stands both men up).
     _playPairedThrow(other, clipId, { damage, shake = [200, 0.003], finish, hitEvent = 'impact',
-        foley = hitEvent === 'impact' ? ['mat', 0.9] : null, faceToFace = true, superseded = null, onAbort = null }) {
+        foley = hitEvent === 'impact' ? ['mat', 0.9] : null, faceToFace = true, superseded = null, onAbort = null, landAtHit = null }) {
         const runtime = this.scene.moveRuntime;
         if (!runtime) return;
 
@@ -2709,6 +2734,17 @@ export default class Wrestler {
 
         const handle = runtime.play(clipId, { attacker: this, defender: other }, {
             onEvent: (event) => {
+                // ?falls=v1 (PLAN_FALLS T2.2): contact is the pelvis reaching the mat, a clip event after the hit (bodySlam: the impact event fires with the
+                // pelvis still 37 px up, falls_landing_audit). He leaves the clip here and lands on the grounded rig with the landing response. His time on
+                // the mat is unchanged (the clip's tail is added).
+                if (landAtHit && event.type === 'contact') {
+                    if (!fallsCandidate() || other.state !== 'holding') return;
+                    runtime.releaseRole(handle, 'defender');
+                    other._activeMove = null;
+                    other._fixedHold  = false;
+                    landAtHit(handle.clip.duration - handle.time);
+                    return;
+                }
                 if (event.type !== hitEvent) return;
                 if (this.state !== 'holding' || other.state !== 'holding') return;
                 other._hurt(damage, clipId);
@@ -3530,6 +3566,8 @@ export default class Wrestler {
                 this.stateTimer   = downTime;
                 this.fallProgress = 0;
                 this.scene.cameras.main.shake(100, 0.0015);
+                // The fall's last frame is contact. Only the backward fall so far (T2.2); its closing pelvis speed is read off the keys (the easeIn's end rate).
+                if (this._fallVariant === 'backward') this._startLanding('back', Skeleton.fallClosingSpeed(this._fallVariant));
             },
         });
     }
@@ -3663,7 +3701,7 @@ export default class Wrestler {
                 // motion and pauses stretch the blend with everything else.
                 const u = (handoff.t0 - this.stateTimer) / GROUND_HANDOFF_SEC;
                 if (handoff.from && u < 1 && handoff.lying === this.lying) {
-                    this.skeleton.updateGroundedBlend(x, y, s, facing, this.lying, handoff.from, u);
+                    this.skeleton.updateGroundedBlend(x, y, s, facing, this.lying, handoff.from, u, this._landingOffsets());
                     return;
                 }
                 this._groundHandoff = null;
@@ -3671,18 +3709,21 @@ export default class Wrestler {
                 this._groundHandoff = null;
             }
             const sold = state === 'down' ? this._sellPose() : null;
+            const landD = this._landingOffsets();
             if (sold) {
-                this.skeleton.updateGroundedReach(x, y, s, facing, sold.g, sold.reach,
+                this.skeleton.updateGroundedReach(x, y, s, facing, landD ? applyOffsets(sold.g, landD) : sold.g, sold.reach,
                     sellArtCandidate() ? { paintedContacts: true,
                         backContact: this._sell?.plan[this._sell.i]?.part === 'back' } : undefined);
                 return;
             }
             const lyingHold = this._lyingHold();
             if (lyingHold) {
-                this.skeleton.updateGroundedReach(x, y, s, facing, limitKnees(applyOffsets(Skeleton.lyingBase(this.lying, fallsCandidate()), lyingHold.offsets)),
+                const held = limitKnees(applyOffsets(Skeleton.lyingBase(this.lying, fallsCandidate()), lyingHold.offsets));
+                this.skeleton.updateGroundedReach(x, y, s, facing, landD ? applyOffsets(held, landD) : held,
                     { near: { to: 'nearHip', w: lyingHold.w } }, { paintedContacts: true, backContact: true });
                 return;
             }
+            if (landD) { this.skeleton.updateGroundedReach(x, y, s, facing, applyOffsets(Skeleton.lyingBase(this.lying, true), landD), {}); return; }
             this.skeleton.updateGrounded(x, y, s, facing, this.lying);
             return;
         }

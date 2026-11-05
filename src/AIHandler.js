@@ -163,7 +163,7 @@ export default class AIHandler {
         if (!self || !opp) return;
 
         // Reaction delay: when the opponent hits the mat, take a beat before pouncing
-        const oppDown = opp.state === 'down' || opp.state === 'possum';
+        const oppDown = (opp.state === 'down' || opp.state === 'possum') && !opp.isLanding?.();
         if (oppDown && !this._oppWasDown) this._react = 0.15 + Math.random() * 0.2;
         if (!oppDown) this._pounces = 0; // fresh down-spell, fresh pounce budget
         this._oppWasDown = oppDown;
@@ -358,7 +358,7 @@ export default class AIHandler {
         }
 
         // Opponent is down or playing possum — pounce, after a human reaction beat
-        if (opp.state === 'down' || opp.state === 'possum') {
+        if ((opp.state === 'down' || opp.state === 'possum') && !opp.isLanding?.()) {
             if (this._react > 0 || dist >= GRAPPLE_REACH) return;
             // Pins break instantly at the ropes — don't cover there, and don't
             // machine-gun re-covers after a kickout or rope break

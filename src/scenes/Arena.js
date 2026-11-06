@@ -26,6 +26,7 @@ import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS, ROSTER_PERSONALITIES } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
 import { ROPE_HIT, stepRopeSpring } from '../animation/ropeHit.js';
+import { WEAR_MAX, KNOCKDOWN_WEAR, EXCEPTIONAL_WEAR } from '../animation/falls.js';
 import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
 
 // 2026-07-26 (promoted-george roster change): the roster is now just these
@@ -3242,6 +3243,20 @@ export default class Arena extends Phaser.Scene {
 
         draw(this.w1, PAD, false);                   // P1 bar — grows right
         draw(this.w2, W - PAD - BAR_W, true);        // P2 bar — grows left
+
+        // ?wear=show (PLAN_FALLS T3.16, debug, off by default): a thin wear bar under each stamina bar, the knockdown and exceptional lines ticked
+        if (this._wearShow ??= new URLSearchParams(location.search).get('wear') === 'show') {
+            const drawWear = (wrestler, x, flip) => {
+                const wy = Y + BAR_H + 2, fillW = BAR_W * Math.min(1, (wrestler.wear ?? 0) / WEAR_MAX);
+                g.fillStyle(0x222222, 0.8); g.fillRect(x, wy, BAR_W, 3);
+                g.fillStyle((wrestler.wear ?? 0) >= EXCEPTIONAL_WEAR ? 0xff5533 : (wrestler.wear ?? 0) >= KNOCKDOWN_WEAR ? 0xff9933 : 0xcc66ff, 1);
+                g.fillRect(flip ? x + BAR_W - fillW : x, wy, fillW, 3);
+                g.fillStyle(0xffffff, 0.9);
+                for (const line of [KNOCKDOWN_WEAR, EXCEPTIONAL_WEAR]) g.fillRect(flip ? x + BAR_W - BAR_W * line / WEAR_MAX : x + BAR_W * line / WEAR_MAX, wy - 1, 1, 5);
+            };
+            drawWear(this.w1, PAD, false);
+            drawWear(this.w2, W - PAD - BAR_W, true);
+        }
     }
 
     // Append a timestamped event to the match log.

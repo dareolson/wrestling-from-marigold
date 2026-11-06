@@ -1,0 +1,250 @@
+[
+ {
+  "name": "george-lou-1",
+  "gameSec": 150.4,
+  "errors": 0,
+  "stuck": 0,
+  "strikes": 6,
+  "first": 97,
+  "gated": 3,
+  "exceptional": 0,
+  "exceptionalAt": [],
+  "piledrivers": 0,
+  "buckets": [
+   {
+    "from": 0,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 2,
+    "meanWear": 15.6
+   },
+   {
+    "from": 30,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 1,
+    "meanWear": 24.4
+   },
+   {
+    "from": 60,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 0,
+    "meanWear": 47
+   },
+   {
+    "from": 90,
+    "gated": 2,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 2,
+    "meanWear": 73
+   },
+   {
+    "from": 120,
+    "gated": 1,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 1,
+    "meanWear": 91.9
+   },
+   {
+    "from": 150,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 0,
+    "meanWear": 93.8
+   }
+  ]
+ },
+ {
+  "name": "george-lou-2",
+  "gameSec": 150.3,
+  "errors": 0,
+  "stuck": 0,
+  "strikes": 14,
+  "first": 66.15,
+  "gated": 7,
+  "exceptional": 0,
+  "exceptionalAt": [],
+  "piledrivers": 0,
+  "buckets": [
+   {
+    "from": 0,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 3,
+    "meanWear": 8.7
+   },
+   {
+    "from": 30,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 0,
+    "meanWear": 31
+   },
+   {
+    "from": 60,
+    "gated": 3,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 5,
+    "meanWear": 69.5
+   },
+   {
+    "from": 90,
+    "gated": 2,
+    "always": 1,
+    "exceptional": 0,
+    "strikes": 4,
+    "meanWear": 89.1
+   },
+   {
+    "from": 120,
+    "gated": 2,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 2,
+    "meanWear": 97.5
+   },
+   {
+    "from": 150,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 0,
+    "meanWear": 95.9
+   }
+  ]
+ },
+ {
+  "name": "lou-george-1",
+  "gameSec": 150.4,
+  "errors": 0,
+  "stuck": 0,
+  "strikes": 5,
+  "first": 87.95,
+  "gated": 1,
+  "exceptional": 0,
+  "exceptionalAt": [],
+  "piledrivers": 0,
+  "buckets": [
+   {
+    "from": 0,
+    "gated": 0,
+    "always": 1,
+    "exceptional": 0,
+    "strikes": 4,
+    "meanWear": 17.8
+   },
+   {
+    "from": 30,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 0,
+    "meanWear": 47.9
+   },
+   {
+    "from": 60,
+    "gated": 1,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 1,
+    "meanWear": 74.6
+   },
+   {
+    "from": 90,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 0,
+    "meanWear": 97.4
+   },
+   {
+    "from": 120,
+    "gated": 0,
+    "always": 1,
+    "exceptional": 0,
+    "strikes": 0,
+    "meanWear": 98.3
+   },
+   {
+    "from": 150,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 0,
+    "meanWear": 99.2
+   }
+  ]
+ },
+ {
+  "name": "lou-george-2",
+  "gameSec": 150.3,
+  "errors": 0,
+  "stuck": 0,
+  "strikes": 5,
+  "first": 86.6,
+  "gated": 4,
+  "exceptional": 0,
+  "exceptionalAt": [],
+  "piledrivers": 0,
+  "buckets": [
+   {
+    "from": 0,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 1,
+    "meanWear": 13.7
+   },
+   {
+    "from": 30,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 0,
+    "meanWear": 50.3
+   },
+   {
+    "from": 60,
+    "gated": 1,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 1,
+    "meanWear": 65.4
+   },
+   {
+    "from": 90,
+    "gated": 1,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 1,
+    "meanWear": 85.2
+   },
+   {
+    "from": 120,
+    "gated": 2,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 2,
+    "meanWear": 97.5
+   },
+   {
+    "from": 150,
+    "gated": 0,
+    "always": 0,
+    "exceptional": 0,
+    "strikes": 0,
+    "meanWear": 98.5
+   }
+  ]
+ }
+]

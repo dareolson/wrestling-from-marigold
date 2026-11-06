@@ -227,10 +227,10 @@ export const MOVE_FALLS = Object.freeze({
 export const BIG_MOVES = Object.freeze(['suplex', 'backBodyDrop', 'bodySlam']);
 // T3.13-T3.15: `wear` (0-100) is how beaten-up he is over the match, apart from stamina's moment-to-moment drain. It rises with the damage he takes and drops slowly.
 export const WEAR_MAX = 100;
-export const WEAR_PER_DAMAGE = 1;      // wear gained per point of damage (tuned in T3.15)
-export const WEAR_RECOVER = 0.5;       // wear lost per second (stamina recovers 6)
+export const WEAR_PER_DAMAGE = 0.8;      // wear gained per point of damage (tuned in T3.15)
+export const WEAR_RECOVER = 0.4;       // wear lost per second (stamina recovers 6)
 export const KNOCKDOWN_WEAR = 60;      // T3.14: a strike that leaves him at or over this puts him down instead of staggering him
-export const EXCEPTIONAL_WEAR = 85;    // a big move on a man at or over this lands exceptional
+export const EXCEPTIONAL_WEAR = 92;    // a big move on a man at or over this lands exceptional
 export const TIRED_WEAR = KNOCKDOWN_WEAR;   // at or over: the collapses (sitBack, kneesForward); under FRESH_WEAR: the straight falls (backward, forward)
 export const FRESH_WEAR = 30;
 /** Wear after taking `damage` (stamina points drained by a hit). */

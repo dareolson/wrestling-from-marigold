@@ -3,6 +3,8 @@
 // Logs per run: every landed strike (Wrestler._strikeReact, called at the hit after the damage) with the receiver's stamina right then and what it did (fall or stagger);
 // every fall's pick reason; every landing (kind, tier, stamina, how long until it ended = the earliest legal pin: tryAction pins once !isLanding()); a landing cut short by a
 // pick-up; page errors; states stuck past a limit. Nothing is retuned: the stamina recovery and the 35 line are the game's.
+// T3.15: also the wear of both men once per game second (S.wear) and the receiver's wear at every strike and landing; the knockdown/exceptional table is
+// tools/debug/falls_g3_wear_table.mjs over the JSON this writes.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { launch } from './harness.mjs';
@@ -17,25 +19,28 @@ process.env.WFM_QS = 'notitle=1&grapples=v1&falls=v1';
 const INSTALL = () => {
     const sc = window.__WFM_GAME.scene.scenes[0];
     for (const n of [1, 2]) if (sc[`w${n}`].input !== sc[`_p${n}AI`]) sc._togglePlayer(n);
-    const S = window.__fsoak = { gsec: 0, strikes: [], landings: [], stuck: [], matches: 0, frames: 0, picked: [] };
+    const S = window.__fsoak = { gsec: 0, strikes: [], landings: [], stuck: [], matches: 0, frames: 0, picked: [], wear: [] };
     const W = [['p1', sc.w1], ['p2', sc.w2]];
+    const log = sc._logEvent.bind(sc);
+    sc._logEvent = (type, payload) => { log(type, payload); sc.matchEvents.at(-1).g = +S.gsec.toFixed(2); };   // g: the soak's game clock, which _matchTime is not across match resets
     const now = () => +S.gsec.toFixed(2);   // game seconds: real frame time x the arena's timeScale (WFM_TS), summed across the arena's own match resets
     for (const [id, w] of W) {
         const react = w._strikeReact.bind(w);
         w._strikeReact = (attacker, move, ...rest) => {
             const stamina = +w.stamina.toFixed(1), before = sc.matchEvents.filter(e => e.type === 'fall').length, st0 = w.state;
             react(attacker, move, ...rest);
-            S.strikes.push({ t: now(), who: id, move, stamina, state: st0 });
+            S.strikes.push({ t: now(), who: id, move, stamina, wear: +(w.wear ?? 0).toFixed(1), state: st0 });
         };
         const start = w._startLanding.bind(w);
         w._startLanding = (kind, vy, additive, tier) => {
             start(kind, vy, additive, tier);
-            S.landings.push({ t: now(), who: id, kind, tier: tier ?? null, stamina: +w.stamina.toFixed(1), source: w._pain?.source ?? w._fallVariant ?? null, endT: null, cut: false });
+            S.landings.push({ t: now(), who: id, kind, tier: tier ?? null, stamina: +w.stamina.toFixed(1), wear: +(w.wear ?? 0).toFixed(1), source: w._pain?.source ?? w._fallVariant ?? null, endT: null, cut: false });
         };
     }
     const lim = { falling: 2, flipping: 2, selling: 1.5, staggered: 3, grabbed: 2 }, since = { p1: [null, 0], p2: [null, 0] };
     sc.events.on('postupdate', (time, delta) => {
         S.frames++; S.gsec += delta / 1000 * sc.timeScale;
+        if (Math.floor(S.gsec) > (S.wear.at(-1)?.t ?? -1)) S.wear.push({ t: Math.floor(S.gsec), p1: +(sc.w1.wear ?? 0).toFixed(1), p2: +(sc.w2.wear ?? 0).toFixed(1) });
         for (const [id, w] of W) {
             // the landing ends: isLanding() false while still down = the earliest legal pin; leaving 'down' first = cut short
             const open = [...S.landings].reverse().find(l => l.who === id && l.endT == null);

@@ -14,7 +14,7 @@ import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { GETUPS, GETUP_SETS, eligibleForBackSell, legacyFor, chooseGetUp, stallMs, stallTimeline, stallOffsets, sineInOut } from './animation/getUps.js';
-import { landingResponse, landingDuration, REF_VY } from './animation/falls.js';
+import { landingResponse, landingDuration, applyOffsetsSoft, TIERS, REF_VY } from './animation/falls.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
@@ -40,6 +40,7 @@ const GROUND_HANDOFF_SEC = 0.3;
 // A down-state sell (src/animation/sells.js) starts after the grounded
 // handoff has settled and ends this long before the get-up.
 const SELL_LEAD_SEC = 0.35;
+const FALL_LANDING = { forward: 'catch', kneesForward: 'knees', sitBack: 'seat', spill: 'spill' };   // ?falls=v1: the landing shape of each fall from standing (the backward fall is 'back')
 const SELL_TAIL_SEC = 0.3;
 const RECOVERY_RAMP_MS = 200; // ?aftermath=v2 protective recovery fades in over this
 // The dropkick v2 candidate connects with Lou this far from George (rig units;
@@ -163,6 +164,14 @@ const RUN_GAIT = { STANCE: 0.35, CADENCE: 3.6, LIFT: 32, HIP_BASE: 4, HIP_DROP: 
 // falls (PLAN_FALLS D1): the rest pose (arms on the mat, near knee up) in place of the missile pose. Opt-in: `?falls=v1`; flag off is byte-identical.
 // Node without `location` stays off.
 export const fallsCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('falls') === 'v1';
+// ?falls=v1&slamTier=heavy|exceptional (PLAN_FALLS T2.5d): a bigger landing for the body slam, preview only. Anything else (or no flag) is r2.
+export const slamTierCandidate = () => {
+    if (!fallsCandidate()) return null;
+    const v = new URLSearchParams(location.search).get('slamTier');
+    return v === 'heavy' || v === 'exceptional' ? v : null;
+};
+// ?falls=v1&spill=1 (T2.5e): the sideways spill, a concept fall that no move calls; startFall('spill') only plays with it.
+export const spillCandidate = () => fallsCandidate() && new URLSearchParams(location.search).get('spill') === '1';
 export const waistlockCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('waistlock') === 'v1';
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
@@ -1114,7 +1123,7 @@ export default class Wrestler {
         if (this.state !== 'down') { this._sell = null; this._hold = null; this._landing = null; } // pinned, picked up, rising: the sell (and hold) stops, and so does the landing
         if (this._landing && this.state === 'down') {
             this._landing.t += dt;
-            if (this._landing.t >= landingDuration(this._landing.kind, this._landing.intensity, this._landing.vy)) this._landing = null;
+            if (this._landing.t >= landingDuration(this._landing.kind, this._landing.intensity, this._landing.vy, this._landing.tier)) this._landing = null;
         }
         if (this.state !== 'down' && this.state !== 'staggered') return;
         if (this.state === 'down') this._tickSell(dt);
@@ -1144,15 +1153,17 @@ export default class Wrestler {
         if (!this._sell && pain?.phase === 'mat' && !pain.planned) {
             pain.planned = true;
             this._hold = null;
+            // a heavier slam tier (T2.5d) holds a short spent pause on the mat before the sell starts; the sell is planned into what is left of the down time
+            const lead = SELL_LEAD_SEC + (TIERS[this._landing?.tier]?.spent ?? 0);
             if (pain.part) {
                 const plan = planSells({
                     style: this.sellStyle, lying: this.lying, part: pain.part, intensity: pain.severity,
-                    budget: this.stateTimer - SELL_LEAD_SEC - SELL_TAIL_SEC,
+                    budget: this.stateTimer - lead - SELL_TAIL_SEC,
                     limb: pain.limb, compact: aftermathCandidate(), noRoll: getUpsCandidate() || fallsCandidate(), force: !!pain.forceClutch,
                 });
                 // facing0: the facing he went down with. The hurt limb's slot is
                 // measured from it, plus one flip per roll (groundedSlot).
-                if (plan.length) this._sell = { plan, i: 0, t: -SELL_LEAD_SEC, facing0: this.facing };
+                if (plan.length) this._sell = { plan, i: 0, t: -lead, facing0: this.facing };
             }
         }
         const sell = this._sell;
@@ -1188,9 +1199,10 @@ export default class Wrestler {
     // pelvis speed at contact in px/s at s = 1. No-op with the flag off.
     // `additive` (T2.4b, the slam): the offsets ride over the ground blend's pose at full size instead of into its target, where the blend's smoothstep scales
     // them (7% left at 50 ms, 26% at 100 ms).
-    _startLanding(kind, vy = REF_VY, additive = false) {
+    // `tier` (T2.5d, the slam, `?slamTier=`): TIERS key or null.
+    _startLanding(kind, vy = REF_VY, additive = false, tier = null) {
         if (!fallsCandidate()) return;
-        this._landing = { kind, intensity: this._pain?.severity || 0.6, vy, t: 0, additive };
+        this._landing = { kind, intensity: this._pain?.severity || 0.6, vy, t: 0, additive, tier };
     }
 
     // True from contact until the landing response ends: AI actions and pins wait (the man is still hitting the mat).
@@ -1200,7 +1212,7 @@ export default class Wrestler {
     _landingOffsets() {
         const l = this._landing;
         if (!l || this.state !== 'down') return null;
-        const r = landingResponse(l.kind, l.intensity, l.vy, l.t);
+        const r = landingResponse(l.kind, l.intensity, l.vy, l.t, l.tier);
         return r.done ? null : r.d;
     }
 
@@ -1225,7 +1237,8 @@ export default class Wrestler {
         for (const [side, w] of Object.entries(reach)) hands[side] = { to: def.hands[side], w };
         // A roll keeps its turnover pose exactly (its halves must meet); every other
         // sell keeps the knees inside their limits.
-        const g = applyOffsets(Skeleton.lyingBase(lying, fallsCandidate()), d);
+        // ?falls=v1: the sell's knee bend was authored over the missile's straight knee; over the rest pose's drawn-up one it would pin at the cap (T2.5a)
+        const g = fallsCandidate() && cur.name !== 'roll' ? applyOffsetsSoft(Skeleton.lyingBase(lying, true), d) : applyOffsets(Skeleton.lyingBase(lying, fallsCandidate()), d);
         return { g: cur.name === 'roll' ? g : limitKnees(g), reach: hands };
     }
 
@@ -2550,9 +2563,12 @@ export default class Wrestler {
     // Lou's body slam: scooped, swung across the shoulders and slammed on his
     // back in front (author_bodyslam.mjs, sheet frames 322–328 / 120–121).
     _doBodySlam(other) {
+        const tier = slamTierCandidate();
         this._playPairedThrow(other, 'bodySlam', {
             damage: STAMINA_DRAIN.bodySlam,
-            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY, true); },
+            // a heavier tier scales the camera shake only (the mat foley is already at 0.9 of its range); the hit stays on the one impact frame
+            ...(tier ? { shake: [200, 0.003 * (tier === 'exceptional' ? 1.8 : 1.4)], foley: ['mat', 1.0] } : {}),
+            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY, true, tier); },
             finish: () => {
                 if (other.state === 'holding') other._layOnBack(DOWN_SEC);   // flag off, or the landing already laid him down at the impact
                 this._standBackUp();
@@ -3558,7 +3574,7 @@ export default class Wrestler {
         const variants = exact ? null : Skeleton.FALL_VARIANTS[fall];
         const variant  = variants ? variants[Math.floor(Math.random() * variants.length)] : fall;
         const spec     = Skeleton.FALLS[variant];
-        if (!spec) throw new RangeError(`unknown fall "${fall}"`);
+        if (!spec || (variant === 'spill' && !spillCandidate())) throw new RangeError(`unknown fall "${fall}"`);
         this.state        = 'falling';
         this.fallProgress = 0;
         this._fallVariant = variant;
@@ -3573,8 +3589,10 @@ export default class Wrestler {
                 this.stateTimer   = downTime;
                 this.fallProgress = 0;
                 this.scene.cameras.main.shake(100, 0.0015);
-                // The fall's last frame is contact. Only the backward fall so far (T2.2); its closing pelvis speed is read off the keys (the easeIn's end rate).
+                // The fall's last frame is contact. The backward fall (T2.2) lands as a back bump with a hop, its closing pelvis speed read off the keys (the easeIn's
+                // end rate); the others (T2.5b-e) are their own shapes (falls.js SHAPES), no flight.
                 if (this._fallVariant === 'backward') this._startLanding('back', Skeleton.fallClosingSpeed(this._fallVariant));
+                else if (FALL_LANDING[this._fallVariant]) this._startLanding(FALL_LANDING[this._fallVariant]);
             },
         });
     }
@@ -3719,7 +3737,7 @@ export default class Wrestler {
             const landD = this._landingOffsets();
             if (sold) {
                 // limitKnees: the landing's knee bend on a sell pose already near the knee limit stays inside it (T2.4c)
-                this.skeleton.updateGroundedReach(x, y, s, facing, landD ? limitKnees(applyOffsets(sold.g, landD)) : sold.g, sold.reach,
+                this.skeleton.updateGroundedReach(x, y, s, facing, landD ? limitKnees(applyOffsetsSoft(sold.g, landD)) : sold.g, sold.reach,
                     sellArtCandidate() ? { paintedContacts: true,
                         backContact: this._sell?.plan[this._sell.i]?.part === 'back' } : undefined);
                 return;

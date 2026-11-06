@@ -3,13 +3,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Skeleton from '../src/Skeleton.js';
 import { JOINT_LIMITS } from '../src/rig/articulation.js';
-import { landingResponse, reboundPlan, landingDuration, flexChange, REF_VY, KINDS } from '../src/animation/falls.js';
+import { landingResponse, reboundPlan, landingDuration, flexChange, applyOffsetsSoft, REF_VY, KINDS, SHAPES, TIERS } from '../src/animation/falls.js';
 
-const REST = { back: Skeleton.REST_POSES.supine, front: Skeleton.REST_POSES.prone };
+const REST = { back: Skeleton.REST_POSES.supine, front: Skeleton.REST_POSES.prone, catch: Skeleton.REST_POSES.prone, knees: Skeleton.REST_POSES.prone, seat: Skeleton.REST_POSES.supine, spill: Skeleton.REST_POSES.supine };
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const CASES = [];
-for (const kind of ['back', 'front']) for (const intensity of [0.3, 0.7, 0.85, 1]) for (const vy of [REF_VY * 0.6, REF_VY, REF_VY * 1.4]) CASES.push({ kind, intensity, vy });
-const samples = (c) => { const T = landingDuration(c.kind, c.intensity, c.vy); return Array.from({ length: 120 }, (_, k) => landingResponse(c.kind, c.intensity, c.vy, (k / 119) * T * 1.02)); };
+for (const kind of ['back', 'front', 'catch', 'knees', 'seat', 'spill']) for (const intensity of [0.3, 0.7, 0.85, 1]) for (const vy of [REF_VY * 0.6, REF_VY, REF_VY * 1.4]) CASES.push({ kind, intensity, vy });
+const samples = (c) => { const T = landingDuration(c.kind, c.intensity, c.vy, c.tier); return Array.from({ length: 120 }, (_, k) => landingResponse(c.kind, c.intensity, c.vy, (k / 119) * T * 1.02, c.tier)); };
+for (const tier of ['heavy', 'exceptional']) for (const intensity of [0.3, 0.7, 1]) for (const vy of [REF_VY * 0.6, REF_VY, REF_VY * 1.4]) CASES.push({ kind: 'back', intensity, vy, tier });
 
 test('signed flex of every knee and elbow stays inside the limits over 120 samples per kind, intensity and speed', () => {
     for (const c of CASES) {
@@ -26,9 +27,9 @@ test('signed flex of every knee and elbow stays inside the limits over 120 sampl
 
 test('the offsets are zero at the end (the rest pose is where it lands) and the response says done', () => {
     for (const c of CASES) {
-        const T = landingDuration(c.kind, c.intensity, c.vy);
-        for (const t of [T, T + 0.5]) { const r = landingResponse(c.kind, c.intensity, c.vy, t); assert.ok(r.done); for (const [ch, v] of Object.entries(r.d)) assert.equal(v, 0, `${ch}`); }
-        const near = landingResponse(c.kind, c.intensity, c.vy, T - 1e-4);
+        const T = landingDuration(c.kind, c.intensity, c.vy, c.tier);
+        for (const t of [T, T + 0.5]) { const r = landingResponse(c.kind, c.intensity, c.vy, t, c.tier); assert.ok(r.done); for (const [ch, v] of Object.entries(r.d)) assert.equal(v, 0, `${ch}`); }
+        const near = landingResponse(c.kind, c.intensity, c.vy, T - 1e-4, c.tier);
         for (const [ch, v] of Object.entries(near.d)) assert.ok(Math.abs(v) < 0.01, `${c.kind} ${ch} ${v} just before the end`);
     }
 });
@@ -68,6 +69,7 @@ test('unknown kind throws; every channel is finite', () => {
     assert.throws(() => landingResponse('side', 0.5, REF_VY, 0.1), RangeError);
     for (const c of CASES) for (const r of samples(c)) for (const v of Object.values(r.d)) assert.ok(Number.isFinite(v));
     assert.deepEqual(Object.keys(KINDS).sort(), ['back', 'front']);
+    assert.deepEqual(Object.keys(SHAPES).sort(), ['catch', 'knees', 'seat', 'spill']);
 });
 
 test('Skeleton.fallClosingSpeed reads the backward fall\'s closing pelvis speed off its keys (px/s at s = 1)', () => {
@@ -90,8 +92,8 @@ test('MoveRuntime.releaseRole lets one actor go and the clip keeps playing for t
 });
 
 // ---- T2.4c: the slam, end to end (Wrestler + MoveRuntime, no Phaser) -------------------------------------------------------------
-async function slamFixture({ falls = true } = {}) {
-    globalThis.location = { search: falls ? '?falls=v1' : '' };
+async function slamFixture({ falls = true, qs = '' } = {}) {
+    globalThis.location = { search: falls ? '?falls=v1' + qs : '' };
     const { default: Wrestler } = await import('../src/Wrestler.js');
     const { default: MoveRuntime } = await import('../src/animation/MoveRuntime.js');
     const { bodySlamClip } = await import('../src/animation/clips/bodySlam.js');
@@ -153,4 +155,87 @@ test('the slam with the flag off: no landing, he stays in the clip until it ends
     assert.equal(def.state, 'holding', 'flag off: the clip still owns him after the hit');
     assert.ok(!def._landing);
     delete globalThis.location;
+});
+
+// ---- T2.5: the other falls, the slam tiers, the soft knee --------------------------------------------------------------------------
+test('catch and knees are supported, not flights: the pelvis rises a few px at most (catch), not at all (knees); seat and spill keep the pelvis on the mat', () => {
+    const peak = (kind) => Math.max(...samples({ kind, intensity: 1, vy: REF_VY }).map(r => r.lift));
+    assert.ok(peak('catch') > 1 && peak('catch') <= 4.2 + 1e-9, `catch ${peak('catch')}`);
+    for (const k of ['knees', 'seat', 'spill']) assert.equal(peak(k), 0, k);
+    assert.ok(peak('catch') < 0.5 * reboundPlan(0.7, REF_VY).h1 + 2, 'far from the slam\'s hop');
+});
+
+test('catch: one forearm stays planted (the far elbow barely bends) while the near one yields; knees and seat bend both, staggered', () => {
+    const maxFlex = (kind, side) => Math.max(...samples({ kind, intensity: 0.7, vy: REF_VY }).map(r => flexChange(r.d, 'elbow', side)));
+    assert.ok(maxFlex('catch', 'near') > 0.25 && maxFlex('catch', 'far') < 0.1, `${maxFlex('catch', 'near')} ${maxFlex('catch', 'far')}`);
+    for (const k of ['knees', 'seat']) assert.ok(maxFlex(k, 'near') > 0.1 && maxFlex(k, 'far') > 0.1, k);
+});
+
+test('no new landing runs longer than the r2 slam\'s (Lou\'s slam is intensity 0.8, two hops), and each ends within 0.45-0.8 s', () => {
+    const r2 = landingDuration('back', 0.8, REF_VY);
+    for (const k of Object.keys(SHAPES)) { const d = landingDuration(k, 0.8, REF_VY); assert.ok(d >= 0.45 && d <= 0.8 && d <= r2 + 0.05, `${k} ${d} vs ${r2}`); }
+});
+
+test('slam tiers: commanded 14 / 18.8 px at Lou\'s slam intensity 0.8 (the probe reads about 0.82x of it drawn over the blend base: 11.5 / 14.7); one dominant hop; shorter than r2', () => {
+    const r2 = reboundPlan(0.8, REF_VY), hv = reboundPlan(0.8, REF_VY, 'heavy'), ex = reboundPlan(0.8, REF_VY, 'exceptional');
+    assert.ok(r2.h1 < hv.h1 && hv.h1 < ex.h1);
+    assert.ok(hv.h1 >= 13 && hv.h1 <= 15, `${hv.h1}`);
+    assert.ok(ex.h1 >= 17 && ex.h1 <= 19.5, `${ex.h1}`);
+    for (const t of ['heavy', 'exceptional']) { assert.equal(reboundPlan(1, REF_VY, t).hops.length, 1, `${t} one dominant rebound at any intensity`); assert.ok(landingDuration('back', 0.8, REF_VY, t) < landingDuration('back', 0.8, REF_VY)); }
+    assert.equal(reboundPlan(0.85, REF_VY).hops.length, 2, 'r2 unchanged');
+    assert.equal(TIERS.default.spent, 0);
+    assert.ok(TIERS.heavy.spent > 0 && TIERS.exceptional.spent >= TIERS.heavy.spent);
+});
+
+test('no tier is r2 exactly: the same samples as before the tier argument existed', () => {
+    for (const t of [0, 0.03, 0.06, 0.1, 0.2, 0.35, 0.5]) assert.deepEqual(landingResponse('back', 0.7, REF_VY, t), landingResponse('back', 0.7, REF_VY, t, null));
+    assert.deepEqual(landingResponse('back', 0.7, REF_VY, 0.2, 'nonsense'), landingResponse('back', 0.7, REF_VY, 0.2));
+});
+
+test('applyOffsetsSoft: plain offsets below the knee point, continuous, monotone, never reaches the cap; straightening passes through', () => {
+    const base = { nearThigh: 1.97, nearShin: 0.47, farThigh: 1.5, farShin: 1.55 };      // the supine rest pose's legs: near flex 1.5, far -0.05
+    const flexAfter = (delta) => { const g = applyOffsetsSoft(base, { nearThigh: 0, nearShin: -delta, farThigh: 0, farShin: 0 }); return g.nearThigh - g.nearShin; };
+    assert.ok(Math.abs(flexAfter(0.2) - 1.7) < 1e-9, 'inside the linear part: rest + delta');
+    let prev = flexAfter(0);
+    for (let d = 0.01; d <= 3; d += 0.01) { const f = flexAfter(d); assert.ok(f >= prev - 1e-12 && f - prev < 0.0101, `monotone and continuous at ${d}`); assert.ok(f < 2.45 + 1e-9, `${f} under the soft cap`); prev = f; }
+    assert.ok(flexAfter(3) > 2.4, 'it does keep rising toward the cap');
+    const g = applyOffsetsSoft(base, { nearThigh: 0, nearShin: 0.3, farThigh: 0, farShin: 0 });
+    assert.ok(Math.abs((g.nearThigh - g.nearShin) - 1.2) < 1e-9, 'straightening is plain');
+    const full = { nearThigh: 1.97, nearShin: -0.5, farThigh: 0, farShin: 0 };                  // a base already at the cap (flex 2.47): the added bend is dropped
+    const gf = applyOffsetsSoft(full, { nearThigh: 0.1, nearShin: -0.3, farThigh: 0, farShin: 0 });
+    assert.ok(Math.abs((gf.nearThigh - gf.nearShin) - 2.47) < 1e-9, `${gf.nearThigh - gf.nearShin}`);
+    const g2 = applyOffsetsSoft(base, { nearThigh: 0.1, nearShin: 0.1, hip: 4 });
+    assert.equal(g2.hip, base.hip === undefined ? undefined : g2.hip);   // unrelated channels untouched by the soft part
+});
+
+test('Skeleton.FALLS.spill lands supine, every key keeps both knees and both elbows inside the limits, and the hip lands before the shoulders', () => {
+    const f = Skeleton.FALLS.spill;
+    assert.equal(f.lands, 'supine');
+    const keys = [...f.keys.slice(0, -1), { ...Skeleton.REST_POSES.supine, t: 1 }];   // ?falls=v1 ends every fall on the rest pose (Skeleton.updateFall)
+    for (let k = 0; k <= 100; k++) {
+        const g = Skeleton._sampleKeyposes(keys, k / 100);
+        for (const side of ['near', 'far']) {
+            const knee = wrap(g[`${side}Thigh`] - g[`${side}Shin`]), elbow = wrap(g[`${side}Fore`] - g[`${side}Arm`]);
+            assert.ok(knee >= JOINT_LIMITS.knee.min && knee <= JOINT_LIMITS.knee.max, `${side} knee ${knee} at ${k / 100}`);
+            assert.ok(elbow >= -0.12 && elbow <= JOINT_LIMITS.elbow.max, `${side} elbow ${elbow} at ${k / 100}`);
+        }
+    }
+    const hipLow = f.keys.findIndex(q => q.hip <= 14), torsoDown = f.keys.findIndex(q => q.torso >= Math.PI + 0.9);
+    assert.ok(hipLow >= 0 && torsoDown > hipLow, 'hip first (key 0.55), shoulders later (0.80)');
+});
+
+test('?slamTier on the slam: the tier rides the landing, the shake scales on the one hit, one damage event, the sell waits the tier\'s spent pause; no tier and a bad tier are r2', async () => {
+    const run = async (qs) => {
+        const { rt, atk, def, log } = await slamFixture({ qs });
+        let hurts = 0; const hurt = def._hurt.bind(def); def._hurt = (...a) => { hurts++; hurt(...a); };
+        atk._doBodySlam(def);
+        for (let i = 0; i < 100 && !def._landing; i++) { rt._t = i / 60; atk.tickDown(1 / 60); def.tickDown(1 / 60); rt.update(1 / 60); }
+        const shakes = log.filter(l => l[0] === 'shake');
+        return { tier: def._landing?.tier ?? null, hurts, shakes: shakes.length, amp: shakes[0]?.[3], foley: log.filter(l => l[0] === 'foley').map(l => l[3]) };
+    };
+    const r2 = await run(''), bad = await run('&slamTier=bogus'), hv = await run('&slamTier=heavy'), ex = await run('&slamTier=exceptional');
+    assert.equal(r2.tier, null); assert.equal(bad.tier, null); assert.deepEqual(bad, r2);
+    assert.equal(hv.tier, 'heavy'); assert.equal(ex.tier, 'exceptional');
+    for (const r of [r2, hv, ex]) { assert.equal(r.hurts, 1); assert.equal(r.shakes, 1); assert.equal(r.foley.length, 1); }
+    assert.ok(hv.amp > r2.amp && ex.amp > hv.amp, `${r2.amp} ${hv.amp} ${ex.amp}`);
 });

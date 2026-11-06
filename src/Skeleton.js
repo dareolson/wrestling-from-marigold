@@ -2236,6 +2236,16 @@ export default class Skeleton {
             { t: 0.62, hip: 14, torso: Math.PI + 0.30, farThigh: 1.45, farShin: 1.55, nearThigh: 1.38, nearShin: 1.50, farArm: -0.35, farFore: -0.45, nearArm: -0.30, nearFore: -0.40 },
             { ...Skeleton.GROUNDED_SUPINE, t: 1.00 },
         ]) }),
+        // ?falls=v1&spill=1 (PLAN_FALLS T2.5e, concept, no move calls it): the feet go out from under him sideways. The hip takes the mat first with the near leg
+        // tucked under it and the far leg kicked out, the near arm braces beside the hip, the far arm flies up; the brace gives and the torso rolls back onto the
+        // shoulders. Not a rotated back bump: the first impact is the hip, at 0.55, and the shoulders arrive 0.3 later.
+        spill: Object.freeze({ lands: 'supine', duration: 640, keys: Object.freeze([
+            { ...Skeleton.GETUP_POSES[Skeleton.GETUP_POSES.length - 1], t: 0 },
+            { t: 0.28, hip: 66, torso: Math.PI + 0.12, farThigh: 0.95, farShin: 0.55, nearThigh: 0.30, nearShin: -0.55, farArm: 2.00, farFore: 2.35, nearArm: 0.55, nearFore: 0.65 },
+            { t: 0.55, hip: 14, torso: Math.PI + 0.20, farThigh: 1.05, farShin: 0.85, nearThigh: 0.55, nearShin: -0.80, farArm: 2.25, farFore: 2.55, nearArm: 0.18, nearFore: 0.22 },
+            { t: 0.80, hip: 12, torso: Math.PI + 0.95, farThigh: 1.30, farShin: 1.20, nearThigh: 1.05, nearShin: 0.10, farArm: 2.10, farFore: 2.40, nearArm: 0.70, nearFore: 1.25 },
+            { ...Skeleton.GROUNDED_SUPINE, t: 1.00 },
+        ]) }),
         // Taken off the feet in the air (clothesline, dropkick, back body
         // drop): flat out horizontal at the peak, down on the back. The
         // caller adds the arc height; this is only the body's rotation.

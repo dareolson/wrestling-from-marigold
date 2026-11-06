@@ -20,15 +20,28 @@ const r1 = (v) => (v == null ? null : +v.toFixed(1)), r2 = (v) => (v == null ? n
 const hip = (p) => ({ x: (p.nearHip.x + p.farHip.x) / 2, y: (p.nearHip.y + p.farHip.y) / 2 });
 const sub = (a, b) => ({ x: a.x - b.x, y: a.y - b.y }), dot = (a, b) => a.x * b.x + a.y * b.y;
 const stepOf = (A, B) => { let best = { px: 0, joint: null }; for (const k of Object.keys(A.pts)) if (B.pts[k]) { const s = Math.hypot(A.pts[k].x - B.pts[k].x, A.pts[k].y - B.pts[k].y); if (s > best.px) best = { px: s, joint: k }; } return best; };
-const flexes = (v) => {
+// Signed flex of a joint from the drawn points. The bend's handedness is fixed per limb from the run's rest row (where every limb is bent the proper way, or straight and
+// then the other limb of the pair decides), NOT re-chosen per frame from the torso normal: with the thigh pointing up (a drawn-up knee) that choice flipped and a real
+// 2.4 rad knee read as -2.4 (+2 pi = 3.9). T2.5: found when a pinned 2.55 knee read 3.73.
+const handOf = (v) => {
     const p = v.pts, t = sub(p.neck, hip(p)), n = v.facing >= 0 ? { x: -t.y, y: t.x } : { x: t.y, y: -t.x };
-    const flex = (a, b, c) => { const u = sub(b, a), l = sub(c, b); let q = { x: -u.y, y: u.x }; if (dot(q, n) < 0) q = { x: -q.x, y: -q.y }; return Math.atan2(dot(l, q), dot(l, u)); };
-    const o = {};
+    const side = (a, b) => { const u = sub(b, a); return dot({ x: -u.y, y: u.x }, n) / Math.hypot(u.x, u.y); };
+    const h = {};
+    for (const j of ['Knee', 'Elbow']) {
+        const [from, to] = j === 'Knee' ? ['Hip', 'Knee'] : ['Shoulder', 'Elbow'];
+        const c = ['near', 'far'].map(sd => side(p[`${sd}${from}`], p[`${sd}${to}`]));
+        const best = Math.abs(c[0]) >= Math.abs(c[1]) ? c[0] : c[1];
+        for (let k = 0; k < 2; k++) h[`${['near', 'far'][k]}${j}`] = Math.sign(Math.abs(c[k]) >= 0.2 ? c[k] : best) || 1;
+    }
+    return h;
+};
+let HAND = null;
+const flexes = (v) => {
+    const p = v.pts, o = {};
+    const flex = (a, b, c, hh) => { const u = sub(b, a), l = sub(c, b), q = { x: -hh * u.y, y: hh * u.x }; return Math.atan2(dot(l, q), dot(l, u)); };
     for (const sd of ['near', 'far']) {
-        o[`${sd}Knee`] = -flex(p[`${sd}Hip`], p[`${sd}Knee`], p[`${sd}Ankle`]);
-        o[`${sd}Elbow`] = flex(p[`${sd}Shoulder`], p[`${sd}Elbow`], p[`${sd}Wrist`]);
-        if (o[`${sd}Knee`] < -1.6) o[`${sd}Knee`] += 2 * Math.PI;   // a knee folded past straight by more than 1.6 rad is not a pose: it is a fold past pi read through atan2's wrap
-        if (o[`${sd}Elbow`] < -2.9) o[`${sd}Elbow`] += 2 * Math.PI;
+        o[`${sd}Knee`] = -flex(p[`${sd}Hip`], p[`${sd}Knee`], p[`${sd}Ankle`], HAND[`${sd}Knee`]);
+        o[`${sd}Elbow`] = flex(p[`${sd}Shoulder`], p[`${sd}Elbow`], p[`${sd}Wrist`], HAND[`${sd}Elbow`]);
     }
     return o;
 };
@@ -37,6 +50,7 @@ const out = [];
 for (const f of readdirSync(dir).filter(n => /^rows-.*\.json$/.test(n)).sort()) {
     const id = f.slice(5, -5), rows = JSON.parse(readFileSync(join(dir, f), 'utf8'));
     const restIdx = rows.findIndex(r => r.rest), s = rows[0].d.s;
+    HAND = handOf(rows[restIdx].d);
     const runtimePhases = rows.some(r => r.d.land);
     const firstDown = rows.findIndex((r, i) => i > 0 && r.d.state === 'down' && rows[i - 1].d.state !== 'down');
     const contact = runtimePhases ? rows.findIndex(r => r.d.land) : firstDown;
@@ -45,7 +59,7 @@ for (const f of readdirSync(dir).filter(n => /^rows-.*\.json$/.test(n)).sort()) 
     // the landing's actual end: the first frame after contact with no landing record (the response is done or something cleared it)
     const landEnd = runtimePhases ? (rows.findIndex((r, i) => i > contact && !r.d.land)) : Math.min(restIdx, contact + Math.round(0.6 * F));
     const landDur = r2((landEnd - contact) / F);
-    const phaseOf = (r) => { const l = r.d.land; if (!l) return null; const x = landingResponse(l.kind, l.i, l.vy, l.t); return { phase: x.phase, lift: x.lift }; };
+    const phaseOf = (r) => { const l = r.d.land; if (!l) return null; const x = landingResponse(l.kind, l.i, l.vy, l.t, l.tier); return { phase: x.phase, lift: x.lift }; };
     const phases = rows.map(r => phaseOf(r));
     const blendEnd = runtimePhases ? rows.findIndex((r, i) => i > contact && !r.d.blend) : null;
     const soldAt = rows.findIndex((r, i) => i > 0 && r.d.sold && !rows[i - 1].d.sold);
@@ -84,7 +98,7 @@ for (const f of readdirSync(dir).filter(n => /^rows-.*\.json$/.test(n)).sort()) 
         flexMin[k] = r2(Math.min(...seq.map(q => q.v))); flexMax[k] = r2(Math.max(...seq.map(q => q.v)));
         // cause: the landing's own flex change at that frame (landingResponse, bend-only, >= 0) is taken off the drawn flex; a frame still outside the limit without it
         // belongs to the base under the offsets (the blend from the clip's body, or the sell's pose), a frame inside it was pushed out by the landing.
-        const own = (q) => { const l = rows[q.i].d.land; if (!l) return 0; const jt = k.endsWith('Knee') ? 'knee' : 'elbow'; return flexChange(landingResponse(l.kind, l.i, l.vy, l.t).d, jt, k.startsWith('near') ? 'near' : 'far'); };
+        const own = (q) => { const l = rows[q.i].d.land; if (!l) return 0; const jt = k.endsWith('Knee') ? 'knee' : 'elbow'; return flexChange(landingResponse(l.kind, l.i, l.vy, l.t, l.tier).d, jt, k.startsWith('near') ? 'near' : 'far'); };
         const bad = seq.filter(q => q.v < lo - QUANT || q.v > hi + QUANT), byLanding = bad.filter(q => q.v - own(q) >= lo - QUANT && q.v - own(q) <= hi + QUANT), inLand = (q) => q.i < landEnd;
         if (bad.length) misses.push(`${k} outside [${lo}, ${hi}] in ${bad.length} frames (min ${flexMin[k]}, max ${flexMax[k]}; ${byLanding.length} pushed out by the landing's offsets, ${bad.length - byLanding.length} already outside under them: ${bad.filter(q => !byLanding.includes(q)).map(q => rows[q.i].d.blend ? 'blend' : rows[q.i].d.sold ? 'sell' : 'base').filter((v, i, a) => a.indexOf(v) === i).join('/')}; frames ${bad[0].i}-${bad.at(-1).i})`);
         clamps[k] = seq.filter(q => Math.abs(q.v - lo) <= CLAMP_EPS || Math.abs(q.v - hi) <= CLAMP_EPS).length;

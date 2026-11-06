@@ -41,7 +41,7 @@ const row = (d, id) => { const a = get(d, id), hop = a.rebound.firstHop; return 
 const tableIds = [['r2', ['forward', 'kneesForward', 'sitBack']], ['spill', ['spill']], ['r2', ['bodySlam']], ['heavy', ['bodySlam']], ['exceptional', ['bodySlam']]];
 const table = tableIds.flatMap(([d, ps]) => ps.flatMap(p => victims.flatMap(v => sides.map(s => row(d, `${p}-${v}-${s}`))))).join('');
 const marksOf = (d, id) => { const a = get(d, id); return { hit: id.startsWith('bodySlam') ? hitFrame(d, id) : null, contact: a.contact, apex: a.rebound.firstHop?.peakFrame ?? null, recontact: a.rebound.firstHop?.recontactFrame ?? null }; };
-const cell = (d, id, tag) => `<div><canvas data-dir="../${d}/frames/${id}" data-n="${rows(d, id).length}" data-marks='${JSON.stringify(marksOf(d, id))}' width="560" height="330"></canvas><div class="cap">${tag}: ${id}</div></div>`;
+const cell = (d, id, tag) => `<div><canvas data-dir="${d}/frames/${id}" data-n="${rows(d, id).length}" data-marks='${JSON.stringify(marksOf(d, id))}' width="560" height="330"></canvas><div class="cap">${tag}: ${id}</div></div>`;
 const section = (title, note, cells) => `<h3>${title}</h3><p class="cap">${note}</p><div class="pairrow">${cells}</div>`;
 const four = (d, p, tag) => victims.flatMap(v => sides.map(s => cell(d, `${p}-${v}-${s}`, tag))).join('');
 const loops = [

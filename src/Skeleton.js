@@ -2379,15 +2379,17 @@ export default class Skeleton {
     }
 
     /** Grounded pose `poseName`, blended from a groundedPoseFrom() start by u (0→1). */
-    updateGroundedBlend(x, y, s, facing, poseName, from, u, landing = null) {
+    updateGroundedBlend(x, y, s, facing, poseName, from, u, landing = null, landingAfter = false) {
         let target = Skeleton.GROUNDED_POSES[poseName] && Skeleton.lyingBase(poseName, this._falls);
         if (!target) throw new RangeError(`unknown grounded pose "${poseName}"`);
-        if (landing) { target = { ...target }; for (const [c, v] of Object.entries(landing)) if (c in target) target[c] += v; }   // ?falls=v1: the landing's offsets ride the blend's target
+        if (landing && !landingAfter) { target = { ...target }; for (const [c, v] of Object.entries(landing)) if (c in target) target[c] += v; }   // ?falls=v1: the landing's offsets ride the blend's target
         const e = u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
         const g = {};
         for (const key of Object.keys(target)) {
             g[key] = Number.isFinite(from[key]) ? from[key] + (target[key] - from[key]) * e : target[key];
         }
+        // landingAfter (PLAN_FALLS T2.4b): the offsets sit on the blended pose, so they keep their full size from contact
+        if (landing && landingAfter) for (const [c, v] of Object.entries(landing)) if (c in g) g[c] += v;
         const k = 1 - e;
         if (k > 0) {
             // The two render paths place some joints and art differently

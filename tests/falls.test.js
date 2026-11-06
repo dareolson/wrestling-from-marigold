@@ -88,3 +88,69 @@ test('MoveRuntime.releaseRole lets one actor go and the clip keeps playing for t
     assert.equal(d.pose.lean, frozen);
     assert.ok(a.pose.lean > 0.9);
 });
+
+// ---- T2.4c: the slam, end to end (Wrestler + MoveRuntime, no Phaser) -------------------------------------------------------------
+async function slamFixture({ falls = true } = {}) {
+    globalThis.location = { search: falls ? '?falls=v1' : '' };
+    const { default: Wrestler } = await import('../src/Wrestler.js');
+    const { default: MoveRuntime } = await import('../src/animation/MoveRuntime.js');
+    const { bodySlamClip } = await import('../src/animation/clips/bodySlam.js');
+    const rt = new MoveRuntime(); rt.register(bodySlamClip);
+    const log = [];
+    const scene = { moveRuntime: rt, time: { now: 0, delayedCall: () => {} }, tweens: { add: () => ({ stop() {} }), killTweensOf: () => {} }, _logEvent: () => {},
+        cameras: { main: { shake: (...a) => log.push(['shake', rt._t ?? 0, ...a]) } }, crowd: { impact: (...a) => log.push(['foley', rt._t ?? 0, ...a]) } };
+    const mk = (facing, x) => Object.assign(Object.create(Wrestler.prototype), { scene, state: 'standing', facing, x, y: 360, stamina: 100, pose: {}, idlePose: 'idle',
+        skeleton: { setPartVariants() {}, jointAttachmentPoints: null }, _activeMove: null, _fixedHold: false, vx: 0, vy: 0, input: { justDown: () => false, isDown: () => false }, moveSet: ['pin'] });
+    const atk = mk(1, 470), def = mk(-1, 520);
+    return { Wrestler, rt, atk, def, log, scene };
+}
+function stepTo(rt, log, from, to) { for (let t = from; t < to - 1e-9; t += 1 / 60) { rt._t = t; rt.update(1 / 60); } }
+
+test('the slam under ?falls=v1: one damage event, the foley and shake on the hit, the landing one frame later, the pin and the AI wait until it ends, a get-up clears it', async () => {
+    const { rt, atk, def, log } = await slamFixture();
+    let hurts = 0; const hurt = def._hurt.bind(def); def._hurt = (...a) => { hurts++; hurt(...a); };
+    atk._doBodySlam(def);
+    const frames = [];
+    for (let i = 0; i < 100 && !def._landing; i++) { rt._t = i / 60; atk.tickDown(1 / 60); def.tickDown(1 / 60); rt.update(1 / 60); frames.push({ t: (i + 1) / 60, hurts, foley: log.filter(l => l[0] === 'foley').length }); }
+    assert.ok(def._landing, 'the landing started');
+    assert.equal(def.state, 'down');
+    assert.equal(hurts, 1, 'exactly one damage event');
+    assert.equal(log.filter(l => l[0] === 'foley').length, 1);
+    assert.equal(log.filter(l => l[0] === 'shake').length, 1);
+    const hitFrame = frames.findIndex(f => f.hurts === 1), landFrame = frames.length - 1;
+    assert.ok(landFrame - hitFrame <= 1, `the landing starts within one frame of the hit (hit ${hitFrame}, landing ${landFrame})`);
+    assert.equal(def._landing.additive, true, 'the slam landing rides over the blend');
+    assert.equal(def.isLanding(), true);
+    // the pin starts in tryAction: while he lands it does nothing to him; once the landing is over the same call pins
+    atk._fixedHold = false; atk.state = 'standing'; atk._runPoseSequence = () => {}; atk.input = { justDown: (k) => k === 'action', isDown: () => false };
+    globalThis.Phaser ??= { Math: { Distance: { Between: (a, b, c, d) => Math.hypot(c - a, d - b) } } };
+    def.x = atk.x + 60;   // the slam threw him out of reach
+    atk.tryAction(def);
+    assert.equal(def.state, 'down', 'no pin while he is landing');
+    // the landing ends on its own clock (landingDuration), then isLanding() is false and the man is still down
+    const { landingDuration } = await import('../src/animation/falls.js');
+    const dur = landingDuration(def._landing.kind, def._landing.intensity, def._landing.vy);
+    def.stateTimer = 5;
+    for (let t = 0; t < dur + 0.1; t += 1 / 60) def.tickDown(1 / 60);
+    assert.equal(def.isLanding(), false);
+    assert.equal(def.state, 'down');
+    atk.state = 'standing'; atk.tryAction(def);
+    assert.equal(def.state, 'pinned', 'the same call pins once the landing is over');
+    def.state = 'down';
+    // a get-up (state leaves 'down') clears a landing that is still running
+    def._startLanding('back', undefined, true); assert.equal(def.isLanding(), true);
+    def.state = 'gettingUp'; def.tickDown(1 / 60);
+    assert.equal(def.isLanding(), false, 'leaving the mat clears the landing');
+    assert.equal(hurts, 1, 'still one damage event after the clip ends');
+});
+
+test('the slam with the flag off: no landing, he stays in the clip until it ends, one damage event on the impact', async () => {
+    const { rt, atk, def } = await slamFixture({ falls: false });
+    let hurts = 0; const hurt = def._hurt.bind(def); def._hurt = (...a) => { hurts++; hurt(...a); };
+    atk._doBodySlam(def);
+    for (let i = 0; i < 100 && hurts === 0; i++) { atk.tickDown(1 / 60); def.tickDown(1 / 60); rt.update(1 / 60); }
+    assert.equal(hurts, 1);
+    assert.equal(def.state, 'holding', 'flag off: the clip still owns him after the hit');
+    assert.ok(!def._landing);
+    delete globalThis.location;
+});

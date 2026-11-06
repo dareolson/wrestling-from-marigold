@@ -1108,6 +1108,7 @@ export default class Wrestler {
     }
 
     tickDown(dt) {
+        this._landNext?.();   // ?falls=v1: the slam's landing, one frame after its hit (_playPairedThrow)
         this._tickRiseFlip();
         this._tickPain();
         if (this.state !== 'down') { this._sell = null; this._hold = null; this._landing = null; } // pinned, picked up, rising: the sell (and hold) stops, and so does the landing
@@ -1185,13 +1186,15 @@ export default class Wrestler {
 
     // ?falls=v1 (PLAN_FALLS T2.2): the landing starts at contact. `kind` 'back' | 'front'; intensity from the pain context (the move's sell), vy the
     // pelvis speed at contact in px/s at s = 1. No-op with the flag off.
-    _startLanding(kind, vy = REF_VY) {
+    // `additive` (T2.4b, the slam): the offsets ride over the ground blend's pose at full size instead of into its target, where the blend's smoothstep scales
+    // them (7% left at 50 ms, 26% at 100 ms).
+    _startLanding(kind, vy = REF_VY, additive = false) {
         if (!fallsCandidate()) return;
-        this._landing = { kind, intensity: this._pain?.severity || 0.6, vy, t: 0 };
+        this._landing = { kind, intensity: this._pain?.severity || 0.6, vy, t: 0, additive };
     }
 
     // True from contact until the landing response ends: AI actions and pins wait (the man is still hitting the mat).
-    isLanding() { return !!this._landing; }
+    isLanding() { return !!this._landing && this.state === 'down'; }
 
     // The landing's offsets over the lying pose right now, or null.
     _landingOffsets() {
@@ -2549,7 +2552,7 @@ export default class Wrestler {
     _doBodySlam(other) {
         this._playPairedThrow(other, 'bodySlam', {
             damage: STAMINA_DRAIN.bodySlam,
-            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back'); },
+            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY, true); },
             finish: () => {
                 if (other.state === 'holding') other._layOnBack(DOWN_SEC);   // flag off, or the landing already laid him down at the impact
                 this._standBackUp();
@@ -2721,6 +2724,7 @@ export default class Wrestler {
         other._fixedHold = true;
 
         const release = (finished) => {
+            other._landNext   = null;
             this._activeMove  = null;
             other._activeMove = null;
             this._fixedHold   = false;
@@ -2734,22 +2738,25 @@ export default class Wrestler {
 
         const handle = runtime.play(clipId, { attacker: this, defender: other }, {
             onEvent: (event) => {
-                // ?falls=v1 (PLAN_FALLS T2.2): contact is the pelvis reaching the mat, a clip event after the hit (bodySlam: the impact event fires with the
-                // pelvis still 37 px up, falls_landing_audit). He leaves the clip here and lands on the grounded rig with the landing response. His time on
-                // the mat is unchanged (the clip's tail is added).
-                if (landAtHit && event.type === 'contact') {
-                    if (!fallsCandidate() || other.state !== 'holding') return;
-                    runtime.releaseRole(handle, 'defender');
-                    other._activeMove = null;
-                    other._fixedHold  = false;
-                    landAtHit(handle.clip.duration - handle.time);
-                    return;
-                }
                 if (event.type !== hitEvent) return;
                 if (this.state !== 'holding' || other.state !== 'holding') return;
                 other._hurt(damage, clipId);
                 this.scene.cameras.main.shake(...shake);
                 if (foley) this.scene.crowd?.impact?.(...foley);
+                // ?falls=v1 (PLAN_FALLS T2.4a): the hit is the contact. The slam's pelvis is at the mat on the `impact` event (falls_probe rows: 49.8 px at 1.067 s,
+                // 12.8 at 1.083 s and flat to 1.367 s), so the landing follows the hit at once; the old trigger, a contact marker at 1.367 s, left him lying
+                // 0.28 s with no reaction (hits, then a pause). It starts on the next frame's tickDown, not in this event: events fire in the runtime update,
+                // before the clip's pose is applied and drawn, and the ground blend starts from the LAST drawn body, which here is still the frame before the
+                // pelvis arrived (a blend from 49.8 px floated him down over 0.3 s). He leaves the clip then and lands on the grounded rig with the landing
+                // response. His time on the mat is unchanged (the clip's tail is added).
+                if (landAtHit && fallsCandidate()) other._landNext = () => {
+                    other._landNext = null;
+                    if (other.state !== 'holding' || other._activeMove !== handle) return;
+                    runtime.releaseRole(handle, 'defender');
+                    other._activeMove = null;
+                    other._fixedHold  = false;
+                    landAtHit(handle.clip.duration - handle.time);
+                };
             },
             onComplete: () => release(true),
             onCancel: () => release(false),
@@ -3701,7 +3708,7 @@ export default class Wrestler {
                 // motion and pauses stretch the blend with everything else.
                 const u = (handoff.t0 - this.stateTimer) / GROUND_HANDOFF_SEC;
                 if (handoff.from && u < 1 && handoff.lying === this.lying) {
-                    this.skeleton.updateGroundedBlend(x, y, s, facing, this.lying, handoff.from, u, this._landingOffsets());
+                    this.skeleton.updateGroundedBlend(x, y, s, facing, this.lying, handoff.from, u, this._landingOffsets(), !!this._landing?.additive);
                     return;
                 }
                 this._groundHandoff = null;
@@ -3711,7 +3718,8 @@ export default class Wrestler {
             const sold = state === 'down' ? this._sellPose() : null;
             const landD = this._landingOffsets();
             if (sold) {
-                this.skeleton.updateGroundedReach(x, y, s, facing, landD ? applyOffsets(sold.g, landD) : sold.g, sold.reach,
+                // limitKnees: the landing's knee bend on a sell pose already near the knee limit stays inside it (T2.4c)
+                this.skeleton.updateGroundedReach(x, y, s, facing, landD ? limitKnees(applyOffsets(sold.g, landD)) : sold.g, sold.reach,
                     sellArtCandidate() ? { paintedContacts: true,
                         backContact: this._sell?.plan[this._sell.i]?.part === 'back' } : undefined);
                 return;

@@ -65,7 +65,10 @@ const FRAME = () => {
         return +Math.max(...[[-ox, -oy], [fw - ox, -oy], [fw - ox, fh - oy], [-ox, fh - oy]].map(([x, y]) => m.b * x + m.d * y + m.ty)).toFixed(2); };
     const mk = (w) => ({ x: +w.x.toFixed(2), y: +w.y.toFixed(2), s: w.s, facing: w.facing, state: w.state, lying: w.lying, sold: !!w._sell, fv: w._fallVariant ?? null, fp: +(w.fallProgress ?? 0).toFixed(4), flp: +(w.flipProgress ?? 0).toFixed(4),
         pts: Object.fromEntries(Object.entries(w.skeleton.jointAttachmentPoints ?? {}).filter(([, p]) => p).map(([k, p]) => [k, { x: +p.x.toFixed(2), y: +p.y.toFixed(2) }])),
-        hands: { near: hand(w, 'nearHand'), far: hand(w, 'farHand') } });
+        hands: { near: hand(w, 'nearHand'), far: hand(w, 'farHand') },
+        // ?falls=v1 (T2.4c): the landing's own record per frame (null outside it): kind, intensity, incoming speed, seconds since contact, additive over the blend;
+        // blend = the ground blend from the clip's last body is still running. The audit reads phase and the landing's actual end off these, not a fixed time.
+        land: w._landing ? { kind: w._landing.kind, i: w._landing.intensity, vy: w._landing.vy, t: +w._landing.t.toFixed(4), add: !!w._landing.additive } : null, blend: !!w._groundHandoff });
     const h = a._activeMove ?? d._activeMove;
     return { clip: h?.clip?.id ?? null, ct: h ? +h.time.toFixed(4) : null, a: mk(a), d: mk(d) };
 };

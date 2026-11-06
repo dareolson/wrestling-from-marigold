@@ -32,7 +32,7 @@ function rises() {
 
 function falls() {
     const out = {};
-    // `spill` (PLAN_FALLS T2.5e) is a later variant behind ?falls=v1&spill=1, not in the pre-fix snapshot
+    // `spill` (PLAN_FALLS T2.5e) is a later variant (?falls=v1), not in the pre-fix snapshot
     for (const variant of Object.keys(Skeleton.FALLS).filter(v => v !== 'spill')) {
         out[variant] = [];
         for (const p of [0, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 1]) {

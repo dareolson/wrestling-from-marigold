@@ -314,3 +314,59 @@ test('Skeleton.fallBallisticU: the pelvis (hip channel) follows free fall to con
     assert.equal(Skeleton.fallClosingSpeed('backward', true), 1710 * 0.4, 'the hop reads free fall\'s closing speed');
     assert.equal(Skeleton.fallDuration('backward'), 400);
 });
+
+// ── Stage 3: chooseFall (T3.1) ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+import { chooseFall, MOVE_FALLS, LYING_REACH, KNOCKDOWN_STAMINA } from '../src/animation/falls.js';
+const OPEN = { back: 300, front: 300, side: 100 };
+const seen = (ctx, n = 60) => { const out = new Set(); for (let i = 0; i < n; i++) out.add(chooseFall({ ...ctx, rng: () => (i + 0.5) / n }).fall); return [...out].sort(); };
+
+test('chooseFall: front, head or chest -> backward or sitBack; gut -> kneesForward or sitBack', () => {
+    assert.deepEqual(seen({ move: 'headbutt', side: 'front', stamina: 70, room: OPEN }), ['backward', 'sitBack']);
+    assert.deepEqual(seen({ move: 'jab', hit: 'chest', side: 'front', stamina: 70, room: OPEN }), ['backward', 'sitBack']);
+    assert.deepEqual(seen({ move: 'frontKick', side: 'front', stamina: 70, room: OPEN }), ['kneesForward', 'sitBack']);
+    assert.deepEqual(seen({ move: 'kneeLift', side: 'front', stamina: 70, room: OPEN }), ['kneesForward', 'sitBack']);
+});
+test('chooseFall: from behind -> forward or kneesForward, whatever the hit', () => {
+    for (const move of ['headbutt', 'frontKick', 'shove']) assert.deepEqual(seen({ move, side: 'behind', stamina: 70, room: OPEN }), ['forward', 'kneesForward'], move);
+});
+test('chooseFall: a shove or glancing blow with room to the side spills; without room, or without the spill, it falls backward', () => {
+    assert.deepEqual(seen({ move: 'shove', side: 'front', stamina: 70, room: OPEN }), ['spill']);
+    assert.deepEqual(seen({ move: 'jab', glancing: true, side: 'front', stamina: 70, room: OPEN }), ['backward', 'sitBack']);   // the jab's own list has no spill
+    assert.ok(!seen({ move: 'shove', side: 'front', stamina: 70, room: { ...OPEN, side: 10 } }).includes('spill'));
+    assert.ok(!seen({ move: 'shove', side: 'front', stamina: 70, room: OPEN, spillAvailable: false }).includes('spill'));
+    assert.deepEqual(seen({ move: 'shove', side: 'front', stamina: 70, room: { ...OPEN, side: 10 } }), ['backward', 'sitBack']);
+});
+test('chooseFall: tired weights the collapses, fresh the straight falls, and neither excludes the other', () => {
+    const share = (stamina, fall) => { let n = 0; for (let i = 0; i < 1000; i++) if (chooseFall({ move: 'headbutt', side: 'front', stamina, room: OPEN, rng: () => (i + 0.5) / 1000 }).fall === fall) n++; return n / 1000; };
+    assert.equal(share(20, 'sitBack'), 0.75);
+    assert.equal(share(90, 'backward'), 0.75);
+    assert.equal(share(45, 'sitBack'), 0.5);
+});
+test('chooseFall: a fall that would leave the ring is dropped, by its lying length', () => {
+    // 94 px ahead: backward / sitBack reach 96 ahead, forward / kneesForward 92, so a front headbutt's own pool is out and the move's forward falls are what's left
+    const r = chooseFall({ move: 'headbutt', side: 'front', stamina: 70, room: { back: 300, front: 94, side: 100 }, rng: () => 0 });
+    assert.ok(['forward', 'kneesForward'].includes(r.fall));
+    assert.match(r.reason, /ring room/);
+    // no fall of the move fits: the one that overshoots least, flagged
+    const c = chooseFall({ move: 'cornerCharge', side: 'behind', stamina: 70, room: { back: 50, front: 300, side: 100 }, rng: () => 0 });
+    assert.match(c.reason, /cramped/);
+    // the corner charge: room inward fits both of its falls
+    assert.deepEqual(seen({ move: 'cornerCharge', side: 'behind', stamina: 70, room: OPEN }), ['forward', 'kneesForward']);
+});
+test('chooseFall: exceptional when a big move lands on a receiver under 25, otherwise the move\'s own tier', () => {
+    assert.equal(chooseFall({ move: 'suplex', side: 'front', stamina: 24, tier: 'heavy', room: OPEN }).tier, 'exceptional');
+    assert.equal(chooseFall({ move: 'bodySlam', side: 'front', stamina: 10, room: OPEN }).tier, 'exceptional');
+    assert.equal(chooseFall({ move: 'suplex', side: 'front', stamina: 25, tier: 'heavy', room: OPEN }).tier, 'heavy');
+    assert.equal(chooseFall({ move: 'hipToss', side: 'front', stamina: 5, tier: null, room: OPEN }).tier, null);
+    assert.equal(chooseFall({ move: 'headbutt', side: 'front', stamina: 5, room: OPEN }).tier, null);
+});
+test('chooseFall: every result is a Skeleton.FALLS variant, for every move, side, stamina and rng, and the table only names real falls', () => {
+    for (const [m, spec] of Object.entries(MOVE_FALLS)) for (const f of spec.falls) assert.ok(Skeleton.FALLS[f] && LYING_REACH[f], `${m} ${f}`);
+    for (const move of [...Object.keys(MOVE_FALLS), 'suplex', 'unknown']) for (const side of ['front', 'behind']) for (const stamina of [0, 20, 34, 40, 60, 100])
+        for (const room of [undefined, OPEN, { back: 20, front: 20, side: 0 }]) for (const rng of [() => 0, () => 0.5, () => 0.999]) {
+            const r = chooseFall({ move, side, stamina, room, rng });
+            assert.ok(Skeleton.FALLS[r.fall], `${move} ${side} ${stamina} -> ${r.fall}`);
+            assert.equal(typeof r.reason, 'string');
+        }
+});
+test('the knockdown threshold is 35', () => assert.equal(KNOCKDOWN_STAMINA, 35));

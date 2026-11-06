@@ -143,7 +143,7 @@ export function flexChange(d, joint, side) {
 //           lower legs flutter.
 //   seat    `sitBack`: the hips hit first (the fall's key before the end); the shoulders arrive and rock back up and down with the pelvis staying, the legs kick, the
 //           arms slap out lightly. No full-body hop.
-//   spill   the sideways spill concept (`?falls=v1&spill=1`): seat's response, quieter in the legs, the far arm the one that reacts.
+//   spill   the sideways spill concept (`?falls=v1`, the shove calls it): seat's response, quieter in the legs, the far arm the one that reacts.
 export const SHAPES = Object.freeze({
     catch: Object.freeze({ lying: 'prone', end: 0.62, sec: 0.09, compress: 1.8, torsoPress: 0.06, push: { px: 3.4, max: 4.2, from: 0.09, len: 0.2 }, torsoPerPx: 0.015, rock: 0, wince: { torso: 0.07, knee: 0.20 },
         knee: { near: [0.50, 0.06, 3.2, 0.35], far: [0.38, 0.12, 3.0, 0.30] }, thigh: null,
@@ -206,4 +206,84 @@ export function applyOffsetsSoft(base, d, cap = KNEE_SOFT_CAP) {
         g[sh] = g[th] - flex;
     }
     return g;
+}
+
+// ── The right fall for the situation (PLAN_FALLS Stage 3, T3.1-T3.2) ─────────────────────────────────────────────────────────────────────────────
+// `chooseFall(ctx)` is pure: the caller (Wrestler) measures the situation, this picks the fall and says why. Everything it returns is a Skeleton.FALLS
+// variant `startFall(downTime, fall, true)` accepts.
+
+/** What each move may cause (T3.2). `hit`: where it lands; `glancing`: a shove-type blow that can spill him; `falls`: the variants it is allowed to cause. */
+export const MOVE_FALLS = Object.freeze({
+    headbutt:        Object.freeze({ hit: 'head',  falls: Object.freeze(['backward', 'sitBack', 'forward', 'kneesForward']) }),
+    jab:             Object.freeze({ hit: 'head',  falls: Object.freeze(['backward', 'sitBack', 'forward', 'kneesForward']) }),
+    doubleAxeHandle: Object.freeze({ hit: 'head',  falls: Object.freeze(['backward', 'sitBack', 'forward', 'kneesForward']) }),
+    frontKick:       Object.freeze({ hit: 'gut',   falls: Object.freeze(['kneesForward', 'sitBack', 'forward', 'backward']) }),
+    kneeLift:        Object.freeze({ hit: 'gut',   falls: Object.freeze(['kneesForward', 'sitBack', 'forward', 'backward']) }),
+    shove:           Object.freeze({ hit: 'chest', glancing: true, falls: Object.freeze(['spill', 'backward', 'sitBack', 'forward', 'kneesForward']) }),
+    cornerCharge:    Object.freeze({ hit: 'chest', falls: Object.freeze(['forward', 'kneesForward']) }),   // the corner behind him: inward only
+});
+
+/** Big moves: a receiver this tired takes the exceptional landing from them (T3.1). */
+export const BIG_MOVES = Object.freeze(['suplex', 'backBodyDrop', 'bodySlam']);
+export const KNOCKDOWN_STAMINA = 35;   // T3.2: a strike that leaves him under this puts him down instead of staggering him
+export const TIRED_STAMINA = 35;       // below: the collapses (sitBack, kneesForward); FRESH_STAMINA and above: the straight falls (backward, forward)
+export const FRESH_STAMINA = 60;
+export const EXCEPTIONAL_STAMINA = 25;
+const SPILL_SIDE_PX = 40;              // depth room (px at s = 1) the spill needs on the side it goes
+
+/** How far a fall's lying body reaches from where he stood, along his facing (px at s = 1; measured on the rows of the G2 page, both facings). */
+export const LYING_REACH = Object.freeze({
+    backward:     Object.freeze({ back: 70, front: 96 }),    // head 68 behind where he stood, boots 95 ahead
+    sitBack:      Object.freeze({ back: 70, front: 96 }),
+    forward:      Object.freeze({ back: 92, front: 84 }),    // boots 91 behind, head 83 ahead
+    kneesForward: Object.freeze({ back: 92, front: 84 }),
+    spill:        Object.freeze({ back: 70, front: 96 }),
+});
+
+const COLLAPSES = new Set(['sitBack', 'kneesForward']);
+
+/**
+ * ctx: { move, hit?: 'head'|'chest'|'gut', side: 'front'|'behind', stamina, room: { back, front, side? }, tier?, glancing?, spillAvailable?, rng? }
+ *   side: where the attacker is relative to the way the receiver faces ('behind' falls him forward). room: px at s = 1 from him to the rope along his facing
+ *   (`front`), against it (`back`) and in depth (`side`). tier: the move's own landing tier (T2.5g/h). rng: () => [0, 1), Math.random by default.
+ * Returns { fall, tier, reason }: `reason` is the rule that picked, for the G3 page and the logs.
+ */
+export function chooseFall(ctx) {
+    const rng = ctx.rng ?? Math.random;
+    const spec = MOVE_FALLS[ctx.move];
+    const hit = ctx.hit ?? spec?.hit ?? 'chest';
+    const stamina = ctx.stamina ?? 100;
+    const tired = stamina < TIRED_STAMINA, fresh = stamina >= FRESH_STAMINA;
+    const allowed = new Set(spec?.falls ?? ['backward', 'sitBack', 'forward', 'kneesForward']);
+    const fits = (f) => ctx.room == null
+        || (ctx.room.back >= LYING_REACH[f].back && ctx.room.front >= LYING_REACH[f].front && (f !== 'spill' || (ctx.room.side ?? 0) >= SPILL_SIDE_PX));
+
+    let rule, pool;
+    if (ctx.side === 'behind') { rule = 'from behind'; pool = ['forward', 'kneesForward']; }
+    else if ((ctx.glancing ?? spec?.glancing) && allowed.has('spill') && ctx.spillAvailable !== false && fits('spill')) { rule = 'glancing blow, room to the side'; pool = ['spill']; }
+    else if (hit === 'gut') { rule = 'front, gut'; pool = ['kneesForward', 'sitBack']; }
+    else { rule = `front, ${hit}`; pool = ['backward', 'sitBack']; }
+
+    let cand = pool.filter(f => allowed.has(f));
+    if (!cand.length) cand = [...allowed].filter(f => ctx.side === 'behind' ? f === 'forward' || f === 'kneesForward' : f !== 'spill' || ctx.spillAvailable !== false);
+    let left = cand.filter(fits);
+    if (!left.length) {   // the pool leaves the ring: try the move's other falls, then take the one that overshoots least
+        left = [...allowed].filter(f => (f !== 'spill' || ctx.spillAvailable !== false) && fits(f));
+        if (left.length) rule += ' (ring room)';
+        else {
+            const over = (f) => Math.max(0, LYING_REACH[f].back - ctx.room.back) + Math.max(0, LYING_REACH[f].front - ctx.room.front);
+            const best = Math.min(...cand.map(over));
+            left = cand.filter(f => over(f) === best);
+            rule += ' (cramped)';
+        }
+    }
+
+    // fresh: toward the straight falls; tired: toward the collapses (weights 3:1 either way); in between, even
+    const weight = (f) => (tired ? (COLLAPSES.has(f) ? 3 : 1) : fresh ? (COLLAPSES.has(f) ? 1 : 3) : 1);
+    const total = left.reduce((t, f) => t + weight(f), 0);
+    let r = rng() * total, fall = left[left.length - 1];
+    for (const f of left) { r -= weight(f); if (r < 0) { fall = f; break; } }
+    const state = tired ? 'tired' : fresh ? 'fresh' : 'worn';
+    const tier = BIG_MOVES.includes(ctx.move) && stamina < EXCEPTIONAL_STAMINA ? 'exceptional' : (ctx.tier ?? null);
+    return { fall, tier, reason: `${rule}, ${state} (${Math.round(stamina)}) -> ${fall}` };
 }

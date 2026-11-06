@@ -1,0 +1,1294 @@
+[
+ {
+  "id": "headbutt-fresh-george",
+  "move": "headbutt",
+  "situation": "fresh",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "backward",
+  "tier": null,
+  "reason": "front, head, fresh (92) -> backward",
+  "stamina": {
+   "before": 100,
+   "after": 92
+  },
+  "lastX": 548,
+  "fallAt": 24,
+  "downAt": 48,
+  "frames": 94,
+  "events": [
+   {
+    "t": 3,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "headbutt",
+    "fall": "backward",
+    "tier": null,
+    "reason": "front, head, fresh (92) -> backward"
+   }
+  ]
+ },
+ {
+  "id": "headbutt-tired-george",
+  "move": "headbutt",
+  "situation": "tired",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "backward",
+  "tier": null,
+  "reason": "front, head, tired (14) -> backward",
+  "stamina": {
+   "before": 20,
+   "after": 13.5
+  },
+  "lastX": 551,
+  "fallAt": 24,
+  "downAt": 48,
+  "frames": 94,
+  "events": [
+   {
+    "t": 4,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "headbutt",
+    "fall": "backward",
+    "tier": null,
+    "reason": "front, head, tired (14) -> backward"
+   }
+  ]
+ },
+ {
+  "id": "headbutt-behind-george",
+  "move": "headbutt",
+  "situation": "behind",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "forward",
+  "tier": null,
+  "reason": "from behind, tired (14) -> forward",
+  "stamina": {
+   "before": 20,
+   "after": 13.5
+  },
+  "lastX": 551,
+  "fallAt": 24,
+  "downAt": 48,
+  "frames": 94,
+  "events": [
+   {
+    "t": 6,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "headbutt",
+    "fall": "forward",
+    "tier": null,
+    "reason": "from behind, tired (14) -> forward"
+   }
+  ]
+ },
+ {
+  "id": "headbutt-ropes-george",
+  "move": "headbutt",
+  "situation": "ropes",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, head, tired (14) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 13.5
+  },
+  "lastX": 803,
+  "fallAt": 24,
+  "downAt": 62,
+  "frames": 108,
+  "events": [
+   {
+    "t": 7,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "headbutt",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, head, tired (14) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "jab-fresh-george",
+  "move": "jab",
+  "situation": "fresh",
+  "victim": "george",
+  "outcome": "stagger",
+  "fall": null,
+  "tier": null,
+  "reason": null,
+  "stamina": {
+   "before": 100,
+   "after": 96.9
+  },
+  "lastX": 561,
+  "fallAt": -1,
+  "downAt": null,
+  "frames": 90,
+  "events": []
+ },
+ {
+  "id": "jab-tired-george",
+  "move": "jab",
+  "situation": "tired",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, head, tired (16) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 16.3
+  },
+  "lastX": 551,
+  "fallAt": 20,
+  "downAt": 58,
+  "frames": 104,
+  "events": [
+   {
+    "t": 11,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "jab",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, head, tired (16) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "jab-behind-george",
+  "move": "jab",
+  "situation": "behind",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "kneesForward",
+  "tier": null,
+  "reason": "from behind, tired (16) -> kneesForward",
+  "stamina": {
+   "before": 20,
+   "after": 16.3
+  },
+  "lastX": 551,
+  "fallAt": 20,
+  "downAt": 58,
+  "frames": 104,
+  "events": [
+   {
+    "t": 12,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "jab",
+    "fall": "kneesForward",
+    "tier": null,
+    "reason": "from behind, tired (16) -> kneesForward"
+   }
+  ]
+ },
+ {
+  "id": "jab-ropes-george",
+  "move": "jab",
+  "situation": "ropes",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "backward",
+  "tier": null,
+  "reason": "front, head, tired (16) -> backward",
+  "stamina": {
+   "before": 20,
+   "after": 16.3
+  },
+  "lastX": 803,
+  "fallAt": 20,
+  "downAt": 44,
+  "frames": 90,
+  "events": [
+   {
+    "t": 14,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "jab",
+    "fall": "backward",
+    "tier": null,
+    "reason": "front, head, tired (16) -> backward"
+   }
+  ]
+ },
+ {
+  "id": "frontKick-fresh-george",
+  "move": "frontKick",
+  "situation": "fresh",
+  "victim": "george",
+  "outcome": "stagger",
+  "fall": null,
+  "tier": null,
+  "reason": null,
+  "stamina": {
+   "before": 100,
+   "after": 94.9
+  },
+  "lastX": 598,
+  "fallAt": -1,
+  "downAt": null,
+  "frames": 103,
+  "events": []
+ },
+ {
+  "id": "frontKick-tired-george",
+  "move": "frontKick",
+  "situation": "tired",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "kneesForward",
+  "tier": null,
+  "reason": "front, gut, tired (16) -> kneesForward",
+  "stamina": {
+   "before": 20,
+   "after": 15.6
+  },
+  "lastX": 588,
+  "fallAt": 33,
+  "downAt": 71,
+  "frames": 117,
+  "events": [
+   {
+    "t": 18,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "frontKick",
+    "fall": "kneesForward",
+    "tier": null,
+    "reason": "front, gut, tired (16) -> kneesForward"
+   }
+  ]
+ },
+ {
+  "id": "frontKick-behind-george",
+  "move": "frontKick",
+  "situation": "behind",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "forward",
+  "tier": null,
+  "reason": "from behind, tired (16) -> forward",
+  "stamina": {
+   "before": 20,
+   "after": 15.6
+  },
+  "lastX": 588,
+  "fallAt": 33,
+  "downAt": 57,
+  "frames": 103,
+  "events": [
+   {
+    "t": 20,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "frontKick",
+    "fall": "forward",
+    "tier": null,
+    "reason": "from behind, tired (16) -> forward"
+   }
+  ]
+ },
+ {
+  "id": "frontKick-ropes-george",
+  "move": "frontKick",
+  "situation": "ropes",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, gut, tired (16) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 15.6
+  },
+  "lastX": 803,
+  "fallAt": 33,
+  "downAt": 71,
+  "frames": 117,
+  "events": [
+   {
+    "t": 21,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "frontKick",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, gut, tired (16) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "shove-fresh-george",
+  "move": "shove",
+  "situation": "fresh",
+  "victim": "george",
+  "outcome": "stagger",
+  "fall": null,
+  "tier": null,
+  "reason": null,
+  "stamina": {
+   "before": 100,
+   "after": 97.9
+  },
+  "lastX": 602,
+  "fallAt": -1,
+  "downAt": null,
+  "frames": 105,
+  "events": []
+ },
+ {
+  "id": "shove-tired-george",
+  "move": "shove",
+  "situation": "tired",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "spill",
+  "tier": null,
+  "reason": "glancing blow, room to the side, tired (19) -> spill",
+  "stamina": {
+   "before": 20,
+   "after": 18.8
+  },
+  "lastX": 592,
+  "fallAt": 35,
+  "downAt": 74,
+  "frames": 120,
+  "events": [
+   {
+    "t": 25,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "shove",
+    "fall": "spill",
+    "tier": null,
+    "reason": "glancing blow, room to the side, tired (19) -> spill"
+   }
+  ]
+ },
+ {
+  "id": "shove-behind-george",
+  "move": "shove",
+  "situation": "behind",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "forward",
+  "tier": null,
+  "reason": "from behind, tired (19) -> forward",
+  "stamina": {
+   "before": 20,
+   "after": 18.8
+  },
+  "lastX": 592,
+  "fallAt": 35,
+  "downAt": 59,
+  "frames": 105,
+  "events": [
+   {
+    "t": 27,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "shove",
+    "fall": "forward",
+    "tier": null,
+    "reason": "from behind, tired (19) -> forward"
+   }
+  ]
+ },
+ {
+  "id": "shove-ropes-george",
+  "move": "shove",
+  "situation": "ropes",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "spill",
+  "tier": null,
+  "reason": "glancing blow, room to the side, tired (19) -> spill",
+  "stamina": {
+   "before": 20,
+   "after": 18.8
+  },
+  "lastX": 803,
+  "fallAt": 35,
+  "downAt": 74,
+  "frames": 120,
+  "events": [
+   {
+    "t": 29,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "shove",
+    "fall": "spill",
+    "tier": null,
+    "reason": "glancing blow, room to the side, tired (19) -> spill"
+   }
+  ]
+ },
+ {
+  "id": "doubleAxeHandle-fresh-george",
+  "move": "doubleAxeHandle",
+  "situation": "fresh",
+  "victim": "george",
+  "outcome": "stagger",
+  "fall": null,
+  "tier": null,
+  "reason": null,
+  "stamina": {
+   "before": 100,
+   "after": 89.9
+  },
+  "lastX": 561,
+  "fallAt": -1,
+  "downAt": null,
+  "frames": 102,
+  "events": []
+ },
+ {
+  "id": "doubleAxeHandle-tired-george",
+  "move": "doubleAxeHandle",
+  "situation": "tired",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, head, tired (10) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 10.4
+  },
+  "lastX": 551,
+  "fallAt": 32,
+  "downAt": 70,
+  "frames": 116,
+  "events": [
+   {
+    "t": 32,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "doubleAxeHandle",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, head, tired (10) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "doubleAxeHandle-behind-george",
+  "move": "doubleAxeHandle",
+  "situation": "behind",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "kneesForward",
+  "tier": null,
+  "reason": "from behind, tired (10) -> kneesForward",
+  "stamina": {
+   "before": 20,
+   "after": 10.4
+  },
+  "lastX": 551,
+  "fallAt": 32,
+  "downAt": 70,
+  "frames": 116,
+  "events": [
+   {
+    "t": 34,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "doubleAxeHandle",
+    "fall": "kneesForward",
+    "tier": null,
+    "reason": "from behind, tired (10) -> kneesForward"
+   }
+  ]
+ },
+ {
+  "id": "doubleAxeHandle-ropes-george",
+  "move": "doubleAxeHandle",
+  "situation": "ropes",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, head, tired (10) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 10.4
+  },
+  "lastX": 803,
+  "fallAt": 32,
+  "downAt": 70,
+  "frames": 116,
+  "events": [
+   {
+    "t": 36,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "doubleAxeHandle",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, head, tired (10) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "kneeLift-fresh-george",
+  "move": "kneeLift",
+  "situation": "fresh",
+  "victim": "george",
+  "outcome": "stagger",
+  "fall": null,
+  "tier": null,
+  "reason": null,
+  "stamina": {
+   "before": 100,
+   "after": 92.9
+  },
+  "lastX": 561,
+  "fallAt": -1,
+  "downAt": null,
+  "frames": 98,
+  "events": []
+ },
+ {
+  "id": "kneeLift-tired-george",
+  "move": "kneeLift",
+  "situation": "tired",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, gut, tired (13) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 12.9
+  },
+  "lastX": 551,
+  "fallAt": 28,
+  "downAt": 66,
+  "frames": 112,
+  "events": [
+   {
+    "t": 40,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "kneeLift",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, gut, tired (13) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "kneeLift-behind-george",
+  "move": "kneeLift",
+  "situation": "behind",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "forward",
+  "tier": null,
+  "reason": "from behind, tired (13) -> forward",
+  "stamina": {
+   "before": 20,
+   "after": 12.9
+  },
+  "lastX": 551,
+  "fallAt": 28,
+  "downAt": 52,
+  "frames": 98,
+  "events": [
+   {
+    "t": 42,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "kneeLift",
+    "fall": "forward",
+    "tier": null,
+    "reason": "from behind, tired (13) -> forward"
+   }
+  ]
+ },
+ {
+  "id": "kneeLift-ropes-george",
+  "move": "kneeLift",
+  "situation": "ropes",
+  "victim": "george",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, gut, tired (13) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 12.9
+  },
+  "lastX": 803,
+  "fallAt": 28,
+  "downAt": 66,
+  "frames": 112,
+  "events": [
+   {
+    "t": 43,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "kneeLift",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, gut, tired (13) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "headbutt-fresh-lou",
+  "move": "headbutt",
+  "situation": "fresh",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, head, fresh (92) -> sitBack",
+  "stamina": {
+   "before": 100,
+   "after": 92
+  },
+  "lastX": 548,
+  "fallAt": 24,
+  "downAt": 62,
+  "frames": 108,
+  "events": [
+   {
+    "t": 3,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "headbutt",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, head, fresh (92) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "headbutt-tired-lou",
+  "move": "headbutt",
+  "situation": "tired",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, head, tired (14) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 13.5
+  },
+  "lastX": 551,
+  "fallAt": 24,
+  "downAt": 62,
+  "frames": 108,
+  "events": [
+   {
+    "t": 5,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "headbutt",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, head, tired (14) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "headbutt-behind-lou",
+  "move": "headbutt",
+  "situation": "behind",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "forward",
+  "tier": null,
+  "reason": "from behind, tired (14) -> forward",
+  "stamina": {
+   "before": 20,
+   "after": 13.5
+  },
+  "lastX": 551,
+  "fallAt": 24,
+  "downAt": 48,
+  "frames": 94,
+  "events": [
+   {
+    "t": 6,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "headbutt",
+    "fall": "forward",
+    "tier": null,
+    "reason": "from behind, tired (14) -> forward"
+   }
+  ]
+ },
+ {
+  "id": "headbutt-ropes-lou",
+  "move": "headbutt",
+  "situation": "ropes",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, head, tired (14) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 13.5
+  },
+  "lastX": 803,
+  "fallAt": 24,
+  "downAt": 62,
+  "frames": 108,
+  "events": [
+   {
+    "t": 8,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "headbutt",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, head, tired (14) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "jab-fresh-lou",
+  "move": "jab",
+  "situation": "fresh",
+  "victim": "lou",
+  "outcome": "stagger",
+  "fall": null,
+  "tier": null,
+  "reason": null,
+  "stamina": {
+   "before": 100,
+   "after": 96.9
+  },
+  "lastX": 561,
+  "fallAt": -1,
+  "downAt": null,
+  "frames": 90,
+  "events": []
+ },
+ {
+  "id": "jab-tired-lou",
+  "move": "jab",
+  "situation": "tired",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "backward",
+  "tier": null,
+  "reason": "front, head, tired (16) -> backward",
+  "stamina": {
+   "before": 20,
+   "after": 16.3
+  },
+  "lastX": 551,
+  "fallAt": 20,
+  "downAt": 44,
+  "frames": 90,
+  "events": [
+   {
+    "t": 11,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "jab",
+    "fall": "backward",
+    "tier": null,
+    "reason": "front, head, tired (16) -> backward"
+   }
+  ]
+ },
+ {
+  "id": "jab-behind-lou",
+  "move": "jab",
+  "situation": "behind",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "kneesForward",
+  "tier": null,
+  "reason": "from behind, tired (16) -> kneesForward",
+  "stamina": {
+   "before": 20,
+   "after": 16.3
+  },
+  "lastX": 551,
+  "fallAt": 20,
+  "downAt": 58,
+  "frames": 104,
+  "events": [
+   {
+    "t": 13,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "jab",
+    "fall": "kneesForward",
+    "tier": null,
+    "reason": "from behind, tired (16) -> kneesForward"
+   }
+  ]
+ },
+ {
+  "id": "jab-ropes-lou",
+  "move": "jab",
+  "situation": "ropes",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, head, tired (16) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 16.3
+  },
+  "lastX": 803,
+  "fallAt": 20,
+  "downAt": 58,
+  "frames": 104,
+  "events": [
+   {
+    "t": 14,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "jab",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, head, tired (16) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "frontKick-fresh-lou",
+  "move": "frontKick",
+  "situation": "fresh",
+  "victim": "lou",
+  "outcome": "stagger",
+  "fall": null,
+  "tier": null,
+  "reason": null,
+  "stamina": {
+   "before": 100,
+   "after": 94.9
+  },
+  "lastX": 598,
+  "fallAt": -1,
+  "downAt": null,
+  "frames": 103,
+  "events": []
+ },
+ {
+  "id": "frontKick-tired-lou",
+  "move": "frontKick",
+  "situation": "tired",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, gut, tired (16) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 15.6
+  },
+  "lastX": 588,
+  "fallAt": 33,
+  "downAt": 71,
+  "frames": 117,
+  "events": [
+   {
+    "t": 18,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "frontKick",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, gut, tired (16) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "frontKick-behind-lou",
+  "move": "frontKick",
+  "situation": "behind",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "kneesForward",
+  "tier": null,
+  "reason": "from behind, tired (16) -> kneesForward",
+  "stamina": {
+   "before": 20,
+   "after": 15.6
+  },
+  "lastX": 588,
+  "fallAt": 33,
+  "downAt": 71,
+  "frames": 117,
+  "events": [
+   {
+    "t": 20,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "frontKick",
+    "fall": "kneesForward",
+    "tier": null,
+    "reason": "from behind, tired (16) -> kneesForward"
+   }
+  ]
+ },
+ {
+  "id": "frontKick-ropes-lou",
+  "move": "frontKick",
+  "situation": "ropes",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, gut, tired (16) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 15.6
+  },
+  "lastX": 803,
+  "fallAt": 33,
+  "downAt": 71,
+  "frames": 117,
+  "events": [
+   {
+    "t": 22,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "frontKick",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, gut, tired (16) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "shove-fresh-lou",
+  "move": "shove",
+  "situation": "fresh",
+  "victim": "lou",
+  "outcome": "stagger",
+  "fall": null,
+  "tier": null,
+  "reason": null,
+  "stamina": {
+   "before": 100,
+   "after": 97.9
+  },
+  "lastX": 602,
+  "fallAt": -1,
+  "downAt": null,
+  "frames": 105,
+  "events": []
+ },
+ {
+  "id": "shove-tired-lou",
+  "move": "shove",
+  "situation": "tired",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "spill",
+  "tier": null,
+  "reason": "glancing blow, room to the side, tired (19) -> spill",
+  "stamina": {
+   "before": 20,
+   "after": 18.8
+  },
+  "lastX": 592,
+  "fallAt": 35,
+  "downAt": 74,
+  "frames": 120,
+  "events": [
+   {
+    "t": 26,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "shove",
+    "fall": "spill",
+    "tier": null,
+    "reason": "glancing blow, room to the side, tired (19) -> spill"
+   }
+  ]
+ },
+ {
+  "id": "shove-behind-lou",
+  "move": "shove",
+  "situation": "behind",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "kneesForward",
+  "tier": null,
+  "reason": "from behind, tired (19) -> kneesForward",
+  "stamina": {
+   "before": 20,
+   "after": 18.8
+  },
+  "lastX": 592,
+  "fallAt": 35,
+  "downAt": 73,
+  "frames": 119,
+  "events": [
+   {
+    "t": 28,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "shove",
+    "fall": "kneesForward",
+    "tier": null,
+    "reason": "from behind, tired (19) -> kneesForward"
+   }
+  ]
+ },
+ {
+  "id": "shove-ropes-lou",
+  "move": "shove",
+  "situation": "ropes",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "spill",
+  "tier": null,
+  "reason": "glancing blow, room to the side, tired (19) -> spill",
+  "stamina": {
+   "before": 20,
+   "after": 18.8
+  },
+  "lastX": 803,
+  "fallAt": 35,
+  "downAt": 74,
+  "frames": 120,
+  "events": [
+   {
+    "t": 30,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "shove",
+    "fall": "spill",
+    "tier": null,
+    "reason": "glancing blow, room to the side, tired (19) -> spill"
+   }
+  ]
+ },
+ {
+  "id": "doubleAxeHandle-fresh-lou",
+  "move": "doubleAxeHandle",
+  "situation": "fresh",
+  "victim": "lou",
+  "outcome": "stagger",
+  "fall": null,
+  "tier": null,
+  "reason": null,
+  "stamina": {
+   "before": 100,
+   "after": 89.9
+  },
+  "lastX": 561,
+  "fallAt": -1,
+  "downAt": null,
+  "frames": 102,
+  "events": []
+ },
+ {
+  "id": "doubleAxeHandle-tired-lou",
+  "move": "doubleAxeHandle",
+  "situation": "tired",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, head, tired (10) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 10.4
+  },
+  "lastX": 551,
+  "fallAt": 32,
+  "downAt": 70,
+  "frames": 116,
+  "events": [
+   {
+    "t": 33,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "doubleAxeHandle",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, head, tired (10) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "doubleAxeHandle-behind-lou",
+  "move": "doubleAxeHandle",
+  "situation": "behind",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "kneesForward",
+  "tier": null,
+  "reason": "from behind, tired (10) -> kneesForward",
+  "stamina": {
+   "before": 20,
+   "after": 10.4
+  },
+  "lastX": 551,
+  "fallAt": 32,
+  "downAt": 70,
+  "frames": 116,
+  "events": [
+   {
+    "t": 35,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "doubleAxeHandle",
+    "fall": "kneesForward",
+    "tier": null,
+    "reason": "from behind, tired (10) -> kneesForward"
+   }
+  ]
+ },
+ {
+  "id": "doubleAxeHandle-ropes-lou",
+  "move": "doubleAxeHandle",
+  "situation": "ropes",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, head, tired (10) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 10.4
+  },
+  "lastX": 803,
+  "fallAt": 32,
+  "downAt": 70,
+  "frames": 116,
+  "events": [
+   {
+    "t": 37,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "doubleAxeHandle",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, head, tired (10) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "kneeLift-fresh-lou",
+  "move": "kneeLift",
+  "situation": "fresh",
+  "victim": "lou",
+  "outcome": "stagger",
+  "fall": null,
+  "tier": null,
+  "reason": null,
+  "stamina": {
+   "before": 100,
+   "after": 92.9
+  },
+  "lastX": 561,
+  "fallAt": -1,
+  "downAt": null,
+  "frames": 98,
+  "events": []
+ },
+ {
+  "id": "kneeLift-tired-lou",
+  "move": "kneeLift",
+  "situation": "tired",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, gut, tired (13) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 12.9
+  },
+  "lastX": 551,
+  "fallAt": 28,
+  "downAt": 66,
+  "frames": 112,
+  "events": [
+   {
+    "t": 41,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "kneeLift",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, gut, tired (13) -> sitBack"
+   }
+  ]
+ },
+ {
+  "id": "kneeLift-behind-lou",
+  "move": "kneeLift",
+  "situation": "behind",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "forward",
+  "tier": null,
+  "reason": "from behind, tired (13) -> forward",
+  "stamina": {
+   "before": 20,
+   "after": 12.9
+  },
+  "lastX": 551,
+  "fallAt": 28,
+  "downAt": 52,
+  "frames": 98,
+  "events": [
+   {
+    "t": 43,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "kneeLift",
+    "fall": "forward",
+    "tier": null,
+    "reason": "from behind, tired (13) -> forward"
+   }
+  ]
+ },
+ {
+  "id": "kneeLift-ropes-lou",
+  "move": "kneeLift",
+  "situation": "ropes",
+  "victim": "lou",
+  "outcome": "fall",
+  "fall": "sitBack",
+  "tier": null,
+  "reason": "front, gut, tired (13) -> sitBack",
+  "stamina": {
+   "before": 20,
+   "after": 12.9
+  },
+  "lastX": 803,
+  "fallAt": 28,
+  "downAt": 66,
+  "frames": 112,
+  "events": [
+   {
+    "t": 44,
+    "type": "fall",
+    "wrestler": "p2",
+    "move": "kneeLift",
+    "fall": "sitBack",
+    "tier": null,
+    "reason": "front, gut, tired (13) -> sitBack"
+   }
+  ]
+ }
+]

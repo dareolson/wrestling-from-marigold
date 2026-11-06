@@ -2236,7 +2236,7 @@ export default class Skeleton {
             { t: 0.62, hip: 14, torso: Math.PI + 0.30, farThigh: 1.45, farShin: 1.55, nearThigh: 1.38, nearShin: 1.50, farArm: -0.35, farFore: -0.45, nearArm: -0.30, nearFore: -0.40 },
             { ...Skeleton.GROUNDED_SUPINE, t: 1.00 },
         ]) }),
-        // ?falls=v1&spill=1 (PLAN_FALLS T2.5e, concept, no move calls it): the feet go out from under him sideways. The hip takes the mat first with the near leg
+        // ?falls=v1 (PLAN_FALLS T2.5e; the shove calls it through chooseFall since T3.3): the feet go out from under him sideways. The hip takes the mat first with the near leg
         // tucked under it and the far leg kicked out, the near arm braces beside the hip, the far arm flies up; the brace gives and the torso rolls back onto the
         // shoulders. Not a rotated back bump: the first impact is the hip, at 0.55, and the shoulders arrive 0.3 later.
         spill: Object.freeze({ lands: 'supine', duration: 640, keys: Object.freeze([

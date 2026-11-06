@@ -14,7 +14,7 @@ import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { GETUPS, GETUP_SETS, eligibleForBackSell, legacyFor, chooseGetUp, stallMs, stallTimeline, stallOffsets, sineInOut } from './animation/getUps.js';
-import { landingResponse, landingDuration, applyOffsetsSoft, TIERS, REF_VY } from './animation/falls.js';
+import { landingResponse, landingDuration, applyOffsetsSoft, TIERS, REF_VY, chooseFall, KNOCKDOWN_STAMINA } from './animation/falls.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
@@ -177,8 +177,8 @@ export const moveTier = (move) => {
     }
     return MOVE_TIER[move] ?? null;
 };
-// ?falls=v1&spill=1 (T2.5e): the sideways spill, a concept fall that no move calls; startFall('spill') only plays with it.
-export const spillCandidate = () => fallsCandidate() && new URLSearchParams(location.search).get('spill') === '1';
+// ?falls=v1 (T3.3): the sideways spill (T2.5e), called by the shove through chooseFall. It was `&spill=1` until Stage 3; the flag is gone, the name stays for the tools.
+export const spillCandidate = () => fallsCandidate();
 export const waistlockCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('waistlock') === 'v1';
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
@@ -1758,9 +1758,15 @@ export default class Wrestler {
     // from the rope at his y. Measured: the hips are the anchor, the body lies about 94·s behind them and 71·s ahead (joints), so the
     // 60·s of startClotheslineFall's downMargin would leave the feet 34 px through the rope.
     _fallFromCorner(facing, part) {
-        const variant = part === 'gut' ? 'kneesForward' : 'forward';
+        let variant = part === 'gut' ? 'kneesForward' : 'forward';
         this.facing = facing;
-        this.startFall(DOWN_SEC + CORNER_CHARGE.sellRoomS, variant, true);
+        let tier = null;
+        if (fallsCandidate()) {   // Stage 3 (T3.2): the corner charge picks through chooseFall, the corner behind him (inward only); the gut still folds him onto his knees
+            const pick = this._pickFall(null, 'cornerCharge', { hit: part === 'gut' ? 'gut' : 'chest', side: 'behind', allowed: part === 'gut' ? ['kneesForward'] : null,
+                room: { back: CORNER_CHARGE.landMargin } });   // the fall carries him inward to landMargin from the rope: that is the room behind him
+            variant = pick.fall; tier = pick.tier;
+        }
+        this.startFall(DOWN_SEC + CORNER_CHARGE.sellRoomS, variant, true, tier);
         this._cornerFallTok = {};
         const tok = this._cornerFallTok, b = ringBoundsAtY(this.y), margin = CORNER_CHARGE.landMargin * this.s;
         const x = facing > 0 ? Math.max(this.x, b.left + margin) : Math.min(this.x, b.right - margin);
@@ -2161,7 +2167,7 @@ export default class Wrestler {
                     return;
                 }
                 other._drain(STAMINA_DRAIN.jab);
-                other._doSell('sellHead', 110, () => other.startStagger());
+                other._doSell('sellHead', 110, () => other._staggerOrFall(this, 'jab'));
                 this.scene.crowd?.impact?.('strike', 0.6);
             },
             onComplete: () => { this._activeMove = null; },
@@ -2197,7 +2203,7 @@ export default class Wrestler {
                 if (!strikable || Math.abs(other.y - this.y) > STRIKE_DEPTH_TOLERANCE ||
                     Math.abs(other.x - this.x) > FRONT_KICK_HIT * this.s) return;
                 other._hurt(STAMINA_DRAIN.frontKick, 'frontKick');
-                other._doSell('sellChest', 110, () => other.startStagger());
+                other._doSell('sellChest', 110, () => other._staggerOrFall(this, 'frontKick'));
                 // The boot shoves him a step away from the attacker.
                 const pushX = Math.max(b.left + margin, Math.min(b.right - margin, other.x + facing * 28 * this.s));
                 this.scene.tweens.add({ targets: other, x: pushX, duration: 105, ease: 'Cubic.easeOut' });
@@ -2235,7 +2241,7 @@ export default class Wrestler {
                 if (!strikable || Math.abs(other.y - this.y) > STRIKE_DEPTH_TOLERANCE ||
                     Math.abs(other.x - this.x) > SHOVE_HIT * this.s) return;
                 other._hurt(STAMINA_DRAIN.shove, 'shove');
-                other._doSell('sellChest', 110, () => other.startStagger());
+                other._doSell('sellChest', 110, () => other._staggerOrFall(this, 'shove'));
                 const pushX = Math.max(b.left + margin, Math.min(b.right - margin, other.x + facing * 40 * this.s));
                 this.scene.tweens.add({ targets: other, x: pushX, duration: 105, ease: 'Cubic.easeOut' });
                 this.scene.crowd?.impact?.('strike', 0.6);
@@ -2253,7 +2259,7 @@ export default class Wrestler {
                 return;
             }
             other._drain(STAMINA_DRAIN.jab);
-            other._doSell('sellHead', 110, () => other.startStagger());
+            other._doSell('sellHead', 110, () => other._staggerOrFall(this, 'jab'));
         });
     }
 
@@ -2266,7 +2272,7 @@ export default class Wrestler {
                 return;
             }
             other._hurt(STAMINA_DRAIN.headbutt, 'headbutt');
-            other._doSell('sellHead', 150, () => other.startFall());
+            other._doSell('sellHead', 150, () => (fallsCandidate() ? other._fallBySituation(this, 'headbutt') : other.startFall()));
         });
     }
 
@@ -2289,7 +2295,7 @@ export default class Wrestler {
             }
             other._hurt(STAMINA_DRAIN.doubleAxeHandle, 'doubleAxeHandle');
             this.scene.cameras.main.shake(80, 0.001);
-            other._doSell('sellHead', 130, () => other.startStagger());
+            other._doSell('sellHead', 130, () => other._staggerOrFall(this, 'doubleAxeHandle'));
         });
     }
 
@@ -3201,7 +3207,7 @@ export default class Wrestler {
                 return;
             }
             other._hurt(STAMINA_DRAIN.kneeLift, 'kneeLift');
-            other._doSell('sellChest', 140, () => other.startStagger());
+            other._doSell('sellChest', 140, () => other._staggerOrFall(this, 'kneeLift'));
         });
     }
 
@@ -3567,6 +3573,34 @@ export default class Wrestler {
         });
     }
 
+    // ?falls=v1 (PLAN_FALLS Stage 3, T3.2): the fall that fits the situation. `attacker` may be null (the corner charge: the corner is behind him).
+    // The situation: where the attacker stands against the way he faces, his stamina, the room to the ropes along his facing and against it, and the depth room.
+    // Returns chooseFall's { fall, tier, reason }; `allowed` narrows the move's own list.
+    _pickFall(attacker, move, { hit, side, allowed, room: roomOver } = {}) {
+        const b = ringBoundsAtY(this.y), s = this.s || 1, x = this.x, f = this.facing || 1;
+        const toRight = (b.right - x) / s, toLeft = (x - b.left) / s;
+        const room = { front: f > 0 ? toRight : toLeft, back: f > 0 ? toLeft : toRight, side: Math.min(this.y - RING.farLeft.y, RING.nearLeft.y - this.y) / s, ...roomOver };
+        const dir = attacker ? Math.sign(attacker.x - this.x) || -f : -f;
+        const sideOf = side ?? (dir === f ? 'front' : 'behind');
+        const pick = chooseFall({ move, hit, side: sideOf, stamina: this.stamina, room, tier: moveTier(move), spillAvailable: spillCandidate() });
+        if (allowed && !allowed.includes(pick.fall)) { pick.fall = allowed[0]; pick.reason += ` (narrowed to ${pick.fall})`; }
+        this.scene._logEvent?.('fall', { wrestler: this.scene.w1 === this ? 'p1' : 'p2', move, fall: pick.fall, tier: pick.tier, reason: pick.reason });
+        return pick;
+    }
+
+    _fallBySituation(attacker, move, opts = {}) {
+        const pick = this._pickFall(attacker, move, opts);
+        this.startFall(DOWN_SEC, pick.fall, true, pick.tier);
+        return pick;
+    }
+
+    // A strike's reaction. Flag off: always the stagger. ?falls=v1 (T3.2): a man the hit leaves under KNOCKDOWN_STAMINA goes down instead, by the situation.
+    // Damage, down time and the pin rules are the move's own; the threshold is the only new rule.
+    _staggerOrFall(attacker, move) {
+        if (fallsCandidate() && this.stamina < KNOCKDOWN_STAMINA && !this._cornerEp) this._fallBySituation(attacker, move);
+        else this.startStagger();
+    }
+
     // A stagger is one of STAGGER_TYPES (src/animation/staggers.js), chosen by how
     // hurt he is: rock, stumble, reel, buckle, out on his feet. Each is its own
     // movement, with real backward steps and a torso that reels (`bend`).
@@ -3602,7 +3636,7 @@ export default class Wrestler {
     // `fall` is a direction ('backward' / 'forward', a random variant of it,
     // see Skeleton.FALL_VARIANTS) or one Skeleton.FALLS variant by name.
     // `exact` (T3c.8): `fall` is one Skeleton.FALLS variant even where its name is also a direction ('forward').
-    startFall(downTime = DOWN_SEC, fall = 'backward', exact = false) {
+    startFall(downTime = DOWN_SEC, fall = 'backward', exact = false, tier = null) {
         const variants = exact ? null : Skeleton.FALL_VARIANTS[fall];
         const variant  = variants ? variants[Math.floor(Math.random() * variants.length)] : fall;
         const spec     = Skeleton.FALLS[variant];
@@ -3627,8 +3661,8 @@ export default class Wrestler {
                 this.scene.cameras.main.shake(100, 0.0015);
                 // The fall's last frame is contact. The backward fall (T2.2) lands as a back bump with a hop, its closing pelvis speed read off the keys (the easeIn's
                 // end rate); the others (T2.5b-e) are their own shapes (falls.js SHAPES), no flight.
-                if (this._fallVariant === 'backward') this._startLanding('back', Skeleton.fallClosingSpeed(this._fallVariant, ballistic));
-                else if (FALL_LANDING[this._fallVariant]) this._startLanding(FALL_LANDING[this._fallVariant]);
+                if (this._fallVariant === 'backward') this._startLanding('back', Skeleton.fallClosingSpeed(this._fallVariant, ballistic), false, tier);
+                else if (FALL_LANDING[this._fallVariant]) this._startLanding(FALL_LANDING[this._fallVariant], REF_VY, false, tier);
             },
         });
     }

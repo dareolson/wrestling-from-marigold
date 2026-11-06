@@ -209,3 +209,24 @@ Each page has a download button for the sheet; right-click the sheet image
 and Save Image As works too. If a page moves, the game pages list everyone:
 https://www.spriters-resource.com/snes/wwfroyal/ and
 https://www.spriters-resource.com/snes/saturdaynightslammasters/.
+
+
+## 4. Falls by move (`?falls=v1`, PLAN_FALLS Stage 3)
+
+`chooseFall` (src/animation/falls.js) picks the fall from the situation; `MOVE_FALLS` is the registry of what each move may cause. Strikes only knock a man down when the
+hit leaves him **under 35 stamina** (`KNOCKDOWN_STAMINA`); a fresher man staggers as before. The headbutt and the corner charge always put him down. Damage, down time and pin
+rules are the move's own. Flag off, none of this runs.
+
+| Move | Lands | May cause | Picked by |
+|---|---|---|---|
+| headbutt | head | backward, sitBack (behind: forward, kneesForward) | always a fall |
+| jab, double axe handle | head | backward, sitBack (behind: forward, kneesForward) | stamina under 35 after the hit |
+| front kick, knee lift | gut | kneesForward, sitBack (behind: forward, kneesForward) | stamina under 35 after the hit |
+| shove | chest, glancing | spill (room to the side), else backward, sitBack (behind: forward, kneesForward) | stamina under 35 after the hit |
+| corner charge | chest / gut | forward, kneesForward (gut: kneesForward only) | always a fall; the corner is behind him |
+| clothesline, dropkick, dive, back body drop | chest | flip (airborne), unchanged | unchanged |
+| body slam, suplex, hip toss, snapmare, piledriver | throws | their own landings (T2.5g/h), tier per move | exceptional when a suplex, back body drop or body slam lands on a man under 25 stamina |
+
+Rules, in order: attacker behind him -> forward or kneesForward; a shove with room to the side -> spill; gut -> kneesForward or sitBack; head or chest -> backward or sitBack.
+Under 35 stamina the collapses (sitBack, kneesForward) weigh 3:1, at 60 and over the straight falls (backward, forward) do; any fall whose lying length (px at s = 1, behind / ahead:
+backward and sitBack 70 / 96, forward and kneesForward 92 / 84) would leave the ring is dropped.

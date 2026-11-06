@@ -1,0 +1,172 @@
+{
+ "pair": "lou-george",
+ "run": "1",
+ "gameSec": 150.2,
+ "ts": 3,
+ "errors": [],
+ "S": {
+  "gsec": 150.29397000000245,
+  "strikes": [
+   {
+    "t": 18.9,
+    "who": "p2",
+    "move": "jab",
+    "stamina": 95,
+    "state": "standing"
+   },
+   {
+    "t": 31.25,
+    "who": "p1",
+    "move": "jab",
+    "stamina": 95,
+    "state": "standing"
+   },
+   {
+    "t": 78.6,
+    "who": "p1",
+    "move": "jab",
+    "stamina": 95,
+    "state": "blocking"
+   },
+   {
+    "t": 102.05,
+    "who": "p1",
+    "move": "jab",
+    "stamina": 95,
+    "state": "blocking"
+   },
+   {
+    "t": 102.7,
+    "who": "p1",
+    "move": "headbutt",
+    "stamina": 87,
+    "state": "staggered"
+   },
+   {
+    "t": 130.29,
+    "who": "p1",
+    "move": "kneeLift",
+    "stamina": 84.9,
+    "state": "standing"
+   }
+  ],
+  "landings": [
+   {
+    "t": 1.55,
+    "who": "p1",
+    "kind": "back",
+    "tier": null,
+    "stamina": 86,
+    "source": "dropkick",
+    "endT": 2.15,
+    "cut": false
+   },
+   {
+    "t": 54.25,
+    "who": "p2",
+    "kind": "back",
+    "tier": null,
+    "stamina": 86,
+    "source": "dropkick",
+    "endT": 54.8,
+    "cut": false
+   },
+   {
+    "t": 87,
+    "who": "p2",
+    "kind": "back",
+    "tier": null,
+    "stamina": 86,
+    "source": "dropkick",
+    "endT": 87.55,
+    "cut": false
+   },
+   {
+    "t": 103.35,
+    "who": "p1",
+    "kind": "back",
+    "tier": null,
+    "stamina": 87,
+    "source": "headbutt",
+    "endT": 103.9,
+    "cut": false
+   },
+   {
+    "t": 116.4,
+    "who": "p1",
+    "kind": "back",
+    "tier": null,
+    "stamina": 39.3,
+    "source": "clothesline",
+    "endT": 117,
+    "cut": false
+   },
+   {
+    "t": 120.35,
+    "who": "p2",
+    "kind": "back",
+    "tier": null,
+    "stamina": 87.8,
+    "source": "clothesline",
+    "endT": 120.9,
+    "cut": false
+   },
+   {
+    "t": 138.29,
+    "who": "p2",
+    "kind": "back",
+    "tier": null,
+    "stamina": 86,
+    "source": "dropkick",
+    "endT": 138.84,
+    "cut": false
+   }
+  ],
+  "stuck": [],
+  "matches": 0,
+  "frames": 3006,
+  "picked": []
+ },
+ "falls": [
+  {
+   "t": 110,
+   "type": "fall",
+   "wrestler": "p1",
+   "move": "headbutt",
+   "fall": "backward",
+   "tier": null,
+   "reason": "front, head, fresh (87) -> backward",
+   "stamina": 87,
+   "side": "front"
+  }
+ ],
+ "counts": {
+  "move:dropkick": 4,
+  "knockdown": 5,
+  "move:taunt": 7,
+  "move:lockup": 16,
+  "move:headlock": 6,
+  "move:hammerlock": 1,
+  "move:sleeperHold": 2,
+  "sleeperApplied": 2,
+  "sleeperEscape": 2,
+  "move:jab": 4,
+  "move:irishWhip": 8,
+  "whipRelease": 8,
+  "move:armBar": 2,
+  "move:ankleLock": 2,
+  "move:pin": 3,
+  "pinAttempt": 3,
+  "kickout": 3,
+  "stagger": 1,
+  "fall": 1,
+  "move:figureFour": 1,
+  "move:clothesline": 2,
+  "move:kneeLift": 1,
+  "cornerHit": 1,
+  "cornerLeave": 1
+ },
+ "matchSec": 157.2856700000027,
+ "sec": 150.29397000000245,
+ "count": 5
+}

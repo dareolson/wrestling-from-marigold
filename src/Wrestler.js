@@ -14,7 +14,7 @@ import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { GETUPS, GETUP_SETS, eligibleForBackSell, legacyFor, chooseGetUp, stallMs, stallTimeline, stallOffsets, sineInOut } from './animation/getUps.js';
-import { landingResponse, landingDuration, applyOffsetsSoft, TIERS, REF_VY, chooseFall, KNOCKDOWN_STAMINA } from './animation/falls.js';
+import { landingResponse, landingDuration, applyOffsetsSoft, TIERS, REF_VY, chooseFall, tierFor, KNOCKDOWN_STAMINA } from './animation/falls.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
@@ -177,6 +177,9 @@ export const moveTier = (move) => {
     }
     return MOVE_TIER[move] ?? null;
 };
+// A landed strike's reaction on `other`: flag off, the sell then the stagger exactly as before (the call is the old one, so a stand-in receiver needs only _doSell and
+// startStagger); ?falls=v1, Wrestler._strikeReact reads the hit and may put him down (T3.5).
+const strikeReact = (other, attacker, move, pose, ms, alwaysFall = false) => (fallsCandidate() ? other._strikeReact(attacker, move, pose, ms, alwaysFall) : other._doSell(pose, ms, () => other.startStagger()));
 // ?falls=v1 (T3.3): the sideways spill (T2.5e), called by the shove through chooseFall. It was `&spill=1` until Stage 3; the flag is gone, the name stays for the tools.
 export const spillCandidate = () => fallsCandidate();
 export const waistlockCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('waistlock') === 'v1';
@@ -1762,7 +1765,7 @@ export default class Wrestler {
         this.facing = facing;
         let tier = null;
         if (fallsCandidate()) {   // Stage 3 (T3.2): the corner charge picks through chooseFall, the corner behind him (inward only); the gut still folds him onto his knees
-            const pick = this._pickFall(null, 'cornerCharge', { hit: part === 'gut' ? 'gut' : 'chest', side: 'behind', allowed: part === 'gut' ? ['kneesForward'] : null,
+            const pick = this._pickFall({ attacker: null, move: 'cornerCharge', side: 'behind', stamina: this.stamina }, { hit: part === 'gut' ? 'gut' : 'chest', allowed: part === 'gut' ? ['kneesForward'] : null,
                 room: { back: CORNER_CHARGE.landMargin } });   // the fall carries him inward to landMargin from the rope: that is the room behind him
             variant = pick.fall; tier = pick.tier;
         }
@@ -2167,7 +2170,7 @@ export default class Wrestler {
                     return;
                 }
                 other._drain(STAMINA_DRAIN.jab);
-                other._doSell('sellHead', 110, () => other._staggerOrFall(this, 'jab'));
+                strikeReact(other, this, 'jab', 'sellHead', 110);
                 this.scene.crowd?.impact?.('strike', 0.6);
             },
             onComplete: () => { this._activeMove = null; },
@@ -2203,7 +2206,7 @@ export default class Wrestler {
                 if (!strikable || Math.abs(other.y - this.y) > STRIKE_DEPTH_TOLERANCE ||
                     Math.abs(other.x - this.x) > FRONT_KICK_HIT * this.s) return;
                 other._hurt(STAMINA_DRAIN.frontKick, 'frontKick');
-                other._doSell('sellChest', 110, () => other._staggerOrFall(this, 'frontKick'));
+                strikeReact(other, this, 'frontKick', 'sellChest', 110);
                 // The boot shoves him a step away from the attacker.
                 const pushX = Math.max(b.left + margin, Math.min(b.right - margin, other.x + facing * 28 * this.s));
                 this.scene.tweens.add({ targets: other, x: pushX, duration: 105, ease: 'Cubic.easeOut' });
@@ -2241,7 +2244,7 @@ export default class Wrestler {
                 if (!strikable || Math.abs(other.y - this.y) > STRIKE_DEPTH_TOLERANCE ||
                     Math.abs(other.x - this.x) > SHOVE_HIT * this.s) return;
                 other._hurt(STAMINA_DRAIN.shove, 'shove');
-                other._doSell('sellChest', 110, () => other._staggerOrFall(this, 'shove'));
+                strikeReact(other, this, 'shove', 'sellChest', 110);
                 const pushX = Math.max(b.left + margin, Math.min(b.right - margin, other.x + facing * 40 * this.s));
                 this.scene.tweens.add({ targets: other, x: pushX, duration: 105, ease: 'Cubic.easeOut' });
                 this.scene.crowd?.impact?.('strike', 0.6);
@@ -2259,7 +2262,7 @@ export default class Wrestler {
                 return;
             }
             other._drain(STAMINA_DRAIN.jab);
-            other._doSell('sellHead', 110, () => other._staggerOrFall(this, 'jab'));
+            strikeReact(other, this, 'jab', 'sellHead', 110);
         });
     }
 
@@ -2272,7 +2275,8 @@ export default class Wrestler {
                 return;
             }
             other._hurt(STAMINA_DRAIN.headbutt, 'headbutt');
-            other._doSell('sellHead', 150, () => (fallsCandidate() ? other._fallBySituation(this, 'headbutt') : other.startFall()));
+            if (fallsCandidate()) strikeReact(other, this, 'headbutt', 'sellHead', 150, true);
+            else other._doSell('sellHead', 150, () => other.startFall());
         });
     }
 
@@ -2295,7 +2299,7 @@ export default class Wrestler {
             }
             other._hurt(STAMINA_DRAIN.doubleAxeHandle, 'doubleAxeHandle');
             this.scene.cameras.main.shake(80, 0.001);
-            other._doSell('sellHead', 130, () => other._staggerOrFall(this, 'doubleAxeHandle'));
+            strikeReact(other, this, 'doubleAxeHandle', 'sellHead', 130);
         });
     }
 
@@ -2578,11 +2582,10 @@ export default class Wrestler {
     // Lou's body slam: scooped, swung across the shoulders and slammed on his
     // back in front (author_bodyslam.mjs, sheet frames 322–328 / 120–121).
     _doBodySlam(other) {
-        const tier = moveTier('bodySlam');
         this._playPairedThrow(other, 'bodySlam', {
             damage: STAMINA_DRAIN.bodySlam,
-            tier,
-            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY, true, tier); },
+            tierOf: (stamina) => this._throwTier('bodySlam', stamina),
+            landAtHit: (tail, tier) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY, true, tier); },
             finish: () => {
                 if (other.state === 'holding') other._layOnBack(DOWN_SEC);   // flag off, or the landing already laid him down at the impact
                 this._standBackUp();
@@ -2594,14 +2597,13 @@ export default class Wrestler {
     // backward; both land on their backs, the victim behind the attacker
     // (author_suplex.mjs, sheet frames 370–374 / 357–365).
     _doSuplex(other) {
-        const tier = moveTier('suplex');
         this._playPairedThrow(other, 'suplex', {
             damage: STAMINA_DRAIN.suplex,
             shake: [180, 0.003],
             foley: ['mat', 1.0],
-            tier,
+            tierOf: (stamina) => this._throwTier('suplex', stamina),
             // ?falls=v1 (T2.5g): both men land at the impact frame (both pelvises are at the mat within a frame of it): the victim heavy, the attacker's own bump r2
-            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + 1.0 + tail); other._startLanding('back', REF_VY, true, tier); },
+            landAtHit: (tail, tier) => { other._layOnBack(DOWN_SEC + 1.0 + tail); other._startLanding('back', REF_VY, true, tier); },
             attackerLandsAtHit: (tail) => { this._layOnBack(1.5 + tail); this._startLanding('back', REF_VY, true); },
             finish: () => {
                 if (other.state === 'holding') other._layOnBack(DOWN_SEC + 1.0);
@@ -2747,11 +2749,13 @@ export default class Wrestler {
     // `onAbort`: replaces the cancel path's lay-down (the atomic drop is not a knockdown: a torn-down drop stands both men up).
     _playPairedThrow(other, clipId, { damage, shake = [200, 0.003], finish, hitEvent = 'impact',
         foley = hitEvent === 'impact' ? ['mat', 0.9] : null, faceToFace = true, superseded = null, onAbort = null, landAtHit = null,
-        landAtTime = null, attackerLandsAtHit = null, tier = null }) {
+        landAtTime = null, attackerLandsAtHit = null, tier = null, tierOf = null }) {
         const runtime = this.scene.moveRuntime;
         if (!runtime) return;
-        // ?falls=v1 (T2.5h): a heavier tier scales the camera shake on the one hit frame; the mat foley is at least at its range
-        if (tier && fallsCandidate()) { shake = [shake[0], shake[1] * TIER_SHAKE[tier]]; if (foley) foley = [foley[0], Math.max(foley[1], 1.0)]; }
+        // ?falls=v1 (T2.5h): a heavier tier scales the camera shake on the one hit frame; the mat foley is at least at its range. `tierOf(stamina)` (T3.6) reads the
+        // receiver's stamina at the impact, before the damage; a static `tier` is the move's own.
+        let hitTier = tier;
+        const shake0 = shake, foley0 = foley;
 
         this.state       = 'holding';
         other.state      = 'holding';
@@ -2781,12 +2785,15 @@ export default class Wrestler {
             runtime.releaseRole(handle, role);
             who._activeMove = null;
             who._fixedHold  = false;
-            land(handle.clip.duration - handle.time);
+            land(handle.clip.duration - handle.time, hitTier);
         }; };
         const handle = runtime.play(clipId, { attacker: this, defender: other }, {
             onEvent: (event) => {
                 if (event.type !== hitEvent) return;
                 if (this.state !== 'holding' || other.state !== 'holding') return;
+                if (tierOf && fallsCandidate()) hitTier = tierOf(other.stamina);
+                shake = shake0; foley = foley0;
+                if (hitTier && fallsCandidate()) { shake = [shake0[0], shake0[1] * TIER_SHAKE[hitTier]]; if (foley0) foley = [foley0[0], Math.max(foley0[1], 1.0)]; }
                 other._hurt(damage, clipId);
                 this.scene.cameras.main.shake(...shake);
                 if (foley) this.scene.crowd?.impact?.(...foley);
@@ -3207,13 +3214,14 @@ export default class Wrestler {
                 return;
             }
             other._hurt(STAMINA_DRAIN.kneeLift, 'kneeLift');
-            other._doSell('sellChest', 140, () => other._staggerOrFall(this, 'kneeLift'));
+            strikeReact(other, this, 'kneeLift', 'sellChest', 140);
         });
     }
 
     // Back body drop — the defensive answer to a returning runner. Directional
     // override of the returning-runner clothesline (tryAction).
     _doBackBodyDrop(other) {
+        const tier = this._throwTier('backBodyDrop', other.stamina);   // T3.6: the receiver's stamina before this move's own damage
         other._hurt(STAMINA_DRAIN.backBodyDrop, 'backBodyDrop');
         this.state  = 'slamming';
         other.state = 'selling'; // halts the run; blocks other's input/movement like any sell
@@ -3237,7 +3245,7 @@ export default class Wrestler {
             ease:     'Cubic.easeOut',
             onComplete: () => {
                 if (other.state !== 'selling') return;
-                other.startClotheslineFall(runDir, { travelDist: 90, arcHeight: 130, tier: moveTier('backBodyDrop') });
+                other.startClotheslineFall(runDir, { travelDist: 90, arcHeight: 130, tier });
             },
         });
     }
@@ -3573,32 +3581,60 @@ export default class Wrestler {
         });
     }
 
-    // ?falls=v1 (PLAN_FALLS Stage 3, T3.2): the fall that fits the situation. `attacker` may be null (the corner charge: the corner is behind him).
-    // The situation: where the attacker stands against the way he faces, his stamina, the room to the ropes along his facing and against it, and the depth room.
-    // Returns chooseFall's { fall, tier, reason }; `allowed` narrows the move's own list.
-    _pickFall(attacker, move, { hit, side, allowed, room: roomOver } = {}) {
+    // ?falls=v1 (PLAN_FALLS Stage 3, T3.2, T3.5): the fall that fits the situation. `hit` is the situation read AT THE HIT (_hitAt): where the attacker stood against
+    // the way he faced, his stamina right after the damage, his facing; the 110-150 ms sell that follows turns him toward the attacker (move() re-faces a standing man),
+    // so reading any of it afterwards loses "from behind". The room to the ropes is read now, where he stands when he goes. `hit.attacker` may be null (the corner
+    // charge: the corner is behind him). Returns chooseFall's { fall, tier, reason }; `allowed` narrows the move's own list, `room` overrides measured room.
+    _pickFall(hit, { hit: where, allowed, room: roomOver } = {}) {
         const b = ringBoundsAtY(this.y), s = this.s || 1, x = this.x, f = this.facing || 1;
         const toRight = (b.right - x) / s, toLeft = (x - b.left) / s;
         const room = { front: f > 0 ? toRight : toLeft, back: f > 0 ? toLeft : toRight, side: Math.min(this.y - RING.farLeft.y, RING.nearLeft.y - this.y) / s, ...roomOver };
-        const dir = attacker ? Math.sign(attacker.x - this.x) || -f : -f;
-        const sideOf = side ?? (dir === f ? 'front' : 'behind');
-        const pick = chooseFall({ move, hit, side: sideOf, stamina: this.stamina, room, tier: moveTier(move), spillAvailable: spillCandidate() });
+        const pick = chooseFall({ move: hit.move, hit: where, side: hit.side, stamina: hit.stamina, room, tier: moveTier(hit.move), spillAvailable: spillCandidate() });
         if (allowed && !allowed.includes(pick.fall)) { pick.fall = allowed[0]; pick.reason += ` (narrowed to ${pick.fall})`; }
-        this.scene._logEvent?.('fall', { wrestler: this.scene.w1 === this ? 'p1' : 'p2', move, fall: pick.fall, tier: pick.tier, reason: pick.reason });
+        this.scene._logEvent?.('fall', { wrestler: this.scene.w1 === this ? 'p1' : 'p2', move: hit.move, fall: pick.fall, tier: pick.tier, reason: pick.reason, stamina: Math.round(hit.stamina * 10) / 10, side: hit.side });
         return pick;
     }
 
-    _fallBySituation(attacker, move, opts = {}) {
-        const pick = this._pickFall(attacker, move, opts);
+    // The situation at the hit, after the damage: which side the attacker is on (against the way he faces now), his stamina, his facing.
+    _hitAt(attacker, move) {
+        const f = this.facing || 1, dir = Math.sign(attacker.x - this.x) || -f;
+        return { attacker, move, side: dir === f ? 'front' : 'behind', stamina: this.stamina, facing: f };
+    }
+
+    // A strike's reaction, from the hit frame (after its damage). Flag off: the sell, then the stagger (or `alwaysFall`'s own fall) exactly as before. ?falls=v1:
+    // the hit is read now, his facing is held through the sell (a hit from behind does not turn him), and a man the hit left under KNOCKDOWN_STAMINA goes down by the
+    // situation instead of staggering. Damage, down time and pin rules are the move's own; the threshold is the only new rule. `alwaysFall`: the headbutt.
+    _strikeReact(attacker, move, sellPose, ms, alwaysFall = false) {
+        if (!fallsCandidate()) { this._doSell(sellPose, ms, () => this.startStagger()); return; }
+        const hit = this._hitAt(attacker, move);
+        if (!this._facingLock) this._facingLock = (ms + 100) / 1000;
+        this._doSell(sellPose, ms, () => {
+            if (hit.facing && !this._cornerEp) this.facing = hit.facing;
+            if (alwaysFall || (hit.stamina < KNOCKDOWN_STAMINA && !this._cornerEp)) this._fallBySituation(hit);
+            else this.startStagger();
+        });
+    }
+
+    _fallBySituation(hit, opts = {}) {
+        const pick = this._pickFall(hit, opts);
         this.startFall(DOWN_SEC, pick.fall, true, pick.tier);
+        // T3.9: no fall fits the ring here, so he keeps the one chosen and is carried inward over the fall (as _fallFromCorner does), the lying body ending inside the ropes
+        if (pick.slide?.dx) {
+            const tok = this._ringSlideTok = {}, dx = (pick.slide.dx + Math.sign(pick.slide.dx) * 10) * this.s * (this.facing || 1);
+            this.scene.tweens.add({
+                targets: this, x: this.x + dx, duration: Skeleton.fallDuration(pick.fall), ease: 'Sine.easeOut',
+                onUpdate: (tw) => { if (this._ringSlideTok !== tok || this.state !== 'falling') tw.stop(); },
+            });
+        }
         return pick;
     }
 
-    // A strike's reaction. Flag off: always the stagger. ?falls=v1 (T3.2): a man the hit leaves under KNOCKDOWN_STAMINA goes down instead, by the situation.
-    // Damage, down time and the pin rules are the move's own; the threshold is the only new rule.
-    _staggerOrFall(attacker, move) {
-        if (fallsCandidate() && this.stamina < KNOCKDOWN_STAMINA && !this._cornerEp) this._fallBySituation(attacker, move);
-        else this.startStagger();
+    // The tier a throw lands with (T3.6): the move's own, exceptional when a big move meets a man under 25 stamina. Read at the throw's impact BEFORE its damage
+    // (`stamina`). ?slamTier= (the body slam, for review) overrides it; flag off: none.
+    _throwTier(move, stamina) {
+        if (!fallsCandidate()) return null;
+        if (move === 'bodySlam' && /^(r2|heavy|exceptional)$/.test(new URLSearchParams(location.search).get('slamTier') ?? '')) return moveTier(move);
+        return tierFor(move, stamina, moveTier(move));
     }
 
     // A stagger is one of STAGGER_TYPES (src/animation/staggers.js), chosen by how

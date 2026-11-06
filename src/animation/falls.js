@@ -240,6 +240,9 @@ export const LYING_REACH = Object.freeze({
     spill:        Object.freeze({ back: 70, front: 96 }),
 });
 
+/** The landing tier of `move` on a receiver at `stamina` (read before the move's own damage): exceptional for a big move under 25, else the move's own `baseTier`. */
+export const tierFor = (move, stamina, baseTier = null) => (BIG_MOVES.includes(move) && stamina < EXCEPTIONAL_STAMINA ? 'exceptional' : (baseTier ?? null));
+
 const COLLAPSES = new Set(['sitBack', 'kneesForward']);
 
 /**
@@ -284,6 +287,13 @@ export function chooseFall(ctx) {
     let r = rng() * total, fall = left[left.length - 1];
     for (const f of left) { r -= weight(f); if (r < 0) { fall = f; break; } }
     const state = tired ? 'tired' : fresh ? 'fresh' : 'worn';
-    const tier = BIG_MOVES.includes(ctx.move) && stamina < EXCEPTIONAL_STAMINA ? 'exceptional' : (ctx.tier ?? null);
-    return { fall, tier, reason: `${rule}, ${state} (${Math.round(stamina)}) -> ${fall}` };
+    const tier = tierFor(ctx.move, stamina, ctx.tier);
+    // T3.9: no fall fits, so the chosen one is kept and the caller slides him inward over the fall by `slide` (px at s = 1, signed along his facing: + toward `front`),
+    // the way the corner fall does; null when it fits
+    let slide = null;
+    if (ctx.room && !fits(fall)) {
+        const back = Math.max(0, LYING_REACH[fall].back - ctx.room.back), front = Math.max(0, LYING_REACH[fall].front - ctx.room.front);
+        slide = { back, front, dx: back - front };   // dx > 0: toward his front (away from the rope behind him); < 0: toward his back
+    }
+    return { fall, tier, slide, reason: `${rule}, ${state} (${Math.round(stamina)}) -> ${fall}` };
 }

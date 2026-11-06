@@ -1,0 +1,338 @@
+[
+ {
+  "id": "headbutt-george-right",
+  "move": "headbutt",
+  "victim": "george",
+  "facing": 1,
+  "ropeBehindPx": 40,
+  "fall": "sitBack",
+  "reason": "front, head (cramped), tired (14) -> sitBack",
+  "left": 80.9090909090909,
+  "right": 879.0909090909091,
+  "contact": {
+   "x": [
+    718,
+    876
+   ],
+   "margin": 3,
+   "inside": true
+  },
+  "landing": {
+   "x": [
+    718,
+    877
+   ],
+   "margin": 2,
+   "inside": true
+  },
+  "sell": {
+   "x": [
+    719,
+    876
+   ],
+   "margin": 3,
+   "inside": true
+  },
+  "xStart": 847,
+  "xAtPick": 847,
+  "xDown": 807,
+  "s": 0.809,
+  "fallAt": 24,
+  "downAt": 62,
+  "frames": 103
+ },
+ {
+  "id": "headbutt-george-left",
+  "move": "headbutt",
+  "victim": "george",
+  "facing": -1,
+  "ropeBehindPx": 40,
+  "fall": "sitBack",
+  "reason": "front, head (cramped), tired (14) -> sitBack",
+  "left": 80.9090909090909,
+  "right": 879.0909090909091,
+  "contact": {
+   "x": [
+    84,
+    242
+   ],
+   "margin": 3,
+   "inside": true
+  },
+  "landing": {
+   "x": [
+    83,
+    242
+   ],
+   "margin": 2,
+   "inside": true
+  },
+  "sell": {
+   "x": [
+    84,
+    241
+   ],
+   "margin": 3,
+   "inside": true
+  },
+  "xStart": 117,
+  "xAtPick": 117,
+  "xDown": 153,
+  "s": 0.899,
+  "fallAt": 24,
+  "downAt": 62,
+  "frames": 103
+ },
+ {
+  "id": "jab-george-right",
+  "move": "jab",
+  "victim": "george",
+  "facing": 1,
+  "ropeBehindPx": 40,
+  "fall": "backward",
+  "reason": "front, head (cramped), tired (16) -> backward",
+  "left": 80.9090909090909,
+  "right": 879.0909090909091,
+  "contact": {
+   "x": [
+    718,
+    876
+   ],
+   "margin": 3,
+   "inside": true
+  },
+  "landing": {
+   "x": [
+    718,
+    877
+   ],
+   "margin": 2,
+   "inside": true
+  },
+  "sell": {
+   "x": [
+    718,
+    877
+   ],
+   "margin": 2,
+   "inside": true
+  },
+  "xStart": 843,
+  "xAtPick": 843,
+  "xDown": 807,
+  "s": 0.899,
+  "fallAt": 20,
+  "downAt": 44,
+  "frames": 85
+ },
+ {
+  "id": "jab-george-left",
+  "move": "jab",
+  "victim": "george",
+  "facing": -1,
+  "ropeBehindPx": 40,
+  "fall": "sitBack",
+  "reason": "front, head (cramped), tired (16) -> sitBack",
+  "left": 80.9090909090909,
+  "right": 879.0909090909091,
+  "contact": {
+   "x": [
+    84,
+    242
+   ],
+   "margin": 3,
+   "inside": true
+  },
+  "landing": {
+   "x": [
+    83,
+    242
+   ],
+   "margin": 2,
+   "inside": true
+  },
+  "sell": {
+   "x": [
+    83,
+    242
+   ],
+   "margin": 2,
+   "inside": true
+  },
+  "xStart": 117,
+  "xAtPick": 117,
+  "xDown": 153,
+  "s": 0.899,
+  "fallAt": 20,
+  "downAt": 58,
+  "frames": 99
+ },
+ {
+  "id": "headbutt-lou-right",
+  "move": "headbutt",
+  "victim": "lou",
+  "facing": 1,
+  "ropeBehindPx": 40,
+  "fall": "sitBack",
+  "reason": "front, head (cramped), tired (14) -> sitBack",
+  "left": 80.9090909090909,
+  "right": 879.0909090909091,
+  "contact": {
+   "x": [
+    724,
+    872
+   ],
+   "margin": 7,
+   "inside": true
+  },
+  "landing": {
+   "x": [
+    723,
+    872
+   ],
+   "margin": 7,
+   "inside": true
+  },
+  "sell": {
+   "x": [
+    723,
+    897
+   ],
+   "margin": -18,
+   "inside": false
+  },
+  "xStart": 847,
+  "xAtPick": 847,
+  "xDown": 807,
+  "s": 0.809,
+  "fallAt": 24,
+  "downAt": 62,
+  "frames": 103
+ },
+ {
+  "id": "headbutt-lou-left",
+  "move": "headbutt",
+  "victim": "lou",
+  "facing": -1,
+  "ropeBehindPx": 40,
+  "fall": "sitBack",
+  "reason": "front, head (cramped), tired (14) -> sitBack",
+  "left": 80.9090909090909,
+  "right": 879.0909090909091,
+  "contact": {
+   "x": [
+    88,
+    236
+   ],
+   "margin": 7,
+   "inside": true
+  },
+  "landing": {
+   "x": [
+    88,
+    237
+   ],
+   "margin": 7,
+   "inside": true
+  },
+  "sell": {
+   "x": [
+    63,
+    237
+   ],
+   "margin": -18,
+   "inside": false
+  },
+  "xStart": 117,
+  "xAtPick": 117,
+  "xDown": 153,
+  "s": 0.899,
+  "fallAt": 24,
+  "downAt": 62,
+  "frames": 103
+ },
+ {
+  "id": "jab-lou-right",
+  "move": "jab",
+  "victim": "lou",
+  "facing": 1,
+  "ropeBehindPx": 40,
+  "fall": "backward",
+  "reason": "front, head (cramped), tired (16) -> backward",
+  "left": 80.9090909090909,
+  "right": 879.0909090909091,
+  "contact": {
+   "x": [
+    724,
+    872
+   ],
+   "margin": 7,
+   "inside": true
+  },
+  "landing": {
+   "x": [
+    723,
+    872
+   ],
+   "margin": 7,
+   "inside": true
+  },
+  "sell": {
+   "x": [
+    723,
+    872
+   ],
+   "margin": 7,
+   "inside": true
+  },
+  "xStart": 843,
+  "xAtPick": 843,
+  "xDown": 807,
+  "s": 0.899,
+  "fallAt": 20,
+  "downAt": 44,
+  "frames": 85
+ },
+ {
+  "id": "jab-lou-left",
+  "move": "jab",
+  "victim": "lou",
+  "facing": -1,
+  "ropeBehindPx": 40,
+  "fall": "sitBack",
+  "reason": "front, head (cramped), tired (16) -> sitBack",
+  "left": 80.9090909090909,
+  "right": 879.0909090909091,
+  "contact": {
+   "x": [
+    88,
+    236
+   ],
+   "margin": 7,
+   "inside": true
+  },
+  "landing": {
+   "x": [
+    88,
+    237
+   ],
+   "margin": 7,
+   "inside": true
+  },
+  "sell": {
+   "x": [
+    88,
+    237
+   ],
+   "margin": 7,
+   "inside": true
+  },
+  "xStart": 117,
+  "xAtPick": 117,
+  "xDown": 153,
+  "s": 0.899,
+  "fallAt": 20,
+  "downAt": 58,
+  "frames": 99
+ }
+]

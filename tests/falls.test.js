@@ -370,3 +370,138 @@ test('chooseFall: every result is a Skeleton.FALLS variant, for every move, side
         }
 });
 test('the knockdown threshold is 35', () => assert.equal(KNOCKDOWN_STAMINA, 35));
+
+// ---- T3.5 / T3.6: read at the hit, at the executor (Wrestler + MoveRuntime, no Phaser) --------------------------------------------------------
+async function jabFixture({ stamina, behind, falls = true }) {
+    const f = await slamFixture({ falls, clips: [] });
+    const { jabClip } = await import('../src/animation/clips/jab.js');
+    f.rt.register(jabClip);
+    const { atk, def } = f;
+    atk.x = 470; def.x = 540; atk.facing = 1;
+    def.facing = behind ? 1 : -1;   // behind: he faces the same way as the attacker, his back to him
+    def.stamina = stamina;
+    const calls = { fall: [], stagger: 0, sellCb: null, facingAtFall: null };
+    def.tweenPose = (pose, ms, e, cb) => { calls.sellCb = cb; };
+    def.startFall = (dt, fall, exact, tier) => { calls.fall.push({ fall, exact, tier }); calls.facingAtFall = def.facing; };
+    def.startStagger = () => { calls.stagger++; };
+    return { ...f, calls };
+}
+async function jab(fx) {   // run the clip to its impact, then the sell's end, the way a frame loop would; between them the receiver turns to face the attacker (move())
+    const { atk, def, rt, calls } = fx;
+    atk._doJab(def);
+    for (let i = 0; i < 60 && !calls.sellCb; i++) { atk.tickDown(1 / 60); rt.update(1 / 60); }
+    assert.ok(calls.sellCb, 'the jab landed and the sell started');
+    def.facing = Math.sign(atk.x - def.x);   // what the sell's frames do to a standing man
+    calls.sellCb();
+}
+test('T3.5: a real jab from behind, no facing lock, picks a forward fall off the hit-time side and plays it facing as he stood', async () => {
+    const fx = await jabFixture({ stamina: 20, behind: true });
+    await jab(fx);
+    assert.equal(fx.calls.fall.length, 1);
+    assert.ok(['forward', 'kneesForward'].includes(fx.calls.fall[0].fall), fx.calls.fall[0].fall);
+    assert.equal(fx.calls.facingAtFall, 1, 'he falls facing the way he faced at the hit, not turned by the sell');
+    delete globalThis.location;
+});
+test('T3.5: the same jab from the front picks backward or sitBack', async () => {
+    const fx = await jabFixture({ stamina: 20, behind: false });
+    await jab(fx);
+    assert.ok(['backward', 'sitBack'].includes(fx.calls.fall[0].fall), fx.calls.fall[0].fall);
+    delete globalThis.location;
+});
+test('T3.5: the threshold is read right after the damage: 35 after staggers, 34.9 after falls (the jab drains 5)', async () => {
+    const { STAMINA_DRAIN } = await import('../src/Wrestler.js');
+    for (const [after, falls] of [[35, false], [34.9, true], [35.1, false], [0, true]]) {
+        const fx = await jabFixture({ stamina: after + STAMINA_DRAIN.jab, behind: false });
+        await jab(fx);
+        assert.equal(fx.calls.fall.length, falls ? 1 : 0, `after ${after}`);
+        assert.equal(fx.calls.stagger, falls ? 0 : 1, `after ${after}`);
+        delete globalThis.location;
+    }
+});
+test('T3.5: flag off, the same jab staggers a man at 10 stamina, from behind or not', async () => {
+    for (const behind of [true, false]) {
+        const fx = await jabFixture({ stamina: 10, behind, falls: false });
+        await jab(fx);
+        assert.equal(fx.calls.fall.length, 0); assert.equal(fx.calls.stagger, 1);
+        delete globalThis.location;
+    }
+});
+async function slamTierAt(stamina, { qs = '', falls = true } = {}) {
+    const { rt, atk, def } = await slamFixture({ falls, qs });
+    def.stamina = stamina;
+    atk._doBodySlam(def);
+    for (let i = 0; i < 100 && !def._landing; i++) { atk.tickDown(1 / 60); def.tickDown(1 / 60); rt.update(1 / 60); }
+    const tier = def._landing?.tier ?? null;
+    delete globalThis.location;
+    return tier;
+}
+test('T3.6: a body slam on a receiver at 24 stamina lands exceptional, at 26 heavy; the stamina is read before the slam\'s own damage', async () => {
+    assert.equal(await slamTierAt(24), 'exceptional');
+    assert.equal(await slamTierAt(26), 'heavy');
+    assert.equal(await slamTierAt(25), 'heavy');
+    assert.equal(await slamTierAt(100), 'heavy');
+});
+test('T3.6: ?slamTier= overrides the tired rule; flag off has no tier', async () => {
+    assert.equal(await slamTierAt(10, { qs: '&slamTier=heavy' }), 'heavy');
+    assert.equal(await slamTierAt(90, { qs: '&slamTier=exceptional' }), 'exceptional');
+    assert.equal(await slamTierAt(10, { falls: false }), null);
+});
+test('tierFor: only the big moves go exceptional, under 25', async () => {
+    const { tierFor } = await import('../src/animation/falls.js');
+    assert.equal(tierFor('suplex', 24.9, 'heavy'), 'exceptional');
+    assert.equal(tierFor('backBodyDrop', 0, 'heavy'), 'exceptional');
+    assert.equal(tierFor('hipToss', 0, null), null);
+    assert.equal(tierFor('piledriver', 0, 'exceptional'), 'exceptional');
+    assert.equal(tierFor('suplex', 25, 'heavy'), 'heavy');
+});
+
+test('T3.9: when no fall fits, the pick keeps its fall and says how far to slide him inward; when one fits there is no slide', () => {
+    const r = chooseFall({ move: 'headbutt', side: 'front', stamina: 70, room: { back: 50, front: 300, side: 100 }, rng: () => 0 });
+    assert.match(r.reason, /cramped/);
+    assert.ok(['backward', 'sitBack'].includes(r.fall));
+    assert.equal(r.slide.back, LYING_REACH[r.fall].back - 50);
+    assert.equal(r.slide.front, 0);
+    assert.equal(r.slide.dx, LYING_REACH[r.fall].back - 50, 'toward his front, away from the rope behind him');
+    const f = chooseFall({ move: 'headbutt', side: 'front', stamina: 70, room: { back: 300, front: 40, side: 100 }, rng: () => 0 });
+    assert.ok(f.slide.dx < 0, 'a rope in front of him: toward his back');
+    assert.equal(chooseFall({ move: 'headbutt', side: 'front', stamina: 70, room: OPEN }).slide, null);
+});
+
+// ---- T3.10: the suplex cleans up both men when interrupted (the attacker's own bump is armed at the hit, like the victim's) ----------------------------------
+async function suplexRun(cutAt) {
+    const { rt, atk, def } = await slamFixture({ clips: ['suplex'] });
+    atk.tweenPose = () => {}; def.tweenPose = () => {};
+    atk._doSuplex(def);
+    const frames = [];
+    for (let i = 0; i < 400; i++) {
+        atk.tickDown(1 / 60); def.tickDown(1 / 60); rt.update(1 / 60);
+        frames.push({ atk: atk.state, def: def.state, aL: !!atk._landing, dL: !!def._landing });
+        if (cutAt(i, frames)) { atk._cancelActiveMove('test'); def._cancelActiveMove('test'); for (let k = 0; k < 20; k++) { atk.tickDown(1 / 60); def.tickDown(1 / 60); rt.update(1 / 60); } break; }
+    }
+    delete globalThis.location;
+    return { atk, def, frames };
+}
+test('T3.10: a suplex cut before the impact leaves the attacker standing and the victim on his back, nobody holding, no landing armed', async () => {
+    const { atk, def, frames } = await suplexRun((i) => i === 20);
+    assert.ok(!frames.some(f => f.dL || f.aL), 'no landing before the hit');
+    assert.equal(atk.state, 'standing'); assert.notEqual(def.state, 'holding');
+    assert.ok(!atk._activeMove); assert.ok(!def._activeMove);
+    assert.equal(atk._fixedHold, false); assert.equal(def._fixedHold, false);
+    assert.ok(!atk._landNext); assert.ok(!def._landNext);
+});
+test('T3.10: a suplex cut on the frame of the hit, before the landings start: both men are released, no stale landing hook fires later', async () => {
+    let hit = -1;
+    const { atk, def } = await suplexRun((i, frames) => { if (hit < 0 && frames.at(-1).def !== 'holding') hit = i; return false; });   // find the frame the victim leaves the clip
+    assert.ok(hit > 0);
+    const r = await suplexRun((i) => i === hit - 1);
+    assert.notEqual(r.atk.state, 'holding'); assert.notEqual(r.def.state, 'holding');
+    assert.ok(!r.atk._landNext, 'the attacker\'s armed bump does not outlive the cut'); assert.ok(!r.def._landNext);
+    for (const w of [r.atk, r.def]) { assert.equal(w._fixedHold, false); assert.ok(!w._activeMove); }
+});
+test('T3.10: a suplex cut after both men have landed leaves both down with their own landing, neither holding', async () => {
+    const { atk, def, frames } = await suplexRun((i, frames) => frames.at(-1).aL && frames.at(-1).dL);
+    assert.equal(atk.state, 'down'); assert.equal(def.state, 'down');
+    assert.ok(atk._landing && def._landing, 'both landings run to their own end');
+    assert.equal(atk._fixedHold, false); assert.equal(def._fixedHold, false);
+    assert.ok(frames.some(f => f.aL && f.dL));
+});

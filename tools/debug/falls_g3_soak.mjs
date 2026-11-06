@@ -1,0 +1,74 @@
+// PLAN_FALLS T3.10: real-match evidence, nothing capped or placed. Both sides on the real AI, ?falls=v1&grapples=v1, real time at WFM_TS x (default 3).
+//   WFM_URL=http://localhost:5173 PAIR=lou-george SEC=150 node tools/debug/falls_g3_soak.mjs [out=research/animation/falls-2026-11/g3/soak]
+// Logs per run: every landed strike (Wrestler._strikeReact, called at the hit after the damage) with the receiver's stamina right then and what it did (fall or stagger);
+// every fall's pick reason; every landing (kind, tier, stamina, how long until it ended = the earliest legal pin: tryAction pins once !isLanding()); a landing cut short by a
+// pick-up; page errors; states stuck past a limit. Nothing is retuned: the stamina recovery and the 35 line are the game's.
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { launch } from './harness.mjs';
+
+const RIGS = { lou: 'thesz-procreate-v1', george: 'george-roster-v1' };
+const PAIR = process.env.PAIR ?? 'lou-george', SEC = Number(process.env.SEC ?? 150), RUN = process.env.RUN ?? '1';
+const outDir = process.argv[2] ?? 'research/animation/falls-2026-11/g3/soak';
+const [a, b] = PAIR.split('-');
+process.env.WFM_P1 = RIGS[a]; process.env.WFM_P2 = RIGS[b]; process.env.WFM_TS = process.env.WFM_TS ?? '3';
+process.env.WFM_QS = 'notitle=1&grapples=v1&falls=v1';
+
+const INSTALL = () => {
+    const sc = window.__WFM_GAME.scene.scenes[0];
+    for (const n of [1, 2]) if (sc[`w${n}`].input !== sc[`_p${n}AI`]) sc._togglePlayer(n);
+    const S = window.__fsoak = { gsec: 0, strikes: [], landings: [], stuck: [], matches: 0, frames: 0, picked: [] };
+    const W = [['p1', sc.w1], ['p2', sc.w2]];
+    const now = () => +S.gsec.toFixed(2);   // game seconds: real frame time x the arena's timeScale (WFM_TS), summed across the arena's own match resets
+    for (const [id, w] of W) {
+        const react = w._strikeReact.bind(w);
+        w._strikeReact = (attacker, move, ...rest) => {
+            const stamina = +w.stamina.toFixed(1), before = sc.matchEvents.filter(e => e.type === 'fall').length, st0 = w.state;
+            react(attacker, move, ...rest);
+            S.strikes.push({ t: now(), who: id, move, stamina, state: st0 });
+        };
+        const start = w._startLanding.bind(w);
+        w._startLanding = (kind, vy, additive, tier) => {
+            start(kind, vy, additive, tier);
+            S.landings.push({ t: now(), who: id, kind, tier: tier ?? null, stamina: +w.stamina.toFixed(1), source: w._pain?.source ?? w._fallVariant ?? null, endT: null, cut: false });
+        };
+    }
+    const lim = { falling: 2, flipping: 2, selling: 1.5, staggered: 3, grabbed: 2 }, since = { p1: [null, 0], p2: [null, 0] };
+    sc.events.on('postupdate', (time, delta) => {
+        S.frames++; S.gsec += delta / 1000 * sc.timeScale;
+        for (const [id, w] of W) {
+            // the landing ends: isLanding() false while still down = the earliest legal pin; leaving 'down' first = cut short
+            const open = [...S.landings].reverse().find(l => l.who === id && l.endT == null);
+            if (open) { if (!w._landing) open.endT = now(); else if (w.state !== 'down' && now() - open.t > 0.05) { open.endT = now(); open.cut = true; } }
+            const [st, t] = since[id];
+            if (w.state !== st) since[id] = [w.state, now()];
+            else if (lim[w.state] && now() - t > lim[w.state] + 3 && !S.stuck.some(s => s.who === id && s.state === w.state && now() - s.t < 5)) S.stuck.push({ t: now(), who: id, state: w.state, for: +(now() - t).toFixed(1) });
+        }
+    });
+    return true;
+};
+
+const h = await launch();
+const errors = [];
+try {
+    const page = h.page;
+    page.on('pageerror', e => errors.push(e.message));
+    await page.waitForTimeout(2500);
+    await page.evaluate(INSTALL);
+    const clock = () => page.evaluate(() => window.__fsoak.gsec), start = await clock(), ts = Number(process.env.WFM_TS), wall0 = Date.now();
+    for (;;) {
+        await page.waitForTimeout(2000);
+        if ((await clock()) - start >= SEC || (Date.now() - wall0) / 1000 > SEC / ts * 2 + 60) break;
+    }
+    const data = await page.evaluate(() => {
+        const sc = window.__WFM_GAME.scene.scenes[0], S = window.__fsoak, ev = sc.matchEvents;
+        const count = (f) => ev.filter(f).length;
+        return { S, falls: ev.filter(e => e.type === 'fall'), counts: ev.reduce((c, e) => { const k = e.type === 'move' ? `move:${e.move}` : e.type; c[k] = (c[k] ?? 0) + 1; return c; }, {}), matchSec: sc._matchTime, sec: S.gsec, count: count(e => e.type === 'knockdown') };
+    });
+    mkdirSync(outDir, { recursive: true });
+    const gameSec = data.sec - start;
+    const out = { pair: PAIR, run: RUN, gameSec: +gameSec.toFixed(1), ts, errors, ...data };
+    writeFileSync(join(outDir, `${PAIR}-${RUN}.json`), JSON.stringify(out, null, 1));
+    const byMove = {}; for (const s of data.S.strikes) { const m = (byMove[s.move] ??= { landed: 0, belowLine: 0, minStamina: 100 }); m.landed++; if (s.stamina < 35) m.belowLine++; m.minStamina = Math.min(m.minStamina, s.stamina); }
+    console.log(`[soak] ${PAIR} run ${RUN}: ${out.gameSec} game s, strikes ${JSON.stringify(byMove)}, falls ${data.falls.length} ${JSON.stringify(data.falls.reduce((c, f) => { c[f.move + ':' + f.fall] = (c[f.move + ':' + f.fall] ?? 0) + 1; return c; }, {}))}, landings ${data.S.landings.length}, stuck ${data.S.stuck.length}, errors ${errors.length}`);
+} finally { await h.close(); }

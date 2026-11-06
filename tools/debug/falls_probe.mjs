@@ -2,6 +2,7 @@
 // AIs nulled), 1/60 s steps, both rigs as the man who goes down, both facings.
 //
 //   WFM_URL=http://localhost:5173 node tools/debug/falls_probe.mjs [outDir=research/animation/falls-2026-11/before] [paths=all] [shots=1]
+//   FALLS_PROBE_STAMINA=24 sets the receiver's stamina before the throw (T3.6, the tired slam); default 100.
 //   WFM_QS='falls=v1' runs the same paths with the flag on (the after columns of G1-G3); WFM_TAG=after prefixes nothing, it only names the output.
 //
 // Paths: the four Skeleton.FALLS variants (startFall, `exact`), the flip (startClotheslineFall), and the throws that lay a man down: body slam, hip toss and
@@ -37,7 +38,7 @@ export const PATHS = {
 export const TRIGGER_AT = 8, CONTACT_PX = 4, FREE_FALL_SEC = 0.40, MAT_PAUSE = 40, F = 60;
 
 // ---- in page ---------------------------------------------------------------------------------------------------------------
-const SETUP = async ({ facing, gap, rearReversal = false }) => {
+const SETUP = async ({ facing, gap, rearReversal = false, stamina = 100 }) => {
     const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
     let a0 = 0x5eed1234;
     Math.random = () => { a0 = (a0 + 0x6D2B79F5) | 0; let t = Math.imul(a0 ^ (a0 >>> 15), 1 | a0); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -46,7 +47,7 @@ const SETUP = async ({ facing, gap, rearReversal = false }) => {
     for (const w of [a, d]) {
         w.scene.tweens.killTweensOf(w); w.scene.tweens.killTweensOf(w.pose);
         w._facingLock = rearReversal; w._landNext = null; w._landing = null; w._activeMove = null; w._choreoUntil = 0; w._sell = null; w._hold = null; w._gripLatch = null; w._groundHandoff = null; w._pain = null; w._fixedHold = false;
-        w.state = 'standing'; w.stamina = 100; w.vx = 0; w.vy = 0; w.combatBlend = 0; w.moveBlend = 0; w.walkPhase = 0; w.lying = null; w.fallProgress = 0; w.flipProgress = 0;
+        w.state = 'standing'; w.stamina = w === d ? stamina : 100; w.vx = 0; w.vy = 0; w.combatBlend = 0; w.moveBlend = 0; w.walkPhase = 0; w.lying = null; w.fallProgress = 0; w.flipProgress = 0;
         for (const k of Object.keys(w.pose)) if (!(k in window.__idle)) delete w.pose[k];
         Object.assign(w.pose, window.__idle);
         w.skeleton.setPartVariants?.({});
@@ -173,10 +174,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             await page.waitForTimeout(2500);
             const info = await page.evaluate(INSTALL);
             const bx = info.box, mX = (x) => bx.x + x * bx.w / bx.gw, mY = (y) => bx.y + y * bx.h / bx.gh;
-            const clip = { width: 560, height: 330, x: Math.max(0, Math.round(mX(520) - 280)), y: Math.round(mY(440) - 330) };
+            const CLIP_W = Number(process.env.FALLS_PROBE_CLIP_W ?? 560), clip = { width: CLIP_W, height: 330, x: Math.max(0, Math.round(mX(520) - CLIP_W / 2)), y: Math.round(mY(440) - 330) };   // FALLS_PROBE_CLIP_W: a wider frame for throws that carry him far (the snapmare)
             for (const pid of pathIds) for (const facing of [-1, 1]) {
                 const spec = PATHS[pid], id = `${pid}-${pair.victim}-${facing < 0 ? 'l' : 'r'}`, dir = join(outRoot, 'frames', id);
-                const placed = await page.evaluate(SETUP, { facing, gap: spec.kind === 'throw' ? 55 : 220, rearReversal: !!spec.rearReversal });
+                const placed = await page.evaluate(SETUP, { facing, gap: spec.kind === 'throw' ? 55 : 220, rearReversal: !!spec.rearReversal, stamina: Number(process.env.FALLS_PROBE_STAMINA ?? 100) });
                 if (shots === '1') { rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true }); }
                 const rows = [], snap = async () => { const i = rows.length; if (shots === '1') await page.screenshot({ path: join(dir, `s${String(i).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 60, clip }); };
                 let downAt = null, mark = null;

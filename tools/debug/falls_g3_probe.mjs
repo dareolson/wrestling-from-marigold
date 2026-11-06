@@ -17,7 +17,7 @@ export const MOVES = { headbutt: { call: 'a._doHeadbutt(w)', gap: 70 }, jab: { c
 export const SITUATIONS = { fresh: { stamina: 100 }, tired: { stamina: 20 }, behind: { stamina: 20, behind: true }, ropes: { stamina: 20, rope: 85 } };
 const TRIGGER_AT = 8, MAX = 330;
 
-const SETUP = async ({ gap, stamina, behind, rope }) => {
+export const SETUP = async ({ gap, stamina, behind, rope, facing = 1, preHit = null }) => {
     const { ringBoundsAtY } = await import('/src/constants.js');
     const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
     let a0 = 0x5eed1234;
@@ -25,30 +25,46 @@ const SETUP = async ({ gap, stamina, behind, rope }) => {
     sc.dropState = null; sc.lockupState = null; sc.headlockState = null; sc.pinState = null; sc.sleeperState = null; sc.waistlockState = null;
     for (const w of [a, d]) {
         w.scene.tweens.killTweensOf(w); w.scene.tweens.killTweensOf(w.pose);
-        w._facingLock = !!behind && w === d; w._landNext = null; w._landing = null; w._activeMove = null; w._choreoUntil = 0; w._sell = null; w._hold = null; w._gripLatch = null; w._groundHandoff = null; w._pain = null; w._fixedHold = false; w._cornerEp = null;
+        w._facingLock = false; w._landNext = null; w._landing = null; w._activeMove = null; w._choreoUntil = 0; w._sell = null; w._hold = null; w._gripLatch = null; w._groundHandoff = null; w._pain = null; w._fixedHold = false; w._cornerEp = null;
         w.state = 'standing'; w.stamina = 100; w.vx = 0; w.vy = 0; w.combatBlend = 0; w.moveBlend = 0; w.walkPhase = 0; w.lying = null; w.fallProgress = 0; w.flipProgress = 0;
         for (const k of Object.keys(w.pose)) if (!(k in window.__idle)) delete w.pose[k];
         Object.assign(w.pose, window.__idle);
         w.skeleton.setPartVariants?.({});
     }
     sc.matchEvents.length = 0;
-    const facing = 1, s = a.s, b = ringBoundsAtY(400);
-    a.y = d.y = 400; a.facing = facing; d.facing = behind ? facing : -facing;
+    const s = a.s, b = ringBoundsAtY(400);
+    a.y = d.y = 400; a.facing = facing; d.facing = -facing;
     // the receiver stands to the attacker's right; at the ropes his back is `rope` px from the right rope (the strike drives him toward it)
-    const mid = rope ? b.right - rope * s - gap * s / 2 : 520;
-    a.x = mid - gap * s / 2; d.x = mid + gap * s / 2;
+    const mid = rope ? (facing > 0 ? b.right - rope * s - gap * s / 2 : b.left + rope * s + gap * s / 2) : 520;
+    a.x = mid - facing * gap * s / 2; d.x = mid + facing * gap * s / 2;
     d.stamina = stamina;
+    // T3.5: no facing lock. `behind`: the receiver is turned away on the frame of the hit (his facing is set where the strike reads it, as a man who was facing away would be); the
+    // strike must pick from that, and the sell must not turn him. window.__hits records what the strike read.
+    window.__hits = [];
+    // preHit: the receiver's stamina is set to exactly this just before the strike's damage (the staging's wind-up frames regenerate a little), so the value the strike reads
+    // right after the damage is preHit minus the move's own drain
+    d.__drain0 ??= d._drain;
+    d._drain = function (amount) { if (preHit != null && !this.__pinned) { this.__pinned = true; this.stamina = preHit; } return d.__drain0.call(this, amount); };
+    d.__pinned = false;
+    d._strikeReact ??= null; d.__react0 ??= d._strikeReact ?? Object.getPrototypeOf(d)._strikeReact;
+    d._strikeReact = function (attacker, move, ...rest) {
+        if (behind) this.facing = attacker.facing;
+        window.__hits.push({ move, stamina: +this.stamina.toFixed(2), facing: this.facing, attackerX: Math.round(attacker.x), x: Math.round(this.x) });
+        return d.__react0.call(this, attacker, move, ...rest);
+    };
     const keys = new Set();
     a.input = d.input = { justDown: (k) => keys.has(k), isDown: (k) => keys.has(k) };
-    return { ax: a.x, dx: d.x, s, right: b.right };
+    return { ax: a.x, dx: d.x, s, left: b.left, right: b.right };
 };
-const TRIGGER = (call) => { const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, w = sc.w2; return eval(call); };   // eslint-disable-line no-eval
-const FRAME = () => {
+export const TRIGGER = (call) => { const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, w = sc.w2; return eval(call); };   // eslint-disable-line no-eval
+export const FRAME = () => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0], a = sc.w1, d = sc.w2;
     window.__T += 1000 / 60;
     game.step(window.__T, 1000 / 60);
-    return { as: a.state, ds: d.state, fv: d._fallVariant ?? null, st: Math.round(d.stamina * 10) / 10, dx: Math.round(d.x), lying: d.lying, tier: d._landing?.tier ?? null, kind: d._landing?.kind ?? null };
+    const pts = Object.values(d.skeleton.jointAttachmentPoints ?? {}).filter(Boolean), xs = pts.map(p => p.x);
+    return { ext: xs.length ? [Math.min(...xs), Math.max(...xs)] : null, as: a.state, ds: d.state, fv: d._fallVariant ?? null, st: Math.round(d.stamina * 10) / 10, dx: Math.round(d.x), lying: d.lying, tier: d._landing?.tier ?? null, kind: d._landing?.kind ?? null };
 };
+export const HITS = () => window.__hits;
 const EVENTS = () => window.__WFM_GAME.scene.scenes[0].matchEvents.filter(e => e.type === 'fall' || e.type === 'dodge');
 
 if (import.meta.url === `file://${process.argv[1]}`) {

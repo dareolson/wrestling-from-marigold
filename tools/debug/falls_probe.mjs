@@ -26,25 +26,26 @@ export const PATHS = {
     sitBack: { kind: 'fall', call: "w.startFall(4.5, 'sitBack', true)" },
     forward: { kind: 'fall', call: "w.startFall(4.5, 'forward', true)" },
     kneesForward: { kind: 'fall', call: "w.startFall(4.5, 'kneesForward', true)" },
-    spill: { kind: 'fall', call: "w.startFall(4.5, 'spill', true)" },   // ?falls=v1&spill=1 only (T2.5e)
+    spill: { kind: 'fall', call: "w.startFall(4.5, 'spill', true)" },   // ?falls=v1 only (T2.5e)
     flip: { kind: 'fall', call: 'w.startClotheslineFall(w.facing === 1 ? -1 : 1)' },
     bodySlam: { kind: 'throw', call: 'a._doBodySlam(w)' },
     hipToss: { kind: 'throw', call: 'a._doHipToss(w)' },
-    snapmare: { kind: 'throw', call: 'a._doSnapmare(w)' },
+    snapmare: { kind: 'throw', rearReversal: true, call: "sc._beginAtomicDrop({ attacker: w, defender: a }); sc._fallsProbeReverse = true" },
     suplex: { kind: 'throw', call: 'a._doSuplex(w)' },
     piledriver: { kind: 'throw', call: 'a._doPiledriver(w)' },
 };
 export const TRIGGER_AT = 8, CONTACT_PX = 4, FREE_FALL_SEC = 0.40, MAT_PAUSE = 40, F = 60;
 
 // ---- in page ---------------------------------------------------------------------------------------------------------------
-const SETUP = async ({ facing, gap }) => {
+const SETUP = async ({ facing, gap, rearReversal = false }) => {
     const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
     let a0 = 0x5eed1234;
     Math.random = () => { a0 = (a0 + 0x6D2B79F5) | 0; let t = Math.imul(a0 ^ (a0 >>> 15), 1 | a0); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    sc.dropState = null; sc._fallsProbeReverse = false;
     sc.lockupState = null; sc.headlockState = null; sc.pinState = null; sc.sleeperState = null; sc.waistlockState = null;
     for (const w of [a, d]) {
         w.scene.tweens.killTweensOf(w); w.scene.tweens.killTweensOf(w.pose);
-        w._activeMove = null; w._choreoUntil = 0; w._sell = null; w._hold = null; w._gripLatch = null; w._groundHandoff = null; w._pain = null; w._fixedHold = false;
+        w._facingLock = rearReversal; w._landNext = null; w._landing = null; w._activeMove = null; w._choreoUntil = 0; w._sell = null; w._hold = null; w._gripLatch = null; w._groundHandoff = null; w._pain = null; w._fixedHold = false;
         w.state = 'standing'; w.stamina = 100; w.vx = 0; w.vy = 0; w.combatBlend = 0; w.moveBlend = 0; w.walkPhase = 0; w.lying = null; w.fallProgress = 0; w.flipProgress = 0;
         for (const k of Object.keys(w.pose)) if (!(k in window.__idle)) delete w.pose[k];
         Object.assign(w.pose, window.__idle);
@@ -53,6 +54,13 @@ const SETUP = async ({ facing, gap }) => {
     a.y = d.y = 400; a.facing = facing; d.facing = -facing;
     const mid = 520;
     a.x = mid - facing * gap * a.s / 2; d.x = mid + facing * gap * a.s / 2;
+    // The eventual thrower is the original defender: the lifter starts behind him,
+    // both facing the same way. A front snapmare needs a different authored entry.
+    if (rearReversal) {
+        d.facing = facing;
+        a.x = mid + facing * gap * a.s / 2;
+        d.x = mid - facing * gap * a.s / 2;
+    }
     const keys = new Set();
     a.input = d.input = { justDown: (k) => keys.has(k), isDown: (k) => keys.has(k) };
     return { x: [a.x, d.x], s: a.s };
@@ -61,6 +69,11 @@ const TRIGGER = (call) => { const sc = window.__WFM_GAME.scene.scenes[0], a = sc
 const FRAME = () => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0], a = sc.w1, d = sc.w2;
     window.__T += 1000 / 60;
+    // Use Arena's actual role swap and grip ownership, after a visible rear lift.
+    if (sc._fallsProbeReverse && sc.dropState?.kind === 'drop' && sc.dropState.handle.time >= 0.1) {
+        sc._fallsProbeReverse = false;
+        sc._beginSnapmare(sc.dropState);
+    }
     game.step(window.__T, 1000 / 60);
     // no separate hand art on these rigs: the forearm part carries the hand
     const hand = (w, n) => { const img = w.skeleton[n] ?? w.skeleton[n.replace('Hand', 'Forearm')]; if (!img?.visible) return null; const m = img.getWorldTransformMatrix(), fw = img.width, fh = img.height, ox = img.originX * fw, oy = img.originY * fh;
@@ -148,7 +161,7 @@ export function measure(rows, kind, g, pid = null) {
 // ---- main ------------------------------------------------------------------------------------------------------------------
 if (import.meta.url === `file://${process.argv[1]}`) {
     const [outRoot = 'research/animation/falls-2026-11/before', pathsArg = 'all', shots = '1', pairsArg = 'lg,gl'] = process.argv.slice(2);
-    const pathIds = pathsArg === 'all' ? Object.keys(PATHS).filter(k => k !== 'spill' || /spill=1/.test(process.env.WFM_XQ ?? '')) : pathsArg.split(',');   // spill needs ?falls=v1&spill=1
+    const pathIds = pathsArg === 'all' ? Object.keys(PATHS).filter(k => k !== 'spill' || /falls=v1/.test(process.env.WFM_XQ ?? '')) : pathsArg.split(',');   // spill needs ?falls=v1
     mkdirSync(outRoot, { recursive: true });
     const runs = [];
     // paths = none: no runs, only the summary of the rows already in the folder (recomputed with the current measures)
@@ -163,7 +176,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
             const clip = { width: 560, height: 330, x: Math.max(0, Math.round(mX(520) - 280)), y: Math.round(mY(440) - 330) };
             for (const pid of pathIds) for (const facing of [-1, 1]) {
                 const spec = PATHS[pid], id = `${pid}-${pair.victim}-${facing < 0 ? 'l' : 'r'}`, dir = join(outRoot, 'frames', id);
-                const placed = await page.evaluate(SETUP, { facing, gap: spec.kind === 'throw' ? 55 : 220 });
+                const placed = await page.evaluate(SETUP, { facing, gap: spec.kind === 'throw' ? 55 : 220, rearReversal: !!spec.rearReversal });
                 if (shots === '1') { rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true }); }
                 const rows = [], snap = async () => { const i = rows.length; if (shots === '1') await page.screenshot({ path: join(dir, `s${String(i).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 60, clip }); };
                 let downAt = null, mark = null;

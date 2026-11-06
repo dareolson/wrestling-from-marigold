@@ -316,70 +316,79 @@ test('Skeleton.fallBallisticU: the pelvis (hip channel) follows free fall to con
 });
 
 // ── Stage 3: chooseFall (T3.1) ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-import { chooseFall, MOVE_FALLS, LYING_REACH, KNOCKDOWN_STAMINA } from '../src/animation/falls.js';
+import { chooseFall, MOVE_FALLS, LYING_REACH, KNOCKDOWN_WEAR, EXCEPTIONAL_WEAR, TIRED_WEAR, FRESH_WEAR, WEAR_MAX, WEAR_PER_DAMAGE, WEAR_RECOVER, wearAfterDamage, wearAfterRecovery } from '../src/animation/falls.js';
 const OPEN = { back: 300, front: 300, side: 100 };
 const seen = (ctx, n = 60) => { const out = new Set(); for (let i = 0; i < n; i++) out.add(chooseFall({ ...ctx, rng: () => (i + 0.5) / n }).fall); return [...out].sort(); };
 
 test('chooseFall: front, head or chest -> backward or sitBack; gut -> kneesForward or sitBack', () => {
-    assert.deepEqual(seen({ move: 'headbutt', side: 'front', stamina: 70, room: OPEN }), ['backward', 'sitBack']);
-    assert.deepEqual(seen({ move: 'jab', hit: 'chest', side: 'front', stamina: 70, room: OPEN }), ['backward', 'sitBack']);
-    assert.deepEqual(seen({ move: 'frontKick', side: 'front', stamina: 70, room: OPEN }), ['kneesForward', 'sitBack']);
-    assert.deepEqual(seen({ move: 'kneeLift', side: 'front', stamina: 70, room: OPEN }), ['kneesForward', 'sitBack']);
+    assert.deepEqual(seen({ move: 'headbutt', side: 'front', wear: 40, room: OPEN }), ['backward', 'sitBack']);
+    assert.deepEqual(seen({ move: 'jab', hit: 'chest', side: 'front', wear: 40, room: OPEN }), ['backward', 'sitBack']);
+    assert.deepEqual(seen({ move: 'frontKick', side: 'front', wear: 40, room: OPEN }), ['kneesForward', 'sitBack']);
+    assert.deepEqual(seen({ move: 'kneeLift', side: 'front', wear: 40, room: OPEN }), ['kneesForward', 'sitBack']);
 });
 test('chooseFall: from behind -> forward or kneesForward, whatever the hit', () => {
-    for (const move of ['headbutt', 'frontKick', 'shove']) assert.deepEqual(seen({ move, side: 'behind', stamina: 70, room: OPEN }), ['forward', 'kneesForward'], move);
+    for (const move of ['headbutt', 'frontKick', 'shove']) assert.deepEqual(seen({ move, side: 'behind', wear: 40, room: OPEN }), ['forward', 'kneesForward'], move);
 });
 test('chooseFall: a shove or glancing blow with room to the side spills; without room, or without the spill, it falls backward', () => {
-    assert.deepEqual(seen({ move: 'shove', side: 'front', stamina: 70, room: OPEN }), ['spill']);
-    assert.deepEqual(seen({ move: 'jab', glancing: true, side: 'front', stamina: 70, room: OPEN }), ['backward', 'sitBack']);   // the jab's own list has no spill
-    assert.ok(!seen({ move: 'shove', side: 'front', stamina: 70, room: { ...OPEN, side: 10 } }).includes('spill'));
-    assert.ok(!seen({ move: 'shove', side: 'front', stamina: 70, room: OPEN, spillAvailable: false }).includes('spill'));
-    assert.deepEqual(seen({ move: 'shove', side: 'front', stamina: 70, room: { ...OPEN, side: 10 } }), ['backward', 'sitBack']);
+    assert.deepEqual(seen({ move: 'shove', side: 'front', wear: 40, room: OPEN }), ['spill']);
+    assert.deepEqual(seen({ move: 'jab', glancing: true, side: 'front', wear: 40, room: OPEN }), ['backward', 'sitBack']);   // the jab's own list has no spill
+    assert.ok(!seen({ move: 'shove', side: 'front', wear: 40, room: { ...OPEN, side: 10 } }).includes('spill'));
+    assert.ok(!seen({ move: 'shove', side: 'front', wear: 40, room: OPEN, spillAvailable: false }).includes('spill'));
+    assert.deepEqual(seen({ move: 'shove', side: 'front', wear: 40, room: { ...OPEN, side: 10 } }), ['backward', 'sitBack']);
 });
 test('chooseFall: tired weights the collapses, fresh the straight falls, and neither excludes the other', () => {
-    const share = (stamina, fall) => { let n = 0; for (let i = 0; i < 1000; i++) if (chooseFall({ move: 'headbutt', side: 'front', stamina, room: OPEN, rng: () => (i + 0.5) / 1000 }).fall === fall) n++; return n / 1000; };
-    assert.equal(share(20, 'sitBack'), 0.75);
-    assert.equal(share(90, 'backward'), 0.75);
-    assert.equal(share(45, 'sitBack'), 0.5);
+    const share = (wear, fall) => { let n = 0; for (let i = 0; i < 1000; i++) if (chooseFall({ move: 'headbutt', side: 'front', wear, room: OPEN, rng: () => (i + 0.5) / 1000 }).fall === fall) n++; return n / 1000; };
+    assert.equal(share(TIRED_WEAR, 'sitBack'), 0.75);
+    assert.equal(share(TIRED_WEAR - 0.1, 'sitBack'), 0.5);
+    assert.equal(share(FRESH_WEAR - 0.1, 'backward'), 0.75);
+    assert.equal(share(FRESH_WEAR, 'backward'), 0.5);
 });
 test('chooseFall: a fall that would leave the ring is dropped, by its lying length', () => {
     // 94 px ahead: backward / sitBack reach 96 ahead, forward / kneesForward 92, so a front headbutt's own pool is out and the move's forward falls are what's left
-    const r = chooseFall({ move: 'headbutt', side: 'front', stamina: 70, room: { back: 300, front: 94, side: 100 }, rng: () => 0 });
+    const r = chooseFall({ move: 'headbutt', side: 'front', wear: 40, room: { back: 300, front: 94, side: 100 }, rng: () => 0 });
     assert.ok(['forward', 'kneesForward'].includes(r.fall));
     assert.match(r.reason, /ring room/);
     // no fall of the move fits: the one that overshoots least, flagged
-    const c = chooseFall({ move: 'cornerCharge', side: 'behind', stamina: 70, room: { back: 50, front: 300, side: 100 }, rng: () => 0 });
+    const c = chooseFall({ move: 'cornerCharge', side: 'behind', wear: 40, room: { back: 50, front: 300, side: 100 }, rng: () => 0 });
     assert.match(c.reason, /cramped/);
     // the corner charge: room inward fits both of its falls
-    assert.deepEqual(seen({ move: 'cornerCharge', side: 'behind', stamina: 70, room: OPEN }), ['forward', 'kneesForward']);
+    assert.deepEqual(seen({ move: 'cornerCharge', side: 'behind', wear: 40, room: OPEN }), ['forward', 'kneesForward']);
 });
-test('chooseFall: exceptional when a big move lands on a receiver under 25, otherwise the move\'s own tier', () => {
-    assert.equal(chooseFall({ move: 'suplex', side: 'front', stamina: 24, tier: 'heavy', room: OPEN }).tier, 'exceptional');
-    assert.equal(chooseFall({ move: 'bodySlam', side: 'front', stamina: 10, room: OPEN }).tier, 'exceptional');
-    assert.equal(chooseFall({ move: 'suplex', side: 'front', stamina: 25, tier: 'heavy', room: OPEN }).tier, 'heavy');
-    assert.equal(chooseFall({ move: 'hipToss', side: 'front', stamina: 5, tier: null, room: OPEN }).tier, null);
-    assert.equal(chooseFall({ move: 'headbutt', side: 'front', stamina: 5, room: OPEN }).tier, null);
+test('chooseFall: exceptional when a big move lands on a receiver at EXCEPTIONAL_WEAR or over, otherwise the move\'s own tier', () => {
+    assert.equal(chooseFall({ move: 'suplex', side: 'front', wear: EXCEPTIONAL_WEAR, tier: 'heavy', room: OPEN }).tier, 'exceptional');
+    assert.equal(chooseFall({ move: 'bodySlam', side: 'front', wear: WEAR_MAX, room: OPEN }).tier, 'exceptional');
+    assert.equal(chooseFall({ move: 'suplex', side: 'front', wear: EXCEPTIONAL_WEAR - 0.1, tier: 'heavy', room: OPEN }).tier, 'heavy');
+    assert.equal(chooseFall({ move: 'hipToss', side: 'front', wear: WEAR_MAX, tier: null, room: OPEN }).tier, null);
+    assert.equal(chooseFall({ move: 'headbutt', side: 'front', wear: WEAR_MAX, room: OPEN }).tier, null);
 });
-test('chooseFall: every result is a Skeleton.FALLS variant, for every move, side, stamina and rng, and the table only names real falls', () => {
+test('chooseFall: every result is a Skeleton.FALLS variant, for every move, side, wear and rng, and the table only names real falls', () => {
     for (const [m, spec] of Object.entries(MOVE_FALLS)) for (const f of spec.falls) assert.ok(Skeleton.FALLS[f] && LYING_REACH[f], `${m} ${f}`);
-    for (const move of [...Object.keys(MOVE_FALLS), 'suplex', 'unknown']) for (const side of ['front', 'behind']) for (const stamina of [0, 20, 34, 40, 60, 100])
+    for (const move of [...Object.keys(MOVE_FALLS), 'suplex', 'unknown']) for (const side of ['front', 'behind']) for (const wear of [0, 20, 34, 40, 60, 100])
         for (const room of [undefined, OPEN, { back: 20, front: 20, side: 0 }]) for (const rng of [() => 0, () => 0.5, () => 0.999]) {
-            const r = chooseFall({ move, side, stamina, room, rng });
-            assert.ok(Skeleton.FALLS[r.fall], `${move} ${side} ${stamina} -> ${r.fall}`);
+            const r = chooseFall({ move, side, wear, room, rng });
+            assert.ok(Skeleton.FALLS[r.fall], `${move} ${side} ${wear} -> ${r.fall}`);
             assert.equal(typeof r.reason, 'string');
         }
 });
-test('the knockdown threshold is 35', () => assert.equal(KNOCKDOWN_STAMINA, 35));
+test('T3.13: wear rises with damage, caps at 100, recovers slowly and never below 0; stamina recovers far faster', () => {
+    assert.equal(wearAfterDamage(0, 10), 10 * WEAR_PER_DAMAGE);
+    assert.equal(wearAfterDamage(95, 1000), WEAR_MAX);
+    assert.equal(wearAfterDamage(20, -5), 20, 'damage is never negative');
+    assert.equal(wearAfterRecovery(50, 2), 50 - 2 * WEAR_RECOVER);
+    assert.equal(wearAfterRecovery(0.1, 10), 0);
+    assert.ok(WEAR_RECOVER > 0 && WEAR_RECOVER < 6 / 4, 'a fraction of stamina\'s 6 per second');
+    assert.ok(0 < FRESH_WEAR && FRESH_WEAR < TIRED_WEAR && TIRED_WEAR <= KNOCKDOWN_WEAR && KNOCKDOWN_WEAR < EXCEPTIONAL_WEAR && EXCEPTIONAL_WEAR <= WEAR_MAX);
+});
 
 // ---- T3.5 / T3.6: read at the hit, at the executor (Wrestler + MoveRuntime, no Phaser) --------------------------------------------------------
-async function jabFixture({ stamina, behind, falls = true }) {
+async function jabFixture({ wear = 0, stamina = 100, behind, falls = true }) {
     const f = await slamFixture({ falls, clips: [] });
     const { jabClip } = await import('../src/animation/clips/jab.js');
     f.rt.register(jabClip);
     const { atk, def } = f;
     atk.x = 470; def.x = 540; atk.facing = 1;
     def.facing = behind ? 1 : -1;   // behind: he faces the same way as the attacker, his back to him
-    def.stamina = stamina;
+    def.stamina = stamina; def.wear = wear;
     const calls = { fall: [], stagger: 0, sellCb: null, facingAtFall: null };
     def.tweenPose = (pose, ms, e, cb) => { calls.sellCb = cb; };
     def.startFall = (dt, fall, exact, tier) => { calls.fall.push({ fall, exact, tier }); calls.facingAtFall = def.facing; };
@@ -395,7 +404,7 @@ async function jab(fx) {   // run the clip to its impact, then the sell's end, t
     calls.sellCb();
 }
 test('T3.5: a real jab from behind, no facing lock, picks a forward fall off the hit-time side and plays it facing as he stood', async () => {
-    const fx = await jabFixture({ stamina: 20, behind: true });
+    const fx = await jabFixture({ wear: KNOCKDOWN_WEAR + 20, behind: true });
     await jab(fx);
     assert.equal(fx.calls.fall.length, 1);
     assert.ok(['forward', 'kneesForward'].includes(fx.calls.fall[0].fall), fx.calls.fall[0].fall);
@@ -403,68 +412,69 @@ test('T3.5: a real jab from behind, no facing lock, picks a forward fall off the
     delete globalThis.location;
 });
 test('T3.5: the same jab from the front picks backward or sitBack', async () => {
-    const fx = await jabFixture({ stamina: 20, behind: false });
+    const fx = await jabFixture({ wear: KNOCKDOWN_WEAR + 20, behind: false });
     await jab(fx);
     assert.ok(['backward', 'sitBack'].includes(fx.calls.fall[0].fall), fx.calls.fall[0].fall);
     delete globalThis.location;
 });
-test('T3.5: the threshold is read right after the damage: 35 after staggers, 34.9 after falls (the jab drains 5)', async () => {
+test('T3.14: the threshold is read right after the damage: wear just under KNOCKDOWN_WEAR staggers, at it falls; stamina does not matter (the jab adds its damage x WEAR_PER_DAMAGE)', async () => {
     const { STAMINA_DRAIN } = await import('../src/Wrestler.js');
-    for (const [after, falls] of [[35, false], [34.9, true], [35.1, false], [0, true]]) {
-        const fx = await jabFixture({ stamina: after + STAMINA_DRAIN.jab, behind: false });
+    const add = STAMINA_DRAIN.jab * WEAR_PER_DAMAGE;
+    for (const [after, falls, stamina] of [[KNOCKDOWN_WEAR - 0.1, false, 100], [KNOCKDOWN_WEAR, true, 100], [KNOCKDOWN_WEAR + 0.1, true, 100], [WEAR_MAX, true, 100], [0, false, 5], [KNOCKDOWN_WEAR - 0.1, false, 5]]) {
+        const fx = await jabFixture({ wear: Math.max(0, after - add), stamina, behind: false });
         await jab(fx);
         assert.equal(fx.calls.fall.length, falls ? 1 : 0, `after ${after}`);
         assert.equal(fx.calls.stagger, falls ? 0 : 1, `after ${after}`);
         delete globalThis.location;
     }
 });
-test('T3.5: flag off, the same jab staggers a man at 10 stamina, from behind or not', async () => {
+test('T3.5: flag off, the same jab staggers a man at 10 stamina and full wear, from behind or not', async () => {
     for (const behind of [true, false]) {
-        const fx = await jabFixture({ stamina: 10, behind, falls: false });
+        const fx = await jabFixture({ stamina: 10, wear: WEAR_MAX, behind, falls: false });
         await jab(fx);
         assert.equal(fx.calls.fall.length, 0); assert.equal(fx.calls.stagger, 1);
         delete globalThis.location;
     }
 });
-async function slamTierAt(stamina, { qs = '', falls = true } = {}) {
+async function slamTierAt(wear, { qs = '', falls = true } = {}) {
     const { rt, atk, def } = await slamFixture({ falls, qs });
-    def.stamina = stamina;
+    def.wear = wear;
     atk._doBodySlam(def);
     for (let i = 0; i < 100 && !def._landing; i++) { atk.tickDown(1 / 60); def.tickDown(1 / 60); rt.update(1 / 60); }
     const tier = def._landing?.tier ?? null;
     delete globalThis.location;
     return tier;
 }
-test('T3.6: a body slam on a receiver at 24 stamina lands exceptional, at 26 heavy; the stamina is read before the slam\'s own damage', async () => {
-    assert.equal(await slamTierAt(24), 'exceptional');
-    assert.equal(await slamTierAt(26), 'heavy');
-    assert.equal(await slamTierAt(25), 'heavy');
-    assert.equal(await slamTierAt(100), 'heavy');
+test('T3.14: a body slam on a receiver at EXCEPTIONAL_WEAR lands exceptional, just under it heavy; the wear is read before the slam\'s own damage', async () => {
+    assert.equal(await slamTierAt(EXCEPTIONAL_WEAR), 'exceptional');
+    assert.equal(await slamTierAt(WEAR_MAX), 'exceptional');
+    assert.equal(await slamTierAt(EXCEPTIONAL_WEAR - 0.1), 'heavy');
+    assert.equal(await slamTierAt(0), 'heavy');
 });
 test('T3.6: ?slamTier= overrides the tired rule; flag off has no tier', async () => {
-    assert.equal(await slamTierAt(10, { qs: '&slamTier=heavy' }), 'heavy');
-    assert.equal(await slamTierAt(90, { qs: '&slamTier=exceptional' }), 'exceptional');
-    assert.equal(await slamTierAt(10, { falls: false }), null);
+    assert.equal(await slamTierAt(WEAR_MAX, { qs: '&slamTier=heavy' }), 'heavy');
+    assert.equal(await slamTierAt(0, { qs: '&slamTier=exceptional' }), 'exceptional');
+    assert.equal(await slamTierAt(WEAR_MAX, { falls: false }), null);
 });
-test('tierFor: only the big moves go exceptional, under 25', async () => {
+test('tierFor: only the big moves go exceptional, at EXCEPTIONAL_WEAR or over', async () => {
     const { tierFor } = await import('../src/animation/falls.js');
-    assert.equal(tierFor('suplex', 24.9, 'heavy'), 'exceptional');
-    assert.equal(tierFor('backBodyDrop', 0, 'heavy'), 'exceptional');
-    assert.equal(tierFor('hipToss', 0, null), null);
+    assert.equal(tierFor('suplex', EXCEPTIONAL_WEAR, 'heavy'), 'exceptional');
+    assert.equal(tierFor('backBodyDrop', WEAR_MAX, 'heavy'), 'exceptional');
+    assert.equal(tierFor('hipToss', WEAR_MAX, null), null);
     assert.equal(tierFor('piledriver', 0, 'exceptional'), 'exceptional');
-    assert.equal(tierFor('suplex', 25, 'heavy'), 'heavy');
+    assert.equal(tierFor('suplex', EXCEPTIONAL_WEAR - 0.1, 'heavy'), 'heavy');
 });
 
 test('T3.9: when no fall fits, the pick keeps its fall and says how far to slide him inward; when one fits there is no slide', () => {
-    const r = chooseFall({ move: 'headbutt', side: 'front', stamina: 70, room: { back: 50, front: 300, side: 100 }, rng: () => 0 });
+    const r = chooseFall({ move: 'headbutt', side: 'front', wear: 40, room: { back: 50, front: 300, side: 100 }, rng: () => 0 });
     assert.match(r.reason, /cramped/);
     assert.ok(['backward', 'sitBack'].includes(r.fall));
     assert.equal(r.slide.back, LYING_REACH[r.fall].back - 50);
     assert.equal(r.slide.front, 0);
     assert.equal(r.slide.dx, LYING_REACH[r.fall].back - 50, 'toward his front, away from the rope behind him');
-    const f = chooseFall({ move: 'headbutt', side: 'front', stamina: 70, room: { back: 300, front: 40, side: 100 }, rng: () => 0 });
+    const f = chooseFall({ move: 'headbutt', side: 'front', wear: 40, room: { back: 300, front: 40, side: 100 }, rng: () => 0 });
     assert.ok(f.slide.dx < 0, 'a rope in front of him: toward his back');
-    assert.equal(chooseFall({ move: 'headbutt', side: 'front', stamina: 70, room: OPEN }).slide, null);
+    assert.equal(chooseFall({ move: 'headbutt', side: 'front', wear: 40, room: OPEN }).slide, null);
 });
 
 // ---- T3.10: the suplex cleans up both men when interrupted (the attacker's own bump is armed at the hit, like the victim's) ----------------------------------
@@ -504,4 +514,18 @@ test('T3.10: a suplex cut after both men have landed leaves both down with their
     assert.ok(atk._landing && def._landing, 'both landings run to their own end');
     assert.equal(atk._fixedHold, false); assert.equal(def._fixedHold, false);
     assert.ok(frames.some(f => f.aL && f.dL));
+});
+
+test('T3.13: _hurt and _damage raise wear under ?falls=v1 only; _drain (the attacker\'s own cost) never does; recovery runs in the frame update, flag or not', async () => {
+    const { STAMINA_DRAIN } = await import('../src/Wrestler.js');
+    for (const falls of [true, false]) {
+        const { def } = await slamFixture({ falls, clips: [] });
+        def.wear = 0;
+        def._hurt(STAMINA_DRAIN.jab, 'jab');
+        def._damage(4);
+        def._drain(10);
+        assert.equal(def.stamina, 100 - STAMINA_DRAIN.jab - 4 - 10);
+        assert.equal(def.wear, falls ? (STAMINA_DRAIN.jab + 4) * WEAR_PER_DAMAGE : 0, `falls ${falls}`);
+        delete globalThis.location;
+    }
 });

@@ -225,10 +225,18 @@ export const MOVE_FALLS = Object.freeze({
 
 /** Big moves: a receiver this tired takes the exceptional landing from them (T3.1). */
 export const BIG_MOVES = Object.freeze(['suplex', 'backBodyDrop', 'bodySlam']);
-export const KNOCKDOWN_STAMINA = 35;   // T3.2: a strike that leaves him under this puts him down instead of staggering him
-export const TIRED_STAMINA = 35;       // below: the collapses (sitBack, kneesForward); FRESH_STAMINA and above: the straight falls (backward, forward)
-export const FRESH_STAMINA = 60;
-export const EXCEPTIONAL_STAMINA = 25;
+// T3.13-T3.15: `wear` (0-100) is how beaten-up he is over the match, apart from stamina's moment-to-moment drain. It rises with the damage he takes and drops slowly.
+export const WEAR_MAX = 100;
+export const WEAR_PER_DAMAGE = 1;      // wear gained per point of damage (tuned in T3.15)
+export const WEAR_RECOVER = 0.5;       // wear lost per second (stamina recovers 6)
+export const KNOCKDOWN_WEAR = 60;      // T3.14: a strike that leaves him at or over this puts him down instead of staggering him
+export const EXCEPTIONAL_WEAR = 85;    // a big move on a man at or over this lands exceptional
+export const TIRED_WEAR = KNOCKDOWN_WEAR;   // at or over: the collapses (sitBack, kneesForward); under FRESH_WEAR: the straight falls (backward, forward)
+export const FRESH_WEAR = 30;
+/** Wear after taking `damage` (stamina points drained by a hit). */
+export const wearAfterDamage = (wear, damage) => Math.min(WEAR_MAX, wear + Math.max(0, damage) * WEAR_PER_DAMAGE);
+/** Wear after `dt` seconds of recovery. */
+export const wearAfterRecovery = (wear, dt) => Math.max(0, wear - WEAR_RECOVER * dt);
 const SPILL_SIDE_PX = 40;              // depth room (px at s = 1) the spill needs on the side it goes
 
 /** How far a fall's lying body reaches from where he stood, along his facing (px at s = 1; measured on the rows of the G2 page, both facings). */
@@ -240,13 +248,13 @@ export const LYING_REACH = Object.freeze({
     spill:        Object.freeze({ back: 70, front: 96 }),
 });
 
-/** The landing tier of `move` on a receiver at `stamina` (read before the move's own damage): exceptional for a big move under 25, else the move's own `baseTier`. */
-export const tierFor = (move, stamina, baseTier = null) => (BIG_MOVES.includes(move) && stamina < EXCEPTIONAL_STAMINA ? 'exceptional' : (baseTier ?? null));
+/** The landing tier of `move` on a receiver at `wear` (read before the move's own damage): exceptional for a big move at EXCEPTIONAL_WEAR or over, else the move's own `baseTier`. */
+export const tierFor = (move, wear, baseTier = null) => (BIG_MOVES.includes(move) && wear >= EXCEPTIONAL_WEAR ? 'exceptional' : (baseTier ?? null));
 
 const COLLAPSES = new Set(['sitBack', 'kneesForward']);
 
 /**
- * ctx: { move, hit?: 'head'|'chest'|'gut', side: 'front'|'behind', stamina, room: { back, front, side? }, tier?, glancing?, spillAvailable?, rng? }
+ * ctx: { move, hit?: 'head'|'chest'|'gut', side: 'front'|'behind', wear, room: { back, front, side? }, tier?, glancing?, spillAvailable?, rng? }
  *   side: where the attacker is relative to the way the receiver faces ('behind' falls him forward). room: px at s = 1 from him to the rope along his facing
  *   (`front`), against it (`back`) and in depth (`side`). tier: the move's own landing tier (T2.5g/h). rng: () => [0, 1), Math.random by default.
  * Returns { fall, tier, reason }: `reason` is the rule that picked, for the G3 page and the logs.
@@ -255,8 +263,8 @@ export function chooseFall(ctx) {
     const rng = ctx.rng ?? Math.random;
     const spec = MOVE_FALLS[ctx.move];
     const hit = ctx.hit ?? spec?.hit ?? 'chest';
-    const stamina = ctx.stamina ?? 100;
-    const tired = stamina < TIRED_STAMINA, fresh = stamina >= FRESH_STAMINA;
+    const wear = ctx.wear ?? 0;
+    const tired = wear >= TIRED_WEAR, fresh = wear < FRESH_WEAR;
     const allowed = new Set(spec?.falls ?? ['backward', 'sitBack', 'forward', 'kneesForward']);
     const fits = (f) => ctx.room == null
         || (ctx.room.back >= LYING_REACH[f].back && ctx.room.front >= LYING_REACH[f].front && (f !== 'spill' || (ctx.room.side ?? 0) >= SPILL_SIDE_PX));
@@ -287,7 +295,7 @@ export function chooseFall(ctx) {
     let r = rng() * total, fall = left[left.length - 1];
     for (const f of left) { r -= weight(f); if (r < 0) { fall = f; break; } }
     const state = tired ? 'tired' : fresh ? 'fresh' : 'worn';
-    const tier = tierFor(ctx.move, stamina, ctx.tier);
+    const tier = tierFor(ctx.move, wear, ctx.tier);
     // T3.9: no fall fits, so the chosen one is kept and the caller slides him inward over the fall by `slide` (px at s = 1, signed along his facing: + toward `front`),
     // the way the corner fall does; null when it fits
     let slide = null;
@@ -295,5 +303,5 @@ export function chooseFall(ctx) {
         const back = Math.max(0, LYING_REACH[fall].back - ctx.room.back), front = Math.max(0, LYING_REACH[fall].front - ctx.room.front);
         slide = { back, front, dx: back - front };   // dx > 0: toward his front (away from the rope behind him); < 0: toward his back
     }
-    return { fall, tier, slide, reason: `${rule}, ${state} (${Math.round(stamina)}) -> ${fall}` };
+    return { fall, tier, slide, reason: `${rule}, ${state} (wear ${Math.round(wear)}) -> ${fall}` };
 }

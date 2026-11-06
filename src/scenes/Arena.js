@@ -3626,7 +3626,7 @@ export default class Arena extends Phaser.Scene {
         }
 
         // Drain defender stamina continuously (~18 total over 4s)
-        ss.defender._drain(4.5 * dt);
+        ss.defender._damage(4.5 * dt);
 
         // Show deepening z's as the hold wears them down
         const zText = ss.timer < 1.4 ? 'z' : ss.timer < 2.8 ? 'zz' : 'zzz';
@@ -3687,7 +3687,7 @@ export default class Arena extends Phaser.Scene {
 
         // Continuous stamina drain — the headlock is the era's real wear
         // move; at 4/s a full ride costs 12, competitive with a slam
-        hs.defender._drain(4.0 * dt);
+        hs.defender._damage(4.0 * dt);
 
         const release = (toDown) => {
             hs.attacker.tweenPose('idle', 200, 'Linear');
@@ -4268,8 +4268,8 @@ export default class Arena extends Phaser.Scene {
                 targets: txt, alpha: 0, duration: 600, ease: 'Linear',
                 onComplete: () => {
                     txt.destroy();
-                    this.w1.x = 330; this.w1.y = 360; this.w1.state = 'standing'; this.w1.facing =  1; this.w1.stamina = 100;
-                    this.w2.x = 630; this.w2.y = 360; this.w2.state = 'standing'; this.w2.facing = -1; this.w2.stamina = 100;
+                    this.w1.x = 330; this.w1.y = 360; this.w1.state = 'standing'; this.w1.facing =  1; this.w1.stamina = 100; this.w1.wear = 0;
+                    this.w2.x = 630; this.w2.y = 360; this.w2.state = 'standing'; this.w2.facing = -1; this.w2.stamina = 100; this.w2.wear = 0;
                     this.w1.pinSaveUsed = false;
                     this.w2.pinSaveUsed = false;
                     this.w1.clearPain();

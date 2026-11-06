@@ -40,6 +40,8 @@ const smooth = (u) => { const k = clamp(u, 0, 1); return k * k * (3 - 2 * k); };
 export const KINDS = Object.freeze({
     // a back bump: shoulders and arms meet the mat together, the arms slap out (D3)
     back: Object.freeze({ lift: -1, torsoPerPx: 0.014, compress: 2.5, torsoPress: 0.05, nearArmSign: -1, farArmSign: 1, armSlap: 0.30, elbowMax: 0.35, kneeNear: 0.34, kneeFar: 0.24, wince: { torso: -0.10, knee: 0.22 } }),
+    // the piledriver's crumple (T2.5g): face down with no hand catch, the arms stay limp on the rest pose (no yield, no flail), the legs and the chest react
+    limp: Object.freeze({ lift: 1, torsoPerPx: 0.012, compress: 2.0, torsoPress: 0.04, nearArmSign: 1, farArmSign: 1, armSlap: 0, elbowMax: 0, kneeNear: 0.30, kneeFar: 0.22, wince: { torso: 0.07, knee: 0.20 } }),
     // a forward fall: hands and forearms land first (1-2 frames before the chest), the chest bounces, the heels kick up
     front: Object.freeze({ lift: 1, torsoPerPx: 0.012, compress: 2.0, torsoPress: 0.04, nearArmSign: 1, farArmSign: 1, armSlap: 0.12, elbowMax: 0.30, kneeNear: 0.30, kneeFar: 0.22, wince: { torso: 0.07, knee: 0.20 } }),
 });
@@ -48,7 +50,10 @@ export const KINDS = Object.freeze({
 export function reboundPlan(intensity, incomingVy = REF_VY, tier = null) {
     const T = tierOf(tier);
     const i = clamp(intensity, 0, 1.2), speed = clamp(incomingVy / REF_VY, 0.4, 1.6);
-    const h1 = Math.min(T.hopMax, T.hopPx * i * speed);
+    // a tier's hop reads the intensity up to 0.85 only: the piledriver's full intensity (1.0) otherwise hopped 17.6-18.7 px drawn against the exceptional range of 14-16;
+    // the slam (0.8) is below the cap and unchanged
+    const ih = T === TIERS.default ? i : Math.min(i, 0.85);
+    const h1 = Math.min(T.hopMax, T.hopPx * ih * speed);
     const hops = [];
     let t = T.compressSec;
     const heights = i >= SECOND_HOP_FROM && T.second ? [h1, h1 * 0.32] : [h1];

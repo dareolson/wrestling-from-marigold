@@ -17,6 +17,7 @@ import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { launch } from './harness.mjs';
 import { INSTALL } from './grapples_film.mjs';
+import Skeleton from '../../src/Skeleton.js';
 
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 export const PAIRS = { lg: { id: 'lou-george', att: LOU, def: GEORGE, victim: 'george' }, gl: { id: 'george-lou', att: GEORGE, def: LOU, victim: 'lou' } };
@@ -90,7 +91,7 @@ const armOff = (v) => {
     return off;
 };
 
-export function measure(rows, kind, g) {
+export function measure(rows, kind, g, pid = null) {
     const start = rows.findIndex((r, i) => i >= TRIGGER_AT && (r.d.state !== 'standing' || r.clip));
     const restIdx = rows.findIndex(r => r.rest), riseIdx = rows.findIndex(r => r.rise);
     const h = (r) => r.d.y - hip(r.d.pts).y;
@@ -108,6 +109,19 @@ export function measure(rows, kind, g) {
         const maxAt = drops.indexOf(Math.max(...drops));
         const free = Math.sqrt(2 * (heights[0] / s) / g);
         out.gravity = { dropsPx: drops.map(r1), decreasingSteps: viol, fastestFrameIsLast: maxAt === drops.length - 1, fastestFrame: maxAt + 1, ofFrames: drops.length, fallSec: r2(drops.length / F), freeFallSec: r2(free), ratio: r2(drops.length / F / free), pelvisDropPx: r1(total) };
+    }
+    // D4 on the UNSUPPORTED interval only (T2.6, ?falls=v1 runs): from balance lost to where the pelvis arrives or the knees take the weight, Skeleton.FALL_BALLISTIC's tb.
+    // What follows (the shoulders rocking back, the knees folding him down) is a supported phase, reported by its own drops. Free fall is read two ways: from the pelvis
+    // height at the start (the plan's wording) and from the drop actually made.
+    const bal = kind === 'fall' && pid ? Skeleton.FALL_BALLISTIC[pid] : null;
+    if (bal && /falls=v1/.test(process.env.WFM_XQ ?? '')) {
+        const n = Math.round(bal.tb / (1000 / F)), hs = []; for (let i = start; i <= Math.min(start + n, rows.length - 1); i++) hs.push(h(rows[i]));
+        const dr = []; for (let i = 1; i < hs.length; i++) dr.push(hs[i - 1] - hs[i]);
+        let viol = 0; for (let i = 1; i < dr.length; i++) if (dr[i] < dr[i - 1] - 0.05 * s) viol++;
+        const maxAt = dr.indexOf(Math.max(...dr)), t = dr.length / F, dropH = hs[0] - hs[hs.length - 1];
+        out.d4 = { unsupportedFrames: dr.length, sec: r2(t), freeFromStandingSec: r2(Math.sqrt(2 * (hs[0] / s) / g)), ratioStanding: r2(t / Math.sqrt(2 * (hs[0] / s) / g)), freeFromDropSec: r2(Math.sqrt(2 * (dropH / s) / g)), ratioDrop: r2(t / Math.sqrt(2 * (dropH / s) / g)),
+            decreasingSteps: viol, fastestFrame: maxAt + 1, fastestIsLast: maxAt === dr.length - 1, fastestIsLastTwo: maxAt >= dr.length - 2, dropsPx: dr.map(r1), pelvisAtEndPx: r1(hs[hs.length - 1]), startPelvisPx: r1(hs[0]),
+            supportedTailDropsPx: (() => { const t2 = []; for (let i = start + n + 1; i <= contact; i++) t2.push(r1(h(rows[i - 1]) - h(rows[i]))); return t2; })() };
     }
     // bounce: rises of the pelvis after contact, up to the rest
     let bounces = 0, peak = 0, low = h(rows[contact]), up = false;
@@ -134,10 +148,11 @@ export function measure(rows, kind, g) {
 // ---- main ------------------------------------------------------------------------------------------------------------------
 if (import.meta.url === `file://${process.argv[1]}`) {
     const [outRoot = 'research/animation/falls-2026-11/before', pathsArg = 'all', shots = '1', pairsArg = 'lg,gl'] = process.argv.slice(2);
-    const pathIds = pathsArg === 'all' ? Object.keys(PATHS) : pathsArg.split(',');
+    const pathIds = pathsArg === 'all' ? Object.keys(PATHS).filter(k => k !== 'spill' || /spill=1/.test(process.env.WFM_XQ ?? '')) : pathsArg.split(',');   // spill needs ?falls=v1&spill=1
     mkdirSync(outRoot, { recursive: true });
     const runs = [];
-    for (const pair of pairsArg.split(',').map(k => PAIRS[k])) {
+    // paths = none: no runs, only the summary of the rows already in the folder (recomputed with the current measures)
+    for (const pair of (pathsArg === 'none' ? [] : pairsArg.split(',')).map(k => PAIRS[k])) {
         process.env.WFM_P1 = pair.att; process.env.WFM_P2 = pair.def; process.env.WFM_QS = 'notitle=1&grapples=v1' + (process.env.WFM_XQ ? '&' + process.env.WFM_XQ : '');
         const h = await launch();
         try {
@@ -177,9 +192,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     });
     const load = (r) => JSON.parse(readFileSync(join(outRoot, r.rowsFile), 'utf8'));
     // g, picked once: a standing man's free fall is FREE_FALL_SEC at scale 1 (Lou's standing pelvis height, the first row of a Lou run)
-    const lr = load(all.find(r => r.victim === 'lou'));
-    const standLou = (lr[0].d.y - hip(lr[0].d.pts).y) / lr[0].d.s, g = 2 * standLou / (FREE_FALL_SEC * FREE_FALL_SEC);
-    for (const r of all) { const rows = load(r); r.frames = rows.length; r.m = measure(rows, r.kind, g); }
+    // (a folder with only George's rows takes the g the Lou rows gave: 1709.88)
+    const lou = all.find(r => r.victim === 'lou'), lr = lou && load(lou);
+    const standLou = lr ? (lr[0].d.y - hip(lr[0].d.pts).y) / lr[0].d.s : 136.8, g = lr ? 2 * standLou / (FREE_FALL_SEC * FREE_FALL_SEC) : 1709.88;
+    for (const r of all) { const rows = load(r); r.frames = rows.length; r.m = measure(rows, r.kind, g, r.path); }
     writeFileSync(join(outRoot, 'summary.json'), JSON.stringify({ tool: 'tools/debug/falls_probe.mjs', flags: process.env.WFM_XQ ?? '', g: { value: r2(g), unit: 'px/s^2 at scale 1', standingPelvisPx: r1(standLou), freeFallSec: FREE_FALL_SEC }, runs: all }, null, 1));
     console.log(`summary: ${all.length} runs, g = ${r2(g)} px/s^2`);
 }

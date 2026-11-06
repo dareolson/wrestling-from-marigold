@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { landingResponse, flexChange } from '../../src/animation/falls.js';
 import { JOINT_LIMITS } from '../../src/rig/articulation.js';
 
-const dir = process.argv[2], outFile = process.argv[3];
+const dir = process.argv[2], outFile = process.argv[3], SIDE = process.env.AUDIT_SIDE === 'a' ? 'a' : 'd';   // AUDIT_SIDE=a: audit the ATTACKER's body (the suplex's own bump), ids get '-atk'
 const F = 60, ELBOW_MIN = -0.12, HAND_LINE = 3, IMPACT_SEC = 0.2, CLAMP_EPS = 0.01, QUANT = 0.005;   // QUANT: the rows round joints to 0.01 px, so a drawn flex reads +-0.005 rad off; it is the measurement's grain, not a tolerance on the pose
 const LIM = { knee: [JOINT_LIMITS.knee.min, JOINT_LIMITS.knee.max], elbow: [ELBOW_MIN, JOINT_LIMITS.elbow.max] };
 const r1 = (v) => (v == null ? null : +v.toFixed(1)), r2 = (v) => (v == null ? null : +v.toFixed(2));
@@ -48,7 +48,7 @@ const flexes = (v) => {
 
 const out = [];
 for (const f of readdirSync(dir).filter(n => /^rows-.*\.json$/.test(n)).sort()) {
-    const id = f.slice(5, -5), rows = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+    const id = f.slice(5, -5) + (SIDE === 'a' ? '-atk' : ''), rows = JSON.parse(readFileSync(join(dir, f), 'utf8')).map(r => (SIDE === 'a' ? { ...r, d: r.a } : r));
     const restIdx = rows.findIndex(r => r.rest), s = rows[0].d.s;
     HAND = handOf(rows[restIdx].d);
     const runtimePhases = rows.some(r => r.d.land);

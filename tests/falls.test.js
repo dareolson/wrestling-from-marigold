@@ -68,7 +68,7 @@ test('the arms only move away from the torso line: the missile test (15 deg) hol
 test('unknown kind throws; every channel is finite', () => {
     assert.throws(() => landingResponse('side', 0.5, REF_VY, 0.1), RangeError);
     for (const c of CASES) for (const r of samples(c)) for (const v of Object.values(r.d)) assert.ok(Number.isFinite(v));
-    assert.deepEqual(Object.keys(KINDS).sort(), ['back', 'front']);
+    assert.deepEqual(Object.keys(KINDS).sort(), ['back', 'front', 'limp']);
     assert.deepEqual(Object.keys(SHAPES).sort(), ['catch', 'knees', 'seat', 'spill']);
 });
 
@@ -92,12 +92,13 @@ test('MoveRuntime.releaseRole lets one actor go and the clip keeps playing for t
 });
 
 // ---- T2.4c: the slam, end to end (Wrestler + MoveRuntime, no Phaser) -------------------------------------------------------------
-async function slamFixture({ falls = true, qs = '' } = {}) {
+async function slamFixture({ falls = true, qs = '', clips = ['bodySlam'] } = {}) {
     globalThis.location = { search: falls ? '?falls=v1' + qs : '' };
     const { default: Wrestler } = await import('../src/Wrestler.js');
     const { default: MoveRuntime } = await import('../src/animation/MoveRuntime.js');
-    const { bodySlamClip } = await import('../src/animation/clips/bodySlam.js');
-    const rt = new MoveRuntime(); rt.register(bodySlamClip);
+    const rt = new MoveRuntime();
+    const mod = { bodySlam: ['bodySlam', 'bodySlamClip'], suplex: ['suplex', 'suplexClip'], hipToss: ['hipToss', 'hipTossClip'], piledriver: ['piledriver', 'piledriverClip'], snapmare: ['snapmare', 'snapmareClip'] };
+    for (const c of clips) { const m = await import(`../src/animation/clips/${mod[c][0]}.js`); rt.register(m[mod[c][1]] ?? Object.values(m)[0]); }
     const log = [];
     const scene = { moveRuntime: rt, time: { now: 0, delayedCall: () => {} }, tweens: { add: () => ({ stop() {} }), killTweensOf: () => {} }, _logEvent: () => {},
         cameras: { main: { shake: (...a) => log.push(['shake', rt._t ?? 0, ...a]) } }, crowd: { impact: (...a) => log.push(['foley', rt._t ?? 0, ...a]) } };
@@ -224,7 +225,19 @@ test('Skeleton.FALLS.spill lands supine, every key keeps both knees and both elb
     assert.ok(hipLow >= 0 && torsoDown > hipLow, 'hip first (key 0.55), shoulders later (0.80)');
 });
 
-test('?slamTier on the slam: the tier rides the landing, the shake scales on the one hit, one damage event, the sell waits the tier\'s spent pause; no tier and a bad tier are r2', async () => {
+test('tiers by move (T2.5h): slam, suplex and back body drop heavy, piledriver exceptional, the rest r2; ?slamTier overrides the slam only; no flag, no tier', async () => {
+    globalThis.location = { search: '' };
+    const { moveTier } = await import('../src/Wrestler.js');
+    assert.equal(moveTier('bodySlam'), null, 'flag off');
+    const at = (qs, move) => { globalThis.location = { search: '?falls=v1' + qs }; return moveTier(move); };
+    assert.equal(at('', 'bodySlam'), 'heavy'); assert.equal(at('', 'suplex'), 'heavy'); assert.equal(at('', 'backBodyDrop'), 'heavy'); assert.equal(at('', 'piledriver'), 'exceptional');
+    for (const m of ['hipToss', 'snapmare', 'armDrag', 'clothesline']) assert.equal(at('', m), null, m);
+    assert.equal(at('&slamTier=r2', 'bodySlam'), null); assert.equal(at('&slamTier=exceptional', 'bodySlam'), 'exceptional'); assert.equal(at('&slamTier=bogus', 'bodySlam'), 'heavy');
+    assert.equal(at('&slamTier=exceptional', 'suplex'), 'heavy', 'the override is the slam\'s only');
+    delete globalThis.location;
+});
+
+test('the slam tier rides the landing: the shake scales on the one hit, one damage event, r2 on request', async () => {
     const run = async (qs) => {
         const { rt, atk, def, log } = await slamFixture({ qs });
         let hurts = 0; const hurt = def._hurt.bind(def); def._hurt = (...a) => { hurts++; hurt(...a); };
@@ -233,9 +246,71 @@ test('?slamTier on the slam: the tier rides the landing, the shake scales on the
         const shakes = log.filter(l => l[0] === 'shake');
         return { tier: def._landing?.tier ?? null, hurts, shakes: shakes.length, amp: shakes[0]?.[3], foley: log.filter(l => l[0] === 'foley').map(l => l[3]) };
     };
-    const r2 = await run(''), bad = await run('&slamTier=bogus'), hv = await run('&slamTier=heavy'), ex = await run('&slamTier=exceptional');
-    assert.equal(r2.tier, null); assert.equal(bad.tier, null); assert.deepEqual(bad, r2);
-    assert.equal(hv.tier, 'heavy'); assert.equal(ex.tier, 'exceptional');
+    const r2 = await run('&slamTier=r2'), dflt = await run(''), hv = await run('&slamTier=heavy'), ex = await run('&slamTier=exceptional');
+    assert.equal(r2.tier, null); assert.equal(dflt.tier, 'heavy'); assert.deepEqual(dflt, hv); assert.equal(ex.tier, 'exceptional');
     for (const r of [r2, hv, ex]) { assert.equal(r.hurts, 1); assert.equal(r.shakes, 1); assert.equal(r.foley.length, 1); }
     assert.ok(hv.amp > r2.amp && ex.amp > hv.amp, `${r2.amp} ${hv.amp} ${ex.amp}`);
+    delete globalThis.location;
+});
+
+// T2.5g: each throw's landing. Both men's clip roles, one damage event, the landing one frame after the hit (the piledriver: at 1.8 s, the pelvis at the mat).
+async function runThrow(move, call, { clips = [move], qs = '', falls = true } = {}) {
+    const { rt, atk, def, log } = await slamFixture({ clips, qs, falls });
+    let hurts = 0; const hurt = def._hurt.bind(def); def._hurt = (...a) => { hurts++; hurt(...a); };
+    atk[call](def);
+    let hitAt = null, defAt = null, atkAt = null, defLand = null, atkLand = null;
+    for (let i = 0; i < 400 && !(defAt != null && (atkAt != null || move !== 'suplex')); i++) {
+        rt._t = i / 60; atk.tickDown(1 / 60); def.tickDown(1 / 60); rt.update(1 / 60);
+        if (hurts && hitAt == null) hitAt = i;
+        if (def._landing && defAt == null) { defAt = i; defLand = { ...def._landing }; }
+        if (atk._landing && atkAt == null) { atkAt = i; atkLand = { ...atk._landing }; }
+    }
+    // let the clip run out: nothing re-lays or double-damages
+    for (let i = 0; i < 200; i++) { rt._t = i / 60; atk.tickDown(1 / 60); def.tickDown(1 / 60); rt.update(1 / 60); }
+    delete globalThis.location;
+    return { hurts, hitAt, defAt, atkAt, defLand, atkLand, def, atk, log };
+}
+
+test('hip toss, snapmare and suplex under ?falls=v1: one damage, the landing a frame after the hit, the right kind and tier; the suplex attacker bumps too', async () => {
+    const hip = await runThrow('hipToss', '_doHipToss');
+    assert.equal(hip.hurts, 1); assert.equal(hip.defAt - hip.hitAt, 1); assert.equal(hip.defLand.kind, 'back'); assert.equal(hip.defLand.tier, null);
+    const snap = await runThrow('snapmare', '_doSnapmare');
+    assert.equal(snap.hurts, 1); assert.equal(snap.defAt - snap.hitAt, 1); assert.equal(snap.defLand.kind, 'seat');
+    const sup = await runThrow('suplex', '_doSuplex');
+    assert.equal(sup.hurts, 1); assert.equal(sup.defAt - sup.hitAt, 1); assert.equal(sup.atkAt, sup.defAt, 'his own bump on the same frame');
+    assert.equal(sup.defLand.kind, 'back'); assert.equal(sup.defLand.tier, 'heavy'); assert.equal(sup.atkLand.tier, null);
+    assert.equal(sup.def.lying, 'supine'); assert.equal(sup.atk.lying, 'supine');
+});
+
+test('piledriver under ?falls=v1: damage on the hit, the landing at 1.8 s (not at the hit), face down, exceptional, limp arms; flag off: no landing', async () => {
+    const pd = await runThrow('piledriver', '_doPiledriver');
+    assert.equal(pd.hurts, 1);
+    assert.ok(pd.defAt - pd.hitAt > 25 && pd.defAt - pd.hitAt < 45, `landing ${pd.defAt - pd.hitAt} frames after the hit`);
+    assert.equal(pd.defLand.kind, 'limp'); assert.equal(pd.defLand.tier, 'exceptional'); assert.equal(pd.def.lying, 'prone');
+    const off = await runThrow('piledriver', '_doPiledriver', { falls: false });
+    assert.equal(off.hurts, 1); assert.equal(off.defAt, null, 'flag off: no landing');
+    assert.equal(off.def.lying, 'prone');
+});
+
+// ---- T2.6: the falls from standing under gravity ----------------------------------------------------------------------------------
+test('Skeleton.fallBallisticU: the pelvis (hip channel) follows free fall to contact, never slows before it, then the keys finish eased; u is monotone and ends at 1', () => {
+    for (const variant of Object.keys(Skeleton.FALL_BALLISTIC)) {
+        const b = Skeleton.FALL_BALLISTIC[variant], fall = Skeleton.FALLS[variant];
+        const keys = [...fall.keys.slice(0, -1), { ...Skeleton.lyingBase(fall.lands, true), t: 1 }];
+        const hip = (u) => Skeleton._sampleKeyposes(keys, u).hip;
+        const D = Skeleton.fallDuration(variant), n = Math.round(D / (1000 / 60));
+        let prevU = -1, prevDrop = -1;
+        const h0 = hip(0), hc = hip(b.contactU);
+        for (let k = 0; k <= n; k++) {
+            const ms = Math.min(D, k * 1000 / 60), u = Skeleton.fallBallisticU(keys, variant, ms);
+            assert.ok(u >= prevU - 1e-9 && u >= 0 && u <= 1 + 1e-9, `${variant} u monotone at ${ms}`);
+            if (ms <= b.tb) assert.ok(Math.abs(hip(u) - (h0 - (h0 - hc) * (ms / b.tb) ** 2)) < 0.05, `${variant} hip follows free fall at ${ms}: ${hip(u)}`);
+            if (k > 0 && ms <= b.tb) { const drop = hip(Skeleton.fallBallisticU(keys, variant, (k - 1) * 1000 / 60)) - hip(u); assert.ok(drop >= prevDrop - 0.05, `${variant} per-frame drop never decreases (${drop} after ${prevDrop})`); prevDrop = drop; }
+            prevU = u;
+        }
+        assert.ok(Math.abs(Skeleton.fallBallisticU(keys, variant, D) - 1) < 1e-9, `${variant} ends on the rest pose`);
+        assert.ok(Math.abs(Skeleton.fallBallisticU(keys, variant, b.tb) - b.contactU) < 1e-3, `${variant} contact at contactU`);
+    }
+    assert.equal(Skeleton.fallClosingSpeed('backward', true), 1710 * 0.4, 'the hop reads free fall\'s closing speed');
+    assert.equal(Skeleton.fallDuration('backward'), 400);
 });

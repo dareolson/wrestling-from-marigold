@@ -164,11 +164,18 @@ const RUN_GAIT = { STANCE: 0.35, CADENCE: 3.6, LIFT: 32, HIP_BASE: 4, HIP_DROP: 
 // falls (PLAN_FALLS D1): the rest pose (arms on the mat, near knee up) in place of the missile pose. Opt-in: `?falls=v1`; flag off is byte-identical.
 // Node without `location` stays off.
 export const fallsCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('falls') === 'v1';
-// ?falls=v1&slamTier=heavy|exceptional (PLAN_FALLS T2.5d): a bigger landing for the body slam, preview only. Anything else (or no flag) is r2.
-export const slamTierCandidate = () => {
+// ?falls=v1 impact tiers (PLAN_FALLS T2.5d/h): the landing's weight by move. Default (Opus's proposal, Derek can overrule at G2): body slam, suplex and back body drop heavy;
+// the piledriver exceptional; every other throw and the flips r2 (no tier). `?slamTier=heavy|exceptional|r2` overrides the BODY SLAM only, for review. null = r2.
+const MOVE_TIER = { bodySlam: 'heavy', suplex: 'heavy', backBodyDrop: 'heavy', piledriver: 'exceptional' };
+const TIER_SHAKE = { heavy: 1.4, exceptional: 1.8 };   // camera shake on the same hit frame; the mat foley is already at its range
+export const moveTier = (move) => {
     if (!fallsCandidate()) return null;
-    const v = new URLSearchParams(location.search).get('slamTier');
-    return v === 'heavy' || v === 'exceptional' ? v : null;
+    if (move === 'bodySlam') {
+        const v = new URLSearchParams(location.search).get('slamTier');
+        if (v === 'r2') return null;
+        if (v === 'heavy' || v === 'exceptional') return v;
+    }
+    return MOVE_TIER[move] ?? null;
 };
 // ?falls=v1&spill=1 (T2.5e): the sideways spill, a concept fall that no move calls; startFall('spill') only plays with it.
 export const spillCandidate = () => fallsCandidate() && new URLSearchParams(location.search).get('spill') === '1';
@@ -1202,7 +1209,9 @@ export default class Wrestler {
     // `tier` (T2.5d, the slam, `?slamTier=`): TIERS key or null.
     _startLanding(kind, vy = REF_VY, additive = false, tier = null) {
         if (!fallsCandidate()) return;
-        this._landing = { kind, intensity: this._pain?.severity || 0.6, vy, t: 0, additive, tier };
+        // T2.5h: the rig's hopScale (rig config `falls.hopScale`) scales the incoming speed the hop is read from, so both rigs' drawn hops land in the same px range
+        // (George's drawn hop read 1.29x Lou's at the same command).
+        this._landing = { kind, intensity: this._pain?.severity || 0.6, vy: vy * (this.skeleton?._textureConfig?.falls?.hopScale ?? 1), t: 0, additive, tier };
     }
 
     // True from contact until the landing response ends: AI actions and pins wait (the man is still hitting the mat).
@@ -2563,11 +2572,10 @@ export default class Wrestler {
     // Lou's body slam: scooped, swung across the shoulders and slammed on his
     // back in front (author_bodyslam.mjs, sheet frames 322–328 / 120–121).
     _doBodySlam(other) {
-        const tier = slamTierCandidate();
+        const tier = moveTier('bodySlam');
         this._playPairedThrow(other, 'bodySlam', {
             damage: STAMINA_DRAIN.bodySlam,
-            // a heavier tier scales the camera shake only (the mat foley is already at 0.9 of its range); the hit stays on the one impact frame
-            ...(tier ? { shake: [200, 0.003 * (tier === 'exceptional' ? 1.8 : 1.4)], foley: ['mat', 1.0] } : {}),
+            tier,
             landAtHit: (tail) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY, true, tier); },
             finish: () => {
                 if (other.state === 'holding') other._layOnBack(DOWN_SEC);   // flag off, or the landing already laid him down at the impact
@@ -2580,13 +2588,18 @@ export default class Wrestler {
     // backward; both land on their backs, the victim behind the attacker
     // (author_suplex.mjs, sheet frames 370–374 / 357–365).
     _doSuplex(other) {
+        const tier = moveTier('suplex');
         this._playPairedThrow(other, 'suplex', {
             damage: STAMINA_DRAIN.suplex,
             shake: [180, 0.003],
             foley: ['mat', 1.0],
+            tier,
+            // ?falls=v1 (T2.5g): both men land at the impact frame (both pelvises are at the mat within a frame of it): the victim heavy, the attacker's own bump r2
+            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + 1.0 + tail); other._startLanding('back', REF_VY, true, tier); },
+            attackerLandsAtHit: (tail) => { this._layOnBack(1.5 + tail); this._startLanding('back', REF_VY, true); },
             finish: () => {
-                other._layOnBack(DOWN_SEC + 1.0);
-                this._layOnBack(1.5);
+                if (other.state === 'holding') other._layOnBack(DOWN_SEC + 1.0);
+                if (this.state === 'holding') this._layOnBack(1.5);
             },
         });
     }
@@ -2727,9 +2740,12 @@ export default class Wrestler {
     // `superseded`: a function; true when a cancel is a hand-over to another clip (the snapmare), so the cancel path lays nobody down.
     // `onAbort`: replaces the cancel path's lay-down (the atomic drop is not a knockdown: a torn-down drop stands both men up).
     _playPairedThrow(other, clipId, { damage, shake = [200, 0.003], finish, hitEvent = 'impact',
-        foley = hitEvent === 'impact' ? ['mat', 0.9] : null, faceToFace = true, superseded = null, onAbort = null, landAtHit = null }) {
+        foley = hitEvent === 'impact' ? ['mat', 0.9] : null, faceToFace = true, superseded = null, onAbort = null, landAtHit = null,
+        landAtTime = null, attackerLandsAtHit = null, tier = null }) {
         const runtime = this.scene.moveRuntime;
         if (!runtime) return;
+        // ?falls=v1 (T2.5h): a heavier tier scales the camera shake on the one hit frame; the mat foley is at least at its range
+        if (tier && fallsCandidate()) { shake = [shake[0], shake[1] * TIER_SHAKE[tier]]; if (foley) foley = [foley[0], Math.max(foley[1], 1.0)]; }
 
         this.state       = 'holding';
         other.state      = 'holding';
@@ -2752,6 +2768,15 @@ export default class Wrestler {
             if (this.state === 'holding') this._standBackUp();
         };
 
+        // One man leaves the clip and lands on the grounded rig, on the next frame's tickDown (see the T2.4a note below); `tail` is what is left of the clip.
+        const armLanding = (who, role, land) => { who._landNext = () => {
+            who._landNext = null;
+            if (who.state !== 'holding' || who._activeMove !== handle) return;
+            runtime.releaseRole(handle, role);
+            who._activeMove = null;
+            who._fixedHold  = false;
+            land(handle.clip.duration - handle.time);
+        }; };
         const handle = runtime.play(clipId, { attacker: this, defender: other }, {
             onEvent: (event) => {
                 if (event.type !== hitEvent) return;
@@ -2765,14 +2790,8 @@ export default class Wrestler {
                 // before the clip's pose is applied and drawn, and the ground blend starts from the LAST drawn body, which here is still the frame before the
                 // pelvis arrived (a blend from 49.8 px floated him down over 0.3 s). He leaves the clip then and lands on the grounded rig with the landing
                 // response. His time on the mat is unchanged (the clip's tail is added).
-                if (landAtHit && fallsCandidate()) other._landNext = () => {
-                    other._landNext = null;
-                    if (other.state !== 'holding' || other._activeMove !== handle) return;
-                    runtime.releaseRole(handle, 'defender');
-                    other._activeMove = null;
-                    other._fixedHold  = false;
-                    landAtHit(handle.clip.duration - handle.time);
-                };
+                if (landAtHit && fallsCandidate() && landAtTime == null) armLanding(other, 'defender', landAtHit);
+                if (attackerLandsAtHit && fallsCandidate()) armLanding(this, 'attacker', attackerLandsAtHit);   // the suplex: his own bump is at the same frame
             },
             onComplete: () => release(true),
             onCancel: () => release(false),
@@ -2781,6 +2800,12 @@ export default class Wrestler {
         other._activeMove = handle;
         this.state = other.state = 'holding';
         this._fixedHold = other._fixedHold = true;
+        // landAtTime (the piledriver): the lie-down is not at the hit (his head meets the mat with the body still inverted) but when the pelvis reaches it
+        if (landAtHit && fallsCandidate() && landAtTime != null) other._landNext = function poll() {
+            if (other.state !== 'holding' || other._activeMove !== handle) { other._landNext = null; return; }
+            if (handle.time < landAtTime) return;
+            armLanding(other, 'defender', landAtHit); other._landNext();
+        };
     }
 
     // Hand a body a throw clip left lying back over to the grounded rig.
@@ -2818,8 +2843,9 @@ export default class Wrestler {
         this._playPairedThrow(other, 'hipToss', {
             foley: ['mat', 0.7],
             damage: STAMINA_DRAIN.hipToss,
+            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY, true); },   // T2.5g: r2
             finish: () => {
-                other._layOnBack(DOWN_SEC);
+                if (other.state === 'holding') other._layOnBack(DOWN_SEC);
                 this._standBackUp();
             },
         });
@@ -2856,8 +2882,9 @@ export default class Wrestler {
             foley: ['mat', 1.0],
             faceToFace: false,
             onAbort: () => { if (other.state === 'holding') other._layOnBack(DOWN_SEC); if (this.state === 'holding') this._standBackUp(); },
+            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + 0.5 + tail); other._startLanding('seat'); },   // T2.5g: he sits down hard and rocks back
             finish: () => {
-                other._layOnBack(DOWN_SEC + 0.5);
+                if (other.state === 'holding') other._layOnBack(DOWN_SEC + 0.5);
                 this._standBackUp();
             },
         });
@@ -2903,9 +2930,14 @@ export default class Wrestler {
             damage: STAMINA_DRAIN.piledriver,
             shake: [220, 0.0035],
             foley: ['mat', 1.0],
+            tier: moveTier('piledriver'),
+            // ?falls=v1 (T2.5g): his pelvis reaches the mat at about 1.80 s, 0.56 s after the hit (head into the mat, body still inverted); he lands face down there,
+            // exceptional, arms limp (he did not put his hands out)
+            landAtTime: 1.8,
+            landAtHit: (tail) => { other._layDown(DOWN_SEC + 2.0 + tail, 'prone'); other._startLanding('limp', REF_VY, true, moveTier('piledriver')); },
             finish: () => {
                 // He crumples forward, face down (author_piledriver.mjs).
-                other._layDown(DOWN_SEC + 2.0, 'prone');
+                if (other.state === 'holding') other._layDown(DOWN_SEC + 2.0, 'prone');
                 this._layOnBack(2.0);
             },
         });
@@ -3199,7 +3231,7 @@ export default class Wrestler {
             ease:     'Cubic.easeOut',
             onComplete: () => {
                 if (other.state !== 'selling') return;
-                other.startClotheslineFall(runDir, { travelDist: 90, arcHeight: 130 });
+                other.startClotheslineFall(runDir, { travelDist: 90, arcHeight: 130, tier: moveTier('backBodyDrop') });
             },
         });
     }
@@ -3579,11 +3611,15 @@ export default class Wrestler {
         this.fallProgress = 0;
         this._fallVariant = variant;
         this.lying        = spec.lands;
+        // ?falls=v1 (T2.6, D4): the falls from standing are gravity-timed (Skeleton.FALL_BALLISTIC): linear progress over the free fall plus the supported tail,
+        // the keys sampled where the pelvis follows free fall (Skeleton.updateFall `ballistic`)
+        const ballistic = fallsCandidate() && !!Skeleton.FALL_BALLISTIC[variant];
+        this._fallBallistic = ballistic;
         this.scene.tweens.add({
             targets:      this,
             fallProgress: 1,
-            duration:     spec.duration,
-            ease:         'Sine.easeIn',
+            duration:     ballistic ? Skeleton.fallDuration(variant) : spec.duration,
+            ease:         ballistic ? 'Linear' : 'Sine.easeIn',
             onComplete: () => {
                 this.state        = 'down';
                 this.stateTimer   = downTime;
@@ -3591,7 +3627,7 @@ export default class Wrestler {
                 this.scene.cameras.main.shake(100, 0.0015);
                 // The fall's last frame is contact. The backward fall (T2.2) lands as a back bump with a hop, its closing pelvis speed read off the keys (the easeIn's
                 // end rate); the others (T2.5b-e) are their own shapes (falls.js SHAPES), no flight.
-                if (this._fallVariant === 'backward') this._startLanding('back', Skeleton.fallClosingSpeed(this._fallVariant));
+                if (this._fallVariant === 'backward') this._startLanding('back', Skeleton.fallClosingSpeed(this._fallVariant, ballistic));
                 else if (FALL_LANDING[this._fallVariant]) this._startLanding(FALL_LANDING[this._fallVariant]);
             },
         });
@@ -3601,7 +3637,8 @@ export default class Wrestler {
     // the original clothesline numbers so every existing caller is
     // byte-identical. backBodyDrop overrides both for a bigger throw arc —
     // see _doBackBodyDrop.
-    startClotheslineFall(runFacing, { travelDist = 80, arcHeight = 85 } = {}) {
+    // `tier` (T2.5g, ?falls=v1): the landing's weight, null = r2.
+    startClotheslineFall(runFacing, { travelDist = 80, arcHeight = 85, tier = null } = {}) {
         this.state         = 'flipping';
         this.flipProgress  = 0;
         this.flipDir       = runFacing;
@@ -3630,6 +3667,7 @@ export default class Wrestler {
                 this.stateTimer   = DOWN_SEC;
                 this.flipProgress = 0;
                 this.scene.cameras.main.shake(150, 0.002);
+                this._startLanding('back', REF_VY, false, tier);   // ?falls=v1 (T2.5g): the flip lands on his back like any bump
             },
         });
     }
@@ -3666,7 +3704,8 @@ export default class Wrestler {
             gfx.fillStyle(0x000000, 0.22);
             gfx.fillEllipse(x, y, (120 + p * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
-            this.skeleton.updateFall(x, y, s, facing, this._fallVariant, p, state === 'risingUp' ? this._riseStand(s, facing) : null);
+            const ballistic = state === 'falling' && this._fallBallistic && fallsCandidate();   // T2.6: no pop at the start (he starts from where he stands), free fall to contact
+            this.skeleton.updateFall(x, y, s, facing, this._fallVariant, p, state === 'risingUp' || ballistic ? this._riseStand(s, facing) : null, ballistic);
             return;
         }
 

@@ -2287,17 +2287,46 @@ export default class Skeleton {
     /** Draw fall `variant` (a Skeleton.FALLS key) at progress t (0 standing → 1 lying). */
     // `stand` (?risefix=1, the quick rise only): the standing end of the fall (t = 0) is replaced by the grounded
     // channels that draw this rig's upright idle, so the first segment, which the rise ends on, converges on it.
-    updateFall(x, y, s, facing, variant, t, stand = null) {
+    // `ballistic` (?falls=v1, T2.6, the 'falling' state only): `t` is the tween's linear progress over Skeleton.fallDuration(variant), and the keys are sampled at
+    // the u where the pelvis (the `hip` channel) follows free fall to its contact (fallBallisticU), not at t.
+    updateFall(x, y, s, facing, variant, t, stand = null, ballistic = false) {
         const fall = Skeleton.FALLS[variant];
         if (!fall) throw new RangeError(`unknown fall "${variant}"`);
         let keys = stand ? [{ ...stand, t: 0 }, ...fall.keys.slice(1)] : fall.keys;
         // ?falls=v1: the fall ends on the rest pose (the key is the lying pose by identity otherwise)
         if (this._falls) keys = [...keys.slice(0, -1), { ...Skeleton.lyingBase(fall.lands, true), t: 1 }];
-        this._applyGrounded(x, y, s, facing, Skeleton._sampleKeyposes(keys, t));
+        const u = ballistic && Skeleton.FALL_BALLISTIC[variant] ? Skeleton.fallBallisticU(keys, variant, t * Skeleton.fallDuration(variant)) : t;
+        this._applyGrounded(x, y, s, facing, Skeleton._sampleKeyposes(keys, u));
+    }
+
+    // PLAN_FALLS T2.6 / D4 (?falls=v1): the falls from standing under gravity. `contactU`: the key position where the pelvis arrives (the end of the unsupported drop; the
+    // sitBack and spill hips take the mat there and the shoulders follow, the kneesForward knees take the weight there); `tb`: ms of that free fall (sqrt(2 h / g) with g
+    // 1710 px/s^2 at s = 1, h from the standing pelvis to where it arrives; tuned on both rigs against D4's 20%); `post`: ms for the rest of the keys after contact
+    // (supported: the shoulders rock back, the knees fold the body down), eased, no free fall.
+    static FALL_BALLISTIC = Object.freeze({
+        backward:     Object.freeze({ contactU: 1,    tb: 400, post: 0 }),
+        forward:      Object.freeze({ contactU: 1,    tb: 400, post: 0 }),
+        sitBack:      Object.freeze({ contactU: 0.62, tb: 400, post: 220 }),
+        kneesForward: Object.freeze({ contactU: 0.55, tb: 330, post: 300 }),
+        spill:        Object.freeze({ contactU: 0.55, tb: 400, post: 240 }),
+    });
+    static fallDuration(variant) { const b = Skeleton.FALL_BALLISTIC[variant]; return b ? b.tb + b.post : Skeleton.FALLS[variant].duration; }
+
+    /** The key position u (0-1) of fall `variant` `ms` after balance is lost: the hip channel falls as h0 - (h0 - hc)(ms / tb)^2 up to contactU, then the rest eases in. */
+    static fallBallisticU(keys, variant, ms) {
+        const b = Skeleton.FALL_BALLISTIC[variant];
+        if (ms >= b.tb) return b.post > 0 ? b.contactU + (1 - b.contactU) * Math.min(1, Math.max(0, (ms - b.tb) / b.post)) ** 2 * (3 - 2 * Math.min(1, Math.max(0, (ms - b.tb) / b.post))) : 1;
+        const hip = (u) => Skeleton._sampleKeyposes(keys, u).hip, h0 = hip(0), hc = hip(b.contactU);
+        const target = h0 - (h0 - hc) * (Math.max(0, ms) / b.tb) ** 2;
+        let lo = 0, hi = b.contactU;
+        for (let i = 0; i < 28; i++) { const mid = (lo + hi) / 2; if (hip(mid) > target) lo = mid; else hi = mid; }
+        return (lo + hi) / 2;
     }
 
     /** The pelvis's speed at the end of fall `variant`, px/s at s = 1: the last key interval's drop rate times the easeIn's closing factor (pi/2). */
-    static fallClosingSpeed(variant) {
+    static fallClosingSpeed(variant, ballistic = false) {
+        // ballistic (?falls=v1, T2.6): free fall's speed at the end of tb, g * tb
+        if (ballistic && Skeleton.FALL_BALLISTIC[variant]) return 1710 * Skeleton.FALL_BALLISTIC[variant].tb / 1000;
         const fall = Skeleton.FALLS[variant], keys = fall.keys, a = keys[keys.length - 2], b = keys[keys.length - 1];
         return ((a.hip - b.hip) / ((b.t - a.t) * fall.duration / 1000)) * (Math.PI / 2);
     }

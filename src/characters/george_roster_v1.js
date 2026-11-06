@@ -220,6 +220,8 @@ export const georgeRosterV1 = {
             "v": 0.9106814666277037
         }
     },
+    // PLAN_FALLS T2.5h: his drawn landing hop reads 1.29x Lou's at the same command (14.9 / 18.8 px against 11.5 / 14.4), so the hop is scaled by this (Wrestler._startLanding)
+    "falls": { "hopScale": 0.775 },
     "backSell": {
         "holdW": 0.7,
         "recoveryArm": -0.7,

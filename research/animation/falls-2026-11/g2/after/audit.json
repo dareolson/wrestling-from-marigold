@@ -1,0 +1,2028 @@
+[
+ {
+  "id": "backward-george-l",
+  "runtimePhases": true,
+  "contact": 32,
+  "landingEnd": 63,
+  "landingSec": 0.52,
+  "additive": false,
+  "rest": 73,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 8.8,
+  "pelvisAtContactVsRest": -1.3,
+  "blendEnd": 33,
+  "sellStart": null,
+  "phases": {
+   "compression": 2,
+   "rebound": 9,
+   "contact": 3,
+   "settle": 17
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 35,
+    "to": 44,
+    "commandedPx": 5.1,
+    "drawnPx": 5.4,
+    "peakFrame": 39,
+    "recontactFrame": 44
+   },
+   "recontactFrames": [
+    44
+   ],
+   "heightPx": 5.4
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -86,
+    "gapAtRest": -74.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -55.1
+   },
+   "far": {
+    "class": "released, replanted",
+    "gapAtContact": -3.7,
+    "gapAtRest": -0.8,
+    "releaseFrame": 35,
+    "replantFrame": 43,
+    "maxGap": 15.9
+   }
+  },
+  "flexMin": {
+   "nearKnee": 1.5,
+   "nearElbow": 0.45,
+   "farKnee": 0,
+   "farElbow": 0.15
+  },
+  "flexMax": {
+   "nearKnee": 1.82,
+   "nearElbow": 0.65,
+   "farKnee": 0.14,
+   "farElbow": 0.29
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 32,
+     "px": 52.4
+    },
+    {
+     "label": "blend end",
+     "frame": 33,
+     "px": 4.8
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 63,
+     "px": 0.2
+    }
+   ],
+   "impactWindow": {
+    "px": 7.6,
+    "joint": "farWrist",
+    "frame": 35
+   },
+   "afterImpactToRest": {
+    "px": 2.5,
+    "joint": "nearWrist",
+    "frame": 45
+   }
+  }
+ },
+ {
+  "id": "backward-george-r",
+  "runtimePhases": true,
+  "contact": 32,
+  "landingEnd": 63,
+  "landingSec": 0.52,
+  "additive": false,
+  "rest": 73,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 8.8,
+  "pelvisAtContactVsRest": -1.3,
+  "blendEnd": 33,
+  "sellStart": null,
+  "phases": {
+   "compression": 2,
+   "rebound": 9,
+   "contact": 3,
+   "settle": 17
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 35,
+    "to": 44,
+    "commandedPx": 5.1,
+    "drawnPx": 5.4,
+    "peakFrame": 39,
+    "recontactFrame": 44
+   },
+   "recontactFrames": [
+    44
+   ],
+   "heightPx": 5.4
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -86,
+    "gapAtRest": -74.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -55.1
+   },
+   "far": {
+    "class": "released, replanted",
+    "gapAtContact": -3.7,
+    "gapAtRest": -0.8,
+    "releaseFrame": 35,
+    "replantFrame": 43,
+    "maxGap": 15.9
+   }
+  },
+  "flexMin": {
+   "nearKnee": 1.5,
+   "nearElbow": 0.45,
+   "farKnee": 0,
+   "farElbow": 0.15
+  },
+  "flexMax": {
+   "nearKnee": 1.82,
+   "nearElbow": 0.65,
+   "farKnee": 0.14,
+   "farElbow": 0.29
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 32,
+     "px": 52.4
+    },
+    {
+     "label": "blend end",
+     "frame": 33,
+     "px": 4.8
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 63,
+     "px": 0.2
+    }
+   ],
+   "impactWindow": {
+    "px": 7.6,
+    "joint": "farWrist",
+    "frame": 35
+   },
+   "afterImpactToRest": {
+    "px": 2.5,
+    "joint": "nearWrist",
+    "frame": 45
+   }
+  }
+ },
+ {
+  "id": "bodySlam-george-l",
+  "runtimePhases": true,
+  "contact": 73,
+  "landingEnd": 99,
+  "landingSec": 0.43,
+  "additive": true,
+  "rest": 114,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 11.2,
+  "pelvisAtContactVsRest": 1.1,
+  "blendEnd": 91,
+  "sellStart": 73,
+  "phases": {
+   "compression": 2,
+   "rebound": 13,
+   "contact": 3,
+   "settle": 8
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 75,
+    "to": 88,
+    "commandedPx": 10.8,
+    "drawnPx": 11.8,
+    "peakFrame": 81,
+    "recontactFrame": 88
+   },
+   "recontactFrames": [
+    88
+   ],
+   "heightPx": 11.8
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -21.2,
+    "gapAtRest": -74.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -12.3
+   },
+   "far": {
+    "class": "up at contact, planted later",
+    "gapAtContact": 11.5,
+    "gapAtRest": -0.8,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": 39.2
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0,
+   "nearElbow": 0.26,
+   "farKnee": 0,
+   "farElbow": -0.04
+  },
+  "flexMax": {
+   "nearKnee": 2.25,
+   "nearElbow": 0.64,
+   "farKnee": 0.42,
+   "farElbow": 0.37
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 73,
+     "px": 25.2
+    },
+    {
+     "label": "blend end",
+     "frame": 91,
+     "px": 1.8
+    },
+    {
+     "label": "sell start",
+     "frame": 73,
+     "px": 25.2
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 99,
+     "px": 0
+    }
+   ],
+   "impactWindow": {
+    "px": 11.6,
+    "joint": "nearWrist",
+    "frame": 81
+   },
+   "afterImpactToRest": {
+    "px": 8.3,
+    "joint": "farAnkle",
+    "frame": 86
+   }
+  }
+ },
+ {
+  "id": "bodySlam-george-r",
+  "runtimePhases": true,
+  "contact": 73,
+  "landingEnd": 99,
+  "landingSec": 0.43,
+  "additive": true,
+  "rest": 114,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 11.2,
+  "pelvisAtContactVsRest": 1.1,
+  "blendEnd": 91,
+  "sellStart": 73,
+  "phases": {
+   "compression": 2,
+   "rebound": 13,
+   "contact": 3,
+   "settle": 8
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 75,
+    "to": 88,
+    "commandedPx": 10.8,
+    "drawnPx": 11.8,
+    "peakFrame": 81,
+    "recontactFrame": 88
+   },
+   "recontactFrames": [
+    88
+   ],
+   "heightPx": 11.8
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -21.2,
+    "gapAtRest": -74.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -12.3
+   },
+   "far": {
+    "class": "up at contact, planted later",
+    "gapAtContact": 11.5,
+    "gapAtRest": -0.8,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": 39.2
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0,
+   "nearElbow": 0.32,
+   "farKnee": 0,
+   "farElbow": -0.45
+  },
+  "flexMax": {
+   "nearKnee": 2.41,
+   "nearElbow": 0.69,
+   "farKnee": 0.67,
+   "farElbow": 0.37
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 1
+  },
+  "flexMisses": [
+   "farElbow outside [-0.12, 2.75] in 6 frames (min -0.45, max 0.37; 0 pushed out by the landing's offsets, 6 already outside under them: sell; frames 108-113)"
+  ],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 73,
+     "px": 25.2
+    },
+    {
+     "label": "blend end",
+     "frame": 91,
+     "px": 1.8
+    },
+    {
+     "label": "sell start",
+     "frame": 73,
+     "px": 25.2
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 99,
+     "px": 0
+    }
+   ],
+   "impactWindow": {
+    "px": 11.6,
+    "joint": "nearWrist",
+    "frame": 81
+   },
+   "afterImpactToRest": {
+    "px": 12,
+    "joint": "nearWrist",
+    "frame": 108
+   }
+  }
+ },
+ {
+  "id": "flip-george-l",
+  "runtimePhases": true,
+  "contact": 31,
+  "landingEnd": 62,
+  "landingSec": 0.52,
+  "additive": false,
+  "rest": 72,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 8.8,
+  "pelvisAtContactVsRest": -1.3,
+  "blendEnd": 32,
+  "sellStart": null,
+  "phases": {
+   "compression": 2,
+   "rebound": 9,
+   "contact": 3,
+   "settle": 17
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 34,
+    "to": 43,
+    "commandedPx": 5.1,
+    "drawnPx": 5.4,
+    "peakFrame": 38,
+    "recontactFrame": 43
+   },
+   "recontactFrames": [
+    43
+   ],
+   "heightPx": 5.4
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -86,
+    "gapAtRest": -74.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -55.1
+   },
+   "far": {
+    "class": "released, replanted",
+    "gapAtContact": -3.7,
+    "gapAtRest": -0.8,
+    "releaseFrame": 34,
+    "replantFrame": 42,
+    "maxGap": 15.9
+   }
+  },
+  "flexMin": {
+   "nearKnee": 1.5,
+   "nearElbow": 0.45,
+   "farKnee": 0,
+   "farElbow": 0.15
+  },
+  "flexMax": {
+   "nearKnee": 1.82,
+   "nearElbow": 0.65,
+   "farKnee": 0.14,
+   "farElbow": 0.29
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 31,
+     "px": 9.6
+    },
+    {
+     "label": "blend end",
+     "frame": 32,
+     "px": 4.8
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 62,
+     "px": 0.2
+    }
+   ],
+   "impactWindow": {
+    "px": 7.6,
+    "joint": "farWrist",
+    "frame": 34
+   },
+   "afterImpactToRest": {
+    "px": 2.5,
+    "joint": "nearWrist",
+    "frame": 44
+   }
+  }
+ },
+ {
+  "id": "flip-george-r",
+  "runtimePhases": true,
+  "contact": 31,
+  "landingEnd": 62,
+  "landingSec": 0.52,
+  "additive": false,
+  "rest": 72,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 8.8,
+  "pelvisAtContactVsRest": -1.3,
+  "blendEnd": 32,
+  "sellStart": null,
+  "phases": {
+   "compression": 2,
+   "rebound": 9,
+   "contact": 3,
+   "settle": 17
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 34,
+    "to": 43,
+    "commandedPx": 5.1,
+    "drawnPx": 5.4,
+    "peakFrame": 38,
+    "recontactFrame": 43
+   },
+   "recontactFrames": [
+    43
+   ],
+   "heightPx": 5.4
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -86,
+    "gapAtRest": -74.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -55.1
+   },
+   "far": {
+    "class": "released, replanted",
+    "gapAtContact": -3.7,
+    "gapAtRest": -0.8,
+    "releaseFrame": 34,
+    "replantFrame": 42,
+    "maxGap": 15.9
+   }
+  },
+  "flexMin": {
+   "nearKnee": 1.5,
+   "nearElbow": 0.45,
+   "farKnee": 0,
+   "farElbow": 0.15
+  },
+  "flexMax": {
+   "nearKnee": 1.82,
+   "nearElbow": 0.65,
+   "farKnee": 0.14,
+   "farElbow": 0.29
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 31,
+     "px": 9.6
+    },
+    {
+     "label": "blend end",
+     "frame": 32,
+     "px": 4.8
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 62,
+     "px": 0.2
+    }
+   ],
+   "impactWindow": {
+    "px": 7.6,
+    "joint": "farWrist",
+    "frame": 34
+   },
+   "afterImpactToRest": {
+    "px": 2.5,
+    "joint": "nearWrist",
+    "frame": 44
+   }
+  }
+ },
+ {
+  "id": "forward-george-l",
+  "runtimePhases": true,
+  "contact": 32,
+  "landingEnd": 67,
+  "landingSec": 0.58,
+  "additive": false,
+  "rest": 73,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 9.5,
+  "pelvisAtContactVsRest": -0.6,
+  "blendEnd": 33,
+  "sellStart": null,
+  "phases": {
+   "compression": 5,
+   "rebound": 12,
+   "contact": 6,
+   "settle": 12
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 37,
+    "to": 49,
+    "commandedPx": 2,
+    "drawnPx": 2.2,
+    "peakFrame": 42,
+    "recontactFrame": 49
+   },
+   "recontactFrames": [
+    49
+   ],
+   "heightPx": 2.2
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -41.8,
+    "gapAtRest": -42.9,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -33.6
+   },
+   "far": {
+    "class": "stayed",
+    "gapAtContact": -49.7,
+    "gapAtRest": -47.8,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -43.4
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0.8,
+   "nearElbow": 1.85,
+   "farKnee": 0.15,
+   "farElbow": 2.35
+  },
+  "flexMax": {
+   "nearKnee": 1.13,
+   "nearElbow": 2.14,
+   "farKnee": 0.38,
+   "farElbow": 2.39
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 32,
+     "px": 20.5
+    },
+    {
+     "label": "blend end",
+     "frame": 33,
+     "px": 2
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 67,
+     "px": 0.4
+    }
+   ],
+   "impactWindow": {
+    "px": 3.3,
+    "joint": "nearAnkle",
+    "frame": 39
+   },
+   "afterImpactToRest": {
+    "px": 3.3,
+    "joint": "nearAnkle",
+    "frame": 64
+   }
+  }
+ },
+ {
+  "id": "forward-george-r",
+  "runtimePhases": true,
+  "contact": 32,
+  "landingEnd": 67,
+  "landingSec": 0.58,
+  "additive": false,
+  "rest": 73,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 9.5,
+  "pelvisAtContactVsRest": -0.6,
+  "blendEnd": 33,
+  "sellStart": null,
+  "phases": {
+   "compression": 5,
+   "rebound": 12,
+   "contact": 6,
+   "settle": 12
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 37,
+    "to": 49,
+    "commandedPx": 2,
+    "drawnPx": 2.2,
+    "peakFrame": 42,
+    "recontactFrame": 49
+   },
+   "recontactFrames": [
+    49
+   ],
+   "heightPx": 2.2
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -41.8,
+    "gapAtRest": -42.9,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -33.6
+   },
+   "far": {
+    "class": "stayed",
+    "gapAtContact": -49.7,
+    "gapAtRest": -47.8,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -43.4
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0.8,
+   "nearElbow": 1.85,
+   "farKnee": 0.15,
+   "farElbow": 2.35
+  },
+  "flexMax": {
+   "nearKnee": 1.13,
+   "nearElbow": 2.14,
+   "farKnee": 0.38,
+   "farElbow": 2.39
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 32,
+     "px": 20.5
+    },
+    {
+     "label": "blend end",
+     "frame": 33,
+     "px": 2
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 67,
+     "px": 0.4
+    }
+   ],
+   "impactWindow": {
+    "px": 3.3,
+    "joint": "nearAnkle",
+    "frame": 39
+   },
+   "afterImpactToRest": {
+    "px": 3.3,
+    "joint": "nearAnkle",
+    "frame": 64
+   }
+  }
+ },
+ {
+  "id": "hipToss-george-l",
+  "runtimePhases": true,
+  "contact": 46,
+  "landingEnd": 77,
+  "landingSec": 0.52,
+  "additive": true,
+  "rest": 87,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 12.7,
+  "pelvisAtContactVsRest": 2.5,
+  "blendEnd": 64,
+  "sellStart": 46,
+  "phases": {
+   "compression": 2,
+   "rebound": 9,
+   "contact": 3,
+   "settle": 17
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 49,
+    "to": 58,
+    "commandedPx": 5.1,
+    "drawnPx": 5.5,
+    "peakFrame": 53,
+    "recontactFrame": 58
+   },
+   "recontactFrames": [
+    58
+   ],
+   "heightPx": 5.5
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -11.8,
+    "gapAtRest": -74.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -11.8
+   },
+   "far": {
+    "class": "up at contact, planted later",
+    "gapAtContact": 19.1,
+    "gapAtRest": -0.8,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": 32
+   }
+  },
+  "flexMin": {
+   "nearKnee": -0.01,
+   "nearElbow": 0.37,
+   "farKnee": 0,
+   "farElbow": 0.15
+  },
+  "flexMax": {
+   "nearKnee": 2.23,
+   "nearElbow": 1.92,
+   "farKnee": 0.63,
+   "farElbow": 0.38
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 46,
+     "px": 32.6
+    },
+    {
+     "label": "blend end",
+     "frame": 64,
+     "px": 2.4
+    },
+    {
+     "label": "sell start",
+     "frame": 46,
+     "px": 32.6
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 77,
+     "px": 1.9
+    }
+   ],
+   "impactWindow": {
+    "px": 13.8,
+    "joint": "nearAnkle",
+    "frame": 54
+   },
+   "afterImpactToRest": {
+    "px": 6.6,
+    "joint": "nearAnkle",
+    "frame": 59
+   }
+  }
+ },
+ {
+  "id": "hipToss-george-r",
+  "runtimePhases": true,
+  "contact": 46,
+  "landingEnd": 77,
+  "landingSec": 0.52,
+  "additive": true,
+  "rest": 87,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 12.7,
+  "pelvisAtContactVsRest": 2.5,
+  "blendEnd": 64,
+  "sellStart": 46,
+  "phases": {
+   "compression": 2,
+   "rebound": 9,
+   "contact": 3,
+   "settle": 17
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 49,
+    "to": 58,
+    "commandedPx": 5.1,
+    "drawnPx": 5.5,
+    "peakFrame": 53,
+    "recontactFrame": 58
+   },
+   "recontactFrames": [
+    58
+   ],
+   "heightPx": 5.5
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -11.8,
+    "gapAtRest": -74.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -11.8
+   },
+   "far": {
+    "class": "never supported",
+    "gapAtContact": 19.1,
+    "gapAtRest": -0.8,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": 32
+   }
+  },
+  "flexMin": {
+   "nearKnee": -0.01,
+   "nearElbow": 0.13,
+   "farKnee": 0,
+   "farElbow": -0.17
+  },
+  "flexMax": {
+   "nearKnee": 2.41,
+   "nearElbow": 0.61,
+   "farKnee": 0.76,
+   "farElbow": 0.38
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 1
+  },
+  "flexMisses": [
+   "farElbow outside [-0.12, 2.75] in 5 frames (min -0.17, max 0.38; 0 pushed out by the landing's offsets, 5 already outside under them: sell; frames 82-86)"
+  ],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 46,
+     "px": 32.6
+    },
+    {
+     "label": "blend end",
+     "frame": 64,
+     "px": 2.4
+    },
+    {
+     "label": "sell start",
+     "frame": 46,
+     "px": 32.6
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 77,
+     "px": 3.5
+    }
+   ],
+   "impactWindow": {
+    "px": 13.8,
+    "joint": "nearAnkle",
+    "frame": 54
+   },
+   "afterImpactToRest": {
+    "px": 6.6,
+    "joint": "nearAnkle",
+    "frame": 59
+   }
+  }
+ },
+ {
+  "id": "kneesForward-george-l",
+  "runtimePhases": true,
+  "contact": 46,
+  "landingEnd": 84,
+  "landingSec": 0.63,
+  "additive": false,
+  "rest": 87,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 8.9,
+  "pelvisAtContactVsRest": -1.2,
+  "blendEnd": 47,
+  "sellStart": null,
+  "phases": {
+   "compression": 4,
+   "rebound": 0,
+   "contact": 22,
+   "settle": 12
+  },
+  "rebound": {
+   "firstHop": null,
+   "recontactFrames": [],
+   "heightPx": 0
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -43.2,
+    "gapAtRest": -42.9,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -31.7
+   },
+   "far": {
+    "class": "stayed",
+    "gapAtContact": -51.2,
+    "gapAtRest": -47.8,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -42.2
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0.8,
+   "nearElbow": 1.85,
+   "farKnee": 0.15,
+   "farElbow": 2.35
+  },
+  "flexMax": {
+   "nearKnee": 1.19,
+   "nearElbow": 2.09,
+   "farKnee": 0.51,
+   "farElbow": 2.54
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 46,
+     "px": 5.2
+    },
+    {
+     "label": "blend end",
+     "frame": 47,
+     "px": 2.6
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 84,
+     "px": 0
+    }
+   ],
+   "impactWindow": {
+    "px": 5,
+    "joint": "nearAnkle",
+    "frame": 49
+   },
+   "afterImpactToRest": {
+    "px": 2.3,
+    "joint": "farAnkle",
+    "frame": 61
+   }
+  }
+ },
+ {
+  "id": "kneesForward-george-r",
+  "runtimePhases": true,
+  "contact": 46,
+  "landingEnd": 84,
+  "landingSec": 0.63,
+  "additive": false,
+  "rest": 87,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 8.9,
+  "pelvisAtContactVsRest": -1.2,
+  "blendEnd": 47,
+  "sellStart": null,
+  "phases": {
+   "compression": 4,
+   "rebound": 0,
+   "contact": 22,
+   "settle": 12
+  },
+  "rebound": {
+   "firstHop": null,
+   "recontactFrames": [],
+   "heightPx": 0
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -43.2,
+    "gapAtRest": -42.9,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -31.7
+   },
+   "far": {
+    "class": "stayed",
+    "gapAtContact": -51.2,
+    "gapAtRest": -47.8,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -42.2
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0.8,
+   "nearElbow": 1.85,
+   "farKnee": 0.15,
+   "farElbow": 2.35
+  },
+  "flexMax": {
+   "nearKnee": 1.19,
+   "nearElbow": 2.09,
+   "farKnee": 0.51,
+   "farElbow": 2.54
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 46,
+     "px": 5.2
+    },
+    {
+     "label": "blend end",
+     "frame": 47,
+     "px": 2.6
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 84,
+     "px": 0
+    }
+   ],
+   "impactWindow": {
+    "px": 5,
+    "joint": "nearAnkle",
+    "frame": 49
+   },
+   "afterImpactToRest": {
+    "px": 2.3,
+    "joint": "farAnkle",
+    "frame": 61
+   }
+  }
+ },
+ {
+  "id": "piledriver-george-l",
+  "runtimePhases": true,
+  "contact": 117,
+  "landingEnd": 144,
+  "landingSec": 0.45,
+  "additive": true,
+  "rest": 158,
+  "restPelvisPx": 10.2,
+  "contactPelvisPx": 10.6,
+  "pelvisAtContactVsRest": 0.4,
+  "blendEnd": 135,
+  "sellStart": 117,
+  "phases": {
+   "compression": 2,
+   "rebound": 16,
+   "contact": 2,
+   "settle": 7
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 119,
+    "to": 135,
+    "commandedPx": 15.5,
+    "drawnPx": 16.3,
+    "peakFrame": 126,
+    "recontactFrame": 135
+   },
+   "recontactFrames": [
+    135
+   ],
+   "heightPx": 16.3
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -31.1,
+    "gapAtRest": -43.3,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -22.9
+   },
+   "far": {
+    "class": "stayed",
+    "gapAtContact": -47.2,
+    "gapAtRest": -48.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -32.5
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0,
+   "nearElbow": 0.31,
+   "farKnee": 0,
+   "farElbow": 0.32
+  },
+  "flexMax": {
+   "nearKnee": 0.99,
+   "nearElbow": 1.88,
+   "farKnee": 0.32,
+   "farElbow": 2.38
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 117,
+     "px": 7.7
+    },
+    {
+     "label": "blend end",
+     "frame": 135,
+     "px": 5.2
+    },
+    {
+     "label": "sell start",
+     "frame": 117,
+     "px": 7.7
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 144,
+     "px": 0
+    }
+   ],
+   "impactWindow": {
+    "px": 7.6,
+    "joint": "nearWrist",
+    "frame": 126
+   },
+   "afterImpactToRest": {
+    "px": 6.8,
+    "joint": "neck",
+    "frame": 134
+   }
+  }
+ },
+ {
+  "id": "piledriver-george-r",
+  "runtimePhases": true,
+  "contact": 117,
+  "landingEnd": 144,
+  "landingSec": 0.45,
+  "additive": true,
+  "rest": 158,
+  "restPelvisPx": 10.2,
+  "contactPelvisPx": 10.6,
+  "pelvisAtContactVsRest": 0.4,
+  "blendEnd": 135,
+  "sellStart": 117,
+  "phases": {
+   "compression": 2,
+   "rebound": 16,
+   "contact": 2,
+   "settle": 7
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 119,
+    "to": 135,
+    "commandedPx": 15.5,
+    "drawnPx": 16.3,
+    "peakFrame": 126,
+    "recontactFrame": 135
+   },
+   "recontactFrames": [
+    135
+   ],
+   "heightPx": 16.3
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -31.1,
+    "gapAtRest": -43.3,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -22.9
+   },
+   "far": {
+    "class": "stayed",
+    "gapAtContact": -47.2,
+    "gapAtRest": -48.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -32.5
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0,
+   "nearElbow": 0.31,
+   "farKnee": 0,
+   "farElbow": 0.32
+  },
+  "flexMax": {
+   "nearKnee": 0.99,
+   "nearElbow": 1.88,
+   "farKnee": 0.32,
+   "farElbow": 2.38
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 117,
+     "px": 7.7
+    },
+    {
+     "label": "blend end",
+     "frame": 135,
+     "px": 5.2
+    },
+    {
+     "label": "sell start",
+     "frame": 117,
+     "px": 7.7
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 144,
+     "px": 0
+    }
+   ],
+   "impactWindow": {
+    "px": 7.6,
+    "joint": "nearWrist",
+    "frame": 126
+   },
+   "afterImpactToRest": {
+    "px": 6.8,
+    "joint": "neck",
+    "frame": 134
+   }
+  }
+ },
+ {
+  "id": "sitBack-george-l",
+  "runtimePhases": true,
+  "contact": 46,
+  "landingEnd": 82,
+  "landingSec": 0.6,
+  "additive": false,
+  "rest": 87,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 9.2,
+  "pelvisAtContactVsRest": -0.9,
+  "blendEnd": 47,
+  "sellStart": null,
+  "phases": {
+   "compression": 3,
+   "rebound": 0,
+   "contact": 21,
+   "settle": 12
+  },
+  "rebound": {
+   "firstHop": null,
+   "recontactFrames": [],
+   "heightPx": 0
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -82.3,
+    "gapAtRest": -74.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -61.2
+   },
+   "far": {
+    "class": "released, replanted",
+    "gapAtContact": -2.9,
+    "gapAtRest": -0.8,
+    "releaseFrame": 50,
+    "replantFrame": 78,
+    "maxGap": 9.1
+   }
+  },
+  "flexMin": {
+   "nearKnee": 1.5,
+   "nearElbow": 0.45,
+   "farKnee": 0,
+   "farElbow": 0.15
+  },
+  "flexMax": {
+   "nearKnee": 1.81,
+   "nearElbow": 0.6,
+   "farKnee": 0.22,
+   "farElbow": 0.26
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 46,
+     "px": 6.5
+    },
+    {
+     "label": "blend end",
+     "frame": 47,
+     "px": 3.6
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 82,
+     "px": 0.6
+    }
+   ],
+   "impactWindow": {
+    "px": 6.5,
+    "joint": "farAnkle",
+    "frame": 52
+   },
+   "afterImpactToRest": {
+    "px": 4.2,
+    "joint": "farAnkle",
+    "frame": 59
+   }
+  }
+ },
+ {
+  "id": "sitBack-george-r",
+  "runtimePhases": true,
+  "contact": 46,
+  "landingEnd": 82,
+  "landingSec": 0.6,
+  "additive": false,
+  "rest": 87,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 9.2,
+  "pelvisAtContactVsRest": -0.9,
+  "blendEnd": 47,
+  "sellStart": null,
+  "phases": {
+   "compression": 3,
+   "rebound": 0,
+   "contact": 21,
+   "settle": 12
+  },
+  "rebound": {
+   "firstHop": null,
+   "recontactFrames": [],
+   "heightPx": 0
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -82.3,
+    "gapAtRest": -74.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -61.2
+   },
+   "far": {
+    "class": "released, replanted",
+    "gapAtContact": -2.9,
+    "gapAtRest": -0.8,
+    "releaseFrame": 50,
+    "replantFrame": 78,
+    "maxGap": 9.1
+   }
+  },
+  "flexMin": {
+   "nearKnee": 1.5,
+   "nearElbow": 0.45,
+   "farKnee": 0,
+   "farElbow": 0.15
+  },
+  "flexMax": {
+   "nearKnee": 1.81,
+   "nearElbow": 0.6,
+   "farKnee": 0.22,
+   "farElbow": 0.26
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 46,
+     "px": 6.5
+    },
+    {
+     "label": "blend end",
+     "frame": 47,
+     "px": 3.6
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 82,
+     "px": 0.6
+    }
+   ],
+   "impactWindow": {
+    "px": 6.5,
+    "joint": "farAnkle",
+    "frame": 52
+   },
+   "afterImpactToRest": {
+    "px": 4.2,
+    "joint": "farAnkle",
+    "frame": 59
+   }
+  }
+ },
+ {
+  "id": "snapmare-george-l",
+  "runtimePhases": true,
+  "contact": 33,
+  "landingEnd": 71,
+  "landingSec": 0.63,
+  "additive": false,
+  "rest": 74,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 23.9,
+  "pelvisAtContactVsRest": 13.7,
+  "blendEnd": 51,
+  "sellStart": 33,
+  "phases": {
+   "compression": 3,
+   "rebound": 0,
+   "contact": 23,
+   "settle": 12
+  },
+  "rebound": {
+   "firstHop": null,
+   "recontactFrames": [],
+   "heightPx": 0
+  },
+  "hands": {
+   "near": {
+    "class": "released, replanted",
+    "gapAtContact": -11.6,
+    "gapAtRest": -74.2,
+    "releaseFrame": 62,
+    "replantFrame": 67,
+    "maxGap": 11.7
+   },
+   "far": {
+    "class": "never supported",
+    "gapAtContact": 17.8,
+    "gapAtRest": -0.8,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": 56.1
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0.54,
+   "nearElbow": 0.06,
+   "farKnee": 0,
+   "farElbow": -0.48
+  },
+  "flexMax": {
+   "nearKnee": 2.45,
+   "nearElbow": 0.71,
+   "farKnee": 1.38,
+   "farElbow": 0.29
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 2
+  },
+  "flexMisses": [
+   "farElbow outside [-0.12, 2.75] in 11 frames (min -0.48, max 0.29; 0 pushed out by the landing's offsets, 11 already outside under them: sell; frames 59-69)"
+  ],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 33,
+     "px": 6.3
+    },
+    {
+     "label": "blend end",
+     "frame": 51,
+     "px": 1.5
+    },
+    {
+     "label": "sell start",
+     "frame": 33,
+     "px": 6.3
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 71,
+     "px": 7.3
+    }
+   ],
+   "impactWindow": {
+    "px": 8,
+    "joint": "nearAnkle",
+    "frame": 44
+   },
+   "afterImpactToRest": {
+    "px": 12.6,
+    "joint": "nearWrist",
+    "frame": 59
+   }
+  }
+ },
+ {
+  "id": "snapmare-george-r",
+  "runtimePhases": true,
+  "contact": 33,
+  "landingEnd": 71,
+  "landingSec": 0.63,
+  "additive": false,
+  "rest": 74,
+  "restPelvisPx": 10.1,
+  "contactPelvisPx": 23.9,
+  "pelvisAtContactVsRest": 13.7,
+  "blendEnd": 51,
+  "sellStart": 33,
+  "phases": {
+   "compression": 3,
+   "rebound": 0,
+   "contact": 23,
+   "settle": 12
+  },
+  "rebound": {
+   "firstHop": null,
+   "recontactFrames": [],
+   "heightPx": 0
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -11.6,
+    "gapAtRest": -74.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -11.6
+   },
+   "far": {
+    "class": "never supported",
+    "gapAtContact": 17.8,
+    "gapAtRest": -0.8,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": 17.8
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0.54,
+   "nearElbow": 0.06,
+   "farKnee": 0,
+   "farElbow": -0.24
+  },
+  "flexMax": {
+   "nearKnee": 2.45,
+   "nearElbow": 0.49,
+   "farKnee": 0.92,
+   "farElbow": 0.29
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [
+   "farElbow outside [-0.12, 2.75] in 7 frames (min -0.24, max 0.29; 0 pushed out by the landing's offsets, 7 already outside under them: sell; frames 67-73)"
+  ],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 33,
+     "px": 6.3
+    },
+    {
+     "label": "blend end",
+     "frame": 51,
+     "px": 1.5
+    },
+    {
+     "label": "sell start",
+     "frame": 33,
+     "px": 6.3
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 71,
+     "px": 2
+    }
+   ],
+   "impactWindow": {
+    "px": 8,
+    "joint": "nearAnkle",
+    "frame": 44
+   },
+   "afterImpactToRest": {
+    "px": 7.1,
+    "joint": "nearAnkle",
+    "frame": 46
+   }
+  }
+ },
+ {
+  "id": "suplex-george-l",
+  "runtimePhases": true,
+  "contact": 85,
+  "landingEnd": 112,
+  "landingSec": 0.45,
+  "additive": true,
+  "rest": 126,
+  "restPelvisPx": 10,
+  "contactPelvisPx": 17.9,
+  "pelvisAtContactVsRest": 7.9,
+  "blendEnd": 103,
+  "sellStart": 85,
+  "phases": {
+   "compression": 2,
+   "rebound": 14,
+   "contact": 2,
+   "settle": 8
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 87,
+    "to": 101,
+    "commandedPx": 11.5,
+    "drawnPx": 13.2,
+    "peakFrame": 93,
+    "recontactFrame": 101
+   },
+   "recontactFrames": [
+    101
+   ],
+   "heightPx": 13.2
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -20.7,
+    "gapAtRest": -73.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -7.2
+   },
+   "far": {
+    "class": "up at contact, planted later",
+    "gapAtContact": 12.3,
+    "gapAtRest": -0.7,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": 44.4
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0,
+   "nearElbow": 0.32,
+   "farKnee": 0,
+   "farElbow": -0.5
+  },
+  "flexMax": {
+   "nearKnee": 2.42,
+   "nearElbow": 0.71,
+   "farKnee": 0.73,
+   "farElbow": 0.37
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [
+   "farElbow outside [-0.12, 2.75] in 7 frames (min -0.5, max 0.37; 0 pushed out by the landing's offsets, 7 already outside under them: sell; frames 119-125)"
+  ],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 85,
+     "px": 29.3
+    },
+    {
+     "label": "blend end",
+     "frame": 103,
+     "px": 2
+    },
+    {
+     "label": "sell start",
+     "frame": 85,
+     "px": 29.3
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 112,
+     "px": 0.2
+    }
+   ],
+   "impactWindow": {
+    "px": 12.4,
+    "joint": "nearAnkle",
+    "frame": 93
+   },
+   "afterImpactToRest": {
+    "px": 12.8,
+    "joint": "nearWrist",
+    "frame": 120
+   }
+  }
+ },
+ {
+  "id": "suplex-george-r",
+  "runtimePhases": true,
+  "contact": 85,
+  "landingEnd": 112,
+  "landingSec": 0.45,
+  "additive": true,
+  "rest": 126,
+  "restPelvisPx": 10,
+  "contactPelvisPx": 17.9,
+  "pelvisAtContactVsRest": 7.9,
+  "blendEnd": 103,
+  "sellStart": 85,
+  "phases": {
+   "compression": 2,
+   "rebound": 14,
+   "contact": 2,
+   "settle": 8
+  },
+  "rebound": {
+   "firstHop": {
+    "from": 87,
+    "to": 101,
+    "commandedPx": 11.5,
+    "drawnPx": 13.2,
+    "peakFrame": 93,
+    "recontactFrame": 101
+   },
+   "recontactFrames": [
+    101
+   ],
+   "heightPx": 13.2
+  },
+  "hands": {
+   "near": {
+    "class": "stayed",
+    "gapAtContact": -20.7,
+    "gapAtRest": -73.2,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": -7.2
+   },
+   "far": {
+    "class": "up at contact, planted later",
+    "gapAtContact": 12.3,
+    "gapAtRest": -0.7,
+    "releaseFrame": null,
+    "replantFrame": null,
+    "maxGap": 44.4
+   }
+  },
+  "flexMin": {
+   "nearKnee": 0,
+   "nearElbow": 0.24,
+   "farKnee": 0,
+   "farElbow": -0.06
+  },
+  "flexMax": {
+   "nearKnee": 2.29,
+   "nearElbow": 0.64,
+   "farKnee": 0.46,
+   "farElbow": 0.37
+  },
+  "clampHits": {
+   "nearKnee": 0,
+   "nearElbow": 0,
+   "farKnee": 0,
+   "farElbow": 0
+  },
+  "flexMisses": [],
+  "steps": {
+   "note": "px at s = 1, max over joints; impact window = the first 0.2 s after contact (velocity expected); seams are single frames at the runtime transitions",
+   "seams": [
+    {
+     "label": "fall -> landing",
+     "frame": 85,
+     "px": 29.3
+    },
+    {
+     "label": "blend end",
+     "frame": 103,
+     "px": 2
+    },
+    {
+     "label": "sell start",
+     "frame": 85,
+     "px": 29.3
+    },
+    {
+     "label": "landing end -> sell/rest",
+     "frame": 112,
+     "px": 0.2
+    }
+   ],
+   "impactWindow": {
+    "px": 12.4,
+    "joint": "nearAnkle",
+    "frame": 93
+   },
+   "afterImpactToRest": {
+    "px": 10.6,
+    "joint": "nearWrist",
+    "frame": 101
+   }
+  }
+ }
+]

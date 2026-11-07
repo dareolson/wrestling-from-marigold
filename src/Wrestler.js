@@ -35,6 +35,7 @@ import {
 const SPEED      = 140;
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
+const FLIGHT_CUT = {}, FLIGHT_REGISTERED = new WeakSet();   // T4.7b: the cut flight clips, and the runtimes they are registered on
 const ELBOW_REST_SEC = 0.1;    // ?falls=v1 (T4.7a): lying after the roll-off, before the get-up
 const ELBOW_DOWN_SEC = 0.8;   // ?falls=v1 (T4.2b): how long the elbow-drop attacker lies before his get-up; down long enough to read, short enough to be hard to pin
 // How long a thrown body takes to settle from the clip's last frame into the
@@ -2656,7 +2657,9 @@ export default class Wrestler {
             // Now jump: the flight is the elbowDrop clip (sheet frames
             // 165–168, author_elbowdrop.mjs) on the rig; this moves him onto
             // the target over the same 380 ms.
-            this._playFlight(elbowDropClip, { x: other.x, ease: 'Sine.easeInOut' }, () => {
+            // ?falls=v1 (T4.7b): the flight is cut at its apex and the ground attack's gravity fall carries him on into the chest, one continuous descent (no mat-level pose before the hit)
+            const falls = fallsCandidate(), flight = falls ? this._elbowDropFlight() : elbowDropClip;
+            this._playFlight(flight, { x: other.x, ease: 'Sine.easeInOut' }, () => {
                 // Damage lands with the elbow, not at the wind-up, so an
                 // interrupted drop costs the defender nothing (as kneeDrop).
                 const contact = () => {
@@ -2681,6 +2684,16 @@ export default class Wrestler {
                 });
             });
         });
+    }
+
+    // T4.7b: the elbow drop clip up to its apex key (ELBOW_DROP.flightAt), registered on first use; the descent after it belongs to the ground attack
+    _elbowDropFlight() {
+        const cut = ELBOW_DROP.flightAt;
+        FLIGHT_CUT.elbowDrop ??= { ...elbowDropClip, id: 'elbowDropFall', duration: cut, events: [],
+            tracks: { attacker: { ...elbowDropClip.tracks.attacker, keyframes: elbowDropClip.tracks.attacker.keyframes.filter(k => k.at <= cut + 1e-9) } } };
+        const runtime = this.scene.moveRuntime;
+        if (!FLIGHT_REGISTERED.has(runtime)) { runtime.register(FLIGHT_CUT.elbowDrop); FLIGHT_REGISTERED.add(runtime); }
+        return FLIGHT_CUT.elbowDrop;
     }
 
     // An airborne flight posed by a one-wrestler clip (elbow drop, knee drop,
@@ -2940,26 +2953,29 @@ export default class Wrestler {
         let s = s0, root = place(s);
         for (let i = 0; i < 2; i++) { s = scaleAt(root.y); root = place(s); }
         sk.setVisible(true);
-        if (smp.seg === 'blend') {
-            const e = smp.u * smp.u * (3 - 2 * smp.u);
-            if (!ga.from && ga.joints) ga.from = Skeleton.groundedPoseFrom(ga.joints, this.x, this.y, s0, facing, P.approach.g);
+        if (smp.seg === 'fall') {
+            // one descent from the flight's apex: the body and its height ease in as u^2 (gravity) from the flight's last body into the contact pose, while it travels to the elbow-on-chest root
+            if (!ga.from && ga.joints) ga.from = Skeleton.groundedPoseFrom(ga.joints, this.x, this.y, s0, facing, P.contact.g);
             if (ga.from) {
-                root = { x: this.x + (root.x - this.x) * e, y: this.y + (root.y - this.y) * e };
-                s = s0 + (s - s0) * e;
+                root = { x: this.x + (root.x - this.x) * smp.u, y: this.y + (root.y - this.y) * smp.u };
+                s = s0 + (s - s0) * smp.u;
                 gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
-                sk.updateGroundedBlend(root.x, root.y, s, facing, P.approach.g, ga.from, smp.u);
+                sk.updateGroundedBlend(root.x, root.y, s, facing, P.contact.g, ga.from, smp.e, null, false, true);
                 ga.root = root;
+                if (smp.layer) this._layerStrike(sk, def, op);
                 return;
             }
         }
         gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
         sk._applyGrounded(root.x, root.y, s, facing, smp.g);
         ga.root = root;
-        if (smp.layer) {
-            // the striking forearm over the receiver for the contact window; the rest of him keeps his own depth (a fixed order, released when the window ends)
-            const top = 12 + op.y * 0.03 + 0.01;
-            [`${def.side}UpArm`, `${def.side}Forearm`, `${def.side}Hand`].forEach((k, i) => sk[k]?.setDepth(top + i * 0.00001));
-        }
+        if (smp.layer) this._layerStrike(sk, def, op);
+    }
+
+    // the striking arm over the receiver for the contact window; the rest of him keeps his own depth (a fixed order, released when the window ends)
+    _layerStrike(sk, def, op) {
+        const top = 12 + op.y * 0.03 + 0.01;
+        [`${def.side}UpArm`, `${def.side}Forearm`, `${def.side}Hand`].forEach((k, i) => sk[k]?.setDepth(top + i * 0.00001));
     }
 
     _standBackUp() {

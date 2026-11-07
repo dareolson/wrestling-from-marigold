@@ -2425,11 +2425,11 @@ export default class Skeleton {
     }
 
     /** Grounded pose `poseName`, blended from a groundedPoseFrom() start by u (0→1). */
-    updateGroundedBlend(x, y, s, facing, poseName, from, u, landing = null, landingAfter = false) {
+    updateGroundedBlend(x, y, s, facing, poseName, from, u, landing = null, landingAfter = false, linear = false) {   // linear: u is already the eased value (T4.7b gravity fall)
         let target = typeof poseName === 'object' ? poseName : Skeleton.GROUNDED_POSES[poseName] && Skeleton.lyingBase(poseName, this._falls);   // an object is a grounded pose itself (T4.7a ground attacks)
         if (!target) throw new RangeError(`unknown grounded pose "${poseName}"`);
         if (landing && !landingAfter) { target = { ...target }; for (const [c, v] of Object.entries(landing)) if (c in target) target[c] += v; }   // ?falls=v1: the landing's offsets ride the blend's target
-        const e = u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+        const e = u <= 0 ? 0 : u >= 1 ? 1 : linear ? u : u * u * (3 - 2 * u);
         const g = {};
         for (const key of Object.keys(target)) {
             g[key] = Number.isFinite(from[key]) ? from[key] + (target[key] - from[key]) * e : target[key];

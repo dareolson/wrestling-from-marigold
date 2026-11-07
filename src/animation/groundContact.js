@@ -19,9 +19,12 @@ export const ELBOW_DROP = Object.freeze({
         // wrist sits; the body slides so the wrist is on that point. The stills tool still places this pose by `anchor`.
         rolloff:  Object.freeze({ plant: Object.freeze({ dx: -20, gap: 14 }), anchor: Object.freeze({ dx: -45, dy: -60 }), g: Object.freeze({ hip: 22, torso: 1.95, farThigh: -1.45, farShin: -1.80, nearThigh: -0.60, nearShin: -1.90, farArm: 0.30, farFore: 1.90, nearArm: 0.10, nearFore: 0.15 }) }),
     }),
-    // T4.7a: seconds. blend = the flight's last body into the approach pose; reach = approach -> contact (eased in: it arrives, it doesn't slow); hold = the contact beat (damage, sound and shake
-    // fire at its start); release = contact -> roll-off, the hand planting; settle = roll-off -> the ordinary lying pose, drawn here too so the ordinary down draw takes over with no handoff; `layer` is the window the striking forearm draws over the receiver.
-    timing: Object.freeze({ blend: 0.14, reach: 0.16, hold: 0.10, release: 0.34, settle: 0.30, layerFrom: 0.5, layerTail: 0.12 }),
+    // seconds. T4.7b: `fall` = the one continuous descent from the flight's apex into the elbow on the chest (gravity: the pose and height ease in as u^2 from the apex, so the speed rises right up to
+    // contact; the hit lands on its last frame, in the air above the mat); hold = the contact beat with a brief compression (`press`); release = contact -> roll-off, the hand planting; settle =
+    // roll-off -> the ordinary lying pose, drawn here too so the ordinary down draw takes over with no handoff; `layer` is the window the striking forearm draws over the receiver.
+    // The flight clip that precedes it is cut at `flightAt` (the clip's own apex key, 0.24 s of its 0.38): flightAt + fall is the old flight length, so the hit lands where the old flight ended.
+    flightAt: 0.24,
+    timing: Object.freeze({ fall: 0.14, hold: 0.10, release: 0.34, settle: 0.30, layerFrom: 0.6, layerTail: 0.12, pressHip: 5, pressDy: 2 }),
 });
 
 const lerp = (a, b, u) => a + (b - a) * u;
@@ -29,18 +32,21 @@ const smooth = (u) => u * u * (3 - 2 * u);
 const mixG = (a, b, u) => { const g = {}; for (const k of Object.keys(b)) if (k !== 't') g[k] = lerp(a[k] ?? b[k], b[k], u); return g; };
 const mixAnchor = (a, b, u) => ({ dx: lerp(a.dx, b.dx, u), dy: lerp(a.dy, b.dy, u) });
 
-export const groundAttackSeconds = (def) => { const t = def.timing; return t.blend + t.reach + t.hold + t.release + t.settle; };
-export const groundAttackReleaseEnd = (def) => { const t = def.timing; return t.blend + t.reach + t.hold + t.release; };
-export const groundAttackContactAt = (def) => def.timing.blend + def.timing.reach;
+export const groundAttackSeconds = (def) => { const t = def.timing; return t.fall + t.hold + t.release + t.settle; };
+export const groundAttackReleaseEnd = (def) => { const t = def.timing; return t.fall + t.hold + t.release; };
+export const groundAttackContactAt = (def) => def.timing.fall;
 
-// The ground attack at time t: { seg, u, g, anchor, plant, layer }. `anchor` places the striking elbow on the receiver (blend, reach, hold, and the start of release);
-// `plant` (0..1) is how far the body has moved from that placement to the roll-off's planted wrist; `layer` is the contact window.
+// The ground attack at time t: { seg, u, e, g, anchor, plant, layer }. `fall` (u: 0..1, e = u^2 the gravity ease the caller applies to the pose and height blend from the flight's last body, and the contact
+// pose is g); `anchor` places the striking elbow on the receiver; `plant` (0..1) is how far the body has moved from that placement to the roll-off's planted wrist; `layer` is the contact window.
 export function sampleGroundAttack(def, t, rest) {
-    const T = def.timing, P = def.phases, c = T.blend + T.reach, h = c + T.hold, end = h + T.release;
-    const layer = t >= T.blend + T.reach * T.layerFrom && t < h + T.release * T.layerTail;
-    if (t < T.blend) return { seg: 'blend', u: t / T.blend, g: P.approach.g, anchor: P.approach.anchor, plant: 0, layer };
-    if (t < c) { const u = (t - T.blend) / T.reach, e = u * u; return { seg: 'reach', u, g: mixG(P.approach.g, P.contact.g, e), anchor: mixAnchor(P.approach.anchor, P.contact.anchor, e), plant: 0, layer }; }
-    if (t < h) return { seg: 'hold', u: (t - c) / T.hold, g: P.contact.g, anchor: P.contact.anchor, plant: 0, layer };
+    const T = def.timing, P = def.phases, c = T.fall, h = c + T.hold, end = h + T.release;
+    const layer = t >= T.fall * T.layerFrom && t < h + T.release * T.layerTail;
+    if (t < c) { const u = t / c; return { seg: 'fall', u, e: u * u, g: P.contact.g, anchor: P.contact.anchor, plant: 0, layer }; }
+    if (t < h) {
+        // compression: the body dips into him and comes back over the hold (a sine pulse), the elbow pressing a little deeper
+        const u = (t - c) / T.hold, press = Math.sin(Math.PI * u);
+        return { seg: 'hold', u, e: 1, g: { ...P.contact.g, hip: P.contact.g.hip - T.pressHip * press }, anchor: { dx: P.contact.anchor.dx, dy: P.contact.anchor.dy + T.pressDy * press }, plant: 0, layer };
+    }
     if (t >= end) return { seg: 'settle', u: Math.min(1, (t - end) / T.settle), g: mixG(P.rolloff.g, rest, smooth(Math.min(1, (t - end) / T.settle))), anchor: P.contact.anchor, plant: 1, layer: false };
     const u = Math.min(1, (t - h) / T.release), e = smooth(u);
     return { seg: 'release', u, g: mixG(P.contact.g, P.rolloff.g, e), anchor: P.contact.anchor, plant: e, layer };

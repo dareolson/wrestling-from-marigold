@@ -565,7 +565,7 @@ async function downFixture(falls) {
     globalThis.location = { search: falls ? '?falls=v1' : '' };
     const { default: Wrestler } = await import('../src/Wrestler.js');
     const shakes = [];
-    const scene = { time: { now: 0 }, tweens: { add: () => ({ stop() {} }), killTweensOf: () => {} }, cameras: { main: { shake: (...a) => shakes.push(a) } }, crowd: { impact() {} } };
+    const scene = { moveRuntime: { register() {} }, time: { now: 0 }, tweens: { add: () => ({ stop() {} }), killTweensOf: () => {} }, cameras: { main: { shake: (...a) => shakes.push(a) } }, crowd: { impact() {} } };
     const mk = (x, facing) => Object.assign(Object.create(Wrestler.prototype), { scene, state: 'standing', facing, x, y: 360, stamina: 100, pose: { tilt: 1.5, lift: -95 }, idlePose: 'idle',
         skeleton: { setPartVariants() {}, jointAttachmentPoints: { neck: { x: 1, y: 2 } }, artPlacement: () => ({}) }, _activeMove: null, vx: 0, vy: 0, input: { justDown: () => false, isDown: () => false }, moveSet: [] });
     const atk = mk(470, 1), def = mk(520, -1);
@@ -662,10 +662,10 @@ test('ground attack sampler: g is continuous at every segment join, ends exactly
     assert.ok(worst < 0.06, `largest channel step per 1/600 s ${worst}`);   // reach is eased in: the steepest part is the arrival at contact
     const end = sampleGroundAttack(ELBOW_DROP, groundAttackSeconds(ELBOW_DROP), REST_PRONE);
     for (const k of Object.keys(REST_PRONE)) if (k !== 't') assert.ok(Math.abs(end.g[k] - REST_PRONE[k]) < 1e-9, `${k} ends on the lying pose`);
-    assert.equal(groundAttackContactAt(ELBOW_DROP), T.blend + T.reach);
+    assert.equal(groundAttackContactAt(ELBOW_DROP), T.fall);
     assert.equal(sampleGroundAttack(ELBOW_DROP, groundAttackContactAt(ELBOW_DROP), REST_PRONE).seg, 'hold');
     assert.ok(sampleGroundAttack(ELBOW_DROP, groundAttackContactAt(ELBOW_DROP), REST_PRONE).layer, 'the forearm is over him at contact');
-    assert.ok(!sampleGroundAttack(ELBOW_DROP, 0.01, REST_PRONE).layer && !sampleGroundAttack(ELBOW_DROP, groundAttackReleaseEnd(ELBOW_DROP), REST_PRONE).layer, 'no layering at the approach or after the release');
+    assert.ok(!sampleGroundAttack(ELBOW_DROP, 0.3 * T.fall, REST_PRONE).layer && !sampleGroundAttack(ELBOW_DROP, groundAttackReleaseEnd(ELBOW_DROP), REST_PRONE).layer, 'no layering early in the fall or after the release');
 });
 
 test('ground attack: damage, jolt and shake land once, on the contact frame, and never before it', async () => {
@@ -710,11 +710,11 @@ test('ground attack depth: the striking forearm draws over the receiver only ins
     const gfx = { fillStyle() {}, fillEllipse() {} };
     atk._doElbowDrop(def);
     const draw = (t) => { for (const k of Object.keys(depth)) delete depth[k]; atk._groundAttack.t = t; atk._drawGroundAttack(1, 1, gfx); };
-    draw(ELBOW_DROP.timing.blend + ELBOW_DROP.timing.reach + 0.01);
+    draw(ELBOW_DROP.timing.fall + 0.01);
     const over = 12 + def.y * 0.03;
     assert.ok(depth.fore > over && depth.up > over && depth.hand > over, 'over the receiver at contact');
     assert.ok(depth.up < depth.fore && depth.fore < depth.hand, 'fixed order: upper arm, forearm, hand');
-    draw(ELBOW_DROP.timing.blend + 0.12 * ELBOW_DROP.timing.reach); assert.deepEqual(depth, {}, 'approach: untouched');
+    draw(0.3 * ELBOW_DROP.timing.fall); assert.deepEqual(depth, {}, 'early in the fall: untouched');
     draw(groundAttackReleaseEnd(ELBOW_DROP) + 0.01); assert.deepEqual(depth, {}, 'after the release: untouched');
     delete globalThis.location;
 });
@@ -730,5 +730,41 @@ test('ground attack ring room: the drawn root never leaves the ropes, whatever t
     for (let t = 0.2; t < groundAttackReleaseEnd(ELBOW_DROP); t += 0.05) { atk._groundAttack.t = t; atk._drawGroundAttack(1, 1, gfx); }
     assert.ok(roots.length > 5);
     for (const [, y] of roots) assert.ok(y >= RING.farLeft.y + 6 - 1e-9 && y <= RING.nearLeft.y - 6 + 1e-9, `root y ${y}`);
+    delete globalThis.location;
+});
+
+// ---- PLAN_FALLS T4.7b: one continuous fall into the chest ---------------------------------------------------------------------------------------------------------------------
+test('T4.7b fall: the eased fraction keeps speeding up to the contact frame (no stall, no settled pose before it), and the hold starts exactly on the contact pose', () => {
+    const T = ELBOW_DROP.timing, dt = T.fall / 100;
+    let prevE = 0, prevV = -1;
+    for (let t = dt; t <= T.fall + 1e-9; t += dt) {
+        const s = sampleGroundAttack(ELBOW_DROP, Math.min(t, T.fall - 1e-9), REST_PRONE);
+        assert.equal(s.seg, 'fall');
+        const v = s.e - prevE; assert.ok(v > prevV, `speed rises at t=${t.toFixed(3)}`); prevV = v; prevE = s.e;
+    }
+    assert.ok(sampleGroundAttack(ELBOW_DROP, T.fall - 1e-9, REST_PRONE).e > 0.99);
+    const hold0 = sampleGroundAttack(ELBOW_DROP, T.fall, REST_PRONE);
+    assert.equal(hold0.seg, 'hold');
+    for (const k of Object.keys(ELBOW_DROP.phases.contact.g)) assert.ok(Math.abs(hold0.g[k] - ELBOW_DROP.phases.contact.g[k]) < 1e-9, `${k}: the fall ends on the contact pose`);
+    // compression: the hip dips into him over the hold and is back at the contact height at its end
+    const mid = sampleGroundAttack(ELBOW_DROP, T.fall + T.hold / 2, REST_PRONE), end = sampleGroundAttack(ELBOW_DROP, T.fall + T.hold - 1e-9, REST_PRONE);
+    assert.ok(Math.abs(mid.g.hip - (ELBOW_DROP.phases.contact.g.hip - T.pressHip)) < 1e-6 && Math.abs(end.g.hip - ELBOW_DROP.phases.contact.g.hip) < 0.01);
+});
+
+test('T4.7b: under ?falls=v1 the flight is the elbow drop clip cut at its apex key (no impact event, registered once); flag off plays the whole clip', async () => {
+    for (const falls of [true, false]) {
+        const { atk, def } = await downFixture(falls);
+        const regs = []; atk.scene.moveRuntime.register = (c) => regs.push(c.id);
+        const seen = []; atk._playFlight = (clip, motion, land) => { seen.push(clip); };
+        atk._doElbowDrop(def); atk._doElbowDrop(def);
+        const clip = seen[0];
+        if (falls) {
+            assert.equal(clip.id, 'elbowDropFall'); assert.equal(clip.duration, ELBOW_DROP.flightAt);
+            const keys = clip.tracks.attacker.keyframes; assert.ok(keys.at(-1).at === ELBOW_DROP.flightAt && keys.every(k => k.at <= ELBOW_DROP.flightAt));
+            assert.deepEqual(clip.events, []);
+            assert.ok(clip.tracks.attacker.keyframes.at(-1).pose.lift > 0, 'cut while he is still in the air');
+            assert.ok(regs.length <= 1, 'registered once per runtime');
+        } else assert.equal(clip.id, 'elbowDrop');
+    }
     delete globalThis.location;
 });

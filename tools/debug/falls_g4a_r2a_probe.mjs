@@ -15,6 +15,7 @@ const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const PAIRS = [{ att: LOU, def: GEORGE, victim: 'george', attacker: 'lou' }, { att: GEORGE, def: LOU, victim: 'lou', attacker: 'george' }];
 const [outRoot = 'research/animation/falls-2026-11/g4a-r2a', shots = '1', only = ''] = process.argv.slice(2);
 const BEFORE = process.env.BEFORE === '1', TRIGGER_AT = 8, WINDOW = 66;
+const FRAMES = process.env.FRAMES ?? 'frames', OUT = process.env.OUT ?? (BEFORE ? 'before.json' : 'results.json');   // T4.7b: FRAMES / OUT name the run when two code versions are filmed side by side (current = 54b60db, served on another port)
 const DECL = { side: 'far', parts: ['Forearm', 'Hand'] };
 
 const LAY = (o) => {
@@ -33,7 +34,9 @@ const FRAME = (decl) => {
     const snap = (w) => Object.fromEntries(Object.entries(w.skeleton.jointAttachmentPoints ?? {}).filter(([, p]) => p).map(([k, p]) => [k, [p.x, p.y]]));
     const cur = { a: snap(a), d: snap(d) }, prev = window.__prev;
     const step = (c, p) => { if (!p) return 0; let m = 0; for (const k of Object.keys(c)) if (p[k]) m = Math.max(m, Math.hypot(c[k][0] - p[k][0], c[k][1] - p[k][1])); return +m.toFixed(2); };
-    const row = { as: a.state, ds: d.state, al: a.lying ?? null, ast: step(cur.a, prev?.a), dst: step(cur.d, prev?.d), ga: a._groundAttack ? +a._groundAttack.t.toFixed(3) : null, hurts: window.__hurts, shakes: window.__shakes,
+    const pa = a.skeleton.jointAttachmentPoints ?? {}, hipA = pa.nearHip && pa.farHip ? (pa.nearHip.y + pa.farHip.y) / 2 : (pa.nearHip ?? pa.farHip)?.y;
+    const rootY = a._groundAttack?.root?.y ?? a.y, sc_ = a._groundAttack?.root ? a.skeleton ? (window.__s ?? 1) : 1 : 1;
+    const row = { hipY: hipA === undefined ? null : +hipA.toFixed(2), hipH: hipA === undefined ? null : +(rootY - hipA).toFixed(2), as: a.state, ds: d.state, al: a.lying ?? null, ast: step(cur.a, prev?.a), dst: step(cur.d, prev?.d), ga: a._groundAttack ? +a._groundAttack.t.toFixed(3) : null, hurts: window.__hurts, shakes: window.__shakes,
         ax: Math.round(a.x), ay: Math.round(a.y), jolt: d._jolt ? 1 : 0 };
     if (a.state === 'down' || a._groundAttack) {
         const c = window.__contactDeclared(a, d, decl); Object.assign(row, { raw: c.raw, out: c.outside, conf: c.conflict, strike: c.strike, edge: c.edge });
@@ -61,7 +64,7 @@ for (const pair of PAIRS) {
         await page.evaluate(INSTALL_CONTACT); await page.evaluate(INSTALL_CONTACT_DECLARED);
         const bx = info.box, mX = (x) => bx.x + x * bx.w / bx.gw, mY = (y) => bx.y + y * bx.h / bx.gh;
         for (const lying of ['supine', 'prone']) for (const facing of [1, -1]) {
-            const id = `elbowDrop-${lying}-${pair.attacker}-on-${pair.victim}-${facing > 0 ? 'right' : 'left'}`, dir = join(outRoot, 'frames', id);
+            const id = `elbowDrop-${lying}-${pair.attacker}-on-${pair.victim}-${facing > 0 ? 'right' : 'left'}`, dir = join(outRoot, FRAMES, id);
             if (only && !id.includes(only)) continue;
             const placed = await page.evaluate(SETUP, { gap: 120, stamina: 100, facing });
             await page.evaluate(LAY, { lying, before: BEFORE });
@@ -96,9 +99,18 @@ for (const pair of PAIRS) {
                 recvRestDelta: +Math.max(...Object.keys(restBefore).map(k => restAfter[k] ? Math.hypot(restBefore[k][0] - restAfter[k][0], restBefore[k][1] - restAfter[k][1]) : 0)).toFixed(2), from: TRIGGER_AT - 3 };
             out.series = win.map(r => [r.ga, r.raw, r.out, r.conf, r.strike, r.elbowGap, r.wristEdgeGap, r.ax, r.ay]);
             out.steps = win.map(r => r.ast ?? 0).concat(rows.slice(downAt + WINDOW, downAt + WINDOW + 30).map(r => r.ast));   // per-frame attacker step, kept to find a seam
+            // T4.7b marks (frame indices into rows) and the downward hip speed across them. apex = the hip's highest point before the hit; elbow contact = the hit frame (damage fires);
+            // matLevel = the first frame the hip is within 2 px of the contact pose's height (hip 14 at s = 1) = "on the mat"; speed = hip y change per frame, + is down.
+            const hitI = rows.findIndex(r => r.hurts > 0), pre = rows.slice(TRIGGER_AT, (hitI < 0 ? rows.length : hitI) + 1);
+            const hv = rows.map((r, i) => (i && r.hipY !== null && rows[i - 1].hipY !== null ? +(r.hipY - rows[i - 1].hipY).toFixed(2) : null));
+            const apexI = pre.reduce((m, r, i) => (r.hipY !== null && r.hipY < (pre[m].hipY ?? 1e9) ? i : m), 0) + TRIGGER_AT;
+            const flightEnd = rows.findIndex(r => r.as === 'down');
+            out.marks = { trigger: TRIGGER_AT, apex: apexI, flightEnd, hit: hitI, matLevel: rows.findIndex((r, i) => i >= TRIGGER_AT && r.hipH !== null && r.hipH <= 16 * 1.0 + 2 && r.as === 'down'), rolloff: rows.findIndex(r => r.ga !== null && r.ga >= 0.24) };
+            out.descent = hv.slice(apexI, (hitI < 0 ? apexI : hitI) + 3);   // hip px/frame from the apex through the hit (down +)
+            out.speedAtHandoff = flightEnd < 0 ? null : { before: hv.slice(Math.max(0, flightEnd - 4), flightEnd), at: hv[flightEnd], after: hv.slice(flightEnd + 1, flightEnd + 5) };
             results.push(out);
             console.log(`[r2a${BEFORE ? ' BEFORE' : ''}] ${id}: raw peak ${out.raw.peak} (sum ${out.raw.sum}), outside peak ${out.outside.peak} (${out.outside.frames50} frames >50), conflict peak ${out.conflict.peak}, strike ${out.strikePeak}; elbow gap at contact ${out.elbowGapAtContact}; roll-off end ${JSON.stringify(out.rollEnd)}; hurts ${out.hurts}; seam ${out.seamAtEnd}; ${out.states.map(s => s.s).join('>')}`);
         }
     } finally { await h.close(); }
 }
-writeFileSync(join(outRoot, BEFORE ? 'before.json' : 'results.json'), JSON.stringify(results, null, 1));
+writeFileSync(join(outRoot, OUT), JSON.stringify(results, null, 1));

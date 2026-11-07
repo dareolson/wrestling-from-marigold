@@ -935,6 +935,8 @@ test('T4.8a sampleSplash, every variant, both sides of the mirror: knees and elb
             prev = { J, mirror: s.mirror, t };
         }
         assert.equal(clamps, 0, `${name}: the grounded knee clamp would fire`);
+        // the first sampled pose of a mirrored variant is already mirrored (its apex key sits at mirrorAt), so the loop above never crosses the flip: compare the apex drawn plain with the same pose drawn mirrored
+        if (def.mirrorAt != null) { const post = sampleSplash(def, b0 + T.bounce * (def.mirrorAt + 1e-6), rest), flip = dist(joints(def.keys[0].g, false), joints(post.g, post.mirror)); assert.ok(flip <= Math.max(1, maxStep), `${name}: the apex drawn plain vs mirrored steps ${flip.toFixed(2)} px (neighbouring frames ${maxStep.toFixed(2)})`); }
         if (def.mirrorAt != null) assert.ok(mirrorStep <= Math.max(1, maxStep), `${name}: the drawn joints step ${mirrorStep.toFixed(2)} px across the mirror (neighbouring frames ${maxStep.toFixed(2)})`);
     }
 });

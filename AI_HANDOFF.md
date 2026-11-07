@@ -28,7 +28,7 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Status (2026-11-07, replace this block; ≤ 40 lines)
+## Status (2026-11-07 late, replace this block; ≤ 40 lines)
 
 - **Direction (Derek 2026-11-06):** moves are passable for now. Stop polishing them and move the project forward; move misses go on polish lists and get revisited later.
 - **Falls ([PLAN_FALLS.md](PLAN_FALLS.md)):** done through T3.16 (`c53ea13`), G3 r3 accepted as passable ([page](research/animation/falls-2026-11/g3/r3.html)). `falls` PROMOTED (73cb6d1, G4 awaiting Derek; `?falls=off` disables): wear meter (0.8/damage, 0.4/s recovery, knockdown 60, exceptional 92), `?wear=show` bar. Stage 4 done: soak clean (0 errors, 0 stuck), knee drop and dives use `groundHitSell`. Polish: get-up to standing steps 20-46 px (27 median without falls too), a man already getting up when the elbow lands gets no sell, 0-4 knockdowns a run, the two exceptional landings at wear 100 came early (42/52 s), the AI rarely throws big moves, sell limbs past the rope, George's snapmare elbow.
@@ -39,13 +39,15 @@ Avoid a large rewrite.
   - Opening: Chicago 1952, kitchen phone/union call, landlord's $100 demand, girlfriend sends Guido out ([brief](STORY_CARNIVAL_OPENING.md)). Carnival $100 challenge is the first playable match; Carl then recruits him. Kohler naming bridge unresolved.
   - Whole game monochrome; art generated in color, monochrome derived ([standard](CINEMATIC_ART_STANDARD.md)).
   - Venues/crowds/exhibition: [plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md). Carl as Guy's ringside trainer: [sheet](research/art/carl-ringside-2026-10-31/carl-ringside-sheet-v1.png). Feud/art: [STORY_ART_AND_FEUD_DIRECTION.md](STORY_ART_AND_FEUD_DIRECTION.md).
-- **Awaiting Derek:** G4 (play a match with no flag, falls on) and G4b r6 (splash roll); Marigold title queue (83ab5cd) visual OK.
+- **Awaiting Derek:** G4b half trip (keep, or `route.scale` 0.75 to clear the overlap); G4 (a match with no flag, falls on); Marigold title queue (83ab5cd) visual OK; PLAN_CLEANUP T3 (tag + delete the old side branch).
 - **Uncommitted on purpose:** Codex's sleeper-wrap PNGs and 4 Codex `tools/debug` scripts (unreviewed, untracked). Frame dumps gitignored (kept; may not be reproducible).
-- **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`). Pushed through `fac431f` (2026-11-07); push URL is SSH now. Roster PSDs tracked (69b2c90). Cleanup leftovers, low priority: [PLAN_CLEANUP.md](PLAN_CLEANUP.md). Coverage baseline 26 gaps.
-- **Next:** Derek at **G4b r6** ([page](research/animation/falls-2026-11/g4b-r6/index.html): roll r5 vs r6 vs pivot, diving elbow, both rigs and facings). T4.8c (Opus): the roll's legs stay on the side away from the head the whole roll (r5's dolphin was them swinging across and back); one straight diagonal body at the flip, the pivot's tuck after it. Defaults: diving elbow = roll, top dive = pivot, tumble parked (5c6bd55). Also open at G4b: whether the half trip stays. Then [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 3d (STOP G3d), then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1 (finisher dispatch in F1.1). Later: per-wrestler settings out of `Arena.js` ([Codex review](AI_HANDOFF_ENTRIES/2026-11-07-codex-structure-efficiency-review-for-opus.md)).
+- **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`). Pushed to origin via SSH (`git push origin <branch>`). Roster PSDs tracked (69b2c90). Cleanup leftovers, low priority: [PLAN_CLEANUP.md](PLAN_CLEANUP.md). Coverage baseline 26 gaps.
+- **Next:** **G4b r6 roll APPROVED** (Derek "looks perfect", 7c2c34e, [page](research/animation/falls-2026-11/g4b-r6/index.html)). Defaults: diving elbow = roll, top dive = pivot, tumble parked. Ask Derek about the half trip, then [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 3d (STOP G3d), then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1 (finisher dispatch in F1.1). Later: per-wrestler presets out of `Arena.js`. Session handoff: [entry](AI_HANDOFF_ENTRIES/2026-11-07-claude-opus-handoff-roll-approved.md).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-07 · Claude Opus · [Handoff: backup done, splash roll approved at G4b r6](AI_HANDOFF_ENTRIES/2026-11-07-claude-opus-handoff-roll-approved.md)
 
 - 2026-11-07 · Derek, recorded by Codex · [Keep roll’s action; use pivot’s understated leg motion](AI_HANDOFF_ENTRIES/2026-11-07-derek-roll-action-pivot-legs.md)
 

@@ -1008,6 +1008,30 @@ Derek picked the German from 4b's "later" list (back suplex and rollup still wai
   parts can't hold a bridge, report the frame and what's missing; no art request without Derek.
 - **D12 during the throw:** as A7: overlap frames reported raw, Derek judges.
 
+## Stage 3d: whip with weight (Derek 2026-11-06: "the irish whip to have more gravity"), stop at G3d
+
+The whip itself stays as Derek approved it on 2026-10-31: direction 8/8, release times (`WHIP_RELEASE_SAME_MS` 170 / `_CROSS_MS` 240),
+the cross-body flip, rope bow and return (T3c.5b), corners and the charge. This stage adds weight, as the elbow drop got at G4a. What
+Opus saw in the frames (`research/animation/whip-2026-10/frames`, `rope-frames`): the thrower stays upright and only his arms move;
+the receiver leaves at full `RUN_SPEED` on the release frame (`tickRun` moves x at full speed at once; `moveBlend` only fades the gait
+pose in), upright, so nothing looks thrown; he meets the rope nearly upright. Change only the `grapples` path (`_doIrishWhipLeadIn`
+and the run it starts). `?grapples=off` stays identical (A/B).
+
+- **T3d.1 The thrower throws from his legs.** On the load his hips sink (about 8-12·s px) and he leans back against the man; on the
+  release he pivots and drives through the hips, and the follow-through carries his weight onto his front foot before he recovers.
+  Use pose overrides in the lead-in, not new `MOVE_DEFS.irishWhip` values (the flag-off path reads them). Release times unchanged.
+- **T3d.2 The receiver is slung, not launched.** Released near a standstill, he is pulled off balance: chest and head go first
+  (strong forward pitch), his feet catch up in two long stumbling strides, and his speed builds over about 0.25-0.35 s to the run
+  speed (rising every frame, no jump), then the pitch settles to the run lean. If his arrival at the rope moves by more than 100 ms,
+  raise the run's top speed a little so it doesn't. Corner runs get the same start.
+- **T3d.3 He hits the rope with his weight.** Momentum carries his shoulders back past his hips into the rope as it loads (more lean
+  than today, hips sink a little), then he comes off it leaning forward and accelerating. Keep the T3c.5b distances and timing.
+- **Proof:** a strip, current beside revised, normal and quarter speed, both pairings, both directions, same-side and cross-body,
+  fresh and worn, with one corner run. Report: receiver x speed (px/frame) for the 12 frames after release, today and revised; the
+  thrower's hip drop and torso lean (signed); receiver torso pitch over the run; release-to-rope time today vs revised; direction
+  8/8; the follow-ups still land (clothesline, back body drop, corner charge); first-frame pose steps at release and at the rope.
+  Focused tests, flag-off A/B. Commit locally, **STOP at G3d**: Derek judges the strip.
+
 ## Later stages (outline, written in full after G1)
 
 - **Stage 2: hands and the steal.** A Codex art request from Derek's G1 hand list. Likely: a hand gripping the back of a

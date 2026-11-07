@@ -47,6 +47,10 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-11-07 · Sonnet · [Code structure and roster bloat, for Opus](AI_HANDOFF_ENTRIES/2026-11-07-sonnet-structure-and-bloat-for-opus.md)
+
+- 2026-11-07 · Codex · [Efficiency review for Opus: Sonnet’s assumptions, roster ownership, story saves and corrected asset budget](AI_HANDOFF_ENTRIES/2026-11-07-codex-structure-efficiency-review-for-opus.md)
+
 - 2026-11-06 · Codex · [Confirmed splash roll backward-leg fault: mirrored sampled flex violates renderer contract](AI_HANDOFF_ENTRIES/2026-11-06-codex-splash-backward-legs.md)
 
 - 2026-11-06 · Claude Opus · [Handoff: falls ground contact at T4.7c; finishers and personality queued](AI_HANDOFF_ENTRIES/2026-11-06-claude-opus-handoff-ground-contact.md)

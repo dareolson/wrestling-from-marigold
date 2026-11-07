@@ -1,0 +1,330 @@
+{
+ "lou-george-right": {
+  "frozen": [
+   {
+    "man": "a",
+    "slot": "nearForearm",
+    "frame": 9,
+    "art": "collarTie",
+    "cornerMaxPx": 0,
+    "centroidPx": 0
+   },
+   {
+    "man": "a",
+    "slot": "farForearm",
+    "frame": 10,
+    "art": "elbowCup",
+    "cornerMaxPx": 0,
+    "centroidPx": 0
+   },
+   {
+    "man": "d",
+    "slot": "farForearm",
+    "frame": 12,
+    "art": "elbowCup",
+    "cornerMaxPx": 0.05,
+    "centroidPx": 0.05
+   },
+   {
+    "man": "d",
+    "slot": "nearForearm",
+    "frame": 14,
+    "art": "elbowCup",
+    "cornerMaxPx": 0.06,
+    "centroidPx": 0.06
+   }
+  ],
+  "hands": {
+   "a.collarTie.near": {
+    "frames": 73,
+    "reachable94": false,
+    "shortfallMeanPx": 0.01,
+    "shortfallMaxPx": 0.43,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -4.62,
+    "reachOverLenMaxPx": -4.29,
+    "palmMeanPx": 0.25,
+    "palmMaxPx": 0.45
+   },
+   "a.elbowCup.far": {
+    "frames": 72,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -15.3,
+    "reachOverLenMaxPx": -16.58,
+    "palmMeanPx": 12.5,
+    "palmMaxPx": 18.53
+   },
+   "d.bicepGrip.far": {
+    "frames": 70,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -30.91,
+    "reachOverLenMaxPx": -13.63,
+    "palmMeanPx": 14.39,
+    "palmMaxPx": 27.57
+   },
+   "d.bicepGrip.near": {
+    "frames": 68,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -23.32,
+    "reachOverLenMaxPx": -13.13,
+    "palmMeanPx": 10.67,
+    "palmMaxPx": 10.9
+   }
+  }
+ },
+ "lou-george-left": {
+  "frozen": [
+   {
+    "man": "a",
+    "slot": "nearForearm",
+    "frame": 9,
+    "art": "collarTie",
+    "cornerMaxPx": 0,
+    "centroidPx": 0
+   },
+   {
+    "man": "a",
+    "slot": "farForearm",
+    "frame": 10,
+    "art": "elbowCup",
+    "cornerMaxPx": 0,
+    "centroidPx": 0
+   },
+   {
+    "man": "d",
+    "slot": "farForearm",
+    "frame": 12,
+    "art": "elbowCup",
+    "cornerMaxPx": 0.05,
+    "centroidPx": 0.05
+   },
+   {
+    "man": "d",
+    "slot": "nearForearm",
+    "frame": 14,
+    "art": "elbowCup",
+    "cornerMaxPx": 0.06,
+    "centroidPx": 0.06
+   }
+  ],
+  "hands": {
+   "a.collarTie.near": {
+    "frames": 73,
+    "reachable94": false,
+    "shortfallMeanPx": 0.03,
+    "shortfallMaxPx": 2.4,
+    "palmReachShortfallMaxPx": 1.76,
+    "palmReachOverFullMaxPx": -2.66,
+    "reachOverLenMaxPx": -2.32,
+    "palmMeanPx": 0.27,
+    "palmMaxPx": 2.4
+   },
+   "a.elbowCup.far": {
+    "frames": 72,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -15.25,
+    "reachOverLenMaxPx": -17.92,
+    "palmMeanPx": 12.35,
+    "palmMaxPx": 18.5
+   },
+   "d.bicepGrip.far": {
+    "frames": 70,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -30.59,
+    "reachOverLenMaxPx": -13.57,
+    "palmMeanPx": 14.12,
+    "palmMaxPx": 27.57
+   },
+   "d.bicepGrip.near": {
+    "frames": 68,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -23.25,
+    "reachOverLenMaxPx": -13.14,
+    "palmMeanPx": 10.66,
+    "palmMaxPx": 10.92
+   }
+  }
+ },
+ "george-lou-right": {
+  "frozen": [
+   {
+    "man": "a",
+    "slot": "nearForearm",
+    "frame": 9,
+    "art": "collarTie",
+    "cornerMaxPx": 0.06,
+    "centroidPx": 0.06
+   },
+   {
+    "man": "a",
+    "slot": "farForearm",
+    "frame": 10,
+    "art": "elbowCup",
+    "cornerMaxPx": 0.05,
+    "centroidPx": 0.05
+   },
+   {
+    "man": "d",
+    "slot": "farForearm",
+    "frame": 12,
+    "art": "elbowCup",
+    "cornerMaxPx": 0,
+    "centroidPx": 0
+   },
+   {
+    "man": "d",
+    "slot": "nearForearm",
+    "frame": 14,
+    "art": "elbowCup",
+    "cornerMaxPx": 0,
+    "centroidPx": 0
+   }
+  ],
+  "hands": {
+   "a.collarTie.near": {
+    "frames": 73,
+    "reachable94": false,
+    "shortfallMeanPx": 0.01,
+    "shortfallMaxPx": 0.88,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -9.29,
+    "reachOverLenMaxPx": -2.64,
+    "palmMeanPx": 27.55,
+    "palmMaxPx": 27.82
+   },
+   "a.elbowCup.far": {
+    "frames": 72,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -23.82,
+    "reachOverLenMaxPx": -6.49,
+    "palmMeanPx": 39.71,
+    "palmMaxPx": 40.58
+   },
+   "d.bicepGrip.far": {
+    "frames": 70,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -38.3,
+    "reachOverLenMaxPx": -39.66,
+    "palmMeanPx": 0.71,
+    "palmMaxPx": 0.73
+   },
+   "d.bicepGrip.near": {
+    "frames": 68,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -17.52,
+    "reachOverLenMaxPx": -17.86,
+    "palmMeanPx": 0.01,
+    "palmMaxPx": 0.07
+   }
+  }
+ },
+ "george-lou-left": {
+  "frozen": [
+   {
+    "man": "a",
+    "slot": "nearForearm",
+    "frame": 9,
+    "art": "collarTie",
+    "cornerMaxPx": 0.06,
+    "centroidPx": 0.06
+   },
+   {
+    "man": "a",
+    "slot": "farForearm",
+    "frame": 10,
+    "art": "elbowCup",
+    "cornerMaxPx": 0.05,
+    "centroidPx": 0.05
+   },
+   {
+    "man": "d",
+    "slot": "farForearm",
+    "frame": 12,
+    "art": "elbowCup",
+    "cornerMaxPx": 0,
+    "centroidPx": 0
+   },
+   {
+    "man": "d",
+    "slot": "nearForearm",
+    "frame": 14,
+    "art": "elbowCup",
+    "cornerMaxPx": 0,
+    "centroidPx": 0
+   }
+  ],
+  "hands": {
+   "a.collarTie.near": {
+    "frames": 73,
+    "reachable94": false,
+    "shortfallMeanPx": 0.02,
+    "shortfallMaxPx": 1.45,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -7.3,
+    "reachOverLenMaxPx": -2.07,
+    "palmMeanPx": 27.46,
+    "palmMaxPx": 27.78
+   },
+   "a.elbowCup.far": {
+    "frames": 72,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -23.93,
+    "reachOverLenMaxPx": -6.45,
+    "palmMeanPx": 39.67,
+    "palmMaxPx": 40.54
+   },
+   "d.bicepGrip.far": {
+    "frames": 70,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -37.7,
+    "reachOverLenMaxPx": -39.03,
+    "palmMeanPx": 0.71,
+    "palmMaxPx": 0.72
+   },
+   "d.bicepGrip.near": {
+    "frames": 68,
+    "reachable94": true,
+    "shortfallMeanPx": 0,
+    "shortfallMaxPx": 0,
+    "palmReachShortfallMaxPx": 0,
+    "palmReachOverFullMaxPx": -17.48,
+    "reachOverLenMaxPx": -17.82,
+    "palmMeanPx": 0.02,
+    "palmMaxPx": 0.07
+   }
+  }
+ }
+}

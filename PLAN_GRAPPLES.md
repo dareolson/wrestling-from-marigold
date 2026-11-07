@@ -1026,9 +1026,13 @@ and the run it starts). `?grapples=off` stays identical (A/B).
   raise the run's top speed a little so it doesn't. Corner runs get the same start.
 - **T3d.3 He hits the rope with his weight.** Momentum carries his shoulders back past his hips into the rope as it loads (more lean
   than today, hips sink a little), then he comes off it leaning forward and accelerating. Keep the T3c.5b distances and timing.
+  **Arms (Derek): no mummy arms.** Today he meets the rope with both arms held straight out in front (`LOAD` in
+  `src/animation/ropeHit.js`, lArm 1.1 / rArm 0.95, "arms flung out"; in `rope-frames` from the turn through the load). Elbows tucked
+  and bent, hands near his ribs or hips; the arms may give a little with the impact, then swing naturally as he comes off. The same
+  from the turn before the rope through the launch. If the rig can't bend the elbows enough, name the narrow art request.
 - **Proof:** a strip, current beside revised, normal and quarter speed, both pairings, both directions, same-side and cross-body,
   fresh and worn, with one corner run. Report: receiver x speed (px/frame) for the 12 frames after release, today and revised; the
-  thrower's hip drop and torso lean (signed); receiver torso pitch over the run; release-to-rope time today vs revised; direction
+  thrower's hip drop and torso lean (signed); receiver torso pitch over the run; arm and forearm angles (signed) at the turn, the load and the launch; release-to-rope time today vs revised; direction
   8/8; the follow-ups still land (clothesline, back body drop, corner charge); first-frame pose steps at release and at the rope.
   Focused tests, flag-off A/B. Commit locally, **STOP at G3d**: Derek judges the strip.
 

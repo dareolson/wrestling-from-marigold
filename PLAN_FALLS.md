@@ -314,6 +314,34 @@ the man on the mat doesn't react. Measured: `_doElbowDrop`, `_doKneeDrop` and `_
 - G4a page `research/animation/falls-2026-11/g4a/`: one normal-speed loop strip per move, both facings, Procreate Lou and
   `george-roster-v1` receiving, supine and prone. Misses first (step limit, outline overlap, rope and mat clipping). Focused tests, then
   commit locally and **STOP at G4a** for Derek's glance.
+
+### G4a r2: ground-attack contact (Opus 2026-11-06), stop at the stills, then at G4a r2
+
+Derek at G4a: underwhelmed, the ground attacks phase through the opponent. Codex
+[review](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-attack-contact.md), confirmed by Opus: `_doElbowDrop` flies to `other.x` at the
+attacker's own depth, and `_layDown` drops him into a generic prone pose on that spot. The two torsos lie through each other
+(`g4a/film/frames/elbowDrop-supine-george-right/s0051.jpg`). No code aims the elbow at the chest or keeps the bodies apart, and G4a
+never measured overlap between the two bodies. The jolt and the handoff stay; the contact is what's missing.
+
+- **T4.5** A body-overlap measure first: the two wrestlers' painted silhouettes (torso + head + limbs) from the render, overlap px per
+  frame, split into the striking limb on the target (allowed) and everything else (a miss). Run it on G4a's frames to get the
+  before numbers.
+- **T4.6** Elbow drop, three **stills only**: **approach / contact / roll-off**. Procreate Lou and `george-roster-v1` each as
+  attacker, both facings, receiver supine and prone.
+  - Contact: the striking elbow on a torso contact point taken from the receiver's drawn pose and rig geometry (supine/prone and facing
+    change it), not his root. The attacker's body lies beside the receiver, slightly nearer the camera (a depth offset, checked against
+    ring room). Only the striking forearm overlaps the target.
+  - Per-part layering for the contact window only: the striking forearm over the target, far limbs behind as the pose needs. A fixed
+    order with an explicit release. No whole-body depth swaps, fades or distortion to hide an overlap.
+  - Roll-off: he rolls or plants a hand **away** from the receiver, and the get-up starts from there.
+  - Existing parts only. If a bent elbow or shoulder angle can't be made, list the narrow art request for Codex. Normal joint limits
+    and the knee rule apply.
+  - Stills page with silhouettes and a contact close-up, overlap numbers per still. Commit locally, **STOP at the stills** for Derek.
+- **T4.7** After Derek approves the stills: animate between them. The flight aims at the contact point. The elbow's downward travel
+  stops at contact (brief compression, the receiver's jolt around the hit, attacker recoil). Damage, sound and shake land once, on the
+  actual contact frame. The handoff to the ground must not pull him back through the receiver. Then apply the same approach to the knee
+  drop, diving elbow and top dive, each with its own contact point (not one shared offset). G4a r2 page: loop strips as G4a, overlap
+  numbers before and after. Focused tests, flag-off pass. Commit locally, **STOP at G4a r2**.
 - **T4.3** Soak: `grapples_soak.mjs` with `falls=v1`, 4 x 150 s, both pairings. Count falls per variant and pick reason, down-hit
   reactions, page errors, stuck `down` states and get-up pops. A stuck state or a page error blocks T4.4. Fix it or report it.
 - **T4.4** Promote: `fallsCandidate` becomes `defaultOnFlag('falls', 'v1')` like the other promoted flags, so `?falls=off` is the old

@@ -42,10 +42,12 @@ Avoid a large rewrite.
 - **Awaiting Derek:** Marigold title queue (83ab5cd) visual OK; what comes next (see below).
 - **Uncommitted on purpose:** Codex's sleeper-wrap PNGs (`src/assets/wrestlers/*/forearm_sleeper_wrap.png`) and 4 Codex `tools/debug` scripts (sleeper wrap, throw support, waistlock probes) are unreviewed and stay untracked. Large frame dumps are gitignored.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `fb8c5ca` (2026-11-06). Push via the SSH URL only. Coverage baseline 26 gaps.
-- **Next (2026-11-06):** PLAN_FALLS Stage 4 T4.1-T4.2b built (379255b, local), **at G4a**: Derek glances at [the page](research/animation/falls-2026-11/g4a/index.html). Then Sonnet: T4.3 soak and T4.4 promotion, **STOP at G4**. After that, the next front (story opening is the likely one).
+- **Next (Opus 2026-11-06):** G4a (379255b): Derek underwhelmed, ground attacks phase through the receiver ([Codex](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-attack-contact.md), confirmed). Sonnet: [PLAN_FALLS.md](PLAN_FALLS.md) **G4a r2**: T4.5 body-overlap measure, T4.6 elbow-drop approach/contact/roll-off stills, **STOP at the stills**; then T4.7 animate + knee drop and dives, **STOP at G4a r2**; then T4.3 soak, T4.4 promotion (**G4**). Then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1 (Lou's Thesz press set piece, **STOP at G1**). Later: a personality plan (per-wrestler sheet, Mixamo/CMU importer, act-out video).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-06 · Codex · [Ground attacks: staged limb contact, separate body silhouettes, roll-off; preserve existing art](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-attack-contact.md)
 
 - 2026-11-05 · Codex · [G3 review for Opus: tired-throw tier wiring, hit context and natural match evidence](AI_HANDOFF_ENTRIES/2026-11-05-codex-g3-review-for-opus.md)
 

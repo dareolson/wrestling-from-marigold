@@ -618,6 +618,8 @@ test('the four moves on a downed man call the jolt once with their weights (the 
 
 test('T4.2b: the attacker of an elbow drop, diving elbow, top dive and press whiff lies down through _layDown (flag on) and rises through the get-up; flag off is as it was', async () => {
     for (const [call, sec] of [['_doDive', 2.0], ['_doTopDive', 3.0], ['_doTheszPress', 2.6]]) {
+        // T4.8: on a man on the mat the two dives bounce off him and roll away (the splash, tested below); this is the attacker who did NOT land on a downed man: his target stands
+        if (call !== '_doTheszPress') { const st = await downFixture(true); st.def.state = 'standing'; st.atk.x = st.def.x - 20; st.atk[call](st.def); assert.equal(st.atk.stateTimer, sec, `${call}: a dive on a standing man still lies down`); assert.equal(st.atk._groundAttack, null); continue; }
         const on = await downFixture(true);
         on.atk.x = on.def.x - 20; on.atk[call](on.def);
         assert.equal(on.atk.state, 'down', `${call}: down after the impact`);
@@ -840,5 +842,52 @@ test('T4.4 promotion: falls is on with no flag or ?falls=v1, off with ?falls=off
         globalThis.location = { search };
         assert.equal(fallsCandidate(), on, JSON.stringify(search));
     }
+    delete globalThis.location;
+});
+
+
+// ---- PLAN_FALLS T4.8: the splash on a downed man: he bounces off the chest, rolls over and lands face up, up the screen --------------------------------------------------
+import { SPLASH, sampleSplash } from '../src/animation/groundContact.js';
+test('T4.8 sampleSplash: one gravity bounce (lift 0 -> apex -> 0, never below the mat), travel 0 -> 1 monotone, the body falls into exactly the supine rest pose', () => {
+    const REST_SUPINE = Skeleton.lyingBase('supine', true), T = SPLASH.timing, b0 = T.fall + T.hold;
+    let prevTravel = 0, peak = 0;
+    for (let t = 0; t <= groundAttackSeconds(SPLASH) + 0.05; t += 1 / 240) {
+        const s = sampleSplash(SPLASH, t, REST_SUPINE);
+        assert.ok(s.lift >= 0 && s.lift <= SPLASH.lift + 1e-9, `lift ${s.lift} at ${t}`); assert.ok(s.travel >= prevTravel - 1e-12, 'travel never goes back'); prevTravel = s.travel; peak = Math.max(peak, s.lift);
+        assert.ok(!('flipped' in s), 'no facing flip: the roll is the prone -> supine pivot');
+    }
+    assert.ok(Math.abs(peak - SPLASH.lift) < 0.5, `apex ${peak}`);
+    assert.equal(sampleSplash(SPLASH, b0, REST_SUPINE).lift, 0); assert.equal(sampleSplash(SPLASH, b0 + T.bounce, REST_SUPINE).lift, 0);
+    assert.equal(sampleSplash(SPLASH, b0 + T.bounce, REST_SUPINE).travel, 1);
+    const end = sampleSplash(SPLASH, b0 + T.bounce - 1e-9, REST_SUPINE).g;
+    for (const [k, v] of Object.entries(REST_SUPINE)) if (k !== 't') assert.ok(Math.abs(end[k] - v) < 1e-6, `${k} lands on the rest pose`);
+    assert.equal(b0 + T.bounce, groundAttackReleaseEnd(SPLASH), 'the bounce ends where the lifecycle commits the body');
+    assert.equal(groundAttackContactAt(SPLASH), 0, 'contact is the flight callback\'s, on the first tick');
+});
+
+test('T4.8 the splash apex keeps bend-only knees and elbows inside the limits, and a rigid pivot from prone to supine (torso passes up, not down)', () => {
+    const g = SPLASH.apex, P = Skeleton.lyingBase('prone', true), S = Skeleton.lyingBase('supine', true);
+    for (const side of ['near', 'far']) { assert.ok(g[`${side}Thigh`] - g[`${side}Shin`] >= 0, `${side} knee bends the right way`); assert.ok(g[`${side}Fore`] - g[`${side}Arm`] >= 0, `${side} elbow bends the right way`); }
+    assert.ok(P.torso < g.torso && g.torso < S.torso, `torso ${P.torso} -> ${g.torso} -> ${S.torso}: the pivot goes up through vertical (pi)`);
+    assert.ok(Math.abs(g.torso - Math.PI) < 0.3, 'near vertical at the top');
+});
+
+test('T4.8 a dive on a man on the mat: damage, sell and shake once, then the splash (prone -> supine, no facing change, shorter down time); possum and standing targets keep the old landing', async () => {
+    for (const [call, move, old] of [['_doDive', 'divingElbow', 2.0], ['_doTopDive', 'topDive', 3.0]]) {
+        const { atk, def, hurts } = await downFixture(true);
+        const facing = atk.facing; atk.x = def.x - 20; atk[call](def);
+        assert.equal(hurts(), 1, `${move}: damage once, at the flight's end`);
+        assert.equal(atk.state, 'down'); assert.equal(atk._groundAttack?.def, SPLASH, `${move}: the splash`); assert.equal(def._jolt.sell, 'curl');
+        assert.ok(Math.abs(atk.stateTimer - (groundAttackSeconds(SPLASH) + SPLASH.restSec)) < 1e-9);
+        assert.ok(atk.stateTimer < old, `${move}: shorter than the old ${old} s`);
+        let n = 0; while (atk._groundAttack && n++ < 200) atk.tickDown(1 / 60);
+        assert.equal(atk._groundAttack, null); assert.equal(atk.lying, 'supine', `${move}: he rolled over`); assert.equal(atk.facing, facing, 'no facing flip');
+        assert.ok(atk.stateTimer <= SPLASH.restSec && atk.stateTimer > SPLASH.restSec - 2 / 60, `the rest (within a frame of ${SPLASH.restSec}), then the ordinary get-up: ${atk.stateTimer}`);
+        assert.equal(hurts(), 1, 'nothing fires again');
+    }
+    const pos = await downFixture(true); pos.def.state = 'possum'; pos.atk.x = pos.def.x - 20; pos.atk._doTopDive(pos.def);
+    assert.equal(pos.atk._groundAttack, null, 'a possum man has no sell to bounce off'); assert.equal(pos.atk.stateTimer, 3.0);
+    const off = await downFixture(false); off.atk.x = off.def.x - 20; off.atk._doTopDive(off.def);
+    assert.equal(off.atk._groundAttack ?? null, null, 'flag off: the old landing'); assert.equal(off.atk.stateTimer, 3.0);
     delete globalThis.location;
 });

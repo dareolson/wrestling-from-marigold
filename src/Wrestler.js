@@ -9,7 +9,7 @@ import { shoveClip } from './animation/clips/shove.js';
 // ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
 import { dropkickV2Clip } from './animation/clips/dropkickV2.js';
 import { elbowDropClip } from './animation/clips/elbowDrop.js';
-import { ELBOW_DROP, ARM_CHANNELS, sampleGroundAttack, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from './animation/groundContact.js';
+import { ELBOW_DROP, SPLASH, ARM_CHANNELS, sampleGroundAttack, sampleSplash, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from './animation/groundContact.js';
 import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
@@ -2902,7 +2902,7 @@ export default class Wrestler {
     // commits the offset. The window's part depths are set per frame in the draw, so ending, a pin, a cancel or a match end restore them with the next ordinary draw.
     _beginGroundAttack(other, def, onContact) {
         const total = groundAttackSeconds(def);
-        this._layDown(total + ELBOW_REST_SEC, 'prone');
+        this._layDown(total + (def.restSec ?? ELBOW_REST_SEC), 'prone');
         this._groundAttack = { def, other, t: 0, onContact, contacted: false, joints: this._groundHandoff?.joints ?? null, from: null, root: null };
         this._groundHandoff = null;
     }
@@ -2916,14 +2916,43 @@ export default class Wrestler {
             // the roll-off is over: the body stays where it drew (the hand planted), and the settle draws from there
             ga.committed = true;
             if (ga.root) { this.x = ga.root.x; this.y = ga.root.y; this._clamp(); }
+            if (ga.def.mode === 'splash') this.lying = 'supine';   // T4.8: he rolled over (_drawSplash): he lies face up now, and the get-up rises from there
         }
         if (ga.t < groundAttackSeconds(ga.def)) return;
         // settled into the ordinary lying pose (the same pose object, so no handoff): the ordinary down draw and the get-up take over
         this._groundAttack = null;
-        this.stateTimer = ELBOW_REST_SEC;
+        this.stateTimer = ga.def.restSec ?? ELBOW_REST_SEC;
+    }
+
+    // ?falls=v1 (PLAN_FALLS T4.8): a splash on a man on the mat: the flight's last body on his chest, then one bounce over him up the screen (sampleSplash). The body is drawn at
+    // root - lift; the shadow stays on the mat. He rolls prone -> supine through the apex (no mirror); _tickGroundAttack makes it his `lying` at the end.
+    _drawSplash(s0, facing, gfx) {
+        const ga = this._groundAttack, def = ga.def, sk = this.skeleton, op = ga.other;
+        const rest = Skeleton.lyingBase('supine', true), smp = sampleSplash(def, ga.t, rest);
+        ga.from0 ??= { x: this.x, y: this.y };
+        if (!ga.to) {
+            // the mat up the screen from him: past his far edge (the top of everything he draws), the body's depth clear of it, inside the ropes
+            let edge = Infinity;
+            for (const p of op.skeleton._parts) if (p?.visible && p.alpha > 0 && p.frame) edge = Math.min(edge, p.getBounds().y);
+            if (!Number.isFinite(edge)) edge = op.y - 40 * s0;
+            const y = Math.max(RING.farLeft.y + 6, Math.min(RING.nearLeft.y - 6, edge - def.route.gap * s0)), b = ringBoundsAtY(y);
+            ga.to = { x: Math.max(b.left + 20, Math.min(b.right - 20, ga.from0.x)), y };
+        }
+        const root = { x: ga.from0.x + (ga.to.x - ga.from0.x) * smp.travel, y: ga.from0.y + (ga.to.y - ga.from0.y) * smp.travel };
+        const s = s0 * perspectiveScale(root.y) / perspectiveScale(ga.from0.y);
+        ga.root = root; ga.lift = smp.lift; ga.seg = smp.seg;   // read by the proof tools
+        gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
+        sk.setVisible(true);
+        if (smp.seg === 'settle') { sk._applyGrounded(root.x, root.y, s, facing, rest); return; }
+        const y = root.y - smp.lift * s;
+        if (!ga.from && ga.joints) ga.from = Skeleton.groundedPoseFrom(ga.joints, ga.from0.x, ga.from0.y, s0, facing, def.apex);
+        if (smp.g) sk._applyGrounded(root.x, y, s, facing, smp.g);
+        else if (ga.from) sk.updateGroundedBlend(root.x, y, s, facing, def.apex, ga.from, smp.toApex);
+        else sk._applyGrounded(root.x, y, s, facing, def.apex);
     }
 
     _drawGroundAttack(s0, facing, gfx) {
+        if (this._groundAttack.def.mode === 'splash') { this._drawSplash(s0, facing, gfx); return; }
         const ga = this._groundAttack, def = ga.def, sk = this.skeleton, f = facing >= 0 ? 1 : -1, op = ga.other;
         const smp = sampleGroundAttack(def, ga.t, Skeleton.lyingBase('prone', true)), P = def.phases;
         const scaleAt = (y) => perspectiveScale(y) * this._heightScale;   // he is smaller up the screen: the scale follows the body as it moves, so the commit at the end is no jump
@@ -3103,9 +3132,11 @@ export default class Wrestler {
             const dist = Math.abs(this.x - other.x);
             const hit  = dist <= 130 * this.s &&
                          (other.state === 'standing' || other.state === 'down' || other.state === 'possum' || other.state === 'staggered' || other.state === 'cornered');
+            let hitDown = false;
             if (hit) {
                 other._hurt(STAMINA_DRAIN.divingElbow, 'divingElbow');
                 if (other.state === 'down') {
+                    hitDown = true;
                     other.stateTimer = DOWN_SEC;
                     other._downHitReact(this, 'divingElbow', 0.9, 'curl');
                 } else {
@@ -3116,7 +3147,8 @@ export default class Wrestler {
                 this.scene.cameras.main.shake(70, 0.001);
             }
             // ?falls=v1 (T4.2b): the clip's last body eases into the grounded pose (the hand-set landing cut 52 px at the seam, 13-16 px/frame before it)
-            if (fallsCandidate()) { this._layDown(2.0, 'prone'); return; }
+            // T4.8: on a man on the mat he bounces off the chest and rolls away up the screen (SPLASH) instead of lying on him
+            if (fallsCandidate()) { if (hitDown) this._beginGroundAttack(other, SPLASH, () => {}); else this._layDown(2.0, 'prone'); return; }
             this.pose.tilt   = 0;
             this.pose.lift   = 0;
             this.state       = 'down';
@@ -3132,8 +3164,10 @@ export default class Wrestler {
         this._playFlight(topDiveClip, { x: other.x, y: other.y, ease: 'Sine.easeIn' }, () => {
             const dist = Math.abs(this.x - other.x);
             const inRange = dist <= 140 * this.s;
+            let hitDown = false;
             if (inRange && (other.state === 'down' || other.state === 'possum')) {
                 // Splash on downed opponent — maximum damage, extended down time
+                hitDown = other.state === 'down';   // T4.8: a possum man has no sell to bounce off
                 other._hurt(STAMINA_DRAIN.topDive, 'topDive');
                 other.stateTimer = DOWN_SEC + 2.0;
                 other._downHitReact(this, 'topDive', 0.9, 'curl');
@@ -3146,7 +3180,7 @@ export default class Wrestler {
             } else {
                 this.scene.cameras.main.shake(110, 0.002);
             }
-            if (fallsCandidate()) { this._layDown(3.0, 'prone'); return; }   // T4.2b, as _doDive
+            if (fallsCandidate()) { if (hitDown) this._beginGroundAttack(other, SPLASH, () => {}); else this._layDown(3.0, 'prone'); return; }   // T4.2b, as _doDive; T4.8: the splash on a downed man bounces and rolls away
             this.pose.tilt   = 0;
             this.pose.lift   = 0;
             this.state       = 'down';

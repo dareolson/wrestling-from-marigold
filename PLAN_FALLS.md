@@ -344,7 +344,17 @@ never measured overlap between the two bodies. The jolt and the handoff stay; th
   numbers before and after. Focused tests, flag-off pass. Commit locally, **STOP at G4a r2**.
 - **T4.7 additions** (Codex's [stills review](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-contact-stills-review.md), confirmed by
   Opus):
-  - **Side:** Derek picks far side (Sonnet's stills) or near side (the plan). The metric doesn't decide it.
+  - **Side: far** (Derek 2026-11-06 at the stills): the attacker lands on the far side of the receiver.
+  - **Derek at the stills:** "needs to be dialed in, limbs still don't look good, might look better in action." So **T4.7a** first:
+    the elbow drop only, animated in the runtime between the three stills (far side), with a quick dial-in of what Opus saw in the
+    stills:
+    - contact: the striking forearm visibly on the chest, not hidden behind the receiver. Lou's body angled away from George's so the
+      two don't lie stacked parallel with their heads together.
+    - roll-off: the near hand planted on the mat beside the receiver (not on his head or back). Hips and legs on the mat under him,
+      not trailing in the air.
+    Normal-speed loop strips, both facings, Lou on George and George on Lou, supine and prone, with the three overlap numbers on each.
+    Focused tests. Commit locally, **STOP at G4a r2a** for Derek to judge in motion. The rest of T4.7 (full validation, knee drop,
+    dives) waits for that.
   - **The measure, tightened:** each move declares its striking side and part (elbow drop: the near-camera forearm + hand only, not
     the upper arm) and its target region on the receiver. The allowed limb is fixed for the whole move, not re-picked per frame.
     Report raw overlap, overlap outside the allowed part, and the depth-order conflict as three separate numbers. "Front conflict 0"

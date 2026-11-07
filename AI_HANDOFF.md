@@ -42,7 +42,7 @@ Avoid a large rewrite.
 - **Awaiting Derek:** Marigold title queue (83ab5cd) visual OK; what comes next (see below).
 - **Uncommitted on purpose:** Codex's sleeper-wrap PNGs (`src/assets/wrestlers/*/forearm_sleeper_wrap.png`) and 4 Codex `tools/debug` scripts (sleeper wrap, throw support, waistlock probes) are unreviewed and stay untracked. Large frame dumps are gitignored.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `fb8c5ca` (2026-11-06). Push via the SSH URL only. Coverage baseline 26 gaps.
-- **Next (Opus 2026-11-06):** G4a (379255b): Derek underwhelmed, ground attacks phase through the receiver ([Codex](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-attack-contact.md), confirmed). Sonnet: [PLAN_FALLS.md](PLAN_FALLS.md) **G4a r2**: T4.5 body-overlap measure, T4.6 elbow-drop approach/contact/roll-off stills, **STOP at the stills**; then T4.7 animate + knee drop and dives, **STOP at G4a r2**; then T4.3 soak, T4.4 promotion (**G4**). Then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1 (Lou's Thesz press set piece, **STOP at G1**). Later: a personality plan (per-wrestler sheet, Mixamo/CMU importer, act-out video).
+- **Next (2026-11-06):** PLAN_FALLS G4a r2 T4.5-T4.6 built (local), **at the stills**: Derek looks at [the stills page](research/animation/falls-2026-11/g4a-r2/index.html) (elbow drop approach/contact/roll-off; attacker lies on the far side, layering only in the tool). Then Sonnet: T4.7 animate between them and apply to knee drop, diving elbow, top dive, **STOP at G4a r2**; then T4.3 soak and T4.4 promotion.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

@@ -631,3 +631,16 @@ test('T4.2b: the attacker of an elbow drop, diving elbow, top dive and press whi
     assert.ok(!off.atk._groundHandoff);
     delete globalThis.location;
 });
+
+// PLAN_FALLS T4.6: the elbow drop's three contact poses stay inside the joint limits and the knee rule (positive thigh - shin only: no knee folds backward)
+import { ELBOW_DROP } from '../src/animation/groundContact.js';
+test('elbow drop stills: every phase has bend-only knees and elbows inside the limits, and the striking side is an arm the pose names', () => {
+    assert.ok(['near', 'far'].includes(ELBOW_DROP.side));
+    for (const [phase, { g }] of Object.entries(ELBOW_DROP.phases)) {
+        for (const side of ['near', 'far']) {
+            const knee = g[`${side}Thigh`] - g[`${side}Shin`], elbow = g[`${side}Fore`] - g[`${side}Arm`];
+            assert.ok(knee >= 0 && knee <= JOINT_LIMITS.knee.max, `${phase} ${side} knee flex ${knee}`);
+            assert.ok(elbow >= 0 && elbow <= JOINT_LIMITS.elbow.max, `${phase} ${side} elbow flex ${elbow}`);
+        }
+    }
+});

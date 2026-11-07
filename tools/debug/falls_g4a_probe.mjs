@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { launch } from './harness.mjs';
 import { INSTALL } from './grapples_film.mjs';
 import { SETUP } from './falls_g3_probe.mjs';
+import { INSTALL_CONTACT } from './falls_contact.mjs';
 
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const PAIRS = [{ att: LOU, def: GEORGE, victim: 'george', attacker: 'lou' }, { att: GEORGE, def: LOU, victim: 'lou', attacker: 'george' }];
@@ -19,11 +20,12 @@ const CELLS = [
     { move: 'theszPress', call: 'a._doTheszPress(w)', gap: 120, lyings: ['supine'], whiff: true },
 ];
 const STEP_LIMIT = 2.5, TRIGGER_AT = 8;
+const CONTACT = process.env.CONTACT === '1';   // T4.5: also measure the two bodies' silhouette overlap every frame (falls_contact.mjs)
 
 const LAY = (o) => {
     const sc = window.__WFM_GAME.scene.scenes[0], d = sc.w2;
     if (o.lying) { d.state = 'down'; d.lying = o.lying; d.stateTimer = 9; d._groundHandoff = null; d._pain = null; d._sell = null; }
-    window.__prev = null;
+    window.__prev = null; window.__measure = o.measure;
 };
 const FRAME = () => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0], a = sc.w1, d = sc.w2;
@@ -34,11 +36,18 @@ const FRAME = () => {
     const step = (c, p) => { if (!p) return 0; let m = 0; for (const k of Object.keys(c)) if (p[k]) m = Math.max(m, Math.hypot(c[k][0] - p[k][0], c[k][1] - p[k][1])); return +m.toFixed(2); };
     const row = { as: a.state, ds: d.state, al: a.lying ?? null, dl: d.lying ?? null, ast: step(cur.a, prev?.a), dst: step(cur.d, prev?.d), jolt: d._jolt ? +d._jolt.t.toFixed(3) : null, jm: d._jolt?.move ?? null,
         ax: Math.round(a.x), dx: Math.round(d.x), atilt: +(a.pose.tilt ?? 0).toFixed(2), alift: Math.round(a.pose.lift ?? 0), at: +(a.stateTimer ?? 0).toFixed(2), ag: a._groundHandoff ? 1 : 0 };
+    if (window.__measure) { const c = window.__contact(a, d); row.ov = c.over; row.lm = c.limb; row.ms = c.miss; }
     window.__prev = cur; window.__cur = cur;
     return row;
 };
 const SNAP = () => window.__cur?.d ?? null;
 
+// overlap per frame (px): `miss` is the attacker's body outside his striking arm inside the receiver's silhouette, `limb` the striking arm on him (allowed)
+const contactSummary = (rows) => {
+    const hit = rows.map((r, i) => ({ i, ms: r.ms ?? 0, lm: r.lm ?? 0, ov: r.ov ?? 0 })), peak = hit.reduce((m, r) => (r.ms > m.ms ? r : m), hit[0]);
+    return { peakMiss: peak.ms, peakFrame: peak.i, framesMiss: hit.filter(r => r.ms > 0).length, framesMiss50: hit.filter(r => r.ms > 50).length, peakLimb: Math.max(...hit.map(r => r.lm)), peakOver: Math.max(...hit.map(r => r.ov)),
+        missSum: hit.reduce((n, r) => n + r.ms, 0) };
+};
 const [outRoot = 'research/animation/falls-2026-11/g4a', shots = '1'] = process.argv.slice(2);
 const flag = process.env.FLAG ?? 'falls=v1';
 mkdirSync(outRoot, { recursive: true });
@@ -50,10 +59,11 @@ for (const pair of PAIRS) {
         const page = h.page;
         await page.waitForTimeout(2500);
         const info = await page.evaluate(INSTALL);
+        if (CONTACT) await page.evaluate(INSTALL_CONTACT);
         const bx = info.box, mX = (x) => bx.x + x * bx.w / bx.gw, mY = (y) => bx.y + y * bx.h / bx.gh;
         for (const cell of CELLS) for (const lying of cell.lyings) for (const facing of [1, -1]) {
             const id = `${cell.move}-${lying ?? 'standing'}-${pair.victim}-${facing > 0 ? 'right' : 'left'}`, dir = join(outRoot, 'frames', id);
-            const placed = await page.evaluate(SETUP, { gap: cell.gap, stamina: 100, facing }); await page.evaluate(LAY, { lying });
+            const placed = await page.evaluate(SETUP, { gap: cell.gap, stamina: 100, facing }); await page.evaluate(LAY, { lying, measure: CONTACT });
             const clip = { width: 640, height: 330, x: Math.max(0, Math.round(mX((placed.ax + placed.dx) / 2) - 320)), y: Math.round(mY(440) - 330) };
             if (shots === '1') { rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true }); }
             const rows = []; let before = null, downAt = null, calm = 0;
@@ -80,9 +90,9 @@ for (const pair of PAIRS) {
             const out = { kneeRise: cell.move === 'kneeDrop' && landAt >= 0 ? { frames: stoodAt - landAt, maxStep: Math.max(...rows.slice(landAt, stoodAt + 1).map(r => r.ast)), stepBefore: rows[landAt - 1].ast } : undefined, id, move: cell.move, lying, facing, victim: pair.victim, attacker: pair.attacker, downAt, joltFrames: jFrom === null ? null : [jFrom, jTo], joltMaxStepRecv: maxIn(jFrom ?? 0, jTo ?? -1, 'dst'),
                 attackerSeamStep: downAt === null ? null : rows[downAt].ast, attackerStepAfterSeam: downAt === null ? null : Math.max(...rows.slice(downAt + 1, downAt + 6).map(r => r.ast)),
                 attackerStepBefore: downAt === null ? null : Math.max(...rows.slice(Math.max(0, downAt - 5), downAt).map(r => r.ast)), handoff: downAt === null ? null : rows[downAt].ag,
-                from: TRIGGER_AT - 3, attackerStates: seq, recvEnd: rows.at(-1).ds, restDelta, frames: rows.length };
+                from: TRIGGER_AT - 3, contact: CONTACT ? contactSummary(rows) : undefined, attackerStates: seq, recvEnd: rows.at(-1).ds, restDelta, frames: rows.length };
             results.push(out);
-            console.log(`[g4a] ${id}: att ${seq.map(s => s.s).join('>')} seam ${out.attackerSeamStep} (before ${out.attackerStepBefore}, after ${out.attackerStepAfterSeam}); jolt ${out.joltFrames ?? 'none'} max step ${out.joltMaxStepRecv}; rest delta ${restDelta}`);
+            console.log(`[g4a] ${id}: att ${seq.map(s => s.s).join('>')} seam ${out.attackerSeamStep} (before ${out.attackerStepBefore}, after ${out.attackerStepAfterSeam}); miss peak ${out.contact?.peakMiss ?? '-'} px (${out.contact?.framesMiss ?? '-'} frames) limb ${out.contact?.peakLimb ?? '-'}; jolt ${out.joltFrames ?? 'none'} max step ${out.joltMaxStepRecv}; rest delta ${restDelta}`);
         }
     } finally { await h.close(); }
 }

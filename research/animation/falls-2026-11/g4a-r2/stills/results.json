@@ -1,0 +1,698 @@
+[
+ {
+  "id": "elbowDrop-approach-lou-on-george-supine-right",
+  "phase": "approach",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "supine",
+  "facing": 1,
+  "root": {
+   "x": 519,
+   "y": 395
+  },
+  "target": {
+   "x": 621.6889238557416,
+   "y": 392.20812369368826
+  },
+  "over": 237,
+  "limb": 128,
+  "miss": 109,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 7355,
+  "b": 8119,
+  "side": "far",
+  "chest": {
+   "x": 621.7,
+   "y": 392.2
+  }
+ },
+ {
+  "id": "elbowDrop-contact-lou-on-george-supine-right",
+  "phase": "contact",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "supine",
+  "facing": 1,
+  "root": {
+   "x": 578,
+   "y": 362
+  },
+  "target": {
+   "x": 627.2723218885563,
+   "y": 392.20812369368826
+  },
+  "over": 1245,
+  "limb": 573,
+  "miss": 672,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": true,
+  "a": 6250,
+  "b": 8119,
+  "side": "far",
+  "chest": {
+   "x": 627.3,
+   "y": 392.2
+  }
+ },
+ {
+  "id": "elbowDrop-rolloff-lou-on-george-supine-right",
+  "phase": "rolloff",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "supine",
+  "facing": 1,
+  "root": {
+   "x": 538,
+   "y": 353
+  },
+  "target": {
+   "x": 621.3941556376068,
+   "y": 392.20812369368826
+  },
+  "over": 476,
+  "limb": 246,
+  "miss": 230,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 6576,
+  "b": 8129,
+  "side": "far",
+  "chest": {
+   "x": 621.4,
+   "y": 392.2
+  }
+ },
+ {
+  "id": "elbowDrop-approach-lou-on-george-supine-left",
+  "phase": "approach",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "supine",
+  "facing": -1,
+  "root": {
+   "x": 523,
+   "y": 395
+  },
+  "target": {
+   "x": 420.32265244233093,
+   "y": 392.20812369368826
+  },
+  "over": 237,
+  "limb": 129,
+  "miss": 108,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 7358,
+  "b": 8118,
+  "side": "far",
+  "chest": {
+   "x": 420.3,
+   "y": 392.2
+  }
+ },
+ {
+  "id": "elbowDrop-contact-lou-on-george-supine-left",
+  "phase": "contact",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "supine",
+  "facing": -1,
+  "root": {
+   "x": 462,
+   "y": 362
+  },
+  "target": {
+   "x": 412.7276781114437,
+   "y": 392.20812369368826
+  },
+  "over": 1245,
+  "limb": 573,
+  "miss": 672,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": true,
+  "a": 6250,
+  "b": 8119,
+  "side": "far",
+  "chest": {
+   "x": 412.7,
+   "y": 392.2
+  }
+ },
+ {
+  "id": "elbowDrop-rolloff-lou-on-george-supine-left",
+  "phase": "rolloff",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "supine",
+  "facing": -1,
+  "root": {
+   "x": 502,
+   "y": 353
+  },
+  "target": {
+   "x": 418.60584436239316,
+   "y": 392.20812369368826
+  },
+  "over": 476,
+  "limb": 246,
+  "miss": 230,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 6576,
+  "b": 8129,
+  "side": "far",
+  "chest": {
+   "x": 418.6,
+   "y": 392.2
+  }
+ },
+ {
+  "id": "elbowDrop-approach-lou-on-george-prone-right",
+  "phase": "approach",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "prone",
+  "facing": 1,
+  "root": {
+   "x": 429,
+   "y": 388
+  },
+  "target": {
+   "x": 529.9276238130508,
+   "y": 385.10611407662554
+  },
+  "over": 0,
+  "limb": 0,
+  "miss": 0,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 7076,
+  "b": 7060,
+  "side": "far",
+  "chest": {
+   "x": 529.9,
+   "y": 385.1
+  }
+ },
+ {
+  "id": "elbowDrop-contact-lou-on-george-prone-right",
+  "phase": "contact",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "prone",
+  "facing": 1,
+  "root": {
+   "x": 488,
+   "y": 355
+  },
+  "target": {
+   "x": 536.4060255089558,
+   "y": 385.10611407662554
+  },
+  "over": 799,
+  "limb": 483,
+  "miss": 316,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": true,
+  "a": 5991,
+  "b": 7074,
+  "side": "far",
+  "chest": {
+   "x": 536.4,
+   "y": 385.1
+  }
+ },
+ {
+  "id": "elbowDrop-rolloff-lou-on-george-prone-right",
+  "phase": "rolloff",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "prone",
+  "facing": 1,
+  "root": {
+   "x": 449,
+   "y": 347
+  },
+  "target": {
+   "x": 530.5278592580064,
+   "y": 385.10611407662554
+  },
+  "over": 210,
+  "limb": 163,
+  "miss": 47,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 6297,
+  "b": 7072,
+  "side": "far",
+  "chest": {
+   "x": 530.5,
+   "y": 385.1
+  }
+ },
+ {
+  "id": "elbowDrop-approach-lou-on-george-prone-left",
+  "phase": "approach",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "prone",
+  "facing": -1,
+  "root": {
+   "x": 612,
+   "y": 388
+  },
+  "target": {
+   "x": 511.1889488219312,
+   "y": 385.10611407662554
+  },
+  "over": 0,
+  "limb": 0,
+  "miss": 0,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 7074,
+  "b": 7057,
+  "side": "far",
+  "chest": {
+   "x": 511.2,
+   "y": 385.1
+  }
+ },
+ {
+  "id": "elbowDrop-contact-lou-on-george-prone-left",
+  "phase": "contact",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "prone",
+  "facing": -1,
+  "root": {
+   "x": 552,
+   "y": 355
+  },
+  "target": {
+   "x": 503.593974491044,
+   "y": 385.10611407662554
+  },
+  "over": 799,
+  "limb": 483,
+  "miss": 316,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": true,
+  "a": 5991,
+  "b": 7074,
+  "side": "far",
+  "chest": {
+   "x": 503.6,
+   "y": 385.1
+  }
+ },
+ {
+  "id": "elbowDrop-rolloff-lou-on-george-prone-left",
+  "phase": "rolloff",
+  "attacker": "lou",
+  "victim": "george",
+  "lying": "prone",
+  "facing": -1,
+  "root": {
+   "x": 591,
+   "y": 347
+  },
+  "target": {
+   "x": 509.47214074199354,
+   "y": 385.10611407662554
+  },
+  "over": 210,
+  "limb": 163,
+  "miss": 47,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 6297,
+  "b": 7072,
+  "side": "far",
+  "chest": {
+   "x": 509.5,
+   "y": 385.1
+  }
+ },
+ {
+  "id": "elbowDrop-approach-george-on-lou-supine-right",
+  "phase": "approach",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "supine",
+  "facing": 1,
+  "root": {
+   "x": 500,
+   "y": 395
+  },
+  "target": {
+   "x": 618.6769922363244,
+   "y": 392.6719398387066
+  },
+  "over": 0,
+  "limb": 0,
+  "miss": 0,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 7165,
+  "b": 8557,
+  "side": "far",
+  "chest": {
+   "x": 618.7,
+   "y": 392.7
+  }
+ },
+ {
+  "id": "elbowDrop-contact-george-on-lou-supine-right",
+  "phase": "contact",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "supine",
+  "facing": 1,
+  "root": {
+   "x": 569,
+   "y": 368
+  },
+  "target": {
+   "x": 624.1695941464468,
+   "y": 392.6719398387066
+  },
+  "over": 1469,
+  "limb": 542,
+  "miss": 927,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": true,
+  "a": 6331,
+  "b": 8565,
+  "side": "far",
+  "chest": {
+   "x": 624.2,
+   "y": 392.7
+  }
+ },
+ {
+  "id": "elbowDrop-rolloff-george-on-lou-supine-right",
+  "phase": "rolloff",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "supine",
+  "facing": 1,
+  "root": {
+   "x": 525,
+   "y": 352
+  },
+  "target": {
+   "x": 619.5039530183083,
+   "y": 392.6719398387066
+  },
+  "over": 289,
+  "limb": 132,
+  "miss": 157,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 6154,
+  "b": 8561,
+  "side": "far",
+  "chest": {
+   "x": 619.5,
+   "y": 392.7
+  }
+ },
+ {
+  "id": "elbowDrop-approach-george-on-lou-supine-left",
+  "phase": "approach",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "supine",
+  "facing": -1,
+  "root": {
+   "x": 542,
+   "y": 395
+  },
+  "target": {
+   "x": 423.5014050345692,
+   "y": 392.67193983870663
+  },
+  "over": 0,
+  "limb": 0,
+  "miss": 0,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 7160,
+  "b": 8561,
+  "side": "far",
+  "chest": {
+   "x": 423.5,
+   "y": 392.7
+  }
+ },
+ {
+  "id": "elbowDrop-contact-george-on-lou-supine-left",
+  "phase": "contact",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "supine",
+  "facing": -1,
+  "root": {
+   "x": 471,
+   "y": 368
+  },
+  "target": {
+   "x": 415.83040585355303,
+   "y": 392.67193983870663
+  },
+  "over": 1469,
+  "limb": 542,
+  "miss": 927,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": true,
+  "a": 6331,
+  "b": 8565,
+  "side": "far",
+  "chest": {
+   "x": 415.8,
+   "y": 392.7
+  }
+ },
+ {
+  "id": "elbowDrop-rolloff-george-on-lou-supine-left",
+  "phase": "rolloff",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "supine",
+  "facing": -1,
+  "root": {
+   "x": 515,
+   "y": 352
+  },
+  "target": {
+   "x": 420.4960469816917,
+   "y": 392.67193983870663
+  },
+  "over": 289,
+  "limb": 132,
+  "miss": 157,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 6154,
+  "b": 8561,
+  "side": "far",
+  "chest": {
+   "x": 420.5,
+   "y": 392.7
+  }
+ },
+ {
+  "id": "elbowDrop-approach-george-on-lou-prone-right",
+  "phase": "approach",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "prone",
+  "facing": 1,
+  "root": {
+   "x": 415,
+   "y": 391
+  },
+  "target": {
+   "x": 532.6053807974845,
+   "y": 388.91421377219825
+  },
+  "over": 0,
+  "limb": 0,
+  "miss": 0,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 7046,
+  "b": 7515,
+  "side": "far",
+  "chest": {
+   "x": 532.6,
+   "y": 388.9
+  }
+ },
+ {
+  "id": "elbowDrop-contact-george-on-lou-prone-right",
+  "phase": "contact",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "prone",
+  "facing": 1,
+  "root": {
+   "x": 485,
+   "y": 364
+  },
+  "target": {
+   "x": 539.685593099595,
+   "y": 388.91421377219825
+  },
+  "over": 1033,
+  "limb": 595,
+  "miss": 438,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": true,
+  "a": 6205,
+  "b": 7518,
+  "side": "far",
+  "chest": {
+   "x": 539.7,
+   "y": 388.9
+  }
+ },
+ {
+  "id": "elbowDrop-rolloff-george-on-lou-prone-right",
+  "phase": "rolloff",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "prone",
+  "facing": 1,
+  "root": {
+   "x": 442,
+   "y": 349
+  },
+  "target": {
+   "x": 535.0199519714564,
+   "y": 388.91421377219825
+  },
+  "over": 28,
+  "limb": 28,
+  "miss": 0,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 6021,
+  "b": 7524,
+  "side": "far",
+  "chest": {
+   "x": 535,
+   "y": 388.9
+  }
+ },
+ {
+  "id": "elbowDrop-approach-george-on-lou-prone-left",
+  "phase": "approach",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "prone",
+  "facing": -1,
+  "root": {
+   "x": 625,
+   "y": 391
+  },
+  "target": {
+   "x": 507.98540608142105,
+   "y": 388.9142137721982
+  },
+  "over": 0,
+  "limb": 0,
+  "miss": 0,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 7042,
+  "b": 7524,
+  "side": "far",
+  "chest": {
+   "x": 508,
+   "y": 388.9
+  }
+ },
+ {
+  "id": "elbowDrop-contact-george-on-lou-prone-left",
+  "phase": "contact",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "prone",
+  "facing": -1,
+  "root": {
+   "x": 555,
+   "y": 364
+  },
+  "target": {
+   "x": 500.31440690040495,
+   "y": 388.9142137721982
+  },
+  "over": 1033,
+  "limb": 595,
+  "miss": 438,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": true,
+  "a": 6204,
+  "b": 7518,
+  "side": "far",
+  "chest": {
+   "x": 500.3,
+   "y": 388.9
+  }
+ },
+ {
+  "id": "elbowDrop-rolloff-george-on-lou-prone-left",
+  "phase": "rolloff",
+  "attacker": "george",
+  "victim": "lou",
+  "lying": "prone",
+  "facing": -1,
+  "root": {
+   "x": 598,
+   "y": 349
+  },
+  "target": {
+   "x": 504.9800480285435,
+   "y": 388.9142137721982
+  },
+  "over": 28,
+  "limb": 28,
+  "miss": 0,
+  "front": 0,
+  "bodyBehind": true,
+  "limbOver": false,
+  "a": 6021,
+  "b": 7524,
+  "side": "far",
+  "chest": {
+   "x": 505,
+   "y": 388.9
+  }
+ }
+]

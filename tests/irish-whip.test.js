@@ -5,7 +5,7 @@ import Wrestler from '../src/Wrestler.js';
 function pair() {
     const calls = [], events = [];
     const scene = { time: { delayedCall: (ms, fn) => calls.push({ ms, fn }) }, tweens: { add: () => {} }, _logEvent: (...args) => events.push(args) };
-    const a = Object.assign(Object.create(Wrestler.prototype), { scene, x: 400, y: 400, facing: 1, _runPoseSequence: () => {} });
+    const a = Object.assign(Object.create(Wrestler.prototype), { scene, x: 400, y: 400, facing: 1, pose: {}, _runPoseSequence: () => {} });
     const d = { x: 470, y: 400, facing: -1, state: 'standing', tweenPose: () => {} };
     return { a, d, calls, events };
 }

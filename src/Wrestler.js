@@ -440,6 +440,10 @@ const WHIP_WEIGHT = Object.freeze({
     load:    { crouch: 0.48, bend: -0.20 },
     release: { crouch: 0.34, bend: 0.20 },
     follow:  { crouch: 0.20, bend: 0.30 },
+    push: 1.18,   // Derek G3d: 15-20% more forearm push through the release and follow-through
+    plant: [0.62, 0.8],  // rad of leg per unit of crouch added, near and far leg, that keeps the ankles on their marks (fitted on Lou, checked on George)
+    lead: 50,     // ms the release pose peaks before the receiver is released
+    closeIn: 12,  // px (times s) the receiver steps in before a same-side whip
 });
 // T3d.2: the receiver is slung. He pitches forward at the release and his speed builds linearly over slingMs; the pitch settles to
 // the run lean over settleMs. A rise in top speed pays back the distance the build-up costs, so he reaches the rope on time.
@@ -2409,11 +2413,22 @@ export default class Wrestler {
         // T3d.1: he throws from his legs. Pose overrides on the same steps (MOVE_DEFS.irishWhip, which the flag-off path reads, is
         // untouched): the load sinks his hips and leans him back against the man, the release drives through them, the follow-through
         // leaves his weight forward on the front foot.
-        const seq = MOVE_DEFS.irishWhip.poseSeq, W = WHIP_WEIGHT;
-        const throwSeq = [{ ...seq[0], dur: 60 },
-                          { ...seq[1], p: { ...POSES[seq[1].p], ...W.load }, dur: crossBody ? 120 : 60 },
-                          { ...seq[2], p: { ...POSES[seq[2].p], ...W.release }, dur: 60 },
-                          { ...seq[3], p: { ...POSES[seq[3].p], ...W.follow }, dur: 120 },
+        // Feet planted: legs are held at the stance he starts in, less WHIP_WEIGHT.plant rad per unit of crouch added (per leg), which cancels the
+        // forward swing the crouch gives the thighs, so the ankles stay on their marks through the throw.
+        const seq = MOVE_DEFS.irishWhip.poseSeq, W = WHIP_WEIGHT, push = W.push;
+        const l0 = this.pose.lLeg ?? 0, r0 = this.pose.rLeg ?? 0, c0 = this.pose.crouch ?? 0;
+        const step = (i, over, dur) => {
+            const base = { ...POSES[seq[i].p], ...over }, c = base.crouch ?? 0;
+            return { ...seq[i], p: { ...base, lLeg: l0 - W.plant[0] * (c - c0), rLeg: r0 - W.plant[1] * (c - c0) }, dur };
+        };
+        const arms = (name, k = push) => ({ lArm: POSES[name].lArm * k, rArm: POSES[name].rArm * k });
+        // Derek G3d: the throw led by a beat. The release pose peaks W.lead ms before the receiver is let go (it used to peak on that
+        // frame), so the arm and hips are already through when he goes and the follow-through carries after him.
+        const grabMs = 50, relMs = 50, loadMs = releaseAt - W.lead - grabMs - relMs;
+        const throwSeq = [step(0, {}, grabMs),
+                          step(1, W.load, loadMs),
+                          step(2, { ...W.release, ...arms('whipRelease') }, relMs),
+                          step(3, { ...W.follow, ...arms('whipFollow') }, 120),
                           seq[4]];
         this._runPoseSequence(throwSeq, () => {
             if (this._whip !== token) return;
@@ -2425,6 +2440,13 @@ export default class Wrestler {
         other.tweenPose('idle', WHIP_RELEASE_SAME_MS, 'Sine.easeInOut');
         const stepY = Math.max(RING.farLeft.y + 20, this.y - 22 * this.s);
         this.scene.tweens.add({ targets: this, y: stepY, duration: WHIP_RELEASE_SAME_MS, ease: 'Sine.easeInOut' });
+        if (!crossBody) {
+            // Derek G3d: he steps in a little closer before he is whipped (cross-body already walks to its mark)
+            this.scene.tweens.add({
+                targets: other, x: other.x - Math.sign(other.x - this.x) * WHIP_WEIGHT.closeIn * this.s, duration: 110, ease: 'Sine.easeOut',
+                onUpdate: (tw) => { if (other._whip !== token || other.state !== 'grabbed' || this.state !== 'slamming') tw.stop(); },
+            });
+        }
         if (crossBody) {
             const b = ringBoundsAtY(other.y);
             const target = Math.max(b.left + 20, Math.min(b.right - 20, this.x + dir * 45 * this.s));

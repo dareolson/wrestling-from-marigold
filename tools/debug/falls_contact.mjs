@@ -112,6 +112,10 @@ export const INSTALL_CONTACT_DECLARED = () => {
             if (r && o) { outside++; if (O[k] > R[k]) conflict++; }
         }
         let edge = Infinity; for (const p of skd._parts) if (shown(p)) edge = Math.min(edge, p.getBounds().y);
-        return { raw, outside, conflict, strike, a: na, b: nb, chest: { x: +chest.x.toFixed(1), y: +chest.y.toFixed(1) }, edge: Math.round(edge) };
+        // T4.7c: the receiver's own limbs (arms, legs, boots) against the attacker's whole body, and how far any receiver part is past the ring's side ropes at its own height
+        const limbKeys = ['nearUpArm', 'nearForearm', 'nearHand', 'farUpArm', 'farForearm', 'farHand', 'nearThigh', 'nearShin', 'nearBoot', 'farThigh', 'farShin', 'farBoot'];
+        const RL = depthMap(limbKeys.map(k => skd[k]).filter(Boolean), ox, oy); let recvLimb = 0; for (let k = 0; k < RL.length; k++) if (RL[k] > -Infinity && All[k] > -Infinity) recvLimb++;
+        let ropeOver = 0; const rb = window.__ringB; if (rb) for (const p of skd._parts) if (shown(p)) { const b = p.getBounds(), r = rb(Math.max(b.y, b.bottom)); ropeOver = Math.max(ropeOver, r.left - b.x, b.right - r.right); }
+        return { recvLimb, ropeOver: Math.round(ropeOver), raw, outside, conflict, strike, a: na, b: nb, chest: { x: +chest.x.toFixed(1), y: +chest.y.toFixed(1) }, edge: Math.round(edge) };
     };
 };

@@ -747,7 +747,7 @@ test('T4.7b fall: the eased fraction keeps speeding up to the contact frame (no 
     assert.equal(hold0.seg, 'hold');
     for (const k of Object.keys(ELBOW_DROP.phases.contact.g)) assert.ok(Math.abs(hold0.g[k] - ELBOW_DROP.phases.contact.g[k]) < 1e-9, `${k}: the fall ends on the contact pose`);
     // compression: the hip dips into him over the hold and is back at the contact height at its end
-    const mid = sampleGroundAttack(ELBOW_DROP, T.fall + T.hold / 2, REST_PRONE), end = sampleGroundAttack(ELBOW_DROP, T.fall + T.hold - 1e-9, REST_PRONE);
+    const mid = sampleGroundAttack(ELBOW_DROP, T.fall + T.hold * T.pressAt, REST_PRONE), end = sampleGroundAttack(ELBOW_DROP, T.fall + T.hold - 1e-9, REST_PRONE);
     assert.ok(Math.abs(mid.g.hip - (ELBOW_DROP.phases.contact.g.hip - T.pressHip)) < 1e-6 && Math.abs(end.g.hip - ELBOW_DROP.phases.contact.g.hip) < 0.01);
 });
 
@@ -767,4 +767,52 @@ test('T4.7b: under ?falls=v1 the flight is the elbow drop clip cut at its apex k
         } else assert.equal(clip.id, 'elbowDrop');
     }
     delete globalThis.location;
+});
+
+// ---- PLAN_FALLS T4.7c: the sell after a ground hit (falls.js groundHitSell), the squash and recoil, the elbow-led fall -----------------------------------------------------------
+import { groundHitSell, groundHitSellDuration, GROUND_SELL } from '../src/animation/falls.js';
+test('T4.7c groundHitSell: exactly 0 at the end, chest pinned until the curl starts, knees only ever gain flex, three alternating kicks that fade', () => {
+    for (const lying of ['supine', 'prone']) for (const i of [0.4, 0.7, 1]) {
+        const end = groundHitSellDuration(i);
+        for (const [ch, v] of Object.entries(groundHitSell(lying, i, end).d)) assert.equal(v, 0, `${lying} ${ch}`);
+        assert.ok(groundHitSell(lying, i, end).done);
+        let peak = 0;
+        for (let t = 0; t < end; t += 1 / 240) {
+            const { d } = groundHitSell(lying, i, t);
+            if (t <= GROUND_SELL.pinned) assert.ok(Math.abs(d.torso) < 1e-9, `${lying} chest pinned at ${t.toFixed(3)}`);
+            peak = Math.max(peak, Math.abs(d.torso));
+            for (const side of ['near', 'far']) assert.ok(d[`${side}Thigh`] - d[`${side}Shin`] >= -1e-9, `${lying} ${side} flex never shrinks at ${t.toFixed(3)}`);
+            for (const [ch, v] of Object.entries(d)) if (ch !== 'hip') assert.ok(Math.abs(v) < 1.6, `${lying} ${ch} bounded`);   // hip is px
+        }
+        assert.ok(peak > 0.25 && peak < 0.5, `${lying} curl ${peak}: a curl, not the jolt's 0.35-0.61 lift`);
+    }
+    // the kicks: near, far, near, in that order, each a swing of the whole leg (supine: thigh and shin together), the third smaller than the first
+    const kick = (t, side) => { const a = groundHitSell('supine', 0.7, t).d, base = groundHitSell('supine', 0.7, GROUND_SELL.kickFrom - 1e-3).d; return a[`${side}Thigh`] - 0.30 * 0 - base[`${side}Thigh`]; };
+    const win = (j) => GROUND_SELL.kickFrom + (j + 0.5) * GROUND_SELL.kickEvery;
+    const swing = (j) => { const side = j % 2 ? 'far' : 'near', other = j % 2 ? 'near' : 'far'; return [kick(win(j), side), kick(win(j), other)]; };
+    const k0 = swing(0), k1 = swing(1), k2 = swing(2);
+    assert.ok(k0[0] > 0.25 && k1[0] > 0.2 && k2[0] > 0.1, 'near, far, near each swing');
+    assert.ok(k0[0] > k2[0], 'they fade');
+});
+
+test('T4.7c: the elbow drop\'s receiver gets the curl sell on the contact frame; it ends on the lying pose and holds the pin off until it does', async () => {
+    const { atk, def } = await downFixture(true);
+    const real = def._downHitReact.bind(def), seen = []; def._downHitReact = (a, m, n, sell) => { seen.push([m, n, sell]); return real(a, m, n, sell); };
+    def._hurt = () => {};
+    atk.x = def.x - 20; atk._doElbowDrop(def);
+    for (let t = 0; t < groundAttackContactAt(ELBOW_DROP) + 0.02; t += 1 / 60) atk.tickDown(1 / 60);
+    assert.deepEqual(seen, [['elbowDrop', 0.7, 'curl']]);
+    assert.equal(def._jolt.sell, 'curl'); assert.equal(def.isLanding(), true, 'no pin mid-sell');
+    assert.ok(def.stateTimer >= groundHitSellDuration(0.7) - 1e-9);
+    let n = 0; while (def._jolt && n++ < 200) def.tickDown(1 / 60);
+    assert.equal(def._jolt, null); assert.equal(def._landingOffsets(), null, 'back on the lying pose');
+    delete globalThis.location;
+});
+
+test('T4.7c: the elbow drop\'s contact pose and roll-off keep his legs on the mat (knee flex only, thighs along the mat), and the fall\'s arms lead the body', () => {
+    for (const ph of ['contact', 'rolloff']) { const g = ELBOW_DROP.phases[ph].g;
+        for (const side of ['near', 'far']) { const flex = g[`${side}Thigh`] - g[`${side}Shin`]; assert.ok(flex >= 0 && flex < 0.5, `${ph} ${side} knee barely bent: ${flex}`); assert.ok(Math.abs(g[`${side}Thigh`] + Math.PI / 2) < 0.5, `${ph} ${side} thigh trails along the mat`); } }
+    const s = sampleGroundAttack(ELBOW_DROP, ELBOW_DROP.timing.fall * 0.3, REST_PRONE);
+    assert.ok(s.eArm > s.e + 0.3, `arms ${s.eArm} ahead of the body ${s.e} early in the fall`);
+    assert.ok(sampleGroundAttack(ELBOW_DROP, ELBOW_DROP.timing.fall * ELBOW_DROP.timing.armLead, REST_PRONE).eArm > 0.999, 'the elbow is cocked by armLead');
 });

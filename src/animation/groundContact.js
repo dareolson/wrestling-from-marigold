@@ -14,19 +14,20 @@ export const ELBOW_DROP = Object.freeze({
     side: 'far',
     phases: Object.freeze({
         approach: Object.freeze({ anchor: Object.freeze({ dx: -55, dy: -85 }), g: Object.freeze({ hip: 70, torso: 1.50, farThigh: -1.60, farShin: -1.95, nearThigh: -1.35, nearShin: -1.85, farArm: 2.70, farFore: 4.60, nearArm: 2.40, nearFore: 3.10 }) }),
-        contact:  Object.freeze({ anchor: Object.freeze({ dx: 0, dy: 0 }),     g: Object.freeze({ hip: 14, torso: 1.90, farThigh: -2.00, farShin: -2.25, nearThigh: -1.70, nearShin: -2.50, farArm: 0.10, farFore: 2.10, nearArm: 0.20, nearFore: 0.25 }) }),
+        contact:  Object.freeze({ anchor: Object.freeze({ dx: 0, dy: 0 }),     g: Object.freeze({ hip: 14, torso: 1.90, farThigh: -1.90, farShin: -2.00, nearThigh: -1.80, nearShin: -1.95, farArm: 0.10, farFore: 2.10, nearArm: 0.20, nearFore: 0.25 }) }),
         // plant (T4.7a): the roll-off's far hand lands on the MAT beside the receiver: dx along the facing from his chest (px at s = 1), gap = how far past his far edge (up the screen) the
         // wrist sits; the body slides so the wrist is on that point. The stills tool still places this pose by `anchor`.
-        rolloff:  Object.freeze({ plant: Object.freeze({ dx: -20, gap: 14 }), anchor: Object.freeze({ dx: -45, dy: -60 }), g: Object.freeze({ hip: 22, torso: 1.95, farThigh: -1.45, farShin: -1.80, nearThigh: -0.60, nearShin: -1.90, farArm: 0.30, farFore: 1.90, nearArm: 0.10, nearFore: 0.15 }) }),
+        rolloff:  Object.freeze({ plant: Object.freeze({ dx: -20, gap: 14 }), anchor: Object.freeze({ dx: -45, dy: -60 }), g: Object.freeze({ hip: 22, torso: 1.95, farThigh: -1.85, farShin: -1.95, nearThigh: -1.75, nearShin: -1.90, farArm: 0.30, farFore: 1.90, nearArm: 0.10, nearFore: 0.15 }) }),
     }),
     // seconds. T4.7b: `fall` = the one continuous descent from the flight's apex into the elbow on the chest (gravity: the pose and height ease in as u^2 from the apex, so the speed rises right up to
     // contact; the hit lands on its last frame, in the air above the mat); hold = the contact beat with a brief compression (`press`); release = contact -> roll-off, the hand planting; settle =
     // roll-off -> the ordinary lying pose, drawn here too so the ordinary down draw takes over with no handoff; `layer` is the window the striking forearm draws over the receiver.
     // The flight clip that precedes it is cut at `flightAt` (the clip's own apex key, 0.24 s of its 0.38): flightAt + fall is the old flight length, so the hit lands where the old flight ended.
     flightAt: 0.24,
-    timing: Object.freeze({ fall: 0.14, hold: 0.10, release: 0.34, settle: 0.30, layerFrom: 0.6, layerTail: 0.12, pressHip: 5, pressDy: 2 }),
+    timing: Object.freeze({ fall: 0.14, hold: 0.10, release: 0.34, settle: 0.30, layerFrom: 0.6, layerTail: 0.12, pressHip: 14, pressDy: 3, pressAt: 0.6, armLead: 0.45 }),   // T4.7c: pressHip = the squash at the hit (a decelerating yield over half the hold, then the recoil); armLead = the fraction of the fall by which the arms have reached their contact pose
 });
 
+export const ARM_CHANNELS = Object.freeze(['farArm', 'farFore', 'nearArm', 'nearFore']);
 const lerp = (a, b, u) => a + (b - a) * u;
 const smooth = (u) => u * u * (3 - 2 * u);
 const mixG = (a, b, u) => { const g = {}; for (const k of Object.keys(b)) if (k !== 't') g[k] = lerp(a[k] ?? b[k], b[k], u); return g; };
@@ -41,10 +42,10 @@ export const groundAttackContactAt = (def) => def.timing.fall;
 export function sampleGroundAttack(def, t, rest) {
     const T = def.timing, P = def.phases, c = T.fall, h = c + T.hold, end = h + T.release;
     const layer = t >= T.fall * T.layerFrom && t < h + T.release * T.layerTail;
-    if (t < c) { const u = t / c; return { seg: 'fall', u, e: u * u, g: P.contact.g, anchor: P.contact.anchor, plant: 0, layer }; }
+    if (t < c) { const u = t / c; return { seg: 'fall', u, e: u * u, eArm: smooth(Math.min(1, u / T.armLead)), g: P.contact.g, anchor: P.contact.anchor, plant: 0, layer }; }
     if (t < h) {
         // compression: the body dips into him and comes back over the hold (a sine pulse), the elbow pressing a little deeper
-        const u = (t - c) / T.hold, press = Math.sin(Math.PI * u);
+        const u = (t - c) / T.hold, press = u < T.pressAt ? 1 - (1 - u / T.pressAt) ** 2 : 1 - smooth((u - T.pressAt) / (1 - T.pressAt));
         return { seg: 'hold', u, e: 1, g: { ...P.contact.g, hip: P.contact.g.hip - T.pressHip * press }, anchor: { dx: P.contact.anchor.dx, dy: P.contact.anchor.dy + T.pressDy * press }, plant: 0, layer };
     }
     if (t >= end) return { seg: 'settle', u: Math.min(1, (t - end) / T.settle), g: mixG(P.rolloff.g, rest, smooth(Math.min(1, (t - end) / T.settle))), anchor: P.contact.anchor, plant: 1, layer: false };

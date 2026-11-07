@@ -9,13 +9,13 @@ import { shoveClip } from './animation/clips/shove.js';
 // ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
 import { dropkickV2Clip } from './animation/clips/dropkickV2.js';
 import { elbowDropClip } from './animation/clips/elbowDrop.js';
-import { ELBOW_DROP, sampleGroundAttack, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from './animation/groundContact.js';
+import { ELBOW_DROP, ARM_CHANNELS, sampleGroundAttack, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from './animation/groundContact.js';
 import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { GETUPS, GETUP_SETS, eligibleForBackSell, legacyFor, chooseGetUp, stallMs, stallTimeline, stallOffsets, sineInOut } from './animation/getUps.js';
-import { landingResponse, landingDuration, applyOffsetsSoft, TIERS, REF_VY, chooseFall, tierFor, KNOCKDOWN_WEAR, wearAfterDamage, wearAfterRecovery, joltResponse, joltDuration } from './animation/falls.js';
+import { landingResponse, landingDuration, applyOffsetsSoft, TIERS, REF_VY, chooseFall, tierFor, KNOCKDOWN_WEAR, wearAfterDamage, wearAfterRecovery, joltResponse, joltDuration, groundHitSell, groundHitSellDuration } from './animation/falls.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
@@ -1145,7 +1145,7 @@ export default class Wrestler {
         if (this._groundAttack) this._tickGroundAttack(dt);
         if (this._jolt && this.state === 'down') {
             this._jolt.t += dt;
-            if (this._jolt.t >= joltDuration(this._jolt.intensity)) this._jolt = null;
+            if (this._jolt.t >= (this._jolt.sell ? groundHitSellDuration(this._jolt.intensity) : joltDuration(this._jolt.intensity))) this._jolt = null;
         }
         if (this.state !== 'down' && this.state !== 'staggered') return;
         if (this.state === 'down') this._tickSell(dt);
@@ -1235,12 +1235,13 @@ export default class Wrestler {
     // ?falls=v1 (PLAN_FALLS T4.1): a move lands on this man while he is on the mat. He jolts up at the waist, arms flailing, and drops back flat. Only
     // the pose changes: damage, the down timer and the get-up are the caller's. A sell in progress is dropped (the jolt owns the pose); a pin or a
     // get-up never starts mid-jolt (isLanding gates the pin, and the timer is held to the jolt's end), so the jolt never ends in a pop.
-    _downHitReact(attacker, move, intensity) {
+    // sell: 'curl' = the T4.7c sell after a ground hit (chest pinned, head and shoulders curl, knees up, arms flail, then the alternating leg kicks), else the T4.1 jolt
+    _downHitReact(attacker, move, intensity, sell = null) {
         if (!fallsCandidate() || this.state !== 'down') return false;
         this._sell = null;
         if (this._pain) this._pain.planned = true;
-        this._jolt = { lying: this.lying === 'prone' ? 'prone' : 'supine', intensity, t: 0, move };
-        this.stateTimer = Math.max(this.stateTimer, joltDuration(intensity));
+        this._jolt = { lying: this.lying === 'prone' ? 'prone' : 'supine', intensity, t: 0, move, sell };
+        this.stateTimer = Math.max(this.stateTimer, sell ? groundHitSellDuration(intensity) : joltDuration(intensity));
         return true;
     }
 
@@ -1248,7 +1249,7 @@ export default class Wrestler {
     _landingOffsets() {
         const l = this._landing;
         if (!l && this._jolt && this.state === 'down') {
-            const r = joltResponse(this._jolt.lying, this._jolt.intensity, this._jolt.t);
+            const r = (this._jolt.sell ? groundHitSell : joltResponse)(this._jolt.lying, this._jolt.intensity, this._jolt.t);
             return r.done ? null : r.d;
         }
         if (!l || this.state !== 'down') return null;
@@ -2665,7 +2666,7 @@ export default class Wrestler {
                 const contact = () => {
                     other._hurt(STAMINA_DRAIN.elbowDrop, 'elbowDrop');
                     other.stateTimer = DOWN_SEC;
-                    other._downHitReact(this, 'elbowDrop', 0.7);
+                    other._downHitReact(this, 'elbowDrop', 0.7, fallsCandidate() ? 'curl' : null);
                     this.scene.cameras.main.shake(130, 0.002);
                     this.scene.crowd?.impact?.('mat', 0.7);
                 };
@@ -2960,7 +2961,7 @@ export default class Wrestler {
                 root = { x: this.x + (root.x - this.x) * smp.u, y: this.y + (root.y - this.y) * smp.u };
                 s = s0 + (s - s0) * smp.u;
                 gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
-                sk.updateGroundedBlend(root.x, root.y, s, facing, P.contact.g, ga.from, smp.e, null, false, true);
+                sk.updateGroundedBlend(root.x, root.y, s, facing, P.contact.g, ga.from, smp.e, null, false, (key) => (ARM_CHANNELS.includes(key) ? smp.eArm : smp.e));   // T4.7c: the arms lead (the elbow is cocked at the chest early), the body follows under gravity
                 ga.root = root;
                 if (smp.layer) this._layerStrike(sk, def, op);
                 return;

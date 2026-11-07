@@ -18,7 +18,8 @@ const BEFORE = process.env.BEFORE === '1', TRIGGER_AT = 8, WINDOW = 66;
 const FRAMES = process.env.FRAMES ?? 'frames', OUT = process.env.OUT ?? (BEFORE ? 'before.json' : 'results.json');   // T4.7b: FRAMES / OUT name the run when two code versions are filmed side by side (current = 54b60db, served on another port)
 const DECL = { side: 'far', parts: ['Forearm', 'Hand'] };
 
-const LAY = (o) => {
+const LAY = async (o) => {
+    const C = await import('/src/constants.js'); window.__ringB = C.ringBoundsAtY;
     const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
     d.state = 'down'; d.lying = o.lying; d.stateTimer = 99; d._groundHandoff = null; d._pain = null; d._sell = null;
     window.__prev = null; window.__hurts = 0; window.__hurtAt = null; window.__shakes = 0;
@@ -39,13 +40,13 @@ const FRAME = (decl) => {
     const row = { hipY: hipA === undefined ? null : +hipA.toFixed(2), hipH: hipA === undefined ? null : +(rootY - hipA).toFixed(2), as: a.state, ds: d.state, al: a.lying ?? null, ast: step(cur.a, prev?.a), dst: step(cur.d, prev?.d), ga: a._groundAttack ? +a._groundAttack.t.toFixed(3) : null, hurts: window.__hurts, shakes: window.__shakes,
         ax: Math.round(a.x), ay: Math.round(a.y), jolt: d._jolt ? 1 : 0 };
     if (a.state === 'down' || a._groundAttack) {
-        const c = window.__contactDeclared(a, d, decl); Object.assign(row, { raw: c.raw, out: c.outside, conf: c.conflict, strike: c.strike, edge: c.edge });
+        const c = window.__contactDeclared(a, d, decl); Object.assign(row, { raw: c.raw, out: c.outside, conf: c.conflict, strike: c.strike, edge: c.edge, rl: c.recvLimb, rope: c.ropeOver });
         const chest = c.chest, el = a.skeleton.jointAttachmentPoints?.farElbow, wr = a.skeleton.jointAttachmentPoints?.farWrist;
         if (el) row.elbowGap = +Math.hypot(el.x - chest.x, el.y - chest.y).toFixed(1);
         if (wr) row.wristEdgeGap = +(c.edge - wr.y).toFixed(1);   // + = the wrist is above the receiver's far edge (on the mat beside him), - = inside his silhouette
         // lowest hand/forearm point vs the mat: the planted hand's y against the attacker's root y
     }
-    const dp = d.skeleton.jointAttachmentPoints ?? {};
+    const dp = d.skeleton.jointAttachmentPoints ?? {}; row.nAnk = dp.nearAnkle ? +dp.nearAnkle.y.toFixed(1) : null; row.fAnk = dp.farAnkle ? +dp.farAnkle.y.toFixed(1) : null;
     row.recvRest = Object.values(dp).filter(Boolean).length;
     window.__prev = cur;
     return row;
@@ -106,6 +107,13 @@ for (const pair of PAIRS) {
             const apexI = pre.reduce((m, r, i) => (r.hipY !== null && r.hipY < (pre[m].hipY ?? 1e9) ? i : m), 0) + TRIGGER_AT;
             const flightEnd = rows.findIndex(r => r.as === 'down');
             out.marks = { trigger: TRIGGER_AT, apex: apexI, flightEnd, hit: hitI, matLevel: rows.findIndex((r, i) => i >= TRIGGER_AT && r.hipH !== null && r.hipH <= 16 * 1.0 + 2 && r.as === 'down'), rolloff: rows.findIndex(r => r.ga !== null && r.ga >= 0.24) };
+            // T4.7c: the stop (hip px/frame over the last 4 frames before the hit, the hit frame and the 4 after, and the squash = how far the hip sinks past its height at the hit), the receiver's
+            // limbs against the attacker (px) and past the ropes (px), and the kicks (alternating upward swings of an ankle, > 8 px, after the curl)
+            const hip0 = rows[hitI]?.hipH ?? null;
+            out.stop = hitI < 0 ? null : { before: hv.slice(hitI - 4, hitI), at: hv[hitI], after: hv.slice(hitI + 1, hitI + 5), squash: +(hip0 - Math.min(...rows.slice(hitI, hitI + 8).map(r => r.hipH ?? hip0))).toFixed(1) };
+            const after = rows.slice(hitI + 1, hitI + 75), peaks = (k) => { const base = rows[hitI]?.[k]; let n = 0; for (let i = 8; i < after.length - 1; i++) { const v = base - after[i][k], p = base - after[i - 1][k], q = base - after[i + 1][k]; if (v > 8 && v >= p && v > q) n++; } return n; };
+            out.kicks = { near: peaks('nAnk'), far: peaks('fAnk') };
+            out.recvLimbPeak = Math.max(0, ...rows.slice(hitI).map(r => r.rl ?? 0)); out.ropeOverPeak = Math.max(0, ...rows.slice(hitI).map(r => r.rope ?? 0));
             out.descent = hv.slice(apexI, (hitI < 0 ? apexI : hitI) + 3);   // hip px/frame from the apex through the hit (down +)
             out.speedAtHandoff = flightEnd < 0 ? null : { before: hv.slice(Math.max(0, flightEnd - 4), flightEnd), at: hv[flightEnd], after: hv.slice(flightEnd + 1, flightEnd + 5) };
             results.push(out);

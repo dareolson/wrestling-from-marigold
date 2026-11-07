@@ -2429,10 +2429,11 @@ export default class Skeleton {
         let target = typeof poseName === 'object' ? poseName : Skeleton.GROUNDED_POSES[poseName] && Skeleton.lyingBase(poseName, this._falls);   // an object is a grounded pose itself (T4.7a ground attacks)
         if (!target) throw new RangeError(`unknown grounded pose "${poseName}"`);
         if (landing && !landingAfter) { target = { ...target }; for (const [c, v] of Object.entries(landing)) if (c in target) target[c] += v; }   // ?falls=v1: the landing's offsets ride the blend's target
-        const e = u <= 0 ? 0 : u >= 1 ? 1 : linear ? u : u * u * (3 - 2 * u);
+        const e = u <= 0 ? 0 : u >= 1 ? 1 : linear ? u : u * u * (3 - 2 * u);   // a linear FUNCTION gives each channel its own eased fraction (T4.7c: the arms lead the body); u is the body's
         const g = {};
         for (const key of Object.keys(target)) {
-            g[key] = Number.isFinite(from[key]) ? from[key] + (target[key] - from[key]) * e : target[key];
+            const ek = typeof linear === 'function' ? linear(key) : e;
+            g[key] = Number.isFinite(from[key]) ? from[key] + (target[key] - from[key]) * ek : target[key];
         }
         // landingAfter (PLAN_FALLS T2.4b): the offsets sit on the blended pose, so they keep their full size from contact
         if (landing && landingAfter) for (const [c, v] of Object.entries(landing)) if (c in g) g[c] += v;

@@ -12,8 +12,8 @@
         "frame": 9,
         "to": "collarTie",
         "weightAtSwap": 0.741,
-        "forearmStepPx": 17.7,
-        "forearmStepBeforePx": 27.4
+        "forearmStepPx": 2.4,
+        "forearmStepBeforePx": 16
       },
       {
         "man": "a",
@@ -21,8 +21,8 @@
         "frame": 10,
         "to": "elbowCup",
         "weightAtSwap": 0.55,
-        "forearmStepPx": 8.1,
-        "forearmStepBeforePx": 17.7
+        "forearmStepPx": 7.3,
+        "forearmStepBeforePx": 2.4
       },
       {
         "man": "a",
@@ -30,8 +30,8 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 24.6,
-        "forearmStepBeforePx": 48.7
+        "forearmStepPx": 40.8,
+        "forearmStepBeforePx": 33.1
       },
       {
         "man": "a",
@@ -39,17 +39,17 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 24.6,
-        "forearmStepBeforePx": 48.7
+        "forearmStepPx": 40.8,
+        "forearmStepBeforePx": 33.1
       },
       {
         "man": "d",
         "slot": "far",
         "frame": 12,
-        "to": "collarTie",
+        "to": "elbowCup",
         "weightAtSwap": 0.599,
-        "forearmStepPx": 32.1,
-        "forearmStepBeforePx": 53.6
+        "forearmStepPx": 137.4,
+        "forearmStepBeforePx": 37.9
       },
       {
         "man": "d",
@@ -57,8 +57,8 @@
         "frame": 14,
         "to": "elbowCup",
         "weightAtSwap": 0.648,
-        "forearmStepPx": 40.2,
-        "forearmStepBeforePx": 23.7
+        "forearmStepPx": 23.4,
+        "forearmStepBeforePx": 58.6
       },
       {
         "man": "d",
@@ -66,8 +66,8 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 44.2,
-        "forearmStepBeforePx": 8.3
+        "forearmStepPx": 57.2,
+        "forearmStepBeforePx": 46.9
       },
       {
         "man": "d",
@@ -75,33 +75,33 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 44.2,
-        "forearmStepBeforePx": 8.3
+        "forearmStepPx": 57.2,
+        "forearmStepBeforePx": 46.9
       }
     ],
     "palmMax": {
-      "a.collarTie": 0.25,
-      "a.elbowCup": 36.93,
-      "d.collarTie": 27.31,
-      "d.elbowCup": 6.03
+      "a.collarTie.near": 0.25,
+      "a.elbowCup.far": 26.7,
+      "d.elbowCup.far": 27.55,
+      "d.elbowCup.near": 1.79
     },
     "palmMean": {
-      "a.collarTie": 0.24,
-      "a.elbowCup": 35.74,
-      "d.collarTie": 27.22,
-      "d.elbowCup": 5.83
+      "a.collarTie.near": 0.24,
+      "a.elbowCup.far": 15.05,
+      "d.elbowCup.far": 18.22,
+      "d.elbowCup.near": 1.73
     },
     "wristMean": {
-      "a.collarTie": 5.4,
-      "a.elbowCup": 40.06,
-      "d.collarTie": 13.85,
-      "d.elbowCup": 16.26
+      "a.collarTie.near": 5.4,
+      "a.elbowCup.far": 15.57,
+      "d.elbowCup.far": 13.82,
+      "d.elbowCup.near": 16.26
     },
     "palmFrames": {
-      "a.collarTie": 73,
-      "a.elbowCup": 72,
-      "d.collarTie": 70,
-      "d.elbowCup": 68
+      "a.collarTie.near": 73,
+      "a.elbowCup.far": 72,
+      "d.elbowCup.far": 70,
+      "d.elbowCup.near": 68
     }
   },
   "lou-george-right-waistlock": {
@@ -118,8 +118,8 @@
         "frame": 9,
         "to": "collarTie",
         "weightAtSwap": 0.741,
-        "forearmStepPx": 9.6,
-        "forearmStepBeforePx": 27.2
+        "forearmStepPx": 4.2,
+        "forearmStepBeforePx": 12.5
       },
       {
         "man": "a",
@@ -127,8 +127,8 @@
         "frame": 10,
         "to": "elbowCup",
         "weightAtSwap": 0.55,
-        "forearmStepPx": 8.8,
-        "forearmStepBeforePx": 9.6
+        "forearmStepPx": 5,
+        "forearmStepBeforePx": 4.2
       },
       {
         "man": "a",
@@ -137,7 +137,7 @@
         "to": "base",
         "weightAtSwap": 1,
         "forearmStepPx": 3.2,
-        "forearmStepBeforePx": 1.1
+        "forearmStepBeforePx": 1.3
       },
       {
         "man": "a",
@@ -146,7 +146,7 @@
         "to": "base",
         "weightAtSwap": 1,
         "forearmStepPx": 3.2,
-        "forearmStepBeforePx": 1.1
+        "forearmStepBeforePx": 1.3
       },
       {
         "man": "a",
@@ -170,10 +170,10 @@
         "man": "d",
         "slot": "far",
         "frame": 12,
-        "to": "collarTie",
+        "to": "elbowCup",
         "weightAtSwap": 0.599,
-        "forearmStepPx": 33.4,
-        "forearmStepBeforePx": 52
+        "forearmStepPx": 139.1,
+        "forearmStepBeforePx": 37.8
       },
       {
         "man": "d",
@@ -181,8 +181,8 @@
         "frame": 14,
         "to": "elbowCup",
         "weightAtSwap": 0.648,
-        "forearmStepPx": 40.2,
-        "forearmStepBeforePx": 23.7
+        "forearmStepPx": 74.8,
+        "forearmStepBeforePx": 57
       },
       {
         "man": "d",
@@ -190,8 +190,8 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 6.9,
-        "forearmStepBeforePx": 1.2
+        "forearmStepPx": 6.4,
+        "forearmStepBeforePx": 1.7
       },
       {
         "man": "d",
@@ -199,37 +199,37 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 6.9,
-        "forearmStepBeforePx": 1.2
+        "forearmStepPx": 6.4,
+        "forearmStepBeforePx": 1.7
       }
     ],
     "palmMax": {
-      "a.collarTie": 0.35,
-      "a.elbowCup": 36.6,
-      "d.collarTie": 27.24,
-      "d.elbowCup": 6.04,
-      "a.waistClasp": 3.69
+      "a.collarTie.near": 0.35,
+      "a.elbowCup.far": 27.24,
+      "d.elbowCup.far": 27.52,
+      "d.elbowCup.near": 1.79,
+      "a.waistClasp.near": 3.69
     },
     "palmMean": {
-      "a.collarTie": 0.23,
-      "a.elbowCup": 34.02,
-      "d.collarTie": 27.12,
-      "d.elbowCup": 5.99,
-      "a.waistClasp": 2.32
+      "a.collarTie.near": 0.23,
+      "a.elbowCup.far": 10.53,
+      "d.elbowCup.far": 7.98,
+      "d.elbowCup.near": 1.77,
+      "a.waistClasp.near": 2.32
     },
     "wristMean": {
-      "a.collarTie": 5.4,
-      "a.elbowCup": 38.22,
-      "d.collarTie": 13.83,
-      "d.elbowCup": 16.26,
-      "a.waistClasp": 4.72
+      "a.collarTie.near": 5.4,
+      "a.elbowCup.far": 10.18,
+      "d.elbowCup.far": 13.79,
+      "d.elbowCup.near": 16.26,
+      "a.waistClasp.near": 4.72
     },
     "palmFrames": {
-      "a.collarTie": 29,
-      "a.elbowCup": 28,
-      "d.collarTie": 26,
-      "d.elbowCup": 24,
-      "a.waistClasp": 98
+      "a.collarTie.near": 29,
+      "a.elbowCup.far": 28,
+      "d.elbowCup.far": 26,
+      "d.elbowCup.near": 24,
+      "a.waistClasp.near": 98
     }
   },
   "lou-george-left-lockup": {
@@ -245,8 +245,8 @@
         "frame": 9,
         "to": "collarTie",
         "weightAtSwap": 0.741,
-        "forearmStepPx": 12.3,
-        "forearmStepBeforePx": 27.4
+        "forearmStepPx": 3.9,
+        "forearmStepBeforePx": 12.3
       },
       {
         "man": "a",
@@ -254,8 +254,8 @@
         "frame": 10,
         "to": "elbowCup",
         "weightAtSwap": 0.55,
-        "forearmStepPx": 8.5,
-        "forearmStepBeforePx": 12.3
+        "forearmStepPx": 4.6,
+        "forearmStepBeforePx": 3.9
       },
       {
         "man": "a",
@@ -263,8 +263,8 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 24.6,
-        "forearmStepBeforePx": 48.7
+        "forearmStepPx": 41,
+        "forearmStepBeforePx": 33.6
       },
       {
         "man": "a",
@@ -272,17 +272,17 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 24.6,
-        "forearmStepBeforePx": 48.7
+        "forearmStepPx": 41,
+        "forearmStepBeforePx": 33.6
       },
       {
         "man": "d",
         "slot": "far",
         "frame": 12,
-        "to": "collarTie",
+        "to": "elbowCup",
         "weightAtSwap": 0.599,
-        "forearmStepPx": 33,
-        "forearmStepBeforePx": 52.4
+        "forearmStepPx": 139.3,
+        "forearmStepBeforePx": 39.2
       },
       {
         "man": "d",
@@ -290,8 +290,8 @@
         "frame": 14,
         "to": "elbowCup",
         "weightAtSwap": 0.648,
-        "forearmStepPx": 40.2,
-        "forearmStepBeforePx": 23.7
+        "forearmStepPx": 24.6,
+        "forearmStepBeforePx": 57.4
       },
       {
         "man": "d",
@@ -299,8 +299,8 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 44.2,
-        "forearmStepBeforePx": 8.3
+        "forearmStepPx": 57.4,
+        "forearmStepBeforePx": 47
       },
       {
         "man": "d",
@@ -308,33 +308,33 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 44.2,
-        "forearmStepBeforePx": 8.3
+        "forearmStepPx": 57.4,
+        "forearmStepBeforePx": 47
       }
     ],
     "palmMax": {
-      "a.collarTie": 0.29,
-      "a.elbowCup": 36.88,
-      "d.collarTie": 27.31,
-      "d.elbowCup": 6.04
+      "a.collarTie.near": 0.29,
+      "a.elbowCup.far": 27.46,
+      "d.elbowCup.far": 27.56,
+      "d.elbowCup.near": 1.79
     },
     "palmMean": {
-      "a.collarTie": 0.24,
-      "a.elbowCup": 35.68,
-      "d.collarTie": 27.22,
-      "d.elbowCup": 5.84
+      "a.collarTie.near": 0.24,
+      "a.elbowCup.far": 14.74,
+      "d.elbowCup.far": 18.24,
+      "d.elbowCup.near": 1.73
     },
     "wristMean": {
-      "a.collarTie": 5.4,
-      "a.elbowCup": 40.01,
-      "d.collarTie": 13.85,
-      "d.elbowCup": 16.26
+      "a.collarTie.near": 5.4,
+      "a.elbowCup.far": 15.24,
+      "d.elbowCup.far": 13.82,
+      "d.elbowCup.near": 16.26
     },
     "palmFrames": {
-      "a.collarTie": 73,
-      "a.elbowCup": 72,
-      "d.collarTie": 70,
-      "d.elbowCup": 68
+      "a.collarTie.near": 73,
+      "a.elbowCup.far": 72,
+      "d.elbowCup.far": 70,
+      "d.elbowCup.near": 68
     }
   },
   "lou-george-left-waistlock": {
@@ -351,8 +351,8 @@
         "frame": 9,
         "to": "collarTie",
         "weightAtSwap": 0.741,
-        "forearmStepPx": 9.6,
-        "forearmStepBeforePx": 27.2
+        "forearmStepPx": 4.2,
+        "forearmStepBeforePx": 12.5
       },
       {
         "man": "a",
@@ -360,8 +360,8 @@
         "frame": 10,
         "to": "elbowCup",
         "weightAtSwap": 0.55,
-        "forearmStepPx": 8.8,
-        "forearmStepBeforePx": 9.6
+        "forearmStepPx": 5,
+        "forearmStepBeforePx": 4.2
       },
       {
         "man": "a",
@@ -370,7 +370,7 @@
         "to": "base",
         "weightAtSwap": 1,
         "forearmStepPx": 3.2,
-        "forearmStepBeforePx": 1.1
+        "forearmStepBeforePx": 1.3
       },
       {
         "man": "a",
@@ -379,7 +379,7 @@
         "to": "base",
         "weightAtSwap": 1,
         "forearmStepPx": 3.2,
-        "forearmStepBeforePx": 1.1
+        "forearmStepBeforePx": 1.3
       },
       {
         "man": "a",
@@ -403,10 +403,10 @@
         "man": "d",
         "slot": "far",
         "frame": 12,
-        "to": "collarTie",
+        "to": "elbowCup",
         "weightAtSwap": 0.599,
-        "forearmStepPx": 33.4,
-        "forearmStepBeforePx": 52
+        "forearmStepPx": 139.1,
+        "forearmStepBeforePx": 37.8
       },
       {
         "man": "d",
@@ -414,8 +414,8 @@
         "frame": 14,
         "to": "elbowCup",
         "weightAtSwap": 0.648,
-        "forearmStepPx": 40.2,
-        "forearmStepBeforePx": 23.7
+        "forearmStepPx": 74.8,
+        "forearmStepBeforePx": 57
       },
       {
         "man": "d",
@@ -423,8 +423,8 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 6.9,
-        "forearmStepBeforePx": 1.2
+        "forearmStepPx": 6.4,
+        "forearmStepBeforePx": 1.7
       },
       {
         "man": "d",
@@ -432,37 +432,37 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 6.9,
-        "forearmStepBeforePx": 1.2
+        "forearmStepPx": 6.4,
+        "forearmStepBeforePx": 1.7
       }
     ],
     "palmMax": {
-      "a.collarTie": 0.35,
-      "a.elbowCup": 36.6,
-      "d.collarTie": 27.24,
-      "d.elbowCup": 6.04,
-      "a.waistClasp": 3.69
+      "a.collarTie.near": 0.35,
+      "a.elbowCup.far": 27.24,
+      "d.elbowCup.far": 27.52,
+      "d.elbowCup.near": 1.79,
+      "a.waistClasp.near": 3.69
     },
     "palmMean": {
-      "a.collarTie": 0.23,
-      "a.elbowCup": 34.02,
-      "d.collarTie": 27.12,
-      "d.elbowCup": 5.99,
-      "a.waistClasp": 2.32
+      "a.collarTie.near": 0.23,
+      "a.elbowCup.far": 10.53,
+      "d.elbowCup.far": 7.98,
+      "d.elbowCup.near": 1.77,
+      "a.waistClasp.near": 2.32
     },
     "wristMean": {
-      "a.collarTie": 5.4,
-      "a.elbowCup": 38.22,
-      "d.collarTie": 13.83,
-      "d.elbowCup": 16.26,
-      "a.waistClasp": 4.72
+      "a.collarTie.near": 5.4,
+      "a.elbowCup.far": 10.18,
+      "d.elbowCup.far": 13.79,
+      "d.elbowCup.near": 16.26,
+      "a.waistClasp.near": 4.72
     },
     "palmFrames": {
-      "a.collarTie": 29,
-      "a.elbowCup": 28,
-      "d.collarTie": 26,
-      "d.elbowCup": 24,
-      "a.waistClasp": 98
+      "a.collarTie.near": 29,
+      "a.elbowCup.far": 28,
+      "d.elbowCup.far": 26,
+      "d.elbowCup.near": 24,
+      "a.waistClasp.near": 98
     }
   },
   "george-lou-right-lockup": {
@@ -478,8 +478,8 @@
         "frame": 9,
         "to": "collarTie",
         "weightAtSwap": 0.741,
-        "forearmStepPx": 15.6,
-        "forearmStepBeforePx": 21
+        "forearmStepPx": 9.7,
+        "forearmStepBeforePx": 14.6
       },
       {
         "man": "a",
@@ -487,8 +487,8 @@
         "frame": 10,
         "to": "elbowCup",
         "weightAtSwap": 0.55,
-        "forearmStepPx": 34.1,
-        "forearmStepBeforePx": 15.6
+        "forearmStepPx": 35.6,
+        "forearmStepBeforePx": 9.7
       },
       {
         "man": "a",
@@ -496,8 +496,8 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 30.6,
-        "forearmStepBeforePx": 24.8
+        "forearmStepPx": 94.4,
+        "forearmStepBeforePx": 57.1
       },
       {
         "man": "a",
@@ -505,17 +505,17 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 30.6,
-        "forearmStepBeforePx": 24.8
+        "forearmStepPx": 94.4,
+        "forearmStepBeforePx": 57.1
       },
       {
         "man": "d",
         "slot": "far",
         "frame": 12,
-        "to": "collarTie",
+        "to": "elbowCup",
         "weightAtSwap": 0.599,
-        "forearmStepPx": 29.6,
-        "forearmStepBeforePx": 25.4
+        "forearmStepPx": 97.6,
+        "forearmStepBeforePx": 44.6
       },
       {
         "man": "d",
@@ -523,8 +523,8 @@
         "frame": 14,
         "to": "elbowCup",
         "weightAtSwap": 0.648,
-        "forearmStepPx": 11.4,
-        "forearmStepBeforePx": 24.6
+        "forearmStepPx": 33.7,
+        "forearmStepBeforePx": 65.4
       },
       {
         "man": "d",
@@ -532,8 +532,8 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 20.1,
-        "forearmStepBeforePx": 11.5
+        "forearmStepPx": 81.9,
+        "forearmStepBeforePx": 58
       },
       {
         "man": "d",
@@ -541,33 +541,33 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 20.1,
-        "forearmStepBeforePx": 11.5
+        "forearmStepPx": 81.9,
+        "forearmStepBeforePx": 58
       }
     ],
     "palmMax": {
-      "a.collarTie": 27.82,
-      "a.elbowCup": 10.29,
-      "d.collarTie": 0.15,
-      "d.elbowCup": 4.97
+      "a.collarTie.near": 27.65,
+      "a.elbowCup.far": 28.22,
+      "d.elbowCup.far": 2.51,
+      "d.elbowCup.near": 5.02
     },
     "palmMean": {
-      "a.collarTie": 27.36,
-      "a.elbowCup": 0.98,
-      "d.collarTie": 0.11,
-      "d.elbowCup": 4.92
+      "a.collarTie.near": 26.72,
+      "a.elbowCup.far": 19.87,
+      "d.elbowCup.far": 1.53,
+      "d.elbowCup.near": 5
     },
     "wristMean": {
-      "a.collarTie": 16.3,
-      "a.elbowCup": 13.11,
-      "d.collarTie": 4.59,
-      "d.elbowCup": 5.21
+      "a.collarTie.near": 16.3,
+      "a.elbowCup.far": 13.3,
+      "d.elbowCup.far": 4.43,
+      "d.elbowCup.near": 5.21
     },
     "palmFrames": {
-      "a.collarTie": 73,
-      "a.elbowCup": 72,
-      "d.collarTie": 70,
-      "d.elbowCup": 68
+      "a.collarTie.near": 73,
+      "a.elbowCup.far": 72,
+      "d.elbowCup.far": 70,
+      "d.elbowCup.near": 68
     }
   },
   "george-lou-right-waistlock": {
@@ -584,8 +584,8 @@
         "frame": 9,
         "to": "collarTie",
         "weightAtSwap": 0.741,
-        "forearmStepPx": 7.9,
-        "forearmStepBeforePx": 27.1
+        "forearmStepPx": 5.6,
+        "forearmStepBeforePx": 11.8
       },
       {
         "man": "a",
@@ -593,8 +593,8 @@
         "frame": 10,
         "to": "elbowCup",
         "weightAtSwap": 0.55,
-        "forearmStepPx": 18.8,
-        "forearmStepBeforePx": 7.9
+        "forearmStepPx": 32.9,
+        "forearmStepBeforePx": 5.6
       },
       {
         "man": "a",
@@ -602,8 +602,8 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 6.6,
-        "forearmStepBeforePx": 1.3
+        "forearmStepPx": 5.6,
+        "forearmStepBeforePx": 1.6
       },
       {
         "man": "a",
@@ -611,8 +611,8 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 6.6,
-        "forearmStepBeforePx": 1.3
+        "forearmStepPx": 5.6,
+        "forearmStepBeforePx": 1.6
       },
       {
         "man": "a",
@@ -636,10 +636,10 @@
         "man": "d",
         "slot": "far",
         "frame": 12,
-        "to": "collarTie",
+        "to": "elbowCup",
         "weightAtSwap": 0.599,
-        "forearmStepPx": 38.5,
-        "forearmStepBeforePx": 25.7
+        "forearmStepPx": 98.5,
+        "forearmStepBeforePx": 47.2
       },
       {
         "man": "d",
@@ -647,8 +647,8 @@
         "frame": 14,
         "to": "elbowCup",
         "weightAtSwap": 0.648,
-        "forearmStepPx": 11.1,
-        "forearmStepBeforePx": 17
+        "forearmStepPx": 32.4,
+        "forearmStepBeforePx": 54
       },
       {
         "man": "d",
@@ -656,8 +656,8 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 3.5,
-        "forearmStepBeforePx": 1.2
+        "forearmStepPx": 4,
+        "forearmStepBeforePx": 1.7
       },
       {
         "man": "d",
@@ -665,37 +665,37 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 3.5,
-        "forearmStepBeforePx": 1.2
+        "forearmStepPx": 4,
+        "forearmStepBeforePx": 1.7
       }
     ],
     "palmMax": {
-      "a.collarTie": 27.78,
-      "a.elbowCup": 10.36,
-      "d.collarTie": 0.14,
-      "d.elbowCup": 4.9,
-      "a.waistClasp": 11.67
+      "a.collarTie.near": 27.61,
+      "a.elbowCup.far": 39.15,
+      "d.elbowCup.far": 2.57,
+      "d.elbowCup.near": 5,
+      "a.waistClasp.near": 11.67
     },
     "palmMean": {
-      "a.collarTie": 26.09,
-      "a.elbowCup": 1.32,
-      "d.collarTie": 0.11,
-      "d.elbowCup": 4.86,
-      "a.waistClasp": 11.65
+      "a.collarTie.near": 25.13,
+      "a.elbowCup.far": 8.36,
+      "d.elbowCup.far": 0.88,
+      "d.elbowCup.near": 5,
+      "a.waistClasp.near": 11.65
     },
     "wristMean": {
-      "a.collarTie": 16.3,
-      "a.elbowCup": 12.81,
-      "d.collarTie": 4.59,
-      "d.elbowCup": 5.22,
-      "a.waistClasp": 16.21
+      "a.collarTie.near": 16.3,
+      "a.elbowCup.far": 12.97,
+      "d.elbowCup.far": 4.43,
+      "d.elbowCup.near": 5.21,
+      "a.waistClasp.near": 16.21
     },
     "palmFrames": {
-      "a.collarTie": 29,
-      "a.elbowCup": 28,
-      "d.collarTie": 26,
-      "d.elbowCup": 24,
-      "a.waistClasp": 98
+      "a.collarTie.near": 29,
+      "a.elbowCup.far": 28,
+      "d.elbowCup.far": 26,
+      "d.elbowCup.near": 24,
+      "a.waistClasp.near": 98
     }
   },
   "george-lou-left-lockup": {
@@ -711,8 +711,8 @@
         "frame": 9,
         "to": "collarTie",
         "weightAtSwap": 0.741,
-        "forearmStepPx": 8,
-        "forearmStepBeforePx": 24
+        "forearmStepPx": 5.6,
+        "forearmStepBeforePx": 11.9
       },
       {
         "man": "a",
@@ -720,8 +720,8 @@
         "frame": 10,
         "to": "elbowCup",
         "weightAtSwap": 0.55,
-        "forearmStepPx": 20.5,
-        "forearmStepBeforePx": 8
+        "forearmStepPx": 33.2,
+        "forearmStepBeforePx": 5.6
       },
       {
         "man": "a",
@@ -729,8 +729,8 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 30.7,
-        "forearmStepBeforePx": 24.8
+        "forearmStepPx": 94.3,
+        "forearmStepBeforePx": 57.3
       },
       {
         "man": "a",
@@ -738,17 +738,17 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 30.7,
-        "forearmStepBeforePx": 24.8
+        "forearmStepPx": 94.3,
+        "forearmStepBeforePx": 57.3
       },
       {
         "man": "d",
         "slot": "far",
         "frame": 12,
-        "to": "collarTie",
+        "to": "elbowCup",
         "weightAtSwap": 0.599,
-        "forearmStepPx": 38.3,
-        "forearmStepBeforePx": 25.7
+        "forearmStepPx": 98.4,
+        "forearmStepBeforePx": 46.9
       },
       {
         "man": "d",
@@ -756,8 +756,8 @@
         "frame": 14,
         "to": "elbowCup",
         "weightAtSwap": 0.648,
-        "forearmStepPx": 11.1,
-        "forearmStepBeforePx": 17.1
+        "forearmStepPx": 32.7,
+        "forearmStepBeforePx": 64.8
       },
       {
         "man": "d",
@@ -765,8 +765,8 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 20.1,
-        "forearmStepBeforePx": 11.5
+        "forearmStepPx": 81.8,
+        "forearmStepBeforePx": 58.1
       },
       {
         "man": "d",
@@ -774,33 +774,33 @@
         "frame": 87,
         "to": "base",
         "weightAtSwap": 0.5,
-        "forearmStepPx": 20.1,
-        "forearmStepBeforePx": 11.5
+        "forearmStepPx": 81.8,
+        "forearmStepBeforePx": 58.1
       }
     ],
     "palmMax": {
-      "a.collarTie": 27.79,
-      "a.elbowCup": 10.36,
-      "d.collarTie": 0.15,
-      "d.elbowCup": 4.95
+      "a.collarTie.near": 27.62,
+      "a.elbowCup.far": 28.14,
+      "d.elbowCup.far": 2.55,
+      "d.elbowCup.near": 5
     },
     "palmMean": {
-      "a.collarTie": 27.09,
-      "a.elbowCup": 0.99,
-      "d.collarTie": 0.11,
-      "d.elbowCup": 4.91
+      "a.collarTie.near": 26.56,
+      "a.elbowCup.far": 19.81,
+      "d.elbowCup.far": 1.53,
+      "d.elbowCup.near": 4.98
     },
     "wristMean": {
-      "a.collarTie": 16.3,
-      "a.elbowCup": 13.11,
-      "d.collarTie": 4.59,
-      "d.elbowCup": 5.21
+      "a.collarTie.near": 16.3,
+      "a.elbowCup.far": 13.25,
+      "d.elbowCup.far": 4.43,
+      "d.elbowCup.near": 5.21
     },
     "palmFrames": {
-      "a.collarTie": 73,
-      "a.elbowCup": 72,
-      "d.collarTie": 70,
-      "d.elbowCup": 68
+      "a.collarTie.near": 73,
+      "a.elbowCup.far": 72,
+      "d.elbowCup.far": 70,
+      "d.elbowCup.near": 68
     }
   },
   "george-lou-left-waistlock": {
@@ -817,8 +817,8 @@
         "frame": 9,
         "to": "collarTie",
         "weightAtSwap": 0.741,
-        "forearmStepPx": 7.9,
-        "forearmStepBeforePx": 27.1
+        "forearmStepPx": 5.6,
+        "forearmStepBeforePx": 11.8
       },
       {
         "man": "a",
@@ -826,8 +826,8 @@
         "frame": 10,
         "to": "elbowCup",
         "weightAtSwap": 0.55,
-        "forearmStepPx": 18.8,
-        "forearmStepBeforePx": 7.9
+        "forearmStepPx": 32.9,
+        "forearmStepBeforePx": 5.6
       },
       {
         "man": "a",
@@ -835,8 +835,8 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 6.6,
-        "forearmStepBeforePx": 1.3
+        "forearmStepPx": 5.6,
+        "forearmStepBeforePx": 1.6
       },
       {
         "man": "a",
@@ -844,8 +844,8 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 6.6,
-        "forearmStepBeforePx": 1.3
+        "forearmStepPx": 5.6,
+        "forearmStepBeforePx": 1.6
       },
       {
         "man": "a",
@@ -869,10 +869,10 @@
         "man": "d",
         "slot": "far",
         "frame": 12,
-        "to": "collarTie",
+        "to": "elbowCup",
         "weightAtSwap": 0.599,
-        "forearmStepPx": 38.5,
-        "forearmStepBeforePx": 25.7
+        "forearmStepPx": 98.5,
+        "forearmStepBeforePx": 47.2
       },
       {
         "man": "d",
@@ -880,8 +880,8 @@
         "frame": 14,
         "to": "elbowCup",
         "weightAtSwap": 0.648,
-        "forearmStepPx": 11.1,
-        "forearmStepBeforePx": 17
+        "forearmStepPx": 32.4,
+        "forearmStepBeforePx": 54
       },
       {
         "man": "d",
@@ -889,8 +889,8 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 3.5,
-        "forearmStepBeforePx": 1.2
+        "forearmStepPx": 4,
+        "forearmStepBeforePx": 1.7
       },
       {
         "man": "d",
@@ -898,37 +898,37 @@
         "frame": 40,
         "to": "base",
         "weightAtSwap": 1,
-        "forearmStepPx": 3.5,
-        "forearmStepBeforePx": 1.2
+        "forearmStepPx": 4,
+        "forearmStepBeforePx": 1.7
       }
     ],
     "palmMax": {
-      "a.collarTie": 27.78,
-      "a.elbowCup": 10.36,
-      "d.collarTie": 0.14,
-      "d.elbowCup": 4.9,
-      "a.waistClasp": 11.67
+      "a.collarTie.near": 27.61,
+      "a.elbowCup.far": 39.15,
+      "d.elbowCup.far": 2.57,
+      "d.elbowCup.near": 5,
+      "a.waistClasp.near": 11.67
     },
     "palmMean": {
-      "a.collarTie": 26.09,
-      "a.elbowCup": 1.32,
-      "d.collarTie": 0.11,
-      "d.elbowCup": 4.86,
-      "a.waistClasp": 11.65
+      "a.collarTie.near": 25.13,
+      "a.elbowCup.far": 8.36,
+      "d.elbowCup.far": 0.88,
+      "d.elbowCup.near": 5,
+      "a.waistClasp.near": 11.65
     },
     "wristMean": {
-      "a.collarTie": 16.3,
-      "a.elbowCup": 12.81,
-      "d.collarTie": 4.59,
-      "d.elbowCup": 5.22,
-      "a.waistClasp": 16.21
+      "a.collarTie.near": 16.3,
+      "a.elbowCup.far": 12.97,
+      "d.elbowCup.far": 4.43,
+      "d.elbowCup.near": 5.21,
+      "a.waistClasp.near": 16.21
     },
     "palmFrames": {
-      "a.collarTie": 29,
-      "a.elbowCup": 28,
-      "d.collarTie": 26,
-      "d.elbowCup": 24,
-      "a.waistClasp": 98
+      "a.collarTie.near": 29,
+      "a.elbowCup.far": 28,
+      "d.elbowCup.far": 26,
+      "d.elbowCup.near": 24,
+      "a.waistClasp.near": 98
     }
   }
 }

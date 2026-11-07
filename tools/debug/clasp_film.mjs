@@ -25,6 +25,7 @@ async function run(h, { facing, kind, dir }) {
     }
 }
 for (const [which, url] of [['revised', process.env.WFM_URL], ['before', process.env.WFM_BASE]]) {
+    if (!url || (which === 'before' && process.env.ONLY_REVISED)) continue;
     process.env.WFM_URL = url;
     for (const [pair, att, def] of PAIRS) {
         process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = 'notitle=1&grapples=v1&waistlock=v1';

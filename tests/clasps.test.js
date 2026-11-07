@@ -22,7 +22,8 @@ test('the lockup, the waistlock and its far hand: which grip carries which clasp
     const man = (facing) => ({ facing, s: 1, skeleton: { lChannelSide: () => 'near', jointAttachmentPoints: { neck: { x: 0, y: 0 } } } });
     const a = man(1), d = man(-1);
     const l = lockupGrips(a, d, { attacker: { collar: 1, elbow: 1 }, defender: { collar: 1, elbow: 1 } });
-    for (const role of ['attacker', 'defender']) assert.deepEqual(l[role].map(i => i.clasp).sort(), ['collarTie', 'elbowCup']);
+    assert.deepEqual(l.attacker.map(i => i.clasp).sort(), ['collarTie', 'elbowCup']);
+    assert.deepEqual(l.defender.map(i => i.clasp), ['elbowCup', 'elbowCup'], 'the tied-up man holds the attacker\'s arm with both hands');
     const waist = { skeleton: { jointAttachmentPoints: { nearHip: { x: 0, y: 0 }, farHip: { x: 0, y: 0 }, neck: { x: 0, y: -50 } }, lChannelSide: () => 'near' }, facing: 1, s: 1 };
     const w = waistlockGrips(a, waist, { attacker: { near: 1, far: 1 }, defender: { pry: 1 } });
     assert.deepEqual(w.attacker.map(i => i.clasp ?? null), ['waistClasp', null], 'the near hand clasps; the far hand is already hidden behind the defender');

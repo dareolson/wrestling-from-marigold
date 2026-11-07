@@ -260,16 +260,19 @@ export function lockupGrips(attacker, defender, grips) {
         const s = partner.s ?? 1;
         return { x: neck.x - partner.facing * LOCKUP.collarBack * s, y: neck.y + LOCKUP.collarDrop * s };
     };
-    const list = (actor, partner, g, collarArm, elbowArm) => {
+    // `holdArm`: the man tied up (the defender) has nothing to collar-tie, his hand reaching the attacker's neck floated in the air (Derek G2,
+    // 2026-11-07), so his second hand takes hold of the attacker's elbow on its own side (past it, onto the forearm), as his other hand does.
+    const list = (actor, partner, g, collarArm, elbowArm, holdArm = false) => {
         const out = [];
         const at = collarAt(partner);
-        if (at && g.collar > 0) out.push({ arm: collarArm, partner, joint: 'Neck', side: 'same', at, w: g.collar, clasp: 'collarTie' });
+        if (holdArm) { if (g.collar > 0) out.push({ arm: collarArm, partner, joint: 'Elbow', side: 'same', above: LOCKUP.elbowCup, w: g.collar, clasp: 'elbowCup' }); }
+        else if (at && g.collar > 0) out.push({ arm: collarArm, partner, joint: 'Neck', side: 'same', at, w: g.collar, clasp: 'collarTie' });
         if (g.elbow > 0) out.push({ arm: elbowArm, partner, joint: 'Elbow', side: 'same', above: LOCKUP.elbowCup, w: g.elbow, clasp: 'elbowCup' });
         return out;
     };
     return {
         attacker: list(attacker, defender, grips.attacker, nearArm(attacker), farArm(attacker)),
-        defender: list(defender, attacker, grips.defender, farArm(defender), nearArm(defender)),
+        defender: list(defender, attacker, grips.defender, farArm(defender), nearArm(defender), true),
     };
 }
 

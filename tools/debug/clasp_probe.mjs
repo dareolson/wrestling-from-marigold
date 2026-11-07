@@ -27,7 +27,7 @@ const READ = async () => {
             const side = item.arm === 'l' ? sk.lChannelSide(w.facing) : (sk.lChannelSide(w.facing) === 'near' ? 'far' : 'near');
             const img = sk[`${side}Forearm`], P = sk.constructor.imageAnchorPoint(img, img?._semanticAnchors?.clutch), T = gripTarget(item, side), W = sk.jointAttachmentPoints[`${side}Wrist`];
             const on = st[`${side}Forearm`] === item.clasp;
-            out.palm[`${id}.${item.clasp}`] = { w: +item.w.toFixed(3), on, palm: on && P && T ? +Math.hypot(P.x - T.x, P.y - T.y).toFixed(2) : null, wrist: W && T ? +Math.hypot(W.x - T.x, W.y - T.y).toFixed(2) : null };
+            out.palm[`${id}.${item.clasp}.${side}`] = { w: +item.w.toFixed(3), on, palm: on && P && T ? +Math.hypot(P.x - T.x, P.y - T.y).toFixed(2) : null, wrist: W && T ? +Math.hypot(W.x - T.x, W.y - T.y).toFixed(2) : null };
         }
     }
     return out;
@@ -60,7 +60,7 @@ for (const [pair, att, def] of PAIRS) {
                 if (was === now) continue;
                 const key = Object.keys(rows[k].palm).find(x => x.startsWith(m + '.') && rows[k].palm[x]) ?? null;
                 const prev = Object.entries(rows[k - 1].palm).find(([x, v]) => x.startsWith(m + '.') && x.endsWith(now !== 'base' ? now : was));
-                const wgt = (now !== 'base' ? rows[k].palm[`${m}.${now}`] : rows[k - 1].palm[`${m}.${was}`])?.w ?? null;
+                const wgt = (now !== 'base' ? rows[k].palm[`${m}.${now}.${slot}`] : rows[k - 1].palm[`${m}.${was}.${slot}`])?.w ?? null;
                 rec.swaps.push({ man: m, slot, frame: k, to: now, weightAtSwap: wgt, forearmStepPx: +step(rows[k - 1][m === 'a' ? 'rowA' : 'rowD'], rows[k][m === 'a' ? 'rowA' : 'rowD'], /forearm/i).toFixed(1), forearmStepBeforePx: k > 1 ? +step(rows[k - 2][m === 'a' ? 'rowA' : 'rowD'], rows[k - 1][m === 'a' ? 'rowA' : 'rowD'], /forearm/i).toFixed(1) : null });
                 if (now !== 'base' && wgt !== null && wgt < 0.5) fail(`${id}: ${m} swapped to ${now} at weight ${wgt}`);
             }

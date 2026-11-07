@@ -22,7 +22,7 @@ test('the attacker\'s collar and elbow land before the defender\'s', () => {
     }
 });
 
-test('D4 sides in both facings: attacker near arm on the collar, far arm on the far elbow; defender far arm on the collar, near arm on the near elbow', () => {
+test('D4 sides in both facings: attacker near arm on the collar, far arm on the far elbow; the defender holds the attacker\'s arm with both hands (Derek G2: nothing to collar-tie, so his hand floated): far arm on the far elbow, near arm on the near elbow', () => {
     const grips = { attacker: { collar: 1, elbow: 1 }, defender: { collar: 1, elbow: 1 } };
     for (const lSide of ['near', 'far']) {
         for (const facing of [1, -1]) {
@@ -32,11 +32,11 @@ test('D4 sides in both facings: attacker near arm on the collar, far arm on the 
             const by = (list, joint) => list.find(g => g.joint === joint);
             assert.equal(by(attacker, 'Neck').arm, nearCh);
             assert.equal(by(attacker, 'Elbow').arm, farCh);
-            assert.equal(by(defender, 'Neck').arm, farCh);
-            assert.equal(by(defender, 'Elbow').arm, nearCh);
+            assert.equal(by(defender, 'Neck'), undefined, 'the defender has no collar tie');
+            assert.deepEqual(defender.map(g => [g.arm, g.joint, g.side]).sort(), [[farCh, 'Elbow', 'same'], [nearCh, 'Elbow', 'same']].sort());
             assert.equal(by(attacker, 'Elbow').side, 'same');
             assert.equal(by(attacker, 'Neck').partner, d);
-            assert.equal(by(defender, 'Neck').partner, a);
+            assert.ok(defender.every(g => g.partner === a));
         }
     }
 });

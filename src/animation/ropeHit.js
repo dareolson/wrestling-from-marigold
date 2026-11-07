@@ -40,9 +40,9 @@ export function ropeHitAt(ms, stamina) {
     return { phase: 'done', offset: 0, tension: 0 };
 }
 
-// Pose channels for the hit (T3d.3): shoulders back past the hips into the rope, hips sunk, elbows tucked with the hands at the ribs;
+// Pose channels for the hit (T3d.3): shoulders back past the hips into the rope, hips sunk, elbows down against the ribs (the upper arms are set back to cancel the torso's lean, so they hang) and the forearms up in a guard;
 // then folded forward, the arms giving a little and swinging free.
-const LOAD = { bend: -0.52, lArm: 0.22, rArm: 0.16, lElbow: 1.9, rElbow: 1.85, crouch: 0.22, lLeg: -0.2, rLeg: 0.24 };
+const LOAD = { bend: -0.52, lArm: -0.35, rArm: -0.4, lElbow: 2.0, rElbow: 1.95, crouch: 0.22, lLeg: -0.2, rLeg: 0.24 };
 const SPRING = { bend: 0.34, lArm: -0.25, rArm: 0.3, lElbow: 1.0, rElbow: 0.9, crouch: 0.2, lLeg: 0.24, rLeg: -0.2 };
 export const ELBOW_REST = 0.70; // a channel the pose has never carried starts from the rest flex
 export function ropeHitPose(ms, stamina) {

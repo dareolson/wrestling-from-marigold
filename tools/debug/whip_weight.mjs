@@ -75,6 +75,7 @@ for (const [which, url] of [['revised', process.env.WFM_URL], ['today', process.
             IDLE_HIP.v = await h.page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0], w = sc.w1; w.state = 'standing'; sc.tweens.killTweensOf(w.pose); w._choreoUntil = sc.time.now + 5000; Object.assign(w.pose, { crouch: 0, bend: 0, lean: 0, lKnee: 0, rKnee: 0 }); window.__T += 1000 / 60; window.__WFM_GAME.step(window.__T, 1000 / 60); const p = w.skeleton.jointAttachmentPoints; return (p.nearHip.y + p.farHip.y) / 2 - w.y; });
             for (const dirKey of ['left', 'right']) for (const [label, st] of STAMINA) {
                 const id = `${pair}-${dirKey}-${label}`;
+                if (process.env.ONLY && !id.includes(process.env.ONLY)) continue;
                 const rows = await run(h, { dirKey, st });
                 const m = measure(rows, dirKey);
                 (results[which] ??= {})[id] = m;

@@ -284,10 +284,29 @@ in this stage.
 
 Polish list (not now): the sell pushes limbs 13-18 px past the rope in 2 edge cases; George's snapmare-sell far elbow.
 
-## Stage 4: AI, soak, promotion question (after G3)
+## Stage 4: down-hit reaction, soak, promotion (Opus 2026-11-06), stop at G4a, then G4
 
-`grapples_soak.mjs` with `falls=v1`: falls counted per variant and pick reason, page errors, stuck `down` states, get-up pops. Then
-Derek decides promotion: making falls standard means `?falls=v1` becomes the default (and `?falls=0` the old path for one release).
+Derek 2026-11-06: G3 r3 is passable, moves are passable, **promote falls**. Plus one gap he saw: when an elbow lands on a man on the mat,
+the man on the mat doesn't react. Measured: `_doElbowDrop`, `_doKneeDrop` and `_doTopDive`'s down branch call only `_hurt` and set
+`stateTimer`, with no pose. `_doDive` (diving elbow) on a downed man plays the standing `sellChest` and then `startClotheslineFall`.
+
+- **T4.1** `Wrestler._downHitReact(attacker, move, intensity)`, under `?falls=v1` only, pure keys/timing in `src/animation/falls.js`.
+  Supine (`this.lying === 'supine'`): he **jolts up at the waist**. Shoulders and head come off the mat (torso about 20-35 degrees,
+  scaled by intensity), knees come up a little through `lShin`/hips (never positive `lKnee`, see the knee rule), and both **arms flail**
+  out and up, with each arm offset in phase and amplitude so they don't mirror. Then he drops back flat. Peak about 120 ms after the
+  impact, total 450-600 ms. Prone: head and heels lift, the back arches, arms flail at the sides, the same timing. Damage, `stateTimer`,
+  pins and get-ups don't change. A pin or a get-up that starts mid-jolt cancels it cleanly back to the lying pose (no pop). Tests:
+  the jolt peaks and returns to the exact lying pose; the cancel path; flag-off is byte-identical.
+- **T4.2** Call it at the impact of every move that hits a downed man: elbowDrop (0.7), kneeDrop (0.8), divingElbow on a downed man
+  (0.9, replaces the standing sell + clothesline fall in that branch only), and topDive's down branch (0.9). The attacker side doesn't
+  change. G4a page `research/animation/falls-2026-11/g4a/`: one normal-speed loop strip per move, both facings, Procreate Lou and
+  `george-roster-v1` receiving, supine and prone. Misses first (step limit, outline overlap, rope and mat clipping). Focused tests, then
+  commit locally and **STOP at G4a** for Derek's glance.
+- **T4.3** Soak: `grapples_soak.mjs` with `falls=v1`, 4 x 150 s, both pairings. Count falls per variant and pick reason, down-hit
+  reactions, page errors, stuck `down` states and get-up pops. A stuck state or a page error blocks T4.4. Fix it or report it.
+- **T4.4** Promote: `fallsCandidate` becomes `defaultOnFlag('falls', 'v1')` like the other promoted flags, so `?falls=off` is the old
+  path. `?wear=show` stays opt-in. Update tests that assumed falls off by default, the flag list in AI_HANDOFF Status and the Progress
+  line. Full suite, build, coverage and a `?falls=off` pass. Commit locally, **STOP at G4**: Derek plays a match with no flag.
 
 ## Open for Derek
 

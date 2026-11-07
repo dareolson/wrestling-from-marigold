@@ -9,6 +9,7 @@ import { shoveClip } from './animation/clips/shove.js';
 // ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
 import { dropkickV2Clip } from './animation/clips/dropkickV2.js';
 import { elbowDropClip } from './animation/clips/elbowDrop.js';
+import { ELBOW_DROP, sampleGroundAttack, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from './animation/groundContact.js';
 import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
@@ -34,6 +35,7 @@ import {
 const SPEED      = 140;
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
+const ELBOW_REST_SEC = 0.1;    // ?falls=v1 (T4.7a): lying after the roll-off, before the get-up
 const ELBOW_DOWN_SEC = 0.8;   // ?falls=v1 (T4.2b): how long the elbow-drop attacker lies before his get-up; down long enough to read, short enough to be hard to pin
 // How long a thrown body takes to settle from the clip's last frame into the
 // grounded lying pose (see _layOnBack / Skeleton.groundedPoseFrom).
@@ -1134,11 +1136,12 @@ export default class Wrestler {
         this._landNext?.();   // ?falls=v1: the slam's landing, one frame after its hit (_playPairedThrow)
         this._tickRiseFlip();
         this._tickPain();
-        if (this.state !== 'down') { this._sell = null; this._hold = null; this._landing = null; this._jolt = null; } // pinned, picked up, rising: the sell (and hold) stops, and so does the landing
+        if (this.state !== 'down') { this._sell = null; this._hold = null; this._landing = null; this._jolt = null; this._groundAttack = null; } // pinned, picked up, rising: the sell (and hold) stops, and so does the landing
         if (this._landing && this.state === 'down') {
             this._landing.t += dt;
             if (this._landing.t >= landingDuration(this._landing.kind, this._landing.intensity, this._landing.vy, this._landing.tier)) this._landing = null;
         }
+        if (this._groundAttack) this._tickGroundAttack(dt);
         if (this._jolt && this.state === 'down') {
             this._jolt.t += dt;
             if (this._jolt.t >= joltDuration(this._jolt.intensity)) this._jolt = null;
@@ -2656,14 +2659,17 @@ export default class Wrestler {
             this._playFlight(elbowDropClip, { x: other.x, ease: 'Sine.easeInOut' }, () => {
                 // Damage lands with the elbow, not at the wind-up, so an
                 // interrupted drop costs the defender nothing (as kneeDrop).
-                other._hurt(STAMINA_DRAIN.elbowDrop, 'elbowDrop');
-                other.stateTimer = DOWN_SEC;
-                other._downHitReact(this, 'elbowDrop', 0.7);
-                this.scene.cameras.main.shake(130, 0.002);
-                this.scene.crowd?.impact?.('mat', 0.7);
-                // ?falls=v1 (PLAN_FALLS T4.2b): the clip ends lying (tilt 1.5, lift -95: face down, as the diving elbow's last key); he stays down and gets up
-                // through the library instead of standing in one frame
-                if (fallsCandidate()) { this._layDown(ELBOW_DOWN_SEC, 'prone'); return; }
+                const contact = () => {
+                    other._hurt(STAMINA_DRAIN.elbowDrop, 'elbowDrop');
+                    other.stateTimer = DOWN_SEC;
+                    other._downHitReact(this, 'elbowDrop', 0.7);
+                    this.scene.cameras.main.shake(130, 0.002);
+                    this.scene.crowd?.impact?.('mat', 0.7);
+                };
+                // ?falls=v1 (PLAN_FALLS T4.7a): the clip ends lying; the ground attack carries him to the receiver's chest (damage, sound and shake on that contact frame),
+                // rolls him off with a hand on the mat, and then he stays down and gets up through the library
+                if (fallsCandidate()) { this._beginGroundAttack(other, ELBOW_DROP, contact); return; }
+                contact();
                 // Show landing / recovery poses (skeleton visible again)
                 this.state = 'slamming';
                 this._runPoseSequence([
@@ -2861,6 +2867,7 @@ export default class Wrestler {
     // ...or face down (prone: head toward his facing), as the piledriver's
     // forward crumple leaves him.
     _layDown(seconds, lying) {
+        this._groundAttack = null;
         this.pose.tilt   = 0;
         this.pose.lift   = 0;
         this.pose.bend   = 0;
@@ -2873,6 +2880,86 @@ export default class Wrestler {
         this._groundHandoff = points?.neck
             ? { joints: { ...JSON.parse(JSON.stringify(points)), art: this.skeleton.artPlacement() }, from: null, t0: seconds }
             : null;
+    }
+
+    // ?falls=v1 (PLAN_FALLS T4.7a): a ground attack. He lies down (as _layDown) but the grounded rig is posed by sampleGroundAttack against the receiver's drawn chest:
+    // the striking elbow on it, then the hand planted on the mat beside him. Gameplay x/y stay put until the end; the draw offsets the body (_drawGroundAttack) and the end
+    // commits the offset. The window's part depths are set per frame in the draw, so ending, a pin, a cancel or a match end restore them with the next ordinary draw.
+    _beginGroundAttack(other, def, onContact) {
+        const total = groundAttackSeconds(def);
+        this._layDown(total + ELBOW_REST_SEC, 'prone');
+        this._groundAttack = { def, other, t: 0, onContact, contacted: false, joints: this._groundHandoff?.joints ?? null, from: null, root: null };
+        this._groundHandoff = null;
+    }
+
+    _tickGroundAttack(dt) {
+        const ga = this._groundAttack;
+        if (this.state !== 'down') { this._groundAttack = null; return; }
+        ga.t += dt;
+        if (!ga.contacted && ga.t >= groundAttackContactAt(ga.def)) { ga.contacted = true; ga.onContact(); }
+        if (!ga.committed && ga.t >= groundAttackReleaseEnd(ga.def)) {
+            // the roll-off is over: the body stays where it drew (the hand planted), and the settle draws from there
+            ga.committed = true;
+            if (ga.root) { this.x = ga.root.x; this.y = ga.root.y; this._clamp(); }
+        }
+        if (ga.t < groundAttackSeconds(ga.def)) return;
+        // settled into the ordinary lying pose (the same pose object, so no handoff): the ordinary down draw and the get-up take over
+        this._groundAttack = null;
+        this.stateTimer = ELBOW_REST_SEC;
+    }
+
+    _drawGroundAttack(s0, facing, gfx) {
+        const ga = this._groundAttack, def = ga.def, sk = this.skeleton, f = facing >= 0 ? 1 : -1, op = ga.other;
+        const smp = sampleGroundAttack(def, ga.t, Skeleton.lyingBase('prone', true)), P = def.phases;
+        const scaleAt = (y) => perspectiveScale(y) * this._heightScale;   // he is smaller up the screen: the scale follows the body as it moves, so the commit at the end is no jump
+        if (smp.seg === 'settle') {
+            gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(this.x, this.y, 120 * s0, 36 * s0);
+            sk.setVisible(true);
+            sk._applyGrounded(this.x, this.y, s0, facing, smp.g);
+            return;
+        }
+        const opPts = op.skeleton.jointAttachmentPoints ?? {};
+        const place = (s) => {
+            const chest = Skeleton.groundedTarget(opPts, 'chest', op.s * op._heightScale) ?? { x: op.x, y: op.y };
+            const rootAt = (g, point, at) => { const e = sk.groundedPointAt(s, facing, g, point); return e ? { x: at.x - e.x, y: at.y - e.y } : { x: this.x, y: this.y }; };
+            let root = rootAt(smp.g, `${def.side}Elbow`, { x: chest.x + smp.anchor.dx * f * s, y: chest.y + smp.anchor.dy * s });
+            if (smp.plant > 0) {
+                // the mat point beside the receiver: past his far edge on the screen (the top of everything he draws), a little along the facing from his chest
+                let edge = Infinity;
+                for (const p of op.skeleton._parts) if (p?.visible && p.alpha > 0 && p.frame) edge = Math.min(edge, p.getBounds().y);
+                if (!Number.isFinite(edge)) edge = chest.y - 40 * s;
+                const pl = P.rolloff.plant, to = rootAt(smp.g, `${def.side}Wrist`, { x: chest.x + pl.dx * f * s, y: edge - pl.gap * s });
+                root = { x: root.x + (to.x - root.x) * smp.plant, y: root.y + (to.y - root.y) * smp.plant };
+            }
+            // ring room: the body stays inside the ropes along the route (the elbow then misses the chest rather than the body leaving the ring)
+            root.y = Math.max(RING.farLeft.y + 6, Math.min(RING.nearLeft.y - 6, root.y));
+            const b = ringBoundsAtY(root.y);
+            root.x = Math.max(b.left + 20, Math.min(b.right - 20, root.x));
+            return root;
+        };
+        let s = s0, root = place(s);
+        for (let i = 0; i < 2; i++) { s = scaleAt(root.y); root = place(s); }
+        sk.setVisible(true);
+        if (smp.seg === 'blend') {
+            const e = smp.u * smp.u * (3 - 2 * smp.u);
+            if (!ga.from && ga.joints) ga.from = Skeleton.groundedPoseFrom(ga.joints, this.x, this.y, s0, facing, P.approach.g);
+            if (ga.from) {
+                root = { x: this.x + (root.x - this.x) * e, y: this.y + (root.y - this.y) * e };
+                s = s0 + (s - s0) * e;
+                gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
+                sk.updateGroundedBlend(root.x, root.y, s, facing, P.approach.g, ga.from, smp.u);
+                ga.root = root;
+                return;
+            }
+        }
+        gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
+        sk._applyGrounded(root.x, root.y, s, facing, smp.g);
+        ga.root = root;
+        if (smp.layer) {
+            // the striking forearm over the receiver for the contact window; the rest of him keeps his own depth (a fixed order, released when the window ends)
+            const top = 12 + op.y * 0.03 + 0.01;
+            [`${def.side}UpArm`, `${def.side}Forearm`, `${def.side}Hand`].forEach((k, i) => sk[k]?.setDepth(top + i * 0.00001));
+        }
     }
 
     _standBackUp() {
@@ -3856,6 +3943,8 @@ export default class Wrestler {
         }
 
 
+
+        if (this._groundAttack && state === 'down') { this._drawGroundAttack(s, facing, gfx); return; }
 
         const shadowY = onRopes ? this._corner.matY : y;
         gfx.fillStyle(0x000000, 0.22);

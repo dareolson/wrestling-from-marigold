@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Skeleton from '../src/Skeleton.js';
+import { RING } from '../src/constants.js';
 import { JOINT_LIMITS } from '../src/rig/articulation.js';
 import { landingResponse, reboundPlan, landingDuration, flexChange, applyOffsetsSoft, REF_VY, KINDS, SHAPES, TIERS } from '../src/animation/falls.js';
 
@@ -573,7 +574,7 @@ async function downFixture(falls) {
     atk._playFlight = (clip, motion, land) => land();   // the flight ends at once, still in its flight state
     atk._runPoseSequence = (seq, done) => done?.();
     atk._drain = () => {};
-    return { atk, def, Wrestler, hurts: () => hurts };
+    return { atk, def, Wrestler, hurts: () => hurts, shakes };
 }
 
 test('_downHitReact under ?falls=v1: jolts at the waist, peaks and returns to the lying pose, blocks the pin until it ends, leaves the down timer alone, a get-up clears it', async () => {
@@ -607,6 +608,7 @@ test('the four moves on a downed man call the jolt once with their weights (the 
         const { atk, def, hurts } = await downFixture(falls);
         const calls = []; def._downHitReact = (a, m, n) => calls.push([m, n]);
         atk.x = def.x - 20; atk[call](def);
+        if (falls && call === '_doElbowDrop') { assert.equal(hurts(), 0, 'T4.7a: the elbow drop\'s damage waits for the contact frame'); for (let t = 0; t < 1; t += 1 / 60) atk.tickDown(1 / 60); }   // the ground attack's own contact
         assert.deepEqual(calls, [[move, i]], `${call} falls=${falls}`);   // the flag check is inside _downHitReact (no-op off, tested above)
         assert.equal(hurts(), 1);
         assert.equal(def.stateTimer >= 4.5, true);
@@ -615,7 +617,7 @@ test('the four moves on a downed man call the jolt once with their weights (the 
 });
 
 test('T4.2b: the attacker of an elbow drop, diving elbow, top dive and press whiff lies down through _layDown (flag on) and rises through the get-up; flag off is as it was', async () => {
-    for (const [call, sec] of [['_doElbowDrop', 0.8], ['_doDive', 2.0], ['_doTopDive', 3.0], ['_doTheszPress', 2.6]]) {
+    for (const [call, sec] of [['_doDive', 2.0], ['_doTopDive', 3.0], ['_doTheszPress', 2.6]]) {
         const on = await downFixture(true);
         on.atk.x = on.def.x - 20; on.atk[call](on.def);
         assert.equal(on.atk.state, 'down', `${call}: down after the impact`);
@@ -643,4 +645,90 @@ test('elbow drop stills: every phase has bend-only knees and elbows inside the l
             assert.ok(elbow >= 0 && elbow <= JOINT_LIMITS.elbow.max, `${phase} ${side} elbow flex ${elbow}`);
         }
     }
+});
+
+// ---- PLAN_FALLS T4.7a: the elbow drop's ground attack (groundContact.js sampler, Wrestler._beginGroundAttack / _tickGroundAttack / _drawGroundAttack) -------------------------
+import { sampleGroundAttack, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from '../src/animation/groundContact.js';
+const REST_PRONE = Skeleton.REST_POSES.prone;
+
+test('ground attack sampler: g is continuous at every segment join, ends exactly on the ordinary lying pose, and the contact time is the end of the reach', () => {
+    const T = ELBOW_DROP.timing, dt = 1 / 600;
+    let prev = null, worst = 0;
+    for (let t = 0; t <= groundAttackSeconds(ELBOW_DROP) + 0.05; t += dt) {
+        const g = sampleGroundAttack(ELBOW_DROP, t, REST_PRONE).g;
+        if (prev) for (const k of Object.keys(g)) if (k !== 'hip') worst = Math.max(worst, Math.abs(g[k] - prev[k]));   // hip is px, the rest radians
+        prev = g;
+    }
+    assert.ok(worst < 0.06, `largest channel step per 1/600 s ${worst}`);   // reach is eased in: the steepest part is the arrival at contact
+    const end = sampleGroundAttack(ELBOW_DROP, groundAttackSeconds(ELBOW_DROP), REST_PRONE);
+    for (const k of Object.keys(REST_PRONE)) if (k !== 't') assert.ok(Math.abs(end.g[k] - REST_PRONE[k]) < 1e-9, `${k} ends on the lying pose`);
+    assert.equal(groundAttackContactAt(ELBOW_DROP), T.blend + T.reach);
+    assert.equal(sampleGroundAttack(ELBOW_DROP, groundAttackContactAt(ELBOW_DROP), REST_PRONE).seg, 'hold');
+    assert.ok(sampleGroundAttack(ELBOW_DROP, groundAttackContactAt(ELBOW_DROP), REST_PRONE).layer, 'the forearm is over him at contact');
+    assert.ok(!sampleGroundAttack(ELBOW_DROP, 0.01, REST_PRONE).layer && !sampleGroundAttack(ELBOW_DROP, groundAttackReleaseEnd(ELBOW_DROP), REST_PRONE).layer, 'no layering at the approach or after the release');
+});
+
+test('ground attack: damage, jolt and shake land once, on the contact frame, and never before it', async () => {
+    const { atk, def, hurts, shakes } = await downFixture(true);
+    const jolts = []; def._downHitReact = (a, m, n) => jolts.push([m, n]);
+    atk.x = def.x - 20; atk._doElbowDrop(def);
+    assert.equal(atk.state, 'down'); assert.equal(atk.lying, 'prone'); assert.ok(atk._groundAttack);
+    assert.ok(Math.abs(atk.stateTimer - (groundAttackSeconds(ELBOW_DROP) + 0.1)) < 1e-9);
+    assert.equal(atk._groundHandoff, null, 'the ground attack draws the blend itself');
+    const at = groundAttackContactAt(ELBOW_DROP);
+    let t = 0, firedAt = null;
+    for (; t < groundAttackSeconds(ELBOW_DROP) + 0.03; t += 1 / 60) { atk.tickDown(1 / 60); if (firedAt === null && hurts() > 0) firedAt = t + 1 / 60; }
+    assert.ok(firedAt >= at - 1e-9 && firedAt <= at + 1 / 60 + 1e-9, `fired at ${firedAt}, contact ${at}`);
+    assert.equal(hurts(), 1); assert.deepEqual(jolts, [['elbowDrop', 0.7]]); assert.equal(shakes.length, 1);
+    assert.equal(atk._groundAttack, null, 'settled into the ordinary lying pose'); assert.equal(atk.state, 'down');
+    assert.ok(atk.stateTimer <= 0.1 + 1e-9, 'the get-up follows after a short rest');
+    delete globalThis.location;
+});
+
+test('ground attack cancel: a pin, a pick-up or a match end before contact costs the receiver nothing and ends the attack; layDown clears it too', async () => {
+    for (const to of ['pinned', 'standing', 'gettingUp']) {
+        const { atk, def, hurts } = await downFixture(true);
+        def._downHitReact = () => {};
+        atk.x = def.x - 20; atk._doElbowDrop(def);
+        for (let t = 0; t < 0.1; t += 1 / 60) atk.tickDown(1 / 60);
+        atk.state = to; atk.tickDown(1 / 60);
+        assert.equal(atk._groundAttack, null, to);
+        for (let t = 0; t < 1; t += 1 / 60) atk.tickDown(1 / 60);
+        assert.equal(hurts(), 0, `${to}: interrupted before contact, no damage`);
+    }
+    const { atk, def } = await downFixture(true); def._downHitReact = () => {};
+    atk._doElbowDrop(def); atk._layDown(1, 'supine'); assert.equal(atk._groundAttack, null);
+    delete globalThis.location;
+});
+
+test('ground attack depth: the striking forearm draws over the receiver only inside the contact window, in a fixed order; outside it nothing is touched (the ordinary draw restores depths)', async () => {
+    const { atk, def } = await downFixture(true);
+    def._downHitReact = () => {};
+    const depth = {}; const part = (k) => ({ setDepth: (d) => { depth[k] = d; } });
+    Object.assign(atk.skeleton, { farUpArm: part('up'), farForearm: part('fore'), farHand: part('hand'), setVisible() {}, groundedPointAt: () => ({ x: 0, y: 0 }), _applyGrounded() {} });
+    Object.assign(def.skeleton, { _parts: [], jointAttachmentPoints: {} }); def._heightScale = 1; atk._heightScale = 1;
+    const gfx = { fillStyle() {}, fillEllipse() {} };
+    atk._doElbowDrop(def);
+    const draw = (t) => { for (const k of Object.keys(depth)) delete depth[k]; atk._groundAttack.t = t; atk._drawGroundAttack(1, 1, gfx); };
+    draw(ELBOW_DROP.timing.blend + ELBOW_DROP.timing.reach + 0.01);
+    const over = 12 + def.y * 0.03;
+    assert.ok(depth.fore > over && depth.up > over && depth.hand > over, 'over the receiver at contact');
+    assert.ok(depth.up < depth.fore && depth.fore < depth.hand, 'fixed order: upper arm, forearm, hand');
+    draw(ELBOW_DROP.timing.blend + 0.12 * ELBOW_DROP.timing.reach); assert.deepEqual(depth, {}, 'approach: untouched');
+    draw(groundAttackReleaseEnd(ELBOW_DROP) + 0.01); assert.deepEqual(depth, {}, 'after the release: untouched');
+    delete globalThis.location;
+});
+
+test('ground attack ring room: the drawn root never leaves the ropes, whatever the receiver\'s position', async () => {
+    const { atk, def } = await downFixture(true);
+    def._downHitReact = () => {};
+    const roots = [];
+    Object.assign(atk.skeleton, { farUpArm: { setDepth() {} }, farForearm: { setDepth() {} }, farHand: { setDepth() {} }, setVisible() {}, groundedPointAt: () => ({ x: 0, y: 0 }), _applyGrounded: (x, y) => roots.push([x, y]) });
+    Object.assign(def.skeleton, { _parts: [], jointAttachmentPoints: { neck: { x: 500, y: -400 }, nearHip: { x: 560, y: -400 }, farHip: { x: 560, y: -400 } } }); def._heightScale = 1; atk._heightScale = 1;   // a chest far past the far rope
+    atk._doElbowDrop(def);
+    const gfx = { fillStyle() {}, fillEllipse() {} };
+    for (let t = 0.2; t < groundAttackReleaseEnd(ELBOW_DROP); t += 0.05) { atk._groundAttack.t = t; atk._drawGroundAttack(1, 1, gfx); }
+    assert.ok(roots.length > 5);
+    for (const [, y] of roots) assert.ok(y >= RING.farLeft.y + 6 - 1e-9 && y <= RING.nearLeft.y - 6 + 1e-9, `root y ${y}`);
+    delete globalThis.location;
 });

@@ -2417,9 +2417,16 @@ export default class Skeleton {
         return out;
     }
 
+    // Where the joint `point` ('farElbow', 'farWrist') falls when grounded pose `g` is drawn at the origin: what a caller slides the body by to put it somewhere (T4.7a).
+    groundedPointAt(s, facing, g, point) {
+        this._applyGrounded(0, 0, s, facing, g);
+        const p = this.jointAttachmentPoints[point];
+        return p ? { x: p.x, y: p.y } : null;
+    }
+
     /** Grounded pose `poseName`, blended from a groundedPoseFrom() start by u (0→1). */
     updateGroundedBlend(x, y, s, facing, poseName, from, u, landing = null, landingAfter = false) {
-        let target = Skeleton.GROUNDED_POSES[poseName] && Skeleton.lyingBase(poseName, this._falls);
+        let target = typeof poseName === 'object' ? poseName : Skeleton.GROUNDED_POSES[poseName] && Skeleton.lyingBase(poseName, this._falls);   // an object is a grounded pose itself (T4.7a ground attacks)
         if (!target) throw new RangeError(`unknown grounded pose "${poseName}"`);
         if (landing && !landingAfter) { target = { ...target }; for (const [c, v] of Object.entries(landing)) if (c in target) target[c] += v; }   // ?falls=v1: the landing's offsets ride the blend's target
         const e = u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);

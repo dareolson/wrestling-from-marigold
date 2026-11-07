@@ -66,3 +66,52 @@ export const INSTALL_CONTACT = () => {
         return { over, limb, miss: over - limb, front: bodyBehind ? 0 : over - limb, bodyBehind, limbOver, a: count(A), b: count(B), side, chest: { x: +chest.x.toFixed(1), y: +chest.y.toFixed(1) } };
     };
 };
+
+// PLAN_FALLS T4.7a: the tightened measure. The striking side and parts are DECLARED per move and fixed for the whole move (not re-picked per frame):
+//   window.__contactDeclared(attacker, receiver, { side: 'far', parts: ['Forearm', 'Hand'] }) -> { raw, outside, conflict, strike, a, b, chest, edge }
+//     raw       px where attacker and receiver both paint (all attacker parts)
+//     outside   of those, the px not under the declared striking parts (a body inside a body)
+//     conflict  px where an attacker part OUTSIDE the declared limb is drawn above a receiver part (depth order, per pixel): 0 with the whole body behind the receiver is real occlusion
+//     strike    px of the declared parts on the receiver (the contact itself)
+//     edge      the top (smallest screen y) of everything the receiver draws, for the mat-point gap
+// Report all three of raw / outside / conflict; none stands in for the others.
+export const INSTALL_CONTACT_DECLARED = () => {
+    const W = 1000, H = 560, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d', { willReadFrequently: true });
+    const shown = (p) => { if (!p?.frame || !p.texture || !p.visible || !(p.alpha > 0)) return false; for (let c = p.parentContainer; c; c = c.parentContainer) if (!c.visible) return false; return true; };
+    const paint = (img, ox, oy) => {   // one part's mask in the W x H window, only its bounds read back
+        const b = img.getBounds(), x0 = Math.max(0, Math.floor(b.x - ox) - 2), y0 = Math.max(0, Math.floor(b.y - oy) - 2), x1 = Math.min(W, Math.ceil(b.right - ox) + 2), y1 = Math.min(H, Math.ceil(b.bottom - oy) + 2);
+        if (x1 <= x0 || y1 <= y0) return null;
+        ctx.clearRect(x0, y0, x1 - x0, y1 - y0);
+        const m = img.getWorldTransformMatrix(), f = img.frame;
+        ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); ctx.clip();
+        ctx.setTransform(m.a, m.b, m.c, m.d, m.tx - ox, m.ty - oy);
+        ctx.translate(-img.originX * img.width, -img.originY * img.height);
+        if (img.flipX) { ctx.translate(img.width, 0); ctx.scale(-1, 1); }
+        ctx.drawImage(f.source.image, f.cutX, f.cutY, f.cutWidth, f.cutHeight, 0, 0, img.width, img.height);
+        ctx.restore();
+        return { x0, y0, w: x1 - x0, h: y1 - y0, d: ctx.getImageData(x0, y0, x1 - x0, y1 - y0).data };
+    };
+    const depthMap = (imgs, ox, oy) => {   // the topmost depth painted at each px (-Infinity where nothing)
+        const map = new Float32Array(W * H).fill(-Infinity);
+        for (const img of imgs) { if (!shown(img)) continue; const r = paint(img, ox, oy); if (!r) continue;
+            for (let y = 0; y < r.h; y++) for (let x = 0; x < r.w; x++) if (r.d[(y * r.w + x) * 4 + 3] >= 128) { const k = (r.y0 + y) * W + r.x0 + x; if (img.depth > map[k]) map[k] = img.depth; } }
+        return map;
+    };
+    window.__contactDeclared = (a, d, { side, parts }) => {
+        const ska = a.skeleton, skd = d.skeleton, chest = window.__chestOf(d);
+        const ox = Math.floor(chest.x - W / 2), oy = Math.floor(Math.max(a.y, d.y) - H + 80);
+        const limb = parts.map(p => ska[`${side}${p}`]).filter(Boolean), rest = ska._parts.filter(p => !limb.includes(p));
+        const R = depthMap(skd._parts, ox, oy), Lm = depthMap(limb, ox, oy), O = depthMap(rest, ox, oy), All = depthMap(ska._parts, ox, oy);
+        let raw = 0, outside = 0, conflict = 0, strike = 0, na = 0, nb = 0;
+        for (let k = 0; k < R.length; k++) {
+            const r = R[k] > -Infinity, o = O[k] > -Infinity, l = Lm[k] > -Infinity;
+            if (All[k] > -Infinity) na++; if (r) nb++;
+            if (r && (o || l)) raw++;
+            if (r && l) strike++;
+            if (r && o) { outside++; if (O[k] > R[k]) conflict++; }
+        }
+        let edge = Infinity; for (const p of skd._parts) if (shown(p)) edge = Math.min(edge, p.getBounds().y);
+        return { raw, outside, conflict, strike, a: na, b: nb, chest: { x: +chest.x.toFixed(1), y: +chest.y.toFixed(1) }, edge: Math.round(edge) };
+    };
+};

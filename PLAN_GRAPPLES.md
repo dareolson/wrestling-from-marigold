@@ -118,6 +118,7 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
   Misses: Guido has no `hammerlockOdds` or `cornerWhipOdds` (allow-listed, not retuned); no shadowed moves; `grapples_flagoff` with no `WFM_URL` (self-started server) prints DIFFERENT at frame 0 (about 1e-5 in pose) also on the code before T6.1, identical with `WFM_URL=http://localhost:5173` (flagoff now pins `thesz`/`george`).
 - **G3d (Stage 3d whip with weight): approved by Derek 2026-11-07** ("looks good"). 833d407 + 8a18910: thrower sinks/leans and drives, feet held (±5-9 px, was 15-33), receiver steps in 12·s, forearm ×1.18, release peaks 50 ms early; receiver slung (speed builds 0.3 s), rope load elbows tucked.
   Misses: hip drop ~7·s (target 8-12·s); depth sidestep still slides ~20 px; corner run, follow-ups, worn film and full suite/build/coverage not run; flag-off identical by code path only.
+- Opus review of 4cc49fa (2026-11-07): suite 1258/1260 (corner-daze arms: the corner reuses the new load with 0.7 elbows), build, coverage 26. T3d.4 written, STOP at G3d-c.
 
 ## Why (Derek 2026-10-29)
 
@@ -1037,6 +1038,21 @@ and the run it starts). `?grapples=off` stays identical (A/B).
   thrower's hip drop and torso lean (signed); receiver torso pitch over the run; arm and forearm angles (signed) at the turn, the load and the launch; release-to-rope time today vs revised; direction
   8/8; the follow-ups still land (clothesline, back body drop, corner charge); first-frame pose steps at release and at the rope.
   Focused tests, flag-off A/B. Commit locally, **STOP at G3d**: Derek judges the strip.
+- **T3d.4 (Sonnet) The corner keeps up with the new rope load, and the proof G3d skipped.** Opus review 2026-11-07 at 4cc49fa: suite
+  1258/1260, build and coverage (26) pass. `corner-daze.test.js` "arms: flung in the load..." fails: `cornerPoseAt`
+  (`src/animation/cornerDaze.js`) starts from `ropeHitPose`'s LOAD, so the corner now has the upper arms set back (-0.35/-0.40) but its
+  elbows are hard-coded `0.7 * (1 - ka)`, not the load's 2.0/1.95. At the end of the load the corner has neither G3e-2's flung arms nor the
+  T3d.3 guard, and the arms then swing forward 0.25-0.42 rad to hang (they lift).
+  1. Start the corner's elbows from the load's (`load.lElbow ?? 0.7`), so the guard he hits with is the one he slumps out of: elbows
+     unfold to `CORNER.elbow` over `armFallMs`, the upper arms settle to the hang with no overshoot or bounce.
+  2. Rewrite that test to this intent (tucked at the end of the load: elbows > 1.5, upper arms < 0; then the elbows only unfold, the
+     upper arms move monotonically to the hang and never pass it; the hang and "never lift on their own" checks as now). Don't
+     loosen the other corner tests.
+  3. The proof T3d listed and r1-r3 didn't run: one corner run (near and far, both kits) beside the 4554a94 corner, normal and quarter
+     speed, on the G3d page; the follow-ups still land (clothesline, back body drop, corner charge: `grapples_assert`); worn runs
+     (stamina 20); `grapples_flagoff.mjs` with `WFM_URL=http://127.0.0.1:5173` identical. Report the corner arm and elbow angles at
+     contact, the load end and +320 ms (signed), and the first-frame part step at corner contact.
+  Full suite, build, coverage. Commit locally, **STOP at G3d-c**: Derek looks at the corner.
 
 ## Stage 2: clasping hands (Derek 2026-11-07), runs alongside Stage 3d, stop at G2
 

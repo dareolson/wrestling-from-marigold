@@ -367,6 +367,23 @@ never measured overlap between the two bodies. The jolt and the handoff stay; th
   - **Order:** the elbow drop alone first (both rigs, facings, supine and prone). Validate elbow gap, the three overlap numbers, hand
     support, signed joints, seams, damage/foley firing once, and the cancel path. Then knee drop and dives, each with its own striking
     part.
+- **T4.7b** Derek at G4a r2a (2026-11-06): looks good and is close, but "it's almost like he hits the ground, then hits the guy."
+  [Codex note](AI_HANDOFF_ENTRIES/2026-11-06-derek-ground-impact-gravity.md), confirmed by Opus: `elbowDropClip` runs to its end
+  (`tilt 1.5`, `lift -95`, already mat-level), and only then does `_beginGroundAttack` spend `blend` 0.14 s + `reach` 0.16 s before
+  the hit. So he lands, waits about 0.30 s, then strikes. Fix: **one continuous fall into the chest.**
+  - The flight ends **at contact**: its last stretch aims at the elbow-on-chest target (far side), and the body keeps speeding up
+    downward until the elbow meets the torso, above the mat. He never reaches a settled mat pose before contact. Retarget or replace
+    the clip's tail. No blend back up to an approach pose afterwards. Drop `blend`/`reach` from the post-flight part, or fold them
+    into the flight.
+  - At contact: the hit (damage, jolt, sound, shake once, on that frame), brief compression, recoil, then the existing hold, release,
+    planted-hand roll-off and settle, unchanged. Don't speed the whole move up, and don't make the impact bigger.
+  - Keep what Derek liked: far side, elbow-to-chest target, the forearm layering window, the planted hand, the roll-off and the get-up.
+  - Proof: current beside revised, normal speed and quarter speed, both rigs, facings, supine and prone. Mark the apex, first elbow
+    contact, first attacker mat support, the hit and the roll-off. Report the downward speed across the flight/contact handoff (it
+    must keep rising up to contact, no stall), signed joints, the three overlap numbers and layer cleanup. Focused tests. Commit
+    locally, **STOP at G4a r2b**. Knee drop and dives still wait.
+  - Known, leave for now unless it falls out naturally: striking part is the far forearm (plan said near), he ends about 130 px
+    up-screen, Lou's contact pose still roughly parallel to George.
 - **T4.3** Soak: `grapples_soak.mjs` with `falls=v1`, 4 x 150 s, both pairings. Count falls per variant and pick reason, down-hit
   reactions, page errors, stuck `down` states and get-up pops. A stuck state or a page error blocks T4.4. Fix it or report it.
 - **T4.4** Promote: `fallsCandidate` becomes `defaultOnFlag('falls', 'v1')` like the other promoted flags, so `?falls=off` is the old

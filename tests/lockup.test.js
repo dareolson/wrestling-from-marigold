@@ -35,6 +35,7 @@ test('D4 sides in both facings: attacker near arm on the collar, far arm on the 
             assert.equal(by(defender, 'Neck').arm, farCh);
             assert.equal(by(defender, 'Elbow').arm, nearCh);
             assert.equal(by(attacker, 'Elbow').side, 'same');
+            assert.equal(by(defender, 'Elbow').side, LOCKUP.defenderElbowSide, 'the defender\'s near hand takes the attacker\'s far arm: his own side left it holding nothing visible (Derek G2)');
             assert.equal(by(attacker, 'Neck').partner, d);
             assert.equal(by(defender, 'Neck').partner, a);
         }

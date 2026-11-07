@@ -32,6 +32,7 @@ export const LOCKUP = Object.freeze({
     legGain: 1.086,                     // ankle travel per rad of a leg channel, as a share of that rig's thigh + shin length (T1.12 probe at s = 1: Lou 129 px over 118.8, George 106 over 97.6, every role key)
     holdGap: 80,                        // px at s = 1 between the pair's x while held. D12 sweep (T1.7): no overlap under the belt or torso on torso, every grip 0 px; 78 also passes, but on the edge of the band, where the tugs and the strain leave it
     collarBack: 9, collarDrop: 6,       // px at s = 1: the collar point is the partner's neck, back of it and lower (D7)
+    defenderElbowSide: 'other',         // which of the attacker's elbows the defender's near hand takes (Derek G2: 'same' left it holding nothing visible)
     elbowCup: -0.6,                     // where the far hand cups, as a share of the partner's upper arm from the elbow toward his shoulder; negative = past the elbow, onto his forearm. Solved on the elbow itself, Lou's far hand flips to a fold the rig's elbow can't draw and misses by 30 px (T1.8)
 });
 
@@ -260,16 +261,16 @@ export function lockupGrips(attacker, defender, grips) {
         const s = partner.s ?? 1;
         return { x: neck.x - partner.facing * LOCKUP.collarBack * s, y: neck.y + LOCKUP.collarDrop * s };
     };
-    const list = (actor, partner, g, collarArm, elbowArm) => {
+    const list = (actor, partner, g, collarArm, elbowArm, elbowSide = 'same') => {
         const out = [];
         const at = collarAt(partner);
         if (at && g.collar > 0) out.push({ arm: collarArm, partner, joint: 'Neck', side: 'same', at, w: g.collar, clasp: 'collarTie' });
-        if (g.elbow > 0) out.push({ arm: elbowArm, partner, joint: 'Elbow', side: 'same', above: LOCKUP.elbowCup, w: g.elbow, clasp: 'elbowCup' });
+        if (g.elbow > 0) out.push({ arm: elbowArm, partner, joint: 'Elbow', side: elbowSide, above: LOCKUP.elbowCup, w: g.elbow, clasp: 'elbowCup' });
         return out;
     };
     return {
         attacker: list(attacker, defender, grips.attacker, nearArm(attacker), farArm(attacker)),
-        defender: list(defender, attacker, grips.defender, farArm(defender), nearArm(defender)),
+        defender: list(defender, attacker, grips.defender, farArm(defender), nearArm(defender), LOCKUP.defenderElbowSide),
     };
 }
 

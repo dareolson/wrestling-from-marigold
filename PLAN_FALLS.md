@@ -385,7 +385,7 @@ never measured overlap between the two bodies. The jolt and the handoff stay; th
   - Known, leave for now unless it falls out naturally: striking part is the far forearm (plan said near), he ends about 130 px
     up-screen, Lou's contact pose still roughly parallel to George.
 - **T4.7c** Derek at G4a r2b (2026-11-06): the continuous fall is in (e8c7498), now finesse. Opus's read of the frames, agreed by
-  Derek, plus his own note on the sell. Timing and the contact frame stay as they are.
+  Derek, plus his own note on the sell. **Derek approved the timing** (apex cut, 0.14 s fall, contact frame): locked, finesse must not move it.
   - **The elbow leads the fall.** From the apex the striking elbow is cocked and pointed at the chest, and the body rolls onto its side
     so the elbow is the lowest point. Today (frames 41-48, Lou on George supine) he goes flat like a plank with his arms hanging, which
     reads as a float. Existing parts; if the cocked elbow can't be made, name the narrow art request.

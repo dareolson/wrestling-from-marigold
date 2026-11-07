@@ -1115,6 +1115,28 @@ at G2, only then a far-side drawing.
   Lou, both facings, normal and quarter speed. Report per hand: contact to target (px) every frame the clasp is on; the frame
   each swap happens and its grip weight; the first-frame part step at each swap (px); forearm-inside-own-torso pixels (want 0).
   Focused tests, flag-off A/B. Commit locally, **STOP at G2**: Derek judges.
+- **T2.2 r5 (Sonnet) The defender defends; the reach cap fixed (Derek G2 2026-11-07, Codex r4 review).** Derek: "the victim in
+  the grapple should clasp the opponent approximately on the bicep, they need to be defending themselves, not just hugging." The
+  attacker's grips (collar tie, elbow cup) stay as they are. Read `lockupGrips`, `gripTarget` and `holdGrips` first.
+  1. **Defender's grips, `lockup.js`:** no hand behind the attacker's neck. Each hand on a different attacker upper arm, at the
+     middle of the biceps: `joint: 'Elbow'` with `above: LOCKUP.bicepGrip` (new, start 0.5 = halfway from elbow to shoulder). One
+     hand must hold the attacker's collar arm (the arm on his own neck: that is the defending grip). Start both on `side: 'other'`
+     (the r3 finding: his own-side elbow drew out of sight); if a hand ends out of sight or inside a torso, report it in px and try
+     `'same'` for that hand only. The clasp label for both is a new `bicepGrip`; until Codex draws it, select the `elbowCup` art
+     for it (map in `clasps.js`, no new PNGs). Drop `defenderElbowSide` if nothing else reads it.
+  2. **Reach cap only with art on (Codex finding 1):** in `holdGrips` the `CLASP_REACH` cap applies only when
+     `this._claspSel?.[side + 'Forearm'] === item.clasp` (the same test as the palm correction). No art, or weight under .5:
+     back to `0.999`, so Guido/Kowalski and the subthreshold frames solve as before r4.
+  3. **The cap holds as drawn (Codex finding 2):** aim the forearm at the capped point `S + d·(cos base, sin base)`, not at `goal`.
+     Don't lengthen arms or widen joint limits.
+  4. **Tests:** a no-art grip and a subthreshold labelled grip give the same pose as an unlabelled one; the defender's list has no
+     `Neck`/`at` entry and two `Elbow` entries on different attacker arms; drawn shoulder-to-wrist ≤ .94 of the arm with art on.
+  **Proof (same G2 page, r5 section):** a normal-speed loop strip in both facings first, then a close-up of the held tie-up per
+  pair. Per hand: palm to target px (mean/max while the clasp is on), drawn elbow flex, whether the target is reachable at all at
+  .94 (yes/no + the shortfall in px). The frame-14 jump (Codex finding 4): the forearm at the frozen pose with base vs clasp art,
+  px apart. Focused tests (`clasps`, `grapples`, `lockup`, `waistlock`), flag-off A/B. Commit locally, **STOP at G2**: Derek judges.
+  If Derek wants a dedicated hand for the biceps grab, it is Codex C4 `bicepGrip` (fingers over the top of the arm, thumb under) on
+  the T2.0 pipeline.
 - **Later in Stage 2 (after G2):** the steal as a visible shove, with a re-grip if Derek wants D5 changed (the old outline);
   more clasps (wrist grab for the whip, arm drag and wristlocks; headlock) on the same pipeline.
 

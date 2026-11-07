@@ -2,7 +2,7 @@ import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
-import { resolveSemanticSlots } from './rig/partVariants.js';
+import { resolveSemanticSlots, textureKey } from './rig/partVariants.js';
 import { dropkickClip } from './animation/clips/dropkick.js';
 import { frontKickClip } from './animation/clips/frontKick.js';
 import { shoveClip } from './animation/clips/shove.js';
@@ -24,6 +24,7 @@ import { staggerFor } from './animation/staggers.js';
 import { ROPE_HIT, ELBOW_REST, ropeHitAt, ropeHitPose } from './animation/ropeHit.js';
 import { CORNER, CORNER_CHARGE, CORNER_DAZE_POSE, cornerDazeSeconds, cornerOffsetAt, cornerPoseAt } from './animation/cornerDaze.js';
 import { gripTarget } from './animation/lockup.js';
+import { claspSelection } from './animation/clasps.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
     ARTICULATED_CHANNELS,
@@ -753,9 +754,15 @@ export default class Wrestler {
             const { arm, w } = item;
             const handSide = arm === 'l' ? sk.lChannelSide(this.facing) : flip(sk.lChannelSide(this.facing));
             // `at` (PLAN_GRAPPLES D7): a world point in place of a partner joint (the collar, behind the neck). `above`: up his arm from it.
-            const to = gripTarget(item, handSide);
+            let to = gripTarget(item, handSide);
             const S = pts[`${handSide}Shoulder`], E = pts[`${handSide}Elbow`], W = pts[`${handSide}Wrist`];
             if (!to || !S || !E || !W) continue;
+            // A clasp on this arm: the painted palm (its `clutch` anchor) goes to the target, not the wrist, so the wrist goal is the
+            // target moved by where the palm sits from the wrist now. Redone every pass, so it settles as the forearm turns.
+            if (item.clasp && this._claspSel?.[`${handSide}Forearm`] === item.clasp) {
+                const img = sk[`${handSide}Forearm`], P = Skeleton.imageAnchorPoint(img, img?._semanticAnchors?.clutch);
+                if (P) to = { x: W.x + (to.x - P.x), y: W.y + (to.y - P.y) };
+            }
             const goal = { x: W.x + (to.x - W.x) * w, y: W.y + (to.y - W.y) * w };
             if (dist(W, goal) < 0.5) continue;
             const lu = dist(S, E), lf = dist(E, W);
@@ -773,6 +780,31 @@ export default class Wrestler {
             moved = true;
         }
         if (moved) this.draw();
+    }
+
+    // grapples=v1 (T2.2): put the clasp art on the arms whose grip is closing, take it off the rest (animation/clasps.js). Only the
+    // forearm slots a clasp owns are touched; any other variant the skeleton has on is kept. Called before holdGrips.
+    setClasps(list) {
+        const sk = this.skeleton, textures = sk?._textureConfig;
+        if (!sk?._partImages || !textures) return;
+        const has = (name, slot) => !!sk._partImages[slot] && !!textureKey(textures.variants?.forearm?.[name]);
+        const want = claspSelection(list, sk.lChannelSide?.(this.facing), has);
+        this._applyClasps(want);
+    }
+
+    // Every exit: the art comes off whatever the grip did (Arena calls this each frame for a man with no grip left).
+    clearClasps() {
+        if (this._claspSel) this._applyClasps({});
+    }
+
+    _applyClasps(want) {
+        const sk = this.skeleton, had = this._claspSel ?? {};
+        if (JSON.stringify(want) === JSON.stringify(had)) return;
+        const keep = {};
+        for (const [slot, name] of Object.entries(sk._partVariantState ?? {})) if (name && name !== 'base' && had[slot] !== name) keep[slot] = name;
+        sk.setPartVariants({ ...keep, ...want });
+        this._claspSel = Object.keys(want).length ? want : null;
+        this.draw();
     }
 
     // Screen turn per unit of a pose channel, by probing it once (cached per

@@ -261,6 +261,21 @@ export const theszProcreateV1 = {
                     // use this contact; ordinary clip posing remains unchanged.
                     semanticAnchors: { clutch: { u: 57 / 117, v: 279 / 351 } },
                 },
+                // Stage 2 clasp (PLAN_GRAPPLES T2.1b/T2.2): fitted by tools/debug/build_forearm_variant.mjs; `clutch` is the palm's contact point.
+                collarTie: {
+                    key: 'thesz_pv1_forearm_collar_tie', file: 'forearm_collar_tie.png',
+                    semanticAnchors: { clutch: { u: 0.5850348286750334, v: 0.794871794871795 } },
+                },
+                // Stage 2 clasp (PLAN_GRAPPLES T2.1b/T2.2): fitted by tools/debug/build_forearm_variant.mjs; `clutch` is the palm's contact point.
+                elbowCup: {
+                    key: 'thesz_pv1_forearm_elbow_cup', file: 'forearm_elbow_cup.png',
+                    semanticAnchors: { clutch: { u: 0.5474909235977463, v: 0.794871794871795 } },
+                },
+                // Stage 2 clasp (PLAN_GRAPPLES T2.1b/T2.2): fitted by tools/debug/build_forearm_variant.mjs; `clutch` is the palm's contact point.
+                waistClasp: {
+                    key: 'thesz_pv1_forearm_waist_clasp', file: 'forearm_waist_clasp.png',
+                    semanticAnchors: { clutch: { u: 0.7067185287335018, v: 0.7948717948717948 } },
+                },
             },
         },
         thigh: {

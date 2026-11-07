@@ -15,7 +15,7 @@ test('the candidate declares a valid rig contract', () => {
     assert.ok(ok, `rig contract invalid: ${errors.join('; ')}`);
 });
 
-test('it delivers shipped Lou\'s six body parts, plus the two audition forearms', () => {
+test('it delivers shipped Lou\'s six body parts, plus the audition forearms and the three clasps', () => {
     const assets = enumerateCharacterAssets(theszProcreateV1);
     const body = assets.filter(a => a.variant === 'base' && a.slot !== 'farForearm').map(a => a.slot).sort();
     assert.deepEqual(body, ['forearm', 'head', 'shin', 'thigh', 'torso', 'upperArm'].sort());
@@ -24,7 +24,8 @@ test('it delivers shipped Lou\'s six body parts, plus the two audition forearms'
     // 2026-10-11 audition: palm-side far forearm and the hammerlock grip.
     const extra = assets.filter(a => a.slot === 'farForearm' || a.variant !== 'base')
         .map(a => `${a.slot}.${a.variant}`).sort();
-    assert.deepEqual(extra, ['farForearm.base', 'forearm.grip']);
+    // 2026-11-07 clasps (PLAN_GRAPPLES Stage 2): the same canvas as forearm.png, one whole forearm each.
+    assert.deepEqual(extra, ['farForearm.base', 'forearm.collarTie', 'forearm.elbowCup', 'forearm.grip', 'forearm.waistClasp']);
 });
 
 test('audition forearms keep the base forearm geometry exactly', () => {
@@ -36,6 +37,12 @@ test('audition forearms keep the base forearm geometry exactly', () => {
     assert.equal(resolved.key, 'thesz_pv1_forearm_grip');
     assert.deepEqual(resolved.box, t.forearm.box);
     assert.equal(resolved.jointPivotFrac, t.forearm.jointPivotFrac);
+    for (const clasp of ['collarTie', 'elbowCup', 'waistClasp']) {
+        const c = resolvePartSelection(t, { nearForearm: clasp }).nearForearm;
+        assert.deepEqual(c.box, t.forearm.box, `${clasp}: base geometry`);
+        assert.equal(c.jointPivotFrac, t.forearm.jointPivotFrac, `${clasp}: the elbow pivot`);
+        assert.ok(c.semanticAnchors.clutch.u > 0 && c.semanticAnchors.clutch.v > 0, `${clasp}: a contact point`);
+    }
 });
 
 test('workingHand swaps the forearm for a hand-in-forearm character, by facing', () => {

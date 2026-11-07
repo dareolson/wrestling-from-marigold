@@ -3522,6 +3522,7 @@ export default class Arena extends Phaser.Scene {
         if (this.waistlockState) this._holdWaistlockGrips();
         if (this.dropState?.kind === 'snap') this._holdSnapmareGrips();
         if (this.sleeperState?.rear) this._holdSleeperGrips();
+        this._clearStrayClasps();
         // Grip solving may redraw the entire rig. Keep the temporary lead-in
         // pose installed until every post-draw grip has used it.
         undoBlend?.();
@@ -3736,6 +3737,8 @@ export default class Arena extends Phaser.Scene {
         // D5: a steal swaps who is in control, not who holds what, so the grips stay with the men who grabbed first.
         const attacker = g.grabber ?? ls.attacker, defender = g.grabbed ?? ls.defender;
         const lists = lockupGrips(attacker, defender, g.grips);
+        attacker.setClasps(lists.attacker);   // T2.2: the clasp art on the hands that are closing, before the IK aims its palm
+        defender.setClasps(lists.defender);
         for (const pass of [['attacker', attacker], ['defender', defender], ['attacker', attacker], ['defender', defender], ['attacker', attacker], ['defender', defender]]) {
             const [role, actor] = pass;
             if (lists[role].length) actor.holdGrips(lists[role]);
@@ -4237,11 +4240,22 @@ export default class Arena extends Phaser.Scene {
         }
     }
 
+    // T2.2: clasp art lives only while a tie-up or waistlock is solving that man's grips. Any other frame (a break, shove, rope break, a move
+    // taking over, a match end, either man pulled out) takes it off, so no exit has to remember to.
+    _clearStrayClasps() {
+        const held = new Set();
+        if (this.lockupState?.grapple?.grips && grapplesCandidate()) { held.add(this.lockupState.attacker); held.add(this.lockupState.defender); }
+        if (this.waistlockState?.grips) { held.add(this.waistlockState.attacker); held.add(this.waistlockState.defender); }
+        for (const w of [this.w1, this.w2]) if (!held.has(w)) w.clearClasps();
+    }
+
     // W4/W5: after both draw, turn each gripping arm onto its target (waistlock.js waistlockGrips), then stack the parts (waistlockLayerOrder).
     _holdWaistlockGrips() {
         const ws = this.waistlockState, A = ws.attacker, D = ws.defender;
         if (!ws.grips) return;
         const lists = waistlockGrips(A, D, ws.grips);
+        A.setClasps(lists.attacker);
+        D.setClasps(lists.defender);
         for (const [role, actor] of [['attacker', A], ['defender', D], ['attacker', A], ['defender', D], ['attacker', A], ['defender', D]]) if (lists[role].length) actor.holdGrips(lists[role]);
         // T4b.2b: the W4 stack only from the moment the hands start to close; on the approach the order is the whole-body depth from y, so on the
         // near-side pass the attacker draws in front.

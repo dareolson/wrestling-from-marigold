@@ -261,6 +261,36 @@ export const georgeRosterV1 = {
                         "v": 0.7835990888382688
                     }
                 }
+            },
+            "collarTie": {
+                "key": "george_rv1_forearm_collar_tie",
+                "file": "forearm_collar_tie.png",
+                "semanticAnchors": {
+                    "clutch": {
+                        "u": 0.5273841590918646,
+                        "v": 0.7835990888382688
+                    }
+                }
+            },
+            "elbowCup": {
+                "key": "george_rv1_forearm_elbow_cup",
+                "file": "forearm_elbow_cup.png",
+                "semanticAnchors": {
+                    "clutch": {
+                        "u": 0.5188266972272926,
+                        "v": 0.7835990888382687
+                    }
+                }
+            },
+            "waistClasp": {
+                "key": "george_rv1_forearm_waist_clasp",
+                "file": "forearm_waist_clasp.png",
+                "semanticAnchors": {
+                    "clutch": {
+                        "u": 0.5622796491114113,
+                        "v": 0.7835990888382687
+                    }
+                }
             }
         }
     }

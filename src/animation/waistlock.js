@@ -113,7 +113,7 @@ export function waistlockGrips(attacker, defender, grips) {
     const farArm = (a) => (nearArm(a) === 'l' ? 'r' : 'l');
     const out = { attacker: [], defender: [] };
     const front = waistPoint(defender, WAISTLOCK.waistFront), mid = waistPoint(defender, 0);
-    if (front && grips.attacker.near > 0) out.attacker.push({ arm: nearArm(attacker), partner: defender, joint: 'Waist', side: 'same', at: front, w: grips.attacker.near });
+    if (front && grips.attacker.near > 0) out.attacker.push({ arm: nearArm(attacker), partner: defender, joint: 'Waist', side: 'same', at: front, w: grips.attacker.near, clasp: 'waistClasp' });
     if (mid && grips.attacker.far > 0) out.attacker.push({ arm: farArm(attacker), partner: defender, joint: 'Waist', side: 'same', at: mid, w: grips.attacker.far });
     if (grips.defender.pry > 0) out.defender.push({ arm: nearArm(defender), partner: attacker, joint: 'Wrist', side: 'same', w: grips.defender.pry });
     return out;

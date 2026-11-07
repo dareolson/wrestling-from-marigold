@@ -28,7 +28,8 @@ const CASES = [
 ];
 const snap = () => {
     const sc = window.__WFM_GAME.scene.scenes[0];
-    return { phase: sc.waistlockState?.phase ?? null, held: !!sc.waistlockState, clip: !!(sc.w1._activeMove || sc.w2._activeMove), fixed: [!!sc.w1._fixedHold, !!sc.w2._fixedHold], dropState: !!sc.dropState, sleeper: !!sc.sleeperState, states: [sc.w1.state, sc.w2.state], locks: [!!sc.w1._facingLock, !!sc.w2._facingLock], matchOver: sc.matchOver, orphans: sc.matchEvents.filter(e => e.type === 'orphanRescue').length };
+    const claspOf = (w) => ({ sel: w._claspSel ?? null, art: [w.skeleton._partVariantState?.nearForearm ?? 'base', w.skeleton._partVariantState?.farForearm ?? 'base'] });
+    return { clasp: [claspOf(sc.w1), claspOf(sc.w2)], phase: sc.waistlockState?.phase ?? null, held: !!sc.waistlockState, clip: !!(sc.w1._activeMove || sc.w2._activeMove), fixed: [!!sc.w1._fixedHold, !!sc.w2._fixedHold], dropState: !!sc.dropState, sleeper: !!sc.sleeperState, states: [sc.w1.state, sc.w2.state], locks: [!!sc.w1._facingLock, !!sc.w2._facingLock], matchOver: sc.matchOver, orphans: sc.matchEvents.filter(e => e.type === 'orphanRescue').length };
 };
 
 for (const [name, endAt, drop, rev, sleeper] of CASES) {
@@ -45,6 +46,7 @@ for (const [name, endAt, drop, rev, sleeper] of CASES) {
         if (sleeper) check(`${name}: the match ends inside the rear sleeper`, before.sleeper && !before.held && before.states[1] === 'sleeping', before);
         else if (drop) check(`${name}: the match ends inside the ${rev ? 'snapmare' : 'atomic drop'}'s clip`, before.clip && before.fixed.every(Boolean) && !before.held, before);
         else check(`${name}: the match ends inside the waistlock (${before.phase})`, before.held && before.locks.every(Boolean), before);
+        if (name === 'the hold') check(`${name}: the near hand wears the waist clasp in the hold`, before.clasp.some(c => c.sel && Object.values(c.sel).includes('waistClasp')), before.clasp);
         await page.evaluate(() => window.__WFM_GAME.scene.scenes[0]._endMatch('TEST'));
         const after = await page.evaluate(snap);
         check(`${name}: right after the match ends both facing locks are off and the state is gone`, !after.held && !after.dropState && !after.sleeper && after.locks.every(v => !v), after);
@@ -52,6 +54,8 @@ for (const [name, endAt, drop, rev, sleeper] of CASES) {
         for (let i = 0; i < 360; i++) await page.evaluate(STEP, { mask: false });
         const reset = await page.evaluate(snap);
         check(`${name}: after the reset the match is on, both men stand, no lock, no orphanRescue`, reset.matchOver === false && reset.states.every(s => s === 'standing') && reset.locks.every(v => !v) && reset.orphans === 0 && !reset.clip && !reset.sleeper && reset.fixed.every(v => !v), reset);
+        // T2.2: no clasp art left on either forearm once the match is reset, whatever ended the hold
+        check(`${name}: after the reset no clasp art is left on either forearm`, reset.clasp.every(c => !c.sel && c.art.every(a => a === 'base' || a === 'grip')), reset.clasp);
         // crossing the opponent turns each man: w1 left of w2 faces right; put him to the right of w2 and he must face left
         const turned = await page.evaluate(async () => {
             const sc = window.__WFM_GAME.scene.scenes[0], out = [];

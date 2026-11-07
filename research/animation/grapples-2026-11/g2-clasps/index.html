@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><title>Clasping hands G2</title>
+<style>body{font:16px system-ui;background:#181b20;color:#eee;margin:24px}select,button{font:inherit;padding:6px;margin:0 10px 8px 0}canvas{width:49%;background:#000}#stats{color:#ccc;line-height:1.5;padding:8px 0}</style>
+<h1>Clasping hands (T2.2): before left, with clasps right</h1>
+<p>Flag <code>?grapples=v1</code>. The tie-up's collar hand (collarTie) and elbow hand (elbowCup), both men, and the waistlock's near hand (waistClasp), swapped in as each grip closes past half and out as it lets go. Plays at normal speed on a loop; switch to quarter speed to step through the swaps.</p>
+<label>Hold <select id="kind"><option value="lockup">Tie-up, drive and break</option><option value="waistlock">Waistlock: go behind and hold</option></select></label>
+<label>Pair <select id="pair"><option value="lou-george">Lou on George</option><option value="george-lou">George on Lou</option></select></label>
+<label>Facing <select id="face"><option value="right">Right</option><option value="left">Left</option></select></label>
+<label>Speed <select id="spd"><option value="1">Normal</option><option value="0.25">Quarter</option></select></label>
+<button id="pause">Pause</button>
+<div id="stats"></div><canvas id="a"></canvas> <canvas id="b"></canvas>
+<script>
+let R={};fetch('results.json').then(r=>r.json()).then(j=>{R=j;sel()});
+const N={lockup:101,waistlock:150};
+const load=(w)=>Array.from({length:N[kind.value]},(_,i)=>{const im=new Image();im.src='frames/'+w+'/'+pair.value+'-'+face.value+'-'+kind.value+'/s'+String(i).padStart(4,'0')+'.jpg';return im});
+let A,B,f=0,last=0,paused=false;const ca=a.getContext('2d'),cb=b.getContext('2d');
+function sel(){A=load('before');B=load('revised');f=0;const r=R[pair.value+'-'+face.value+'-'+kind.value];if(r){const sw=r.swaps.filter(s=>s.to!=='base').map(s=>(s.man==='a'?'attacker':'defender')+' '+s.to+' on at frame '+s.frame+' (grip weight '+s.weightAtSwap+', forearm step '+s.forearmStepPx+' px)');stats.innerHTML=sw.join('<br>')+'<br>Palm to target once the grip is full (mean/max px): '+Object.keys(r.palmMean).map(k=>k+' '+r.palmMean[k]+'/'+r.palmMax[k]).join(', ')}}
+for(const e of [kind,pair,face])e.onchange=sel;
+pause.onclick=()=>{paused=!paused;pause.textContent=paused?'Play':'Pause'};
+function draw(c,cv,im){if(im.complete&&im.naturalWidth){cv.width=im.naturalWidth;cv.height=im.naturalHeight;c.drawImage(im,0,0)}}
+function tick(t){if(!paused&&t-last>1000/(60*+spd.value)){last=t;if(A){draw(ca,a,A[f]);draw(cb,b,B[f]);f=(f+1)%A.length}}requestAnimationFrame(tick)}requestAnimationFrame(tick);
+</script>

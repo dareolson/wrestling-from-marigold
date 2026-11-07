@@ -263,8 +263,8 @@ export function lockupGrips(attacker, defender, grips) {
     const list = (actor, partner, g, collarArm, elbowArm) => {
         const out = [];
         const at = collarAt(partner);
-        if (at && g.collar > 0) out.push({ arm: collarArm, partner, joint: 'Neck', side: 'same', at, w: g.collar });
-        if (g.elbow > 0) out.push({ arm: elbowArm, partner, joint: 'Elbow', side: 'same', above: LOCKUP.elbowCup, w: g.elbow });
+        if (at && g.collar > 0) out.push({ arm: collarArm, partner, joint: 'Neck', side: 'same', at, w: g.collar, clasp: 'collarTie' });
+        if (g.elbow > 0) out.push({ arm: elbowArm, partner, joint: 'Elbow', side: 'same', above: LOCKUP.elbowCup, w: g.elbow, clasp: 'elbowCup' });
         return out;
     };
     return {

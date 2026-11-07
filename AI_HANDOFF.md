@@ -28,7 +28,7 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Status (2026-11-06 late, replace this block; ≤ 40 lines)
+## Status (2026-11-07, replace this block; ≤ 40 lines)
 
 - **Direction (Derek 2026-11-06):** moves are passable for now. Stop polishing them and move the project forward; move misses go on polish lists and get revisited later.
 - **Falls ([PLAN_FALLS.md](PLAN_FALLS.md)):** done through T3.16 (`c53ea13`), G3 r3 accepted as passable ([page](research/animation/falls-2026-11/g3/r3.html)). `falls` PROMOTED (73cb6d1, G4 awaiting Derek; `?falls=off` disables): wear meter (0.8/damage, 0.4/s recovery, knockdown 60, exceptional 92), `?wear=show` bar. Stage 4 done: soak clean (0 errors, 0 stuck), knee drop and dives use `groundHitSell`. Polish: get-up to standing steps 20-46 px (27 median without falls too), a man already getting up when the elbow lands gets no sell, 0-4 knockdowns a run, the two exceptional landings at wear 100 came early (42/52 s), the AI rarely throws big moves, sell limbs past the rope, George's snapmare elbow.
@@ -40,9 +40,9 @@ Avoid a large rewrite.
   - Whole game monochrome; art generated in color, monochrome derived ([standard](CINEMATIC_ART_STANDARD.md)).
   - Venues/crowds/exhibition: [plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md). Carl as Guy's ringside trainer: [sheet](research/art/carl-ringside-2026-10-31/carl-ringside-sheet-v1.png). Feud/art: [STORY_ART_AND_FEUD_DIRECTION.md](STORY_ART_AND_FEUD_DIRECTION.md).
 - **Awaiting Derek:** G4 (play a match with no flag, falls on) and G4b (splash bounce); Marigold title queue (83ab5cd) visual OK.
-- **Uncommitted on purpose:** Codex's sleeper-wrap PNGs (`src/assets/wrestlers/*/forearm_sleeper_wrap.png`) and 4 Codex `tools/debug` scripts (sleeper wrap, throw support, waistlock probes) are unreviewed and stay untracked. Large frame dumps are gitignored.
-- **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `fb8c5ca` (2026-11-06); later commits local. Session handoff: [entry](AI_HANDOFF_ENTRIES/2026-11-06-claude-opus-handoff-ground-contact.md). Push via the SSH URL only. Coverage baseline 26 gaps.
-- **Next (Sonnet 2026-11-06):** falls promoted (73cb6d1). T4.8 splash **at G4b** (2f79495, local): pivot, tumble (face down) and roll (on his back), all halved at Derek's r3 ([tumble vs roll](research/animation/falls-2026-11/g4b-r2/index.html)); Derek picks which move gets which and whether the half trip (it overlaps the receiver) stays. Then [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) **Stage 3d** (whip with weight, tucked elbows at the rope), **STOP at G3d**; then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1. **First: [PLAN_FALLS.md](PLAN_FALLS.md) T4.8a** (backward legs, [Codex entry](AI_HANDOFF_ENTRIES/2026-11-06-codex-splash-backward-legs.md), Opus confirmed): the roll's mirror negates each angle, so knees bend the wrong way (far -0.90, near wraps to 5.283); test the sampled poses, **STOP at G4b r4**. G4b waits for it.
+- **Uncommitted on purpose:** Codex's sleeper-wrap PNGs and 4 Codex `tools/debug` scripts (unreviewed, untracked). Frame dumps gitignored (kept; may not be reproducible).
+- **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`). Pushed through `fac431f` (2026-11-07); push URL is SSH now. Roster PSDs tracked (69b2c90). Cleanup leftovers, low priority: [PLAN_CLEANUP.md](PLAN_CLEANUP.md). Coverage baseline 26 gaps.
+- **Next (Opus 2026-11-07):** [PLAN_FALLS.md](PLAN_FALLS.md) T4.8a code landed (9cf8257 plan, 1adfc00 fix + sampled-pose test) but has no Progress line and no review page. Sonnet: add the T4.8a Progress line, re-render the [tumble vs roll page](research/animation/falls-2026-11/g4b-r2/index.html) as `g4b-r4/` with the fix (both facings, normal speed), report per-knee flex sign through the roll, the apex mirror-frame step (was 71-96 px) and clamp counts; **STOP at G4b r4**. Derek then picks which move gets tumble/roll and whether the half trip stays. After G4b: [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 3d (STOP G3d), then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

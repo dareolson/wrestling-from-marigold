@@ -70,3 +70,19 @@ Derek's idea, banked, not started. A simple timeline: date, what changed, a befo
 A snapmare from the front can work, but needs its own entry: head/neck control, a turn or step into position, a planted base and a
 forward pull before the flip. Don't run the rear-reversal clip from face-to-face spacing. See
 [Codex's note](AI_HANDOFF_ENTRIES/2026-11-05-codex-snapmare-preview-correction.md).
+
+## Wrestler personality through movement (Derek 2026-11-06, plan after the finisher G1)
+
+- A personality sheet per wrestler: walk, idle, taunt, crowd play, hero pose, how he sells, one signature quirk. Lou and George
+  first; Ricky Starr (ballet) when his rig exists.
+- Sources: Mixamo (free, royalty-free) and CMU mocap for the bulk; Bandai Namco style dataset for study only (non-commercial);
+  Muybridge plates (public domain, side views, wrestling); period footage (Kohler DuMont kinescopes, Pathé/AP newsreels, Starr's
+  World of Sport clips) to watch; Derek acting signature bits on video.
+- Tools (Codex): a BVH/FBX importer that projects mocap to the side view as move-editor keyposes, first; later video pose tracking
+  (MediaPipe) with a skeleton overlay, which doubles as content footage.
+- Shooting: tripod at hip height, Derek at Lou's three-quarter turn, movement across the frame, 60 fps (120-240 for fast moves), a
+  second phone from the front for the far limbs.
+- Rig limits to plan around: no wrist bend (hands are swapped art), no fingers, no head turn found, no face, no shoulder/hip twist,
+  facing only flips (spins are faked), fixed feet, knees clamped. Signature bits that live there become narrow art requests (a
+  pointing hand, an open ballet hand, a relevé foot). One art list per wrestler.
+- Content series: "acting out every finisher", "the ballet wrestler", side-by-side of Derek / skeleton / game.

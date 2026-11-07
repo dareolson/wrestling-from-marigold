@@ -13,7 +13,7 @@ export const CORNER = Object.freeze({
     exitMs: 260,
     swayBend: 0.05, swayPeriodS: 2.7,     // slow sway of the torso
     swayCrouch: 0.025, swayCrouchPeriodS: 1.8,
-    armFallMs: 320,     // the arms drop from the load's flung pose, slower than the torso's settle (T3c.6b)
+    armFallMs: 320,     // the arms settle from the load's guard to the hang, slower than the torso's settle (T3c.6b)
     elbow: 0.25,        // limp: not the idle .7
 });
 
@@ -57,7 +57,8 @@ export function cornerPoseAt(ms) {
         const w = key === 'lArm' || key === 'rArm' ? ka : k;
         out[key] = (load[key] ?? 0) * (1 - w) + (CORNER_DAZE_POSE[key] ?? 0) * w;
     }
-    for (const e of ['lElbow', 'rElbow']) out[e] = 0.7 * (1 - ka) + CORNER.elbow * ka;
+    // the elbows start from the load's guard (T3d.4) and unfold to limp over armFallMs
+    for (const e of ['lElbow', 'rElbow']) out[e] = (load[e] ?? 0.7) * (1 - ka) + CORNER.elbow * ka;
     const t = Math.max(0, ms - ROPE_HIT.loadMs) / 1000;
     out.bend += CORNER.swayBend * k * Math.sin(2 * Math.PI * t / CORNER.swayPeriodS);
     out.crouch += CORNER.swayCrouch * k * Math.sin(2 * Math.PI * t / CORNER.swayCrouchPeriodS + 0.8);

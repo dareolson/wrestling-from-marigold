@@ -6,7 +6,7 @@ import Wrestler, { STAMINA_DRAIN } from '../src/Wrestler.js';
 import { RING, ringBoundsAtY } from '../src/constants.js';
 import Skeleton from '../src/Skeleton.js';
 import { planSells, SELLS, clutchSell } from '../src/animation/sells.js';
-import { CORNER, CORNER_CHARGE, cornerDazeSeconds, cornerOffsetAt, cornerPoseAt } from '../src/animation/cornerDaze.js';
+import { CORNER, CORNER_CHARGE, CORNER_DAZE_POSE, cornerDazeSeconds, cornerOffsetAt, cornerPoseAt } from '../src/animation/cornerDaze.js';
 import { ROPE_HIT } from '../src/animation/ropeHit.js';
 import { STAGGER_TYPES, staggerFor } from '../src/animation/staggers.js';
 
@@ -164,22 +164,27 @@ test('a fall during the sell ends the episode: no restore, no grips, no stale st
     });
 });
 
-test('arms: flung in the load, fall over 320 ms after it (no bounce, never lifting), hang with limp elbows, in every corner and both kits', () => {
+test('arms: the load\'s guard (elbows tucked, upper arms set back), then the elbows only unfold and the upper arms settle to the hang over 320 ms without overshoot, in every corner and both kits', () => {
     withFlag(() => {
         const at = (ms) => cornerPoseAt(ms);
         const load = ROPE_HIT.loadMs;
-        assert.ok(at(load).lArm > 0.9 && at(load).rArm > 0.8, 'flung at the end of the load');
-        let prev = at(load);
+        const g = at(load);
+        assert.ok(g.lElbow > 1.5 && g.rElbow > 1.5, `elbows tucked at the end of the load: ${g.lElbow}, ${g.rElbow}`);
+        assert.ok(g.lArm < 0 && g.rArm < 0, `upper arms set back, not flung: ${g.lArm}, ${g.rArm}`);
+        assert.ok(at(0).lElbow > 0.69 && at(0).rElbow > 0.69, 'the elbows come into the guard from the rest flex, never straight');
+        const hang = { lArm: CORNER_DAZE_POSE.lArm, rArm: CORNER_DAZE_POSE.rArm };
+        let prev = g;
         for (let ms = load + 5; ms <= load + CORNER.armFallMs; ms += 5) {
             const p = at(ms);
-            assert.ok(p.lArm <= prev.lArm + 1e-9 && p.rArm <= prev.rArm + 1e-9, `arms only fall (${ms} ms)`);
-            assert.ok(p.lElbow <= prev.lElbow + 1e-9, 'elbows only ease toward limp');
+            assert.ok(p.lElbow <= prev.lElbow + 1e-9 && p.rElbow <= prev.rElbow + 1e-9, `elbows only unfold (${ms} ms)`);
+            assert.ok(p.lArm >= prev.lArm - 1e-9 && p.rArm >= prev.rArm - 1e-9, `upper arms only move toward the hang (${ms} ms)`);
+            assert.ok(p.lArm <= hang.lArm + 1e-9 && p.rArm <= hang.rArm + 1e-9, `and never pass it (${ms} ms)`);
             prev = p;
         }
         const end = at(load + CORNER.armFallMs);
         assert.ok(end.lArm < -0.09 && end.rArm < 0.03, `arms hang: ${end.lArm}, ${end.rArm}`);
         assert.ok(Math.abs(end.lElbow - CORNER.elbow) < 1e-9);
-        assert.ok(at(load + CORNER.settleMs).lArm > 0.2, 'the arms are still falling when the torso has settled');
+        assert.ok(at(load + CORNER.settleMs).lElbow > CORNER.elbow + 0.3, 'the elbows are still unfolding when the torso has settled');
         for (let ms = load + CORNER.armFallMs; ms < 6000; ms += 17) { const p = at(ms); assert.ok(p.lArm <= -0.0999 && p.rArm <= 0.0201, 'they never lift on their own'); }
         for (const kit of ['lou', 'george']) for (const y of [NEAR_Y, FAR_Y]) for (const dir of [-1, 1]) {
             const sc = world(), w = man(sc, kit, { x: dir < 0 ? 300 : 650, y });

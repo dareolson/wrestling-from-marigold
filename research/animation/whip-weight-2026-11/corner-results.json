@@ -1,0 +1,802 @@
+{
+  "revised/lou-george-left-near-fresh": {
+    "arrived": 137,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 35.01
+  },
+  "revised/lou-george-left-near-worn": {
+    "arrived": 137,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 34.2
+  },
+  "revised/lou-george-right-near-fresh": {
+    "arrived": 122,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 70.84
+  },
+  "revised/lou-george-right-near-worn": {
+    "arrived": 122,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 70.84
+  },
+  "revised/lou-george-left-far-fresh": {
+    "arrived": 121,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 42.8
+  },
+  "revised/lou-george-left-far-worn": {
+    "arrived": 121,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 42.8
+  },
+  "revised/lou-george-right-far-fresh": {
+    "arrived": 115,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 20.4
+  },
+  "revised/lou-george-right-far-worn": {
+    "arrived": 115,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 20.4
+  },
+  "revised/george-lou-left-near-fresh": {
+    "arrived": 137,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 25.76
+  },
+  "revised/george-lou-left-near-worn": {
+    "arrived": 137,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 24.79
+  },
+  "revised/george-lou-right-near-fresh": {
+    "arrived": 122,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 57.35
+  },
+  "revised/george-lou-right-near-worn": {
+    "arrived": 122,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 57.35
+  },
+  "revised/george-lou-left-far-fresh": {
+    "arrived": 121,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 35.96
+  },
+  "revised/george-lou-left-far-worn": {
+    "arrived": 121,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 35.96
+  },
+  "revised/george-lou-right-far-fresh": {
+    "arrived": 115,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 15.58
+  },
+  "revised/george-lou-right-far-worn": {
+    "arrived": 115,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": -0.35,
+      "rArm": -0.4,
+      "lElbow": 2,
+      "rElbow": 1.95,
+      "bend": -0.52
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 15.58
+  },
+  "base/lou-george-left-near-fresh": {
+    "arrived": 135,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 61.36
+  },
+  "base/lou-george-left-near-worn": {
+    "arrived": 135,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 61.97
+  },
+  "base/lou-george-right-near-fresh": {
+    "arrived": 120,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 67.33
+  },
+  "base/lou-george-right-near-worn": {
+    "arrived": 120,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 67.33
+  },
+  "base/lou-george-left-far-fresh": {
+    "arrived": 124,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 40.01
+  },
+  "base/lou-george-left-far-worn": {
+    "arrived": 124,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 40.01
+  },
+  "base/lou-george-right-far-fresh": {
+    "arrived": 124,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 39.97
+  },
+  "base/lou-george-right-far-worn": {
+    "arrived": 124,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 39.97
+  },
+  "base/george-lou-left-near-fresh": {
+    "arrived": 135,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 49.09
+  },
+  "base/george-lou-left-near-worn": {
+    "arrived": 135,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 49.96
+  },
+  "base/george-lou-right-near-fresh": {
+    "arrived": 120,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 55.64
+  },
+  "base/george-lou-right-near-worn": {
+    "arrived": 120,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 55.64
+  },
+  "base/george-lou-left-far-fresh": {
+    "arrived": 124,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 31.64
+  },
+  "base/george-lou-left-far-worn": {
+    "arrived": 124,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 31.64
+  },
+  "base/george-lou-right-far-fresh": {
+    "arrived": 124,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 31.6
+  },
+  "base/george-lou-right-far-worn": {
+    "arrived": 124,
+    "contact": {
+      "lArm": 0,
+      "rArm": 0,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": 0
+    },
+    "loadEnd": {
+      "lArm": 1.1,
+      "rArm": 0.95,
+      "lElbow": 0.7,
+      "rElbow": 0.7,
+      "bend": -0.38
+    },
+    "plus320": {
+      "lArm": -0.1,
+      "rArm": 0.02,
+      "lElbow": 0.25,
+      "rElbow": 0.25,
+      "bend": -0.19
+    },
+    "contactStepPx": 31.6
+  }
+}

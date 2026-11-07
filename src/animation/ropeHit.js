@@ -49,7 +49,8 @@ export function ropeHitPose(ms, stamina) {
     const { loadMs, springMs } = ROPE_HIT, tautMs = tautMsFor(stamina), out = {};
     const at = ms < loadMs ? easeOut(clamp01(ms / loadMs)) : 1;
     const sp = ms < loadMs + tautMs ? 0 : easeOut(clamp01((ms - loadMs - tautMs) / springMs));
-    for (const k of Object.keys(LOAD)) out[k] = (LOAD[k] * at) * (1 - sp) + SPRING[k] * sp;
+    // an elbow comes in from the rest flex, not from 0 (a straight arm), so the guard is bent the whole way
+    for (const k of Object.keys(LOAD)) { const from = k.endsWith('Elbow') ? ELBOW_REST : 0; out[k] = (from + (LOAD[k] - from) * at) * (1 - sp) + SPRING[k] * sp; }
     return out;
 }
 

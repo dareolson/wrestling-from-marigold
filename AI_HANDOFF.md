@@ -42,10 +42,12 @@ Avoid a large rewrite.
 - **Awaiting Derek:** Marigold title queue (83ab5cd) visual OK; what comes next (see below).
 - **Uncommitted on purpose:** Codex's sleeper-wrap PNGs (`src/assets/wrestlers/*/forearm_sleeper_wrap.png`) and 4 Codex `tools/debug` scripts (sleeper wrap, throw support, waistlock probes) are unreviewed and stay untracked. Large frame dumps are gitignored.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `fb8c5ca` (2026-11-06). Push via the SSH URL only. Coverage baseline 26 gaps.
-- **Next (2026-11-06):** PLAN_FALLS G4a r2 T4.5-T4.6 built (local), **at the stills**: Derek looks at [the stills page](research/animation/falls-2026-11/g4a-r2/index.html) (elbow drop approach/contact/roll-off; attacker lies on the far side, layering only in the tool). Then Sonnet: T4.7 animate between them and apply to knee drop, diving elbow, top dive, **STOP at G4a r2**; then T4.3 soak and T4.4 promotion.
+- **Next (2026-11-06):** PLAN_FALLS G4a r2 T4.5-T4.6 built (local), **at the stills**: Derek looks at [the stills page](research/animation/falls-2026-11/g4a-r2/index.html) (elbow drop approach/contact/roll-off; attacker lies on the far side, layering only in the tool). Then Sonnet: T4.7 animate between them and apply to knee drop, diving elbow, top dive, **STOP at G4a r2**; then T4.3 soak and T4.4 promotion. [Codex stills review for Opus](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-contact-stills-review.md): raw overlap remains despite depth-derived zero conflict; verify roll-off hand support and explicit striking-part measurement before animation. Fresh falls tests 57/57.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-06 · Codex · [Ground-contact stills review for Opus: depth vs overlap, explicit striking limb, support and animation](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-contact-stills-review.md)
 
 - 2026-11-06 · Codex · [Ground attacks: staged limb contact, separate body silhouettes, roll-off; preserve existing art](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-attack-contact.md)
 

@@ -342,6 +342,21 @@ never measured overlap between the two bodies. The jolt and the handoff stay; th
   actual contact frame. The handoff to the ground must not pull him back through the receiver. Then apply the same approach to the knee
   drop, diving elbow and top dive, each with its own contact point (not one shared offset). G4a r2 page: loop strips as G4a, overlap
   numbers before and after. Focused tests, flag-off pass. Commit locally, **STOP at G4a r2**.
+- **T4.7 additions** (Codex's [stills review](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-contact-stills-review.md), confirmed by
+  Opus):
+  - **Side:** Derek picks far side (Sonnet's stills) or near side (the plan). The metric doesn't decide it.
+  - **The measure, tightened:** each move declares its striking side and part (elbow drop: the near-camera forearm + hand only, not
+    the upper arm) and its target region on the receiver. The allowed limb is fixed for the whole move, not re-picked per frame.
+    Report raw overlap, overlap outside the allowed part, and the depth-order conflict as three separate numbers. "Front conflict 0"
+    with all parts behind is not "no phasing". Before/after is a matched window (same move, same frames), not a pose against 2.6 s.
+  - **Roll-off support:** anchor a planted hand to a mat point beside the receiver, not to an offset from his chest. Show the point,
+    its gap to the mat and to the receiver, and start the get-up from it. Existing parts first.
+  - **Production ownership:** the stills tool's `updateGrounded`/`setDepth` overrides become runtime code with one owner. Part depths
+    are restored on the end of contact, on a cancel, a pin or a match end (tests for each). The target point follows the receiver
+    through his jolt. Ring room and mat support are checked at the real positions along the whole route.
+  - **Order:** the elbow drop alone first (both rigs, facings, supine and prone). Validate elbow gap, the three overlap numbers, hand
+    support, signed joints, seams, damage/foley firing once, and the cancel path. Then knee drop and dives, each with its own striking
+    part.
 - **T4.3** Soak: `grapples_soak.mjs` with `falls=v1`, 4 x 150 s, both pairings. Count falls per variant and pick reason, down-hit
   reactions, page errors, stuck `down` states and get-up pops. A stuck state or a page error blocks T4.4. Fix it or report it.
 - **T4.4** Promote: `fallsCandidate` becomes `defaultOnFlag('falls', 'v1')` like the other promoted flags, so `?falls=off` is the old

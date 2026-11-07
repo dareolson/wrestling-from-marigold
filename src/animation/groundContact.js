@@ -62,7 +62,7 @@ export function sampleGroundAttack(def, t, rest) {
 //   tumble (r2) a full turn in the air, rigid-rotating the tucked apex pose (every absolute angle + theta) through head-up, head-back, head-down, into the PRONE rest: the head ends on the
 //          SAME side and he rises from his front.
 //   roll   (r2) up to the apex and back down on the same side, landing SUPINE with the head on the same side. The rig's supine pose has the head on the far side, so the second half is
-//          drawn with the facing mirrored and every angle negated (same joint positions, only the art mirrors, at the apex); his facing is the mirror of the dive's from then on, and he
+//          drawn with the facing mirrored and every angle negated (same joint positions, only the art mirrors, at the apex; T4.8a: the roll's apex has straight limbs so the negation reverses no bend); his facing is the mirror of the dive's from then on, and he
 //          rises from his back.
 // (A facing flip drawn at an arbitrary frame was tried first: mirroring a pose throws its wrists 70-240 px.)
 const B = Object.freeze({ torso: 3.0, farThigh: 1.1, farShin: 0.2, nearThigh: 1.3, nearShin: 0.3, farArm: 0.5, farFore: 1.8, nearArm: 0.3, nearFore: 1.4 });   // the tucked top of the pivot: torso just short of vertical, thighs drawn up a little, shins hanging, arms out
@@ -76,12 +76,29 @@ export const SPLASH = Object.freeze({ ...SPLASH_BASE, variant: 'pivot', rest: 's
 export const SPLASH_TUMBLE = Object.freeze({ ...SPLASH_BASE, variant: 'tumble', rest: 'prone', restShift: 2 * Math.PI, apex: APEX, lift: 22,
     keys: Object.freeze([{ u: 0.22, g: rotated(0, 66) }, { u: 0.36, g: rotated(Math.PI / 2, 60) }, { u: 0.50, g: rotated(Math.PI, 76) }, { u: 0.64, g: rotated(Math.PI * 1.5, 82) }].map(Object.freeze)),
     timing: Object.freeze({ fall: 0, hold: 0.06, release: 0.66, settle: 0.22, bounce: 0.66 }) });
-export const SPLASH_ROLL = Object.freeze({ ...SPLASH_BASE, variant: 'roll', rest: 'supine', mirrorAt: 0.5, apex: APEX, keys: Object.freeze([Object.freeze({ u: 0.5, g: APEX })]), lift: 14,
+// T4.8a: the roll's own apex, limbs STRAIGHT (distal = proximal on every chain). Mirroring negates each angle, which reverses a bend (a knee thigh - shin >= 0 becomes <= 0: a backward knee), so the facing flips only on a pose with no bend to
+// reverse; the knees and elbows bend after it, into the supine rest, the valid way for the new facing. Legs at 1.0/1.15 rad keep the feet clear of the mat at hip 66.
+const ROLL_APEX = Object.freeze({ hip: 66, torso: 3.0, farThigh: 1.0, farShin: 1.0, nearThigh: 1.15, nearShin: 1.15, farArm: 0.5, farFore: 0.5, nearArm: 0.3, nearFore: 0.3 });
+export const SPLASH_ROLL = Object.freeze({ ...SPLASH_BASE, variant: 'roll', rest: 'supine', mirrorAt: 0.5, apex: ROLL_APEX, keys: Object.freeze([Object.freeze({ u: 0.5, g: ROLL_APEX })]), lift: 14,
     timing: Object.freeze({ fall: 0, hold: 0.06, release: 0.46, settle: 0.22, bounce: 0.46 }) });
 export const SPLASH_VARIANTS = Object.freeze({ pivot: SPLASH, tumble: SPLASH_TUMBLE, roll: SPLASH_ROLL });
 
 const wrapTo = (a, ref) => a + 2 * Math.PI * Math.round((ref - a) / (2 * Math.PI));
-const mirrored = (g, ref) => { const m = {}; for (const [k, v] of Object.entries(g)) m[k] = k === 'hip' || k === 't' ? v : wrapTo(-v, ref[k] ?? -v); return m; };   // the same joint positions drawn with the facing mirrored
+// The same joint positions drawn with the facing mirrored: negate every angle. A chain stays whole: the proximal channel (torso, thigh, upper arm) wraps to `ref`, the distal one is placed from it by the
+// same bend on the same branch (never wrapped on its own). Negating reverses a bend's sign, which the renderer's one-way knees and elbows can't draw, so a pose with a bend is an error, not a clamp.
+const CHAINS = Object.freeze([['farThigh', 'farShin'], ['nearThigh', 'nearShin'], ['farArm', 'farFore'], ['nearArm', 'nearFore']]);
+const MIRROR_BEND_TOL = 0.02;
+const mirrored = (g, ref) => {
+    const m = {};
+    for (const [k, v] of Object.entries(g)) if (k === 'hip' || k === 't') m[k] = v; else m[k] = wrapTo(-v, ref[k] ?? -v);
+    for (const [p, d] of CHAINS) {
+        if (g[p] === undefined || g[d] === undefined) continue;
+        const bend = g[p] - g[d];
+        if (Math.abs(bend) > MIRROR_BEND_TOL) throw new Error(`mirrored: ${p}/${d} bend ${bend.toFixed(3)} would reverse; straighten the pose before the facing flips`);
+        m[d] = m[p] + bend;
+    }
+    return m;
+};
 const shifted = (g, d) => { const m = {}; for (const [k, v] of Object.entries(g)) m[k] = k === 'hip' || k === 't' ? v : v + d; return m; };
 
 // The splash at time t (since contact): { seg, u (0..1 over the bounce), lift (px at s = 1), travel (0..1 along the route), toApex (0..1 body blend flight -> first key; g absent until then), mirror (draw g with the facing mirrored), g }.

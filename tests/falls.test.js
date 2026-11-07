@@ -906,3 +906,40 @@ test('T4.8 a dive on a man on the mat: damage, sell and shake once, then the spl
     assert.equal(off.atk._groundAttack ?? null, null, 'flag off: the old landing'); assert.equal(off.atk.stateTimer, 3.0);
     delete globalThis.location;
 });
+
+// PLAN_FALLS T4.8a: backward legs. The roll mirrored each angle on its own, which reversed the knee bend (far -0.90) and wrapped the near knee to 5.283. Sample what the renderer is actually handed.
+test('T4.8a sampleSplash, every variant, both sides of the mirror: knees and elbows bend only the right way, no wrapped chain, the drawn joints step no more across the mirror frame than between neighbouring frames, the grounded knee clamp never fires beyond the shared rest pose', () => {
+    const L = { thigh: 44, shin: 44, arm: 38, fore: 38 }, tip = (a, len, f) => [Math.sin(a) * len * f, Math.cos(a) * len];
+    const joints = (g, mir) => { const f = mir ? -1 : 1, out = {}; for (const side of ['far', 'near']) {
+        const k = tip(g[`${side}Thigh`], L.thigh, f), a = tip(g[`${side}Shin`], L.shin, f), e = tip(g[`${side}Arm`], L.arm, f), w = tip(g[`${side}Fore`], L.fore, f);
+        out[`${side}Knee`] = k; out[`${side}Ankle`] = [k[0] + a[0], k[1] + a[1]]; out[`${side}Elbow`] = e; out[`${side}Wrist`] = [e[0] + w[0], e[1] + w[1]];
+    } return out; };
+    const dist = (A, B) => Math.max(...Object.keys(A).map(k => Math.hypot(A[k][0] - B[k][0], A[k][1] - B[k][1])));
+    for (const [name, def] of Object.entries(SPLASH_VARIANTS)) {
+        const rest = REST_OF(def), T = def.timing, b0 = T.fall + T.hold, ts = [];
+        for (let i = 0; i <= 240; i++) ts.push(b0 + T.bounce * i / 240);
+        if (def.mirrorAt != null) ts.push(b0 + T.bounce * def.mirrorAt - T.bounce * 1e-6, b0 + T.bounce * def.mirrorAt + T.bounce * 1e-6);
+        ts.push(b0 + T.bounce - 1e-9); ts.sort((a, b) => a - b);
+        const restKnee = Math.min(rest.farThigh - rest.farShin, rest.nearThigh - rest.nearShin), kneeFloor = Math.min(-0.02, restKnee - 1e-9);
+        let clamps = 0, prev = null, maxStep = 0, mirrorStep = 0;
+        for (const t of ts) {
+            const s = sampleSplash(def, t, rest); if (!s.g) continue;
+            for (const side of ['far', 'near']) {
+                const knee = s.g[`${side}Thigh`] - s.g[`${side}Shin`], elbow = s.g[`${side}Fore`] - s.g[`${side}Arm`];
+                assert.ok(knee >= kneeFloor && knee <= 2.55, `${name} ${side} knee flex ${knee} at ${t}`);
+                assert.ok(elbow >= -0.02 && elbow <= 2.55, `${name} ${side} elbow flex ${elbow} at ${t}`);
+                if (knee < Math.min(0, restKnee) - 1e-9) clamps++;
+            }
+            const J = joints(s.g, s.mirror);
+            if (prev) { const d = dist(prev.J, J); if (prev.mirror !== s.mirror) mirrorStep = Math.max(mirrorStep, d); else if (t - prev.t > 1e-4) maxStep = Math.max(maxStep, d); }
+            prev = { J, mirror: s.mirror, t };
+        }
+        assert.equal(clamps, 0, `${name}: the grounded knee clamp would fire`);
+        if (def.mirrorAt != null) assert.ok(mirrorStep <= Math.max(1, maxStep), `${name}: the drawn joints step ${mirrorStep.toFixed(2)} px across the mirror (neighbouring frames ${maxStep.toFixed(2)})`);
+    }
+});
+
+test('T4.8a mirrored refuses a pose whose bend it cannot keep, instead of clamping or wrapping it', () => {
+    assert.throws(() => sampleSplash({ ...SPLASH_ROLL, keys: [{ u: 0.5, g: SPLASH.apex }] }, 0.06 + 0.46 * 0.6, REST_OF(SPLASH_ROLL)), /would reverse/);
+    assert.doesNotThrow(() => sampleSplash(SPLASH_ROLL, 0.06 + 0.46 * 0.6, REST_OF(SPLASH_ROLL)));
+});

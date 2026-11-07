@@ -1139,6 +1139,23 @@ at G2, only then a far-side drawing.
   px apart. Focused tests (`clasps`, `grapples`, `lockup`, `waistlock`), flag-off A/B. Commit locally, **STOP at G2**: Derek judges.
   If Derek wants a dedicated hand for the biceps grab, it is Codex C4 `bicepGrip` (fingers over the top of the arm, thumb under) on
   the T2.0 pipeline.
+- **T2.2 r6 (Sonnet) The swap hides inside the grab (Derek G2 2026-11-07).** Derek: "the transition to the new limb seems to
+  happen too late, you can see it, but if it happened during the grab, i think it would be less detectable." Today the art swaps
+  when the grip weight reaches `CLASP_ON` .5 (frames 9-14), when the hand has mostly arrived. The frozen check (r5) shows the
+  swap itself is aligned (0-0.06 px), so this is timing, not fit: a hand that changes shape while nearly still shows.
+  1. **Measure first:** per hand (both pairs, both facings), the drawn hand's screen speed (palm/clutch point, px/frame) every
+     frame from the start of the reach (the arm leaving its idle pose, which may be before the grip ramp starts) to the land.
+     Report the frame of peak speed, the swap frame now, and the speed at each.
+  2. **Move the swap onto the fast part of the reach:** sweep `CLASP_ON` (.05, .1, .2, .3) and pick the value that puts every
+     hand's swap within a frame of its peak speed. If no single weight does (the reach starts before the ramp), swap on the hand's
+     own speed instead (e.g. the first frame past half its peak). The palm aim keeps scaling with `w`, so an early swap changes
+     the aim by little; report the palm path's step at the swap frame (px) next to the before value.
+  3. **The release the same way:** the art comes off while the hand is moving away (the break, the shove, the rope break), not
+     after it has stopped. Measure and report it the same way. No double swap (on, off, on) when the weight wobbles.
+  4. Tests: the swap threshold/rule (unit); the existing cleanup and no-art cases still pass.
+  **Proof (G2 page, r6 section):** the normal-speed loop strip in both facings beside r5, and a frame-by-frame row through each
+  swap (3 frames before to 3 after) for the grab and the release, the swap frame marked. Focused tests, flag-off A/B. Commit
+  locally, don't push, **STOP at G2**, clickable link for Derek.
 - **Later in Stage 2 (after G2):** the steal as a visible shove, with a re-grip if Derek wants D5 changed (the old outline);
   more clasps (wrist grab for the whip, arm drag and wristlocks; headlock) on the same pipeline.
 

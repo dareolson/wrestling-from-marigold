@@ -42,7 +42,7 @@ Avoid a large rewrite.
 - **Awaiting Derek:** G4 (play a match with no flag, falls on) and G4b (splash bounce); Marigold title queue (83ab5cd) visual OK.
 - **Uncommitted on purpose:** Codex's sleeper-wrap PNGs (`src/assets/wrestlers/*/forearm_sleeper_wrap.png`) and 4 Codex `tools/debug` scripts (sleeper wrap, throw support, waistlock probes) are unreviewed and stay untracked. Large frame dumps are gitignored.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `fb8c5ca` (2026-11-06); later commits local. Session handoff: [entry](AI_HANDOFF_ENTRIES/2026-11-06-claude-opus-handoff-ground-contact.md). Push via the SSH URL only. Coverage baseline 26 gaps.
-- **Next (Opus 2026-11-06):** falls promoted (73cb6d1). Derek at G4: the splashes tangle the bodies. Sonnet: [PLAN_FALLS.md](PLAN_FALLS.md) **T4.8** (the diver bounces off the chest, rolls over and ends up-screen, then gets up), **STOP at G4b**. Then [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) **Stage 3d** (whip with weight, tucked elbows at the rope), **STOP at G3d**; then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1.
+- **Next (Sonnet 2026-11-06):** falls promoted (73cb6d1). T4.8 splash done (fff8d94, local), **at G4b**: Derek judges the bounce and roll ([page](research/animation/falls-2026-11/g4b/index.html)); the plan's facing flip was dropped (a mirror pops 72-244 px), he lands face up. Then [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) **Stage 3d** (whip with weight, tucked elbows at the rope), **STOP at G3d**; then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

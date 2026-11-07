@@ -40,9 +40,8 @@ for(const [id,rig] of [['thesz-procreate-v1',theszProcreateV1],['george-roster-v
  const wholeCanvasFit=Math.min(base.w/master.w,base.h/master.h,
   pivot.x/crook.x,(base.w-1-pivot.x)/(master.w-1-crook.x),
   pivot.y/crook.y,(base.h-1-pivot.y)/(master.h-1-crook.y));
- const scale={x:wholeCanvasFit,y:wholeCanvasFit},shift={x:pivot.x-crook.x*scale.x,y:pivot.y-crook.y*scale.y};
  const keep=Math.floor(pivot.y)-8,blend=8,targetTone=tone(base),delta=targetTone.map((v,i)=>v-sourceTone[i]);
- const out={w:base.w,h:base.h,rgba:new Uint8Array(base.w*base.h*4)};
+ const paint=(scale,shiftX)=>{const shift={x:shiftX??pivot.x-crook.x*scale.x,y:pivot.y-crook.y*scale.y},out={w:base.w,h:base.h,rgba:new Uint8Array(base.w*base.h*4)};
  // Inverse map the WHOLE source canvas, then register its crook at the elbow.
  // Bilinear sampling is premultiplied-alpha; no bbox fit, silhouette crop or browser round trip.
  for(let y=0;y<base.h;y++)for(let x=0;x<base.w;x++){
@@ -53,9 +52,24 @@ for(const [id,rig] of [['thesz-procreate-v1',theszProcreateV1],['george-roster-v
   out.rgba[i+3]=Math.round(a*255);
   if(y<=keep)out.rgba.set(base.rgba.subarray(i,i+4),i); // exact original cap, including transparent RGB
  }
+ return {out,shift};};
+ const edges=(im,y)=>{let lo=im.w,hi=-1;for(let x=0;x<im.w;x++)if(im.rgba[(y*im.w+x)*4+3]>=40){lo=Math.min(lo,x);hi=Math.max(hi,x);}return[lo,hi];};
+ // Derek 2026-11-07: fit roughly to the rig's working arm. Length: the palm lands on the working grip's clutch row (the
+ // hammerlock forearm, in game on both rigs). Width: the shaft matches the base forearm's, so the swap doesn't thin the arm.
+ // Both are scales about the elbow pivot, so the cap and the registration stay put.
+ const uniform={x:wholeCanvasFit,y:wholeCanvasFit},gripV=rig.textures.variants?.forearm?.grip?.semanticAnchors?.clutch?.v;
+ const ownY=config.masterContact.y*uniform.y+pivot.y-crook.y*uniform.y,refY=gripV==null?ownY:gripV*base.h;
+ const sy=(refY-pivot.y)/(ownY-pivot.y),lenFit={x:uniform.x,y:uniform.y*sy},trial=paint(lenFit).out;
+ const shaftRows=[];for(let y=keep+blend+4;y<=pivot.y+.55*(refY-pivot.y);y++)shaftRows.push(y);
+ const ratios=shaftRows.map(y=>{const[bl,bh]=edges(base,y),[ol,oh]=edges(trial,y);return oh>=ol&&bh>=bl?(bh-bl+1)/(oh-ol+1):1;});
+ // Stretch about the shaft's own centre line (the drawing sits off the pivot), and never past the canvas edge.
+ const cx=median(shaftRows.map(y=>{const[l,h]=edges(trial,y);return(l+h)/2;}));
+ let lo=base.w,hi=-1;for(let y=keep+blend;y<base.h;y++){const[l,h]=edges(trial,y);if(h>=l){lo=Math.min(lo,l);hi=Math.max(hi,h);}}
+ const room=Math.min(lo<cx?(cx-3)/(cx-lo):9,hi>cx?(base.w-4-cx)/(hi-cx):9);   // 3 px margin: bilinear spill
+ const sx=Math.max(.8,Math.min(1.6,room,median(ratios.slice())));
+ const scale={x:uniform.x*sx,y:lenFit.y},shiftU=pivot.x-crook.x*uniform.x,{out,shift}=paint(scale,cx+(shiftU-cx)*sx);
  // Graft the silhouette gradually too: alpha blending alone exposes a wide
  // lateral shelf as soon as the first generated row crosses the paint threshold.
- const edges=(im,y)=>{let lo=im.w,hi=-1;for(let x=0;x<im.w;x++)if(im.rgba[(y*im.w+x)*4+3]>=40){lo=Math.min(lo,x);hi=Math.max(hi,x);}return[lo,hi];};
  const startEdge=edges(base,keep),endEdge=edges(out,keep+blend);
  for(let y=keep+1;y<keep+blend;y++){const k=(y-keep)/blend,lo=Math.floor(startEdge[0]*(1-k)+endEdge[0]*k),hi=Math.ceil(startEdge[1]*(1-k)+endEdge[1]*k);
   for(let x=0;x<base.w;x++)if(x<lo||x>hi)out.rgba.fill(0,(y*base.w+x)*4,(y*base.w+x+1)*4);}
@@ -72,7 +86,7 @@ for(const [id,rig] of [['thesz-procreate-v1',theszProcreateV1],['george-roster-v
  for(let y=0;y<base.h;y++){let min=base.w,max=-1,prevMin=base.w,prevMax=-1;for(let x=0;x<base.w;x++){const i=(y*base.w+x)*4;if(y<=keep)for(let c=0;c<4;c++)if(out.rgba[i+c]!==base.rgba[i+c])capDiff++;if(out.rgba[i+3]>=40){opaque++;min=Math.min(min,x);max=Math.max(max,x);bbox=[Math.min(bbox[0],x),Math.min(bbox[1],y),Math.max(bbox[2],x),Math.max(bbox[3],y)];if(Math.max(...out.rgba.subarray(i,i+3))<90)ink++;}
  if(y>keep&&y<=keep+blend+1&&out.rgba[i-4*base.w+3]>=40){prevMin=Math.min(prevMin,x);prevMax=Math.max(prevMax,x);}}
  if(y>keep&&y<=keep+blend+1&&min<=max&&prevMin<=prevMax)seamMax=Math.max(seamMax,Math.abs(min-prevMin),Math.abs(max-prevMax));}
- result.rigs[id]={canvas:[base.w,base.h],baseSha256:createHash('sha256').update(bytes).digest('hex'),pivot,contact:{x:config.masterContact.x*scale.x+shift.x,y:config.masterContact.y*scale.y+shift.y},semanticAnchors:{clutch:{u:(config.masterContact.x*scale.x+shift.x)/base.w,v:(config.masterContact.y*scale.y+shift.y)/base.h}},wholeCanvasScale:scale,registrationShift:shift,capRows:[0,keep],blendRows:[keep+1,keep+blend],capChangedChannels:capDiff,sourceSkinMedian:sourceTone,targetSkinMedian:targetTone,fittedSkinMedian:tone(out),toneShift:delta,baseInkMedianPx:baseInkMedian,beforeInkMedianPx:beforeInkMedian,fittedInkMedianPx:median(inkRuns(out)),alpha40Pixels:opaque,inkPixelsUnder90:ink,bboxAlpha40:bbox,maxJoinRowEdgeStepPx:seamMax,output:output.slice(root.length)};
+ result.rigs[id]={canvas:[base.w,base.h],baseSha256:createHash('sha256').update(bytes).digest('hex'),pivot,contact:{x:config.masterContact.x*scale.x+shift.x,y:config.masterContact.y*scale.y+shift.y},semanticAnchors:{clutch:{u:(config.masterContact.x*scale.x+shift.x)/base.w,v:(config.masterContact.y*scale.y+shift.y)/base.h}},wholeCanvasScale:uniform,fittedScale:scale,workingArmFit:{gripClutchRow:refY,uniformContactRow:ownY,lengthScale:sy,widthScale:sx,widthWanted:median(ratios.slice()),stretchCentreX:cx,shaftRows:[shaftRows[0],shaftRows.at(-1)]},edgeColumnAlphaPx:(()=>{let n=0;for(let y=0;y<base.h;y++)for(const x of [0,base.w-1])if(out.rgba[(y*base.w+x)*4+3]>=40)n++;return n;})(),registrationShift:shift,capRows:[0,keep],blendRows:[keep+1,keep+blend],capChangedChannels:capDiff,sourceSkinMedian:sourceTone,targetSkinMedian:targetTone,fittedSkinMedian:tone(out),toneShift:delta,baseInkMedianPx:baseInkMedian,beforeInkMedianPx:beforeInkMedian,fittedInkMedianPx:median(inkRuns(out)),alpha40Pixels:opaque,inkPixelsUnder90:ink,bboxAlpha40:bbox,maxJoinRowEdgeStepPx:seamMax,output:output.slice(root.length)};
  const c=result.rigs[id].semanticAnchors.clutch;
  if(c.u<0||c.u>1||c.v<0||c.v>1)throw Error(id+': contact outside canvas');
  if(capDiff)throw Error('cap changed');

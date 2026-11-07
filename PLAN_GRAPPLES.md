@@ -121,6 +121,7 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - Opus review of 4cc49fa (2026-11-07): suite 1258/1260 (corner-daze arms: the corner reuses the new load with 0.7 elbows), build, coverage 26. T3d.4 written, STOP at G3d-c.
 - T2.1 (Opus review of Codex T2.0): art + fit tools committed (this commit), `build_forearm_variant.mjs all --check` passes (caps 0 changed). Palm to target: Lou 1.8-3.9 px, George 16.6-21.5 px (wrist IK, not palm: T2.2's job).
   Misses: collarTie and waistClasp shafts 25-37% narrower than the base forearm at the same rows (Lou 55/43 vs 78/65 px, George 52 vs 83); elbowCup within 7-11%. Derek judges the stills; masters live in ignored `Sprite sheets/`.
+- T2.1b (Derek: fit to the working arm): `build_forearm_variant.mjs` scales each clasp about the elbow: length so the palm sits on the `grip` clutch row (Lou 279, George 344), width to the base shaft about the shaft's centre, 3 px inside the canvas. Shaft widths now base ±12% (Lou elbowCup capped at 1.0 by the canvas, 67 vs 78 px). Palm to target: Lou 4.4-6.3 px, George 12.7-16.3 px. [Sheet](research/art/clasps-2026-11/forearm-fit-before-after.png), [in ring](research/art/clasps-2026-11/in-ring-clasps-refit.png).
 - T3d r4: ece82fe (Derek's note), the rope launch hands the run equal arms (0.05/0.05, rest elbows; was -0.25/+0.3 and 1.0/0.9, flapping). Opus: launch only, the corner reads LOAD alone; focused 29/30 (the T3d.4 corner test).
 
 ## Why (Derek 2026-10-29)

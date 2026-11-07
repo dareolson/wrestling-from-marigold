@@ -882,9 +882,9 @@ test('T4.8 the splash poses keep bend-only knees and elbows; the pivot goes up t
     assert.ok(torsos.every((t, i) => i === 0 || t > torsos[i - 1]) && Math.abs(torsos.at(-1) - (P.torso + 2 * Math.PI)) < 0.4, `the tumble's torso keeps turning one way: ${torsos}`);
 });
 
-test('T4.8 a dive on a man on the mat: damage, sell and shake once, then the splash variant; the top dive defaults to the pivot, the diving elbow to the tumble, ?splash= forces one; possum and standing targets keep the old landing', async () => {
+test('T4.8 a dive on a man on the mat: damage, sell and shake once, then the splash variant; the top dive defaults to the pivot, the diving elbow to the roll, ?splash= forces one; possum and standing targets keep the old landing', async () => {
     const rises = { pivot: 'supine', tumble: 'prone', roll: 'supine' };
-    for (const [call, move, old, dflt] of [['_doDive', 'divingElbow', 2.0, 'tumble'], ['_doTopDive', 'topDive', 3.0, 'pivot']]) {
+    for (const [call, move, old, dflt] of [['_doDive', 'divingElbow', 2.0, 'roll'], ['_doTopDive', 'topDive', 3.0, 'pivot']]) {
         for (const forced of [null, 'pivot', 'tumble', 'roll']) {
             const { atk, def, hurts } = await downFixture(true);
             if (forced) globalThis.location.search = `?falls=v1&splash=${forced}`;

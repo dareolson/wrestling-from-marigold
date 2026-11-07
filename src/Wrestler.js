@@ -187,9 +187,9 @@ export const moveTier = (move) => {
 const strikeReact = (other, attacker, move, pose, ms, alwaysFall = false) => (fallsCandidate() ? other._strikeReact(attacker, move, pose, ms, alwaysFall) : other._doSell(pose, ms, () => other.startStagger()));
 // ?falls=v1 (T3.3): the sideways spill (T2.5e), called by the shove through chooseFall. It was `&spill=1` until Stage 3; the flag is gone, the name stays for the tools.
 export const spillCandidate = () => fallsCandidate();
-// PLAN_FALLS T4.8 (G4b r2): which turn a dive on a man on the mat takes (groundContact.js SPLASH_VARIANTS). Default: the top dive keeps the pivot (Derek: a good landing for a splash off the top rope), the
-// diving elbow the tumble; `?splash=pivot|tumble|roll` forces one for review.
-const SPLASH_DEFAULT = { topDive: 'pivot', divingElbow: 'tumble' };
+// PLAN_FALLS T4.8 (G4b r4): which turn a dive on a man on the mat takes (groundContact.js SPLASH_VARIANTS). Default (Derek): the top dive keeps the pivot (a good landing for a splash off the top rope), the
+// diving elbow, from normal height, the roll. The tumble is parked (too gravity-defying) but kept; `?splash=pivot|tumble|roll` forces one for review.
+const SPLASH_DEFAULT = { topDive: 'pivot', divingElbow: 'roll' };
 export const splashFor = (move) => {
     const v = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('splash') : null;
     return SPLASH_VARIANTS[v] ?? SPLASH_VARIANTS[SPLASH_DEFAULT[move]];

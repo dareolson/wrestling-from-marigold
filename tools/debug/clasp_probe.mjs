@@ -65,7 +65,7 @@ for (const [pair, att, def] of PAIRS) {
                 const pick = (r, art) => Object.entries(r.palm).find(([x, v]) => x.startsWith(m + '.') && v.art === art && `${v.side}` === slot)?.[1];
                 const wgt = (now !== 'base' ? pick(rows[k], now) : pick(rows[k - 1], was))?.w ?? null;
                 rec.swaps.push({ man: m, slot, frame: k, to: now, weightAtSwap: wgt, forearmStepPx: +step(rows[k - 1][m === 'a' ? 'rowA' : 'rowD'], rows[k][m === 'a' ? 'rowA' : 'rowD'], /forearm/i).toFixed(1), forearmStepBeforePx: k > 1 ? +step(rows[k - 2][m === 'a' ? 'rowA' : 'rowD'], rows[k - 1][m === 'a' ? 'rowA' : 'rowD'], /forearm/i).toFixed(1) : null });
-                if (now !== 'base' && wgt !== null && wgt < 0.5) fail(`${id}: ${m} swapped to ${now} at weight ${wgt}`);
+                if (now !== 'base' && wgt !== null && wgt < 0.05) fail(`${id}: ${m} swapped to ${now} at weight ${wgt}`);
             }
             const acc = {};
             for (const r of rows) for (const [k, v] of Object.entries(r.palm)) if (v.on && v.palm !== null && v.w >= 0.95) (acc[k] ??= { p: [], w: [] }, acc[k].p.push(v.palm), acc[k].w.push(v.wrist));

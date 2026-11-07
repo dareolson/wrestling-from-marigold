@@ -24,7 +24,7 @@ import { staggerFor } from './animation/staggers.js';
 import { ROPE_HIT, ELBOW_REST, ropeHitAt, ropeHitPose } from './animation/ropeHit.js';
 import { CORNER, CORNER_CHARGE, CORNER_DAZE_POSE, cornerDazeSeconds, cornerOffsetAt, cornerPoseAt } from './animation/cornerDaze.js';
 import { gripTarget } from './animation/lockup.js';
-import { claspSelection, claspArt, CLASP_REACH } from './animation/clasps.js';
+import { claspStep, claspArt, CLASP_REACH } from './animation/clasps.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
     ARTICULATED_CHANNELS,
@@ -785,6 +785,7 @@ export default class Wrestler {
             moved = true;
         }
         if (moved) this.draw();
+        if (list.some(i => i.clasp)) this._claspPost = { near: { ...pts.nearWrist }, far: { ...pts.farWrist } };
     }
 
     // grapples=v1 (T2.2): put the clasp art on the arms whose grip is closing, take it off the rest (animation/clasps.js). Only the
@@ -793,12 +794,22 @@ export default class Wrestler {
         const sk = this.skeleton, textures = sk?._textureConfig;
         if (!sk?._partImages || !textures) return;
         const has = (name, slot) => !!sk._partImages[slot] && !!textureKey(textures.variants?.forearm?.[name]);
-        const want = claspSelection(list, sk.lChannelSide?.(this.facing), has);
+        // The hand's speed is how far its drawn wrist moved over the last frame (holdGrips leaves the post-IK wrist in _claspPost).
+        const speed = {}, prior = this._claspPrior ?? {};
+        for (const side of ['near', 'far']) {
+            const last = this._claspPost?.[side];
+            speed[`${side}Forearm`] = last && prior[side] ? Math.hypot(last.x - prior[side].x, last.y - prior[side].y) : 0;
+        }
+        this._claspPrior = { ...(this._claspPost ?? {}) };
+        const { want, released, full } = claspStep(list, sk.lChannelSide?.(this.facing), has, { worn: this._claspSel ?? {}, speed: (slot) => speed[slot], released: this._claspReleased ?? {}, full: this._claspFull ?? {} });
+        this._claspReleased = released;
+        this._claspFull = full;
         this._applyClasps(want);
     }
 
     // Every exit: the art comes off whatever the grip did (Arena calls this each frame for a man with no grip left).
     clearClasps() {
+        this._claspPost = this._claspPrior = this._claspReleased = this._claspFull = null;
         if (this._claspSel) this._applyClasps({});
     }
 

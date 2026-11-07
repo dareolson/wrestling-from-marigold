@@ -1,0 +1,1442 @@
+{
+ "lou-george-right-shove.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   39.2
+  ],
+  "grabSwap": [
+   8,
+   24.5
+  ],
+  "grabSwapBefore": [
+   9,
+   7.1
+  ],
+  "releasePeak": [
+   90,
+   13.8
+  ],
+  "releaseSwap": [
+   88,
+   5.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   11.4
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-right-shove.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   17.2
+  ],
+  "grabSwap": [
+   12,
+   17.2
+  ],
+  "grabSwapBefore": [
+   10,
+   3.4
+  ],
+  "releasePeak": [
+   89,
+   21.6
+  ],
+  "releaseSwap": [
+   88,
+   21
+  ],
+  "releaseSwapBefore": [
+   87,
+   15.5
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-right-shove.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   21.8
+  ],
+  "grabSwap": [
+   13,
+   14.9
+  ],
+  "grabSwapBefore": [
+   14,
+   9.9
+  ],
+  "releasePeak": [
+   85,
+   19.9
+  ],
+  "releaseSwap": [
+   88,
+   17.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   6.9
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-right-shove.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.4
+  ],
+  "grabSwap": [
+   11,
+   16.6
+  ],
+  "grabSwapBefore": [
+   12,
+   1.6
+  ],
+  "releasePeak": [
+   88,
+   18
+  ],
+  "releaseSwap": [
+   88,
+   18
+  ],
+  "releaseSwapBefore": [
+   87,
+   7.7
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-shove.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   41.2
+  ],
+  "grabSwap": [
+   8,
+   24
+  ],
+  "grabSwapBefore": [
+   9,
+   6.9
+  ],
+  "releasePeak": [
+   90,
+   13.8
+  ],
+  "releaseSwap": [
+   88,
+   5.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   11.4
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-shove.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   17
+  ],
+  "grabSwap": [
+   12,
+   17
+  ],
+  "grabSwapBefore": [
+   10,
+   3.7
+  ],
+  "releasePeak": [
+   89,
+   21.6
+  ],
+  "releaseSwap": [
+   88,
+   21
+  ],
+  "releaseSwapBefore": [
+   87,
+   15.5
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-shove.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   22.2
+  ],
+  "grabSwap": [
+   13,
+   15
+  ],
+  "grabSwapBefore": [
+   14,
+   10
+  ],
+  "releasePeak": [
+   85,
+   20
+  ],
+  "releaseSwap": [
+   88,
+   17.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   6.9
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-shove.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.7
+  ],
+  "grabSwap": [
+   11,
+   16.5
+  ],
+  "grabSwapBefore": [
+   12,
+   2.2
+  ],
+  "releasePeak": [
+   88,
+   18
+  ],
+  "releaseSwap": [
+   88,
+   18
+  ],
+  "releaseSwapBefore": [
+   87,
+   7.7
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-right-plain.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   41.2
+  ],
+  "grabSwap": [
+   8,
+   24
+  ],
+  "grabSwapBefore": [
+   9,
+   6.9
+  ],
+  "releasePeak": [
+   88,
+   35.7
+  ],
+  "releaseSwap": [
+   88,
+   35.7
+  ],
+  "releaseSwapBefore": [
+   87,
+   27
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-right-plain.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   17
+  ],
+  "grabSwap": [
+   12,
+   17
+  ],
+  "grabSwapBefore": [
+   10,
+   3.7
+  ],
+  "releasePeak": [
+   85,
+   15.2
+  ],
+  "releaseSwap": [
+   88,
+   9.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   5.3
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-right-plain.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   22.2
+  ],
+  "grabSwap": [
+   13,
+   15
+  ],
+  "grabSwapBefore": [
+   14,
+   10
+  ],
+  "releasePeak": [
+   88,
+   20.7
+  ],
+  "releaseSwap": [
+   88,
+   20.7
+  ],
+  "releaseSwapBefore": [
+   87,
+   8.3
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-right-plain.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.7
+  ],
+  "grabSwap": [
+   11,
+   16.5
+  ],
+  "grabSwapBefore": [
+   12,
+   2.2
+  ],
+  "releasePeak": [
+   88,
+   22.1
+  ],
+  "releaseSwap": [
+   88,
+   22.1
+  ],
+  "releaseSwapBefore": [
+   87,
+   9.1
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-plain.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   41.2
+  ],
+  "grabSwap": [
+   8,
+   24
+  ],
+  "grabSwapBefore": [
+   9,
+   6.9
+  ],
+  "releasePeak": [
+   88,
+   35.7
+  ],
+  "releaseSwap": [
+   88,
+   35.7
+  ],
+  "releaseSwapBefore": [
+   87,
+   27
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-plain.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   17
+  ],
+  "grabSwap": [
+   12,
+   17
+  ],
+  "grabSwapBefore": [
+   10,
+   3.7
+  ],
+  "releasePeak": [
+   85,
+   15.2
+  ],
+  "releaseSwap": [
+   88,
+   9.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   5.3
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-plain.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   22.2
+  ],
+  "grabSwap": [
+   13,
+   15
+  ],
+  "grabSwapBefore": [
+   14,
+   10
+  ],
+  "releasePeak": [
+   88,
+   20.7
+  ],
+  "releaseSwap": [
+   88,
+   20.7
+  ],
+  "releaseSwapBefore": [
+   87,
+   8.3
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-plain.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.7
+  ],
+  "grabSwap": [
+   11,
+   16.5
+  ],
+  "grabSwapBefore": [
+   12,
+   2.2
+  ],
+  "releasePeak": [
+   88,
+   22.1
+  ],
+  "releaseSwap": [
+   88,
+   22.1
+  ],
+  "releaseSwapBefore": [
+   87,
+   9.1
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-right-rope.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   41.2
+  ],
+  "grabSwap": [
+   8,
+   24
+  ],
+  "grabSwapBefore": [
+   9,
+   6.9
+  ],
+  "releasePeak": [
+   89,
+   23.4
+  ],
+  "releaseSwap": [
+   88,
+   8
+  ],
+  "releaseSwapBefore": [
+   87,
+   7
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-right-rope.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   17
+  ],
+  "grabSwap": [
+   12,
+   17
+  ],
+  "grabSwapBefore": [
+   10,
+   3.7
+  ],
+  "releasePeak": [
+   89,
+   30.5
+  ],
+  "releaseSwap": [
+   88,
+   29.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   18.9
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-right-rope.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   22.2
+  ],
+  "grabSwap": [
+   13,
+   15
+  ],
+  "grabSwapBefore": [
+   14,
+   10
+  ],
+  "releasePeak": [
+   85,
+   20.2
+  ],
+  "releaseSwap": [
+   88,
+   17.9
+  ],
+  "releaseSwapBefore": [
+   87,
+   7
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-right-rope.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.7
+  ],
+  "grabSwap": [
+   11,
+   16.5
+  ],
+  "grabSwapBefore": [
+   12,
+   2.2
+  ],
+  "releasePeak": [
+   88,
+   19
+  ],
+  "releaseSwap": [
+   88,
+   19
+  ],
+  "releaseSwapBefore": [
+   87,
+   7.5
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-rope.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   41.2
+  ],
+  "grabSwap": [
+   8,
+   24
+  ],
+  "grabSwapBefore": [
+   9,
+   6.9
+  ],
+  "releasePeak": [
+   89,
+   23.4
+  ],
+  "releaseSwap": [
+   88,
+   8
+  ],
+  "releaseSwapBefore": [
+   87,
+   7
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-rope.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   17
+  ],
+  "grabSwap": [
+   12,
+   17
+  ],
+  "grabSwapBefore": [
+   10,
+   3.7
+  ],
+  "releasePeak": [
+   89,
+   30.5
+  ],
+  "releaseSwap": [
+   88,
+   29.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   18.9
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-rope.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   22.2
+  ],
+  "grabSwap": [
+   13,
+   15
+  ],
+  "grabSwapBefore": [
+   14,
+   10
+  ],
+  "releasePeak": [
+   85,
+   20.2
+  ],
+  "releaseSwap": [
+   88,
+   17.9
+  ],
+  "releaseSwapBefore": [
+   87,
+   7
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "lou-george-left-rope.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.7
+  ],
+  "grabSwap": [
+   11,
+   16.5
+  ],
+  "grabSwapBefore": [
+   12,
+   2.2
+  ],
+  "releasePeak": [
+   88,
+   19
+  ],
+  "releaseSwap": [
+   88,
+   19
+  ],
+  "releaseSwapBefore": [
+   87,
+   7.5
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-shove.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   38.9
+  ],
+  "grabSwap": [
+   8,
+   14.9
+  ],
+  "grabSwapBefore": [
+   9,
+   1.4
+  ],
+  "releasePeak": [
+   84,
+   19.7
+  ],
+  "releaseSwap": [
+   88,
+   11.4
+  ],
+  "releaseSwapBefore": [
+   87,
+   8.5
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-shove.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   26.4
+  ],
+  "grabSwap": [
+   12,
+   26.4
+  ],
+  "grabSwapBefore": [
+   10,
+   4
+  ],
+  "releasePeak": [
+   84,
+   25.3
+  ],
+  "releaseSwap": [
+   88,
+   16.8
+  ],
+  "releaseSwapBefore": [
+   87,
+   16.6
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-shove.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   19.8
+  ],
+  "grabSwap": [
+   13,
+   14
+  ],
+  "grabSwapBefore": [
+   14,
+   9.9
+  ],
+  "releasePeak": [
+   88,
+   21
+  ],
+  "releaseSwap": [
+   88,
+   21
+  ],
+  "releaseSwapBefore": [
+   87,
+   17.8
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-shove.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.1
+  ],
+  "grabSwap": [
+   11,
+   18.4
+  ],
+  "grabSwapBefore": [
+   12,
+   13.1
+  ],
+  "releasePeak": [
+   88,
+   17.9
+  ],
+  "releaseSwap": [
+   88,
+   17.9
+  ],
+  "releaseSwapBefore": [
+   87,
+   12.3
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-shove.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   40.3
+  ],
+  "grabSwap": [
+   8,
+   15.4
+  ],
+  "grabSwapBefore": [
+   9,
+   0.9
+  ],
+  "releasePeak": [
+   84,
+   19.6
+  ],
+  "releaseSwap": [
+   88,
+   11.4
+  ],
+  "releaseSwapBefore": [
+   87,
+   8.5
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-shove.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   25.6
+  ],
+  "grabSwap": [
+   12,
+   25.6
+  ],
+  "grabSwapBefore": [
+   10,
+   3.8
+  ],
+  "releasePeak": [
+   84,
+   25.2
+  ],
+  "releaseSwap": [
+   88,
+   16.7
+  ],
+  "releaseSwapBefore": [
+   87,
+   16.6
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-shove.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   20.3
+  ],
+  "grabSwap": [
+   13,
+   14.4
+  ],
+  "grabSwapBefore": [
+   14,
+   9.8
+  ],
+  "releasePeak": [
+   88,
+   21
+  ],
+  "releaseSwap": [
+   88,
+   21
+  ],
+  "releaseSwapBefore": [
+   87,
+   17.8
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-shove.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.3
+  ],
+  "grabSwap": [
+   11,
+   19
+  ],
+  "grabSwapBefore": [
+   12,
+   12.7
+  ],
+  "releasePeak": [
+   88,
+   18
+  ],
+  "releaseSwap": [
+   88,
+   18
+  ],
+  "releaseSwapBefore": [
+   87,
+   12.3
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-plain.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   40.3
+  ],
+  "grabSwap": [
+   8,
+   15.4
+  ],
+  "grabSwapBefore": [
+   9,
+   0.9
+  ],
+  "releasePeak": [
+   88,
+   31
+  ],
+  "releaseSwap": [
+   88,
+   31
+  ],
+  "releaseSwapBefore": [
+   87,
+   13.5
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-plain.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   25.6
+  ],
+  "grabSwap": [
+   12,
+   25.6
+  ],
+  "grabSwapBefore": [
+   10,
+   3.8
+  ],
+  "releasePeak": [
+   84,
+   25.3
+  ],
+  "releaseSwap": [
+   88,
+   11.5
+  ],
+  "releaseSwapBefore": [
+   87,
+   7.2
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-plain.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   20.3
+  ],
+  "grabSwap": [
+   13,
+   14.4
+  ],
+  "grabSwapBefore": [
+   14,
+   9.8
+  ],
+  "releasePeak": [
+   88,
+   24.9
+  ],
+  "releaseSwap": [
+   88,
+   24.9
+  ],
+  "releaseSwapBefore": [
+   87,
+   20.5
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-plain.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.3
+  ],
+  "grabSwap": [
+   11,
+   19
+  ],
+  "grabSwapBefore": [
+   12,
+   12.7
+  ],
+  "releasePeak": [
+   88,
+   22
+  ],
+  "releaseSwap": [
+   88,
+   22
+  ],
+  "releaseSwapBefore": [
+   87,
+   16.3
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-plain.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   40.3
+  ],
+  "grabSwap": [
+   8,
+   15.4
+  ],
+  "grabSwapBefore": [
+   9,
+   0.9
+  ],
+  "releasePeak": [
+   88,
+   31
+  ],
+  "releaseSwap": [
+   88,
+   31
+  ],
+  "releaseSwapBefore": [
+   87,
+   13.5
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-plain.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   25.6
+  ],
+  "grabSwap": [
+   12,
+   25.6
+  ],
+  "grabSwapBefore": [
+   10,
+   3.8
+  ],
+  "releasePeak": [
+   84,
+   25.3
+  ],
+  "releaseSwap": [
+   88,
+   11.5
+  ],
+  "releaseSwapBefore": [
+   87,
+   7.2
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-plain.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   20.3
+  ],
+  "grabSwap": [
+   13,
+   14.4
+  ],
+  "grabSwapBefore": [
+   14,
+   9.8
+  ],
+  "releasePeak": [
+   88,
+   24.9
+  ],
+  "releaseSwap": [
+   88,
+   24.9
+  ],
+  "releaseSwapBefore": [
+   87,
+   20.5
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-plain.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.3
+  ],
+  "grabSwap": [
+   11,
+   19
+  ],
+  "grabSwapBefore": [
+   12,
+   12.7
+  ],
+  "releasePeak": [
+   88,
+   22
+  ],
+  "releaseSwap": [
+   88,
+   22
+  ],
+  "releaseSwapBefore": [
+   87,
+   16.3
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-rope.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   40.3
+  ],
+  "grabSwap": [
+   8,
+   15.4
+  ],
+  "grabSwapBefore": [
+   9,
+   0.9
+  ],
+  "releasePeak": [
+   84,
+   19.8
+  ],
+  "releaseSwap": [
+   88,
+   4.5
+  ],
+  "releaseSwapBefore": [
+   87,
+   6.8
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-rope.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   25.6
+  ],
+  "grabSwap": [
+   12,
+   25.6
+  ],
+  "grabSwapBefore": [
+   10,
+   3.8
+  ],
+  "releasePeak": [
+   84,
+   25.2
+  ],
+  "releaseSwap": [
+   88,
+   20.5
+  ],
+  "releaseSwapBefore": [
+   87,
+   17.7
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-rope.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   20.3
+  ],
+  "grabSwap": [
+   13,
+   14.4
+  ],
+  "grabSwapBefore": [
+   14,
+   9.8
+  ],
+  "releasePeak": [
+   88,
+   21.6
+  ],
+  "releaseSwap": [
+   88,
+   21.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   17.9
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-right-rope.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.3
+  ],
+  "grabSwap": [
+   11,
+   19
+  ],
+  "grabSwapBefore": [
+   12,
+   12.7
+  ],
+  "releasePeak": [
+   88,
+   19.6
+  ],
+  "releaseSwap": [
+   88,
+   19.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   13
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-rope.a.near": {
+  "label": "collarTie",
+  "grabPeak": [
+   7,
+   40.3
+  ],
+  "grabSwap": [
+   8,
+   15.4
+  ],
+  "grabSwapBefore": [
+   9,
+   0.9
+  ],
+  "releasePeak": [
+   84,
+   19.8
+  ],
+  "releaseSwap": [
+   88,
+   4.5
+  ],
+  "releaseSwapBefore": [
+   87,
+   6.8
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-rope.a.far": {
+  "label": "elbowCup",
+  "grabPeak": [
+   12,
+   25.6
+  ],
+  "grabSwap": [
+   12,
+   25.6
+  ],
+  "grabSwapBefore": [
+   10,
+   3.8
+  ],
+  "releasePeak": [
+   84,
+   25.2
+  ],
+  "releaseSwap": [
+   88,
+   20.5
+  ],
+  "releaseSwapBefore": [
+   87,
+   17.7
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-rope.d.near": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   12,
+   20.3
+  ],
+  "grabSwap": [
+   13,
+   14.4
+  ],
+  "grabSwapBefore": [
+   14,
+   9.8
+  ],
+  "releasePeak": [
+   88,
+   21.6
+  ],
+  "releaseSwap": [
+   88,
+   21.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   17.9
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ },
+ "george-lou-left-rope.d.far": {
+  "label": "bicepGrip",
+  "grabPeak": [
+   10,
+   19.3
+  ],
+  "grabSwap": [
+   11,
+   19
+  ],
+  "grabSwapBefore": [
+   12,
+   12.7
+  ],
+  "releasePeak": [
+   88,
+   19.6
+  ],
+  "releaseSwap": [
+   88,
+   19.6
+  ],
+  "releaseSwapBefore": [
+   87,
+   13
+  ],
+  "swapsOn": 1,
+  "swapsOff": 1,
+  "grabWithinOneFramePeak": true
+ }
+}

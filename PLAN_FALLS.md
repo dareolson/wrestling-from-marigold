@@ -401,6 +401,10 @@ never measured overlap between the two bodies. The jolt and the handoff stay; th
   - Proof as r2b: current beside revised, normal and quarter speed, 8 cells, apex / contact / roll-off / kicks marked; the stop
     (px/frame over the last 4 frames and the compression), signed joints, the three overlap numbers, the receiver's limbs against
     Lou and the ropes. Focused tests. Commit locally, **STOP at G4a r2c**. Knee drop and dives still wait.
+- **T4.7d** Derek at G4a r2c (2026-11-06): the receiver's sell read as arm-waving, not kicks; Opus toned it down (arms 0.25x, curl
+  about half, kicks 0.38/0.30/0.20). Elbow drop **accepted, move on**: no more ground-contact finesse. Give the knee drop, diving elbow
+  and top dive's receiver `groundHitSell` at their own intensities in place of the jolt. No new staging or striking-part work (polish list).
+  Focused tests; one normal-speed strip per move, both facings. Then go straight on to T4.3 and T4.4, **STOP at G4**.
 - **T4.3** Soak: `grapples_soak.mjs` with `falls=v1`, 4 x 150 s, both pairings. Count falls per variant and pick reason, down-hit
   reactions, page errors, stuck `down` states and get-up pops. A stuck state or a page error blocks T4.4. Fix it or report it.
 - **T4.4** Promote: `fallsCandidate` becomes `defaultOnFlag('falls', 'v1')` like the other promoted flags, so `?falls=off` is the old
@@ -455,3 +459,4 @@ never measured overlap between the two bodies. The jolt and the handoff stay; th
   Misses: overlap unchanged at the peak (outside-limb 1,710-2,503, conflict 937-1,410: same contact pose); he hits at 29-34 px/frame and the compression is only 5 px, so the stop is abrupt; George-on-Lou supine ends the roll-off with a 5 px forearm touch; carried over: far forearm, ends ~130 px up-screen, Lou's contact pose parallel to George.
 - T4.7c: (sha below) finesse, hit frame locked at 44 (same as r2b, 8/8): arms lead the fall (cocked by 45%), the stop yields (hip 30/14/~1 px/frame, squash 6.4-8.5 px past the hit frame, was 2.3-3.1), legs lie along the mat from contact through the roll-off, and the receiver's `groundHitSell` (reusable): chest pinned 0.08 s, curl, knees up, arm flail, 3 alternating kicks from 0.16 s, 1.0 s. Hit/jolt/shake once, no part past the side ropes, seam 0.9-1.0 px. [G4a r2c](research/animation/falls-2026-11/g4a-r2c/index.html). **STOP at G4a r2c.**
   Misses: body still reads flat in the fall (no roll about the long axis in the rig); the stop is a compromise (a 3-4 frame yield from 30 px/frame needs ~45 px); supine receivers overlap the attacker more (his limbs on him up to 2,559 px, was 2,188; outside-limb peak 2,825, was 2,503; prone less); kicks swing the whole leg up the screen so they may read as lifts; the sell holds the pin off 1.0 s (jolt 0.55 s).
+- T4.7d (Opus, sha below): `groundHitSell` toned down at r2c (arms 0.25x, fore +0.08/0.06, curl 0.14+0.08i, kicks 0.38/0.30/0.20). falls tests 67/67. Not re-rendered; Derek judges in play.

@@ -42,7 +42,7 @@ Avoid a large rewrite.
 - **Awaiting Derek:** Marigold title queue (83ab5cd) visual OK; what comes next (see below).
 - **Uncommitted on purpose:** Codex's sleeper-wrap PNGs (`src/assets/wrestlers/*/forearm_sleeper_wrap.png`) and 4 Codex `tools/debug` scripts (sleeper wrap, throw support, waistlock probes) are unreviewed and stay untracked. Large frame dumps are gitignored.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `fb8c5ca` (2026-11-06); later commits local. Session handoff: [entry](AI_HANDOFF_ENTRIES/2026-11-06-claude-opus-handoff-ground-contact.md). Push via the SSH URL only. Coverage baseline 26 gaps.
-- **Next (Claude 2026-11-06):** T4.7c done, **STOP at G4a r2c** ([page](research/animation/falls-2026-11/g4a-r2c/index.html)): the elbow leads the fall, softer stop, legs on the mat, and the receiver's curl-and-kick sell (`groundHitSell`, reusable). Hit frame unchanged (Derek's timing locked). Derek judges, current beside revised. Then knee drop and dives (own striking parts, `groundHitSell` at their strengths), T4.3 soak, T4.4 promotion (**G4**); then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1. Misses are in the plan's Progress line.
+- **Next (Opus 2026-11-06):** G4a r2c judged: the receiver's sell was arm-waving, toned down (arms 0.25x, curl half, kicks smaller); elbow drop accepted, move on. Sonnet: [PLAN_FALLS.md](PLAN_FALLS.md) **T4.7d** (knee drop and dives get `groundHitSell`, no new staging), then T4.3 soak and T4.4 promotion, **STOP at G4**; then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

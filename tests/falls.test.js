@@ -784,7 +784,7 @@ test('T4.7c groundHitSell: exactly 0 at the end, chest pinned until the curl sta
             for (const side of ['near', 'far']) assert.ok(d[`${side}Thigh`] - d[`${side}Shin`] >= -1e-9, `${lying} ${side} flex never shrinks at ${t.toFixed(3)}`);
             for (const [ch, v] of Object.entries(d)) if (ch !== 'hip') assert.ok(Math.abs(v) < 1.6, `${lying} ${ch} bounded`);   // hip is px
         }
-        assert.ok(peak > 0.25 && peak < 0.5, `${lying} curl ${peak}: a curl, not the jolt's 0.35-0.61 lift`);
+        assert.ok(peak > 0.1 && peak < 0.25, `${lying} curl ${peak}: a small curl (toned down at r2c), not the jolt's 0.35-0.61 lift`);
     }
     // the kicks: near, far, near, in that order, each a swing of the whole leg (supine: thigh and shin together), the third smaller than the first
     const kick = (t, side) => { const a = groundHitSell('supine', 0.7, t).d, base = groundHitSell('supine', 0.7, GROUND_SELL.kickFrom - 1e-3).d; return a[`${side}Thigh`] - 0.30 * 0 - base[`${side}Thigh`]; };

@@ -354,22 +354,23 @@ export function joltResponse(lying, intensity, t) {
 // back on the lying pose. Offsets over the rest pose in the same channels as joltResponse, exactly 0 at the end. Knees only change through the thigh/shin pair with the flex never shrinking (the knee
 // rule): a kick swings the whole leg (thigh and shin together, flex unchanged), the drawn-up knee adds flex.
 // Supine: curl = torso -, knees up = thigh +, shin + by less... as the jolt: shin = thigh - flex. Prone: curl = torso +, heels up = shin -.
-export const GROUND_SELL = Object.freeze({ pinned: 0.08, curlRise: 0.20, kickFrom: 0.16, kickEvery: 0.15, kickAmp: [0.50, 0.40, 0.28] });
+export const GROUND_SELL = Object.freeze({ pinned: 0.08, curlRise: 0.20, kickFrom: 0.16, kickEvery: 0.15, kickAmp: [0.38, 0.30, 0.20], armScale: 0.25 });
 export const groundHitSellDuration = (intensity) => 0.9 + 0.15 * clamp(intensity, 0, 1);
 export function groundHitSell(lying, intensity, t) {
     const i = clamp(intensity, 0, 1), end = groundHitSellDuration(i);
     if (t >= end) return { d: zero(), done: true };
     const tt = Math.max(0, t), G = GROUND_SELL, out = (a, b, u) => 1 - smooth((u - a) / (b - a));   // out: 1 until a, falling to 0 at b
-    const curl = smooth((tt - G.pinned) / G.curlRise) * out(0.55, end - 0.05, tt) * (0.30 + 0.15 * i);
+    const curl = smooth((tt - G.pinned) / G.curlRise) * out(0.55, end - 0.05, tt) * (0.14 + 0.08 * i);   // toned down (Derek at r2c): a small curl
     const knees = smooth(tt / 0.12) * out(0.6, end - 0.05, tt);
     const arms = smooth(tt / 0.05) * out(end - 0.3, end, tt);
     const sway = (A) => 0.5 + 0.5 * Math.sin(2 * Math.PI * A.freq * tt + A.phase);
-    const nearA = 1.1 * JOLT_ARM.near.amp * (0.5 + 0.5 * i) * arms * sway(JOLT_ARM.near), farA = 1.1 * JOLT_ARM.far.amp * (0.5 + 0.5 * i) * arms * sway(JOLT_ARM.far);
+    // Derek at r2c: the arm flail read louder than the kicks ("he does something with his arms"); the arms are now a small twitch and the legs carry the sell
+    const nearA = G.armScale * JOLT_ARM.near.amp * (0.5 + 0.5 * i) * arms * sway(JOLT_ARM.near), farA = G.armScale * JOLT_ARM.far.amp * (0.5 + 0.5 * i) * arms * sway(JOLT_ARM.far);
     // the kicks: leg j % 2 (near first), each a half sine over kickEvery, fading with its own amplitude
     const kick = { near: 0, far: 0 };
     G.kickAmp.forEach((a, j) => { const u = (tt - G.kickFrom - j * G.kickEvery) / G.kickEvery; if (u > 0 && u < 1) kick[j % 2 ? 'far' : 'near'] += a * (0.6 + 0.4 * i) * Math.sin(Math.PI * u); });
     const d = zero();
-    d.nearArm = nearA; d.nearFore = nearA + 0.30 * arms; d.farArm = farA; d.farFore = farA + 0.25 * arms;
+    d.nearArm = nearA; d.nearFore = nearA + 0.08 * arms; d.farArm = farA; d.farFore = farA + 0.06 * arms;
     if (lying === 'supine') {
         d.torso = -curl; d.hip = 1.5 * knees;
         d.nearThigh = 0.30 * knees + kick.near; d.nearShin = 0.30 * knees - 0.45 * knees + kick.near;

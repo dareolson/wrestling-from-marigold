@@ -116,6 +116,8 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
   Misses: the window outlasts the grips (0.72 s) to 1.08 s, else the forearm drops behind the trunks in one frame (343 px) at the release; the forearm is in front 17-19 frames after it. Whole near arm is raised, not forearm only.
 - T6.1-T6.3: 4774ed4, 3454930, de33540. Default fighters Procreate Lou and `george-roster-v1`; `rosterKits.js` is the one kit file; `moves:kits` table and kit checks. Suite 1124/1124, build, coverage 23, kits, `grapples_assert` all passed. STOPPED at G6.
   Misses: Guido has no `hammerlockOdds` or `cornerWhipOdds` (allow-listed, not retuned); no shadowed moves; `grapples_flagoff` with no `WFM_URL` (self-started server) prints DIFFERENT at frame 0 (about 1e-5 in pose) also on the code before T6.1, identical with `WFM_URL=http://localhost:5173` (flagoff now pins `thesz`/`george`).
+- **G3d (Stage 3d whip with weight): approved by Derek 2026-11-07** ("looks good"). 833d407 + 8a18910: thrower sinks/leans and drives, feet held (±5-9 px, was 15-33), receiver steps in 12·s, forearm ×1.18, release peaks 50 ms early; receiver slung (speed builds 0.3 s), rope load elbows tucked.
+  Misses: hip drop ~7·s (target 8-12·s); depth sidestep still slides ~20 px; corner run, follow-ups, worn film and full suite/build/coverage not run; flag-off identical by code path only.
 
 ## Why (Derek 2026-10-29)
 

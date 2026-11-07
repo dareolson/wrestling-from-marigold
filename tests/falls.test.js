@@ -94,7 +94,7 @@ test('MoveRuntime.releaseRole lets one actor go and the clip keeps playing for t
 
 // ---- T2.4c: the slam, end to end (Wrestler + MoveRuntime, no Phaser) -------------------------------------------------------------
 async function slamFixture({ falls = true, qs = '', clips = ['bodySlam'] } = {}) {
-    globalThis.location = { search: falls ? '?falls=v1' + qs : '' };
+    globalThis.location = { search: falls ? '?falls=v1' + qs : '?falls=off' };
     const { default: Wrestler } = await import('../src/Wrestler.js');
     const { default: MoveRuntime } = await import('../src/animation/MoveRuntime.js');
     const rt = new MoveRuntime();
@@ -227,7 +227,7 @@ test('Skeleton.FALLS.spill lands supine, every key keeps both knees and both elb
 });
 
 test('tiers by move (T2.5h): slam, suplex and back body drop heavy, piledriver exceptional, the rest r2; ?slamTier overrides the slam only; no flag, no tier', async () => {
-    globalThis.location = { search: '' };
+    globalThis.location = { search: '?falls=off' };
     const { moveTier } = await import('../src/Wrestler.js');
     assert.equal(moveTier('bodySlam'), null, 'flag off');
     const at = (qs, move) => { globalThis.location = { search: '?falls=v1' + qs }; return moveTier(move); };
@@ -562,7 +562,7 @@ test('jolt arms flail out of phase (the two arms do not mirror)', () => {
 
 // ---- T4.1-T4.2b: the jolt and the attacker landings on the Wrestler (flight and pose runner stubbed, no Phaser) -------------------------------------------------
 async function downFixture(falls) {
-    globalThis.location = { search: falls ? '?falls=v1' : '' };
+    globalThis.location = { search: falls ? '?falls=v1' : '?falls=off' };
     const { default: Wrestler } = await import('../src/Wrestler.js');
     const shakes = [];
     const scene = { moveRuntime: { register() {} }, time: { now: 0 }, tweens: { add: () => ({ stop() {} }), killTweensOf: () => {} }, cameras: { main: { shake: (...a) => shakes.push(a) } }, crowd: { impact() {} } };
@@ -827,6 +827,18 @@ test('T4.7d knee drop, diving elbow and top dive on a downed man play groundHitS
         assert.deepEqual(calls, [[move, i, 'curl']], call);
         assert.equal(def._jolt.sell, 'curl', call);
         assert.ok(def.stateTimer >= groundHitSellDuration(i), `${call}: the timer holds to the sell's end`);
+    }
+    delete globalThis.location;
+});
+
+// ---- PLAN_FALLS T4.4: falls is promoted: on with no flag, `?falls=off` is the old path, Node without `location` stays off --------------------------------------------------
+test('T4.4 promotion: falls is on with no flag or ?falls=v1, off with ?falls=off, and off in Node with no location', async () => {
+    const { fallsCandidate } = await import('../src/Wrestler.js');
+    delete globalThis.location;
+    assert.equal(fallsCandidate(), false, 'no location (Node, tools)');
+    for (const [search, on] of [['', true], ['?notitle=1', true], ['?falls=v1', true], ['?falls=off', false], ['?grapples=v1&falls=off', false]]) {
+        globalThis.location = { search };
+        assert.equal(fallsCandidate(), on, JSON.stringify(search));
     }
     delete globalThis.location;
 });

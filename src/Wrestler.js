@@ -92,6 +92,7 @@ const dropkickCandidate = () => typeof location !== 'undefined' && new URLSearch
 //     (PLAN_MOVE_PERFORMANCE.md D4).
 //   sellart: grip art, lying hold, protected/carried rise (PLAN_SUPLEX_RISE.md).
 //   getups: the authored get-ups, no roll while selling, the knee clamp and the eased separation (PLAN_GETUPS).
+//   falls: the rest pose, gravity falls, impact tiers, wear meter, the down-hit sell (PLAN_FALLS).
 const defaultOnFlag = (name, value) => {
     if (typeof location === 'undefined') return false;
     const v = new URLSearchParams(location.search).get(name);
@@ -165,9 +166,9 @@ export function gaitV2Config() {
 const RUN_GAIT = { STANCE: 0.35, CADENCE: 3.6, LIFT: 32, HIP_BASE: 4, HIP_DROP: 9 };
 // ?waistlock=v1 (PLAN_GRAPPLES Stage 4b W1): the go-behind waistlock from the tie-up (src/animation/waistlock.js, Arena._tickWaistlock). Opt-in
 // like ?plant=1, on only for `v1`; off in Node with no `location`. Flag off is byte-identical (grapples_flagoff.mjs).
-// falls (PLAN_FALLS D1): the rest pose (arms on the mat, near knee up) in place of the missile pose. Opt-in: `?falls=v1`; flag off is byte-identical.
-// Node without `location` stays off.
-export const fallsCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('falls') === 'v1';
+// falls (PLAN_FALLS D1): the rest pose (arms on the mat, near knee up), falls under gravity, impact tiers, wear and the down-hit sell. PROMOTED (Derek 2026-11-06,
+// Stage 4 T4.4): on by default, `?falls=off` is the old path (byte-identical). Node without `location` stays off.
+export const fallsCandidate = () => defaultOnFlag('falls', 'v1');
 // ?falls=v1 impact tiers (PLAN_FALLS T2.5d/h): the landing's weight by move. Default (Opus's proposal, Derek can overrule at G2): body slam, suplex and back body drop heavy;
 // the piledriver exceptional; every other throw and the flips r2 (no tier). `?slamTier=heavy|exceptional|r2` overrides the BODY SLAM only, for review. null = r2.
 const MOVE_TIER = { bodySlam: 'heavy', suplex: 'heavy', backBodyDrop: 'heavy', piledriver: 'exceptional' };

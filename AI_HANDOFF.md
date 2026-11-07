@@ -39,13 +39,15 @@ Avoid a large rewrite.
   - Opening: Chicago 1952, kitchen phone/union call, landlord's $100 demand, girlfriend sends Guido out ([brief](STORY_CARNIVAL_OPENING.md)). Carnival $100 challenge is the first playable match; Carl then recruits him. Kohler naming bridge unresolved.
   - Whole game monochrome; art generated in color, monochrome derived ([standard](CINEMATIC_ART_STANDARD.md)).
   - Venues/crowds/exhibition: [plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md). Carl as Guy's ringside trainer: [sheet](research/art/carl-ringside-2026-10-31/carl-ringside-sheet-v1.png). Feud/art: [STORY_ART_AND_FEUD_DIRECTION.md](STORY_ART_AND_FEUD_DIRECTION.md).
-- **Awaiting Derek:** G4 (play a match with no flag, falls on) and G4b r4 (splash); Marigold title queue (83ab5cd) visual OK.
+- **Awaiting Derek:** G4 (play a match with no flag, falls on) and G4b r6 (splash roll); Marigold title queue (83ab5cd) visual OK.
 - **Uncommitted on purpose:** Codex's sleeper-wrap PNGs and 4 Codex `tools/debug` scripts (unreviewed, untracked). Frame dumps gitignored (kept; may not be reproducible).
 - **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`). Pushed through `fac431f` (2026-11-07); push URL is SSH now. Roster PSDs tracked (69b2c90). Cleanup leftovers, low priority: [PLAN_CLEANUP.md](PLAN_CLEANUP.md). Coverage baseline 26 gaps.
-- **Next:** Derek at **G4b r5** ([page](research/animation/falls-2026-11/g4b-r5/index.html); r4 [page](research/animation/falls-2026-11/g4b-r4/index.html): pivot, tumble, roll after the backward-leg fix, both facings): DECIDED: tumble parked, diving elbow = roll, top dive = pivot (5c6bd55). Roll legs reworked for both rigs (T4.8b r5, [page](research/animation/falls-2026-11/g4b-r5/index.html)); Derek judges it, plus whether the half trip stays. Then [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 3d (STOP G3d), then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1 (finisher dispatch lives in F1.1). Later, after G4b: move per-wrestler settings out of `Arena.js` ([Codex review](AI_HANDOFF_ENTRIES/2026-11-07-codex-structure-efficiency-review-for-opus.md)).
+- **Next:** Derek at **G4b r6** ([page](research/animation/falls-2026-11/g4b-r6/index.html): roll r5 vs r6 vs pivot, diving elbow, both rigs and facings). T4.8c (Opus): the roll's legs stay on the side away from the head the whole roll (r5's dolphin was them swinging across and back); one straight diagonal body at the flip, the pivot's tuck after it. Defaults: diving elbow = roll, top dive = pivot, tumble parked (5c6bd55). Also open at G4b: whether the half trip stays. Then [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 3d (STOP G3d), then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1 (finisher dispatch in F1.1). Later: per-wrestler settings out of `Arena.js` ([Codex review](AI_HANDOFF_ENTRIES/2026-11-07-codex-structure-efficiency-review-for-opus.md)).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-07 · Derek, recorded by Codex · [Keep roll’s action; use pivot’s understated leg motion](AI_HANDOFF_ENTRIES/2026-11-07-derek-roll-action-pivot-legs.md)
 
 - 2026-11-07 · Sonnet · [Code structure and roster bloat, for Opus](AI_HANDOFF_ENTRIES/2026-11-07-sonnet-structure-and-bloat-for-opus.md)
 

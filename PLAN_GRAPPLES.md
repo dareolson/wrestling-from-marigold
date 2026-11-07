@@ -1036,11 +1036,64 @@ and the run it starts). `?grapples=off` stays identical (A/B).
   8/8; the follow-ups still land (clothesline, back body drop, corner charge); first-frame pose steps at release and at the rope.
   Focused tests, flag-off A/B. Commit locally, **STOP at G3d**: Derek judges the strip.
 
+## Stage 2: clasping hands (Derek 2026-11-07), runs alongside Stage 3d, stop at G2
+
+Derek: "new forearm combos to express the hands clasping their opponent." Today every grip is the base forearm's loose fist laid on
+the partner (the lockup's collar and elbow, the waistlock's hands at the waist), so nothing shows a hand holding on. The rig has no
+wrist bend (IDEAS.md rig limits): the hand is painted into the forearm (`handInForearm`), so each clasp is a whole forearm variant,
+made the way Codex made `forearm_sleeper_wrap.png` (T4d.0): one master, fitted to each rig's `forearm.png` canvas and elbow pivot.
+Derek's first batch, in this order:
+
+- **C1 `collarTie`:** the hand cupped over the back of the partner's neck, fingers wrapping toward the far side and partly hidden
+  by it; the heel of the hand toward the camera. The lockup's collar hand, both men (`LOCKUP.collarBack`/`collarDrop` point).
+- **C2 `elbowCup`:** the hand cupping the partner's elbow from below and outside, palm up, fingers curled over the joint. The
+  lockup's elbow hand, both men (`LOCKUP.elbowCup`, which grips just past the elbow onto the forearm).
+- **C3 `waistClasp`:** the two hands locked at the defender's waist (gable grip: palm to palm, the near hand over the far one),
+  drawn into the near forearm; the far hand is already hidden behind the defender (waistlock W5). The waistlock's near hand, and
+  later the German suplex and back body drop.
+
+Variants are a shared family (`partVariants.js` `SHARED_VARIANT_FAMILIES`): one registered `forearm.collarTie` serves whichever arm
+asks, near or far. Lou's far arm has its own base drawing (`far_forearm.png`, palm side); if a clasp on the far arm fails Derek's eye
+at G2, only then a far-side drawing.
+
+- **T2.0 (Codex, art; can run now, alongside Sonnet's Stage 3d)** C1-C3, one master each, fitted to each rig:
+  1. One master donor per clasp (Procreate Lou's style is the bar), each with a REPORT.md, under
+     `Sprite sheets/AI Pilot/shared/articulation-donors/2026-11-07-clasps-v1/<collarTie|elbowCup|waistClasp>/`. Each REPORT.md
+     names the approved file and gives the contact point (the inside of the palm, where it meets the partner) in master pixels.
+  2. Make `tools/debug/build_sleeper_wrap.mjs` general (`build_forearm_variant.mjs <name>`, or a list in one script): the same
+     whole-canvas fit (Lou 117x351, `george-roster-v1` 426x439; never a tight bbox), the elbow lined up with the rig's pivot, the
+     rig's own elbow-cap pixels kept, line weight and tone matched. Output `forearm_collar_tie.png`, `forearm_elbow_cup.png`,
+     `forearm_waist_clasp.png` beside each rig's `forearm.png`, and each rig's contact point as (u, v) of its canvas. One
+     command rebuilds all of them, sleeper wrap included; `--check` proves the outputs match.
+  3. Stills, 1x and 3x, both facings: Lou on George and George on Lou in the lockup (C1 and C2 on both men) and the waistlock
+     (C3), posed with today's grip IK. List misses in px (elbow seam, line weight, tone, palm contact to the target point);
+     no "reads" claims.
+  Art and the fit script only: no game code, no variant registration, don't commit on top of Sonnet's work, don't push.
+- **T2.1 (Opus)** Review T2.0 and Codex's untracked sleeper-wrap PNGs and scripts together; commit the reviewed art locally. Derek
+  looks at the stills; anything he rejects goes back to Codex before T2.2.
+- **T2.2 (Sonnet; only after T2.1) Wire the clasps, `grapples` path only.**
+  1. Register `collarTie`, `elbowCup`, `waistClasp` under `textures.variants.forearm` in `thesz_procreate_v1.js` and
+     `george_roster_v1.js`, each with `semanticAnchors.clutch` from the fit script (as `grip` has).
+  2. The lockup (`lockupGrips` / `holdGrips` callers) and the waistlock hold select the variant per arm from the side
+     `holdGrips` already computes (`sk.lChannelSide(this.facing)`): the collar arm gets `collarTie`, the elbow arm `elbowCup`, the
+     attacker's waistlock near hand `waistClasp`. Swap in when that grip's weight reaches 0.5 (the hand closing), back to base
+     when it falls below 0.5 on the release; never both arms on one variant by accident. A rig with no such variant keeps its base
+     forearm (Guido and Kowalski today).
+  3. With a clasp on, `holdGrips` aims the variant's `clutch` contact at the target, not the wrist (the hammerlock's `grip` does
+     this for candidate reaches: reuse that path, read it first).
+  4. `?grapples=off` identical (A/B). Variant state cleared on every exit, break, shove, rope break and match end
+     (`waistlock_cleanup.mjs` gets a case: no clasp art left on after a break).
+  **Proof (G2 page `research/animation/grapples-2026-11/g2-clasps/`):** a normal-speed loop strip in both facings first (CLAUDE.md),
+  then base beside clasp: the lockup's tie-up, drive and break, the waistlock's go-behind and hold; Lou on George and George on
+  Lou, both facings, normal and quarter speed. Report per hand: contact to target (px) every frame the clasp is on; the frame
+  each swap happens and its grip weight; the first-frame part step at each swap (px); forearm-inside-own-torso pixels (want 0).
+  Focused tests, flag-off A/B. Commit locally, **STOP at G2**: Derek judges.
+- **Later in Stage 2 (after G2):** the steal as a visible shove, with a re-grip if Derek wants D5 changed (the old outline);
+  more clasps (wrist grab for the whip, arm drag and wristlocks; headlock) on the same pipeline.
+
 ## Later stages (outline, written in full after G1)
 
-- **Stage 2: hands and the steal.** A Codex art request from Derek's G1 hand list. Likely: a hand gripping the back of a
-  neck, partly hidden; a hand cupping an elbow; a forearm across the collarbone. Lou's `sellart` grip may cover some of
-  these. Then the steal as a visible shove, with a re-grip if Derek wants D5 changed.
+- **Stage 2: hands and the steal.** Written in full above (clasping hands, Derek 2026-11-07); the steal follows G2.
 - **Stage 3: every exit starts from the tie-up.** Headlock, whip, suplex, hip toss / arm drag, hammerlock, and
   piledriver / slam each get a lead-in from the Stage 1 pose. The (e) jumps are the work list.
 - **Stage 3c: whip routes (Derek 2026-10-31: "eventually").** Corner whips and diagonal runs that land where they were aimed.

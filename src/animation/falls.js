@@ -305,3 +305,46 @@ export function chooseFall(ctx) {
     }
     return { fall, tier, slide, reason: `${rule}, ${state} (wear ${Math.round(wear)}) -> ${fall}` };
 }
+
+// PLAN_FALLS T4.1, the down-hit reaction: an elbow, knee or dive lands on a man already on the mat and he jolts at the waist, arms flailing, then drops
+// back flat. Offsets over the rest pose in the landing's channels, so Wrestler draws it through the same path. Every offset is exactly 0 at the end.
+// Supine: the shoulders and head come off the mat (torso -), the knees come up (thigh +, shin - by more, so the flex only grows), the arms fly up and out.
+// Prone: the chest and head lift (torso +), the heels kick up (shin -), the arms flail at the sides. The two arms differ in frequency, phase and size.
+export const JOLT_PEAK_SEC = 0.12;
+const JOLT_TORSO = [0.35, 0.61];   // rad off the rest pose at intensity 0 and 1 (20 to 35 degrees)
+const JOLT_ARM = { near: { amp: 0.95, freq: 4.4, phase: 0.4 }, far: { amp: 0.7, freq: 5.8, phase: 2.3 } };
+
+/** Seconds a jolt of `intensity` lasts (0.45 to 0.60). */
+export const joltDuration = (intensity) => 0.45 + 0.15 * clamp(intensity, 0, 1);
+
+/**
+ * @param {'supine'|'prone'} lying
+ * @param {number} intensity  the move's weight, 0-1 (elbowDrop 0.7, kneeDrop 0.8, dives 0.9)
+ * @param {number} t          seconds since the impact
+ * @returns {{ d: Object<string, number>, done: boolean, peak: boolean }}
+ */
+export function joltResponse(lying, intensity, t) {
+    const i = clamp(intensity, 0, 1), end = joltDuration(i);
+    if (t >= end) return { d: zero(), done: true, peak: false };
+    const tt = Math.max(0, t);
+    // up to the peak in 120 ms, then back down over the rest; the arms keep flailing on the way down, in their own envelope
+    const env = tt < JOLT_PEAK_SEC ? smooth(tt / JOLT_PEAK_SEC) : 1 - smooth((tt - JOLT_PEAK_SEC) / (end - JOLT_PEAK_SEC));
+    const arms = smooth(tt / 0.06) * (1 - smooth((tt - (end - 0.15)) / 0.15));
+    const sway = (A) => 0.5 + 0.5 * Math.sin(2 * Math.PI * A.freq * tt + A.phase);   // 0..1
+    const lift = JOLT_TORSO[0] + (JOLT_TORSO[1] - JOLT_TORSO[0]) * i;
+    const d = zero();
+    const nearA = JOLT_ARM.near.amp * (0.5 + 0.5 * i) * arms * sway(JOLT_ARM.near), farA = JOLT_ARM.far.amp * (0.5 + 0.5 * i) * arms * sway(JOLT_ARM.far);
+    if (lying === 'supine') {
+        d.torso = -lift * env; d.hip = 2 * env;
+        d.nearThigh = 0.30 * env; d.nearShin = d.nearThigh - 0.45 * env;
+        d.farThigh = 0.22 * env; d.farShin = d.farThigh - 0.35 * env;
+        d.nearArm = nearA; d.nearFore = nearA + 0.30 * arms;      // bend-only elbows: the forearm leads the arm
+        d.farArm = farA; d.farFore = farA + 0.25 * arms;
+    } else {
+        d.torso = lift * env; d.hip = 3 * env;
+        d.nearShin = -0.70 * env; d.farShin = -0.55 * env;
+        d.nearArm = nearA; d.nearFore = nearA + 0.30 * arms;
+        d.farArm = farA; d.farFore = farA + 0.25 * arms;
+    }
+    return { d, done: false, peak: tt >= JOLT_PEAK_SEC * 0.5 && tt <= JOLT_PEAK_SEC * 1.5 };
+}

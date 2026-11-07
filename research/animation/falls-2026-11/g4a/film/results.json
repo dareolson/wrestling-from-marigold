@@ -1,0 +1,1646 @@
+[
+ {
+  "id": "elbowDrop-supine-george-right",
+  "move": "elbowDrop",
+  "lying": "supine",
+  "facing": 1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 51,
+  "joltFrames": [
+   51,
+   84
+  ],
+  "joltMaxStepRecv": 25.73,
+  "attackerSeamStep": 6.46,
+  "attackerStepAfterSeam": 5.73,
+  "attackerStepBefore": 31.04,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 29
+   },
+   {
+    "s": "down",
+    "i": 51
+   },
+   {
+    "s": "gettingUp",
+    "i": 99
+   },
+   {
+    "s": "standing",
+    "i": 152
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 177
+ },
+ {
+  "id": "elbowDrop-supine-george-left",
+  "move": "elbowDrop",
+  "lying": "supine",
+  "facing": -1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 51,
+  "joltFrames": [
+   51,
+   84
+  ],
+  "joltMaxStepRecv": 25.73,
+  "attackerSeamStep": 6.46,
+  "attackerStepAfterSeam": 5.73,
+  "attackerStepBefore": 31.06,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 29
+   },
+   {
+    "s": "down",
+    "i": 51
+   },
+   {
+    "s": "gettingUp",
+    "i": 99
+   },
+   {
+    "s": "standing",
+    "i": 152
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 177
+ },
+ {
+  "id": "elbowDrop-prone-george-right",
+  "move": "elbowDrop",
+  "lying": "prone",
+  "facing": 1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 51,
+  "joltFrames": [
+   51,
+   84
+  ],
+  "joltMaxStepRecv": 14.9,
+  "attackerSeamStep": 6.46,
+  "attackerStepAfterSeam": 5.73,
+  "attackerStepBefore": 31.06,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 29
+   },
+   {
+    "s": "down",
+    "i": 51
+   },
+   {
+    "s": "gettingUp",
+    "i": 99
+   },
+   {
+    "s": "standing",
+    "i": 152
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 177
+ },
+ {
+  "id": "elbowDrop-prone-george-left",
+  "move": "elbowDrop",
+  "lying": "prone",
+  "facing": -1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 51,
+  "joltFrames": [
+   51,
+   84
+  ],
+  "joltMaxStepRecv": 14.9,
+  "attackerSeamStep": 6.46,
+  "attackerStepAfterSeam": 5.73,
+  "attackerStepBefore": 31.06,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 29
+   },
+   {
+    "s": "down",
+    "i": 51
+   },
+   {
+    "s": "gettingUp",
+    "i": 99
+   },
+   {
+    "s": "standing",
+    "i": 152
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 177
+ },
+ {
+  "kneeRise": {
+   "frames": 23,
+   "maxStep": 44.95,
+   "stepBefore": 16.47
+  },
+  "id": "kneeDrop-supine-george-right",
+  "move": "kneeDrop",
+  "lying": "supine",
+  "facing": 1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": null,
+  "joltFrames": [
+   29,
+   63
+  ],
+  "joltMaxStepRecv": 27.03,
+  "attackerSeamStep": null,
+  "attackerStepAfterSeam": null,
+  "attackerStepBefore": null,
+  "handoff": null,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 16
+   },
+   {
+    "s": "slamming",
+    "i": 29
+   },
+   {
+    "s": "standing",
+    "i": 52
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 160
+ },
+ {
+  "kneeRise": {
+   "frames": 23,
+   "maxStep": 44.95,
+   "stepBefore": 16.47
+  },
+  "id": "kneeDrop-supine-george-left",
+  "move": "kneeDrop",
+  "lying": "supine",
+  "facing": -1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": null,
+  "joltFrames": [
+   29,
+   63
+  ],
+  "joltMaxStepRecv": 27.03,
+  "attackerSeamStep": null,
+  "attackerStepAfterSeam": null,
+  "attackerStepBefore": null,
+  "handoff": null,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 16
+   },
+   {
+    "s": "slamming",
+    "i": 29
+   },
+   {
+    "s": "standing",
+    "i": 52
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 160
+ },
+ {
+  "kneeRise": {
+   "frames": 23,
+   "maxStep": 44.95,
+   "stepBefore": 16.47
+  },
+  "id": "kneeDrop-prone-george-right",
+  "move": "kneeDrop",
+  "lying": "prone",
+  "facing": 1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": null,
+  "joltFrames": [
+   29,
+   63
+  ],
+  "joltMaxStepRecv": 15.66,
+  "attackerSeamStep": null,
+  "attackerStepAfterSeam": null,
+  "attackerStepBefore": null,
+  "handoff": null,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 16
+   },
+   {
+    "s": "slamming",
+    "i": 29
+   },
+   {
+    "s": "standing",
+    "i": 52
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 160
+ },
+ {
+  "kneeRise": {
+   "frames": 23,
+   "maxStep": 44.95,
+   "stepBefore": 16.47
+  },
+  "id": "kneeDrop-prone-george-left",
+  "move": "kneeDrop",
+  "lying": "prone",
+  "facing": -1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": null,
+  "joltFrames": [
+   29,
+   63
+  ],
+  "joltMaxStepRecv": 15.66,
+  "attackerSeamStep": null,
+  "attackerStepAfterSeam": null,
+  "attackerStepBefore": null,
+  "handoff": null,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 16
+   },
+   {
+    "s": "slamming",
+    "i": 29
+   },
+   {
+    "s": "standing",
+    "i": 52
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 160
+ },
+ {
+  "id": "divingElbow-supine-george-right",
+  "move": "divingElbow",
+  "lying": "supine",
+  "facing": 1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 40,
+  "joltFrames": [
+   40,
+   75
+  ],
+  "joltMaxStepRecv": 28.33,
+  "attackerSeamStep": 3.16,
+  "attackerStepAfterSeam": 9.53,
+  "attackerStepBefore": 15.91,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 40
+   },
+   {
+    "s": "gettingUp",
+    "i": 161
+   },
+   {
+    "s": "standing",
+    "i": 214
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 239
+ },
+ {
+  "id": "divingElbow-supine-george-left",
+  "move": "divingElbow",
+  "lying": "supine",
+  "facing": -1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 40,
+  "joltFrames": [
+   40,
+   75
+  ],
+  "joltMaxStepRecv": 28.33,
+  "attackerSeamStep": 3.16,
+  "attackerStepAfterSeam": 9.53,
+  "attackerStepBefore": 15.91,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 40
+   },
+   {
+    "s": "gettingUp",
+    "i": 161
+   },
+   {
+    "s": "standing",
+    "i": 214
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 239
+ },
+ {
+  "id": "divingElbow-prone-george-right",
+  "move": "divingElbow",
+  "lying": "prone",
+  "facing": 1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 40,
+  "joltFrames": [
+   40,
+   75
+  ],
+  "joltMaxStepRecv": 16.42,
+  "attackerSeamStep": 3.16,
+  "attackerStepAfterSeam": 9.53,
+  "attackerStepBefore": 15.91,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 40
+   },
+   {
+    "s": "gettingUp",
+    "i": 161
+   },
+   {
+    "s": "standing",
+    "i": 214
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 239
+ },
+ {
+  "id": "divingElbow-prone-george-left",
+  "move": "divingElbow",
+  "lying": "prone",
+  "facing": -1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 40,
+  "joltFrames": [
+   40,
+   75
+  ],
+  "joltMaxStepRecv": 16.42,
+  "attackerSeamStep": 3.16,
+  "attackerStepAfterSeam": 9.53,
+  "attackerStepBefore": 15.91,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 40
+   },
+   {
+    "s": "gettingUp",
+    "i": 161
+   },
+   {
+    "s": "standing",
+    "i": 214
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 239
+ },
+ {
+  "id": "topDive-supine-george-right",
+  "move": "topDive",
+  "lying": "supine",
+  "facing": 1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 49,
+  "joltFrames": [
+   49,
+   84
+  ],
+  "joltMaxStepRecv": 28.33,
+  "attackerSeamStep": 3.12,
+  "attackerStepAfterSeam": 7.5,
+  "attackerStepBefore": 12.71,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 49
+   },
+   {
+    "s": "gettingUp",
+    "i": 230
+   },
+   {
+    "s": "standing",
+    "i": 283
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 308
+ },
+ {
+  "id": "topDive-supine-george-left",
+  "move": "topDive",
+  "lying": "supine",
+  "facing": -1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 49,
+  "joltFrames": [
+   49,
+   84
+  ],
+  "joltMaxStepRecv": 28.33,
+  "attackerSeamStep": 3.12,
+  "attackerStepAfterSeam": 7.5,
+  "attackerStepBefore": 12.71,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 49
+   },
+   {
+    "s": "gettingUp",
+    "i": 230
+   },
+   {
+    "s": "standing",
+    "i": 283
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 308
+ },
+ {
+  "id": "topDive-prone-george-right",
+  "move": "topDive",
+  "lying": "prone",
+  "facing": 1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 49,
+  "joltFrames": [
+   49,
+   84
+  ],
+  "joltMaxStepRecv": 16.42,
+  "attackerSeamStep": 3.12,
+  "attackerStepAfterSeam": 7.5,
+  "attackerStepBefore": 12.71,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 49
+   },
+   {
+    "s": "gettingUp",
+    "i": 230
+   },
+   {
+    "s": "standing",
+    "i": 283
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 308
+ },
+ {
+  "id": "topDive-prone-george-left",
+  "move": "topDive",
+  "lying": "prone",
+  "facing": -1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 49,
+  "joltFrames": [
+   49,
+   84
+  ],
+  "joltMaxStepRecv": 16.42,
+  "attackerSeamStep": 3.12,
+  "attackerStepAfterSeam": 7.5,
+  "attackerStepBefore": 12.71,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 49
+   },
+   {
+    "s": "gettingUp",
+    "i": 230
+   },
+   {
+    "s": "standing",
+    "i": 283
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 308
+ },
+ {
+  "id": "theszPress-supine-george-right",
+  "move": "theszPress",
+  "lying": "supine",
+  "facing": 1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 33,
+  "joltFrames": null,
+  "joltMaxStepRecv": null,
+  "attackerSeamStep": 4.5,
+  "attackerStepAfterSeam": 3.06,
+  "attackerStepBefore": 27.64,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "pressing",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 33
+   },
+   {
+    "s": "gettingUp",
+    "i": 190
+   },
+   {
+    "s": "standing",
+    "i": 243
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 268
+ },
+ {
+  "id": "theszPress-supine-george-left",
+  "move": "theszPress",
+  "lying": "supine",
+  "facing": -1,
+  "victim": "george",
+  "attacker": "lou",
+  "downAt": 33,
+  "joltFrames": null,
+  "joltMaxStepRecv": null,
+  "attackerSeamStep": 4.5,
+  "attackerStepAfterSeam": 3.06,
+  "attackerStepBefore": 27.64,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "pressing",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 33
+   },
+   {
+    "s": "gettingUp",
+    "i": 190
+   },
+   {
+    "s": "standing",
+    "i": 243
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 268
+ },
+ {
+  "id": "elbowDrop-supine-lou-right",
+  "move": "elbowDrop",
+  "lying": "supine",
+  "facing": 1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 51,
+  "joltFrames": [
+   51,
+   84
+  ],
+  "joltMaxStepRecv": 33.79,
+  "attackerSeamStep": 9.27,
+  "attackerStepAfterSeam": 6.04,
+  "attackerStepBefore": 33.82,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 29
+   },
+   {
+    "s": "down",
+    "i": 51
+   },
+   {
+    "s": "gettingUp",
+    "i": 99
+   },
+   {
+    "s": "standing",
+    "i": 152
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 177
+ },
+ {
+  "id": "elbowDrop-supine-lou-left",
+  "move": "elbowDrop",
+  "lying": "supine",
+  "facing": -1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 51,
+  "joltFrames": [
+   51,
+   84
+  ],
+  "joltMaxStepRecv": 33.79,
+  "attackerSeamStep": 9.27,
+  "attackerStepAfterSeam": 6.04,
+  "attackerStepBefore": 33.84,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 29
+   },
+   {
+    "s": "down",
+    "i": 51
+   },
+   {
+    "s": "gettingUp",
+    "i": 99
+   },
+   {
+    "s": "standing",
+    "i": 152
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 177
+ },
+ {
+  "id": "elbowDrop-prone-lou-right",
+  "move": "elbowDrop",
+  "lying": "prone",
+  "facing": 1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 51,
+  "joltFrames": [
+   51,
+   84
+  ],
+  "joltMaxStepRecv": 21.39,
+  "attackerSeamStep": 9.27,
+  "attackerStepAfterSeam": 6.04,
+  "attackerStepBefore": 33.84,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 29
+   },
+   {
+    "s": "down",
+    "i": 51
+   },
+   {
+    "s": "gettingUp",
+    "i": 99
+   },
+   {
+    "s": "standing",
+    "i": 152
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 177
+ },
+ {
+  "id": "elbowDrop-prone-lou-left",
+  "move": "elbowDrop",
+  "lying": "prone",
+  "facing": -1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 51,
+  "joltFrames": [
+   51,
+   84
+  ],
+  "joltMaxStepRecv": 21.39,
+  "attackerSeamStep": 9.27,
+  "attackerStepAfterSeam": 6.04,
+  "attackerStepBefore": 33.84,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 29
+   },
+   {
+    "s": "down",
+    "i": 51
+   },
+   {
+    "s": "gettingUp",
+    "i": 99
+   },
+   {
+    "s": "standing",
+    "i": 152
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 177
+ },
+ {
+  "kneeRise": {
+   "frames": 23,
+   "maxStep": 44.95,
+   "stepBefore": 35.01
+  },
+  "id": "kneeDrop-supine-lou-right",
+  "move": "kneeDrop",
+  "lying": "supine",
+  "facing": 1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": null,
+  "joltFrames": [
+   29,
+   63
+  ],
+  "joltMaxStepRecv": 35.44,
+  "attackerSeamStep": null,
+  "attackerStepAfterSeam": null,
+  "attackerStepBefore": null,
+  "handoff": null,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 16
+   },
+   {
+    "s": "slamming",
+    "i": 29
+   },
+   {
+    "s": "standing",
+    "i": 52
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 160
+ },
+ {
+  "kneeRise": {
+   "frames": 23,
+   "maxStep": 44.95,
+   "stepBefore": 35.01
+  },
+  "id": "kneeDrop-supine-lou-left",
+  "move": "kneeDrop",
+  "lying": "supine",
+  "facing": -1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": null,
+  "joltFrames": [
+   29,
+   63
+  ],
+  "joltMaxStepRecv": 35.44,
+  "attackerSeamStep": null,
+  "attackerStepAfterSeam": null,
+  "attackerStepBefore": null,
+  "handoff": null,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 16
+   },
+   {
+    "s": "slamming",
+    "i": 29
+   },
+   {
+    "s": "standing",
+    "i": 52
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 160
+ },
+ {
+  "kneeRise": {
+   "frames": 23,
+   "maxStep": 44.95,
+   "stepBefore": 35.01
+  },
+  "id": "kneeDrop-prone-lou-right",
+  "move": "kneeDrop",
+  "lying": "prone",
+  "facing": 1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": null,
+  "joltFrames": [
+   29,
+   63
+  ],
+  "joltMaxStepRecv": 22.37,
+  "attackerSeamStep": null,
+  "attackerStepAfterSeam": null,
+  "attackerStepBefore": null,
+  "handoff": null,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 16
+   },
+   {
+    "s": "slamming",
+    "i": 29
+   },
+   {
+    "s": "standing",
+    "i": 52
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 160
+ },
+ {
+  "kneeRise": {
+   "frames": 23,
+   "maxStep": 44.95,
+   "stepBefore": 35.01
+  },
+  "id": "kneeDrop-prone-lou-left",
+  "move": "kneeDrop",
+  "lying": "prone",
+  "facing": -1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": null,
+  "joltFrames": [
+   29,
+   63
+  ],
+  "joltMaxStepRecv": 22.37,
+  "attackerSeamStep": null,
+  "attackerStepAfterSeam": null,
+  "attackerStepBefore": null,
+  "handoff": null,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "slamming",
+    "i": 8
+   },
+   {
+    "s": "elbowDropping",
+    "i": 16
+   },
+   {
+    "s": "slamming",
+    "i": 29
+   },
+   {
+    "s": "standing",
+    "i": 52
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 160
+ },
+ {
+  "id": "divingElbow-supine-lou-right",
+  "move": "divingElbow",
+  "lying": "supine",
+  "facing": 1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 40,
+  "joltFrames": [
+   40,
+   75
+  ],
+  "joltMaxStepRecv": 37.07,
+  "attackerSeamStep": 5.53,
+  "attackerStepAfterSeam": 9.54,
+  "attackerStepBefore": 16.11,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 40
+   },
+   {
+    "s": "gettingUp",
+    "i": 161
+   },
+   {
+    "s": "standing",
+    "i": 214
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 239
+ },
+ {
+  "id": "divingElbow-supine-lou-left",
+  "move": "divingElbow",
+  "lying": "supine",
+  "facing": -1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 40,
+  "joltFrames": [
+   40,
+   75
+  ],
+  "joltMaxStepRecv": 37.07,
+  "attackerSeamStep": 5.53,
+  "attackerStepAfterSeam": 9.54,
+  "attackerStepBefore": 16.11,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 40
+   },
+   {
+    "s": "gettingUp",
+    "i": 161
+   },
+   {
+    "s": "standing",
+    "i": 214
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 239
+ },
+ {
+  "id": "divingElbow-prone-lou-right",
+  "move": "divingElbow",
+  "lying": "prone",
+  "facing": 1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 40,
+  "joltFrames": [
+   40,
+   75
+  ],
+  "joltMaxStepRecv": 23.35,
+  "attackerSeamStep": 5.53,
+  "attackerStepAfterSeam": 9.54,
+  "attackerStepBefore": 16.11,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 40
+   },
+   {
+    "s": "gettingUp",
+    "i": 161
+   },
+   {
+    "s": "standing",
+    "i": 214
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 239
+ },
+ {
+  "id": "divingElbow-prone-lou-left",
+  "move": "divingElbow",
+  "lying": "prone",
+  "facing": -1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 40,
+  "joltFrames": [
+   40,
+   75
+  ],
+  "joltMaxStepRecv": 23.35,
+  "attackerSeamStep": 5.53,
+  "attackerStepAfterSeam": 9.54,
+  "attackerStepBefore": 16.11,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 40
+   },
+   {
+    "s": "gettingUp",
+    "i": 161
+   },
+   {
+    "s": "standing",
+    "i": 214
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 239
+ },
+ {
+  "id": "topDive-supine-lou-right",
+  "move": "topDive",
+  "lying": "supine",
+  "facing": 1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 49,
+  "joltFrames": [
+   49,
+   84
+  ],
+  "joltMaxStepRecv": 37.07,
+  "attackerSeamStep": 5.53,
+  "attackerStepAfterSeam": 7.51,
+  "attackerStepBefore": 12.88,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 49
+   },
+   {
+    "s": "gettingUp",
+    "i": 230
+   },
+   {
+    "s": "standing",
+    "i": 283
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 308
+ },
+ {
+  "id": "topDive-supine-lou-left",
+  "move": "topDive",
+  "lying": "supine",
+  "facing": -1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 49,
+  "joltFrames": [
+   49,
+   84
+  ],
+  "joltMaxStepRecv": 37.07,
+  "attackerSeamStep": 5.53,
+  "attackerStepAfterSeam": 7.51,
+  "attackerStepBefore": 12.88,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 49
+   },
+   {
+    "s": "gettingUp",
+    "i": 230
+   },
+   {
+    "s": "standing",
+    "i": 283
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 308
+ },
+ {
+  "id": "topDive-prone-lou-right",
+  "move": "topDive",
+  "lying": "prone",
+  "facing": 1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 49,
+  "joltFrames": [
+   49,
+   84
+  ],
+  "joltMaxStepRecv": 23.35,
+  "attackerSeamStep": 5.53,
+  "attackerStepAfterSeam": 7.51,
+  "attackerStepBefore": 12.88,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 49
+   },
+   {
+    "s": "gettingUp",
+    "i": 230
+   },
+   {
+    "s": "standing",
+    "i": 283
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 308
+ },
+ {
+  "id": "topDive-prone-lou-left",
+  "move": "topDive",
+  "lying": "prone",
+  "facing": -1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 49,
+  "joltFrames": [
+   49,
+   84
+  ],
+  "joltMaxStepRecv": 23.35,
+  "attackerSeamStep": 5.53,
+  "attackerStepAfterSeam": 7.51,
+  "attackerStepBefore": 12.88,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "diving",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 49
+   },
+   {
+    "s": "gettingUp",
+    "i": 230
+   },
+   {
+    "s": "standing",
+    "i": 283
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 308
+ },
+ {
+  "id": "theszPress-supine-lou-right",
+  "move": "theszPress",
+  "lying": "supine",
+  "facing": 1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 33,
+  "joltFrames": null,
+  "joltMaxStepRecv": null,
+  "attackerSeamStep": 6.47,
+  "attackerStepAfterSeam": 3.16,
+  "attackerStepBefore": 29.69,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "pressing",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 33
+   },
+   {
+    "s": "gettingUp",
+    "i": 190
+   },
+   {
+    "s": "standing",
+    "i": 243
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 268
+ },
+ {
+  "id": "theszPress-supine-lou-left",
+  "move": "theszPress",
+  "lying": "supine",
+  "facing": -1,
+  "victim": "lou",
+  "attacker": "george",
+  "downAt": 33,
+  "joltFrames": null,
+  "joltMaxStepRecv": null,
+  "attackerSeamStep": 6.47,
+  "attackerStepAfterSeam": 3.16,
+  "attackerStepBefore": 29.69,
+  "handoff": 1,
+  "from": 5,
+  "attackerStates": [
+   {
+    "s": "standing",
+    "i": 0
+   },
+   {
+    "s": "pressing",
+    "i": 8
+   },
+   {
+    "s": "down",
+    "i": 33
+   },
+   {
+    "s": "gettingUp",
+    "i": 190
+   },
+   {
+    "s": "standing",
+    "i": 243
+   }
+  ],
+  "recvEnd": "down",
+  "restDelta": 0,
+  "frames": 268
+ }
+]

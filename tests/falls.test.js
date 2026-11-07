@@ -529,3 +529,105 @@ test('T3.13: _hurt and _damage raise wear under ?falls=v1 only; _drain (the atta
         delete globalThis.location;
     }
 });
+
+// PLAN_FALLS T4.1: the down-hit jolt
+import { joltResponse, joltDuration, JOLT_PEAK_SEC } from '../src/animation/falls.js';
+for (const lying of ['supine', 'prone']) for (const intensity of [0.7, 0.8, 0.9, 1]) {
+    test(`jolt ${lying} ${intensity}: peaks at the waist near 120 ms, returns to the exact rest pose, bend-only joints`, () => {
+        const T = joltDuration(intensity), rest = Skeleton.REST_POSES[lying];
+        assert.ok(T >= 0.45 - 1e-9 && T <= 0.6 + 1e-9, `duration ${T}`);
+        let peakTorso = 0;
+        for (let k = 0; k <= 200; k++) {
+            const r = joltResponse(lying, intensity, (k / 200) * T * 1.05);
+            if (r.done) { assert.ok(Object.values(r.d).every((v) => v === 0)); continue; }
+            peakTorso = Math.max(peakTorso, Math.abs(r.d.torso));
+            for (const side of ['near', 'far']) {
+                assert.ok(flexChange(r.d, 'knee', side) >= -1e-9 && flexChange(r.d, 'elbow', side) >= -1e-9);
+                const knee = wrap(rest[`${side}Thigh`] - rest[`${side}Shin`]) + flexChange(r.d, 'knee', side);
+                assert.ok(knee >= JOINT_LIMITS.knee.min && knee <= JOINT_LIMITS.knee.max, `${side} knee ${knee}`);
+            }
+        }
+        assert.ok(peakTorso >= 0.35 - 1e-9 && peakTorso <= 0.61 + 1e-9, `peak torso ${peakTorso} rad`);
+        assert.ok(Math.abs(joltResponse(lying, intensity, JOLT_PEAK_SEC).d.torso) >= peakTorso - 1e-9, 'torso peaks at 120 ms');
+        assert.equal(Math.abs(joltResponse(lying, intensity, 0).d.torso), 0);
+        assert.ok(joltResponse(lying, intensity, T).done);
+    });
+}
+test('jolt arms flail out of phase (the two arms do not mirror)', () => {
+    let differ = 0;
+    for (let k = 1; k < 40; k++) { const r = joltResponse('supine', 0.8, k * 0.01).d; if (Math.abs(r.nearArm - r.farArm) > 0.1) differ++; }
+    assert.ok(differ > 20);
+});
+
+// ---- T4.1-T4.2b: the jolt and the attacker landings on the Wrestler (flight and pose runner stubbed, no Phaser) -------------------------------------------------
+async function downFixture(falls) {
+    globalThis.location = { search: falls ? '?falls=v1' : '' };
+    const { default: Wrestler } = await import('../src/Wrestler.js');
+    const shakes = [];
+    const scene = { time: { now: 0 }, tweens: { add: () => ({ stop() {} }), killTweensOf: () => {} }, cameras: { main: { shake: (...a) => shakes.push(a) } }, crowd: { impact() {} } };
+    const mk = (x, facing) => Object.assign(Object.create(Wrestler.prototype), { scene, state: 'standing', facing, x, y: 360, stamina: 100, pose: { tilt: 1.5, lift: -95 }, idlePose: 'idle',
+        skeleton: { setPartVariants() {}, jointAttachmentPoints: { neck: { x: 1, y: 2 } }, artPlacement: () => ({}) }, _activeMove: null, vx: 0, vy: 0, input: { justDown: () => false, isDown: () => false }, moveSet: [] });
+    const atk = mk(470, 1), def = mk(520, -1);
+    def.state = 'down'; def.lying = 'supine'; def.stateTimer = 4.5;
+    let hurts = 0; def._hurt = () => { hurts++; };
+    atk._playFlight = (clip, motion, land) => land();   // the flight ends at once, still in its flight state
+    atk._runPoseSequence = (seq, done) => done?.();
+    atk._drain = () => {};
+    return { atk, def, Wrestler, hurts: () => hurts };
+}
+
+test('_downHitReact under ?falls=v1: jolts at the waist, peaks and returns to the lying pose, blocks the pin until it ends, leaves the down timer alone, a get-up clears it', async () => {
+    const { def } = await downFixture(true);
+    assert.equal(def._downHitReact({}, 'elbowDrop', 0.7), true);
+    assert.equal(def.stateTimer, 4.5, 'damage and the down timer are the caller\'s');
+    assert.equal(def.isLanding(), true, 'no pin mid-jolt');
+    def.tickDown(0.12);
+    assert.ok(Math.abs(def._landingOffsets().torso) >= 0.35, 'torso is up at the peak');
+    for (let t = 0; t < 0.7; t += 1 / 60) def.tickDown(1 / 60);
+    assert.equal(def._landingOffsets(), null, 'back on the lying pose');
+    assert.equal(def.isLanding(), false);
+    def._downHitReact({}, 'kneeDrop', 0.8); assert.ok(def._landingOffsets());
+    def.state = 'gettingUp'; assert.equal(def._landingOffsets(), null, 'a get-up draws the lying pose, no offsets');
+    def.tickDown(1 / 60); assert.equal(def._jolt, null);
+    delete globalThis.location;
+});
+
+test('_downHitReact: prone takes the prone keys; a short down timer is held to the jolt\'s end; flag off is a no-op', async () => {
+    let f = await downFixture(true);
+    f.def.lying = 'prone'; f.def.stateTimer = 0.1; f.def._downHitReact({}, 'topDive', 0.9);
+    assert.equal(f.def._jolt.lying, 'prone'); assert.ok(f.def.stateTimer >= 0.45 + 0.15 * 0.9 - 1e-9, 'held so the jolt never ends in a pop');
+    f = await downFixture(false);
+    assert.equal(f.def._downHitReact({}, 'elbowDrop', 0.7), false);
+    assert.ok(!f.def._jolt && f.def._landingOffsets() === null && f.def.isLanding() === false);
+    delete globalThis.location;
+});
+
+test('the four moves on a downed man call the jolt once with their weights (the reaction itself is flag-gated)', async () => {
+    for (const falls of [true, false]) for (const [call, move, i] of [['_doElbowDrop', 'elbowDrop', 0.7], ['_doKneeDrop', 'kneeDrop', 0.8], ['_doDive', 'divingElbow', 0.9], ['_doTopDive', 'topDive', 0.9]]) {
+        const { atk, def, hurts } = await downFixture(falls);
+        const calls = []; def._downHitReact = (a, m, n) => calls.push([m, n]);
+        atk.x = def.x - 20; atk[call](def);
+        assert.deepEqual(calls, [[move, i]], `${call} falls=${falls}`);   // the flag check is inside _downHitReact (no-op off, tested above)
+        assert.equal(hurts(), 1);
+        assert.equal(def.stateTimer >= 4.5, true);
+    }
+    delete globalThis.location;
+});
+
+test('T4.2b: the attacker of an elbow drop, diving elbow, top dive and press whiff lies down through _layDown (flag on) and rises through the get-up; flag off is as it was', async () => {
+    for (const [call, sec] of [['_doElbowDrop', 0.8], ['_doDive', 2.0], ['_doTopDive', 3.0], ['_doTheszPress', 2.6]]) {
+        const on = await downFixture(true);
+        on.atk.x = on.def.x - 20; on.atk[call](on.def);
+        assert.equal(on.atk.state, 'down', `${call}: down after the impact`);
+        assert.equal(on.atk.lying, 'prone'); assert.equal(on.atk.stateTimer, sec);
+        assert.ok(on.atk._groundHandoff, `${call}: the clip's last body eases into the grounded pose`);
+        assert.equal(on.atk.pose.tilt, 0); assert.equal(on.atk.pose.lift, 0);
+        let rose = 0; on.atk._startRiseUp = () => { rose++; }; on.atk.stateTimer = 0.01; on.atk.tickDown(0.02);
+        assert.equal(rose, 1, `${call}: up through the get-up, not idle`);
+    }
+    const off = await downFixture(false);
+    off.atk._doElbowDrop(off.def);
+    assert.notEqual(off.atk.state, 'down', 'flag off: the elbow drop attacker still stands up from the crouch');
+    assert.ok(!off.atk._groundHandoff);
+    delete globalThis.location;
+});

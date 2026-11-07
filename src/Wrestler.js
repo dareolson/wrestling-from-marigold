@@ -14,7 +14,7 @@ import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { GETUPS, GETUP_SETS, eligibleForBackSell, legacyFor, chooseGetUp, stallMs, stallTimeline, stallOffsets, sineInOut } from './animation/getUps.js';
-import { landingResponse, landingDuration, applyOffsetsSoft, TIERS, REF_VY, chooseFall, tierFor, KNOCKDOWN_WEAR, wearAfterDamage, wearAfterRecovery } from './animation/falls.js';
+import { landingResponse, landingDuration, applyOffsetsSoft, TIERS, REF_VY, chooseFall, tierFor, KNOCKDOWN_WEAR, wearAfterDamage, wearAfterRecovery, joltResponse, joltDuration } from './animation/falls.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
@@ -34,6 +34,7 @@ import {
 const SPEED      = 140;
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
+const ELBOW_DOWN_SEC = 0.8;   // ?falls=v1 (T4.2b): how long the elbow-drop attacker lies before his get-up; down long enough to read, short enough to be hard to pin
 // How long a thrown body takes to settle from the clip's last frame into the
 // grounded lying pose (see _layOnBack / Skeleton.groundedPoseFrom).
 const GROUND_HANDOFF_SEC = 0.3;
@@ -537,6 +538,7 @@ export default class Wrestler {
         this.stateTimer   = 0;
         this.fallProgress = 0;
         this._landing     = null;   // ?falls=v1 (PLAN_FALLS T2.2): { kind, intensity, vy, t } from contact until the response ends
+        this._jolt        = null;   // ?falls=v1 (PLAN_FALLS T4.1): { lying, intensity, t } from the hit on a downed man until he drops back flat
         // How a downed wrestler lies: 'supine' (on the back, feet toward
         // facing) or 'prone' (face down, head toward facing). Set by every
         // path that puts a wrestler on the mat; read by the grounded render
@@ -1132,10 +1134,14 @@ export default class Wrestler {
         this._landNext?.();   // ?falls=v1: the slam's landing, one frame after its hit (_playPairedThrow)
         this._tickRiseFlip();
         this._tickPain();
-        if (this.state !== 'down') { this._sell = null; this._hold = null; this._landing = null; } // pinned, picked up, rising: the sell (and hold) stops, and so does the landing
+        if (this.state !== 'down') { this._sell = null; this._hold = null; this._landing = null; this._jolt = null; } // pinned, picked up, rising: the sell (and hold) stops, and so does the landing
         if (this._landing && this.state === 'down') {
             this._landing.t += dt;
             if (this._landing.t >= landingDuration(this._landing.kind, this._landing.intensity, this._landing.vy, this._landing.tier)) this._landing = null;
+        }
+        if (this._jolt && this.state === 'down') {
+            this._jolt.t += dt;
+            if (this._jolt.t >= joltDuration(this._jolt.intensity)) this._jolt = null;
         }
         if (this.state !== 'down' && this.state !== 'staggered') return;
         if (this.state === 'down') this._tickSell(dt);
@@ -1220,11 +1226,27 @@ export default class Wrestler {
     }
 
     // True from contact until the landing response ends: AI actions and pins wait (the man is still hitting the mat).
-    isLanding() { return !!this._landing && this.state === 'down'; }
+    isLanding() { return (!!this._landing || !!this._jolt) && this.state === 'down'; }
+
+    // ?falls=v1 (PLAN_FALLS T4.1): a move lands on this man while he is on the mat. He jolts up at the waist, arms flailing, and drops back flat. Only
+    // the pose changes: damage, the down timer and the get-up are the caller's. A sell in progress is dropped (the jolt owns the pose); a pin or a
+    // get-up never starts mid-jolt (isLanding gates the pin, and the timer is held to the jolt's end), so the jolt never ends in a pop.
+    _downHitReact(attacker, move, intensity) {
+        if (!fallsCandidate() || this.state !== 'down') return false;
+        this._sell = null;
+        if (this._pain) this._pain.planned = true;
+        this._jolt = { lying: this.lying === 'prone' ? 'prone' : 'supine', intensity, t: 0, move };
+        this.stateTimer = Math.max(this.stateTimer, joltDuration(intensity));
+        return true;
+    }
 
     // The landing's offsets over the lying pose right now, or null.
     _landingOffsets() {
         const l = this._landing;
+        if (!l && this._jolt && this.state === 'down') {
+            const r = joltResponse(this._jolt.lying, this._jolt.intensity, this._jolt.t);
+            return r.done ? null : r.d;
+        }
         if (!l || this.state !== 'down') return null;
         const r = landingResponse(l.kind, l.intensity, l.vy, l.t, l.tier);
         return r.done ? null : r.d;
@@ -2636,8 +2658,12 @@ export default class Wrestler {
                 // interrupted drop costs the defender nothing (as kneeDrop).
                 other._hurt(STAMINA_DRAIN.elbowDrop, 'elbowDrop');
                 other.stateTimer = DOWN_SEC;
+                other._downHitReact(this, 'elbowDrop', 0.7);
                 this.scene.cameras.main.shake(130, 0.002);
                 this.scene.crowd?.impact?.('mat', 0.7);
+                // ?falls=v1 (PLAN_FALLS T4.2b): the clip ends lying (tilt 1.5, lift -95: face down, as the diving elbow's last key); he stays down and gets up
+                // through the library instead of standing in one frame
+                if (fallsCandidate()) { this._layDown(ELBOW_DOWN_SEC, 'prone'); return; }
                 // Show landing / recovery poses (skeleton visible again)
                 this.state = 'slamming';
                 this._runPoseSequence([
@@ -2976,6 +3002,7 @@ export default class Wrestler {
                 other._hurt(STAMINA_DRAIN.divingElbow, 'divingElbow');
                 if (other.state === 'down') {
                     other.stateTimer = DOWN_SEC;
+                    other._downHitReact(this, 'divingElbow', 0.9);
                 } else {
                     other._doSell('sellChest', 150, () => other.startClotheslineFall(this.facing));
                 }
@@ -2983,6 +3010,8 @@ export default class Wrestler {
             } else {
                 this.scene.cameras.main.shake(70, 0.001);
             }
+            // ?falls=v1 (T4.2b): the clip's last body eases into the grounded pose (the hand-set landing cut 52 px at the seam, 13-16 px/frame before it)
+            if (fallsCandidate()) { this._layDown(2.0, 'prone'); return; }
             this.pose.tilt   = 0;
             this.pose.lift   = 0;
             this.state       = 'down';
@@ -3002,6 +3031,7 @@ export default class Wrestler {
                 // Splash on downed opponent — maximum damage, extended down time
                 other._hurt(STAMINA_DRAIN.topDive, 'topDive');
                 other.stateTimer = DOWN_SEC + 2.0;
+                other._downHitReact(this, 'topDive', 0.9);
                 this.scene.cameras.main.shake(260, 0.005);
             } else if (inRange && (other.state === 'standing' || other.state === 'staggered')) {
                 // Flying cross-body on standing opponent — big knockdown
@@ -3011,6 +3041,7 @@ export default class Wrestler {
             } else {
                 this.scene.cameras.main.shake(110, 0.002);
             }
+            if (fallsCandidate()) { this._layDown(3.0, 'prone'); return; }   // T4.2b, as _doDive
             this.pose.tilt   = 0;
             this.pose.lift   = 0;
             this.state       = 'down';
@@ -3046,11 +3077,14 @@ export default class Wrestler {
                 // Whiffed — crash and burn, long punish window. (On a hit
                 // the pin's pinHold tween brings tilt/lift back up into
                 // the cover; here he goes straight to the grounded rig.)
-                this.pose.tilt  = 0;
-                this.pose.lift  = 0;
-                this.state      = 'down';
-                this.lying      = 'prone';
-                this.stateTimer = 2.6;
+                if (fallsCandidate()) this._layDown(2.6, 'prone');   // T4.2b, as _doDive
+                else {
+                    this.pose.tilt  = 0;
+                    this.pose.lift  = 0;
+                    this.state      = 'down';
+                    this.lying      = 'prone';
+                    this.stateTimer = 2.6;
+                }
                 this.scene.cameras.main.shake(90, 0.0012);
             }
         }, { state: 'pressing' });
@@ -3285,6 +3319,7 @@ export default class Wrestler {
                 // defender stays in its existing grounded draw state, no
                 // pose change, no down-timer restart.
                 other._hurt(STAMINA_DRAIN.kneeDrop, 'kneeDrop');
+                other._downHitReact(this, 'kneeDrop', 0.8);
                 this._runPoseSequence([
                     { p: 'kneeDropLand', dur: 120, e: 'Linear' },
                     { p: this.idlePose,  dur: 220, e: 'Cubic.easeOut' },

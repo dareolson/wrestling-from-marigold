@@ -305,8 +305,11 @@ the man on the mat doesn't react. Measured: `_doElbowDrop`, `_doKneeDrop` and `_
   under `?falls=v1`: at the impact, `this._layDown(ELBOW_DOWN_SEC, lying)` (lying = whichever of supine/prone matches the clip's last
   frame; show the check), so `_groundHandoff` eases him from the clip into the grounded pose and the authored get-up stands him up.
   Tune `ELBOW_DOWN_SEC` (start 0.8 s) so he is down long enough to read but not long enough to be pinned easily. Flag-off doesn't
-  change. Check the diving elbow's landing the same way: it sets `state = 'down'` by hand with no `_groundHandoff`, so measure the
-  first-frame step and switch it to `_layDown` if it pops. Tests: the attacker is `down` after the impact, gets up through the get-up
+  change. Then check every other move that leaves the attacker on the mat. Dropkick and piledriver already use `_layOnBack` and
+  are fine. The diving elbow (`_doDive`), top dive (`_doTopDive`) and the Thesz press whiff set `state = 'down'` by hand with no
+  `_groundHandoff`: measure each one's first-frame step and switch it to `_layDown` if it pops. The knee drop lands on a knee and
+  stands in 220 ms (`kneeDropLand` -> idle). Report that rise next to the step limit and leave it alone unless it breaks the limit.
+  Include each of these attacker landings in the G4a strips. Tests: the attacker is `down` after the impact, gets up through the get-up
   library (not `idle`), and the first-frame step at the handoff is within the step limit.
 - G4a page `research/animation/falls-2026-11/g4a/`: one normal-speed loop strip per move, both facings, Procreate Lou and
   `george-roster-v1` receiving, supine and prone. Misses first (step limit, outline overlap, rope and mat clipping). Focused tests, then

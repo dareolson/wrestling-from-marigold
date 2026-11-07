@@ -123,6 +123,8 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
   Misses: collarTie and waistClasp shafts 25-37% narrower than the base forearm at the same rows (Lou 55/43 vs 78/65 px, George 52 vs 83); elbowCup within 7-11%. Derek judges the stills; masters live in ignored `Sprite sheets/`.
 - T2.1b (Derek: fit to the working arm): `build_forearm_variant.mjs` scales each clasp about the elbow: length so the palm sits on the `grip` clutch row (Lou 279, George 344), width to the base shaft about the shaft's centre, 3 px inside the canvas. Shaft widths now base ±12% (Lou elbowCup capped at 1.0 by the canvas, 67 vs 78 px). Palm to target: Lou 4.4-6.3 px, George 12.7-16.3 px. [Sheet](research/art/clasps-2026-11/forearm-fit-before-after.png), [in ring](research/art/clasps-2026-11/in-ring-clasps-refit.png).
 - T3d r4: ece82fe (Derek's note), the rope launch hands the run equal arms (0.05/0.05, rest elbows; was -0.25/+0.3 and 1.0/0.9, flapping). Opus: launch only, the corner reads LOAD alone; focused 29/30 (the T3d.4 corner test).
+- T3d.4: 18d253d, corner elbows start from the load's guard (2.0/1.95, were 0.7; arms no longer lift), unfold to 0.25 over 320 ms, upper arms settle -0.35/-0.40 to -0.10/0.02. Suite 1260/1260, build, coverage 26, grapples_assert, flag-off identical.
+  Misses: contact-frame part step 15.6-70.8 px raw (before 31.6-67.3), arrival within 2 frames; page [corner strip](research/animation/whip-weight-2026-11/index.html) vs 4554a94. STOPPED at G3d-c.
 
 ## Why (Derek 2026-10-29)
 

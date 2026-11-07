@@ -42,10 +42,12 @@ Avoid a large rewrite.
 - **Awaiting Derek:** G4 (play a match with no flag, falls on) and G4b (splash bounce); Marigold title queue (83ab5cd) visual OK.
 - **Uncommitted on purpose:** Codex's sleeper-wrap PNGs (`src/assets/wrestlers/*/forearm_sleeper_wrap.png`) and 4 Codex `tools/debug` scripts (sleeper wrap, throw support, waistlock probes) are unreviewed and stay untracked. Large frame dumps are gitignored.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `fb8c5ca` (2026-11-06); later commits local. Session handoff: [entry](AI_HANDOFF_ENTRIES/2026-11-06-claude-opus-handoff-ground-contact.md). Push via the SSH URL only. Coverage baseline 26 gaps.
-- **Next (Sonnet 2026-11-06):** falls promoted (73cb6d1). T4.8 splash **at G4b** (2f79495, local): pivot, tumble (face down) and roll (on his back), all halved at Derek's r3 ([tumble vs roll](research/animation/falls-2026-11/g4b-r2/index.html)); Derek picks which move gets which and whether the half trip (it overlaps the receiver) stays. Then [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) **Stage 3d** (whip with weight, tucked elbows at the rope), **STOP at G3d**; then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1.
+- **Next (Sonnet 2026-11-06):** falls promoted (73cb6d1). T4.8 splash **at G4b** (2f79495, local): pivot, tumble (face down) and roll (on his back), all halved at Derek's r3 ([tumble vs roll](research/animation/falls-2026-11/g4b-r2/index.html)); Derek picks which move gets which and whether the half trip (it overlaps the receiver) stays. Then [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) **Stage 3d** (whip with weight, tucked elbows at the rope), **STOP at G3d**; then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1. **First: [PLAN_FALLS.md](PLAN_FALLS.md) T4.8a** (backward legs, [Codex entry](AI_HANDOFF_ENTRIES/2026-11-06-codex-splash-backward-legs.md), Opus confirmed): the roll's mirror negates each angle, so knees bend the wrong way (far -0.90, near wraps to 5.283); test the sampled poses, **STOP at G4b r4**. G4b waits for it.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-06 · Codex · [Confirmed splash roll backward-leg fault: mirrored sampled flex violates renderer contract](AI_HANDOFF_ENTRIES/2026-11-06-codex-splash-backward-legs.md)
 
 - 2026-11-06 · Claude Opus · [Handoff: falls ground contact at T4.7c; finishers and personality queued](AI_HANDOFF_ENTRIES/2026-11-06-claude-opus-handoff-ground-contact.md)
 

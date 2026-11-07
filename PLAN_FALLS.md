@@ -428,6 +428,28 @@ never measured overlap between the two bodies. The jolt and the handoff stay; th
     apex, the flip frame, his landing, the get-up start. Report: his root path (x/y per frame from contact to landing), the flip
     frame's pose step, overlap between the two bodies per frame after contact, the landing point vs the receiver and the ropes, rest
     delta, damage/foley firing once. Focused tests. Commit locally, **STOP at G4b**.
+- **T4.8a** Derek at G4b (2026-11-06): **backward legs** in the splash. Fix before any more splash tuning or G4b judging.
+  Cause (Codex, [entry](AI_HANDOFF_ENTRIES/2026-11-06-codex-splash-backward-legs.md); Opus confirmed in code): from `mirrorAt` on, the
+  roll draws `mirrored(keys[i].g, target)` ([groundContact.js](src/animation/groundContact.js) `mirrored`), negating and wrapping every
+  channel on its own. Grounded knees bend only one way in `g` (thigh - shin >= 0 in both facings; `_applyGrounded` straightens
+  shin > thigh with getups on). Negating flips that sign: far knee at the apex -0.90 (clamped straight), near knee wraps to 5.283
+  (passes the clamp, invalid chain). With the facing mirrored, the painted knee is on the other side anyway, so "the same joint
+  positions" draws a backward knee even where the clamp doesn't fire.
+  - **Roll:** do the mirror on a frame where the pose is the same in both facings: give the roll its own apex with knees and elbows
+    nearly straight (flex about 0.05, legs still clear of the mat), so negating it is a valid bend with near-identical geometry. Then
+    bend into the supine rest's knees in the fall, the valid way for the new facing. Leave `APEX`/`B` (the pivot and tumble) alone.
+  - **`mirrored`:** keep chains whole: wrap the proximal channel (thigh, upper arm) to `ref`, then place the distal one by the
+    negated bend on the same branch. Never wrap a distal channel on its own. Assert that a bend sign it can't keep is an error, not a clamp.
+  - **Test (the gap):** sample `sampleSplash` for all three variants, >= 241 points over the bounce, plus `mirrorAt` +/- 1e-6 and the
+    landing, both facings, against the rest each variant uses: every returned `g` has knee flex (thigh - shin) in [-0.02, 2.55] and
+    elbows within the convention the existing T4.8 bend test uses; drawn hip/knee/ankle and shoulder/elbow/wrist step across the
+    mirror frame no bigger than the neighbouring frames' steps; the grounded knee clamp fires 0 times during the splash (count it).
+    Keep the existing stored-key test. Do not widen limits, disable the clamp or swap shin art to pass.
+  - Pivot's supine rest is 0.05 the wrong way (1.50/1.55, the shared rest pose): report it, don't change the rest pose here.
+  - Derek said "variants", plural: render apex, mirror frame and landing for pivot, tumble and roll, both rigs, both facings, before
+    beside after, plus one normal-speed loop strip per variant in both facings. Give your own read of every knee, then the numbers
+    (bad sample count per variant, min/max flex, clamp count, mirror-frame step). Report the roll's get-up turn (71-96 px) but don't
+    fix it here. Focused tests. Commit locally, **STOP at G4b r4**.
 
 ## Open for Derek
 

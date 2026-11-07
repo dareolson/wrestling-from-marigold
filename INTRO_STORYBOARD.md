@@ -1,3 +1,5 @@
+> **Visual direction, Derek 2026-10-31:** the entire game is monochrome, including story, carnival, televised matches, bar fight and exhibition. This supersedes earlier color presentation directions in this document. Preserve source masters; see [the production standard](CINEMATIC_ART_STANDARD.md). Current move work remains the priority.
+
 # Opening Title and Arrival — Production Storyboard
 
 **Scene ID:** `intro_arrival`  

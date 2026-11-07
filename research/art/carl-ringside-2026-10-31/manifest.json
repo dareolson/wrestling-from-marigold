@@ -1,0 +1,74 @@
+{
+  "character": "Carl",
+  "role": "Guy's trainer and ringside cornerman",
+  "date": "2026-10-31",
+  "tool": "built-in image_gen",
+  "status": "Full-body sheet look approved by Derek on 2026-10-31; saved for later integration as Guy’s ringside trainer; not a registered runtime atlas",
+  "asset": "carl-ringside-sheet-v1.png",
+  "identityAndStyleReference": "src/assets/story/trainer-medium-handdrawn-v2-candidate.png",
+  "originalIdentityMaster": "src/assets/story/trainer-medium-v1.png",
+  "format": {
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGBA",
+    "layout": "4 columns by 2 rows"
+  },
+  "nativeFacing": "right",
+  "costume": "Tobacco-brown short-sleeve shirt, off-white neck towel, charcoal high-waisted trousers, brown leather work shoes; empty hands",
+  "frames": [
+    {
+      "frame": 1,
+      "pose": "attentive rest",
+      "sequence": "coach"
+    },
+    {
+      "frame": 2,
+      "pose": "cupped-hand call",
+      "sequence": "coach"
+    },
+    {
+      "frame": 3,
+      "pose": "pointing instruction",
+      "sequence": "coach"
+    },
+    {
+      "frame": 4,
+      "pose": "settle to rest",
+      "sequence": "coach"
+    },
+    {
+      "frame": 5,
+      "pose": "clap preparation",
+      "sequence": "cheer"
+    },
+    {
+      "frame": 6,
+      "pose": "clap contact",
+      "sequence": "cheer"
+    },
+    {
+      "frame": 7,
+      "pose": "fist-pump encouragement",
+      "sequence": "cheer"
+    },
+    {
+      "frame": 8,
+      "pose": "settle to rest",
+      "sequence": "cheer"
+    }
+  ],
+  "intendedBehavior": "Named cornerman bound to Guy's match role; occasional coaching while Guy is active, encouragement when recovering, cheering on Guy's successful offense and nearfalls. Mirror native facing according to the ringside slot.",
+  "reviewNotes": [
+    "All eight figures include heads and both complete shoes.",
+    "Generated placement is approximate: the pointing hand extends past the ideal third-column boundary. Extract using individual bounds rather than blindly slicing equal cells.",
+    "Re-anchor feet and normalize shared scale before animation; do not independently scale each pose by its width.",
+    "Hand anatomy, facial consistency and registration still require visual review.",
+    "Empty-background alpha spot checks are zero; image alpha ranges from 0 to 254. Original generated alpha retained."
+  ],
+  "approval": {
+    "date": "2026-10-31",
+    "by": "Derek",
+    "scope": "Full-body sprite sheet visual approval; future use cheering and coaching during Guy matches",
+    "timing": "Deferred for later; Opus handoff recorded"
+  }
+}

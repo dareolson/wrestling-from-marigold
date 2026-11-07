@@ -195,6 +195,75 @@ layer takes any images. Reference only, like the sprites.
 | Body | body scissors, abdominal stretch, cobra twist | |
 | Signatures | Thesz's airplane spin and backdrop suplex; George's flying tackle (confirm in footage) | `theszPress` |
 
+## 2b. Opener moves (low impact) — planning list
+
+Added 2026-10-31. Derek's vision: **a match escalates.** Early on, wrestlers
+are fresh and use low-impact moves; suplexes, piledrivers and finishers are
+earned by wearing the opponent down. So the opening needs a real pool of
+moves that don't end exchanges. Planning only: nothing here is built, and
+frame numbers marked "verify" were read by eye at thumbnail scale.
+
+**Tiers (proposed, not wired).** Opener: strikes and transitions that cost
+little and do little. Middle: slams, throws, simple holds. Late: suplex,
+piledriver, `theszPress`, finishers. Gating by opponent wear/stamina is a
+separate task; `registry.js` has an `ai` tag field, but nothing reads it yet.
+A sell button that refills stamina (hold it down to stay on the mat, or rest
+on the ropes or a knee) is planned as part of the same escalation loop; see
+`IDEAS.md` "Sell button". Not being worked on yet.
+
+**Already built and usable as openers:** `jab`, `shove`, `frontKick`,
+`armDrag`, `hipToss`, `irishWhip`, `headlock`, `kneeLift`, `headbutt` (vs a
+staggered man). Lockup + Power only fits one of `hipToss`/`armDrag`, so a
+second lockup opener needs a new input or a random pick.
+
+### Sheet-sourced
+
+| Move | Source | Notes |
+|---|---|---|
+| Club blow / forearm smash | Titanic Tim, Haggar Strikes (verify) | power-wrestler jab replacement |
+| Running forearm | Lex Luger 397–399 | mid-range, closing in |
+| Belly bump (shoulder-block stand-in) | Jumbo Jack Strikes (verify) | big-man first impact |
+| Hip attack | Jumbo Jack Strikes (verify) | a shove with the hips |
+| Low kick / leg sweep | Biff Strikes (verify) | lower rows |
+| Backward roll escape | Bret 239–243 | defensive reset |
+| Cartwheel / handspring evade | Oni, Scorpion (verify) | flyer's dodge |
+| Mounted punches | Bret 180–183 | on a downed opponent |
+| Crowd-work taunts | Macho sky-point 356–377, DiBiase money toss 393–397, Razor 386, Luger flex 400–404 | one per personality |
+
+### Needs real-match footage (nothing usable in our sheets)
+
+| Family | Moves |
+|---|---|
+| Lockup transitions | wristlock, side headlock takeover, snapmare, waistlock takedown, single-leg takedown, arm wringer |
+| Quick reversals | hiplock, drop toehold, leapfrog |
+| Tests and strikes | test of strength, knife-edge chop, European uppercut, back elbow |
+
+### Suggested first batch
+
+1. Club blow and running forearm (same pattern as `jab`/`frontKick`).
+2. Shoulder block, from the Jumbo belly bump.
+3. Backward roll.
+4. Snapmare and side headlock takeover (extend `headlock`; footage needed).
+5. Wristlock, which can chain into `hammerlock` or `armBar`.
+6. Per-wrestler taunt variants.
+
+### Other findings from the all-sheet pass (2026-10-31)
+
+Not openers, but new versus section 2:
+
+- Yokozuna 392–395: a leap that ends flat, possibly a splash (verify).
+- Razor 393–395: low flat lunge after his throw (verify).
+- Scorpion: handstand spinning split-kick, handspring flip throws, psycho-aura
+  charge. Gunloc: spinning backfist and rising flash kick (with arcs),
+  diagonal cross-body. Oni: flash kick, cartwheel kicks, rolling dive.
+  Jumbo Jack: belly bump, hip attack, curled rolling body press, cane frames.
+  Titanic Tim: overhead smashes and lift/press. Haggar: running lariat, mat
+  slide. These are the main source for a flyer kit; the Rumble sheets have
+  almost none.
+- Every Rumble sheet shares Bret's walk, run and idle frames, and frames
+  298–376 on all but Bret's are one shared sell block (not checked
+  frame-for-frame).
+
 ## 3. To download next
 
 The site blocks automated downloads, so save these in a browser into

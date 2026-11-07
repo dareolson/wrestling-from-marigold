@@ -102,6 +102,18 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - **Derek on r3 (2026-11-03): the atomic drop still lifts straight up; it should be an arc, George leaning back as Lou leans back, Lou's legs and back doing the work. Lou looks like he lifts 200 lbs with his arms.** Opus, from the r3 table: defender `tilt` 0 and x fixed while `lift` adds 80 px; hands ride up 26 px on the hip IK; Lou leans 29 deg, George 0; chest-to-back opens 32 -> 51 px. T4c.4g (a `carry`).
 - T4d.2: (this commit). Rear sleeper from the hold, flag on: finisher in the hold -> `_beginSleeperFromHold`; attacker 50 px behind and upstage, poses and hands per frame (`sleeper.js`, `_poseSleeper`, `_holdSleeperGrips`); front sleeper off (`tryFinisher` returns false); mash rises one stage; base forearm (no wrap art). `sleeper_assert` 26/26, `waistlock_cleanup` +2 sleeper cases, knee audit passes.
   Misses: D12 below the belt 1113 px, torso 525 px (attacker 50 px behind); far arm over his own torso 0; hand to far side of neck not measured yet (T4d.4); AI and kits are T4d.5.
+- **Codex on 27f06ba (2026-11-03):** the T4c.4d knee folds are clamped to -0.10 (0 px difference, both rigs); snapmare soles slide 85/57 px; the drop lands on a straight leg. Opus: T4c.4h-T4c.4k (absolute-shin knees, `plants`, seat on a bent knee, r5 loops), STOP at r5, then T4d.3.
+- T4c.4h: 9d4a79b `foldShin`/`shinsFromFolds` (rig/articulation.js): drop, snapmare and rear sleeper write absolute shins (the clamp ate every lKnee fold); `knee_fold_sweep` 16/16 (ankle steps 14-25 px, flex = request), audit also fails on saturation (0 ship); entry seam <= 1.2 px.
+  Misses: the audit's flex reading was ill-conditioned for a raised thigh (read -0.9 on a normal bend): now follows the bone, piledriver attacker nearKnee re-listed -1.399; drop/snapmare exit pop 36-41 px and a 5 px step at exit frame 1 remain; `grapples_flagoff` frame-0 residue (up to 3e-3) fails on HEAD too.
+- T4c.4i: 50c9990 `plants` on the clip (MoveRuntime._plant, Skeleton.soleWorld, validated like carry); thrower's forward foot 0.2 px held, 0.2 px/frame, residual 0.2 (was 85/57 px slide). Misses: the 0.10 s release steps 32-36 px (8.7-9.7 px/frame); rear foot not planted; near knee 20-30 px over the mat at the impact; thrower keys carry lift 6.
+- T4c.4j: b3e96ed knee chambered at the hitch, second carry `frame: 'thigh'` onto the knee, compression/recoil keys, support foot planted; first contact .55/.57 s, ATOMIC.impact .60 -> .55 (drop .12 -> .07, sell .55), gap <= 2.5 px held, support sole 0.2 px. Misses: Lou's contact 1 frame after the marker; D12 worse in the lift beat (2784 vs 1603 px^2); attacker keys carry lift 8.
+- T4c.4k: 5b6dfed [G4c-a r5](research/animation/grapples-2026-10/g4c-a5/index.html): loops both pairs and facings, marks, grayscale stills, r4 beside. Suite 1176/1176, `waistlock_throws_assert`, `waistlock_cleanup`, `sleeper_assert`, audit (0 new) pass. **STOPPED at G4c-a r5**: Derek judges.
+- T4c.4l-T4c.4n: e7cd7cd (Codex's atomic peak, gated; atomicDrop coverage entry re-taken), 34337f3 (`ATOMIC.chamber` / `?atomicChamber=hitch`), r6 [page](research/animation/grapples-2026-11/g4c-a6/index.html). Suite 1178/1178 at 4l.
+  Misses: hitch: George's support sole drifts 19.5 px (lift 0.1), near sole 16 px off the mat before L (a second plant holds for Lou, George can't reach), receiver pelvis 6.2 / 0.3 px over the hitch (want <2). **STOPPED at G4c-a r6**: Derek picks the chamber and the 0.24 s peak.
+- T4c.4o-T4c.4q: 8a84b69 (comments), 474fa65 (receiver arms), b7ecae7 (pain, 4 planted steps, turn; sell 1.17, duration 1.90), 63b07de [r7](research/animation/grapples-2026-11/g4c-a7/index.html). Suite 1178/1178, STOP at G4c-a r7.
+  Misses: stance sole slide 2.6-2.8 px (Lou's 3rd step); turn pop 45/68 px; hand on his own hip joint (7-8 px behind), off 0.12 s before the turn; steps are 8-10 px shuffles (gap 86 -> 123); rope-side: staging fit moves the pair, no clamp.
+- T4c.4r: (this commit) `layers` on the atomic drop: the attacker's `nearArm` over the receiver's torso, 0 to 1.08 s ([r7 page, section](research/animation/grapples-2026-11/g4c-a7/index.html)). Trunks over the forearm in the grip window: 43/43 frames (max 583 px) -> 0/43, all four runs; 0 after the release.
+  Misses: the window outlasts the grips (0.72 s) to 1.08 s, else the forearm drops behind the trunks in one frame (343 px) at the release; the forearm is in front 17-19 frames after it. Whole near arm is raised, not forearm only.
 - T6.1-T6.3: 4774ed4, 3454930, de33540. Default fighters Procreate Lou and `george-roster-v1`; `rosterKits.js` is the one kit file; `moves:kits` table and kit checks. Suite 1124/1124, build, coverage 23, kits, `grapples_assert` all passed. STOPPED at G6.
   Misses: Guido has no `hammerlockOdds` or `cornerWhipOdds` (allow-listed, not retuned); no shadowed moves; `grapples_flagoff` with no `WFM_URL` (self-started server) prints DIFFERENT at frame 0 (about 1e-5 in pose) also on the code before T6.1, identical with `WFM_URL=http://localhost:5173` (flagoff now pins `thesz`/`george`).
 
@@ -720,6 +732,149 @@ standing man against the 2.5 px/frame limit.
   own torso through the lift (want under 5 px: locked arms); the chest-to-back gap (want steady, within 5 px); planted soles; the knee
   audit; D12 overlap per beat, raw (A7). r4 page: r3 lift beside the new one, both facings, normal speed, plus the trace stills.
   Then back to Stage 4d at T4d.2.
+- **Codex review of 27f06ba (2026-11-03, Derek's request): George's feet don't plant in the snapmare; the atomic drop looks like a
+  kick between the legs.** [Entry](AI_HANDOFF_ENTRIES/2026-11-03-codex-support-and-landing-review.md), [report](research/animation/grapples-2026-10/support-landing-review/REPORT.md),
+  probe `tools/debug/throw_support_review.mjs`. Opus checked the core claim in source: `JOINT_LIMITS.knee` is `[-0.10, 2.55]`
+  (`src/rig/articulation.js:14`) and on the upright path a negative `lKnee` is the natural fold, so every fold T4c.4d wrote (-0.2 to
+  -1.6) draws as -0.10. Codex's sweep: -0.1/-0.6/-0.9/-1.4 give 0 px difference, both rigs, both facings. The knee audit passed
+  because the knees are near straight, not because they fold. `lockup.js:43` already hit this and owns its shins as absolute
+  `lShin`/`rShin`. Order: T4c.4h, T4c.4i, T4c.4j, T4c.4k (STOP), then Derek's call, then T4d.3.
+- **T4c.4h One knee convention that actually folds (first; no pose tuning before it).**
+  1. **Route (Opus decision): absolute shin, as the lockup does.** In `atomicDrop.js` and `snapmare.js`, every leg key of both roles
+     drops `lKnee`/`rKnee` and writes `lShin`/`rShin` from one helper, e.g. `foldShin(leg, crouch, fold)` next to `clampLocalFlex`
+     in `articulation.js`, where `fold > 0` = heel toward the back of the thigh (anatomical, the audit's sign). Start from
+     lockup's bridge formula (`leg + .85 * crouch - fold`, sign per the render, not by expectation) and prove it with step 2. One owner per
+     track for the whole clip: no key mixes `lKnee` with `lShin`. Check `sleeper.js` and the waistlock hold poses for the same
+     dead range (computed values too, not only literals) and convert them the same way if any are hit.
+  2. **Prove the fold renders.** Extend Codex's sweep into a focused browser check (`tools/debug/knee_fold_sweep.mjs`): folds
+     0 / 0.6 / 1.2 / 1.8 through the helper, both rigs, both facings, drawn ankle positions; fail unless each step moves the ankle
+     at least 8 px and the audit's drawn flex is within 0.15 rad of the request. Raw numbers in the output.
+  3. **Make the audit catch saturation.** `clip_knee_audit` also fails on any clip key whose `lKnee`/`rKnee` lies outside
+     `JOINT_LIMITS.knee` (a static scan of the compiled tracks, all registered clips): a request the clamp removes is a miss, not a pass.
+     Shipped moves that do this go in the baseline (list them for Opus), the two throws may not.
+  4. **Don't** widen `JOINT_LIMITS.knee.min`, flip the sign, or touch other moves: the clamp also feeds `_recordJointState`
+     (Skeleton.js:1432), lockup's bridge (lockup.js:316) and `_lockupLegsHome` (Arena.js:3846). Widening it is a separate
+     Opus decision (polish list). Rewrite the knee note in `clips/index.js` and `atomicDrop.js:6` so it says the clamp eats the
+     fold and names the helper.
+  5. Blends in and out of the clips change owner (`lKnee` <-> `lShin`): `exitBlendPose`'s knee bridge covers the exit; check the entry
+     too. Report the first-frame lead-in step (r3: 36.6 / 40.7 px) and any pop over 2.5 px/frame at either seam.
+  Gates: sweep, knee audit (no new or worse failures), `waistlock_throws_assert`, `grapples_flagoff`, focused tests. Commit; no stop.
+- **T4c.4i George plants his feet in the snapmare (a `plants` entry).** The thrower slides from x 0 to 12/14 with no foot owner:
+  painted soles travel 85 / 57 px from reach-end to landing (Codex). Add `plants` on the clip, the same shape as `carry`
+  (role, `foot: 'near'|'far'`, window `in`/`out` with blends, target captured the first frame the weight is above zero, which must
+  be a frame where that sole is on the mat), resolved in `MoveRuntime.afterDraw` **before** `carry` and `grips`: solve that leg with
+  `solveLegToAnchor` (Skeleton.js:319, the painted `_soleAnchorFrac` as `_gaitLeg` does, mirroring included) so the sole holds the
+  captured world point, then write the solved leg back into the pose the way carry writes back, so later redraws keep it. Validate in
+  `AnimationClip.js` like `floorContacts`; focused test. If the target leaves the leg's reach, don't build a pelvis solver: change
+  the clip's x keys so the pelvis stays in reach, and report the frames.
+  Phases, thrower: **land/set** (capture both soles when they arrive), **pull** (far sole planted; near knee lowers, near foot free to
+  roll), **throw** (far sole + near knee carry him; near knee by keys, measured, not a second constraint), **rise** (far sole held until
+  the weight is back over it, then released over 0.10 s or a deliberate step). Measures: far-sole drift inside its window (want 1-2 px
+  at s=1; 2.5 px/frame is the ceiling), near-knee height over the mat at contact, release time, the step out. Raw px.
+- **T4c.4j The atomic drop lands on a bent knee (Codex's four steps).** Keep the carry and the fridge lift.
+  1. **The knee is a platform.** With T4c.4h's helper, chamber the attacker's near leg during the hitch, before the receiver reaches
+     it: thigh forward and up, shin hanging near vertical, heel under or behind the knee (report thigh angle from vertical and the
+     drawn fold). The support (far) foot is a T4c.4i `plants` entry from the wrap to the catch.
+  2. **The arc continues onto it.** Don't hand the receiver back to his own x/lift keys at `T`. Give `carry` a second anchor frame,
+     `frame: 'nearThigh'` (anchor at the top of the knee end of the attacker's near thigh), and cross-blend the torso carry into it
+     over the drop, so the pelvis path is one curve, up and back, then forward and down onto the knee. Contact point on the receiver:
+     a painted seat/tailbone anchor if the rig has one; if not, the lowest point of the torso art at the hip line, and say which.
+  3. **Weight arrives.** First contact, then 2-3 frames held: pelvis on the knee (gap under 3 px), his hips and torso compress
+     (crouch/bend), shoulders lag a frame, the attacker gives 3-5 px through his support leg. Move `ATOMIC.impact` and the damage
+     marker to the first contact frame (report the old and new times).
+  4. **Recoil after contact.** Distinct poses: impact, compression, recoil (arch, pops forward, hand to his backside), recovery
+     (catch-step, his own feet). The knee drops away only after the recoil starts.
+  Measures: seat-to-knee gap per frame from 0.10 s before contact to the recoil; thigh angle and fold at contact; support-sole drift;
+  first contact time vs damage marker; D12 raw per beat (planting doesn't waive it); knee audit.
+- **T4c.4k Proof loops, r5 (before any full packet).** `research/animation/grapples-2026-10/g4c-a5/index.html`: one normal-speed loop
+  per move, both facings, Lou/George: George's snapmare (plant targets and the near-knee contact marked), the atomic drop from the hitch
+  to the first recovery step (seat/knee contact marked). Beside each, a few held stills at real game size in grayscale, and the r4
+  strip, labelled. Table first: contact misses, sole drift, seat-to-knee gap, D12 raw, knee audit, the sweep. No speed retune, no art,
+  no new variants, no promotion. Commit locally, **STOP at G4c-a r5**: Derek judges. Then T4d.3 (the small snapmare uses the fixed snapmare).
+- **Derek on r5 (2026-11-04), via Codex:** keep the faster lift and the support; lift the receiver higher, hold a beat at the peak,
+  bend his legs on the landing. Codex built it uncommitted on 5b6dfed ([entry](AI_HANDOFF_ENTRIES/2026-11-04-codex-atomic-peak-and-landing.md),
+  [page](research/animation/grapples-2026-11/atomic-peak/index.html)): `carry.slide` (36 units up the carrier's torso over the lift,
+  then held), hitch 0.06 -> 0.24 s, receiver landing folds 0.95/0.90 and compression 1.15/1.05, thigh carry `in: [T, I]`,
+  `ATOMIC.impact` 0.73, duration 1.28. +19.24 px, 0 px drift at the peak, seat gap 0 at impact, support sole 0.1 px. Codex ran 61
+  focused tests, build, throw asserts, contact probe and flag-off: **not** the knee audit, D12 or the full suite. Opus reviewed the diff
+  (small, tested, validation frozen): one side effect: the attacker's `L` key now equals `T` (near thigh `lLeg` 1.25, fold 1.0), so
+  the chamber rises **during the lift** (r5: during the hitch). He finishes a 200 lb lift on one leg, against "legs and back" (T4c.4f).
+- **T4c.4l Commit Codex's candidate, gated.** Commit his working-tree changes as they are (AnimationClip.js, MoveRuntime.js, carry.js,
+  atomicDrop.js, waistlockThrows.js, tests/carry.test.js, `tools/debug/atomic_peak_page.mjs`, his `research/animation/grapples-2026-11/`),
+  message "T4c.4l: Codex's atomic peak (...)", only after: `clip_knee_audit` (0 new, 0 saturated), `waistlock_throws_assert`,
+  `waistlock_cleanup`, `grapples_flagoff`, D12 raw per beat beside r5's, full suite, build. Stage only those paths (other sessions'
+  docs are uncommitted on this branch). A failing gate: stop and report, don't fix inside this commit. **Known, expected (Opus
+  2026-11-04, confirmed):** the suite is 1177/1178, the one failure `moveCoverage.test.js` because `moves:coverage --check` reports
+  atomicDrop's fingerprint c0a28edd8422 -> 7ba5418ae518. Not a gameplay failure: the debt re-opens because the clip changed. In this
+  commit re-take **only** the `atomicDrop` entry in `tools/move-critic/coverage-baseline.json` (fingerprint 7ba5418ae518, status stays
+  `unverified`, append to its reason "; re-taken at T4c.4l (slide, held hitch)"). Don't regenerate other entries; the move is still
+  not covered (no critic spec). Any other coverage change is a real failure: stop.
+- **T4c.4m Chamber in the hitch, not the lift (variant for Derek).** On top of T4c.4l: the attacker's `L` key goes back to r5's legs
+  (`lLeg` 0.45, `lFold` 0.45; keep `lift: 8` and `bend: -0.60` so the torso, and the carried man, stay still), and the near thigh
+  chambers to 1.25 / 1.0 over the first ~0.14 s of the 0.24 s hitch, held to `T`. Want both feet on the mat until `L`, but the
+  keys don't guarantee it: the plant anchors only the `r` leg and the body solve can move the other sole (Codex 2026-11-04). So
+  **measure both painted soles** (height over the mat and x slide, px, per frame) through the squat and lift, for both variants. If
+  the near sole leaves the mat before `L`, author the weight transfer in the keys first; a second plant only if reach and the knee
+  clamp allow it (knee audit 0 saturated), and say which you did. Measure also: receiver pelvis vertical range over the hitch
+  (Codex's is 0; want under 2 px, without breaking his carry to freeze him), pose continuity (max joint step, px) at lift-end,
+  chamber-end and impact, thigh angle at `T`, seat gap at impact, support sole, D12 per beat, knee audit. Controlled comparison:
+  same height, total duration, drop, damage time, landing folds and camera; only the chamber timing differs. Behind a constant
+  (`ATOMIC.chamber: 'hitch' | 'lift'`) so both play from one build; `'hitch'` the default only if Derek picks it.
+- **T4c.4n r6 page** `research/animation/grapples-2026-11/g4c-a6/index.html`: Lou on George, both facings, normal speed: Codex's
+  (chamber in the lift) beside T4c.4m (chamber in the hitch), same loop length, the peak frame held as a still for each, and George on
+  Lou numerically. Misses first, also carried from r4/r5: the receiver's near leg near horizontal and straight at the peak; snapmare
+  release step 32-36 px; snapmare near knee 20-30 px over the mat at impact. Commit, **STOP at G4c-a r6**: Derek picks the chamber
+  and says whether 0.24 s at the top is right. Then T4d.3.
+- **Derek after r6 (2026-11-04):** “it looks good”; next fix the receiver's stiff arms with natural, asymmetric flailing during the lift/drop, then work on the tailbone sell: pain, move away, only then turn back. [Recorded direction and implementation advice](AI_HANDOFF_ENTRIES/2026-11-04-derek-atomic-arms-and-sell.md). These passes come before the small snapmare. No chamber variant selected in this feedback; keep the current default and reported misses.
+- **Opus on r6 + Codex's chamber review (2026-11-04):** `'lift'` stays the default. The hitch variant is a recorded **failed experiment**
+  (George support sole 19.5 px, near sole up 16.1 px before lift-end, Lou pelvis 6.2 px against <2, and it needed `lift` 13 to compensate):
+  leave it behind `?atomicChamber=hitch`, don't repair it unless Derek asks. Order: T4c.4o, T4c.4p, T4c.4q, **STOP at r7**, then T4d.3.
+- **T4c.4o Comments and probe labels, then the receiver's arms.** (1) Docs first, own commit: fix the comments that say the hitch keeps
+  both feet down (`atomicDrop.js` the `L` key comment and the `plants` comment, `waistlockThrows.js` the CHAMBER comment) to say what was
+  measured, and drop the stale "~9 px" on HLIFT. In `atomic_chamber_probe.mjs` label units per column (scaled vs raw game px) and name
+  the sole "mat" as "displacement from the wrap". (2) The defender's arms (`atomicDrop.js` defender track, today 0.7/0.7, elbows
+  0.9 held identical at `L` and `T`): loss of balance, asymmetric. Shoulders lead, elbows and hands a beat later; the two arms on
+  different times (offset keys 0.04-0.08 s apart, different amplitudes); a reach out/up as he leaves the mat, a smaller grab in the
+  held peak (not frozen, not mirrored, no sine loop), a reaction as the drop starts, and into the impact keys already there. Arm keys
+  only: legs, torso, carry, transform and timing unchanged, so the receiver pelvis path must match T4c.4l within 0.5 px (measure it).
+  The attacker's grips unchanged. Measure per frame, both pairs, both facings: max hand step (px/frame, flag a pop), L/R arm angle
+  difference over lift + hitch (want it never 0 for more than 2 frames), hand or forearm inside the partner's or his own torso
+  outline (px counted, as G8's forearm count). Focused tests (`atomicDrop`, `carry`), `clip_knee_audit`, `waistlock_throws_assert`.
+  Commit locally; no stop.
+- **T4c.4p Tailbone sell, walk away, then turn.** Order: contact and compression (keep) -> pain -> steps away, still facing away ->
+  turn back. Lift, drop, impact (0.73) and the one damage event stay where they are. (a) **Pain:** after the recoil the near hand goes to
+  the tailbone (back of the pelvis, not the lower back) and the far arm stays out for balance; hips tucked under, short guarded torso,
+  the flail of T4c.4o flowing into the reach (no reset to neutral). (b) **Walk away:** 2-3 short uneven steps along the facing (away
+  from the attacker), authored as real steps: each sole planted while it bears weight (sole slide under 2 px while planted, measured),
+  the hurt side stepping shorter. Distance from the attacker at the turn: report it (px, both rigs); target about 1.5x the
+  atomic drop's `holdBehind` gap, reduced, never slid, when the ropes are near: clamp travel to ring room before authoring the path,
+  and measure a rope-side case (no `Wrestler._clamp` correction during the clip). (c) **Turn back:** after the steps, not during. The
+  facing flips once on a turn-friendly frame (profile torso, feet together, the whip/get-up precedent) and the frame-to-frame pop is
+  measured (px, both rigs; G3b's 120 px whip turn is the ceiling to beat). After the clip the auto-face (`Wrestler.js` ~961) must not flip
+  him first: hold it with `_facingLock` (seconds, as the waistlock's `turnBeat`) until the authored turn. (d) **Carry the hurt:** the
+  aftermath-v2 back recovery (`_painRecovering`, `sellSpec.part 'back'`) continues from his last frame with no pose step at the hand-off
+  (max joint step, px). Extend `ATOMIC.sell` and `duration` as much as the beats need (report the new values; this is an implementation
+  choice, not Derek's); the attacker gets up off his knee in the same time and holds his facing, no chase. Check: one impact/damage
+  event, `waistlock_cleanup` interrupted mid-walk (match end, stun) leaves no `_facingLock` or pose, AI and input can't act on the
+  defender before the turn, `grapples_flagoff`. Commit locally; no stop.
+- **T4c.4q r7 page** `research/animation/grapples-2026-11/g4c-a7/index.html`: Lou on George and George on Lou, both facings, normal speed,
+  the full drop through the turn, with r6's lift loop beside it for the arms. Before it, one normal-speed loop strip in both facings for Derek
+  to glance at (CLAUDE.md). Misses first: T4c.4o and T4c.4p's measurements, the rope-side case, and the carried ones (receiver's near leg
+  straight at the peak, snapmare release step 32-36 px, snapmare near knee 20-30 px over the mat). Full suite, build, coverage (atomicDrop
+  fingerprint re-take, as T4c.4l, only that entry). Commit, **STOP at G4c-a r7**: Derek judges the arms and the sell. Then T4d.3.
+- **Derek after r7 (2026-11-04):** keep the attacker's outside wrapping forearm **stacked in front of the victim's trunks** while holding/lifting him, so the hold stays visible. Draw order, not a higher hand position. [Opus note and implementation lead](AI_HANDOFF_ENTRIES/2026-11-04-derek-atomic-outside-forearm.md); check both rigs and facings through grip release. Preserve the new receiver flail and pain/walk/turn sequence.
+- **T4c.4r The carrier's outside forearm over the trunks** ([Derek via Codex](AI_HANDOFF_ENTRIES/2026-11-04-derek-atomic-outside-forearm.md)).
+  An occlusion fix only: the camera-side wrapping forearm draws in front of the receiver's trunks from the wrap through the drop while
+  the grip is engaged, then releases with the grip. Resolve the camera-side arm per rig and facing (`lChannelSide`), not a fixed l/r.
+  Use the clip's `layers` after the grip redraw, scoped to the grip window; the smallest part-level order (forearm + hand) if the whole
+  arm in front looks wrong; never global wrestler depth. Grip target, carry path and the far arm's behind-body order unchanged; the
+  receiver's flail kept. Measure per frame, both pairs, both facings: frames where any trunks pixel covers the working forearm (want 0,
+  including the release), arm pixels drawn in front outside the grip window. Before/after still of lift and peak plus a normal-speed
+  loop, added to the r7 page as a section. Commit locally; no stop (Derek glances at it with the falls work). Then
+  [PLAN_FALLS.md](PLAN_FALLS.md) Stage 1, ahead of T4d.3 (Derek 2026-11-04).
+- **T4c.4s Snapmare at 2x (Derek 2026-11-05: "2x is better").** Default `SPEED` in `src/animation/waistlockThrows.js` 1.5 -> 2
+  (`?snapmareSpeed=` still overrides). Re-check A6's ring check and the boot-to-head gap at 2x, both facings, re-take only the
+  snapmare's coverage fingerprint if it changes. Focused tests. Commit locally; no stop. Then PLAN_FALLS Stage 2.
 - **T4c.5 Kits, AI, soak** (A8), after G4c-a. `grapples_soak.mjs` with `waistlock=v1`, one pair at a time (two at once crashed in
   T4b.4): drops, reversals, denied reversals counted; fail on page errors, `orphanRescue`, stuck states.
 - **T4c.6 G4c page**: strips of both moves, both attackers, both facings; table, misses first. Gates: focused tests,
@@ -809,7 +964,13 @@ angles at each z stage; the small snapmare's rotation (rad), seat landing frame 
 - **T4d.2b** Only once Derek has approved the T4d.0 art (it will be in the Status): register `sleeperWrap` per rig from the fit
   script's output, measure the crook to the defender's neck (px) both facings, commit. If not approved by T4d.4, skip it and
   say so on the page; the G4d-a strips then show the base forearm.
-- **T4d.3** The small snapmare (S6), after 4c's snapmare clip (T4c.3). Commit locally; no stop.
+- **T4d.3** The small snapmare (S6), after 4c's snapmare clip (T4c.3). `sleeper.js` has the option data but `clips/snapmare.js`
+  builds one fixed full flip and supine landing. One clip builder with an option, default `full` (full snapmare unchanged: its
+  existing tests and `waistlock_throws_assert` must pass untouched). The `small` option authors its own path, a **seated** landing,
+  the 0.8 s hold and a continuous seated-to-get-up handoff; halving the rotation alone is wrong. Verify: reversal available at z/zz,
+  denied at zzz; one damage event; both partners cleaned up on interruption (`waistlock_cleanup` case); denied without ring room.
+  Base forearm art until Derek approves the wrap. Inherited snapmare misses (release step 32-36 px, kneeling gap, body overlap) stay
+  listed as misses, kept apart from any new ones the small option adds. Commit locally; no stop.
 - **T4d.4** G4d-a page `research/animation/grapples-2026-10/g4d-a/index.html`: normal-speed loops, Lou on George, both facings:
   sleeper through the sink to the slump; sleeper escaped; small snapmare. Misses first. **STOP at G4d-a.**
 - **T4d.5-T4d.6** after G4d-a: AI and kits (S7) and a one-pair soak; G4d page and the full gates as T4c.6. **STOP at G4d.**

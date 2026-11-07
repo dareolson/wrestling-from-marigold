@@ -1,0 +1,27 @@
+focused tests: PASS
+1..56
+# tests 56
+# suites 0
+# pass 56
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 133.690833
+
+throw browser assertions: PASS
+ok   George on Lou, attacker first facing right: both stand at the end, no facing lock, nothing held
+ok   George on Lou, attacker first facing right: the defender is down 12 stamina at the knee (before it regenerates)
+ok   George on Lou, attacker first facing right: a press 0.1 s into the lift reverses it into the snapmare, once
+ok   George on Lou, attacker first facing right: the thrown man (the old attacker) ends down on his back, the thrower stands, nobody tilted
+ok   George on Lou, attacker first facing right: the thrown man is down 16 stamina (the snapmare), the thrower none
+ok   George on Lou, attacker first facing right: he turns the whole flip: tilt at the landing is a turn plus the landing angle
+ok   George on Lou, attacker first facing right: a press after the window is ignored and the drop completes
+ok   George on Lou, attacker first facing right: with no room to land, the reversal is denied (logged) and the drop completes
+all passed
+
+grapples flag off: PASS
+flag off identical over 60 frames (x, state, timeout and every pose channel, exact to 1e-4)
+
+production build: PASS (final state)
+git diff --check: PASS

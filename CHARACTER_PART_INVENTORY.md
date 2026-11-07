@@ -120,6 +120,7 @@ Only create these when a named move proof shows that ordinary rotation cannot pr
 | `forearm.strike` / `hand.fist` | jab, clothesline | supported | Prefer hand-only change if arm silhouette already works. |
 | `upper_arm.overhead` / `forearm.overhead` | double axe handle, taunts | supported with locked anchors | Add only if base parts expose bad joint paint overhead. |
 | `forearm.grip` / `hand.grip` | hammerlock, sleeper, headlock, arm bar | supported | Hand family first; forearm replacement only if wrist/arm silhouette still fails. |
+| `forearm.sleeper_wrap` | rear sleeper (PLAN_GRAPPLES 4d) | variant slot exists (`variants.forearm`) | Derek 2026-11-03: the wrap across the throat runs into depth; rotation can't show it. Elbow crook under the chin, forearm foreshortened away from camera, hand hidden. One master fitted to every rig (Lou, George), not one per rig. |
 | `thigh.knee_chamber` / `shin.knee_chamber` | knee lift, knee drop | supported with locked anchors | Use a replacement only if rotated base parts cannot read anatomically. |
 | `thigh.dropkick` / `shin.dropkick` / `boot.pointed` | dropkick | supported | Preserve hip, knee, ankle geometry. |
 | `boot.toe_point` | aerials, dropkick | supported after boot split | Lower priority than hands. |

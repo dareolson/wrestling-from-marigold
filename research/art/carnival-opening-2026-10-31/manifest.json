@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-31",
+  "author": "Codex",
+  "tool": "built-in image_gen",
+  "status": "Visual development candidates; not registered game assets",
+  "story": "STORY_CARNIVAL_OPENING.md",
+  "assets": [
+    {
+      "file": "carnival-champion-v1.png",
+      "role": "Initial character concept; user requested more profile orientation"
+    },
+    {
+      "file": "carnival-champion-profile-v2.png",
+      "role": "Current right-facing profile revision; identity and costume retained; rig preparation remains"
+    },
+    {
+      "file": "carnival-ring-concept-v1.png",
+      "role": "Fictional 1952 neighborhood carnival venue concept; requires separate floor/rope/post/scenery layers and calibrated ring bounds"
+    }
+  ],
+  "references": {
+    "initialStyle": "Sprite sheets/RosterNew/2026-10-18/LouNew/extracted-v1/figure.png",
+    "profileOrientation": "Sprite sheets/New Lou/LouTheszFullBodyRef.png"
+  },
+  "constraints": [
+    "No final character name chosen",
+    "No visual approval assumed",
+    "No source asset overwritten",
+    "Carl discovers Guido after the carnival win; he is not initially the cornerman",
+    "Generated image is not a certified segmented rig or final playable venue"
+  ]
+}

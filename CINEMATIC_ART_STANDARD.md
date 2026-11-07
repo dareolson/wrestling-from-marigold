@@ -1,5 +1,12 @@
 # Cinematic Art and Motion Standard
 
+## Monochrome throughout — Derek's decision, October 31, 2026
+
+The entire game will be monochrome: titles, story scenes, carnival, professional matches, bar fight, crowds and exhibition. This supersedes the earlier color-world / black-and-white-television split and any proposed color exhibition variant. Television is distinguished through staging, sound and broadcast presentation, not a change from color to monochrome. Older color directions below are superseded for final presentation.
+
+**Source-art workflow (Derek confirmed 2026-10-31): generate new artwork in color and retain those color masters. Derive and tune the monochrome presentation separately**, keeping flexibility to adjust how source colors map to gray, along with contrast and scene lighting. Do not bake a destructive grayscale conversion into the only master or commission exclusively monochrome sources by default. The released game remains monochrome. Prepare the final presentation for deliberate grayscale values, readable silhouettes and separation between skin, gear, canvas and crowd. This decision does not require regenerating approved identities or interrupting current move work. No new comparison or approval checkpoint is needed to decide whether to use color. Runtime conversion and scene-specific value tuning remain implementation work.
+
+
 **Status:** Initial production standard  
 **Applies to:** Opening titles, story cutscenes, between-match scenes, and
 non-interactive illustrated sequences  

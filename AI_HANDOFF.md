@@ -28,37 +28,47 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Status (2026-10-31, replace this block; ≤ 40 lines)
+## Status (2026-11-06, replace this block; ≤ 40 lines)
 
-- **Opening scene specified (Derek 2026-10-31):** skyline/CHICAGO 1952, radio and obscured picket-line inserts, kitchen wall-phone/union call, landlord’s $100-by-tomorrow demand, girlfriend sends Guido out for the money. [Dialogue/brief](STORY_CARNIVAL_OPENING.md), [Opus note](AI_HANDOFF_ENTRIES/2026-10-31-codex-kitchen-opening-scene.md). Docs only; moves remain priority.
-
-- **Waistlock (Stage 4b, 2026-11-03, local, unpushed):** opt-in `?waistlock=v1` go-behind from the tie-up (power + up/down), endings switch / shove-off / rope break, AI uses it; G4b-a approved, **stopped at G4b**: [page](research/animation/grapples-2026-10/g4b/index.html), plan [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 4b. Circle footwork, turn and route stay on the polish list. Never promote.
-
-- **Visual direction settled (Derek 2026-10-31):** entire game monochrome, including story/carnival/bar fight/exhibition; supersedes color-world/B&W-TV split. Generate new art in color, retain color masters, and derive/tune monochrome separately; [decision](AI_HANDOFF_ENTRIES/2026-10-31-codex-monochrome-decision.md), [standard](CINEMATIC_ART_STANDARD.md). Docs updated; runtime treatment pending; moves remain priority.
-
-- **Venues/crowds/exhibition (Derek 2026-10-31):** [plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md), [Opus note](AI_HANDOFF_ENTRIES/2026-10-31-codex-venue-crowd-exhibition-direction.md). Refresh audiences via seeded rules; carnival and convention recipes. Story carnival unlocks as an exhibition venue; completed bar fight becomes a replayable special encounter. Preserve meta unlocks and isolate replay rewards. Planning only; active grapple work unchanged.
-
-- **New opening (Derek 2026-10-31):** [carnival/strike brief](STORY_CARNIVAL_OPENING.md), [Opus handoff](AI_HANDOFF_ENTRIES/2026-10-31-codex-carnival-origin.md). Guido is a striking steelworker under rent pressure; $100 carnival challenge is first playable match, then Carl recruits him for paid work. Ring and champion profile concepts saved; runtime pending. Kohler naming bridge explicitly unresolved.
-
-- **Codex review for Opus (2026-10-31):** [corner/rebound note](AI_HANDOFF_ENTRIES/2026-10-31-codex-corner-rebound-review-for-opus.md). Confirmed return-line geometry can miss the attacker by 62+ px in depth; existing 16 focused tests pass but miss this case. Also: corner episode cancellation, one-time daze extension, charge endpoint/vertical approach and AI gates. Advice only; G3d review boundary retained.
-
-- **Carl / Guy, saved for later (Derek 2026-10-31):** full-body coaching/cheering sheet approved. [Opus note](AI_HANDOFF_ENTRIES/2026-10-31-codex-carl-ringside-for-opus.md), [sheet](research/art/carl-ringside-2026-10-31/carl-ringside-sheet-v1.png). Later: add Carl as Guy’s named ringside trainer during his matches; extraction, foot alignment and match integration remain. Current grapple priorities unchanged.
-
-- **Irish whip (Codex, Derek request 2026-10-31):** [direction viewer](research/animation/whip-2026-10/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-codex-irish-whip-direction.md). Candidate under `grapples=v1`, committed local in a4ba0e1 and d22ec32 (T3c.0a, T3c.0b): release 183 / 250 ms, cross-body flip on the release frame, direction 8/8, approved by Derek, no promotion. Polish list: cross-body hip overlap, wrist contact. Diagonals and corner runs T3c.1-T3c.4 done, G3c approved, suite 1080/1080. **T3c.4b, T3c.5b done, G3d-2 approved by Derek; T3c.6-T3c.7 (corner daze on the rope's lean, running attack) done at a96c34f; Derek at G3e: arms down in the corner, **T3c.6b done at d7bb349 (hands off the rope, arms hang, daze 2.2 s minimum), G3e-2 approved by Derek; T3c.8 done at dc73b78 (the charge puts him down, forced face or stomach sell), G3f approved by Derek (1dcffb4, suite 1110/1110, local); Stage 5 done and STOPPED at G5: T5.1 c4d657d (the AI whips to the corner), T5.2 be87a8f (live soak, results in `research/animation/grapples-soak-2026-10/`), T5.3 aa0532f (`grapples` on by default, `?grapples=off` = old lockup); Derek plays a match with no flag**; [knockdown strip](research/animation/whip-2026-10/corner-knockdown.html) (frames local); suite 1110/1110, coverage 23 gaps (cornerCharge baselined)** in [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 3c, which also holds corners, the corner daze and diagonals.
-- **HEAD** see `git log` on `story/marigold-opening`; full suite 1115/1115 at aa0532f (Node 22: `nvm use`; shell default is 25). Uncommitted: story docs, the Carl entry, `research/story/`, `STORY_ART_AND_FEUD_DIRECTION.md`.
-- **Next (Opus 2026-11-03):** **G4b approved by Derek.** Stage 4c T4c.1-T4c.4 done (local, `waistlock` opt-in): atomic drop and its snapmare reversal, **STOPPED at G4c-a**: [page](research/animation/grapples-2026-10/g4c-a/index.html), plan [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) Stage 4c. Derek judges the drop, the flip (1 turn vs 270 degrees) and the A7 overlap frames; then T4c.5 (kits, AI, soak) and G4c. Circle footwork/turn/route on the polish list. G6 not yet signed off by Derek.
-- **Earlier (Opus 2026-10-31):** [PLAN_GRAPPLES.md](PLAN_GRAPPLES.md) **G1c approved by Derek**; stages 1b, 1c, 3, 3b, 3c and 5 are done, local through aa0532f, unpushed; `grapples` is on by default, **G5 approved by Derek 2026-11-01**; Stage 6 done at de33540 (default fighters Procreate Lou and `george-roster-v1`, `rosterKits.js` the one kit file, `moves:kits`, kit checks; suite 1124/1124), stopped at G6, local; `grapples_flagoff` passes on the dev server but its own cold-start server shows frame-0 pose residue of 1-11e-4 (x and state identical). **Stage 3b stopped at G3b** ([page](research/animation/grapples-2026-10/g3b/index.html), [entry](AI_HANDOFF_ENTRIES/2026-10-31-claude-grapples-g3b.md)): no game code changed; no move keeps a lockup shin from the break settle; clip moves land after the 0.14 s lead-in, but headlock, whip and arm drag act inside it; the whip turn is 120.5 / 118.7 px/frame (today 98.6 / 108.4), the flip alone, no per-move timing fixes Lou. Needs Derek: the whip turn and arm-drag sell choice, his failing-hands list (Stage 2) or the order for Stage 4. Open misses: Lou's planted sole 1.5-1.9 px, overlap in engage and break (up to 147 px), George's collar 9.0 px for 2 frames, first-frame step from the break settle up to +30 px over idle at 0 ms.
-- **Pushed vs local:** pushed through `baa9f37` 2026-10-31 (whip through G3f). Push via the SSH URL (HTTPS returns 400).
-- **Gait (2026-10-26):** [PLAN_GAIT.md](PLAN_GAIT.md) Stage 3 (run as its own gait) built behind `?gait=v2` (`&runGait=off` = Stage 2 run; flag off byte-identical), stopped at **G3**: Derek judges the [G3 page](research/animation/gait-2026-10/g3.html). Stage 2 commits local only. Open: whip-start facing flip (Stage 4), George hip step 3.3 px.
-- **Active plan:** [PLAN_GETUPS.md](PLAN_GETUPS.md) (authored get-ups; default on since T4.4, `?getups=off` = legacy). Stage 4 done and promoted: G1, G1-rev2, G2a, G2, G2b and G3 approved (Derek 2026-10-28/29). **Stage 5 (George re-check, G4) parked by Derek**; George's leftovers go on a polish list, not a stage. [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md) parked at G10a. Side ideas: [IDEAS.md](IDEAS.md).
-- **Open misses (G8):** prone run misses the 2.5 px/frame step limit (3.26, 16.63, 2.85 px; the prone rise has no hand route); forearm pixels still show inside the torso outline in the rise (1–80 px counted); the latch cannot decide the swap (want = the route); swap-in is at the start of the clutch, not at the via point; holdW .7 leaves a .48 px margin to the 15 px line; about +1 ms a frame.
-- **Feature flags:** `risefix`, `sellart` (v1), `aftermath` (v2), `getups` (v1) and `grapples` (v1) are **promoted** (default on, `=off` disables; risefix 82b71a8, getups 6bfb66c Derek 2026-10-29, grapples aa0532f Derek 2026-10-31, others Derek 2026-10-24). `?plant=1` (support-hand plant) is **opt-in only**, parked.
-- **Parked (Derek):** figure-four track (2026-10-23, G1 never approved, revisit later, see [PLAN_MOVE_PERFORMANCE.md](PLAN_MOVE_PERFORMANCE.md) and `research/animation/figure-four-tableau/LEDGER.md`); support-hand plant and Codex's support-art request; old rigs `thesz` and `thesz-front3q-r1` (don't fix, don't retire).
-- **Other open items:** Lou's rise-to-standing whole-body step (31/35 px) is the facing turn, not the hand ([PLAN_RISE_HANDOFF.md](PLAN_RISE_HANDOFF.md)); the Marigold title queue (83ab5cd) awaits Derek's visual OK; move coverage baseline is 23 gaps (`npm run moves:coverage -- --check`).
-- **Plans and viewers:** [PLAN_GEORGE_TRANSFER.md](PLAN_GEORGE_TRANSFER.md), [PLAN_SUPLEX_RISE.md](PLAN_SUPLEX_RISE.md) (G4 approved, promoted), [PLAN_RISE_HANDOFF.md](PLAN_RISE_HANDOFF.md), [PLAN_PIPELINE_COVERAGE.md](PLAN_PIPELINE_COVERAGE.md), [PLAN_MOVE_PERFORMANCE.md](PLAN_MOVE_PERFORMANCE.md), [PLAN_TOKEN_EFFICIENCY.md](PLAN_TOKEN_EFFICIENCY.md), [MOVE_CATALOG.md](MOVE_CATALOG.md), [MOVE_PIPELINE_EVOLUTION.md](MOVE_PIPELINE_EVOLUTION.md). Viewers: [G7](research/animation/george-transfer-2026-10/g7-viewer.html), [G6](research/animation/george-transfer-2026-10/viewer.html), [G4](research/animation/suplex-rise-2026-10/viewer.html).
-- **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) (old Status summary + Handoff Log, plus archived plan Progress).
+- **Direction (Derek 2026-11-06):** moves are passable for now. Stop polishing them and move the project forward; move misses go on polish lists and get revisited later.
+- **Falls ([PLAN_FALLS.md](PLAN_FALLS.md)):** done through T3.16 (`c53ea13`), G3 r3 accepted as passable ([page](research/animation/falls-2026-11/g3/r3.html)). `?falls=v1` is opt-in: wear meter (0.8/damage, 0.4/s recovery, knockdown 60, exceptional 92), `?wear=show` bar. Stage 4 (soak + promotion) waits for Derek. Polish: 0-4 knockdowns a run, the two exceptional landings at wear 100 came early (42/52 s), the AI rarely throws big moves, sell limbs past the rope, George's snapmare elbow.
+- **Grapples ([PLAN_GRAPPLES.md](PLAN_GRAPPLES.md)):** `grapples` promoted (aa0532f, G5). Waistlock (`?waistlock=v1`, opt-in) stopped at G4b; atomic drop T4c.4r, T4d.3 and sleeper wrap art parked as passable/polish. Irish whip, corners and charge approved (G3f).
+- **Other moves, parked:** gait Stage 3 behind `?gait=v2` (G3 unjudged); get-ups promoted (Stage 5 parked); George transfer parked at G10a; figure-four and support-hand plant parked.
+- **Promoted flags:** `risefix`, `sellart`, `aftermath` (v2), `getups`, `grapples` (default on, `=off` disables). Opt-in: `falls=v1`, `waistlock=v1`, `gait=v2`, `plant=1`.
+- **Story and art direction (docs only, no runtime yet):**
+  - Opening: Chicago 1952, kitchen phone/union call, landlord's $100 demand, girlfriend sends Guido out ([brief](STORY_CARNIVAL_OPENING.md)). Carnival $100 challenge is the first playable match; Carl then recruits him. Kohler naming bridge unresolved.
+  - Whole game monochrome; art generated in color, monochrome derived ([standard](CINEMATIC_ART_STANDARD.md)).
+  - Venues/crowds/exhibition: [plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md). Carl as Guy's ringside trainer: [sheet](research/art/carl-ringside-2026-10-31/carl-ringside-sheet-v1.png). Feud/art: [STORY_ART_AND_FEUD_DIRECTION.md](STORY_ART_AND_FEUD_DIRECTION.md).
+- **Awaiting Derek:** Marigold title queue (83ab5cd) visual OK; what comes next (see below).
+- **Uncommitted on purpose:** Codex's sleeper-wrap PNGs (`src/assets/wrestlers/*/forearm_sleeper_wrap.png`) and 4 Codex `tools/debug` scripts (sleeper wrap, throw support, waistlock probes) are unreviewed and stay untracked. Large frame dumps are gitignored.
+- **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `baa9f37` (2026-10-31); everything after is local. Push via the SSH URL only. Coverage baseline 26 gaps.
+- **Next:** Derek picks the next front (story opening runtime is the natural one). Opus writes that plan; Sonnet executes.
+- **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-05 · Codex · [G3 review for Opus: tired-throw tier wiring, hit context and natural match evidence](AI_HANDOFF_ENTRIES/2026-11-05-codex-g3-review-for-opus.md)
+
+- 2026-11-05 · Codex · [Snapmare preview correction: rear reversal retained; front entry needs different setup](AI_HANDOFF_ENTRIES/2026-11-05-codex-snapmare-preview-correction.md)
+
+- 2026-11-05 · Codex · [For Opus: G2 review — contact transitions, supported phases, tiers and match timing](AI_HANDOFF_ENTRIES/2026-11-05-codex-g2-review-for-opus.md)
+
+- 2026-11-05 · Codex · [Derek likes r2: fall variety and bigger impact exploration for Opus](AI_HANDOFF_ENTRIES/2026-11-05-codex-fall-variety-and-heavy-impacts.md)
+
+- 2026-11-05 · Codex · [For Opus: G2a review — contact/foley, attenuated landing blend, audit limits](AI_HANDOFF_ENTRIES/2026-11-05-codex-g2a-review-for-opus.md)
+
+- 2026-11-06 · Claude Opus · [Falls G2a to G3 r2; wear meter next](AI_HANDOFF_ENTRIES/2026-11-06-claude-opus-falls-wear-wrapup.md)
+- 2026-11-05 · Codex · [Falls G1 assessment and Derek's next direction: rebound with natural limbs, no hyperextension](AI_HANDOFF_ENTRIES/2026-11-05-codex-falls-bounce-review.md)
+
+- 2026-11-04 · Derek, recorded by Codex · [For Opus: carrier's outside forearm stays in front of the receiver's trunks](AI_HANDOFF_ENTRIES/2026-11-04-derek-atomic-outside-forearm.md)
+
+- 2026-11-04 · Derek, recorded by Codex · [Atomic drop: natural receiver arms, then tailbone pain and move away before turning](AI_HANDOFF_ENTRIES/2026-11-04-derek-atomic-arms-and-sell.md)
+
+- 2026-11-04 · Codex · [Sonnet chamber review before Opus: support misses and incomplete r6 package](AI_HANDOFF_ENTRIES/2026-11-04-codex-sonnet-chamber-review.md)
+
+- 2026-11-04 · Codex · [Next move for Opus: close r6, support measurement, coverage gate, then sleeper reversal](AI_HANDOFF_ENTRIES/2026-11-04-codex-next-move-review.md)
+
+- 2026-11-02 · Codex · [Waistlock review for Opus: confirmed cleanup bug and animation repair sequence](AI_HANDOFF_ENTRIES/2026-11-02-codex-waistlock-review-for-opus.md)
 
 - 2026-10-31 · Codex · [Stage 5 in-progress review: soak failure and actual clutch coverage](AI_HANDOFF_ENTRIES/2026-10-31-codex-stage5-in-progress-review.md)
 

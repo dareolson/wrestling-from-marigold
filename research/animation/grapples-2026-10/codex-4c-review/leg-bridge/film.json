@@ -1,0 +1,33 @@
+{
+ "tool": "tools/debug/waistlock_throws.mjs",
+ "runs": [
+  {
+   "id": "drop-lou-george-l",
+   "case": "drop",
+   "pair": "lou-george",
+   "facing": -1,
+   "rows": 175
+  },
+  {
+   "id": "drop-lou-george-r",
+   "case": "drop",
+   "pair": "lou-george",
+   "facing": 1,
+   "rows": 175
+  },
+  {
+   "id": "reverse-lou-george-l",
+   "case": "reverse",
+   "pair": "lou-george",
+   "facing": -1,
+   "rows": 203
+  },
+  {
+   "id": "reverse-lou-george-r",
+   "case": "reverse",
+   "pair": "lou-george",
+   "facing": 1,
+   "rows": 203
+  }
+ ]
+}

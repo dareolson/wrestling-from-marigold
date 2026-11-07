@@ -1,3 +1,143 @@
+> **Detailed opening scene, Derek 2026-10-31:** skyline / **CHICAGO 1952**, radio strike report and obscured picket-line inserts; Guido's kitchen wall-phone call to the union boss (no deal, another month expected); landlord demands $100 by tomorrow, one week overdue; girlfriend demands he cross the line, then sends him out for the money. The [current carnival brief](STORY_CARNIVAL_OPENING.md) preserves the dialogue and replaces earlier abbreviated opening sketches. Pregnancy is hypothetical; no children established. Moves remain the active priority.
+
+> **Visual direction, Derek 2026-10-31:** the entire game is monochrome, including story, carnival, televised matches, bar fight and exhibition. This supersedes earlier color presentation directions in this document. Preserve source masters; see [the production standard](CINEMATIC_ART_STANDARD.md). Current move work remains the priority.
+
+# New opening direction — carnival and steel strike (October 31, 2026)
+
+Derek’s latest premise replaces the bricklayer origin and makes a carnival prize bout the first playable match: Guido is a striking steelworker under rent pressure; he enters a $100 challenge, wins, and Carl offers paid work. See [the current opening brief](STORY_CARNIVAL_OPENING.md) for the sequence, draft dialogue, ring/opponent concepts and continuity implications. Marigold becomes the later professional debut. The naming bridge around Kohler’s rename is a recommendation awaiting confirmation; older “first match” statements below predate the carnival. Runtime implementation remains pending.
+
+---
+
+# Cinematic direction / crush clarification — October 29, 2026
+
+Guy has a crush on Kohler's fictionalized adult college-student daughter;
+he does not ask her out during the campaign. This supersedes the earlier
+invitation note. She may make the first move during the closing credits;
+that beat is tentative, and its relationship-branch conditions remain open.
+Derek wants the story to feel like a movie, with playable matches and the bar
+fight carrying action within the dramatic arc. This does not itself authorize
+new animation systems or remove existing player choices. Implementation and
+final ending remain pending.
+
+---
+
+# Breakup interlude — bar fight (October 29, 2026)
+
+After his girlfriend leaves, Guy fights five ordinary men outside a bar in a
+playable dark-night-of-the-soul scene. They do not need full wrestler kits;
+Guy is supposed to win. Combat prototype, enemy behaviors, exact staging,
+win enforcement, and defeat handling remain unimplemented. This is distinct
+from the earlier brick-yard gambling-outfit interludes. See the story plan's
+“After the breakup — five men outside a bar.”
+
+After the fight Guy is arrested and Kohler bails him out. Guy says, “I'm sorry,
+Mr. Kohler.” Fred replies, “Well, it's not the worst press we've had,” holding
+up a newspaper headed “Guy Moretti KO's five guys outside [club name].” The
+club name, bail amount, charges, legal aftermath, and exact staging remain
+open. This is fictional campaign material; scene implementation is pending.
+The newspaper story makes Guy a huge attraction: everyone wants to see him.
+This breakout precedes Buddy; the Buddy and Kowalski performances develop his
+already-established popularity rather than introduce it. Exact billing,
+audience scale, and economic effects remain to be written.
+After Guy's breakout, his ex returns acting sweet. The player can accept or
+refuse reconciliation. If accepted, she spends his money and treats him rudely. As long as he dates
+her, his bank account and self-esteem keep declining. The drains stop when
+the relationship ends; recovery and refunds are not specified. Exact timing,
+dialogue, drain rates and bounds, self-esteem presentation / gameplay effects,
+breakup controls, and her response to refusal remain unwritten. No
+relationship-choice runtime exists yet.
+
+---
+
+# Naming continuity update — October 29, 2026
+
+First match only: Guido Moretti. After that match, win or lose, Kohler says he
+does not like Guido, saying the name very dismissively, and tells him to use
+Guy because he considers it more masculine. From then on: Guy
+Moretti, including any rematches with the first heel. His girlfriend calls it
+stupid; he accepts the change and it helps him get over with the crowd.
+This supersedes the old permanent Guido-introduction / Guy-commentary split.
+Scene implementation and final dialogue remain pending.
+
+---
+
+# Latest opening revision — the repeating heel (October 29, 2026)
+
+Derek now wants Guido booked against the same obnoxious lower-level heel after
+every loss, until the player takes the victory. Carl eventually urges him to
+“just beat this guy.” No minimum loss count is specified. Winning moves the
+story forward and triggers the locker-room refusal / guaranteed first Lou
+loss / professional-versus-personal lesson. The former lose-and-skip-Lou branch
+below is superseded. Repeated losses are continued bookings, not restarts.
+Derek also adds a girlfriend: Guido rushes home after his first win, admits he
+was supposed to lose, and she calls him an idiot and says he should have stayed
+in the brick yard. She leaves him after the first Lou defeat: her father has
+always called Guido a loser, a rich man has offered to marry her, and she
+believes Guido will never amount to anything. Her identity, the suitor's
+identity, proposal timing, and exact dialogue remain unwritten.
+These are authored story events; no relationship-meter system is specified.
+Guido's next match after Lou is a booked babyface loss: engage the crowd with
+offense and a little showboating, then take the fall to “Nature Boy” Buddy
+Rogers. Buddy tells Guido beforehand that he will cheat to win and Guido only
+has to play along. After approximately seven minutes, Buddy produces a foreign
+object and knocks Guido out with it. Object, referee staging, official result
+presentation, engagement criteria, and rewards remain to be designed. It is a
+performance assignment, not passive survival; the backstage exchange and match
+are campaign fiction.
+The Buddy match's popularity earns Guido a booking against the biggest heel,
+Killer Kowalski. Guido is booked to lose again but must get offense in against
+a tough opponent. Derek specifies a guaranteed iron-claw finish: Kowalski can
+apply it at any time, regardless of Guido's performance, and wins. Exact
+offensive objectives, trigger timing, official result presentation, purse, and
+backstage beats remain unwritten. This is career progress from performing the
+Buddy job well, even though the final result is fixed. The claw finish is
+campaign fiction, not a historical repertoire claim.
+After Kowalski, Guido's babyface popularity earns a match against Bobo Brazil,
+with Guido booked to win: his first authorized victory in this opening arc.
+This does not trigger Lou punishment. Finish, difficulty, failure handling,
+Bobo's alignment, and backstage relationship remain to be written; a winning
+booking is specified, not an automatic player victory.
+After the Bobo win, Guido receives his biggest paycheck ever. Kohler says,
+“You get paid more to win.” Guido wants to win every match; Kohler replies,
+“You gotta earn that.” Exact amounts and the broader payment system remain
+open. This is fictional campaign dialogue, not a historical pay-rule claim.
+The first playable campaign match and result routing remain unimplemented.
+See `STORY_MODE_SCRIPTING.md`, “Latest revision: the heel loop.”
+
+---
+
+# Opening direction changed — October 29, 2026
+
+Derek now wants an enigmatic Kohler and a humble Guido eager to impress him.
+The first opponent will be a new lower-level wrestler whom Kohler wants punished;
+Guido is booked to punish him but lose. Either result advances, and a win
+impresses Kohler. The first opponent is obnoxious and easy to dominate, so a
+player win is likely. Winning makes other wrestlers refuse to work with Guido;
+he gets Lou Thesz, who demolishes him. After that loss another wrestler agrees
+to work with him. Taking the original booked loss skips this refusal / Lou
+thread. This supersedes the first-match victory restart recorded below.
+See `STORY_MODE_SCRIPTING.md`, “Opening direction — October 29, 2026.”
+
+Derek's follow-up: early Guido is intentionally nerfed against Lou, who toys
+with him and humiliates him. Taking an unauthorized win in a match Guido was
+booked to lose brings a Lou punishment booking; this is not a general penalty
+for mistakes. Lou takes the win whether Guido wants to cooperate or not,
+teaching that overpowering one man does not give Guido control over everyone. A later Lou match reverses the expectation: Lou is much
+easier to work with. Derek's latest decision makes the first Lou encounter a
+guaranteed defeat: nobody can beat him the first time. This supersedes the
+possible early-win shortcut; there is no first-Lou victory branch. The loss
+advances the story. Trigger definitions, tuning, defeat enforcement, and Lou's
+changing relationship still need design. This is fictionalized story
+behavior, not a historical claim about Thesz.
+
+Implementation is pending: existing `FrontDoor.js` dialogue still names George
+and uses the earlier exchange. No playable first-match branch exists yet.
+The named robe after a booked loss remains established; its win-branch outcome
+is open. Older entries below describe the prior implementation, not current
+story decisions.
+
+---
+
 # Robe dialogue — October 13, 2026
 
 The opening now asks where Guido's robe is, establishes he has none, and gives

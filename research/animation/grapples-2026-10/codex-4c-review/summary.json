@@ -1,0 +1,325 @@
+{
+  "note": "Game-pixel part steps; normalized contact px. Mask canvas is finite: original overlap-cropping limitation remains. Baseline George entry is not an original-handoff comparison.",
+  "runs": [
+    {
+      "id": "drop-lou-george-l",
+      "frames": 175,
+      "baselineSource": "original HEAD poses / original handoff",
+      "before": {
+        "clip": "atomicDrop",
+        "firstFrame": 80,
+        "firstPartStepPx": 45.25,
+        "maxPartStepPx": 45.39,
+        "maxBelowBeltOverlapPx": 750,
+        "maxTorsoOverlapPx": 0,
+        "endStates": [
+          "standing",
+          "standing"
+        ],
+        "impact": {
+          "frame": 105,
+          "time": 0.4333,
+          "pelvisToRaisedKneePx": 12.81
+        }
+      },
+      "after": {
+        "clip": "atomicDrop",
+        "firstFrame": 80,
+        "firstPartStepPx": 36.42,
+        "maxPartStepPx": 45.39,
+        "maxBelowBeltOverlapPx": 750,
+        "maxTorsoOverlapPx": 0,
+        "endStates": [
+          "standing",
+          "standing"
+        ],
+        "impact": {
+          "frame": 105,
+          "time": 0.4333,
+          "pelvisToRaisedKneePx": 12.81
+        }
+      }
+    },
+    {
+      "id": "drop-lou-george-r",
+      "frames": 175,
+      "baselineSource": "original HEAD poses / original handoff",
+      "before": {
+        "clip": "atomicDrop",
+        "firstFrame": 80,
+        "firstPartStepPx": 45.24,
+        "maxPartStepPx": 45.39,
+        "maxBelowBeltOverlapPx": 758,
+        "maxTorsoOverlapPx": 0,
+        "endStates": [
+          "standing",
+          "standing"
+        ],
+        "impact": {
+          "frame": 105,
+          "time": 0.4333,
+          "pelvisToRaisedKneePx": 12.81
+        }
+      },
+      "after": {
+        "clip": "atomicDrop",
+        "firstFrame": 80,
+        "firstPartStepPx": 36.43,
+        "maxPartStepPx": 45.39,
+        "maxBelowBeltOverlapPx": 758,
+        "maxTorsoOverlapPx": 0,
+        "endStates": [
+          "standing",
+          "standing"
+        ],
+        "impact": {
+          "frame": 105,
+          "time": 0.4333,
+          "pelvisToRaisedKneePx": 12.81
+        }
+      }
+    },
+    {
+      "id": "reverse-lou-george-l",
+      "frames": 203,
+      "baselineSource": "original HEAD poses / original handoff",
+      "before": {
+        "clip": "snapmare",
+        "firstFrame": 86,
+        "firstPartStepPx": 34.83,
+        "maxPartStepPx": 77.88,
+        "maxBelowBeltOverlapPx": 1798,
+        "maxTorsoOverlapPx": 72,
+        "endStates": [
+          "down",
+          "standing"
+        ],
+        "fullGripHandMissPx": 32.01,
+        "landing": {
+          "frame": 134,
+          "time": 0.8167,
+          "tilt": 11
+        }
+      },
+      "after": {
+        "clip": "snapmare",
+        "firstFrame": 86,
+        "firstPartStepPx": 13.18,
+        "maxPartStepPx": 77.23,
+        "maxBelowBeltOverlapPx": 1869,
+        "maxTorsoOverlapPx": 81,
+        "endStates": [
+          "down",
+          "standing"
+        ],
+        "fullGripHandMissPx": 0,
+        "landing": {
+          "frame": 134,
+          "time": 0.8167,
+          "tilt": 11
+        }
+      }
+    },
+    {
+      "id": "reverse-lou-george-r",
+      "frames": 203,
+      "baselineSource": "original HEAD poses / original handoff",
+      "before": {
+        "clip": "snapmare",
+        "firstFrame": 86,
+        "firstPartStepPx": 34.83,
+        "maxPartStepPx": 77.88,
+        "maxBelowBeltOverlapPx": 1807,
+        "maxTorsoOverlapPx": 75,
+        "endStates": [
+          "down",
+          "standing"
+        ],
+        "fullGripHandMissPx": 32.01,
+        "landing": {
+          "frame": 134,
+          "time": 0.8167,
+          "tilt": 11
+        }
+      },
+      "after": {
+        "clip": "snapmare",
+        "firstFrame": 86,
+        "firstPartStepPx": 13.18,
+        "maxPartStepPx": 77.23,
+        "maxBelowBeltOverlapPx": 1873,
+        "maxTorsoOverlapPx": 85,
+        "endStates": [
+          "down",
+          "standing"
+        ],
+        "fullGripHandMissPx": 0,
+        "landing": {
+          "frame": 134,
+          "time": 0.8167,
+          "tilt": 11
+        }
+      }
+    },
+    {
+      "id": "drop-george-lou-l",
+      "frames": 175,
+      "baselineSource": "original HEAD poses / corrected handoff / right-facing contact baseline",
+      "before": {
+        "clip": "atomicDrop",
+        "firstFrame": 80,
+        "firstPartStepPx": 49.81,
+        "maxPartStepPx": 36.25,
+        "maxBelowBeltOverlapPx": 859,
+        "maxTorsoOverlapPx": 25,
+        "endStates": [
+          "standing",
+          "standing"
+        ],
+        "impact": {
+          "frame": 105,
+          "time": 0.4333,
+          "pelvisToRaisedKneePx": 47.06
+        }
+      },
+      "after": {
+        "clip": "atomicDrop",
+        "firstFrame": 80,
+        "firstPartStepPx": 49.81,
+        "maxPartStepPx": 36.25,
+        "maxBelowBeltOverlapPx": 859,
+        "maxTorsoOverlapPx": 25,
+        "endStates": [
+          "standing",
+          "standing"
+        ],
+        "impact": {
+          "frame": 105,
+          "time": 0.4333,
+          "pelvisToRaisedKneePx": 47.06
+        }
+      }
+    },
+    {
+      "id": "drop-george-lou-r",
+      "frames": 175,
+      "baselineSource": "original HEAD poses / corrected handoff / right-facing contact baseline",
+      "before": {
+        "clip": "atomicDrop",
+        "firstFrame": 80,
+        "firstPartStepPx": 49.81,
+        "maxPartStepPx": 36.25,
+        "maxBelowBeltOverlapPx": 859,
+        "maxTorsoOverlapPx": 25,
+        "endStates": [
+          "standing",
+          "standing"
+        ],
+        "impact": {
+          "frame": 105,
+          "time": 0.4333,
+          "pelvisToRaisedKneePx": 47.06
+        }
+      },
+      "after": {
+        "clip": "atomicDrop",
+        "firstFrame": 80,
+        "firstPartStepPx": 49.8,
+        "maxPartStepPx": 36.26,
+        "maxBelowBeltOverlapPx": 859,
+        "maxTorsoOverlapPx": 24,
+        "endStates": [
+          "standing",
+          "standing"
+        ],
+        "impact": {
+          "frame": 105,
+          "time": 0.4333,
+          "pelvisToRaisedKneePx": 47.06
+        }
+      }
+    },
+    {
+      "id": "reverse-george-lou-l",
+      "frames": 203,
+      "baselineSource": "original HEAD poses / corrected handoff / right-facing contact baseline",
+      "before": {
+        "clip": "snapmare",
+        "firstFrame": 86,
+        "firstPartStepPx": 31.4,
+        "maxPartStepPx": 69.29,
+        "maxBelowBeltOverlapPx": 1221,
+        "maxTorsoOverlapPx": 359,
+        "endStates": [
+          "down",
+          "standing"
+        ],
+        "fullGripHandMissPx": 22.59,
+        "landing": {
+          "frame": 134,
+          "time": 0.8167,
+          "tilt": 11
+        }
+      },
+      "after": {
+        "clip": "snapmare",
+        "firstFrame": 86,
+        "firstPartStepPx": 31.4,
+        "maxPartStepPx": 70.76,
+        "maxBelowBeltOverlapPx": 1221,
+        "maxTorsoOverlapPx": 359,
+        "endStates": [
+          "down",
+          "standing"
+        ],
+        "fullGripHandMissPx": 18.78,
+        "landing": {
+          "frame": 134,
+          "time": 0.8167,
+          "tilt": 11
+        }
+      }
+    },
+    {
+      "id": "reverse-george-lou-r",
+      "frames": 203,
+      "baselineSource": "original HEAD poses / corrected handoff / right-facing contact baseline",
+      "before": {
+        "clip": "snapmare",
+        "firstFrame": 86,
+        "firstPartStepPx": 31.4,
+        "maxPartStepPx": 69.29,
+        "maxBelowBeltOverlapPx": 1221,
+        "maxTorsoOverlapPx": 359,
+        "endStates": [
+          "down",
+          "standing"
+        ],
+        "fullGripHandMissPx": 22.59,
+        "landing": {
+          "frame": 134,
+          "time": 0.8167,
+          "tilt": 11
+        }
+      },
+      "after": {
+        "clip": "snapmare",
+        "firstFrame": 86,
+        "firstPartStepPx": 31.4,
+        "maxPartStepPx": 70.76,
+        "maxBelowBeltOverlapPx": 1209,
+        "maxTorsoOverlapPx": 366,
+        "endStates": [
+          "down",
+          "standing"
+        ],
+        "fullGripHandMissPx": 18.78,
+        "landing": {
+          "frame": 134,
+          "time": 0.8167,
+          "tilt": 11
+        }
+      }
+    }
+  ]
+}

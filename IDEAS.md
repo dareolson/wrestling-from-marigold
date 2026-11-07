@@ -3,6 +3,21 @@
 Derek's ideas that came up mid-plan, written down so they aren't lost and don't sidetrack the active plan.
 Each becomes a PLAN_*.md only when Derek picks it up. Newest first.
 
+## Sell button: selling is how you recover stamina (2026-10-31)
+
+Derek: part of the match-escalation design (see MOVE_CATALOG.md 2b). Plan it, don't build it yet.
+Today stamina recovers passively (`STAMINA_RECOVER`, 6/s while standing, `Wrestler.js`); the HUD already has stamina bars.
+The idea: recovery has to be earned by selling.
+- **A "sell" button.** Hold it while down after a knockdown and you stay on the mat with stamina rising fast.
+  Not holding it means you get up on the normal get-up timing.
+- **Optional rests on your feet:** lean against the ropes, or take a knee, to regain stamina (slower than selling down;
+  leaves you open to a strike).
+- Passive standing recovery then drops or goes away, so the opening spends stamina and only selling refills it.
+Open questions for when it's picked up: how fast the hold recovers, what the opponent can do to a wrestler who stays
+down (ties to "Punishable fatigue stall" below and the pin/kickout logic), whether the AI sells on its own, and the
+rope-lean and take-a-knee poses (new art or rig poses). Touches `Wrestler.js` stamina, the get-up library
+(PLAN_GETUPS) and `moveDecision.js`.
+
 ## Top-light shading on the bodies (2026-10-27)
 
 Derek: "is there anyway to create shadows on our art that mimic top lighting ... I purposefully didn't shade them because the
@@ -49,3 +64,9 @@ Derek's idea, banked, not started. A simple timeline: date, what changed, a befo
 - Many captured frames are in `.git/info/exclude`, so they exist only on this Mac (G1 and G1b strips included). Copy keepers to an
   external drive before any disk cleanup.
 - From now on, save one normal-speed clip at each approval.
+
+## Front snapmare (Derek 2026-11-05)
+
+A snapmare from the front can work, but needs its own entry: head/neck control, a turn or step into position, a planted base and a
+forward pull before the flip. Don't run the rear-reversal clip from face-to-face spacing. See
+[Codex's note](AI_HANDOFF_ENTRIES/2026-11-05-codex-snapmare-preview-correction.md).

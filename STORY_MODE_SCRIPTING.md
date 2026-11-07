@@ -1,3 +1,13 @@
+> **Detailed opening scene, Derek 2026-10-31:** skyline / **CHICAGO 1952**, radio strike report and obscured picket-line inserts; Guido's kitchen wall-phone call to the union boss (no deal, another month expected); landlord demands $100 by tomorrow, one week overdue; girlfriend demands he cross the line, then sends him out for the money. The [current carnival brief](STORY_CARNIVAL_OPENING.md) preserves the dialogue and replaces earlier abbreviated opening sketches. Pregnancy is hypothetical; no children established. Moves remain the active priority.
+
+> **Visual direction, Derek 2026-10-31:** the entire game is monochrome, including story, carnival, televised matches, bar fight and exhibition. This supersedes earlier color presentation directions in this document. Preserve source masters; see [the production standard](CINEMATIC_ART_STANDARD.md). Current move work remains the priority.
+
+# New opening direction — carnival and steel strike (October 31, 2026)
+
+Derek’s latest premise replaces the bricklayer origin and makes a carnival prize bout the first playable match: Guido is a striking steelworker under rent pressure; he enters a $100 challenge, wins, and Carl offers paid work. See [the current opening brief](STORY_CARNIVAL_OPENING.md) for the sequence, draft dialogue, ring/opponent concepts and continuity implications. Marigold becomes the later professional debut. The naming bridge around Kohler’s rename is a recommendation awaiting confirmation; older “first match” statements below predate the carnival. Runtime implementation remains pending.
+
+---
+
 # Wrestling from Marigold — Story Mode and Campaign Scripting
 
 **Status:** Initial narrative design and scripting framework  
@@ -92,8 +102,9 @@ posters and newspapers         → limited period print colors
 ```
 
 This division is thematic, not merely decorative. **Guido** arrives in color as
-a private young man. The television camera turns him into **Guy Moretti** in
-monochrome. Returning to color after a match restores the pain, doubt, and
+a private young man. Broadcast monochrome presents his professional world;
+the explicit change to **Guy Moretti** happens after his first match, at
+Kohler's instruction, rather than automatically at the first bell. Returning to color after a match restores the pain, doubt, and
 consequences that the broadcast presentation cannot contain.
 
 For the first match, make the transition explicit but restrained: Guy crosses
@@ -198,7 +209,498 @@ directly into a short campaign-specific recap image or the next scheduled
 scene. The arrival belongs to the beginning of Guy's story and becomes less
 powerful if treated as a general loading sequence.
 
-## Opening decisions — October 13, 2026
+## Opening direction — October 29, 2026 (Derek)
+
+### Naming decision — one match as Guido (Derek)
+
+He wrestles his first match as **Guido Moretti**. After that match, Fred Kohler
+says he does not like “Guido,” pronouncing it very dismissively, and tells him
+to change it to **Guy** because he considers it more masculine. This is
+Kohler's character judgment, not the narrator's description of either name.
+From then on he is **Guy Moretti**: introductions, commentary, posters, and story display
+names should follow that progression. The change happens after the first
+appearance regardless of result; repeat bookings against the first heel are
+already as Guy. His girlfriend says the change is stupid, but he does it, and
+it helps him get over with the crowd. Exact dialogue remains to be drafted.
+
+This supersedes the earlier rule that the announcer always introduces Guido
+while commentary calls him Guy. Earlier planning passages and dialogue drafts
+below still using Guido after the first match refer to the same protagonist;
+apply the new chronological naming rule when producing their final scripts.
+Private use of his birth name, if any, remains to be decided rather than
+assuming the earlier private/public naming exception survives this change.
+
+Kohler's naming-scene wording (Derek): **“More masculine. It's perfect.”**
+He says “Guido” very dismissively before settling on Guy Moretti.
+
+### Latest revision: the heel loop (Derek; supersedes the loss-skip branch below)
+
+Guido remains booked against the first obnoxious lower-level heel until he
+takes the victory. Taking the booked loss does not bypass the Lou thread or
+advance him to a different opponent: he gets this man again. The player must
+eventually win to move the opening story forward. Repeated losses are continued
+bookings in the same feud, not game-overs or chapter resets.
+
+The heel should become intensely annoying across these encounters. Even Carl
+eventually tells Guido to “just beat this guy.” Carl's encouragement does not
+change Kohler's booked finish or make the victory authorized by the office.
+Exactly when Carl changes his advice, the intervening dialogue, and the heel's
+specific provocations remain to be written. Do not require an arbitrary number
+of losses before allowing the player to win.
+
+The opening lesson now includes learning when not to obey: following the
+booking indefinitely keeps Guido stuck. Taking the win moves his career
+forward, impresses Kohler, and still triggers the refusal / Lou consequence.
+Carl can encourage the choice without being able to protect Guido from it.
+Lou's professional / personal warning remains afterward; the tension between
+those lessons is deliberate, not a promise that obedience always pays.
+
+```text
+First heel: booked to punish him, then lose
+  ├─ Lose → get booked against the same annoying heel again
+  │         (Carl eventually urges Guido to beat him)
+  └─ Win, at any attempt → Kohler impressed; locker-room refusal
+                          → guaranteed first defeat by Lou
+                          → Lou's professional / personal exchange
+                          → another wrestler agrees to work with Guido
+```
+
+This replaces the earlier same-day decision that a first booked loss skips Lou.
+The earlier branch below is retained as superseded development history.
+The loss-based robe promise remains established; when it is delivered within
+this repeat-booking structure and what happens on a first-attempt win remain
+unresolved. No playable campaign result logic has been implemented.
+
+This decision supersedes the October 13 first opponent and win-ends-run rule,
+and the older opening premise / first-chapter outline wherever they conflict.
+Those earlier sections remain development history until the chapter is rewritten.
+
+- Fred Kohler is an enigmatic boss to Guido. Guido is humble, eager to work,
+  and wants to impress him; his opening motivation is not defiance of the office.
+- Guido's first opponent is a new lower-level wrestler, not George: an
+  obnoxious, thoroughly unlikable man (Derek: “a total chud”) whom Guido can
+  dominate easily. The player will likely win. His identity and the reason
+  Kohler is angry with him remain to be written.
+- Kohler brings Guido in to punish this wrestler / knock some sense into him.
+  The booking is to give him a punishing match **and then lose**.
+- Earlier decision (superseded by the heel loop above): both win and loss
+  advanced the story. If Guido wins,
+  Kohler is impressed despite the departure from the booked finish. Do not
+  implement a first-match victory game-over or mandatory restart.
+- Do not imply that Kohler secretly ordered a win. The instruction to lose is
+  genuine; his reaction to a win reveals something Guido did not know about him.
+- The first win immediately triggers the consequence below; repeated broken
+  bookings are not required. The opponent's specific grievance, later place for
+  George, and subsequent match order remain open. No hidden performance
+  threshold or deliberate injury requirement has been specified.
+- The existing robe promise rewards taking the fall. Whether a winning Guido
+  receives the robe is unresolved; winning advances regardless. Do not silently
+  remove the promise or invent its victory-branch outcome.
+
+### Home after the win; separation after Lou — Derek
+
+Guido has a girlfriend. Her name, work, living arrangement, relationship
+history, and exact shared financial obligations remain open. His ambition to
+make money through wrestling now has a relationship consequence as well as a
+professional one.
+
+After beating the first heel, Guido rushes home to tell her about the win.
+During the exchange he admits he was supposed to lose. She calls him an idiot
+and says he should have stayed in the brick yard. His excitement meets a very
+different reading of what he has done: he has departed from the job he was
+hired to perform. Exact dialogue beyond Derek's specified beats is unwritten.
+
+After the guaranteed first loss to Lou, she leaves him. Derek specifies that
+her father has always called **Guido**, not his daughter, a loser. A rich man
+has offered to marry her, and she leaves for that opportunity because she
+believes Guido will never amount to anything. Her departure follows Lou's
+victory, but it is not simply dislike of a man losing a fight: she has an
+alternative future and has dismissed Guido's prospects. These judgments belong
+to her and her father, not the narrator. The rich man's identity and the timing
+of his proposal remain open; do not invent an affair or make her father the
+arranger without a further decision.
+
+This separation is an authored opening event, not a player failure state,
+restart trigger, or relationship-meter system. Her exact breakup dialogue and
+any earlier warnings remain to be written. Do not replace the specified motive
+with the earlier suggestion that she leaves primarily over bills or reliability.
+
+Revised sequence:
+
+```text
+Lose to the heel → repeat booking until Guido takes the win
+Win → rush home → admit the booked loss → girlfriend's rebuke
+    → locker-room refusal / Lou booking → guaranteed defeat by Lou
+    → Lou's professional / personal warning → girlfriend leaves
+    → career continues; another wrestler agrees to work with Guido
+```
+
+The precise ordering of the renewed booking and separation is not yet fixed;
+the home celebration follows the first win and her departure follows Lou.
+Kohler's impressed reaction, Carl's eventual encouragement, the recurring
+unauthorized-win consequences, and the later change in Lou's treatment remain.
+Existing borrowed-robe / promised named-robe continuity still needs resolution
+within this revised opening. No new cinematic art is commissioned by this note.
+
+### After the breakup — five men outside a bar (Derek)
+
+After his girlfriend leaves, Guy has a dark night of the soul and fights five
+men outside a bar. This is a playable story encounter. Although earlier
+conversation called him Guido, the post-first-match naming rule makes him
+**Guy Moretti** here.
+
+The five men do not need to be full wrestlers. They are ordinary bar-fight
+opponents, and **Guy is supposed to win**. Do not build five complete wrestling
+movesets, treat them as five Lou-level opponents, or make this another authored
+humiliation. Exact difficulty, defeat handling, and whether the intended win
+is mechanically guaranteed remain open; “supposed to win” specifies the
+intended outcome without yet selecting its enforcement mechanism.
+
+The inciting exchange, identities, location, and fight dialogue remain
+unwritten. The immediate aftermath is now the arrest and Kohler bailout below. Do not assume intoxication, who throws the first punch, or
+that these men work for Kohler or the gambling outfit. This bar fight is a
+new breakup-linked scene; it does not automatically inherit the prior
+brick-yard recruitment / collection plots or delete those earlier proposals.
+Its addition requires revisiting the old two-interlude campaign count.
+
+Suggested minimal gameplay approach (Codex proposal): reuse Guy's movement,
+punches and a small set of grapples; give the five men simple approach, swing,
+stagger and knockdown behaviors. Test one attacker with the others positioning
+before tuning any overlapping attacks. Make all five present in the scene
+without assuming five simultaneous attacking brains are required. Readable
+openings and decisive reactions should let Guy's training make the difference.
+No ring, referee, booked fall or crowd-performance objective is needed for
+this encounter. Target selection, multi-actor combat interactions, progression,
+and win/defeat handling need a bounded prototype; existing two-wrestler
+mechanics should not be assumed to support five opponents without changes.
+
+Dramatically this is a low point despite the intended victory: winning this
+fight cannot restore the relationship. The arrest and Kohler bailout below now establish the next scene; Guy's
+remaining emotional response still needs writing. Avoid adding money, reputation rewards, injuries carried
+into Buddy, or a new redemption speech without a decision.
+
+### After the bar fight — Kohler pays bail (Derek)
+
+Guy is arrested after knocking out the five men outside the bar. Kohler bails
+him out. Guy apologizes: **“I'm sorry, Mr. Kohler.”** Fred replies,
+**“Well, it's not the worst press we've had,”** and holds up a newspaper.
+
+Headline direction:
+
+> GUY MORETTI KO'S FIVE GUYS OUTSIDE [CLUB NAME]
+
+The club name remains open; the brackets are a writing placeholder, not final
+in-game typography. Keep Guy Moretti in the headline, consistent with Kohler's
+post-first-match name change. The conversation's use of Guido refers to the
+same protagonist; final story display names follow the established timeline.
+
+Kohler's response combines concrete help with an eye for publicity. Guy expects
+a reprimand and receives this dry assessment instead. Do not add an explicit
+claim that Kohler approves of every part of the fight, secretly arranged the
+arrest, or has bought Guy's loyalty. Whether bail creates a debt, what charges
+follow, the amount, and the legal aftermath remain unspecified. The newspaper,
+arrest, and bailout are fictional campaign events, not historical claims.
+
+This follows the breakup-linked bar fight and precedes the return to the
+wrestling career. Exact location and blocking of the exchange, elapsed time,
+and the ordering relative to the next booking conversation remain unwritten.
+Do not generate a newspaper asset or commission a jail scene before the scene
+and club name are ready.
+
+### The newspaper breakout — everyone wants Guy Moretti (Derek)
+
+The newspaper account of Guy knocking out five men makes him a huge attraction:
+everyone wants to see Guy Moretti now. This is an established story consequence,
+not merely Kohler hoping the publicity might help. The arrest / bailout scene
+turns his private low point into public demand for the new name Kohler gave him.
+
+This precedes the Buddy Rogers match in the revised opening. Buddy's popular
+match and Kowalski's higher-profile booking build on a man who is already a
+major draw; they do not represent the first time anyone notices him. The
+subsequent Bobo win and biggest-paycheck scene remain established beats, but
+exact purses, billing, crowd presentation, and how Kohler handles this sudden
+demand need development. Sudden popularity does not itself authorize Guy to
+change booked finishes.
+
+Do not add a specific attendance figure, nationwide celebrity claim, extra
+match, or automatic wealth award. Derek has established enormous audience
+interest; its geographic scale and concrete production details remain open.
+
+### After the breakout — the girlfriend returns (Derek)
+
+After Guy becomes a major attraction, his former girlfriend returns and acts
+sweet toward him. The player can choose whether to take her back.
+
+- **Take her back:** she spends Guy's money and is rude to him. For as long
+  as he dates her, his bank account keeps draining and his self-esteem also
+  declines (Derek). These are ongoing relationship consequences, not a one-off
+  expense or argument. The relationship duration controls these two drains;
+  ending it stops future relationship-driven drain, without automatically
+  refunding money or restoring lost self-esteem. Recovery behavior is open.
+- **Decline:** reconciliation does not occur. Her response, any later contact,
+  and additional consequences remain unwritten; no reward or punishment for
+  refusing has been specified.
+
+Her sudden sweetness follows the success she previously said he would never
+achieve. Exact dialogue, timing relative to Buddy / Kowalski / Bobo, spending
+amounts and frequency, and rude interactions remain to be designed. The
+ongoing financial and self-esteem effects are now specified; their update
+cadence, bounds, presentation, and any gameplay effects of self-esteem remain
+open. Do not silently add debt, bankruptcy, combat stat penalties, loss of
+player controls, or an irreversible choice. The player-facing way Guy can end
+the renewed relationship still needs design. The status of the rich suitor and his
+marriage proposal also remains to be resolved; do not assume a marriage has
+already occurred.
+
+Present the return and decision through a scene that remembers the breakup.
+The player should understand what relationship they are choosing to resume;
+exact UI wording and how financial consequences are communicated need design.
+This is this fictional character's behavior, not a general statement about
+women or romantic relationships.
+
+### Kohler's daughter — the crush and closing-credits possibility (Derek)
+
+Latest clarification: Guy **has a crush** on Kohler's attractive adult
+college-student daughter. This supersedes the earlier suggestion that he asks
+her out during the campaign. No date, affair, mutual romance, or invitation is
+established. If Guy took his ex back, that relationship still exists; do not
+silently resolve it through the crush.
+
+She may make the first move on Guy during the closing credits (Derek:
+“maybe”). Keep that as a tentative final beat, not a promised reward or an
+implemented ending. Her exact gesture, whether it depends on Guy's existing
+relationship, and their future remain open. The attraction can stay lightly
+present through the story without requiring a dating system or repeated
+romantic-choice scenes.
+
+Treat her as a fictionalized adult college student, not a biographical
+portrayal of any actual named Kohler daughter. Her name, studies, personality,
+individual ambitions, and Fred's awareness of the crush remain unwritten.
+
+### Presentation direction — make it a movie (Derek)
+
+Derek wants the campaign to feel like a movie, with playable wrestling and the
+bar fight carrying the action. Develop scenes around the rise from humble
+worker to attraction, professional lessons, personal losses, and earned
+triumph. Let recurring relationships, objects, and dialogue acquire meaning
+across that arc. The possible closing-credits romantic gesture is a final
+character beat rather than a separate romance campaign.
+
+The established player choices and match branches remain; “movie” does not
+cancel them or specify feature-film length, voice acting, full animation,
+additional cutscenes, or a new cinematic engine. Exact ending, pacing, and
+closing-credits staging still need development. Align scene writing before
+expanding art production.
+
+### First match after Lou — the babyface job (Derek)
+
+Guido's next match after the first Lou defeat is another booked loss. This
+time he works as the babyface: his assignment is to engage the crowd through
+meaningful offense and a little showboating, then take the fall. The wrestler
+who agrees to work with him is **“Nature Boy” Buddy Rogers**. Before the match,
+Buddy tells Guido he will cheat to get the win; Guido only has to play along.
+Their backstage agreement makes the finish clear to Guido and the player.
+
+The dramatic progression is from taking a win to learning how to give a
+performance. A loss can now demonstrate progress: Guido creates investment,
+gives the audience someone to cheer, and keeps the agreed finish. Do not
+reduce the task to passive survival or tell the player that all offense is
+misconduct. He is explicitly supposed to attack and show personality.
+
+The match lasts approximately seven minutes. Guido works the crowd as the
+babyface through offense and modest showmanship. Buddy then produces a foreign
+object, hits Guido with it, and knocks him out. This is the agreed cheating
+finish, not a surprise betrayal of their backstage arrangement. It gives the
+crowd a reason to sympathize with Guido despite his loss.
+
+The object's identity, concealment, referee staging, precise timing, and result
+presentation remain to be designed. The knockout is specified; a particular
+pin animation, count, or official knockout ruling has not been specified.
+Exact crowd-engagement goals, showmanship actions, reward, and post-match
+response also remain open. No arbitrary taunt count, mandatory nearfall, or
+hidden crowd threshold has been specified. Taking another unauthorized win
+remains subject to the established Lou punishment policy; this note does not
+specify a new hard failure or restart rule. Buddy's dialogue and this finish
+are fictional campaign scenes, not a claim about a documented Rogers match.
+
+This match follows Lou regardless of the still-open ordering of the girlfriend's
+departure and renewed booking. Her departure remains after Lou. Existing
+mechanics and story preview have not yet been changed to implement this match.
+
+### After Buddy — Killer Kowalski (Derek)
+
+The Buddy Rogers match is so popular that Guido is booked against the biggest
+heel, **Killer Kowalski**. This is a concrete career advance earned through a
+successful performance in a losing effort, not a reward for an unauthorized
+win. The reception to the Buddy match leads to this booking; exact crowd
+metrics and presentation remain unspecified.
+
+Guido is again booked to lose, but must get his offense in. Kowalski is tough:
+creating that offense is the central challenge. Guido needs to make the crowd
+care while working against a much more difficult opponent. Do not turn this
+into passive survival or duplicate the guaranteed, humiliating first Lou
+encounter. Lou imposed the rookie lesson; this is a higher-profile professional
+assignment earned by Guido's previous work.
+
+**Finish (Derek): Kowalski wins with the iron claw.** No matter how well
+Guido is doing, Kowalski can apply it at any time and end the match. Strong
+player performance does not remove this finish or create a victory branch;
+the authored result is Kowalski's win. Offense and crowd engagement are still
+the player's assignment, even though they cannot prevent the final defeat.
+
+The exact offensive objectives, decision of when Kowalski applies the claw,
+pose/contact staging, official result presentation, purse, and backstage
+interactions remain to be written. Do not infer a fixed seven-minute runtime
+from the Buddy match or add an escape mechanic that contradicts the specified
+overriding finish. This is a newly specified guaranteed result, superseding
+the earlier note that only the first Lou encounter was explicitly unwinnable.
+This booking and the iron-claw finish are fictional campaign material, not a
+claim about Kowalski's documented historical move repertoire or a real bout.
+
+Current opening progression: repeating lower-level heel → unauthorized win →
+first Lou punishment defeat → Buddy babyface job / foreign-object knockout →
+popular reception → Kowalski babyface job against the biggest heel. The home
+rebuke follows the first win; the girlfriend leaves after Lou. Carl and
+Kohler's specific responses to the Buddy success and Kowalski booking remain
+open rather than being silently invented here.
+
+### After Kowalski — authorized win against Bobo Brazil (Derek)
+
+Guido has become such a popular babyface that he is booked against **Bobo
+Brazil**, and this time **Guido is booked to win**. This is the first authorized
+win in the revised opening progression: his crowd connection earns the office's
+backing, rather than him taking a finish he was told to lose.
+
+Do not treat this win as misconduct or trigger Lou's unauthorized-win punishment.
+Derek has specified the winning booking, not a mechanically automatic victory;
+match difficulty, finish, objectives, and failure handling remain open. Bobo's
+alignment, attitude toward Guido, backstage interaction, and reason for the
+pairing also remain unwritten. Guido being a babyface does not by itself make
+Bobo a heel. The popularity is established story context; no hidden popularity
+threshold or mandatory repetition of the prior matches has been specified.
+
+Revised progression: lower-level heel loop → unauthorized win → Lou punishment
+→ Buddy Rogers babyface loss → popularity earns Kowalski booking → iron-claw
+loss → sustained babyface popularity earns Bobo Brazil booking and permission
+to win. This pairing is fictional campaign material, not a documented bout.
+
+### After the Bobo win — the biggest payday (Derek)
+
+After winning against Bobo Brazil, Guido receives his biggest paycheck ever.
+Kohler tells him he gets paid more to win. Guido says he wants to win every
+match; Kohler answers that he has to earn that.
+
+Dialogue beat, formatted from Derek's direction:
+
+> **KOHLER:** You get paid more to win.
+>
+> **GUIDO:** I want to win every match.
+>
+> **KOHLER:** You gotta earn that.
+
+The money gives Guido's ambition a concrete reward. In the context of the
+previous bookings, earning more winning assignments is different from taking
+unauthorized victories. Do not reinterpret Kohler's line as retroactively
+endorsing Guido's first broken finish or paying a bonus for disobedience.
+
+Exact purse amounts, expenses, future payment rules, and requirements for more
+winning bookings remain open. This scene does not establish a universal
+historical rule about wrestler pay or a fully specified gameplay economy.
+It is fictional Kohler dialogue for the campaign. Do not add an extra lecture
+after his final line without developing the scene further with Derek.
+
+### Earlier first result branch — superseded by the heel loop above
+
+```text
+First match: punish the lower-level opponent, then take the fall
+  ├─ Guido wins (likely): Kohler is impressed, but wrestlers refuse to work
+  │  with Guido → Guido gets Lou Thesz → Lou demolishes him → after Guido
+  │  loses, another wrestler agrees to work with him → career continues
+  └─ Guido takes the booked loss: skip the refusal / Lou punishment thread
+     → career continues
+```
+
+The punishment for winning is an in-world match with Lou, not a game-over or
+chapter restart. The easy opening match invites the player to win; its aftermath
+teaches that physical superiority alone does not secure employment. Kohler's
+approval and the locker room's willingness to work with Guido are distinct.
+After the Lou loss, the next wrestler's acceptance makes the consequence and
+return to work concrete. The defeat is part of the story's forward progress.
+
+### Lou as the recurring rookie lesson — Derek's follow-up
+
+- Intentionally nerf the early player character against Lou. Lou toys with
+  Guido and humiliates him; this is an authored mismatch, not the normal
+  difficulty or a fair introduction to Lou's eventual campaign match.
+- **Punishment trigger: taking a win he was booked to lose (Derek).** Lou
+  bookings specifically follow unauthorized wins, not general professional
+  mistakes, missed inputs, failed moves, or ordinary competitive losses.
+- **The lesson is enforced power, not merely obedience.** Guido may be able
+  to overpower one opponent and take a result that was not his to take. Lou
+  will take the win whether Guido cooperates or not. Guido experiences the
+  loss of control he imposed on the earlier opponent: being able to beat one
+  man does not mean there is nobody who can beat him. His willingness to take
+  the fall cannot change Lou's ability to impose it.
+- Later Guido faces Lou expecting the same treatment, but Lou is much easier
+  to work with. The relationship changes: the player carries the memory of
+  those humiliations into a match with a more cooperative Lou. The specific
+  reason for Lou's changed treatment and the scene revealing it need writing.
+- **First Lou match: guaranteed defeat (Derek).** Nobody can beat him the
+  first time. This supersedes the tentative exceptional-win / story-skip idea:
+  there is no first-Lou victory branch or shortcut. The defeat advances the
+  story and unlocks another wrestler's willingness to work with Guido.
+- Exact stat reductions, AI behavior and the mechanism enforcing the first
+  defeat remain implementation work. The encounter must let Lou toy with
+  Guido and deliver the rookie lesson, while guaranteeing the loss. It is an
+  authored mismatch, not a fair contest. Do not turn the loss into a restart.
+  The guaranteed result is specified for the first Lou match; outcomes of
+  later punishment bookings and the later cooperative match remain open.
+- Who arranges each punishment booking and what Kohler tells Lou remain open.
+  Lou's rookie-lesson role is now explicit campaign fiction. Do not present
+  this recurring punishment arrangement as a documented historical practice.
+
+### After the first Lou defeat — Derek's dialogue beat
+
+Lou delivers the professional / personal lesson after imposing the loss, then
+leaves. Guido does not already understand the distinction. The threat below
+is fictional character dialogue, not a historical quotation or an assertion
+that the actual roster routinely injured uncooperative wrestlers.
+
+> **LOU:** Any one of these guys will break your neck if you don't keep it professional.
+>
+> **GUIDO:** Professional?
+>
+> **LOU:** Exactly. And when it's professional, it's not what?
+>
+> Guido doesn't know.
+>
+> **LOU:** Personal. That's right. You're getting it.
+>
+> Lou leaves.
+
+Dialogue formatted from Derek's proposed exchange; no additional explanation
+or reply is added after Lou's exit. The lesson follows an unauthorized win:
+Guido must learn the difference between working a match and taking a result
+personally. Lou's warning is his character's statement, not narrator endorsement.
+
+Suggested execution boundary (Codex, not a new user decision): stage the
+unauthorized win and its consequence, one short punishment encounter, and one
+later respectful encounter before building a repeat system. Repeated
+Lou matches should preserve forward progress and reveal a changed beat; avoid
+replaying an identical long squash after every mistake. The player can learn
+from the first humiliation while Guido continues learning how to earn trust.
+
+The first opponent is fictional; these Lou incidents are also campaign fiction,
+not documented historical events.
+
+This is fictional campaign characterization, not a documented incident involving
+Kohler. See [personality research](research/story/fred-kohler-character-research.md)
+for historical evidence and its limits. Current `FrontDoor.js` dialogue still
+names George and challenges the booked loss; it needs a dedicated rewrite.
+The preview ends before the playable first match, so result branches are not
+implemented yet.
+
+## Opening decisions — October 13, 2026 (superseded where noted above)
 
 The first dressing-room exchange now follows the revised dialogue in
 `src/scenes/FrontDoor.js`: Guido challenges the paid loss; the trainer warns,
@@ -314,32 +816,23 @@ enough to dominate the established heavyweights physically. He looks like a
 young man who could handle himself in a neighborhood fight, not a polished
 champion or exaggerated bodybuilder.
 
-The full name is deliberately specific. Family, childhood friends, and people
-trying to reach the private young man call him **Guido**. The formal ring
-introduction also uses **Guido Moretti**. Once the introduction ends, broadcast
-commentary calls him **Guy** or **Moretti** almost exclusively. The commentator
-should rarely say Guido again during a match and may never need to. Posters and
-newspapers use **Guy Moretti** or the full billing according to available space.
-
-The promoter did not invent a flamboyant gimmick; he simply shortened Guido
-into a name that fits cleanly on a bill and in rapid commentary. That modest act
-of repackaging is Guy's first lesson that the wrestling business can rename a
-man before it has decided whether he matters.
-
-Use the full billing selectively:
+His name changes through an explicit scene after his first match. He arrives
+and makes his first appearance as **Guido Moretti**. Kohler then rejects the
+first name and tells him to use **Guy**. He accepts; afterward, use **Guy
+Moretti** in introductions, commentary, posters, and story display names.
+His girlfriend dismisses the change as stupid, but the name helps him connect
+with the crowd. See the October 29 naming decision above for continuity.
 
 ```text
-GUIDO “GUY” MORETTI
+FIRST MATCH: GUIDO MORETTI
+AFTER KOHLER'S CHANGE: GUY MORETTI
 New York City
 5'10" — 190 lb
 ```
 
-The formal introduction uses “Guido Moretti.” After the bell, use “Guy” for
-immediacy and “Moretti” for traditional play-by-play cadence. The full quoted
-billing belongs on title cards, major posters, press material, and scenes where
-the contrast between his private and professional identities matters. His exact
-New York neighborhood remains open until his family is written in greater
-detail.
+Do not silently rename him before that first match or keep using Guido in all
+later formal introductions. Private birth-name usage and exact home-scene
+placement remain open. His exact New York neighborhood also remains open.
 
 ### Before the Marigold
 
@@ -395,9 +888,9 @@ Guido has none. The trainer lends him an old one for tonight, then promises:
 “Take the fall, and I’ll buy you one of your own. MORETTI across the back.”
 After Guido takes the booked loss, the trainer keeps his word and gives him
 his own robe with **MORETTI** on the back. The reward belongs to the first
-post-match scene, not a later reputation tier. Winning still ends the run and
-requires restarting; it does not award the robe. This supersedes the earlier
-plan to reserve name lettering for contender status.
+post-match scene, not a later reputation tier. The October 29 decision supersedes the former victory restart: both results
+now advance. The robe outcome after a win remains open. The original promise
+superseded the earlier plan to reserve name lettering for contender status.
 
 The opening preview includes the promise; the post-match award and owned-robe
 state await the playable campaign. The current departure illustration shows
@@ -411,12 +904,11 @@ post-match presentation of the named robe still need to be made.
   learned how much of the business happens outside the ring.
 - **Tough rather than fearless:** He feels pain and recognizes danger, but he
   refuses to let another wrestler decide that he is small, weak, or disposable.
-- **Proud:** He is deeply reluctant to do the job. Losing on command feels like
-  admitting inferiority, even when he intellectually understands why newcomers
-  are used that way.
-- **Professional under protest:** He does the first jobs because this is his
-  only entrance into the business. He tries to give the promoter what was
-  requested, but every loss costs him something emotionally.
+- **Humble and ambitious:** He wants to impress Kohler and earn his place. He
+  takes the assignment seriously, even when he cannot read the boss's intentions.
+- **Learning the profession:** The first booking asks him to punish an opponent
+  but lose. His uncertainty comes from learning what the office values, rather
+  than beginning in open rebellion against the job.
 - **Impossible to bully quietly:** He can be ordered around by the office, but
   he cannot be shoved, hazed, or humiliated in the locker room without
   responding. This creates trouble before he has the status to survive it.
@@ -441,7 +933,8 @@ is sometimes the word powerful people use when they want him to accept
 humiliation. His maturity is not simple obedience. It is learning which losses
 are part of the craft and which demands require him to stand up for himself.
 
-This makes the Booker's ultimatum especially potent. “Go into business for
+The older chapter outline made the Booker's ultimatum especially potent; that
+sequence now needs reconsideration under the October 29 opening direction. “Go into business for
 yourself” gives him permission to act on the impulse he has suppressed for
 three matches, but doing it successfully requires all the wrestling knowledge
 those losses taught him.
@@ -699,17 +1192,19 @@ opponent corner/trainer designs, introduction poses and runtime staging.
 
 ### Guy's baseline introduction
 
+First match only:
+
 > “And in this corner, from New York City, standing five feet ten inches tall,
 > weighing one hundred ninety pounds—Guido Moretti!”
 
-Do not insert “Guy” into the ordinary spoken introduction. The contrast is the
-point: **Guido** is the young man standing nervously in the corner; **Guy** is
-the wrestler the broadcast begins describing when the bell rings.
+After Kohler changes his name, the same introduction ends **“Guy Moretti!”**
+Commentary follows the same chronology. Do not use the old automatic distinction
+between a Guido introduction and Guy commentary within the first match.
 
 Major matches can expand the billing after he earns status:
 
 > “From New York City, weighing one hundred ninety pounds—the young contender,
-> Guido Moretti!”
+> Guy Moretti!”
 
 Avoid adding grand nicknames too early. His name should acquire weight through
 the player's memory of what he survived.
@@ -720,7 +1215,8 @@ the player's memory of what he survived.
 
 ### Commentary naming rules
 
-- First call after the bell: “Guy Moretti...” or “Moretti...”
+- First match: “Guido Moretti...” or “Moretti...”; after the post-match name
+  change: “Guy Moretti...” or “Moretti...”
 - Ordinary action: mostly “Guy”; use “Moretti” for formal calls and major
   momentum shifts.
 - “Guido” is reserved for an exceptionally personal moment, if used at all:

@@ -1,0 +1,190 @@
+{
+  "knees": [
+    {
+      "rig": "Lou",
+      "facing": -1,
+      "maxJointDifferencePx": 0
+    },
+    {
+      "rig": "Lou",
+      "facing": 1,
+      "maxJointDifferencePx": 0
+    },
+    {
+      "rig": "George",
+      "facing": -1,
+      "maxJointDifferencePx": 0
+    },
+    {
+      "rig": "George",
+      "facing": 1,
+      "maxJointDifferencePx": 0
+    }
+  ],
+  "runs": [
+    {
+      "id": "drop-left",
+      "feet": {
+        "nearAnkle": {
+          "fromFrame": 105,
+          "toFrame": 115,
+          "excursionPx": 90.59049508640517,
+          "maxFrameStepPx": 19.614917792333475,
+          "note": "ankle diagnostic, not painted-sole or support classification"
+        },
+        "farAnkle": {
+          "fromFrame": 105,
+          "toFrame": 115,
+          "excursionPx": 57.409493988363984,
+          "maxFrameStepPx": 23.894622826066943,
+          "note": "ankle diagnostic, not painted-sole or support classification"
+        }
+      },
+      "soles": {
+        "near": {
+          "anchor": {
+            "x": 425.65039846,
+            "y": 391.01633986
+          },
+          "excursionPx": 141.0898398424522,
+          "maxFrameStepPx": 30.069414895733576,
+          "source": "painted sole anchor transformed through recorded sprite quad"
+        },
+        "far": {
+          "anchor": {
+            "x": 457.93378623,
+            "y": 387.984064
+          },
+          "excursionPx": 57.61638173816818,
+          "maxFrameStepPx": 23.938893796046674,
+          "source": "painted sole anchor transformed through recorded sprite quad"
+        }
+      },
+      "impactOrLandingTime": 0.6,
+      "frame": 115
+    },
+    {
+      "id": "drop-right",
+      "feet": {
+        "nearAnkle": {
+          "fromFrame": 105,
+          "toFrame": 115,
+          "excursionPx": 90.58069606709809,
+          "maxFrameStepPx": 19.614917792333475,
+          "note": "ankle diagnostic, not painted-sole or support classification"
+        },
+        "farAnkle": {
+          "fromFrame": 105,
+          "toFrame": 115,
+          "excursionPx": 57.40949398836397,
+          "maxFrameStepPx": 23.89482161473484,
+          "note": "ankle diagnostic, not painted-sole or support classification"
+        }
+      },
+      "soles": {
+        "near": {
+          "anchor": {
+            "x": 615.5496015399999,
+            "y": 391.02619716
+          },
+          "excursionPx": 141.09736216173312,
+          "maxFrameStepPx": 30.07737560963666,
+          "source": "painted sole anchor transformed through recorded sprite quad"
+        },
+        "far": {
+          "anchor": {
+            "x": 583.2598027600001,
+            "y": 387.984064
+          },
+          "excursionPx": 57.61638173816818,
+          "maxFrameStepPx": 23.938708707894563,
+          "source": "painted sole anchor transformed through recorded sprite quad"
+        }
+      },
+      "impactOrLandingTime": 0.6,
+      "frame": 115
+    },
+    {
+      "id": "reverse-left",
+      "feet": {
+        "nearAnkle": {
+          "fromFrame": 91,
+          "toFrame": 118,
+          "excursionPx": 73.42022132900443,
+          "maxFrameStepPx": 13.07404298600859,
+          "note": "ankle diagnostic, not painted-sole or support classification"
+        },
+        "farAnkle": {
+          "fromFrame": 91,
+          "toFrame": 118,
+          "excursionPx": 47.83010767288741,
+          "maxFrameStepPx": 8.83456846710696,
+          "note": "ankle diagnostic, not painted-sole or support classification"
+        }
+      },
+      "soles": {
+        "near": {
+          "anchor": {
+            "x": 493.72439203213554,
+            "y": 394.42046697369403
+          },
+          "excursionPx": 85.05642571715185,
+          "maxFrameStepPx": 15.191520561140807,
+          "source": "painted sole anchor transformed through recorded sprite quad"
+        },
+        "far": {
+          "anchor": {
+            "x": 493.0113044412496,
+            "y": 397.0549695953467
+          },
+          "excursionPx": 57.14277690490188,
+          "maxFrameStepPx": 10.537295844867472,
+          "source": "painted sole anchor transformed through recorded sprite quad"
+        }
+      },
+      "impactOrLandingTime": 0.55,
+      "frame": 118
+    },
+    {
+      "id": "reverse-right",
+      "feet": {
+        "nearAnkle": {
+          "fromFrame": 91,
+          "toFrame": 118,
+          "excursionPx": 73.42022132900443,
+          "maxFrameStepPx": 13.07404298600859,
+          "note": "ankle diagnostic, not painted-sole or support classification"
+        },
+        "farAnkle": {
+          "fromFrame": 91,
+          "toFrame": 118,
+          "excursionPx": 47.83010767288732,
+          "maxFrameStepPx": 8.834568467106918,
+          "note": "ankle diagnostic, not painted-sole or support classification"
+        }
+      },
+      "soles": {
+        "near": {
+          "anchor": {
+            "x": 546.7056079678644,
+            "y": 394.4295021554915
+          },
+          "excursionPx": 85.05100467305756,
+          "maxFrameStepPx": 15.19453936901056,
+          "source": "painted sole anchor transformed through recorded sprite quad"
+        },
+        "far": {
+          "anchor": {
+            "x": 547.4186955587504,
+            "y": 397.0549695953467
+          },
+          "excursionPx": 57.13524488452462,
+          "maxFrameStepPx": 10.544786051784037,
+          "source": "painted sole anchor transformed through recorded sprite quad"
+        }
+      },
+      "impactOrLandingTime": 0.55,
+      "frame": 118
+    }
+  ]
+}

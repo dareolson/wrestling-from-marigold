@@ -125,6 +125,8 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - T3d r4: ece82fe (Derek's note), the rope launch hands the run equal arms (0.05/0.05, rest elbows; was -0.25/+0.3 and 1.0/0.9, flapping). Opus: launch only, the corner reads LOAD alone; focused 29/30 (the T3d.4 corner test).
 - T3d.4: 18d253d, corner elbows start from the load's guard (2.0/1.95, were 0.7; arms no longer lift), unfold to 0.25 over 320 ms, upper arms settle -0.35/-0.40 to -0.10/0.02. Suite 1260/1260, build, coverage 26, grapples_assert, flag-off identical.
   Misses: contact-frame part step 15.6-70.8 px raw (before 31.6-67.3), arrival within 2 frames; page [corner strip](research/animation/whip-weight-2026-11/index.html) vs 4554a94. STOPPED at G3d-c.
+- T2.2: e63bb94, clasps wired (collarTie/elbowCup in the tie-up, waistClasp on the waistlock's near hand), in at grip weight .5, out below, palm aimed at the target. Suite 1261/1263 (flaky corner face-hit + a stale Lou asset-list test, fixed), build, coverage 26, flag-off identical. [G2 page](research/animation/grapples-2026-11/g2-clasps/index.html)
+  Misses: palm 27-36 px off the target in 3 of 8 collar/elbow grips (Lou a.elbowCup, Lou d.collarTie, George a.collarTie: out of arm reach, the palm sits short of the wrist); George's waist clasp 11.7 px; forearm-inside-torso not measured. STOPPED at G2.
 - **G3d-c: approved by Derek 2026-11-07** ("the corner looks good"). Opus rerun at 22f94a2: suite 1259/1260 (flaky: corner-daze "face hit" expects `forward`, chooseFall sometimes gives `kneesForward`, ~1 in 6, since dfea763; not Stage 3d), build, coverage 26. Stage 3d done. Next T2.2 once Derek OKs the clasp art.
 
 ## Why (Derek 2026-10-29)

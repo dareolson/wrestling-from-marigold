@@ -119,6 +119,8 @@ Handoff: [2026-10-29-claude-grapples-handoff.md](AI_HANDOFF_ENTRIES/2026-10-29-c
 - **G3d (Stage 3d whip with weight): approved by Derek 2026-11-07** ("looks good"). 833d407 + 8a18910: thrower sinks/leans and drives, feet held (±5-9 px, was 15-33), receiver steps in 12·s, forearm ×1.18, release peaks 50 ms early; receiver slung (speed builds 0.3 s), rope load elbows tucked.
   Misses: hip drop ~7·s (target 8-12·s); depth sidestep still slides ~20 px; corner run, follow-ups, worn film and full suite/build/coverage not run; flag-off identical by code path only.
 - Opus review of 4cc49fa (2026-11-07): suite 1258/1260 (corner-daze arms: the corner reuses the new load with 0.7 elbows), build, coverage 26. T3d.4 written, STOP at G3d-c.
+- T2.1 (Opus review of Codex T2.0): art + fit tools committed (this commit), `build_forearm_variant.mjs all --check` passes (caps 0 changed). Palm to target: Lou 1.8-3.9 px, George 16.6-21.5 px (wrist IK, not palm: T2.2's job).
+  Misses: collarTie and waistClasp shafts 25-37% narrower than the base forearm at the same rows (Lou 55/43 vs 78/65 px, George 52 vs 83); elbowCup within 7-11%. Derek judges the stills; masters live in ignored `Sprite sheets/`.
 - T3d r4: ece82fe (Derek's note), the rope launch hands the run equal arms (0.05/0.05, rest elbows; was -0.25/+0.3 and 1.0/0.9, flapping). Opus: launch only, the corner reads LOAD alone; focused 29/30 (the T3d.4 corner test).
 
 ## Why (Derek 2026-10-29)

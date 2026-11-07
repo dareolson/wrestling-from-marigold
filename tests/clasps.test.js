@@ -22,7 +22,8 @@ test('the lockup, the waistlock and its far hand: which grip carries which clasp
     const man = (facing) => ({ facing, s: 1, skeleton: { lChannelSide: () => 'near', jointAttachmentPoints: { neck: { x: 0, y: 0 } } } });
     const a = man(1), d = man(-1);
     const l = lockupGrips(a, d, { attacker: { collar: 1, elbow: 1 }, defender: { collar: 1, elbow: 1 } });
-    for (const role of ['attacker', 'defender']) assert.deepEqual(l[role].map(i => i.clasp).sort(), ['collarTie', 'elbowCup']);
+    assert.deepEqual(l.attacker.map(i => i.clasp).sort(), ['collarTie', 'elbowCup']);
+    assert.deepEqual(l.defender.map(i => i.clasp), ['bicepGrip', 'bicepGrip']);
     const waist = { skeleton: { jointAttachmentPoints: { nearHip: { x: 0, y: 0 }, farHip: { x: 0, y: 0 }, neck: { x: 0, y: -50 } }, lChannelSide: () => 'near' }, facing: 1, s: 1 };
     const w = waistlockGrips(a, waist, { attacker: { near: 1, far: 1 }, defender: { pry: 1 } });
     assert.deepEqual(w.attacker.map(i => i.clasp ?? null), ['waistClasp', null], 'the near hand clasps; the far hand is already hidden behind the defender');
@@ -32,4 +33,11 @@ test('the lockup, the waistlock and its far hand: which grip carries which clasp
 test('a clasp never reaches the arm\'s full length, so its elbow keeps a bend (Derek G2)', async () => {
     const { CLASP_REACH } = await import('../src/animation/clasps.js');
     assert.ok(CLASP_REACH < 0.97 && CLASP_REACH > 0.85, `${CLASP_REACH}`);
+});
+
+test('bicepGrip wears the elbowCup art until it has its own, and only where the rig has that art', () => {
+    const l = [{ arm: 'l', w: 1, clasp: 'bicepGrip' }, { arm: 'r', w: 1, clasp: 'bicepGrip' }];
+    assert.deepEqual(claspSelection(l, 'near'), { nearForearm: 'elbowCup', farForearm: 'elbowCup' });
+    assert.deepEqual(claspSelection(l, 'near', (name) => name === 'elbowCup'), { nearForearm: 'elbowCup', farForearm: 'elbowCup' });
+    assert.deepEqual(claspSelection(l, 'near', (name) => name === 'bicepGrip'), {});
 });

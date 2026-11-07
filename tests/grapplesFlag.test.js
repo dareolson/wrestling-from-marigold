@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import Wrestler, { grapplesCandidate } from '../src/Wrestler.js';
+import { CLASP_REACH } from '../src/animation/clasps.js';
 
 const withSearch = (search, fn) => {
     globalThis.location = { search };
@@ -54,4 +55,23 @@ test('holdGrips without `at` still reads the partner joint (unchanged)', () => {
     w.holdGrips([{ arm: 'l', partner, joint: 'Elbow', side: 'same', w: 1 }]);
     const W = w.skeleton.jointAttachmentPoints.nearWrist;
     assert.ok(Math.hypot(W.x - 150, W.y - 250) < 0.6);
+});
+
+test('the clasp reach cap needs the art on: no art or a subthreshold grip solves as an unlabelled one, art on stops at CLASP_REACH', () => {
+    const far = { x: 100 + 200, y: 200 };   // out of reach of an 80 px arm
+    const solve = (grip, sel) => {
+        const w = armed();
+        w._claspSel = sel;
+        w.holdGrips([{ arm: 'l', partner: null, joint: 'Neck', side: 'same', at: far, w: 1, ...grip }]);
+        const p = w.skeleton.jointAttachmentPoints;
+        return { pose: { ...w.pose }, reach: Math.hypot(p.nearWrist.x - p.nearShoulder.x, p.nearWrist.y - p.nearShoulder.y), flex: w.pose.lElbow };
+    };
+    const plain = solve({}, null);
+    assert.deepEqual(solve({ clasp: 'collarTie' }, null).pose, plain.pose, 'a rig with no such art');
+    assert.deepEqual(solve({ clasp: 'collarTie' }, { farForearm: 'collarTie' }).pose, plain.pose, 'the art is on the other arm');
+    assert.deepEqual(solve({ clasp: 'bicepGrip' }, { nearForearm: 'collarTie' }).pose, plain.pose, 'the art on is another label\'s');
+    const on = solve({ clasp: 'collarTie' }, { nearForearm: 'collarTie' }), via = solve({ clasp: 'bicepGrip' }, { nearForearm: 'elbowCup' });
+    assert.deepEqual(via.pose, on.pose, 'bicepGrip is held in the elbowCup art');
+    assert.ok(on.reach <= 80 * CLASP_REACH + 0.01, `drawn reach ${on.reach}`);
+    assert.ok(plain.reach > on.reach, `${plain.reach} vs ${on.reach}`);
 });

@@ -24,7 +24,7 @@ import { staggerFor } from './animation/staggers.js';
 import { ROPE_HIT, ELBOW_REST, ropeHitAt, ropeHitPose } from './animation/ropeHit.js';
 import { CORNER, CORNER_CHARGE, CORNER_DAZE_POSE, cornerDazeSeconds, cornerOffsetAt, cornerPoseAt } from './animation/cornerDaze.js';
 import { gripTarget } from './animation/lockup.js';
-import { claspSelection, CLASP_REACH } from './animation/clasps.js';
+import { claspSelection, claspArt, CLASP_REACH } from './animation/clasps.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
     ARTICULATED_CHANNELS,
@@ -759,23 +759,26 @@ export default class Wrestler {
             if (!to || !S || !E || !W) continue;
             // A clasp on this arm: the painted palm (its `clutch` anchor) goes to the target, not the wrist, so the wrist goal is the
             // target moved by where the palm sits from the wrist now. Redone every pass, so it settles as the forearm turns.
-            if (item.clasp && this._claspSel?.[`${handSide}Forearm`] === item.clasp) {
+            const art = !!item.clasp && this._claspSel?.[`${handSide}Forearm`] === claspArt(item.clasp);
+            if (art) {
                 const img = sk[`${handSide}Forearm`], P = Skeleton.imageAnchorPoint(img, img?._semanticAnchors?.clutch);
                 if (P) to = { x: W.x + (to.x - P.x), y: W.y + (to.y - P.y) };
             }
             const goal = { x: W.x + (to.x - W.x) * w, y: W.y + (to.y - W.y) * w };
             if (dist(W, goal) < 0.5) continue;
             const lu = dist(S, E), lf = dist(E, W);
-            // A clasp never locks the arm straight (Derek G2): the reach stops at CLASP_REACH of the arm's length, so the elbow keeps a bend
-            // and the palm stops that much short of a target that is at full stretch.
-            const d = Math.max(Math.abs(lu - lf) + 1e-3, Math.min(dist(S, goal), (lu + lf) * (item.clasp ? CLASP_REACH : 0.999)));
+            // A clasp with its art on never locks the arm straight (Derek G2): the reach stops at CLASP_REACH of the arm's length, so the elbow
+            // keeps a bend and the palm stops that much short of a target at full stretch.
+            const d = Math.max(Math.abs(lu - lf) + 1e-3, Math.min(dist(S, goal), (lu + lf) * (art ? CLASP_REACH : 0.999)));
             const base = angle(S, goal);
+            // With art on, the forearm aims at the point the capped reach can hold, so the drawn arm stays inside the cap.
+            const aim = art ? { x: S.x + Math.cos(base) * d, y: S.y + Math.sin(base) * d } : goal;
             const bend = Math.acos(Math.max(-1, Math.min(1, (lu * lu + d * d - lf * lf) / (2 * lu * d))));
             // Of the two elbows, keep the one nearer where it is.
             const elbows = [base + bend, base - bend].map(a => ({ x: S.x + Math.cos(a) * lu, y: S.y + Math.sin(a) * lu }));
             const E2 = dist(elbows[0], E) <= dist(elbows[1], E) ? elbows[0] : elbows[1];
             const dUpper = wrap(angle(S, E2) - angle(S, E));
-            const dFore = wrap(angle(E2, goal) - angle(E, W)) - dUpper;
+            const dFore = wrap(angle(E2, aim) - angle(E, W)) - dUpper;
             const signs = this._gripSigns(arm, handSide);
             this.pose[`${arm}Arm`] += signs.arm * dUpper;
             this.pose[`${arm}Elbow`] += signs.elbow * dFore;

@@ -28,7 +28,7 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Status (2026-11-06, replace this block; ≤ 40 lines)
+## Status (2026-11-06 late, replace this block; ≤ 40 lines)
 
 - **Direction (Derek 2026-11-06):** moves are passable for now. Stop polishing them and move the project forward; move misses go on polish lists and get revisited later.
 - **Falls ([PLAN_FALLS.md](PLAN_FALLS.md)):** done through T3.16 (`c53ea13`), G3 r3 accepted as passable ([page](research/animation/falls-2026-11/g3/r3.html)). `?falls=v1` is opt-in: wear meter (0.8/damage, 0.4/s recovery, knockdown 60, exceptional 92), `?wear=show` bar. Stage 4 (soak + promotion) waits for Derek. Polish: 0-4 knockdowns a run, the two exceptional landings at wear 100 came early (42/52 s), the AI rarely throws big moves, sell limbs past the rope, George's snapmare elbow.
@@ -41,11 +41,13 @@ Avoid a large rewrite.
   - Venues/crowds/exhibition: [plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md). Carl as Guy's ringside trainer: [sheet](research/art/carl-ringside-2026-10-31/carl-ringside-sheet-v1.png). Feud/art: [STORY_ART_AND_FEUD_DIRECTION.md](STORY_ART_AND_FEUD_DIRECTION.md).
 - **Awaiting Derek:** Marigold title queue (83ab5cd) visual OK; what comes next (see below).
 - **Uncommitted on purpose:** Codex's sleeper-wrap PNGs (`src/assets/wrestlers/*/forearm_sleeper_wrap.png`) and 4 Codex `tools/debug` scripts (sleeper wrap, throw support, waistlock probes) are unreviewed and stay untracked. Large frame dumps are gitignored.
-- **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `fb8c5ca` (2026-11-06). Push via the SSH URL only. Coverage baseline 26 gaps.
+- **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `fb8c5ca` (2026-11-06); later commits local. Session handoff: [entry](AI_HANDOFF_ENTRIES/2026-11-06-claude-opus-handoff-ground-contact.md). Push via the SSH URL only. Coverage baseline 26 gaps.
 - **Next (Opus 2026-11-06):** G4a r2b (e8c7498): continuous fall in; Derek wants finesse and a bigger sell. Sonnet: [PLAN_FALLS.md](PLAN_FALLS.md) **T4.7c** (the elbow leads, a softer stop, legs on the mat, receiver curls around the hit and kicks his legs), **STOP at G4a r2c**; then knee drop and dives, T4.3 soak, T4.4 promotion (**G4**); then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1. [Codex r2b review](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-gravity-review-for-opus.md).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-06 · Claude Opus · [Handoff: falls ground contact at T4.7c; finishers and personality queued](AI_HANDOFF_ENTRIES/2026-11-06-claude-opus-handoff-ground-contact.md)
 
 - 2026-11-06 · Codex · [For Opus: continuous descent verified; compression, support marker and overlap limits](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-gravity-review-for-opus.md)
 

@@ -28,3 +28,8 @@ test('the lockup, the waistlock and its far hand: which grip carries which clasp
     assert.deepEqual(w.attacker.map(i => i.clasp ?? null), ['waistClasp', null], 'the near hand clasps; the far hand is already hidden behind the defender');
     assert.equal(w.defender[0].clasp, undefined);
 });
+
+test('a clasp never reaches the arm\'s full length, so its elbow keeps a bend (Derek G2)', async () => {
+    const { CLASP_REACH } = await import('../src/animation/clasps.js');
+    assert.ok(CLASP_REACH < 0.97 && CLASP_REACH > 0.85, `${CLASP_REACH}`);
+});

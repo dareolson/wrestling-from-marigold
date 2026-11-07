@@ -17,6 +17,7 @@ const READ = async () => {
     else if (ls?.grapple?.grips) lists = lockupGrips(ls.grapple.grabber ?? ls.attacker, ls.grapple.grabbed ?? ls.defender, ls.grapple.grips);
     const men = ws ? { attacker: ws.attacker, defender: ws.defender } : ls ? { attacker: ls.grapple?.grabber ?? ls.attacker, defender: ls.grapple?.grabbed ?? ls.defender } : {};
     out.mode = ws ? 'waistlock' : ls ? 'lockup' : 'none';
+    out.elbow = { a: { l: sc.w1.pose.lElbow, r: sc.w1.pose.rElbow }, d: { l: sc.w2.pose.lElbow, r: sc.w2.pose.rElbow } };
     out.men = {}; out.palm = {};
     for (const [id, w] of [['a', sc.w1], ['d', sc.w2]]) {
         const sk = w.skeleton, st = sk._partVariantState ?? {};
@@ -67,6 +68,8 @@ for (const [pair, att, def] of PAIRS) {
             const acc = {};
             for (const r of rows) for (const [k, v] of Object.entries(r.palm)) if (v.on && v.palm !== null && v.w >= 0.95) (acc[k] ??= { p: [], w: [] }, acc[k].p.push(v.palm), acc[k].w.push(v.wrist));
             for (const [k, v] of Object.entries(acc)) { rec.palmMax[k] = +Math.max(...v.p).toFixed(2); rec.palmMean[k] = +(v.p.reduce((a, b) => a + b, 0) / v.p.length).toFixed(2); rec.wristMean[k] = +(v.w.reduce((a, b) => a + b, 0) / v.w.length).toFixed(2); rec.palmFrames ??= {}; rec.palmFrames[k] = v.p.length; }
+            const flex = {}; for (const r of rows) if (r.mode !== 'none') for (const m of ['a', 'd']) if (worn(r, m)) for (const c of ['l', 'r']) { const v = r.elbow[m][c]; if (Number.isFinite(v)) flex[`${m}.${c}`] = Math.min(flex[`${m}.${c}`] ?? 9, Math.abs(v)); }
+            rec.minElbowFlex = Object.fromEntries(Object.entries(flex).map(([k, v]) => [k, +v.toFixed(2)]));   // smallest |flex| (rad) of each elbow channel while its man wears a clasp: ~0 is straight out
             results[id] = rec;
             console.log(id, JSON.stringify(rec));
         }

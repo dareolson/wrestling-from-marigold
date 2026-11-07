@@ -24,7 +24,7 @@ import { staggerFor } from './animation/staggers.js';
 import { ROPE_HIT, ELBOW_REST, ropeHitAt, ropeHitPose } from './animation/ropeHit.js';
 import { CORNER, CORNER_CHARGE, CORNER_DAZE_POSE, cornerDazeSeconds, cornerOffsetAt, cornerPoseAt } from './animation/cornerDaze.js';
 import { gripTarget } from './animation/lockup.js';
-import { claspSelection } from './animation/clasps.js';
+import { claspSelection, CLASP_REACH } from './animation/clasps.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
     ARTICULATED_CHANNELS,
@@ -766,7 +766,9 @@ export default class Wrestler {
             const goal = { x: W.x + (to.x - W.x) * w, y: W.y + (to.y - W.y) * w };
             if (dist(W, goal) < 0.5) continue;
             const lu = dist(S, E), lf = dist(E, W);
-            const d = Math.max(Math.abs(lu - lf) + 1e-3, Math.min(dist(S, goal), (lu + lf) * 0.999));
+            // A clasp never locks the arm straight (Derek G2): the reach stops at CLASP_REACH of the arm's length, so the elbow keeps a bend
+            // and the palm stops that much short of a target that is at full stretch.
+            const d = Math.max(Math.abs(lu - lf) + 1e-3, Math.min(dist(S, goal), (lu + lf) * (item.clasp ? CLASP_REACH : 0.999)));
             const base = angle(S, goal);
             const bend = Math.acos(Math.max(-1, Math.min(1, (lu * lu + d * d - lf * lf) / (2 * lu * d))));
             // Of the two elbows, keep the one nearer where it is.

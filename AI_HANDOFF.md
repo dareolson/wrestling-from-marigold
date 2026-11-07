@@ -42,10 +42,12 @@ Avoid a large rewrite.
 - **Awaiting Derek:** Marigold title queue (83ab5cd) visual OK; what comes next (see below).
 - **Uncommitted on purpose:** Codex's sleeper-wrap PNGs (`src/assets/wrestlers/*/forearm_sleeper_wrap.png`) and 4 Codex `tools/debug` scripts (sleeper wrap, throw support, waistlock probes) are unreviewed and stay untracked. Large frame dumps are gitignored.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `fb8c5ca` (2026-11-06). Push via the SSH URL only. Coverage baseline 26 gaps.
-- **Next (Claude 2026-11-06):** T4.7b done, **STOP at G4a r2b** ([page](research/animation/falls-2026-11/g4a-r2b/index.html)): the elbow drop is one continuous fall into the chest (flight cut at its apex, gravity fall, hit lands 18 frames earlier, no mat pose first). Derek judges, current beside revised, normal and quarter speed. Then the rest of T4.7 (knee drop, dives), T4.3 soak, T4.4 promotion (**G4**); then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1. Misses are in the plan's Progress line.
+- **Next (Opus 2026-11-06):** G4a r2b (e8c7498): continuous fall in; Derek wants finesse and a bigger sell. Sonnet: [PLAN_FALLS.md](PLAN_FALLS.md) **T4.7c** (the elbow leads, a softer stop, legs on the mat, receiver curls around the hit and kicks his legs), **STOP at G4a r2c**; then knee drop and dives, T4.3 soak, T4.4 promotion (**G4**); then [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1. [Codex r2b review](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-gravity-review-for-opus.md).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-06 · Codex · [For Opus: continuous descent verified; compression, support marker and overlap limits](AI_HANDOFF_ENTRIES/2026-11-06-codex-ground-gravity-review-for-opus.md)
 
 - 2026-11-06 · Derek, recorded by Codex · [Ground attack looks good; make impact one gravity-driven descent](AI_HANDOFF_ENTRIES/2026-11-06-derek-ground-impact-gravity.md)
 

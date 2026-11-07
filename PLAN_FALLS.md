@@ -384,6 +384,23 @@ never measured overlap between the two bodies. The jolt and the handoff stay; th
     locally, **STOP at G4a r2b**. Knee drop and dives still wait.
   - Known, leave for now unless it falls out naturally: striking part is the far forearm (plan said near), he ends about 130 px
     up-screen, Lou's contact pose still roughly parallel to George.
+- **T4.7c** Derek at G4a r2b (2026-11-06): the continuous fall is in (e8c7498), now finesse. Opus's read of the frames, agreed by
+  Derek, plus his own note on the sell. Timing and the contact frame stay as they are.
+  - **The elbow leads the fall.** From the apex the striking elbow is cocked and pointed at the chest, and the body rolls onto its side
+    so the elbow is the lowest point. Today (frames 41-48, Lou on George supine) he goes flat like a plank with his arms hanging, which
+    reads as a float. Existing parts; if the cocked elbow can't be made, name the narrow art request.
+  - **A softer stop.** Today he goes from 30 px/frame to about 0 in two frames with 5 px of compression. Give the hit a short
+    yielding compression and recoil (on the order of 2-4 frames, more squash), not a pause and not a slower fall.
+  - **Legs after contact** (frames 55-62): no far boot swinging high, no splayed legs. His legs come down to the mat and stay there
+    through the roll-off.
+  - **The receiver sells more** (Derek): around the hit, his chest stays pinned under the elbow (no torso rise into Lou). His head and
+    shoulders curl up, his knees draw up and his arms flail. Then, as Lou rolls off, he **kicks his legs**: two or three alternating
+    kicks, feet off the mat, fading out. Knees through `lShin`/hip only (the knee rule), never into Lou or past the rope. Then he goes
+    back to the lying pose, and the down timer and get-up are unchanged. Make it a reusable "sell after a ground hit" so the knee drop
+    and dives can use it at their own strengths.
+  - Proof as r2b: current beside revised, normal and quarter speed, 8 cells, apex / contact / roll-off / kicks marked; the stop
+    (px/frame over the last 4 frames and the compression), signed joints, the three overlap numbers, the receiver's limbs against
+    Lou and the ropes. Focused tests. Commit locally, **STOP at G4a r2c**. Knee drop and dives still wait.
 - **T4.3** Soak: `grapples_soak.mjs` with `falls=v1`, 4 x 150 s, both pairings. Count falls per variant and pick reason, down-hit
   reactions, page errors, stuck `down` states and get-up pops. A stuck state or a page error blocks T4.4. Fix it or report it.
 - **T4.4** Promote: `fallsCandidate` becomes `defaultOnFlag('falls', 'v1')` like the other promoted flags, so `?falls=off` is the old

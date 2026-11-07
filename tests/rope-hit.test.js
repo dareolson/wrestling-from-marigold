@@ -120,5 +120,7 @@ test('T3d.3: the load tucks the elbows and keeps the hands near the ribs, the sp
     assert.ok(load.bend < -0.45, 'shoulders well back into the rope');
     assert.ok(load.lElbow > 1.5 && load.rElbow > 1.5, 'elbows bent');
     assert.ok(Math.abs(load.lArm) < 0.5 && Math.abs(load.rArm) < 0.5, 'upper arms near the sides, not flung out');
-    assert.ok(spring.lElbow < load.lElbow && spring.lArm !== load.lArm);
+    assert.ok(spring.lElbow < load.lElbow);
+    assert.ok(Math.abs(spring.lArm - spring.rArm) < 1e-3, 'the launch hands the gait equal arms: unequal ones read as flapping');
+    assert.ok(Math.abs(spring.lElbow - spring.rElbow) < 1e-3);
 });

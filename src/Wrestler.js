@@ -9,7 +9,7 @@ import { shoveClip } from './animation/clips/shove.js';
 // ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
 import { dropkickV2Clip } from './animation/clips/dropkickV2.js';
 import { elbowDropClip } from './animation/clips/elbowDrop.js';
-import { ELBOW_DROP, SPLASH, ARM_CHANNELS, sampleGroundAttack, sampleSplash, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from './animation/groundContact.js';
+import { ELBOW_DROP, SPLASH_VARIANTS, ARM_CHANNELS, sampleGroundAttack, sampleSplash, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from './animation/groundContact.js';
 import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
@@ -187,6 +187,13 @@ export const moveTier = (move) => {
 const strikeReact = (other, attacker, move, pose, ms, alwaysFall = false) => (fallsCandidate() ? other._strikeReact(attacker, move, pose, ms, alwaysFall) : other._doSell(pose, ms, () => other.startStagger()));
 // ?falls=v1 (T3.3): the sideways spill (T2.5e), called by the shove through chooseFall. It was `&spill=1` until Stage 3; the flag is gone, the name stays for the tools.
 export const spillCandidate = () => fallsCandidate();
+// PLAN_FALLS T4.8 (G4b r2): which turn a dive on a man on the mat takes (groundContact.js SPLASH_VARIANTS). Default: the top dive keeps the pivot (Derek: a good landing for a splash off the top rope), the
+// diving elbow the tumble; `?splash=pivot|tumble|roll` forces one for review.
+const SPLASH_DEFAULT = { topDive: 'pivot', divingElbow: 'tumble' };
+export const splashFor = (move) => {
+    const v = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('splash') : null;
+    return SPLASH_VARIANTS[v] ?? SPLASH_VARIANTS[SPLASH_DEFAULT[move]];
+};
 export const waistlockCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('waistlock') === 'v1';
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
@@ -1138,7 +1145,7 @@ export default class Wrestler {
         this._landNext?.();   // ?falls=v1: the slam's landing, one frame after its hit (_playPairedThrow)
         this._tickRiseFlip();
         this._tickPain();
-        if (this.state !== 'down') { this._sell = null; this._hold = null; this._landing = null; this._jolt = null; this._groundAttack = null; } // pinned, picked up, rising: the sell (and hold) stops, and so does the landing
+        if (this.state !== 'down') { this._sell = null; this._hold = null; this._landing = null; this._jolt = null; this._groundAttack = null; this._rollTurn = false; } // pinned, picked up, rising: the sell (and hold) stops, and so does the landing
         if (this._landing && this.state === 'down') {
             this._landing.t += dt;
             if (this._landing.t >= landingDuration(this._landing.kind, this._landing.intensity, this._landing.vy, this._landing.tier)) this._landing = null;
@@ -2882,7 +2889,7 @@ export default class Wrestler {
     // ...or face down (prone: head toward his facing), as the piledriver's
     // forward crumple leaves him.
     _layDown(seconds, lying) {
-        this._groundAttack = null;
+        this._groundAttack = null; this._rollTurn = false;
         this.pose.tilt   = 0;
         this.pose.lift   = 0;
         this.pose.bend   = 0;
@@ -2916,7 +2923,10 @@ export default class Wrestler {
             // the roll-off is over: the body stays where it drew (the hand planted), and the settle draws from there
             ga.committed = true;
             if (ga.root) { this.x = ga.root.x; this.y = ga.root.y; this._clamp(); }
-            if (ga.def.mode === 'splash') this.lying = 'supine';   // T4.8: he rolled over (_drawSplash): he lies face up now, and the get-up rises from there
+            if (ga.def.mode === 'splash') {   // T4.8: how he landed (_drawSplash): face up (pivot, roll) or face down (tumble); the roll's art was mirrored from its apex, so the facing is the mirror from here on
+                this.lying = ga.def.rest;
+                if (ga.def.mirrorAt != null) { this.facing = -this.facing; this._rollTurn = true; }   // the roll left him mirrored: the rise turns him back (the get-up's own turn, PLAN_GETUPS B2), not the stand-up's snap
+            }
         }
         if (ga.t < groundAttackSeconds(ga.def)) return;
         // settled into the ordinary lying pose (the same pose object, so no handoff): the ordinary down draw and the get-up take over
@@ -2928,27 +2938,29 @@ export default class Wrestler {
     // root - lift; the shadow stays on the mat. He rolls prone -> supine through the apex (no mirror); _tickGroundAttack makes it his `lying` at the end.
     _drawSplash(s0, facing, gfx) {
         const ga = this._groundAttack, def = ga.def, sk = this.skeleton, op = ga.other;
-        const rest = Skeleton.lyingBase('supine', true), smp = sampleSplash(def, ga.t, rest);
+        const rest = Skeleton.lyingBase(def.rest, true), smp = sampleSplash(def, ga.t, rest);
         ga.from0 ??= { x: this.x, y: this.y };
         if (!ga.to) {
             // the mat up the screen from him: past his far edge (the top of everything he draws), the body's depth clear of it, inside the ropes
             let edge = Infinity;
             for (const p of op.skeleton._parts) if (p?.visible && p.alpha > 0 && p.frame) edge = Math.min(edge, p.getBounds().y);
             if (!Number.isFinite(edge)) edge = op.y - 40 * s0;
-            const y = Math.max(RING.farLeft.y + 6, Math.min(RING.nearLeft.y - 6, edge - def.route.gap * s0)), b = ringBoundsAtY(y);
+            const full = Math.max(RING.farLeft.y + 6, Math.min(RING.nearLeft.y - 6, edge - def.route.gap * s0)), y = ga.from0.y + (full - ga.from0.y) * def.route.scale, b = ringBoundsAtY(y);   // scale: the part of the trip up the screen he makes (r3)
             ga.to = { x: Math.max(b.left + 20, Math.min(b.right - 20, ga.from0.x)), y };
         }
         const root = { x: ga.from0.x + (ga.to.x - ga.from0.x) * smp.travel, y: ga.from0.y + (ga.to.y - ga.from0.y) * smp.travel };
         const s = s0 * perspectiveScale(root.y) / perspectiveScale(ga.from0.y);
         ga.root = root; ga.lift = smp.lift; ga.seg = smp.seg;   // read by the proof tools
+        const fx = smp.mirror ? -facing : facing;   // the roll draws its second half mirrored (same joints, mirrored art)
         gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
         sk.setVisible(true);
         if (smp.seg === 'settle') { sk._applyGrounded(root.x, root.y, s, facing, rest); return; }
         const y = root.y - smp.lift * s;
-        if (!ga.from && ga.joints) ga.from = Skeleton.groundedPoseFrom(ga.joints, ga.from0.x, ga.from0.y, s0, facing, def.apex);
-        if (smp.g) sk._applyGrounded(root.x, y, s, facing, smp.g);
-        else if (ga.from) sk.updateGroundedBlend(root.x, y, s, facing, def.apex, ga.from, smp.toApex);
-        else sk._applyGrounded(root.x, y, s, facing, def.apex);
+        const first = def.keys[0].g;
+        if (!ga.from && ga.joints) ga.from = Skeleton.groundedPoseFrom(ga.joints, ga.from0.x, ga.from0.y, s0, facing, first);
+        if (smp.g) sk._applyGrounded(root.x, y, s, fx, smp.g);
+        else if (ga.from) sk.updateGroundedBlend(root.x, y, s, facing, first, ga.from, smp.toApex);
+        else sk._applyGrounded(root.x, y, s, facing, first);
     }
 
     _drawGroundAttack(s0, facing, gfx) {
@@ -3148,7 +3160,7 @@ export default class Wrestler {
             }
             // ?falls=v1 (T4.2b): the clip's last body eases into the grounded pose (the hand-set landing cut 52 px at the seam, 13-16 px/frame before it)
             // T4.8: on a man on the mat he bounces off the chest and rolls away up the screen (SPLASH) instead of lying on him
-            if (fallsCandidate()) { if (hitDown) this._beginGroundAttack(other, SPLASH, () => {}); else this._layDown(2.0, 'prone'); return; }
+            if (fallsCandidate()) { if (hitDown) this._beginGroundAttack(other, splashFor('divingElbow'), () => {}); else this._layDown(2.0, 'prone'); return; }
             this.pose.tilt   = 0;
             this.pose.lift   = 0;
             this.state       = 'down';
@@ -3180,7 +3192,7 @@ export default class Wrestler {
             } else {
                 this.scene.cameras.main.shake(110, 0.002);
             }
-            if (fallsCandidate()) { if (hitDown) this._beginGroundAttack(other, SPLASH, () => {}); else this._layDown(3.0, 'prone'); return; }   // T4.2b, as _doDive; T4.8: the splash on a downed man bounces and rolls away
+            if (fallsCandidate()) { if (hitDown) this._beginGroundAttack(other, splashFor('topDive'), () => {}); else this._layDown(3.0, 'prone'); return; }   // T4.2b, as _doDive; T4.8: the splash on a downed man bounces and rolls away
             this.pose.tilt   = 0;
             this.pose.lift   = 0;
             this.state       = 'down';
@@ -3663,6 +3675,7 @@ export default class Wrestler {
 
     // PLAN_GETUPS B2: the opponent counts as behind past the deadband and on the other side of where he faces; decided once.
     _riseNeedsTurn() {
+        if (this._rollTurn) return true;   // T4.8 r2: the splash roll left his facing mirrored
         const other = this._lastOther ?? (this.scene.w1 === this ? this.scene.w2 : this.scene.w1);
         const dx = other ? other.x - this.x : 0;
         return Math.abs(dx) > GETUP_TURN_DEADBAND && Math.sign(dx) !== this.facing;

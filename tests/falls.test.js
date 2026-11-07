@@ -846,44 +846,59 @@ test('T4.4 promotion: falls is on with no flag or ?falls=v1, off with ?falls=off
 });
 
 
-// ---- PLAN_FALLS T4.8: the splash on a downed man: he bounces off the chest, rolls over and lands face up, up the screen --------------------------------------------------
-import { SPLASH, sampleSplash } from '../src/animation/groundContact.js';
-test('T4.8 sampleSplash: one gravity bounce (lift 0 -> apex -> 0, never below the mat), travel 0 -> 1 monotone, the body falls into exactly the supine rest pose', () => {
-    const REST_SUPINE = Skeleton.lyingBase('supine', true), T = SPLASH.timing, b0 = T.fall + T.hold;
-    let prevTravel = 0, peak = 0;
-    for (let t = 0; t <= groundAttackSeconds(SPLASH) + 0.05; t += 1 / 240) {
-        const s = sampleSplash(SPLASH, t, REST_SUPINE);
-        assert.ok(s.lift >= 0 && s.lift <= SPLASH.lift + 1e-9, `lift ${s.lift} at ${t}`); assert.ok(s.travel >= prevTravel - 1e-12, 'travel never goes back'); prevTravel = s.travel; peak = Math.max(peak, s.lift);
-        assert.ok(!('flipped' in s), 'no facing flip: the roll is the prone -> supine pivot');
+// ---- PLAN_FALLS T4.8: the splash on a downed man: he bounces off the chest, turns over and lands up the screen (pivot, tumble, roll) --------------------------------------------------
+import { SPLASH, SPLASH_TUMBLE, SPLASH_ROLL, SPLASH_VARIANTS, sampleSplash } from '../src/animation/groundContact.js';
+const REST_OF = (def) => Skeleton.lyingBase(def.rest, true);
+test('T4.8 sampleSplash, every variant: one gravity bounce (lift 0 -> apex -> 0, never below the mat), travel 0 -> 1 monotone, the body falls into exactly its rest pose, no jump at a key or the mirror', () => {
+    for (const [name, def] of Object.entries(SPLASH_VARIANTS)) {
+        const rest = REST_OF(def), T = def.timing, b0 = T.fall + T.hold;
+        let prevTravel = 0, peak = 0, prev = null;
+        for (let t = 0; t <= groundAttackSeconds(def) + 0.05; t += 1 / 240) {
+            const s = sampleSplash(def, t, rest);
+            assert.ok(s.lift >= 0 && s.lift <= def.lift + 1e-9, `${name}: lift ${s.lift} at ${t}`); assert.ok(s.travel >= prevTravel - 1e-12, `${name}: travel never goes back`); prevTravel = s.travel; peak = Math.max(peak, s.lift);
+            // the pose is continuous (a 240 Hz step moves no angle by more than 0.2 rad (the gravity settle is steepest at the very end), modulo the tumble's full turn into the plain rest pose), including across the roll's mirror (angles negated, geometry the same)
+            if (prev?.g && s.g && prev.mirror === s.mirror) for (const [k, v] of Object.entries(s.g)) if (k !== 'hip' && k !== 't') assert.ok(Math.abs(Math.atan2(Math.sin(v - prev.g[k]), Math.cos(v - prev.g[k]))) < 0.2, `${name}: ${k} jumps ${prev.g[k]} -> ${v} at ${t}`);
+            prev = s;
+        }
+        assert.ok(Math.abs(peak - def.lift) < 0.5, `${name}: apex ${peak}`);
+        assert.equal(sampleSplash(def, b0, rest).lift, 0); assert.equal(sampleSplash(def, b0 + T.bounce, rest).lift, 0); assert.equal(sampleSplash(def, b0 + T.bounce, rest).travel, 1);
+        const target = def.restShift ? Object.fromEntries(Object.entries(rest).map(([k, v]) => [k, k === 'hip' || k === 't' ? v : v + def.restShift])) : rest;
+        const end = sampleSplash(def, b0 + T.bounce - 1e-9, rest).g;
+        for (const [k, v] of Object.entries(target)) if (k !== 't') assert.ok(Math.abs(end[k] - v) < 1e-6, `${name}: ${k} lands on the rest pose`);
+        assert.equal(b0 + T.bounce, groundAttackReleaseEnd(def), `${name}: the bounce ends where the lifecycle commits the body`);
+        assert.equal(groundAttackContactAt(def), 0, 'contact is the flight callback\'s, on the first tick');
+        assert.ok(def.keys.every((k, i, a) => i === 0 || k.u > a[i - 1].u) && def.keys.at(-1).u < 1, `${name}: keys in order`);
     }
-    assert.ok(Math.abs(peak - SPLASH.lift) < 0.5, `apex ${peak}`);
-    assert.equal(sampleSplash(SPLASH, b0, REST_SUPINE).lift, 0); assert.equal(sampleSplash(SPLASH, b0 + T.bounce, REST_SUPINE).lift, 0);
-    assert.equal(sampleSplash(SPLASH, b0 + T.bounce, REST_SUPINE).travel, 1);
-    const end = sampleSplash(SPLASH, b0 + T.bounce - 1e-9, REST_SUPINE).g;
-    for (const [k, v] of Object.entries(REST_SUPINE)) if (k !== 't') assert.ok(Math.abs(end[k] - v) < 1e-6, `${k} lands on the rest pose`);
-    assert.equal(b0 + T.bounce, groundAttackReleaseEnd(SPLASH), 'the bounce ends where the lifecycle commits the body');
-    assert.equal(groundAttackContactAt(SPLASH), 0, 'contact is the flight callback\'s, on the first tick');
+    assert.equal(sampleSplash(SPLASH_ROLL, 0.4, REST_OF(SPLASH_ROLL)).mirror, true, 'the roll draws mirrored in its second half'); assert.equal(sampleSplash(SPLASH_TUMBLE, 0.3, REST_OF(SPLASH_TUMBLE)).mirror, false);
 });
 
-test('T4.8 the splash apex keeps bend-only knees and elbows inside the limits, and a rigid pivot from prone to supine (torso passes up, not down)', () => {
-    const g = SPLASH.apex, P = Skeleton.lyingBase('prone', true), S = Skeleton.lyingBase('supine', true);
-    for (const side of ['near', 'far']) { assert.ok(g[`${side}Thigh`] - g[`${side}Shin`] >= 0, `${side} knee bends the right way`); assert.ok(g[`${side}Fore`] - g[`${side}Arm`] >= 0, `${side} elbow bends the right way`); }
-    assert.ok(P.torso < g.torso && g.torso < S.torso, `torso ${P.torso} -> ${g.torso} -> ${S.torso}: the pivot goes up through vertical (pi)`);
-    assert.ok(Math.abs(g.torso - Math.PI) < 0.3, 'near vertical at the top');
+test('T4.8 the splash poses keep bend-only knees and elbows; the pivot goes up through vertical (torso passes pi); the tumble turns a full circle head-first the same way and ends where the prone rest is', () => {
+    for (const [name, def] of Object.entries(SPLASH_VARIANTS)) for (const key of def.keys) for (const side of ['near', 'far']) {
+        assert.ok(key.g[`${side}Thigh`] - key.g[`${side}Shin`] >= 0, `${name} ${side} knee bends the right way`); assert.ok(key.g[`${side}Fore`] - key.g[`${side}Arm`] >= 0, `${name} ${side} elbow bends the right way`);
+    }
+    const P = Skeleton.lyingBase('prone', true), S = Skeleton.lyingBase('supine', true), g = SPLASH.apex;
+    assert.ok(P.torso < g.torso && g.torso < S.torso && Math.abs(g.torso - Math.PI) < 0.3, 'the pivot: prone -> near vertical -> supine');
+    const torsos = SPLASH_TUMBLE.keys.map(k => k.g.torso);
+    assert.ok(torsos.every((t, i) => i === 0 || t > torsos[i - 1]) && Math.abs(torsos.at(-1) - (P.torso + 2 * Math.PI)) < 0.4, `the tumble's torso keeps turning one way: ${torsos}`);
 });
 
-test('T4.8 a dive on a man on the mat: damage, sell and shake once, then the splash (prone -> supine, no facing change, shorter down time); possum and standing targets keep the old landing', async () => {
-    for (const [call, move, old] of [['_doDive', 'divingElbow', 2.0], ['_doTopDive', 'topDive', 3.0]]) {
-        const { atk, def, hurts } = await downFixture(true);
-        const facing = atk.facing; atk.x = def.x - 20; atk[call](def);
-        assert.equal(hurts(), 1, `${move}: damage once, at the flight's end`);
-        assert.equal(atk.state, 'down'); assert.equal(atk._groundAttack?.def, SPLASH, `${move}: the splash`); assert.equal(def._jolt.sell, 'curl');
-        assert.ok(Math.abs(atk.stateTimer - (groundAttackSeconds(SPLASH) + SPLASH.restSec)) < 1e-9);
-        assert.ok(atk.stateTimer < old, `${move}: shorter than the old ${old} s`);
-        let n = 0; while (atk._groundAttack && n++ < 200) atk.tickDown(1 / 60);
-        assert.equal(atk._groundAttack, null); assert.equal(atk.lying, 'supine', `${move}: he rolled over`); assert.equal(atk.facing, facing, 'no facing flip');
-        assert.ok(atk.stateTimer <= SPLASH.restSec && atk.stateTimer > SPLASH.restSec - 2 / 60, `the rest (within a frame of ${SPLASH.restSec}), then the ordinary get-up: ${atk.stateTimer}`);
-        assert.equal(hurts(), 1, 'nothing fires again');
+test('T4.8 a dive on a man on the mat: damage, sell and shake once, then the splash variant; the top dive defaults to the pivot, the diving elbow to the tumble, ?splash= forces one; possum and standing targets keep the old landing', async () => {
+    const rises = { pivot: 'supine', tumble: 'prone', roll: 'supine' };
+    for (const [call, move, old, dflt] of [['_doDive', 'divingElbow', 2.0, 'tumble'], ['_doTopDive', 'topDive', 3.0, 'pivot']]) {
+        for (const forced of [null, 'pivot', 'tumble', 'roll']) {
+            const { atk, def, hurts } = await downFixture(true);
+            if (forced) globalThis.location.search = `?falls=v1&splash=${forced}`;
+            const name = forced ?? dflt, d = SPLASH_VARIANTS[name], facing = atk.facing; atk.x = def.x - 20; atk[call](def);
+            assert.equal(hurts(), 1, `${move}: damage once, at the flight's end`);
+            assert.equal(atk.state, 'down'); assert.equal(atk._groundAttack?.def, d, `${move}: ${name}`); assert.equal(def._jolt.sell, 'curl');
+            assert.ok(Math.abs(atk.stateTimer - (groundAttackSeconds(d) + d.restSec)) < 1e-9);
+            assert.ok(atk.stateTimer < old, `${move} ${name}: shorter than the old ${old} s`);
+            let n = 0; while (atk._groundAttack && n++ < 200) atk.tickDown(1 / 60);
+            assert.equal(atk._groundAttack, null); assert.equal(atk.lying, rises[name], `${move} ${name}: lands ${rises[name]}`);
+            assert.equal(atk.facing, name === 'roll' ? -facing : facing, `${name}: only the roll mirrors the facing (his art was mirrored from its apex)`);
+            assert.ok(atk.stateTimer <= d.restSec && atk.stateTimer > d.restSec - 2 / 60, `the rest, then the ordinary get-up: ${atk.stateTimer}`);
+            assert.equal(hurts(), 1, 'nothing fires again');
+        }
     }
     const pos = await downFixture(true); pos.def.state = 'possum'; pos.atk.x = pos.def.x - 20; pos.atk._doTopDive(pos.def);
     assert.equal(pos.atk._groundAttack, null, 'a possum man has no sell to bounce off'); assert.equal(pos.atk.stateTimer, 3.0);

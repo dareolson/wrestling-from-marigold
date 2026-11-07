@@ -3739,8 +3739,7 @@ export default class Arena extends Phaser.Scene {
         const lists = lockupGrips(attacker, defender, g.grips);
         attacker.setClasps(lists.attacker);   // T2.2: the clasp art on the hands that are closing, before the IK aims its palm
         defender.setClasps(lists.defender);
-        // twelve alternating passes (was six): each hand's target is the other man's elbow, which his own hands move, so it takes more to settle
-        for (const pass of Array.from({ length: 12 }, (_, k) => (k % 2 ? ['defender', defender] : ['attacker', attacker]))) {
+        for (const pass of [['attacker', attacker], ['defender', defender], ['attacker', attacker], ['defender', defender], ['attacker', attacker], ['defender', defender]]) {
             const [role, actor] = pass;
             if (lists[role].length) actor.holdGrips(lists[role]);
         }

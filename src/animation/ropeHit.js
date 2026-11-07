@@ -40,9 +40,11 @@ export function ropeHitAt(ms, stamina) {
     return { phase: 'done', offset: 0, tension: 0 };
 }
 
-// Pose channels for the hit: back arched into the rope, arms flung out; then folded forward, arms trailing.
-const LOAD = { bend: -0.38, lArm: 1.1, rArm: 0.95, crouch: 0.1, lLeg: -0.2, rLeg: 0.24 };
-const SPRING = { bend: 0.34, lArm: 0.1, rArm: 0.0, crouch: 0.2, lLeg: 0.24, rLeg: -0.2 };
+// Pose channels for the hit (T3d.3): shoulders back past the hips into the rope, hips sunk, elbows tucked with the hands at the ribs;
+// then folded forward, the arms giving a little and swinging free.
+const LOAD = { bend: -0.52, lArm: 0.22, rArm: 0.16, lElbow: 1.9, rElbow: 1.85, crouch: 0.22, lLeg: -0.2, rLeg: 0.24 };
+const SPRING = { bend: 0.34, lArm: -0.25, rArm: 0.3, lElbow: 1.0, rElbow: 0.9, crouch: 0.2, lLeg: 0.24, rLeg: -0.2 };
+export const ELBOW_REST = 0.70; // a channel the pose has never carried starts from the rest flex
 export function ropeHitPose(ms, stamina) {
     const { loadMs, springMs } = ROPE_HIT, tautMs = tautMsFor(stamina), out = {};
     const at = ms < loadMs ? easeOut(clamp01(ms / loadMs)) : 1;

@@ -21,7 +21,7 @@ import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGrip
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
 import { AROUND, aroundChannel, backSellSupport, recoveryVia, resolveAroundVia } from './rig/backSell.js';
 import { staggerFor } from './animation/staggers.js';
-import { ROPE_HIT, ropeHitAt, ropeHitPose } from './animation/ropeHit.js';
+import { ROPE_HIT, ELBOW_REST, ropeHitAt, ropeHitPose } from './animation/ropeHit.js';
 import { CORNER, CORNER_CHARGE, CORNER_DAZE_POSE, cornerDazeSeconds, cornerOffsetAt, cornerPoseAt } from './animation/cornerDaze.js';
 import { gripTarget } from './animation/lockup.js';
 import { MOVE_SPECS } from './moves/registry.js';
@@ -435,6 +435,15 @@ POSES.elbowDropAir = elbowDropClip.tracks.attacker.keyframes
 // Candidate whip (grapples=v1): ms from the press to the receiver's first run step.
 const WHIP_RELEASE_SAME_MS = 170;
 const WHIP_RELEASE_CROSS_MS = 240;
+// T3d.1 (grapples=v1): the thrower's weight, as pose channels laid over the whip poses. bend < 0 leans back, crouch sinks the hips.
+const WHIP_WEIGHT = Object.freeze({
+    load:    { crouch: 0.48, bend: -0.20 },
+    release: { crouch: 0.34, bend: 0.20 },
+    follow:  { crouch: 0.20, bend: 0.30 },
+});
+// T3d.2: the receiver is slung. He pitches forward at the release and his speed builds linearly over slingMs; the pitch settles to
+// the run lean over settleMs. A rise in top speed pays back the distance the build-up costs, so he reaches the rope on time.
+const WHIP_SLING = Object.freeze({ slingMs: 300, settleMs: 340, pitch: 0.55, crouch: 0.18, maxBoost: 1.4 });
 
 export const MOVE_DEFS = {
     irishWhip:   { poseSeq: [{ p: 'whipGrab',    dur: 100, e: 'Cubic.easeOut' },
@@ -971,7 +980,7 @@ export default class Wrestler {
         const [head, ...rest] = sequence;
         if (!head) { if (onDone) onDone(); return; }
         this.tweenPose(
-            POSES[head.p] ?? POSES.idle,
+            typeof head.p === 'object' ? head.p : (POSES[head.p] ?? POSES.idle),
             head.dur,
             head.e ?? 'Linear',
             () => this._runPoseSequence(rest, onDone),
@@ -1454,6 +1463,7 @@ export default class Wrestler {
             this._ropeTension = 0; // an interrupted rope hit clears itself: the rope reads this only while he is running
             this._returnVia = null;
             this._runBoost = 0;
+            this._sling = null;
             this._ropeTurned = false;
             if (this.runPhase === 'ropeHit') this.runPhase = null;
             return;
@@ -1471,7 +1481,7 @@ export default class Wrestler {
         // A run on a line (grapples=v1): x keeps its speed, y follows the straight line. Past a slope of 0.5, x slows so
         // y never moves faster than 0.5 x speed; the foot lock reads x travel only, so it is untouched.
         const lineY = this.runTargetY != null;
-        const slow = (lineY ? this._runLineSlow() : 1) * this._returnBoost(dt);
+        const slow = (lineY ? this._runLineSlow() : 1) * this._returnBoost(dt) * this._slingSpeed(dt);
         this.x += dir * runSpeed * this.s * dt * slow;
         if (g2) {
             // same lock as the walk: travel over the draw scale, direction against facing, no 0.8. The run's own gait blends in
@@ -1577,7 +1587,7 @@ export default class Wrestler {
         this._ropeTension = r.tension;
         this._ropeSide = h.dir;
         const pose = ropeHitPose(h.ms, this.stamina), blend = Math.min(1, h.ms / 50);
-        for (const k of Object.keys(pose)) this.pose[k] = (h.from[k] ?? 0) + (pose[k] - (h.from[k] ?? 0)) * blend;
+        for (const k of Object.keys(pose)) { const from = h.from[k] ?? (k.endsWith('Elbow') ? ELBOW_REST : 0); this.pose[k] = from + (pose[k] - from) * blend; }
         this._choreoUntil = this.scene.time.now + 50; // the pose is his until the launch
     }
 
@@ -1590,6 +1600,29 @@ export default class Wrestler {
         this.moveBlend = ROPE_HIT.launchBlend;
         this._runBoost = ROPE_HIT.boost;
         this._runBoostLeft = ROPE_HIT.boostMs / 1000;
+    }
+
+    // grapples=v1 (T3d.2): slung out of the whip. Called on the release frame, the run already set up.
+    _beginSling(dir, depth) {
+        const D = Math.abs(this.runTarget - this.x), V = (this._gaitV2 ? this._gaitV2.run.speed : RUN_SPEED) * this.s, T = WHIP_SLING.slingMs / 1000;
+        // Linear build over T covers V*T/2 less than full speed would; top speed rises so the time to the rope is unchanged.
+        const gap = D - V * T / 2;
+        const top = gap > V * T ? Math.min(WHIP_SLING.maxBoost, D / gap) : 1;
+        this._sling = { t: 0, top };
+        const { pitch, crouch, settleMs } = WHIP_SLING;
+        // pitch in over four frames (no pop on the release frame), then settle to the run lean
+        this.tweenPose('idle', 70);
+        this.scene.tweens.killTweensOf(this.pose);
+        this.scene.tweens.add({ targets: this.pose, bend: pitch, crouch, duration: 70, ease: 'Cubic.easeOut',
+            onComplete: () => { if (this._sling) this.tweenPose('idle', settleMs, 'Sine.easeInOut'); } });
+    }
+
+    _slingSpeed(dt) {
+        const sl = this._sling;
+        if (!sl) return 1;
+        if (this.runPhase !== 'toRope' && this.runPhase !== 'toCorner') { this._sling = null; return 1; }
+        sl.t += dt;
+        return sl.top * Math.min(1, sl.t / (WHIP_SLING.slingMs / 1000));
     }
 
     // Speed multiplier for the return: 1.7 at launch down to 1 over 260 ms. Reaches x and, through `slow`, the gait's travel.
@@ -2373,11 +2406,15 @@ export default class Wrestler {
         // Arm snap lands as the exit blend (LOCKUP.exitBlend, 140 ms) ends; the
         // run starts at the release. MOVE_DEFS.irishWhip stays as it is.
         const releaseAt = crossBody ? WHIP_RELEASE_CROSS_MS : WHIP_RELEASE_SAME_MS;
-        const throwSeq = [{ ...MOVE_DEFS.irishWhip.poseSeq[0], dur: 60 },
-                          { ...MOVE_DEFS.irishWhip.poseSeq[1], dur: crossBody ? 120 : 60 },
-                          { ...MOVE_DEFS.irishWhip.poseSeq[2], dur: 60 },
-                          { ...MOVE_DEFS.irishWhip.poseSeq[3], dur: 120 },
-                          MOVE_DEFS.irishWhip.poseSeq[4]];
+        // T3d.1: he throws from his legs. Pose overrides on the same steps (MOVE_DEFS.irishWhip, which the flag-off path reads, is
+        // untouched): the load sinks his hips and leans him back against the man, the release drives through them, the follow-through
+        // leaves his weight forward on the front foot.
+        const seq = MOVE_DEFS.irishWhip.poseSeq, W = WHIP_WEIGHT;
+        const throwSeq = [{ ...seq[0], dur: 60 },
+                          { ...seq[1], p: { ...POSES[seq[1].p], ...W.load }, dur: crossBody ? 120 : 60 },
+                          { ...seq[2], p: { ...POSES[seq[2].p], ...W.release }, dur: 60 },
+                          { ...seq[3], p: { ...POSES[seq[3].p], ...W.follow }, dur: 120 },
+                          seq[4]];
         this._runPoseSequence(throwSeq, () => {
             if (this._whip !== token) return;
             this._whip = null;
@@ -2411,6 +2448,7 @@ export default class Wrestler {
             other.runTargetY = null;
             if (depth) other._setRunLine(dir, cornerRunY(depth));
             other.moveBlend = 0;
+            other._beginSling?.(dir, depth);
             // The flip throws him: the attacker turns on the frame the receiver
             // starts running, and whipFollow reaches after him.
             if (crossBody) this.facing = dir;

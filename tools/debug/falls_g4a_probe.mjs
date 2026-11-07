@@ -61,7 +61,7 @@ for (const pair of PAIRS) {
         const info = await page.evaluate(INSTALL);
         if (CONTACT) await page.evaluate(INSTALL_CONTACT);
         const bx = info.box, mX = (x) => bx.x + x * bx.w / bx.gw, mY = (y) => bx.y + y * bx.h / bx.gh;
-        for (const cell of CELLS) for (const lying of cell.lyings) for (const facing of [1, -1]) {
+        for (const cell of CELLS.filter(c => !process.env.ONLY || process.env.ONLY.split(',').includes(c.move))) for (const lying of cell.lyings.filter(l => !process.env.LYING || l === process.env.LYING)) for (const facing of [1, -1]) {
             const id = `${cell.move}-${lying ?? 'standing'}-${pair.victim}-${facing > 0 ? 'right' : 'left'}`, dir = join(outRoot, 'frames', id);
             const placed = await page.evaluate(SETUP, { gap: cell.gap, stamina: 100, facing }); await page.evaluate(LAY, { lying, measure: CONTACT });
             const clip = { width: 640, height: 330, x: Math.max(0, Math.round(mX((placed.ax + placed.dx) / 2) - 320)), y: Math.round(mY(440) - 330) };

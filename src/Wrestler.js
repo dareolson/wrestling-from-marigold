@@ -3106,7 +3106,7 @@ export default class Wrestler {
                 other._hurt(STAMINA_DRAIN.divingElbow, 'divingElbow');
                 if (other.state === 'down') {
                     other.stateTimer = DOWN_SEC;
-                    other._downHitReact(this, 'divingElbow', 0.9);
+                    other._downHitReact(this, 'divingElbow', 0.9, 'curl');
                 } else {
                     other._doSell('sellChest', 150, () => other.startClotheslineFall(this.facing));
                 }
@@ -3135,7 +3135,7 @@ export default class Wrestler {
                 // Splash on downed opponent — maximum damage, extended down time
                 other._hurt(STAMINA_DRAIN.topDive, 'topDive');
                 other.stateTimer = DOWN_SEC + 2.0;
-                other._downHitReact(this, 'topDive', 0.9);
+                other._downHitReact(this, 'topDive', 0.9, 'curl');
                 this.scene.cameras.main.shake(260, 0.005);
             } else if (inRange && (other.state === 'standing' || other.state === 'staggered')) {
                 // Flying cross-body on standing opponent — big knockdown
@@ -3423,7 +3423,7 @@ export default class Wrestler {
                 // defender stays in its existing grounded draw state, no
                 // pose change, no down-timer restart.
                 other._hurt(STAMINA_DRAIN.kneeDrop, 'kneeDrop');
-                other._downHitReact(this, 'kneeDrop', 0.8);
+                other._downHitReact(this, 'kneeDrop', 0.8, 'curl');
                 this._runPoseSequence([
                     { p: 'kneeDropLand', dur: 120, e: 'Linear' },
                     { p: this.idlePose,  dur: 220, e: 'Cubic.easeOut' },

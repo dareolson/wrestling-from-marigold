@@ -816,3 +816,17 @@ test('T4.7c: the elbow drop\'s contact pose and roll-off keep his legs on the ma
     assert.ok(s.eArm > s.e + 0.3, `arms ${s.eArm} ahead of the body ${s.e} early in the fall`);
     assert.ok(sampleGroundAttack(ELBOW_DROP, ELBOW_DROP.timing.fall * ELBOW_DROP.timing.armLead, REST_PRONE).eArm > 0.999, 'the elbow is cocked by armLead');
 });
+
+// ---- PLAN_FALLS T4.7d: the knee drop, diving elbow and top dive sell with groundHitSell at their own weights ----------------------------------------------------------------
+test('T4.7d knee drop, diving elbow and top dive on a downed man play groundHitSell (curl) at their own intensity, not the jolt', async () => {
+    for (const [call, move, i] of [['_doKneeDrop', 'kneeDrop', 0.8], ['_doDive', 'divingElbow', 0.9], ['_doTopDive', 'topDive', 0.9]]) {
+        const { atk, def } = await downFixture(true);
+        const calls = []; const real = def._downHitReact.bind(def);
+        def._downHitReact = (a, m, n, sell) => { calls.push([m, n, sell]); return real(a, m, n, sell); };
+        atk.x = def.x - 20; atk[call](def);
+        assert.deepEqual(calls, [[move, i, 'curl']], call);
+        assert.equal(def._jolt.sell, 'curl', call);
+        assert.ok(def.stateTimer >= groundHitSellDuration(i), `${call}: the timer holds to the sell's end`);
+    }
+    delete globalThis.location;
+});

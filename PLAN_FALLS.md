@@ -411,6 +411,24 @@ never measured overlap between the two bodies. The jolt and the handoff stay; th
   path. `?wear=show` stays opt-in. Update tests that assumed falls off by default, the flag list in AI_HANDOFF Status and the Progress
   line. Full suite, build, coverage and a `?falls=off` pass. Commit locally, **STOP at G4**: Derek plays a match with no flag.
 
+- **T4.8** Derek at G4 (2026-11-06): the splashes tangle the bodies the way the elbow drop used to. Cause: `_doTopDive` and `_doDive`
+  fly to `other.x, other.y` and `_layDown(…, 'prone')` lays him on the same spot. Derek's staging: **he bounces off and rolls away.**
+  On a downed man only (the cross-body on a standing man, the miss and the Thesz press, which ends on top as the cover, stay as they are):
+  - Contact is unchanged (same frame, damage, shake, `groundHitSell` 0.9 for the receiver).
+  - **Bounce:** his body rebounds off the chest in a short gravity arc (up then down, u^2 like T4.7b; on the order of 20-30·s px and
+    0.2 s), no hold on top.
+  - **Roll over:** during the bounce and landing he rolls toward the far side (up the screen, as the elbow drop's far side) and his
+    facing flips once, on a frame where the flip doesn't pop (the whip precedent).
+  - **End north:** he lands on the mat up-screen of the receiver, clear of his body (no silhouette overlap after the bounce), inside the
+    ropes, lying, then gets up with the ordinary get-up after a shorter down time than today (he is selling the dive, not knocked out).
+  - Reuse `groundContact.js` (phases, root anchor, the roll-off) with a `SPLASH` definition rather than new one-off code. The top dive
+    first, then the diving elbow onto a downed man with the same staging (it lands with the elbow, so it may want the elbow drop's
+    contact pose; report if it reads wrong and stop).
+  - Proof: current beside revised, normal and quarter speed, both rigs, both facings, receiver supine and prone. Mark contact, bounce
+    apex, the flip frame, his landing, the get-up start. Report: his root path (x/y per frame from contact to landing), the flip
+    frame's pose step, overlap between the two bodies per frame after contact, the landing point vs the receiver and the ropes, rest
+    delta, damage/foley firing once. Focused tests. Commit locally, **STOP at G4b**.
+
 ## Open for Derek
 
 - Trained bumps (D3) or rougher, more civilian falls for this era?

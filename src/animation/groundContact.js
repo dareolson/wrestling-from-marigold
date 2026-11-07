@@ -77,9 +77,9 @@ export const SPLASH_TUMBLE = Object.freeze({ ...SPLASH_BASE, variant: 'tumble', 
     keys: Object.freeze([{ u: 0.22, g: rotated(0, 66) }, { u: 0.36, g: rotated(Math.PI / 2, 60) }, { u: 0.50, g: rotated(Math.PI, 76) }, { u: 0.64, g: rotated(Math.PI * 1.5, 82) }].map(Object.freeze)),
     timing: Object.freeze({ fall: 0, hold: 0.06, release: 0.66, settle: 0.22, bounce: 0.66 }) });
 // T4.8a: the roll's own apex, limbs STRAIGHT (distal = proximal on every chain). Mirroring negates each angle, which reverses a bend (a knee thigh - shin >= 0 becomes <= 0: a backward knee), so the facing flips only on a pose with no bend to
-// reverse; the knees and elbows bend after it, into the supine rest, the valid way for the new facing. Legs at 1.0/1.15 rad keep the feet clear of the mat at hip 66.
-const ROLL_APEX = Object.freeze({ hip: 66, torso: 3.0, farThigh: 1.0, farShin: 1.0, nearThigh: 1.15, nearShin: 1.15, farArm: 0.5, farFore: 0.5, nearArm: 0.3, nearFore: 0.3 });
-export const SPLASH_ROLL = Object.freeze({ ...SPLASH_BASE, variant: 'roll', rest: 'supine', mirrorAt: 0.5, apex: ROLL_APEX, keys: Object.freeze([Object.freeze({ u: 0.5, g: ROLL_APEX })]), lift: 14,
+// reverse; the knees and elbows bend after it, into the supine rest, the valid way for the new facing. Legs at 0.65/0.8 rad (hanging, not thrown forward: Derek, George's roll read as a backbend) keep the feet clear of the mat at hip 66 with the 14 px lift.
+const ROLL_APEX = Object.freeze({ hip: 66, torso: 3.0, farThigh: 0.65, farShin: 0.65, nearThigh: 0.8, nearShin: 0.8, farArm: 0.5, farFore: 0.5, nearArm: 0.3, nearFore: 0.3 });
+export const SPLASH_ROLL = Object.freeze({ ...SPLASH_BASE, variant: 'roll', rest: 'supine', mirrorAt: 0.5, kneeEase: 1, apex: ROLL_APEX, keys: Object.freeze([Object.freeze({ u: 0.5, g: ROLL_APEX })]), lift: 14,
     timing: Object.freeze({ fall: 0, hold: 0.06, release: 0.46, settle: 0.22, bounce: 0.46 }) });
 export const SPLASH_VARIANTS = Object.freeze({ pivot: SPLASH, tumble: SPLASH_TUMBLE, roll: SPLASH_ROLL });
 
@@ -113,7 +113,11 @@ export function sampleSplash(def, t, rest) {
     const next = keys[i + 1], target = def.restShift ? shifted(rest, def.restShift) : rest;
     const from = mirror ? mirrored(keys[i].g, target) : keys[i].g;
     // between keys the turn runs at a steady rate; after the last key the body settles into the mat as u^2 (gravity)
-    const g = next ? mixG(keys[i].g, next.g, (u - keys[i].u) / (next.u - keys[i].u)) : mixG(from, target, ((u - keys[i].u) / (1 - keys[i].u)) ** 2);
+    const x = (u - keys[i].u) / (1 - keys[i].u);
+    const g = next ? mixG(keys[i].g, next.g, (u - keys[i].u) / (next.u - keys[i].u)) : mixG(from, target, x ** 2);
+    // T4.8b: def.kneeEase spreads the knee bend over the whole descent (weight x ** kneeEase, 1 = even) instead of the body's u^2, which piled the fold into the last few frames (Derek: George's roll legs bent too far);
+    // the end is still the rest pose's bend, and the thigh keeps the body's curve.
+    if (!next && def.kneeEase) for (const [p, d] of [['farThigh', 'farShin'], ['nearThigh', 'nearShin']]) { const b0 = from[p] - from[d], b1 = target[p] - target[d]; g[d] = g[p] - (b0 + (b1 - b0) * x ** def.kneeEase); }
     return { seg: next ? 'turn' : 'fall', u, lift, travel, toApex: 1, mirror, g };
 }
 export const splashSeconds = (def) => groundAttackSeconds(def);

@@ -299,7 +299,16 @@ the man on the mat doesn't react. Measured: `_doElbowDrop`, `_doKneeDrop` and `_
   the jolt peaks and returns to the exact lying pose; the cancel path; flag-off is byte-identical.
 - **T4.2** Call it at the impact of every move that hits a downed man: elbowDrop (0.7), kneeDrop (0.8), divingElbow on a downed man
   (0.9, replaces the standing sell + clothesline fall in that branch only), and topDive's down branch (0.9). The attacker side doesn't
-  change. G4a page `research/animation/falls-2026-11/g4a/`: one normal-speed loop strip per move, both facings, Procreate Lou and
+  change.
+- **T4.2b** Derek 2026-11-06: after the elbow drop **the attacker teleports up**. Measured: `elbowDropClip` ends lying (tilt 1.5,
+  lift -95), and `_doElbowDrop`'s land callback then poses `elbowLand` (a standing crouch, 80 ms) and `idle`, with no get-up. Fix it
+  under `?falls=v1`: at the impact, `this._layDown(ELBOW_DOWN_SEC, lying)` (lying = whichever of supine/prone matches the clip's last
+  frame; show the check), so `_groundHandoff` eases him from the clip into the grounded pose and the authored get-up stands him up.
+  Tune `ELBOW_DOWN_SEC` (start 0.8 s) so he is down long enough to read but not long enough to be pinned easily. Flag-off doesn't
+  change. Check the diving elbow's landing the same way: it sets `state = 'down'` by hand with no `_groundHandoff`, so measure the
+  first-frame step and switch it to `_layDown` if it pops. Tests: the attacker is `down` after the impact, gets up through the get-up
+  library (not `idle`), and the first-frame step at the handoff is within the step limit.
+- G4a page `research/animation/falls-2026-11/g4a/`: one normal-speed loop strip per move, both facings, Procreate Lou and
   `george-roster-v1` receiving, supine and prone. Misses first (step limit, outline overlap, rope and mat clipping). Focused tests, then
   commit locally and **STOP at G4a** for Derek's glance.
 - **T4.3** Soak: `grapples_soak.mjs` with `falls=v1`, 4 x 150 s, both pairings. Count falls per variant and pick reason, down-hit

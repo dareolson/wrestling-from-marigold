@@ -42,7 +42,7 @@ Avoid a large rewrite.
 - **Awaiting Derek:** Marigold title queue (83ab5cd) visual OK; what comes next (see below).
 - **Uncommitted on purpose:** Codex's sleeper-wrap PNGs (`src/assets/wrestlers/*/forearm_sleeper_wrap.png`) and 4 Codex `tools/debug` scripts (sleeper wrap, throw support, waistlock probes) are unreviewed and stay untracked. Large frame dumps are gitignored.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`nvm use`; shell default is 25). Pushed through `fb8c5ca` (2026-11-06). Push via the SSH URL only. Coverage baseline 26 gaps.
-- **Next (Opus 2026-11-06):** Derek chose to promote falls first. Sonnet: [PLAN_FALLS.md](PLAN_FALLS.md) **Stage 4**: T4.1-T4.2 down-hit reaction (an elbow/knee/dive on a downed man makes him jolt up at the waist with arms flailing), **STOP at G4a**; then T4.3 soak and T4.4 promotion, **STOP at G4**. After that, the next front (story opening is the likely one).
+- **Next (Opus 2026-11-06):** Derek chose to promote falls first. Sonnet: [PLAN_FALLS.md](PLAN_FALLS.md) **Stage 4**: T4.1-T4.2 down-hit reaction (an elbow/knee/dive on a downed man makes him jolt up at the waist with arms flailing) and T4.2b (the elbow-drop attacker lies down and uses a get-up instead of teleporting up), **STOP at G4a**; then T4.3 soak and T4.4 promotion, **STOP at G4**. After that, the next front (story opening is the likely one).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

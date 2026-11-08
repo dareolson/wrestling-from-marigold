@@ -39,7 +39,7 @@ Avoid a large rewrite.
 - **Awaiting Derek:** G4 (a match with no flag, falls on); Marigold title queue (83ab5cd) visual OK; PLAN_CLEANUP T3 (tag + delete the old side branch).
 - **Uncommitted on purpose:** 3 old Codex waistlock review scripts in `tools/debug/` (unreviewed; waistlock parked). Frame dumps gitignored, kept on disk.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`). ~30 commits ahead of origin, not pushed; run full suite, build, coverage before pushing (SSH: `git push origin <branch>`). Last full suite at r4 (1263/1263). Coverage baseline 26 gaps. Cleanup leftovers: [PLAN_CLEANUP.md](PLAN_CLEANUP.md).
-- **Next:** [PLAN_FINISHERS.md](PLAN_FINISHERS.md) Stage 1, **F1.1** (trigger and controller behind `?finisher=v1`), Sonnet; stop at G1. Later: per-wrestler presets out of `Arena.js`. Session handoff: [entry](AI_HANDOFF_ENTRIES/2026-11-07-claude-opus-handoff-clasps-approved.md).
+- **Next:** [PLAN_LIGHT_MOVES.md](PLAN_LIGHT_MOVES.md) **T1.1** (measure the front kick), Sonnet; stop at G1. Derek 2026-11-07: lighter moves before finishers; [PLAN_FINISHERS.md](PLAN_FINISHERS.md) parked. Later: per-wrestler presets out of `Arena.js`. Session handoff: [entry](AI_HANDOFF_ENTRIES/2026-11-07-claude-opus-handoff-clasps-approved.md).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

@@ -17,6 +17,7 @@ Replaces PLAN_FINISHERS as the next front (Derek 2026-11-07: "i don't think i wa
   Misses: the drag is faster, ~8 px/frame in and ~6 out (was 4.5; 170 and 190 px apart still cross); the victim's hips lift and head-down slope unjudged; no sell; Kowalski/Guido unchecked. Derek judges the art.
 - T2.2f (sha below): downed man's far arm behind his torso, near arm in front (127/127 held frames, 4 cases; 64aa65b 0/127); he starts, grabs and ends 205 px (hips) from the man, ankle gap +69/+48/+73 Lou, +74/+64/+77 George, legs on legs 0 px at all three, entries 50/70/150/210; trapped leg on his legs 8 f / 438 px Lou, 21 f / 460 George (was 48 / 905, 45 / 924), [page](research/animation/light-moves-2026-11/t2-2f/index.html).
   Misses: first frame pops him back up to 155 px at a 50 px entry (no lead-in); trapped leg still crosses his legs at 0.37-0.48 s (Lou) and 0.08-0.27, 0.32-0.45 s (George); palm in the lift 5.67 px (bar 6, 6.8 at a 145 mid gap); deep pickup crouch unjudged (George curls over the boot at 0.3 s).
+- **T2.2f staging: approved by Derek 2026-11-07** ("it looks good now", bb449b6). Polish list: the 50 px entry pops him 105 px back on frame 1 (no lead-in); trapped leg still crosses his legs 8 / 21 frames; deep pickup crouch. Next T2.3 (sell), then T2.4 (bent-boot contract, Opus).
 
 ## Why
 

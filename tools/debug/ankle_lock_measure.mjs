@@ -1,10 +1,11 @@
-// PLAN_LIGHT_MOVES T2.1: the ankle lock as drawn today (no code change). Lou vs George and George vs Lou, both facings, the attacker's
+// PLAN_LIGHT_MOVES: rendered ankle-lock contact audit. Lou vs George and George vs Lou, both facings, the attacker's
 // real `_doAnkleLock` on a downed man, stepped 1/60 s with the loop asleep. Per frame: each hand's wrist to the trapped ankle joint and to
 // the trapped boot (centroid of the opaque shin pixels in the lowest 30% of the shin image), attacker ankle slide, knee flex of both men,
 // the trapped leg's angle off the mat, silhouette overlap (D12 masks).
 //   WFM_URL=http://127.0.0.1:5173 [LIGHT=1] node tools/debug/ankle_lock_measure.mjs [out.json]
-// LIGHT=1 runs ?light=v1 (ankleLockV2) and adds the grip targets: the l (near) hand to the heel (shin +0.15 past the ankle), the r (far) hand to the toes (+0.4).
-import { writeFileSync } from 'node:fs';
+// targetHeld measures the painted palm to the painted heel/toe when anchors exist, otherwise wrist to shin-axis proxies.
+// CAPTURE_DIR saves a held still per pairing/facing. Wrist-to-centroid fields are descriptive, not contact gates.
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { launch } from './harness.mjs';
 import { INSTALL, STEP } from './grapples_film.mjs';
 import { INSTALL_MASKS } from './grapples_masks.mjs';
@@ -57,10 +58,10 @@ const READ = () => {
     out.trapped = side; out.ankle = ankle; out.boot = b;
     out.hands = {};
     const past = (k) => ({ x: ankle.x + (ankle.x - knee.x) * k, y: ankle.y + (ankle.y - knee.y) * k });
-    const tgt = { near: past(0.15), far: past(0.4) };
+    const tgt = { near: sk.partAnchorPoint?.(`${side}Shin`, 'heel') ?? past(0.15), far: sk.partAnchorPoint?.(`${side}Shin`, 'toe') ?? past(0.4) };
     for (const hs of ['near', 'far']) {
         const w = ap[`${hs}Wrist`], S = ap[`${hs}Shoulder`], E = ap[`${hs}Elbow`];
-        out.hands[hs] = { toAnkle: dist(w, ankle), toBoot: dist(w, b), toTarget: dist(w, tgt[hs]), shoulderToTarget: dist(S, tgt[hs]), armLen: dist(S, E) + dist(E, w) };
+        out.hands[hs] = { toAnkle: dist(w, ankle), toBoot: dist(w, b), toTarget: dist(ask.partAnchorPoint?.(`${hs}Forearm`, 'clutch') ?? w, tgt[hs]), shoulderToTarget: dist(S, tgt[hs]), armLen: dist(S, E) + dist(E, w) };
     }
     const rd = (q) => (q ? [Math.round(q.x), Math.round(q.y)] : null);
     out.dbg = { shN: rd(ap.nearShoulder), shF: rd(ap.farShoulder), tN: rd(tgt.near), tF: rd(tgt.far), ank: rd(ankle), knee: rd(knee), dHip: rd(hip), aHip: rd(ap.nearHip), aKneeP: rd(ap.nearKnee), aAnk: rd(ap.nearAnkle), neck: rd(ap.neck), eN: rd(ap.nearElbow), eF: rd(ap.farElbow), arm: [a.pose.lArm, a.pose.rArm, a.pose.lElbow, a.pose.rElbow].map(v => (Number.isFinite(v) ? +v.toFixed(2) : v)), wN: rd(ap.nearWrist), wF: rd(ap.farWrist), matY: Math.round(a.y) };
@@ -98,12 +99,14 @@ for (const [pair, att, def] of PAIRS) {
         for (const facing of [1, -1]) {
             const id = `${pair}-${facing > 0 ? 'right' : 'left'}`;
             const info = await h.page.evaluate(SETUP, { facing });
-            const rows = [];
+            const rows = []; let captured=false;
+            if(process.env.CAPTURE_DIR)mkdirSync(process.env.CAPTURE_DIR,{recursive:true});
             for (let i = 0; i < 230; i++) {
                 await h.page.evaluate(STEP, { press: {}, hold: {} });
                 const r = await h.page.evaluate(READ);
                 if (r.t === null && rows.length) break;
                 if (r.t !== null) rows.push(r);
+                if(process.env.CAPTURE_DIR&&!captured&&r.t>=1){await h.page.screenshot({path:process.env.CAPTURE_DIR+'/'+id+'.png'});captured=true;}
             }
             const held = rows.filter(r => r.t >= HELD[0] && r.t <= HELD[1]);
             const stat = (arr) => arr.length ? { min: round(Math.min(...arr)), max: round(Math.max(...arr)), mean: round(arr.reduce((p, q) => p + q, 0) / arr.length) } : null;

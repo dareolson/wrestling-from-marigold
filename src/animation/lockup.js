@@ -292,9 +292,11 @@ export function breakTravel(kind) {
 
 // Where a holdGrips entry's hand goes, for a hand on `handSide`: its `at`, else the partner's joint on that side (or the other side), moved
 // `above` of the way up to the partner's shoulder. Read fresh each pass, because the partner's own grips move his joints.
-export function gripTarget({ partner, joint, side, at, above, fore, past }, handSide) {
+export function gripTarget({ partner, joint, side, at, above, fore, past, anchor }, handSide) {
     if (at) return at;
     const pts = partner.skeleton.jointAttachmentPoints, on = side === 'other' ? (handSide === 'near' ? 'far' : 'near') : handSide;
+    const painted = anchor && joint === 'Ankle' ? partner.skeleton.partAnchorPoint?.(`${on}Shin`, anchor) : null;
+    if (painted) return painted;
     const p = pts?.[`${on}${joint}`];
     // `fore`: down the partner's forearm from the elbow toward his wrist (the point on the drawn forearm, however bent the elbow is)
     const wr = fore ? pts?.[`${on}Wrist`] : null;

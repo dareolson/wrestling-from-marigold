@@ -145,6 +145,7 @@ export const georgeRosterV1 = {
     },
     "shin": {
         "key": "george_rv1_shin",
+        "semanticAnchors": { "heel": { "u": 0.39, "v": 0.86 }, "toe": { "u": 0.87, "v": 0.875 } },
         "box": {
             "w": 57.74563567243859,
             "h": 79.89080663419901

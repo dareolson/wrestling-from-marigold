@@ -15,7 +15,7 @@ test('ankleLockV2 is a valid clip with the old clip\'s duration and events', () 
 
 test('both hands are declared on the defender\'s ankle (heel, then toes), the soles are planted', () => {
     const [heel, toes] = ankleLockV2Clip.grips;
-    assert.deepEqual([heel.arm, heel.to.joint, heel.to.past, toes.arm, toes.to.joint, toes.to.past], ['l', 'Ankle', 0.15, 'r', 'Ankle', 0.4]);
+    assert.deepEqual([heel.arm, heel.to.joint, heel.to.anchor, toes.arm, toes.to.joint, toes.to.anchor], ['l', 'Ankle', 'heel', 'r', 'Ankle', 'toe']);
     assert.deepEqual(ankleLockV2Clip.plants.map(p => p.leg).sort(), ['l', 'r']);
 });
 
@@ -36,4 +36,18 @@ test('flag off: the V2 clip is not in the registered move clips and the old ankl
     assert.equal(REGISTERED_MOVE_CLIPS.includes(ankleLockV2Clip), false);
     assert.equal(REGISTERED_MOVE_CLIPS.includes(ankleLockClip), true);
     assert.equal(ankleLockClip.grips, undefined);
+});
+
+
+test('painted boot anchors follow the requested side, with joint fallback for rigs without them', () => {
+    const calls = [];
+    const partner = { skeleton: {
+        jointAttachmentPoints: { farAnkle: { x: 1, y: 2 } },
+        partAnchorPoint(slot, anchor) { calls.push([slot, anchor]); return anchor === 'toe' ? { x: 30, y: 40 } : null; },
+    } };
+    assert.deepEqual(gripTarget({ partner, joint: 'Ankle', side: 'other', anchor: 'toe' }, 'near'), { x: 30, y: 40 });
+    assert.deepEqual(calls, [['farShin', 'toe']]);
+    assert.deepEqual(gripTarget({ partner, joint: 'Ankle', side: 'other', anchor: 'heel' }, 'near'), { x: 1, y: 2 });
+    const compiled = compileClip(ankleLockV2Clip);
+    assert.deepEqual(compiled.grips.map(g => [g.to.anchor, g.palm]), [['heel', 'clutch'], ['toe', 'clutch']]);
 });

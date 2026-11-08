@@ -44,6 +44,8 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-11-07 · Codex · [Ankle-lock painted contact (Opus-reviewed, committed)](AI_HANDOFF_ENTRIES/2026-11-07-codex-ankle-painted-contact.md)
+
 - 2026-11-07 · Claude Opus · [Handoff: clasping hands approved at G2](AI_HANDOFF_ENTRIES/2026-11-07-claude-opus-handoff-clasps-approved.md)
 
 - 2026-11-07 · Codex · [Clasp r4 review for Opus: fallback reach regression, remaining palm gaps and activation step](AI_HANDOFF_ENTRIES/2026-11-07-codex-clasp-runtime-review-for-opus.md)

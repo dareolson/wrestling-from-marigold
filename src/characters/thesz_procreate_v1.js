@@ -287,6 +287,7 @@ export const theszProcreateV1 = {
         },
         shin: {
             key: 'thesz_pv1_shin',
+            semanticAnchors: { heel: { u: 0.21, v: 0.89 }, toe: { u: 0.82, v: 0.90 } },
             box: { w: 43.716, h: 101.028 },
             jointPivotFrac: 0.090196,
             soleAnchorFrac: { u: 0.641101, v: 0.98573 },

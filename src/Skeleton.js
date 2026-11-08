@@ -2743,6 +2743,11 @@ export default class Skeleton {
 
     // Normalized source-image anchor -> displayed world point, including the
     // Image's real origin, flips and transform. Works with legacy and bound art.
+    partAnchorPoint(slot, name) {
+        const image = this[slot];
+        return Skeleton.imageAnchorPoint(image, image?._semanticAnchors?.[name]);
+    }
+
     static imageAnchorPoint(image, anchor) {
         const frame = image?.frame;
         if (!frame || !image.getWorldTransformMatrix || !Number.isFinite(anchor?.u)

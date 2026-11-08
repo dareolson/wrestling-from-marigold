@@ -766,9 +766,11 @@ export default class Wrestler {
                 const img = sk[`${handSide}Forearm`], P = Skeleton.imageAnchorPoint(img, img?._semanticAnchors?.clutch);
                 if (P) to = { x: W.x + (to.x - P.x), y: W.y + (to.y - P.y) };
             }
-            const goal = { x: W.x + (to.x - W.x) * w, y: W.y + (to.y - W.y) * w };
-            if (dist(W, goal) < 0.5) continue;
-            const lu = dist(S, E), lf = dist(E, W);
+            // An explicit painted endpoint rotates with the forearm; solve its full E→palm vector.
+            const endpoint = (item.palm && sk.partAnchorPoint(`${handSide}Forearm`, item.palm)) || W;
+            const goal = { x: endpoint.x + (to.x - endpoint.x) * w, y: endpoint.y + (to.y - endpoint.y) * w };
+            if (dist(endpoint, goal) < 0.5) continue;
+            const lu = dist(S, E), lf = dist(E, endpoint);
             // A clasp with its art on never locks the arm straight (Derek G2): the reach stops at CLASP_REACH of the arm's length, so the elbow
             // keeps a bend and the palm stops that much short of a target at full stretch.
             const d = Math.max(Math.abs(lu - lf) + 1e-3, Math.min(dist(S, goal), (lu + lf) * (art ? CLASP_REACH : 0.999)));
@@ -780,7 +782,7 @@ export default class Wrestler {
             const elbows = [base + bend, base - bend].map(a => ({ x: S.x + Math.cos(a) * lu, y: S.y + Math.sin(a) * lu }));
             let E2 = dist(elbows[0], E) <= dist(elbows[1], E) ? elbows[0] : elbows[1];
             const signs = this._gripSigns(arm, handSide);
-            const turn = (e) => { const dUpper = wrap(angle(S, e) - angle(S, E)); return { dUpper, dFore: wrap(angle(e, aim) - angle(E, W)) - dUpper }; };
+            const turn = (e) => { const dUpper = wrap(angle(S, e) - angle(S, E)); return { dUpper, dFore: wrap(angle(e, aim) - angle(E, endpoint)) - dUpper }; };
             let { dUpper, dFore } = turn(E2);
             // `natural` (PLAN_LIGHT_MOVES): the elbow bends the ordinary way. If the nearer branch folds it behind the upper arm, take the other one.
             if (item.natural && wrap(this.pose[`${arm}Elbow`] + signs.elbow * dFore) < 0) {

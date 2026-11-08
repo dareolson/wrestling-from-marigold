@@ -37,12 +37,15 @@ Avoid a large rewrite.
 - **Promoted flags:** `risefix`, `sellart`, `aftermath` (v2), `getups`, `grapples`, `falls` (default on, `=off` disables). Opt-in: `waistlock=v1`, `gait=v2`, `plant=1`.
 - **Story and art direction (docs only, no runtime yet):** Chicago 1952 opening ([brief](STORY_CARNIVAL_OPENING.md)), carnival $100 challenge is the first playable match; monochrome game ([standard](CINEMATIC_ART_STANDARD.md)); venues ([plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md)); feud/art ([direction](STORY_ART_AND_FEUD_DIRECTION.md)). Kohler naming bridge unresolved.
 - **Awaiting Derek:** G4 (a match with no flag, falls on); Marigold title queue (83ab5cd) visual OK; PLAN_CLEANUP T3 (tag + delete the old side branch).
+- **Ankle lock:** pickup before lift and both near legs above both torsos committed after Opus review ([Codex note](AI_HANDOFF_ENTRIES/2026-11-07-codex-ankle-pickup-and-near-leg.md)); Derek judges the motion.
 - **Uncommitted on purpose:** 3 old Codex waistlock review scripts in `tools/debug/` (unreviewed; waistlock parked). Frame dumps gitignored, kept on disk.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`). ~30 commits ahead of origin, not pushed; run full suite, build, coverage before pushing (SSH: `git push origin <branch>`). Last full suite at r4 (1263/1263). Coverage baseline 26 gaps. Cleanup leftovers: [PLAN_CLEANUP.md](PLAN_CLEANUP.md).
 - **Next:** [PLAN_LIGHT_MOVES.md](PLAN_LIGHT_MOVES.md) **T1.1** (measure the front kick), Sonnet; stop at G1. Derek 2026-11-07: lighter moves before finishers; [PLAN_FINISHERS.md](PLAN_FINISHERS.md) parked. Later: per-wrestler presets out of `Arena.js`. Session handoff: [entry](AI_HANDOFF_ENTRIES/2026-11-07-claude-opus-handoff-clasps-approved.md).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-07 · Codex · [Ankle-lock pickup before lift and near-leg depth (Opus-reviewed, committed)](AI_HANDOFF_ENTRIES/2026-11-07-codex-ankle-pickup-and-near-leg.md)
 
 - 2026-11-07 · Codex · [Ankle-lock painted contact (Opus-reviewed, committed)](AI_HANDOFF_ENTRIES/2026-11-07-codex-ankle-painted-contact.md)
 

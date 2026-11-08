@@ -8,7 +8,7 @@
 //   - painted palm to painted heel / toe (the l hand to the heel, the r hand to the toe), attacker ankle slide.
 // A frame is "broken" when an ink gap exceeds max(idle, 0) + 0.5 px, or a joint is pinned.
 //   WFM_URL=http://127.0.0.1:5173 LIGHT=1 node tools/debug/ankle_lock_audit.mjs <out.json> [framesDir]
-// With framesDir: a 30 fps crop of every second game frame (<framesDir>/<case>/sNNNN.jpg, normal speed) and 6 tight stills (still-<t>.png).
+// With framesDir: a 30 fps crop of every second game frame (<framesDir>/<case>/sNNNN.jpg, normal speed) and tight stills including the pickup (still-<t>.png).
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { launch } from './harness.mjs';
 import { INSTALL, STEP } from './grapples_film.mjs';
@@ -17,7 +17,7 @@ import { INSTALL_MASKS } from './grapples_masks.mjs';
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 const PAIRS = [['lou-george', LOU, GEORGE], ['george-lou', GEORGE, LOU]];
 const HELD = [0.6, 2.7];
-const STILLS = [0.5, 0.9, 1.4, 1.95, 2.4, 2.7];
+const STILLS = [0.3, 0.5, 0.9, 1.4, 1.95, 2.4, 2.7];
 const MAX_EXTRA_GAP = 0.5;
 const out = process.argv[2], framesDir = process.argv[3];
 
@@ -111,6 +111,8 @@ const READ = () => {
     const side = dsk.lChannelSide(d.facing);   // the trapped leg is the defender's lLeg channel
     const dist = (p, q) => (p && q ? Math.hypot(p.x - q.x, p.y - q.y) : null);
     const r = { t: hnd ? +hnd.time.toFixed(4) : null };
+    r.position = { attacker: { x: a.x, y: a.y }, defender: { x: d.x, y: d.y } };
+    r.planted = hnd?.clip.plants?.every(p => hnd.time >= p.in[1] && hnd.time <= p.out[0]) ?? false;
     const heel = dsk.partAnchorPoint?.(`${side}Shin`, 'heel'), toe = dsk.partAnchorPoint?.(`${side}Shin`, 'toe');
     r.palm = { heel: dist(ask.partAnchorPoint?.('nearForearm', 'clutch'), heel), toe: dist(ask.partAnchorPoint?.('farForearm', 'clutch'), toe) };
     r.ankle = { near: ap.nearAnkle && { x: ap.nearAnkle.x, y: ap.nearAnkle.y }, far: ap.farAnkle && { x: ap.farAnkle.x, y: ap.farAnkle.y } };
@@ -144,7 +146,7 @@ const READ = () => {
     r.depth = { shin: shin.depth, torso: ask.torso.depth, nearThigh: ask.nearThigh.depth, farThigh: ask.farThigh.depth, nearForearm: ask.nearForearm.depth, farForearm: ask.farForearm.depth };
     r.bootInFrontOfTorso = shin.depth > ask.torso.depth;
     // T2.2d: his far upper arm behind his torso, both his thighs (and shins) in front of it, his near arm in front of the boot
-    r.order = { farArmBehindTorso: ask.farUpArm.depth < ask.torso.depth, thighsOverTorso: ask.nearThigh.depth > ask.torso.depth && ask.farThigh.depth > ask.torso.depth, shinsOverTorso: ask.nearShin.depth > ask.torso.depth && ask.farShin.depth > ask.torso.depth, nearArmOverBoot: ask.nearForearm.depth > shin.depth };
+    r.order = { trappedOverOwnTorso: Math.min(shin.depth, thigh.depth) > Math.max(dsk.torso.depth, dsk.trunks?.depth ?? -Infinity), nearLegOverBothTorsos: Math.min(ask.nearThigh.depth, ask.nearShin.depth) > Math.max(ask.torso.depth, dsk.torso.depth), farArmBehindTorso: ask.farUpArm.depth < ask.torso.depth, thighsOverTorso: ask.nearThigh.depth > ask.torso.depth && ask.farThigh.depth > ask.torso.depth, shinsOverTorso: ask.nearShin.depth > ask.torso.depth && ask.farShin.depth > ask.torso.depth, nearArmOverBoot: ask.nearForearm.depth > shin.depth };
     r.bootCenter = (() => { const mm = shin.getWorldTransformMatrix(); return { x: Math.round(mm.tx), y: Math.round(mm.ty) }; })();
     const rd = (q) => (q ? [Math.round(q.x - a.x), Math.round(a.y - q.y)] : null);   // x from the attacker (+ toward the downed man when facing right), y above the mat
     const f = a.facing;
@@ -198,9 +200,11 @@ for (const [pair, att, def] of PAIRS.filter(p => !process.env.ONLY || process.en
                 if (bad.length) broken.push({ t: r.t, bad });
             }
             const slide = (k) => rows.slice(1).map((r, i) => Math.hypot(r.ankle[k].x - rows[i].ankle[k].x, r.ankle[k].y - rows[i].ankle[k].y));
-            const plantedSlide = (k) => rows.slice(1).map((r, i) => [r.t, Math.hypot(r.ankle[k].x - rows[i].ankle[k].x, r.ankle[k].y - rows[i].ankle[k].y)]).filter(([t]) => t >= 0.4 && t <= 2.7).map(([, v]) => v);
+            const plantedSlide = (k) => rows.slice(1).map((r, i) => [r.t, Math.hypot(r.ankle[k].x - rows[i].ankle[k].x, r.ankle[k].y - rows[i].ankle[k].y)]).filter((_, i) => rows[i + 1].planted && rows[i].planted).map(([, v]) => v);
             results[id] = {
                 frames: rows.length, idleGap: idle,
+                entryTrace: rows.filter(r => r.t <= 0.65).map(r => ({ t: r.t, position: r.position, palm: r.palm })),
+                receiverTravel: { x: Math.max(...rows.map(r => r.position.defender.x)) - Math.min(...rows.map(r => r.position.defender.x)), y: Math.max(...rows.map(r => r.position.defender.y)) - Math.min(...rows.map(r => r.position.defender.y)) },
                 palmHeld: { heel: stat(held.map(r => r.palm.heel)), toe: stat(held.map(r => r.palm.toe)), framesOver6: held.filter(r => r.palm.heel > 6 || r.palm.toe > 6).length },
                 worstInkGap: worstGap,
                 brokenFrames: broken.length, brokenList: broken,
@@ -208,12 +212,12 @@ for (const [pair, att, def] of PAIRS.filter(p => !process.env.ONLY || process.en
                 belowBodyPx: stat(rows.map(r => r.belowBody)), torsoPx: stat(rows.map(r => r.torso)),
                 trappedVsLegsPx: stat(rows.map(r => r.trappedVsLegs)), trappedVsLegsFrames: rows.filter(r => r.trappedVsLegs > 0).length,
                 trappedVsTorsoPx: stat(rows.map(r => r.trappedVsTorso)), bootInFrontOfTorsoFramesHeld: held.filter(r => r.bootInFrontOfTorso).length + '/' + held.length,
-                orderHeld: Object.fromEntries(['farArmBehindTorso', 'thighsOverTorso', 'shinsOverTorso', 'nearArmOverBoot'].map(k => [k, held.filter(r => r.order[k]).length + '/' + held.length])),
+                orderHeld: Object.fromEntries(['trappedOverOwnTorso', 'nearLegOverBothTorsos', 'farArmBehindTorso', 'thighsOverTorso', 'shinsOverTorso', 'nearArmOverBoot'].map(k => [k, held.filter(r => r.order[k]).length + '/' + held.length])),
                 depthHeld: held[Math.floor(held.length / 2)]?.depth, bootCenterHeld: held[Math.floor(held.length / 2)]?.bootCenter,
                 plantedSlideMax: { near: round(Math.max(...plantedSlide('near'))), far: round(Math.max(...plantedSlide('far'))) }, wholeSlideMax: { near: round(Math.max(...slide('near'))), far: round(Math.max(...slide('far'))) },
                 trappedVsLegsAt: rows.filter(r => r.trappedVsLegs > 0).map(r => [r.t, r.trappedVsLegs]).filter((x, i) => i % 3 === 0),
                 belowBodyAt: rows.filter((r, i) => i % 10 === 0).map(r => [r.t, r.belowBody]),
-                plantedSlideOver15: rows.slice(1).map((r, i) => [r.t, Math.max(...['near', 'far'].map(k => Math.hypot(r.ankle[k].x - rows[i].ankle[k].x, r.ankle[k].y - rows[i].ankle[k].y)))]).filter(([t, v]) => t >= 0.4 && t <= 2.7 && v > 1.5).map(([t, v]) => [t, round(v)]),
+                plantedSlideOver15: rows.slice(1).map((r, i) => [r.t, Math.max(...['near', 'far'].map(k => Math.hypot(r.ankle[k].x - rows[i].ankle[k].x, r.ankle[k].y - rows[i].ankle[k].y)))]).filter(([t, v], i) => rows[i + 1].planted && rows[i].planted && v > 1.5).map(([t, v]) => [t, round(v)]),
                 kneeDrawn: { a: stat(rows.flatMap(r => [r.knee.a.near, r.knee.a.far])), d: stat(rows.flatMap(r => [r.knee.d.near, r.knee.d.far])) },
                 torsoBend: stat(held.map(r => r.torsoBend ?? 0)),
             };

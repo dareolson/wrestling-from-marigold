@@ -4,6 +4,7 @@ import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
 import { resolveSemanticSlots, textureKey } from './rig/partVariants.js';
 import { dropkickClip } from './animation/clips/dropkick.js';
+import { ankleLockEntryClip } from './animation/clips/ankleLockV2.js';
 import { frontKickClip } from './animation/clips/frontKick.js';
 import { shoveClip } from './animation/clips/shove.js';
 // ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
@@ -3205,6 +3206,10 @@ export default class Wrestler {
     // stands the foot up and wrenches it; the arm bar sits through and lies
     // back across the chest. Each drains on its three `squeeze` markers.
     _doAnkleLock(other) {
+        if (lightCandidate() && this.scene.moveRuntime) {
+            const distance = (other.x - this.x) * this.facing / this.s;
+            this.scene.moveRuntime.register(ankleLockEntryClip(distance));
+        }
         this._playPairedThrow(other, lightCandidate() ? 'ankleLockV2' : 'ankleLock', {
             damage: STAMINA_DRAIN.ankleLock, hitEvent: 'squeeze', shake: [80, 0.001],
             finish: () => { other._layOnBack(DOWN_SEC); this._standBackUp(); },

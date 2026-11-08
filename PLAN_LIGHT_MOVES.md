@@ -20,6 +20,7 @@ Replaces PLAN_FINISHERS as the next front (Derek 2026-11-07: "i don't think i wa
 - **T2.2f staging: approved by Derek 2026-11-07** ("it looks good now", bb449b6). Polish list: the 50 px entry pops him 105 px back on frame 1 (no lead-in); trapped leg still crosses his legs 8 / 21 frames; deep pickup crouch. Next T2.3 (sell), then T2.4 (bent-boot contract, Opus).
 - T2.3 (sha below): downed man sells the squeezes (head +20 to +24 px at each squeeze vs bb449b6 (peaks 51-69 px above the mat), near hand reaches 91 / 104 px (Lou / George), slaps down to 15 / 5 px above the mat, free knee draws in between), lead-in 0.2 s: worst hip step at entries 50/70/150/210 is 11.6/10.1/7.1/7.1 px/frame (was 139/121/49/7), [page](research/animation/light-moves-2026-11/t2-3/index.html). Bars: palm lift 5.67, held 0, 0 seams, 0 pinned, slide 0, travel 0.
   Misses: free leg's silhouette on his legs 762 / 747 px (was 654 / 635; drawn behind them 127/127); a close entry now starts standing on his shins for 0.2 s (legs on legs 1059 / 942 px at 50 / 70, 255 at 150, 0 at 210); free ankle 2 px above the mat at the draw-in; the rope is not drawn, the reach points past his head.
+- **T2.3 sell: approved by Derek 2026-11-07** ("it looks good", d780c58). Polish adds: free leg silhouette on his legs 747-762 px, close entry stands on the shins for the 0.2 s lead-in, rope not drawn. Next T2.4 (Opus).
 
 ## Why
 

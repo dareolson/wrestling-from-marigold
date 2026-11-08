@@ -45,24 +45,24 @@
 </table>
 <p>No backward elbows came back (the fold of T1.8): every flex stays positive. George's attacker far arm (<code>a.r</code>) sits at 0.09 rad, close to straight, before and after (open item, not changed here).</p>
 <h2>3. Frozen swap check on drawn pixels, base art vs clasp art at the same pose</h2>
-<p>At the frame each clasp swaps in, the same pose is drawn twice and the screenshots diffed. Shaft = changed pixels with t &lt; 0.85 along the forearm (elbow 0, wrist 1); hand = the rest. A hand-only redraw would show shaft near 0. <b>Caveat:</b> George's three clasp PNGs on disk were being redrawn by Codex while this ran (modified in the working tree, unchanged during the run), so George's rows are of that in-progress art, not the committed art.</p>
+<p>At the frame each clasp swaps in, the same pose is drawn twice and the screenshots diffed. Shaft = changed pixels with t &lt; 0.85 along the forearm (elbow 0, wrist 1); hand = the rest. A hand-only redraw would show shaft near 0. <b>Re-run with George's committed T2.0b art</b> (5201724; the first run, at 051b84b, saw Codex's art mid-redraw). George's forearms now change 0-25 shaft px (3-14 on the defender's hands in Lou-on-George, 7-25 on the attacker's collar and elbow in George-on-Lou, of 300+ changed px that are the hand). <b>Lou's clasps are not hand-only:</b> his shaft changes 72-294 px per swap, up to 16 px across the forearm; his art was not part of T2.0b.</p>
 <table><tr><th>case</th><th>forearm</th><th>swap frame</th><th>art</th><th>changed px</th><th>shaft px</th><th>hand px</th><th>shaft max perp px</th></tr>
-<tr><td>lou-george-right</td><td>Lou a.near</td><td>8</td><td>collarTie</td><td>547</td><td>232</td><td>315</td><td>15.9</td></tr>
+<tr><td>lou-george-right</td><td>Lou a.near</td><td>8</td><td>collarTie</td><td>548</td><td>233</td><td>315</td><td>15.9</td></tr>
 <tr><td>lou-george-right</td><td>Lou a.far</td><td>9</td><td>elbowCup</td><td>72</td><td>72</td><td>0</td><td>12.2</td></tr>
-<tr><td>lou-george-right</td><td>George d.far</td><td>11</td><td>elbowCup</td><td>5</td><td>5</td><td>0</td><td>1.1</td></tr>
-<tr><td>lou-george-right</td><td>George d.near</td><td>13</td><td>elbowCup</td><td>297</td><td>5</td><td>292</td><td>2.4</td></tr>
-<tr><td>lou-george-left</td><td>Lou a.near</td><td>7</td><td>collarTie</td><td>456</td><td>290</td><td>166</td><td>14.8</td></tr>
+<tr><td>lou-george-right</td><td>George d.far</td><td>11</td><td>elbowCup</td><td>3</td><td>3</td><td>0</td><td>1.1</td></tr>
+<tr><td>lou-george-right</td><td>George d.near</td><td>13</td><td>elbowCup</td><td>310</td><td>9</td><td>301</td><td>2.9</td></tr>
+<tr><td>lou-george-left</td><td>Lou a.near</td><td>7</td><td>collarTie</td><td>455</td><td>289</td><td>166</td><td>14.8</td></tr>
 <tr><td>lou-george-left</td><td>Lou a.far</td><td>9</td><td>elbowCup</td><td>95</td><td>95</td><td>0</td><td>9.7</td></tr>
-<tr><td>lou-george-left</td><td>George d.far</td><td>10</td><td>elbowCup</td><td>97</td><td>8</td><td>89</td><td>3.5</td></tr>
-<tr><td>lou-george-left</td><td>George d.near</td><td>13</td><td>elbowCup</td><td>301</td><td>14</td><td>287</td><td>13.6</td></tr>
-<tr><td>george-lou-right</td><td>George a.near</td><td>8</td><td>collarTie</td><td>310</td><td>10</td><td>300</td><td>12.4</td></tr>
-<tr><td>george-lou-right</td><td>George a.far</td><td>10</td><td>elbowCup</td><td>29</td><td>19</td><td>10</td><td>12.1</td></tr>
-<tr><td>george-lou-right</td><td>Lou d.far</td><td>11</td><td>elbowCup</td><td>6</td><td>6</td><td>0</td><td>10.8</td></tr>
-<tr><td>george-lou-right</td><td>Lou d.near</td><td>13</td><td>elbowCup</td><td>448</td><td>290</td><td>158</td><td>13</td></tr>
-<tr><td>george-lou-left</td><td>George a.near</td><td>7</td><td>collarTie</td><td>299</td><td>19</td><td>280</td><td>13.8</td></tr>
-<tr><td>george-lou-left</td><td>George a.far</td><td>10</td><td>elbowCup</td><td>29</td><td>29</td><td>0</td><td>11.9</td></tr>
-<tr><td>george-lou-left</td><td>Lou d.far</td><td>10</td><td>elbowCup</td><td>57</td><td>53</td><td>4</td><td>11.4</td></tr>
-<tr><td>george-lou-left</td><td>Lou d.near</td><td>13</td><td>elbowCup</td><td>486</td><td>231</td><td>255</td><td>14.4</td></tr>
+<tr><td>lou-george-left</td><td>George d.far</td><td>10</td><td>elbowCup</td><td>92</td><td>7</td><td>85</td><td>3.8</td></tr>
+<tr><td>lou-george-left</td><td>George d.near</td><td>13</td><td>elbowCup</td><td>325</td><td>14</td><td>311</td><td>11.7</td></tr>
+<tr><td>george-lou-right</td><td>George a.near</td><td>8</td><td>collarTie</td><td>293</td><td>7</td><td>286</td><td>12.6</td></tr>
+<tr><td>george-lou-right</td><td>George a.far</td><td>10</td><td>elbowCup</td><td>26</td><td>22</td><td>4</td><td>13.3</td></tr>
+<tr><td>george-lou-right</td><td>Lou d.far</td><td>11</td><td>elbowCup</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>george-lou-right</td><td>Lou d.near</td><td>13</td><td>elbowCup</td><td>442</td><td>294</td><td>148</td><td>12.8</td></tr>
+<tr><td>george-lou-left</td><td>George a.near</td><td>7</td><td>collarTie</td><td>345</td><td>25</td><td>320</td><td>14.9</td></tr>
+<tr><td>george-lou-left</td><td>George a.far</td><td>10</td><td>elbowCup</td><td>16</td><td>16</td><td>0</td><td>12.1</td></tr>
+<tr><td>george-lou-left</td><td>Lou d.far</td><td>10</td><td>elbowCup</td><td>90</td><td>80</td><td>10</td><td>9</td></tr>
+<tr><td>george-lou-left</td><td>Lou d.near</td><td>13</td><td>elbowCup</td><td>473</td><td>208</td><td>265</td><td>12.3</td></tr>
 </table>
 <label>Pair <select id="r7pair"><option value="lou-george">Lou on George</option><option value="george-lou">George on Lou</option></select></label>
 <label>Speed <select id="r7spd"><option value="1">Normal</option><option value="0.25">Quarter</option></select></label>

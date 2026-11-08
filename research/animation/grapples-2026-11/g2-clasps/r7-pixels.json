@@ -5,8 +5,8 @@
       "slot": "nearForearm",
       "frame": 8,
       "art": "collarTie",
-      "changed": 547,
-      "shaft": 232,
+      "changed": 548,
+      "shaft": 233,
       "hand": 315,
       "elbowEnd": 2,
       "bbox": [
@@ -41,14 +41,14 @@
       "slot": "farForearm",
       "frame": 11,
       "art": "elbowCup",
-      "changed": 5,
-      "shaft": 5,
+      "changed": 3,
+      "shaft": 3,
       "hand": 0,
       "elbowEnd": 0,
       "bbox": [
         64,
-        67,
-        68,
+        66,
+        69,
         73
       ],
       "shaftMaxPerpPx": 1.1,
@@ -59,17 +59,17 @@
       "slot": "nearForearm",
       "frame": 13,
       "art": "elbowCup",
-      "changed": 297,
-      "shaft": 5,
-      "hand": 292,
-      "elbowEnd": 4,
+      "changed": 310,
+      "shaft": 9,
+      "hand": 301,
+      "elbowEnd": 3,
       "bbox": [
-        37,
+        38,
         34,
-        87,
-        73
+        92,
+        71
       ],
-      "shaftMaxPerpPx": 2.4,
+      "shaftMaxPerpPx": 2.9,
       "forearmScreenLen": 27.4
     }
   ],
@@ -79,8 +79,8 @@
       "slot": "nearForearm",
       "frame": 7,
       "art": "collarTie",
-      "changed": 456,
-      "shaft": 290,
+      "changed": 455,
+      "shaft": 289,
       "hand": 166,
       "elbowEnd": 34,
       "bbox": [
@@ -115,17 +115,17 @@
       "slot": "farForearm",
       "frame": 10,
       "art": "elbowCup",
-      "changed": 97,
-      "shaft": 8,
-      "hand": 89,
+      "changed": 92,
+      "shaft": 7,
+      "hand": 85,
       "elbowEnd": 0,
       "bbox": [
-        68,
-        42,
+        67,
+        47,
         104,
         66
       ],
-      "shaftMaxPerpPx": 3.5,
+      "shaftMaxPerpPx": 3.8,
       "forearmScreenLen": 23.3
     },
     {
@@ -133,17 +133,17 @@
       "slot": "nearForearm",
       "frame": 13,
       "art": "elbowCup",
-      "changed": 301,
+      "changed": 325,
       "shaft": 14,
-      "hand": 287,
-      "elbowEnd": 3,
+      "hand": 311,
+      "elbowEnd": 0,
       "bbox": [
-        57,
-        34,
-        113,
+        60,
+        35,
+        115,
         72
       ],
-      "shaftMaxPerpPx": 13.6,
+      "shaftMaxPerpPx": 11.7,
       "forearmScreenLen": 27.4
     }
   ],
@@ -153,17 +153,17 @@
       "slot": "nearForearm",
       "frame": 8,
       "art": "collarTie",
-      "changed": 310,
-      "shaft": 10,
-      "hand": 300,
+      "changed": 293,
+      "shaft": 7,
+      "hand": 286,
       "elbowEnd": 0,
       "bbox": [
-        62,
+        68,
         34,
         115,
-        72
+        70
       ],
-      "shaftMaxPerpPx": 12.4,
+      "shaftMaxPerpPx": 12.6,
       "forearmScreenLen": 27.4
     },
     {
@@ -171,17 +171,17 @@
       "slot": "farForearm",
       "frame": 10,
       "art": "elbowCup",
-      "changed": 29,
-      "shaft": 19,
-      "hand": 10,
+      "changed": 26,
+      "shaft": 22,
+      "hand": 4,
       "elbowEnd": 0,
       "bbox": [
-        64,
+        65,
         49,
-        86,
+        84,
         65
       ],
-      "shaftMaxPerpPx": 12.1,
+      "shaftMaxPerpPx": 13.3,
       "forearmScreenLen": 23.3
     },
     {
@@ -189,17 +189,12 @@
       "slot": "farForearm",
       "frame": 11,
       "art": "elbowCup",
-      "changed": 6,
-      "shaft": 6,
+      "changed": 0,
+      "shaft": 0,
       "hand": 0,
       "elbowEnd": 0,
-      "bbox": [
-        89,
-        62,
-        92,
-        63
-      ],
-      "shaftMaxPerpPx": 10.8,
+      "bbox": null,
+      "shaftMaxPerpPx": 0,
       "forearmScreenLen": 41.6
     },
     {
@@ -207,17 +202,17 @@
       "slot": "nearForearm",
       "frame": 13,
       "art": "elbowCup",
-      "changed": 448,
-      "shaft": 290,
-      "hand": 158,
-      "elbowEnd": 19,
+      "changed": 442,
+      "shaft": 294,
+      "hand": 148,
+      "elbowEnd": 18,
       "bbox": [
-        55,
+        56,
         48,
-        110,
+        113,
         72
       ],
-      "shaftMaxPerpPx": 13,
+      "shaftMaxPerpPx": 12.8,
       "forearmScreenLen": 49
     }
   ],
@@ -227,17 +222,17 @@
       "slot": "nearForearm",
       "frame": 7,
       "art": "collarTie",
-      "changed": 299,
-      "shaft": 19,
-      "hand": 280,
-      "elbowEnd": 11,
+      "changed": 345,
+      "shaft": 25,
+      "hand": 320,
+      "elbowEnd": 16,
       "bbox": [
         35,
         36,
-        88,
-        72
+        89,
+        70
       ],
-      "shaftMaxPerpPx": 13.8,
+      "shaftMaxPerpPx": 14.9,
       "forearmScreenLen": 27.4
     },
     {
@@ -245,17 +240,17 @@
       "slot": "farForearm",
       "frame": 10,
       "art": "elbowCup",
-      "changed": 29,
-      "shaft": 29,
+      "changed": 16,
+      "shaft": 16,
       "hand": 0,
-      "elbowEnd": 10,
+      "elbowEnd": 4,
       "bbox": [
         64,
         49,
         85,
-        64
+        65
       ],
-      "shaftMaxPerpPx": 11.9,
+      "shaftMaxPerpPx": 12.1,
       "forearmScreenLen": 23.3
     },
     {
@@ -263,17 +258,17 @@
       "slot": "farForearm",
       "frame": 10,
       "art": "elbowCup",
-      "changed": 57,
-      "shaft": 53,
-      "hand": 4,
+      "changed": 90,
+      "shaft": 80,
+      "hand": 10,
       "elbowEnd": 0,
       "bbox": [
-        72,
-        51,
-        95,
-        70
+        74,
+        58,
+        97,
+        73
       ],
-      "shaftMaxPerpPx": 11.4,
+      "shaftMaxPerpPx": 9,
       "forearmScreenLen": 41.6
     },
     {
@@ -281,17 +276,17 @@
       "slot": "nearForearm",
       "frame": 13,
       "art": "elbowCup",
-      "changed": 486,
-      "shaft": 231,
-      "hand": 255,
-      "elbowEnd": 5,
+      "changed": 473,
+      "shaft": 208,
+      "hand": 265,
+      "elbowEnd": 2,
       "bbox": [
         58,
-        47,
+        52,
         120,
         71
       ],
-      "shaftMaxPerpPx": 14.4,
+      "shaftMaxPerpPx": 12.3,
       "forearmScreenLen": 49
     }
   ]

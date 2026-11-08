@@ -20,8 +20,9 @@ const HELD = [0.6, 2.7];
 const STILLS = [0.3, 0.5, 0.9, 1.4, 1.95, 2.4, 2.7];
 const MAX_EXTRA_GAP = 0.5;
 const out = process.argv[2], framesDir = process.argv[3];
+const SEP = +(process.env.SEP ?? 70);   // entry separation, hips to hips, as the game's `(other.x - this.x) * facing / s`
 
-const SETUP = async ({ facing }) => {
+const SETUP = async ({ facing, sep }) => {
     const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
     let s0 = 0x5eed1234;
     Math.random = () => { s0 = (s0 + 0x6D2B79F5) | 0; let t = Math.imul(s0 ^ (s0 >>> 15), 1 | s0); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -33,7 +34,7 @@ const SETUP = async ({ facing }) => {
         Object.assign(w.pose, window.__idle);
         w.skeleton.setPartVariants?.({});
     }
-    a.y = d.y = 400; a.facing = facing; d.facing = -facing; a.x = 520; d.x = 520 + facing * 70 * a.s;
+    a.y = d.y = 400; a.facing = facing; d.facing = -facing; a.x = 520; d.x = 520 + facing * sep * a.s; window.__ax0 = a.x;
     a.input = { justDown: () => false, isDown: () => false }; d.input = a.input;
     // each man's own idle seams first (standing, idle pose, this facing), then the lock
     for (const w of [a, d]) w.draw();
@@ -146,7 +147,15 @@ const READ = () => {
     r.depth = { shin: shin.depth, torso: ask.torso.depth, nearThigh: ask.nearThigh.depth, farThigh: ask.farThigh.depth, nearForearm: ask.nearForearm.depth, farForearm: ask.farForearm.depth };
     r.bootInFrontOfTorso = shin.depth > ask.torso.depth;
     // T2.2d: his far upper arm behind his torso, both his thighs (and shins) in front of it, his near arm in front of the boot
-    r.order = { trappedOverOwnTorso: Math.min(shin.depth, thigh.depth) > Math.max(dsk.torso.depth, dsk.trunks?.depth ?? -Infinity), nearLegOverBothTorsos: Math.min(ask.nearThigh.depth, ask.nearShin.depth) > Math.max(ask.torso.depth, dsk.torso.depth), farArmBehindTorso: ask.farUpArm.depth < ask.torso.depth, thighsOverTorso: ask.nearThigh.depth > ask.torso.depth && ask.farThigh.depth > ask.torso.depth, shinsOverTorso: ask.nearShin.depth > ask.torso.depth && ask.farShin.depth > ask.torso.depth, nearArmOverBoot: ask.nearForearm.depth > shin.depth };
+    r.order = { trappedOverOwnTorso: Math.min(shin.depth, thigh.depth) > Math.max(dsk.torso.depth, dsk.trunks?.depth ?? -Infinity), nearLegOverBothTorsos: Math.min(ask.nearThigh.depth, ask.nearShin.depth) > Math.max(ask.torso.depth, dsk.torso.depth), farArmBehindTorso: ask.farUpArm.depth < ask.torso.depth, thighsOverTorso: ask.nearThigh.depth > ask.torso.depth && ask.farThigh.depth > ask.torso.depth, shinsOverTorso: ask.nearShin.depth > ask.torso.depth && ask.farShin.depth > ask.torso.depth, nearArmOverBoot: ask.nearForearm.depth > shin.depth,
+        // T2.2f: the downed man's far arm behind his own torso, his near arm in front of it
+        manFarArmBehindOwnTorso: Math.max(dsk.farUpArm.depth, dsk.farForearm.depth) < dsk.torso.depth, manNearArmOverOwnTorso: Math.min(dsk.nearUpArm.depth, dsk.nearForearm.depth) > dsk.torso.depth };
+    // T2.2f: the attacker's soles against the downed man's nearest boot, along his facing from where he stood at the start (+ = toward the man).
+    // gap > 0: the attacker's front ankle is short of the man's nearest ankle, i.e. he stands past the boots. legsVsLegs: silhouette px of his legs on the man's legs.
+    const fax = (q) => (q.x - window.__ax0) * a.facing;
+    const aAnk = [ap.nearAnkle, ap.farAnkle].map(fax), dAnk = [dp.nearAnkle, dp.farAnkle].map(fax);
+    r.soles = { aFront: Math.max(...aAnk), aBack: Math.min(...aAnk), dBoot: Math.min(...dAnk), gap: Math.min(...dAnk) - Math.max(...aAnk),
+        legsVsLegs: window.__overlap([ask.nearThigh, ask.farThigh, ask.nearShin, ask.farShin], [dsk.nearThigh, dsk.farThigh, dsk.nearShin, dsk.farShin], a, d) };
     r.bootCenter = (() => { const mm = shin.getWorldTransformMatrix(); return { x: Math.round(mm.tx), y: Math.round(mm.ty) }; })();
     const rd = (q) => (q ? [Math.round(q.x - a.x), Math.round(a.y - q.y)] : null);   // x from the attacker (+ toward the downed man when facing right), y above the mat
     const f = a.facing;
@@ -168,8 +177,8 @@ for (const [pair, att, def] of PAIRS.filter(p => !process.env.ONLY || process.en
         await h.page.evaluate(INSTALL); await h.page.evaluate(INSTALL_MASKS);
         await h.page.evaluate(INSTALL_AUDIT, { LIM: JOINT_LIMITS, NOINK: !!process.env.NOINK });
         for (const facing of (process.env.ONE_FACING ? [1] : [1, -1])) {
-            const id = `${pair}-${facing > 0 ? 'right' : 'left'}`;
-            const setup = await h.page.evaluate(SETUP, { facing });
+            const id = `${pair}-${facing > 0 ? 'right' : 'left'}${process.env.IDSUF ?? ''}`;
+            const setup = await h.page.evaluate(SETUP, { facing, sep: SEP });
             let clip = null; const rows = []; const stills = new Set(); let n = 0;
             if (framesDir) mkdirSync(`${framesDir}/${id}`, { recursive: true });
             for (let i = 0; i < 230; i++) {
@@ -205,6 +214,9 @@ for (const [pair, att, def] of PAIRS.filter(p => !process.env.ONLY || process.en
                 frames: rows.length, idleGap: idle,
                 entryTrace: rows.filter(r => r.t <= 0.65).map(r => ({ t: r.t, position: r.position, palm: r.palm })),
                 receiverTravel: { x: Math.max(...rows.map(r => r.position.defender.x)) - Math.min(...rows.map(r => r.position.defender.x)), y: Math.max(...rows.map(r => r.position.defender.y)) - Math.min(...rows.map(r => r.position.defender.y)) },
+                sep: SEP, sole: { first: rows[0].soles, grab: rows.find(r => r.t >= 0.3).soles, last: rows[rows.length - 1].soles, firstT: rows[0].t, lastT: rows[rows.length - 1].t },
+                palmLift: { heel: stat(rows.filter(r => r.t >= 0.3 && r.t <= 0.6).map(r => r.palm.heel)), toe: stat(rows.filter(r => r.t >= 0.3 && r.t <= 0.6).map(r => r.palm.toe)) },
+                trappedVsLegsWindows: rows.filter(r => r.trappedVsLegs > 0).map(r => r.t).reduce((w, t) => { const l = w[w.length - 1]; if (l && t - l[1] < 0.03) l[1] = t; else w.push([t, t]); return w; }, []),
                 palmHeld: { heel: stat(held.map(r => r.palm.heel)), toe: stat(held.map(r => r.palm.toe)), framesOver6: held.filter(r => r.palm.heel > 6 || r.palm.toe > 6).length },
                 worstInkGap: worstGap,
                 brokenFrames: broken.length, brokenList: broken,
@@ -212,7 +224,7 @@ for (const [pair, att, def] of PAIRS.filter(p => !process.env.ONLY || process.en
                 belowBodyPx: stat(rows.map(r => r.belowBody)), torsoPx: stat(rows.map(r => r.torso)),
                 trappedVsLegsPx: stat(rows.map(r => r.trappedVsLegs)), trappedVsLegsFrames: rows.filter(r => r.trappedVsLegs > 0).length,
                 trappedVsTorsoPx: stat(rows.map(r => r.trappedVsTorso)), bootInFrontOfTorsoFramesHeld: held.filter(r => r.bootInFrontOfTorso).length + '/' + held.length,
-                orderHeld: Object.fromEntries(['trappedOverOwnTorso', 'nearLegOverBothTorsos', 'farArmBehindTorso', 'thighsOverTorso', 'shinsOverTorso', 'nearArmOverBoot'].map(k => [k, held.filter(r => r.order[k]).length + '/' + held.length])),
+                orderHeld: Object.fromEntries(['trappedOverOwnTorso', 'nearLegOverBothTorsos', 'farArmBehindTorso', 'thighsOverTorso', 'shinsOverTorso', 'nearArmOverBoot', 'manFarArmBehindOwnTorso', 'manNearArmOverOwnTorso'].map(k => [k, held.filter(r => r.order[k]).length + '/' + held.length])),
                 depthHeld: held[Math.floor(held.length / 2)]?.depth, bootCenterHeld: held[Math.floor(held.length / 2)]?.bootCenter,
                 plantedSlideMax: { near: round(Math.max(...plantedSlide('near'))), far: round(Math.max(...plantedSlide('far'))) }, wholeSlideMax: { near: round(Math.max(...slide('near'))), far: round(Math.max(...slide('far'))) },
                 trappedVsLegsAt: rows.filter(r => r.trappedVsLegs > 0).map(r => [r.t, r.trappedVsLegs]).filter((x, i) => i % 3 === 0),
@@ -224,7 +236,7 @@ for (const [pair, att, def] of PAIRS.filter(p => !process.env.ONLY || process.en
             const R = results[id];
             if (process.env.TRACE) for (const r of rows.filter(r => [0.6, 1.0, 1.5, 2.0, 2.6].some(t => Math.abs(r.t - t) < 0.009))) console.log('  ', r.t, JSON.stringify(r.geo), 'palm', round(r.palm.heel, 1), round(r.palm.toe, 1), 'pinned', r.pinned.join(','));
             if (process.env.TRACE) console.log('  legs', JSON.stringify(results[id].trappedVsLegsAt), 'slide', JSON.stringify(results[id].plantedSlideOver15), 'below', JSON.stringify(results[id].belowBodyAt));
-            console.log(id, `palm held heel ${R.palmHeld.heel?.max} toe ${R.palmHeld.toe?.max} over6 ${R.palmHeld.framesOver6} | broken ${R.brokenFrames}/${R.frames} pinned ${R.pinnedFrames} | belowBody max ${R.belowBodyPx.max} | trapped∩legs ${R.trappedVsLegsFrames}f max ${R.trappedVsLegsPx.max} | boot>torso ${R.bootInFrontOfTorsoFramesHeld} | planted slide ${R.plantedSlideMax.near}/${R.plantedSlideMax.far}`);
+            console.log(id, `sep ${SEP} gap first/grab/last ${R.sole.first.gap.toFixed(0)}/${R.sole.grab.gap.toFixed(0)}/${R.sole.last.gap.toFixed(0)} legsVsLegs ${R.sole.first.legsVsLegs}/${R.sole.grab.legsVsLegs}/${R.sole.last.legsVsLegs} | travel ${R.receiverTravel.x}/${R.receiverTravel.y} | palm lift ${R.palmLift.heel?.max}/${R.palmLift.toe?.max} | palm held heel ${R.palmHeld.heel?.max} toe ${R.palmHeld.toe?.max} over6 ${R.palmHeld.framesOver6} | broken ${R.brokenFrames}/${R.frames} pinned ${R.pinnedFrames} | belowBody max ${R.belowBodyPx.max} | trapped∩legs ${R.trappedVsLegsFrames}f max ${R.trappedVsLegsPx.max} | boot>torso ${R.bootInFrontOfTorsoFramesHeld} | planted slide ${R.plantedSlideMax.near}/${R.plantedSlideMax.far}`);
         }
     } finally { await h.close(); }
 }

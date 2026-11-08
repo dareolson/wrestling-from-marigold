@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ankleLockClip } from '../src/animation/clips/ankleLock.js';
-import { ankleLockV2Clip, ankleLockEntryClip } from '../src/animation/clips/ankleLockV2.js';
+import { ankleLockV2Clip, ankleLockEntryClip, GRAB_GAP } from '../src/animation/clips/ankleLockV2.js';
 import { compileClip, validateClip, sampleClip } from '../src/animation/AnimationClip.js';
 import { clipLayerDepths } from '../src/animation/clipLayers.js';
 import { gripTarget } from '../src/animation/lockup.js';
@@ -65,7 +65,7 @@ test('T2.2c: the trapped leg is raised and drawn over his body, his arms over th
     const held = ankleLockV2Clip.tracks.defender.keyframes.filter(k => k.at >= 0.6 && k.at <= 2.8);
     for (const k of held) assert.ok(k.pose.lLeg >= 1.3 && k.pose.lift > -110, `trapped leg up and hips off the mat at ${k.at}`);
     const [win] = ankleLockV2Clip.layers;
-    assert.deepEqual(win.order.map(([r, l]) => `${r}.${l}`), ['defender.rLeg', 'defender.torso', 'defender.head', 'defender.rArm', 'defender.lArm', 'attacker.farArm', 'attacker.torso', 'attacker.head', 'attacker.farLeg', 'attacker.nearLeg', 'defender.lLeg', 'attacker.nearArm']);
+    assert.deepEqual(win.order.map(([r, l]) => `${r}.${l}`), ['defender.rLeg', 'defender.farArm', 'defender.torso', 'defender.head', 'defender.nearArm', 'attacker.farArm', 'attacker.torso', 'attacker.head', 'attacker.farLeg', 'attacker.nearLeg', 'defender.lLeg', 'attacker.nearArm']);
     assert.equal(ankleLockV2Clip.events.filter(e => e.type === 'squeeze').length, 3);
 });
 
@@ -77,7 +77,7 @@ test('pickup preserves the receiver position at different entry distances, befor
             const sample = sampleClip(clip, t).tracks;
             assert.equal(sample.defender.transform.x, distance, `receiver moved at ${t}`);
         }
-        assert.equal(sampleClip(clip, 0).tracks.attacker.transform.x, 0);
+        assert.equal(sampleClip(clip, 0).tracks.attacker.transform.x, Math.min(0, distance - GRAB_GAP), 'he starts no closer than the grab spot');
         const grab = sampleClip(clip, 0.3).tracks, held = sampleClip(clip, 0.6).tracks;
         assert.equal(grab.defender.pose.lift, -110, 'receiver stays down until the grab');
         assert.ok(grab.defender.pose.lLeg < 0.1, 'trapped leg stays down until the grab');
@@ -102,5 +102,37 @@ test('both near legs clear both torsos, including the receiver trunks, in either
                 assert.ok(d(role, part) > d(torso, image), `${role}.${part} buried under ${torso}.${image}`);
             }
         }
+    }
+});
+
+
+test('T2.2f: the downed man\'s far arm is behind his torso, his near arm in front, in either facing; the attacker keeps his own order', () => {
+    const names = ['torso', 'trunks', 'head', 'nearThigh', 'nearShin', 'farThigh', 'farShin', 'nearUpArm', 'nearForearm', 'farUpArm', 'farForearm'];
+    for (const facing of [1, -1]) for (const lSide of ['near', 'far']) {
+        // a rig whose l channel is drawn far (lChannelSide) must still get the far-named art behind his torso
+        const actor = f => ({ facing: f, skeleton: {
+            lChannelSide: () => lSide,
+            ...Object.fromEntries(names.map((n, i) => [n, { depth: 12 + i * 0.00001 }])),
+        } });
+        const actors = { attacker: actor(facing), defender: actor(-facing) };
+        const depths = clipLayerDepths(ankleLockV2Clip, 1, actors);
+        const d = (role, part) => depths.get(actors[role].skeleton[part]) ?? actors[role].skeleton[part].depth;
+        for (const p of ['UpArm', 'Forearm']) {
+            assert.ok(d('defender', `far${p}`) < d('defender', 'torso'), `defender far ${p} is in front of his torso (${facing}, l ${lSide})`);
+            assert.ok(d('defender', `far${p}`) < d('defender', 'trunks'), `defender far ${p} is in front of his trunks (${facing}, l ${lSide})`);
+            assert.ok(d('defender', `near${p}`) > d('defender', 'torso'), `defender near ${p} is behind his torso (${facing}, l ${lSide})`);
+        }
+        assert.ok(d('attacker', 'farUpArm') < d('attacker', 'torso'), 'attacker far arm behind his torso');
+        assert.ok(d('attacker', 'nearForearm') > d('defender', 'nearShin'), 'attacker near forearm over the boot');
+    }
+});
+
+test('T2.2f: he starts and ends past the man\'s boots at every entry separation (the lying man never moves)', () => {
+    for (const distance of [50, 70, 150, 210]) {
+        const clip = compileClip(ankleLockEntryClip(distance));
+        const x = t => sampleClip(clip, t).tracks.attacker.transform.x;
+        // hips-to-hips gap he stands at: at least the grab gap at the first frame, the grab and the last frame, the held gap between
+        for (const t of [0, 0.3, clip.duration]) assert.ok(distance - x(t) >= GRAB_GAP - 1e-9, `hips gap ${distance - x(t)} at ${t} s with entry ${distance}`);
+        assert.ok(distance - x(1.5) < 100, 'he is in close for the hold');
     }
 });

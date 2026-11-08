@@ -1,0 +1,342 @@
+{
+ "bb449b6": {
+  "50": {
+   "lou-george": {
+    "leadInMaxStep": 139.33,
+    "restMaxStep": 13.3,
+    "firstStep": 139.33,
+    "firstLegsOnLegs": 0,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 69,
+    "grabGap": 48,
+    "lastGap": 73,
+    "palmLiftMax": 5.67,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   },
+   "george-lou": {
+    "leadInMaxStep": 139.33,
+    "restMaxStep": 13.3,
+    "firstStep": 139.33,
+    "firstLegsOnLegs": 0,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 74,
+    "grabGap": 64,
+    "lastGap": 77,
+    "palmLiftMax": 0,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   }
+  },
+  "70": {
+   "lou-george": {
+    "leadInMaxStep": 121.36,
+    "restMaxStep": 13.3,
+    "firstStep": 121.36,
+    "firstLegsOnLegs": 0,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 69,
+    "grabGap": 48,
+    "lastGap": 73,
+    "palmLiftMax": 5.67,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   },
+   "george-lou": {
+    "leadInMaxStep": 121.36,
+    "restMaxStep": 13.3,
+    "firstStep": 121.36,
+    "firstLegsOnLegs": 0,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 74,
+    "grabGap": 64,
+    "lastGap": 77,
+    "palmLiftMax": 0,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   }
+  },
+  "150": {
+   "lou-george": {
+    "leadInMaxStep": 49.44,
+    "restMaxStep": 13.3,
+    "firstStep": 49.44,
+    "firstLegsOnLegs": 0,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 69,
+    "grabGap": 48,
+    "lastGap": 73,
+    "palmLiftMax": 5.67,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   },
+   "george-lou": {
+    "leadInMaxStep": 49.44,
+    "restMaxStep": 13.3,
+    "firstStep": 49.44,
+    "firstLegsOnLegs": 0,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 74,
+    "grabGap": 64,
+    "lastGap": 77,
+    "palmLiftMax": 0,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   }
+  },
+  "210": {
+   "lou-george": {
+    "leadInMaxStep": 7.09,
+    "restMaxStep": 13.3,
+    "firstStep": 0.25,
+    "firstLegsOnLegs": 0,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 73,
+    "grabGap": 48,
+    "lastGap": 73,
+    "palmLiftMax": 5.67,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   },
+   "george-lou": {
+    "leadInMaxStep": 7.09,
+    "restMaxStep": 13.3,
+    "firstStep": 0.25,
+    "firstLegsOnLegs": 0,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 78,
+    "grabGap": 64,
+    "lastGap": 77,
+    "palmLiftMax": 0,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   }
+  }
+ },
+ "t2-3": {
+  "50": {
+   "lou-george": {
+    "leadInMaxStep": 11.61,
+    "restMaxStep": 13.3,
+    "firstStep": 11.61,
+    "firstLegsOnLegs": 1059,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": -59,
+    "grabGap": 48,
+    "lastGap": 73,
+    "palmLiftMax": 5.67,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   },
+   "george-lou": {
+    "leadInMaxStep": 11.61,
+    "restMaxStep": 13.3,
+    "firstStep": 11.61,
+    "firstLegsOnLegs": 971,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": -54,
+    "grabGap": 64,
+    "lastGap": 77,
+    "palmLiftMax": 0,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   }
+  },
+  "70": {
+   "lou-george": {
+    "leadInMaxStep": 10.11,
+    "restMaxStep": 13.3,
+    "firstStep": 10.11,
+    "firstLegsOnLegs": 942,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": -43,
+    "grabGap": 48,
+    "lastGap": 73,
+    "palmLiftMax": 5.67,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   },
+   "george-lou": {
+    "leadInMaxStep": 10.11,
+    "restMaxStep": 13.3,
+    "firstStep": 10.11,
+    "firstLegsOnLegs": 923,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": -38,
+    "grabGap": 64,
+    "lastGap": 77,
+    "palmLiftMax": 0,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   }
+  },
+  "150": {
+   "lou-george": {
+    "leadInMaxStep": 7.09,
+    "restMaxStep": 13.3,
+    "firstStep": 4.12,
+    "firstLegsOnLegs": 255,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 23,
+    "grabGap": 48,
+    "lastGap": 73,
+    "palmLiftMax": 5.67,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   },
+   "george-lou": {
+    "leadInMaxStep": 7.09,
+    "restMaxStep": 13.3,
+    "firstStep": 4.12,
+    "firstLegsOnLegs": 530,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 28,
+    "grabGap": 64,
+    "lastGap": 77,
+    "palmLiftMax": 0,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   }
+  },
+  "210": {
+   "lou-george": {
+    "leadInMaxStep": 7.09,
+    "restMaxStep": 13.3,
+    "firstStep": 0.37,
+    "firstLegsOnLegs": 0,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 73,
+    "grabGap": 48,
+    "lastGap": 73,
+    "palmLiftMax": 5.67,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   },
+   "george-lou": {
+    "leadInMaxStep": 7.09,
+    "restMaxStep": 13.3,
+    "firstStep": 0.37,
+    "firstLegsOnLegs": 0,
+    "grabLegsOnLegs": 0,
+    "lastLegsOnLegs": 0,
+    "firstGap": 78,
+    "grabGap": 64,
+    "lastGap": 77,
+    "palmLiftMax": 0,
+    "travel": {
+     "x": 0,
+     "y": 0
+    },
+    "plantedSlide": {
+     "near": 0,
+     "far": 0
+    }
+   }
+  }
+ }
+}

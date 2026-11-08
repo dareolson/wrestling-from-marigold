@@ -3,6 +3,7 @@
 import {readFileSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
+import {fitGeorgeClasp,writeGeorgeClaspAnchor} from './fit_george_clasp.mjs';
 import {decodeRgbaPng} from '../wrestler-cutter/validate-source-manifest.mjs';
 import {encodeRgbaPng} from '../wrestler-cutter/export-v2-sheet.mjs';
 import {theszProcreateV1} from '../../src/characters/thesz_procreate_v1.js';
@@ -32,6 +33,7 @@ function tone(im){const c=[[],[],[]];for(let i=0;i<im.rgba.length;i+=4){const p=
 const sourceTone=tone(master);
 const result={master:'master.png',masterSha256:createHash('sha256').update(masterBytes).digest('hex'),masterCanvas:[master.w,master.h],masterElbow:crook,masterContact:config.masterContact,rigs:{}};
 for(const [id,rig] of [['thesz-procreate-v1',theszProcreateV1],['george-roster-v1',georgeRosterV1]]){
+ if(id==='george-roster-v1'){result.rigs[id]=fitGeorgeClasp(name,rig,{check:process.argv.includes('--check')});if(process.argv.includes('--write-george-anchors')&&!process.argv.includes('--check'))writeGeorgeClaspAnchor(name,result.rigs[id].semanticAnchors.clutch);continue;}
  const basePath=root+'src/assets/wrestlers/'+id+'/forearm.png',bytes=readFileSync(basePath),base=decodeRgbaPng(bytes),entry=rig.textures.forearm;
  const pivot={x:(.5+entry.pivotOffsetFrac)*base.w,y:entry.jointPivotFrac*base.h};
  // Bound the entire registered canvas around its elbow, not the alpha bbox.

@@ -267,8 +267,8 @@ export const georgeRosterV1 = {
                 "file": "forearm_collar_tie.png",
                 "semanticAnchors": {
                     "clutch": {
-                        "u": 0.5273841590918646,
-                        "v": 0.7835990888382688
+                        "u": 0.5766197183098591,
+                        "v": 0.7510250569476081
                     }
                 }
             },
@@ -277,8 +277,8 @@ export const georgeRosterV1 = {
                 "file": "forearm_elbow_cup.png",
                 "semanticAnchors": {
                     "clutch": {
-                        "u": 0.5188266972272926,
-                        "v": 0.7835990888382687
+                        "u": 0.5436619718309859,
+                        "v": 0.7366742596810935
                     }
                 }
             },
@@ -287,8 +287,8 @@ export const georgeRosterV1 = {
                 "file": "forearm_waist_clasp.png",
                 "semanticAnchors": {
                     "clutch": {
-                        "u": 0.5622796491114113,
-                        "v": 0.7835990888382687
+                        "u": 0.5673239436619718,
+                        "v": 0.7558086560364465
                     }
                 }
             }

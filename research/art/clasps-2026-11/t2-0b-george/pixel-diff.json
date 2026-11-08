@@ -1,0 +1,140 @@
+[
+  {
+    "variant": "collarTie",
+    "canvas": [
+      426,
+      439
+    ],
+    "wristRowInclusive": 252,
+    "preservedRows": [
+      0,
+      252
+    ],
+    "changedPixelsAboveWrist": 0,
+    "beforeChangedPixelsAboveWrist": 18861,
+    "changedPixelsTotal": 13746,
+    "visibleChangedPixels": 13737,
+    "changedBounds": [
+      148,
+      253,
+      301,
+      400
+    ],
+    "contact": {
+      "x": 245.64,
+      "y": 329.7
+    },
+    "clutch": {
+      "u": 0.5766197183098591,
+      "v": 0.7510250569476081
+    },
+    "pivot": {
+      "x": 213.44307772458657,
+      "y": 68.43016854099969
+    },
+    "baseSha256": "dcea3476ec2b6249c92fef6c3ca2a703e0e2cf8c87707f7b37c06d9f948ae1d7",
+    "outputSha256": "efc0eb61d5e4f047cbd962c86b02da35d5d1e14b5bc1b857d9b991b8ee6760e5",
+    "skinMedianTarget": [
+      243,
+      193,
+      159
+    ],
+    "skinMedianHand": [
+      243,
+      193,
+      159
+    ]
+  },
+  {
+    "variant": "elbowCup",
+    "canvas": [
+      426,
+      439
+    ],
+    "wristRowInclusive": 252,
+    "preservedRows": [
+      0,
+      252
+    ],
+    "changedPixelsAboveWrist": 0,
+    "beforeChangedPixelsAboveWrist": 18894,
+    "changedPixelsTotal": 14786,
+    "visibleChangedPixels": 14771,
+    "changedBounds": [
+      128,
+      253,
+      301,
+      400
+    ],
+    "contact": {
+      "x": 231.6,
+      "y": 323.40000000000003
+    },
+    "clutch": {
+      "u": 0.5436619718309859,
+      "v": 0.7366742596810935
+    },
+    "pivot": {
+      "x": 213.44307772458657,
+      "y": 68.43016854099969
+    },
+    "baseSha256": "dcea3476ec2b6249c92fef6c3ca2a703e0e2cf8c87707f7b37c06d9f948ae1d7",
+    "outputSha256": "ac02daafae8b1e936b233d64f77a51285749e22f45b32673cb568135fa35cfaf",
+    "skinMedianTarget": [
+      243,
+      193,
+      159
+    ],
+    "skinMedianHand": [
+      243,
+      193,
+      159
+    ]
+  },
+  {
+    "variant": "waistClasp",
+    "canvas": [
+      426,
+      439
+    ],
+    "wristRowInclusive": 252,
+    "preservedRows": [
+      0,
+      252
+    ],
+    "changedPixelsAboveWrist": 0,
+    "beforeChangedPixelsAboveWrist": 18546,
+    "changedPixelsTotal": 13716,
+    "visibleChangedPixels": 13705,
+    "changedBounds": [
+      174,
+      253,
+      301,
+      430
+    ],
+    "contact": {
+      "x": 241.68,
+      "y": 331.8
+    },
+    "clutch": {
+      "u": 0.5673239436619718,
+      "v": 0.7558086560364465
+    },
+    "pivot": {
+      "x": 213.44307772458657,
+      "y": 68.43016854099969
+    },
+    "baseSha256": "dcea3476ec2b6249c92fef6c3ca2a703e0e2cf8c87707f7b37c06d9f948ae1d7",
+    "outputSha256": "96a2ef33fb9393f051e6e1d4023fc9cc3057a3cb84f3472daf3e6bab3770a36c",
+    "skinMedianTarget": [
+      243,
+      193,
+      159
+    ],
+    "skinMedianHand": [
+      243,
+      193,
+      159
+    ]
+  }
+]

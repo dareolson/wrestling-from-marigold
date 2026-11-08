@@ -51,3 +51,19 @@ test('painted boot anchors follow the requested side, with joint fallback for ri
     const compiled = compileClip(ankleLockV2Clip);
     assert.deepEqual(compiled.grips.map(g => [g.to.anchor, g.palm]), [['heel', 'clutch'], ['toe', 'clutch']]);
 });
+
+test('T2.2c: the attacker stands tall (bend <= .3), both men own their shins, the victim\'s knees bend the natural way', () => {
+    for (const k of ankleLockV2Clip.tracks.attacker.keyframes) assert.ok((k.pose.bend ?? 0) <= 0.3, `attacker bend ${k.pose.bend} at ${k.at}`);
+    for (const k of ankleLockV2Clip.tracks.defender.keyframes) {
+        assert.equal('lKnee' in k.pose || 'rKnee' in k.pose, false, `defender key ${k.at}`);
+        for (const s of ['l', 'r']) assert.ok(k.pose[`${s}Shin`] < k.pose[`${s}Leg`], `${s} shin is folded behind its thigh at ${k.at}`);
+    }
+});
+
+test('T2.2c: the trapped leg is raised and drawn over his body, his arms over the boot; same events and damage', () => {
+    const held = ankleLockV2Clip.tracks.defender.keyframes.filter(k => k.at >= 0.6 && k.at <= 2.8);
+    for (const k of held) assert.ok(k.pose.lLeg >= 1.3 && k.pose.lift > -110, `trapped leg up and hips off the mat at ${k.at}`);
+    const [win] = ankleLockV2Clip.layers;
+    assert.deepEqual(win.order.map(([r, l]) => `${r}.${l}`), ['defender.rLeg', 'attacker.body', 'defender.lLeg', 'attacker.farArm', 'attacker.nearArm']);
+    assert.equal(ankleLockV2Clip.events.filter(e => e.type === 'squeeze').length, 3);
+});

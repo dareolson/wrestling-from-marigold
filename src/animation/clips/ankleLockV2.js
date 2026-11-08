@@ -1,43 +1,62 @@
-// Opt-in ankle lock: painted palms follow the boot heel and toe, not shin-axis proxies.
+// PLAN_LIGHT_MOVES T2.2c (?light=v1): the ankle lock with his hands on the boot, re-staged. A copy of ankleLock (same duration, events, damage):
+//  - grips (D5, T2.2b): the l arm aims its painted palm (`clutch`) at the boot's painted heel, the r arm at the toe (`to.anchor`, `palm`). Both rigs
+//    draw the l channel on the near side whichever way they face (Skeleton.lChannelSide), so the l hand is the near hand and the trapped leg (the
+//    defender's lLeg) is his near leg: l -> side 'same', r -> side 'other'.
+//  - the attacker stands tall (torso bend <= .3) and leans back on planted soles (D4); the downed man's hips come off the mat and the trapped leg
+//    comes up in front of the attacker, the boot at his chest, so the hands hold it out in front of him, not at his waist.
+//  - layers: the trapped leg over the attacker's body, his arms over the boot (clipLayers.js).
+//  - knees (D3): both men own their shins (`lShin`/`rShin` through shinsFromFolds), never a positive lKnee/rKnee upright; the victim's trapped knee
+//    is bent the natural way.
 import { ankleLockClip } from './ankleLock.js';
 import { shinsFromFolds } from '../../rig/articulation.js';
 
-// Keep the attacker beside the leg; lean his shoulders toward it instead of stepping 80 px into the receiver.
-const STEP_IN = 0;
-const DEFENDER_X = 100;
-const HOLD_END = 2.7;   // the hands let go from here; the foot falls after them
+const DEFENDER_X = 68;   // the downed man's hips from the attacker while held, so the raised boot is within an arm of his chest
+const APART_X = 150;     // the old clip's distance, kept at the grab and the release so his lying leg does not pass through the attacker's feet
+const HIP_LIFT = -70;    // his hips come off the mat over the hold (lying is -110), which carries the boot up to chest height
+const TRAPPED_LEG = 1.45; // the trapped thigh's lLeg while held
+const FREE_LEG = -0.45;  // the other leg lies on the mat (the tilted body would lift it; rLeg .1 is flat only when he is), drawn behind the attacker's legs
+const FREE_FOLD = 0.15;
+const HOLD_END = 2.7;    // the hands let go from here; the foot falls after them
 
-// Pose edits on top of the old keys, by time. `fold` is the attacker's heel fold, both legs (0 = straight).
+// Attacker poses on top of the old keys, by time. `fold` is the heel fold of both legs (0 = straight).
+const STAND = { crouch: 0.5, bend: 0.25, fold: 0.8 };
 const ATTACKER = {
-    0: { fold: 0 }, 0.3: { fold: 1.0 }, 0.6: { crouch: 0.85, lean: 0.15, fold: 1.25 }, 0.9: { crouch: 0.85, lean: 0.15, fold: 1.25 },
-    1.4: { crouch: 0.85, lean: 0.15, fold: 1.25 }, 1.95: { crouch: 0.85, lean: 0.12, fold: 1.25 }, 2.5: { crouch: 0.85, lean: 0.15, fold: 1.25 },
-    2.8: { crouch: 0.7, lean: 0.1, fold: 1.0 }, 3.1: { fold: 0 },
+    0: { fold: 0, bend: 0 },
+    0.3: { crouch: 0.5, lean: 0.15, bend: 0.25, fold: 0.8 },
+    0.6: { ...STAND, lean: -0.05 }, 0.9: { ...STAND, lean: -0.15 }, 1.4: { ...STAND, lean: -0.1 }, 1.95: { ...STAND, lean: -0.18 }, 2.5: { ...STAND, lean: -0.1 },
+    2.8: { ...STAND, lean: -0.1 },   // still down while the soles let go; he rises over the release
+    3.1: { fold: 0, bend: 0 },
 };
-const DEFENDER = { 0.6: { lLeg: 1.45 }, 0.9: { lLeg: 1.45 }, 1.4: { lLeg: 1.45 }, 1.95: { lLeg: 1.45 }, 2.5: { lLeg: 1.45 }, 2.8: { lLeg: 1.45 } };
+// Defender: the trapped leg up, his hips lifted, a soft bend in both knees (`fold` l = trapped, r = free).
+const DEFENDER = {
+    0: { lFold: 0.15, rFold: 0.15 }, 0.3: { lFold: 0.3, rFold: 0.15 },
+    0.6: { tilt: -1.9, lLeg: TRAPPED_LEG, lFold: 0.5, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT }, 0.9: { tilt: -1.7, lLeg: TRAPPED_LEG, lFold: 0.5, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT },
+    1.4: { tilt: -1.9, lLeg: TRAPPED_LEG, lFold: 0.5, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT }, 1.95: { tilt: -1.65, lLeg: TRAPPED_LEG, lFold: 0.5, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT },
+    2.5: { tilt: -1.88, lLeg: TRAPPED_LEG, lFold: 0.5, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT }, 2.8: { tilt: -1.7, lLeg: TRAPPED_LEG, lFold: 0.4, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT },
+    3.1: { lFold: 0.15, rFold: 0.15 },
+};
 
-const edited = (keyframes, edits, x, own) => keyframes.map(k => {
-    const { fold, ...rest } = edits[k.at] ?? {};
-    let pose = { ...k.pose, ...rest };
-    if (own) {   // the attacker owns his shins: no positive lKnee/rKnee
-        const { lKnee, rKnee, ...legs } = pose;
-        pose = shinsFromFolds({ ...legs, bend: k.at > 0 && k.at < 3.1 ? 0.75 : 0, lFold: fold ?? 0.5, rFold: fold ?? 0.5 });
-    }
+const attackerKeys = (keyframes) => keyframes.map(k => {
+    const { fold, ...rest } = ATTACKER[k.at] ?? {};
+    const { lKnee, rKnee, ...legs } = { ...k.pose, ...rest };   // he owns his shins: no positive lKnee/rKnee
     const holding = k.at > 0 && k.at < 3.1;
     return {
-        ...k, pose,
-        ...(own ? { parts: { ...k.parts, nearForearm: holding ? 'grip' : 'base', farForearm: holding ? 'grip' : 'base' } } : {}),
-        transform: x === null ? k.transform : {
-            ...k.transform, x: x(k.at), ...(own ? { y: holding ? 20 : 0 } : {}),
-        },
+        ...k, pose: shinsFromFolds({ ...legs, lFold: fold ?? 0.5, rFold: fold ?? 0.5 }),
+        parts: { ...k.parts, nearForearm: holding ? 'grip' : 'base', farForearm: holding ? 'grip' : 'base' },
     };
+});
+
+const defenderKeys = (keyframes) => keyframes.map(k => {
+    const { lKnee, rKnee, ...legs } = { ...k.pose, ...(DEFENDER[k.at] ?? {}) };
+    return { ...k, pose: shinsFromFolds({ lFold: 0.15, rFold: 0.15, ...legs }), transform: { ...k.transform, x: k.at <= 0.3 || k.at >= 3.1 ? APART_X : DEFENDER_X } };
 });
 
 export const ankleLockV2Clip = {
     ...ankleLockClip,
     id: 'ankleLockV2',
     tracks: {
-        attacker: { ...ankleLockClip.tracks.attacker, keyframes: edited(ankleLockClip.tracks.attacker.keyframes, ATTACKER, (at) => (at === 0 || at === 3.1 ? 0 : STEP_IN), true) },
-        defender: { ...ankleLockClip.tracks.defender, keyframes: edited(ankleLockClip.tracks.defender.keyframes, DEFENDER, () => DEFENDER_X, false) },
+        attacker: { ...ankleLockClip.tracks.attacker, keyframes: attackerKeys(ankleLockClip.tracks.attacker.keyframes) },
+        defender: { ...ankleLockClip.tracks.defender, keyframes: defenderKeys(ankleLockClip.tracks.defender.keyframes) },
     },
     grips: [
         { role: 'attacker', arm: 'l', to: { role: 'defender', joint: 'Ankle', side: 'same', anchor: 'heel' }, in: [0.15, 0.35], out: [HOLD_END, 2.95], natural: true, palm: 'clutch' },
@@ -47,4 +66,6 @@ export const ankleLockV2Clip = {
         { role: 'attacker', leg: 'l', in: [0.3, 0.4], out: [HOLD_END, 2.9] },
         { role: 'attacker', leg: 'r', in: [0.3, 0.4], out: [HOLD_END, 2.9] },
     ],
+    // back -> front: his free leg, his body, the trapped leg, then his arms over the boot
+    layers: [{ from: 0, to: 3.1, order: [['defender', 'rLeg'], ['attacker', 'body'], ['defender', 'lLeg'], ['attacker', 'farArm'], ['attacker', 'nearArm']] }],
 };

@@ -1,0 +1,1074 @@
+{
+ "lou-george-right": {
+  "frames": 186,
+  "idleGap": {
+   "a": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   },
+   "d": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   }
+  },
+  "palmHeld": {
+   "heel": {
+    "min": 0,
+    "max": 0,
+    "mean": 0
+   },
+   "toe": {
+    "min": 0,
+    "max": 0,
+    "mean": 0
+   },
+   "framesOver6": 0
+  },
+  "worstInkGap": {
+   "a": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   },
+   "d": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   }
+  },
+  "brokenFrames": 0,
+  "brokenList": [],
+  "pinnedFrames": 0,
+  "pinnedKinds": [],
+  "belowBodyPx": {
+   "min": 264,
+   "max": 824,
+   "mean": 584.2
+  },
+  "torsoPx": {
+   "min": 0,
+   "max": 0,
+   "mean": 0
+  },
+  "trappedVsLegsPx": {
+   "min": 0,
+   "max": 479,
+   "mean": 76.92
+  },
+  "trappedVsLegsFrames": 45,
+  "trappedVsTorsoPx": {
+   "min": 0,
+   "max": 0,
+   "mean": 0
+  },
+  "bootInFrontOfTorsoFramesHeld": "127/127",
+  "depthHeld": {
+   "shin": 24.000129999999995,
+   "torso": 24.000059999999998,
+   "nearThigh": 24.000109999999996,
+   "farThigh": 24.00004,
+   "nearForearm": 24.000189999999993,
+   "farForearm": 24.000159999999994
+  },
+  "bootCenterHeld": {
+   "x": 584,
+   "y": 312
+  },
+  "plantedSlideMax": {
+   "near": 0.51,
+   "far": 0.46
+  },
+  "wholeSlideMax": {
+   "near": 2.93,
+   "far": 2.19
+  },
+  "trappedVsLegsAt": [
+   [
+    0.0167,
+    214
+   ],
+   [
+    0.0667,
+    249
+   ],
+   [
+    0.1167,
+    299
+   ],
+   [
+    0.1667,
+    345
+   ],
+   [
+    0.2167,
+    390
+   ],
+   [
+    0.2667,
+    412
+   ],
+   [
+    0.3167,
+    346
+   ],
+   [
+    0.3667,
+    306
+   ],
+   [
+    0.4167,
+    435
+   ],
+   [
+    0.4667,
+    293
+   ],
+   [
+    2.8667,
+    35
+   ],
+   [
+    2.9167,
+    301
+   ],
+   [
+    2.9667,
+    406
+   ],
+   [
+    3.0167,
+    367
+   ],
+   [
+    3.0667,
+    350
+   ]
+  ],
+  "belowBodyAt": [
+   [
+    0.0167,
+    285
+   ],
+   [
+    0.1833,
+    458
+   ],
+   [
+    0.35,
+    517
+   ],
+   [
+    0.5167,
+    500
+   ],
+   [
+    0.6833,
+    617
+   ],
+   [
+    0.85,
+    607
+   ],
+   [
+    1.0167,
+    607
+   ],
+   [
+    1.1833,
+    614
+   ],
+   [
+    1.35,
+    625
+   ],
+   [
+    1.5167,
+    619
+   ],
+   [
+    1.6833,
+    612
+   ],
+   [
+    1.85,
+    607
+   ],
+   [
+    2.0167,
+    603
+   ],
+   [
+    2.1833,
+    605
+   ],
+   [
+    2.35,
+    611
+   ],
+   [
+    2.5167,
+    625
+   ],
+   [
+    2.6833,
+    610
+   ],
+   [
+    2.85,
+    454
+   ],
+   [
+    3.0167,
+    594
+   ]
+  ],
+  "plantedSlideOver15": [],
+  "kneeDrawn": {
+   "a": {
+    "min": 0,
+    "max": 0.8,
+    "mean": 0.67
+   },
+   "d": {
+    "min": 0.15,
+    "max": 0.5,
+    "mean": 0.29
+   }
+  },
+  "torsoBend": {
+   "min": 0.25,
+   "max": 0.25,
+   "mean": 0.25
+  }
+ },
+ "lou-george-left": {
+  "frames": 186,
+  "idleGap": {
+   "a": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   },
+   "d": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   }
+  },
+  "palmHeld": {
+   "heel": {
+    "min": 0,
+    "max": 0,
+    "mean": 0
+   },
+   "toe": {
+    "min": 0,
+    "max": 0,
+    "mean": 0
+   },
+   "framesOver6": 0
+  },
+  "worstInkGap": {
+   "a": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   },
+   "d": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   }
+  },
+  "brokenFrames": 0,
+  "brokenList": [],
+  "pinnedFrames": 0,
+  "pinnedKinds": [],
+  "belowBodyPx": {
+   "min": 264,
+   "max": 824,
+   "mean": 584.2
+  },
+  "torsoPx": {
+   "min": 0,
+   "max": 0,
+   "mean": 0
+  },
+  "trappedVsLegsPx": {
+   "min": 0,
+   "max": 479,
+   "mean": 76.92
+  },
+  "trappedVsLegsFrames": 45,
+  "trappedVsTorsoPx": {
+   "min": 0,
+   "max": 0,
+   "mean": 0
+  },
+  "bootInFrontOfTorsoFramesHeld": "127/127",
+  "depthHeld": {
+   "shin": 24.000129999999995,
+   "torso": 24.000059999999998,
+   "nearThigh": 24.000109999999996,
+   "farThigh": 24.00004,
+   "nearForearm": 24.000189999999993,
+   "farForearm": 24.000159999999994
+  },
+  "bootCenterHeld": {
+   "x": 456,
+   "y": 312
+  },
+  "plantedSlideMax": {
+   "near": 0.51,
+   "far": 0.46
+  },
+  "wholeSlideMax": {
+   "near": 2.93,
+   "far": 2.19
+  },
+  "trappedVsLegsAt": [
+   [
+    0.0167,
+    214
+   ],
+   [
+    0.0667,
+    249
+   ],
+   [
+    0.1167,
+    299
+   ],
+   [
+    0.1667,
+    345
+   ],
+   [
+    0.2167,
+    390
+   ],
+   [
+    0.2667,
+    412
+   ],
+   [
+    0.3167,
+    346
+   ],
+   [
+    0.3667,
+    306
+   ],
+   [
+    0.4167,
+    435
+   ],
+   [
+    0.4667,
+    293
+   ],
+   [
+    2.8667,
+    35
+   ],
+   [
+    2.9167,
+    301
+   ],
+   [
+    2.9667,
+    406
+   ],
+   [
+    3.0167,
+    367
+   ],
+   [
+    3.0667,
+    350
+   ]
+  ],
+  "belowBodyAt": [
+   [
+    0.0167,
+    285
+   ],
+   [
+    0.1833,
+    458
+   ],
+   [
+    0.35,
+    517
+   ],
+   [
+    0.5167,
+    500
+   ],
+   [
+    0.6833,
+    617
+   ],
+   [
+    0.85,
+    607
+   ],
+   [
+    1.0167,
+    607
+   ],
+   [
+    1.1833,
+    614
+   ],
+   [
+    1.35,
+    625
+   ],
+   [
+    1.5167,
+    619
+   ],
+   [
+    1.6833,
+    612
+   ],
+   [
+    1.85,
+    607
+   ],
+   [
+    2.0167,
+    603
+   ],
+   [
+    2.1833,
+    605
+   ],
+   [
+    2.35,
+    611
+   ],
+   [
+    2.5167,
+    625
+   ],
+   [
+    2.6833,
+    610
+   ],
+   [
+    2.85,
+    454
+   ],
+   [
+    3.0167,
+    594
+   ]
+  ],
+  "plantedSlideOver15": [],
+  "kneeDrawn": {
+   "a": {
+    "min": 0,
+    "max": 0.8,
+    "mean": 0.67
+   },
+   "d": {
+    "min": 0.15,
+    "max": 0.5,
+    "mean": 0.29
+   }
+  },
+  "torsoBend": {
+   "min": 0.25,
+   "max": 0.25,
+   "mean": 0.25
+  }
+ },
+ "george-lou-right": {
+  "frames": 186,
+  "idleGap": {
+   "a": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   },
+   "d": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   }
+  },
+  "palmHeld": {
+   "heel": {
+    "min": 0,
+    "max": 0,
+    "mean": 0
+   },
+   "toe": {
+    "min": 0,
+    "max": 0.43,
+    "mean": 0
+   },
+   "framesOver6": 0
+  },
+  "worstInkGap": {
+   "a": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   },
+   "d": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   }
+  },
+  "brokenFrames": 0,
+  "brokenList": [],
+  "pinnedFrames": 0,
+  "pinnedKinds": [],
+  "belowBodyPx": {
+   "min": 324,
+   "max": 1170,
+   "mean": 569.83
+  },
+  "torsoPx": {
+   "min": 0,
+   "max": 0,
+   "mean": 0
+  },
+  "trappedVsLegsPx": {
+   "min": 0,
+   "max": 663,
+   "mean": 66.33
+  },
+  "trappedVsLegsFrames": 43,
+  "trappedVsTorsoPx": {
+   "min": 0,
+   "max": 351,
+   "mean": 45.73
+  },
+  "bootInFrontOfTorsoFramesHeld": "127/127",
+  "depthHeld": {
+   "shin": 24.000139999999995,
+   "torso": 24.00004,
+   "nearThigh": 24.000119999999995,
+   "farThigh": 24.000089999999997,
+   "nearForearm": 24.000209999999992,
+   "farForearm": 24.000179999999993
+  },
+  "bootCenterHeld": {
+   "x": 587,
+   "y": 306
+  },
+  "plantedSlideMax": {
+   "near": 0.29,
+   "far": 0.25
+  },
+  "wholeSlideMax": {
+   "near": 3.5,
+   "far": 1.03
+  },
+  "trappedVsLegsAt": [
+   [
+    0.0167,
+    117
+   ],
+   [
+    0.0667,
+    109
+   ],
+   [
+    0.1167,
+    72
+   ],
+   [
+    0.1667,
+    87
+   ],
+   [
+    0.2167,
+    158
+   ],
+   [
+    0.2667,
+    220
+   ],
+   [
+    0.3167,
+    247
+   ],
+   [
+    0.3667,
+    405
+   ],
+   [
+    0.4167,
+    654
+   ],
+   [
+    0.4667,
+    221
+   ],
+   [
+    2.9,
+    265
+   ],
+   [
+    2.95,
+    615
+   ],
+   [
+    3,
+    519
+   ],
+   [
+    3.05,
+    315
+   ],
+   [
+    3.1,
+    105
+   ]
+  ],
+  "belowBodyAt": [
+   [
+    0.0167,
+    531
+   ],
+   [
+    0.1833,
+    386
+   ],
+   [
+    0.35,
+    510
+   ],
+   [
+    0.5167,
+    439
+   ],
+   [
+    0.6833,
+    572
+   ],
+   [
+    0.85,
+    551
+   ],
+   [
+    1.0167,
+    550
+   ],
+   [
+    1.1833,
+    558
+   ],
+   [
+    1.35,
+    586
+   ],
+   [
+    1.5167,
+    572
+   ],
+   [
+    1.6833,
+    555
+   ],
+   [
+    1.85,
+    532
+   ],
+   [
+    2.0167,
+    512
+   ],
+   [
+    2.1833,
+    552
+   ],
+   [
+    2.35,
+    560
+   ],
+   [
+    2.5167,
+    585
+   ],
+   [
+    2.6833,
+    564
+   ],
+   [
+    2.85,
+    462
+   ],
+   [
+    3.0167,
+    1129
+   ]
+  ],
+  "plantedSlideOver15": [],
+  "kneeDrawn": {
+   "a": {
+    "min": 0,
+    "max": 0.8,
+    "mean": 0.64
+   },
+   "d": {
+    "min": 0.15,
+    "max": 0.5,
+    "mean": 0.29
+   }
+  },
+  "torsoBend": {
+   "min": 0.25,
+   "max": 0.25,
+   "mean": 0.25
+  }
+ },
+ "george-lou-left": {
+  "frames": 186,
+  "idleGap": {
+   "a": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   },
+   "d": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   }
+  },
+  "palmHeld": {
+   "heel": {
+    "min": 0,
+    "max": 0,
+    "mean": 0
+   },
+   "toe": {
+    "min": 0,
+    "max": 0.43,
+    "mean": 0
+   },
+   "framesOver6": 0
+  },
+  "worstInkGap": {
+   "a": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   },
+   "d": {
+    "neck": 0,
+    "farShoulder": 0,
+    "nearShoulder": 0,
+    "farElbow": 0,
+    "nearElbow": 0,
+    "farHip": 0,
+    "nearHip": 0,
+    "farKnee": 0,
+    "nearKnee": 0
+   }
+  },
+  "brokenFrames": 0,
+  "brokenList": [],
+  "pinnedFrames": 0,
+  "pinnedKinds": [],
+  "belowBodyPx": {
+   "min": 324,
+   "max": 1170,
+   "mean": 569.83
+  },
+  "torsoPx": {
+   "min": 0,
+   "max": 0,
+   "mean": 0
+  },
+  "trappedVsLegsPx": {
+   "min": 0,
+   "max": 663,
+   "mean": 66.33
+  },
+  "trappedVsLegsFrames": 43,
+  "trappedVsTorsoPx": {
+   "min": 0,
+   "max": 351,
+   "mean": 45.73
+  },
+  "bootInFrontOfTorsoFramesHeld": "127/127",
+  "depthHeld": {
+   "shin": 24.000139999999995,
+   "torso": 24.00004,
+   "nearThigh": 24.000119999999995,
+   "farThigh": 24.000089999999997,
+   "nearForearm": 24.000209999999992,
+   "farForearm": 24.000179999999993
+  },
+  "bootCenterHeld": {
+   "x": 453,
+   "y": 306
+  },
+  "plantedSlideMax": {
+   "near": 0.29,
+   "far": 0.25
+  },
+  "wholeSlideMax": {
+   "near": 3.5,
+   "far": 1.03
+  },
+  "trappedVsLegsAt": [
+   [
+    0.0167,
+    117
+   ],
+   [
+    0.0667,
+    109
+   ],
+   [
+    0.1167,
+    72
+   ],
+   [
+    0.1667,
+    87
+   ],
+   [
+    0.2167,
+    158
+   ],
+   [
+    0.2667,
+    220
+   ],
+   [
+    0.3167,
+    247
+   ],
+   [
+    0.3667,
+    405
+   ],
+   [
+    0.4167,
+    654
+   ],
+   [
+    0.4667,
+    221
+   ],
+   [
+    2.9,
+    265
+   ],
+   [
+    2.95,
+    615
+   ],
+   [
+    3,
+    519
+   ],
+   [
+    3.05,
+    315
+   ],
+   [
+    3.1,
+    105
+   ]
+  ],
+  "belowBodyAt": [
+   [
+    0.0167,
+    531
+   ],
+   [
+    0.1833,
+    386
+   ],
+   [
+    0.35,
+    510
+   ],
+   [
+    0.5167,
+    439
+   ],
+   [
+    0.6833,
+    572
+   ],
+   [
+    0.85,
+    551
+   ],
+   [
+    1.0167,
+    550
+   ],
+   [
+    1.1833,
+    558
+   ],
+   [
+    1.35,
+    586
+   ],
+   [
+    1.5167,
+    572
+   ],
+   [
+    1.6833,
+    555
+   ],
+   [
+    1.85,
+    532
+   ],
+   [
+    2.0167,
+    512
+   ],
+   [
+    2.1833,
+    552
+   ],
+   [
+    2.35,
+    560
+   ],
+   [
+    2.5167,
+    585
+   ],
+   [
+    2.6833,
+    564
+   ],
+   [
+    2.85,
+    462
+   ],
+   [
+    3.0167,
+    1129
+   ]
+  ],
+  "plantedSlideOver15": [],
+  "kneeDrawn": {
+   "a": {
+    "min": 0,
+    "max": 0.8,
+    "mean": 0.64
+   },
+   "d": {
+    "min": 0.15,
+    "max": 0.5,
+    "mean": 0.29
+   }
+  },
+  "torsoBend": {
+   "min": 0.25,
+   "max": 0.25,
+   "mean": 0.25
+  }
+ }
+}

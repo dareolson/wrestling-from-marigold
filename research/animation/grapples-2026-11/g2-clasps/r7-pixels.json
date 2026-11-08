@@ -1,0 +1,298 @@
+{
+  "lou-george-right": [
+    {
+      "man": "a",
+      "slot": "nearForearm",
+      "frame": 8,
+      "art": "collarTie",
+      "changed": 547,
+      "shaft": 232,
+      "hand": 315,
+      "elbowEnd": 2,
+      "bbox": [
+        65,
+        44,
+        120,
+        68
+      ],
+      "shaftMaxPerpPx": 15.9,
+      "forearmScreenLen": 49
+    },
+    {
+      "man": "a",
+      "slot": "farForearm",
+      "frame": 9,
+      "art": "elbowCup",
+      "changed": 72,
+      "shaft": 72,
+      "hand": 0,
+      "elbowEnd": 3,
+      "bbox": [
+        62,
+        57,
+        83,
+        76
+      ],
+      "shaftMaxPerpPx": 12.2,
+      "forearmScreenLen": 41.6
+    },
+    {
+      "man": "d",
+      "slot": "farForearm",
+      "frame": 11,
+      "art": "elbowCup",
+      "changed": 5,
+      "shaft": 5,
+      "hand": 0,
+      "elbowEnd": 0,
+      "bbox": [
+        64,
+        67,
+        68,
+        73
+      ],
+      "shaftMaxPerpPx": 1.1,
+      "forearmScreenLen": 23.3
+    },
+    {
+      "man": "d",
+      "slot": "nearForearm",
+      "frame": 13,
+      "art": "elbowCup",
+      "changed": 297,
+      "shaft": 5,
+      "hand": 292,
+      "elbowEnd": 4,
+      "bbox": [
+        37,
+        34,
+        87,
+        73
+      ],
+      "shaftMaxPerpPx": 2.4,
+      "forearmScreenLen": 27.4
+    }
+  ],
+  "lou-george-left": [
+    {
+      "man": "a",
+      "slot": "nearForearm",
+      "frame": 7,
+      "art": "collarTie",
+      "changed": 456,
+      "shaft": 290,
+      "hand": 166,
+      "elbowEnd": 34,
+      "bbox": [
+        54,
+        48,
+        114,
+        71
+      ],
+      "shaftMaxPerpPx": 14.8,
+      "forearmScreenLen": 49
+    },
+    {
+      "man": "a",
+      "slot": "farForearm",
+      "frame": 9,
+      "art": "elbowCup",
+      "changed": 95,
+      "shaft": 95,
+      "hand": 0,
+      "elbowEnd": 18,
+      "bbox": [
+        77,
+        54,
+        98,
+        76
+      ],
+      "shaftMaxPerpPx": 9.7,
+      "forearmScreenLen": 41.6
+    },
+    {
+      "man": "d",
+      "slot": "farForearm",
+      "frame": 10,
+      "art": "elbowCup",
+      "changed": 97,
+      "shaft": 8,
+      "hand": 89,
+      "elbowEnd": 0,
+      "bbox": [
+        68,
+        42,
+        104,
+        66
+      ],
+      "shaftMaxPerpPx": 3.5,
+      "forearmScreenLen": 23.3
+    },
+    {
+      "man": "d",
+      "slot": "nearForearm",
+      "frame": 13,
+      "art": "elbowCup",
+      "changed": 301,
+      "shaft": 14,
+      "hand": 287,
+      "elbowEnd": 3,
+      "bbox": [
+        57,
+        34,
+        113,
+        72
+      ],
+      "shaftMaxPerpPx": 13.6,
+      "forearmScreenLen": 27.4
+    }
+  ],
+  "george-lou-right": [
+    {
+      "man": "a",
+      "slot": "nearForearm",
+      "frame": 8,
+      "art": "collarTie",
+      "changed": 310,
+      "shaft": 10,
+      "hand": 300,
+      "elbowEnd": 0,
+      "bbox": [
+        62,
+        34,
+        115,
+        72
+      ],
+      "shaftMaxPerpPx": 12.4,
+      "forearmScreenLen": 27.4
+    },
+    {
+      "man": "a",
+      "slot": "farForearm",
+      "frame": 10,
+      "art": "elbowCup",
+      "changed": 29,
+      "shaft": 19,
+      "hand": 10,
+      "elbowEnd": 0,
+      "bbox": [
+        64,
+        49,
+        86,
+        65
+      ],
+      "shaftMaxPerpPx": 12.1,
+      "forearmScreenLen": 23.3
+    },
+    {
+      "man": "d",
+      "slot": "farForearm",
+      "frame": 11,
+      "art": "elbowCup",
+      "changed": 6,
+      "shaft": 6,
+      "hand": 0,
+      "elbowEnd": 0,
+      "bbox": [
+        89,
+        62,
+        92,
+        63
+      ],
+      "shaftMaxPerpPx": 10.8,
+      "forearmScreenLen": 41.6
+    },
+    {
+      "man": "d",
+      "slot": "nearForearm",
+      "frame": 13,
+      "art": "elbowCup",
+      "changed": 448,
+      "shaft": 290,
+      "hand": 158,
+      "elbowEnd": 19,
+      "bbox": [
+        55,
+        48,
+        110,
+        72
+      ],
+      "shaftMaxPerpPx": 13,
+      "forearmScreenLen": 49
+    }
+  ],
+  "george-lou-left": [
+    {
+      "man": "a",
+      "slot": "nearForearm",
+      "frame": 7,
+      "art": "collarTie",
+      "changed": 299,
+      "shaft": 19,
+      "hand": 280,
+      "elbowEnd": 11,
+      "bbox": [
+        35,
+        36,
+        88,
+        72
+      ],
+      "shaftMaxPerpPx": 13.8,
+      "forearmScreenLen": 27.4
+    },
+    {
+      "man": "a",
+      "slot": "farForearm",
+      "frame": 10,
+      "art": "elbowCup",
+      "changed": 29,
+      "shaft": 29,
+      "hand": 0,
+      "elbowEnd": 10,
+      "bbox": [
+        64,
+        49,
+        85,
+        64
+      ],
+      "shaftMaxPerpPx": 11.9,
+      "forearmScreenLen": 23.3
+    },
+    {
+      "man": "d",
+      "slot": "farForearm",
+      "frame": 10,
+      "art": "elbowCup",
+      "changed": 57,
+      "shaft": 53,
+      "hand": 4,
+      "elbowEnd": 0,
+      "bbox": [
+        72,
+        51,
+        95,
+        70
+      ],
+      "shaftMaxPerpPx": 11.4,
+      "forearmScreenLen": 41.6
+    },
+    {
+      "man": "d",
+      "slot": "nearForearm",
+      "frame": 13,
+      "art": "elbowCup",
+      "changed": 486,
+      "shaft": 231,
+      "hand": 255,
+      "elbowEnd": 5,
+      "bbox": [
+        58,
+        47,
+        120,
+        71
+      ],
+      "shaftMaxPerpPx": 14.4,
+      "forearmScreenLen": 49
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+ "lou-george-right-lockup": {
+  "palmMeanBefore": {
+   "a.collarTie": 0.25,
+   "a.elbowCup": 12.5,
+   "d.bicepGrip.far": 14.39,
+   "d.bicepGrip.near": 10.67
+  },
+  "palmMeanAfter": {
+   "a.collarTie": 0.25,
+   "a.elbowCup": 5.51,
+   "d.bicepGrip.far": 14.39,
+   "d.bicepGrip.near": 13.34
+  },
+  "palmMaxBefore": {
+   "a.collarTie": 0.45,
+   "a.elbowCup": 18.53,
+   "d.bicepGrip.far": 27.57,
+   "d.bicepGrip.near": 10.9
+  },
+  "palmMaxAfter": {
+   "a.collarTie": 0.45,
+   "a.elbowCup": 5.8,
+   "d.bicepGrip.far": 27.57,
+   "d.bicepGrip.near": 13.73
+  },
+  "minElbowFlexBefore": {
+   "a.l": 0.7,
+   "a.r": 0.53,
+   "d.l": 0.78,
+   "d.r": 1.84
+  },
+  "minElbowFlexAfter": {
+   "a.l": 0.7,
+   "a.r": 0.54,
+   "d.l": 0.8,
+   "d.r": 1.84
+  }
+ },
+ "lou-george-left-lockup": {
+  "palmMeanBefore": {
+   "a.collarTie": 0.27,
+   "a.elbowCup": 12.36,
+   "d.bicepGrip.far": 14.12,
+   "d.bicepGrip.near": 10.66
+  },
+  "palmMeanAfter": {
+   "a.collarTie": 0.27,
+   "a.elbowCup": 5.5,
+   "d.bicepGrip.far": 14.12,
+   "d.bicepGrip.near": 13.34
+  },
+  "palmMaxBefore": {
+   "a.collarTie": 1.93,
+   "a.elbowCup": 18.5,
+   "d.bicepGrip.far": 27.57,
+   "d.bicepGrip.near": 10.92
+  },
+  "palmMaxAfter": {
+   "a.collarTie": 1.93,
+   "a.elbowCup": 5.79,
+   "d.bicepGrip.far": 27.57,
+   "d.bicepGrip.near": 13.74
+  },
+  "minElbowFlexBefore": {
+   "a.l": 0.7,
+   "a.r": 0.5,
+   "d.l": 0.77,
+   "d.r": 1.84
+  },
+  "minElbowFlexAfter": {
+   "a.l": 0.7,
+   "a.r": 0.5,
+   "d.l": 0.8,
+   "d.r": 1.84
+  }
+ },
+ "george-lou-right-lockup": {
+  "palmMeanBefore": {
+   "a.collarTie": 27.55,
+   "a.elbowCup": 39.71,
+   "d.bicepGrip.far": 0.71,
+   "d.bicepGrip.near": 0.01
+  },
+  "palmMeanAfter": {
+   "a.collarTie": 27.55,
+   "a.elbowCup": 4.85,
+   "d.bicepGrip.far": 0.71,
+   "d.bicepGrip.near": 0.03
+  },
+  "palmMaxBefore": {
+   "a.collarTie": 27.82,
+   "a.elbowCup": 40.58,
+   "d.bicepGrip.far": 0.73,
+   "d.bicepGrip.near": 0.07
+  },
+  "palmMaxAfter": {
+   "a.collarTie": 27.82,
+   "a.elbowCup": 6.65,
+   "d.bicepGrip.far": 0.73,
+   "d.bicepGrip.near": 0.04
+  },
+  "minElbowFlexBefore": {
+   "a.l": 0.71,
+   "a.r": 0.09,
+   "d.l": 0.74,
+   "d.r": 1.49
+  },
+  "minElbowFlexAfter": {
+   "a.l": 0.71,
+   "a.r": 0.09,
+   "d.l": 0.74,
+   "d.r": 1.49
+  }
+ },
+ "george-lou-left-lockup": {
+  "palmMeanBefore": {
+   "a.collarTie": 27.49,
+   "a.elbowCup": 39.68,
+   "d.bicepGrip.far": 0.71,
+   "d.bicepGrip.near": 0.01
+  },
+  "palmMeanAfter": {
+   "a.collarTie": 27.49,
+   "a.elbowCup": 4.83,
+   "d.bicepGrip.far": 0.71,
+   "d.bicepGrip.near": 0.03
+  },
+  "palmMaxBefore": {
+   "a.collarTie": 27.79,
+   "a.elbowCup": 40.55,
+   "d.bicepGrip.far": 0.73,
+   "d.bicepGrip.near": 0.07
+  },
+  "palmMaxAfter": {
+   "a.collarTie": 27.79,
+   "a.elbowCup": 6.57,
+   "d.bicepGrip.far": 0.73,
+   "d.bicepGrip.near": 0.04
+  },
+  "minElbowFlexBefore": {
+   "a.l": 0.71,
+   "a.r": 0.09,
+   "d.l": 0.74,
+   "d.r": 1.49
+  },
+  "minElbowFlexAfter": {
+   "a.l": 0.71,
+   "a.r": 0.08,
+   "d.l": 0.74,
+   "d.r": 1.49
+  }
+ }
+}

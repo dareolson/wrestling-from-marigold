@@ -32,7 +32,7 @@ test('D4 sides in both facings: attacker near arm on the collar, far arm on the 
             const by = (list, joint) => list.find(g => g.joint === joint);
             assert.equal(by(attacker, 'Neck').arm, nearCh);
             assert.equal(by(attacker, 'Elbow').arm, farCh);
-            assert.equal(by(attacker, 'Elbow').side, 'same');
+            assert.equal(by(attacker, 'Elbow').side, 'other');
             const holds = defender.filter(g => g.joint === 'Elbow');
             assert.equal(defender.some(g => g.joint === 'Neck' || g.at), false, 'the defender holds arms, not the attacker\'s neck (Derek G2)');
             assert.deepEqual(holds.map(g => g.arm).sort(), ['l', 'r'], 'one hand on each of the attacker\'s upper arms');
@@ -222,6 +222,26 @@ test('gripTarget: `at` wins, a joint is the joint, `above` moves along the partn
     assert.deepEqual(gripTarget({ ...it, above: 0.25 }, 'near'), { x: 100, y: 40 });
     assert.deepEqual(gripTarget({ ...it, above: -0.5 }, 'near'), { x: 100, y: 70 });
     assert.deepEqual(gripTarget({ ...it, side: 'other', above: 0.5 }, 'near'), { x: 0, y: 0 });
+});
+
+test('gripTarget `fore`: down the partner\'s forearm from the elbow, on the side the hand asks for, however bent the elbow is', () => {
+    const partner = { skeleton: { jointAttachmentPoints: { nearElbow: { x: 100, y: 50 }, nearWrist: { x: 140, y: 50 }, nearShoulder: { x: 100, y: 10 }, farElbow: { x: 0, y: 0 }, farWrist: { x: 0, y: 80 } } } };
+    const it = { partner, joint: 'Elbow', side: 'same', fore: 0.25 };
+    assert.deepEqual(gripTarget(it, 'near'), { x: 110, y: 50 }, 'a bent arm: the point is on the forearm, not on the upper arm\'s line');
+    assert.deepEqual(gripTarget({ ...it, side: 'other' }, 'near'), { x: 0, y: 20 });
+    assert.deepEqual(gripTarget({ ...it, at: { x: 1, y: 2 } }, 'near'), { x: 1, y: 2 });
+    assert.deepEqual(gripTarget({ ...it, fore: 0, above: 0.25 }, 'near'), { x: 100, y: 40 }, 'no fore: the old `above`');
+});
+
+test('the attacker\'s elbow hand cups the partner\'s near (visible) forearm (r7)', () => {
+    const grips = { attacker: { collar: 1, elbow: 1 }, defender: { collar: 0, elbow: 0 } };
+    for (const lSide of ['near', 'far']) for (const facing of [1, -1]) {
+        const { attacker } = lockupGrips(actor(facing, lSide, { x: 0, y: 0 }), actor(-facing, lSide, { x: 90, y: 0 }), grips);
+        const e = attacker.find(g => g.joint === 'Elbow');
+        assert.equal(e.side, 'other');
+        assert.equal(e.fore, LOCKUP.elbowFore);
+        assert.equal(e.above, undefined);
+    }
 });
 
 test('exitBlendPose: starts on the held tie-up, ends on the move, and leaves the move\'s own pose alone', () => {

@@ -33,7 +33,7 @@ export const LOCKUP = Object.freeze({
     holdGap: 80,                        // px at s = 1 between the pair's x while held. D12 sweep (T1.7): no overlap under the belt or torso on torso, every grip 0 px; 78 also passes, but on the edge of the band, where the tugs and the strain leave it
     collarBack: 9, collarDrop: 6,       // px at s = 1: the collar point is the partner's neck, back of it and lower (D7)
     bicepGrip: 0.5,                     // where the defender's hands hold the attacker's arms, as a share of the upper arm from the elbow toward the shoulder (Derek G2: he defends, he doesn't hug)
-    elbowCup: -0.6,                     // where the far hand cups, as a share of the partner's upper arm from the elbow toward his shoulder; negative = past the elbow, onto his forearm. Solved on the elbow itself, Lou's far hand flips to a fold the rig's elbow can't draw and misses by 30 px (T1.8)
+    elbowFore: 0.25,                    // where the attacker's far hand cups the partner's NEAR arm (the one drawn in front of his torso), as a share of his forearm from the elbow toward the wrist. r7 (Derek G2: "resting his fist on george's ribs"): the old target, -0.6 of the upper arm past the far elbow, sat on the far arm drawn behind the torso, 14-42 px from any visible arm pixel; this is 0-2 px
 });
 
 // Pose keys (D6, D13). Legs, shins, bend, crouch only; the arms come from the IK. `bend` is the torso pitch the rig draws (`lean` is not
@@ -250,8 +250,8 @@ function endingPose(weights, { ending: { kind, role, u }, releaseBend, lean = 0,
 }
 
 // The D4 grip list, in Wrestler.holdGrips form, for each role's actor. Near arm = the arm whose channel draws on the near
-// side (skeleton.lChannelSide). Attacker: near arm collar (behind the defender's neck), far arm on the defender's far
-// elbow. Defender: far arm collar (behind the attacker's neck), near arm on the attacker's near elbow.
+// side (skeleton.lChannelSide). Attacker: near arm collar (behind the defender's neck), far arm cupping the defender's near
+// (visible) elbow, just down his forearm. Defender: a hand on the middle of each of the attacker's upper arms (r5).
 export function lockupGrips(attacker, defender, grips) {
     const nearArm = (actor) => ((actor.skeleton?.lChannelSide?.(actor.facing) ?? 'near') === 'near' ? 'l' : 'r');
     const farArm = (actor) => (nearArm(actor) === 'l' ? 'r' : 'l');
@@ -265,7 +265,7 @@ export function lockupGrips(attacker, defender, grips) {
         const out = [];
         const at = collarAt(partner);
         if (at && g.collar > 0) out.push({ arm: collarArm, partner, joint: 'Neck', side: 'same', at, w: g.collar, clasp: 'collarTie' });
-        if (g.elbow > 0) out.push({ arm: elbowArm, partner, joint: 'Elbow', side: 'same', above: LOCKUP.elbowCup, w: g.elbow, clasp: 'elbowCup' });
+        if (g.elbow > 0) out.push({ arm: elbowArm, partner, joint: 'Elbow', side: 'other', fore: LOCKUP.elbowFore, w: g.elbow, clasp: 'elbowCup' });
         return out;
     };
     // The defender holds the attacker's arms, not his neck: each hand on the middle of a different upper arm, `other` side so the near
@@ -292,10 +292,13 @@ export function breakTravel(kind) {
 
 // Where a holdGrips entry's hand goes, for a hand on `handSide`: its `at`, else the partner's joint on that side (or the other side), moved
 // `above` of the way up to the partner's shoulder. Read fresh each pass, because the partner's own grips move his joints.
-export function gripTarget({ partner, joint, side, at, above }, handSide) {
+export function gripTarget({ partner, joint, side, at, above, fore }, handSide) {
     if (at) return at;
     const pts = partner.skeleton.jointAttachmentPoints, on = side === 'other' ? (handSide === 'near' ? 'far' : 'near') : handSide;
     const p = pts?.[`${on}${joint}`];
+    // `fore`: down the partner's forearm from the elbow toward his wrist (the point on the drawn forearm, however bent the elbow is)
+    const wr = fore ? pts?.[`${on}Wrist`] : null;
+    if (p && wr) return { x: p.x + (wr.x - p.x) * fore, y: p.y + (wr.y - p.y) * fore };
     if (!p || !above) return p;   // `above` < 0 goes past the joint
     const q = pts[`${on}Shoulder`];
     return q ? { x: p.x + (q.x - p.x) * above, y: p.y + (q.y - p.y) * above } : p;

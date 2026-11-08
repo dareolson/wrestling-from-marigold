@@ -1,0 +1,490 @@
+{
+  "lou-george-right": {
+    "f30.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 58,
+      "nearestVisibleArmScreenPx": 47.8,
+      "nearestWorldPx": 41.7
+    },
+    "f30.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 1107,
+      "nearestVisibleArmScreenPx": 21,
+      "nearestWorldPx": 18.3
+    },
+    "f30.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1107,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f30.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 255,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1107,
+      "nearestVisibleArmScreenPx": 1,
+      "nearestWorldPx": 0.9
+    },
+    "f30.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 255,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1107,
+      "nearestVisibleArmScreenPx": 1,
+      "nearestWorldPx": 0.9
+    },
+    "f50.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 78,
+      "nearestVisibleArmScreenPx": 21.2,
+      "nearestWorldPx": 18.5
+    },
+    "f50.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1101,
+      "nearestVisibleArmScreenPx": 20,
+      "nearestWorldPx": 17.5
+    },
+    "f50.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 253,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1101,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f50.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1101,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f50.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1101,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f70.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 77,
+      "nearestVisibleArmScreenPx": 21.9,
+      "nearestWorldPx": 19.1
+    },
+    "f70.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 253,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1156,
+      "nearestVisibleArmScreenPx": 20,
+      "nearestWorldPx": 17.5
+    },
+    "f70.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1156,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f70.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1156,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f70.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1156,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    }
+  },
+  "lou-george-left": {
+    "f30.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 58,
+      "nearestVisibleArmScreenPx": 41.8,
+      "nearestWorldPx": 36.4
+    },
+    "f30.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 1135,
+      "nearestVisibleArmScreenPx": 19.1,
+      "nearestWorldPx": 16.7
+    },
+    "f30.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1135,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f30.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1135,
+      "nearestVisibleArmScreenPx": 2,
+      "nearestWorldPx": 1.7
+    },
+    "f30.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 253,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1135,
+      "nearestVisibleArmScreenPx": 2.2,
+      "nearestWorldPx": 2
+    },
+    "f50.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 73,
+      "nearestVisibleArmScreenPx": 16.6,
+      "nearestWorldPx": 14.4
+    },
+    "f50.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1162,
+      "nearestVisibleArmScreenPx": 21.8,
+      "nearestWorldPx": 19.1
+    },
+    "f50.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1162,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f50.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1162,
+      "nearestVisibleArmScreenPx": 2.2,
+      "nearestWorldPx": 2
+    },
+    "f50.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1162,
+      "nearestVisibleArmScreenPx": 2.8,
+      "nearestWorldPx": 2.5
+    },
+    "f70.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 75,
+      "nearestVisibleArmScreenPx": 17.9,
+      "nearestWorldPx": 15.6
+    },
+    "f70.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1222,
+      "nearestVisibleArmScreenPx": 22.6,
+      "nearestWorldPx": 19.7
+    },
+    "f70.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 253,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1222,
+      "nearestVisibleArmScreenPx": 1,
+      "nearestWorldPx": 0.9
+    },
+    "f70.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1222,
+      "nearestVisibleArmScreenPx": 2,
+      "nearestWorldPx": 1.7
+    },
+    "f70.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1222,
+      "nearestVisibleArmScreenPx": 2,
+      "nearestWorldPx": 1.7
+    }
+  },
+  "george-lou-right": {
+    "f30.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 134,
+      "nearestVisibleArmScreenPx": 19.3,
+      "nearestWorldPx": 16.9
+    },
+    "f30.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 251,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1020,
+      "nearestVisibleArmScreenPx": 20,
+      "nearestWorldPx": 17.5
+    },
+    "f30.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1020,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f30.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 255,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1020,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f30.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 1020,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f50.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 123,
+      "nearestVisibleArmScreenPx": 20.2,
+      "nearestWorldPx": 17.7
+    },
+    "f50.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 253,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1033,
+      "nearestVisibleArmScreenPx": 19,
+      "nearestWorldPx": 16.6
+    },
+    "f50.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 253,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1033,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f50.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1033,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f50.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 1033,
+      "nearestVisibleArmScreenPx": 1,
+      "nearestWorldPx": 0.9
+    },
+    "f70.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 130,
+      "nearestVisibleArmScreenPx": 19.9,
+      "nearestWorldPx": 17.4
+    },
+    "f70.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 255,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1017,
+      "nearestVisibleArmScreenPx": 18,
+      "nearestWorldPx": 15.7
+    },
+    "f70.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 253,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1017,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f70.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1017,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f70.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 1017,
+      "nearestVisibleArmScreenPx": 1.4,
+      "nearestWorldPx": 1.2
+    }
+  },
+  "george-lou-left": {
+    "f30.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 134,
+      "nearestVisibleArmScreenPx": 19,
+      "nearestWorldPx": 16.6
+    },
+    "f30.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 255,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1074,
+      "nearestVisibleArmScreenPx": 20,
+      "nearestWorldPx": 17.5
+    },
+    "f30.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1074,
+      "nearestVisibleArmScreenPx": 1,
+      "nearestWorldPx": 0.9
+    },
+    "f30.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1074,
+      "nearestVisibleArmScreenPx": 1.4,
+      "nearestWorldPx": 1.2
+    },
+    "f30.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 1074,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f50.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 126,
+      "nearestVisibleArmScreenPx": 19,
+      "nearestWorldPx": 16.6
+    },
+    "f50.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 255,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1100,
+      "nearestVisibleArmScreenPx": 19,
+      "nearestWorldPx": 16.6
+    },
+    "f50.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1100,
+      "nearestVisibleArmScreenPx": 1,
+      "nearestWorldPx": 0.9
+    },
+    "f50.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1100,
+      "nearestVisibleArmScreenPx": 2,
+      "nearestWorldPx": 1.7
+    },
+    "f50.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 1100,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    },
+    "f70.far -0.6 (today)": {
+      "onArm": "far",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 136,
+      "nearestVisibleArmScreenPx": 19,
+      "nearestWorldPx": 16.6
+    },
+    "f70.near -0.6": {
+      "onArm": "near",
+      "torsoAlpha": 255,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1089,
+      "nearestVisibleArmScreenPx": 19.1,
+      "nearestWorldPx": 16.7
+    },
+    "f70.near 0 (elbow)": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1089,
+      "nearestVisibleArmScreenPx": 1,
+      "nearestWorldPx": 0.9
+    },
+    "f70.near fore .25": {
+      "onArm": "near",
+      "torsoAlpha": 254,
+      "insideTorsoSilhouette": true,
+      "visibleArmPx": 1089,
+      "nearestVisibleArmScreenPx": 2,
+      "nearestWorldPx": 1.7
+    },
+    "f70.near fore .5": {
+      "onArm": "near",
+      "torsoAlpha": 0,
+      "insideTorsoSilhouette": false,
+      "visibleArmPx": 1089,
+      "nearestVisibleArmScreenPx": 0,
+      "nearestWorldPx": 0
+    }
+  }
+}

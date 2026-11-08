@@ -1,4 +1,85 @@
 <!doctype html><meta charset="utf-8"><title>Clasping hands G2</title>
+<div class="r7"><h1>T2.2 r7: Lou's elbow hand holds the arm George shows (newest section)</h1>
+<p>Derek: "he's resting his fist on george's ribs". The attacker's elbow hand was aimed at the partner's far elbow, 0.6 of the upper arm past it, and the far arm draws behind the torso. Now it is aimed at the partner's near arm, 0.25 down the forearm from the elbow (<code>LOCKUP.elbowFore</code>, new <code>fore</code> option on <code>gripTarget</code>). Measurements, not a verdict: Derek judges.</p>
+<h2>1. Where the target sat (measured before the change; frames 30 / 50 / 70 of the held tie-up)</h2>
+<p>Visible arm px = pixels that change when the partner's arm parts are hidden (what shows of that arm, after everything drawn over it). Nearest = the target's distance to the nearest of those pixels, in world px. Inside torso = the target falls where the partner's torso image is opaque.</p>
+<table><tr><th>case</th><th>target</th><th>inside torso silhouette</th><th>visible arm px</th><th>nearest visible arm px</th></tr>
+<tr><td>lou-george-right</td><td>far -0.6 (today)</td><td>no/no/no</td><td>58/78/77</td><td>41.7/18.5/19.1</td></tr>
+<tr><td>lou-george-right</td><td>near -0.6</td><td>no/yes/yes</td><td>1107/1101/1156</td><td>18.3/17.5/17.5</td></tr>
+<tr><td>lou-george-right</td><td>near 0 (elbow)</td><td>yes/yes/yes</td><td>1107/1101/1156</td><td>0/0/0</td></tr>
+<tr><td>lou-george-right</td><td>near fore .25</td><td>yes/yes/yes</td><td>1107/1101/1156</td><td>0.9/0/0</td></tr>
+<tr><td>lou-george-right</td><td>near fore .5</td><td>yes/yes/yes</td><td>1107/1101/1156</td><td>0.9/0/0</td></tr>
+<tr><td>lou-george-left</td><td>far -0.6 (today)</td><td>no/no/no</td><td>58/73/75</td><td>36.4/14.4/15.6</td></tr>
+<tr><td>lou-george-left</td><td>near -0.6</td><td>no/yes/yes</td><td>1135/1162/1222</td><td>16.7/19.1/19.7</td></tr>
+<tr><td>lou-george-left</td><td>near 0 (elbow)</td><td>yes/yes/yes</td><td>1135/1162/1222</td><td>0/0/0.9</td></tr>
+<tr><td>lou-george-left</td><td>near fore .25</td><td>yes/yes/yes</td><td>1135/1162/1222</td><td>1.7/2/1.7</td></tr>
+<tr><td>lou-george-left</td><td>near fore .5</td><td>yes/yes/yes</td><td>1135/1162/1222</td><td>2/2.5/1.7</td></tr>
+<tr><td>george-lou-right</td><td>far -0.6 (today)</td><td>no/no/no</td><td>134/123/130</td><td>16.9/17.7/17.4</td></tr>
+<tr><td>george-lou-right</td><td>near -0.6</td><td>yes/yes/yes</td><td>1020/1033/1017</td><td>17.5/16.6/15.7</td></tr>
+<tr><td>george-lou-right</td><td>near 0 (elbow)</td><td>yes/yes/yes</td><td>1020/1033/1017</td><td>0/0/0</td></tr>
+<tr><td>george-lou-right</td><td>near fore .25</td><td>yes/yes/yes</td><td>1020/1033/1017</td><td>0/0/0</td></tr>
+<tr><td>george-lou-right</td><td>near fore .5</td><td>no/no/no</td><td>1020/1033/1017</td><td>0/0.9/1.2</td></tr>
+<tr><td>george-lou-left</td><td>far -0.6 (today)</td><td>no/no/no</td><td>134/126/136</td><td>16.6/16.6/16.6</td></tr>
+<tr><td>george-lou-left</td><td>near -0.6</td><td>yes/yes/yes</td><td>1074/1100/1089</td><td>17.5/16.6/16.7</td></tr>
+<tr><td>george-lou-left</td><td>near 0 (elbow)</td><td>yes/yes/yes</td><td>1074/1100/1089</td><td>0.9/0.9/0.9</td></tr>
+<tr><td>george-lou-left</td><td>near fore .25</td><td>yes/yes/yes</td><td>1074/1100/1089</td><td>1.2/1.7/1.7</td></tr>
+<tr><td>george-lou-left</td><td>near fore .5</td><td>no/no/no</td><td>1074/1100/1089</td><td>0/0/0</td></tr>
+</table>
+<h2>2. Palm to target (mean / max px while the grip is full), before then after, and whether anything else moved</h2>
+<table><tr><th>case</th><th>hand</th><th>before</th><th>after</th></tr>
+<tr><td>lou-george-right</td><td>a.elbowCup</td><td>12.5 / 18.53</td><td><b>5.51 / 5.8</b></td></tr>
+<tr><td>lou-george-right</td><td>d.bicepGrip.near</td><td>10.67 / 10.9</td><td><b>13.34 / 13.73</b></td></tr>
+<tr><td>lou-george-left</td><td>a.elbowCup</td><td>12.36 / 18.5</td><td><b>5.5 / 5.79</b></td></tr>
+<tr><td>lou-george-left</td><td>d.bicepGrip.near</td><td>10.66 / 10.92</td><td><b>13.34 / 13.74</b></td></tr>
+<tr><td>george-lou-right</td><td>a.elbowCup</td><td>39.71 / 40.58</td><td><b>4.85 / 6.65</b></td></tr>
+<tr><td>george-lou-right</td><td>d.bicepGrip.near</td><td>0.01 / 0.07</td><td><b>0.03 / 0.04</b></td></tr>
+<tr><td>george-lou-left</td><td>a.elbowCup</td><td>39.68 / 40.55</td><td><b>4.83 / 6.57</b></td></tr>
+<tr><td>george-lou-left</td><td>d.bicepGrip.near</td><td>0.01 / 0.07</td><td><b>0.03 / 0.04</b></td></tr>
+</table>
+<p>The attacker's elbow hand is the one retargeted. The defender's biceps hands and the collar hand are not retargeted; the table lists the defender's near hand because it moved: Lou-attacker cases 10.7 to 13.3 px (it holds the attacker's elbow, which the new reach moves), George-attacker cases 0.01 to 0.03. The attacker collar hand and the defender's far biceps hand are unchanged to 0.01 px (George-attacker collar 27.5, Lou defender far hand 14.1-14.4, still the open misses). Minimum elbow flex (rad) per channel while a clasp is worn, before / after:</p>
+<table><tr><th>case</th><th>before</th><th>after</th></tr>
+<tr><td>lou-george-right</td><td>{'a.l': 0.7, 'a.r': 0.53, 'd.l': 0.78, 'd.r': 1.84}</td><td>{'a.l': 0.7, 'a.r': 0.54, 'd.l': 0.8, 'd.r': 1.84}</td></tr>
+<tr><td>lou-george-left</td><td>{'a.l': 0.7, 'a.r': 0.5, 'd.l': 0.77, 'd.r': 1.84}</td><td>{'a.l': 0.7, 'a.r': 0.5, 'd.l': 0.8, 'd.r': 1.84}</td></tr>
+<tr><td>george-lou-right</td><td>{'a.l': 0.71, 'a.r': 0.09, 'd.l': 0.74, 'd.r': 1.49}</td><td>{'a.l': 0.71, 'a.r': 0.09, 'd.l': 0.74, 'd.r': 1.49}</td></tr>
+<tr><td>george-lou-left</td><td>{'a.l': 0.71, 'a.r': 0.09, 'd.l': 0.74, 'd.r': 1.49}</td><td>{'a.l': 0.71, 'a.r': 0.08, 'd.l': 0.74, 'd.r': 1.49}</td></tr>
+</table>
+<p>No backward elbows came back (the fold of T1.8): every flex stays positive. George's attacker far arm (<code>a.r</code>) sits at 0.09 rad, close to straight, before and after (open item, not changed here).</p>
+<h2>3. Frozen swap check on drawn pixels, base art vs clasp art at the same pose</h2>
+<p>At the frame each clasp swaps in, the same pose is drawn twice and the screenshots diffed. Shaft = changed pixels with t &lt; 0.85 along the forearm (elbow 0, wrist 1); hand = the rest. A hand-only redraw would show shaft near 0. <b>Caveat:</b> George's three clasp PNGs on disk were being redrawn by Codex while this ran (modified in the working tree, unchanged during the run), so George's rows are of that in-progress art, not the committed art.</p>
+<table><tr><th>case</th><th>forearm</th><th>swap frame</th><th>art</th><th>changed px</th><th>shaft px</th><th>hand px</th><th>shaft max perp px</th></tr>
+<tr><td>lou-george-right</td><td>Lou a.near</td><td>8</td><td>collarTie</td><td>547</td><td>232</td><td>315</td><td>15.9</td></tr>
+<tr><td>lou-george-right</td><td>Lou a.far</td><td>9</td><td>elbowCup</td><td>72</td><td>72</td><td>0</td><td>12.2</td></tr>
+<tr><td>lou-george-right</td><td>George d.far</td><td>11</td><td>elbowCup</td><td>5</td><td>5</td><td>0</td><td>1.1</td></tr>
+<tr><td>lou-george-right</td><td>George d.near</td><td>13</td><td>elbowCup</td><td>297</td><td>5</td><td>292</td><td>2.4</td></tr>
+<tr><td>lou-george-left</td><td>Lou a.near</td><td>7</td><td>collarTie</td><td>456</td><td>290</td><td>166</td><td>14.8</td></tr>
+<tr><td>lou-george-left</td><td>Lou a.far</td><td>9</td><td>elbowCup</td><td>95</td><td>95</td><td>0</td><td>9.7</td></tr>
+<tr><td>lou-george-left</td><td>George d.far</td><td>10</td><td>elbowCup</td><td>97</td><td>8</td><td>89</td><td>3.5</td></tr>
+<tr><td>lou-george-left</td><td>George d.near</td><td>13</td><td>elbowCup</td><td>301</td><td>14</td><td>287</td><td>13.6</td></tr>
+<tr><td>george-lou-right</td><td>George a.near</td><td>8</td><td>collarTie</td><td>310</td><td>10</td><td>300</td><td>12.4</td></tr>
+<tr><td>george-lou-right</td><td>George a.far</td><td>10</td><td>elbowCup</td><td>29</td><td>19</td><td>10</td><td>12.1</td></tr>
+<tr><td>george-lou-right</td><td>Lou d.far</td><td>11</td><td>elbowCup</td><td>6</td><td>6</td><td>0</td><td>10.8</td></tr>
+<tr><td>george-lou-right</td><td>Lou d.near</td><td>13</td><td>elbowCup</td><td>448</td><td>290</td><td>158</td><td>13</td></tr>
+<tr><td>george-lou-left</td><td>George a.near</td><td>7</td><td>collarTie</td><td>299</td><td>19</td><td>280</td><td>13.8</td></tr>
+<tr><td>george-lou-left</td><td>George a.far</td><td>10</td><td>elbowCup</td><td>29</td><td>29</td><td>0</td><td>11.9</td></tr>
+<tr><td>george-lou-left</td><td>Lou d.far</td><td>10</td><td>elbowCup</td><td>57</td><td>53</td><td>4</td><td>11.4</td></tr>
+<tr><td>george-lou-left</td><td>Lou d.near</td><td>13</td><td>elbowCup</td><td>486</td><td>231</td><td>255</td><td>14.4</td></tr>
+</table>
+<label>Pair <select id="r7pair"><option value="lou-george">Lou on George</option><option value="george-lou">George on Lou</option></select></label>
+<label>Speed <select id="r7spd"><option value="1">Normal</option><option value="0.25">Quarter</option></select></label>
+<button id="r7pause">Pause</button> <span id="r7f"></span>
+<h2>4. Strip, both facings: r6 left, r7 right (normal-speed loop, clasp art)</h2><div class="grid" id="r7strip"></div>
+<h2>5. Held tie-up at 3x (frame 60): r6 left, r7 right</h2><div id="r7close" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+<hr><h1 style="font-size:20px">Earlier: r6</h1></div>
+<script>
+(()=>{const N=101,q=id=>document.getElementById(id);let f=0,last=0,paused=false,imgs=[];
+function build(){const pair=q('r7pair').value;imgs=[];q('r7strip').innerHTML='';q('r7close').innerHTML='';
+for(const face of ['right','left']){for(const [lab,root] of [['r6','frames/r6/strip/'],['r7','frames/r7/strip/']]){const fig=document.createElement('figure');fig.innerHTML='<canvas></canvas><figcaption>Facing '+face+', '+lab+'</figcaption>';q('r7strip').appendChild(fig);imgs.push({c:fig.firstChild,list:Array.from({length:N},(_,i)=>{const im=new Image();im.src=root+pair+'-'+face+'/wide-clasp/s'+String(i).padStart(4,'0')+'.jpg';return im})});
+const c=document.createElement('figure');c.style.margin=0;c.innerHTML='<img style="width:780px;max-width:100%;image-rendering:pixelated;background:#000" src="'+root+pair+'-'+face+'/close-clasp/s0060.jpg"><figcaption style="color:#aaa;font-size:13px">Facing '+face+', '+lab+'</figcaption>';q('r7close').appendChild(c)}}
+f=0}
+q('r7pair').onchange=build;q('r7pause').onclick=()=>{paused=!paused;q('r7pause').textContent=paused?'Play':'Pause'};
+function tick(t){if(!paused&&t-last>1000/(60*+q('r7spd').value)){last=t;for(const o of imgs){const im=o.list[f];if(im.complete&&im.naturalWidth){o.c.width=im.naturalWidth;o.c.height=im.naturalHeight;o.c.getContext('2d').drawImage(im,0,0)}}q('r7f').textContent='frame '+f;f=(f+1)%N}requestAnimationFrame(tick)}
+build();requestAnimationFrame(tick)})();
+</script>
 <style>.r6 .row{display:flex;gap:3px;margin:2px 0}.r6 .row figure{margin:0;text-align:center;font-size:11px;color:#aaa}.r6 .row img{width:120px;height:90px;image-rendering:pixelated;background:#000;display:block}.r6 .row .sw img{outline:3px solid #f5b400}.r6 h3{margin:12px 0 2px;font-size:14px}</style>
 <div class="r6"><h1>T2.2 r6: the swap moves into the grab and the release (this section is the newest)</h1>
 <p>Rule (code in <code>src/animation/clasps.js</code>): <b>grab</b> = art on at the first frame the grip has weight (.05 or more) and the hand moved 8 px or more the frame before (full weight .95 is the fallback for a still hand); <b>release</b> = art off once a full grip falls below weight .2, held off until the grip is gone (no on-off-on). Measured on the wrist's screen speed per frame, 48 hands (both pairs, both facings, shove, plain and rope-break endings): before r6 the art swapped at weight .5, frames 9-14 of the grab and frame 87 of the release.</p>

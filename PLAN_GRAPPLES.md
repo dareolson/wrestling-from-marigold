@@ -1158,6 +1158,25 @@ at G2, only then a far-side drawing.
   **Proof (G2 page, r6 section):** the normal-speed loop strip in both facings beside r5, and a frame-by-frame row through each
   swap (3 frames before to 3 after) for the grab and the release, the swap frame marked. Focused tests, flag-off A/B. Commit
   locally, don't push, **STOP at G2**, clickable link for Derek.
+- **G2 r6 (Derek 2026-11-07):** "still exactly as bad as before"; the swap shows only on George's arm (Lou on George). Lou isn't
+  grabbing George's elbow: "he's resting his fist on george's ribs." Opus: George's clasp forearms are not George's drawing. Next
+  to his `forearm.png` (soft outline, his hand) the three clasps are Lou's master (heavy black outline, Lou's wrist mark and elbow
+  notch, narrower shaft), so the whole forearm changes drawing at the swap, at any timing. Lou's clasps match his base (same
+  shaft, marks, line). r5's "frozen swap 0-0.06 px" measured the image quad, not the pixels, so it couldn't see this.
+- **T2.0b (Codex, art) George's clasps on George's own forearm.** For `forearm_collar_tie.png`, `forearm_elbow_cup.png`,
+  `forearm_waist_clasp.png` in `src/assets/wrestlers/george-roster-v1/`: keep George's `forearm.png` pixels from the elbow cap down
+  to the wrist (shaft, outline, tone, no added marks or notch) and change only the hand, drawn in George's line and tone. Same
+  canvas and pivot; the `clutch` anchors updated from the fit script. `build_forearm_variant.mjs all --check` passes. Proof: per
+  clasp, base and clasp overlaid at the same pose, 3x, plus a pixel diff with the changed area outlined (want: the hand only;
+  report changed px above the wrist, want 0). Don't commit; Opus reviews.
+- **T2.2 r7 (Sonnet) Lou's elbow hand holds a visible arm.** The attacker's far hand takes George's same-side (far) elbow, which
+  draws behind George's torso, so Lou's hand shows on the ribs (the r3 lesson, for the defender). Measure first, both pairs and
+  facings: the elbow-hand target's position against the partner's drawn torso (inside his torso silhouette yes/no, px from the
+  nearest visible arm pixel). Then point it at the partner's near arm (`side: 'other'`), keeping `LOCKUP.elbowCup` -0.6 unless the
+  fold of T1.8 comes back (report the elbow flex; no backward elbows). Report palm-to-target px before/after for every hand, and
+  check nothing else in the tie-up moved (defender's biceps grips). Also redo the frozen swap check on pixels (the forearm's drawn
+  pixels base vs clasp at one pose, changed px count and where), so it can catch an art mismatch. Proof: the normal-speed strip
+  both facings and a 3x close-up of the held tie-up per pair. Focused tests, flag-off A/B, commit locally, STOP at G2.
 - **Later in Stage 2 (after G2):** the steal as a visible shove, with a re-grip if Derek wants D5 changed (the old outline);
   more clasps (wrist grab for the whip, arm drag and wristlocks; headlock) on the same pipeline.
 

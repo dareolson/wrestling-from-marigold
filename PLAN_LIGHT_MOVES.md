@@ -9,6 +9,8 @@ Replaces PLAN_FINISHERS as the next front (Derek 2026-11-07: "i don't think i wa
 
 - T2.1 (sha below): measured, no code change ([json](research/animation/light-moves-2026-11/t2-1-ankle-lock-measure.json), `tools/debug/ankle_lock_measure.mjs`). Held 0.6-2.8 s, best hand to trapped boot: Lou→George mean 85 px (min 78), George→Lou mean 59 px (min 50); bar is 6.
   Misses: leg only 11-50° off the mat; attacker ankle slide up to 3.1-3.7 px/frame (bar 1.5); body overlap under the belt on all 186 frames (1224-1360 px); trapped knee flex only 0.05-0.1 rad; no knee goes negative.
+- T2.2 (sha below): `ankleLockV2` under `?light=v1` ([json](research/animation/light-moves-2026-11/t2-2-ankle-lock-v2-measure.json)). Held 0.6-2.7 s, hand to its own grip target (heel / toes): max 3.1 / 5.9 px, 0 frames over 6, both pairings and facings; planted 0.3-2.7 s slide 0 frames over 1.5; attacker knees via lShin, drawn flex 0-1.5 (none negative).
+  Misses: body overlap under the belt is worse, 2.3-2.4k px every frame (was 1.2-1.4k; T2.3); he steps in 80 px over the grab (4-5 px/frame) and out over the release (up to 8); leg now 66-82° off the mat, a big change from the old 11-50°; l/r hand = near/far assumes Lou/George (Kowalski, Guido unchecked); heel/toe targets are shin-fraction proxies, not art anchors.
 
 ## Why
 

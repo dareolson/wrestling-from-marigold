@@ -195,6 +195,8 @@ export const splashFor = (move) => {
     const v = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('splash') : null;
     return SPLASH_VARIANTS[v] ?? SPLASH_VARIANTS[SPLASH_DEFAULT[move]];
 };
+// ?light=v1 (PLAN_LIGHT_MOVES D2): the rebuilt light moves (ankleLockV2). Opt-in until G5; flag off is the old clips byte for byte.
+export const lightCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('light') === 'v1';
 export const waistlockCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('waistlock') === 'v1';
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
@@ -776,12 +778,18 @@ export default class Wrestler {
             const bend = Math.acos(Math.max(-1, Math.min(1, (lu * lu + d * d - lf * lf) / (2 * lu * d))));
             // Of the two elbows, keep the one nearer where it is.
             const elbows = [base + bend, base - bend].map(a => ({ x: S.x + Math.cos(a) * lu, y: S.y + Math.sin(a) * lu }));
-            const E2 = dist(elbows[0], E) <= dist(elbows[1], E) ? elbows[0] : elbows[1];
-            const dUpper = wrap(angle(S, E2) - angle(S, E));
-            const dFore = wrap(angle(E2, aim) - angle(E, W)) - dUpper;
+            let E2 = dist(elbows[0], E) <= dist(elbows[1], E) ? elbows[0] : elbows[1];
             const signs = this._gripSigns(arm, handSide);
+            const turn = (e) => { const dUpper = wrap(angle(S, e) - angle(S, E)); return { dUpper, dFore: wrap(angle(e, aim) - angle(E, W)) - dUpper }; };
+            let { dUpper, dFore } = turn(E2);
+            // `natural` (PLAN_LIGHT_MOVES): the elbow bends the ordinary way. If the nearer branch folds it behind the upper arm, take the other one.
+            if (item.natural && wrap(this.pose[`${arm}Elbow`] + signs.elbow * dFore) < 0) {
+                const other = E2 === elbows[0] ? elbows[1] : elbows[0], t = turn(other);
+                if (wrap(this.pose[`${arm}Elbow`] + signs.elbow * t.dFore) >= 0) { E2 = other; dUpper = t.dUpper; dFore = t.dFore; }
+            }
             this.pose[`${arm}Arm`] += signs.arm * dUpper;
             this.pose[`${arm}Elbow`] += signs.elbow * dFore;
+            if (item.natural) this.pose[`${arm}Elbow`] = wrap(this.pose[`${arm}Elbow`]);
             moved = true;
         }
         if (moved) this.draw();
@@ -3195,7 +3203,7 @@ export default class Wrestler {
     // stands the foot up and wrenches it; the arm bar sits through and lies
     // back across the chest. Each drains on its three `squeeze` markers.
     _doAnkleLock(other) {
-        this._playPairedThrow(other, 'ankleLock', {
+        this._playPairedThrow(other, lightCandidate() ? 'ankleLockV2' : 'ankleLock', {
             damage: STAMINA_DRAIN.ankleLock, hitEvent: 'squeeze', shake: [80, 0.001],
             finish: () => { other._layOnBack(DOWN_SEC); this._standBackUp(); },
         });

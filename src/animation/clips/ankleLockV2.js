@@ -11,7 +11,7 @@ import { ankleLockClip } from './ankleLock.js';
 import { shinsFromFolds } from '../../rig/articulation.js';
 
 const DEFENDER_X = 68;   // the downed man's hips from the attacker while held, so the raised boot is within an arm of his chest
-const APART_X = 150;     // the old clip's distance, kept at the grab and the release so his lying leg does not pass through the attacker's feet
+const APART_X = 210;     // the downed man's hips from the attacker at the grab and the release (the old clip's 150 put his lying legs through the attacker's feet)
 const HIP_LIFT = -70;    // his hips come off the mat over the hold (lying is -110), which carries the boot up to chest height
 const TRAPPED_LEG = 1.45; // the trapped thigh's lLeg while held
 const FREE_LEG = -0.45;  // the other leg lies on the mat (the tilted body would lift it; rLeg .1 is flat only when he is), drawn behind the attacker's legs
@@ -29,10 +29,11 @@ const ATTACKER = {
 };
 // Defender: the trapped leg up, his hips lifted, a soft bend in both knees (`fold` l = trapped, r = free).
 const DEFENDER = {
-    0: { lFold: 0.15, rFold: 0.15 }, 0.3: { lFold: 0.3, rFold: 0.15 },
+    0: { lFold: 0.15, rFold: 0.15 }, 0.3: { lLeg: TRAPPED_LEG, lFold: 0.5, rLeg: FREE_LEG, rFold: FREE_FOLD, tilt: -1.9, lift: HIP_LIFT },
     0.6: { tilt: -1.9, lLeg: TRAPPED_LEG, lFold: 0.5, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT }, 0.9: { tilt: -1.7, lLeg: TRAPPED_LEG, lFold: 0.5, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT },
     1.4: { tilt: -1.9, lLeg: TRAPPED_LEG, lFold: 0.5, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT }, 1.95: { tilt: -1.65, lLeg: TRAPPED_LEG, lFold: 0.5, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT },
     2.5: { tilt: -1.88, lLeg: TRAPPED_LEG, lFold: 0.5, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT }, 2.8: { tilt: -1.7, lLeg: TRAPPED_LEG, lFold: 0.4, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT },
+    2.7: { tilt: -1.78, lLeg: TRAPPED_LEG, lFold: 0.45, rLeg: FREE_LEG, rFold: FREE_FOLD, lift: HIP_LIFT },
     3.1: { lFold: 0.15, rFold: 0.15 },
 };
 
@@ -46,10 +47,29 @@ const attackerKeys = (keyframes) => keyframes.map(k => {
     };
 });
 
-const defenderKeys = (keyframes) => keyframes.map(k => {
-    const { lKnee, rKnee, ...legs } = { ...k.pose, ...(DEFENDER[k.at] ?? {}) };
-    return { ...k, pose: shinsFromFolds({ lFold: 0.15, rFold: 0.15, ...legs }), transform: { ...k.transform, x: k.at <= 0.3 || k.at >= 3.1 ? APART_X : DEFENDER_X } };
-});
+// The downed man's hips from the attacker over time: the apart distance at the grab, in by the time the boot is up, out again after the hands let go.
+// Spread over 0.6 s and 0.4 s, not the old 0.3 s, so the drag stays slow, and the apart distance clears his lying legs from the attacker's feet.
+const DEFENDER_X_AT = [[0, APART_X], [0.3, APART_X], [0.6, DEFENDER_X], [HOLD_END, DEFENDER_X], [3.1, APART_X]];
+const defenderXAt = (t) => {
+    const i = DEFENDER_X_AT.findIndex(([at]) => at >= t);
+    if (i <= 0) return DEFENDER_X_AT[Math.max(i, 0)][1];
+    const [t0, x0] = DEFENDER_X_AT[i - 1], [t1, x1] = DEFENDER_X_AT[i];
+    return x0 + (x1 - x0) * (t - t0) / (t1 - t0);
+};
+const lerpKey = (a, b, at) => {
+    const u = (at - a.at) / (b.at - a.at), mix = (p, q) => Object.fromEntries(Object.keys(q).map(n => [n, p[n] === undefined ? q[n] : p[n] + (q[n] - p[n]) * u]));
+    return { ...a, at, pose: mix(a.pose, b.pose), transform: { ...a.transform } };
+};
+
+const defenderKeys = (keyframes) => {
+    const keys = [...keyframes];
+    const i = keys.findIndex(k => k.at > HOLD_END);   // a key where the hands let go, so the slide out starts there
+    keys.splice(i, 0, lerpKey(keys[i - 1], keys[i], HOLD_END));
+    return keys.map(k => {
+        const { lKnee, rKnee, ...legs } = { ...k.pose, ...(DEFENDER[k.at] ?? {}) };
+        return { ...k, pose: shinsFromFolds({ lFold: 0.15, rFold: 0.15, ...legs }), transform: { ...k.transform, x: defenderXAt(k.at) } };
+    });
+};
 
 export const ankleLockV2Clip = {
     ...ankleLockClip,
@@ -66,6 +86,8 @@ export const ankleLockV2Clip = {
         { role: 'attacker', leg: 'l', in: [0.3, 0.4], out: [HOLD_END, 2.9] },
         { role: 'attacker', leg: 'r', in: [0.3, 0.4], out: [HOLD_END, 2.9] },
     ],
-    // back -> front: his free leg, his body, the trapped leg, then his arms over the boot
-    layers: [{ from: 0, to: 3.1, order: [['defender', 'rLeg'], ['attacker', 'body'], ['defender', 'lLeg'], ['attacker', 'farArm'], ['attacker', 'nearArm']] }],
+    // back -> front: the victim's free leg, the attacker's far arm (the hand reaches round the far side of the boot), his torso and head, both his legs over
+    // the torso (his far leg steps forward, so Lou's normal stack would bury it under the trunks; George's art already draws both over), the trapped leg,
+    // his near arm over the boot. Named parts rather than `body`: that one is each rig's own stack.
+    layers: [{ from: 0, to: 3.1, order: [['defender', 'rLeg'], ['attacker', 'farArm'], ['attacker', 'torso'], ['attacker', 'head'], ['attacker', 'farLeg'], ['attacker', 'nearLeg'], ['defender', 'lLeg'], ['attacker', 'nearArm']] }],
 };

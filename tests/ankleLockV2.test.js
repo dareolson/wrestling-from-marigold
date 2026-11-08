@@ -64,6 +64,6 @@ test('T2.2c: the trapped leg is raised and drawn over his body, his arms over th
     const held = ankleLockV2Clip.tracks.defender.keyframes.filter(k => k.at >= 0.6 && k.at <= 2.8);
     for (const k of held) assert.ok(k.pose.lLeg >= 1.3 && k.pose.lift > -110, `trapped leg up and hips off the mat at ${k.at}`);
     const [win] = ankleLockV2Clip.layers;
-    assert.deepEqual(win.order.map(([r, l]) => `${r}.${l}`), ['defender.rLeg', 'attacker.body', 'defender.lLeg', 'attacker.farArm', 'attacker.nearArm']);
+    assert.deepEqual(win.order.map(([r, l]) => `${r}.${l}`), ['defender.rLeg', 'attacker.farArm', 'attacker.torso', 'attacker.head', 'attacker.farLeg', 'attacker.nearLeg', 'defender.lLeg', 'attacker.nearArm']);
     assert.equal(ankleLockV2Clip.events.filter(e => e.type === 'squeeze').length, 3);
 });

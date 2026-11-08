@@ -143,6 +143,8 @@ const READ = () => {
     r.trappedVsTorso = window.__overlap([shin], [ask.torso], a, d);
     r.depth = { shin: shin.depth, torso: ask.torso.depth, nearThigh: ask.nearThigh.depth, farThigh: ask.farThigh.depth, nearForearm: ask.nearForearm.depth, farForearm: ask.farForearm.depth };
     r.bootInFrontOfTorso = shin.depth > ask.torso.depth;
+    // T2.2d: his far upper arm behind his torso, both his thighs (and shins) in front of it, his near arm in front of the boot
+    r.order = { farArmBehindTorso: ask.farUpArm.depth < ask.torso.depth, thighsOverTorso: ask.nearThigh.depth > ask.torso.depth && ask.farThigh.depth > ask.torso.depth, shinsOverTorso: ask.nearShin.depth > ask.torso.depth && ask.farShin.depth > ask.torso.depth, nearArmOverBoot: ask.nearForearm.depth > shin.depth };
     r.bootCenter = (() => { const mm = shin.getWorldTransformMatrix(); return { x: Math.round(mm.tx), y: Math.round(mm.ty) }; })();
     const rd = (q) => (q ? [Math.round(q.x - a.x), Math.round(a.y - q.y)] : null);   // x from the attacker (+ toward the downed man when facing right), y above the mat
     const f = a.facing;
@@ -206,6 +208,7 @@ for (const [pair, att, def] of PAIRS.filter(p => !process.env.ONLY || process.en
                 belowBodyPx: stat(rows.map(r => r.belowBody)), torsoPx: stat(rows.map(r => r.torso)),
                 trappedVsLegsPx: stat(rows.map(r => r.trappedVsLegs)), trappedVsLegsFrames: rows.filter(r => r.trappedVsLegs > 0).length,
                 trappedVsTorsoPx: stat(rows.map(r => r.trappedVsTorso)), bootInFrontOfTorsoFramesHeld: held.filter(r => r.bootInFrontOfTorso).length + '/' + held.length,
+                orderHeld: Object.fromEntries(['farArmBehindTorso', 'thighsOverTorso', 'shinsOverTorso', 'nearArmOverBoot'].map(k => [k, held.filter(r => r.order[k]).length + '/' + held.length])),
                 depthHeld: held[Math.floor(held.length / 2)]?.depth, bootCenterHeld: held[Math.floor(held.length / 2)]?.bootCenter,
                 plantedSlideMax: { near: round(Math.max(...plantedSlide('near'))), far: round(Math.max(...plantedSlide('far'))) }, wholeSlideMax: { near: round(Math.max(...slide('near'))), far: round(Math.max(...slide('far'))) },
                 trappedVsLegsAt: rows.filter(r => r.trappedVsLegs > 0).map(r => [r.t, r.trappedVsLegs]).filter((x, i) => i % 3 === 0),

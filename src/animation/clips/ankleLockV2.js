@@ -19,6 +19,8 @@ const TRAPPED_LEG = 1.45; // the trapped thigh's lLeg while held
 const FREE_LEG = -0.45;  // the other leg lies on the mat (the tilted body would lift it; rLeg .1 is flat only when he is), drawn behind the attacker's legs
 const FREE_FOLD = 0.15;
 export const LEAD_IN = 0.2;     // seconds to shuffle from where he stood to the grab spot (the worst close entry, 50 px, steps 11-12 px/frame, under the release's 13)
+const BOOT_ON = 0.45;   // the trapped boot's bent-boot art goes on here (the lift's middle) and off at BOOT_OFF (the foot falling)
+const BOOT_OFF = 2.95;
 const HOLD_END = 2.7;    // the hands let go from here; the foot falls after them
 
 // Attacker poses on top of the old keys, by time. `fold` is the heel fold of both legs (0 = straight).
@@ -113,6 +115,13 @@ const defenderKeys = (keyframes) => {
         const j = base.findIndex(k => k.at > at);
         base.splice(j, 0, lerpKey(base[j - 1], base[j], at));
     }
+    // T2.6: the trapped boot wears the bent-boot shin (`variants.shin.ankleTwist`, a rig without it keeps its normal shin) from half way through the lift,
+    // while the leg is moving, until the foot falls after the hands let go. Parts are discrete, so the swap keys sit inside moving stretches.
+    for (const at of [BOOT_ON, BOOT_OFF]) {
+        const j = base.findIndex(k => k.at > at);
+        if (!base.some(k => k.at === at)) base.splice(j, 0, lerpKey(base[j - 1], base[j], at));
+    }
+    for (const k of base) k.parts = { ...k.parts, lShin: k.at >= BOOT_ON && k.at < BOOT_OFF ? 'ankleTwist' : 'base' };
     return base.map(k => {
         if (k.at < 0.6 || k.at > 2.8) return k;
         const [, bend, lArm, lElbow, rArm, rElbow, kick, bendKnee] = sellAt(k.at);

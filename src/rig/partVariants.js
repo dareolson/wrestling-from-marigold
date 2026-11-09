@@ -41,6 +41,8 @@ export const RENDER_PART_SLOTS = Object.freeze([
 export const SEMANTIC_PART_SLOTS = Object.freeze({
     strikingForearm: Object.freeze({ near: 'nearForearm', far: 'farForearm' }),
     workingHand: Object.freeze({ near: 'nearHand', far: 'farHand' }),
+    // The shin under the lLeg channel (the trapped leg of a hold): the ankle lock's bent boot.
+    lShin: Object.freeze({ near: 'nearShin', far: 'farShin' }),
 });
 
 /**

@@ -170,3 +170,13 @@ test('T2.3: the sell. Head up on each squeeze, the near arm reaches, slaps, reac
     }
     for (const t of [0.6, 2.8]) assert.ok(at(t).bend === 0 && at(t).lArm < 0.1, `rest at ${t}`);
 });
+
+test('T2.6: the downed man\'s lShin wears ankleTwist from mid-lift to the foot falling, base at the ends; it resolves to the trapped (lLeg) shin', async () => {
+    const { resolveSemanticSlots } = await import('../src/rig/partVariants.js');
+    const keys = ankleLockV2Clip.tracks.defender.keyframes;
+    const worn = keys.filter(k => k.parts?.lShin === 'ankleTwist').map(k => k.at);
+    assert.ok(Math.min(...worn) === 0.45 && Math.max(...worn) >= 2.8 && Math.max(...worn) < 2.95, `worn keys ${worn}`);
+    for (const k of keys.filter(k => k.at < 0.45 || k.at >= 2.95)) assert.equal(k.parts.lShin, 'base', `key ${k.at}`);
+    assert.deepEqual(resolveSemanticSlots({ lShin: 'ankleTwist' }, 1, null, 'near'), { nearShin: 'ankleTwist' });
+    assert.deepEqual(resolveSemanticSlots({ lShin: 'ankleTwist' }, -1, null, 'far'), { farShin: 'ankleTwist' });
+});

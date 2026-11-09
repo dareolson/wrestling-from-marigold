@@ -56,6 +56,7 @@ const READ = () => {
     const side = lSide, ankle = pt[`${side}Ankle`], hip = pt[`${side}Hip`], knee = pt[`${side}Knee`], shin = sk[`${side}Shin`], b = boot(shin);
     const dist = (p, q) => (p && q ? Math.hypot(p.x - q.x, p.y - q.y) : null);
     out.trapped = side; out.ankle = ankle; out.boot = b;
+    out.shinArt = d.skeleton._partVariantState?.[`${side}Shin`] ?? 'base'; out.shinKey = shin?.texture?.key ?? null;   // T2.6: the art the trapped shin is set to wear, and the texture actually drawn
     out.hands = {};
     const past = (k) => ({ x: ankle.x + (ankle.x - knee.x) * k, y: ankle.y + (ankle.y - knee.y) * k });
     const tgt = { near: sk.partAnchorPoint?.(`${side}Shin`, 'heel') ?? past(0.15), far: sk.partAnchorPoint?.(`${side}Shin`, 'toe') ?? past(0.4) };
@@ -114,7 +115,7 @@ for (const [pair, att, def] of PAIRS) {
             const slide = (ank) => { let worst = 0, sum = 0, n = 0; for (let i = 1; i < rows.length; i++) { const dx = Math.hypot(rows[i].aAnkle[ank].x - rows[i - 1].aAnkle[ank].x, rows[i].aAnkle[ank].y - rows[i - 1].aAnkle[ank].y); worst = Math.max(worst, dx); sum += dx; n++; } return { worstPxPerFrame: round(worst), meanPxPerFrame: round(sum / n) }; };
             const kneeFlex = (who) => { const ks = rows.flatMap(r => [r[who].lKnee, r[who].rKnee]).filter(Number.isFinite); if (!ks.length) return null; return { min: round(Math.min(...ks), 3), max: round(Math.max(...ks), 3) }; };
             const rec = {
-                info, frames: rows.length, trapped: rows[0]?.trapped, lSide: rows[0]?.lSide,
+                info, shinArtFrames: rows.reduce((m, r) => (m[r.shinArt] = (m[r.shinArt] ?? 0) + 1, m), {}), shinKeys: [...new Set(rows.map(r => r.shinKey))], frames: rows.length, trapped: rows[0]?.trapped, lSide: rows[0]?.lSide,
                 handsHeld: { near: { toAnkle: handStat(held, 'near', 'toAnkle'), toBoot: handStat(held, 'near', 'toBoot') }, far: { toAnkle: handStat(held, 'far', 'toAnkle'), toBoot: handStat(held, 'far', 'toBoot') } },
                 handsAll: { near: { toAnkle: handStat(rows, 'near', 'toAnkle'), toBoot: handStat(rows, 'near', 'toBoot') }, far: { toAnkle: handStat(rows, 'far', 'toAnkle'), toBoot: handStat(rows, 'far', 'toBoot') } },
                 targetHeld: { near: handStat(held, 'near', 'toTarget'), far: handStat(held, 'far', 'toTarget') },

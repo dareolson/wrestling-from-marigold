@@ -25,7 +25,7 @@ test('it delivers shipped Lou\'s six body parts, plus the audition forearms and 
     const extra = assets.filter(a => a.slot === 'farForearm' || a.variant !== 'base')
         .map(a => `${a.slot}.${a.variant}`).sort();
     // 2026-11-07 clasps (PLAN_GRAPPLES Stage 2): the same canvas as forearm.png, one whole forearm each.
-    assert.deepEqual(extra, ['farForearm.base', 'forearm.collarTie', 'forearm.elbowCup', 'forearm.grip', 'forearm.waistClasp']);
+    assert.deepEqual(extra, ['farForearm.base', 'forearm.collarTie', 'forearm.elbowCup', 'forearm.grip', 'forearm.waistClasp', 'shin.ankleTwist']);
 });
 
 test('audition forearms keep the base forearm geometry exactly', () => {

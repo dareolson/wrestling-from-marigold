@@ -253,6 +253,17 @@ export const theszProcreateV1 = {
         // request swaps the whole forearm (see resolveSemanticSlots).
         handInForearm: true,
         variants: {
+            shin: {
+                // PLAN_LIGHT_MOVES T2.5 review candidate. Geometry inherits
+                // from shin; only the foot below pixel row 395 is repainted.
+                ankleTwist: {
+                    key: 'thesz-procreate-v1_shin_ankle_twist', file: 'shin_ankle_twist.png',
+                    semanticAnchors: {
+                        heel: { u: 43 / 216, v: 443 / 495 },
+                        toe: { u: 164 / 216, v: 475 / 495 },
+                    },
+                },
+            },
             forearm: {
                 grip: {
                     key: 'thesz_pv1_forearm_grip', file: 'forearm_grip.png',

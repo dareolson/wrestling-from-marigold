@@ -1,0 +1,12 @@
+{
+  "canvas": [
+    216,
+    495
+  ],
+  "ankleRow": 395,
+  "blendEnd": 411,
+  "changedPixelsAboveAnkle": 0,
+  "changedPixels": 13381,
+  "gate": "<= 5",
+  "output": "src/assets/wrestlers/thesz-procreate-v1/shin_ankle_twist.png"
+}

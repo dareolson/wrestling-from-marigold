@@ -5,6 +5,7 @@ import { stagedWorldPoint } from './animation/clipStaging.js';
 import { resolveSemanticSlots, textureKey } from './rig/partVariants.js';
 import { dropkickClip } from './animation/clips/dropkick.js';
 import { ankleLockEntryClip } from './animation/clips/ankleLockV2.js';
+import { armBarEntryClip } from './animation/clips/armBarV2.js';
 import { frontKickClip } from './animation/clips/frontKick.js';
 import { shoveClip } from './animation/clips/shove.js';
 // ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
@@ -3217,7 +3218,10 @@ export default class Wrestler {
     }
 
     _doArmBar(other) {
-        this._playPairedThrow(other, 'armBar', {
+        if (lightCandidate() && this.scene.moveRuntime) {
+            this.scene.moveRuntime.register(armBarEntryClip((other.x - this.x) * this.facing / this.s));
+        }
+        this._playPairedThrow(other, lightCandidate() ? 'armBarV2' : 'armBar', {
             damage: STAMINA_DRAIN.armBar, hitEvent: 'squeeze', shake: [80, 0.001],
             finish: () => { other._layOnBack(DOWN_SEC); this._standBackUp(); },
         });

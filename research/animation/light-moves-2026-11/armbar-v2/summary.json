@@ -1,0 +1,54 @@
+{
+  "lou-george-right": {
+    "clip": "armBarV2",
+    "frames": 216,
+    "heldFrames": 118,
+    "maxWristGap": 0.00006236586354335114,
+    "maxForearmGap": 0.000056001094882774124,
+    "pinnedFrames": 0,
+    "maxHeldAnkleSlide": 0,
+    "kneeRange": [
+      0.00044279270652674673,
+      2.0504427927065287
+    ]
+  },
+  "lou-george-left": {
+    "clip": "armBarV2",
+    "frames": 216,
+    "heldFrames": 118,
+    "maxWristGap": 0.00003368455396070909,
+    "maxForearmGap": 0.00003159043445952278,
+    "pinnedFrames": 0,
+    "maxHeldAnkleSlide": 0,
+    "kneeRange": [
+      0.00044279270652674673,
+      2.050442792706526
+    ]
+  },
+  "george-lou-right": {
+    "clip": "armBarV2",
+    "frames": 216,
+    "heldFrames": 118,
+    "maxWristGap": 0.0000617808083946241,
+    "maxForearmGap": 0.00004336615810416754,
+    "pinnedFrames": 0,
+    "maxHeldAnkleSlide": 0,
+    "kneeRange": [
+      0,
+      2.049999999999999
+    ]
+  },
+  "george-lou-left": {
+    "clip": "armBarV2",
+    "frames": 216,
+    "heldFrames": 118,
+    "maxWristGap": 0.00003405154840864248,
+    "maxForearmGap": 0.0000264167743713971,
+    "pinnedFrames": 0,
+    "maxHeldAnkleSlide": 0,
+    "kneeRange": [
+      0,
+      2.0499999999999994
+    ]
+  }
+}

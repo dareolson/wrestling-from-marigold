@@ -1,7 +1,8 @@
-// PLAN_LIGHT_MOVES T2.6b: the arm bar as it is today (no changes), real `_doArmBar` on a downed man, both pairings, both facings, 1/60 s steps (loop asleep).
+// Real `_doArmBar` on a downed man, both pairings/facings, 1/60 s steps.
+// Default: light=v1 candidate. LIGHT=0: legacy. NOFILM=1: stills/audit only.
 // A 30 fps crop of every second game frame (<framesDir>/<case>/sNNNN.jpg, normal speed) and tight stills (still-<t>.png), the same framing as ankle_lock_audit.mjs.
 //   node tools/debug/arm_bar_frames.mjs <framesDir>
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { launch } from './harness.mjs';
 import { INSTALL, STEP } from './grapples_film.mjs';
 
@@ -31,9 +32,33 @@ const SETUP = ({ facing, sep }) => {
 };
 const TIME = () => { const sc = window.__WFM_GAME.scene.scenes[0]; return sc.w1._activeMove ? sc.w1._activeMove.time : null; };
 const CROP = () => { const sc = window.__WFM_GAME.scene.scenes[0], cam = sc.cameras.main, box = document.querySelector('canvas').getBoundingClientRect(), g = window.__WFM_GAME.scale.gameSize, k = box.width / g.width; const x = (sc.w1.x + sc.w2.x) / 2, y = (sc.w1.y + sc.w2.y) / 2; return { x: box.x + (x - cam.worldView.x) * cam.zoom * k, y: box.y + (y - cam.worldView.y) * cam.zoom * k }; };
+const READ = () => {
+    const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
+    const ap = a.skeleton.jointAttachmentPoints, dp = d.skeleton.jointAttachmentPoints;
+    const side = d.skeleton.lChannelSide(d.facing), other = side === 'near' ? 'far' : 'near';
+    const E = dp[side + 'Elbow'], W = dp[side + 'Wrist'];
+    const palm = s => a.skeleton.partAnchorPoint(s + 'Forearm', 'clutch') ?? ap[s + 'Wrist'];
+    const dist = (p, q) => Math.hypot(p.x - q.x, p.y - q.y);
+    const as = a.skeleton.lChannelSide(a.facing), ao = as === 'near' ? 'far' : 'near';
+    const pinned = [];
+    for (const [role, w] of [['a', a], ['d', d]]) for (const ch of ['lElbow', 'rElbow']) if (w.pose[ch] <= -2.995 || w.pose[ch] >= 2.745) pinned.push(role + '.' + ch);
+    const knees = [];
+    for (const w of [a, d]) for (const sd of ['near', 'far']) {
+        const p = w.skeleton.jointAttachmentPoints, H = p[sd + 'Hip'], K = p[sd + 'Knee'], A = p[sd + 'Ankle'];
+        let flex = -Math.atan2(((K.y-H.y)*(A.x-K.x)-(K.x-H.x)*(A.y-K.y))*w.facing, (K.x-H.x)*(A.x-K.x)+(K.y-H.y)*(A.y-K.y));
+        if (flex < -2.6) flex += 2*Math.PI;
+        knees.push(flex);
+        if (flex <= -.095 || flex >= 2.545) pinned.push((w === a ? 'a' : 'd') + '.' + sd + 'Knee');
+    }
+    return { t: a._activeMove?.time, clip: a._activeMove?.clip.id,
+        wristGap: dist(palm(as), W), forearmGap: dist(palm(ao), { x: E.x+(W.x-E.x)*.55, y: E.y+(W.y-E.y)*.55 }),
+        geometry: { shoulder: ap[as+'Shoulder'], elbow: ap[as+'Elbow'], palm: palm(as), target: W },
+        pinned, knees, ankles: [ap.nearAnkle, ap.farAnkle], torsoTilt: a.pose.tilt, defender: { x: d.x, y: d.y },
+    };
+};
 
 for (const [pair, att, def] of PAIRS) {
-    process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = 'notitle=1&light=v1';
+    process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = 'notitle=1' + (process.env.LIGHT === '0' ? '' : '&light=v1');
     const h = await launch();
     try {
         await h.page.waitForTimeout(2500);
@@ -42,18 +67,23 @@ for (const [pair, att, def] of PAIRS) {
             const id = `${pair}-${facing > 0 ? 'right' : 'left'}`;
             const dur = await h.page.evaluate(SETUP, { facing, sep: SEP });
             mkdirSync(`${framesDir}/${id}`, { recursive: true });
-            let clip = null, n = 0; const stills = new Set(); let frames = 0;
+            let clip = null, n = 0; const stills = new Set(); let frames = 0; const rows = [];
             for (let i = 0; i < 400; i++) {
                 await h.page.evaluate(STEP, { press: {}, hold: {} });
                 const t = await h.page.evaluate(TIME);
                 if (t === null) { if (frames) break; continue; }
                 frames++;
+                rows.push(await h.page.evaluate(READ));
                 if (!clip) { const c = await h.page.evaluate(CROP); clip = { x: Math.max(0, c.x - 270), y: Math.max(0, c.y - 285), width: 540, height: 350 }; }
-                if (i % 2 === 0) await h.page.screenshot({ path: `${framesDir}/${id}/s${String(n++).padStart(4, '0')}.jpg`, type: 'jpeg', quality: 80, clip });
+                if (!process.env.NOFILM && i % 2 === 0) await h.page.screenshot({ path: `${framesDir}/${id}/s${String(n++).padStart(4, '0')}.jpg`, type: 'jpeg', quality: 80, clip });
                 const st = STILLS.find(s => t >= s && !stills.has(s));
                 if (st !== undefined) { stills.add(st); await h.page.screenshot({ path: `${framesDir}/${id}/still-${st}.png`, clip: { x: clip.x + 90, y: clip.y + 10, width: 360, height: 330 } }); }
             }
-            console.log(id, 'clip', dur, 's,', frames, 'frames');
+            const held = rows.filter(r => r.t >= 1.05 && r.t <= 3);
+            const maxSlide = Math.max(0, ...held.slice(1).flatMap((r, i) => r.ankles.map((p, j) => Math.hypot(p.x-held[i].ankles[j].x, p.y-held[i].ankles[j].y))));
+            const summary = { clip: rows[0].clip, frames, heldFrames: held.length, maxWristGap: Math.max(...held.map(r=>r.wristGap)), maxForearmGap: Math.max(...held.map(r=>r.forearmGap)), pinnedFrames: rows.filter(r=>r.pinned.length).length, maxHeldAnkleSlide: maxSlide, kneeRange: [Math.min(...rows.flatMap(r=>r.knees)), Math.max(...rows.flatMap(r=>r.knees))] };
+            writeFileSync(`${framesDir}/${id}/audit.json`, JSON.stringify({ summary, rows }, null, 2));
+            console.log(id, JSON.stringify(summary));
         }
     } finally { await h.close(); }
 }

@@ -24,6 +24,9 @@ Replaces PLAN_FINISHERS as the next front (Derek 2026-11-07: "i don't think i wa
 - **T2.3 sell: approved by Derek 2026-11-07** ("it looks good", d780c58). Polish adds: free leg silhouette on his legs 747-762 px, close entry stands on the shins for the 0.2 s lead-in, rope not drawn. Next T2.4 (Opus).
 - T2.6b (sha below): G2 [page](research/animation/light-moves-2026-11/t2-6b/index.html) (5dde20c base shin vs 4825c75, loops + stills + close-ups, `tools/debug/ankle_lock_t26b_page.mjs`, plus armBar as is). Lou trapped draws ankleTwist 150 of 186 frames, both facings; every audit number identical before/after: palm held 0 / 0 px, 0 seams, 0 pinned, slide 0, boot over torso 127/127; swap 0 px above ankle row 395.
   Misses: George has no ankleTwist art (base shin in both columns); two grey wisps on the bent boot's shaft edge in the art; in-play stills too small/grainy to show the boot, judge from the loops; armBar unmeasured; polish items from T2.2f/T2.3 unchanged.
+- **T2.6b G2 bent boot: approved by Derek 2026-11-10** ("ankle lock looks good", 0d2e0da). Polish: two grey wisps on the bent boot's shaft edge; George's `ankleTwist` art (Codex T2.5). Derek rejected the old `armBar` at G2 and chose a kneeling wrestling arm bar.
+- armBarV2 candidate (Codex, sha below, committed unapproved by Opus): kneeling arm bar under `?light=v1`, [page](research/animation/light-moves-2026-11/armbar-v2/index.html). Palm to wrist / forearm < 0.001 px held, 0/216 pinned, held ankle slide 0, 4 cases; flag off plays the old clip.
+  Misses (Opus): his near shin over George's hips (Lou, 1.4 s), George's thigh on Lou's belly (1.95 s), arms straight out at 0.3 s; overlap, knee-to-mat and entry/exit speed unmeasured. T2.7 fixes.
 
 ## Order and roles (2026-11-10)
 
@@ -31,6 +34,7 @@ Do these in order. Every **STOP**: Sonnet commits locally, writes its Progress l
 
 1. **T2.6b** G2 page for the ankle lock (the wiring is in 4825c75; no page yet). George has no `ankleTwist` art, so he shows the base shin: say so on the page. Codex can draw George's later (T2.5).
 2. **Stage 1** front kick: T1.1 → T1.3, STOP at G1.
+2b. **T2.7** kneeling arm bar fixes (after G1).
 3. **Stage 3** step-over toehold: T3.0 first asks Derek for footage.
 4. **Stage 4** leg-hold slot per kit, G4.
 5. **Stage 5** body slam, **Stage 6** whip-return attacks, **Stage 7** snapmare from the tie-up.
@@ -92,6 +96,7 @@ Derek 2026-11-07: **improve the current ankle lock, don't replace it.** Keep its
   6. **Done when:** contract committed; Codex T2.5 can start from items 1-4 with no questions.
 - **T2.5 Art (Codex, per rig).** Lou first (`thesz-procreate-v1`, the bar), then George; Kowalski and Guido later. Each drawn from that rig's own shin and boot so the swap changes only the foot (pixel swap check like clasps T2.0b: changed px above the ankle ≈ 0). Sonnet reviews before anything is committed (Derek 2026-11-08: no Opus, to save tokens).
 - **T2.6 Wire and G2 page.** Swap on, both pairings, both facings: old vs new, a normal-speed loop strip, numbers beside each, plus pixel swap counts and still close-ups of the bent boot. Include `armBar` as it is today so Derek can say if it is trash too. **STOP at G2.**
+- **T2.7 Kneeling arm bar (`armBarV2`, Codex's candidate; Derek 2026-11-10 agreed with Opus's review).** Keep the kneel, the grips (wrist + forearm at 0.55, painted palm) and the timing. Fix: (1) the attacker kneels **beside** the man, both knees on the mat on the camera side, no shin or thigh drawn over his hips, legs or belly (D12 masks: below-belt and torso overlap per held frame, report px vs the candidate); (2) knee-to-mat px for the kneeling knee on held frames (bar ≤ 6); (3) no arms stuck out straight at shoulder height while he is still walking in (0-0.6 s): hands low until the reach; (4) entry and exit hip step px/frame at entries 50/70/150/210 (the T2.3 measure). Tools: `tools/debug/arm_bar_frames.mjs` (LIGHT=0 for the old clip), `tools/debug/arm_bar_review_page.mjs`. Page: candidate vs new, both pairings and facings, normal-speed loops and stills. **STOP for Derek.**
 
 ## Stage 3: step-over toehold (new move)
 

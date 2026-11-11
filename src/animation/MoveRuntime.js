@@ -201,7 +201,7 @@ export default class MoveRuntime {
                 const actor = handle.bindings[grip.role], partner = handle.bindings[grip.to.role];
                 if (!(w > 0) || !actor?.holdGrips || !partner?.skeleton) continue;
                 if (!byRole.has(actor)) byRole.set(actor, []);
-                byRole.get(actor).push({ arm: grip.arm, partner, joint: grip.to.joint, side: grip.to.side, past: grip.to.past, anchor: grip.to.anchor, palm: grip.palm, natural: grip.natural, w });
+                byRole.get(actor).push({ arm: grip.arm, partner, joint: grip.to.joint, side: grip.to.side, fore: grip.to.fore, past: grip.to.past, anchor: grip.to.anchor, palm: grip.palm, natural: grip.natural, w });
             }
             for (const [actor, list] of byRole) actor.holdGrips(list);
         }

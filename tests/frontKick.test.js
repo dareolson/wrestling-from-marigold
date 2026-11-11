@@ -119,8 +119,8 @@ test('working kick folds the receiver forward and loads the canvas without chang
     const old = kickImpact(), next = kickImpact({ light: true });
     assert.deepEqual(next.hurts, old.hurts);
     assert.equal(next.sells[0][0], 'sellGut');
-    assert.equal(next.sells[0][1], 320);
-    assert.ok(POSES.sellGut.bend > .7);
+    assert.equal(next.sells[0][1], 200);
+    assert.ok(POSES.sellGut.bend > .4 && POSES.sellGut.bend < .7, 'folds over, not double');
     assert.equal(old.sells[0][0], 'sellChest');
     assert.equal(old.sells[0][1], 110);
     assert.equal(next.pushes[0].x, 594, 'short stomach-kick recoil');

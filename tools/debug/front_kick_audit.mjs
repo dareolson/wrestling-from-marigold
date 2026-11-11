@@ -11,11 +11,12 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { launch } from './harness.mjs';
 import { INSTALL, STEP } from './grapples_film.mjs';
 import { JOINT_LIMITS } from '../../src/rig/articulation.js';
-import { FRONT_KICK_V2_STANDOFF } from '../../src/animation/clips/frontKickV2.js';
+import { frontKickV2For } from '../../src/animation/clips/frontKickV2.js';
 
 const RIG = { lou: 'thesz-procreate-v1', george: 'george-roster-v1', kowalski: 'kowalski-roster-v1', guido: 'guido-roster-v1' };
 const PAIRS = [['lou-george', 'lou', 'george'], ['george-lou', 'george', 'lou'], ['kowalski-george', 'kowalski', 'george'], ['guido-lou', 'guido', 'lou']];
 const STILLS = [0.12, 0.22, 0.3, 0.36, 0.46, 0.58];
+const SELL_STILLS = [0.8, 1.1, 1.5, 2.0];   // the receiver's sell after the clip ends
 const out = process.argv[2], framesDir = process.argv[3];
 const STANDOFF = 84;   // Wrestler.js FRONT_KICK_STANDOFF, boot to belly in the clip's own units (scaled by s)
 
@@ -75,7 +76,7 @@ for (const [pair, att, def] of PAIRS.filter(q => !process.env.ONLY || process.en
         await h.page.evaluate(INSTALL);
         for (const facing of [1, -1]) {
             const id = `${pair}-${facing > 0 ? 'right' : 'left'}`;
-            const setup = await h.page.evaluate(SETUP, { facing, standoff: process.env.LIGHT ? FRONT_KICK_V2_STANDOFF : STANDOFF });
+            const setup = await h.page.evaluate(SETUP, { facing, standoff: process.env.LIGHT ? frontKickV2For(RIG[att]).standoff : STANDOFF });
             const rows = []; let clip = null, n = 0; const stills = new Set();
             if (framesDir) mkdirSync(`${framesDir}/${id}`, { recursive: true });
             for (let i = 0; i < 90; i++) {
@@ -85,8 +86,20 @@ for (const [pair, att, def] of PAIRS.filter(q => !process.env.ONLY || process.en
                 rows.push(r);
                 if (framesDir) {
                     if (!clip) { const c = await h.page.evaluate(CROP); clip = { x: Math.max(0, c.x - 270), y: Math.max(0, c.y - 285), width: 540, height: 350 }; }
-                    if (i % 2 === 0) await h.page.screenshot({ path: `${framesDir}/${id}/s${String(n++).padStart(4, '0')}.jpg`, type: 'jpeg', quality: 80, clip });
+                    if (rows.length % 2 === 1) await h.page.screenshot({ path: `${framesDir}/${id}/s${String(n++).padStart(4, '0')}.jpg`, type: 'jpeg', quality: 80, clip });
                     const st = STILLS.find(t => r.t >= t && !stills.has(t));
+                    if (st !== undefined) { stills.add(st); await h.page.screenshot({ path: `${framesDir}/${id}/still-${st}.png`, clip: { x: clip.x + 90, y: clip.y + 10, width: 360, height: 330 } }); }
+                }
+            }
+            // the receiver's sell goes on after the clip ends: 2.6 s more, his pose and travel
+            const after = [];
+            for (let i = 0; i < 160; i++) {
+                await h.page.evaluate(STEP, { press: {}, hold: {} });
+                const r = await h.page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0], d = sc.w2; return { state: d.state, bend: d.pose.bend ?? 0, crouch: d.pose.crouch ?? 0, x: d.x }; });
+                after.push(r);
+                if (framesDir && clip && (rows.length + i) % 2 === 0) {
+                    await h.page.screenshot({ path: `${framesDir}/${id}/s${String(n++).padStart(4, '0')}.jpg`, type: 'jpeg', quality: 80, clip });
+                    const t = 0.68 + (i + 1) / 60, st = SELL_STILLS.find(q => t >= q && !stills.has(q));
                     if (st !== undefined) { stills.add(st); await h.page.screenshot({ path: `${framesDir}/${id}/still-${st}.png`, clip: { x: clip.x + 90, y: clip.y + 10, width: 360, height: 330 } }); }
                 }
             }
@@ -107,6 +120,7 @@ for (const [pair, att, def] of PAIRS.filter(q => !process.env.ONLY || process.en
                 impact: { bellyHeight: imp.bellyH, t: imp.t, kickBootGap: imp.ankle.near.gap, kickBootHeight: imp.ankle.near.h, supportAnkleHeight: imp.ankle.far.h },
                 soleContactAtImpact: imp.contact,
                 defenderSell: rows.map(r => ({ t: r.t, ...r.defender })),
+                defenderAfter: after.map((r, i) => ({ t: +(0.68 + (i + 1) / 60).toFixed(3), ...r, x: +r.x.toFixed(1) })).filter((r, i) => i % 5 === 0),
                 hipDrop: stat(rows.map(r => r.hipY)),
                 attackerShift: round(Math.max(...rows.map(r => r.x)) - Math.min(...rows.map(r => r.x))),
                 plantTrace: rows.filter((r, i) => i % 4 === 0).map(r => [r.t, r.plant]),

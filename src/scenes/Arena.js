@@ -26,7 +26,7 @@ import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS, ROSTER_PERSONALITIES } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
 import { ankleLockV2Clip } from '../animation/clips/ankleLockV2.js';
-import { frontKickV2Clip } from '../animation/clips/frontKickV2.js';
+import { FRONT_KICK_V2_CLIPS } from '../animation/clips/frontKickV2.js';
 import { ROPE_HIT, stepRopeSpring } from '../animation/ropeHit.js';
 import { WEAR_MAX, KNOCKDOWN_WEAR, EXCEPTIONAL_WEAR } from '../animation/falls.js';
 import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
@@ -3082,6 +3082,7 @@ export default class Arena extends Phaser.Scene {
         const c2 = this._preset2 = PRESETS[q.get('p2')] ?? PRESETS['george-roster-v1'];
 
         this.w1 = new Wrestler(this, 330, 360, c1.skin, c1.trunks, input1, c1.moveSet, c1.textures ?? {});
+        this.w1.rigId    = Object.keys(PRESETS).find(k => PRESETS[k] === c1);
         this.w1.facing   = 1;
         this.w1.idlePose = c1.idlePose;
         this.w1.begsOff  = !!c1.begsOff;
@@ -3089,6 +3090,7 @@ export default class Arena extends Phaser.Scene {
         this.w1.sellStyle = c1.sellStyle ?? 'economical';
 
         this.w2 = new Wrestler(this, 630, 360, c2.skin, c2.trunks, input2, c2.moveSet, c2.textures ?? {});
+        this.w2.rigId    = Object.keys(PRESETS).find(k => PRESETS[k] === c2);
         this.w2.facing   = -1;
         this.w2.idlePose = c2.idlePose;
         this.w2.begsOff  = !!c2.begsOff;
@@ -3108,7 +3110,7 @@ export default class Arena extends Phaser.Scene {
         // ?dropkick=v2 comparison candidate (Wrestler._doDropkick picks it).
         if (new URLSearchParams(location.search).get('dropkick') === 'v2') this.moveRuntime.register(dropkickV2Clip);
         // ?light=v1 rebuilds (PLAN_LIGHT_MOVES), picked by Wrestler.
-        if (lightCandidate()) { this.moveRuntime.register(ankleLockV2Clip); this.moveRuntime.register(frontKickV2Clip); }
+        if (lightCandidate()) { this.moveRuntime.register(ankleLockV2Clip); for (const clip of FRONT_KICK_V2_CLIPS) this.moveRuntime.register(clip); }
         this.events.once('shutdown', () => {
             this.moveRuntime.shutdown();
             this.w1?.clearPain?.();

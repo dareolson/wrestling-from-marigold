@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { frontKickClip } from '../src/animation/clips/frontKick.js';
-import { frontKickV2Clip } from '../src/animation/clips/frontKickV2.js';
+import { frontKickV2Clip, frontKickV2LouClip, frontKickV2For, FRONT_KICK_V2_CLIPS } from '../src/animation/clips/frontKickV2.js';
+import { GUT_STAGGER } from '../src/animation/staggers.js';
 import { compileClip, validateClip } from '../src/animation/AnimationClip.js';
 import { REGISTERED_MOVE_CLIPS } from '../src/animation/clips/index.js';
 
@@ -51,4 +52,26 @@ test('flag off: the V2 clip is not registered and the old frontKick is untouched
 test('the plant keeps its kneeRestart flag through compile (the runtime reads it); no other clip sets it', async () => {
     assert.equal(compileClip(frontKickV2Clip).plants[0].kneeRestart, true);
     for (const c of REGISTERED_MOVE_CLIPS) for (const p of c.plants ?? []) assert.equal(p.kneeRestart, undefined, c.id);
+});
+
+test('Lou has his own stomp table (the same shape as the first pass, the thigh higher); every other rig gets the stomp as authored', () => {
+    assert.equal(frontKickV2For('thesz-procreate-v1').clip, frontKickV2LouClip);
+    for (const rig of ['kowalski-roster-v1', 'guido-roster-v1', 'george-roster-v1', undefined]) assert.equal(frontKickV2For(rig).clip, frontKickV2Clip);
+    assert.deepEqual(FRONT_KICK_V2_CLIPS.map(c => validateClip(c).ok), [true, true]);
+    const at = (c, t) => c.tracks.attacker.keyframes.find(k => k.at === t).pose;
+    assert.ok(at(frontKickV2LouClip, 0.3).lLeg > at(frontKickV2Clip, 0.3).lLeg);
+    assert.equal(at(frontKickV2LouClip, 0.3).crouch, at(frontKickV2Clip, 0.3).crouch, 'the same sunk stomp');
+});
+
+test('the gut stagger folds, stumbles back with the knees giving, holds two beats, then straightens; no positive knee channel', () => {
+    const steps = GUT_STAGGER.steps;
+    for (const st of steps) assert.equal('lKnee' in st.pose || 'rKnee' in st.pose, false);
+    assert.ok(steps[0].pose.bend > 0.4 && Math.max(...steps.map(st => st.pose.bend)) < 0.7, 'bent over, never double');
+    assert.ok(steps.slice(0, 5).every(st => st.pose.crouch >= 0.2), 'knees give throughout the stumble and the hold');
+    const holds = steps.filter(st => st.dur >= 300 && st.dx === 0 && st.pose.bend >= 0.5);
+    assert.ok(holds.length >= 2, 'two held beats');
+    const total = steps.reduce((ms, st) => ms + st.dur, 0);
+    assert.ok(GUT_STAGGER.seconds * 1000 >= total, 'the stagger state outlasts its steps');
+    assert.equal(steps.at(-1).pose.crouch, 0);
+    assert.ok(steps.reduce((d, st) => d + st.dx, 0) > 0, 'he travels back');
 });

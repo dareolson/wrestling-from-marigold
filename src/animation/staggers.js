@@ -79,6 +79,22 @@ export const STAGGER_TYPES = Object.freeze([
     },
 ]);
 
+// A kick to the stomach (?light=v1 front kick): not part of the stamina progression. He doubles over, stumbles back a step or two with his knees giving a little
+// (`crouch`, never a positive knee), then stays bent over holding his belly for two slow beats before straightening. Knees collapse through `crouch` only.
+const gut = (bend, crouch, l = 0.38, r = 0.5) => ({ ...arms(l, r), lElbow: 1.8, rElbow: 1.85, bend, crouch });
+export const GUT_STAGGER = Object.freeze({
+    id: 'gut', seconds: 2.0,
+    steps: [
+        step({ ...gut(0.6, 0.22), lLeg: -0.16, rLeg: 0.22 }, 170, 'Cubic.easeOut', 8),            // folds as the boot lands, one step back
+        step({ ...gut(0.5, 0.34), lLeg: 0.14, rLeg: -0.12 }, 210, 'Sine.easeInOut', 9),           // stumbles, the knees give
+        step({ ...gut(0.56, 0.3), lLeg: -0.1, rLeg: 0.14 }, 190, 'Sine.easeInOut', 4),             // catches himself, still folded
+        step({ ...gut(0.6, 0.32), lLeg: 0.02, rLeg: 0.04 }, 330, 'Sine.easeInOut', 0),            // beat one: holding his stomach
+        step({ ...gut(0.52, 0.28), lLeg: 0.02, rLeg: 0.04 }, 330, 'Sine.easeInOut', 0),           // beat two: a breath, still bent
+        step({ ...arms(0.15, 0.2), lElbow: 1.2, rElbow: 1.3, lLeg: -0.02, rLeg: 0.12, crouch: 0.1, bend: 0.2 }, 280, 'Sine.easeInOut', 0),   // straightens up
+        step({ ...arms(0, 0), lLeg: -0.04, rLeg: 0.16, crouch: 0, bend: 0 }, 300, 'Linear', 0),
+    ],
+});
+
 // The type for a wrestler this hurt.
 export function staggerFor(stamina) {
     return STAGGER_TYPES.find(t => stamina > t.minStamina) ?? STAGGER_TYPES[STAGGER_TYPES.length - 1];

@@ -10,7 +10,7 @@ import { frontKickClip } from './animation/clips/frontKick.js';
 import { shoveClip } from './animation/clips/shove.js';
 // ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
 import { dropkickV2Clip } from './animation/clips/dropkickV2.js';
-import { frontKickV2Clip, FRONT_KICK_V2_STANDOFF } from './animation/clips/frontKickV2.js';
+import { frontKickV2For } from './animation/clips/frontKickV2.js';
 import { elbowDropClip } from './animation/clips/elbowDrop.js';
 import { ELBOW_DROP, SPLASH_VARIANTS, ARM_CHANNELS, sampleGroundAttack, sampleSplash, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from './animation/groundContact.js';
 import { kneeDropClip } from './animation/clips/kneeDrop.js';
@@ -23,7 +23,7 @@ import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, l
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
 import { AROUND, aroundChannel, backSellSupport, recoveryVia, resolveAroundVia } from './rig/backSell.js';
-import { staggerFor } from './animation/staggers.js';
+import { staggerFor, GUT_STAGGER } from './animation/staggers.js';
 import { ROPE_HIT, ELBOW_REST, ropeHitAt, ropeHitPose } from './animation/ropeHit.js';
 import { CORNER, CORNER_CHARGE, CORNER_DAZE_POSE, cornerDazeSeconds, cornerOffsetAt, cornerPoseAt } from './animation/cornerDaze.js';
 import { gripTarget } from './animation/lockup.js';
@@ -188,7 +188,7 @@ export const moveTier = (move) => {
 };
 // A landed strike's reaction on `other`: flag off, the sell then the stagger exactly as before (the call is the old one, so a stand-in receiver needs only _doSell and
 // startStagger); ?falls=v1, Wrestler._strikeReact reads the hit and may put him down (T3.5).
-const strikeReact = (other, attacker, move, pose, ms, alwaysFall = false) => (fallsCandidate() ? other._strikeReact(attacker, move, pose, ms, alwaysFall) : other._doSell(pose, ms, () => other.startStagger()));
+const strikeReact = (other, attacker, move, pose, ms, alwaysFall = false, stagger = null) => (fallsCandidate() ? other._strikeReact(attacker, move, pose, ms, alwaysFall, stagger) : other._doSell(pose, ms, () => other.startStagger(stagger)));
 // ?falls=v1 (T3.3): the sideways spill (T2.5e), called by the shove through chooseFall. It was `&spill=1` until Stage 3; the flag is gone, the name stays for the tools.
 export const spillCandidate = () => fallsCandidate();
 // PLAN_FALLS T4.8 (G4b r4): which turn a dive on a man on the mat takes (groundContact.js SPLASH_VARIANTS). Default (Derek): the top dive keeps the pivot (a good landing for a splash off the top rope), the
@@ -325,7 +325,7 @@ export const POSES = {
     cornerShoulderFollow: { lLeg:-0.25, rLeg: 0.46, lArm:-0.30, rArm: 0.20, crouch: 0.40, bend: 0.50 },
     cornerDaze:     CORNER_DAZE_POSE, // grapples=v1 (T3c.6): slumped in the corner, feet planted, knees soft, arms hanging (T3c.6b); the sway is cornerPoseAt's
     sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82, lean:-0.30, bend: -0.34 }, // chest impact — torso snaps back, arms whip behind
-    sellGut:        { lLeg:-0.08, rLeg:0.10, lArm:0.35, rArm:0.45, lElbow:1.7, rElbow:1.8, lean:0.08, bend:0.95 }, // stomach kick: fold over the abdomen, hands come in
+    sellGut:        { lLeg:-0.08, rLeg:0.10, lArm:0.35, rArm:0.45, lElbow:1.7, rElbow:1.8, lean:0.08, bend:0.55, crouch:0.15 }, // stomach kick: fold over the abdomen, hands come in
     sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10, bend: -0.22 }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
     powerIdle:      { lLeg: -0.18, rLeg: 0.13,  lArm: 0.10,  rArm: 0.59, lean: 0.09, crouch: 0.22 }, // wide, imposing — arms hanging low (rig-tuner pass 2026-07-26, live export; supersedes the prior 2026-07-26 values — used by shipped george via idlePose: 'powerIdle', see Arena.js/george.js; formerly also shared across the now-vaulted george-ai-pilot v1-v9 lineage)
@@ -2329,9 +2329,10 @@ export default class Wrestler {
         const b       = ringBoundsAtY(this.y);
         const margin  = 30 * this.s;
         const clampX  = x => Math.max(b.left + margin, Math.min(b.right - margin, x));
-        const standX  = clampX(other.x - facing * (lightCandidate() ? FRONT_KICK_V2_STANDOFF : FRONT_KICK_STANDOFF) * this.s);
+        const v2      = lightCandidate() ? frontKickV2For(this.rigId) : null;
+        const standX  = clampX(other.x - facing * (v2 ? v2.standoff : FRONT_KICK_STANDOFF) * this.s);
         const stance  = this.scene.tweens.add({ targets: this, x: standX, duration: 200, ease: 'Sine.easeOut' });
-        this._activeMove = runtime.play((lightCandidate() ? frontKickV2Clip : frontKickClip).id, { attacker: this }, {
+        this._activeMove = runtime.play((v2 ? v2.clip : frontKickClip).id, { attacker: this }, {
             onEvent: (event) => {
                 if (event.type !== 'impact') return;
                 if (other.state === 'evading') {
@@ -2342,7 +2343,7 @@ export default class Wrestler {
                 if (!strikable || Math.abs(other.y - this.y) > STRIKE_DEPTH_TOLERANCE ||
                     Math.abs(other.x - this.x) > (lightCandidate() ? FRONT_KICK_REACH : FRONT_KICK_HIT) * this.s) return;
                 other._hurt(STAMINA_DRAIN.frontKick, 'frontKick');
-                strikeReact(other, this, 'frontKick', lightCandidate() ? 'sellGut' : 'sellChest', lightCandidate() ? 320 : 110);
+                strikeReact(other, this, 'frontKick', v2 ? 'sellGut' : 'sellChest', v2 ? 200 : 110, false, v2 ? GUT_STAGGER : null);
                 // The boot shoves him a step away from the attacker.
                 const pushX = Math.max(b.left + margin, Math.min(b.right - margin, other.x + facing * (lightCandidate() ? 10 : 28) * this.s));
                 this.scene.tweens.add({ targets: other, x: pushX, duration: 105, ease: 'Cubic.easeOut' });
@@ -3930,14 +3931,14 @@ export default class Wrestler {
     // A strike's reaction, from the hit frame (after its damage). Flag off: the sell, then the stagger (or `alwaysFall`'s own fall) exactly as before. ?falls=v1:
     // the hit is read now, his facing is held through the sell (a hit from behind does not turn him), and a man the hit left at KNOCKDOWN_WEAR or over goes down by the
     // situation instead of staggering. Damage, down time and pin rules are the move's own; the threshold is the only new rule. `alwaysFall`: the headbutt.
-    _strikeReact(attacker, move, sellPose, ms, alwaysFall = false) {
-        if (!fallsCandidate()) { this._doSell(sellPose, ms, () => this.startStagger()); return; }
+    _strikeReact(attacker, move, sellPose, ms, alwaysFall = false, stagger = null) {
+        if (!fallsCandidate()) { this._doSell(sellPose, ms, () => this.startStagger(stagger)); return; }
         const hit = this._hitAt(attacker, move);
         if (!this._facingLock) this._facingLock = (ms + 100) / 1000;
         this._doSell(sellPose, ms, () => {
             if (hit.facing && !this._cornerEp) this.facing = hit.facing;
             if (alwaysFall || (hit.wear >= KNOCKDOWN_WEAR && !this._cornerEp)) this._fallBySituation(hit);
-            else this.startStagger();
+            else this.startStagger(stagger);
         });
     }
 
@@ -3966,10 +3967,10 @@ export default class Wrestler {
     // A stagger is one of STAGGER_TYPES (src/animation/staggers.js), chosen by how
     // hurt he is: rock, stumble, reel, buckle, out on his feet. Each is its own
     // movement, with real backward steps and a torso that reels (`bend`).
-    startStagger() {
+    startStagger(forced = null) {
         if (this._cornerEp && this._restoreCorner()) return; // a hit on a cornered man leaves him in the corner
         this.state = 'staggered';
-        const type = staggerFor(this.stamina);
+        const type = forced ?? staggerFor(this.stamina);   // `forced`: a hit that owns its stagger (the gut kick's GUT_STAGGER)
         this.stateTimer = type.seconds;
         this._staggerType = type.id;
         this._runStaggerSteps(type.steps);

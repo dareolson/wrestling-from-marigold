@@ -38,6 +38,7 @@ Replaces PLAN_FINISHERS as the next front (Derek 2026-11-07: "i don't think i wa
 
 - T1.3 round 3 (sha below): Derek: keep Kowalski's first-pass stomp, give Lou the same, George sells it like a gut kick. `frontKickV2` = the stomp again (Kowalski unchanged); Lou has `frontKickV2Lou` (same stomp, thigh higher; `Wrestler.rigId`); receiver `GUT_STAGGER` (bend 0.6, was 0.95; stumbles back, knees give via crouch, holds ~1.0 s, straightens), [page](research/animation/light-moves-2026-11/t1-5/index.html). Sole vs belly at impact Lou -24.9 / +12.9 px, Kowalski -29.3 / +11.3; Lou support slide 1.09 (0 over 1.5), 0 backward knees.
   Misses: Kowalski slide 3.6 (9 frames), George 4.3 (6), Guido 15.9 (13) over the bar; Lou's support knee 2.02 rad (deep sink, cap 2.55); sell timings are my guess at "a couple beats"; unjudged by Derek.
+  Opus review 2026-11-10: diff clean, flag off unchanged, `kneeRestart` opt-in, 104/104 focused tests. Stills: Lou's boot hidden inside George's belly at impact, Lou leans far back, George's hands land on Lou's chest at 1.1 s. Awaiting Derek.
 
 ## Order and roles (2026-11-10)
 

@@ -28,11 +28,13 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Status (2026-11-10, replace this block; ≤ 40 lines)
+## Status (2026-11-10 night, replace this block; ≤ 40 lines)
 
 - **Roles (Derek 2026-11-10):** Opus is project manager again: writes contracts, reviews Sonnet's work at every STOP before Derek sees it, writes gate lines, pushes when asked. Sonnet executes plan tasks and commits locally. Codex builds art/tooling, Sonnet or Opus reviews it before commit. Derek judges every visual.
 - **Active plan: [PLAN_LIGHT_MOVES.md](PLAN_LIGHT_MOVES.md)**, all behind `?light=v1`. Order (see its "Order and roles"): T2.6b ankle lock G2 page → Stage 1 front kick → Stage 3 step-over toehold → Stage 4 per-kit leg holds → Stage 5 body slam (too much, reads as a powerbomb) → Stage 6 whip-return attacks (back body drop first, hip toss/arm drag off the whip, drop toe hold) → Stage 7 snapmare from the tie-up via a pivot → GP promote.
-- **Ankle lock:** staging (bb449b6) and sell (d780c58) approved; Lou's bent boot `ankleTwist` (5dde20c) wired (4825c75). George has no `ankleTwist` art yet (T2.5, Codex). Polish: trapped/free leg overlap, 0.2 s standing on his shins at a close entry, deep pickup squat, rope not drawn.
+- **Ankle lock:** G2 bent boot approved 2026-11-10 (0d2e0da). George has no `ankleTwist` art yet (T2.5, Codex). Polish: wisps on the bent boot, trapped/free leg overlap, close entry on his shins, deep pickup squat, rope not drawn.
+- **Arm bar:** old `armBar` rejected by Derek; Codex's kneeling `armBarV2` is a committed, unapproved candidate (15e7d5e); **T2.7** fixes it after G1.
+- **Front kick:** round 3 (8d084c4: Kowalski's stomp, Lou's own `frontKickV2Lou`, `GUT_STAGGER` sell) at **STOP G1**, Opus-reviewed, Derek's verdict pending ([page](research/animation/light-moves-2026-11/t1-5/index.html)).
 - **Grapples ([PLAN_GRAPPLES.md](PLAN_GRAPPLES.md)):** promoted; clasps G2 approved (bebc34e). Waistlock (`?waistlock=v1`) parked at G4b.
 - **Falls ([PLAN_FALLS.md](PLAN_FALLS.md)):** promoted. Polish list in the plan.
 - **Parked:** finishers, gait Stage 3 (`?gait=v2`), get-ups Stage 5, George transfer G10a, figure-four, support-hand plant.
@@ -40,11 +42,15 @@ Avoid a large rewrite.
 - **Story and art direction (docs only):** Chicago 1952 opening ([brief](STORY_CARNIVAL_OPENING.md)), monochrome ([standard](CINEMATIC_ART_STANDARD.md)), venues ([plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md)), feud ([direction](STORY_ART_AND_FEUD_DIRECTION.md)).
 - **Awaiting Derek:** G4 falls match; Marigold title queue (83ab5cd) visual OK; PLAN_CLEANUP T3 (old side branch).
 - **Ideas parked in [IDEAS.md](IDEAS.md):** front snapmare, body slam, whip-return attacks (now plan Stages 5-7), personality-through-movement.
-- **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`), ~48 commits ahead of origin, not pushed; full suite, build, coverage before pushing (SSH). Last full suite 1263/1263. Coverage baseline 26 gaps. The 3 old Codex waistlock scripts were deleted 2026-11-10 (results live in their REPORT.md files).
-- **Next:** T1.1-T1.3 front kick is at **STOP G1** (page [t1-3](research/animation/light-moves-2026-11/t1-3/index.html), Opus reviews, then Derek judges); then Sonnet does **T2.7** (kneeling arm bar fixes). Ankle lock G2 approved 2026-11-10 (0d2e0da); `armBarV2` (15e7d5e) is a committed, unapproved Codex candidate.
+- **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`), 56 commits ahead of origin, not pushed; full suite, build, coverage before pushing (SSH). Last full suite 1263/1263 (before 2026-11-10). Coverage baseline 26 gaps. Untracked `kick-working/` + `front_kick_working_page.mjs`: Codex's superseded round-2 page, delete with Derek's OK.
+- **Next:** Derek judges G1. Approved → Sonnet **T2.7**; changes → kick round 4. Handoffs: [Sonnet](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-for-sonnet.md), [Opus PM](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-pm.md).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-10 · Claude Opus · [Handoff for the next Opus: project manager on PLAN_LIGHT_MOVES](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-pm.md)
+
+- 2026-11-10 · Claude Opus · [Handoff for the next Sonnet: what to do after G1](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-for-sonnet.md)
 
 - 2026-11-07 · Claude Opus · [Handoff: light moves plan, ankle lock staging and sell approved](AI_HANDOFF_ENTRIES/2026-11-07-claude-opus-handoff-ankle-lock-approved.md)
 

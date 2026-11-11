@@ -71,6 +71,17 @@ A snapmare from the front can work, but needs its own entry: head/neck control, 
 forward pull before the flip. Don't run the rear-reversal clip from face-to-face spacing. See
 [Codex's note](AI_HANDOFF_ENTRIES/2026-11-05-codex-snapmare-preview-correction.md).
 
+2026-11-10: the snapmare from the grapple still looks wrong. Cheapest fix: the attacker pivots out of the tie-up into the same
+orientation the waistlock reversal uses, then plays the existing snapmare clip, which avoids authoring a second flip.
+
+## Body slam and whip-return attacks (Derek 2026-11-10)
+
+- **Body slam is comically too much.** The `bodySlam` clip still reads as a powerbomb (MOVE_CATALOG: "kept"). Tone it down to a
+  real slam: lower lift, shorter hang, a flatter drop. Reference: Bret 120–121, 322–328.
+- **Attacks for a man coming back off an Irish whip.** Build a small pool for the rebound. Back body drop first: `backBodyDrop`
+  exists only as an old pose sequence (unverified); upgrade it to a clip with the victim's flip (Bret 184–193). `clothesline`
+  already fires vs a runner. Later: hip toss, arm drag, drop toe hold, sleeper/lariat variants off the ropes.
+
 ## Wrestler personality through movement (Derek 2026-11-06, plan after the finisher G1)
 
 - A personality sheet per wrestler: walk, idle, taunt, crowd play, hero pose, how he sells, one signature quirk. Lou and George

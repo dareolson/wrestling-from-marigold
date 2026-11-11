@@ -6,16 +6,18 @@ import { shinsFromFolds } from '../../rig/articulation.js';
 
 const TIMES = [0, .25, .6, .95, 1.3, 1.6, 1.8, 2.2, 2.4, 2.8, 3, 3.25, 3.6];
 const clamp = v => Math.max(0, Math.min(1, v));
+// The hands stay low while he walks in and come up with the reach (grips in at .35, on the wrist by .95).
+const reach = at => clamp((at - .25) / .7);
 export function armBarEntryClip(distance = 70) {
     const keyframes = role => TIMES.map(at => {
         const enter = clamp(at / .95), leave = clamp((at - 3) / .6);
         const held = enter * (1 - leave);
         const squeeze = [1.6, 2.2, 2.8].includes(at) ? 1 : 0;
         const pose = role === 'attacker' ? shinsFromFolds({
-            lArm: .8, rArm: .9, lElbow: .8, rElbow: .8,
-            lLeg: -.45 * held, rLeg: -.75 * held,
-            lFold: 1.85 * held, rFold: 2.05 * held,
-            crouch: 1.35 * held, bend: (.45 + squeeze * .10) * held,
+            lArm: .08 + .72 * reach(at), rArm: .15 + .75 * reach(at), lElbow: .3 + .5 * reach(at), rElbow: .3 + .5 * reach(at),
+            lLeg: -.45 * held, rLeg: -.45 * held,
+            lFold: 2.1 * held, rFold: 2.1 * held,
+            crouch: 1.05 * held, bend: (.45 + squeeze * .10) * held,
             lean: .05, tilt: 0, lift: 0,
         }) : shinsFromFolds({
             lArm: .05 + .8 * held, lElbow: .12,
@@ -26,8 +28,8 @@ export function armBarEntryClip(distance = 70) {
             tilt: -Math.PI / 2, lift: -110,
         });
         return { at, ease: 'easeInOut', pose,
-            // Kneel beside him on the camera side of the mat, not on his ribs.
-            transform: { x: role === 'defender' ? distance : (distance - 15) * held, y: role === 'attacker' ? 18 * held : 0 },
+            // Kneel at his shoulder on the camera side (y +40 is the front of the mat), the man eased 30 back so the thighs clear his hips, belly and legs.
+            transform: { x: role === 'defender' ? distance : (distance + 40) * held, y: (role === 'attacker' ? 40 : -30) * held || 0 },
             parts: role === 'attacker' ? { nearForearm: at > 0 && at < 3.25 ? 'grip' : 'base', farForearm: at > 0 && at < 3.25 ? 'grip' : 'base' } : {},
         };
     });

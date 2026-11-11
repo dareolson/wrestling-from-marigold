@@ -10,6 +10,7 @@ import { frontKickClip } from './animation/clips/frontKick.js';
 import { shoveClip } from './animation/clips/shove.js';
 // ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
 import { dropkickV2Clip } from './animation/clips/dropkickV2.js';
+import { frontKickV2Clip } from './animation/clips/frontKickV2.js';
 import { elbowDropClip } from './animation/clips/elbowDrop.js';
 import { ELBOW_DROP, SPLASH_VARIANTS, ARM_CHANNELS, sampleGroundAttack, sampleSplash, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from './animation/groundContact.js';
 import { kneeDropClip } from './animation/clips/kneeDrop.js';
@@ -2329,7 +2330,7 @@ export default class Wrestler {
         const clampX  = x => Math.max(b.left + margin, Math.min(b.right - margin, x));
         const standX  = clampX(other.x - facing * FRONT_KICK_STANDOFF * this.s);
         const stance  = this.scene.tweens.add({ targets: this, x: standX, duration: 200, ease: 'Sine.easeOut' });
-        this._activeMove = runtime.play(frontKickClip.id, { attacker: this }, {
+        this._activeMove = runtime.play((lightCandidate() ? frontKickV2Clip : frontKickClip).id, { attacker: this }, {
             onEvent: (event) => {
                 if (event.type !== 'impact') return;
                 if (other.state === 'evading') {

@@ -238,21 +238,31 @@ export default class MoveRuntime {
         const at = (a, b) => { b = Math.max(thighOf(a) - 2.45, Math.min(thighOf(a), b)); man.pose[legKey] = a; man.pose[shinKey] = b; man.draw(); return sk.soleWorld(side); };
         const EPS = 0.02, miss = (q) => Math.hypot(want.x - q.x, want.y - q.y);
         let p = at(cur[0], cur[1]);
-        for (let it = 0; it < 6 && miss(p) > 0.2; it++) {
-            const pa = at(cur[0] + EPS, cur[1]), pb = at(cur[0], cur[1] + EPS);
-            const J = [[(pa.x - p.x) / EPS, (pb.x - p.x) / EPS], [(pa.y - p.y) / EPS, (pb.y - p.y) / EPS]];
-            const det = J[0][0] * J[1][1] - J[0][1] * J[1][0];
-            if (Math.abs(det) < 1e-6) { p = at(cur[0], cur[1]); break; }
-            const ex = want.x - p.x, ey = want.y - p.y;
-            let da = (J[1][1] * ex - J[0][1] * ey) / det, db = (-J[1][0] * ex + J[0][0] * ey) / det;
-            const big = Math.max(Math.abs(da), Math.abs(db)); if (big > 0.5) { da *= 0.5 / big; db *= 0.5 / big; }
-            let k = 1, next = cur, q = p;
-            for (let h = 0; h < 4; h++, k /= 2) {   // halve the step until the miss shrinks
-                next = [cur[0] + da * k, cur[1] + db * k]; q = at(next[0], next[1]);
-                if (miss(q) < miss(p)) break;
+        const solve = () => {
+            for (let it = 0; it < 6 && miss(p) > 0.2; it++) {
+                const pa = at(cur[0] + EPS, cur[1]), pb = at(cur[0], cur[1] + EPS);
+                const J = [[(pa.x - p.x) / EPS, (pb.x - p.x) / EPS], [(pa.y - p.y) / EPS, (pb.y - p.y) / EPS]];
+                const det = J[0][0] * J[1][1] - J[0][1] * J[1][0];
+                if (Math.abs(det) < 1e-6) { p = at(cur[0], cur[1]); break; }
+                const ex = want.x - p.x, ey = want.y - p.y;
+                let da = (J[1][1] * ex - J[0][1] * ey) / det, db = (-J[1][0] * ex + J[0][0] * ey) / det;
+                const big = Math.max(Math.abs(da), Math.abs(db)); if (big > 0.5) { da *= 0.5 / big; db *= 0.5 / big; }
+                let k = 1, next = cur, q = p;
+                for (let h = 0; h < 4; h++, k /= 2) {   // halve the step until the miss shrinks
+                    next = [cur[0] + da * k, cur[1] + db * k]; q = at(next[0], next[1]);
+                    if (miss(q) < miss(p)) break;
+                }
+                if (!(miss(q) < miss(p))) { p = at(cur[0], cur[1]); break; }
+                cur = next; p = q;
             }
-            if (!(miss(q) < miss(p))) { p = at(cur[0], cur[1]); break; }
-            cur = next; p = q;
+        };
+        solve();
+        // A straight leg that is too long for its hip (the pelvis dropped, T1.2) is a singular start: the thigh and shin columns of the Jacobian are parallel, no step shrinks the miss and
+        // the solve stops with the foot through the mat. A plant that sets `kneeRestart` bends the knee and solves again from there (opt-in: no other clip's solve changes).
+        if (plant.kneeRestart && miss(p) > 2 && thighOf(cur[0]) - cur[1] < 0.1) {
+            const keep = { cur, miss: miss(p) };
+            cur = [cur[0], thighOf(cur[0]) - 0.5]; p = at(cur[0], cur[1]); solve();
+            if (!(miss(p) < keep.miss)) { cur = keep.cur; p = at(cur[0], cur[1]); }
         }
         state.last = cur;
         if (last) handle.plantLog?.push({ time: handle.time, index, w, side, target: state.target, sole: p, want, onMat: state.onMat, err: Math.hypot(want.x - p.x, want.y - p.y), leg: cur[0], shin: cur[1], thigh: thighOf(cur[0]), hip: { ...sk.jointAttachmentPoints[`${side}Hip`] } });

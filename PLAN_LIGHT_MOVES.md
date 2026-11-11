@@ -28,6 +28,11 @@ Replaces PLAN_FINISHERS as the next front (Derek 2026-11-07: "i don't think i wa
 - armBarV2 candidate (Codex, sha below, committed unapproved by Opus): kneeling arm bar under `?light=v1`, [page](research/animation/light-moves-2026-11/armbar-v2/index.html). Palm to wrist / forearm < 0.001 px held, 0/216 pinned, held ankle slide 0, 4 cases; flag off plays the old clip.
   Misses (Opus): his near shin over George's hips (Lou, 1.4 s), George's thigh on Lou's belly (1.95 s), arms straight out at 0.3 s; overlap, knee-to-mat and entry/exit speed unmeasured. T2.7 fixes.
 
+- T1.1 (sha below): measured frontKick, 4 attackers, both facings ([json](research/animation/light-moves-2026-11/t1-1/old.json), `tools/debug/front_kick_audit.mjs`). Kicking knee drawn backward 23 of 40 frames (worst -1.55 rad, at its limit 13 in a row); support sole slides up to 24.5-27.6 px/frame (16-17 frames over 1.5) and sinks to y 474-486 (mat 400); hips fall to 37 px above the mat; impact boot 54-63 px up, his belly ~144.
+  Misses: none open; this is the baseline.
+- T1.2 + T1.3 (sha below): `frontKickV2` under `?light=v1` ([page](research/animation/light-moves-2026-11/t1-3/index.html), 6 stills + loops, Lou and Kowalski on George, both facings): 0 backward-fold frames, 0 saturated, same 0.68 s and impact 0.3 s; support plant `kneeRestart` (opt-in in MoveRuntime, other clips unchanged: ankle audit identical). Support sole slide worst 1.09 px/frame, 0 over 1.5 (Lou), 3.6 / 9 frames (Kowalski); impact boot 99 / 123 px up, 4.4 / -15.1 px short of the belly.
+  Misses: George 4.3 (6 frames) and Guido 15.9 px/frame (13 frames, sole to y 414) over the slide bar; Kowalski's boot passes his belly by 15 px; the plant start/hit edge; the clip is not in clip_knee_audit (V2 clips are flag-gated), covered by the new audit instead; Derek judges the art.
+
 ## Order and roles (2026-11-10)
 
 Do these in order. Every **STOP**: Sonnet commits locally, writes its Progress line and stops. Derek tells Opus "review T-x", and Opus checks the diff, tests and numbers before Derek sees the page. Opus writes the Progress gate line after Derek's verdict. Nobody pushes unless Derek asks; Opus pushes.

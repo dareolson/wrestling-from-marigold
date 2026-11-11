@@ -10,7 +10,7 @@ import { frontKickClip } from './animation/clips/frontKick.js';
 import { shoveClip } from './animation/clips/shove.js';
 // ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
 import { dropkickV2Clip } from './animation/clips/dropkickV2.js';
-import { frontKickV2Clip } from './animation/clips/frontKickV2.js';
+import { frontKickV2Clip, FRONT_KICK_V2_STANDOFF } from './animation/clips/frontKickV2.js';
 import { elbowDropClip } from './animation/clips/elbowDrop.js';
 import { ELBOW_DROP, SPLASH_VARIANTS, ARM_CHANNELS, sampleGroundAttack, sampleSplash, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from './animation/groundContact.js';
 import { kneeDropClip } from './animation/clips/kneeDrop.js';
@@ -325,6 +325,7 @@ export const POSES = {
     cornerShoulderFollow: { lLeg:-0.25, rLeg: 0.46, lArm:-0.30, rArm: 0.20, crouch: 0.40, bend: 0.50 },
     cornerDaze:     CORNER_DAZE_POSE, // grapples=v1 (T3c.6): slumped in the corner, feet planted, knees soft, arms hanging (T3c.6b); the sway is cornerPoseAt's
     sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82, lean:-0.30, bend: -0.34 }, // chest impact — torso snaps back, arms whip behind
+    sellGut:        { lLeg:-0.08, rLeg:0.10, lArm:0.35, rArm:0.45, lElbow:1.7, rElbow:1.8, lean:0.08, bend:0.95 }, // stomach kick: fold over the abdomen, hands come in
     sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10, bend: -0.22 }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
     powerIdle:      { lLeg: -0.18, rLeg: 0.13,  lArm: 0.10,  rArm: 0.59, lean: 0.09, crouch: 0.22 }, // wide, imposing — arms hanging low (rig-tuner pass 2026-07-26, live export; supersedes the prior 2026-07-26 values — used by shipped george via idlePose: 'powerIdle', see Arena.js/george.js; formerly also shared across the now-vaulted george-ai-pilot v1-v9 lineage)
@@ -2328,7 +2329,7 @@ export default class Wrestler {
         const b       = ringBoundsAtY(this.y);
         const margin  = 30 * this.s;
         const clampX  = x => Math.max(b.left + margin, Math.min(b.right - margin, x));
-        const standX  = clampX(other.x - facing * FRONT_KICK_STANDOFF * this.s);
+        const standX  = clampX(other.x - facing * (lightCandidate() ? FRONT_KICK_V2_STANDOFF : FRONT_KICK_STANDOFF) * this.s);
         const stance  = this.scene.tweens.add({ targets: this, x: standX, duration: 200, ease: 'Sine.easeOut' });
         this._activeMove = runtime.play((lightCandidate() ? frontKickV2Clip : frontKickClip).id, { attacker: this }, {
             onEvent: (event) => {
@@ -2339,13 +2340,15 @@ export default class Wrestler {
                 }
                 const strikable = other.state === 'standing' || other.state === 'blocking' || other.state === 'staggered' || other.state === 'cornered';
                 if (!strikable || Math.abs(other.y - this.y) > STRIKE_DEPTH_TOLERANCE ||
-                    Math.abs(other.x - this.x) > FRONT_KICK_HIT * this.s) return;
+                    Math.abs(other.x - this.x) > (lightCandidate() ? FRONT_KICK_REACH : FRONT_KICK_HIT) * this.s) return;
                 other._hurt(STAMINA_DRAIN.frontKick, 'frontKick');
-                strikeReact(other, this, 'frontKick', 'sellChest', 110);
+                strikeReact(other, this, 'frontKick', lightCandidate() ? 'sellGut' : 'sellChest', lightCandidate() ? 320 : 110);
                 // The boot shoves him a step away from the attacker.
-                const pushX = Math.max(b.left + margin, Math.min(b.right - margin, other.x + facing * 28 * this.s));
+                const pushX = Math.max(b.left + margin, Math.min(b.right - margin, other.x + facing * (lightCandidate() ? 10 : 28) * this.s));
                 this.scene.tweens.add({ targets: other, x: pushX, duration: 105, ease: 'Cubic.easeOut' });
                 this.scene.crowd?.impact?.('kick', 0.7);
+                // A light canvas thump from loading the planted support foot.
+                if (lightCandidate()) this.scene.crowd?.impact?.('mat', 0.18);
             },
             onComplete: () => { this._activeMove = null; },
             onCancel:   () => { stance.stop(); this._activeMove = null; },

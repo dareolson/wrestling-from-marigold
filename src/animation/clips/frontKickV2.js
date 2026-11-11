@@ -5,16 +5,17 @@
 //  - knees (D3): both legs own their shins as the absolute `lShin`/`rShin` through `shinsFromFolds`; the old clip's positive lKnee 1.55 / 1.3 folded the knee backward.
 import { frontKickClip } from './frontKick.js';
 import { shinsFromFolds } from '../../rig/articulation.js';
+export const FRONT_KICK_V2_STANDOFF = 128;
 
 // per key time: the legs and the crouch that carries the soft support knee. `lFold`/`rFold` = heel fold in radians (0 = straight, shin parallel to the thigh).
 const LEGS = {
     0:    { lLeg: -0.04, lFold: 0,    rLeg: 0.16, rFold: 0,    crouch: 0, lift: 0 },
     0.04: { lLeg: -0.04, lFold: 0.24, rLeg: 0.16, rFold: 0.24, crouch: 0.15, lift: 0 },   // both knees ease into a crouch first (fold 1.6 x crouch is the rig's own crouch), the soles stay on the mat
     0.12: { lLeg: 0.35,  lFold: 0.75, rLeg: 0.08, rFold: 0.6, crouch: 0.2, lift: 6 },   // weight onto the support leg, the kicking foot comes off the mat
-    0.22: { lLeg: 1.30,  lFold: 1.55, rLeg: 0.05, rFold: 0.6, crouch: 0.32, lift: 12 },   // chamber: thigh up, shin hanging a little behind the knee
-    0.30: { lLeg: 1.62,  lFold: 0.12, rLeg: 0.05, rFold: 0.6, crouch: 0.32, lift: 12 },   // the push, leg out flat-footed into the belly (the impact)
-    0.36: { lLeg: 1.66,  lFold: 0.10, rLeg: 0.05, rFold: 0.6, crouch: 0.32, lift: 12 },
-    0.46: { lLeg: 1.25,  lFold: 1.50, rLeg: 0.06, rFold: 0.6, crouch: 0.14, lift: 12 },   // back through the chamber
+    0.22: { lLeg: 1.45,  lFold: 1.55, rLeg: 0.05, rFold: 0.6, crouch: 0.18, lift: 16 },   // chamber without sitting down into the kick
+    0.30: { lLeg: 1.72,  lFold: 0.18, rLeg: 0.05, rFold: 0.6, crouch: 0.10, lift: 24 },   // sole into the abdomen, above the trunks
+    0.36: { lLeg: 1.72,  lFold: 0.18, rLeg: 0.05, rFold: 0.7, crouch: 0.16, lift: 22 },   // weight settles through the planted support foot
+    0.46: { lLeg: 1.25,  lFold: 1.50, rLeg: 0.06, rFold: 0.6, crouch: 0.14, lift: 16 },   // back through the chamber
     0.58: { lLeg: 0.30,  lFold: 0.70, rLeg: 0.10, rFold: 0.5, crouch: 0.08, lift: 6 },   // setting down
     0.68: { lLeg: -0.04, lFold: 0,    rLeg: 0.16, rFold: 0,    crouch: 0, lift: 0 },
 };

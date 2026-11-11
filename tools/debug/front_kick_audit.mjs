@@ -11,6 +11,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { launch } from './harness.mjs';
 import { INSTALL, STEP } from './grapples_film.mjs';
 import { JOINT_LIMITS } from '../../src/rig/articulation.js';
+import { FRONT_KICK_V2_STANDOFF } from '../../src/animation/clips/frontKickV2.js';
 
 const RIG = { lou: 'thesz-procreate-v1', george: 'george-roster-v1', kowalski: 'kowalski-roster-v1', guido: 'guido-roster-v1' };
 const PAIRS = [['lou-george', 'lou', 'george'], ['george-lou', 'george', 'lou'], ['kowalski-george', 'kowalski', 'george'], ['guido-lou', 'guido', 'lou']];
@@ -18,7 +19,7 @@ const STILLS = [0.12, 0.22, 0.3, 0.36, 0.46, 0.58];
 const out = process.argv[2], framesDir = process.argv[3];
 const STANDOFF = 84;   // Wrestler.js FRONT_KICK_STANDOFF, boot to belly in the clip's own units (scaled by s)
 
-const SETUP = ({ facing }) => {
+const SETUP = ({ facing, standoff }) => {
     const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
     for (const w of [a, d]) {
         w.scene.tweens.killTweensOf(w); w.scene.tweens.killTweensOf(w.pose);
@@ -29,9 +30,13 @@ const SETUP = ({ facing }) => {
         w.skeleton.setPartVariants?.({});
     }
     a.y = d.y = 400; a.facing = facing; d.facing = -facing;
-    d.x = 640; a.x = d.x - facing * 84 * a.s;   // already at the standoff: the stance tween then moves nothing
+    d.x = 640; a.x = d.x - facing * standoff * a.s;   // already at the standoff: the stance tween then moves nothing
     a.input = { justDown: () => false, isDown: () => false }; d.input = a.input;
     window.__keys = { a: new Set(), d: new Set(), ad: new Set(), dd: new Set() };
+    d.draw();
+    const dp = d.skeleton.jointAttachmentPoints;
+    const hip = { x: (dp.nearHip.x + dp.farHip.x) / 2, y: (dp.nearHip.y + dp.farHip.y) / 2 };
+    window.__kickTarget = { x: (dp.neck.x + hip.x) / 2, y: (dp.neck.y + hip.y) / 2 };
     a._doFrontKick(d);
     return { clip: a._activeMove?.clip?.id ?? null, dur: a._activeMove?.clip?.duration ?? null, s: a.s };
 };
@@ -53,7 +58,8 @@ const READ = () => {
     const ank = (sd) => ({ gap: +((belly.x - p[`${sd}Ankle`].x) * facing).toFixed(1), h: +(a.y - p[`${sd}Ankle`].y).toFixed(1) });
     const pl = hnd?.plantLog?.at(-1); const plant = pl ? { w: +pl.w.toFixed(2), err: +pl.err.toFixed(2), leg: +pl.leg.toFixed(2), shin: +pl.shin.toFixed(2), thigh: +pl.thigh.toFixed(2), sole: [Math.round(pl.sole.x), Math.round(pl.sole.y)], want: [Math.round(pl.want.x), Math.round(pl.want.y)] } : null;
     const bellyH = +(a.y - belly.y).toFixed(1);
-    return { plant, bellyH, t: hnd ? +hnd.time.toFixed(4) : null, x: a.x, flex, sole: { near: sole('near'), far: sole('far') }, ankle: { near: ank('near'), far: ank('far') }, hipY: +(a.y - hip.y).toFixed(1),
+    const contact = sole(sk.lChannelSide(a.facing)), target = window.__kickTarget;
+    return { contact: { x: contact.x, y: contact.y, dx: (target.x-contact.x)*facing, dy: contact.y-target.y }, defender: { bend: d.pose.bend ?? 0, neck: dp.neck, state: d.state, stamina: d.stamina }, plant, bellyH, t: hnd ? +hnd.time.toFixed(4) : null, x: a.x, flex, sole: { near: sole('near'), far: sole('far') }, ankle: { near: ank('near'), far: ank('far') }, hipY: +(a.y - hip.y).toFixed(1),
         pose: { lLeg: a.pose.lLeg, lKnee: a.pose.lKnee, lShin: a.pose.lShin ?? null, rLeg: a.pose.rLeg, rKnee: a.pose.rKnee, rShin: a.pose.rShin ?? null, crouch: a.pose.crouch } };
 };
 
@@ -69,7 +75,7 @@ for (const [pair, att, def] of PAIRS.filter(q => !process.env.ONLY || process.en
         await h.page.evaluate(INSTALL);
         for (const facing of [1, -1]) {
             const id = `${pair}-${facing > 0 ? 'right' : 'left'}`;
-            const setup = await h.page.evaluate(SETUP, { facing });
+            const setup = await h.page.evaluate(SETUP, { facing, standoff: process.env.LIGHT ? FRONT_KICK_V2_STANDOFF : STANDOFF });
             const rows = []; let clip = null, n = 0; const stills = new Set();
             if (framesDir) mkdirSync(`${framesDir}/${id}`, { recursive: true });
             for (let i = 0; i < 90; i++) {
@@ -99,6 +105,8 @@ for (const [pair, att, def] of PAIRS.filter(q => !process.env.ONLY || process.en
                 supportSlide: stat(slide('far')), supportSlideOver15: slide('far').filter(v => v > 1.5).length, supportSlideOverAt: slide('far').map((v, i) => [rows[i + 1].t, round(v)]).filter(([, v]) => v > 1.5), kickSlide: stat(slide('near')),
                 supportSoleY: stat(rows.map(r => d0(r))), supportKnee: stat(rows.map(r => r.flex.far)),
                 impact: { bellyHeight: imp.bellyH, t: imp.t, kickBootGap: imp.ankle.near.gap, kickBootHeight: imp.ankle.near.h, supportAnkleHeight: imp.ankle.far.h },
+                soleContactAtImpact: imp.contact,
+                defenderSell: rows.map(r => ({ t: r.t, ...r.defender })),
                 hipDrop: stat(rows.map(r => r.hipY)),
                 attackerShift: round(Math.max(...rows.map(r => r.x)) - Math.min(...rows.map(r => r.x))),
                 plantTrace: rows.filter((r, i) => i % 4 === 0).map(r => [r.t, r.plant]),

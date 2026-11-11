@@ -5,7 +5,7 @@ import MoveRuntime from '../src/animation/MoveRuntime.js';
 import { frontKickClip } from '../src/animation/clips/frontKick.js';
 import { ROSTER_KITS } from '../src/characters/rosterKits.js';
 import { validateKit } from '../src/moves/registry.js';
-import Wrestler from '../src/Wrestler.js';
+import Wrestler, { POSES } from '../src/Wrestler.js';
 
 test('front kick clip validates, compiles, and is solo (the executor owns position)', () => {
     const result = validateClip(frontKickClip);
@@ -85,14 +85,15 @@ test('roster kits are valid and only the new rigs carry the front kick', () => {
 });
 
 // Executor: the impact callback, driven on the real prototype with a stub scene.
-function kickImpact({ dy = 0, dx = 84, otherState = 'standing' } = {}) {
-    const tweens = [], sells = [], hurts = [];
+function kickImpact({ dy = 0, dx = 84, otherState = 'standing', light = false } = {}) {
+    const tweens = [], sells = [], hurts = [], sounds = [];
     let onEvent;
     const self = {
         x: 500, y: 300, s: 1, facing: 1, scene: {
             moveRuntime: { play: (_id, _ctx, cbs) => { onEvent = cbs.onEvent; return {}; } },
             tweens: { add: t => { tweens.push(t); return { stop() {} }; } },
             _logEvent() {},
+            crowd: { impact: (...args) => sounds.push(args) },
         },
         _cancelActiveMove() {},
     };
@@ -100,11 +101,32 @@ function kickImpact({ dy = 0, dx = 84, otherState = 'standing' } = {}) {
         x: 500 + dx, y: 300 + dy, state: otherState,
         _hurt: (...a) => hurts.push(a),
         _doSell: (...a) => sells.push(a),
+        _strikeReact: (_attacker, _move, pose, ms) => sells.push([pose, ms]),
     };
-    Wrestler.prototype._doFrontKick.call(self, other);
-    onEvent({ type: 'impact' });
-    return { hurts, sells, pushes: tweens.filter(t => t.targets === other) };
+    const previous = globalThis.location;
+    if (light) globalThis.location = { search: '?light=v1' };
+    try {
+        Wrestler.prototype._doFrontKick.call(self, other);
+        onEvent({ type: 'impact' });
+        return { hurts, sells, sounds, pushes: tweens.filter(t => t.targets === other) };
+    } finally {
+        if (previous === undefined) delete globalThis.location;
+        else globalThis.location = previous;
+    }
 }
+
+test('working kick folds the receiver forward and loads the canvas without changing damage', () => {
+    const old = kickImpact(), next = kickImpact({ light: true });
+    assert.deepEqual(next.hurts, old.hurts);
+    assert.equal(next.sells[0][0], 'sellGut');
+    assert.equal(next.sells[0][1], 320);
+    assert.ok(POSES.sellGut.bend > .7);
+    assert.equal(old.sells[0][0], 'sellChest');
+    assert.equal(old.sells[0][1], 110);
+    assert.equal(next.pushes[0].x, 594, 'short stomach-kick recoil');
+    assert.deepEqual(next.sounds, [['kick', .7], ['mat', .18]]);
+    assert.deepEqual(kickImpact({ light: true, dy: 40 }).sounds, []);
+});
 
 test('front kick lands: hurts, sells, and pushes the defender', () => {
     const { hurts, sells, pushes } = kickImpact();

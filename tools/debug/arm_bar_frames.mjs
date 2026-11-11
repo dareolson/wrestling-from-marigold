@@ -83,7 +83,22 @@ const READ = () => {
         if (flex <= -.095 || flex >= 2.545) pinned.push((w === a ? 'a' : 'd') + '.' + sd + 'Knee');
     }
     const mask = window.__maskOverlap(a, d), lower = window.__lowerOverlap(a, d);
+    const stacking = {};
+    for (const [role, w] of [['attacker', a], ['defender', d]]) {
+        const sk = w.skeleton;
+        const names = ['torso', 'head', 'trunks', 'pelvisMask', 'pelvisOverlay', 'pelvisUnderlay', 'nearThigh', 'nearShin', 'nearBoot', 'farThigh', 'farShin', 'farBoot'];
+        const body = names.filter(n => sk[n]);
+        const saved = new Map(sk._parts.map(p => [p, p.depth]));
+        const actual = Object.fromEntries(body.map(n => [n, sk[n].depth]));
+        const torsoDepth = sk.torso.depth;
+        const farArmBehind = Math.max(sk.farUpArm.depth, sk.farForearm.depth, sk.farHand?.depth ?? -Infinity) < Math.min(...Object.values(actual));
+        sk.setDepth(0);
+        const changed = body.filter(n => Math.abs((actual[n]-torsoDepth)-(sk[n].depth-sk.torso.depth)) > 1e-8);
+        for (const [part, depth] of saved) part.setDepth(depth);
+        stacking[role] = { farArmBehind, changedNativeOffsets: changed };
+    }
     return { t: a._activeMove?.time, clip: a._activeMove?.clip.id,
+        stacking,
         lower, mask: { below: mask.below, belowBody: mask.belowBody, torso: mask.torso, above: mask.above },
         kneeToMat: ['near', 'far'].map(sd => a.y - ap[sd + 'Knee'].y), ankleToMat: ['near', 'far'].map(sd => a.y - ap[sd + 'Ankle'].y), ax: a.x, ay: a.y,
         wristGap: dist(palm(as), W), forearmGap: dist(palm(ao), { x: E.x+(W.x-E.x)*.55, y: E.y+(W.y-E.y)*.55 }),
@@ -118,6 +133,7 @@ for (const [pair, att, def] of PAIRS) {
             const held = rows.filter(r => r.t >= 1.05 && r.t <= 3);
             const maxSlide = Math.max(0, ...held.slice(1).flatMap((r, i) => r.ankles.map((p, j) => Math.hypot(p.x-held[i].ankles[j].x, p.y-held[i].ankles[j].y))));
             const summary = { clip: rows[0].clip, frames, heldFrames: held.length, maxWristGap: Math.max(...held.map(r=>r.wristGap)), maxForearmGap: Math.max(...held.map(r=>r.forearmGap)), pinnedFrames: rows.filter(r=>r.pinned.length).length, maxHeldAnkleSlide: maxSlide, kneeRange: [Math.min(...rows.flatMap(r=>r.knees)), Math.max(...rows.flatMap(r=>r.knees))],
+                stackFailureFrames: rows.filter(r => Object.values(r.stacking).some(s => !s.farArmBehind || s.changedNativeOffsets.length)).length,
                 heldLowerMax: { legs: Math.max(...held.map(r=>r.lower.legs)), belly: Math.max(...held.map(r=>r.lower.belly)) },
                 heldMaskMax: { below: Math.max(...held.map(r=>r.mask.below)), belowBody: Math.max(...held.map(r=>r.mask.belowBody)), torso: Math.max(...held.map(r=>r.mask.torso)), above: Math.max(...held.map(r=>r.mask.above)) },
                 heldKneeToMat: [0, 1].map(j => [Math.min(...held.map(r=>r.kneeToMat[j])), Math.max(...held.map(r=>r.kneeToMat[j]))].map(v => +v.toFixed(1))),

@@ -14,11 +14,10 @@ test('kneeling arm bar preserves timing/events and the receiver position across 
         assert.deepEqual(source.events, armBarClip.events);
         const clip = compileClip(source);
         assert.equal(sampleClip(clip, 0).tracks.attacker.transform.x, 0);
-        for (const [t, y] of [[0, 0], [2, -30], [source.duration, 0]]) assert.equal(sampleClip(clip, t).tracks.defender.transform.y, y, 'the man is eased 30 px back for the hold, home at both ends');
         for (let t = 0; t <= source.duration; t += 1 / 60) {
             const tracks = sampleClip(clip, t).tracks;
             assert.equal(tracks.defender.transform.x, gap);
-            assert.ok(tracks.defender.transform.y <= 0 && tracks.defender.transform.y >= -30, 'the man is only eased back, never past 30');
+            assert.equal(tracks.defender.transform.y, 0);
             assert.equal(tracks.attacker.pose.tilt, 0);
             for (const role of ['attacker', 'defender']) {
                 assert.equal('lKnee' in tracks[role].pose || 'rKnee' in tracks[role].pose, false);

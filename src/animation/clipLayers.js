@@ -22,7 +22,9 @@ export const LAYER_LIMBS = Object.freeze(['lLeg', 'rLeg', 'lArm', 'rArm', 'torso
 // is the far arm in one facing and the near arm in the other). Resolved per actor per frame, like the anatomical limbs:
 //   nearArm, farArm, nearLeg, farLeg, and `body` = his far leg, torso, head, near leg (a rig whose art wants both legs over the torso, George, gets
 //   torso, head, far leg, near leg), the W4 stack of the waistlock.
-export const LAYER_RELATIVE = Object.freeze(['nearArm', 'farArm', 'nearLeg', 'farLeg', 'body']);
+// nativeBody moves the complete body stack as one block, preserving the rig's
+// head, garment masks and leg depths exactly. Arms remain separate for grips.
+export const LAYER_RELATIVE = Object.freeze(['nearArm', 'farArm', 'nearLeg', 'farLeg', 'body', 'nativeBody']);
 const resolveLimb = (actor, limb) => {
     const near = (actor?.skeleton?.lChannelSide?.(actor.facing ?? 1) ?? 'near') === 'near';
     const side = { nearArm: near ? 'lArm' : 'rArm', farArm: near ? 'rArm' : 'lArm', nearLeg: near ? 'lLeg' : 'rLeg', farLeg: near ? 'rLeg' : 'lLeg' };
@@ -54,7 +56,8 @@ export function limbParts(actor, limb) {
     const sk = actor?.skeleton;
     if (!sk) return [];
     let names;
-    if (limb === 'torso') names = TORSO_PARTS;
+    if (limb === 'nativeBody') names = [...TORSO_PARTS, 'head', ...['near', 'far'].flatMap(side => SIDE_PARTS.Leg.map(p => `${side}${p}`))];
+    else if (limb === 'torso') names = TORSO_PARTS;
     else if (limb === 'head') names = ['head'];
     else {
         const lSide = sk.lChannelSide?.(actor.facing ?? 1) ?? 'near';

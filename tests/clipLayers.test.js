@@ -37,6 +37,37 @@ function wrestler(kind, facing, y = 360) {
 }
 
 const snapshot = w => Object.fromEntries(PARTS.map(n => [n, w.skeleton[n].depth]));
+
+test('native body blocks preserve garment, head and leg offsets with far arms behind them', () => {
+    for (const kind of ['near', 'swap']) for (const facing of [1, -1]) for (const legsOver of [false, true]) {
+        const a = wrestler(kind, facing), d = wrestler(kind, -facing);
+        for (const w of [a, d]) {
+            w.skeleton._farLegOverTorso = legsOver;
+            w.skeleton._headOverTorso = true;
+            w.skeleton._forearmOverUpperArm = true;
+            w.draw();
+        }
+        const before = new Map([a, d].map(w => [w, snapshot(w)]));
+        const runtime = new MoveRuntime();
+        runtime.register(clip({ layers: [{ from: 0, to: 2, order: [
+            ['defender', 'farArm'], ['defender', 'nativeBody'], ['attacker', 'farArm'], ['attacker', 'nativeBody'],
+            ['defender', 'nearArm'], ['attacker', 'nearArm'],
+        ] }] }));
+        runtime.play('layerProbe', { attacker: a, defender: d });
+        frame(runtime, a, d, 1);
+        for (const w of [a, d]) {
+            const parts = limbParts(w, 'nativeBody'), anchor = w.skeleton.torso;
+            for (const img of parts) {
+                const name = PARTS.find(n => w.skeleton[n] === img);
+                assert.ok(Math.abs((img.depth-anchor.depth)-(before.get(w)[name]-before.get(w).torso)) < 1e-12, `${name} keeps its native depth`);
+            }
+            assert.ok(Math.max(...['farUpArm', 'farForearm', 'farHand'].map(n => w.skeleton[n].depth)) < Math.min(...parts.map(p => p.depth)));
+            assert.ok(w.skeleton.pelvisMask.depth > w.skeleton.nearThigh.depth, 'garment mask stays over the hip joint');
+            assert.ok(w.skeleton.farForearm.depth < w.skeleton.torso.depth);
+            assert.ok(w.skeleton.farUpArm.depth < w.skeleton.torso.depth);
+        }
+    }
+});
 const CHAIN = [['defender', 'rLeg'], ['attacker', 'lLeg'], ['defender', 'lLeg']];
 
 function clip(extra = {}, id = 'layerProbe') {

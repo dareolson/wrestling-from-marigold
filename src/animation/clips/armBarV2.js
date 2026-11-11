@@ -15,9 +15,9 @@ export function armBarEntryClip(distance = 70) {
         const squeeze = [1.6, 2.2, 2.8].includes(at) ? 1 : 0, strain = held * (at > 1 && at < 3 ? 1 : 0);
         const pose = role === 'attacker' ? shinsFromFolds({
             lArm: .08 + .72 * reach(at), rArm: .15 + .75 * reach(at), lElbow: .3 + .5 * reach(at), rElbow: .3 + .5 * reach(at),
-            lLeg: -.45 * held, rLeg: -.45 * held,
-            lFold: 2.1 * held, rFold: 2.1 * held,
-            crouch: 1.05 * held, bend: (.45 + squeeze * .10) * held,
+            lLeg: -.45 * held, rLeg: -.75 * held,
+            lFold: 1.85 * held, rFold: 2.05 * held,
+            crouch: 1.35 * held, bend: (.45 + squeeze * .10) * held,
             lean: .05, tilt: 0, lift: 0,
         }) : shinsFromFolds({
             // The man sells the hold: a steady strain through the hold (strain), a hard writhe on each squeeze (squeeze): free arm slaps up, back curls, free knee draws in, hips lift.
@@ -29,8 +29,8 @@ export function armBarEntryClip(distance = 70) {
             tilt: -Math.PI / 2, lift: -110 - strain * 3 - squeeze * 9,
         });
         return { at, ease: 'easeInOut', pose,
-            // Kneel at his shoulder on the camera side (y +40 is the front of the mat), the man eased 30 back so the thighs clear his hips, belly and legs.
-            transform: { x: role === 'defender' ? distance : (distance + 40) * held, y: (role === 'attacker' ? 40 : -30) * held || 0 },
+            // Codex's kneel beside him on the camera side of the mat (Derek 2026-11-10: the T2.7 reposition broke the art; this geometry stays).
+            transform: { x: role === 'defender' ? distance : (distance - 15) * held, y: role === 'attacker' ? 18 * held : 0 },
             parts: role === 'attacker' ? { nearForearm: at > 0 && at < 3.25 ? 'grip' : 'base', farForearm: at > 0 && at < 3.25 ? 'grip' : 'base' } : {},
         };
     });
@@ -45,9 +45,11 @@ export function armBarEntryClip(distance = 70) {
             { role: 'attacker', leg: 'l', in: [.95, 1.05], out: [3, 3.25] },
             { role: 'attacker', leg: 'r', in: [.95, 1.05], out: [3, 3.25] },
         ],
-        // His far arm sits behind his own torso; each man's legs stack by his rig (`body`: Lou far leg, torso, near leg; George both legs over the torso).
+        // Preserve each rig's complete body stack, including head and garment
+        // masks. Splitting it into torso/head/legs put thighs over pelvis masks.
+        // Both parts of the far arm stay behind that block throughout the move.
         layers: [{ from: 0, to: 3.6, order: [
-            ['defender', 'farArm'], ['defender', 'body'], ['attacker', 'farArm'], ['attacker', 'body'], ['defender', 'nearArm'], ['attacker', 'nearArm'],
+            ['defender', 'farArm'], ['defender', 'nativeBody'], ['attacker', 'farArm'], ['attacker', 'nativeBody'], ['defender', 'nearArm'], ['attacker', 'nearArm'],
         ] }],
     };
 }

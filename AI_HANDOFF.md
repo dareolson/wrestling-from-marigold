@@ -41,7 +41,7 @@ Avoid a large rewrite.
 - **Awaiting Derek:** G4 falls match; Marigold title queue (83ab5cd) visual OK; PLAN_CLEANUP T3 (old side branch).
 - **Ideas parked in [IDEAS.md](IDEAS.md):** front snapmare, body slam, whip-return attacks (now plan Stages 5-7), personality-through-movement.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`), ~48 commits ahead of origin, not pushed; full suite, build, coverage before pushing (SSH). Last full suite 1263/1263. Coverage baseline 26 gaps. The 3 old Codex waistlock scripts were deleted 2026-11-10 (results live in their REPORT.md files).
-- **Next:** Sonnet does **T2.6b**, then T1.1.
+- **Next:** T2.6b is at its STOP (page ready, Opus reviews, then Derek judges); then Sonnet does T1.1.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

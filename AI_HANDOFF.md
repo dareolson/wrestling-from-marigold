@@ -28,19 +28,20 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Status (2026-11-07 night, replace this block; ≤ 40 lines)
+## Status (2026-11-10, replace this block; ≤ 40 lines)
 
-- **Direction (Derek 2026-11-06):** moves are passable for now. Stop polishing them and move the project forward; move misses go on polish lists and get revisited later.
-- **Grapples ([PLAN_GRAPPLES.md](PLAN_GRAPPLES.md)):** `grapples` promoted (aa0532f). **Stage 2 clasps: G2 APPROVED** (Derek 2026-11-07, r7 bebc34e, [page](research/animation/grapples-2026-11/g2-clasps/index.html)): defender grips the attacker's biceps (no hug), attacker's elbow hand on the partner's near forearm, swap timed to the hand's speed, George's clasp art on his own forearm (5201724). Polish: George collar hand 27.5 px, his elbow 0.09 rad, Lou-defending biceps hand 14 px. Later: the steal as a shove, more clasps. Waistlock (`?waistlock=v1`) stopped at G4b, parked. Irish whip, corners and charge approved.
-- **Falls ([PLAN_FALLS.md](PLAN_FALLS.md)):** `falls` PROMOTED (73cb6d1), splash roll approved (G4b r6, 7c2c34e). Polish: get-up steps 20-46 px, late-elbow no sell, 0-4 knockdowns a run, exceptional landings early, AI rarely throws big moves, sell limbs past the rope, George's snapmare elbow, flaky corner-daze "face hit" test (~1 in 6), diving-elbow overlap.
-- **Other moves, parked:** gait Stage 3 behind `?gait=v2`; get-ups promoted (Stage 5 parked); George transfer parked at G10a; figure-four and support-hand plant parked.
-- **Promoted flags:** `risefix`, `sellart`, `aftermath` (v2), `getups`, `grapples`, `falls` (default on, `=off` disables). Opt-in: `light=v1`, `waistlock=v1`, `gait=v2`, `plant=1`.
-- **Story and art direction (docs only, no runtime yet):** Chicago 1952 opening ([brief](STORY_CARNIVAL_OPENING.md)), carnival $100 challenge is the first playable match; monochrome game ([standard](CINEMATIC_ART_STANDARD.md)); venues ([plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md)); feud/art ([direction](STORY_ART_AND_FEUD_DIRECTION.md)). Kohler naming bridge unresolved.
-- **Awaiting Derek:** G4 (a match with no flag, falls on); Marigold title queue (83ab5cd) visual OK; PLAN_CLEANUP T3 (tag + delete the old side branch).
-- **Light moves ([PLAN_LIGHT_MOVES.md](PLAN_LIGHT_MOVES.md), active; finishers parked):** ankle lock rebuilt as `ankleLockV2` behind `?light=v1`. Staging approved (T2.2f bb449b6), sell approved (T2.3 d780c58, Derek "it looks good"). Codex added painted heel/toe anchors on Lou's and George's boots + painted-palm IK (6abf871) and the boot pickup (64aa65b). Polish: trapped/free leg overlap, 0.2 s standing on his shins at a close entry, deep pickup squat, rope not drawn.
-- **Uncommitted on purpose:** 3 old Codex waistlock review scripts in `tools/debug/` (unreviewed; waistlock parked). Frame dumps gitignored, kept on disk.
-- **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`). ~30 commits ahead of origin, not pushed; run full suite, build, coverage before pushing (SSH: `git push origin <branch>`). Last full suite at r4 (1263/1263). Coverage baseline 26 gaps. Cleanup leftovers: [PLAN_CLEANUP.md](PLAN_CLEANUP.md).
-- **Next:** PLAN_LIGHT_MOVES **T2.4** (Opus writes the bent-boot shin-variant contract, keeps the heel/toe anchor names), then T2.5 art (Codex, Lou then George), T2.6 G2 page (with `armBar` for Derek to judge). Then Stage 1 front kick (T1.1), Stage 3 step-over toehold, Stage 4 per-kit leg holds. Session handoff: [entry](AI_HANDOFF_ENTRIES/2026-11-07-claude-opus-handoff-ankle-lock-approved.md).
+- **Roles (Derek 2026-11-10):** Opus is project manager again: writes contracts, reviews Sonnet's work at every STOP before Derek sees it, writes gate lines, pushes when asked. Sonnet executes plan tasks and commits locally. Codex builds art/tooling, Sonnet or Opus reviews it before commit. Derek judges every visual.
+- **Active plan: [PLAN_LIGHT_MOVES.md](PLAN_LIGHT_MOVES.md)**, all behind `?light=v1`. Order (see its "Order and roles"): T2.6b ankle lock G2 page → Stage 1 front kick → Stage 3 step-over toehold → Stage 4 per-kit leg holds → Stage 5 body slam (too much, reads as a powerbomb) → Stage 6 whip-return attacks (back body drop first, hip toss/arm drag off the whip, drop toe hold) → Stage 7 snapmare from the tie-up via a pivot → GP promote.
+- **Ankle lock:** staging (bb449b6) and sell (d780c58) approved; Lou's bent boot `ankleTwist` (5dde20c) wired (4825c75). George has no `ankleTwist` art yet (T2.5, Codex). Polish: trapped/free leg overlap, 0.2 s standing on his shins at a close entry, deep pickup squat, rope not drawn.
+- **Grapples ([PLAN_GRAPPLES.md](PLAN_GRAPPLES.md)):** promoted; clasps G2 approved (bebc34e). Waistlock (`?waistlock=v1`) parked at G4b.
+- **Falls ([PLAN_FALLS.md](PLAN_FALLS.md)):** promoted. Polish list in the plan.
+- **Parked:** finishers, gait Stage 3 (`?gait=v2`), get-ups Stage 5, George transfer G10a, figure-four, support-hand plant.
+- **Promoted flags:** `risefix`, `sellart`, `aftermath` (v2), `getups`, `grapples`, `falls`. Opt-in: `light=v1`, `waistlock=v1`, `gait=v2`, `plant=1`.
+- **Story and art direction (docs only):** Chicago 1952 opening ([brief](STORY_CARNIVAL_OPENING.md)), monochrome ([standard](CINEMATIC_ART_STANDARD.md)), venues ([plan](PLAN_VENUES_CROWDS_AND_EXHIBITION.md)), feud ([direction](STORY_ART_AND_FEUD_DIRECTION.md)).
+- **Awaiting Derek:** G4 falls match; Marigold title queue (83ab5cd) visual OK; PLAN_CLEANUP T3 (old side branch).
+- **Ideas parked in [IDEAS.md](IDEAS.md):** front snapmare, body slam, whip-return attacks (now plan Stages 5-7), personality-through-movement.
+- **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`), ~48 commits ahead of origin, not pushed; full suite, build, coverage before pushing (SSH). Last full suite 1263/1263. Coverage baseline 26 gaps. The 3 old Codex waistlock scripts were deleted 2026-11-10 (results live in their REPORT.md files).
+- **Next:** Sonnet does **T2.6b**, then T1.1.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

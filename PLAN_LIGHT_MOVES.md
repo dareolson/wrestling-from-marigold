@@ -1,6 +1,7 @@
 # Light moves: fix the trash, add a toehold, make each kit its own
 
 2026-11-07 · Claude (Opus) plan, Sonnet executes · Derek judges every visual result.
+2026-11-10 · Derek: "i want all those moves": kick, toehold, kit slots, plus body slam, whip-return attacks and the grapple snapmare (Stages 5-7). Opus is project manager again (reviews at every STOP, writes contracts, pushes when asked); Sonnet executes; Codex builds art.
 Replaces PLAN_FINISHERS as the next front (Derek 2026-11-07: "i don't think i want to do finishers next... i want to work on lighter moves"). PLAN_FINISHERS is parked, not dropped.
 
 ## Progress
@@ -21,6 +22,17 @@ Replaces PLAN_FINISHERS as the next front (Derek 2026-11-07: "i don't think i wa
 - T2.3 (sha below): downed man sells the squeezes (head +20 to +24 px at each squeeze vs bb449b6 (peaks 51-69 px above the mat), near hand reaches 91 / 104 px (Lou / George), slaps down to 15 / 5 px above the mat, free knee draws in between), lead-in 0.2 s: worst hip step at entries 50/70/150/210 is 11.6/10.1/7.1/7.1 px/frame (was 139/121/49/7), [page](research/animation/light-moves-2026-11/t2-3/index.html). Bars: palm lift 5.67, held 0, 0 seams, 0 pinned, slide 0, travel 0.
   Misses: free leg's silhouette on his legs 762 / 747 px (was 654 / 635; drawn behind them 127/127); a close entry now starts standing on his shins for 0.2 s (legs on legs 1059 / 942 px at 50 / 70, 255 at 150, 0 at 210); free ankle 2 px above the mat at the draw-in; the rope is not drawn, the reach points past his head.
 - **T2.3 sell: approved by Derek 2026-11-07** ("it looks good", d780c58). Polish adds: free leg silhouette on his legs 747-762 px, close entry stands on the shins for the 0.2 s lead-in, rope not drawn. Next T2.4 (Opus).
+
+## Order and roles (2026-11-10)
+
+Do these in order. Every **STOP**: Sonnet commits locally, writes its Progress line and stops. Derek tells Opus "review T-x", and Opus checks the diff, tests and numbers before Derek sees the page. Opus writes the Progress gate line after Derek's verdict. Nobody pushes unless Derek asks; Opus pushes.
+
+1. **T2.6b** G2 page for the ankle lock (the wiring is in 4825c75; no page yet). George has no `ankleTwist` art, so he shows the base shin: say so on the page. Codex can draw George's later (T2.5).
+2. **Stage 1** front kick: T1.1 → T1.3, STOP at G1.
+3. **Stage 3** step-over toehold: T3.0 first asks Derek for footage.
+4. **Stage 4** leg-hold slot per kit, G4.
+5. **Stage 5** body slam, **Stage 6** whip-return attacks, **Stage 7** snapmare from the tie-up.
+6. **GP** promote `light`.
 
 ## Why
 
@@ -100,10 +112,41 @@ Today the Finisher-next-to-a-downed-man slot is Up = `armBar`, Down = `ankleLock
 
 - **T4.1** Wire the slot and Derek's table: kits, `KIT_AI_ODDS`, `moves:kits --write`, kit checks. Each wrestler's distinct moves listed in one table on the page.
 - **T4.2 G4:** a match per pairing with `?light=v1`, soak for stuck states. **STOP at G4.**
-- **G5 (Derek): promote `light`** (default on, `=off` disables).
+- **G4 then Stages 5-7.** Promotion moves to the end (GP below).
+
+## Stage 5: body slam (Derek 2026-11-10: "comically too much")
+
+`bodySlam` ([clip](src/animation/clips/bodySlam.js)) reads as a powerbomb (MOVE_CATALOG note). Kits: Lou, Kowalski. Reference Bret 120-121, 322-328.
+
+- **T5.1 Measure now.** Lou on George and George on Lou if George's kit allows (else force it in the harness, say so), both facings: the victim's peak height over the attacker's head (px and as a fraction of the attacker's height), hang time at the top (frames within 10 px of the peak), drop speed px/frame, the victim's body angle at the peak and at impact, landing spot vs the attacker, knee signs and saturation on both men. One normal-speed strip. No code change.
+- **T5.2 `bodySlamV2`** under `?light=v1` (D2). A real slam: the attacker scoops (one arm through the crotch, one over the shoulder: grips per D5 if the rig has them, else say which points you aim at), lifts the man horizontal at the attacker's chest/shoulder height, not above his head; brief turn; the victim drops flat onto his back in front of him. Shorter hang, the lift slower than the drop. Same damage, sell and landing type unless the measure shows a reason. Bars: peak no higher than the attacker's shoulder + 10%; victim horizontal (±20°) at the peak; attacker soles planted (D4) through the lift; D3 knees. Report every number vs T5.1.
+- **T5.3 G5 page**, old vs new, both pairings and facings, loops and stills, numbers beside each. **STOP at G5.**
+
+## Stage 6: attacks on a man coming back off the ropes (Derek 2026-11-10)
+
+Today `tryAction` (src/Wrestler.js:1996) answers a returning runner with `clothesline`, or `backBodyDrop` when Up is held. Both are pose sequences, unverified. Derek wants a pool.
+
+- **T6.1 Measure and map.** The current back body drop and clothesline vs a runner, both pairings and facings: timing window, contact frame, the runner's path through the move (does he stop dead, keep momentum?), knee signs, landing spot. List every kit's runner answers. Proposal for Derek (Opus fills in at the review, Derek decides): Action = clothesline, Up + Action = back body drop, Down + Action = drop toe hold, Power = hip toss or arm drag off the whip (kit picks, like the lockup slot). No code change. **STOP for Derek's input map.**
+- **T6.2 `backBodyDropV2` clip** under `?light=v1` (first move). Reference Bret 184-193. The attacker ducks low, head down, as the runner arrives; the runner's momentum carries him up over the attacker's back, the attacker stands up into him and the runner flips and lands flat on his back behind the attacker. The runner keeps his speed into the contact (no stop before the flip). Bars: D3, D4, landing inside the ring (reuse a landing-room check like `snapmareFits`), no body overlap through the flip (D12 masks), runner speed at contact vs his run speed (report).
+- **T6.3 Runner hip toss and arm drag.** Reuse the `hipToss` clip and `_doArmDrag` with a runner entry: the attacker catches the arm as the man arrives and his momentum carries the throw. Measure the handoff step (part steps px/frame at the first frame, the `partSteps` measure) so the entry doesn't teleport.
+- **T6.4 Drop toe hold (new move).** The attacker drops to the mat and hooks the runner's ankles, the runner falls forward onto his face/chest. Registry entry (kit-gated, `antiRunner`), damage near `armDrag`, sell `chest`. Ask Derek for footage first; else hand-posed stills on Lou for his OK.
+- **T6.5 Kits and AI.** Wire Derek's map, `KIT_AI_ODDS` (`antiRunner`), `npm run moves:kits -- --write`, kit checks. Each wrestler gets at least two answers and no two kits the same pair.
+- **T6.6 G6 page:** every runner answer, both pairings and facings, normal-speed loop and stills. **STOP at G6.**
+
+## Stage 7: snapmare from the tie-up (Derek 2026-11-10)
+
+Today the snapmare only fires as the reversal of the atomic drop (`?waistlock=v1`, Arena._beginSnapmare). Codex 2026-11-05 ([note](AI_HANDOFF_ENTRIES/2026-11-05-codex-snapmare-preview-correction.md)) found the face-to-face version only in a preview harness, and it defied physics. Derek's fix: the attacker **pivots** out of the tie-up into the reversal's orientation (his back to the man's chest, same facing), takes the head and plays the existing clip. Don't author a second flip.
+
+- **T7.1 Contract.** Input slot from the lockup (proposal: Lockup + Power with Back held; Derek decides at the STOP), the pivot (a turn under the man's arm or a step-through, about 0.3-0.4 s; facing flips once, at the hidden moment), where both men stand when the clip starts (copy the reversal's start: read `_beginSnapmare` and `snapmareFits`), the rope check (deny if the landing is past the ropes, as the reversal does). Kit-gated; works without `waistlock=v1` but under `light=v1`. **STOP for Derek's slot.**
+- **T7.2 Build the pivot and the handoff into the clip.** Bars: first-frame part step at the handoff ≤ the clip's own max step (no teleport); hands on the head per the reversal's `snapmareHeadGrip`; D3, D4.
+- **T7.3 G7 page**, both pairings, both facings, the reversal beside the new entry. **STOP at G7.**
+
+## GP: promote `light` (Derek)
+
+Default on, `=off` disables. Full suite, build, coverage before.
 
 ## Later (not in this plan)
 
-- The §2b opener batch: club blow / forearm smash, running forearm, shoulder block, backward roll; then wristlock, snapmare, headlock takeover. The spinning toehold.
+- The §2b opener batch: club blow / forearm smash, running forearm, shoulder block, backward roll; then wristlock, headlock takeover (the snapmare is Stage 7). The spinning toehold.
 - A triage strip of every built light move and hold for Derek to mark keep/polish/trash.
 - `armBar` if G2 trashes it.

@@ -3224,7 +3224,7 @@ export default class Wrestler {
 
     _doArmBar(other) {
         if (lightCandidate() && this.scene.moveRuntime) {
-            this.scene.moveRuntime.register(armBarEntryClip((other.x - this.x) * this.facing / this.s));
+            this.scene.moveRuntime.register(armBarEntryClip((other.x - this.x) * this.facing / this.s, other.rigId));
         }
         this._playPairedThrow(other, lightCandidate() ? 'armBarV2' : 'armBar', {
             damage: STAMINA_DRAIN.armBar, hitEvent: 'squeeze', shake: [80, 0.001],

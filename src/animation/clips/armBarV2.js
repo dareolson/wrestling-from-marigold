@@ -8,7 +8,11 @@ const TIMES = [0, .25, .6, .95, 1.3, 1.6, 1.8, 2.2, 2.4, 2.8, 3, 3.25, 3.6];
 const clamp = v => Math.max(0, Math.min(1, v));
 // The hands stay low while he walks in and come up with the reach (grips in at .35, on the wrist by .95).
 const reach = at => clamp((at - .25) / .7);
-export function armBarEntryClip(distance = 70) {
+export function armBarEntryClip(distance = 70, defenderRigId = null) {
+    // Lou's baked hand extends beyond the visible wrist. Whoever holds Lou's
+    // arm grips just above that hand, 82% along the elbow-to-endpoint segment.
+    const wristTarget = defenderRigId === 'thesz-procreate-v1'
+        ? { joint: 'Elbow', fore: .82 } : { joint: 'Wrist' };
     const keyframes = role => TIMES.map(at => {
         const enter = clamp(at / .95), leave = clamp((at - 3) / .6);
         const held = enter * (1 - leave);
@@ -39,7 +43,7 @@ export function armBarEntryClip(distance = 70) {
         ...armBarClip, id: 'armBarV2',
         tracks: { attacker: { keyframes: keyframes('attacker') }, defender: { keyframes: keyframes('defender') } },
         grips: [
-            { role: 'attacker', arm: 'l', to: { role: 'defender', joint: 'Wrist', side: 'same' }, in: [.35, .95], out: [3, 3.25], natural: true, palm: 'clutch' },
+            { role: 'attacker', arm: 'l', to: { role: 'defender', ...wristTarget, side: 'same' }, in: [.35, .95], out: [3, 3.25], natural: true, palm: 'clutch' },
             { role: 'attacker', arm: 'r', to: { role: 'defender', joint: 'Elbow', side: 'other', fore: .55 }, in: [.35, .95], out: [3, 3.25], natural: true, palm: 'clutch' },
         ],
         plants: [

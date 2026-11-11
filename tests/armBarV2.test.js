@@ -44,3 +44,18 @@ test('runtime delivers the forearm offset to the grip solver on the trapped arm'
     assert.equal(grip.fore, .55);
     assert.deepEqual(gripTarget(grip, 'far'), { x: 32, y: 31 });
 });
+
+test('the grip sits above Lou’s baked hand when Lou is held; other men keep the wrist', () => {
+    const onLou = compileClip(armBarEntryClip(70, 'thesz-procreate-v1'));
+    const onGeorge = compileClip(armBarEntryClip(70, 'george-roster-v1'));
+    const target = onLou.grips.find(g => g.arm === 'l').to;
+    assert.equal(target.joint, 'Elbow');
+    assert.equal(target.fore, .82);
+    assert.equal(onGeorge.grips.find(g => g.arm === 'l').to.joint, 'Wrist');
+    const partner = { skeleton: { jointAttachmentPoints: {
+        nearElbow: { x: 0, y: 0 }, nearWrist: { x: 100, y: 50 },
+    } } };
+    assert.deepEqual(gripTarget({ ...target, partner }, 'near'), { x: 82, y: 41 });
+    assert.deepEqual(onLou.events, onGeorge.events);
+    assert.deepEqual(onLou.layers, onGeorge.layers);
+});

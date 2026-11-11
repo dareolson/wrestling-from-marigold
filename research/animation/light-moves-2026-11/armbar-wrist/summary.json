@@ -1,0 +1,234 @@
+{
+  "lou-george-right": {
+    "clip": "armBarV2",
+    "frames": 216,
+    "heldFrames": 118,
+    "maxWristGap": 0.00005020105411621525,
+    "maxForearmGap": 0.000052570115276311764,
+    "pinnedFrames": 0,
+    "maxHeldAnkleSlide": 0,
+    "kneeRange": [
+      0.00044279270652674673,
+      2.1004427927065277
+    ],
+    "stackFailureFrames": 0,
+    "heldShadow": {
+      "overMax": 356,
+      "aboveFrames": 0,
+      "areaMax": 1666,
+      "gapX": [
+        -15.4,
+        -15.4
+      ],
+      "gapY": [
+        -1.5,
+        -1.5
+      ]
+    },
+    "heldLowerMax": {
+      "legs": 1569,
+      "belly": 465
+    },
+    "heldMaskMax": {
+      "below": 2079,
+      "belowBody": 2070,
+      "torso": 20,
+      "above": 659
+    },
+    "heldKneeToMat": [
+      [
+        -2.8,
+        -2.8
+      ],
+      [
+        -0.3,
+        -0.3
+      ]
+    ],
+    "heldAnkleToMat": [
+      [
+        -0.1,
+        -0.1
+      ],
+      [
+        2.4,
+        2.4
+      ]
+    ],
+    "hipStep": 2.0584919152846624
+  },
+  "lou-george-left": {
+    "clip": "armBarV2",
+    "frames": 216,
+    "heldFrames": 118,
+    "maxWristGap": 0.0000327230870587777,
+    "maxForearmGap": 0.000029887344816427232,
+    "pinnedFrames": 0,
+    "maxHeldAnkleSlide": 0,
+    "kneeRange": [
+      0.00044279270652674673,
+      2.1004427927065286
+    ],
+    "stackFailureFrames": 0,
+    "heldShadow": {
+      "overMax": 356,
+      "aboveFrames": 0,
+      "areaMax": 1666,
+      "gapX": [
+        15.4,
+        15.4
+      ],
+      "gapY": [
+        -1.5,
+        -1.5
+      ]
+    },
+    "heldLowerMax": {
+      "legs": 1569,
+      "belly": 465
+    },
+    "heldMaskMax": {
+      "below": 2079,
+      "belowBody": 2070,
+      "torso": 20,
+      "above": 659
+    },
+    "heldKneeToMat": [
+      [
+        -2.8,
+        -2.8
+      ],
+      [
+        -0.3,
+        -0.3
+      ]
+    ],
+    "heldAnkleToMat": [
+      [
+        -0.1,
+        -0.1
+      ],
+      [
+        2.4,
+        2.4
+      ]
+    ],
+    "hipStep": 2.0584919152846055
+  },
+  "george-lou-right": {
+    "clip": "armBarV2",
+    "frames": 216,
+    "heldFrames": 118,
+    "maxWristGap": 0.00006219073227836536,
+    "maxForearmGap": 0.000052457619195167005,
+    "pinnedFrames": 0,
+    "maxHeldAnkleSlide": 0,
+    "kneeRange": [
+      0,
+      2.1000000000000005
+    ],
+    "stackFailureFrames": 0,
+    "heldShadow": {
+      "overMax": 705,
+      "aboveFrames": 0,
+      "areaMax": 2401,
+      "gapX": [
+        -22.1,
+        -22.1
+      ],
+      "gapY": [
+        5.2,
+        5.2
+      ]
+    },
+    "heldLowerMax": {
+      "legs": 1589,
+      "belly": 614
+    },
+    "heldMaskMax": {
+      "below": 2240,
+      "belowBody": 2240,
+      "torso": 26,
+      "above": 819
+    },
+    "heldKneeToMat": [
+      [
+        5.2,
+        5.2
+      ],
+      [
+        5.2,
+        5.2
+      ]
+    ],
+    "heldAnkleToMat": [
+      [
+        9,
+        9
+      ],
+      [
+        9.1,
+        9.1
+      ]
+    ],
+    "hipStep": 2.0584919152846624
+  },
+  "george-lou-left": {
+    "clip": "armBarV2",
+    "frames": 216,
+    "heldFrames": 118,
+    "maxWristGap": 0.00003488226551421271,
+    "maxForearmGap": 0.000029516603948802553,
+    "pinnedFrames": 0,
+    "maxHeldAnkleSlide": 0,
+    "kneeRange": [
+      0,
+      2.1000000000000005
+    ],
+    "stackFailureFrames": 0,
+    "heldShadow": {
+      "overMax": 710,
+      "aboveFrames": 0,
+      "areaMax": 2401,
+      "gapX": [
+        22.1,
+        22.1
+      ],
+      "gapY": [
+        5.2,
+        5.2
+      ]
+    },
+    "heldLowerMax": {
+      "legs": 1589,
+      "belly": 615
+    },
+    "heldMaskMax": {
+      "below": 2240,
+      "belowBody": 2240,
+      "torso": 26,
+      "above": 819
+    },
+    "heldKneeToMat": [
+      [
+        5.2,
+        5.2
+      ],
+      [
+        5.2,
+        5.2
+      ]
+    ],
+    "heldAnkleToMat": [
+      [
+        9,
+        9
+      ],
+      [
+        9.1,
+        9.1
+      ]
+    ],
+    "hipStep": 2.0584919152846055
+  }
+}

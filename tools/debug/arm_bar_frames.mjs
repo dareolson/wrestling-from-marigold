@@ -79,6 +79,8 @@ const READ = () => {
     const ap = a.skeleton.jointAttachmentPoints, dp = d.skeleton.jointAttachmentPoints;
     const side = d.skeleton.lChannelSide(d.facing), other = side === 'near' ? 'far' : 'near';
     const E = dp[side + 'Elbow'], W = dp[side + 'Wrist'];
+    const wristFore = a._activeMove?.clip.grips.find(g => g.arm === 'l')?.to.fore ?? 1;
+    const wristTarget = { x: E.x+(W.x-E.x)*wristFore, y: E.y+(W.y-E.y)*wristFore };
     const palm = s => a.skeleton.partAnchorPoint(s + 'Forearm', 'clutch') ?? ap[s + 'Wrist'];
     const dist = (p, q) => Math.hypot(p.x - q.x, p.y - q.y);
     const as = a.skeleton.lChannelSide(a.facing), ao = as === 'near' ? 'far' : 'near';
@@ -111,8 +113,8 @@ const READ = () => {
         stacking,
         shadow, lower, mask: { below: mask.below, belowBody: mask.belowBody, torso: mask.torso, above: mask.above },
         kneeToMat: ['near', 'far'].map(sd => a.y - ap[sd + 'Knee'].y), ankleToMat: ['near', 'far'].map(sd => a.y - ap[sd + 'Ankle'].y), ax: a.x, ay: a.y,
-        wristGap: dist(palm(as), W), forearmGap: dist(palm(ao), { x: E.x+(W.x-E.x)*.55, y: E.y+(W.y-E.y)*.55 }),
-        geometry: { shoulder: ap[as+'Shoulder'], elbow: ap[as+'Elbow'], palm: palm(as), target: W },
+        wristGap: dist(palm(as), wristTarget), wristFore, forearmGap: dist(palm(ao), { x: E.x+(W.x-E.x)*.55, y: E.y+(W.y-E.y)*.55 }),
+        geometry: { shoulder: ap[as+'Shoulder'], elbow: ap[as+'Elbow'], palm: palm(as), target: wristTarget },
         pinned, knees, ankles: [ap.nearAnkle, ap.farAnkle], torsoTilt: a.pose.tilt, defender: { x: d.x, y: d.y },
     };
 };

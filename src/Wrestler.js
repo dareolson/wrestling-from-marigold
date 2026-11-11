@@ -4069,6 +4069,17 @@ export default class Wrestler {
         });
     }
 
+    // T2.7b: under ?light=v1 the kneeling arm-bar attacker's shadow sits under his knees and boots (last frame's joints), below the man he works on. Null otherwise.
+    _armBarKneelShadow(s) {
+        const h = this._activeMove;
+        if (!lightCandidate() || h?.clip?.id !== 'armBarV2' || h.bindings?.attacker !== this) return null;
+        const man = h.bindings.defender, p = this.skeleton.jointAttachmentPoints;
+        if (!man || !p?.nearKnee || !p?.nearAnkle) return null;
+        const xs = [p.nearKnee.x, p.farKnee.x, p.nearAnkle.x, p.farAnkle.x];
+        const lo = Math.min(...xs), hi = Math.max(...xs);
+        return { x: (lo + hi) / 2, y: this.y, w: hi - lo + 50, h: 30 * s, depth: 12 + man.y * 0.03 - 0.02 };
+    }
+
     // ── Drawing ───────────────────────────────────────────────────────────────
 
     draw() {
@@ -4144,8 +4155,17 @@ export default class Wrestler {
         if (this._groundAttack && state === 'down') { this._drawGroundAttack(s, facing, gfx); return; }
 
         const shadowY = onRopes ? this._corner.matY : y;
+        const kneel = this._armBarKneelShadow(s);
         gfx.fillStyle(0x000000, 0.22);
-        gfx.fillEllipse(x, shadowY, 120 * s, 36 * s);
+        if (kneel) {
+            // Arm bar (light=v1): his oval goes under the knees and boots, and below the man's body (gfx depth under his), not the 120 px oval at his root over him.
+            gfx.setDepth(kneel.depth);
+            gfx.fillEllipse(kneel.x, kneel.y, kneel.w, kneel.h);
+            this._shadowDbg = { x: kneel.x, y: kneel.y, w: kneel.w, h: kneel.h, depth: kneel.depth };
+        } else {
+            gfx.fillEllipse(x, shadowY, 120 * s, 36 * s);
+            this._shadowDbg = { x, y: shadowY, w: 120 * s, h: 36 * s, depth };
+        }
 
         // Lying on the mat now renders through the modular rig instead of
         // _drawFlat's primitives, so these states carry real joints, bindings

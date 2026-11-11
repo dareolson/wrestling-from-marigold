@@ -15,9 +15,10 @@ export function armBarEntryClip(distance = 70) {
         const squeeze = [1.6, 2.2, 2.8].includes(at) ? 1 : 0, strain = held * (at > 1 && at < 3 ? 1 : 0);
         const pose = role === 'attacker' ? shinsFromFolds({
             lArm: .08 + .72 * reach(at), rArm: .15 + .75 * reach(at), lElbow: .3 + .5 * reach(at), rElbow: .3 + .5 * reach(at),
-            lLeg: -.45 * held, rLeg: -.75 * held,
-            lFold: 1.85 * held, rFold: 2.05 * held,
-            crouch: 1.35 * held, bend: (.45 + squeeze * .10) * held,
+            // Hips sunk so both knees rest on the mat (T2.7b): the old 1.35 crouch left the thigh near vertical over a 1.85-2.05 rad fold, the stub-and-kink under the trunks.
+            lLeg: -.45 * held, rLeg: -.45 * held,
+            lFold: 2.1 * held, rFold: 2.1 * held,
+            crouch: 1.05 * held, bend: (.45 + squeeze * .10) * held,
             lean: .05, tilt: 0, lift: 0,
         }) : shinsFromFolds({
             // The man sells the hold: a steady strain through the hold (strain), a hard writhe on each squeeze (squeeze): free arm slaps up, back curls, free knee draws in, hips lift.

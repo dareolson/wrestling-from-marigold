@@ -31,6 +31,16 @@ const INSTALL_LOWER = () => {
         for (let k = 0; k < out.length; k++) out[k] = px[k * 4 + 3] > 128 ? 1 : 0;
         return out;
     };
+    // T2.7b: pixels of the attacker's ground oval (what Wrestler.draw recorded in _shadowDbg) that fall on the man's drawn body, and whether that oval is drawn above him (gfx depth over his).
+    window.__shadowOver = (a, d) => {
+        const e = a._shadowDbg; if (!e) return null;
+        const ox = Math.floor(Math.min(a.x, d.x) - 240), oy = Math.floor(Math.min(a.y, d.y) - 340), cw = Math.ceil(Math.abs(a.x - d.x) + 480), ch = 420;
+        const M = mask(1, d, ox, oy, cw, ch, () => true);
+        let over = 0, area = 0;
+        for (let y = 0, k = 0; y < ch; y++) for (let x = 0; x < cw; x++, k++) { const dx = (x + ox - e.x) / (e.w / 2), dy = (y + oy - e.y) / (e.h / 2); if (dx * dx + dy * dy <= 1) { area++; if (M[k]) over++; } }
+        const P = a.skeleton.jointAttachmentPoints, kx = (P.nearKnee.x + P.farKnee.x) / 2, ky = (P.nearKnee.y + P.farKnee.y) / 2;
+        return { over, area, above: e.depth > d.gfx.depth + 0.0005, gapX: e.x - kx, gapY: e.y - ky };
+    };
     window.__lowerOverlap = (a, d) => {
         const ox = Math.floor(Math.min(a.x, d.x) - 240), oy = Math.floor(Math.min(a.y, d.y) - 340), cw = Math.ceil(Math.abs(a.x - d.x) + 480), ch = 420;
         const sa = a.skeleton, sd = d.skeleton, up = [sa.nearUpArm, sa.farUpArm, sa.nearForearm, sa.farForearm, sa.nearHand, sa.farHand, sa.head, sa.torso];
@@ -82,7 +92,7 @@ const READ = () => {
         knees.push(flex);
         if (flex <= -.095 || flex >= 2.545) pinned.push((w === a ? 'a' : 'd') + '.' + sd + 'Knee');
     }
-    const mask = window.__maskOverlap(a, d), lower = window.__lowerOverlap(a, d);
+    const mask = window.__maskOverlap(a, d), lower = window.__lowerOverlap(a, d), shadow = window.__shadowOver(a, d);
     const stacking = {};
     for (const [role, w] of [['attacker', a], ['defender', d]]) {
         const sk = w.skeleton;
@@ -99,7 +109,7 @@ const READ = () => {
     }
     return { t: a._activeMove?.time, clip: a._activeMove?.clip.id,
         stacking,
-        lower, mask: { below: mask.below, belowBody: mask.belowBody, torso: mask.torso, above: mask.above },
+        shadow, lower, mask: { below: mask.below, belowBody: mask.belowBody, torso: mask.torso, above: mask.above },
         kneeToMat: ['near', 'far'].map(sd => a.y - ap[sd + 'Knee'].y), ankleToMat: ['near', 'far'].map(sd => a.y - ap[sd + 'Ankle'].y), ax: a.x, ay: a.y,
         wristGap: dist(palm(as), W), forearmGap: dist(palm(ao), { x: E.x+(W.x-E.x)*.55, y: E.y+(W.y-E.y)*.55 }),
         geometry: { shoulder: ap[as+'Shoulder'], elbow: ap[as+'Elbow'], palm: palm(as), target: W },
@@ -134,6 +144,7 @@ for (const [pair, att, def] of PAIRS) {
             const maxSlide = Math.max(0, ...held.slice(1).flatMap((r, i) => r.ankles.map((p, j) => Math.hypot(p.x-held[i].ankles[j].x, p.y-held[i].ankles[j].y))));
             const summary = { clip: rows[0].clip, frames, heldFrames: held.length, maxWristGap: Math.max(...held.map(r=>r.wristGap)), maxForearmGap: Math.max(...held.map(r=>r.forearmGap)), pinnedFrames: rows.filter(r=>r.pinned.length).length, maxHeldAnkleSlide: maxSlide, kneeRange: [Math.min(...rows.flatMap(r=>r.knees)), Math.max(...rows.flatMap(r=>r.knees))],
                 stackFailureFrames: rows.filter(r => Object.values(r.stacking).some(s => !s.farArmBehind || s.changedNativeOffsets.length)).length,
+                heldShadow: { overMax: Math.max(...held.map(r=>r.shadow?.over ?? 0)), aboveFrames: held.filter(r=>r.shadow?.above).length, areaMax: Math.max(...held.map(r=>r.shadow?.area ?? 0)), gapX: [Math.min(...held.map(r=>r.shadow.gapX)), Math.max(...held.map(r=>r.shadow.gapX))].map(v=>+v.toFixed(1)), gapY: [Math.min(...held.map(r=>r.shadow.gapY)), Math.max(...held.map(r=>r.shadow.gapY))].map(v=>+v.toFixed(1)) },
                 heldLowerMax: { legs: Math.max(...held.map(r=>r.lower.legs)), belly: Math.max(...held.map(r=>r.lower.belly)) },
                 heldMaskMax: { below: Math.max(...held.map(r=>r.mask.below)), belowBody: Math.max(...held.map(r=>r.mask.belowBody)), torso: Math.max(...held.map(r=>r.mask.torso)), above: Math.max(...held.map(r=>r.mask.above)) },
                 heldKneeToMat: [0, 1].map(j => [Math.min(...held.map(r=>r.kneeToMat[j])), Math.max(...held.map(r=>r.kneeToMat[j]))].map(v => +v.toFixed(1))),

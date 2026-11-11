@@ -43,7 +43,7 @@ Avoid a large rewrite.
 - **Awaiting Derek:** G4 falls match; Marigold title queue (83ab5cd) visual OK; PLAN_CLEANUP T3 (old side branch).
 - **Ideas parked in [IDEAS.md](IDEAS.md):** front snapmare, body slam, whip-return attacks (now plan Stages 5-7), personality-through-movement.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`), 61 commits ahead of origin (with this one), not pushed; full suite, build, coverage before pushing (SSH). Last full suite 1263/1263 (before 2026-11-10). Coverage baseline 26 gaps. Untracked `kick-working/` + `front_kick_working_page.mjs`: Codex's superseded round-2 page, delete with Derek's OK.
-- **Next:** Sonnet **T2.7b** arm bar polish (thigh art breaking, knees on the mat, shadow; contract in the plan), STOP for Opus then Derek. Then Stage 3 **T3.0** (toehold footage from Derek). Handoffs: [Sonnet](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-for-sonnet.md), [Opus PM](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-pm.md).
+- **Next:** **T2.7b** arm bar polish committed locally, at STOP for Opus then Derek ([page](research/animation/light-moves-2026-11/t2-7b/index.html)). Then Stage 3 **T3.0** (toehold footage from Derek). Handoffs: [Sonnet](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-for-sonnet.md), [Opus PM](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-pm.md).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

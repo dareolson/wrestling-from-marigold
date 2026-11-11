@@ -4,8 +4,8 @@
       "clip": "armBarV2",
       "frames": 216,
       "heldFrames": 118,
-      "maxWristGap": 0.000053465781768075714,
-      "maxForearmGap": 0.00004845432628261022,
+      "maxWristGap": 0.00005061812255726716,
+      "maxForearmGap": 0.00005359906864032359,
       "pinnedFrames": 0,
       "maxHeldAnkleSlide": 0,
       "kneeRange": [
@@ -14,13 +14,13 @@
       ],
       "heldLowerMax": {
         "legs": 0,
-        "belly": 328
+        "belly": 334
       },
       "heldMaskMax": {
         "below": 799,
         "belowBody": 799,
-        "torso": 1406,
-        "above": 995
+        "torso": 1457,
+        "above": 1395
       },
       "heldKneeToMat": [
         [
@@ -94,8 +94,8 @@
       "clip": "armBarV2",
       "frames": 216,
       "heldFrames": 118,
-      "maxWristGap": 0.00003196915724762222,
-      "maxForearmGap": 0.000028824305208895748,
+      "maxWristGap": 0.000030686422983534744,
+      "maxForearmGap": 0.00003298624148242876,
       "pinnedFrames": 0,
       "maxHeldAnkleSlide": 0,
       "kneeRange": [
@@ -104,13 +104,13 @@
       ],
       "heldLowerMax": {
         "legs": 0,
-        "belly": 291
+        "belly": 299
       },
       "heldMaskMax": {
         "below": 799,
         "belowBody": 799,
-        "torso": 1406,
-        "above": 995
+        "torso": 1457,
+        "above": 1395
       },
       "heldKneeToMat": [
         [
@@ -184,8 +184,8 @@
       "clip": "armBarV2",
       "frames": 216,
       "heldFrames": 118,
-      "maxWristGap": 0.000047934747972930424,
-      "maxForearmGap": 0.00005409982709235806,
+      "maxWristGap": 0.00004680082657099449,
+      "maxForearmGap": 1.1648550891858467,
       "pinnedFrames": 0,
       "maxHeldAnkleSlide": 0,
       "kneeRange": [
@@ -199,8 +199,8 @@
       "heldMaskMax": {
         "below": 1007,
         "belowBody": 1007,
-        "torso": 1376,
-        "above": 1046
+        "torso": 1378,
+        "above": 1320
       },
       "heldKneeToMat": [
         [
@@ -274,8 +274,8 @@
       "clip": "armBarV2",
       "frames": 216,
       "heldFrames": 118,
-      "maxWristGap": 0.000031879289397055755,
-      "maxForearmGap": 0.00003086865806401301,
+      "maxWristGap": 0.00003321846487807866,
+      "maxForearmGap": 1.1648245723153736,
       "pinnedFrames": 0,
       "maxHeldAnkleSlide": 0,
       "kneeRange": [
@@ -289,8 +289,8 @@
       "heldMaskMax": {
         "below": 1007,
         "belowBody": 1007,
-        "torso": 1376,
-        "above": 1046
+        "torso": 1378,
+        "above": 1320
       },
       "heldKneeToMat": [
         [

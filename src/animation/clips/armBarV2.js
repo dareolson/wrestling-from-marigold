@@ -12,7 +12,7 @@ export function armBarEntryClip(distance = 70) {
     const keyframes = role => TIMES.map(at => {
         const enter = clamp(at / .95), leave = clamp((at - 3) / .6);
         const held = enter * (1 - leave);
-        const squeeze = [1.6, 2.2, 2.8].includes(at) ? 1 : 0;
+        const squeeze = [1.6, 2.2, 2.8].includes(at) ? 1 : 0, strain = held * (at > 1 && at < 3 ? 1 : 0);
         const pose = role === 'attacker' ? shinsFromFolds({
             lArm: .08 + .72 * reach(at), rArm: .15 + .75 * reach(at), lElbow: .3 + .5 * reach(at), rElbow: .3 + .5 * reach(at),
             lLeg: -.45 * held, rLeg: -.45 * held,
@@ -20,12 +20,13 @@ export function armBarEntryClip(distance = 70) {
             crouch: 1.05 * held, bend: (.45 + squeeze * .10) * held,
             lean: .05, tilt: 0, lift: 0,
         }) : shinsFromFolds({
+            // The man sells the hold: a steady strain through the hold (strain), a hard writhe on each squeeze (squeeze): free arm slaps up, back curls, free knee draws in, hips lift.
             lArm: .05 + .8 * held, lElbow: .12,
-            rArm: .05 + squeeze * .8, rElbow: .2 + squeeze * .25,
-            lLeg: .05, rLeg: .1 + squeeze * .12,
-            lFold: .15, rFold: .15 + squeeze * .35,
-            crouch: 0, lean: 0, bend: squeeze * .1,
-            tilt: -Math.PI / 2, lift: -110,
+            rArm: .05 + (strain * .3 + squeeze * 1.0), rElbow: .2 + strain * .1 + squeeze * .4,
+            lLeg: .05 + squeeze * .1, rLeg: .1 + strain * .06 + squeeze * .3,
+            lFold: .15 + squeeze * .3, rFold: .15 + strain * .2 + squeeze * .9,
+            crouch: 0, lean: strain * .08 + squeeze * .1, bend: strain * .1 + squeeze * .35,
+            tilt: -Math.PI / 2, lift: -110 - strain * 3 - squeeze * 9,
         });
         return { at, ease: 'easeInOut', pose,
             // Kneel at his shoulder on the camera side (y +40 is the front of the mat), the man eased 30 back so the thighs clear his hips, belly and legs.
@@ -44,10 +45,9 @@ export function armBarEntryClip(distance = 70) {
             { role: 'attacker', leg: 'l', in: [.95, 1.05], out: [3, 3.25] },
             { role: 'attacker', leg: 'r', in: [.95, 1.05], out: [3, 3.25] },
         ],
+        // His far arm sits behind his own torso; each man's legs stack by his rig (`body`: Lou far leg, torso, near leg; George both legs over the torso).
         layers: [{ from: 0, to: 3.6, order: [
-            ['defender', 'farArm'], ['defender', 'torso'], ['defender', 'head'], ['defender', 'farLeg'], ['defender', 'nearLeg'],
-            ['attacker', 'farLeg'], ['attacker', 'nearLeg'], ['attacker', 'torso'], ['attacker', 'head'],
-            ['defender', 'nearArm'], ['attacker', 'farArm'], ['attacker', 'nearArm'],
+            ['defender', 'farArm'], ['defender', 'body'], ['attacker', 'farArm'], ['attacker', 'body'], ['defender', 'nearArm'], ['attacker', 'nearArm'],
         ] }],
     };
 }

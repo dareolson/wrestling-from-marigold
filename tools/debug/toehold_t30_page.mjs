@@ -19,6 +19,8 @@ const sec = ([id, title]) => {
 <p>palm to heel ${f(v.gripPx.heel)} px, to toe ${f(v.gripPx.toe)} px (bar 6)</p>
 <p>knee flex: attacker near ${v.att.knees.near} / far ${v.att.knees.far}; man's trapped ${v.def.knees[v.def.lSide]} (cap 2.545)</p>
 <p>near a cap: ${cap.length ? cap.join(', ') : 'none (pinned list empty)'}</p>
+${v.metrics ? `<p>held foot minus attacker hip y: ${f(v.metrics.footMinusHip)} px (0 = hip height, + = below); attacker's body covers ${v.metrics.bootCoveredPx} of ${v.metrics.bootPx} px of the foot</p>
+<p>mat line (400): attacker knees ${v.metrics.kneeToMat.map(f).join(' / ')} px above, ankles ${v.metrics.ankleToMat.map(f).join(' / ')} px above, knee above ankle ${v.metrics.kneeAboveAnkle.map(f).join(' / ')}, seat ${f(v.metrics.seatToMat)} px above</p>` : ''}${v.fists && v.fists.length ? `<p>fists, lowest drawn pixel minus the mat line (neg = above), at each strike (0.30 / 0.60 / 0.90 s), near | far: ${[0.30, 0.60, 0.90].map(t => { const rows = v.fists.filter(x => Math.abs(x.t - t) < .06); const lo = h => Math.max(...rows.map(x => x[h] ?? -999)); return f(lo('near')) + ' | ' + f(lo('far')); }).join(' ; ')} ; deepest over the preview ${f(Math.max(...v.fists.map(x => Math.max(x.near ?? -999, x.far ?? -999))))}</p>` : ''}
 <p>layers: ${LAYER[k]}</p>${prone && v.authored ? `<p>Receiver: ${v.authored.prone ? 'stomach down' : 'on back'}; hip lift ${v.authored.def.lift}, attacker crouch ${f(v.authored.att.crouch)}, hip spacing ${f(v.authored.gap)} px.</p>` : ''}<p>bent boot: ${boot}</p></td></tr>`;
     }).join('');
     return `<section><h2>${title}</h2><table>${lock}</table></section>`;

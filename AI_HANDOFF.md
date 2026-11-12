@@ -43,7 +43,7 @@ Avoid a large rewrite.
 - **Awaiting Derek:** G4 falls match; Marigold title queue (83ab5cd) visual OK; PLAN_CLEANUP T3 (old side branch).
 - **Ideas parked in [IDEAS.md](IDEAS.md):** front snapmare, body slam, whip-return attacks (now plan Stages 5-7), personality-through-movement.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`), pushed to origin 2026-11-11. Full suite 1298/1298, build, coverage (26 baselined gaps) passed. corner-daze face-hit test now accepts either forward fall (falls promoted, chooseFall picks).
-- **Next:** Stage 3 **T3.0**: Derek doesn't know the step-over toehold (2026-11-11), so show him first: reference stills/footage found for him or hand-posed stills on Lou, his OK before any clip work. Handoffs: [Sonnet](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-for-sonnet.md), [Opus PM](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-pm.md).
+- **Next:** Stage 3 **T3.0**: Derek set his toehold version 2026-11-11 (step in and over, flip, kneel bending the leg, sit back and pull the foot; see the plan). Posed stills on Lou, both facings, two sit-back options, for his pick before any clip work. Handoffs: [Sonnet](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-for-sonnet.md), [Opus PM](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-pm.md).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

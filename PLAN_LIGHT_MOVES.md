@@ -59,7 +59,7 @@ Do these in order. Every **STOP**: Sonnet commits locally, writes its Progress l
 1. **T2.6b** G2 page for the ankle lock (the wiring is in 4825c75; no page yet). George has no `ankleTwist` art, so he shows the base shin: say so on the page. Codex can draw George's later (T2.5).
 2. **Stage 1** front kick: T1.1 → T1.3, STOP at G1.
 2b. **T2.7** kneeling arm bar fixes (after G1).
-3. **Stage 3** step-over toehold: T3.0 first asks Derek for footage.
+3. **Stage 3** step-over toehold: T3.0 posed stills of Derek's version first.
 4. **Stage 4** leg-hold slot per kit, G4.
 5. **Stage 5** body slam, **Stage 6** whip-return attacks, **Stage 7** snapmare from the tie-up.
 6. **GP** promote `light`.
@@ -125,9 +125,9 @@ Derek 2026-11-07: **improve the current ankle lock, don't replace it.** Keep its
 
 ## Stage 3: step-over toehold (new move)
 
-- **T3.0 Reference.** Derek 2026-11-11: "i don't know what a step over toehold looks like": show him reference first (found stills/footage, or hand-posed stills on Lou) and get his OK before T3.1. The move: the man is on his back. The attacker grabs one ankle, lifts it, steps his near leg over the shin and turns to face the man's feet, so the trapped leg is bent at the knee and wrapped around the attacker's thigh, foot in front of the attacker's hip. He holds the toes with both hands and leans forward to crank the ankle and knee. The Funks' spinning toehold is this hold entered with spins (later). Our sheets have no frame of it; ask Derek for footage, else hand-posed stills on Lou for his OK first. The victim's foot reuses the T2.4 bent-boot variant if it fits the crank, else a second variant.
+- **T3.0 Derek's version and posed stills.** Derek 2026-11-11 saw reference (Cecchine catch-wrestling chain, STF how-tos) and set his own version: "he steps in and over and flips directions while kneeling and bending the leg he grabbed, he basically sits down then and pulls back on the foot." So: the man is on his back; the attacker grabs one ankle, steps in and over the shin and turns to face the man's feet (facing flips once, during the step-over); he goes down to his knees as he bends the trapped leg (knee bends the natural way, foot coming up behind/beside the attacker's hip); then he sits back and pulls the foot toward himself. No standing lean-forward crank. Before any clip: hand-posed stills on Procreate Lou attacking George, both facings: (1) ankle grab, (2) mid step-over (which leg is in front of the shin), (3) kneeling with the leg bent, (4) the sit-back pull in two options: (a) sitting on his heels, (b) sitting on the mat beside the man's hip. Note per still: layer order of the four legs, any joint near its cap, art seams. The victim's foot reuses the T2.4 bent-boot variant if it fits, else name the second variant Codex would draw. **STOP for Derek's pick.**
 - **T3.1 Registry and slot.** `stepOverToehold`: hold (mat), kit-gated, `damageKey` and `STAMINA_DRAIN` near the ankle lock (5 per squeeze), AI field `groundHoldOdds`, added to `GROUND_HOLDS`. Slot: see Stage 4; until G4 it fills the Finisher + Down slot only when a kit holds it instead of `ankleLock`. Kit checks and `npm run moves:kits -- --write` pass.
-- **T3.2 Clip** under `?light=v1` (the new move needs the flag anyway): grab, lift, step over (the attacker's leg passes over the shin; per-frame layer order for both legs), turn, crank × 3, step back out. Grips on the ankle and foot (D5), planted base (D4), no backward knees on either man (the victim's trapped knee bends the natural way, measured).
+- **T3.2 Clip** under `?light=v1` (the new move needs the flag anyway): grab, step in and over (the attacker's leg passes over the shin; per-frame layer order for all four legs), turn (one facing flip), kneel while bending the leg, sit back and pull × 3 (the pose Derek picked at T3.0), get up and step back out. Grips on the ankle and foot (D5), planted base (D4), no backward knees on either man (the victim's trapped knee bends the natural way, measured).
 - **T3.3 The victim sells it,** as T2.3.
 - **T3.4 G3 page,** both pairings, both facings. **STOP at G3.**
 

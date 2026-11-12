@@ -22,3 +22,14 @@ export const STILLS = [
         att: { crouch: 1.6, bend: .15, lean: -.3, lLeg: .5, rLeg: -.2, lFold: 1.5, rFold: 1.7, lArm: .5, rArm: .5, lElbow: .4, rElbow: .4, tilt: 0, lift: 0 },
         def: { ...DEF_LYING, lLeg: 1.45, rLeg: -.3, lFold: 2.4, rFold: .15 } },
 ];
+
+// Derek 2026-11-11: the cinch turns the receiver onto his stomach.
+// Reverse facing and torso tilt together to keep his head at the same end.
+// Keep heel folds positive: negating folds would bend the knee backwards.
+for (const still of STILLS) {
+    if (!still.twist) continue;
+    still.prone = true;
+    Object.assign(still.def, { tilt: Math.PI / 2, lLeg: -.65, rLeg: .05,
+        lFold: 1.65, rFold: .15, lArm: 2.5, rArm: 2.5,
+        lElbow: .2, rElbow: .2 });
+}

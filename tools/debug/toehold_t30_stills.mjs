@@ -16,22 +16,30 @@ export const POSES = JSON.parse(process.env.POSES_JSON ?? 'null') ?? {};
 const PLAY = ({ id, pose, facing, gap, flip, distance }) => {
     const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
     return import('/src/rig/articulation.js').then(({ shinsFromFolds }) => {
-        const keys = role => [0, 1.2].map(at => ({ at, ease: 'linear', pose: shinsFromFolds({ ...pose[role === 'attacker' ? 'att' : 'def'] }),
+        const keys = role => [0, .22, .30, .52, .60, .82, .90, 1.2].map(at => ({ at, ease: 'linear', pose: shinsFromFolds({ ...pose[role === 'attacker' ? 'att' : 'def'],
+            ...(role === 'defender' && pose.prone ? {
+                // Slow fist lift, quick downward strike; alternate the two arms.
+                lArm: at === .22 || at === .82 ? 3.0 : 2.5,
+                lElbow: at === .22 || at === .82 ? .9 : .2,
+                rArm: at === .52 ? 3.0 : 2.5,
+                rElbow: at === .52 ? .9 : .2,
+            } : {}) }),
             transform: { x: role === 'defender' ? distance : distance - gap, y: role === 'attacker' ? (pose.attY ?? 0) : 0 },
-            parts: role === 'defender' ? { lShin: pose.twist ? 'ankleTwist' : 'base' } : {} }));
+            parts: role === 'defender' ? { lShin: pose.twist ? 'ankleTwist' : 'base', nearForearm: pose.prone ? 'grip' : 'base', farForearm: pose.prone ? 'grip' : 'base' } : {} }));
         // The trapped leg is the man's l channel. `side` is relative to the gripping arm's own side, so resolve it after the facing flip: the l arm sits on the near side only
         // while the attacker's lChannelSide matches the man's.
-        const fa = flip ? -a.facing : a.facing, as = a.skeleton.lChannelSide(fa), ds = d.skeleton.lChannelSide(-a.facing);
+        const fa = flip ? -a.facing : a.facing, as = a.skeleton.lChannelSide(fa), ds = d.skeleton.lChannelSide(pose.prone ? a.facing : -a.facing);
         const sideFor = armSide => (armSide === ds ? 'same' : 'other');
         const lHeel = pose.swap ? 'toe' : 'heel', rHeel = pose.swap ? 'heel' : 'toe';
         sc.moveRuntime.register({ id, duration: 1.2, events: [], tracks: { attacker: { keyframes: keys('attacker') }, defender: { keyframes: keys('defender') } }, grips: pose.grip === false ? [] : [
-            { role: 'attacker', arm: 'l', to: { role: 'defender', joint: 'Ankle', side: sideFor(as), anchor: lHeel }, in: [0, .05], out: [1.1, 1.2], natural: true, palm: 'clutch' },
-            { role: 'attacker', arm: 'r', to: { role: 'defender', joint: 'Ankle', side: sideFor(as === 'near' ? 'far' : 'near'), anchor: rHeel }, in: [0, .05], out: [1.1, 1.2], natural: true, palm: 'clutch' }],
+            { role: 'attacker', arm: 'l', to: { role: 'defender', joint: 'Ankle', side: sideFor(as), anchor: lHeel }, in: [0, .05], out: [1.19, 1.2], natural: true, palm: 'clutch' },
+            { role: 'attacker', arm: 'r', to: { role: 'defender', joint: 'Ankle', side: sideFor(as === 'near' ? 'far' : 'near'), anchor: rHeel }, in: [0, .05], out: [1.19, 1.2], natural: true, palm: 'clutch' }],
             plants: [], layers: [{ from: 0, to: 1.2, order: pose.order }] });
         a.state = d.state = 'holding';
         const h = sc.moveRuntime.play(id, { attacker: a, defender: d }, { onEvent() {}, onComplete() {}, onCancel() {} });
         a._activeMove = d._activeMove = h; a._fixedHold = d._fixedHold = true;
-        d.facing = -a.facing;
+        d.facing = pose.prone ? a.facing : -a.facing;
+        d.lying = pose.prone ? 'prone' : 'supine';
         if (flip) a.facing = -a.facing;
         return true;
     });
@@ -80,6 +88,7 @@ const READ = () => {
 };
 
 const { STILLS } = await import(process.env.STILLS_MODULE ?? './toehold_t30_poses.mjs');
+const searched = new Map();
 for (const [pair, att, def] of PAIRS) {
     if (process.env.ONLY && !pair.startsWith(process.env.ONLY)) continue;
     process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = 'notitle=1&light=v1';
@@ -94,7 +103,8 @@ for (const [pair, att, def] of PAIRS) {
             const report = {};
             for (let st of STILLS) {
                 if (process.env.ONLYSTILL && st.id !== process.env.ONLYSTILL) continue;
-                if (process.env.SEARCH) {   // grid over the man's hip lift, the attacker's crouch and gap: least grip px, with a penalty for lifting the man off the mat
+                if (searched.has(pair + st.id)) st = searched.get(pair + st.id);
+                else if (process.env.SEARCH) {   // grid over the man's hip lift, the attacker's crouch and gap: least grip px, with a penalty for lifting the man off the mat
                     let best = null;
                     for (const lift of [-110, -100, -90, -80, -70]) for (const dc of [-.4, -.2, 0, .2]) for (const dg of [-20, -10, 0, 10, 20]) {
                         const t = { ...st, gap: st.gap + dg, att: { ...st.att, crouch: st.att.crouch + dc }, def: { ...st.def, lift } };
@@ -106,13 +116,20 @@ for (const [pair, att, def] of PAIRS) {
                     }
                     console.log('best', st.id, JSON.stringify({ ...best.g, lift: best.t.def.lift, crouch: best.t.att.crouch, gap: best.t.gap }));
                     st = best.t;
+                    searched.set(pair + st.id, st);
                 }
                 await h.page.evaluate(SETUP, { facing, sep: 120 });
                 await h.page.evaluate(PLAY, { id: 'toeholdStill_' + st.id, pose: st, facing, gap: st.gap, flip: !!st.flip, distance: 120 });
                 for (let i = 0; i < 8; i++) await h.page.evaluate(STEPF);
                 const c = await h.page.evaluate(CROP);
                 await h.page.screenshot({ path: `${outDir}/${pair}-${side}/${st.id}.png`, clip: { x: Math.max(0, c.x - 190), y: Math.max(0, c.y - 200), width: 380, height: 280 } });
-                report[st.id] = { ...(await h.page.evaluate(READ)), gripPx: await h.page.evaluate(GRIPPX) }; console.log(st.id, JSON.stringify(report[st.id].gripPx));
+                if (st.prone) {
+                    for (let frame = 0; frame < 60; frame++) {
+                        if (frame % 3 === 0) await h.page.screenshot({ path: `${outDir}/${pair}-${side}/${st.id}-sell-${frame / 3}.png`, clip: { x: Math.max(0, c.x - 190), y: Math.max(0, c.y - 200), width: 380, height: 280 } });
+                        await h.page.evaluate(STEPF);
+                    }
+                }
+                report[st.id] = { authored: st, ...(await h.page.evaluate(READ)), gripPx: await h.page.evaluate(GRIPPX) }; console.log(st.id, JSON.stringify(report[st.id].gripPx));
             }
             writeFileSync(`${outDir}/${pair}-${side}/report.json`, JSON.stringify(report, null, 1));
             console.log(pair, side, 'done');

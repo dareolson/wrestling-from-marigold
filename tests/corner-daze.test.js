@@ -299,7 +299,7 @@ test('face hit: one damage event with part head, a reaction, a forward fall, dow
         assert.equal(hurts.length, 1);
         assert.deepEqual(hurts[0], [STAMINA_DRAIN.cornerCharge, 'cornerCharge', { part: 'head' }]);
         assert.deepEqual(states.slice(states.indexOf('cornered')), ['cornered', 'selling', 'falling', 'down'], `states ${states}`);
-        assert.equal(d._fallVariant, 'forward');
+        assert.ok(['forward', 'kneesForward'].includes(d._fallVariant), `a forward fall (falls promoted: chooseFall picks either), got ${d._fallVariant}`);
         assert.equal(d.lying, 'prone'); assert.equal(d.facing, 1, 'head toward the ring');
         assert.equal(d._cornerEp, null); assert.equal(a._charge, null);
         for (let i = 0; i < 200; i++) { sc.frame(); d.tickDown(DT); assert.notEqual(d.state, 'cornered', 'never back in the corner'); }

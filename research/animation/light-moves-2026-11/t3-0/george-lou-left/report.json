@@ -1,0 +1,622 @@
+{
+ "1-grab": {
+  "att": {
+   "knees": {
+    "near": 1.2,
+    "far": 1
+   },
+   "pinned": [],
+   "lSide": "near",
+   "x": 520,
+   "facing": -1,
+   "pose": {
+    "lLeg": -0.2,
+    "rLeg": 0.2,
+    "lArm": 0.15,
+    "rArm": -1.038,
+    "lean": 0.1,
+    "crouch": 1.2,
+    "lElbow": 0.164,
+    "rElbow": 1.42,
+    "lShin": -0.38,
+    "rShin": 0.22,
+    "bend": 0.7,
+    "tilt": 0,
+    "lift": 0
+   },
+   "pts": {
+    "nearHip": {
+     "x": 526.5,
+     "y": 315.8
+    },
+    "farHip": {
+     "x": 513.5,
+     "y": 315.7
+    },
+    "nearKnee": {
+     "x": 492.7,
+     "y": 347.3
+    },
+    "farKnee": {
+     "x": 470.1,
+     "y": 331.6
+    },
+    "nearAnkle": {
+     "x": 508.5,
+     "y": 386.8
+    },
+    "farAnkle": {
+     "x": 460.8,
+     "y": 373.1
+    },
+    "nearWrist": {
+     "x": 519,
+     "y": 312.7
+    },
+    "farWrist": {
+     "x": 511.6,
+     "y": 293.2
+    }
+   }
+  },
+  "def": {
+   "knees": {
+    "near": 0.2,
+    "far": 0.15
+   },
+   "pinned": [],
+   "lSide": "near",
+   "x": 412.1283422459893,
+   "facing": 1,
+   "pose": {
+    "lLeg": 0.6,
+    "rLeg": 0.1,
+    "lArm": 0.05,
+    "rArm": 0.05,
+    "lean": 0,
+    "crouch": 0,
+    "lElbow": 0.12,
+    "rElbow": 0.12,
+    "lShin": 0.4,
+    "rShin": -0.05,
+    "tilt": -1.571,
+    "lift": -70,
+    "bend": 0
+   },
+   "pts": {
+    "nearHip": {
+     "x": 413.3,
+     "y": 362.7
+    },
+    "farHip": {
+     "x": 410.9,
+     "y": 348.3
+    },
+    "nearKnee": {
+     "x": 458.5,
+     "y": 331.8
+    },
+    "farKnee": {
+     "x": 465.4,
+     "y": 342.8
+    },
+    "nearAnkle": {
+     "x": 485.8,
+     "y": 320.2
+    },
+    "farAnkle": {
+     "x": 495,
+     "y": 344.3
+    },
+    "nearWrist": {
+     "x": 436.7,
+     "y": 359
+    },
+    "farWrist": {
+     "x": 425.2,
+     "y": 331.8
+    }
+   }
+  },
+  "gripPx": {
+   "heel": 0,
+   "toe": 0
+  }
+ },
+ "2-step-over": {
+  "att": {
+   "knees": {
+    "near": 0.5,
+    "far": 1
+   },
+   "pinned": [],
+   "lSide": "near",
+   "x": 484.0427807486631,
+   "facing": -1,
+   "pose": {
+    "lLeg": 0.9,
+    "rLeg": -0.2,
+    "lArm": -0.4,
+    "rArm": -1.291,
+    "lean": 0.1,
+    "crouch": 0.4,
+    "lElbow": 1.348,
+    "rElbow": 2.062,
+    "lShin": 0.74,
+    "rShin": -0.86,
+    "bend": 0.5,
+    "tilt": 0,
+    "lift": 0
+   },
+   "pts": {
+    "nearHip": {
+     "x": 490.5,
+     "y": 324.6
+    },
+    "farHip": {
+     "x": 477.6,
+     "y": 324.6
+    },
+    "nearKnee": {
+     "x": 446.8,
+     "y": 339.6
+    },
+    "farKnee": {
+     "x": 471.1,
+     "y": 370.3
+    },
+    "nearAnkle": {
+     "x": 418.1,
+     "y": 371.1
+    },
+    "farAnkle": {
+     "x": 503.4,
+     "y": 398.1
+    },
+    "nearWrist": {
+     "x": 485.3,
+     "y": 308.6
+    },
+    "farWrist": {
+     "x": 472.5,
+     "y": 292.1
+    }
+   }
+  },
+  "def": {
+   "knees": {
+    "near": 0.5,
+    "far": 0.15
+   },
+   "pinned": [],
+   "lSide": "near",
+   "x": 412.1283422459893,
+   "facing": 1,
+   "pose": {
+    "lLeg": 1.2,
+    "rLeg": 0.05,
+    "lArm": 0.05,
+    "rArm": 0.05,
+    "lean": 0,
+    "crouch": 0,
+    "lElbow": 0.12,
+    "rElbow": 0.12,
+    "lShin": 0.7,
+    "rShin": -0.1,
+    "tilt": -1.571,
+    "lift": -110,
+    "bend": 0
+   },
+   "pts": {
+    "nearHip": {
+     "x": 413.3,
+     "y": 395.6
+    },
+    "farHip": {
+     "x": 410.9,
+     "y": 381.3
+    },
+    "nearKnee": {
+     "x": 433.1,
+     "y": 344.6
+    },
+    "farKnee": {
+     "x": 465.6,
+     "y": 378.5
+    },
+    "nearAnkle": {
+     "x": 455.9,
+     "y": 325.5
+    },
+    "farAnkle": {
+     "x": 495.1,
+     "y": 381.5
+    },
+    "nearWrist": {
+     "x": 436.7,
+     "y": 391.9
+    },
+    "farWrist": {
+     "x": 425.2,
+     "y": 364.7
+    }
+   }
+  },
+  "gripPx": {
+   "heel": 0,
+   "toe": 0
+  }
+ },
+ "3-kneel": {
+  "att": {
+   "knees": {
+    "near": 2,
+    "far": 2
+   },
+   "pinned": [],
+   "lSide": "near",
+   "x": 419.3197860962567,
+   "facing": 1,
+   "pose": {
+    "lLeg": -0.45,
+    "rLeg": -0.45,
+    "lArm": 0.79,
+    "rArm": -0.036,
+    "lean": -0.3,
+    "crouch": 0.9,
+    "lElbow": 0.09,
+    "rElbow": 2.244,
+    "lShin": -1.685,
+    "rShin": -1.685,
+    "bend": 1.2,
+    "tilt": 0,
+    "lift": 0
+   },
+   "pts": {
+    "nearHip": {
+     "x": 412.8,
+     "y": 352.7
+    },
+    "farHip": {
+     "x": 425.8,
+     "y": 352.7
+    },
+    "nearKnee": {
+     "x": 427.1,
+     "y": 396.7
+    },
+    "farKnee": {
+     "x": 440.1,
+     "y": 396.6
+    },
+    "nearAnkle": {
+     "x": 384.8,
+     "y": 391.8
+    },
+    "farAnkle": {
+     "x": 397.8,
+     "y": 391.7
+    },
+    "nearWrist": {
+     "x": 450.8,
+     "y": 370.2
+    },
+    "farWrist": {
+     "x": 466.9,
+     "y": 359.4
+    }
+   }
+  },
+  "def": {
+   "knees": {
+    "near": 2.4,
+    "far": 0.15
+   },
+   "pinned": [],
+   "lSide": "near",
+   "x": 412.1283422459893,
+   "facing": 1,
+   "pose": {
+    "lLeg": 1.7,
+    "rLeg": -0.3,
+    "lArm": 0.05,
+    "rArm": 0.05,
+    "lean": 0,
+    "crouch": 0,
+    "lElbow": 0.12,
+    "rElbow": 0.12,
+    "lShin": -0.7,
+    "rShin": -0.45,
+    "tilt": -1.571,
+    "lift": -90,
+    "bend": 0
+   },
+   "pts": {
+    "nearHip": {
+     "x": 413.3,
+     "y": 379.1
+    },
+    "farHip": {
+     "x": 410.9,
+     "y": 364.8
+    },
+    "nearKnee": {
+     "x": 406.3,
+     "y": 324.9
+    },
+    "farKnee": {
+     "x": 463.2,
+     "y": 381
+    },
+    "nearAnkle": {
+     "x": 429,
+     "y": 344
+    },
+    "farAnkle": {
+     "x": 489.9,
+     "y": 393.9
+    },
+    "nearWrist": {
+     "x": 436.7,
+     "y": 375.4
+    },
+    "farWrist": {
+     "x": 425.2,
+     "y": 348.2
+    }
+   }
+  },
+  "gripPx": {
+   "heel": 0.6,
+   "toe": 0
+  }
+ },
+ "4a-heels": {
+  "att": {
+   "knees": {
+    "near": 2.3,
+    "far": 2.3
+   },
+   "pinned": [],
+   "lSide": "near",
+   "x": 443.5909090909091,
+   "facing": 1,
+   "pose": {
+    "lLeg": -0.45,
+    "rLeg": -0.45,
+    "lArm": 0.116,
+    "rArm": -0.15,
+    "lean": -0.25,
+    "crouch": 0.9,
+    "lElbow": 0.651,
+    "rElbow": 1.176,
+    "lShin": -1.985,
+    "rShin": -1.985,
+    "bend": 0.2,
+    "tilt": 0,
+    "lift": 0
+   },
+   "pts": {
+    "nearHip": {
+     "x": 437.1,
+     "y": 371.4
+    },
+    "farHip": {
+     "x": 450.1,
+     "y": 371.3
+    },
+    "nearKnee": {
+     "x": 451.4,
+     "y": 415.3
+    },
+    "farKnee": {
+     "x": 464.4,
+     "y": 415.2
+    },
+    "nearAnkle": {
+     "x": 412.4,
+     "y": 398.1
+    },
+    "farAnkle": {
+     "x": 425.4,
+     "y": 398.1
+    },
+    "nearWrist": {
+     "x": 451.6,
+     "y": 363.7
+    },
+    "farWrist": {
+     "x": 470.2,
+     "y": 356.8
+    }
+   }
+  },
+  "def": {
+   "knees": {
+    "near": 2.4,
+    "far": 0.15
+   },
+   "pinned": [],
+   "lSide": "near",
+   "x": 412.1283422459893,
+   "facing": 1,
+   "pose": {
+    "lLeg": 1.45,
+    "rLeg": -0.3,
+    "lArm": 0.05,
+    "rArm": 0.05,
+    "lean": 0,
+    "crouch": 0,
+    "lElbow": 0.12,
+    "rElbow": 0.12,
+    "lShin": -0.95,
+    "rShin": -0.45,
+    "tilt": -1.571,
+    "lift": -70,
+    "bend": 0
+   },
+   "pts": {
+    "nearHip": {
+     "x": 413.3,
+     "y": 362.7
+    },
+    "farHip": {
+     "x": 410.9,
+     "y": 348.3
+    },
+    "nearKnee": {
+     "x": 419.9,
+     "y": 308.4
+    },
+    "farKnee": {
+     "x": 463.2,
+     "y": 364.5
+    },
+    "nearAnkle": {
+     "x": 437.2,
+     "y": 332.5
+    },
+    "farAnkle": {
+     "x": 489.9,
+     "y": 377.4
+    },
+    "nearWrist": {
+     "x": 436.7,
+     "y": 359
+    },
+    "farWrist": {
+     "x": 425.2,
+     "y": 331.8
+    }
+   }
+  },
+  "gripPx": {
+   "heel": 0,
+   "toe": 0
+  }
+ },
+ "4b-mat": {
+  "att": {
+   "knees": {
+    "near": 1.5,
+    "far": 1.7
+   },
+   "pinned": [],
+   "lSide": "near",
+   "x": 461.56951871657753,
+   "facing": 1,
+   "pose": {
+    "lLeg": 0.5,
+    "rLeg": -0.2,
+    "lArm": 0.026,
+    "rArm": -0.108,
+    "lean": -0.3,
+    "crouch": 1.8,
+    "lElbow": 0.081,
+    "rElbow": 0.083,
+    "lShin": 0.53,
+    "rShin": -0.37,
+    "bend": 0.15,
+    "tilt": 0,
+    "lift": 0
+   },
+   "pts": {
+    "nearHip": {
+     "x": 454.9,
+     "y": 360.5
+    },
+    "farHip": {
+     "x": 468.3,
+     "y": 360.5
+    },
+    "nearKnee": {
+     "x": 497.6,
+     "y": 339.4
+    },
+    "farKnee": {
+     "x": 514.5,
+     "y": 371.8
+    },
+    "nearAnkle": {
+     "x": 519.8,
+     "y": 377.3
+    },
+    "farAnkle": {
+     "x": 498.6,
+     "y": 412.8
+    },
+    "nearWrist": {
+     "x": 451.4,
+     "y": 358.2
+    },
+    "farWrist": {
+     "x": 470.5,
+     "y": 353.3
+    }
+   }
+  },
+  "def": {
+   "knees": {
+    "near": 2.4,
+    "far": 0.15
+   },
+   "pinned": [],
+   "lSide": "near",
+   "x": 412.1283422459893,
+   "facing": 1,
+   "pose": {
+    "lLeg": 1.45,
+    "rLeg": -0.3,
+    "lArm": 0.05,
+    "rArm": 0.05,
+    "lean": 0,
+    "crouch": 0,
+    "lElbow": 0.12,
+    "rElbow": 0.12,
+    "lShin": -0.95,
+    "rShin": -0.45,
+    "tilt": -1.571,
+    "lift": -70,
+    "bend": 0
+   },
+   "pts": {
+    "nearHip": {
+     "x": 413.3,
+     "y": 362.7
+    },
+    "farHip": {
+     "x": 410.9,
+     "y": 348.3
+    },
+    "nearKnee": {
+     "x": 419.9,
+     "y": 308.4
+    },
+    "farKnee": {
+     "x": 463.2,
+     "y": 364.5
+    },
+    "nearAnkle": {
+     "x": 437.2,
+     "y": 332.5
+    },
+    "farAnkle": {
+     "x": 489.9,
+     "y": 377.4
+    },
+    "nearWrist": {
+     "x": 436.7,
+     "y": 359
+    },
+    "farWrist": {
+     "x": 425.2,
+     "y": 331.8
+    }
+   }
+  },
+  "gripPx": {
+   "heel": 5.6,
+   "toe": 3.5
+  }
+ }
+}

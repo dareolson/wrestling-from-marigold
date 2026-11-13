@@ -1,0 +1,368 @@
+[
+ {
+  "file": "lou-george-right-4a.webm",
+  "pair": "lou-george",
+  "side": "right",
+  "ending": "4a-heels",
+  "rate": 1,
+  "tStart": 4.07,
+  "tEnd": 9.22,
+  "bytes": 1025225,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -36,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 104,
+     "longestRun": 51,
+     "highestLift": -36,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 0,
+    "toe": 3
+   },
+   "gripTransit": {
+    "heel": 39.2,
+    "toe": 47.6
+   },
+   "gripFlipFrames": {
+    "heel": 94,
+    "toe": 136.5
+   },
+   "pinned": [
+    "att rElbow"
+   ]
+  }
+ },
+ {
+  "file": "lou-george-right-4a-slow.webm",
+  "pair": "lou-george",
+  "side": "right",
+  "ending": "4a-heels",
+  "rate": 0.25,
+  "tStart": 3.9,
+  "tEnd": 24.11,
+  "bytes": 2884045
+ },
+ {
+  "file": "lou-george-right-4b.webm",
+  "pair": "lou-george",
+  "side": "right",
+  "ending": "4b-mat",
+  "rate": 1,
+  "tStart": 3.67,
+  "tEnd": 8.73,
+  "bytes": 982264,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -36,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 104,
+     "longestRun": 51,
+     "highestLift": -36,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 7.4,
+    "toe": 4.7
+   },
+   "gripTransit": {
+    "heel": 39.2,
+    "toe": 47.6
+   },
+   "gripFlipFrames": {
+    "heel": 94,
+    "toe": 136.5
+   },
+   "pinned": [
+    "att rElbow"
+   ]
+  }
+ },
+ {
+  "file": "lou-george-left-4a.webm",
+  "pair": "lou-george",
+  "side": "left",
+  "ending": "4a-heels",
+  "rate": 1,
+  "tStart": 3.72,
+  "tEnd": 8.78,
+  "bytes": 987094,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 107,
+     "longestRun": 52,
+     "highestLift": -36,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 0,
+    "toe": 3
+   },
+   "gripTransit": {
+    "heel": 39.2,
+    "toe": 47.6
+   },
+   "gripFlipFrames": {
+    "heel": 94,
+    "toe": 136.5
+   },
+   "pinned": [
+    "def nearKnee",
+    "def farKnee",
+    "att rElbow"
+   ]
+  }
+ },
+ {
+  "file": "lou-george-left-4b.webm",
+  "pair": "lou-george",
+  "side": "left",
+  "ending": "4b-mat",
+  "rate": 1,
+  "tStart": 3.61,
+  "tEnd": 8.68,
+  "bytes": 983614,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 107,
+     "longestRun": 52,
+     "highestLift": -36,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 7.4,
+    "toe": 4.7
+   },
+   "gripTransit": {
+    "heel": 39.2,
+    "toe": 47.6
+   },
+   "gripFlipFrames": {
+    "heel": 94,
+    "toe": 136.5
+   },
+   "pinned": [
+    "def nearKnee",
+    "def farKnee",
+    "att rElbow"
+   ]
+  }
+ },
+ {
+  "file": "george-lou-right-4a.webm",
+  "pair": "george-lou",
+  "side": "right",
+  "ending": "4a-heels",
+  "rate": 1,
+  "tStart": 3.67,
+  "tEnd": 8.74,
+  "bytes": 993001,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 101,
+     "longestRun": 51,
+     "highestLift": -35,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 0,
+    "toe": 0
+   },
+   "gripTransit": {
+    "heel": 12.6,
+    "toe": 8.6
+   },
+   "gripFlipFrames": {
+    "heel": 49.7,
+    "toe": 85.1
+   },
+   "pinned": []
+  }
+ },
+ {
+  "file": "george-lou-right-4a-slow.webm",
+  "pair": "george-lou",
+  "side": "right",
+  "ending": "4a-heels",
+  "rate": 0.25,
+  "tStart": 3.71,
+  "tEnd": 23.95,
+  "bytes": 2864393
+ },
+ {
+  "file": "george-lou-right-4b.webm",
+  "pair": "george-lou",
+  "side": "right",
+  "ending": "4b-mat",
+  "rate": 1,
+  "tStart": 3.6,
+  "tEnd": 8.67,
+  "bytes": 976805,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 101,
+     "longestRun": 51,
+     "highestLift": -35,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 25.2,
+    "toe": 32.5
+   },
+   "gripTransit": {
+    "heel": 12.6,
+    "toe": 8.6
+   },
+   "gripFlipFrames": {
+    "heel": 49.7,
+    "toe": 85.1
+   },
+   "pinned": []
+  }
+ },
+ {
+  "file": "george-lou-left-4a.webm",
+  "pair": "george-lou",
+  "side": "left",
+  "ending": "4a-heels",
+  "rate": 1,
+  "tStart": 3.66,
+  "tEnd": 8.73,
+  "bytes": 980089,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 101,
+     "longestRun": 51,
+     "highestLift": -35,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 0,
+    "toe": 0
+   },
+   "gripTransit": {
+    "heel": 12.6,
+    "toe": 8.6
+   },
+   "gripFlipFrames": {
+    "heel": 49.7,
+    "toe": 85.1
+   },
+   "pinned": [
+    "att nearKnee",
+    "att farKnee"
+   ]
+  }
+ },
+ {
+  "file": "george-lou-left-4b.webm",
+  "pair": "george-lou",
+  "side": "left",
+  "ending": "4b-mat",
+  "rate": 1,
+  "tStart": 3.71,
+  "tEnd": 8.77,
+  "bytes": 985519,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 101,
+     "longestRun": 51,
+     "highestLift": -35,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 25.2,
+    "toe": 32.5
+   },
+   "gripTransit": {
+    "heel": 12.6,
+    "toe": 8.6
+   },
+   "gripFlipFrames": {
+    "heel": 49.7,
+    "toe": 85.1
+   },
+   "pinned": [
+    "att nearKnee",
+    "att farKnee"
+   ]
+  }
+ }
+]

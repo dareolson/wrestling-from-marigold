@@ -43,8 +43,8 @@ Avoid a large rewrite.
 - **Awaiting Derek:** G4 falls match; Marigold title queue (83ab5cd) visual OK; PLAN_CLEANUP T3 (old side branch).
 - **Ideas parked in [IDEAS.md](IDEAS.md):** front snapmare, body slam, whip-return attacks (now plan Stages 5-7), personality-through-movement.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`), pushed to origin 2026-11-11. Full suite 1298/1298, build, coverage (26 baselined gaps) passed. corner-daze face-hit test now accepts either forward fall (falls promoted, chooseFall picks).
-- **Review for Opus (2026-11-12):** [Codex findings on 2f7ba29](AI_HANDOFF_ENTRIES/2026-11-12-codex-toehold-r4-review-for-opus.md): still 3 knees 38–69 px above mat; fist contact unproven; ignored sell frames break motion on fresh checkout; saved poses need replay. No gate approval.
-- **Next:** Sonnet does **T3.0b** in PLAN_LIGHT_MOVES (Derek 2026-11-12: poses not there yet, wants video): still 3 kneels, real fist contact, saved-pose replay, webm previews of the full sequence (4a and 4b endings) on a page that works on a fresh checkout. STOP for Opus, then Derek picks 4a/4b from the videos. Handoffs: [Sonnet](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-for-sonnet.md), [Opus PM](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-pm.md).
+- **Review for Opus (2026-11-12):** T3.0b done, committed locally, not pushed: [page](research/animation/light-moves-2026-11/t3-0b/index.html) with 8 webm (4a/4b × 2 pairings × 2 facings), still 3 kneels, hand-only fist contact, `REPLAY=1`. Misses in the PLAN Progress line (4b pulls drift off the foot, flip/roll snaps, far knee 6.1). No gate approval.
+- **Next:** Opus reviews T3.0b, then Derek picks 4a or 4b from the videos; then T3.1/T3.2. Handoffs: [Sonnet](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-for-sonnet.md), [Opus PM](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-pm.md).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

@@ -1,0 +1,697 @@
+[
+ {
+  "file": "lou-george-right.webm",
+  "tag": "lou-george-right",
+  "pair": "lou-george",
+  "side": "right",
+  "rate": 1,
+  "tStart": 3.91,
+  "tEnd": 9.47,
+  "bytes": 1064678,
+  "summary": {
+   "grip": {
+    "worst": 3.2,
+    "worstAt": 2.0167,
+    "framesOver6": 0,
+    "over6Times": []
+   },
+   "drop": {
+    "hipDrop": 16.2,
+    "start": 1.4,
+    "land": 1.7,
+    "seconds": 0.3,
+    "landFrame": [
+     102,
+     102
+    ],
+    "standingKnees": [
+     28.1,
+     28.6
+    ],
+    "worstFrameJump": 9.2
+   },
+   "turn": {
+    "seconds": 0.3,
+    "flipAt": 1.2417,
+    "worstFrameJump": {
+     "t": 1.1167,
+     "d": 50.9
+    },
+    "medianFrameJump": 4.7
+   },
+   "roll": {
+    "seconds": 0.5,
+    "afterLand": 0.15,
+    "flipAt": 2.0917,
+    "worstFrameJump": {
+     "t": 2.2333,
+     "d": 14.8
+    },
+    "medianFrameJump": 5.1
+   },
+   "kneesHold": [
+    {
+     "min": -1.8,
+     "max": 4.1
+    },
+    {
+     "min": -2.8,
+     "max": 5.2
+    }
+   ],
+   "kneeTravelPx": [
+    5.8,
+    4.2
+   ],
+   "wrenches": [
+    {
+     "peak": 2.8,
+     "foot": 37.5,
+     "footPath": 38.5,
+     "hipBack": 21.8,
+     "kneesAtPeak": [
+      4,
+      -2.8
+     ]
+    },
+    {
+     "peak": 3.7,
+     "foot": 37.5,
+     "footPath": 37.4,
+     "hipBack": 21.8,
+     "kneesAtPeak": [
+      4,
+      -2.8
+     ]
+    },
+    {
+     "peak": 4.6,
+     "foot": 37.5,
+     "footPath": 53.3,
+     "hipBack": 21.8,
+     "kneesAtPeak": [
+      4,
+      -2.8
+     ]
+    }
+   ],
+   "fists": {
+    "near": {
+     "strikes": 2,
+     "contactFrames": 137,
+     "longestRun": 79,
+     "highestLift": -36,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 1,
+     "contactFrames": 165,
+     "longestRun": 112,
+     "highestLift": -36,
+     "deepest": 2
+    }
+   },
+   "strikes": [
+    {
+     "peak": 2.8,
+     "arm": "l",
+     "side": "near",
+     "lift": -36,
+     "landedAt": 2.8,
+     "offsetFrames": 0,
+     "contactFrames": 24
+    },
+    {
+     "peak": 3.7,
+     "arm": "r",
+     "side": "far",
+     "lift": -36,
+     "landedAt": 3.7,
+     "offsetFrames": 0,
+     "contactFrames": 25
+    },
+    {
+     "peak": 4.6,
+     "arm": "l",
+     "side": "near",
+     "lift": -36,
+     "landedAt": 4.6,
+     "offsetFrames": 0,
+     "contactFrames": 25
+    }
+   ],
+   "boot": {
+    "easeCovered": 28,
+    "bootPx": 795,
+    "wrenchMin": 0,
+    "wrenchMax": 104,
+    "atPeaks": [
+     65,
+     65,
+     65
+    ]
+   },
+   "pinned": [
+    "att lElbow"
+   ]
+  }
+ },
+ {
+  "file": "lou-george-right-half.webm",
+  "tag": "lou-george-right",
+  "pair": "lou-george",
+  "side": "right",
+  "rate": 0.5,
+  "tStart": 3.73,
+  "tEnd": 14.85,
+  "bytes": 1744763
+ },
+ {
+  "file": "lou-george-left.webm",
+  "tag": "lou-george-left",
+  "pair": "lou-george",
+  "side": "left",
+  "rate": 1,
+  "tStart": 3.75,
+  "tEnd": 9.31,
+  "bytes": 1046137,
+  "summary": {
+   "grip": {
+    "worst": 11.8,
+    "worstAt": 2.6167,
+    "framesOver6": 6,
+    "over6Times": [
+     2.6167,
+     4.0833,
+     4.1167,
+     4.1333,
+     4.1833,
+     5.0833
+    ]
+   },
+   "drop": {
+    "hipDrop": 35,
+    "start": 1.4,
+    "land": 1.7,
+    "seconds": 0.3,
+    "landFrame": [
+     102,
+     102
+    ],
+    "standingKnees": [
+     33.7,
+     28.4
+    ],
+    "worstFrameJump": 12.6
+   },
+   "turn": {
+    "seconds": 0.3,
+    "flipAt": 1.2417,
+    "worstFrameJump": {
+     "t": 1.1167,
+     "d": 28.5
+    },
+    "medianFrameJump": 5.1
+   },
+   "roll": {
+    "seconds": 0.5,
+    "afterLand": 0.15,
+    "flipAt": 2.0917,
+    "worstFrameJump": {
+     "t": 2.2333,
+     "d": 14.8
+    },
+    "medianFrameJump": 5.1
+   },
+   "kneesHold": [
+    {
+     "min": -1.9,
+     "max": 5
+    },
+    {
+     "min": -2.8,
+     "max": 4.2
+    }
+   ],
+   "kneeTravelPx": [
+    4.1,
+    6.1
+   ],
+   "wrenches": [
+    {
+     "peak": 2.8,
+     "foot": 40,
+     "footPath": 83.9,
+     "hipBack": 0,
+     "kneesAtPeak": [
+      3.6,
+      -2
+     ]
+    },
+    {
+     "peak": 3.7,
+     "foot": 40,
+     "footPath": 86.3,
+     "hipBack": 0,
+     "kneesAtPeak": [
+      3.6,
+      -2
+     ]
+    },
+    {
+     "peak": 4.6,
+     "foot": 40,
+     "footPath": 63.5,
+     "hipBack": 0,
+     "kneesAtPeak": [
+      3.6,
+      -2
+     ]
+    }
+   ],
+   "fists": {
+    "near": {
+     "strikes": 2,
+     "contactFrames": 137,
+     "longestRun": 79,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 1,
+     "contactFrames": 165,
+     "longestRun": 112,
+     "highestLift": -36,
+     "deepest": 2
+    }
+   },
+   "strikes": [
+    {
+     "peak": 2.8,
+     "arm": "l",
+     "side": "near",
+     "lift": -35,
+     "landedAt": 2.8,
+     "offsetFrames": 0,
+     "contactFrames": 24
+    },
+    {
+     "peak": 3.7,
+     "arm": "r",
+     "side": "far",
+     "lift": -36,
+     "landedAt": 3.7,
+     "offsetFrames": 0,
+     "contactFrames": 25
+    },
+    {
+     "peak": 4.6,
+     "arm": "l",
+     "side": "near",
+     "lift": -35,
+     "landedAt": 4.6,
+     "offsetFrames": 0,
+     "contactFrames": 25
+    }
+   ],
+   "boot": {
+    "easeCovered": 0,
+    "bootPx": 800,
+    "wrenchMin": 0,
+    "wrenchMax": 0,
+    "atPeaks": [
+     0,
+     0,
+     0
+    ]
+   },
+   "pinned": [
+    "def nearKnee",
+    "def farKnee",
+    "att rElbow",
+    "att lElbow"
+   ]
+  }
+ },
+ {
+  "file": "lou-george-left-half.webm",
+  "tag": "lou-george-left",
+  "pair": "lou-george",
+  "side": "left",
+  "rate": 0.5,
+  "tStart": 3.75,
+  "tEnd": 14.87,
+  "bytes": 1734443
+ },
+ {
+  "file": "george-lou-right.webm",
+  "tag": "george-lou-right",
+  "pair": "george-lou",
+  "side": "right",
+  "rate": 1,
+  "tStart": 3.59,
+  "tEnd": 9.16,
+  "bytes": 1031080,
+  "summary": {
+   "grip": {
+    "worst": 10.9,
+    "worstAt": 4.8667,
+    "framesOver6": 7,
+    "over6Times": [
+     3.1167,
+     3.5667,
+     3.5833,
+     4.0333,
+     4.4833,
+     4.8667,
+     4.8833
+    ]
+   },
+   "drop": {
+    "hipDrop": 25.3,
+    "start": 1.4,
+    "land": 1.7,
+    "seconds": 0.3,
+    "landFrame": [
+     102,
+     102
+    ],
+    "standingKnees": [
+     32.9,
+     34.6
+    ],
+    "worstFrameJump": 9.2
+   },
+   "turn": {
+    "seconds": 0.3,
+    "flipAt": 1.2417,
+    "worstFrameJump": {
+     "t": 1.1167,
+     "d": 36.7
+    },
+    "medianFrameJump": 2.5
+   },
+   "roll": {
+    "seconds": 0.5,
+    "afterLand": 0.15,
+    "flipAt": 2.0917,
+    "worstFrameJump": {
+     "t": 2.3333,
+     "d": 21.9
+    },
+    "medianFrameJump": 6.9
+   },
+   "kneesHold": [
+    {
+     "min": -0.9,
+     "max": 4
+    },
+    {
+     "min": -2.5,
+     "max": 3.6
+    }
+   ],
+   "kneeTravelPx": [
+    4.4,
+    6.3
+   ],
+   "wrenches": [
+    {
+     "peak": 2.8,
+     "foot": 47.1,
+     "footPath": 62.6,
+     "hipBack": 4.7,
+     "kneesAtPeak": [
+      4,
+      -2
+     ]
+    },
+    {
+     "peak": 3.7,
+     "foot": 47.1,
+     "footPath": 52.5,
+     "hipBack": 4.7,
+     "kneesAtPeak": [
+      4,
+      -2
+     ]
+    },
+    {
+     "peak": 4.6,
+     "foot": 47.1,
+     "footPath": 55.3,
+     "hipBack": 4.7,
+     "kneesAtPeak": [
+      4,
+      -2
+     ]
+    }
+   ],
+   "fists": {
+    "near": {
+     "strikes": 2,
+     "contactFrames": 137,
+     "longestRun": 79,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 1,
+     "contactFrames": 164,
+     "longestRun": 112,
+     "highestLift": -35,
+     "deepest": 2
+    }
+   },
+   "strikes": [
+    {
+     "peak": 2.8,
+     "arm": "l",
+     "side": "near",
+     "lift": -35,
+     "landedAt": 2.8,
+     "offsetFrames": 0,
+     "contactFrames": 24
+    },
+    {
+     "peak": 3.7,
+     "arm": "r",
+     "side": "far",
+     "lift": -35,
+     "landedAt": 3.7,
+     "offsetFrames": 0,
+     "contactFrames": 25
+    },
+    {
+     "peak": 4.6,
+     "arm": "l",
+     "side": "near",
+     "lift": -35,
+     "landedAt": 4.6,
+     "offsetFrames": 0,
+     "contactFrames": 25
+    }
+   ],
+   "boot": {
+    "easeCovered": 0,
+    "bootPx": 869,
+    "wrenchMin": 0,
+    "wrenchMax": 4,
+    "atPeaks": [
+     0,
+     0,
+     0
+    ]
+   },
+   "pinned": [
+    "att rElbow"
+   ]
+  }
+ },
+ {
+  "file": "george-lou-right-half.webm",
+  "tag": "george-lou-right",
+  "pair": "george-lou",
+  "side": "right",
+  "rate": 0.5,
+  "tStart": 3.67,
+  "tEnd": 14.8,
+  "bytes": 1731974
+ },
+ {
+  "file": "george-lou-left.webm",
+  "tag": "george-lou-left",
+  "pair": "george-lou",
+  "side": "left",
+  "rate": 1,
+  "tStart": 3.73,
+  "tEnd": 9.31,
+  "bytes": 1049401,
+  "summary": {
+   "grip": {
+    "worst": 9.6,
+    "worstAt": 2.0833,
+    "framesOver6": 5,
+    "over6Times": [
+     2.0167,
+     2.0333,
+     2.05,
+     2.0667,
+     2.0833
+    ]
+   },
+   "drop": {
+    "hipDrop": 34.9,
+    "start": 1.4,
+    "land": 1.7,
+    "seconds": 0.3,
+    "landFrame": [
+     102,
+     102
+    ],
+    "standingKnees": [
+     39.3,
+     42.6
+    ],
+    "worstFrameJump": 8.5
+   },
+   "turn": {
+    "seconds": 0.3,
+    "flipAt": 1.2417,
+    "worstFrameJump": {
+     "t": 1.1167,
+     "d": 33
+    },
+    "medianFrameJump": 3.5
+   },
+   "roll": {
+    "seconds": 0.5,
+    "afterLand": 0.15,
+    "flipAt": 2.0917,
+    "worstFrameJump": {
+     "t": 2.3333,
+     "d": 21.9
+    },
+    "medianFrameJump": 6.9
+   },
+   "kneesHold": [
+    {
+     "min": -1.7,
+     "max": 6
+    },
+    {
+     "min": -2,
+     "max": 4.9
+    }
+   ],
+   "kneeTravelPx": [
+    4.7,
+    3.8
+   ],
+   "wrenches": [
+    {
+     "peak": 2.8,
+     "foot": 39.8,
+     "footPath": 43.6,
+     "hipBack": 6.3,
+     "kneesAtPeak": [
+      4,
+      -2
+     ]
+    },
+    {
+     "peak": 3.7,
+     "foot": 39.8,
+     "footPath": 42.5,
+     "hipBack": 6.3,
+     "kneesAtPeak": [
+      4,
+      -2
+     ]
+    },
+    {
+     "peak": 4.6,
+     "foot": 39.8,
+     "footPath": 43.6,
+     "hipBack": 6.3,
+     "kneesAtPeak": [
+      4,
+      -2
+     ]
+    }
+   ],
+   "fists": {
+    "near": {
+     "strikes": 2,
+     "contactFrames": 137,
+     "longestRun": 79,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 1,
+     "contactFrames": 164,
+     "longestRun": 112,
+     "highestLift": -35,
+     "deepest": 2
+    }
+   },
+   "strikes": [
+    {
+     "peak": 2.8,
+     "arm": "l",
+     "side": "near",
+     "lift": -35,
+     "landedAt": 2.8,
+     "offsetFrames": 0,
+     "contactFrames": 24
+    },
+    {
+     "peak": 3.7,
+     "arm": "r",
+     "side": "far",
+     "lift": -35,
+     "landedAt": 3.7,
+     "offsetFrames": 0,
+     "contactFrames": 25
+    },
+    {
+     "peak": 4.6,
+     "arm": "l",
+     "side": "near",
+     "lift": -35,
+     "landedAt": 4.6,
+     "offsetFrames": 0,
+     "contactFrames": 25
+    }
+   ],
+   "boot": {
+    "easeCovered": 347,
+    "bootPx": 869,
+    "wrenchMin": 1,
+    "wrenchMax": 423,
+    "atPeaks": [
+     1,
+     1,
+     1
+    ]
+   },
+   "pinned": [
+    "att nearKnee",
+    "att farKnee",
+    "att lElbow",
+    "att rElbow"
+   ]
+  }
+ },
+ {
+  "file": "george-lou-left-half.webm",
+  "tag": "george-lou-left",
+  "pair": "george-lou",
+  "side": "left",
+  "rate": 0.5,
+  "tStart": 3.69,
+  "tEnd": 14.87,
+  "bytes": 1735876
+ }
+]

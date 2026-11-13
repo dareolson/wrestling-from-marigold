@@ -43,8 +43,8 @@ Avoid a large rewrite.
 - **Awaiting Derek:** G4 falls match; Marigold title queue (83ab5cd) visual OK; PLAN_CLEANUP T3 (old side branch).
 - **Ideas parked in [IDEAS.md](IDEAS.md):** front snapmare, body slam, whip-return attacks (now plan Stages 5-7), personality-through-movement.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`), pushed to origin 2026-11-11. Full suite 1298/1298, build, coverage (26 baselined gaps) passed. corner-daze face-hit test now accepts either forward fall (falls promoted, chooseFall picks).
-- **Review for Opus (2026-11-12):** T3.0b done, committed locally, not pushed: [page](research/animation/light-moves-2026-11/t3-0b/index.html) with 8 webm (4a/4b × 2 pairings × 2 facings), still 3 kneels, hand-only fist contact, `REPLAY=1`. Misses in the PLAN Progress line (4b pulls drift off the foot, flip/roll snaps, far knee 6.1). No gate approval.
-- **Next:** Derek judges [Codex’s two-knee capture preview](research/animation/light-moves-2026-11/t3-knee-capture/index.html): 0.2 s knee drop, trapped leg between attacker legs, stationary kneeling wrench, stomach-down fist sell. Held knees 1.6–3.5 px, grip 0, 24/24 focused tests. Entry turn/roll and transit grips still rough; no approval or playable move. [Details](research/animation/light-moves-2026-11/t3-knee-capture/README.md).
+- **Review for Opus (2026-11-13):** T3.0c done, committed locally, not pushed: [page](research/animation/light-moves-2026-11/t3-0c/index.html), 4 cases × normal + 0.5× webm, contact sheets. Solved timeline: real turn (0.3 s), 0.3 s knee drop (knees land frame 102 both), 0.5 s roll, 3 wrenches 37-47 px with strikes on each peak. Misses: grip 9.6-11.8 px in 3 cases; hips-back 0-22 px; George-left lunge/knee limits + 423 px boot covered. Misses listed on the page. No approval.
+- **Next:** Opus reviews T3.0c; Derek judges the videos (candidate = Codex's t3-knee-capture, bfe38c5).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

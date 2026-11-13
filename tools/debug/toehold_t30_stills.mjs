@@ -96,6 +96,7 @@ for (const [pair, att, def] of PAIRS) {
             const report = {};
             for (let st of STILLS) {
                 if (process.env.ONLYSTILL && st.id !== process.env.ONLYSTILL) continue;
+                if (saved && !saved[st.id]) continue;   // a revised preview may omit a superseded ending
                 if (saved) st = saved[st.id].authored;   // REPLAY: the saved pose, which SEARCH_IDS may then refine
                 const searchIt = process.env.SEARCH && (!saved || SEARCH_IDS.has(st.id));
                 if (searchIt && searched.has(pair + st.id)) st = searched.get(pair + st.id);

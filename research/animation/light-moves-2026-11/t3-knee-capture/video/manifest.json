@@ -1,0 +1,247 @@
+[
+ {
+  "file": "lou-george-right-4a.webm",
+  "pair": "lou-george",
+  "side": "right",
+  "ending": "4a-heels",
+  "rate": 1,
+  "tStart": 4.03,
+  "tEnd": 9.19,
+  "bytes": 1029576,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -36,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 104,
+     "longestRun": 51,
+     "highestLift": -36,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 0,
+    "toe": 0
+   },
+   "gripTransit": {
+    "heel": 43.5,
+    "toe": 66.6
+   },
+   "gripFlipFrames": {
+    "heel": 94,
+    "toe": 136.5
+   },
+   "pinned": [
+    "att rElbow"
+   ],
+   "capture": {
+    "samples": 59,
+    "depthFailures": 0,
+    "kneesAboveMat": [
+     {
+      "min": 1.7869371603210311,
+      "max": 1.7869371603229638
+     },
+     {
+      "min": 3.4686042567141158,
+      "max": 3.468604256715821
+     }
+    ],
+    "kneeTravel": [
+     2.5036928884157126e-12,
+     1.9887074454954814e-12
+    ]
+   }
+  }
+ },
+ {
+  "file": "lou-george-left-4a.webm",
+  "pair": "lou-george",
+  "side": "left",
+  "ending": "4a-heels",
+  "rate": 1,
+  "tStart": 3.64,
+  "tEnd": 8.71,
+  "bytes": 982949,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 107,
+     "longestRun": 52,
+     "highestLift": -36,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 0,
+    "toe": 0
+   },
+   "gripTransit": {
+    "heel": 43.5,
+    "toe": 66.6
+   },
+   "gripFlipFrames": {
+    "heel": 94,
+    "toe": 136.5
+   },
+   "pinned": [
+    "def nearKnee",
+    "def farKnee",
+    "att rElbow"
+   ],
+   "capture": {
+    "samples": 59,
+    "depthFailures": 0,
+    "kneesAboveMat": [
+     {
+      "min": 1.7869371603210311,
+      "max": 1.7869371603229638
+     },
+     {
+      "min": 3.4686042567141158,
+      "max": 3.468604256715821
+     }
+    ],
+    "kneeTravel": [
+     2.577458883196103e-12,
+     2.0185417388989557e-12
+    ]
+   }
+  }
+ },
+ {
+  "file": "george-lou-right-4a.webm",
+  "pair": "george-lou",
+  "side": "right",
+  "ending": "4a-heels",
+  "rate": 1,
+  "tStart": 3.61,
+  "tEnd": 8.66,
+  "bytes": 979156,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 101,
+     "longestRun": 51,
+     "highestLift": -35,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 0,
+    "toe": 0
+   },
+   "gripTransit": {
+    "heel": 13.9,
+    "toe": 9.3
+   },
+   "gripFlipFrames": {
+    "heel": 49.7,
+    "toe": 85.1
+   },
+   "pinned": [],
+   "capture": {
+    "samples": 59,
+    "depthFailures": 0,
+    "kneesAboveMat": [
+     {
+      "min": 1.5999701359270375,
+      "max": 1.5999701359285154
+     },
+     {
+      "min": 2.7449721691007767,
+      "max": 2.744972169102141
+     }
+    ],
+    "kneeTravel": [
+     2.0901070809998417e-12,
+     1.6396148910025611e-12
+    ]
+   }
+  }
+ },
+ {
+  "file": "george-lou-left-4a.webm",
+  "pair": "george-lou",
+  "side": "left",
+  "ending": "4a-heels",
+  "rate": 1,
+  "tStart": 3.65,
+  "tEnd": 8.72,
+  "bytes": 983129,
+  "summary": {
+   "fists": {
+    "near": {
+     "strikes": 3,
+     "contactFrames": 78,
+     "longestRun": 24,
+     "highestLift": -35,
+     "deepest": 2
+    },
+    "far": {
+     "strikes": 3,
+     "contactFrames": 101,
+     "longestRun": 51,
+     "highestLift": -35,
+     "deepest": 2
+    }
+   },
+   "gripKneelAndPulls": {
+    "heel": 0,
+    "toe": 0
+   },
+   "gripTransit": {
+    "heel": 13.9,
+    "toe": 9.3
+   },
+   "gripFlipFrames": {
+    "heel": 49.7,
+    "toe": 85.1
+   },
+   "pinned": [
+    "att nearKnee",
+    "att farKnee"
+   ],
+   "capture": {
+    "samples": 59,
+    "depthFailures": 0,
+    "kneesAboveMat": [
+     {
+      "min": 1.5999701359270375,
+      "max": 1.5999701359285154
+     },
+     {
+      "min": 2.7449721691007767,
+      "max": 2.744972169102141
+     }
+    ],
+    "kneeTravel": [
+     2.0503067386097695e-12,
+     1.6396148910025611e-12
+    ]
+   }
+  }
+ }
+]

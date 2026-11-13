@@ -23,12 +23,13 @@ const sample = (wps, t) => {   // piecewise linear over [{ t, v }]; v is a flat 
 const flat = (still, role) => { const { fists, ...rest } = still[role]; return role === 'att' ? { ...rest, _gap: still.gap, _attY: still.attY ?? 0 } : rest; };
 export const buildClip = (P, ending) => {
     const [p1, p2, p3, p4] = [P['1-grab'], P['2-step-over'], P['3-kneel'], P[ending]];
+    const capture = !!p3.capture;
     const fists = p3.def.fists, mid = role => num(flat(p3, role), flat(p4, role), .5);
     // kneel, then pull (to the ending), release halfway, pull, release halfway, pull, hold
     const pullTimes = [T.pull, ...[1, 2, 3, 4, 5].map(i => T.pull + i * T.step), T.end];
     const pullVal = (role, i) => (i === 0 ? flat(p3, role) : [1, 3, 5, 6].includes(i) ? flat(p4, role) : mid(role));
     const wp = role => [{ t: 0, v: flat(p1, role) }, { t: T.hold, v: flat(p1, role) }, { t: T.stepEnd, v: flat(p2, role) },
-        ...(role === 'att' ? [{ t: T.flip, v: flat(p2, role) }, { t: T.kneel, v: flat(p3, role) }] : [{ t: T.roll - .01, v: flat(p2, role) }, { t: T.roll, v: flat(p3, role) }, { t: T.kneel, v: flat(p3, role) }]),
+        ...(role === 'att' ? [{ t: T.flip, v: flat(p2, role) }, ...(capture ? [{ t: T.kneel - .2, v: flat(p2, role) }] : []), { t: T.kneel, v: flat(p3, role) }] : [{ t: T.roll - .01, v: flat(p2, role) }, { t: T.roll, v: flat(p3, role) }, { t: T.kneel, v: flat(p3, role) }]),
         ...pullTimes.map((t, i) => ({ t, v: pullVal(role, i) }))].sort((a, b) => a.t - b.t);
     const wa = wp('att'), wd = wp('def'), sell = sellFrames(fists, T.roll, T.end, 1.8);
     const times = [...new Set([...wa.map(w => w.t), ...wd.map(w => w.t), T.flip, T.roll, ...sell.map(f => f.at)].map(t => +t.toFixed(3)))].sort((a, b) => a - b);
@@ -64,6 +65,16 @@ const PLAYCLIP = ({ id, clip, rate }) => {
         return true;
     });
 };
+// Check the actual drawn stack and grounded knee positions during the wrench.
+const CAPTURESTATE = () => {
+    const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
+    const sk = a.skeleton, ds = d.skeleton.lChannelSide(d.facing);
+    const trapped = d.skeleton[ds + 'Thigh'];
+    return { knees: ['near', 'far'].map(sd => {
+        const k = sk.jointAttachmentPoints[sd + 'Knee'];
+        return { x: k.x, y: k.y, aboveMat: d.y - k.y };
+    }), sandwiched: sk.farThigh.depth < trapped.depth && trapped.depth < sk.nearThigh.depth };
+};
 // drawn bounds of both men (world px): the stepped pass unions these over the clip to frame the recording
 const BOUNDS = () => {
     const sc = window.__WFM_GAME.scene.scenes[0]; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
@@ -94,11 +105,11 @@ try {
             const side = facing > 0 ? 'right' : 'left', rep = JSON.parse(readFileSync(`${reportDir}/${pair}-${side}/report.json`));
             const P = Object.fromEntries(Object.entries(rep).map(([k, v]) => [k, v.authored]));
             for (const ending of ['4a-heels', '4b-mat']) {
-                if (process.env.ENDING && !ending.startsWith(process.env.ENDING)) continue;
+                if (!P[ending] || (process.env.ENDING && !ending.startsWith(process.env.ENDING))) continue;
                 const tag = `${pair}-${side}-${ending.slice(0, 2)}`, clip = buildClip(P, ending);
                 // 1. stepped pass: deterministic numbers over the whole clip
                 process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = 'notitle=1&light=v1';
-                const h = await launch(), series = [], grips = [], pinned = new Set(), box = [1e9, 1e9, -1e9, -1e9];
+                const h = await launch(), series = [], grips = [], captures = [], pinned = new Set(), box = [1e9, 1e9, -1e9, -1e9];
                 try {
                     await h.page.waitForTimeout(2500);
                     await h.page.evaluate(INSTALL); await h.page.evaluate(MASKS);
@@ -108,6 +119,7 @@ try {
                         const t = f / 60;
                         if (t >= T.roll + .05) series.push({ t: +t.toFixed(3), ...(await h.page.evaluate(FISTS)) });
                         if (f % 3 === 0 && t < clip.duration - .1) grips.push({ t, ...(await h.page.evaluate(GRIPPX)) });
+                        if (P['3-kneel'].capture && t >= T.kneel && t < clip.duration - .1 && f % 3 === 0) captures.push(await h.page.evaluate(CAPTURESTATE));
                         if (f % 6 === 0) { const b = await h.page.evaluate(BOUNDS); box[0] = Math.min(box[0], b[0]); box[1] = Math.min(box[1], b[1]); box[2] = Math.max(box[2], b[2]); box[3] = Math.max(box[3], b[3]); }
                         if (f % 10 === 0) { const r = await h.page.evaluate(READ); for (const role of ['att', 'def']) for (const p of r[role].pinned) pinned.add(`${role} ${p}`); }
                         await h.page.evaluate(STEPF);
@@ -117,7 +129,11 @@ try {
                 const gmax = (rows, k) => Math.max(0, ...rows.map(g => g[k] ?? 0));
                 // grips: while the kneel and the pulls run (2.0 s on) and over the transit before it (0.15-2.0 s: grab, step-over, flip, roll, the move into the kneel)
                 const near = g => Math.abs(g.t - T.flip) < .07, held = grips.filter(g => g.t >= T.kneel), transit = grips.filter(g => g.t > .15 && g.t < T.kneel && !near(g)), flip = grips.filter(near);
-                const summary = { fists: fistSummary(series), gripKneelAndPulls: { heel: gmax(held, 'heel'), toe: gmax(held, 'toe') }, gripTransit: { heel: gmax(transit, 'heel'), toe: gmax(transit, 'toe') }, gripFlipFrames: { heel: gmax(flip, 'heel'), toe: gmax(flip, 'toe') }, pinned: [...pinned] };
+                const summary = { fists: fistSummary(series), gripKneelAndPulls: { heel: gmax(held, 'heel'), toe: gmax(held, 'toe') }, gripTransit: { heel: gmax(transit, 'heel'), toe: gmax(transit, 'toe') }, gripFlipFrames: { heel: gmax(flip, 'heel'), toe: gmax(flip, 'toe') }, pinned: [...pinned], ...(captures.length ? { capture: {
+                    samples: captures.length, depthFailures: captures.filter(c => !c.sandwiched).length,
+                    kneesAboveMat: [0, 1].map(k => ({ min: Math.min(...captures.map(c => c.knees[k].aboveMat)), max: Math.max(...captures.map(c => c.knees[k].aboveMat)) })),
+                    kneeTravel: [0, 1].map(k => Math.max(...captures.map(c => Math.hypot(c.knees[k].x - captures[0].knees[k].x, c.knees[k].y - captures[0].knees[k].y))))
+                } } : {}) };
                 // 2. recorded pass(es): normal speed always; a 0.25x copy for one case per pairing
                 for (const [rate, suffix] of [[1, ''], ...(!process.env.NOSLOW && side === 'right' && ending === '4a-heels' ? [[.25, '-slow']] : [])]) {
                     const ctx = await browser.newContext({ viewport: { width: 1100, height: 700 }, recordVideo: { dir: `${outDir}/video/_raw`, size: { width: 780, height: 496 } } });

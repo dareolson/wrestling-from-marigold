@@ -44,10 +44,12 @@ Avoid a large rewrite.
 - **Ideas parked in [IDEAS.md](IDEAS.md):** front snapmare, body slam, whip-return attacks (now plan Stages 5-7), personality-through-movement.
 - **Repo:** branch `story/marigold-opening`, Node 22 (`source ~/.nvm/nvm.sh && nvm use`), pushed to origin 2026-11-11. Full suite 1298/1298, build, coverage (26 baselined gaps) passed. corner-daze face-hit test now accepts either forward fall (falls promoted, chooseFall picks).
 - **Review for Opus (2026-11-12):** T3.0b done, committed locally, not pushed: [page](research/animation/light-moves-2026-11/t3-0b/index.html) with 8 webm (4a/4b × 2 pairings × 2 facings), still 3 kneels, hand-only fist contact, `REPLAY=1`. Misses in the PLAN Progress line (4b pulls drift off the foot, flip/roll snaps, far knee 6.1). No gate approval.
-- **Next:** Opus reviews T3.0b, then Derek picks 4a or 4b from the videos; then T3.1/T3.2. Handoffs: [Sonnet](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-for-sonnet.md), [Opus PM](AI_HANDOFF_ENTRIES/2026-11-10-claude-opus-handoff-pm.md).
+- **Next:** Derek judges [Codex’s two-knee capture preview](research/animation/light-moves-2026-11/t3-knee-capture/index.html): 0.2 s knee drop, trapped leg between attacker legs, stationary kneeling wrench, stomach-down fist sell. Held knees 1.6–3.5 px, grip 0, 24/24 focused tests. Entry turn/roll and transit grips still rough; no approval or playable move. [Details](research/animation/light-moves-2026-11/t3-knee-capture/README.md).
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-12 · Codex · [Latest toe-hold direction for Opus: drop onto both knees, trap the leg between them, then wrench](AI_HANDOFF_ENTRIES/2026-11-12-codex-toehold-leg-capture-direction.md)
 
 - 2026-11-12 · Codex · [T3.0 r4 review for Opus: kneeling, fist contact, portable motion evidence](AI_HANDOFF_ENTRIES/2026-11-12-codex-toehold-r4-review-for-opus.md)
 

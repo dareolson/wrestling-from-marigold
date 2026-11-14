@@ -239,6 +239,14 @@ export const MOVE_SPECS = {
         trigger: 'tryFinisher() — hold down, down/possum target in reach',
         ai: ['vsDown', 'holdDrain'],
     },
+    // ?light=v1 (PLAN_LIGHT_MOVES B2): the leg hold a kit holds instead of ankleLock; flag off the executor plays the ankle lock; the clip is registered per play (distance), like ankleLockV2.
+    halfBostonCrab: {
+        category: C.HOLD, clip: null, executor: '_doHalfBostonCrab',
+        sell: { part: 'knee', intensity: 0.8 },
+        damageKey: 'halfBostonCrab', poseSeq: false, legacyFallback: null, kitGated: true,
+        trigger: 'tryFinisher() — hold down, down/possum target in reach',
+        ai: ['vsDown', 'holdDrain'],
+    },
 
     // ── Aerials ───────────────────────────────────────────────────────────
     elbowDrop: {
@@ -421,6 +429,7 @@ export const KIT_AI_ODDS = Object.freeze({
     figureFour: 'figureFourOdds',
     armBar:     'groundHoldOdds',
     ankleLock:  'groundHoldOdds',
+    halfBostonCrab: 'groundHoldOdds',
     kneeDrop:   'kneeDropOdds',
     kneeLift:   'kneeLiftOdds',
     frontKick:  'frontKickOdds',

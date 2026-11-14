@@ -128,5 +128,10 @@
     "fingerprint": "39ad43d67325",
     "status": "unverified",
     "reason": "historical: legacy cover (no clip), no critic spec; not waived because a pin does involve body contact"
+  },
+  "halfBostonCrab": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-13 (PLAN_LIGHT_MOVES B2): hold registered per play under ?light=v1 (halfBostonCrabClip), no critic spec; checked by tests/halfBostonCrab.test.js, tools/move-preview/crab_report.mjs and tools/debug/crab_play_check.mjs"
   }
 }

@@ -242,7 +242,7 @@ test('validateKit passes a clean kit', () => {
 // it, and the catalog, when a move is built for the pool or assigned.
 // armBar and ankleLock were the original pair; Lou took them as mat holds
 // on 2026-10-15.
-const UNASSIGNED_POOL = ['atomicDrop', 'snapmare'];   // PLAN_GRAPPLES T4c.2-T4c.3: built, not in a kit until T4c.5 (A8); then this goes back to []
+const UNASSIGNED_POOL = ['atomicDrop', 'halfBostonCrab', 'snapmare'];   // halfBostonCrab: built 2026-11-13 (PLAN_LIGHT_MOVES B2), assigned to Lou at B3 (T4.1);   // PLAN_GRAPPLES T4c.2-T4c.3: built, not in a kit until T4c.5 (A8); then this goes back to []
 
 test('built-but-unassigned moves are exactly the catalog pool', () => {
     // The roster comparison kits count: frontKick is built for them first.

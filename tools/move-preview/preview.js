@@ -1,5 +1,5 @@
 import { buildClip, PLAYCLIP } from '../debug/toehold_t30c_clip.mjs';
-import { buildHalfCrab } from './half-boston-crab.js';
+import { halfBostonCrabClip } from '../../src/animation/clips/halfBostonCrab.js';
 import { SETUP } from '../debug/toehold_t30_lib.mjs';
 const $ = id => document.getElementById(id);
 const started = performance.now();
@@ -7,7 +7,7 @@ const root = '/research/animation/light-moves-2026-11';
 const paths = { revision: `${root}/t3-foreground`, seed: `${root}/t3-knee-capture` };
 const FRONT = [['defender','farArm'],['defender','nativeBody'],['defender','nearArm'],['attacker','farArm'],['attacker','nativeBody'],['attacker','nearArm']];
 let win, scene, clip, handle, data, signature = '', time = 0, facing = 1, playing = true, ready = false, loading = false;
-let rendered = -1;
+let rendered = -1, rollAt = null;
 const run = (fn, args) => win.eval(`(${fn.toString()})(${JSON.stringify(args)})`);
 const status = text => { $('status').textContent = text; };
 async function loadData() {
@@ -23,10 +23,19 @@ async function rebuild(next, preserve = false) {
     const orders = $('front').checked ? { p1: FRONT, p2: FRONT, cap: FRONT } : { p1: rep['1-grab'].authored.order, p2: rep['2-step-over'].authored.order, cap: p3.order };
     const crab = $('move').value === 'half-boston-crab';
     const toe = crab || $('move').value === 'toehold';
-    clip = crab ? buildHalfCrab(data.crab, p3.def.fists, FRONT, $('pair').value) : toe ? buildClip(data.W, p3.def.fists, orders) : scene.moveRuntime._clips.get($('move').value);
+    clip = crab ? halfBostonCrabClip(120, { spec: data.crab, pair: $('pair').value }) : toe ? buildClip(data.W, p3.def.fists, orders) : scene.moveRuntime._clips.get($('move').value);
+    rollAt = crab ? clip.events.find(e => e.type === 'roll').at : toe ? clip.rollAt : null;
     for (const h of [...scene.moveRuntime._active.values()]) scene.moveRuntime.cancel(h, 'preview-reset');
     run(SETUP, { facing, sep: 120 });
-    if (toe) {
+    if (crab) {
+        // the game's own clip, registered and played like the executor does (src/animation/clips/halfBostonCrab.js)
+        scene.moveRuntime.register(clip);
+        handle = scene.moveRuntime.play(clip.id, { attacker: scene.w1, defender: scene.w2 }, { rate: 0, onEvent() {} });
+        scene.w1._activeMove = scene.w2._activeMove = handle;
+        scene.w1._fixedHold = scene.w2._fixedHold = true;
+        scene.w1.state = scene.w2.state = 'holding';
+        scene.w2.facing = -scene.w1.facing; scene.w2.lying = 'supine';
+    } else if (toe) {
         await run(PLAYCLIP, { id: 'live-toehold', clip, rate: 0 });
         handle = scene.w1._activeMove;
     } else {
@@ -45,7 +54,7 @@ async function rebuild(next, preserve = false) {
 function draw() {
     if (!ready || !handle || Math.abs(time - rendered) < .00001) return;
     scene.moveRuntime.seek(handle, time);
-    if (['half-boston-crab','toehold'].includes($('move').value)) scene.w2.lying = time >= clip.rollAt ? 'prone' : 'supine';
+    if (rollAt !== null) scene.w2.lying = time >= rollAt ? 'prone' : 'supine';
     win.__T += 1000 / 60;
     win.__WFM_GAME.step(win.__T, 1000 / 60);
     rendered = time;

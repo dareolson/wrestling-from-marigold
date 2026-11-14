@@ -5,6 +5,7 @@ import { stagedWorldPoint } from './animation/clipStaging.js';
 import { resolveSemanticSlots, textureKey } from './rig/partVariants.js';
 import { dropkickClip } from './animation/clips/dropkick.js';
 import { ankleLockEntryClip } from './animation/clips/ankleLockV2.js';
+import { halfBostonCrabClip, crabPairFor } from './animation/clips/halfBostonCrab.js';
 import { armBarEntryClip } from './animation/clips/armBarV2.js';
 import { frontKickClip } from './animation/clips/frontKick.js';
 import { shoveClip } from './animation/clips/shove.js';
@@ -208,8 +209,9 @@ const BEG_STAMINA = 35;
 
 // Submissions on a downed man, in the order a plain finisher press picks
 // them, and who runs each.
-const GROUND_HOLDS = ['figureFour', 'ankleLock', 'armBar'];
-const GROUND_HOLD_EXECUTORS = { figureFour: '_doFigureFour', ankleLock: '_doAnkleLock', armBar: '_doArmBar' };
+// halfBostonCrab (?light=v1, PLAN_LIGHT_MOVES B2) is the leg hold a kit holds instead of ankleLock: Down takes it, and a plain press picks it before the ankle lock.
+const GROUND_HOLDS = ['figureFour', 'halfBostonCrab', 'ankleLock', 'armBar'];
+const GROUND_HOLD_EXECUTORS = { figureFour: '_doFigureFour', halfBostonCrab: '_doHalfBostonCrab', ankleLock: '_doAnkleLock', armBar: '_doArmBar' };
 
 // States where a wrestler is on, or on the way to, the mat. move() must not
 // turn him to face the opponent here: on the ground facing decides which way
@@ -256,6 +258,7 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     armDrag:          14,
     armBar:            6, // per squeeze — three while the hold is on (the mat arm bar)
     ankleLock:         5, // per squeeze — three while the hold is on
+    halfBostonCrab:    5, // per pull — three while the hold is on (?light=v1)
     hipToss:          10,
     atomicDrop:       12, // waistlock=v1 (Stage 4c): a middle-tier throw, he stays on his feet
     snapmare:         16, // the drop's reversal (waistlock=v1): a bigger spot than the move it stopped
@@ -2259,6 +2262,7 @@ export default class Wrestler {
         if (dist <= reach * 1.4 && (other.state === 'down' || other.state === 'possum')) {
             const has = move => this.moveSet.includes(move);
             const hold = this.input.isDown('up') && has('armBar') ? 'armBar'
+                : this.input.isDown('down') && has('halfBostonCrab') ? 'halfBostonCrab'
                 : this.input.isDown('down') && has('ankleLock') ? 'ankleLock'
                 : GROUND_HOLDS.find(has);
             if (hold) {
@@ -2936,7 +2940,7 @@ export default class Wrestler {
     // `onAbort`: replaces the cancel path's lay-down (the atomic drop is not a knockdown: a torn-down drop stands both men up).
     _playPairedThrow(other, clipId, { damage, shake = [200, 0.003], finish, hitEvent = 'impact',
         foley = hitEvent === 'impact' ? ['mat', 0.9] : null, faceToFace = true, superseded = null, onAbort = null, landAtHit = null,
-        landAtTime = null, attackerLandsAtHit = null, tier = null, tierOf = null }) {
+        landAtTime = null, attackerLandsAtHit = null, tier = null, tierOf = null, onClipEvent = null }) {
         const runtime = this.scene.moveRuntime;
         if (!runtime) return;
         // ?falls=v1 (T2.5h): a heavier tier scales the camera shake on the one hit frame; the mat foley is at least at its range. `tierOf(wear)` (T3.6, T3.14) reads the
@@ -2976,6 +2980,7 @@ export default class Wrestler {
         }; };
         const handle = runtime.play(clipId, { attacker: this, defender: other }, {
             onEvent: (event) => {
+                onClipEvent?.(event);
                 if (event.type !== hitEvent) return;
                 if (this.state !== 'holding' || other.state !== 'holding') return;
                 if (tierOf && fallsCandidate()) hitTier = tierOf(other.wear ?? 0);
@@ -3219,6 +3224,19 @@ export default class Wrestler {
         this._playPairedThrow(other, lightCandidate() ? 'ankleLockV2' : 'ankleLock', {
             damage: STAMINA_DRAIN.ankleLock, hitEvent: 'squeeze', shake: [80, 0.001],
             finish: () => { other._layOnBack(DOWN_SEC); this._standBackUp(); },
+        });
+    }
+
+    // ?light=v1 (PLAN_LIGHT_MOVES B2): the half Boston crab. The receiver is rolled onto his front inside the clip (its `roll` event) and left prone;
+    // flag off, a kit that holds it plays the ankle lock.
+    _doHalfBostonCrab(other) {
+        if (!lightCandidate() || !this.scene.moveRuntime) { this._doAnkleLock(other); return; }
+        this.scene.moveRuntime.register(halfBostonCrabClip((other.x - this.x) * this.facing / this.s, { pair: crabPairFor(this.rigId) }));
+        this._playPairedThrow(other, 'halfBostonCrab', {
+            damage: STAMINA_DRAIN.halfBostonCrab, hitEvent: 'squeeze', shake: [80, 0.001],
+            onClipEvent: (event) => { if (event.type === 'roll' && other.state === 'holding') other.lying = 'prone'; },
+            onAbort: () => { if (other.state === 'holding') other._layDown(DOWN_SEC, other.lying === 'prone' ? 'prone' : 'supine'); if (this.state === 'holding') this._standBackUp(); },
+            finish: () => { other._layDown(DOWN_SEC, 'prone'); this._standBackUp(); },
         });
     }
 

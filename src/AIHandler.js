@@ -373,7 +373,7 @@ export default class AIHandler {
                 // never chain them at the ropes — back off and let them rise
                 if (self.moveSet.includes('figureFour') && Math.random() < (cfg.figureFourOdds ?? 0)) {
                     this._attack('finisher', 1.2); // figure-four
-                } else if ((self.moveSet.includes('armBar') || self.moveSet.includes('ankleLock')) &&
+                } else if ((self.moveSet.includes('armBar') || self.moveSet.includes('ankleLock') || self.moveSet.includes('halfBostonCrab')) &&
                            Math.random() < (cfg.groundHoldOdds ?? 0)) {
                     if (Math.random() < 0.5) this._hold(Math.random() < 0.5 ? 'up' : 'down'); // arm bar / ankle lock
                     this._attack('finisher', 1.2); // mat submission

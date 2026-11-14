@@ -78,6 +78,7 @@ kits in `src/characters/rosterKits.js` and the registry, so it cannot drift.
 | `armBar` | yes | Lou, Kowalski | - | unverified |
 | `figureFour` | yes | George, Guido | - | unverified |
 | `ankleLock` | yes | Lou, Kowalski | - | unverified |
+| `halfBostonCrab` | yes | none | - | unverified |
 | `elbowDrop` | yes | Lou, George, Kowalski, Guido | - | unverified |
 | `kneeDrop` | yes | Lou, George, Kowalski, Guido | - | unverified |
 | `theszPress` | yes | Lou, Kowalski | - | unverified |

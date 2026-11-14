@@ -1,0 +1,46 @@
+{
+  "gap": 48,
+  "attY": 18,
+  "att": {
+    "crouch": 1.1,
+    "bend": -0.2,
+    "lean": -0.25,
+    "lLeg": -0.15,
+    "rLeg": 0.1,
+    "lFold": 1.5,
+    "rFold": 1.5,
+    "lArm": -0.25,
+    "rArm": 0.3,
+    "lElbow": 1.8,
+    "rElbow": 0.7,
+    "tilt": 0,
+    "lift": 0
+  },
+  "def": {
+    "tilt": 1.75,
+    "lift": -93,
+    "lLeg": -0.5,
+    "rLeg": 0.45,
+    "lFold": 1.25,
+    "rFold": 0.15,
+    "lArm": 1.8,
+    "rArm": 3.0,
+    "lElbow": 1.52,
+    "rElbow": 0.32,
+    "crouch": 0,
+    "lean": 0,
+    "bend": 0
+  },
+  "variants": {
+    "george-lou": {
+      "def": {
+        "lFold": 1.6
+      },
+      "gap": 30,
+      "att": {
+        "lArm": -0.6,
+        "lElbow": 1.65
+      }
+    }
+  }
+}

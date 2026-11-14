@@ -1,0 +1,52 @@
+// Run against an existing Vite server: WFM_URL=http://localhost:5197 node tools/move-preview/smoke.mjs
+import { chromium } from 'playwright-core';
+import assert from 'node:assert/strict';
+const browser = await chromium.launch({ channel: 'chrome', headless: true });
+try {
+ const page = await browser.newPage({ viewport: { width: 1200, height: 950 } });
+ const errors = []; page.on('pageerror', e => errors.push(e.message));
+ const start = performance.now();
+ await page.goto(`${process.env.WFM_URL ?? 'http://localhost:5197'}/tools/move-preview/`);
+ await page.waitForFunction(() => window.__MOVE_PREVIEW?.ready && window.__MOVE_PREVIEW.handle, { timeout: 30000 });
+ const ready = performance.now() - start;
+ await page.evaluate(() => window.__MOVE_PREVIEW.seek(2.5));
+ assert.equal(await page.locator('#move').inputValue(), 'half-boston-crab');
+ await page.screenshot({ path: '/tmp/wfm-half-crab-preview.png' });
+ await page.locator('#move').selectOption('toehold');
+ await page.waitForFunction(() => window.__MOVE_PREVIEW.handle?.clip.id === 'live-toehold');
+ await page.evaluate(() => window.__MOVE_PREVIEW.seek(2.8));
+ const position = await page.evaluate(() => ({ t: window.__MOVE_PREVIEW.time, h: window.__MOVE_PREVIEW.handle.time }));
+ assert.equal(position.t, 2.8); assert.equal(position.h, 2.8);
+ await page.locator('#next').click();
+ assert.ok(Math.abs(await page.evaluate(() => window.__MOVE_PREVIEW.time) - (2.8 + 1/60)) < .001);
+ const beforeReload = await page.evaluate(() => window.__MOVE_PREVIEW.handle.id);
+ const saved = await page.evaluate(async () => (await fetch('/research/animation/light-moves-2026-11/t3-foreground/lou-george-right/waypoints.json')).json());
+ saved.previewSmokeRevision = 1;
+ await page.route('**/t3-foreground/lou-george-right/waypoints.json', route => route.fulfill({ json: saved }));
+ await page.waitForFunction(id => window.__MOVE_PREVIEW.handle.id !== id, beforeReload);
+ assert.ok(Math.abs(await page.evaluate(() => window.__MOVE_PREVIEW.time) - (2.8 + 1/60)) < .001, 'automatic reload preserves the paused frame');
+ const changed = performance.now();
+ await page.locator('#front').uncheck();
+ await page.waitForFunction(() => window.__MOVE_PREVIEW.handle?.clip.layers[0].order.some(x => x[1] === 'rLeg'));
+ await page.locator('#front').check();
+ await page.waitForFunction(() => window.__MOVE_PREVIEW.handle?.clip.layers[0].order.some(x => x[1] === 'nativeBody'));
+ const toggleMs = performance.now() - changed;
+ const stack = await page.evaluate(() => {
+   const w = document.querySelector('#game').contentWindow, s = w.__WFM_GAME.scene.scenes[0];
+   const dep = a => a.skeleton._parts.filter(i => i && i.visible && i.alpha > 0).map(i => i.depth);
+   return Math.min(...dep(s.w1)) - Math.max(...dep(s.w2));
+ });
+ assert.ok(stack > 0, 'foreground toggle must reach the actual runtime renderer');
+ await page.locator('#mirror').click();
+ await page.waitForFunction(() => document.querySelector('#mirror').textContent === 'Face right' && window.__MOVE_PREVIEW.handle);
+ await page.evaluate(() => window.__MOVE_PREVIEW.seek(2.8));
+ await page.screenshot({ path: '/tmp/wfm-live-preview.png' });
+ await page.locator('#pair').selectOption('george-lou');
+ await page.waitForFunction(() => window.__MOVE_PREVIEW.ready && window.__MOVE_PREVIEW.handle);
+ await page.locator('#move').selectOption('ankleLockV2');
+ await page.waitForFunction(() => window.__MOVE_PREVIEW.handle?.clip.id === 'ankleLockV2');
+ await page.evaluate(() => window.__MOVE_PREVIEW.seek(1.4));
+ assert.ok(await page.locator('#front').isDisabled());
+ assert.equal(errors.length, 0, errors.join('\n'));
+ console.log(JSON.stringify({ firstPreviewMs: Math.round(ready), twoLayerTogglesMs: Math.round(toggleMs), errors, checks: ['seek','frame-step','foreground-runtime-depth','mirror','pair-change','auto-reload-preserves-frame','registered-clip'] }));
+} finally { await browser.close(); }

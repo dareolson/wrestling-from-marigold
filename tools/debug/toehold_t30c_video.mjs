@@ -2,7 +2,7 @@
 //   1. a stepped pass measures every frame (grips, knees, foot, fists, boot coverage, joint travel per frame),
 //   2. a second stepped pass photographs the 12-frame contact sheet,
 //   3. a live pass records normal speed and a 0.5x copy (Playwright recordVideo, webm).
-//   node tools/debug/toehold_t30c_video.mjs <seedDir> <outDir>    env: ONLY=<pair prefix>, FACE=1|-1, NOREC=1 (measure + sheet only), NOHALF=1
+//   node tools/debug/toehold_t30c_video.mjs <seedDir> <outDir>    env: ONLY=<pair prefix>, FACE=1|-1, NOREC=1 (measure + sheet only), NOHALF=1, FOREGROUND=1 (whole attacker in front)
 import { mkdirSync, writeFileSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright-core';
@@ -12,52 +12,12 @@ import { PAIRS, fistSummary, SETUP, STEPF, GRIPPX, READ, MASKS, METRICS, FISTS }
 import { MEASURE, installPage, T, FPS, DIST, fistKeys, armsAt } from './toehold_t30c_lib.mjs';
 
 const [seedDir, outDir] = process.argv.slice(2);
+const FOREGROUND = process.env.FOREGROUND === '1';
+const FRONT_ORDER = [['defender', 'farArm'], ['defender', 'nativeBody'], ['defender', 'nearArm'], ['attacker', 'farArm'], ['attacker', 'nativeBody'], ['attacker', 'nearArm']];
 const PORT = 5199, URL0 = `http://localhost:${PORT}`;
-const lerp = (a, b, k) => a + (b - a) * k;
-const mixObj = (a, b, k) => Object.fromEntries(Object.keys(a).map(key => [key, typeof a[key] === 'number' ? lerp(a[key], b[key] ?? a[key], k) : a[key]]));
-const strip = ({ fists, ...r }) => r;
+import { buildClip, PLAYCLIP } from './toehold_t30c_clip.mjs';
+export { buildClip } from './toehold_t30c_clip.mjs';
 
-// ---- clip from waypoints ----------------------------------------------------------------------------------------------------------------------------------
-export const buildClip = (W, fists, orders) => {
-    const wps = [{ ...W.waypoints[0], t: 0 }, ...W.waypoints].sort((a, b) => a.t - b.t);
-    const at = t => {
-        let i = wps.length - 1; while (i > 0 && wps[i].t > t + 1e-9) i--;
-        const a = wps[i], b = wps[Math.min(i + 1, wps.length - 1)], k = b.t === a.t ? 0 : Math.max(0, Math.min(1, (t - a.t) / (b.t - a.t)));
-        return { att: strip(mixObj(a.att, b.att, k)), gap: lerp(a.gap, b.gap, k), attY: lerp(a.attY ?? 0, b.attY ?? 0, k), def: strip(mixObj(a.def, b.def, k)), attSign: a.attSign, defSign: a.defSign, twist: a.twist };
-    };
-    const fk = fistKeys(fists, T.peaks);
-    const times = [...new Set([...wps.map(w => w.t), ...[...fk.l, ...fk.r].map(k => k[0]), T.end].map(t => +t.toFixed(4)))].filter(t => t <= T.end + 1e-9).sort((a, b) => a - b);
-    const frames = { attacker: [], defender: [] };
-    for (const t of times) {
-        const s = at(t), def = t >= T.rollEnd - .05 ? { ...s.def, ...armsAt(fk, t) } : s.def;
-        frames.attacker.push({ at: t, pose: s.att, x: DIST - s.gap, y: s.attY, facing: s.attSign, parts: {} });
-        frames.defender.push({ at: t, pose: def, x: DIST, y: 0, facing: s.defSign, parts: s.defSign > 0 ? { lShin: s.twist ? 'ankleTwist' : 'base', nearForearm: 'grip', farForearm: 'grip' } : { lShin: 'base', nearForearm: 'base', farForearm: 'base' } });
-    }
-    const phases = [{ from: 0, to: T.turnFlip, attSign: 1, defSign: -1 }, { from: T.turnFlip, to: T.rollFlip, attSign: -1, defSign: -1 }, { from: T.rollFlip, to: T.end, attSign: -1, defSign: 1 }];
-    return { duration: T.end, frames, phases, rollAt: T.rollFlip, layers: [{ from: 0, to: .85, order: orders.p1 }, { from: .85, to: T.turnFlip, order: orders.p2 }, { from: T.turnFlip, to: T.end, order: orders.cap }] };
-};
-
-// ---- in page ----------------------------------------------------------------------------------------------------------------------------------------------
-const PLAYCLIP = ({ id, clip, rate }) => {
-    const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
-    return import('/src/rig/articulation.js').then(({ shinsFromFolds }) => {
-        const kf = frames => frames.map(f => ({ at: f.at, ease: 'linear', pose: shinsFromFolds(f.pose), transform: { x: f.x, y: f.y }, facing: f.facing, parts: f.parts }));
-        const a0 = a.facing, dur = clip.duration, grips = [];
-        clip.phases.forEach((ph, i) => {
-            const as = a.skeleton.lChannelSide(a0 * ph.attSign), ds = d.skeleton.lChannelSide(a0 * ph.defSign), sf = s => (s === ds ? 'same' : 'other');
-            const inW = i === 0 ? [0, .004] : [ph.from + .002, ph.from + .004], outW = i === clip.phases.length - 1 ? [dur - .01, dur] : [ph.to - .004, ph.to - .002];
-            for (const [arm, side, anchor] of [['l', sf(as), 'heel'], ['r', sf(as === 'near' ? 'far' : 'near'), 'toe']])
-                grips.push({ role: 'attacker', arm, to: { role: 'defender', joint: 'Ankle', side, anchor }, in: inW, out: outW, natural: true, palm: 'clutch' });
-        });
-        sc.moveRuntime.register({ id, duration: dur, events: [{ at: clip.rollAt, type: 'roll' }], tracks: { attacker: { keyframes: kf(clip.frames.attacker) }, defender: { keyframes: kf(clip.frames.defender) } }, grips, plants: [], layers: clip.layers });
-        a.state = d.state = 'holding';
-        window.__clipDone = false;
-        const h = sc.moveRuntime.play(id, { attacker: a, defender: d }, { rate, onEvent: e => { if (e.type === 'roll') d.lying = 'prone'; }, onComplete() { window.__clipDone = true; }, onCancel() { window.__clipDone = true; } });
-        a._activeMove = d._activeMove = h; a._fixedHold = d._fixedHold = true;
-        d.facing = -a.facing; d.lying = 'supine';
-        return true;
-    });
-};
 const BOUNDS = () => {
     const sc = window.__WFM_GAME.scene.scenes[0]; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
     for (const w of [sc.w1, sc.w2]) for (const i of w.skeleton._parts) { if (!i || !i.visible || i.alpha <= 0 || !i.getBounds) continue; const b = i.getBounds(); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.right); y1 = Math.max(y1, b.bottom); }
@@ -137,7 +97,9 @@ try {
             if (process.env.FACE && +process.env.FACE !== facing) continue;
             const side = facing > 0 ? 'right' : 'left', tag = `${pair}-${side}`, caseDir = `${outDir}/${tag}`;
             const W = JSON.parse(readFileSync(`${caseDir}/waypoints.json`)), rep = JSON.parse(readFileSync(`${seedDir}/${tag}/report.json`)), p3 = rep['3-kneel'].authored;
-            const orders = { p1: rep['1-grab'].authored.order, p2: rep['2-step-over'].authored.order, cap: p3.order }, clip = buildClip(W, p3.def.fists, orders);
+            const orders = { p1: rep['1-grab'].authored.order, p2: rep['2-step-over'].authored.order, cap: p3.order };
+            if (FOREGROUND) for (const phase of Object.keys(orders)) orders[phase] = FRONT_ORDER;
+            const clip = buildClip(W, p3.def.fists, orders);
             process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = 'notitle=1&light=v1';
             const h = await launch(), rows = [], fistRows = [], box = [1e9, 1e9, -1e9, -1e9];
             let cam, summary;
@@ -154,6 +116,12 @@ try {
                     await h.page.evaluate(STEPF);
                 }
                 summary = summarise(rows, fistRows.filter(r => r.t >= T.rollEnd), facing);
+                if (FOREGROUND) summary.foreground = {
+                    frames: rows.length - 2,
+                    startupDepthGap: rows[0].m.actorDepthGap,   // before the first rendered clip frame
+                    failures: rows.slice(1, -1).filter(r => !r.m.attackerInFront).length,
+                    minDepthGap: Math.min(...rows.slice(1, -1).map(r => r.m.actorDepthGap))
+                };
                 cam = { cx: (box[0] + box[2]) / 2, cy: (box[1] + box[3]) / 2, z: +Math.min(960 / (box[2] - box[0] + 50), 600 / (box[3] - box[1] + 50)).toFixed(2) };
                 // contact sheet: the same clip again, camera locked on the pair, 12 photographs
                 await h.page.evaluate(SETUP, { facing, sep: DIST }); await h.page.evaluate(PLAYCLIP, { id: 'toeholdC_sheet_' + tag, clip, rate: 1 });
@@ -169,9 +137,14 @@ try {
                 await sheet.waitForTimeout(400);
                 await sheet.screenshot({ path: `${caseDir}/contact-sheet.png`, fullPage: true }); await sheet.close();
             } finally { await h.close(); }
-            writeFileSync(`${caseDir}/series.json`, JSON.stringify({ cam, rows: rows.map(r => ({ t: r.t, grip: r.m.grip, knees: r.m.knees.map(v => +v.toFixed(1)), kneeX: r.m.kneeX.map(v => +v.toFixed(1)), foot: r.m.foot, boot: r.m.boot ? [r.m.boot.bootCoveredPx, r.m.boot.bootPx] : null })), fists: fistRows }));
+            writeFileSync(`${caseDir}/series.json`, JSON.stringify({ cam, rows: rows.map(r => ({ t: r.t, grip: r.m.grip, knees: r.m.knees.map(v => +v.toFixed(1)), kneeX: r.m.kneeX.map(v => +v.toFixed(1)), foot: r.m.foot, actorDepthGap: r.m.actorDepthGap, boot: r.m.boot ? [r.m.boot.bootCoveredPx, r.m.boot.bootPx] : null })), fists: fistRows }));
             console.log(tag, JSON.stringify(summary).slice(0, 1800));
-            if (process.env.NOREC) { manifest = [...manifest.filter(m => m.tag !== tag), { tag, pair, side, summary }]; continue; }
+            if (process.env.NOREC) {
+                const recorded = manifest.some(m => m.tag === tag && m.file);
+                manifest = recorded ? manifest.map(m => m.tag === tag && m.rate === 1 ? { ...m, summary } : m)
+                    : [...manifest.filter(m => m.tag !== tag), { tag, pair, side, summary }];
+                continue;
+            }
             const entries = [];
             for (const [rate, suffix] of [[1, ''], ...(process.env.NOHALF ? [] : [[.5, '-half']])]) {
                 const ctx = await browser.newContext({ viewport: { width: 1100, height: 700 }, recordVideo: { dir: `${outDir}/video/_raw`, size: { width: 780, height: 496 } } });

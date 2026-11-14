@@ -3,6 +3,7 @@
 // Everything the page needs is committed beside it (video/*.webm, video/manifest.json, <case>/contact-sheet.png): no regeneration on a fresh checkout.
 import { readFileSync, writeFileSync } from 'node:fs';
 const [dir, seedDir = 'research/animation/light-moves-2026-11/t3-knee-capture'] = process.argv.slice(2);
+const foreground = dir.includes('foreground');
 const CASES = [['lou-george-right', 'Lou on George, facing right'], ['lou-george-left', 'Lou on George, facing left'], ['george-lou-right', 'George on Lou, facing right'], ['george-lou-left', 'George on Lou, facing left']];
 const manifest = JSON.parse(readFileSync(`${dir}/video/manifest.json`));
 const f = (v, d = 1) => v === null || v === undefined ? 'n/a' : (+v).toFixed(d).replace(/\.0+$/, '');
@@ -43,6 +44,7 @@ const sec = ([tag, title]) => {
 <h3>Contact sheet (12 frames over the move)</h3><a href="${tag}/contact-sheet.png"><img class="sheet" src="${tag}/contact-sheet.png" alt="contact sheet, ${title}"></a>
 <h3>Misses</h3>${miss.length ? `<ul>${miss.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '<p>None against the task bars.</p>'}
 <h3>Numbers</h3>
+${s.foreground ? `<p>Whole attacker in front: ${s.foreground.frames - s.foreground.failures}/${s.foreground.frames} frames; stack failures ${s.foreground.failures}.</p>` : ''}
 <p><b>Hands on the foot, every frame from the grab (0.02 s) to the end:</b> worst ${f(s.grip.worst)} px at ${f(s.grip.worstAt, 2)} s; ${s.grip.framesOver6} frames over 6 px.</p>
 <p><b>Turn</b> (attacker mirrors at his straddle, ${f(s.turn.flipAt, 3)} s): ${s.turn.seconds} s long; biggest one-frame joint move ${f(s.turn.worstFrameJump.d)} px at ${f(s.turn.worstFrameJump.t, 3)} s (median frame ${f(s.turn.medianFrameJump)}). <b>Roll</b> (man's back to his stomach, mirrors at ${f(s.roll.flipAt, 3)} s): ${s.roll.seconds} s long, starts ${s.roll.afterLand} s after the knees land; biggest one-frame joint move ${f(s.roll.worstFrameJump.d)} px at ${f(s.roll.worstFrameJump.t, 3)} s (median ${f(s.roll.medianFrameJump)}).</p>
 <p><b>Knee drop:</b> ${s.drop.seconds} s (${s.drop.start} to ${s.drop.land} s); standing knees ${s.drop.standingKnees.map(v => f(v)).join(' / ')} px above the mat; hips fall ${f(s.drop.hipDrop)} px; knees reach the mat (≤3 px) on frames ${s.drop.landFrame.join(' / ')} (near / far); largest one-frame joint move in the drop ${f(s.drop.worstFrameJump)} px. Knees above the mat during the hold: near ${s.kneesHold[0].min}..${s.kneesHold[0].max}, far ${s.kneesHold[1].min}..${s.kneesHold[1].max} px; knee sideways travel ${s.kneeTravelPx.map(v => f(v)).join(' / ')} px.</p>
@@ -52,7 +54,8 @@ const sec = ([tag, title]) => {
 };
 writeFileSync(`${dir}/index.html`, `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T3.0c two-knee toe hold</title>
 <style>body{font:15px/1.4 system-ui;margin:16px auto;max-width:1000px;padding:0 16px;background:#f4f1ea;color:#1d1b17}video{width:100%;max-width:780px;background:#000;border:1px solid #bbb}.sheet{width:100%;max-width:980px;border:1px solid #bbb}figure{margin:0 0 14px}figcaption{font-size:13px}p,li{margin:3px 0}h2{border-top:2px solid #999;padding-top:8px}table{border-collapse:collapse;margin:6px 0;font-size:13px}td,th{border:1px solid #bbb;padding:2px 8px;text-align:left}@media(prefers-color-scheme:dark){body{background:#161512;color:#ece7da}}</style></head><body>
-<h1>Toe hold: knee drop, turn, roll, wrench (T3.0c)</h1>
+<h1>${foreground ? 'Toe hold: attacker entirely in front' : 'Toe hold: knee drop, turn, roll, wrench (T3.0c)'}</h1>
+${foreground ? '<p><b>Foreground revision:</b> the entire attacker draws in front of the victim, preserving each wrestler’s own body and garment stack. Same poses, positions and timing as T3.0c. This replaces the interleaved leg stack at Derek’s request. <a href="../t3-0c/index.html">Previous preview</a>. The trapped boot can be hidden by the attacker; assess that tradeoff in motion.</p>' : ''}
 <p>Derek's direction: the attacker falls onto both knees with the man's leg between his legs, then wrenches the foot while the man, on his stomach, pounds the canvas. Each clip: grab, step-over, a turn (the attacker mirrors at a standing straddle over the leg), a 0.3 s knee drop, the man rolls from his back to his stomach (mirrors at a straight-limbed instant), then three wrenches, each with a fist strike on the peak, alternating arms. Hands ride the clip grip channel the whole way. Review preview, not a playable move; nothing here is approved. Videos loop only the move. Misses are listed first under each case.</p>
 ${CASES.map(sec).join('')}
 <script>document.querySelectorAll('video[data-start]').forEach(v=>{const s=+v.dataset.start,e=+v.dataset.end;v.addEventListener('loadedmetadata',()=>{v.currentTime=s});v.addEventListener('timeupdate',()=>{if(v.currentTime>=e||v.currentTime<s-.05)v.currentTime=s})})</script></body></html>`);

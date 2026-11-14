@@ -3,6 +3,26 @@
 Derek's ideas that came up mid-plan, written down so they aren't lost and don't sidetrack the active plan.
 Each becomes a PLAN_*.md only when Derek picks it up. Newest first.
 
+## Dazed half get-up, punished by a normal attack (2026-11-13)
+
+Derek: a wrestler low on energy sometimes stops partway up from the mat and stays there in a daze. If you get close and
+press the normal attack button, you play a pre-animated set piece (e.g. a kick to the head that drops him onto his back).
+It's not a grapple; a regular attack triggers it.
+- **Dazed state.** The rise stops at a held pose (one knee, or hands and knees) with a sway loop for about 1.5-2.5 s, then he
+  finishes the rise. It's a random roll at get-up time that grows likelier as stamina drops. It lives in the get-up library
+  (PLAN_GETUPS).
+- **Trigger.** Action in range of a dazed man plays the set piece instead of the normal strike. This is the same pattern as
+  Stage 6 of PLAN_LIGHT_MOVES (Action against a runner coming back off the ropes plays a set piece), so it can share
+  that `tryAction` context branch.
+- **Pool later.** Each kit picks its own: head kick, running knee, forearm smash. Other context states can follow the
+  same pattern: leaning on the ropes, seated after a fall.
+- **Playing possum (Derek, same day).** About 60% of dazes are real (the attack lands) and 40% are a trap (the attack gets
+  reversed). The daze lasts a random 1, 2 or 3 s. If the dazed wrestler presses sell while stunned, he's playing possum
+  and reverses the incoming attack. The attacker can't tell which kind it is, so attacking is a gamble.
+Open questions: is the 60/40 the AI's own odds, with a human victim choosing by pressing sell, or does sell only work on a
+40% roll? Does a possum daze give a tell (a look or a twitch)? What reversal set piece plays? Does the AI punish dazes,
+and how often? Each set piece needs its own landing room and sell.
+
 ## Sell button: selling is how you recover stamina (2026-10-31)
 
 Derek: part of the match-escalation design (see MOVE_CATALOG.md 2b). Plan it, don't build it yet.

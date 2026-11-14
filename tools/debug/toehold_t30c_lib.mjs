@@ -69,6 +69,11 @@ export const MEASURE = metrics => {
     const out = { grip: g, pinned: [...r.att.pinned.map(p => 'att ' + p), ...r.def.pinned.map(p => 'def ' + p)], knees: [mat - ap.nearKnee.y, mat - ap.farKnee.y], kneeX: [ap.nearKnee.x, ap.farKnee.x],
         kneeFlex: [r.att.knees.near, r.att.knees.far], attX: a.x, foot: { x: foot.x, y: foot.y }, hip, attFacing: a.facing, defFacing: d.facing,
         pts: { att: r.att.pts, def: r.def.pts } };
+    // All visible artwork, including garment masks, must respect a whole-actor front stack.
+    const depths = w => w.skeleton._parts.filter(i => i && i.visible && i.alpha > 0).map(i => i.depth);
+    const ad = depths(a), dd = depths(d);
+    out.actorDepthGap = Math.min(...ad) - Math.max(...dd);
+    out.attackerInFront = out.actorDepthGap > 0;
     if (metrics) out.boot = window.__METRICS();
     return out;
 };

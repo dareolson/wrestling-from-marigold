@@ -17,7 +17,7 @@
 // and every rig. Wrestler.draw() resets every depth each frame, so overrides
 // need no teardown: the first draw after the clip ends restores defaults.
 
-export const LAYER_LIMBS = Object.freeze(['lLeg', 'rLeg', 'lArm', 'rArm', 'torso', 'head']);
+export const LAYER_LIMBS = Object.freeze(['lLeg', 'rLeg', 'lArm', 'rArm', 'torso', 'head', 'lShin', 'rShin']);
 // Facing-relative names for a clip whose order must hold in both facings (the near/far side of an actor depends on his facing and rig, so `lArm`
 // is the far arm in one facing and the near arm in the other). Resolved per actor per frame, like the anatomical limbs:
 //   nearArm, farArm, nearLeg, farLeg, and `body` = his far leg, torso, head, near leg (a rig whose art wants both legs over the torso, George, gets
@@ -41,6 +41,7 @@ export const LAYER_TIE_STEP = 0.000005;
 
 const SIDE_PARTS = Object.freeze({
     Leg: ['Thigh', 'Shin', 'Boot'],
+    Shin: ['Shin', 'Boot'],   // expose a trapped lower leg without drawing its thigh over the other actor
     Arm: ['UpArm', 'Forearm', 'Hand'],
 });
 const TORSO_PARTS = Object.freeze(['pelvisUnderlay', 'torso', 'trunks', 'pelvisOverlay', 'pelvisMask']);

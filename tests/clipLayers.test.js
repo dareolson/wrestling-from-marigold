@@ -265,3 +265,22 @@ test('the snapmare\'s layers use only relative limbs and validate', async () => 
     assert.ok(snapmareClip.layers.length === 2);
     for (const win of snapmareClip.layers) for (const [, limb] of win.order) assert.ok(['farArm', 'nearArm', 'body'].includes(limb), limb);
 });
+
+test('a trapped shin can sit in front of a native body while its thigh stays behind and the gripping arm covers it', () => {
+    for (const kind of ['near', 'swap']) for (const facing of [1, -1]) {
+        const a = wrestler(kind, facing), d = wrestler(kind, -facing);
+        const runtime = new MoveRuntime();
+        runtime.register(clip({ layers: [{ from: 0, to: 2, order: [
+            ['defender', 'farArm'], ['defender', 'nativeBody'], ['defender', 'nearArm'],
+            ['attacker', 'farArm'], ['attacker', 'nativeBody'], ['defender', 'lShin'], ['attacker', 'nearArm'],
+        ] }] }));
+        runtime.play('layerProbe', { attacker: a, defender: d });
+        frame(runtime, a, d, 1);
+        const side = d.skeleton.lChannelSide(d.facing), ds = d.skeleton;
+        assert.ok(ds[side + 'Thigh'].depth < a.skeleton.torso.depth);
+        assert.ok(ds[side + 'Shin'].depth > a.skeleton.torso.depth);
+        assert.ok(ds[side + 'Boot'].depth > a.skeleton.torso.depth);
+        assert.ok(ds[side + 'Shin'].depth < a.skeleton.nearUpArm.depth);
+        assert.deepEqual(limbParts(d, 'lShin'), [ds[side + 'Shin'], ds[side + 'Boot']]);
+    }
+});

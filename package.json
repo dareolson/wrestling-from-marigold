@@ -56,7 +56,8 @@
     "art:proofs": "node tools/wrestler-cutter/render-articulation-proofs.mjs",
     "art:map-candidate": "node tools/wrestler-cutter/map-candidate-to-rig.mjs",
     "art:straighten-limbs": "node tools/wrestler-cutter/straighten-limb-bake.mjs",
-    "art:key-plate": "node tools/wrestler-cutter/key-prealphaed-plate.mjs"
+    "art:key-plate": "node tools/wrestler-cutter/key-prealphaed-plate.mjs",
+    "move:preview": "vite --open /tools/move-preview/"
   },
   "repository": {
     "type": "git",

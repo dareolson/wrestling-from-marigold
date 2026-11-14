@@ -50,6 +50,7 @@ export const PERSONALITIES = {
         kneeLiftOdds:     0.20,  // substitutes for the close jab this often (never twice in a row)
         kneeDropOdds:     0.40,  // substitutes for the elbow drop pounce this often
         figureFourOdds:   0.30,  // Flair's figure-four instead of a drop on a downed man
+        groundHoldOdds:   0.30,  // ?light=v1 (Stage 4): his leg hold is the ankle lock; read only when his kit holds a mat hold
         goBehindOdds:     0.10,  // waistlock=v1 (Stage 4b W7): of his lockups, this share he goes behind
         switchOdds:       0.15,  // waistlock=v1: the defender reverses a waistlock this often
     },
@@ -117,6 +118,7 @@ PERSONALITIES.guido = {
     kneeLiftOdds:     0.25,
     kneeDropOdds:     0.35,
     figureFourOdds:   0.20,
+    groundHoldOdds:   0.25,  // ?light=v1 (Stage 4): his leg hold is the ankle lock; read only when his kit holds a mat hold
     frontKickOdds:    0.30,
 };
 

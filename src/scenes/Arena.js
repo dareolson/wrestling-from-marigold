@@ -23,7 +23,7 @@ import { dropAvailable, reversalOpen, snapmareFits, snapmareHeadGrip } from '../
 import { SLEEPER, sleeperStage, sleeperChannels, stageRestartTime } from '../animation/sleeper.js';
 import { WAISTLOCK, atRopes, behindSpotFits, waistlockPhase, goBehindOffset, waistlockPoseChannels, waistlockGrips, waistlockLayerOrder, releaseTravel } from '../animation/waistlock.js';
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
-import { ROSTER_KITS, ROSTER_PERSONALITIES } from '../characters/rosterKits.js';
+import { ROSTER_KITS, ROSTER_PERSONALITIES, kitFor } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
 import { ankleLockV2Clip } from '../animation/clips/ankleLockV2.js';
 import { FRONT_KICK_V2_CLIPS } from '../animation/clips/frontKickV2.js';
@@ -3039,17 +3039,17 @@ export default class Arena extends Phaser.Scene {
             'guido-roster-v1': {
                 name: 'GUIDO', personality: ROSTER_PERSONALITIES.guido, idlePose: guidoRosterV1.idlePose, begsOff: guidoRosterV1.begsOff, struts: guidoRosterV1.struts, sellStyle: guidoRosterV1.sellStyle,
                 skin: 0xd9a070, trunks: 0x7a1c22,
-                moveSet: ROSTER_KITS.guido, textures: guidoRosterV1.textures,
+                moveSet: kitFor('guido', lightCandidate()), textures: guidoRosterV1.textures,
             },
             'kowalski-roster-v1': {
                 name: 'KOWALSKI', personality: ROSTER_PERSONALITIES.kowalski, idlePose: kowalskiRosterV1.idlePose,
                 skin: 0xe8c098, trunks: 0x8a1c24,
-                moveSet: ROSTER_KITS.kowalski, textures: kowalskiRosterV1.textures,
+                moveSet: kitFor('kowalski', lightCandidate()), textures: kowalskiRosterV1.textures,
             },
             'george-roster-v1': {
                 name: 'GEORGE', personality: ROSTER_PERSONALITIES.george, idlePose: georgeRosterV1.idlePose, begsOff: georgeRosterV1.begsOff, struts: georgeRosterV1.struts, sellStyle: georgeRosterV1.sellStyle,
                 skin: 0xa87858, trunks: 0x1a1a1a,
-                moveSet: ROSTER_KITS.george, textures: georgeRosterV1.textures,
+                moveSet: kitFor('george', lightCandidate()), textures: georgeRosterV1.textures,
             },
             'thesz-roster-v1': {
                 name: 'THESZ', personality: 'thesz', idlePose: theszRosterV1.idlePose,
@@ -3063,7 +3063,7 @@ export default class Arena extends Phaser.Scene {
             'thesz-procreate-v1': {
                 name: 'THESZ', personality: ROSTER_PERSONALITIES.thesz, idlePose: theszProcreateV1.idlePose,
                 skin: 0xe8c098, trunks: 0x484848,
-                moveSet: ROSTER_KITS.thesz,
+                moveSet: kitFor('thesz', lightCandidate()),
                 textures: theszProcreateV1.textures,
             },
         };

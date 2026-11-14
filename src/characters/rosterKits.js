@@ -35,6 +35,17 @@ export const ROSTER_KITS = {
     ],
 };
 
+// ?light=v1 (PLAN_LIGHT_MOVES Stage 4, T4.1): each kit fills the leg-hold slot (Finisher + Down on a downed man) with its own hold. Swaps on top of the lists above, so
+// flag off is those lists untouched: Lou's ankle lock becomes the half Boston crab, George and Guido swap their figure-four for the ankle lock (the figure-four's
+// art is parked); Kowalski keeps the ankle lock. Opus's defaults for Derek 2026-11-13; change a row here and run `npm run moves:kits`.
+export const LIGHT_KIT_SWAPS = {
+    thesz:  { ankleLock: 'halfBostonCrab' },
+    george: { figureFour: 'ankleLock' },
+    guido:  { figureFour: 'ankleLock' },
+};
+export const lightKit = name => (ROSTER_KITS[name] ?? []).map(id => LIGHT_KIT_SWAPS[name]?.[id] ?? id);
+export const kitFor = (name, light) => (light ? lightKit(name) : ROSTER_KITS[name]);
+
 // The AIHandler personality each roster member plays (Arena.js presets read this).
 export const ROSTER_PERSONALITIES = {
     thesz:    'thesz',

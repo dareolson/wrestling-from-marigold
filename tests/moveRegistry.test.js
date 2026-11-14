@@ -20,7 +20,7 @@ import {
 import Wrestler, { MOVE_DEFS, STAMINA_DRAIN } from '../src/Wrestler.js';
 import { george } from '../src/characters/george.js';
 import { thesz } from '../src/characters/thesz.js';
-import { ROSTER_KITS } from '../src/characters/rosterKits.js';
+import { ROSTER_KITS, lightKit } from '../src/characters/rosterKits.js';
 import { REGISTERED_MOVE_CLIPS } from '../src/animation/clips/index.js';
 
 const CATEGORIES = new Set(Object.values(MOVE_CATEGORY));
@@ -242,11 +242,11 @@ test('validateKit passes a clean kit', () => {
 // it, and the catalog, when a move is built for the pool or assigned.
 // armBar and ankleLock were the original pair; Lou took them as mat holds
 // on 2026-10-15.
-const UNASSIGNED_POOL = ['atomicDrop', 'halfBostonCrab', 'snapmare'];   // halfBostonCrab: built 2026-11-13 (PLAN_LIGHT_MOVES B2), assigned to Lou at B3 (T4.1);   // PLAN_GRAPPLES T4c.2-T4c.3: built, not in a kit until T4c.5 (A8); then this goes back to []
+const UNASSIGNED_POOL = ['atomicDrop', 'snapmare'];   // halfBostonCrab is Lou's under ?light=v1 (LIGHT_KIT_SWAPS), counted below;   // PLAN_GRAPPLES T4c.2-T4c.3: built, not in a kit until T4c.5 (A8); then this goes back to []
 
 test('built-but-unassigned moves are exactly the catalog pool', () => {
     // The roster comparison kits count: frontKick is built for them first.
-    const orphans = orphanedMoves(george.moveSet, thesz.moveSet, ...Object.values(ROSTER_KITS));
+    const orphans = orphanedMoves(george.moveSet, thesz.moveSet, ...Object.values(ROSTER_KITS), ...Object.keys(ROSTER_KITS).map(lightKit));
     assert.deepEqual(orphans.sort(), [...UNASSIGNED_POOL].sort(),
         'a move became unreachable, or one was assigned without updating UNASSIGNED_POOL');
 });

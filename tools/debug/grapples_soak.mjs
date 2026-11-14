@@ -6,6 +6,7 @@
 //   ... node tools/debug/grapples_soak.mjs --keyboard        the chain through the input object, both directions
 // Env: PAIR (lou-george, george-lou, kow-guido, guido-kow, lou-guido, george-kow), GAIT (default|v2), GRAPPLES (v1|off),
 //      MAX_MIN (wall minutes cap, 20), MIN_CHAINS (3), MIN_MATCHES (2), OUT (json path).
+//      LIGHT=v1 (PLAN_LIGHT_MOVES T4.2): adds ?light=v1 (leg holds per kit); the table at the end counts each mat hold played.
 //      WAISTLOCK=v1 (PLAN_GRAPPLES T4b.4): adds ?waistlock=v1, counts go-behinds, switches and each ending, fails a waistlock alive past 6 s or a facing
 //      lock left on after it; the run then ends at MIN_WL (8) go-behinds or MAX_MIN, not at chains. WFM_TS=3 runs the game at 3x.
 // Fails: page error; non-finite x, y or pose; facing 0; orphanRescue; a state past its limit (grabbed 1 s, cornered 4 s, running 6 s);
@@ -21,14 +22,15 @@ const PAIR = process.env.PAIR ?? 'lou-george';
 const GAIT = process.env.GAIT ?? 'default';
 const GRAPPLES = process.env.GRAPPLES ?? 'v1';
 const WAISTLOCK = process.env.WAISTLOCK === 'v1';
+const LIGHT = process.env.LIGHT === 'v1';
 const MIN_WL = Number(process.env.MIN_WL ?? 8);
 const MAX_MIN = Number(process.env.MAX_MIN ?? 20);
 const MIN_CHAINS = Number(process.env.MIN_CHAINS ?? 3);
 const MIN_MATCHES = Number(process.env.MIN_MATCHES ?? 2);
 const [a, b] = PAIR.split('-');
 process.env.WFM_P1 = RIGS[a]; process.env.WFM_P2 = RIGS[b];
-process.env.WFM_QS = ['notitle=1', `grapples=${GRAPPLES}`, GAIT === 'v2' ? 'gait=v2' : '', WAISTLOCK ? 'waistlock=v1' : ''].filter(Boolean).join('&');
-const OUT = process.env.OUT ?? `research/animation/grapples-soak-2026-10/${MODE}-${PAIR}-${GAIT}-${GRAPPLES}${WAISTLOCK ? '-waistlock' : ''}.json`;
+process.env.WFM_QS = ['notitle=1', `grapples=${GRAPPLES}`, GAIT === 'v2' ? 'gait=v2' : '', WAISTLOCK ? 'waistlock=v1' : '', LIGHT ? 'light=v1' : ''].filter(Boolean).join('&');
+const OUT = process.env.OUT ?? `research/animation/grapples-soak-2026-10/${MODE}-${PAIR}-${GAIT}-${GRAPPLES}${WAISTLOCK ? '-waistlock' : ''}${LIGHT ? '-light' : ''}.json`;
 
 // ── The page side ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
 // Installed once. window.__soak holds everything; polled from Node as plain JSON.

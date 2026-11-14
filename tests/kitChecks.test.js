@@ -2,8 +2,8 @@
 // has to be given a value for has one, and MOVE_CATALOG.md's generated table matches the code.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { KIT_SLOTS, KIT_AI_ODDS, shadowedMoves, KIT_ELIGIBLE_IDS } from '../src/moves/registry.js';
-import { ROSTER_KITS, ROSTER_PERSONALITIES } from '../src/characters/rosterKits.js';
+import { KIT_SLOTS, KIT_AI_ODDS, shadowedMoves, KIT_ELIGIBLE_IDS, validateKit } from '../src/moves/registry.js';
+import { ROSTER_KITS, ROSTER_PERSONALITIES, LIGHT_KIT_SWAPS, lightKit, kitFor } from '../src/characters/rosterKits.js';
 import { PERSONALITIES } from '../src/AIHandler.js';
 import { checkCatalog, kitRows, kitsBlock } from '../tools/move-critic/kits.mjs';
 
@@ -69,4 +69,27 @@ test('kits table: one row per registry id, and a roster kit move is listed under
     assert.deepEqual(rows.find(r => r.id === 'shove').kits, ['Kowalski']);
     assert.equal(rows.find(r => r.id === 'armDrag').slot, 'lockupPower');
     assert.ok(kitsBlock(rows).includes('| `shove` | yes | Kowalski | - |'));
+});
+
+// ?light=v1 Stage 4 (T4.1): the leg-hold slot, one hold per wrestler.
+const LEG_HOLDS = ['figureFour', 'ankleLock', 'halfBostonCrab'];
+test('light kits: same size as the base kits, each swap replaces a move the base kit holds, flag off is the base list itself', () => {
+    for (const name of Object.keys(ROSTER_KITS)) {
+        const base = ROSTER_KITS[name], light = lightKit(name);
+        assert.equal(light.length, base.length, name);
+        assert.equal(kitFor(name, false), base, `${name}: flag off returns the base list`);
+        assert.deepEqual(validateKit(light, `${name} (light)`), []);
+        assert.deepEqual(shadowedMoves(light), [], `${name} (light) holds a shadowed move`);
+        for (const [from, to] of Object.entries(LIGHT_KIT_SWAPS[name] ?? {})) assert.ok(base.includes(from) && !base.includes(to) && light.includes(to) && !light.includes(from), `${name}: ${from} -> ${to}`);
+    }
+});
+test('light kits: every wrestler holds exactly one leg hold and the table is Derek\'s defaults (2026-11-13)', () => {
+    const table = Object.fromEntries(Object.keys(ROSTER_KITS).map(n => [n, lightKit(n).filter(m => LEG_HOLDS.includes(m))]));
+    assert.deepEqual(table, { thesz: ['halfBostonCrab'], george: ['ankleLock'], kowalski: ['ankleLock'], guido: ['ankleLock'] });
+});
+test('light kits: the AI works a mat hold for every wrestler who holds one (groundHoldOdds)', () => {
+    for (const name of Object.keys(ROSTER_KITS)) {
+        const cfg = PERSONALITIES[ROSTER_PERSONALITIES[name]];
+        for (const id of lightKit(name).filter(m => KIT_AI_ODDS[m])) assert.ok(cfg[KIT_AI_ODDS[id]] > 0 || AI_ALLOW[`${name}:${id}`], `${name}:${id}`);
+    }
 });

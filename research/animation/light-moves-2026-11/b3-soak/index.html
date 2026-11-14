@@ -1,0 +1,13 @@
+<!doctype html><meta charset=utf-8><title>B3 leg holds and soak</title><style>body{font:15px system-ui;background:#151515;color:#eee;margin:18px auto;max-width:1100px}table{border-collapse:collapse;margin:10px 0}td,th{border:1px solid #444;padding:6px 10px;text-align:left;font-size:13px}a{color:#8cf}</style>
+<h1>B3: leg-hold slot per wrestler, and the soak (?light=v1)</h1>
+<p>Opus's defaults for Derek (2026-11-13), kits in <code>src/characters/rosterKits.js</code> (<code>LIGHT_KIT_SWAPS</code>); flag off every kit is unchanged. Press Finisher beside a downed man; Down picks the crab where held.</p>
+<table><tr><th></th><th>Leg hold (light)</th><th>Other moves only he (or some) hold</th><th>groundHoldOdds</th><th>Leg hold flag off</th></tr><tr><th>Lou</th><td><b>halfBostonCrab</b></td><td>bodySlam, hipToss, theszPress, armBar, goBehind</td><td>0.4</td><td>ankleLock</td></tr>
+<tr><th>George</th><td><b>ankleLock</b></td><td>piledriver, armDrag, headbutt, kneeLift, goBehind</td><td>0.3</td><td>figureFour</td></tr>
+<tr><th>Kowalski</th><td><b>ankleLock</b></td><td>bodySlam, hipToss, theszPress, armBar, frontKick, shove</td><td>0.4</td><td>ankleLock</td></tr>
+<tr><th>Guido</th><td><b>ankleLock</b></td><td>piledriver, armDrag, headbutt, kneeLift, frontKick</td><td>0.25</td><td>figureFour</td></tr></table>
+<p>The crab: <a href="../b1-half-crab/index.html">B1 page</a> (four cases, normal speed, numbers and misses). Ankle lock: G2 approved 2026-11-10. Figure-four is parked.</p>
+<h2>Soak: AI vs AI, nothing placed by hand (<code>LIGHT=v1 tools/debug/grapples_soak.mjs</code>, 3x speed)</h2>
+<table><tr><th>pair</th><th></th><th>length</th><th>matches</th><th>stuck / failures</th><th>mat holds played</th></tr><tr><th>george-lou</th><td></td><td>12.05 game min</td><td>[object Object] matches</td><td>0 failures</td><td>move:halfBostonCrab ×7, move:ankleLock ×8, move:armBar ×6</td></tr>
+<tr><th>guido-kow</th><td></td><td>11.9 game min</td><td>[object Object],[object Object],[object Object] matches</td><td>0 failures</td><td>move:ankleLock ×21, move:armBar ×3</td></tr>
+<tr><th>kow-guido</th><td></td><td>11.83 game min</td><td>[object Object],[object Object],[object Object],[object Object] matches</td><td>0 failures</td><td>move:ankleLock ×11, move:armBar ×1</td></tr>
+<tr><th>lou-george</th><td></td><td>12.07 game min</td><td>[object Object] matches</td><td>0 failures</td><td>move:armBar ×12, move:halfBostonCrab ×15, move:ankleLock ×11</td></tr></table>

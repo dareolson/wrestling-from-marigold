@@ -5,6 +5,7 @@ import { stagedWorldPoint } from './animation/clipStaging.js';
 import { resolveSemanticSlots, textureKey } from './rig/partVariants.js';
 import { dropkickClip } from './animation/clips/dropkick.js';
 import { ankleLockEntryClip } from './animation/clips/ankleLockV2.js';
+import { bodySlamV2For } from './animation/clips/bodySlamV2.js';
 import { halfBostonCrabClip, crabPairFor } from './animation/clips/halfBostonCrab.js';
 import { armBarEntryClip } from './animation/clips/armBarV2.js';
 import { frontKickClip } from './animation/clips/frontKick.js';
@@ -2754,7 +2755,7 @@ export default class Wrestler {
     // Lou's body slam: scooped, swung across the shoulders and slammed on his
     // back in front (author_bodyslam.mjs, sheet frames 322–328 / 120–121).
     _doBodySlam(other) {
-        this._playPairedThrow(other, 'bodySlam', {
+        this._playPairedThrow(other, lightCandidate() ? bodySlamV2For(this.rigId) : 'bodySlam', {
             damage: STAMINA_DRAIN.bodySlam,
             tierOf: (wear) => this._throwTier('bodySlam', wear),
             landAtHit: (tail, tier) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY, true, tier); },

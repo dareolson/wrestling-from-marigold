@@ -27,6 +27,7 @@ import { ROSTER_KITS, ROSTER_PERSONALITIES, kitFor } from '../characters/rosterK
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
 import { ankleLockV2Clip } from '../animation/clips/ankleLockV2.js';
 import { FRONT_KICK_V2_CLIPS } from '../animation/clips/frontKickV2.js';
+import { bodySlamV2Clip, bodySlamV2GeorgeClip } from '../animation/clips/bodySlamV2.js';
 import { ROPE_HIT, stepRopeSpring } from '../animation/ropeHit.js';
 import { WEAR_MAX, KNOCKDOWN_WEAR, EXCEPTIONAL_WEAR } from '../animation/falls.js';
 import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
@@ -3110,7 +3111,7 @@ export default class Arena extends Phaser.Scene {
         // ?dropkick=v2 comparison candidate (Wrestler._doDropkick picks it).
         if (new URLSearchParams(location.search).get('dropkick') === 'v2') this.moveRuntime.register(dropkickV2Clip);
         // ?light=v1 rebuilds (PLAN_LIGHT_MOVES), picked by Wrestler.
-        if (lightCandidate()) { this.moveRuntime.register(ankleLockV2Clip); for (const clip of FRONT_KICK_V2_CLIPS) this.moveRuntime.register(clip); }
+        if (lightCandidate()) { this.moveRuntime.register(ankleLockV2Clip); this.moveRuntime.register(bodySlamV2Clip); this.moveRuntime.register(bodySlamV2GeorgeClip); for (const clip of FRONT_KICK_V2_CLIPS) this.moveRuntime.register(clip); }
         this.events.once('shutdown', () => {
             this.moveRuntime.shutdown();
             this.w1?.clearPain?.();

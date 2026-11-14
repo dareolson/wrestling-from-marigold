@@ -61,6 +61,9 @@ Replaces PLAN_FINISHERS as the next front (Derek 2026-11-07: "i don't think i wa
   Misses: Kowalski slide 3.6 (9 frames), George 4.3 (6), Guido 15.9 (13) over the bar; Lou's support knee 2.02 rad (deep sink, cap 2.55); sell timings are my guess at "a couple beats"; unjudged by Derek.
   Opus review 2026-11-10: diff clean, flag off unchanged, `kneeRestart` opt-in, 104/104 focused tests. Stills: Lou's boot hidden inside George's belly at impact, Lou leans far back, George's hands land on Lou's chest at 1.1 s. Awaiting Derek.
 - **T1.3 round 3 G1 front kick: approved by Derek 2026-11-10** (8d084c4). Polish: Lou's boot hidden in George's belly at impact (-24.9 px) and he leans far back; Lou's support knee 2.02 rad; George's hands on Lou's chest at 1.1 s; support slide Kowalski 3.6 / George 4.3 / Guido 15.9 px/frame. Next T2.7 (Sonnet).
+- B0 (30f76da): Codex half-crab draft + live preview committed; clipLayers 12/12, preview smoke passed.
+- B1 (sha below): turn is a 0.3 s step (flip on a straight-legged symmetric pose: part step 38-39 px at the flip, was 69-89; the defender's roll flip 34-37 px; clip max elsewhere ≤ 28); pelvis 0.59 (Lou) / 0.60 (George) of standing (was 0.79 / 0.82); boot travel per pull 22 / 16 px (was 9 / 7), torso lean change 23° / 23°; his hips 18 / 27 px behind the man's hips (was 43 / 27). REVIEW: [page](file:///Users/home/Documents/wrestling-from-marigold/research/animation/light-moves-2026-11/b1-half-crab/index.html)
+  Misses: trapped-leg silhouette on his legs is WORSE, Lou 411-572 px (was 139-198), George 238-408 (was 735-751 George; better); boot visible 340-625 of ~770 px (Lou); the boot sits behind his shoulder/back, not clearly in the armpit; Lou's -1.1 leg raise cuts overlap to 181-283 but puts the boot behind his back; George rElbow pinned at 0.68-0.70 s (grip release); left-facing stills crop the man (preview camera), videos are full frame.
 
 ## Order and roles (2026-11-10)
 

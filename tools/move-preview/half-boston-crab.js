@@ -4,7 +4,7 @@ import { shinsFromFolds } from '../../src/rig/articulation.js';
 export function buildHalfCrab(s, fists, front, pair = 'lou-george') {
  const v = s.variants?.[pair] ?? {};
  s = { ...s, ...v, att: { ...s.att, ...v.att }, def: { ...s.def, ...v.def } };
- const end = 4.6, turn = .82, roll = .88;
+ const end = 4.6, turn = .78, roll = .88;
  const tuck = 1.18;
  const pickup = ankleLockEntryClip(120);
  const frames = { attacker: [], defender: [] };
@@ -16,9 +16,14 @@ export function buildHalfCrab(s, fists, front, pair = 'lou-george') {
  // Move the trapped leg as one stack: calf stays below thigh, outside arm covers the toes.
  const add = (role, at, pose, gap = s.gap, sign) => frames[role].push({ at, pose: shinsFromFolds(pose), x: role === 'attacker' ? 120-gap : 120, y: role === 'attacker' ? s.attY : 0, facing: sign ?? (role === 'attacker' ? -1 : 1), parts: role === 'defender' ? { nearForearm:'base',farForearm:'base' } : { nearForearm:'grip',farForearm:'grip' } });
  // First collect the leg, then step around it before taking the crab's base.
- add('attacker', .81, { ...s.att, crouch: .65, bend: .25, lean: 0, lLeg: .2, rLeg: -.2, lFold: .8, rFold: .8, lArm: 0, lElbow: .8, rArm: 0, rElbow: .1 }, 65, 1);
- add('attacker', turn, { ...s.att, crouch: .65, bend: .25, lean: 0, lLeg: -.2, rLeg: .2, lFold: .8, rFold: .8, lArm: 0, lElbow: .8, rArm: 0, rElbow: .1 }, 65);
- add('attacker', .68, { ...s.att, crouch: .65, bend: .25, lean: 0, lLeg: .2, rLeg: -.2, lFold: .8, rFold: .8, lArm: .1, lElbow: .7, rArm: .1, rElbow: .4 }, 65, 1);
+ // The turn: a step around the leg, about 0.25 s. Knees and elbows bend toward the facing, so the facing flips (turn)
+ // on a near-symmetric pose (legs crossing, knees and elbows nearly straight) and the mirrored frame matches the last.
+ const wide = { ...s.att, crouch: .5, bend: .1, lean: 0, lLeg: .38, rLeg: -.38, lFold: .35, rFold: .35, lArm: .1, lElbow: .7, rArm: .1, rElbow: .4 };
+ const cross = { ...s.att, crouch: 0, bend: 0, lean: 0, lLeg: 0, rLeg: 0, lFold: 0, rFold: 0, lArm: 0, lElbow: 0, rArm: 0, rElbow: 0 };
+ add('attacker', .68, wide, 65, 1);
+ add('attacker', turn - .01, cross, 62, 1);
+ add('attacker', turn, cross, 62);
+ add('attacker', .92, { ...wide, lLeg: -.3, rLeg: .3, lElbow: .8, rElbow: .4 }, 58);
  add('attacker', 1.0, { ...s.att, bend: .2, lean: 0, lArm: -.1, lElbow: 1.4, rArm: -.2, rElbow: .7 });
  add('attacker', tuck, { ...s.att, bend: .2, lean: 0 });
  // The receiver rolls over while the attacker brings the leg into position.
@@ -32,9 +37,11 @@ export function buildHalfCrab(s, fists, front, pair = 'lou-george') {
  frames.defender.at(-1).ease = 'step';
  add('defender', 1.0, { ...s.def, tilt: 1.65, lift: -97, lFold: s.def.lFold - .45 });
  add('defender', tuck, s.def);
+ // Each pull: he sits back (hips low, torso leans back) and drags the leg with him; the man slides toward him.
  for (const [at, back] of [[1.6,1],[2.0,0],[2.5,1],[2.9,0],[3.4,1],[3.8,0],[end,0]]) {
-   add('attacker', at, { ...s.att, bend: s.att.bend + (back ? -.18 : .1), lean: s.att.lean + (back ? -.1 : 0) });
-   add('defender', at, { ...s.def, lLeg: s.def.lLeg - (back ? .08 : 0), lFold: s.def.lFold + (back ? .1 : 0) });
+   add('attacker', at, { ...s.att, bend: s.att.bend + (back ? -.3 : .1), lean: s.att.lean + (back ? -.22 : 0) });
+   add('defender', at, { ...s.def, lLeg: s.def.lLeg - (back ? .2 : 0), lFold: s.def.lFold + (back ? .25 : 0) });
+   frames.defender.at(-1).x = 120 - (back ? s.drag ?? 12 : 0);
  }
  // One elbow stays braced while the other fist pounds on each pull.
  const support = { ...s.def };
@@ -62,5 +69,5 @@ export function buildHalfCrab(s, fists, front, pair = 'lou-george') {
  for (const f of frames.attacker) f.ease = 'easeInOut';
  for (const list of Object.values(frames)) list.sort((a,b)=>a.at-b.at);
  const order = front ?? [['defender','farArm'],['defender','nativeBody'],['defender','nearArm'],['attacker','farArm'],['attacker','nativeBody'],['attacker','nearArm']];
- return { duration:end, rollAt:roll, frames, phases:[{from:0,to:.78,attSign:1,defSign:-1,release:.1},{from:.78,to:turn,attSign:1,defSign:-1,arms:[]},{from:turn,to:roll,attSign:-1,defSign:-1,arms:[]},{from:roll,to:tuck,attSign:-1,defSign:1,arms:[],release:.2},{from:tuck,to:end,attSign:-1,defSign:1,arms:[]}], layers:[{from:0,to:roll,order},{from:roll,to:end,order:[['defender','farArm'],['defender','nativeBody'],['defender','nearArm'],['attacker','farArm'],['attacker','nativeBody'],['defender','lLeg'],['attacker','nearArm']]}] };
+ return { duration:end, rollAt:roll, frames, phases:[{from:0,to:turn,attSign:1,defSign:-1,release:.1},{from:turn,to:roll,attSign:-1,defSign:-1,arms:[]},{from:roll,to:tuck,attSign:-1,defSign:1,arms:[],release:.2},{from:tuck,to:end,attSign:-1,defSign:1,arms:[]}], layers:[{from:0,to:roll,order},{from:roll,to:end,order:[['defender','farArm'],['defender','nativeBody'],['defender','nearArm'],['attacker','farArm'],['attacker','nativeBody'],['defender','lLeg'],['attacker','nearArm']]}] };
 }

@@ -43,7 +43,15 @@ export const LIGHT_KIT_SWAPS = {
     george: { figureFour: 'ankleLock' },
     guido:  { figureFour: 'ankleLock' },
 };
-export const lightKit = name => (ROSTER_KITS[name] ?? []).map(id => LIGHT_KIT_SWAPS[name]?.[id] ?? id);
+// Stage 6 runner answers (T6.5): Action answers a returning runner with the back body drop when the kit holds it, else the clothesline; Power with the hip toss
+// or the arm drag. Under ?light=v1 each kit keeps one Action answer so no two kits share a pair: Lou and George the back body drop, Kowalski and Guido the clothesline.
+export const LIGHT_KIT_REMOVE = {
+    thesz:    ['clothesline'],
+    george:   ['clothesline'],
+    kowalski: ['backBodyDrop'],
+    guido:    ['backBodyDrop'],
+};
+export const lightKit = name => (ROSTER_KITS[name] ?? []).map(id => LIGHT_KIT_SWAPS[name]?.[id] ?? id).filter(id => !LIGHT_KIT_REMOVE[name]?.includes(id));
 export const kitFor = (name, light) => (light ? lightKit(name) : ROSTER_KITS[name]);
 
 // The AIHandler personality each roster member plays (Arena.js presets read this).

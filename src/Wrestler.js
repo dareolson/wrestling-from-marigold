@@ -6,6 +6,9 @@ import { resolveSemanticSlots, textureKey } from './rig/partVariants.js';
 import { dropkickClip } from './animation/clips/dropkick.js';
 import { ankleLockEntryClip } from './animation/clips/ankleLockV2.js';
 import { bodySlamV2For } from './animation/clips/bodySlamV2.js';
+import { backBodyDropV2Clip } from './animation/clips/backBodyDropV2.js';
+import { runnerEntryClip } from './animation/clips/runnerEntry.js';
+import { hipTossClip } from './animation/clips/hipToss.js';
 import { halfBostonCrabClip, crabPairFor } from './animation/clips/halfBostonCrab.js';
 import { armBarEntryClip } from './animation/clips/armBarV2.js';
 import { frontKickClip } from './animation/clips/frontKick.js';
@@ -2014,6 +2017,11 @@ export default class Wrestler {
 
             // Directional override: holding `up` answers the rebound with a
             // back body drop instead of a clothesline.
+            // ?light=v1 (Stage 6, T6.5): the kit's own answer on Action alone: back body drop for a kit that holds it (no Up needed), else the clothesline.
+            if (inRange && lightCandidate() && this.moveSet.includes('backBodyDrop')) {
+                this._doBackBodyDrop(other);
+                return 'backBodyDrop';
+            }
             if (this.input.isDown('up') && inRange && this.moveSet.includes('backBodyDrop')) {
                 this._doBackBodyDrop(other);
                 return 'backBodyDrop';
@@ -2077,6 +2085,15 @@ export default class Wrestler {
     tryPower(other) {
         if (this.state !== 'standing') return false;
         if (!this.input.justDown('power')) return false;
+
+        // ?light=v1 (PLAN_LIGHT_MOVES T6.3): Power answers a runner coming back off the ropes with the kit's throw, the hip toss or the arm drag, in the same window as the clothesline.
+        if (lightCandidate() && other.state === 'running' && other.runPhase === 'returning' && this.scene.moveRuntime) {
+            const pastDist = (other.x - this.x) * other.runFacing;
+            if (Math.abs(other.x - this.x) < 160 * this.s && pastDist < 45 * this.s && sharesDepth(this, other)) {
+                if (this.moveSet.includes('hipToss')) { this._doRunnerHipToss(other); return 'hipToss'; }
+                if (this.moveSet.includes('armDrag')) { other.runPhase = null; this.facing = Math.sign(other.x - this.x) || this.facing; this._doArmDrag(other); return 'armDrag'; }
+            }
+        }
 
         const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
 
@@ -3163,8 +3180,8 @@ export default class Wrestler {
     // Hip toss (author_hiptoss.mjs, Bret's sheet 345–356): hip in, over he
     // goes, flat on his back in front. Fills the lockup + power slot for a
     // wrestler who has it, ahead of the arm drag.
-    _doHipToss(other) {
-        this._playPairedThrow(other, 'hipToss', {
+    _doHipToss(other, clipId = 'hipToss') {
+        this._playPairedThrow(other, clipId, {
             foley: ['mat', 0.7],
             damage: STAMINA_DRAIN.hipToss,
             landAtHit: (tail) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY, true); },   // T2.5g: r2
@@ -3173,6 +3190,15 @@ export default class Wrestler {
                 this._standBackUp();
             },
         });
+    }
+
+    // ?light=v1 (T6.3): the hip toss on a runner: the catch is the clip's own first beat, his speed carries into it (clips/runnerEntry.js).
+    _doRunnerHipToss(other) {
+        const dist = Math.abs(other.x - this.x) / this.s;
+        this.facing = Math.sign(other.x - this.x) || this.facing;
+        other.runPhase = null;
+        this.scene.moveRuntime.register(runnerEntryClip(hipTossClip, dist, 'hipTossRunner'));
+        this._doHipToss(other, 'hipTossRunner');
     }
 
     // Atomic drop (Stage 4c, Derek 2026-11-03), out of the waistlock: lifted from behind, dropped seated on the raised knee, and he pops forward
@@ -3565,6 +3591,7 @@ export default class Wrestler {
     // Back body drop — the defensive answer to a returning runner. Directional
     // override of the returning-runner clothesline (tryAction).
     _doBackBodyDrop(other) {
+        if (lightCandidate() && this.scene.moveRuntime) { this._doBackBodyDropV2(other); return; }
         const tier = this._throwTier('backBodyDrop', other.wear);   // T3.6/T3.14: the receiver's wear before this move's own damage
         other._hurt(STAMINA_DRAIN.backBodyDrop, 'backBodyDrop');
         this.state  = 'slamming';
@@ -3590,6 +3617,25 @@ export default class Wrestler {
             onComplete: () => {
                 if (other.state !== 'selling') return;
                 other.startClotheslineFall(runDir, { travelDist: 90, arcHeight: 130, tier });
+            },
+        });
+    }
+
+    // ?light=v1 (PLAN_LIGHT_MOVES T6.2): the back body drop as a paired clip; the runner keeps his speed into the contact (clips/backBodyDropV2.js).
+    _doBackBodyDropV2(other) {
+        const dist = (other.x - this.x) * (Math.sign(other.x - this.x) || this.facing) / this.s;
+        this.facing = Math.sign(other.x - this.x) || this.facing;
+        other.runPhase = null;
+        this._drain(4); // attacker cost
+        this.scene.moveRuntime.register(backBodyDropV2Clip(dist));
+        this._playPairedThrow(other, 'backBodyDropV2', {
+            damage: STAMINA_DRAIN.backBodyDrop,
+            faceToFace: false,
+            tierOf: (wear) => this._throwTier('backBodyDrop', wear),
+            landAtHit: (tail, tier) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY, true, tier); },
+            finish: () => {
+                if (other.state === 'holding') other._layOnBack(DOWN_SEC);
+                this._standBackUp();
             },
         });
     }

@@ -4,7 +4,7 @@
 // opponent is vulnerable.
 
 import { ringBoundsAtY, RING } from './constants.js';
-import { grapplesCandidate, waistlockCandidate, sharesDepth } from './Wrestler.js';
+import { grapplesCandidate, waistlockCandidate, lightCandidate, sharesDepth } from './Wrestler.js';
 import { LOCKUP } from './animation/lockup.js';
 import { WAISTLOCK, behindSpotFits } from './animation/waistlock.js';
 
@@ -444,7 +444,9 @@ export default class AIHandler {
                     this._cooldown = 0.6;
                     return;
                 }
-                this._attack('action', 1.0); // clothesline
+                // ?light=v1 (Stage 6): a kit with a runner throw (hip toss, arm drag) uses it on half the rebounds, else the Action answer (clothesline or back body drop)
+                const throws = lightCandidate() && (self.moveSet.includes('hipToss') || self.moveSet.includes('armDrag'));
+                this._attack(throws && Math.random() < 0.5 ? 'power' : 'action', 1.0);
             }
             return;
         }

@@ -1,0 +1,190 @@
+{
+  "mode": "soak",
+  "pair": "guido-kow",
+  "gait": "default",
+  "grapples": "v1",
+  "wallMin": 3.1,
+  "gameMin": 8.75,
+  "fps": 60.1,
+  "maxPollGapSec": 2,
+  "pageSec": 180,
+  "chainsStarted": 2,
+  "chainsComplete": 1,
+  "chainByEnd": {
+    "expired": 1,
+    "complete": 1
+  },
+  "chainFarthestStage": [
+    "whip>corner",
+    "whip>corner>charge>react>down>sell"
+  ],
+  "cornerWhips": 2,
+  "flatWhips": 4,
+  "ropesEscapeWhips": 0,
+  "cornerWhipRate": 0.333,
+  "cornerWhipRateOpenRing": 0.333,
+  "charge": {
+    "gut": 1,
+    "head": 0,
+    "miss": 0
+  },
+  "lockGapPx": {
+    "p1": {
+      "n": 220,
+      "min": 47.2,
+      "mean": 56.5,
+      "max": 68
+    },
+    "p2": {
+      "n": 212,
+      "min": 47.5,
+      "mean": 58.3,
+      "max": 74.5
+    }
+  },
+  "lockups": 51,
+  "lockupsPerGameMin": 5.83,
+  "matches": [
+    {
+      "len": 81.6,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 117.4,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 67.7,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 142.6,
+      "how": "pinfall",
+      "winner": "p1"
+    },
+    {
+      "len": 101.8,
+      "how": "pinfall",
+      "winner": "p1"
+    }
+  ],
+  "meanMatchLen": 102.2,
+  "moves": {
+    "move:lockup": 51,
+    "move:headlock": 11,
+    "knockdown:piledriver": 29,
+    "knockdown:kneeDrop": 6,
+    "knockdown:elbowDrop": 15,
+    "move:shove": 4,
+    "move:pin": 49,
+    "move:jab": 17,
+    "fall:jab": 10,
+    "move:frontKick": 9,
+    "move:irishWhip": 6,
+    "move:clothesline": 3,
+    "move:dropkick": 4,
+    "move:ankleLock": 6,
+    "move:sleeperHold": 1,
+    "fall:frontKick": 5,
+    "move:hammerlock": 2,
+    "move:kneeLift": 1,
+    "fall:kneeLift": 1,
+    "move:hipToss": 1,
+    "move:armBar": 1,
+    "fall:shove": 1,
+    "move:cornerCharge": 1,
+    "fall:cornerCharge": 1,
+    "move:suplex": 1
+  },
+  "maxStateSec": {
+    "standing": 2.38,
+    "lockup": 0.57,
+    "headlocked": 0.13,
+    "holding": 1.18,
+    "blocking": 0.25,
+    "down": 3.42,
+    "gettingUp": 0.83,
+    "slamming": 0.2,
+    "elbowDropping": 0.05,
+    "selling": 0.08,
+    "staggered": 0.98,
+    "pinning": 0.83,
+    "pinned": 0.83,
+    "falling": 0.2,
+    "evading": 0.12,
+    "grabbed": 0.05,
+    "running": 1.38,
+    "flipping": 0.12,
+    "dropkicking": 0.18,
+    "sleeping": 0.05,
+    "cornered": 0.48
+  },
+  "maxExcess": {
+    "x": 7.4,
+    "yFar": 0,
+    "yNear": 0
+  },
+  "failures": [],
+  "pageErrors": [],
+  "lostFlow": null,
+  "chains": [
+    {
+      "rec": "p1",
+      "whipper": "p2",
+      "at0": 58766.8,
+      "depth": -1,
+      "dir": -1,
+      "stages": {
+        "whip": true,
+        "corner": true
+      },
+      "after": [],
+      "cornerAt": 200,
+      "end": "expired",
+      "endAt": 45015
+    },
+    {
+      "rec": "p1",
+      "whipper": "p2",
+      "at0": 121830.9,
+      "depth": -1,
+      "dir": 1,
+      "stages": {
+        "whip": true,
+        "corner": true,
+        "charge": true,
+        "react": true,
+        "down": true,
+        "sell": true
+      },
+      "after": [
+        "fall:cornerCharge",
+        "knockdown:kneeDrop",
+        "knockdown:elbowDrop",
+        "knockdown:elbowDrop",
+        "move:pin",
+        "pinAttempt"
+      ],
+      "cornerAt": 400,
+      "part": "gut",
+      "chargeAt": 883,
+      "downAt": 1167,
+      "fall": {
+        "facing": -1,
+        "lying": "prone",
+        "variant": "kneesForward",
+        "x": 685,
+        "y": 264
+      },
+      "forcedSeen": true,
+      "forcedPlan": "clutch:gut:1.38",
+      "forcedMaxT": 0.95,
+      "resolved": "pin",
+      "end": "complete",
+      "endAt": 4600
+    }
+  ]
+}

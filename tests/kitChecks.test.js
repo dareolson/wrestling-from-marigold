@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { KIT_SLOTS, KIT_AI_ODDS, shadowedMoves, KIT_ELIGIBLE_IDS, validateKit } from '../src/moves/registry.js';
-import { ROSTER_KITS, ROSTER_PERSONALITIES, LIGHT_KIT_SWAPS, LIGHT_KIT_REMOVE, lightKit, kitFor } from '../src/characters/rosterKits.js';
+import { ROSTER_KITS, ROSTER_PERSONALITIES, LIGHT_KIT_SWAPS, LIGHT_KIT_REMOVE, LIGHT_KIT_ADD, lightKit, kitFor } from '../src/characters/rosterKits.js';
 import { PERSONALITIES } from '../src/AIHandler.js';
 import { checkCatalog, kitRows, kitsBlock } from '../tools/move-critic/kits.mjs';
 
@@ -76,7 +76,7 @@ const LEG_HOLDS = ['figureFour', 'ankleLock', 'halfBostonCrab'];
 test('light kits: same size as the base kits, each swap replaces a move the base kit holds, flag off is the base list itself', () => {
     for (const name of Object.keys(ROSTER_KITS)) {
         const base = ROSTER_KITS[name], light = lightKit(name);
-        assert.equal(light.length, base.length - (LIGHT_KIT_REMOVE[name] ?? []).length, name);
+        assert.equal(light.length, base.length - (LIGHT_KIT_REMOVE[name] ?? []).length + (LIGHT_KIT_ADD[name] ?? []).length, name);
         assert.equal(kitFor(name, false), base, `${name}: flag off returns the base list`);
         assert.deepEqual(validateKit(light, `${name} (light)`), []);
         assert.deepEqual(shadowedMoves(light), [], `${name} (light) holds a shadowed move`);

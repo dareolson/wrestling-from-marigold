@@ -7,6 +7,7 @@ import { dropkickClip } from './animation/clips/dropkick.js';
 import { ankleLockEntryClip } from './animation/clips/ankleLockV2.js';
 import { bodySlamV2For } from './animation/clips/bodySlamV2.js';
 import { backBodyDropV2Clip } from './animation/clips/backBodyDropV2.js';
+import { snapmareTieUpClip } from './animation/clips/snapmareTieUp.js';
 import { runnerEntryClip } from './animation/clips/runnerEntry.js';
 import { hipTossClip } from './animation/clips/hipToss.js';
 import { halfBostonCrabClip, crabPairFor } from './animation/clips/halfBostonCrab.js';
@@ -3192,6 +3193,12 @@ export default class Wrestler {
         });
     }
 
+    // ?light=v1 (PLAN_LIGHT_MOVES T7.2): the snapmare out of the face-to-face tie-up: a 0.34 s pivot into the reversal's start, then the same clip (clips/snapmareTieUp.js).
+    _doSnapmareFromTieUp(other) {
+        this.scene.moveRuntime.register(snapmareTieUpClip(Math.abs(other.x - this.x) / this.s));
+        this._doSnapmare(other, 'snapmareTieUp');
+    }
+
     // ?light=v1 (T6.3): the hip toss on a runner: the catch is the clip's own first beat, his speed carries into it (clips/runnerEntry.js).
     _doRunnerHipToss(other) {
         const dist = Math.abs(other.x - this.x) / this.s;
@@ -3225,8 +3232,8 @@ export default class Wrestler {
     // Snapmare (Stage 4c A4), the reversal of the atomic drop: `this` was being lifted, comes down on his feet, takes the head of the man who
     // held him and throws him over his shoulder; `other` turns one forward flip and lands flat on his back in front. Arena calls it from inside
     // the drop's lift, after marking the drop's attacker `_reversed` so the clip it replaces lays nobody down.
-    _doSnapmare(other) {
-        this._playPairedThrow(other, 'snapmare', {
+    _doSnapmare(other, clipId = 'snapmare') {
+        this._playPairedThrow(other, clipId, {
             damage: STAMINA_DRAIN.snapmare,
             shake: [220, 0.0035],
             foley: ['mat', 1.0],

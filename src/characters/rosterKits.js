@@ -51,7 +51,9 @@ export const LIGHT_KIT_REMOVE = {
     kowalski: ['backBodyDrop'],
     guido:    ['backBodyDrop'],
 };
-export const lightKit = name => (ROSTER_KITS[name] ?? []).map(id => LIGHT_KIT_SWAPS[name]?.[id] ?? id).filter(id => !LIGHT_KIT_REMOVE[name]?.includes(id));
+// Stage 7 (T7.1): the snapmare from the tie-up (Lockup + Power, Back held) goes to Lou and Guido as Opus's default; it adds a move, so those two light kits are one longer.
+export const LIGHT_KIT_ADD = { thesz: ['snapmare'], guido: ['snapmare'] };
+export const lightKit = name => [...(ROSTER_KITS[name] ?? []).map(id => LIGHT_KIT_SWAPS[name]?.[id] ?? id).filter(id => !LIGHT_KIT_REMOVE[name]?.includes(id)), ...(LIGHT_KIT_ADD[name] ?? [])];
 export const kitFor = (name, light) => (light ? lightKit(name) : ROSTER_KITS[name]);
 
 // The AIHandler personality each roster member plays (Arena.js presets read this).

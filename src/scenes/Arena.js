@@ -25,6 +25,7 @@ import { WAISTLOCK, atRopes, behindSpotFits, waistlockPhase, goBehindOffset, wai
 import { REGISTERED_MOVE_CLIPS } from '../animation/clips/index.js';
 import { ROSTER_KITS, ROSTER_PERSONALITIES, kitFor } from '../characters/rosterKits.js';
 import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
+import { PIVOT } from '../animation/clips/snapmareTieUp.js';
 import { ankleLockV2Clip } from '../animation/clips/ankleLockV2.js';
 import { FRONT_KICK_V2_CLIPS } from '../animation/clips/frontKickV2.js';
 import { bodySlamV2Clip, bodySlamV2GeorgeClip } from '../animation/clips/bodySlamV2.js';
@@ -4019,6 +4020,25 @@ export default class Arena extends Phaser.Scene {
             }
         }
 
+        // ?light=v1 (PLAN_LIGHT_MOVES Stage 7, T7.1): Power with Back held (away from the man) is the snapmare, for a kit that holds it: a pivot, then the reversal's clip.
+        // Denied, and the tie-up goes on, when the landing is past the ropes (the reversal's own check, from the pivoted facing). The AI never presses power in a lockup.
+        if (lightCandidate() && ls.attacker.moveSet.includes('snapmare') && just(ls.attacker, 'power')) {
+            const stored = ls.attacker.input.justDown('power') ? null : consumed?.get(ls.attacker)?.get('power');
+            const back = ls.attacker.facing > 0 ? 'left' : 'right', held = stored?.[back] ?? ls.attacker.input.isDown(back);
+            if (held) {
+                const A = ls.attacker, D = ls.defender;
+                if (!snapmareFits(A, -A.facing, ringBoundsAtY(A.y))) { this._logEvent('snapmareDenied', { defender: who === 'p1' ? 'p2' : 'p1' }); return; }
+                A.state = 'standing'; D.state = 'standing';
+                this.lockupState = null;
+                A._doSnapmareFromTieUp(D);
+                this.dropState = { kind: 'snap', attacker: A, defender: D, handle: A._activeMove, lead: PIVOT };
+                this._logEvent('snapmare', { attacker: who, defenderStamina: Math.round(D.stamina), from: 'tieUp' });
+                this._logEvent('move', { attacker: who, move: 'snapmare', defenderStamina: Math.round(D.stamina) });
+                this._heatForMove('snapmare');
+                return;
+            }
+        }
+
         // Power from the lockup: the kit's hip toss, else its arm drag — two
         // moves competing for one slot, so the kit decides which a wrestler has.
         const powerThrow = ['hipToss', 'armDrag'].find(move => ls.attacker.moveSet.includes(move));
@@ -4227,7 +4247,7 @@ export default class Arena extends Phaser.Scene {
     // (snapmareHeadGrip says how closed they are at this clip time).
     _holdSnapmareGrips() {
         const ds = this.dropState, T = ds.attacker, X = ds.defender, neck = X.skeleton?.jointAttachmentPoints?.neck;
-        const w = snapmareHeadGrip(ds.handle.time);
+        const w = snapmareHeadGrip(ds.handle.time - (ds.lead ?? 0));
         if (!neck || w <= 0) return;
         T.holdGrips([{ arm: 'l', partner: X, at: neck, w }, { arm: 'r', partner: X, at: neck, w }]);
     }

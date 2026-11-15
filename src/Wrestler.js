@@ -2466,7 +2466,7 @@ export default class Wrestler {
             other.tweenPose(def.bendOver, 220, 'Sine.easeOut');
             other.stateTimer = Math.max(other.stateTimer ?? 0, spec.times.end + 0.5);
         }
-        const clip = lightStrikeClip(id, this.rigId, { hitAt, defenderRigId: other.rigId, walk: (standX - this.x) * facing / this.s });
+        const clip = lightStrikeClip(id, this.rigId, { hitAt, defenderRigId: other.rigId, walk: (standX - this.x) * facing / this.s, lSide: this.skeleton.lChannelSide(facing) });
         runtime.register(clip);
         this.runPhase = null;
         // 'slamming' for the swing: the standing separation would push him back out of the lean the clip's `lunge` puts his body in, and Power cannot fire a second blow into it

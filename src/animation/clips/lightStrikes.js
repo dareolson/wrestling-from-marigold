@@ -16,6 +16,11 @@ const STEP = { cock: { lLeg: -0.05, rLeg: 0.2 }, hit: { lLeg: 0.25, rLeg: -0.12 
 
 // target / probe: what strike_solve.mjs and strike_measure.mjs read. sell: the receiver's pose name and length (ms); fall: the blow can put a worn man down (the falls plumbing decides);
 // damage keys live in Wrestler.js's STAMINA_DRAIN under the move's id.
+// Arm art per move and rig: the upperArm + forearm variant worn at each phase (the open hand of the chop). Absent for a rig without the art.
+export const LIGHT_STRIKE_ART = {
+    chop: { [LOU]: { cock: 'chopWindup', hit: 'chopContact', follow: 'chopFollow' } },
+};
+
 export const LIGHT_STRIKES = {
     clubBlow: {
         probe: 'forearm', target: 'neck', sell: { pose: 'sellHead', ms: 140 },
@@ -130,19 +135,22 @@ const poseOf = (spec, hit, phase) => {
 
 // The standing strike clip for a rig. `hitAt` retimes it so the hit lands then (a runner's arrival): the cock stretches or squeezes, the follow keeps its length.
 // `walk`: how far he closes along his facing before the hit (px at s = 1); the clip owns his x through its transform, so the approach is part of it (he ends where the walk took him).
-export function lightStrikeClip(id, rigId, { hitAt, defenderRigId, walk = 0 } = {}) {
+export function lightStrikeClip(id, rigId, { hitAt, defenderRigId, walk = 0, lSide = null } = {}) {
     const s = specFor(LIGHT_STRIKES[id], { attackerRigId: rigId, defenderRigId }), t = s.times;
     const at = hitAt ?? t.hit, shift = at - t.hit, k = at / t.hit;
-    const key = (time, pose, lunge, ease = 'easeInOut') => ({ at: +time.toFixed(4), ease, pose, transform: { x: lunge, y: 0 } });
+    // forearm + upper arm art for the swinging arm (lSide = the side the l channels draw on at this facing), when the rig has it
+    const art = lSide ? LIGHT_STRIKE_ART[id]?.[rigId] : null;
+    const hand = phase => (art ? { parts: { [`${lSide}UpperArm`]: art[phase] ?? 'base', [`${lSide}Forearm`]: art[phase] ?? 'base' } } : {});
+    const key = (time, pose, lunge, ease = 'easeInOut', phase = null) => ({ at: +time.toFixed(4), ease, pose, transform: { x: lunge, y: 0 }, ...hand(phase) });
     return {
-        id: `${id}:${rigId}${hitAt ? ':' + Math.round(hitAt * 1000) : ''}`,   // per rig (and per timing), so two men playing one move never replace each other's clip
+        id: `${id}:${rigId}${art ? ':' + lSide : ''}${hitAt ? ':' + Math.round(hitAt * 1000) : ''}`,   // per rig (and per timing), so two men playing one move never replace each other's clip
         duration: +(t.end + shift).toFixed(4),
         events: [{ at: +at.toFixed(4), type: 'impact' }],
         tracks: { attacker: { keyframes: [
             key(0, s.fromRun ? poseOf(s, s.hit, 'cock') : { ...IDLE }, 0),
-            key(t.cock * k, poseOf(s, s.hit, 'cock'), walk * 0.85, 'easeOut'),
-            key(at, poseOf(s, s.hit, 'hit'), walk + s.lunge, 'easeIn'),
-            key(t.follow + shift, poseOf(s, s.hit, 'follow'), walk + s.lunge * 0.6, 'easeOut'),
+            key(t.cock * k, poseOf(s, s.hit, 'cock'), walk * 0.85, 'easeOut', 'cock'),
+            key(at, poseOf(s, s.hit, 'hit'), walk + s.lunge, 'easeIn', 'hit'),
+            key(t.follow + shift, poseOf(s, s.hit, 'follow'), walk + s.lunge * 0.6, 'easeOut', 'follow'),
             key(t.end + shift, { ...IDLE }, walk),
         ] } },
     };

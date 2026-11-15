@@ -118,3 +118,17 @@ test('a clip that closes the gap carries the walk in its transform and ends wher
         assert.deepEqual(keys.at(-1).transform, { x: 60, y: 0 });
     }
 });
+
+test('chop: Lou wears the open-hand arm art on the swinging side through the blow and drops it at the end; other rigs and no side get none', async () => {
+    const { lightStrikeClip, LIGHT_STRIKE_ART } = await import('../src/animation/clips/lightStrikes.js');
+    const { theszProcreateV1 } = await import('../src/characters/thesz_procreate_v1.js');
+    const lou = lightStrikeClip('chop', 'thesz-procreate-v1', { lSide: 'far' }).tracks.attacker.keyframes;
+    assert.deepEqual(lou.map(k => k.parts.farUpperArm), ['base', 'chopWindup', 'chopContact', 'chopFollow', 'base']);
+    assert.deepEqual(lou[2].parts, { farUpperArm: 'chopContact', farForearm: 'chopContact' });
+    assert.notEqual(lightStrikeClip('chop', 'thesz-procreate-v1', { lSide: 'near' }).id, lightStrikeClip('chop', 'thesz-procreate-v1', { lSide: 'far' }).id);
+    assert.ok(!lightStrikeClip('chop', 'kowalski-roster-v1', { lSide: 'far' }).tracks.attacker.keyframes.some(k => k.parts));
+    assert.ok(!lightStrikeClip('chop', 'thesz-procreate-v1').tracks.attacker.keyframes.some(k => k.parts));
+    for (const name of Object.values(LIGHT_STRIKE_ART.chop['thesz-procreate-v1'])) {
+        assert.ok(theszProcreateV1.textures.variants.upperArm[name] && theszProcreateV1.textures.variants.forearm[name], `${name} is registered on both pieces`);
+    }
+});

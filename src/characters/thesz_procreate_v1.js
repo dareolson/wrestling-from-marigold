@@ -287,6 +287,16 @@ export const theszProcreateV1 = {
                     key: 'thesz_pv1_forearm_waist_clasp', file: 'forearm_waist_clasp.png',
                     semanticAnchors: { clutch: { u: 0.7067185287335018, v: 0.7948717948717948 } },
                 },
+                // The chop (lightStrikes.js LIGHT_STRIKE_ART): flat open hand, from Codex's whole-arm drawings (research/art/chop-far-arm-2026-11-15/)
+                // split at the elbow and fitted to this canvas by tools/art/build_chop_arms.py. Each goes with the upperArm variant of the same name.
+                chopWindup: { key: 'thesz_pv1_forearm_chop_windup', file: 'forearm_chopWindup.png' },
+                chopContact: { key: 'thesz_pv1_forearm_chop_contact', file: 'forearm_chopContact.png' },
+                chopFollow: { key: 'thesz_pv1_forearm_chop_follow', file: 'forearm_chopFollow.png' },
+            },
+            upperArm: {
+                chopWindup: { key: 'thesz_pv1_upper_arm_chop_windup', file: 'upper_arm_chopWindup.png' },
+                chopContact: { key: 'thesz_pv1_upper_arm_chop_contact', file: 'upper_arm_chopContact.png' },
+                chopFollow: { key: 'thesz_pv1_upper_arm_chop_follow', file: 'upper_arm_chopFollow.png' },
             },
         },
         thigh: {

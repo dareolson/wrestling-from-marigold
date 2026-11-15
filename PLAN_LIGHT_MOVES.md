@@ -360,6 +360,29 @@ Roadmap only: no tasks yet. Mostly 1950s mat and lockup work, since Stages 10-11
 
 Alternates: Lou's airplane spin, George's flying tackle, Kowalski's hip attack. Still open from before: T6.4 drop toe hold.
 
+### Stage 12 batch run (Opus, 2026-11-15; Derek: "batch make 10 moves and we'll fix them after")
+
+**Where:** the worktree `/Users/home/Documents/wfm-stage12`, branch `moves/stage12`. Never the main folder (Codex works there) or `wfm-george-hair` (Stage E). Untracked `Sprite sheets` art is missing in a worktree; tests that need it fail there and are known: list them once in T12.0 and only count new failures after that. Commit locally per task, never push.
+
+**Contract:** the Overnight run section above, unchanged: no stopping, no asking; `DEFAULT TAKEN:` / `SKIPPED:` in Progress lines; misses committed with numbers; full suite, build, coverage at the end (T12.11); leave the George performance and face code alone. Rough is fine: Derek dials them in after. Get all ten in before polishing any one.
+
+**Build pattern:** two-man moves are MoveRuntime clips with attacker and defender tracks, built like the snapmare (Stage 7, tie-up entry) and the half crab (mat hold); throws hand off to the falls plumbing (`_playPairedThrow`, `landAtHit`); holds use the existing hold/escape loop (`armBar`, `halfBostonCrab`). Every move: under `?light=v1` only; kit rows in `LIGHT_KIT_ADD` (rosterKits.js); registry entry; `STAMINA_DRAIN` key; works with every one of the 4 rigs as either man (body-relative sizes, `specFor` rig overrides); no positive `lKnee` on an upright man (use `lShin`); a 0.5 s+ loop strip per move for the page.
+
+- **T12.0 Input audit.** Map every route that exists now (standing, tie-up, headlock, vs runner, vs staggered, vs down supine/prone, on his own back) with its keys, from `tryPower` / `tryAction` / `tryFinisher` / Arena lockup handling / `g10_inputs.mjs`. Pick a free slot for each move below (the defaults below are wishes; if one is taken, take the nearest free one and log `DEFAULT TAKEN:`). Write the table into the Progress line file `research/animation/light-moves-2026-11/g12/inputs.md`.
+- **T12.1 Wristlock into arm wringer** (Lou, Guido): tie-up, Back + Action. He takes the wrist, turns under, the man's arm twisted; ends with the man bent and staggered (stagger state), not on the mat.
+- **T12.2 Headlock takeover** (Lou, George): while holding the headlock, Power: he drops to a hip and takes the man over to the mat, both down, the man on his back; the headlock continues on the mat or breaks (default: breaks, attacker up first).
+- **T12.3 Flying mare** (Guido, Lou): tie-up, Up + Power is the go-behind under `waistlock=v1`, so default Back + Power: he turns, pulls the man over his shoulder by the arm, the man lands on his back (falls plumbing).
+- **T12.4 Test of strength** (Kowalski, Lou): tie-up, Up + Action: hands lock overhead; the existing lockup struggle decides it; the loser is pushed down to his knees (a hold with an escape); the winner lets go into a free strike window.
+- **T12.5 Leapfrog** (Guido, George): defending, Up as a runner comes in (Stage 6 runner answers): he jumps, the runner passes under and runs on to the far ropes. No damage.
+- **T12.6 Backward roll** (George, Guido): on his back, Back held at the get-up: he rolls back over his shoulder to his feet, away from the opponent (an escape; uses the get-up timing).
+- **T12.7 Abdominal stretch** (Kowalski, George): vs a staggered man, Back + Action: from his side, leg hooked over the man's leg, arm over the head, the man stretched; a hold with escape.
+- **T12.8 Body scissors** (Lou, Kowalski): next to a man on his back, Up + Action: he sits behind/beside him, legs locked round the waist, squeezes; a mat hold with escape.
+- **T12.9 Indian deathlock** (George, Kowalski): at the legs of a man on his back, Down + Power if free (else log): legs entwined, he leans back; a mat hold with escape. Don Eagle's signature later (PLAN_FINISHERS).
+- **T12.10 Backdrop suplex** (Lou, Kowalski): from behind the man (the go-behind under `waistlock=v1`; without it, vs a man with his back turned), Power: lift, fall back, the man lands on his upper back/shoulders (falls plumbing, high tier). Late-match: allowed only when the man's wear is past the knockdown line (`KNOCKDOWN_WEAR`); log the gate.
+- **T12.11 Page, soak, gate.** One page: all ten, Lou on George and George on Lou, both facings, normal-speed loops plus stills, the input for each, the numbers and misses; kit table. AI soak (4 pairings, as G10). Full suite, build, `moves:coverage --check`, `moves:kits --check`. Status block updated with the REVIEW link. Then stop.
+
+Progress (Stage 12):
+
 ## Stage 13 roadmap: the roster's signature moves (Derek 2026-11-15: "let's put all these moves in the roadmap")
 
 Roadmap only. From [PLAN_FINISHERS.md](PLAN_FINISHERS.md) "the roster's finishers" (sources, evidence, footage there). The set-piece finishers themselves (pin or submission ending, the controller) stay in PLAN_FINISHERS; this stage builds the moves underneath them so they also work as ordinary moves. Moves for wrestlers without a rig yet are built and tested on the four rigged men first, then reassigned when the rig lands.

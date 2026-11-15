@@ -1,0 +1,71 @@
+{
+ "sum": {
+  "R0": {
+   "frames": 157,
+   "rootDriftMax": 0,
+   "ankleStepMax": 0,
+   "hairFrames": 115,
+   "contactDistMin": 1.25,
+   "contactDistMax": 76.94,
+   "eyeCoveredFrames": 4,
+   "mouthCoveredFrames": 9,
+   "endState": "standing"
+  },
+  "R1": {
+   "frames": 133,
+   "rootDriftMax": 0,
+   "ankleStepMax": 0,
+   "hairFrames": 97,
+   "contactDistMin": 1.25,
+   "contactDistMax": 75.02,
+   "eyeCoveredFrames": 4,
+   "mouthCoveredFrames": 7,
+   "endState": "standing"
+  },
+  "R2": {
+   "frames": 95,
+   "rootDriftMax": 0,
+   "ankleStepMax": 0,
+   "hairFrames": 73,
+   "contactDistMin": 1.25,
+   "contactDistMax": 74.25,
+   "eyeCoveredFrames": 3,
+   "mouthCoveredFrames": 3,
+   "endState": "standing"
+  },
+  "L0": {
+   "frames": 157,
+   "rootDriftMax": 0,
+   "ankleStepMax": 0,
+   "hairFrames": 115,
+   "contactDistMin": 1.25,
+   "contactDistMax": 76.94,
+   "eyeCoveredFrames": 4,
+   "mouthCoveredFrames": 9,
+   "endState": "standing"
+  },
+  "L1": {
+   "frames": 133,
+   "rootDriftMax": 0,
+   "ankleStepMax": 0,
+   "hairFrames": 97,
+   "contactDistMin": 1.25,
+   "contactDistMax": 75.02,
+   "eyeCoveredFrames": 4,
+   "mouthCoveredFrames": 7,
+   "endState": "standing"
+  },
+  "L2": {
+   "frames": 95,
+   "rootDriftMax": 0,
+   "ankleStepMax": 0,
+   "hairFrames": 73,
+   "contactDistMin": 1.25,
+   "contactDistMax": 74.25,
+   "eyeCoveredFrames": 3,
+   "mouthCoveredFrames": 3,
+   "endState": "standing"
+  }
+ },
+ "errors": []
+}

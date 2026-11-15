@@ -62,9 +62,31 @@ Decisions (Derek 2026-11-06):
 The AI calls it in a tie-up when the opponent's wear is past the line (with some odds, not every time). Soak run: stuck states, page
 errors, how often and when it happens, kickouts. Derek decides promotion.
 
-## Later: the others' finishers
+## Later: the roster's finishers (research 2026-11-15)
 
-George, Kowalski and Guido each get one, built as their own set piece on the same controller. Derek picks the moves.
+Each wrestler gets his real signature as a set piece on the same controller as Lou's. Researched on the web (sources below); 1950s records are thin, so "solid" means more than one source or match logs, "thin" means one source. Guido and the carnival giant are ours: a move we make up later (Derek). Reference footage comes first for each: what we have, and what to find.
+
+| Wrestler | Finisher | Evidence | Builds on | Needs |
+|---|---|---|---|---|
+| Lou Thesz | **Thesz press** (flying body press into the pin); also backdrop suplex (called the "Reverse Death Trap" on a 1952 broadcast), airplane spin | solid: match logs 1950-57 | `theszPress`; Stage 12.10 backdrop suplex | footage: Thesz vs Gagne (Chicago 1952), Thesz vs Anaya (1950). Airplane spin: a spin on his shoulders in a side view needs a plan for the turn |
+| Gorgeous George | **Flying hiplock** (headlock takeover with a twist), pin with a butterfly lock rolling back | thin: one 1951 match review; no named finisher anywhere; a heel who wins by cheating fits him | `headlock`; Stage 12.2 headlock takeover | footage: George vs Jesse James (1951), George vs Cyclone Anaya (1950) |
+| Killer Kowalski | **The claw** (stomach claw, squeezing the gut) | solid: WWE and others | none: a standing hold | art: a claw hand (fingers spread, gripping). Also: knee drop off the top (the Yukon Eric ear incident, 1952), a match story beat more than a finisher |
+| Bobo Brazil | **Coco Butt** (headbutt, "the hardest head in the sport") | solid for the name; how he threw it is not written down | `headbutt` | footage: any Bobo match, to see standing vs running, one hand on the head or not |
+| Buddy Rogers | **Figure-four leglock** (credited with it in the 1950s) | solid | `figureFour` (built, parked) | the strut too: Rogers was the original "Nature Boy" strutter (George already has one) |
+| Rikidozan | **Karate chop** (from sumo's open-hand slap, not real karate), thrown in a comeback flurry | solid | `chop` (Stage 11.1) | art: an open chop hand (the chop needs it anyway); a comeback flurry: several fast chops once worn down |
+| Don Eagle | **Indian deathlock** | thin: Cagematch only | Stage 12.9 (give it to Don Eagle) | footage: Eagle vs George (Chicago 1950) |
+| Yukon Eric | **Bear hug** (fans remember him submitting men with it); a database lists a shoulder backbreaker | mixed | none: a standing hold | pick one (bear hug is the better known); footage not found yet |
+| Tor Johnson | not found | none: no source names a hold; no match footage online | | his only filmed ring work: *Alias the Champ* (1949). Fallback: a big man's bear hug or a crushing body slam; Derek picks |
+| Guido | ours, later | | | |
+| Carnival giant | ours, later | | | |
+
+**What it adds up to:**
+- **Footage to find:** Thesz vs Gagne 1952, George vs Jesse James 1951 and vs Anaya 1950, Eagle vs George 1950, any Bobo Brazil match, *Alias the Champ* 1949 for Tor. Export a hold's frames into a folder (move editor reference layer).
+- **Art to order:** Kowalski's claw hand; an open chop hand for Rikidozan and the chop. New rigs for Bobo, Rogers, Rikidozan, Eagle, Yukon Eric, Tor and the giant come first (their base masters are approved in `Roster Base Masters/`; none is cut or rigged yet).
+- **Already built, needs reassigning or polish:** `theszPress`, `figureFour`, `headbutt`, `chop`. New: claw, bear hug, Indian deathlock (Stage 12), headlock takeover (Stage 12), backdrop suplex (Stage 12), airplane spin.
+- **Order (default):** Lou first (Stage 1 here), then the ones that reuse built moves (Bobo, Rogers, Rikidozan) as soon as their rigs exist; then the new holds (Kowalski, Yukon Eric, Eagle); George's last, after the Stage 12 headlock takeover.
+
+Sources: [Kowalski](https://en.wikipedia.org/wiki/Killer_Kowalski), [the claw](https://www.wwe.com/shows/raw/2012-05-14/history-of-the-claw), [Thesz 1952 review](https://www.prowrestlingmusings.com/post/retro-review-lou-thesz-vs-verne-gagne), [Thesz match guide](https://www.prowrestlingmusings.com/amp/patrick-eire-retro-matchguide-the-1950s), [George vs Jesse James 1951](https://www.blogofdoom.com/2022/04/20/83972/), [George vs Anaya](https://www.prowrestlingmusings.com/post/retro-review-gorgeous-george-vs-cyclone-anaya), [Eagle vs George 1950](https://www.legacyofwrestling.com/EagleGeorge.html), [Bobo Brazil (WWE)](https://www.wwe.com/superstars/bobobrazil/), [Rogers and the figure-four](https://www.wwe.com/classics/sports-entertainment-maneuver-innovators), [Rikidozan](https://www.wikipedia.com/wiki/Rikid%C5%8Dzan), [Don Eagle (Cagematch)](https://www.cagematch.net/?id=2&nr=1396), [Yukon Eric (OWW)](https://onlineworldofwrestling.com/profile/yukon-eric), [Yukon Eric (Slam)](https://slamwrestling.net/?p=2295), [Tor Johnson](https://en.wikipedia.org/wiki/Tor_Johnson).
 
 ## Progress
 

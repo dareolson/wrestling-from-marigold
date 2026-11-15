@@ -31,6 +31,7 @@ import { FRONT_KICK_V2_CLIPS } from '../animation/clips/frontKickV2.js';
 import { bodySlamV2Clip, bodySlamV2GeorgeClip } from '../animation/clips/bodySlamV2.js';
 import { ROPE_HIT, stepRopeSpring } from '../animation/ropeHit.js';
 import { WEAR_MAX, KNOCKDOWN_WEAR, EXCEPTIONAL_WEAR } from '../animation/falls.js';
+import { facesTrial, faceAssets, FaceDriver } from '../animation/faceTrial.js';
 import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
 
 // 2026-07-26 (promoted-george roster change): the roster is now just these
@@ -625,6 +626,7 @@ export default class Arena extends Phaser.Scene {
             // Non-file rig metadata is filtered by enumerateCharacterAssets.
             for (const asset of enumerateCharacterAssets(char)) this.load.image(asset.key, asset.file);
         }
+        if (facesTrial()) for (const asset of faceAssets()) this.load.image(asset.key, asset.file);
         for (const extra of CROWD_EXTRAS) {
             for (let i = 1; i <= extra.frames; i++) {
                 this.load.image(`${extra.slug}${i}`, `src/assets/audience/${extra.slug}/frame${i}.png`);
@@ -3098,6 +3100,9 @@ export default class Arena extends Phaser.Scene {
         this.w2.begsOff  = !!c2.begsOff;
         this.w2.struts   = !!c2.struts;
         this.w2.sellStyle = c2.sellStyle ?? 'economical';
+        // expression heads (faceTrial.js): null for a rig without them and with ?faces=0
+        this.w1.face = FaceDriver.for(this.w1);
+        this.w2.face = FaceDriver.for(this.w2);
 
         // Seekable move-animation runtime, driven by this Scene's own clock in
         // _tickGame — no second timer. Migrated so far: jab (single-actor) and
@@ -3418,6 +3423,8 @@ export default class Arena extends Phaser.Scene {
 
         w1.updateCombatBlend(dt, w2);
         w2.updateCombatBlend(dt, w1);
+        w1.face?.tick(this.time.now, w2);
+        w2.face?.tick(this.time.now, w1);
 
         // Defense first — a block/evade registered this frame beats the
         // attack attempts resolved below

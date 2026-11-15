@@ -2574,6 +2574,7 @@ export default class Wrestler {
     // Damage taken (not the attacker's own cost): stamina drains and, under ?falls=v1, wear rises (T3.13). _hurt and the receiver-side direct drains call this.
     _damage(amount) {
         this._drain(amount);
+        this._damageTaken = (this._damageTaken ?? 0) + amount;   // the expression heads (faceTrial.js) read it; nothing else does
         if (fallsCandidate()) this.wear = wearAfterDamage(this.wear ?? 0, amount);
     }
 

@@ -1,0 +1,26 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>George — expressions trial</title>
+<style>body{background:#202127;color:#eee;font:17px system-ui;max-width:980px;margin:30px auto;padding:20px}h1{font-size:25px}canvas{width:min(100%,470px);background:#777;border-radius:8px}button,select{font:inherit;padding:10px;margin:5px}main{display:flex;flex-wrap:wrap;gap:24px}aside{max-width:390px}p{line-height:1.5}.muted{color:#bbb}button:focus-visible{outline:3px solid gold}</style>
+<h1>George: expressions and match wear</h1><p class="muted">Art and timing trial. These heads are not yet fitted to the in-match rig. No recorded speech.</p>
+<main><canvas id="view" width="470" height="470" aria-label="Animated George head"></canvas><aside>
+<p><label>Match stage <select id="stage"><option value="0">Immaculate</option><option value="1">Disheveled</option><option value="2">Battered</option></select></label></p>
+<p id="wear"></p><button id="hit">Take a hit</button><button id="reset">New match</button>
+<p><button id="pain">Sell pain</button><button id="smug">Boast / chuckle</button></p><p>Talk to:</p><button data-target="referee">Referee</button><button data-target="audience">Audience</button><button data-target="opponent">Opponent</button>
+<p><label><input id="mirror" type="checkbox"> Face left</label></p><p><label><input id="interrupt" type="checkbox"> Suppress with active move</label></p>
+<p id="status" role="status"></p><p class="muted">Wear stays through every expression. Taking a hit cancels speech or boasting and starts pain. Active moves can suppress expressions. Target buttons test context and rhythm; body gestures and turning toward the target come in a later rig pass.</p>
+</aside></main><script type="module">
+import {newHeadPerformance,addHeadWear,startHeadSpeech,startHeadReaction,sampleHeadPerformance} from '/src/animation/headPerformance.js';
+let state=newHeadPerformance();const images={};for(const [family,file] of Object.entries({talk:'george-expression-atlas-v1.png',pain:'george-pain-atlas-v1.png',smug:'george-smug-atlas-v1.png'})){const image=new Image();image.src='/research/art/george-expressions-2026-11-14/'+file;images[family]=image;}
+const resting=['/src/assets/wrestlers/george-roster-v1/head.png','/research/art/george-expressions-2026-11-14/george-rest-disheveled-v1.png','/research/art/george-expressions-2026-11-14/george-rest-battered-v1.png'].map(src=>{const i=new Image();i.src=src;return i;});
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),stage=document.querySelector('#stage');
+document.querySelectorAll('[data-target]').forEach(b=>b.onclick=()=>state=startHeadSpeech(state,b.dataset.target,performance.now()));
+document.querySelector('#hit').onclick=()=>{state=startHeadReaction(addHeadWear(state,14),'pain',performance.now());stage.value=state.stage;};
+document.querySelector('#pain').onclick=()=>state=startHeadReaction(state,'pain',performance.now());
+document.querySelector('#smug').onclick=()=>state=startHeadReaction(state,'smug',performance.now());
+document.querySelector('#reset').onclick=()=>{state=newHeadPerformance();stage.value=0;};
+stage.onchange=()=>{state={...state,wear:[0,35,75][+stage.value],stage:+stage.value};};
+function draw(now){const s=sampleHeadPerformance(state,now,document.querySelector('#interrupt').checked);ctx.clearRect(0,0,470,470);const isRest=s.family==='talk'&&!s.talking;const image=isRest?resting[s.stage]:images[s.family];
+if(image.complete&&image.naturalWidth){const w=image.naturalWidth/3,h=image.naturalHeight/3;ctx.save();if(document.querySelector('#mirror').checked){ctx.translate(470,0);ctx.scale(-1,1);} // Skip the generated debris below the neck; source atlas remains untouched.
+if(isRest){const scale=Math.min(430/image.naturalWidth,430/image.naturalHeight);const dw=image.naturalWidth*scale,dh=image.naturalHeight*scale;ctx.drawImage(image,(470-dw)/2,(470-dh)/2,dw,dh);}else ctx.drawImage(image,s.mouth*w,s.stage*h,w,h*(s.family==='talk'?.85:.88),0,30,470,400);ctx.restore();}
+document.querySelector('#wear').textContent=`Accumulated match wear: ${state.wear} / 100`;
+document.querySelector('#status').textContent=s.family==='pain'?'Selling pain':s.family==='smug'?'Smug boasting':s.talking?`Shouting at ${s.target}`:'Holding expression';requestAnimationFrame(draw);}requestAnimationFrame(draw);
+</script></html>

@@ -43,6 +43,11 @@ import {
 } from './rig/articulation.js';
 
 const SPEED      = 140;
+// ?light=v1 strut (_startStrut): units/s at s = 1 (half the walk), seconds walking, the settle after, the speed/pose ease,
+// the arm swing (rad) against the stride, and the room he needs ahead before he turns and struts the other way.
+// phase0: the stride phase his posed stance matches (strut_probe.mjs: no foot jump entering or leaving the gait);
+// easePhase: the stride phase over which he slows into the last step; minSpeed keeps him moving until he is on it.
+const STRUT = { speed: 70, walk: 1.6, settle: 0.35, ease: 0.25, armSwing: 0.35, minRoom: 70, phase0: Math.PI, easePhase: 1.2, minSpeed: 0.15 };
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
 const FLIGHT_CUT = {}, FLIGHT_REGISTERED = new WeakSet();   // T4.7b: the cut flight clips, and the runtimes they are registered on
@@ -353,6 +358,10 @@ export const POSES = {
     // hanging forward; the two alternate the stepping leg.
     strutLeft:      { lLeg: 0.30,  rLeg:-0.15,  lArm: 0.55,  rArm: 0.35, lElbow: 1.10, rElbow: 1.00, lKnee: 0.45, rKnee: 0.30, lean: 0.45, crouch: 0.30 },
     strutRight:     { lLeg:-0.15,  rLeg: 0.30,  lArm: 0.35,  rArm: 0.55, lElbow: 1.00, rElbow: 1.10, lKnee: 0.30, rKnee: 0.45, lean: 0.42, crouch: 0.30 },
+    // ?light=v1 (Derek 2026-11-14: "gumby legs, he looks ridiculous"): the strut's upper body only. The legs walk on the gait (planted feet,
+    // knees from the IK); the old strutLeft/Right posed positive lKnee (a backward knee) and slid him 48 units on still feet. Chest out, head
+    // back, elbows bent, the arms swinging wide against the stride (_tickStrut adds the swing).
+    strutProud:     {                           lArm: 0.20,  rArm:-0.20, lElbow: 0.95, rElbow: 0.95, lean:-0.12, crouch: 0 },
     begShake:       { lLeg:-0.22,  rLeg: 0.12,  lArm: 1.20,  rArm: 0.85, lElbow: 1.85, rElbow: 2.30, lKnee: 0.30, rKnee: 0.30, lean:-0.24, crouch: 0.30 },
     ropeOneTaunt:   { lLeg: 0.08,  rLeg:-0.06,  lArm: 1.80,  rArm:-1.80  }, // one arm raised to crowd, other grips rope
     axeHandleUp:    { lLeg: 0.08,  rLeg: 0.12,  lArm: 2.70,  rArm: 3.10, lean:-0.22 }, // arms overhead, back arched for the drop
@@ -1084,6 +1093,11 @@ export default class Wrestler {
             if (dx !== 0) this.facing = Math.sign(dx);
         }
 
+        if (this._strut) {
+            if (this.state === 'taunting') { this._tickStrut(dt); return; }
+            this._strut = null;   // knocked out of it: the strut's facing lock goes with it
+            this._facingLock = false;
+        }
         if (this.state !== 'standing') {
             // Not under walk control (mid-move, staggered, etc.) — re-enter
             // standing from a dead stop rather than carrying stale velocity.
@@ -3738,6 +3752,7 @@ export default class Wrestler {
             return;
         }
         // Flair's strut: four hunched, stalking steps forward.
+        if (this.struts && lightCandidate()) { this._startStrut(); return; }
         if (this.struts) {
             const steps = ['strutLeft', 'strutRight', 'strutLeft', 'strutRight'];
             const b = ringBoundsAtY(this.y);
@@ -3757,6 +3772,72 @@ export default class Wrestler {
         this._runPoseSequence(tauntSeq, () => {
             if (this.state === 'taunting') this.state = 'standing';
         });
+    }
+
+    // ?light=v1 strut: real steps on the walk gait (feet planted, knees from the leg IK) at a proud, slow pace, upper body from
+    // strutProud with the arms swinging against the stride. He struts the way he faces if there is room, else turns his back and struts away.
+    _startStrut() {
+        const b = ringBoundsAtY(this.y), margin = 40 * this.s;
+        const room = d => (d > 0 ? b.right - margin - this.x : this.x - (b.left + margin));
+        let dir = this.facing;
+        if (room(dir) < STRUT.minRoom * this.s) dir = -dir;
+        this.facing = dir;
+        const walk = Math.max(0, Math.min(STRUT.walk, room(dir) / (STRUT.speed * this.s)));
+        // whole strides only: he starts on the stride phase whose feet match his stance and stops on it again, so the switch
+        // between the posed stance and the gait neither swaps nor slides the feet
+        const freq = this._gaitV2 ? this._gaitParamsAt(0).freq * this.s / (this.s * this._heightScale) : WALK_FREQ;
+        const strides = Math.max(1, Math.round(walk * STRUT.speed * freq / (Math.PI * 2)));
+        this.walkPhase = STRUT.phase0;
+        this._strut = { t: 0, phase: 0, phaseEnd: strides * Math.PI * 2, done: null, dir, from: { ...this.pose } };
+        this._facingLock = walk + STRUT.settle + 1;   // released when the strut ends
+        this.scene.tweens.killTweensOf(this.pose);
+        this._choreoUntil = 0;
+    }
+
+    _tickStrut(dt) {
+        const st = this._strut;
+        st.t += dt;
+        // the speed eases in over the first step and out over the last, by the phase left, so he stops on the planned stride
+        const left = st.phaseEnd - st.phase;
+        const moving = st.done === null ? Math.max(left > 0 ? STRUT.minSpeed : 0, Math.min(1, st.t / STRUT.ease, left / STRUT.easePhase)) : 0;
+        const b = ringBoundsAtY(this.y);
+        const g = this._gaitV2;
+        const perUnit = g ? this._gaitParamsAt(0).freq / (this.s * this._heightScale) : WALK_FREQ / this.s;   // phase per px of travel
+        let travel = STRUT.speed * this.s * moving * dt;
+        if (st.done === null) travel = Math.min(travel, left / perUnit);
+        const x0 = this.x;
+        this.x = Math.max(b.left + 20, Math.min(b.right - 20, this.x + st.dir * travel));
+        travel = Math.abs(this.x - x0);
+        this._walkPhaseDir = 1;
+        st.phase += travel * perUnit;
+        this.walkPhase = ((STRUT.phase0 + st.phase) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        if (st.done === null && (st.phaseEnd - st.phase < 1e-3 || (travel === 0 && st.t > STRUT.ease))) st.done = st.t;   // on the stride, or at the ropes
+        // the gait carries the legs from the first frame to the last: no blend through the half-posed legs in between
+        this.moveBlend = 1;
+        if (g) {
+            this._gaitLift = 1;
+            this._gaitRest = 0;
+        }
+        // upper body: into strutProud over the first step, the arms swinging against the legs while he walks
+        // in over the first step; back out over the settle, so the pose he is handed back in matches the one the gait leaves (lean moves the posed feet)
+        const w = st.done === null ? Math.min(1, st.t / STRUT.ease) : Math.max(0, 1 - (st.t - st.done) / STRUT.settle), P = POSES.strutProud, swing = Math.sin(this.walkPhase) * STRUT.armSwing * Math.min(1, moving * 2);
+        // the posed legs stay at his stance (strutProud has none): it is the stance the gait meets at phase0, both ways in and out
+        for (const k of ['lArm', 'rArm', 'lElbow', 'rElbow', 'lean', 'crouch']) {
+            const from = Number.isFinite(st.from[k]) ? st.from[k] : (k.endsWith('Elbow') ? 0.7 : 0);
+            this.pose[k] = from + (P[k] - from) * w;
+        }
+        this.pose.lArm += swing;
+        this.pose.rArm -= swing;
+        for (const k of ['lKnee', 'rKnee', 'lShin', 'rShin']) delete this.pose[k];
+        if (st.done !== null && st.t - st.done >= STRUT.settle) {
+            this._strut = null;
+            this._facingLock = false;
+            this.moveBlend = 0;
+            this.walkPhase = 0;
+            this.tweenPose(this.idlePose ?? 'idle', 300, 'Linear', () => {
+                if (this.state === 'taunting') this.state = 'standing';
+            });
+        }
     }
 
     _doSell(poseName, duration, onDone) {
@@ -4303,7 +4384,7 @@ export default class Wrestler {
         // over: move() returns early outside standing. Never let that stale
         // gait replace a held wrestler's authored knees or swing their arms.
         const choreography = this._choreoOwnsPose();
-        const locomotion = !choreography && (state === 'standing' || state === 'running');
+        const locomotion = !choreography && (state === 'standing' || state === 'running' || (this._strut && state === 'taunting'));
         const gaitBlend = locomotion ? this.moveBlend : 0;
         const gaitPhase = locomotion ? this.walkPhase : 0;
         const lean      = this.facing * (0.07 * gaitBlend + (this.pose.lean ?? 0)) + wooze;

@@ -1,4 +1,5 @@
 import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
+import { georgeCrowdTauntClip } from './animation/clips/georgeCrowdTaunt.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
@@ -211,6 +212,8 @@ export const splashFor = (move) => {
 };
 // ?light=v1 (PLAN_LIGHT_MOVES D2): the rebuilt light moves (ankleLockV2). Opt-in until G5; flag off is the old clips byte for byte.
 export const lightCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('light') === 'v1';
+// PLAN_GEORGE_PERFORMANCE A: the strut continues into the crowd taunt (opt-in preview, on top of light=v1)
+export const georgePerformanceCandidate = () => lightCandidate() && new URLSearchParams(location.search).get('georgePerformance') === '1';
 export const waistlockCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('waistlock') === 'v1';
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —
@@ -3834,10 +3837,32 @@ export default class Wrestler {
             this._facingLock = false;
             this.moveBlend = 0;
             this.walkPhase = 0;
+            if (georgePerformanceCandidate() && this.rigId?.startsWith('george') && this.scene.moveRuntime) { this._doCrowdTaunt(); return; }
             this.tweenPose(this.idlePose ?? 'idle', 300, 'Linear', () => {
                 if (this.state === 'taunting') this.state = 'standing';
             });
         }
+    }
+
+    // PLAN_GEORGE_PERFORMANCE A (?light=v1&georgePerformance=1): standing still after the strut, he presents himself, waits for applause,
+    // recoils offended and waves the crowd off (georgeCrowdTaunt.js). The clip's events drive his face (FaceDriver.perform); a hit cancels the
+    // clip through the normal pose override and the face is released.
+    _doCrowdTaunt() {
+        const runtime = this.scene.moveRuntime;
+        this.state = 'taunting';
+        const clip = georgeCrowdTauntClip({ ...this.pose }, POSES[this.idlePose] ?? POSES.idle);
+        runtime.register(clip);
+        const done = () => { this._activeMove = null; this.face?.perform('release', this.scene.time.now); };
+        this._activeMove = runtime.play(clip.id, { attacker: this }, {
+            onEvent: (event) => this.face?.perform(event.type, this.scene.time.now),
+            // the clip ends on his idle upper body over the stance he started in: hand straight back (a tween to the idle pose
+            // would write knee channels the stance does not have, a 10 px foot pop in one frame)
+            onComplete: () => {
+                done();
+                if (this.state === 'taunting') this.state = 'standing';
+            },
+            onCancel: done,
+        });
     }
 
     _doSell(poseName, duration, onDone) {

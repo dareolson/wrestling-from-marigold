@@ -54,6 +54,22 @@ export class FaceDriver {
         this.boastAt = null;
         this.nextTauntAt = null;
         this.key = null;
+        this.override = null;    // a body performance's face (perform); pain wins over it
+    }
+
+    // PLAN_GEORGE_PERFORMANCE: the crowd taunt's beats (georgeCrowdTaunt.js events). Each sets a short run of frames: { family, mouths, ms },
+    // the last frame held to the next beat. 'release' hands the face back to the driver. Talk frame 0 stands in for an offended face.
+    perform(beat, now) {
+        const BEATS = {
+            present: { family: 'smug', mouths: [0, 0, 1, 1, 1, 0], ms: 1050 },   // smirk into a grin, then the closed smirk for the hold
+            reject:  { family: 'talk', mouths: [0], ms: 250 },                    // offended
+            dismiss: { family: 'talk', mouths: [1, 2, 1, 0], ms: 450 },           // one short burst at the crowd
+            release: null,
+        };
+        if (!(beat in BEATS)) return;
+        const b = BEATS[beat];
+        this.override = b && { ...b, start: now };
+        if (b) this.state = { ...this.state, speech: null, reaction: this._busy(now) ? this.state.reaction : null };
     }
 
     tick(now, other) {
@@ -62,6 +78,7 @@ export class FaceDriver {
         if (taken > this.taken) {
             this.state = startHeadReaction(addHeadWear(this.state, taken - this.taken), 'pain', now);
             this.boastAt = null;
+            this.override = null;
         }
         if (dealt > this.dealt) this.boastAt = now + BOAST_DELAY_MS;
         this.taken = taken; this.dealt = dealt;
@@ -79,7 +96,12 @@ export class FaceDriver {
         }
         const s = sampleHeadPerformance(this.state, now);
         const resting = s.family === 'talk' && !s.talking;
-        const key = resting ? this.restKeys[s.stage] : `${this.prefix}_${cellName(s.family, s.stage, s.mouth)}`;
+        let key = resting ? this.restKeys[s.stage] : `${this.prefix}_${cellName(s.family, s.stage, s.mouth)}`;
+        const o = this.override;
+        if (o && !this._busy(now)) {
+            const u = Math.min(o.mouths.length - 1, Math.floor((now - o.start) / o.ms * o.mouths.length));
+            key = `${this.prefix}_${cellName(o.family, this.state.stage, o.mouths[u])}`;
+        }
         const head = w.skeleton?.head;
         if (key !== this.key && head?.setTexture && w.scene.textures.exists(key)) {
             head.setTexture(key);

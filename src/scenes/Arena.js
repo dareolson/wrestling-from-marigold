@@ -4068,7 +4068,7 @@ export default class Arena extends Phaser.Scene {
 
         // ?light=v1 (Stage 12, T12.3 / T12.4): Power with Down held is the flying mare, with Up held the test of strength, for a kit that holds each. Under waistlock=v1 a kit holding goBehind keeps
         // those two directions for it (checked above), so these only fire for it when the flag is off.
-        if (lightCandidate() && just(ls.attacker, 'power') && !(waistlockCandidate() && ls.attacker.moveSet.includes('goBehind'))) {
+        if (lightCandidate() && just(ls.attacker, 'power') && !(g && waistlockCandidate() && ls.attacker.moveSet.includes('goBehind'))) {
             const stored = ls.attacker.input.justDown('power') ? null : consumed?.get(ls.attacker)?.get('power');
             const held = d => stored?.[d] ?? ls.attacker.input.isDown(d);
             const move = held('down') && ls.attacker.moveSet.includes('flyingMare') ? 'flyingMare' : held('up') && ls.attacker.moveSet.includes('testOfStrength') ? 'testOfStrength' : null;
@@ -4148,6 +4148,9 @@ export default class Arena extends Phaser.Scene {
         if (atRopes(D, ringBoundsAtY(D.y)) || atRopes(A, ringBoundsAtY(A.y))) { letGo('rope'); return false; }
         // Stage 4c A1: the attacker's power in the hold lifts and drops him. The defender's power, inside the lift, is _tickDrop's.
         if (dropAvailable(ws) && A.moveSet.includes('atomicDrop') && A.input.justDown('power')) { this._beginAtomicDrop(ws); return true; }
+        // ?light=v1 (Stage 12, T12.10): the attacker's Power in the hold, with a kit that holds it and the man worn to the knockdown line, is the backdrop suplex. (A standing man always faces his opponent
+        // in this engine, so the waistlock's go-behind is the only way to get behind one; the plan's "back turned" fallback is unreachable.)
+        if (dropAvailable(ws) && lightCandidate() && A.moveSet.includes('backdropSuplex') && (D.wear ?? 0) >= KNOCKDOWN_WEAR && A.input.justDown('power')) { this._beginBackdropSuplex(ws); return true; }
         // Stage 4d S1: the attacker's finisher in the hold is the rear sleeper.
         if (dropAvailable(ws) && A.moveSet.includes('sleeperHold') && A.input.justDown('finisher')) { this._beginSleeperFromHold(ws); return true; }
         if (D.input.justDown('action') && D.moveSet.includes('goBehind')) {
@@ -4214,6 +4217,18 @@ export default class Arena extends Phaser.Scene {
         this.dropState = { kind: 'drop', attacker: A, defender: D, handle: A._activeMove, denied: false };
         this._logEvent('move', { attacker: who, move: 'atomicDrop', defenderStamina: Math.round(D.stamina) });
         this._heatForMove('atomicDrop');
+    }
+
+    // ?light=v1 (Stage 12, T12.10): the hold hands both men to the backdrop suplex's clip, as the atomic drop's hand-over (the draw blends from the hold's last frame, the shins are let go).
+    _beginBackdropSuplex(ws) {
+        const A = ws.attacker, D = ws.defender, who = A === this.w1 ? 'p1' : 'p2';
+        const held = new Map([A, D].map(w => [w, { pose: { ...w.pose }, x: w.x, y: w.y, facing: w.facing }]));
+        this._endWaistlock(0, true);
+        for (const w of [A, D]) this._dropLockupShins(w);
+        A._doBackdropSuplex(D);
+        this._exitBlend = { t: 0, held };
+        this._logEvent('move', { attacker: who, move: 'backdropSuplex', defenderStamina: Math.round(D.stamina) });
+        this._heatForMove('backdropSuplex');
     }
 
     // Stage 4d S1/S2: the hold hands both men to the sleeper. The gameplay (Arena._tickSleeper: drain, z text, escape, rope break, the slump) is the old one;

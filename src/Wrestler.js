@@ -2266,9 +2266,6 @@ export default class Wrestler {
         if (!this.scene.moveRuntime) return false;
         const back = this.input.isDown(this.facing > 0 ? 'left' : 'right'), fwd = this.input.isDown(this.facing > 0 ? 'right' : 'left'), up = this.input.isDown('up'), down = this.input.isDown('down');
         const has = id => this.moveSet.includes(id);
-        // Stage 12 (T12.10): Power on a standing or staggered man whose back is turned, from right behind him, once he is worn past the knockdown line.
-        if (this.moveSet.includes('backdropSuplex') && (other.state === 'standing' || other.state === 'staggered') && other.facing === this.facing && sharesDepth(this, other) &&
-            Math.abs(other.x - this.x) <= 85 * this.s && (other.wear ?? 0) >= KNOCKDOWN_WEAR) { this._doBackdropSuplex(other); return 'backdropSuplex'; }
         // Down + Power on a staggered man bent over: both fists across his back (plain Power stays the headbutt)
         if (other.state === 'staggered' && down && dist <= 110 * this.s && has('axeHandleBack')) { this._doAxeHandleBack(other); return 'axeHandleBack'; }
         const strikable = other.state === 'standing' || other.state === 'blocking' || other.state === 'cornered';
@@ -3539,7 +3536,7 @@ export default class Wrestler {
         this.facing = Math.sign(other.x - this.x) || this.facing;
         if (def.kind === 'solo') return this._doMatSolo(id, def);
         const distance = Math.max(20, (other.x - this.x) * this.facing / this.s);
-        runtime.register(matMoveClip(id, distance, { attackerRigId: this.rigId, defenderRigId: other.rigId }));
+        runtime.register(matMoveClip(id, distance, { attackerRigId: this.rigId, defenderRigId: other.rigId, dy: (other.y - this.y) / this.s }));
         const standing = def.end.def === 'stagger';
         this._playPairedThrow(other, id, {
             damage: STAMINA_DRAIN[id], hitEvent: def.hitEvent, shake: def.shake, foley: def.foley ?? null, faceToFace: def.faceToFace,

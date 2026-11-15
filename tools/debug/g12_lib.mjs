@@ -11,7 +11,7 @@ export const MOVES = [
     ['abdominalStretch', '_doAbdominalStretch', 'stagger',  'T12.7 Abdominal stretch',          'Back + Action vs a staggered man',             'Kowalski, George'],
     ['bodyScissors',     '_doBodyScissors',     'supine',   'T12.8 Body scissors',              'Up + Action next to a man on his back',        'Lou, Kowalski'],
     ['indianDeathlock',  '_doIndianDeathlock',  'supine',   'T12.9 Indian deathlock',           'Back + Finisher on a man on his back',         'George, Kowalski'],
-    ['backdropSuplex',   '_doBackdropSuplex',   'behind',   'T12.10 Backdrop suplex',           'Power from behind a worn man (wear >= 60)',    'Lou, Kowalski'],
+    ['backdropSuplex',   '_doBackdropSuplex',   'behind',   'T12.10 Backdrop suplex',           'Power in the waistlock hold (waistlock=v1) on a worn man (wear >= 60)',    'Lou, Kowalski'],
 ];
 
 // in-page: put both men in the move's situation (w1 is the attacker). Closes over nothing; Playwright serialises it.
@@ -28,7 +28,7 @@ export const SETUP = ({ facing, kind }) => {
     if (kind === 'roll') { A.state = 'down'; A.lying = 'supine'; A.stateTimer = 99; D.x = 520 + facing * 170; }
     if (kind === 'stagger') { D.x = 520 + facing * 80 * s; D.startStagger(); }
     if (kind === 'supine') { D.x = 520 + facing * 90; D.state = 'down'; D.lying = 'supine'; D.stateTimer = 99; }
-    if (kind === 'behind') { D.x = 520 + facing * 70 * s; D.facing = facing; D.wear = 70; D.stamina = 60; }
+    if (kind === 'behind') { A.y = 330 - 12 * s; D.x = 520 + facing * 70 * s; D.facing = facing; D.wear = 70; D.stamina = 60; }   // as the waistlock hold leaves them: both facing one way, he 12 upstage
 };
 
 // Existing moves in the same situations, for scale: what the shipped throws and holds show on the same measures (BASE=1 in g12_play.mjs).

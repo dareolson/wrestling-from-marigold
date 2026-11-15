@@ -410,7 +410,7 @@ export const MOVE_SPECS = {
         category: C.THROW, clip: null, executor: '_doBackdropSuplex',
         sell: { part: 'back', intensity: 1.0 },
         damageKey: 'backdropSuplex', poseSeq: false, legacyFallback: null, kitGated: true,
-        trigger: 'tryPower() -> _tryLightStrikes() — Power on a standing or staggered man facing away, from right behind him, once his wear is at or past KNOCKDOWN_WEAR (?light=v1)',
+        trigger: 'Arena._waistlockEndings — the attacker\'s Power in the waistlock hold (waistlock=v1 and ?light=v1), a kit that holds it, the man\'s wear at or past KNOCKDOWN_WEAR',
         ai: ['knockdown'],
     },
     theszPress: {

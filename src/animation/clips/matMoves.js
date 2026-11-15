@@ -131,7 +131,7 @@ export const MAT_MOVES = {
                 [0.55, { ...LIE, lLeg: 0.7, rLeg: 0.6, lFold: 0.4, rFold: 0.4, tilt: -Math.PI, lift: 25, lArm: 0.6, rArm: 0.6 }, -42],
                 [0.9, { ...LIE, lLeg: 0.5, rLeg: 0.4, lFold: 1.6, rFold: 1.6, tilt: -3 * PI2, lift: -40, crouch: 0.9, lArm: 0.4, rArm: 0.4 }, -84],
                 [1.2, { ...ST, crouch: 1.5, lFold: 2.0, rFold: 2.0, tilt: -4 * PI2, lift: 0, lean: 0.1 }, -90],
-                [1.5, { ...ST, crouch: 0.3, lFold: 0.5, rFold: 0.5 }, -90],
+                [1.5, { ...ST, crouch: 0.3, lFold: 0.5, rFold: 0.5, tilt: -4 * PI2 }, -90],   // tilt stays at -2 pi (upright): a 0 here would turn him a whole turn back; _standBackUp zeroes it after
             ],
         }),
     },
@@ -265,14 +265,14 @@ export function flyingMareClip(distance = 100) {
     };
 }
 
-// `distance`: the man's hips from the attacker's at the start, in the attacker's units. Returns a clip for MoveRuntime.register (id = the move's id).
-export function matMoveClip(id, distance = 100, { attackerRigId, defenderRigId } = {}) {
+// `distance`: the man's hips from the attacker's at the start, in the attacker's units; `dy`: his depth from the attacker's (the waistlock stands the attacker upstage). Returns a clip for MoveRuntime.register (id = the move's id).
+export function matMoveClip(id, distance = 100, { attackerRigId, defenderRigId, dy = 0 } = {}) {
     if (id === 'flyingMare') return flyingMareClip(distance);
     const def = MAT_MOVES[id];
     if (!def?.build) throw new Error(`matMoveClip: no spec for ${id}`);
     const params = specFor({ gap: 0, ...(def.params ?? {}) }, { attackerRigId, defenderRigId });
     const spec = def.build(distance + params.gap);
     const tracks = { attacker: { keyframes: spec.att.map(b => kf(ST, b)) } };
-    if (spec.def) tracks.defender = { keyframes: spec.def.map(b => kf(ST, b)) };
+    if (spec.def) tracks.defender = { keyframes: spec.def.map(([at, over, x, y = 0, ...rest]) => kf(ST, [at, over, x, y + dy, ...rest])) };   // `dy`: the man's depth from the attacker's at play(), so a pair a little off one line does not pop
     return { id, duration: spec.duration, events: spec.events, tracks, plants: [], ...(spec.layers ? { layers: [{ from: 0, to: spec.duration, order: spec.layers }] } : {}) };
 }

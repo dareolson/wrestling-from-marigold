@@ -1,0 +1,78 @@
+{
+ "thesz-procreate-v1": {
+  "pose": {
+   "lLeg": 0.25,
+   "rLeg": -0.12,
+   "lArm": 1.41,
+   "lElbow": 1.5,
+   "rArm": -0.3,
+   "lean": 0.05,
+   "bend": 0.5,
+   "crouch": 0.37,
+   "lunge": 38.31
+  },
+  "miss": 3,
+  "missR": 3,
+  "missL": 3,
+  "reach": 80.9,
+  "height": -172.3,
+  "defender": "george-roster-v1"
+ },
+ "george-roster-v1": {
+  "pose": {
+   "lLeg": 0.25,
+   "rLeg": -0.12,
+   "lArm": 1.89,
+   "lElbow": 1.5,
+   "rArm": -0.3,
+   "lean": 0.05,
+   "bend": 0.5,
+   "crouch": 0.1,
+   "lunge": 27.68
+  },
+  "miss": 3,
+  "missR": 3,
+  "missL": 3,
+  "reach": 79.1,
+  "height": -183.6,
+  "defender": "thesz-procreate-v1"
+ },
+ "kowalski-roster-v1": {
+  "pose": {
+   "lLeg": 0.25,
+   "rLeg": -0.12,
+   "lArm": 1.75,
+   "lElbow": 1.5,
+   "rArm": -0.3,
+   "lean": 0.05,
+   "bend": 0.5,
+   "crouch": 0.43,
+   "lunge": 26.14
+  },
+  "miss": 3,
+  "missR": 3,
+  "missL": 3,
+  "reach": 78.8,
+  "height": -185.2,
+  "defender": "thesz-procreate-v1"
+ },
+ "guido-roster-v1": {
+  "pose": {
+   "lLeg": 0.25,
+   "rLeg": -0.12,
+   "lArm": 2.06,
+   "lElbow": 1.5,
+   "rArm": -0.3,
+   "lean": 0.05,
+   "bend": 0.5,
+   "crouch": 0.1,
+   "lunge": 35.08
+  },
+  "miss": 3,
+  "missR": 3,
+  "missL": 3,
+  "reach": 79.7,
+  "height": -182.8,
+  "defender": "thesz-procreate-v1"
+ }
+}

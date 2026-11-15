@@ -101,7 +101,7 @@ Today the taunt is the finisher button with the other man out of reach (`tryFini
 
 - **T-E1 Taunt table and input.** Each character gets `taunts: { neutral, up, down, forward, back }` → taunt ids (a registry of taunt executors, like the move kits; body-relative, reusable across wrestlers). Pressing the taunt reads the held direction at the press, relative to his facing, the way `tryPower` reads Up/Back/Forward. A direction with no entry falls back to `neutral`. Keep it one input layer so a controller's d-pad or stick maps onto the same five slots later: no keyboard-only logic in the taunt code. Context overrides stay: the begging heel at low stamina, George's superiority over a downed man. The AI picks at random from the wrestler's own slots. Existing near-range finisher inputs (Up/Down over a downed man) must still win: the taunt only plays where it plays now.
 - **T-E2 At least two per wrestler.** DEFAULT TAKEN (Derek overrides at the gate):
-  - George: neutral strut (half end in the crowd taunt), up hair check, forward crowd taunt alone, down superiority when the man is down else strut.
+  - George: neutral strut (half end in the crowd taunt; the random hair-check roll from T-D2 goes, the wear-triggered fix stays), up hair check, forward crowd taunt alone, down superiority when the man is down else strut.
   - Lou (babyface): neutral the existing arms wide, up hand to the ear for the crowd, forward point at the opponent and fist up.
   - Guido (babyface): neutral a fist pump to the crowd, up hand to the ear (shared with Lou); he loses George's strut.
   - Kowalski (monster heel): neutral the existing arms wide, up a two-fisted chest beat with a roar face, forward a throat-slash at the opponent.

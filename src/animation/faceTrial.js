@@ -69,6 +69,8 @@ export class FaceDriver {
             inspect: { family: 'talk', mouths: [0], ms: 300 },                    // what has this done to my hair
             resent:  { family: 'talk', mouths: [0, 1, 0], ms: 400 },              // a resentful word at the opponent
             abort:   { family: 'talk', mouths: [1, 2, 1, 0], ms: 450 },           // battered: gives up on it, snarling
+            talk:    { family: 'talk', mouths: [0, 1, 2, 1], ms: 500 },           // a call to the crowd (babyfaces, Stage E)
+            shout:   { family: 'talk', mouths: [1, 2, 2, 2, 1], ms: 800 },        // the roar (Kowalski, Stage E)
             release: null,
         };
         if (!(beat in BEATS)) return;

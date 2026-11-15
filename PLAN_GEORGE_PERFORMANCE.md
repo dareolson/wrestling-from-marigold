@@ -114,3 +114,6 @@ Today the taunt is the finisher button with the other man out of reach (`tryFini
 - **Gate GE:** one page: every wrestler's taunts, both facings, normal-speed loop strip plus stills, with the input that plays each. STOP for Derek.
 
 Progress:
+- T-E1/E2/E3 (commit pending below): `tauntTable.js` (five slots, kits per wrestler, direction read by facing, AI picks from its own slots), `tauntGestures.js` (earCup, pointFist, fistPump, chestBeat, throatSlash), `Wrestler._playTaunt`; all behind `?light=v1&georgePerformance=1`. The random hair-check roll is gone; the wear-triggered fix stays. A man down within 1.4 reach still gets the ground hold, the taunt plays beyond it.
+- Probe (60 fps): every new gesture root drift 0, ankle step 0, no positive knee channel, both facings. Misses: George's strut travels 87 px (ankle step 8.9 at its handback, existing gait); Lou/Kowalski arms-wide (existing) ankle step 3.5/4.2 px on frame 1; Guido has no forward slot (plays neutral); faces only exist on George so babyface/Kowalski `talk`/`shout` beats are no-ops.
+- GE page: [research/animation/george-performance-2026-11/ge/index.html](research/animation/george-performance-2026-11/ge/index.html) (videos and stills on disk only). STOP for Derek.

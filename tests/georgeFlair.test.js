@@ -12,6 +12,7 @@ function taunter({ begsOff, stamina, struts = false }) {
     const actor = { begsOff, struts, stamina, state: 'standing', tauntPose: 'tauntArmsWide', idlePose: 'powerIdle',
         x: 400, y: 380, s: 1, facing: 1, scene: { tweens: { add: tween => { actor.moved = tween.x - 400; } } } };
     actor._runPoseSequence = (sequence) => { actor.sequence = sequence.map(step => step.p); };
+    actor._doArmsWideTaunt = Wrestler.prototype._doArmsWideTaunt;
     return actor;
 }
 

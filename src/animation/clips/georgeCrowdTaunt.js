@@ -39,7 +39,7 @@ const UPPER = ['lArm', 'rArm', 'lElbow', 'rElbow', 'lean', 'bend'];
 const CROWD_HANDS = { settle: 'presentPalm', present: 'presentPalm', hold: 'presentPalm', recoil: 'chestTouch', sweepMid: 'dismiss', sweep: 'dismiss' };
 const SUPERIORITY_HANDS = { lift: 'presentPalm', present: 'presentPalm', hold: 'presentPalm' };
 
-function builder(stance, lSlot) {
+export function builder(stance, lSlot) {
     const lower = Object.fromEntries(Object.entries(stance).filter(([k, v]) => Number.isFinite(v) && !UPPER.includes(k) && !['tilt', 'lift'].includes(k)));
     const upperOf = p => Object.fromEntries(UPPER.map(k => [k, Number.isFinite(p[k]) ? p[k] : (k.endsWith('Elbow') ? 0.7 : 0)]));
     const key = (at, upper, hand = 'base', ease = 'easeInOut') => ({ at, ease, pose: { ...lower, ...upper }, ...(lSlot ? { parts: { [lSlot]: hand } } : {}) });

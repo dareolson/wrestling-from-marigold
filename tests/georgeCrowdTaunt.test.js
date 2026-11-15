@@ -63,7 +63,11 @@ test('hair check: valid at every wear stage, far hand smooths and near hand insp
         assert.equal(ks[1].parts.farForearm, 'hairSmooth');
         assert.deepEqual(ks.at(-1).parts, { nearForearm: 'base', farForearm: 'base' });
     }
-    assert.ok(clips[0].duration >= 1.5 && clips[0].duration <= 1.9, `${clips[0].duration}`);
+    assert.ok(clips[0].duration >= 2.0 && clips[0].duration <= 2.6, `${clips[0].duration}`);
+    // T-D1: the hand rests on the hair about half a second, and the clean stage strokes twice
+    const ks0 = clips[0].tracks.attacker.keyframes, onHair = ks0.filter(k => k.parts.farForearm === 'hairSmooth');
+    assert.ok(onHair.at(-1).at - ks0[2].at >= 1.0, 'hand stays on the hair');
+    assert.equal(ks0.filter(k => k.pose.rElbow > 1.2 && k.parts.farForearm === 'hairSmooth').length, 2, 'two strokes');
     assert.ok(clips[1].duration < clips[0].duration, 'disheveled is quicker');
     assert.ok(clips[0].tracks.attacker.keyframes.some(k => k.parts.nearForearm === 'inspect'));
     assert.ok(!clips[2].tracks.attacker.keyframes.some(k => k.parts.nearForearm === 'inspect'), 'battered breaks off before looking at his hand');

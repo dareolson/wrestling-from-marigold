@@ -10,138 +10,138 @@
   "inkPxToHead": 1.411
  },
  "talk_0_0": {
-  "scale": 0.911,
-  "inkPxSkinFit": 0.98,
-  "inkPxToRest": 0.821
+  "scale": 0.878,
+  "inkPxSkinFit": 0.815,
+  "inkPxToRest": 0.8
  },
  "talk_0_1": {
-  "scale": 0.911,
-  "rowIoU": 0.997,
-  "inkPxToRest": 1.019
+  "scale": 0.878,
+  "rowIoU": 0.987,
+  "inkPxToRest": 1.059
  },
  "talk_0_2": {
-  "scale": 0.911,
-  "rowIoU": 0.996,
-  "inkPxToRest": 1.398
+  "scale": 0.878,
+  "rowIoU": 0.98,
+  "inkPxToRest": 1.514
  },
  "talk_1_0": {
-  "scale": 0.873,
-  "inkPxSkinFit": 1.89,
-  "inkPxToRest": 1.9
+  "scale": 0.745,
+  "inkPxSkinFit": 1.182,
+  "inkPxToRest": 1.154
  },
  "talk_1_1": {
-  "scale": 0.873,
-  "rowIoU": 0.991,
-  "inkPxToRest": 2.059
+  "scale": 0.745,
+  "rowIoU": 0.983,
+  "inkPxToRest": 1.145
  },
  "talk_1_2": {
-  "scale": 0.873,
-  "rowIoU": 0.992,
-  "inkPxToRest": 2.398
+  "scale": 0.745,
+  "rowIoU": 0.975,
+  "inkPxToRest": 1.627
  },
  "talk_2_0": {
-  "scale": 0.903,
-  "inkPxSkinFit": 1.788,
-  "inkPxToRest": 1.788
+  "scale": 0.675,
+  "inkPxSkinFit": 1.433,
+  "inkPxToRest": 1.01
  },
  "talk_2_1": {
-  "scale": 0.903,
-  "rowIoU": 0.99,
-  "inkPxToRest": 1.916
+  "scale": 0.675,
+  "rowIoU": 0.971,
+  "inkPxToRest": 1.296
  },
  "talk_2_2": {
-  "scale": 0.903,
-  "rowIoU": 0.989,
-  "inkPxToRest": 2.274
+  "scale": 0.675,
+  "rowIoU": 0.959,
+  "inkPxToRest": 1.906
  },
  "pain_0_0": {
-  "scale": 0.886,
-  "inkPxSkinFit": 1.297,
-  "inkPxToRest": 1.282
+  "scale": 0.881,
+  "inkPxSkinFit": 1.824,
+  "inkPxToRest": 1.294
  },
  "pain_0_1": {
-  "scale": 0.886,
-  "rowIoU": 0.996,
-  "inkPxToRest": 1.385
+  "scale": 0.881,
+  "rowIoU": 0.988,
+  "inkPxToRest": 1.316
  },
  "pain_0_2": {
-  "scale": 0.886,
-  "rowIoU": 0.994,
-  "inkPxToRest": 1.721
+  "scale": 0.881,
+  "rowIoU": 0.978,
+  "inkPxToRest": 1.822
  },
  "pain_1_0": {
-  "scale": 0.828,
-  "inkPxSkinFit": 2.197,
-  "inkPxToRest": 2.164
+  "scale": 0.772,
+  "inkPxSkinFit": 1.111,
+  "inkPxToRest": 1.078
  },
  "pain_1_1": {
-  "scale": 0.828,
-  "rowIoU": 0.986,
-  "inkPxToRest": 2.228
+  "scale": 0.772,
+  "rowIoU": 0.972,
+  "inkPxToRest": 1.255
  },
  "pain_1_2": {
-  "scale": 0.828,
-  "rowIoU": 0.984,
-  "inkPxToRest": 2.731
+  "scale": 0.772,
+  "rowIoU": 0.946,
+  "inkPxToRest": 1.63
  },
  "pain_2_0": {
-  "scale": 0.844,
-  "inkPxSkinFit": 2.012,
-  "inkPxToRest": 2.088
+  "scale": 0.715,
+  "inkPxSkinFit": 1.257,
+  "inkPxToRest": 1.119
  },
  "pain_2_1": {
-  "scale": 0.844,
-  "rowIoU": 0.988,
-  "inkPxToRest": 2.14
+  "scale": 0.715,
+  "rowIoU": 0.979,
+  "inkPxToRest": 1.097
  },
  "pain_2_2": {
-  "scale": 0.844,
-  "rowIoU": 0.981,
-  "inkPxToRest": 2.638
+  "scale": 0.715,
+  "rowIoU": 0.96,
+  "inkPxToRest": 1.746
  },
  "smug_0_0": {
-  "scale": 0.895,
-  "inkPxSkinFit": 1.156,
-  "inkPxToRest": 1.014
+  "scale": 0.853,
+  "inkPxSkinFit": 0.676,
+  "inkPxToRest": 0.6
  },
  "smug_0_1": {
-  "scale": 0.895,
+  "scale": 0.853,
   "rowIoU": 0.994,
-  "inkPxToRest": 1.176
+  "inkPxToRest": 0.965
  },
  "smug_0_2": {
-  "scale": 0.895,
-  "rowIoU": 0.992,
-  "inkPxToRest": 1.545
+  "scale": 0.853,
+  "rowIoU": 0.99,
+  "inkPxToRest": 1.176
  },
  "smug_1_0": {
-  "scale": 0.845,
-  "inkPxSkinFit": 2.252,
-  "inkPxToRest": 2.145
+  "scale": 0.719,
+  "inkPxSkinFit": 0.777,
+  "inkPxToRest": 0.641
  },
  "smug_1_1": {
-  "scale": 0.845,
-  "rowIoU": 0.973,
-  "inkPxToRest": 2.227
+  "scale": 0.719,
+  "rowIoU": 0.986,
+  "inkPxToRest": 0.941
  },
  "smug_1_2": {
-  "scale": 0.845,
-  "rowIoU": 0.977,
-  "inkPxToRest": 2.68
+  "scale": 0.719,
+  "rowIoU": 0.984,
+  "inkPxToRest": 1.226
  },
  "smug_2_0": {
-  "scale": 0.874,
-  "inkPxSkinFit": 2.014,
-  "inkPxToRest": 2.01
+  "scale": 0.703,
+  "inkPxSkinFit": 0.749,
+  "inkPxToRest": 0.698
  },
  "smug_2_1": {
-  "scale": 0.874,
-  "rowIoU": 0.963,
-  "inkPxToRest": 2.006
+  "scale": 0.703,
+  "rowIoU": 0.98,
+  "inkPxToRest": 1.11
  },
  "smug_2_2": {
-  "scale": 0.874,
-  "rowIoU": 0.968,
-  "inkPxToRest": 2.404
+  "scale": 0.703,
+  "rowIoU": 0.979,
+  "inkPxToRest": 1.242
  }
 }

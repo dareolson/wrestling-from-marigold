@@ -15,7 +15,8 @@ HERE = os.path.join(ROOT, ART)
 BASE = os.path.join(ROOT, f'src/assets/wrestlers/{RIG}/head.png')
 OUT = os.path.join(ROOT, f'src/assets/wrestlers/{RIG}/expressions-trial')
 REST = {'rest_1': f'{NAME}-rest-disheveled-v1.png', 'rest_2': f'{NAME}-rest-battered-v1.png'}
-ATLASES = {'talk': f'{NAME}-expression-atlas-v1.png', 'pain': f'{NAME}-pain-atlas-v1.png', 'smug': f'{NAME}-smug-atlas-v1.png'}
+V = sys.argv[4] if len(sys.argv) >= 5 else ('v2' if NAME == 'george' else 'v1')   # atlas version; George's v2 rows are drawn from his resting heads
+ATLASES = {'talk': f'{NAME}-expression-atlas-{V}.png', 'pain': f'{NAME}-pain-atlas-{V}.png', 'smug': f'{NAME}-smug-atlas-{V}.png'}
 
 
 def load(path):

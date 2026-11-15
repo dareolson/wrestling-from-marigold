@@ -21,3 +21,11 @@ Preview now has Sell pain and Boast/chuckle sequences. Take a hit adds wear and 
 User requested closer likeness to current George. `george-rest-disheveled-v1.png` and `george-rest-battered-v1.png` are individual edits referenced DIRECTLY to current `george-roster-v1/head.png`, not the expression atlases. Preserve original rounded face, nose, cheek volume, eye, jaw and faint closed-mouth smile while changing hair and restrained late-match wear. Preview now uses original production head at clean rest and these files at worn rest. These supersede the talking atlas's closed-mouth frame for resting use, but do not imply approval of the new art or production alignment. Generated dimensions differ from original; Claude still needs anchor registration, edge cleanup and an on-body likeness check. Expressions currently show some identity/scale drift relative to these closer resting heads; use these and original as references for any next expression refinement.
 
 Generated originals: `exec-d63f7fc4-2e22-4114-b30d-5babfebb4578.png` (disheveled) and `exec-4284b2bc-25cd-47fb-8ebb-c07dc3f05875.png` (battered), same generated_images directory as above.
+
+## George atlas v2 — row-specific resting references
+
+Redone per the expression-heads brief. Files: `george-expression-atlas-v2.png`, `george-pain-atlas-v2.png`, `george-smug-atlas-v2.png`. V1 sheets preserved.
+
+Every sheet was generated with exactly three references: top clean row directly from current `src/assets/wrestlers/george-roster-v1/head.png`; middle row from `george-rest-disheveled-v1.png`; bottom row from `george-rest-battered-v1.png`. No earlier atlas used as input. George remains an arrogant theatrical heel: trash talking, genuine pain selling, smug smirk/grin/chuckle. Source generated originals and row inputs are recorded in `generation-manifest-v2.json`.
+
+Visually inspected all three sheets; transparency checked. Small colored neck-edge residue remains in the generated source and needs cleanup during registration. Check cell framing, face/neck alignment and on-body likeness in both facings before replacing runtime sprites. Art only: no cell registration, preview changes or runtime wiring performed.

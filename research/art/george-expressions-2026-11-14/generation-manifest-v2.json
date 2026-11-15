@@ -1,0 +1,37 @@
+{
+  "name": "george",
+  "rig": "george-roster-v1",
+  "artOnly": true,
+  "personality": "Arrogant theatrical heel",
+  "version": 2,
+  "assets": [
+    {
+      "file": "george-expression-atlas-v2.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-568b5258-cdc8-4182-a87a-ef95c5c27409.png",
+      "referencesByRow": [
+        "src/assets/wrestlers/george-roster-v1/head.png",
+        "research/art/george-expressions-2026-11-14/george-rest-disheveled-v1.png",
+        "research/art/george-expressions-2026-11-14/george-rest-battered-v1.png"
+      ]
+    },
+    {
+      "file": "george-pain-atlas-v2.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-d75c04eb-668e-450c-bee0-a6764d22c7f1.png",
+      "referencesByRow": [
+        "src/assets/wrestlers/george-roster-v1/head.png",
+        "research/art/george-expressions-2026-11-14/george-rest-disheveled-v1.png",
+        "research/art/george-expressions-2026-11-14/george-rest-battered-v1.png"
+      ]
+    },
+    {
+      "file": "george-smug-atlas-v2.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-fb2adc5c-57fe-4d3f-bbfa-92f034294666.png",
+      "referencesByRow": [
+        "src/assets/wrestlers/george-roster-v1/head.png",
+        "research/art/george-expressions-2026-11-14/george-rest-disheveled-v1.png",
+        "research/art/george-expressions-2026-11-14/george-rest-battered-v1.png"
+      ]
+    }
+  ],
+  "notes": "Each atlas uses only original rig head and two stage resting heads. No earlier expression atlas used. Needs edge cleanup and registration; not wired."
+}

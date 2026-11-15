@@ -26,6 +26,8 @@ import { ELBOW_DROP, SPLASH_VARIANTS, ARM_CHANNELS, sampleGroundAttack, sampleSp
 import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { handStompClip, HAND_STOMP_SPEC } from './animation/clips/handStomp.js';
 import { specFor } from './animation/clips/rigOverrides.js';
+import { lightStrikeClip, LIGHT_STRIKES, STRIKE_STANDOFF } from './animation/clips/lightStrikes.js';
+import { mountedPunchesClip, MOUNTED_PUNCHES_SPEC, bodyStompsClip, BODY_STOMPS_SPEC } from './animation/clips/groundStrikes.js';
 import { kneeDropV2Clip, KNEE_DROP_V2_SPEC } from './animation/clips/kneeDropV2.js';
 import { georgeCrowdTauntClip, georgeSuperiorityClip, georgeHairCheckClip } from './animation/clips/georgeCrowdTaunt.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
@@ -295,6 +297,16 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     backBodyDrop:      16,
     kneeDrop:          12,
     handStomp:         8,   // ?light=v1 (PLAN_LIGHT_MOVES T8.1): below the knee drop
+    clubBlow:          7,   // ?light=v1 (Stage 10): a clubbing forearm, above the jab
+    chop:              5,   // ?light=v1 (Stage 11): the knife-edge chop, a sting
+    uppercut:          8,   // ?light=v1 (Stage 11): the European uppercut
+    shoulderBlock:     9,   // ?light=v1 (Stage 10): the big man's first hit
+    runningForearm:   10,   // ?light=v1 (Stage 10): off the ropes
+    backElbow:        10,   // ?light=v1 (Stage 11): a runner answer, a little under the clothesline
+    legSweep:          7,   // ?light=v1 (Stage 11): drops him on his back, light damage
+    axeHandleBack:     9,   // ?light=v1 (Stage 11): both fists across a staggered man's back
+    mountedPunches:    3,   // ?light=v1 (Stage 10): per punch (four)
+    bodyStomps:        3,   // ?light=v1 (Stage 11): per stomp (three)
     frontKick:          7, // planted push-kick: light damage, a stagger and a step back
     shove:              4, // two-handed guard-breaker: little damage, opens a blocker and gives ground
 };
@@ -1222,7 +1234,7 @@ export default class Wrestler {
         if (depthDiff < 26) {
             const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
             const minDist = 80 * this.s;
-            if (dist < minDist) {
+            if (dist < minDist && !(other._lungeUntil > this.scene.time.now)) {   // ?light=v1: not while the other man's strike leans his body into the gap (clips/lightStrikes.js `lunge`)
                 // Dead-centered (moves that set other.x = attacker.x leave dist
                 // at exactly 0) has no angle to push along — step back opposite
                 // our own facing instead of fusing into one silhouette
@@ -2053,6 +2065,10 @@ export default class Wrestler {
             // Directional override: holding `up` answers the rebound with a
             // back body drop instead of a clothesline.
             // ?light=v1 (Stage 6, T6.5): the kit's own answer on Action alone: back body drop for a kit that holds it (no Up needed), else the clothesline.
+            if (inRange && lightCandidate() && this.input.isDown('down') && this.moveSet.includes('backElbow') && this.scene.moveRuntime) {   // Stage 11: Down + Action turns the shoulder and drives the elbow back into the runner
+                this._doBackElbow(other);
+                return 'backElbow';
+            }
             if (inRange && lightCandidate() && this.moveSet.includes('backBodyDrop')) {
                 this._doBackBodyDrop(other);
                 return 'backBodyDrop';
@@ -2070,6 +2086,16 @@ export default class Wrestler {
         const dist  = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
         const reach = 110 * this.s;
         if (dist > reach) return false;
+
+        // ?light=v1 (Stages 10-11): Down + Action next to a man on the mat is the kit's strike on him (mounted punches on his back, body stomps on his stomach); a standing man in reach, the leg sweep.
+        // A kit without the move keeps the pin (Action alone, and Down + Action, are unchanged for it).
+        if (lightCandidate() && this.input.isDown('down') && this.scene.moveRuntime) {
+            if ((other.state === 'down' || other.state === 'possum') && !other.isLanding()) {
+                if (other.lying === 'supine' && this.moveSet.includes('mountedPunches')) { this._doMountedPunches(other); return 'mountedPunches'; }
+                if (other.lying === 'prone' && this.moveSet.includes('bodyStomps')) { this._doBodyStomps(other); return 'bodyStomps'; }
+            }
+            if (other.state === 'standing' && dist <= 100 * this.s && this.moveSet.includes('legSweep')) { this._doLegSweep(other); return 'legSweep'; }
+        }
 
         // Grapple block: a braced opponent stuffs the tie-up and shoves the
         // attacker off balance — the free window swings the other way.
@@ -2146,6 +2172,9 @@ export default class Wrestler {
             return 'kneeDrop';
         }
 
+        // ?light=v1 (Stages 10-11): the kit's light strikes (club blow in the jab's place, chop on Up, uppercut on Back) on a man in front of him.
+        if (lightCandidate()) { const light = this._tryLightStrikes(other, dist); if (light) return light; }
+
         // Front kick — directional override (down + power) of the close strikes:
         // a planted push-kick to the belly from jab range out to a stride away.
         // Checked here, not in resolvePowerMove, for the same reason as the
@@ -2174,6 +2203,25 @@ export default class Wrestler {
         }
     }
 
+    // ?light=v1 (PLAN_LIGHT_MOVES Stage 10-11): the standing strikes on Power, by the direction held. Chop = Up, uppercut = Back (away from the man); the club blow takes the jab's
+    // place with no direction; the shoulder block is Forward at medium reach. A kit holds each one or not; the first match fires.
+    _tryLightStrikes(other, dist) {
+        if (!this.scene.moveRuntime) return false;
+        const back = this.input.isDown(this.facing > 0 ? 'left' : 'right'), fwd = this.input.isDown(this.facing > 0 ? 'right' : 'left'), up = this.input.isDown('up'), down = this.input.isDown('down');
+        const has = id => this.moveSet.includes(id);
+        // Down + Power on a staggered man bent over: both fists across his back (plain Power stays the headbutt)
+        if (other.state === 'staggered' && down && dist <= 110 * this.s && has('axeHandleBack')) { this._doAxeHandleBack(other); return 'axeHandleBack'; }
+        const strikable = other.state === 'standing' || other.state === 'blocking' || other.state === 'cornered';
+        if (!strikable) return false;
+        const close = dist <= 85 * this.s;
+        if (close && up && has('chop'))       { this._doChop(other);     return 'chop'; }
+        if (close && back && has('uppercut')) { this._doUppercut(other); return 'uppercut'; }
+        if (close && !up && !back && !down && has('clubBlow')) { this._doClubBlow(other); return 'clubBlow'; }
+        // Forward + Power from a stride away: the shoulder block (plain Power stays the dropkick)
+        if (!close && dist <= 170 * this.s && fwd && !up && !down && has('shoulderBlock') && sharesDepth(this, other)) { this._doShoulderBlock(other); return 'shoulderBlock'; }
+        return false;
+    }
+
     // Run key: self-initiated run toward the rope you're facing
     tryRun() {
         if (this.state !== 'standing') return false;
@@ -2198,6 +2246,10 @@ export default class Wrestler {
         if (this.state !== 'running' || this.runPhase !== 'returning') return false;
         if (!this.input.justDown('power')) return false;
         if (Math.abs(other.x - this.x) > 170 * this.s || !sharesDepth(this, other)) return false;
+        if (lightCandidate() && this.moveSet.includes('runningForearm') && this.scene.moveRuntime) {   // Stage 10: the runner's own strike, the forearm (a kit holds it in place of the double axe handle's slot)
+            this._doRunningForearm(other);
+            return 'runningForearm';
+        }
         if (this.moveSet.includes('doubleAxeHandle')) {
             this._doDoubleAxeHandle(other);
             return 'doubleAxeHandle';
@@ -2380,6 +2432,130 @@ export default class Wrestler {
             onComplete: () => { this._activeMove = null; },
             onCancel:   () => { stance?.stop(); this._activeMove = null; },
         });
+    }
+
+    // ?light=v1 (PLAN_LIGHT_MOVES Stages 10-11): a standing strike from the lightStrikes spec table (club blow, chop, uppercut, ...). The attacker closes to the separation minimum as the
+    // cock loads, the clip lands its solved contact pose on `impact`, and there the damage, the receiver's sell and the crowd fire; a man who evades by then takes nothing. `opts.hitAt`
+    // (s) retimes the hit to a runner's arrival. The blow owns its own fall (MOVE_FALLS / `fall`), as the jab and headbutt do.
+    _doLightStrike(id, other) {
+        const runtime = this.scene.moveRuntime;
+        if (!runtime) return false;
+        const def = LIGHT_STRIKES[id], spec = specFor(def, { attackerRigId: this.rigId, defenderRigId: other.rigId });
+        this._cancelActiveMove('relight');
+        const facing = Math.sign(other.x - this.x) || this.facing;
+        this.facing = facing;
+        const b = ringBoundsAtY(this.y), margin = 30 * this.s, clampX = x => Math.max(b.left + margin, Math.min(b.right - margin, x));
+        let hitAt = null, standX = clampX(other.x - facing * STRIKE_STANDOFF * this.s);
+        if (def.runner) {
+            // the man runs into it (the clothesline's arrival, clotheslineV2.js): the cock stretches to his arrival and the hit lands then
+            const boost = other._runBoost ? 1 + (other._runBoost - 1) * other._runBoostLeft / (ROPE_HIT.boostMs / 1000) : 1;
+            const speed = (other._gaitV2 ? other._gaitV2.run.speed : RUN_SPEED) * other.s * boost;
+            const runDir = Math.sign(other.runTarget - other.x) || other.runFacing || -facing;
+            const closing = -runDir * facing, gap = (Math.abs(other.x - this.x) - STRIKE_STANDOFF * this.s) * closing;
+            const { min, max } = CLOTHESLINE_ARRIVE_MS;
+            const ms = Math.max(min, Math.min(max, gap / speed * 1000));
+            hitAt = ms / 1000;
+            standX = clampX(other.x + runDir * speed * hitAt - facing * STRIKE_STANDOFF * this.s);
+        } else if (def.approach) {
+            // he closes the gap first (shoulder block, running forearm): never quicker than the clip's own hit
+            const gap = Math.abs(other.x - this.x) - STRIKE_STANDOFF * this.s;
+            if (gap > 0) hitAt = Math.max(spec.times.hit, gap / (def.approach * this.s));
+        }
+        if (def.bendOver) {   // a staggered man is held bent over for the blow (see lightStrikes.js bendOver); his stagger timer is kept alive through the hit
+            other.tweenPose(def.bendOver, 220, 'Sine.easeOut');
+            other.stateTimer = Math.max(other.stateTimer ?? 0, spec.times.end + 0.5);
+        }
+        const clip = lightStrikeClip(id, this.rigId, { hitAt, defenderRigId: other.rigId, walk: (standX - this.x) * facing / this.s });
+        runtime.register(clip);
+        this.runPhase = null;
+        // 'slamming' for the swing: the standing separation would push him back out of the lean the clip's `lunge` puts his body in, and Power cannot fire a second blow into it
+        this.state = 'slamming';
+        this._lungeUntil = this.scene.time.now + clip.duration * 1000;
+        const done = () => { this._lungeUntil = 0; this._activeMove = null; if (this.state === 'slamming') this.state = 'standing'; };
+        this._activeMove = runtime.play(clip.id, { attacker: this }, {
+            onEvent: (event) => {
+                if (event.type !== 'impact') return;
+                if (other.state === 'evading') {
+                    this.scene._logEvent('dodge', { wrestler: other === this.scene.w1 ? 'p1' : 'p2', move: id });
+                    return;
+                }
+                if (def.runner) {
+                    if (other.state !== 'running') return;   // he is already past
+                    other._hurt(STAMINA_DRAIN[id], id);
+                    other._doSell(def.sell.pose, def.sell.ms, () => other.startClotheslineFall(other.runFacing));
+                } else {
+                    other._hurt(STAMINA_DRAIN[id], id);
+                    strikeReact(other, this, id, def.sell.pose, def.sell.ms, !!def.sell.fall, def.sell.stagger ?? null);
+                }
+                this.scene.cameras.main.shake(60, 0.0010);
+                this.scene.crowd?.impact?.('strike', def.sell.crowd ?? 0.6);
+            },
+            onComplete: done,
+            onCancel:   done,
+        });
+        return true;
+    }
+
+    // ?light=v1 (PLAN_LIGHT_MOVES T10.4): mounted punches on a man on his back. He kneels beside the man on the camera side (the arm bar's half kneel) with the face under his fists; four punches, the
+    // lead hand first, each one a hit (damage, the man's curl, a thump). He then rises and stands.
+    _doMountedPunches(other) {
+        const runtime = this.scene.moveRuntime;
+        if (!runtime) return false;
+        this._cancelActiveMove('remount');
+        const spec = specFor(MOUNTED_PUNCHES_SPEC, { attackerRigId: this.rigId });
+        const hb = other.skeleton.head.getBounds();
+        const facing = -other.facing || this.facing;   // he faces the man's head
+        this.facing = facing;
+        const faceX = (hb.left + hb.right) / 2 - facing * (hb.right - hb.left) * 0.2, standY = other.y + spec.depth * this.s;
+        const b = ringBoundsAtY(standY), margin = 30 * this.s;
+        const standX = Math.max(b.left + margin, Math.min(b.right - margin, faceX - facing * spec.reach * this.s));
+        const nearChannel = this.skeleton.lChannelSide(facing) === 'near' ? 'l' : 'r';
+        const clip = mountedPunchesClip(MOUNTED_PUNCHES_SPEC, this.rigId, { nearChannel, walk: { x: (standX - this.x) * facing / this.s, y: (standY - this.y) / this.s }, punches: this.moveStyle?.punches });
+        runtime.register(clip);
+        this.state = 'slamming';
+        const done = () => { this._activeMove = null; if (this.state === 'slamming') this.state = 'standing'; };
+        this._activeMove = runtime.play(clip.id, { attacker: this }, {
+            onEvent: (event) => {
+                if (event.type !== 'impact' || (other.state !== 'down' && other.state !== 'possum')) return;
+                other._hurt(STAMINA_DRAIN.mountedPunches, 'mountedPunches');
+                other._downHitReact(this, 'mountedPunches', 0.5, 'curl');
+                this.scene.cameras.main.shake(50, 0.0008);
+                this.scene.crowd?.impact?.('strike', 0.45);
+            },
+            onComplete: done,
+            onCancel:   done,
+        });
+        return true;
+    }
+
+    // ?light=v1 (PLAN_LIGHT_MOVES T11.6): body stomps on a man lying on his stomach: the hand stomp's stomp (its keys, its per-rig reach) three times on the back, the man curling each time.
+    _doBodyStomps(other) {
+        const runtime = this.scene.moveRuntime;
+        if (!runtime) return false;
+        this._cancelActiveMove('restomps');
+        const hs = specFor(HAND_STOMP_SPEC, { attackerRigId: this.rigId }), bs = specFor(BODY_STOMPS_SPEC, { attackerRigId: this.rigId });
+        const so = other.s * other._heightScale;
+        const back = Skeleton.groundedTarget(other.skeleton.jointAttachmentPoints ?? {}, 'chest', so) ?? { x: other.x, y: other.y };
+        const facing = other.facing || this.facing;
+        this.facing = facing;
+        const standY = back.y + bs.standY * this.s, b = ringBoundsAtY(standY), margin = 30 * this.s;
+        const standX = Math.max(b.left + margin, Math.min(b.right - margin, back.x - facing * hs.reach * this.s));
+        const clip = bodyStompsClip(this.rigId, { walk: { x: (standX - this.x) * facing / this.s, y: (standY - this.y) / this.s }, stomps: this.moveStyle?.stomps });
+        runtime.register(clip);
+        this.state = 'slamming';
+        const done = () => { this._activeMove = null; if (this.state === 'slamming') this.state = 'standing'; };
+        this._activeMove = runtime.play(clip.id, { attacker: this }, {
+            onEvent: (event) => {
+                if (event.type !== 'impact' || (other.state !== 'down' && other.state !== 'possum')) return;
+                other._hurt(STAMINA_DRAIN.bodyStomps, 'bodyStomps');
+                other._downHitReact(this, 'bodyStomps', 0.6, 'curl');
+                this.scene.cameras.main.shake(60, 0.001);
+                this.scene.crowd?.impact?.('mat', 0.4);
+            },
+            onComplete: done,
+            onCancel:   done,
+        });
+        return true;
     }
 
     // Front kick — a planted push-kick on the clip runtime (clips/frontKick.js,
@@ -4670,3 +4846,6 @@ export default class Wrestler {
         this.x = Math.max(b.left + margin, Math.min(b.right - margin, this.x));
     }
 }
+
+// One `_do<Move>` per light strike: the registry names an executor method for every move (PLAN_LIGHT_MOVES Stages 10-11).
+for (const id of Object.keys(LIGHT_STRIKES)) Wrestler.prototype[`_do${id[0].toUpperCase()}${id.slice(1)}`] = function (other) { return this._doLightStrike(id, other); };

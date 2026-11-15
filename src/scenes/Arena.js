@@ -3342,7 +3342,7 @@ export default class Arena extends Phaser.Scene {
             dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
             headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
             jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12, theszPress: 16,
-            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, handStomp: 5, figureFour: 14, hipToss: 6, atomicDrop: 7, snapmare: 12, armBar: 8, ankleLock: 8,
+            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, handStomp: 5, clubBlow: 4, chop: 4, uppercut: 5, shoulderBlock: 6, runningForearm: 7, backElbow: 7, legSweep: 5, axeHandleBack: 6, mountedPunches: 5, bodyStomps: 4, figureFour: 14, hipToss: 6, atomicDrop: 7, snapmare: 12, armBar: 8, ankleLock: 8,
         };
         const n = bumps[move];
         if (n) this.bumpHeat(n);

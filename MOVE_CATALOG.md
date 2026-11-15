@@ -82,6 +82,16 @@ kits in `src/characters/rosterKits.js` and the registry, so it cannot drift.
 | `elbowDrop` | yes | Lou, George, Kowalski, Guido | - | unverified |
 | `kneeDrop` | yes | Lou, George, Kowalski, Guido | - | unverified |
 | `handStomp` | yes | none | - | unverified |
+| `clubBlow` | yes | none | - | unverified |
+| `chop` | yes | none | - | unverified |
+| `uppercut` | yes | none | - | unverified |
+| `shoulderBlock` | yes | none | - | unverified |
+| `runningForearm` | yes | none | - | unverified |
+| `backElbow` | yes | none | - | unverified |
+| `legSweep` | yes | none | - | unverified |
+| `axeHandleBack` | yes | none | - | unverified |
+| `mountedPunches` | yes | none | - | unverified |
+| `bodyStomps` | yes | none | - | unverified |
 | `theszPress` | yes | Lou, Kowalski | - | unverified |
 | `divingElbow` | no | everyone | - | unverified |
 | `topDive` | no | everyone | - | unverified |

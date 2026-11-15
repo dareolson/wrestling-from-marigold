@@ -122,6 +122,10 @@ PERSONALITIES.guido = {
     frontKickOdds:    0.30,
 };
 
+// ?light=v1 (Stages 10-11): how often the AI reaches for each directional light strike, of the beats it was already going to strike on. Read only when his kit holds the move.
+const LIGHT_AI_ODDS = { chopOdds: 0.25, uppercutOdds: 0.25, shoulderBlockOdds: 0.2, backElbowOdds: 0.3, legSweepOdds: 0.2, axeHandleBackOdds: 0.35, groundStrikeOdds: 0.45 };
+for (const cfg of Object.values(PERSONALITIES)) for (const [k, v] of Object.entries(LIGHT_AI_ODDS)) cfg[k] ??= v;
+
 export default class AIHandler {
     constructor(personality = 'brawler') {
         this._cfg         = PERSONALITIES[personality] ?? PERSONALITIES.brawler;
@@ -373,7 +377,12 @@ export default class AIHandler {
             } else if (this._offense <= 0 && (this._pounces ?? 0) < (cfg.pounceBudget ?? 2) && !this._nearRopes(opp)) {
                 // Each drop re-downs them, so cap follow-ups per down-spell and
                 // never chain them at the ropes — back off and let them rise
-                if (self.moveSet.includes('figureFour') && Math.random() < (cfg.figureFourOdds ?? 0)) {
+                // ?light=v1 (Stages 10-11): a strike on the mat, by how he lies: mounted punches on his back, body stomps on his stomach (Down + Action)
+                const groundStrike = lightCandidate() && ((opp.lying === 'supine' && self.moveSet.includes('mountedPunches')) || (opp.lying === 'prone' && self.moveSet.includes('bodyStomps')));
+                if (groundStrike && Math.random() < (cfg.groundStrikeOdds ?? 0)) {
+                    this._hold('down');
+                    this._attack('action', 0.9);
+                } else if (self.moveSet.includes('figureFour') && Math.random() < (cfg.figureFourOdds ?? 0)) {
                     this._attack('finisher', 1.2); // figure-four
                 } else if ((self.moveSet.includes('armBar') || self.moveSet.includes('ankleLock') || self.moveSet.includes('halfBostonCrab')) &&
                            Math.random() < (cfg.groundHoldOdds ?? 0)) {
@@ -405,7 +414,11 @@ export default class AIHandler {
             const roll = Math.random();
             const slam = cfg.staggerSlamOdds ?? 0;
             if (roll < slam)             this._attack('action', 0.9);  // grab → slam
-            else if (roll < slam + 0.45) this._attack('power', 0.85);  // headbutt
+            else if (roll < slam + 0.45) {
+                // ?light=v1 (Stage 11): a kit with the axe handle clubs the bent-over man's back instead of the headbutt on this share (Down + Power)
+                if (lightCandidate() && self.moveSet.includes('axeHandleBack') && Math.random() < (cfg.axeHandleBackOdds ?? 0)) this._hold('down');
+                this._attack('power', 0.85);  // headbutt
+            }
             else                         this._cooldown = 0.45;
             return;
         }
@@ -444,6 +457,8 @@ export default class AIHandler {
                     this._cooldown = 0.6;
                     return;
                 }
+                // ?light=v1 (Stage 11): a kit with the back elbow drives it into the runner on this share of the rebounds (Down + Action)
+                if (lightCandidate() && self.moveSet.includes('backElbow') && Math.random() < (cfg.backElbowOdds ?? 0)) { this._hold('down'); this._attack('action', 1.0); return; }
                 // ?light=v1 (Stage 6): a kit with a runner throw (hip toss, arm drag) uses it on half the rebounds, else the Action answer (clothesline or back body drop)
                 const throws = lightCandidate() && (self.moveSet.includes('hipToss') || self.moveSet.includes('armDrag'));
                 this._attack(throws && Math.random() < 0.5 ? 'power' : 'action', 1.0);
@@ -491,6 +506,21 @@ export default class AIHandler {
                     this._hold('up');
                     this._attack('power', 0.75); // knee lift
                     this._lastCloseMove = 'kneeLift';
+                } else if (lightCandidate() && opp.state === 'standing' && self.moveSet.includes('legSweep') &&
+                           this._lastCloseMove !== 'legSweep' && Math.random() < (cfg.legSweepOdds ?? 0)) {
+                    this._hold('down');
+                    this._attack('action', 0.8); // leg sweep (?light=v1)
+                    this._lastCloseMove = 'legSweep';
+                } else if (lightCandidate() && opp.state === 'standing' && self.moveSet.includes('chop') &&
+                           this._lastCloseMove !== 'chop' && Math.random() < (cfg.chopOdds ?? 0)) {
+                    this._hold('up');
+                    this._attack('power', 0.7); // chop (?light=v1)
+                    this._lastCloseMove = 'chop';
+                } else if (lightCandidate() && opp.state === 'standing' && self.moveSet.includes('uppercut') &&
+                           this._lastCloseMove !== 'uppercut' && Math.random() < (cfg.uppercutOdds ?? 0)) {
+                    this._hold(self.facing > 0 ? 'left' : 'right');
+                    this._attack('power', 0.85); // European uppercut (?light=v1)
+                    this._lastCloseMove = 'uppercut';
                 } else if (self.moveSet.includes('frontKick') && opp.state === 'standing' &&
                            this._lastCloseMove !== 'frontKick' && Math.random() < (cfg.frontKickOdds ?? 0)) {
                     this._hold('down');
@@ -528,6 +558,13 @@ export default class AIHandler {
                 Math.random() < (cfg.frontKickOdds ?? 0)) {
                 this._hold('down');
                 this._attack('power', 0.9); // front kick
+                return;
+            }
+            // ?light=v1 (Stage 10): the shoulder block from a stride away, Forward + Power (plain Power is the dropkick)
+            if (lightCandidate() && self.moveSet.includes('shoulderBlock') && opp.state === 'standing' && dist > JAB_REACH && sharesDepth(self, opp) &&
+                Math.random() < (cfg.shoulderBlockOdds ?? 0)) {
+                this._hold(self.facing > 0 ? 'right' : 'left');
+                this._attack('power', 1.0);
                 return;
             }
             if (Math.random() < cfg.dropkickOdds) {

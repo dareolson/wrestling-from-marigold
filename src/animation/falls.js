@@ -219,6 +219,13 @@ export const MOVE_FALLS = Object.freeze({
     doubleAxeHandle: Object.freeze({ hit: 'head',  falls: Object.freeze(['backward', 'sitBack', 'forward', 'kneesForward']) }),
     frontKick:       Object.freeze({ hit: 'gut',   falls: Object.freeze(['kneesForward', 'sitBack', 'forward', 'backward']) }),
     kneeLift:        Object.freeze({ hit: 'gut',   falls: Object.freeze(['kneesForward', 'sitBack', 'forward', 'backward']) }),
+    clubBlow:        Object.freeze({ hit: 'head',  falls: Object.freeze(['forward', 'kneesForward', 'sitBack', 'backward']) }),   // ?light=v1 Stage 10: a clubbing forearm bends him forward
+    chop:            Object.freeze({ hit: 'chest', falls: Object.freeze(['sitBack', 'kneesForward', 'backward', 'forward']) }),
+    uppercut:        Object.freeze({ hit: 'head',  falls: Object.freeze(['backward', 'sitBack', 'kneesForward', 'forward']) }),   // the chin snaps his head back
+    shoulderBlock:   Object.freeze({ hit: 'chest', falls: Object.freeze(['backward', 'sitBack', 'kneesForward', 'forward']) }),
+    runningForearm:  Object.freeze({ hit: 'head',  falls: Object.freeze(['backward', 'sitBack', 'forward', 'kneesForward']) }),
+    legSweep:        Object.freeze({ hit: 'chest', falls: Object.freeze(['backward', 'sitBack', 'forward', 'kneesForward']) }),   // the feet go out from under him: on his back from the front, on his stomach from behind
+    axeHandleBack:   Object.freeze({ hit: 'head',  falls: Object.freeze(['forward', 'kneesForward']) }),   // he drops onto his knees or flat on his stomach
     shove:           Object.freeze({ hit: 'chest', glancing: true, falls: Object.freeze(['spill', 'backward', 'sitBack', 'forward', 'kneesForward']) }),
     cornerCharge:    Object.freeze({ hit: 'chest', falls: Object.freeze(['forward', 'kneesForward']) }),   // the corner behind him: inward only
 });

@@ -40,8 +40,9 @@ export const ROSTER_KITS = {
 // art is parked); Kowalski keeps the ankle lock. Opus's defaults for Derek 2026-11-13; change a row here and run `npm run moves:kits`.
 export const LIGHT_KIT_SWAPS = {
     thesz:  { ankleLock: 'halfBostonCrab' },
-    george: { figureFour: 'ankleLock' },
+    george: { figureFour: 'ankleLock', jab: 'clubBlow' },   // Stage 10: George and Kowalski club where they used to jab
     guido:  { figureFour: 'ankleLock' },
+    kowalski: { jab: 'clubBlow' },
 };
 // Stage 6 runner answers (T6.5): Action answers a returning runner with the back body drop when the kit holds it, else the clothesline; Power with the hip toss
 // or the arm drag. Under ?light=v1 each kit keeps one Action answer so no two kits share a pair: Lou and George the back body drop, Kowalski and Guido the clothesline.
@@ -52,7 +53,15 @@ export const LIGHT_KIT_REMOVE = {
     guido:    ['backBodyDrop'],
 };
 // Stage 7 (T7.1): the snapmare from the tie-up (Lockup + Power, Back held) goes to Lou and Guido as Opus's default; it adds a move, so those two light kits are one longer.
-export const LIGHT_KIT_ADD = { thesz: ['snapmare', 'handStomp'], george: ['handStomp'], kowalski: ['handStomp'], guido: ['snapmare', 'handStomp'] };   // Stage 8: every kit that holds kneeDrop also holds the hand stomp (Down + Power on a man on his stomach)
+export const LIGHT_KIT_ADD = {
+    // Stage 8: every kit that holds kneeDrop also holds the hand stomp (Down + Power on a man on his stomach). Stages 10-11 (Opus's defaults for Derek, 2026-11-15): club blow replaces the jab for George and Kowalski (LIGHT_KIT_SWAPS);
+    // running forearm Lou + Guido; shoulder block Kowalski + George; mounted punches everyone; chop Lou + Kowalski; uppercut Guido + Kowalski; back elbow George + Kowalski; leg sweep Lou + Guido;
+    // axe handle to the back George + Kowalski; body stomps George + Kowalski.
+    thesz:    ['snapmare', 'handStomp', 'runningForearm', 'mountedPunches', 'chop', 'legSweep'],
+    george:   ['handStomp', 'shoulderBlock', 'mountedPunches', 'backElbow', 'axeHandleBack', 'bodyStomps'],
+    kowalski: ['handStomp', 'shoulderBlock', 'mountedPunches', 'chop', 'uppercut', 'backElbow', 'axeHandleBack', 'bodyStomps'],
+    guido:    ['snapmare', 'handStomp', 'runningForearm', 'mountedPunches', 'uppercut', 'legSweep'],
+};
 export const lightKit = name => [...(ROSTER_KITS[name] ?? []).map(id => LIGHT_KIT_SWAPS[name]?.[id] ?? id).filter(id => !LIGHT_KIT_REMOVE[name]?.includes(id)), ...(LIGHT_KIT_ADD[name] ?? [])];
 export const kitFor = (name, light) => (light ? lightKit(name) : ROSTER_KITS[name]);
 

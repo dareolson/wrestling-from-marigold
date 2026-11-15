@@ -94,6 +94,11 @@
     "status": "unverified",
     "reason": "historical: hold clip with squeeze events but no critic spec; no contact windows asserted"
   },
+  "halfBostonCrab": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-13 (PLAN_LIGHT_MOVES B2): hold registered per play under ?light=v1 (halfBostonCrabClip), no critic spec; checked by tests/halfBostonCrab.test.js, tools/move-preview/crab_report.mjs and tools/debug/crab_play_check.mjs"
+  },
   "elbowDrop": {
     "fingerprint": "39ad43d67325",
     "status": "unverified",
@@ -103,6 +108,61 @@
     "fingerprint": "39ad43d67325",
     "status": "unverified",
     "reason": "historical: aerial clip with an impact event but no critic spec (no landing or strike assertions written)"
+  },
+  "handStomp": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-14 (PLAN_LIGHT_MOVES T8.1): clip registered per play under ?light=v1 (handStompClip), no critic spec; checked by tests/handStomp.test.js and tools/debug/hand_stomp_probe.mjs"
+  },
+  "clubBlow": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES T10.1): clip registered per play under ?light=v1 (lightStrikes.js), no critic spec; checked by tools/debug/strike_measure.mjs (probe-to-target px at the hit, every rig pairing) and tests/lightStrikes.test.js"
+  },
+  "chop": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES T11.1): clip registered per play under ?light=v1 (lightStrikes.js), no critic spec; checked by tools/debug/strike_measure.mjs (probe-to-target px at the hit, every rig pairing) and tests/lightStrikes.test.js"
+  },
+  "uppercut": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES T11.2): clip registered per play under ?light=v1 (lightStrikes.js), no critic spec; checked by tools/debug/strike_measure.mjs (probe-to-target px at the hit, every rig pairing) and tests/lightStrikes.test.js"
+  },
+  "shoulderBlock": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES T10.3): clip registered per play under ?light=v1 (lightStrikes.js), no critic spec; checked by tools/debug/strike_measure.mjs (probe-to-target px at the hit, every rig pairing) and tests/lightStrikes.test.js"
+  },
+  "runningForearm": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES T10.2): clip registered per play under ?light=v1 (lightStrikes.js), no critic spec; checked by tools/debug/strike_measure.mjs (probe-to-target px at the hit, every rig pairing) and tests/lightStrikes.test.js"
+  },
+  "backElbow": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES T11.3): clip registered per play under ?light=v1 (lightStrikes.js), no critic spec; checked by tools/debug/strike_measure.mjs (probe-to-target px at the hit, every rig pairing) and tests/lightStrikes.test.js"
+  },
+  "legSweep": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES T11.4): clip registered per play under ?light=v1 (lightStrikes.js), no critic spec; checked by tools/debug/strike_measure.mjs (probe-to-target px at the hit, every rig pairing) and tests/lightStrikes.test.js"
+  },
+  "axeHandleBack": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES T11.5): clip registered per play under ?light=v1 (lightStrikes.js), no critic spec; checked by tools/debug/strike_measure.mjs (probe-to-target px at the hit, every rig pairing) and tests/lightStrikes.test.js"
+  },
+  "mountedPunches": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES T10.4): clip registered per play under ?light=v1 (groundStrikes.js), no critic spec; checked by tools/debug/ground_measure.mjs (probe-to-target px at the hit, every rig pairing) and tests/lightStrikes.test.js"
+  },
+  "bodyStomps": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES T11.6): clip registered per play under ?light=v1 (groundStrikes.js), no critic spec; checked by tools/debug/ground_measure.mjs (probe-to-target px at the hit, every rig pairing) and tests/lightStrikes.test.js"
   },
   "theszPress": {
     "fingerprint": "39ad43d67325",
@@ -128,15 +188,5 @@
     "fingerprint": "39ad43d67325",
     "status": "unverified",
     "reason": "historical: legacy cover (no clip), no critic spec; not waived because a pin does involve body contact"
-  },
-  "halfBostonCrab": {
-    "fingerprint": "39ad43d67325",
-    "status": "unverified",
-    "reason": "new 2026-11-13 (PLAN_LIGHT_MOVES B2): hold registered per play under ?light=v1 (halfBostonCrabClip), no critic spec; checked by tests/halfBostonCrab.test.js, tools/move-preview/crab_report.mjs and tools/debug/crab_play_check.mjs"
-  },
-  "handStomp": {
-    "fingerprint": "39ad43d67325",
-    "status": "unverified",
-    "reason": "new 2026-11-14 (PLAN_LIGHT_MOVES T8.1): clip registered per play under ?light=v1 (handStompClip), no critic spec; checked by tests/handStomp.test.js and tools/debug/hand_stomp_probe.mjs"
   }
 }

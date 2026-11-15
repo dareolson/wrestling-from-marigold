@@ -358,6 +358,27 @@ Roadmap only: no tasks yet. Mostly 1950s mat and lockup work, since Stages 10-11
 
 Alternates: Lou's airplane spin, George's flying tackle, Kowalski's hip attack. Still open from before: T6.4 drop toe hold.
 
+## Stage 13 roadmap: the roster's signature moves (Derek 2026-11-15: "let's put all these moves in the roadmap")
+
+Roadmap only. From [PLAN_FINISHERS.md](PLAN_FINISHERS.md) "the roster's finishers" (sources, evidence, footage there). The set-piece finishers themselves (pin or submission ending, the controller) stay in PLAN_FINISHERS; this stage builds the moves underneath them so they also work as ordinary moves. Moves for wrestlers without a rig yet are built and tested on the four rigged men first, then reassigned when the rig lands.
+
+| # | Move | Signature of | Builds on | Needs |
+|---|---|---|---|---|
+| 13.1 | Stomach claw (standing hold, squeeze, he sinks) | Kowalski | none | claw hand art (Codex) |
+| 13.2 | Bear hug (standing hold, lift and squeeze) | Yukon Eric; Tor Johnson fallback | none | footage not found; pose from scratch |
+| 13.3 | Coco Butt (big headbutt) | Bobo Brazil | `headbutt` | any Bobo footage: standing or running |
+| 13.4 | Karate chop comeback flurry (several fast chops once worn down) | Rikidozan | `chop` (approved 2026-11-15, open-hand arm art) | comeback trigger: wear past a line |
+| 13.5 | Figure-four leglock, unparked | Buddy Rogers | `figureFour` (parked) | the parked misses |
+| 13.6 | Airplane spin (on the shoulders, spin, drop) | Lou | Stage 12 lift work | a plan for the turn in a side view |
+| 13.7 | Flying hiplock into a butterfly lock, rolling back to pin | George | Stage 12.2 headlock takeover | footage: George vs Jesse James 1951 |
+| 13.8 | Knee drop off the top rope | Kowalski | `kneeDrop`, `divingElbow` | |
+| 13.9 | Shoulder backbreaker | Yukon Eric (alt) | Stage 12 lift work | |
+| 13.10 | Hip attack | Kowalski (alt) | `shove` | |
+
+Also from Stage 12: 12.2 headlock takeover (George), 12.9 Indian deathlock (Don Eagle's signature), 12.10 backdrop suplex (Lou's "Reverse Death Trap"). Still open: George's flying tackle (no source found; drop unless footage shows it), T6.4 drop toe hold. Guido and the carnival giant: ours, later.
+
+**Order (default):** Stage 12, then 13.3-13.5 (reuse built moves), 13.1-13.2 (new holds; the claw waits on art), 13.7, 13.6, 13.8-13.10.
+
 ## GP: promote `light` (Derek)
 
 Default on, `=off` disables. Full suite, build, coverage before.

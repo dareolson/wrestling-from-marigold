@@ -1,9 +1,9 @@
 // PLAN_LIGHT_MOVES Stages 10-11 (?light=v1): the standing strikes as one spec table and one clip builder (build rules: one spec per move, overrides by rig, shared phrases).
 // Each move is a one-wrestler clip: idle -> cock -> hit (the impact event) -> follow -> idle. The `hit` pose is solved per rig by tools/debug/strike_solve.mjs: a probe point on
 // the attacker (`probe`) onto a target point on a standing man (`target`) with the men 80 units apart (the separation minimum), by the arm channels, the trunk, and `lunge`: how
-// far the drawn body leans in along his facing at the hit (px at s = 1; a clip transform, so the game's separation and the men's positions do not change). The cock and the
+// far his body leans in along his facing at the hit (px at s = 1; a clip transform, which moves his x: Wrestler._doLightStrike holds the other man's separation off with `_lungeUntil` while it plays). The cock and the
 // follow are deltas on the solved hit pose, so a rig with a different reach keeps the same motion. `reach`: his root to the probe point at the hit, along his facing.
-// An attacker override replaces `hit` / `lunge` / `reach` per rig; a defender override (a man who stands taller or leans) can shift `lift`, the pose's height offset.
+// An attacker override replaces `hit` / `lunge` / `reach` per rig (a defender override is supported by specFor but no move uses one yet).
 import { specFor } from './rigOverrides.js';
 import { shinsFromFolds } from '../../rig/articulation.js';
 

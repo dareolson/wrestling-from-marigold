@@ -1,0 +1,42 @@
+{
+ "pair": "lou-george",
+ "ts": 3,
+ "errors": [],
+ "gameSec": 420.8,
+ "stuck": [],
+ "newMoves": {
+  "clubBlow": 7,
+  "runningForearm": 0,
+  "shoulderBlock": 1,
+  "mountedPunches": 0,
+  "chop": 2,
+  "uppercut": 0,
+  "backElbow": 0,
+  "legSweep": 2,
+  "axeHandleBack": 0,
+  "bodyStomps": 0
+ },
+ "allMoves": {
+  "taunt": 25,
+  "clubBlow": 7,
+  "lockup": 31,
+  "hammerlock": 5,
+  "legSweep": 2,
+  "halfBostonCrab": 8,
+  "pin": 8,
+  "jab": 3,
+  "irishWhip": 8,
+  "headlock": 16,
+  "dropkick": 13,
+  "armBar": 3,
+  "kneeLift": 3,
+  "chop": 2,
+  "sleeperHold": 1,
+  "ankleLock": 2,
+  "shoulderBlock": 1,
+  "backBodyDrop": 1,
+  "suplex": 1
+ },
+ "events": 199,
+ "matchesEnded": 0
+}

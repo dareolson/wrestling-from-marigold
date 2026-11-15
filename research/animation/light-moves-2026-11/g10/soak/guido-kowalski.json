@@ -1,0 +1,43 @@
+{
+ "pair": "guido-kowalski",
+ "ts": 3,
+ "errors": [],
+ "gameSec": 420.9,
+ "stuck": [],
+ "newMoves": {
+  "clubBlow": 8,
+  "runningForearm": 0,
+  "shoulderBlock": 4,
+  "mountedPunches": 0,
+  "chop": 1,
+  "uppercut": 2,
+  "backElbow": 0,
+  "legSweep": 3,
+  "axeHandleBack": 0,
+  "bodyStomps": 0
+ },
+ "allMoves": {
+  "dropkick": 3,
+  "legSweep": 3,
+  "pin": 36,
+  "lockup": 22,
+  "irishWhip": 4,
+  "hipToss": 2,
+  "ankleLock": 7,
+  "armBar": 3,
+  "clubBlow": 8,
+  "uppercut": 2,
+  "frontKick": 10,
+  "slam": 1,
+  "shoulderBlock": 4,
+  "jab": 7,
+  "clothesline": 2,
+  "kneeLift": 3,
+  "chop": 1,
+  "headlock": 4,
+  "hammerlock": 1,
+  "sleeperHold": 1
+ },
+ "events": 280,
+ "matchesEnded": 1
+}

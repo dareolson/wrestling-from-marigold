@@ -1,0 +1,39 @@
+{
+ "pair": "george-lou",
+ "ts": 3,
+ "errors": [],
+ "gameSec": 420.9,
+ "stuck": [],
+ "newMoves": {
+  "clubBlow": 6,
+  "runningForearm": 0,
+  "shoulderBlock": 7,
+  "mountedPunches": 0,
+  "chop": 0,
+  "uppercut": 0,
+  "backElbow": 0,
+  "legSweep": 1,
+  "axeHandleBack": 0,
+  "bodyStomps": 0
+ },
+ "allMoves": {
+  "taunt": 25,
+  "lockup": 28,
+  "headlock": 15,
+  "irishWhip": 6,
+  "backBodyDrop": 2,
+  "ankleLock": 6,
+  "jab": 5,
+  "shoulderBlock": 7,
+  "hammerlock": 3,
+  "dropkick": 8,
+  "clubBlow": 6,
+  "legSweep": 1,
+  "halfBostonCrab": 4,
+  "armBar": 3,
+  "pin": 6,
+  "kneeLift": 1
+ },
+ "events": 188,
+ "matchesEnded": 0
+}

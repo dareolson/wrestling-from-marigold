@@ -1,0 +1,70 @@
+{
+ "george-lou": {
+  "gameSec": 420.9,
+  "newMoves": {
+   "clubBlow": 6,
+   "runningForearm": 0,
+   "shoulderBlock": 7,
+   "mountedPunches": 0,
+   "chop": 0,
+   "uppercut": 0,
+   "backElbow": 0,
+   "legSweep": 1,
+   "axeHandleBack": 0,
+   "bodyStomps": 0
+  },
+  "stuck": 0,
+  "pageErrors": 0
+ },
+ "guido-kowalski": {
+  "gameSec": 420.9,
+  "newMoves": {
+   "clubBlow": 8,
+   "runningForearm": 0,
+   "shoulderBlock": 4,
+   "mountedPunches": 0,
+   "chop": 1,
+   "uppercut": 2,
+   "backElbow": 0,
+   "legSweep": 3,
+   "axeHandleBack": 0,
+   "bodyStomps": 0
+  },
+  "stuck": 0,
+  "pageErrors": 0
+ },
+ "kowalski-guido": {
+  "gameSec": 420.8,
+  "newMoves": {
+   "clubBlow": 8,
+   "runningForearm": 0,
+   "shoulderBlock": 3,
+   "mountedPunches": 0,
+   "chop": 2,
+   "uppercut": 0,
+   "backElbow": 1,
+   "legSweep": 1,
+   "axeHandleBack": 0,
+   "bodyStomps": 0
+  },
+  "stuck": 0,
+  "pageErrors": 0
+ },
+ "lou-george": {
+  "gameSec": 420.8,
+  "newMoves": {
+   "clubBlow": 7,
+   "runningForearm": 0,
+   "shoulderBlock": 1,
+   "mountedPunches": 0,
+   "chop": 2,
+   "uppercut": 0,
+   "backElbow": 0,
+   "legSweep": 2,
+   "axeHandleBack": 0,
+   "bodyStomps": 0
+  },
+  "stuck": 0,
+  "pageErrors": 0
+ }
+}

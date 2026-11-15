@@ -32,6 +32,15 @@ Order per wrestler:
    - `talk`: closed, speaking, shouting.
    - `pain`: flinch, clenched teeth, open-mouth cry.
    - `smug`: smirk, toothy grin, chuckle.
+   **Personality (Derek 2026-11-14):** George stays the arrogant heel. Lou and Guido are babyfaces, and Kowalski ("Killer") is a monster heel. Same three slots and file names for everyone, so the code is unchanged. The `smug` slot plays after he lands a hit; `talk` plays while he stands over a downed man.
+   - **Lou, Guido (babyface):**
+     - `talk`: fired up, rallying the crowd: closed jaw-set, calling out, full-throated yell.
+     - `pain`: open, honest selling.
+     - `smug` slot: determined, never smug: a grim nod, a gritted fighting grin, a fired-up shout.
+   - **Kowalski (monster heel):**
+     - `talk`: a low growl and snarl: closed sneer, bared teeth, roar.
+     - `pain`: grudging, more anger than hurt: grimace, clenched snarl, pained roar.
+     - `smug` slot: menace: cold dead stare, wide-eyed sneer, a slow cruel grin.
 3. **Format, as for George:**
    - Same profile angle, framing and neck cut as `head.png`.
    - Transparent background.

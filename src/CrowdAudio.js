@@ -140,7 +140,11 @@ export default class CrowdAudio {
             src.connect(f); f.connect(g); g.connect(this._fx);
             src.start(t + delay, Math.random() * 0.5); src.stop(t + delay + decay + 0.02);
         };
-        if (kind === 'strike') {
+        if (kind === 'chop') {
+            burst('bandpass', 2800, 1.0, 1.3, 0.055);
+            burst('highpass', 5000, 0.7, 0.45, 0.035);
+            thud(140, 70, 0.06, 0.65, 0.12);
+        } else if (kind === 'strike') {
             burst('bandpass', 1900, 1.4, 1.2, 0.05);
             thud(170, 95, 0.05, 1.0, 0.1);
         } else if (kind === 'kick') {

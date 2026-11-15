@@ -81,7 +81,7 @@ export class FaceDriver {
         const w = this.w;
         const taken = w._damageTaken ?? 0, dealt = other?._damageTaken ?? 0;
         if (taken > this.taken) {
-            this.state = startHeadReaction(addHeadWear(this.state, taken - this.taken), 'pain', now);
+            this.state = startHeadReaction(addHeadWear(this.state, taken - this.taken), 'pain', now, w._pain?.source === 'chop' ? 1900 : 1400);
             this.boastAt = null;
             this.override = null;
         }

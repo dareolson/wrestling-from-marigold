@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ten-move legwork review</title>
+<style>body{margin:18px;background:#17191d;color:#eee;font:16px system-ui}h1{font-size:24px}select,button{font:inherit;padding:8px;margin:4px}iframe{display:block;width:100%;height:72vh;border:1px solid #555;margin-top:12px}p{max-width:1000px;line-height:1.5}a{color:#c6ddff}</style>
+<h1>Ten-move legwork review</h1>
+<p>Actual gameplay executors with AI disabled. Review the support foot, recovery and receiver's legs. Kit restrictions are bypassed for this animation review.</p>
+<label>Move <select id="move"></select></label>
+<label>Attacker <select id="attacker"></select></label>
+<label>Receiver <select id="defender"></select></label>
+<label>Facing <select id="facing"><option value="1">Right</option><option value="-1">Left</option></select></label>
+<button id="play">Replay</button><label><input type="checkbox" id="loop"> Repeat</label><span id="status" role="status"></span>
+<p><a href="/research/animation/legwork-2026-11-15/REPORT.md">Audit findings</a> · <a href="/research/animation/light-moves-2026-11/g10/index.html">Original G10/G11 recordings</a></p>
+<iframe id="game" title="Live move review"></iframe>
+<script type="module">
+const cases={clubBlow:['Club blow','standing'],runningForearm:['Running forearm','runnerAtk'],shoulderBlock:['Shoulder block','standing'],mountedPunches:['Mounted punches','supine'],chop:['Chop','standing'],uppercut:['Uppercut','standing'],backElbow:['Back elbow','runner'],legSweep:['Leg sweep','standing'],axeHandleBack:['Axe handle to back','staggered'],bodyStomps:['Body stomps','prone']};
+const rigs={'thesz-procreate-v1':'Lou','george-roster-v1':'George','kowalski-roster-v1':'Kowalski','guido-roster-v1':'Guido'};
+cases.chopTieup=['Chop from tie-up','tieup'];
+const $=id=>document.getElementById(id),frame=$('game');
+for(const [id,[label]] of Object.entries(cases))$('move').add(new Option(label,id));
+for(const id of ['attacker','defender'])for(const [rig,label] of Object.entries(rigs))$(id).add(new Option(label,rig));
+const params=new URLSearchParams(location.search);
+$('defender').value=params.get('defender')||'george-roster-v1';$('move').value=params.get('move')||'mountedPunches';
+if(rigs[params.get('attacker')])$('attacker').value=params.get('attacker');let token=0,liveScene=null,loadedRigs='',replayTimer;
+$('loop').checked=params.get('loop')==='1';
+async function play(){
+ clearTimeout(replayTimer);
+ const current=++token,move=$('move').value,kind=cases[move][1],facing=+$('facing').value;
+ $('status').textContent='Loading…';
+ const wantedRigs=$('attacker').value+':'+$('defender').value;
+ try{
+ let sc=liveScene;
+ if(!sc||wantedRigs!==loadedRigs){
+ sc=null;
+ const loaded=new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(new Error('Game page timed out')),45000);frame.addEventListener('load',()=>{clearTimeout(timeout);resolve();},{once:true});});
+ frame.src='/?'+new URLSearchParams({arena:'1',notitle:'1',light:'v1',p1:$('attacker').value,p2:$('defender').value,review:String(current)});
+  await loaded;
+  for(let i=0;i<900;i++){
+   if(current!==token)return;
+   const w=frame.contentWindow;
+   if(frame.contentDocument?.readyState==='complete'&&w?.__WFM_GAME?.scene.scenes[0]?.w2){sc=w.__WFM_GAME.scene.scenes[0];break;}
+   await new Promise(resolve=>setTimeout(resolve,50));
+  }
+  if(!sc)throw new Error('Game did not finish loading');
+  liveScene=sc;loadedRigs=wantedRigs;
+ }
+  sc._p1AI=sc._p2AI=null;
+  sc.lockupState=null;sc._exitBlend=null;
+  for(const h of [...sc.moveRuntime._active.values()])sc.moveRuntime.cancel(h,'review-reset');
+  const A=sc.w1,D=sc.w2;
+  for(const w of [A,D]){
+   sc.tweens.killTweensOf(w);sc.tweens.killTweensOf(w.pose);w._cancelActiveMove('review');
+   w.state='standing';w.stateTimer=0;w.vx=w.vy=0;w.y=330;w.stamina=100;w.wear=0;w.lying=null;
+   w._landing=w._landNext=w._jolt=w._sell=w._pain=null;w._lightContactOther=null;w._facingLock=false;
+   w.runPhase=null;w.moveBlend=0;w.input={justDown:()=>false,isDown:()=>false};
+   Object.assign(w.pose,{lLeg:-.04,rLeg:.16,lShin:-.12,rShin:.08,lArm:0,rArm:0,lElbow:.75,rElbow:.75,lean:0,crouch:0,bend:0,tilt:0,lift:0,chestClutch:0});
+  }
+  A.x=450;D.x=450+facing*((kind==='standing'||kind==='staggered')?80*A.s:90);A.facing=facing;D.facing=-facing;
+  if(kind==='supine'||kind==='prone'){D.state='down';D.lying=kind;D.stateTimer=99;D.facing=kind==='supine'?-facing:facing;}
+  if(kind==='runner'){D.state='running';D.runPhase='returning';D.runFacing=-facing;D.runTarget=A.x-facing*400;D.x=A.x+facing*110*A.s;}
+  if(kind==='runnerAtk'){A.state='running';A.runPhase='returning';A.runFacing=facing;D.x=A.x+facing*110*A.s;}
+  if(kind==='staggered')D.startStagger();
+  const cam=sc.cameras.main;cam.stopFollow?.();cam.removeBounds?.();cam.setZoom(1.6);cam.centerOn((A.x+D.x)/2,280);
+  A.draw();D.draw();
+  if(kind==='tieup'){
+   A.state=D.state='lockup';
+   sc.lockupState={attacker:A,defender:D,timer:0,grapple:{seed:1,t:0,stealAt:null,breakAt:null,grips:null}};
+   let sent=false;
+   A.input={justDown:k=>k==='power'&&!sent?(sent=true):false,isDown:k=>k===(facing>0?'right':'left')};
+   const releaseInput=()=>{if(A.state!=='lockup'||current!==token){A.input={justDown:()=>false,isDown:()=>false};sc.events.off('postupdate',releaseInput);}};
+   sc.events.on('postupdate',releaseInput);
+  }else A['_do'+move[0].toUpperCase()+move.slice(1)](D);
+  $('status').textContent=cases[move][0]+' · playing';
+  if($('loop').checked)replayTimer=setTimeout(play,kind==='tieup'?3400:2400);
+ }catch(e){$('status').textContent=e.message;}
+}
+$('play').onclick=play;for(const id of ['move','attacker','defender','facing'])$(id).onchange=play;play();
+$('loop').onchange=()=>{clearTimeout(replayTimer);if($('loop').checked)play();};
+</script></html>

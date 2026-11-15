@@ -38,11 +38,14 @@ Avoid a large rewrite.
 - **Soak:** AI vs AI, `?light=v1`, 420 game s each at 3x, Lou-George, George-Lou, Kowalski-Guido, Guido-Kowalski: 0 stuck states, 0 page errors. Plays (4 runs): club blow 29, shoulder block 15, chop 5, leg sweep 7, uppercut 2, back elbow 1; **0 plays of running forearm, mounted punches, axe handle to the back, body stomps** (the AI has no running attack; the AI's ground and staggered branches never rolled these in four matches, so their AI path is unproven; the player path is routed in `g10_inputs.mjs`). Data: `research/animation/light-moves-2026-11/g10/soak-summary.json`.
 - **Earlier open items:** T6.4 drop toe hold not built (needs Derek's footage or hand-posed Lou stills); crab/body slam/runner/snapmare misses are in their Progress lines; Codex's runner polish + impact/sell work is in S0 unreviewed (`npm run move:preview`); Derek praised snapmare and clothesline and "looks pretty good" on jab + clothesline contact; his G8 fixes (T8.5) and the G9 half kneel await his verdict.
 - **Expression heads (committed 79c07d4 + f42c086, on by default, `?faces=0` off)** and **George performance (a7dc7c9 +, `?georgePerformance=1`)** are Opus's and untouched by this run; plan: [PLAN_GEORGE_PERFORMANCE.md](PLAN_GEORGE_PERFORMANCE.md) (untracked), entry [2026-11-15](AI_HANDOFF_ENTRIES/2026-11-15-codex-george-performance-and-arm-art.md) (untracked).
+- **Legwork audit (Codex, 2026-11-15, uncommitted):** all ten moves, 320 cases; mount rebuilt with both knees down, stable support plants, neutral shin recovery, quieter mounted receiver legs and recovery-pop fixes. Tests 1371/1371 + build pass. Review current code at `/tools/legwork-preview/`; [findings and limits](AI_HANDOFF_ENTRIES/2026-11-15-codex-ten-move-legwork-audit.md). Sweep reach / shoulder-block overlap / running entry still need visual attention. No approval or promotion.
 - **Next:** Derek judges the G10+G11 page; GP (promote `light`) is his call; Opus reviews S0's Codex half and Stages 8-11 before any push. Not committed on purpose: `Roster Base Masters/`, the 2026-11-14 art research folders, the G9 jpg frame dumps (disk only).
 - **Parked:** finishers, gait Stage 3, get-ups Stage 5, George transfer G10a, figure-four, support-hand plant. Promoted flags: `risefix`, `sellart`, `aftermath`, `getups`, `grapples`, `falls`. Opt-in: `light=v1`, `waistlock=v1`, `gait=v2`, `plant=1`. Dev servers: `npx vite --port 5197`; a second with `server.watch: null` for long solver runs.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-15 · Codex · [Ten-move legwork audit: support feet, mounted punches, receiver legs and recovery](AI_HANDOFF_ENTRIES/2026-11-15-codex-ten-move-legwork-audit.md)
 
 - 2026-11-15 · Codex · [George performance plan and new hair-check/dismissal arm-art direction](AI_HANDOFF_ENTRIES/2026-11-15-codex-george-performance-and-arm-art.md)
 

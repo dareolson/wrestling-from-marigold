@@ -1,0 +1,121 @@
+{
+  "results": [
+    {
+      "move": "mountedPunches",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        56,
+        74,
+        93,
+        111
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07999999999999988
+          ],
+          "maxGroundedSoleSlide": 1.7351411861665087,
+          "maxSoleAboveRoot": 1.94688771787429,
+          "maxSoleBelowRoot": 4.491915742751928,
+          "segmentMaxMinRatio": 1.026877168778241
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [
+        "mountedPunches-thesz-20.png",
+        "mountedPunches-thesz-56.png",
+        "mountedPunches-thesz-74.png",
+        "mountedPunches-thesz-93.png",
+        "mountedPunches-thesz-111.png",
+        "mountedPunches-thesz-130.png"
+      ],
+      "plantMax": 0.026420008475754608
+    },
+    {
+      "move": "legSweep",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            1.1102230246251565e-16
+          ],
+          "maxGroundedSoleSlide": 12.61590109668109,
+          "maxSoleAboveRoot": 12.981723780589732,
+          "maxSoleBelowRoot": 13.730762793299732,
+          "segmentMaxMinRatio": 1.0000000000000027
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.0000064362119981120625
+          ],
+          "maxGroundedSoleSlide": 2.360109894334785,
+          "maxSoleAboveRoot": 5.0555206358193345,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [
+        "legSweep-thesz-20.png",
+        "legSweep-thesz-22.png",
+        "legSweep-thesz-130.png"
+      ],
+      "plantMax": 11.094667281578273
+    },
+    {
+      "move": "clubBlow",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        20
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07999999999999999
+          ],
+          "maxGroundedSoleSlide": 8.715273102800474,
+          "maxSoleAboveRoot": 2.013263971249671,
+          "maxSoleBelowRoot": 3.4491635167856884,
+          "segmentMaxMinRatio": 1.0000000000000024
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 6.534472708661432,
+          "maxSoleAboveRoot": 7.19507469242626,
+          "maxSoleBelowRoot": 0.15441834838236446,
+          "segmentMaxMinRatio": 1.0000000000000024
+        }
+      },
+      "snaps": [
+        "clubBlow-thesz-20.png",
+        "clubBlow-thesz-130.png"
+      ],
+      "plantMax": 0.17300260703289175
+    }
+  ],
+  "errors": []
+}

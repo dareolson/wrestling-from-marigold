@@ -101,3 +101,18 @@ export function staggerFor(stamina) {
 }
 
 export const stepMs = type => type.steps.reduce((ms, s) => ms + s.dur, 0);
+
+// A hard chop: recover from the snap, protect the sternum and breathe through
+// the sting. Two short alternating recovery steps accompany the recoil.
+const chest = (bend, weight, crouch = .08) => ({
+    lLeg:-.04,rLeg:.16,lShin:-.04+.85*crouch-.14,rShin:.16+.85*crouch-.14,
+    lArm:.12,rArm:.08,lElbow:1.2,rElbow:1.1,bend,crouch,chestClutch:weight,
+});
+export const CHOP_STAGGER = Object.freeze({id:'chopChest',seconds:1.6,steps:[
+    step({...chest(-.22,.45,.12),lLeg:-.18,rLeg:.24,lShin:-.218,rShin:.202},140,'Cubic.easeOut',8),
+    step({...chest(.18,1,.12),lLeg:.12,rLeg:-.08,lShin:.082,rShin:-.118},180,'Sine.easeInOut',6),
+    step(chest(.25,1,.1),340,'Sine.easeInOut'),
+    step(chest(.12,1),300,'Sine.easeInOut'),
+    step(chest(.06,.5,.04),260,'Sine.easeInOut'),
+    step({...chest(0,0,0),lElbow:.75,rElbow:.75,lShin:-.12,rShin:.08},220,'Sine.easeInOut'),
+]});

@@ -1,0 +1,13 @@
+{
+  "seen": [
+    "thesz_pv1_upper_arm",
+    "thesz_pv1_chop_sweep_back",
+    "thesz_pv1_chop_sweep_camera",
+    "thesz_pv1_chop_sweep_contact",
+    "thesz_pv1_chop_sweep_follow"
+  ],
+  "restored": true,
+  "sameGame": true,
+  "status": "Chop · playing",
+  "errors": []
+}

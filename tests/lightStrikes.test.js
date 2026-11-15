@@ -97,7 +97,13 @@ test('the ground strikes build for every rig and facing channel: valid, finite, 
         assert.deepEqual(keys[0].transform, { x: 0, y: 0 });
         // the arms alternate: the striking arm at each hit key is not the one at the next
         const hits = m.events.map(e => keys.find(k => k.at === e.at).pose);
-        for (let i = 1; i < hits.length; i++) assert.notEqual(hits[i].lArm > hits[i].rArm, hits[i - 1].lArm > hits[i - 1].rArm, 'alternating hands');
+        for (let i = 0; i < hits.length; i++) {
+            const guard = i % 2 === 0 ? 'r' : 'l', striking = guard === 'l' ? 'r' : 'l';
+            assert.equal(hits[i][guard+'Arm'], MOUNTED_PUNCHES_SPEC.guard.arm, 'non-striking hand stays in guard');
+            assert.equal(hits[i][guard+'Elbow'], MOUNTED_PUNCHES_SPEC.guard.elbow);
+            assert.notDeepEqual([hits[i][striking+'Arm'], hits[i][striking+'Elbow']],
+                [MOUNTED_PUNCHES_SPEC.guard.arm, MOUNTED_PUNCHES_SPEC.guard.elbow], 'alternating striking hand leaves guard');
+        }
     }
     for (const rig of RIGS) {
         const b = bodyStompsClip(rig, { walk: { x: 40, y: 5 } });
@@ -117,4 +123,62 @@ test('a clip that closes the gap carries the walk in its transform and ends wher
         assert.ok(hit.transform.x >= 60, id);
         assert.deepEqual(keys.at(-1).transform, { x: 60, y: 0 });
     }
+});
+
+
+test('leg-owning clips finish with neutral shins instead of carrying folded legs into standing', () => {
+    const clips = RIGS.flatMap(rig => [
+        ...IDS.map(id => lightStrikeClip(id, rig)),
+        mountedPunchesClip(MOUNTED_PUNCHES_SPEC, rig),
+        bodyStompsClip(rig),
+    ]);
+    for (const clip of clips) {
+        const keys = clip.tracks.attacker.keyframes;
+        for (const key of keys) for (const side of ['l', 'r']) {
+            assert.ok(Number.isFinite(key.pose[side + 'Shin']), `${clip.id} explicit ${side} shin at ${key.at}`);
+            assert.ok(key.pose[side + 'Shin'] <= key.pose[side + 'Leg'] + .85 * key.pose.crouch + 1e-8,
+                `${clip.id} no backward fold at ${key.at}`);
+        }
+        const end = keys.at(-1).pose;
+        for (const side of ['l', 'r']) assert.ok(Math.abs(end[side+'Shin'] - end[side+'Leg']) <= .081,
+            `${clip.id} releases folded shin before returning to idle`);
+    }
+});
+
+test('mounted punches use a bilateral kneeling base with a stable lower body through alternating hits', () => {
+    for (const rig of RIGS) for (const nearChannel of ['l', 'r']) {
+        const c = mountedPunchesClip(MOUNTED_PUNCHES_SPEC, rig, { nearChannel });
+        const hits = c.events.map(e => c.tracks.attacker.keyframes.find(k => k.at === e.at).pose);
+        for (const p of hits) for (const side of ['l','r']) {
+            const fold = p[side+'Leg'] + .85 * p.crouch - p[side+'Shin'];
+            assert.ok(fold >= 2 && fold <= 2.45, 'both heels folded back in the mount');
+            assert.ok(Math.abs(p[side+'Leg']) < .3, 'no raised half-kneel thigh');
+        }
+        const lower = p => ['lLeg','rLeg','lShin','rShin','crouch'].map(k=>p[k]);
+        for (const p of hits) assert.deepEqual(lower(p), lower(hits[0]));
+        assert.equal(c.plants.length, 2);
+        assert.ok(c.tracks.defender && c.layers.length, 'far leg can sit behind the grounded receiver');
+    }
+});
+
+test('Lou chops with the far arm in either channel mapping, resets its art and preserves the same footwork', () => {
+    const clips = ['near','far'].map(lSide => lightStrikeClip('chop', 'thesz-procreate-v1', {lSide}));
+    for (let i=0;i<clips.length;i++) {
+        const clip=clips[i],keys=clip.tracks.attacker.keyframes;
+        assert.ok(validateClip(clip).ok);
+        const hit=keys.find(k=>k.at===LIGHT_STRIKES.chop.times.hit),channel=i===0?'r':'l';
+        assert.equal(hit.pose[channel+'Arm'],.965);
+        assert.equal(hit.parts.farForearm,'base');
+        assert.equal(hit.parts.farUpperArm,'chopSweepContact');
+        assert.equal(hit.parts.nearForearm,undefined);
+        assert.equal(keys.at(-1).parts.farForearm,'base');
+        assert.ok(keys.some(k=>k.at<LIGHT_STRIKES.chop.times.cock&&k.parts.farUpperArm==='chopSweepBack'));
+        const tween=keys.find(k=>k.parts.farUpperArm==='chopSweepCamera');
+        assert.ok(tween&&tween.at<hit.at,'the end-on drawing must actually play before contact');
+        const layer=clip.layers.find(w=>w.from<=tween.at&&w.to>tween.at);
+        assert.ok(layer.order.findIndex(x=>x[0]==='attacker'&&x[1]==='nativeBody')<layer.order.findIndex(x=>x[0]==='attacker'&&x[1]==='farArm'), 'the end-on hand is visible in front of his own torso');
+        assert.ok(clip.tracks.defender&&clip.layers.length,'contact art can draw over receiver chest');
+    }
+    const legs=clip=>clip.tracks.attacker.keyframes.map(k=>['lLeg','rLeg','lShin','rShin','crouch'].map(n=>k.pose[n]));
+    assert.deepEqual(legs(clips[0]),legs(clips[1]));
 });

@@ -287,6 +287,32 @@ export const theszProcreateV1 = {
                     key: 'thesz_pv1_forearm_waist_clasp', file: 'forearm_waist_clasp.png',
                     semanticAnchors: { clutch: { u: 0.7067185287335018, v: 0.7948717948717948 } },
                 },
+                // The chop (lightStrikes.js LIGHT_STRIKE_ART): flat open hand, from Codex's whole-arm drawings (research/art/chop-far-arm-2026-11-15/)
+                // split at the elbow and fitted to this canvas by tools/art/build_chop_arms.py. Each goes with the upperArm variant of the same name.
+                chopWindup: { key: 'thesz_pv1_forearm_chop_windup', file: 'forearm_chopWindup.png' },
+                chopContact: { key: 'thesz_pv1_forearm_chop_contact', file: 'forearm_chopContact.png' },
+                chopFollow: { key: 'thesz_pv1_forearm_chop_follow', file: 'forearm_chopFollow.png' },
+            },
+            upperArm: {
+                chopSweepBack: { key: 'thesz_pv1_chop_sweep_back', file: 'upper_arm_chopSweepBack.png', projectedArm: {
+                    shoulder: {u:140/1672,v:225/941}, elbow:{u:590/1672,v:650/941}, wrist:{u:1230/1672,v:580/941},
+                    scaleX:.045,scaleY:.045,reverse:true,
+                } },
+                chopSweepCamera: { key: 'thesz_pv1_chop_sweep_camera', file: 'upper_arm_chopSweepCamera.png', projectedArm: {
+                    shoulder:{u:550/1312,v:350/1199},elbow:{u:520/1312,v:560/1199},wrist:{u:590/1312,v:740/1199},
+                    scaleX:.055,scaleY:.038,
+                }, semanticAnchors:{chopEdge:{u:650/1312,v:900/1199}} },
+                chopSweepContact: { key: 'thesz_pv1_chop_sweep_contact', file: 'upper_arm_chopSweepContact.png', projectedArm: {
+                    shoulder:{u:140/1774,v:215/887},elbow:{u:640/1774,v:600/887},wrist:{u:1250/1774,v:575/887},
+                    scaleX:.055,scaleY:.055,
+                }, semanticAnchors:{chopEdge:{u:1590/1774,v:590/887}} },
+                chopSweepFollow: { key: 'thesz_pv1_chop_sweep_follow', file: 'upper_arm_chopSweepFollow.png', projectedArm: {
+                    shoulder:{u:110/1774,v:250/887},elbow:{u:700/1774,v:520/887},wrist:{u:1350/1774,v:440/887},
+                    scaleX:.045,scaleY:.045,angle:.18,
+                } },
+                chopWindup: { key: 'thesz_pv1_upper_arm_chop_windup', file: 'upper_arm_chopWindup.png' },
+                chopContact: { key: 'thesz_pv1_upper_arm_chop_contact', file: 'upper_arm_chopContact.png' },
+                chopFollow: { key: 'thesz_pv1_upper_arm_chop_follow', file: 'upper_arm_chopFollow.png' },
             },
         },
         thigh: {

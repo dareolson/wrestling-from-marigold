@@ -4014,6 +4014,20 @@ export default class Arena extends Phaser.Scene {
             return;
         }
 
+        // A chest chop from the tie-up: forward + power. Keep up/down free for go-behind.
+        if (lightCandidate() && ls.attacker.moveSet.includes('chop') && just(ls.attacker, 'power')) {
+            const stored = ls.attacker.input.justDown('power') ? null : consumed?.get(ls.attacker)?.get('power');
+            const held = d => stored?.[d] ?? ls.attacker.input.isDown(d);
+            if (held(ls.attacker.facing > 0 ? 'right' : 'left') && !held('up') && !held('down')) {
+                const {attacker,defender}=ls;
+                this.lockupState=null;attacker.state=defender.state='standing';
+                attacker._doChop(defender);
+                this._logEvent('move',{attacker:who,move:'chop',from:'lockup',defenderStamina:Math.round(defender.stamina)});
+                this._heatForMove('chop');
+                return;
+            }
+        }
+
         // Stage 4b W2 (`?waistlock=v1`): power with up or down held goes behind (up round the far side, down the near); power alone stays the
         // kit's hip toss / arm drag. The AI never presses power in a lockup (AIHandler._handleLockup), so only a player's held direction can start it.
         if (g && waistlockCandidate() && ls.attacker.moveSet.includes('goBehind') && just(ls.attacker, 'power') && (g.stealAt === null || g.t - g.stealAt > LOCKUP.stealHitch + LOCKUP.stealCrossfade)) {

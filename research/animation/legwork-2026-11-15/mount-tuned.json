@@ -1,0 +1,50 @@
+{
+  "thesz-procreate-v1": {
+    "l": {
+      "arm": 0.896,
+      "elbow": 0.575,
+      "miss": 0.08
+    },
+    "r": {
+      "arm": 0.232,
+      "elbow": 1.428,
+      "miss": 0.13
+    }
+  },
+  "george-roster-v1": {
+    "l": {
+      "arm": 0.9,
+      "elbow": 0.02,
+      "miss": 9.41
+    },
+    "r": {
+      "arm": 0.7,
+      "elbow": 0.02,
+      "miss": 2.09
+    }
+  },
+  "kowalski-roster-v1": {
+    "l": {
+      "arm": 0.713,
+      "elbow": 0.379,
+      "miss": 0.02
+    },
+    "r": {
+      "arm": 0.2,
+      "elbow": 1.12,
+      "miss": 4.03
+    }
+  },
+  "guido-roster-v1": {
+    "l": {
+      "arm": 0.9,
+      "elbow": 0.22,
+      "miss": 6.43
+    },
+    "r": {
+      "arm": 0.204,
+      "elbow": 1.063,
+      "miss": 0.02
+    }
+  }
+}

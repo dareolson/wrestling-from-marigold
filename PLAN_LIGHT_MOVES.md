@@ -95,6 +95,8 @@ Replaces PLAN_FINISHERS as the next front (Derek 2026-11-07: "i don't think i wa
 - T11.6 body stomps (334ce99): 32/32 runs, 96 stomps: painted sole on the torso in all 96 (sole-to-torso 0 px, overlap 79-139 px, the hand stomp's was 100-195); ankle-to-back-point joint miss 5.1-28.7 px; joint step 20.6. Down + Action next to a man on his stomach, George + Kowalski (a kit without it keeps the pin); `style.stomps` sets the count. Misses: left-facing Lou worst at the joint metric; standY not tuned beyond 0.
 
 - T11.7 combined G10+G11 page + soak + final gate (this commit): REVIEW: [G10+G11 page](file:///Users/home/Documents/wrestling-from-marigold/research/animation/light-moves-2026-11/g10/index.html) (10 moves x Lou-George / George-Lou x both facings, measure numbers, kit table, soak). Soak 4 pairings x 420 game s: 0 stuck, 0 page errors; the AI played club blow, shoulder block, chop, leg sweep, uppercut, back elbow but **never** running forearm, mounted punches, axe handle, body stomps (AI path unproven for those four). Gate: full suite 1369/1369 (Node 22), build, `moves:coverage --check` (38 baselined), `moves:kits --check`.
+- **2026-11-15 Codex follow-up (uncommitted):** Derek requested legwork audit of all ten. Support plants/neutral shins, low bilateral mount and bounded receiver leg sell, straight sweep with support-weighted solve, gait/facing/separation recovery-pop fixes. 320/320 real-executor cases, tests 1371/1371 + build pass. Current review: `/tools/legwork-preview/`; [report](research/animation/legwork-2026-11-15/REPORT.md). Remaining contact/staging limits recorded; no Derek/Opus approval or gate promotion.
+
 
 ## Order and roles (2026-11-10)
 

@@ -1,0 +1,2736 @@
+{
+  "results": [
+    {
+      "move": "clubBlow",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        20
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 6.289451248359271,
+          "maxSoleAboveRoot": 1.8764993332752056,
+          "maxSoleBelowRoot": 2.5594112462370617,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 6.534453138952564,
+          "maxSoleAboveRoot": 7.19507469242626,
+          "maxSoleBelowRoot": 0.15441834838236446,
+          "segmentMaxMinRatio": 1.0000000000000022
+        }
+      },
+      "snaps": [
+        "clubBlow-thesz-20.png",
+        "clubBlow-thesz-130.png"
+      ],
+      "plantMax": null
+    },
+    {
+      "move": "runningForearm",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        12
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.02500000000000023
+          ],
+          "maxGroundedSoleSlide": 31.404423572988847,
+          "maxSoleAboveRoot": 1.7339212082752056,
+          "maxSoleBelowRoot": 2.4021846837370617,
+          "segmentMaxMinRatio": 1.0000000000000022
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 5.708958078100766,
+          "maxSoleAboveRoot": 7.218861503357914,
+          "maxSoleBelowRoot": 0.17997664357511667,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [
+        "runningForearm-thesz-12.png",
+        "runningForearm-thesz-20.png",
+        "runningForearm-thesz-130.png"
+      ],
+      "plantMax": null
+    },
+    {
+      "move": "shoulderBlock",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 13.515831707361848,
+          "maxSoleAboveRoot": 5.402930062356688,
+          "maxSoleBelowRoot": 6.289607844459169,
+          "segmentMaxMinRatio": 1.0000000000000022
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 2.1512789076777357,
+          "maxSoleAboveRoot": 7.178027366264814,
+          "maxSoleBelowRoot": 0.13609525761904706,
+          "segmentMaxMinRatio": 1.0000000000000024
+        }
+      },
+      "snaps": [
+        "shoulderBlock-thesz-20.png",
+        "shoulderBlock-thesz-22.png",
+        "shoulderBlock-thesz-130.png"
+      ],
+      "plantMax": null
+    },
+    {
+      "move": "mountedPunches",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        56,
+        74,
+        93,
+        111
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.695
+          ],
+          "maxGroundedSoleSlide": 5.206461288725236,
+          "maxSoleAboveRoot": 21.374803155838435,
+          "maxSoleBelowRoot": 22.584371462404363,
+          "segmentMaxMinRatio": 1.040314286889632
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [
+        "mountedPunches-thesz-20.png",
+        "mountedPunches-thesz-56.png",
+        "mountedPunches-thesz-74.png",
+        "mountedPunches-thesz-93.png",
+        "mountedPunches-thesz-111.png",
+        "mountedPunches-thesz-130.png"
+      ],
+      "plantMax": 0.025221204391268476
+    },
+    {
+      "move": "chop",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        17
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.027958579881656814
+          ],
+          "maxGroundedSoleSlide": 7.0512218847514765,
+          "maxSoleAboveRoot": 1.7337381028064556,
+          "maxSoleBelowRoot": 2.4020015782683117,
+          "segmentMaxMinRatio": 1.0000000000000022
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 2.1512789076777357,
+          "maxSoleAboveRoot": 7.208442282878764,
+          "maxSoleBelowRoot": 0.16874911923900981,
+          "segmentMaxMinRatio": 1.0000000000000027
+        }
+      },
+      "snaps": [
+        "chop-thesz-17.png",
+        "chop-thesz-20.png",
+        "chop-thesz-130.png"
+      ],
+      "plantMax": null
+    },
+    {
+      "move": "uppercut",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 4.351449265218119,
+          "maxSoleAboveRoot": 2.4414737635285633,
+          "maxSoleBelowRoot": 3.3423117018810444,
+          "segmentMaxMinRatio": 1.0000000000000022
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 5.630162332463683,
+          "maxSoleAboveRoot": 7.16780929826092,
+          "maxSoleBelowRoot": 0.1251143409987776,
+          "segmentMaxMinRatio": 1.0000000000000024
+        }
+      },
+      "snaps": [
+        "uppercut-thesz-20.png",
+        "uppercut-thesz-24.png",
+        "uppercut-thesz-130.png"
+      ],
+      "plantMax": null
+    },
+    {
+      "move": "backElbow",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        8
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 77.46459839914515,
+          "maxSoleAboveRoot": 2.9600259446033306,
+          "maxSoleBelowRoot": 3.7549373692839367,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.00014968141403277901
+          ],
+          "maxGroundedSoleSlide": 0.4089006421571283,
+          "maxSoleAboveRoot": 17.610679979826273,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [
+        "backElbow-thesz-8.png",
+        "backElbow-thesz-20.png",
+        "backElbow-thesz-130.png"
+      ],
+      "plantMax": null
+    },
+    {
+      "move": "legSweep",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.665
+          ],
+          "maxGroundedSoleSlide": 3.668952788498424,
+          "maxSoleAboveRoot": 14.560680377573533,
+          "maxSoleBelowRoot": 16.643985135784703,
+          "segmentMaxMinRatio": 1.0000000000000033
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.000006436239430085422
+          ],
+          "maxGroundedSoleSlide": 2.3601292070933284,
+          "maxSoleAboveRoot": 5.05551903616805,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000024
+        }
+      },
+      "snaps": [
+        "legSweep-thesz-20.png",
+        "legSweep-thesz-22.png",
+        "legSweep-thesz-130.png"
+      ],
+      "plantMax": null
+    },
+    {
+      "move": "axeHandleBack",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 4.905348847724892,
+          "maxSoleAboveRoot": 2.0655252121814556,
+          "maxSoleBelowRoot": 2.7679073399870617,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.064
+          ],
+          "maxGroundedSoleSlide": 0.8491115720289366,
+          "maxSoleAboveRoot": 5.030059238210072,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000033
+        }
+      },
+      "snaps": [
+        "axeHandleBack-thesz-20.png",
+        "axeHandleBack-thesz-24.png",
+        "axeHandleBack-thesz-130.png"
+      ],
+      "plantMax": null
+    },
+    {
+      "move": "bodyStomps",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": 1,
+      "hits": [
+        58,
+        79,
+        101
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 21.314420708340403,
+          "maxSoleAboveRoot": 12.724678567247508,
+          "maxSoleBelowRoot": 2.2860516793797956,
+          "segmentMaxMinRatio": 1.060008940584342
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [
+        "bodyStomps-thesz-20.png",
+        "bodyStomps-thesz-58.png",
+        "bodyStomps-thesz-79.png",
+        "bodyStomps-thesz-101.png",
+        "bodyStomps-thesz-130.png"
+      ],
+      "plantMax": 0.812471083019051
+    },
+    {
+      "move": "clubBlow",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": -1,
+      "hits": [
+        20
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 6.289451248359271,
+          "maxSoleAboveRoot": 1.8764993332752056,
+          "maxSoleBelowRoot": 2.5594112462370617,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 6.534472708661489,
+          "maxSoleAboveRoot": 7.19507469242626,
+          "maxSoleBelowRoot": 0.15441834838236446,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "runningForearm",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": -1,
+      "hits": [
+        12
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.02500000000000023
+          ],
+          "maxGroundedSoleSlide": 31.404423572988847,
+          "maxSoleAboveRoot": 1.7339212082752056,
+          "maxSoleBelowRoot": 2.4021846837370617,
+          "segmentMaxMinRatio": 1.0000000000000022
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 5.709021124131488,
+          "maxSoleAboveRoot": 7.218861503357914,
+          "maxSoleBelowRoot": 0.17997664357511667,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "shoulderBlock",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": -1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 13.515831707361848,
+          "maxSoleAboveRoot": 5.402930062356688,
+          "maxSoleBelowRoot": 6.289607844459169,
+          "segmentMaxMinRatio": 1.0000000000000022
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 2.151309239717642,
+          "maxSoleAboveRoot": 7.178027366264814,
+          "maxSoleBelowRoot": 0.13609525761904706,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "mountedPunches",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": -1,
+      "hits": [
+        56,
+        74,
+        93,
+        111
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.695
+          ],
+          "maxGroundedSoleSlide": 5.206461288725236,
+          "maxSoleAboveRoot": 21.374803155838435,
+          "maxSoleBelowRoot": 22.584371462404363,
+          "segmentMaxMinRatio": 1.040314286889632
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.02522605971576346
+    },
+    {
+      "move": "chop",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": -1,
+      "hits": [
+        17
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.027958579881656814
+          ],
+          "maxGroundedSoleSlide": 7.0512218847514765,
+          "maxSoleAboveRoot": 1.7337381028064556,
+          "maxSoleBelowRoot": 2.4020015782683117,
+          "segmentMaxMinRatio": 1.0000000000000022
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 2.151309239717642,
+          "maxSoleAboveRoot": 7.208442282878764,
+          "maxSoleBelowRoot": 0.16874911923900981,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "uppercut",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": -1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 4.351449265218119,
+          "maxSoleAboveRoot": 2.4414737635285633,
+          "maxSoleBelowRoot": 3.3423117018810444,
+          "segmentMaxMinRatio": 1.0000000000000022
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 5.630147687607929,
+          "maxSoleAboveRoot": 7.16780929826092,
+          "maxSoleBelowRoot": 0.1251143409987776,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "backElbow",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": -1,
+      "hits": [
+        8
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 77.46459839914515,
+          "maxSoleAboveRoot": 2.9600259446033306,
+          "maxSoleBelowRoot": 3.7549373692839367,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.00014964842817563606
+          ],
+          "maxGroundedSoleSlide": 0.40915795061076865,
+          "maxSoleAboveRoot": 17.61067811849125,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000003
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "legSweep",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": -1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.665
+          ],
+          "maxGroundedSoleSlide": 3.668952788498424,
+          "maxSoleAboveRoot": 14.560680377573533,
+          "maxSoleBelowRoot": 16.643985135784703,
+          "segmentMaxMinRatio": 1.0000000000000033
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.0000064362119981120625
+          ],
+          "maxGroundedSoleSlide": 2.3601098943348986,
+          "maxSoleAboveRoot": 5.0555206358193345,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "axeHandleBack",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": -1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 4.905348847724892,
+          "maxSoleAboveRoot": 2.0655252121814556,
+          "maxSoleBelowRoot": 2.7679073399870617,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.064
+          ],
+          "maxGroundedSoleSlide": 0.8491115720288807,
+          "maxSoleAboveRoot": 5.030059238210072,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "bodyStomps",
+      "a": "thesz-procreate-v1",
+      "d": "george-roster-v1",
+      "facing": -1,
+      "hits": [
+        58,
+        79,
+        101
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 21.314420708340403,
+          "maxSoleAboveRoot": 12.724678567247508,
+          "maxSoleBelowRoot": 2.2860516793797956,
+          "segmentMaxMinRatio": 1.060008940584342
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.8126455630853731
+    },
+    {
+      "move": "clubBlow",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": 1,
+      "hits": [
+        20
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 4.976268828148603,
+          "maxSoleAboveRoot": 5.624564732655983,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 30.257885331112544,
+          "maxSoleAboveRoot": 2.9489774435249956,
+          "maxSoleBelowRoot": 2.4146767304131345,
+          "segmentMaxMinRatio": 1.0000000000000029
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "runningForearm",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": 1,
+      "hits": [
+        12
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.07960738475046336
+          ],
+          "maxGroundedSoleSlide": 11.030435968539567,
+          "maxSoleAboveRoot": 5.624564732655983,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000022
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 30.257885331112544,
+          "maxSoleAboveRoot": 2.9516915399591426,
+          "maxSoleBelowRoot": 2.415756602397664,
+          "segmentMaxMinRatio": 1.0000000000000027
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "shoulderBlock",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": 1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 7.615618159811013,
+          "maxSoleAboveRoot": 6.531740799066597,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 30.257885331112544,
+          "maxSoleAboveRoot": 2.9470407999819486,
+          "maxSoleBelowRoot": 2.4138866725057824,
+          "segmentMaxMinRatio": 1.0000000000000027
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "mountedPunches",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": 1,
+      "hits": [
+        56,
+        74,
+        93,
+        111
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.695
+          ],
+          "maxGroundedSoleSlide": 5.187280137233801,
+          "maxSoleAboveRoot": 18.89337198267225,
+          "maxSoleBelowRoot": 18.509545735370523,
+          "segmentMaxMinRatio": 1.0403142868896305
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000038
+        }
+      },
+      "snaps": [
+        "mountedPunches-george-20.png",
+        "mountedPunches-george-56.png",
+        "mountedPunches-george-74.png",
+        "mountedPunches-george-93.png",
+        "mountedPunches-george-111.png",
+        "mountedPunches-george-130.png"
+      ],
+      "plantMax": 0.026245831324597742
+    },
+    {
+      "move": "chop",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": 1,
+      "hits": [
+        17
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 5.156056814761845,
+          "maxSoleAboveRoot": 5.6244636519215305,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 30.257885331112544,
+          "maxSoleAboveRoot": 2.9504887909856734,
+          "maxSoleBelowRoot": 2.4152867803472304,
+          "segmentMaxMinRatio": 1.0000000000000027
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "uppercut",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": 1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.01599999999999993
+          ],
+          "maxGroundedSoleSlide": 2.014503100067327,
+          "maxSoleAboveRoot": 5.208247578021485,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 30.257885331112544,
+          "maxSoleAboveRoot": 2.9458939485607516,
+          "maxSoleBelowRoot": 2.4134020346614875,
+          "segmentMaxMinRatio": 1.0000000000000029
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "backElbow",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": 1,
+      "hits": [
+        8
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 67.20007214974233,
+          "maxSoleAboveRoot": 5.6198575392335215,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.024799488824977074,
+            -0.000034018503189264804
+          ],
+          "maxGroundedSoleSlide": 8.643786854424402,
+          "maxSoleAboveRoot": 11.723145801675287,
+          "maxSoleBelowRoot": 2.265902621461123,
+          "segmentMaxMinRatio": 1.0000000000000029
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "legSweep",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": 1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.40499999999999997
+          ],
+          "maxGroundedSoleSlide": 4.619628530969414,
+          "maxSoleAboveRoot": 29.336352291093874,
+          "maxSoleBelowRoot": 25.14328074166508,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.06824725158726297,
+            -0.0000014627754541252092
+          ],
+          "maxGroundedSoleSlide": 2.386297094670783,
+          "maxSoleAboveRoot": 2.4692487813146613,
+          "maxSoleBelowRoot": 2.257731961565355,
+          "segmentMaxMinRatio": 1.0000000000000049
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "axeHandleBack",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": 1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 3.534565755633962,
+          "maxSoleAboveRoot": 5.640358866981671,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.064
+          ],
+          "maxGroundedSoleSlide": 1.4908449898684588,
+          "maxSoleAboveRoot": 1.908651683259734,
+          "maxSoleBelowRoot": 2.8202367885136255,
+          "segmentMaxMinRatio": 1.0000000000000047
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "bodyStomps",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": 1,
+      "hits": [
+        58,
+        79,
+        101
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 24.52393927166066,
+          "maxSoleAboveRoot": 24.534951261767617,
+          "maxSoleBelowRoot": 1.5549264463152213,
+          "segmentMaxMinRatio": 1.0486257720856367
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000022
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.19066437435378908
+    },
+    {
+      "move": "clubBlow",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": -1,
+      "hits": [
+        20
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 4.976268828148603,
+          "maxSoleAboveRoot": 5.624564732655983,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 30.257885331112487,
+          "maxSoleAboveRoot": 2.9489774435249956,
+          "maxSoleBelowRoot": 2.4146767304131345,
+          "segmentMaxMinRatio": 1.0000000000000027
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "runningForearm",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": -1,
+      "hits": [
+        12
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.07960738475046336
+          ],
+          "maxGroundedSoleSlide": 10.498139330928417,
+          "maxSoleAboveRoot": 5.624564732655983,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000022
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 30.257885331112487,
+          "maxSoleAboveRoot": 2.9516915399591426,
+          "maxSoleBelowRoot": 2.415756602397664,
+          "segmentMaxMinRatio": 1.0000000000000024
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "shoulderBlock",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": -1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 7.615618159811013,
+          "maxSoleAboveRoot": 6.531740799066597,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 30.257885331112487,
+          "maxSoleAboveRoot": 2.9470407999819486,
+          "maxSoleBelowRoot": 2.4138866725057824,
+          "segmentMaxMinRatio": 1.0000000000000027
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "mountedPunches",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": -1,
+      "hits": [
+        56,
+        74,
+        93,
+        111
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.695
+          ],
+          "maxGroundedSoleSlide": 5.187280137233801,
+          "maxSoleAboveRoot": 18.89337198267225,
+          "maxSoleBelowRoot": 18.509545735370523,
+          "segmentMaxMinRatio": 1.0403142868896305
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000029
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.026232432471568503
+    },
+    {
+      "move": "chop",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": -1,
+      "hits": [
+        17
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 5.156056814761845,
+          "maxSoleAboveRoot": 5.6244636519215305,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 30.257885331112487,
+          "maxSoleAboveRoot": 2.9504887909856734,
+          "maxSoleBelowRoot": 2.4152867803472304,
+          "segmentMaxMinRatio": 1.0000000000000027
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "uppercut",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": -1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.01599999999999993
+          ],
+          "maxGroundedSoleSlide": 2.014503100067327,
+          "maxSoleAboveRoot": 5.208247578021485,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 30.257885331112487,
+          "maxSoleAboveRoot": 2.9458939485607516,
+          "maxSoleBelowRoot": 2.4134020346614875,
+          "segmentMaxMinRatio": 1.0000000000000027
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "backElbow",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": -1,
+      "hits": [
+        8
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 67.20007214974233,
+          "maxSoleAboveRoot": 5.6198575392335215,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.024800855029635867,
+            -0.000034020377269738944
+          ],
+          "maxGroundedSoleSlide": 8.643760704878437,
+          "maxSoleAboveRoot": 11.723151725968819,
+          "maxSoleBelowRoot": 2.2658994362890326,
+          "segmentMaxMinRatio": 1.000000000000004
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "legSweep",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": -1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.40499999999999997
+          ],
+          "maxGroundedSoleSlide": 4.619628530969414,
+          "maxSoleAboveRoot": 29.336352291093874,
+          "maxSoleBelowRoot": 25.14328074166508,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.06824696070124209,
+            -0.0000014627692194180142
+          ],
+          "maxGroundedSoleSlide": 2.386302750211378,
+          "maxSoleAboveRoot": 2.4692587930018135,
+          "maxSoleBelowRoot": 2.25772912309759,
+          "segmentMaxMinRatio": 1.0000000000000027
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "axeHandleBack",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": -1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 3.534565755633962,
+          "maxSoleAboveRoot": 5.640358866981671,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.064
+          ],
+          "maxGroundedSoleSlide": 1.4908449898684588,
+          "maxSoleAboveRoot": 1.908651683259734,
+          "maxSoleBelowRoot": 2.8202367885136255,
+          "segmentMaxMinRatio": 1.0000000000000027
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "bodyStomps",
+      "a": "george-roster-v1",
+      "d": "thesz-procreate-v1",
+      "facing": -1,
+      "hits": [
+        58,
+        79,
+        101
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 24.52393927166066,
+          "maxSoleAboveRoot": 24.53495126176756,
+          "maxSoleBelowRoot": 1.554926446315278,
+          "segmentMaxMinRatio": 1.0486257720856365
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000027
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.19064748357675831
+    },
+    {
+      "move": "clubBlow",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": 1,
+      "hits": [
+        20
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 4.3176958023073695,
+          "maxSoleAboveRoot": 4.3115548288440095,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 33.22021584769502,
+          "maxSoleAboveRoot": 3.8074571138160422,
+          "maxSoleBelowRoot": 5.274838718079195,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "runningForearm",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": 1,
+      "hits": [
+        12
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.02500000000000023
+          ],
+          "maxGroundedSoleSlide": 6.07757568359375,
+          "maxSoleAboveRoot": 5.910086391935067,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 33.22018535786844,
+          "maxSoleAboveRoot": 3.8324043604027906,
+          "maxSoleBelowRoot": 5.299005482374014,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "shoulderBlock",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": 1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 7.8945890370372265,
+          "maxSoleAboveRoot": 8.665284076890885,
+          "maxSoleBelowRoot": 4.00985291353021,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 33.22021584769502,
+          "maxSoleAboveRoot": 3.7895695642193346,
+          "maxSoleBelowRoot": 5.257503477966907,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "mountedPunches",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": 1,
+      "hits": [
+        56,
+        74,
+        93,
+        111
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.695
+          ],
+          "maxGroundedSoleSlide": 5.724771883486968,
+          "maxSoleAboveRoot": 18.313552656325157,
+          "maxSoleBelowRoot": 12.631406536166537,
+          "segmentMaxMinRatio": 1.040314286889631
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000016
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.02166116649345943
+    },
+    {
+      "move": "chop",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": 1,
+      "hits": [
+        17
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.027958579881656814
+          ],
+          "maxGroundedSoleSlide": 6.55287797545948,
+          "maxSoleAboveRoot": 3.8692940866565095,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 33.22021584769502,
+          "maxSoleAboveRoot": 3.821471322123557,
+          "maxSoleBelowRoot": 5.28839858388892,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "uppercut",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": 1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 3.227210520413988,
+          "maxSoleAboveRoot": 5.5072030222033845,
+          "maxSoleBelowRoot": 0.8453021322802101,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 33.22021584769502,
+          "maxSoleAboveRoot": 3.7788533454553885,
+          "maxSoleBelowRoot": 5.2471162722437725,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "backElbow",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": 1,
+      "hits": [
+        8
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 77.97190273849323,
+          "maxSoleAboveRoot": 5.9880379831408845,
+          "maxSoleBelowRoot": 1.3539691244677101,
+          "segmentMaxMinRatio": 1.0000000000000016
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.00014968141403277901
+          ],
+          "maxGroundedSoleSlide": 1.9964533079909828,
+          "maxSoleAboveRoot": 16.88600793184895,
+          "maxSoleBelowRoot": 3.2034305364908846,
+          "segmentMaxMinRatio": 1.0000000000000022
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "legSweep",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": 1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.0270000000000001
+          ],
+          "maxGroundedSoleSlide": 3.7172745099824063,
+          "maxSoleAboveRoot": 22.334788227982585,
+          "maxSoleBelowRoot": 17.89147804071399,
+          "segmentMaxMinRatio": 1.0000000000000016
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.000006436294292019862
+          ],
+          "maxGroundedSoleSlide": 2.2666758021156497,
+          "maxSoleAboveRoot": 1.6151956658115978,
+          "maxSoleBelowRoot": 3.147537257411045,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "axeHandleBack",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": 1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 2.932983477344751,
+          "maxSoleAboveRoot": 4.6389779245471345,
+          "maxSoleBelowRoot": 0.07332947603021012,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.064
+          ],
+          "maxGroundedSoleSlide": 1.437734861383052,
+          "maxSoleAboveRoot": 1.7838299383293474,
+          "maxSoleBelowRoot": 3.2839483832705127,
+          "segmentMaxMinRatio": 1.000000000000003
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "bodyStomps",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": 1,
+      "hits": [
+        58,
+        79,
+        101
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 18.65973696386315,
+          "maxSoleAboveRoot": 26.72484516628066,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0446568344001337
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.18947207141838526
+    },
+    {
+      "move": "clubBlow",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": -1,
+      "hits": [
+        20
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 4.3176958023073695,
+          "maxSoleAboveRoot": 4.3115548288440095,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000016
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 33.220246337521594,
+          "maxSoleAboveRoot": 3.8074571138160422,
+          "maxSoleBelowRoot": 5.274838718079195,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "runningForearm",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": -1,
+      "hits": [
+        12
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.02500000000000023
+          ],
+          "maxGroundedSoleSlide": 5.47824024462007,
+          "maxSoleAboveRoot": 5.910086391935067,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 33.22021584769502,
+          "maxSoleAboveRoot": 3.8324043604027906,
+          "maxSoleBelowRoot": 5.299005482374014,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "shoulderBlock",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": -1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 7.8945890370372265,
+          "maxSoleAboveRoot": 8.665284076890885,
+          "maxSoleBelowRoot": 4.00985291353021,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 33.220246337521594,
+          "maxSoleAboveRoot": 3.7895695642193346,
+          "maxSoleBelowRoot": 5.257503477966907,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "mountedPunches",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": -1,
+      "hits": [
+        56,
+        74,
+        93,
+        111
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.695
+          ],
+          "maxGroundedSoleSlide": 5.724771883487025,
+          "maxSoleAboveRoot": 18.313552656325157,
+          "maxSoleBelowRoot": 12.631406536166537,
+          "segmentMaxMinRatio": 1.0403142868896305
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000016
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.02167952296907694
+    },
+    {
+      "move": "chop",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": -1,
+      "hits": [
+        17
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.027958579881656814
+          ],
+          "maxGroundedSoleSlide": 6.55287797545948,
+          "maxSoleAboveRoot": 3.8692940866565095,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000016
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 33.220246337521594,
+          "maxSoleAboveRoot": 3.821471322123557,
+          "maxSoleBelowRoot": 5.28839858388892,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "uppercut",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": -1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 3.227210520413988,
+          "maxSoleAboveRoot": 5.5072030222033845,
+          "maxSoleBelowRoot": 0.8453021322802101,
+          "segmentMaxMinRatio": 1.0000000000000016
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 33.220246337521594,
+          "maxSoleAboveRoot": 3.7788533454553885,
+          "maxSoleBelowRoot": 5.2471162722437725,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "backElbow",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": -1,
+      "hits": [
+        8
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 77.97190273849323,
+          "maxSoleAboveRoot": 5.9880379831408845,
+          "maxSoleBelowRoot": 1.3539691244677101,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.00014968141403277901
+          ],
+          "maxGroundedSoleSlide": 1.9964533079909828,
+          "maxSoleAboveRoot": 16.88600793184895,
+          "maxSoleBelowRoot": 3.2034305364908846,
+          "segmentMaxMinRatio": 1.000000000000003
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "legSweep",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": -1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.0270000000000001
+          ],
+          "maxGroundedSoleSlide": 3.7172745099824063,
+          "maxSoleAboveRoot": 22.334788227982585,
+          "maxSoleBelowRoot": 17.89147804071399,
+          "segmentMaxMinRatio": 1.0000000000000016
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.000006436266861392648
+          ],
+          "maxGroundedSoleSlide": 2.2665939484921216,
+          "maxSoleAboveRoot": 1.615192539135819,
+          "maxSoleBelowRoot": 3.1475481395480642,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "axeHandleBack",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": -1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            -0.07
+          ],
+          "maxGroundedSoleSlide": 2.932983477344751,
+          "maxSoleAboveRoot": 4.6389779245471345,
+          "maxSoleBelowRoot": 0.07332947603021012,
+          "segmentMaxMinRatio": 1.0000000000000016
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.064
+          ],
+          "maxGroundedSoleSlide": 1.437734861383052,
+          "maxSoleAboveRoot": 1.7838299383293474,
+          "maxSoleBelowRoot": 3.2839483832705127,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "bodyStomps",
+      "a": "kowalski-roster-v1",
+      "d": "guido-roster-v1",
+      "facing": -1,
+      "hits": [
+        58,
+        79,
+        101
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 18.65973696386315,
+          "maxSoleAboveRoot": 26.724845166280716,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0446568344001335
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.000000000000002
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.18955349280679804
+    },
+    {
+      "move": "clubBlow",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": 1,
+      "hits": [
+        20
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 9.42670063256786,
+          "maxSoleAboveRoot": 2.2412609127360383,
+          "maxSoleBelowRoot": 3.7536166322954045,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 7.355357815940519,
+          "maxSoleAboveRoot": 3.7759172121666325,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "runningForearm",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": 1,
+      "hits": [
+        12
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.07960738475046336
+          ],
+          "maxGroundedSoleSlide": 46.45444653013292,
+          "maxSoleAboveRoot": 2.2412609127360383,
+          "maxSoleBelowRoot": 3.7536166322954045,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 7.355357815940462,
+          "maxSoleAboveRoot": 3.7759172121666325,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "shoulderBlock",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": 1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.0319092970521542
+          ],
+          "maxGroundedSoleSlide": 24.041696126533395,
+          "maxSoleAboveRoot": 1.9609602420429724,
+          "maxSoleBelowRoot": 3.448178652094896,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 3.645878474826709,
+          "maxSoleAboveRoot": 3.7759172121666325,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "mountedPunches",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": 1,
+      "hits": [
+        56,
+        74,
+        93,
+        111
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.695
+          ],
+          "maxGroundedSoleSlide": 6.017071507539721,
+          "maxSoleAboveRoot": 20.241752211761536,
+          "maxSoleBelowRoot": 20.24360797478704,
+          "segmentMaxMinRatio": 1.0403142868896307
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000016
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.023624173469062315
+    },
+    {
+      "move": "chop",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": 1,
+      "hits": [
+        17
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 11.406978764161797,
+          "maxSoleAboveRoot": 2.241139495933396,
+          "maxSoleBelowRoot": 3.7534977095112367,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 4.218472530813337,
+          "maxSoleAboveRoot": 3.7759172121666325,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "uppercut",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": 1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 10.666563394735428,
+          "maxSoleAboveRoot": 1.7482712555559488,
+          "maxSoleBelowRoot": 3.2778963897876565,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 7.355357815940519,
+          "maxSoleAboveRoot": 3.7759172121666325,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "backElbow",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": 1,
+      "hits": [
+        8
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 26.053404138124694,
+          "maxSoleAboveRoot": 2.2353132687920834,
+          "maxSoleBelowRoot": 3.747963992766927,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.024799488824977074,
+            -0.000034018503189264804
+          ],
+          "maxGroundedSoleSlide": 2.582737112170737,
+          "maxSoleAboveRoot": 19.79484361081842,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "legSweep",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": 1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            1
+          ],
+          "maxGroundedSoleSlide": 8.345443815797783,
+          "maxSoleAboveRoot": 43.92806776898357,
+          "maxSoleBelowRoot": 44.646163956127,
+          "segmentMaxMinRatio": 1.0000000000000029
+        },
+        "d": {
+          "kneeRange": [
+            -0.06824783333770668,
+            -0.0000014627879230399987
+          ],
+          "maxGroundedSoleSlide": 4.669932299508864,
+          "maxSoleAboveRoot": 2.5959864537201724,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "axeHandleBack",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": 1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 8.206593371130774,
+          "maxSoleAboveRoot": 2.242800082386907,
+          "maxSoleBelowRoot": 3.7540493336803706,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.064
+          ],
+          "maxGroundedSoleSlide": 1.3363090635840114,
+          "maxSoleAboveRoot": 2.786919723544827,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000024
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "bodyStomps",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": 1,
+      "hits": [
+        58,
+        79,
+        101
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 24.086491092776743,
+          "maxSoleAboveRoot": 24.15339962100751,
+          "maxSoleBelowRoot": 3.5150852009843447,
+          "segmentMaxMinRatio": 1.053447085559673
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000013
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.19340143971208082
+    },
+    {
+      "move": "clubBlow",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": -1,
+      "hits": [
+        20
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 9.42670063256786,
+          "maxSoleAboveRoot": 2.2412609127360383,
+          "maxSoleBelowRoot": 3.7536166322954045,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 7.355388298507326,
+          "maxSoleAboveRoot": 3.7759172121666325,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000016
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "runningForearm",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": -1,
+      "hits": [
+        12
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.07960738475046336
+          ],
+          "maxGroundedSoleSlide": 46.45444653013292,
+          "maxSoleAboveRoot": 2.2412609127360383,
+          "maxSoleBelowRoot": 3.7536166322954045,
+          "segmentMaxMinRatio": 1.0000000000000018
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 7.355357815940576,
+          "maxSoleAboveRoot": 3.7759172121666325,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "shoulderBlock",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": -1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.0319092970521542
+          ],
+          "maxGroundedSoleSlide": 24.04169612653334,
+          "maxSoleAboveRoot": 1.9609602420429724,
+          "maxSoleBelowRoot": 3.448178652094896,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 3.645878474826709,
+          "maxSoleAboveRoot": 3.7759172121666325,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000016
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "mountedPunches",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": -1,
+      "hits": [
+        56,
+        74,
+        93,
+        111
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0.695
+          ],
+          "maxGroundedSoleSlide": 6.017101943569958,
+          "maxSoleAboveRoot": 20.241752211761536,
+          "maxSoleBelowRoot": 20.24360797478704,
+          "segmentMaxMinRatio": 1.04031428688963
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000016
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.023624173469062315
+    },
+    {
+      "move": "chop",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": -1,
+      "hits": [
+        17
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 11.406978764161797,
+          "maxSoleAboveRoot": 2.241139495933396,
+          "maxSoleBelowRoot": 3.7534977095112367,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 4.21846835253334,
+          "maxSoleAboveRoot": 3.7759172121666325,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000016
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "uppercut",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": -1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 10.666563394735428,
+          "maxSoleAboveRoot": 1.7482712555559488,
+          "maxSoleBelowRoot": 3.2778963897876565,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 7.355388298507326,
+          "maxSoleAboveRoot": 3.7759172121666325,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000016
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "backElbow",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": -1,
+      "hits": [
+        8
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 26.053404138124694,
+          "maxSoleAboveRoot": 2.2353132687920834,
+          "maxSoleBelowRoot": 3.747963992766927,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.024800855029635867,
+            -0.000034020377269738944
+          ],
+          "maxGroundedSoleSlide": 2.5827806970584954,
+          "maxSoleAboveRoot": 19.794820591967266,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000029
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "legSweep",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": -1,
+      "hits": [
+        22
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            1
+          ],
+          "maxGroundedSoleSlide": 8.345443815797783,
+          "maxSoleAboveRoot": 43.92806776898357,
+          "maxSoleBelowRoot": 44.646163956127,
+          "segmentMaxMinRatio": 1.0000000000000024
+        },
+        "d": {
+          "kneeRange": [
+            -0.06824696070124209,
+            -0.0000014627692194180142
+          ],
+          "maxGroundedSoleSlide": 4.669891584304194,
+          "maxSoleAboveRoot": 2.5959849164189563,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000018
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "axeHandleBack",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": -1,
+      "hits": [
+        24
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 8.206593371130774,
+          "maxSoleAboveRoot": 2.242800082386907,
+          "maxSoleBelowRoot": 3.7540493336803706,
+          "segmentMaxMinRatio": 1.000000000000002
+        },
+        "d": {
+          "kneeRange": [
+            -0.1,
+            -0.064
+          ],
+          "maxGroundedSoleSlide": 1.3363090635840114,
+          "maxSoleAboveRoot": 2.786919723544827,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000016
+        }
+      },
+      "snaps": [],
+      "plantMax": null
+    },
+    {
+      "move": "bodyStomps",
+      "a": "guido-roster-v1",
+      "d": "kowalski-roster-v1",
+      "facing": -1,
+      "hits": [
+        58,
+        79,
+        101
+      ],
+      "metrics": {
+        "a": {
+          "kneeRange": [
+            -0.1,
+            0
+          ],
+          "maxGroundedSoleSlide": 24.086491092776743,
+          "maxSoleAboveRoot": 24.15339962100751,
+          "maxSoleBelowRoot": 3.515085200984288,
+          "segmentMaxMinRatio": 1.0534470855596727
+        },
+        "d": {
+          "kneeRange": [
+            null,
+            null
+          ],
+          "maxGroundedSoleSlide": 0,
+          "maxSoleAboveRoot": 0,
+          "maxSoleBelowRoot": 0,
+          "segmentMaxMinRatio": 1.0000000000000013
+        }
+      },
+      "snaps": [],
+      "plantMax": 0.1933801059309649
+    }
+  ],
+  "errors": []
+}

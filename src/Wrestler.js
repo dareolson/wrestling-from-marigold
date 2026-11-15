@@ -298,7 +298,7 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     kneeDrop:          12,
     handStomp:         8,   // ?light=v1 (PLAN_LIGHT_MOVES T8.1): below the knee drop
     clubBlow:          7,   // ?light=v1 (Stage 10): a clubbing forearm, above the jab
-    chop:              5,   // ?light=v1 (Stage 11): the knife-edge chop, a sting
+    chop:             12,   // heavy chest chop, available as a tie-up follow-up
     uppercut:          8,   // ?light=v1 (Stage 11): the European uppercut
     shoulderBlock:     9,   // ?light=v1 (Stage 10): the big man's first hit
     runningForearm:   10,   // ?light=v1 (Stage 10): off the ropes
@@ -365,6 +365,7 @@ export const POSES = {
     cornerShoulderFollow: { lLeg:-0.25, rLeg: 0.46, lArm:-0.30, rArm: 0.20, crouch: 0.40, bend: 0.50 },
     cornerDaze:     CORNER_DAZE_POSE, // grapples=v1 (T3c.6): slumped in the corner, feet planted, knees soft, arms hanging (T3c.6b); the sway is cornerPoseAt's
     sellChest:      { lLeg:-0.10,  rLeg: 0.08,  lArm:-0.90,  rArm:-0.82, lean:-0.30, bend: -0.34 }, // chest impact — torso snaps back, arms whip behind
+    sellChop:       { lLeg:-0.08, rLeg:0.12, lShin:-0.189, rShin:0.011, lArm:-0.65, rArm:-0.45, lElbow:0.7, rElbow:0.75, crouch:0.06, lean:-0.24, bend:-0.32, chestClutch:0 },
     sellGut:        { lLeg:-0.08, rLeg:0.10, lArm:0.35, rArm:0.45, lElbow:1.7, rElbow:1.8, lean:0.08, bend:0.55, crouch:0.15 }, // stomach kick: fold over the abdomen, hands come in
     sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10, bend: -0.22 }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
@@ -1034,6 +1035,10 @@ export default class Wrestler {
         this.pose.tilt ??= 0;
         this.pose.lift ??= 0;
         this.pose.bend ??= 0;
+        if (p.chestClutch !== undefined || this.pose.chestClutch !== undefined) {
+            this.pose.chestClutch ??= 0;
+            t.chestClutch = p.chestClutch ?? 0;
+        }
         // Articulated channels need a finite value on this.pose to interpolate
         // FROM. A channel the live pose has never carried has none, and Phaser
         // reads that `undefined` as NaN for the whole tween: clampLocalFlex
@@ -1116,7 +1121,10 @@ export default class Wrestler {
         // receiver passed, a one-frame pop of up to 74 px.
         // _facingLock: true holds the facing (the waistlock), a number holds it that many seconds (the let-go's turn beat). Unset with the flag off.
         if (typeof this._facingLock === 'number') { this._facingLock -= dt; if (this._facingLock <= 0) this._facingLock = false; }
-        if (this.state !== 'running' && !this._cornerEp && !this._activeMove && !this._facingLock && !(this._whip && (this.state === 'slamming' || this.state === 'grabbed')) && !GROUNDED_FACING_LOCK.has(this.state)) {
+        const lightReceiverDown = lightCandidate() && this._lightContactOther === other
+            && !['left', 'right', 'up', 'down'].some(key => this.input?.isDown?.(key))
+            && ['down', 'possum', 'flipping', 'falling'].includes(other.state);
+        if (!lightReceiverDown && this.state !== 'running' && !this._cornerEp && !this._activeMove && !this._facingLock && !(this._whip && (this.state === 'slamming' || this.state === 'grabbed')) && !GROUNDED_FACING_LOCK.has(this.state)) {
             const dx = other.x - this.x;
             if (dx !== 0) this.facing = Math.sign(dx);
         }
@@ -1231,7 +1239,11 @@ export default class Wrestler {
         // Y is depth in 2.5D — only separate wrestlers at the same ring depth.
         // If they're on clearly different depth tracks, let them pass freely.
         const depthDiff = Math.abs(this.y - other.y);
-        if (depthDiff < 26) {
+        // New light strikes may finish beside a falling/grounded receiver. Do not teleport
+        // the recovering attacker out to standing separation while that body is still down.
+        const lightGroundClearance = lightCandidate() && this._lightContactOther === other
+            && ['down', 'possum', 'flipping', 'falling', 'gettingUp'].includes(other.state);
+        if (depthDiff < 26 && !lightGroundClearance) {
             const dist = Phaser.Math.Distance.Between(this.x, this.y, other.x, other.y);
             const minDist = 80 * this.s;
             if (dist < minDist && !(other._lungeUntil > this.scene.time.now)) {   // ?light=v1: not while the other man's strike leans his body into the gap (clips/lightStrikes.js `lunge`)
@@ -1380,7 +1392,17 @@ export default class Wrestler {
 
     // Seconds from the hit to the end of a reaction: the ground sells (`sell` 'hand' is the stomped hand's, handHitSell) or the plain jolt.
     _joltSeconds(j) { return j.sell === 'hand' ? handHitSellDuration(j.style) : j.sell ? groundHitSellDuration(j.intensity) : joltDuration(j.intensity); }
-    _joltOffsets(j) { return j.sell === 'hand' ? handHitSell(j.intensity, j.t, j.style) : (j.sell ? groundHitSell : joltResponse)(j.lying, j.intensity, j.t); }
+    _joltOffsets(j) {
+        if (j.sell === 'mounted') {
+            const r = groundHitSell(j.lying, j.intensity, j.t);
+            // Under a mounted opponent the pelvis stays down; short heel movements
+            // replace the free sell's high alternating bicycle kicks.
+            r.d.hip = 0;
+            for (const k of ['nearThigh', 'nearShin', 'farThigh', 'farShin']) r.d[k] *= 0.25;
+            return r;
+        }
+        return j.sell === 'hand' ? handHitSell(j.intensity, j.t, j.style) : (j.sell ? groundHitSell : joltResponse)(j.lying, j.intensity, j.t);
+    }
 
     // The landing's offsets over the lying pose right now, or null.
     _landingOffsets() {
@@ -2440,6 +2462,7 @@ export default class Wrestler {
     _doLightStrike(id, other) {
         const runtime = this.scene.moveRuntime;
         if (!runtime) return false;
+        this._lightContactOther = other;
         const def = LIGHT_STRIKES[id], spec = specFor(def, { attackerRigId: this.rigId, defenderRigId: other.rigId });
         this._cancelActiveMove('relight');
         const facing = Math.sign(other.x - this.x) || this.facing;
@@ -2465,14 +2488,15 @@ export default class Wrestler {
             other.tweenPose(def.bendOver, 220, 'Sine.easeOut');
             other.stateTimer = Math.max(other.stateTimer ?? 0, spec.times.end + 0.5);
         }
-        const clip = lightStrikeClip(id, this.rigId, { hitAt, defenderRigId: other.rigId, walk: (standX - this.x) * facing / this.s });
+        const clip = lightStrikeClip(id, this.rigId, { hitAt, defenderRigId: other.rigId, walk: (standX - this.x) * facing / this.s, lSide: this.skeleton.lChannelSide(facing) });
         runtime.register(clip);
         this.runPhase = null;
+        this.moveBlend = 0; this.walkPhase = 0;
         // 'slamming' for the swing: the standing separation would push him back out of the lean the clip's `lunge` puts his body in, and Power cannot fire a second blow into it
         this.state = 'slamming';
         this._lungeUntil = this.scene.time.now + clip.duration * 1000;
         const done = () => { this._lungeUntil = 0; this._activeMove = null; if (this.state === 'slamming') this.state = 'standing'; };
-        this._activeMove = runtime.play(clip.id, { attacker: this }, {
+        this._activeMove = runtime.play(clip.id, { attacker: this, defender: other }, {
             onEvent: (event) => {
                 if (event.type !== 'impact') return;
                 if (other.state === 'evading') {
@@ -2485,10 +2509,10 @@ export default class Wrestler {
                     other._doSell(def.sell.pose, def.sell.ms, () => other.startClotheslineFall(other.runFacing));
                 } else {
                     other._hurt(STAMINA_DRAIN[id], id);
-                    strikeReact(other, this, id, def.sell.pose, def.sell.ms, !!def.sell.fall, def.sell.stagger ?? null);
+                    strikeReact(other, this, id, spec.sell.pose, spec.sell.ms, !!spec.sell.fall, spec.sell.stagger ?? null);
                 }
-                this.scene.cameras.main.shake(60, 0.0010);
-                this.scene.crowd?.impact?.('strike', def.sell.crowd ?? 0.6);
+                this.scene.cameras.main.shake(spec.impact?.shakeMs ?? 60, spec.impact?.shake ?? 0.0010);
+                this.scene.crowd?.impact?.(spec.impact?.sound ?? 'strike', spec.sell.crowd ?? 0.6);
             },
             onComplete: done,
             onCancel:   done,
@@ -2502,6 +2526,8 @@ export default class Wrestler {
         const runtime = this.scene.moveRuntime;
         if (!runtime) return false;
         this._cancelActiveMove('remount');
+        this.moveBlend = 0; this.walkPhase = 0;
+        this._lightContactOther = other;
         const spec = specFor(MOUNTED_PUNCHES_SPEC, { attackerRigId: this.rigId });
         const hb = other.skeleton.head.getBounds();
         const facing = -other.facing || this.facing;   // he faces the man's head
@@ -2514,11 +2540,11 @@ export default class Wrestler {
         runtime.register(clip);
         this.state = 'slamming';
         const done = () => { this._activeMove = null; if (this.state === 'slamming') this.state = 'standing'; };
-        this._activeMove = runtime.play(clip.id, { attacker: this }, {
+        this._activeMove = runtime.play(clip.id, { attacker: this, defender: other }, {
             onEvent: (event) => {
                 if (event.type !== 'impact' || (other.state !== 'down' && other.state !== 'possum')) return;
                 other._hurt(STAMINA_DRAIN.mountedPunches, 'mountedPunches');
-                other._downHitReact(this, 'mountedPunches', 0.5, 'curl');
+                other._downHitReact(this, 'mountedPunches', 0.5, 'mounted');
                 this.scene.cameras.main.shake(50, 0.0008);
                 this.scene.crowd?.impact?.('strike', 0.45);
             },
@@ -2533,6 +2559,8 @@ export default class Wrestler {
         const runtime = this.scene.moveRuntime;
         if (!runtime) return false;
         this._cancelActiveMove('restomps');
+        this.moveBlend = 0; this.walkPhase = 0;
+        this._lightContactOther = other;
         const hs = specFor(HAND_STOMP_SPEC, { attackerRigId: this.rigId }), bs = specFor(BODY_STOMPS_SPEC, { attackerRigId: this.rigId });
         const so = other.s * other._heightScale;
         const back = Skeleton.groundedTarget(other.skeleton.jointAttachmentPoints ?? {}, 'chest', so) ?? { x: other.x, y: other.y };
@@ -4815,6 +4843,7 @@ export default class Wrestler {
         // T2.6: a rig whose aroundVia has a `path` takes the hand out from the back along it, solved by IK each frame
         const routed = this._routeHandDraw(x, y, s, facing, drawPose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
         if (routed) drawPose = routed;
+        if (drawPose.chestClutch && !(state === 'staggered' && this._staggerType === 'chopChest')) drawPose = { ...drawPose, chestClutch: 0 };
         this.skeleton.updateUpright(x, y, s, facing, drawPose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
         if (this._activeMove && this._floorContacts) {
             const turn = (this.pose.tilt ?? 0) + (this.pose.bend ?? 0);

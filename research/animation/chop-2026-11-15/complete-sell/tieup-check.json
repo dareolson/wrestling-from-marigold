@@ -1,0 +1,35 @@
+{
+  "results": [
+    {
+      "facing": 1,
+      "calls": 1,
+      "damage": [
+        {
+          "n": 12,
+          "id": "chop"
+        }
+      ],
+      "states": [],
+      "faces": [],
+      "lockup": false,
+      "attacker": "standing",
+      "defender": "standing"
+    },
+    {
+      "facing": -1,
+      "calls": 1,
+      "damage": [
+        {
+          "n": 12,
+          "id": "chop"
+        }
+      ],
+      "states": [],
+      "faces": [],
+      "lockup": false,
+      "attacker": "standing",
+      "defender": "standing"
+    }
+  ],
+  "errors": []
+}

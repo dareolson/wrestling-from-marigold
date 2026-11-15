@@ -753,6 +753,11 @@ export default class Skeleton {
 
             img.setTexture(key);
             if (slot !== 'head') {
+                if (img._projectedArm && !entry.projectedArm) {
+                    const side = slot.startsWith('far') ? 'far' : 'near';
+                    this[side + 'Forearm']?.setVisible(img.visible);
+                    this[side + 'Hand']?.setVisible(img.visible);
+                }
                 const meta = resolveTexEntry(entry, this._partBaseDims[slot]);
                 img._texDims = meta.dims;
                 img._pivotOffsetFrac = meta.pivot;
@@ -762,6 +767,7 @@ export default class Skeleton {
                 img._binding = meta.binding;
                 img._semanticAnchors = meta.semanticAnchors;
                 img._attachmentDisplayScale = meta.displayScale;
+                img._projectedArm = entry.projectedArm ?? null;
                 img.setOrigin(0.5, meta.jointPivotFrac);
             }
             this._partVariantState[slot] = name;
@@ -1216,6 +1222,50 @@ export default class Skeleton {
         if (head && !this._headIsImage && (head.x || head.y || head.rotation)) head.setPosition(0, 0).setRotation(0);
         this._applyTorsoBend(facing, pose?.bend ?? 0);
         this._applyBodyTilt(s, facing, pose?.tilt ?? 0, pose?.lift ?? 0);
+        this._applyProjectedArms(s, facing);
+        this._applyChestClutch(s, facing, pose?.chestClutch ?? 0);
+    }
+
+    _applyChestClutch(s, facing, weight) {
+        if (!(weight > 0)) return;
+        const P = this.jointAttachmentPoints, S = P.nearShoulder, E = P.nearElbow, W = P.nearWrist;
+        if (!S || !E || !W || !P.neck || !P.nearHip || !P.farHip) return;
+        const hip = {x:(P.nearHip.x+P.farHip.x)/2,y:(P.nearHip.y+P.farHip.y)/2};
+        // The hand is baked past the wrist in these rigs. Put the wrist on
+        // the lower sternum so the palm/fingers settle on the chest, not throat.
+        const goal = {x:P.neck.x+(hip.x-P.neck.x)*.52,y:P.neck.y+(hip.y-P.neck.y)*.52};
+        const lu = Math.hypot(E.x-S.x,E.y-S.y),lf = Math.hypot(W.x-E.x,W.y-E.y);
+        const u = Math.min(1,weight),reachGoal={x:W.x+(goal.x-W.x)*u,y:W.y+(goal.y-W.y)*u};
+        const choices = [-1,1].map(sign=>Skeleton.solveReachArm(S,lu,lf,reachGoal,null,sign));
+        const solved = choices.sort((a,b)=>b.elbow.y-a.elbow.y)[0];
+        const elbow=solved.elbow,wrist=solved.hand;
+        const upperAngle=Math.atan2(elbow.x-S.x,elbow.y-S.y),foreAngle=Math.atan2(wrist.x-elbow.x,wrist.y-elbow.y);
+        this._placeLimbPart(this.nearUpArm,S,elbow,{x:S.x,y:S.y,w:20,h:lu,angle:upperAngle,scale:s,facing});
+        this._placeLimbPart(this.nearForearm,elbow,wrist,{x:elbow.x,y:elbow.y,w:18,h:lf,angle:foreAngle,scale:s,facing});
+        this._placeAttachment(this.nearHand,wrist,foreAngle,s,facing,'nearHand');
+        P.nearElbow=elbow;P.nearWrist=wrist;
+    }
+
+    // A perspective arm drawing is already posed in depth. Fitting its two
+    // halves to ordinary FK bones would erase that foreshortening. Attach the
+    // complete drawing at the real shoulder, keeping the far/near depth slot.
+    _applyProjectedArms(s, facing) {
+        for (const side of ['far', 'near']) {
+            const img = this[side + 'UpArm'], art = img?._projectedArm;
+            if (!art) continue;
+            const shoulder = this.jointAttachmentPoints[side + 'Shoulder'];
+            if (!shoulder) continue;
+            const flip = facing * (art.reverse ? -1 : 1) < 0;
+            img.setOrigin(flip ? 1 - art.shoulder.u : art.shoulder.u, art.shoulder.v)
+                .setFlipX(flip).setPosition(shoulder.x, shoulder.y)
+                .setDisplaySize(img.frame.realWidth * art.scaleX * s, img.frame.realHeight * art.scaleY * s)
+                .setRotation(facing * (art.angle ?? 0));
+            this[side + 'Forearm']?.setVisible(false);
+            this[side + 'Hand']?.setVisible(false);
+            for (const [part, anchor] of [['Elbow', art.elbow], ['Wrist', art.wrist]]) {
+                if (anchor) this.jointAttachmentPoints[side + part] = Skeleton.imageAnchorPoint(img, anchor);
+            }
+        }
     }
 
     // The upper body as one rigid group about the hips: the parts a torso

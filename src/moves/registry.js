@@ -281,9 +281,9 @@ export const MOVE_SPECS = {
     },
     chop: {
         category: C.STRIKE, clip: null, executor: '_doChop',
-        sell: { part: 'chest', intensity: 0.5 },
+        sell: { part: 'chest', intensity: 0.85 },
         damageKey: 'chop', poseSeq: false, legacyFallback: null, kitGated: true,
-        trigger: 'tryPower() -> _tryLightStrikes() — Up + Power vs a standing/blocking man inside 85*s (?light=v1)',
+        trigger: 'Up + Power standing inside 85*s; Forward + Power as attacker in a tie-up (?light=v1)',
         ai: ['opener', 'pointBlank'],
     },
     uppercut: {

@@ -103,8 +103,30 @@ export const HAIR_CHECK = {
 };
 const HAIR_HANDS = { reach: { r: 'hairSmooth' }, touch: { r: 'hairSmooth' }, hold: { r: 'hairSmooth' }, stroke: { r: 'hairSmooth' }, lift: { r: 'hairSmooth' }, stroke2: { r: 'hairSmooth' }, inspect: { l: 'inspect' }, held: { l: 'inspect' }, glance: {} };
 
+// Stage D (T-D2): the hair fix he does on his own when it gets messy. 'one' (stage 1): a single irritated stroke and a glance.
+// 'two' (stage 2): two hurried tries, the second breaks off with a snarl (the face's abort beat). Same arm poses as the check.
+const FIX_TIMES = {
+    one: { reach: 0.30, touch: 0.38, stroke: 0.65, glance: 0.95, end: 1.25 },
+    two: { reach: 0.25, touch: 0.32, stroke: 0.52, lift: 0.62, touch2: 0.70, glance: 1.00, end: 1.35 },
+};
+function fixClip(frames, fix, { key, k, sc, upperOf, idle }) {
+    const t = FIX_TIMES[fix];
+    frames.push(k('reach', sc(t.reach), 'easeOut'), k('touch', sc(t.touch), 'linear'), k('stroke', sc(t.stroke)));
+    let events;
+    if (fix === 'one') {
+        frames.push(k('glance', sc(t.glance)));
+        events = [{ at: 0.05, type: 'hairTouch' }, { at: sc(t.stroke), type: 'resent' }, { at: sc(t.end) - 0.05, type: 'release' }];
+    } else {
+        frames.push(k('lift', sc(t.lift)), k('touch', sc(t.touch2), 'linear'), k('glance', sc(t.glance), 'easeOut'));
+        events = [{ at: 0.05, type: 'hairTouch' }, { at: sc(t.touch2), type: 'abort' }, { at: sc(t.end) - 0.05, type: 'release' }];
+    }
+    const end = sc(t.end);
+    frames.push(key(end, upperOf(idle), {}));
+    return { id: 'georgeHairFix', duration: end, events, tracks: { attacker: { keyframes: frames } } };
+}
+
 // lSlot / rSlot: the forearm slots the l and r channels draw at this facing. stage: his wear stage (0 clean, 1 disheveled, 2 battered).
-export function georgeHairCheckClip(stance, idle = stance, { lSlot = null, rSlot = null, stage = 0, spec = HAIR_CHECK } = {}) {
+export function georgeHairCheckClip(stance, idle = stance, { lSlot = null, rSlot = null, stage = 0, spec = HAIR_CHECK, fix = null } = {}) {
     const st = spec.stages[Math.max(0, Math.min(2, stage))], sc = x => +(x * st.scale).toFixed(3), t = spec.times;
     const lower = Object.fromEntries(Object.entries(stance).filter(([k, v]) => Number.isFinite(v) && !UPPER.includes(k) && !['tilt', 'lift'].includes(k)));
     const upperOf = p => Object.fromEntries(UPPER.map(k => [k, Number.isFinite(p[k]) ? p[k] : (k.endsWith('Elbow') ? 0.7 : 0)]));
@@ -113,6 +135,7 @@ export function georgeHairCheckClip(stance, idle = stance, { lSlot = null, rSlot
     const k = (n, at, ease) => key(at, spec.keys[n], HAIR_HANDS[n], ease);
     const frames = [key(0, upperOf(stance), HAIR_HANDS.reach), k('reach', sc(t.reach), 'easeOut'), k('touch', sc(t.touch), 'linear'), k('hold', sc(t.hold), 'linear'), k('stroke', sc(t.stroke))];
     let end, events;
+    if (fix) return fixClip(frames.slice(0, 1), fix, { key, k, spec, upperOf, idle, sc: x => +(x * st.scale).toFixed(3) });
     if (st.inspect) {
         frames.push(k('lift', sc(t.lift)), k('stroke2', sc(t.stroke2)), k('inspect', sc(t.inspect)), k('held', sc(t.inspectEnd), 'linear'), k('glance', sc(t.glance)));
         end = sc(t.end);

@@ -123,7 +123,7 @@ PERSONALITIES.guido = {
 };
 
 // ?light=v1 (Stages 10-11): how often the AI reaches for each directional light strike, of the beats it was already going to strike on. Read only when his kit holds the move.
-const LIGHT_AI_ODDS = { chopOdds: 0.25, uppercutOdds: 0.25, shoulderBlockOdds: 0.2, backElbowOdds: 0.3, legSweepOdds: 0.2, axeHandleBackOdds: 0.35, groundStrikeOdds: 0.45 };
+const LIGHT_AI_ODDS = { chopOdds: 0.25, uppercutOdds: 0.25, shoulderBlockOdds: 0.2, backElbowOdds: 0.3, legSweepOdds: 0.2, axeHandleBackOdds: 0.35, groundStrikeOdds: 0.45, matMoveOdds: 0.3 };
 for (const cfg of Object.values(PERSONALITIES)) for (const [k, v] of Object.entries(LIGHT_AI_ODDS)) cfg[k] ??= v;
 
 export default class AIHandler {
@@ -378,6 +378,15 @@ export default class AIHandler {
                 // Each drop re-downs them, so cap follow-ups per down-spell and
                 // never chain them at the ropes — back off and let them rise
                 // ?light=v1 (Stages 10-11): a strike on the mat, by how he lies: mounted punches on his back, body stomps on his stomach (Down + Action)
+                // ?light=v1 (Stage 12): a mat hold by how he lies: the body scissors (Up + Action) or the Indian deathlock (Back + Finisher) on a man on his back
+                const away = opp.x > self.x ? 'left' : 'right';
+                const matHold = lightCandidate() && opp.lying === 'supine' && ['bodyScissors', 'indianDeathlock'].filter(m => self.moveSet.includes(m));
+                if (matHold?.length && Math.random() < (cfg.matMoveOdds ?? 0)) {
+                    if (matHold[Math.floor(Math.random() * matHold.length)] === 'bodyScissors') { this._hold('up'); this._attack('action', 1.2); }
+                    else { this._hold(away); this._attack('finisher', 1.2); }
+                    this._pounces = (this._pounces ?? 0) + 1;
+                    return;
+                }
                 const groundStrike = lightCandidate() && ((opp.lying === 'supine' && self.moveSet.includes('mountedPunches')) || (opp.lying === 'prone' && self.moveSet.includes('bodyStomps')));
                 if (groundStrike && Math.random() < (cfg.groundStrikeOdds ?? 0)) {
                     this._hold('down');
@@ -413,6 +422,8 @@ export default class AIHandler {
             if (this._nearRopes(opp)) { this._cooldown = 0.5; return; }
             const roll = Math.random();
             const slam = cfg.staggerSlamOdds ?? 0;
+            // ?light=v1 (Stage 12): a kit with the abdominal stretch takes the staggered man into it on this share (Back + Action)
+            if (lightCandidate() && self.moveSet.includes('abdominalStretch') && Math.random() < (cfg.matMoveOdds ?? 0)) { this._hold(opp.x > self.x ? 'left' : 'right'); this._attack('action', 0.9); return; }
             if (roll < slam)             this._attack('action', 0.9);  // grab → slam
             else if (roll < slam + 0.45) {
                 // ?light=v1 (Stage 11): a kit with the axe handle clubs the bent-over man's back instead of the headbutt on this share (Down + Power)
@@ -457,6 +468,8 @@ export default class AIHandler {
                     this._cooldown = 0.6;
                     return;
                 }
+                // ?light=v1 (Stage 12): a kit with the leapfrog hops over the runner on this share of the rebounds (Up + Power)
+                if (lightCandidate() && self.moveSet.includes('leapfrog') && Math.random() < (cfg.matMoveOdds ?? 0)) { this._hold('up'); this._attack('power', 1.0); return; }
                 // ?light=v1 (Stage 11): a kit with the back elbow drives it into the runner on this share of the rebounds (Down + Action)
                 if (lightCandidate() && self.moveSet.includes('backElbow') && Math.random() < (cfg.backElbowOdds ?? 0)) { this._hold('down'); this._attack('action', 1.0); return; }
                 // ?light=v1 (Stage 6): a kit with a runner throw (hip toss, arm drag) uses it on half the rebounds, else the Action answer (clothesline or back body drop)

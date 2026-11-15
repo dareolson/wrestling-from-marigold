@@ -53,14 +53,16 @@ export const LIGHT_KIT_REMOVE = {
     guido:    ['backBodyDrop'],
 };
 // Stage 7 (T7.1): the snapmare from the tie-up (Lockup + Power, Back held) goes to Lou and Guido as Opus's default; it adds a move, so those two light kits are one longer.
+// Stage 12 (Opus's defaults for Derek, 2026-11-15): wristlock Lou + Guido; headlock takeover Lou + George; flying mare Guido + Lou; test of strength Kowalski + Lou; leapfrog Guido + George; backward roll George + Guido;
+// abdominal stretch Kowalski + George; body scissors Lou + Kowalski; Indian deathlock George + Kowalski; backdrop suplex Lou + Kowalski. Inputs: research/animation/light-moves-2026-11/g12/inputs.md.
 export const LIGHT_KIT_ADD = {
     // Stage 8: every kit that holds kneeDrop also holds the hand stomp (Down + Power on a man on his stomach). Stages 10-11 (Opus's defaults for Derek, 2026-11-15): club blow replaces the jab for George and Kowalski (LIGHT_KIT_SWAPS);
     // running forearm Lou + Guido; shoulder block Kowalski + George; mounted punches everyone; chop Lou + Kowalski; uppercut Guido + Kowalski; back elbow George + Kowalski; leg sweep Lou + Guido;
     // axe handle to the back George + Kowalski; body stomps George + Kowalski.
-    thesz:    ['snapmare', 'handStomp', 'runningForearm', 'mountedPunches', 'chop', 'legSweep'],
-    george:   ['handStomp', 'shoulderBlock', 'mountedPunches', 'backElbow', 'axeHandleBack', 'bodyStomps'],
-    kowalski: ['handStomp', 'shoulderBlock', 'mountedPunches', 'chop', 'uppercut', 'backElbow', 'axeHandleBack', 'bodyStomps'],
-    guido:    ['snapmare', 'handStomp', 'runningForearm', 'mountedPunches', 'uppercut', 'legSweep'],
+    thesz:    ['snapmare', 'handStomp', 'runningForearm', 'mountedPunches', 'chop', 'legSweep', 'wristlock', 'headlockTakeover', 'flyingMare', 'testOfStrength', 'bodyScissors', 'backdropSuplex'],
+    george:   ['handStomp', 'shoulderBlock', 'mountedPunches', 'backElbow', 'axeHandleBack', 'bodyStomps', 'headlockTakeover', 'leapfrog', 'backwardRoll', 'abdominalStretch', 'indianDeathlock'],
+    kowalski: ['handStomp', 'shoulderBlock', 'mountedPunches', 'chop', 'uppercut', 'backElbow', 'axeHandleBack', 'bodyStomps', 'testOfStrength', 'abdominalStretch', 'bodyScissors', 'indianDeathlock', 'backdropSuplex'],
+    guido:    ['snapmare', 'handStomp', 'runningForearm', 'mountedPunches', 'uppercut', 'legSweep', 'wristlock', 'flyingMare', 'leapfrog', 'backwardRoll'],
 };
 export const lightKit = name => [...(ROSTER_KITS[name] ?? []).map(id => LIGHT_KIT_SWAPS[name]?.[id] ?? id).filter(id => !LIGHT_KIT_REMOVE[name]?.includes(id)), ...(LIGHT_KIT_ADD[name] ?? [])];
 export const kitFor = (name, light) => (light ? lightKit(name) : ROSTER_KITS[name]);

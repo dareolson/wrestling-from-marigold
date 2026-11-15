@@ -188,5 +188,55 @@
     "fingerprint": "39ad43d67325",
     "status": "unverified",
     "reason": "historical: legacy cover (no clip), no critic spec; not waived because a pin does involve body contact"
+  },
+  "wristlock": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES Stage 12): hand-posed rough clip registered per play under ?light=v1 (matMoves.js), no critic spec; checked by tests/matMoves.test.js (every rig pairing builds) and tools/debug/g12_measure.mjs; Derek dials it in"
+  },
+  "headlockTakeover": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES Stage 12): hand-posed rough clip registered per play under ?light=v1 (matMoves.js), no critic spec; checked by tests/matMoves.test.js (every rig pairing builds) and tools/debug/g12_measure.mjs; Derek dials it in"
+  },
+  "flyingMare": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES Stage 12): hand-posed rough clip registered per play under ?light=v1 (matMoves.js), no critic spec; checked by tests/matMoves.test.js (every rig pairing builds) and tools/debug/g12_measure.mjs; Derek dials it in"
+  },
+  "testOfStrength": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES Stage 12): hand-posed rough clip registered per play under ?light=v1 (matMoves.js), no critic spec; checked by tests/matMoves.test.js (every rig pairing builds) and tools/debug/g12_measure.mjs; Derek dials it in"
+  },
+  "leapfrog": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES Stage 12): hand-posed rough clip registered per play under ?light=v1 (matMoves.js), no critic spec; checked by tests/matMoves.test.js (every rig pairing builds) and tools/debug/g12_measure.mjs; Derek dials it in"
+  },
+  "backwardRoll": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES Stage 12): hand-posed rough clip registered per play under ?light=v1 (matMoves.js), no critic spec; checked by tests/matMoves.test.js (every rig pairing builds) and tools/debug/g12_measure.mjs; Derek dials it in"
+  },
+  "abdominalStretch": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES Stage 12): hand-posed rough clip registered per play under ?light=v1 (matMoves.js), no critic spec; checked by tests/matMoves.test.js (every rig pairing builds) and tools/debug/g12_measure.mjs; Derek dials it in"
+  },
+  "bodyScissors": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES Stage 12): hand-posed rough clip registered per play under ?light=v1 (matMoves.js), no critic spec; checked by tests/matMoves.test.js (every rig pairing builds) and tools/debug/g12_measure.mjs; Derek dials it in"
+  },
+  "indianDeathlock": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES Stage 12): hand-posed rough clip registered per play under ?light=v1 (matMoves.js), no critic spec; checked by tests/matMoves.test.js (every rig pairing builds) and tools/debug/g12_measure.mjs; Derek dials it in"
+  },
+  "backdropSuplex": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-15 (PLAN_LIGHT_MOVES Stage 12): hand-posed rough clip registered per play under ?light=v1 (matMoves.js), no critic spec; checked by tests/matMoves.test.js (every rig pairing builds) and tools/debug/g12_measure.mjs; Derek dials it in"
   }
 }

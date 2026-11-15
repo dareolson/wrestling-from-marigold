@@ -3342,7 +3342,7 @@ export default class Arena extends Phaser.Scene {
             dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
             headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
             jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12, theszPress: 16,
-            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, handStomp: 5, clubBlow: 4, chop: 4, uppercut: 5, shoulderBlock: 6, runningForearm: 7, backElbow: 7, legSweep: 5, axeHandleBack: 6, mountedPunches: 5, bodyStomps: 4, figureFour: 14, hipToss: 6, atomicDrop: 7, snapmare: 12, armBar: 8, ankleLock: 8,
+            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, handStomp: 5, clubBlow: 4, chop: 4, uppercut: 5, shoulderBlock: 6, runningForearm: 7, backElbow: 7, legSweep: 5, axeHandleBack: 6, mountedPunches: 5, bodyStomps: 4, wristlock: 5, headlockTakeover: 6, flyingMare: 9, testOfStrength: 4, leapfrog: 6, backwardRoll: 3, abdominalStretch: 6, bodyScissors: 4, indianDeathlock: 6, backdropSuplex: 14, figureFour: 14, hipToss: 6, atomicDrop: 7, snapmare: 12, armBar: 8, ankleLock: 8,
         };
         const n = bumps[move];
         if (n) this.bumpHeat(n);
@@ -3723,6 +3723,17 @@ export default class Arena extends Phaser.Scene {
         // move; at 4/s a full ride costs 12, competitive with a slam
         hs.defender._damage(4.0 * dt);
 
+        // ?light=v1 (Stage 12, T12.2): the attacker's Power in the headlock takes the man over to the mat (a kit holds it).
+        if (lightCandidate() && hs.timer > 0.25 && hs.attacker.moveSet.includes('headlockTakeover') && hs.attacker.input.justDown('power')) {
+            const { attacker, defender } = hs;
+            this.headlockState = null;
+            attacker.state = defender.state = 'standing';
+            attacker._doHeadlockTakeover(defender);
+            this._logEvent('move', { attacker: attacker === this.w1 ? 'p1' : 'p2', move: 'headlockTakeover', defenderStamina: Math.round(defender.stamina) });
+            this._heatForMove('headlockTakeover');
+            return;
+        }
+
         const release = (toDown) => {
             hs.attacker.tweenPose('idle', 200, 'Linear');
             hs.attacker.state = 'standing';
@@ -3974,6 +3985,17 @@ export default class Arena extends Phaser.Scene {
             const goRight = held('right');
             const dir     = goLeft ? -1 : goRight ? 1 : ls.attacker.facing;
 
+            // ?light=v1 (Stage 12, T12.1): Back + Action (away from the man) is the wristlock into the arm wringer, for a kit that holds it; a kit without it whips backward as before.
+            if (lightCandidate() && ls.attacker.moveSet.includes('wristlock') && (ls.attacker.facing > 0 ? goLeft : goRight)) {
+                const { attacker, defender } = ls;
+                attacker.state = defender.state = 'standing';
+                this.lockupState = null;
+                attacker._doWristlock(defender);
+                this._logEvent('move', { attacker: who, move: 'wristlock', defenderStamina: Math.round(defender.stamina) });
+                this._heatForMove('wristlock');
+                return;
+            }
+
             ls.attacker.state = 'standing';
             ls.defender.state = 'standing';
             this.lockupState  = null;
@@ -4040,6 +4062,22 @@ export default class Arena extends Phaser.Scene {
             if (held('up') || held('down')) {
                 this._beginWaistlock(ls, held('up') ? -1 : 1);
                 this._logEvent('waistlockStart', { attacker: who, side: held('up') ? 'far' : 'near' });
+                return;
+            }
+        }
+
+        // ?light=v1 (Stage 12, T12.3 / T12.4): Power with Down held is the flying mare, with Up held the test of strength, for a kit that holds each. Under waistlock=v1 a kit holding goBehind keeps
+        // those two directions for it (checked above), so these only fire for it when the flag is off.
+        if (lightCandidate() && just(ls.attacker, 'power') && !(waistlockCandidate() && ls.attacker.moveSet.includes('goBehind'))) {
+            const stored = ls.attacker.input.justDown('power') ? null : consumed?.get(ls.attacker)?.get('power');
+            const held = d => stored?.[d] ?? ls.attacker.input.isDown(d);
+            const move = held('down') && ls.attacker.moveSet.includes('flyingMare') ? 'flyingMare' : held('up') && ls.attacker.moveSet.includes('testOfStrength') ? 'testOfStrength' : null;
+            if (move) {
+                const { attacker, defender } = ls;
+                this.lockupState = null; attacker.state = defender.state = 'standing';
+                attacker[move === 'flyingMare' ? '_doFlyingMare' : '_doTestOfStrength'](defender);
+                this._logEvent('move', { attacker: who, move, defenderStamina: Math.round(defender.stamina) });
+                this._heatForMove(move);
                 return;
             }
         }

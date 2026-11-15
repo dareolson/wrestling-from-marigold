@@ -92,6 +92,16 @@ kits in `src/characters/rosterKits.js` and the registry, so it cannot drift.
 | `axeHandleBack` | yes | none | - | unverified |
 | `mountedPunches` | yes | none | - | unverified |
 | `bodyStomps` | yes | none | - | unverified |
+| `wristlock` | yes | none | - | unverified |
+| `headlockTakeover` | yes | none | - | unverified |
+| `flyingMare` | yes | none | - | unverified |
+| `testOfStrength` | yes | none | - | unverified |
+| `leapfrog` | yes | none | - | unverified |
+| `backwardRoll` | yes | none | - | unverified |
+| `abdominalStretch` | yes | none | - | unverified |
+| `bodyScissors` | yes | none | - | unverified |
+| `indianDeathlock` | yes | none | - | unverified |
+| `backdropSuplex` | yes | none | - | unverified |
 | `theszPress` | yes | Lou, Kowalski | - | unverified |
 | `divingElbow` | no | everyone | - | unverified |
 | `topDive` | no | everyone | - | unverified |

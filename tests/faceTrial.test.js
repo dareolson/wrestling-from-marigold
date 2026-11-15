@@ -5,19 +5,20 @@ import { faceAssets, FaceDriver } from '../src/animation/faceTrial.js';
 
 test('faces: every listed expression head exists on disk, keys unique', () => {
     const assets = faceAssets();
-    assert.equal(assets.length, 29, '27 expression cells + 2 worn resting heads');
+    assert.equal(assets.length, 4 * 29, 'per wrestler: 27 expression cells + 2 worn resting heads');
     for (const a of assets) assert.ok(existsSync(a.file), a.file);
     assert.equal(new Set(assets.map(a => a.key)).size, assets.length);
 });
 
 const fakeWrestler = (rigId) => {
-    const keys = new Set(faceAssets().map(a => a.key).concat('george_rv1_head'));
+    const keys = new Set(faceAssets().map(a => a.key).concat('george_rv1_head', 'thesz_pv1_head', 'guido_rv1_head', 'kowalski_rv1_head'));
     const head = { key: null, setTexture(k) { this.key = k; } };
     return { rigId, state: 'standing', skeleton: { head }, scene: { textures: { exists: k => keys.has(k) } } };
 };
 
-test('faces: a rig without heads gets no driver', () => {
-    assert.equal(FaceDriver.for(fakeWrestler('thesz-procreate-v1')), null);
+test('faces: every roster rig gets a driver; a rig without heads gets none', () => {
+    for (const rig of ['george-roster-v1', 'thesz-procreate-v1', 'guido-roster-v1', 'kowalski-roster-v1']) assert.ok(FaceDriver.for(fakeWrestler(rig)), rig);
+    assert.equal(FaceDriver.for(fakeWrestler('thesz')), null);
 });
 
 test('faces: at rest George wears his own head clean, then the worn resting heads as damage adds up; a hit shows pain', () => {

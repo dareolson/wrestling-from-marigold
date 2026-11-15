@@ -42,6 +42,33 @@ def main_blob(im):
     return out
 
 
+def atlas_cells(atlas):
+    # the 9 heads by their own pixels, not cut at equal thirds: worn hair pokes past the third lines and was being cut flat.
+    # Each opaque piece goes to the grid cell holding its centre; a piece that spans two rows (heads touching) is split at the row line.
+    a = (atlas[:, :, 3] > 40).astype(np.uint8)
+    H, W = a.shape
+    ch, cw = H / 3, W / 3
+    n, lab, stats, cent = cv2.connectedComponentsWithStats(a, 8)
+    owner = np.full(a.shape, -1, np.int32)
+    yy, xx = np.mgrid[0:H, 0:W]
+    for i in range(1, n):
+        m = lab == i
+        x, y, w, h = stats[i, :4]
+        if h > 1.3 * ch or w > 1.3 * cw:
+            owner[m] = (np.minimum(2, yy[m] // ch) * 3 + np.minimum(2, xx[m] // cw)).astype(np.int32)
+        else:
+            owner[m] = int(min(2, cent[i][1] // ch) * 3 + min(2, cent[i][0] // cw))
+    cells = [[None] * 3 for _ in range(3)]
+    for k in range(9):
+        m = owner == k
+        ys, xs = np.nonzero(m)
+        y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
+        cell = atlas[y0:y1, x0:x1].copy()
+        cell[~m[y0:y1, x0:x1], 3] = 0
+        cells[k // 3][k % 3] = cell
+    return cells
+
+
 def place(cell, scale, dx, dy, W, H):
     M = np.float32([[scale, 0, dx], [0, scale, dy]])
     return cv2.warpAffine(cell, M, (W, H), flags=cv2.INTER_AREA if scale < 1 else cv2.INTER_LINEAR, borderValue=(0, 0, 0, 0))
@@ -98,45 +125,80 @@ def register_to_row(cell, ref, scale, W, H):
     return best
 
 
+def ink(im):
+    g = cv2.cvtColor(im[:, :, :3], cv2.COLOR_BGR2GRAY)
+    return ((g < 70) & (im[:, :, 3] > 128)).astype(np.uint8)
+
+
+def ink_px(out, ref):
+    # mean symmetric distance (px, capped at 10) between the two drawings' ink lines: 0 = the lines sit on each other
+    a, b = ink(out), ink(ref)
+    da = cv2.distanceTransform(1 - a, cv2.DIST_L2, 3); db = cv2.distanceTransform(1 - b, cv2.DIST_L2, 3)
+    return float((np.minimum(db[a > 0], 10).mean() + np.minimum(da[b > 0], 10).mean()) / 2)
+
+
+def refine(cell, ref, scale, dx, dy):
+    # the row's closed frame fitted onto its resting head (head.png when clean) by the ink lines: hair, ear, jaw and neck outline
+    W, H = ref.shape[1], ref.shape[0]
+    dref = np.minimum(cv2.distanceTransform(1 - ink(ref), cv2.DIST_L2, 3), 10)
+    def score(sc, x, y):
+        out = place(cell, sc, x, y, W, H)
+        m = ink(out) > 0
+        return float(dref[m].mean()) if m.any() else 99
+    best = (score(scale, dx, dy), scale, dx, dy)
+    for step_s, step_xy, span in ((0.01, 2, 6), (0.004, 0.5, 2)):
+        _, s0, x0, y0 = best
+        for sc in s0 * (1 + np.arange(-span, span + 1) * step_s):
+            # keep the head's centre fixed while scaling, then search the offset
+            cx, cy = x0 + (s0 - sc) * cell.shape[1] / 2, y0 + (s0 - sc) * cell.shape[0] / 2
+            for x in np.arange(cx - span * step_xy * 2, cx + span * step_xy * 2 + 0.01, step_xy):
+                for y in np.arange(cy - span * step_xy * 2, cy + span * step_xy * 2 + 0.01, step_xy):
+                    v = score(sc, x, y)
+                    if v < best[0]:
+                        best = (v, sc, x, y)
+    return best[1:]
+
+
 def main():
     base = load(BASE)
     H, W = base.shape[:2]
     os.makedirs(OUT, exist_ok=True)
     report = {}
-    for family, file in ATLASES.items():
-        atlas = load(os.path.join(HERE, file))
-        ch, cw = atlas.shape[0] // 3, atlas.shape[1] // 3
-        for stage in range(3):
-            ref = None
-            for mouth in range(3):
-                cell = main_blob(atlas[stage * ch:(stage + 1) * ch, mouth * cw:(mouth + 1) * cw])
-                if ref is None:
-                    iou, (scale, dx, dy) = register(cell, base)
-                    out = place(cell, scale, dx, dy, W, H)
-                    ref = out.copy()
-                else:
-                    iou, (dx, dy) = register_to_row(cell, ref, scale, W, H)
-                    out = place(cell, scale, dx, dy, W, H)
-                # the torso covers the neck stub: cut the neck where the production head's neck ends
-                rows = np.nonzero(base[:, :, 3].max(axis=1) > 40)[0]
-                out[rows.max() + 1:, :, 3] = 0
-                name = f'{family}_{stage}_{mouth}'
-                cv2.imwrite(os.path.join(OUT, name + '.png'), out)
-                report[name] = {'skinIoU': round(float(iou), 3), 'scale': round(float(scale), 4), 'dx': round(float(dx), 1), 'dy': round(float(dy), 1)}
-                print(name, report[name])
+    neck = np.nonzero(base[:, :, 3].max(axis=1) > 40)[0].max() + 1   # the torso covers the neck stub: cut where head.png's neck ends
+    def save(name, out, **fit):
+        out[neck:, :, 3] = 0
+        cv2.imwrite(os.path.join(OUT, name + '.png'), out)
+        report[name] = {k: round(float(v), 3) for k, v in fit.items()}
+        print(name, report[name])
+        return out
     # resting heads for the worn stages (Codex, drawn from head.png itself); the clean stage rests on head.png
+    refs = [base]
     for name, file in REST.items():
         cell = main_blob(load(os.path.join(HERE, file)))
         iou, (scale, dx, dy) = register(cell, base)
+        scale, dx, dy = refine(cell, base, scale, dx, dy)
         out = place(cell, scale, dx, dy, W, H)
-        rows = np.nonzero(base[:, :, 3].max(axis=1) > 40)[0]
-        out[rows.max() + 1:, :, 3] = 0
-        cv2.imwrite(os.path.join(OUT, name + '.png'), out)
-        report[name] = {'skinIoU': round(float(iou), 3), 'scale': round(float(scale), 4), 'dx': round(float(dx), 1), 'dy': round(float(dy), 1)}
-        print(name, report[name])
+        refs.append(save(name, out, skinIoU=iou, scale=scale, inkPxToHead=ink_px(out, base)))
+    for family, file in ATLASES.items():
+        cells = atlas_cells(load(os.path.join(HERE, file)))
+        for stage in range(3):
+            row = None
+            for mouth in range(3):
+                cell = main_blob(cells[stage][mouth])
+                name = f'{family}_{stage}_{mouth}'
+                if row is None:
+                    iou, (scale, dx, dy) = register(cell, base)
+                    raw = ink_px(place(cell, scale, dx, dy, W, H), refs[stage])
+                    scale, dx, dy = refine(cell, refs[stage], scale, dx, dy)
+                    out = place(cell, scale, dx, dy, W, H)
+                    row = out.copy()
+                    save(name, out, scale=scale, inkPxSkinFit=raw, inkPxToRest=ink_px(out, refs[stage]))
+                else:
+                    iou, (dx, dy) = register_to_row(cell, row, scale, W, H)
+                    out = place(cell, scale, dx, dy, W, H)
+                    save(name, out, scale=scale, rowIoU=iou, inkPxToRest=ink_px(out, refs[stage]))
     with open(os.path.join(OUT, 'registration.json'), 'w') as f:
         json.dump(report, f, indent=1)
-
 
 if __name__ == '__main__':
     main()

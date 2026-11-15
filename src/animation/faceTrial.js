@@ -1,5 +1,5 @@
 // Expression heads (Derek 2026-11-14 trial, "it looks amazing, let's lock it in": on by default, `?faces=0` turns them off): generated heads
-// (research/art/george-expressions-2026-11-14, cut and registered to his head.png canvas by register_cells.py) swapped onto his head in a match.
+// (research/art/<name>-expressions-2026-11-14, cut and registered to each rig's head.png canvas by register_cells.py) swapped onto the head in a match.
 // Three families (talk: closed/speaking/shouting, pain: flinch/clench/cry, smug: smirk/grin/chuckle) x three wear stages x three mouth frames.
 // Driven by headPerformance.js: damage taken adds wear (monotonic) and starts pain; damage he deals starts a boast; standing over a downed man
 // he shouts at him or the crowd now and then. No gameplay effect; a rig without a FACE_RIGS entry, or `?faces=0`, loads and changes nothing.
@@ -9,7 +9,15 @@ export const facesTrial = () => typeof location === 'undefined' || new URLSearch
 
 // `restKeys`: the face between reactions, per wear stage: the clean stage is his own head texture (Derek 2026-11-14: the talk atlas's closed
 // mouth is the wrong resting face); the worn stages are Codex's resting heads drawn from it (rest_1, rest_2).
-const FACE_RIGS = { 'george-roster-v1': { dir: 'src/assets/wrestlers/george-roster-v1/expressions-trial', prefix: 'george_face', restKeys: ['george_rv1_head', 'george_face_rest_1', 'george_face_rest_2'] } };
+// Personality is in the art (Derek 2026-11-14): George the arrogant heel, Lou and Guido babyfaces (the `smug` slot is their fired-up face),
+// Kowalski the monster heel (snarls; the `smug` slot is menace).
+const face = (rigId, name, headKey) => ({ dir: `src/assets/wrestlers/${rigId}/expressions-trial`, prefix: `${name}_face`, restKeys: [headKey, `${name}_face_rest_1`, `${name}_face_rest_2`] });
+const FACE_RIGS = {
+    'george-roster-v1':   face('george-roster-v1', 'george', 'george_rv1_head'),
+    'thesz-procreate-v1': face('thesz-procreate-v1', 'lou', 'thesz_pv1_head'),
+    'guido-roster-v1':    face('guido-roster-v1', 'guido', 'guido_rv1_head'),
+    'kowalski-roster-v1': face('kowalski-roster-v1', 'kowalski', 'kowalski_rv1_head'),
+};
 const FAMILIES = ['talk', 'pain', 'smug'];
 
 const cellName = (family, stage, mouth) => `${family}_${stage}_${mouth}`;

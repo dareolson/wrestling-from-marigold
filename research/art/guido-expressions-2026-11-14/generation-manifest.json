@@ -1,0 +1,60 @@
+{
+  "name": "guido",
+  "rig": "guido-roster-v1",
+  "personality": "Babyface: fired-up crowd rallying for talk, honest pain selling, and determination / gritted fighting grin / triumphant shout for the compatibility smug slot. No arrogant boasting.",
+  "artOnly": true,
+  "status": "source candidates for Claude registration",
+  "assets": [
+    {
+      "name": "guido",
+      "rig": "guido-roster-v1",
+      "file": "guido-rest-disheveled-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-a94807a0-e2eb-40ff-9e72-410a377396eb.png",
+      "references": [
+        "src/assets/wrestlers/guido-roster-v1/head.png"
+      ]
+    },
+    {
+      "name": "guido",
+      "rig": "guido-roster-v1",
+      "file": "guido-rest-battered-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-266130b7-7a39-4ab4-b792-f6d6d5393276.png",
+      "references": [
+        "src/assets/wrestlers/guido-roster-v1/head.png"
+      ]
+    },
+    {
+      "name": "guido",
+      "rig": "guido-roster-v1",
+      "file": "guido-expression-atlas-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-326bb6b9-30ea-4a97-b853-b6a004922146.png",
+      "references": [
+        "src/assets/wrestlers/guido-roster-v1/head.png",
+        "research/art/guido-expressions-2026-11-14/guido-rest-disheveled-v1.png",
+        "research/art/guido-expressions-2026-11-14/guido-rest-battered-v1.png"
+      ]
+    },
+    {
+      "name": "guido",
+      "rig": "guido-roster-v1",
+      "file": "guido-pain-atlas-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-182aa971-2a1c-4250-acdf-5a408f228910.png",
+      "references": [
+        "src/assets/wrestlers/guido-roster-v1/head.png",
+        "research/art/guido-expressions-2026-11-14/guido-rest-disheveled-v1.png",
+        "research/art/guido-expressions-2026-11-14/guido-rest-battered-v1.png"
+      ]
+    },
+    {
+      "name": "guido",
+      "rig": "guido-roster-v1",
+      "file": "guido-smug-atlas-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-25cc168b-ab37-4b94-aef8-ad87bcb7c8f1.png",
+      "references": [
+        "src/assets/wrestlers/guido-roster-v1/head.png",
+        "research/art/guido-expressions-2026-11-14/guido-rest-disheveled-v1.png",
+        "research/art/guido-expressions-2026-11-14/guido-rest-battered-v1.png"
+      ]
+    }
+  ]
+}

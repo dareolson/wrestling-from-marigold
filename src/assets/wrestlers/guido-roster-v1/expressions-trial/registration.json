@@ -1,0 +1,147 @@
+{
+ "rest_1": {
+  "skinIoU": 0.925,
+  "scale": 0.213,
+  "inkPxToHead": 0.413
+ },
+ "rest_2": {
+  "skinIoU": 0.855,
+  "scale": 0.21,
+  "inkPxToHead": 0.459
+ },
+ "talk_0_0": {
+  "scale": 0.701,
+  "inkPxSkinFit": 0.148,
+  "inkPxToRest": 0.154
+ },
+ "talk_0_1": {
+  "scale": 0.701,
+  "rowIoU": 0.988,
+  "inkPxToRest": 0.25
+ },
+ "talk_0_2": {
+  "scale": 0.701,
+  "rowIoU": 0.986,
+  "inkPxToRest": 0.383
+ },
+ "talk_1_0": {
+  "scale": 0.626,
+  "inkPxSkinFit": 0.432,
+  "inkPxToRest": 0.342
+ },
+ "talk_1_1": {
+  "scale": 0.626,
+  "rowIoU": 0.972,
+  "inkPxToRest": 0.4
+ },
+ "talk_1_2": {
+  "scale": 0.626,
+  "rowIoU": 0.972,
+  "inkPxToRest": 0.54
+ },
+ "talk_2_0": {
+  "scale": 0.587,
+  "inkPxSkinFit": 0.34,
+  "inkPxToRest": 0.291
+ },
+ "talk_2_1": {
+  "scale": 0.587,
+  "rowIoU": 0.974,
+  "inkPxToRest": 0.378
+ },
+ "talk_2_2": {
+  "scale": 0.587,
+  "rowIoU": 0.964,
+  "inkPxToRest": 0.579
+ },
+ "pain_0_0": {
+  "scale": 0.724,
+  "inkPxSkinFit": 0.336,
+  "inkPxToRest": 0.308
+ },
+ "pain_0_1": {
+  "scale": 0.724,
+  "rowIoU": 0.988,
+  "inkPxToRest": 0.256
+ },
+ "pain_0_2": {
+  "scale": 0.724,
+  "rowIoU": 0.986,
+  "inkPxToRest": 0.377
+ },
+ "pain_1_0": {
+  "scale": 0.627,
+  "inkPxSkinFit": 0.556,
+  "inkPxToRest": 0.395
+ },
+ "pain_1_1": {
+  "scale": 0.627,
+  "rowIoU": 0.961,
+  "inkPxToRest": 0.4
+ },
+ "pain_1_2": {
+  "scale": 0.627,
+  "rowIoU": 0.958,
+  "inkPxToRest": 0.515
+ },
+ "pain_2_0": {
+  "scale": 0.598,
+  "inkPxSkinFit": 0.509,
+  "inkPxToRest": 0.424
+ },
+ "pain_2_1": {
+  "scale": 0.598,
+  "rowIoU": 0.977,
+  "inkPxToRest": 0.385
+ },
+ "pain_2_2": {
+  "scale": 0.598,
+  "rowIoU": 0.965,
+  "inkPxToRest": 0.487
+ },
+ "smug_0_0": {
+  "scale": 0.699,
+  "inkPxSkinFit": 0.224,
+  "inkPxToRest": 0.208
+ },
+ "smug_0_1": {
+  "scale": 0.699,
+  "rowIoU": 0.991,
+  "inkPxToRest": 0.267
+ },
+ "smug_0_2": {
+  "scale": 0.699,
+  "rowIoU": 0.989,
+  "inkPxToRest": 0.469
+ },
+ "smug_1_0": {
+  "scale": 0.623,
+  "inkPxSkinFit": 0.341,
+  "inkPxToRest": 0.343
+ },
+ "smug_1_1": {
+  "scale": 0.623,
+  "rowIoU": 0.988,
+  "inkPxToRest": 0.35
+ },
+ "smug_1_2": {
+  "scale": 0.623,
+  "rowIoU": 0.987,
+  "inkPxToRest": 0.543
+ },
+ "smug_2_0": {
+  "scale": 0.584,
+  "inkPxSkinFit": 0.297,
+  "inkPxToRest": 0.258
+ },
+ "smug_2_1": {
+  "scale": 0.584,
+  "rowIoU": 0.988,
+  "inkPxToRest": 0.28
+ },
+ "smug_2_2": {
+  "scale": 0.584,
+  "rowIoU": 0.977,
+  "inkPxToRest": 0.48
+ }
+}

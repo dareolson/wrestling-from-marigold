@@ -1,0 +1,60 @@
+{
+  "name": "kowalski",
+  "rig": "kowalski-roster-v1",
+  "personality": "Monster heel: growl/snarl/roar for talk; angry, grudging pain; cold stare, wide-eyed sneer and cruel grin for the smug slot.",
+  "artOnly": true,
+  "status": "source candidates for Claude registration",
+  "assets": [
+    {
+      "name": "kowalski",
+      "rig": "kowalski-roster-v1",
+      "file": "kowalski-rest-disheveled-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-d8063606-7077-4c97-92fb-2cc6fc98b50f.png",
+      "references": [
+        "src/assets/wrestlers/kowalski-roster-v1/head.png"
+      ]
+    },
+    {
+      "name": "kowalski",
+      "rig": "kowalski-roster-v1",
+      "file": "kowalski-rest-battered-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-a5cb08c0-bde1-434b-9319-dbc89b8bd575.png",
+      "references": [
+        "src/assets/wrestlers/kowalski-roster-v1/head.png"
+      ]
+    },
+    {
+      "name": "kowalski",
+      "rig": "kowalski-roster-v1",
+      "file": "kowalski-expression-atlas-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-f61ca0b9-566b-4f5f-8b70-8024c35733f0.png",
+      "references": [
+        "src/assets/wrestlers/kowalski-roster-v1/head.png",
+        "research/art/kowalski-expressions-2026-11-14/kowalski-rest-disheveled-v1.png",
+        "research/art/kowalski-expressions-2026-11-14/kowalski-rest-battered-v1.png"
+      ]
+    },
+    {
+      "name": "kowalski",
+      "rig": "kowalski-roster-v1",
+      "file": "kowalski-pain-atlas-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-1821e5b8-19cf-494f-a3dd-716f86af1064.png",
+      "references": [
+        "src/assets/wrestlers/kowalski-roster-v1/head.png",
+        "research/art/kowalski-expressions-2026-11-14/kowalski-rest-disheveled-v1.png",
+        "research/art/kowalski-expressions-2026-11-14/kowalski-rest-battered-v1.png"
+      ]
+    },
+    {
+      "name": "kowalski",
+      "rig": "kowalski-roster-v1",
+      "file": "kowalski-smug-atlas-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-b79ed3e4-aaa0-45bf-8dc1-60f365529df5.png",
+      "references": [
+        "src/assets/wrestlers/kowalski-roster-v1/head.png",
+        "research/art/kowalski-expressions-2026-11-14/kowalski-rest-disheveled-v1.png",
+        "research/art/kowalski-expressions-2026-11-14/kowalski-rest-battered-v1.png"
+      ]
+    }
+  ]
+}

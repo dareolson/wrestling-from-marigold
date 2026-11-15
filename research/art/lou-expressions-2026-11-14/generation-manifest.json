@@ -1,0 +1,60 @@
+{
+  "name": "lou",
+  "rig": "thesz-procreate-v1",
+  "personality": "Babyface: fired-up crowd rallying for talk, honest pain selling, and determination / gritted fighting grin / triumphant shout for the compatibility smug slot. No arrogant boasting.",
+  "artOnly": true,
+  "status": "source candidates for Claude registration",
+  "assets": [
+    {
+      "name": "lou",
+      "rig": "thesz-procreate-v1",
+      "file": "lou-rest-disheveled-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-3fd3812f-93e5-4fcc-85fd-debaee173d8c.png",
+      "references": [
+        "src/assets/wrestlers/thesz-procreate-v1/head.png"
+      ]
+    },
+    {
+      "name": "lou",
+      "rig": "thesz-procreate-v1",
+      "file": "lou-rest-battered-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-bc71910a-ae5b-4448-ad8c-0c7b5054dfdc.png",
+      "references": [
+        "src/assets/wrestlers/thesz-procreate-v1/head.png"
+      ]
+    },
+    {
+      "name": "lou",
+      "rig": "thesz-procreate-v1",
+      "file": "lou-expression-atlas-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-0e2eeb3d-a3de-45c5-86dc-858dfced9ec0.png",
+      "references": [
+        "src/assets/wrestlers/thesz-procreate-v1/head.png",
+        "research/art/lou-expressions-2026-11-14/lou-rest-disheveled-v1.png",
+        "research/art/lou-expressions-2026-11-14/lou-rest-battered-v1.png"
+      ]
+    },
+    {
+      "name": "lou",
+      "rig": "thesz-procreate-v1",
+      "file": "lou-pain-atlas-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-c31925d6-6654-4a32-9eb8-e0edddf99248.png",
+      "references": [
+        "src/assets/wrestlers/thesz-procreate-v1/head.png",
+        "research/art/lou-expressions-2026-11-14/lou-rest-disheveled-v1.png",
+        "research/art/lou-expressions-2026-11-14/lou-rest-battered-v1.png"
+      ]
+    },
+    {
+      "name": "lou",
+      "rig": "thesz-procreate-v1",
+      "file": "lou-smug-atlas-v1.png",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-11831a05-2aab-43f3-9222-edac203fbb41.png",
+      "references": [
+        "src/assets/wrestlers/thesz-procreate-v1/head.png",
+        "research/art/lou-expressions-2026-11-14/lou-rest-disheveled-v1.png",
+        "research/art/lou-expressions-2026-11-14/lou-rest-battered-v1.png"
+      ]
+    }
+  ]
+}

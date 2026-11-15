@@ -140,3 +140,14 @@ test('Skeleton applies and then cleanly resets a calibrated whole-part swap', ()
     assert.equal(image.key, 'test_forearm');
     assert.deepEqual(image._texDims, { w: 40, h: 60 });
 });
+
+test('an explicit binding: null unbinds a variant (George hairReach: a foreshortened arm placed by its own elbow); no binding key inherits the base', async () => {
+    const { resolvePartSelection, validateCharacterArt } = await import('../src/rig/partVariants.js');
+    const { georgeRosterV1 } = await import('../src/characters/george_roster_v1.js');
+    const hair = resolvePartSelection(georgeRosterV1.textures, { nearUpperArm: 'hairReach' }).nearUpperArm;
+    assert.equal(hair.binding, null);
+    assert.deepEqual(hair.distalAnchorFrac, { u: 0.5013513513513513, v: 0.6 });
+    assert.ok(resolvePartSelection(georgeRosterV1.textures, {}).nearUpperArm.binding?.proximal, 'base stays bound');
+    assert.ok(resolvePartSelection(georgeRosterV1.textures, { nearForearm: 'hairFix' }).nearForearm.binding?.proximal, 'a variant without the key inherits');
+    assert.deepEqual(validateCharacterArt(georgeRosterV1).errors, [], 'the rig validates with the unbound variant');
+});

@@ -73,3 +73,24 @@ test('hair check: valid at every wear stage, far hand smooths and near hand insp
     assert.ok(!clips[2].tracks.attacker.keyframes.some(k => k.parts.nearForearm === 'inspect'), 'battered breaks off before looking at his hand');
     assert.ok(clips[2].events.some(e => e.type === 'abort'));
 });
+
+test('hair check on the near arm (T-D3): hairReach + hairFix on the l-channel arm through the touches, the far arm rests, fixes and battered stage keep the same art', async () => {
+    const { georgeHairCheckClip } = await import('../src/animation/clips/georgeCrowdTaunt.js');
+    const o = { lSlot: 'nearForearm', rSlot: 'farForearm', lUpSlot: 'nearUpperArm', nearArm: true };
+    for (const [stage, fix] of [[0, null], [1, null], [2, null], [1, 'one'], [2, 'two']]) {
+        const c = georgeHairCheckClip(stance, stance, { ...o, stage, fix });
+        assert.deepEqual(validateClip(c), { ok: true, errors: [] });
+        const ks = c.tracks.attacker.keyframes;
+        assert.ok(c.duration <= 2.6, `${c.duration}`);
+        assert.equal(ks[1].parts.nearUpperArm, 'hairReach');
+        assert.equal(ks[1].parts.nearForearm, 'hairFix');
+        assert.equal(ks[1].parts.farForearm, 'base', 'the far hand stays at rest');
+        assert.deepEqual(ks.at(-1).parts, { nearForearm: 'base', farForearm: 'base', nearUpperArm: 'base' });
+        for (const k of ks) for (const ch of ['lLeg', 'rLeg', 'crouch', 'lKnee', 'rKnee']) assert.equal(k.pose[ch], stance[ch]);
+        // the hair art is only on while the hand is up: never with the inspecting hand
+        for (const k of ks) assert.ok(k.parts.nearForearm !== 'hairFix' || k.parts.nearUpperArm === 'hairReach', 'the pair goes together');
+    }
+    const far = georgeHairCheckClip(stance, stance, { ...o, nearArm: false });
+    assert.ok(!far.tracks.attacker.keyframes.some(k => k.parts.nearUpperArm === 'hairReach'), 'without the art: the far arm, as before');
+    assert.equal(far.tracks.attacker.keyframes[1].parts.farForearm, 'hairSmooth');
+});

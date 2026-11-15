@@ -318,6 +318,27 @@ export const georgeRosterV1 = {
             "inspect": {
                 "key": "george_rv1_forearm_inspect",
                 "file": "forearm_inspect.png"
+            },
+            "hairFix": {
+                "key": "george_rv1_forearm_hair_fix",
+                "file": "forearm_hair_fix.png",
+                "semanticAnchors": {
+                    "hairContact": {
+                        "u": 0.5868544600938967,
+                        "v": 0.8177676537585421
+                    }
+                }
+            }
+        },
+        "upperArm": {
+            "hairReach": {
+                "key": "george_rv1_upper_arm_hair_reach",
+                "file": "upper_arm_hair_reach.png",
+                "binding": null,
+                "distalAnchorFrac": {
+                    "u": 0.5013513513513513,
+                    "v": 0.6
+                }
             }
         }
     }

@@ -4217,9 +4217,11 @@ export default class Wrestler {
         const runtime = this.scene.moveRuntime;
         this.state = 'taunting';
         (this._hairFix ??= new HairFixQueue()).noteFix(this.scene.time.now);
-        const l = this.skeleton.lChannelSide(this.facing);
+        const l = this.skeleton.lChannelSide(this.facing), tx = this.scene.textures;
+        // the near arm does it when the l channel draws the near arm and Codex's hair arm pair is loaded; else the far arm with hairSmooth
+        const nearArm = l === 'near' && !!tx.exists('george_rv1_upper_arm_hair_reach') && !!tx.exists('george_rv1_forearm_hair_fix');
         const clip = georgeHairCheckClip({ ...this.pose }, POSES[this.idlePose] ?? POSES.idle,
-            { lSlot: `${l}Forearm`, rSlot: `${l === 'near' ? 'far' : 'near'}Forearm`, stage: this.face?.state.stage ?? 0, fix });
+            { lSlot: `${l}Forearm`, rSlot: `${l === 'near' ? 'far' : 'near'}Forearm`, lUpSlot: `${l}UpperArm`, stage: this.face?.state.stage ?? 0, fix, nearArm });
         runtime.register(clip);
         this._playPerformance(clip);
     }

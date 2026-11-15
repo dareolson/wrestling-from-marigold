@@ -103,21 +103,42 @@ export const HAIR_CHECK = {
 };
 const HAIR_HANDS = { reach: { r: 'hairSmooth' }, touch: { r: 'hairSmooth' }, hold: { r: 'hairSmooth' }, stroke: { r: 'hairSmooth' }, lift: { r: 'hairSmooth' }, stroke2: { r: 'hairSmooth' }, inspect: { l: 'inspect' }, held: { l: 'inspect' }, glance: {} };
 
+// Stage D (T-D3): the same gesture on the NEAR arm (the l channel), with Codex's hairReach upper arm + hairFix forearm; the far arm rests. Contact pose
+// (lArm 1.64, lElbow 1.44: hairContact within ~1.3 px of the forelock, eyes and mouth clear, both facings) and the small smoothing arc (to 1.76 / 1.54) are
+// Codex's fit (research/art/george-hair-arm-2026-11-15/preview-fit.json); a wider sweep crosses the face on the low-angle side, so the approach stays high.
+const NEAR_REST = { rArm: 0.15, rElbow: 0.8 };
+export const HAIR_CHECK_NEAR_KEYS = {
+    reach:   { ...NEAR_REST, lArm: 2.10, lElbow: 2.40, lean: -0.08, bend: -0.04 },   // the hand comes in from above: a low approach crosses the face (hair_arm_probe.mjs)
+    touch:   { ...NEAR_REST, lArm: 1.64, lElbow: 1.44, lean: -0.06, bend: 0 },
+    hold:    { ...NEAR_REST, lArm: 1.64, lElbow: 1.44, lean: -0.06, bend: 0 },
+    stroke:  { ...NEAR_REST, lArm: 1.76, lElbow: 1.54, lean: -0.06, bend: 0 },
+    lift:    { ...NEAR_REST, lArm: 1.64, lElbow: 1.44, lean: -0.06, bend: 0 },
+    stroke2: { ...NEAR_REST, lArm: 1.76, lElbow: 1.54, lean: -0.06, bend: 0 },
+    away:    { ...NEAR_REST, lArm: 1.00, lElbow: 1.00, lean: -0.04, bend: 0 },   // off the hair before it goes down to the chin
+    inspect: { rArm: 0.15, rElbow: 0.8, lArm: 0.45, lElbow: 2.20, lean: 0.02, bend: 0.04 },   // the same hand down before the chin, palm to his face
+    held:    { rArm: 0.15, rElbow: 0.8, lArm: 0.47, lElbow: 2.22, lean: 0.03, bend: 0.05 },
+    glance:  { rArm: 0.15, rElbow: 0.8, lArm: 0.40, lElbow: 1.60, lean: -0.04, bend: -0.02 },
+};
+// the look at the fingers starts a beat later: the hand leaves the hair first (`away`)
+const NEAR_TIMES = { away: 1.74, inspect: 1.92, inspectEnd: 2.30, glance: 2.44 };
+const NEAR_FIX = { lUp: 'hairReach', l: 'hairFix' };
+const HAIR_HANDS_NEAR = { reach: NEAR_FIX, touch: NEAR_FIX, hold: NEAR_FIX, stroke: NEAR_FIX, lift: NEAR_FIX, stroke2: NEAR_FIX, away: NEAR_FIX, inspect: { l: 'inspect' }, held: { l: 'inspect' }, glance: {} };
+
 // Stage D (T-D2): the hair fix he does on his own when it gets messy. 'one' (stage 1): a single irritated stroke and a glance.
 // 'two' (stage 2): two hurried tries, the second breaks off with a snarl (the face's abort beat). Same arm poses as the check.
 const FIX_TIMES = {
     one: { reach: 0.30, touch: 0.38, stroke: 0.65, glance: 0.95, end: 1.25 },
     two: { reach: 0.25, touch: 0.32, stroke: 0.52, lift: 0.62, touch2: 0.70, glance: 1.00, end: 1.35 },
 };
-function fixClip(frames, fix, { key, k, sc, upperOf, idle }) {
+function fixClip(frames, fix, { key, k, sc, upperOf, idle, spec }) {
     const t = FIX_TIMES[fix];
     frames.push(k('reach', sc(t.reach), 'easeOut'), k('touch', sc(t.touch), 'linear'), k('stroke', sc(t.stroke)));
     let events;
     if (fix === 'one') {
-        frames.push(k('glance', sc(t.glance)));
+        frames.push(...(spec.keys.away ? [k('away', sc(t.stroke + 0.10))] : []), k('glance', sc(t.glance)));
         events = [{ at: 0.05, type: 'hairTouch' }, { at: sc(t.stroke), type: 'resent' }, { at: sc(t.end) - 0.05, type: 'release' }];
     } else {
-        frames.push(k('lift', sc(t.lift)), k('touch', sc(t.touch2), 'linear'), k('glance', sc(t.glance), 'easeOut'));
+        frames.push(k('lift', sc(t.lift)), k('touch', sc(t.touch2), 'linear'), ...(spec.keys.away ? [k('away', sc(t.touch2 + 0.10))] : []), k('glance', sc(t.glance), 'easeOut'));
         events = [{ at: 0.05, type: 'hairTouch' }, { at: sc(t.touch2), type: 'abort' }, { at: sc(t.end) - 0.05, type: 'release' }];
     }
     const end = sc(t.end);
@@ -126,23 +147,27 @@ function fixClip(frames, fix, { key, k, sc, upperOf, idle }) {
 }
 
 // lSlot / rSlot: the forearm slots the l and r channels draw at this facing. stage: his wear stage (0 clean, 1 disheveled, 2 battered).
-export function georgeHairCheckClip(stance, idle = stance, { lSlot = null, rSlot = null, stage = 0, spec = HAIR_CHECK, fix = null } = {}) {
+export function georgeHairCheckClip(stance, idle = stance, { lSlot = null, rSlot = null, lUpSlot = null, stage = 0, spec = HAIR_CHECK, fix = null, nearArm = false } = {}) {
+    // nearArm: the hair art for the l-channel arm is on (lUpSlot, lSlot and the textures exist); else the far-arm version
+    if (nearArm) spec = { ...spec, keys: HAIR_CHECK_NEAR_KEYS, times: { ...spec.times, ...NEAR_TIMES } };
+    const hands = nearArm ? HAIR_HANDS_NEAR : HAIR_HANDS;
     const st = spec.stages[Math.max(0, Math.min(2, stage))], sc = x => +(x * st.scale).toFixed(3), t = spec.times;
     const lower = Object.fromEntries(Object.entries(stance).filter(([k, v]) => Number.isFinite(v) && !UPPER.includes(k) && !['tilt', 'lift'].includes(k)));
     const upperOf = p => Object.fromEntries(UPPER.map(k => [k, Number.isFinite(p[k]) ? p[k] : (k.endsWith('Elbow') ? 0.7 : 0)]));
-    const parts = (h = {}) => (lSlot && rSlot ? { parts: { [lSlot]: h.l ?? 'base', [rSlot]: h.r ?? 'base' } } : {});
+    const parts = (h = {}) => (lSlot && rSlot ? { parts: { [lSlot]: h.l ?? 'base', [rSlot]: h.r ?? 'base', ...(nearArm && lUpSlot ? { [lUpSlot]: h.lUp ?? 'base' } : {}) } } : {});
     const key = (at, upper, h, ease = 'easeInOut') => ({ at, ease, pose: { ...lower, ...upper }, ...parts(h) });
-    const k = (n, at, ease) => key(at, spec.keys[n], HAIR_HANDS[n], ease);
-    const frames = [key(0, upperOf(stance), HAIR_HANDS.reach), k('reach', sc(t.reach), 'easeOut'), k('touch', sc(t.touch), 'linear'), k('hold', sc(t.hold), 'linear'), k('stroke', sc(t.stroke))];
+    const k = (n, at, ease) => key(at, spec.keys[n], hands[n], ease);
+    const frames = [key(0, upperOf(stance), hands.reach), k('reach', sc(t.reach), 'easeOut'), k('touch', sc(t.touch), 'linear'), k('hold', sc(t.hold), 'linear'), k('stroke', sc(t.stroke))];
     let end, events;
     if (fix) return fixClip(frames.slice(0, 1), fix, { key, k, spec, upperOf, idle, sc: x => +(x * st.scale).toFixed(3) });
     if (st.inspect) {
-        frames.push(k('lift', sc(t.lift)), k('stroke2', sc(t.stroke2)), k('inspect', sc(t.inspect)), k('held', sc(t.inspectEnd), 'linear'), k('glance', sc(t.glance)));
+        frames.push(k('lift', sc(t.lift)), k('stroke2', sc(t.stroke2)), ...(spec.keys.away ? [k('away', sc(t.away))] : []), k('inspect', sc(t.inspect)), k('held', sc(t.inspectEnd), 'linear'), k('glance', sc(t.glance)));
         end = sc(t.end);
         events = [{ at: 0.05, type: 'hairTouch' }, { at: sc(t.inspect), type: 'inspect' }, { at: sc(t.inspectEnd), type: 'resent' }, { at: sc(t.glance) + 0.05, type: 'release' }];
     } else {
         // battered: the first stroke goes nowhere; he yanks the hand down and snarls
-        const yank = sc(t.stroke) + 0.25;
+        const yank = sc(t.stroke) + (spec.keys.away ? 0.30 : 0.25);
+        if (spec.keys.away) frames.push(k('away', sc(t.stroke) + 0.12));
         frames.push(k('glance', yank, 'easeOut'));
         end = yank + 0.35;
         events = [{ at: 0.05, type: 'hairTouch' }, { at: sc(t.stroke), type: 'abort' }, { at: end - 0.05, type: 'release' }];

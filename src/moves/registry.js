@@ -401,7 +401,7 @@ export const MOVE_SPECS = {
     },
     indianDeathlock: {
         category: C.HOLD, clip: null, executor: '_doIndianDeathlock',
-        sell: { part: 'leg', intensity: 0.6 },
+        sell: { part: 'back', intensity: 0.6 },
         damageKey: 'indianDeathlock', poseSeq: false, legacyFallback: null, kitGated: true,
         trigger: 'tryFinisher() — Back + Finisher on a man on his back (?light=v1); Up arm bar, Down crab / ankle lock',
         ai: ['vsDown', 'holdDrain'],

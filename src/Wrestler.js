@@ -2200,7 +2200,7 @@ export default class Wrestler {
         if (!this.input.justDown('power')) return false;
 
         // ?light=v1 (Stage 12, T12.5): Up + Power in the same runner window hops over him (the leapfrog), ahead of the hip toss / arm drag a plain Power gets.
-        if (lightCandidate() && this.input.isDown('up') && this.moveSet.includes('leapfrog') && other.state === 'running' && other.runPhase === 'returning' && this.scene.moveRuntime) {
+        if (lightCandidate() && this.moveSet.includes('leapfrog') && other.state === 'running' && other.runPhase === 'returning' && this.scene.moveRuntime && this.input.isDown('up')) {
             const pastDist = (other.x - this.x) * other.runFacing;
             if (Math.abs(other.x - this.x) < 160 * this.s && pastDist < 45 * this.s && sharesDepth(this, other)) { this._doLeapfrog(other); return 'leapfrog'; }
         }

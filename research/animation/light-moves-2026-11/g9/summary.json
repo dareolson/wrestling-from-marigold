@@ -1,0 +1,474 @@
+{
+  "lou-george-right": {
+    "after": {
+      "clip": "armBarV2",
+      "frames": 216,
+      "heldFrames": 118,
+      "maxWristGap": 0.000057997570248407116,
+      "maxForearmGap": 0.00005739225474245945,
+      "pinnedFrames": 0,
+      "maxHeldAnkleSlide": 0,
+      "kneeRange": [
+        0.00044279270652674673,
+        2.3004427927065274
+      ],
+      "stackFailureFrames": 0,
+      "heldShadow": {
+        "overMax": 266,
+        "aboveFrames": 0,
+        "areaMax": 2035,
+        "gapX": [
+          -3,
+          -3
+        ],
+        "gapY": [
+          36.1,
+          36.1
+        ]
+      },
+      "heldLowerMax": {
+        "legs": 1332,
+        "belly": 668
+      },
+      "heldMaskMax": {
+        "below": 1561,
+        "belowBody": 1561,
+        "torso": 214,
+        "above": 2200
+      },
+      "heldKneeToMat": [
+        [
+          6.3,
+          6.3
+        ],
+        [
+          65.9,
+          65.9
+        ]
+      ],
+      "heldAnkleToMat": [
+        [
+          -3.6,
+          -3.6
+        ],
+        [
+          45.6,
+          45.6
+        ]
+      ],
+      "hipStep": 2.0584919152846624
+    },
+    "before": {
+      "clip": "armBarV2",
+      "frames": 216,
+      "heldFrames": 118,
+      "maxWristGap": 0.00005020105411621525,
+      "maxForearmGap": 0.000052570115276311764,
+      "pinnedFrames": 0,
+      "maxHeldAnkleSlide": 0,
+      "kneeRange": [
+        0.00044279270652674673,
+        2.1004427927065277
+      ],
+      "stackFailureFrames": 0,
+      "heldShadow": {
+        "overMax": 356,
+        "aboveFrames": 0,
+        "areaMax": 1666,
+        "gapX": [
+          -15.4,
+          -15.4
+        ],
+        "gapY": [
+          -1.5,
+          -1.5
+        ]
+      },
+      "heldLowerMax": {
+        "legs": 1569,
+        "belly": 465
+      },
+      "heldMaskMax": {
+        "below": 2079,
+        "belowBody": 2070,
+        "torso": 20,
+        "above": 659
+      },
+      "heldKneeToMat": [
+        [
+          -2.8,
+          -2.8
+        ],
+        [
+          -0.3,
+          -0.3
+        ]
+      ],
+      "heldAnkleToMat": [
+        [
+          -0.1,
+          -0.1
+        ],
+        [
+          2.4,
+          2.4
+        ]
+      ],
+      "hipStep": 2.0584919152846624
+    }
+  },
+  "lou-george-left": {
+    "after": {
+      "clip": "armBarV2",
+      "frames": 216,
+      "heldFrames": 118,
+      "maxWristGap": 0.000031212490193093967,
+      "maxForearmGap": 0.000026647849008665123,
+      "pinnedFrames": 0,
+      "maxHeldAnkleSlide": 0,
+      "kneeRange": [
+        0.00044279270652674673,
+        2.300442792706528
+      ],
+      "stackFailureFrames": 0,
+      "heldShadow": {
+        "overMax": 271,
+        "aboveFrames": 0,
+        "areaMax": 2035,
+        "gapX": [
+          3,
+          3
+        ],
+        "gapY": [
+          36.1,
+          36.1
+        ]
+      },
+      "heldLowerMax": {
+        "legs": 1332,
+        "belly": 662
+      },
+      "heldMaskMax": {
+        "below": 1563,
+        "belowBody": 1563,
+        "torso": 214,
+        "above": 2200
+      },
+      "heldKneeToMat": [
+        [
+          6.3,
+          6.3
+        ],
+        [
+          65.9,
+          65.9
+        ]
+      ],
+      "heldAnkleToMat": [
+        [
+          -3.6,
+          -3.6
+        ],
+        [
+          45.6,
+          45.6
+        ]
+      ],
+      "hipStep": 2.0584919152846055
+    },
+    "before": {
+      "clip": "armBarV2",
+      "frames": 216,
+      "heldFrames": 118,
+      "maxWristGap": 0.0000327230870587777,
+      "maxForearmGap": 0.000029887344816427232,
+      "pinnedFrames": 0,
+      "maxHeldAnkleSlide": 0,
+      "kneeRange": [
+        0.00044279270652674673,
+        2.1004427927065286
+      ],
+      "stackFailureFrames": 0,
+      "heldShadow": {
+        "overMax": 356,
+        "aboveFrames": 0,
+        "areaMax": 1666,
+        "gapX": [
+          15.4,
+          15.4
+        ],
+        "gapY": [
+          -1.5,
+          -1.5
+        ]
+      },
+      "heldLowerMax": {
+        "legs": 1569,
+        "belly": 465
+      },
+      "heldMaskMax": {
+        "below": 2079,
+        "belowBody": 2070,
+        "torso": 20,
+        "above": 659
+      },
+      "heldKneeToMat": [
+        [
+          -2.8,
+          -2.8
+        ],
+        [
+          -0.3,
+          -0.3
+        ]
+      ],
+      "heldAnkleToMat": [
+        [
+          -0.1,
+          -0.1
+        ],
+        [
+          2.4,
+          2.4
+        ]
+      ],
+      "hipStep": 2.0584919152846055
+    }
+  },
+  "george-lou-right": {
+    "after": {
+      "clip": "armBarV2",
+      "frames": 216,
+      "heldFrames": 118,
+      "maxWristGap": 0.00005841692703494235,
+      "maxForearmGap": 0.0000548665383609168,
+      "pinnedFrames": 0,
+      "maxHeldAnkleSlide": 0,
+      "kneeRange": [
+        -3.780300335011807e-16,
+        2.299999999999999
+      ],
+      "stackFailureFrames": 0,
+      "heldShadow": {
+        "overMax": 676,
+        "aboveFrames": 0,
+        "areaMax": 3088,
+        "gapX": [
+          -4.3,
+          -4.3
+        ],
+        "gapY": [
+          31.6,
+          31.6
+        ]
+      },
+      "heldLowerMax": {
+        "legs": 1134,
+        "belly": 704
+      },
+      "heldMaskMax": {
+        "below": 1402,
+        "belowBody": 1402,
+        "torso": 334,
+        "above": 2222
+      },
+      "heldKneeToMat": [
+        [
+          7.5,
+          7.5
+        ],
+        [
+          55.7,
+          55.7
+        ]
+      ],
+      "heldAnkleToMat": [
+        [
+          -6.7,
+          -6.7
+        ],
+        [
+          26.6,
+          26.6
+        ]
+      ],
+      "hipStep": 2.0584919152846624
+    },
+    "before": {
+      "clip": "armBarV2",
+      "frames": 216,
+      "heldFrames": 118,
+      "maxWristGap": 0.00006219073227836536,
+      "maxForearmGap": 0.000052457619195167005,
+      "pinnedFrames": 0,
+      "maxHeldAnkleSlide": 0,
+      "kneeRange": [
+        0,
+        2.1000000000000005
+      ],
+      "stackFailureFrames": 0,
+      "heldShadow": {
+        "overMax": 705,
+        "aboveFrames": 0,
+        "areaMax": 2401,
+        "gapX": [
+          -22.1,
+          -22.1
+        ],
+        "gapY": [
+          5.2,
+          5.2
+        ]
+      },
+      "heldLowerMax": {
+        "legs": 1589,
+        "belly": 614
+      },
+      "heldMaskMax": {
+        "below": 2240,
+        "belowBody": 2240,
+        "torso": 26,
+        "above": 819
+      },
+      "heldKneeToMat": [
+        [
+          5.2,
+          5.2
+        ],
+        [
+          5.2,
+          5.2
+        ]
+      ],
+      "heldAnkleToMat": [
+        [
+          9,
+          9
+        ],
+        [
+          9.1,
+          9.1
+        ]
+      ],
+      "hipStep": 2.0584919152846624
+    }
+  },
+  "george-lou-left": {
+    "after": {
+      "clip": "armBarV2",
+      "frames": 216,
+      "heldFrames": 118,
+      "maxWristGap": 0.00003225988448448282,
+      "maxForearmGap": 0.00003101522156672521,
+      "pinnedFrames": 0,
+      "maxHeldAnkleSlide": 0,
+      "kneeRange": [
+        -9.751894139860687e-16,
+        2.2999999999999994
+      ],
+      "stackFailureFrames": 0,
+      "heldShadow": {
+        "overMax": 682,
+        "aboveFrames": 0,
+        "areaMax": 3088,
+        "gapX": [
+          4.3,
+          4.3
+        ],
+        "gapY": [
+          31.6,
+          31.6
+        ]
+      },
+      "heldLowerMax": {
+        "legs": 1134,
+        "belly": 698
+      },
+      "heldMaskMax": {
+        "below": 1402,
+        "belowBody": 1402,
+        "torso": 334,
+        "above": 2222
+      },
+      "heldKneeToMat": [
+        [
+          7.5,
+          7.5
+        ],
+        [
+          55.7,
+          55.7
+        ]
+      ],
+      "heldAnkleToMat": [
+        [
+          -6.7,
+          -6.7
+        ],
+        [
+          26.6,
+          26.6
+        ]
+      ],
+      "hipStep": 2.0584919152846055
+    },
+    "before": {
+      "clip": "armBarV2",
+      "frames": 216,
+      "heldFrames": 118,
+      "maxWristGap": 0.00003488226551421271,
+      "maxForearmGap": 0.000029516603948802553,
+      "pinnedFrames": 0,
+      "maxHeldAnkleSlide": 0,
+      "kneeRange": [
+        0,
+        2.1000000000000005
+      ],
+      "stackFailureFrames": 0,
+      "heldShadow": {
+        "overMax": 710,
+        "aboveFrames": 0,
+        "areaMax": 2401,
+        "gapX": [
+          22.1,
+          22.1
+        ],
+        "gapY": [
+          5.2,
+          5.2
+        ]
+      },
+      "heldLowerMax": {
+        "legs": 1589,
+        "belly": 615
+      },
+      "heldMaskMax": {
+        "below": 2240,
+        "belowBody": 2240,
+        "torso": 26,
+        "above": 819
+      },
+      "heldKneeToMat": [
+        [
+          5.2,
+          5.2
+        ],
+        [
+          5.2,
+          5.2
+        ]
+      ],
+      "heldAnkleToMat": [
+        [
+          9,
+          9
+        ],
+        [
+          9.1,
+          9.1
+        ]
+      ],
+      "hipStep": 2.0584919152846055
+    }
+  }
+}

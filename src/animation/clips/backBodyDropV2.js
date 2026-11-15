@@ -28,14 +28,15 @@ export function backBodyDropV2Clip(distance = 160, { flip = 1 } = {}) {
         [end, 'easeInOut', { ...stand }, 0],
     ];
     // The runner: strides in, hits the attacker's shoulders with his hips, goes over (tilt through the vertical, `flip` signs the turn) and lands supine.
+    // A higher shoulder-driven arc, with another 0.06 s to descend.
     const R = [
         [0, 'linear', runA, D],
         [+(tc * 0.5).toFixed(3), 'linear', runB, D - RUN_SPEED_UNITS * tc * 0.5],
         [tc, 'linear', { ...runA, bend: 0.35, lean: 0.1 }, 12],
-        [t(0.1), 'easeOut', { ...stand, tilt: flip * 1.2, lift: 55, bend: 0.3, lLeg: 0.7, rLeg: 0.5, lFold: 0.6, rFold: 0.5, lArm: 1.3, rArm: 1.5 }, -18],
-        [t(I), 'easeInOut', { ...stand, tilt: flip * 3.1, lift: 105, lLeg: 0.2, rLeg: 0.1, lFold: 0.4, rFold: 0.3, lArm: 1.6, rArm: 1.8 }, -62],
-        [t(I + 0.16), 'easeIn', { ...stand, tilt: flip * 4.6, lift: -90, lLeg: 0.35, rLeg: 0.3, lFold: 0.4, rFold: 0.3, lArm: 1.2, rArm: 1.4 }, -118],
-        [t(I + 0.2), 'linear', { ...stand, tilt: flip * 4.7, lift: -110, lLeg: 0.4, rLeg: 0.3, lFold: 0.4, rFold: 0.3, lArm: 0.7, rArm: 0.6, bend: 0.2 }, -125],
+        [t(0.1), 'easeOut', { ...stand, tilt: flip * 1.2, lift: 80, bend: 0.3, lLeg: 0.7, rLeg: 0.5, lFold: 0.6, rFold: 0.5, lArm: 1.3, rArm: 1.5 }, -18],
+        [t(I), 'easeInOut', { ...stand, tilt: flip * 3.1, lift: 150, lLeg: 0.2, rLeg: 0.1, lFold: 0.4, rFold: 0.3, lArm: 1.6, rArm: 1.8 }, -62],
+        [t(I + 0.21), 'easeIn', { ...stand, tilt: flip * 4.6, lift: -90, lLeg: 0.35, rLeg: 0.3, lFold: 0.4, rFold: 0.3, lArm: 1.2, rArm: 1.4 }, -118],
+        [t(I + 0.26), 'linear', { ...stand, tilt: flip * 4.7, lift: -110, lLeg: 0.4, rLeg: 0.3, lFold: 0.4, rFold: 0.3, lArm: 0.7, rArm: 0.6, bend: 0.2 }, -125],
         [t(I + 0.4), 'easeOut', { ...stand, tilt: flip * 4.7, lift: -110, lLeg: 0.3, rLeg: 0.25, lArm: 0.4, rArm: 0.4 }, -125],
         [end, 'easeInOut', { ...stand, tilt: flip * 4.7, lift: -110, lLeg: 0.06, rLeg: 0.25, lArm: 0.05, rArm: 0.08 }, -125],
     ];
@@ -43,7 +44,7 @@ export function backBodyDropV2Clip(distance = 160, { flip = 1 } = {}) {
     return {
         id: 'backBodyDropV2',
         duration: end,
-        events: [{ at: t(I + 0.2), type: 'impact' }],
+        events: [{ at: t(I + 0.26), type: 'impact' }],
         tracks: { attacker: { keyframes: A.map(k => key(k, 1)) }, defender: { keyframes: R.map(k => key(k, -1)) } },
     };
 }

@@ -46,3 +46,35 @@ test('runnerEntryClip leads the clip in by the run, plays it unchanged and shift
 test('flag off: the new clips are not statically registered', () => {
     assert.equal(REGISTERED_MOVE_CLIPS.some(c => ['backBodyDropV2', 'hipTossRunner'].includes(c.id)), false);
 });
+
+
+test('the running hip toss gains height without changing the standing toss or its landing', async () => {
+    const { runnerHipTossClip } = await import('../src/animation/clips/runnerHipToss.js');
+    const before = JSON.stringify(hipTossClip), c = runnerHipTossClip(150);
+    assert.deepEqual(validateClip(c), { ok: true, errors: [] });
+    const lead = c.events[0].at - .62;
+    const peak = c.tracks.defender.keyframes.find(k => Math.abs(k.at - (lead + .42)) < .002);
+    assert.ok(peak.pose.lift > hipTossClip.tracks.defender.keyframes.find(k => k.at === .42).pose.lift + 40);
+    const impact = c.tracks.defender.keyframes.find(k => k.at === c.events[0].at);
+    assert.equal(impact.pose.lift, -110);
+    assert.equal(impact.transform.x, -160);
+    assert.equal(JSON.stringify(hipTossClip), before);
+    for (const track of Object.values(c.tracks)) for (const k of track.keyframes) assert.equal('lKnee' in k.pose || 'rKnee' in k.pose, false);
+});
+
+test('runner arm drag catches the arm, retains the running entry, releases before impact and lands on the mat', async () => {
+    const { runnerArmDragClip } = await import('../src/animation/clips/runnerArmDrag.js');
+    for (const d of [60, 90, 150, 200]) {
+        const c = runnerArmDragClip(d);
+        assert.deepEqual(validateClip(c), { ok: true, errors: [] });
+        const catchKey = c.tracks.defender.keyframes[1];
+        assert.equal(catchKey.transform.x, 68);
+        assert.ok(c.grips.some(g => g.to.joint === 'Wrist'));
+        assert.ok(c.grips.some(g => g.to.joint === 'Elbow'));
+        assert.ok(c.grips.every(g => g.out[1] < c.events[0].at));
+        const impact = c.tracks.defender.keyframes.find(k => k.at === c.events[0].at);
+        assert.equal(impact.pose.lift, -110);
+        assert.equal(impact.transform.x, -150);
+        for (const track of Object.values(c.tracks)) for (const k of track.keyframes) assert.equal('lKnee' in k.pose || 'rKnee' in k.pose, false);
+    }
+});

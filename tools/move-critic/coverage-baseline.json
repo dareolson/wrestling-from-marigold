@@ -133,5 +133,10 @@
     "fingerprint": "39ad43d67325",
     "status": "unverified",
     "reason": "new 2026-11-13 (PLAN_LIGHT_MOVES B2): hold registered per play under ?light=v1 (halfBostonCrabClip), no critic spec; checked by tests/halfBostonCrab.test.js, tools/move-preview/crab_report.mjs and tools/debug/crab_play_check.mjs"
+  },
+  "handStomp": {
+    "fingerprint": "39ad43d67325",
+    "status": "unverified",
+    "reason": "new 2026-11-14 (PLAN_LIGHT_MOVES T8.1): clip registered per play under ?light=v1 (handStompClip), no critic spec; checked by tests/handStomp.test.js and tools/debug/hand_stomp_probe.mjs"
   }
 }

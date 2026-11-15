@@ -34,6 +34,8 @@ const SUPINE_CLUTCH = {
     back: { d: { hip: 8, torso: 0.18, nearThigh: 0.6, nearShin: -0.5, farThigh: 0.5, farShin: -0.45 }, hands: { near: 'nearHip' } },
     // Curled over the chest, both hands on it.
     chest: { d: { torso: -0.22, nearThigh: 0.5, nearShin: -0.45, farThigh: 0.35, farShin: -0.3 }, hands: { near: 'chest', far: 'chest' } },
+    // A hurt near hand (T8.2): the far hand grips it, knees drawn up. The stomped man's own sell is falls.js handHitSell; this is the plain clutch for any other way a hand gets hurt.
+    hand: { d: { torso: -0.25, nearThigh: 0.5, nearShin: -0.5, farThigh: 0.4, farShin: -0.4 }, hands: { far: 'nearWrist' } },
     // Folded over the stomach: knees drawn right up, both hands low on the belly (T3c.8).
     gut: { d: { torso: -0.40, nearThigh: 0.95, nearShin: -0.9, farThigh: 0.8, farShin: -0.75, hip: 3 }, hands: { near: 'gut', far: 'gut' } },
 };
@@ -46,6 +48,7 @@ const PRONE_CLUTCH = {
     arm: { d: { torso: 0.20, nearShin: -0.5, nearArm: 0.4 }, hands: { far: 'nearShoulder' } },
     back: { d: { torso: 0.15, hip: 3, nearShin: -0.6, farShin: -0.3, farArm: 1.0, farFore: 1.2 }, hands: { near: 'nearHip' } },
     chest: { d: { torso: 0.35, hip: 4, farArm: 1.3, farFore: 1.4, nearShin: -0.4 }, hands: { near: 'chest' } },
+    hand: { d: { torso: 0.3, nearShin: -0.6, farShin: -0.3, nearArm: 0.4 }, hands: { far: 'nearWrist' } },
     // Face down, hips up and the knee drawn under him, near hand under to the stomach (T3c.8).
     gut: { d: { torso: 0.15, hip: 9, nearThigh: 0.7, nearShin: -1.0, farShin: -0.5 }, hands: { near: 'gut' } },
 };

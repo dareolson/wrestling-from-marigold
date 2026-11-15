@@ -1,5 +1,5 @@
 // Half-crab numbers from the live preview. Vite must be running.
-//   WFM_URL=http://127.0.0.1:5197 node tools/move-preview/crab_measure.mjs [out.json] [pair=lou-george|george-lou] [facing=right|left|all]
+//   WFM_URL=http://127.0.0.1:5197 node tools/move-preview/crab_measure.mjs [out.json] [pair=lou-george|george-lou|<attRig>:<defRig>] [facing=right|left|all]
 import { chromium } from 'playwright-core';
 import { writeFileSync } from 'node:fs';
 import { MASKS, READ } from '../debug/toehold_t30_lib.mjs';
@@ -13,7 +13,9 @@ try {
     const page = await browser.newPage({ viewport: { width: 1200, height: 950 } });
     await page.goto(`${process.env.WFM_URL ?? 'http://127.0.0.1:5197'}/tools/move-preview/`);
     await page.waitForFunction(() => window.__MOVE_PREVIEW?.ready && window.__MOVE_PREVIEW.handle, { timeout: 30000 });
-    if (pair !== 'lou-george') { await page.locator('#pair').selectOption(pair); await page.waitForFunction(() => window.__MOVE_PREVIEW.ready && window.__MOVE_PREVIEW.handle); }
+    // 'attackerRig:defenderRig' picks any two roster rigs; the two named pairs use the Pair preset
+    if (pair.includes(':')) { const [att, def] = pair.split(':'); await page.locator('#att').selectOption(att); await page.locator('#def').selectOption(def); await page.waitForFunction(() => window.__MOVE_PREVIEW.ready && window.__MOVE_PREVIEW.handle); }
+    else if (pair !== 'lou-george') { await page.locator('#pair').selectOption(pair); await page.waitForFunction(() => window.__MOVE_PREVIEW.ready && window.__MOVE_PREVIEW.handle); }
     if (fc === 'left') { await page.locator('#mirror').click(); await page.waitForFunction(() => document.querySelector('#mirror').textContent === 'Face right' && window.__MOVE_PREVIEW.handle); }
     await page.waitForTimeout(300);
     res[`${pair}-${fc}`] = await page.evaluate(async ([masks, readSrc]) => {

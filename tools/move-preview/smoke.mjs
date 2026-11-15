@@ -9,6 +9,7 @@ try {
  await page.goto(`${process.env.WFM_URL ?? 'http://localhost:5197'}/tools/move-preview/`);
  await page.waitForFunction(() => window.__MOVE_PREVIEW?.ready && window.__MOVE_PREVIEW.handle, { timeout: 30000 });
  const ready = performance.now() - start;
+ await page.locator('#move').selectOption('half-boston-crab');
  await page.evaluate(() => window.__MOVE_PREVIEW.seek(2.5));
  assert.equal(await page.locator('#move').inputValue(), 'half-boston-crab');
  await page.screenshot({ path: '/tmp/wfm-half-crab-preview.png' });

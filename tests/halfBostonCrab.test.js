@@ -1,13 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { halfBostonCrabClip, crabPairFor, HALF_CRAB_SPEC, HALF_CRAB_TIMES } from '../src/animation/clips/halfBostonCrab.js';
+import { halfBostonCrabClip, HALF_CRAB_SPEC, HALF_CRAB_TIMES } from '../src/animation/clips/halfBostonCrab.js';
 import { ankleLockV2Clip } from '../src/animation/clips/ankleLockV2.js';
 import { validateClip, compileClip } from '../src/animation/AnimationClip.js';
 import { REGISTERED_MOVE_CLIPS } from '../src/animation/clips/index.js';
 import { MOVE_SPECS as MOVES } from '../src/moves/registry.js';
 
-const clips = ['lou-george', 'george-lou'].map(pair => [pair, halfBostonCrabClip(120, { pair })]);
+const L = 'thesz-procreate-v1', G = 'george-roster-v1';
+const clips = [['lou-george', L, G], ['george-lou', G, L]].map(([pair, attackerRigId, defenderRigId]) => [pair, halfBostonCrabClip(120, { attackerRigId, defenderRigId })]);
 
 test('the clip is valid, three squeezes drain, the roll is declared, both pickup grips are on the ankle', () => {
     for (const [, c] of clips) {
@@ -64,12 +65,6 @@ test('distance moves both men: the receiver lies at it, the attacker sits a gap 
     const held = c => [c.tracks.attacker.keyframes.find(k => k.at === 2.0).transform.x, c.tracks.defender.keyframes.find(k => k.at === 2.0).transform.x];
     assert.equal(held(far)[0] - held(near)[0], 60);
     assert.equal(held(far)[1] - held(near)[1], 60);
-});
-
-test('the rig picks the pair: George\'s values for George, Lou\'s for anyone else', () => {
-    assert.equal(crabPairFor('george-roster-v1'), 'george-lou');
-    assert.equal(crabPairFor('thesz-procreate-v1'), 'lou-george');
-    assert.equal(crabPairFor(undefined), 'lou-george');
 });
 
 test('flag off: the clip is not statically registered, and the registry move is kit-gated, a hold, run by _doHalfBostonCrab', () => {

@@ -28,6 +28,7 @@ import { dropkickV2Clip } from '../animation/clips/dropkickV2.js';
 import { PIVOT } from '../animation/clips/snapmareTieUp.js';
 import { ankleLockV2Clip } from '../animation/clips/ankleLockV2.js';
 import { FRONT_KICK_V2_CLIPS } from '../animation/clips/frontKickV2.js';
+import { JAB_V2_CLIPS } from '../animation/clips/jabV2.js';
 import { bodySlamV2Clip, bodySlamV2GeorgeClip } from '../animation/clips/bodySlamV2.js';
 import { ROPE_HIT, stepRopeSpring } from '../animation/ropeHit.js';
 import { WEAR_MAX, KNOCKDOWN_WEAR, EXCEPTIONAL_WEAR } from '../animation/falls.js';
@@ -3092,6 +3093,7 @@ export default class Arena extends Phaser.Scene {
         this.w1.begsOff  = !!c1.begsOff;
         this.w1.struts   = !!c1.struts;
         this.w1.sellStyle = c1.sellStyle ?? 'economical';
+        this.w1.moveStyle = c1.style ?? {};
 
         this.w2 = new Wrestler(this, 630, 360, c2.skin, c2.trunks, input2, c2.moveSet, c2.textures ?? {});
         this.w2.rigId    = Object.keys(PRESETS).find(k => PRESETS[k] === c2);
@@ -3103,6 +3105,7 @@ export default class Arena extends Phaser.Scene {
         // expression heads (faceTrial.js): null for a rig without them and with ?faces=0
         this.w1.face = FaceDriver.for(this.w1);
         this.w2.face = FaceDriver.for(this.w2);
+        this.w2.moveStyle = c2.style ?? {};
 
         // Seekable move-animation runtime, driven by this Scene's own clock in
         // _tickGame — no second timer. Migrated so far: jab (single-actor) and
@@ -3117,7 +3120,7 @@ export default class Arena extends Phaser.Scene {
         // ?dropkick=v2 comparison candidate (Wrestler._doDropkick picks it).
         if (new URLSearchParams(location.search).get('dropkick') === 'v2') this.moveRuntime.register(dropkickV2Clip);
         // ?light=v1 rebuilds (PLAN_LIGHT_MOVES), picked by Wrestler.
-        if (lightCandidate()) { this.moveRuntime.register(ankleLockV2Clip); this.moveRuntime.register(bodySlamV2Clip); this.moveRuntime.register(bodySlamV2GeorgeClip); for (const clip of FRONT_KICK_V2_CLIPS) this.moveRuntime.register(clip); }
+        if (lightCandidate()) { this.moveRuntime.register(ankleLockV2Clip); this.moveRuntime.register(bodySlamV2Clip); this.moveRuntime.register(bodySlamV2GeorgeClip); for (const clip of [...FRONT_KICK_V2_CLIPS, ...JAB_V2_CLIPS]) this.moveRuntime.register(clip); }
         this.events.once('shutdown', () => {
             this.moveRuntime.shutdown();
             this.w1?.clearPain?.();
@@ -3339,7 +3342,7 @@ export default class Arena extends Phaser.Scene {
             dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
             headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
             jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12, theszPress: 16,
-            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, figureFour: 14, hipToss: 6, atomicDrop: 7, snapmare: 12, armBar: 8, ankleLock: 8,
+            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, handStomp: 5, figureFour: 14, hipToss: 6, atomicDrop: 7, snapmare: 12, armBar: 8, ankleLock: 8,
         };
         const n = bumps[move];
         if (n) this.bumpHeat(n);

@@ -1,0 +1,218 @@
+[
+  {
+    "pair": "lou-george",
+    "mirror": 0,
+    "id": "runner-back-drop",
+    "bounce": 10.843995038815812,
+    "compression": -2.704592313609391,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "lou-george",
+    "mirror": 0,
+    "id": "runner-hip-toss",
+    "bounce": 6.1363353475604425,
+    "compression": -1.299038105676658,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "lou-george",
+    "mirror": 0,
+    "id": "runner-arm-drag",
+    "bounce": 5.084353292436805,
+    "compression": -1.0825317547305484,
+    "sells": true,
+    "pain": "arm"
+  },
+  {
+    "pair": "lou-george",
+    "mirror": 0,
+    "id": "snapmare-live",
+    "bounce": 8.524981698379648,
+    "compression": -2.165063509461097,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "lou-george",
+    "mirror": 0,
+    "id": "clothesline-live",
+    "bounce": 5.967462200695977,
+    "compression": -1.5155444566227678,
+    "sells": true,
+    "pain": "chest"
+  },
+  {
+    "pair": "lou-george",
+    "mirror": 0,
+    "id": "body-slam-live",
+    "bounce": 10.843995038815812,
+    "compression": -2.704592313609391,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "lou-george",
+    "mirror": 1,
+    "id": "runner-back-drop",
+    "bounce": 10.843995038815812,
+    "compression": -2.704592313609391,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "lou-george",
+    "mirror": 1,
+    "id": "runner-hip-toss",
+    "bounce": 6.1363353475604425,
+    "compression": -1.299038105676658,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "lou-george",
+    "mirror": 1,
+    "id": "runner-arm-drag",
+    "bounce": 5.084353292436805,
+    "compression": -1.0825317547305484,
+    "sells": true,
+    "pain": "arm"
+  },
+  {
+    "pair": "lou-george",
+    "mirror": 1,
+    "id": "snapmare-live",
+    "bounce": 8.524981698379648,
+    "compression": -2.165063509461097,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "lou-george",
+    "mirror": 1,
+    "id": "clothesline-live",
+    "bounce": 5.967462200695977,
+    "compression": -1.5155444566227678,
+    "sells": true,
+    "pain": "chest"
+  },
+  {
+    "pair": "lou-george",
+    "mirror": 1,
+    "id": "body-slam-live",
+    "bounce": 10.843995038815812,
+    "compression": -2.704592313609391,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 0,
+    "id": "runner-back-drop",
+    "bounce": 13.998565443791916,
+    "compression": -2.704592313609391,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 0,
+    "id": "runner-hip-toss",
+    "bounce": 7.907946408953941,
+    "compression": -1.299038105676658,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 0,
+    "id": "runner-arm-drag",
+    "bounce": 6.582484025548914,
+    "compression": -1.0825317547305484,
+    "sells": true,
+    "pain": "arm"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 0,
+    "id": "snapmare-live",
+    "bounce": 10.99102182534246,
+    "compression": -2.165063509461097,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 0,
+    "id": "clothesline-live",
+    "bounce": 7.677754003558224,
+    "compression": -1.5155444566227678,
+    "sells": true,
+    "pain": "chest"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 0,
+    "id": "body-slam-live",
+    "bounce": 13.998565443791916,
+    "compression": -2.704592313609391,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 1,
+    "id": "runner-back-drop",
+    "bounce": 13.998565443791916,
+    "compression": -2.704592313609391,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 1,
+    "id": "runner-hip-toss",
+    "bounce": 7.907946408953941,
+    "compression": -1.299038105676658,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 1,
+    "id": "runner-arm-drag",
+    "bounce": 6.582484025548914,
+    "compression": -1.0825317547305484,
+    "sells": true,
+    "pain": "arm"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 1,
+    "id": "snapmare-live",
+    "bounce": 10.99102182534246,
+    "compression": -2.165063509461097,
+    "sells": true,
+    "pain": "back"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 1,
+    "id": "clothesline-live",
+    "bounce": 7.677754003558224,
+    "compression": -1.5155444566227678,
+    "sells": true,
+    "pain": "chest"
+  },
+  {
+    "pair": "george-lou",
+    "mirror": 1,
+    "id": "body-slam-live",
+    "bounce": 13.998565443791916,
+    "compression": -2.704592313609391,
+    "sells": true,
+    "pain": "back"
+  }
+]

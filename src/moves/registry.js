@@ -263,6 +263,14 @@ export const MOVE_SPECS = {
         trigger: 'tryPower() — hold down vs a down/possum opponent',
         ai: ['vsDown'],
     },
+    // ?light=v1 (PLAN_LIGHT_MOVES T8.1): the boot comes down on a prone man's hand; Down + Power picks it over the knee drop when he lies on his stomach. The clip is registered per play (handStompClip).
+    handStomp: {
+        category: C.STRIKE, clip: null, executor: '_doHandStomp',
+        sell: { part: 'hand', intensity: 1.0 },
+        damageKey: 'handStomp', poseSeq: false, legacyFallback: null, kitGated: true,
+        trigger: 'tryPower() — hold down vs a prone down/possum opponent (?light=v1, the kit holds kneeDrop and handStomp)',
+        ai: ['vsDown'],
+    },
     theszPress: {
         category: C.AERIAL, clip: 'theszPress', executor: '_doTheszPress',
         sell: { part: 'chest', intensity: 0.8 },
@@ -431,6 +439,7 @@ export const KIT_AI_ODDS = Object.freeze({
     ankleLock:  'groundHoldOdds',
     halfBostonCrab: 'groundHoldOdds',
     kneeDrop:   'kneeDropOdds',
+    handStomp:  'kneeDropOdds',   // the AI's Down + Power on a downed man: the move that fires follows how he lies
     kneeLift:   'kneeLiftOdds',
     frontKick:  'frontKickOdds',
     theszPress: 'pressHuntAt',

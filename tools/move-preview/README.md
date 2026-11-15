@@ -4,7 +4,7 @@ Run `npm run move:preview`. Open `/tools/move-preview/` on the Vite server. The 
 
 Use this first for visual revisions: play/pause, scrub, single-frame steps, normal/half/quarter speed, mirror, pair selection. The game runs in the iframe with the real Wrestler, Skeleton, MoveRuntime, grips and layer resolver. No solver, pixel-mask audit, screenshots or video encoding runs before the preview appears.
 
-Current default: **half Boston crab draft**, requested by Derek 2026-11-13. Starts with ankleLockV2's actual pickup keys, then turns into the crab, tucks the raised leg under the arm and leans back. Edit `half-boston-crab.json` for the held stance; the page reloads that JSON within one second while preserving the paused time. The timeline is authored in `src/animation/clips/halfBostonCrab.js`, the same file the game registers (`?light=v1`, B2); the JSON is passed to it as `spec`, and a test keeps it equal to the file's `HALF_CRAB_SPEC`, so copy a finished JSON back into the file. No visual approval is implied. Only Lou-on-George has had an initial pose inspection; other options are available for later checking.
+Half Boston crab authoring, requested by Derek 2026-11-13: Starts with ankleLockV2's actual pickup keys, then turns into the crab, tucks the raised leg under the arm and leans back. Edit `half-boston-crab.json` for the held stance; the page reloads that JSON within one second while preserving the paused time. The timeline is authored in `src/animation/clips/halfBostonCrab.js`, the same file the game registers (`?light=v1`, B2); the JSON is passed to it as `spec`, and a test keeps it equal to the file's `HALF_CRAB_SPEC`, so copy a finished JSON back into the file. No visual approval is implied. Only Lou-on-George has had an initial pose inspection; other options are available for later checking.
 
 The previous toe-hold revision is selectable. It watches saved waypoints in `research/animation/light-moves-2026-11/t3-foreground/<case>/waypoints.json` and seed reports in `t3-knee-capture`. The foreground toggle gives instant before/after comparison on that revision. The clip construction and playback are shared with `toehold_t30c_video.mjs` through `toehold_t30c_clip.mjs`; the viewer does not approximate the animation in a different renderer.
 
@@ -57,3 +57,21 @@ Checked a six-frame live strip around 0.84–1.3 s and per-frame ankle travel du
 Lou's longer lower leg entered George's shoulder. The `george-lou` settings now add a deeper trapped-knee fold (1.6 vs 1.25 rad), tilting the lower leg back behind George's shoulder; the entry's intermediate bend follows that adjustment. This override applies only to George attacking Lou, both facings. The default Lou-on-George clip was checked for exact equality with the unmodified settings. Live George-on-Lou held pose inspected; no art or body scaling changed.
 
 George fit follow-up: reduced George-on-Lou hip spacing from 48 to 30 rig units and angled the outside upper arm farther back (`lArm` -0.6, elbow flex 1.65). The body now sits closer to Lou's raised lower leg, closing the armpit clamp. Live held pose inspected; elbow remains below the shoulder. Lou-on-George again checked unchanged.
+
+## Runner revisions (2026-11-14)
+
+The menu opens on **Back body drop · runner** and also provides **Hip toss · runner** and **Arm drag · runner** from the actual game factories. Switch these without a solver or video export; the wider camera fits the higher arcs. The paired arm drag is separate from the legacy standing arm drag. [Revision notes and validation](../../research/animation/light-moves-2026-11/runner-polish-2026-11-14/README.md).
+
+## Real impact and aftermath (2026-11-14)
+
+The six top-level previews now use actual game executors and fixed game steps: runner back body drop, runner hip toss, runner arm drag, snapmare, clothesline and body slam. The timeline includes an extra 2.4 s for the landing and aftermath, with a phase label for impact/bounce and selling. Rewind resets the pair and replays locally with a fixed random seed; it does not generate videos or run a solver. Other registered clips remain track-only previews.
+
+The original track viewer never ran hit callbacks or grounded reactions, so it omitted the existing mat response. `gameplay.js` fixes that omission. Production also resolves named visual variants (e.g. hipTossRunner) to their canonical move's pain definition through `impactMoves.js`; these formerly had no hurt-part definition and therefore no planned sell. Arm drag explicitly gets a clutch even for an economical seller. Damage is unchanged. Hip toss/arm drag receive a slightly stronger rebound; snapmare retains its throw choreography but lands into a back rebound rather than a seat-only rock.
+
+Validation: 24 actual gameplay cases (six moves, both pairings/facings), all with compression, positive rebound and an aftermath sell, no browser errors; 1333/1333 tests and build pass. Rebound command offsets range 5.1–14.0 rig units depending on move/rig; these are not painted-pixel measurements. [Impact data](../../research/animation/light-moves-2026-11/runner-polish-2026-11-14/impact-summary.json).
+
+```sh
+MATRIX=1 node tools/move-preview/impact_smoke.mjs /tmp/wfm-impact-cases.json
+```
+
+Keep the real landing path active when revising these moves. Additional bounce baked into the flight keyframes would stack on top of it.

@@ -381,3 +381,32 @@ export function groundHitSell(lying, intensity, t) {
     }
     return { d, done: false };
 }
+
+// PLAN_LIGHT_MOVES T8.2 (?light=v1), the sell after a boot comes down on a prone man's hand (Derek: "sells his hurt hand a lot and kicks in pain"). Same grounded channels and the same contract
+// as groundHitSell (offsets over the prone rest pose, exactly 0 at the end), on `t` seconds since the hit. Before the hit (t < 0) he stays in the normal prone rest pose; the attacker targets the hand already on the canvas. After it the stomped arm jerks, he pulls the hand in under his chest and shakes it, head and chest come up off the mat, and both legs kick: alternating heel lifts from
+// the knee (prone shin -), `kicks` of them, each smaller than the last. `style` is the kit's `handSell` knobs: { kicks, seconds }; the defaults are the approved version.
+export const HAND_SELL = Object.freeze({ kicks: 4, seconds: 1.8, kickFrom: 0.12, kickEvery: 0.4, kickGap: 0.3, kickAmp: 0.9, kickDecay: 0.78, shakeHz: 6.5, shakeAmp: 0.2, chest: 0.34,
+    pull: Object.freeze({ nearArm: 0.8, nearFore: 0.7 }) });
+const handKnobs = (style) => ({ kicks: style?.kicks ?? HAND_SELL.kicks, seconds: style?.seconds ?? HAND_SELL.seconds });
+export const handHitSellDuration = (style) => handKnobs(style).seconds;
+export function handHitSell(intensity, t, style = null) {
+    const { kicks, seconds } = handKnobs(style), H = HAND_SELL, i = clamp(intensity, 0, 1), d = zero();
+    if (t >= seconds) return { d, done: true };
+    if (t < 0) return { d, done: false };   // before the hit he lies in the rest pose; the stomp's target is the hand where it already is
+    const out = (a, b) => 1 - smooth((t - a) / (b - a));   // 1 until a, falling to 0 at b
+    const pull = smooth(t / 0.18);                                // the arm snaps in from the reach to the pulled-in hold
+    const env = out(seconds - 0.45, seconds);                     // everything lets go together over the last 0.45 s
+    const shake = Math.sin(2 * Math.PI * H.shakeHz * t) * H.shakeAmp * smooth((t - 0.18) / 0.15) * env;
+    const jerk = t < 0.1 ? Math.sin(Math.PI * t / 0.1) * 0.35 : 0;   // the arm is slammed down into the mat at the hit
+    d.nearArm = (H.pull.nearArm * pull) * env - jerk + shake;
+    d.nearFore = (H.pull.nearFore * pull) * env + shake * 1.4;
+    d.torso = H.chest * (0.7 + 0.3 * i) * smooth((t - 0.05) / 0.2) * env; d.hip = 3 * smooth((t - 0.05) / 0.2) * env;
+    // the kicks: leg j % 2 (near first), a half sine over kickEvery from kickFrom, each kickDecay times the last; the heel lifts (shin -), the thigh stays
+    const kick = { near: 0, far: 0 };
+    for (let j = 0; j < kicks; j++) {
+        const u = (t - H.kickFrom - j * H.kickGap) / H.kickEvery;   // kickGap < kickEvery: successive kicks overlap, one leg is on its way up as the other comes down
+        if (u > 0 && u < 1) kick[j % 2 ? 'far' : 'near'] += H.kickAmp * H.kickDecay ** j * (0.6 + 0.4 * i) * Math.sin(Math.PI * u);
+    }
+    d.nearShin = -kick.near * env; d.farShin = -kick.far * env;
+    return { d, done: false };
+}

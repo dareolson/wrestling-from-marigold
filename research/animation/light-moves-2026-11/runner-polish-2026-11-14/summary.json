@@ -1,0 +1,160 @@
+{
+  "backBodyDrop-lou-george-right": {
+    "answer": "backBodyDrop",
+    "forcedKitForTest": false,
+    "oldPelvisPeakY": 194.2,
+    "newPelvisPeakY": 153.8,
+    "extraHeightPx": 40.4,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [],
+    "errors": []
+  },
+  "backBodyDrop-lou-george-left": {
+    "answer": "backBodyDrop",
+    "forcedKitForTest": false,
+    "oldPelvisPeakY": 194.2,
+    "newPelvisPeakY": 153.8,
+    "extraHeightPx": 40.4,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [],
+    "errors": []
+  },
+  "backBodyDrop-george-lou-right": {
+    "answer": "backBodyDrop",
+    "forcedKitForTest": false,
+    "oldPelvisPeakY": 211.4,
+    "newPelvisPeakY": 174.4,
+    "extraHeightPx": 37.0,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [],
+    "errors": []
+  },
+  "backBodyDrop-george-lou-left": {
+    "answer": "backBodyDrop",
+    "forcedKitForTest": false,
+    "oldPelvisPeakY": 211.4,
+    "newPelvisPeakY": 174.4,
+    "extraHeightPx": 37.0,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [],
+    "errors": []
+  },
+  "hipToss-lou-george-right": {
+    "answer": "hipToss",
+    "forcedKitForTest": false,
+    "oldPelvisPeakY": 245.4,
+    "newPelvisPeakY": 197.8,
+    "extraHeightPx": 47.6,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [],
+    "errors": []
+  },
+  "hipToss-lou-george-left": {
+    "answer": "hipToss",
+    "forcedKitForTest": false,
+    "oldPelvisPeakY": 245.4,
+    "newPelvisPeakY": 197.8,
+    "extraHeightPx": 47.6,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [],
+    "errors": []
+  },
+  "hipToss-george-lou-right": {
+    "answer": "hipToss",
+    "forcedKitForTest": true,
+    "oldPelvisPeakY": 258.7,
+    "newPelvisPeakY": 215.0,
+    "extraHeightPx": 43.7,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [],
+    "errors": []
+  },
+  "hipToss-george-lou-left": {
+    "answer": "hipToss",
+    "forcedKitForTest": true,
+    "oldPelvisPeakY": 258.7,
+    "newPelvisPeakY": 215.0,
+    "extraHeightPx": 43.7,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [],
+    "errors": []
+  },
+  "armDrag-lou-george-right": {
+    "answer": "armDrag",
+    "forcedKitForTest": true,
+    "oldPelvisPeakY": null,
+    "newPelvisPeakY": 257.4,
+    "extraHeightPx": null,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [
+      {
+        "afterCall": 0.3,
+        "joints": [
+          "rElbow"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "armDrag-lou-george-left": {
+    "answer": "armDrag",
+    "forcedKitForTest": true,
+    "oldPelvisPeakY": null,
+    "newPelvisPeakY": 257.4,
+    "extraHeightPx": null,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [
+      {
+        "afterCall": 0.3,
+        "joints": [
+          "rElbow"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "armDrag-george-lou-right": {
+    "answer": "armDrag",
+    "forcedKitForTest": false,
+    "oldPelvisPeakY": null,
+    "newPelvisPeakY": 269.3,
+    "extraHeightPx": null,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [],
+    "errors": []
+  },
+  "armDrag-george-lou-left": {
+    "answer": "armDrag",
+    "forcedKitForTest": false,
+    "oldPelvisPeakY": null,
+    "newPelvisPeakY": 269.3,
+    "extraHeightPx": null,
+    "runnerSpeedAtCall": 305.63636363636533,
+    "receiverEnd": "down/supine",
+    "attackerEnd": "standing",
+    "pinned": [],
+    "errors": []
+  }
+}

@@ -5,6 +5,7 @@
 //  - knees (D3): both legs own their shins as the absolute `lShin`/`rShin` through `shinsFromFolds`; the old clip's positive lKnee 1.55 / 1.3 folded the knee backward.
 import { frontKickClip } from './frontKick.js';
 import { shinsFromFolds } from '../../rig/articulation.js';
+import { LOU_RIG, specFor } from './rigOverrides.js';
 
 // per key time: the legs and the crouch that carries the soft support knee. `lFold`/`rFold` = heel fold in radians (0 = straight, shin parallel to the thigh).
 // STOMP is the first pass (e27939c) that Derek liked on Kowalski: the body sinks onto the support leg and the kicking leg drives out and down through the belly.
@@ -19,12 +20,18 @@ const STOMP = {
     0.58: { lLeg: 0.30,  lFold: 0.70, rLeg: 0.10, rFold: 0.5, crouch: 0.08, lift: 6 },   // setting down
     0.68: { lLeg: -0.04, lFold: 0,    rLeg: 0.16, rFold: 0,    crouch: 0, lift: 0 },
 };
-// Lou: the same stomp (sunk body, driving leg) with the thigh carried higher so his shorter reach still meets the abdomen.
-const LOU = { ...STOMP,
-    0.22: { ...STOMP[0.22], lLeg: 1.42 }, 0.30: { ...STOMP[0.30], lLeg: 1.80 }, 0.36: { ...STOMP[0.36], lLeg: 1.84 },
+// One spec: the stomp is the base; a rig that does it differently is an attacker override (rigOverrides.js). Lou: the same stomp (sunk body, driving leg) with the thigh
+// carried higher so his shorter reach still meets the abdomen. `id` names the rig's clip; the base's is 'frontKickV2'.
+export const FRONT_KICK_V2_SPEC = {
+    id: 'frontKickV2',
+    standoff: 84,            // boot to belly, the old kick's
+    legs: STOMP,
+    attacker: {
+        [LOU_RIG]: { id: 'frontKickV2Lou', legs: { 0.22: { lLeg: 1.42 }, 0.30: { lLeg: 1.80 }, 0.36: { lLeg: 1.84 } } },
+    },
 };
-export const FRONT_KICK_V2_STANDOFF = 84;        // boot to belly, the old kick's
-export const FRONT_KICK_V2_LOU_STANDOFF = 84;
+export const FRONT_KICK_V2_STANDOFF = FRONT_KICK_V2_SPEC.standoff;
+export const FRONT_KICK_V2_LOU_STANDOFF = specFor(FRONT_KICK_V2_SPEC, { attackerRigId: LOU_RIG }).standoff;
 
 // An extra key at SHIFT_AT on the old keys' own path (every non-leg channel interpolated): the support knee is bent by the time the plant takes the sole, since a plant
 // started on a straight leg solves to a straight leg (the knee's derivative is zero there) and never bends it.
@@ -51,8 +58,11 @@ const build = (id, legs) => ({
     plants: [{ role: 'attacker', leg: 'r', in: [0, 0.03], out: [0.66, 0.68], kneeRestart: true }],
     events: frontKickClip.events,
 });
-export const frontKickV2Clip = build('frontKickV2', STOMP);
-export const frontKickV2LouClip = build('frontKickV2Lou', LOU);
-export const FRONT_KICK_V2_CLIPS = [frontKickV2Clip, frontKickV2LouClip];
-// The clip and standoff for a rig (Wrestler.rigId): Lou has his own table, everyone else the stomp as authored.
-export const frontKickV2For = (rigId) => (rigId === 'thesz-procreate-v1' ? { clip: frontKickV2LouClip, standoff: FRONT_KICK_V2_LOU_STANDOFF } : { clip: frontKickV2Clip, standoff: FRONT_KICK_V2_STANDOFF });
+const forRig = rigId => { const m = specFor(FRONT_KICK_V2_SPEC, { attackerRigId: rigId }); return { clip: build(m.id, m.legs), standoff: m.standoff }; };
+export const frontKickV2Clip = forRig(undefined).clip;
+// One clip per rig that has an override, plus the base.
+const BY_RIG = new Map(Object.keys(FRONT_KICK_V2_SPEC.attacker).map(rigId => [rigId, forRig(rigId)]));
+export const frontKickV2LouClip = BY_RIG.get(LOU_RIG).clip;
+export const FRONT_KICK_V2_CLIPS = [frontKickV2Clip, ...[...BY_RIG.values()].map(v => v.clip)];
+// The clip and standoff for a rig (Wrestler.rigId): a rig with an attacker override has its own, everyone else the stomp as authored.
+export const frontKickV2For = (rigId) => BY_RIG.get(rigId) ?? { clip: frontKickV2Clip, standoff: FRONT_KICK_V2_SPEC.standoff };

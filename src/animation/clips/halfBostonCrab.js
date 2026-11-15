@@ -7,6 +7,8 @@
 //  - Both men own their shins (shinsFromFolds): no positive lKnee/rKnee (D3). `facing` keys are relative to the attacker's facing at play.
 import { ankleLockEntryClip } from './ankleLockV2.js';
 import { shinsFromFolds } from '../../rig/articulation.js';
+import { specFor } from './rigOverrides.js';
+import { turnPoses, rollPoses, exitPoses } from './groundPhrases.js';
 
 export const HALF_CRAB_SPEC = {
     "gap": 20,
@@ -41,18 +43,13 @@ export const HALF_CRAB_SPEC = {
         "lean": 0,
         "bend": 0
     },
-    "variants": {
-        "george-lou": {
-            "def": {
-                "lFold": 1.6
-            },
-            "gap": 30,
-            "att": {
-                "lArm": -0.6,
-                "lElbow": 1.65,
-                "crouch": 1.75
-            }
-        }
+    // Overrides by role and rig (rigOverrides.js). George's frame stands farther off and carries the arms and crouch differently; Lou's trapped leg folds deeper
+    // as the receiver. These were the pairing table 'george-lou' before B3b (same numbers, so the approved clips are unchanged).
+    "attacker": {
+        "george-roster-v1": { "gap": 30, "att": { "lArm": -0.6, "lElbow": 1.65, "crouch": 1.75 } }
+    },
+    "defender": {
+        "thesz-procreate-v1": { "def": { "lFold": 1.6 } }
     }
 };
 
@@ -60,13 +57,9 @@ export const HALF_CRAB_TIMES = { turn: 0.78, roll: 0.88, tuck: 1.18, end: 4.6, e
 const FRONT = [['defender', 'farArm'], ['defender', 'nativeBody'], ['defender', 'nearArm'], ['attacker', 'farArm'], ['attacker', 'nativeBody'], ['attacker', 'nearArm']];
 const HOLD_ORDER = [['defender', 'farArm'], ['defender', 'nativeBody'], ['defender', 'nearArm'], ['attacker', 'farArm'], ['attacker', 'nativeBody'], ['defender', 'lLeg'], ['attacker', 'nearArm']];
 
-// The pair's spec: george-lou overrides on top of the base (a rig that is not George takes the Lou-on-George values).
-export const crabPairFor = attackerRigId => (/george/i.test(attackerRigId ?? '') ? 'george-lou' : 'lou-george');
-const merge = (s, pair) => { const v = s.variants?.[pair] ?? {}; return { ...s, ...v, att: { ...s.att, ...v.att }, def: { ...s.def, ...v.def } }; };
-
 // `distance`: hips to hips at the entry (the receiver lies there and never moves). Returns a clip for MoveRuntime.register.
-export function halfBostonCrabClip(distance = 120, { spec = HALF_CRAB_SPEC, pair = 'lou-george', order = FRONT } = {}) {
-    const s = merge(spec, pair), { turn, roll, tuck, end, exit, pulls } = HALF_CRAB_TIMES, D = distance;
+export function halfBostonCrabClip(distance = 120, { spec = HALF_CRAB_SPEC, attackerRigId, defenderRigId, order = FRONT } = {}) {
+    const s = specFor(spec, { attackerRigId, defenderRigId }), { turn, roll, tuck, end, exit, pulls } = HALF_CRAB_TIMES, D = distance;
     const pickup = ankleLockEntryClip(D);
     const frames = { attacker: [], defender: [] };
     for (const [role, out] of Object.entries(frames)) {
@@ -77,8 +70,7 @@ export function halfBostonCrabClip(distance = 120, { spec = HALF_CRAB_SPEC, pair
         facing: sign ?? (role === 'attacker' ? -1 : 1), parts: role === 'defender' ? { nearForearm: 'base', farForearm: 'base' } : { nearForearm: 'grip', farForearm: 'grip' },
     });
     // The turn: a step around the leg (0.6-0.9 s). The facing flips at `turn` on a straight-legged, straight-armed pose.
-    const wide = { ...s.att, crouch: 0.5, bend: 0.1, lean: 0, lLeg: 0.38, rLeg: -0.38, lFold: 0.35, rFold: 0.35, lArm: 0.1, lElbow: 0.7, rArm: 0.1, rElbow: 0.4 };
-    const cross = { ...s.att, crouch: 0, bend: 0, lean: 0, lLeg: 0, rLeg: 0, lFold: 0, rFold: 0, lArm: 0, lElbow: 0, rArm: 0, rElbow: 0 };
+    const { wide, cross } = turnPoses(s.att);
     add('attacker', 0.68, wide, 65, 1);
     add('attacker', turn - 0.01, cross, 62, 1);
     add('attacker', turn, cross, 62);
@@ -86,8 +78,8 @@ export function halfBostonCrabClip(distance = 120, { spec = HALF_CRAB_SPEC, pair
     add('attacker', 1.0, { ...s.att, bend: 0.2, lean: 0, lArm: -0.1, lElbow: 1.4, rArm: -0.2, rElbow: 0.7 });
     add('attacker', tuck, { ...s.att, bend: 0.2, lean: 0 });
     // The receiver rolls over while the attacker brings the leg into position; his roll flip is stepped on the mirrored pose.
-    const rollPose = { ...s.def, tilt: Math.PI / 2, lift: -100, lLeg: -0.5, rLeg: 0.1, lFold: 0, rFold: 0, lArm: 0.05, rArm: 0.05, lElbow: 0, rElbow: 0 };
-    add('defender', 0.86, { ...rollPose, tilt: -Math.PI / 2, lLeg: 0.5, rLeg: -0.1, lArm: -0.05, rArm: -0.05 }, 0, -1);
+    const { down: rollPose, over } = rollPoses(s.def);
+    add('defender', 0.86, over, 0, -1);
     add('defender', roll, rollPose);
     frames.defender.at(-1).ease = 'step';
     add('defender', 1.0, { ...s.def, tilt: 1.65, lift: -97, lFold: s.def.lFold - 0.45 });
@@ -121,11 +113,12 @@ export function halfBostonCrabClip(distance = 120, { spec = HALF_CRAB_SPEC, pair
         }
     }
     // Exit: he rises and backs out along the mat (facing unchanged), the man lets the leg fall and lies; Wrestler lays him down prone from the last body.
-    add('attacker', 4.85, { ...s.att, crouch: 1.0, bend: 0.1, lean: 0, lFold: 1.4, rFold: 1.4, lArm: 0, lElbow: 0.6, rArm: 0, rElbow: 0.3 }, s.gap + 14);
-    add('attacker', 5.2, { ...s.att, crouch: 0.5, bend: 0.1, lean: 0, lFold: 0.8, rFold: 0.8, lArm: 0, lElbow: 0.3, rArm: 0, rElbow: 0.2 }, s.gap + 40);
-    add('attacker', exit, { ...s.att, crouch: 0.2, bend: 0, lean: 0, lFold: 0.3, rFold: 0.3, lArm: 0, lElbow: 0.1, rArm: 0, rElbow: 0.1 }, s.gap + 56);
-    add('defender', 4.85, { ...s.def, lLeg: s.def.lLeg + 0.3, lFold: s.def.lFold - 0.4 });
-    add('defender', exit, { ...s.def, lLeg: 0.1, lFold: 0.3, lArm: 1.2, rArm: 2.2, lElbow: 0.8, rElbow: 0.5 });
+    const out = exitPoses(s.att, s.def);
+    add('attacker', 4.85, out.attacker[0], s.gap + 14);
+    add('attacker', 5.2, out.attacker[1], s.gap + 40);
+    add('attacker', exit, out.attacker[2], s.gap + 56);
+    add('defender', 4.85, out.defenderLetGo);
+    add('defender', exit, out.defenderLies);
 
     for (const f of frames.attacker) f.ease = 'easeInOut';
     for (const list of Object.values(frames)) list.sort((a, b) => a.at - b.at);

@@ -49,3 +49,15 @@ test('double axe handle: runner 100 px off in depth is not hit; same depth still
         assert.equal(near.a.tryRunningAttack(near.r), 'doubleAxeHandle');
     });
 });
+
+test('light runner Power routes arm-drag kits to the paired catch rather than the legacy attack', () => {
+    const old = globalThis.location;
+    globalThis.location = { search: '?light=v1' };
+    try {
+        const { a, r } = pair(400); let caught = false;
+        Object.assign(a, { moveSet: ['armDrag'], scene: { moveRuntime: {} }, input: { justDown: k => k === 'power' },
+            _doRunnerArmDrag: () => { caught = true; }, _doArmDrag: () => assert.fail('legacy arm drag used') });
+        assert.equal(a.tryPower(r), 'armDrag');
+        assert.equal(caught, true);
+    } finally { if (old === undefined) delete globalThis.location; else globalThis.location = old; }
+});

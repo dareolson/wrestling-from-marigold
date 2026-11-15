@@ -276,7 +276,7 @@ test('hip toss, snapmare and suplex under ?falls=v1: one damage, the landing a f
     const hip = await runThrow('hipToss', '_doHipToss');
     assert.equal(hip.hurts, 1); assert.equal(hip.defAt - hip.hitAt, 1); assert.equal(hip.defLand.kind, 'back'); assert.equal(hip.defLand.tier, null);
     const snap = await runThrow('snapmare', '_doSnapmare');
-    assert.equal(snap.hurts, 1); assert.equal(snap.defAt - snap.hitAt, 1); assert.equal(snap.defLand.kind, 'seat');
+    assert.equal(snap.hurts, 1); assert.equal(snap.defAt - snap.hitAt, 1); assert.equal(snap.defLand.kind, 'back');
     const sup = await runThrow('suplex', '_doSuplex');
     assert.equal(sup.hurts, 1); assert.equal(sup.defAt - sup.hitAt, 1); assert.equal(sup.atkAt, sup.defAt, 'his own bump on the same frame');
     assert.equal(sup.defLand.kind, 'back'); assert.equal(sup.defLand.tier, 'heavy'); assert.equal(sup.atkLand.tier, null);

@@ -59,3 +59,13 @@ test('the grip sits above Lou’s baked hand when Lou is held; other men keep th
     assert.deepEqual(onLou.events, onGeorge.events);
     assert.deepEqual(onLou.layers, onGeorge.layers);
 });
+
+test('T9.1 half kneel: the camera-side leg kneels (thigh near vertical, shin folded back), the far foot is planted (thigh forward, shin near vertical); the channel follows the facing', () => {
+    for (const near of ['l', 'r']) {
+        const far = near === 'l' ? 'r' : 'l', clip = armBarEntryClip(70, null, near), held = clip.tracks.attacker.keyframes.find(k => k.at === 1.8).pose;
+        assert.ok(Math.abs(held[near + 'Leg']) < 0.3 && held[near + 'Shin'] < -1, 'down leg: thigh upright, shin folded back');
+        assert.ok(held[far + 'Leg'] > 0.7 && Math.abs(held[far + 'Leg'] - held[far + 'Shin']) < 1.7 && held[far + 'Shin'] > 0.5, 'up leg: thigh forward, shin near vertical');
+        for (const k of ['lKnee', 'rKnee']) assert.ok(!(held[k] > 0), 'no positive knee channel (D3)');
+        assert.deepEqual(clip.plants.map(p => p.leg).sort(), ['l', 'r']);
+    }
+});

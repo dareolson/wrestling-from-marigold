@@ -81,6 +81,7 @@ kits in `src/characters/rosterKits.js` and the registry, so it cannot drift.
 | `halfBostonCrab` | yes | none | - | unverified |
 | `elbowDrop` | yes | Lou, George, Kowalski, Guido | - | unverified |
 | `kneeDrop` | yes | Lou, George, Kowalski, Guido | - | unverified |
+| `handStomp` | yes | none | - | unverified |
 | `theszPress` | yes | Lou, Kowalski | - | unverified |
 | `divingElbow` | no | everyone | - | unverified |
 | `topDive` | no | everyone | - | unverified |

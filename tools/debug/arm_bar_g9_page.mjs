@@ -1,0 +1,38 @@
+// node tools/debug/arm_bar_g9_page.mjs <new-capture> <old-capture>   (T9.2: old = the double-kneel armBarV2 at HEAD, new = the half kneel; same framing, arm_bar_frames.mjs captures)
+import { mkdirSync, cpSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+const root = 'research/animation/light-moves-2026-11/g9';
+const capture = process.argv[2], candCapture = process.argv[3];
+const cases = ['lou-george-right', 'lou-george-left', 'george-lou-right', 'george-lou-left'];
+mkdirSync(root, { recursive: true });
+const data = {}, summaries = {};
+for (const id of cases) {
+    cpSync(`${capture}/${id}`, `${root}/after/${id}`, { recursive: true });
+    cpSync(`${candCapture}/${id}`, `${root}/before/${id}`, { recursive: true });
+    for (const [which, dir] of [['before', 'before'], ['after', 'after']]) {
+        data[`${id}/${which}`] = readdirSync(`${root}/${dir}/${id}`).filter(n => /^s\d+\.jpg$/.test(n)).sort().map(n => `${dir}/${id}/${n}`);
+    }
+    summaries[id] = { after: JSON.parse(readFileSync(`${capture}/${id}/audit.json`)).summary, before: JSON.parse(readFileSync(`${candCapture}/${id}/audit.json`)).summary };
+}
+writeFileSync(`${root}/summary.json`, JSON.stringify(summaries, null, 2) + '\n');
+const f = n => n.toFixed(1);
+const kn = k => k.map(r => r[0] === r[1] ? f(r[0]) : `${f(r[0])}..${f(r[1])}`).join(' / ');
+const html = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G9 arm bar half kneel</title><style>
+body{font:16px/1.5 system-ui;background:#f4f1ea;color:#221f19;max-width:1160px;margin:auto;padding:24px}h1{font-size:26px}h2{font-size:19px}section{border-top:1px solid #aaa;padding-top:15px;margin-top:30px}.pair{display:flex;gap:16px;flex-wrap:wrap}figure{margin:0;flex:1;min-width:320px}canvas{width:100%;height:auto;background:#222}button,select,input{font:inherit}nav{position:sticky;top:0;background:#f4f1ea;padding:12px;border-bottom:1px solid #aaa}table{border-collapse:collapse}th,td{text-align:left;padding:4px 18px 4px 0}.stills{display:flex;gap:8px;flex-wrap:wrap}.stills img{width:170px;max-width:100%}</style>
+<h1>G9: arm bar, half kneel (draft, no approval)</h1>
+<p>Left: today's double kneel. Right: the half kneel: the camera-side knee down on the mat with the shin back, the far foot planted with the shin near vertical. Same grips, timing, squeezes, damage and sell. Lou and George, both facings, normal speed (30 fps loops). Numbers are measurements, not a verdict; how it looks is Derek's call.</p>
+<nav><button id="play">Pause</button> <select id="speed"><option value="1">Normal speed</option><option value="0.5">Half speed</option></select> <input id="frame" type="range" min="0" max="107" value="0" aria-label="Frame"></nav>
+${cases.map(id => {const a = summaries[id].after, b = summaries[id].before; return `<section><h2>${id.replaceAll('-', ' ')}</h2><div class="pair">${['before','after'].map(which=>`<figure><canvas width="540" height="350" data-key="${id}/${which}"></canvas><figcaption>${which==='before'?'Today (double kneel)':'Half kneel'}</figcaption></figure>`).join('')}</div>
+<table><tr><th>Held 1.05 to 3.0 s</th><th>Today</th><th>Half kneel</th><th>Bar</th></tr>
+<tr><td>His legs, hips drawn over the man's legs (px)</td><td>${b.heldLowerMax.legs}</td><td>${a.heldLowerMax.legs}</td><td>0</td></tr>
+<tr><td>His legs and hips over the man's belly (px, hip half of the torso)</td><td>${b.heldLowerMax.belly}</td><td>${a.heldLowerMax.belly}</td><td>0 (not met)</td></tr>
+<tr><td>D12 below the belt / torso on torso / above (px, worst held frame)</td><td>${b.heldMaskMax.belowBody} / ${b.heldMaskMax.torso} / ${b.heldMaskMax.above}</td><td>${a.heldMaskMax.belowBody} / ${a.heldMaskMax.torso} / ${a.heldMaskMax.above}</td><td>report</td></tr>
+<tr><td>Knee height above the mat, near / far (px)</td><td>${kn(b.heldKneeToMat)}</td><td>${kn(a.heldKneeToMat)}</td><td>within 6</td></tr>
+<tr><td>Palm to wrist / forearm, max px</td><td>${b.maxWristGap.toFixed(3)} / ${b.maxForearmGap.toFixed(3)}</td><td>${a.maxWristGap.toFixed(3)} / ${a.maxForearmGap.toFixed(3)}</td><td>held</td></tr>
+<tr><td>Pinned frames / ankle slide</td><td>${b.pinnedFrames} / ${b.maxHeldAnkleSlide}</td><td>${a.pinnedFrames} / ${a.maxHeldAnkleSlide}</td><td>0 / 0</td></tr>
+<tr><td>His worst step in and out at separation 70 (px/frame)</td><td>${b.hipStep.toFixed(1)}</td><td>${a.hipStep.toFixed(1)}</td><td>report</td></tr></table>
+<div class="stills">${[.3,.9,1.4,2.4].map(t=>`<a href="after/${id}/still-${t}.png"><img src="after/${id}/still-${t}.png" alt="Half kneel at ${t}s"></a>`).join('')}</div></section>`;}).join('')}
+<p>Misses: see the Progress line in PLAN_LIGHT_MOVES.md (his legs still overlap the man's legs and belly; not claimed to read).</p>
+<script>const data=${JSON.stringify(data)};const views=[...document.querySelectorAll('canvas')].map(c=>({c,ctx:c.getContext('2d'),images:data[c.dataset.key].map(src=>{const i=new Image();i.src=src;return i})}));let frame=0,playing=true,last=0,speed=1;play.onclick=()=>{playing=!playing;play.textContent=playing?'Pause':'Play'};document.getElementById('speed').onchange=e=>speed=+e.target.value;document.getElementById('frame').oninput=e=>{frame=+e.target.value;playing=false;play.textContent='Play'};function tick(t){if(playing&&t-last>=1000/30/speed){last=t;frame=(frame+1)%108;document.getElementById('frame').value=frame}for(const v of views){const i=v.images[frame%v.images.length];if(i.complete&&i.naturalWidth)v.ctx.drawImage(i,0,0,540,350)}requestAnimationFrame(tick)}requestAnimationFrame(tick);</script></html>`;
+writeFileSync(`${root}/index.html`, html);
+console.log(`${root}/index.html`);

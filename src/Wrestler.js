@@ -1,5 +1,5 @@
+import { impactMoveId } from './animation/impactMoves.js';
 import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
-import { georgeCrowdTauntClip, georgeSuperiorityClip, georgeHairCheckClip } from './animation/clips/georgeCrowdTaunt.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
@@ -9,23 +9,30 @@ import { ankleLockEntryClip } from './animation/clips/ankleLockV2.js';
 import { bodySlamV2For } from './animation/clips/bodySlamV2.js';
 import { backBodyDropV2Clip } from './animation/clips/backBodyDropV2.js';
 import { snapmareTieUpClip } from './animation/clips/snapmareTieUp.js';
-import { runnerEntryClip } from './animation/clips/runnerEntry.js';
-import { hipTossClip } from './animation/clips/hipToss.js';
-import { halfBostonCrabClip, crabPairFor } from './animation/clips/halfBostonCrab.js';
+import { runnerHipTossClip } from './animation/clips/runnerHipToss.js';
+import { runnerArmDragClip } from './animation/clips/runnerArmDrag.js';
+import { halfBostonCrabClip } from './animation/clips/halfBostonCrab.js';
 import { armBarEntryClip } from './animation/clips/armBarV2.js';
 import { frontKickClip } from './animation/clips/frontKick.js';
 import { shoveClip } from './animation/clips/shove.js';
 // ?dropkick=v2 comparison candidate (tools/move-editor/author_dropkick_v2.mjs).
 import { dropkickV2Clip } from './animation/clips/dropkickV2.js';
 import { frontKickV2For } from './animation/clips/frontKickV2.js';
+import { jabV2For, JAB_V2_STANDOFF } from './animation/clips/jabV2.js';
+import { JAB_IMPACT_AT } from './animation/clips/jab.js';
+import { clotheslineV2For, CLOTHESLINE_SWING_MS, CLOTHESLINE_ARRIVE_MS } from './animation/clips/clotheslineV2.js';
 import { elbowDropClip } from './animation/clips/elbowDrop.js';
 import { ELBOW_DROP, SPLASH_VARIANTS, ARM_CHANNELS, sampleGroundAttack, sampleSplash, groundAttackSeconds, groundAttackContactAt, groundAttackReleaseEnd } from './animation/groundContact.js';
 import { kneeDropClip } from './animation/clips/kneeDrop.js';
+import { handStompClip, HAND_STOMP_SPEC } from './animation/clips/handStomp.js';
+import { specFor } from './animation/clips/rigOverrides.js';
+import { kneeDropV2Clip, KNEE_DROP_V2_SPEC } from './animation/clips/kneeDropV2.js';
+import { georgeCrowdTauntClip, georgeSuperiorityClip, georgeHairCheckClip } from './animation/clips/georgeCrowdTaunt.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
 import { theszPressClip } from './animation/clips/theszPress.js';
 import { GETUPS, GETUP_SETS, eligibleForBackSell, legacyFor, chooseGetUp, stallMs, stallTimeline, stallOffsets, sineInOut } from './animation/getUps.js';
-import { landingResponse, landingDuration, applyOffsetsSoft, TIERS, REF_VY, chooseFall, tierFor, KNOCKDOWN_WEAR, wearAfterDamage, wearAfterRecovery, joltResponse, joltDuration, groundHitSell, groundHitSellDuration } from './animation/falls.js';
+import { landingResponse, landingDuration, applyOffsetsSoft, TIERS, REF_VY, chooseFall, tierFor, KNOCKDOWN_WEAR, wearAfterDamage, wearAfterRecovery, joltResponse, joltDuration, groundHitSell, groundHitSellDuration, handHitSell, handHitSellDuration } from './animation/falls.js';
 import { SELLS, clutchSell, sampleSell, applyOffsets, planSells, groundedSlot, limitKnees, scaleLegs } from './animation/sells.js';
 import { backRiseParts, groundedSellParts, nearGripParts, newGripLatch, stepGripLatch } from './animation/sellAppearance.js';
 import { holdWeight, holdOffsets, settledBackHand, backRiseWeight, carriedHandTarget } from './animation/backRisePerformance.js';
@@ -287,6 +294,7 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     kneeLift:           9,
     backBodyDrop:      16,
     kneeDrop:          12,
+    handStomp:         8,   // ?light=v1 (PLAN_LIGHT_MOVES T8.1): below the knee drop
     frontKick:          7, // planted push-kick: light damage, a stagger and a step back
     shove:              4, // two-handed guard-breaker: little damage, opens a blocker and gives ground
 };
@@ -627,6 +635,7 @@ export default class Wrestler {
         this.pose            = { ...POSES.idle, lean: 0, crouch: 0 }; // live joint angles, tweened per move
         this.idlePose        = 'idle';            // character-specific resting stance — override after construction
         this.tauntPose       = 'tauntArmsWide';   // character-specific taunt — override after construction
+        this.moveStyle       = {};                // per-kit knobs a move reads (Arena copies the kit's `style`): { handSell: { kicks, seconds } }
         this.sellStyle       = 'economical';      // how he sells on the mat (sells.js SELL_STYLES) — override after construction
         this._pain           = null;              // pain context of the last confirmed hit (_hurt): sold on the mat, carried through the rise
         this._sell           = null;              // the sells playing on this trip to the mat (_tickSell)
@@ -1257,7 +1266,7 @@ export default class Wrestler {
         if (this._groundAttack) this._tickGroundAttack(dt);
         if (this._jolt && this.state === 'down') {
             this._jolt.t += dt;
-            if (this._jolt.t >= (this._jolt.sell ? groundHitSellDuration(this._jolt.intensity) : joltDuration(this._jolt.intensity))) this._jolt = null;
+            if (this._jolt.t >= this._joltSeconds(this._jolt)) this._jolt = null;
         }
         if (this.state !== 'down' && this.state !== 'staggered') return;
         if (this.state === 'down') this._tickSell(dt);
@@ -1352,16 +1361,20 @@ export default class Wrestler {
         if (!fallsCandidate() || this.state !== 'down') return false;
         this._sell = null;
         if (this._pain) this._pain.planned = true;
-        this._jolt = { lying: this.lying === 'prone' ? 'prone' : 'supine', intensity, t: 0, move, sell };
-        this.stateTimer = Math.max(this.stateTimer, sell ? groundHitSellDuration(intensity) : joltDuration(intensity));
+        this._jolt = { lying: this.lying === 'prone' ? 'prone' : 'supine', intensity, t: 0, move, sell, style: this.moveStyle?.handSell };
+        this.stateTimer = Math.max(this.stateTimer, this._joltSeconds(this._jolt));
         return true;
     }
+
+    // Seconds from the hit to the end of a reaction: the ground sells (`sell` 'hand' is the stomped hand's, handHitSell) or the plain jolt.
+    _joltSeconds(j) { return j.sell === 'hand' ? handHitSellDuration(j.style) : j.sell ? groundHitSellDuration(j.intensity) : joltDuration(j.intensity); }
+    _joltOffsets(j) { return j.sell === 'hand' ? handHitSell(j.intensity, j.t, j.style) : (j.sell ? groundHitSell : joltResponse)(j.lying, j.intensity, j.t); }
 
     // The landing's offsets over the lying pose right now, or null.
     _landingOffsets() {
         const l = this._landing;
         if (!l && this._jolt && this.state === 'down') {
-            const r = (this._jolt.sell ? groundHitSell : joltResponse)(this._jolt.lying, this._jolt.intensity, this._jolt.t);
+            const r = this._joltOffsets(this._jolt);
             return r.done ? null : r.d;
         }
         if (!l || this.state !== 'down') return null;
@@ -2113,7 +2126,7 @@ export default class Wrestler {
             const pastDist = (other.x - this.x) * other.runFacing;
             if (Math.abs(other.x - this.x) < 160 * this.s && pastDist < 45 * this.s && sharesDepth(this, other)) {
                 if (this.moveSet.includes('hipToss')) { this._doRunnerHipToss(other); return 'hipToss'; }
-                if (this.moveSet.includes('armDrag')) { other.runPhase = null; this.facing = Math.sign(other.x - this.x) || this.facing; this._doArmDrag(other); return 'armDrag'; }
+                if (this.moveSet.includes('armDrag')) { this._doRunnerArmDrag(other); return 'armDrag'; }
             }
         }
 
@@ -2126,6 +2139,9 @@ export default class Wrestler {
         }
         if (this.input.isDown('down') && (other.state === 'down' || other.state === 'possum') && dist <= 105 * this.s &&
             this.moveSet.includes('kneeDrop')) {
+            // ?light=v1 (T8.1): a man on his stomach takes the hand stomp (the kit must hold it); flag off or any other lying, the knee drop
+            if (lightCandidate() && other.lying === 'prone' && this.moveSet.includes('handStomp')) { this._doHandStomp(other); return 'handStomp'; }
+            if (lightCandidate() && other.lying === 'supine' && this.scene.moveRuntime) { this._doKneeDropV2(other); return 'kneeDrop'; }   // T8.3: on his back, the true knee drop
             this._doKneeDrop(other);
             return 'kneeDrop';
         }
@@ -2340,7 +2356,15 @@ export default class Wrestler {
         // A fresh jab supersedes any in-flight one, so repeated presses can't
         // leave overlapping handles or stack two impacts.
         this._cancelActiveMove('rejab');
-        this._activeMove = runtime.play('jab', { attacker: this }, {
+        // ?light=v1: the rig's own contact pose, from the separation minimum (inside it the game pushes the men back out), reached by the impact frame
+        let stance = null;
+        if (lightCandidate()) {
+            const facing = Math.sign(other.x - this.x) || this.facing, b = ringBoundsAtY(this.y), margin = 30 * this.s;
+            this.facing = facing;
+            const standX = Math.max(b.left + margin, Math.min(b.right - margin, other.x - facing * JAB_V2_STANDOFF * this.s));
+            stance = this.scene.tweens.add({ targets: this, x: standX, duration: JAB_IMPACT_AT * 1000, ease: 'Sine.easeOut' });
+        }
+        this._activeMove = runtime.play(lightCandidate() ? jabV2For(this.rigId).id : 'jab', { attacker: this }, {
             onEvent: (event) => {
                 if (event.type !== 'impact') return;
                 // Drain and sell fire at the authored impact frame so a
@@ -2354,7 +2378,7 @@ export default class Wrestler {
                 this.scene.crowd?.impact?.('strike', 0.6);
             },
             onComplete: () => { this._activeMove = null; },
-            onCancel:   () => { this._activeMove = null; },
+            onCancel:   () => { stance?.stop(); this._activeMove = null; },
         });
     }
 
@@ -2606,6 +2630,7 @@ export default class Wrestler {
     // replaces the previous one. `limb` (lLeg/rLeg/lArm/rArm, anatomical)
     // overrides the registry's `sell.limb`.
     _hurt(amount, moveId, { limb, part } = {}) {
+        moveId = impactMoveId(moveId);
         this._damage(amount);
         const sell = MOVE_SPECS[moveId]?.sell;
         this._pain = {
@@ -2618,6 +2643,8 @@ export default class Wrestler {
             until: null,
             planned: false, // sells planned for this trip to the mat (once per trip)
         };
+        // Even the economical seller must acknowledge the arm drag's lower-intensity bump.
+        if (moveId === 'armDrag') this._pain.forceClutch = true;
     }
 
     // Pain context lifecycle (PLAN_MOVE_PERFORMANCE.md D3). Visual continuity
@@ -2779,6 +2806,7 @@ export default class Wrestler {
     }
 
     _doClothesline(other) {
+        if (lightCandidate()) { this._doClotheslineV2(other); return; }
         other._hurt(STAMINA_DRAIN.clothesline, 'clothesline');
 
         // Step up into delivery position — arm extends at this Y
@@ -2789,6 +2817,44 @@ export default class Wrestler {
         // Sell fires at impact (after clotheslineCock wind-up phase)
         this.scene.time.delayedCall(100, () => {
             other._doSell('sellChest', 150, () => other.startClotheslineFall(other.runFacing));
+        });
+    }
+
+    // ?light=v1 (clips/clotheslineV2.js): the swing timed to the runner. His arrival is read from his run speed (rope boost included); the cock
+    // stretches to it, the attacker steps to where the forearm meets the runner's neck at that moment, and the damage, sell and fall land on the
+    // swing's last frame. He is 'slamming' for the swing, so the standing separation does not shove him off the runner it is meant to meet.
+    _doClotheslineV2(other) {
+        const v = clotheslineV2For(this.rigId);
+        const facing = Math.sign(other.x - this.x) || this.facing;
+        this.facing = facing;
+        const boost = other._runBoost ? 1 + (other._runBoost - 1) * other._runBoostLeft / (ROPE_HIT.boostMs / 1000) : 1;
+        const speed = (other._gaitV2 ? other._gaitV2.run.speed : RUN_SPEED) * other.s * boost;
+        const runDir = Math.sign(other.runTarget - other.x) || other.runFacing || -facing;   // tickRun's own direction
+        const closing = -runDir * facing;   // +1 while he runs at the attacker
+        const gap = (Math.abs(other.x - this.x) - v.contact * this.s) * closing;
+        const { min, max } = CLOTHESLINE_ARRIVE_MS;
+        const hitMs = Math.max(min, Math.min(max, gap / speed * 1000));
+        const runnerX = other.x + runDir * speed * hitMs / 1000;
+        const b = ringBoundsAtY(this.y), margin = 30 * this.s;
+        const standX = Math.max(b.left + margin, Math.min(b.right - margin, runnerX - facing * v.contact * this.s));
+        this.state = 'slamming';
+        const step = this.scene.tweens.add({ targets: this, x: standX, duration: hitMs, ease: 'Sine.easeInOut' });
+        const done = () => { if (this.state === 'slamming') this.state = 'standing'; };
+        // the hit lands as the swing tween completes (a chained tween starts a frame late, so a timer would fire before the arm is out)
+        this._runPoseSequence([
+            { p: v.cock,  dur: hitMs - CLOTHESLINE_SWING_MS, e: 'Cubic.easeOut' },
+            { p: v.swing, dur: CLOTHESLINE_SWING_MS,         e: 'Cubic.easeIn'  },
+        ], () => {
+            if (this.state !== 'slamming') return;
+            if (other.state === 'running') {
+                other._hurt(STAMINA_DRAIN.clothesline, 'clothesline');
+                other._doSell('sellChest', 150, () => other.startClotheslineFall(other.runFacing));
+                this.scene.crowd?.impact?.('strike', 0.8);
+            } else step.stop();
+            this._runPoseSequence([
+                { p: v.follow, dur: 130, e: 'Linear'        },
+                { p: v.idle,   dur: 200, e: 'Cubic.easeOut' },
+            ], done);
         });
     }
 
@@ -3207,7 +3273,7 @@ export default class Wrestler {
         this._playPairedThrow(other, clipId, {
             foley: ['mat', 0.7],
             damage: STAMINA_DRAIN.hipToss,
-            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY, true); },   // T2.5g: r2
+            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY * 1.2, true); },   // running/standing hip toss: visible rebound
             finish: () => {
                 if (other.state === 'holding') other._layOnBack(DOWN_SEC);
                 this._standBackUp();
@@ -3221,12 +3287,12 @@ export default class Wrestler {
         this._doSnapmare(other, 'snapmareTieUp');
     }
 
-    // ?light=v1 (T6.3): the hip toss on a runner: the catch is the clip's own first beat, his speed carries into it (clips/runnerEntry.js).
+    // ?light=v1: the runner's momentum gives the hip toss its higher arc (runnerHipToss.js).
     _doRunnerHipToss(other) {
         const dist = Math.abs(other.x - this.x) / this.s;
         this.facing = Math.sign(other.x - this.x) || this.facing;
         other.runPhase = null;
-        this.scene.moveRuntime.register(runnerEntryClip(hipTossClip, dist, 'hipTossRunner'));
+        this.scene.moveRuntime.register(runnerHipTossClip(dist));
         this._doHipToss(other, 'hipTossRunner');
     }
 
@@ -3261,7 +3327,7 @@ export default class Wrestler {
             foley: ['mat', 1.0],
             faceToFace: false,
             onAbort: () => { if (other.state === 'holding') other._layOnBack(DOWN_SEC); if (this.state === 'holding') this._standBackUp(); },
-            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + 0.5 + tail); other._startLanding('seat'); },   // T2.5g: he sits down hard and rocks back
+            landAtHit: (tail) => { other._layOnBack(DOWN_SEC + 0.5 + tail); other._startLanding('back', REF_VY, true); },   // the forward flip lands on his back, then rebounds
             finish: () => {
                 if (other.state === 'holding') other._layOnBack(DOWN_SEC + 0.5);
                 this._standBackUp();
@@ -3287,7 +3353,7 @@ export default class Wrestler {
     // flag off, a kit that holds it plays the ankle lock.
     _doHalfBostonCrab(other) {
         if (!lightCandidate() || !this.scene.moveRuntime) { this._doAnkleLock(other); return; }
-        this.scene.moveRuntime.register(halfBostonCrabClip((other.x - this.x) * this.facing / this.s, { pair: crabPairFor(this.rigId) }));
+        this.scene.moveRuntime.register(halfBostonCrabClip((other.x - this.x) * this.facing / this.s, { attackerRigId: this.rigId, defenderRigId: other.rigId }));
         this._playPairedThrow(other, 'halfBostonCrab', {
             damage: STAMINA_DRAIN.halfBostonCrab, hitEvent: 'squeeze', shake: [80, 0.001],
             onClipEvent: (event) => { if (event.type === 'roll' && other.state === 'holding') other.lying = 'prone'; },
@@ -3298,7 +3364,7 @@ export default class Wrestler {
 
     _doArmBar(other) {
         if (lightCandidate() && this.scene.moveRuntime) {
-            this.scene.moveRuntime.register(armBarEntryClip((other.x - this.x) * this.facing / this.s, other.rigId));
+            this.scene.moveRuntime.register(armBarEntryClip((other.x - this.x) * this.facing / this.s, other.rigId, this.skeleton.lChannelSide(this.facing) === 'near' ? 'l' : 'r'));
         }
         this._playPairedThrow(other, lightCandidate() ? 'armBarV2' : 'armBar', {
             damage: STAMINA_DRAIN.armBar, hitEvent: 'squeeze', shake: [80, 0.001],
@@ -3462,6 +3528,18 @@ export default class Wrestler {
         other.facing = this.facing; // both face same direction — side headlock, not a clinch
         this._runPoseSequence(MOVE_DEFS.headlock.poseSeq);
         other.tweenPose('headlocked', 250, 'Cubic.easeOut');
+    }
+
+    _doRunnerArmDrag(other) {
+        const dist = Math.abs(other.x - this.x) / this.s;
+        this.facing = Math.sign(other.x - this.x) || this.facing;
+        other.runPhase = null;
+        this.scene.moveRuntime.register(runnerArmDragClip(dist));
+        this._playPairedThrow(other, 'armDragRunner', {
+            damage: STAMINA_DRAIN.armDrag, foley: ['mat', .7],
+            landAtHit: tail => { other._layOnBack(DOWN_SEC + tail); other._startLanding('back', REF_VY * 1.2, true); },
+            finish: () => { if (other.state === 'holding') other._layOnBack(DOWN_SEC); this._standBackUp(); },
+        });
     }
 
     _doArmDrag(other) {
@@ -3673,6 +3751,77 @@ export default class Wrestler {
     // of the elbow drop. Flies through the same _playFlight plumbing
     // (state elbowDropping) with its own short hop clip and an offset
     // landing spot.
+    // ?light=v1 (PLAN_LIGHT_MOVES T8.1, T8.2): the hand stomp on a man lying on his stomach. His near hand stays in its normal prone resting position during the approach, the
+    // attacker walks so the boot's sole meets that hand (his root = the hand's drawn point - the clip's `reach` along his facing), and the stomp lands on the clip's `impact`; the sell is the
+    // man's (hand sell: the arm jerks and pulls in, both legs kick).
+    _doHandStomp(other) {
+        const runtime = this.scene.moveRuntime;
+        if (!runtime) return;
+        this._cancelActiveMove('rehandstomp');
+        const spec = specFor(HAND_STOMP_SPEC, { attackerRigId: this.rigId });
+        // where his near hand is drawn at the hit: the prone rest pose plus the hand sell's offsets at t = 0, read from his skeleton like the ground attacks read the chest
+        const rest = Skeleton.lyingBase('prone', true), g = applyOffsets(rest, handHitSell(1, 0, other.moveStyle?.handSell).d), so = other.s * other._heightScale;
+        const off = other.skeleton.groundedPointAt(so, other.facing, g, 'nearWrist') ?? { x: 0, y: 0 };
+        const handX = other.x + off.x, handY = other.y + off.y;
+        // he stands on the camera side of the man, past the hand toward his head, facing back toward his hips: the boot reaches onto the hand (beside the shoulder, on the arm's side, away
+        // from the face) and his feet stay below the body in depth (Derek 2026-11-14 T8.5)
+        const facing = other.facing || this.facing;
+        this.facing = facing;
+        const b = ringBoundsAtY(handY + spec.standY * this.s), margin = 30 * this.s;   // the ring's width at the depth he stands, not the one he starts at
+        const standX = Math.max(b.left + margin, Math.min(b.right - margin, handX - facing * spec.reach * this.s));
+        // the clip walks him there (transform keys are along his facing and down the screen, in his own units)
+        const clip = handStompClip(HAND_STOMP_SPEC, this.rigId, { x: (standX - this.x) * facing / this.s, y: (handY + spec.standY * this.s - this.y) / this.s });
+        runtime.register(clip);
+        this._activeMove = runtime.play(clip.id, { attacker: this }, {
+            onEvent: (event) => {
+                if (event.type !== 'impact') return;
+                if (other.state !== 'down' && other.state !== 'possum') return;
+                other._hurt(STAMINA_DRAIN.handStomp, 'handStomp');
+                other._downHitReact(this, 'handStomp', 1.0, 'hand');
+                this.scene.cameras.main.shake(70, 0.0012);
+                this.scene.crowd?.impact?.('mat', 0.35);
+            },
+            onComplete: () => { this._activeMove = null; },
+            onCancel:   () => { this._activeMove = null; },
+        });
+    }
+
+    // ?light=v1 (PLAN_LIGHT_MOVES T8.3): the knee drop proper, on a man on his back. The clip walks him to the chest, he leaps (apex a fraction of his hip height), and comes down knee first on the
+    // chest point read from the man's drawn skeleton; the hit is the clip's `impact` (damage, shake, mat foley, the knee drop's own chest sell), then he kneels up and stands.
+    _doKneeDropV2(other) {
+        const runtime = this.scene.moveRuntime;
+        this._cancelActiveMove('reknee');
+        const spec = specFor(KNEE_DROP_V2_SPEC, { attackerRigId: this.rigId });
+        const so = other.s * other._heightScale;
+        const hipHeight = this.skeleton.standingHipHeight;   // rig units: the body lift scales by this over 124, so apex and contact heights in px at s = 1 are fractions of it
+        const chest = Skeleton.groundedTarget(other.skeleton.jointAttachmentPoints ?? {}, 'chest', so) ?? { x: other.x, y: other.y };
+        // he faces the man's head (a supine man's head is away from his own facing), so his trailing shins and feet lie toward the man's legs, never on his head and shoulders
+        const facing = -other.facing || this.facing;
+        this.facing = facing;
+        const b = ringBoundsAtY(this.y), margin = 30 * this.s;
+        const standX = Math.max(b.left + margin, Math.min(b.right - margin, chest.x - facing * spec.reach * this.s));
+        // beside him in depth, on the camera side: before and after the drop his mat line is below the lowest joint the man draws plus a boot (not on the man's own depth line); at the contact he
+        // steps in across the depth so the knee is on the chest with his body down (the clip's `land`)
+        let bottom = -Infinity;
+        for (const pt of Object.values(other.skeleton.jointAttachmentPoints ?? {})) if (Number.isFinite(pt?.y)) bottom = Math.max(bottom, pt.y + 12 * so);
+        const standY = Math.min(RING.nearLeft.y - 6, Math.max(other.y, Number.isFinite(bottom) ? bottom : other.y) + spec.depthMargin * this.s);
+        const landY = Math.min(standY, chest.y + spec.kneeRest * this.s);
+        const clip = kneeDropV2Clip(KNEE_DROP_V2_SPEC, this.rigId, { hipHeight, walk: { x: (standX - this.x) * facing / this.s, y: (standY - this.y) / this.s }, land: { y: (landY - this.y) / this.s } });
+        runtime.register(clip);
+        this._activeMove = runtime.play(clip.id, { attacker: this }, {
+            onEvent: (event) => {
+                if (event.type !== 'impact') return;
+                if (other.state !== 'down' && other.state !== 'possum') return;
+                this.scene.cameras.main.shake(110, 0.0018);
+                this.scene.crowd?.impact?.('mat', 0.6);
+                other._hurt(STAMINA_DRAIN.kneeDrop, 'kneeDrop');
+                other._downHitReact(this, 'kneeDrop', 0.8, 'curl');
+            },
+            onComplete: () => { this._activeMove = null; },
+            onCancel:   () => { this._activeMove = null; },
+        });
+    }
+
     _doKneeDrop(other) {
         this.state  = 'slamming';
         this.facing = Math.sign(other.x - this.x) || this.facing;
@@ -4323,6 +4472,7 @@ export default class Wrestler {
         this.skeleton.setHandUnion?.(getUpsCandidate() && unionCandidate());
         this.skeleton.setGetUps?.(getUpsCandidate());
         this.skeleton.setFalls?.(fallsCandidate());
+        Skeleton.setLightRest(lightCandidate());
         this.skeleton.setHandUnder?.(this._handUnder());
         this.skeleton.setKneeTuck?.(kneeTuckConfig());
         this.skeleton.setDepth(depth);

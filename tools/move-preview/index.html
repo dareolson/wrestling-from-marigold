@@ -3,12 +3,14 @@
 <style>
 :root{color-scheme:dark;font:15px system-ui;background:#151515;color:#eee}body{margin:0}header,footer{padding:12px 18px;background:#252525}h1{font-size:20px;margin:0 0 10px}nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}button,select,input{font:inherit}button,select{padding:6px}main{max-width:1100px;margin:auto}iframe{border:0;width:100%;height:min(68vh,680px);display:block}#scrub{width:min(60vw,650px)}p{margin:8px 0;font-size:14px}#status{color:#ded4a3}label{white-space:nowrap}
 </style></head><body><header><h1>WFM live move preview</h1><nav>
-<label>Move <select id="move"><option value="half-boston-crab">Half Boston crab · draft</option></select></label>
+<label>Move <select id="move"><option value="runner-back-drop">Back body drop · runner</option></select></label>
 <label>Pair <select id="pair"><option value="lou-george">Lou on George</option><option value="george-lou">George on Lou</option></select></label>
+<label>Attacker <select id="att"><option value="thesz-procreate-v1">Lou</option><option value="george-roster-v1">George</option><option value="kowalski-roster-v1">Kowalski</option><option value="guido-roster-v1">Guido</option></select></label>
+<label>Defender <select id="def"><option value="george-roster-v1">George</option><option value="thesz-procreate-v1">Lou</option><option value="kowalski-roster-v1">Kowalski</option><option value="guido-roster-v1">Guido</option></select></label>
 <button id="mirror">Face left</button><label>Speed <select id="speed"><option value="1">Normal</option><option value="0.5">Half</option><option value="0.25">Quarter</option></select></label>
 <label><input type="checkbox" id="front" checked> Attacker in front</label><button id="reload">Reload saved revision</button>
 </nav></header><main><iframe id="game" title="WFM game preview"></iframe></main><footer><nav>
 <button id="play">Pause</button><button id="restart">Restart</button><button id="back">−1 frame</button><button id="next">+1 frame</button>
-<input id="scrub" aria-label="Move timeline" type="range" min="0" max="5.549" step="0.0166667" value="0"><output id="time">0.00 s</output>
+<input id="scrub" aria-label="Move timeline" type="range" min="0" max="5.549" step="0.0166667" value="0"><output id="time">0.00 s</output><output id="phase"></output>
 </nav><p id="status">Loading the game…</p><p>Saved pose changes reload automatically. This is a visual draft; measurements and video exports run separately.</p></footer>
 <script type="module" src="./preview.js"></script></body></html>

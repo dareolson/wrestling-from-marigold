@@ -1,10 +1,11 @@
 // PLAN_LIGHT_MOVES T6.3 (?light=v1): a paired throw's clip with a runner entry. The clip starts with the man at its own first distance, standing; a man coming back
 // off the ropes is `distance` out and running. This puts a lead-in in front of the clip: the attacker waits in his first pose, the runner strides in at his run speed
 // (x falls at RUN_SPEED_UNITS) and eases into the clip's first defender pose as he arrives; the clip then plays unchanged, shifted by the lead-in.
+import { shinsFromFolds } from '../../rig/articulation.js';
 import { RUN_SPEED_UNITS } from './backBodyDropV2.js';
 
-const RUN = { lArm: -0.5, rArm: 0.6, lElbow: 1.0, rElbow: 0.9, lLeg: 0.55, rLeg: -0.45, lKnee: 0.9, rKnee: 0.2, lean: 0, crouch: 0.05, tilt: 0, lift: 0, bend: 0.1 };
-const RUN_B = { ...RUN, lArm: 0.6, rArm: -0.5, lLeg: -0.45, rLeg: 0.55, lKnee: 0.2, rKnee: 0.9 };
+const RUN = shinsFromFolds({ lArm: -0.5, rArm: 0.6, lElbow: 1.0, rElbow: 0.9, lLeg: 0.55, rLeg: -0.45, lFold: 0.9, rFold: 0.2, lean: 0, crouch: 0.05, tilt: 0, lift: 0, bend: 0.1 });
+const RUN_B = shinsFromFolds({ ...RUN, lArm: 0.6, rArm: -0.5, lLeg: -0.45, rLeg: 0.55, lFold: 0.2, rFold: 0.9 });
 const MIN_LEAD = 0.12;
 
 export function runnerEntryClip(base, distance, id = `${base.id}Runner`) {

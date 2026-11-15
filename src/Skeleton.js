@@ -2173,8 +2173,15 @@ export default class Skeleton {
     /** The pose a man lies in: the rest pose with `falls` on (?falls=v1), the missile (GROUNDED_POSES) without. `lying`: supine | prone | flat. */
     static lyingBase(lying, falls) {
         const key = lying === 'supine' ? 'supine' : 'prone';
+        if (falls && key === 'prone' && Skeleton._lightRest) return Skeleton.REST_PRONE_LIGHT;
         return falls ? Skeleton.REST_POSES[key] : Skeleton.GROUNDED_POSES[lying];
     }
+
+    // PLAN_LIGHT_MOVES T8.5 (?light=v1): the prone rest pose with the near arm lying out from the shoulder along the mat, toward the camera and back from the face, so the hand a boot comes down on
+    // is beside the shoulder, not at the head. Everything else is REST_POSES.prone; the flag is set per frame by the Wrestler (one value for the whole scene).
+    static _lightRest = false;
+    static setLightRest(on) { Skeleton._lightRest = !!on; }
+    static REST_PRONE_LIGHT = Object.freeze({ ...Skeleton.REST_POSES.prone, nearArm: -0.95, nearFore: -0.9 });
 
     static GETUP_POSES = [
         //         hips on mat, torso barely off it, arms at sides, legs away

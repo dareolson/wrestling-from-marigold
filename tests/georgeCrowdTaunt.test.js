@@ -21,3 +21,12 @@ test('crowd taunt: the lower body holds the stance on every key (soles planted, 
 test('crowd taunt: no arm is raised overhead (the near hand stays below the face)', () => {
     for (const k of georgeCrowdTauntClip(stance).tracks.attacker.keyframes) assert.ok(k.pose.lArm <= 1.1 && k.pose.rArm <= 1.1, `${k.at}`);
 });
+
+test('superiority: a valid short clip, lower body held, the presenting hand at waist height', async () => {
+    const { georgeSuperiorityClip, SUPERIORITY } = await import('../src/animation/clips/georgeCrowdTaunt.js');
+    const clip = georgeSuperiorityClip(stance);
+    assert.deepEqual(validateClip(clip), { ok: true, errors: [] });
+    assert.ok(clip.duration >= 0.9 && clip.duration <= 1.2, `${clip.duration}`);
+    for (const k of clip.tracks.attacker.keyframes) for (const c of ['lLeg', 'rLeg', 'crouch', 'lKnee', 'rKnee']) assert.equal(k.pose[c], stance[c]);
+    assert.ok(SUPERIORITY.keys.present.lArm < 0.8, 'presenting at the waist, not raised');
+});

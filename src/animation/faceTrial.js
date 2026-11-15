@@ -64,6 +64,7 @@ export class FaceDriver {
             present: { family: 'smug', mouths: [0, 0, 1, 1, 1, 0], ms: 1050 },   // smirk into a grin, then the closed smirk for the hold
             reject:  { family: 'talk', mouths: [0], ms: 250 },                    // offended
             dismiss: { family: 'talk', mouths: [1, 2, 1, 0], ms: 450 },           // one short burst at the crowd
+            superior: { family: 'smug', mouths: [0, 1, 1, 1], ms: 700 },          // the self-satisfied grin over the man on the mat
             release: null,
         };
         if (!(beat in BEATS)) return;

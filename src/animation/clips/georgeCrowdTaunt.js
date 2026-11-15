@@ -20,6 +20,17 @@ export const CROWD_TAUNT = {
     },
 };
 
+// PLAN_GEORGE_PERFORMANCE B, "Effortless superiority": with the other man down, a chest lift, the near hand turned out at waist height to
+// present him ("look what I did"), the far fist on the hip, a self-satisfied pause, back to guard. 1.15 s, no travel.
+export const SUPERIORITY = {
+    times: { lift: 0.20, present: 0.40, holdEnd: 0.90, end: 1.15 },
+    keys: {
+        lift:    { lArm: 0.25, rArm: -0.10, lElbow: 0.80, rElbow: 1.20, lean: -0.12, bend: -0.06 },
+        present: { lArm: 0.55, rArm: -0.25, lElbow: 0.55, rElbow: 1.70, lean: -0.15, bend: -0.08 },
+        hold:    { lArm: 0.58, rArm: -0.25, lElbow: 0.52, rElbow: 1.70, lean: -0.16, bend: -0.09 },
+    },
+};
+
 const UPPER = ['lArm', 'rArm', 'lElbow', 'rElbow', 'lean', 'bend'];
 
 // `stance`: the pose he is in when it starts (his own idle after the strut). Its lower body is held on every key; the first key is the stance
@@ -41,6 +52,25 @@ export function georgeCrowdTauntClip(stance, idle = stance, spec = CROWD_TAUNT) 
             key(t.recoil, spec.keys.recoil, 'easeOut'),
             key(t.sweepMid, spec.keys.sweepMid),
             key(t.sweep, spec.keys.sweep, 'easeOut'),
+            key(t.end, upperOf(idle)),
+        ] } },
+    };
+}
+
+export function georgeSuperiorityClip(stance, idle = stance, spec = SUPERIORITY) {
+    const t = spec.times;
+    const lower = Object.fromEntries(Object.entries(stance).filter(([k, v]) => Number.isFinite(v) && !UPPER.includes(k) && !['tilt', 'lift'].includes(k)));
+    const upperOf = p => Object.fromEntries(UPPER.map(k => [k, Number.isFinite(p[k]) ? p[k] : (k.endsWith('Elbow') ? 0.7 : 0)]));
+    const key = (at, upper, ease = 'easeInOut') => ({ at, ease, pose: { ...lower, ...upper } });
+    return {
+        id: 'georgeSuperiority',
+        duration: t.end,
+        events: [{ at: 0.05, type: 'superior' }, { at: t.holdEnd, type: 'release' }],   // the runtime does not fire an event at 0
+        tracks: { attacker: { keyframes: [
+            key(0, upperOf(stance)),
+            key(t.lift, spec.keys.lift),
+            key(t.present, spec.keys.present, 'easeOut'),
+            key(t.holdEnd, spec.keys.hold, 'linear'),
             key(t.end, upperOf(idle)),
         ] } },
     };

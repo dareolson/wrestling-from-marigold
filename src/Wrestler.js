@@ -1,5 +1,5 @@
 import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
-import { georgeCrowdTauntClip } from './animation/clips/georgeCrowdTaunt.js';
+import { georgeCrowdTauntClip, georgeSuperiorityClip } from './animation/clips/georgeCrowdTaunt.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
@@ -48,6 +48,8 @@ const SPEED      = 140;
 // the arm swing (rad) against the stride, and the room he needs ahead before he turns and struts the other way.
 // phase0: the stride phase his posed stance matches (strut_probe.mjs: no foot jump entering or leaving the gait);
 // easePhase: the stride phase over which he slows into the last step; minSpeed keeps him moving until he is on it.
+// PLAN_GEORGE_PERFORMANCE: the share of George's struts that go on into the crowd taunt (?georgePerformance=1)
+const GEORGE_CROWD_CHANCE = 0.5;
 const STRUT = { speed: 70, walk: 1.6, settle: 0.35, ease: 0.25, armSwing: 0.35, minRoom: 70, phase0: Math.PI, easePhase: 1.2, minSpeed: 0.15 };
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
@@ -3754,6 +3756,12 @@ export default class Wrestler {
             });
             return;
         }
+        // PLAN_GEORGE_PERFORMANCE B: George taunting over a downed man presents him instead of strutting off
+        const other = this._lastOther;
+        if (georgePerformanceCandidate() && this.rigId?.startsWith('george') && this.scene.moveRuntime && (other?.state === 'down' || other?.state === 'possum')) {
+            this._doSuperiority(other);
+            return;
+        }
         // Flair's strut: four hunched, stalking steps forward.
         if (this.struts && lightCandidate()) { this._startStrut(); return; }
         if (this.struts) {
@@ -3837,11 +3845,37 @@ export default class Wrestler {
             this._facingLock = false;
             this.moveBlend = 0;
             this.walkPhase = 0;
-            if (georgePerformanceCandidate() && this.rigId?.startsWith('george') && this.scene.moveRuntime) { this._doCrowdTaunt(); return; }
+            // the crowd taunt is an occasion, not every strut (PLAN_GEORGE_PERFORMANCE: an event the player notices)
+            if (georgePerformanceCandidate() && this.rigId?.startsWith('george') && this.scene.moveRuntime && Math.random() < GEORGE_CROWD_CHANCE) { this._doCrowdTaunt(); return; }
             this.tweenPose(this.idlePose ?? 'idle', 300, 'Linear', () => {
                 if (this.state === 'taunting') this.state = 'standing';
             });
         }
+    }
+
+    // PLAN_GEORGE_PERFORMANCE B (?light=v1&georgePerformance=1): taunting over a downed man, he presents him with the near hand, fist on
+    // the hip, and a smug pause (georgeSuperiorityClip).
+    _doSuperiority(other) {
+        const runtime = this.scene.moveRuntime;
+        this.state = 'taunting';
+        this.facing = Math.sign(other.x - this.x) || this.facing;
+        const clip = georgeSuperiorityClip({ ...this.pose }, POSES[this.idlePose] ?? POSES.idle);
+        runtime.register(clip);
+        this._playPerformance(clip);
+    }
+
+    // a George performance clip: events drive the face, completion hands straight back to standing (the clip ends on his idle upper body
+    // over the stance he started in; a tween to the idle pose would write knee channels the stance does not have, a 10 px foot pop)
+    _playPerformance(clip) {
+        const done = () => { this._activeMove = null; this.face?.perform('release', this.scene.time.now); };
+        this._activeMove = this.scene.moveRuntime.play(clip.id, { attacker: this }, {
+            onEvent: (event) => this.face?.perform(event.type, this.scene.time.now),
+            onComplete: () => {
+                done();
+                if (this.state === 'taunting') this.state = 'standing';
+            },
+            onCancel: done,
+        });
     }
 
     // PLAN_GEORGE_PERFORMANCE A (?light=v1&georgePerformance=1): standing still after the strut, he presents himself, waits for applause,
@@ -3852,17 +3886,7 @@ export default class Wrestler {
         this.state = 'taunting';
         const clip = georgeCrowdTauntClip({ ...this.pose }, POSES[this.idlePose] ?? POSES.idle);
         runtime.register(clip);
-        const done = () => { this._activeMove = null; this.face?.perform('release', this.scene.time.now); };
-        this._activeMove = runtime.play(clip.id, { attacker: this }, {
-            onEvent: (event) => this.face?.perform(event.type, this.scene.time.now),
-            // the clip ends on his idle upper body over the stance he started in: hand straight back (a tween to the idle pose
-            // would write knee channels the stance does not have, a 10 px foot pop in one frame)
-            onComplete: () => {
-                done();
-                if (this.state === 'taunting') this.state = 'standing';
-            },
-            onCancel: done,
-        });
+        this._playPerformance(clip);
     }
 
     _doSell(poseName, duration, onDone) {

@@ -1,0 +1,96 @@
+{
+ "poses": {
+  "crowdPresentHold": {
+   "lArm": 0.9,
+   "rArm": 0.6,
+   "lElbow": 0.42,
+   "rElbow": 0.52,
+   "lean": -0.15,
+   "bend": -0.09
+  },
+  "crowdRecoil": {
+   "lArm": 0.4,
+   "rArm": 0.25,
+   "lElbow": 2.1,
+   "rElbow": 0.9,
+   "lean": -0.24,
+   "bend": -0.14
+  },
+  "crowdDismissSweep": {
+   "lArm": 0.8,
+   "rArm": 0.2,
+   "lElbow": 1.1,
+   "rElbow": 0.85,
+   "lean": -0.16,
+   "bend": -0.06
+  },
+  "superiorityPresent": {
+   "lArm": 0.55,
+   "rArm": -0.25,
+   "lElbow": 0.55,
+   "rElbow": 1.7,
+   "lean": -0.15,
+   "bend": -0.08
+  },
+  "hairFarArm": {
+   "rArm": 2.95,
+   "rElbow": 1.05,
+   "lArm": 0.15,
+   "lElbow": 0.8,
+   "lean": -0.06,
+   "bend": 0
+  }
+ },
+ "measured": {
+  "crowdPresentHold_R": {
+   "forearmDegFromForwardDown": 4.1,
+   "wristAboveFeetPx": 140.4,
+   "armSlot": "near"
+  },
+  "crowdRecoil_R": {
+   "forearmDegFromForwardDown": -66.4,
+   "wristAboveFeetPx": 150.5,
+   "armSlot": "near"
+  },
+  "crowdDismissSweep_R": {
+   "forearmDegFromForwardDown": -27.5,
+   "wristAboveFeetPx": 149.5,
+   "armSlot": "near"
+  },
+  "superiorityPresent_R": {
+   "forearmDegFromForwardDown": 17.2,
+   "wristAboveFeetPx": 126.3,
+   "armSlot": "near"
+  },
+  "hairFarArm_R": {
+   "forearmDegFromForwardDown": -144.3,
+   "wristAboveFeetPx": 197.8,
+   "armSlot": "far"
+  },
+  "crowdPresentHold_L": {
+   "forearmDegFromForwardDown": 4.1,
+   "wristAboveFeetPx": 140.4,
+   "armSlot": "near"
+  },
+  "crowdRecoil_L": {
+   "forearmDegFromForwardDown": -66.4,
+   "wristAboveFeetPx": 150.5,
+   "armSlot": "near"
+  },
+  "crowdDismissSweep_L": {
+   "forearmDegFromForwardDown": -27.5,
+   "wristAboveFeetPx": 149.5,
+   "armSlot": "near"
+  },
+  "superiorityPresent_L": {
+   "forearmDegFromForwardDown": 17.2,
+   "wristAboveFeetPx": 126.3,
+   "armSlot": "near"
+  },
+  "hairFarArm_L": {
+   "forearmDegFromForwardDown": -144.3,
+   "wristAboveFeetPx": 197.8,
+   "armSlot": "far"
+  }
+ }
+}

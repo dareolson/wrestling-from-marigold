@@ -339,6 +339,25 @@ Derek: "make sure he doesn't stop until he's done." The batch-run rules above ap
 - **Context:** if your context gets long, write the Progress line, commit, and continue in a new chat that starts with CLAUDE.md's session-start reads and this section.
 - **Done means:** every task in T8.5-T11.7 has a Progress line (built, or SKIPPED with the reason), the combined page exists, the final gate passed, the Status is updated. Then stop.
 
+## Stage 12 roadmap: the next ten moves (Derek 2026-11-15: "create the next roadmap so we know which moves are next")
+
+Roadmap only: no tasks yet. Mostly 1950s mat and lockup work, since Stages 10-11 were strikes. Expect them rough on first build; they get dialled in after (Derek: "it's kind of expected they will look terrible until we dial them in"). Two-man holds and throws, not one strike framework, so plan each on the snapmare (Stage 7) and half crab pattern. Footage: MOVE_CATALOG §2 "Mat wrestling" (Chicago Film Archives 1950s matches); without it, pose from scratch as the snapmare was. Starts after PLAN_GEORGE_PERFORMANCE Stages D-E unless a second Sonnet runs it in its own worktree.
+
+| # | Move | Where it fits | Default kit |
+|---|---|---|---|
+| 12.1 | Wristlock into arm wringer | from the lockup; chains into `hammerlock` or `armBar` | Lou, Guido |
+| 12.2 | Headlock takeover | from `headlock`, to the mat | Lou, George |
+| 12.3 | Flying mare | over the shoulder by the arm from the tie-up | Guido, Lou |
+| 12.4 | Test of strength | knuckle lock in the lockup, the loser forced to his knees | Kowalski, Lou |
+| 12.5 | Leapfrog over a runner | defensive answer off the ropes (Stage 6 runner answers) | Guido, George |
+| 12.6 | Backward roll | escape from his back to his feet / out of range | George, Guido |
+| 12.7 | Abdominal stretch | standing hold | Kowalski, George |
+| 12.8 | Body scissors | mat hold | Lou, Kowalski |
+| 12.9 | Indian deathlock | mat leg hold | George, Kowalski |
+| 12.10 | Backdrop suplex | late-match big move (escalation, MOVE_CATALOG §2b) | Lou, Kowalski |
+
+Alternates: Lou's airplane spin, George's flying tackle, Kowalski's hip attack. Still open from before: T6.4 drop toe hold.
+
 ## GP: promote `light` (Derek)
 
 Default on, `=off` disables. Full suite, build, coverage before.

@@ -29,6 +29,7 @@ import { specFor } from './animation/clips/rigOverrides.js';
 import { lightStrikeClip, LIGHT_STRIKES, STRIKE_STANDOFF } from './animation/clips/lightStrikes.js';
 import { mountedPunchesClip, MOUNTED_PUNCHES_SPEC, bodyStompsClip, BODY_STOMPS_SPEC } from './animation/clips/groundStrikes.js';
 import { kneeDropV2Clip, KNEE_DROP_V2_SPEC } from './animation/clips/kneeDropV2.js';
+import { HairFixQueue, HAIR_TAUNT_CHANCE } from './animation/hairFixQueue.js';
 import { georgeCrowdTauntClip, georgeSuperiorityClip, georgeHairCheckClip } from './animation/clips/georgeCrowdTaunt.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
@@ -59,8 +60,7 @@ const SPEED      = 140;
 // easePhase: the stride phase over which he slows into the last step; minSpeed keeps him moving until he is on it.
 // PLAN_GEORGE_PERFORMANCE: the share of George's struts that go on into the crowd taunt (?georgePerformance=1)
 const GEORGE_CROWD_CHANCE = 0.5;
-// and the share of his taunts (the other man up) that are the hair check instead of the strut
-const GEORGE_HAIR_CHANCE = 0.35;
+// (the share of his taunts that are the hair check instead of the strut rises with wear: HAIR_TAUNT_CHANCE)
 const STRUT = { speed: 70, walk: 1.6, settle: 0.35, ease: 0.25, armSwing: 0.35, minRoom: 70, phase0: Math.PI, easePhase: 1.2, minSpeed: 0.15 };
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
@@ -1134,6 +1134,7 @@ export default class Wrestler {
             this._strut = null;   // knocked out of it: the strut's facing lock goes with it
             this._facingLock = false;
         }
+        this._tickHairFix?.(other);   // optional: tests call move() on a bare object
         if (this.state !== 'standing') {
             // Not under walk control (mid-move, staggered, etc.) — re-enter
             // standing from a dead stop rather than carrying stale velocity.
@@ -4118,7 +4119,7 @@ export default class Wrestler {
             return;
         }
         // PLAN_GEORGE_PERFORMANCE C: otherwise, now and then, he sees to his hair instead of strutting
-        if (georgePerformanceCandidate() && this.rigId?.startsWith('george') && this.scene.moveRuntime && Math.random() < GEORGE_HAIR_CHANCE) {
+        if (georgePerformanceCandidate() && this.rigId?.startsWith('george') && this.scene.moveRuntime && Math.random() < HAIR_TAUNT_CHANCE[this.face?.state.stage ?? 0]) {
             this._doHairCheck();
             return;
         }
@@ -4240,14 +4241,29 @@ export default class Wrestler {
 
     // PLAN_GEORGE_PERFORMANCE C (?light=v1&georgePerformance=1): the far hand to the back of his hair, one stroke, a look at his fingers and a
     // resentful glance (georgeHairCheckClip). His wear stage (the face's) sets the rhythm; battered, he breaks off. The hair does not heal.
-    _doHairCheck() {
+    _doHairCheck(fix = null) {
         const runtime = this.scene.moveRuntime;
         this.state = 'taunting';
-        const l = this.skeleton.lChannelSide(this.facing);
+        (this._hairFix ??= new HairFixQueue()).noteFix(this.scene.time.now);
+        const l = this.skeleton.lChannelSide(this.facing), tx = this.scene.textures;
+        // the near arm does it when the l channel draws the near arm and Codex's hair arm pair is loaded; else the far arm with hairSmooth
+        const nearArm = l === 'near' && !!tx.exists('george_rv1_upper_arm_hair_reach') && !!tx.exists('george_rv1_forearm_hair_fix');
         const clip = georgeHairCheckClip({ ...this.pose }, POSES[this.idlePose] ?? POSES.idle,
-            { lSlot: `${l}Forearm`, rSlot: `${l === 'near' ? 'far' : 'near'}Forearm`, stage: this.face?.state.stage ?? 0 });
+            { lSlot: `${l}Forearm`, rSlot: `${l === 'near' ? 'far' : 'near'}Forearm`, lUpSlot: `${l}UpperArm`, stage: this.face?.state.stage ?? 0, fix, nearArm });
         runtime.register(clip);
         this._playPerformance(clip);
+    }
+
+    // PLAN_GEORGE_PERFORMANCE Stage D (T-D2): when his wear stage rises he queues a hair fix and plays it at the next safe moment (HairFixQueue).
+    // Not tied to the taunt button; a hit cancels it through the normal pose override; fixing never lowers the wear.
+    _tickHairFix(other) {
+        if (!this.face || !georgePerformanceCandidate() || !this.rigId?.startsWith('george') || !this.scene.moveRuntime) return;
+        const q = (this._hairFix ??= new HairFixQueue(this.face.state.stage)), now = this.scene.time.now;
+        q.observe(this.face.state.stage, now);
+        const safe = HairFixQueue.safe({ standing: this.state === 'standing' && !this._activeMove && !this._cornerEp && !this._strut,
+            otherState: other?.state, dist: Math.abs((other?.x ?? 1e9) - this.x) });
+        const stage = q.take(now, safe);
+        if (stage) this._doHairCheck(stage >= 2 ? 'two' : 'one');
     }
 
     // PLAN_GEORGE_PERFORMANCE A (?light=v1&georgePerformance=1): standing still after the strut, he presents himself, waits for applause,

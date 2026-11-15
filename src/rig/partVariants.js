@@ -143,7 +143,8 @@ export function mergeVariantEntry(baseEntry, variantEntry) {
         box: variantEntry.box ?? base.box,
         distalAnchorFrac: variantEntry.distalAnchorFrac ?? base.distalAnchorFrac,
         soleAnchorFrac: variantEntry.soleAnchorFrac ?? base.soleAnchorFrac,
-        binding: variantEntry.binding ?? base.binding,
+        // an explicit `binding: null` unbinds the part: it is placed by its own distalAnchorFrac (a foreshortened arm whose painted elbow is not at the bone's end)
+        binding: variantEntry.binding !== undefined ? variantEntry.binding : base.binding,
         semanticAnchors: variantEntry.semanticAnchors ?? base.semanticAnchors,
         displayScale: variantEntry.displayScale ?? base.displayScale,
     };
@@ -224,7 +225,7 @@ export function validateCharacterArt(character) {
                 errors.push(`${path}.${anchor}: expected normalized {u,v}`);
             }
         }
-        if (entry.binding !== undefined) {
+        if (entry.binding !== undefined && entry.binding !== null) {
             const binding = entry.binding;
             if (!isObject(binding) || !validFrac(binding.proximal)
                 || (binding.distal !== undefined && !validFrac(binding.distal))) {

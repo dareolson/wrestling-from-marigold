@@ -92,3 +92,25 @@ Derek, after watching C: "he needs to check his hair more obviously, also when h
 - **Gate GD:** one page: the hair check and the wear-triggered fix, both facings, all three wear stages, a normal-speed full-ring loop strip plus close stills. Numbers: root and ankle motion during the gesture, `hairContact` distance to the hair surface, any frame where the arm covers the eyes or mouth. STOP for Derek.
 
 Progress:
+- T-D1 27196d60: rest on the hair 0.45 s, two strokes, chest lifted, longer look; 2.6 s clean. T-D2 5163b434: `hairFixQueue.js` (6 s expiry, 8 s cooldown, safe gate 150 px / man down), one-stroke and two-try fix clips; started itself 50 ms after the stage change in the live game. A rise inside the 8 s cooldown cannot play (cooldown > expiry).
+- T-D3 d63e8972: hairReach + hairFix registered (variant `binding: null` in partVariants.js keeps the foreshortened elbow); near arm lands hairContact 1.25 px from the forelock both facings; root drift 0, ankle step 0. Misses: the hand crosses the eye/mouth for 2-4 / 3-9 frames (60 fps) on the way in and down to the chin; far-arm version kept when the art is missing.
+- GD page: [research/animation/george-performance-2026-11/gd/index.html](research/animation/george-performance-2026-11/gd/index.html) (videos and stills on disk only). STOP for Derek; no gameplay was changed beyond `?georgePerformance=1`.
+- GD APPROVED by Derek 2026-11-15 ("the hair and chop look good"). The chop arm art (2afeba6c) approved with it.
+
+## Stage E: a taunt set per wrestler, picked by direction (Opus, 2026-11-15)
+
+Derek: "can we have multiple taunts, eventually i want to put this on a controller and I'll use the direction pad or analog stick for the different taunts, probably a minimum of two per wrestler". Same worktree and branch as Stage D; do E after T-D2 (both change `_doTaunt`), T-D3 can land whenever the art does.
+
+Today the taunt is the finisher button with the other man out of reach (`tryFinisher` falls through to `_doTaunt`). George picks at random between strut, crowd taunt, hair check and superiority; Lou and Kowalski have one arms-wide pose sequence; Guido inherits George's strut flag (a known miss).
+
+- **T-E1 Taunt table and input.** Each character gets `taunts: { neutral, up, down, forward, back }` → taunt ids (a registry of taunt executors, like the move kits; body-relative, reusable across wrestlers). Pressing the taunt reads the held direction at the press, relative to his facing, the way `tryPower` reads Up/Back/Forward. A direction with no entry falls back to `neutral`. Keep it one input layer so a controller's d-pad or stick maps onto the same five slots later: no keyboard-only logic in the taunt code. Context overrides stay: the begging heel at low stamina, George's superiority over a downed man. The AI picks at random from the wrestler's own slots. Existing near-range finisher inputs (Up/Down over a downed man) must still win: the taunt only plays where it plays now.
+- **T-E2 At least two per wrestler.** DEFAULT TAKEN (Derek overrides at the gate):
+  - George: neutral strut (half end in the crowd taunt; the random hair-check roll from T-D2 goes, the wear-triggered fix stays), up hair check, forward crowd taunt alone, down superiority when the man is down else strut.
+  - Lou (babyface): neutral the existing arms wide, up hand to the ear for the crowd, forward point at the opponent and fist up.
+  - Guido (babyface): neutral a fist pump to the crowd, up hand to the ear (shared with Lou); he loses George's strut.
+  - Kowalski (monster heel): neutral the existing arms wide, up a two-fisted chest beat with a roar face, forward a throat-slash at the opponent.
+  - New gestures are upper-body clips on the `georgeCrowdTaunt.js` pattern (lower body held from the stance, no knees authored, events drive `FaceDriver.perform` beats: babyfaces `talk`, Kowalski `talk` at the shouting row). Base fists are fine; list any hand art a gesture really needs as an art order instead of waiting on it.
+- **T-E3 Tests and probes:** every character has ≥ 2 distinct taunts; every slot resolves; direction → taunt routing per facing; the AI never plays a slot the wrestler lacks; root and ankle motion during each gesture; no positive `lKnee`.
+- **Gate GE:** one page: every wrestler's taunts, both facings, normal-speed loop strip plus stills, with the input that plays each. STOP for Derek.
+
+Progress:

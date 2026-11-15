@@ -1,5 +1,5 @@
 import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
-import { georgeCrowdTauntClip, georgeSuperiorityClip } from './animation/clips/georgeCrowdTaunt.js';
+import { georgeCrowdTauntClip, georgeSuperiorityClip, georgeHairCheckClip } from './animation/clips/georgeCrowdTaunt.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
@@ -50,6 +50,8 @@ const SPEED      = 140;
 // easePhase: the stride phase over which he slows into the last step; minSpeed keeps him moving until he is on it.
 // PLAN_GEORGE_PERFORMANCE: the share of George's struts that go on into the crowd taunt (?georgePerformance=1)
 const GEORGE_CROWD_CHANCE = 0.5;
+// and the share of his taunts (the other man up) that are the hair check instead of the strut
+const GEORGE_HAIR_CHANCE = 0.35;
 const STRUT = { speed: 70, walk: 1.6, settle: 0.35, ease: 0.25, armSwing: 0.35, minRoom: 70, phase0: Math.PI, easePhase: 1.2, minSpeed: 0.15 };
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
@@ -3762,6 +3764,11 @@ export default class Wrestler {
             this._doSuperiority(other);
             return;
         }
+        // PLAN_GEORGE_PERFORMANCE C: otherwise, now and then, he sees to his hair instead of strutting
+        if (georgePerformanceCandidate() && this.rigId?.startsWith('george') && this.scene.moveRuntime && Math.random() < GEORGE_HAIR_CHANCE) {
+            this._doHairCheck();
+            return;
+        }
         // Flair's strut: four hunched, stalking steps forward.
         if (this.struts && lightCandidate()) { this._startStrut(); return; }
         if (this.struts) {
@@ -3876,6 +3883,18 @@ export default class Wrestler {
             },
             onCancel: done,
         });
+    }
+
+    // PLAN_GEORGE_PERFORMANCE C (?light=v1&georgePerformance=1): the far hand to the back of his hair, one stroke, a look at his fingers and a
+    // resentful glance (georgeHairCheckClip). His wear stage (the face's) sets the rhythm; battered, he breaks off. The hair does not heal.
+    _doHairCheck() {
+        const runtime = this.scene.moveRuntime;
+        this.state = 'taunting';
+        const l = this.skeleton.lChannelSide(this.facing);
+        const clip = georgeHairCheckClip({ ...this.pose }, POSES[this.idlePose] ?? POSES.idle,
+            { lSlot: `${l}Forearm`, rSlot: `${l === 'near' ? 'far' : 'near'}Forearm`, stage: this.face?.state.stage ?? 0 });
+        runtime.register(clip);
+        this._playPerformance(clip);
     }
 
     // PLAN_GEORGE_PERFORMANCE A (?light=v1&georgePerformance=1): standing still after the strut, he presents himself, waits for applause,

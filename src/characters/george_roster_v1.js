@@ -300,6 +300,24 @@ export const georgeRosterV1 = {
             "dismiss": {
                 "key": "george_rv1_forearm_dismiss",
                 "file": "forearm_dismiss.png"
+            },
+            "chestTouch": {
+                "key": "george_rv1_forearm_chest_touch",
+                "file": "forearm_chest_touch.png"
+            },
+            "hairSmooth": {
+                "key": "george_rv1_forearm_hair_smooth",
+                "file": "forearm_hair_smooth.png",
+                "semanticAnchors": {
+                    "hairContact": {
+                        "u": 0.5727699530516432,
+                        "v": 0.7562642369020501
+                    }
+                }
+            },
+            "inspect": {
+                "key": "george_rv1_forearm_inspect",
+                "file": "forearm_inspect.png"
             }
         }
     }

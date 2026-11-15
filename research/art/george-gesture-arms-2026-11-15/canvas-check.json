@@ -52,5 +52,91 @@
       -12
     ],
     "note": "No semantic contact anchor requested for these two gestures; on-body review pending."
+  },
+  "chestTouch": {
+    "file": "forearm_chestTouch-v1.png",
+    "canvas": [
+      426,
+      439
+    ],
+    "originalPixelsPreservedThroughRow": 233,
+    "jointPivotFrac": 0.1559,
+    "distalAnchorFrac": {
+      "u": 0.501,
+      "v": 0.5298
+    },
+    "semanticAnchors": {},
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sourceSize": [
+      1236,
+      1273
+    ],
+    "wholeCanvasTranslation": [
+      5,
+      -12
+    ],
+    "note": "Art candidate; on-body review pending."
+  },
+  "hairSmooth": {
+    "file": "forearm_hairSmooth-v1.png",
+    "canvas": [
+      426,
+      439
+    ],
+    "originalPixelsPreservedThroughRow": 233,
+    "jointPivotFrac": 0.1559,
+    "distalAnchorFrac": {
+      "u": 0.501,
+      "v": 0.5298
+    },
+    "semanticAnchors": {
+      "hairContact": {
+        "u": 0.5727699530516432,
+        "v": 0.7562642369020501
+      }
+    },
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sourceSize": [
+      1236,
+      1273
+    ],
+    "wholeCanvasTranslation": [
+      5,
+      -12
+    ],
+    "note": "Far-arm hair smoothing; hairContact measured separately on packaged art in semantic-anchors.json. Forearm length unchanged; original face-overlap concern requires in-game review."
+  },
+  "inspect": {
+    "file": "forearm_inspect-v1.png",
+    "canvas": [
+      426,
+      439
+    ],
+    "originalPixelsPreservedThroughRow": 233,
+    "jointPivotFrac": 0.1559,
+    "distalAnchorFrac": {
+      "u": 0.501,
+      "v": 0.5298
+    },
+    "semanticAnchors": {},
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sourceSize": [
+      1236,
+      1273
+    ],
+    "wholeCanvasTranslation": [
+      5,
+      -12
+    ],
+    "note": "Art candidate; on-body review pending."
   }
 }

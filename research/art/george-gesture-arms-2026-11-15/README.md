@@ -22,3 +22,15 @@ Generation used only `references/forearm.png`, `references/forearm_grip.png`, an
 ## Review
 
 Both packaged candidates visually inspected, real alpha and exact canvas checked, source elbow/forearm byte equality through row 233 verified. Derek still needs to judge the open palm and dismissive gesture in game. Inspect wrist transition, hand proportion, palm direction and paint overlap across the complete gesture in both facings. These are candidate hand drawings, not a claim of an already certified gesture. Claude owns registration and wiring.
+
+## Second delivery: chestTouch, hairSmooth, inspect
+
+- `forearm_chestTouch-v1.png`: near-arm flat/together fingers for offended upper-chest touch.
+- `forearm_hairSmooth-v1.png`: **far-arm** gently curved together fingers for crown smoothing. Contact anchor is on the delivered canvas at pixel **(244, 332)**: `hairContact = {u: 244/426, v: 332/439}`. Exact normalized values and pixel coordinates are in `semantic-anchors.json`, and copied into `canvas-check.json`.
+- `forearm_inspect-v1.png`: near-arm visible palm with slightly spread fingers, drawn straight in local source orientation so runtime can rotate it in front of the chin.
+
+All three use the same full-canvas packaging and original pixel preservation through row 233. Prompts, references and generated originals are recorded in `generation-manifest-next.json`; generated sources preserved in `generated/`. The first inspect generation bent the forearm and was rejected; its original path/reason is recorded separately, not delivered as a variant.
+
+The hair-contact anchor is the centre of the curved distal finger-pad area, not the wrist or back of the hand. It is an art landmark, not proof of hair contact under the current pose. Original forearm length remains unchanged. The previously reported far-forearm overlap in front of the face is a staging/depth issue this hand replacement cannot certify away; check the full path in both facings. If overlap persists, evaluate a revised path/depth first; a shorter/bent forearm would be a separate rig/art change. No foreshortened near-arm replacement was made.
+
+No source/runtime assets were replaced and no variant was registered or wired. Derek judges all three in game after Claude's registration. Earlier presentPalm/dismiss deliverables remain untouched.

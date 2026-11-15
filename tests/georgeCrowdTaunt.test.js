@@ -35,7 +35,7 @@ test('gesture hands: the presenting arm wears the open palm through the presenta
     const { existsSync } = await import('node:fs');
     const { georgeRosterV1 } = await import('../src/characters/george_roster_v1.js');
     const { georgeSuperiorityClip } = await import('../src/animation/clips/georgeCrowdTaunt.js');
-    for (const name of ['presentPalm', 'dismiss']) {
+    for (const name of ['presentPalm', 'dismiss', 'chestTouch', 'hairSmooth', 'inspect']) {
         const v = georgeRosterV1.textures.variants.forearm[name];
         assert.ok(v && existsSync(`src/assets/wrestlers/george-roster-v1/${v.file}`), name);
     }
@@ -44,10 +44,28 @@ test('gesture hands: the presenting arm wears the open palm through the presenta
     assert.equal(hand(a, 0), 'base');
     assert.equal(hand(a, t.present), 'presentPalm');
     assert.equal(hand(a, t.holdEnd), 'presentPalm');
+    assert.equal(hand(a, t.recoil), 'chestTouch');
     assert.equal(hand(a, t.sweepMid), 'dismiss');
     assert.equal(hand(a, t.end), 'base');
     assert.deepEqual(validateClip(a), { ok: true, errors: [] });
     const b = georgeSuperiorityClip(stance, stance, { lSlot: 'farForearm' });
     assert.equal(b.tracks.attacker.keyframes.at(-1).parts.farForearm, 'base');
     assert.ok(!georgeCrowdTauntClip(stance).tracks.attacker.keyframes.some(k => k.parts), 'no slot given: no art swap');
+});
+
+test('hair check: valid at every wear stage, far hand smooths and near hand inspects, quicker when worn, battered breaks off, lower body held', async () => {
+    const { georgeHairCheckClip } = await import('../src/animation/clips/georgeCrowdTaunt.js');
+    const clips = [0, 1, 2].map(stage => georgeHairCheckClip(stance, stance, { lSlot: 'nearForearm', rSlot: 'farForearm', stage }));
+    for (const c of clips) {
+        assert.deepEqual(validateClip(c), { ok: true, errors: [] });
+        for (const k of c.tracks.attacker.keyframes) for (const ch of ['lLeg', 'rLeg', 'crouch', 'lKnee', 'rKnee']) assert.equal(k.pose[ch], stance[ch]);
+        const ks = c.tracks.attacker.keyframes;
+        assert.equal(ks[1].parts.farForearm, 'hairSmooth');
+        assert.deepEqual(ks.at(-1).parts, { nearForearm: 'base', farForearm: 'base' });
+    }
+    assert.ok(clips[0].duration >= 1.5 && clips[0].duration <= 1.9, `${clips[0].duration}`);
+    assert.ok(clips[1].duration < clips[0].duration, 'disheveled is quicker');
+    assert.ok(clips[0].tracks.attacker.keyframes.some(k => k.parts.nearForearm === 'inspect'));
+    assert.ok(!clips[2].tracks.attacker.keyframes.some(k => k.parts.nearForearm === 'inspect'), 'battered breaks off before looking at his hand');
+    assert.ok(clips[2].events.some(e => e.type === 'abort'));
 });

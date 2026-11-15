@@ -2,11 +2,15 @@
 from pathlib import Path
 from PIL import Image
 import json
+import sys
 P=Path(__file__).parent
 base=Image.open(P/'references/forearm.png').convert('RGBA')
 assert base.size==(426,439)
-report={}
-for name in ['presentPalm','dismiss']:
+report_path=P/'canvas-check.json'
+report=json.loads(report_path.read_text()) if report_path.exists() else {}
+names=sys.argv[1:] or ['presentPalm','dismiss']
+for name in names:
+    assert name in ['presentPalm','dismiss','chestTouch','hairSmooth','inspect']
     # Scale the entire generated canvas, never its alpha bounding box.
     generated=Image.open(P/f'generated/{name}-source-v1.png').convert('RGBA')
     full=generated.resize(base.size,Image.Resampling.LANCZOS)
@@ -27,6 +31,11 @@ for name in ['presentPalm','dismiss']:
         'jointPivotFrac':.1559,'distalAnchorFrac':{'u':.5010,'v':.5298},
         'semanticAnchors':{},'alphaExtrema':list(out.getchannel('A').getextrema()),
         'sourceSize':list(generated.size),'wholeCanvasTranslation':[5,-12],
-        'note':'No semantic contact anchor requested for these two gestures; on-body review pending.'}
+        'note':'Art candidate; on-body review pending.'}
+    if name=='hairSmooth':
+        report[name]['note']='Far-arm hair smoothing; hairContact measured separately on packaged art in semantic-anchors.json. Forearm length unchanged; original face-overlap concern requires in-game review.'
+        anchor_path=P/'semantic-anchors.json'
+        if anchor_path.exists():
+            report[name]['semanticAnchors']=json.loads(anchor_path.read_text())['hairSmooth']['semanticAnchors']
 (P/'canvas-check.json').write_text(json.dumps(report,indent=2)+'\n')
-print('Two 426x439 RGBA variants; original elbow/forearm pixels unchanged through wrist row 233.')
+print(f'{len(names)} 426x439 RGBA variants; original elbow/forearm pixels unchanged through wrist row 233.')

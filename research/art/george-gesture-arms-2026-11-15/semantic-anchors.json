@@ -1,0 +1,23 @@
+{
+  "hairSmooth": {
+    "file": "forearm_hairSmooth-v1.png",
+    "arm": "far",
+    "canvas": [
+      426,
+      439
+    ],
+    "anchorPixels": {
+      "hairContact": {
+        "x": 244,
+        "y": 332
+      }
+    },
+    "semanticAnchors": {
+      "hairContact": {
+        "u": 0.5727699530516432,
+        "v": 0.7562642369020501
+      }
+    },
+    "meaning": "Centre of the curved distal finger-pad contact area on the delivered canvas; drawn hand contact candidate, not a calibrated on-hair runtime target."
+  }
+}

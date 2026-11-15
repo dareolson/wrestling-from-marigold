@@ -5,19 +5,20 @@
 import { chromium } from 'playwright-core';
 const URL = process.env.WFM_URL ?? 'http://localhost:5197', HIT = process.env.HIT ? +process.env.HIT : null;
 // SUPERIOR=1: Lou is down a step away, so the taunt is B (georgeSuperiority) instead of the strut
-const SUPERIOR = !!process.env.SUPERIOR, CLIP = SUPERIOR ? 'georgeSuperiority' : 'georgeCrowdTaunt';
+// HAIR=1: the hair check (C)
+const SUPERIOR = !!process.env.SUPERIOR, HAIR = !!process.env.HAIR, CLIP = SUPERIOR ? 'georgeSuperiority' : HAIR ? 'georgeHairCheck' : 'georgeCrowdTaunt';
 const [out = '', facingArg = '1', wearArg = '0'] = process.argv.slice(2), facing = +facingArg;
 const b = await chromium.launch({ channel: 'chrome' });
 const p = await b.newPage({ viewport: { width: 1100, height: 700 }, deviceScaleFactor: 2 });
 const errors = []; p.on('pageerror', e => errors.push(e.message));
 await p.goto(`${URL}/?arena=1&notitle=1&light=v1&georgePerformance=1&p1=george-roster-v1&p2=thesz-procreate-v1`);
 await p.waitForFunction(() => window.__WFM_GAME?.scene.scenes[0]?.w2);
-await p.evaluate(({ facing, wear, superior }) => { const g = window.__WFM_GAME, sc = g.scene.scenes[0]; g.loop.sleep(); sc._p1AI = sc._p2AI = null; sc.tweens.getDelta = () => 1000 / 60; window.__T = sc.time.now;
+await p.evaluate(({ facing, wear, superior, hair }) => { const g = window.__WFM_GAME, sc = g.scene.scenes[0]; g.loop.sleep(); sc._p1AI = sc._p2AI = null; sc.tweens.getDelta = () => 1000 / 60; window.__T = sc.time.now;
   const A = sc.w1, D = sc.w2; A.x = 440; D.x = 440 + facing * 330; A.y = D.y = 380; A.facing = facing;
   window.__step = () => { window.__T += 1000 / 60; g.step(window.__T, 1000 / 60); };
   for (let i = 0; i < 30; i++) window.__step(); if (wear) A._damage(wear); for (let i = 0; i < 120; i++) window.__step(); A.stamina = 100;
-  if (superior) { D.x = A.x + facing * 120; D.state = 'down'; D.lying = 'supine'; D.stateTimer = 99; window.__step(); } else Math.random = () => 0;   // always the crowd taunt after the strut
-  A._doTaunt(); }, { facing, wear: +wearArg, superior: SUPERIOR });
+  if (superior) { D.x = A.x + facing * 120; D.state = 'down'; D.lying = 'supine'; D.stateTimer = 99; window.__step(); } else Math.random = () => (hair ? 0 : 0.4);   // 0: the hair check; 0.4: no hair check, then the crowd taunt after the strut
+  A._doTaunt(); }, { facing, wear: +wearArg, superior: SUPERIOR, hair: HAIR });
 const rows = []; let t0 = null, f = 0;
 for (; f < 600; f++) {
   const r = await p.evaluate((hitNow) => { window.__step(); const sc = window.__WFM_GAME.scene.scenes[0], A = sc.w1, P = A.skeleton.jointAttachmentPoints ?? {};
@@ -27,7 +28,7 @@ for (; f < 600; f++) {
   if (t0 === null && r.clip === CLIP) t0 = f;
   if (out && t0 !== null && (f - t0) % 12 === 0 && f - t0 <= 168) {
     const bb = await p.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0], A = sc.w1, c = sc.game.canvas.getBoundingClientRect(), k = c.width / sc.scale.width; return { x: c.left + (A.x - 95) * k, y: c.top + (A.y - 215) * k, width: 190 * k, height: 225 * k }; });
-    await p.screenshot({ path: `${out}/${SUPERIOR ? 'superior' : 'crowd'}_${facing > 0 ? 'R' : 'L'}_w${wearArg}_${String(f - t0).padStart(3, '0')}.png`, clip: bb });
+    await p.screenshot({ path: `${out}/${SUPERIOR ? 'superior' : HAIR ? 'hair' : 'crowd'}_${facing > 0 ? 'R' : 'L'}_w${wearArg}_${String(f - t0).padStart(3, '0')}.png`, clip: bb });
   }
   if (t0 !== null && r.st === 'standing' && !r.clip) break;
 }

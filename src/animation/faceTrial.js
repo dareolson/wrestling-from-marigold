@@ -65,6 +65,10 @@ export class FaceDriver {
             reject:  { family: 'talk', mouths: [0], ms: 250 },                    // offended
             dismiss: { family: 'talk', mouths: [1, 2, 1, 0], ms: 450 },           // one short burst at the crowd
             superior: { family: 'smug', mouths: [0, 1, 1, 1], ms: 700 },          // the self-satisfied grin over the man on the mat
+            hairTouch: { family: 'smug', mouths: [0], ms: 300 },                  // preening
+            inspect: { family: 'talk', mouths: [0], ms: 300 },                    // what has this done to my hair
+            resent:  { family: 'talk', mouths: [0, 1, 0], ms: 400 },              // a resentful word at the opponent
+            abort:   { family: 'talk', mouths: [1, 2, 1, 0], ms: 450 },           // battered: gives up on it, snarling
             release: null,
         };
         if (!(beat in BEATS)) return;

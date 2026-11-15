@@ -1,0 +1,25 @@
+{
+  "artOnly": true,
+  "assets": [
+    {
+      "name": "chestTouch",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-fdb40a1a-5370-4e4e-a6f2-2314da2f21fc.png",
+      "prompt": "Edit INPUT1 CURRENT George forearm.png into chestTouch forearm-with-baked-hand variant. INPUT2 grip variant confirms original skin/line weight/elbow cap. INPUT3 contextual posed screenshot ONLY; DO NOT draw body or rotate sprite like screenshot. One isolated forearm in ORIGINAL LOCAL SOURCE ORIENTATION, elbow at top hand below, full 426x439 transparent canvas with original empty margins. No tight crop/enlargement. Elbow and forearm through wrist stay unchanged: identical silhouette, shading, skin, length and placement. Wrist approximately (213,233), elbow pivot y .1559*439, distalAnchorFrac (.5010,.5298). Change ONLY wrist/hand below wrist. Near hand pressing fingertips/flat palm toward his OWN UPPER CHEST in offended recoil: how dare you. Fingers together, gently bent against chest, thumb relaxed. Show flatter slender hand, finger pads oriented inward toward chest when rotated 66 degrees above horizontal. Not a fist or palm-up offer. Five coherent digits, proportional original hand size, no added muscles. Match thin black ink, pale peach skin, sparse warm shadows. Smooth UNOUTLINED elbow cap. No torso, labels, drawn anchors, grid, paint residue or other objects. Actual transparency, opaque interior, whole arm inside canvas."
+    },
+    {
+      "name": "hairSmooth",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-47e03a0c-059e-4a58-aecb-17535695eae9.png",
+      "prompt": "Edit INPUT1 CURRENT George forearm.png into hairSmooth forearm-with-baked-hand variant. INPUT2 grip variant confirms original skin/line weight/elbow cap. INPUT3 contextual posed screenshot ONLY; DO NOT draw body or rotate sprite like screenshot. One isolated forearm in ORIGINAL LOCAL SOURCE ORIENTATION, elbow at top hand below, full 426x439 transparent canvas with original empty margins. No tight crop/enlargement. Elbow and forearm through wrist stay unchanged: identical silhouette, shading, skin, length and placement. Wrist approximately (213,233), elbow pivot y .1559*439, distalAnchorFrac (.5010,.5298). Change ONLY wrist/hand below wrist. FAR ARM hair-smoothing hand. Open fingers TOGETHER, gently CURVED to lie over crown: low flattened shallow arc, not upright fingers. Finger pads contact hair; back of hand faces viewer, thumb relaxed alongside. When sprite rotates onto far forearm behind head at -144 degrees from forward, wrist bends hand over crown, not poking above it. Normal unchanged forearm length, no foreshortened upper arm or shorter/bent forearm. Clearly defined contiguous finger-pad contact area for hairContact anchor. Five coherent digits, proportional original hand size, no added muscles. Match thin black ink, pale peach skin, sparse warm shadows. Smooth UNOUTLINED elbow cap. No torso, labels, drawn anchors, grid, paint residue or other objects. Actual transparency, opaque interior, whole arm inside canvas."
+    },
+    {
+      "name": "inspect",
+      "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-37fe8499-23b1-4f22-8b91-f7fabdc99494.png",
+      "prompt": "Edit this exact straight downward forearm sprite ONLY BELOW THE WRIST at source pixel (213,233) on 426x439 full canvas. Make an INSPECTING OPEN PALM with slightly separated fingers. CRITICAL: FOREARM MUST REMAIN STRAIGHT VERTICAL from rounded elbow at top to wrist below. All five fingers extend DOWNWARD below the wrist, NOT upward back alongside forearm. Do not draw bent arm, elbow bend, hook shape, bent forearm or U shape. Show palm surface facing viewer, four fingers pointing down with small natural gaps, thumb on right relaxed and apart. The rig will rotate this whole sprite to place hand in front of George's face, do NOT draw the posed arm position. Preserve exact upper forearm silhouette, position, length, skin tone, thin black outline, unoutlined elbow cap and shading. No change above wrist; only hand and gentle wrist angle below it. Same canvas and margins, transparent background. One straight forearm with one hand, no torso, labels or debris. Natural proportional human hand, not starburst fingers."
+    }
+  ],
+  "rejected": {
+    "name": "inspect",
+    "original": "/Users/home/.codex/generated_images/01a1cec4-a88a-7593-8aee-05fccbb73a0f/exec-81ada7e5-ccb0-454c-8cd6-505c751bebc7.png",
+    "reason": "Bent the entire forearm, violating straight original source canvas; not delivered."
+  }
+}

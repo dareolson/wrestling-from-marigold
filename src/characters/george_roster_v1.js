@@ -292,6 +292,14 @@ export const georgeRosterV1 = {
                         "v": 0.7558086560364465
                     }
                 }
+            },
+            "presentPalm": {
+                "key": "george_rv1_forearm_present_palm",
+                "file": "forearm_present_palm.png"
+            },
+            "dismiss": {
+                "key": "george_rv1_forearm_dismiss",
+                "file": "forearm_dismiss.png"
             }
         }
     }

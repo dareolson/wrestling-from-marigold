@@ -1,0 +1,56 @@
+{
+  "presentPalm": {
+    "file": "forearm_presentPalm-v1.png",
+    "canvas": [
+      426,
+      439
+    ],
+    "originalPixelsPreservedThroughRow": 233,
+    "jointPivotFrac": 0.1559,
+    "distalAnchorFrac": {
+      "u": 0.501,
+      "v": 0.5298
+    },
+    "semanticAnchors": {},
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sourceSize": [
+      1236,
+      1273
+    ],
+    "wholeCanvasTranslation": [
+      5,
+      -12
+    ],
+    "note": "No semantic contact anchor requested for these two gestures; on-body review pending."
+  },
+  "dismiss": {
+    "file": "forearm_dismiss-v1.png",
+    "canvas": [
+      426,
+      439
+    ],
+    "originalPixelsPreservedThroughRow": 233,
+    "jointPivotFrac": 0.1559,
+    "distalAnchorFrac": {
+      "u": 0.501,
+      "v": 0.5298
+    },
+    "semanticAnchors": {},
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sourceSize": [
+      1236,
+      1273
+    ],
+    "wholeCanvasTranslation": [
+      5,
+      -12
+    ],
+    "note": "No semantic contact anchor requested for these two gestures; on-body review pending."
+  }
+}

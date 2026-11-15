@@ -22,7 +22,7 @@ const rows = []; let t0 = null, f = 0;
 for (; f < 600; f++) {
   const r = await p.evaluate((hitNow) => { window.__step(); const sc = window.__WFM_GAME.scene.scenes[0], A = sc.w1, P = A.skeleton.jointAttachmentPoints ?? {};
     if (hitNow) { A._hurt(6, 'jab'); A._doSell('sellChest', 150, () => { A.state = 'standing'; }); }
-    return { x: +A.x.toFixed(2), st: A.state, clip: A._activeMove?.clip?.id ?? null, face: A.face?.key, nA: P.nearAnkle && [+P.nearAnkle.x.toFixed(1), +P.nearAnkle.y.toFixed(1)], fA: P.farAnkle && [+P.farAnkle.x.toFixed(1), +P.farAnkle.y.toFixed(1)], lock: A._facingLock, now: sc.time.now }; }, HIT !== null && t0 !== null && f - t0 === Math.round(HIT * 60));
+    return { x: +A.x.toFixed(2), st: A.state, clip: A._activeMove?.clip?.id ?? null, face: A.face?.key, hands: `${A.skeleton.nearForearm.texture.key.replace('george_rv1_', '')}|${A.skeleton.farForearm.texture.key.replace('george_rv1_', '')}`, nA: P.nearAnkle && [+P.nearAnkle.x.toFixed(1), +P.nearAnkle.y.toFixed(1)], fA: P.farAnkle && [+P.farAnkle.x.toFixed(1), +P.farAnkle.y.toFixed(1)], lock: A._facingLock, now: sc.time.now }; }, HIT !== null && t0 !== null && f - t0 === Math.round(HIT * 60));
   rows.push(r);
   if (t0 === null && r.clip === CLIP) t0 = f;
   if (out && t0 !== null && (f - t0) % 12 === 0 && f - t0 <= 168) {
@@ -34,10 +34,11 @@ for (; f < 600; f++) {
 const taunt = rows.slice(t0 ?? 0).filter(r => r.clip === CLIP);
 let ankle = 0; for (let i = 1; i < taunt.length; i++) for (const k of ['nA', 'fA']) if (taunt[i][k] && taunt[i - 1][k]) ankle = Math.max(ankle, Math.hypot(taunt[i][k][0] - taunt[i - 1][k][0], taunt[i][k][1] - taunt[i - 1][k][1]));
 const faces = []; for (const r of rows.slice(t0 ?? 0)) if (r.face !== faces.at(-1)) faces.push(r.face);
+const hands = []; for (const r of rows.slice(t0 ?? 0)) if (r.hands !== hands.at(-1)?.h) hands.push({ h: r.hands, f: rows.indexOf(r) - (t0 ?? 0) });
 // the hand-back to idle after the clip: ankle jump on the first frames out of it
 const after = rows.slice((t0 ?? 0) + taunt.length - 1, (t0 ?? 0) + taunt.length + 10);
 let handback = 0; for (let i = 1; i < after.length; i++) for (const k of ['nA', 'fA']) if (after[i][k] && after[i - 1][k]) handback = Math.max(handback, Math.hypot(after[i][k][0] - after[i - 1][k][0], after[i][k][1] - after[i - 1][k][1]));
 // the largest one-frame ankle move over the whole run (strut, hand-over into the taunt, taunt, hand-back), with where it happened
 let worst = { px: 0, f: -1, clip: null }; for (let i = 1; i < rows.length; i++) for (const k of ['nA', 'fA']) if (rows[i][k] && rows[i - 1][k]) { const d = Math.hypot(rows[i][k][0] - rows[i - 1][k][0], rows[i][k][1] - rows[i - 1][k][1]); if (d > worst.px) worst = { px: +d.toFixed(1), f: i - (t0 ?? 0), clip: rows[i].clip, st: rows[i].st }; }
-console.log(JSON.stringify({ facing, worstAnkleJump: worst, wear: +wearArg, hit: HIT, tauntStarted: t0 !== null, tauntFrames: taunt.length, rootDriftPx: taunt.length ? +Math.abs(taunt.at(-1).x - taunt[0].x).toFixed(2) : null, ankleMaxPxPerFrame: +ankle.toFixed(2), handbackAnklePx: +handback.toFixed(1), endState: rows.at(-1).st, endFacingLock: rows.at(-1).lock, endClip: rows.at(-1).clip, faces, errors }));
+console.log(JSON.stringify({ facing, worstAnkleJump: worst, wear: +wearArg, hit: HIT, tauntStarted: t0 !== null, tauntFrames: taunt.length, rootDriftPx: taunt.length ? +Math.abs(taunt.at(-1).x - taunt[0].x).toFixed(2) : null, ankleMaxPxPerFrame: +ankle.toFixed(2), handbackAnklePx: +handback.toFixed(1), endState: rows.at(-1).st, endFacingLock: rows.at(-1).lock, endClip: rows.at(-1).clip, hands, faces, errors }));
 await b.close();

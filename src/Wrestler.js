@@ -3859,7 +3859,7 @@ export default class Wrestler {
         const runtime = this.scene.moveRuntime;
         this.state = 'taunting';
         this.facing = Math.sign(other.x - this.x) || this.facing;
-        const clip = georgeSuperiorityClip({ ...this.pose }, POSES[this.idlePose] ?? POSES.idle);
+        const clip = georgeSuperiorityClip({ ...this.pose }, POSES[this.idlePose] ?? POSES.idle, { lSlot: `${this.skeleton.lChannelSide(this.facing)}Forearm` });
         runtime.register(clip);
         this._playPerformance(clip);
     }
@@ -3884,7 +3884,7 @@ export default class Wrestler {
     _doCrowdTaunt() {
         const runtime = this.scene.moveRuntime;
         this.state = 'taunting';
-        const clip = georgeCrowdTauntClip({ ...this.pose }, POSES[this.idlePose] ?? POSES.idle);
+        const clip = georgeCrowdTauntClip({ ...this.pose }, POSES[this.idlePose] ?? POSES.idle, { lSlot: `${this.skeleton.lChannelSide(this.facing)}Forearm` });
         runtime.register(clip);
         this._playPerformance(clip);
     }

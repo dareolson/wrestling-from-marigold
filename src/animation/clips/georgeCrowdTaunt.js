@@ -33,44 +33,48 @@ export const SUPERIORITY = {
 
 const UPPER = ['lArm', 'rArm', 'lElbow', 'rElbow', 'lean', 'bend'];
 
-// `stance`: the pose he is in when it starts (his own idle after the strut). Its lower body is held on every key; the first key is the stance
-// itself and the last returns the upper body to `idle` (his idlePose, so tweening on to it afterwards is a no-op).
-export function georgeCrowdTauntClip(stance, idle = stance, spec = CROWD_TAUNT) {
-    const t = spec.times;
+// The hand the l-channel arm (the presenting / dismissing arm) wears from each key on: George's forearm variants (Codex 2026-11-15:
+// presentPalm, dismiss; george_roster_v1.js). Art swaps are discrete, so each is set on the key the motion starts from. `lSlot` is the
+// forearm slot the l channels draw at this facing (Skeleton.lChannelSide); the other forearm stays on its base art.
+const CROWD_HANDS = { settle: 'presentPalm', present: 'presentPalm', hold: 'presentPalm', recoil: 'dismiss', sweepMid: 'dismiss', sweep: 'dismiss' };
+const SUPERIORITY_HANDS = { lift: 'presentPalm', present: 'presentPalm', hold: 'presentPalm' };
+
+function builder(stance, lSlot) {
     const lower = Object.fromEntries(Object.entries(stance).filter(([k, v]) => Number.isFinite(v) && !UPPER.includes(k) && !['tilt', 'lift'].includes(k)));
     const upperOf = p => Object.fromEntries(UPPER.map(k => [k, Number.isFinite(p[k]) ? p[k] : (k.endsWith('Elbow') ? 0.7 : 0)]));
-    const key = (at, upper, ease = 'easeInOut') => ({ at, ease, pose: { ...lower, ...upper } });
+    const key = (at, upper, hand = 'base', ease = 'easeInOut') => ({ at, ease, pose: { ...lower, ...upper }, ...(lSlot ? { parts: { [lSlot]: hand } } : {}) });
+    return { upperOf, key };
+}
+
+// `stance`: the pose he is in when it starts (his own idle after the strut). Its lower body is held on every key; the first key is the stance
+// itself and the last returns the upper body to `idle` (his idlePose, so tweening on to it afterwards is a no-op).
+export function georgeCrowdTauntClip(stance, idle = stance, { lSlot = null, spec = CROWD_TAUNT, hands = CROWD_HANDS } = {}) {
+    const t = spec.times, { upperOf, key } = builder(stance, lSlot), k = (n, at = t[n]) => key(at, spec.keys[n], hands[n], n === 'hold' ? 'linear' : n === 'recoil' || n === 'sweep' ? 'easeOut' : 'easeInOut');
     return {
         id: 'georgeCrowdTaunt',
         duration: t.end,
         events: [{ at: t.settle, type: 'present' }, { at: t.holdEnd, type: 'reject' }, { at: t.recoil, type: 'dismiss' }, { at: t.sweep, type: 'release' }],
         tracks: { attacker: { keyframes: [
             key(0, upperOf(stance)),
-            key(t.settle, spec.keys.settle),
-            key(t.present, spec.keys.present),
-            key(t.holdEnd, spec.keys.hold, 'linear'),
-            key(t.recoil, spec.keys.recoil, 'easeOut'),
-            key(t.sweepMid, spec.keys.sweepMid),
-            key(t.sweep, spec.keys.sweep, 'easeOut'),
+            k('settle'), k('present'),
+            k('hold', t.holdEnd),
+            k('recoil'), k('sweepMid'), k('sweep'),
             key(t.end, upperOf(idle)),
         ] } },
     };
 }
 
-export function georgeSuperiorityClip(stance, idle = stance, spec = SUPERIORITY) {
-    const t = spec.times;
-    const lower = Object.fromEntries(Object.entries(stance).filter(([k, v]) => Number.isFinite(v) && !UPPER.includes(k) && !['tilt', 'lift'].includes(k)));
-    const upperOf = p => Object.fromEntries(UPPER.map(k => [k, Number.isFinite(p[k]) ? p[k] : (k.endsWith('Elbow') ? 0.7 : 0)]));
-    const key = (at, upper, ease = 'easeInOut') => ({ at, ease, pose: { ...lower, ...upper } });
+export function georgeSuperiorityClip(stance, idle = stance, { lSlot = null, spec = SUPERIORITY, hands = SUPERIORITY_HANDS } = {}) {
+    const t = spec.times, { upperOf, key } = builder(stance, lSlot);
     return {
         id: 'georgeSuperiority',
         duration: t.end,
         events: [{ at: 0.05, type: 'superior' }, { at: t.holdEnd, type: 'release' }],   // the runtime does not fire an event at 0
         tracks: { attacker: { keyframes: [
             key(0, upperOf(stance)),
-            key(t.lift, spec.keys.lift),
-            key(t.present, spec.keys.present, 'easeOut'),
-            key(t.holdEnd, spec.keys.hold, 'linear'),
+            key(t.lift, spec.keys.lift, hands.lift),
+            key(t.present, spec.keys.present, hands.present, 'easeOut'),
+            key(t.holdEnd, spec.keys.hold, hands.hold, 'linear'),
             key(t.end, upperOf(idle)),
         ] } },
     };

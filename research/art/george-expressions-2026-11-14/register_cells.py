@@ -2,17 +2,20 @@
 # (279x319, same headScale/anchor), so a cell can replace the head texture in game with no other change.
 # Per cell: keep the largest opaque blob (drops the generated debris under the neck), then a scale + offset
 # search that best overlaps the cell's skin with the production head's skin (hair is ignored: it changes with wear).
-#   python3 research/art/george-expressions-2026-11-14/register_cells.py
-import json, os
+#   python3 research/art/george-expressions-2026-11-14/register_cells.py [rigId artDir namePrefix]
+# Another wrestler: e.g. `guido-roster-v1 research/art/guido-expressions-<date> guido` reads <prefix>-expression-atlas-v1.png,
+# <prefix>-pain-atlas-v1.png, <prefix>-smug-atlas-v1.png, <prefix>-rest-disheveled-v1.png, <prefix>-rest-battered-v1.png from artDir.
+import json, os, sys
 import cv2
 import numpy as np
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.abspath(os.path.join(HERE, '../../..'))
-BASE = os.path.join(ROOT, 'src/assets/wrestlers/george-roster-v1/head.png')
-OUT = os.path.join(ROOT, 'src/assets/wrestlers/george-roster-v1/expressions-trial')
-REST = {'rest_1': 'george-rest-disheveled-v1.png', 'rest_2': 'george-rest-battered-v1.png'}
-ATLASES = {'talk': 'george-expression-atlas-v1.png', 'pain': 'george-pain-atlas-v1.png', 'smug': 'george-smug-atlas-v1.png'}
+ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../..'))
+RIG, ART, NAME = sys.argv[1:4] if len(sys.argv) >= 4 else ('george-roster-v1', 'research/art/george-expressions-2026-11-14', 'george')
+HERE = os.path.join(ROOT, ART)
+BASE = os.path.join(ROOT, f'src/assets/wrestlers/{RIG}/head.png')
+OUT = os.path.join(ROOT, f'src/assets/wrestlers/{RIG}/expressions-trial')
+REST = {'rest_1': f'{NAME}-rest-disheveled-v1.png', 'rest_2': f'{NAME}-rest-battered-v1.png'}
+ATLASES = {'talk': f'{NAME}-expression-atlas-v1.png', 'pain': f'{NAME}-pain-atlas-v1.png', 'smug': f'{NAME}-smug-atlas-v1.png'}
 
 
 def load(path):

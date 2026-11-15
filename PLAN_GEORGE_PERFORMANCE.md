@@ -95,6 +95,7 @@ Progress:
 - T-D1 27196d60: rest on the hair 0.45 s, two strokes, chest lifted, longer look; 2.6 s clean. T-D2 5163b434: `hairFixQueue.js` (6 s expiry, 8 s cooldown, safe gate 150 px / man down), one-stroke and two-try fix clips; started itself 50 ms after the stage change in the live game. A rise inside the 8 s cooldown cannot play (cooldown > expiry).
 - T-D3 d63e8972: hairReach + hairFix registered (variant `binding: null` in partVariants.js keeps the foreshortened elbow); near arm lands hairContact 1.25 px from the forelock both facings; root drift 0, ankle step 0. Misses: the hand crosses the eye/mouth for 2-4 / 3-9 frames (60 fps) on the way in and down to the chin; far-arm version kept when the art is missing.
 - GD page: [research/animation/george-performance-2026-11/gd/index.html](research/animation/george-performance-2026-11/gd/index.html) (videos and stills on disk only). STOP for Derek; no gameplay was changed beyond `?georgePerformance=1`.
+- GD APPROVED by Derek 2026-11-15 ("the hair and chop look good"). The chop arm art (2afeba6c) approved with it.
 
 ## Stage E: a taunt set per wrestler, picked by direction (Opus, 2026-11-15)
 

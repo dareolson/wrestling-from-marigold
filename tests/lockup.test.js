@@ -240,6 +240,18 @@ test('gripTarget `fore`: down the partner\'s forearm from the elbow, on the side
     assert.deepEqual(gripTarget({ ...it, fore: 0, above: 0.25 }, 'near'), { x: 100, y: 40 }, 'no fore: the old `above`');
 });
 
+test('gripTarget `limb`: his own wrist at those arm angles from his drawn bone lengths, toward his back in both facings', () => {
+    const pts = { nearShoulder: { x: 100, y: 10 }, nearElbow: { x: 100, y: 40 }, nearWrist: { x: 100, y: 60 } };
+    const at = (facing, limb, p = pts) => gripTarget({ partner: { facing, skeleton: { jointAttachmentPoints: p } }, joint: 'Shoulder', side: 'same', limb }, 'near');
+    const near = (a, b) => assert.ok(Math.hypot(a.x - b.x, a.y - b.y) < 1e-9, JSON.stringify(a));
+    near(at(1, { upper: 0, fore: Math.PI }), { x: 100, y: 20 });
+    near(at(1, { upper: Math.PI / 2, fore: Math.PI / 2 }), { x: 50, y: 10 });
+    near(at(-1, { upper: Math.PI / 2, fore: Math.PI / 2 }), { x: 150, y: 10 });
+    // A longer forearm folds the hand higher, the elbow stays where the angles put it.
+    near(at(1, { upper: 0, fore: Math.PI }, { ...pts, nearWrist: { x: 100, y: 75 } }), { x: 100, y: 5 });
+    assert.deepEqual(at(1, { upper: 0, fore: 0 }, { nearShoulder: pts.nearShoulder }), pts.nearShoulder, 'no arm drawn: the shoulder');
+});
+
 test('the attacker\'s elbow hand cups the partner\'s near (visible) forearm (r7)', () => {
     const grips = { attacker: { collar: 1, elbow: 1 }, defender: { collar: 0, elbow: 0 } };
     for (const lSide of ['near', 'far']) for (const facing of [1, -1]) {

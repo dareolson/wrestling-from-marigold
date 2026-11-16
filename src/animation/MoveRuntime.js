@@ -272,9 +272,10 @@ export default class MoveRuntime {
                 const target=gripTarget({partner,...grip.to},side);
                 if(target){const progress=windowWeight({in:grip.in,out:[handle.clip.duration,handle.clip.duration]},handle.time);at={x:start.x+(target.x-start.x)*progress,y:start.y+(target.y-start.y)*progress};reachWeight=handle.time<=grip.in[1]?1:w;}
             }
-            byRole.get(actor).push({ arm, partner, at, joint: grip.to.joint, side: grip.to.side, above: grip.to.above, offset:grip.to.offset, fore: grip.to.fore, past: grip.to.past, anchor: grip.to.anchor, palm: grip.palm, natural: grip.natural, blendFromHand:grip.blendFromHand, reverseElbow:grip.reverseElbow, w:reachWeight });
+            byRole.get(actor).push({ arm, partner, at, joint: grip.to.joint, side: grip.to.side, above: grip.to.above, offset:grip.to.offset, limb:grip.to.limb, fore: grip.to.fore, past: grip.to.past, anchor: grip.to.anchor, palm: grip.palm, natural: grip.natural, blendFromHand:grip.blendFromHand, reverseElbow:grip.reverseElbow, w:reachWeight });
         }
-        for (const [actor, list] of byRole) actor.holdGrips(list);
+        // A blendFromHand grip takes the arm over from an earlier grip on it: holdGrips turns each from the posed arm, so both would add up.
+        for (const [actor, list] of byRole) actor.holdGrips(list.filter((g, i) => !list.slice(i + 1).some(n => n.blendFromHand && n.arm === g.arm)));
     }
 
     // One frame of one plant (AnimationClip.js plants): over its window a sole holds the world point it had the first frame the weight is above zero (a

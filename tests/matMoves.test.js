@@ -83,4 +83,36 @@ test('hammerlock handoff rejects invalid offsets and grip options',()=>{
     for(const change of [{to:{...source.grips[1].to,offset:{x:NaN,y:0}}},{blendFromHand:'yes'},{reverseElbow:1}]){
         assert.equal(validateClip({...source,grips:[{...source.grips[1],...change}]}).ok,false);
     }
+    const crank=source.grips[2];
+    for(const to of [{...crank.to,joint:'Hip'},{...crank.to,role:'attacker'},{...crank.to,limb:{upper:.5}}])
+        assert.equal(validateClip({...source,grips:[{...crank,to}]}).ok,false);
+});
+
+test('hammerlock: the worked arm swings low behind him, then cranks up his back with the elbow down (Derek, 2026-11-15)',()=>{
+    const source=matMoveClip('wristlockHammerlock');
+    const behind=source.grips.filter(g=>g.role==='defender'&&g.to.role==='defender'&&g.arm==='near');
+    assert.equal(behind.length,2);
+    const [swing,crank]=behind;
+    assert.equal(swing.to.joint,'Hip');
+    assert.ok(crank.in[0]<swing.in[1]+.01&&crank.in[0]>=swing.in[0],'the crank picks the hand up where the swing leaves it');
+    assert.ok(swing.out[1]<=crank.in[1]+.01);
+    assert.ok(crank.blendFromHand&&crank.reverseElbow);
+    assert.ok(crank.to.limb.upper>0&&crank.to.limb.upper<.7,'elbow down, a little back');
+    assert.ok(crank.to.limb.fore-crank.to.limb.upper>2.3,'forearm folded up the back, past a chicken wing (rig/articulation.js)');
+    const hold=source.layers.find(w=>w.from<=3.3&&w.to>3.3).order.map(x=>x.join(':'));
+    assert.ok(hold.indexOf('defender:nearArm')>hold.indexOf('defender:nativeBody'),'the worked arm shows on the camera side of his body');
+});
+
+test('runtime: a blendFromHand grip takes the arm over, so two grips on one arm never both turn it',async()=>{
+    const {default:MoveRuntime}=await import('../src/animation/MoveRuntime.js');
+    const source=matMoveClip('wristlockHammerlock'),runtime=new MoveRuntime();
+    const lists=[],P=()=>({nearShoulder:{x:0,y:0},nearElbow:{x:0,y:30},nearWrist:{x:0,y:50},nearHip:{x:0,y:50},farShoulder:{x:0,y:0},farElbow:{x:0,y:30},farWrist:{x:0,y:50},farHip:{x:0,y:50},neck:{x:0,y:-5}});
+    const actor=(own)=>({pose:{},facing:1,s:1,skeleton:{setPartVariants(){},lChannelSide:()=>'near',jointAttachmentPoints:P()},holdGrips(list){if(own)lists.push(list);}});
+    const attacker=actor(false),defender=actor(true);
+    runtime.register({...source,plants:[],layers:[],floorContacts:[]});
+    runtime.play(source.id,{attacker,defender});
+    for(let t=0;t<2.8;t+=1/60){runtime.update(1/60);runtime.afterDraw();}
+    const last=lists.at(-1).filter(g=>g.arm==='l');
+    assert.equal(last.length,1,'one grip on the worked arm while the swing fades and the crank comes in');
+    assert.ok(last[0].limb,'the crank holds it');
 });

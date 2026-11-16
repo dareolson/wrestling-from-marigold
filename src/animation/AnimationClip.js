@@ -98,6 +98,7 @@ export function validateClip(source) {
         if (!['same', 'other'].includes(grip?.to?.side ?? 'same')) errors.push(`grips[${index}].to.side must be 'same' or 'other'`);
         if (badWindow(grip)) errors.push(`grips[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
         for(const flag of ['blendFromHand','reverseElbow'])if(grip[flag]!==undefined&&typeof grip[flag]!=='boolean')errors.push(`grips[${index}] invalid ${flag}`);
+        if(grip?.to?.limb&&(grip.to.joint!=='Shoulder'||grip.to.role!==grip.role||!Number.isFinite(grip.to.limb.upper)||!Number.isFinite(grip.to.limb.fore)))errors.push(`grips[${index}] invalid limb target`);
         if(grip?.to?.offset&&(!Number.isFinite(grip.to.offset.x)||!Number.isFinite(grip.to.offset.y)))errors.push(`grips[${index}] invalid target offset`);
         if(grip?.to?.joint==='Floor'&&(grip.to.role!==grip.role||(grip.to.ahead!==undefined&&!Number.isFinite(grip.to.ahead))))errors.push(`grips[${index}] invalid floor hand target`);
         if(grip?.afterLegs && (source.legContacts??[]).some(c=>c.role===grip.role))errors.push(`grips[${index}] afterLegs cannot redraw an actor with leg contacts`);

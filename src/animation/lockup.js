@@ -292,9 +292,17 @@ export function breakTravel(kind) {
 
 // Where a holdGrips entry's hand goes, for a hand on `handSide`: its `at`, else the partner's joint on that side (or the other side), moved
 // `above` of the way up to the partner's shoulder. Read fresh each pass, because the partner's own grips move his joints.
-export function gripTarget({ partner, joint, side, at, above, fore, past, anchor, offset }, handSide) {
+export function gripTarget({ partner, joint, side, at, above, fore, past, anchor, offset, limb }, handSide) {
     if (at) return at;
     const pts = partner.skeleton.jointAttachmentPoints, on = side === 'other' ? (handSide === 'near' ? 'far' : 'near') : handSide;
+    // `limb` (Shoulder): where his own wrist lands with the upper arm and forearm at these angles, radians from straight down, + toward his
+    // back. Built from his drawn bone lengths, so every rig folds the arm to the same shape whatever its forearm length.
+    if (limb && joint === 'Shoulder') {
+        const S = pts?.[`${on}Shoulder`], E = pts?.[`${on}Elbow`], W = pts?.[`${on}Wrist`];
+        if (!S || !E || !W) return S;
+        const lu = Math.hypot(E.x - S.x, E.y - S.y), lf = Math.hypot(W.x - E.x, W.y - E.y), back = -(partner.facing ?? 1);
+        return { x: S.x + back * (Math.sin(limb.upper) * lu + Math.sin(limb.fore) * lf), y: S.y + Math.cos(limb.upper) * lu + Math.cos(limb.fore) * lf };
+    }
     const painted = anchor && joint === 'Ankle' ? partner.skeleton.partAnchorPoint?.(`${on}Shin`, anchor) : null;
     if (painted) return painted;
     const p = joint === 'Neck' ? pts?.neck : pts?.[`${on}${joint}`];

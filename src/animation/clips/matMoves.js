@@ -86,7 +86,8 @@ export const MAT_MOVES = {
                 layerWindows:[{from:0,to:1.6,order:entry.layers},
                     // Carry the captured wrist across the camera side before circling behind.
                     {from:1.6,to:2.5,order:[['defender','farArm'],['defender','nativeBody'],['defender','nearArm'],['attacker','farArm'],['attacker','nativeBody'],['attacker','nearArm']]},
-                    {from:2.5,to:4.4,order:[['attacker','farArm'],['attacker','nativeBody'],['defender','farArm'],['defender','nearArm'],['defender','nativeBody'],['attacker','nearArm']]},
+                    // The worked arm stays on the camera side of his body: elbow down past his back, forearm cranked up it.
+                    {from:2.5,to:4.4,order:[['attacker','farArm'],['attacker','nativeBody'],['defender','farArm'],['defender','nativeBody'],['defender','nearArm'],['attacker','nearArm']]},
                     {from:4.4,to:4.8,order:entry.layers}],
             };
         },
@@ -434,7 +435,10 @@ export function matMoveClip(id, distance = 100, { attackerRigId, defenderRigId, 
         ],
         wristlockHammerlock:[
             {role:'defender',arm:'near',to:{role:'attacker',joint:'Hip',side:'other',above:.6},in:[.15,.4],out:[1.5,1.5],natural:true},
-            {role:'defender',arm:'near',to:{role:'defender',joint:'Hip',side:'same',above:.5,offset:{x:-18,y:0}},in:[1.5,2.65],out:[4.05,4.45],blendFromHand:true,reverseElbow:true},
+            {role:'defender',arm:'near',to:{role:'defender',joint:'Hip',side:'same',above:.5,offset:{x:-18,y:0}},in:[1.5,2.65],out:[2.65,2.95],blendFromHand:true,reverseElbow:true},
+            // Then crank it: the elbow points down past his back and the forearm folds up his spine (Derek, 2026-11-15). The swing above keeps
+            // the low path; a straight line to this high target passes the shoulder and the elbow pops.
+            {role:'defender',arm:'near',to:{role:'defender',joint:'Shoulder',side:'same',limb:{upper:.5,fore:2.94}},in:[2.6,2.95],out:[4.05,4.45],blendFromHand:true,reverseElbow:true},
             grip('near','Wrist','same',.2,.45,4.05,4.45),
             grip('far','Elbow','other',.4,.6,1.5,1.8,{fore:.9}),
             grip('far','Elbow','other',1.7,2.3,4.05,4.45,{fore:.15}),

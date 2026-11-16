@@ -32,7 +32,7 @@ Avoid a large rewrite.
 
 - **Stage 12 merged into `story/marigold-opening` (02fa53fe), pushed 2026-11-15.** Brings the ten mat/lockup moves (Sonnet, 07e79457) plus Codex's dial-in with Derek (31b0ce0a), all under `?light=v1`. Gate on the merge: suite 1417/1417, build, coverage (49 baselined gaps). The `wfm-stage12` worktree is now redundant.
 - **Approved by Derek:** abdominal stretch (outside calf hook, reverse unhook, pry attempts, shove into hands-first fall, bent arms after the catch) and Indian deathlock (seated threaded trap, victim sits up and misses punches). Preserve both.
-- **In progress when Codex hit its limit:** Lou's `wristlockHammerlock` (Lou's kit; Guido keeps `wristlock`), front-pass revision, awaiting Derek's look. Wristlock itself: Derek wants more pain/sell, revisit.
+- **Lou's `wristlockHammerlock`** (Lou's kit; Guido keeps `wristlock`): Claude finished Derek's last note to Codex (elbow down, arm cranked up the back), [entry](AI_HANDOFF_ENTRIES/2026-11-15-claude-hammerlock-elbow-down.md); awaiting Derek's look. Wristlock itself: Derek wants more pain/sell, revisit.
 - **Reworked, not judged:** body scissors, headlock takeover, backward roll, backdrop suplex, flying mare (own arm throw now). **Untouched:** test of strength (no contest, attacker always wins), leapfrog (needs a real duck from the runner).
 - **Open control issues:** with `waistlock=v1`, Lou's go-behind shadows Up/Down + Power (his test of strength and flying mare); AI plays only stretch, scissors and deathlock.
 - **Preview:** `npm run dev`, then `/tools/mat-preview/?move=<key>&att=<rig>&def=<rig>` (e.g. `move=wristlockHammerlock&att=thesz-procreate-v1&def=george-roster-v1`).
@@ -43,6 +43,7 @@ Avoid a large rewrite.
 
 ## Entry index
 
+- 2026-11-15 · Claude · [Hammerlock: elbow down, arm cranked up the back](AI_HANDOFF_ENTRIES/2026-11-15-claude-hammerlock-elbow-down.md)
 - 2026-11-15 · Codex · [Wristlock-to-hammerlock: Lou passes in front (awaiting Derek)](AI_HANDOFF_ENTRIES/2026-11-15-codex-wristlock-front-pass.md)
 - 2026-11-15 · Codex · [Lou's wristlock into hammerlock variant](AI_HANDOFF_ENTRIES/2026-11-15-codex-wristlock-hammerlock-variant.md)
 - 2026-11-15 · Codex · [Stretch: bent asymmetric arms; Derek APPROVED the stretch (knee/hook passes: `2026-11-15-codex-stretch-*.md`)](AI_HANDOFF_ENTRIES/2026-11-15-codex-stretch-elbow-flex.md)

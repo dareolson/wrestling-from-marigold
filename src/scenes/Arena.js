@@ -3342,7 +3342,7 @@ export default class Arena extends Phaser.Scene {
             dropkick: 8, elbowDrop: 7, doubleAxeHandle: 8, sleeperHold: 6,
             headlock: 3, armDrag: 6, suplex: 12, dive: 10, topDive: 18,
             jab: 3, headbutt: 5, taunt: 10, turnbuckleTaunt: 12, theszPress: 16,
-            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, handStomp: 5, clubBlow: 4, chop: 4, uppercut: 5, shoulderBlock: 6, runningForearm: 7, backElbow: 7, legSweep: 5, axeHandleBack: 6, mountedPunches: 5, bodyStomps: 4, wristlock: 5, headlockTakeover: 6, flyingMare: 9, testOfStrength: 4, leapfrog: 6, backwardRoll: 3, abdominalStretch: 6, bodyScissors: 4, indianDeathlock: 6, backdropSuplex: 14, figureFour: 14, hipToss: 6, atomicDrop: 7, snapmare: 12, armBar: 8, ankleLock: 8,
+            hammerlock: 5, kneeLift: 5, frontKick: 5, backBodyDrop: 10, kneeDrop: 7, handStomp: 5, clubBlow: 4, chop: 4, uppercut: 5, shoulderBlock: 6, runningForearm: 7, backElbow: 7, legSweep: 5, axeHandleBack: 6, mountedPunches: 5, bodyStomps: 4, wristlock: 5, wristlockHammerlock: 5, headlockTakeover: 6, flyingMare: 9, testOfStrength: 4, leapfrog: 6, backwardRoll: 3, abdominalStretch: 6, bodyScissors: 4, indianDeathlock: 6, backdropSuplex: 14, figureFour: 14, hipToss: 6, atomicDrop: 7, snapmare: 12, armBar: 8, ankleLock: 8,
         };
         const n = bumps[move];
         if (n) this.bumpHeat(n);
@@ -3986,13 +3986,14 @@ export default class Arena extends Phaser.Scene {
             const dir     = goLeft ? -1 : goRight ? 1 : ls.attacker.facing;
 
             // ?light=v1 (Stage 12, T12.1): Back + Action (away from the man) is the wristlock into the arm wringer, for a kit that holds it; a kit without it whips backward as before.
-            if (lightCandidate() && ls.attacker.moveSet.includes('wristlock') && (ls.attacker.facing > 0 ? goLeft : goRight)) {
+            const wristMove=ls.attacker.moveSet.includes('wristlockHammerlock')?'wristlockHammerlock':'wristlock';
+            if (lightCandidate() && ls.attacker.moveSet.includes(wristMove) && (ls.attacker.facing > 0 ? goLeft : goRight)) {
                 const { attacker, defender } = ls;
                 attacker.state = defender.state = 'standing';
                 this.lockupState = null;
-                attacker._doWristlock(defender);
-                this._logEvent('move', { attacker: who, move: 'wristlock', defenderStamina: Math.round(defender.stamina) });
-                this._heatForMove('wristlock');
+                attacker._doMatMove(wristMove,defender);
+                this._logEvent('move', { attacker: who, move: wristMove, defenderStamina: Math.round(defender.stamina) });
+                this._heatForMove(wristMove);
                 return;
             }
 

@@ -4,9 +4,10 @@ import assert from 'node:assert/strict';
 import Skeleton from '../src/Skeleton.js';
 import { compileClip, validateClip } from '../src/animation/AnimationClip.js';
 import MoveRuntime from '../src/animation/MoveRuntime.js';
-import { limbParts, LAYER_TIE_STEP } from '../src/animation/clipLayers.js';
+import { limbParts, clipLayerDepths, LAYER_TIE_STEP } from '../src/animation/clipLayers.js';
 import { piledriverClip } from '../src/animation/clips/piledriver.js';
 import { suplexClip } from '../src/animation/clips/suplex.js';
+import { matMoveClip } from '../src/animation/clips/matMoves.js';
 
 const image = () => ({ depth: null, setDepth(value) { this.depth = value; return this; } });
 const PARTS = [
@@ -37,6 +38,60 @@ function wrestler(kind, facing, y = 360) {
 }
 
 const snapshot = w => Object.fromEntries(PARTS.map(n => [n, w.skeleton[n].depth]));
+
+test('stretch entry keeps the reaching arm behind until shoulder clearance and the calf behind until its outward swing',()=>{
+    const stretch=matMoveClip('abdominalStretch');
+    for(const kind of ['near','swap'])for(const facing of [1,-1]){
+        const a=wrestler(kind,facing),d=wrestler(kind,facing),runtime=new MoveRuntime();
+        runtime.register(clip({duration:stretch.duration,layers:stretch.layers}));
+        runtime.play('layerProbe',{attacker:a,defender:d});
+        frame(runtime,a,d,.55);
+        assert.ok(a.skeleton.nearForearm.depth<d.skeleton.torso.depth);
+        assert.ok(a.skeleton.farShin.depth<d.skeleton.farThigh.depth);
+        frame(runtime,a,d,.12);
+        assert.ok(a.skeleton.nearForearm.depth<d.skeleton.torso.depth);
+        assert.ok(a.skeleton.farShin.depth>d.skeleton.nearThigh.depth);
+        frame(runtime,a,d,.1);
+        assert.ok(a.skeleton.nearForearm.depth>d.skeleton.torso.depth);
+    }
+});
+
+test('stretch release keeps the calf in front until clear, then lowers it behind the victim',()=>{
+    const stretch=matMoveClip('abdominalStretch');
+    for(const kind of ['near','swap'])for(const facing of [1,-1]){
+        const a=wrestler(kind,facing),d=wrestler(kind,facing),runtime=new MoveRuntime();
+        runtime.register(clip({duration:stretch.duration,layers:stretch.layers}));
+        runtime.play('layerProbe',{attacker:a,defender:d});frame(runtime,a,d,3.3);
+        assert.ok(a.skeleton.farThigh.depth<d.skeleton.farThigh.depth);
+        assert.ok(a.skeleton.farShin.depth>d.skeleton.nearThigh.depth);
+        frame(runtime,a,d,.1);
+        assert.ok(a.skeleton.farShin.depth<d.skeleton.farThigh.depth);
+        assert.ok(a.skeleton.farBoot.depth<d.skeleton.farThigh.depth);
+    }
+});
+
+test('stretch wrap leaves the proximal thigh behind and folds only the calf in front',()=>{
+    const stretch=matMoveClip('abdominalStretch');
+    for(const kind of ['near','swap'])for(const facing of [1,-1]){
+        const a=wrestler(kind,facing),d=wrestler(kind,facing),runtime=new MoveRuntime();
+        runtime.register(clip({duration:stretch.duration,layers:stretch.layers}));
+        runtime.play('layerProbe',{attacker:a,defender:d});frame(runtime,a,d,1.3);
+        assert.ok(a.skeleton.farThigh.depth<d.skeleton.farThigh.depth,'upper thigh passes behind the victim');
+        for(const part of ['Shin','Boot'])assert.ok(a.skeleton['far'+part].depth>d.skeleton.nearThigh.depth,'calf folds across the front');
+    }
+});
+
+test('camera-far shin layers expose the hook while the thigh stays behind the receiver',()=>{
+    for(const kind of ['near','swap'])for(const facing of [1,-1]){
+        const a=wrestler(kind,facing),d=wrestler(kind,facing),runtime=new MoveRuntime();
+        runtime.register(clip({layers:[{from:0,to:2,order:[['attacker','nativeBody'],['defender','nativeBody'],['attacker','farShin']]}]}));
+        runtime.play('layerProbe',{attacker:a,defender:d});frame(runtime,a,d,1);
+        assert.ok(a.skeleton.farThigh.depth<d.skeleton.torso.depth);
+        assert.ok(a.skeleton.farShin.depth>d.skeleton.torso.depth);
+        assert.ok(a.skeleton.farBoot.depth>d.skeleton.torso.depth);
+        assert.ok(a.skeleton.nearShin.depth<d.skeleton.torso.depth);
+    }
+});
 
 test('native body blocks preserve garment, head and leg offsets with far arms behind them', () => {
     for (const kind of ['near', 'swap']) for (const facing of [1, -1]) for (const legsOver of [false, true]) {
@@ -282,5 +337,16 @@ test('a trapped shin can sit in front of a native body while its thigh stays beh
         assert.ok(ds[side + 'Boot'].depth > a.skeleton.torso.depth);
         assert.ok(ds[side + 'Shin'].depth < a.skeleton.nearUpArm.depth);
         assert.deepEqual(limbParts(d, 'lShin'), [ds[side + 'Shin'], ds[side + 'Boot']]);
+    }
+});
+
+
+test('paired layer stacking keeps both mat shadows below the bodies at different ring depths',()=>{
+    for(const facing of [1,-1]){
+        const attacker=wrestler('swap',facing,320),defender=wrestler('stay',-facing,340);
+        for(const actor of [attacker,defender]){actor.skeleton.setDepth=Skeleton.prototype.setDepth;actor.skeleton.setDepth(12+actor.y*.03);actor.gfx=image();actor.gfx.depth=12+actor.y*.03;}
+        const actors={attacker,defender},depths=clipLayerDepths(matMoveClip('abdominalStretch'),3.95,actors);
+        const bodyDepths=Object.values(actors).flatMap(a=>PARTS.map(n=>depths.get(a.skeleton[n])??a.skeleton[n].depth));
+        for(const a of Object.values(actors))assert.ok(depths.get(a.gfx)<Math.min(...bodyDepths),'shadow remains underneath even when victim shares the attacker layer band');
     }
 });

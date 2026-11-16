@@ -350,6 +350,11 @@ export const MOVE_SPECS = {
         trigger: 'Arena._tickLockup — Back + Action in the tie-up (?light=v1); a kit without it whips backward',
         ai: ['lockup'],
     },
+    wristlockHammerlock: {
+        category:C.THROW,clip:null,executor:'_doWristlockHammerlock',
+        sell:{part:'arm',intensity:.7},damageKey:'wristlockHammerlock',poseSeq:false,legacyFallback:null,kitGated:true,
+        trigger:'Arena._tickLockup — Back + Action in the tie-up for a kit holding the wristlock-to-hammerlock variant (?light=v1)',ai:['lockup'],
+    },
     headlockTakeover: {
         category: C.THROW, clip: null, executor: '_doHeadlockTakeover',
         sell: { part: 'back', intensity: 0.6 },

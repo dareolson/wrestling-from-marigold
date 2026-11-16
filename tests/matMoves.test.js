@@ -10,8 +10,8 @@ import { PERSONALITIES } from '../src/AIHandler.js';
 const RIGS = ['thesz-procreate-v1', 'george-roster-v1', 'kowalski-roster-v1', 'guido-roster-v1', undefined];
 const IDS = Object.keys(MAT_MOVES);
 
-test('ten Stage 12 moves, each in the registry with an executor and in the plan\'s default kits', () => {
-    assert.equal(IDS.length, 10);
+test('Stage 12 moves and wristlock variant, each in the registry with an executor and in the plan\'s default kits', () => {
+    assert.equal(IDS.length, 11);
     for (const id of IDS) {
         assert.ok(MOVE_SPECS[id], `${id}: registry entry`);
         assert.equal(MOVE_SPECS[id].executor, `_do${id[0].toUpperCase()}${id.slice(1)}`);
@@ -21,7 +21,7 @@ test('ten Stage 12 moves, each in the registry with an executor and in the plan\
     }
     const holds = (name, id) => lightKit(name).includes(id);
     for (const [id, who] of Object.entries({
-        wristlock: ['thesz', 'guido'], headlockTakeover: ['thesz', 'george'], flyingMare: ['guido', 'thesz'], testOfStrength: ['kowalski', 'thesz'], leapfrog: ['guido', 'george'],
+        wristlock: ['guido'], wristlockHammerlock:['thesz'], headlockTakeover: ['thesz', 'george'], flyingMare: ['guido', 'thesz'], testOfStrength: ['kowalski', 'thesz'], leapfrog: ['guido', 'george'],
         backwardRoll: ['george', 'guido'], abdominalStretch: ['kowalski', 'george'], bodyScissors: ['thesz', 'kowalski'], indianDeathlock: ['george', 'kowalski'], backdropSuplex: ['thesz', 'kowalski'],
     })) for (const name of ['thesz', 'george', 'kowalski', 'guido']) assert.equal(holds(name, id), who.includes(name), `${name} ${id}`);
 });
@@ -59,5 +59,28 @@ test('the AI works the mat holds, the stagger hold and the leapfrog (matMoveOdds
     for (const id of ['abdominalStretch', 'bodyScissors', 'indianDeathlock', 'leapfrog']) {
         assert.equal(KIT_AI_ODDS[id], 'matMoveOdds');
         for (const cfg of Object.values(PERSONALITIES)) assert.ok(cfg.matMoveOdds > 0, `${id}`);
+    }
+});
+
+
+test('Lou keeps the original wristlock entry before the behind-back variant and Guido keeps the original move',()=>{
+    const original=matMoveClip('wristlock'),variant=matMoveClip('wristlockHammerlock');
+    assert.deepEqual(variant.events,original.events,'same single damage event');
+    assert.deepEqual(variant.tracks.attacker.keyframes.filter(k=>k.at<=1.5),original.tracks.attacker.keyframes.filter(k=>k.at<=1.5));
+    assert.ok(lightKit('thesz').includes('wristlockHammerlock'));
+    assert.ok(!lightKit('thesz').includes('wristlock'));
+    assert.ok(lightKit('guido').includes('wristlock'));
+    assert.ok(!lightKit('guido').includes('wristlockHammerlock'));
+    assert.ok(variant.grips.filter(g=>g.role==='defender'&&g.to.role==='attacker').every(g=>g.arm==='near'),'same worked arm throughout');
+    const hold=variant.tracks.defender.keyframes.find(k=>k.at===2.7);
+    assert.ok(hold.pose.nearElbow< -2);
+    assert.equal(variant.tracks.attacker.keyframes.find(k=>k.at===2.7).facing,undefined,'facing inherited from the turn key');
+});
+
+
+test('hammerlock handoff rejects invalid offsets and grip options',()=>{
+    const source=matMoveClip('wristlockHammerlock');
+    for(const change of [{to:{...source.grips[1].to,offset:{x:NaN,y:0}}},{blendFromHand:'yes'},{reverseElbow:1}]){
+        assert.equal(validateClip({...source,grips:[{...source.grips[1],...change}]}).ok,false);
     }
 });

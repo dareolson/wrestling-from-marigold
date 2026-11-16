@@ -292,18 +292,22 @@ export function breakTravel(kind) {
 
 // Where a holdGrips entry's hand goes, for a hand on `handSide`: its `at`, else the partner's joint on that side (or the other side), moved
 // `above` of the way up to the partner's shoulder. Read fresh each pass, because the partner's own grips move his joints.
-export function gripTarget({ partner, joint, side, at, above, fore, past, anchor }, handSide) {
+export function gripTarget({ partner, joint, side, at, above, fore, past, anchor, offset }, handSide) {
     if (at) return at;
     const pts = partner.skeleton.jointAttachmentPoints, on = side === 'other' ? (handSide === 'near' ? 'far' : 'near') : handSide;
     const painted = anchor && joint === 'Ankle' ? partner.skeleton.partAnchorPoint?.(`${on}Shin`, anchor) : null;
     if (painted) return painted;
-    const p = pts?.[`${on}${joint}`];
+    const p = joint === 'Neck' ? pts?.neck : pts?.[`${on}${joint}`];
     // `fore`: down the partner's forearm from the elbow toward his wrist (the point on the drawn forearm, however bent the elbow is)
     const wr = fore ? pts?.[`${on}Wrist`] : null;
     if (p && wr) return { x: p.x + (wr.x - p.x) * fore, y: p.y + (wr.y - p.y) * fore };
     // `past` (Ankle): on along the shin from the knee through the ankle, that fraction of the shin beyond the ankle (the boot: heel ~0.15, toes ~0.4)
     const kn = past ? pts?.[`${on}Knee`] : null;
     if (p && kn) return { x: p.x + (p.x - kn.x) * past, y: p.y + (p.y - kn.y) * past };
+    if(p&&offset){
+        const q=above?pts[`${on}Shoulder`]:null;
+        return {x:p.x+(q?(q.x-p.x)*above:0)+(partner.facing??1)*(offset.x??0)*partner.s,y:p.y+(q?(q.y-p.y)*above:0)+(offset.y??0)*partner.s};
+    }
     if (!p || !above) return p;   // `above` < 0 goes past the joint
     const q = pts[`${on}Shoulder`];
     return q ? { x: p.x + (q.x - p.x) * above, y: p.y + (q.y - p.y) * above } : p;

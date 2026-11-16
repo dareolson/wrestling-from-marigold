@@ -48,6 +48,7 @@ import { gripTarget } from './animation/lockup.js';
 import { claspStep, claspArt, CLASP_REACH } from './animation/clasps.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
+    JOINT_LIMITS,
     ARTICULATED_CHANNELS,
     ARTICULATION_CHANNEL_PAIRS,
     authoredArticulationChannels,
@@ -308,6 +309,7 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     legSweep:          7,   // ?light=v1 (Stage 11): drops him on his back, light damage
     axeHandleBack:     9,   // ?light=v1 (Stage 11): both fists across a staggered man's back
     mountedPunches:    3,   // ?light=v1 (Stage 10): per punch (four)
+    wristlockHammerlock: 8,
     wristlock:          8,   // ?light=v1 (Stage 12): the wrist cranked, once, at the wringer
     headlockTakeover:   9,   // ?light=v1 (Stage 12): the headlock to the mat, a little over the headlock's own drain
     flyingMare:        14,   // ?light=v1 (Stage 12): over the shoulder by the arm, a bigger spot than the hip toss, under the snapmare
@@ -784,7 +786,14 @@ export default class Wrestler {
         this._riseHold = null;   // the lying hold's last pose offsets, eased out over the start of the rise (null = none)
         this._gripLatch = null;  // measured-contact art latch for the hand on the back
         if (facingAxis && sample.facing) this.facing = facingAxis * sample.facing;
-        if (sample.pose) mergeArticulatedPose(this.pose, sample.pose);
+        if (sample.pose) {
+            const pose={...sample.pose};
+            for(const side of ['near','far'])for(const joint of ['Arm','Elbow']){
+                const key=side+joint;
+                if(pose[key]!==undefined){const channel=this.skeleton.lChannelSide(this.facing)===side?'l':'r';pose[channel+joint]=pose[key];delete pose[key];}
+            }
+            mergeArticulatedPose(this.pose,pose);
+        }
         // Read by draw() only while a move is active, so it can't go stale.
         this._floorContacts = sample.floorContacts ?? null;
         if (sample.parts) this.skeleton.setPartVariants(this._resolveVariantSlots(sample.parts));
@@ -849,9 +858,15 @@ export default class Wrestler {
                 const other = E2 === elbows[0] ? elbows[1] : elbows[0], t = turn(other);
                 if (wrap(this.pose[`${arm}Elbow`] + signs.elbow * t.dFore) >= 0) { E2 = other; dUpper = t.dUpper; dFore = t.dFore; }
             }
+            if(item.reverseElbow&&wrap(this.pose[`${arm}Elbow`]+signs.elbow*dFore)>0){const other=E2===elbows[0]?elbows[1]:elbows[0],t=turn(other);E2=other;dUpper=t.dUpper;dFore=t.dFore;}
+            if(item.blendFromHand){
+                const flex=wrap(this.pose[`${arm}Elbow`]+signs.elbow*dFore);
+                if(flex<JOINT_LIMITS.elbow.min||flex>JOINT_LIMITS.elbow.max){const other=E2===elbows[0]?elbows[1]:elbows[0],t=turn(other);dUpper=t.dUpper;dFore=t.dFore;}
+            }
             this.pose[`${arm}Arm`] += signs.arm * dUpper;
             this.pose[`${arm}Elbow`] += signs.elbow * dFore;
-            if (item.natural) this.pose[`${arm}Elbow`] = wrap(this.pose[`${arm}Elbow`]);
+            if (item.natural||item.blendFromHand) this.pose[`${arm}Elbow`] = wrap(this.pose[`${arm}Elbow`]);
+            if(item.blendFromHand)this.pose[`${arm}Arm`]=wrap(this.pose[`${arm}Arm`]);
             moved = true;
         }
         if (moved) this.draw();
@@ -3534,18 +3549,29 @@ export default class Wrestler {
         if (!runtime || !def) return false;
         this._cancelActiveMove('rematmove');
         this.facing = Math.sign(other.x - this.x) || this.facing;
-        if (def.kind === 'solo') return this._doMatSolo(id, def);
+        if (def.kind === 'solo') return this._doMatSolo(id, def, other);
         const distance = Math.max(20, (other.x - this.x) * this.facing / this.s);
         runtime.register(matMoveClip(id, distance, { attackerRigId: this.rigId, defenderRigId: other.rigId, dy: (other.y - this.y) / this.s }));
-        const standing = def.end.def === 'stagger';
+        const standing = def.end.def === 'stagger' || def.escapeStanding === true;
         this._playPairedThrow(other, id, {
             damage: STAMINA_DRAIN[id], hitEvent: def.hitEvent, shake: def.shake, foley: def.foley ?? null, faceToFace: def.faceToFace,
             tierOf: def.tier ? (wear) => this._throwTier(def.tier, wear) : null,
+            onClipEvent: event => {
+                if (event.type === 'shove') other._holdEscape = null;
+                if (event.type === 'matImpact') {
+                    this.scene.cameras.main.shake(130, .002);
+                    this.scene.crowd?.impact?.('mat', .8);
+                }
+            },
             landAtHit: def.land ? (tail, tier) => { other._layOnBack(DOWN_SEC + 0.5 + tail); other._startLanding('back', REF_VY, true, tier); } : null,
             attackerLandsAtHit: def.attLand ? (tail) => { this._layOnBack(1.5 + tail); this._startLanding('back', REF_VY, true); } : null,
             onAbort: standing ? () => { if (other.state === 'holding') other.startStagger(); if (this.state === 'holding') this._standBackUp(); } : null,
             finish: () => {
-                if (other.state === 'holding') { if (def.end.def === 'stagger') other.startStagger(); else other._layOnBack(DOWN_SEC + 0.5); }
+                if (other.state === 'holding') {
+                    if (def.end.def === 'stagger') other.startStagger();
+                    else if (def.end.def === 'prone') other._layDown(DOWN_SEC + 0.5, 'prone');
+                    else other._layOnBack(DOWN_SEC + 0.5);
+                }
                 if (this.state === 'holding') { if (def.end.att === 'back') this._layOnBack(1.5); else this._standBackUp(); }
             },
         });
@@ -3566,9 +3592,12 @@ export default class Wrestler {
 
     // The solo moves. Leapfrog: he hops over the runner (the runner is never touched; his separation is held off while he is in the air). Backward roll: from his back he rolls over his shoulders
     // to his feet, away from the man; there must be room behind him.
-    _doMatSolo(id, def) {
+    _doMatSolo(id, def, other = null) {
         const runtime = this.scene.moveRuntime;
-        const clip = matMoveClip(id, 0, { attackerRigId: this.rigId });
+        const speed=(other?._gaitV2?other._gaitV2.run.speed:RUN_SPEED)*(other?.s??this.s);
+        const boost=other?._runBoost?1+(other._runBoost-1)*other._runBoostLeft/(ROPE_HIT.boostMs/1000):1;
+        const delay=id==='leapfrog'&&other?Math.max(0,Math.min(1.2,Math.abs(other.x-this.x)/(speed*boost)-.45)):0;
+        const clip = matMoveClip(id, 0, { attackerRigId: this.rigId, delay });
         if (id === 'backwardRoll') {
             const b = ringBoundsAtY(this.y), margin = 30 * this.s, endX = this.x - this.facing * 92 * this.s;
             if (endX < b.left + margin || endX > b.right - margin) return false;

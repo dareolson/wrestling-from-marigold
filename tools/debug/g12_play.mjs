@@ -18,7 +18,8 @@ const RUN = ({ exec, facing, kind, id }) => {
     for (let i = 0; i < 2; i++) window.__step();
     let drained = 0, hits = 0;
     const orig = D._hurt.bind(D); D._hurt = (...a) => { const b = D.stamina; hits++; const r = orig(...a); drained += b - D.stamina; return r; };
-    const joints = w => Object.values(w.skeleton.jointAttachmentPoints).map(p => [p.x, p.y]);
+    const jointNames = ['farHip','farKnee','farAnkle','nearHip','nearKnee','nearAnkle','farShoulder','farElbow','farWrist','nearShoulder','nearElbow','nearWrist','neck'];
+    const joints = w => jointNames.map(name => { const p=w.skeleton.jointAttachmentPoints[name]; return [p?.x ?? NaN,p?.y ?? NaN]; });
     const step = (a, b, s) => { let m = 0; for (let i = 0; i < a.length; i++) m = Math.max(m, Math.hypot(a[i][0] - b[i][0], a[i][1] - b[i][1]) / s); return m; };
     const fired = A[exec](D);
     const out = { fired: fired !== false, hits: 0, drain: 0, clip: null, dur: 0, frames: 0, minGap: 1e9, stepMid: { a: 0, d: 0 }, stepStart: 0, stepEnd: 0, nan: false };

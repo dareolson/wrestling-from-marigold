@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>Stage 12 — move review</title>
+<style>body{margin:0;background:#17191e;color:#eee;font:15px system-ui}header{padding:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}select,button{font:inherit;padding:6px;background:#30343e;color:white;border:1px solid #666;border-radius:4px}iframe{width:100%;height:calc(100vh - 125px);border:0}p{margin:0 12px 8px;color:#bcc5d5}</style>
+<header><strong>Stage 12 live review</strong><select id="move"></select><select id="att"></select><span>→</span><select id="def"></select><select id="face"><option value="1">Facing right</option><option value="-1">Facing left</option></select><button id="play">Replay</button><label><input id="repeat" type="checkbox" checked>Repeat</label></header>
+<p id="status">Loading…</p><iframe id="game"></iframe>
+<script type="module">
+import {MOVES,RIGS,SETUP} from '/tools/debug/g12_lib.mjs';
+const $=id=>document.getElementById(id), frame=$('game');let loaded='',timer,busy=false,neutral;
+for(const m of MOVES)$('move').add(new Option(m[3],m[0]));
+for(const id of ['att','def'])for(const [i,r] of RIGS.entries())$(id).add(new Option(['Lou','George','Kowalski','Guido'][i],r));
+const query=new URLSearchParams(location.search);
+$('move').value=query.get('move')||'bodyScissors';if(!$('move').value)$('move').value='bodyScissors';
+$('att').value=query.get('att')||($('move').value==='indianDeathlock'?'george-roster-v1':RIGS[0]);
+$('def').value=query.get('def')||($('move').value==='indianDeathlock'?RIGS[0]:'george-roster-v1');
+async function replay(){clearTimeout(timer);if(busy)return;busy=true;try{
+const pair=$('att').value+'|'+$('def').value;
+if(loaded!==pair){frame.src='/?arena=1&notitle=1&light=v1&p1='+$('att').value+'&p2='+$('def').value;await new Promise(resolve=>frame.onload=resolve);await new Promise(resolve=>{const check=()=>frame.contentWindow.__WFM_GAME?.scene.scenes[0]?.w2?resolve():setTimeout(check,50);check()});loaded=pair;neutral=null;}
+const w=frame.contentWindow,g=w.__WFM_GAME,sc=g.scene.scenes[0],actors=[sc.w1,sc.w2];g.loop.wake();
+if(!neutral)neutral=actors.map(a=>({...a.pose}));
+for(const a of actors){if(a._activeMove)sc.moveRuntime.cancel(a._activeMove,'preview-reset');sc.tweens.killTweensOf(a);sc.tweens.killTweensOf(a.pose);a._activeMove=null;a._groundAttack=null;a._groundHandoff=null;a._choreoUntil=0;a._lungeUntil=0;a._hold=null;a._landing=null;a._sell=null;a._jolt=null;a._holdEscape=null;a._facingLock=null;a.runPhase=null;Object.assign(a.pose,neutral[actors.indexOf(a)]);}
+const m=MOVES.find(m=>m[0]===$('move').value);w.Function('return ('+SETUP.toString()+')')()({facing:+$('face').value,kind:m[2]});
+actors[0][m[1]](actors[1]);sc.cameras.main.stopFollow?.();sc.cameras.main.setZoom(1.5);sc.cameras.main.centerOn((actors[0].x+actors[1].x)/2,300);
+$('status').textContent=m[3]+' · Direct move preview, independent of roster kit. '+m[4];
+const duration=actors[0]._activeMove?.clip.duration??3;
+timer=setTimeout(()=>{if($('repeat').checked)replay()},duration*1000+2200);
+}catch(e){$('status').textContent=e.stack}finally{busy=false}}
+$('play').onclick=replay;for(const id of ['move','att','def','face'])$(id).onchange=replay;replay();
+</script>

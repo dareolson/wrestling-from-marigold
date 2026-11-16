@@ -3,6 +3,7 @@ export { RIGS } from './strike_lib.mjs';
 // id, executor, situation, title, the input, the default kits
 export const MOVES = [
     ['wristlock',        '_doWristlock',        'tie',      'T12.1 Wristlock into arm wringer', 'Tie-up, Back + Action',                        'Lou, Guido'],
+    ['wristlockHammerlock','_doWristlockHammerlock','tie','T12.1b Wristlock into hammerlock','Tie-up, Back + Action','Lou'],
     ['headlockTakeover', '_doHeadlockTakeover', 'headlock', 'T12.2 Headlock takeover',          'In the headlock, Power',                       'Lou, George'],
     ['flyingMare',       '_doFlyingMare',       'tie',      'T12.3 Flying mare',                'Tie-up, Down + Power (Back + Power is the snapmare)', 'Guido, Lou'],
     ['testOfStrength',   '_doTestOfStrength',   'tie',      'T12.4 Test of strength',           'Tie-up, Up + Power (Up + Action is the suplex)', 'Kowalski, Lou'],

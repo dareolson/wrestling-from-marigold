@@ -17,17 +17,17 @@
 // and every rig. Wrestler.draw() resets every depth each frame, so overrides
 // need no teardown: the first draw after the clip ends restores defaults.
 
-export const LAYER_LIMBS = Object.freeze(['lLeg', 'rLeg', 'lArm', 'rArm', 'torso', 'head', 'lShin', 'rShin']);
+export const LAYER_LIMBS = Object.freeze(['lLeg', 'rLeg', 'lArm', 'rArm', 'torso', 'head', 'lShin', 'rShin', 'lThigh', 'rThigh']);
 // Facing-relative names for a clip whose order must hold in both facings (the near/far side of an actor depends on his facing and rig, so `lArm`
 // is the far arm in one facing and the near arm in the other). Resolved per actor per frame, like the anatomical limbs:
 //   nearArm, farArm, nearLeg, farLeg, and `body` = his far leg, torso, head, near leg (a rig whose art wants both legs over the torso, George, gets
 //   torso, head, far leg, near leg), the W4 stack of the waistlock.
 // nativeBody moves the complete body stack as one block, preserving the rig's
 // head, garment masks and leg depths exactly. Arms remain separate for grips.
-export const LAYER_RELATIVE = Object.freeze(['nearArm', 'farArm', 'nearLeg', 'farLeg', 'body', 'nativeBody']);
+export const LAYER_RELATIVE = Object.freeze(['nearArm', 'farArm', 'nearLeg', 'farLeg', 'nearShin', 'farShin', 'body', 'nativeBody']);
 const resolveLimb = (actor, limb) => {
     const near = (actor?.skeleton?.lChannelSide?.(actor.facing ?? 1) ?? 'near') === 'near';
-    const side = { nearArm: near ? 'lArm' : 'rArm', farArm: near ? 'rArm' : 'lArm', nearLeg: near ? 'lLeg' : 'rLeg', farLeg: near ? 'rLeg' : 'lLeg' };
+    const side = { nearArm: near ? 'lArm' : 'rArm', farArm: near ? 'rArm' : 'lArm', nearLeg: near ? 'lLeg' : 'rLeg', farLeg: near ? 'rLeg' : 'lLeg', nearShin: near ? 'lShin' : 'rShin', farShin: near ? 'rShin' : 'lShin' };
     if (limb === 'body') return actor?.skeleton?._farLegOverTorso ? ['torso', 'head', side.farLeg, side.nearLeg] : [side.farLeg, 'torso', 'head', side.nearLeg];
     return [side[limb] ?? limb];
 };
@@ -42,6 +42,7 @@ export const LAYER_TIE_STEP = 0.000005;
 const SIDE_PARTS = Object.freeze({
     Leg: ['Thigh', 'Shin', 'Boot'],
     Shin: ['Shin', 'Boot'],   // expose a trapped lower leg without drawing its thigh over the other actor
+    Thigh: ['Thigh'],        // keep a painted knee cap over a deeply folded calf
     Arm: ['UpArm', 'Forearm', 'Hand'],
 });
 const TORSO_PARTS = Object.freeze(['pelvisUnderlay', 'torso', 'trunks', 'pelvisOverlay', 'pelvisMask']);
@@ -198,6 +199,13 @@ export function clipLayerDepths(clip, time, actors) {
     const depthOf = img => (out.has(img) ? out.get(img) : img.depth);
     for (const win of windows) {
         for (const [img, d] of layerDepths(win, actors, depthOf)) out.set(img, d);
+    }
+    // Paired bodies can move below the other actor's native depth. Carry
+    // their mat shadows below the complete reordered pair as well.
+    if(out.size){
+        const parts=Object.values(actors).flatMap(allParts);
+        const floor=Math.min(...parts.map(depthOf));
+        for(const actor of Object.values(actors))if(actor?.gfx&&Number.isFinite(actor.gfx.depth))out.set(actor.gfx,Math.min(actor.gfx.depth,floor-LAYER_STEP));
     }
     return out;
 }

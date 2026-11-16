@@ -93,6 +93,7 @@ kits in `src/characters/rosterKits.js` and the registry, so it cannot drift.
 | `mountedPunches` | yes | none | - | unverified |
 | `bodyStomps` | yes | none | - | unverified |
 | `wristlock` | yes | none | - | unverified |
+| `wristlockHammerlock` | yes | none | - | unverified |
 | `headlockTakeover` | yes | none | - | unverified |
 | `flyingMare` | yes | none | - | unverified |
 | `testOfStrength` | yes | none | - | unverified |

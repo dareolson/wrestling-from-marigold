@@ -30,7 +30,7 @@ Avoid a large rewrite.
 
 ## Status (2026-11-15 night, Claude Opus; replace this block; ≤ 40 lines)
 
-- **Stage 12 merged into `story/marigold-opening` (02fa53fe), local, NOT pushed.** Brings the ten mat/lockup moves (Sonnet, 07e79457) plus Codex's dial-in with Derek (31b0ce0a), all under `?light=v1`. Gate on the merge: suite 1417/1417, build, coverage (49 baselined gaps). The `wfm-stage12` worktree is now redundant.
+- **Stage 12 merged into `story/marigold-opening` (02fa53fe), pushed 2026-11-15.** Brings the ten mat/lockup moves (Sonnet, 07e79457) plus Codex's dial-in with Derek (31b0ce0a), all under `?light=v1`. Gate on the merge: suite 1417/1417, build, coverage (49 baselined gaps). The `wfm-stage12` worktree is now redundant.
 - **Approved by Derek:** abdominal stretch (outside calf hook, reverse unhook, pry attempts, shove into hands-first fall, bent arms after the catch) and Indian deathlock (seated threaded trap, victim sits up and misses punches). Preserve both.
 - **In progress when Codex hit its limit:** Lou's `wristlockHammerlock` (Lou's kit; Guido keeps `wristlock`), front-pass revision, awaiting Derek's look. Wristlock itself: Derek wants more pain/sell, revisit.
 - **Reworked, not judged:** body scissors, headlock takeover, backward roll, backdrop suplex, flying mare (own arm throw now). **Untouched:** test of strength (no contest, attacker always wins), leapfrog (needs a real duck from the runner).

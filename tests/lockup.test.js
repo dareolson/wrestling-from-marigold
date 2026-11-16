@@ -13,6 +13,13 @@ const actor = (facing, lSide, neck, s = 1) => ({
     facing, s, skeleton: { lChannelSide: () => lSide, jointAttachmentPoints: { neck } },
 });
 
+test('a clip neck target uses the central neck point for either hand',()=>{
+    const neck={x:50,y:30},partner=actor(1,'near',neck);
+    for(const handSide of ['near','far'])for(const side of ['same','other']){
+        assert.equal(gripTarget({partner,joint:'Neck',side},handSide),neck);
+    }
+});
+
 test('the attacker\'s collar and elbow land before the defender\'s', () => {
     const first = (role, key) => run().find(f => f.grips[role][key] >= 1)?.t;
     const a = [first('attacker', 'collar'), first('attacker', 'elbow')], d = [first('defender', 'collar'), first('defender', 'elbow')];
@@ -308,4 +315,13 @@ test('D13 break: the torso comes up slower than the arms let go, so the hip has 
     assert.ok(worst < 0.05, `${worst}`);   // the 0.16 s release stepped 0.059 rad/frame here
     assert.equal(at(LOCKUP.breakBendRelease).bend, 0);
     assert.equal(at(LOCKUP.breakRelease).lArm, LOCKUP.breakArm);   // the arms are still home by breakRelease
+});
+
+
+test('behind-back grip offset follows the victim facing and scale independently of the attacker',()=>{
+    for(const facing of [1,-1]){
+        const partner={facing,s:2,skeleton:{jointAttachmentPoints:{nearHip:{x:100,y:200},nearShoulder:{x:90,y:100}}}};
+        const target=gripTarget({partner,joint:'Hip',side:'same',above:.5,offset:{x:-18,y:2}},'near');
+        assert.deepEqual(target,{x:95-36*facing,y:154});
+    }
 });

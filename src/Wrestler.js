@@ -27,6 +27,7 @@ import { kneeDropClip } from './animation/clips/kneeDrop.js';
 import { handStompClip, HAND_STOMP_SPEC } from './animation/clips/handStomp.js';
 import { specFor } from './animation/clips/rigOverrides.js';
 import { lightStrikeClip, LIGHT_STRIKES, STRIKE_STANDOFF } from './animation/clips/lightStrikes.js';
+import { matMoveClip, MAT_MOVES } from './animation/clips/matMoves.js';
 import { mountedPunchesClip, MOUNTED_PUNCHES_SPEC, bodyStompsClip, BODY_STOMPS_SPEC } from './animation/clips/groundStrikes.js';
 import { kneeDropV2Clip, KNEE_DROP_V2_SPEC } from './animation/clips/kneeDropV2.js';
 import { HairFixQueue, HAIR_TAUNT_CHANCE } from './animation/hairFixQueue.js';
@@ -47,6 +48,7 @@ import { gripTarget } from './animation/lockup.js';
 import { claspStep, claspArt, CLASP_REACH } from './animation/clasps.js';
 import { MOVE_SPECS } from './moves/registry.js';
 import {
+    JOINT_LIMITS,
     ARTICULATED_CHANNELS,
     ARTICULATION_CHANNEL_PAIRS,
     authoredArticulationChannels,
@@ -268,6 +270,7 @@ export { ARTICULATED_CHANNELS };
 
 // Exported so tests/moveRegistry.test.js can assert every registry damageKey
 // resolves here and every value here is claimed by a move (no dead damage).
+const HOLD_ESCAPE_PRESSES = 4;   // ?light=v1 Stage 12: Action presses that break one of the new holds (default: the plan names no number)
 export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move landing
     jab:          5,
     headbutt:     8,
@@ -306,6 +309,15 @@ export const STAMINA_DRAIN = {    // drained from the DEFENDER on each move land
     legSweep:          7,   // ?light=v1 (Stage 11): drops him on his back, light damage
     axeHandleBack:     9,   // ?light=v1 (Stage 11): both fists across a staggered man's back
     mountedPunches:    3,   // ?light=v1 (Stage 10): per punch (four)
+    wristlockHammerlock: 8,
+    wristlock:          8,   // ?light=v1 (Stage 12): the wrist cranked, once, at the wringer
+    headlockTakeover:   9,   // ?light=v1 (Stage 12): the headlock to the mat, a little over the headlock's own drain
+    flyingMare:        14,   // ?light=v1 (Stage 12): over the shoulder by the arm, a bigger spot than the hip toss, under the snapmare
+    testOfStrength:     3,   // ?light=v1 (Stage 12): per push (three)
+    abdominalStretch:   5,   // ?light=v1 (Stage 12): per pull (three)
+    bodyScissors:       4,   // ?light=v1 (Stage 12): per squeeze (three)
+    indianDeathlock:    5,   // ?light=v1 (Stage 12): per pull (three)
+    backdropSuplex:    17,   // ?light=v1 (Stage 12): a late-match big move, a little over the suplex
     bodyStomps:        3,   // ?light=v1 (Stage 11): per stomp (three)
     frontKick:          7, // planted push-kick: light damage, a stagger and a step back
     shove:              4, // two-handed guard-breaker: little damage, opens a blocker and gives ground
@@ -774,7 +786,14 @@ export default class Wrestler {
         this._riseHold = null;   // the lying hold's last pose offsets, eased out over the start of the rise (null = none)
         this._gripLatch = null;  // measured-contact art latch for the hand on the back
         if (facingAxis && sample.facing) this.facing = facingAxis * sample.facing;
-        if (sample.pose) mergeArticulatedPose(this.pose, sample.pose);
+        if (sample.pose) {
+            const pose={...sample.pose};
+            for(const side of ['near','far'])for(const joint of ['Arm','Elbow']){
+                const key=side+joint;
+                if(pose[key]!==undefined){const channel=this.skeleton.lChannelSide(this.facing)===side?'l':'r';pose[channel+joint]=pose[key];delete pose[key];}
+            }
+            mergeArticulatedPose(this.pose,pose);
+        }
         // Read by draw() only while a move is active, so it can't go stale.
         this._floorContacts = sample.floorContacts ?? null;
         if (sample.parts) this.skeleton.setPartVariants(this._resolveVariantSlots(sample.parts));
@@ -839,9 +858,15 @@ export default class Wrestler {
                 const other = E2 === elbows[0] ? elbows[1] : elbows[0], t = turn(other);
                 if (wrap(this.pose[`${arm}Elbow`] + signs.elbow * t.dFore) >= 0) { E2 = other; dUpper = t.dUpper; dFore = t.dFore; }
             }
+            if(item.reverseElbow&&wrap(this.pose[`${arm}Elbow`]+signs.elbow*dFore)>0){const other=E2===elbows[0]?elbows[1]:elbows[0],t=turn(other);E2=other;dUpper=t.dUpper;dFore=t.dFore;}
+            if(item.blendFromHand){
+                const flex=wrap(this.pose[`${arm}Elbow`]+signs.elbow*dFore);
+                if(flex<JOINT_LIMITS.elbow.min||flex>JOINT_LIMITS.elbow.max){const other=E2===elbows[0]?elbows[1]:elbows[0],t=turn(other);dUpper=t.dUpper;dFore=t.dFore;}
+            }
             this.pose[`${arm}Arm`] += signs.arm * dUpper;
             this.pose[`${arm}Elbow`] += signs.elbow * dFore;
-            if (item.natural) this.pose[`${arm}Elbow`] = wrap(this.pose[`${arm}Elbow`]);
+            if (item.natural||item.blendFromHand) this.pose[`${arm}Elbow`] = wrap(this.pose[`${arm}Elbow`]);
+            if(item.blendFromHand)this.pose[`${arm}Arm`]=wrap(this.pose[`${arm}Arm`]);
             moved = true;
         }
         if (moved) this.draw();
@@ -1112,6 +1137,7 @@ export default class Wrestler {
 
     move(dt, other) {
         this._lastOther = other;
+        if (this._holdEscape) this._tickHoldEscape();   // ?light=v1 Stage 12: a held man pressing to break out
         // A bound clip owns facing: the executor sets it before play() and
         // keyframes may author it. Arena ticks move() BEFORE moveRuntime.update,
         // so re-facing here undid any facing a clip didn't re-author every
@@ -1300,6 +1326,8 @@ export default class Wrestler {
             if (this.state === 'staggered') {
                 this.tweenPose('idle', 180, 'Linear');
                 this.state = 'standing';
+            } else if (this._tryBackwardRoll()) {
+                // ?light=v1 (Stage 12, T12.6): Back held at the rise: over the shoulders to his feet, away from the man
             } else if (this.input.isDown('down')) {
                 // Player holds down to play possum — stay flat, 4s before forced rise
                 this.state      = 'possum';
@@ -1308,6 +1336,15 @@ export default class Wrestler {
                 this._startRiseUp();
             }
         }
+    }
+
+    // ?light=v1 (Stage 12, T12.6): at the end of the down timer a man on his back with his feet toward the other man, holding the key away from him, rolls back to his feet instead of rising (a kit holds it).
+    _tryBackwardRoll() {
+        const other = this._lastOther;
+        if (!lightCandidate() || !other || this.lying !== 'supine' || !this.moveSet.includes('backwardRoll') || !this.scene.moveRuntime) return false;
+        const toward = Math.sign(other.x - this.x) || this.facing;
+        if (toward !== this.facing || !this.input.isDown(toward > 0 ? 'left' : 'right')) return false;
+        return this._doBackwardRoll(other);
     }
 
     // Plan the sells for this trip to the mat from the move that put him
@@ -2120,6 +2157,13 @@ export default class Wrestler {
             if (other.state === 'standing' && dist <= 100 * this.s && this.moveSet.includes('legSweep')) { this._doLegSweep(other); return 'legSweep'; }
         }
 
+        // ?light=v1 (Stage 12): Up + Action next to a man on his back is the body scissors; Back + Action on a staggered man the abdominal stretch (a kit holds each one).
+        if (lightCandidate() && this.scene.moveRuntime) {
+            const back = this.input.isDown(this.facing > 0 ? 'left' : 'right');
+            if (this.input.isDown('up') && other.lying === 'supine' && (other.state === 'down' || other.state === 'possum') && !other.isLanding() && this.moveSet.includes('bodyScissors')) { this._doBodyScissors(other); return 'bodyScissors'; }
+            if (back && other.state === 'staggered' && this.moveSet.includes('abdominalStretch')) { this._doAbdominalStretch(other); return 'abdominalStretch'; }
+        }
+
         // Grapple block: a braced opponent stuffs the tie-up and shoves the
         // attacker off balance — the free window swings the other way.
         // Strikes are the answer to a turtle, not grapples.
@@ -2170,6 +2214,11 @@ export default class Wrestler {
         if (this.state !== 'standing') return false;
         if (!this.input.justDown('power')) return false;
 
+        // ?light=v1 (Stage 12, T12.5): Up + Power in the same runner window hops over him (the leapfrog), ahead of the hip toss / arm drag a plain Power gets.
+        if (lightCandidate() && this.moveSet.includes('leapfrog') && other.state === 'running' && other.runPhase === 'returning' && this.scene.moveRuntime && this.input.isDown('up')) {
+            const pastDist = (other.x - this.x) * other.runFacing;
+            if (Math.abs(other.x - this.x) < 160 * this.s && pastDist < 45 * this.s && sharesDepth(this, other)) { this._doLeapfrog(other); return 'leapfrog'; }
+        }
         // ?light=v1 (PLAN_LIGHT_MOVES T6.3): Power answers a runner coming back off the ropes with the kit's throw, the hip toss or the arm drag, in the same window as the clothesline.
         if (lightCandidate() && other.state === 'running' && other.runPhase === 'returning' && this.scene.moveRuntime) {
             const pastDist = (other.x - this.x) * other.runFacing;
@@ -2391,6 +2440,7 @@ export default class Wrestler {
         // ankle lock; with neither held, the first one in the kit (George's
         // figure-four, Lou's ankle lock).
         if (dist <= reach * 1.4 && (other.state === 'down' || other.state === 'possum')) {
+            if (lightCandidate() && this.scene.moveRuntime && other.lying === 'supine' && !other.isLanding() && this.input.isDown(this.facing > 0 ? 'left' : 'right') && this.moveSet.includes('indianDeathlock')) { this._doIndianDeathlock(other); return 'indianDeathlock'; }   // Stage 12 (T12.9)
             const has = move => this.moveSet.includes(move);
             const hold = this.input.isDown('up') && has('armBar') ? 'armBar'
                 : this.input.isDown('down') && has('halfBostonCrab') ? 'halfBostonCrab'
@@ -3490,6 +3540,77 @@ export default class Wrestler {
     _doSnapmareFromTieUp(other) {
         this.scene.moveRuntime.register(snapmareTieUpClip(Math.abs(other.x - this.x) / this.s));
         this._doSnapmare(other, 'snapmareTieUp');
+    }
+
+    // ?light=v1 (PLAN_LIGHT_MOVES Stage 12): the ten mat and lockup moves from clips/matMoves.js, one executor. A paired move rides _playPairedThrow (damage on its hitEvent, the ending by the
+    // spec's `end`); a hold (`hold`) lets the held man break out by pressing Action `HOLD_ESCAPE_PRESSES` times (_tickHoldEscape); a solo move (leapfrog, backward roll) is one man's clip.
+    _doMatMove(id, other) {
+        const runtime = this.scene.moveRuntime, def = MAT_MOVES[id];
+        if (!runtime || !def) return false;
+        this._cancelActiveMove('rematmove');
+        this.facing = Math.sign(other.x - this.x) || this.facing;
+        if (def.kind === 'solo') return this._doMatSolo(id, def, other);
+        const distance = Math.max(20, (other.x - this.x) * this.facing / this.s);
+        runtime.register(matMoveClip(id, distance, { attackerRigId: this.rigId, defenderRigId: other.rigId, dy: (other.y - this.y) / this.s }));
+        const standing = def.end.def === 'stagger' || def.escapeStanding === true;
+        this._playPairedThrow(other, id, {
+            damage: STAMINA_DRAIN[id], hitEvent: def.hitEvent, shake: def.shake, foley: def.foley ?? null, faceToFace: def.faceToFace,
+            tierOf: def.tier ? (wear) => this._throwTier(def.tier, wear) : null,
+            onClipEvent: event => {
+                if (event.type === 'shove') other._holdEscape = null;
+                if (event.type === 'matImpact') {
+                    this.scene.cameras.main.shake(130, .002);
+                    this.scene.crowd?.impact?.('mat', .8);
+                }
+            },
+            landAtHit: def.land ? (tail, tier) => { other._layOnBack(DOWN_SEC + 0.5 + tail); other._startLanding('back', REF_VY, true, tier); } : null,
+            attackerLandsAtHit: def.attLand ? (tail) => { this._layOnBack(1.5 + tail); this._startLanding('back', REF_VY, true); } : null,
+            onAbort: standing ? () => { if (other.state === 'holding') other.startStagger(); if (this.state === 'holding') this._standBackUp(); } : null,
+            finish: () => {
+                if (other.state === 'holding') {
+                    if (def.end.def === 'stagger') other.startStagger();
+                    else if (def.end.def === 'prone') other._layDown(DOWN_SEC + 0.5, 'prone');
+                    else other._layOnBack(DOWN_SEC + 0.5);
+                }
+                if (this.state === 'holding') { if (def.end.att === 'back') this._layOnBack(1.5); else this._standBackUp(); }
+            },
+        });
+        if (def.hold && this._activeMove) other._holdEscape = { handle: this._activeMove, presses: 0, need: HOLD_ESCAPE_PRESSES };
+        return true;
+    }
+
+    // The held man's way out of a Stage 12 hold: Action presses; at `need` the clip is cancelled (the abort path stands the attacker up and leaves the man staggered or on his back).
+    _tickHoldEscape() {
+        const e = this._holdEscape;
+        if (this._activeMove !== e.handle || this.state !== 'holding') { this._holdEscape = null; return; }
+        if (!this.input?.justDown?.('action')) return;
+        if (++e.presses < e.need) return;
+        this._holdEscape = null;
+        this.scene._logEvent?.('holdEscape', { wrestler: this === this.scene.w1 ? 'p1' : 'p2', hold: e.handle.clip.id });
+        this.scene.moveRuntime.cancel(e.handle, 'escaped', { initiator: this });
+    }
+
+    // The solo moves. Leapfrog: he hops over the runner (the runner is never touched; his separation is held off while he is in the air). Backward roll: from his back he rolls over his shoulders
+    // to his feet, away from the man; there must be room behind him.
+    _doMatSolo(id, def, other = null) {
+        const runtime = this.scene.moveRuntime;
+        const speed=(other?._gaitV2?other._gaitV2.run.speed:RUN_SPEED)*(other?.s??this.s);
+        const boost=other?._runBoost?1+(other._runBoost-1)*other._runBoostLeft/(ROPE_HIT.boostMs/1000):1;
+        const delay=id==='leapfrog'&&other?Math.max(0,Math.min(1.2,Math.abs(other.x-this.x)/(speed*boost)-.45)):0;
+        const clip = matMoveClip(id, 0, { attackerRigId: this.rigId, delay });
+        if (id === 'backwardRoll') {
+            const b = ringBoundsAtY(this.y), margin = 30 * this.s, endX = this.x - this.facing * 92 * this.s;
+            if (endX < b.left + margin || endX > b.right - margin) return false;
+            this.lying = null; this._groundAttack = null; this._sell = null; this._hold = null; this._landing = null; this._jolt = null; this.stateTimer = 0;
+            this.pose.tilt = 0; this.pose.lift = 0;
+        }
+        runtime.register(clip);
+        this.runPhase = null;
+        this.state = 'slamming';
+        this._lungeUntil = this.scene.time.now + clip.duration * 1000;
+        const done = () => { this._lungeUntil = 0; this._activeMove = null; if (this.state === 'slamming') { this._standBackUp(); this._clamp(); } };
+        this._activeMove = runtime.play(clip.id, { attacker: this }, { onComplete: done, onCancel: done });
+        return true;
     }
 
     // ?light=v1: the runner's momentum gives the hip toss its higher arc (runnerHipToss.js).
@@ -4894,3 +5015,6 @@ export default class Wrestler {
 
 // One `_do<Move>` per light strike: the registry names an executor method for every move (PLAN_LIGHT_MOVES Stages 10-11).
 for (const id of Object.keys(LIGHT_STRIKES)) Wrestler.prototype[`_do${id[0].toUpperCase()}${id.slice(1)}`] = function (other) { return this._doLightStrike(id, other); };
+
+// One `_do<Move>` per Stage 12 mat move: the registry names an executor method for every move (PLAN_LIGHT_MOVES Stage 12).
+for (const id of Object.keys(MAT_MOVES)) Wrestler.prototype[`_do${id[0].toUpperCase()}${id.slice(1)}`] = function (other) { return this._doMatMove(id, other); };

@@ -19,6 +19,8 @@ test('standing poses are untouched; tilt or lift ramps the body off its feet con
     assert.equal(w({ tilt: Math.PI }), 1);
     // Continuity: no jump between a standing key and a slightly lifted one.
     assert.ok(w({ lift: 0.2 }) < 0.02);
+    assert.ok(w({tilt:-2*Math.PI})<1e-12,'a completed backward roll returns to standing placement');
+    assert.ok(Math.abs(w({tilt:-2*Math.PI+.15})-.5)<1e-12,'recovery blends continuously through a full turn');
 });
 
 test('standing hip height is boot + thigh + shin; shipped Lou is the reference', () => {

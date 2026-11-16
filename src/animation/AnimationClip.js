@@ -93,10 +93,26 @@ export function validateClip(source) {
     }
     for (const [index, grip] of (source?.grips ?? []).entries()) {
         if (!source.tracks?.[grip?.role] || !source.tracks?.[grip?.to?.role]) errors.push(`grips[${index}] roles need tracks`);
-        if (!['l', 'r'].includes(grip?.arm)) errors.push(`grips[${index}].arm must be 'l' or 'r'`);
+        if (!['l', 'r', 'near', 'far'].includes(grip?.arm)) errors.push(`grips[${index}].arm must be l, r, near or far`);
         if (!GRIP_JOINTS.includes(grip?.to?.joint)) errors.push(`grips[${index}].to.joint must be one of ${GRIP_JOINTS.join(', ')}`);
         if (!['same', 'other'].includes(grip?.to?.side ?? 'same')) errors.push(`grips[${index}].to.side must be 'same' or 'other'`);
         if (badWindow(grip)) errors.push(`grips[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
+        for(const flag of ['blendFromHand','reverseElbow'])if(grip[flag]!==undefined&&typeof grip[flag]!=='boolean')errors.push(`grips[${index}] invalid ${flag}`);
+        if(grip?.to?.offset&&(!Number.isFinite(grip.to.offset.x)||!Number.isFinite(grip.to.offset.y)))errors.push(`grips[${index}] invalid target offset`);
+        if(grip?.to?.joint==='Floor'&&(grip.to.role!==grip.role||(grip.to.ahead!==undefined&&!Number.isFinite(grip.to.ahead))))errors.push(`grips[${index}] invalid floor hand target`);
+        if(grip?.afterLegs && (source.legContacts??[]).some(c=>c.role===grip.role))errors.push(`grips[${index}] afterLegs cannot redraw an actor with leg contacts`);
+    }
+    for(const [index,c]of(source?.legContacts??[]).entries()){
+        if(!source.tracks?.[c.role]||!source.tracks?.[c.to?.role])errors.push(`legContacts[${index}] roles need tracks`);
+        if(!['near','far'].includes(c.side)||!['near','far'].includes(c.to?.side))errors.push(`legContacts[${index}] needs explicit near/far sides`);
+        if(!['Hip','Knee'].includes(c.to?.joint))errors.push(`legContacts[${index}] target must be Hip or Knee`);
+        if(c.to?.channel!==undefined&&!['l','r'].includes(c.to.channel))errors.push(`legContacts[${index}] target channel must be l or r`);
+        if(c.bend!==undefined&&!['up','down','forward'].includes(c.bend))errors.push(`legContacts[${index}] invalid knee direction`);
+        if(c.to?.maxReach!==undefined&&(!(c.to.maxReach>0&&c.to.maxReach<=1)||!['Hip','Knee'].includes(c.to.joint)||!Number.isFinite(c.to.along)||c.to.along<0||c.to.along>1||!(c.to.minAlong>=0&&c.to.minAlong<=c.to.along)))errors.push(`legContacts[${index}] invalid calf reach budget`);
+        if(c.kneeOverlap!==undefined&&(!Number.isFinite(c.kneeOverlap)||c.kneeOverlap<0||c.kneeOverlap>6))errors.push(`legContacts[${index}] invalid painted knee overlap`);
+        if(c.kneeArtOffset!==undefined&&(!c.kneeArtOffset||!['x','y'].every(axis=>Number.isFinite(c.kneeArtOffset[axis])&&Math.abs(c.kneeArtOffset[axis])<=6)))errors.push(`legContacts[${index}] invalid painted knee offset`);
+        for(const sweep of [c.sweep,c.releaseSweep])if(sweep&&(!(0<=sweep.from&&sweep.from<sweep.apex&&sweep.apex<sweep.to&&sweep.to<=source.duration)||!Number.isFinite(sweep.x)||!Number.isFinite(sweep.y)))errors.push(`legContacts[${index}] invalid sweep`);
+        if(badWindow(c))errors.push(`legContacts[${index}] invalid window`);
     }
     for (const [index, c] of (source?.carry ?? []).entries()) {
         if (!source.tracks?.[c?.role] || !source.tracks?.[c?.on] || c.role === c.on) errors.push(`carry[${index}] role and on need two different tracks`);
@@ -160,6 +176,7 @@ export function compileClip(source) {
         events: (source.events ?? []).map((event, index) => ({ ...event, _order: index })),
         floorContacts: (source.floorContacts ?? []).map(contact => Object.freeze({ ...contact })),
         grips: (source.grips ?? []).map(grip => Object.freeze({ ...grip, to: Object.freeze({ side: 'same', ...grip.to }) })),
+        legContacts: (source.legContacts ?? []).map(c=>Object.freeze({...c,to:Object.freeze({...c.to})})),
         // One man riding another's torso (carry.js); resolved in MoveRuntime.afterDraw before grips.
         carry: (source.carry ?? []).map(c => Object.freeze({ ...c, in: Object.freeze([...c.in]), out: Object.freeze([...c.out]), ...(c.slide ? { slide: Object.freeze({ ...c.slide, in: Object.freeze([...c.slide.in]) }) } : {}) })),
         // A sole held on the mat over a window (MoveRuntime._plant); resolved in afterDraw before carry and grips.
@@ -178,7 +195,7 @@ export function compileClip(source) {
 // with each rig's hip height, so it can't put every cast's crown on the mat;
 // the Wrestler measures the gap and closes it (Wrestler.draw). `in` ramps
 // the hold up, `out` ramps it back off; weights are smoothstepped.
-export const FLOOR_POINTS = Object.freeze(['crown']);
+export const FLOOR_POINTS = Object.freeze(['crown','upperBack','nearKnee','nearSole']);
 
 // A clip can also hold a hand on a partner's joint (2026-10-15). The clip's
 // arm angles are solved on one cast; a partner of other proportions moves
@@ -187,7 +204,7 @@ export const FLOOR_POINTS = Object.freeze(['crown']);
 // channel ('l'/'r'); `to.side` says whether the joint is on the same depth
 // side as that hand ('same', near hand on near hip) or the other. Each rig
 // decides which side a channel draws on (Skeleton.lChannelSide).
-export const GRIP_JOINTS = Object.freeze(['Hip', 'Knee', 'Ankle', 'Shoulder', 'Elbow', 'Wrist']);
+export const GRIP_JOINTS = Object.freeze(['Hip', 'Knee', 'Ankle', 'Shoulder', 'Elbow', 'Wrist', 'Neck', 'Floor']);
 
 export function floorContactWeight(contact, time) { return windowWeight(contact, time); }
 

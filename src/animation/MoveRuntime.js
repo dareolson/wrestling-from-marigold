@@ -1,3 +1,5 @@
+import { gripTarget } from './lockup.js';
+import { reachableCalfFraction } from './legContacts.js';
 import { compileClip, eventsBetween, sampleClip, windowWeight } from './AnimationClip.js';
 import { clipLayerDepths } from './clipLayers.js';
 import { carryTarget, carrySlideAt, pelvisOf, thighTop, toFrame, torsoFrame } from './carry.js';
@@ -192,19 +194,41 @@ export default class MoveRuntime {
         for (const handle of this._active.values()) {
             for (const [index, carry] of (handle.clip.carry ?? []).entries()) this._carry(handle, carry, index);
         }
+        for (const handle of this._active.values()) this._applyGrips(handle, false);
+        // Arm grips redraw their actor; resolve leg entanglements afterwards.
         for (const handle of this._active.values()) {
-            const grips = handle.clip.grips;
-            if (!grips?.length) continue;
-            const byRole = new Map();
-            for (const grip of grips) {
-                const w = windowWeight(grip, handle.time);
-                const actor = handle.bindings[grip.role], partner = handle.bindings[grip.to.role];
-                if (!(w > 0) || !actor?.holdGrips || !partner?.skeleton) continue;
-                if (!byRole.has(actor)) byRole.set(actor, []);
-                byRole.get(actor).push({ arm: grip.arm, partner, joint: grip.to.joint, side: grip.to.side, fore: grip.to.fore, past: grip.to.past, anchor: grip.to.anchor, palm: grip.palm, natural: grip.natural, w });
+            for(const c of handle.clip.legContacts??[]){
+                const w=windowWeight(c,handle.time),actor=handle.bindings[c.role],other=handle.bindings[c.to.role];
+                if(!(w>0)||!actor?.skeleton?.reachLeg||!other?.skeleton)continue;
+                const P=other.skeleton.jointAttachmentPoints;
+                const lSide=other.skeleton.lChannelSide?.(other.facing)??'near';
+                const side=c.to.channel?(c.to.channel==='l'?lSide:(lSide==='near'?'far':'near')):(c.to.side??'near');
+                const q=P?.[side+(c.to.joint??'Hip')];
+                if(!q)continue;
+                // Swing the foot outside first, then fold it back across the calf.
+                const t=handle.time,sweep=c.releaseSweep&&t>=c.releaseSweep.from?c.releaseSweep:c.sweep;
+                const phase=!sweep||t<sweep.from||t>sweep.to?0:t<sweep.apex?(t-sweep.from)/(sweep.apex-sweep.from):(sweep.to-t)/(sweep.to-sweep.apex);
+                const arc=phase*phase*(3-2*phase);
+                const ox=(c.to.x??0)+(sweep?.x??0)*arc,oy=(c.to.y??0)+(sweep?.y??0)*arc;
+                let goal={...q};
+                if(c.to.torso&&P.neck){const hip={x:(P.nearHip.x+P.farHip.x)/2,y:(P.nearHip.y+P.farHip.y)/2};goal={x:hip.x+(P.neck.x-hip.x)*c.to.torso,y:hip.y+(P.neck.y-hip.y)*c.to.torso};}
+                if(c.to.along!=null&&P[side+'Ankle']){
+                    const a=P[side+'Ankle'];let along=c.to.along;
+                    const own=actor.skeleton.jointAttachmentPoints,H=own?.[c.side+'Hip'],K=own?.[c.side+'Knee'],N=own?.[c.side+'Ankle'];
+                    if(c.to.maxReach&&H&&K&&N){
+                        const reach=(Math.hypot(K.x-H.x,K.y-H.y)+Math.hypot(N.x-K.x,N.y-K.y))*c.to.maxReach;
+                        along=reachableCalfFraction(q,a,H,reach,along,c.to.minAlong,{x:ox*actor.s*actor.facing,y:oy*actor.s});
+                    }
+                    goal={x:q.x+(a.x-q.x)*along,y:q.y+(a.y-q.y)*along};
+                }
+                goal.x+=ox*actor.s*actor.facing;goal.y+=oy*actor.s;
+                const result=actor.skeleton.reachLeg(c.side,goal,w,c.bend,actor.s*(actor._heightScale??1),actor.facing,c.kneeOverlap??0,c.kneeArtOffset);
+                if(result){handle.legContactLog??=[];handle.legContactLog.push({t:handle.time,role:c.role,side:c.side,...result});}
             }
-            for (const [actor, list] of byRole) actor.holdGrips(list);
         }
+        // A boot held after threading must target the solved ankle, not the
+        // receiver's pre-contact pose. Only non-entangled actors may redraw here.
+        for (const handle of this._active.values()) this._applyGrips(handle, true);
         // Then cross-actor layers (clipLayers.js). After every grip, because a
         // grip redraws its actor and a draw resets depth. Nothing to undo
         // later: the next draw() resets depth again.
@@ -212,6 +236,45 @@ export default class MoveRuntime {
             if (!handle.clip.layers && !handle.clip.layerTie) continue;
             for (const [img, depth] of clipLayerDepths(handle.clip, handle.time, handle.bindings)) img.setDepth(depth);
         }
+        // Capture the outgoing wrist after its existing grip has resolved.
+        for(const handle of this._active.values())for(const [index,g]of(handle.clip.grips??[]).entries())if(g.blendFromHand&&handle.time<g.in[0]){
+            const actor=handle.bindings[g.role],side=['near','far'].includes(g.arm)?g.arm:(actor.skeleton.lChannelSide(actor.facing)=== 'near'?(g.arm==='l'?'near':'far'):(g.arm==='l'?'far':'near'));
+            const p=actor.skeleton.jointAttachmentPoints?.[side+'Wrist'];if(p)(handle._gripStarts??={})[index]={...p};
+        }
+    }
+
+    _applyGrips(handle, afterLegs) {
+        const grips = handle.clip.grips;
+        if (!grips?.length) return;
+        const byRole = new Map();
+        for (const [gripIndex,grip] of grips.entries()) {
+            if (!!grip.afterLegs !== afterLegs) continue;
+            const w = windowWeight(grip, handle.time);
+            const actor = handle.bindings[grip.role], partner = handle.bindings[grip.to.role];
+            if (!(w > 0) || !actor?.holdGrips || !partner?.skeleton) continue;
+            if (!byRole.has(actor)) byRole.set(actor, []);
+            const arm=['near','far'].includes(grip.arm)
+                ? (actor.skeleton.lChannelSide(actor.facing)===grip.arm?'l':'r') : grip.arm;
+            let at;
+            if(grip.to.joint==='Floor'){
+                const lSide=actor.skeleton.lChannelSide(actor.facing),side=arm==='l'?lSide:(lSide==='near'?'far':'near');
+                const shoulder=actor.skeleton.jointAttachmentPoints?.[side+'Shoulder'];
+                if(!shoulder)continue;
+                const key=gripIndex,plants=handle._handPlants??={};
+                const target={x:shoulder.x+actor.facing*(grip.to.ahead??10)*actor.s,y:actor.y-7*actor.s};
+                if(handle.time>=grip.in[1])plants[key]??=target;
+                at=plants[key]??target;
+            }
+            let reachWeight=w;
+            if(grip.blendFromHand){
+                const side=actor.skeleton.lChannelSide(actor.facing)=== (arm==='l'?'near':'far')?'near':'far';
+                const start=(handle._gripStarts??={})[gripIndex]??=({...actor.skeleton.jointAttachmentPoints[side+'Wrist']});
+                const target=gripTarget({partner,...grip.to},side);
+                if(target){const progress=windowWeight({in:grip.in,out:[handle.clip.duration,handle.clip.duration]},handle.time);at={x:start.x+(target.x-start.x)*progress,y:start.y+(target.y-start.y)*progress};reachWeight=handle.time<=grip.in[1]?1:w;}
+            }
+            byRole.get(actor).push({ arm, partner, at, joint: grip.to.joint, side: grip.to.side, above: grip.to.above, offset:grip.to.offset, fore: grip.to.fore, past: grip.to.past, anchor: grip.to.anchor, palm: grip.palm, natural: grip.natural, blendFromHand:grip.blendFromHand, reverseElbow:grip.reverseElbow, w:reachWeight });
+        }
+        for (const [actor, list] of byRole) actor.holdGrips(list);
     }
 
     // One frame of one plant (AnimationClip.js plants): over its window a sole holds the world point it had the first frame the weight is above zero (a

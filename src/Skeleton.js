@@ -1268,6 +1268,48 @@ export default class Skeleton {
         }
     }
 
+    // A leg wrapped around another body is a two-link chain, not a stretched
+    // thigh/shin drawing. Move its ankle toward the contact and preserve both
+    // segment lengths. The camera-side knee passes below the waist, the far
+    // knee above it; the clip's layer order completes the wrap.
+    reachLeg(side, goal, weight, bend = 'down', scale = 1, facing = 1, kneeOverlap = 0, kneeArtOffset = null) {
+        const P=this.jointAttachmentPoints,H=P?.[side+'Hip'],K=P?.[side+'Knee'],A=P?.[side+'Ankle'];
+        if(!H||!K||!A||!(weight>0))return null;
+        const lu=Math.hypot(K.x-H.x,K.y-H.y),lf=Math.hypot(A.x-K.x,A.y-K.y);
+        const u=Math.min(1,weight);
+        const choices=[-1,1].map(sign=>Skeleton.solveReachArm(H,lu,lf,goal,null,sign,2.45));
+        choices.sort((a,b)=>bend==='forward'
+            ? facing*(b.elbow.x-a.elbow.x)
+            : bend==='up'?a.elbow.y-b.elbow.y:b.elbow.y-a.elbow.y);
+        const target=choices[0],wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
+        const a0=Math.atan2(K.y-H.y,K.x-H.x),b0=Math.atan2(A.y-K.y,A.x-K.x);
+        const a1=Math.atan2(target.elbow.y-H.y,target.elbow.x-H.x),b1=Math.atan2(target.hand.y-target.elbow.y,target.hand.x-target.elbow.x);
+        const aa=a0+wrap(a1-a0)*u,bb=b0+wrap(b1-b0)*u;
+        const knee={x:H.x+Math.cos(aa)*lu,y:H.y+Math.sin(aa)*lu};
+        const ankle={x:knee.x+Math.cos(bb)*lf,y:knee.y+Math.sin(bb)*lf};
+        // Carry the already drawn art with its bone. Replacing its render
+        // origin with the abstract joint discarded authored overlap/offsets;
+        // boots also used to remain at their pre-IK ankle.
+        const thigh=this[side+'Thigh'],shin=this[side+'Shin'],boot=this[side+'Boot'];
+        this._rotateAbout([thigh],[],H,wrap(aa-a0));
+        const anchors=Object.entries(this.semanticAnchors??{})
+            .filter(([name])=>name.startsWith(side+'Shin.')||name.startsWith(side+'Boot.')).map(([,p])=>p);
+        this._rotateAbout([shin,boot],anchors,K,wrap(bb-b0));
+        const dx=knee.x-K.x,dy=knee.y-K.y;
+        // Slide the painted cap up the calf axis into the knee. Pulling toward
+        // the hip instead shifts it sideways as the hold folds the leg.
+        const tuck=Math.max(0,kneeOverlap)*scale*u;
+        // Optional facing-relative painted correction; joints remain untouched.
+        const tx=-Math.cos(bb)*tuck+(kneeArtOffset?.x??0)*facing*scale*u;
+        const ty=-Math.sin(bb)*tuck+(kneeArtOffset?.y??0)*scale*u;
+        for(const part of [shin,boot])if(part?.visible)part.setPosition(part.x+dx+tx,part.y+dy+ty);
+        for(const p of anchors){p.x+=dx+tx;p.y+=dy+ty;}
+        const foot=this[side+'Foot'];
+        if(foot){const r=wrap(bb-b0),x=foot.x-K.x,y=foot.y-K.y;foot.x=knee.x+x*Math.cos(r)-y*Math.sin(r);foot.y=knee.y+x*Math.sin(r)+y*Math.cos(r);foot.x+=tx;foot.y+=ty;foot.planted=false;}
+        P[side+'Knee']=knee;P[side+'Ankle']=ankle;
+        return {err:Math.hypot(ankle.x-goal.x,ankle.y-goal.y),upper:lu,lower:lf};
+    }
+
     // The upper body as one rigid group about the hips: the parts a torso
     // bend carries, and the joints they publish. Each arm moves whole with
     // the chest, so shoulder and elbow attachments are preserved exactly; the
@@ -1288,6 +1330,22 @@ export default class Skeleton {
     // when upside down (`turn` = tilt + bend = PI), less as the body turns
     // off vertical. A rig without the measurement is left alone.
     holdOnFloor(point, floorY, s, w, turn) {
+        if(point==='nearSole'&&w>0){
+            const sole=this.soleWorld('near');
+            if(sole)this._rotateAbout(this._parts,Object.values(this.jointAttachmentPoints??{}),this._hipPivot(),0,(floorY-sole.y)*w);
+            return;
+        }
+        if(point==='nearKnee'&&w>0&&this.jointAttachmentPoints?.nearKnee){
+            const contactY=this.jointAttachmentPoints.nearKnee.y+6*s;
+            this._rotateAbout(this._parts,Object.values(this.jointAttachmentPoints),this._hipPivot(),0,(floorY-contactY)*w);
+            return;
+        }
+        if(point==='upperBack'&&w>0&&this.jointAttachmentPoints?.neck){
+            const neck=this.jointAttachmentPoints.neck,head=this.head?.getBounds?.();
+            const supportY=Math.max(neck.y+6*s,head?.bottom??neck.y);
+            this._rotateAbout(this._parts,Object.values(this.jointAttachmentPoints),this._hipPivot(),0,(floorY-supportY)*w);
+            return;
+        }
         if (point !== 'crown' || !(w > 0)) return;
         const reach = this._textureConfig?.rigProfile?.crownBelowHip;
         if (!Number.isFinite(reach) || !this.jointAttachmentPoints?.neck) return;
@@ -1352,7 +1410,10 @@ export default class Skeleton {
     // easing from a standing key into a lifted one never pops.
     static bodyPlacementWeight(pose) {
         const lift = Math.abs(pose?.lift ?? 0);
-        const tilt = Math.abs(pose?.tilt ?? 0);
+        // A completed roll is upright again. Keeping -2PI at full placement
+        // weight until the idle controller writes zero caused a recovery pop.
+        const turn = pose?.tilt ?? 0;
+        const tilt = Math.abs(Math.atan2(Math.sin(turn), Math.cos(turn)));
         return Math.min(1, Math.max(lift / 20, tilt / 0.3));
     }
 

@@ -24,3 +24,7 @@ Largest per-frame joint step: George 9, Guido 10, Kowalski 16, Lou 32. The 16/32
 Suite 1420/1420, build, coverage (49 baselined). New tests: `limb` math both facings and two forearm lengths; invalid `limb` rejected; swing-then-crank shape and hold layer; runtime hand-off (fails without the fix). Evidence on disk: `research/animation/hammerlock-elbow-down-2026-11-15/` (contact sheet, before/after zoom, probe scripts).
 
 Not judged. Open: the release (4.3-4.5 s) still moves 8-15 px a frame; Derek's earlier "wristlock not painful enough" note stands.
+
+## Derek's acceptance
+
+Derek approved the hammerlock, 2026-11-15 (preview port 5233): "it looks good, i approve". Preserve the elbow-down crank, the camera-side hold layer and the hand-off rule.

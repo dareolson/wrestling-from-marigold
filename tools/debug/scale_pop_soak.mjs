@@ -34,7 +34,7 @@ const INSTALL = (BAR) => {
             const key = p.st === cur.st ? cur.st : 'transition';
             const h = S.hist[key] ??= { n: 0, bins: {} };
             h.n++; const bin = Math.floor(ad / 0.0005); h.bins[bin] = (h.bins[bin] ?? 0) + 1;
-            if (ad > BAR) S.flags.push({ t: +S.gsec.toFixed(2), who: id, dPct: +(d * 100).toFixed(2), rawPct: +(raw * 100).toFixed(2), dt: +dt.toFixed(4), stBefore: p.st, stAfter: cur.st, clipBefore: p.clip, clipAfter: cur.clip, dy: +(cur.y - p.y).toFixed(1), y: +cur.y.toFixed(0), ox: +(o.x - w.x).toFixed(1), oy: +(o.y - w.y).toFixed(1), oState: o.state, oLying: o.lying ?? null });
+            if (ad > BAR) S.flags.push({ t: +S.gsec.toFixed(2), who: id, dPct: +(d * 100).toFixed(2), rawPct: +(raw * 100).toFixed(2), dt: +dt.toFixed(4), stBefore: p.st, stAfter: cur.st, clipBefore: p.clip, clipAfter: cur.clip, dy: +(cur.y - p.y).toFixed(1), y: +cur.y.toFixed(0), ox: +(o.x - w.x).toFixed(1), oy: +(o.y - w.y).toFixed(1), oState: o.state, oLying: o.lying ?? null, ga: !!(w._groundAttack?.root && !w._groundAttack.committed) });
         }
     });
     return true;
@@ -52,6 +52,7 @@ try {
     const data = await page.evaluate(() => { const S = window.__spop; return { gameSec: S.gsec, frames: S.frames, flags: S.flags, hist: S.hist }; });
     // Cause tag from what the flag record shows; the raw fields stay so Opus can recheck.
     const cause = f => {
+        if (f.ga) return 'I ground-attack route (the drawn scale follows the body along its path)';
         if (f.stBefore === 'down' && f.stAfter === 'down' && Math.abs(f.dy) >= 25) return 'A separation push of stacked down bodies';
         if (f.stBefore !== f.stAfter && f.clipAfter && !f.clipBefore) return 'B paired-move entry snap (clip staging y)';
         if (f.stBefore !== f.stAfter) return 'C other state change with y step';
@@ -60,7 +61,9 @@ try {
         if (f.stBefore === 'running') return 'F run line past a body';
         return 'G standing separation / 26-48 band y step';
     };
-    for (const f of data.flags) f.cause = cause(f);
+    // Arena.js:4405: after a match both men are put back at their start marks (x 330/630, y 360) in one frame: both flagged on the same frame, both landing on y 360. Intended.
+    const resetFrames = new Set(data.flags.filter(f => f.y === 360 && data.flags.some(g => g !== f && g.t === f.t && g.y === 360)).map(f => f.t));
+    for (const f of data.flags) f.cause = resetFrames.has(f.t) && f.y === 360 ? 'H match reset snap (intended)' : cause(f);
     const byCause = {}; for (const f of data.flags) byCause[f.cause] = (byCause[f.cause] ?? 0) + 1;
     const pct = (hh, q) => { let n = 0; const tot = Object.values(hh.bins).reduce((s, v) => s + v, 0); const top = Math.max(...Object.keys(hh.bins).map(Number)); for (let i = 0; i <= top; i++) { n += hh.bins[i] ?? 0; if (n >= q * tot) return +((i + 1) * 0.05).toFixed(2); } return +((top + 1) * 0.05).toFixed(2); };
     const dist = Object.fromEntries(Object.entries(data.hist).map(([k, v]) => [k, { frames: v.n, p50: pct(v, .5), p99: pct(v, .99), p999: pct(v, .999), max: pct(v, 1) }]));   // |Δscale| in % per 60 fps-equivalent frame, bin upper edge (0.05% bins, uncapped)

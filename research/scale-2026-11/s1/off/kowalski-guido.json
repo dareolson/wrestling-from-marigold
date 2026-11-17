@@ -1,0 +1,216 @@
+{
+ "pair": "kowalski-guido",
+ "scale": false,
+ "bar": 0.02,
+ "ts": 1,
+ "errors": [],
+ "gameSec": 150.5,
+ "frames": 4514,
+ "fps": 30,
+ "popsPerMin": 1.2,
+ "byCause": {
+  "C other state change with y step": 1,
+  "B paired-move entry snap (clip staging y)": 2
+ },
+ "distPctPerFrame": {
+  "standing": {
+   "frames": 2082,
+   "p50": 0.05,
+   "p99": 0.4,
+   "p999": 0.6,
+   "max": 1.25
+  },
+  "transition": {
+   "frames": 240,
+   "p50": 0.05,
+   "p99": 4.2,
+   "p999": 7.8,
+   "max": 7.8
+  },
+  "lockup": {
+   "frames": 500,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "holding": {
+   "frames": 1741,
+   "p50": 0.05,
+   "p99": 0.2,
+   "p999": 0.8,
+   "max": 0.8
+  },
+  "headlocked": {
+   "frames": 35,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "evading": {
+   "frames": 30,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "blocking": {
+   "frames": 105,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "selling": {
+   "frames": 76,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "staggered": {
+   "frames": 81,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "down": {
+   "frames": 2626,
+   "p50": 0.05,
+   "p99": 0.85,
+   "p999": 1.8,
+   "max": 1.95
+  },
+  "gettingUp": {
+   "frames": 590,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "slamming": {
+   "frames": 609,
+   "p50": 0.05,
+   "p99": 0.95,
+   "p999": 1,
+   "max": 1
+  },
+  "dropkicking": {
+   "frames": 17,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "flipping": {
+   "frames": 11,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinned": {
+   "frames": 19,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinning": {
+   "frames": 19,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "falling": {
+   "frames": 169,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "sleeping": {
+   "frames": 5,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "elbowDropping": {
+   "frames": 18,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "taunting": {
+   "frames": 53,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  }
+ },
+ "flags": [
+  {
+   "t": 47.56,
+   "who": "p1",
+   "dPct": 7.72,
+   "rawPct": 15.44,
+   "dt": 0.0333,
+   "stBefore": "standing",
+   "stAfter": "lockup",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": 56.1,
+   "y": 419,
+   "ox": -5.1,
+   "oy": -65.2,
+   "oState": "lockup",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "C other state change with y step"
+  },
+  {
+   "t": 48.6,
+   "who": "p1",
+   "dPct": -7.77,
+   "rawPct": -15.55,
+   "dt": 0.0333,
+   "stBefore": "lockup",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "piledriver",
+   "dy": -65.2,
+   "y": 354,
+   "ox": -57.3,
+   "oy": 0,
+   "oState": "holding",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "B paired-move entry snap (clip staging y)"
+  },
+  {
+   "t": 81.73,
+   "who": "p2",
+   "dPct": 4.19,
+   "rawPct": 8.39,
+   "dt": 0.0333,
+   "stBefore": "lockup",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "hammerlock",
+   "dy": 30.2,
+   "y": 390,
+   "ox": -72.3,
+   "oy": -2.7,
+   "oState": "holding",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "B paired-move entry snap (clip staging y)"
+  }
+ ]
+}

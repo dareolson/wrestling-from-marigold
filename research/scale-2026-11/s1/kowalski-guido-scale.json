@@ -1,0 +1,184 @@
+{
+ "pair": "kowalski-guido",
+ "scale": true,
+ "bar": 0.02,
+ "ts": 1,
+ "errors": [],
+ "gameSec": 150.1,
+ "frames": 4502,
+ "fps": 30,
+ "popsPerMin": 0.4,
+ "byCause": {
+  "D clip-authored y motion": 1
+ },
+ "distPctPerFrame": {
+  "standing": {
+   "frames": 2455,
+   "p50": 0.05,
+   "p99": 0.4,
+   "p999": 0.95,
+   "max": 2.05
+  },
+  "transition": {
+   "frames": 209,
+   "p50": 0.05,
+   "p99": 0.45,
+   "p999": 0.45,
+   "max": 0.45
+  },
+  "dropkicking": {
+   "frames": 17,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "selling": {
+   "frames": 69,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "flipping": {
+   "frames": 11,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "down": {
+   "frames": 2660,
+   "p50": 0.05,
+   "p99": 1.05,
+   "p999": 1.8,
+   "max": 1.95
+  },
+  "gettingUp": {
+   "frames": 647,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "slamming": {
+   "frames": 392,
+   "p50": 0.05,
+   "p99": 1,
+   "p999": 1,
+   "max": 1
+  },
+  "elbowDropping": {
+   "frames": 30,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "holding": {
+   "frames": 1703,
+   "p50": 0.05,
+   "p99": 0.15,
+   "p999": 0.3,
+   "max": 0.3
+  },
+  "staggered": {
+   "frames": 170,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "lockup": {
+   "frames": 338,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "grabbed": {
+   "frames": 5,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "running": {
+   "frames": 46,
+   "p50": 0.05,
+   "p99": 0.25,
+   "p999": 0.25,
+   "max": 0.25
+  },
+  "falling": {
+   "frames": 123,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "headlocked": {
+   "frames": 6,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "evading": {
+   "frames": 40,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinned": {
+   "frames": 23,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinning": {
+   "frames": 23,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "blocking": {
+   "frames": 32,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "sleeping": {
+   "frames": 3,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  }
+ },
+ "flags": [
+  {
+   "t": 138.09,
+   "who": "p1",
+   "dPct": -2,
+   "rawPct": -4.01,
+   "dt": 0.0333,
+   "stBefore": "standing",
+   "stAfter": "standing",
+   "clipBefore": "kneeDropV2",
+   "clipAfter": "kneeDropV2",
+   "dy": -15,
+   "y": 359,
+   "ox": 15.2,
+   "oy": -1.9,
+   "oState": "down",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "D clip-authored y motion"
+  }
+ ]
+}

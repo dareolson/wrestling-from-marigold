@@ -1,0 +1,355 @@
+{
+ "pair": "kowalski-guido",
+ "scale": false,
+ "bar": 0.015,
+ "ts": 1,
+ "errors": [],
+ "gameSec": 152.9,
+ "frames": 5060,
+ "popsPerMin": 4.32,
+ "byCause": {
+  "B paired-move entry snap (clip staging y)": 4,
+  "A separation push of stacked down bodies (y jump 26-87 px)": 4,
+  "E slam carry y motion (no clip)": 1,
+  "G standing: separation/band y step": 1,
+  "C other state change with y step": 1
+ },
+ "distPctPerFrame": {
+  "standing": {
+   "frames": 2380,
+   "p50": 0.05,
+   "p99": 0.8,
+   "p999": 1.35,
+   "max": 5.05
+  },
+  "transition": {
+   "frames": 270,
+   "p50": 0.05,
+   "p99": 2.6,
+   "p999": 5.05,
+   "max": 5.05
+  },
+  "dropkicking": {
+   "frames": 57,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "selling": {
+   "frames": 111,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "flipping": {
+   "frames": 58,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "down": {
+   "frames": 3163,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 5.05,
+   "max": 5.05
+  },
+  "gettingUp": {
+   "frames": 603,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "holding": {
+   "frames": 1781,
+   "p50": 0.05,
+   "p99": 0.3,
+   "p999": 0.8,
+   "max": 0.85
+  },
+  "lockup": {
+   "frames": 410,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "slamming": {
+   "frames": 653,
+   "p50": 0.05,
+   "p99": 1.4,
+   "p999": 4.3,
+   "max": 4.3
+  },
+  "elbowDropping": {
+   "frames": 26,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "staggered": {
+   "frames": 37,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "falling": {
+   "frames": 249,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "grabbed": {
+   "frames": 10,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "running": {
+   "frames": 141,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinning": {
+   "frames": 42,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinned": {
+   "frames": 42,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "evading": {
+   "frames": 18,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "blocking": {
+   "frames": 54,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "taunting": {
+   "frames": 10,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "sleeping": {
+   "frames": 3,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  }
+ },
+ "flags": [
+  {
+   "t": 14.13,
+   "who": "p1",
+   "dPct": -2.04,
+   "dt": 0.03,
+   "stBefore": "lockup",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "piledriver",
+   "dy": -7.5,
+   "y": 360,
+   "ox": 58.2,
+   "oy": 0,
+   "oState": "holding",
+   "oLying": "supine",
+   "cause": "B paired-move entry snap (clip staging y)"
+  },
+  {
+   "t": 21.63,
+   "who": "p2",
+   "dPct": -17.35,
+   "dt": 0.03,
+   "stBefore": "down",
+   "stAfter": "down",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -62.4,
+   "y": 297,
+   "ox": -113.5,
+   "oy": 65.7,
+   "oState": "down",
+   "oLying": "prone",
+   "cause": "A separation push of stacked down bodies (y jump 26-87 px)"
+  },
+  {
+   "t": 33.72,
+   "who": "p1",
+   "dPct": -17.03,
+   "dt": 0.0383,
+   "stBefore": "down",
+   "stAfter": "down",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -74.4,
+   "y": 362,
+   "ox": -141.7,
+   "oy": 76.9,
+   "oState": "down",
+   "oLying": "prone",
+   "cause": "A separation push of stacked down bodies (y jump 26-87 px)"
+  },
+  {
+   "t": 41.12,
+   "who": "p1",
+   "dPct": -4.29,
+   "dt": 0.05,
+   "stBefore": "slamming",
+   "stAfter": "slamming",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -18.7,
+   "y": 417,
+   "ox": 66.9,
+   "oy": 21.7,
+   "oState": "grabbed",
+   "oLying": "prone",
+   "cause": "E slam carry y motion (no clip)"
+  },
+  {
+   "t": 54.13,
+   "who": "p2",
+   "dPct": -17.66,
+   "dt": 0.0317,
+   "stBefore": "down",
+   "stAfter": "down",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -77.2,
+   "y": 360,
+   "ox": 137.3,
+   "oy": 79.3,
+   "oState": "down",
+   "oLying": "prone",
+   "cause": "A separation push of stacked down bodies (y jump 26-87 px)"
+  },
+  {
+   "t": 110.77,
+   "who": "p1",
+   "dPct": -6.67,
+   "dt": 0.035,
+   "stBefore": "standing",
+   "stAfter": "standing",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -28.7,
+   "y": 401,
+   "ox": -71.4,
+   "oy": 29.6,
+   "oState": "standing",
+   "oLying": "supine",
+   "cause": "G standing: separation/band y step"
+  },
+  {
+   "t": 117.35,
+   "who": "p1",
+   "dPct": -2.59,
+   "dt": 0.035,
+   "stBefore": "gettingUp",
+   "stAfter": "taunting",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -10.5,
+   "y": 393,
+   "ox": 41.5,
+   "oy": 45.9,
+   "oState": "slamming",
+   "oLying": "supine",
+   "cause": "C other state change with y step"
+  },
+  {
+   "t": 117.35,
+   "who": "p2",
+   "dPct": 5.73,
+   "dt": 0.035,
+   "stBefore": "standing",
+   "stAfter": "slamming",
+   "clipBefore": null,
+   "clipAfter": "uppercut:guido-roster-v1",
+   "dy": 23.8,
+   "y": 439,
+   "ox": -41.5,
+   "oy": -45.9,
+   "oState": "taunting",
+   "oLying": "supine",
+   "cause": "B paired-move entry snap (clip staging y)"
+  },
+  {
+   "t": 123.39,
+   "who": "p2",
+   "dPct": -9.64,
+   "dt": 0.04,
+   "stBefore": "lockup",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "hammerlock",
+   "dy": -41.6,
+   "y": 389,
+   "ox": -69.2,
+   "oy": -3.3,
+   "oState": "holding",
+   "oLying": "supine",
+   "cause": "B paired-move entry snap (clip staging y)"
+  },
+  {
+   "t": 132.23,
+   "who": "p1",
+   "dPct": 1.84,
+   "dt": 0.0333,
+   "stBefore": "down",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "ankleLockV2",
+   "dy": 7.2,
+   "y": 399,
+   "ox": -86.9,
+   "oy": 0,
+   "oState": "holding",
+   "oLying": "supine",
+   "cause": "B paired-move entry snap (clip staging y)"
+  },
+  {
+   "t": 149.11,
+   "who": "p2",
+   "dPct": -19.67,
+   "dt": 0.0283,
+   "stBefore": "down",
+   "stAfter": "down",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -78.6,
+   "y": 321,
+   "ox": 30.4,
+   "oy": 78.4,
+   "oState": "down",
+   "oLying": "supine",
+   "cause": "A separation push of stacked down bodies (y jump 26-87 px)"
+  }
+ ]
+}

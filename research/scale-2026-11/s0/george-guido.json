@@ -1,0 +1,337 @@
+{
+ "pair": "george-guido",
+ "scale": false,
+ "bar": 0.015,
+ "ts": 1,
+ "errors": [],
+ "gameSec": 164.8,
+ "frames": 5479,
+ "popsPerMin": 3.64,
+ "byCause": {
+  "C other state change with y step": 1,
+  "F run line past a body, ordinary motion": 3,
+  "B paired-move entry snap (clip staging y)": 3,
+  "A separation push of stacked down bodies (y jump 26-87 px)": 3
+ },
+ "distPctPerFrame": {
+  "standing": {
+   "frames": 2782,
+   "p50": 0.05,
+   "p99": 1,
+   "p999": 1.3,
+   "max": 1.3
+  },
+  "transition": {
+   "frames": 211,
+   "p50": 0.05,
+   "p99": 5.05,
+   "p999": 5.05,
+   "max": 5.05
+  },
+  "dropkicking": {
+   "frames": 63,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "selling": {
+   "frames": 47,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "flipping": {
+   "frames": 37,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "down": {
+   "frames": 2762,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 5.05,
+   "max": 5.05
+  },
+  "gettingUp": {
+   "frames": 624,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "slamming": {
+   "frames": 709,
+   "p50": 0.05,
+   "p99": 0.8,
+   "p999": 1.4,
+   "max": 1.4
+  },
+  "lockup": {
+   "frames": 466,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "grabbed": {
+   "frames": 10,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "running": {
+   "frames": 228,
+   "p50": 0.05,
+   "p99": 1.75,
+   "p999": 2.05,
+   "max": 2.05
+  },
+  "taunting": {
+   "frames": 780,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "evading": {
+   "frames": 27,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "blocking": {
+   "frames": 126,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "falling": {
+   "frames": 92,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "holding": {
+   "frames": 1916,
+   "p50": 0.05,
+   "p99": 0.2,
+   "p999": 0.9,
+   "max": 0.95
+  },
+  "pinned": {
+   "frames": 4,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinning": {
+   "frames": 4,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "staggered": {
+   "frames": 35,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "headlocked": {
+   "frames": 10,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "elbowDropping": {
+   "frames": 23,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  }
+ },
+ "flags": [
+  {
+   "t": 12.13,
+   "who": "p2",
+   "dPct": -10.69,
+   "dt": 0.03,
+   "stBefore": "standing",
+   "stAfter": "lockup",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -45.8,
+   "y": 382,
+   "ox": -52.1,
+   "oy": 56.9,
+   "oState": "lockup",
+   "oLying": "supine",
+   "cause": "C other state change with y step"
+  },
+  {
+   "t": 13.51,
+   "who": "p1",
+   "dPct": -2.05,
+   "dt": 0.0333,
+   "stBefore": "running",
+   "stAfter": "running",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -9,
+   "y": 430,
+   "ox": 39.5,
+   "oy": -54.3,
+   "oState": "standing",
+   "oLying": "supine",
+   "cause": "F run line past a body, ordinary motion"
+  },
+  {
+   "t": 13.54,
+   "who": "p1",
+   "dPct": -1.84,
+   "dt": 0.0317,
+   "stBefore": "running",
+   "stAfter": "running",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -7.9,
+   "y": 422,
+   "ox": 22.1,
+   "oy": -44.6,
+   "oState": "standing",
+   "oLying": "supine",
+   "cause": "F run line past a body, ordinary motion"
+  },
+  {
+   "t": 13.57,
+   "who": "p1",
+   "dPct": -1.74,
+   "dt": 0.0317,
+   "stBefore": "running",
+   "stAfter": "running",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -7.3,
+   "y": 415,
+   "ox": 6.7,
+   "oy": -36.5,
+   "oState": "standing",
+   "oLying": "supine",
+   "cause": "F run line past a body, ordinary motion"
+  },
+  {
+   "t": 29.16,
+   "who": "p1",
+   "dPct": 6.65,
+   "dt": 0.025,
+   "stBefore": "lockup",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "piledriver",
+   "dy": 26.3,
+   "y": 421,
+   "ox": 68.1,
+   "oy": 0,
+   "oState": "holding",
+   "oLying": "supine",
+   "cause": "B paired-move entry snap (clip staging y)"
+  },
+  {
+   "t": 81.01,
+   "who": "p2",
+   "dPct": -2.45,
+   "dt": 0.0383,
+   "stBefore": "lockup",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "hammerlock",
+   "dy": -7.9,
+   "y": 313,
+   "ox": 56.2,
+   "oy": -2.5,
+   "oState": "holding",
+   "oLying": "supine",
+   "cause": "B paired-move entry snap (clip staging y)"
+  },
+  {
+   "t": 122.1,
+   "who": "p2",
+   "dPct": -17.89,
+   "dt": 0.03,
+   "stBefore": "down",
+   "stAfter": "down",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -78.6,
+   "y": 360,
+   "ox": 133.6,
+   "oy": 78.6,
+   "oState": "down",
+   "oLying": "prone",
+   "cause": "A separation push of stacked down bodies (y jump 26-87 px)"
+  },
+  {
+   "t": 149.07,
+   "who": "p1",
+   "dPct": -18.33,
+   "dt": 0.0283,
+   "stBefore": "down",
+   "stAfter": "down",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -80.5,
+   "y": 358,
+   "ox": 43.7,
+   "oy": 80.5,
+   "oState": "down",
+   "oLying": "supine",
+   "cause": "A separation push of stacked down bodies (y jump 26-87 px)"
+  },
+  {
+   "t": 157.26,
+   "who": "p1",
+   "dPct": 15.98,
+   "dt": 0.0183,
+   "stBefore": "lockup",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "piledriver",
+   "dy": 51.3,
+   "y": 372,
+   "ox": 60.3,
+   "oy": 0,
+   "oState": "holding",
+   "oLying": "supine",
+   "cause": "B paired-move entry snap (clip staging y)"
+  },
+  {
+   "t": 164.66,
+   "who": "p2",
+   "dPct": -17.14,
+   "dt": 0.0383,
+   "stBefore": "down",
+   "stAfter": "down",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -63.9,
+   "y": 308,
+   "ox": -114.3,
+   "oy": 67.2,
+   "oState": "down",
+   "oLying": "prone",
+   "cause": "A separation push of stacked down bodies (y jump 26-87 px)"
+  }
+ ]
+}

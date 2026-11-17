@@ -18,6 +18,9 @@ const INSTALL = (BAR) => {
     const S = window.__spop = { gsec: 0, flags: [], hist: {}, frames: 0, prev: {} };
     const drawScale = (w) => {
         const onRopes = (w.state === 'climbing' || w.state === 'onTurnbuckle' || (w.state === 'taunting' && w._ropeLevel > 0)) && w._corner;
+        // A ground attack (elbow drop, splash) draws the body at ga.root with the scale following it (_drawGroundAttack/_drawSplash), then commits root to x/y: the drawn size is continuous there, so measure it at root.y
+        const ga = w._groundAttack;
+        if (ga?.root && !ga.committed) { const y = w.y; w.y = ga.root.y; const s = w.s * w._heightScale; w.y = y; return s; }
         if (!onRopes) return w.s * w._heightScale;
         const y = w.y; w.y = w._corner.matY; const s = w.s * w._heightScale; w.y = y; return s;
     };

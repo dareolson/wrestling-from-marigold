@@ -87,8 +87,10 @@
 // snapped, and stays a pure function of clip time: seeking stays exact.
 
 import { sampleTrack } from './AnimationClip.js';
+import { scaleCandidate } from '../constants.js';
 
 export const FIT_EASE_SEC = 0.45;
+export const ENTRY_EASE_SEC = 0.2;
 
 // Which bound role defines the staging axis. `attacker` first: for a paired
 // move the attacker's facing is the one gameplay already establishes at
@@ -165,8 +167,24 @@ export function captureStagingContext(clip, bindings) {
     const fit = bindings[anchorRole]?.stagingFit?.(frame, transformExtents(clip, staged));
     if (Number.isFinite(fit) && fit !== 0) frame.fitShift = fit;
     const roles = {};
-    for (const role of staged) roles[role] = Object.freeze({ role, ...frame });
+    const entry = scaleCandidate() ? entryEase(clip, staged) : null;
+    for (const role of staged) {
+        let entryY = 0;
+        if (entry && role !== anchorRole) {
+            const realY = bindings[role]?.captureStagingOrigin?.().y ?? bindings[role]?.y;
+            const stagedY = stagedWorldPoint(frame, sampleTrack(clip.tracks[role], 0).transform).y;
+            if (Number.isFinite(realY) && Number.isFinite(stagedY)) entryY = realY - stagedY;
+        }
+        roles[role] = Object.freeze(entryY ? { role, ...frame, entryY, entryUntil: entry } : { role, ...frame });
+    }
     return Object.freeze({ anchorRole, ...frame, roles: Object.freeze(roles) });
+}
+
+// The entry window's length: ENTRY_EASE_SEC, or the clip's first key after t=0 if that comes sooner (never past the clip's end).
+function entryEase(clip, roles) {
+    let first = Infinity;
+    for (const role of roles) for (const frame of clip.tracks[role].keyframes) if (frame.at > 1e-9) first = Math.min(first, frame.at);
+    return Math.min(ENTRY_EASE_SEC, first, clip.duration ?? ENTRY_EASE_SEC);
 }
 
 /**
@@ -195,9 +213,17 @@ export function transformExtents(clip, roles) {
  * object when there is no shift.
  */
 export function stagingAt(staging, time) {
-    if (!staging?.fitShift) return staging;
-    const u = Math.max(0, Math.min(1, staging.fitUntil > 0 ? time / staging.fitUntil : 1));
-    return { ...staging, originX: staging.originX + staging.fitShift * u * u * (3 - 2 * u) };
+    if (!staging?.fitShift && !staging?.entryY) return staging;
+    let out = staging;
+    if (staging.fitShift) {
+        const u = Math.max(0, Math.min(1, staging.fitUntil > 0 ? time / staging.fitUntil : 1));
+        out = { ...out, originX: staging.originX + staging.fitShift * u * u * (3 - 2 * u) };
+    }
+    if (staging.entryY) {   // ?scale=v1: the entry window's y ease (see DETERMINISM)
+        const u = Math.max(0, Math.min(1, staging.entryUntil > 0 ? time / staging.entryUntil : 1));
+        out = { ...out, originY: staging.originY + staging.entryY * (1 - u * u * (3 - 2 * u)) };
+    }
+    return out;
 }
 
 /**

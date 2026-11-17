@@ -23,6 +23,9 @@ export function ringBoundsAtY(y) {
     };
 }
 
+// ?scale=v1 (PLAN_SCALE): one perspective, no size pops. Opt-in; flag off is byte-identical (same y, same draw scale, every frame).
+export const scaleCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('scale') === 'v1';
+
 export function perspectiveScale(y) {
     const t = Math.max(0, Math.min(1, (y - RING.farLeft.y) / (RING.nearLeft.y - RING.farLeft.y)));
     return 0.58 + t * 0.42;

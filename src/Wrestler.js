@@ -1,5 +1,5 @@
 import { impactMoveId } from './animation/impactMoves.js';
-import { RING, ringBoundsAtY, perspectiveScale } from './constants.js';
+import { RING, ringBoundsAtY, perspectiveScale, scaleCandidate } from './constants.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
@@ -229,8 +229,7 @@ export const splashFor = (move) => {
 export const lightCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('light') === 'v1';
 // PLAN_GEORGE_PERFORMANCE A: the strut continues into the crowd taunt (opt-in preview, on top of light=v1)
 export const georgePerformanceCandidate = () => lightCandidate() && new URLSearchParams(location.search).get('georgePerformance') === '1';
-// ?scale=v1 (PLAN_SCALE): one perspective, no size pops. Opt-in; flag off is byte-identical (same y, same draw scale, every frame).
-export const scaleCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('scale') === 'v1';
+export { scaleCandidate };   // defined in constants.js (clipStaging.js reads it too)
 export const waistlockCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('waistlock') === 'v1';
 const plantCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('plant') === '1';
 // Below this a wrestler who begs off (George) begs instead of taunting —

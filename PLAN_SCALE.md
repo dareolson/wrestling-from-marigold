@@ -19,6 +19,7 @@ Runs alongside the Stage 12 move refinement (PLAN_LIGHT_MOVES). Don't touch move
 
 - **S1 review (Opus, 2026-11-16): code accepted, three follow-ups (T1.4) before promotion; strip goes to Derek now.** Checked: flag off untouched (all new paths behind `scaleCandidate()`), 38/38 focused tests, `stagingAt` is the one path MoveRuntime samples (MoveRuntime.js:402). Cause A really was the soak's mistake: the ground attack draws at `scaleAt(root.y)` along its route (Wrestler.js:3481), so the S0 13-20% "down-body" pops were never on screen. Pops 0.8/min off → 0.2/min on, both left at the 2% bar (kneeDropV2 clip motion).
   Open: entry grips move up to 14 px in the window (piledriver 35.5 → 49.3); the probe covers `hammerlock`, not the approved `wristlockHammerlock`, stretch or deathlock, and only to 0.7 s; the DETERMINISM comment wasn't updated; the x-only push at a rope is unmeasured.
+- **S1 strip (Derek, 2026-11-17): approved.** Next: T1.4.
 
 ## Rules
 

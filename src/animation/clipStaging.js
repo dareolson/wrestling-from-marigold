@@ -58,6 +58,10 @@
 // on. Because the origin is shared, this also means the RELATIVE geometry at
 // any time t is a pure function of the clip data: identical from every trigger
 // distance, in both facings, in either role assignment.
+// The one exception is the ?scale=v1 entry window (T1.2): each non-anchor role
+// carries an entry offset in y only, eased to 0 over min(0.2 s, the clip's
+// first key). x and every frame after the window are unchanged, so the rule
+// holds from the window's end on; flag off has no window.
 //
 // OWNERSHIP. Staging is OPT-IN PER TRACK: a context exists only for roles whose
 // track actually authors transform channels (see `authorsTransform` on the

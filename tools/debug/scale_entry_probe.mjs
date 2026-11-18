@@ -9,8 +9,12 @@ const MOVES = [   // [clip, executor, attacker state, defender state, defender l
     ['piledriver', '_doPiledriver', 'lockup', 'lockup', null], ['hammerlock', '_doHammerlock', 'lockup', 'lockup', null],
     ['halfBostonCrab', '_doHalfBostonCrab', 'standing', 'down', 'supine'], ['armBarV2', '_doArmBar', 'standing', 'down', 'supine'],
     ['hipTossRunner', '_doRunnerHipToss', 'standing', 'standing', null], ['bodySlam', '_doBodySlam', 'lockup', 'lockup', null], ['uppercut', '_doUppercut', 'standing', 'standing', null],
+    // T1.4: the approved moves (6th field), compared from the end of the entry window to the clip end + TAIL s (the others stop at 2 s, compared to 0.7 s)
+    ['wristlock', '_doWristlock', 'lockup', 'lockup', null, true], ['wristlockHammerlock', '_doWristlockHammerlock', 'lockup', 'lockup', null, true],
+    ['abdominalStretch', '_doAbdominalStretch', 'standing', 'staggered', null, true], ['indianDeathlock', '_doIndianDeathlock', 'standing', 'down', 'supine', true],
 ];
-const WINDOW = 0.3, DYS = [0, 25, -25];
+const APPROVED = new Set(['wristlock', 'wristlockHammerlock', 'armBarV2', 'abdominalStretch', 'indianDeathlock']), TAIL = 0.5;
+const WINDOW = 0.3, ENTRY = 0.2, DYS = [0, 25, -25];
 const SETUP = ({ move, facing, dy, sep }) => {
     const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2;
     let s0 = 0x5eed1234; Math.random = () => { s0 = (s0 + 0x6D2B79F5) | 0; let t = Math.imul(s0 ^ (s0 >>> 15), 1 | s0); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -30,7 +34,7 @@ const SETUP = ({ move, facing, dy, sep }) => {
     if (typeof a[exec] !== 'function') return { error: `no ${exec}` };
     const pre = { a: { x: a.x, y: a.y, s: a.s * a._heightScale }, d: { x: d.x, y: d.y, s: d.s * d._heightScale } };
     a[exec](d);
-    return { clip: a._activeMove?.clip?.id ?? null, pre };
+    return { clip: a._activeMove?.clip?.id ?? null, duration: a._activeMove?.clip?.duration ?? null, pre };
 };
 const STEP = (T) => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0], a = sc.w1, d = sc.w2;
@@ -61,9 +65,11 @@ for (const flag of [0, 1]) {
             await page.waitForTimeout(1500);
             await page.evaluate(() => { const g = window.__WFM_GAME, sc = g.scene.scenes[0]; g.loop.sleep(); sc.tweens.getDelta = () => 1000 / 60; sc._p1AI = null; sc._p2AI = null; window.__T = sc.time.now; window.__idle = { ...sc.w1.pose }; });
             for (const move of MOVES) for (const facing of [1, -1]) for (const dy of DYS) {
+                process.stderr.write(`${flag} ${name} ${move[0]} ${facing} ${dy}\n`);
                 const info = await page.evaluate(SETUP, { move, facing, dy, sep: 70 });
                 const rec = { flag, pair: name, move: move[0], facing, dy, ...info, frames: [] };
-                if (!info.error) for (let i = 0; i < 120; i++) { rec.frames.push(await page.evaluate((T) => { window.__T += 1000 / 60; return window.__T; }).then(T => page.evaluate(STEP, T))); }
+                const n = !info.error && APPROVED.has(move[0]) && info.duration ? Math.ceil((info.duration + TAIL) * 60) : 120;
+                if (!info.error) rec.frames = await page.evaluate(({ n, stepSrc }) => { const step = eval(stepSrc); const fr = []; for (let i = 0; i < n; i++) { window.__T += 1000 / 60; fr.push(step(window.__T)); } return fr; }, { n, stepSrc: STEP.toString() });
                 out.push(rec);
             }
         } finally { await h.close(); }
@@ -77,8 +83,12 @@ const rows = [];
 for (const r of out.filter(r => r.flag)) {
     const o = offs.get(key(r)); if (!o || r.error) { rows.push({ key: key(r), error: r.error ?? 'no flag-off twin' }); continue; }
     const n = Math.round(WINDOW * 60);
-    let maxAfter = 0, at = null; for (let i = n; i < Math.min(o.frames.length, r.frames.length, 42); i++) for (const w of ['a', 'd']) { const m = Math.max(Math.abs(o.frames[i][w].x - r.frames[i][w].x), Math.abs(o.frames[i][w].y - r.frames[i][w].y)); if (m > maxAfter) { maxAfter = m; at = `${w}@${(i / 60).toFixed(2)}s`; } }
-    rows.push({ key: key(r), clip: r.clip, popOffPct: maxPop(o, n), popOnPct: maxPop(r, n), gripOff: maxGrip(o, n), gripOn: maxGrip(r, n), maxDiffWindowTo0_7sPx: +maxAfter.toFixed(2), at });   // past 0.7 s the flag also changes the move-end separation (T1.1), so it is not compared
+    const full = APPROVED.has(r.move), last = full ? Math.min(o.frames.length, r.frames.length) : 42, end = full && r.duration ? Math.ceil(r.duration * 60) : null, e0 = full ? Math.round(ENTRY * 60) : n;
+    let maxAfter = 0, at = null, gripDiff = 0, gripAt = null, maxIn = 0, inAt = null;
+    for (let i = e0; i < last; i++) { const go = o.frames[i].grip, gr = r.frames[i].grip; if (go != null && gr != null && Math.abs(go - gr) > gripDiff) { gripDiff = Math.abs(go - gr); gripAt = `${(i / 60).toFixed(2)}s`; } }
+    if (full) for (let i = e0; i < Math.min(last, end); i++) for (const w of ['a', 'd']) { const m = Math.max(Math.abs(o.frames[i][w].x - r.frames[i][w].x), Math.abs(o.frames[i][w].y - r.frames[i][w].y), Math.abs(o.frames[i][w].s - r.frames[i][w].s)); if (m > maxIn) { maxIn = m; inAt = `${w}@${(i / 60).toFixed(2)}s`; } }   // inside the clip: x, y and draw scale
+    for (let i = e0; i < last; i++) for (const w of ['a', 'd']) { const m = Math.max(Math.abs(o.frames[i][w].x - r.frames[i][w].x), Math.abs(o.frames[i][w].y - r.frames[i][w].y)); if (m > maxAfter) { maxAfter = m; at = `${w}@${(i / 60).toFixed(2)}s`; } }
+    rows.push({ key: key(r), clip: r.clip, popOffPct: maxPop(o, n), popOnPct: maxPop(r, n), gripOff: maxGrip(o, n), gripOn: maxGrip(r, n), ...(full ? { approved: true, clipEndS: +r.duration.toFixed(2), maxDiffToClipEndPx: +maxIn.toFixed(2), atInClip: inAt, maxDiffToEnd05Px: +maxAfter.toFixed(2), at, maxGripDiffPx: +gripDiff.toFixed(2), gripAt } : { maxDiffWindowTo0_7sPx: +maxAfter.toFixed(2), at }) });   // past 0.7 s the flag also changes the move-end separation (T1.1), so it is not compared
 }
 if (process.env.RAW) writeFileSync(process.env.RAW, JSON.stringify(out));
 writeFileSync(process.argv[2] ?? 'research/scale-2026-11/s1/entry-probe.json', JSON.stringify({ rows }, null, 1));

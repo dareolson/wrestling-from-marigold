@@ -695,6 +695,11 @@ export default class Wrestler {
 
     get s() { return perspectiveScale(this.y); }
 
+    // The one draw-scale method (T2.2): the size he is drawn at. While on the ropes the corner's mat depth fixes it (climbing the post doesn't move him deeper into
+    // the ring; also rope taunts); otherwise perspective at `y` (default his own, a ground attack passes the body's route y), then the rig's heightScale. `this.s` stays the movement/reach scale.
+    _onRopes() { return (this.state === 'climbing' || this.state === 'onTurnbuckle' || (this.state === 'taunting' && this._ropeLevel > 0)) && this._corner; }
+    drawScale(y = this.y) { return (this._onRopes() ? perspectiveScale(this._corner.matY) : perspectiveScale(y)) * this._heightScale; }
+
     // True while authored choreography — a MoveRuntime clip or a MOVE_DEFS pose
     // sequence — owns the stance.
     //
@@ -1229,7 +1234,7 @@ export default class Wrestler {
             this.y += this.vy * dt;
             // v2: the feet are drawn at s * _heightScale, so travel is measured in that scale or the planted foot creeps
             const g = this._gaitV2;
-            const unscaled = travelSpeed / (g ? this.s * this._heightScale : this.s);
+            const unscaled = travelSpeed / (g ? this.drawScale() : this.s);
             this.walkPhase = ((this.walkPhase + this._walkPhaseDir * unscaled * dt * (g ? this._gaitParamsAt(this._gaitRunW).freq : WALK_FREQ)) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
             this._clamp();
         } else if (!this._gaitV2) {
@@ -1627,7 +1632,7 @@ export default class Wrestler {
     _carriedRiseEnd() {
         const ctx = this._backRiseContext();
         if (!ctx?.carry) return null;
-        const s = this.s * this._heightScale;
+        const s = this.drawScale();
         const arm = this.skeleton.carriedRiseEndArm?.(s, this.facing, ctx.severity, this._riseStand(s, this.facing));
         if (!arm) return null;
         return { w: backRiseWeight(1, ctx.from > 0 ? ctx.from : 0, ctx.severity, true), arm: arm.arm, elbow: arm.elbow };
@@ -2632,7 +2637,7 @@ export default class Wrestler {
         this.moveBlend = 0; this.walkPhase = 0;
         this._lightContactOther = other;
         const hs = specFor(HAND_STOMP_SPEC, { attackerRigId: this.rigId }), bs = specFor(BODY_STOMPS_SPEC, { attackerRigId: this.rigId });
-        const so = other.s * other._heightScale;
+        const so = other.drawScale();
         const back = Skeleton.groundedTarget(other.skeleton.jointAttachmentPoints ?? {}, 'chest', so) ?? { x: other.x, y: other.y };
         const facing = other.facing || this.facing;
         this.facing = facing;
@@ -3478,7 +3483,7 @@ export default class Wrestler {
         if (this._groundAttack.def.mode === 'splash') { this._drawSplash(s0, facing, gfx); return; }
         const ga = this._groundAttack, def = ga.def, sk = this.skeleton, f = facing >= 0 ? 1 : -1, op = ga.other;
         const smp = sampleGroundAttack(def, ga.t, Skeleton.lyingBase('prone', true)), P = def.phases;
-        const scaleAt = (y) => perspectiveScale(y) * this._heightScale;   // he is smaller up the screen: the scale follows the body as it moves, so the commit at the end is no jump
+        const scaleAt = (y) => this.drawScale(y);   // he is smaller up the screen: the scale follows the body as it moves, so the commit at the end is no jump
         if (smp.seg === 'settle') {
             gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(this.x, this.y, 120 * s0, 36 * s0);
             sk.setVisible(true);
@@ -3487,7 +3492,7 @@ export default class Wrestler {
         }
         const opPts = op.skeleton.jointAttachmentPoints ?? {};
         const place = (s) => {
-            const chest = Skeleton.groundedTarget(opPts, 'chest', op.s * op._heightScale) ?? { x: op.x, y: op.y };
+            const chest = Skeleton.groundedTarget(opPts, 'chest', op.drawScale()) ?? { x: op.x, y: op.y };
             const rootAt = (g, point, at) => { const e = sk.groundedPointAt(s, facing, g, point); return e ? { x: at.x - e.x, y: at.y - e.y } : { x: this.x, y: this.y }; };
             let root = rootAt(smp.g, `${def.side}Elbow`, { x: chest.x + smp.anchor.dx * f * s, y: chest.y + smp.anchor.dy * s });
             if (smp.plant > 0) {
@@ -4105,7 +4110,7 @@ export default class Wrestler {
         this._cancelActiveMove('rehandstomp');
         const spec = specFor(HAND_STOMP_SPEC, { attackerRigId: this.rigId });
         // where his near hand is drawn at the hit: the prone rest pose plus the hand sell's offsets at t = 0, read from his skeleton like the ground attacks read the chest
-        const rest = Skeleton.lyingBase('prone', true), g = applyOffsets(rest, handHitSell(1, 0, other.moveStyle?.handSell).d), so = other.s * other._heightScale;
+        const rest = Skeleton.lyingBase('prone', true), g = applyOffsets(rest, handHitSell(1, 0, other.moveStyle?.handSell).d), so = other.drawScale();
         const off = other.skeleton.groundedPointAt(so, other.facing, g, 'nearWrist') ?? { x: 0, y: 0 };
         const handX = other.x + off.x, handY = other.y + off.y;
         // he stands on the camera side of the man, past the hand toward his head, facing back toward his hips: the boot reaches onto the hand (beside the shoulder, on the arm's side, away
@@ -4137,7 +4142,7 @@ export default class Wrestler {
         const runtime = this.scene.moveRuntime;
         this._cancelActiveMove('reknee');
         const spec = specFor(KNEE_DROP_V2_SPEC, { attackerRigId: this.rigId });
-        const so = other.s * other._heightScale;
+        const so = other.drawScale();
         const hipHeight = this.skeleton.standingHipHeight;   // rig units: the body lift scales by this over 124, so apex and contact heights in px at s = 1 are fractions of it
         const chest = Skeleton.groundedTarget(other.skeleton.jointAttachmentPoints ?? {}, 'chest', so) ?? { x: other.x, y: other.y };
         // he faces the man's head (a supine man's head is away from his own facing), so his trailing shins and feet lie toward the man's legs, never on his head and shoulders
@@ -4297,7 +4302,7 @@ export default class Wrestler {
         const walk = Math.max(0, Math.min(STRUT.walk, room(dir) / (STRUT.speed * this.s)));
         // whole strides only: he starts on the stride phase whose feet match his stance and stops on it again, so the switch
         // between the posed stance and the gait neither swaps nor slides the feet
-        const freq = this._gaitV2 ? this._gaitParamsAt(0).freq * this.s / (this.s * this._heightScale) : WALK_FREQ;
+        const freq = this._gaitV2 ? this._gaitParamsAt(0).freq * this.s / this.drawScale() : WALK_FREQ;
         const strides = Math.max(1, Math.round(walk * STRUT.speed * freq / (Math.PI * 2)));
         this.walkPhase = STRUT.phase0;
         this._strut = { t: 0, phase: 0, phaseEnd: strides * Math.PI * 2, done: null, dir, from: { ...this.pose } };
@@ -4314,7 +4319,7 @@ export default class Wrestler {
         const moving = st.done === null ? Math.max(left > 0 ? STRUT.minSpeed : 0, Math.min(1, st.t / STRUT.ease, left / STRUT.easePhase)) : 0;
         const b = ringBoundsAtY(this.y);
         const g = this._gaitV2;
-        const perUnit = g ? this._gaitParamsAt(0).freq / (this.s * this._heightScale) : WALK_FREQ / this.s;   // phase per px of travel
+        const perUnit = g ? this._gaitParamsAt(0).freq / this.drawScale() : WALK_FREQ / this.s;   // phase per px of travel
         let travel = STRUT.speed * this.s * moving * dt;
         if (st.done === null) travel = Math.min(travel, left / perUnit);
         const x0 = this.x;
@@ -4818,11 +4823,11 @@ export default class Wrestler {
         const { x, y, facing, state, skinCol, trunksCol } = this;
         // On ropes, size is locked to the corner's mat depth — climbing up the post
         // doesn't move the wrestler deeper into the ring. Also applies during rope taunts.
-        const onRopes = (state === 'climbing' || state === 'onTurnbuckle' || (state === 'taunting' && this._ropeLevel > 0)) && this._corner;
+        const onRopes = this._onRopes();
         // heightScale folded in here only — every draw()-local use of `s`
         // below (skeleton render, fallback gfx shapes, shadow) picks it up
         // uniformly; `this.s` itself (movement/reach/hit-detection) is untouched.
-        const s = (onRopes ? perspectiveScale(this._corner.matY) : this.s) * this._heightScale;
+        const s = this.drawScale();
         const gfx   = this.gfx;
         // Depth from ring position, not screen y — a climbing wrestler's y is
         // tweened up the post but his depth in the ring doesn't change.

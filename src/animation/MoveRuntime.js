@@ -222,7 +222,7 @@ export default class MoveRuntime {
                     goal={x:q.x+(a.x-q.x)*along,y:q.y+(a.y-q.y)*along};
                 }
                 goal.x+=ox*actor.s*actor.facing;goal.y+=oy*actor.s;
-                const result=actor.skeleton.reachLeg(c.side,goal,w,c.bend,actor.s*(actor._heightScale??1),actor.facing,c.kneeOverlap??0,c.kneeArtOffset);
+                const result=actor.skeleton.reachLeg(c.side,goal,w,c.bend,(actor.drawScale?.()??actor.s*(actor._heightScale??1)),actor.facing,c.kneeOverlap??0,c.kneeArtOffset);
                 if(result){handle.legContactLog??=[];handle.legContactLog.push({t:handle.time,role:c.role,side:c.side,...result});}
             }
         }

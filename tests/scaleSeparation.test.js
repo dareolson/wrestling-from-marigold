@@ -32,8 +32,9 @@ test('T1.1/T1.5: a stander inside 26 px of depth is eased out (<= 6 * s per fram
     for (const dx of [0, 15, 40]) for (const dy of [0, 20]) for (const facing of [1, -1]) {
         const { w, other } = setup({ dx, dy, facing });
         let prev = w.x;
-        for (let i = 0; i < 30; i++) { frames(w, other, 1, '?scale=v1'); assert.ok(Math.abs(w.x - prev) <= 6 * w.s + 1e-6, `dx ${dx} dy ${dy}: step ${w.x - prev}`); prev = w.x; }
-        assert.ok(Math.hypot(w.x - other.x, w.y - other.y) >= 80 * w.s - 1e-6, `dx ${dx} dy ${dy}: ${Math.hypot(w.x - other.x, w.y - other.y)}`);
+        const S = withFlag('?scale=v1', () => w.s);   // the flag's own perspective (T2.1)
+        for (let i = 0; i < 30; i++) { frames(w, other, 1, '?scale=v1'); assert.ok(Math.abs(w.x - prev) <= 6 * S + 1e-6, `dx ${dx} dy ${dy}: step ${w.x - prev}`); prev = w.x; }
+        assert.ok(Math.hypot(w.x - other.x, w.y - other.y) >= 80 * S - 1e-6, `dx ${dx} dy ${dy}: ${Math.hypot(w.x - other.x, w.y - other.y)}`);
     }
 });
 
@@ -46,8 +47,9 @@ test('T1.1: over a down body the push is eased (<= 6 * s per frame), y untouched
         const { w, other } = setup({ dx, dy: 5, oState, facing });
         let prev = w.x, worst = 0;
         for (let i = 0; i < 30; i++) { frames(w, other, 1, '?scale=v1'); worst = Math.max(worst, Math.abs(w.x - prev)); prev = w.x; assert.equal(w.y, 355); }
-        assert.ok(worst <= 6 * w.s + 1e-9, `step ${worst}`);
-        assert.ok(Math.hypot(w.x - other.x, w.y - other.y) >= 80 * w.s - 1e-6);
+        const S = withFlag('?scale=v1', () => w.s);
+        assert.ok(worst <= 6 * S + 1e-9, `step ${worst}`);
+        assert.ok(Math.hypot(w.x - other.x, w.y - other.y) >= 80 * S - 1e-6);
     }
 });
 

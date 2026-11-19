@@ -1,0 +1,311 @@
+{
+ "rows": {
+  "back": 266,
+  "middle": 352,
+  "front": 438
+ },
+ "cells": {
+  "back-idle-off": {
+   "on": 0,
+   "row": "back",
+   "kind": "idle",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 266,
+     "drawScale": 0.4728,
+     "bodyPx": 151.4,
+     "postPx": 123.4,
+     "frac": 1.227
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 266,
+     "drawScale": 0.6051,
+     "bodyPx": 151.8,
+     "postPx": 123.4,
+     "frac": 1.23
+    }
+   ]
+  },
+  "back-move-off": {
+   "on": 0,
+   "row": "back",
+   "kind": "move",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 266,
+     "drawScale": 0.4728,
+     "bodyPx": 150.5,
+     "postPx": 123.4,
+     "frac": 1.219
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 266,
+     "drawScale": 0.6051,
+     "bodyPx": 149.4,
+     "postPx": 123.4,
+     "frac": 1.211
+    }
+   ]
+  },
+  "middle-idle-off": {
+   "on": 0,
+   "row": "middle",
+   "kind": "idle",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 352,
+     "drawScale": 0.6255,
+     "bodyPx": 200.3,
+     "postPx": 160.2,
+     "frac": 1.25
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 352,
+     "drawScale": 0.8006,
+     "bodyPx": 200.9,
+     "postPx": 160.2,
+     "frac": 1.254
+    }
+   ]
+  },
+  "middle-move-off": {
+   "on": 0,
+   "row": "middle",
+   "kind": "move",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 352,
+     "drawScale": 0.6255,
+     "bodyPx": 199.1,
+     "postPx": 160.2,
+     "frac": 1.243
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 352,
+     "drawScale": 0.8006,
+     "bodyPx": 197.7,
+     "postPx": 160.2,
+     "frac": 1.234
+    }
+   ]
+  },
+  "front-idle-off": {
+   "on": 0,
+   "row": "front",
+   "kind": "idle",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 438,
+     "drawScale": 0.7783,
+     "bodyPx": 249.2,
+     "postPx": 197,
+     "frac": 1.265
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 438,
+     "drawScale": 0.9961,
+     "bodyPx": 249.9,
+     "postPx": 197,
+     "frac": 1.269
+    }
+   ]
+  },
+  "front-move-off": {
+   "on": 0,
+   "row": "front",
+   "kind": "move",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 438,
+     "drawScale": 0.7783,
+     "bodyPx": 247.7,
+     "postPx": 197,
+     "frac": 1.257
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 438,
+     "drawScale": 0.9961,
+     "bodyPx": 246,
+     "postPx": 197,
+     "frac": 1.248
+    }
+   ]
+  },
+  "back-idle-on": {
+   "on": 1,
+   "row": "back",
+   "kind": "idle",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 266,
+     "drawScale": 0.4983,
+     "bodyPx": 159.6,
+     "postPx": 123.4,
+     "frac": 1.293
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 266,
+     "drawScale": 0.6377,
+     "bodyPx": 160,
+     "postPx": 123.4,
+     "frac": 1.297
+    }
+   ]
+  },
+  "back-move-on": {
+   "on": 1,
+   "row": "back",
+   "kind": "move",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 266,
+     "drawScale": 0.4983,
+     "bodyPx": 158.6,
+     "postPx": 123.4,
+     "frac": 1.285
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 266,
+     "drawScale": 0.6377,
+     "bodyPx": 157.5,
+     "postPx": 123.4,
+     "frac": 1.276
+    }
+   ]
+  },
+  "middle-idle-on": {
+   "on": 1,
+   "row": "middle",
+   "kind": "idle",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 352,
+     "drawScale": 0.6388,
+     "bodyPx": 204.6,
+     "postPx": 160.2,
+     "frac": 1.277
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 352,
+     "drawScale": 0.8176,
+     "bodyPx": 205.1,
+     "postPx": 160.2,
+     "frac": 1.28
+    }
+   ]
+  },
+  "middle-move-on": {
+   "on": 1,
+   "row": "middle",
+   "kind": "move",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 352,
+     "drawScale": 0.6388,
+     "bodyPx": 203.3,
+     "postPx": 160.2,
+     "frac": 1.269
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 352,
+     "drawScale": 0.8176,
+     "bodyPx": 201.9,
+     "postPx": 160.2,
+     "frac": 1.26
+    }
+   ]
+  },
+  "front-idle-on": {
+   "on": 1,
+   "row": "front",
+   "kind": "idle",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 438,
+     "drawScale": 0.7793,
+     "bodyPx": 249.6,
+     "postPx": 197,
+     "frac": 1.267
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 438,
+     "drawScale": 0.9974,
+     "bodyPx": 250.3,
+     "postPx": 197,
+     "frac": 1.27
+    }
+   ]
+  },
+  "front-move-on": {
+   "on": 1,
+   "row": "front",
+   "kind": "move",
+   "men": [
+    {
+     "rig": "thesz-procreate-v1",
+     "y": 438,
+     "drawScale": 0.7793,
+     "bodyPx": 248,
+     "postPx": 197,
+     "frac": 1.259
+    },
+    {
+     "rig": "george-roster-v1",
+     "y": 438,
+     "drawScale": 0.9974,
+     "bodyPx": 246.3,
+     "postPx": 197,
+     "frac": 1.25
+    }
+   ]
+  }
+ },
+ "loops": [
+  {
+   "id": "loop-l-off",
+   "facing": -1,
+   "on": 0,
+   "n": 150
+  },
+  {
+   "id": "loop-r-off",
+   "facing": 1,
+   "on": 0,
+   "n": 150
+  },
+  {
+   "id": "loop-l-on",
+   "facing": -1,
+   "on": 1,
+   "n": 150
+  },
+  {
+   "id": "loop-r-on",
+   "facing": 1,
+   "on": 1,
+   "n": 150
+  }
+ ]
+}

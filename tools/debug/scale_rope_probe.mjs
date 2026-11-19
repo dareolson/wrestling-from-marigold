@@ -15,9 +15,11 @@ const RUN = ({ side, dx, dy, n }) => {
     a.input = { justDown: () => false, isDown: () => false }; d.input = a.input;
     a.y = 380; a.x = side < 0 ? -1e4 : 1e4; a._clamp();   // against the rope: x at the bound _clamp() allows
     d.y = a.y + dy; d.x = a.x - side * dx; a.facing = -side; d.facing = side;
+    d._clamp();   // the shallower man's bound is narrower: start him inside the ring or frame 1 measures _clamp, not the push
+    const start = { ax: a.x, ay: a.y, dx: d.x, dy: d.y };   // read before the loop: frame 1's step (setup -> first update) counts
     const fr = [];
     for (let i = 0; i < n; i++) { window.__T += 1000 / 60; game.step(window.__T, 1000 / 60); fr.push({ ax: a.x, ay: a.y, dx: d.x, dy: d.y, s: a.s * a._heightScale, ss: a.s }); }
-    return { start: { ax: a.x, dxp: d.x }, fr };
+    return { start, fr };
 };
 const out = [];
 for (const flag of [0, 1]) {
@@ -29,7 +31,7 @@ for (const flag of [0, 1]) {
         await page.evaluate(() => { const g = window.__WFM_GAME, sc = g.scene.scenes[0]; g.loop.sleep(); sc.tweens.getDelta = () => 1000 / 60; sc._p1AI = null; sc._p2AI = null; window.__T = sc.time.now; window.__idle = { ...sc.w1.pose }; });
         for (const side of [-1, 1]) for (const dx of DXS) for (const dy of DYS) {
             const r = await page.evaluate(RUN, { side, dx, dy, n: N });
-            const f = [{ ax: r.start.ax, ay: 380, dx: r.start.dxp, dy: 380 + dy }, ...r.fr];
+            const f = [r.start, ...r.fr];
             let stepX = 0, stepY = 0, rev = 0; const sg = { a: 0, d: 0 };
             for (let i = 1; i < f.length; i++) for (const w of ['a', 'd']) {
                 const ex = f[i][w + 'x'] - f[i - 1][w + 'x'], ey = f[i][w + 'y'] - f[i - 1][w + 'y'];

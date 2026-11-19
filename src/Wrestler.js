@@ -1273,15 +1273,15 @@ export default class Wrestler {
             && ['down', 'possum', 'flipping', 'falling', 'gettingUp'].includes(other.state);
         if (scaleCandidate()) {
             // ?scale=v1 (T1.1): the push is along x only and y is never written (0.22% of body size per px of y, so a y step is a size pop).
-            // A man who is not standing yet (a down body, a get-up, the rise window) is eased out at SEP_EASE_PX; a stander is moved out at once, as before.
+            // Every man is eased out at SEP_EASE_PX * s per 1/60 s (T1.5: standers too), so no frame snaps x by the whole overlap.
             const dx = this.x - other.x, away = dx !== 0 ? Math.sign(dx) : -this.facing;   // dead-centred: step back opposite own facing
             if (depthDiff < 26 && !lightGroundClearance) {
                 const dy = this.y - other.y, minDist = 80 * this.s;
                 if (Math.hypot(dx, dy) < minDist && !(other._lungeUntil > this.scene.time.now)) {
                     const tx = other.x + away * Math.sqrt(minDist * minDist - dy * dy);
-                    const eased = (this._riseStandAt != null && this.scene.time.now - this._riseStandAt < SEP_EASE_MS && getUpsCandidate()) || ['down', 'possum', 'flipping', 'falling', 'gettingUp'].includes(other.state);
+                    // T1.5: every man is eased out (a stander too, ≤ SEP_EASE_PX * s per 1/60 s), so no frame snaps x by the whole overlap
                     const cap = SEP_EASE_PX * this.s * dt * 60;
-                    this.x += eased ? Math.max(-cap, Math.min(cap, tx - this.x)) : tx - this.x;
+                    this.x += Math.max(-cap, Math.min(cap, tx - this.x));
                     const y = this.y; this._clamp(); this.y = y;
                 }
             } else if (depthDiff < 48 && (other.state === 'standing' || other.state === 'staggered' || other.state === 'cornered') && Math.abs(dx) < 60 * this.s) {

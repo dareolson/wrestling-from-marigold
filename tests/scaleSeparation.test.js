@@ -28,10 +28,11 @@ test('T1.1: standers at dx 0-40, dy 0-47, both facings: y is never written under
     }
 });
 
-test('T1.1: a stander inside 26 px of depth ends 80 * s clear of the other, in x', () => {
+test('T1.1/T1.5: a stander inside 26 px of depth is eased out (<= 6 * s per frame) and ends 80 * s clear of the other, in x', () => {
     for (const dx of [0, 15, 40]) for (const dy of [0, 20]) for (const facing of [1, -1]) {
         const { w, other } = setup({ dx, dy, facing });
-        frames(w, other, 2, '?scale=v1');
+        let prev = w.x;
+        for (let i = 0; i < 30; i++) { frames(w, other, 1, '?scale=v1'); assert.ok(Math.abs(w.x - prev) <= 6 * w.s + 1e-6, `dx ${dx} dy ${dy}: step ${w.x - prev}`); prev = w.x; }
         assert.ok(Math.hypot(w.x - other.x, w.y - other.y) >= 80 * w.s - 1e-6, `dx ${dx} dy ${dy}: ${Math.hypot(w.x - other.x, w.y - other.y)}`);
     }
 });

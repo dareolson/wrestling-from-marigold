@@ -1,0 +1,270 @@
+{
+ "pair": "lou-george",
+ "scale": false,
+ "bar": 0.02,
+ "ts": 1,
+ "errors": [],
+ "gameSec": 158.8,
+ "frames": 4560,
+ "fps": 28.7,
+ "popsPerMin": 1.89,
+ "byCause": {
+  "G standing separation / 26-48 band y step": 1,
+  "C other state change with y step": 1,
+  "B paired-move entry snap (clip staging y)": 2,
+  "I ground-attack route (the drawn scale follows the body along its path)": 1
+ },
+ "distPctPerFrame": {
+  "standing": {
+   "frames": 2635,
+   "p50": 0.05,
+   "p99": 0.5,
+   "p999": 1.05,
+   "max": 3.05
+  },
+  "transition": {
+   "frames": 242,
+   "p50": 0.05,
+   "p99": 2.6,
+   "p999": 4.85,
+   "max": 4.85
+  },
+  "dropkicking": {
+   "frames": 128,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "selling": {
+   "frames": 65,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "flipping": {
+   "frames": 75,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "down": {
+   "frames": 2256,
+   "p50": 0.05,
+   "p99": 0.75,
+   "p999": 1.9,
+   "max": 2.25
+  },
+  "gettingUp": {
+   "frames": 519,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "slamming": {
+   "frames": 490,
+   "p50": 0.05,
+   "p99": 0.65,
+   "p999": 1.55,
+   "max": 1.55
+  },
+  "evading": {
+   "frames": 88,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "holding": {
+   "frames": 1099,
+   "p50": 0.05,
+   "p99": 0.2,
+   "p999": 1.05,
+   "max": 1.2
+  },
+  "pinning": {
+   "frames": 43,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinned": {
+   "frames": 43,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "lockup": {
+   "frames": 350,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "blocking": {
+   "frames": 93,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "staggered": {
+   "frames": 41,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "taunting": {
+   "frames": 566,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "headlocked": {
+   "frames": 27,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "falling": {
+   "frames": 100,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "grabbed": {
+   "frames": 12,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "running": {
+   "frames": 192,
+   "p50": 0.05,
+   "p99": 0.65,
+   "p999": 0.7,
+   "max": 0.7
+  },
+  "elbowDropping": {
+   "frames": 16,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "cornered": {
+   "frames": 38,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  }
+ },
+ "flags": [
+  {
+   "t": 7.51,
+   "who": "p1",
+   "dPct": 3.02,
+   "rawPct": 6.64,
+   "dt": 0.0367,
+   "stBefore": "standing",
+   "stAfter": "standing",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": 24.6,
+   "y": 394,
+   "ox": -56.9,
+   "oy": -34.3,
+   "oState": "evading",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "G standing separation / 26-48 band y step"
+  },
+  {
+   "t": 67.69,
+   "who": "p1",
+   "dPct": -3.28,
+   "rawPct": -6.24,
+   "dt": 0.0317,
+   "stBefore": "evading",
+   "stAfter": "standing",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -20.5,
+   "y": 308,
+   "ox": -30.9,
+   "oy": 43.9,
+   "oState": "running",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "C other state change with y step"
+  },
+  {
+   "t": 67.92,
+   "who": "p2",
+   "dPct": -4.8,
+   "rawPct": -12.48,
+   "dt": 0.0433,
+   "stBefore": "running",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "hipTossRunner",
+   "dy": -43.9,
+   "y": 308,
+   "ox": -35.8,
+   "oy": 0,
+   "oState": "holding",
+   "oLying": "prone",
+   "ga": false,
+   "cause": "B paired-move entry snap (clip staging y)"
+  },
+  {
+   "t": 139.83,
+   "who": "p2",
+   "dPct": -2.58,
+   "rawPct": -5.41,
+   "dt": 0.035,
+   "stBefore": "down",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "halfBostonCrab",
+   "dy": -23.8,
+   "y": 415,
+   "ox": 100.2,
+   "oy": 0,
+   "oState": "holding",
+   "oLying": "prone",
+   "ga": false,
+   "cause": "B paired-move entry snap (clip staging y)"
+  },
+  {
+   "t": 146.46,
+   "who": "p1",
+   "dPct": 2.24,
+   "rawPct": 4.92,
+   "dt": 0.0367,
+   "stBefore": "down",
+   "stAfter": "down",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": 0,
+   "y": 432,
+   "ox": 0,
+   "oy": -16.8,
+   "oState": "down",
+   "oLying": "prone",
+   "ga": true,
+   "cause": "I ground-attack route (the drawn scale follows the body along its path)"
+  }
+ ]
+}

@@ -1,0 +1,53 @@
+{
+ "pair": "george-guido",
+ "ts": 3,
+ "errors": [],
+ "gameSec": 212.5,
+ "plays": {
+  "dropkick": 6,
+  "jabV2Guido": 1,
+  "legSweep:guido-roster-v1": 1,
+  "elbowDropFall": 2,
+  "kneeDropV2": 1,
+  "frontKickV2": 3,
+  "mountedPunches:george-roster-v1": 1,
+  "piledriver": 8,
+  "ankleLockV2": 1,
+  "mountedPunches:guido-roster-v1": 3,
+  "clubBlow:george-roster-v1": 3,
+  "handStomp": 1,
+  "abdominalStretch": 1
+ },
+ "dodges": 0,
+ "stuck": [],
+ "newMoves": {
+  "wristlock": 0,
+  "headlockTakeover": 0,
+  "flyingMare": 0,
+  "testOfStrength": 0,
+  "leapfrog": 0,
+  "backwardRoll": 0,
+  "abdominalStretch": 1,
+  "bodyScissors": 0,
+  "indianDeathlock": 0,
+  "backdropSuplex": 0
+ },
+ "allMoves": {
+  "dropkick": 6,
+  "lockup": 11,
+  "headlock": 1,
+  "jab": 1,
+  "taunt": 11,
+  "legSweep": 1,
+  "frontKick": 3,
+  "irishWhip": 3,
+  "ankleLock": 1,
+  "pin": 10,
+  "clubBlow": 3,
+  "piledriver": 2,
+  "clothesline": 1,
+  "abdominalStretch": 1
+ },
+ "events": 98,
+ "matchesEnded": 1
+}

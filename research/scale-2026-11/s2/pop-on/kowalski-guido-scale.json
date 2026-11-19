@@ -1,0 +1,175 @@
+{
+ "pair": "kowalski-guido",
+ "scale": true,
+ "bar": 0.02,
+ "ts": 1,
+ "errors": [],
+ "gameSec": 154.9,
+ "frames": 4775,
+ "fps": 30.8,
+ "popsPerMin": 0.77,
+ "byCause": {
+  "H match reset snap (intended)": 2
+ },
+ "distPctPerFrame": {
+  "standing": {
+   "frames": 2074,
+   "p50": 0.05,
+   "p99": 0.35,
+   "p999": 0.35,
+   "max": 7.9
+  },
+  "transition": {
+   "frames": 270,
+   "p50": 0.05,
+   "p99": 0.35,
+   "p999": 0.4,
+   "max": 0.4
+  },
+  "lockup": {
+   "frames": 842,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "holding": {
+   "frames": 1820,
+   "p50": 0.05,
+   "p99": 0.1,
+   "p999": 0.2,
+   "max": 0.2
+  },
+  "headlocked": {
+   "frames": 14,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "blocking": {
+   "frames": 42,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "selling": {
+   "frames": 65,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "staggered": {
+   "frames": 48,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "down": {
+   "frames": 2733,
+   "p50": 0.05,
+   "p99": 0.85,
+   "p999": 1.3,
+   "max": 1.4
+  },
+  "gettingUp": {
+   "frames": 511,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinned": {
+   "frames": 207,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinning": {
+   "frames": 207,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "evading": {
+   "frames": 42,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "slamming": {
+   "frames": 490,
+   "p50": 0.05,
+   "p99": 0.9,
+   "p999": 0.95,
+   "max": 0.95
+  },
+  "falling": {
+   "frames": 155,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "elbowDropping": {
+   "frames": 21,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "taunting": {
+   "frames": 7,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  }
+ },
+ "flags": [
+  {
+   "t": 143.18,
+   "who": "p1",
+   "dPct": -7.87,
+   "rawPct": -16.53,
+   "dt": 0.035,
+   "stBefore": "standing",
+   "stAfter": "standing",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -79,
+   "y": 360,
+   "ox": 297.8,
+   "oy": 0,
+   "oState": "standing",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "H match reset snap (intended)"
+  },
+  {
+   "t": 143.18,
+   "who": "p2",
+   "dPct": -7.87,
+   "rawPct": -16.53,
+   "dt": 0.035,
+   "stBefore": "standing",
+   "stAfter": "standing",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -79,
+   "y": 360,
+   "ox": -297.8,
+   "oy": 0,
+   "oState": "standing",
+   "oLying": "prone",
+   "ga": false,
+   "cause": "H match reset snap (intended)"
+  }
+ ]
+}

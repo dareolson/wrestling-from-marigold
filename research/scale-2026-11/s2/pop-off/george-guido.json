@@ -1,0 +1,184 @@
+{
+ "pair": "george-guido",
+ "scale": false,
+ "bar": 0.02,
+ "ts": 1,
+ "errors": [],
+ "gameSec": 153,
+ "frames": 4441,
+ "fps": 29,
+ "popsPerMin": 0.39,
+ "byCause": {
+  "C other state change with y step": 1
+ },
+ "distPctPerFrame": {
+  "standing": {
+   "frames": 2410,
+   "p50": 0.05,
+   "p99": 0.4,
+   "p999": 0.45,
+   "max": 0.6
+  },
+  "transition": {
+   "frames": 204,
+   "p50": 0.05,
+   "p99": 1.1,
+   "p999": 7.1,
+   "max": 7.1
+  },
+  "dropkicking": {
+   "frames": 62,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "selling": {
+   "frames": 63,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "down": {
+   "frames": 2373,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 1.2,
+   "max": 1.55
+  },
+  "flipping": {
+   "frames": 45,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "gettingUp": {
+   "frames": 496,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "slamming": {
+   "frames": 212,
+   "p50": 0.05,
+   "p99": 0.55,
+   "p999": 0.85,
+   "max": 0.85
+  },
+  "blocking": {
+   "frames": 24,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "staggered": {
+   "frames": 109,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "taunting": {
+   "frames": 698,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "lockup": {
+   "frames": 350,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "holding": {
+   "frames": 1611,
+   "p50": 0.05,
+   "p99": 0.15,
+   "p999": 0.65,
+   "max": 0.8
+  },
+  "grabbed": {
+   "frames": 4,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "running": {
+   "frames": 101,
+   "p50": 0.05,
+   "p99": 0.3,
+   "p999": 0.3,
+   "max": 0.3
+  },
+  "pinned": {
+   "frames": 11,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinning": {
+   "frames": 11,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "evading": {
+   "frames": 23,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "falling": {
+   "frames": 67,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "headlocked": {
+   "frames": 1,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "elbowDropping": {
+   "frames": 5,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  }
+ },
+ "flags": [
+  {
+   "t": 136.39,
+   "who": "p1",
+   "dPct": -7.07,
+   "rawPct": -14.13,
+   "dt": 0.0333,
+   "stBefore": "standing",
+   "stAfter": "evading",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -48.3,
+   "y": 293,
+   "ox": -21.5,
+   "oy": 57.6,
+   "oState": "standing",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "C other state change with y step"
+  }
+ ]
+}

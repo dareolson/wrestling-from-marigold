@@ -1,0 +1,241 @@
+{
+ "pair": "kowalski-guido",
+ "scale": false,
+ "bar": 0.02,
+ "ts": 1,
+ "errors": [],
+ "gameSec": 156.6,
+ "frames": 4873,
+ "fps": 31.1,
+ "popsPerMin": 1.92,
+ "byCause": {
+  "B paired-move entry snap (clip staging y)": 2,
+  "H match reset snap (intended)": 2,
+  "C other state change with y step": 1
+ },
+ "distPctPerFrame": {
+  "standing": {
+   "frames": 2115,
+   "p50": 0.05,
+   "p99": 0.3,
+   "p999": 0.6,
+   "max": 7.1
+  },
+  "transition": {
+   "frames": 251,
+   "p50": 0.05,
+   "p99": 2.35,
+   "p999": 5.75,
+   "max": 5.75
+  },
+  "lockup": {
+   "frames": 1026,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "holding": {
+   "frames": 1316,
+   "p50": 0.05,
+   "p99": 0.15,
+   "p999": 0.2,
+   "max": 0.2
+  },
+  "down": {
+   "frames": 2805,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "gettingUp": {
+   "frames": 435,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinned": {
+   "frames": 404,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinning": {
+   "frames": 404,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "evading": {
+   "frames": 29,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "blocking": {
+   "frames": 42,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "headlocked": {
+   "frames": 36,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "selling": {
+   "frames": 60,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "staggered": {
+   "frames": 121,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "slamming": {
+   "frames": 426,
+   "p50": 0.05,
+   "p99": 0.55,
+   "p999": 0.95,
+   "max": 0.95
+  },
+  "grabbed": {
+   "frames": 9,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "running": {
+   "frames": 142,
+   "p50": 0.1,
+   "p99": 0.25,
+   "p999": 0.25,
+   "max": 0.25
+  },
+  "cornered": {
+   "frames": 34,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "falling": {
+   "frames": 89,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  }
+ },
+ "flags": [
+  {
+   "t": 72.55,
+   "who": "p1",
+   "dPct": 2.3,
+   "rawPct": 4.84,
+   "dt": 0.035,
+   "stBefore": "lockup",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "piledriver",
+   "dy": 19.5,
+   "y": 423,
+   "ox": 68.5,
+   "oy": 0,
+   "oState": "holding",
+   "oLying": "prone",
+   "ga": false,
+   "cause": "B paired-move entry snap (clip staging y)"
+  },
+  {
+   "t": 105.68,
+   "who": "p1",
+   "dPct": -7.08,
+   "rawPct": -15.58,
+   "dt": 0.0367,
+   "stBefore": "standing",
+   "stAfter": "standing",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -66.5,
+   "y": 360,
+   "ox": 297.7,
+   "oy": 0,
+   "oState": "standing",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "H match reset snap (intended)"
+  },
+  {
+   "t": 105.68,
+   "who": "p2",
+   "dPct": -6.74,
+   "rawPct": -14.82,
+   "dt": 0.0367,
+   "stBefore": "standing",
+   "stAfter": "standing",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -62.7,
+   "y": 360,
+   "ox": -297.7,
+   "oy": 0,
+   "oState": "standing",
+   "oLying": "prone",
+   "ga": false,
+   "cause": "H match reset snap (intended)"
+  },
+  {
+   "t": 116.44,
+   "who": "p2",
+   "dPct": 3.99,
+   "rawPct": 8.77,
+   "dt": 0.0367,
+   "stBefore": "standing",
+   "stAfter": "lockup",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": 32.5,
+   "y": 402,
+   "ox": 44.3,
+   "oy": -50.3,
+   "oState": "lockup",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "C other state change with y step"
+  },
+  {
+   "t": 117.57,
+   "who": "p1",
+   "dPct": 5.71,
+   "rawPct": 14.27,
+   "dt": 0.0417,
+   "stBefore": "lockup",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": "piledriver",
+   "dy": 50.3,
+   "y": 402,
+   "ox": -65.2,
+   "oy": 0,
+   "oState": "holding",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "B paired-move entry snap (clip staging y)"
+  }
+ ]
+}

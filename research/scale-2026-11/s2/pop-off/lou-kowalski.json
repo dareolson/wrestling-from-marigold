@@ -1,0 +1,268 @@
+{
+ "pair": "lou-kowalski",
+ "scale": false,
+ "bar": 0.02,
+ "ts": 1,
+ "errors": [],
+ "gameSec": 152,
+ "frames": 4560,
+ "fps": 30,
+ "popsPerMin": 1.97,
+ "byCause": {
+  "C other state change with y step": 3,
+  "G standing separation / 26-48 band y step": 2
+ },
+ "distPctPerFrame": {
+  "standing": {
+   "frames": 1960,
+   "p50": 0.05,
+   "p99": 0.55,
+   "p999": 2.25,
+   "max": 2.6
+  },
+  "transition": {
+   "frames": 281,
+   "p50": 0.05,
+   "p99": 2.65,
+   "p999": 5.4,
+   "max": 5.4
+  },
+  "lockup": {
+   "frames": 740,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "holding": {
+   "frames": 2156,
+   "p50": 0.05,
+   "p99": 0.15,
+   "p999": 0.3,
+   "max": 1.2
+  },
+  "headlocked": {
+   "frames": 65,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "blocking": {
+   "frames": 94,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "grabbed": {
+   "frames": 27,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "slamming": {
+   "frames": 971,
+   "p50": 0.05,
+   "p99": 0.65,
+   "p999": 1.9,
+   "max": 1.9
+  },
+  "running": {
+   "frames": 493,
+   "p50": 0.05,
+   "p99": 0.45,
+   "p999": 0.55,
+   "max": 0.55
+  },
+  "cornered": {
+   "frames": 151,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "selling": {
+   "frames": 43,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "falling": {
+   "frames": 135,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "down": {
+   "frames": 1601,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.5,
+   "max": 0.5
+  },
+  "gettingUp": {
+   "frames": 214,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "dropkicking": {
+   "frames": 40,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinned": {
+   "frames": 14,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinning": {
+   "frames": 14,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "flipping": {
+   "frames": 19,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "staggered": {
+   "frames": 22,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "sleeping": {
+   "frames": 43,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "evading": {
+   "frames": 24,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "elbowDropping": {
+   "frames": 11,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  }
+ },
+ "flags": [
+  {
+   "t": 27.92,
+   "who": "p1",
+   "dPct": -5.38,
+   "rawPct": -12.91,
+   "dt": 0.04,
+   "stBefore": "standing",
+   "stAfter": "lockup",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -50.7,
+   "y": 342,
+   "ox": -37.7,
+   "oy": 60.3,
+   "oState": "lockup",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "C other state change with y step"
+  },
+  {
+   "t": 35.26,
+   "who": "p1",
+   "dPct": -2.24,
+   "rawPct": -3.81,
+   "dt": 0.0283,
+   "stBefore": "standing",
+   "stAfter": "standing",
+   "clipBefore": null,
+   "clipAfter": "jabV2Thesz",
+   "dy": -13.4,
+   "y": 338,
+   "ox": -61.7,
+   "oy": 15.8,
+   "oState": "standing",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "G standing separation / 26-48 band y step"
+  },
+  {
+   "t": 64.12,
+   "who": "p1",
+   "dPct": 2.57,
+   "rawPct": 5.91,
+   "dt": 0.0383,
+   "stBefore": "standing",
+   "stAfter": "standing",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": 20.8,
+   "y": 373,
+   "ox": 57.6,
+   "oy": -31.6,
+   "oState": "slamming",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "G standing separation / 26-48 band y step"
+  },
+  {
+   "t": 127.48,
+   "who": "p1",
+   "dPct": -2.61,
+   "rawPct": -6.52,
+   "dt": 0.0417,
+   "stBefore": "standing",
+   "stAfter": "evading",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": -18.4,
+   "y": 264,
+   "ox": -9.6,
+   "oy": 27.8,
+   "oState": "standing",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "C other state change with y step"
+  },
+  {
+   "t": 143.5,
+   "who": "p1",
+   "dPct": 2.95,
+   "rawPct": 6.2,
+   "dt": 0.035,
+   "stBefore": "standing",
+   "stAfter": "holding",
+   "clipBefore": null,
+   "clipAfter": null,
+   "dy": 17.2,
+   "y": 295,
+   "ox": -33.2,
+   "oy": -24.8,
+   "oState": "sleeping",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "C other state change with y step"
+  }
+ ]
+}

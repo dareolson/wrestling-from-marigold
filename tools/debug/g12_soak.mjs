@@ -9,11 +9,12 @@ const PAIR = process.env.PAIR ?? 'lou-george', SEC = Number(process.env.SEC ?? 1
 const outDir = process.argv[2] ?? 'research/animation/light-moves-2026-11/g12/soak-runs';
 const [a, b] = PAIR.split('-');
 process.env.WFM_P1 = RIGS[a]; process.env.WFM_P2 = RIGS[b]; process.env.WFM_TS = process.env.WFM_TS ?? '3';
-process.env.WFM_QS = 'notitle=1&light=v1';
+process.env.WFM_QS = 'notitle=1&light=v1' + (process.env.SCALE ? '&scale=v1' : '');   // SCALE=1: PLAN_SCALE T2.3, the same soak under ?scale=v1
 const INSTALL = () => {
     const sc = window.__WFM_GAME.scene.scenes[0];
     for (const n of [1, 2]) if (sc[`w${n}`].input !== sc[`_p${n}AI`]) sc._togglePlayer(n);
-    const S = window.__gsoak = { gsec: 0, stuck: [], played: {}, matches: 0 };
+    const S = window.__gsoak = { gsec: 0, stuck: [], played: {}, matches: 0, plays: {} };
+    const rt = sc.moveRuntime, play0 = rt.play.bind(rt); rt.play = (id, ...r) => { S.plays[id] = (S.plays[id] ?? 0) + 1; return play0(id, ...r); };   // clips started, to set against the 'move' events (a hit/landing): the gap is whiffs and aborts
     const lim = { falling: 3, flipping: 3, selling: 2.5, staggered: 4, grabbed: 3, down: 12, slamming: 6, running: 8 }, since = { p1: [null, 0], p2: [null, 0] };
     sc.events.on('postupdate', (time, delta) => {
         S.gsec += delta / 1000 * sc.timeScale;
@@ -30,6 +31,7 @@ const errors = [];
 try {
     const page = h.page;
     page.on('pageerror', e => errors.push(e.message));
+    await page.waitForFunction(() => window.__WFM_GAME?.scene?.scenes?.[0]?.w2 && window.__WFM_GAME.scene.scenes[0].moveRuntime, null, { timeout: 90000 });   // 4 soaks in parallel load slowly: wait for the scene, not a fixed 2.5 s
     await page.waitForTimeout(2500);
     await page.evaluate(INSTALL);
     const clock = () => page.evaluate(() => window.__gsoak.gsec), start = await clock(), ts = Number(process.env.WFM_TS), wall0 = Date.now();
@@ -37,7 +39,7 @@ try {
     const data = await page.evaluate((NEW) => {
         const sc = window.__WFM_GAME.scene.scenes[0], ev = sc.matchEvents, S = window.__gsoak;
         const counts = ev.reduce((c, e) => { if (e.type === 'move') c[e.move] = (c[e.move] ?? 0) + 1; return c; }, {});
-        return { gameSec: S.gsec, stuck: S.stuck, newMoves: Object.fromEntries(NEW.map(m => [m, counts[m] ?? 0])), allMoves: counts, events: ev.length, matchesEnded: ev.filter(e => e.type === 'matchEnd' || e.type === 'pinfall' || e.type === 'timeLimitDraw').length };
+        return { gameSec: S.gsec, plays: S.plays, dodges: ev.filter(e => e.type === 'dodge').length, stuck: S.stuck, newMoves: Object.fromEntries(NEW.map(m => [m, counts[m] ?? 0])), allMoves: counts, events: ev.length, matchesEnded: ev.filter(e => e.type === 'matchEnd' || e.type === 'pinfall' || e.type === 'timeLimitDraw').length };
     }, NEW);
     mkdirSync(outDir, { recursive: true });
     const out = { pair: PAIR, ts, errors, ...data, gameSec: +data.gameSec.toFixed(1) };

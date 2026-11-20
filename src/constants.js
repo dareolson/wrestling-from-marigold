@@ -23,8 +23,13 @@ export function ringBoundsAtY(y) {
     };
 }
 
-// ?scale=v1 (PLAN_SCALE): one perspective, no size pops. Opt-in; flag off is byte-identical (same y, same draw scale, every frame).
-export const scaleCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('scale') === 'v1';
+// scale (PLAN_SCALE): one perspective, no size pops. Promoted to default by Derek 2026-11-19: on unless the URL says `?scale=off` (any value but `v1` turns it off; same rule as defaultOnFlag in
+// Wrestler.js). Node without `location` stays off, and `?scale=off` is byte-identical to the old game (same y, same draw scale, every frame).
+export const scaleCandidate = () => {
+    if (typeof location === 'undefined') return false;
+    const v = new URLSearchParams(location.search).get('scale');
+    return v === null || v === 'v1';
+};
 // ?scaleDebug=1 (T3.4): render-only size overlay (src/scaleDebug.js); off by default, changes nothing in play.
 export const scaleDebugCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('scaleDebug') === '1';
 

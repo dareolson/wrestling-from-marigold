@@ -11,7 +11,7 @@ if (process.argv[2] === '--compare') {
     process.exit(bad || ds ? 1 : 0);
 }
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
-process.env.WFM_P1 = LOU; process.env.WFM_P2 = GEORGE; process.env.WFM_QS = 'notitle=1&light=v1' + (process.env.SCALE ? '&scale=v1' : '');
+process.env.WFM_P1 = LOU; process.env.WFM_P2 = GEORGE; process.env.WFM_QS = 'notitle=1&light=v1' + (process.env.SCALE ? '&scale=v1' : '&scale=off');
 const CASES = [['wristlockHammerlock', '_doWristlockHammerlock', 'lockup'], ['bodySlam', '_doBodySlam', 'lockup'], ['ropes', null, 'standing']];
 const RUN = ({ c, facing, n }) => {
     const game = window.__WFM_GAME, sc = game.scene.scenes[0], a = sc.w1, d = sc.w2;

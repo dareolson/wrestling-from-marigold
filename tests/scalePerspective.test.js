@@ -1,7 +1,7 @@
 // PLAN_SCALE T2.1: under ?scale=v1 perspectiveScale follows the ring's own width ratio; flag off is the old 0.58 + 0.42t.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RING, ringBoundsAtY, perspectiveScale, HORIZON_Y, ringHorizonY } from '../src/constants.js';
+import { RING, ringBoundsAtY, perspectiveScale, HORIZON_Y, ringHorizonY, scaleCandidate } from '../src/constants.js';
 
 const withFlag = (search, fn) => { globalThis.location = { search }; try { return fn(); } finally { delete globalThis.location; } };
 
@@ -26,10 +26,11 @@ test('T2.1: the front row is 1.000, the back row 0.614, and rows past the ring c
     });
 });
 
-test('T2.1: flag off is the old formula, byte for byte', () => {
+test('T2.1: ?scale=off (and node with no location) is the old formula, byte for byte', () => {
     for (let y = 200; y <= 500; y += 7) {
         const t = Math.max(0, Math.min(1, (y - 258) / (445 - 258)));
-        assert.equal(perspectiveScale(y), 0.58 + t * 0.42);
+        assert.equal(withFlag('?scale=off', () => perspectiveScale(y)), 0.58 + t * 0.42);
+        assert.equal(perspectiveScale(y), 0.58 + t * 0.42);   // and with no location (node)
     }
 });
 
@@ -65,4 +66,21 @@ test('T3.1: for moved corners the horizon formula still reproduces the ring widt
 test('T3.1: a ring whose side edges are parallel has no horizon (ringHorizonY is not finite)', () => {
     const box = { ...RING, farLeft: { x: 40, y: 258 }, farRight: { x: 920, y: 258 } };
     assert.ok(!Number.isFinite(ringHorizonY(box)));
+});
+
+// T4.1: scale is on by default, the same rule as defaultOnFlag in Wrestler.js
+test('T4.1: what each URL value does to scale (absent / =v1 on; =off / =1 / other off; no location off)', () => {
+    assert.equal(scaleCandidate(), false, 'no location (node): off');
+    const on = (search) => withFlag(search, () => scaleCandidate());
+    assert.equal(on(''), true, 'no query string: on');
+    assert.equal(on('?light=v1'), true, 'scale absent among other params: on');
+    assert.equal(on('?scale=v1'), true);
+    assert.equal(on('?scale=off'), false);
+    assert.equal(on('?scale=1'), false);
+    assert.equal(on('?scale='), false);
+    assert.equal(on('?scale=V1'), false);
+    assert.equal(on('?scaleDebug=1'), true, '?scaleDebug is a different flag and does not touch scale');
+    // and the perspective follows it
+    assert.ok(Math.abs(withFlag('', () => perspectiveScale(258)) - 0.614) < 0.001);
+    assert.equal(withFlag('?scale=off', () => perspectiveScale(258)), 0.58);
 });

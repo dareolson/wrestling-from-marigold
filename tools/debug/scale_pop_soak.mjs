@@ -1,4 +1,4 @@
-// PLAN_SCALE S0 (T0.1): an AI-vs-AI soak that flags one-frame draw-scale pops under ?light=v1 (plus &scale=v1 when SCALE=1).
+// PLAN_SCALE S0 (T0.1): an AI-vs-AI soak that flags one-frame draw-scale pops under ?light=v1 (scale is the default now: SCALE=off adds &scale=off).
 //   WFM_URL=http://127.0.0.1:5173 PAIR=lou-george SEC=150 [SCALE=1] [BAR=0.02] node tools/debug/scale_pop_soak.mjs [outDir]   (WFM_TS default 1 so a frame is a real frame; PAIR = any two of lou george kowalski guido)
 // Deltas are normalised to a 60 fps frame: |Δs/s| * (1/60)/dt, so the bar means the same at any game frame rate (PLAN_SCALE S0 review: bar 2%).
 // Draw scale mirrors Wrestler.draw(): perspectiveScale(y) * _heightScale, or the corner matY scale while on the ropes.
@@ -6,14 +6,14 @@ import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { launch } from './harness.mjs';
-// --check (PLAN_SCALE T3.2): one short ?scale=v1 soak per pairing (each in its own process, one at a time so the game runs at 60 fps), exit 1 on any pop over BAR that is not on the named list.
+// --check (PLAN_SCALE T3.2): one short soak per pairing with no scale query (the default game) (each in its own process, one at a time so the game runs at 60 fps), exit 1 on any pop over BAR that is not on the named list.
 //   WFM_URL=http://127.0.0.1:5173 [CHECK_SEC=60] node tools/debug/scale_pop_soak.mjs --check [outDir=research/scale-2026-11/gs]
 // Named list (accepted pops): a ground-attack route's continuous travel (below), the match-reset snap (both men put on their start marks in one frame, intended) and kneeDropV2's clip-authored y, which sits on the 2% bar (T1.3).
 const NAMED = [{ name: 'match reset snap (intended)', test: f => f.cause?.startsWith('H ') }, { name: 'kneeDropV2 clip-authored y (on the 2% bar)', test: f => f.clipBefore === 'kneeDropV2' && f.clipAfter === 'kneeDropV2' }];
 if (process.argv.includes('--check')) {
     const dir = process.argv.filter(a => !a.startsWith('--') && a !== process.argv[0] && a !== process.argv[1])[0] ?? 'research/scale-2026-11/gs', bad = [], accepted = [];
     for (const pair of ['lou-george', 'lou-kowalski', 'george-guido', 'kowalski-guido']) {
-        const r = spawnSync(process.execPath, [process.argv[1], dir], { env: { ...process.env, PAIR: pair, SCALE: '1', SEC: process.env.CHECK_SEC ?? '60' }, stdio: ['ignore', 'inherit', 'inherit'] });
+        const r = spawnSync(process.execPath, [process.argv[1], dir], { env: { ...process.env, PAIR: pair, SCALE: undefined, SEC: process.env.CHECK_SEC ?? '60' }, stdio: ['ignore', 'inherit', 'inherit'] });
         if (r.status !== 0) { bad.push({ pair, why: `soak exited ${r.status}` }); continue; }
         const out = JSON.parse(readFileSync(join(dir, `${pair}-scale.json`)));
         if (out.errors.length) bad.push({ pair, why: `${out.errors.length} page errors: ${out.errors[0]}` });
@@ -26,11 +26,11 @@ if (process.argv.includes('--check')) {
     process.exit(bad.length ? 1 : 0);
 }
 const RIGS = { lou: 'thesz-procreate-v1', george: 'george-roster-v1', kowalski: 'kowalski-roster-v1', guido: 'guido-roster-v1' };
-const PAIR = process.env.PAIR ?? 'lou-george', SEC = Number(process.env.SEC ?? 150), BAR = Number(process.env.BAR ?? 0.02), SCALE = process.env.SCALE === '1';
+const PAIR = process.env.PAIR ?? 'lou-george', SEC = Number(process.env.SEC ?? 150), BAR = Number(process.env.BAR ?? 0.02), SCALE = process.env.SCALE !== 'off';   // SCALE=off: ?scale=off (the old game); SCALE=1: ?scale=v1; unset: no scale param, the default (on since 2026-11-19)
 const outDir = process.argv[2] ?? 'research/scale-2026-11/s0';
 const [a, b] = PAIR.split('-');
 process.env.WFM_P1 = RIGS[a]; process.env.WFM_P2 = RIGS[b]; process.env.WFM_TS = process.env.WFM_TS ?? '1';
-process.env.WFM_QS = 'notitle=1&light=v1' + (SCALE ? '&scale=v1' : '');
+process.env.WFM_QS = 'notitle=1&light=v1' + (process.env.SCALE === '1' ? '&scale=v1' : process.env.SCALE === 'off' ? '&scale=off' : '');
 const INSTALL = (BAR) => {
     const sc = window.__WFM_GAME.scene.scenes[0];
     for (const n of [1, 2]) if (sc[`w${n}`].input !== sc[`_p${n}AI`]) sc._togglePlayer(n);
@@ -90,5 +90,5 @@ try {
     mkdirSync(outDir, { recursive: true });
     const gameSec = +data.gameSec.toFixed(1), out = { pair: PAIR, scale: SCALE, bar: BAR, ts, errors, gameSec, frames: data.frames, fps: +(data.frames / gameSec).toFixed(1), popsPerMin: +(data.flags.length / (gameSec / 60)).toFixed(2), byCause, distPctPerFrame: dist, flags: data.flags };
     writeFileSync(join(outDir, `${PAIR}${SCALE ? '-scale' : ''}.json`), JSON.stringify(out, null, 1));
-    console.log(`[pop] ${PAIR}${SCALE ? ' scale=v1' : ''}: ${gameSec} game s, ${data.frames} frames, ${data.flags.length} pops (${out.popsPerMin}/min) ${JSON.stringify(byCause)}, page errors ${errors.length}`);
+    console.log(`[pop] ${PAIR}${SCALE ? ' scale on' : ' scale=off'}: ${gameSec} game s, ${data.frames} frames, ${data.flags.length} pops (${out.popsPerMin}/min) ${JSON.stringify(byCause)}, page errors ${errors.length}`);
 } finally { await h.close(); }

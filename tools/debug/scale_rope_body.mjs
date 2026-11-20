@@ -52,7 +52,7 @@ const SETUP = ({ row }) => {
 if (import.meta.url === `file://${process.argv[1]}`) {
     const out = [];
     for (const on of [0, 1]) {
-        process.env.WFM_P1 = LOU; process.env.WFM_P2 = GEORGE; process.env.WFM_QS = 'notitle=1&light=v1' + (on ? '&scale=v1' : '');
+        process.env.WFM_P1 = LOU; process.env.WFM_P2 = GEORGE; process.env.WFM_QS = 'notitle=1&light=v1' + (on ? '&scale=v1' : '&scale=off');
         const h = await launch();
         try {
             const page = h.page;

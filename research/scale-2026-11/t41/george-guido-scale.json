@@ -1,0 +1,227 @@
+{
+ "pair": "george-guido",
+ "scale": true,
+ "bar": 0.02,
+ "ts": 1,
+ "errors": [],
+ "gameSec": 60.3,
+ "frames": 3617,
+ "fps": 60,
+ "popsPerMin": 3.98,
+ "byCause": {
+  "D clip-authored y motion": 4
+ },
+ "distPctPerFrame": {
+  "standing": {
+   "frames": 2317,
+   "p50": 0.05,
+   "p99": 0.35,
+   "p999": 0.35,
+   "max": 0.35
+  },
+  "transition": {
+   "frames": 93,
+   "p50": 0.05,
+   "p99": 0.45,
+   "p999": 0.45,
+   "max": 0.45
+  },
+  "evading": {
+   "frames": 40,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "blocking": {
+   "frames": 124,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "slamming": {
+   "frames": 158,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "selling": {
+   "frames": 51,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "staggered": {
+   "frames": 150,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "taunting": {
+   "frames": 494,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "lockup": {
+   "frames": 486,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "holding": {
+   "frames": 1054,
+   "p50": 0.05,
+   "p99": 0.2,
+   "p999": 2.35,
+   "max": 2.35
+  },
+  "down": {
+   "frames": 1726,
+   "p50": 0.05,
+   "p99": 0.8,
+   "p999": 1.7,
+   "max": 1.9
+  },
+  "gettingUp": {
+   "frames": 346,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "dropkicking": {
+   "frames": 72,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "elbowDropping": {
+   "frames": 13,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "headlocked": {
+   "frames": 3,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinned": {
+   "frames": 23,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "pinning": {
+   "frames": 23,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "falling": {
+   "frames": 37,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  },
+  "flipping": {
+   "frames": 22,
+   "p50": 0.05,
+   "p99": 0.05,
+   "p999": 0.05,
+   "max": 0.05
+  }
+ },
+ "flags": [
+  {
+   "t": 40.53,
+   "who": "p1",
+   "dPct": 2.13,
+   "rawPct": 2.13,
+   "dt": 0.0167,
+   "stBefore": "holding",
+   "stAfter": "holding",
+   "clipBefore": "piledriver",
+   "clipAfter": "piledriver",
+   "dy": 6.7,
+   "y": 281,
+   "ox": -53.5,
+   "oy": 37.9,
+   "oState": "holding",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "D clip-authored y motion"
+  },
+  {
+   "t": 40.55,
+   "who": "p1",
+   "dPct": 2.31,
+   "rawPct": 2.31,
+   "dt": 0.0167,
+   "stBefore": "holding",
+   "stAfter": "holding",
+   "clipBefore": "piledriver",
+   "clipAfter": "piledriver",
+   "dy": 7.4,
+   "y": 289,
+   "ox": -53.6,
+   "oy": 30.5,
+   "oState": "holding",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "D clip-authored y motion"
+  },
+  {
+   "t": 40.57,
+   "who": "p1",
+   "dPct": 2.32,
+   "rawPct": 2.32,
+   "dt": 0.0167,
+   "stBefore": "holding",
+   "stAfter": "holding",
+   "clipBefore": "piledriver",
+   "clipAfter": "piledriver",
+   "dy": 7.6,
+   "y": 296,
+   "ox": -53.7,
+   "oy": 22.9,
+   "oState": "holding",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "D clip-authored y motion"
+  },
+  {
+   "t": 40.58,
+   "who": "p1",
+   "dPct": 2.18,
+   "rawPct": 2.18,
+   "dt": 0.0167,
+   "stBefore": "holding",
+   "stAfter": "holding",
+   "clipBefore": "piledriver",
+   "clipAfter": "piledriver",
+   "dy": 7.3,
+   "y": 303,
+   "ox": -53.8,
+   "oy": 15.6,
+   "oState": "holding",
+   "oLying": "supine",
+   "ga": false,
+   "cause": "D clip-authored y motion"
+  }
+ ]
+}

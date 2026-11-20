@@ -10,7 +10,8 @@ globalThis.Phaser ??= { Math: { Distance: { Between: (x1, y1, x2, y2) => Math.hy
 const noop = () => {};
 const DT = 1 / 60;
 const IDLE = { lLeg: -0.05, rLeg: 0.14, lArm: 0.04, rArm: 0.17, lean: 0.05, crouch: 0.05 };
-const withFlag = (search, fn) => { globalThis.location = { search }; try { return fn(); } finally { delete globalThis.location; } };
+// these tests are about the getups ease: scale (default on) is written =off so the old push is what they exercise
+const withFlag = (search, fn) => { const q = new URLSearchParams(search); if (!q.has('scale')) q.set('scale', 'off'); globalThis.location = { search: `?${q}` }; try { return fn(); } finally { delete globalThis.location; } };
 
 // a standing wrestler `gap` px from an opponent in `oState`, stamped as having reached standing at t = 0 (or never)
 function setup({ gap, oState = 'elbowDropping', stampedAt = 0, facing = 1 }) {

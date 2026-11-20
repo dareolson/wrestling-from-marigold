@@ -34,7 +34,7 @@ const BEGIN = ({ kase, facing }) => {
 const STEP = () => { const g = window.__WFM_GAME, sc = g.scene.scenes[0]; window.__T += 1000 / 60; g.step(window.__T, 1000 / 60); const { w1: a, w2: d } = sc; return { ay: a.y, dy: d.y, as: a.s, ds: d.s, ax: a.x, dx: d.x }; };
 const cells = [];
 for (const on of [0, 1]) {
-    process.env.WFM_P1 = LOU; process.env.WFM_P2 = GEORGE; process.env.WFM_QS = 'notitle=1&light=v1' + (on ? '&scale=v1' : '');
+    process.env.WFM_P1 = LOU; process.env.WFM_P2 = GEORGE; process.env.WFM_QS = 'notitle=1&light=v1' + (on ? '&scale=v1' : '&scale=off');
     const h = await launch();
     try {
         const page = h.page;

@@ -26,7 +26,7 @@ function run(search, { facing = 1, dyStart = 40, y = 340 } = {}) {
 }
 
 test('T1.2: flag off: the defender is on the authored y from the first frame (the old snap)', () => {
-    const off = run('');
+    const off = run('?scale=off');
     assert.ok(Math.abs(off[0].y - off[off.length - 1].y) < 200);
     const on = run('?scale=v1');
     // the first frame differs under the flag: it starts from the real y
@@ -44,7 +44,7 @@ test('T1.2: no frame in the entry window steps y more than the 2% size bar, both
 test('T1.2: from the end of the window every x and y equals flag off; x equals flag off in the window too', () => {
     for (const facing of [1, -1]) for (const dyStart of [-50, 0, 50]) {
         // anchor on the front row (445), where the old and the T2.1 perspective agree (1.000): this test is about the entry ease, not the scale formula
-        const on = run('?scale=v1', { facing, dyStart, y: 445 }), off = run('', { facing, dyStart, y: 445 });
+        const on = run('?scale=v1', { facing, dyStart, y: 445 }), off = run('?scale=off', { facing, dyStart, y: 445 });
         for (let i = 0; i < on.length; i++) {
             assert.equal(on[i].x, off[i].x);
             if (on[i].t > ENTRY_EASE_SEC + 1e-9) assert.equal(on[i].y, off[i].y, `t ${on[i].t}`);
@@ -57,5 +57,5 @@ test('T1.2: the anchor is never offset', () => {
     const mk = (search) => { const scene = { moveRuntime: runtime, time: { now: 0, delayedCall() {} }, tweens: { add: () => ({ stop() {} }), killTweensOf() {} }, _logEvent() {} };
         const a = wrestler(scene, { facing: 1, x: 470, y: 340 }), d = wrestler(scene, { facing: -1, x: 540, y: 380 });
         withFlag(search, () => { runtime.play(stagingProofClip.id, { attacker: a, defender: d }); runtime.update(1 / 60); }); return a.y; };
-    assert.equal(mk('?scale=v1'), mk(''));
+    assert.equal(mk('?scale=v1'), mk('?scale=off'));
 });

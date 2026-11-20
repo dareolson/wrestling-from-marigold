@@ -9,7 +9,7 @@ const PAIR = process.env.PAIR ?? 'lou-george', SEC = Number(process.env.SEC ?? 1
 const outDir = process.argv[2] ?? 'research/animation/light-moves-2026-11/g12/soak-runs';
 const [a, b] = PAIR.split('-');
 process.env.WFM_P1 = RIGS[a]; process.env.WFM_P2 = RIGS[b]; process.env.WFM_TS = process.env.WFM_TS ?? '3';
-process.env.WFM_QS = 'notitle=1&light=v1' + (process.env.SCALE ? '&scale=v1' : '');   // SCALE=1: PLAN_SCALE T2.3, the same soak under ?scale=v1
+process.env.WFM_QS = 'notitle=1&light=v1' + (process.env.SCALE === '1' ? '&scale=v1' : process.env.SCALE === 'off' ? '&scale=off' : '');   // SCALE=1: ?scale=v1, SCALE=off: ?scale=off (the old game), unset: no scale param (the default, on since 2026-11-19)
 const INSTALL = () => {
     const sc = window.__WFM_GAME.scene.scenes[0];
     for (const n of [1, 2]) if (sc[`w${n}`].input !== sc[`_p${n}AI`]) sc._togglePlayer(n);

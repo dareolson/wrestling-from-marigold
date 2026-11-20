@@ -45,7 +45,7 @@ const RUN = ({ move, row, facing, n }) => {
 };
 const out = [];
 for (const on of [0, 1]) for (const [pa, pd, name] of [[LOU, GEORGE, 'lou-george'], [GEORGE, LOU, 'george-lou']]) {
-    process.env.WFM_P1 = pa; process.env.WFM_P2 = pd; process.env.WFM_QS = 'notitle=1&light=v1' + (on ? '&scale=v1' : '');
+    process.env.WFM_P1 = pa; process.env.WFM_P2 = pd; process.env.WFM_QS = 'notitle=1&light=v1' + (on ? '&scale=v1' : '&scale=off');
     const h = await launch();
     try {
         const page = h.page;

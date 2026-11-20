@@ -23,7 +23,7 @@ const RUN = ({ side, dx, dy, n }) => {
 };
 const out = [];
 for (const flag of [0, 1]) {
-    process.env.WFM_QS = 'notitle=1&light=v1' + (flag ? '&scale=v1' : ''); process.env.WFM_P1 = LOU; process.env.WFM_P2 = GEORGE;
+    process.env.WFM_QS = 'notitle=1&light=v1' + (flag ? '&scale=v1' : '&scale=off'); process.env.WFM_P1 = LOU; process.env.WFM_P2 = GEORGE;
     const h = await launch();
     try {
         const page = h.page;

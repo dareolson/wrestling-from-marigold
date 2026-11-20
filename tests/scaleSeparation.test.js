@@ -65,7 +65,7 @@ test('T1.1: the 26-48 band nudges x apart (gate 60 * s) and leaves y alone; outs
 
 test('T1.1: flag off is the old push: along the line between them, y moves', () => {
     const { w, other } = setup({ dx: 10, dy: 20 });
-    frames(w, other, 1, '');
+    frames(w, other, 1, '?scale=off');
     assert.notEqual(w.y, 355);
 });
 

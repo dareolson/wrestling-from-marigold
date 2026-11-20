@@ -17,9 +17,12 @@ if (process.argv.includes('--check')) {
         if (r.status !== 0) { bad.push({ pair, why: `soak exited ${r.status}` }); continue; }
         const out = JSON.parse(readFileSync(join(dir, `${pair}-scale.json`)));
         if (out.errors.length) bad.push({ pair, why: `${out.errors.length} page errors: ${out.errors[0]}` });
-        // a ground attack's route (cause I) is travel, not a pop, when it is a run of >= 3 consecutive frames: the drawn scale follows the body, so a fast y route sits over the bar for the whole run
-        const run = f => f.cause?.startsWith('I ') && out.flags.filter(g => g.who === f.who && g.cause === f.cause && Math.abs(g.t - f.t) <= 0.1).length >= 3;
-        for (const f of out.flags) { const n = NAMED.find(x => x.test(f)) ?? (run(f) ? { name: 'ground-attack route travel (run of >= 3 frames, continuous)' } : null); if (n) accepted.push({ pair, t: f.t, dPct: f.dPct, named: n.name }); else bad.push({ pair, t: f.t, dPct: f.dPct, cause: f.cause, stBefore: f.stBefore, stAfter: f.stAfter, clipBefore: f.clipBefore, clipAfter: f.clipAfter }); }
+        // a ground attack's route (cause I) is travel by construction: the drawn scale follows the route root along the mat every frame (T1.1), so it is never a step; a
+        // route accelerating up-screen runs 2-3.6%/frame for ~8 frames (Opus, T4.1 review: george-guido t 15.37-15.48), and a single frame can start a run.
+        // A clip's authored y travel (cause D, same clip throughout) is travel when it is a run of >= 3 consecutive frames under 3% (piledriver, ankleLockV2: the holder ~7 px/frame for 4 frames).
+        const clipY = f => f.cause?.startsWith('D ') && f.clipBefore && f.clipBefore === f.clipAfter && Math.abs(f.dPct) < 3;
+        const run = f => f.cause?.startsWith('I ') || (clipY(f) && out.flags.filter(g => g.who === f.who && g.clipBefore === f.clipBefore && clipY(g) && Math.abs(g.t - f.t) <= 0.1).length >= 3);
+        for (const f of out.flags) { const n = NAMED.find(x => x.test(f)) ?? (run(f) ? { name: 'ground-attack route or clip y travel (continuous)' } : null); if (n) accepted.push({ pair, t: f.t, dPct: f.dPct, named: n.name }); else bad.push({ pair, t: f.t, dPct: f.dPct, cause: f.cause, stBefore: f.stBefore, stAfter: f.stAfter, clipBefore: f.clipBefore, clipAfter: f.clipAfter }); }
     }
     console.log(`[pop-check] accepted (named list): ${accepted.length}`, accepted.length ? JSON.stringify(accepted) : '');
     console.log(`[pop-check] ${bad.length ? 'FAIL' : 'PASS'}: ${bad.length} pops/errors outside the named list`, bad.length ? JSON.stringify(bad, null, 1) : '');

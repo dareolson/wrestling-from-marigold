@@ -2,9 +2,29 @@
 //   WFM_URL=http://127.0.0.1:5173 PAIR=lou-george SEC=150 [SCALE=1] [BAR=0.02] node tools/debug/scale_pop_soak.mjs [outDir]   (WFM_TS default 1 so a frame is a real frame; PAIR = any two of lou george kowalski guido)
 // Deltas are normalised to a 60 fps frame: |Δs/s| * (1/60)/dt, so the bar means the same at any game frame rate (PLAN_SCALE S0 review: bar 2%).
 // Draw scale mirrors Wrestler.draw(): perspectiveScale(y) * _heightScale, or the corner matY scale while on the ropes.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { launch } from './harness.mjs';
+// --check (PLAN_SCALE T3.2): one short ?scale=v1 soak per pairing (each in its own process, one at a time so the game runs at 60 fps), exit 1 on any pop over BAR that is not on the named list.
+//   WFM_URL=http://127.0.0.1:5173 [CHECK_SEC=60] node tools/debug/scale_pop_soak.mjs --check [outDir=research/scale-2026-11/gs]
+// Named list (accepted pops): a ground-attack route's continuous travel (below), the match-reset snap (both men put on their start marks in one frame, intended) and kneeDropV2's clip-authored y, which sits on the 2% bar (T1.3).
+const NAMED = [{ name: 'match reset snap (intended)', test: f => f.cause?.startsWith('H ') }, { name: 'kneeDropV2 clip-authored y (on the 2% bar)', test: f => f.clipBefore === 'kneeDropV2' && f.clipAfter === 'kneeDropV2' }];
+if (process.argv.includes('--check')) {
+    const dir = process.argv.filter(a => !a.startsWith('--') && a !== process.argv[0] && a !== process.argv[1])[0] ?? 'research/scale-2026-11/gs', bad = [], accepted = [];
+    for (const pair of ['lou-george', 'lou-kowalski', 'george-guido', 'kowalski-guido']) {
+        const r = spawnSync(process.execPath, [process.argv[1], dir], { env: { ...process.env, PAIR: pair, SCALE: '1', SEC: process.env.CHECK_SEC ?? '60' }, stdio: ['ignore', 'inherit', 'inherit'] });
+        if (r.status !== 0) { bad.push({ pair, why: `soak exited ${r.status}` }); continue; }
+        const out = JSON.parse(readFileSync(join(dir, `${pair}-scale.json`)));
+        if (out.errors.length) bad.push({ pair, why: `${out.errors.length} page errors: ${out.errors[0]}` });
+        // a ground attack's route (cause I) is travel, not a pop, when it is a run of >= 3 consecutive frames: the drawn scale follows the body, so a fast y route sits over the bar for the whole run
+        const run = f => f.cause?.startsWith('I ') && out.flags.filter(g => g.who === f.who && g.cause === f.cause && Math.abs(g.t - f.t) <= 0.1).length >= 3;
+        for (const f of out.flags) { const n = NAMED.find(x => x.test(f)) ?? (run(f) ? { name: 'ground-attack route travel (run of >= 3 frames, continuous)' } : null); if (n) accepted.push({ pair, t: f.t, dPct: f.dPct, named: n.name }); else bad.push({ pair, t: f.t, dPct: f.dPct, cause: f.cause, stBefore: f.stBefore, stAfter: f.stAfter, clipBefore: f.clipBefore, clipAfter: f.clipAfter }); }
+    }
+    console.log(`[pop-check] accepted (named list): ${accepted.length}`, accepted.length ? JSON.stringify(accepted) : '');
+    console.log(`[pop-check] ${bad.length ? 'FAIL' : 'PASS'}: ${bad.length} pops/errors outside the named list`, bad.length ? JSON.stringify(bad, null, 1) : '');
+    process.exit(bad.length ? 1 : 0);
+}
 const RIGS = { lou: 'thesz-procreate-v1', george: 'george-roster-v1', kowalski: 'kowalski-roster-v1', guido: 'guido-roster-v1' };
 const PAIR = process.env.PAIR ?? 'lou-george', SEC = Number(process.env.SEC ?? 150), BAR = Number(process.env.BAR ?? 0.02), SCALE = process.env.SCALE === '1';
 const outDir = process.argv[2] ?? 'research/scale-2026-11/s0';

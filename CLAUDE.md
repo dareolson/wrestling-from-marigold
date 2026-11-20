@@ -7,7 +7,7 @@
 
 ## Commands (Node 22 only: `.nvmrc`, `engines` ">=22 <23"; other versions fail)
 - Full suite: `npm test` (`node --test tests/*.test.js`). One file: `node --test tests/<name>.test.js`.
-- Build: `npm run build`. Move coverage gate: `npm run moves:coverage -- --check`.
+- Build: `npm run build`. Move coverage gate: `npm run moves:coverage -- --check`. Size-pop gate (`?scale=v1`, runs at gates, needs the dev server): `WFM_URL=http://127.0.0.1:5173 node tools/debug/scale_pop_soak.mjs --check`.
 - Dev server: `npm run dev` serves 127.0.0.1:5173. Tools in `tools/debug/` take `WFM_URL=http://127.0.0.1:5173` (and `WFM_P1=<rig key>`).
 
 ## Git

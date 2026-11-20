@@ -1,4 +1,5 @@
-import { W, H, RING, ringBoundsAtY } from '../constants.js';
+import { W, H, RING, ringBoundsAtY, scaleDebugCandidate } from '../constants.js';
+import ScaleDebug from '../scaleDebug.js';
 import Wrestler, { lightCandidate, grapplesCandidate, waistlockCandidate, POSES } from '../Wrestler.js';
 import InputHandler from '../InputHandler.js';
 import AIHandler from '../AIHandler.js';
@@ -3535,6 +3536,7 @@ export default class Arena extends Phaser.Scene {
         const undoBlend = this._exitBlend ? this._applyExitBlend(dt) : null;
         w1.draw();
         w2.draw();
+        if (scaleDebugCandidate()) (this._scaleDebug ??= new ScaleDebug(this)).update([w1, w2], dt);   // ?scaleDebug=1: render-only size overlay
         this.moveRuntime.afterDraw?.();
         if (this.lockupState?.grapple && grapplesCandidate()) this._holdLockupGrips();
         if (this.waistlockState) this._holdWaistlockGrips();

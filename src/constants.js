@@ -25,6 +25,8 @@ export function ringBoundsAtY(y) {
 
 // ?scale=v1 (PLAN_SCALE): one perspective, no size pops. Opt-in; flag off is byte-identical (same y, same draw scale, every frame).
 export const scaleCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('scale') === 'v1';
+// ?scaleDebug=1 (T3.4): render-only size overlay (src/scaleDebug.js); off by default, changes nothing in play.
+export const scaleDebugCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('scaleDebug') === '1';
 
 // The ring's side edges meet at the horizon: the intersection of nearLeft->farLeft and nearRight->farRight (y ≈ -39), derived from RING so a moved corner can't leave it stale.
 export function ringHorizonY(ring = RING) {

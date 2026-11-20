@@ -1,0 +1,100 @@
+{
+ "row": 438,
+ "note": "ink = painted pixels, alpha >= 128, idle, ?scale=v1; inkPerDs = ink / drawScale; ratioToLou = (inkPerDs * heightScale) / Lou's",
+ "rigs": [
+  {
+   "id": "thesz-procreate-v1",
+   "numbers": {
+    "heightScale": 0.7907,
+    "torsoH": 113.23,
+    "thighH": 76.96,
+    "shinH": 41.81,
+    "headScale": 0.6445
+   },
+   "art": {
+    "head": "c6a660c26ec05d41",
+    "torso": "290d4803bae02202",
+    "thigh": "500f5bd3a4fd992e",
+    "shin": "80b43d2357f1a649"
+   },
+   "row": 438,
+   "drawScale": 0.7793,
+   "inkPx": 245.9,
+   "inkPerDs": 315.52,
+   "ratioToLou": 1,
+   "measuredRatioToLou": 1
+  },
+  {
+   "id": "george-roster-v1",
+   "numbers": {
+    "heightScale": 1.01201,
+    "torsoH": 75.97915275525037,
+    "thighH": 50.77362028488883,
+    "shinH": 46.81255294468119,
+    "headScale": 0.6004705882352941
+   },
+   "art": {
+    "head": "1b1f1f62ff9bfeed",
+    "torso": "e51d0d6a309c4fc5",
+    "thigh": "a8ed13e948d6525f",
+    "shin": "d3487f50775c9aa1",
+    "far_thigh": "a020239c5aca8f57",
+    "far_shin": "515c0b035ee13e67"
+   },
+   "row": 438,
+   "drawScale": 0.9974,
+   "inkPx": 236.5,
+   "inkPerDs": 237.1,
+   "ratioToLou": 0.9618,
+   "measuredRatioToLou": 0.9618
+  },
+  {
+   "id": "kowalski-roster-v1",
+   "numbers": {
+    "heightScale": 0.94296,
+    "torsoH": 86.87833340710937,
+    "thighH": 58.27060890372715,
+    "shinH": 62.64213796128827,
+    "headScale": 0.576
+   },
+   "art": {
+    "head": "8b025986a5312370",
+    "torso": "7345ee4aa6324825",
+    "thigh": "04ff47a5b626d5e6",
+    "shin": "bedde0530c9c13a2",
+    "far_thigh": "9075956621387e5c",
+    "far_shin": "b5a63d78472cbb77"
+   },
+   "row": 438,
+   "drawScale": 0.9293,
+   "inkPx": 244.4,
+   "inkPerDs": 263.01,
+   "ratioToLou": 0.9941,
+   "measuredRatioToLou": 0.9939
+  },
+  {
+   "id": "guido-roster-v1",
+   "numbers": {
+    "heightScale": 1.00338,
+    "torsoH": 76.59173029112,
+    "thighH": 57.09471970786038,
+    "shinH": 49.216128076594096,
+    "headScale": 0.4950588235294117
+   },
+   "art": {
+    "head": "910e5b3f6c19dbde",
+    "torso": "0147e99783f09334",
+    "thigh": "24593df283b919f3",
+    "shin": "4000e9dbe7c3268c",
+    "far_thigh": "60567f3e03dfe55f",
+    "far_shin": "282ac5b437c7574d"
+   },
+   "row": 438,
+   "drawScale": 0.9889,
+   "inkPx": 236.9,
+   "inkPerDs": 239.55,
+   "ratioToLou": 0.9634,
+   "measuredRatioToLou": 0.9634
+  }
+ ]
+}

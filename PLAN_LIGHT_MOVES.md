@@ -421,6 +421,12 @@ Also from Stage 12: 12.2 headlock takeover (George), 12.9 Indian deathlock (Don 
 
 Default on, `=off` disables. Full suite, build, coverage before.
 
+**Derek, 2026-11-20: promote.** ("the old moves were kinda butt"; a `?light=v1` match with scale on "starting to really feel like a match".)
+
+- **TGP.1 Promote `light`.** `lightCandidate()` (Wrestler.js:229) becomes `defaultOnFlag('light', 'v1')` (on unless `?light=off`; any value but v1 off; node without `location` off). Opt-ins that sit on top of it (`georgePerformance`, `waistlock`, `gait`, `plant`, `scaleDebug`) stay opt-in. Add `light` to `tests/support/promotedFlags.js` `onlyListed`; every test or tool that meant light-off now says `?light=off` (flag-off kit lists in rosterKits.js stay as written: they are the `=off` game). One new test pins absent / `=v1` / `=off` / `=1` / no location. `npm run moves:kits` if it reads the flag. Update AI_HANDOFF Status's promoted/opt-in line and CLAUDE.md if it names `light=v1` as needed.
+  **Shared tree:** Wrestler.js and other files carry another session's uncommitted edits. Commit only your own hunks: build a patch of just your change and `git apply --cached` it (never `git add` a file you share; never commit or revert their edits). If you can't separate them cleanly, hard-stop and say so.
+  Checks: full suite, build, `moves:coverage -- --check`, pop check (`scale_pop_soak.mjs --check`, now light on with no query). Live: dev server, no query string, Lou vs George, AI both sides, 2 min: list the moves played (light moves appear, no `figureFour` from George), stuck states, page errors. Commit, Progress line. **STOP for Opus** (Opus re-runs the gate on a clean worktree and pushes).
+
 ## Later (not in this plan)
 
 - The §2b opener batch: club blow / forearm smash, running forearm, shoulder block, backward roll; then wristlock, headlock takeover (the snapmare is Stage 7). The spinning toehold.

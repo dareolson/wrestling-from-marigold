@@ -1,4 +1,4 @@
-// PLAN_LIGHT_MOVES Stage 12 (T12.11): an AI-vs-AI soak per pairing under ?light=v1, reporting which of the ten Stage 12 moves played, page errors and stuck states.
+// PLAN_LIGHT_MOVES Stage 12 (T12.11): an AI-vs-AI soak per pairing (light is the default now; LIGHT=off adds &light=off), reporting which of the ten Stage 12 moves played, page errors and stuck states.
 //   WFM_URL=http://localhost:5197 PAIR=lou-george SEC=150 node tools/debug/g12_soak.mjs [outDir]   (real time at WFM_TS x, default 3; PAIR = any two of lou george kowalski guido)
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -9,7 +9,7 @@ const PAIR = process.env.PAIR ?? 'lou-george', SEC = Number(process.env.SEC ?? 1
 const outDir = process.argv[2] ?? 'research/animation/light-moves-2026-11/g12/soak-runs';
 const [a, b] = PAIR.split('-');
 process.env.WFM_P1 = RIGS[a]; process.env.WFM_P2 = RIGS[b]; process.env.WFM_TS = process.env.WFM_TS ?? '3';
-process.env.WFM_QS = 'notitle=1&light=v1' + (process.env.SCALE === '1' ? '&scale=v1' : process.env.SCALE === 'off' ? '&scale=off' : '');   // SCALE=1: ?scale=v1, SCALE=off: ?scale=off (the old game), unset: no scale param (the default, on since 2026-11-19)
+process.env.WFM_QS = 'notitle=1' + (process.env.LIGHT === 'off' ? '&light=off' : '') + (process.env.SCALE === '1' ? '&scale=v1' : process.env.SCALE === 'off' ? '&scale=off' : '');   // SCALE=1: ?scale=v1, SCALE=off: ?scale=off (the old game), unset: no scale param (the default, on since 2026-11-19)
 const INSTALL = () => {
     const sc = window.__WFM_GAME.scene.scenes[0];
     for (const n of [1, 2]) if (sc[`w${n}`].input !== sc[`_p${n}AI`]) sc._togglePlayer(n);

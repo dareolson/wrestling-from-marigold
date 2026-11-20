@@ -1,4 +1,4 @@
-// PLAN_SCALE S0 (T0.1): an AI-vs-AI soak that flags one-frame draw-scale pops under ?light=v1 (scale is the default now: SCALE=off adds &scale=off).
+// PLAN_SCALE S0 (T0.1): an AI-vs-AI soak that flags one-frame draw-scale pops with no light param (light and scale are the default now: SCALE=off adds &scale=off, LIGHT=off adds &light=off).
 //   WFM_URL=http://127.0.0.1:5173 PAIR=lou-george SEC=150 [SCALE=1] [BAR=0.02] node tools/debug/scale_pop_soak.mjs [outDir]   (WFM_TS default 1 so a frame is a real frame; PAIR = any two of lou george kowalski guido)
 // Deltas are normalised to a 60 fps frame: |Δs/s| * (1/60)/dt, so the bar means the same at any game frame rate (PLAN_SCALE S0 review: bar 2%).
 // Draw scale mirrors Wrestler.draw(): perspectiveScale(y) * _heightScale, or the corner matY scale while on the ropes.
@@ -33,7 +33,7 @@ const PAIR = process.env.PAIR ?? 'lou-george', SEC = Number(process.env.SEC ?? 1
 const outDir = process.argv[2] ?? 'research/scale-2026-11/s0';
 const [a, b] = PAIR.split('-');
 process.env.WFM_P1 = RIGS[a]; process.env.WFM_P2 = RIGS[b]; process.env.WFM_TS = process.env.WFM_TS ?? '1';
-process.env.WFM_QS = 'notitle=1&light=v1' + (process.env.SCALE === '1' ? '&scale=v1' : process.env.SCALE === 'off' ? '&scale=off' : '');
+process.env.WFM_QS = 'notitle=1' + (process.env.LIGHT === 'off' ? '&light=off' : '') + (process.env.SCALE === '1' ? '&scale=v1' : process.env.SCALE === 'off' ? '&scale=off' : '');
 const INSTALL = (BAR) => {
     const sc = window.__WFM_GAME.scene.scenes[0];
     for (const n of [1, 2]) if (sc[`w${n}`].input !== sc[`_p${n}AI`]) sc._togglePlayer(n);

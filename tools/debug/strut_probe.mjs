@@ -7,7 +7,7 @@ const [out, facingArg = '1'] = process.argv.slice(2), facing = +facingArg;
 const b = await chromium.launch({ channel: 'chrome' });
 const p = await b.newPage({ viewport: { width: 1100, height: 700 } });
 const errors = []; p.on('pageerror', e => errors.push(e.message));
-await p.goto(`${URL}/?arena=1&notitle=1${light ? '&light=v1' : ''}&p1=george-roster-v1&p2=thesz-procreate-v1`);
+await p.goto(`${URL}/?arena=1&notitle=1${light ? '&light=v1' : '&light=off'}&p1=george-roster-v1&p2=thesz-procreate-v1`);
 await p.waitForFunction(() => window.__WFM_GAME?.scene.scenes[0]?.w2);
 await p.evaluate((facing) => { const g = window.__WFM_GAME, sc = g.scene.scenes[0]; g.loop.sleep(); sc._p1AI = sc._p2AI = null; sc.tweens.getDelta = () => 1000 / 60; window.__T = sc.time.now;
   const A = sc.w1, D = sc.w2; A.x = 480; D.x = 480 + facing * 200; A.y = D.y = 380; A.facing = facing;

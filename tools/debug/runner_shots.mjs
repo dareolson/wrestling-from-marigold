@@ -7,7 +7,7 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1100, height: 700 } });
   page.on('pageerror', e => console.log('pageerror', e.message));
-  await page.goto(`${process.env.WFM_URL ?? 'http://127.0.0.1:5197'}/?arena=1&notitle=1${LIGHT ? '&light=v1' : ''}&p1=${a}&p2=${d}`);
+  await page.goto(`${process.env.WFM_URL ?? 'http://127.0.0.1:5197'}/?arena=1&notitle=1${LIGHT ? '&light=v1' : '&light=off'}&p1=${a}&p2=${d}`);
   await page.waitForFunction(() => window.__WFM_GAME?.scene.scenes[0]?.w2, { timeout: 30000 }); await page.waitForTimeout(1500);
   await page.evaluate(({ facing, mode }) => {
     const G = window.__WFM_GAME, sc = G.scene.scenes[0], w1 = sc.w1, w2 = sc.w2; G.loop.sleep(); sc._p1AI = sc._p2AI = null; sc.tweens.getDelta = () => 1000 / 60;

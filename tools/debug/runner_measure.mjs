@@ -14,7 +14,7 @@ try {
   for (const mode of MODES) for (const [name, a, d] of [['lou-george', LOU, GEORGE], ['george-lou', GEORGE, LOU]]) for (const facing of [1, -1]) {
     const page = await browser.newPage({ viewport: { width: 1100, height: 700 } });
     const errors = []; page.on('pageerror', e => errors.push(e.message));
-    await page.goto(`${URL0}/?arena=1&notitle=1${LIGHT ? '&light=v1' : ''}&p1=${a}&p2=${d}`);
+    await page.goto(`${URL0}/?arena=1&notitle=1${LIGHT ? '&light=v1' : '&light=off'}&p1=${a}&p2=${d}`);
     await page.waitForFunction(() => window.__WFM_GAME?.scene.scenes[0]?.w2, { timeout: 30000 });
     await page.waitForTimeout(1500);
     res[`${mode}-${name}-${facing > 0 ? 'right' : 'left'}`] = { errors, ...(await page.evaluate(async ({ facing, mode, readSrc }) => {

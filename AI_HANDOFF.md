@@ -38,7 +38,7 @@ Avoid a large rewrite.
 - **Preview:** `npm run dev`, then `/tools/mat-preview/?move=<key>&att=<rig>&def=<rig>` (e.g. `move=wristlockHammerlock&att=thesz-procreate-v1&def=george-roster-v1`).
 - **Evidence on disk only (not committed, ~250 MB):** `research/animation/*-2026-11-15/` (stretch-*, deathlock-*, wristlock-*, stage12-*, legwork, chop).
 - **Still from earlier:** G10+G11 page (ten light strikes) awaits Derek; chop approved; GP (promote `light`) is Derek's call; Opus reviews before any push. T6.4 drop toe hold not built.
-- **Parked:** finishers, gait Stage 3, get-ups Stage 5, George transfer G10a, figure-four, support-hand plant. Promoted flags: `risefix`, `sellart`, `aftermath`, `getups`, `grapples`, `falls`. Opt-in: `light=v1`, `waistlock=v1`, `gait=v2`, `plant=1`.
+- **Parked:** finishers, gait Stage 3, get-ups Stage 5, George transfer G10a, figure-four, support-hand plant. Promoted flags: `risefix`, `sellart`, `aftermath`, `getups`, `grapples`, `falls`, `scale`, `light` (`?light=off` is the old game). Opt-in: `waistlock=v1`, `gait=v2`, `plant=1`.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

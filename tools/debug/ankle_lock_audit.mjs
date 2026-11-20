@@ -177,7 +177,7 @@ const stat = (arr) => (arr.length ? { min: round(Math.min(...arr)), max: round(M
 const results = {};
 const { JOINT_LIMITS } = await import('../../src/rig/articulation.js');
 for (const [pair, att, def] of PAIRS.filter(p => !process.env.ONLY || process.env.ONLY.split(',').includes(p[0]))) {
-    process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = process.env.LIGHT ? 'notitle=1&light=v1' : 'notitle=1';
+    process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = process.env.LIGHT ? 'notitle=1&light=v1' : 'notitle=1&light=off';
     const h = await launch();
     try {
         await h.page.waitForTimeout(2500);

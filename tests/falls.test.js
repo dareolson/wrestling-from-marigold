@@ -94,7 +94,7 @@ test('MoveRuntime.releaseRole lets one actor go and the clip keeps playing for t
 
 // ---- T2.4c: the slam, end to end (Wrestler + MoveRuntime, no Phaser) -------------------------------------------------------------
 async function slamFixture({ falls = true, qs = '', clips = ['bodySlam'] } = {}) {
-    globalThis.location = { search: falls ? '?falls=v1' + qs : '?falls=off' };
+    globalThis.location = { search: falls ? '?falls=v1&light=off' + qs : '?falls=off&light=off' };
     const { default: Wrestler } = await import('../src/Wrestler.js');
     const { default: MoveRuntime } = await import('../src/animation/MoveRuntime.js');
     const rt = new MoveRuntime();
@@ -227,10 +227,10 @@ test('Skeleton.FALLS.spill lands supine, every key keeps both knees and both elb
 });
 
 test('tiers by move (T2.5h): slam, suplex and back body drop heavy, piledriver exceptional, the rest r2; ?slamTier overrides the slam only; no flag, no tier', async () => {
-    globalThis.location = { search: '?falls=off' };
+    globalThis.location = { search: '?falls=off&light=off' };
     const { moveTier } = await import('../src/Wrestler.js');
     assert.equal(moveTier('bodySlam'), null, 'flag off');
-    const at = (qs, move) => { globalThis.location = { search: '?falls=v1' + qs }; return moveTier(move); };
+    const at = (qs, move) => { globalThis.location = { search: '?falls=v1&light=off' + qs }; return moveTier(move); };
     assert.equal(at('', 'bodySlam'), 'heavy'); assert.equal(at('', 'suplex'), 'heavy'); assert.equal(at('', 'backBodyDrop'), 'heavy'); assert.equal(at('', 'piledriver'), 'exceptional');
     for (const m of ['hipToss', 'snapmare', 'armDrag', 'clothesline']) assert.equal(at('', m), null, m);
     assert.equal(at('&slamTier=r2', 'bodySlam'), null); assert.equal(at('&slamTier=exceptional', 'bodySlam'), 'exceptional'); assert.equal(at('&slamTier=bogus', 'bodySlam'), 'heavy');
@@ -562,7 +562,7 @@ test('jolt arms flail out of phase (the two arms do not mirror)', () => {
 
 // ---- T4.1-T4.2b: the jolt and the attacker landings on the Wrestler (flight and pose runner stubbed, no Phaser) -------------------------------------------------
 async function downFixture(falls) {
-    globalThis.location = { search: falls ? '?falls=v1' : '?falls=off' };
+    globalThis.location = { search: falls ? '?falls=v1&light=off' : '?falls=off&light=off' };
     const { default: Wrestler } = await import('../src/Wrestler.js');
     const shakes = [];
     const scene = { moveRuntime: { register() {} }, time: { now: 0 }, tweens: { add: () => ({ stop() {} }), killTweensOf: () => {} }, cameras: { main: { shake: (...a) => shakes.push(a) } }, crowd: { impact() {} } };

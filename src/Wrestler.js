@@ -225,8 +225,8 @@ export const splashFor = (move) => {
     const v = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('splash') : null;
     return SPLASH_VARIANTS[v] ?? SPLASH_VARIANTS[SPLASH_DEFAULT[move]];
 };
-// ?light=v1 (PLAN_LIGHT_MOVES D2): the rebuilt light moves (ankleLockV2). Opt-in until G5; flag off is the old clips byte for byte.
-export const lightCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('light') === 'v1';
+// ?light (PLAN_LIGHT_MOVES D2): the rebuilt light moves (ankleLockV2). On by default (Derek 2026-11-20); ?light=off is the old clips byte for byte.
+export const lightCandidate = () => defaultOnFlag('light', 'v1');
 // PLAN_GEORGE_PERFORMANCE A: the strut continues into the crowd taunt (opt-in preview, on top of light=v1)
 export const georgePerformanceCandidate = () => lightCandidate() && new URLSearchParams(location.search).get('georgePerformance') === '1';
 export { scaleCandidate };   // defined in constants.js (clipStaging.js reads it too)

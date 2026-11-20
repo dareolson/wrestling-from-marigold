@@ -6,7 +6,7 @@ import Wrestler, { sharesDepth } from '../src/Wrestler.js';
 globalThis.Phaser ??= { Math: { Distance: { Between: (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1) } } };
 
 const withFlag = (on, fn) => {
-    if (on) globalThis.location = { search: '?grapples=v1' };
+    if (on) globalThis.location = { search: '?grapples=v1&light=off' };
     try { return fn(); } finally { delete globalThis.location; }
 };
 function pair(runnerY) {

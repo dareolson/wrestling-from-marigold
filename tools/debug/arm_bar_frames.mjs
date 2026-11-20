@@ -121,7 +121,7 @@ const READ = () => {
 
 for (const [pair, att, def] of PAIRS) {
     if (process.env.ONLY && !pair.startsWith(process.env.ONLY)) continue;
-    process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = 'notitle=1' + (process.env.LIGHT === '0' ? '' : '&light=v1');
+    process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = 'notitle=1' + (process.env.LIGHT === '0' ? '&light=off' : '&light=v1');
     const h = await launch();
     try {
         await h.page.waitForTimeout(2500);

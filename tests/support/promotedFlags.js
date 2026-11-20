@@ -1,10 +1,10 @@
-// ?sellart, ?aftermath, ?risefix, ?getups, ?grapples, ?falls and ?scale are on by default in the game (Derek 2026-10-24; risefix 2026-10-25; getups 2026-10-29; grapples 2026-10-31; falls 2026-11-06; scale 2026-11-19). These
+// ?sellart, ?aftermath, ?risefix, ?getups, ?grapples, ?falls, ?scale and ?light are on by default in the game (Derek 2026-10-24; risefix 2026-10-25; getups 2026-10-29; grapples 2026-10-31; falls 2026-11-06; scale 2026-11-19; light 2026-11-20). These
 // tests were written when an absent flag meant off, and they test one flag at a
 // time. `onlyListed` keeps that meaning: any listed flag absent from `search` is
 // written as `=off`. `undefined` (no location: Node, tools) is passed through.
 export function onlyListed(search) {
     if (search === undefined) return undefined;
     const q = new URLSearchParams(search);
-    for (const name of ['sellart', 'aftermath', 'risefix', 'getups', 'grapples', 'falls', 'scale']) if (!q.has(name)) q.set(name, 'off');
+    for (const name of ['sellart', 'aftermath', 'risefix', 'getups', 'grapples', 'falls', 'scale', 'light']) if (!q.has(name)) q.set(name, 'off');
     return `?${q}`;
 }

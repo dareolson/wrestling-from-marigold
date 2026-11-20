@@ -69,7 +69,7 @@ const round = (v, n = 2) => +v.toFixed(n);
 const stat = (arr) => (arr.length ? { min: round(Math.min(...arr)), max: round(Math.max(...arr)), mean: round(arr.reduce((s, v) => s + v, 0) / arr.length) } : null);
 const results = {};
 for (const [pair, att, def] of PAIRS.filter(q => !process.env.ONLY || process.env.ONLY.split(',').includes(q[0]))) {
-    process.env.WFM_P1 = RIG[att]; process.env.WFM_P2 = RIG[def]; process.env.WFM_QS = process.env.LIGHT ? 'notitle=1&light=v1' : 'notitle=1';
+    process.env.WFM_P1 = RIG[att]; process.env.WFM_P2 = RIG[def]; process.env.WFM_QS = process.env.LIGHT ? 'notitle=1&light=v1' : 'notitle=1&light=off';
     const h = await launch();
     try {
         await h.page.waitForTimeout(2500);

@@ -85,7 +85,7 @@ const exec = (search, rig = 'thesz-procreate-v1') => {
     return { calls, me, other };
 };
 test('flag off a kit that holds it plays the ankle lock; flag on it plays the crab with squeeze damage', () => {
-    assert.deepEqual(exec('').calls, [['ankleLock']]);
+    assert.deepEqual(exec('?light=off').calls, [['ankleLock']]);
     const { calls, me, other } = exec('?light=v1');
     assert.deepEqual(calls, [['register', 'halfBostonCrab'], ['play', 'halfBostonCrab', 'squeeze']]);
     me.opts.onClipEvent({ type: 'roll' }); assert.equal(other.lying, 'prone');

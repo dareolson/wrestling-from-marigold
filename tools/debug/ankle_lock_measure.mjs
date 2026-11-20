@@ -91,7 +91,7 @@ const READ = () => {
 const round = (v, n = 2) => (typeof v === 'number' ? +v.toFixed(n) : v);
 const results = {};
 for (const [pair, att, def] of PAIRS) {
-    process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = process.env.LIGHT ? 'notitle=1&light=v1' : 'notitle=1';
+    process.env.WFM_P1 = att; process.env.WFM_P2 = def; process.env.WFM_QS = process.env.LIGHT ? 'notitle=1&light=v1' : 'notitle=1&light=off';
     const h = await launch();
     try {
         await h.page.waitForTimeout(2500);

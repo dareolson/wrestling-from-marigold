@@ -29,7 +29,7 @@ const MIN_CHAINS = Number(process.env.MIN_CHAINS ?? 3);
 const MIN_MATCHES = Number(process.env.MIN_MATCHES ?? 2);
 const [a, b] = PAIR.split('-');
 process.env.WFM_P1 = RIGS[a]; process.env.WFM_P2 = RIGS[b];
-process.env.WFM_QS = ['notitle=1', `grapples=${GRAPPLES}`, GAIT === 'v2' ? 'gait=v2' : '', WAISTLOCK ? 'waistlock=v1' : '', LIGHT ? 'light=v1' : ''].filter(Boolean).join('&');
+process.env.WFM_QS = ['notitle=1', `grapples=${GRAPPLES}`, GAIT === 'v2' ? 'gait=v2' : '', WAISTLOCK ? 'waistlock=v1' : '', LIGHT ? 'light=v1' : 'light=off'].filter(Boolean).join('&');
 const OUT = process.env.OUT ?? `research/animation/grapples-soak-2026-10/${MODE}-${PAIR}-${GAIT}-${GRAPPLES}${WAISTLOCK ? '-waistlock' : ''}${LIGHT ? '-light' : ''}.json`;
 
 // ── The page side ───────────────────────────────────────────────────────────────────────────────────────────────────────────────

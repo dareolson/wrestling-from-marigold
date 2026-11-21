@@ -89,7 +89,7 @@ export default class MoveRuntime {
             // One row per plant per frame (the solve's target, sole and residual); kept for the probes, null on clips with no plants.
             plantLog: clip.plants?.length ? [] : null,
             // One row per carry per frame for the probes (kept only where a carry has a thigh frame).
-            carryLog: clip.carry?.some(c => c.frame === 'thigh') ? [] : null,
+            carryLog: clip.carry?.some(c => ['thigh','part','joint'].includes(c.frame)) ? [] : null,
             // Per-role staging frame, captured ONCE here from the bound actors'
             // live positions and the anchor's facing/scale, then never rewritten
             // for the life of the handle. Capturing at play() rather than on
@@ -287,8 +287,10 @@ export default class MoveRuntime {
     _plant(handle, plant, index, last = true) {
         const w = windowWeight(plant, handle.time), man = handle.bindings[plant.role], sk = man?.skeleton;
         if (!(w > 0.001) || !sk?.soleWorld || typeof man.draw !== 'function') return;
-        const side = sk.lChannelSide(man.facing) === 'near' ? (plant.leg === 'l' ? 'near' : 'far') : (plant.leg === 'l' ? 'far' : 'near');
-        const legKey = `${plant.leg}Leg`, shinKey = `${plant.leg}Shin`;
+        const leftSide=sk.lChannelSide(man.facing);
+        const side=['near','far'].includes(plant.leg)?plant.leg:(plant.leg==='l'?leftSide:(leftSide==='near'?'far':'near'));
+        const channel=side===leftSide?'l':'r';
+        const legKey = `${channel}Leg`, shinKey = `${channel}Shin`;
         if (!Number.isFinite(man.pose[legKey]) || !Number.isFinite(man.pose[shinKey])) return;
         const natural = sk.soleWorld(side);
         if (!natural) return;
@@ -351,6 +353,14 @@ export default class MoveRuntime {
             const seat0 = man.skeleton.seatWorld();
             point = () => man.skeleton.seatWorld();
             want = { x: seat0.x + (contact.x - seat0.x) * w, y: seat0.y + (contact.y - seat0.y) * w, tilt: man.pose.tilt ?? 0 };
+        } else if(carry.frame==='part'||carry.frame==='joint'){
+            // joint: a point `at` of the way from the carrier's joint `from` to `to` (a forearm crook on the real arm).
+            const cp=carrier.skeleton.jointAttachmentPoints,a=cp[carry.from],b=cp[carry.to];
+            contact=carry.frame==='part'?carrier.skeleton.partAnchorPoint?.(carry.part,carry.anchor)
+                :(a&&b?{x:a.x+(b.x-a.x)*carry.at,y:a.y+(b.y-a.y)*carry.at}:null);
+            point=()=>man.skeleton.jointAttachmentPoints[carry.joint];
+            const p=point();if(!contact||!p)return;
+            want={x:p.x+(contact.x-p.x)*w,y:p.y+(contact.y-p.y)*w,tilt:man.pose.tilt??0};
         } else {
             const state = ((handle._carry ??= [])[index] ??= {
                 anchor: toFrame(torsoFrame(carrier.skeleton.jointAttachmentPoints, carrier.facing), pelvisOf(man.skeleton.jointAttachmentPoints)),
@@ -363,6 +373,17 @@ export default class MoveRuntime {
         man.draw();
         // The pose `lift` is not linear in the drawn height (the rig blends its hip toward the canonical height as the lift grows), so the correction is re-measured: a few
         // passes of "move it by the height a 10-unit lift buys", stopping when the point is on the target.
+        if(carry.frame==='part'||carry.frame==='joint'){
+            // Close-to-standing lift blends can have a flat derivative. A
+            // bracketed solve keeps the neck contact through that transition.
+            const lift0=man.pose.lift??0;let lo=lift0-200,hi=lift0+200;
+            for(let pass=0;pass<16;pass++){
+                man.pose.lift=(lo+hi)/2;man.draw();
+                const err=point().y-want.y;
+                if(Math.abs(err)<.05)break;
+                if(err>0)lo=man.pose.lift;else hi=man.pose.lift;
+            }
+        }else{
         for (let pass = 0; pass < 6; pass++) {
             const p = point(), err = p.y - want.y;
             if (pass > 0 && Math.abs(err) < 0.3) break;
@@ -373,8 +394,11 @@ export default class MoveRuntime {
             man.pose.lift = Math.abs(unit) > 1e-6 ? lift0 + err / unit : lift0;
             man.draw();
         }
-        const seat = contact ? man.skeleton.seatWorld() : null;
-        handle.carryLog?.push({ time: handle.time, index, w, lift: man.pose.lift, x: man.x, tilt: man.pose.tilt, ...(contact && seat ? { gap: Math.hypot(seat.x - contact.x, seat.y - contact.y), seat, contact } : {}) });
+        }
+        // Lift can move a bent torso sideways while its hip placement blends.
+        if(carry.frame==='part'||carry.frame==='joint'){man.x+=want.x-point().x;man.draw();}
+        const seat = carry.frame==='thigh' ? man.skeleton.seatWorld() : null;
+        handle.carryLog?.push({ time: handle.time, index, w, lift: man.pose.lift, x: man.x, tilt: man.pose.tilt, ...(contact ? { gap: Math.hypot(point().x-contact.x,point().y-contact.y), contact, point:point(),...(seat?{seat}:{}) } : {}) });
     }
 
     _apply(handle) {

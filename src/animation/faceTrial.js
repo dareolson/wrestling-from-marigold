@@ -107,8 +107,13 @@ export class FaceDriver {
             const u = Math.min(o.mouths.length - 1, Math.floor((now - o.start) / o.ms * o.mouths.length));
             key = `${this.prefix}_${cellName(o.family, this.state.stage, o.mouths[u])}`;
         }
+        // An authored pain head holds the expression through a selling tail,
+        // after the automatic damage flinch has expired. Clearing the clip
+        // returns ownership to the normal face driver.
+        if(w.skeleton?._partVariantState?.head==='pain')key=`${this.prefix}_${cellName('pain',this.state.stage,2)}`;
         const head = w.skeleton?.head;
-        if (key !== this.key && head?.setTexture && w.scene.textures.exists(key)) {
+        const drawnKey=head?.texture?.key??head?.key??this.key;
+        if (key !== drawnKey && head?.setTexture && w.scene.textures.exists(key)) {
             head.setTexture(key);
             this.key = key;
         }

@@ -17,17 +17,17 @@
 // and every rig. Wrestler.draw() resets every depth each frame, so overrides
 // need no teardown: the first draw after the clip ends restores defaults.
 
-export const LAYER_LIMBS = Object.freeze(['lLeg', 'rLeg', 'lArm', 'rArm', 'torso', 'head', 'lShin', 'rShin', 'lThigh', 'rThigh']);
+export const LAYER_LIMBS = Object.freeze(['lLeg', 'rLeg', 'lArm', 'rArm', 'torso', 'head', 'lShin', 'rShin', 'lThigh', 'rThigh', 'lForearm', 'rForearm']);
 // Facing-relative names for a clip whose order must hold in both facings (the near/far side of an actor depends on his facing and rig, so `lArm`
 // is the far arm in one facing and the near arm in the other). Resolved per actor per frame, like the anatomical limbs:
 //   nearArm, farArm, nearLeg, farLeg, and `body` = his far leg, torso, head, near leg (a rig whose art wants both legs over the torso, George, gets
 //   torso, head, far leg, near leg), the W4 stack of the waistlock.
 // nativeBody moves the complete body stack as one block, preserving the rig's
 // head, garment masks and leg depths exactly. Arms remain separate for grips.
-export const LAYER_RELATIVE = Object.freeze(['nearArm', 'farArm', 'nearLeg', 'farLeg', 'nearShin', 'farShin', 'body', 'nativeBody']);
+export const LAYER_RELATIVE = Object.freeze(['nearArm', 'farArm', 'nearLeg', 'farLeg', 'nearShin', 'farShin', 'body', 'nativeBody', 'nearForearm', 'farForearm']);
 const resolveLimb = (actor, limb) => {
     const near = (actor?.skeleton?.lChannelSide?.(actor.facing ?? 1) ?? 'near') === 'near';
-    const side = { nearArm: near ? 'lArm' : 'rArm', farArm: near ? 'rArm' : 'lArm', nearLeg: near ? 'lLeg' : 'rLeg', farLeg: near ? 'rLeg' : 'lLeg', nearShin: near ? 'lShin' : 'rShin', farShin: near ? 'rShin' : 'lShin' };
+    const side = { nearArm: near ? 'lArm' : 'rArm', farArm: near ? 'rArm' : 'lArm', nearLeg: near ? 'lLeg' : 'rLeg', farLeg: near ? 'rLeg' : 'lLeg', nearShin: near ? 'lShin' : 'rShin', farShin: near ? 'rShin' : 'lShin', nearForearm: near ? 'lForearm' : 'rForearm', farForearm: near ? 'rForearm' : 'lForearm' };
     if (limb === 'body') return actor?.skeleton?._farLegOverTorso ? ['torso', 'head', side.farLeg, side.nearLeg] : [side.farLeg, 'torso', 'head', side.nearLeg];
     return [side[limb] ?? limb];
 };
@@ -44,6 +44,7 @@ const SIDE_PARTS = Object.freeze({
     Shin: ['Shin', 'Boot'],   // expose a trapped lower leg without drawing its thigh over the other actor
     Thigh: ['Thigh'],        // keep a painted knee cap over a deeply folded calf
     Arm: ['UpArm', 'Forearm', 'Hand'],
+    Forearm: ['Forearm', 'Hand'],
 });
 const TORSO_PARTS = Object.freeze(['pelvisUnderlay', 'torso', 'trunks', 'pelvisOverlay', 'pelvisMask']);
 const ALL_PARTS = Object.freeze([

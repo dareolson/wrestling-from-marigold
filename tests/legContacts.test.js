@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import Skeleton from '../src/Skeleton.js';
 import Wrestler from '../src/Wrestler.js';
-import {matMoveClip} from '../src/animation/clips/matMoves.js';
+import {matMoveClip,MAT_MOVES} from '../src/animation/clips/matMoves.js';
 import {validateClip} from '../src/animation/AnimationClip.js';
 import MoveRuntime from '../src/animation/MoveRuntime.js';
+import {shinsFromFolds} from '../src/rig/articulation.js';
 import {reachableCalfFraction} from '../src/animation/legContacts.js';
 
 test('calf contact fits shorter legs higher without changing the requested hook for longer legs',()=>{
@@ -83,15 +84,26 @@ test('leapfrog arrival delay keeps clip events and contact windows valid',()=>{
     }
 });
 
-test('flying mare keeps arm control through the shoulder load and lands after the flip',()=>{
+test('flying mare snaps over the shoulder into seated arm control without releasing the wrist at impact',()=>{
     const clip=matMoveClip('flyingMare');
     assert.equal(validateClip(clip).ok,true);
     const impact=clip.events.find(e=>e.type==='impact').at;
-    assert.ok(clip.grips.some(g=>g.to.joint==='Wrist'&&g.out[0]>=.95));
-    const flight=clip.tracks.defender.keyframes.filter(k=>k.at>=.95&&k.at<=impact);
+    assert.ok(impact<1,'the landing happens promptly');
+    assert.equal(MAT_MOVES.flyingMare.land,undefined,'generic landing must not release the receiver at impact');
+    assert.ok(clip.grips.some(g=>g.to.joint==='Wrist'&&g.in[1]<.2&&g.out[0]>2.8),'one wrist remains captured across impact and hold');
+    const flight=clip.tracks.defender.keyframes.filter(k=>k.at>=.36&&k.at<=impact);
     assert.ok(flight.every((k,i)=>i===0||k.pose.tilt>flight[i-1].pose.tilt));
+    assert.ok(impact-flight[0].at<.5,'no long airborne plateau');
     assert.equal(flight.at(-1).pose.tilt,3*Math.PI/2);
-    assert.ok(clip.floorContacts.some(c=>c.point==='nearKnee'&&c.out[0]>=impact));
+    const seated=clip.tracks.defender.keyframes.find(k=>k.at===1.2);
+    assert.ok(seated.pose.bend>1.2,'torso curls up above the seated pelvis');
+    assert.equal(seated.parts.head,'pain','pain remains keyed after impact');
+    assert.equal(seated.pose.farArmScale,1.15,'the receiver free arm keeps matching proportions during the hold');
+    assert.equal(clip.tracks.defender.keyframes.find(k=>k.at===5.55).pose.farArmScale,1);
+    assert.equal(clip.tracks.attacker.keyframes.find(k=>k.at===1.45).parts.farForearm,'grip');
+    const rise=clip.tracks.attacker.keyframes.find(k=>k.at===5.55);
+    assert.equal(rise.pose.farArmScale,1);assert.equal(rise.parts.farForearm,'base');assert.equal(rise.parts.nearUpperArm,'base');
+    assert.ok(clip.floorContacts.some(c=>c.point==='nearKnee'&&c.out[0]>2.8));
 });
 
 test('knee support moves the complete body to the mat rather than stretching a segment',()=>{
@@ -239,4 +251,30 @@ test('grip handoff blends the captured held wrist, independent of changing autho
     actor.skeleton.jointAttachmentPoints.nearWrist={x:200,y:300};rt.update(.35);rt.afterDraw();
     assert.deepEqual(contact.at,{x:55,y:60});assert.equal(contact.w,1,'hand stays fully constrained while target moves');
     rt.update(.25);rt.afterDraw();assert.deepEqual(contact.at,{x:100,y:100});
+});
+
+
+test('facing-relative folded legs resolve to the same physical brace knee across rig mappings',()=>{
+    for(const nearChannel of ['near','far'])for(const facing of [1,-1]){
+        const actor={pose:{},facing,skeleton:{lChannelSide:()=>nearChannel}};
+        Wrestler.prototype.applyAnimationSample.call(actor,{pose:shinsFromFolds({crouch:.65,nearLeg:-.15,nearFold:2.2,farLeg:.85,farFold:2.15})});
+        const near=nearChannel==='near'?'l':'r',far=near==='l'?'r':'l';
+        assert.equal(actor.pose[far+'Leg'],.85);assert.equal(actor.pose[near+'Leg'],-.15);
+        assert.ok(Math.abs(actor.pose[far+'Shin']-(.85+.85*.65-2.15))<1e-10);
+        assert.equal(actor.pose.farLeg,undefined);assert.equal(actor.pose.nearShin,undefined);
+    }
+});
+
+
+test('relative sole plants choose the supporting physical foot across rig channel mappings',()=>{
+    for(const leftSide of ['near','far'])for(const side of ['near','far']){
+        const actor={pose:{lLeg:.1,rLeg:-.2,lShin:-.5,rShin:-.6},y:330,facing:1,draw(){},skeleton:{lChannelSide:()=>leftSide,soleWorld:which=>({x:which==='near'?30:60,y:330})}};
+        const runtime=new MoveRuntime(),handle={time:.5,bindings:{attacker:actor}};
+        runtime._plant(handle,{role:'attacker',leg:side,in:[0,.1],out:[.8,.9]},0);
+        assert.equal(handle._plants[0].target.x,side==='near'?30:60);
+        assert.equal(handle._plants[0].last[0],actor.pose[(side===leftSide?'l':'r')+'Leg']);
+    }
+    const mare=matMoveClip('flyingMare');assert.equal(validateClip(mare).ok,true);
+    const end=mare.tracks.attacker.keyframes.at(-1).pose;
+    assert.ok(end.farShin> -1&&end.nearShin> -1,'the raised knee is explicitly cleared before standing/retreat');
 });

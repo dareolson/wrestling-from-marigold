@@ -1,0 +1,11 @@
+# Guido wristlock: receiver pulls back and pushes at the control
+
+Derek reviewed the current Guido-on-George wristlock and requested: George pulls back against it, pushes with his open/free arm, and braces his legs back to sell pain.
+
+Main workspace /Users/home/Documents/wrestling-from-marigold, story/marigold-opening. Changed only src/animation/clips/matMoves.js: receiver rocks back at 1.85s, hips retreat 12 rig px, torso pulls nearly upright/back, legs trail into a wider brace; pressure folds him forward at 2.15s with a deeper knee buckle, then another resistance at 2.35s. Free far hand now pushes Guido's controlling near forearm (partner Elbow fore .65), after the primary grips resolve, rather than only clutching his own arm. Same shared choreography across receivers and both facings; no rig-specific conditional.
+
+This is the requested resistance revision for visual review. Did NOT implement the separate earlier three-crank/four-second/split-damage plan yet: duration remains 3.1s and one 8-point impact at 1.5s. Entry pose keys through 1.5s unchanged. Approved wristlockHammerlock, abdominalStretch and indianDeathlock clips were compared against HEAD via deep equality and are unchanged, including the hammerlock's reused wristlock entry/events. No changes to shared runtime, roster, controls or art. Not approved yet.
+
+74 focused tests pass, build and git diff --check pass. No new tests for pose-only revision. Browser Guido against all four receivers in both facings: 8 clean standing/staggered endings, each exactly one [8,wristlock] hurt call, zero nonfinite joints/browser errors. Viewed resistance/pressure captures, especially George both facings. The script's maxHoldWristError includes early arm-stretch samples; it is not a guarantee of exact full-contact reach on every rig. Evidence/scripts: research/animation/wristlock-resistance-2026-11-16/. No full-suite rerun for this small choreography revision; Opus's preceding baseline reports 1420/1420.
+
+Preview http://localhost:5173/tools/mat-preview/?move=wristlock&att=guido-roster-v1&def=george-roster-v1 . Main server (not redundant Stage12 worktree). Changes uncommitted; no commit, merge, push or reset. Preserve main's existing AI_HANDOFF.md edit and untracked research/art.

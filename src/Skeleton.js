@@ -849,6 +849,9 @@ export default class Skeleton {
 
     /** Whether the near forearm/hand draw behind the torso (takes effect at the next setDepth). */
     setHandUnder(on) { this._handUnder = !!on; }
+    setClipArmStyle(style = null) {
+        this._clipFarArmScale = Number.isFinite(style?.scale) && style.scale > 0 ? style.scale : 1;
+    }
     // PLAN_GETUPS T2.7 (D13, ?getups=v1): behind the body means behind the thighs too. The hand mask and the clearance test both
     // use torso U near thigh U far thigh. Off = today (the torso alone).
     setHandUnion(on) { this._handUnion = !!on; }
@@ -1259,7 +1262,7 @@ export default class Skeleton {
             img.setOrigin(flip ? 1 - art.shoulder.u : art.shoulder.u, art.shoulder.v)
                 .setFlipX(flip).setPosition(shoulder.x, shoulder.y)
                 .setDisplaySize(img.frame.realWidth * art.scaleX * s, img.frame.realHeight * art.scaleY * s)
-                .setRotation(facing * (art.angle ?? 0));
+                .setRotation(facing * (art.angle ?? 0)+(art.followTorso?this.torso.rotation:0));
             this[side + 'Forearm']?.setVisible(false);
             this[side + 'Hand']?.setVisible(false);
             for (const [part, anchor] of [['Elbow', art.elbow], ['Wrist', art.wrist]]) {
@@ -2034,10 +2037,12 @@ export default class Skeleton {
         // deltoid swell above the torso (the reported "football pads"
         // distortion). Keep the shoulder at its true authored anchor; only
         // child segments with overlap slack use _attachChild.
-        const farGraphElbow = this._end(farShoulderX, farShoulderY, upperArmH * RIG.FAR_ARM_SCALE, farUpArmAng);
+        const farArmGrow = this._clipFarArmScale ?? 1;
+        const farArmScale = RIG.FAR_ARM_SCALE * farArmGrow;
+        const farGraphElbow = this._end(farShoulderX, farShoulderY, upperArmH * farArmScale, farUpArmAng);
         this._placeLimbPart(this.farUpArm, { x: farShoulderX, y: farShoulderY }, farGraphElbow, {
             x: farShoulderX, y: farShoulderY, w: armW, h: upperArmH,
-            angle: farUpArmAng, scale: s * RIG.FAR_ARM_SCALE, facing,
+            angle: farUpArmAng, scale: s * farArmScale, facing,
         });
         this._recordJointAttachment('farShoulder', this.farUpArm, farShoulderX, farShoulderY, farUpArmAng);
         // FAR_ARM_SCALE changes the rendered bone length as well as width;
@@ -2046,20 +2051,20 @@ export default class Skeleton {
         // Lou's forearm was correctly attached to the skeleton but visibly
         // floating beyond the painted elbow.
         const farTrueElbow = this.farUpArm._binding ? farGraphElbow
-            : this._trueDistalEnd(this.farUpArm, farShoulderX, farShoulderY, upperArmH * RIG.FAR_ARM_SCALE, farUpArmAng, s * RIG.FAR_ARM_SCALE, facing);
+            : this._trueDistalEnd(this.farUpArm, farShoulderX, farShoulderY, upperArmH * farArmScale, farUpArmAng, s * farArmScale, facing);
         // Back off along the CHILD forearm's axis. Using the upper-arm angle
         // makes the root orbit the elbow whenever the joint bends.
-        const farElbow = this._attachChild(this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA, s, RIG.ELBOW_OVERLAP);
+        const farElbow = this._attachChild(this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA, s * farArmGrow, RIG.ELBOW_OVERLAP);
         const farForearmX = farElbow.x + (this._lockLimbJoints ? 0 : facing * this._farForearmOffsetX * s);
         const farForearmY = farElbow.y + (this._lockLimbJoints ? 0 : this._farForearmOffsetY * s);
-        const farWrist = this._end(farTrueElbow.x, farTrueElbow.y, forearmH * RIG.FAR_ARM_SCALE, farFA);
+        const farWrist = this._end(farTrueElbow.x, farTrueElbow.y, forearmH * farArmScale, farFA);
         this.jointAttachmentPoints.farWrist = { ...farWrist };
         this._placeLimbPart(this.farForearm, farTrueElbow, farWrist, {
             x: farForearmX, y: farForearmY, w: armW, h: forearmH,
-            angle: farFA, scale: s * RIG.FAR_ARM_SCALE, facing,
+            angle: farFA, scale: s * farArmScale, facing,
         });
         this._recordJointAttachment('farElbow', this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA);
-        this._placeAttachment(this.farHand, farWrist, farFA, s * RIG.FAR_ARM_SCALE, facing, 'farHand');
+        this._placeAttachment(this.farHand, farWrist, farFA, s * farArmScale, facing, 'farHand');
 
         // Torso: full height when trunks are baked into the PNG, split otherwise.
         // torsoOriginX/Y (see the comment above the leg-solving block) is

@@ -16,7 +16,7 @@ const LIE = { lArm: 0.05, rArm: 0.08, lElbow: 0.1, rElbow: 0.1, lLeg: 0.1, rLeg:
 const HEADLOCK = { ...ST, lArm: 1.5, rArm: 0.8, lElbow: 1.3, rElbow: 0.9, lean: 0.1, crouch: 0.15, bend: 0.15, lLeg: 0.2, rLeg: -0.15, lFold: 0.4, rFold: 0.4 };
 
 // A beat: [at, pose over `base`, x, y, ease, facing]
-const kf = (base, [at, over, x = 0, y = 0, ease = 'easeInOut', facing]) => ({ at, ease, pose: shinsFromFolds({ ...base, ...over }), transform: { x, y }, ...(facing === undefined ? {} : { facing }), parts: {} });
+const kf = (base, [at, over, x = 0, y = 0, ease = 'easeInOut', facing, parts = {}]) => ({ at, ease, pose: shinsFromFolds({ ...base, ...over }), transform: { x, y }, ...(facing === undefined ? {} : { facing }), parts });
 const FRONT_ATT = [['defender', 'farArm'], ['defender', 'body'], ['defender', 'nearArm'], ['attacker', 'farArm'], ['attacker', 'body'], ['attacker', 'nearArm']];
 const FRONT_DEF = [['attacker', 'farArm'], ['attacker', 'body'], ['attacker', 'nearArm'], ['defender', 'farArm'], ['defender', 'body'], ['defender', 'nearArm']];
 
@@ -29,7 +29,7 @@ export const MAT_MOVES = {
     wristlock: {
         kind: 'paired', hitEvent: 'impact', damage: 8, faceToFace: true, end: { def: 'stagger', att: 'stand' }, shake: [110, 0.0018],
         build: D => ({
-            duration:3.1,events:[{at:1.5,type:'impact'}],
+            duration:4.5,events:[{at:1.5,type:'impact'}],
             att:[
                 [0,TIE,0,0,'linear',1],
                 [.3,{...ST,lArm:.8,rArm:.7,lElbow:1,rElbow:1,crouch:.08},4],
@@ -37,8 +37,10 @@ export const MAT_MOVES = {
                 [1.15,{...ST,lArm:.65,rArm:.6,lElbow:1,rElbow:1,crouch:.15,bend:.05,lLeg:.15,rLeg:-.12,lFold:.4,rFold:.4},D-90],
                 [1.5,{...ST,lArm:.55,rArm:.5,lElbow:1.1,rElbow:1.1,crouch:.2,bend:.1,lLeg:.2,rLeg:-.15,lFold:.4,rFold:.4},D-94],
                 [2.15,{...ST,lArm:.55,rArm:.5,lElbow:1.1,rElbow:1.1,crouch:.2,bend:.1,lLeg:.2,rLeg:-.15,lFold:.4,rFold:.4},D-94],
-                [2.55,{...ST,lArm:.4,rArm:.35,lElbow:.8,rElbow:.8,crouch:.1},D-100],
-                [3.1,ST,D-108],
+                [2.35,{...ST,lArm:.55,rArm:.5,lElbow:1.1,rElbow:1.1,crouch:.18,bend:.08,lLeg:.2,rLeg:-.15,lFold:.4,rFold:.4},D-94],
+                [2.55,{...ST,lArm:.4,rArm:.35,lElbow:1.45,rElbow:1.4,crouch:.25,bend:.25,lLeg:.2,rLeg:-.15,lFold:.45,rFold:.4},D-100,0,'easeOut'],
+                [2.78,{...ST,lArm:.4,rArm:.35,lElbow:1.1,rElbow:1.1,crouch:.15,bend:.12},D-102],
+                [3.1,ST,D-108],[4.5,ST,D-108],
             ],
             def:[
                 [0,TIE,D,0,'linear',-1],
@@ -46,12 +48,28 @@ export const MAT_MOVES = {
                 [.8,{...ST,lArm:.9,rArm:.9,lElbow:1.2,rElbow:1.2,bend:.18,crouch:.1,lFold:.3,rFold:.3},D+2],
                 [1.15,{...ST,lArm:.9,rArm:.9,lElbow:1.2,rElbow:1.2,bend:.35,crouch:.15,lFold:.35,rFold:.35},D+4],
                 [1.5,{...ST,lArm:.9,rArm:.9,lElbow:1.2,rElbow:1.2,bend:.65,crouch:.22,lFold:.45,rFold:.4},D+8],
-                [1.85,{...ST,lArm:.9,rArm:.9,lElbow:1.2,rElbow:1.2,bend:.5,crouch:.18,lFold:.4,rFold:.4},D+8],
-                [2.15,{...ST,lArm:.9,rArm:.9,lElbow:1.2,rElbow:1.2,bend:.6,crouch:.2,lFold:.4,rFold:.4},D+8],
-                [2.55,{...ST,lArm:.6,rArm:.6,lElbow:1.3,rElbow:1.3,bend:.4,crouch:.12,lFold:.3,rFold:.3},D+12],
-                [3.1,{...ST,lArm:.5,rArm:.5,lElbow:1.2,rElbow:1.2,bend:.25,crouch:.08},D+12],
+                // Pull his weight back against the captured wrist; the free hand
+                // pushes into the controlling forearm while the legs brace behind.
+                [1.85,{...ST,lArm:.9,rArm:.9,lElbow:1.2,rElbow:1.2,bend:-.08,crouch:.22,lLeg:-.38,rLeg:-.2,lFold:.5,rFold:.45},D+20],
+                [2.15,{...ST,lArm:.9,rArm:.9,lElbow:1.2,rElbow:1.2,bend:.58,crouch:.26,lLeg:-.22,rLeg:-.14,lFold:.62,rFold:.48},D+13],
+                [2.35,{...ST,lArm:.9,rArm:.9,lElbow:1.2,rElbow:1.2,bend:.08,crouch:.2,lLeg:-.32,rLeg:-.18,lFold:.45,rFold:.4},D+20],
+                [2.55,{...ST,lArm:.6,rArm:.6,lElbow:1.3,rElbow:1.3,bend:.85,crouch:.34,lLeg:.04,rLeg:-.16,lFold:.85,rFold:.55},D+6,0,'easeOut',undefined,{head:'pain'}],
+                [2.78,{...ST,lArm:.6,rArm:.6,lElbow:1.3,rElbow:1.3,bend:.65,crouch:.24,lLeg:-.04,rLeg:-.1,lFold:.6,rFold:.45},D+9,0,'easeInOut',undefined,{head:'pain'}],
+                // Back away in short guarded steps, keeping the same sore wrist.
+                [3.1,{...ST,nearArm:.7,nearElbow:1.4,farArm:.9,farElbow:1.6,bend:.4,crouch:.16,lLeg:-.2,rLeg:.12,lFold:.45,rFold:.3},D+16,0,'easeInOut',undefined,{head:'pain',farForearm:'grip'}],
+                [3.35,{...ST,nearArm:.7,nearElbow:1.4,farArm:.9,farElbow:1.6,bend:.32,crouch:.14,lLeg:-.42,rLeg:.18,lFold:.55,rFold:.2},D+32,0,'linear',undefined,{head:'pain',farForearm:'grip'}],
+                [3.65,{...ST,nearArm:.7,nearElbow:1.4,farArm:.9,farElbow:1.6,bend:.38,crouch:.18,lLeg:.16,rLeg:-.38,lFold:.2,rFold:.55},D+48,0,'linear',undefined,{head:'pain',farForearm:'grip'}],
+                [3.95,{...ST,nearArm:.7,nearElbow:1.4,farArm:.9,farElbow:1.6,bend:.3,crouch:.14,lLeg:-.3,rLeg:.12,lFold:.4,rFold:.2},D+63,0,'linear',undefined,{head:'pain',farForearm:'grip'}],
+                [4.25,{...ST,nearArm:.7,nearElbow:1.4,farArm:.9,farElbow:1.6,bend:.35,crouch:.13,lLeg:-.12,rLeg:.12,lFold:.3,rFold:.25},D+68,0,'easeOut',undefined,{head:'pain',farForearm:'grip'}],
+                [4.5,{...ST,nearArm:.7,nearElbow:1.4,farArm:.9,farElbow:1.6,bend:.3,crouch:.1,lFold:.25,rFold:.25},D+68,0,'easeInOut',undefined,{head:'pain',farForearm:'grip'}],
             ],
             layers:[['defender','farArm'],['defender','nativeBody'],['attacker','farArm'],['attacker','nativeBody'],['defender','nearArm'],['attacker','nearArm']],
+            layerWindows:[
+                {from:0,to:3,order:[['defender','farArm'],['defender','nativeBody'],['attacker','farArm'],['attacker','nativeBody'],['defender','nearArm'],['attacker','nearArm']]},
+                // Keep the complete back arm behind the torso; its gripping hand
+                // meets the sore wrist outside the body silhouette.
+                {from:3,to:4.5,order:[['attacker','farArm'],['attacker','nativeBody'],['attacker','nearArm'],['defender','farArm'],['defender','nativeBody'],['defender','nearArm']]},
+            ],
         }),
     },
 
@@ -93,68 +111,179 @@ export const MAT_MOVES = {
         },
     },
 
-    // T12.2: in the headlock (both facing the same way, he beside the man), Power: he drops to a hip and takes the man back over it to the mat; the headlock breaks, he is up first.
+    // T12.2: in the headlock (both facing the same way, he beside the man), Power: he earns the wrap first: a hop, the camera-side arm all the way up over the
+    // man's head and swung back down around his neck (Derek, Nov 17: no hot-swapped arm), then the drop to a hip and the man back over it to the mat; up first.
     headlockTakeover: {
-        kind: 'paired', hitEvent: 'impact', damage: 9, faceToFace: false, end: { def: 'back', att: 'stand' }, shake: [150, 0.0025], foley: ['mat', 0.8],
-        build: D => ({
-            duration:3.2,events:[{at:1.2,type:'impact'}],
-            att:[
-                [0,HEADLOCK,0,0,'linear',1],
-                [.3,{...HEADLOCK,crouch:.4,bend:.2,lFold:.7,rFold:.7},D-50],
-                [.55,{...HEADLOCK,crouch:.55,bend:.3,lLeg:.2,rLeg:-.1,lFold:1,rFold:1.1},D-44],
-                [.85,{...HEADLOCK,crouch:0,lift:-85,tilt:.6,bend:.1,lLeg:.3,rLeg:.2,lFold:.7,rFold:.9},D-140],
-                [1.2,{...HEADLOCK,crouch:0,lift:-105,tilt:1.35,bend:0,lLeg:.1,rLeg:.2,lFold:.5,rFold:.7,rArm:1.7,rElbow:1.5},D-190,12],
-                [1.7,{...HEADLOCK,crouch:0,lift:-105,tilt:1.35,bend:0,lLeg:.1,rLeg:.2,lFold:.5,rFold:.7,rArm:1.7,rElbow:1.5},D-190,12],
-                [2.05,{...ST,crouch:0,lift:-95,tilt:.5,lLeg:1,rLeg:.3,lFold:1.6,rFold:2.1},D-195,12],
-                [2.6,{...ST,crouch:1,lLeg:-.05,rLeg:-.05,lFold:2.3,rFold:2.3,bend:.2},D-205,12],
-                [3.2,ST,D-220,12],
-            ],
-            def:[
-                [0,{...ST,lArm:.9,rArm:.7,bend:.5,crouch:.2},D,0,'linear',1],
-                [.3,{...ST,lArm:1,rArm:.8,bend:.5,crouch:.3},D],
-                [.55,{...ST,lArm:1.2,rArm:1,bend:.55,crouch:.1,tilt:-.2,lift:8,lFold:.4,rFold:.4},D-20],
-                [.85,{...ST,lArm:1.3,rArm:1.1,tilt:-.8,lift:15,bend:.2,lLeg:.4,rLeg:.3,lFold:.6,rFold:.6},D-30],
-                [1.2,{...LIE,lArm:.9,rArm:.7,lElbow:1,rElbow:1},D-40,0,'easeIn'],
-                [1.3,{...LIE,lift:-103,lLeg:.3,rLeg:.3,lFold:.45,rFold:.55,lArm:.9,rArm:.7,lElbow:1,rElbow:1},D-40],
-                [1.45,{...LIE,lArm:.9,rArm:.7,lElbow:1,rElbow:1},D-40],
-                [1.7,{...LIE,lArm:.8,rArm:.6,lElbow:1,rElbow:1},D-40],
-                [2.05,LIE,D-40],[3.2,LIE,D-40],
-            ],layers:FRONT_ATT,
-        }),
+        kind:'paired',hitEvent:'impact',damage:9,faceToFace:false,end:{def:'stagger',att:'stand'},shake:[150,.0025],foley:['mat',.8],
+        build:D=>{
+            const grip={farForearm:'grip'},free={farForearm:'base'};
+            const hold={...HEADLOCK,crouch:.12,bend:.05,nearArm:.45,nearElbow:1.4,farArm:1.0,farElbow:1.6};
+            return {duration:5.15,events:[{at:1.65,type:'impact'}],
+                att:[
+                    [0,hold,0,0,'linear',1,free],
+                    // Guide the head as the knees load; the reach begins before takeoff.
+                    [.18,{...hold,crouch:.35,lFold:.85,rFold:.8,nearArm:1.9,nearElbow:.7,farArm:1.1,farElbow:1.3},D-42,0,'easeInOut',undefined,free],
+                    // The wrapping arm clears the crown on the way up, then closes while still airborne.
+                    [.3,{...hold,crouch:.05,lift:48,lLeg:.35,rLeg:-.25,lFold:.7,rFold:.75,nearArm:2.35,nearElbow:.55,farArm:1.2,farElbow:1.4,lean:.1},D-44,0,'easeOut',undefined,free],
+                    [.38,{...hold,crouch:0,lift:60,lLeg:.45,rLeg:-.35,lFold:.7,rFold:.8,nearArm:1.95,nearElbow:.85,farArm:1.2,farElbow:1.4,lean:.1},D-44,0,'linear',undefined,free],
+                    [.48,{...hold,crouch:.08,lift:36,lLeg:.35,rLeg:-.25,lFold:.6,rFold:.6,nearArm:1.15,nearElbow:1.4,farArm:1.1,farElbow:1.5,lean:.15},D-43,0,'easeIn',undefined,free],
+                    [.6,{...hold,crouch:.2,lift:0,lLeg:.2,rLeg:-.15,lFold:.5,rFold:.45},D-42,0,'easeOut',undefined,free],
+                    [.75,{...hold,crouch:.25,lLeg:.15,rLeg:-.15,lFold:.5,rFold:.45},D-42,0,'easeOut',undefined,grip],
+                    [1.0,{...hold,crouch:.4,bend:.12,lLeg:.3,rLeg:-.2,lFold:.8,rFold:.7},D-40,0,'easeInOut',undefined,grip],
+                    [1.3,{...hold,crouch:.08,bend:.05,tilt:.72,lift:-66,lLeg:.4,rLeg:.15,lFold:1.1,rFold:.85},D-48,0,'easeInOut',undefined,grip],
+                    // Open the torso angle and lower the crook so the heads separate on landing.
+                    [1.65,{...hold,crouch:0,bend:0,tilt:.82,lift:-112,nearArm:.25,nearElbow:1.85,lLeg:.05,rLeg:.25,lFold:.25,rFold:.65},D-52,0,'easeOut',undefined,grip],
+                    // Settle long on his side, keep the clasp while the receiver tries to peel it.
+                    [2.05,{...hold,crouch:0,bend:0,tilt:.82,lift:-112,nearArm:.25,nearElbow:1.85,lLeg:-.08,rLeg:.2,lFold:.18,rFold:.55},D-52,0,'easeInOut',undefined,grip],
+                    [2.45,{...hold,crouch:0,bend:.2,tilt:.65,lift:-95,nearArm:.3,nearElbow:1.9,lLeg:-.12,rLeg:.35,lFold:1.1,rFold:.8},D-52,0,'easeInOut',undefined,grip],
+                    [3.0,{...hold,crouch:0,bend:.35,tilt:.6,lift:-80,nearArm:.25,nearElbow:1.85,lLeg:-.15,rLeg:.4,lFold:1.55,rFold:.75},D-52,0,'easeInOut',undefined,grip],
+                    [3.25,{...hold,tilt:.2,lift:-30,crouch:.45,bend:.3,nearArm:.25,nearElbow:1.85,lLeg:-.15,rLeg:.35,lFold:.95,rFold:.6},D-52,0,'easeInOut',undefined,grip],
+                    // Load against the chest, then shove through straightening arms before either man travels.
+                    [3.45,{...ST,tilt:.12,lift:-20,crouch:.35,bend:.35,nearArm:.75,nearElbow:1.3,farArm:.4,farElbow:1,lLeg:-.15,rLeg:.4,lFold:1.2,rFold:.7},D-52,0,'easeIn',undefined,free],
+                    [3.51,{...ST,tilt:.05,lift:-10,crouch:.35,bend:.12,nearArm:1.3,nearElbow:.15,farArm:.5,farElbow:.6,lLeg:-.3,rLeg:.45,lFold:.9,rFold:.6},D-54,0,'easeIn'],
+                    // A short recoil and a catch step, not a continuous glide out of the lock.
+                    [3.67,{...ST,tilt:-.12,lift:-12,crouch:.4,bend:-.08,nearArm:1.05,nearElbow:.4,farArm:.65,farElbow:.85,lLeg:-.55,rLeg:.25,lFold:.7,rFold:.4},D-112,0,'easeOut'],
+                    [3.78,{...ST,crouch:.48,bend:.1,nearArm:.65,farArm:.55,nearElbow:1.05,farElbow:.9,lLeg:-.45,rLeg:.28,lFold:.85,rFold:.5},D-120,0,'easeOut'],
+                    [3.98,{...ST,crouch:.25,bend:.16,nearArm:.55,farArm:.5,nearElbow:1.15,farElbow:.95,lLeg:-.18,rLeg:.2,lFold:.45,rFold:.3},D-120,0,'easeInOut'],
+                    [4.25,{...ST,crouch:.1,bend:.1,nearArm:.5,farArm:.45,nearElbow:1,farElbow:.9,lLeg:-.08,rLeg:.2,lFold:.25,rFold:.25},D-120],
+                    [4.7,{...ST,nearArm:.4,farArm:.35,nearElbow:.8,farElbow:.8},D-120],
+                    [5.15,ST,D-120],
+                ],
+                def:[
+                    [0,{...ST,bend:.65,crouch:.3,nearArm:.8,farArm:.8,nearElbow:1,farElbow:1},D-20,0,'linear',1],
+                    // Brace as the arm comes over; one hand rises to peel it, the other stays low.
+                    [.38,{...ST,bend:.6,crouch:.28,nearArm:1.25,farArm:.45,nearElbow:1.6,farElbow:.85,lLeg:-.16,rLeg:.24,lFold:.35,rFold:.3},D-18],
+                    [.56,{...ST,bend:.85,crouch:.24,nearArm:1.5,farArm:.7,nearElbow:1.85,farElbow:1.15,lLeg:-.24,rLeg:.3,lFold:.5,rFold:.28},D-15],
+                    // Fold over the crook, then pull against the clasp with a staggered base.
+                    [.75,{...ST,bend:1.05,crouch:.18,nearArm:1.15,farArm:.55,nearElbow:1.7,farElbow:.9,lLeg:-.25,rLeg:.28,lFold:.55,rFold:.3},D-12],
+                    [.9,{...ST,bend:1.12,crouch:.23,nearArm:1.35,farArm:.85,nearElbow:1.95,farElbow:1.3,lLeg:-.3,rLeg:.18,lFold:.65,rFold:.35},D-10],
+                    [1.0,{...ST,bend:.95,crouch:.18,tilt:-.2,nearArm:1.1,farArm:.75,nearElbow:1.65,farElbow:1.2,lLeg:-.15,rLeg:.3,lFold:.5,rFold:.65},D-8],
+                    // The outside leg trails the hip; his free arm opens to catch the fall.
+                    [1.3,{...ST,bend:.1,tilt:-1.05,lift:5,lLeg:.55,rLeg:-.12,lFold:.85,rFold:.3,nearArm:.8,farArm:-.4,nearElbow:1.45,farElbow:.65},D-6],
+                    [1.65,{...LIE,nearArm:-.65,farArm:.25,nearElbow:1.2,farElbow:1,lLeg:.05,rLeg:.3,lFold:.35,rFold:.4},D-4,0,'easeIn',undefined,{head:'pain'}],
+                    // Impact contracts the legs unevenly; he squirms once against the hold.
+                    [1.74,{...LIE,bend:.08,nearArm:-.4,farArm:.4,nearElbow:1.5,farElbow:1.2,lLeg:-.12,rLeg:.48,lFold:.95,rFold:.6},D-4,0,'easeOut'],
+                    [1.88,{...LIE,bend:.03,nearArm:-.6,farArm:.15,nearElbow:1.3,farElbow:1.05,lLeg:.22,rLeg:.08,lFold:.65,rFold:.85},D-4],
+                    [2.0,{...LIE,nearArm:-.5,farArm:.3,nearElbow:1.4,farElbow:1.2,lLeg:.12,rLeg:.25,lFold:.4,rFold:.6},D-4],
+                    // Draw a knee across, roll through the side, then face the mat under the retained lock.
+                    [2.2,{...LIE,bend:.08,nearArm:-.2,farArm:.4,nearElbow:1.55,farElbow:1.2,lLeg:-.2,rLeg:.4,lFold:1.15,rFold:.75},D-4],
+                    [2.34,{...LIE,tilt:-1.5,bend:.1,nearArm:.2,farArm:.6,nearElbow:1.3,farElbow:1.1,lLeg:-.3,rLeg:.3,lFold:1.4,rFold:.95},D-4],
+                    [2.35,{...ST,tilt:1.5,lift:-106,bend:.1,nearArm:.25,farArm:.45,nearElbow:1.1,farElbow:1,lLeg:-.3,rLeg:.3,lFold:1.4,rFold:.95},D-4,0,'step',-1],
+                    [2.6,{...ST,tilt:1.05,lift:-85,bend:.65,crouch:.1,nearArm:.25,farArm:.2,nearElbow:.8,farElbow:.9,lLeg:1.0,rLeg:.2,lFold:1.8,rFold:1.35},D-4],
+                    [3.0,{...ST,tilt:.8,lift:-70,bend:.9,crouch:.2,nearArm:.2,farArm:.15,nearElbow:.45,farElbow:.65,lLeg:.8,rLeg:.2,lFold:1.8,rFold:1.45},D-4],
+                    [3.25,{...ST,tilt:.3,lift:-35,bend:.5,crouch:.4,nearArm:.5,farArm:.35,nearElbow:1.15,farElbow:.9,lLeg:-.15,rLeg:.3,lFold:1,rFold:.7},D-4],
+                    // Brace into Lou, drive the shoulder away, then catch the recoil on a backward step.
+                    [3.45,{...ST,tilt:.15,lift:-25,bend:.5,crouch:.3,nearArm:.7,farArm:.6,nearElbow:1.2,farElbow:1.15,lLeg:.6,rLeg:.3,lFold:1.65,rFold:1.3},D-4,0,'easeIn'],
+                    [3.51,{...ST,tilt:.08,lift:-12,bend:.35,crouch:.4,nearArm:1.3,farArm:1.15,nearElbow:.15,farElbow:.25,lLeg:.35,rLeg:.3,lFold:1.25,rFold:.9},D-2,0,'easeIn'],
+                    [3.67,{...ST,tilt:-.08,lift:-15,bend:-.08,crouch:.45,nearArm:1.1,farArm:.9,nearElbow:.4,farElbow:.6,lLeg:-.45,rLeg:.3,lFold:.8,rFold:.6},D+50,0,'easeOut'],
+                    [3.78,{...ST,crouch:.5,bend:.12,nearArm:.75,farArm:.65,nearElbow:1,farElbow:.9,lLeg:-.4,rLeg:.3,lFold:.85,rFold:.55},D+58,0,'easeOut'],
+                    [3.98,{...ST,crouch:.3,bend:.25,nearArm:.6,farArm:.45,nearElbow:1.15,farElbow:.85,lLeg:-.2,rLeg:.25,lFold:.5,rFold:.35},D+58],
+                    [4.25,{...ST,crouch:.16,bend:.25,nearArm:.5,farArm:.3,nearElbow:1.1,farElbow:.8,lLeg:-.1,rLeg:.2,lFold:.35,rFold:.25},D+58],
+                    [4.7,{...ST,bend:.2,crouch:.1,nearArm:.45,farArm:.25,nearElbow:1.1,farElbow:.75,lFold:.25,rFold:.2},D+58],
+                    [5.15,{...ST,bend:.18,crouch:.08,nearArm:.4,farArm:.2,nearElbow:1.1,farElbow:.7,lFold:.2,rFold:.2},D+58],
+                ],
+                // His neck in the crook of the real forearm, from the moment the swing comes down around it.
+                carry:[{role:'defender',on:'attacker',frame:'joint',from:'nearElbow',to:'nearWrist',at:.35,joint:'neck',in:[.42,.6],out:[3.35,3.43]}],
+                floorContacts:[
+                    {role:'attacker',point:'nearSole',in:[0,.05],out:[.2,.28]},
+                    {role:'attacker',point:'nearKnee',in:[2.6,2.85],out:[3.0,3.12]},
+                    {role:'attacker',point:'nearSole',in:[3.04,3.12],out:[5.15,5.15]},
+                    {role:'defender',point:'nearSole',in:[3.4,3.48],out:[5.15,5.15]},
+                ],
+                // The man stays over his torso the whole way; only the wrapping arm comes over the man (Derek, Nov 17).
+                layers:[['attacker','farArm'],['attacker','nativeBody'],['defender','farArm'],['defender','nativeBody'],['defender','nearArm'],['attacker','nearArm']],
+            };
+        },
     },
 
     // T12.3: tie-up, Down + Power. Arm capture, pivot, shoulder load and
     // kneeling forward throw; independently authored in flyingMareClip below.
-    flyingMare: { kind: 'paired', hitEvent: 'impact', damage: 14, faceToFace: false, end: { def: 'back', att: 'stand' }, land: 'back', shake: [210, 0.0033], foley: ['mat', 1.0], custom: true },
-    // T12.4: tie-up, Up + Power. Hands lock overhead; he forces the man down in three pushes (squeezes drain); the man is on his knees, he lets go: a free strike window (stagger). The attacker always wins (no struggle).
+    flyingMare: { kind: 'paired', hitEvent: 'impact', damage: 14, faceToFace: false, end: { def: 'back', att: 'stand' }, shake: [210, 0.0033], foley: ['mat', 1.0], custom: true },
+    // T12.4: a slow overhead hand-lock contest: establish, resist, regain ground, then yield.
     testOfStrength: {
-        kind: 'paired', hitEvent: 'squeeze', damage: 3, faceToFace: true, end: { def: 'stagger', att: 'stand' }, hold: true, shake: [60, 0.0008],
-        build: D => {
-            const m = D / 2, up = { lArm: 2.45, rArm: 2.45, lElbow: 0.5, rElbow: 0.5 };
-            return {
-                duration: 3.1, events: squeezes(1.0, 1.55, 2.1),
-                att: [
-                    [0, TIE, 0, 0, 'linear', 1],
-                    [0.4, { ...up, lean: 0.05, crouch: 0.1 }, m - 36],
-                    [1.0, { ...up, lean: 0.22, crouch: 0.25, bend: 0.1, lFold: 0.6, rFold: 0.6 }, m - 34],
-                    [1.55, { ...up, lean: 0.3, crouch: 0.3, bend: 0.12, lFold: 0.7, rFold: 0.7 }, m - 33],
-                    [2.1, { ...up, lean: 0.36, crouch: 0.35, bend: 0.15, lFold: 0.8, rFold: 0.8 }, m - 32],
-                    [2.5, { ...up, lean: 0.36, crouch: 0.35, bend: 0.15, lFold: 0.8, rFold: 0.8 }, m - 32],
-                    [3.1, { ...ST, lean: 0.05, crouch: 0.1 }, m - 52],
+        kind:'paired',hitEvent:'squeeze',damage:3,faceToFace:true,end:{def:'stand',att:'stand'},hold:true,shake:[60,.0008],
+        build:D=>{
+            const m=D/2,up={...ST,nearArm:1.95,farArm:2.15,nearElbow:1.0,farElbow:.85,crouch:.1,lLeg:-.18,rLeg:.22,lFold:.3,rFold:.3};
+            const reach={...up,nearArm:2.75,farArm:2.85,nearElbow:.25,farElbow:.25};
+            const hands={nearForearm:'grip',farForearm:'grip'};
+            const lock={...ST,crouch:.18,bend:.12,nearArm:.9,nearElbow:1.25,farArm:1.1,farElbow:1.7,lLeg:-.18,rLeg:.22,lFold:.4,rFold:.35};
+            const caught={...ST,crouch:.12,bend:.3,nearArm:1.05,nearElbow:2.1,farArm:-.5,farElbow:1.8,lFold:.3,rFold:.3};
+
+            return {duration:12.6,events:[...squeezes(3.0,5.0,7.0),{at:11.08,type:'shove'}],
+                att:[
+                    [0,TIE,0,0,'linear',1],
+                    [.7,{...up,nearArm:1.4,farArm:1.6,nearElbow:.9,farElbow:.8},m-44],
+                    [.95,up,m-44],
+                    [1.35,up,m-44],
+                    [2.1,{...up,bend:-.05,crouch:.14},m-44],
+                    [3.0,{...up,bend:.18,crouch:.22,lFold:.5,rFold:.45},m-51],
+                    [3.9,{...up,bend:-.12,crouch:.3,lFold:.65,rFold:.5},m-44],
+                    [5.0,{...up,bend:.22,crouch:.28,lFold:.65,rFold:.55},m-44],
+                    [5.9,{...up,bend:.02,crouch:.22,lFold:.5,rFold:.4},m-44],
+                    [7.0,{...up,bend:.3,crouch:.35,nearArm:1.75,farArm:1.95,lFold:.8,rFold:.65},m-48],
+                    [7.7,{...up,bend:.25,crouch:.32,nearArm:1.75,farArm:1.95,lFold:.7,rFold:.6},m-48],
+                    [8.25,{...lock,nearArm:1.1,farArm:.25,farElbow:1.1},m-18],
+                    [8.85,{...lock,farArm:-.55,farElbow:1.95},m-26],
+                    [9.2,{...lock,farArm:-.6,farElbow:1.6},m-26],
+                    [9.35,{...lock,bend:.2,farArm:1.25,farElbow:1.9},m-26],
+                    [9.85,{...lock,bend:.28,crouch:.25},m-22],
+                    [10.35,{...lock,bend:.2,crouch:.2,nearArm:.85,farArm:1.25,farElbow:1.9},m-22],
+                    [10.7,{...lock,bend:.15,crouch:.15,nearArm:-.05,farArm:-.65,nearElbow:1.4,farElbow:1.75},m-25],
+                    [10.95,{...ST,crouch:.25,bend:.24,nearArm:1.0,farArm:1.05,nearElbow:1.4,farElbow:1.4,lLeg:-.18,rLeg:.2,lFold:.55,rFold:.35},m-21],
+                    [11.08,{...ST,crouch:.12,bend:.42,nearArm:1.45,farArm:1.5,nearElbow:.25,farElbow:.3,lLeg:-.25,rLeg:.18,lFold:.45,rFold:.3},m-16,0,'easeIn'],
+                    [11.2,{...ST,crouch:.15,bend:.32,nearArm:1.35,farArm:1.3,nearElbow:.4,farElbow:.45,lLeg:-.25,rLeg:.18,lFold:.4,rFold:.3},m-16,0,'easeOut'],
+                    [11.5,{...ST,crouch:.15,bend:.12,nearArm:.8,farArm:.75,nearElbow:1.1,farElbow:1.1,lFold:.35,rFold:.3},m-19,0,'easeOut'],
+                    [11.65,{...ST,nearArm:.6,farArm:.55,nearElbow:1,farElbow:1,lLeg:-.3,rLeg:.12,lFold:.4,rFold:.2},m-30],
+                    [12.15,{...ST,nearArm:.6,farArm:.55,nearElbow:1,farElbow:1,lLeg:.1,rLeg:-.25,lFold:.2,rFold:.4},m-52],
+                    [12.6,ST,m-55],
+                ].map(k=>{if(k[0]>=.7&&k[0]<=10.7)k[6]=hands;if(k[0]>=11.5)k[6]={nearUpperArm:'base',farUpperArm:'base',nearForearm:'base',farForearm:'base'};return k}),
+                def:[
+                    [0,TIE,D,0,'linear',-1],
+                    [.7,{...up,nearArm:1.4,farArm:1.6,nearElbow:.9,farElbow:.8},m+44],
+                    [.95,up,m+44],
+                    [1.35,up,m+44],
+                    [2.1,{...up,bend:-.12,tilt:-.04,crouch:.2,lLeg:-.3,rLeg:.25,lFold:.5,rFold:.35},m+44],
+                    // Yield through the hips as he folds: the locked palms must
+                    // stay ahead of Lou's shoulders, rather than collapsing into them.
+                    [3.0,{...up,nearArm:2.2,farArm:2.35,nearElbow:.7,farElbow:.6,crouch:.44,bend:.38,tilt:.07,lLeg:-.25,rLeg:.3,lFold:1.0,rFold:.65},m+69],
+                    // He wins a little height back before the next sustained push.
+                    [3.45,{...up,bend:.5,tilt:.09,crouch:.48,lLeg:-.25,rLeg:.3,lFold:1.05,rFold:.8},m+84],
+                    [3.9,{...up,bend:-.1,tilt:-.05,crouch:.27,lLeg:-.3,rLeg:.25,lFold:.6,rFold:.4},m+48],
+                    [5.0,{...reach,crouch:.78,bend:.48,tilt:.08,lLeg:-.2,rLeg:.18,lFold:1.55,rFold:1.25},m+77],
+                    [5.4,{...reach,crouch:.85,bend:.58,tilt:.1,lFold:1.75,rFold:1.45},m+92],
+                    [5.9,{...up,nearArm:2.4,farArm:2.55,nearElbow:.5,farElbow:.4,crouch:.5,bend:-.06,tilt:-.03,lLeg:-.25,rLeg:.2,lFold:1.05,rFold:.8},m+49],
+                    [7.0,{...reach,crouch:1,bend:.4,tilt:.06,lLeg:-.05,rLeg:-.05,lFold:2.35,rFold:2.35},m+82],
+                    [7.7,{...reach,crouch:1,bend:.55,tilt:.08,lLeg:-.05,rLeg:-.05,lFold:2.35,rFold:2.35},m+92],
+                    [8.25,{...caught,crouch:.65,lFold:1.35,rFold:1.25,nearArm:1.65,nearElbow:1.4,farArm:.1,farElbow:2.6},m+65],
+                    [8.85,{...caught,crouch:.25,lFold:.6,rFold:.5,farArm:-.4,farElbow:2.2},m+54],
+                    // Two pain hops, with a crouched landing between them.
+                    [9.35,{...caught,bend:.35,crouch:.28,lLeg:-.18,rLeg:.25,lFold:.65,rFold:.55},m+43],
+                    [9.5,{...caught,bend:.3,tilt:-.03,crouch:.02,lift:24,lLeg:-.12,rLeg:.22,lFold:.3,rFold:.65},m+43,0,'easeOut'],
+                    [9.65,{...caught,bend:.25,tilt:-.03,crouch:0,lift:30,lLeg:-.12,rLeg:.22,lFold:.4,rFold:.7},m+43],
+                    [9.85,{...caught,bend:.5,crouch:.3,lLeg:-.18,rLeg:.25,lFold:.7,rFold:.6},m+41,0,'easeIn'],
+                    [10.0,{...caught,bend:.45,crouch:.28,lLeg:-.18,rLeg:.25,lFold:.65,rFold:.55},m+41],
+                    [10.15,{...caught,bend:.3,tilt:-.03,crouch:.02,lift:24,lLeg:.22,rLeg:-.15,lFold:.65,rFold:.35},m+43,0,'easeOut'],
+                    [10.3,{...caught,bend:.25,tilt:-.03,crouch:0,lift:30,lLeg:.22,rLeg:-.15,lFold:.7,rFold:.4},m+43],
+                    [10.5,{...caught,bend:.5,crouch:.32,lLeg:-.18,rLeg:.25,lFold:.75,rFold:.65},m+41,0,'easeIn'],
+                    [10.7,{...caught,bend:.32,crouch:.12},m+43],
+                    [10.95,{...ST,bend:.3,crouch:.18,nearArm:.5,nearElbow:1.7,farArm:.65,farElbow:1.2,lFold:.4,rFold:.35},m+43],
+                    [11.08,{...ST,bend:-.32,tilt:-.15,crouch:.3,nearArm:.8,nearElbow:.8,farArm:.65,farElbow:1.2,lLeg:-.15,rLeg:.35,lFold:.45,rFold:.6},m+50,0,'easeIn'],
+                    [11.3,{...ST,bend:-.4,tilt:-.22,crouch:.4,nearArm:.7,nearElbow:1.0,farArm:.5,farElbow:1.5,lLeg:-.55,rLeg:.12,lFold:.9,rFold:.3},m+115,0,'easeOut'],
+                    [11.65,{...ST,bend:.1,tilt:-.08,crouch:.3,nearArm:.45,nearElbow:1.5,farArm:.4,farElbow:1.7,lLeg:.15,rLeg:-.42,lFold:.3,rFold:.8},m+180],
+                    [12.05,{...ST,bend:.32,crouch:.2,nearArm:.4,nearElbow:1.5,farArm:.35,farElbow:1.7,lLeg:-.18,rLeg:.16,lFold:.45,rFold:.3},m+225],
+                    [12.6,{...ST,bend:.08,crouch:.03,nearArm:.4,nearElbow:1.4,farArm:.35,farElbow:1.7,lFold:.25,rFold:.25},m+240],
+                ].map(k=>{if(k[0]>=.7&&k[0]<=12.6)k[6]={...(k[0]<=10.7?hands:{}),...(k[0]>=2.1?{head:'pain'}:{})};return k}),
+                floorContacts:[{role:'defender',point:'nearKnee',in:[6.7,7],out:[7.8,8.85]}],
+                layerWindows:[
+                    {from:0,to:8.25,order:[['attacker','farArm'],['defender','farArm'],['attacker','nativeBody'],['defender','nativeBody'],['attacker','farForearm'],['defender','farForearm'],['defender','head'],['defender','nearArm'],['attacker','nearArm']]},
+                    {from:8.25,to:10.85,order:[['attacker','farArm'],['defender','farArm'],['attacker','nativeBody'],['defender','nativeBody'],['defender','farForearm'],['defender','nearArm'],['attacker','nearArm']]},
+                    {from:10.85,to:12.6,order:[['defender','farArm'],['defender','nativeBody'],['defender','farForearm'],['defender','nearArm'],['attacker','farArm'],['attacker','nativeBody'],['attacker','nearArm']]},
                 ],
-                def: [
-                    [0, TIE, D, 0, 'linear', -1],
-                    [0.4, { ...up, lean: 0, crouch: 0.1 }, m + 36],
-                    [1.0, { ...up, lean: -0.1, crouch: 0.5, bend: 0.15, lFold: 1.0, rFold: 1.0 }, m + 36],
-                    [1.55, { ...up, lean: -0.15, crouch: 1.0, bend: 0.25, lFold: 1.7, rFold: 1.7 }, m + 36],
-                    [2.1,{...up,lean:-.1,crouch:1,bend:.15,lLeg:-.05,rLeg:-.05,lFold:2.35,rFold:2.35},m+36],
-                    [2.5,{...up,lean:-.1,crouch:1,bend:.15,lLeg:-.05,rLeg:-.05,lFold:2.35,rFold:2.35},m+36],
-                    [3.1, { ...ST, lArm: 0.5, rArm: 0.6, bend: 0.5, crouch: 0.9, lFold: 1.4, rFold: 1.4 }, m + 44],
-                ],
-                layers: FRONT_ATT,
+                layers:[['attacker','farArm'],['defender','farArm'],['attacker','nativeBody'],['defender','nativeBody'],['attacker','farForearm'],['defender','farForearm'],['defender','nearArm'],['attacker','nearArm']],
             };
         },
     },
+
     // T12.5: defending vs a returning runner, Up + Power. A solo hop: a spring, legs apart, hands forward, and down again as the runner passes under. No damage; nobody is touched.
     leapfrog: {
         kind: 'solo', end: { att: 'stand' },
@@ -368,38 +497,99 @@ export const MAT_MOVES = {
 // Robbins/Gotch, How to Wrestle, printed pp.32–33: wrist capture, turn under
 // the arm, shoulder load, then forward pull. No head-grip or retimed flip.
 export function flyingMareClip(distance = 100) {
-    const knee = {...ST,crouch:1,lLeg:-.05,rLeg:-.05,lFold:2.35,rFold:2.35,bend:.4,lArm:1,rArm:.8,lElbow:1,rElbow:1.1};
-    const landed = {...LIE,tilt:3*PI2};
-    const att = [
-        [0,TIE,0,0,'easeOut',1],
-        [.19,{...ST,lArm:0,rArm:0,lElbow:0,rElbow:0,lLeg:0,rLeg:0,lFold:0,rFold:0},0,0,'linear',1],
-        [.2,{...ST,lArm:0,rArm:0,lElbow:0,rElbow:0,lLeg:0,rLeg:0,lFold:0,rFold:0},0,0,'linear',-1],
-        [.4,{...TIE,lArm:.8,rArm:.7,lElbow:1,rElbow:1},4],
-        [.75,{...ST,crouch:.45,bend:.25,lLeg:.15,rLeg:-.1,lFold:.6,rFold:.7,lArm:.8,rArm:.7,lElbow:1,rElbow:1.1},8],
-        [1.05,knee,10],[1.65,{...knee,lArm:.5,rArm:.4},12],
-        [2.05,{...ST,crouch:.6,lFold:1.5,rFold:1.5,bend:.2},12],
-        [2.4,ST,10],
+    const knee={...ST,crouch:.8,lift:-25,lLeg:-.15,rLeg:-.05,lFold:2.2,rFold:2.2,bend:.2,nearArm:.65,farArm:.5,nearElbow:1,farElbow:1.2};
+    const brace={...knee,crouch:.65,bend:.05,nearLeg:-.15,nearFold:2.2,farLeg:.5,farFold:2.15};
+    const drive={...brace,bend:.1,tilt:-.08,farLeg:.6,nearArm:.9,nearElbow:1.1};
+    const seated={...LIE,tilt:3*PI2,bend:1.4,nearArm:-1.5,nearElbow:.15,farArm:.6,farElbow:1.2,lLeg:.12,rLeg:.25,lFold:.25,rFold:.5};
+    const landed={...LIE,tilt:3*PI2};
+    const att=[
+        [0,TIE,0,0,'linear',1],
+        [.18,{...ST,crouch:.15,nearArm:.9,farArm:.7,nearElbow:1,farElbow:1.1},2,0,'linear',1],
+        [.2,{...ST,crouch:.15,nearArm:.9,farArm:.7,nearElbow:1,farElbow:1.1},2,0,'step',-1],
+        [.36,{...ST,crouch:.45,bend:.2,lLeg:.15,rLeg:-.1,lFold:.6,rFold:.7,nearArm:1.2,farArm:.9,nearElbow:.9,farElbow:1.1},8,0,'easeIn'],
+        [.44,{...knee,bend:.55,crouch:.85},10,0,'easeIn'],
+        [.62,{...knee,bend:.7,nearArm:1.35,nearElbow:.6},10,0,'linear'],
+        [.82,{...knee,bend:.45},8,0,'easeOut',undefined,{nearForearm:'grip',farForearm:'grip'}],
+        [1.02,knee,2],
+        [1.3,brace,15],
+        [1.45,{...brace,bend:0,nearArm:.8,nearElbow:.85},15],
+        [1.7,drive,15,0,'easeOut'],
+        [2.05,brace,15],
+        [2.35,drive,15,0,'easeOut'],
+        [2.8,brace,15],
+        [3.15,brace,15],
+        [3.6,drive,15,0,'easeOut'],
+        [3.95,brace,15],
+        [4.25,drive,15,0,'easeOut'],
+        [4.9,brace,15],
+        [5.22,{...brace,bend:.2,farLeg:.5,nearArm:.6,farArm:.4},2],
+        [5.55,{...ST,crouch:.7,bend:.3,lFold:1.6,rFold:1.25,nearArm:.4,farArm:.4,nearElbow:.9,farElbow:.9},14],
+        [5.9,{...ST,crouch:.25,bend:.15,lFold:.55,rFold:.45},24],
+        [6.25,{...ST,crouch:.08,nearArm:.6,farArm:.5,nearElbow:1,farElbow:.9},28],
+        [6.35,{...ST,crouch:.12,nearArm:.6,farArm:.5,nearElbow:1,farElbow:.9,lLeg:-.1,rLeg:.2,lFold:.3,rFold:.2},28],
+        [6.45,{...ST,crouch:.08,nearArm:.6,farArm:.5,nearElbow:1,farElbow:.9,lLeg:-.35,rLeg:.2,lFold:.5,rFold:.2},42,0,'linear'],
+        [6.55,{...ST,crouch:.1,nearArm:.6,farArm:.5,nearElbow:1,farElbow:.9,lLeg:-.25,rLeg:.2,lFold:.2,rFold:.25},54,0,'easeOut'],
+        [6.65,{...ST,crouch:.12,nearArm:.6,farArm:.5,nearElbow:1,farElbow:.9,lLeg:.15,rLeg:-.1,lFold:.25,rFold:.3},54],
+        [6.76,{...ST,crouch:.08,nearArm:.6,farArm:.5,nearElbow:1,farElbow:.9,lLeg:.2,rLeg:-.35,lFold:.2,rFold:.5},66,0,'linear'],
+        [6.87,{...ST,crouch:.1,nearArm:.6,farArm:.5,nearElbow:1,farElbow:.9,lLeg:.15,rLeg:-.25,lFold:.25,rFold:.2},78,0,'easeOut'],
+        [7.15,{...ST,nearArm:.55,farArm:.45,nearElbow:1,farElbow:.9},78],
     ];
-    const def = [
-        [0,TIE,distance,0,'easeOut',-1],
-        [.4,{...TIE,bend:.2,crouch:.1},62],
-        [.75,{...ST,bend:.35,crouch:.2,tilt:.25,lArm:1.2,rArm:.4,lElbow:.4,rElbow:.8},40],
-        [.95,{...ST,tilt:.8,lift:45,bend:.2,lLeg:.2,rLeg:.1,lFold:.55,rFold:.7,lArm:1.3,rArm:.5},15,0,'linear'],
-        [1.1,{...ST,tilt:1.5,lift:75,bend:.15,lLeg:.3,rLeg:.2,lFold:.7,rFold:.8,lArm:1.1,rArm:.7},-15,0,'linear'],
-        [1.25,{...ST,tilt:2.3,lift:60,bend:.1,lLeg:.3,rLeg:.2,lFold:.8,rFold:.9,lArm:.9,rArm:.8},-45,0,'linear'],
-        [1.4,{...ST,tilt:3.1,lift:45,bend:.05,lLeg:.25,rLeg:.2,lFold:.7,rFold:.8,lArm:.8,rArm:.8},-70,0,'linear'],
-        [1.55,{...ST,tilt:4,lift:-30,lLeg:.2,rLeg:.15,lFold:.45,rFold:.6,lArm:.7,rArm:.7},-95,0,'linear'],
-        [1.6,{...ST,tilt:4.4,lift:-65,lLeg:.15,rLeg:.2,lFold:.3,rFold:.5,lArm:.5,rArm:.5},-103,0,'linear'],
-        [1.65,landed,-110,0,'easeIn'],[2.4,landed,-110],
+    const def=[
+        [0,TIE,distance,0,'linear',-1],
+        [.2,{...TIE,nearArm:1.1,nearElbow:.5,farArm:.35,farElbow:.9},70],
+        [.36,{...ST,bend:.4,crouch:.15,tilt:.15,nearArm:1.4,nearElbow:.35,farArm:.4,farElbow:.8},40,0,'easeIn'],
+        [.44,{...ST,tilt:.65,lift:24,bend:.25,lLeg:.2,rLeg:.1,lFold:.5,rFold:.65,nearArm:1.35,nearElbow:.3,farArm:.5,farElbow:.9},18,0,'linear'],
+        [.54,{...ST,tilt:1.8,lift:35,bend:.15,lLeg:.4,rLeg:.1,lFold:.8,rFold:.9,nearArm:1.2,nearElbow:.3,farArm:.65,farElbow:1},-8,0,'linear'],
+        [.64,{...ST,tilt:3.25,lift:20,bend:.15,lLeg:.4,rLeg:.15,lFold:1,rFold:.9,nearArm:.5,nearElbow:.3,farArm:.8,farElbow:1},-35,0,'linear'],
+        [.74,{...ST,tilt:4.3,lift:-55,bend:.55,lLeg:.2,rLeg:.25,lFold:.5,rFold:.6,nearArm:-.5,nearElbow:.25,farArm:.7,farElbow:1.2},-60,0,'easeIn'],
+        [.82,{...seated,bend:1.25,lFold:.45,rFold:.6},-75,0,'easeIn',undefined,{head:'pain'}],
+        [.94,{...seated,bend:1.5,lFold:.6,rFold:.5},-75,0,'easeOut'],
+        [1.2,seated,-75],
+        [1.7,{...seated,bend:.95,nearArm:-1.8,nearElbow:.1,farArm:1.2,farElbow:1.8,lLeg:.4,lFold:.85,rFold:.65},-75],
+        [2.05,{...seated,bend:1.25,farArm:1.0,farElbow:1.7,rFold:.7},-75],
+        [2.35,{...seated,bend:.9,nearArm:-1.85,nearElbow:.1,farArm:1.3,farElbow:1.9,lLeg:.45,lFold:.95,rFold:.55},-75],
+        [2.8,{...seated,bend:1.2,farArm:1.0,farElbow:1.6,rFold:.65},-75],
+        [3.15,{...seated,bend:1.25,farArm:1.0,farElbow:1.7,rFold:.65},-75],
+        [3.6,{...seated,bend:.95,nearArm:-1.8,nearElbow:.1,farArm:1.2,farElbow:1.8,lLeg:.4,lFold:.85,rFold:.65},-75],
+        [3.95,{...seated,bend:1.25,farArm:1.0,farElbow:1.7,rFold:.7},-75],
+        [4.25,{...seated,bend:.9,nearArm:-1.85,nearElbow:.1,farArm:1.3,farElbow:1.9,lLeg:.45,lFold:.95,rFold:.55},-75],
+        [4.9,{...seated,bend:1.2,farArm:1.0,farElbow:1.6,rFold:.65},-75],
+        [5.22,{...seated,bend:1.2,nearArm:-.65,nearElbow:.8,farArm:.8,farElbow:1.5},-75],
+        [5.55,{...seated,bend:.9,nearArm:.2,nearElbow:1.4,farArm:.7,farElbow:1.4},-75],
+        [5.9,{...landed,bend:.2,nearArm:.4,nearElbow:.9,farArm:.3,farElbow:.7},-75],
+        [6.25,landed,-75],
+        [7.15,landed,-75],
     ];
-    return {id:'flyingMare',duration:2.4,events:[{at:1.65,type:'impact'}],
+    // Enlarge the complete back arm consistently, then blend back to idle proportions on release.
+    for(const beat of att){const p=beat[1];beat[1]={...p,nearLeg:p.nearLeg??p.lLeg,nearFold:p.nearFold??p.lFold,farLeg:p.farLeg??p.rLeg,farFold:p.farFold??p.rFold,farArmScale:beat[0]<=5.22?1.15:1};}
+    // Keep the receiver's free arm at matching proportions through the seated struggle.
+    for(const beat of def)beat[1]={...beat[1],farArmScale:beat[0]<=5.22?1.15:1};
+    // Appearance is keyed per beat: keep the grip and pain through the hold, not only on impact.
+    for(const beat of att)if(beat[0]>=.82&&beat[0]<=5.22)beat[6]={nearForearm:'grip',farForearm:'grip'};
+    for(const beat of att)if(beat[0]>=5.55)beat[6]={nearUpperArm:'base',farUpperArm:'base',nearForearm:'base',farForearm:'base'};
+    for(const beat of def)if(beat[0]>=.82&&beat[0]<=5.55)beat[6]={head:'pain'};
+    return {id:'flyingMare',duration:7.15,events:[{at:.82,type:'impact'}],
         tracks:{attacker:{keyframes:att.map(b=>kf(ST,b))},defender:{keyframes:def.map(b=>kf(ST,b))}},
+        // One captured wrist through the throw and seated lock; the back hand clamps the top shoulder while the near hand works the wrist.
         grips:[
-            {role:'attacker',arm:'l',to:{role:'defender',joint:'Wrist',side:'same'},in:[.3,.45],out:[.95,1.15],natural:true},
-            {role:'attacker',arm:'r',to:{role:'defender',joint:'Shoulder',side:'other'},in:[.3,.45],out:[.95,1.12],natural:true},
+            // Solve the receiver's captured arm onto the gripping hand after the throw pose is placed.
+            {role:'defender',arm:'near',to:{role:'attacker',joint:'Wrist',side:'same'},in:[.06,.16],out:[5.05,5.35],natural:true,afterLegs:true},
+            {role:'attacker',arm:'near',to:{role:'defender',joint:'Wrist',side:'same'},in:[.06,.16],out:[5.05,5.35],natural:true},
+            {role:'attacker',arm:'far',to:{role:'defender',joint:'Shoulder',side:'other'},in:[.08,.18],out:[.62,.82],natural:true},
+            {role:'attacker',arm:'far',to:{role:'defender',joint:'Shoulder',side:'other',offset:{x:0,y:-4}},in:[.82,1.05],out:[5.05,5.35],palm:'clutch',natural:true,afterLegs:true},
         ],
-        floorContacts:[{role:'attacker',point:'nearKnee',in:[.8,1.05],out:[1.65,1.95]}],
-        layers:[{from:0,to:1.15,order:FRONT_ATT},{from:1.15,to:2.4,order:FRONT_DEF}],
+        floorContacts:[{role:'attacker',point:'nearKnee',in:[.38,.55],out:[5.22,5.55]},
+            {role:'attacker',point:'nearSole',in:[5.6,5.9],out:[7.15,7.15]}],
+        plants:[{role:'attacker',leg:'far',in:[6.2,6.25],out:[6.48,6.6],kneeRestart:true},
+            {role:'attacker',leg:'near',in:[6.48,6.55],out:[6.8,6.9],kneeRestart:true},
+            {role:'attacker',leg:'far',in:[6.8,6.87],out:[7.15,7.15],kneeRestart:true}],
+        layers:[
+            {from:0,to:.64,order:FRONT_ATT},
+            {from:.64,to:.82,order:FRONT_DEF},
+            // Keep the complete back arm behind both bodies; only its depth changes.
+            {from:.82,to:5.35,order:[['attacker','farArm'],['attacker','nearArm'],['attacker','nativeBody'],['defender','farArm'],['attacker','farLeg'],['defender','nativeBody'],['defender','nearArm'],['defender','farForearm'],['attacker','nearForearm']]},
+            {from:5.35,to:7.15,order:FRONT_DEF},
+        ],
     };
 }
 
@@ -428,10 +618,12 @@ export function matMoveClip(id, distance = 100, { attackerRigId, defenderRigId, 
             // Place the worked near wrist first, then both hands follow that
             // same forearm. Separate bodies leave the grip and shoulder visible.
             {role:'defender',arm:'near',to:{role:'attacker',joint:'Hip',side:'other',above:.75},in:[.15,.4],out:[.6,1.05],natural:true},
-            {role:'defender',arm:'near',to:{role:'attacker',joint:'Hip',side:'other',above:.5},in:[.6,1.05],out:[2.15,2.65],natural:true},
-            grip('near','Wrist','same',.2,.45,2.15,2.65),
-            grip('far','Elbow','other',.2,.45,2.15,2.65,{fore:.9}),
-            {role:'defender',arm:'far',to:{role:'defender',joint:'Elbow',side:'other',fore:.6},in:[.75,1.1],out:[2.15,2.65],natural:true,afterLegs:true},
+            {role:'defender',arm:'near',to:{role:'attacker',joint:'Hip',side:'other',above:.5},in:[.6,1.05],out:[2.62,2.9],natural:true},
+            grip('near','Wrist','same',.2,.45,2.62,2.9),
+            grip('far','Elbow','other',.2,.45,2.62,2.9,{fore:.9}),
+            {role:'defender',arm:'far',to:{role:'attacker',joint:'Elbow',side:'other',fore:.65},in:[.75,1.1],out:[2.35,2.7],natural:true,afterLegs:true},
+            {role:'defender',arm:'near',to:{role:'defender',joint:'Hip',side:'same',above:.35,offset:{x:40,y:4}},in:[2.9,3.3],out:[4.3,4.5],natural:true,blendFromHand:true},
+            {role:'defender',arm:'far',to:{role:'defender',joint:'Wrist',side:'other'},in:[3,3.3],out:[4.3,4.5],natural:true,palm:'clutch',afterLegs:true},
         ],
         wristlockHammerlock:[
             {role:'defender',arm:'near',to:{role:'attacker',joint:'Hip',side:'other',above:.6},in:[.15,.4],out:[1.5,1.5],natural:true},
@@ -444,8 +636,29 @@ export function matMoveClip(id, distance = 100, { attackerRigId, defenderRigId, 
             grip('far','Elbow','other',1.7,2.3,4.05,4.45,{fore:.15}),
             {role:'defender',arm:'far',to:{role:'defender',joint:'Elbow',side:'other',fore:.6},in:[.75,1.1],out:[1.5,1.8],natural:true,afterLegs:true},
         ],
-        headlockTakeover:[grip('l','Shoulder','other',0,.1,1.7,2.05),grip('r','Shoulder','same',.4,.6,1.7,2.05)],
-        testOfStrength:[grip('l','Wrist','same',.15,.4,2.45,2.85),grip('r','Wrist','same',.15,.4,2.45,2.85)],
+        headlockTakeover:[
+            // The far hand guides the head through takeoff, then transfers to the clasp.
+            {role:'attacker',arm:'far',to:{role:'defender',joint:'Neck',side:'same',offset:{x:0,y:-5}},in:[.08,.18],out:[.48,.6],natural:true,afterLegs:true},
+            {role:'attacker',arm:'far',to:{role:'attacker',joint:'Wrist',side:'other'},in:[.6,.75],out:[2.5,2.6],palm:'clutch',natural:true},
+            {role:'defender',arm:'near',to:{role:'attacker',joint:'Elbow',side:'same',fore:.65},in:[2.02,2.18],out:[2.36,2.5],natural:true,afterLegs:true},
+            {role:'defender',arm:'near',to:{role:'defender',joint:'Floor',side:'same',ahead:8},in:[2.4,2.65],out:[2.92,3.08],natural:true,afterLegs:true},
+            {role:'defender',arm:'far',to:{role:'defender',joint:'Floor',side:'same',ahead:0},in:[2.4,2.65],out:[3.0,3.1],natural:true,afterLegs:true},
+            {role:'attacker',arm:'far',to:{role:'attacker',joint:'Floor',side:'same',ahead:12},in:[2.55,2.75],out:[2.9,3.08],natural:true},
+            {role:'attacker',arm:'near',to:{role:'defender',joint:'Shoulder',side:'same',offset:{x:0,y:12}},in:[3.35,3.43],out:[3.51,3.58],natural:true,afterLegs:true},
+            {role:'defender',arm:'near',to:{role:'attacker',joint:'Shoulder',side:'other',offset:{x:0,y:12}},in:[3.34,3.43],out:[3.51,3.58],natural:true,afterLegs:true},
+            {role:'defender',arm:'far',to:{role:'attacker',joint:'Shoulder',side:'other',offset:{x:0,y:12}},in:[3.36,3.45],out:[3.51,3.58],natural:true,afterLegs:true},
+            {role:'attacker',arm:'far',to:{role:'attacker',joint:'Wrist',side:'other'},in:[3.08,3.2],out:[3.35,3.4],palm:'clutch',natural:true},
+        ],
+        testOfStrength:[
+            {role:'defender',arm:'near',to:{role:'defender',joint:'Hip',side:'same',above:.3,offset:{x:28,y:-2}},in:[7.85,8.85],out:[11.08,11.2],natural:true},
+            {role:'attacker',arm:'near',to:{role:'defender',joint:'Wrist',side:'same',anchor:'clutch'},in:[.7,.95],out:[11.08,11.2],palm:'clutch',natural:true},
+            {role:'attacker',arm:'far',to:{role:'defender',joint:'Wrist',side:'same',anchor:'clutch'},in:[.7,.95],out:[8.85,8.95],palm:'clutch',natural:true},
+            {role:'defender',arm:'near',to:{role:'attacker',joint:'Wrist',side:'same',anchor:'clutch'},in:[.7,.95],out:[7.7,7.85],palm:'clutch',natural:true,afterLegs:true},
+            {role:'defender',arm:'far',to:{role:'attacker',joint:'Wrist',side:'same',anchor:'clutch'},in:[.7,.95],out:[8.85,8.95],palm:'clutch',natural:true,afterLegs:true},
+            // The second hand threads underneath the worked arm and closes on his own wrist.
+            {role:'attacker',arm:'far',to:{role:'attacker',joint:'Wrist',side:'other',anchor:'clutch'},in:[8.95,9.2],out:[10.6,10.85],palm:'clutch',natural:true,afterLegs:true},
+            {role:'attacker',arm:'far',to:{role:'defender',joint:'Shoulder',side:'other',offset:{x:0,y:12}},in:[10.85,10.95],out:[11.08,11.2],palm:'clutch',natural:true,afterLegs:true},
+        ],
         abdominalStretch:[
             {role:'defender',arm:'far',to:{role:'attacker',joint:'Neck',side:'same'},in:[.5,.9],out:[3,3.3],natural:true},
             grip('far','Hip','other',.5,.9,3,3.3,{above:.6}),
@@ -479,15 +692,15 @@ export function matMoveClip(id, distance = 100, { attackerRigId, defenderRigId, 
     const plant=(role,leg,start,full,hold,end)=>({role,leg,in:[start,full],out:[hold,end],kneeRestart:true});
     const plants={
         wristlockHammerlock:[plant('attacker','r',.8,1,1.5,1.65),plant('defender','r',.3,.5,4.1,4.5)],
-        wristlock:[plant('attacker','r',.8,1,2.1,2.7),plant('defender','r',.3,.5,2.1,2.7)],
-        headlockTakeover:[plant('attacker','r',.05,.12,.35,.5)],
-        testOfStrength:[plant('attacker','r',.4,.55,2.5,2.9)],
+        wristlock:[plant('attacker','r',.8,1,2.1,2.7),plant('defender','r',.3,.5,2.1,2.7),plant('defender','r',3.02,3.08,3.3,3.4),plant('defender','l',3.4,3.48,3.65,3.75),plant('defender','r',3.75,3.83,4.05,4.15)],
+        headlockTakeover:[plant('attacker','r',.05,.1,.16,.24),plant('attacker','r',.62,.72,1.0,1.15),plant('attacker','r',3.43,3.47,3.53,3.6),plant('attacker','l',3.67,3.75,3.93,4.07),plant('defender','r',3.43,3.47,3.53,3.6),plant('defender','l',3.67,3.75,3.93,4.07)],
+        testOfStrength:[plant('attacker','r',1.15,1.35,7.7,8.25),plant('defender','r',1.15,1.35,4.6,5.0),plant('attacker','r',10.85,10.95,11.35,11.5),plant('defender','r',11.27,11.3,11.45,11.55),plant('defender','l',11.6,11.65,11.9,12.05)],
         leapfrog:[plant('attacker','r',0,.05,.12+delay,.2+delay),plant('attacker','l',.85+delay,.92+delay,.98+delay,1+delay)],
         backdropSuplex:[plant('attacker','r',.3,.45,.75,.94)],
     }[id]??[];
     const tracks = { attacker: { keyframes: spec.att.map(b => kf(ST, b)) } };
     if (spec.def) tracks.defender = { keyframes: spec.def.map(([at, over, x, y = 0, ...rest]) => kf(ST, [at, over, x, y + dy, ...rest])) };   // `dy`: the man's depth from the attacker's at play(), so a pair a little off one line does not pop
-    return { id, duration: spec.duration, events: spec.events, tracks, plants, grips, floorContacts:spec.floorContacts??[], legContacts:spec.legContacts??[],
+    return { id, duration: spec.duration, events: spec.events, tracks, plants, grips, floorContacts:spec.floorContacts??[], legContacts:spec.legContacts??[],...(spec.carry?{carry:spec.carry}:{}),
         ...(id==='backdropSuplex'?{carry:[{role:'defender',on:'attacker',tilt:1,in:[.4,.65],out:[.98,1.18],slide:{along:55,in:[.5,.95]}}]}:{}),
         ...(id==='backwardRoll'?{floorContacts:[{role:'attacker',point:'upperBack',in:[.2,.35],out:[.8,1.05]}]}:{}),
         ...(spec.layers ? { layers: spec.layerWindows??[{ from: 0, to: spec.duration, order: spec.layers }] } : {}) };

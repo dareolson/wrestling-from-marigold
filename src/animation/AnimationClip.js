@@ -117,18 +117,20 @@ export function validateClip(source) {
     }
     for (const [index, c] of (source?.carry ?? []).entries()) {
         if (!source.tracks?.[c?.role] || !source.tracks?.[c?.on] || c.role === c.on) errors.push(`carry[${index}] role and on need two different tracks`);
-        if (c?.frame !== undefined && c.frame !== 'thigh') errors.push(`carry[${index}].frame must be 'thigh' or absent (the carrier's torso)`);
+        if (c?.frame !== undefined && !['thigh','part','joint'].includes(c.frame)) errors.push(`carry[${index}].frame must be thigh, part, joint or absent (the carrier's torso)`);
         if (c?.frame === 'thigh') { if (!['l', 'r'].includes(c.leg)) errors.push(`carry[${index}].leg must be 'l' or 'r' (the carrier's clip channel) for a thigh frame`); }
+        else if(c?.frame==='part'){if(!['nearUpArm','farUpArm','torso'].includes(c.part)||typeof c.anchor!=='string'||!['neck','nearHip','farHip'].includes(c.joint))errors.push(`carry[${index}] invalid part anchor contact`);}
+        else if(c?.frame==='joint'){const J=['nearElbow','nearWrist','farElbow','farWrist','nearShoulder','farShoulder'];if(!J.includes(c.from)||!J.includes(c.to)||!(c.at>=0&&c.at<=1)||!['neck','nearHip','farHip'].includes(c.joint))errors.push(`carry[${index}] invalid joint contact`);}
         else if (!Number.isFinite(c?.tilt)) errors.push(`carry[${index}].tilt is the ratio of his torso angle to the carrier's`);
         if (badWindow(c)) errors.push(`carry[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
-        if (c?.slide && (c.frame === 'thigh' || !Number.isFinite(c.slide.along) || !Array.isArray(c.slide.in) || c.slide.in.length !== 2
+        if (c?.slide && (c.frame === 'thigh' || c.frame==='part' || c.frame==='joint' || !Number.isFinite(c.slide.along) || !Array.isArray(c.slide.in) || c.slide.in.length !== 2
             || !c.slide.in.every(Number.isFinite) || c.slide.in[0] < c.in?.[0] || c.slide.in[1] <= c.slide.in[0] || c.slide.in[1] > c.out?.[0])) {
             errors.push(`carry[${index}].slide needs a finite along and increasing in-window within the torso carry before release`);
         }
     }
     for (const [index, plant] of (source?.plants ?? []).entries()) {
         if (!source.tracks?.[plant?.role]) errors.push(`plants[${index}].role has no track`);
-        if (!['l', 'r'].includes(plant?.leg)) errors.push(`plants[${index}].leg must be 'l' or 'r' (the clip's own leg channel; the sole is whichever limb that channel draws)`);
+        if (!['l', 'r', 'near', 'far'].includes(plant?.leg)) errors.push(`plants[${index}].leg must be l, r, near or far`);
         if (badWindow(plant)) errors.push(`plants[${index}] needs in: [start, full] and out: [hold end, release], in order, inside the clip`);
     }
     errors.push(...validateLayers(source).errors);

@@ -28,20 +28,72 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Status (2026-11-15 night, Claude Opus; replace this block; ≤ 40 lines)
+## Status (2026-11-21, Claude; replace this block; ≤ 40 lines)
 
-- **Stage 12 merged into `story/marigold-opening` (02fa53fe), pushed 2026-11-15.** Brings the ten mat/lockup moves (Sonnet, 07e79457) plus Codex's dial-in with Derek (31b0ce0a), all under `?light=v1`. Gate on the merge: suite 1417/1417, build, coverage (49 baselined gaps). The `wfm-stage12` worktree is now redundant.
-- **Approved by Derek:** Lou's wristlock-to-hammerlock, abdominal stretch (outside calf hook, reverse unhook, pry attempts, shove into hands-first fall, bent arms after the catch) and Indian deathlock (seated threaded trap, victim sits up and misses punches). Preserve both.
-- **Lou's `wristlockHammerlock`** (Lou's kit; Guido keeps `wristlock`): **APPROVED by Derek** (elbow down, arm cranked up the back, 62e6f981), [entry](AI_HANDOFF_ENTRIES/2026-11-15-claude-hammerlock-elbow-down.md). Wristlock itself: Derek wants more pain/sell, revisit.
-- **Reworked, not judged:** body scissors, headlock takeover, backward roll, backdrop suplex, flying mare (own arm throw now). **Untouched:** test of strength (no contest, attacker always wins), leapfrog (needs a real duck from the runner).
+- **Checkpoint (Claude, 2026-11-21):** Guido wristlock, headlock takeover, flying mare and test of strength reviewed and committed together on `story/marigold-opening` (local, not pushed). Hammerlock, stretch and deathlock were already committed (62e6f981, 31b0ce0a) and are unchanged. Gates on the commit: suite 1463/1463, build, coverage (49 baselined gaps), size-pop soak PASS (0 outside the named list; run with `WFM_URL=http://localhost:5173`, the server now binds IPv6 only).
+- **Accepted by Derek, preserve as committed:**
+  - Lou's `wristlockHammerlock` (62e6f981, elbow down, arm cranked up the back). Guido keeps `wristlock`.
+  - Guido `wristlock` (Nov 16): resistance push, final wrench, 4.5s backward retreat holding the wrist, 8 damage, sustained pain face. [Entry](AI_HANDOFF_ENTRIES/2026-11-16-codex-wristlock-grip-swap.md).
+  - Abdominal stretch and Indian deathlock (Stage 12 dial-in, 31b0ce0a).
+  - Headlock takeover (Nov 19): chest shove 3.45–3.51, recoil, catch step at 3.78. Lou catch-plant miss ≤7.06px remains. [Entry](AI_HANDOFF_ENTRIES/2026-11-19-codex-headlock-hard-break.md).
+  - Flying mare → seated armlock (Nov 21): 7.15s, back arm 1.15× behind both bodies, receiver free arm 1.15× foreground. [Entry](AI_HANDOFF_ENTRIES/2026-11-21-codex-flying-mare-george-free-arm.md).
+  - **Test of strength (Nov 21, Derek: “I think this is good”):** overhead palms at .95s, near contact through knees-to-standing until the shove, far hand held through the rise then wristlock transfer, back-forearm depth, two airborne pain hops, 295-unit final gap, both end standing with George controllable, three 3-damage calls. [Entry](AI_HANDOFF_ENTRIES/2026-11-21-codex-strength-earlier-grip.md).
+- **Shared rig/runtime changes those moves need (in the checkpoint):** per-clip `farArmScale`, `near`/`far` leg/fold/plant channels, carry `part`/`joint` frames, `nearForearm`/`farForearm` layers, painted Wrist grip anchors, authored pain head holds, `end.def: 'stand'`, `followTorso` projected arms. `headlockWrap` arm art (both rigs) is declared and committed but no clip uses it (Derek: no hot-swapped arm).
+- **NEXT (Derek returns):** leapfrog (untouched, needs a real duck from the runner), backward roll, body scissors, backdrop suplex (last three reworked, not judged).
 - **Open control issues:** with `waistlock=v1`, Lou's go-behind shadows Up/Down + Power (his test of strength and flying mare); AI plays only stretch, scissors and deathlock.
-- **Preview:** `npm run dev`, then `/tools/mat-preview/?move=<key>&att=<rig>&def=<rig>` (e.g. `move=wristlockHammerlock&att=thesz-procreate-v1&def=george-roster-v1`).
-- **Evidence on disk only (not committed, ~250 MB):** `research/animation/*-2026-11-15/` (stretch-*, deathlock-*, wristlock-*, stage12-*, legwork, chop).
-- **Still from earlier:** G10+G11 page (ten light strikes) awaits Derek; chop approved; GP (promote `light`) is Derek's call; Opus reviews before any push. T6.4 drop toe hold not built.
+- **Preview:** `npm run dev`, then `/tools/mat-preview/?move=<key>&att=<rig>&def=<rig>` (e.g. `move=testOfStrength&att=thesz-procreate-v1&def=george-roster-v1`).
+- **Not committed, on disk only:** research captures under `research/animation/` (~1,100 files), `Roster Base Masters/` (art source).
+- **Still from earlier:** G10+G11 page (ten light strikes) awaits Derek; chop approved; `light` promoted (677b6345). T6.4 drop toe hold not built. Opus reviews before any push.
 - **Parked:** finishers, gait Stage 3, get-ups Stage 5, George transfer G10a, figure-four, support-hand plant. Promoted flags: `risefix`, `sellart`, `aftermath`, `getups`, `grapples`, `falls`, `scale`, `light` (`?light=off` is the old game). Opt-in: `waistlock=v1`, `gait=v2`, `plant=1`.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-21 · Codex · [Test of strength: actual-preview ending and stronger shove](AI_HANDOFF_ENTRIES/2026-11-21-codex-strength-ending-preview.md)
+
+- 2026-11-21 · Codex · [Test of strength: arm depth, shove and stagger](AI_HANDOFF_ENTRIES/2026-11-21-codex-strength-arm-depth-shove.md)
+
+- 2026-11-21 · Codex · [Test of strength: face clear, contact and body language](AI_HANDOFF_ENTRIES/2026-11-21-codex-strength-face-contact-sell.md)
+
+- 2026-11-21 · Codex · [Test of strength: slower contest and palm grip](AI_HANDOFF_ENTRIES/2026-11-21-codex-strength-slower-palm-grip.md)
+
+- 2026-11-21 · Codex · [Flying mare: larger, consistently visible receiver free arm](AI_HANDOFF_ENTRIES/2026-11-21-codex-flying-mare-george-free-arm.md)
+
+- 2026-11-20 · Codex · [Flying mare: back arm behind both bodies, same position](AI_HANDOFF_ENTRIES/2026-11-20-codex-flying-mare-back-arm-depth.md)
+
+- 2026-11-20 · Codex · [Flying mare: restore arm route and switch to base arms during rise](AI_HANDOFF_ENTRIES/2026-11-20-codex-flying-mare-restore-arm-route.md)
+
+- 2026-11-20 · Codex · [Flying mare: larger visible arm, doubled hold, two retreat steps](AI_HANDOFF_ENTRIES/2026-11-20-codex-flying-mare-arm-hold-retreat.md)
+
+- 2026-11-19 · Codex · [Flying mare: arm silhouette, knee brace and sustained pain](AI_HANDOFF_ENTRIES/2026-11-19-codex-flying-mare-knee-pain.md)
+
+- 2026-11-19 · Codex · [Flying mare: visible back-hand shoulder clamp](AI_HANDOFF_ENTRIES/2026-11-19-codex-flying-mare-shoulder-clamp.md)
+
+- 2026-11-19 · Codex · [Flying mare: snappier throw into seated armlock](AI_HANDOFF_ENTRIES/2026-11-19-codex-flying-mare-seated-armlock.md)
+
+- 2026-11-19 · Codex · [Headlock takeover: loaded break, recoil and catch step](AI_HANDOFF_ENTRIES/2026-11-19-codex-headlock-hard-break.md)
+
+- 2026-11-19 · Codex · [Headlock takeover: combined head grab and turn-out escape](AI_HANDOFF_ENTRIES/2026-11-19-codex-headlock-entry-and-turnout.md)
+
+- 2026-11-19 · Codex · [Headlock takeover: mutual shove and supported rise](AI_HANDOFF_ENTRIES/2026-11-19-codex-headlock-mutual-pushoff.md)
+
+- 2026-11-19 · Codex · [Headlock takeover: extended bottom hold and opened legs](AI_HANDOFF_ENTRIES/2026-11-19-codex-headlock-bottom-hold.md)
+
+- 2026-11-19 · Codex · [Headlock takeover: receiver resistance and impact sell](AI_HANDOFF_ENTRIES/2026-11-19-codex-headlock-receiver-sell.md)
+
+- 2026-11-18 · Codex · [Headlock takeover: FK bend and mat separation measurements (awaiting Derek)](AI_HANDOFF_ENTRIES/2026-11-18-codex-headlock-fk-refinement.md)
+
+- 2026-11-16 · Codex · [Headlock takeover: new wrap art and retained head control (awaiting Derek)](AI_HANDOFF_ENTRIES/2026-11-16-codex-headlock-wrap-takeover.md)
+
+- 2026-11-16 · Codex · [Wristlock: existing grip swap, back arm behind torso (awaiting Derek)](AI_HANDOFF_ENTRIES/2026-11-16-codex-wristlock-grip-swap.md)
+
+- 2026-11-16 · Codex · [Wristlock: cradle arm depth and sustained pain face (awaiting Derek)](AI_HANDOFF_ENTRIES/2026-11-16-codex-wristlock-cradle-depth-pain.md)
+
+- 2026-11-16 · Codex · [Wristlock: backward steps and wrist cradle (awaiting Derek)](AI_HANDOFF_ENTRIES/2026-11-16-codex-wristlock-retreat-cradle.md)
+
+- 2026-11-16 · Codex · [Wristlock: Guido final wrench and receiver pain (awaiting Derek)](AI_HANDOFF_ENTRIES/2026-11-16-codex-wristlock-final-wrench.md)
+
+- 2026-11-16 · Codex · [Wristlock: receiver resistance and braced legs (awaiting Derek)](AI_HANDOFF_ENTRIES/2026-11-16-codex-wristlock-resistance.md)
 
 - 2026-11-15 · Claude · [Hammerlock: elbow down, arm cranked up the back](AI_HANDOFF_ENTRIES/2026-11-15-claude-hammerlock-elbow-down.md)
 - 2026-11-15 · Codex · [Wristlock-to-hammerlock: Lou passes in front (awaiting Derek)](AI_HANDOFF_ENTRIES/2026-11-15-codex-wristlock-front-pass.md)

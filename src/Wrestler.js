@@ -794,7 +794,9 @@ export default class Wrestler {
         if (facingAxis && sample.facing) this.facing = facingAxis * sample.facing;
         if (sample.pose) {
             const pose={...sample.pose};
-            for(const side of ['near','far'])for(const joint of ['Arm','Elbow']){
+            this._clipArmStyle={scale:pose.farArmScale??1};
+            delete pose.farArmScale;
+            for(const side of ['near','far'])for(const joint of ['Arm','Elbow','Leg','Shin']){
                 const key=side+joint;
                 if(pose[key]!==undefined){const channel=this.skeleton.lChannelSide(this.facing)===side?'l':'r';pose[channel+joint]=pose[key];delete pose[key];}
             }
@@ -3576,7 +3578,7 @@ export default class Wrestler {
         if (def.kind === 'solo') return this._doMatSolo(id, def, other);
         const distance = Math.max(20, (other.x - this.x) * this.facing / this.s);
         runtime.register(matMoveClip(id, distance, { attackerRigId: this.rigId, defenderRigId: other.rigId, dy: (other.y - this.y) / this.s }));
-        const standing = def.end.def === 'stagger' || def.escapeStanding === true;
+        const standing = def.end.def === 'stagger' || def.end.def === 'stand' || def.escapeStanding === true;
         this._playPairedThrow(other, id, {
             damage: STAMINA_DRAIN[id], hitEvent: def.hitEvent, shake: def.shake, foley: def.foley ?? null, faceToFace: def.faceToFace,
             tierOf: def.tier ? (wear) => this._throwTier(def.tier, wear) : null,
@@ -3592,7 +3594,8 @@ export default class Wrestler {
             onAbort: standing ? () => { if (other.state === 'holding') other.startStagger(); if (this.state === 'holding') this._standBackUp(); } : null,
             finish: () => {
                 if (other.state === 'holding') {
-                    if (def.end.def === 'stagger') other.startStagger();
+                    if (def.end.def === 'stand') other._standBackUp();
+                    else if (def.end.def === 'stagger') other.startStagger();
                     else if (def.end.def === 'prone') other._layDown(DOWN_SEC + 0.5, 'prone');
                     else other._layOnBack(DOWN_SEC + 0.5);
                 }
@@ -4819,6 +4822,7 @@ export default class Wrestler {
     // ── Drawing ───────────────────────────────────────────────────────────────
 
     draw() {
+        this.skeleton?.setClipArmStyle?.(this._activeMove ? this._clipArmStyle : null);
         this._syncSellAppearance();
         const { x, y, facing, state, skinCol, trunksCol } = this;
         // On ropes, size is locked to the corner's mat depth — climbing up the post

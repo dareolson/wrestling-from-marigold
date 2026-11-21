@@ -130,6 +130,7 @@ test('plants are validated like carry: a leg channel, a real track, and an order
     const errs = (plants) => (validateClip({ ...base, plants }).errors ?? []).filter(e => e.startsWith('plants'));
     assert.deepEqual(errs([{ role: 'a', leg: 'l', in: [0.1, 0.2], out: [0.5, 0.6] }]), []);
     assert.equal(errs([{ role: 'b', leg: 'l', in: [0.1, 0.2], out: [0.5, 0.6] }]).length, 1, 'no such track');
-    assert.equal(errs([{ role: 'a', leg: 'near', in: [0.1, 0.2], out: [0.5, 0.6] }]).length, 1, 'leg is the clip channel, not a depth side');
+    for (const leg of ['near','far']) assert.deepEqual(errs([{ role:'a',leg,in:[.1,.2],out:[.5,.6] }]),[], 'physical-side plants are supported');
+    assert.equal(errs([{ role:'a',leg:'left',in:[.1,.2],out:[.5,.6] }]).length,1,'unsupported leg names are rejected');
     assert.equal(errs([{ role: 'a', leg: 'r', in: [0.3, 0.2], out: [0.5, 0.6] }]).length, 1, 'window out of order');
 });

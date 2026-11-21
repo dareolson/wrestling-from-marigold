@@ -36,3 +36,15 @@ test('faces: at rest George wears his own head clean, then the worn resting head
     f.tick(10000, other);
     assert.equal(w.skeleton.head.key, 'george_face_rest_2');
 });
+
+
+test('authored pain stays visible through selling and releases cleanly without adding damage',()=>{
+    const w=fakeWrestler('george-roster-v1'),other={state:'standing'},f=FaceDriver.for(w);
+    w._damageTaken=8;f.tick(0,other);
+    w.skeleton._partVariantState={head:'pain'};
+    f.tick(4000,other);assert.equal(w.skeleton.head.key,'george_face_pain_0_2');
+    w.skeleton.head.key='george_rv1_head';
+    f.tick(4100,other);assert.equal(w.skeleton.head.key,'george_face_pain_0_2','repairs a body-art head reset even when the face cache has not changed');
+    w.skeleton._partVariantState={head:'base'};
+    f.tick(4200,other);assert.equal(w.skeleton.head.key,'george_rv1_head');assert.equal(w._damageTaken,8);
+});

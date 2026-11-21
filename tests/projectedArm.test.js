@@ -44,3 +44,13 @@ test('clearing a projected variant restores the ordinary forearm immediately',()
  assert.equal(upper._projectedArm,null);
  assert.equal(child.visible,true);
 });
+
+
+test('headlock wrap rotates with the torso while its shoulder stays attached in both facings',()=>{
+ const art=theszProcreateV1.textures.variants.upperArm.headlockWrap.projectedArm;
+ for(const facing of [1,-1]){
+  const img=image(1312,1199,art),child={setVisible(){}},sk={nearUpArm:img,nearForearm:child,torso:{rotation:facing*1.2},jointAttachmentPoints:{nearShoulder:{x:100,y:200}}};
+  Skeleton.prototype._applyProjectedArms.call(sk,1,facing);
+  assert.equal(img.angle,facing*1.2);assert.deepEqual(Skeleton.imageAnchorPoint(img,art.shoulder),{x:100,y:200});
+ }
+});

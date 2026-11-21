@@ -294,6 +294,10 @@ export const theszProcreateV1 = {
                 chopFollow: { key: 'thesz_pv1_forearm_chop_follow', file: 'forearm_chopFollow.png' },
             },
             upperArm: {
+                headlockWrap: { key:'thesz_pv1_headlock_wrap',file:'upper_arm_headlockWrap_v1.png',projectedArm:{
+                    shoulder:{u:340/1312,v:220/1199},elbow:{u:1010/1312,v:595/1199},wrist:{u:595/1312,v:950/1199},
+                    scaleX:0.055,scaleY:0.055,followTorso:true,
+                },semanticAnchors:{headlockCrook:{u:640/1312,v:790/1199}} },
                 chopSweepBack: { key: 'thesz_pv1_chop_sweep_back', file: 'upper_arm_chopSweepBack.png', projectedArm: {
                     shoulder: {u:140/1672,v:225/941}, elbow:{u:590/1672,v:650/941}, wrist:{u:1230/1672,v:580/941},
                     scaleX:.045,scaleY:.045,reverse:true,

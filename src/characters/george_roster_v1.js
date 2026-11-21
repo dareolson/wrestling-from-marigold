@@ -331,6 +331,10 @@ export const georgeRosterV1 = {
             }
         },
         "upperArm": {
+                headlockWrap: { key:'george_rv1_headlock_wrap',file:'upper_arm_headlockWrap_v1.png',projectedArm:{
+                    shoulder:{u:340/1312,v:220/1199},elbow:{u:1010/1312,v:595/1199},wrist:{u:595/1312,v:950/1199},
+                    scaleX:0.049,scaleY:0.049,followTorso:true,
+                },semanticAnchors:{headlockCrook:{u:640/1312,v:790/1199}} },
             "hairReach": {
                 "key": "george_rv1_upper_arm_hair_reach",
                 "file": "upper_arm_hair_reach.png",

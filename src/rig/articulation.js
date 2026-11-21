@@ -89,7 +89,7 @@ export function foldShin(leg, crouch, fold) {
 // A keyed pose with `lFold`/`rFold` (heel fold, radians, >= 0) becomes one with `lShin`/`rShin`; every other key passes through.
 export function shinsFromFolds(pose) {
     const out = { ...pose };
-    for (const side of ['l', 'r']) {
+    for (const side of ['l', 'r', 'near', 'far']) {
         const key = `${side}Fold`;
         if (!(key in out)) continue;
         out[`${side}Shin`] = foldShin(out[`${side}Leg`], out.crouch, out[key]);

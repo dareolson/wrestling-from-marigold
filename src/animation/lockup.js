@@ -303,7 +303,7 @@ export function gripTarget({ partner, joint, side, at, above, fore, past, anchor
         const lu = Math.hypot(E.x - S.x, E.y - S.y), lf = Math.hypot(W.x - E.x, W.y - E.y), back = -(partner.facing ?? 1);
         return { x: S.x + back * (Math.sin(limb.upper) * lu + Math.sin(limb.fore) * lf), y: S.y + Math.cos(limb.upper) * lu + Math.cos(limb.fore) * lf };
     }
-    const painted = anchor && joint === 'Ankle' ? partner.skeleton.partAnchorPoint?.(`${on}Shin`, anchor) : null;
+    const painted = anchor && ['Ankle','Wrist'].includes(joint) ? partner.skeleton.partAnchorPoint?.(`${on}${joint==='Ankle'?'Shin':'Forearm'}`, anchor) : null;
     if (painted) return painted;
     const p = joint === 'Neck' ? pts?.neck : pts?.[`${on}${joint}`];
     // `fore`: down the partner's forearm from the elbow toward his wrist (the point on the drawn forearm, however bent the elbow is)

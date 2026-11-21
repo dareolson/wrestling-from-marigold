@@ -28,6 +28,7 @@ test('it delivers shipped Lou\'s six body parts, plus the audition forearms and 
     assert.deepEqual(extra, ['farForearm.base', 'forearm.collarTie', 'forearm.elbowCup', 'forearm.grip', 'forearm.waistClasp', 'shin.ankleTwist',
         ...['chopWindup','chopContact','chopFollow'].flatMap(name=>['forearm.'+name,'upperArm.'+name]),
         ...['Back','Camera','Contact','Follow'].map(name=>'upperArm.chopSweep'+name),
+        'upperArm.headlockWrap',
     ].sort());
 });
 

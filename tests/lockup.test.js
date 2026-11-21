@@ -20,6 +20,17 @@ test('a clip neck target uses the central neck point for either hand',()=>{
     }
 });
 
+test('wrist grips can target the painted palm, with a wrist fallback for rigs without that anchor', () => {
+    const wrist={x:100,y:50},palm={x:106,y:44},calls=[];
+    const partner={skeleton:{jointAttachmentPoints:{nearWrist:wrist},partAnchorPoint:(part,anchor)=>{calls.push([part,anchor]);return palm;}}};
+    assert.equal(gripTarget({partner,joint:'Wrist',side:'same',anchor:'clutch'},'near'),palm);
+    assert.deepEqual(calls,[['nearForearm','clutch']]);
+    partner.skeleton.partAnchorPoint=()=>null;
+    assert.equal(gripTarget({partner,joint:'Wrist',side:'same',anchor:'clutch'},'near'),wrist);
+    delete partner.skeleton.partAnchorPoint;
+    assert.equal(gripTarget({partner,joint:'Wrist',side:'same',anchor:'clutch'},'near'),wrist);
+});
+
 test('the attacker\'s collar and elbow land before the defender\'s', () => {
     const first = (role, key) => run().find(f => f.grips[role][key] >= 1)?.t;
     const a = [first('attacker', 'collar'), first('attacker', 'elbow')], d = [first('defender', 'collar'), first('defender', 'elbow')];

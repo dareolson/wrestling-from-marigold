@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MAT_MOVES, matMoveClip } from '../src/animation/clips/matMoves.js';
-import { validateClip } from '../src/animation/AnimationClip.js';
+import { validateClip, windowWeight } from '../src/animation/AnimationClip.js';
 import { ROSTER_KITS, lightKit, kitFor } from '../src/characters/rosterKits.js';
 import { MOVE_SPECS, KIT_AI_ODDS } from '../src/moves/registry.js';
 import { PERSONALITIES } from '../src/AIHandler.js';
@@ -115,4 +115,75 @@ test('runtime: a blendFromHand grip takes the arm over, so two grips on one arm 
     const last=lists.at(-1).filter(g=>g.arm==='l');
     assert.equal(last.length,1,'one grip on the worked arm while the swing fades and the crank comes in');
     assert.ok(last[0].limb,'the crank holds it');
+});
+
+test('test of strength rises from knees into a two-hand wristlock and releases standing', () => {
+    const clip=matMoveClip('testOfStrength',100),def=clip.tracks.defender.keyframes;
+    assert.ok(clip.duration>=12);
+    const openingGrips=clip.grips.filter(g=>g.in[0]===.7);
+    assert.equal(openingGrips.length,4);
+    assert.ok(openingGrips.every(g=>windowWeight(g,.95)===1), 'both palm pairs connect as the hands reach the top');
+    assert.ok(def.find(k=>k.at===7).pose.crouch>=1);
+    assert.ok(def.find(k=>k.at===9.65).pose.crouch<.2);
+    assert.ok(def.at(-1).pose.crouch<=.1);
+    assert.equal(MAT_MOVES.testOfStrength.end.def,'stand');
+    const att=clip.tracks.attacker.keyframes;
+    const gap=t=>def.find(k=>k.at===t).transform.x-att.find(k=>k.at===t).transform.x;
+    for(const t of [8.25,8.85]) assert.ok(gap(t)<=gap(1.35), 'close the body spacing during the knee-to-wristlock transfer');
+    assert.ok(def.every(k=>!(Math.abs(k.pose.tilt??0)>.3)), 'no discarded hip toss');
+    const clasp=clip.grips.find(g=>g.role==='attacker'&&g.arm==='far'&&g.to.role==='attacker');
+    assert.equal(clasp.to.joint,'Wrist');
+    assert.equal(clasp.to.side,'other');
+    assert.ok(clasp.in[1]>8&&clasp.out[0]>10);
+    assert.deepEqual(clip.events.map(e=>e.type),['squeeze','squeeze','squeeze','shove']);
+});
+
+
+test('test of strength keeps the receiver face above the back arm and varies the strain between pushes', () => {
+    const clip=matMoveClip('testOfStrength',100),order=clip.layers[0].order;
+    assert.ok(order.findIndex(([r,p])=>r==='defender'&&p==='head')>order.findIndex(([r,p])=>r==='defender'&&p==='farArm'));
+    const index=p=>order.findIndex(([r,q])=>r==='defender'&&q===p);
+    assert.ok(index('farForearm')>index('nativeBody'));
+    assert.ok(index('head')>index('farForearm'));
+    assert.ok(index('nearArm')>index('head'));
+    const wristlock=clip.layers.find(w=>w.from===8.25).order;
+    assert.ok(wristlock.findIndex(([r,p])=>r==='attacker'&&p==='farArm')<wristlock.findIndex(([r,p])=>r==='attacker'&&p==='nativeBody'));
+    assert.ok(!wristlock.some(([r,p])=>r==='attacker'&&p==='farForearm'), 'back forearm stays behind Lou torso instead of appearing as a second front forearm');
+    const poses=clip.tracks.defender.keyframes.filter(k=>k.at>=2.1&&k.at<=7.7).map(k=>k.pose);
+    assert.ok(Math.max(...poses.map(p=>p.bend))-Math.min(...poses.map(p=>p.bend))>.6);
+    assert.ok(poses.some(p=>p.tilt<0)&&poses.some(p=>p.tilt>0));
+});
+
+
+test('test of strength shove sends the receiver back while the attacker holds his ground', () => {
+    const clip=matMoveClip('testOfStrength',100),a=clip.tracks.attacker.keyframes,d=clip.tracks.defender.keyframes;
+    const x=(keys,t)=>keys.find(k=>k.at===t).transform.x;
+    assert.equal(x(a,11.08),x(a,11.2));
+    assert.ok(x(d,11.3)-x(d,11.08)>=35);
+    assert.ok(x(d,12.6)-x(a,12.6)>=280, 'shove resets to distance rather than leaving an immediate follow-up');
+    assert.ok(d.find(k=>k.at===11.3).pose.tilt<-.2);
+    const transfer=clip.grips.find(g=>g.role==='attacker'&&g.arm==='far'&&g.to.role==='attacker');
+    const farHold=clip.grips.find(g=>g.role==='attacker'&&g.arm==='far'&&g.to.role==='defender'&&g.to.joint==='Wrist');
+    for(const t of [7.7,8,8.25,8.6,8.85]) assert.equal(windowWeight(farHold,t),1, 'George far hand stays held as he rises');
+    assert.ok(!clip.grips.some(g=>g.role==='defender'&&g.arm==='far'&&g.out[1]>transfer.in[0]), 'free arm is released only at the deliberate wristlock transfer');
+    const wrist=clip.grips.find(g=>g.role==='attacker'&&g.arm==='near'&&g.to.joint==='Wrist');
+    const shove=clip.events.find(e=>e.type==='shove').at;
+    for(const t of [7.7,8,8.25,8.6,8.85,10.65,10.85,10.95,shove]) {
+        assert.equal(windowWeight(wrist,t),1, 'holding hand stays attached until the shove');
+        assert.equal(clip.grips.filter(g=>g.role==='attacker'&&g.arm==='near'&&windowWeight(g,t)>0).length,1, 'no push target pulls the holding hand off early');
+    }
+});
+
+test('test of strength wristlock has two airborne pain hops with landings', () => {
+    const clip=matMoveClip('testOfStrength',100),keys=clip.tracks.defender.keyframes;
+    const pose=t=>keys.find(k=>k.at===t).pose;
+    for(const t of [9.65,10.3]) {
+        assert.ok(pose(t).lift>=25, 'both feet leave the mat');
+        assert.ok(pose(t).crouch<.1);
+    }
+    for(const t of [9.85,10.5]) {
+        assert.equal(pose(t).lift,0);
+        assert.ok(pose(t).crouch>=.3, 'knees absorb each landing');
+    }
+    assert.ok(!clip.plants.some(p=>p.role==='defender'&&p.in[0]<10.5&&p.out[1]>9.35), 'no foot pin fights the hops');
 });

@@ -350,3 +350,34 @@ test('paired layer stacking keeps both mat shadows below the bodies at different
         for(const a of Object.values(actors))assert.ok(depths.get(a.gfx)<Math.min(...bodyDepths),'shadow remains underneath even when victim shares the attacker layer band');
     }
 });
+
+
+test('wrist cradle keeps the complete back arm behind the torso',()=>{
+    const source=matMoveClip('wristlock');
+    for(const kind of ['near','swap'])for(const facing of [1,-1]){
+        const a=wrestler(kind,facing),d=wrestler(kind,-facing),runtime=new MoveRuntime();
+        runtime.register(clip({duration:source.duration,layers:source.layers}));runtime.play('layerProbe',{attacker:a,defender:d});
+        frame(runtime,a,d,3.6);
+        const sk=d.skeleton;
+        assert.ok(sk.farUpArm.depth<sk.torso.depth);
+        assert.ok(sk.farForearm.depth<sk.torso.depth);
+        assert.ok(sk.farHand.depth<sk.torso.depth);
+    }
+});
+
+
+test('flying mare keeps the complete shoulder-clamping arm behind both bodies',()=>{
+    const mare=matMoveClip('flyingMare');
+    for(const kind of ['near','swap'])for(const facing of [1,-1]){
+        const a=wrestler(kind,facing),d=wrestler(kind,facing),runtime=new MoveRuntime();
+        runtime.register(clip({duration:mare.duration,layers:mare.layers}));runtime.play('layerProbe',{attacker:a,defender:d});frame(runtime,a,d,1.2);
+        for(const name of ['farUpArm','farForearm','farHand']){
+            assert.ok(a.skeleton[name].depth<a.skeleton.torso.depth);
+            assert.ok(a.skeleton[name].depth<d.skeleton.torso.depth);
+        }
+        assert.deepEqual(limbParts(a,a.skeleton.lChannelSide(facing)==='near'?'rForearm':'lForearm'),[a.skeleton.farForearm,a.skeleton.farHand]);
+        assert.ok(d.skeleton.farUpArm.depth<d.skeleton.torso.depth);
+        assert.ok(d.skeleton.farForearm.depth>d.skeleton.torso.depth,'free forearm stays visible as it reaches across the receiver');
+        assert.ok(d.skeleton.farHand.depth>d.skeleton.torso.depth);
+    }
+});

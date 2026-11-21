@@ -112,3 +112,32 @@ test('carry slide validation rejects invalid rise windows and freezes the author
     const c = clip([{...entry,slide:{along:24,in:[0,.4]}}]).carry[0];
     assert.ok(Object.isFrozen(c.slide) && Object.isFrozen(c.slide.in));
 });
+
+
+test('part contact keeps a neck in a moving painted arm crook without changing limb lengths or pose tilt',()=>{
+    for(const facing of [1,-1])for(const scale of [.6,1.4]){
+        const rt=new MoveRuntime(),carrier=man(300,330,facing,scale),rider=man(340,330,facing,scale);
+        const anchor=()=>({x:carrier.skeleton.jointAttachmentPoints.neck.x+facing*15,y:carrier.skeleton.jointAttachmentPoints.neck.y+20});
+        carrier.skeleton.partAnchorPoint=(part,name)=>{assert.equal(part,'nearUpArm');assert.equal(name,'crook');return anchor()};
+        rt.register(clip([{role:'rider',on:'carrier',frame:'part',part:'nearUpArm',anchor:'crook',joint:'neck',in:[0,.1],out:[.8,.9]}]));
+        const h=rt.play('carryTest',{carrier,rider});
+        for(let i=0;i<40;i++){rt.update(1/60);carrier.draw();rider.draw();rt.afterDraw();if(h.time<.1)continue;const p=rider.skeleton.jointAttachmentPoints.neck,q=anchor();assert.ok(Math.hypot(p.x-q.x,p.y-q.y)<.31);assert.equal(rider.pose.tilt,0);}
+        const count=rider.draws;rt.update(.3);rt.afterDraw();assert.equal(rider.draws,count,'released contact does not redraw');
+    }
+});
+
+test('part contact requires a supported part, anchor and body joint',()=>{
+    const base={id:'part',duration:1,tracks:{a:{keyframes:[{at:0,pose:{}}]},b:{keyframes:[{at:0,pose:{}}]}}};
+    const contact={role:'a',on:'b',frame:'part',part:'nearUpArm',anchor:'crook',joint:'neck',in:[0,.1],out:[.8,.9]};
+    assert.equal(validateClip({...base,carry:[contact]}).ok,true);
+    for(const change of [{part:'missing'},{joint:'head'},{anchor:12}])assert.equal(validateClip({...base,carry:[{...contact,...change}]}).ok,false);
+});
+
+test('part contact crosses a flat lift derivative when leaving a planted pose',()=>{
+    const rt=new MoveRuntime(),carrier=man(100,330,1),rider=man(140,330,1);
+    carrier.skeleton.partAnchorPoint=()=>({x:130,y:280});
+    rider.draw=function(){const lift=this.pose.lift??0,hip={x:this.x,y:this.y-Math.sign(lift)*Math.max(0,Math.abs(lift)-20)};this.skeleton.jointAttachmentPoints={nearHip:{...hip},farHip:{...hip},neck:{x:hip.x,y:hip.y-60}}};rider.draw();
+    rt.register(clip([{role:'rider',on:'carrier',frame:'part',part:'nearUpArm',anchor:'crook',joint:'neck',in:[0,.1],out:[.8,.9]}]));
+    rt.play('carryTest',{carrier,rider});rt.update(.3);carrier.draw();rider.draw();rt.afterDraw();
+    const p=rider.skeleton.jointAttachmentPoints.neck;assert.ok(Math.hypot(p.x-130,p.y-280)<.06);
+});

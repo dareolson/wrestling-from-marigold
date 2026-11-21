@@ -15,6 +15,7 @@ so one fix reaches the whole roster. Sonnet executes; Opus reviews at gates; Der
 - T3.1 df73fb3: run gait behind ?gait=v2 (&runGait=off = Stage 2 run): own stride for 3.6 steps/s, stance .35, lift 32, run hip, rope-turn mirror. Lou/George run steady: cadence 6.44/4.83 -> 3.22, flight 0 -> .20/.21, drift 0, hip at mid-stance -1..-2 -> +2.5/+3.3 px (lowest), rope-turn foot step rel. body 44/57 -> 4.6 px, hip step 1.3/1.8 -> 2.5/3.3 px/frame. Page g3.html (G3).
 - Misses: whip start still flips facing in one frame (foot step 36/50 -> 60/55 px, Stage 4); run stride fits the leg (half stride .45 of leg), so no runSpeed change needed, knob &runSpeed= exists; George hip step 3.3 > 3 px; run end fades params over ~.12 s, Stage 4 checks it.
 - G3 (Derek 2026-10-26): picked option A (stance .35, 3.6 steps/s, run speed 340; flight .30, cadence 3.62 measured). Now the ?gait=v2 run defaults; run knobs still override.
+- GP (Derek 2026-11-21): promoted ahead of Stage 4. gait v2 is default-on, `?gait=off` = old gait (defaultOnFlag; tests via onlyListed). Stage 4 misses (whip flip, George hip 3.3 px, run-end fade) go to polish.
 - G2 (Derek 2026-10-25): picked A/B column D (stride x1.3 + knee .1 + lean .10/.25). Now the ?gait=v2 defaults; URL knobs still override.
 
 ## Rules

@@ -39,12 +39,13 @@ Avoid a large rewrite.
   - Flying mare → seated armlock (Nov 21): 7.15s, back arm 1.15× behind both bodies, receiver free arm 1.15× foreground. [Entry](AI_HANDOFF_ENTRIES/2026-11-21-codex-flying-mare-george-free-arm.md).
   - **Test of strength (Nov 21, Derek: “I think this is good”):** overhead palms at .95s, near contact through knees-to-standing until the shove, far hand held through the rise then wristlock transfer, back-forearm depth, two airborne pain hops, 295-unit final gap, both end standing with George controllable, three 3-damage calls. [Entry](AI_HANDOFF_ENTRIES/2026-11-21-codex-strength-earlier-grip.md).
 - **Shared rig/runtime changes those moves need (in the checkpoint):** per-clip `farArmScale`, `near`/`far` leg/fold/plant channels, carry `part`/`joint` frames, `nearForearm`/`farForearm` layers, painted Wrist grip anchors, authored pain head holds, `end.def: 'stand'`, `followTorso` projected arms. `headlockWrap` arm art (both rigs) is declared and committed but no clip uses it (Derek: no hot-swapped arm).
-- **NEXT (Derek returns):** leapfrog (untouched, needs a real duck from the runner), backward roll, body scissors, backdrop suplex (last three reworked, not judged).
+- **Leapfrog first pass awaiting Derek:** runner duck preserves run/gait, earlier/higher straddle takeoff, landing-timing validation fix, preview widened. 42 focused tests; Lou→George both facings at 4 approach distances: no damage, clean completion/cancel, positive head/hip crossing clearance (tight at short range). [Entry](AI_HANDOFF_ENTRIES/2026-11-21-codex-leapfrog-first-pass.md). Uncommitted.
+- **NEXT:** finish leapfrog with Derek, then backward roll, body scissors, backdrop suplex (last three reworked, not judged).
 - **Open control issues:** with `waistlock=v1`, Lou's go-behind shadows Up/Down + Power (his test of strength and flying mare); AI plays only stretch, scissors and deathlock.
 - **Preview:** `npm run dev`, then `/tools/mat-preview/?move=<key>&att=<rig>&def=<rig>` (e.g. `move=testOfStrength&att=thesz-procreate-v1&def=george-roster-v1`).
 - **Not committed, on disk only:** research captures under `research/animation/` (~1,100 files), `Roster Base Masters/` (art source).
 - **Still from earlier:** G10+G11 page (ten light strikes) awaits Derek; chop approved; `light` promoted (677b6345). T6.4 drop toe hold not built. Opus reviews before any push.
-- **Parked:** finishers, gait Stage 3, get-ups Stage 5, George transfer G10a, figure-four, support-hand plant. Promoted flags: `risefix`, `sellart`, `aftermath`, `getups`, `grapples`, `falls`, `scale`, `light` (`?light=off` is the old game). Opt-in: `waistlock=v1`, `gait=v2`, `plant=1`.
+- **Parked:** finishers, gait Stage 4 (transitions, polish list), get-ups Stage 5, George transfer G10a, figure-four, support-hand plant. Promoted flags: `risefix`, `sellart`, `aftermath`, `getups`, `grapples`, `falls`, `scale`, `light`, `gait` (2026-11-21; `?<flag>=off` is the old game). Opt-in: `waistlock=v1`, `plant=1`.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

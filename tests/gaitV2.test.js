@@ -23,8 +23,11 @@ function walker(search, extra = {}) {
 }
 const OTHER = { x: 900, y: 150, state: 'standing' };
 
-test('config: null without the flag, defaults and URL knobs with it', () => {
-    assert.equal(gaitV2Config(), null);
+test('config: on by default (promoted 2026-11-21), null for ?gait=off / other values / no location; defaults and URL knobs', () => {
+    assert.equal(gaitV2Config(), null, 'no location (node)');
+    assert.ok(withFlag('', gaitV2Config), 'absent = on');
+    assert.ok(withFlag('?scale=off', gaitV2Config), 'other params leave it on');
+    assert.equal(withFlag('?gait=off', gaitV2Config), null);
     assert.equal(withFlag('?gait=v1', gaitV2Config), null);
     const c = withFlag('?gait=v2', gaitV2Config);
     assert.equal(c.leanWalk, GAIT_LEAN.walk); assert.equal(c.leanRun, GAIT_LEAN.run); assert.equal(c.knee, GAIT_V2_DEFAULTS.knee); assert.equal(c.stride, GAIT_V2_DEFAULTS.stride);

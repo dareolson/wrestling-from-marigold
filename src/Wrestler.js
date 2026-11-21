@@ -168,7 +168,8 @@ export const grapplesCandidate = () => defaultOnFlag('grapples', 'v1');
 const riseFixCandidate = () => defaultOnFlag('risefix', '1');
 // Overlays that switch on at the swap (the drunken sway of a worn wrestler) fade in over this instead.
 const RISE_OVERLAY_RAMP_MS = 300;
-// ?gait=v2 (PLAN_GAIT Stage 2), opt-in until Derek promotes it. Off = null, and every v2 branch below is skipped.
+// ?gait=v2 (PLAN_GAIT Stage 2). Promoted to default by Derek 2026-11-21: on unless the URL says `?gait=off` (any value but `v2`
+// turns it off; defaultOnFlag). Off, or Node with no `location`, = null, and every v2 branch below is skipped.
 //   foot lock: the phase advances from travel over the DRAW scale (s * _heightScale), the run has no 0.8, a stop freezes
 //     the phase (feet stay put) and the swing foot is set down where it is (_gaitLift).
 //   lean: `bend` (the torso pitch Skeleton actually draws; `lean` is not drawn). Knobs for the A/B page:
@@ -178,9 +179,8 @@ export const GAIT_LEAN = { walk: 0.10, run: 0.25 };
 export const GAIT_V2_DEFAULTS = { stride: 1.3, knee: 0.1 };
 const GAIT_LEAN_ACCEL = 0.06; // at most this much extra into a start / back on a brake
 export function gaitV2Config() {
-    if (typeof location === 'undefined') return null;
+    if (!defaultOnFlag('gait', 'v2')) return null;
     const q = new URLSearchParams(location.search);
-    if (q.get('gait') !== 'v2') return null;
     const num = (name, d) => { const v = parseFloat(q.get(name)); return Number.isFinite(v) ? v : d; };
     const stride = num('gaitStride', GAIT_V2_DEFAULTS.stride);
     const params = { STRIDE: GAIT.STRIDE * stride, STANCE: GAIT.STANCE, LIFT: GAIT.LIFT };

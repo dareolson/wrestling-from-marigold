@@ -31,13 +31,14 @@ const INSTALL = ({ ai }) => {
     let a0 = 0x5eed1234;
     Math.random = () => { a0 = (a0 + 0x6D2B79F5) | 0; let t = Math.imul(a0 ^ (a0 >>> 15), 1 | a0); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
     // capture each rope graphic's polygons per frame
+    window.__seq = 0;
     const wrap = (g) => {
         const fp = g.fillPoints.bind(g), cl = g.clear.bind(g);
         g.__calls = [];
-        g.fillPoints = (pts, ...r) => { g.__calls.push(pts.map(p => ({ x: p.x, y: p.y }))); return fp(pts, ...r); };
+        g.fillPoints = (pts, ...r) => { const c = pts.map(p => ({ x: p.x, y: p.y })); c.seq = ++window.__seq; g.__calls.push(c); return fp(pts, ...r); };
         g.clear = () => { g.__calls = []; return cl(); };
     };
-    [...sc.nearRopeBands, sc.farRopeGfx, ...sc.sideRopeBands].forEach(wrap);
+    [...sc.nearRopeBands, sc.farRopeGfx, ...sc.sideRopeBands, ...(sc.sideRopeSplit ?? [])].forEach(wrap);
     const cv = document.createElement('canvas'); cv.width = 1920; cv.height = 1200;
     const names = (w) => { const sk = w.skeleton, out = []; for (const [k, v] of Object.entries(sk)) { const i = sk._parts.indexOf(v); if (i >= 0 && !out[i]) out[i] = k; } return out.map((n, i) => n ?? `part${i}`); };
     window.__probe = { cv, cx: cv.getContext('2d', { willReadFrequently: true }), inkCache: new Map(), alphaCv: document.createElement('canvas'), names: { 1: names(sc.w1), 2: names(sc.w2) }, snaps: [] };
@@ -58,10 +59,20 @@ const MEASURE = ({ cells }) => {
     const paint = (id, band, pts) => { cx.fillStyle = `rgb(${id * 16},${(band + 1) * 8},0)`; poly(pts); };
     sc.nearRopeBands.forEach((g, i) => { for (let ri = 0; ri < 3; ri++) { const c = g.__calls[3 * ri + 1]; if (c) paint(1 + ri, i, c); } });
     { const c = sc.farRopeGfx.__calls; for (let ri = 0; ri < 3; ri++) if (c[3 * ri + 1]) paint(4 + ri, -1, c[3 * ri + 1]); }
-    sc.sideRopeBands.forEach((g, i) => { for (let ri = 0; ri < 3; ri++) for (const [k, wall] of [[0, 'L'], [1, 'R']]) {
-        const c = g.__calls[3 * (ri * 2 + k) + 1]; if (!c) continue;
-        paint((wall === 'L' ? 7 : 10) + ri, i, c);
-        sideGeom[wall][ri][i] = [{ x: (c[0].x + c[3].x) / 2, y: (c[0].y + c[3].y) / 2 }, { x: (c[1].x + c[2].x) / 2, y: (c[1].y + c[2].y) / 2 }];
+    const sideQuad = (wall, ri, seg, c, depth, t0, t1) => {
+        paint((wall === 'L' ? 7 : 10) + ri, seg, c);
+        sideGeom[wall][ri][seg] = { c0: { x: (c[0].x + c[3].x) / 2, y: (c[0].y + c[3].y) / 2 }, c1: { x: (c[1].x + c[2].x) / 2, y: (c[1].y + c[2].y) / 2 }, depth, t0, t1 };
+    };
+    const planDbg = sc.sideRopeSplit ? sc._splitDebug : null;
+    if (planDbg) {   // ?ropes=v1: the pieces were drawn in segment order per (rope, dir) across the split graphics; the call sequence number puts them back in order
+        const all = sc.sideRopeSplit.flatMap(g => g.__calls.map(c => ({ c, g }))).sort((p, q) => p.c.seq - q.c.seq), nseg = planDbg.ts.length - 1;
+        all.forEach(({ c, g }, idx) => {
+            if (idx % 3 !== 1) return;
+            const n = Math.floor(idx / 3), si = Math.floor(n / nseg), seg = n % nseg;
+            sideQuad(si % 2 === 0 ? 'L' : 'R', Math.floor(si / 2), seg, c, g.depth, planDbg.ts[seg], planDbg.ts[seg + 1]);
+        });
+    } else sc.sideRopeBands.forEach((g, i) => { for (let ri = 0; ri < 3; ri++) for (const [k, wall] of [[0, 'L'], [1, 'R']]) {
+        const c = g.__calls[3 * (ri * 2 + k) + 1]; if (c) sideQuad(wall, ri, i, c, g.depth, i / sc.sideRopeBands.length, (i + 1) / sc.sideRopeBands.length);
     } });
     const sp = sc._sidePtsDebug;
     const nBands = sc.sideRopeBands.length;
@@ -90,7 +101,7 @@ const MEASURE = ({ cells }) => {
         for (const v of vis) { x0 = Math.min(x0, v.b.left); y0 = Math.min(y0, v.b.top); x1 = Math.max(x1, v.b.right); y1 = Math.max(y1, v.b.bottom); }
         const rx0 = Math.max(0, Math.floor(x0) - 2), ry0 = Math.max(0, Math.floor(y0) - 2), rx1 = Math.min(960, Math.ceil(x1) + 2), ry1 = Math.min(600, Math.ceil(y1) + 2);
         const rw = rx1 - rx0, rh = ry1 - ry0;
-        const rec = { who: n, rig: w.rigId, x: +w.x.toFixed(1), y: +w.y.toFixed(1), gy, st: w.state, mv: w._activeMove?.clip?.id ?? null, onRopes, inside, cross: 0, crossWall: {}, wrong: 0, wrongTally: {}, penPx: 0, penTally: {}, wrongCells: [], penCells: [] };
+        const rec = { who: n, fd: +(12 + gy * 0.03).toFixed(4), gd: +w.gfx.depth.toFixed(4), pd: +w.skeleton.torso.depth.toFixed(4), cuts: sc._splitDebug?.cuts?.map(c => [+c.t.toFixed(3), +c.depth.toFixed(3), +c.low.toFixed(3)]), rig: w.rigId, x: +w.x.toFixed(1), y: +w.y.toFixed(1), gy, st: w.state, mv: w._activeMove?.clip?.id ?? null, onRopes, inside, cross: 0, crossWall: {}, wrong: 0, wrongTally: {}, penPx: 0, penOver: 0, overCells: [], penTally: {}, wrongCells: [], penCells: [] };
         if (rw <= 0 || rh <= 0) { out.push(rec); continue; }
         const mask = cx.getImageData(rx0 * 2, ry0 * 2, rw * 2, rh * 2).data;
         const seen = new Set(), seenPen = new Set();
@@ -113,12 +124,15 @@ const MEASURE = ({ cells }) => {
             for (let q = 0; q < ink.xs.length; q++) {
                 const px = (fx ? rwid - (ink.xs[q] + 0.5 + ox0) : ink.xs[q] + 0.5 + ox0) - ox, py = (fy ? rhei - (ink.ys[q] + 0.5 + oy0) : ink.ys[q] + 0.5 + oy0) - oy;
                 const X = m.a * px + m.c * py + m.tx, Y = m.b * px + m.d * py + m.ty;
+                let hereS = null, hereDepth = 0;
                 const mx = Math.floor(X * 2) - rx0 * 2, my = Math.floor(Y * 2) - ry0 * 2;
                 if (mx >= 0 && my >= 0 && mx < rw * 2 && my < rh * 2) {
                     const o = (my * rw * 2 + mx) * 4;
+                    hereS = null;
                     if (mask[o + 3] >= 128) {
                         const id = Math.round(mask[o] / 16), band = Math.round(mask[o + 1] / 8) - 1, S = window.__STRANDS[id];
-                        const okBand = S && (S.wall === 'far' ? true : S.wall === 'near' ? !!sc.nearRopeBands[band] : !!sideGeom[S.wall][S.ri][band]);   // a pixel blended from two strands at a crossing decodes to nothing real: skipped
+                        const okBand = S && (S.wall === 'far' ? true : S.wall === 'near' ? !!sc.nearRopeBands[band] : !!sideGeom[S.wall][S.ri][band]);
+                        hereS = okBand ? S : null; hereDepth = okBand && S.wall !== 'near' && S.wall !== 'far' ? sideGeom[S.wall][S.ri][band].depth : 0;   // a pixel blended from two strands at a crossing decodes to nothing real: skipped
                         if (okBand) {
                             const cell = ((Math.floor(Y) * 1000 + Math.floor(X)) * 64 + i) * 16 + id;
                             if (!seen.has(cell)) {
@@ -127,9 +141,9 @@ const MEASURE = ({ cells }) => {
                                 if (S.wall === 'near') { sGround = RING.nearLeft.y; sDepth = sc.nearRopeBands[band].depth; }
                                 else if (S.wall === 'far') { sGround = RING.farLeft.y; sDepth = sc.farRopeGfx.depth; }
                                 else {
-                                    const [c0, c1] = sideGeom[S.wall][S.ri][band], dx = c1.x - c0.x, dy = c1.y - c0.y;
+                                    const G = sideGeom[S.wall][S.ri][band], c0 = G.c0, c1 = G.c1, dx = c1.x - c0.x, dy = c1.y - c0.y;
                                     const fr = Math.min(1, Math.max(0, ((X - c0.x) * dx + (Y - c0.y) * dy) / (dx * dx + dy * dy || 1)));
-                                    sGround = RING.nearLeft.y + (RING.farLeft.y - RING.nearLeft.y) * ((band + fr) / nBands); sDepth = sc.sideRopeBands[band].depth;
+                                    sGround = RING.nearLeft.y + (RING.farLeft.y - RING.nearLeft.y) * (G.t0 + fr * (G.t1 - G.t0)); sDepth = G.depth;
                                 }
                                 const shouldFront = sGround > gy + 0.5, shouldBehind = sGround < gy - 0.5;
                                 const drawnFront = sDepth > pdepth;
@@ -148,6 +162,7 @@ const MEASURE = ({ cells }) => {
                     const cell = ((Math.floor(Y) * 1000 + Math.floor(X)) * 64 + i) * 16 + (p.dir < 0 ? 7 : 10) + p.ri;
                     if (seenPen.has(cell)) continue;
                     seenPen.add(cell); rec.penPx++;
+                    if (hereS && hereDepth && hereDepth < pdepth) { rec.penOver++; if (cells && rec.overCells.length < 400) rec.overCells.push([+X.toFixed(1), +Y.toFixed(1)]); }
                     const key = `${p.wall}${p.ri}|${pname}`; const e = rec.penTally[key] ??= { px: 0, past: 0 };
                     e.px++; e.past = Math.max(e.past, Math.abs(X - p.px));
                     if (cells && rec.penCells.length < 400) rec.penCells.push([+X.toFixed(1), +Y.toFixed(1)]);
@@ -243,12 +258,12 @@ const BATCH = ({ n, thrW, thrP }) => {
         const r = window.__ONE({ cells: true });
         const keep = [];
         for (const rec of r.recs) {
-            const slim = { ...rec, wrongCells: undefined, penCells: undefined };
+            const slim = { ...rec, wrongCells: undefined, penCells: undefined, overCells: undefined };
             if (rec.cross > 0 || rec.penPx > 0) out.push(slim);
-            if (rec.wrong >= thrW || (rec.penPx >= thrP && rec.inside && !['climbing', 'onTurnbuckle'].includes(rec.st))) keep.push(rec);
+            if (rec.wrong >= thrW || (rec.penOver >= thrP && rec.inside && !['climbing', 'onTurnbuckle'].includes(rec.st))) keep.push(rec);
         }
         if (keep.length) {
-            const wrong = Math.max(0, ...keep.map(k => k.wrong)), pen = Math.max(0, ...keep.map(k => k.penPx));
+            const wrong = Math.max(0, ...keep.map(k => k.wrong)), pen = Math.max(0, ...keep.map(k => k.penOver));
             // a PNG straight after the step, while the drawing buffer is still the frame just rendered
             snaps.push({ f: window.__run.f, wrong, pen, png: window.__WFM_GAME.canvas.toDataURL('image/png'), scr: r.scr, recs: keep });
             snaps.sort((p, q) => Math.max(q.wrong, q.pen) - Math.max(p.wrong, p.pen)); snaps.length = Math.min(snaps.length, 4);
@@ -292,7 +307,7 @@ const runOne = async (page, cfg, label) => {
 const RING = { nearLeft: { x: 40, y: 445 }, nearRight: { x: 920, y: 445 }, farLeft: { x: 210, y: 258 }, farRight: { x: 750, y: 258 }, ropes: [{ nearY: 380, farY: 218 }, { nearY: 316, farY: 181 }, { nearY: 251, farY: 142 }] };
 
 const launchWith = async (p1, p2, ai) => {
-    process.env.WFM_P1 = p1; process.env.WFM_P2 = p2; process.env.WFM_QS = 'notitle=1'; process.env.WFM_INIT_SCRIPT = new URL('./no_hmr_init.js', import.meta.url).pathname;
+    process.env.WFM_P1 = p1; process.env.WFM_P2 = p2; process.env.WFM_QS = 'notitle=1' + (process.env.ROPES === 'v1' ? '&ropes=v1' : '') + (process.env.PAST === '1' ? '&ropesPast=1' : ''); process.env.WFM_INIT_SCRIPT = new URL('./no_hmr_init.js', import.meta.url).pathname;
     const h = await launch();
     await h.page.waitForFunction(() => window.__WFM_GAME?.scene?.scenes?.[0]?.w2, null, { timeout: 60000 });
     await h.page.waitForTimeout(1500);
@@ -310,11 +325,12 @@ if (process.argv.includes('--profile')) {
     const r = await h.page.evaluate(() => {
         window.__run = null; return 0;
     });
-    await h.page.evaluate(INIT, { kind: 'walkFar' });
+    await h.page.evaluate(INIT, { kind: 'move', move: 'wristlockHammerlock', wall: 'R' });
     const t = await h.page.evaluate(() => {
-        const g = window.__WFM_GAME; let a = 0, m = 0, last;
-        for (let i = 0; i < 40; i++) { window.__run.script(); window.__T += 1000 / 60; let t0 = performance.now(); g.step(window.__T, 1000 / 60); a += performance.now() - t0; t0 = performance.now(); last = window.__MEASURE({ cells: false }); m += performance.now() - t0; }
-        return { step: a / 40, measure: m / 40, last: last.map(r => ({ who: r.who, cross: r.cross, wrong: r.wrong, x: r.x, y: r.y, st: r.st, region: r.region, inside: r.inside })) };
+        const g = window.__WFM_GAME, sc = g.scene.scenes[0], out = [];
+        for (let i = 0; i < 400; i++) { window.__run.script(); window.__T += 1000 / 60; g.step(window.__T, 1000 / 60);
+            const w = window.__MEASURE({ cells: false }); if (w.some(r => r.wrong > 0) && out.length < 3 && i > 5) out.push({ i, men: [sc.w1, sc.w2].map(m => ({ y: m.y, x: m.x, st: m.state, formula: 12 + m.y * 0.03, gfx: m.gfx.depth, torso: m.skeleton.torso.depth })), plan: sc._splitDebug && { ts: sc._splitDebug.ts.map(v => +v.toFixed(3)), group: sc._splitDebug.group, depths: sc._splitDebug.depths, cuts: sc._splitDebug.cuts }, w: w.map(r => [r.who, r.wrong, r.gy, JSON.stringify(r.wrongTally).slice(0, 150)]) }); }
+        return out;
     });
     console.log(JSON.stringify(t));
     await h.close(); process.exit(0);
@@ -381,11 +397,12 @@ summary.penByRun = tally(penRows, r => [[r.run.split(':').slice(0, 1)[0] === 'c'
 summary.penByState = tally(penRows, r => [[r.mv ? `move:${r.mv}` : `state:${r.st}`, r.penPx, fk(r)]]);
 summary.penByPart = tally(penRows, r => Object.entries(r.penTally).map(([k, v]) => [k.split('|')[1], v.px, fk(r)]));
 summary.penByStrand = tally(penRows, r => Object.entries(r.penTally).map(([k, v]) => [k.split('|')[0], v.px, fk(r)]));
+summary.penOverManFrames = penRows.filter(r => r.penOver > 0).length; summary.penOverPx = penRows.reduce((a, r) => a + r.penOver, 0); summary.penOverMax = Math.max(0, ...penRows.map(r => r.penOver));
 summary.penMaxPast = Math.max(0, ...penRows.flatMap(r => Object.values(r.penTally).map(v => v.past)));
 const perRun = results.map(r => ({ run: r.label, frames: r.frames, wrongFrames: r.recs.filter(x => x.wrong > 0).length, maxWrongPx: Math.max(0, ...r.recs.map(x => x.wrong)), penFrames: r.recs.filter(x => x.penPx > 0 && x.inside && !['climbing', 'onTurnbuckle'].includes(x.st)).length, maxPenPx: Math.max(0, ...r.recs.map(x => x.penPx)) }));
 writeFileSync(join(outDir, 'probe.json'), JSON.stringify({ made: new Date().toISOString(), sec: SEC, summary, perRun, pools: { wrong: pools.wrong, pen: pools.pen }, film, recs: all }, null, 1));
 const show = (t, rows) => { console.log(`\n${t}`); console.table(rows.slice(0, 14)); };
-console.log(`\n[ropes] man-frames ${summary.totalManFrames}, with a strand crossing ${summary.crossingManFrames}, wrong-order ${summary.wrongManFrames}, penetrating ${summary.penetrationManFrames} (max past plane ${summary.penMaxPast.toFixed(1)} px)`);
+console.log(`\n[ropes] man-frames ${summary.totalManFrames}, with a strand crossing ${summary.crossingManFrames}, wrong-order ${summary.wrongManFrames}, penetrating ${summary.penetrationManFrames} (of which ink past the plane drawn OVER a side strand: ${summary.penOverManFrames} man-frames, max ${summary.penOverMax} px) (max past plane ${summary.penMaxPast.toFixed(1)} px)`);
 console.log("crossing px by wall", JSON.stringify(summary.crossingPxByWall)); show("wrong-order by wall", summary.wrongByWall); show('by strand (wall+rope index 0 bottom..2 top)', summary.wrongByStrand); show('by ring region', summary.wrongByRegionAll);
 show('by part', summary.wrongByPart); show('by state / move', summary.wrongByState); show('by drawn order', summary.wrongByOrder);
 show('penetration by run', summary.penByRun); show('penetration by state/move', summary.penByState); show('penetration by part', summary.penByPart); show('per run', perRun.filter(r => r.wrongFrames || r.penFrames));

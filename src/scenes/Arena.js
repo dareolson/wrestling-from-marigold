@@ -1,4 +1,6 @@
-import { W, H, RING, ringBoundsAtY, scaleDebugCandidate } from '../constants.js';
+import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate } from '../constants.js';
+import { splitPlan, pastPlane, pastPartDepth } from '../animation/ropeSplit.js';
+import { partInkX } from '../ropeInk.js';
 import ScaleDebug from '../scaleDebug.js';
 import Wrestler, { lightCandidate, grapplesCandidate, waistlockCandidate, POSES } from '../Wrestler.js';
 import InputHandler from '../InputHandler.js';
@@ -2198,6 +2200,8 @@ export default class Arena extends Phaser.Scene {
             g._baseDepth = 12 + groundY * 0.03;
             this.sideRopeBands.push(g);
         }
+        // ?ropes=v1 (PLAN_ROPES T1.1): the side strands are drawn in pieces cut at each wrestler's depth (splitPlan), up to one more piece than there are men.
+        if (ropesCandidate()) this.sideRopeSplit = [0, 1, 2].map(() => this.add.graphics().setDepth(26));
     }
 
     // Wrestlers close enough to a rope wall press into it: 0 press at 34px
@@ -2255,6 +2259,7 @@ export default class Arena extends Phaser.Scene {
         farG.clear();
         for (const b of this.nearRopeBands) b.clear();
         for (const b of this.sideRopeBands) b.clear();
+        for (const b of this.sideRopeSplit ?? []) b.clear();
         if (this.ropeShadowGfx) this.ropeShadowGfx.clear();
 
         const ns = this.nearRopeSag.val;
@@ -2337,7 +2342,7 @@ export default class Arena extends Phaser.Scene {
         // per band, pts.length === bands.length + 1. Edges are computed once
         // over the whole span so adjacent bands share exact vertices: no
         // cracks between graphics.
-        const fillRibbonBands = (bands, pts, hw, color, alpha, hlColor, hlAlpha) => {
+        const fillRibbonBands = (bands, pts, hw, color, alpha, hlColor, hlAlpha, bandOf = (i) => i) => {
             const core  = ribbonEdges(pts, hw);
             const halo  = ribbonEdges(pts, hw.map(v => v + AA));
             const inner = ribbonEdges(pts, hw.map(v => v - Math.max(0.7, v * 0.55)));
@@ -2345,8 +2350,8 @@ export default class Arena extends Phaser.Scene {
             const useTop = core.top[mid].y < core.bot[mid].y;
             const hlO = useTop ? core.top  : core.bot;
             const hlI = useTop ? inner.top : inner.bot;
-            for (let i = 0; i < bands.length; i++) {
-                const g = bands[i];
+            for (let i = 0; i < pts.length - 1; i++) {
+                const g = bands[bandOf(i)];
                 g.fillStyle(color, alpha * 0.3);
                 g.fillPoints([halo.top[i], halo.top[i + 1], halo.bot[i + 1], halo.bot[i]], true);
                 g.fillStyle(color, alpha);
@@ -2387,6 +2392,31 @@ export default class Arena extends Phaser.Scene {
         const nearPtsByRi = [], nearRefByRi = [];
         const farPtsByRi = [], farRefByRi = [];
         const sidePtsByRi = [], sideRefByRi = [];
+        // ?ropes=v1: where each side strand is cut this frame, one cut per wrestler at his ground depth (his corner's mat row while he is on the ropes).
+        const splitMen = this.sideRopeSplit ? [this.w1, this.w2].filter(Boolean).map(w => {
+            const gy = w._onRopes() ? w._corner.matY : w.y;
+            let hi = -Infinity, lo = Infinity;
+            for (const im of w.skeleton._parts) if (im?.visible) { hi = Math.max(hi, im.depth); lo = Math.min(lo, im.depth); }
+            const base = 12 + gy * 0.03;
+            return { t: (RING.nearLeft.y - gy) / (RING.nearLeft.y - RING.farLeft.y), depth: Math.max(base, hi), low: Math.min(base, lo) };   // cut at his ground t; clear every part he draws
+        }) : null;
+        const plan = splitMen ? splitPlan(splitMen, BANDS) : null;
+        // T1.3 (`?ropesPast=1`): a part whose ink reaches past a side plane is outside the ring: it draws under the pieces behind its man, so the strand passes between it and the rest of him.
+        if (plan && ropesPastCandidate()) {
+            const men = [this.w1, this.w2].filter(Boolean);
+            men.forEach((w, mi) => {
+                const gy = w._onRopes() ? w._corner.matY : w.y, b = ringBoundsAtY(gy);
+                if (Math.min(w.x - b.left, b.right - w.x) > 110 * w.s) return;   // far from both walls: skip the per-part work
+                const d = pastPartDepth(plan, mi);
+                for (const im of w.skeleton._parts) {
+                    if (!im?.visible) continue;
+                    const ink = partInkX(im);
+                    if (ink && pastPlane(ink.minX, ink.maxX, b)) im.setDepth(Math.min(im.depth, d));
+                }
+            });
+        }
+        if (plan) this._splitDebug = plan;   // read by tools/debug/rope_order_probe.mjs only
+        if (plan) this.sideRopeSplit.forEach((g, k) => g.setDepth(plan.depths[k] ?? 26));
 
         ropes.forEach((rope, ri) => {
             const rest = REST_SAG[ri] ?? 4;
@@ -2445,7 +2475,10 @@ export default class Arena extends Phaser.Scene {
                 }
                 sidePtsByRi[ri][dir] = pts;
                 sideRefByRi[ri][dir] = ref;
-                fillRibbonBands(this.sideRopeBands, pts, hw, 0x36362f, 0.85, 0x82827a, 0.75);
+                if (plan) {
+                    const sp = plan.ts.map(t => sidePoint(nearP, farP, rope, dir, t, sideRest, warpX));
+                    fillRibbonBands(this.sideRopeSplit, sp, plan.ts.map(t => (3.0 - 1.2 * t) / 2), 0x36362f, 0.85, 0x82827a, 0.75, i => plan.group[i]);
+                } else fillRibbonBands(this.sideRopeBands, pts, hw, 0x36362f, 0.85, 0x82827a, 0.75);
             }
         });
 
@@ -2536,7 +2569,7 @@ export default class Arena extends Phaser.Scene {
         // behind them from the camera, pressed or not. Re-sorting them behind
         // a pressing body (the old behaviour) made him read as standing
         // through the ropes (Derek, 2026-10-08). The bend shows the contact.
-        for (let i = 0; i < BANDS; i++) {
+        for (let i = 0; i < BANDS && !plan; i++) {
             const g = this.sideRopeBands[i];
             const tMid = (i + 0.5) / BANDS;
             let d = g._baseDepth;

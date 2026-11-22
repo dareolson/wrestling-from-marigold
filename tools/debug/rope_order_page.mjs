@@ -3,10 +3,14 @@
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-const dir = process.argv[2] ?? 'research/ropes-2026-11/r0';
+//   node tools/debug/rope_order_page.mjs <dir> [label] [offDir]   label = the flags this run used; offDir = a flag-off probe dir to compare against (before | after per run kind)
+const dir = process.argv[2] ?? 'research/ropes-2026-11/r0', LABEL = process.argv[3] ?? 'no flag (the game as it is)', VS = process.argv[4];
 const P = JSON.parse(readFileSync(join(dir, 'probe.json'), 'utf8'));
 const esc = (s) => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 const table = (rows, cols) => rows.length ? `<table><tr>${cols.map(c => `<th>${esc(c[1])}</th>`).join('')}</tr>${rows.map(r => `<tr>${cols.map(c => `<td>${esc(r[c[0]])}</td>`).join('')}</tr>`).join('')}</table>` : '<p class="dim">none</p>';
+const kinds = (Q) => { const o = {}; for (const r of Q.recs) { const K = r.run.split(':')[0]; const e = o[K] ??= { wrong: 0, wrongPx: 0, maxWrong: 0, pen: 0, over: 0, overPx: 0 }; if (r.wrong > 0) { e.wrong++; e.wrongPx += r.wrong; e.maxWrong = Math.max(e.maxWrong, r.wrong); } if (r.penPx > 0 && r.inside && !['climbing', 'onTurnbuckle'].includes(r.st)) { e.pen++; if (r.penOver > 0) { e.over++; e.overPx += r.penOver; } } } return o; };
+const KIND = { a: 'a far-edge walk', b: 'b side-wall walks', c: 'c moves at walls', d: 'd AI soak' };
+const cmp = VS ? (() => { const A = kinds(JSON.parse(readFileSync(join(VS, 'probe.json'), 'utf8'))), B = kinds(P); return `<h2>Before | after, per run kind</h2><p class="dim">Man-frames (px summed over frames). Before = ${esc(VS)} (no flag). The AI soak is not repeatable run to run; a, b, c are scripted.</p>${table(Object.keys(KIND).map(k => ({ run: KIND[k], wrongB: `${A[k]?.wrong ?? 0} (${A[k]?.wrongPx ?? 0} px, max ${A[k]?.maxWrong ?? 0})`, wrongA: `${B[k]?.wrong ?? 0} (${B[k]?.wrongPx ?? 0} px, max ${B[k]?.maxWrong ?? 0})`, overB: `${A[k]?.over ?? 0} (${A[k]?.overPx ?? 0} px)`, overA: `${B[k]?.over ?? 0} (${B[k]?.overPx ?? 0} px)` })), [['run', 'run'], ['wrongB', 'wrong-order before'], ['wrongA', 'wrong-order after'], ['overB', 'ink past plane drawn over a strand, before'], ['overA', 'after']])}`; })() : '';
 const tcols = [['key', 'key'], ['frames', 'man-frames'], ['maxPx', 'max px'], ['sumPx', 'sum px']];
 const S = P.summary;
 
@@ -14,7 +18,7 @@ const caption = (e, kind) => {
     const rows = e.recs.map(r => {
         const w = Object.entries(r.wrongTally ?? {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k.replace(/\|/g, ' · ')}: ${v}px`).join('<br>');
         const p = Object.entries(r.penTally ?? {}).sort((a, b) => b[1].px - a[1].px).map(([k, v]) => `${k.replace('|', ' · ')}: ${v.px}px, ${v.past.toFixed(1)} past the plane`).join('<br>');
-        return `<tr><td>${esc(r.who === 1 ? 'w1' : 'w2')} ${esc(r.rig)}</td><td>x ${r.x}, y ${r.y}${r.onRopes ? ` (ground ${r.gy})` : ''}<br>${esc(r.region)}</td><td>${esc(r.mv ? 'move ' + r.mv : r.st)}</td><td>${kind === 'wrong' ? r.wrong : r.penPx}</td><td>${kind === 'wrong' ? w : p}</td></tr>`;
+        return `<tr><td>${esc(r.who === 1 ? 'w1' : 'w2')} ${esc(r.rig)}</td><td>x ${r.x}, y ${r.y}${r.onRopes ? ` (ground ${r.gy})` : ''}<br>${esc(r.region)}</td><td>${esc(r.mv ? 'move ' + r.mv : r.st)}</td><td>${kind === 'wrong' ? r.wrong : `${r.penOver} drawn over (of ${r.penPx} past the plane)`}</td><td>${kind === 'wrong' ? w : p}</td></tr>`;
     }).join('');
     return `<table class="cap"><tr><th>man</th><th>root</th><th>state</th><th>${kind === 'wrong' ? 'wrong-order px' : 'penetration px'} (this man)</th><th>${kind === 'wrong' ? 'wall+rope · part · drawn order' : 'wall+rope · part'}</th></tr>${rows}</table>`;
 };
@@ -22,7 +26,7 @@ const card = (e, i, kind) => `<section class="card">
   <h3>${kind === 'wrong' ? 'Wrong order' : 'Penetration'} #${i + 1}: ${e.score} px <span class="dim">· run ${esc(e.run)} · game frame ${e.f}</span></h3>
   <div class="pair"><div class="full"><img src="${e.file}" data-i="${kind}${i}" alt=""><svg class="marks" data-i="${kind}${i}"></svg></div><canvas class="zoom" data-i="${kind}${i}"></canvas></div>
   ${caption(e, kind)}
-  <p class="dim">${kind === 'wrong' ? 'red = ink px where the strand is drawn on the wrong side of the part' : 'blue = ink px beyond a side strand\'s plane within 3 px of that strand\'s drawn height'}. Right: 4x crop of the marks.</p>
+  <p class="dim">${kind === 'wrong' ? 'red = ink px where the strand is drawn on the wrong side of the part' : 'blue = ink px past a side strand\'s plane (within 3 px of its height) that sit on the strand and are drawn over it'}. Right: 4x crop of the marks.</p>
 </section>`;
 
 let film = '';
@@ -37,7 +41,7 @@ const runRows = P.perRun.filter(r => r.wrongFrames || r.penFrames).sort((a, b) =
 const wallTotals = Object.entries(S.crossingPxByWall ?? {}).map(([k, v]) => `${k} ${v}`).join(', ');
 
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rope order R0</title>
+<title>Rope order</title>
 <style>
 :root{--bg:#15171c;--fg:#e6e8ee;--dim:#8d93a3;--card:#1e2128;--line:#2e323c;--red:#ff4d4d;--blue:#4da3ff}
 @media (prefers-color-scheme: light){:root{--bg:#f4f5f8;--fg:#1b1e26;--dim:#667085;--card:#fff;--line:#d9dce4}}
@@ -50,20 +54,21 @@ table{border-collapse:collapse;font-size:12px;margin:6px 0}th,td{border:1px soli
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
 .strip img{width:100%;display:block;background:#000}.ctl{display:flex;gap:8px;align-items:center;margin-top:6px}.ctl input{flex:1}
 </style></head><body>
-<h1>Ropes R0: what the game draws today</h1>
-<p class="dim">Measured by tools/debug/rope_order_probe.mjs on the game as it is (no flag, no src change). ${esc(P.made)}. Crossing = a painted pixel of a body part lying on a drawn strand. A crossing is <b>wrong</b> when the strand's drawn depth puts it on the other side of the part from where its ground position says it belongs (strand ground y vs the man's ground y).</p>
+<h1>Ropes: ${esc(LABEL)}</h1>
+<p class="dim">Measured by tools/debug/rope_order_probe.mjs with: ${esc(LABEL)}. ${esc(P.made)}. Crossing = a painted pixel of a body part lying on a drawn strand. A crossing is <b>wrong</b> when the strand's drawn depth puts it on the other side of the part from where its ground position says it belongs (strand ground y vs the man's ground y).</p>
 <div class="card"><b>${S.totalManFrames}</b> man-frames measured (runs a/b/c/d). <b>${S.crossingManFrames}</b> had a strand over/under ink; <b>${S.wrongManFrames}</b> had a wrong-order crossing; <b>${S.penetrationManFrames}</b> had ink past a side-wall plane at a strand's height (max ${S.penMaxPast.toFixed(1)} px past, climbing/turnbuckle excluded).
 <br><span class="dim">Crossing px summed over all frames by wall: ${esc(wallTotals)}. Near and far strands were never wrong-ordered unless listed below; their draw order is fixed.</span></div>
+${cmp}
 <h2>Wrong-order totals</h2>
 <div class="grid"><div><b>by wall</b>${table(sumRows(S.wrongByWall), tcols)}</div><div><b>by strand (L/R/near/far + rope 0 bottom, 2 top)</b>${table(sumRows(S.wrongByStrand), tcols)}</div><div><b>by ring region</b>${table(sumRows(S.wrongByRegionAll), tcols)}</div><div><b>by part</b>${table(sumRows(S.wrongByPart), tcols)}</div><div><b>by state / move</b>${table(sumRows(S.wrongByState), tcols)}</div><div><b>by drawn order</b>${table(sumRows(S.wrongByOrder), tcols)}<p class="dim">strandOver = strand drawn over the part but belongs behind it; strandUnder = drawn under but belongs in front.</p></div></div>
 <h2>Penetration totals</h2>
 <div class="grid"><div><b>by run</b>${table(sumRows(S.penByRun), tcols)}</div><div><b>by state / move</b>${table(sumRows(S.penByState), tcols)}</div><div><b>by part</b>${table(sumRows(S.penByPart), tcols)}</div><div><b>by strand</b>${table(sumRows(S.penByStrand), tcols)}</div></div>
 <h2>Runs with a miss</h2>${table(runRows.slice(0, 30), [['run', 'run'], ['frames', 'frames'], ['wrongFrames', 'wrong-order man-frames'], ['maxWrongPx', 'max wrong px'], ['penFrames', 'penetration man-frames'], ['maxPenPx', 'max pen px']])}
 <h2>Worst ${P.pools.wrong.length} wrong-order frames</h2>${P.pools.wrong.map((e, i) => card(e, i, 'wrong')).join('')}
-<h2>Worst ${P.pools.pen.length} penetrations</h2>${P.pools.pen.map((e, i) => card(e, i, 'pen')).join('')}
+<h2>Worst ${P.pools.pen.length} penetrations (ink past the plane drawn over the strand)</h2>${P.pools.pen.map((e, i) => card(e, i, 'pen')).join('')}
 <h2>Far-edge walk at normal speed</h2>${film || '<p class="dim">no film in this run</p>'}
 <script>
-const POOLS = ${JSON.stringify({ wrong: P.pools.wrong.map(e => ({ scr: e.scr, cells: e.recs.flatMap(r => r.wrongCells ?? []) })), pen: P.pools.pen.map(e => ({ scr: e.scr, cells: e.recs.flatMap(r => r.penCells ?? []) })) })};
+const POOLS = ${JSON.stringify({ wrong: P.pools.wrong.map(e => ({ scr: e.scr, cells: e.recs.flatMap(r => r.wrongCells ?? []) })), pen: P.pools.pen.map(e => ({ scr: e.scr, cells: e.recs.flatMap(r => r.overCells ?? []) })) })};
 const draw = (img) => {
   const [kind, i] = [img.dataset.i.replace(/\\d+$/, ''), +img.dataset.i.replace(/^\\D+/, '')], e = POOLS[kind][i], col = kind === 'wrong' ? '#ff4d4d' : '#4da3ff';
   const nw = img.naturalWidth, nh = img.naturalHeight, k = nw / e.scr.w;

@@ -64,3 +64,41 @@ test('pastPartDepth: under the pieces behind its man, above the next man back', 
     assert.ok(dn < near.low && dn > far.depth);                          // the near man's part: behind him, still in front of the far man
     assert.ok(df < far.low && df > far.low - 0.02);                       // the far man's part: just under him
 });
+
+// T1.4: the press window
+import { pressWindow, PRESS_WINDOW } from '../src/animation/ropeSplit.js';
+test('pressWindow: only a hard press (k >= 0.55) opens the old window', () => {
+    assert.equal(pressWindow(null), null);
+    assert.equal(pressWindow({ t: 0.5, k: 0.54 }), null);
+    assert.deepEqual(pressWindow({ t: 0.5, k: 0.55 }), [0.5 - PRESS_WINDOW, 0.5 + PRESS_WINDOW]);
+});
+test('splitPlan: a pressing man puts every piece inside his window below him, outside is unchanged', () => {
+    const men = [{ t: 0.5, depth: 20, low: 19.99, win: [0.2, 0.8] }];
+    const p = splitPlan(men, 8), plain = splitPlan([{ t: 0.5, depth: 20, low: 19.99 }], 8);
+    const gAt = (pl, t) => pl.group[pl.ts.findIndex((v, j) => v <= t + 1e-9 && pl.ts[j + 1] > t + 1e-9)];
+    assert.equal(gAt(plain, 0.3), 0);                 // nearer than him: above him
+    assert.equal(gAt(p, 0.3), 1);                     // in his window: below him
+    assert.equal(gAt(p, 0.6), 1);
+    assert.equal(gAt(p, 0.1), 0);                     // outside the window: unchanged
+    assert.ok(p.ts.includes(0.2) && p.ts.includes(0.8));
+    assert.ok(p.depths[1] < 19.99);
+});
+test('splitPlan: with no window the plan is identical to before', () => {
+    const men = [{ t: 0.4, depth: 20, low: 19.99 }, { t: 0.7, depth: 19.5, low: 19.49 }];
+    assert.deepEqual(splitPlan(men.map(m => ({ ...m, win: null }))), splitPlan(men));
+});
+test('splitPlan: a press window never pushes a piece under a nearer man it is still in front of', () => {
+    const near = { t: 0.3, depth: 21, low: 20.99 }, far = { t: 0.6, depth: 19, low: 18.99, win: [0.3, 0.9] };
+    const p = splitPlan([near, far], 8);
+    const gAt = t => p.group[p.ts.findIndex((v, j) => v <= t + 1e-9 && p.ts[j + 1] > t + 1e-9)];
+    assert.equal(gAt(0.2), 0);   // nearer than both: above both, outside the window anyway
+    assert.equal(gAt(0.45), 2);  // behind the near man, inside the far man's window: under the far man
+    assert.equal(gAt(0.35), 2);
+});
+test('splitPlan: a window piece in front of a nearer non-pressing man stays above him', () => {
+    const near = { t: 0.5, depth: 21, low: 20.99 }, far = { t: 0.7, depth: 19, low: 18.99, win: [0.1, 0.9] };
+    const p = splitPlan([near, far], 8);
+    const gAt = t => p.group[p.ts.findIndex((v, j) => v <= t + 1e-9 && p.ts[j + 1] > t + 1e-9)];
+    assert.equal(gAt(0.3), 0);   // in front of the near man: stays above him
+    assert.equal(gAt(0.6), 2);
+});

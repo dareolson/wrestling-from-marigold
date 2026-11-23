@@ -2,6 +2,7 @@
 // so a strand wraps round a body instead of sorting against it as one fixed band. Pure: Arena feeds it the men's depths and draws the result.
 //   men: [{ t, depth, low }]  t = ground depth along the side wall (0 near corner, 1 far corner); depth / low = the highest / lowest draw depth among his parts (a paired move can lay him
 //   at his partner's depth, so Arena reads the parts, not 12 + ground y * 0.03). `low` defaults to `depth`.
+//   T1.4: a man pressing this wall carries win: [lo, hi] (t range, the old press window): inside it every piece draws below him whichever side of him it is on, and the window edges are cut points.
 //   returns { ts, group, depths }: sorted sample ts (the uniform ones plus every cut), group[j] for the segment ts[j]..ts[j+1], depths[g] for each group.
 export const SPLIT_SEGS = 8;
 export const SPLIT_STEP = 0.01;     // a strand piece draws this far above / below the man it is nearer / farther than (his own parts span base .. base + 0.0041)
@@ -18,10 +19,21 @@ export function splitPlan(men, segs = SPLIT_SEGS) {
     const ts = [];
     for (let i = 0; i <= segs; i++) ts.push(i / segs);
     for (const c of cuts) ts.push(c.t);
+    for (const m of men) if (m.win) ts.push(Math.min(1, Math.max(0, m.win[0])), Math.min(1, Math.max(0, m.win[1])));
     ts.sort((a, b) => a - b);
     const u = ts.filter((t, i) => i === 0 || t - ts[i - 1] > 1e-9);
     const group = [];
-    for (let j = 0; j < u.length - 1; j++) group.push(cuts.filter(c => c.t <= u[j] + 1e-9).length);
+    for (let j = 0; j < u.length - 1; j++) {
+        let g = cuts.filter(c => c.t <= u[j] + 1e-9).length;
+        const mid = (u[j] + u[j + 1]) / 2;
+        for (const m of men) {
+            if (!m.win || mid <= m.win[0] || mid >= m.win[1]) continue;
+            const ci = cutOf[men.indexOf(m)];
+            // pressing him: below his cut, which is also below every man nearer than him; a piece still nearer than one of those men stays by position (it cannot be above him and below a man deeper than him)
+            if (cuts.slice(0, ci).every(c => c.t <= mid)) g = Math.max(g, ci + 1);
+        }
+        group.push(g);
+    }
     const depths = [cuts.length ? cuts[0].depth + SPLIT_STEP : 26];
     for (let k = 1; k < cuts.length; k++) depths.push((cuts[k - 1].low + cuts[k].depth) / 2);
     if (cuts.length) depths.push(cuts.at(-1).low - SPLIT_STEP);
@@ -34,3 +46,8 @@ export const PAST_MARGIN = 2;
 export function pastPlane(minX, maxX, b, margin = PAST_MARGIN) { return minX < b.left - margin || maxX > b.right + margin; }
 // The depth such a part takes: under the piece group just behind its man (`plan.depths[cutOf + 1]`), by less than a step so it stays above any man farther back.
 export function pastPartDepth(plan, manIndex) { return plan.depths[plan.cutOf[manIndex] + 1] - 0.003; }
+
+// T1.4: the old press rule's window (Arena ~2572): a man pressing a side wall at least this hard has the strands under him within this t either side of him.
+export const PRESS_MIN_K = 0.55;
+export const PRESS_WINDOW = 0.3;
+export function pressWindow(p) { return p && p.k >= PRESS_MIN_K ? [p.t - PRESS_WINDOW, p.t + PRESS_WINDOW] : null; }

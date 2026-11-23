@@ -1,5 +1,5 @@
 import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate } from '../constants.js';
-import { splitPlan, pastPlane, pastPartDepth } from '../animation/ropeSplit.js';
+import { splitPlan, pastPlane, pastPartDepth, pressWindow } from '../animation/ropeSplit.js';
 import { partInkX } from '../ropeInk.js';
 import ScaleDebug from '../scaleDebug.js';
 import Wrestler, { lightCandidate, grapplesCandidate, waistlockCandidate, POSES } from '../Wrestler.js';
@@ -2200,8 +2200,8 @@ export default class Arena extends Phaser.Scene {
             g._baseDepth = 12 + groundY * 0.03;
             this.sideRopeBands.push(g);
         }
-        // ?ropes=v1 (PLAN_ROPES T1.1): the side strands are drawn in pieces cut at each wrestler's depth (splitPlan), up to one more piece than there are men.
-        if (ropesCandidate()) this.sideRopeSplit = [0, 1, 2].map(() => this.add.graphics().setDepth(26));
+        // ?ropes=v1 (PLAN_ROPES T1.1): the side strands are drawn in pieces cut at each wrestler's depth (splitPlan), up to one more piece than there are men; the first three Graphics are the left wall's, the last three the right's (a press window differs per wall, T1.4).
+        if (ropesCandidate()) this.sideRopeSplit = [0, 1, 2, 3, 4, 5].map(() => this.add.graphics().setDepth(26));
     }
 
     // Wrestlers close enough to a rope wall press into it: 0 press at 34px
@@ -2234,8 +2234,8 @@ export default class Arena extends Phaser.Scene {
             const kR    = press(b.right - w.x);
             if (kNear) out.near.push({ x: w.x, k: kNear, depth, w: wRope });
             if (kFar)  out.far.push({ x: w.x, k: kFar, w: wRope });
-            if (kL)    out.side[-1].push({ t, k: kL, depth, w: wRope });
-            if (kR)    out.side[1].push({ t, k: kR, depth, w: wRope });
+            if (kL)    out.side[-1].push({ t, k: kL, depth, w: wRope, who: w });
+            if (kR)    out.side[1].push({ t, k: kR, depth, w: wRope, who: w });
             // grapples=v1 (T3c.5b): a runner taking the rope's weight. The rope springs from this; it reads only while he is running.
             if (w.state === 'running' && w._ropeTension > 0) out.hit.push({ dir: w._ropeSide, t, tension: w._ropeTension, w: wRope });
         }
@@ -2401,6 +2401,13 @@ export default class Arena extends Phaser.Scene {
             return { t: (RING.nearLeft.y - gy) / (RING.nearLeft.y - RING.farLeft.y), depth: Math.max(base, hi), low: Math.min(base, lo) };   // cut at his ground t; clear every part he draws
         }) : null;
         const plan = splitMen ? splitPlan(splitMen, BANDS) : null;
+        // T1.4: the old press rule. A man pressing a side wall (k >= 0.55) has that wall's strands drawn under him within the press window; the plan per wall carries the window.
+        const wallPlan = {};
+        if (plan) for (const dir of [-1, 1]) {
+            const men = [this.w1, this.w2].filter(Boolean);
+            const wins = men.map(w => pressWindow(presses.side[dir].find(p => p.who === w)));
+            wallPlan[dir] = wins.some(Boolean) ? splitPlan(splitMen.map((m, i) => ({ ...m, win: wins[i] })), BANDS) : plan;
+        }
         // T1.3 (`?ropesPast=1`): a part whose ink reaches past a side plane is outside the ring: it draws under the pieces behind its man, so the strand passes between it and the rest of him.
         if (plan && ropesPastCandidate()) {
             const men = [this.w1, this.w2].filter(Boolean);
@@ -2415,8 +2422,8 @@ export default class Arena extends Phaser.Scene {
                 }
             });
         }
-        if (plan) this._splitDebug = plan;   // read by tools/debug/rope_order_probe.mjs only
-        if (plan) this.sideRopeSplit.forEach((g, k) => g.setDepth(plan.depths[k] ?? 26));
+        if (plan) { plan.wall = wallPlan; this._splitDebug = plan; }   // read by tools/debug/rope_order_probe.mjs only
+        if (plan) this.sideRopeSplit.forEach((g, k) => g.setDepth(plan.depths[k % 3] ?? 26));
 
         ropes.forEach((rope, ri) => {
             const rest = REST_SAG[ri] ?? 4;
@@ -2476,8 +2483,9 @@ export default class Arena extends Phaser.Scene {
                 sidePtsByRi[ri][dir] = pts;
                 sideRefByRi[ri][dir] = ref;
                 if (plan) {
-                    const sp = plan.ts.map(t => sidePoint(nearP, farP, rope, dir, t, sideRest, warpX));
-                    fillRibbonBands(this.sideRopeSplit, sp, plan.ts.map(t => (3.0 - 1.2 * t) / 2), 0x36362f, 0.85, 0x82827a, 0.75, i => plan.group[i]);
+                    const wp = wallPlan[dir], gs = this.sideRopeSplit, off = dir < 0 ? 0 : 3;
+                    const sp = wp.ts.map(t => sidePoint(nearP, farP, rope, dir, t, sideRest, warpX));
+                    fillRibbonBands(gs, sp, wp.ts.map(t => (3.0 - 1.2 * t) / 2), 0x36362f, 0.85, 0x82827a, 0.75, i => off + wp.group[i]);
                 } else fillRibbonBands(this.sideRopeBands, pts, hw, 0x36362f, 0.85, 0x82827a, 0.75);
             }
         });

@@ -65,12 +65,14 @@ const MEASURE = ({ cells }) => {
     };
     const planDbg = sc.sideRopeSplit ? sc._splitDebug : null;
     if (planDbg) {   // ?ropes=v1: the pieces were drawn in segment order per (rope, dir) across the split graphics; the call sequence number puts them back in order
-        const all = sc.sideRopeSplit.flatMap(g => g.__calls.map(c => ({ c, g }))).sort((p, q) => p.c.seq - q.c.seq), nseg = planDbg.ts.length - 1;
-        all.forEach(({ c, g }, idx) => {
-            if (idx % 3 !== 1) return;
-            const n = Math.floor(idx / 3), si = Math.floor(n / nseg), seg = n % nseg;
-            sideQuad(si % 2 === 0 ? 'L' : 'R', Math.floor(si / 2), seg, c, g.depth, planDbg.ts[seg], planDbg.ts[seg + 1]);
-        });
+        // T1.4: each wall has its own plan (press window), so the calls are decoded wall by wall: per rope, left then right, nseg segments each, 3 calls per segment
+        const all = sc.sideRopeSplit.flatMap(g => g.__calls.map(c => ({ c, g }))).sort((p, q) => p.c.seq - q.c.seq);
+        const wp = planDbg.wall ?? { '-1': planDbg, 1: planDbg };
+        let idx = 0;
+        for (let ri = 0; ri < 3; ri++) for (const [dir, wall] of [[-1, 'L'], [1, 'R']]) {
+            const pl = wp[dir];
+            for (let seg = 0; seg < pl.ts.length - 1; seg++, idx += 3) { const e = all[idx + 1]; if (e) sideQuad(wall, ri, seg, e.c, e.g.depth, pl.ts[seg], pl.ts[seg + 1]); }
+        }
     } else sc.sideRopeBands.forEach((g, i) => { for (let ri = 0; ri < 3; ri++) for (const [k, wall] of [[0, 'L'], [1, 'R']]) {
         const c = g.__calls[3 * (ri * 2 + k) + 1]; if (c) sideQuad(wall, ri, i, c, g.depth, i / sc.sideRopeBands.length, (i + 1) / sc.sideRopeBands.length);
     } });
@@ -85,6 +87,9 @@ const MEASURE = ({ cells }) => {
         const b = { left: RING.nearLeft.x + (RING.farLeft.x - RING.nearLeft.x) * (RING.nearLeft.y - gy) / (RING.nearLeft.y - RING.farLeft.y), right: RING.nearRight.x + (RING.farRight.x - RING.nearRight.x) * (RING.nearLeft.y - gy) / (RING.nearLeft.y - RING.farLeft.y) };
         const tW = (RING.nearLeft.y - gy) / (RING.nearLeft.y - RING.farLeft.y);
         const inside = w.x > b.left && w.x < b.right;
+        // T1.4: the press window on each side wall (either man's: the old rule lowered the strands for any press, and two men at one depth share a cut)
+        //   (was: the press window this man holds on each side wall (strands under him by design), t range or null
+        const pwin = sc.sideRopeSplit ? Object.fromEntries([['L', -1], ['R', 1]].map(([k, d]) => { const p = sc._ropePresses().side[d].filter(q => q.k >= 0.55)[0]; return [k, p ? [p.t - 0.3, p.t + 0.3] : null]; })) : {};
         // penetration reference lines at his depth: per side wall and rope, the plane x (rest) and the drawn y there
         const pen = [];
         if (sp && inside) for (const [dir, wall] of [[-1, 'L'], [1, 'R']]) for (let ri = 0; ri < 3; ri++) {
@@ -147,7 +152,9 @@ const MEASURE = ({ cells }) => {
                                 }
                                 const shouldFront = sGround > gy + 0.5, shouldBehind = sGround < gy - 0.5;
                                 const drawnFront = sDepth > pdepth;
-                                if ((shouldFront && !drawnFront) || (shouldBehind && drawnFront)) {
+                                const sT = (sGround - RING.nearLeft.y) / (RING.farLeft.y - RING.nearLeft.y), pw = pwin[S.wall];
+                                if (pw && shouldFront && !drawnFront && sT > pw[0] && sT < pw[1]) { rec.pressPx = (rec.pressPx ?? 0) + 1; rec.pressWall = S.wall; }   // inside his press window, under him by design
+                                else if ((shouldFront && !drawnFront) || (shouldBehind && drawnFront)) {
                                     rec.wrong++;
                                     const key = `${S.wall}${S.ri}|${pname}|${drawnFront ? 'strandOver' : 'strandUnder'}`;
                                     rec.wrongTally[key] = (rec.wrongTally[key] ?? 0) + 1;
@@ -335,6 +342,29 @@ if (process.argv.includes('--profile')) {
     console.log(JSON.stringify(t));
     await h.close(); process.exit(0);
 }
+// T1.4 --whip: normal-speed (30 fps) strips of the Irish whip into each side wall (L, R) and the far corners (FL, FR), both rigs as the whipper; frames in <outDir>/whip/<rig>-<wall>/
+if (process.argv.includes('--whip')) {
+    const out = [];
+    for (const [p1, p2] of [[LOU, GEORGE], [GEORGE, LOU]]) {
+        const { h, info } = await launchWith(p1, p2, false);
+        try {
+            const rig = p1 === LOU ? 'lou' : 'george';
+            for (const wall of ['L', 'R', 'FL', 'FR']) {
+                const dir = join(outDir, 'whip', `${rig}-${wall}`); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
+                await h.page.evaluate(INIT, { kind: 'move', move: 'irishWhip', wall });
+                const clip = { x: info.box.x, y: info.box.y + info.box.h * (wall.startsWith('F') ? 0.2 : 0.3), width: info.box.w, height: info.box.h * 0.5 };
+                let n = 0;
+                for (let f = 0; ; f++) {
+                    const r = await h.page.evaluate(() => window.__ONE({ cells: false }));
+                    if (f % 2 === 0) await h.page.screenshot({ path: join(dir, `f${String(n++).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 72, clip });
+                    if (r.done) break;
+                }
+                out.push({ rig, wall, frames: n }); console.log(`[ropes] whip ${rig} ${wall}: ${n} frames`);
+            }
+        } finally { await h.close(); }
+    }
+    writeFileSync(join(outDir, 'whip', 'index.json'), JSON.stringify(out)); process.exit(0);
+}
 const filmRun = async (page, info, rig) => {   // run a again, one frame at a time, a clip of the far half at 30 fps (every other frame)
     const dir = join(outDir, 'film', rig); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
     await page.evaluate(INIT, { kind: 'walkFar' });
@@ -397,12 +427,14 @@ summary.penByRun = tally(penRows, r => [[r.run.split(':').slice(0, 1)[0] === 'c'
 summary.penByState = tally(penRows, r => [[r.mv ? `move:${r.mv}` : `state:${r.st}`, r.penPx, fk(r)]]);
 summary.penByPart = tally(penRows, r => Object.entries(r.penTally).map(([k, v]) => [k.split('|')[1], v.px, fk(r)]));
 summary.penByStrand = tally(penRows, r => Object.entries(r.penTally).map(([k, v]) => [k.split('|')[0], v.px, fk(r)]));
+summary.pressManFrames = all.filter(r => r.pressPx > 0).length; summary.pressPx = all.reduce((a, r) => a + (r.pressPx ?? 0), 0);
 summary.penOverManFrames = penRows.filter(r => r.penOver > 0).length; summary.penOverPx = penRows.reduce((a, r) => a + r.penOver, 0); summary.penOverMax = Math.max(0, ...penRows.map(r => r.penOver));
 summary.penMaxPast = Math.max(0, ...penRows.flatMap(r => Object.values(r.penTally).map(v => v.past)));
 const perRun = results.map(r => ({ run: r.label, frames: r.frames, wrongFrames: r.recs.filter(x => x.wrong > 0).length, maxWrongPx: Math.max(0, ...r.recs.map(x => x.wrong)), penFrames: r.recs.filter(x => x.penPx > 0 && x.inside && !['climbing', 'onTurnbuckle'].includes(x.st)).length, maxPenPx: Math.max(0, ...r.recs.map(x => x.penPx)) }));
 writeFileSync(join(outDir, 'probe.json'), JSON.stringify({ made: new Date().toISOString(), sec: SEC, summary, perRun, pools: { wrong: pools.wrong, pen: pools.pen }, film, recs: all }, null, 1));
 const show = (t, rows) => { console.log(`\n${t}`); console.table(rows.slice(0, 14)); };
 console.log(`\n[ropes] man-frames ${summary.totalManFrames}, with a strand crossing ${summary.crossingManFrames}, wrong-order ${summary.wrongManFrames}, penetrating ${summary.penetrationManFrames} (of which ink past the plane drawn OVER a side strand: ${summary.penOverManFrames} man-frames, max ${summary.penOverMax} px) (max past plane ${summary.penMaxPast.toFixed(1)} px)`);
+console.log(`[ropes] press window (intended, strand under him inside his window): ${summary.pressManFrames} man-frames, ${summary.pressPx} px`);
 console.log("crossing px by wall", JSON.stringify(summary.crossingPxByWall)); show("wrong-order by wall", summary.wrongByWall); show('by strand (wall+rope index 0 bottom..2 top)', summary.wrongByStrand); show('by ring region', summary.wrongByRegionAll);
 show('by part', summary.wrongByPart); show('by state / move', summary.wrongByState); show('by drawn order', summary.wrongByOrder);
 show('penetration by run', summary.penByRun); show('penetration by state/move', summary.penByState); show('penetration by part', summary.penByPart); show('per run', perRun.filter(r => r.wrongFrames || r.penFrames));

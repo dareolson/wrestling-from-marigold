@@ -314,7 +314,7 @@ const runOne = async (page, cfg, label) => {
 const RING = { nearLeft: { x: 40, y: 445 }, nearRight: { x: 920, y: 445 }, farLeft: { x: 210, y: 258 }, farRight: { x: 750, y: 258 }, ropes: [{ nearY: 380, farY: 218 }, { nearY: 316, farY: 181 }, { nearY: 251, farY: 142 }] };
 
 const launchWith = async (p1, p2, ai) => {
-    process.env.WFM_P1 = p1; process.env.WFM_P2 = p2; process.env.WFM_QS = 'notitle=1' + (process.env.ROPES === 'v1' ? '&ropes=v1' : '') + (process.env.PAST === '1' ? '&ropesPast=1' : '') + (process.env.SWAYSCALE ? `&ropeSway=${process.env.SWAYSCALE}` : ''); process.env.WFM_INIT_SCRIPT = new URL('./no_hmr_init.js', import.meta.url).pathname;
+    process.env.WFM_P1 = p1; process.env.WFM_P2 = p2; process.env.WFM_QS = 'notitle=1' + '&ropes=' + (process.env.ROPES === 'v1' ? 'v1' : 'off') + (process.env.PAST === '1' ? '&ropesPast=1' : '') + (process.env.SWAYSCALE ? `&ropeSway=${process.env.SWAYSCALE}` : ''); process.env.WFM_INIT_SCRIPT = new URL('./no_hmr_init.js', import.meta.url).pathname;
     const h = await launch();
     await h.page.waitForFunction(() => window.__WFM_GAME?.scene?.scenes?.[0]?.w2, null, { timeout: 60000 });
     await h.page.waitForTimeout(1500);

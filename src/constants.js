@@ -30,8 +30,13 @@ export const scaleCandidate = () => {
     const v = new URLSearchParams(location.search).get('scale');
     return v === null || v === 'v1';
 };
-// ropes (PLAN_ROPES): opt-in `?ropes=v1`; absent or anything else is the old ropes, byte for byte.
-export const ropesCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('ropes') === 'v1';
+// ropes (PLAN_ROPES): promoted to default by Derek 2026-11-23: on unless the URL says `?ropes=off` (any value but `v1` turns it off, as scale). Node without `location` stays off,
+// and `?ropes=off` is the old ropes, byte for byte.
+export const ropesCandidate = () => {
+    if (typeof location === 'undefined') return false;
+    const v = new URLSearchParams(location.search).get('ropes');
+    return v === null || v === 'v1';
+};
 // ropesPast (T1.3): with ropes=v1, a part whose ink reaches past a side plane draws under the strand. Its own opt-in so Derek can judge it against ropes=v1 alone: it trades side-wall order for ink past the plane.
 export const ropesPastCandidate = () => ropesCandidate() && new URLSearchParams(location.search).get('ropesPast') === '1';
 /** `?ropeSway=<scale>` (PLAN_ROPES T1.6, with ?ropes=v1): how big the bottom strand's swing is; 2 default (Derek 2026-11-23), 0 off. */

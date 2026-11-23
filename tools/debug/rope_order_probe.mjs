@@ -89,7 +89,7 @@ const MEASURE = ({ cells }) => {
         const inside = w.x > b.left && w.x < b.right;
         // T1.4: the press window on each side wall (either man's: the old rule lowered the strands for any press, and two men at one depth share a cut)
         //   (was: the press window this man holds on each side wall (strands under him by design), t range or null
-        const pwin = sc.sideRopeSplit ? Object.fromEntries([['L', -1], ['R', 1]].map(([k, d]) => { const p = sc._ropePresses().side[d].filter(q => q.k >= 0.55)[0]; return [k, p ? [p.t - 0.3, p.t + 0.3] : null]; })) : {};
+        const pwin = sc.sideRopeSplit ? Object.fromEntries([['L', -1], ['R', 1]].map(([k, d]) => { return [k, sc._splitDebug?.wins?.[d]?.find(Boolean) ?? null]; })) : {};
         // penetration reference lines at his depth: per side wall and rope, the plane x (rest) and the drawn y there
         const pen = [];
         if (sp && inside) for (const [dir, wall] of [[-1, 'L'], [1, 'R']]) for (let ri = 0; ri < 3; ri++) {
@@ -365,6 +365,20 @@ if (process.argv.includes('--whip')) {
     }
     writeFileSync(join(outDir, 'whip', 'index.json'), JSON.stringify(out)); process.exit(0);
 }
+// T1.5 --stills: the R0 slam-at-side-wall spots (bodySlam at L f73, at FL f71, Lou) as a PNG each, named by STILLTAG (e.g. t14 / t15)
+if (process.argv.includes('--stills')) {
+    const { h, info } = await launchWith(LOU, GEORGE, false);
+    try {
+        mkdirSync(outDir, { recursive: true });
+        for (const [wall, fr] of [['L', 73], ['FL', 71], ['R', 73], ['FR', 71]]) {
+            await h.page.evaluate(INIT, { kind: 'move', move: 'bodySlam', wall });
+            for (let f = 0; f < fr; f++) await h.page.evaluate(() => window.__ONE({ cells: false }));
+            await h.page.screenshot({ path: join(outDir, `${process.env.STILLTAG ?? 'still'}-${wall}.png`), clip: { x: info.box.x, y: info.box.y, width: info.box.w, height: info.box.h } });
+            console.log(`[ropes] still ${wall} f${fr}`);
+        }
+    } finally { await h.close(); }
+    process.exit(0);
+}
 const filmRun = async (page, info, rig) => {   // run a again, one frame at a time, a clip of the far half at 30 fps (every other frame)
     const dir = join(outDir, 'film', rig); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
     await page.evaluate(INIT, { kind: 'walkFar' });
@@ -427,6 +441,7 @@ summary.penByRun = tally(penRows, r => [[r.run.split(':').slice(0, 1)[0] === 'c'
 summary.penByState = tally(penRows, r => [[r.mv ? `move:${r.mv}` : `state:${r.st}`, r.penPx, fk(r)]]);
 summary.penByPart = tally(penRows, r => Object.entries(r.penTally).map(([k, v]) => [k.split('|')[1], v.px, fk(r)]));
 summary.penByStrand = tally(penRows, r => Object.entries(r.penTally).map(([k, v]) => [k.split('|')[0], v.px, fk(r)]));
+summary.pressByState = {}; for (const r of all) if (r.pressPx > 0) summary.pressByState[r.st] = (summary.pressByState[r.st] ?? 0) + 1;
 summary.pressManFrames = all.filter(r => r.pressPx > 0).length; summary.pressPx = all.reduce((a, r) => a + (r.pressPx ?? 0), 0);
 summary.penOverManFrames = penRows.filter(r => r.penOver > 0).length; summary.penOverPx = penRows.reduce((a, r) => a + r.penOver, 0); summary.penOverMax = Math.max(0, ...penRows.map(r => r.penOver));
 summary.penMaxPast = Math.max(0, ...penRows.flatMap(r => Object.values(r.penTally).map(v => v.past)));
@@ -434,6 +449,7 @@ const perRun = results.map(r => ({ run: r.label, frames: r.frames, wrongFrames: 
 writeFileSync(join(outDir, 'probe.json'), JSON.stringify({ made: new Date().toISOString(), sec: SEC, summary, perRun, pools: { wrong: pools.wrong, pen: pools.pen }, film, recs: all }, null, 1));
 const show = (t, rows) => { console.log(`\n${t}`); console.table(rows.slice(0, 14)); };
 console.log(`\n[ropes] man-frames ${summary.totalManFrames}, with a strand crossing ${summary.crossingManFrames}, wrong-order ${summary.wrongManFrames}, penetrating ${summary.penetrationManFrames} (of which ink past the plane drawn OVER a side strand: ${summary.penOverManFrames} man-frames, max ${summary.penOverMax} px) (max past plane ${summary.penMaxPast.toFixed(1)} px)`);
+console.log('[ropes] press-window frames by state', JSON.stringify(summary.pressByState));
 console.log(`[ropes] press window (intended, strand under him inside his window): ${summary.pressManFrames} man-frames, ${summary.pressPx} px`);
 console.log("crossing px by wall", JSON.stringify(summary.crossingPxByWall)); show("wrong-order by wall", summary.wrongByWall); show('by strand (wall+rope index 0 bottom..2 top)', summary.wrongByStrand); show('by ring region', summary.wrongByRegionAll);
 show('by part', summary.wrongByPart); show('by state / move', summary.wrongByState); show('by drawn order', summary.wrongByOrder);

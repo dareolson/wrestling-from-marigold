@@ -47,7 +47,9 @@ export function pastPlane(minX, maxX, b, margin = PAST_MARGIN) { return minX < b
 // The depth such a part takes: under the piece group just behind its man (`plan.depths[cutOf + 1]`), by less than a step so it stays above any man farther back.
 export function pastPartDepth(plan, manIndex) { return plan.depths[plan.cutOf[manIndex] + 1] - 0.003; }
 
-// T1.4: the old press rule's window (Arena ~2572): a man pressing a side wall at least this hard has the strands under him within this t either side of him.
+// T1.4/T1.5: the old press rule's window (Arena ~2572): a man pressing a side wall at least this hard, while upright, has the strands under him within this t either side of him.
+// A man lying or rising (down, gettingUp, possum, pinned, ...) opens no window: the strand crosses him by position, as in T1.1.
 export const PRESS_MIN_K = 0.55;
 export const PRESS_WINDOW = 0.3;
-export function pressWindow(p) { return p && p.k >= PRESS_MIN_K ? [p.t - PRESS_WINDOW, p.t + PRESS_WINDOW] : null; }
+export const PRESS_STATES = new Set(['running', 'standing', 'staggered', 'cornered', 'holding', 'slamming', 'selling', 'blocking']);
+export function pressWindow(p, state) { return p && p.k >= PRESS_MIN_K && PRESS_STATES.has(state) ? [p.t - PRESS_WINDOW, p.t + PRESS_WINDOW] : null; }

@@ -14,6 +14,7 @@ import { thesz } from '../characters/thesz.js';
 import { theszFront3qR1 } from '../characters/thesz_front3q_r1.js';
 import { theszProcreateV1 } from '../characters/thesz_procreate_v1.js';
 import { theszRosterV1 } from '../characters/thesz_roster_v1.js';
+import { theszLou2V1 } from '../characters/thesz_lou2_v1.js';
 import { georgeRosterV1 } from '../characters/george_roster_v1.js';
 import { kowalskiRosterV1 } from '../characters/kowalski_roster_v1.js';
 import { guidoRosterV1 } from '../characters/guido_roster_v1.js';
@@ -48,7 +49,7 @@ import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamIn
 // theszFront3qR1 is here so Arena.preload() loads its eight part files. It is a
 // review candidate, not a roster member: it is never selected unless asked for
 // by name, and shipped `thesz` is untouched by its presence.
-const CHARACTERS = [george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, georgeRosterV1, kowalskiRosterV1, guidoRosterV1];
+const CHARACTERS = [george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, theszLou2V1, georgeRosterV1, kowalskiRosterV1, guidoRosterV1];
 
 // Named crowd extras: each is one chroma-keyed multi-frame reference sheet
 // cut via tools/audience-cutter into src/assets/audience/<slug>/frame1..N.png
@@ -2402,10 +2403,11 @@ export default class Arena extends Phaser.Scene {
         }) : null;
         const plan = splitMen ? splitPlan(splitMen, BANDS) : null;
         // T1.4: the old press rule. A man pressing a side wall (k >= 0.55) has that wall's strands drawn under him within the press window; the plan per wall carries the window.
-        const wallPlan = {};
+        const wallPlan = {}, wallWins = {};
         if (plan) for (const dir of [-1, 1]) {
             const men = [this.w1, this.w2].filter(Boolean);
-            const wins = men.map(w => pressWindow(presses.side[dir].find(p => p.who === w)));
+            const wins = men.map(w => pressWindow(presses.side[dir].find(p => p.who === w), w.state));
+            wallWins[dir] = wins;
             wallPlan[dir] = wins.some(Boolean) ? splitPlan(splitMen.map((m, i) => ({ ...m, win: wins[i] })), BANDS) : plan;
         }
         // T1.3 (`?ropesPast=1`): a part whose ink reaches past a side plane is outside the ring: it draws under the pieces behind its man, so the strand passes between it and the rest of him.
@@ -2422,7 +2424,7 @@ export default class Arena extends Phaser.Scene {
                 }
             });
         }
-        if (plan) { plan.wall = wallPlan; this._splitDebug = plan; }   // read by tools/debug/rope_order_probe.mjs only
+        if (plan) { plan.wall = wallPlan; plan.wins = wallWins; this._splitDebug = plan; }   // read by tools/debug/rope_order_probe.mjs only
         if (plan) this.sideRopeSplit.forEach((g, k) => g.setDepth(plan.depths[k % 3] ?? 26));
 
         ropes.forEach((rope, ri) => {
@@ -3113,6 +3115,16 @@ export default class Arena extends Phaser.Scene {
                 moveSet: kitFor('thesz', lightCandidate()),
                 textures: theszProcreateV1.textures,
             },
+            // Derek's Lou2 PSD (2026-11-22, joint-overlap edit of LouNew) on
+            // Procreate Lou's moves: `moveRig` makes every per-rig clip override
+            // read Lou's entry, while art-keyed code reads the preset key.
+            // `?p1=thesz-lou2-v1`.
+            'thesz-lou2-v1': {
+                name: 'THESZ', personality: ROSTER_PERSONALITIES.thesz, idlePose: theszLou2V1.idlePose,
+                skin: 0xe8c098, trunks: 0x484848, moveRig: 'thesz-procreate-v1',
+                moveSet: kitFor('thesz', lightCandidate()),
+                textures: theszLou2V1.textures,
+            },
         };
         // Throw rather than log: a bad move ID silently disables part of a kit,
         // which is exactly the class of failure this registry exists to catch,
@@ -3129,7 +3141,8 @@ export default class Arena extends Phaser.Scene {
         const c2 = this._preset2 = PRESETS[q.get('p2')] ?? PRESETS['george-roster-v1'];
 
         this.w1 = new Wrestler(this, 330, 360, c1.skin, c1.trunks, input1, c1.moveSet, c1.textures ?? {});
-        this.w1.rigId    = Object.keys(PRESETS).find(k => PRESETS[k] === c1);
+        this.w1.artRigId = Object.keys(PRESETS).find(k => PRESETS[k] === c1);
+        this.w1.rigId    = c1.moveRig ?? this.w1.artRigId;
         this.w1.facing   = 1;
         this.w1.idlePose = c1.idlePose;
         this.w1.begsOff  = !!c1.begsOff;
@@ -3138,7 +3151,8 @@ export default class Arena extends Phaser.Scene {
         this.w1.moveStyle = c1.style ?? {};
 
         this.w2 = new Wrestler(this, 630, 360, c2.skin, c2.trunks, input2, c2.moveSet, c2.textures ?? {});
-        this.w2.rigId    = Object.keys(PRESETS).find(k => PRESETS[k] === c2);
+        this.w2.artRigId = Object.keys(PRESETS).find(k => PRESETS[k] === c2);
+        this.w2.rigId    = c2.moveRig ?? this.w2.artRigId;
         this.w2.facing   = -1;
         this.w2.idlePose = c2.idlePose;
         this.w2.begsOff  = !!c2.begsOff;

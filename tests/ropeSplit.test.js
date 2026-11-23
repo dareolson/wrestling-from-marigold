@@ -67,10 +67,14 @@ test('pastPartDepth: under the pieces behind its man, above the next man back', 
 
 // T1.4: the press window
 import { pressWindow, PRESS_WINDOW } from '../src/animation/ropeSplit.js';
-test('pressWindow: only a hard press (k >= 0.55) opens the old window', () => {
-    assert.equal(pressWindow(null), null);
-    assert.equal(pressWindow({ t: 0.5, k: 0.54 }), null);
-    assert.deepEqual(pressWindow({ t: 0.5, k: 0.55 }), [0.5 - PRESS_WINDOW, 0.5 + PRESS_WINDOW]);
+test('pressWindow: only a hard press (k >= 0.55) by an upright man opens the old window', () => {
+    assert.equal(pressWindow(null, 'running'), null);
+    assert.equal(pressWindow({ t: 0.5, k: 0.54 }, 'running'), null);
+    assert.deepEqual(pressWindow({ t: 0.5, k: 0.55 }, 'running'), [0.5 - PRESS_WINDOW, 0.5 + PRESS_WINDOW]);
+});
+test('pressWindow: lying or rising men open none', () => {
+    for (const st of ['down', 'gettingUp', 'possum', 'pinned', 'sleeping']) assert.equal(pressWindow({ t: 0.5, k: 1 }, st), null, st);
+    for (const st of ['running', 'standing', 'staggered', 'cornered', 'holding', 'slamming']) assert.ok(pressWindow({ t: 0.5, k: 1 }, st), st);
 });
 test('splitPlan: a pressing man puts every piece inside his window below him, outside is unchanged', () => {
     const men = [{ t: 0.5, depth: 20, low: 19.99, win: [0.2, 0.8] }];

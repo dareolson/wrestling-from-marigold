@@ -8,7 +8,7 @@
 //   WFM_URL=http://localhost:5173 node tools/debug/rope_order_probe.mjs [outDir=research/ropes-2026-11/r0] [runs=a,b,c,d] [--film]
 // Runs: a far-edge walk into both far corners and back; b both side walls up and down (facing the rope); c moves taken against far corners and side walls; d AI soak 4 pairings x SEC s.
 // Writes <outDir>/probe.json (summary + per-frame records), <outDir>/stills/*.png (pool of worst frames, with marks), <outDir>/film/<rig>/fNNNN.jpg (--film: run a at 30 fps).
-import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { launch } from './harness.mjs';
 
@@ -314,7 +314,7 @@ const runOne = async (page, cfg, label) => {
 const RING = { nearLeft: { x: 40, y: 445 }, nearRight: { x: 920, y: 445 }, farLeft: { x: 210, y: 258 }, farRight: { x: 750, y: 258 }, ropes: [{ nearY: 380, farY: 218 }, { nearY: 316, farY: 181 }, { nearY: 251, farY: 142 }] };
 
 const launchWith = async (p1, p2, ai) => {
-    process.env.WFM_P1 = p1; process.env.WFM_P2 = p2; process.env.WFM_QS = 'notitle=1' + '&ropes=' + (process.env.ROPES === 'v1' ? 'v1' : 'off') + (process.env.PAST === '1' ? '&ropesPast=1' : '') + (process.env.SWAYSCALE ? `&ropeSway=${process.env.SWAYSCALE}` : ''); process.env.WFM_INIT_SCRIPT = new URL('./no_hmr_init.js', import.meta.url).pathname;
+    process.env.WFM_P1 = p1; process.env.WFM_P2 = p2; process.env.WFM_QS = 'notitle=1' + '&ropes=' + (process.env.ROPES === 'v1' ? 'v1' : 'off') + (process.env.PAST === '1' ? '&ropesPast=1' : '') + (process.env.CONTACT === 'v1' ? '&ropeContact=v1' : '') + (process.env.SWAYSCALE ? `&ropeSway=${process.env.SWAYSCALE}` : ''); process.env.WFM_INIT_SCRIPT = new URL('./no_hmr_init.js', import.meta.url).pathname;
     const h = await launch();
     await h.page.waitForFunction(() => window.__WFM_GAME?.scene?.scenes?.[0]?.w2, null, { timeout: 60000 });
     await h.page.waitForTimeout(1500);
@@ -344,26 +344,31 @@ if (process.argv.includes('--profile')) {
 }
 // T1.4 --whip: normal-speed (30 fps) strips of the Irish whip into each side wall (L, R) and the far corners (FL, FR), both rigs as the whipper; frames in <outDir>/whip/<rig>-<wall>/
 if (process.argv.includes('--whip')) {
-    const out = [];
+    // MOVE=<irishWhip|bodySlam|walkFar> WALLS=L,R,FL,FR PEAKS=<dir of a previous run>: with ropeContact on, the frame of the largest bow is kept as peak-<rig>-<wall>.png; a later run (flag off) is shot at those frames
+    const out = [], MOVE = process.env.MOVE ?? 'irishWhip', WALLS = (process.env.WALLS ?? 'L,R,FL,FR').split(','), peaksIn = process.env.PEAKS ? JSON.parse(readFileSync(join(process.env.PEAKS, 'whip', 'peaks.json'))) : null, peaks = {};
     for (const [p1, p2] of [[LOU, GEORGE], [GEORGE, LOU]]) {
         const { h, info } = await launchWith(p1, p2, false);
         try {
             const rig = p1 === LOU ? 'lou' : 'george';
-            for (const wall of ['L', 'R', 'FL', 'FR']) {
+            for (const wall of WALLS) {
                 const dir = join(outDir, 'whip', `${rig}-${wall}`); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
-                await h.page.evaluate(INIT, { kind: 'move', move: 'irishWhip', wall });
-                const clip = { x: info.box.x, y: info.box.y + info.box.h * (wall.startsWith('F') ? 0.2 : 0.3), width: info.box.w, height: info.box.h * 0.5 };
-                let n = 0;
+                await h.page.evaluate(INIT, MOVE === 'walkFar' ? { kind: 'walkFar' } : { kind: 'move', move: MOVE, wall });
+                const clip = { x: info.box.x, y: info.box.y + info.box.h * (wall.startsWith('F') || wall === 'W' ? 0.15 : 0.3), width: info.box.w, height: info.box.h * 0.55 };
+                let n = 0, best = 0, bestF = -1; const want = peaksIn?.[`${rig}-${wall}`];
                 for (let f = 0; ; f++) {
                     const r = await h.page.evaluate(() => window.__ONE({ cells: false }));
+                    const v = await h.page.evaluate(() => Math.max(0, ...(window.__WFM_GAME.scene.scenes[0]._contactDebug ?? []).map(a => Math.abs(a.val))));
                     if (f % 2 === 0) await h.page.screenshot({ path: join(dir, `f${String(n++).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 72, clip });
-                    if (r.done) break;
+                    if (v > best + 0.05) { best = v; bestF = f; if (!peaksIn) await h.page.screenshot({ path: join(outDir, 'whip', `peak-${rig}-${wall}.png`), clip }); }
+                    if (peaksIn && want && f === want.f) await h.page.screenshot({ path: join(outDir, 'whip', `peak-${rig}-${wall}.png`), clip });
+                    if (r.done || f > 1500) break;
                 }
-                out.push({ rig, wall, frames: n }); console.log(`[ropes] whip ${rig} ${wall}: ${n} frames`);
+                peaks[`${rig}-${wall}`] = { f: bestF, px: +best.toFixed(1) };
+                out.push({ rig, wall, frames: n }); console.log(`[ropes] ${MOVE} ${rig} ${wall}: ${n} frames, peak bow ${best.toFixed(1)} px at f${bestF}`);
             }
         } finally { await h.close(); }
     }
-    writeFileSync(join(outDir, 'whip', 'index.json'), JSON.stringify(out)); process.exit(0);
+    writeFileSync(join(outDir, 'whip', 'index.json'), JSON.stringify(out)); writeFileSync(join(outDir, 'whip', 'peaks.json'), JSON.stringify(peaks)); process.exit(0);
 }
 // T1.5 --stills: the R0 slam-at-side-wall spots (bodySlam at L f73, at FL f71, Lou) as a PNG each, named by STILLTAG (e.g. t14 / t15)
 if (process.argv.includes('--stills')) {
@@ -413,6 +418,31 @@ if (process.argv.includes('--sway')) {
         } finally { await h.close(); }
     }
     mkdirSync(outDir, { recursive: true }); writeFileSync(join(outDir, 'sway.json'), JSON.stringify(rows, null, 1)); process.exit(0);
+}
+// T2.2 --contact: the run-c moves, per run the largest bow (px) each wall / strand reaches and how long the spring takes to go quiet after the last contact. Needs CONTACT=v1 ROPES=v1.
+if (process.argv.includes('--contact')) {
+    const rows = [];
+    for (const [p1, p2] of [[LOU, GEORGE], [GEORGE, LOU]]) {
+        const { h } = await launchWith(p1, p2, false);
+        try {
+            const rig = p1 === LOU ? 'lou' : 'george';
+            for (const wall of ['FL', 'FR', 'L', 'R', 'N']) for (const move of ['bodySlam', 'suplex', 'irishWhip', 'clothesline', 'wristlockHammerlock']) {
+                await h.page.evaluate(INIT, { kind: 'move', move, wall });
+                const tl = [];
+                for (let f = 0; f < 520; f++) {
+                    const r = await h.page.evaluate(() => window.__ONE({ cells: false }));
+                    tl.push(await h.page.evaluate(() => (window.__WFM_GAME.scene.scenes[0]._contactDebug ?? []).map(a => [a.key, +a.val.toFixed(2), a.target ? 1 : 0])));
+                    if (r.done && f > 60) break;
+                }
+                const max = {}; let lastTarget = -1, lastLoud = -1;
+                tl.forEach((fr, i) => { for (const [k, v, t] of fr) { const kk = k.split('|').slice(1).join('|'); max[kk] = Math.max(max[kk] ?? 0, Math.abs(v)); if (t) lastTarget = i; if (Math.abs(v) > 0.5) lastLoud = i; } });
+                const ranges = Object.fromEntries(Object.entries(max).map(([k, v]) => [k, +v.toFixed(1)]));
+                rows.push({ rig, wall, move, frames: tl.length, max: ranges, maxAny: Math.max(0, ...Object.values(ranges)), settleAfterReleaseS: lastTarget < 0 ? 0 : +(Math.max(0, lastLoud - lastTarget) / 60).toFixed(2) });
+                console.log(`[ropes] contact ${rig} ${move} ${wall}: max ${Math.max(0, ...Object.values(ranges))} px, settle ${rows.at(-1).settleAfterReleaseS} s`);
+            }
+        } finally { await h.close(); }
+    }
+    mkdirSync(outDir, { recursive: true }); writeFileSync(join(outDir, 'contact.json'), JSON.stringify(rows, null, 1)); process.exit(0);
 }
 const filmRun = async (page, info, rig) => {   // run a again, one frame at a time, a clip of the far half at 30 fps (every other frame)
     const dir = join(outDir, 'film', rig); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });

@@ -1,5 +1,6 @@
-import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate, ropeSwayScale } from '../constants.js';
+import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate, ropeSwayScale, ropeContactCandidate } from '../constants.js';
 import { createSway, swayKick, swayStep, swayWall, swayHardness, SWAY, SWAY_STATES } from '../animation/ropeSway.js';
+import { createContact, contactStep, sidePartPx, reachesY, coverWeight, CONTACT_SKIP, CONTACT_PARTS } from '../animation/ropeContact.js';
 import { splitPlan, pastPlane, pastPartDepth, pressWindow } from '../animation/ropeSplit.js';
 import { partInkX } from '../ropeInk.js';
 import ScaleDebug from '../scaleDebug.js';
@@ -2234,8 +2235,8 @@ export default class Arena extends Phaser.Scene {
             const kFar  = press(w.y - RING.farLeft.y);
             const kL    = press(w.x - b.left);
             const kR    = press(b.right - w.x);
-            if (kNear) out.near.push({ x: w.x, k: kNear, depth, w: wRope });
-            if (kFar)  out.far.push({ x: w.x, k: kFar, w: wRope });
+            if (kNear) out.near.push({ x: w.x, k: kNear, depth, w: wRope, who: w });
+            if (kFar)  out.far.push({ x: w.x, k: kFar, w: wRope, who: w });
             if (kL)    out.side[-1].push({ t, k: kL, depth, w: wRope, who: w });
             if (kR)    out.side[1].push({ t, k: kR, depth, w: wRope, who: w });
             // grapples=v1 (T3c.5b): a runner taking the rope's weight. The rope springs from this; it reads only while he is running.
@@ -2279,6 +2280,48 @@ export default class Arena extends Phaser.Scene {
         return Object.fromEntries(Object.entries(sw.spring).map(([k, v]) => [k, v.val]));
     }
 
+    // PLAN_ROPES T2.1/T2.2 (`?ropeContact=v1`): part contacts and springs. A part whose ink is past a side plane at a strand's height pushes that strand (more the farther past, capped);
+    // the root press stays as the fallback; near / far walls keep the root press but weight each strand by whether any part's ink spans its height. Every bow is a spring, sited where it was.
+    // Returns { near, far, side: { -1, 1 } } of { px: [3 strands], x | t } entries the warps below sum.
+    _contactPresses(presses, dt) {
+        const st = this._ropeContactState ??= createContact(), targets = new Map(), debugT = {};
+        [this.w1, this.w2].forEach((w, mi) => {
+            if (!w || CONTACT_SKIP.has(w.state)) return;
+            const b = ringBoundsAtY(w.y), t = (RING.nearLeft.y - w.y) / (RING.nearLeft.y - RING.farLeft.y);
+            const near = presses.near.find(p => p.who === w), far = presses.far.find(p => p.who === w);
+            const sideE = { '-1': presses.side[-1].find(p => p.who === w), 1: presses.side[1].find(p => p.who === w) };
+            const nearWall = Math.min(w.x - b.left, b.right - w.x) < 110 * w.s;
+            if (!nearWall && !near && !far) return;
+            const inks = [];
+            for (const k of CONTACT_PARTS) { const im = w.skeleton[k]; if (im?.visible) { const ink = partInkX(im); if (ink) inks.push(ink); } }
+            RING.ropes.forEach((rope, ri) => {
+                for (const dir of [-1, 1]) {
+                    const sy = rope.nearY + (rope.farY - rope.nearY) * t;
+                    let part = 0;
+                    for (const ink of inks) if (reachesY(ink, sy)) part = Math.max(part, sidePartPx(dir < 0 ? b.left - ink.minX : ink.maxX - b.right));
+                    const e = sideE[dir], root = e ? e.k * e.w[ri] * 8 : 0, px = Math.max(part, root);
+                    if (px > 0) targets.set(`${mi}|${dir < 0 ? 'L' : 'R'}|${ri}`, { px, pos: t });
+                }
+                if (near) targets.set(`${mi}|near|${ri}`, { px: near.k * near.w[ri] * coverWeight(inks, rope.nearY) * 6, pos: w.x });
+                if (far)  targets.set(`${mi}|far|${ri}`, { px: far.k * far.w[ri] * coverWeight(inks, rope.farY) * 3, pos: w.x });
+            });
+        });
+        const alive = contactStep(st, targets, Math.min(dt, 1 / 30));
+        this._contactDebug = alive;   // read by tools/debug/rope_order_probe.mjs only
+        const out = { near: [], far: [], side: { '-1': [], 1: [] } }, by = new Map();
+        for (const a of alive) {
+            const [mi, wall, ri] = a.key.split('|');
+            const g = by.get(mi + wall) ?? by.set(mi + wall, { wall, px: [0, 0, 0], pos: a.pos }).get(mi + wall);
+            g.px[+ri] = a.val;
+        }
+        for (const g of by.values()) {
+            if (g.wall === 'near') out.near.push({ x: g.pos, px: g.px });
+            else if (g.wall === 'far') out.far.push({ x: g.pos, px: g.px });
+            else out.side[g.wall === 'L' ? -1 : 1].push({ t: g.pos, px: g.px });
+        }
+        return out;
+    }
+
     _updateRopes(dt) {
         const { nearLeft, nearRight, farLeft, farRight, ropes } = RING;
 
@@ -2300,6 +2343,7 @@ export default class Arena extends Phaser.Scene {
         // Local rope deformation: wrestlers pressed into a wall bow the
         // strands around their position with a smooth cosine falloff.
         const presses = this._ropePresses();
+        const cs = ropeContactCandidate() ? this._contactPresses(presses, dt) : null;   // T2.1/T2.2: when on, these feed the warps; `presses` still drives the press window and the hit spring
         // The side ropes' hit spring (T3c.5b): tracks the runner's tension while he is in the hit and rings out after. Zero otherwise.
         this._ropeHitSpring ??= { '-1': { val: 0, vel: 0, t: 0.5, w: [0.8, 1, 0.85] }, 1: { val: 0, vel: 0, t: 0.5, w: [0.8, 1, 0.85] } };
         for (const dir of [-1, 1]) {
@@ -2476,8 +2520,8 @@ export default class Arena extends Phaser.Scene {
                 return Math.max(0, Math.min(1, v));
             };
             const pull = (x, c, x0, x1, r) => 0.75 * span(x, c, x0, x1) + 0.25 * bump(x, c, r);
-            const nearWarp = x =>  presses.near.reduce((a, p) => a + p.k * p.w[ri] * 6 * pull(x, p.x, nearLeft.x, nearRight.x, 220), 0);
-            const farWarp  = x => -presses.far.reduce((a, p)  => a + p.k * p.w[ri] * 3 * pull(x, p.x, farLeft.x, farRight.x, 140), 0);
+            const nearWarp = x => cs ? cs.near.reduce((a, p) => a + p.px[ri] * pull(x, p.x, nearLeft.x, nearRight.x, 220), 0) : presses.near.reduce((a, p) => a + p.k * p.w[ri] * 6 * pull(x, p.x, nearLeft.x, nearRight.x, 220), 0);
+            const farWarp  = x => cs ? -cs.far.reduce((a, p) => a + p.px[ri] * pull(x, p.x, farLeft.x, farRight.x, 140), 0) : -presses.far.reduce((a, p)  => a + p.k * p.w[ri] * 3 * pull(x, p.x, farLeft.x, farRight.x, 140), 0);
             const nearPts = archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75 + (sway && ri === 0 ? sway.near : 0), nearWarp, NBANDS);
             nearPtsByRi[ri] = nearPts;
             // Reference uses `rest` (the rope's own always-present resting
@@ -2505,8 +2549,8 @@ export default class Arena extends Phaser.Scene {
                 const nearP = dir < 0 ? nearLeft : nearRight;
                 const farP  = dir < 0 ? farLeft  : farRight;
                 const hs = this._ropeHitSpring[dir];
-                const warpX = t => dir * presses.side[dir].reduce(
-                    (a, p) => a + p.k * p.w[ri] * 8 * (1 - 0.42 * t) * bump(t, p.t, 0.28), 0)
+                const warpX = t => dir * (cs ? cs.side[dir].reduce((a, p) => a + p.px[ri] * (1 - 0.42 * t) * bump(t, p.t, 0.28), 0) : presses.side[dir].reduce(
+                    (a, p) => a + p.k * p.w[ri] * 8 * (1 - 0.42 * t) * bump(t, p.t, 0.28), 0))
                     + (hs.val ? dir * hs.w[ri] * hs.val * bump(t, hs.t, 0.28) : 0);
                 const swS = sway && ri === 0 ? sway[dir < 0 ? 'L' : 'R'] : 0;
                 const pts = [], ref = [], hw = [];

@@ -39,6 +39,8 @@ export const ropesCandidate = () => {
 };
 // ropesPast (T1.3): with ropes=v1, a part whose ink reaches past a side plane draws under the strand. Its own opt-in so Derek can judge it against ropes=v1 alone: it trades side-wall order for ink past the plane.
 export const ropesPastCandidate = () => ropesCandidate() && new URLSearchParams(location.search).get('ropesPast') === '1';
+// ropeContact (PLAN_ROPES T2.1/T2.2): with ropes on, parts bend the strands and each bend is a spring. Opt-in `?ropeContact=v1` until Derek judges it; absent is today's root-only press.
+export const ropeContactCandidate = () => ropesCandidate() && new URLSearchParams(location.search).get('ropeContact') === 'v1';
 /** `?ropeSway=<scale>` (PLAN_ROPES T1.6, with ?ropes=v1): how big the bottom strand's swing is; 2 default (Derek 2026-11-23), 0 off. */
 export const ropeSwayScale = () => { if (typeof location === 'undefined') return 2; const v = Number(new URLSearchParams(location.search).get('ropeSway')); return Number.isFinite(v) && new URLSearchParams(location.search).has('ropeSway') ? Math.max(0, v) : 2; };
 // ?scaleDebug=1 (T3.4): render-only size overlay (src/scaleDebug.js); off by default, changes nothing in play.

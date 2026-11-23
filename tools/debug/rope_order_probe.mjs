@@ -228,8 +228,8 @@ const INIT = (cfg) => {
         };
     } else if (cfg.kind === 'move') {
         // the attacker toward the ring centre of the defender, who has his back to the wall; wall = 'FL' | 'FR' (far corners) | 'L' | 'R' (side walls, mid depth)
-        const dir = cfg.wall.endsWith('L') ? -1 : 1, y = cfg.wall.startsWith('F') ? 272 : 350, b = bounds(y);
-        d.y = y; d.x = (dir < 0 ? b.left : b.right) - dir * 30; a.y = y; a.x = d.x - dir * 70 * s; a.facing = -dir; d.facing = dir;
+        const dir = cfg.wall.endsWith('L') ? -1 : 1, y = cfg.wall === 'N' ? 432 : cfg.wall.startsWith('F') ? 272 : 350, b = bounds(y);
+        d.y = y; d.x = cfg.wall === 'N' ? 480 : (dir < 0 ? b.left : b.right) - dir * 30; a.y = y; a.x = d.x - dir * 70 * s; a.facing = -dir; d.facing = dir;   // wall 'N' = beside the near wall (T1.6)
         R.max = 480; R.called = false;
         R.script = () => {
             if (R.f === 3) {
@@ -314,7 +314,7 @@ const runOne = async (page, cfg, label) => {
 const RING = { nearLeft: { x: 40, y: 445 }, nearRight: { x: 920, y: 445 }, farLeft: { x: 210, y: 258 }, farRight: { x: 750, y: 258 }, ropes: [{ nearY: 380, farY: 218 }, { nearY: 316, farY: 181 }, { nearY: 251, farY: 142 }] };
 
 const launchWith = async (p1, p2, ai) => {
-    process.env.WFM_P1 = p1; process.env.WFM_P2 = p2; process.env.WFM_QS = 'notitle=1' + (process.env.ROPES === 'v1' ? '&ropes=v1' : '') + (process.env.PAST === '1' ? '&ropesPast=1' : ''); process.env.WFM_INIT_SCRIPT = new URL('./no_hmr_init.js', import.meta.url).pathname;
+    process.env.WFM_P1 = p1; process.env.WFM_P2 = p2; process.env.WFM_QS = 'notitle=1' + (process.env.ROPES === 'v1' ? '&ropes=v1' : '') + (process.env.PAST === '1' ? '&ropesPast=1' : '') + (process.env.SWAYSCALE ? `&ropeSway=${process.env.SWAYSCALE}` : ''); process.env.WFM_INIT_SCRIPT = new URL('./no_hmr_init.js', import.meta.url).pathname;
     const h = await launch();
     await h.page.waitForFunction(() => window.__WFM_GAME?.scene?.scenes?.[0]?.w2, null, { timeout: 60000 });
     await h.page.waitForTimeout(1500);
@@ -378,6 +378,41 @@ if (process.argv.includes('--stills')) {
         }
     } finally { await h.close(); }
     process.exit(0);
+}
+// T1.6 --sway: slam beside each side wall and the near wall (Lou and George as the slammer); per wall the bottom strand's swing (px) and settle time, plus strips with --shots into <outDir>/<rig>-<wall>/.
+//   SWAYSCALE=<n> sets ?ropeSway. Needs ROPES=v1.
+if (process.argv.includes('--sway')) {
+    const rows = [];
+    for (const [p1, p2] of [[LOU, GEORGE], [GEORGE, LOU]]) {
+        const { h, info } = await launchWith(p1, p2, false);
+        try {
+            const rig = p1 === LOU ? 'lou' : 'george';
+            for (const wall of ['L', 'R', 'N']) {
+                await h.page.evaluate(INIT, { kind: 'move', move: 'bodySlam', wall });
+                const dir = join(outDir, `${rig}-${wall}`);
+                if (process.argv.includes('--shots')) { rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true }); }
+                const clip = { x: info.box.x, y: info.box.y + info.box.h * 0.3, width: info.box.w, height: info.box.h * 0.6 };
+                const tl = []; let n = 0;
+                for (let f = 0; ; f++) {
+                    const r = await h.page.evaluate(() => window.__ONE({ cells: false }));
+                    const m = await h.page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0], s = sc._swayDebug; return { st: sc.w2.state, lg: s ? s.log.length : 0, tt: s ? +s.t.toFixed(3) : 0, v: s ? Object.fromEntries(Object.entries(s.spring).map(([k, q]) => [k, q.val])) : null }; });
+                    tl.push({ f, ...m });
+                    if (process.argv.includes('--shots') && f % 2 === 0) await h.page.screenshot({ path: join(dir, `f${String(n++).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 72, clip });
+                    if (r.done && f > 60) break;
+                    if (f > 520) break;
+                }
+                const walls = ['near', 'R', 'far', 'L'], per = {};
+                const first = tl.findIndex(x => x.v && walls.some(w => Math.abs(x.v[w]) > 0.5));
+                const lastKick = tl.reduce((a, x, i) => i && x.lg > tl[i - 1].lg ? i : a, -1);   // frame of the last kick (landing kick, then the top-ups while he lies on it)
+                for (const w of walls) {
+                    const ys = tl.map(x => Math.abs(x.v?.[w] ?? 0)), last = ys.reduce((a, v, i) => v > 0.5 ? i : a, -1);
+                    per[w] = { maxPx: +Math.max(...ys).toFixed(1), settleS: first < 0 || last < 0 ? 0 : +((last - first) / 60).toFixed(2), settleAfterLastKickS: last < 0 ? 0 : +(Math.max(0, last - lastKick) / 60).toFixed(2), maxWhileGettingUp: +Math.max(0, ...tl.filter(x => x.st === 'gettingUp').map(x => Math.abs(x.v?.[w] ?? 0))).toFixed(1) };
+                }
+                rows.push({ rig, wall, scale: process.env.SWAYSCALE ?? '1', firstFrame: first, kicks: tl.at(-1).lg, lastKickFrame: lastKick, states: [...new Set(tl.map(x => x.st))], per, frames: n }); console.log(`[ropes] sway ${rig} ${wall}`, JSON.stringify(per));
+            }
+        } finally { await h.close(); }
+    }
+    mkdirSync(outDir, { recursive: true }); writeFileSync(join(outDir, 'sway.json'), JSON.stringify(rows, null, 1)); process.exit(0);
 }
 const filmRun = async (page, info, rig) => {   // run a again, one frame at a time, a clip of the far half at 30 fps (every other frame)
     const dir = join(outDir, 'film', rig); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });

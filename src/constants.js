@@ -34,6 +34,8 @@ export const scaleCandidate = () => {
 export const ropesCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('ropes') === 'v1';
 // ropesPast (T1.3): with ropes=v1, a part whose ink reaches past a side plane draws under the strand. Its own opt-in so Derek can judge it against ropes=v1 alone: it trades side-wall order for ink past the plane.
 export const ropesPastCandidate = () => ropesCandidate() && new URLSearchParams(location.search).get('ropesPast') === '1';
+/** `?ropeSway=<scale>` (PLAN_ROPES T1.6, with ?ropes=v1): how big the bottom strand's swing is; 1 default, 0 off. */
+export const ropeSwayScale = () => { if (typeof location === 'undefined') return 1; const v = Number(new URLSearchParams(location.search).get('ropeSway')); return Number.isFinite(v) && new URLSearchParams(location.search).has('ropeSway') ? Math.max(0, v) : 1; };
 // ?scaleDebug=1 (T3.4): render-only size overlay (src/scaleDebug.js); off by default, changes nothing in play.
 export const scaleDebugCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('scaleDebug') === '1';
 

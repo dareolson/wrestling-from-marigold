@@ -1,4 +1,5 @@
-import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate } from '../constants.js';
+import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate, ropeSwayScale } from '../constants.js';
+import { createSway, swayKick, swayStep, swayWall, swayHardness, SWAY, SWAY_STATES } from '../animation/ropeSway.js';
 import { splitPlan, pastPlane, pastPartDepth, pressWindow } from '../animation/ropeSplit.js';
 import { partInkX } from '../ropeInk.js';
 import ScaleDebug from '../scaleDebug.js';
@@ -35,7 +36,7 @@ import { FRONT_KICK_V2_CLIPS } from '../animation/clips/frontKickV2.js';
 import { JAB_V2_CLIPS } from '../animation/clips/jabV2.js';
 import { bodySlamV2Clip, bodySlamV2GeorgeClip } from '../animation/clips/bodySlamV2.js';
 import { ROPE_HIT, stepRopeSpring } from '../animation/ropeHit.js';
-import { WEAR_MAX, KNOCKDOWN_WEAR, EXCEPTIONAL_WEAR } from '../animation/falls.js';
+import { WEAR_MAX, KNOCKDOWN_WEAR, EXCEPTIONAL_WEAR, REF_VY } from '../animation/falls.js';
 import { facesTrial, faceAssets, FaceDriver } from '../animation/faceTrial.js';
 import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamInfluenceAt, BEAM_DEPTH, ROPE_SHADOW, insetMatTrapezoid } from './arenaLighting.js';
 
@@ -2248,6 +2249,36 @@ export default class Arena extends Phaser.Scene {
         sag.vel += 90;
     }
 
+    // PLAN_ROPES T1.6 (`?ropes=v1`): kick the sway from any lying man whose ink is on a bottom strand, step it, and hand back the px per wall (all 0 when asleep).
+    _updateSway(dt) {
+        const sc = ropeSwayScale();
+        const sw = this._ropeSway ??= createSway(), seen = this._swayIn ??= new Map();
+        const men = [this.w1, this.w2].filter(Boolean);
+        for (const w of men) {
+            const lying = SWAY_STATES.has(w.state) || !!w._landing;
+            let wall = null;
+            if (lying) {
+                const b = ringBoundsAtY(w.y), t = (RING.nearLeft.y - w.y) / (RING.nearLeft.y - RING.farLeft.y), r0 = RING.ropes[0];
+                let ink = null;
+                if (Math.min(w.x - b.left, b.right - w.x) < 110 * w.s) for (const im of w.skeleton._parts) {
+                    if (!im?.visible) continue;
+                    const k = partInkX(im);
+                    if (!k) continue;
+                    ink = ink ? { minX: Math.min(ink.minX, k.minX), maxX: Math.max(ink.maxX, k.maxX), minY: Math.min(ink.minY, k.minY), maxY: Math.max(ink.maxY, k.maxY) } : k;
+                }
+                wall = swayWall({ y: w.y, ink, bounds: b, stripY: r0.nearY + (r0.farY - r0.nearY) * t, nearY: RING.nearLeft.y, farY: RING.farLeft.y });
+            }
+            const was = seen.get(w);
+            if (wall && sc > 0) {
+                if (!was) { swayKick(sw, wall, SWAY.amp * sc * swayHardness(w._landing, REF_VY)); seen.set(w, { wall, t: 0 }); }
+                else { was.t += dt; if (was.t >= SWAY.topUpEvery) { was.t = 0; swayKick(sw, wall, SWAY.amp * sc * SWAY.topUp); } }
+            } else seen.delete(w);
+        }
+        swayStep(sw, Math.min(dt, 1 / 30));
+        this._swayDebug = sw;   // read by tools/debug/rope_sway_probe.mjs only
+        return Object.fromEntries(Object.entries(sw.spring).map(([k, v]) => [k, v.val]));
+    }
+
     _updateRopes(dt) {
         const { nearLeft, nearRight, farLeft, farRight, ropes } = RING;
 
@@ -2277,6 +2308,8 @@ export default class Arena extends Phaser.Scene {
             stepRopeSpring(sp, hit ? ROPE_HIT.ropeBow * hit.tension : 0, Math.min(dt, 1 / 30));
             if (!hit && Math.abs(sp.val) < 0.01 && Math.abs(sp.vel) < 0.01) { sp.val = 0; sp.vel = 0; }
         }
+        // ?ropes=v1 T1.6: the bottom strand's sway (px per wall, strand 0 only), kicked by a man lying on it and travelling round the ring.
+        const sway = ropesCandidate() ? this._updateSway(dt) : null;
         const bump = (u, c, r) => {
             const q = Math.abs(u - c) / r;
             return q >= 1 ? 0 : 0.5 + 0.5 * Math.cos(q * Math.PI);
@@ -2445,7 +2478,7 @@ export default class Arena extends Phaser.Scene {
             const pull = (x, c, x0, x1, r) => 0.75 * span(x, c, x0, x1) + 0.25 * bump(x, c, r);
             const nearWarp = x =>  presses.near.reduce((a, p) => a + p.k * p.w[ri] * 6 * pull(x, p.x, nearLeft.x, nearRight.x, 220), 0);
             const farWarp  = x => -presses.far.reduce((a, p)  => a + p.k * p.w[ri] * 3 * pull(x, p.x, farLeft.x, farRight.x, 140), 0);
-            const nearPts = archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75, nearWarp, NBANDS);
+            const nearPts = archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest + ns * 0.75 + (sway && ri === 0 ? sway.near : 0), nearWarp, NBANDS);
             nearPtsByRi[ri] = nearPts;
             // Reference uses `rest` (the rope's own always-present resting
             // gravity droop), not 0 — a dead-flat line. Zeroing it out made
@@ -2458,7 +2491,7 @@ export default class Arena extends Phaser.Scene {
             nearRefByRi[ri] = archPts(nearLeft.x, rope.nearY, nearRight.x, rope.nearY, rest, null, NBANDS);
             fillRibbonBands(this.nearRopeBands, nearPts,
                 new Array(NBANDS + 1).fill(2), 0x32322e, 1, 0x8e8e82, 0.9);
-            const farPts = archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58 + fs * 0.75, farWarp);
+            const farPts = archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58 + fs * 0.75 + (sway && ri === 0 ? sway.far * 0.6 : 0), farWarp);   // far wall: the swing at its perspective size
             farPtsByRi[ri] = farPts;
             farRefByRi[ri] = archPts(farLeft.x, rope.farY, farRight.x, rope.farY, rest * 0.58, null);
             fillRibbon(farG, farPts, 1, 0x3c3c38, 0.9, 0x787870);
@@ -2475,10 +2508,11 @@ export default class Arena extends Phaser.Scene {
                 const warpX = t => dir * presses.side[dir].reduce(
                     (a, p) => a + p.k * p.w[ri] * 8 * (1 - 0.42 * t) * bump(t, p.t, 0.28), 0)
                     + (hs.val ? dir * hs.w[ri] * hs.val * bump(t, hs.t, 0.28) : 0);
+                const swS = sway && ri === 0 ? sway[dir < 0 ? 'L' : 'R'] : 0;
                 const pts = [], ref = [], hw = [];
                 for (let i = 0; i <= BANDS; i++) {
                     const t = i / BANDS;
-                    pts.push(sidePoint(nearP, farP, rope, dir, t, sideRest, warpX));
+                    pts.push(sidePoint(nearP, farP, rope, dir, t, sideRest + swS, warpX));
                     ref.push(sidePoint(nearP, farP, rope, dir, t, sideRest, null)); // resting droop included, press excluded — see near-rope comment above
                     hw.push((3.0 - 1.2 * t) / 2); // thinner with distance
                 }
@@ -2486,7 +2520,7 @@ export default class Arena extends Phaser.Scene {
                 sideRefByRi[ri][dir] = ref;
                 if (plan) {
                     const wp = wallPlan[dir], gs = this.sideRopeSplit, off = dir < 0 ? 0 : 3;
-                    const sp = wp.ts.map(t => sidePoint(nearP, farP, rope, dir, t, sideRest, warpX));
+                    const sp = wp.ts.map(t => sidePoint(nearP, farP, rope, dir, t, sideRest + swS, warpX));
                     fillRibbonBands(gs, sp, wp.ts.map(t => (3.0 - 1.2 * t) / 2), 0x36362f, 0.85, 0x82827a, 0.75, i => off + wp.group[i]);
                 } else fillRibbonBands(this.sideRopeBands, pts, hw, 0x36362f, 0.85, 0x82827a, 0.75);
             }

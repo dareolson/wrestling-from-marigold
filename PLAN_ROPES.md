@@ -63,6 +63,18 @@ Everything new goes behind `?ropes=v1` (off = byte-identical to today). Don't to
 - **T2.2 Strand spring.** Each strand gets a small spring per contact point (settle after release, no ringing past ~0.4 s). Measure: max deflection px per strand in the T0.1 runs, settle time.
 - **T2.3 G page.** Irish whip into each side wall, a man backed into the far corner, a slam beside a side wall, the far-corner walk: off | on stills plus the normal-speed loop strip, both facings. **STOP for Opus, then Derek.**
 
+## RS Rope spill: a knockdown ends under the bottom rope (`?ropeSpill=v1`)
+
+Derek 2026-11-23: "often in old matches they would kind of spill into the bottom ropes… our wrestlers can't react to the ropes themselves." Approach: authored and placed against the rope, as the rope-run hit and the corner daze are, not physics. Side walls only: the near strands always draw in front and the far strands always behind, so a head under those would draw wrong (parked). Name it **rope spill**; `spill` is already a fall kind in falls.js (the glancing sideways fall), don't reuse or change it.
+
+- **TS.0 Measure (no src change).** Today `chooseFall` keeps the body inside the ring (`ctx.room`, `LYING_REACH`; falls that overshoot are avoided, "(ring room)"). With the rope probe (runs c + d): how often a knockdown happens within reach of a side wall, which falls are picked there, which way the head points (toward or away from the wall), and how far head/shoulder ink ends from the plane. Report a table; no page. Then go on to TS.1 (no STOP).
+- **TS.1 The spill.** Near a side wall, a fall that lands head toward that wall (backward fall with his back to the rope, forward fall facing it) is no longer kept inside: it becomes a rope spill. The root ends so that head and shoulders lie just past the plane, under the bottom strand (a target: the base of the neck ~10-20 px past the plane at s = 1, by rig; never the hips). Reach it with a short slide during the landing's settle (eased, capped, e.g. ≤ 40 px at s = 1), not a jump. The root stays inside (`_clamp` must not fight it; check). Pure helper `ropeSpillPlan(ctx)` → `{ dx, dur }` or null, unit-tested per facing, wall and rig. Get-up from a spill: he first slides back in (head clear of the strand) and then runs the normal get-up; no part passes up through a strand.
+- **TS.2 The rope lies on him.** While he is spilled, the bottom strand rests across his chest: at his contact point its drawn y follows the top of his torso ink (it sags onto him, R2 contact spring carries it), and the sway (T1.6) fires on the landing. Middle and top strands unchanged. Check draw order with the probe: the bottom strand in front of his head and torso, 0 wrong-order px past the T1.5 level.
+- **TS.3 Rope break.** A spilled man counts as at the ropes: pin, sleeper and headlock on him break as today (`_isAtRopes`; today it's root within 30 px, which a spilled man's root may not be). The AI doesn't go for a pin on a spilled man (pulls him out later, not here). Tests for both.
+- **TS.4 Footage.** Normal-speed mp4 (Derek reviews from footage): knockdowns beside each side wall (strike knockdown, body slam, suplex), both facings, Lou and George, old over spill. Plus numbers: spills per minute in the AI soak, head past plane px, slide px, get-up clear (no strand crossing on the way up). **STOP for Opus, then Derek.**
+
+Parked from RS: spilling under the near ropes (needs the near strands split like the sides), the far wall, legs/feet under the rope, draped over the middle rope (later, with R3's hand-to-strand grip).
+
 ## R3 Grab the rope (design first)
 
 - **T3.0 Derek decides (Opus writes the options page, no code).** Candidates:

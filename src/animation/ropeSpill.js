@@ -15,8 +15,8 @@ export const SPILL = Object.freeze({
     // headTop = the head ink's top edge above the root's row
     rig: Object.freeze({
         default: Object.freeze({ supine: 80, thrown: 70, prone: 82, len: 92, midSupine: -8, midProne: -14, head: 115, headTopSupine: -32, headTopProne: -32 }),
-        'thesz-procreate-v1': Object.freeze({ supine: 82, thrown: 72, prone: 84, len: 93, midSupine: -10, midProne: -14, head: 121, headTopSupine: -32, headTopProne: -38 }),
-        'george-roster-v1': Object.freeze({ supine: 78, thrown: 67, prone: 80, len: 90, midSupine: -5, midProne: -14, head: 109, headTopSupine: -31, headTopProne: -27 }),
+        'george-roster-v1': Object.freeze({ supine: 82, thrown: 72, prone: 84, len: 93, midSupine: -10, midProne: -14, head: 121, headTopSupine: -32, headTopProne: -38 }),
+        'thesz-procreate-v1': Object.freeze({ supine: 78, thrown: 67, prone: 80, len: 90, midSupine: -5, midProne: -14, head: 109, headTopSupine: -31, headTopProne: -27 }),
     }),
 });
 const rigOf = rig => SPILL.rig[rig] ?? SPILL.rig.default;
@@ -61,5 +61,26 @@ export function spillBack({ x, y, s = 1, wall, lying, rig, bounds, thrown = fals
     const want = head - out + SPILL.clear;
     return want > dist ? { dx: -(want - dist) * s * dir, dur: SPILL.backDur } : null;
 }
+// TS.6: the rope catches him. A knockdown whose head or torso ink reaches the drawn bottom strand is thrown back toward the middle by one small hop and ends `SPILL.clear` px inside it.
+export const CATCH = Object.freeze({
+    lift: 14,     // s = 1 px: the hop's peak height
+    minDx: 10,    // s = 1 px: the least the bounce carries him, so even a graze reads as a bounce
+    dur: 0.45,    // s, the one hop
+    extra: 16,    // s = 1 px: carried past the line it was measured to, so the landing's settle, the sells and the rise stay inside it
+    near: 130,    // s = 1 px: ink is only measured within this of the plane
+});
+/**
+ * The bounce that leaves his whole head inside the drawn strand (spillBack's line, at the landed pose's reach): { dx (world px, signed, away from the wall), lift (world px), dur, wall }, or
+ * null when he already lies inside. `over` (s = 1 px): the ink's measured overshoot past the strand, when the fall measures it before the tables say so.
+ */
+export function catchPlan({ x, y, s = 1, facing = 1, lying, rig, bounds, thrown = false, over = 0 }) {
+    if (lying !== 'supine' && lying !== 'prone') return null;
+    const dir = spillHeadDir(lying, facing), back = spillBack({ x, y, s, wall: dir > 0 ? 'R' : 'L', lying, rig, bounds, thrown });
+    const base = Math.max(back ? Math.abs(back.dx) / s : 0, over > 0 ? over + SPILL.clear : 0);
+    if (base <= 0) return null;
+    return { dx: -dir * Math.max(base + CATCH.extra, CATCH.minDx) * s, lift: CATCH.lift * s, dur: CATCH.dur, wall: dir > 0 ? 'R' : 'L' };
+}
+/** How far (px at s = 1, + = crossing) a part's ink box passes the drawn bottom strand on the side `dir`, read at the box's top row (the strand slants up the screen). */
+export const strandOver = (ink, dir, s = 1) => (dir < 0 ? strandX(ink.minY, -1) - ink.minX : ink.maxX - strandX(ink.minY, 1)) / s;
 /** The rope-break test for a pin, sleeper or headlock on `w`: at the wall as before, or lying spilled under it. */
 export function spillAtRopes({ x, s = 1, bounds, spilled = false }) { return spilled || x <= bounds.left + 30 * s || x >= bounds.right - 30 * s; }

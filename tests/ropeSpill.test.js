@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SPILL, spillExt, spillHeadDir, spillPlan, spillBack, spillAtRopes, strandX } from '../src/animation/ropeSpill.js';
+import { SPILL, spillExt, spillHeadDir, spillPlan, spillBack, spillAtRopes, strandX, catchPlan, strandOver, CATCH } from '../src/animation/ropeSpill.js';
 import { chooseFall } from '../src/animation/falls.js';
 import { splitPlan } from '../src/animation/ropeSplit.js';
 
@@ -11,7 +11,7 @@ test('head direction: on his back away from his facing, face down toward it', ()
     assert.equal(spillHeadDir('supine', 1), -1); assert.equal(spillHeadDir('supine', -1), 1);
     assert.equal(spillHeadDir('prone', 1), 1); assert.equal(spillHeadDir('prone', -1), -1);
 });
-const row = (x, o = {}) => ({ x, y: 350, s: 1, facing: 1, lying: 'supine', rig: LOU, bounds: B, ...o });   // facing right, on his back: the head points at the LEFT wall (plane x = 100)
+const row = (x, o = {}) => ({ x, y: 350, s: 1, facing: 1, lying: 'supine', rig: GEORGE, bounds: B, ...o });   // George: torso 93 long, fall ext 82, head 121 (probe)   // facing right, on his back: the head points at the LEFT wall (plane x = 100)
 test('strandX: the drawn bottom strand sits well outside the ground plane at the torso row', () => {
     assert.ok(Math.abs(strandX(380, -1) - 40) < 1e-9);                                    // near corner
     assert.ok(strandX(345, -1) > strandX(300, -1) - 200 && strandX(345, -1) < strandX(380, -1) + 100);
@@ -41,17 +41,17 @@ test('spillPlan: not lying is null; the move scales with s; rigs differ in reach
     assert.equal(spillPlan(row(B.left + 30, { lying: null })), null);
     const half = spillPlan(row(B.left + 15, { s: 0.5, canShift: true }));
     assert.ok(half.fallDx < 0 && half.fallDx > -10, `${half.fallDx}`);
-    const g = spillPlan(row(B.left + 60, { rig: GEORGE, canShift: true })), l = spillPlan(row(B.left + 60, { canShift: true }));
+    const g = spillPlan(row(B.left + 60, { rig: LOU, canShift: true })), l = spillPlan(row(B.left + 60, { canShift: true }));
     assert.ok(g && l && g.want >= SPILL.hipsMin && l.want >= SPILL.hipsMin);
 });
 test('spillBack: slides his whole head inside the drawn strand (its x at the head top row) before the get-up, nothing when it already is', () => {
-    const b = spillBack({ x: B.left + 20, y: 350, s: 1, wall: 'L', lying: 'supine', rig: LOU, bounds: B });
+    const b = spillBack({ x: B.left + 20, y: 350, s: 1, wall: 'L', lying: 'supine', rig: GEORGE, bounds: B });
     const top = strandX(350 - 32, -1), outTop = B.left - top;                              // head top 32 px above the root's row
     assert.ok(Math.abs(b.dx - (121 - outTop + SPILL.clear - 20)) < 1e-9, `${b.dx}`);       // away from the left wall = +x
     assert.ok(b.dx > 40, 'a real slide, not a nudge');
-    assert.equal(spillBack({ x: B.left + 300, y: 350, s: 1, wall: 'L', lying: 'supine', rig: LOU, bounds: B }), null);
-    assert.ok(spillBack({ x: B.right - 20, y: 350, s: 1, wall: 'R', lying: 'supine', rig: LOU, bounds: B }).dx < 0);
-    const th = spillBack({ x: B.left + 20, y: 350, s: 1, wall: 'L', lying: 'supine', rig: LOU, bounds: B, thrown: true });
+    assert.equal(spillBack({ x: B.left + 300, y: 350, s: 1, wall: 'L', lying: 'supine', rig: GEORGE, bounds: B }), null);
+    assert.ok(spillBack({ x: B.right - 20, y: 350, s: 1, wall: 'R', lying: 'supine', rig: GEORGE, bounds: B }).dx < 0);
+    const th = spillBack({ x: B.left + 20, y: 350, s: 1, wall: 'L', lying: 'supine', rig: GEORGE, bounds: B, thrown: true });
     assert.ok(Math.abs((b.dx - th.dx) - 10) < 1e-9, 'a thrown man lies 10 px shorter');
 });
 test('rope break: a spilled man is at the ropes wherever his root is; otherwise the 30 px rule', () => {
@@ -87,4 +87,32 @@ test('AI: a spilled man is near the ropes wherever his root is; a man mid-ring i
     assert.ok(!near.call({}, { x: 450, y: 350, s: 1, isSpilled: () => false }));
     assert.ok(!near.call({}, { x: 450, y: 350, s: 1 }), 'a wrestler without isSpilled (older objects) behaves as before');
     assert.ok(near.call({}, { x: 130, y: 350, s: 1, isSpilled: () => false }), 'the plain wall rule is unchanged');
+});
+
+test('catchPlan (TS.6): a head that would cross the strand is thrown back by one hop to `clear` px inside it; a man already inside is not touched', () => {
+    const near = catchPlan({ x: B.left + 20, y: 350, s: 1, facing: 1, lying: 'supine', rig: GEORGE, bounds: B });
+    const back = spillBack({ x: B.left + 20, y: 350, s: 1, wall: 'L', lying: 'supine', rig: GEORGE, bounds: B });
+    assert.equal(near.wall, 'L'); assert.ok(near.dx > 0, 'away from the left wall');
+    assert.ok(Math.abs(near.dx - (back.dx + CATCH.extra)) < 1e-9, 'the line the get-up used to slide to, plus the extra');
+    assert.equal(near.lift, CATCH.lift); assert.equal(near.dur, CATCH.dur);
+    assert.equal(catchPlan({ x: B.left + 300, y: 350, s: 1, facing: 1, lying: 'supine', rig: GEORGE, bounds: B }), null);
+    assert.equal(catchPlan({ x: B.left + 20, y: 350, s: 1, facing: 1, lying: null, rig: GEORGE, bounds: B }), null);
+    const half = catchPlan({ x: B.left + 10, y: 350, s: 0.5, facing: 1, lying: 'supine', rig: GEORGE, bounds: B });
+    assert.ok(half.lift === CATCH.lift * 0.5 && half.dx > 0, 'lift scales with s');
+});
+test('catchPlan: a graze still bounces (minDx), a measured overshoot widens it, the right wall throws him left', () => {
+    const edge = B.left + 20, nd = Math.abs(spillBack({ x: edge, y: 350, s: 1, wall: 'L', lying: 'supine', rig: GEORGE, bounds: B })?.dx ?? 0);
+    const over = catchPlan({ x: B.left + 300, y: 350, s: 1, facing: 1, lying: 'supine', rig: GEORGE, bounds: B, over: 3 });
+    assert.ok(over && over.dx >= CATCH.minDx, 'a 3 px graze: bounces at least minDx');
+    const wide = catchPlan({ x: edge, y: 350, s: 1, facing: 1, lying: 'supine', rig: GEORGE, bounds: B, over: nd + 40 });
+    assert.ok(Math.abs(wide.dx) >= nd + 40 + SPILL.clear + CATCH.extra - 1e-9);
+    assert.ok(catchPlan({ x: B.right - 20, y: 350, s: 1, facing: 1, lying: 'prone', rig: GEORGE, bounds: B }).dx < 0, 'prone, facing right: head at the right wall, thrown left');
+});
+test('strandOver: + when the ink box passes the drawn strand, - inside it', () => {
+    const k = (minX, maxX) => ({ minX, maxX, minY: 300, maxY: 340 }), sx = strandX(300, -1);
+    assert.ok(Math.abs(strandOver(k(sx - 6, sx + 50), -1) - 6) < 1e-9);
+    assert.ok(strandOver(k(sx + 5, sx + 50), -1) < 0);
+    const sr = strandX(300, 1);
+    assert.ok(Math.abs(strandOver(k(sr - 50, sr + 4), 1) - 4) < 1e-9);
+    assert.ok(Math.abs(strandOver(k(sx - 6, sx + 50), -1, 2) - 3) < 1e-9, 's scales it');
 });

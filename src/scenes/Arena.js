@@ -2270,6 +2270,7 @@ export default class Arena extends Phaser.Scene {
                 }
                 wall = swayWall({ y: w.y, ink, bounds: b, stripY: r0.nearY + (r0.farY - r0.nearY) * t, nearY: RING.nearLeft.y, farY: RING.farLeft.y });
             }
+            if (w._catchKick) { if (sc > 0) swayKick(sw, w._catchKick.wall, SWAY.amp * sc * w._catchKick.hard); w._catchKick = null; }   // TS.6: the rope takes him
             const was = seen.get(w);
             if (wall && sc > 0) {
                 if (!was) { swayKick(sw, wall, SWAY.amp * sc * swayHardness(w._landing, REF_VY)); seen.set(w, { wall, t: 0 }); }

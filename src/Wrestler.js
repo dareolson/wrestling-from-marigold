@@ -1,6 +1,7 @@
 import { impactMoveId } from './animation/impactMoves.js';
 import { RING, ringBoundsAtY, perspectiveScale, scaleCandidate, ropeSpillCandidate } from './constants.js';
-import { spillPlan, spillBack } from './animation/ropeSpill.js';
+import { spillPlan, spillBack, spillHeadDir, catchPlan, strandOver, CATCH } from './animation/ropeSpill.js';
+import { partInkX } from './ropeInk.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
@@ -1347,6 +1348,7 @@ export default class Wrestler {
             this._jolt.t += dt;
             if (this._jolt.t >= this._joltSeconds(this._jolt)) this._jolt = null;
         }
+        this._tickCatch(dt);
         if (this.state !== 'down' && this.state !== 'staggered') return;
         if (this.state === 'down') this._tickSell(dt);
         this.stateTimer -= dt;
@@ -1436,7 +1438,6 @@ export default class Wrestler {
     // `tier` (T2.5d, the slam, `?slamTier=`): TIERS key or null.
     _startLanding(kind, vy = REF_VY, additive = false, tier = null) {
         if (!fallsCandidate()) return;
-        if (ropeSpillCandidate()) this._maybeSpill(additive);   // additive = a throw's landing (slam, suplex)
         // T2.5h: the rig's hopScale (rig config `falls.hopScale`) scales the incoming speed the hop is read from, so both rigs' drawn hops land in the same px range
         // (George's drawn hop read 1.29x Lou's at the same command).
         this._landing = { kind, intensity: this._pain?.severity || 0.6, vy: vy * (this.skeleton?._textureConfig?.falls?.hopScale ?? 1), t: 0, additive, tier };
@@ -1456,6 +1457,40 @@ export default class Wrestler {
         const plan = spillPlan({ x: this.x, y: this.y, s: this.s, facing: this.facing || 1, lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), canShift: true });
         if (!plan || Math.abs(plan.fallDx) < 0.5) return;
         const tok = this._spillTok = {};
+    // ?ropeSpill=v1 (PLAN_ROPES TS.6): the rope catches him. A knockdown whose head or torso ink reaches the drawn bottom strand (measured each frame once he is near flat; the tables only set the floor
+    // of the bounce) is thrown back by one small hop that ends his whole head inside the strand; he stays there through the get-up. One catch per knockdown. The TS.5
+    // under-the-rope code below (_maybeSpill, _spillFallShift, _spillGetUp) stays, unused.
+    _catchWatch() {
+        if (this._catchDone || !ropeSpillCandidate() || !this.skeleton || (this.state !== 'falling' && !this._landing)) return;
+        if (this.state === 'falling' && this.fallProgress < 0.95) return;   // upright or mid-fall the ink box is tall: the strand's line is only valid against a body lying near flat
+        const lying = this.state === 'falling' ? Skeleton.FALLS[this._fallVariant]?.lands : this.lying;
+        if (lying !== 'supine' && lying !== 'prone') return;
+        const b = ringBoundsAtY(this.y), s = this.s || 1, dir = spillHeadDir(lying, this.facing || 1);
+        if ((dir > 0 ? b.right - this.x : this.x - b.left) > CATCH.near * s) return;
+        let over = 0;
+        for (const im of [this.skeleton.head, this.skeleton.torso]) { const k = im?.visible ? partInkX(im) : null; if (k) over = Math.max(over, strandOver(k, dir, s)); }
+        if (over > 0) this._startCatch({ lying, over });
+    }
+    _startCatch({ lying, over = 0, thrown = false }) {
+        const plan = catchPlan({ x: this.x, y: this.y, s: this.s, facing: this.facing || 1, lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), thrown, over });
+        if (!plan) return;
+        this._catchDone = true;
+        this._catch = { dx: plan.dx, lift: plan.lift, dur: plan.dur, t: 0, u0: 0 };
+        this._catchKick = { wall: plan.wall, hard: Math.min(1.5, 0.6 + Math.abs(plan.dx) / (this.s || 1) / 80) };
+        this._catchLog = { t: this.scene?.time?.now ?? 0, dx: plan.dx / (this.s || 1), lift: plan.lift / (this.s || 1), over, state: this.state };
+    }
+    _tickCatch(dt) {
+        if (this.state !== 'falling' && this.state !== 'down' && this.state !== 'possum') { this._catchDone = false; this._catch = null; this._catchLift = 0; return; }
+        this._catchWatch();
+        const c = this._catch;
+        if (!c) return;
+        c.t = Math.min(c.dur, c.t + dt);
+        const u = c.t / c.dur, e = 1 - (1 - u) * (1 - u);   // thrown back fast, easing out
+        this.x += c.dx * (e - c.u0); c.u0 = e;
+        this._catchLift = c.lift * 4 * u * (1 - u);          // one hop, down again by the end
+        if (c.t >= c.dur) { this._catch = null; this._catchLift = 0; }
+    }
+
         this.scene.tweens.add({ targets: this, x: this.x + plan.fallDx, duration: Skeleton.fallDuration(variant), ease: 'Sine.easeOut', onUpdate: (tw) => { if (this._spillTok !== tok || this.state !== 'falling') tw.stop(); } });
     }
     // The slides on the mat run on the game's dt (like stateTimer, which holds the get-up for them), not a tween: a tween's clock can run slower than dt and cut the slide short.
@@ -4732,7 +4767,6 @@ export default class Wrestler {
     _fallBySituation(hit, opts = {}) {
         const pick = this._pickFall(hit, opts);
         this.startFall(DOWN_SEC, pick.fall, true, pick.tier);
-        if (ropeSpillCandidate()) this._spillFallShift(pick.fall);
         // T3.9: no fall fits the ring here, so he keeps the one chosen and is carried inward over the fall (as _fallFromCorner does), the lying body ending inside the ropes
         if (pick.slide?.dx) {
             const tok = this._ringSlideTok = {}, dx = (pick.slide.dx + Math.sign(pick.slide.dx) * 10) * this.s * (this.facing || 1);
@@ -4903,7 +4937,7 @@ export default class Wrestler {
             gfx.fillEllipse(x, y, (120 + p * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
             const ballistic = state === 'falling' && this._fallBallistic && fallsCandidate();   // T2.6: no pop at the start (he starts from where he stands), free fall to contact
-            this.skeleton.updateFall(x, y, s, facing, this._fallVariant, p, state === 'risingUp' || ballistic ? this._riseStand(s, facing) : null, ballistic);
+            this.skeleton.updateFall(x, y - (this._catchLift || 0), s, facing, this._fallVariant, p, state === 'risingUp' || ballistic ? this._riseStand(s, facing) : null, ballistic);
             return;
         }
 
@@ -4966,7 +5000,7 @@ export default class Wrestler {
             // Lies however he landed (this.lying; Arena.startPin turns a pinned
             // wrestler onto his back). Supine is the prone pose rotated the
             // other way, never reflected (see Skeleton.GROUNDED_SUPINE).
-            const handoff = this._groundHandoff;
+            const handoff = this._groundHandoff, ly = y - (this._catchLift || 0);   // TS.6: the rope's hop lifts the drawing, not the root
             if (handoff && state === 'down') {
                 handoff.lying ??= this.lying;
                 handoff.from ??= Skeleton.groundedPoseFrom(handoff.joints, x, y, s, facing, Skeleton.lyingBase(handoff.lying, fallsCandidate()));
@@ -4974,7 +5008,7 @@ export default class Wrestler {
                 // motion and pauses stretch the blend with everything else.
                 const u = (handoff.t0 - this.stateTimer) / GROUND_HANDOFF_SEC;
                 if (handoff.from && u < 1 && handoff.lying === this.lying) {
-                    this.skeleton.updateGroundedBlend(x, y, s, facing, this.lying, handoff.from, u, this._landingOffsets(), !!this._landing?.additive);
+                    this.skeleton.updateGroundedBlend(x, ly, s, facing, this.lying, handoff.from, u, this._landingOffsets(), !!this._landing?.additive);
                     return;
                 }
                 this._groundHandoff = null;
@@ -4985,7 +5019,7 @@ export default class Wrestler {
             const landD = this._landingOffsets();
             if (sold) {
                 // limitKnees: the landing's knee bend on a sell pose already near the knee limit stays inside it (T2.4c)
-                this.skeleton.updateGroundedReach(x, y, s, facing, landD ? limitKnees(applyOffsetsSoft(sold.g, landD)) : sold.g, sold.reach,
+                this.skeleton.updateGroundedReach(x, ly, s, facing, landD ? limitKnees(applyOffsetsSoft(sold.g, landD)) : sold.g, sold.reach,
                     sellArtCandidate() ? { paintedContacts: true,
                         backContact: this._sell?.plan[this._sell.i]?.part === 'back' } : undefined);
                 return;
@@ -4993,12 +5027,12 @@ export default class Wrestler {
             const lyingHold = this._lyingHold();
             if (lyingHold) {
                 const held = limitKnees(applyOffsets(Skeleton.lyingBase(this.lying, fallsCandidate()), lyingHold.offsets));
-                this.skeleton.updateGroundedReach(x, y, s, facing, landD ? applyOffsets(held, landD) : held,
+                this.skeleton.updateGroundedReach(x, ly, s, facing, landD ? applyOffsets(held, landD) : held,
                     { near: { to: 'nearHip', w: lyingHold.w } }, { paintedContacts: true, backContact: true });
                 return;
             }
-            if (landD) { this.skeleton.updateGroundedReach(x, y, s, facing, applyOffsets(Skeleton.lyingBase(this.lying, true), landD), {}); return; }
-            this.skeleton.updateGrounded(x, y, s, facing, this.lying);
+            if (landD) { this.skeleton.updateGroundedReach(x, ly, s, facing, applyOffsets(Skeleton.lyingBase(this.lying, true), landD), {}); return; }
+            this.skeleton.updateGrounded(x, ly, s, facing, this.lying);
             return;
         }
 

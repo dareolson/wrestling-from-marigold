@@ -1,6 +1,7 @@
-import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate, ropeSwayScale, ropeContactCandidate } from '../constants.js';
+import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate, ropeSwayScale, ropeContactCandidate, ropeSpillCandidate } from '../constants.js';
 import { createSway, swayKick, swayStep, swayWall, swayHardness, SWAY, SWAY_STATES } from '../animation/ropeSway.js';
 import { createContact, contactStep, sidePartPx, reachesY, coverWeight, CONTACT_SKIP, CONTACT_PARTS } from '../animation/ropeContact.js';
+import { spillAtRopes } from '../animation/ropeSpill.js';
 import { splitPlan, pastPlane, pastPartDepth, pressWindow } from '../animation/ropeSplit.js';
 import { partInkX } from '../ropeInk.js';
 import ScaleDebug from '../scaleDebug.js';
@@ -2322,6 +2323,27 @@ export default class Arena extends Phaser.Scene {
         return out;
     }
 
+    // PLAN_ROPES stage RS (`?ropeSpill=v1`): a spilled man's chest holds the bottom side strand down. The dip (px, down the screen) goes to where his torso ink's top is, as a spring
+    // (the R2 contact spring), sited at his depth; returns { -1, 1 } -> warpY(t) for strand 0 of that wall, or null when that wall has none.
+    _spillSag(dt) {
+        const st = this._spillSagState ??= createContact(), targets = new Map(), r0 = RING.ropes[0];
+        [this.w1, this.w2].forEach((w, mi) => {
+            if (!w?.isSpilled?.()) return;
+            const ink = w.skeleton.torso?.visible ? partInkX(w.skeleton.torso) : null;
+            if (!ink) return;
+            const t = (RING.nearLeft.y - w.y) / (RING.nearLeft.y - RING.farLeft.y), sy = r0.nearY + (r0.farY - r0.nearY) * t;
+            const dip = Math.max(0, Math.min(45, ink.minY - sy));
+            targets.set(`${mi}|${w._spill.wall}`, { px: dip, pos: t });
+        });
+        const alive = contactStep(st, targets, Math.min(dt, 1 / 30));
+        const out = { '-1': null, 1: null };
+        for (const dir of [-1, 1]) {
+            const mine = alive.filter(a => a.key.endsWith(dir < 0 ? '|L' : '|R'));
+            if (mine.length) out[dir] = t => mine.reduce((acc, a) => acc + a.val * (t >= a.pos + 0.22 || t <= a.pos - 0.22 ? 0 : 0.5 + 0.5 * Math.cos(Math.abs(t - a.pos) / 0.22 * Math.PI)), 0);
+        }
+        return out;
+    }
+
     _updateRopes(dt) {
         const { nearLeft, nearRight, farLeft, farRight, ropes } = RING;
 
@@ -2354,6 +2376,7 @@ export default class Arena extends Phaser.Scene {
         }
         // ?ropes=v1 T1.6: the bottom strand's sway (px per wall, strand 0 only), kicked by a man lying on it and travelling round the ring.
         const sway = ropesCandidate() ? this._updateSway(dt) : null;
+        const sagY = ropeSpillCandidate() ? this._spillSag(dt) : { '-1': null, 1: null };   // RS: the bottom strand sags onto a spilled man's chest
         const bump = (u, c, r) => {
             const q = Math.abs(u - c) / r;
             return q >= 1 ? 0 : 0.5 + 0.5 * Math.cos(q * Math.PI);
@@ -2445,11 +2468,11 @@ export default class Arena extends Phaser.Scene {
         const NBANDS = this.nearRopeBands.length;
         const yBow  = (ns + fs) * 0.5;
         const xBow  = (ns + fs) * 0.6;
-        const sidePoint = (nearP, farP, rope, dir, t, rest, warpX) => {
+        const sidePoint = (nearP, farP, rope, dir, t, rest, warpX, warpY) => {
             const bow = Math.sin(t * Math.PI);
             return {
                 x: nearP.x + (farP.x - nearP.x) * t + dir * xBow * bow + (warpX ? warpX(t) : 0),
-                y: rope.nearY + (rope.farY - rope.nearY) * t + (yBow + rest) * bow,
+                y: rope.nearY + (rope.farY - rope.nearY) * t + (yBow + rest) * bow + (warpY ? warpY(t) : 0),
             };
         };
 
@@ -2485,7 +2508,9 @@ export default class Arena extends Phaser.Scene {
             const men = [this.w1, this.w2].filter(Boolean);
             const wins = men.map(w => pressWindow(presses.side[dir].find(p => p.who === w), w.state));
             wallWins[dir] = wins;
-            wallPlan[dir] = wins.some(Boolean) ? splitPlan(splitMen.map((m, i) => ({ ...m, win: wins[i] })), BANDS) : plan;
+            // RS: a man spilled under this wall: its bottom strand draws over him around where he lies (the rope lies across his chest)
+            const overs = men.map(w => w.isSpilled?.() && w._spill.wall === (dir < 0 ? 'L' : 'R') ? (t => [t - 0.14, t + 0.14])((RING.nearLeft.y - w.y) / (RING.nearLeft.y - RING.farLeft.y)) : null);
+            wallPlan[dir] = wins.some(Boolean) || overs.some(Boolean) ? splitPlan(splitMen.map((m, i) => ({ ...m, win: wins[i], over: overs[i] })), BANDS) : plan;
         }
         // T1.3 (`?ropesPast=1`): a part whose ink reaches past a side plane is outside the ring: it draws under the pieces behind its man, so the strand passes between it and the rest of him.
         if (plan && ropesPastCandidate()) {
@@ -2556,7 +2581,7 @@ export default class Arena extends Phaser.Scene {
                 const pts = [], ref = [], hw = [];
                 for (let i = 0; i <= BANDS; i++) {
                     const t = i / BANDS;
-                    pts.push(sidePoint(nearP, farP, rope, dir, t, sideRest + swS, warpX));
+                    pts.push(sidePoint(nearP, farP, rope, dir, t, sideRest + swS, warpX, ri === 0 ? sagY[dir] : null));
                     ref.push(sidePoint(nearP, farP, rope, dir, t, sideRest, null)); // resting droop included, press excluded — see near-rope comment above
                     hw.push((3.0 - 1.2 * t) / 2); // thinner with distance
                 }
@@ -2564,8 +2589,8 @@ export default class Arena extends Phaser.Scene {
                 sideRefByRi[ri][dir] = ref;
                 if (plan) {
                     const wp = wallPlan[dir], gs = this.sideRopeSplit, off = dir < 0 ? 0 : 3;
-                    const sp = wp.ts.map(t => sidePoint(nearP, farP, rope, dir, t, sideRest + swS, warpX));
-                    fillRibbonBands(gs, sp, wp.ts.map(t => (3.0 - 1.2 * t) / 2), 0x36362f, 0.85, 0x82827a, 0.75, i => off + wp.group[i]);
+                    const sp = wp.ts.map(t => sidePoint(nearP, farP, rope, dir, t, sideRest + swS, warpX, ri === 0 ? sagY[dir] : null));
+                    fillRibbonBands(gs, sp, wp.ts.map(t => (3.0 - 1.2 * t) / 2), 0x36362f, 0.85, 0x82827a, 0.75, i => off + (ri === 0 && wp.over[i] ? 0 : wp.group[i]));
                 } else fillRibbonBands(this.sideRopeBands, pts, hw, 0x36362f, 0.85, 0x82827a, 0.75);
             }
         });
@@ -3441,8 +3466,7 @@ export default class Arena extends Phaser.Scene {
 
     _isAtRopes(wrestler) {
         const b = ringBoundsAtY(wrestler.y);
-        const threshold = 30 * wrestler.s;
-        return wrestler.x <= b.left + threshold || wrestler.x >= b.right - threshold;
+        return spillAtRopes({ x: wrestler.x, s: wrestler.s, bounds: b, spilled: !!wrestler.isSpilled?.() });   // ?ropeSpill=v1: a man spilled under a side rope is at the ropes
     }
 
     // A move that lands directly in a cover (the Thesz press) enters the pin

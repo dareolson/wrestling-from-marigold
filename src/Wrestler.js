@@ -1,5 +1,6 @@
 import { impactMoveId } from './animation/impactMoves.js';
-import { RING, ringBoundsAtY, perspectiveScale, scaleCandidate } from './constants.js';
+import { RING, ringBoundsAtY, perspectiveScale, scaleCandidate, ropeSpillCandidate } from './constants.js';
+import { spillPlan, spillBack } from './animation/ropeSpill.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
@@ -1348,6 +1349,7 @@ export default class Wrestler {
         if (this.state !== 'down' && this.state !== 'staggered') return;
         if (this.state === 'down') this._tickSell(dt);
         this.stateTimer -= dt;
+        if (this.stateTimer <= 0 && this.state === 'down' && this._spillGetUp()) return;
         if (this.stateTimer <= 0) {
             if (this.state === 'staggered') {
                 this.tweenPose('idle', 180, 'Linear');
@@ -1433,9 +1435,36 @@ export default class Wrestler {
     // `tier` (T2.5d, the slam, `?slamTier=`): TIERS key or null.
     _startLanding(kind, vy = REF_VY, additive = false, tier = null) {
         if (!fallsCandidate()) return;
+        if (ropeSpillCandidate()) this._maybeSpill(additive);   // additive = a throw's landing (slam, suplex)
         // T2.5h: the rig's hopScale (rig config `falls.hopScale`) scales the incoming speed the hop is read from, so both rigs' drawn hops land in the same px range
         // (George's drawn hop read 1.29x Lou's at the same command).
         this._landing = { kind, intensity: this._pain?.severity || 0.6, vy: vy * (this.skeleton?._textureConfig?.falls?.hopScale ?? 1), t: 0, additive, tier };
+    }
+
+    // ?ropeSpill=v1 (PLAN_ROPES stage RS): a man who lands beside a side wall with his head toward it slides (eased, capped) until his head and shoulders lie under the bottom strand
+    // and is `spilled` until he slides back in before the get-up. `_spill` = { wall, back }. Pure plan in animation/ropeSpill.js.
+    _maybeSpill(thrown = false) {
+        const plan = spillPlan({ x: this.x, s: this.s, facing: this.facing || 1, lying: this.lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), thrown });
+        if (!plan) return;
+        this._spill = { wall: plan.wall, back: false, thrown };
+        this._spillSlide(plan.dx, plan.dur);
+    }
+    _spillSlide(dx, dur) {
+        const tok = this._spillTok = {};
+        if (Math.abs(dx) < 0.5) return;
+        this.scene.tweens.add({ targets: this, x: this.x + dx, duration: dur * 1000, ease: 'Sine.easeInOut', onUpdate: (tw) => { if (this._spillTok !== tok || (this.state !== 'down' && this.state !== 'possum')) tw.stop(); } });
+    }
+    /** Spilled under a side rope: lying beside it with head and shoulders past the plane. */
+    isSpilled() { return !!this._spill && (this.state === 'down' || this.state === 'possum'); }
+    // Before the get-up: slide back in so no part rises up through the strand. True while that slide holds the get-up.
+    _spillGetUp() {
+        if (!this._spill || this._spill.back) return false;
+        this._spill.back = true;
+        const plan = spillBack({ x: this.x, s: this.s, wall: this._spill.wall, lying: this.lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), thrown: this._spill.thrown });
+        if (!plan) return false;
+        this._spillSlide(plan.dx, plan.dur);
+        this.stateTimer = plan.dur;
+        return true;
     }
 
     // True from contact until the landing response ends: AI actions and pins wait (the man is still hitting the mat).
@@ -1649,7 +1678,7 @@ export default class Wrestler {
             return;
         }
         // Forced rise after possum window expires
-        if (this.stateTimer <= 0) this._startRiseUp();
+        if (this.stateTimer <= 0 && !this._spillGetUp()) this._startRiseUp();
     }
 
     // ?gait=v2: the gait block for run weight `w` (0 = the walk's, 1 = the run's own), with the lock frequency to match.
@@ -4448,6 +4477,7 @@ export default class Wrestler {
         this._riseFrom = hold?.w ?? 0;
         this._riseHold = hold?.offsets ?? null; // the pose offsets the hold last drew, eased out over the rise start
         this._hold = null;
+        this._spill = null;
         this._syncSellAppearance(true);
         this.state = 'gettingUp';
         this._sell = null;
@@ -4655,7 +4685,7 @@ export default class Wrestler {
         const b = ringBoundsAtY(this.y), s = this.s || 1, x = this.x, f = this.facing || 1;
         const toRight = (b.right - x) / s, toLeft = (x - b.left) / s;
         const room = { front: f > 0 ? toRight : toLeft, back: f > 0 ? toLeft : toRight, side: Math.min(this.y - RING.farLeft.y, RING.nearLeft.y - this.y) / s, ...roomOver };
-        const pick = chooseFall({ move: hit.move, hit: where, side: hit.side, wear: hit.wear, room, tier: moveTier(hit.move), spillAvailable: spillCandidate() });
+        const pick = chooseFall({ move: hit.move, hit: where, side: hit.side, wear: hit.wear, room, tier: moveTier(hit.move), spillAvailable: spillCandidate(), ropeSpill: ropeSpillCandidate() });
         if (allowed && !allowed.includes(pick.fall)) { pick.fall = allowed[0]; pick.reason += ` (narrowed to ${pick.fall})`; }
         this.scene._logEvent?.('fall', { wrestler: this.scene.w1 === this ? 'p1' : 'p2', move: hit.move, fall: pick.fall, tier: pick.tier, reason: pick.reason, stamina: Math.round(hit.stamina * 10) / 10, wear: Math.round(hit.wear * 10) / 10, side: hit.side });
         return pick;

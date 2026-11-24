@@ -599,7 +599,7 @@ export default class AIHandler {
     _nearRopes(w) {
         const b   = ringBoundsAtY(w.y);
         const thr = 34 * w.s;
-        return w.x <= b.left + thr || w.x >= b.right - thr;
+        return w.isSpilled?.() || w.x <= b.left + thr || w.x >= b.right - thr;   // ?ropeSpill=v1: a man spilled under a side rope is at the ropes
     }
 
     // waistlock=v1 (Stage 4b W7): the AI inside a waistlock. The attacker presses nothing (the hold times out into the shove); the defender

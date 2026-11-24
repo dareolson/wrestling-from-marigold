@@ -261,7 +261,7 @@ export const tierFor = (move, wear, baseTier = null) => (BIG_MOVES.includes(move
 const COLLAPSES = new Set(['sitBack', 'kneesForward']);
 
 /**
- * ctx: { move, hit?: 'head'|'chest'|'gut', side: 'front'|'behind', wear, room: { back, front, side? }, tier?, glancing?, spillAvailable?, rng? }
+ * ctx: { move, hit?: 'head'|'chest'|'gut', side: 'front'|'behind', wear, room: { back, front, side? }, tier?, glancing?, spillAvailable?, ropeSpill?, rng? }
  *   side: where the attacker is relative to the way the receiver faces ('behind' falls him forward). room: px at s = 1 from him to the rope along his facing
  *   (`front`), against it (`back`) and in depth (`side`). tier: the move's own landing tier (T2.5g/h). rng: () => [0, 1), Math.random by default.
  * Returns { fall, tier, reason }: `reason` is the rule that picked, for the G3 page and the logs.
@@ -273,8 +273,10 @@ export function chooseFall(ctx) {
     const wear = ctx.wear ?? 0;
     const tired = wear >= TIRED_WEAR, fresh = wear < FRESH_WEAR;
     const allowed = new Set(spec?.falls ?? ['backward', 'sitBack', 'forward', 'kneesForward']);
+    // ctx.ropeSpill (`?ropeSpill=v1`): a fall that lands head toward the wall may go past it, the rope spill places him under the bottom strand; the boots still have to fit
+    const headBack = ctx.ropeSpill ? (f => f === 'backward' || f === 'sitBack') : null, headFront = ctx.ropeSpill ? (f => f === 'forward' || f === 'kneesForward') : null;
     const fits = (f) => ctx.room == null
-        || (ctx.room.back >= LYING_REACH[f].back && ctx.room.front >= LYING_REACH[f].front && (f !== 'spill' || (ctx.room.side ?? 0) >= SPILL_SIDE_PX));
+        || ((ctx.room.back >= LYING_REACH[f].back || !!headBack?.(f)) && (ctx.room.front >= LYING_REACH[f].front || !!headFront?.(f)) && (f !== 'spill' || (ctx.room.side ?? 0) >= SPILL_SIDE_PX));
 
     let rule, pool;
     if (ctx.side === 'behind') { rule = 'from behind'; pool = ['forward', 'kneesForward']; }
@@ -289,7 +291,7 @@ export function chooseFall(ctx) {
         left = [...allowed].filter(f => (f !== 'spill' || ctx.spillAvailable !== false) && fits(f));
         if (left.length) rule += ' (ring room)';
         else {
-            const over = (f) => Math.max(0, LYING_REACH[f].back - ctx.room.back) + Math.max(0, LYING_REACH[f].front - ctx.room.front);
+            const over = (f) => (headBack?.(f) ? 0 : Math.max(0, LYING_REACH[f].back - ctx.room.back)) + (headFront?.(f) ? 0 : Math.max(0, LYING_REACH[f].front - ctx.room.front));
             const best = Math.min(...cand.map(over));
             left = cand.filter(f => over(f) === best);
             rule += ' (cramped)';
@@ -307,7 +309,7 @@ export function chooseFall(ctx) {
     // the way the corner fall does; null when it fits
     let slide = null;
     if (ctx.room && !fits(fall)) {
-        const back = Math.max(0, LYING_REACH[fall].back - ctx.room.back), front = Math.max(0, LYING_REACH[fall].front - ctx.room.front);
+        const back = headBack?.(fall) ? 0 : Math.max(0, LYING_REACH[fall].back - ctx.room.back), front = headFront?.(fall) ? 0 : Math.max(0, LYING_REACH[fall].front - ctx.room.front);
         slide = { back, front, dx: back - front };   // dx > 0: toward his front (away from the rope behind him); < 0: toward his back
     }
     return { fall, tier, slide, reason: `${rule}, ${state} (wear ${Math.round(wear)}) -> ${fall}` };

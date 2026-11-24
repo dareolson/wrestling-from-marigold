@@ -89,6 +89,8 @@ const MEASURE = ({ cells }) => {
         const inside = w.x > b.left && w.x < b.right;
         // T1.4: the press window on each side wall (either man's: the old rule lowered the strands for any press, and two men at one depth share a cut)
         //   (was: the press window this man holds on each side wall (strands under him by design), t range or null
+        // RS: a spilled man's bottom strand draws over everyone within +-0.14 t of him (the rope lies across his chest): pieces there drawn over him are intended, their own row
+        const owin = w.isSpilled?.() ? { [w._spill.wall]: [tW - 0.14, tW + 0.14] } : {};
         const pwin = sc.sideRopeSplit ? Object.fromEntries([['L', -1], ['R', 1]].map(([k, d]) => { return [k, sc._splitDebug?.wins?.[d]?.find(Boolean) ?? null]; })) : {};
         // penetration reference lines at his depth: per side wall and rope, the plane x (rest) and the drawn y there
         const pen = [];
@@ -153,7 +155,9 @@ const MEASURE = ({ cells }) => {
                                 const shouldFront = sGround > gy + 0.5, shouldBehind = sGround < gy - 0.5;
                                 const drawnFront = sDepth > pdepth;
                                 const sT = (sGround - RING.nearLeft.y) / (RING.farLeft.y - RING.nearLeft.y), pw = pwin[S.wall];
-                                if (pw && shouldFront && !drawnFront && sT > pw[0] && sT < pw[1]) { rec.pressPx = (rec.pressPx ?? 0) + 1; rec.pressWall = S.wall; }   // inside his press window, under him by design
+                                const ow = S.ri === 0 ? owin[S.wall] : null;
+                                if (ow && drawnFront && sT > ow[0] && sT < ow[1]) { rec.overPx = (rec.overPx ?? 0) + 1; }   // spilled man: the bottom strand over him by design
+                                else if (pw && shouldFront && !drawnFront && sT > pw[0] && sT < pw[1]) { rec.pressPx = (rec.pressPx ?? 0) + 1; rec.pressWall = S.wall; }   // inside his press window, under him by design
                                 else if ((shouldFront && !drawnFront) || (shouldBehind && drawnFront)) {
                                     rec.wrong++;
                                     const key = `${S.wall}${S.ri}|${pname}|${drawnFront ? 'strandOver' : 'strandUnder'}`;
@@ -314,7 +318,7 @@ const runOne = async (page, cfg, label) => {
 const RING = { nearLeft: { x: 40, y: 445 }, nearRight: { x: 920, y: 445 }, farLeft: { x: 210, y: 258 }, farRight: { x: 750, y: 258 }, ropes: [{ nearY: 380, farY: 218 }, { nearY: 316, farY: 181 }, { nearY: 251, farY: 142 }] };
 
 const launchWith = async (p1, p2, ai) => {
-    process.env.WFM_P1 = p1; process.env.WFM_P2 = p2; process.env.WFM_QS = 'notitle=1' + '&ropes=' + (process.env.ROPES === 'v1' ? 'v1' : 'off') + (process.env.PAST === '1' ? '&ropesPast=1' : '') + '&ropeContact=' + (process.env.CONTACT === 'v1' ? 'v1' : 'off') + (process.env.SWAYSCALE ? `&ropeSway=${process.env.SWAYSCALE}` : ''); process.env.WFM_INIT_SCRIPT = new URL('./no_hmr_init.js', import.meta.url).pathname;
+    process.env.WFM_P1 = p1; process.env.WFM_P2 = p2; process.env.WFM_QS = 'notitle=1' + '&ropes=' + (process.env.ROPES === 'v1' ? 'v1' : 'off') + (process.env.PAST === '1' ? '&ropesPast=1' : '') + '&ropeContact=' + (process.env.CONTACT === 'v1' ? 'v1' : 'off') + (process.env.SPILL === 'v1' ? '&ropeSpill=v1' : (process.env.SPILLQS ?? '')) + (process.env.SWAYSCALE ? `&ropeSway=${process.env.SWAYSCALE}` : ''); process.env.WFM_INIT_SCRIPT = new URL('./no_hmr_init.js', import.meta.url).pathname;
     const h = await launch();
     await h.page.waitForFunction(() => window.__WFM_GAME?.scene?.scenes?.[0]?.w2, null, { timeout: 60000 });
     await h.page.waitForTimeout(1500);
@@ -444,6 +448,132 @@ if (process.argv.includes('--contact')) {
     }
     mkdirSync(outDir, { recursive: true }); writeFileSync(join(outDir, 'contact.json'), JSON.stringify(rows, null, 1)); process.exit(0);
 }
+// TS.0 --spillscan: every knockdown (a man entering 'down' from another state): where, which fall, which way the head points, and how far his head / torso ink ends past the side plane
+// 1.0 s later. Runs: bodySlam / suplex / clothesline / irishWhip at the L, R and near spots (both rigs), then the AI soak (SEC s per pairing). SPILLSCAN=v1 also sets ?ropeSpill=v1.
+const SCAN = async (page) => page.evaluate(async () => {
+    const { partInkX } = await import('/src/ropeInk.js'), sc = window.__WFM_GAME.scene.scenes[0], RING = window.__RING;
+    const bounds = (y) => { const t = (RING.nearLeft.y - y) / (RING.nearLeft.y - RING.farLeft.y); return { left: RING.nearLeft.x + (RING.farLeft.x - RING.nearLeft.x) * t, right: RING.nearRight.x + (RING.farRight.x - RING.nearRight.x) * t }; };
+    window.__spills = []; window.__spillGame = { t: 0 }; const prev = new Map(), pend = [];
+    sc.events.off('postupdate', window.__spillTick);
+    window.__spillTick = (time, delta) => {
+        window.__spillGame.t += delta / 1000 * sc.timeScale;
+        const now = window.__spillGame.t;
+        for (const [n, w] of [[1, sc.w1], [2, sc.w2]]) {
+            const was = prev.get(n); prev.set(n, w.state);
+            if (w.state === 'down' && was !== 'down' && was !== undefined) {
+                const b = bounds(w.y), dl = w.x - b.left, dr = b.right - w.x, wall = dl < dr ? 'L' : 'R', d = Math.min(dl, dr) / w.s;
+                pend.push({ at: now + 1.0, n, w, rec: { n, run: window.__scanRun, t: +now.toFixed(2), prevState: was, fall: w._fallVariant ?? null, lying: w.lying, facing: w.facing, rig: w.rigId, wall, rootToPlane: +d.toFixed(0), s: +w.s.toFixed(2), x: +w.x.toFixed(0), y: +w.y.toFixed(0), rootToPlaneAtLanding: +d.toFixed(0) } });
+            }
+        }
+        window.__ups ??= []; window.__gu ??= {};
+        for (const [n, w] of [[1, sc.w1], [2, sc.w2]]) {
+            const b = bounds(w.y), g = window.__gu[n];
+            if (w.state === 'gettingUp') {
+                const past = (im) => { const k = im?.visible ? partInkX(im) : null; return k ? Math.max(b.left - k.minX, k.maxX - b.right) : -999; };
+                const o = g ?? (window.__gu[n] = { run: window.__scanRun, t: +now.toFixed(2), head: -999, torso: -999, x0: w.x, wall: Math.min(w.x - b.left, b.right - w.x) === w.x - b.left ? 'L' : 'R' });
+                o.head = Math.max(o.head, past(w.skeleton.head)); o.torso = Math.max(o.torso, past(w.skeleton.torso)); o.x1 = w.x;
+            } else if (g) { window.__ups.push({ ...g, head: Math.round(g.head), torso: Math.round(g.torso) }); delete window.__gu[n]; }
+        }
+        for (let i = pend.length - 1; i >= 0; i--) {
+            const q = pend[i]; if (q.at > now) continue; pend.splice(i, 1);
+            const w = q.w, b = bounds(w.y), r = q.rec, ink = (im) => im?.visible ? partInkX(im) : null, hd = ink(w.skeleton.head), tr = ink(w.skeleton.torso);
+            const past = (k) => k ? +Math.max(b.left - k.minX, k.maxX - b.right).toFixed(0) : null;
+            const wallDir = r.wall === 'L' ? -1 : 1, hc = hd ? (hd.minX + hd.maxX) / 2 : w.x;
+            r.headToward = Math.sign(hc - w.x) === wallDir; r.headPast = past(hd); r.torsoPast = past(tr); r.rootX1s = +w.x.toFixed(0); r.rootToPlane1s = +(Math.min(w.x - b.left, b.right - w.x) / w.s).toFixed(0); r.stillDown = w.state === 'down';
+            window.__spills.push(r);
+        }
+    };
+    sc.events.on('postupdate', window.__spillTick);
+    return true;
+});
+if (process.argv.includes('--spillscan')) {
+    const rows = [];
+    if (process.env.SPILLSCAN === 'v1') process.env.SPILLQS = '&ropeSpill=v1';
+    for (const [p1, p2] of [[LOU, GEORGE], [GEORGE, LOU]]) {
+        const { h } = await launchWith(p1, p2, false);
+        try {
+            const rig = p1 === LOU ? 'lou' : 'george';
+            await SCAN(h.page);
+            for (const wall of ['L', 'R', 'N']) for (const move of ['bodySlam', 'suplex', 'clothesline', 'irishWhip']) {
+                await h.page.evaluate((l) => { window.__scanRun = l; }, `c:${rig}:${move}:${wall}`);
+                await h.page.evaluate(INIT, { kind: 'move', move, wall });
+                for (let f = 0; f < 520; f++) { const r = await h.page.evaluate(() => { const R = window.__run; R.script(); window.__T += 1000 / 60; window.__WFM_GAME.step(window.__T, 1000 / 60); R.f++; return R.f >= R.max; }); if (r) break; }
+                await h.page.evaluate(() => { const g = window.__WFM_GAME; for (let i = 0; i < 90; i++) { window.__T += 1000 / 60; g.step(window.__T, 1000 / 60); } });   // let the last landing's 1 s read finish
+            }
+            rows.push(...await h.page.evaluate(() => window.__spills));
+        } finally { await h.close(); }
+    }
+    const soak = [];
+    for (const [p1, p2, tag] of [[LOU, GEORGE, 'lou-george'], [LOU, KOW, 'lou-kowalski'], [GEORGE, GUIDO, 'george-guido'], [KOW, GUIDO, 'kowalski-guido']]) {
+        const { h } = await launchWith(p1, p2, true);
+        try {
+            await SCAN(h.page); await h.page.evaluate((l) => { window.__scanRun = l; }, `d:${tag}`);
+            await h.page.evaluate(INIT, { kind: 'ai', ai: true, frames: SEC * 60 });
+            await h.page.evaluate((n) => { const g = window.__WFM_GAME; for (let i = 0; i < n; i++) { window.__T += 1000 / 60; g.step(window.__T, 1000 / 60); } }, SEC * 60);
+            const got = await h.page.evaluate(() => window.__spills); soak.push(...got); console.log(`[ropes] spillscan d ${tag}: ${got.length} knockdowns in ${SEC} s`);
+        } finally { await h.close(); }
+    }
+    // strike knockdowns beside each side wall: he is hit by a jab-type blow (alwaysFall) at 30 / 70 / 110 px from the plane, back to the rope (head toward it) and facing it, fresh and tired
+    const strikes = [], ups = [];
+    for (const [p1, p2] of [[LOU, GEORGE], [GEORGE, LOU]]) {
+        const { h } = await launchWith(p1, p2, false);
+        try {
+            const rig = p1 === LOU ? 'lou' : 'george';
+            await SCAN(h.page);
+            for (const wall of ['L', 'R']) for (const dist of [30, 70, 110]) for (const face of ['backToWall', 'facingWall']) for (const wear of [10, 70]) {
+                const label = `s:${rig}:${wall}:${dist}:${face}:w${wear}`;
+                await h.page.evaluate((l) => { window.__scanRun = l; }, label);
+                await h.page.evaluate(INIT, { kind: 'ai' });
+                await h.page.evaluate(({ wall, dist, face, wear }) => {
+                    const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2, RING = window.__RING, y = 350, t = (RING.nearLeft.y - y) / (RING.nearLeft.y - RING.farLeft.y);
+                    const b = { left: RING.nearLeft.x + (RING.farLeft.x - RING.nearLeft.x) * t, right: RING.nearRight.x + (RING.farRight.x - RING.nearRight.x) * t };
+                    const dir = wall === 'L' ? -1 : 1;                       // the wall's side
+                    d.y = a.y = y; d.x = (dir < 0 ? b.left : b.right) - dir * dist * d.s;
+                    d.facing = face === 'backToWall' ? -dir : dir;           // head toward the wall: on his back (hit from the front) when his back is to it; face down (hit from behind) when he faces it
+                    a.x = face === 'backToWall' ? d.x + d.facing * 70 * d.s : d.x - d.facing * 70 * d.s;   // in front of him, or behind him
+                    a.facing = d.x > a.x ? 1 : -1;
+                    d.wear = wear; d.stamina = 40;
+                    d._strikeReact(a, 'jab', 'sellHead', 150, true);
+                }, { wall, dist, face, wear });
+                await h.page.evaluate(() => { const g = window.__WFM_GAME; for (let i = 0; i < 60 * 9; i++) { window.__T += 1000 / 60; g.step(window.__T, 1000 / 60); } });
+            }
+            strikes.push(...await h.page.evaluate(() => window.__spills)); ups.push(...await h.page.evaluate(() => window.__ups ?? []));
+        } finally { await h.close(); }
+    }
+    mkdirSync(outDir, { recursive: true }); writeFileSync(join(outDir, 'spillscan.json'), JSON.stringify({ sec: SEC, c: rows, d: soak, strikes, ups }, null, 1)); console.log(`[ropes] spillscan: c ${rows.length} knockdowns, d ${soak.length}`); process.exit(0);
+}
+// TS.4 --spillfilm: frames (30 fps, every other game frame) of a strike knockdown, a body slam and a suplex beside each side wall, Lou and George as the man going down, into <outDir>/<name>/f####.jpg.
+// Run it once with SPILL=v1 and once without; tools/debug/rope_spill_film.mjs puts the two side by side as mp4.
+if (process.argv.includes('--spillfilm')) {
+    const index = [];
+    for (const [p1, p2] of [[LOU, GEORGE], [GEORGE, LOU]]) {
+        const { h, info } = await launchWith(p1, p2, false);
+        try {
+            const rig = p1 === LOU ? 'george' : 'lou';   // d (w2) is the man going down: p2's rig
+            for (const move of ['strike', 'bodySlam', 'suplex']) for (const wall of ['L', 'R']) {
+                const name = `${move}-${wall}-${rig}`, dir = join(outDir, name); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
+                let max = 520;
+                if (move === 'strike') {
+                    await h.page.evaluate(INIT, { kind: 'ai' });
+                    await h.page.evaluate(({ wall }) => {
+                        const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2, RING = window.__RING, y = 350, t = (RING.nearLeft.y - y) / (RING.nearLeft.y - RING.farLeft.y);
+                        const b = { left: RING.nearLeft.x + (RING.farLeft.x - RING.nearLeft.x) * t, right: RING.nearRight.x + (RING.farRight.x - RING.nearRight.x) * t }, dir = wall === 'L' ? -1 : 1;
+                        d.y = a.y = y; d.x = (dir < 0 ? b.left : b.right) - dir * 50 * d.s; d.facing = -dir; a.x = d.x + d.facing * 70 * d.s; a.facing = d.x > a.x ? 1 : -1; d.wear = 70; d.stamina = 40;
+                        d._strikeReact(a, 'jab', 'sellHead', 150, true);
+                    }, { wall }); max = 480;
+                } else await h.page.evaluate(INIT, { kind: 'move', move, wall });
+                const clip = { x: info.box.x + (wall === 'L' ? 0 : info.box.w * 0.4), y: info.box.y + info.box.h * 0.3, width: info.box.w * 0.6, height: info.box.h * 0.6 };
+                let n = 0;
+                for (let f = 0; f < max; f++) {
+                    await h.page.evaluate(() => { const R = window.__run; R.script(); window.__T += 1000 / 60; window.__WFM_GAME.step(window.__T, 1000 / 60); R.f++; });
+                    if (f % 2 === 0) await h.page.screenshot({ path: join(dir, `f${String(n++).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 80, clip });
+                }
+                index.push({ name, frames: n }); console.log(`[ropes] spillfilm ${name}: ${n} frames`);
+            }
+        } finally { await h.close(); }
+    }
+    mkdirSync(outDir, { recursive: true }); writeFileSync(join(outDir, 'index.json'), JSON.stringify(index)); process.exit(0);
+}
 const filmRun = async (page, info, rig) => {   // run a again, one frame at a time, a clip of the far half at 30 fps (every other frame)
     const dir = join(outDir, 'film', rig); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
     await page.evaluate(INIT, { kind: 'walkFar' });
@@ -506,6 +636,7 @@ summary.penByRun = tally(penRows, r => [[r.run.split(':').slice(0, 1)[0] === 'c'
 summary.penByState = tally(penRows, r => [[r.mv ? `move:${r.mv}` : `state:${r.st}`, r.penPx, fk(r)]]);
 summary.penByPart = tally(penRows, r => Object.entries(r.penTally).map(([k, v]) => [k.split('|')[1], v.px, fk(r)]));
 summary.penByStrand = tally(penRows, r => Object.entries(r.penTally).map(([k, v]) => [k.split('|')[0], v.px, fk(r)]));
+summary.spillOverManFrames = all.filter(r => r.overPx > 0).length; summary.spillOverPx = all.reduce((a, r) => a + (r.overPx ?? 0), 0);
 summary.pressByState = {}; for (const r of all) if (r.pressPx > 0) summary.pressByState[r.st] = (summary.pressByState[r.st] ?? 0) + 1;
 summary.pressManFrames = all.filter(r => r.pressPx > 0).length; summary.pressPx = all.reduce((a, r) => a + (r.pressPx ?? 0), 0);
 summary.penOverManFrames = penRows.filter(r => r.penOver > 0).length; summary.penOverPx = penRows.reduce((a, r) => a + r.penOver, 0); summary.penOverMax = Math.max(0, ...penRows.map(r => r.penOver));
@@ -514,6 +645,7 @@ const perRun = results.map(r => ({ run: r.label, frames: r.frames, wrongFrames: 
 writeFileSync(join(outDir, 'probe.json'), JSON.stringify({ made: new Date().toISOString(), sec: SEC, summary, perRun, pools: { wrong: pools.wrong, pen: pools.pen }, film, recs: all }, null, 1));
 const show = (t, rows) => { console.log(`\n${t}`); console.table(rows.slice(0, 14)); };
 console.log(`\n[ropes] man-frames ${summary.totalManFrames}, with a strand crossing ${summary.crossingManFrames}, wrong-order ${summary.wrongManFrames}, penetrating ${summary.penetrationManFrames} (of which ink past the plane drawn OVER a side strand: ${summary.penOverManFrames} man-frames, max ${summary.penOverMax} px) (max past plane ${summary.penMaxPast.toFixed(1)} px)`);
+console.log(`[ropes] spilled-man over window (intended): ${summary.spillOverManFrames} man-frames, ${summary.spillOverPx} px`);
 console.log('[ropes] press-window frames by state', JSON.stringify(summary.pressByState));
 console.log(`[ropes] press window (intended, strand under him inside his window): ${summary.pressManFrames} man-frames, ${summary.pressPx} px`);
 console.log("crossing px by wall", JSON.stringify(summary.crossingPxByWall)); show("wrong-order by wall", summary.wrongByWall); show('by strand (wall+rope index 0 bottom..2 top)', summary.wrongByStrand); show('by ring region', summary.wrongByRegionAll);

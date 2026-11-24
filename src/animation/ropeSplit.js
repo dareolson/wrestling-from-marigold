@@ -3,7 +3,8 @@
 //   men: [{ t, depth, low }]  t = ground depth along the side wall (0 near corner, 1 far corner); depth / low = the highest / lowest draw depth among his parts (a paired move can lay him
 //   at his partner's depth, so Arena reads the parts, not 12 + ground y * 0.03). `low` defaults to `depth`.
 //   T1.4: a man pressing this wall carries win: [lo, hi] (t range, the old press window): inside it every piece draws below him whichever side of him it is on, and the window edges are cut points.
-//   returns { ts, group, depths }: sorted sample ts (the uniform ones plus every cut), group[j] for the segment ts[j]..ts[j+1], depths[g] for each group.
+//   RS: a spilled man carries over: [lo, hi] (t range): the bottom strand's pieces there draw over everyone (plan.over[j]).
+//   returns { ts, group, depths, over }: sorted sample ts (the uniform ones plus every cut), group[j] for the segment ts[j]..ts[j+1], depths[g] for each group.
 export const SPLIT_SEGS = 8;
 export const SPLIT_STEP = 0.01;     // a strand piece draws this far above / below the man it is nearer / farther than (his own parts span base .. base + 0.0041)
 export const SPLIT_MERGE = 0.02;    // two men closer than this in depth (0.67 px of ground y) share one cut: a depth between them would fall inside their parts
@@ -19,6 +20,7 @@ export function splitPlan(men, segs = SPLIT_SEGS) {
     const ts = [];
     for (let i = 0; i <= segs; i++) ts.push(i / segs);
     for (const c of cuts) ts.push(c.t);
+    for (const m of men) if (m.over) ts.push(Math.min(1, Math.max(0, m.over[0])), Math.min(1, Math.max(0, m.over[1])));
     for (const m of men) if (m.win) ts.push(Math.min(1, Math.max(0, m.win[0])), Math.min(1, Math.max(0, m.win[1])));
     ts.sort((a, b) => a - b);
     const u = ts.filter((t, i) => i === 0 || t - ts[i - 1] > 1e-9);
@@ -37,7 +39,9 @@ export function splitPlan(men, segs = SPLIT_SEGS) {
     const depths = [cuts.length ? cuts[0].depth + SPLIT_STEP : 26];
     for (let k = 1; k < cuts.length; k++) depths.push((cuts[k - 1].low + cuts[k].depth) / 2);
     if (cuts.length) depths.push(cuts.at(-1).low - SPLIT_STEP);
-    return { ts: u, group, depths, cuts, cutOf };
+    // RS: a spilled man's `over` window: the pieces of the bottom strand inside it draw over every man (the rope lies across his chest)
+    const over = u.slice(0, -1).map((t, j) => men.some(m => m.over && (t + u[j + 1]) / 2 > m.over[0] && (t + u[j + 1]) / 2 < m.over[1]));
+    return { ts: u, group, depths, cuts, cutOf, over };
 }
 
 // ?ropes=v1 (T1.3): a part whose ink reaches past a side wall's plane is outside the ring, so the strand passes between it and the rest of the body: it draws below the pieces

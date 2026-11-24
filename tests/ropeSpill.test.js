@@ -1,52 +1,58 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SPILL, spillExt, spillHeadDir, spillPlan, spillBack, spillAtRopes } from '../src/animation/ropeSpill.js';
+import { SPILL, spillExt, spillHeadDir, spillPlan, spillBack, spillAtRopes, strandX } from '../src/animation/ropeSpill.js';
 import { chooseFall } from '../src/animation/falls.js';
 import { splitPlan } from '../src/animation/ropeSplit.js';
 
-const B = { left: 100, right: 800 };
+const B = { left: 127, right: 800 };   // the plane at row 350
 const LOU = 'thesz-procreate-v1', GEORGE = 'george-roster-v1';
 
 test('head direction: on his back away from his facing, face down toward it', () => {
     assert.equal(spillHeadDir('supine', 1), -1); assert.equal(spillHeadDir('supine', -1), 1);
     assert.equal(spillHeadDir('prone', 1), 1); assert.equal(spillHeadDir('prone', -1), -1);
 });
-test('spillPlan: slides the root so the shoulders end neckPast beyond the plane, per wall and facing', () => {
-    // on his back facing right = head to the left wall: root 60 px from the plane, Lou wants 72 - 12 = 60 -> no slide needed
-    const p0 = spillPlan({ x: 160, s: 1, facing: 1, lying: 'supine', rig: LOU, bounds: B, thrown: true });
-    assert.equal(p0.wall, 'L'); assert.ok(Math.abs(p0.dx) < 1e-9);
-    // 25 px from the wall (a slam beside it): he overshoots, slides 35 px back in (toward +x for the left wall)
-    const p1 = spillPlan({ x: 125, s: 1, facing: 1, lying: 'supine', rig: LOU, bounds: B, thrown: true });
-    assert.ok(Math.abs(p1.dx - 35) < 1e-9 && p1.wall === 'L');
-    // mirror: facing left, head to the right wall: slides -x
-    const p2 = spillPlan({ x: 775, s: 1, facing: -1, lying: 'supine', rig: LOU, bounds: B, thrown: true });
-    assert.ok(Math.abs(p2.dx + 35) < 1e-9 && p2.wall === 'R');
-    // 90 px out: 30 px toward the wall
-    const p3 = spillPlan({ x: 190, s: 1, facing: 1, lying: 'supine', rig: LOU, bounds: B, thrown: true });
-    assert.ok(Math.abs(p3.dx + 30) < 1e-9);
+const row = (x, o = {}) => ({ x, y: 350, s: 1, facing: 1, lying: 'supine', rig: LOU, bounds: B, ...o });   // facing right, on his back: the head points at the LEFT wall (plane x = 100)
+test('strandX: the drawn bottom strand sits well outside the ground plane at the torso row', () => {
+    assert.ok(Math.abs(strandX(380, -1) - 40) < 1e-9);                                    // near corner
+    assert.ok(strandX(345, -1) > strandX(300, -1) - 200 && strandX(345, -1) < strandX(380, -1) + 100);
+    assert.ok(strandX(345, 1) > strandX(345, -1), 'right wall is to the right');
+    assert.ok(strandX(300, -1) > strandX(345, -1), 'higher up the screen = nearer the far corner = further in');
 });
-test('spillPlan: capped, and null when the wall is too far for the cap or he is not lying', () => {
-    assert.ok(Math.abs(spillPlan({ x: 150, s: 1, facing: 1, lying: 'supine', rig: LOU, bounds: B, thrown: true }).dx) <= SPILL.cap);   // 50 from the wall -> overshoots 10 in
-    assert.equal(spillPlan({ x: 300, s: 1, facing: 1, lying: 'supine', rig: LOU, bounds: B, thrown: true }), null);                    // 200 px from the plane
-    assert.equal(spillPlan({ x: 160, s: 1, facing: 1, lying: null, rig: LOU, bounds: B, thrown: true }), null);
-    const near = spillPlan({ x: 112, s: 1, facing: 1, lying: 'supine', rig: LOU, bounds: B, thrown: true });
-    assert.equal(near.dx, SPILL.cap);   // 12 px from the plane: wants 48 in, capped at 40
+test('spillPlan: the root goes where the drawn strand crosses the torso a quarter in from the neck, never nearer the plane than hipsMin', () => {
+    const near = spillPlan(row(B.left + 30, { canShift: true }));
+    assert.equal(near.wall, 'L'); assert.ok(near.out > 40 && near.out < 55, `out ${near.out}`);
+    assert.equal(near.want, SPILL.hipsMin);                                                // 82 - 45 - 23 < 20: held at the hips margin
+    assert.ok(Math.abs(near.fallDx + 10) < 1e-9 && near.dx === 0, `${near.fallDx} ${near.dx}`);   // 10 px toward the wall (-x), all of it carried by the fall
+    // a man far out: the fall carries him up to fallCap, the slide the rest, the hips still stop at the margin
+    const far = spillPlan(row(B.left + 118, { canShift: true }));
+    assert.ok(Math.abs(far.fallDx + SPILL.fallCap) < 1e-9 && Math.abs(far.dx + (118 - SPILL.hipsMin - SPILL.fallCap)) < 1e-9, `${far.fallDx} ${far.dx}`);
+    assert.equal(spillPlan(row(B.left + 130, { canShift: true })), null, 'beyond fall shift + slide');
 });
-test('spillPlan: rigs differ and the slide scales with s', () => {
-    const l = spillPlan({ x: 125, s: 1, facing: 1, lying: 'supine', rig: LOU, bounds: B, thrown: true }), g = spillPlan({ x: 125, s: 1, facing: 1, lying: 'supine', rig: GEORGE, bounds: B, thrown: true });
-    assert.ok(l.dx - g.dx === spillExt(LOU, 'supine', true) - spillExt(GEORGE, 'supine', true));
-    const half = spillPlan({ x: 112.5, s: 0.5, facing: 1, lying: 'supine', rig: LOU, bounds: B, thrown: true });
-    assert.ok(Math.abs(half.dx - 17.5) < 1e-9);
+test('spillPlan: at the landing (no fall shift) or for a throw only the slide counts', () => {
+    assert.ok(Math.abs(spillPlan(row(B.left + 30)).dx + 10) < 1e-9);
+    assert.equal(spillPlan(row(B.left + 70)), null, '50 px is beyond the 40 px slide');
+    const slam = spillPlan(row(B.left + 25, { thrown: true }));                            // a slam beside the wall
+    assert.ok(Math.abs(slam.dx + 5) < 1e-9 && slam.fallDx === 0);
+    // facing the other way: head to the right wall, the move is +x
+    const r = spillPlan(row(B.right - 30, { facing: -1, canShift: true }));
+    assert.equal(r.wall, 'R'); assert.ok(r.fallDx > 0);
 });
-test('spillPlan: a fall (not thrown) and a face-down fall use their own reach', () => {
-    const fall = spillPlan({ x: 125, s: 1, facing: 1, lying: 'supine', rig: LOU, bounds: B });
-    assert.equal(fall.dx, SPILL.cap);   // wants 82 - 12 = 70 in from 25: 45, capped at 40
+test('spillPlan: not lying is null; the move scales with s; rigs differ in reach', () => {
+    assert.equal(spillPlan(row(B.left + 30, { lying: null })), null);
+    const half = spillPlan(row(B.left + 15, { s: 0.5, canShift: true }));
+    assert.ok(half.fallDx < 0 && half.fallDx > -10, `${half.fallDx}`);
+    const g = spillPlan(row(B.left + 60, { rig: GEORGE, canShift: true })), l = spillPlan(row(B.left + 60, { canShift: true }));
+    assert.ok(g && l && g.want >= SPILL.hipsMin && l.want >= SPILL.hipsMin);
 });
-test('spillBack: slides the torso inside the plane, nothing when it already is', () => {
-    const b = spillBack({ x: 160, s: 1, wall: 'L', lying: 'supine', rig: LOU, bounds: B, thrown: true });
-    assert.ok(Math.abs(b.dx - (72 + SPILL.headExtra + SPILL.clear - 60)) < 1e-9);   // head clear: 48 px away from the left wall = toward +x
-    assert.equal(spillBack({ x: 260, s: 1, wall: 'L', lying: 'supine', rig: LOU, bounds: B, thrown: true }), null);
-    assert.ok(spillBack({ x: 740, s: 1, wall: 'R', lying: 'supine', rig: LOU, bounds: B, thrown: true }).dx < 0);
+test('spillBack: slides his whole head inside the drawn strand (its x at the head top row) before the get-up, nothing when it already is', () => {
+    const b = spillBack({ x: B.left + 20, y: 350, s: 1, wall: 'L', lying: 'supine', rig: LOU, bounds: B });
+    const top = strandX(350 - 32, -1), outTop = B.left - top;                              // head top 32 px above the root's row
+    assert.ok(Math.abs(b.dx - (121 - outTop + SPILL.clear - 20)) < 1e-9, `${b.dx}`);       // away from the left wall = +x
+    assert.ok(b.dx > 40, 'a real slide, not a nudge');
+    assert.equal(spillBack({ x: B.left + 300, y: 350, s: 1, wall: 'L', lying: 'supine', rig: LOU, bounds: B }), null);
+    assert.ok(spillBack({ x: B.right - 20, y: 350, s: 1, wall: 'R', lying: 'supine', rig: LOU, bounds: B }).dx < 0);
+    const th = spillBack({ x: B.left + 20, y: 350, s: 1, wall: 'L', lying: 'supine', rig: LOU, bounds: B, thrown: true });
+    assert.ok(Math.abs((b.dx - th.dx) - 10) < 1e-9, 'a thrown man lies 10 px shorter');
 });
 test('rope break: a spilled man is at the ropes wherever his root is; otherwise the 30 px rule', () => {
     assert.ok(spillAtRopes({ x: 190, s: 1, bounds: B, spilled: true }));

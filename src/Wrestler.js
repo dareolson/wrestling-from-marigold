@@ -1333,6 +1333,7 @@ export default class Wrestler {
     }
 
     tickDown(dt) {
+        this._tickSpillMove(dt);
         this._landNext?.();   // ?falls=v1: the slam's landing, one frame after its hit (_playPairedThrow)
         this._tickRiseFlip();
         this._tickPain();
@@ -1444,15 +1445,31 @@ export default class Wrestler {
     // ?ropeSpill=v1 (PLAN_ROPES stage RS): a man who lands beside a side wall with his head toward it slides (eased, capped) until his head and shoulders lie under the bottom strand
     // and is `spilled` until he slides back in before the get-up. `_spill` = { wall, back }. Pure plan in animation/ropeSpill.js.
     _maybeSpill(thrown = false) {
-        const plan = spillPlan({ x: this.x, s: this.s, facing: this.facing || 1, lying: this.lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), thrown });
+        const plan = spillPlan({ x: this.x, y: this.y, s: this.s, facing: this.facing || 1, lying: this.lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), thrown });
         if (!plan) return;
         this._spill = { wall: plan.wall, back: false, thrown };
         this._spillSlide(plan.dx, plan.dur);
     }
-    _spillSlide(dx, dur) {
+    // TS.5: a knockdown that will end beside a side wall is carried toward the drawn strand by the fall itself (the knockback), eased over the fall; the landing's settle slide covers the rest.
+    _spillFallShift(variant) {
+        const lying = Skeleton.FALLS[variant]?.lands;
+        const plan = spillPlan({ x: this.x, y: this.y, s: this.s, facing: this.facing || 1, lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), canShift: true });
+        if (!plan || Math.abs(plan.fallDx) < 0.5) return;
         const tok = this._spillTok = {};
-        if (Math.abs(dx) < 0.5) return;
-        this.scene.tweens.add({ targets: this, x: this.x + dx, duration: dur * 1000, ease: 'Sine.easeInOut', onUpdate: (tw) => { if (this._spillTok !== tok || (this.state !== 'down' && this.state !== 'possum')) tw.stop(); } });
+        this.scene.tweens.add({ targets: this, x: this.x + plan.fallDx, duration: Skeleton.fallDuration(variant), ease: 'Sine.easeOut', onUpdate: (tw) => { if (this._spillTok !== tok || this.state !== 'falling') tw.stop(); } });
+    }
+    // The slides on the mat run on the game's dt (like stateTimer, which holds the get-up for them), not a tween: a tween's clock can run slower than dt and cut the slide short.
+    _spillSlide(dx, dur) {
+        this._spillTok = {};
+        this._spillMove = Math.abs(dx) < 0.5 ? null : { x0: this.x, dx, t: 0, dur };
+    }
+    _tickSpillMove(dt) {
+        const m = this._spillMove;
+        if (!m) return;
+        if (this.state !== 'down' && this.state !== 'possum') { this._spillMove = null; return; }
+        m.t = Math.min(m.dur, m.t + dt);
+        this.x = m.x0 + m.dx * (0.5 - 0.5 * Math.cos(Math.PI * m.t / m.dur));
+        if (m.t >= m.dur) this._spillMove = null;
     }
     /** Spilled under a side rope: lying beside it with head and shoulders past the plane. */
     isSpilled() { return !!this._spill && (this.state === 'down' || this.state === 'possum'); }
@@ -1460,7 +1477,7 @@ export default class Wrestler {
     _spillGetUp() {
         if (!this._spill || this._spill.back) return false;
         this._spill.back = true;
-        const plan = spillBack({ x: this.x, s: this.s, wall: this._spill.wall, lying: this.lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), thrown: this._spill.thrown });
+        const plan = spillBack({ x: this.x, y: this.y, s: this.s, wall: this._spill.wall, lying: this.lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), thrown: this._spill.thrown });
         if (!plan) return false;
         this._spillSlide(plan.dx, plan.dur);
         this.stateTimer = plan.dur;
@@ -1671,6 +1688,7 @@ export default class Wrestler {
 
     tickPossum(dt) {
         if (this.state !== 'possum') return;
+        this._tickSpillMove(dt);
         this.stateTimer -= dt;
         // Action or power = quick spring to feet
         if (this.input.justDown('action') || this.input.justDown('power')) {
@@ -4714,6 +4732,7 @@ export default class Wrestler {
     _fallBySituation(hit, opts = {}) {
         const pick = this._pickFall(hit, opts);
         this.startFall(DOWN_SEC, pick.fall, true, pick.tier);
+        if (ropeSpillCandidate()) this._spillFallShift(pick.fall);
         // T3.9: no fall fits the ring here, so he keeps the one chosen and is carried inward over the fall (as _fallFromCorner does), the lying body ending inside the ropes
         if (pick.slide?.dx) {
             const tok = this._ringSlideTok = {}, dx = (pick.slide.dx + Math.sign(pick.slide.dx) * 10) * this.s * (this.facing || 1);

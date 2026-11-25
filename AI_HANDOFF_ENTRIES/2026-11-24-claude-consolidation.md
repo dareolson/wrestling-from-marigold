@@ -38,6 +38,7 @@
 - grip, clasp and chop forearms show the old elbow cap: an art pass is needed
 - far-shin ankle twist uses a different boot drawing
 - backSell `holdW`/`recovery*` and `crownBelowHip` are pre-swap values: re-measure with hold_weight_sweep / recovery_probe
+- Derek (2026-11-25, close-up film): "seems like an improvement, maybe his forearm is too big". Measured, in world units (new / shelf): forearm width at 30/50/70% of its length 15.3/11.5/12.7 vs 13.5/10.1/13.5; upper arm 19.4/21.4/19.3 vs 16.4/17.7/16.1; bone lengths equal (forearm 47.5 vs 47.6); torso 78.6 vs 89.5 tall. The arms are 10-20% thicker on a 12% shorter torso. Not changed: Derek decides (art edit in Lou-current.psd, or a forearm scale).
 - Derek (2026-11-24): "they seem fine from a distance"; the clips are too small to judge closely. Not a close-up approval.
 
 ## System

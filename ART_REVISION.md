@@ -20,6 +20,7 @@ A variant drawn on a base canvas inherits that base's geometry. When the base is
 
 ## The procedure
 
+0. **Start from the in-game art, not an archived PSD.** `python3 tools/art/export_rig_psd.py` writes `Sprite sheets/RosterNew/<date>/Lou-current.psd` (plus `sources.json` and `Lou-current/inventory.json`). It has Lou2.psd's canvas and layer order. The body layers and head are the exact game pixels: the round trip through the exporter is pixel-identical. Above them sit hidden `ref ...` layers: every grip/clasp/chop forearm, chop upper arm, the far-arm forearm, both ankle twists and all 29 faces, placed where they sit on the body. Import it into Procreate, edit the visible layers, export PSD. Keep the first ten layers in their order: the exporter maps roles by layer index, so a new or reordered layer means editing `inventory.json`. Lou only for now; the roster rigs need the same, built from their generator's records.
 1. **Derek** saves the edited PSD as a new dated copy (`Sprite sheets/RosterNew/<today>/`), keeping layer names. Export with `tools/wrestler-cutter/export-roster-psds.py --cleanup` (point the rig's generator SOURCE at the new folder).
 2. `node tools/art/revise_rig.mjs <rig>`. In one command it:
    - snapshots the current art to `research/art-revisions/<date>-<rig>/old/`
@@ -59,3 +60,4 @@ See `thesz_procreate_shelf.js` (`?p1=thesz-procreate-shelf`). Shelves are not ma
 | Date | Rig | What | Record |
 | --- | --- | --- | --- |
 | 2026-11-24 | thesz-procreate-v1 | Body from Lou2.psd; Procreate head kept; 17 variants re-fitted; old body shelved | `research/art-revisions/2026-11-24-lou/` |
+| 2026-11-25 | thesz-procreate-v1 | `Lou-current.psd` exported from the game art (52 layers; round trip exact) for Derek's next edit | `Sprite sheets/RosterNew/2026-11-25/Lou-current/verify.json` |

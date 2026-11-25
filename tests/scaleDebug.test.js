@@ -7,8 +7,8 @@ import { scaleDebugCandidate } from '../src/constants.js';
 const fakeScene = () => { const calls = []; const g = new Proxy({}, { get: (_, k) => k === 'setDepth' ? () => g : (...a) => { calls.push([k, ...a]); return g; } }); return { calls, scene: { add: { graphics: () => g } } }; };
 
 test('T3.4: expected height is the ladder\'s ink per draw scale x drawScale; unknown rigs get none', () => {
-    assert.ok(Math.abs(expectedInkHeight('thesz-procreate-v1', 0.7793) - 245.9) < 0.1);
-    assert.ok(Math.abs(expectedInkHeight('george-roster-v1', 0.9974) - 236.5) < 0.1);
+    assert.ok(Math.abs(expectedInkHeight('thesz-procreate-v1', 1.0696) - 242.9) < 0.1);   // 2026-11-24 Lou2 body (was 0.7793 -> 245.9)
+    assert.ok(Math.abs(expectedInkHeight('george-roster-v1', 0.9974) - 234.7) < 0.1);
     assert.equal(expectedInkHeight('thesz', 0.8), null);
 });
 

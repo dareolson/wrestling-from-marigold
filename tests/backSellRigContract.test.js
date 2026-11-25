@@ -11,12 +11,12 @@ import { thesz } from '../src/characters/thesz.js';
 import { theszFront3qR1 } from '../src/characters/thesz_front3q_r1.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 import { theszRosterV1 } from '../src/characters/thesz_roster_v1.js';
-import { theszLou2V1 } from '../src/characters/thesz_lou2_v1.js';
+import { theszProcreateShelf } from '../src/characters/thesz_procreate_shelf.js';
 import { georgeRosterV1 } from '../src/characters/george_roster_v1.js';
 import { kowalskiRosterV1 } from '../src/characters/kowalski_roster_v1.js';
 import { guidoRosterV1 } from '../src/characters/guido_roster_v1.js';
 
-const BY_NAME = { george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, theszLou2V1, georgeRosterV1, kowalskiRosterV1, guidoRosterV1 };
+const BY_NAME = { george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, theszProcreateShelf, georgeRosterV1, kowalskiRosterV1, guidoRosterV1 };
 // id -> reason. Delete an entry when its data lands (a waiver for a rig that satisfies the contract fails).
 const WAIVERS = {};
 
@@ -50,10 +50,11 @@ test('every registered character has both backWaist and backSell, or neither, or
 
 test('Procreate Lou and George support the back sell, each on its own numbers; every other rig is unsupported, never on borrowed ones', () => {
     const supported = Object.values(BY_NAME).filter(c => backSellSupport(view(c)).ok).map(c => c.id);
-    assert.deepEqual(supported.sort(), ['george-roster-v1', 'thesz-procreate-v1']);
+    // thesz-procreate-shelf is Lou's pre-swap body (2026-11-24), frozen with the numbers measured on it.
+    assert.deepEqual(supported.sort(), ['george-roster-v1', 'thesz-procreate-shelf', 'thesz-procreate-v1']);
     assert.notDeepEqual(georgeRosterV1.textures.backSell, theszProcreateV1.textures.backSell, 'George does not carry Lou\'s numbers');
     assert.equal(georgeRosterV1.textures.backSell.holdW === theszProcreateV1.textures.backSell.holdW, false);
-    for (const c of Object.values(BY_NAME)) if (c !== theszProcreateV1 && c !== georgeRosterV1) {
+    for (const c of Object.values(BY_NAME)) if (c !== theszProcreateV1 && c !== georgeRosterV1 && c !== theszProcreateShelf) {
         const s = backSellSupport(view(c));
         assert.equal(s.ok, false, c.id);
         assert.equal(s.data, null, `${c.id}: no data borrowed`);

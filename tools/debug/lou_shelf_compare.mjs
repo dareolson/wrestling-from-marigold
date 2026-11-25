@@ -1,12 +1,12 @@
-// Lou2 vs Procreate Lou: the same mat/lockup and base moves on George, both facings, normal speed, side by side.
-//   WFM_URL=http://localhost:5173 node tools/debug/lou2_compare.mjs research/animation/lou2-2026-11-22 [moveId ...]
+// Lou (Lou2.psd body, 2026-11-24) vs the shelved pre-swap Procreate Lou: the same mat/lockup and base moves on George, both facings, normal speed, side by side.
+//   WFM_URL=http://localhost:5173 node tools/debug/lou_shelf_compare.mjs research/art-revisions/2026-11-24-lou/compare [moveId ...]
 import { chromium } from 'playwright-core';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { MOVES, BASE_MOVES, SETUP } from './g12_lib.mjs';
 const [dir, ...only] = process.argv.slice(2), URL0 = process.env.WFM_URL ?? 'http://localhost:5173';
-const PICK = ['wristlockHammerlock', 'headlockTakeover', 'flyingMare', 'testOfStrength', 'backwardRoll', 'kipUp', 'abdominalStretch', 'indianDeathlock', 'hipToss', 'suplex', 'halfBostonCrab', 'piledriver'];
+const PICK = ['wristlockHammerlock', 'headlockTakeover', 'flyingMare', 'testOfStrength', 'backwardRoll', 'kipUp', 'abdominalStretch', 'indianDeathlock', 'hipToss', 'suplex', 'halfBostonCrab', 'piledriver', 'ankleLock', 'headlock'];
 const moves = [...MOVES, ...BASE_MOVES].filter(m => (only.length ? only : PICK).includes(m[0]));
-const RIGS = [['lou', 'thesz-procreate-v1'], ['lou2', 'thesz-lou2-v1']];
+const RIGS = [['lou', 'thesz-procreate-v1'], ['shelf', 'thesz-procreate-shelf']];
 mkdirSync(`${dir}/video/_raw`, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const cases = [];

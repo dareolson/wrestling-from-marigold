@@ -17,7 +17,7 @@ import { thesz } from '../characters/thesz.js';
 import { theszFront3qR1 } from '../characters/thesz_front3q_r1.js';
 import { theszProcreateV1 } from '../characters/thesz_procreate_v1.js';
 import { theszRosterV1 } from '../characters/thesz_roster_v1.js';
-import { theszLou2V1 } from '../characters/thesz_lou2_v1.js';
+import { theszProcreateShelf } from '../characters/thesz_procreate_shelf.js';
 import { georgeRosterV1 } from '../characters/george_roster_v1.js';
 import { kowalskiRosterV1 } from '../characters/kowalski_roster_v1.js';
 import { guidoRosterV1 } from '../characters/guido_roster_v1.js';
@@ -52,7 +52,7 @@ import { lightingEnabled, createMatLightPool, drawBeams, createBeamSpill, beamIn
 // theszFront3qR1 is here so Arena.preload() loads its eight part files. It is a
 // review candidate, not a roster member: it is never selected unless asked for
 // by name, and shipped `thesz` is untouched by its presence.
-const CHARACTERS = [george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, theszLou2V1, georgeRosterV1, kowalskiRosterV1, guidoRosterV1];
+const CHARACTERS = [george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, theszProcreateShelf, georgeRosterV1, kowalskiRosterV1, guidoRosterV1];
 
 // Named crowd extras: each is one chroma-keyed multi-frame reference sheet
 // cut via tools/audience-cutter into src/assets/audience/<slug>/frame1..N.png
@@ -3209,25 +3209,20 @@ export default class Arena extends Phaser.Scene {
                 skin: 0xe8c098, trunks: 0x484848,
                 moveSet: theszRosterV1.moveSet, textures: theszRosterV1.textures,
             },
-            // Temporary, reversible A/B for Derek's review of his Procreate
-            // master. Same name, pose, kit, skin and trunks as THESZ -- only the
-            // art differs, so anything that reads differently on screen is the
-            // art. `?p1=thesz-procreate-v1`.
+            // Production Lou (default p1). Body parts from Lou2.psd since 2026-11-24 (thesz_procreate_v1.js).
             'thesz-procreate-v1': {
                 name: 'THESZ', personality: ROSTER_PERSONALITIES.thesz, idlePose: theszProcreateV1.idlePose,
                 skin: 0xe8c098, trunks: 0x484848,
                 moveSet: kitFor('thesz', lightCandidate()),
                 textures: theszProcreateV1.textures,
             },
-            // Derek's Lou2 PSD (2026-11-22, joint-overlap edit of LouNew) on
-            // Procreate Lou's moves: `moveRig` makes every per-rig clip override
-            // read Lou's entry, while art-keyed code reads the preset key.
-            // `?p1=thesz-lou2-v1`.
-            'thesz-lou2-v1': {
-                name: 'THESZ', personality: ROSTER_PERSONALITIES.thesz, idlePose: theszLou2V1.idlePose,
+            // Shelved 2026-11-24: Procreate Lou's previous body, frozen (thesz_procreate_shelf.js). Moves read Lou's
+            // rig through moveRig; art-keyed code reads the preset key. `?p1=thesz-procreate-shelf`.
+            'thesz-procreate-shelf': {
+                name: 'THESZ', personality: ROSTER_PERSONALITIES.thesz, idlePose: theszProcreateShelf.idlePose,
                 skin: 0xe8c098, trunks: 0x484848, moveRig: 'thesz-procreate-v1',
                 moveSet: kitFor('thesz', lightCandidate()),
-                textures: theszLou2V1.textures,
+                textures: theszProcreateShelf.textures,
             },
         };
         // Throw rather than log: a bad move ID silently disables part of a kit,

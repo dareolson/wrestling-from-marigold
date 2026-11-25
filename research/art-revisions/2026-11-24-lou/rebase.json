@@ -1,0 +1,223 @@
+{
+  "forearm": {
+    "scale": 0.991983857282557,
+    "rotationDeg": 5.586338502525527,
+    "translate": [
+      66.60895300892292,
+      19.261729122064317
+    ],
+    "baseIoUSeed": 0.7033,
+    "baseIoUFit": 0.9786,
+    "oldCanvas": [
+      117,
+      351
+    ],
+    "newCanvas": [
+      238,
+      398
+    ],
+    "variants": {
+      "forearm_grip.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/forearm_grip.png",
+        "lostInkPx": 0,
+        "anchors": {
+          "clutch": {
+            "u": 0.403116729683276,
+            "v": 0.7543090338035523
+          }
+        }
+      },
+      "forearm_collar_tie.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/forearm_collar_tie.png",
+        "lostInkPx": 0,
+        "anchors": {
+          "clutch": {
+            "u": 0.4506098289779872,
+            "v": 0.7570868803040787
+          }
+        }
+      },
+      "forearm_elbow_cup.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/forearm_elbow_cup.png",
+        "lostInkPx": 0,
+        "anchors": {
+          "clutch": {
+            "u": 0.4323882747480838,
+            "v": 0.7560211111417506
+          }
+        }
+      },
+      "forearm_waist_clasp.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/forearm_waist_clasp.png",
+        "lostInkPx": 0,
+        "anchors": {
+          "clutch": {
+            "u": 0.5096677808598242,
+            "v": 0.760541148974674
+          }
+        }
+      },
+      "forearm_chopWindup.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/forearm_chopWindup.png",
+        "lostInkPx": 0,
+        "anchors": {}
+      },
+      "forearm_chopContact.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/forearm_chopContact.png",
+        "lostInkPx": 0,
+        "anchors": {}
+      },
+      "forearm_chopFollow.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/forearm_chopFollow.png",
+        "lostInkPx": 0,
+        "anchors": {}
+      },
+      "far_forearm.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/far_forearm.png",
+        "lostInkPx": 0,
+        "anchors": {}
+      }
+    },
+    "anchors": {}
+  },
+  "upperArm": {
+    "scale": 1.0078917491596364,
+    "rotationDeg": -0.7161972439135291,
+    "translate": [
+      72.50664199110123,
+      35.68670974937766
+    ],
+    "baseIoUSeed": 0.9226,
+    "baseIoUFit": 0.961,
+    "oldCanvas": [
+      143,
+      330
+    ],
+    "newCanvas": [
+      310,
+      406
+    ],
+    "variants": {
+      "upper_arm_chopWindup.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/upper_arm_chopWindup.png",
+        "lostInkPx": 0,
+        "anchors": {}
+      },
+      "upper_arm_chopContact.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/upper_arm_chopContact.png",
+        "lostInkPx": 0,
+        "anchors": {}
+      },
+      "upper_arm_chopFollow.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/upper_arm_chopFollow.png",
+        "lostInkPx": 0,
+        "anchors": {}
+      }
+    },
+    "anchors": {}
+  },
+  "shin": {
+    "scale": 0.9343481210237936,
+    "rotationDeg": 0.4297183463481174,
+    "translate": [
+      66.89851022676406,
+      11.943253835524573
+    ],
+    "baseIoUSeed": 0.7373,
+    "baseIoUFit": 0.9404,
+    "oldCanvas": [
+      216,
+      495
+    ],
+    "newCanvas": [
+      286,
+      499
+    ],
+    "variants": {
+      "shin_ankle_twist.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/shin_ankle_twist.png",
+        "lostInkPx": 0,
+        "anchors": {
+          "heel": {
+            "u": 0.3635314927626773,
+            "v": 0.8540063217517208
+          },
+          "toe": {
+            "u": 0.7580374420933284,
+            "v": 0.9156219769300517
+          }
+        }
+      }
+    },
+    "anchors": {
+      "heel": {
+        "u": 0.3713013110644904,
+        "v": 0.8494521119166794
+      },
+      "toe": {
+        "u": 0.801621446144836,
+        "v": 0.860570763776336
+      }
+    }
+  },
+  "torso": {
+    "scale": 1.0020279320044636,
+    "rotationDeg": 0.0,
+    "translate": [
+      5.770185157554323,
+      5.767977034010016
+    ],
+    "baseIoUSeed": 0.9156,
+    "baseIoUFit": 0.955,
+    "oldCanvas": [
+      302,
+      521
+    ],
+    "newCanvas": [
+      313,
+      562
+    ],
+    "variants": {},
+    "anchors": {
+      "backWaist": {
+        "u": 0.23113393277933192,
+        "v": 0.5676190544103298
+      }
+    }
+  },
+  "farShin": {
+    "scale": 0.9068935790145962,
+    "rotationDeg": -0.5729577951308235,
+    "translate": [
+      117.8329690332239,
+      -0.6735377379560248
+    ],
+    "baseIoUSeed": 0.7142,
+    "baseIoUFit": 0.8256,
+    "oldCanvas": [
+      216,
+      495
+    ],
+    "newCanvas": [
+      376,
+      467
+    ],
+    "variants": {
+      "far_shin_ankle_twist.png": {
+        "src": "research/art-revisions/2026-11-24-lou/old/shin_ankle_twist.png",
+        "lostInkPx": 0,
+        "anchors": {
+          "heel": {
+            "u": 0.42777902851675176,
+            "v": 0.8579663222709359
+          },
+          "toe": {
+            "u": 0.7203823197637693,
+            "v": 0.9177560879436422
+          }
+        }
+      }
+    },
+    "anchors": {}
+  }
+}

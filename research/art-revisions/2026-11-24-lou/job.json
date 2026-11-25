@@ -1,0 +1,196 @@
+{
+ "out": "src/assets/wrestlers/thesz-procreate-v1",
+ "report": "research/art-revisions/2026-11-24-lou/rebase.json",
+ "parts": {
+  "forearm": {
+   "old": "research/art-revisions/2026-11-24-lou/old/forearm.png",
+   "new": "src/assets/wrestlers/thesz-procreate-v1/forearm.png",
+   "oldPivot": [
+    57.050604,
+    40.784094
+   ],
+   "newPivot": [
+    118.8990715496085,
+    71.07448414275548
+   ],
+   "scale": 1.0129624314001229,
+   "variants": [
+    {
+     "name": "grip",
+     "src": "research/art-revisions/2026-11-24-lou/old/forearm_grip.png",
+     "dst": "forearm_grip.png",
+     "anchors": {
+      "clutch": [
+       0.48717948717948717,
+       0.7948717948717948
+      ]
+     }
+    },
+    {
+     "name": "collarTie",
+     "src": "research/art-revisions/2026-11-24-lou/old/forearm_collar_tie.png",
+     "dst": "forearm_collar_tie.png",
+     "anchors": {
+      "clutch": [
+       0.5850348286750334,
+       0.794871794871795
+      ]
+     }
+    },
+    {
+     "name": "elbowCup",
+     "src": "research/art-revisions/2026-11-24-lou/old/forearm_elbow_cup.png",
+     "dst": "forearm_elbow_cup.png",
+     "anchors": {
+      "clutch": [
+       0.5474909235977463,
+       0.794871794871795
+      ]
+     }
+    },
+    {
+     "name": "waistClasp",
+     "src": "research/art-revisions/2026-11-24-lou/old/forearm_waist_clasp.png",
+     "dst": "forearm_waist_clasp.png",
+     "anchors": {
+      "clutch": [
+       0.7067185287335018,
+       0.7948717948717948
+      ]
+     }
+    },
+    {
+     "name": "chopWindup",
+     "src": "research/art-revisions/2026-11-24-lou/old/forearm_chopWindup.png",
+     "dst": "forearm_chopWindup.png"
+    },
+    {
+     "name": "chopContact",
+     "src": "research/art-revisions/2026-11-24-lou/old/forearm_chopContact.png",
+     "dst": "forearm_chopContact.png"
+    },
+    {
+     "name": "chopFollow",
+     "src": "research/art-revisions/2026-11-24-lou/old/forearm_chopFollow.png",
+     "dst": "forearm_chopFollow.png"
+    },
+    {
+     "src": "research/art-revisions/2026-11-24-lou/old/far_forearm.png",
+     "dst": "far_forearm.png",
+     "splice": {
+      "v": 0.385,
+      "feather": 18
+     }
+    }
+   ],
+   "note": "grip/clasp/chop donors are slimmer than the Lou2 forearm: a splice doubles the contour, so they keep their own whole silhouette (old elbow cap = known miss, art pass). far_forearm is the same width: spliced."
+  },
+  "upperArm": {
+   "old": "research/art-revisions/2026-11-24-lou/old/upper_arm.png",
+   "new": "src/assets/wrestlers/thesz-procreate-v1/upper_arm.png",
+   "oldPivot": [
+    76.982334,
+    60.49989
+   ],
+   "newPivot": [
+    155.4898338586842,
+    97.47316710513495
+   ],
+   "scale": 1.013001136956733,
+   "variants": [
+    {
+     "src": "research/art-revisions/2026-11-24-lou/old/upper_arm_chopWindup.png",
+     "dst": "upper_arm_chopWindup.png"
+    },
+    {
+     "src": "research/art-revisions/2026-11-24-lou/old/upper_arm_chopContact.png",
+     "dst": "upper_arm_chopContact.png"
+    },
+    {
+     "src": "research/art-revisions/2026-11-24-lou/old/upper_arm_chopFollow.png",
+     "dst": "upper_arm_chopFollow.png"
+    }
+   ]
+  },
+  "shin": {
+   "old": "research/art-revisions/2026-11-24-lou/old/shin.png",
+   "new": "src/assets/wrestlers/thesz-procreate-v1/shin.png",
+   "oldPivot": [
+    81.07884,
+    44.64702
+   ],
+   "newPivot": [
+    143.22212884312475,
+    69.55105676952101
+   ],
+   "scale": 1.0215195310682872,
+   "variants": [
+    {
+     "src": "research/art-revisions/2026-11-24-lou/old/shin_ankle_twist.png",
+     "dst": "shin_ankle_twist.png",
+     "anchors": {
+      "heel": [
+       0.19907407407407407,
+       0.8949494949494949
+      ],
+      "toe": [
+       0.7592592592592593,
+       0.9595959595959596
+      ]
+     }
+    }
+   ],
+   "splice": {
+    "oldV": 0.797979797979798,
+    "feather": 10
+   },
+   "anchors": {
+    "heel": [
+     0.21,
+     0.89
+    ],
+    "toe": [
+     0.82,
+     0.9
+    ]
+   }
+  },
+  "torso": {
+   "old": "research/art-revisions/2026-11-24-lou/old/torso.png",
+   "new": "src/assets/wrestlers/thesz-procreate-v1/torso.png",
+   "scale": 0.989632781417213,
+   "variants": [],
+   "anchors": {
+    "backWaist": [
+     0.22,
+     0.6
+    ]
+   }
+  },
+  "farShin": {
+   "old": "research/art-revisions/2026-11-24-lou/old/shin.png",
+   "new": "src/assets/wrestlers/thesz-procreate-v1/far_shin.png",
+   "splice": {
+    "oldV": 0.797979797979798,
+    "feather": 10
+   },
+   "note": "near-shin ankle twist onto the separate far-shin painting: far boot shaft kept, twisted foot from the near variant",
+   "variants": [
+    {
+     "src": "research/art-revisions/2026-11-24-lou/old/shin_ankle_twist.png",
+     "dst": "far_shin_ankle_twist.png",
+     "anchors": {
+      "heel": [
+       0.19907407407407407,
+       0.8949494949494949
+      ],
+      "toe": [
+       0.7592592592592593,
+       0.9595959595959596
+      ]
+     }
+    }
+   ]
+  }
+ }
+}

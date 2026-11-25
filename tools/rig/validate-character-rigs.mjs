@@ -8,7 +8,7 @@ import { thesz } from '../../src/characters/thesz.js';
 import { theszFront3qR1 } from '../../src/characters/thesz_front3q_r1.js';
 import { theszProcreateV1 } from '../../src/characters/thesz_procreate_v1.js';
 import { theszRosterV1 } from '../../src/characters/thesz_roster_v1.js';
-import { theszLou2V1 } from '../../src/characters/thesz_lou2_v1.js';
+import { theszProcreateShelf } from '../../src/characters/thesz_procreate_shelf.js';
 import { georgeRosterV1 } from '../../src/characters/george_roster_v1.js';
 import { kowalskiRosterV1 } from '../../src/characters/kowalski_roster_v1.js';
 import { guidoRosterV1 } from '../../src/characters/guido_roster_v1.js';
@@ -29,7 +29,7 @@ async function pngSize(file) {
 }
 
 let failed = false;
-for (const character of [george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, theszLou2V1, georgeRosterV1, kowalskiRosterV1, guidoRosterV1]) {
+for (const character of [george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, theszProcreateShelf, georgeRosterV1, kowalskiRosterV1, guidoRosterV1]) {
     const result = validateCharacterArt(character);
     for (const warning of result.warnings) console.warn(`${character.id}: warning: ${warning}`);
     for (const error of result.errors) {

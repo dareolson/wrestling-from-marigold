@@ -5,22 +5,24 @@
   {
    "id": "thesz-procreate-v1",
    "numbers": {
-    "heightScale": 0.7907,
-    "torsoH": 113.23,
-    "thighH": 76.96,
-    "shinH": 41.81,
-    "headScale": 0.6445
+    "heightScale": 1.08526,
+    "torsoH": 72.40252757901344,
+    "thighH": 59.214683763362885,
+    "shinH": 49.05820809216229,
+    "headScale": 0.45364705882352946
    },
    "art": {
     "head": "c6a660c26ec05d41",
-    "torso": "290d4803bae02202",
-    "thigh": "500f5bd3a4fd992e",
-    "shin": "80b43d2357f1a649"
+    "torso": "0f7ffbdda822ee0c",
+    "thigh": "74ce1ec0dbc47844",
+    "shin": "06abb638b3989afd",
+    "far_thigh": "0544ae7ebb3358bb",
+    "far_shin": "17351507ffa973e3"
    },
    "row": 438,
-   "drawScale": 0.7793,
-   "inkPx": 245.9,
-   "inkPerDs": 315.52,
+   "drawScale": 1.0696,
+   "inkPx": 242.9,
+   "inkPerDs": 227.11,
    "ratioToLou": 1,
    "measuredRatioToLou": 1
   },
@@ -43,10 +45,10 @@
    },
    "row": 438,
    "drawScale": 0.9974,
-   "inkPx": 236.5,
-   "inkPerDs": 237.1,
-   "ratioToLou": 0.9618,
-   "measuredRatioToLou": 0.9618
+   "inkPx": 234.7,
+   "inkPerDs": 235.34,
+   "ratioToLou": 0.9663,
+   "measuredRatioToLou": 0.9662
   },
   {
    "id": "kowalski-roster-v1",
@@ -67,10 +69,10 @@
    },
    "row": 438,
    "drawScale": 0.9293,
-   "inkPx": 244.4,
-   "inkPerDs": 263.01,
-   "ratioToLou": 0.9941,
-   "measuredRatioToLou": 0.9939
+   "inkPx": 242.6,
+   "inkPerDs": 261.05,
+   "ratioToLou": 0.9987,
+   "measuredRatioToLou": 0.9988
   },
   {
    "id": "guido-roster-v1",
@@ -91,10 +93,10 @@
    },
    "row": 438,
    "drawScale": 0.9889,
-   "inkPx": 236.9,
-   "inkPerDs": 239.55,
-   "ratioToLou": 0.9634,
-   "measuredRatioToLou": 0.9634
+   "inkPx": 235.5,
+   "inkPerDs": 238.14,
+   "ratioToLou": 0.9695,
+   "measuredRatioToLou": 0.9695
   }
  ]
 }

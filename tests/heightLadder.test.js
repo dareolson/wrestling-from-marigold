@@ -7,7 +7,8 @@ import { readFileSync } from 'node:fs';
 import { LADDER_RIGS, rigFingerprint } from '../tools/debug/height_ladder_lib.mjs';
 
 const ladder = JSON.parse(readFileSync(new URL('../research/scale-2026-11/height-ladder.json', import.meta.url)));
-const PINNED = { 'thesz-procreate-v1': 1, 'george-roster-v1': 0.9618, 'kowalski-roster-v1': 0.9941, 'guido-roster-v1': 0.9634 };   // 2026-11-20 ratios to Lou, ink height at the front row
+// 2026-11-24 re-pin: Lou's body from Lou2.psd (thesz_procreate_v1.js) stands 0.5% shorter in ink; was .9618/.9941/.9634 (2026-11-20).
+const PINNED = { 'thesz-procreate-v1': 1, 'george-roster-v1': 0.9663, 'kowalski-roster-v1': 0.9987, 'guido-roster-v1': 0.9695 };   // ratios to Lou, ink height at the front row
 
 test('T3.3: the ladder covers every rig in the line-up, Lou first', () => {
     assert.deepEqual(ladder.rigs.map(r => r.id), LADDER_RIGS.map(r => r.id));

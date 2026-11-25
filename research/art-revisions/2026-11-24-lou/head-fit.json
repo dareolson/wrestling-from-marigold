@@ -1,0 +1,27 @@
+{
+  "head": {
+    "scale": 1.0,
+    "rotationDeg": 0.0,
+    "translate": [
+      6.0,
+      6.0
+    ],
+    "baseIoUSeed": 1.0,
+    "baseIoUFit": 1.0,
+    "oldCanvas": [
+      197,
+      241
+    ],
+    "newCanvas": [
+      209,
+      253
+    ],
+    "variants": {},
+    "anchors": {
+      "procreateNeck": {
+        "u": 0.3585964162679426,
+        "v": 0.8489718102766799
+      }
+    }
+  }
+}

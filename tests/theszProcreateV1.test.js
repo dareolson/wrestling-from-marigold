@@ -15,17 +15,19 @@ test('the candidate declares a valid rig contract', () => {
     assert.ok(ok, `rig contract invalid: ${errors.join('; ')}`);
 });
 
-test('it delivers shipped Lou\'s six body parts, plus the audition forearms and the three clasps', () => {
+test('it delivers Lou\'s body parts (2026-11-24: Lou2.psd body, separate far leg), plus the audition forearms and the three clasps', () => {
     const assets = enumerateCharacterAssets(theszProcreateV1);
     const body = assets.filter(a => a.variant === 'base' && a.slot !== 'farForearm').map(a => a.slot).sort();
-    assert.deepEqual(body, ['forearm', 'head', 'shin', 'thigh', 'torso', 'upperArm'].sort());
-    const shipped = enumerateCharacterAssets(thesz).map(a => a.slot).sort();
-    assert.deepEqual(body, shipped, 'the six body slots must match shipped Lou exactly');
+    assert.deepEqual(body, ['farShin', 'farThigh', 'forearm', 'head', 'shin', 'thigh', 'torso', 'upperArm'].sort());
+    // Draw order follows Lou2.psd: calves over thighs, the far leg over the trunks, forearm over upper arm.
+    assert.equal(theszProcreateV1.textures.shinUnderThigh, false);
+    assert.equal(theszProcreateV1.textures.farLegOverTorso, true);
+    assert.equal(theszProcreateV1.textures.forearmOverUpperArm, true);
     // 2026-10-11 audition: palm-side far forearm and the hammerlock grip.
     const extra = assets.filter(a => a.slot === 'farForearm' || a.variant !== 'base')
         .map(a => `${a.slot}.${a.variant}`).sort();
     // 2026-11-07 clasps (PLAN_GRAPPLES Stage 2): the same canvas as forearm.png, one whole forearm each.
-    assert.deepEqual(extra, ['farForearm.base', 'forearm.collarTie', 'forearm.elbowCup', 'forearm.grip', 'forearm.waistClasp', 'shin.ankleTwist',
+    assert.deepEqual(extra, ['farForearm.base', 'forearm.collarTie', 'forearm.elbowCup', 'forearm.grip', 'forearm.waistClasp', 'shin.ankleTwist', 'farShin.ankleTwist',
         ...['chopWindup','chopContact','chopFollow'].flatMap(name=>['forearm.'+name,'upperArm.'+name]),
         ...['Back','Camera','Contact','Follow'].map(name=>'upperArm.chopSweep'+name),
         'upperArm.headlockWrap',

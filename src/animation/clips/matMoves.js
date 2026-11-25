@@ -284,19 +284,23 @@ export const MAT_MOVES = {
         },
     },
 
-    // T12.5: defending vs a returning runner, Up + Power. A solo hop: a spring, legs apart, hands forward, and down again as the runner passes under. No damage; nobody is touched.
+    // T12.5: defending vs a returning runner, Up + Power. Press off his back,
+    // lift the knees, then recover both feet before returning control. No damage.
     leapfrog: {
         kind: 'solo', end: { att: 'stand' },
         build: () => ({
-            duration: 1.0, events: [{ at: 0.45, type: 'apex' }],
+            duration: 1.24, events: [{ at: 0.45, type: 'apex' }],
             att: [
                 [0, ST, 0, 0, 'linear', 1],
-                [0.16, { ...ST, crouch: 0.7, lFold: 1.2, rFold: 1.2, lean: 0.2, lArm: 0.6, rArm: 0.6 }, 0],
-                [0.32, { ...ST, lift: 50, lLeg: 1.0, rLeg: -1.0, lFold: 0.1, rFold: 0.1, lArm: 1.5, rArm: 1.4, lElbow: 0.2, rElbow: 0.2, lean: 0.15 }, 6, 0, 'easeOut'],
-                [0.5, { ...ST, lift: 82, lLeg: 1.15, rLeg: -1.15, lFold: 0.05, rFold: 0.05, lArm: 1.6, rArm: 1.5, lElbow: 0.15, rElbow: 0.15, lean: 0.2 }, 12, 0, 'easeInOut'],
-                [0.72, { ...ST, lift: 30, lLeg: 0.6, rLeg: -0.5, lFold: 0.4, rFold: 0.4, lArm: 0.8, rArm: 0.8, lean: 0.1 }, 18, 0, 'easeIn'],
-                [0.85, { ...ST, crouch: 0.5, lFold: 0.9, rFold: 0.9, lean: 0.1 }, 18],
-                [1.0, ST, 18],
+                [.12,{...ST,crouch:.7,lFold:1.2,rFold:1.2,lArm:.45,rArm:.5,lElbow:.8,rElbow:.8,bend:.3},0,0,'easeInOut',undefined,{nearForearm:'grip',farForearm:'grip'}],
+                [.18,{...ST,lift:45,lLeg:.95,rLeg:.7,lFold:1.7,rFold:1.65,lArm:.1,rArm:.2,lElbow:.85,rElbow:.85,bend:.9},2,0,'easeOut'],
+                [.26,{...ST,lift:100,lLeg:1.05,rLeg:.85,lFold:1.6,rFold:1.75,lArm:.05,rArm:.15,lElbow:.25,rElbow:.3,bend:1.0},6,0,'easeOut'],
+                [.45,{...ST,lift:115,lLeg:1.2,rLeg:.95,lFold:1.05,rFold:1.3,lArm:.3,rArm:.4,lElbow:.6,rElbow:.65,bend:.45},12,0,'easeInOut',undefined,{nearForearm:'base',farForearm:'base'}],
+                [.72,{...ST,lift:30,lLeg:.35,rLeg:.15,lFold:.85,rFold:.8,lArm:.5,rArm:.55,lElbow:.7,rElbow:.7,bend:.08},18,0,'easeIn'],
+                [.85,{...ST,crouch:.35,lLeg:-.1,rLeg:.2,lFold:.65,rFold:.65},18],
+                [.98,{...ST,crouch:.12,lLeg:.02,rLeg:.16,lFold:.3,rFold:.35},18],
+                [1.08,ST,18],
+                [1.24,ST,18],
             ],
         }),
     },
@@ -304,16 +308,26 @@ export const MAT_MOVES = {
     backwardRoll: {
         kind: 'solo', end: { att: 'stand' },
         build: () => ({
-            duration:2.0,events:[{at:.7,type:'over'}],
+            duration:2.85,events:[{at:.65,type:'over'}],
             att:[
-                [0,LIE,0,0,'linear',1],
-                [.25,{...LIE,lLeg:1.6,rLeg:1.5,lFold:1.9,rFold:1.9,tilt:-1.8,lift:-100,bend:.25,lArm:1.8,rArm:1.8,lElbow:1.2,rElbow:1.2},-8],
-                [.55,{...ST,lLeg:1.7,rLeg:1.6,lFold:2.1,rFold:2.1,tilt:-2.8,lift:-30,bend:.4,lArm:2.2,rArm:2.2,lElbow:1.4,rElbow:1.4},-30],
-                [.8,{...ST,lLeg:1.5,rLeg:1.4,lFold:2.1,rFold:2.1,tilt:-3.9,lift:-10,bend:.35,lArm:2,rArm:2,lElbow:1.4,rElbow:1.4},-55],
-                [1.05,{...ST,lLeg:.7,rLeg:.6,lFold:1.8,rFold:1.8,tilt:-5.2,lift:-35,bend:.2,crouch:.3,lArm:1.2,rArm:1.2,lElbow:.7,rElbow:.7},-80],
-                [1.35,{...ST,crouch:1,lLeg:-.05,rLeg:-.05,lFold:2.3,rFold:2.3,tilt:-4*PI2,lArm:.8,rArm:.8,lElbow:.6,rElbow:.6},-90],
-                [1.7,{...ST,crouch:.3,lFold:.65,rFold:.65,tilt:-4*PI2},-90],
-                [2,{...ST,tilt:-4*PI2},-90],
+                [0,{...LIE,gaitWeight:0,gaitDistance:0},0,0,'linear',1],
+                // Legs lead: raise them first, then curl the pelvis toward
+                // the shoulders before the hands take the full load.
+                [.1,{...LIE,lLeg:1.05,rLeg:.95,lFold:.85,rFold:.95,tilt:-1.6,lift:-108,bend:.15,lArm:1.4,rArm:1.5,lElbow:1.1,rElbow:1.1},-1],
+                [.24,{...LIE,lLeg:2.05,rLeg:1.95,lFold:1.5,rFold:1.6,tilt:-2.1,lift:-72,bend:.35,lArm:1.3,rArm:1.4,lElbow:.85,rElbow:.85},-5,0,'easeIn'],
+                [.4,{...ST,lLeg:2.1,rLeg:1.95,lFold:1.8,rFold:1.85,tilt:-2.8,lift:-25,bend:.7,lArm:1.1,rArm:1.2,lElbow:.7,rElbow:.7},-16],
+                [.65,{...ST,lLeg:1.8,rLeg:1.65,lFold:1.8,rFold:1.75,tilt:-3.45,bend:.85,lArm:1.1,rArm:1.2,lElbow:.7,rElbow:.7},-44,0,'easeIn'],
+                [.86,{...ST,lLeg:1.35,rLeg:1.15,lFold:2,rFold:1.9,tilt:-4.05,bend:.75,lArm:1.1,rArm:1.2,lElbow:.65,rElbow:.65},-92,0,'easeIn'],
+                [1.06,{...ST,lLeg:.45,rLeg:.25,lFold:1.4,rFold:1.3,tilt:-5.5,lift:-15,bend:.3,crouch:.35,lArm:1.1,rArm:1,lElbow:.5,rElbow:.5},-138,0,'easeOut'],
+                [1.22,{...ST,crouch:1.6,lLeg:0,rLeg:.16,lFold:2.4,rFold:2.35,tilt:-4*PI2,bend:1.6,lArm:.5,rArm:.5,lElbow:1.1,rElbow:1.1},-178],
+                [1.34,{...ST,crouch:1.6,lLeg:0,rLeg:.16,lFold:2.4,rFold:2.35,tilt:-4*PI2,bend:1.6,lArm:.5,rArm:.5,lElbow:1.1,rElbow:1.1},-178],
+                [1.45,{...ST,crouch:.85,lLeg:-.08,rLeg:.16,lFold:1.65,rFold:1.55,tilt:-4*PI2,bend:1.2,lArm:.3,rArm:.35,lElbow:.35,rElbow:.35},-178],
+                [1.85,{...ST,tilt:-4*PI2,gaitWeight:0,gaitDistance:0},-178],
+                [2.0,{...ST,tilt:-4*PI2,gaitWeight:.65,gaitDistance:-6},-184,0,'linear'],
+                [2.22,{...ST,tilt:-4*PI2,gaitWeight:1,gaitDistance:-23},-201,0,'linear'],
+                [2.48,{...ST,tilt:-4*PI2,gaitWeight:.65,gaitDistance:-43},-221,0,'linear'],
+                [2.7,{...ST,tilt:-4*PI2,gaitWeight:.1,gaitDistance:-52},-230,0,'easeOut'],
+                [2.85,{...ST,tilt:-4*PI2,gaitWeight:0,gaitDistance:-54},-232],
             ],
         }),
     },
@@ -381,36 +395,43 @@ export const MAT_MOVES = {
     },
 
     // T12.8: next to a man on his back, Up + Action. He drops to a seat at the man's side and locks his legs round the waist; three squeezes; he rises, the man stays on his back.
+    // Retired Nov 22; retained solely as construction data for head scissors.
     bodyScissors: {
-        kind: 'paired', hitEvent: 'squeeze', damage: 4, faceToFace: true, end: { def: 'back', att: 'stand' }, hold: true, shake: [70, 0.0009],
-        build: D => {
-            const sit = { lift:-90,crouch:0,lFold:.18,rFold:.3,lLeg:1.4,rLeg:1.5,lean:0,bend:-.12,lArm:.1,rArm:-.3,lElbow:.55,rElbow:.45 };
-            const lock = { ...sit, lFold:.35,rFold:.5 };
-            const sq = { ...lock, bend:-.18 };
-            const squeezed = { ...LIE, bend:.12,lArm:.55,rArm:.65,lElbow:1.4,rElbow:1.4 };
-            return {
-                duration: 4.3, events: squeezes(1.5, 2.1, 2.7),
-                att: [
-                    [0, ST, 0, 0, 'linear', 1],
-                    [.35,{...ST,crouch:.7,lFold:1.3,rFold:1.3,bend:.2},D-78,6],
-                    [.85,sit,D-62,10],
-                    [1.2,lock,D-62,10],[1.5,sq,D-62,10],[1.8,lock,D-62,10],[2.1,sq,D-62,10],[2.4,lock,D-62,10],[2.7,sq,D-62,10],[3.0,lock,D-62,10],
-                    [3.35,sit,D-70,10],
-                    [3.8,{...ST,crouch:1,lLeg:-.05,rLeg:-.05,lFold:2.3,rFold:2.3,bend:.25},D-78,10],
-                    [4.3,{...ST,lFold:.08,rFold:.08},D-82,10],
+        retired:true,
+        kind:'paired',hitEvent:'squeeze',damage:4,faceToFace:false,end:{def:'back',att:'stand'},hold:true,shake:[70,.0009],
+        build:D=>{
+            const recline={...LIE,tilt:-1.4,lift:-108,bend:.12,lLeg:.15,rLeg:.25,lFold:.8,rFold:.7,lArm:.3,rArm:.4,lElbow:.9,rElbow:1.0};
+            const squeeze={...recline,bend:.2,lArm:.4,lElbow:1.1};
+            const receiver={...LIE,tilt:-1.45,lLeg:.15,rLeg:.35,lFold:.25,rFold:.5,lArm:.65,rArm:.45,lElbow:1.1,rElbow:1.3};
+            return{
+                duration:5,events:squeezes(1.65,2.3,2.95),
+                att:[
+                    [0,ST,0,0,'linear',1],
+                    [.35,{...ST,crouch:.65,lFold:1.1,rFold:1.05,bend:.35,lArm:.7,rArm:.8},D-80,10],
+                    [.75,{...recline,tilt:-.75,lift:-88,lLeg:1.1,rLeg:.7,lFold:1.3,rFold:1.1},D-48,16],
+                    [1.25,recline,D-45,16],
+                    [1.65,squeeze,D-45,16],[1.95,recline,D-45,16],
+                    [2.3,squeeze,D-45,16],[2.6,recline,D-45,16],
+                    [2.95,squeeze,D-45,16],[3.25,recline,D-45,16],
+                    [3.65,{...recline,lLeg:.6,rLeg:.75,lFold:.6,rFold:.65,bend:0},D-54,16],
+                    [4.05,{...ST,lift:-70,tilt:-.35,crouch:.45,lLeg:1.1,rLeg:.8,lFold:1.5,rFold:1.3,bend:.4,lArm:1,rArm:.8},D-66,16],
+                    [4.5,{...ST,crouch:.65,lFold:1.2,rFold:1.15,bend:.4},D-78,16],
+                    [5,ST,D-86,16],
                 ],
-                def: [
-                    [0, LIE, D, 0, 'linear', -1],
-                    [1.2, LIE, D],
-                    [1.5, squeezed, D], [1.8, { ...LIE, bend: 0.1, lArm: 0.8 }, D],
-                    [2.1, squeezed, D], [2.4, { ...LIE, bend: 0.1, lArm: 0.8 }, D],
-                    [2.7, squeezed, D], [3.3, LIE, D],
-                    [4.3, LIE, D],
+                def:[
+                    [0,LIE,D,0,'linear',1],[.75,receiver,D],
+                    [1.25,receiver,D],
+                    [1.65,{...receiver,bend:.2,lFold:.4,rFold:.65},D],
+                    [1.95,receiver,D],[2.3,{...receiver,bend:.2,lFold:.4,rFold:.65},D],
+                    [2.6,receiver,D],[2.95,{...receiver,bend:.2,lFold:.4,rFold:.65},D],
+                    [3.25,receiver,D],[3.8,LIE,D],[5,LIE,D],
                 ],
-                layers: [['attacker','farLeg'],['defender','farArm'],['defender','nativeBody'],['defender','nearArm'],['attacker','farArm'],['attacker','torso'],['attacker','head'],['attacker','nearLeg'],['attacker','nearArm']],
-                legContacts: [
-                    {role:'attacker',side:'far',to:{role:'defender',joint:'Hip',side:'far',torso:.15,y:-9},bend:'up',in:[.85,1.2],out:[3,3.35]},
-                    {role:'attacker',side:'near',to:{role:'defender',joint:'Hip',side:'near',torso:.15,y:9},bend:'down',in:[.85,1.2],out:[3,3.35]},
+                floorContacts:[{role:'attacker',point:'upperBack',in:[.7,1.1],out:[3.3,3.85]}],
+                layers:[['attacker','farArm'],['attacker','farLeg'],['defender','farArm'],['defender','farLeg'],
+                    ['attacker','torso'],['attacker','head'],['defender','nativeBody'],['attacker','nearLeg'],['attacker','nearArm'],['defender','nearArm']],
+                legContacts:[
+                    {role:'attacker',side:'far',to:{role:'defender',joint:'Hip',side:'far',torso:.15,y:-5},bend:'up',in:[.75,1.25],out:[3.25,3.65]},
+                    {role:'attacker',side:'near',to:{role:'attacker',joint:'Ankle',side:'far',x:3,y:4},bend:'down',in:[.95,1.3],out:[3.25,3.65]},
                 ],
             };
         },
@@ -594,12 +615,20 @@ export function flyingMareClip(distance = 100) {
 }
 
 // `distance`: the man's hips from the attacker's at the start, in the attacker's units; `dy`: his depth from the attacker's (the waistlock stands the attacker upstage). Returns a clip for MoveRuntime.register (id = the move's id).
-export function matMoveClip(id, distance = 100, { attackerRigId, defenderRigId, dy = 0, delay = 0 } = {}) {
+export function matMoveClip(id, distance = 100, { attackerRigId, defenderRigId, dy = 0, delay = 0, landingPose } = {}) {
     if (id === 'flyingMare') return flyingMareClip(distance);
     const def = MAT_MOVES[id];
     if (!def?.build) throw new Error(`matMoveClip: no spec for ${id}`);
     const params = specFor({ gap: 0, ...(def.params ?? {}) }, { attackerRigId, defenderRigId });
     const spec = def.build(distance + params.gap, params);
+    if(id==='leapfrog'&&landingPose){
+        // Finish in the live rig's actual idle stance, so turning after the
+        // landing cannot expose a leftover single-foot IK solution.
+        const settled={...ST,...landingPose};
+        for(const side of ['l','r']) settled[side+'Fold']=(settled[side+'Leg']??0)+.85*(settled.crouch??0)-(landingPose[side+'Shin']??0);
+        spec.att.at(-2)[1]=settled;
+        spec.att.at(-1)[1]={...settled};
+    }
     if(id==='leapfrog'&&delay>0){
         for(let i=1;i<spec.att.length;i++)spec.att[i][0]=+(spec.att[i][0]+delay).toFixed(4);
         spec.att.splice(1,0,[+delay.toFixed(4),ST,0]);
@@ -687,6 +716,17 @@ export function matMoveClip(id, distance = 100, { attackerRigId, defenderRigId, 
             {role:'defender',arm:'near',to:{role:'attacker',joint:'Hip',side:'other',above:.75},in:[2.14,2.3],out:[2.32,2.5],natural:true},
             {role:'defender',arm:'near',to:{role:'attacker',joint:'Hip',side:'other',above:.75},in:[2.88,3.08],out:[3.1,3.3],natural:true},
         ],
+        bodyScissors:[
+            {role:'attacker',arm:'near',to:{role:'attacker',joint:'Floor',ahead:-12},in:[.75,1.15],out:[3.25,3.65],natural:true},
+            {role:'defender',arm:'near',to:{role:'attacker',joint:'Knee',side:'same'},in:[.9,1.3],out:[3.25,3.65],natural:true,afterLegs:true},
+            {role:'defender',arm:'far',to:{role:'attacker',joint:'Ankle',side:'same'},in:[.9,1.3],out:[3.25,3.65],natural:true,afterLegs:true},
+        ],
+        backwardRoll:[
+            {role:'attacker',arm:'near',to:{role:'attacker',joint:'Floor',ahead:12},in:[.24,.4],out:[.78,.98],palm:'clutch',natural:true,afterLegs:true},
+            {role:'attacker',arm:'far',to:{role:'attacker',joint:'Floor',ahead:6},in:[.24,.4],out:[.78,.98],palm:'clutch',natural:true,afterLegs:true},
+            {role:'attacker',arm:'near',to:{role:'attacker',joint:'Floor',ahead:16},in:[1.08,1.24],out:[1.38,1.6],palm:'clutch',natural:true,afterLegs:true},
+            {role:'attacker',arm:'far',to:{role:'attacker',joint:'Floor',ahead:10},in:[1.08,1.24],out:[1.38,1.6],palm:'clutch',natural:true,afterLegs:true},
+        ],
         backdropSuplex:[grip('l','Hip','same',.05,.35,.98,1.15),grip('r','Hip','other',.05,.35,.98,1.15)],
     }[id]??[];
     const plant=(role,leg,start,full,hold,end)=>({role,leg,in:[start,full],out:[hold,end],kneeRestart:true});
@@ -695,13 +735,19 @@ export function matMoveClip(id, distance = 100, { attackerRigId, defenderRigId, 
         wristlock:[plant('attacker','r',.8,1,2.1,2.7),plant('defender','r',.3,.5,2.1,2.7),plant('defender','r',3.02,3.08,3.3,3.4),plant('defender','l',3.4,3.48,3.65,3.75),plant('defender','r',3.75,3.83,4.05,4.15)],
         headlockTakeover:[plant('attacker','r',.05,.1,.16,.24),plant('attacker','r',.62,.72,1.0,1.15),plant('attacker','r',3.43,3.47,3.53,3.6),plant('attacker','l',3.67,3.75,3.93,4.07),plant('defender','r',3.43,3.47,3.53,3.6),plant('defender','l',3.67,3.75,3.93,4.07)],
         testOfStrength:[plant('attacker','r',1.15,1.35,7.7,8.25),plant('defender','r',1.15,1.35,4.6,5.0),plant('attacker','r',10.85,10.95,11.35,11.5),plant('defender','r',11.27,11.3,11.45,11.55),plant('defender','l',11.6,11.65,11.9,12.05)],
-        leapfrog:[plant('attacker','r',0,.05,.12+delay,.2+delay),plant('attacker','l',.85+delay,.92+delay,.98+delay,1+delay)],
+        leapfrog:[plant('attacker','r',0,.05,.1+delay,.13+delay),
+            plant('attacker','l',1.08+delay,1.12+delay,spec.duration,spec.duration),
+            plant('attacker','r',1.08+delay,1.12+delay,spec.duration,spec.duration)],
+        backwardRoll:[plant('attacker','l',1.35,1.45,1.65,1.82),plant('attacker','r',1.35,1.45,1.65,1.82)],
         backdropSuplex:[plant('attacker','r',.3,.45,.75,.94)],
     }[id]??[];
     const tracks = { attacker: { keyframes: spec.att.map(b => kf(ST, b)) } };
     if (spec.def) tracks.defender = { keyframes: spec.def.map(([at, over, x, y = 0, ...rest]) => kf(ST, [at, over, x, y + dy, ...rest])) };   // `dy`: the man's depth from the attacker's at play(), so a pair a little off one line does not pop
     return { id, duration: spec.duration, events: spec.events, tracks, plants, grips, floorContacts:spec.floorContacts??[], legContacts:spec.legContacts??[],...(spec.carry?{carry:spec.carry}:{}),
         ...(id==='backdropSuplex'?{carry:[{role:'defender',on:'attacker',tilt:1,in:[.4,.65],out:[.98,1.18],slide:{along:55,in:[.5,.95]}}]}:{}),
-        ...(id==='backwardRoll'?{floorContacts:[{role:'attacker',point:'upperBack',in:[.2,.35],out:[.8,1.05]}]}:{}),
+        ...(id==='backwardRoll'?{floorContacts:[
+            {role:'attacker',point:'shoulders',pinX:true,in:[.12,.3],out:[.72,.98]},
+            {role:'attacker',point:'nearSole',in:[1.02,1.2],out:[1.65,1.82]},
+        ]}:{}),
         ...(spec.layers ? { layers: spec.layerWindows??[{ from: 0, to: spec.duration, order: spec.layers }] } : {}) };
 }

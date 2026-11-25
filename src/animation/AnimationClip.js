@@ -101,18 +101,21 @@ export function validateClip(source) {
         if(grip?.to?.limb&&(grip.to.joint!=='Shoulder'||grip.to.role!==grip.role||!Number.isFinite(grip.to.limb.upper)||!Number.isFinite(grip.to.limb.fore)))errors.push(`grips[${index}] invalid limb target`);
         if(grip?.to?.offset&&(!Number.isFinite(grip.to.offset.x)||!Number.isFinite(grip.to.offset.y)))errors.push(`grips[${index}] invalid target offset`);
         if(grip?.to?.joint==='Floor'&&(grip.to.role!==grip.role||(grip.to.ahead!==undefined&&!Number.isFinite(grip.to.ahead))))errors.push(`grips[${index}] invalid floor hand target`);
-        if(grip?.afterLegs && (source.legContacts??[]).some(c=>c.role===grip.role))errors.push(`grips[${index}] afterLegs cannot redraw an actor with leg contacts`);
+        if(grip?.afterLegs && (source.legContacts??[]).some(c=>c.role===grip.role
+            && grip.in?.[0]<c.out?.[1] && c.in?.[0]<grip.out?.[1]))errors.push(`grips[${index}] afterLegs cannot redraw an actor with leg contacts`);
     }
     for(const [index,c]of(source?.legContacts??[]).entries()){
         if(!source.tracks?.[c.role]||!source.tracks?.[c.to?.role])errors.push(`legContacts[${index}] roles need tracks`);
         if(!['near','far'].includes(c.side)||!['near','far'].includes(c.to?.side))errors.push(`legContacts[${index}] needs explicit near/far sides`);
-        if(!['Hip','Knee'].includes(c.to?.joint))errors.push(`legContacts[${index}] target must be Hip or Knee`);
+        if(!['Hip','Knee','Ankle','Neck'].includes(c.to?.joint))errors.push(`legContacts[${index}] target must be Hip, Knee, Ankle or Neck`);
         if(c.to?.channel!==undefined&&!['l','r'].includes(c.to.channel))errors.push(`legContacts[${index}] target channel must be l or r`);
-        if(c.bend!==undefined&&!['up','down','forward'].includes(c.bend))errors.push(`legContacts[${index}] invalid knee direction`);
+        if(c.bend!==undefined&&!['up','down','forward','anatomical'].includes(c.bend))errors.push(`legContacts[${index}] invalid knee direction`);
         if(c.to?.maxReach!==undefined&&(!(c.to.maxReach>0&&c.to.maxReach<=1)||!['Hip','Knee'].includes(c.to.joint)||!Number.isFinite(c.to.along)||c.to.along<0||c.to.along>1||!(c.to.minAlong>=0&&c.to.minAlong<=c.to.along)))errors.push(`legContacts[${index}] invalid calf reach budget`);
         if(c.kneeOverlap!==undefined&&(!Number.isFinite(c.kneeOverlap)||c.kneeOverlap<0||c.kneeOverlap>6))errors.push(`legContacts[${index}] invalid painted knee overlap`);
         if(c.kneeArtOffset!==undefined&&(!c.kneeArtOffset||!['x','y'].every(axis=>Number.isFinite(c.kneeArtOffset[axis])&&Math.abs(c.kneeArtOffset[axis])<=6)))errors.push(`legContacts[${index}] invalid painted knee offset`);
         for(const sweep of [c.sweep,c.releaseSweep])if(sweep&&(!(0<=sweep.from&&sweep.from<sweep.apex&&sweep.apex<sweep.to&&sweep.to<=source.duration)||!Number.isFinite(sweep.x)||!Number.isFinite(sweep.y)))errors.push(`legContacts[${index}] invalid sweep`);
+        if(c.pulses!==undefined&&!Array.isArray(c.pulses))errors.push(`legContacts[${index}] pulses must be an array`);
+        for(const pulse of Array.isArray(c.pulses)?c.pulses:[])if(badWindow(pulse)||!Number.isFinite(pulse.x)||!Number.isFinite(pulse.y))errors.push(`legContacts[${index}] invalid pulse`);
         if(badWindow(c))errors.push(`legContacts[${index}] invalid window`);
     }
     for (const [index, c] of (source?.carry ?? []).entries()) {
@@ -198,7 +201,7 @@ export function compileClip(source) {
 // with each rig's hip height, so it can't put every cast's crown on the mat;
 // the Wrestler measures the gap and closes it (Wrestler.draw). `in` ramps
 // the hold up, `out` ramps it back off; weights are smoothstepped.
-export const FLOOR_POINTS = Object.freeze(['crown','upperBack','nearKnee','nearSole']);
+export const FLOOR_POINTS = Object.freeze(['crown','upperBack','shoulders','hips','nearKnee','nearSole','farSole']);
 
 // A clip can also hold a hand on a partner's joint (2026-10-15). The clip's
 // arm angles are solved on one cast; a partner of other proportions moves
@@ -262,7 +265,7 @@ export function sampleClip(clip, time) {
         tracks: Object.fromEntries(Object.entries(clip.tracks).map(([role, track]) => {
             const sample = sampleTrack(track, at);
             const contacts = (clip.floorContacts ?? []).filter(c => c.role === role)
-                .map(c => ({ point: c.point, w: floorContactWeight(c, at) })).filter(c => c.w > 0);
+                .map(c => ({ point: c.point, w: floorContactWeight(c, at),...(c.pinX?{pinX:true}:{}) })).filter(c => c.w > 0);
             if (contacts.length) sample.floorContacts = contacts;
             return [role, sample];
         })),

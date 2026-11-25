@@ -36,6 +36,24 @@ function threeMarkerClip() {
     });
 }
 
+test('post-draw support runs only while its move remains active', () => {
+    for (const finish of ['cancel', 'complete']) {
+        const runtime = new MoveRuntime();
+        runtime.register(threeMarkerClip());
+        const seen = [];
+        const handle = runtime.play('three-marker-test-clip', { solo: fakeActor() }, {
+            onAfterDraw: h => seen.push(h.time),
+        });
+        runtime.update(.1);
+        runtime.afterDraw();
+        assert.deepEqual(seen, [.1]);
+        if (finish === 'cancel') runtime.cancel(handle);
+        else runtime.update(1);
+        runtime.afterDraw();
+        assert.deepEqual(seen, [.1]);
+    }
+});
+
 // ── update(): self-cancellation from a per-handle onEvent ──────────────────────
 
 test('a per-handle onEvent that cancels its own handle stops later markers in the same update, and never applies a post-cancel sample', () => {

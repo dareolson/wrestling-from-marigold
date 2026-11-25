@@ -1,4 +1,9 @@
 import { resolvePartSelection, textureKey } from './rig/partVariants.js';
+import {walkLoad,walkSwing} from './animation/walkPresentation.js';
+import {runArmFlex} from './animation/runPresentation.js';
+import {readyWristTexture} from './animation/readyWrist.js';
+import {wrestlingStance,probingGuard} from './animation/wrestlingStance.js';
+import {locomotionArms} from './animation/locomotionArms.js';
 import {
     applyImageBinding,
     solveAnchoredAttachment,
@@ -275,7 +280,10 @@ export function footGait(phase, g = GAIT) {
     const u = (t - g.STANCE) / (1 - g.STANCE);
     const e = u * u * (3 - 2 * u);                 // smoothstep — accelerate then settle
     const liftFrac = Math.sin(Math.PI * u);
-    return { fx: g.STRIDE * (-0.5 + e), lift: g.LIFT * liftFrac, liftFrac };
+    const old={fx:g.STRIDE*(-.5+e),liftFrac};
+    const w=Math.min(1,(g.walkWeight??0)+(g.runWeight??0)),soft=w>0?walkSwing(u,g.STRIDE,g.STANCE):old;
+    const frac=old.liftFrac+(soft.liftFrac-old.liftFrac)*w;
+    return {fx:old.fx+(soft.fx-old.fx)*w,lift:g.LIFT*frac,liftFrac:frac};
 }
 
 // ?gait=v2 run hip (PLAN_GAIT Stage 3): 1 at mid-stance of whichever foot is down, 0 when both feet are off the mat.
@@ -1280,14 +1288,20 @@ export default class Skeleton {
         if(!H||!K||!A||!(weight>0))return null;
         const lu=Math.hypot(K.x-H.x,K.y-H.y),lf=Math.hypot(A.x-K.x,A.y-K.y);
         const u=Math.min(1,weight);
-        const choices=[-1,1].map(sign=>Skeleton.solveReachArm(H,lu,lf,goal,null,sign,2.45));
+        const anatomical=bend==='anatomical';
+        const choices=(anatomical?[facing]:[-1,1]).map(sign=>Skeleton.solveReachArm(H,lu,lf,goal,null,sign,2.45));
         choices.sort((a,b)=>bend==='forward'
             ? facing*(b.elbow.x-a.elbow.x)
             : bend==='up'?a.elbow.y-b.elbow.y:b.elbow.y-a.elbow.y);
         const target=choices[0],wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
         const a0=Math.atan2(K.y-H.y,K.x-H.x),b0=Math.atan2(A.y-K.y,A.x-K.x);
         const a1=Math.atan2(target.elbow.y-H.y,target.elbow.x-H.x),b1=Math.atan2(target.hand.y-target.elbow.y,target.hand.x-target.elbow.x);
-        const aa=a0+wrap(a1-a0)*u,bb=b0+wrap(b1-b0)*u;
+        const aa=a0+wrap(a1-a0)*u;
+        // Interpolate a nonnegative hinge flex, not two independent world
+        // angles: neither the target nor the blend may reverse the knee.
+        const flex0=Math.max(0,Math.min(2.45,facing*wrap(b0-a0)));
+        const flex1=Math.max(0,Math.min(2.45,facing*wrap(b1-a1)));
+        const bb=anatomical?aa+facing*(flex0+(flex1-flex0)*u):b0+wrap(b1-b0)*u;
         const knee={x:H.x+Math.cos(aa)*lu,y:H.y+Math.sin(aa)*lu};
         const ankle={x:knee.x+Math.cos(bb)*lf,y:knee.y+Math.sin(bb)*lf};
         // Carry the already drawn art with its bone. Replacing its render
@@ -1332,9 +1346,23 @@ export default class Skeleton {
     // hangs the rig's measured rigProfile.crownBelowHip under the hip pivot
     // when upside down (`turn` = tilt + bend = PI), less as the body turns
     // off vertical. A rig without the measurement is left alone.
-    holdOnFloor(point, floorY, s, w, turn) {
-        if(point==='nearSole'&&w>0){
-            const sole=this.soleWorld('near');
+    holdOnFloor(point, floorY, s, w, turn, pinX = null) {
+        if(point==='hips'&&w>0){
+            const P=this.jointAttachmentPoints,hip=this._hipPivot();
+            this._rotateAbout(this._parts,Object.values(P??{}),hip,0,(floorY-hip.y-6*s)*w);
+            return;
+        }
+        if(point==='shoulders'&&w>0){
+            const P=this.jointAttachmentPoints,a=P?.nearShoulder,b=P?.farShoulder;
+            if(!a||!b)return;
+            const support={x:(a.x+b.x)/2,y:(a.y+b.y)/2+6*s};
+            const bottom=this.head?.getBounds?.().bottom??support.y;
+            this._rotateAbout(this._parts,Object.values(P),this._hipPivot(),0,
+                (floorY-Math.max(support.y,bottom))*w,pinX===null?0:(pinX-support.x)*w);
+            return;
+        }
+        if((point==='nearSole'||point==='farSole')&&w>0){
+            const sole=this.soleWorld(point==='nearSole'?'near':'far');
             if(sole)this._rotateAbout(this._parts,Object.values(this.jointAttachmentPoints??{}),this._hipPivot(),0,(floorY-sole.y)*w);
             return;
         }
@@ -1358,11 +1386,11 @@ export default class Skeleton {
     }
 
     // Rotate parts and joint points by r about pivot, then raise by dy.
-    _rotateAbout(parts, points, pivot, r, dy = 0) {
+    _rotateAbout(parts, points, pivot, r, dy = 0, dx = 0) {
         const cos = Math.cos(r), sin = Math.sin(r);
         const move = point => {
             const px = point.x - pivot.x, py = point.y - pivot.y;
-            point.x = pivot.x + px * cos - py * sin;
+            point.x = pivot.x + px * cos - py * sin + dx;
             point.y = pivot.y + px * sin + py * cos + dy;
         };
         const head = this.head;
@@ -1373,7 +1401,7 @@ export default class Skeleton {
                 // object's own transform (p' = R(r)(R p + t - P) + P + dy).
                 const t = { x: head.x, y: head.y };
                 const tx = t.x - pivot.x, ty = t.y - pivot.y;
-                head.setPosition(pivot.x + tx * cos - ty * sin, pivot.y + tx * sin + ty * cos + dy).setRotation(head.rotation + r);
+                head.setPosition(pivot.x + tx * cos - ty * sin + dx, pivot.y + tx * sin + ty * cos + dy).setRotation(head.rotation + r);
                 continue;
             }
             const at = { x: part.x, y: part.y };
@@ -1664,22 +1692,33 @@ export default class Skeleton {
                 });
                 const nearHipOffset = hipOffset(sockets.nearHip);
                 const farHipOffset = hipOffset(sockets.farHip);
-                const nearMax = (thighH + Math.hypot(nearSole.x, nearSole.y)) * 0.985;
-                const farMax = (thighH + Math.hypot(farSole.x, farSole.y)) * 0.985;
-                const dxA = facing * footA.fx * s - nearHipOffset.x;
-                const dxB = facing * footB.fx * s - farHipOffset.x;
+                const walk=this._gaitParams??GAIT,track=walk.hipTracks??0;
+                // The far boot sits slightly upstage in George's 3/4 view.
+                // Forcing his shorter painted far chain onto the near sole's
+                // depth otherwise keeps the longer near leg folded all cycle.
+                const farFloor=y+(walk.farGround??0)*s;
+                const nearMax = (thighH + Math.hypot(nearSole.x, nearSole.y)) * (walk.walkReach??.985);
+                const farMax = (thighH + Math.hypot(farSole.x, farSole.y)) * (walk.walkReach??.985);
+                const dxA = facing * footA.fx * s - nearHipOffset.x*(1-track);
+                const dxB = facing * footB.fx * s - farHipOffset.x*(1-track);
                 const reachA = Math.sqrt(Math.max(0, nearMax * nearMax - dxA * dxA));
                 const reachB = Math.sqrt(Math.max(0, farMax * farMax - dxB * dxB));
-                hipYwalk = Math.max(y - nearHipOffset.y - reachA, y - farHipOffset.y - reachB);
+                hipYwalk = Math.max(y - nearHipOffset.y - reachA, farFloor - farHipOffset.y - reachB);
+                if(track>0){
+                    const liftA=footA.lift*s*liftScale+(footA.liftAbs??0)*s;
+                    const liftB=footB.lift*s*liftScale+(footB.liftAbs??0)*s;
+                    const supported=Math.max(y-liftA-nearHipOffset.y-reachA,farFloor-liftB-farHipOffset.y-reachB);
+                    hipYwalk+=(supported-hipYwalk)*track;
+                }
                 hipYstand = Math.max(
                     y - nearHipOffset.y - nearMax * 0.99,
-                    y - farHipOffset.y - farMax * 0.99,
+                    farFloor - farHipOffset.y - farMax * 0.99,
                 );
                 const gr = this._gaitRun;
                 if (gr && gr.w > 0) {
                     // ?gait=v2 run hip: never above what the lifted feet allow, otherwise a stance dip and a flight rise
                     const liftA = footA.lift * s * liftScale + (footA.liftAbs ?? 0) * s, liftB = footB.lift * s * liftScale + (footB.liftAbs ?? 0) * s;
-                    const con = Math.max(y - liftA - nearHipOffset.y - reachA, y - liftB - farHipOffset.y - reachB);
+                    const con = Math.max(y - liftA - nearHipOffset.y - reachA, farFloor - liftB - farHipOffset.y - reachB);
                     const top = hipYstand + (gr.base + gr.drop * runStanceWeight(walkPhase, (this._gaitParams ?? GAIT).STANCE)) * s;
                     hipYwalk += (softMax(con, top, 3 * s) - hipYwalk) * gr.w;
                 }
@@ -1699,6 +1738,8 @@ export default class Skeleton {
             }
             hipY = hipYstand + (hipYwalk - hipYstand) * Math.min(1, moveBlend);
             hipY += crouch * legLen * 0.22; // milder while moving; IK bends the knees
+            const walking=this._walkPresentationWeight??0;
+            if(walking>0)hipY+=(this._gaitParams?.loadDrop??2.4)*s*walking*walkLoad(walkPhase,(this._gaitParams??GAIT).STANCE);
         } else {
             // Pose-driven FK branch (idle and most authored poses — see
             // useGait above).
@@ -1752,6 +1793,47 @@ export default class Skeleton {
             }
         }
 
+        // A stopped wrestler returns to his authored stance. Holding the
+        // walking IK at its shortened reach left every roster rig crouched,
+        // even with a zero-crouch pose. Use the existing stop weight to blend
+        // the pelvis and legs together, so stopping never swaps solvers in
+        // one frame. Clips have no gait hold/rest weight and remain untouched.
+        const restWeight=useGait&&this._gaitHold===true?Math.max(0,Math.min(1,gaitRest??0)):0;
+        let restLegs=null;
+        if(restWeight>0){
+            const leg=(side)=>{
+                const thigh=facing*((pose[side+'Leg']??0)+cThigh);
+                const shin=pose[side+'Knee']!==undefined
+                    ?childAngleFromLocalFlex(thigh,pose[side+'Knee'],facing,'knee')
+                    :pose[side+'Shin']!==undefined?facing*pose[side+'Shin']:thigh-facing*(cThigh+cShin);
+                return{thighAng:thigh,shinAng:shin};
+            };
+            const l=leg('l'),r=leg('r');
+            restLegs=facing>=0?{near:l,far:r}:{near:r,far:l};
+            // The front foot belongs to the same visible limb through a
+            // mirrored turn. Extend that whole leg slightly without adding
+            // knee bend, and sit the pelvis a little behind the stance.
+            for(const [side,angle] of [['far',.10],['near',-.025]]){
+                restLegs[side].thighAng+=facing*angle;
+                restLegs[side].shinAng+=facing*angle;
+            }
+            x-=facing*3*s*restWeight;
+            let restHip=y-bootH-(thighH*Math.cos(cThigh)+shinH*Math.cos(cShin));
+            if(authoredSoles){
+                const sockets=this._torsoSockets,midV=(sockets.nearHip.v+sockets.farHip.v)/2;
+                const required=(side)=>{
+                    const {thighAng,shinAng}=restLegs[side];
+                    const tv=this._anchorVector(this[side+'Thigh'],this[side+'Thigh']._distalAnchorFrac,s*(side==='far'?this._farThighScale:1),facing);
+                    const sv=this._anchorVector(this[side+'Shin'],this[side+'Shin']._soleAnchorFrac,s*(side==='far'?this._farShinScale:this._nearShinScale),facing);
+                    return y-(sockets[side+'Hip'].v-midV)*this.torso._texDims.h*s
+                        -(-tv.x*Math.sin(thighAng)+tv.y*Math.cos(thighAng))
+                        -(-sv.x*Math.sin(shinAng)+sv.y*Math.cos(shinAng));
+                };
+                restHip=(required('near')+required('far'))/2;
+            }
+            hipY+=(restHip-hipY)*restWeight;
+        }
+
         const torsoTop  = hipY - torsoH;
         const shoulderY = torsoTop + 12 * s; // arm pivot slightly below torso top
         // Shoulder pivot is pinned to the same x as the torso/hip below it — the
@@ -1765,9 +1847,14 @@ export default class Skeleton {
 
         // Walk gets a wider swing arc; run stays controlled (fades out as runBlend rises).
         const walkSwing = 1 - runBlend;
-        const armSwing  = MAX_ARM * (1 + runBlend * 0.35 + walkSwing * 0.50);
-        let lArmAng = facing * pose.lArm - swing * armSwing;
-        let rArmAng = facing * pose.rArm + swing * armSwing;
+        const runWeight=this._runPresentationWeight??0;
+        let armSwing  = MAX_ARM * (1 + runBlend * 0.35 + walkSwing * 0.50);
+        armSwing+=(.5-armSwing)*runWeight;
+        const walking=this._walkPresentationWeight??0;
+        let armPhase=this._walkPresentation?facing*Math.cos(walkPhase-.1)*walking:swing;
+        armPhase+=(facing*Math.cos(walkPhase-.1)-armPhase)*runWeight;
+        let lArmAng = facing * pose.lArm - armPhase * armSwing;
+        let rArmAng = facing * pose.rArm + armPhase * armSwing;
         // Walk: mild arm-tracking so forearm swings back with the arm and folds
         // slightly inward on the upswing — run elbow code below overrides at runBlend→1.
         // Keep the default elbow as a real hinge: forearm angle is the upper
@@ -1824,6 +1911,39 @@ export default class Skeleton {
             lForearmAng += (lRunFore - lForearmAng) * runBlend;
             rForearmAng += (rRunFore - rForearmAng) * runBlend;
         }
+        if(runWeight>0){
+            const flex=runArmFlex(walkPhase);
+            lForearmAng+=(lArmAng+facing*flex.near-lForearmAng)*runWeight;
+            rForearmAng+=(rArmAng+facing*flex.far-rForearmAng)*runWeight;
+        }
+        const armWeight=this._armPresentationWeight??0;
+        if(armWeight>0){
+            const targets=locomotionArms(walkPhase,this._armPresentationRun??0,combatBlend);
+            const nearIsL=this.lChannelSide(facing)==='near';
+            const l=nearIsL?targets.near:targets.far,r=nearIsL?targets.far:targets.near;
+            lArmAng+=(facing*l.upper-lArmAng)*armWeight;
+            rArmAng+=(facing*r.upper-rArmAng)*armWeight;
+            lForearmAng+=(facing*l.forearm-lForearmAng)*armWeight;
+            rForearmAng+=(facing*r.forearm-rForearmAng)*armWeight;
+            this._recordJointState('elbow','l',lArmAng,lForearmAng,facing);
+            this._recordJointState('elbow','r',rArmAng,rForearmAng,facing);
+        }
+
+        const stanceWeight=this._stancePresentationWeight??0;
+        let readyWrist=0;
+        if(stanceWeight>0){
+            const targets=this._stanceProbeTime===undefined?wrestlingStance(this._stanceRigId,this._stanceLower)
+                :probingGuard(this._stanceRigId,this._stanceProbeTime,this._stanceLower);
+            readyWrist=(targets.far.wrist??0)*stanceWeight;
+            const nearIsL=this.lChannelSide(facing)==='near';
+            const l=nearIsL?targets.near:targets.far,r=nearIsL?targets.far:targets.near;
+            lArmAng+=(facing*l.upper-lArmAng)*stanceWeight;
+            rArmAng+=(facing*r.upper-rArmAng)*stanceWeight;
+            lForearmAng+=(facing*l.forearm-lForearmAng)*stanceWeight;
+            rForearmAng+=(facing*r.forearm-rForearmAng)*stanceWeight;
+            this._recordJointState('elbow','l',lArmAng,lForearmAng,facing);
+            this._recordJointState('elbow','r',rArmAng,rForearmAng,facing);
+        }
 
         // Arms hang slightly in front of the centerline — breaks mirror symmetry.
         const ARM_FWD = facing * UPRIGHT_ARM_FWD;
@@ -1868,8 +1988,15 @@ export default class Skeleton {
         let far, near;
         if (useGait) {
             // Two feet half a cycle apart, knees solved by IK. A=near, B=far.
-            far  = this._gaitLeg(footB, facing, x, hipY, authoredSoles || modularSoles ? y : ankleGndY, thighH, shinH, s, liftScale, farHipPoint, authoredSoles ? this.farShin : null, s * this._farShinScale, modularSoles ? this.farBoot : null);
+            far  = this._gaitLeg(footB, facing, x, hipY, authoredSoles || modularSoles ? y+(this._gaitParams?.farGround??0)*s : ankleGndY, thighH, shinH, s, liftScale, farHipPoint, authoredSoles ? this.farShin : null, s * this._farShinScale, modularSoles ? this.farBoot : null);
             near = this._gaitLeg(footA, facing, x, hipY, authoredSoles || modularSoles ? y : ankleGndY, thighH, shinH, s, liftScale, nearHipPoint, authoredSoles ? this.nearShin : null, s * this._nearShinScale, modularSoles ? this.nearBoot : null);
+            if(restLegs)for(const [side,drawn] of [['near',near],['far',far]]){
+                for(const key of ['thighAng','shinAng']) drawn[key]+=(restLegs[side][key]-drawn[key])*restWeight;
+                drawn.bootAng=drawn.shinAng+facing*.35;
+                // These cached targets describe the IK result before the
+                // rest blend; foot records must use the rendered sole now.
+                delete drawn.soleX;delete drawn.soleY;
+            }
         } else {
             // Original pose-driven FK (move stances). Preserves the facing-based
             // far/near mapping and per-leg swing alternation exactly as before.
@@ -2054,6 +2181,10 @@ export default class Skeleton {
             : this._trueDistalEnd(this.farUpArm, farShoulderX, farShoulderY, upperArmH * farArmScale, farUpArmAng, s * farArmScale, facing);
         // Back off along the CHILD forearm's axis. Using the upper-arm angle
         // makes the root orbit the elbow whenever the joint bends.
+        if(['readyInside','readyNeutralInside'].includes(this._partVariantState?.farForearm)){
+            const key=this._textureConfig.variants.forearm[this._partVariantState.farForearm].key;
+            this.farForearm.setTexture(readyWristTexture(this._scene,key,readyWrist));
+        }
         const farElbow = this._attachChild(this.farForearm, farTrueElbow.x, farTrueElbow.y, farFA, s * farArmGrow, RIG.ELBOW_OVERLAP);
         const farForearmX = farElbow.x + (this._lockLimbJoints ? 0 : facing * this._farForearmOffsetX * s);
         const farForearmY = farElbow.y + (this._lockLimbJoints ? 0 : this._farForearmOffsetY * s);
@@ -3409,7 +3540,7 @@ export default class Skeleton {
     // the root each leg solves FROM moves to its own socket. Absent (every
     // call before this existed) = root is exactly (x, hipY), byte-identical.
     _gaitLeg(foot, facing, x, hipY, ankleGndY, thighH, shinH, s, liftScale = 1, hipPoint = null, soleImg = null, soleScale = s, bootImg = null) {
-        const footX = x + facing * foot.fx * s;
+        const footX = x + facing * foot.fx * s + (hipPoint?hipPoint.x-x:0)*(this._gaitParams?.hipTracks??0);
         const footY = ankleGndY - foot.lift * s * liftScale - (foot.liftAbs ?? 0) * s;
         const rootX = hipPoint ? hipPoint.x : x;
         const rootY = hipPoint ? hipPoint.y : hipY;

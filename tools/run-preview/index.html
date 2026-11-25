@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Running comparison — Marigold</title>
+<style>body{margin:0;background:#18191d;color:#eee;font:15px system-ui}header{padding:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}h1{font-size:20px;margin:0}button,select{font:inherit;padding:8px;background:#30343b;color:white;border:1px solid #626976;border-radius:4px}p{margin:0 16px 14px;color:#c0c3ca}.panels{display:grid;grid-template-columns:1fr 1fr;gap:8px}h2{font-size:16px;margin:8px 16px}iframe{border:0;width:100%;height:570px;background:#101114}@media(max-width:850px){.panels{grid-template-columns:1fr}iframe{height:450px}}</style>
+<header><h1>Running — same artwork</h1><select id="rig"><option value="george-roster-v1">George</option><option value="thesz-procreate-v1">Lou</option><option value="kowalski-roster-v1">Kowalski</option><option value="guido-roster-v1">Guido</option></select><select id="face"><option value="1">Start toward right rope</option><option value="-1">Start toward left rope</option></select><button id="replay">Replay run</button><label><input type="checkbox" id="repeat" checked>Auto replay</label><button id="otherMode" hidden>Walking arms</button><label id="bodyLabel" hidden><input id="fullBody" type="checkbox">Full body</label></header>
+<p id="status">Loading both previews…</p>
+<div class="panels"><section><h2>Current run</h2><iframe id="before" title="Current running"></iframe></section><section><h2>Movement-only run trial</h2><iframe id="after" title="Improved running trial"></iframe></section></div>
+<script type="module">
+const $=id=>document.getElementById(id),frames=[$('before'),$('after')],query=new URLSearchParams(location.search);
+const armReview=query.get('compare')==='arms';
+if(armReview){document.querySelector('h1').textContent='Arms — running';document.querySelectorAll('h2')[0].textContent='Reviewed run';document.querySelectorAll('h2')[1].textContent='Arm refinement';$('otherMode').hidden=$('bodyLabel').hidden=false;}
+$('fullBody').checked=query.get('body')==='full';
+if([...$('rig').options].some(o=>o.value===query.get('rig')))$('rig').value=query.get('rig');
+if(query.get('face')==='-1')$('face').value='-1';
+let contexts=[],generation=0,ready=false,started=0,finished=0;
+const idle={justDown:()=>false,isDown:()=>false};
+function replay(){if(!ready)return;started=performance.now();finished=0;
+ for(const {scene,a,d} of contexts){
+  scene.tweens.killTweensOf(a);scene.tweens.killTweensOf(a.pose);
+  if(a._activeMove)scene.moveRuntime.cancel(a._activeMove,'run-preview-reset');
+  Object.assign(a,{x:550,y:350,facing:-Number($('face').value),state:'standing',runPhase:null,_facingLock:false,vx:0,vy:0,walkPhase:0,moveBlend:0,_gaitRest:1,_gaitRunW:0,_ropeHit:null,_ropeTurned:false,_ropeTension:0,_sling:null,_returnVia:null,_runBoost:0});
+  d.x=1000;d.y=150;d.input=idle;a.stamina=d.stamina=100;
+  a.input={justDown:k=>k==='run',isDown:()=>false};a.tryRun();a.input=idle;
+ }
+}
+async function load(){const gen=++generation;ready=false;contexts=[];$('status').textContent='Loading both previews…';
+ await Promise.all(frames.map(async(frame,i)=>{
+  frame.src=`/?arena=1&notitle=1&ropes=off&walk=v1&run=${armReview||i?'v1':'off'}&arms=${armReview&&i?'v1':'off'}&p1=${$('rig').value}&p2=george-roster-v1`;
+  await new Promise(r=>frame.onload=r);const deadline=performance.now()+90000;
+  while(!frame.contentWindow.__WFM_GAME?.scene.scenes[0]?.w2){if(gen!==generation)return;if(performance.now()>deadline)throw Error('Game did not finish loading');await new Promise(r=>setTimeout(r,100));}
+  if(gen!==generation)return;const game=frame.contentWindow.__WFM_GAME,scene=game.scene.scenes[0];game.sound.mute=true;
+  scene._p1AI=scene._p2AI=null;scene.cameras.main.stopFollow();scene.cameras.main.setZoom(2.1);
+  for(const r of scene.nearRopeBands??[])r.setVisible(false);
+  scene.events.on('postupdate',()=>{scene.w2.skeleton.setVisible(false);scene.w2.gfx.setVisible(false);});
+  contexts[i]={game,scene,a:scene.w1,d:scene.w2};
+ }));
+ if(gen!==generation)return;ready=true;replay();$('status').textContent=armReview?'Same reviewed run on both sides. Compare the shoulder swing, elbow follow-through and hand path.':'Normal-speed run to the ropes and rebound. Same movement speed and artwork; revised walking retained in both previews.';
+}
+function tick(now){if(ready){
+ for(const {scene,a,d} of contexts){a.stamina=d.stamina=100;d.x=1000;d.y=150;scene.cameras.main.setZoom(armReview&&!$('fullBody').checked?3:2.1);scene.cameras.main.centerOn(a.x,armReview&&!$('fullBody').checked?210:240);}
+ if(contexts.every(c=>c.a.state==='standing')&&now-started>1000){finished||=now;if($('repeat').checked&&now-finished>1000)replay();}else finished=0;
+ }requestAnimationFrame(tick);}
+for(const id of ['rig','face'])$(id).onchange=()=>load().catch(e=>$('status').textContent=e.message);
+$('replay').onclick=replay;window.__runPreview={get contexts(){return contexts;},replay};
+$('otherMode').onclick=()=>location.href=`/tools/gait-preview/?compare=arms&rig=${$('rig').value}&face=${$('face').value}&body=${$('fullBody').checked?'full':'close'}`;
+requestAnimationFrame(tick);load().catch(e=>$('status').textContent=e.message);
+</script></html>

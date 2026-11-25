@@ -6,9 +6,16 @@ import { validateClip, windowWeight } from '../src/animation/AnimationClip.js';
 import { ROSTER_KITS, lightKit, kitFor } from '../src/characters/rosterKits.js';
 import { MOVE_SPECS, KIT_AI_ODDS } from '../src/moves/registry.js';
 import { PERSONALITIES } from '../src/AIHandler.js';
+import Wrestler from '../src/Wrestler.js';
 
 const RIGS = ['thesz-procreate-v1', 'george-roster-v1', 'kowalski-roster-v1', 'guido-roster-v1', undefined];
 const IDS = Object.keys(MAT_MOVES);
+
+test('retired body scissors cannot execute even when called directly',()=>{
+    assert.equal(MAT_MOVES.bodyScissors.retired,true);
+    assert.equal(MOVE_SPECS.bodyScissors.retired,true);
+    assert.equal(Wrestler.prototype._doMatMove.call({scene:{moveRuntime:{}}},'bodyScissors',null),false);
+});
 
 test('Stage 12 moves and wristlock variant, each in the registry with an executor and in the plan\'s default kits', () => {
     assert.equal(IDS.length, 11);
@@ -16,13 +23,14 @@ test('Stage 12 moves and wristlock variant, each in the registry with an executo
         assert.ok(MOVE_SPECS[id], `${id}: registry entry`);
         assert.equal(MOVE_SPECS[id].executor, `_do${id[0].toUpperCase()}${id.slice(1)}`);
         assert.equal(MOVE_SPECS[id].kitGated, true);
-        assert.ok(['thesz', 'george', 'kowalski', 'guido'].some(k => lightKit(k).includes(id)), `${id} is in some light kit`);
+        const assigned=['thesz','george','kowalski','guido'].some(k=>lightKit(k).includes(id));
+        assert.equal(assigned,!MAT_MOVES[id].retired,`${id}: active kit assignment`);
         for (const name of Object.keys(ROSTER_KITS)) { assert.ok(!ROSTER_KITS[name].includes(id)); assert.equal(kitFor(name, false), ROSTER_KITS[name]); }
     }
     const holds = (name, id) => lightKit(name).includes(id);
     for (const [id, who] of Object.entries({
         wristlock: ['guido'], wristlockHammerlock:['thesz'], headlockTakeover: ['thesz', 'george'], flyingMare: ['guido', 'thesz'], testOfStrength: ['kowalski', 'thesz'], leapfrog: ['guido', 'george'],
-        backwardRoll: ['george', 'guido'], abdominalStretch: ['kowalski', 'george'], bodyScissors: ['thesz', 'kowalski'], indianDeathlock: ['george', 'kowalski'], backdropSuplex: ['thesz', 'kowalski'],
+        backwardRoll: ['george', 'guido'], abdominalStretch: ['kowalski', 'george'], bodyScissors: [], indianDeathlock: ['george', 'kowalski'], backdropSuplex: ['thesz', 'kowalski'],
     })) for (const name of ['thesz', 'george', 'kowalski', 'guido']) assert.equal(holds(name, id), who.includes(name), `${name} ${id}`);
 });
 
@@ -56,7 +64,7 @@ test('a paired move has an attacker and a defender track and the drain event the
 });
 
 test('the AI works the mat holds, the stagger hold and the leapfrog (matMoveOdds), and no kit move is left with no AI value that the check can see', () => {
-    for (const id of ['abdominalStretch', 'bodyScissors', 'indianDeathlock', 'leapfrog']) {
+    for (const id of ['abdominalStretch', 'indianDeathlock', 'leapfrog']) {
         assert.equal(KIT_AI_ODDS[id], 'matMoveOdds');
         for (const cfg of Object.values(PERSONALITIES)) assert.ok(cfg.matMoveOdds > 0, `${id}`);
     }

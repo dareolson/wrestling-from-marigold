@@ -54,7 +54,7 @@ export default class MoveRuntime {
         return clip;
     }
 
-    play(clipId, bindings, { rate = 1, onEvent = null, onComplete = null, onCancel = null } = {}) {
+    play(clipId, bindings, { rate = 1, onEvent = null, onComplete = null, onCancel = null, onAfterDraw = null } = {}) {
         const clip = this._clips.get(clipId);
         if (!clip) throw new Error(`Unknown animation clip "${clipId}"`);
         // Participation claims the pose just as tweenPose does. In particular,
@@ -85,6 +85,7 @@ export default class MoveRuntime {
             // no "the hold finished" state). A move must never receive both.
             onComplete,
             onCancel,
+            onAfterDraw,
             cancelled: false,
             // One row per plant per frame (the solve's target, sole and residual); kept for the probes, null on clips with no plants.
             plantLog: clip.plants?.length ? [] : null,
@@ -203,13 +204,14 @@ export default class MoveRuntime {
                 const P=other.skeleton.jointAttachmentPoints;
                 const lSide=other.skeleton.lChannelSide?.(other.facing)??'near';
                 const side=c.to.channel?(c.to.channel==='l'?lSide:(lSide==='near'?'far':'near')):(c.to.side??'near');
-                const q=P?.[side+(c.to.joint??'Hip')];
+                const q=c.to.joint==='Neck'?P?.neck:P?.[side+(c.to.joint??'Hip')];
                 if(!q)continue;
                 // Swing the foot outside first, then fold it back across the calf.
                 const t=handle.time,sweep=c.releaseSweep&&t>=c.releaseSweep.from?c.releaseSweep:c.sweep;
                 const phase=!sweep||t<sweep.from||t>sweep.to?0:t<sweep.apex?(t-sweep.from)/(sweep.apex-sweep.from):(sweep.to-t)/(sweep.to-sweep.apex);
                 const arc=phase*phase*(3-2*phase);
-                const ox=(c.to.x??0)+(sweep?.x??0)*arc,oy=(c.to.y??0)+(sweep?.y??0)*arc;
+                let ox=(c.to.x??0)+(sweep?.x??0)*arc,oy=(c.to.y??0)+(sweep?.y??0)*arc;
+                for(const pulse of c.pulses??[]){const pressure=windowWeight(pulse,t);ox+=pulse.x*pressure;oy+=pulse.y*pressure;}
                 let goal={...q};
                 if(c.to.torso&&P.neck){const hip={x:(P.nearHip.x+P.farHip.x)/2,y:(P.nearHip.y+P.farHip.y)/2};goal={x:hip.x+(P.neck.x-hip.x)*c.to.torso,y:hip.y+(P.neck.y-hip.y)*c.to.torso};}
                 if(c.to.along!=null&&P[side+'Ankle']){
@@ -229,6 +231,7 @@ export default class MoveRuntime {
         // A boot held after threading must target the solved ankle, not the
         // receiver's pre-contact pose. Only non-entangled actors may redraw here.
         for (const handle of this._active.values()) this._applyGrips(handle, true);
+        for (const handle of this._active.values()) handle.onAfterDraw?.(handle);
         // Then cross-actor layers (clipLayers.js). After every grip, because a
         // grip redraws its actor and a draw resets depth. Nothing to undo
         // later: the next draw() resets depth again.

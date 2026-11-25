@@ -5,7 +5,7 @@
 import { george } from './george.js';
 export const georgeRosterV1 = {
     id: 'george-roster-v1', skinCol: george.skinCol, trunksCol: george.trunksCol,
-    idlePose: george.idlePose, tauntPose: george.tauntPose, begsOff: george.begsOff, struts: george.struts,
+    idlePose: 'rosterWrestlingIdle', tauntPose: george.tauntPose, begsOff: george.begsOff, struts: george.struts,
     sellStyle: george.sellStyle, moveSet: george.moveSet,
     textures: {
     "lockLimbJoints": true,
@@ -253,6 +253,17 @@ export const georgeRosterV1 = {
     },
     "variants": {
         "forearm": {
+            "relaxedGripInside": {"key":"george_rv1_forearm_relaxed_grip_inside_v1","file":"forearm_relaxed_grip_inside_v3.png"},
+            "relaxedGripOutside": {"key":"george_rv1_forearm_relaxed_grip_outside_v1","file":"forearm_relaxed_grip_outside_v3.png"},
+            "openGripInside": {"key":"george_rv1_forearm_open_grip_inside_v2","file":"forearm_ready_neutral_inside_v2.png"},
+            "openGripOutside": {"key":"george_rv1_forearm_open_grip_outside_v2","file":"forearm_ready_neutral_outside_v2.png"},
+            "readyNeutralInside": {"key":"george_rv1_forearm_ready_neutral_inside_v1","file":"forearm_relaxed_grip_inside_v3.png"},
+            "readyNeutralOutside": {"key":"george_rv1_forearm_ready_neutral_outside_v1","file":"forearm_relaxed_grip_outside_v3.png"},
+            "cuppedInside": {"key":"george_rv1_forearm_cupped_inside_v5","file":"forearm_ready_inside_v5.png"},
+            "cuppedOutside": {"key":"george_rv1_forearm_cupped_outside_v5","file":"forearm_ready_outside_v5.png"},
+            "readyInside": {"key":"george_rv1_forearm_ready_inside_v2","file":"forearm_ready_inside_v5.png"},
+            "readyOutside": {"key":"george_rv1_forearm_ready_outside_v2","file":"forearm_ready_outside_v5.png"},
+            "readyGrab": {"key":"george_rv1_forearm_ready_grab_v1","file":"forearm_ready_grab_v1.png"},
             "grip": {
                 "key": "george_rv1_forearm_grip",
                 "file": "forearm_grip.png",

@@ -3,6 +3,9 @@ import { RING, ringBoundsAtY, perspectiveScale, scaleCandidate, ropeSpillCandida
 import { spillPlan, spillBack, spillHeadDir, catchPlan, strandOver, CATCH } from './animation/ropeSpill.js';
 import { partInkX } from './ropeInk.js';
 import Skeleton, { GAIT } from './Skeleton.js';
+import {readyStancePose} from './animation/wrestlingStance.js';
+import {walkPresentation,walkProfile} from './animation/walkPresentation.js';
+import {runPresentation,runProfile} from './animation/runPresentation.js';
 import { resolvePowerMove } from './logic/moveDecision.js';
 import { stagedWorldPoint } from './animation/clipStaging.js';
 import { resolveSemanticSlots, textureKey } from './rig/partVariants.js';
@@ -30,6 +33,9 @@ import { handStompClip, HAND_STOMP_SPEC } from './animation/clips/handStomp.js';
 import { specFor } from './animation/clips/rigOverrides.js';
 import { lightStrikeClip, LIGHT_STRIKES, STRIKE_STANDOFF } from './animation/clips/lightStrikes.js';
 import { matMoveClip, MAT_MOVES } from './animation/clips/matMoves.js';
+import {recoveryVariantClip} from './animation/clips/recoveryVariants.js';
+import {headScissorsClip} from './animation/clips/headScissors.js';
+import { leapfrogDuckPose, leapfrogPressWeight } from './animation/leapfrog.js';
 import { mountedPunchesClip, MOUNTED_PUNCHES_SPEC, bodyStompsClip, BODY_STOMPS_SPEC } from './animation/clips/groundStrikes.js';
 import { kneeDropV2Clip, KNEE_DROP_V2_SPEC } from './animation/clips/kneeDropV2.js';
 import { HairFixQueue, HAIR_TAUNT_CHANCE } from './animation/hairFixQueue.js';
@@ -186,10 +192,12 @@ export function gaitV2Config() {
     const num = (name, d) => { const v = parseFloat(q.get(name)); return Number.isFinite(v) ? v : d; };
     const stride = num('gaitStride', GAIT_V2_DEFAULTS.stride);
     const params = { STRIDE: GAIT.STRIDE * stride, STANCE: GAIT.STANCE, LIFT: GAIT.LIFT };
-    return { stride, knee: num('gaitKnee', GAIT_V2_DEFAULTS.knee), leanWalk: num('leanWalk', GAIT_LEAN.walk), leanRun: num('leanRun', GAIT_LEAN.run),
-        params, freq: params.STANCE * Math.PI * 2 / params.STRIDE,
-        run: { on: q.get('runGait') !== 'off', speed: num('runSpeed', RUN_SPEED), stance: num('runStance', RUN_GAIT.STANCE), cadence: num('runCadence', RUN_GAIT.CADENCE),
-            stride: num('runStride', 1), lift: num('runLift', RUN_GAIT.LIFT), hipBase: RUN_GAIT.HIP_BASE, hipDrop: RUN_GAIT.HIP_DROP } };
+    const baseWalk={...params},walkTrial=q.get('walk')==='v1',runTrial=q.get('run')==='v1'&&q.get('runGait')!=='off';
+    if(walkTrial){params.STRIDE*=1.1;params.STANCE=.60;params.LIFT=18;params.walkWeight=1;}
+    return { stride, knee: num('gaitKnee', GAIT_V2_DEFAULTS.knee), leanWalk: num('leanWalk', GAIT_LEAN.walk), leanRun: num('leanRun', runTrial ? .14 : GAIT_LEAN.run),
+        params,baseWalk,freq: params.STANCE * Math.PI * 2 / params.STRIDE,walkTrial,runTrial,armTrial:q.get('arms')==='v1',stanceTrial:q.get('stance')==='v1',readyArt:['v2','cupped'].includes(q.get('readyArt'))?q.get('readyArt'):q.get('readyArt')==='v1',stanceMotion:q.get('guardMotion')!=='off',
+        run: { on: q.get('runGait') !== 'off', speed: num('runSpeed', RUN_SPEED), stance: num('runStance', runTrial ? .38 : RUN_GAIT.STANCE), cadence: num('runCadence', RUN_GAIT.CADENCE),
+            stride: num('runStride', 1), lift: num('runLift', runTrial?30:RUN_GAIT.LIFT), hipBase: runTrial?2:RUN_GAIT.HIP_BASE, hipDrop: runTrial?5:RUN_GAIT.HIP_DROP } };
 }
 // ?gait=v2 Stage 3: the run's own gait. STANCE < .5 gives a flight phase (both feet off the mat). The stride is DERIVED from a
 // target cadence (steps/s) so it fits each body: cycles/s = speed * STANCE / (heightScale * STRIDE) and a step is half a cycle, so
@@ -385,6 +393,9 @@ export const POSES = {
     sellHead:       { lLeg: 0.06,  rLeg: 0.06,  lArm: 0.65,  rArm: 0.55, lean:-0.18, crouch: 0.10, bend: -0.22 }, // head strike — hands fly up toward face
     brawlerIdle:    { lLeg: 0.06,  rLeg:-0.04,  lArm: 0.28,  rArm: 0.18, lean: 0.10, crouch: 0.10 }, // guard stance — weight forward, fists up
     powerIdle:      { lLeg: -0.18, rLeg: 0.13,  lArm: 0.10,  rArm: 0.59, lean: 0.09, crouch: 0.22 }, // wide, imposing — arms hanging low (rig-tuner pass 2026-07-26, live export; supersedes the prior 2026-07-26 values — used by shipped george via idlePose: 'powerIdle', see Arena.js/george.js; formerly also shared across the now-vaulted george-ai-pilot v1-v9 lineage)
+    // Current George/Guido: keep the front foot under the knee rather than
+    // inheriting the older rig's extended, nearly locked front leg.
+    rosterWrestlingIdle: { lLeg:-.08,rLeg:.02,lShin:-.18,rShin:-.16,lArm:.10,rArm:.59,lean:.09,crouch:.1 },
     theszIdle:      { lLeg: 0.04,  rLeg: 0.14,  lArm: 0.04,  rArm: 0.17, lean: 0.05, crouch: 0.05, lForearm: 0.8, lShin: -0.11, rShin: -0.06 }, // Derek rig-tuner export 2026-07-30. Arms low (lArm 0.04) so the corrected shoulder seam shows; lForearm bend + shin bends shape the rest stance.
     // Derek rig-tuner export 2026-10-07, for the thesz-procreate-v1 comparison
     // candidate ONLY. Identical to theszIdle except lLeg 0.04 -> -0.05, tuned
@@ -661,6 +672,7 @@ export default class Wrestler {
         this._divLandY     = 0;
         this._ropeLevel    = 0; // 0=none, 1=middle rope, 2=top rope
         this.pose            = { ...POSES.idle, lean: 0, crouch: 0 }; // live joint angles, tweened per move
+        this._stancePhaseOffset = x * .013;
         this.idlePose        = 'idle';            // character-specific resting stance — override after construction
         this.tauntPose       = 'tauntArmsWide';   // character-specific taunt — override after construction
         this.moveStyle       = {};                // per-kit knobs a move reads (Arena copies the kit's `style`): { handSell: { kicks, seconds } }
@@ -796,6 +808,8 @@ export default class Wrestler {
         if (facingAxis && sample.facing) this.facing = facingAxis * sample.facing;
         if (sample.pose) {
             const pose={...sample.pose};
+            this._clipGait=Number.isFinite(pose.gaitWeight)?{weight:pose.gaitWeight,distance:pose.gaitDistance??0}:null;
+            delete pose.gaitWeight;delete pose.gaitDistance;
             this._clipArmStyle={scale:pose.farArmScale??1};
             delete pose.farArmScale;
             for(const side of ['near','far'])for(const joint of ['Arm','Elbow','Leg','Shin']){
@@ -1334,6 +1348,7 @@ export default class Wrestler {
     }
 
     tickDown(dt) {
+        this._tickCatch(dt);
         this._tickSpillMove(dt);
         this._landNext?.();   // ?falls=v1: the slam's landing, one frame after its hit (_playPairedThrow)
         this._tickRiseFlip();
@@ -1348,7 +1363,6 @@ export default class Wrestler {
             this._jolt.t += dt;
             if (this._jolt.t >= this._joltSeconds(this._jolt)) this._jolt = null;
         }
-        this._tickCatch(dt);
         if (this.state !== 'down' && this.state !== 'staggered') return;
         if (this.state === 'down') this._tickSell(dt);
         this.stateTimer -= dt;
@@ -1443,20 +1457,6 @@ export default class Wrestler {
         this._landing = { kind, intensity: this._pain?.severity || 0.6, vy: vy * (this.skeleton?._textureConfig?.falls?.hopScale ?? 1), t: 0, additive, tier };
     }
 
-    // ?ropeSpill=v1 (PLAN_ROPES stage RS): a man who lands beside a side wall with his head toward it slides (eased, capped) until his head and shoulders lie under the bottom strand
-    // and is `spilled` until he slides back in before the get-up. `_spill` = { wall, back }. Pure plan in animation/ropeSpill.js.
-    _maybeSpill(thrown = false) {
-        const plan = spillPlan({ x: this.x, y: this.y, s: this.s, facing: this.facing || 1, lying: this.lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), thrown });
-        if (!plan) return;
-        this._spill = { wall: plan.wall, back: false, thrown };
-        this._spillSlide(plan.dx, plan.dur);
-    }
-    // TS.5: a knockdown that will end beside a side wall is carried toward the drawn strand by the fall itself (the knockback), eased over the fall; the landing's settle slide covers the rest.
-    _spillFallShift(variant) {
-        const lying = Skeleton.FALLS[variant]?.lands;
-        const plan = spillPlan({ x: this.x, y: this.y, s: this.s, facing: this.facing || 1, lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), canShift: true });
-        if (!plan || Math.abs(plan.fallDx) < 0.5) return;
-        const tok = this._spillTok = {};
     // ?ropeSpill=v1 (PLAN_ROPES TS.6): the rope catches him. A knockdown whose head or torso ink reaches the drawn bottom strand (measured each frame once he is near flat; the tables only set the floor
     // of the bounce) is thrown back by one small hop that ends his whole head inside the strand; he stays there through the get-up. One catch per knockdown. The TS.5
     // under-the-rope code below (_maybeSpill, _spillFallShift, _spillGetUp) stays, unused.
@@ -1491,6 +1491,20 @@ export default class Wrestler {
         if (c.t >= c.dur) { this._catch = null; this._catchLift = 0; }
     }
 
+    // ?ropeSpill=v1 (PLAN_ROPES stage RS): a man who lands beside a side wall with his head toward it slides (eased, capped) until his head and shoulders lie under the bottom strand
+    // and is `spilled` until he slides back in before the get-up. `_spill` = { wall, back }. Pure plan in animation/ropeSpill.js.
+    _maybeSpill(thrown = false) {
+        const plan = spillPlan({ x: this.x, y: this.y, s: this.s, facing: this.facing || 1, lying: this.lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), thrown });
+        if (!plan) return;
+        this._spill = { wall: plan.wall, back: false, thrown };
+        this._spillSlide(plan.dx, plan.dur);
+    }
+    // TS.5: a knockdown that will end beside a side wall is carried toward the drawn strand by the fall itself (the knockback), eased over the fall; the landing's settle slide covers the rest.
+    _spillFallShift(variant) {
+        const lying = Skeleton.FALLS[variant]?.lands;
+        const plan = spillPlan({ x: this.x, y: this.y, s: this.s, facing: this.facing || 1, lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), canShift: true });
+        if (!plan || Math.abs(plan.fallDx) < 0.5) return;
+        const tok = this._spillTok = {};
         this.scene.tweens.add({ targets: this, x: this.x + plan.fallDx, duration: Skeleton.fallDuration(variant), ease: 'Sine.easeOut', onUpdate: (tw) => { if (this._spillTok !== tok || this.state !== 'falling') tw.stop(); } });
     }
     // The slides on the mat run on the game's dt (like stateTimer, which holds the get-up for them), not a tween: a tween's clock can run slower than dt and cut the slide short.
@@ -1655,6 +1669,36 @@ export default class Wrestler {
     // prepare hook releases our selection before its own first sample. Every
     // draw checks state, so pin/pickup/roll/reset also clears an interrupted
     // sell without depending on tickDown having run first.
+    _syncReadyAppearance() {
+        const sk=this.skeleton;
+        if(!sk?._partVariantState)return;
+        const current=sk._partVariantState,slots=['nearForearm','farForearm'];
+        const owned=new Set(['readyGrab','readyInside','readyOutside','readyNeutralInside','readyNeutralOutside']);
+        const owns=slots.some(slot=>owned.has(current[slot]));
+        const names=this._gaitV2?.readyArt==='v2'
+            ?{nearForearm:'readyNeutralOutside',farForearm:'readyNeutralInside'}
+            :this._gaitV2?.readyArt==='cupped'?{nearForearm:'readyOutside',farForearm:'readyInside'}
+            :{nearForearm:'readyGrab',farForearm:'readyGrab'};
+        const availableArt=slots.every(slot=>{
+            const entry=sk._textureConfig?.variants?.forearm?.[names[slot]];
+            return entry&&this.scene.textures.exists(entry.key);
+        });
+        const enabled=this._gaitV2?.readyArt&&this._gaitV2?.stanceTrial
+            &&this.state==='standing'&&!this._choreoOwnsPose()&&!this._strut
+            &&!this._recoveryHandOnBack()&&!this._sell&&!this.pose.chestClutch
+            &&this.combatBlend>(owns?.08:.20)&&availableArt;
+        if(!enabled&&!owns)return;
+        const selection={};let changed=false;
+        for(const [slot,name]of Object.entries(current))if(name&&name!=='base'&&!owned.has(name))selection[slot]=name;
+        for(const slot of slots){
+            const available=!current[slot]||current[slot]==='base'||owned.has(current[slot]);
+            const want=enabled&&available?names[slot]:selection[slot]??'base';
+            if(owned.has(want))selection[slot]=want;
+            if(want!==(current[slot]??'base'))changed=true;
+        }
+        if(changed)sk.setPartVariants(selection);
+    }
+
     _syncSellAppearance(release = false) {
         const enabled = sellArtCandidate();
         if (!enabled && !this._sellArtSelection) return;
@@ -1736,12 +1780,20 @@ export default class Wrestler {
 
     // ?gait=v2: the gait block for run weight `w` (0 = the walk's, 1 = the run's own), with the lock frequency to match.
     _gaitParamsAt(w) {
-        const g = this._gaitV2, wk = g.params;
-        if (!(w > 0)) return { ...wk, freq: g.freq };
+        const g = this._gaitV2;
+        const ordinaryWalk=this.state==='standing'&&!this._activeMove&&!this._strut;
+        const wk=g.walkTrial&&!ordinaryWalk?g.baseWalk:g.params;
+        const profile=g.walkTrial&&ordinaryWalk?walkProfile(this.rigId):null;
+        if (!(w > 0)) return { ...wk,...profile,freq: wk.STANCE*Math.PI*2/wk.STRIDE };
         const r = g.run;
         const run = { STRIDE: 2 * r.speed * r.stance / (r.cadence * this._heightScale) * r.stride, STANCE: r.stance, LIFT: r.lift };
         const mix = { STRIDE: wk.STRIDE + (run.STRIDE - wk.STRIDE) * w, STANCE: wk.STANCE + (run.STANCE - wk.STANCE) * w, LIFT: wk.LIFT + (run.LIFT - wk.LIFT) * w };
-        return { ...mix, freq: mix.STANCE * Math.PI * 2 / mix.STRIDE };
+        const runSkin=g.runTrial?runProfile(this.rigId):null;
+        return { ...mix, ...(g.walkTrial&&ordinaryWalk?{walkWeight:1-w}:{}),
+            ...(profile?{hipTracks:1-w,walkReach:.985+(profile.walkReach-.985)*(1-w),loadDrop:2.4+(profile.loadDrop-2.4)*(1-w),farGround:profile.farGround*(1-w)}:{}),
+            ...(runSkin?{runWeight:w,walkReach:(profile?.walkReach??.985)*(1-w)+runSkin.walkReach*w,
+                farGround:(profile?.farGround??0)*(1-w)+runSkin.farGround*w}:{}),
+            freq: mix.STANCE * Math.PI * 2 / mix.STRIDE };
     }
 
     tickRun(dt) {
@@ -2265,10 +2317,9 @@ export default class Wrestler {
             if (other.state === 'standing' && dist <= 100 * this.s && this.moveSet.includes('legSweep')) { this._doLegSweep(other); return 'legSweep'; }
         }
 
-        // ?light=v1 (Stage 12): Up + Action next to a man on his back is the body scissors; Back + Action on a staggered man the abdominal stretch (a kit holds each one).
+        // ?light=v1 (Stage 12): Back + Action on a staggered man is the abdominal stretch (a kit holds each one).
         if (lightCandidate() && this.scene.moveRuntime) {
             const back = this.input.isDown(this.facing > 0 ? 'left' : 'right');
-            if (this.input.isDown('up') && other.lying === 'supine' && (other.state === 'down' || other.state === 'possum') && !other.isLanding() && this.moveSet.includes('bodyScissors')) { this._doBodyScissors(other); return 'bodyScissors'; }
             if (back && other.state === 'staggered' && this.moveSet.includes('abdominalStretch')) { this._doAbdominalStretch(other); return 'abdominalStretch'; }
         }
 
@@ -3652,17 +3703,17 @@ export default class Wrestler {
 
     // ?light=v1 (PLAN_LIGHT_MOVES Stage 12): the ten mat and lockup moves from clips/matMoves.js, one executor. A paired move rides _playPairedThrow (damage on its hitEvent, the ending by the
     // spec's `end`); a hold (`hold`) lets the held man break out by pressing Action `HOLD_ESCAPE_PRESSES` times (_tickHoldEscape); a solo move (leapfrog, backward roll) is one man's clip.
-    _doMatMove(id, other) {
-        const runtime = this.scene.moveRuntime, def = MAT_MOVES[id];
-        if (!runtime || !def) return false;
+    _doMatMove(id, other, definition = null) {
+        const runtime = this.scene.moveRuntime, def = definition??MAT_MOVES[id];
+        if (!runtime || !def || def.retired) return false;
         this._cancelActiveMove('rematmove');
         this.facing = Math.sign(other.x - this.x) || this.facing;
         if (def.kind === 'solo') return this._doMatSolo(id, def, other);
         const distance = Math.max(20, (other.x - this.x) * this.facing / this.s);
-        runtime.register(matMoveClip(id, distance, { attackerRigId: this.rigId, defenderRigId: other.rigId, dy: (other.y - this.y) / this.s }));
+        runtime.register(def.clip??matMoveClip(id, distance, { attackerRigId: this.rigId, defenderRigId: other.rigId, dy: (other.y - this.y) / this.s }));
         const standing = def.end.def === 'stagger' || def.end.def === 'stand' || def.escapeStanding === true;
         this._playPairedThrow(other, id, {
-            damage: STAMINA_DRAIN[id], hitEvent: def.hitEvent, shake: def.shake, foley: def.foley ?? null, faceToFace: def.faceToFace,
+            damage: STAMINA_DRAIN[id]??def.damage, hitEvent: def.hitEvent, shake: def.shake, foley: def.foley ?? null, faceToFace: def.faceToFace,
             tierOf: def.tier ? (wear) => this._throwTier(def.tier, wear) : null,
             onClipEvent: event => {
                 if (event.type === 'shove') other._holdEscape = null;
@@ -3706,9 +3757,12 @@ export default class Wrestler {
         const speed=(other?._gaitV2?other._gaitV2.run.speed:RUN_SPEED)*(other?.s??this.s);
         const boost=other?._runBoost?1+(other._runBoost-1)*other._runBoostLeft/(ROPE_HIT.boostMs/1000):1;
         const delay=id==='leapfrog'&&other?Math.max(0,Math.min(1.2,Math.abs(other.x-this.x)/(speed*boost)-.45)):0;
-        const clip = matMoveClip(id, 0, { attackerRigId: this.rigId, delay });
-        if (id === 'backwardRoll') {
-            const b = ringBoundsAtY(this.y), margin = 30 * this.s, endX = this.x - this.facing * 92 * this.s;
+        const rate=id==='leapfrog'&&other?Math.max(1,Math.min(2.5,.45/Math.max(.01,Math.abs(other.x-this.x)/(speed*boost)))):1;
+        const clip = def.clip??matMoveClip(id, 0, { attackerRigId: this.rigId, delay,
+            landingPose:id==='leapfrog'?(POSES[this.idlePose]??POSES.idle):undefined });
+        if (id === 'backwardRoll'||def.recovery) {
+            const b = ringBoundsAtY(this.y), margin = 30 * this.s;
+            const endX = this.x + this.facing * clip.tracks.attacker.keyframes.at(-1).transform.x * this.s;
             if (endX < b.left + margin || endX > b.right - margin) return false;
             this.lying = null; this._groundAttack = null; this._sell = null; this._hold = null; this._landing = null; this._jolt = null; this.stateTimer = 0;
             this.pose.tilt = 0; this.pose.lift = 0;
@@ -3717,10 +3771,45 @@ export default class Wrestler {
         this.runPhase = null;
         this.state = 'slamming';
         this._lungeUntil = this.scene.time.now + clip.duration * 1000;
-        const done = () => { this._lungeUntil = 0; this._activeMove = null; if (this.state === 'slamming') { this._standBackUp(); this._clamp(); } };
-        this._activeMove = runtime.play(clip.id, { attacker: this }, { onComplete: done, onCancel: done });
+        const done = () => {
+            if (id==='leapfrog'&&other?._leapfrogDuck?.jumper===this) other._leapfrogDuck=null;
+            this._lungeUntil = 0; this._activeMove = null;
+            if (this.state === 'slamming') { this._standBackUp(); this._clamp(); }
+        };
+        const press=id==='leapfrog'&&other ? handle=>{
+            if(other.state!=='running')return;
+            const w=leapfrogPressWeight(handle.time,clip.events.find(e=>e.type==='apex').at);
+            if(!(w>0))return;
+            const points=other.skeleton.jointAttachmentPoints,hip={x:(points.nearHip.x+points.farHip.x)/2,y:(points.nearHip.y+points.farHip.y)/2};
+            this.holdGrips(['near','far'].map(side=>{
+                const shoulder=points[side+'Shoulder'];
+                return{arm:this.skeleton.lChannelSide(this.facing)===side?'l':'r',partner:other,
+                    at:{x:shoulder.x+(hip.x-shoulder.x)*.25,y:shoulder.y+(hip.y-shoulder.y)*.25-8*other.s},
+                    palm:'clutch',natural:true,w};
+            }));
+        }:null;
+        this._activeMove = runtime.play(clip.id, { attacker: this }, { rate, onComplete: done, onCancel: done,onAfterDraw:press });
+        if(id==='leapfrog'&&other?.state==='running') {
+            other._leapfrogDuck={jumper:this,handle:this._activeMove,apex:clip.events.find(e=>e.type==='apex').at};
+        }
         return true;
     }
+
+    _doHeadScissors(other){
+        const distance=Math.max(20,Math.abs(other.x-this.x)/this.s);
+        const clip=headScissorsClip(distance,{attackerRigId:this.rigId,defenderRigId:other.rigId});
+        return this._doMatMove('headScissors',other,{...MAT_MOVES.bodyScissors,retired:false,clip});
+    }
+
+    _doRecoveryVariant(id,other){
+        if(!this.scene.moveRuntime||!other)return false;
+        this._cancelActiveMove('recovery-variant');
+        this.facing=Math.sign(other.x-this.x)||this.facing;
+        return this._doMatSolo(id,{recovery:true,clip:recoveryVariantClip(id,{attackerRigId:this.rigId,landingPose:POSES[this.idlePose]??POSES.idle})},other);
+    }
+    _doBackwardRollEscape(other){return this._doRecoveryVariant('backwardRollEscape',other);}
+    _doRockingRecovery(other){return this._doRecoveryVariant('rockingRecovery',other);}
+    _doKipUp(other){return this._doRecoveryVariant('kipUp',other);}
 
     // ?light=v1: the runner's momentum gives the hip toss its higher arc (runnerHipToss.js).
     _doRunnerHipToss(other) {
@@ -4905,8 +4994,16 @@ export default class Wrestler {
     // ── Drawing ───────────────────────────────────────────────────────────────
 
     draw() {
+        if (this.skeleton) {
+            this.skeleton._stancePresentationWeight = 0;
+            this.skeleton._stanceProbeTime = undefined;
+            this.skeleton._stanceLower = false;
+            this.skeleton._armPresentationWeight = 0;
+            this.skeleton._armPresentationRun = 0;
+        }
         this.skeleton?.setClipArmStyle?.(this._activeMove ? this._clipArmStyle : null);
         this._syncSellAppearance();
+        this._syncReadyAppearance();
         const { x, y, facing, state, skinCol, trunksCol } = this;
         // On ropes, size is locked to the corner's mat depth — climbing up the post
         // doesn't move the wrestler deeper into the ring. Also applies during rope taunts.
@@ -5054,9 +5151,10 @@ export default class Wrestler {
         // over: move() returns early outside standing. Never let that stale
         // gait replace a held wrestler's authored knees or swing their arms.
         const choreography = this._choreoOwnsPose();
-        const locomotion = !choreography && (state === 'standing' || state === 'running' || (this._strut && state === 'taunting'));
-        const gaitBlend = locomotion ? this.moveBlend : 0;
-        const gaitPhase = locomotion ? this.walkPhase : 0;
+        const clipGait=this._activeMove&&this._clipGait&&(this._clipGait.weight>0||this._clipGait.distance!==0)?this._clipGait:null;
+        const locomotion = !!clipGait||(!choreography && (state === 'standing' || state === 'running' || (this._strut && state === 'taunting')));
+        const gaitBlend = clipGait?clipGait.weight:locomotion ? this.moveBlend : 0;
+        const gaitPhase = clipGait?clipGait.distance*(this._gaitV2?this._gaitParamsAt(0).freq/this._heightScale:WALK_FREQ):locomotion ? this.walkPhase : 0;
         const lean      = this.facing * (0.07 * gaitBlend + (this.pose.lean ?? 0)) + wooze;
         let liftScale   = state === 'running' ? 1.0 : 0.5;
         const runBlend  = state === 'running' ? gaitBlend : 0;
@@ -5078,24 +5176,72 @@ export default class Wrestler {
             if (!locomotion) this._gaitRunW = 0;
             const rw = locomotion ? this._gaitRunW : 0;
             this.skeleton._gaitParams = this._gaitParamsAt(rw);
+            // Authored clip retreats and character performances retain their
+            // existing gait, even when the neutral walking trial is enabled.
+            const trialWalk=g2.walkTrial&&state==='standing'&&!choreography&&!this._strut;
+            this.skeleton._walkPresentation=!!trialWalk;
+            if(g2.walkTrial&&!trialWalk&&rw===0)this.skeleton._gaitParams={...this.skeleton._gaitParams,walkWeight:0};
+            this.skeleton._walkPresentationWeight=trialWalk?Math.max(0,Math.min(1,1-(this._gaitRest??1))):0;
+            const runTrialWeight=g2.runTrial&&!choreography&&locomotion&&this.runPhase!=='ropeHit'?rw:0;
+            this.skeleton._runPresentationWeight=runTrialWeight;
+            const freeArms=g2.armTrial&&locomotion&&!choreography
+                &&(state==='standing'||state==='running')&&this.runPhase!=='ropeHit'
+                &&!this._recoveryHandOnBack()&&!this._sell&&!drawPose.chestClutch;
+            this.skeleton._armPresentationWeight=freeArms
+                ?Math.max(runTrialWeight,Math.max(0,Math.min(1,1-(this._gaitRest??1)))):0;
+            this.skeleton._armPresentationRun=state==='running'?rw:runTrialWeight;
             this.skeleton._gaitRun = rw > 0 ? { w: rw, base: g2.run.hipBase, drop: g2.run.hipDrop } : null;
             if (rw > 0) liftScale = (0.5 + 0.5 * rw);
             this.skeleton._gaitHold = locomotion;
-            this.skeleton._gaitRest = locomotion ? this._gaitRest : 0;
-            liftScale *= this._gaitLift;
+            this.skeleton._gaitRest = clipGait?1-clipGait.weight:locomotion ? this._gaitRest : 0;
+            liftScale *= clipGait?1:this._gaitLift;
             if (locomotion && gaitBlend > 0) {
-                const gaitLean = g2.leanWalk * gaitBlend * (1 - runBlend) + g2.leanRun * runBlend + (state === 'running' ? 0 : this._gaitLeanExtra * gaitBlend);
-                drawPose = { ...drawPose, bend: (drawPose.bend ?? 0) + gaitLean, crouch: (drawPose.crouch ?? 0) + g2.knee * gaitBlend };
+                const gaitLean = (trialWalk ? .035 : g2.leanWalk) * gaitBlend * (1 - runBlend) + g2.leanRun * runBlend + (state === 'running' ? 0 : this._gaitLeanExtra * gaitBlend);
+                drawPose = { ...drawPose, bend: (drawPose.bend ?? 0) + gaitLean, crouch: (drawPose.crouch ?? 0) + (trialWalk ? .06 : g2.knee) * gaitBlend };
             }
+            const profile=trialWalk?walkProfile(this.rigId):null;
+            if(profile){
+                const w=this.skeleton._walkPresentationWeight;
+                drawPose={...drawPose,crouch:(this.pose.crouch??0)*(1-w)+profile.crouch*w};
+            }
+            if(trialWalk&&!this._recoveryHandOnBack()&&!this._sell&&!drawPose.chestClutch){
+                const presented=walkPresentation(drawPose,this.skeleton._walkPresentationWeight,guard);
+                drawPose=presented.pose;guard=presented.guard;
+            }
+            if(runTrialWeight>0){drawPose=runPresentation(drawPose,runTrialWeight);guard*=1-runTrialWeight;}
+        }
+        // Neutral guard only: authored wrestling moves and injury performances
+        // retain ownership. Use the existing proximity easing for entry/exit.
+        if(g2?.stanceTrial && state==='standing' && !choreography && !this._strut
+            && !this._recoveryHandOnBack() && !this._sell && !drawPose.chestClutch){
+            const ready=Math.max(0,Math.min(1,this.combatBlend));
+            this.skeleton._stancePresentationWeight=ready;
+            this.skeleton._stanceRigId=this.rigId;
+            this.skeleton._stanceLower=['v2','cupped'].includes(g2.readyArt);
+            if(g2.stanceMotion)this.skeleton._stanceProbeTime=this.scene.time.now/1000+this._stancePhaseOffset;
+            drawPose=readyStancePose(drawPose,ready,this.rigId);
         }
         // T2.6: a rig whose aroundVia has a `path` takes the hand out from the back along it, solved by IK each frame
         const routed = this._routeHandDraw(x, y, s, facing, drawPose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
         if (routed) drawPose = routed;
         if (drawPose.chestClutch && !(state === 'staggered' && this._staggerType === 'chopChest')) drawPose = { ...drawPose, chestClutch: 0 };
+        const duck=this._leapfrogDuck;
+        if(duck) {
+            if(state==='running'&&duck.jumper._activeMove===duck.handle) drawPose=leapfrogDuckPose(drawPose,duck.handle.time,duck.apex);
+            else this._leapfrogDuck=null;
+        }
         this.skeleton.updateUpright(x, y, s, facing, drawPose, gaitPhase, guard, lean, gaitBlend, liftScale, runBlend);
         if (this._activeMove && this._floorContacts) {
             const turn = (this.pose.tilt ?? 0) + (this.pose.bend ?? 0);
-            for (const { point, w } of this._floorContacts) this.skeleton.holdOnFloor(point, y, s, w, turn);
+            for (const { point, w, pinX } of this._floorContacts) {
+                let anchor=null;
+                if(pinX){
+                    const P=this.skeleton.jointAttachmentPoints;
+                    const at=point==='shoulders'&&P.nearShoulder&&P.farShoulder?(P.nearShoulder.x+P.farShoulder.x)/2:null;
+                    if(at!==null){const pins=this._activeMove._floorPins??={};anchor=pins[point]??=at;}
+                }
+                this.skeleton.holdOnFloor(point, y, s, w, turn,anchor);
+            }
         }
     }
 

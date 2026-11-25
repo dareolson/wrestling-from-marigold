@@ -7,6 +7,27 @@ import {validateClip} from '../src/animation/AnimationClip.js';
 import MoveRuntime from '../src/animation/MoveRuntime.js';
 import {shinsFromFolds} from '../src/rig/articulation.js';
 import {reachableCalfFraction} from '../src/animation/legContacts.js';
+import {sampleClip,compileClip} from '../src/animation/AnimationClip.js';
+
+test('rolling shoulder support holds its horizontal anchor and keeps the head above the floor',()=>{
+    const sk=Object.create(Skeleton.prototype);
+    sk._parts=[];
+    sk.jointAttachmentPoints={nearHip:{x:50,y:250},nearShoulder:{x:40,y:290},farShoulder:{x:60,y:292}};
+    sk.head={getBounds:()=>({bottom:298})};
+    let shift;
+    sk._rotateAbout=(parts,points,pivot,r,dy,dx)=>{shift={dy,dx};};
+    sk.holdOnFloor('shoulders',300,1,1,Math.PI,35);
+    assert.deepEqual(shift,{dy:2,dx:-15});
+    sk.holdOnFloor('shoulders',300,1,.5,Math.PI,35);
+    assert.deepEqual(shift,{dy:1,dx:-7.5});
+    const source=matMoveClip('backwardRoll');
+    assert.equal(validateClip(source).ok,true);
+    const clip=compileClip(source);
+    const support=sampleClip(clip,.5).tracks.attacker.floorContacts.find(c=>c.point==='shoulders');
+    assert.equal(support.pinX,true);
+    assert.equal(support.w,1);
+    assert.ok(sampleClip(clip,1.4).tracks.attacker.floorContacts.every(c=>c.point!=='shoulders'));
+});
 
 test('calf contact fits shorter legs higher without changing the requested hook for longer legs',()=>{
     const knee={x:0,y:50},ankle={x:0,y:100},hip={x:0,y:0};
@@ -30,10 +51,12 @@ test('forward hook knee keeps the same side when the calf target crosses the hip
 });
 
 test('support floor contact uses the painted sole rather than an ankle proxy',()=>{
+    for(const side of ['near','far']){
     const sk=Object.create(Skeleton.prototype);sk._parts=[];sk.jointAttachmentPoints={nearHip:{x:0,y:200}};
-    sk.soleWorld=side=>{assert.equal(side,'near');return{x:5,y:303}};
+    sk.soleWorld=actual=>{assert.equal(actual,side);return{x:5,y:303}};
     let dy;sk._rotateAbout=(parts,points,pivot,angle,y)=>{dy=y};
-    sk.holdOnFloor('nearSole',300,1,1,0);assert.equal(dy,-3);
+    sk.holdOnFloor(side+'Sole',300,1,1,0);assert.equal(dy,-3);
+    }
 });
 
 test('leg contact blends preserve thigh and shin length in both facings',()=>{

@@ -378,12 +378,11 @@ export default class AIHandler {
                 // Each drop re-downs them, so cap follow-ups per down-spell and
                 // never chain them at the ropes — back off and let them rise
                 // ?light=v1 (Stages 10-11): a strike on the mat, by how he lies: mounted punches on his back, body stomps on his stomach (Down + Action)
-                // ?light=v1 (Stage 12): a mat hold by how he lies: the body scissors (Up + Action) or the Indian deathlock (Back + Finisher) on a man on his back
+                // ?light=v1 (Stage 12): Indian deathlock (Back + Finisher) on a man on his back; body scissors retired
                 const away = opp.x > self.x ? 'left' : 'right';
-                const matHold = lightCandidate() && opp.lying === 'supine' && ['bodyScissors', 'indianDeathlock'].filter(m => self.moveSet.includes(m));
+                const matHold = lightCandidate() && opp.lying === 'supine' && ['indianDeathlock'].filter(m => self.moveSet.includes(m));
                 if (matHold?.length && Math.random() < (cfg.matMoveOdds ?? 0)) {
-                    if (matHold[Math.floor(Math.random() * matHold.length)] === 'bodyScissors') { this._hold('up'); this._attack('action', 1.2); }
-                    else { this._hold(away); this._attack('finisher', 1.2); }
+                    { this._hold(away); this._attack('finisher', 1.2); }
                     this._pounces = (this._pounces ?? 0) + 1;
                     return;
                 }

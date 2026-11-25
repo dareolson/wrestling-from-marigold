@@ -242,7 +242,8 @@ test('validateKit passes a clean kit', () => {
 // it, and the catalog, when a move is built for the pool or assigned.
 // armBar and ankleLock were the original pair; Lou took them as mat holds
 // on 2026-10-15.
-const UNASSIGNED_POOL = ['atomicDrop'];   // halfBostonCrab is Lou's under ?light=v1 (LIGHT_KIT_SWAPS), counted below;   // PLAN_GRAPPLES T4c.2-T4c.3: built, not in a kit until T4c.5 (A8); then this goes back to []
+// bodyScissors: retired by Derek 2026-11-22 (registry `retired: true`); its spec stays as head scissors' template.
+const UNASSIGNED_POOL = ['atomicDrop', 'bodyScissors'];   // halfBostonCrab is Lou's under ?light=v1 (LIGHT_KIT_SWAPS), counted below;   // PLAN_GRAPPLES T4c.2-T4c.3: built, not in a kit until T4c.5 (A8); then this goes back to []
 
 test('built-but-unassigned moves are exactly the catalog pool', () => {
     // The roster comparison kits count: frontKick is built for them first.

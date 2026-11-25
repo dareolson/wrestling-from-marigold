@@ -1,7 +1,20 @@
 <!doctype html><meta charset="utf-8"><title>Stage 12 — move review</title>
-<style>body{margin:0;background:#17191e;color:#eee;font:15px system-ui}header{padding:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}select,button{font:inherit;padding:6px;background:#30343e;color:white;border:1px solid #666;border-radius:4px}iframe{width:100%;height:calc(100vh - 125px);border:0}p{margin:0 12px 8px;color:#bcc5d5}</style>
+<style>body{margin:0;background:#17191e;color:#eee;font:15px system-ui}header{padding:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}select,button{font:inherit;padding:6px;background:#30343e;color:white;border:1px solid #666;border-radius:4px}#game{width:100%;height:calc(100vh - 125px);border:0;min-width:0}p{margin:0 12px 8px;color:#bcc5d5}.workspace{display:grid;grid-template-columns:minmax(0,1fr)}.workspace.with-refs{grid-template-columns:minmax(0,1fr) 340px}.references{padding:14px;box-sizing:border-box;max-height:calc(100vh - 100px);overflow:auto;border-left:1px solid #414650}.references h2{font-size:17px;margin:0 0 12px}.references details{margin-bottom:16px}.references summary{cursor:pointer;padding:8px 0}.references img{display:block;width:100%;height:auto}.references figure{margin:0}.references figcaption,.references .source{font-size:12px;line-height:1.5;color:#bcc5d5;margin:8px 0}.references a{color:#a9caff}.references iframe{width:100%;aspect-ratio:9/16;height:auto;border:0;background:#000}[hidden]{display:none!important}@media(max-width:850px){.workspace.with-refs{grid-template-columns:minmax(0,1fr)}.references{max-height:none;border-left:0;border-top:1px solid #414650}.references figure,.references iframe{max-width:440px}}</style>
 <header><strong>Stage 12 live review</strong><select id="move"></select><select id="att"></select><span>→</span><select id="def"></select><select id="face"><option value="1">Facing right</option><option value="-1">Facing left</option></select><button id="play">Replay</button><label><input id="repeat" type="checkbox" checked>Repeat</label></header>
-<p id="status">Loading…</p><iframe id="game"></iframe>
+<p id="status">Loading…</p>
+<main id="workspace" class="workspace">
+<iframe id="game" title="WFM move preview"></iframe>
+<aside id="references" class="references" hidden>
+<h2>Wrestling references</h2>
+<details open><summary>Leapfrog photo</summary>
+<figure><a href="https://s.hdnux.com/photos/65/01/40/13899782/4/1920x0.jpg" target="_blank" rel="noopener noreferrer"><img src="https://s.hdnux.com/photos/65/01/40/13899782/4/1920x0.jpg" alt="A wrestler opens her legs sideways over a bent partner, with both hands on the partner’s upper back" loading="lazy" referrerpolicy="no-referrer"></a><figcaption>Reality of Wrestling training. Yi-Chin Lee / Houston Chronicle. <a href="https://www.houstonchronicle.com/life/article/Going-to-the-mat-in-women-s-wrestling-11959890.php" target="_blank" rel="noopener noreferrer">Source</a></figcaption></figure>
+</details>
+<details><summary>Training video</summary>
+<iframe id="reference-video" title="Damian Slater — Progressive Tumbling Drill" data-src="https://www.youtube-nocookie.com/embed/AlTi_Ol_54w?rel=0" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+<p class="source">Damian Slater / World-Beater Wrestling: pin jump, tuck jump, then leapfrog. <a href="https://www.youtube.com/watch?v=AlTi_Ol_54w" target="_blank" rel="noopener noreferrer">Watch on YouTube</a></p>
+</details>
+</aside>
+</main>
 <script type="module">
 import {MOVES,RIGS,SETUP} from '/tools/debug/g12_lib.mjs';
 const $=id=>document.getElementById(id), frame=$('game');let loaded='',timer,busy=false,neutral;
@@ -12,13 +25,24 @@ $('move').value=query.get('move')||'bodyScissors';if(!$('move').value)$('move').
 $('att').value=query.get('att')||($('move').value==='indianDeathlock'?'george-roster-v1':RIGS[0]);
 $('def').value=query.get('def')||($('move').value==='indianDeathlock'?RIGS[0]:'george-roster-v1');
 async function replay(){clearTimeout(timer);if(busy)return;busy=true;try{
+const showRefs=$('move').value==='leapfrog';$('references').hidden=!showRefs;$('workspace').classList.toggle('with-refs',showRefs);
+const referenceVideo=$('reference-video');if(showRefs&&!referenceVideo.hasAttribute('src'))referenceVideo.src=referenceVideo.dataset.src;else if(!showRefs)referenceVideo.removeAttribute('src');
 const pair=$('att').value+'|'+$('def').value;
 if(loaded!==pair){frame.src='/?arena=1&notitle=1&light=v1&p1='+$('att').value+'&p2='+$('def').value;await new Promise(resolve=>frame.onload=resolve);await new Promise(resolve=>{const check=()=>frame.contentWindow.__WFM_GAME?.scene.scenes[0]?.w2?resolve():setTimeout(check,50);check()});loaded=pair;neutral=null;}
 const w=frame.contentWindow,g=w.__WFM_GAME,sc=g.scene.scenes[0],actors=[sc.w1,sc.w2];g.loop.wake();
 if(!neutral)neutral=actors.map(a=>({...a.pose}));
 for(const a of actors){if(a._activeMove)sc.moveRuntime.cancel(a._activeMove,'preview-reset');sc.tweens.killTweensOf(a);sc.tweens.killTweensOf(a.pose);a._activeMove=null;a._groundAttack=null;a._groundHandoff=null;a._choreoUntil=0;a._lungeUntil=0;a._hold=null;a._landing=null;a._sell=null;a._jolt=null;a._holdEscape=null;a._facingLock=null;a.runPhase=null;Object.assign(a.pose,neutral[actors.indexOf(a)]);}
 const m=MOVES.find(m=>m[0]===$('move').value);w.Function('return ('+SETUP.toString()+')')()({facing:+$('face').value,kind:m[2]});
-actors[0][m[1]](actors[1]);sc.cameras.main.stopFollow?.();sc.cameras.main.setZoom(1.5);sc.cameras.main.centerOn((actors[0].x+actors[1].x)/2,300);
+if(['backwardRoll','rockingRecovery','kipUp'].includes(m[0])){
+    $('status').textContent='Recovery from lying on his back: hold away as the knockdown timer ends.';
+    await new Promise(resolve=>setTimeout(resolve,650));
+}
+const scissors=['bodyScissors','headScissors'].includes(m[0]);
+if(scissors)for(const a of actors)a.y=370;
+for(const rope of sc.nearRopeBands??[])rope.setVisible(!scissors);
+actors[0][m[1]](actors[1]);sc.cameras.main.stopFollow?.();
+sc.cameras.main.setZoom(m[0]==='headScissors'?1.85:scissors?2.1:m[0]==='leapfrog'?1.8:1.5);
+sc.cameras.main.centerOn(m[0]==='leapfrog'?actors[0].x:(actors[0].x+actors[1].x)/2+(m[0]==='headScissors'?-actors[0].facing*15:scissors?actors[0].facing*20:0),m[0]==='headScissors'?310:scissors?340:m[0]==='leapfrog'?240:300);
 $('status').textContent=m[3]+' · Direct move preview, independent of roster kit. '+m[4];
 const duration=actors[0]._activeMove?.clip.duration??3;
 timer=setTimeout(()=>{if($('repeat').checked)replay()},duration*1000+2200);

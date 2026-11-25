@@ -398,11 +398,12 @@ export const MOVE_SPECS = {
         ai: ['vsStaggered', 'holdDrain'],
     },
     bodyScissors: {
+        retired:true,
         category: C.HOLD, clip: null, executor: '_doBodyScissors',
         sell: { part: 'back', intensity: 0.5 },
         damageKey: 'bodyScissors', poseSeq: false, legacyFallback: null, kitGated: true,
-        trigger: 'tryAction() — Up + Action next to a man on his back (?light=v1)',
-        ai: ['vsDown', 'holdDrain'],
+        trigger: 'Retired by Derek; unavailable to players and AI',
+        ai: [],
     },
     indianDeathlock: {
         category: C.HOLD, clip: null, executor: '_doIndianDeathlock',

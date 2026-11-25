@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Walking comparison — Marigold</title>
+<style>
+body{margin:0;background:#18191d;color:#eee;font:15px system-ui}header{padding:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}h1{font-size:20px;margin:0}button,select{font:inherit;padding:8px;background:#30343b;color:white;border:1px solid #626976;border-radius:4px}button.active{background:#81502e}p{margin:0 16px 14px;color:#c0c3ca}.panels{display:grid;grid-template-columns:1fr 1fr;gap:8px}h2{font-size:16px;margin:8px 16px}iframe{border:0;width:100%;height:570px;background:#101114}@media(max-width:850px){.panels{grid-template-columns:1fr}iframe{height:450px}}
+</style>
+<header><h1>Walking — same artwork</h1><select id="rig"><option value="thesz-procreate-v1">Lou</option><option value="george-roster-v1">George</option><option value="kowalski-roster-v1">Kowalski</option><option value="guido-roster-v1">Guido</option></select><select id="face"><option value="1">Facing right</option><option value="-1">Facing left</option></select><button id="cycle">Play walk / stop / back away</button><button data-key="forward">Walk forward</button><button data-key="back">Back away</button><button data-key="stop">Stop</button><label><input type="checkbox" id="close">Opponent nearby</label><button id="otherMode" hidden>Running arms</button><label id="bodyLabel" hidden><input id="fullBody" type="checkbox">Full body</label></header>
+<p id="status">Loading both previews…</p>
+<div class="panels"><section><h2>Current walk</h2><iframe id="before" title="Current walking"></iframe></section><section><h2>Movement-only trial</h2><iframe id="after" title="Improved walking trial"></iframe></section></div>
+<script type="module">
+const $=id=>document.getElementById(id),frames=[$('before'),$('after')];
+const query=new URLSearchParams(location.search);
+const artReview=query.get('compare')==='ready-art';
+const probeReview=query.get('compare')==='probing'||artReview;
+const stanceReview=query.get('compare')==='stance'||probeReview;
+const armReview=query.get('compare')==='arms'||stanceReview;
+if(armReview){document.querySelector('h1').textContent='Arms — walking';document.querySelectorAll('h2')[0].textContent='Reviewed walk';document.querySelectorAll('h2')[1].textContent='Arm refinement';$('otherMode').hidden=$('bodyLabel').hidden=false;}
+if(stanceReview){document.querySelector('h1').textContent='Wrestling stance';document.querySelectorAll('h2')[0].textContent='Reviewed stance';document.querySelectorAll('h2')[1].textContent='Wrestling stance trial';$('otherMode').hidden=true;$('close').checked=true;}
+if(probeReview){document.querySelector('h1').textContent='Ready stance — hand probing';document.querySelectorAll('h2')[0].textContent='Still guard';document.querySelectorAll('h2')[1].textContent='Searching guard';}
+if(artReview){document.querySelector('h1').textContent='George — ready-to-grab hands';document.querySelectorAll('h2')[0].textContent='Cupped hands — kept for moves';document.querySelectorAll('h2')[1].textContent='Outlined grip — tucked thumbs';$('rig').value='george-roster-v1';$('rig').disabled=true;}
+$('fullBody').checked=(stanceReview&&!probeReview)||query.get('body')==='full';
+if([...$('rig').options].some(o=>o.value===query.get('rig')))$('rig').value=query.get('rig');
+if(query.get('face')==='-1')$('face').value='-1';
+let mode='cycle',ready=[],epoch=0,generation=0,playing=false;
+const idle={justDown:()=>false,isDown:()=>false};
+function command(next){mode=next;epoch=performance.now();for(const b of document.querySelectorAll('button'))b.classList.toggle('active',b.dataset.key===next||b.id==='cycle'&&next==='cycle');}
+async function load(){
+ const gen=++generation;ready=[];playing=false;$('status').textContent='Loading both previews…';
+ await Promise.all(frames.map(async(frame,i)=>{
+  frame.src=`/?arena=1&notitle=1&ropes=off&p1=${$('rig').value}&p2=george-roster-v1&walk=${armReview||i?'v1':'off'}&run=v1&arms=${stanceReview||armReview&&i?'v1':'off'}&stance=${probeReview||stanceReview&&i?'v1':'off'}&guardMotion=${probeReview&&!artReview&&!i?'off':'on'}&readyArt=${artReview?(i?'v2':'cupped'):'off'}`;
+  await new Promise(r=>frame.onload=r);
+  const deadline=performance.now()+90000;
+  while(!frame.contentWindow.__WFM_GAME?.scene.scenes[0]?.w2){if(gen!==generation)return;if(performance.now()>deadline)throw Error('Game did not finish loading');await new Promise(r=>setTimeout(r,100));}
+  if(gen!==generation)return;
+  const game=frame.contentWindow.__WFM_GAME,scene=game.scene.scenes[0],a=scene.w1,d=scene.w2;
+  game.sound.mute=true;
+  scene._p1AI=scene._p2AI=null;scene.tweens.killTweensOf(a);scene.tweens.killTweensOf(a.pose);
+  a.x=600;a.y=350;a.facing=+$('face').value;a._facingLock=true;a.state='standing';a.vx=a.vy=0;a.walkPhase=0;a.moveBlend=0;a._gaitRest=1;
+  d.input=idle;d.state='standing';d.x=1000;d.y=150;
+  const held=new Set();a.input={justDown:()=>false,isDown:key=>held.has(key)};
+  scene.cameras.main.stopFollow();scene.cameras.main.setZoom(2.2);
+  for(const rope of scene.nearRopeBands??[])rope.setVisible(false);
+  ready[i]={game,scene,a,d,held};
+ }));
+ if(gen!==generation)return;playing=true;command(stanceReview?'stop':'cycle');$('status').textContent=artReview?'Same arm angles and wrist motion. Restored black contours and thumbs closer to the index fingers at right; cupped move variants retained at left.':probeReview?'Both sides use the same ready stance. Compare the alternating reach and retraction on the right.':stanceReview?'Ready stance: softened knees, lowered hips, forward torso and separated guard. Try walking/backing away nearby; toggle Opponent nearby to relax.':armReview?'Same reviewed leg motion on both sides. Compare the shoulder swing, elbow follow-through and hand path.':'Normal-speed walking, stopping, and backing away. Trial is for visual review; match defaults are unchanged.';
+}
+function tick(now){
+ if(!playing){requestAnimationFrame(tick);return;}
+ const t=(now-epoch)/1000,key=mode==='cycle'?(t%4.8<1.5?'forward':t%4.8<2.4?'stop':t%4.8<3.9?'back':'stop'):mode;
+ for(const ctx of ready){if(!ctx)continue;const {scene,a,d,held}=ctx;held.clear();
+  if(key!=='stop'){const sign=a.facing*(key==='forward'?1:-1);held.add(sign>0?'right':'left');}
+  a.stamina=100;d.stamina=100;
+  d.x=$('close').checked?a.x+a.facing*(stanceReview?135:175):a.facing>0?1000:100;d.y=$('close').checked?a.y:150;
+  scene.cameras.main.setZoom(armReview&&!$('fullBody').checked?3:2.2);
+  scene.cameras.main.centerOn(a.x,armReview&&!$('fullBody').checked?210:245);
+ }
+ requestAnimationFrame(tick);
+}
+for(const id of ['rig','face'])$(id).onchange=()=>load().catch(e=>$('status').textContent=e.message);
+$('cycle').onclick=()=>command('cycle');for(const b of document.querySelectorAll('[data-key]'))b.onclick=()=>command(b.dataset.key);
+$('otherMode').onclick=()=>location.href=`/tools/run-preview/?compare=arms&rig=${$('rig').value}&face=${$('face').value}&body=${$('fullBody').checked?'full':'close'}`;
+window.__walkPreview={get contexts(){return ready;},command};
+requestAnimationFrame(tick);load().catch(e=>$('status').textContent=e.message);
+</script></html>

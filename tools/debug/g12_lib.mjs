@@ -9,8 +9,11 @@ export const MOVES = [
     ['testOfStrength',   '_doTestOfStrength',   'tie',      'T12.4 Test of strength',           'Tie-up, Up + Power (Up + Action is the suplex)', 'Kowalski, Lou'],
     ['leapfrog',         '_doLeapfrog',         'runner',   'T12.5 Leapfrog over a runner',     'Up + Power as a runner comes back off the ropes', 'Guido, George'],
     ['backwardRoll',     '_doBackwardRoll',     'roll',     'T12.6 Backward roll',              'On his back at the rise, hold Back (away from the man)', 'George, Guido'],
+    ['backwardRollEscape','_doBackwardRollEscape','standing','Standing backward-roll escape','Standing escape · animation review; control binding pending','Preview'],
+    ['rockingRecovery','_doRockingRecovery','roll','Sit-up-and-rock recovery','Ground recovery variant · animation review','Preview'],
+    ['kipUp','_doKipUp','roll','Kip-up recovery','Athletic ground recovery · animation review','Preview'],
     ['abdominalStretch', '_doAbdominalStretch', 'stagger',  'T12.7 Abdominal stretch',          'Back + Action vs a staggered man',             'Kowalski, George'],
-    ['bodyScissors',     '_doBodyScissors',     'supine',   'T12.8 Body scissors',              'Up + Action next to a man on his back',        'Lou, Kowalski'],
+    ['headScissors','_doHeadScissors','supine','Grounded head scissors','Grounded hold · animation review; gameplay binding pending','Preview'],
     ['indianDeathlock',  '_doIndianDeathlock',  'supine',   'T12.9 Indian deathlock',           'Back + Finisher on a man on his back',         'George, Kowalski'],
     ['backdropSuplex',   '_doBackdropSuplex',   'behind',   'T12.10 Backdrop suplex',           'Power in the waistlock hold (waistlock=v1) on a worn man (wear >= 60)',    'Lou, Kowalski'],
 ];
@@ -27,6 +30,7 @@ export const SETUP = ({ facing, kind }) => {
     if (kind === 'headlock') { D.x = 520 + facing * 68 * s; D.facing = facing; }
     if (kind === 'runner') { D.state = 'running'; D.runPhase = 'returning'; D.runFacing = -facing; D.facing = -facing; D.runTarget = A.x - facing * 200; D.x = A.x + facing * 300; }
     if (kind === 'roll') { A.state = 'down'; A.lying = 'supine'; A.stateTimer = 99; D.x = 520 + facing * 170; }
+    if (kind === 'standing') D.x = 520 + facing * 170;
     if (kind === 'stagger') { D.x = 520 + facing * 80 * s; D.startStagger(); }
     if (kind === 'supine') { D.x = 520 + facing * 90; D.state = 'down'; D.lying = 'supine'; D.stateTimer = 99; }
     if (kind === 'behind') { A.y = 330 - 12 * s; D.x = 520 + facing * 70 * s; D.facing = facing; D.wear = 70; D.stamina = 60; }   // as the waistlock hold leaves them: both facing one way, he 12 upstage

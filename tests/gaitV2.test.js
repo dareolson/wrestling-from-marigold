@@ -99,6 +99,19 @@ function drawn(search, extra = {}) {
     return { w, out };
 }
 
+test('a clip retreat uses distance-driven walking and cannot keep driving the legs after release',()=>{
+    const {w,out}=drawn('?gait=v2',{state:'slamming',_activeMove:{},_clipGait:{weight:1,distance:-20}});
+    w.draw();
+    assert.equal(out.at(-1)[5],-20*w._gaitParamsAt(0).freq/w._heightScale);
+    assert.equal(out.at(-1)[8],1);
+    assert.equal(w.skeleton._gaitRest,0);
+    w._activeMove=null;
+    w.draw();
+    assert.equal(out.at(-1)[5],0);
+    assert.equal(out.at(-1)[8],0);
+    assert.equal(!!w.skeleton._gaitHold,false);
+});
+
 test('lean: walk bend = leanWalk x moveBlend, run bend = leanRun, knee adds crouch; this.pose is never touched', () => {
     const q = '?gait=v2';
     const { w, out } = drawn(q, { moveBlend: 1 });

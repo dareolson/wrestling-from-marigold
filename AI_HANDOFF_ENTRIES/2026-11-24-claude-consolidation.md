@@ -2,7 +2,7 @@
 
 **Ask (Derek):** consolidate everyone's work and clean up. Get the movement changes in (walk and run included). Put the current Lou in production and shelve the old one. Systematize art changes, because every wrestler's knees, and maybe elbows, will be re-done. Follow-ups: replace Lou's body parts rather than build a new rig (calves over thighs, far leg over trunks); merge the Stage E taunts.
 
-## Commits (story/marigold-opening, local, not pushed)
+## Commits (story/marigold-opening, pushed 2026-11-24)
 
 | sha | What |
 | --- | --- |
@@ -50,8 +50,8 @@
 
 - **Worktrees:** `wfm-george-hair` and `wfm-stage12` removed, and their branches deleted after merge. Their ~270 ignored review captures were copied into the main checkout first.
 - **Codex packet:** `integration/` is untracked; its record lives in `research/integration-2026-11-24/`.
-- **Stray folder:** `private/` at the repo root is a stray dry-run copy from this session (59 files); the sandbox refused the delete, so remove it by hand.
-- **Old branch:** `thesz-v2-profile-normalization` is still waiting on PLAN_CLEANUP T3 (Derek).
+- **Stray folder:** `private/` (a dry-run copy from this session) deleted.
+- **Old branch:** `thesz-v2-profile-normalization` tagged `archive/thesz-v2-profile-normalization` (pushed) and deleted (PLAN_CLEANUP T3).
 
 ## Checks
 

@@ -47,7 +47,7 @@ Progress line per task here (sha, result, misses). Status in AI_HANDOFF.md only 
 
 ## Decisions (Derek)
 - T2 backup: GitHub only (no Time Machine). PSDs in git: done.
-- T3 delete side branch (tagged first):
+- T3 delete side branch (tagged first): DONE 2026-11-24 (Derek OK). Tag `archive/thesz-v2-profile-normalization` = 3e035a86 (contains the old origin tip 2fc9d261), pushed; branch deleted locally and on origin.
 - T5 frame dumps: parked.
 
 ## Codex review (2026-11-07, for Opus)

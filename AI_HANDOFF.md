@@ -30,7 +30,7 @@ Avoid a large rewrite.
 
 ## Status (2026-11-24, Claude; replace this block; ≤ 40 lines)
 
-- **Consolidated (Claude, 2026-11-24, local, not pushed):** all Codex/Sonnet work through Nov 24 is committed on `story/marigold-opening`; side worktrees (`wfm-george-hair`, `wfm-stage12`) merged and removed. [Entry](AI_HANDOFF_ENTRIES/2026-11-24-claude-consolidation.md).
+- **Consolidated (Claude, 2026-11-24, pushed e127b665):** all Codex/Sonnet work through Nov 24 is committed on `story/marigold-opening`; side worktrees (`wfm-george-hair`, `wfm-stage12`) merged and removed. [Entry](AI_HANDOFF_ENTRIES/2026-11-24-claude-consolidation.md).
 - **Movement PROMOTED (Derek: "get the movement changes in place"):** walk, run, locomotion arms, ready stance and George's relaxed v3 ready hands are default (`?walk=off` `?run=off` `?arms=off` `?stance=off` `?readyArt=off`). Ready hand art is George-only. Codex packet: [entry](AI_HANDOFF_ENTRIES/2026-11-24-codex-claude-integration.md).
 - **Lou's body is Lou2.psd (Derek, Nov 24):** `thesz-procreate-v1` keeps its id, head, faces, moves, back sell; torso/arms/thighs/shins (separate far leg) come from Lou2, calves over thighs, far leg over trunks (PSD layer order). Old body shelved: `?p1=thesz-procreate-shelf`. Film: `research/art-revisions/2026-11-24-lou/compare/`. Awaiting Derek's look.
   - Misses: grip/clasp/chop forearms keep the old elbow cap (donors slimmer than the new forearm, no clean splice) → art pass; far-shin ankle twist fit IoU .83 (different boot drawing); back sell (holdW/recovery) and `crownBelowHip` are pre-swap numbers → re-measure; Lou stands 0.5% shorter in ink (ladder re-pinned).
@@ -41,7 +41,7 @@ Avoid a large rewrite.
 - **Preview:** `npm run dev`; moves `/tools/mat-preview/?move=<key>&att=<rig>&def=<rig>` (defaults to wristlockHammerlock); gait `/tools/gait-preview/?rig=<rig>`; run `/tools/run-preview/?rig=<rig>`.
 - **Before any push:** Opus reviews; push to the SSH URL. 49cb207a's dangling Lou2 import is resolved (bc103d4a, then superseded).
 - **On disk only:** review frames/footage under `research/animation/`, `research/ropes-2026-11/` (ignored), `Roster Base Masters/`.
-- **Parked:** finishers, gait Stage 4, get-ups Stage 5, George transfer G10a, figure-four, support-hand plant, `thesz-v2-profile-normalization` branch (tag+delete awaits Derek, PLAN_CLEANUP T3). Promoted flags: `risefix`, `sellart`, `aftermath`, `getups`, `grapples`, `falls`, `scale`, `light`, `gait`, `ropes`, `walk`, `run`, `arms`, `stance`, `readyArt` (`?<flag>=off` = old). Opt-in: `waistlock=v1`, `plant=1`, `ropeSpill=v1`.
+- **Parked:** finishers, gait Stage 4, get-ups Stage 5, George transfer G10a, figure-four, support-hand plant. Promoted flags: `risefix`, `sellart`, `aftermath`, `getups`, `grapples`, `falls`, `scale`, `light`, `gait`, `ropes`, `walk`, `run`, `arms`, `stance`, `readyArt` (`?<flag>=off` = old). Opt-in: `waistlock=v1`, `plant=1`, `ropeSpill=v1`.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index

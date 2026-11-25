@@ -28,27 +28,53 @@ Shared project notebook for Derek, Claude, and Codex.
 
 Avoid a large rewrite.
 
-## Status (2026-11-21, Claude; replace this block; ≤ 40 lines)
+## Status (2026-11-24, Claude; replace this block; ≤ 40 lines)
 
-- **Checkpoint (Claude, 2026-11-21):** Guido wristlock, headlock takeover, flying mare and test of strength reviewed and committed together on `story/marigold-opening` (local, not pushed). Hammerlock, stretch and deathlock were already committed (62e6f981, 31b0ce0a) and are unchanged. Gates on the commit: suite 1463/1463, build, coverage (49 baselined gaps), size-pop soak PASS (0 outside the named list; run with `WFM_URL=http://localhost:5173`, the server now binds IPv6 only).
-- **Accepted by Derek, preserve as committed:**
-  - Lou's `wristlockHammerlock` (62e6f981, elbow down, arm cranked up the back). Guido keeps `wristlock`.
-  - Guido `wristlock` (Nov 16): resistance push, final wrench, 4.5s backward retreat holding the wrist, 8 damage, sustained pain face. [Entry](AI_HANDOFF_ENTRIES/2026-11-16-codex-wristlock-grip-swap.md).
-  - Abdominal stretch and Indian deathlock (Stage 12 dial-in, 31b0ce0a).
-  - Headlock takeover (Nov 19): chest shove 3.45–3.51, recoil, catch step at 3.78. Lou catch-plant miss ≤7.06px remains. [Entry](AI_HANDOFF_ENTRIES/2026-11-19-codex-headlock-hard-break.md).
-  - Flying mare → seated armlock (Nov 21): 7.15s, back arm 1.15× behind both bodies, receiver free arm 1.15× foreground. [Entry](AI_HANDOFF_ENTRIES/2026-11-21-codex-flying-mare-george-free-arm.md).
-  - **Test of strength (Nov 21, Derek: “I think this is good”):** overhead palms at .95s, near contact through knees-to-standing until the shove, far hand held through the rise then wristlock transfer, back-forearm depth, two airborne pain hops, 295-unit final gap, both end standing with George controllable, three 3-damage calls. [Entry](AI_HANDOFF_ENTRIES/2026-11-21-codex-strength-earlier-grip.md).
-- **Shared rig/runtime changes those moves need (in the checkpoint):** per-clip `farArmScale`, `near`/`far` leg/fold/plant channels, carry `part`/`joint` frames, `nearForearm`/`farForearm` layers, painted Wrist grip anchors, authored pain head holds, `end.def: 'stand'`, `followTorso` projected arms. `headlockWrap` arm art (both rigs) is declared and committed but no clip uses it (Derek: no hot-swapped arm).
-- **Leapfrog first pass awaiting Derek:** runner duck preserves run/gait, earlier/higher straddle takeoff, landing-timing validation fix, preview widened. 42 focused tests; Lou→George both facings at 4 approach distances: no damage, clean completion/cancel, positive head/hip crossing clearance (tight at short range). [Entry](AI_HANDOFF_ENTRIES/2026-11-21-codex-leapfrog-first-pass.md). Uncommitted.
-- **NEXT:** finish leapfrog with Derek, then backward roll, body scissors, backdrop suplex (last three reworked, not judged).
-- **Open control issues:** with `waistlock=v1`, Lou's go-behind shadows Up/Down + Power (his test of strength and flying mare); AI plays only stretch, scissors and deathlock.
-- **Preview:** `npm run dev`, then `/tools/mat-preview/?move=<key>&att=<rig>&def=<rig>` (e.g. `move=testOfStrength&att=thesz-procreate-v1&def=george-roster-v1`).
-- **Not committed, on disk only:** research captures under `research/animation/` (~1,100 files), `Roster Base Masters/` (art source).
-- **Still from earlier:** G10+G11 page (ten light strikes) awaits Derek; chop approved; `light` promoted (677b6345). T6.4 drop toe hold not built. Opus reviews before any push.
-- **Parked:** finishers, gait Stage 4 (transitions, polish list), get-ups Stage 5, George transfer G10a, figure-four, support-hand plant. Promoted flags: `risefix`, `sellart`, `aftermath`, `getups`, `grapples`, `falls`, `scale`, `light`, `gait` (2026-11-21; `?<flag>=off` is the old game). Opt-in: `waistlock=v1`, `plant=1`.
+- **Consolidated (Claude, 2026-11-24, local, not pushed):** all Codex/Sonnet work through Nov 24 is committed on `story/marigold-opening`; side worktrees (`wfm-george-hair`, `wfm-stage12`) merged and removed. [Entry](AI_HANDOFF_ENTRIES/2026-11-24-claude-consolidation.md).
+- **Movement PROMOTED (Derek: "get the movement changes in place"):** walk, run, locomotion arms, ready stance and George's relaxed v3 ready hands are default (`?walk=off` `?run=off` `?arms=off` `?stance=off` `?readyArt=off`). Ready hand art is George-only. Codex packet: [entry](AI_HANDOFF_ENTRIES/2026-11-24-codex-claude-integration.md).
+- **Lou's body is Lou2.psd (Derek, Nov 24):** `thesz-procreate-v1` keeps its id, head, faces, moves, back sell; torso/arms/thighs/shins (separate far leg) come from Lou2, calves over thighs, far leg over trunks (PSD layer order). Old body shelved: `?p1=thesz-procreate-shelf`. Film: `research/art-revisions/2026-11-24-lou/compare/`. Awaiting Derek's look.
+  - Misses: grip/clasp/chop forearms keep the old elbow cap (donors slimmer than the new forearm, no clean splice) → art pass; far-shin ankle twist fit IoU .83 (different boot drawing); back sell (holdW/recovery) and `crownBelowHip` are pre-swap numbers → re-measure; Lou stands 0.5% shorter in ink (ladder re-pinned).
+- **Art revision system:** [ART_REVISION.md](ART_REVISION.md). All four production rigs = generated base (`src/characters/generated/*.base.js`, never edit) + authored layer. `node tools/art/revise_rig.mjs <rig>` re-cuts from the PSD and re-fits every variant. Derek plans new knees (maybe elbows) on every wrestler: use this.
+- **Accepted, preserve:** Lou `wristlockHammerlock`, Guido `wristlock`, stretch, deathlock, headlock takeover, flying mare, test of strength (Nov 16-21); leapfrog + shared idle, backward-roll getup, standing escape, sit-up/rock, kip-up + compact George/Guido idle (Nov 21); Stage E taunts (merged). Body scissors RETIRED (template kept for head scissors). Head scissors DRAFT; recovery/escape gameplay bindings unassigned.
+- **NEXT:** Derek looks at Lou (film + live `?p1=thesz-procreate-v1`), then head scissors review, then backdrop suplex. Ropes: RS/TS.6 rope spill under `?ropeSpill=v1` awaiting Derek ([PLAN_ROPES.md](PLAN_ROPES.md)); rope height still his call.
+- **Open control issues:** with `waistlock=v1`, Lou's go-behind shadows Up/Down + Power; AI plays only stretch and deathlock of the mat set.
+- **Preview:** `npm run dev`; moves `/tools/mat-preview/?move=<key>&att=<rig>&def=<rig>` (defaults to wristlockHammerlock); gait `/tools/gait-preview/?rig=<rig>`; run `/tools/run-preview/?rig=<rig>`.
+- **Before any push:** Opus reviews; push to the SSH URL. 49cb207a's dangling Lou2 import is resolved (bc103d4a, then superseded).
+- **On disk only:** review frames/footage under `research/animation/`, `research/ropes-2026-11/` (ignored), `Roster Base Masters/`.
+- **Parked:** finishers, gait Stage 4, get-ups Stage 5, George transfer G10a, figure-four, support-hand plant, `thesz-v2-profile-normalization` branch (tag+delete awaits Derek, PLAN_CLEANUP T3). Promoted flags: `risefix`, `sellart`, `aftermath`, `getups`, `grapples`, `falls`, `scale`, `light`, `gait`, `ropes`, `walk`, `run`, `arms`, `stance`, `readyArt` (`?<flag>=off` = old). Opt-in: `waistlock=v1`, `plant=1`, `ropeSpill=v1`.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-24 · Claude · [Consolidation: integration commits, movement promoted, Lou2 body, art revision system](AI_HANDOFF_ENTRIES/2026-11-24-claude-consolidation.md)
+
+- 2026-11-24 · Codex · [Consolidated Claude integration handoff](AI_HANDOFF_ENTRIES/2026-11-24-codex-claude-integration.md)
+
+- 2026-11-24 · Codex · [Arm art seam matching](AI_HANDOFF_ENTRIES/2026-11-24-codex-arm-seam-match.md)
+
+- 2026-11-24 · Codex · [Neutral thumb rotation on both hands](AI_HANDOFF_ENTRIES/2026-11-24-codex-neutral-ready-hands.md)
+
+- 2026-11-24 · Codex · [Far elbow, wrist motion and hand proportion](AI_HANDOFF_ENTRIES/2026-11-24-codex-ready-wrist.md)
+
+- 2026-11-24 · Codex · [Inside forearm and lower ready guard](AI_HANDOFF_ENTRIES/2026-11-24-codex-inside-ready-arm.md)
+
+- 2026-11-24 · Codex · [Ready-to-grab forearm art](AI_HANDOFF_ENTRIES/2026-11-24-codex-ready-grab-art.md)
+
+- 2026-11-24 · Codex · [Searching guard motion](AI_HANDOFF_ENTRIES/2026-11-24-codex-guard-probing.md)
+
+- 2026-11-24 · Codex · [Full-body ready stance](AI_HANDOFF_ENTRIES/2026-11-24-codex-ready-stance.md)
+
+- 2026-11-24 · Codex · [Wrestling stance trial](AI_HANDOFF_ENTRIES/2026-11-24-codex-wrestling-stance.md)
+
+- 2026-11-23 · Codex · [Locomotion arm refinement](AI_HANDOFF_ENTRIES/2026-11-23-codex-locomotion-arms.md)
+
+- 2026-11-23 · Codex · [Existing-art running trial](AI_HANDOFF_ENTRIES/2026-11-23-codex-running-trial.md)
+
+- 2026-11-23 · Codex · [George walking support correction](AI_HANDOFF_ENTRIES/2026-11-23-codex-george-walking.md)
+
+- 2026-11-23 · Codex · [Existing-art walking trial](AI_HANDOFF_ENTRIES/2026-11-23-codex-walking-trial.md)
+
+- 2026-11-21 · Claude · [Ropes plan handoff: rope height, physical ropes, rope grab](AI_HANDOFF_ENTRIES/2026-11-21-claude-ropes-plan-handoff.md)
 
 - 2026-11-21 · Codex · [Test of strength: actual-preview ending and stronger shove](AI_HANDOFF_ENTRIES/2026-11-21-codex-strength-ending-preview.md)
 

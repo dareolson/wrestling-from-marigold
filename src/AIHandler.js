@@ -6,6 +6,7 @@
 import { ringBoundsAtY, RING } from './constants.js';
 import { grapplesCandidate, waistlockCandidate, lightCandidate, sharesDepth } from './Wrestler.js';
 import { LOCKUP } from './animation/lockup.js';
+import { aiTauntSlot, tauntSlotKey } from './animation/tauntTable.js';
 import { WAISTLOCK, behindSpotFits } from './animation/waistlock.js';
 
 export const PERSONALITIES = {
@@ -248,6 +249,13 @@ export default class AIHandler {
         this._justPressed[key] = true;
     }
 
+    // The taunt button with a direction held, the way a player picks one: a slot from the wrestler's own kit (tauntTable.js), none = neutral
+    _pressTaunt() {
+        const self = this._self, kit = self._tauntKit?.();
+        if (kit) { const k = tauntSlotKey(aiTauntSlot(kit), self.facing); if (k) this._hold(k); }
+        this._press('finisher');
+    }
+
     _hold(key) {
         this._keys[key] = true;
     }
@@ -345,7 +353,7 @@ export default class AIHandler {
         if (this._showboat && this._stallTimer <= 0) {
             this._showboat = false;
             if (dist > TAUNT_SAFE || opp.state !== 'standing') {
-                this._press('finisher'); // taunt
+                this._pressTaunt(); // taunt
                 this._cooldown = 2.2;
                 return;
             }
@@ -357,7 +365,7 @@ export default class AIHandler {
             if (dist < JAB_REACH && opp.state === 'standing' && Math.random() < 0.4) {
                 this._attack('power', 1.0); // jab
             } else if (dist > TAUNT_SAFE && Math.random() < 0.04) {
-                this._press('finisher'); // taunt (begging off gesture)
+                this._pressTaunt(); // taunt (begging off gesture)
                 this._cooldown = 2.0;
             }
             return;
@@ -589,7 +597,7 @@ export default class AIHandler {
 
         // Out of range — occasional taunt while approaching
         if (Math.random() < cfg.tauntOdds * 0.3 * dt) {
-            this._press('finisher');
+            this._pressTaunt();
             this._cooldown = 2.5;
         }
     }

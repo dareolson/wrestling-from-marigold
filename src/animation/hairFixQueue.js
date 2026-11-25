@@ -2,9 +2,6 @@
 // bookkeeping (the stage change, the 6 s expiry, the 8 s cooldown, the safe-moment gate); Wrestler plays the clip. Times in ms.
 export const HAIR_FIX = { expireMs: 6000, cooldownMs: 8000, farPx: 150 };
 
-// chance the taunt button is a hair check instead of the strut, by wear stage
-export const HAIR_TAUNT_CHANCE = [0.35, 0.5, 0.6];
-
 export class HairFixQueue {
     constructor(stage = 0) {
         this.stage = stage;

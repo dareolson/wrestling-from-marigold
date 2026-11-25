@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { HairFixQueue, HAIR_FIX, HAIR_TAUNT_CHANCE } from '../src/animation/hairFixQueue.js';
+import { HairFixQueue, HAIR_FIX } from '../src/animation/hairFixQueue.js';
 import { georgeHairCheckClip } from '../src/animation/clips/georgeCrowdTaunt.js';
 import { validateClip } from '../src/animation/AnimationClip.js';
 
@@ -50,12 +50,11 @@ test('8 s cooldown after a fix; a newer rise replaces the pending stage; wear dr
     assert.equal(r.take(100, SAFE), 2);
 });
 
-test('a taunt hair check also starts the cooldown; the taunt chance rises with wear', () => {
+test('a taunt hair check also starts the cooldown', () => {
     const q = new HairFixQueue(0);
     q.noteFix(0);
     q.observe(1, 100);
     assert.equal(q.take(5000, SAFE), null);
-    assert.deepEqual(HAIR_TAUNT_CHANCE, [0.35, 0.5, 0.6]);
 });
 
 test('fix clips: valid, one stroke irritated at stage 1, two hurried tries ending in abort at stage 2, a hit-cancel-safe lower body', () => {

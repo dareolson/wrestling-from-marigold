@@ -38,7 +38,9 @@ import {headScissorsClip} from './animation/clips/headScissors.js';
 import { leapfrogDuckPose, leapfrogPressWeight } from './animation/leapfrog.js';
 import { mountedPunchesClip, MOUNTED_PUNCHES_SPEC, bodyStompsClip, BODY_STOMPS_SPEC } from './animation/clips/groundStrikes.js';
 import { kneeDropV2Clip, KNEE_DROP_V2_SPEC } from './animation/clips/kneeDropV2.js';
-import { HairFixQueue, HAIR_TAUNT_CHANCE } from './animation/hairFixQueue.js';
+import { HairFixQueue } from './animation/hairFixQueue.js';
+import { TAUNT_KITS, tauntKitKey, readTauntSlot, tauntIdFor } from './animation/tauntTable.js';
+import { tauntGestureClip, TAUNT_GESTURES } from './animation/clips/tauntGestures.js';
 import { georgeCrowdTauntClip, georgeSuperiorityClip, georgeHairCheckClip } from './animation/clips/georgeCrowdTaunt.js';
 import { divingElbowClip } from './animation/clips/divingElbow.js';
 import { topDiveClip } from './animation/clips/topDive.js';
@@ -70,7 +72,6 @@ const SPEED      = 140;
 // easePhase: the stride phase over which he slows into the last step; minSpeed keeps him moving until he is on it.
 // PLAN_GEORGE_PERFORMANCE: the share of George's struts that go on into the crowd taunt (?georgePerformance=1)
 const GEORGE_CROWD_CHANCE = 0.5;
-// (the share of his taunts that are the hair check instead of the strut rises with wear: HAIR_TAUNT_CHANCE)
 const STRUT = { speed: 70, walk: 1.6, settle: 0.35, ease: 0.25, armSwing: 0.35, minRoom: 70, phase0: Math.PI, easePhase: 1.2, minSpeed: 0.15 };
 const RUN_SPEED  = 340;
 const DOWN_SEC   = 4.5;
@@ -2622,7 +2623,8 @@ export default class Wrestler {
             return 'theszPress';
         }
 
-        this._doTaunt();
+        // Stage E: the direction held at the press picks the taunt (flag off: the one taunt)
+        this._doTaunt(this._tauntKit() ? readTauntSlot(this.input, this.facing) : 'neutral');
         return 'taunt';
     }
 
@@ -4414,7 +4416,7 @@ export default class Wrestler {
         });
     }
 
-    _doTaunt() {
+    _doTaunt(slot = 'neutral') {
         this.state = 'taunting';
         // A hurt heel doesn't preen, he begs: hands up, "no, no", shaking.
         if (this.begsOff && this.stamina < BEG_STAMINA) {
@@ -4431,17 +4433,9 @@ export default class Wrestler {
             });
             return;
         }
-        // PLAN_GEORGE_PERFORMANCE B: George taunting over a downed man presents him instead of strutting off
-        const other = this._lastOther;
-        if (georgePerformanceCandidate() && this.rigId?.startsWith('george') && this.scene.moveRuntime && (other?.state === 'down' || other?.state === 'possum')) {
-            this._doSuperiority(other);
-            return;
-        }
-        // PLAN_GEORGE_PERFORMANCE C: otherwise, now and then, he sees to his hair instead of strutting
-        if (georgePerformanceCandidate() && this.rigId?.startsWith('george') && this.scene.moveRuntime && Math.random() < HAIR_TAUNT_CHANCE[this.face?.state.stage ?? 0]) {
-            this._doHairCheck();
-            return;
-        }
+        // Stage E (?light=v1&georgePerformance=1): the kit's taunt for the slot held at the press
+        const kit = this._tauntKit?.();
+        if (kit) { this._playTaunt(kit, slot); return; }
         // Flair's strut: four hunched, stalking steps forward.
         if (this.struts && lightCandidate()) { this._startStrut(); return; }
         if (this.struts) {
@@ -4457,12 +4451,45 @@ export default class Wrestler {
             });
             return;
         }
+        this._doArmsWideTaunt();
+    }
+
+    _doArmsWideTaunt() {
         const tauntSeq = MOVE_DEFS.taunt.poseSeq.map(step =>
             step.p === 'tauntArmsWide' ? { ...step, p: this.tauntPose } : step
         );
         this._runPoseSequence(tauntSeq, () => {
             if (this.state === 'taunting') this.state = 'standing';
         });
+    }
+
+    // PLAN_GEORGE_PERFORMANCE Stage E: his kit's taunts (tauntTable.js), on the same flag as the George performances. null = the one legacy taunt.
+    _tauntKit() {
+        return georgePerformanceCandidate() && this.scene.moveRuntime ? TAUNT_KITS[tauntKitKey(this.rigId)] ?? null : null;
+    }
+
+    // slot -> taunt id (a slot the kit lacks is neutral); the context overrides: over a downed man George presents him instead of strutting,
+    // and the slot that names that presentation strolls when nobody is down
+    _playTaunt(kit, slot) {
+        const other = this._lastOther, down = other?.state === 'down' || other?.state === 'possum';
+        let id = tauntIdFor(kit, slot);
+        if (id === 'strut' && down && Object.values(kit).includes('superiority')) id = 'superiority';
+        if (id === 'superiority' && !down) id = kit.neutral;
+        if (id === 'strut') this._startStrut();
+        else if (id === 'armsWide') this._doArmsWideTaunt();
+        else if (id === 'crowd') this._doCrowdTaunt();
+        else if (id === 'hairCheck') this._doHairCheck();
+        else if (id === 'superiority') this._doSuperiority(other);
+        else if (TAUNT_GESTURES[id]) this._doTauntGesture(id);
+        else this._doArmsWideTaunt();
+    }
+
+    _doTauntGesture(name) {
+        const runtime = this.scene.moveRuntime;
+        this.state = 'taunting';
+        const clip = tauntGestureClip(name, { ...this.pose }, POSES[this.idlePose] ?? POSES.idle);
+        runtime.register(clip);
+        this._playPerformance(clip);
     }
 
     // ?light=v1 strut: real steps on the walk gait (feet planted, knees from the leg IK) at a proud, slow pace, upper body from

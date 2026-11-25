@@ -32,7 +32,7 @@ test('walking presentation relaxes guard without writing into authored poses',()
 
 test('walking trial leaves running and authored clip gait parameters unchanged',()=>{
     const config=search=>{globalThis.location={search};try{return gaitV2Config();}finally{delete globalThis.location;}};
-    const candidate=config('?walk=v1'),baseline=config('');
+    const candidate=config('?walk=v1'),baseline=config('?walk=off');
     const actor=g=>Object.assign(Object.create(Wrestler.prototype),{_gaitV2:g,state:'standing',_heightScale:.8});
     const a=actor(candidate),b=actor(baseline);a.rigId=b.rigId='george-roster-v1';
     assert.notEqual(a._gaitParamsAt(0).STRIDE,b._gaitParamsAt(0).STRIDE);

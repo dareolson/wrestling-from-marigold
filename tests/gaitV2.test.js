@@ -29,13 +29,17 @@ test('config: on by default (promoted 2026-11-21), null for ?gait=off / other va
     assert.ok(withFlag('?scale=off', gaitV2Config), 'other params leave it on');
     assert.equal(withFlag('?gait=off', gaitV2Config), null);
     assert.equal(withFlag('?gait=v1', gaitV2Config), null);
-    const c = withFlag('?gait=v2', gaitV2Config);
+    const c = withFlag('?gait=v2&walk=off&run=off&arms=off&stance=off&readyArt=off', gaitV2Config); // the 2026-11-24 presentation layer off: base gait-v2 numbers
     assert.equal(c.leanWalk, GAIT_LEAN.walk); assert.equal(c.leanRun, GAIT_LEAN.run); assert.equal(c.knee, GAIT_V2_DEFAULTS.knee); assert.equal(c.stride, GAIT_V2_DEFAULTS.stride);
     assert.equal(GAIT_V2_DEFAULTS.stride, 1.3); assert.equal(GAIT_V2_DEFAULTS.knee, 0.1); // column D
-    const k = withFlag('?gait=v2&gaitStride=1.3&gaitKnee=0.1&leanWalk=0.2&leanRun=0.3', gaitV2Config);
+    const k = withFlag('?gait=v2&gaitStride=1.3&gaitKnee=0.1&leanWalk=0.2&leanRun=0.3&walk=off&run=off&arms=off&stance=off&readyArt=off', gaitV2Config);
     assert.equal(k.params.STRIDE, GAIT.STRIDE * 1.3);
     assert.ok(Math.abs(k.freq - GAIT.STANCE * TAU / (GAIT.STRIDE * 1.3)) < 1e-12, 'WALK_FREQ re-derived from the stride');
     assert.equal(k.knee, 0.1); assert.equal(k.leanWalk, 0.2); assert.equal(k.leanRun, 0.3);
+    // 2026-11-24: walk/run/arms/stance/readyArt promoted; each `=off` restores the old presentation.
+    const on = withFlag('', gaitV2Config), off = withFlag('?x=1'+'&walk=off&run=off&arms=off&stance=off&readyArt=off', gaitV2Config);
+    assert.deepEqual([on.walkTrial, on.runTrial, on.armTrial, on.stanceTrial, on.readyArt], [true, true, true, true, 'v2']);
+    assert.deepEqual([off.walkTrial, off.runTrial, off.armTrial, off.stanceTrial, off.readyArt], [false, false, false, false, false]);
 });
 
 // A planted foot's world x = body x + facing * fx * s_draw; over a stance it must not move.
@@ -113,7 +117,7 @@ test('a clip retreat uses distance-driven walking and cannot keep driving the le
 });
 
 test('lean: walk bend = leanWalk x moveBlend, run bend = leanRun, knee adds crouch; this.pose is never touched', () => {
-    const q = '?gait=v2';
+    const q = '?gait=v2&walk=off&run=off&arms=off&stance=off&readyArt=off'; // presentation layer (walk/run/arms/stance, 2026-11-24) off: base gait-v2 lean
     const { w, out } = drawn(q, { moveBlend: 1 });
     const before = structuredClone(w.pose);
     w.draw();

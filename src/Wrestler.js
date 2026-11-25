@@ -193,10 +193,13 @@ export function gaitV2Config() {
     const num = (name, d) => { const v = parseFloat(q.get(name)); return Number.isFinite(v) ? v : d; };
     const stride = num('gaitStride', GAIT_V2_DEFAULTS.stride);
     const params = { STRIDE: GAIT.STRIDE * stride, STANCE: GAIT.STANCE, LIFT: GAIT.LIFT };
-    const baseWalk={...params},walkTrial=q.get('walk')==='v1',runTrial=q.get('run')==='v1'&&q.get('runGait')!=='off';
+    const baseWalk={...params},walkTrial=q.get('walk')!=='off',runTrial=q.get('run')!=='off'&&q.get('runGait')!=='off';
+    // Promoted 2026-11-24 (Derek: "get the movement changes in place"): walk/run/arms/stance/readyArt are default-on;
+    // `?walk=off`, `?run=off`, `?arms=off`, `?stance=off`, `?readyArt=off` give the old presentation. readyArt picks George's
+    // final relaxed pair (v2); `cupped`/`v1` stay selectable. Other rigs have no ready art and keep their own forearms.
     if(walkTrial){params.STRIDE*=1.1;params.STANCE=.60;params.LIFT=18;params.walkWeight=1;}
     return { stride, knee: num('gaitKnee', GAIT_V2_DEFAULTS.knee), leanWalk: num('leanWalk', GAIT_LEAN.walk), leanRun: num('leanRun', runTrial ? .14 : GAIT_LEAN.run),
-        params,baseWalk,freq: params.STANCE * Math.PI * 2 / params.STRIDE,walkTrial,runTrial,armTrial:q.get('arms')==='v1',stanceTrial:q.get('stance')==='v1',readyArt:['v2','cupped'].includes(q.get('readyArt'))?q.get('readyArt'):q.get('readyArt')==='v1',stanceMotion:q.get('guardMotion')!=='off',
+        params,baseWalk,freq: params.STANCE * Math.PI * 2 / params.STRIDE,walkTrial,runTrial,armTrial:q.get('arms')!=='off',stanceTrial:q.get('stance')!=='off',readyArt:q.get('readyArt')==='off'?false:q.get('readyArt')==='cupped'?'cupped':q.get('readyArt')==='v1'?true:'v2',stanceMotion:q.get('guardMotion')!=='off',
         run: { on: q.get('runGait') !== 'off', speed: num('runSpeed', RUN_SPEED), stance: num('runStance', runTrial ? .38 : RUN_GAIT.STANCE), cadence: num('runCadence', RUN_GAIT.CADENCE),
             stride: num('runStride', 1), lift: num('runLift', runTrial?30:RUN_GAIT.LIFT), hipBase: runTrial?2:RUN_GAIT.HIP_BASE, hipDrop: runTrial?5:RUN_GAIT.HIP_DROP } };
 }

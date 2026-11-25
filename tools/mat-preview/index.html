@@ -21,7 +21,7 @@ const $=id=>document.getElementById(id), frame=$('game');let loaded='',timer,bus
 for(const m of MOVES)$('move').add(new Option(m[3],m[0]));
 for(const id of ['att','def'])for(const [i,r] of RIGS.entries())$(id).add(new Option(['Lou','George','Kowalski','Guido'][i],r));
 const query=new URLSearchParams(location.search);
-$('move').value=query.get('move')||'bodyScissors';if(!$('move').value)$('move').value='bodyScissors';
+$('move').value=query.get('move')||'wristlockHammerlock';if(!$('move').value)$('move').value=$('move').options[0].value;
 $('att').value=query.get('att')||($('move').value==='indianDeathlock'?'george-roster-v1':RIGS[0]);
 $('def').value=query.get('def')||($('move').value==='indianDeathlock'?RIGS[0]:'george-roster-v1');
 async function replay(){clearTimeout(timer);if(busy)return;busy=true;try{

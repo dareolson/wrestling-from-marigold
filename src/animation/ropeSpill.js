@@ -14,12 +14,14 @@ export const SPILL = Object.freeze({
     // len = torso ink length, mid = torso ink mid-height above the root's row (negative = up the screen), head = root to the head ink's far edge (lying on his back, fall),
     // headTop = the head ink's top edge above the root's row
     rig: Object.freeze({
-        default: Object.freeze({ supine: 80, thrown: 70, prone: 82, len: 92, midSupine: -8, midProne: -14, head: 115, headTopSupine: -32, headTopProne: -32 }),
-        'george-roster-v1': Object.freeze({ supine: 82, thrown: 72, prone: 84, len: 93, midSupine: -10, midProne: -14, head: 121, headTopSupine: -32, headTopProne: -38 }),
-        'thesz-procreate-v1': Object.freeze({ supine: 78, thrown: 67, prone: 80, len: 90, midSupine: -5, midProne: -14, head: 109, headTopSupine: -31, headTopProne: -27 }),
+        default: Object.freeze({ reach: Object.freeze({ supine: 121, prone: 121 }), supine: 80, thrown: 70, prone: 82, len: 92, midSupine: -8, midProne: -14, head: 115, headTopSupine: -32, headTopProne: -32 }),
+        'george-roster-v1': Object.freeze({ reach: Object.freeze({ supine: 121, prone: 120 }), supine: 78, thrown: 67, prone: 80, len: 93, midSupine: -10, midProne: -14, head: 120, headTopSupine: -32, headTopProne: -38 }),
+        'thesz-procreate-v1': Object.freeze({ reach: Object.freeze({ supine: 114, prone: 114 }), supine: 82, thrown: 72, prone: 84, len: 90, midSupine: -5, midProne: -14, head: 114, headTopSupine: -31, headTopProne: -27 }),
     }),
 });
 const rigOf = rig => SPILL.rig[rig] ?? SPILL.rig.default;
+/** The longest any head / torso ink pixel reaches from the root along the head's direction in the whole knockdown window (landing, sells, get-up), px at s = 1: TS.6b `reach`, measured per rig (rope probe --catchscan, REACH=1). */
+export const reachOf = (rig, lying) => rigOf(rig).reach[lying === 'prone' ? 'prone' : 'supine'];
 export const spillExt = (rig, lying, thrown = false) => rigOf(rig)[lying === 'prone' ? 'prone' : thrown ? 'thrown' : 'supine'];
 /** +1 = toward the right wall. On his back the head lies away from his facing, face down it lies toward it. */
 export const spillHeadDir = (lying, facing) => (lying === 'prone' ? 1 : -1) * (facing || 1);
@@ -61,26 +63,44 @@ export function spillBack({ x, y, s = 1, wall, lying, rig, bounds, thrown = fals
     const want = head - out + SPILL.clear;
     return want > dist ? { dx: -(want - dist) * s * dir, dur: SPILL.backDur } : null;
 }
-// TS.6: the rope catches him. A knockdown whose head or torso ink reaches the drawn bottom strand is thrown back toward the middle by one small hop and ends `SPILL.clear` px inside it.
+// TS.6 / TS.6b: the rope catches him. A knockdown whose head or torso ink reaches the drawn bottom strand AT HIS DEPTH is stopped there (the fall's travel toward the wall ends at the first ink pixel on the
+// strand) and thrown back by one small hop that leaves his whole head inside it for the landing, the sells and the get-up.
 export const CATCH = Object.freeze({
     lift: 14,     // s = 1 px: the hop's peak height
     minDx: 10,    // s = 1 px: the least the bounce carries him, so even a graze reads as a bounce
     dur: 0.45,    // s, the one hop
-    extra: 16,    // s = 1 px: carried past the line it was measured to, so the landing's settle, the sells and the rise stay inside it
-    near: 130,    // s = 1 px: ink is only measured within this of the plane
+    extra: 6,     // s = 1 px: carried past the measured reach + clear, so the strand's own bow and the pose's small swings stay inside it
+    near: 140,    // s = 1 px: ink is only measured within this of the plane (the longest lying reach is 121)
+    rows: 14,     // px: the strand's rows at his depth are widened by this: its drawn thickness and the kick, bow and his own hop lift between the frame it was read on and the one drawn (the probe counts only 4)
+    depth: 18,    // s = 1 px: one body depth (the shadow ellipse's half height) either side of his root's row
 });
 /**
- * The bounce that leaves his whole head inside the drawn strand (spillBack's line, at the landed pose's reach): { dx (world px, signed, away from the wall), lift (world px), dur, wall }, or
- * null when he already lies inside. `over` (s = 1 px): the ink's measured overshoot past the strand, when the fall measures it before the tables say so.
+ * The bottom strand at his depth from its drawn points `pts` (near corner .. far corner, evenly in t; the drawn strand, bow and sway included): { xs, ys, rows } where (xs, ys) is its point at his
+ * root's ground row `y` and `rows` is how far its rows reach over one body depth either side of it, plus `CATCH.rows`. Null without points.
  */
-export function catchPlan({ x, y, s = 1, facing = 1, lying, rig, bounds, thrown = false, over = 0 }) {
-    if (lying !== 'supine' && lying !== 'prone') return null;
-    const dir = spillHeadDir(lying, facing), back = spillBack({ x, y, s, wall: dir > 0 ? 'R' : 'L', lying, rig, bounds, thrown });
-    const base = Math.max(back ? Math.abs(back.dx) / s : 0, over > 0 ? over + SPILL.clear : 0);
-    if (base <= 0) return null;
-    return { dx: -dir * Math.max(base + CATCH.extra, CATCH.minDx) * s, lift: CATCH.lift * s, dur: CATCH.dur, wall: dir > 0 ? 'R' : 'L' };
+export function strandAtDepth(pts, y, s = 1) {
+    if (!pts || pts.length < 2) return null;
+    const span = RING.nearLeft.y - RING.farLeft.y, at = (t) => { const k = Math.max(0, Math.min(1, t)) * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(k)), q = k - i; return { x: pts[i].x + (pts[i + 1].x - pts[i].x) * q, y: pts[i].y + (pts[i + 1].y - pts[i].y) * q }; };
+    const t = (RING.nearLeft.y - y) / span, dt = CATCH.depth * s / span, c = at(t), a = at(t - dt), b = at(t + dt);
+    return { xs: c.x, ys: c.y, rows: Math.abs(b.y - a.y) / 2 + CATCH.rows };
 }
-/** How far (px at s = 1, + = crossing) a part's ink box passes the drawn bottom strand on the side `dir`, read at the box's top row (the strand slants up the screen). */
-export const strandOver = (ink, dir, s = 1) => (dir < 0 ? strandX(ink.minY, -1) - ink.minX : ink.maxX - strandX(ink.minY, 1)) / s;
-/** The rope-break test for a pin, sleeper or headlock on `w`: at the wall as before, or lying spilled under it. */
+/** The strand at his depth from the rest line when the drawn points are not to hand (tests). */
+export function strandRest(y, dir, s = 1) {
+    const r = RING.ropes[0], span = RING.nearLeft.y - RING.farLeft.y, t = (RING.nearLeft.y - y) / span, row = (u) => r.nearY - (r.nearY - r.farY) * u, dt = CATCH.depth * s / span;
+    return { xs: strandX(row(t), dir), ys: row(t), rows: Math.abs(row(t + dt) - row(t - dt)) / 2 + CATCH.rows };
+}
+/**
+ * The hop at the first ink on the strand: { dx (world px, signed, away from the wall), lift (world px), dur, wall } or null when the pose's longest reach already lies inside it.
+ * `dist` (s = 1 px): the root's distance to the strand's x now; the hop ends with the rig's longest lying reach plus SPILL.clear plus CATCH.extra inside it.
+ */
+export function catchPlan({ s = 1, facing = 1, lying, rig, dist, wallDir = null, held = false }) {
+    if (lying !== 'supine' && lying !== 'prone') return null;
+    const head = spillHeadDir(lying, facing), dir = wallDir ?? head;
+    // the measured reach is along the head's direction; with the head away from the wall (legs toward it) the torso's length is the reach he can sweep toward it (rising); in a throw's clip the facing is not final: the longer
+    const reach = dir === head && !held ? reachOf(rig, lying) : Math.max(held ? reachOf(rig, lying) : 0, rigOf(rig).len);
+    const want = reach + SPILL.clear + CATCH.extra, base = want - dist;
+    if (base <= 0) return null;
+    return { dx: -dir * Math.max(base, CATCH.minDx) * s, lift: CATCH.lift * s, dur: CATCH.dur, wall: dir > 0 ? 'R' : 'L' };
+}
+/** The rope break test for a pin, sleeper or headlock on `w`: at the wall as before, or lying spilled under it. */
 export function spillAtRopes({ x, s = 1, bounds, spilled = false }) { return spilled || x <= bounds.left + 30 * s || x >= bounds.right - 30 * s; }

@@ -234,6 +234,7 @@ const INIT = (cfg) => {
         // the attacker toward the ring centre of the defender, who has his back to the wall; wall = 'FL' | 'FR' (far corners) | 'L' | 'R' (side walls, mid depth)
         const dir = cfg.wall.endsWith('L') ? -1 : 1, y = cfg.wall === 'N' ? 432 : cfg.wall.startsWith('F') ? 272 : 350, b = bounds(y);
         d.y = y; d.x = cfg.wall === 'N' ? 480 : (dir < 0 ? b.left : b.right) - dir * 30; a.y = y; a.x = d.x - dir * 70 * s; a.facing = -dir; d.facing = dir;   // wall 'N' = beside the near wall (T1.6)
+        if (cfg.move === 'suplex' && cfg.backToWall) { const pl = dir < 0 ? b.left : b.right; a.x = pl - dir * (cfg.aDist ?? 40) * s; d.x = a.x - dir * 70 * s; a.facing = -dir; d.facing = dir; }   // TS.6b: the attacker's back to the wall, the man he takes over lands behind him, beside it
         R.max = 480; R.called = false;
         R.script = () => {
             if (R.f === 3) {
@@ -579,7 +580,7 @@ if (process.argv.includes('--spillfilm')) {
                         d.y = a.y = y; d.x = (dir < 0 ? b.left : b.right) - dir * 50 * d.s; d.facing = -dir; a.x = d.x + d.facing * 70 * d.s; a.facing = d.x > a.x ? 1 : -1; d.wear = 70; d.stamina = 40;
                         d._strikeReact(a, 'jab', 'sellHead', 150, true);
                     }, { wall }); max = 480;
-                } else await h.page.evaluate(INIT, { kind: 'move', move, wall });
+                } else await h.page.evaluate(INIT, { kind: 'move', move, wall, backToWall: true, aDist: Number(process.env.ADIST ?? 40) });
                 const clip = { x: info.box.x + (wall === 'L' ? 0 : info.box.w * 0.4), y: info.box.y + info.box.h * 0.3, width: info.box.w * 0.6, height: info.box.h * 0.6 };
                 let n = 0;
                 for (let f = 0; f < max; f++) {
@@ -599,7 +600,26 @@ const CATCHSCAN = async (page) => page.evaluate(async () => {
     const bounds = (y) => { const t = (RING.nearLeft.y - y) / (RING.nearLeft.y - RING.farLeft.y); return { left: RING.nearLeft.x + (RING.farLeft.x - RING.nearLeft.x) * t, right: RING.nearRight.x + (RING.farRight.x - RING.nearRight.x) * t }; };
     window.__catch = []; window.__trace = true; const cur = new Map(), LOW = new Set(['falling', 'down', 'possum', 'gettingUp', 'risingUp', 'pinned']); let f = 0;
     const strandOf = (wall) => sc._sidePtsDebug?.pts?.[0]?.[wall === 'L' ? -1 : 1];
-    const inBox = (pa, k) => { if (!k || !pa) return 0; let n = 0; for (let i = 0; i < pa.length - 1; i++) { const a0 = pa[i], b0 = pa[i + 1], L = Math.max(1, Math.ceil(Math.hypot(b0.x - a0.x, b0.y - a0.y))); for (let q = 0; q < L; q++) { const x = a0.x + (b0.x - a0.x) * q / L, y = a0.y + (b0.y - a0.y) * q / L; if (x >= k.minX && x <= k.maxX && y >= k.minY && y <= k.maxY) n++; } } return n; };
+    const inBox = (pa, k) => { if (!k || !pa) return 0; let n = 0; for (let i = 0; i < pa.length - 1; i++) { const a0 = pa[i], b0 = pa[i + 1], L = Math.max(1, Math.ceil(Math.hypot(b0.x - a0.x, b0.y - a0.y))); for (let q = 0; q < L; q++) { const x = a0.x + (b0.x - a0.x) * q / L, y = a0.y + (b0.y - a0.y) * q / L; if (x >= k.minX && x <= k.maxX && y >= k.minY && y <= k.maxY) n++; } } return n; };   // TS.6's metric, kept for comparison only
+    // TS.6b metric: the bottom strand AT HIS DEPTH (the drawn strand between his root's ground row +- 18 s, the shadow's half height), against the part's INK PIXELS (alpha >= 128, through the world matrix).
+    // A pixel crosses when it lies past the strand's drawn x at his depth (away from the ring) by > 1 px AND on the strand's rows there (its drawn row +- one body depth's slant +- 4 px). Upright, rising or lying inside it: 0; lying past it but below the strand's rows (under) or above them (over): 0.
+    const BAND = 4, alphaCache = new Map();
+    const alphaOf = (f) => { const k = (f.texture?.key ?? '') + '|' + f.name; let v = alphaCache.get(k); if (v) return v; const w = f.cutWidth, h = f.cutHeight, c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(f.source.image, f.cutX, f.cutY, w, h, 0, 0, w, h); v = { w, h, d: x.getImageData(0, 0, w, h).data }; alphaCache.set(k, v); return v; };
+    const inkPx = (im, step) => { const f = im.frame, out = []; if (!f?.source?.image) return out; const A = alphaOf(f), m = im.getWorldTransformMatrix(), ox = im.displayOriginX, oy = im.displayOriginY, ox0 = f.x ?? 0, oy0 = f.y ?? 0;
+        for (let j = 0; j < A.h; j += step) for (let i = 0; i < A.w; i += step) if (A.d[(j * A.w + i) * 4 + 3] >= 128) { const px = (im.flipX ? f.realWidth - (i + ox0) : i + ox0) - ox, py = (im.flipY ? f.realHeight - (j + oy0) : j + oy0) - oy; out.push([m.a * px + m.c * py + m.tx, m.b * px + m.d * py + m.ty]); }
+        return out; };
+    const polyAt = (pa, t) => { const k = Math.max(0, Math.min(1, t)) * (pa.length - 1), i = Math.min(pa.length - 2, Math.floor(k)), q = k - i; return { x: pa[i].x + (pa[i + 1].x - pa[i].x) * q, y: pa[i].y + (pa[i + 1].y - pa[i].y) * q }; };
+    // the strand at his depth: { A, B } (drawn points at ground t -+ 18 s) and the line's x at a screen row
+    const strandAt = (w, wall) => { const pa = strandOf(wall); if (!pa) return null; const span = RING.nearLeft.y - RING.farLeft.y, t = (RING.nearLeft.y - w.y) / span, dt = 18 * w.s / span, A = polyAt(pa, t - dt), B = polyAt(pa, t + dt); return { A, B, xs: polyAt(pa, t).x, ys: polyAt(pa, t).y, rows: Math.abs(B.y - A.y) / 2 + 4, xl: (y) => A.x + (B.x - A.x) * (y - A.y) / ((B.y - A.y) || 1) }; };
+    const inkVs = (w, wall, parts, step) => {   // { cross: px count crossing, margin: min px inside the line (+ inside), n }
+        const S = strandAt(w, wall), dir = wall === 'L' ? -1 : 1; if (!S) return { cross: 0, margin: null, n: 0 };
+        let cross = 0, margin = Infinity, n = 0; const ex = S.B.x - S.A.x, ey = S.B.y - S.A.y, L2 = ex * ex + ey * ey || 1;
+        for (const im of parts) { if (!im?.visible) continue; for (const [x, y] of inkPx(im, step)) { n++; const o = dir * (x - S.xs); margin = Math.min(margin, -o);   // o > 0: past the strand's x at his depth; margin: + inside
+            if (o > 1 && Math.abs(y - S.ys) <= S.rows) cross++; } }
+        return { cross, margin: n ? margin : null, n };
+    };
+    window.__inkVs = inkVs; window.__strandAt = strandAt;
+    const allParts = (w) => (w.skeleton._parts ?? []);
     sc.events.off('postupdate', window.__catchTick);
     window.__catchTick = () => {
         f++;
@@ -607,20 +627,24 @@ const CATCHSCAN = async (page) => page.evaluate(async () => {
             const o = cur.get(n);
             if (LOW.has(w.state)) {
                 const b = bounds(w.y), wall = w.x - b.left < b.right - w.x ? 'L' : 'R', near = Math.min(w.x - b.left, b.right - w.x) / w.s;
-                const r = o ?? (() => { w._catchLog = null; const q = { run: window.__scanRun, n, rig: w.rigId, wall, f0: f, x0: w.x, s: w.s, cross: 0, crossFrames: 0, caught: null, margin: null, minMarginRise: null, nearMin: 999 }; cur.set(n, q); return q; })();
+                const r = o ?? (() => { const q = { run: window.__scanRun, n, rig: w.rigId, wall, f0: f, x0: w.x, s: w.s, cross: 0, crossFrames: 0, caught: null, margin: null, minMarginRise: null, nearMin: 999 }; cur.set(n, q); return q; })();
                 r.nearMin = Math.min(r.nearMin, near);
-                if (w._catchLog && !r.caught) r.caught = { frame: f - r.f0, state: w._catchLog.state, dx: +w._catchLog.dx.toFixed(1), lift: +w._catchLog.lift.toFixed(1), over: +w._catchLog.over.toFixed(1) };
-                const hk = w.skeleton.head?.visible ? partInkX(w.skeleton.head) : null, tk = w.skeleton.torso?.visible ? partInkX(w.skeleton.torso) : null, pa = strandOf(wall);
-                const c = inBox(pa, hk) + inBox(pa, tk);
+                if (w._catchLog && w._catchLog !== w._catchSeen && !r.caught) r.caught = { ...w._catchLog, frame: f - r.f0 }; if (w._catchLog && r.caught && w._catchLog !== w._catchSeen) { r.caught.stop = +w._catchLog.stop.toFixed(1); r.caught.late = +w._catchLog.late.toFixed(1); r.caught.hopFrame = w._catchLog.hopFrame; }
+                const near2 = Math.min(w.x - b.left, b.right - w.x) / w.s, hk = w.skeleton.head?.visible ? partInkX(w.skeleton.head) : null, tk = w.skeleton.torso?.visible ? partInkX(w.skeleton.torso) : null, pa = strandOf(wall);
+                const cb = inBox(pa, hk) + inBox(pa, tk); if (cb > 0) r.boxFrames = (r.boxFrames ?? 0) + 1;
+                let c = 0, mg = 999;
+                if (near2 < 230) { const v = inkVs(w, wall, [w.skeleton.head, w.skeleton.torso], 2); c = v.cross; const m = inkVs(w, wall, allParts(w), 4).margin; mg = m ?? 999; }
+                if (window.__reach) {   // TS.6b rows: how far head / torso ink reaches from the root along the head's direction (px at s = 1), by phase; needs no wall (run mid-ring with the spill off)
+                    const dW = (w.lying === 'prone' ? 1 : -1) * (w.facing || 1), ph = w.state === 'falling' || w.state === 'risingUp' ? 'fall' : w.state === 'gettingUp' ? 'rise' : 'down', R = (parts) => { let m = -999; for (const im of parts) if (im?.visible) for (const [x] of inkPx(im, 3)) m = Math.max(m, dW * (x - w.x) / w.s); return m; };
+                    const rt = R([w.skeleton.torso]), rh = R([w.skeleton.head]); r.reach ??= { fall: -999, down: -999, rise: -999, head: -999, torso: -999, landed: null }; r.reach.torso = Math.max(r.reach.torso, rt);
+                    r.reach[ph] = Math.max(r.reach[ph], Math.max(rt, rh)); r.reach.head = Math.max(r.reach.head, rh); if (ph === 'down' && r.reach.landed == null) r.reach.landed = +Math.max(rt, rh).toFixed(1); r.lying = w.lying;
+                }
                 if (c > 0) { r.crossFrames++; r.cross = Math.max(r.cross, c); (r.crossAt ??= []).push([f - r.f0, w.state]); }
-                // margin inside the strand (px, + = inside) of the head / torso box, read at its top row
-                const dir = wall === 'L' ? -1 : 1, sx = (k) => { const x = (y) => { const a = dir < 0 ? RING.nearLeft.x : RING.nearRight.x, bb = dir < 0 ? RING.farLeft.x : RING.farRight.x, rr = RING.ropes[0], t = (rr.nearY - y) / (rr.nearY - rr.farY); return a + (bb - a) * t; }; return dir < 0 ? k.minX - x(k.minY) : x(k.minY) - k.maxX; };
-                const mg = Math.min(...[hk, tk].filter(Boolean).map(sx));
                 r.ph ??= {}; { const k = w.state === 'falling' || w.state === 'risingUp' ? 'fall' : w.state === 'gettingUp' ? 'rise' : 'down'; r.ph[k] = (r.ph[k] ?? 0) + (c > 0 ? 1 : 0); }
                 if (window.__trace && (f - r.f0) % 6 === 0 && (f - r.f0) < 400) (r.trace ??= []).push([f - r.f0, w.state, +w.x.toFixed(0), w._catch ? +w._catch.t.toFixed(2) : null, +(w._catchLift || 0).toFixed(1), +mg.toFixed(0), c]);
                 if (w.state === 'down' && !w._catch && !w._landing) r.margin = r.margin == null ? +mg.toFixed(1) : Math.min(r.margin, +mg.toFixed(1));
                 if (w.state === 'gettingUp') r.minMarginRise = r.minMarginRise == null ? +mg.toFixed(1) : Math.min(r.minMarginRise, +mg.toFixed(1));
-            } else if (o) { o.frames = f - o.f0; window.__catch.push(o); cur.delete(n); }
+            } else if (o) { o.frames = f - o.f0; window.__catch.push(o); cur.delete(n); w._catchSeen = w._catchLog; }
         }
     };
     sc.events.on('postupdate', window.__catchTick);
@@ -633,19 +657,19 @@ if (process.argv.includes('--catchscan')) {
         const { h } = await launchWith(p1, p2, false);
         try {
             const rig = p1 === LOU ? 'george' : 'lou';
-            await CATCHSCAN(h.page);
-            for (const move of ['strike', 'bodySlam', 'suplex']) for (const wall of ['L', 'R']) {
+            await CATCHSCAN(h.page); if (process.env.REACH) await h.page.evaluate(() => { window.__reach = true; });
+            for (const move of (process.env.MOVES ?? 'strike,bodySlam,suplex').split(',')) for (const wall of ['L', 'R']) {
                 await h.page.evaluate((l) => { window.__scanRun = l; window.__catch.length = 0; }, `${move}-${wall}-${rig}`);
                 let max = 520;
                 if (move === 'strike') {
                     await h.page.evaluate(INIT, { kind: 'ai' });
-                    await h.page.evaluate(({ wall }) => {
+                    await h.page.evaluate(({ wall, prone }) => {
                         const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2, RING = window.__RING, y = 350, t = (RING.nearLeft.y - y) / (RING.nearLeft.y - RING.farLeft.y);
                         const b = { left: RING.nearLeft.x + (RING.farLeft.x - RING.nearLeft.x) * t, right: RING.nearRight.x + (RING.farRight.x - RING.nearRight.x) * t }, dir = wall === 'L' ? -1 : 1;
-                        d.y = a.y = y; d.x = (dir < 0 ? b.left : b.right) - dir * 50 * d.s; d.facing = -dir; a.x = d.x + d.facing * 70 * d.s; a.facing = d.x > a.x ? 1 : -1; d.wear = 70; d.stamina = 40;
+                        d.y = a.y = y; d.x = (dir < 0 ? b.left : b.right) - dir * 50 * d.s; d.facing = prone ? dir : -dir; a.x = d.x + (prone ? -d.facing : d.facing) * 70 * d.s; a.facing = d.x > a.x ? 1 : -1; d.wear = 70; d.stamina = 40;
                         d._strikeReact(a, 'jab', 'sellHead', 150, true);
-                    }, { wall }); max = 480;
-                } else await h.page.evaluate(INIT, { kind: 'move', move, wall });
+                    }, { wall, prone: process.env.PRONE === '1' }); max = 480;
+                } else await h.page.evaluate(INIT, { kind: 'move', move, wall, backToWall: true, aDist: Number(process.env.ADIST ?? 40) });
                 for (let f = 0; f < max; f++) await h.page.evaluate(() => { const R = window.__run; R.script(); window.__T += 1000 / 60; window.__WFM_GAME.step(window.__T, 1000 / 60); R.f++; });
                 const got = await h.page.evaluate(() => window.__catch.filter(r => r.n === 2)); rows.push(...got);
                 if (process.env.TRACE) console.log(JSON.stringify(got[0]?.trace));
@@ -664,6 +688,43 @@ if (process.argv.includes('--catchscan')) {
         } finally { await h.close(); }
     }
     mkdirSync(outDir, { recursive: true }); writeFileSync(join(outDir, 'catchscan.json'), JSON.stringify({ sec: SEC, cases: rows, soak }, null, 1)); process.exit(0);
+}
+// TS.6b --catchcontrol: the metric's two controls, each beside both side walls, both rigs: (1) a man standing upright with his root 22 s inside the plane (the clamp's margin), (2) a man rising there
+// (knocked down mid-ring by a jab, then, through the whole get-up, shifted each frame so his whole ink sits 4 px inside the strand: the tightest inside). Both must read 0 crossing px. A frame of each with the strand AT HIS DEPTH marked (red) goes to <outDir>/control/.
+if (process.argv.includes('--catchcontrol')) {
+    const rows = [];
+    process.env.SPILLQS = process.env.SPILL === 'v1' ? '&ropeSpill=v1' : '';
+    for (const [p1, p2] of [[LOU, GEORGE], [GEORGE, LOU]]) {
+        const { h, info } = await launchWith(p1, p2, false);
+        try {
+            const rig = p1 === LOU ? 'george' : 'lou';
+            await CATCHSCAN(h.page);
+            await h.page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; window.__mark = sc.add.graphics().setDepth(1000); });
+            const step = (n) => h.page.evaluate((n) => { for (let i = 0; i < n; i++) { const R = window.__run; R.script(); window.__T += 1000 / 60; window.__WFM_GAME.step(window.__T, 1000 / 60); R.f++; } }, n);
+            const place = (wall) => h.page.evaluate(({ wall }) => { const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2, RING = window.__RING, y = 350, t = (RING.nearLeft.y - y) / (RING.nearLeft.y - RING.farLeft.y), dir = wall === 'L' ? -1 : 1;
+                const b = { left: RING.nearLeft.x + (RING.farLeft.x - RING.nearLeft.x) * t, right: RING.nearRight.x + (RING.farRight.x - RING.nearRight.x) * t }; d.y = a.y = y; d.x = (dir < 0 ? b.left : b.right) - dir * 22 * d.s; return true; }, { wall });
+            const hold = (wall) => h.page.evaluate(({ wall }) => { const sc = window.__WFM_GAME.scene.scenes[0], d = sc.w2, dir = wall === 'L' ? -1 : 1, m = window.__inkVs(d, wall, d.skeleton._parts, 4).margin; if (m != null) d.x += dir * (m - 4); d.y = sc.w1.y = 350; return true; }, { wall });   // the rise held with his whole ink 4 px inside the strand
+            const read = (wall) => h.page.evaluate(({ wall }) => { const sc = window.__WFM_GAME.scene.scenes[0], d = sc.w2, v = window.__inkVs(d, wall, [d.skeleton.head, d.skeleton.torso], 1), S = window.__strandAt(d, wall); const g = window.__mark; g.clear(); g.lineStyle(3, 0xff2020, 1); g.beginPath(); g.moveTo(S.A.x, S.A.y); g.lineTo(S.B.x, S.B.y); g.strokePath(); g.fillStyle(0xffe000, 1); g.fillCircle(S.xs, S.ys, 4); g.lineStyle(1, 0xffe000, 1); g.beginPath(); g.moveTo(S.xs, S.ys - 120); g.lineTo(S.xs, S.ys + 120); g.strokePath(); return { state: d.state, cross: v.cross, n: v.n, margin: v.margin == null ? null : +v.margin.toFixed(1) }; }, { wall });
+            const shot = async (name, wall) => { await h.page.evaluate(() => { window.__T += 1000 / 60; window.__WFM_GAME.step(window.__T, 1000 / 60); }); const clip = { x: info.box.x + (wall === 'L' ? 0 : info.box.w * 0.4), y: info.box.y + info.box.h * 0.3, width: info.box.w * 0.6, height: info.box.h * 0.6 }; mkdirSync(join(outDir, 'control'), { recursive: true }); await h.page.screenshot({ path: join(outDir, 'control', name + '.png'), clip }); };
+            for (const wall of ['L', 'R']) {
+                for (const face of ['backToWall', 'facingWall']) {
+                    await h.page.evaluate(INIT, { kind: 'ai' }); await place(wall);
+                    await h.page.evaluate(({ wall, face }) => { const d = window.__WFM_GAME.scene.scenes[0].w2, dir = wall === 'L' ? -1 : 1; d.facing = face === 'backToWall' ? -dir : dir; }, { wall, face });
+                    let mx = 0, mn = 999; for (let i = 0; i < 90; i++) { await step(1); await place(wall); const r = await read(wall); mx = Math.max(mx, r.cross); if (r.margin != null) mn = Math.min(mn, r.margin); if (i === 45) await shot(`upright-${wall}-${rig}-${face}`, wall); }
+                    rows.push({ control: 'upright', wall, rig, face, maxCross: mx, minMargin: mn }); console.log(`[ropes] control upright ${wall} ${rig} ${face}: max crossing px ${mx}, min margin ${mn}`);
+                }
+                for (const face of ['backToWall', 'facingWall']) {
+                    await h.page.evaluate(INIT, { kind: 'ai' });
+                    await h.page.evaluate(({ wall, face }) => { const sc = window.__WFM_GAME.scene.scenes[0], a = sc.w1, d = sc.w2, RING = window.__RING, y = 350, t = (RING.nearLeft.y - y) / (RING.nearLeft.y - RING.farLeft.y), dir = wall === 'L' ? -1 : 1;
+                        const b = { left: RING.nearLeft.x + (RING.farLeft.x - RING.nearLeft.x) * t, right: RING.nearRight.x + (RING.farRight.x - RING.nearRight.x) * t }; d.y = a.y = y; d.x = (dir < 0 ? b.left : b.right) - dir * 260 * d.s; d.facing = face === 'backToWall' ? -dir : dir; a.x = d.x + d.facing * 70 * d.s; a.facing = d.x > a.x ? 1 : -1; d.wear = 70; d.stamina = 40; d._strikeReact(a, 'jab', 'sellHead', 150, true); }, { wall, face });
+                    let mx = 0, mn = 999, frames = 0, shotDone = false;
+                    for (let i = 0; i < 900; i++) { await step(1); const st = await h.page.evaluate(() => window.__WFM_GAME.scene.scenes[0].w2.state); if (st === 'gettingUp' || st === 'risingUp') { await hold(wall); frames++; const r = await read(wall); mx = Math.max(mx, r.cross); if (r.margin != null) mn = Math.min(mn, r.margin); if (!shotDone && frames === 12) { await shot(`rising-${wall}-${rig}-${face}`, wall); shotDone = true; } } else if (frames) break; }
+                    rows.push({ control: 'rising', wall, rig, face, frames, maxCross: mx, minMargin: mn }); console.log(`[ropes] control rising ${wall} ${rig} ${face}: ${frames} frames, max crossing px ${mx}, min margin ${mn}`);
+                }
+            }
+        } finally { await h.close(); }
+    }
+    mkdirSync(outDir, { recursive: true }); writeFileSync(join(outDir, 'catchcontrol.json'), JSON.stringify(rows, null, 1)); process.exit(0);
 }
 const filmRun = async (page, info, rig) => {   // run a again, one frame at a time, a clip of the far half at 30 fps (every other frame)
     const dir = join(outDir, 'film', rig); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });

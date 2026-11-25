@@ -31,3 +31,34 @@ export function partInkX(im) {
     }
     return { minX, maxX, minY, maxY };
 }
+
+// ?ropeSpill=v1 (PLAN_ROPES TS.6b): the part's INK PIXELS (alpha >= 128, through the world matrix) against the bottom strand at his depth. `S` is ropeSpill.strandAtDepth's { xs, ys, rows }.
+// Returns the furthest any ink pixel on the strand's rows (|y - ys| <= rows) lies past the strand's drawn x, in px along `dir` (+ = past it, away from the ring), or -Infinity when no ink is on those rows.
+const alphas = new Map();
+function alphaOf(frame) {
+    const key = (frame.texture?.key ?? '') + '|' + frame.name;
+    let a = alphas.get(key);
+    if (a) return a;
+    const w = frame.cutWidth, h = frame.cutHeight, cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    const cx = cv.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(frame.source.image, frame.cutX, frame.cutY, w, h, 0, 0, w, h);
+    a = { w, h, d: cx.getImageData(0, 0, w, h).data };
+    alphas.set(key, a);
+    return a;
+}
+export function inkPast(im, dir, S, step = 2) {
+    const f = im?.visible ? im.frame : null;
+    if (!f?.source?.image || !S) return -Infinity;
+    const A = alphaOf(f), m = im.getWorldTransformMatrix(), ox = im.displayOriginX, oy = im.displayOriginY, ox0 = f.x ?? 0, oy0 = f.y ?? 0;
+    let best = -Infinity;
+    for (let j = 0; j < A.h; j += step) for (let i = 0; i < A.w; i += step) {
+        if (A.d[(j * A.w + i) * 4 + 3] < 128) continue;
+        const px = (im.flipX ? f.realWidth - (i + ox0) : i + ox0) - ox, py = (im.flipY ? f.realHeight - (j + oy0) : j + oy0) - oy;
+        const y = m.b * px + m.d * py + m.ty;
+        if (Math.abs(y - S.ys) > S.rows) continue;
+        const o = dir * ((m.a * px + m.c * py + m.tx) - S.xs);
+        if (o > best) best = o;
+    }
+    return best;
+}

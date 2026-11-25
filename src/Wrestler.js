@@ -1,7 +1,7 @@
 import { impactMoveId } from './animation/impactMoves.js';
 import { RING, ringBoundsAtY, perspectiveScale, scaleCandidate, ropeSpillCandidate } from './constants.js';
-import { spillPlan, spillBack, spillHeadDir, catchPlan, strandOver, CATCH } from './animation/ropeSpill.js';
-import { partInkX } from './ropeInk.js';
+import { spillPlan, spillBack, spillHeadDir, catchPlan, strandAtDepth, strandRest, CATCH } from './animation/ropeSpill.js';
+import { inkPast } from './ropeInk.js';
 import Skeleton, { GAIT } from './Skeleton.js';
 import {readyStancePose} from './animation/wrestlingStance.js';
 import {walkPresentation,walkProfile} from './animation/walkPresentation.js';
@@ -999,7 +999,7 @@ export default class Wrestler {
     // across the ring.
     _applyStagedTransform(transform, staging) {
         const point = stagedWorldPoint(staging, transform);
-        this.x = point.x;
+        this.x = point.x + (this._catchArmed ? this._catchOff || 0 : 0);   // TS.6b: the rope's push rides the staged position
         this.y = point.y;
         // Ring bounds still win. A clip authored with a big lateral offset that
         // is started near the ropes gets clamped rather than staging a wrestler
@@ -1461,31 +1461,48 @@ export default class Wrestler {
         this._landing = { kind, intensity: this._pain?.severity || 0.6, vy: vy * (this.skeleton?._textureConfig?.falls?.hopScale ?? 1), t: 0, additive, tier };
     }
 
-    // ?ropeSpill=v1 (PLAN_ROPES TS.6): the rope catches him. A knockdown whose head or torso ink reaches the drawn bottom strand (measured each frame once he is near flat; the tables only set the floor
-    // of the bounce) is thrown back by one small hop that ends his whole head inside the strand; he stays there through the get-up. One catch per knockdown. The TS.5
-    // under-the-rope code below (_maybeSpill, _spillFallShift, _spillGetUp) stays, unused.
-    _catchWatch() {
-        if (this._catchDone || !ropeSpillCandidate() || !this.skeleton || (this.state !== 'falling' && !this._landing)) return;
-        if (this.state === 'falling' && this.fallProgress < 0.95) return;   // upright or mid-fall the ink box is tall: the strand's line is only valid against a body lying near flat
-        const lying = this.state === 'falling' ? Skeleton.FALLS[this._fallVariant]?.lands : this.lying;
-        if (lying !== 'supine' && lying !== 'prone') return;
-        const b = ringBoundsAtY(this.y), s = this.s || 1, dir = spillHeadDir(lying, this.facing || 1);
-        if ((dir > 0 ? b.right - this.x : this.x - b.left) > CATCH.near * s) return;
-        let over = 0;
-        for (const im of [this.skeleton.head, this.skeleton.torso]) { const k = im?.visible ? partInkX(im) : null; if (k) over = Math.max(over, strandOver(k, dir, s)); }
-        if (over > 0) this._startCatch({ lying, over });
-    }
-    _startCatch({ lying, over = 0, thrown = false }) {
-        const plan = catchPlan({ x: this.x, y: this.y, s: this.s, facing: this.facing || 1, lying, rig: this.rigId, bounds: ringBoundsAtY(this.y), thrown, over });
-        if (!plan) return;
-        this._catchDone = true;
-        this._catch = { dx: plan.dx, lift: plan.lift, dur: plan.dur, t: 0, u0: 0 };
-        this._catchKick = { wall: plan.wall, hard: Math.min(1.5, 0.6 + Math.abs(plan.dx) / (this.s || 1) / 80) };
-        this._catchLog = { t: this.scene?.time?.now ?? 0, dx: plan.dx / (this.s || 1), lift: plan.lift / (this.s || 1), over, state: this.state };
+    // ?ropeSpill=v1 (PLAN_ROPES TS.6b): the rope catches him. From the start of a knockdown (strike fall, or a throw that lands: slam, suplex) until he stands again, after every draw the head and torso INK
+    // is measured against the bottom strand at his depth (ropeInk.inkPast: pixels on the strand's rows past its drawn x). The first pixel on it fires the catch: the fall's travel toward the wall stops there
+    // (each frame he is pushed back by exactly what is past the strand, so no ink crosses), the strand is kicked, and one small hop throws him back so his longest lying reach ends inside it. One catch per
+    // knockdown. In a throw's clip the push rides the staged position (`_catchOff`); the hop starts when he leaves the clip. The TS.5 under-the-rope code below (_maybeSpill, _spillGetUp) stays, unused.
+    _catchGuard() {
+        if (!this._catchArmed || !ropeSpillCandidate() || !this.skeleton) return false;
+        const lying = this.state === 'falling' ? Skeleton.FALLS[this._fallVariant]?.lands : this.state === 'holding' || this.state === 'flipping' ? 'supine' : this.lying;   // a throw that lands leaves him on his back
+        if (lying !== 'supine' && lying !== 'prone') return false;
+        const b = ringBoundsAtY(this.y), s = this.s || 1, dir = this._catchDone && this._catchLog ? this._catchLog.wall : b.right - this.x < this.x - b.left ? 1 : -1;   // the nearer side wall (once caught, that wall), whichever way his head lies
+        if (!this._catchDone && (dir > 0 ? b.right - this.x : this.x - b.left) > CATCH.near * s) return false;   // the distance gate only spares the measure until the first catch
+        const S = strandAtDepth(this.scene?._sidePtsDebug?.pts?.[0]?.[dir], this.y, s) ?? strandRest(this.y, dir, s);
+        let past = -Infinity;
+        for (const im of [this.skeleton.head, this.skeleton.torso]) past = Math.max(past, inkPast(im, dir, S, 2));
+        if (past <= 0) return false;
+        if (!this._catchDone) {
+            const plan = catchPlan({ s, facing: this.facing || 1, lying, rig: this.rigId, dist: dir * (S.xs - this.x) / s, wallDir: dir, held: this.state === 'holding' });
+            this._catchDone = true;
+            this._catchKick = { wall: dir > 0 ? 'R' : 'L', hard: Math.min(1.5, 0.6 + (plan ? Math.abs(plan.dx) / s : 20) / 80) };
+            this._catchPlan = this.state === 'gettingUp' || this.state === 'risingUp' ? null : plan;   // touching only as he rises: the strand stops him, no hop mid-rise
+            this._catchLog = { wall: dir, frame: this._catchFrame ?? 0, state: this.state, progress: this.state === 'falling' ? +this.fallProgress.toFixed(3) : null, ink: +(past / s).toFixed(1), dx: plan ? +(Math.abs(plan.dx) / s).toFixed(1) : 0, lift: plan ? CATCH.lift : 0, stop: 0, late: 0 };
+        }
+        // the strand stops him: back by exactly what is past it (+ half a px so no pixel reads on it)
+        const push = -dir * (past + 0.5);
+        this.x += push; if (this._activeMove) this._catchOff = (this._catchOff || 0) + push;
+        const tgt = this._catch ?? this._catchPlan;   // what the strand pushed is part of the way the hop was to carry him: the hop's rest is that much less
+        if (tgt) tgt.dx = Math.sign(tgt.dx) * Math.max(0, Math.abs(tgt.dx) - Math.abs(push));
+        this._catchLog[this._catch || !this._catchPlan ? 'late' : 'stop'] += Math.abs(push) / s;
+        return true;
     }
     _tickCatch(dt) {
-        if (this.state !== 'falling' && this.state !== 'down' && this.state !== 'possum') { this._catchDone = false; this._catch = null; this._catchLift = 0; return; }
-        this._catchWatch();
+        this._catchFrame = (this._catchFrame ?? 0) + 1;
+        const on = this.state === 'falling' || this.state === 'flipping' || this.state === 'down' || this.state === 'possum' || this.state === 'gettingUp' || this.state === 'risingUp' || (this.state === 'holding' && this._catchArmed);
+        if (on && !this._catchArmed && ropeSpillCandidate()) { this._catchArmed = true; this._catchDone = false; this._catchOff = 0; }   // any other way down (flip, whip fall, a mat move's landing): guarded from here
+        if (!on) { this._catchArmed = false; this._catchDone = false; this._catch = null; this._catchPlan = null; this._catchLift = 0; this._catchOff = 0; this._catchFrame = 0; return; }
+        if (this._catchPlan && !this._catch && this.state !== 'holding') {
+            let p = this._catchPlan;
+            if (this._catchLog?.state === 'holding' && !this._catchLog.replanned) {   // a throw: the hop is sized where he landed, after the strand's pushes in the clip
+                const dir = this._catchLog.wall, s = this.s || 1, S = strandAtDepth(this.scene?._sidePtsDebug?.pts?.[0]?.[dir], this.y, s) ?? strandRest(this.y, dir, s);
+                p = catchPlan({ s, facing: this.facing || 1, lying: this.lying, rig: this.rigId, dist: dir * (S.xs - this.x) / s, wallDir: dir }) ?? { dx: -dir * CATCH.minDx * s, lift: CATCH.lift * s, dur: CATCH.dur };
+                this._catchLog.replanned = true; this._catchLog.dx = +(Math.abs(p.dx) / s).toFixed(1);
+            }
+            this._catch = { dx: p.dx, lift: p.lift, dur: p.dur, t: 0, u0: 0 }; this._catchPlan = null; if (this._catchLog) this._catchLog.hopFrame = this._catchFrame; }
         const c = this._catch;
         if (!c) return;
         c.t = Math.min(c.dur, c.t + dt);
@@ -3476,6 +3493,7 @@ export default class Wrestler {
 
         this.state       = 'holding';
         other.state      = 'holding';
+        if (landAtHit && ropeSpillCandidate()) { other._catchArmed = true; other._catchDone = false; other._catch = null; other._catchPlan = null; other._catchOff = 0; }   // TS.6b: a throw that lands can be caught on the way down
         if (faceToFace) other.facing = -this.facing; // face to face for the grab
         // Exempt from _orphanWatchdog like the hammerlock: the release is the
         // clip's end, not an Arena-tracked hold.
@@ -4948,6 +4966,7 @@ export default class Wrestler {
         this.state        = 'falling';
         this.fallProgress = 0;
         this._fallVariant = variant;
+        if (ropeSpillCandidate()) { this._catchArmed = true; this._catchDone = false; this._catch = null; this._catchPlan = null; this._catchOff = 0; }   // TS.6b
         this.lying        = spec.lands;
         // ?falls=v1 (T2.6, D4): the falls from standing are gravity-timed (Skeleton.FALL_BALLISTIC): linear progress over the free fall plus the supported tail,
         // the keys sampled where the pelvis follows free fall (Skeleton.updateFall `ballistic`)
@@ -5023,7 +5042,13 @@ export default class Wrestler {
 
     // ── Drawing ───────────────────────────────────────────────────────────────
 
+    // ?ropeSpill=v1 (TS.6b): after the body is drawn, ink on the strand at his depth pushes him back and the body is drawn once more at the new x.
     draw() {
+        this._drawBody();
+        if (!this._catchArmed && (this.state === 'down' || this.state === 'falling' || this.state === 'flipping') && ropeSpillCandidate()) { this._catchArmed = true; this._catchDone = false; this._catchOff = 0; }   // any other way down: guarded from this very frame
+        if (this._catchArmed && !this._catchBusy) { this._catchBusy = true; try { if (this._catchGuard()) this._drawBody(); } finally { this._catchBusy = false; } }
+    }
+    _drawBody() {
         if (this.skeleton) {
             this.skeleton._stancePresentationWeight = 0;
             this.skeleton._stanceProbeTime = undefined;

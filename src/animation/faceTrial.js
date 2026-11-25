@@ -41,7 +41,8 @@ const BOAST_DELAY_MS = 350;
 
 export class FaceDriver {
     static for(wrestler) {
-        return facesTrial() && FACE_RIGS[wrestler.rigId] ? new FaceDriver(wrestler, FACE_RIGS[wrestler.rigId]) : null;
+        const rig = wrestler.artRigId ?? wrestler.rigId;
+        return facesTrial() && FACE_RIGS[rig] ? new FaceDriver(wrestler, FACE_RIGS[rig]) : null;
     }
 
     constructor(wrestler, rig) {

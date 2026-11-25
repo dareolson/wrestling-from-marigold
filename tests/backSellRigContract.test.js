@@ -11,11 +11,12 @@ import { thesz } from '../src/characters/thesz.js';
 import { theszFront3qR1 } from '../src/characters/thesz_front3q_r1.js';
 import { theszProcreateV1 } from '../src/characters/thesz_procreate_v1.js';
 import { theszRosterV1 } from '../src/characters/thesz_roster_v1.js';
+import { theszLou2V1 } from '../src/characters/thesz_lou2_v1.js';
 import { georgeRosterV1 } from '../src/characters/george_roster_v1.js';
 import { kowalskiRosterV1 } from '../src/characters/kowalski_roster_v1.js';
 import { guidoRosterV1 } from '../src/characters/guido_roster_v1.js';
 
-const BY_NAME = { george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, georgeRosterV1, kowalskiRosterV1, guidoRosterV1 };
+const BY_NAME = { george, thesz, theszFront3qR1, theszProcreateV1, theszRosterV1, theszLou2V1, georgeRosterV1, kowalskiRosterV1, guidoRosterV1 };
 // id -> reason. Delete an entry when its data lands (a waiver for a rig that satisfies the contract fails).
 const WAIVERS = {};
 

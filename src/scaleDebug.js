@@ -31,7 +31,7 @@ export default class ScaleDebug {
             const ds = w.drawScale(), prev = this.prev.get(w);
             this.prev.set(w, ds);
             if (prev !== undefined && isPop(prev, ds, dtSec)) this.flash.set(w, FLASH_FRAMES);
-            const bar = expectedInkHeight(w.rigId, ds);
+            const bar = expectedInkHeight(w.artRigId ?? w.rigId, ds);
             if (bar != null) {
                 const x = w.x - 70 * ds;
                 g.lineStyle(1, 0x33ddff, 0.9);

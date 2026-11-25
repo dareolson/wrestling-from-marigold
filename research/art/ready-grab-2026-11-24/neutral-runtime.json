@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "face": 1,
+      "bothNeutral": true,
+      "cuppedPreserved": true,
+      "elbowDrift": 0,
+      "wristAnchorDrift": 0,
+      "frames": 25,
+      "proximalUnchanged": true,
+      "released": true
+    },
+    {
+      "face": -1,
+      "bothNeutral": true,
+      "cuppedPreserved": true,
+      "elbowDrift": 0,
+      "wristAnchorDrift": 0,
+      "frames": 25,
+      "proximalUnchanged": true,
+      "released": true
+    }
+  ],
+  "errors": []
+}

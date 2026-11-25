@@ -1,0 +1,9 @@
+# Match ready forearm seams to original George art — Codex, November 24, 2026
+
+Derek requested matching the current arm art at the seams. Comparison showed new forearm paint pinker than the original peach, with a closed inked proximal cap; runtime wrist animation also used a hard cut/overlap at the enlarged hand.
+
+Built-in imagegen edited the inside/outside pair using George's original forearm and upper arm as explicit seam/style authorities, retaining tucked thumbs and hand views. Current sprites are forearm_relaxed_grip_inside_v3.png and forearm_relaxed_grip_outside_v3.png, 426×439. Warmer source-style paint and original-style plain elbow overlap replace the closed cap. Manifest readiness aliases and relaxedGrip move variants point to these; earlier art remains. Exact prompts seam-match-{inside,outside}-prompt.txt and full selected sources saved under research/art/ready-grab-2026-11-24/.
+
+`readyWrist.js` now uses a small cached triangle deformation, smoothly transitioning from unchanged proximal pixels at y=.50 to fully rotated/1.25× hand at y=.68. Smoothstep weights fix the former cut-and-scale cuff edge. Painted wrist center remains stationary, as do all rig anchors. No changes to elbow pose, stance, locomotion, or gameplay. Cache keys include smooth to avoid reusing hard-cut frames.
+
+Validation: 18 focused tests pass, including pinned proximal points/pivot and continuous transition boundaries; build passes. Both-facing browser audit verifies zero far-elbow/wrist-anchor drift, proximal pixels unchanged, multiple hand frames, ready-art cleanup and preservation of move variants. Current neutral-preview±1.png and neutral-runtime.json show selected art. Evidence seam-match-tests.txt / seam-match-build.txt in the same research directory. Live preview remains localhost:5185 /tools/gait-preview/?compare=ready-art&rig=george-roster-v1&body=close . Await Derek's visual seam review; source matching is generated, not a pixel-exact copy.

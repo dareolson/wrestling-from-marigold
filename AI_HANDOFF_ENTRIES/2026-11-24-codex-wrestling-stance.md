@@ -1,0 +1,9 @@
+# Wrestling stance trial — Codex, November 24, 2026
+
+Derek requested wrestling stance refinement after locomotion arms. First pass changes the neutral ready guard with existing art: far hand leads toward the opponent, near hand stays closer to the chest, staggered elbows keep both arms readable in profile. Kowalski has a lower reach; George has a slightly looser rear guard than Lou/Guido. This pass preserves the previously reviewed lower-body stance and all gait mechanics. No new art or boot articulation.
+
+Opt-in `?stance=v1` (with normal gait v2 enabled). `wrestlingStance.js` contains facing-relative targets; Skeleton applies them after locomotion arms. Wrestler supplies existing eased proximity guard weight only while neutral standing, excluding choreography, strut, carried recovery hands and sells. Reset before early returns prevents stale stance arms in falling. No authored pose mutation or match default promotion.
+
+Preview: http://localhost:5185/tools/gait-preview/?compare=stance&rig=george-roster-v1 . Same reviewed walk/run/arms on both sides, stance flag only on right. Starts stopped with opponent nearby, full body. Select four rigs/directions, walk/back away, toggle opponent proximity, or uncheck Full body for close-up.
+
+Validation: 53 focused tests and production build pass. Eight browser cases (four rigs, both directions) have finite joints, zero hip/knee/ankle differences with stance on/off in the same frame, cleared overlays on falling and relaxed guard after opponent leaves. Browser scope check covers authored-pose preservation and suppression in choreography/running. Screenshots reviewed for George and Lou. Evidence: research/animation/stance-2026-11-23/ (work began before midnight). Await Derek’s visual review; lower-body stance remains a separate possible refinement.

@@ -1,0 +1,9 @@
+# Ready-to-grab forearm candidate — Codex, November 24, 2026
+
+Derek found the open hands unnatural despite improved probing motion and requested new forearms shaped ready to grab. Used imagegen skill/built-in tool to edit George's base forearm into an open cupped grasp, softly curled fingers and opposed thumb, preserving the simple painted style. Generated source and exact prompt saved under research/art/ready-grab-2026-11-24/. Normalized canvas to source 426×439 with sips (packing only), preserving alpha. New sibling asset: src/assets/wrestlers/george-roster-v1/forearm_ready_grab_v1.png . Original art untouched. This is a first George candidate; other characters have not been regenerated.
+
+Registered `readyGrab` variant in George's manifest, inheriting calibrated geometry/bindings. Opt-in `?readyArt=v1&stance=v1` selects it on both forearms near an opponent. `_syncReadyAppearance` restores only ready-owned slots on exit, preserves other variants (e.g. move grips), excludes choreography, strut, sells/recovery and chest-clutch. Proximity has .20 entry/.08 exit hysteresis to prevent texture flicker. Missing-ready-art rigs use base art. No default promotion.
+
+Preview: http://localhost:5185/tools/gait-preview/?compare=ready-art&rig=george-roster-v1&body=close . Existing hands left; candidate right. Same stance, probing and walk on both. George-only selector disabled; both facings and full-body toggle available.
+
+Validation: 16 focused tests + build pass. Browser in both facings confirms successful texture load, alpha, 426×439 dimensions, identical joint positions and authored pose, preservation of an existing grip, cleanup for choreography, and release at distance; zero page errors. Browser screenshots inspected in context. Await Derek's art review before adapting the design for other rigs. Evidence: research/art/ready-grab-2026-11-24/.

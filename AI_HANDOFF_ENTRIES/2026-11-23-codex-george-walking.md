@@ -1,0 +1,13 @@
+# George walking support correction — Codex, November 23
+
+Derek requests a close review of George: his whole gait reads as a goat on two legs. Continued the existing-art `?walk=v1` trial, without promoting it to match defaults.
+
+Inspected George's full forward/stop/back-away cycles in both facings and measured the rendered joints. The first generic trial left both knees deeply bent. His authored hip sockets are separate but both foot paths were centered on the pelvis. The shorter painted far leg's reach constrained the longer near leg even while the far foot was lifted. The idle crouch also remained underneath the walking crouch.
+
+Added a George-only walking profile: each sole follows its own hip's track; hip reach accounts for swing-foot lift; less permanent knee compression (.995 reachable length cap, still below straight); walking crouch blends from authored rest toward .02; loading dip 1.2 instead of 2.4 units. Far sole uses a 6-unit upstage depth offset for the three-quarter projection, rather than forcing the shorter far chain onto the near foot's depth. That offset is a visual trial choice, not a newly measured art landmark. Running and authored clip gait retain baseline parameters, with a fading profile on return from running. Other rigs keep the first trial. No art, rig measurements or accepted rest-pose data changed.
+
+Sampled steady-forward George supporting-knee bend: first generic trial 35.1–71.9°, mean47.9°; revised23.1–47.4°, mean30.5°. Hip vertical range10.70→7.03 world px. Painted sole drift does not fully disappear: sampled steady max .223→.350px/frame; max transition-frame motion2.16→2.78px. Do not call foot skating fixed or infer visual acceptance from smaller knee angles. Boot/shin art remains one piece.
+
+42 focused tests pass (walkPresentation/gaitV2/gaitRun/gaitFlagOff/legContacts/recoveryVariants), including a real IK reconstruction test that independent hip tracks keep their soles planted through body travel. Four George browser sequences (baseline/trial × facings) finish standing at zero velocity, finite joints, no page errors. Build passes with existing chunk-size warning. Both-facing strips and full-frame poses visually inspected. Data, original generic-trial copies, comparison-metrics.json, scripts and captures under research/animation/george-walk-2026-11-23/.
+
+Review: http://localhost:5183/tools/gait-preview/?rig=george-roster-v1 . Dropdown/query selects rig, left/right facing, walk/stop/back away and nearby-opponent toggle. Current walk on left, revised trial on right. Normal-speed comparison video in evidence directory. Awaiting Derek's judgment. No commit/push.

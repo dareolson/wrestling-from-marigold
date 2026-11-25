@@ -1,0 +1,715 @@
+{
+  "prepared": "2026-11-24",
+  "branch": "story/marigold-opening",
+  "head": "b531aa506ee5ec87fd55e5e7ede4c797bfe7db0f",
+  "scope": "Movement, George ready-grip art, leapfrog, recoveries and head-scissors draft; mixed core snapshots require selective integration.",
+  "selected_art": [
+    "src/assets/wrestlers/george-roster-v1/forearm_relaxed_grip_outside_v3.png",
+    "src/assets/wrestlers/george-roster-v1/forearm_relaxed_grip_inside_v3.png"
+  ],
+  "fresh_tests": 112,
+  "entries": [
+    {
+      "path": "AI_HANDOFF.md",
+      "role": "current-project-status",
+      "sha256": "e7d5d26e8ab8b4530d276465d6f0837acd1bf8fc13328eaf4e4d8cd2505f95b5",
+      "bytes": 37108
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-21-codex-backward-roll-grounding.md",
+      "role": "provenance",
+      "sha256": "639022e117f3cb244c4bb0469ac332230d1341afa1d85d4e0978a453647e2744",
+      "bytes": 5981
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-21-codex-leapfrog-first-pass.md",
+      "role": "provenance",
+      "sha256": "51a2a17e2540c4bf63b8e18856f5ad62a97ed215961899b0974e6c21d71e4ee0",
+      "bytes": 2952
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-21-codex-leapfrog-knee-boost.md",
+      "role": "provenance",
+      "sha256": "2ddca321cf753ec5fc6fb9355ce18eabcb6ce8f3d9d22d007cd0bfc6d7ecf34c",
+      "bytes": 4040
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-21-codex-leapfrog-reference-review.md",
+      "role": "provenance",
+      "sha256": "f07bded423c6e38be4a052367bdff9c1e37f2919b25fd2aa290417a75c2ca30b",
+      "bytes": 3385
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-21-codex-recovery-variants.md",
+      "role": "provenance",
+      "sha256": "3f6de3ce54d4f3562bbbfe68d513736293eaa087a38bdab9f0f2096f602a669f",
+      "bytes": 8579
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-21-codex-scissors-build.md",
+      "role": "provenance",
+      "sha256": "d31e73c17700d8d03bc8544c1154fd74c9038c47941858d2abdc7b383971d80b",
+      "bytes": 10873
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-21-codex-scissors-reference-review.md",
+      "role": "provenance",
+      "sha256": "b002bad00e9d95faa040c1dc7b7a7396468ccaa840aff81c1371d5261e3b5322",
+      "bytes": 3307
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-21-codex-shared-idle-stance.md",
+      "role": "provenance",
+      "sha256": "1b2692480ec507f0bf80724937d6fc8ffff2268cae35d2ab5ae5ed453fa405dc",
+      "bytes": 1993
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-21-codex-strength-earlier-grip.md",
+      "role": "provenance",
+      "sha256": "09eeb0131f1aa95e695b33ced735603404b702525caaa33626168959c3c50e64",
+      "bytes": 978
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-21-codex-strength-slower-palm-grip.md",
+      "role": "provenance",
+      "sha256": "177ba8770d44ba6adf8127a8f7ef6cb84970d9a54e27e84e9ff24b3c523f5bd7",
+      "bytes": 3653
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-23-codex-george-walking.md",
+      "role": "provenance",
+      "sha256": "4d77b19335e283e3ccbfc0378c515e497d4fe31780ec4c7c4ff79c3408eea434",
+      "bytes": 2657
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-23-codex-locomotion-arms.md",
+      "role": "provenance",
+      "sha256": "7c0f356233d1d5b49798cdab273de809be5819ad0ed6cae435acb9d598013f50",
+      "bytes": 1965
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-23-codex-running-trial.md",
+      "role": "provenance",
+      "sha256": "1effd67a9cc78a8999aa81e5ab1748ec2a37152dc7d4b979bd1a1174c5f5611c",
+      "bytes": 3186
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-23-codex-walking-trial.md",
+      "role": "provenance",
+      "sha256": "c2aeb48b1ecf64a6971472eece153555c2bded99f00b9997679bfbed4b7433ec",
+      "bytes": 2813
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-24-codex-arm-seam-match.md",
+      "role": "provenance",
+      "sha256": "cdf8c40f3e79a10e5147aa001dbdb9fc42db4b1b9f7160398127a769be70e16e",
+      "bytes": 1969
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-24-codex-guard-probing.md",
+      "role": "provenance",
+      "sha256": "2942c227e8a6c71fbdcecb34bd08b738de424a0f1dc65066cadec49709d3672f",
+      "bytes": 2181
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-24-codex-inside-ready-arm.md",
+      "role": "provenance",
+      "sha256": "7ffea90f9fc84ec708f0b17b76dddead4cf9222c8a57a6d54bd8986733c74c92",
+      "bytes": 2838
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-24-codex-neutral-ready-hands.md",
+      "role": "provenance",
+      "sha256": "48d1f00807dc4a0bc02f3d8af9f621d0c5c095dd987d577363a756f598e60711",
+      "bytes": 5111
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-24-codex-ready-stance.md",
+      "role": "provenance",
+      "sha256": "716226037d52217830188d0327e26e04fe09231c21cc28e375ae9710e06dc089",
+      "bytes": 1615
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-24-codex-ready-wrist.md",
+      "role": "provenance",
+      "sha256": "5e5a23706ed46971b71fc487b765755db61b0757492f9fecc6e6a180959a0cc1",
+      "bytes": 2513
+    },
+    {
+      "path": "AI_HANDOFF_ENTRIES/2026-11-24-codex-wrestling-stance.md",
+      "role": "provenance",
+      "sha256": "53b6f3a500ca9d07925f61a49b369c06c416d172ce00938c26eff4082a9e6aef",
+      "bytes": 1818
+    },
+    {
+      "path": "research/animation/arms-2026-11-23/audit.mjs",
+      "role": "browser-reproduction",
+      "sha256": "46dc5295fd99269c0c3dce9ae5b627443f40e8134e0eb5918352a6468605e32a",
+      "bytes": 4756
+    },
+    {
+      "path": "research/animation/arms-2026-11-23/runtime.json",
+      "role": "browser-evidence",
+      "sha256": "5c9c8cfeb1f1938a22f0cacdbc34bf7ba3b8f404e5ce4961f209226aa716cbd1",
+      "bytes": 4425
+    },
+    {
+      "path": "research/animation/head-scissors-sell-roll-2026-11-22/runtime.json",
+      "role": "browser-evidence",
+      "sha256": "fddfd8a4e71c630d60957e8fd9c55c4fbe123b914b1c8635683030e2dccd7cfe",
+      "bytes": 2069
+    },
+    {
+      "path": "research/animation/ready-stance-2026-11-24/fixed-check.mjs",
+      "role": "browser-reproduction",
+      "sha256": "2b490e3dc4bb588d5e08463d9b3659c33c18a22905795ed5fd3ab870dc92fcf1",
+      "bytes": 2190
+    },
+    {
+      "path": "research/animation/ready-stance-2026-11-24/fixed-runtime.json",
+      "role": "browser-evidence",
+      "sha256": "afaec20d932d67870f7b078424a830ec6fda09d5ea334fab2d92c0248c9ebbd8",
+      "bytes": 7391
+    },
+    {
+      "path": "research/animation/run-2026-11-23/trial/runtime.json",
+      "role": "browser-evidence",
+      "sha256": "b3864c863f49543aeb93867b6d4183f6e9a21749ce8a2f6b879ce8c8e0e98822",
+      "bytes": 496
+    },
+    {
+      "path": "research/art/dempsey-simplified-head-2026-11-22/dempsey-full-body-candidate-v4-moderate.png",
+      "role": "optional-referee-candidate",
+      "sha256": "b9fd5f8b688203435104b0c04d7f5ec573f7db1e13acd90c7678e7d49a969334",
+      "bytes": 1594134
+    },
+    {
+      "path": "research/art/dempsey-simplified-head-2026-11-22/full-body-v4-prompt.txt",
+      "role": "optional-referee-candidate",
+      "sha256": "c81c4b9b785bca5d279e6aa1f0799d1e22e3205395dca89ff1f501d65d10cd6e",
+      "bytes": 1513
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/inside-contour-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "939428562fa8ba863e9257686ba49ba39fd0c2f9d021209aa324c7101a861b14",
+      "bytes": 1284
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/inside-seam-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "cc1729e75d49014a9bedafbabbe32baa6f9892b37f0ca53a494fbbd0a2e66345",
+      "bytes": 1010
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/inside-v2-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "eaf8a4a62a205c91e77804b4d6ad847654798ee3bb606f2e458c3b4407746f0a",
+      "bytes": 1428
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/inside-v4-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "d181ac6e83b708d3f0daf07a4f1b6160be1904bbeb23f3a38afbe9bc1e2e3e2f",
+      "bytes": 1261
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/neutral-assets.md",
+      "role": "art-provenance",
+      "sha256": "4af3ce4985a505a37b2985f0163f75a9efb8393db375c56cf81cd3fd04572ba2",
+      "bytes": 5563
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/neutral-check.mjs",
+      "role": "browser-reproduction",
+      "sha256": "a23175e9f8f3d32e13cdb1024c5f889c522f2b2a73b9df0875f1038b892fd002",
+      "bytes": 2872
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/neutral-inside-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "d873e303560e9334771f426dd8d4f0bde60e39f4d9fb1eeb9e122917159941f0",
+      "bytes": 1648
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/neutral-outside-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "bb7837036b55bc85694dee29238b5b6e160db1d4b6078c2c544a4180150a920e",
+      "bytes": 1646
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/neutral-preview--1.png",
+      "role": "final-preview",
+      "sha256": "256f4a84b388a988203e09cdf5b972a1349f3bddf7485e52d7129c734076c5ea",
+      "bytes": 406394
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/neutral-preview-1.png",
+      "role": "final-preview",
+      "sha256": "e1a565ada9ecd637ed496ac268cdf070f52bea2eb3d2989c43e19550244cb29b",
+      "bytes": 399504
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/neutral-runtime.json",
+      "role": "browser-evidence",
+      "sha256": "3b00df97fc510852d2055170b47f0248807441ce59017ab39041ebebcdb42548",
+      "bytes": 470
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/open-grip-inside-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "11791cd2800fd90105d4499829c0e9f6d2fe446dd68d39b23fe76fafdd77d02f",
+      "bytes": 1946
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/open-grip-outside-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "625ef0c50b83eb5f87593a9a2e80cb991a088d7cf21fb784a32cc5f649d4e78c",
+      "bytes": 1924
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/outlined-inside-cleanup-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "ad6141717722fb4c836d639c6b11941209d91d7b3f0de5fba1a68d16cfc3b532",
+      "bytes": 596
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/outlined-inside-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "aee6954e45cbe5c2de5721a27de60bb1923ae1d0b193ebddf6d24805b4be84ce",
+      "bytes": 1725
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/outlined-outside-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "d26bae81b5c743895ed6fb0e8c1e26e2e5a8fb78da6370d1d65fb58dc2836543",
+      "bytes": 1712
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/outside-contour-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "939428562fa8ba863e9257686ba49ba39fd0c2f9d021209aa324c7101a861b14",
+      "bytes": 1284
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/outside-seam-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "cc1729e75d49014a9bedafbabbe32baa6f9892b37f0ca53a494fbbd0a2e66345",
+      "bytes": 1010
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/outside-v2-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "c89202113b92850044ac69e18ed1e58a6186bfb0fba53c5f23a68c769d6344eb",
+      "bytes": 1262
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "7ccb4c710313b423aa7e4a84466dc2841fa89b2b557e7179ea7f6e3cdd96b3e1",
+      "bytes": 1895
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/relaxed-inside-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "d1b993d1a7d17bd01c4858b36cbad357dbc1845a29ae1f467778c7c3181ab698",
+      "bytes": 2077
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/relaxed-outside-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "02cec8f7a37192a92ee236bd8c4f3d4de02bdda19dd09d7da85f6016b0249cac",
+      "bytes": 2088
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/seam-match-inside-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "4935ee8129512b9dfe825ee8a878e819001687abb04c2b39ca04e189a9f12690",
+      "bytes": 1681
+    },
+    {
+      "path": "research/art/ready-grab-2026-11-24/seam-match-outside-prompt.txt",
+      "role": "generation-prompt",
+      "sha256": "cd1ef8c489d017c1629fb138abcf80cb65feb07d7993e61836a0f170971c9d33",
+      "bytes": 1683
+    },
+    {
+      "path": "src/AIHandler.js",
+      "role": "mixed-reference",
+      "sha256": "ff65883a1e47a9ac44726729d34b0451021f26a4e15c7e9587a3b9ac5f67da99",
+      "bytes": 39059
+    },
+    {
+      "path": "src/Skeleton.js",
+      "role": "mixed-reference",
+      "sha256": "0d79b792afcdfc909225d348ee13302d9af51cdbeb46e58bb7e7f0433d9ee455",
+      "bytes": 227821
+    },
+    {
+      "path": "src/Wrestler.js",
+      "role": "mixed-reference",
+      "sha256": "8aef28e8705b366ef911b0ce3de51e61faf551ec7d678acedef44e89f9ce94df",
+      "bytes": 333275
+    },
+    {
+      "path": "src/animation/AnimationClip.js",
+      "role": "mixed-reference",
+      "sha256": "7926b484e6cdd4cb3ad6b7a26119dcfba1d7be098635194e3481f06bd4125f69",
+      "bytes": 17991
+    },
+    {
+      "path": "src/animation/MoveRuntime.js",
+      "role": "mixed-reference",
+      "sha256": "9bf6a11c16d600f102f7a8a1650be3cbc575a88588862f66c7831adfd310057e",
+      "bytes": 28995
+    },
+    {
+      "path": "src/animation/clips/headScissors.js",
+      "role": "clip",
+      "sha256": "802c15cb700f27f117c26b25ba567305fd3a957d4ad46de7a8f4c4d31883392a",
+      "bytes": 8688
+    },
+    {
+      "path": "src/animation/clips/matMoves.js",
+      "role": "mixed-reference",
+      "sha256": "e68ce5610c3825f0ec67d1b01b80a7d1890385dd0a6e62b0c2ba06fbaf2b424b",
+      "bytes": 68937
+    },
+    {
+      "path": "src/animation/clips/recoveryVariants.js",
+      "role": "clip",
+      "sha256": "78887e57adb478f04447c90b9cf42e68ce17ecb9531911f646c5e2d4652188cc",
+      "bytes": 5755
+    },
+    {
+      "path": "src/animation/clips/rigOverrides.js",
+      "role": "mixed-reference",
+      "sha256": "afe8bcab22580301e0ce8fe61bb89ef0d0d95ce41aeda6a4642d8394d6537c73",
+      "bytes": 1119
+    },
+    {
+      "path": "src/animation/leapfrog.js",
+      "role": "helper",
+      "sha256": "0ec08032f92839007165c6fdc0da36812bd52e1009d3ee62ab1ccafaa14113e5",
+      "bytes": 730
+    },
+    {
+      "path": "src/animation/locomotionArms.js",
+      "role": "helper",
+      "sha256": "8451f3fba9ba2662f464185c8ca4831e7f5ff47e5fed8a055a4d821dd3870bce",
+      "bytes": 976
+    },
+    {
+      "path": "src/animation/readyWrist.js",
+      "role": "helper",
+      "sha256": "d2ff96b68fe483890698ae8a0a4f476707e54b1931abe20db349f92cb72af823",
+      "bytes": 2147
+    },
+    {
+      "path": "src/animation/runPresentation.js",
+      "role": "helper",
+      "sha256": "e60d266b6a2f77b1170182ba251786d5af71c7a5bf6cb47a98b393ee95a5b6b6",
+      "bytes": 643
+    },
+    {
+      "path": "src/animation/walkPresentation.js",
+      "role": "helper",
+      "sha256": "06b02861df66e12f8d36497320efd1d3c231204a6d5a622b1edfdc8bba80abc0",
+      "bytes": 1368
+    },
+    {
+      "path": "src/animation/wrestlingStance.js",
+      "role": "helper",
+      "sha256": "ae2221f288d5dc8453b2f11f1f27ef7cc0b902960185a3d904e274ecd8b04406",
+      "bytes": 1742
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/GRIP_LIBRARY.md",
+      "role": "grip-library",
+      "sha256": "0adbbd02e8ac31adf753e6fa6b4dce5b737587f86607d68308e1905e6c1e60fe",
+      "bytes": 1872
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm.png",
+      "role": "original-seam-reference",
+      "sha256": "dcea3476ec2b6249c92fef6c3ca2a703e0e2cf8c87707f7b37c06d9f948ae1d7",
+      "bytes": 57339
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_chest_touch.png",
+      "role": "registered-art",
+      "sha256": "a4414fafe9879b05997e69839954426a918d57a77397c964752926bc7e3d5747",
+      "bytes": 47746
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_collar_tie.png",
+      "role": "registered-art",
+      "sha256": "efc0eb61d5e4f047cbd962c86b02da35d5d1e14b5bc1b857d9b991b8ee6760e5",
+      "bytes": 53478
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_dismiss.png",
+      "role": "registered-art",
+      "sha256": "da6d2e612a1bdb63a2e2847c9bb691aaab82e25bde5b5730fa41ed10e4dfe28e",
+      "bytes": 54039
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_elbow_cup.png",
+      "role": "registered-art",
+      "sha256": "ac02daafae8b1e936b233d64f77a51285749e22f45b32673cb568135fa35cfaf",
+      "bytes": 61110
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_grip.png",
+      "role": "registered-art",
+      "sha256": "1d463c4434633c7d7261cb0efd50d654c7b1af0f2a8640e021fee0158f0b1c9f",
+      "bytes": 62343
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_hair_fix.png",
+      "role": "registered-art",
+      "sha256": "e5b9eeb5cc856e115f8469ab9d8b89891c74c89ccd53b50faadadb3960f99bb6",
+      "bytes": 58768
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_hair_smooth.png",
+      "role": "registered-art",
+      "sha256": "faa80e83d0dfd241fca0a8abc5e139c671a723438ed475e1eaa1cf6adc9f0046",
+      "bytes": 47720
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_inspect.png",
+      "role": "registered-art",
+      "sha256": "db7767d231c73912a3c2643e0f70966c3a6146f20662a801327fe2a2abc81091",
+      "bytes": 54781
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_present_palm.png",
+      "role": "registered-art",
+      "sha256": "e5861af4892a3670198b85a78414da55496f2f42fde201701d7436a9f95ed3d2",
+      "bytes": 57173
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_ready_grab_v1.png",
+      "role": "registered-art",
+      "sha256": "0b9cc2832f23af9cb6d23da132a3c13c735f2e17ae06b5981fbb97ba4e599a9e",
+      "bytes": 62967
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_ready_inside_v5.png",
+      "role": "registered-art",
+      "sha256": "1df333a57c0d58321edb31edd487c8be92d96cbb06993442f270ecc97f4610e1",
+      "bytes": 56614
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_ready_neutral_inside_v2.png",
+      "role": "registered-art",
+      "sha256": "316612532cd70875489df95bf2bda67e49881f6c9941e3d000b11f84c8a92325",
+      "bytes": 59692
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_ready_neutral_outside_v2.png",
+      "role": "registered-art",
+      "sha256": "7b41d4febefd38420964870e3930074873137bbfd551c5e252298aca96fd3591",
+      "bytes": 61625
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_ready_outside_v5.png",
+      "role": "registered-art",
+      "sha256": "1d408c1f2e25d90378fa559acd111c2d40503c6e8c683f55a0312972312a3784",
+      "bytes": 59819
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_relaxed_grip_inside_v3.png",
+      "role": "registered-art",
+      "sha256": "28fc6bdbcff9f13315779d3497c7af149e5565e16e412e2dada568972e2c03d1",
+      "bytes": 51211
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_relaxed_grip_outside_v3.png",
+      "role": "registered-art",
+      "sha256": "b024f839495ddda86079eb9de8a771d527a8960b5354aab386127be7eecf2e4c",
+      "bytes": 57828
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/forearm_waist_clasp.png",
+      "role": "registered-art",
+      "sha256": "96a2ef33fb9393f051e6e1d4023fc9cc3057a3cb84f3472daf3e6bab3770a36c",
+      "bytes": 55963
+    },
+    {
+      "path": "src/assets/wrestlers/george-roster-v1/upper_arm.png",
+      "role": "original-seam-reference",
+      "sha256": "359c77027ccdab75c57909585c759a89685d1b7f6c47eafe93a721d732bdad4a",
+      "bytes": 56095
+    },
+    {
+      "path": "src/characters/george_roster_v1.js",
+      "role": "mixed-reference",
+      "sha256": "a76a702d2bbee70469f07f1165236faa1226fd104420ea21e322b0d923f908c3",
+      "bytes": 14396
+    },
+    {
+      "path": "src/characters/guido_roster_v1.js",
+      "role": "mixed-reference",
+      "sha256": "26a2b21a0f46dbb1db772f6aff241b0b3d6b623dca870ede3ac003ff6e818949",
+      "bytes": 6579
+    },
+    {
+      "path": "src/characters/rosterKits.js",
+      "role": "mixed-reference",
+      "sha256": "77c7e6fcbcadebd33062b2c300cea926aaa18c069bc931cf889d3e88e9a9fbaa",
+      "bytes": 5970
+    },
+    {
+      "path": "src/moves/registry.js",
+      "role": "mixed-reference",
+      "sha256": "f3786752193b55cce14ac94412f9371d332df55093d6c0fb098d596a9d6f9a68",
+      "bytes": 31964
+    },
+    {
+      "path": "src/rig/articulation.js",
+      "role": "dependency-reference",
+      "sha256": "2580372c67964e276d31f6390e905feb419ffba453425e85af2940216bdac9fb",
+      "bytes": 5219
+    },
+    {
+      "path": "tests/animationClip.test.js",
+      "role": "test",
+      "sha256": "d0876e24d66033c533ef8b6400e09352eeebe6009c7ef3535eabd52f3c56adde",
+      "bytes": 4607
+    },
+    {
+      "path": "tests/armStacking.test.js",
+      "role": "test",
+      "sha256": "c3bcc86e5ac6cc9863b4b1d57288e694560e1f953e53145b9b8db88fd06f37d3",
+      "bytes": 2807
+    },
+    {
+      "path": "tests/fixtures/gaitFlagOff.json",
+      "role": "test-fixture",
+      "sha256": "2569e0a120e862901ecc3d5544e38ab4cbd48d1961e0d09df74296446f0a8690",
+      "bytes": 35309
+    },
+    {
+      "path": "tests/gaitFlagOff.test.js",
+      "role": "test",
+      "sha256": "ff13efac98026d6afc65aa511cbe98e43f644be9f1f979a16c31806f8fbcb5a8",
+      "bytes": 4838
+    },
+    {
+      "path": "tests/gaitRun.test.js",
+      "role": "test",
+      "sha256": "ffcaeeb0080ebf833fc593464f2322105731444281b75b756b9e0f046f236680",
+      "bytes": 2209
+    },
+    {
+      "path": "tests/gaitV2.test.js",
+      "role": "test",
+      "sha256": "4bc5224023e647797adfbf545548fa1d7b8ad873a89de98fddfbf95ac863d693",
+      "bytes": 8421
+    },
+    {
+      "path": "tests/leapfrog.test.js",
+      "role": "test",
+      "sha256": "e395bc3f29fa0c3953fea5ea5716eafe99d07ca15ac4aab00fab0fb7c093106a",
+      "bytes": 1976
+    },
+    {
+      "path": "tests/legContacts.test.js",
+      "role": "test",
+      "sha256": "e098bc35e7194f9e1b753d29590b91c40473463da7f477840b49ad25a358e9b3",
+      "bytes": 19715
+    },
+    {
+      "path": "tests/locomotionArms.test.js",
+      "role": "test",
+      "sha256": "45dee354b86dedf7bbc582e8c12e90fc28bda21eb5127c514823b78f6d5bc053",
+      "bytes": 1680
+    },
+    {
+      "path": "tests/matMoves.test.js",
+      "role": "test",
+      "sha256": "12733c4e385953627fe281a2e4287e1afa30e66101ec06e91e1b0d37c9dfe761",
+      "bytes": 13213
+    },
+    {
+      "path": "tests/moveContacts.test.js",
+      "role": "test",
+      "sha256": "402a271f8a497390b273f822f84f5a4c2a5dcec0d396879b70d1ed22343210a2",
+      "bytes": 7256
+    },
+    {
+      "path": "tests/moveRuntime.test.js",
+      "role": "test",
+      "sha256": "82f8b17b99c4eb495e38e1df3a1c54d134031bfd279f87dffef8ce6cfd8985e0",
+      "bytes": 9520
+    },
+    {
+      "path": "tests/partVariants.test.js",
+      "role": "test",
+      "sha256": "6a2c27dab1993017e73d20a8b01aa32872f3c29fafb1bf78a3675c9d9a731d1e",
+      "bytes": 6437
+    },
+    {
+      "path": "tests/readyWrist.test.js",
+      "role": "test",
+      "sha256": "5bd71c19d46595542e83e45d84bd0c26e237815e8e669aa586d0703f8e97d0a3",
+      "bytes": 689
+    },
+    {
+      "path": "tests/recoveryVariants.test.js",
+      "role": "test",
+      "sha256": "a3b7063136a71ef897e91737afaaabb6f00386ddfcea738c18a4bb1980efdcff",
+      "bytes": 3494
+    },
+    {
+      "path": "tests/runPresentation.test.js",
+      "role": "test",
+      "sha256": "7fd8edb26048623d7aeb76855dcc406b16c4f34a5328b2e2350f790fb7a326a6",
+      "bytes": 2296
+    },
+    {
+      "path": "tests/scissors.test.js",
+      "role": "test",
+      "sha256": "b6d550db3a639357b86b0e3be4c86a719149bb0c1b13b3d14722c85c83ef3df3",
+      "bytes": 6345
+    },
+    {
+      "path": "tests/walkPresentation.test.js",
+      "role": "test",
+      "sha256": "015af1181d5267328f2d5e81275fe4a963831def53ee06aea2710b95816ccc17",
+      "bytes": 3116
+    },
+    {
+      "path": "tests/wrestlingStance.test.js",
+      "role": "test",
+      "sha256": "1f43b685e0571b1b40474d339869e30f9b0a2f304a1b61a40bd50f2e29d89053",
+      "bytes": 2466
+    },
+    {
+      "path": "tools/debug/g12_lib.mjs",
+      "role": "preview",
+      "sha256": "558382068eb4bf1e599b63a814ea7db8af5107b485f3525a80897c35c55a16df",
+      "bytes": 4515
+    },
+    {
+      "path": "tools/gait-preview/index.html",
+      "role": "preview",
+      "sha256": "263e7d948ec3d7375f84d0df1c77f07f8d6263b44ed9d40c89fc2cb8c99fef76",
+      "bytes": 7230
+    },
+    {
+      "path": "tools/mat-preview/index.html",
+      "role": "preview",
+      "sha256": "fa8fc9d9d8be6818c01f19092744db476a836a8ae079d589a8b7ef1f2fd86c9e",
+      "bytes": 6484
+    },
+    {
+      "path": "tools/run-preview/index.html",
+      "role": "preview",
+      "sha256": "7c2006901888fb7a71582960ce3139b80dcd0d7bd14c1803f7ca9873fe677db4",
+      "bytes": 5288
+    }
+  ]
+}

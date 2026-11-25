@@ -1,0 +1,42 @@
+[
+  {
+    "file": "upperArm-hairReach-v1.png",
+    "sourceCanvas": [
+      1066,
+      1476
+    ],
+    "canvas": [
+      296,
+      410
+    ],
+    "capDiff": 0,
+    "capRows": [
+      0,
+      150
+    ],
+    "blendRows": [
+      151,
+      162
+    ]
+  },
+  {
+    "file": "forearm-hairFix-v1.png",
+    "sourceCanvas": [
+      1236,
+      1273
+    ],
+    "canvas": [
+      426,
+      439
+    ],
+    "capDiff": 0,
+    "capRows": [
+      0,
+      233
+    ],
+    "blendRows": [
+      234,
+      255
+    ]
+  }
+]

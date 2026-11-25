@@ -1,0 +1,9 @@
+Built-in imagegen; transparent_background=true. Unapproved head study; no original assets replaced or game references changed.
+
+References, in order:
+Roster Base Masters/Jack Dempsey - Referee.png
+src/assets/wrestlers/george-roster-v1/head.png
+src/assets/wrestlers/thesz-procreate-v1/head.png
+
+Final prompt:
+Use case: style-transfer. Create ONE isolated head-and-short-neck design study for Jack Dempsey as the older referee in the illustrated wrestling game Wrestling from Marigold. Input 1 is the edit target / identity reference: preserve his recognizable older Jack Dempsey likeness, substantial jaw, distinctive nose, heavy eyebrows, swept-back salt-and-pepper hair and serious attentive expression, and the same near-profile angle looking SCREEN RIGHT. Inputs 2 and 3 are STYLE REFERENCES ONLY: the shipped George and Lou heads. Match their simplified hand-drawn game illustration: strong confident black outlines, broad flat warm skin-color regions, just one or two restrained shadow shapes, simple eye and mouth lines, expressive eyebrow and jaw structure, hair drawn as clear dark masses with a few gray locks. Deliberately eliminate the photographic skin modeling, tiny wrinkles, stippling, rendered pores, painterly gradients and many small hair strokes of input 1. Aim for the level of abstraction of input 3, while retaining the older Dempsey identity rather than making him Lou or George. Neutral closed mouth with a clearly drawn simple mouth and jaw that could later be varied for speaking and shouting; do not produce a mouth chart or expression sheet now. Complete hair silhouette, ear, face, jaw and short neck, neatly terminated at base of neck, generous transparent margin, no torso or clothing, no background, no ground shadow, no text, no labels, no logos. This is a facial style candidate, not a rig-ready geometry claim. Truly transparent RGBA background.

@@ -1,0 +1,35 @@
+{
+  "results": [
+    {
+      "face": 1,
+      "maxJointError": 0,
+      "applied": true,
+      "respectsGrip": true,
+      "releasesForMove": true,
+      "releasesFar": true,
+      "poseUnchanged": true,
+      "size": [
+        426,
+        439
+      ],
+      "transparent": 157466,
+      "opaque": 202
+    },
+    {
+      "face": -1,
+      "maxJointError": 0,
+      "applied": true,
+      "respectsGrip": true,
+      "releasesForMove": true,
+      "releasesFar": true,
+      "poseUnchanged": true,
+      "size": [
+        426,
+        439
+      ],
+      "transparent": 157466,
+      "opaque": 202
+    }
+  ],
+  "errors": []
+}

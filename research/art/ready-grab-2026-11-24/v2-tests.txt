@@ -1,0 +1,24 @@
+✔ the near upper arm draws above the near forearm (1.053917ms)
+✔ the far upper arm draws above the far forearm (0.280417ms)
+✔ forearmOverUpperArm is opt-in and flips both arms for the characters that declare it (1.966833ms)
+✔ no other module reassigns an arm part depth (1.030333ms)
+✔ farLegOverTorso is opt-in: far leg above trunks, below the near leg and near arms (0.336167ms)
+✔ bodySlam near either rope lands with the centre-ring separation (12.280541ms)
+✔ hipToss near either rope lands with the centre-ring separation (4.818291ms)
+✔ the ring fit eases in from the trigger position and is absent in the centre (2.281166ms)
+✔ transformExtents covers every staged role between keys (0.349333ms)
+✔ floor contacts and grips validate their windows (1.021125ms)
+✔ the piledriver holds the crown on the mat through the impact, and the waist grip (0.436875ms)
+✔ afterDraw hands each gripping actor its grips, weighted, only inside the window (0.750875ms)
+✔ a runner already on his rope target turns with a real facing (AI-vs-AI freeze) (2.961958ms)
+✔ ready stance eases without changing authored pose or foot angles (1.66725ms)
+✔ all ready guards keep elbows bent within anatomical limits (0.120333ms)
+✔ probing guard keeps elbow limits and hand reach bounded over time (13.316625ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 170.051791

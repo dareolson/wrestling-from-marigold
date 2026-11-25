@@ -43,3 +43,12 @@ research/animation/george-performance-2026-11/ge/video/
 research/animation/george-performance-2026-11/ge/stills/
 research/animation/george-performance-2026-11/ge/probe/*.png
 research/animation/george-performance-2026-11/ge/probe/rows.json
+
+# 2026-11-24 cleanup: review frame strips and footage stay on disk, not in git (PLAN_CLEANUP T5: kept, not deleted).
+# Tracked files are unaffected; commit a chosen still with `git add -f`.
+research/ropes-2026-11/**/*.jpg
+research/ropes-2026-11/**/*.mp4
+research/animation/**/*.jpg
+research/animation/**/*.webm
+.DS_Store
+research/art-revisions/**/*.webm

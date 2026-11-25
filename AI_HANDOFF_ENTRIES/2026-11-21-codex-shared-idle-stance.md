@@ -1,0 +1,9 @@
+# Shared idle stance — Codex, Nov 21
+
+Derek noticed George permanently crouched, then suspected everyone. Browser roster matrix confirms the promoted gait idle caused it on all four current rigs. Same art, gait enabled vs disabled: Lou knee deflection 28.6–37.4° vs 5.9–13.9°; George 47.7–61.5° vs 5.7°; Kowalski 33.9–39.0° vs 11.0–13.9°; Guido 47.3–57.2° vs 5.7°. Zero-crouch controls still bend with gait enabled. Thus no redraw needed to correct this issue.
+
+Skeleton uses the existing gait rest weight to blend pelvis height and leg angles back to the authored stance rather than holding walking IK at shortened reach forever. Walking/running with rest weight zero remain unchanged; authored moves have no gait rest weight. Updated foot records use drawn sole positions after the blend. Derek then requested a little more front-leg extension and hips back, and flagged crossing at reversal: final resting front/far leg rotates forward .10 rad, rear/near leg back .025 rad (whole leg, preserving knee flex), hips 3 rig units back. These adjustments fade with the rest blend. Uses the same semantic limbs in the canonical mirrored pose. Removed the interim Lou-specific gaitRestFx=14 change; it addressed a symptom and is superseded by this shared correction.
+
+All four rigs checked through reversal: joint positions mirror to <.001px, front/rear sole order stays consistent. Focused tests 47/47: gaitV2, gaitRun, gaitFlagOff, legContacts, leapfrog, matMoves. Diff check clean. Browser artifacts in research/animation/leapfrog-2026-11-21/: roster-stance.json (before), restored-stance.json (authored stance), settled-stance.json and settled-* (current extension/hips/reversal), settled-1-after-turn.png (leapfrog transition). These checks are not visual acceptance; Derek judges. No commit/push.
+
+Derek accepted the current result: “This is good, let’s move on.” Preserve the shared idle correction and final front-leg/hip adjustment. Next move is backward roll.

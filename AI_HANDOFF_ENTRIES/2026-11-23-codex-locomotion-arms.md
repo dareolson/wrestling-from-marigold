@@ -1,0 +1,9 @@
+# Locomotion arms — Codex, November 23, 2026
+
+Derek endorsed the running improvement (“looks a lot better”) and requested arm refinement next. Preserve the reviewed walk/run legs. New opt-in `?arms=v1` keeps existing artwork and adds a smaller low walking swing, clearer backward running stroke, and phase-delayed elbow flex. Pure periodic targets avoid frame-history dependence. Guard blends to existing guard targets; active choreography, selling, rope contact and recovery retain their arms. Draw resets the overlay before early returns so falling cannot inherit locomotion arms. Painted joint seams and deformation remain separate work.
+
+`src/animation/locomotionArms.js` provides mirrored near/far targets. Skeleton blends final angles without changing bone lengths or authored pose. Wrestler enables it only for free locomotion. No match defaults promoted.
+
+Preview: http://localhost:5185/tools/gait-preview/?compare=arms&rig=george-roster-v1 . Switch Walking/Running arms, four characters, direction, and close/full-body framing. Left is the reviewed gait, right adds arms. Existing normal preview comparisons remain available without compare=arms. Browser independently renders both panes, so their playback phases can differ; captured same-frame audit pairs supply the exact comparison.
+
+Validation: 61 focused tests pass (locomotion arms, walk/run presentation, gait, arm stacking, move/leg contacts, recovery); production build passes. Browser audit covers four rigs × two facings × walk/run: finite joints, authored pose unchanged, identical hip/knee/ankle/neck positions, original upper/lower arm lengths, and return to standing. Interactive browser check confirms independent arm flags, mode switch, framing, falling-overlay reset and zero page errors. Rendered same-frame George/Lou comparisons inspected. Evidence and scripts: research/animation/arms-2026-11-23/. Await Derek’s visual review; this does not solve painted seam deformation.

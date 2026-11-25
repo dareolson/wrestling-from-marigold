@@ -1,0 +1,338 @@
+[
+  {
+    "facing": 1,
+    "t": 0,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": 1,
+    "t": 0.05,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": 1,
+    "t": 0.1,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": 1,
+    "t": 0.15,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": 1,
+    "t": 0.2,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": 1,
+    "t": 0.25,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": 1,
+    "t": 0.3,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": 1,
+    "t": 0.35,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": 1,
+    "t": 0.4,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": 1,
+    "t": 0.45,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": 1,
+    "t": 0.5,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": 1,
+    "t": 0.55,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": 1,
+    "t": 0.6,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": 1,
+    "t": 0.65,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": 1,
+    "t": 0.7,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": 1,
+    "t": 0.75,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": 1,
+    "t": 0.8,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": 1,
+    "t": 0.85,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": 1,
+    "t": 0.9,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": 1,
+    "t": 0.95,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": 1,
+    "t": 1,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 0,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": -1,
+    "t": 0.05,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": -1,
+    "t": 0.1,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": -1,
+    "t": 0.15,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": -1,
+    "t": 0.2,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": -1,
+    "t": 0.25,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": -1,
+    "t": 0.3,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": -1,
+    "t": 0.35,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": -1,
+    "t": 0.4,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": true,
+    "mouthCovered": true
+  },
+  {
+    "facing": -1,
+    "t": 0.45,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 0.5,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 0.55,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 0.6,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 0.65,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 0.7,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 0.75,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 0.8,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 0.85,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 0.9,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 0.95,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  },
+  {
+    "facing": -1,
+    "t": 1,
+    "upperAlphaAtElbow": 253,
+    "forearmAlphaAtElbow": 254,
+    "eyeCovered": false,
+    "mouthCovered": false
+  }
+]

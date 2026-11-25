@@ -1,0 +1,682 @@
+TAP version 13
+# Subtest: clip sampling blends numeric channels and steps art at authored keyframes
+ok 1 - clip sampling blends numeric channels and steps art at authored keyframes
+  ---
+  duration_ms: 2.35225
+  type: 'test'
+  ...
+# Subtest: event interval is deterministic and does not double-fire its left boundary
+ok 2 - event interval is deterministic and does not double-fire its left boundary
+  ---
+  duration_ms: 1.005625
+  type: 'test'
+  ...
+# Subtest: runtime keeps paired tracks synchronized and resets part variants on completion
+ok 3 - runtime keeps paired tracks synchronized and resets part variants on completion
+  ---
+  duration_ms: 3.293167
+  type: 'test'
+  ...
+# Subtest: invalid clips fail before they reach gameplay
+ok 4 - invalid clips fail before they reach gameplay
+  ---
+  duration_ms: 0.466542
+  type: 'test'
+  ...
+# Subtest: a handler that cancels a later clip stops it in the same update
+ok 5 - a handler that cancels a later clip stops it in the same update
+  ---
+  duration_ms: 1.028958
+  type: 'test'
+  ...
+# Subtest: the near upper arm draws above the near forearm
+ok 6 - the near upper arm draws above the near forearm
+  ---
+  duration_ms: 0.940166
+  type: 'test'
+  ...
+# Subtest: the far upper arm draws above the far forearm
+ok 7 - the far upper arm draws above the far forearm
+  ---
+  duration_ms: 0.264541
+  type: 'test'
+  ...
+# Subtest: forearmOverUpperArm is opt-in and flips both arms for the characters that declare it
+ok 8 - forearmOverUpperArm is opt-in and flips both arms for the characters that declare it
+  ---
+  duration_ms: 12.433541
+  type: 'test'
+  ...
+# Subtest: no other module reassigns an arm part depth
+ok 9 - no other module reassigns an arm part depth
+  ---
+  duration_ms: 2.624
+  type: 'test'
+  ...
+# Subtest: farLegOverTorso is opt-in: far leg above trunks, below the near leg and near arms
+ok 10 - farLegOverTorso is opt-in: far leg above trunks, below the near leg and near arms
+  ---
+  duration_ms: 0.671708
+  type: 'test'
+  ...
+# Subtest: flag-off gait (footGait, move/tickRun phase advance, draw arguments) matches the pre-v2 snapshot
+ok 11 - flag-off gait (footGait, move/tickRun phase advance, draw arguments) matches the pre-v2 snapshot
+  ---
+  duration_ms: 19.140291
+  type: 'test'
+  ...
+# Subtest: mirror at the rope turn: phase -> STANCE*2pi - phase negates both feet, lift unchanged
+ok 12 - mirror at the rope turn: phase -> STANCE*2pi - phase negates both feet, lift unchanged
+  ---
+  duration_ms: 2.014125
+  type: 'test'
+  ...
+# Subtest: STANCE < .5 gives a flight phase, the walk does not
+ok 13 - STANCE < .5 gives a flight phase, the walk does not
+  ---
+  duration_ms: 2.515791
+  type: 'test'
+  ...
+# Subtest: run hip weight: 1 at mid-stance, 0 in flight
+ok 14 - run hip weight: 1 at mid-stance, 0 in flight
+  ---
+  duration_ms: 0.153917
+  type: 'test'
+  ...
+# Subtest: derived run stride gives the target cadence (any height scale)
+ok 15 - derived run stride gives the target cadence (any height scale)
+  ---
+  duration_ms: 0.284625
+  type: 'test'
+  ...
+# Subtest: config: on by default (promoted 2026-11-21), null for ?gait=off / other values / no location; defaults and URL knobs
+ok 16 - config: on by default (promoted 2026-11-21), null for ?gait=off / other values / no location; defaults and URL knobs
+  ---
+  duration_ms: 2.483584
+  type: 'test'
+  ...
+# Subtest: walk: the planted foot stays put at the draw scale (hs 0.79 and 1.01), stride knob included
+ok 17 - walk: the planted foot stays put at the draw scale (hs 0.79 and 1.01), stride knob included
+  ---
+  duration_ms: 16.329584
+  type: 'test'
+  ...
+# Subtest: run: no 0.8, the planted foot stays put, direction follows travel against facing
+ok 18 - run: no 0.8, the planted foot stays put, direction follows travel against facing
+  ---
+  duration_ms: 3.074084
+  type: 'test'
+  ...
+# Subtest: stop: the phase freezes (no decay), the swing foot lift eases to 0, and it comes back when walking resumes
+ok 19 - stop: the phase freezes (no decay), the swing foot lift eases to 0, and it comes back when walking resumes
+  ---
+  duration_ms: 0.898875
+  type: 'test'
+  ...
+# Subtest: a clip retreat uses distance-driven walking and cannot keep driving the legs after release
+ok 20 - a clip retreat uses distance-driven walking and cannot keep driving the legs after release
+  ---
+  duration_ms: 2.802375
+  type: 'test'
+  ...
+# Subtest: lean: walk bend = leanWalk x moveBlend, run bend = leanRun, knee adds crouch; this.pose is never touched
+ok 21 - lean: walk bend = leanWalk x moveBlend, run bend = leanRun, knee adds crouch; this.pose is never touched
+  ---
+  duration_ms: 1.687833
+  type: 'test'
+  ...
+# Subtest: lean: accel and brake add at most +-0.06 in the travel direction, smoothed
+ok 22 - lean: accel and brake add at most +-0.06 in the travel direction, smoothed
+  ---
+  duration_ms: 0.438042
+  type: 'test'
+  ...
+# Subtest: flag off: no v2 state is read or written
+ok 23 - flag off: no v2 state is read or written
+  ---
+  duration_ms: 0.2125
+  type: 'test'
+  ...
+# Subtest: back support follows approach timing and releases before the apex
+ok 24 - back support follows approach timing and releases before the apex
+  ---
+  duration_ms: 0.684
+  type: 'test'
+  ...
+# Subtest: leapfrog duck lowers the runner through passage without changing his live pose or running legs
+ok 25 - leapfrog duck lowers the runner through passage without changing his live pose or running legs
+  ---
+  duration_ms: 2.456916
+  type: 'test'
+  ...
+# Subtest: leapfrog duck follows the delayed apex and releases smoothly
+ok 26 - leapfrog duck follows the delayed apex and releases smoothly
+  ---
+  duration_ms: 0.180792
+  type: 'test'
+  ...
+# Subtest: fractional leapfrog approach delays keep the landing plant inside the clip
+ok 27 - fractional leapfrog approach delays keep the landing plant inside the clip
+  ---
+  duration_ms: 6.915792
+  type: 'test'
+  ...
+# Subtest: rolling shoulder support holds its horizontal anchor and keeps the head above the floor
+ok 28 - rolling shoulder support holds its horizontal anchor and keeps the head above the floor
+  ---
+  duration_ms: 7.471541
+  type: 'test'
+  ...
+# Subtest: calf contact fits shorter legs higher without changing the requested hook for longer legs
+ok 29 - calf contact fits shorter legs higher without changing the requested hook for longer legs
+  ---
+  duration_ms: 0.346542
+  type: 'test'
+  ...
+# Subtest: forward hook knee keeps the same side when the calf target crosses the hip axis
+ok 30 - forward hook knee keeps the same side when the calf target crosses the hip axis
+  ---
+  duration_ms: 1.274458
+  type: 'test'
+  ...
+# Subtest: support floor contact uses the painted sole rather than an ankle proxy
+ok 31 - support floor contact uses the painted sole rather than an ankle proxy
+  ---
+  duration_ms: 0.303625
+  type: 'test'
+  ...
+# Subtest: leg contact blends preserve thigh and shin length in both facings
+ok 32 - leg contact blends preserve thigh and shin length in both facings
+  ---
+  duration_ms: 1.678125
+  type: 'test'
+  ...
+# Subtest: leg solve carries painted pivot offsets, knee overlap and the boot as rigid artwork
+ok 33 - leg solve carries painted pivot offsets, knee overlap and the boot as rigid artwork
+  ---
+  duration_ms: 0.371542
+  type: 'test'
+  ...
+# Subtest: invalid contact roles, sides and windows are rejected before runtime
+ok 34 - invalid contact roles, sides and windows are rejected before runtime
+  ---
+  duration_ms: 11.497208
+  type: 'test'
+  ...
+# Subtest: leapfrog arrival delay keeps clip events and contact windows valid
+ok 35 - leapfrog arrival delay keeps clip events and contact windows valid
+  ---
+  duration_ms: 0.884708
+  type: 'test'
+  ...
+# Subtest: flying mare snaps over the shoulder into seated arm control without releasing the wrist at impact
+ok 36 - flying mare snaps over the shoulder into seated arm control without releasing the wrist at impact
+  ---
+  duration_ms: 3.052209
+  type: 'test'
+  ...
+# Subtest: knee support moves the complete body to the mat rather than stretching a segment
+ok 37 - knee support moves the complete body to the mat rather than stretching a segment
+  ---
+  duration_ms: 0.451417
+  type: 'test'
+  ...
+# Subtest: threaded boot grip follows the solved leg and the authored trapping channel in both facings
+ok 38 - threaded boot grip follows the solved leg and the authored trapping channel in both facings
+  ---
+  duration_ms: 2.713041
+  type: 'test'
+  ...
+# Subtest: outside hook swings away first and returns onto the calf, mirrored in either facing
+ok 39 - outside hook swings away first and returns onto the calf, mirrored in either facing
+  ---
+  duration_ms: 2.9975
+  type: 'test'
+  ...
+# Subtest: fall catch plants both physical hands and holds their floor points as the body falls
+ok 40 - fall catch plants both physical hands and holds their floor points as the body falls
+  ---
+  duration_ms: 6.238334
+  type: 'test'
+  ...
+# Subtest: stretch knee fitting preserves Lou and changes only the other rigs painted overlap
+ok 41 - stretch knee fitting preserves Lou and changes only the other rigs painted overlap
+  ---
+  duration_ms: 1.749833
+  type: 'test'
+  ...
+# Subtest: folded knee artwork tucks along the calf without slipping sideways or changing the solve
+ok 42 - folded knee artwork tucks along the calf without slipping sideways or changing the solve
+  ---
+  duration_ms: 1.134166
+  type: 'test'
+  ...
+# Subtest: painted knee offset mirrors outward, blends down, and preserves the joint solve
+ok 43 - painted knee offset mirrors outward, blends down, and preserves the joint solve
+  ---
+  duration_ms: 2.619291
+  type: 'test'
+  ...
+# Subtest: relative arm poses keep the worked arm near across rig channel mappings and facings
+ok 44 - relative arm poses keep the worked arm near across rig channel mappings and facings
+  ---
+  duration_ms: 1.366083
+  type: 'test'
+  ...
+# Subtest: grip handoff blends the captured held wrist, independent of changing authored arm poses
+ok 45 - grip handoff blends the captured held wrist, independent of changing authored arm poses
+  ---
+  duration_ms: 1.298542
+  type: 'test'
+  ...
+# Subtest: facing-relative folded legs resolve to the same physical brace knee across rig mappings
+ok 46 - facing-relative folded legs resolve to the same physical brace knee across rig mappings
+  ---
+  duration_ms: 0.550417
+  type: 'test'
+  ...
+# Subtest: relative sole plants choose the supporting physical foot across rig channel mappings
+ok 47 - relative sole plants choose the supporting physical foot across rig channel mappings
+  ---
+  duration_ms: 2.092542
+  type: 'test'
+  ...
+# Subtest: locomotion arm cycles are periodic, mirrored, and keep natural elbow flex
+ok 48 - locomotion arm cycles are periodic, mirrored, and keep natural elbow flex
+  ---
+  duration_ms: 7.912
+  type: 'test'
+  ...
+# Subtest: the rearward running stroke takes the hand behind the shoulder, then returns it forward
+ok 49 - the rearward running stroke takes the hand behind the shoulder, then returns it forward
+  ---
+  duration_ms: 0.113334
+  type: 'test'
+  ...
+# Subtest: nearby guard still owns the arms at full guard
+ok 50 - nearby guard still owns the arms at full guard
+  ---
+  duration_ms: 0.624791
+  type: 'test'
+  ...
+# Subtest: retired body scissors cannot execute even when called directly
+ok 51 - retired body scissors cannot execute even when called directly
+  ---
+  duration_ms: 1.732709
+  type: 'test'
+  ...
+# Subtest: Stage 12 moves and wristlock variant, each in the registry with an executor and in the plan's default kits
+ok 52 - Stage 12 moves and wristlock variant, each in the registry with an executor and in the plan's default kits
+  ---
+  duration_ms: 0.883875
+  type: 'test'
+  ...
+# Subtest: every move builds a valid clip for every attacker / defender rig and a few standoffs: finite channels, no knee channels, strictly increasing keys, events inside the clip
+ok 53 - every move builds a valid clip for every attacker / defender rig and a few standoffs: finite channels, no knee channels, strictly increasing keys, events inside the clip
+  ---
+  duration_ms: 520.237417
+  type: 'test'
+  ...
+# Subtest: a paired move has an attacker and a defender track and the drain event the executor listens for; a solo move has the attacker only
+ok 54 - a paired move has an attacker and a defender track and the drain event the executor listens for; a solo move has the attacker only
+  ---
+  duration_ms: 1.560042
+  type: 'test'
+  ...
+# Subtest: the AI works the mat holds, the stagger hold and the leapfrog (matMoveOdds), and no kit move is left with no AI value that the check can see
+ok 55 - the AI works the mat holds, the stagger hold and the leapfrog (matMoveOdds), and no kit move is left with no AI value that the check can see
+  ---
+  duration_ms: 0.174292
+  type: 'test'
+  ...
+# Subtest: Lou keeps the original wristlock entry before the behind-back variant and Guido keeps the original move
+ok 56 - Lou keeps the original wristlock entry before the behind-back variant and Guido keeps the original move
+  ---
+  duration_ms: 0.34075
+  type: 'test'
+  ...
+# Subtest: hammerlock handoff rejects invalid offsets and grip options
+ok 57 - hammerlock handoff rejects invalid offsets and grip options
+  ---
+  duration_ms: 1.1145
+  type: 'test'
+  ...
+# Subtest: hammerlock: the worked arm swings low behind him, then cranks up his back with the elbow down (Derek, 2026-11-15)
+ok 58 - hammerlock: the worked arm swings low behind him, then cranks up his back with the elbow down (Derek, 2026-11-15)
+  ---
+  duration_ms: 0.227625
+  type: 'test'
+  ...
+# Subtest: runtime: a blendFromHand grip takes the arm over, so two grips on one arm never both turn it
+ok 59 - runtime: a blendFromHand grip takes the arm over, so two grips on one arm never both turn it
+  ---
+  duration_ms: 9.673
+  type: 'test'
+  ...
+# Subtest: test of strength rises from knees into a two-hand wristlock and releases standing
+ok 60 - test of strength rises from knees into a two-hand wristlock and releases standing
+  ---
+  duration_ms: 0.807625
+  type: 'test'
+  ...
+# Subtest: test of strength keeps the receiver face above the back arm and varies the strain between pushes
+ok 61 - test of strength keeps the receiver face above the back arm and varies the strain between pushes
+  ---
+  duration_ms: 0.514125
+  type: 'test'
+  ...
+# Subtest: test of strength shove sends the receiver back while the attacker holds his ground
+ok 62 - test of strength shove sends the receiver back while the attacker holds his ground
+  ---
+  duration_ms: 0.323167
+  type: 'test'
+  ...
+# Subtest: test of strength wristlock has two airborne pain hops with landings
+ok 63 - test of strength wristlock has two airborne pain hops with landings
+  ---
+  duration_ms: 0.204375
+  type: 'test'
+  ...
+# Subtest: bodySlam near either rope lands with the centre-ring separation
+ok 64 - bodySlam near either rope lands with the centre-ring separation
+  ---
+  duration_ms: 34.55325
+  type: 'test'
+  ...
+# Subtest: hipToss near either rope lands with the centre-ring separation
+ok 65 - hipToss near either rope lands with the centre-ring separation
+  ---
+  duration_ms: 13.87175
+  type: 'test'
+  ...
+# Subtest: the ring fit eases in from the trigger position and is absent in the centre
+ok 66 - the ring fit eases in from the trigger position and is absent in the centre
+  ---
+  duration_ms: 4.477875
+  type: 'test'
+  ...
+# Subtest: transformExtents covers every staged role between keys
+ok 67 - transformExtents covers every staged role between keys
+  ---
+  duration_ms: 1.302458
+  type: 'test'
+  ...
+# Subtest: floor contacts and grips validate their windows
+ok 68 - floor contacts and grips validate their windows
+  ---
+  duration_ms: 2.107042
+  type: 'test'
+  ...
+# Subtest: the piledriver holds the crown on the mat through the impact, and the waist grip
+ok 69 - the piledriver holds the crown on the mat through the impact, and the waist grip
+  ---
+  duration_ms: 0.812208
+  type: 'test'
+  ...
+# Subtest: afterDraw hands each gripping actor its grips, weighted, only inside the window
+ok 70 - afterDraw hands each gripping actor its grips, weighted, only inside the window
+  ---
+  duration_ms: 2.545667
+  type: 'test'
+  ...
+# Subtest: a runner already on his rope target turns with a real facing (AI-vs-AI freeze)
+ok 71 - a runner already on his rope target turns with a real facing (AI-vs-AI freeze)
+  ---
+  duration_ms: 1.123334
+  type: 'test'
+  ...
+# Subtest: post-draw support runs only while its move remains active
+ok 72 - post-draw support runs only while its move remains active
+  ---
+  duration_ms: 7.60875
+  type: 'test'
+  ...
+# Subtest: a per-handle onEvent that cancels its own handle stops later markers in the same update, and never applies a post-cancel sample
+ok 73 - a per-handle onEvent that cancels its own handle stops later markers in the same update, and never applies a post-cancel sample
+  ---
+  duration_ms: 0.825875
+  type: 'test'
+  ...
+# Subtest: a per-handle onEvent that cancels its own handle on a LATER marker still blocks any marker after it
+ok 74 - a per-handle onEvent that cancels its own handle on a LATER marker still blocks any marker after it
+  ---
+  duration_ms: 3.535333
+  type: 'test'
+  ...
+# Subtest: a GLOBAL onEvent that cancels the handle also stops later markers, and the per-handle callback for a later marker never runs
+ok 75 - a GLOBAL onEvent that cancels the handle also stops later markers, and the per-handle callback for a later marker never runs
+  ---
+  duration_ms: 1.316917
+  type: 'test'
+  ...
+# Subtest: when the per-handle callback cancels the handle, the global callback is not invoked for that same event
+ok 76 - when the per-handle callback cancels the handle, the global callback is not invoked for that same event
+  ---
+  duration_ms: 0.324292
+  type: 'test'
+  ...
+# Subtest: one handle cancelling ANOTHER handle during the same update is preserved (only self-cancellation is special-cased)
+ok 77 - one handle cancelling ANOTHER handle during the same update is preserved (only self-cancellation is special-cased)
+  ---
+  duration_ms: 0.284166
+  type: 'test'
+  ...
+# Subtest: seek() with emitEvents: a marker that cancels the handle must not apply a post-cancellation sample
+ok 78 - seek() with emitEvents: a marker that cancels the handle must not apply a post-cancellation sample
+  ---
+  duration_ms: 1.1
+  type: 'test'
+  ...
+# Subtest: seek() with emitEvents on a handle that survives still applies and returns a sample as before
+ok 79 - seek() with emitEvents on a handle that survives still applies and returns a sample as before
+  ---
+  duration_ms: 1.367625
+  type: 'test'
+  ...
+# Subtest: cancelling a handle that already reached natural completion in the same update is a no-op (idempotent delete guard)
+ok 80 - cancelling a handle that already reached natural completion in the same update is a no-op (idempotent delete guard)
+  ---
+  duration_ms: 1.561208
+  type: 'test'
+  ...
+# Subtest: variant inherits calibrated geometry from its base part
+ok 81 - variant inherits calibrated geometry from its base part
+  ---
+  duration_ms: 1.619958
+  type: 'test'
+  ...
+# Subtest: near/far render slots fall back to shared base art independently
+ok 82 - near/far render slots fall back to shared base art independently
+  ---
+  duration_ms: 0.71575
+  type: 'test'
+  ...
+# Subtest: a unified forearm variant family reaches both semantic near/far slots
+ok 83 - a unified forearm variant family reaches both semantic near/far slots
+  ---
+  duration_ms: 1.728709
+  type: 'test'
+  ...
+# Subtest: a side-specific family overrides the unified fallback
+ok 84 - a side-specific family overrides the unified fallback
+  ---
+  duration_ms: 0.254959
+  type: 'test'
+  ...
+# Subtest: asset enumeration includes explicit variants without treating rig metadata as files
+ok 85 - asset enumeration includes explicit variants without treating rig metadata as files
+  ---
+  duration_ms: 0.467375
+  type: 'test'
+  ...
+# Subtest: variant contract rejects unknown slots and missing files
+ok 86 - variant contract rejects unknown slots and missing files
+  ---
+  duration_ms: 0.196166
+  type: 'test'
+  ...
+# Subtest: modular hand variants lock the wrist but may move contact geometry
+ok 87 - modular hand variants lock the wrist but may move contact geometry
+  ---
+  duration_ms: 0.912208
+  type: 'test'
+  ...
+# Subtest: Skeleton applies and then cleanly resets a calibrated whole-part swap
+ok 88 - Skeleton applies and then cleanly resets a calibrated whole-part swap
+  ---
+  duration_ms: 1.069375
+  type: 'test'
+  ...
+# Subtest: an explicit binding: null unbinds a variant (George hairReach: a foreshortened arm placed by its own elbow); no binding key inherits the base
+ok 89 - an explicit binding: null unbinds a variant (George hairReach: a foreshortened arm placed by its own elbow); no binding key inherits the base
+  ---
+  duration_ms: 1.56
+  type: 'test'
+  ...
+# Subtest: wrist deformation pins the proximal arm and joins continuously
+ok 90 - wrist deformation pins the proximal arm and joins continuously
+  ---
+  duration_ms: 2.803333
+  type: 'test'
+  ...
+# Subtest: recovery variants build valid clips without modifying the accepted getup
+ok 91 - recovery variants build valid clips without modifying the accepted getup
+  ---
+  duration_ms: 314.273458
+  type: 'test'
+  ...
+# Subtest: rocking entry preserves every accepted recovery key and shifted contact window
+ok 92 - rocking entry preserves every accepted recovery key and shifted contact window
+  ---
+  duration_ms: 0.966042
+  type: 'test'
+  ...
+# Subtest: standing escape retreats immediately into a tuck without a flat knockdown beat
+ok 93 - standing escape retreats immediately into a tuck without a flat knockdown beat
+  ---
+  duration_ms: 0.445958
+  type: 'test'
+  ...
+# Subtest: kip-up springs forward into a landing without inheriting the backward somersault
+ok 94 - kip-up springs forward into a landing without inheriting the backward somersault
+  ---
+  duration_ms: 0.143917
+  type: 'test'
+  ...
+# Subtest: kip-up settles into the supplied wrestling stance before returning control
+ok 95 - kip-up settles into the supplied wrestling stance before returning control
+  ---
+  duration_ms: 0.162459
+  type: 'test'
+  ...
+# Subtest: run trial preserves the reviewed walk and authored-clip gait parameters
+ok 96 - run trial preserves the reviewed walk and authored-clip gait parameters
+  ---
+  duration_ms: 1.798292
+  type: 'test'
+  ...
+# Subtest: run trial keeps stance soles fixed, retains flight and preserves rope-turn mirroring
+ok 97 - run trial keeps stance soles fixed, retains flight and preserves rope-turn mirroring
+  ---
+  duration_ms: 1.514583
+  type: 'test'
+  ...
+# Subtest: running elbow pumps remain bent through a whole cycle without mutating the pose
+ok 98 - running elbow pumps remain bent through a whole cycle without mutating the pose
+  ---
+  duration_ms: 0.337542
+  type: 'test'
+  ...
+# Subtest: head-scissors knees cannot reverse past straight during contact blends, in either facing or body rotation
+ok 99 - head-scissors knees cannot reverse past straight during contact blends, in either facing or body rotation
+  ---
+  duration_ms: 11.067209
+  type: 'test'
+  ...
+# Subtest: seated head-scissors support grounds the hips instead of forcing the head onto the floor
+ok 100 - seated head-scissors support grounds the hips instead of forcing the head onto the floor
+  ---
+  duration_ms: 0.561792
+  type: 'test'
+  ...
+# Subtest: body and head scissors validate across the current roster and keep distinct contact locations
+ok 101 - body and head scissors validate across the current roster and keep distinct contact locations
+  ---
+  duration_ms: 37.586042
+  type: 'test'
+  ...
+# Subtest: neck targeting resolves the central neck joint before the opposite ankle crosses onto the solved leg
+ok 102 - neck targeting resolves the central neck joint before the opposite ankle crosses onto the solved leg
+  ---
+  duration_ms: 3.087
+  type: 'test'
+  ...
+# Subtest: pressure pulses tighten the neck and ankle targets smoothly, then return to the base lock
+ok 103 - pressure pulses tighten the neck and ankle targets smoothly, then return to the base lock
+  ---
+  duration_ms: 4.70275
+  type: 'test'
+  ...
+# Subtest: head scissors releases neck and ankle contacts before the backward roll turns over
+ok 104 - head scissors releases neck and ankle contacts before the backward roll turns over
+  ---
+  duration_ms: 4.142542
+  type: 'test'
+  ...
+# Subtest: walking swing meets the planted sole with continuous position and velocity
+ok 105 - walking swing meets the planted sole with continuous position and velocity
+  ---
+  duration_ms: 1.4625
+  type: 'test'
+  ...
+# Subtest: walking presentation relaxes guard without writing into authored poses
+ok 106 - walking presentation relaxes guard without writing into authored poses
+  ---
+  duration_ms: 1.051125
+  type: 'test'
+  ...
+# Subtest: walking trial leaves running and authored clip gait parameters unchanged
+ok 107 - walking trial leaves running and authored clip gait parameters unchanged
+  ---
+  duration_ms: 2.961459
+  type: 'test'
+  ...
+# Subtest: separate foot tracks remain planted as each hip moves past the supporting sole
+ok 108 - separate foot tracks remain planted as each hip moves past the supporting sole
+  ---
+  duration_ms: 1.21825
+  type: 'test'
+  ...
+# Subtest: ready stance eases without changing authored pose or foot angles
+ok 109 - ready stance eases without changing authored pose or foot angles
+  ---
+  duration_ms: 1.120708
+  type: 'test'
+  ...
+# Subtest: all ready guards keep elbows bent within anatomical limits
+ok 110 - all ready guards keep elbows bent within anatomical limits
+  ---
+  duration_ms: 0.175708
+  type: 'test'
+  ...
+# Subtest: probing guard keeps elbow limits and hand reach bounded over time
+ok 111 - probing guard keeps elbow limits and hand reach bounded over time
+  ---
+  duration_ms: 30.6145
+  type: 'test'
+  ...
+# Subtest: lower guard probes from the wrist while the far elbow stays tucked
+ok 112 - lower guard probes from the wrist while the far elbow stays tucked
+  ---
+  duration_ms: 0.759417
+  type: 'test'
+  ...
+1..112
+# tests 112
+# suites 0
+# pass 112
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 859.198834

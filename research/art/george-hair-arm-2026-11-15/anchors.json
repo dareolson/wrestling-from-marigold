@@ -1,0 +1,54 @@
+{
+  "status": "art-only; unregistered",
+  "character": "george-roster-v1",
+  "upperArm": {
+    "hairReach": {
+      "file": "upperArm-hairReach-v1.png",
+      "canvas": {
+        "w": 296,
+        "h": 410
+      },
+      "jointPivotFrac": 0.2528773999674292,
+      "pivotOffsetFrac": 0.001335931701165971,
+      "proximal": {
+        "u": 0.501335931701166,
+        "v": 0.2528773999674292
+      },
+      "distalAnchorFrac": {
+        "u": 0.5013513513513513,
+        "v": 0.6
+      },
+      "distalPixels": {
+        "x": 148.4,
+        "y": 246
+      },
+      "note": "Changed projected elbow; do not inherit and fit base binding onto the normal-length world bone. See README registration note."
+    }
+  },
+  "forearm": {
+    "hairFix": {
+      "file": "forearm-hairFix-v1.png",
+      "canvas": {
+        "w": 426,
+        "h": 439
+      },
+      "jointPivotFrac": 0.15587737708655966,
+      "pivotOffsetFrac": 0.0010400885553675243,
+      "distalAnchorFrac": {
+        "u": 0.5010400885553675,
+        "v": 0.5297511669023867
+      },
+      "semanticAnchors": {
+        "hairContact": {
+          "u": 0.5868544600938967,
+          "v": 0.8177676537585421
+        }
+      },
+      "hairContactPixels": {
+        "x": 250,
+        "y": 359
+      },
+      "note": "hairContact is finger-pad center, not wrist. Original shaft/cap through row233 unchanged."
+    }
+  }
+}

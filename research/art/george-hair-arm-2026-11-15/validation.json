@@ -1,0 +1,42 @@
+[
+  {
+    "file": "upperArm-hairReach-v1.png",
+    "canvas": [
+      296,
+      410
+    ],
+    "sha256": "0083a43e1fc8d6d12513259dc8c83856809923a42ad0876d61169000c7508f86",
+    "originalCapRows": [
+      0,
+      150
+    ],
+    "changedCapChannels": 0,
+    "edgeAlphaPixels": 0,
+    "anchor": {
+      "x": 148.4,
+      "y": 246
+    },
+    "anchorAlpha": 253,
+    "baseStillMatchesReference": true
+  },
+  {
+    "file": "forearm-hairFix-v1.png",
+    "canvas": [
+      426,
+      439
+    ],
+    "sha256": "e5b9eeb5cc856e115f8469ab9d8b89891c74c89ccd53b50faadadb3960f99bb6",
+    "originalCapRows": [
+      0,
+      233
+    ],
+    "changedCapChannels": 0,
+    "edgeAlphaPixels": 0,
+    "anchor": {
+      "x": 250,
+      "y": 359
+    },
+    "anchorAlpha": 253,
+    "baseStillMatchesReference": true
+  }
+]

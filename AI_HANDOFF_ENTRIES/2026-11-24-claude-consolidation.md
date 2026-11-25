@@ -38,7 +38,7 @@
 - grip, clasp and chop forearms show the old elbow cap: an art pass is needed
 - far-shin ankle twist uses a different boot drawing
 - backSell `holdW`/`recovery*` and `crownBelowHip` are pre-swap values: re-measure with hold_weight_sweep / recovery_probe
-- Derek has not looked yet
+- Derek (2026-11-24): "they seem fine from a distance"; the clips are too small to judge closely. Not a close-up approval.
 
 ## System
 

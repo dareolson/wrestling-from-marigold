@@ -60,3 +60,4 @@
 - build OK; `moves:coverage --check` passed (49 baselined)
 - size-pop soak: PASS (0 pops or errors outside the named list; 11 named lou-kowalski ground-attack route pops, which are an accepted category)
 - compare film, Lou vs shelf: `research/art-revisions/2026-11-24-lou/compare/index.html`. 56 cases (14 moves on George × both facings × 2 bodies), 0 page errors. Videos stay on disk (ignored). Not judged: Derek looks.
+- close-up film (2026-11-25): `research/art-revisions/2026-11-24-lou/closeup/index.html`, from `tools/debug/lou_shelf_closeup.mjs`. Chop, ankle lock, hammerlock, test of strength, headlock, backdrop suplex, piledriver; zoom 2.0, camera tracks the pair; 28 clips, 0 page errors. Not judged.

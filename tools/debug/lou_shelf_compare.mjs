@@ -31,8 +31,8 @@ try {
 } finally { await browser.close(); }
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const cell = (id, name, side) => { const c = cases.find(x => x.tag === `${id}-${name}-${side}`); return `<td><video src="video/${c.tag}.webm" autoplay loop muted playsinline></video>${c.errors.length ? `<p class=e>${esc(c.errors.join(' | '))}</p>` : ''}</td>`; };
-const rows = moves.map(([id]) => `<tr><th colspan=4>${esc(id)}</th></tr><tr>${cell(id, 'lou', 'right')}${cell(id, 'lou2', 'right')}${cell(id, 'lou', 'left')}${cell(id, 'lou2', 'left')}</tr>`).join('');
-writeFileSync(`${dir}/index.html`, `<!doctype html><meta charset=utf-8><title>Lou2 vs Lou</title><style>body{background:#1d1f22;color:#ddd;font:14px system-ui;margin:16px}table{border-collapse:collapse}td{padding:4px;vertical-align:top}th{text-align:left;padding:14px 4px 2px;font-size:16px}video{width:400px;display:block}.e{color:#f77;max-width:400px}.h th{font-size:13px;color:#9ab}</style>
-<h1>Lou2 (new PSD) vs current Procreate Lou, on George, normal speed</h1><p>Same moves, same overrides (Lou2 runs Procreate Lou's per-rig tuning via moveRig). Lou2 has no chop/grip/clasp hand variants, so those fall back to his plain forearm.</p>
-<table><tr class=h><th>Lou, facing right</th><th>Lou2, facing right</th><th>Lou, facing left</th><th>Lou2, facing left</th></tr>${rows}</table>`);
+const rows = moves.map(([id]) => `<tr><th colspan=4>${esc(id)}</th></tr><tr>${cell(id, 'lou', 'right')}${cell(id, 'shelf', 'right')}${cell(id, 'lou', 'left')}${cell(id, 'shelf', 'left')}</tr>`).join('');
+writeFileSync(`${dir}/index.html`, `<!doctype html><meta charset=utf-8><title>Lou vs shelf</title><style>body{background:#1d1f22;color:#ddd;font:14px system-ui;margin:16px}table{border-collapse:collapse}td{padding:4px;vertical-align:top}th{text-align:left;padding:14px 4px 2px;font-size:16px}video{width:400px;display:block}.e{color:#f77;max-width:400px}.h th{font-size:13px;color:#9ab}</style>
+<h1>Lou (Lou2.psd body, 2026-11-24) vs shelved Procreate body, on George, normal speed</h1><p>Same moves, same per-rig tuning (the shelf runs Lou's via moveRig). Variants on the new body were re-fitted by tools/art/rebase_variants.py.</p>
+<table><tr class=h><th>Lou, facing right</th><th>Shelf, facing right</th><th>Lou, facing left</th><th>Shelf, facing left</th></tr>${rows}</table>`);
 console.log(`${dir}/index.html`);

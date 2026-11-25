@@ -58,4 +58,5 @@
 - npm test: 1544/1544 (Node 22), on the committed index tree
 - `node tools/rig/validate-character-rigs.mjs`: all valid
 - build OK; `moves:coverage --check` passed (49 baselined)
-- film and size-pop soak: below
+- size-pop soak: PASS (0 pops or errors outside the named list; 11 named lou-kowalski ground-attack route pops, which are an accepted category)
+- compare film, Lou vs shelf: `research/art-revisions/2026-11-24-lou/compare/index.html`. 56 cases (14 moves on George × both facings × 2 bodies), 0 page errors. Videos stay on disk (ignored). Not judged: Derek looks.

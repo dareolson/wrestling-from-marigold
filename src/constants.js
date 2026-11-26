@@ -45,6 +45,8 @@ export const ropeSpillCandidate = () => ropesCandidate() && new URLSearchParams(
 export const cornersCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('corners') === 'v1';
 // `?cornerGap=<px at the near posts>` (TC.3, with ?corners=v1): how far the posts move out; the far posts scale with the far/near ring width. Default 30 (Derek, TC.3).
 export const cornerGapPx = () => { if (typeof location === 'undefined') return 30; const v = Number(new URLSearchParams(location.search).get('cornerGap')); return Number.isFinite(v) && new URLSearchParams(location.search).has('cornerGap') ? Math.max(0, v) : 30; };
+// `?ropeSag=<scale>` (Derek 2026-11-25, "a touch of natural sag"): multiplies every strand's resting droop (Arena REST_SAG 6 / 4.5 / 3 px near, bottom to top). Default 1 = today.
+export const ropeSagScale = () => { if (typeof location === 'undefined') return 1; const q = new URLSearchParams(location.search), v = Number(q.get('ropeSag')); return q.has('ropeSag') && Number.isFinite(v) ? Math.max(0, v) : 1; };
 // ropeContact (PLAN_ROPES T2.1/T2.2): with ropes on, parts bend the strands and each bend is a spring. Promoted by Derek 2026-11-23 ("good enough for now"): on with ropes unless
 // `?ropeContact=off` (any value but `v1` is off), which is the R1 root-only press.
 export const ropeContactCandidate = () => { if (!ropesCandidate()) return false; const v = new URLSearchParams(location.search).get('ropeContact'); return v === null || v === 'v1'; };

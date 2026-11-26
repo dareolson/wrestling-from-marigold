@@ -1,4 +1,4 @@
-import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate, ropeSwayScale, ropeContactCandidate, ropeSpillCandidate, cornersCandidate, cornerGapPx } from '../constants.js';
+import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate, ropeSwayScale, ropeContactCandidate, ropeSpillCandidate, cornersCandidate, cornerGapPx, ropeSagScale } from '../constants.js';
 import { cornerGeom, cornerGaps, drawTurnbuckle } from '../ringCorners.js';
 import { createSway, swayKick, swayStep, swayWall, swayHardness, SWAY, SWAY_STATES } from '../animation/ropeSway.js';
 import { createContact, contactStep, sidePartPx, reachesY, coverWeight, CONTACT_SKIP, CONTACT_PARTS } from '../animation/ropeContact.js';
@@ -2481,7 +2481,7 @@ export default class Arena extends Phaser.Scene {
         // Resting gravity sag, bottom rope loosest → top rope tightest (px at
         // the near side; far side scaled down with the perspective). The
         // spring sag from bounces rides on top of this.
-        const REST_SAG = [6, 4.5, 3];
+        const REST_SAG = [6, 4.5, 3].map(v => v * (this._ropeSag ??= ropeSagScale()));   // ?ropeSag=<scale>
 
         // Rope shadows (see ROPE_SHADOW and the merged-band pass further
         // below) project the exact same near/far/side point arrays the

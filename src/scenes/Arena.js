@@ -1,5 +1,5 @@
 import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate, ropeSwayScale, ropeContactCandidate, ropeSpillCandidate, cornersCandidate, cornerGapPx } from '../constants.js';
-import { cornerGeom, cornerGaps } from '../ringCorners.js';
+import { cornerGeom, cornerGaps, drawTurnbuckle } from '../ringCorners.js';
 import { createSway, swayKick, swayStep, swayWall, swayHardness, SWAY, SWAY_STATES } from '../animation/ropeSway.js';
 import { createContact, contactStep, sidePartPx, reachesY, coverWeight, CONTACT_SKIP, CONTACT_PARTS } from '../animation/ropeContact.js';
 import { spillAtRopes } from '../animation/ropeSpill.js';
@@ -2712,18 +2712,12 @@ export default class Arena extends Phaser.Scene {
         if (cornersCandidate()) {
             const G = cornerGeom(RING, cornerGaps(cornerGapPx(), RING)), wedge = this.add.graphics().setDepth(6);
             for (const [k, c] of Object.entries(G)) {
-                const near = k[0] === 'n', gfx = near ? nearGfx : farGfx, w = near ? 8 : 5, tb = near ? 3.5 : 2, post = c.foot, bot = near ? apronY + (post.y - c.corner.y) : post.y + 16;
+                const near = k[0] === 'n', gfx = near ? nearGfx : farGfx, w = near ? 8 : 5, post = c.foot, bot = near ? apronY + (post.y - c.corner.y) : post.y + 16;
                 gfx.fillStyle(0x686860, 1);
                 gfx.fillRect(post.x - w / 2, topRope[near ? 'nearY' : 'farY'] + (post.y - c.corner.y) - (near ? 6 : 4), w, bot - (topRope[near ? 'nearY' : 'farY'] + (post.y - c.corner.y) - (near ? 6 : 4)));
                 gfx.fillStyle(0x888880, 1);
                 gfx.fillCircle(post.x, topRope[near ? 'nearY' : 'farY'] + (post.y - c.corner.y) - (near ? 6 : 4), w * 0.8);
-                c.levels.forEach((lv, i) => {
-                    gfx.lineStyle(near ? 3 : 2.5, 0xc0c0b4, 1);   // lighter than the post (0x686860) so the connector reads against it
-                    gfx.lineBetween(lv.turnbuckle.x, lv.turnbuckle.y, lv.onPost.x, lv.onPost.y);
-                    gfx.fillStyle(0x484840, 1);
-                    gfx.fillRect(lv.turnbuckle.x - tb, lv.turnbuckle.y - tb, tb * 2, tb * 2);
-                    if (i === ropes.length - 1) { gfx.fillStyle(0x888880, 1); gfx.fillRoundedRect(lv.turnbuckle.x - tb * 1.4, lv.turnbuckle.y - tb * 1.8, tb * 2.8, tb * 3.6, tb * 0.8); }   // the pad on the top turnbuckle
-                });
+                c.levels.forEach(lv => drawTurnbuckle(gfx, lv.turnbuckle, lv.onPost, near ? 1 : 0.85));   // TC.4: a real turnbuckle per level (far parts 0.85, not 540/880: the connector runs along the post there and needs the width to read on the crowd) (the TC.1 pad over the barrel is gone)
                 if (near) {   // the apron's corner: from the apron's edge out under the moved post
                     const sx = k === 'nl' ? -1 : 1, ax = c.corner.x;
                     wedge.fillStyle(0xa0a098, 1);

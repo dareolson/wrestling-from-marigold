@@ -25,7 +25,8 @@ async function shoot(qs, tag) {
         await h.page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0]; sc.w1.x = 400; sc.w2.x = 560; sc.w1.y = sc.w2.y = 360; sc.w1.facing = 1; sc.w2.facing = -1; });
         await step(30);
         await h.page.screenshot({ path: join(outDir, `full-${tag}.png`), clip: { x: box.x, y: box.y, width: box.w, height: box.h } });
-        for (const k of ['nl', 'nr', 'fl', 'fr']) await h.page.screenshot({ path: join(outDir, `${k}-${tag}.png`), clip: clip(G[k].corner.x + (k.endsWith('l') ? 45 : -45), G[k].corner.y - 50, 170, 130) });
+        // all three rope levels at each corner: near rows y 251-380, far y 142-218
+        for (const k of ['nl', 'nr', 'fl', 'fr']) await h.page.screenshot({ path: join(outDir, `${k}-${tag}.png`), clip: clip(G[k].corner.x + (k.endsWith('l') ? 45 : -45), k[0] === 'n' ? 350 : 200, 170, k[0] === 'n' ? 230 : 170) });
         // a man cornered at near left (stuck there after a whip)
         await h.page.evaluate(() => { const sc = window.__WFM_GAME.scene.scenes[0], d = sc.w2, a = sc.w1, R = window.__R; d.x = R.nearLeft.x + 24; d.y = R.nearLeft.y - 6; a.x = d.x + 150; a.y = d.y; a.facing = -1; d.facing = 1; d._beginCorner(-1); });
         await step(45);
@@ -38,22 +39,22 @@ async function shoot(qs, tag) {
         await h.page.screenshot({ path: join(outDir, `turnbuckle-${tag}.png`), clip: clip(G.fr.corner.x - 30, G.fr.corner.y - 120, 150, 210) });
     } finally { await h.close(); }
 }
-const VARIANTS = [['', 'old'], ['&corners=v1&cornerGap=8', 'g8'], ['&corners=v1&cornerGap=20', 'g20'], ['&corners=v1&cornerGap=30', 'g30']];
+const VARIANTS = [['', 'old'], ['&corners=v1', 'tc4']];   // TC.4: the default gap (30)
 for (const [qs, tag] of VARIANTS) await shoot(qs, tag);
 
 const f = n => +n.toFixed(1);
-const TAGS = VARIANTS.map(v => v[1]), LABEL = { old: 'old', g8: 'gap 8 (~2")', g20: 'gap 20 (~5")', g30: 'gap 30 (~8")' };
-const row = (n, w) => `<div class="row">${TAGS.map(t => `<figure><img class="${w < 560 ? 'z' : ''}" src="${n}-${t}.png" style="width:${w}px"><figcaption>${LABEL[t]}</figcaption></figure>`).join('')}</div>`;
-const tbl = [8, 20, 30].map(g => { const GG = cornerGeom(RING, cornerGaps(g, RING)); return `<tr><td>${g}</td>${['nl', 'nr', 'fl', 'fr'].map(k => `<td>(${f(GG[k].foot.x)}, ${f(GG[k].foot.y)}) moves ${f(GG[k].gap)}</td>`).join('')}</tr>`; }).join('');
+const TAGS = VARIANTS.map(v => v[1]), LABEL = { old: 'old', tc4: '?corners=v1 (gap 30, turnbuckles)' };
+const row = (n, w) => `<div class="row">${TAGS.map(t => `<figure><img class="z" src="${n}-${t}.png" style="width:${w}px"><figcaption>${LABEL[t]}</figcaption></figure>`).join('')}</div>`;
+const tbl = [30].map(g => { const GG = cornerGeom(RING, cornerGaps(g, RING)); return `<tr><td>${g}</td>${['nl', 'nr', 'fl', 'fr'].map(k => `<td>(${f(GG[k].foot.x)}, ${f(GG[k].foot.y)}) moves ${f(GG[k].gap)}</td>`).join('')}</tr>`; }).join('');
 writeFileSync(join(outDir, 'index.html'), `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ring corners gap</title>
 <style>:root{color-scheme:dark}body{font:14px system-ui;background:#16161a;color:#ddd;margin:16px;max-width:1700px}img{image-rendering:pixelated;display:block;max-width:100%}img.z{filter:brightness(1.8) contrast(1.1)}.row{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}figure{margin:0}figcaption{font-size:12px;color:#aaa}h2{margin:22px 0 4px;font-size:16px}table{border-collapse:collapse}td,th{border:1px solid #444;padding:3px 8px;text-align:left}</style>
-<h1>Ring corners: how far out the posts stand (TC.3)</h1>
-<p><code>?corners=v1&amp;cornerGap=&lt;px at the near posts&gt;</code>; the far posts move 540/880 of it. Drawing only: strands, RING and rope points are where they were. One near px is about 3 inches (880 px ≈ 20 ft). Connector: light line, 3 px near / 2 px far; the turnbuckle is the dark block at the strand end, the pad on top.</p>
+<h1>Ring corners: posts out 30, a real turnbuckle per level (TC.4)</h1>
+<p><code>?corners=v1</code> now defaults to gap 30 (<code>&amp;cornerGap=&lt;px&gt;</code> still overrides). Each rope level ends in a turnbuckle: rope eye at the strand end, a thread rod, a metal barrel (lit along its top, dark collars), a rod and an eye bolt into the post; every part has a dark outline so it reads on the crowd. Far corners are the same parts at 540/880. The pad over the top turnbuckle is gone. Drawing only: strands, RING and rope points are where they were.</p>
 <h2>Reference (Derek's 1940s ring)</h2><div class="row"><img src="../reference-1940s-ring.png" style="width:680px"></div>
-<h2>Full ring</h2><div class="row">${TAGS.map(t => `<figure><img src="full-${t}.png" style="width:420px"><figcaption>${LABEL[t]}</figcaption></figure>`).join('')}</div>
-${[['nl', 'Near left'], ['nr', 'Near right'], ['fl', 'Far left'], ['fr', 'Far right']].map(([k, n]) => `<h2>${n} corner, zoomed 4x (brightened 1.8x on this page only)</h2>${row(k, 420)}`).join('')}
-<h2>A man cornered (near left)</h2>${row('cornered', 380)}
-<h2>A man on the top turnbuckle (far right)</h2>${row('turnbuckle', 380)}
+<h2>Full ring</h2><div class="row">${TAGS.map(t => `<figure><img src="full-${t}.png" style="width:640px"><figcaption>${LABEL[t]}</figcaption></figure>`).join('')}</div>
+${[['nl', 'Near left'], ['nr', 'Near right'], ['fl', 'Far left'], ['fr', 'Far right']].map(([k, n]) => `<h2>${n} corner, zoomed 4x (brightened 1.8x on this page only)</h2>${row(k, 700)}`).join('')}
+<h2>A man cornered (near left)</h2>${row('cornered', 520)}
+<h2>A man on the top turnbuckle (far right)</h2>${row('turnbuckle', 520)}
 <h2>Numbers: post footprints (game px; canvas 960 wide)</h2><table><tr><th>near gap</th><th>near left</th><th>near right</th><th>far left</th><th>far right</th></tr>${tbl}</table>
 <p>Near gap 30: the near-left post's left edge is at x ≈ ${f(cornerGeom(RING, cornerGaps(30, RING)).nl.foot.x - 4)} (canvas edge 0); the apron wedge under it reaches that x at y 445-490.</p>`);
 console.log('wrote', join(outDir, 'index.html'));

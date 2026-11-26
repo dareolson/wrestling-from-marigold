@@ -69,3 +69,17 @@ export function drawTurnbuckle(gfx, a, b, sc = 1, rim = 0x5a5a54) {
     line(at(b1), at(L - 2.2 * sc), Math.max(1.4, 1.5 * sc), RIM);
     gfx.lineStyle(Math.max(1.4, 1.5 * sc), RIM, 1); gfx.strokeCircle(b.x, b.y, 2 * sc);                // the eye on the post
 }
+
+// TC.6 (Codex art, research/ropes-2026-11/rc/codex-art/): one sprite per corner kind (pad + strap, clip, barrel, hook), drawn at 8x. The left corners use it as drawn, the right corners mirrored; the
+// three levels repeat it. `ropeCorner` sits on the strand end, `postHook` (PNG px) is where the post stands, so the post's x comes from the art, not from `cornerGap`.
+const artScale = () => { if (typeof location === 'undefined') return 1 / 8; const v = Number(new URLSearchParams(location.search).get('tbScale')); return v > 0 ? v : 1 / 8; };   // ?tbScale=<x> (trial)
+export const CORNER_ART = Object.freeze({
+    scale: artScale(),
+    near: Object.freeze({ key: 'turnbuckle-near-v1', size: [320, 200], ropeCorner: [225, 101], postHook: [24, 174] }),
+    far: Object.freeze({ key: 'turnbuckle-far-v1', size: [224, 152], ropeCorner: [148, 71], postHook: [15, 13] }),
+});
+/** Where the art puts the hook relative to the strand end, screen px: { dx, dy } for corner `k` ('nl' | 'nr' | 'fl' | 'fr'). */
+export function cornerArtHook(k) {
+    const a = CORNER_ART[k[0] === 'n' ? 'near' : 'far'], sx = k[1] === 'l' ? 1 : -1;
+    return { dx: sx * (a.postHook[0] - a.ropeCorner[0]) * CORNER_ART.scale, dy: (a.postHook[1] - a.ropeCorner[1]) * CORNER_ART.scale };
+}

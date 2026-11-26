@@ -1,5 +1,7 @@
 import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate, ropeSwayScale, ropeContactCandidate, ropeSpillCandidate, cornersCandidate, cornerGapPx, ropeSagScale } from '../constants.js';
-import { cornerGeom, cornerGaps, drawTurnbuckle } from '../ringCorners.js';
+import { cornerGeom, cornerGaps, drawTurnbuckle, CORNER_ART, cornerArtHook } from '../ringCorners.js';
+import turnbuckleNearUrl from '../assets/ring/turnbuckle-near-v1.png';
+import turnbuckleFarUrl from '../assets/ring/turnbuckle-far-v1.png';
 import { createSway, swayKick, swayStep, swayWall, swayHardness, SWAY, SWAY_STATES } from '../animation/ropeSway.js';
 import { createContact, contactStep, sidePartPx, reachesY, coverWeight, CONTACT_SKIP, CONTACT_PARTS } from '../animation/ropeContact.js';
 import { spillAtRopes } from '../animation/ropeSpill.js';
@@ -636,6 +638,7 @@ export default class Arena extends Phaser.Scene {
             for (const asset of enumerateCharacterAssets(char)) this.load.image(asset.key, asset.file);
         }
         if (facesTrial()) for (const asset of faceAssets()) this.load.image(asset.key, asset.file);
+        if (cornersCandidate()) { this.load.image(CORNER_ART.near.key, turnbuckleNearUrl); this.load.image(CORNER_ART.far.key, turnbuckleFarUrl); }   // TC.6
         for (const extra of CROWD_EXTRAS) {
             for (let i = 1; i <= extra.frames; i++) {
                 this.load.image(`${extra.slug}${i}`, `src/assets/audience/${extra.slug}/frame${i}.png`);
@@ -2711,13 +2714,19 @@ export default class Arena extends Phaser.Scene {
         // Drawing only: the strands, RING and every rope point are untouched. The near apron gets a small wedge so the moved post's base still stands on it.
         if (cornersCandidate()) {
             const G = cornerGeom(RING, cornerGaps(cornerGapPx(), RING)), wedge = this.add.graphics().setDepth(6);
+            const art = this.textures.exists(CORNER_ART.near.key) && this.textures.exists(CORNER_ART.far.key);   // TC.6: Codex's sprites; without them the TC.5 drawing
             for (const [k, c] of Object.entries(G)) {
+                if (art) { const h = cornerArtHook(k); c.foot = { x: c.corner.x + h.dx, y: c.corner.y + h.dy }; }   // the post stands where the art's hook is
                 const near = k[0] === 'n', gfx = near ? nearGfx : farGfx, w = near ? 8 : 5, post = c.foot, bot = near ? apronY + (post.y - c.corner.y) : post.y + 16;
                 gfx.fillStyle(0x686860, 1);
                 gfx.fillRect(post.x - w / 2, topRope[near ? 'nearY' : 'farY'] + (post.y - c.corner.y) - (near ? 6 : 4), w, bot - (topRope[near ? 'nearY' : 'farY'] + (post.y - c.corner.y) - (near ? 6 : 4)));
                 gfx.fillStyle(0x888880, 1);
                 gfx.fillCircle(post.x, topRope[near ? 'nearY' : 'farY'] + (post.y - c.corner.y) - (near ? 6 : 4), w * 0.8);
-                c.levels.forEach(lv => drawTurnbuckle(gfx, lv.turnbuckle, lv.onPost, 1, near ? 0x5a5a54 : 0x8e8e84));   // TC.5: the corner rig per level; far keeps the near size (the far connector is short and sits on the crowd) with a lighter rim (the TC.1 pad over the barrel is gone)
+                if (art) {
+                    const a = CORNER_ART[near ? 'near' : 'far'], right = k[1] === 'r';
+                    for (const lv of c.levels) this.add.image(lv.turnbuckle.x, lv.turnbuckle.y, a.key).setScale(CORNER_ART.scale).setFlipX(right)
+                        .setOrigin(right ? 1 - a.ropeCorner[0] / a.size[0] : a.ropeCorner[0] / a.size[0], a.ropeCorner[1] / a.size[1]).setDepth(near ? 25.71 : 2.55);
+                } else c.levels.forEach(lv => drawTurnbuckle(gfx, lv.turnbuckle, lv.onPost, 1, near ? 0x5a5a54 : 0x8e8e84));   // TC.5: the corner rig per level; far keeps the near size (the far connector is short and sits on the crowd) with a lighter rim (the TC.1 pad over the barrel is gone)
                 if (near) {   // the apron's corner: from the apron's edge out under the moved post
                     const sx = k === 'nl' ? -1 : 1, ax = c.corner.x;
                     wedge.fillStyle(0xa0a098, 1);

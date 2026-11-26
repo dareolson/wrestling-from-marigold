@@ -2717,7 +2717,7 @@ export default class Arena extends Phaser.Scene {
                 gfx.fillRect(post.x - w / 2, topRope[near ? 'nearY' : 'farY'] + (post.y - c.corner.y) - (near ? 6 : 4), w, bot - (topRope[near ? 'nearY' : 'farY'] + (post.y - c.corner.y) - (near ? 6 : 4)));
                 gfx.fillStyle(0x888880, 1);
                 gfx.fillCircle(post.x, topRope[near ? 'nearY' : 'farY'] + (post.y - c.corner.y) - (near ? 6 : 4), w * 0.8);
-                c.levels.forEach(lv => drawTurnbuckle(gfx, lv.turnbuckle, lv.onPost, near ? 1 : 0.85));   // TC.4: a real turnbuckle per level (far parts 0.85, not 540/880: the connector runs along the post there and needs the width to read on the crowd) (the TC.1 pad over the barrel is gone)
+                c.levels.forEach(lv => drawTurnbuckle(gfx, lv.turnbuckle, lv.onPost, 1, near ? 0x5a5a54 : 0x8e8e84));   // TC.5: the corner rig per level; far keeps the near size (the far connector is short and sits on the crowd) with a lighter rim (the TC.1 pad over the barrel is gone)
                 if (near) {   // the apron's corner: from the apron's edge out under the moved post
                     const sx = k === 'nl' ? -1 : 1, ax = c.corner.x;
                     wedge.fillStyle(0xa0a098, 1);

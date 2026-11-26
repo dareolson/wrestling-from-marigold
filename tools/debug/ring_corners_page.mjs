@@ -7,7 +7,7 @@ import { launch } from './harness.mjs';
 import { RING } from '../../src/constants.js';
 import { cornerGeom, cornerGaps } from '../../src/ringCorners.js';
 
-const outDir = process.argv[2] ?? 'research/ropes-2026-11/rc/tc2';
+const outDir = process.argv[2] ?? 'research/ropes-2026-11/rc/tc5-page';
 mkdirSync(outDir, { recursive: true });
 const G = cornerGeom(RING);   // the corner points only (the same at any gap)
 
@@ -39,19 +39,20 @@ async function shoot(qs, tag) {
         await h.page.screenshot({ path: join(outDir, `turnbuckle-${tag}.png`), clip: clip(G.fr.corner.x - 30, G.fr.corner.y - 120, 150, 210) });
     } finally { await h.close(); }
 }
-const VARIANTS = [['', 'old'], ['&corners=v1', 'tc4']];   // TC.4: the default gap (30)
+const VARIANTS = [['', 'old'], ['&corners=v1', 'tc5']];   // TC.5: the default gap (30)
 for (const [qs, tag] of VARIANTS) await shoot(qs, tag);
 
 const f = n => +n.toFixed(1);
-const TAGS = VARIANTS.map(v => v[1]), LABEL = { old: 'old', tc4: '?corners=v1 (gap 30, turnbuckles)' };
+const TAGS = VARIANTS.map(v => v[1]), LABEL = { old: 'old', tc5: '?corners=v1 (gap 30, TC.5 rigging)' };
 const row = (n, w) => `<div class="row">${TAGS.map(t => `<figure><img class="z" src="${n}-${t}.png" style="width:${w}px"><figcaption>${LABEL[t]}</figcaption></figure>`).join('')}</div>`;
 const tbl = [30].map(g => { const GG = cornerGeom(RING, cornerGaps(g, RING)); return `<tr><td>${g}</td>${['nl', 'nr', 'fl', 'fr'].map(k => `<td>(${f(GG[k].foot.x)}, ${f(GG[k].foot.y)}) moves ${f(GG[k].gap)}</td>`).join('')}</tr>`; }).join('');
 writeFileSync(join(outDir, 'index.html'), `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ring corners gap</title>
 <style>:root{color-scheme:dark}body{font:14px system-ui;background:#16161a;color:#ddd;margin:16px;max-width:1700px}img{image-rendering:pixelated;display:block;max-width:100%}img.z{filter:brightness(1.8) contrast(1.1)}.row{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}figure{margin:0}figcaption{font-size:12px;color:#aaa}h2{margin:22px 0 4px;font-size:16px}table{border-collapse:collapse}td,th{border:1px solid #444;padding:3px 8px;text-align:left}</style>
-<h1>Ring corners: posts out 30, a real turnbuckle per level (TC.4)</h1>
-<p><code>?corners=v1</code> now defaults to gap 30 (<code>&amp;cornerGap=&lt;px&gt;</code> still overrides). Each rope level ends in a turnbuckle: rope eye at the strand end, a thread rod, a metal barrel (lit along its top, dark collars), a rod and an eye bolt into the post; every part has a dark outline so it reads on the crowd. Far corners are the same parts at 540/880. The pad over the top turnbuckle is gone. Drawing only: strands, RING and rope points are where they were.</p>
-<h2>Reference (Derek's 1940s ring)</h2><div class="row"><img src="../reference-1940s-ring.png" style="width:680px"></div>
-<h2>Full ring</h2><div class="row">${TAGS.map(t => `<figure><img src="full-${t}.png" style="width:640px"><figcaption>${LABEL[t]}</figcaption></figure>`).join('')}</div>
+<h1>Ring corners: padded covers and rigging (TC.5)</h1>
+<p><code>?corners=v1</code> (gap 30). At each rope level a black padded cover wraps the meeting of the strands (rounded teardrop, soft highlight, a seam), then a strap, a small metal ring (the only light part), a short black barrel, a hook and an eye on the post. All near-black; the far corners are the same parts at the near size with a lighter rim, so they read on the crowd. Drawing only: strands, RING and rope points are unchanged. The zooms are brightened 1.8x on this page only (the full-size shot is as captured).</p>
+<h2>Derek's references</h2><div class="row"><img src="../reference-turnbuckle-1.png" style="width:360px"><img src="../reference-turnbuckle-2.png" style="width:330px"><img src="../reference-turnbuckle-3.png" style="width:360px"></div>
+<h2>Full-size wide shot (as captured, 1100 px)</h2><div class="row"><img src="full-tc5.png" style="width:1100px"></div>
+<h2>Full ring, old</h2><div class="row"><img src="full-old.png" style="width:640px"></div>
 ${[['nl', 'Near left'], ['nr', 'Near right'], ['fl', 'Far left'], ['fr', 'Far right']].map(([k, n]) => `<h2>${n} corner, zoomed 4x (brightened 1.8x on this page only)</h2>${row(k, 700)}`).join('')}
 <h2>A man cornered (near left)</h2>${row('cornered', 520)}
 <h2>A man on the top turnbuckle (far right)</h2>${row('turnbuckle', 520)}

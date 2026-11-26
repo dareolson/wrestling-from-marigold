@@ -37,24 +37,35 @@ export function cornerGeom(ring, gap = CORNER_GAP) {
 }
 
 /**
- * TC.4: one real turnbuckle from the strand end `a` to the post `b` on `gfx` (a Phaser Graphics): a rope eye at the strand end, a thread rod, a metal barrel (thicker than the rope, about half the connector,
- * lit along its top), a rod and an eye bolt into the post. `sc` = 1 near, 540/880 far. Every part is drawn twice, a dark outline under the lighter fill, so it reads against the crowd as well as the mat.
+ * TC.5 (Derek's references): one corner rig from the strand end `a` (where the level's two strands meet) to the post `b` on `gfx` (a Phaser Graphics). A black padded cover wraps the meeting
+ * (a rounded teardrop, about 4 rope-thicknesses tall and longer than tall, tip toward the post, a soft highlight and a seam line, no bright edge), then a short dark strap, a small metal ring (the only
+ * light part), a short black barrel with a faint highlight, a thin hook, and an eye on the post. `sc` = 1 near and far (the far connector is short and sits on the crowd, so it keeps the near rig's size), `rim` lighter at the far corners. Parts sit at fractions
+ * of the connector's length `L` so any `?cornerGap=` works.
  */
-export function drawTurnbuckle(gfx, a, b, sc = 1) {
-    const L = Math.hypot(b.x - a.x, b.y - a.y) || 1, u = { x: (b.x - a.x) / L, y: (b.y - a.y) / L }, n = { x: -u.y, y: u.x };
-    const at = (t, off = 0) => ({ x: a.x + u.x * L * t + n.x * off, y: a.y + u.y * L * t + n.y * off });
-    const th = 5 * sc, re = 2.6 * sc, rb = 2.2 * sc, b0 = 0.22, b1 = 0.72;
+export function drawTurnbuckle(gfx, a, b, sc = 1, rim = 0x5a5a54) {
+    const L = Math.hypot(b.x - a.x, b.y - a.y) || 1, u = { x: (b.x - a.x) / L, y: (b.y - a.y) / L };
+    let n = { x: -u.y, y: u.x }; if (n.y > 0) n = { x: -n.x, y: -n.y };   // n points up the screen: the pad's light side
+    const at = (d, off = 0) => ({ x: a.x + u.x * d + n.x * off, y: a.y + u.y * d + n.y * off });
     const line = (p, q, w, col) => { gfx.lineStyle(w, col, 1); gfx.lineBetween(p.x, p.y, q.x, q.y); };
-    const ring = (p, r, w, col) => { gfx.lineStyle(w, col, 1); gfx.strokeCircle(p.x, p.y, r); };
-    // outline pass
-    const O = 0x0a0a08;   // Derek 2026-11-25: black hardware, a faint sheen so it still reads apart from the ropes (0x36 fill, 0x82 highlight)
-    line(a, b, 2.4 * sc + 1.6, O); line(at(b0), at(b1), th + 2, O);
-    ring(at(re / L), re, 1.6 * sc + 1.6, O); ring(b, rb, 1.6 * sc + 1.6, O);
-    // fill pass: rods, then the barrel with its lit top edge and shaded bottom edge, then the eye and the eye bolt
-    line(a, b, 2.4 * sc, 0x2a2a26);
-    line(at(b0), at(b1), th, 0x1c1c1a);
-    line(at(b0, th * 0.28), at(b1, th * 0.28), th * 0.3, 0x111110);
-    line(at(b0, -th * 0.28), at(b1, -th * 0.28), th * 0.34, 0x4c4c46);
-    line(at(b0), at(b0 + 0.02), th, 0x2e2e2a); line(at(b1 - 0.02), at(b1), th, 0x2e2e2a);   // the barrel's end collars
-    ring(at(re / L), re, 1.6 * sc, 0x3a3a34); ring(b, rb, 1.6 * sc, 0x34342e);
+    const BLACK = 0x1f1f1c, RIM = rim, SOFT = 0x8c8c82, SEAM = 0x080807;   // near-black parts with a soft grey rim and highlight so they read on the dark crowd
+    const H = 12 * sc, pad = Math.max(0.5 * L, 1.6 * H), tip = 0.15 * L, back = tip - pad;   // distances along u from `a`: the pad runs back..tip
+    // the pad: a round back and a pointed tip, as a polygon of its half-widths
+    const prof = (t) => t < 0.3 ? Math.sqrt(Math.max(0, 1 - ((0.3 - t) / 0.3) ** 2)) : Math.pow(Math.max(0, 1 - (t - 0.3) / 0.7), 0.85);
+    const N = 18, top = [], bot = [];
+    for (let k = 0; k <= N; k++) { const t = k / N, d = back + pad * t, w = H / 2 * prof(t); top.push(at(d, w)); bot.push(at(d, -w)); }
+    const outline = [...top, ...bot.reverse()];
+    gfx.fillStyle(BLACK, 1);
+    gfx.fillPoints(outline, true);
+    gfx.lineStyle(Math.max(1, 1.1 * sc), RIM, 1); gfx.strokePoints(outline, true, true);   // the soft rim
+    line(at(back + pad * 0.2, H * 0.22), at(tip - pad * 0.1, H * 0.1), Math.max(1, 1.2 * sc), SOFT);          // the soft highlight along the top
+    line(at(back + pad * 0.25, -H * 0.12), at(tip - pad * 0.15, -H * 0.04), Math.max(0.8, 0.9 * sc), SEAM);   // the seam
+    // strap, ring, barrel, hook, eye
+    const s0 = tip - pad * 0.05, s1 = 0.42 * L, r = 0.47 * L, b0 = 0.52 * L, b1 = 0.80 * L;
+    line(at(s0), at(s1), 3.6 * sc + 1.6, RIM); line(at(s0), at(s1), 3.6 * sc, BLACK);
+    line(at(s0 + (s1 - s0) * 0.5, 0.6 * sc), at(s1, 0.6 * sc), Math.max(0.7, 0.8 * sc), SEAM);
+    gfx.lineStyle(Math.max(1, 1.3 * sc), 0xbcbcb0, 1); gfx.strokeCircle(at(r).x, at(r).y, 1.9 * sc);   // the small metal ring: the only light part
+    line(at(b0), at(b1), 5.6 * sc + 1.6, RIM); line(at(b0), at(b1), 5.6 * sc, BLACK);
+    line(at(b0 + 1, -1.4 * sc), at(b1 - 1, -1.4 * sc), Math.max(0.8, 0.9 * sc), SOFT);
+    line(at(b1), at(L - 2.2 * sc), Math.max(1.4, 1.5 * sc), RIM);
+    gfx.lineStyle(Math.max(1.4, 1.5 * sc), RIM, 1); gfx.strokeCircle(b.x, b.y, 2 * sc);                // the eye on the post
 }

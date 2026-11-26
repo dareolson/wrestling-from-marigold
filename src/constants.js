@@ -42,7 +42,8 @@ export const ropesPastCandidate = () => ropesCandidate() && new URLSearchParams(
 // ropeSpill (PLAN_ROPES stage RS): `?ropeSpill=v1` (with ropes on), opt-in until Derek judges it: a knockdown beside a side wall can end with his head and shoulders under the bottom strand.
 export const ropeSpillCandidate = () => ropesCandidate() && new URLSearchParams(location.search).get('ropeSpill') === 'v1';
 // corners (PLAN_ROPES stage RC): `?corners=v1`, opt-in, drawing only: the posts move out of the rope corners, a turnbuckle and a connector tie each level to its post (src/ringCorners.js).
-export const cornersCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('corners') === 'v1';
+// corners (PLAN_ROPES RC): posts out, turnbuckle pads + rigging (Codex art). PROMOTED to default by Derek 2026-11-25: `?corners=off` (any value but v1) = the old posts.
+export const cornersCandidate = () => { if (typeof location === 'undefined') return false; const v = new URLSearchParams(location.search).get('corners'); return v === null || v === 'v1'; };
 // `?cornerGap=<px at the near posts>` (TC.3, with ?corners=v1): how far the posts move out; the far posts scale with the far/near ring width. Default 30 (Derek, TC.3).
 export const cornerGapPx = () => { if (typeof location === 'undefined') return 30; const v = Number(new URLSearchParams(location.search).get('cornerGap')); return Number.isFinite(v) && new URLSearchParams(location.search).has('cornerGap') ? Math.max(0, v) : 30; };
 // `?ropeSag=<scale>` (Derek 2026-11-25, "a touch of natural sag"): multiplies every strand's resting droop (Arena REST_SAG 6 / 4.5 / 3 px near, bottom to top). Default 3 (Derek picked 3 from research/ropes-2026-11/sag/); `?ropeSag=1` = the old droop.

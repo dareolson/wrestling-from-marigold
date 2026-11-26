@@ -36,7 +36,8 @@ Avoid a large rewrite.
   - Misses: grip/clasp/chop forearms keep the old elbow cap (donors slimmer than the new forearm, no clean splice) → art pass; far-shin ankle twist fit IoU .83 (different boot drawing); back sell (holdW/recovery) and `crownBelowHip` are pre-swap numbers → re-measure; Lou stands 0.5% shorter in ink (ladder re-pinned).
 - **Art revision system:** [ART_REVISION.md](ART_REVISION.md). All four production rigs = generated base (`src/characters/generated/*.base.js`, never edit) + authored layer. `node tools/art/revise_rig.mjs <rig>` re-cuts from the PSD and re-fits every variant. Derek plans new knees (maybe elbows) on every wrestler: use this.
 - **Accepted, preserve:** Lou `wristlockHammerlock`, Guido `wristlock`, stretch, deathlock, headlock takeover, flying mare, test of strength (Nov 16-21); leapfrog + shared idle, backward-roll getup, standing escape, sit-up/rock, kip-up + compact George/Guido idle (Nov 21); Stage E taunts (merged). Body scissors RETIRED (template kept for head scissors). Head scissors DRAFT; recovery/escape gameplay bindings unassigned.
-- **NEXT:** re-measure Lou's back sell + `crownBelowHip` (no Derek needed), then head scissors review, then backdrop suplex. Ropes: RS/TS.6 rope spill under `?ropeSpill=v1` awaiting Derek ([PLAN_ROPES.md](PLAN_ROPES.md)); rope height still his call.
+- **NEXT:** re-measure Lou's back sell + `crownBelowHip` (no Derek needed), then head scissors review, then backdrop suplex. Ropes ([PLAN_ROPES.md](PLAN_ROPES.md)): ring corners PROMOTED Nov 25 (posts out, Codex turnbuckle pads + rigging, `?corners=off` = old); rope sag 3x default (`?ropeSag=1` = old); rope catch TS.6b passed review, still opt-in `?ropeSpill=v1` (Derek: "looking good", promotion his call); re-run TS.6b catchscan + rope order probe under the new sag. Rope height still his call.
+- **Character shadows PROMOTED (Derek, Nov 25):** Codex's cast shadows (`src/rendering/characterShadows.js`, reference angle, 3px soft, 0.29, MULTIPLY pass, no body cutouts) are default; `?shadows=off` = old ovals, `?shadowAngle=original` = first direction. [Codex handoff](AI_HANDOFF_ENTRIES/2026-11-25-codex-character-shadow-review.md). Open: CPU canvas redraw + upload every frame (target-device cost unmeasured).
 - **Open control issues:** with `waistlock=v1`, Lou's go-behind shadows Up/Down + Power; AI plays only stretch and deathlock of the mat set.
 - **Preview:** `npm run dev`; moves `/tools/mat-preview/?move=<key>&att=<rig>&def=<rig>` (defaults to wristlockHammerlock); gait `/tools/gait-preview/?rig=<rig>`; run `/tools/run-preview/?rig=<rig>`.
 - **Before any push:** Opus reviews; push to the SSH URL. 49cb207a's dangling Lou2 import is resolved (bc103d4a, then superseded).
@@ -45,6 +46,8 @@ Avoid a large rewrite.
 - **Older history:** [AI_HANDOFF_ARCHIVE.md](AI_HANDOFF_ARCHIVE.md) and `AI_HANDOFF_ENTRIES/`.
 
 ## Entry index
+
+- 2026-11-25 · Codex · [Accepted character shadows and rendering review](AI_HANDOFF_ENTRIES/2026-11-25-codex-character-shadow-review.md)
 
 - 2026-11-24 · Claude · [Consolidation: integration commits, movement promoted, Lou2 body, art revision system](AI_HANDOFF_ENTRIES/2026-11-24-claude-consolidation.md)
 

@@ -1,3 +1,4 @@
+import { syncCharacterShadow } from './rendering/characterShadows.js';
 import { impactMoveId } from './animation/impactMoves.js';
 import { RING, ringBoundsAtY, perspectiveScale, scaleCandidate, ropeSpillCandidate } from './constants.js';
 import { spillPlan, spillBack, spillHeadDir, catchPlan, strandAtDepth, strandRest, CATCH } from './animation/ropeSpill.js';
@@ -3626,7 +3627,7 @@ export default class Wrestler {
         const s = s0 * perspectiveScale(root.y) / perspectiveScale(ga.from0.y);
         ga.root = root; ga.lift = smp.lift; ga.seg = smp.seg;   // read by the proof tools
         const fx = smp.mirror ? -facing : facing;   // the roll draws its second half mirrored (same joints, mirrored art)
-        gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
+        gfx.fillStyle(0x000000, this._characterShadow ? 0 : 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
         sk.setVisible(true);
         if (smp.seg === 'settle') { sk._applyGrounded(root.x, root.y, s, facing, rest); return; }
         const y = root.y - smp.lift * s;
@@ -3643,7 +3644,7 @@ export default class Wrestler {
         const smp = sampleGroundAttack(def, ga.t, Skeleton.lyingBase('prone', true)), P = def.phases;
         const scaleAt = (y) => this.drawScale(y);   // he is smaller up the screen: the scale follows the body as it moves, so the commit at the end is no jump
         if (smp.seg === 'settle') {
-            gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(this.x, this.y, 120 * s0, 36 * s0);
+            gfx.fillStyle(0x000000, this._characterShadow ? 0 : 0.22); gfx.fillEllipse(this.x, this.y, 120 * s0, 36 * s0);
             sk.setVisible(true);
             sk._applyGrounded(this.x, this.y, s0, facing, smp.g);
             return;
@@ -3676,14 +3677,14 @@ export default class Wrestler {
             if (ga.from) {
                 root = { x: this.x + (root.x - this.x) * smp.u, y: this.y + (root.y - this.y) * smp.u };
                 s = s0 + (s - s0) * smp.u;
-                gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
+                gfx.fillStyle(0x000000, this._characterShadow ? 0 : 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
                 sk.updateGroundedBlend(root.x, root.y, s, facing, P.contact.g, ga.from, smp.e, null, false, (key) => (ARM_CHANNELS.includes(key) ? smp.eArm : smp.e));   // T4.7c: the arms lead (the elbow is cocked at the chest early), the body follows under gravity
                 ga.root = root;
                 if (smp.layer) this._layerStrike(sk, def, op);
                 return;
             }
         }
-        gfx.fillStyle(0x000000, 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
+        gfx.fillStyle(0x000000, this._characterShadow ? 0 : 0.22); gfx.fillEllipse(root.x, root.y, 120 * s, 36 * s);
         sk._applyGrounded(root.x, root.y, s, facing, smp.g);
         ga.root = root;
         if (smp.layer) this._layerStrike(sk, def, op);
@@ -5044,6 +5045,7 @@ export default class Wrestler {
 
     // ?ropeSpill=v1 (TS.6b): after the body is drawn, ink on the strand at his depth pushes him back and the body is drawn once more at the new x.
     draw() {
+        this._characterShadow = syncCharacterShadow(this);
         this._drawBody();
         if (!this._catchArmed && (this.state === 'down' || this.state === 'falling' || this.state === 'flipping') && ropeSpillCandidate()) { this._catchArmed = true; this._catchDone = false; this._catchOff = 0; }   // any other way down: guarded from this very frame
         if (this._catchArmed && !this._catchBusy) { this._catchBusy = true; try { if (this._catchGuard()) this._drawBody(); } finally { this._catchBusy = false; } }
@@ -5085,7 +5087,7 @@ export default class Wrestler {
 
         if (state === 'falling' || state === 'risingUp') {
             const p = this.fallProgress;
-            gfx.fillStyle(0x000000, 0.22);
+            gfx.fillStyle(0x000000, this._characterShadow ? 0 : 0.22);
             gfx.fillEllipse(x, y, (120 + p * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
             const ballistic = state === 'falling' && this._fallBallistic && fallsCandidate();   // T2.6: no pop at the start (he starts from where he stands), free fall to contact
@@ -5095,7 +5097,7 @@ export default class Wrestler {
 
         if (state === 'gettingUp') {
             // Shadow shrinks as the body gathers itself off the mat
-            gfx.fillStyle(0x000000, 0.22);
+            gfx.fillStyle(0x000000, this._characterShadow ? 0 : 0.22);
             gfx.fillEllipse(x, y, (170 - this.riseT * 60) * s, 36 * s);
             this.skeleton.setVisible(true);
             const flipped = !!this._riseFlip;
@@ -5108,7 +5110,7 @@ export default class Wrestler {
 
         if (state === 'flipping') {
             const arc = Math.sin(this.flipProgress * Math.PI); // 0 → 1 → 0
-            gfx.fillStyle(0x000000, 0.22 + arc * 0.10);
+            gfx.fillStyle(0x000000, this._characterShadow ? 0 : 0.22 + arc * 0.10);
             gfx.fillEllipse(x, y, (120 + arc * 55) * s, (36 + arc * 10) * s);
             this.skeleton.setVisible(true);
             this.skeleton.updateFall(x, y - arc * (this._flipArcHeight ?? 85) * s, s, facing, 'flip', this.flipProgress);
@@ -5119,7 +5121,7 @@ export default class Wrestler {
             // Flights posed by one-wrestler clips (_playFlight). The dives' and
             // press's shadow stays on the landing spot while he flies in.
             const shadowY = state === 'elbowDropping' ? y : this._divLandY;
-            gfx.fillStyle(0x000000, 0.22);
+            gfx.fillStyle(0x000000, this._characterShadow ? 0 : 0.22);
             gfx.fillEllipse(x, shadowY, 130 * s, 36 * s);
             this.skeleton.setVisible(true);
             this.skeleton.updateUpright(x, y, s, facing, this.pose, 0, 0, facing * (this.pose.lean ?? 0), 0, 0.5, 0);
@@ -5132,7 +5134,7 @@ export default class Wrestler {
 
         const shadowY = onRopes ? this._corner.matY : y;
         const kneel = this._armBarKneelShadow(s);
-        gfx.fillStyle(0x000000, 0.22);
+        gfx.fillStyle(0x000000, this._characterShadow ? 0 : 0.22);
         if (kneel) {
             // Arm bar (light=v1): his oval goes under the knees and boots, and below the man's body (gfx depth under his), not the 120 px oval at his root over him.
             gfx.setDepth(kneel.depth);

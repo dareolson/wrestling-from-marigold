@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { RING } from '../src/constants.js';
-import { cornerGeom, CORNER_GAP } from '../src/ringCorners.js';
+import { cornerGeom, cornerGaps, CORNER_GAP } from '../src/ringCorners.js';
 
 const G = cornerGeom(RING);
 const inside = (p, poly) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const a = poly[i], b = poly[j]; if ((a.y > p.y) !== (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) c = !c; } return c; };
@@ -30,4 +30,11 @@ test('cornerGeom: the turnbuckles are the strand ends (corner x, the rope row th
 test('cornerGeom: the two walls give a symmetric bisector at mirrored corners', () => {
     assert.ok(Math.abs(G.nl.out.x + G.nr.out.x) < 1e-9 && Math.abs(G.nl.out.y - G.nr.out.y) < 1e-9);
     assert.ok(Math.abs(G.fl.out.x + G.fr.out.x) < 1e-9 && Math.abs(G.fl.out.y - G.fr.out.y) < 1e-9);
+});
+test('cornerGaps: the far posts scale with the far/near ring width; the gap moves the footprint by exactly that', () => {
+    const g = cornerGaps(20, RING), far = 20 * 540 / 880;
+    assert.ok(Math.abs(g.far - far) < 1e-9 && g.near === 20);
+    const W = cornerGeom(RING, g);
+    assert.ok(Math.abs(Math.hypot(W.nl.foot.x - RING.nearLeft.x, W.nl.foot.y - RING.nearLeft.y) - 20) < 1e-9);
+    assert.ok(Math.abs(Math.hypot(W.fr.foot.x - RING.farRight.x, W.fr.foot.y - RING.farRight.y) - far) < 1e-9);
 });

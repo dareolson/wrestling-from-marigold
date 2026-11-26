@@ -1,5 +1,5 @@
-import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate, ropeSwayScale, ropeContactCandidate, ropeSpillCandidate, cornersCandidate } from '../constants.js';
-import { cornerGeom } from '../ringCorners.js';
+import { W, H, RING, ringBoundsAtY, scaleDebugCandidate, ropesCandidate, ropesPastCandidate, ropeSwayScale, ropeContactCandidate, ropeSpillCandidate, cornersCandidate, cornerGapPx } from '../constants.js';
+import { cornerGeom, cornerGaps } from '../ringCorners.js';
 import { createSway, swayKick, swayStep, swayWall, swayHardness, SWAY, SWAY_STATES } from '../animation/ropeSway.js';
 import { createContact, contactStep, sidePartPx, reachesY, coverWeight, CONTACT_SKIP, CONTACT_PARTS } from '../animation/ropeContact.js';
 import { spillAtRopes } from '../animation/ropeSpill.js';
@@ -2710,7 +2710,7 @@ export default class Arena extends Phaser.Scene {
         // ?corners=v1 (RC TC.1): the posts stand outside the rope corners, a turnbuckle sits where each level's strands end and a connector runs from it to the post at that level's height.
         // Drawing only: the strands, RING and every rope point are untouched. The near apron gets a small wedge so the moved post's base still stands on it.
         if (cornersCandidate()) {
-            const G = cornerGeom(RING), wedge = this.add.graphics().setDepth(6);
+            const G = cornerGeom(RING, cornerGaps(cornerGapPx(), RING)), wedge = this.add.graphics().setDepth(6);
             for (const [k, c] of Object.entries(G)) {
                 const near = k[0] === 'n', gfx = near ? nearGfx : farGfx, w = near ? 8 : 5, tb = near ? 3.5 : 2, post = c.foot, bot = near ? apronY + (post.y - c.corner.y) : post.y + 16;
                 gfx.fillStyle(0x686860, 1);
@@ -2718,7 +2718,7 @@ export default class Arena extends Phaser.Scene {
                 gfx.fillStyle(0x888880, 1);
                 gfx.fillCircle(post.x, topRope[near ? 'nearY' : 'farY'] + (post.y - c.corner.y) - (near ? 6 : 4), w * 0.8);
                 c.levels.forEach((lv, i) => {
-                    gfx.lineStyle(near ? 3 : 2, 0x484840, 1);
+                    gfx.lineStyle(near ? 3 : 2.5, 0xc0c0b4, 1);   // lighter than the post (0x686860) so the connector reads against it
                     gfx.lineBetween(lv.turnbuckle.x, lv.turnbuckle.y, lv.onPost.x, lv.onPost.y);
                     gfx.fillStyle(0x484840, 1);
                     gfx.fillRect(lv.turnbuckle.x - tb, lv.turnbuckle.y - tb, tb * 2, tb * 2);

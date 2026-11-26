@@ -1,7 +1,9 @@
 // `?corners=v1` (PLAN_ROPES stage RC): drawing only. On a real ring the posts do not hold the rope ends: each level's two strands meet at a turnbuckle just inside the corner and a short connector runs
 // out to the post. The strands, the `RING` corners and everything measured against them stay where they are; the corner point becomes the turnbuckle and the POST moves out along the corner's outward
 // diagonal (the bisector of its two walls on screen, away from the ring). Pure: Arena.drawPosts draws what this returns.
-export const CORNER_GAP = Object.freeze({ near: 8, far: 5 });   // px the post moves out (the ring's scale: ~1 px per 1.3"); reported on the TC.2 page
+export const CORNER_GAP = Object.freeze({ near: 8, far: 5 });   // TC.1's first guess (~2"): too small to see. `?cornerGap=<px at the near posts>` (TC.3) replaces it; near 880 px ~ 20 ft, so 1 px ~ 3".
+/** The gaps for `near` px at the near posts: the far posts scale with the far/near ring width (540/880). */
+export const cornerGaps = (near, ring = { nearLeft: { x: 40 }, nearRight: { x: 920 }, farLeft: { x: 210 }, farRight: { x: 750 } }) => ({ near, far: near * (ring.farRight.x - ring.farLeft.x) / (ring.nearRight.x - ring.nearLeft.x) });
 
 const unit = (dx, dy) => { const d = Math.hypot(dx, dy) || 1; return { x: dx / d, y: dy / d }; };
 

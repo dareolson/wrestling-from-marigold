@@ -47,14 +47,14 @@ export function drawTurnbuckle(gfx, a, b, sc = 1) {
     const line = (p, q, w, col) => { gfx.lineStyle(w, col, 1); gfx.lineBetween(p.x, p.y, q.x, q.y); };
     const ring = (p, r, w, col) => { gfx.lineStyle(w, col, 1); gfx.strokeCircle(p.x, p.y, r); };
     // outline pass
-    const O = 0x12120e;
+    const O = 0x0a0a08;   // Derek 2026-11-25: black hardware, a faint sheen so it still reads apart from the ropes (0x36 fill, 0x82 highlight)
     line(a, b, 2.4 * sc + 1.6, O); line(at(b0), at(b1), th + 2, O);
     ring(at(re / L), re, 1.6 * sc + 1.6, O); ring(b, rb, 1.6 * sc + 1.6, O);
     // fill pass: rods, then the barrel with its lit top edge and shaded bottom edge, then the eye and the eye bolt
-    line(a, b, 2.4 * sc, 0x8e8e84);
-    line(at(b0), at(b1), th, 0xa4a498);
-    line(at(b0, th * 0.28), at(b1, th * 0.28), th * 0.3, 0x5c5c54);
-    line(at(b0, -th * 0.28), at(b1, -th * 0.28), th * 0.34, 0xeeeee2);
-    line(at(b0), at(b0 + 0.02), th, 0x6a6a62); line(at(b1 - 0.02), at(b1), th, 0x6a6a62);   // the barrel's end collars
-    ring(at(re / L), re, 1.6 * sc, 0xd6d6ca); ring(b, rb, 1.6 * sc, 0xc8c8bc);
+    line(a, b, 2.4 * sc, 0x2a2a26);
+    line(at(b0), at(b1), th, 0x1c1c1a);
+    line(at(b0, th * 0.28), at(b1, th * 0.28), th * 0.3, 0x111110);
+    line(at(b0, -th * 0.28), at(b1, -th * 0.28), th * 0.34, 0x4c4c46);
+    line(at(b0), at(b0 + 0.02), th, 0x2e2e2a); line(at(b1 - 0.02), at(b1), th, 0x2e2e2a);   // the barrel's end collars
+    ring(at(re / L), re, 1.6 * sc, 0x3a3a34); ring(b, rb, 1.6 * sc, 0x34342e);
 }

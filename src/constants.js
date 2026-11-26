@@ -41,6 +41,8 @@ export const ropesCandidate = () => {
 export const ropesPastCandidate = () => ropesCandidate() && new URLSearchParams(location.search).get('ropesPast') === '1';
 // ropeSpill (PLAN_ROPES stage RS): `?ropeSpill=v1` (with ropes on), opt-in until Derek judges it: a knockdown beside a side wall can end with his head and shoulders under the bottom strand.
 export const ropeSpillCandidate = () => ropesCandidate() && new URLSearchParams(location.search).get('ropeSpill') === 'v1';
+// corners (PLAN_ROPES stage RC): `?corners=v1`, opt-in, drawing only: the posts move out of the rope corners, a turnbuckle and a connector tie each level to its post (src/ringCorners.js).
+export const cornersCandidate = () => typeof location !== 'undefined' && new URLSearchParams(location.search).get('corners') === 'v1';
 // ropeContact (PLAN_ROPES T2.1/T2.2): with ropes on, parts bend the strands and each bend is a spring. Promoted by Derek 2026-11-23 ("good enough for now"): on with ropes unless
 // `?ropeContact=off` (any value but `v1` is off), which is the R1 root-only press.
 export const ropeContactCandidate = () => { if (!ropesCandidate()) return false; const v = new URLSearchParams(location.search).get('ropeContact'); return v === null || v === 'v1'; };

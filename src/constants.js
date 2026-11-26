@@ -40,8 +40,8 @@ export const ropesCandidate = () => {
 // ropesPast (T1.3): with ropes=v1, a part whose ink reaches past a side plane draws under the strand. Its own opt-in so Derek can judge it against ropes=v1 alone: it trades side-wall order for ink past the plane.
 export const ropesPastCandidate = () => ropesCandidate() && new URLSearchParams(location.search).get('ropesPast') === '1';
 // ropeSpill (PLAN_ROPES stage RS): `?ropeSpill=v1` (with ropes on), opt-in until Derek judges it: a knockdown beside a side wall can end with his head and shoulders under the bottom strand.
-export const ropeSpillCandidate = () => ropesCandidate() && new URLSearchParams(location.search).get('ropeSpill') === 'v1';
-// corners (PLAN_ROPES stage RC): `?corners=v1`, opt-in, drawing only: the posts move out of the rope corners, a turnbuckle and a connector tie each level to its post (src/ringCorners.js).
+// ropeSpill (PLAN_ROPES RS/TS.6b): the rope catches a knockdown and bounces him once. PROMOTED to default by Derek 2026-11-25: `?ropeSpill=off` (any value but v1) = no catch.
+export const ropeSpillCandidate = () => { if (!ropesCandidate()) return false; const v = new URLSearchParams(location.search).get('ropeSpill'); return v === null || v === 'v1'; };
 // corners (PLAN_ROPES RC): posts out, turnbuckle pads + rigging (Codex art). PROMOTED to default by Derek 2026-11-25: `?corners=off` (any value but v1) = the old posts.
 export const cornersCandidate = () => { if (typeof location === 'undefined') return false; const v = new URLSearchParams(location.search).get('corners'); return v === null || v === 'v1'; };
 // `?cornerGap=<px at the near posts>` (TC.3, with ?corners=v1): how far the posts move out; the far posts scale with the far/near ring width. Default 30 (Derek, TC.3).

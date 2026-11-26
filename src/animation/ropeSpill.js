@@ -69,7 +69,7 @@ export const CATCH = Object.freeze({
     lift: 14,     // s = 1 px: the hop's peak height
     minDx: 10,    // s = 1 px: the least the bounce carries him, so even a graze reads as a bounce
     dur: 0.45,    // s, the one hop
-    extra: 6,     // s = 1 px: carried past the measured reach + clear, so the strand's own bow and the pose's small swings stay inside it
+    extra: 12,    // s = 1 px (6 -> 12 for the 3x rope sag, 2026-11-25: Lou slammed ended 1-2 px inside): carried past the measured reach + clear, so the strand's own bow and the pose's small swings stay inside it
     near: 140,    // s = 1 px: ink is only measured within this of the plane (the longest lying reach is 121)
     rows: 14,     // px: the strand's rows at his depth are widened by this: its drawn thickness and the kick, bow and his own hop lift between the frame it was read on and the one drawn (the probe counts only 4)
     depth: 18,    // s = 1 px: one body depth (the shadow ellipse's half height) either side of his root's row

@@ -64,6 +64,10 @@ function drawShadowPart(ctx, part, m = null) {
 const layers = new WeakMap();
 let serial = 0;
 
+// Cost (Derek 2026-11-25): the cast is drawn and uploaded to the GPU every frame. At half resolution the upload is a quarter of the size; the soft edge hides the
+// difference. `?shadowRes=1` = full resolution (the accepted look as first drawn).
+export const shadowRes = () => (typeof location !== 'undefined' && new URLSearchParams(location.search).get('shadowRes') === '1' ? 1 : 0.5);
+
 export function syncCharacterShadow(w) {
     if (!characterShadowsEnabled() || !w.skeleton?._headIsImage) return false;
     const scene = w.skeleton._scene;
@@ -72,14 +76,15 @@ export function syncCharacterShadow(w) {
     if (!layer) {
         const angle = shadowAngleParam();
         const key = `wfm-character-shadow-${serial++}`;
-        const texture = scene.textures.createCanvas(key, W, H);
+        const R = shadowRes(), w2 = Math.round(W * R), h2 = Math.round(H * R);
+        const texture = scene.textures.createCanvas(key, w2, h2);
         const ink = document.createElement('canvas');
-        ink.width = W; ink.height = H;
+        ink.width = w2; ink.height = h2;
         // A separate multiply batch preserves model occlusion. Sharing the
         // normal-alpha batch produced visible shading on grounded bodies in
         // final-image comparisons, despite correct scene depth values.
         const image = scene.add.image(0, 0, key).setOrigin(0).setDepth(3.4)
-            .setAlpha(0.29).setBlendMode('MULTIPLY');
+            .setAlpha(0.29).setBlendMode('MULTIPLY').setScale(1 / R);
         const body = document.createElement('canvas');
         body.width = W; body.height = H;
         const wrestlers = new Set();
@@ -92,8 +97,9 @@ export function syncCharacterShadow(w) {
         const render = () => {
             const ctx = ink.getContext('2d');
             ctx.setTransform(1, 0, 0, 1, 0, 0);
-            ctx.clearRect(0, 0, W, H);
+            ctx.clearRect(0, 0, w2, h2);
             ctx.save();
+            ctx.setTransform(R, 0, 0, R, 0, 0);   // world px -> the canvas' resolution
             for (const actor of wrestlers) drawCast(ctx, actor);
             // One union, then one opacity: overlapping parts/actors don't darken seams.
             ctx.globalCompositeOperation = 'source-in';
@@ -101,19 +107,21 @@ export function syncCharacterShadow(w) {
             ctx.restore();
             const out = texture.context;
             out.setTransform(1, 0, 0, 1, 0, 0);
-            out.clearRect(0, 0, W, H);
+            out.clearRect(0, 0, w2, h2);
             out.save();
+            out.setTransform(R, 0, 0, R, 0, 0);
             out.beginPath();
             for (const [i, p] of [RING.nearLeft, RING.nearRight, RING.farRight, RING.farLeft].entries()) {
                 if (i === 0) out.moveTo(p.x, p.y); else out.lineTo(p.x, p.y);
             }
             out.closePath(); out.clip();
+            out.setTransform(1, 0, 0, 1, 0, 0);
             // Canvas shadows work in Safari without relying on context.filter.
             // Move the source offscreen and leave only its softly diffused shadow.
             out.shadowColor = '#111111';
-            out.shadowBlur = 3;
-            out.shadowOffsetX = W * 2;
-            out.drawImage(ink, -W * 2, 0);
+            out.shadowBlur = 3 * R;   // 3 world px at any resolution
+            out.shadowOffsetX = w2 * 2;
+            out.drawImage(ink, -w2 * 2, 0);
             out.restore();
             // Native scene depth handles body occlusion. Do not subtract a
             // body cutout: double-compositing its antialias creates a light rim.

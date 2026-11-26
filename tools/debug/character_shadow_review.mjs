@@ -7,7 +7,7 @@ const out = process.argv[2] ?? 'research/animation/character-shadows-2026-11-25/
 await mkdir(out, { recursive:true });
 process.env.WFM_P1 ??= 'thesz-procreate-v1';
 process.env.WFM_P2 ??= 'george-roster-v1';
-process.env.WFM_QS ??= 'notitle=1&shadows=v1&shadowAngle=reference';
+process.env.WFM_QS ??= 'notitle=1&shadows=v1&shadowAngle=reference&shadowRes=1';   // the review reads the layer at 960x600
 const facing = Number(process.env.WFM_SHADOW_FACING ?? 1);
 const mode = process.env.WFM_SHADOW_MOVE ?? 'elbow';
 const h = await launch();
